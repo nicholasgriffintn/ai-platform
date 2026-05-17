@@ -82,9 +82,7 @@ export async function fetchAIResponse<
 		response = await fetch(endpointOrUrl, {
 			method: "POST",
 			headers,
-			body: isFormData
-				? (bodyWithTools as FormData)
-				: JSON.stringify(bodyWithTools),
+			body: isFormData ? (bodyWithTools as FormData) : JSON.stringify(bodyWithTools),
 		});
 	}
 
@@ -93,14 +91,11 @@ export async function fetchAIResponse<
 		try {
 			responseText = await response.text();
 		} catch (textError) {
-			logger.error(
-				`Failed to read response body for ${provider} from ${endpointOrUrl}:`,
-				{
-					error: textError,
-					status: response.status,
-					statusText: response.statusText,
-				},
-			);
+			logger.error(`Failed to read response body for ${provider} from ${endpointOrUrl}:`, {
+				error: textError,
+				status: response.status,
+				statusText: response.statusText,
+			});
 			throw new AssistantError(
 				`Failed to get response for ${provider} from ${endpointOrUrl}: ${response.statusText}`,
 				ErrorType.PROVIDER_ERROR,
@@ -108,10 +103,7 @@ export async function fetchAIResponse<
 		}
 
 		let responseJson = safeParseJson(responseText);
-		logger.error(
-			`Failed to get response for ${provider} from ${endpointOrUrl}`,
-			responseJson,
-		);
+		logger.error(`Failed to get response for ${provider} from ${endpointOrUrl}`, responseJson);
 
 		throw new AssistantError(
 			`Failed to get response for ${provider} from ${endpointOrUrl}`,

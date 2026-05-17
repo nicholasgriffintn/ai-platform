@@ -19,9 +19,7 @@ export class HyperbolicProvider extends BaseProvider {
 		return `${hyperbolicUrl}/v1/chat/completions`;
 	}
 
-	protected async getHeaders(
-		params: ChatCompletionParameters,
-	): Promise<Record<string, string>> {
+	protected async getHeaders(params: ChatCompletionParameters): Promise<Record<string, string>> {
 		const apiKey = await this.getApiKey(params, params.user?.id);
 
 		return {

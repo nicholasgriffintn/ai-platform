@@ -121,9 +121,7 @@ describe("captureScreenshot", () => {
 
 			expect(result.status).toBe("success");
 			expect(result.data?.url).toBe("https://example.com");
-			expect(result.data?.screenshotUrl).toContain(
-				"https://assets.test.com/screenshots/",
-			);
+			expect(result.data?.screenshotUrl).toContain("https://assets.test.com/screenshots/");
 			expect(result.data?.key).toContain("screenshots/");
 		});
 
@@ -145,9 +143,7 @@ describe("captureScreenshot", () => {
 
 			expect(result.status).toBe("success");
 			expect(result.data?.url).toBeUndefined();
-			expect(result.data?.screenshotUrl).toContain(
-				"https://assets.test.com/screenshots/",
-			);
+			expect(result.data?.screenshotUrl).toContain("https://assets.test.com/screenshots/");
 		});
 
 		it("should handle screenshot options", async () => {
@@ -361,9 +357,7 @@ describe("captureScreenshot", () => {
 			const result = await captureScreenshot(params, mockRequest);
 
 			expect(result.status).toBe("error");
-			expect(result.error).toBe(
-				"Error capturing screenshot: API Error: Rate limit exceeded",
-			);
+			expect(result.error).toBe("Error capturing screenshot: API Error: Rate limit exceeded");
 		});
 
 		it("should handle fetch network errors", async () => {
@@ -376,9 +370,7 @@ describe("captureScreenshot", () => {
 			const result = await captureScreenshot(params, mockRequest);
 
 			expect(result.status).toBe("error");
-			expect(result.error).toBe(
-				"Error capturing screenshot: Error: Network error",
-			);
+			expect(result.error).toBe("Error capturing screenshot: Error: Network error");
 		});
 
 		it("should handle AssistantError properly", async () => {
@@ -399,9 +391,7 @@ describe("captureScreenshot", () => {
 
 		it("should handle storage upload errors", async () => {
 			mockFetch.mockResolvedValue(mockFetchResponse);
-			mockStorageService.uploadObject.mockRejectedValue(
-				new Error("Upload failed"),
-			);
+			mockStorageService.uploadObject.mockRejectedValue(new Error("Upload failed"));
 
 			const params: CaptureScreenshotParams = {
 				url: "https://example.com",
@@ -410,9 +400,7 @@ describe("captureScreenshot", () => {
 			const result = await captureScreenshot(params, mockRequest);
 
 			expect(result.status).toBe("error");
-			expect(result.error).toBe(
-				"Error capturing screenshot: Error: Upload failed",
-			);
+			expect(result.error).toBe("Error capturing screenshot: Error: Upload failed");
 		});
 	});
 

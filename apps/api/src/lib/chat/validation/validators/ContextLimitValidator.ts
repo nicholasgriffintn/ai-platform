@@ -12,15 +12,8 @@ import type {
 import type { CoreChatOptions } from "~/types";
 
 export class ContextLimitValidator implements Validator {
-	async validate(
-		_options: CoreChatOptions,
-		context: ValidationContext,
-	): Promise<ValidatorResult> {
-		if (
-			!context.sanitizedMessages ||
-			!context.lastMessage ||
-			!context.modelConfig
-		) {
+	async validate(_options: CoreChatOptions, context: ValidationContext): Promise<ValidatorResult> {
+		if (!context.sanitizedMessages || !context.lastMessage || !context.modelConfig) {
 			return {
 				validation: {
 					isValid: false,
@@ -41,8 +34,7 @@ export class ContextLimitValidator implements Validator {
 						},
 					];
 
-			const lastMessageContentText =
-				lastMessageContent.find((c) => c.type === "text")?.text || "";
+			const lastMessageContentText = lastMessageContent.find((c) => c.type === "text")?.text || "";
 
 			const { markdownAttachments } = getAllAttachments(lastMessageContent);
 			const finalUserMessage = sanitiseInput(lastMessageContentText);
@@ -50,9 +42,7 @@ export class ContextLimitValidator implements Validator {
 			const messageWithContext =
 				markdownAttachments.length > 0
 					? `${finalUserMessage}\n\nContext from attached documents:\n${markdownAttachments
-							.map(
-								(doc) => `${doc.name ? `# ${doc.name}\n` : ""}${doc.markdown}`,
-							)
+							.map((doc) => `${doc.name ? `# ${doc.name}\n` : ""}${doc.markdown}`)
 							.join("\n\n")}`
 					: finalUserMessage;
 
@@ -65,11 +55,7 @@ export class ContextLimitValidator implements Validator {
 						)
 					: [];
 
-			checkContextWindowLimits(
-				prunedWithAttachments,
-				messageWithContext,
-				context.modelConfig,
-			);
+			checkContextWindowLimits(prunedWithAttachments, messageWithContext, context.modelConfig);
 
 			return {
 				validation: { isValid: true },

@@ -24,13 +24,10 @@ export function resolvePromptCapabilities({
 	const metadata = modelMetadata?.modelConfig;
 
 	return {
-		supportsToolCalls:
-			supportsToolCalls ?? metadata?.supportsToolCalls ?? false,
-		supportsArtifacts:
-			supportsArtifacts ?? metadata?.supportsArtifacts ?? false,
+		supportsToolCalls: supportsToolCalls ?? metadata?.supportsToolCalls ?? false,
+		supportsArtifacts: supportsArtifacts ?? metadata?.supportsArtifacts ?? false,
 		reasoningEnabled: metadata?.reasoningConfig?.enabled ?? false,
-		requiresThinkingPrompt:
-			requiresThinkingPrompt ?? metadata?.requiresThinkingPrompt ?? false,
+		requiresThinkingPrompt: requiresThinkingPrompt ?? metadata?.requiresThinkingPrompt ?? false,
 	};
 }
 
@@ -78,9 +75,7 @@ export function getResponseStyle(
 
 	const DEFAULT_PREFERENCES =
 		userPreferences ||
-		(instructionVariant === "compact"
-			? COMPACT_DEFAULT_PREFERENCES
-			: FULL_DEFAULT_PREFERENCES);
+		(instructionVariant === "compact" ? COMPACT_DEFAULT_PREFERENCES : FULL_DEFAULT_PREFERENCES);
 
 	if (instructionVariant === "compact") {
 		const compactProblemBreakdownInstructions = (() => {
@@ -111,9 +106,7 @@ export function getResponseStyle(
 			const agentGuidelines: string[] = [];
 
 			if (supportsToolCalls) {
-				agentGuidelines.push(
-					"Only narrate tool usage when it helps the user act on the result.",
-				);
+				agentGuidelines.push("Only narrate tool usage when it helps the user act on the result.");
 			}
 
 			if (supportsArtifacts) {
@@ -122,9 +115,7 @@ export function getResponseStyle(
 				);
 			}
 
-			agentGuidelines.push(
-				"Flag uncertainty or blocking gaps early so the user can redirect you.",
-			);
+			agentGuidelines.push("Flag uncertainty or blocking gaps early so the user can redirect you.");
 
 			if (agentGuidelines.length > 0) {
 				agentPreferences += `\n- Also keep in mind:\n${agentGuidelines
@@ -171,12 +162,8 @@ export function getResponseStyle(
 			);
 		}
 
-		additionalGuidelines.push(
-			"Flag uncertainty or missing information instead of guessing.",
-		);
-		additionalGuidelines.push(
-			"Scale your explanation to the complexity of the request.",
-		);
+		additionalGuidelines.push("Flag uncertainty or missing information instead of guessing.");
+		additionalGuidelines.push("Scale your explanation to the complexity of the request.");
 
 		let preferences = DEFAULT_PREFERENCES;
 

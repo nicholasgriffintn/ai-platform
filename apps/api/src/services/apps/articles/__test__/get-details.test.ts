@@ -37,23 +37,23 @@ describe("getArticleDetails", () => {
 	});
 
 	it("should throw AssistantError when id is missing", async () => {
-		await expect(
-			getArticleDetails({ env: mockEnv, id: "", userId: 123 }),
-		).rejects.toThrow(expect.any(AssistantError));
+		await expect(getArticleDetails({ env: mockEnv, id: "", userId: 123 })).rejects.toThrow(
+			expect.any(AssistantError),
+		);
 
-		await expect(
-			getArticleDetails({ env: mockEnv, id: "", userId: 123 }),
-		).rejects.toThrow("Article ID is required");
+		await expect(getArticleDetails({ env: mockEnv, id: "", userId: 123 })).rejects.toThrow(
+			"Article ID is required",
+		);
 	});
 
 	it("should throw AssistantError when userId is missing", async () => {
-		await expect(
-			getArticleDetails({ env: mockEnv, id: "article-1", userId: 0 }),
-		).rejects.toThrow(expect.any(AssistantError));
+		await expect(getArticleDetails({ env: mockEnv, id: "article-1", userId: 0 })).rejects.toThrow(
+			expect.any(AssistantError),
+		);
 
-		await expect(
-			getArticleDetails({ env: mockEnv, id: "article-1", userId: 0 }),
-		).rejects.toThrow("User ID is required for lookup");
+		await expect(getArticleDetails({ env: mockEnv, id: "article-1", userId: 0 })).rejects.toThrow(
+			"User ID is required for lookup",
+		);
 	});
 
 	it("should throw NOT_FOUND error when article doesn't exist", async () => {
@@ -77,13 +77,13 @@ describe("getArticleDetails", () => {
 
 		mockAppDataRepo.getAppDataById.mockResolvedValue(mockArticle);
 
-		await expect(
-			getArticleDetails({ env: mockEnv, id: "article-1", userId: 123 }),
-		).rejects.toThrow(expect.any(AssistantError));
+		await expect(getArticleDetails({ env: mockEnv, id: "article-1", userId: 123 })).rejects.toThrow(
+			expect.any(AssistantError),
+		);
 
-		await expect(
-			getArticleDetails({ env: mockEnv, id: "article-1", userId: 123 }),
-		).rejects.toThrow("Forbidden");
+		await expect(getArticleDetails({ env: mockEnv, id: "article-1", userId: 123 })).rejects.toThrow(
+			"Forbidden",
+		);
 	});
 
 	it("should return article details with parsed data", async () => {
@@ -155,28 +155,23 @@ describe("getArticleDetails", () => {
 	});
 
 	it("should throw AssistantError when repository throws non-AssistantError", async () => {
-		mockAppDataRepo.getAppDataById.mockRejectedValue(
-			new Error("Database error"),
+		mockAppDataRepo.getAppDataById.mockRejectedValue(new Error("Database error"));
+
+		await expect(getArticleDetails({ env: mockEnv, id: "article-1", userId: 123 })).rejects.toThrow(
+			expect.any(AssistantError),
 		);
 
-		await expect(
-			getArticleDetails({ env: mockEnv, id: "article-1", userId: 123 }),
-		).rejects.toThrow(expect.any(AssistantError));
-
-		await expect(
-			getArticleDetails({ env: mockEnv, id: "article-1", userId: 123 }),
-		).rejects.toThrow("Failed to get article details");
+		await expect(getArticleDetails({ env: mockEnv, id: "article-1", userId: 123 })).rejects.toThrow(
+			"Failed to get article details",
+		);
 	});
 
 	it("should rethrow AssistantError from repository", async () => {
-		const originalError = new AssistantError(
-			"Custom error",
-			ErrorType.NOT_FOUND,
-		);
+		const originalError = new AssistantError("Custom error", ErrorType.NOT_FOUND);
 		mockAppDataRepo.getAppDataById.mockRejectedValue(originalError);
 
-		await expect(
-			getArticleDetails({ env: mockEnv, id: "article-1", userId: 123 }),
-		).rejects.toThrow(originalError);
+		await expect(getArticleDetails({ env: mockEnv, id: "article-1", userId: 123 })).rejects.toThrow(
+			originalError,
+		);
 	});
 });

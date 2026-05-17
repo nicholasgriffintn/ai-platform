@@ -21,15 +21,11 @@ export function SharedAgentCard({ agent, onInstall, isInstalling }: any) {
 
 					<div className="flex-1 min-w-0">
 						<div className="flex items-start justify-between gap-4">
-							<h3 className="font-semibold text-foreground truncate">
-								{agent.name}
-							</h3>
+							<h3 className="font-semibold text-foreground truncate">{agent.name}</h3>
 						</div>
 
 						{agent.description && (
-							<p className="text-sm text-muted-foreground mt-1 line-clamp-2">
-								{agent.description}
-							</p>
+							<p className="text-sm text-muted-foreground mt-1 line-clamp-2">{agent.description}</p>
 						)}
 
 						<div className="flex flex-wrap gap-1.5 mt-3">

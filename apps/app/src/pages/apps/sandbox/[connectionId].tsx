@@ -34,10 +34,7 @@ export default function SandboxConnectionPage() {
 
 	if (!c.hasValidInstallationId) {
 		return (
-			<PageShell
-				sidebarContent={<AppsSidebarContent />}
-				className="max-w-7xl mx-auto"
-			>
+			<PageShell sidebarContent={<AppsSidebarContent />} className="max-w-7xl mx-auto">
 				<Alert variant="destructive">
 					<AlertTitle>Invalid connection id</AlertTitle>
 					<AlertDescription>
@@ -61,16 +58,13 @@ export default function SandboxConnectionPage() {
 					<BackLink to="/apps/sandbox" label="Back to Sandbox Worker" />
 					<PageTitle title={`Installation ${c.installationId}`} />
 					<p className="text-sm text-muted-foreground">
-						Submit sandbox tasks and stream command-level progress from the
-						sandbox worker.
+						Submit sandbox tasks and stream command-level progress from the sandbox worker.
 					</p>
 				</PageHeader>
 			}
 		>
 			{c.isLoading ? (
-				<div className="text-sm text-muted-foreground">
-					Loading connection...
-				</div>
+				<div className="text-sm text-muted-foreground">Loading connection...</div>
 			) : c.error ? (
 				<Alert variant="destructive">
 					<AlertTitle>Unable to load connection</AlertTitle>
@@ -127,10 +121,7 @@ export default function SandboxConnectionPage() {
 							appId={c.connection.appId}
 						/>
 
-						<CurrentPlanCard
-							latestPlan={c.latestPlan}
-							planTasks={c.planTasks}
-						/>
+						<CurrentPlanCard latestPlan={c.latestPlan} planTasks={c.planTasks} />
 
 						<ConversationCard
 							messages={c.messages}
@@ -138,9 +129,7 @@ export default function SandboxConnectionPage() {
 							operatorMessage={c.operatorMessage}
 							setOperatorMessage={c.setOperatorMessage}
 							isInstructionPending={c.isInstructionPending}
-							onSubmitInstruction={(kind) =>
-								void c.handleSubmitInstruction(kind)
-							}
+							onSubmitInstruction={(kind) => void c.handleSubmitInstruction(kind)}
 						/>
 
 						<LiveStreamCard

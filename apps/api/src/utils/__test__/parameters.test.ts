@@ -284,22 +284,13 @@ describe("parameters", () => {
 		});
 
 		it("should format model name for OpenAI compatible providers", () => {
-			const result = createCommonParameters(
-				baseParams,
-				modelConfig,
-				"groq",
-				true,
-			);
+			const result = createCommonParameters(baseParams, modelConfig, "groq", true);
 
 			expect(result.model).toBe("groq/gpt-4");
 		});
 
 		it("should use max_tokens for non-OpenAI providers", () => {
-			const result = createCommonParameters(
-				baseParams,
-				modelConfig,
-				"anthropic",
-			);
+			const result = createCommonParameters(baseParams, modelConfig, "anthropic");
 
 			expect(result.max_tokens).toBe(1000);
 			expect(result.max_completion_tokens).toBeUndefined();
@@ -315,11 +306,7 @@ describe("parameters", () => {
 				metadata: { userId: "123" },
 			} as ChatCompletionParameters;
 
-			const result = createCommonParameters(
-				paramsWithAll,
-				modelConfig,
-				"anthropic",
-			);
+			const result = createCommonParameters(paramsWithAll, modelConfig, "anthropic");
 
 			expect(result.seed).toBeUndefined();
 			expect(result.repetition_penalty).toBeUndefined();
@@ -338,11 +325,7 @@ describe("parameters", () => {
 				metadata: { userId: "123" },
 			} as ChatCompletionParameters;
 
-			const result = createCommonParameters(
-				paramsWithAll,
-				modelConfig,
-				"openai",
-			);
+			const result = createCommonParameters(paramsWithAll, modelConfig, "openai");
 
 			expect(result.seed).toBe(123);
 			expect(result.repetition_penalty).toBe(1.1);
@@ -357,11 +340,7 @@ describe("parameters", () => {
 				response_format: { type: "json_object" },
 			} as ChatCompletionParameters;
 
-			const result = createCommonParameters(
-				paramsWithFormat,
-				modelConfig,
-				"openai",
-			);
+			const result = createCommonParameters(paramsWithFormat, modelConfig, "openai");
 
 			expect(result.response_format).toEqual({ type: "json_object" });
 		});
@@ -376,11 +355,7 @@ describe("parameters", () => {
 				supportsResponseFormat: false,
 			};
 
-			const result = createCommonParameters(
-				paramsWithFormat,
-				configWithoutFormat,
-				"openai",
-			);
+			const result = createCommonParameters(paramsWithFormat, configWithoutFormat, "openai");
 
 			expect(result.response_format).toBeUndefined();
 		});
@@ -392,11 +367,7 @@ describe("parameters", () => {
 				should_think: false,
 			} as ChatCompletionParameters;
 
-			const result = createCommonParameters(
-				paramsWithTopP,
-				modelConfig,
-				"openai",
-			);
+			const result = createCommonParameters(paramsWithTopP, modelConfig, "openai");
 
 			expect(result.top_p).toBe(0.9);
 		});
@@ -408,11 +379,7 @@ describe("parameters", () => {
 				should_think: true,
 			} as ChatCompletionParameters;
 
-			const result = createCommonParameters(
-				paramsWithTopP,
-				modelConfig,
-				"openai",
-			);
+			const result = createCommonParameters(paramsWithTopP, modelConfig, "openai");
 
 			expect(result.top_p).toBeUndefined();
 		});
@@ -423,11 +390,7 @@ describe("parameters", () => {
 				version: "2024-01-01",
 			} as ChatCompletionParameters;
 
-			const result = createCommonParameters(
-				paramsWithVersion,
-				modelConfig,
-				"anthropic",
-			);
+			const result = createCommonParameters(paramsWithVersion, modelConfig, "anthropic");
 
 			expect(result.version).toBe("2024-01-01");
 		});
@@ -480,11 +443,7 @@ describe("parameters", () => {
 				supportsToolCalls: false,
 			};
 
-			const result = getToolsForProvider(
-				baseParams,
-				configWithoutFunctions,
-				"openai",
-			);
+			const result = getToolsForProvider(baseParams, configWithoutFunctions, "openai");
 
 			expect(result).toEqual({});
 		});
@@ -506,11 +465,7 @@ describe("parameters", () => {
 				tools: [{ type: "function", function: { name: "custom_tool" } }],
 			} as ChatCompletionParameters;
 
-			const result = getToolsForProvider(
-				paramsWithTools,
-				modelConfig,
-				"openai",
-			);
+			const result = getToolsForProvider(paramsWithTools, modelConfig, "openai");
 
 			expect(result.tools).toBeDefined();
 		});
@@ -521,11 +476,7 @@ describe("parameters", () => {
 				parallel_tool_calls: true,
 			} as ChatCompletionParameters;
 
-			const result = getToolsForProvider(
-				paramsWithParallel,
-				modelConfig,
-				"openai",
-			);
+			const result = getToolsForProvider(paramsWithParallel, modelConfig, "openai");
 
 			expect(result.parallel_tool_calls).toBe(true);
 		});
@@ -560,11 +511,7 @@ describe("parameters", () => {
 				tool_choice: "auto",
 			} as ChatCompletionParameters;
 
-			const result = getToolsForProvider(
-				paramsWithChoice,
-				modelConfig,
-				"openai",
-			);
+			const result = getToolsForProvider(paramsWithChoice, modelConfig, "openai");
 
 			expect(result.tool_choice).toBe("auto");
 		});

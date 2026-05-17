@@ -1,10 +1,7 @@
 import { BaseRepository } from "./BaseRepository";
 
 export class EmbeddingRepository extends BaseRepository {
-	public async getEmbedding(
-		id: string,
-		type?: string,
-	): Promise<Record<string, unknown> | null> {
+	public async getEmbedding(id: string, type?: string): Promise<Record<string, unknown> | null> {
 		const conditions: Record<string, unknown> = { id };
 		if (type) {
 			conditions.type = type;
@@ -21,11 +18,7 @@ export class EmbeddingRepository extends BaseRepository {
 		id: string,
 		type: string,
 	): Promise<Record<string, unknown> | null> {
-		const { query, values } = this.buildSelectQuery(
-			"embedding",
-			{ id, type },
-			{ columns: ["id"] },
-		);
+		const { query, values } = this.buildSelectQuery("embedding", { id, type }, { columns: ["id"] });
 		return this.runQuery<Record<string, unknown>>(query, values, true);
 	}
 

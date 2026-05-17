@@ -1,7 +1,4 @@
-import {
-	createServiceContext,
-	type ServiceContext,
-} from "~/lib/context/serviceContext";
+import { createServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
 import type { IEnv } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
@@ -26,9 +23,7 @@ export interface SharedItem {
 	updatedAt: string;
 }
 
-export async function shareItem(
-	params: ShareItemParams,
-): Promise<{ shareId: string }> {
+export async function shareItem(params: ShareItemParams): Promise<{ shareId: string }> {
 	const { userId, id, context, env } = params;
 
 	if (!userId) {
@@ -45,10 +40,7 @@ export async function shareItem(
 			: null);
 
 	if (!serviceContext) {
-		throw new AssistantError(
-			"Service context is required",
-			ErrorType.CONFIGURATION_ERROR,
-		);
+		throw new AssistantError("Service context is required", ErrorType.CONFIGURATION_ERROR);
 	}
 
 	serviceContext.ensureDatabase();
@@ -57,10 +49,7 @@ export async function shareItem(
 	const appData = await appDataRepo.getAppDataByItemId(id);
 
 	if (!appData || appData.user_id !== userId) {
-		throw new AssistantError(
-			"Item not found or does not belong to user",
-			ErrorType.NOT_FOUND,
-		);
+		throw new AssistantError("Item not found or does not belong to user", ErrorType.NOT_FOUND);
 	}
 
 	if (appData.share_id) {
@@ -95,10 +84,7 @@ export async function getSharedItem({
 			: null);
 
 	if (!serviceContext) {
-		throw new AssistantError(
-			"Service context is required",
-			ErrorType.CONFIGURATION_ERROR,
-		);
+		throw new AssistantError("Service context is required", ErrorType.CONFIGURATION_ERROR);
 	}
 
 	serviceContext.ensureDatabase();

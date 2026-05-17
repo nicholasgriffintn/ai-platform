@@ -23,9 +23,7 @@ describe("github sandbox command helpers", () => {
 	});
 
 	it("parses push command markers from commit messages", () => {
-		const parsed = extractSandboxPushCommand(
-			"feat: run checks [sandbox test: Run API tests]",
-		);
+		const parsed = extractSandboxPushCommand("feat: run checks [sandbox test: Run API tests]");
 
 		expect(parsed).toEqual({
 			command: "test",
@@ -84,9 +82,7 @@ describe("github sandbox command helpers", () => {
 	});
 
 	it("maps commands to sandbox app ids", () => {
-		expect(getSandboxDynamicAppId("implement")).toBe(
-			"run_feature_implementation",
-		);
+		expect(getSandboxDynamicAppId("implement")).toBe("run_feature_implementation");
 		expect(getSandboxDynamicAppId("review")).toBe("run_code_review");
 		expect(getSandboxDynamicAppId("test")).toBe("run_test_suite");
 		expect(getSandboxDynamicAppId("fix")).toBe("run_bug_fix");

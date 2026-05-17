@@ -1,18 +1,9 @@
 // Source: https://originui.com/file-upload
 
-import {
-	AlertCircleIcon,
-	PaperclipIcon,
-	UploadIcon,
-	XIcon,
-} from "lucide-react";
+import { AlertCircleIcon, PaperclipIcon, UploadIcon, XIcon } from "lucide-react";
 
 import { Button } from "~/components/ui/Button";
-import {
-	type FileWithPreview,
-	formatBytes,
-	useFileUpload,
-} from "~/hooks/use-file-upload";
+import { type FileWithPreview, formatBytes, useFileUpload } from "~/hooks/use-file-upload";
 import { useTrackEvent } from "~/hooks/use-track-event";
 
 interface SingleFileUploaderProps {
@@ -142,10 +133,7 @@ export function SingleFileUploader({
 			</button>
 
 			{errors.length > 0 && (
-				<div
-					className="text-destructive flex items-center gap-1 text-xs"
-					role="alert"
-				>
+				<div className="text-destructive flex items-center gap-1 text-xs" role="alert">
 					<AlertCircleIcon className="size-3 shrink-0" />
 					<span>{errors[0]}</span>
 				</div>
@@ -158,14 +146,9 @@ export function SingleFileUploader({
 						className="flex items-center justify-between gap-2 rounded-xl border px-4 py-2"
 					>
 						<div className="flex items-center gap-3 overflow-hidden">
-							<PaperclipIcon
-								className="size-4 shrink-0 opacity-60"
-								aria-hidden="true"
-							/>
+							<PaperclipIcon className="size-4 shrink-0 opacity-60" aria-hidden="true" />
 							<div className="min-w-0">
-								<p className="truncate text-[13px] font-medium">
-									{file.file.name}
-								</p>
+								<p className="truncate text-[13px] font-medium">{file.file.name}</p>
 							</div>
 						</div>
 

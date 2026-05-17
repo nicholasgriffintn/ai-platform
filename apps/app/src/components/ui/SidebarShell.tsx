@@ -48,9 +48,7 @@ export function SidebarShell({
 					"bg-off-white dark:bg-zinc-900",
 					"transition-transform duration-300 ease-in-out",
 					"border-r border-zinc-200 dark:border-zinc-800",
-					visible
-						? "translate-x-0"
-						: "-translate-x-full md:translate-x-0 md:w-0 md:border-0",
+					visible ? "translate-x-0" : "-translate-x-full md:translate-x-0 md:w-0 md:border-0",
 					className,
 				)}
 			>
@@ -62,9 +60,7 @@ export function SidebarShell({
 							</div>
 						)}
 
-						<div className="flex-1 overflow-y-auto overflow-x-hidden">
-							{children}
-						</div>
+						<div className="flex-1 overflow-y-auto overflow-x-hidden">{children}</div>
 
 						{footer && (
 							<div className="sticky bottom-0 border-t border-r border-zinc-200 dark:border-zinc-800 bg-off-white dark:bg-zinc-900 overflow-visible">

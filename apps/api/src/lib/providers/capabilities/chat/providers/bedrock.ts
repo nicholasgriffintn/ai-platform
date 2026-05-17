@@ -12,10 +12,7 @@ import type { ChatCompletionParameters, ModelConfigItem } from "~/types";
 import { createEventStreamParser } from "~/utils/awsEventStream";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
-import {
-	createCommonParameters,
-	getToolsForProvider,
-} from "~/utils/parameters";
+import { createCommonParameters, getToolsForProvider } from "~/utils/parameters";
 import { BaseProvider } from "./base";
 import { formatBedrockMessages } from "../../../utils/bedrockContent";
 
@@ -66,10 +63,7 @@ export class BedrockProvider extends BaseProvider {
 		const parts = apiKey.split(delimiter);
 
 		if (parts.length !== 2) {
-			throw new AssistantError(
-				"Invalid AWS credentials format",
-				ErrorType.CONFIGURATION_ERROR,
-			);
+			throw new AssistantError("Invalid AWS credentials format", ErrorType.CONFIGURATION_ERROR);
 		}
 
 		return { accessKey: parts[0], secretKey: parts[1] };
@@ -80,9 +74,7 @@ export class BedrockProvider extends BaseProvider {
 		this.validateAiGatewayToken(params);
 	}
 
-	protected async getEndpoint(
-		params: ChatCompletionParameters,
-	): Promise<string> {
+	protected async getEndpoint(params: ChatCompletionParameters): Promise<string> {
 		const region = this.getRegion();
 		const modelConfig = await getModelConfigByMatchingModel(params.model || "");
 		const operationPath = this.resolveOperationPath(params, modelConfig);
@@ -139,9 +131,7 @@ export class BedrockProvider extends BaseProvider {
 		};
 	}
 
-	protected async getHeaders(
-		_params: ChatCompletionParameters,
-	): Promise<Record<string, string>> {
+	protected async getHeaders(_params: ChatCompletionParameters): Promise<Record<string, string>> {
 		return {
 			"Content-Type": "application/json",
 		};
@@ -225,15 +215,12 @@ export class BedrockProvider extends BaseProvider {
 			};
 		}
 
-		const status =
-			pollData.status || pollData.invocationStatus || pollData.response?.status;
+		const status = pollData.status || pollData.invocationStatus || pollData.response?.status;
 
 		return { data: pollData, status };
 	}
 
-	async getMediaSourceFromMessages(
-		params: ChatCompletionParameters,
-	): Promise<Record<string, any>> {
+	async getMediaSourceFromMessages(params: ChatCompletionParameters): Promise<Record<string, any>> {
 		if (!params.env.EMBEDDINGS_OUTPUT_BUCKET_OWNER) {
 			throw new AssistantError(
 				"Missing EMBEDDINGS_OUTPUT_BUCKET_OWNER",
@@ -250,9 +237,7 @@ export class BedrockProvider extends BaseProvider {
 			);
 		}
 
-		const videoContent = lastMessage.content.find(
-			(item: any) => item.type === "video_url",
-		);
+		const videoContent = lastMessage.content.find((item: any) => item.type === "video_url");
 
 		if (!videoContent?.video_url?.url) {
 			throw new AssistantError(
@@ -269,10 +254,7 @@ export class BedrockProvider extends BaseProvider {
 				},
 			};
 		} else if (videoContent.video_url.url.startsWith("data:")) {
-			const base64Data = videoContent.video_url.url.replace(
-				/^data:.*?;base64,/,
-				"",
-			);
+			const base64Data = videoContent.video_url.url.replace(/^data:.*?;base64,/, "");
 			return {
 				base64String: base64Data,
 			};
@@ -284,9 +266,7 @@ export class BedrockProvider extends BaseProvider {
 		);
 	}
 
-	async getInputPromptFromMessages(
-		params: ChatCompletionParameters,
-	): Promise<string> {
+	async getInputPromptFromMessages(params: ChatCompletionParameters): Promise<string> {
 		const lastMessage = params.messages[params.messages.length - 1];
 		return typeof lastMessage.content === "string"
 			? lastMessage.content
@@ -308,9 +288,7 @@ export class BedrockProvider extends BaseProvider {
 			);
 		}
 
-		const isTwelveLabsEmbed = params.model?.includes(
-			"twelvelabs.marengo-embed",
-		);
+		const isTwelveLabsEmbed = params.model?.includes("twelvelabs.marengo-embed");
 
 		if (isTwelveLabsEmbed) {
 			const mediaSource = await this.getMediaSourceFromMessages(params);
@@ -396,16 +374,10 @@ export class BedrockProvider extends BaseProvider {
 			return {
 				textToImageParams: {
 					text:
-						typeof params.messages[params.messages.length - 1].content ===
-						"string"
+						typeof params.messages[params.messages.length - 1].content === "string"
 							? params.messages[params.messages.length - 1].content
-							: Array.isArray(
-										params.messages[params.messages.length - 1].content,
-								  )
-								? (
-										params.messages[params.messages.length - 1]
-											.content[0] as any
-									)?.text || ""
+							: Array.isArray(params.messages[params.messages.length - 1].content)
+								? (params.messages[params.messages.length - 1].content[0] as any)?.text || ""
 								: "",
 				},
 				taskType: "TEXT_IMAGE",
@@ -428,9 +400,7 @@ export class BedrockProvider extends BaseProvider {
 		const toolsParams = getToolsForProvider(params, modelConfig, this.name);
 		const supportsToolCalls = modelConfig?.supportsToolCalls || false;
 
-		const toolConfig = supportsToolCalls
-			? { toolConfig: { tools: toolsParams.tools } }
-			: {};
+		const toolConfig = supportsToolCalls ? { toolConfig: { tools: toolsParams.tools } } : {};
 
 		const bedrockMessages = formatBedrockMessages(params);
 
@@ -482,18 +452,12 @@ export class BedrockProvider extends BaseProvider {
 					}
 				}
 			} catch (error) {
-				logger.warn(
-					"Failed to get user AWS credentials, using environment variables:",
-					{ error },
-				);
+				logger.warn("Failed to get user AWS credentials, using environment variables:", { error });
 			}
 		}
 
 		if (!accessKey || !secretKey) {
-			throw new AssistantError(
-				"Missing AWS credentials",
-				ErrorType.CONFIGURATION_ERROR,
-			);
+			throw new AssistantError("Missing AWS credentials", ErrorType.CONFIGURATION_ERROR);
 		}
 
 		return { accessKey, secretKey };
@@ -506,9 +470,7 @@ export class BedrockProvider extends BaseProvider {
 		_userId?: number,
 	): Promise<any> {
 		try {
-			const modelConfig = await getModelConfigByMatchingModel(
-				params.model || "",
-			);
+			const modelConfig = await getModelConfigByMatchingModel(params.model || "");
 			const modalityInfo = getModalityInfo(modelConfig);
 			const isVideoType = modalityInfo.outputSet.has("video");
 
@@ -554,10 +516,7 @@ export class BedrockProvider extends BaseProvider {
 		operation: string,
 		userId?: number,
 	): Promise<Response> {
-		const { accessKey, secretKey } = await this.getAwsCredentials(
-			params,
-			userId,
-		);
+		const { accessKey, secretKey } = await this.getAwsCredentials(params, userId);
 		const region = this.getRegion();
 
 		const awsClient = new AwsClient({
@@ -649,10 +608,7 @@ export class BedrockProvider extends BaseProvider {
 		});
 	}
 
-	async getResponse(
-		params: ChatCompletionParameters,
-		userId?: number,
-	): Promise<any> {
+	async getResponse(params: ChatCompletionParameters, userId?: number): Promise<any> {
 		this.validateParams(params);
 
 		const region = this.getRegion();
@@ -669,10 +625,7 @@ export class BedrockProvider extends BaseProvider {
 			provider: this.name,
 			model: params.model as string,
 			operation: async () => {
-				const { accessKey, secretKey } = await this.getAwsCredentials(
-					params,
-					userId,
-				);
+				const { accessKey, secretKey } = await this.getAwsCredentials(params, userId);
 				const awsClient = new AwsClient({
 					accessKeyId: accessKey,
 					secretAccessKey: secretKey,
@@ -690,9 +643,7 @@ export class BedrockProvider extends BaseProvider {
 				});
 
 				if (!presignedRequest.url) {
-					throw new AssistantError(
-						"Failed to get presigned request from Bedrock",
-					);
+					throw new AssistantError("Failed to get presigned request from Bedrock");
 				}
 
 				const signedUrl = new URL(presignedRequest.url);
@@ -741,9 +692,7 @@ export class BedrockProvider extends BaseProvider {
 					}
 
 					const invocationArn =
-						initialData.invocationArn ||
-						initialData.arn ||
-						initialData.response?.invocationArn;
+						initialData.invocationArn || initialData.arn || initialData.response?.invocationArn;
 
 					if (!invocationArn) {
 						logger.error("Missing invocationArn from async Bedrock response", {
@@ -816,10 +765,7 @@ export class BedrockProvider extends BaseProvider {
 				const log_id = response.headers.get("cf-aig-log-id");
 				const cacheStatus = response.headers.get("cf-aig-cache-status");
 
-				return this.formatResponse(
-					{ ...data, eventId, log_id, cacheStatus },
-					params,
-				);
+				return this.formatResponse({ ...data, eventId, log_id, cacheStatus }, params);
 			},
 			analyticsEngine: params.env?.ANALYTICS,
 			settings: {
@@ -849,14 +795,8 @@ export class BedrockProvider extends BaseProvider {
 		const invocationArn = metadata.context?.invocationArn ?? metadata.id;
 		const initialResponse = metadata.initialResponse;
 
-		const region =
-			metadata.context?.region ??
-			params.env.BEDROCK_AWS_REGION ??
-			this.getRegion();
-		const { accessKey, secretKey } = await this.getAwsCredentials(
-			params,
-			userId,
-		);
+		const region = metadata.context?.region ?? params.env.BEDROCK_AWS_REGION ?? this.getRegion();
+		const { accessKey, secretKey } = await this.getAwsCredentials(params, userId);
 
 		const awsClient = new AwsClient({
 			accessKeyId: accessKey,
@@ -890,12 +830,7 @@ export class BedrockProvider extends BaseProvider {
 			normalizedStatus === "COMPLETED"
 		) {
 			const formatted = await this.formatResponse(mergedData, params);
-			const enhanced = await this.enhanceAsyncResult(
-				formatted,
-				mergedData,
-				params,
-				userId,
-			);
+			const enhanced = await this.enhanceAsyncResult(formatted, mergedData, params, userId);
 			return {
 				status: "completed",
 				result: enhanced,

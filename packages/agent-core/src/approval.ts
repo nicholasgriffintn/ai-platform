@@ -7,13 +7,7 @@ export interface ApprovalWindow {
 
 export interface ApprovalRecord {
 	id: string;
-	status:
-		| "pending"
-		| "escalated"
-		| "approved"
-		| "rejected"
-		| "timed_out"
-		| string;
+	status: "pending" | "escalated" | "approved" | "rejected" | "timed_out" | string;
 	expiresAt?: string;
 	escalatedAt?: string;
 	timedOutAt?: string;
@@ -25,22 +19,15 @@ export interface ApprovalControlState {
 	cancellationReason?: string;
 }
 
-export interface ApprovalClient<
-	TApproval extends ApprovalRecord = ApprovalRecord,
-> {
+export interface ApprovalClient<TApproval extends ApprovalRecord = ApprovalRecord> {
 	requestApproval(
 		subject: string,
 		reason: string,
 		window: ApprovalWindow,
 		abortSignal?: AbortSignal,
 	): Promise<TApproval | null>;
-	fetchApproval(
-		approvalId: string,
-		abortSignal?: AbortSignal,
-	): Promise<TApproval | null>;
-	fetchControlState?(
-		abortSignal?: AbortSignal,
-	): Promise<ApprovalControlState | null>;
+	fetchApproval(approvalId: string, abortSignal?: AbortSignal): Promise<TApproval | null>;
+	fetchControlState?(abortSignal?: AbortSignal): Promise<ApprovalControlState | null>;
 }
 
 export interface ResolveApprovalParams<
@@ -55,10 +42,7 @@ export interface ResolveApprovalParams<
 	agentStep: number;
 	emit: (event: Record<string, unknown>) => Promise<void>;
 	guardExecution: (abortMessage: string) => Promise<void>;
-	shouldRequireApproval: (params: {
-		riskLevel: TRisk;
-		trustLevel: TTrust;
-	}) => boolean;
+	shouldRequireApproval: (params: { riskLevel: TRisk; trustLevel: TTrust }) => boolean;
 	approvalWindowForRiskLevel: (riskLevel: TRisk) => ApprovalWindow;
 	approvalClient?: ApprovalClient<TApproval>;
 	abortSignal?: AbortSignal;
@@ -66,9 +50,7 @@ export interface ResolveApprovalParams<
 	eventPrefix?: string;
 }
 
-export interface ResolveApprovalResult<
-	TApproval extends ApprovalRecord = ApprovalRecord,
-> {
+export interface ResolveApprovalResult<TApproval extends ApprovalRecord = ApprovalRecord> {
 	approved: boolean;
 	rejected: boolean;
 	approval?: TApproval;
@@ -110,9 +92,7 @@ export async function resolveApproval<
 	}
 
 	if (!approvalClient) {
-		throw new Error(
-			`Approval required but no approval client is configured for: ${subject}`,
-		);
+		throw new Error(`Approval required but no approval client is configured for: ${subject}`);
 	}
 
 	const approval = await approvalClient.requestApproval(
@@ -148,26 +128,17 @@ export async function resolveApproval<
 			: null;
 
 		if (control?.state === "cancelled") {
-			throw new Error(
-				control.cancellationReason ||
-					"Execution cancelled during approval wait",
-			);
+			throw new Error(control.cancellationReason || "Execution cancelled during approval wait");
 		}
 
-		const latestApproval = await approvalClient.fetchApproval(
-			approval.id,
-			abortSignal,
-		);
+		const latestApproval = await approvalClient.fetchApproval(approval.id, abortSignal);
 
 		if (!latestApproval) {
 			await wait(pollIntervalMs);
 			continue;
 		}
 
-		if (
-			latestApproval.status === "escalated" &&
-			previousStatus !== "escalated"
-		) {
+		if (latestApproval.status === "escalated" && previousStatus !== "escalated") {
 			await emit({
 				type: `${eventPrefix}_escalated`,
 				subject,
@@ -238,8 +209,7 @@ export async function resolveApproval<
 				rejected: true,
 				approval: latestApproval,
 				rejectedMessage:
-					latestApproval.resolutionReason ||
-					"Approval timed out before a decision was made",
+					latestApproval.resolutionReason || "Approval timed out before a decision was made",
 			};
 		}
 

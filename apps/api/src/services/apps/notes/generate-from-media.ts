@@ -1,7 +1,4 @@
-import {
-	handleTranscribe,
-	TranscriptionProvider,
-} from "~/services/audio/transcribe";
+import { handleTranscribe, TranscriptionProvider } from "~/services/audio/transcribe";
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import { getAuxiliaryModel, getModelConfig } from "~/lib/providers/models";
 import { RepositoryManager } from "~/repositories";
@@ -131,10 +128,7 @@ ${extraPrompt ? `Additional context: ${extraPrompt}` : ""}`;
 						? await repositories.userSettings.getUserSettings(user.id)
 						: null;
 					if (!userSettings) {
-						throw new AssistantError(
-							"User settings not found",
-							ErrorType.NOT_FOUND,
-						);
+						throw new AssistantError("User settings not found", ErrorType.NOT_FOUND);
 					}
 					const embedding = getEmbeddingProvider(env, user, userSettings);
 
@@ -207,10 +201,7 @@ ${extraPrompt ? `Additional context: ${extraPrompt}` : ""}`;
 		}
 
 		if (!transcriptionProviderToUse) {
-			throw new AssistantError(
-				"No transcription provider was determined",
-				ErrorType.PARAMS_ERROR,
-			);
+			throw new AssistantError("No transcription provider was determined", ErrorType.PARAMS_ERROR);
 		}
 
 		const transcription = await handleTranscribe({
@@ -221,21 +212,14 @@ ${extraPrompt ? `Additional context: ${extraPrompt}` : ""}`;
 			timestamps: !!timestamps,
 		});
 
-		const response = Array.isArray(transcription)
-			? transcription[0]
-			: transcription;
-		transcriptText =
-			typeof response?.content === "string" ? response.content : "";
+		const response = Array.isArray(transcription) ? transcription[0] : transcription;
+		transcriptText = typeof response?.content === "string" ? response.content : "";
 
 		if (!transcriptText) {
-			throw new AssistantError(
-				"Empty transcript returned",
-				ErrorType.EXTERNAL_API_ERROR,
-			);
+			throw new AssistantError("Empty transcript returned", ErrorType.EXTERNAL_API_ERROR);
 		}
 
-		const { model: modelToUse, provider: providerToUse } =
-			await getAuxiliaryModel(env, user);
+		const { model: modelToUse, provider: providerToUse } = await getAuxiliaryModel(env, user);
 
 		const provider = getChatProvider(providerToUse, { env, user });
 
@@ -258,8 +242,7 @@ ${extraPrompt ? `Additional context: ${extraPrompt}` : ""}`;
 
 		const content =
 			aiResult?.response ||
-			(Array.isArray(aiResult.choices) &&
-				aiResult.choices[0]?.message?.content) ||
+			(Array.isArray(aiResult.choices) && aiResult.choices[0]?.message?.content) ||
 			(typeof aiResult === "string" ? aiResult : JSON.stringify(aiResult));
 
 		return { content };

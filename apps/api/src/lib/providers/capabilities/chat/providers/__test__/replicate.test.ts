@@ -143,8 +143,7 @@ describe("ReplicateProvider", () => {
 		it("should handle text-to-image with output format enum", async () => {
 			// @ts-ignore
 			vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
-				matchingModel:
-					"a91bed9b0301d9d10b34b89b1f4d0255f2e2499c59576bfcd13405575dacdb25",
+				matchingModel: "a91bed9b0301d9d10b34b89b1f4d0255f2e2499c59576bfcd13405575dacdb25",
 				inputSchema: {
 					fields: [
 						{ name: "prompt", type: "string", required: true },
@@ -162,8 +161,7 @@ describe("ReplicateProvider", () => {
 
 			const provider = new ReplicateProvider();
 			const params = {
-				model:
-					"a91bed9b0301d9d10b34b89b1f4d0255f2e2499c59576bfcd13405575dacdb25",
+				model: "a91bed9b0301d9d10b34b89b1f4d0255f2e2499c59576bfcd13405575dacdb25",
 				messages: [{ role: "user", content: "A beautiful sunset" }],
 				env: { AI_GATEWAY_TOKEN: "test-token" },
 				output_format: "png",
@@ -184,8 +182,7 @@ describe("ReplicateProvider", () => {
 		it("should handle image input for img2img", async () => {
 			// @ts-ignore
 			vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
-				matchingModel:
-					"46ad775d45e4c606eb4a8f022a40e9e3d0a22993815d798bcd2103c0e72427bd",
+				matchingModel: "46ad775d45e4c606eb4a8f022a40e9e3d0a22993815d798bcd2103c0e72427bd",
 				inputSchema: {
 					fields: [
 						{ name: "prompt", type: "string", required: true },
@@ -203,8 +200,7 @@ describe("ReplicateProvider", () => {
 
 			const provider = new ReplicateProvider();
 			const params = {
-				model:
-					"46ad775d45e4c606eb4a8f022a40e9e3d0a22993815d798bcd2103c0e72427bd",
+				model: "46ad775d45e4c606eb4a8f022a40e9e3d0a22993815d798bcd2103c0e72427bd",
 				messages: [{ role: "user", content: "Make it more colorful" }],
 				env: { AI_GATEWAY_TOKEN: "test-token" },
 				image: "https://example.com/image.jpg",
@@ -225,8 +221,7 @@ describe("ReplicateProvider", () => {
 		it("should handle image-to-video with video_length enum", async () => {
 			// @ts-ignore
 			vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
-				matchingModel:
-					"3f0457e4619daac51203dedb472816fd4af51f3149fa7a9e0b5ffcf1b8172438",
+				matchingModel: "3f0457e4619daac51203dedb472816fd4af51f3149fa7a9e0b5ffcf1b8172438",
 				inputSchema: {
 					fields: [
 						{ name: "input_image", type: ["file", "string"], required: true },
@@ -243,8 +238,7 @@ describe("ReplicateProvider", () => {
 
 			const provider = new ReplicateProvider();
 			const params = {
-				model:
-					"3f0457e4619daac51203dedb472816fd4af51f3149fa7a9e0b5ffcf1b8172438",
+				model: "3f0457e4619daac51203dedb472816fd4af51f3149fa7a9e0b5ffcf1b8172438",
 				messages: [{ role: "user", content: "Animate this image" }],
 				env: { AI_GATEWAY_TOKEN: "test-token" },
 				input_image: "https://example.com/photo.jpg",
@@ -265,8 +259,7 @@ describe("ReplicateProvider", () => {
 		it("should handle numeric enum for scale parameter", async () => {
 			// @ts-ignore
 			vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
-				matchingModel:
-					"42fed1c4974146d4d2414e2be2c5277c7fcf05fcc3a73abf41610695738c1d7b",
+				matchingModel: "42fed1c4974146d4d2414e2be2c5277c7fcf05fcc3a73abf41610695738c1d7b",
 				inputSchema: {
 					fields: [
 						{ name: "image", type: ["file", "string"], required: true },
@@ -278,8 +271,7 @@ describe("ReplicateProvider", () => {
 
 			const provider = new ReplicateProvider();
 			const params = {
-				version:
-					"42fed1c4974146d4d2414e2be2c5277c7fcf05fcc3a73abf41610695738c1d7b",
+				version: "42fed1c4974146d4d2414e2be2c5277c7fcf05fcc3a73abf41610695738c1d7b",
 				messages: [{ role: "user", content: "Upscale this image" }],
 				env: { AI_GATEWAY_TOKEN: "test-token" },
 				image: "https://example.com/lowres.jpg",
@@ -301,8 +293,7 @@ describe("ReplicateProvider", () => {
 		it("should handle multimodal input with image and prompt", async () => {
 			// @ts-ignore
 			vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
-				matchingModel:
-					"41ecfbfb261e6c1adf3ad896c9066ca98346996d7c4045c5bc944a79d430f174",
+				matchingModel: "41ecfbfb261e6c1adf3ad896c9066ca98346996d7c4045c5bc944a79d430f174",
 				inputSchema: {
 					fields: [
 						{ name: "image", type: ["file", "string"], required: true },
@@ -315,8 +306,7 @@ describe("ReplicateProvider", () => {
 
 			const provider = new ReplicateProvider();
 			const params = {
-				model:
-					"41ecfbfb261e6c1adf3ad896c9066ca98346996d7c4045c5bc944a79d430f174",
+				model: "41ecfbfb261e6c1adf3ad896c9066ca98346996d7c4045c5bc944a79d430f174",
 				messages: [{ role: "user", content: "What's in this image?" }],
 				env: { AI_GATEWAY_TOKEN: "test-token" },
 				image: "https://example.com/scene.jpg",
@@ -338,8 +328,7 @@ describe("ReplicateProvider", () => {
 		it("should handle model enum and boolean parameters", async () => {
 			// @ts-ignore
 			vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
-				matchingModel:
-					"fb8af171cfa1616ddcf1242c093f9c46bcada5ad4cf6f2fbe8b81b330ec5c003",
+				matchingModel: "fb8af171cfa1616ddcf1242c093f9c46bcada5ad4cf6f2fbe8b81b330ec5c003",
 				inputSchema: {
 					fields: [
 						{ name: "image", type: ["file", "string"], required: true },
@@ -356,8 +345,7 @@ describe("ReplicateProvider", () => {
 
 			const provider = new ReplicateProvider();
 			const params = {
-				model:
-					"fb8af171cfa1616ddcf1242c093f9c46bcada5ad4cf6f2fbe8b81b330ec5c003",
+				model: "fb8af171cfa1616ddcf1242c093f9c46bcada5ad4cf6f2fbe8b81b330ec5c003",
 				messages: [{ role: "user", content: "Remove background" }],
 				env: { AI_GATEWAY_TOKEN: "test-token" },
 				image: "https://example.com/portrait.jpg",
@@ -378,8 +366,7 @@ describe("ReplicateProvider", () => {
 		it("should handle audio transcription with diarization", async () => {
 			// @ts-ignore
 			vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
-				matchingModel:
-					"826801120720e563620006b99e412f7ed7b991dd4477e9160473d44a405ef9d9",
+				matchingModel: "826801120720e563620006b99e412f7ed7b991dd4477e9160473d44a405ef9d9",
 				inputSchema: {
 					fields: [
 						{ name: "audio_file", type: ["file", "string"], required: true },
@@ -392,8 +379,7 @@ describe("ReplicateProvider", () => {
 
 			const provider = new ReplicateProvider();
 			const params = {
-				model:
-					"826801120720e563620006b99e412f7ed7b991dd4477e9160473d44a405ef9d9",
+				model: "826801120720e563620006b99e412f7ed7b991dd4477e9160473d44a405ef9d9",
 				messages: [{ role: "user", content: "Transcribe this" }],
 				env: { AI_GATEWAY_TOKEN: "test-token" },
 				audio_file: "https://example.com/audio.mp3",
@@ -417,8 +403,7 @@ describe("ReplicateProvider", () => {
 		it("should handle text-to-audio with duration and steps", async () => {
 			// @ts-ignore
 			vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
-				matchingModel:
-					"f2d7f3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3",
+				matchingModel: "f2d7f3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3",
 				inputSchema: {
 					fields: [
 						{ name: "prompt", type: "string", required: true },
@@ -431,8 +416,7 @@ describe("ReplicateProvider", () => {
 
 			const provider = new ReplicateProvider();
 			const params = {
-				model:
-					"f2d7f3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3",
+				model: "f2d7f3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3",
 				messages: [{ role: "user", content: "Upbeat electronic music" }],
 				env: { AI_GATEWAY_TOKEN: "test-token" },
 				duration: 60,
@@ -454,8 +438,7 @@ describe("ReplicateProvider", () => {
 		it("should handle video segmentation with points and labels", async () => {
 			// @ts-ignore
 			vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
-				matchingModel:
-					"77a5f9e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3",
+				matchingModel: "77a5f9e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3",
 				inputSchema: {
 					fields: [
 						{ name: "video", type: ["file", "string"], required: true },
@@ -468,8 +451,7 @@ describe("ReplicateProvider", () => {
 
 			const provider = new ReplicateProvider();
 			const params = {
-				model:
-					"77a5f9e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3",
+				model: "77a5f9e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3",
 				messages: [{ role: "user", content: "Segment objects" }],
 				env: { AI_GATEWAY_TOKEN: "test-token" },
 				video: "https://example.com/video.mp4",
@@ -492,8 +474,7 @@ describe("ReplicateProvider", () => {
 		it("should handle task enum and timestamp options", async () => {
 			// @ts-ignore
 			vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
-				matchingModel:
-					"3ab86df6c8f54c11309d4d1f930ac292bad43ace52d10c80d87eb258b3c9f79c",
+				matchingModel: "3ab86df6c8f54c11309d4d1f930ac292bad43ace52d10c80d87eb258b3c9f79c",
 				inputSchema: {
 					fields: [
 						{ name: "audio", type: ["file", "string"], required: true },
@@ -516,8 +497,7 @@ describe("ReplicateProvider", () => {
 
 			const provider = new ReplicateProvider();
 			const params = {
-				model:
-					"3ab86df6c8f54c11309d4d1f930ac292bad43ace52d10c80d87eb258b3c9f79c",
+				model: "3ab86df6c8f54c11309d4d1f930ac292bad43ace52d10c80d87eb258b3c9f79c",
 				messages: [{ role: "user", content: "Transcribe" }],
 				env: { AI_GATEWAY_TOKEN: "test-token" },
 				audio: "https://example.com/speech.wav",
@@ -540,8 +520,7 @@ describe("ReplicateProvider", () => {
 		it("should handle both text-to-image and image editing", async () => {
 			// @ts-ignore
 			vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
-				matchingModel:
-					"e6cff243d7a5e551e1ca2b4bf291413d649c9f1417f9a52c1c0a4fbc36027b83",
+				matchingModel: "e6cff243d7a5e551e1ca2b4bf291413d649c9f1417f9a52c1c0a4fbc36027b83",
 				inputSchema: {
 					fields: [
 						{ name: "prompt", type: "string", required: true },
@@ -554,8 +533,7 @@ describe("ReplicateProvider", () => {
 
 			const provider = new ReplicateProvider();
 			const params = {
-				model:
-					"e6cff243d7a5e551e1ca2b4bf291413d649c9f1417f9a52c1c0a4fbc36027b83",
+				model: "e6cff243d7a5e551e1ca2b4bf291413d649c9f1417f9a52c1c0a4fbc36027b83",
 				messages: [{ role: "user", content: "Remove the background" }],
 				env: { AI_GATEWAY_TOKEN: "test-token" },
 				image: "https://example.com/photo.jpg",
@@ -577,8 +555,7 @@ describe("ReplicateProvider", () => {
 		it("should handle Seedance Pro Fast with resolution enum", async () => {
 			// @ts-ignore
 			vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
-				matchingModel:
-					"d7d7d7d7d7d7d7d7d7d7d7d7d7d7d7d7d7d7d7d7d7d7d7d7d7d7d7d7d7d7d7d7",
+				matchingModel: "d7d7d7d7d7d7d7d7d7d7d7d7d7d7d7d7d7d7d7d7d7d7d7d7d7d7d7d7d7d7d7d7",
 				inputSchema: {
 					fields: [
 						{ name: "prompt", type: "string", required: true },
@@ -600,8 +577,7 @@ describe("ReplicateProvider", () => {
 
 			const provider = new ReplicateProvider();
 			const params = {
-				model:
-					"d7d7d7d7d7d7d7d7d7d7d7d7d7d7d7d7d7d7d7d7d7d7d7d7d7d7d7d7d7d7d7d7",
+				model: "d7d7d7d7d7d7d7d7d7d7d7d7d7d7d7d7d7d7d7d7d7d7d7d7d7d7d7d7d7d7d7d7",
 				messages: [{ role: "user", content: "Create a video" }],
 				env: { AI_GATEWAY_TOKEN: "test-token" },
 				duration: "10s",
@@ -622,8 +598,7 @@ describe("ReplicateProvider", () => {
 		it("should handle 4K resolution and extended aspect ratios", async () => {
 			// @ts-ignore
 			vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
-				matchingModel:
-					"spspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspsp",
+				matchingModel: "spspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspsp",
 				inputSchema: {
 					fields: [
 						{ name: "prompt", type: "string", required: true },
@@ -646,8 +621,7 @@ describe("ReplicateProvider", () => {
 
 			const provider = new ReplicateProvider();
 			const params = {
-				model:
-					"spspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspsp",
+				model: "spspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspsp",
 				messages: [{ role: "user", content: "Cinematic video" }],
 				env: { AI_GATEWAY_TOKEN: "test-token" },
 				resolution: "4K",
@@ -670,8 +644,7 @@ describe("ReplicateProvider", () => {
 		it("should handle image, audio, and video inputs", async () => {
 			// @ts-ignore
 			vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
-				matchingModel:
-					"ohohohohohohohohohohohohohohohohohohohohohohohohohohohohohohohoh",
+				matchingModel: "ohohohohohohohohohohohohohohohohohohohohohohohohohohohohohohohoh",
 				inputSchema: {
 					fields: [
 						{ name: "image", type: ["file", "string"], required: true },
@@ -684,8 +657,7 @@ describe("ReplicateProvider", () => {
 
 			const provider = new ReplicateProvider();
 			const params = {
-				model:
-					"ohohohohohohohohohohohohohohohohohohohohohohohohohohohohohohohoh",
+				model: "ohohohohohohohohohohohohohohohohohohohohohohohohohohohohohohohoh",
 				messages: [{ role: "user", content: "Animate" }],
 				env: { AI_GATEWAY_TOKEN: "test-token" },
 				image: "https://example.com/person.jpg",
@@ -707,8 +679,7 @@ describe("ReplicateProvider", () => {
 		it("should handle different OCR task types", async () => {
 			// @ts-ignore
 			vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
-				matchingModel:
-					"dpdpdpdpdpdpdpdpdpdpdpdpdpdpdpdpdpdpdpdpdpdpdpdpdpdpdpdpdpdpdpdp",
+				matchingModel: "dpdpdpdpdpdpdpdpdpdpdpdpdpdpdpdpdpdpdpdpdpdpdpdpdpdpdpdpdpdpdpdp",
 				inputSchema: {
 					fields: [
 						{ name: "image", type: ["file", "string"], required: true },
@@ -725,8 +696,7 @@ describe("ReplicateProvider", () => {
 
 			const provider = new ReplicateProvider();
 			const params = {
-				model:
-					"dpdpdpdpdpdpdpdpdpdpdpdpdpdpdpdpdpdpdpdpdpdpdpdpdpdpdpdpdpdpdpdp",
+				model: "dpdpdpdpdpdpdpdpdpdpdpdpdpdpdpdpdpdpdpdpdpdpdpdpdpdpdpdpdpdpdpdp",
 				messages: [{ role: "user", content: "Extract table" }],
 				env: { AI_GATEWAY_TOKEN: "test-token" },
 				image: "https://example.com/document.pdf",

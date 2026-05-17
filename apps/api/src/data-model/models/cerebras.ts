@@ -1,8 +1,5 @@
 import type { ModelConfig } from "~/types";
-import {
-	createModelConfig,
-	createModelConfigObject,
-} from "~/lib/providers/models/utils";
+import { createModelConfig, createModelConfigObject } from "~/lib/providers/models/utils";
 
 const PROVIDER = "cerebras";
 
@@ -10,8 +7,7 @@ export const cerebrasModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("cerebras/llama3.1-8b", PROVIDER, {
 		name: "Llama 3.1 8B",
 		matchingModel: "llama3.1-8b",
-		description:
-			"A high speed deployment of Llama 3.1 8B optimized for chat and reasoning tasks.",
+		description: "A high speed deployment of Llama 3.1 8B optimized for chat and reasoning tasks.",
 		modalities: { input: ["text"], output: ["text"] },
 		knowledgeCutoffDate: "December 2023",
 		releaseDate: "January 1, 2025",

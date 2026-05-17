@@ -2,13 +2,7 @@ import { Loader2 } from "lucide-react";
 import type { ReactNode } from "react";
 
 import { Button } from "./Button";
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogHeader,
-	DialogTitle,
-} from "./Dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "./Dialog";
 
 interface ConfirmationDialogProps {
 	/** Whether the dialog is open */
@@ -65,18 +59,10 @@ export function ConfirmationDialog({
 				</DialogHeader>
 				{children && <div className="py-4">{children}</div>}
 				<div className="flex justify-end gap-3">
-					<Button
-						variant="outline"
-						onClick={() => onOpenChange(false)}
-						disabled={isLoading}
-					>
+					<Button variant="outline" onClick={() => onOpenChange(false)} disabled={isLoading}>
 						{cancelText}
 					</Button>
-					<Button
-						variant={variant}
-						onClick={handleConfirm}
-						disabled={isLoading}
-					>
+					<Button variant={variant} onClick={handleConfirm} disabled={isLoading}>
 						{isLoading ? (
 							<>
 								<Loader2 className="mr-2 h-4 w-4 animate-spin" />

@@ -1,10 +1,4 @@
-import {
-	type ReactNode,
-	createContext,
-	useContext,
-	useMemo,
-	useState,
-} from "react";
+import { type ReactNode, createContext, useContext, useMemo, useState } from "react";
 
 interface LoadingState {
 	id: string;
@@ -22,12 +16,8 @@ interface LoadingActionsContextType {
 	stopLoading: (id: string) => void;
 }
 
-const LoadingStateContext = createContext<LoadingStateContextType | undefined>(
-	undefined,
-);
-const LoadingActionsContext = createContext<
-	LoadingActionsContextType | undefined
->(undefined);
+const LoadingStateContext = createContext<LoadingStateContextType | undefined>(undefined);
+const LoadingActionsContext = createContext<LoadingActionsContextType | undefined>(undefined);
 
 export function LoadingProvider({ children }: { children: ReactNode }) {
 	const [loadingStates, setLoadingStates] = useState<LoadingState[]>([]);
@@ -55,9 +45,7 @@ export function LoadingProvider({ children }: { children: ReactNode }) {
 				}
 
 				return prev.map((state) =>
-					state.id === id
-						? { ...state, progress, message: message ?? state.message }
-						: state,
+					state.id === id ? { ...state, progress, message: message ?? state.message } : state,
 				);
 			});
 		};
@@ -82,9 +70,7 @@ export function LoadingProvider({ children }: { children: ReactNode }) {
 
 	return (
 		<LoadingActionsContext.Provider value={actions}>
-			<LoadingStateContext.Provider value={stateValue}>
-				{children}
-			</LoadingStateContext.Provider>
+			<LoadingStateContext.Provider value={stateValue}>{children}</LoadingStateContext.Provider>
 		</LoadingActionsContext.Provider>
 	);
 }
@@ -107,10 +93,7 @@ export function useLoadingStates() {
 
 export function useIsLoading(id: string) {
 	const loadingStates = useLoadingStates();
-	return useMemo(
-		() => loadingStates.some((state) => state.id === id),
-		[loadingStates, id],
-	);
+	return useMemo(() => loadingStates.some((state) => state.id === id), [loadingStates, id]);
 }
 
 export function useLoadingProgress(id: string) {

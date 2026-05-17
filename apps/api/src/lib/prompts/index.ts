@@ -5,10 +5,7 @@ import { returnCodingPrompt } from "./coding";
 import { getTextToImageSystemPrompt } from "./image";
 import { returnStandardPrompt } from "./standard";
 import { emptyPrompt } from "./utils";
-import {
-	buildAssistantMetadataSection,
-	type PromptModelMetadata,
-} from "./sections/metadata";
+import { buildAssistantMetadataSection, type PromptModelMetadata } from "./sections/metadata";
 
 export async function getSystemPrompt(
 	request: IBody,
@@ -49,8 +46,7 @@ export async function getSystemPrompt(
 				{ modelId: model, modelConfig },
 			);
 		} else {
-			const isTextToImageModel =
-				outputs.includes("image") && !supportsTextOutput;
+			const isTextToImageModel = outputs.includes("image") && !supportsTextOutput;
 			if (isTextToImageModel) {
 				prompt = getTextToImageSystemPrompt(request.image_style);
 			} else if (!supportsTextOutput) {
@@ -86,10 +82,7 @@ function buildArticlePromptMetadata(
 	});
 }
 
-export function analyseArticlePrompt(
-	article: string,
-	metadata?: PromptModelMetadata,
-): string {
+export function analyseArticlePrompt(article: string, metadata?: PromptModelMetadata): string {
 	const metadataSection = buildArticlePromptMetadata(metadata, "normal");
 	return `<s> [INST] ${metadataSection}Your task is provide a comprehensive analysis that identifies any potential bias, political leanings, and the tone of the content, evaluating the presence of bias and political alignment in the article provided.
 
@@ -118,10 +111,7 @@ ${article}
 Analysis: </s>`;
 }
 
-export function summariseArticlePrompt(
-	article: string,
-	metadata?: PromptModelMetadata,
-): string {
+export function summariseArticlePrompt(article: string, metadata?: PromptModelMetadata): string {
 	const metadataSection = buildArticlePromptMetadata(metadata, "normal");
 	return `<s> [INST] ${metadataSection}Your task is to provide a professional summary of the article provided.
 

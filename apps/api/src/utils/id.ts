@@ -1,8 +1,5 @@
 export function randomHex(len: number): string {
-	if (
-		typeof crypto !== "undefined" &&
-		typeof crypto.getRandomValues === "function"
-	) {
+	if (typeof crypto !== "undefined" && typeof crypto.getRandomValues === "function") {
 		const bytes = new Uint8Array(Math.ceil(len / 2));
 		crypto.getRandomValues(bytes);
 		return Array.from(bytes)
@@ -24,10 +21,7 @@ export function randomUUIDLike(): string {
 }
 
 export function generateId(): string {
-	if (
-		typeof crypto !== "undefined" &&
-		typeof crypto.randomUUID === "function"
-	) {
+	if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
 		return crypto.randomUUID();
 	}
 	return randomUUIDLike();

@@ -1,14 +1,6 @@
-import {
-	MAX_BUFFER_LENGTH,
-	MAX_CONTENT_LENGTH,
-	MAX_THINKING_LENGTH,
-} from "~/constants/app";
+import { MAX_BUFFER_LENGTH, MAX_CONTENT_LENGTH, MAX_THINKING_LENGTH } from "~/constants/app";
 import { formatAssistantMessage, getAIResponse } from "~/lib/chat/responses";
-import {
-	appendReasoningPart,
-	appendTextPart,
-	buildMessageParts,
-} from "~/lib/chat/messageParts";
+import { appendReasoningPart, appendTextPart, buildMessageParts } from "~/lib/chat/messageParts";
 import { handleToolCalls } from "~/lib/chat/tools";
 import { getToolEventPayload } from "~/lib/chat/utils";
 import { preprocessQwQResponse } from "~/lib/chat/utils/qwq";
@@ -65,10 +57,7 @@ function mergeMessageParts(
 	streamedParts: MessagePart[],
 	derivedParts?: MessagePart[],
 ): MessagePart[] | undefined {
-	if (
-		streamedParts.length === 0 &&
-		(!derivedParts || derivedParts.length === 0)
-	) {
+	if (streamedParts.length === 0 && (!derivedParts || derivedParts.length === 0)) {
 		return undefined;
 	}
 
@@ -83,8 +72,7 @@ function mergeMessageParts(
 	const seenToolUse = new Set(
 		merged
 			.filter(
-				(part): part is Extract<MessagePart, { type: "tool_use" }> =>
-					part.type === "tool_use",
+				(part): part is Extract<MessagePart, { type: "tool_use" }> => part.type === "tool_use",
 			)
 			.map((part) => `${part.toolCallId || ""}:${part.name}`),
 	);
@@ -200,10 +188,7 @@ export async function createStreamWithPostProcessing(
 				maxLength: MAX_CONTENT_LENGTH,
 			});
 
-			while (
-				totalContentLength > MAX_CONTENT_LENGTH * 0.8 &&
-				fullContentChunks.length > 1
-			) {
+			while (totalContentLength > MAX_CONTENT_LENGTH * 0.8 && fullContentChunks.length > 1) {
 				const removedChunk = fullContentChunks.shift()!;
 				totalContentLength -= removedChunk.length;
 			}
@@ -221,10 +206,7 @@ export async function createStreamWithPostProcessing(
 				maxLength: MAX_THINKING_LENGTH,
 			});
 
-			while (
-				totalThinkingLength > MAX_THINKING_LENGTH * 0.8 &&
-				fullThinkingChunks.length > 1
-			) {
+			while (totalThinkingLength > MAX_THINKING_LENGTH * 0.8 && fullThinkingChunks.length > 1) {
 				const removedChunk = fullThinkingChunks.shift()!;
 				totalThinkingLength -= removedChunk.length;
 			}
@@ -242,10 +224,7 @@ export async function createStreamWithPostProcessing(
 				maxLength: MAX_BUFFER_LENGTH,
 			});
 
-			while (
-				totalBufferLength > MAX_BUFFER_LENGTH * 0.8 &&
-				bufferChunks.length > 1
-			) {
+			while (totalBufferLength > MAX_BUFFER_LENGTH * 0.8 && bufferChunks.length > 1) {
 				const removedChunk = bufferChunks.shift()!;
 				totalBufferLength -= removedChunk.length;
 			}
@@ -281,8 +260,7 @@ export async function createStreamWithPostProcessing(
 					});
 				} catch (error) {
 					logger.error("Failed in stream start:", {
-						error_message:
-							error instanceof Error ? error.message : "Unknown error",
+						error_message: error instanceof Error ? error.message : "Unknown error",
 					});
 				}
 			},
@@ -292,8 +270,7 @@ export async function createStreamWithPostProcessing(
 					text = new TextDecoder().decode(chunk);
 				} catch (error) {
 					logger.error("Failed to decode chunk:", {
-						error_message:
-							error instanceof Error ? error.message : "Unknown error",
+						error_message: error instanceof Error ? error.message : "Unknown error",
 					});
 					return;
 				}
@@ -325,10 +302,7 @@ export async function createStreamWithPostProcessing(
 
 						if (dataStr === "[DONE]") {
 							if (!postProcessingDone) {
-								if (
-									Object.keys(currentToolCalls).length > 0 &&
-									toolCallsData.length === 0
-								) {
+								if (Object.keys(currentToolCalls).length > 0 && toolCallsData.length === 0) {
 									const completeToolCalls = Object.values(currentToolCalls);
 									toolCallsData = completeToolCalls;
 								}
@@ -341,10 +315,7 @@ export async function createStreamWithPostProcessing(
 						try {
 							const data = safeParseJson(dataStr);
 							if (!data) {
-								throw new AssistantError(
-									"Failed to parse data",
-									ErrorType.PARAMS_ERROR,
-								);
+								throw new AssistantError("Failed to parse data", ErrorType.PARAMS_ERROR);
 							}
 							logger.trace("Parsed SSE data", { currentEventType, data });
 
@@ -357,16 +328,12 @@ export async function createStreamWithPostProcessing(
 								return;
 							}
 
-							const formattedData = await ResponseFormatter.formatResponse(
-								data,
-								options.provider,
-								{
-									model,
-									modalities: modelConfig?.modalities,
-									env,
-									is_streaming: true,
-								},
-							);
+							const formattedData = await ResponseFormatter.formatResponse(data, options.provider, {
+								model,
+								modalities: modelConfig?.modalities,
+								env,
+								is_streaming: true,
+							});
 
 							let contentDelta = "";
 
@@ -383,9 +350,7 @@ export async function createStreamWithPostProcessing(
 								// Handle QwQ models: add <think> tag if needed on first content chunk
 								const isQwQModel = model.toLowerCase().includes("qwq");
 								if (isQwQModel && isFirstContentChunk && !qwqThinkTagAdded) {
-									const contentStartsWithThink = contentDelta
-										.trim()
-										.startsWith("<think>");
+									const contentStartsWithThink = contentDelta.trim().startsWith("<think>");
 									if (!contentStartsWithThink) {
 										emitEvent(controller, "content_block_delta", {
 											content: "<think>\n",
@@ -426,10 +391,7 @@ export async function createStreamWithPostProcessing(
 								}
 							}
 
-							const toolCallData = StreamingFormatter.extractToolCall(
-								data,
-								currentEventType,
-							);
+							const toolCallData = StreamingFormatter.extractToolCall(data, currentEventType);
 
 							if (toolCallData) {
 								if (toolCallData.format === "openai") {
@@ -451,12 +413,10 @@ export async function createStreamWithPostProcessing(
 
 										if (toolCall.function) {
 											if (toolCall.function.name) {
-												currentToolCalls[index].function.name =
-													toolCall.function.name;
+												currentToolCalls[index].function.name = toolCall.function.name;
 											}
 											if (toolCall.function.arguments) {
-												currentToolCalls[index].function.arguments +=
-													toolCall.function.arguments;
+												currentToolCalls[index].function.arguments += toolCall.function.arguments;
 											}
 										}
 									}
@@ -468,10 +428,7 @@ export async function createStreamWithPostProcessing(
 										isComplete: false,
 									};
 								} else if (toolCallData.format === "anthropic_delta") {
-									if (
-										currentToolCalls[toolCallData.index] &&
-										toolCallData.partial_json
-									) {
+									if (currentToolCalls[toolCallData.index] && toolCallData.partial_json) {
 										currentToolCalls[toolCallData.index].accumulatedInput +=
 											toolCallData.partial_json;
 									}
@@ -483,10 +440,7 @@ export async function createStreamWithPostProcessing(
 										isComplete: false,
 									};
 								} else if (toolCallData.format === "nova_delta") {
-									if (
-										currentToolCalls[toolCallData.index] &&
-										toolCallData.partial_json
-									) {
+									if (currentToolCalls[toolCallData.index] && toolCallData.partial_json) {
 										currentToolCalls[toolCallData.index].accumulatedInput +=
 											toolCallData.partial_json;
 									}
@@ -555,16 +509,12 @@ export async function createStreamWithPostProcessing(
 									toolCallsData.push(toolCall);
 								}
 
-								if (
-									currentEventType === "message_stop" &&
-									!postProcessingDone
-								) {
+								if (currentEventType === "message_stop" && !postProcessingDone) {
 									await handlePostProcessing();
 								}
 							}
 
-							const extractedCitations =
-								StreamingFormatter.extractCitations(data);
+							const extractedCitations = StreamingFormatter.extractCitations(data);
 							if (extractedCitations.length > 0) {
 								citationsResponse = extractedCitations;
 							}
@@ -574,28 +524,22 @@ export async function createStreamWithPostProcessing(
 								usageData = extractedUsage;
 							}
 
-							const extractedStructuredData =
-								StreamingFormatter.extractStructuredData(data);
+							const extractedStructuredData = StreamingFormatter.extractStructuredData(data);
 							if (extractedStructuredData) {
 								structuredData = extractedStructuredData;
 							}
 
-							const refusalDelta =
-								StreamingFormatter.extractRefusalFromChunk(data);
+							const refusalDelta = StreamingFormatter.extractRefusalFromChunk(data);
 							if (typeof refusalDelta === "string") {
 								refusalData = refusalDelta;
 							}
 
-							const annotationsDelta =
-								StreamingFormatter.extractAnnotationsFromChunk(data);
+							const annotationsDelta = StreamingFormatter.extractAnnotationsFromChunk(data);
 							if (annotationsDelta !== null && annotationsDelta !== undefined) {
 								annotationsData = annotationsDelta;
 							}
 
-							if (
-								StreamingFormatter.isCompletionIndicated(data) &&
-								!postProcessingDone
-							) {
+							if (StreamingFormatter.isCompletionIndicated(data) && !postProcessingDone) {
 								await handlePostProcessing();
 							}
 						} catch (parseError) {
@@ -621,8 +565,7 @@ export async function createStreamWithPostProcessing(
 						const isProUser = user?.plan_id === "pro";
 
 						const memoriesEnabled =
-							userSettings?.memories_save_enabled ||
-							userSettings?.memories_chat_history_enabled;
+							userSettings?.memories_save_enabled || userSettings?.memories_chat_history_enabled;
 						if (isProUser && memoriesEnabled) {
 							try {
 								const history = await conversationManager.get(completion_id);
@@ -634,8 +577,7 @@ export async function createStreamWithPostProcessing(
 									typeof lastUserRaw === "string"
 										? lastUserRaw
 										: Array.isArray(lastUserRaw)
-											? lastUserRaw.find((b: any) => b.type === "text")?.text ||
-												""
+											? lastUserRaw.find((b: any) => b.type === "text")?.text || ""
 											: "";
 
 								if (lastUserText.trim()) {
@@ -680,9 +622,7 @@ export async function createStreamWithPostProcessing(
 
 							if (!outputValidation?.isValid) {
 								guardrailsFailed = true;
-								guardrailError =
-									outputValidation.rawResponse ||
-									"Content failed validation checks";
+								guardrailError = outputValidation.rawResponse || "Content failed validation checks";
 								guardrailViolations = outputValidation.violations || [];
 
 								logger.warn("Guardrails failed", {
@@ -723,9 +663,7 @@ export async function createStreamWithPostProcessing(
 
 						const derivedParts = buildMessageParts({
 							role: "assistant",
-							content:
-								(assistantMessage.content as Message["content"]) ||
-								processedContent,
+							content: (assistantMessage.content as Message["content"]) || processedContent,
 							tool_calls: assistantMessage.tool_calls,
 							data: assistantMessage.data,
 							timestamp: assistantMessage.timestamp,
@@ -844,8 +782,7 @@ export async function createStreamWithPostProcessing(
 						}
 
 						try {
-							const updatedUsageLimits =
-								await conversationManager.getUsageLimits();
+							const updatedUsageLimits = await conversationManager.getUsageLimits();
 							if (updatedUsageLimits) {
 								emitEvent(controller, "usage_limits", {
 									usage_limits: updatedUsageLimits,
@@ -853,33 +790,23 @@ export async function createStreamWithPostProcessing(
 							}
 						} catch (error) {
 							logger.error("Failed to get updated usage limits:", {
-								error_message:
-									error instanceof Error ? error.message : "Unknown error",
+								error_message: error instanceof Error ? error.message : "Unknown error",
 							});
 						}
 
-						if (
-							toolCallsData.length > 0 &&
-							max_steps &&
-							current_step < max_steps
-						) {
+						if (toolCallsData.length > 0 && max_steps && current_step < max_steps) {
 							const history = await conversationManager.get(completion_id);
 							const lastToolResponses = history
 								.filter((msg) => msg.role === "tool")
 								.slice(-toolCallsData.length);
 
-							const hasToolErrors = lastToolResponses.some(
-								(message) => message.status === "error",
-							);
+							const hasToolErrors = lastToolResponses.some((message) => message.status === "error");
 
 							if (hasToolErrors) {
-								logger.warn(
-									"Tool errors detected, stopping multi-step execution",
-									{
-										completion_id,
-										current_step,
-									},
-								);
+								logger.warn("Tool errors detected, stopping multi-step execution", {
+									completion_id,
+									current_step,
+								});
 							} else {
 								try {
 									const nextStream = await getAIResponse({
@@ -903,8 +830,7 @@ export async function createStreamWithPostProcessing(
 									}
 								} catch (error: any) {
 									console.error("Next stream error:", {
-										error_message:
-											error instanceof Error ? error.message : "Unknown error",
+										error_message: error instanceof Error ? error.message : "Unknown error",
 									});
 								}
 							}
@@ -917,8 +843,7 @@ export async function createStreamWithPostProcessing(
 						emitDoneEvent(controller);
 					} catch (error) {
 						logger.error("Error in stream post-processing:", {
-							error_message:
-								error instanceof Error ? error.message : "Unknown error",
+							error_message: error instanceof Error ? error.message : "Unknown error",
 						});
 					}
 				}

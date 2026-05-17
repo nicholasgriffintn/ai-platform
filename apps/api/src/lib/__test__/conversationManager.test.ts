@@ -57,42 +57,42 @@ describe("ConversationManager", () => {
 		ConversationManager["instance"] = undefined as any;
 
 		// Link old methods to new repository structure for backwards compatibility
-		mockDatabase.repositories.conversations.getConversation.mockImplementation(
-			(...args) => mockDatabase.getConversation(...args),
+		mockDatabase.repositories.conversations.getConversation.mockImplementation((...args) =>
+			mockDatabase.getConversation(...args),
 		);
-		mockDatabase.repositories.conversations.createConversation.mockImplementation(
-			(...args) => mockDatabase.createConversation(...args),
+		mockDatabase.repositories.conversations.createConversation.mockImplementation((...args) =>
+			mockDatabase.createConversation(...args),
 		);
 		mockDatabase.repositories.conversations.updateConversationAfterMessage.mockImplementation(
 			(...args) => mockDatabase.updateConversationAfterMessage(...args),
 		);
-		mockDatabase.repositories.conversations.getUserConversations.mockImplementation(
-			(...args) => mockDatabase.getUserConversations(...args),
+		mockDatabase.repositories.conversations.getUserConversations.mockImplementation((...args) =>
+			mockDatabase.getUserConversations(...args),
 		);
-		mockDatabase.repositories.conversations.updateConversation.mockImplementation(
-			(...args) => mockDatabase.updateConversation(...args),
+		mockDatabase.repositories.conversations.updateConversation.mockImplementation((...args) =>
+			mockDatabase.updateConversation(...args),
 		);
-		mockDatabase.repositories.conversations.getConversationByShareId.mockImplementation(
-			(...args) => mockDatabase.getConversationByShareId(...args),
+		mockDatabase.repositories.conversations.getConversationByShareId.mockImplementation((...args) =>
+			mockDatabase.getConversationByShareId(...args),
 		);
-		mockDatabase.repositories.conversations.deleteAllChatCompletions.mockImplementation(
-			(...args) => mockDatabase.deleteAllChatCompletions(...args),
+		mockDatabase.repositories.conversations.deleteAllChatCompletions.mockImplementation((...args) =>
+			mockDatabase.deleteAllChatCompletions(...args),
 		);
 
-		mockDatabase.repositories.messages.createMessage.mockImplementation(
-			(...args) => mockDatabase.createMessage(...args),
+		mockDatabase.repositories.messages.createMessage.mockImplementation((...args) =>
+			mockDatabase.createMessage(...args),
 		);
-		mockDatabase.repositories.messages.getConversationMessages.mockImplementation(
-			(...args) => mockDatabase.getConversationMessages(...args),
+		mockDatabase.repositories.messages.getConversationMessages.mockImplementation((...args) =>
+			mockDatabase.getConversationMessages(...args),
 		);
-		mockDatabase.repositories.messages.updateMessage.mockImplementation(
-			(...args) => mockDatabase.updateMessage(...args),
+		mockDatabase.repositories.messages.updateMessage.mockImplementation((...args) =>
+			mockDatabase.updateMessage(...args),
 		);
-		mockDatabase.repositories.messages.getMessageById.mockImplementation(
-			(...args) => mockDatabase.getMessageById(...args),
+		mockDatabase.repositories.messages.getMessageById.mockImplementation((...args) =>
+			mockDatabase.getMessageById(...args),
 		);
-		mockDatabase.repositories.messages.getMessages.mockImplementation(
-			(...args) => mockDatabase.getMessages(...args),
+		mockDatabase.repositories.messages.getMessages.mockImplementation((...args) =>
+			mockDatabase.getMessages(...args),
 		);
 	});
 
@@ -146,9 +146,7 @@ describe("ConversationManager", () => {
 		});
 
 		it("should return null when usage manager fails", async () => {
-			mockUsageManager.getUsageLimits.mockRejectedValue(
-				new Error("Database error"),
-			);
+			mockUsageManager.getUsageLimits.mockRejectedValue(new Error("Database error"));
 
 			const manager = ConversationManager.getInstance({
 				database: mockDatabase as any,
@@ -187,10 +185,7 @@ describe("ConversationManager", () => {
 
 			await manager.checkUsageLimits();
 
-			expect(mockUsageManager.checkUsageByModel).toHaveBeenCalledWith(
-				"gpt-4",
-				false,
-			);
+			expect(mockUsageManager.checkUsageByModel).toHaveBeenCalledWith("gpt-4", false);
 		});
 
 		it("should not check usage when no user is set", async () => {
@@ -344,9 +339,7 @@ describe("ConversationManager", () => {
 				user: mockUser,
 			});
 
-			await expect(manager.get("nonexistent")).rejects.toThrow(
-				"Conversation not found",
-			);
+			await expect(manager.get("nonexistent")).rejects.toThrow("Conversation not found");
 		});
 
 		it("should return single message when no store", async () => {
@@ -382,10 +375,9 @@ describe("ConversationManager", () => {
 
 			await manager.updateConversation(conversationId, updates);
 
-			expect(mockDatabase.updateConversation).toHaveBeenCalledWith(
-				conversationId,
-				{ title: "New Title" },
-			);
+			expect(mockDatabase.updateConversation).toHaveBeenCalledWith(conversationId, {
+				title: "New Title",
+			});
 		});
 
 		it("should update conversation archived status", async () => {
@@ -405,10 +397,9 @@ describe("ConversationManager", () => {
 
 			await manager.updateConversation(conversationId, updates);
 
-			expect(mockDatabase.updateConversation).toHaveBeenCalledWith(
-				conversationId,
-				{ is_archived: true },
-			);
+			expect(mockDatabase.updateConversation).toHaveBeenCalledWith(conversationId, {
+				is_archived: true,
+			});
 		});
 	});
 
@@ -446,9 +437,7 @@ describe("ConversationManager", () => {
 
 	describe("error handling", () => {
 		it("should handle database errors gracefully", async () => {
-			mockDatabase.getConversation.mockRejectedValue(
-				new Error("Database error"),
-			);
+			mockDatabase.getConversation.mockRejectedValue(new Error("Database error"));
 
 			const manager = ConversationManager.getInstance({
 				database: mockDatabase as any,

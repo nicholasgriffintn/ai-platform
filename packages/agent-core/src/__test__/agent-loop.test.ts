@@ -1,22 +1,13 @@
 import { describe, expect, it, vi } from "vitest";
 import { executeAgentLoop } from "../agent-loop";
-import type {
-	ActionHandler,
-	AgentDecision,
-	AgentDecisionContext,
-} from "../types";
+import type { ActionHandler, AgentDecision, AgentDecisionContext } from "../types";
 
 function createRunCommandHandler(
-	onExecute?: (context: {
-		step: number;
-		beginPlanRecovery: (reason: string) => void;
-	}) => void,
+	onExecute?: (context: { step: number; beginPlanRecovery: (reason: string) => void }) => void,
 ): ActionHandler {
 	return {
 		name: "run_command",
-		canHandle: (
-			decision,
-		): decision is Extract<AgentDecision, { action: "run_command" }> =>
+		canHandle: (decision): decision is Extract<AgentDecision, { action: "run_command" }> =>
 			decision.action === "run_command",
 		execute: async (_decision, context) => {
 			onExecute?.({

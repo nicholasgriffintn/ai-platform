@@ -12,9 +12,7 @@ vi.mock("~/lib/providers/capabilities/chat", () => ({
 }));
 
 vi.mock("~/lib/providers/models", () => ({
-	getAuxiliaryModel: vi
-		.fn()
-		.mockResolvedValue({ model: "mock-model", provider: "mock-provider" }),
+	getAuxiliaryModel: vi.fn().mockResolvedValue({ model: "mock-model", provider: "mock-provider" }),
 }));
 
 global.fetch = vi.fn();

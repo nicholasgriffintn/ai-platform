@@ -6,18 +6,10 @@ import { useUIStore } from "~/state/stores/uiStore";
 type ShortcutHandler = (e: KeyboardEvent) => void;
 
 export function useKeyboardShortcuts() {
-	const {
-		setSidebarVisible,
-		sidebarVisible,
-		showKeyboardShortcuts,
-		setShowKeyboardShortcuts,
-	} = useUIStore();
-	const {
-		clearCurrentConversation,
-		setShowSearch,
-		localOnlyMode,
-		setLocalOnlyMode,
-	} = useChatStore();
+	const { setSidebarVisible, sidebarVisible, showKeyboardShortcuts, setShowKeyboardShortcuts } =
+		useUIStore();
+	const { clearCurrentConversation, setShowSearch, localOnlyMode, setLocalOnlyMode } =
+		useChatStore();
 
 	useEffect(() => {
 		const handlers: Record<string, ShortcutHandler> = {
@@ -28,11 +20,7 @@ export function useKeyboardShortcuts() {
 				}
 			},
 			o: (e: KeyboardEvent) => {
-				if (
-					(e.metaKey || e.ctrlKey) &&
-					e.shiftKey &&
-					e.key.toLowerCase() === "o"
-				) {
+				if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === "o") {
 					e.preventDefault();
 					clearCurrentConversation();
 				}

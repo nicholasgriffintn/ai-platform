@@ -13,10 +13,7 @@ export const handleAddMemoriesToGroup = async (
 
 	const group = await repository.getMemoryGroupById(groupId);
 	if (!group || group.user_id !== user.id) {
-		throw new AssistantError(
-			"Group not found or access denied",
-			ErrorType.AUTHENTICATION_ERROR,
-		);
+		throw new AssistantError("Group not found or access denied", ErrorType.AUTHENTICATION_ERROR);
 	}
 
 	await repository.addMemoriesToGroup(groupId, memoryIds);

@@ -66,13 +66,9 @@ addRoute(app, "get", "/", {
 					throw error;
 				}
 				routeLogger.error("Error listing Strudel patterns:", {
-					error_message:
-						error instanceof Error ? error.message : "Unknown error",
+					error_message: error instanceof Error ? error.message : "Unknown error",
 				});
-				throw new AssistantError(
-					"Failed to list Strudel patterns",
-					ErrorType.UNKNOWN_ERROR,
-				);
+				throw new AssistantError("Failed to list Strudel patterns", ErrorType.UNKNOWN_ERROR);
 			}
 		})(raw),
 });
@@ -106,13 +102,9 @@ addRoute(app, "get", "/:id", {
 					throw error;
 				}
 				routeLogger.error("Error fetching Strudel pattern:", {
-					error_message:
-						error instanceof Error ? error.message : "Unknown error",
+					error_message: error instanceof Error ? error.message : "Unknown error",
 				});
-				throw new AssistantError(
-					"Failed to fetch Strudel pattern",
-					ErrorType.UNKNOWN_ERROR,
-				);
+				throw new AssistantError("Failed to fetch Strudel pattern", ErrorType.UNKNOWN_ERROR);
 			}
 		})(raw),
 });
@@ -146,8 +138,7 @@ addRoute(app, "post", "/generate", {
 					throw error;
 				}
 				routeLogger.error("Error generating Strudel code:", {
-					error_message:
-						error instanceof Error ? error.message : "Unknown error",
+					error_message: error instanceof Error ? error.message : "Unknown error",
 					error_stack: error instanceof Error ? error.stack : undefined,
 					error_cause: error instanceof Error ? error.cause : undefined,
 				});
@@ -156,8 +147,7 @@ addRoute(app, "post", "/generate", {
 					ErrorType.UNKNOWN_ERROR,
 					500,
 					{
-						originalError:
-							error instanceof Error ? error.message : String(error),
+						originalError: error instanceof Error ? error.message : String(error),
 						stack: error instanceof Error ? error.stack : undefined,
 					},
 				);
@@ -194,13 +184,9 @@ addRoute(app, "post", "/", {
 					throw error;
 				}
 				routeLogger.error("Error saving Strudel pattern:", {
-					error_message:
-						error instanceof Error ? error.message : "Unknown error",
+					error_message: error instanceof Error ? error.message : "Unknown error",
 				});
-				throw new AssistantError(
-					"Failed to save Strudel pattern",
-					ErrorType.UNKNOWN_ERROR,
-				);
+				throw new AssistantError("Failed to save Strudel pattern", ErrorType.UNKNOWN_ERROR);
 			}
 		})(raw),
 });
@@ -236,13 +222,9 @@ addRoute(app, "put", "/:id", {
 					throw error;
 				}
 				routeLogger.error("Error updating Strudel pattern:", {
-					error_message:
-						error instanceof Error ? error.message : "Unknown error",
+					error_message: error instanceof Error ? error.message : "Unknown error",
 				});
-				throw new AssistantError(
-					"Failed to update Strudel pattern",
-					ErrorType.UNKNOWN_ERROR,
-				);
+				throw new AssistantError("Failed to update Strudel pattern", ErrorType.UNKNOWN_ERROR);
 			}
 		})(raw),
 });
@@ -275,13 +257,9 @@ addRoute(app, "delete", "/:id", {
 					throw error;
 				}
 				routeLogger.error("Error deleting Strudel pattern:", {
-					error_message:
-						error instanceof Error ? error.message : "Unknown error",
+					error_message: error instanceof Error ? error.message : "Unknown error",
 				});
-				throw new AssistantError(
-					"Failed to delete Strudel pattern",
-					ErrorType.UNKNOWN_ERROR,
-				);
+				throw new AssistantError("Failed to delete Strudel pattern", ErrorType.UNKNOWN_ERROR);
 			}
 		})(raw),
 });
@@ -325,13 +303,9 @@ addRoute(app, "post", "/feedback", {
 					throw error;
 				}
 				routeLogger.error("Error submitting Strudel feedback:", {
-					error_message:
-						error instanceof Error ? error.message : "Unknown error",
+					error_message: error instanceof Error ? error.message : "Unknown error",
 				});
-				throw new AssistantError(
-					"Failed to submit feedback",
-					ErrorType.UNKNOWN_ERROR,
-				);
+				throw new AssistantError("Failed to submit feedback", ErrorType.UNKNOWN_ERROR);
 			}
 		})(raw),
 });

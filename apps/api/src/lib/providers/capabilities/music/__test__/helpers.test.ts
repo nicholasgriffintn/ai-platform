@@ -1,9 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import {
-	getMusicProvider,
-	listMusicProviders,
-} from "~/lib/providers/capabilities/music";
+import { getMusicProvider, listMusicProviders } from "~/lib/providers/capabilities/music";
 
 vi.mock("~/lib/providers/library", () => ({
 	providerLibrary: {
@@ -31,10 +28,7 @@ describe("music capability helpers", () => {
 		const context = { env: { TEST: true } as any, user: { id: 1 } as any };
 		const provider = getMusicProvider("replicate", context);
 
-		expect(mockProviderLibrary.music).toHaveBeenCalledWith(
-			"replicate",
-			context,
-		);
+		expect(mockProviderLibrary.music).toHaveBeenCalledWith("replicate", context);
 		expect(provider).toBe(fakeProvider);
 	});
 
@@ -47,8 +41,6 @@ describe("music capability helpers", () => {
 		const providers = listMusicProviders();
 
 		expect(mockProviderLibrary.list).toHaveBeenCalledWith("music");
-		expect(providers).toEqual(
-			["ElevenLabs", "Replicate", "elevenlabs", "replicate"].sort(),
-		);
+		expect(providers).toEqual(["ElevenLabs", "Replicate", "elevenlabs", "replicate"].sort());
 	});
 });

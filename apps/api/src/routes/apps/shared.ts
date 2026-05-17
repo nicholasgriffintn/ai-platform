@@ -62,8 +62,7 @@ addRoute(app, "post", "/", {
 				return ResponseFactory.success(c, { share_id: shareId });
 			} catch (error) {
 				routeLogger.error("Error sharing item:", {
-					error_message:
-						error instanceof Error ? error.message : "Unknown error",
+					error_message: error instanceof Error ? error.message : "Unknown error",
 				});
 
 				if (error instanceof AssistantError) {
@@ -117,8 +116,7 @@ addRoute(app, "get", "/:share_id", {
 				});
 			} catch (error) {
 				routeLogger.error("Error retrieving shared item:", {
-					error_message:
-						error instanceof Error ? error.message : "Unknown error",
+					error_message: error instanceof Error ? error.message : "Unknown error",
 				});
 
 				if (error instanceof AssistantError) {

@@ -1,9 +1,5 @@
 import { safeParseJson } from "~/utils/json";
-import type {
-	ModelConfigItem,
-	InputSchemaInputFieldDescriptor,
-	Message,
-} from "~/types";
+import type { ModelConfigItem, InputSchemaInputFieldDescriptor, Message } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
 type InputSchemaFieldType =
@@ -26,9 +22,7 @@ export interface InputSchemaBuildParameters {
 	messages?: Message[];
 }
 
-function normalizeFieldTypes(
-	field: InputSchemaInputFieldDescriptor,
-): InputSchemaFieldType[] {
+function normalizeFieldTypes(field: InputSchemaInputFieldDescriptor): InputSchemaFieldType[] {
 	return Array.isArray(field.type)
 		? (field.type as InputSchemaFieldType[])
 		: [field.type as InputSchemaFieldType];
@@ -52,9 +46,7 @@ function extractPromptFromMessages(messages: Message[]): string {
 
 		if (Array.isArray(content)) {
 			const textParts = content
-				.filter(
-					(part) => part?.type === "text" && typeof part.text === "string",
-				)
+				.filter((part) => part?.type === "text" && typeof part.text === "string")
 				.map((part) => part.text!.trim())
 				.filter(Boolean);
 
@@ -153,13 +145,8 @@ function coerceValue(value: unknown, types: InputSchemaFieldType[]): unknown {
 		}
 	}
 
-	if (
-		(types.includes("number") || types.includes("integer")) &&
-		typeof value === "string"
-	) {
-		const parsed = types.includes("integer")
-			? parseInt(value, 10)
-			: parseFloat(value);
+	if ((types.includes("number") || types.includes("integer")) && typeof value === "string") {
+		const parsed = types.includes("integer") ? parseInt(value, 10) : parseFloat(value);
 		if (!Number.isNaN(parsed)) {
 			return parsed;
 		}
@@ -210,9 +197,7 @@ function buildFieldValue(
 ): unknown {
 	const lastMessage = params.messages?.[params.messages.length - 1];
 	const messageContent =
-		lastMessage &&
-		typeof lastMessage.content === "object" &&
-		!Array.isArray(lastMessage.content)
+		lastMessage && typeof lastMessage.content === "object" && !Array.isArray(lastMessage.content)
 			? (lastMessage.content as Record<string, any>)
 			: undefined;
 
@@ -233,8 +218,7 @@ function buildFieldValue(
 	if (value === undefined) {
 		if (
 			types.includes("string") &&
-			(field.name.toLowerCase() === "prompt" ||
-				field.name.toLowerCase() === "text")
+			(field.name.toLowerCase() === "prompt" || field.name.toLowerCase() === "text")
 		) {
 			const prompt = extractPromptFromMessages(params.messages || []);
 			if (prompt) {

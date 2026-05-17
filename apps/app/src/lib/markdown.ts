@@ -89,10 +89,7 @@ function processInlineMarkdown(text: string): string {
 
 	newText = newText.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>');
 
-	newText = newText.replace(
-		/!\[([^\]]*)\]\(([^)]+)\)/g,
-		'<img src="$2" alt="$1">',
-	);
+	newText = newText.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1">');
 
 	return newText;
 }

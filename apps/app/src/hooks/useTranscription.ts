@@ -15,9 +15,9 @@ export function useTranscription({
 	inputStream,
 }: TranscriptionOptions) {
 	const [isTranscribing, setIsTranscribing] = useState(false);
-	const [status, setStatus] = useState<
-		"idle" | "connecting" | "active" | "reconnecting" | "error"
-	>("idle");
+	const [status, setStatus] = useState<"idle" | "connecting" | "active" | "reconnecting" | "error">(
+		"idle",
+	);
 
 	const pcRef = useRef<RTCPeerConnection | null>(null);
 	const dcRef = useRef<RTCDataChannel | null>(null);
@@ -218,9 +218,7 @@ export function useTranscription({
 			clearTimeout(timeoutId);
 
 			if (!sessionRes.ok) {
-				throw new Error(
-					`Failed to create realtime session: ${sessionRes.status}`,
-				);
+				throw new Error(`Failed to create realtime session: ${sessionRes.status}`);
 			}
 
 			const sessionJson = (await sessionRes.json()) as {
@@ -240,8 +238,7 @@ export function useTranscription({
 			const clientSecret = session.client_secret.value;
 			const sessionId = session.id;
 
-			const stream =
-				externalStream ?? inputStream ?? (await getOptimalAudioStream());
+			const stream = externalStream ?? inputStream ?? (await getOptimalAudioStream());
 			mediaStreamRef.current = stream;
 
 			setupAudioAnalysis(stream);
@@ -267,15 +264,11 @@ export function useTranscription({
 			}
 
 			const transceivers = pc.getTransceivers();
-			const audioTransceiver = transceivers.find(
-				(t) => t.receiver.track.kind === "audio",
-			);
+			const audioTransceiver = transceivers.find((t) => t.receiver.track.kind === "audio");
 
 			if (audioTransceiver) {
 				const codecs = RTCRtpSender.getCapabilities("audio")?.codecs || [];
-				const opusCodec = codecs.find(
-					(c) => c.mimeType === "audio/opus" && c.clockRate === 48000,
-				);
+				const opusCodec = codecs.find((c) => c.mimeType === "audio/opus" && c.clockRate === 48000);
 
 				if (opusCodec) {
 					audioTransceiver.setCodecPreferences([opusCodec]);
@@ -315,9 +308,7 @@ export function useTranscription({
 								}
 							}, RETRY_DELAY);
 						} else {
-							toast.error(
-								"Failed to establish a stable connection after multiple attempts.",
-							);
+							toast.error("Failed to establish a stable connection after multiple attempts.");
 							stopTranscription(true);
 						}
 						break;
@@ -386,16 +377,12 @@ export function useTranscription({
 					if (processedDelta) {
 						const existingDelta = pendingDeltasRef.current.get(itemId) || "";
 						const needsSpace = existingDelta && !existingDelta.endsWith(" ");
-						const updatedDelta =
-							existingDelta + (needsSpace ? " " : "") + processedDelta;
+						const updatedDelta = existingDelta + (needsSpace ? " " : "") + processedDelta;
 						pendingDeltasRef.current.set(itemId, updatedDelta);
 
 						onTranscriptionReceived(processedDelta, true);
 					}
-				} else if (
-					type.endsWith(".completed") &&
-					typeof transcript === "string"
-				) {
+				} else if (type.endsWith(".completed") && typeof transcript === "string") {
 					lastProcessedItemsRef.current.add(itemId);
 
 					const hasPendingDelta = pendingDeltasRef.current.has(itemId);
@@ -403,17 +390,12 @@ export function useTranscription({
 						pendingDeltasRef.current.delete(itemId);
 					}
 
-					const processedText = processTranscriptText(
-						transcript,
-						transcriptBufferRef.current,
-					);
+					const processedText = processTranscriptText(transcript, transcriptBufferRef.current);
 
 					if (processedText) {
 						const needsSpace =
-							transcriptBufferRef.current &&
-							!transcriptBufferRef.current.endsWith(" ");
-						transcriptBufferRef.current +=
-							(needsSpace ? " " : "") + processedText;
+							transcriptBufferRef.current && !transcriptBufferRef.current.endsWith(" ");
+						transcriptBufferRef.current += (needsSpace ? " " : "") + processedText;
 
 						onTranscriptionReceived(processedText, false);
 					}
@@ -452,9 +434,7 @@ export function useTranscription({
 			await pc.setRemoteDescription({ type: "answer", sdp: answerSdp });
 		} catch (err) {
 			console.error("Error starting transcription:", err);
-			toast.error(
-				`Transcription error: ${err instanceof Error ? err.message : "Unknown error"}`,
-			);
+			toast.error(`Transcription error: ${err instanceof Error ? err.message : "Unknown error"}`);
 			stopTranscription(true);
 			setStatus("error");
 		}

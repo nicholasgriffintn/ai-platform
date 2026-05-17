@@ -53,9 +53,7 @@ export function ModelsList({
 	onInfoHoverEnd,
 }: ModelsListProps) {
 	const { trackFeatureUsage } = useTrackEvent();
-	const [selectedProvider, setSelectedProvider] = useState<string>(
-		FEATURED_PROVIDER_KEY,
-	);
+	const [selectedProvider, setSelectedProvider] = useState<string>(FEATURED_PROVIDER_KEY);
 
 	const handleModelSelect = (modelId: string, modelInfo: ModelConfigItem) => {
 		trackFeatureUsage("model_selected", {
@@ -72,9 +70,7 @@ export function ModelsList({
 		() =>
 			models
 				.filter((model) => featuredModelIds[model.id])
-				.sort((a, b) =>
-					getModelDisplayName(a).localeCompare(getModelDisplayName(b)),
-				),
+				.sort((a, b) => getModelDisplayName(a).localeCompare(getModelDisplayName(b))),
 		[models, featuredModelIds],
 	);
 
@@ -124,16 +120,14 @@ export function ModelsList({
 		if (providerExists) return;
 
 		const fallbackProvider =
-			providerEntries.find(
-				(providerEntry) => providerEntry.key === FEATURED_PROVIDER_KEY,
-			)?.key || providerEntries[0].key;
+			providerEntries.find((providerEntry) => providerEntry.key === FEATURED_PROVIDER_KEY)?.key ||
+			providerEntries[0].key;
 
 		setSelectedProvider(fallbackProvider);
 	}, [providerEntries, selectedProvider]);
 
 	const selectedProviderEntry =
-		providerEntries.find((entry) => entry.key === selectedProvider) ||
-		providerEntries[0];
+		providerEntries.find((entry) => entry.key === selectedProvider) || providerEntries[0];
 	const visibleModels = selectedProviderEntry?.models || [];
 
 	if (!providerEntries.length) {
@@ -153,8 +147,7 @@ export function ModelsList({
 					<div className="overflow-x-auto px-2 py-2 sm:flex-1 sm:overflow-x-hidden sm:overflow-y-auto sm:px-2">
 						<div className="flex gap-2 sm:space-y-1 sm:block">
 							{providerEntries.map((providerEntry) => {
-								const isFeaturedProvider =
-									providerEntry.key === FEATURED_PROVIDER_KEY;
+								const isFeaturedProvider = providerEntry.key === FEATURED_PROVIDER_KEY;
 								const isSelected = selectedProvider === providerEntry.key;
 								return (
 									<button
@@ -184,9 +177,7 @@ export function ModelsList({
 											/>
 										)}
 										<span className="line-clamp-1 min-w-0 flex-1 text-left sm:w-full sm:flex-none sm:text-center">
-											{isFeaturedProvider
-												? "Featured"
-												: providerEntry.label.split(" ")[0]}
+											{isFeaturedProvider ? "Featured" : providerEntry.label.split(" ")[0]}
 										</span>
 										<span className="rounded-full bg-zinc-200 px-1.5 py-0.5 text-[10px] text-zinc-700 dark:bg-zinc-700 dark:text-zinc-200">
 											{providerEntry.models.length}
@@ -217,8 +208,7 @@ export function ModelsList({
 						<fieldset role="listbox" aria-label="Available models">
 							<div className="space-y-1">
 								{visibleModels.map((modelItem) => {
-									const disabledOption =
-										isDisabled || (!isPro && !modelItem.isFree) || disabled;
+									const disabledOption = isDisabled || (!isPro && !modelItem.isFree) || disabled;
 									return (
 										<ModelOption
 											key={modelItem.id}

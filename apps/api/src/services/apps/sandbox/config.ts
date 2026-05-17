@@ -39,22 +39,14 @@ export function resolveSandboxTimeoutSeconds(
 	requestedTimeoutSeconds?: number,
 ): number {
 	const configuredDefault =
-		parsePositiveInteger(env?.SANDBOX_DEFAULT_TIMEOUT_SECONDS) ??
-		SANDBOX_TIMEOUT_DEFAULT_SECONDS;
+		parsePositiveInteger(env?.SANDBOX_DEFAULT_TIMEOUT_SECONDS) ?? SANDBOX_TIMEOUT_DEFAULT_SECONDS;
 	const configuredMax =
-		parsePositiveInteger(env?.SANDBOX_MAX_TIMEOUT_SECONDS) ??
-		SANDBOX_TIMEOUT_MAX_SECONDS;
+		parsePositiveInteger(env?.SANDBOX_MAX_TIMEOUT_SECONDS) ?? SANDBOX_TIMEOUT_MAX_SECONDS;
 
-	const maxTimeoutSeconds = Math.max(
-		SANDBOX_TIMEOUT_MIN_SECONDS,
-		configuredMax,
-	);
+	const maxTimeoutSeconds = Math.max(SANDBOX_TIMEOUT_MIN_SECONDS, configuredMax);
 	const requested = requestedTimeoutSeconds ?? configuredDefault;
 
-	return Math.max(
-		SANDBOX_TIMEOUT_MIN_SECONDS,
-		Math.min(requested, maxTimeoutSeconds),
-	);
+	return Math.max(SANDBOX_TIMEOUT_MIN_SECONDS, Math.min(requested, maxTimeoutSeconds));
 }
 
 export function buildSandboxTimeoutConfig(params: {
@@ -64,10 +56,7 @@ export function buildSandboxTimeoutConfig(params: {
 }): SandboxTimeoutConfig {
 	const { env, requestedTimeoutSeconds } = params;
 	const now = params.now ?? new Date();
-	const timeoutSeconds = resolveSandboxTimeoutSeconds(
-		env,
-		requestedTimeoutSeconds,
-	);
+	const timeoutSeconds = resolveSandboxTimeoutSeconds(env, requestedTimeoutSeconds);
 	const timeoutMs = timeoutSeconds * 1000;
 	const timeoutAt = new Date(now.getTime() + timeoutMs).toISOString();
 
@@ -82,11 +71,9 @@ export function resolveSandboxExecutionQuotaConfig(
 	env: IEnv | undefined,
 ): SandboxExecutionQuotaConfig {
 	const maxConcurrentRuns =
-		parsePositiveInteger(env?.SANDBOX_MAX_CONCURRENT_RUNS) ??
-		DEFAULT_MAX_CONCURRENT_RUNS;
+		parsePositiveInteger(env?.SANDBOX_MAX_CONCURRENT_RUNS) ?? DEFAULT_MAX_CONCURRENT_RUNS;
 	const maxRunsPerDay =
-		parsePositiveInteger(env?.SANDBOX_MAX_RUNS_PER_DAY) ??
-		DEFAULT_MAX_RUNS_PER_DAY;
+		parsePositiveInteger(env?.SANDBOX_MAX_RUNS_PER_DAY) ?? DEFAULT_MAX_RUNS_PER_DAY;
 	const maxRunStartsPerMinute =
 		parsePositiveInteger(env?.SANDBOX_MAX_RUN_STARTS_PER_MINUTE) ??
 		DEFAULT_MAX_RUN_STARTS_PER_MINUTE;

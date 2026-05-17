@@ -180,9 +180,7 @@ export class KeywordFilter {
 		],
 	};
 
-	private static flattenKeywords(
-		keywordObj: Record<string, string[]>,
-	): string[] {
+	private static flattenKeywords(keywordObj: Record<string, string[]>): string[] {
 		return Object.values(keywordObj).flat();
 	}
 
@@ -250,9 +248,7 @@ export class KeywordFilter {
 
 	private hasPartialMatch(word: string): boolean {
 		for (const keyword of this.filter) {
-			if (
-				this.calculateSimilarity(word, keyword) >= this.partialMatchThreshold
-			) {
+			if (this.calculateSimilarity(word, keyword) >= this.partialMatchThreshold) {
 				return true;
 			}
 		}
@@ -267,10 +263,7 @@ export class KeywordFilter {
 			return 1.0;
 		}
 
-		return (
-			(longer.length - this.levenshteinDistance(longer, shorter)) /
-			longer.length
-		);
+		return (longer.length - this.levenshteinDistance(longer, shorter)) / longer.length;
 	}
 
 	private levenshteinDistance(str1: string, str2: string): number {
@@ -307,28 +300,14 @@ export class KeywordFilter {
 	}
 
 	private findKeywordCategory(word: string): string | null {
-		for (const [category, keywords] of Object.entries(
-			KeywordFilter.CODING_KEYWORDS,
-		)) {
-			if (
-				keywords.some(
-					(k) =>
-						this.calculateSimilarity(word, k) >= this.partialMatchThreshold,
-				)
-			) {
+		for (const [category, keywords] of Object.entries(KeywordFilter.CODING_KEYWORDS)) {
+			if (keywords.some((k) => this.calculateSimilarity(word, k) >= this.partialMatchThreshold)) {
 				return `coding_${category}`;
 			}
 		}
 
-		for (const [category, keywords] of Object.entries(
-			KeywordFilter.MATH_KEYWORDS,
-		)) {
-			if (
-				keywords.some(
-					(k) =>
-						this.calculateSimilarity(word, k) >= this.partialMatchThreshold,
-				)
-			) {
+		for (const [category, keywords] of Object.entries(KeywordFilter.MATH_KEYWORDS)) {
+			if (keywords.some((k) => this.calculateSimilarity(word, k) >= this.partialMatchThreshold)) {
 				return `math_${category}`;
 			}
 		}

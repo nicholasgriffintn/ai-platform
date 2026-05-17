@@ -177,9 +177,7 @@ describe("selectModels", () => {
 		});
 
 		it("should handle different attachment types", async () => {
-			const attachmentsWithImage = [
-				{ type: "image", data: "base64data" },
-			] as any;
+			const attachmentsWithImage = [{ type: "image", data: "base64data" }] as any;
 			const selectedModel = "vision-model";
 			mockModelRouter.selectModel.mockResolvedValue(selectedModel);
 

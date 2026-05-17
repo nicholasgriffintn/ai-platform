@@ -46,10 +46,7 @@ export async function generateJwtToken(
 		});
 	} catch (error) {
 		logger.error("Error generating JWT token:", { error });
-		throw new AssistantError(
-			"Failed to generate authentication token",
-			ErrorType.UNKNOWN_ERROR,
-		);
+		throw new AssistantError("Failed to generate authentication token", ErrorType.UNKNOWN_ERROR);
 	}
 }
 
@@ -59,10 +56,7 @@ export async function generateJwtToken(
  * @param secret - The secret key to use for the token
  * @returns The decoded JWT payload
  */
-export async function verifyJwtToken(
-	token: string,
-	secret: string,
-): Promise<JwtData> {
+export async function verifyJwtToken(token: string, secret: string): Promise<JwtData> {
 	const invalidTokenError = () =>
 		new AssistantError(
 			"Invalid or expired authentication token",
@@ -79,10 +73,7 @@ export async function verifyJwtToken(
 		}
 		return decoded as JwtData;
 	} catch (error) {
-		if (
-			error instanceof AssistantError &&
-			error.type === ErrorType.AUTHENTICATION_ERROR
-		) {
+		if (error instanceof AssistantError && error.type === ErrorType.AUTHENTICATION_ERROR) {
 			throw invalidTokenError();
 		}
 
@@ -115,9 +106,6 @@ export async function getUserByJwtToken(
 		}
 
 		logger.error("Error getting user by JWT token:", { error });
-		throw new AssistantError(
-			"Failed to retrieve user from token",
-			ErrorType.UNKNOWN_ERROR,
-		);
+		throw new AssistantError("Failed to retrieve user from token", ErrorType.UNKNOWN_ERROR);
 	}
 }

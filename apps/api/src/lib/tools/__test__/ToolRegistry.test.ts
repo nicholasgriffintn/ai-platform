@@ -54,10 +54,7 @@ describe("ToolRegistry", () => {
 		});
 
 		const definitions = registry.listDefinitions("functions");
-		expect(definitions.map((tool) => tool.name).sort()).toEqual([
-			"get_weather",
-			"web_search",
-		]);
+		expect(definitions.map((tool) => tool.name).sort()).toEqual(["get_weather", "web_search"]);
 	});
 
 	it("resolves aliases to the registered tool", () => {

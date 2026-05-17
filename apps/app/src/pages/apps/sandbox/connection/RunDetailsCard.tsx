@@ -35,22 +35,16 @@ export function RunDetailsCard({
 		<Card>
 			<CardHeader>
 				<CardTitle>Selected run details</CardTitle>
-				<CardDescription>
-					Review summary, branch, and output from the selected run.
-				</CardDescription>
+				<CardDescription>Review summary, branch, and output from the selected run.</CardDescription>
 			</CardHeader>
 			<CardContent>
 				{isSelectedRunLoading && targetRunId ? (
-					<div className="text-sm text-muted-foreground">
-						Loading run details...
-					</div>
+					<div className="text-sm text-muted-foreground">Loading run details...</div>
 				) : selectedRunError ? (
 					<Alert variant="destructive">
 						<AlertTitle>Unable to load selected run</AlertTitle>
 						<AlertDescription>
-							{selectedRunError instanceof Error
-								? selectedRunError.message
-								: "Unknown error"}
+							{selectedRunError instanceof Error ? selectedRunError.message : "Unknown error"}
 						</AlertDescription>
 					</Alert>
 				) : selectedRun ? (
@@ -59,30 +53,23 @@ export function RunDetailsCard({
 							<Badge variant={getStatusBadgeVariant(selectedRun.status)}>
 								{selectedRun.status}
 							</Badge>
-							<span className="text-xs text-muted-foreground">
-								Run {selectedRun.runId}
-							</span>
+							<span className="text-xs text-muted-foreground">Run {selectedRun.runId}</span>
 						</div>
-						<p className="text-muted-foreground">
-							{summariseRunResult(selectedRun)}
-						</p>
+						<p className="text-muted-foreground">{summariseRunResult(selectedRun)}</p>
 						<p>
 							<span className="font-medium">Prompt strategy:</span>{" "}
 							{getSandboxPromptStrategyLabel(selectedRun.promptStrategy)}
 						</p>
 						{typeof selectedRun.timeoutSeconds === "number" && (
 							<p>
-								<span className="font-medium">Timeout:</span>{" "}
-								{selectedRun.timeoutSeconds}s
+								<span className="font-medium">Timeout:</span> {selectedRun.timeoutSeconds}s
 							</p>
 						)}
-						{selectedRun.status === "paused" &&
-							typeof selectedRun.pauseReason === "string" && (
-								<p>
-									<span className="font-medium">Pause reason:</span>{" "}
-									{selectedRun.pauseReason}
-								</p>
-							)}
+						{selectedRun.status === "paused" && typeof selectedRun.pauseReason === "string" && (
+							<p>
+								<span className="font-medium">Pause reason:</span> {selectedRun.pauseReason}
+							</p>
+						)}
 						{selectedRun.status === "cancelled" &&
 							typeof selectedRun.cancellationReason === "string" && (
 								<p>
@@ -92,66 +79,53 @@ export function RunDetailsCard({
 							)}
 						{typeof selectedRun.result?.branchName === "string" && (
 							<p>
-								<span className="font-medium">Branch:</span>{" "}
-								{selectedRun.result.branchName}
+								<span className="font-medium">Branch:</span> {selectedRun.result.branchName}
 							</p>
 						)}
-						{typeof selectedRun.result?.diff === "string" &&
-							selectedRun.result.diff.trim() && (
-								<div>
-									<div className="mb-1 flex items-center justify-between gap-2">
-										<p className="flex items-center gap-2 font-medium">
-											<TerminalSquare className="h-4 w-4" />
-											Diff
-										</p>
-										<Button
-											variant="ghost"
-											size="sm"
-											className="h-7 gap-1 text-xs"
-											onClick={() =>
-												copyToClipboard(
-													selectedRun.result?.diff as string,
-													"Diff",
-												)
-											}
-										>
-											<Copy className="h-3 w-3" />
-											Copy
-										</Button>
-									</div>
-									<pre className="max-h-56 overflow-auto rounded-md bg-zinc-900 p-3 text-xs text-zinc-100">
-										{selectedRun.result.diff}
-									</pre>
+						{typeof selectedRun.result?.diff === "string" && selectedRun.result.diff.trim() && (
+							<div>
+								<div className="mb-1 flex items-center justify-between gap-2">
+									<p className="flex items-center gap-2 font-medium">
+										<TerminalSquare className="h-4 w-4" />
+										Diff
+									</p>
+									<Button
+										variant="ghost"
+										size="sm"
+										className="h-7 gap-1 text-xs"
+										onClick={() => copyToClipboard(selectedRun.result?.diff as string, "Diff")}
+									>
+										<Copy className="h-3 w-3" />
+										Copy
+									</Button>
 								</div>
-							)}
-						{typeof selectedRun.result?.logs === "string" &&
-							selectedRun.result.logs.trim() && (
-								<div>
-									<div className="mb-1 flex items-center justify-between gap-2">
-										<p className="flex items-center gap-2 font-medium">
-											<CheckCircle2 className="h-4 w-4" />
-											Logs
-										</p>
-										<Button
-											variant="ghost"
-											size="sm"
-											className="h-7 gap-1 text-xs"
-											onClick={() =>
-												copyToClipboard(
-													selectedRun.result?.logs as string,
-													"Logs",
-												)
-											}
-										>
-											<Copy className="h-3 w-3" />
-											Copy
-										</Button>
-									</div>
-									<pre className="max-h-56 overflow-auto rounded-md bg-zinc-900 p-3 text-xs text-zinc-100">
-										{selectedRun.result.logs}
-									</pre>
+								<pre className="max-h-56 overflow-auto rounded-md bg-zinc-900 p-3 text-xs text-zinc-100">
+									{selectedRun.result.diff}
+								</pre>
+							</div>
+						)}
+						{typeof selectedRun.result?.logs === "string" && selectedRun.result.logs.trim() && (
+							<div>
+								<div className="mb-1 flex items-center justify-between gap-2">
+									<p className="flex items-center gap-2 font-medium">
+										<CheckCircle2 className="h-4 w-4" />
+										Logs
+									</p>
+									<Button
+										variant="ghost"
+										size="sm"
+										className="h-7 gap-1 text-xs"
+										onClick={() => copyToClipboard(selectedRun.result?.logs as string, "Logs")}
+									>
+										<Copy className="h-3 w-3" />
+										Copy
+									</Button>
 								</div>
-							)}
+								<pre className="max-h-56 overflow-auto rounded-md bg-zinc-900 p-3 text-xs text-zinc-100">
+									{selectedRun.result.logs}
+								</pre>
+							</div>
+						)}
 					</div>
 				) : (
 					<div className="text-sm text-muted-foreground">

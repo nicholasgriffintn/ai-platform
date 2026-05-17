@@ -93,14 +93,9 @@ describe("TeamDelegation", () => {
 			mockAgentRepository.getAgentById.mockResolvedValue(targetAgent);
 			(getAIResponse as any).mockResolvedValue(mockResponse);
 
-			const result = await teamDelegation.callAgent(
-				"target-agent-id",
-				messages,
-			);
+			const result = await teamDelegation.callAgent("target-agent-id", messages);
 
-			expect(mockAgentRepository.getAgentById).toHaveBeenCalledWith(
-				"target-agent-id",
-			);
+			expect(mockAgentRepository.getAgentById).toHaveBeenCalledWith("target-agent-id");
 			expect(getAIResponse).toHaveBeenCalledWith({
 				env: mockEnv,
 				user: mockUser,
@@ -111,17 +106,15 @@ describe("TeamDelegation", () => {
 				stream: false,
 				mode: "agent",
 			});
-			expect(result).toEqual([
-				{ role: "assistant", content: "Task completed successfully" },
-			]);
+			expect(result).toEqual([{ role: "assistant", content: "Task completed successfully" }]);
 		});
 
 		it("should throw error when agent not found", async () => {
 			mockAgentRepository.getAgentById.mockResolvedValue(null);
 
-			await expect(
-				teamDelegation.callAgent("nonexistent-agent", []),
-			).rejects.toThrow("Target agent 'nonexistent-agent' not found");
+			await expect(teamDelegation.callAgent("nonexistent-agent", [])).rejects.toThrow(
+				"Target agent 'nonexistent-agent' not found",
+			);
 		});
 
 		it("should throw error when agent is not on same team", async () => {
@@ -134,9 +127,9 @@ describe("TeamDelegation", () => {
 
 			mockAgentRepository.getAgentById.mockResolvedValue(targetAgent);
 
-			await expect(
-				teamDelegation.callAgent("target-agent-id", []),
-			).rejects.toThrow("Team mismatch: Agent 'Target Agent'");
+			await expect(teamDelegation.callAgent("target-agent-id", [])).rejects.toThrow(
+				"Team mismatch: Agent 'Target Agent'",
+			);
 		});
 
 		it("should detect circular delegation", async () => {
@@ -149,9 +142,7 @@ describe("TeamDelegation", () => {
 
 			mockAgentRepository.getAgentById.mockResolvedValue(targetAgent);
 
-			await expect(
-				teamDelegation.callAgent("current-agent-id", []),
-			).rejects.toThrow(
+			await expect(teamDelegation.callAgent("current-agent-id", [])).rejects.toThrow(
 				"Circular delegation detected: current-agent-id -> current-agent-id",
 			);
 		});
@@ -174,9 +165,9 @@ describe("TeamDelegation", () => {
 
 			mockAgentRepository.getAgentById.mockResolvedValue(targetAgent);
 
-			await expect(
-				teamDelegationWithStack.callAgent("target-agent-id", []),
-			).rejects.toThrow("Maximum delegation depth of 5 exceeded");
+			await expect(teamDelegationWithStack.callAgent("target-agent-id", [])).rejects.toThrow(
+				"Maximum delegation depth of 5 exceeded",
+			);
 		});
 	});
 
@@ -201,10 +192,7 @@ describe("TeamDelegation", () => {
 
 			const result = await teamDelegation.getTeamMembers();
 
-			expect(mockAgentRepository.getAgentsByTeamAndUser).toHaveBeenCalledWith(
-				"team-1",
-				1,
-			);
+			expect(mockAgentRepository.getAgentsByTeamAndUser).toHaveBeenCalledWith("team-1", 1);
 			expect(result).toHaveLength(2);
 			expect(result).not.toContain(teamMembers[0]); // Current agent should be excluded
 			expect(result[0].id).toBe("team-member-1");

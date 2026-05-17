@@ -72,12 +72,7 @@ export function PageShell({
 					{children}
 				</>
 			) : (
-				<div
-					className={cn(
-						"container mx-auto px-4 py-8 overflow-y-auto",
-						className,
-					)}
-				>
+				<div className={cn("container mx-auto px-4 py-8 overflow-y-auto", className)}>
 					{header}
 					{children}
 				</div>

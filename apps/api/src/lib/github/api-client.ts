@@ -23,9 +23,7 @@ export async function githubApiRequest(params: {
 
 	if (!response.ok) {
 		const errorText = await response.text();
-		throw new Error(
-			`GitHub API error (${response.status}): ${errorText.slice(0, 500)}`,
-		);
+		throw new Error(`GitHub API error (${response.status}): ${errorText.slice(0, 500)}`);
 	}
 
 	return response;

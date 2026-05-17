@@ -49,15 +49,9 @@ export const loggerMiddleware = async (c: Context, next: Next) => {
 		};
 
 		if (c.res.status >= 500) {
-			logger.error(
-				`Request completed with server error: ${method} ${url}`,
-				responseContext,
-			);
+			logger.error(`Request completed with server error: ${method} ${url}`, responseContext);
 		} else if (c.res.status >= 400) {
-			logger.warn(
-				`Request completed with client error: ${method} ${url}`,
-				responseContext,
-			);
+			logger.warn(`Request completed with client error: ${method} ${url}`, responseContext);
 		} else if (duration > 5000) {
 			logger.warn(`Slow request completed: ${method} ${url}`, responseContext);
 		} else {
@@ -73,10 +67,7 @@ export const loggerMiddleware = async (c: Context, next: Next) => {
 			duration: `${duration / 1000}s`,
 			userId,
 			userAgent,
-			stack:
-				error instanceof Error
-					? error.stack?.substring(0, 1000)
-					: "No stack trace",
+			stack: error instanceof Error ? error.stack?.substring(0, 1000) : "No stack trace",
 		};
 
 		logger.error(`Request failed: ${method} ${url}`, errorContext);

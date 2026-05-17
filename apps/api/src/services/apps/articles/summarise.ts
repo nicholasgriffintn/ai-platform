@@ -5,10 +5,7 @@ import {
 } from "~/lib/providers/models";
 import { summariseArticlePrompt } from "~/lib/prompts";
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
-import {
-	createServiceContext,
-	type ServiceContext,
-} from "~/lib/context/serviceContext";
+import { createServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
 import type { IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { extractQuotes } from "~/utils/extract";
@@ -52,10 +49,7 @@ export async function summariseArticle({
 		throw new AssistantError("Item ID is required", ErrorType.PARAMS_ERROR);
 	}
 	if (!args.article) {
-		throw new AssistantError(
-			"Article content is required",
-			ErrorType.PARAMS_ERROR,
-		);
+		throw new AssistantError("Article content is required", ErrorType.PARAMS_ERROR);
 	}
 
 	const sanitisedArticle = sanitiseInput(args.article);
@@ -71,14 +65,13 @@ export async function summariseArticle({
 				: null);
 
 		if (!serviceContext) {
-			throw new AssistantError(
-				"Service context is required",
-				ErrorType.CONFIGURATION_ERROR,
-			);
+			throw new AssistantError("Service context is required", ErrorType.CONFIGURATION_ERROR);
 		}
 
-		const { model: modelToUse, provider: providerToUse } =
-			await getAuxiliaryModelForRetrieval(serviceContext.env, user);
+		const { model: modelToUse, provider: providerToUse } = await getAuxiliaryModelForRetrieval(
+			serviceContext.env,
+			user,
+		);
 		const modelConfig = await getModelConfigByMatchingModel(modelToUse);
 		const provider = getChatProvider(providerToUse, {
 			env: serviceContext.env,
@@ -102,14 +95,10 @@ export async function summariseArticle({
 			user,
 		});
 
-		const summaryGenDataContent =
-			summaryGenData.content || summaryGenData.response;
+		const summaryGenDataContent = summaryGenData.content || summaryGenData.response;
 
 		if (!summaryGenDataContent) {
-			throw new AssistantError(
-				"Summary content was empty",
-				ErrorType.PARAMS_ERROR,
-			);
+			throw new AssistantError("Summary content was empty", ErrorType.PARAMS_ERROR);
 		}
 
 		const quotes = extractQuotes(summaryGenDataContent);
@@ -174,17 +163,7 @@ export const cleanupArticleSession = async (
 	context.ensureDatabase();
 	const appDataRepo = context.repositories.appData;
 
-	await appDataRepo.deleteAppDataByUserAppAndItem(
-		userId,
-		"articles",
-		itemId,
-		"analysis",
-	);
+	await appDataRepo.deleteAppDataByUserAppAndItem(userId, "articles", itemId, "analysis");
 
-	await appDataRepo.deleteAppDataByUserAppAndItem(
-		userId,
-		"articles",
-		itemId,
-		"summary",
-	);
+	await appDataRepo.deleteAppDataByUserAppAndItem(userId, "articles", itemId, "summary");
 };

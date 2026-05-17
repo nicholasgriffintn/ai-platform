@@ -46,10 +46,7 @@ export class WebAuthnRepository extends BaseRepository {
 			}
 		} catch (error) {
 			logger.error("Error in createChallenge:", { error });
-			throw new AssistantError(
-				"Failed to create challenge",
-				ErrorType.DATABASE_ERROR,
-			);
+			throw new AssistantError("Failed to create challenge", ErrorType.DATABASE_ERROR);
 		}
 	}
 
@@ -70,9 +67,7 @@ export class WebAuthnRepository extends BaseRepository {
 		return this.runQuery<{ challenge: string }>(query, params, true);
 	}
 
-	public async getChallengeByUserId(
-		userId: number,
-	): Promise<{ challenge: string } | null> {
+	public async getChallengeByUserId(userId: number): Promise<{ challenge: string } | null> {
 		return this.runQuery<{ challenge: string }>(
 			`SELECT challenge FROM webauthn_challenge 
        WHERE user_id = ? AND expires_at > datetime('now')
@@ -82,19 +77,13 @@ export class WebAuthnRepository extends BaseRepository {
 		);
 	}
 
-	public async deleteChallenge(
-		challenge: string,
-		userId?: number,
-	): Promise<void> {
+	public async deleteChallenge(challenge: string, userId?: number): Promise<void> {
 		const conditions: Record<string, unknown> = { challenge };
 		if (userId) {
 			conditions.user_id = userId;
 		}
 
-		const { query, values } = this.buildDeleteQuery(
-			"webauthn_challenge",
-			conditions,
-		);
+		const { query, values } = this.buildDeleteQuery("webauthn_challenge", conditions);
 		await this.executeRun(query, values);
 	}
 
@@ -135,9 +124,7 @@ export class WebAuthnRepository extends BaseRepository {
 		}
 	}
 
-	public async getPasskeysByUserId(
-		userId: number,
-	): Promise<Record<string, unknown>[]> {
+	public async getPasskeysByUserId(userId: number): Promise<Record<string, unknown>[]> {
 		const { query, values } = this.buildSelectQuery("passkey", {
 			user_id: userId,
 		});
@@ -157,17 +144,10 @@ export class WebAuthnRepository extends BaseRepository {
 		);
 	}
 
-	public async updatePasskeyCounter(
-		credentialId: string,
-		counter: number,
-	): Promise<void> {
-		const update = this.buildUpdateQuery(
-			"passkey",
-			{ counter },
-			["counter"],
-			"credential_id = ?",
-			[credentialId],
-		);
+	public async updatePasskeyCounter(credentialId: string, counter: number): Promise<void> {
+		const update = this.buildUpdateQuery("passkey", { counter }, ["counter"], "credential_id = ?", [
+			credentialId,
+		]);
 
 		if (!update) {
 			return;
@@ -181,10 +161,7 @@ export class WebAuthnRepository extends BaseRepository {
 		await this.executeRun(queryWithTimestamp, update.values);
 	}
 
-	public async deletePasskey(
-		passkeyId: number,
-		userId: number,
-	): Promise<boolean> {
+	public async deletePasskey(passkeyId: number, userId: number): Promise<boolean> {
 		try {
 			const { query, values } = this.buildDeleteQuery("passkey", {
 				id: passkeyId,

@@ -12,14 +12,8 @@ import {
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import { requirePlan } from "~/middleware/requirePlan";
 import { ResponseFactory } from "~/lib/http/ResponseFactory";
-import {
-	type IDeleteEmbeddingRequest,
-	deleteEmbedding,
-} from "~/services/apps/embeddings/delete";
-import {
-	type IInsertEmbeddingRequest,
-	insertEmbedding,
-} from "~/services/apps/embeddings/insert";
+import { type IDeleteEmbeddingRequest, deleteEmbedding } from "~/services/apps/embeddings/delete";
+import { type IInsertEmbeddingRequest, insertEmbedding } from "~/services/apps/embeddings/insert";
 import { queryEmbeddings } from "~/services/apps/embeddings/query";
 import type { IEnv } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -50,9 +44,7 @@ addRoute(app, "post", "/insert", {
 	middleware: [requirePlan("pro")],
 	handler: async ({ raw }) =>
 		(async (context: Context) => {
-			const body = context.req.valid(
-				"json" as never,
-			) as IInsertEmbeddingRequest["request"];
+			const body = context.req.valid("json" as never) as IInsertEmbeddingRequest["request"];
 			const user = context.get("user");
 
 			const response = await insertEmbedding({
@@ -125,9 +117,7 @@ addRoute(app, "post", "/delete", {
 	middleware: [requirePlan("pro")],
 	handler: async ({ raw }) =>
 		(async (context: Context) => {
-			const body = context.req.valid(
-				"json" as never,
-			) as IDeleteEmbeddingRequest["request"];
+			const body = context.req.valid("json" as never) as IDeleteEmbeddingRequest["request"];
 			const user = context.get("user");
 			const response = await deleteEmbedding({
 				env: context.env as IEnv,

@@ -54,13 +54,7 @@ export function ArtifactSandbox({
 		case "svg":
 		case "image/svg+xml":
 		case "application/vnd.svg":
-			return (
-				<SvgSandbox
-					code={code}
-					setPreviewError={setPreviewError}
-					iframeKey={iframeKey}
-				/>
-			);
+			return <SvgSandbox code={code} setPreviewError={setPreviewError} iframeKey={iframeKey} />;
 
 		case "javascript":
 		case "js":

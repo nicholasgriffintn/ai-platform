@@ -11,12 +11,7 @@ export const handleCreateMemoryGroup = async (
 
 	const repository = context.repositories.memories;
 
-	const group = await repository.createMemoryGroup(
-		user.id,
-		title,
-		description,
-		category,
-	);
+	const group = await repository.createMemoryGroup(user.id, title, description, category);
 
 	return group;
 };

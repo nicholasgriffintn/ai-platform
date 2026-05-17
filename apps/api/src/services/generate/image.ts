@@ -1,10 +1,7 @@
 import { sanitiseInput } from "~/lib/chat/utils";
 import { type imagePrompts } from "~/lib/prompts/image";
 import { getImageProvider } from "~/lib/providers/capabilities/image";
-import {
-	resolveServiceContext,
-	type ServiceContext,
-} from "~/lib/context/serviceContext";
+import { resolveServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
 import { getModelConfigByModel } from "~/lib/providers/models";
 import type { IEnv, IUser } from "~/types";
 
@@ -73,8 +70,7 @@ export async function generateImage({
 
 		const sanitisedPrompt = sanitiseInput(args.prompt);
 
-		const diffusionSteps =
-			args.steps === undefined || args.steps === 0 ? 4 : args.steps;
+		const diffusionSteps = args.steps === undefined || args.steps === 0 ? 4 : args.steps;
 
 		if (diffusionSteps < 1 || diffusionSteps > 8) {
 			return {
@@ -133,8 +129,7 @@ export async function generateImage({
 		return {
 			status: "error",
 			name: "create_image",
-			content:
-				error instanceof Error ? error.message : "Failed to generate image",
+			content: error instanceof Error ? error.message : "Failed to generate image",
 			data: {},
 		};
 	}

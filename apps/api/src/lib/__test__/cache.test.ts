@@ -60,11 +60,9 @@ describe("KVCache", () => {
 			const result = await cache.set("test-key", testData);
 
 			expect(result).toBe(true);
-			expect(mockKV.put).toHaveBeenCalledWith(
-				"test-key",
-				JSON.stringify(testData),
-				{ expirationTtl: 3600 },
-			);
+			expect(mockKV.put).toHaveBeenCalledWith("test-key", JSON.stringify(testData), {
+				expirationTtl: 3600,
+			});
 		});
 
 		it("should store value with custom TTL", async () => {
@@ -74,11 +72,9 @@ describe("KVCache", () => {
 			const result = await cache.set("test-key", testData, { ttl: 1800 });
 
 			expect(result).toBe(true);
-			expect(mockKV.put).toHaveBeenCalledWith(
-				"test-key",
-				JSON.stringify(testData),
-				{ expirationTtl: 1800 },
-			);
+			expect(mockKV.put).toHaveBeenCalledWith("test-key", JSON.stringify(testData), {
+				expirationTtl: 1800,
+			});
 		});
 
 		it("should return false when KV operation fails", async () => {
@@ -171,11 +167,9 @@ describe("KVCache", () => {
 
 			expect(result).toEqual(freshData);
 			expect(queryFn).toHaveBeenCalled();
-			expect(mockKV.put).toHaveBeenCalledWith(
-				"cache-key",
-				JSON.stringify(freshData),
-				{ expirationTtl: 3600 },
-			);
+			expect(mockKV.put).toHaveBeenCalledWith("cache-key", JSON.stringify(freshData), {
+				expirationTtl: 3600,
+			});
 		});
 
 		it("should not cache null results when skipIfNull is true", async () => {
@@ -210,9 +204,7 @@ describe("KVCache", () => {
 
 			expect(result).toBe(true);
 			expect(mockKV.delete).toHaveBeenCalledWith("user-models:user-123");
-			expect(mockKV.delete).toHaveBeenCalledWith(
-				"user-provider-settings:user-123",
-			);
+			expect(mockKV.delete).toHaveBeenCalledWith("user-provider-settings:user-123");
 		});
 
 		it("should return false when deletion fails", async () => {

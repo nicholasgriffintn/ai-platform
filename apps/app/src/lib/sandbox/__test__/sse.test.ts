@@ -35,12 +35,9 @@ describe("parseSseBuffer", () => {
 
 	it("supports multiline data payloads", () => {
 		const onEvent = vi.fn();
-		parseSseBuffer<{ message: string }>(
-			`data: {"message":"line 1\\n` + `line 2"}\n\n`,
-			{
-				onEvent,
-			},
-		);
+		parseSseBuffer<{ message: string }>(`data: {"message":"line 1\\n` + `line 2"}\n\n`, {
+			onEvent,
+		});
 
 		expect(onEvent).toHaveBeenCalledWith({
 			message: "line 1\nline 2",

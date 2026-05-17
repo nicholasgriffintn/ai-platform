@@ -29,11 +29,7 @@ export function useApiKeys() {
 		staleTime: 1000 * 60 * 5, // Cache for 5 minutes
 	});
 
-	const createApiKeyMutation = useMutation<
-		NewApiKeyResponse,
-		Error,
-		{ name?: string }
-	>({
+	const createApiKeyMutation = useMutation<NewApiKeyResponse, Error, { name?: string }>({
 		mutationFn: ({ name }) => apiService.createApiKey(name),
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: API_KEY_QUERY_KEYS.all });

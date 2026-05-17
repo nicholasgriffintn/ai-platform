@@ -10,10 +10,7 @@ export function requirePlan(requiredPlan: PlanType) {
 		const user = context.get("user") as IUser | undefined;
 
 		if (!user?.id) {
-			throw new AssistantError(
-				"User not authenticated",
-				ErrorType.AUTHENTICATION_ERROR,
-			);
+			throw new AssistantError("User not authenticated", ErrorType.AUTHENTICATION_ERROR);
 		}
 
 		if (user.plan_id !== requiredPlan) {

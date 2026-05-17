@@ -1,10 +1,5 @@
 export type CanvasMode = "image" | "video";
-export type CanvasGenerationStatus =
-	| "queued"
-	| "processing"
-	| "succeeded"
-	| "completed"
-	| "failed";
+export type CanvasGenerationStatus = "queued" | "processing" | "succeeded" | "completed" | "failed";
 
 export interface CanvasInputField {
 	name: string;

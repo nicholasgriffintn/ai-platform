@@ -1,8 +1,5 @@
 import type { ChatCompletionParameters } from "~/types";
-import {
-	getAiGatewayMetadataHeaders,
-	resolveAiGatewayCacheTtl,
-} from "~/utils/aiGateway";
+import { getAiGatewayMetadataHeaders, resolveAiGatewayCacheTtl } from "~/utils/aiGateway";
 import { BaseProvider } from "./base";
 
 export class ParallelProvider extends BaseProvider {
@@ -23,9 +20,7 @@ export class ParallelProvider extends BaseProvider {
 		return "chat/completions";
 	}
 
-	protected async getHeaders(
-		params: ChatCompletionParameters,
-	): Promise<Record<string, string>> {
+	protected async getHeaders(params: ChatCompletionParameters): Promise<Record<string, string>> {
 		const apiKey = await this.getApiKey(params, params.user?.id);
 		return {
 			"cf-aig-authorization": params.env.AI_GATEWAY_TOKEN || "",

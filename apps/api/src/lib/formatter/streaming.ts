@@ -51,10 +51,7 @@ export class StreamingFormatter {
 		}
 
 		// Anthropic like text_delta format in content_block_delta
-		if (
-			currentEventType === "content_block_delta" &&
-			data.delta?.type === "text_delta"
-		) {
+		if (currentEventType === "content_block_delta" && data.delta?.type === "text_delta") {
 			return data.delta.text || "";
 		}
 
@@ -159,10 +156,7 @@ export class StreamingFormatter {
 		}
 
 		// Anthropic-like tool_use blocks
-		if (
-			currentEventType === "content_block_start" &&
-			data.content_block?.type === "tool_use"
-		) {
+		if (currentEventType === "content_block_start" && data.content_block?.type === "tool_use") {
 			return {
 				format: "anthropic",
 				id: data.content_block.id,
@@ -232,8 +226,7 @@ export class StreamingFormatter {
 		}
 
 		// Google format
-		const googleFinishReason =
-			data.candidates?.[0]?.finishReason?.toLowerCase();
+		const googleFinishReason = data.candidates?.[0]?.finishReason?.toLowerCase();
 		if (googleFinishReason === "stop" || googleFinishReason === "length") {
 			return true;
 		}

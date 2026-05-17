@@ -15,18 +15,13 @@ export function processCustomXmlTags(text: string): string {
 	});
 
 	const xmlTagRegex = /<([A-Za-z][\w-]*)\b[^>]*>([\s\S]*?)<\/\1>/g;
-	const processed = textNoFences.replace(
-		xmlTagRegex,
-		(_match, tagName, inner) => {
-			const title = tagName
-				.split(/[_-]/)
-				.map(
-					(w: string) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase(),
-				)
-				.join(" ");
-			return `**${title}**\n\n${inner}\n\n`;
-		},
-	);
+	const processed = textNoFences.replace(xmlTagRegex, (_match, tagName, inner) => {
+		const title = tagName
+			.split(/[_-]/)
+			.map((w: string) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+			.join(" ");
+		return `**${title}**\n\n${inner}\n\n`;
+	});
 
 	let result = processed;
 	fences.forEach((fence, i) => {
@@ -41,20 +36,15 @@ export function processCustomXmlTags(text: string): string {
  * Determines if a collection of artifacts can be combined (displayed together)
  * Currently checks if there are both JSX/JavaScript and CSS artifacts
  */
-export function canCombineArtifacts(
-	artifacts: Array<{ language?: string }>,
-): boolean {
+export function canCombineArtifacts(artifacts: Array<{ language?: string }>): boolean {
 	if (artifacts.length < 2) return false;
 
 	const hasJsx = artifacts.some(
 		(a) =>
-			a.language?.toLowerCase().includes("jsx") ||
-			a.language?.toLowerCase().includes("javascript"),
+			a.language?.toLowerCase().includes("jsx") || a.language?.toLowerCase().includes("javascript"),
 	);
 
-	const hasCss = artifacts.some((a) =>
-		a.language?.toLowerCase().includes("css"),
-	);
+	const hasCss = artifacts.some((a) => a.language?.toLowerCase().includes("css"));
 
 	return hasJsx && hasCss;
 }

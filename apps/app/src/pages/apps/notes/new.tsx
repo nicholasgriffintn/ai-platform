@@ -7,10 +7,7 @@ import { useCreateNote, useUpdateNote } from "~/hooks/useNotes";
 import { cn } from "~/lib/utils";
 
 export function meta() {
-	return [
-		{ title: "New Note - Polychat" },
-		{ name: "description", content: "Create a new note" },
-	];
+	return [{ title: "New Note - Polychat" }, { name: "description", content: "Create a new note" }];
 }
 
 export default function NewNotePage() {
@@ -62,15 +59,9 @@ export default function NewNotePage() {
 		<PageShell
 			sidebarContent={<AppsSidebarContent />}
 			fullBleed={isFullBleed}
-			bgClassName={
-				themeMode === "sepia"
-					? "bg-[#f8f2e3] text-[#333]"
-					: "bg-white dark:bg-zinc-900"
-			}
+			bgClassName={themeMode === "sepia" ? "bg-[#f8f2e3] text-[#333]" : "bg-white dark:bg-zinc-900"}
 			className={cn(
-				isFullBleed
-					? "flex flex-col w-full h-full"
-					: "max-w-4xl mx-auto flex flex-col h-full",
+				isFullBleed ? "flex flex-col w-full h-full" : "max-w-4xl mx-auto flex flex-col h-full",
 			)}
 			headerContent={<h1 className="sr-only">New Note</h1>}
 		>

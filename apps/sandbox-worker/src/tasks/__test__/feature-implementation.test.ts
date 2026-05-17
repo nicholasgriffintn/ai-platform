@@ -30,14 +30,9 @@ describe("pushBranchToRemote", () => {
 
 		expect(exec).toHaveBeenCalledTimes(1);
 		expect(exec.mock.calls[0]?.[0]).toContain("http.extraHeader=");
-		expect(exec.mock.calls[0]?.[0]).toContain(
-			"push --set-upstream origin 'polychat/feature-123'",
-		);
+		expect(exec.mock.calls[0]?.[0]).toContain("push --set-upstream origin 'polychat/feature-123'");
 		expect(checkpoint).toHaveBeenCalledTimes(2);
-		expect(emitted.map((event) => event.type)).toEqual([
-			"commit_push_started",
-			"commit_pushed",
-		]);
+		expect(emitted.map((event) => event.type)).toEqual(["commit_push_started", "commit_pushed"]);
 		expect(logs.length).toBe(1);
 		expect(logs[0]).toContain("[auth header redacted]");
 	});
@@ -66,13 +61,8 @@ describe("pushBranchToRemote", () => {
 
 		expect(exec).toHaveBeenCalledTimes(1);
 		expect(exec.mock.calls[0]?.[0]).not.toContain("http.extraHeader=");
-		expect(exec.mock.calls[0]?.[0]).toContain(
-			"push --set-upstream origin 'polychat/feature-456'",
-		);
-		expect(emitted.map((event) => event.type)).toEqual([
-			"commit_push_started",
-			"commit_pushed",
-		]);
+		expect(exec.mock.calls[0]?.[0]).toContain("push --set-upstream origin 'polychat/feature-456'");
+		expect(emitted.map((event) => event.type)).toEqual(["commit_push_started", "commit_pushed"]);
 	});
 
 	it("throws when push fails", async () => {

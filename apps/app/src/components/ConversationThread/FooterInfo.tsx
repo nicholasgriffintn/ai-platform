@@ -17,9 +17,7 @@ export const FooterInfo = ({ isPanelVisible }: FooterInfoProps) => {
 	return (
 		<div
 			className={`absolute bottom-4 left-0 right-0 text-center text-sm text-zinc-600 dark:text-zinc-400 ${
-				isPanelVisible
-					? "pr-[90%] sm:pr-[350px] md:pr-[400px] lg:pr-[650px]"
-					: ""
+				isPanelVisible ? "pr-[90%] sm:pr-[350px] md:pr-[400px] lg:pr-[650px]" : ""
 			}`}
 		>
 			{isAuthLoading ? (

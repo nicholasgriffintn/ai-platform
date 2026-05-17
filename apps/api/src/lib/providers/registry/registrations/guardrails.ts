@@ -38,10 +38,7 @@ const guardrailsProviders: ProviderRegistration<GuardrailsProvider>[] = [
 		lifecycle: "transient",
 		create: (context) => {
 			const _env = ensureEnv(context);
-			const config = ensureConfig<LlamaGuardConfig>(
-				context,
-				"LlamaGuard config required",
-			);
+			const config = ensureConfig<LlamaGuardConfig>(context, "LlamaGuard config required");
 			return new LlamaGuardProvider(config);
 		},
 		metadata: {

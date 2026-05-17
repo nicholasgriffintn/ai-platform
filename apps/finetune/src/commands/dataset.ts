@@ -13,20 +13,14 @@ import type { TrainingExample } from "../types/index.js";
 
 const logger = createLogger("dataset");
 
-export const datasetCommand = new Command("dataset").description(
-	"Manage training datasets",
-);
+export const datasetCommand = new Command("dataset").description("Manage training datasets");
 
 datasetCommand
 	.command("generate")
 	.description("Generate synthetic Strudel training data by calling your API")
 	.option("-c, --count <number>", "Number of examples to generate", "300")
 	.option("-o, --output <path>", "Output directory", "./datasets/strudel")
-	.option(
-		"-m, --model <model>",
-		"Model to use for generation",
-		"claude-sonnet-4-20250514",
-	)
+	.option("-m, --model <model>", "Model to use for generation", "claude-sonnet-4-20250514")
 	.option("--api-url <url>", "API URL", config.API_URL)
 	.option("--api-key <key>", "API key", config.API_KEY)
 	.option(
@@ -49,9 +43,7 @@ datasetCommand
 				isInterrupted = true;
 				spinner.warn(chalk.yellow("\n\nInterrupted! Progress has been saved."));
 				console.log(
-					chalk.gray(
-						`Run the same command with --resume to continue from where you left off.`,
-					),
+					chalk.gray(`Run the same command with --resume to continue from where you left off.`),
 				);
 				process.exit(0);
 			}
@@ -61,9 +53,7 @@ datasetCommand
 		try {
 			const count = parseInt(options.count);
 			const styles = options.styles.split(",").map((s: string) => s.trim());
-			const complexities = options.complexities
-				.split(",")
-				.map((c: string) => c.trim());
+			const complexities = options.complexities.split(",").map((c: string) => c.trim());
 
 			const progressFile = `${options.output}/.progress.jsonl`;
 			if (options.resume && existsSync(progressFile)) {
@@ -105,9 +95,7 @@ datasetCommand
 			console.log(chalk.gray(`  Total examples: ${analysis.totalExamples}`));
 			console.log(chalk.gray(`  Training: ${train.length} examples`));
 			console.log(chalk.gray(`  Validation: ${validation.length} examples`));
-			console.log(
-				chalk.gray(`  Avg tokens/example: ${analysis.avgTokensPerExample}`),
-			);
+			console.log(chalk.gray(`  Avg tokens/example: ${analysis.avgTokensPerExample}`));
 			console.log(chalk.blue("\n📁 Files:"));
 			console.log(chalk.gray(`  Training: ${trainPath}`));
 			console.log(chalk.gray(`  Validation: ${validationPath}`));
@@ -161,15 +149,9 @@ datasetCommand
 				validationValidation = formatter.validateDataset(validationExamples);
 			}
 
-			const analysis = formatter.analyzeDataset([
-				...trainExamples,
-				...validationExamples,
-			]);
+			const analysis = formatter.analyzeDataset([...trainExamples, ...validationExamples]);
 
-			if (
-				trainValidation.valid &&
-				(!validationValidation || validationValidation.valid)
-			) {
+			if (trainValidation.valid && (!validationValidation || validationValidation.valid)) {
 				spinner.succeed(chalk.green("Validation passed!"));
 			} else {
 				spinner.fail(chalk.red("Validation failed"));
@@ -181,40 +163,30 @@ datasetCommand
 			if (validationExamples.length > 0) {
 				console.log(chalk.gray(`  Validation: ${validationExamples.length}`));
 			}
-			console.log(
-				chalk.gray(`  Avg tokens/example: ${analysis.avgTokensPerExample}`),
-			);
+			console.log(chalk.gray(`  Avg tokens/example: ${analysis.avgTokensPerExample}`));
 
 			if (Object.keys(analysis.styleDistribution).length > 0) {
 				console.log(chalk.blue("\n🎵 Style Distribution:"));
-				for (const [style, count] of Object.entries(
-					analysis.styleDistribution,
-				)) {
+				for (const [style, count] of Object.entries(analysis.styleDistribution)) {
 					console.log(chalk.gray(`  ${style}: ${count}`));
 				}
 			}
 
 			if (Object.keys(analysis.complexityDistribution).length > 0) {
 				console.log(chalk.blue("\n📈 Complexity Distribution:"));
-				for (const [complexity, count] of Object.entries(
-					analysis.complexityDistribution,
-				)) {
+				for (const [complexity, count] of Object.entries(analysis.complexityDistribution)) {
 					console.log(chalk.gray(`  ${complexity}: ${count}`));
 				}
 			}
 
 			if (trainValidation.errors.length > 0) {
 				console.log(chalk.red("\n❌ Errors:"));
-				trainValidation.errors.forEach((error) =>
-					console.log(chalk.red(`  ${error}`)),
-				);
+				trainValidation.errors.forEach((error) => console.log(chalk.red(`  ${error}`)));
 			}
 
 			if (trainValidation.warnings.length > 0) {
 				console.log(chalk.yellow("\n⚠️  Warnings:"));
-				trainValidation.warnings.forEach((warning) =>
-					console.log(chalk.yellow(`  ${warning}`)),
-				);
+				trainValidation.warnings.forEach((warning) => console.log(chalk.yellow(`  ${warning}`)));
 			}
 
 			if (!trainValidation.valid) {
@@ -237,11 +209,7 @@ datasetCommand
 		const spinner = ora("Uploading dataset to S3...").start();
 
 		try {
-			validateConfig([
-				"BEDROCK_TRAINING_BUCKET",
-				"AWS_ACCESS_KEY_ID",
-				"AWS_SECRET_ACCESS_KEY",
-			]);
+			validateConfig(["BEDROCK_TRAINING_BUCKET", "AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY"]);
 
 			const s3Service = new S3Service();
 
@@ -266,9 +234,7 @@ datasetCommand
 			});
 			tracker.close();
 
-			console.log(
-				chalk.green("\n✓ Use these URIs when creating a fine-tuning job"),
-			);
+			console.log(chalk.green("\n✓ Use these URIs when creating a fine-tuning job"));
 		} catch (error) {
 			spinner.fail(chalk.red("Upload failed"));
 			logger.error("Upload error", error);
@@ -353,10 +319,7 @@ datasetCommand
 			const analysis = formatter.analyzeDataset(bedrockExamples);
 
 			spinner.text = "Splitting into train/validation sets...";
-			const { train, validation } = formatter.splitAndFormat(
-				bedrockExamples,
-				0.8,
-			);
+			const { train, validation } = formatter.splitAndFormat(bedrockExamples, 0.8);
 
 			spinner.text = "Saving to disk...";
 			const { trainPath, validationPath } = await formatter.saveDataset(
@@ -371,9 +334,7 @@ datasetCommand
 			console.log(chalk.gray(`  Total examples: ${analysis.totalExamples}`));
 			console.log(chalk.gray(`  Training: ${train.length} examples`));
 			console.log(chalk.gray(`  Validation: ${validation.length} examples`));
-			console.log(
-				chalk.gray(`  Avg tokens/example: ${analysis.avgTokensPerExample}`),
-			);
+			console.log(chalk.gray(`  Avg tokens/example: ${analysis.avgTokensPerExample}`));
 
 			if (options.source) {
 				console.log(chalk.gray(`  Source: ${options.source}`));

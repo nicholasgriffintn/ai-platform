@@ -61,98 +61,92 @@ export function useAgentForm() {
 		setActiveTab("basic");
 	}, []);
 
-	const loadAgentData = useCallback(
-		(agent: any, apiModels: Record<string, any>) => {
-			setIsEditMode(true);
-			setCurrentAgentId(agent.id);
-			setName(agent.name || "");
-			setDescription(agent.description || "");
-			setAvatarUrl(agent.avatar_url || "");
+	const loadAgentData = useCallback((agent: any, apiModels: Record<string, any>) => {
+		setIsEditMode(true);
+		setCurrentAgentId(agent.id);
+		setName(agent.name || "");
+		setDescription(agent.description || "");
+		setAvatarUrl(agent.avatar_url || "");
 
-			if (agent.servers) {
-				try {
-					const parsedServers = JSON.parse(agent.servers);
-					if (Array.isArray(parsedServers) && parsedServers.length > 0) {
-						setUseServers(true);
-						setServers(
-							parsedServers.map((s: any) => ({
-								id: generateId(),
-								url: s.url || "",
-								type: s.type || "sse",
-							})),
-						);
-					} else {
-						setUseServers(false);
-						setServers([{ id: generateId(), url: "", type: "sse" }]);
-					}
-				} catch {
+		if (agent.servers) {
+			try {
+				const parsedServers = JSON.parse(agent.servers);
+				if (Array.isArray(parsedServers) && parsedServers.length > 0) {
+					setUseServers(true);
+					setServers(
+						parsedServers.map((s: any) => ({
+							id: generateId(),
+							url: s.url || "",
+							type: s.type || "sse",
+						})),
+					);
+				} else {
 					setUseServers(false);
 					setServers([{ id: generateId(), url: "", type: "sse" }]);
 				}
-			} else {
+			} catch {
 				setUseServers(false);
 				setServers([{ id: generateId(), url: "", type: "sse" }]);
 			}
+		} else {
+			setUseServers(false);
+			setServers([{ id: generateId(), url: "", type: "sse" }]);
+		}
 
-			const agentModel = agent.model || "";
-			const isModelAvailable =
-				agentModel === "" || apiModels[agentModel]?.supportsToolCalls;
+		const agentModel = agent.model || "";
+		const isModelAvailable = agentModel === "" || apiModels[agentModel]?.supportsToolCalls;
 
-			setSelectedModel(isModelAvailable ? agentModel : "");
-			setTemperature(
-				agent.temperature ? Number.parseFloat(agent.temperature) : 0.7,
-			);
-			setMaxSteps(agent.max_steps || 20);
-			setSystemPrompt(agent.system_prompt || "");
+		setSelectedModel(isModelAvailable ? agentModel : "");
+		setTemperature(agent.temperature ? Number.parseFloat(agent.temperature) : 0.7);
+		setMaxSteps(agent.max_steps || 20);
+		setSystemPrompt(agent.system_prompt || "");
 
-			if (agent.few_shot_examples) {
-				try {
-					const parsedExamples = JSON.parse(agent.few_shot_examples);
-					if (Array.isArray(parsedExamples) && parsedExamples.length > 0) {
-						setUseFewShotExamples(true);
-						setFewShotExamples(
-							parsedExamples.map((ex: any) => ({
-								id: generateId(),
-								input: ex.input || "",
-								output: ex.output || "",
-							})),
-						);
-					} else {
-						setUseFewShotExamples(false);
-						setFewShotExamples([{ id: generateId(), input: "", output: "" }]);
-					}
-				} catch {
+		if (agent.few_shot_examples) {
+			try {
+				const parsedExamples = JSON.parse(agent.few_shot_examples);
+				if (Array.isArray(parsedExamples) && parsedExamples.length > 0) {
+					setUseFewShotExamples(true);
+					setFewShotExamples(
+						parsedExamples.map((ex: any) => ({
+							id: generateId(),
+							input: ex.input || "",
+							output: ex.output || "",
+						})),
+					);
+				} else {
 					setUseFewShotExamples(false);
 					setFewShotExamples([{ id: generateId(), input: "", output: "" }]);
 				}
-			} else {
+			} catch {
 				setUseFewShotExamples(false);
 				setFewShotExamples([{ id: generateId(), input: "", output: "" }]);
 			}
+		} else {
+			setUseFewShotExamples(false);
+			setFewShotExamples([{ id: generateId(), input: "", output: "" }]);
+		}
 
-			if (agent.enabled_tools) {
-				try {
-					const parsedTools = Array.isArray(agent.enabled_tools)
-						? agent.enabled_tools
-						: JSON.parse(agent.enabled_tools);
-					setEnabledTools(
-						Array.isArray(parsedTools)
-							? parsedTools.filter((tool: unknown) => typeof tool === "string")
-							: [],
-					);
-				} catch {
-					setEnabledTools([]);
-				}
-			} else {
+		if (agent.enabled_tools) {
+			try {
+				const parsedTools = Array.isArray(agent.enabled_tools)
+					? agent.enabled_tools
+					: JSON.parse(agent.enabled_tools);
+				setEnabledTools(
+					Array.isArray(parsedTools)
+						? parsedTools.filter((tool: unknown) => typeof tool === "string")
+						: [],
+				);
+			} catch {
 				setEnabledTools([]);
 			}
+		} else {
+			setEnabledTools([]);
+		}
 
-			setTeamId(agent.team_id || "");
-			setTeamRole(agent.team_role || "");
-			setIsTeamAgent(agent.is_team_agent || false);
-		},
-		[],
-	);
+		setTeamId(agent.team_id || "");
+		setTeamRole(agent.team_role || "");
+		setIsTeamAgent(agent.is_team_agent || false);
+	}, []);
 
 	const getFormData = useCallback(() => {
 		return {
@@ -200,10 +194,7 @@ export function useAgentForm() {
 			return { valid: false, error: "Please fill in all server URLs" };
 		}
 
-		if (
-			useFewShotExamples &&
-			fewShotExamples.some((ex) => !ex.input || !ex.output)
-		) {
+		if (useFewShotExamples && fewShotExamples.some((ex) => !ex.input || !ex.output)) {
 			return {
 				valid: false,
 				error: "Please fill in all few-shot example fields",

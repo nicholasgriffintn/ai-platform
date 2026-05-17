@@ -32,13 +32,9 @@ describe("listArticles", () => {
 	});
 
 	it("should throw AssistantError when userId is 0", async () => {
-		await expect(listArticles({ env: mockEnv, userId: 0 })).rejects.toThrow(
-			AssistantError,
-		);
+		await expect(listArticles({ env: mockEnv, userId: 0 })).rejects.toThrow(AssistantError);
 
-		await expect(listArticles({ env: mockEnv, userId: 0 })).rejects.toThrow(
-			"User ID is required",
-		);
+		await expect(listArticles({ env: mockEnv, userId: 0 })).rejects.toThrow("User ID is required");
 	});
 
 	it("should return empty sessions when no articles exist", async () => {
@@ -50,10 +46,7 @@ describe("listArticles", () => {
 			status: "success",
 			sessions: [],
 		});
-		expect(mockAppDataRepo.getAppDataByUserAndApp).toHaveBeenCalledWith(
-			123,
-			"articles",
-		);
+		expect(mockAppDataRepo.getAppDataByUserAndApp).toHaveBeenCalledWith(123, "articles");
 	});
 
 	it("should return empty sessions when articles array is null", async () => {
@@ -206,13 +199,9 @@ describe("listArticles", () => {
 	});
 
 	it("should throw AssistantError when repository throws non-AssistantError", async () => {
-		mockAppDataRepo.getAppDataByUserAndApp.mockRejectedValue(
-			new Error("Database error"),
-		);
+		mockAppDataRepo.getAppDataByUserAndApp.mockRejectedValue(new Error("Database error"));
 
-		await expect(listArticles({ env: mockEnv, userId: 123 })).rejects.toThrow(
-			AssistantError,
-		);
+		await expect(listArticles({ env: mockEnv, userId: 123 })).rejects.toThrow(AssistantError);
 
 		await expect(listArticles({ env: mockEnv, userId: 123 })).rejects.toThrow(
 			"Failed to list article sessions",
@@ -220,14 +209,9 @@ describe("listArticles", () => {
 	});
 
 	it("should rethrow AssistantError from repository", async () => {
-		const originalError = new AssistantError(
-			"Custom error",
-			ErrorType.NOT_FOUND,
-		);
+		const originalError = new AssistantError("Custom error", ErrorType.NOT_FOUND);
 		mockAppDataRepo.getAppDataByUserAndApp.mockRejectedValue(originalError);
 
-		await expect(listArticles({ env: mockEnv, userId: 123 })).rejects.toThrow(
-			originalError,
-		);
+		await expect(listArticles({ env: mockEnv, userId: 123 })).rejects.toThrow(originalError);
 	});
 });

@@ -1,7 +1,4 @@
-import {
-	resolveServiceContext,
-	type ServiceContext,
-} from "~/lib/context/serviceContext";
+import { resolveServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
 import type { IEnv } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import type { Drawing } from "./list";
@@ -19,10 +16,7 @@ export async function getDrawingDetails({
 	drawingId: string;
 }): Promise<Drawing> {
 	if (!userId || !drawingId) {
-		throw new AssistantError(
-			"Drawing ID and user ID are required",
-			ErrorType.PARAMS_ERROR,
-		);
+		throw new AssistantError("Drawing ID and user ID are required", ErrorType.PARAMS_ERROR);
 	}
 
 	const serviceContext = resolveServiceContext({ context, env });

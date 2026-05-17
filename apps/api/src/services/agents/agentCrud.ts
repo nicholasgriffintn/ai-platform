@@ -8,30 +8,19 @@ export async function getUserAgents(context: ServiceContext, userId?: number) {
 	return context.repositories.agents.getAgentsByUser(id);
 }
 
-export async function getUserTeamAgents(
-	context: ServiceContext,
-	userId?: number,
-) {
+export async function getUserTeamAgents(context: ServiceContext, userId?: number) {
 	context.ensureDatabase();
 	const id = userId ?? context.requireUser().id;
 	return context.repositories.agents.getTeamAgents(id);
 }
 
-export async function getAgentsByTeam(
-	context: ServiceContext,
-	teamId: string,
-	userId?: number,
-) {
+export async function getAgentsByTeam(context: ServiceContext, teamId: string, userId?: number) {
 	context.ensureDatabase();
 	const id = userId ?? context.requireUser().id;
 	return context.repositories.agents.getAgentsByTeamAndUser(teamId, id);
 }
 
-export async function getAgentById(
-	context: ServiceContext,
-	agentId: string,
-	userId?: number,
-) {
+export async function getAgentById(context: ServiceContext, agentId: string, userId?: number) {
 	context.ensureDatabase();
 	const id = userId ?? context.requireUser().id;
 	const agent = await context.repositories.agents.getAgentById(agentId);
@@ -121,11 +110,7 @@ export async function updateAgent(
 	return agent;
 }
 
-export async function deleteAgent(
-	context: ServiceContext,
-	agentId: string,
-	userId?: number,
-) {
+export async function deleteAgent(context: ServiceContext, agentId: string, userId?: number) {
 	context.ensureDatabase();
 	const id = userId ?? context.requireUser().id;
 

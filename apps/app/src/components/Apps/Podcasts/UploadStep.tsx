@@ -6,9 +6,7 @@ import type { PodcastFormData } from "~/types/podcast";
 
 interface UploadStepProps {
 	formData: PodcastFormData;
-	handleChange: (
-		e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
-	) => void;
+	handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
 	handleFileChange: (file: File) => void;
 	handleUpload: () => void;
 	isUploading: boolean;
@@ -58,14 +56,10 @@ export function UploadStep({
 								name="audioSource"
 								value="file"
 								checked={formData.audioSource === "file"}
-								onChange={() =>
-									setFormData((prev) => ({ ...prev, audioSource: "file" }))
-								}
+								onChange={() => setFormData((prev) => ({ ...prev, audioSource: "file" }))}
 								className="h-4 w-4 text-blue-600 dark:text-blue-400 focus:ring-blue-500 dark:focus:ring-blue-400 border-zinc-300 dark:border-zinc-600"
 							/>
-							<span className="ml-2 text-zinc-700 dark:text-zinc-300">
-								Upload File
-							</span>
+							<span className="ml-2 text-zinc-700 dark:text-zinc-300">Upload File</span>
 						</label>
 						<label className="inline-flex items-center">
 							<input
@@ -73,14 +67,10 @@ export function UploadStep({
 								name="audioSource"
 								value="url"
 								checked={formData.audioSource === "url"}
-								onChange={() =>
-									setFormData((prev) => ({ ...prev, audioSource: "url" }))
-								}
+								onChange={() => setFormData((prev) => ({ ...prev, audioSource: "url" }))}
 								className="h-4 w-4 text-blue-600 dark:text-blue-400 focus:ring-blue-500 dark:focus:ring-blue-400 border-zinc-300 dark:border-zinc-600"
 							/>
-							<span className="ml-2 text-zinc-700 dark:text-zinc-300">
-								Enter URL
-							</span>
+							<span className="ml-2 text-zinc-700 dark:text-zinc-300">Enter URL</span>
 						</label>
 					</div>
 
@@ -116,10 +106,7 @@ export function UploadStep({
 								className="pl-10"
 							/>
 							<div className="absolute left-3 top-[37px] pointer-events-none">
-								<LinkIcon
-									className="h-5 w-5 text-zinc-400"
-									aria-hidden="true"
-								/>
+								<LinkIcon className="h-5 w-5 text-zinc-400" aria-hidden="true" />
 							</div>
 						</div>
 					)}

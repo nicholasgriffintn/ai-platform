@@ -19,17 +19,11 @@ function isObjectOrArray(value: unknown): value is UnknownRecord | unknown[] {
 	return isRecord(value) || Array.isArray(value);
 }
 
-function extractTimestamp(
-	value: unknown,
-	fallbackTimestamp?: number,
-): number | undefined {
+function extractTimestamp(value: unknown, fallbackTimestamp?: number): number | undefined {
 	if (typeof value === "number" && Number.isFinite(value)) {
 		return value;
 	}
-	if (
-		typeof fallbackTimestamp === "number" &&
-		Number.isFinite(fallbackTimestamp)
-	) {
+	if (typeof fallbackTimestamp === "number" && Number.isFinite(fallbackTimestamp)) {
 		return fallbackTimestamp;
 	}
 	return undefined;
@@ -56,17 +50,14 @@ function parseToolInput(value: unknown): unknown {
 }
 
 function toText(value: unknown): string | undefined {
-	return typeof value === "string" && value.trim().length > 0
-		? value
-		: undefined;
+	return typeof value === "string" && value.trim().length > 0 ? value : undefined;
 }
 
 function createAttachmentFilePart(
 	attachment: UnknownRecord,
 	timestamp?: number,
 ): MessagePart | null {
-	const type =
-		typeof attachment.type === "string" ? attachment.type : "document";
+	const type = typeof attachment.type === "string" ? attachment.type : "document";
 	const mimeType =
 		typeof attachment.mimeType === "string"
 			? attachment.mimeType
@@ -77,10 +68,7 @@ function createAttachmentFilePart(
 		name: typeof attachment.name === "string" ? attachment.name : undefined,
 		url: typeof attachment.url === "string" ? attachment.url : undefined,
 		mimeType,
-		sizeBytes:
-			typeof attachment.sizeBytes === "number"
-				? attachment.sizeBytes
-				: undefined,
+		sizeBytes: typeof attachment.sizeBytes === "number" ? attachment.sizeBytes : undefined,
 		timestamp,
 	};
 }
@@ -131,10 +119,7 @@ function appendFilePartFromContent(
 		return;
 	}
 
-	if (
-		contentPart.type === "markdown_document" &&
-		contentPart.markdown_document
-	) {
+	if (contentPart.type === "markdown_document" && contentPart.markdown_document) {
 		parts.push({
 			type: "file",
 			name: contentPart.markdown_document.name,
@@ -159,11 +144,7 @@ function appendFilePartFromContent(
 	}
 }
 
-export function appendTextPart(
-	parts: MessagePart[],
-	text: string,
-	timestamp?: number,
-): void {
+export function appendTextPart(parts: MessagePart[], text: string, timestamp?: number): void {
 	if (!text) {
 		return;
 	}
@@ -204,10 +185,7 @@ export function appendReasoningPart(
 	});
 }
 
-function normalisePart(
-	part: unknown,
-	fallbackTimestamp?: number,
-): MessagePart | null {
+function normalisePart(part: unknown, fallbackTimestamp?: number): MessagePart | null {
 	if (!isRecord(part)) {
 		return null;
 	}
@@ -250,10 +228,7 @@ function normalisePart(
 						: typeof part.tool_call_id === "string"
 							? part.tool_call_id
 							: undefined,
-				input:
-					isObjectOrArray(input) || typeof input === "string"
-						? input
-						: undefined,
+				input: isObjectOrArray(input) || typeof input === "string" ? input : undefined,
 				...commonFields,
 			};
 		}
@@ -282,10 +257,8 @@ function normalisePart(
 				? {
 						type: "reasoning",
 						text,
-						signature:
-							typeof part.signature === "string" ? part.signature : undefined,
-						collapsed:
-							typeof part.collapsed === "boolean" ? part.collapsed : undefined,
+						signature: typeof part.signature === "string" ? part.signature : undefined,
+						collapsed: typeof part.collapsed === "boolean" ? part.collapsed : undefined,
 						...commonFields,
 					}
 				: null;
@@ -307,8 +280,7 @@ function normalisePart(
 				name: typeof part.name === "string" ? part.name : undefined,
 				url: typeof part.url === "string" ? part.url : undefined,
 				mimeType: typeof part.mimeType === "string" ? part.mimeType : undefined,
-				sizeBytes:
-					typeof part.sizeBytes === "number" ? part.sizeBytes : undefined,
+				sizeBytes: typeof part.sizeBytes === "number" ? part.sizeBytes : undefined,
 				...commonFields,
 			};
 		default:
@@ -353,8 +325,7 @@ export function buildMessageParts(message: Message): MessagePart[] | undefined {
 				parts.push({
 					type: "tool_result",
 					content:
-						typeof contentPart.content === "string" ||
-						isObjectOrArray(contentPart.content)
+						typeof contentPart.content === "string" || isObjectOrArray(contentPart.content)
 							? contentPart.content
 							: undefined,
 					toolCallId: contentPart.tool_use_id,
@@ -385,10 +356,7 @@ export function buildMessageParts(message: Message): MessagePart[] | undefined {
 				type: "tool_use",
 				name: functionName,
 				toolCallId: typeof toolCall.id === "string" ? toolCall.id : undefined,
-				input:
-					isObjectOrArray(input) || typeof input === "string"
-						? input
-						: undefined,
+				input: isObjectOrArray(input) || typeof input === "string" ? input : undefined,
 				timestamp,
 			});
 		}

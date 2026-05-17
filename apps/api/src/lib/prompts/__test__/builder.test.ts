@@ -58,17 +58,13 @@ describe("PromptBuilder", () => {
 	describe("conditional with alternatives", () => {
 		it("should add true text when condition is true", () => {
 			const builder = new PromptBuilder();
-			const result = builder
-				.addConditional(true, "true text", "false text")
-				.build();
+			const result = builder.addConditional(true, "true text", "false text").build();
 			expect(result).toBe("true text");
 		});
 
 		it("should add false text when condition is false", () => {
 			const builder = new PromptBuilder();
-			const result = builder
-				.addConditional(false, "true text", "false text")
-				.build();
+			const result = builder.addConditional(false, "true text", "false text").build();
 			expect(result).toBe("false text");
 		});
 

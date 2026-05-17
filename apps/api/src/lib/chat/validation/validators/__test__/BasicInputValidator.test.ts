@@ -18,9 +18,7 @@ describe("BasicInputValidator", () => {
 		vi.clearAllMocks();
 
 		const { sanitiseMessages } =
-			await vi.importMock<typeof import("~/lib/chat/utils")>(
-				"~/lib/chat/utils",
-			);
+			await vi.importMock<typeof import("~/lib/chat/utils")>("~/lib/chat/utils");
 		mockSanitiseMessages = vi.mocked(sanitiseMessages);
 
 		validator = new BasicInputValidator();
@@ -77,9 +75,7 @@ describe("BasicInputValidator", () => {
 			const result = await validator.validate(baseOptions, baseContext);
 
 			expect(result.validation.isValid).toBe(false);
-			expect(result.validation.error).toBe(
-				"Messages array is empty or invalid",
-			);
+			expect(result.validation.error).toBe("Messages array is empty or invalid");
 			expect(result.validation.validationType).toBe("input");
 			expect(result.context).toEqual({});
 		});
@@ -92,15 +88,10 @@ describe("BasicInputValidator", () => {
 
 			mockSanitiseMessages.mockReturnValue([]);
 
-			const result = await validator.validate(
-				optionsWithInvalidMessages,
-				baseContext,
-			);
+			const result = await validator.validate(optionsWithInvalidMessages, baseContext);
 
 			expect(result.validation.isValid).toBe(false);
-			expect(result.validation.error).toBe(
-				"Messages array is empty or invalid",
-			);
+			expect(result.validation.error).toBe("Messages array is empty or invalid");
 			expect(result.validation.validationType).toBe("input");
 		});
 
@@ -159,15 +150,10 @@ describe("BasicInputValidator", () => {
 
 			mockSanitiseMessages.mockReturnValue([]);
 
-			const result = await validator.validate(
-				optionsWithoutMessages,
-				baseContext,
-			);
+			const result = await validator.validate(optionsWithoutMessages, baseContext);
 
 			expect(result.validation.isValid).toBe(false);
-			expect(result.validation.error).toBe(
-				"Messages array is empty or invalid",
-			);
+			expect(result.validation.error).toBe("Messages array is empty or invalid");
 		});
 
 		it("should handle null messages property", async () => {
@@ -178,15 +164,10 @@ describe("BasicInputValidator", () => {
 
 			mockSanitiseMessages.mockReturnValue([]);
 
-			const result = await validator.validate(
-				optionsWithNullMessages,
-				baseContext,
-			);
+			const result = await validator.validate(optionsWithNullMessages, baseContext);
 
 			expect(result.validation.isValid).toBe(false);
-			expect(result.validation.error).toBe(
-				"Messages array is empty or invalid",
-			);
+			expect(result.validation.error).toBe("Messages array is empty or invalid");
 		});
 
 		it("should pass through existing context", async () => {
@@ -217,9 +198,7 @@ describe("BasicInputValidator", () => {
 			const result = await validator.validate(baseOptions, baseContext);
 
 			expect(result.validation.isValid).toBe(false);
-			expect(result.validation.error).toBe(
-				"Messages array is empty or invalid",
-			);
+			expect(result.validation.error).toBe("Messages array is empty or invalid");
 		});
 
 		it("should handle messages with empty content", async () => {

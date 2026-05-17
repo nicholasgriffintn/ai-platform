@@ -37,9 +37,7 @@ function intersectOptions(optionGroups: string[][]): string[] {
 		return [];
 	}
 
-	return optionGroups.reduce((acc, group) =>
-		acc.filter((option) => group.includes(option)),
-	);
+	return optionGroups.reduce((acc, group) => acc.filter((option) => group.includes(option)));
 }
 
 export function parseReferenceImages(value: string): string[] {
@@ -49,24 +47,15 @@ export function parseReferenceImages(value: string): string[] {
 		.filter(Boolean);
 }
 
-export function collectFieldEnumOptions(
-	models: CanvasModel[],
-	fieldName: string,
-): string[] {
+export function collectFieldEnumOptions(models: CanvasModel[], fieldName: string): string[] {
 	const optionGroups = models
-		.map(
-			(model) =>
-				model.inputSchema?.fields.find((field) => field.name === fieldName)
-					?.enum,
-		)
+		.map((model) => model.inputSchema?.fields.find((field) => field.name === fieldName)?.enum)
 		.filter(
 			(enumValues): enumValues is Array<string | number> =>
 				Array.isArray(enumValues) && enumValues.length > 0,
 		)
 		.map((enumValues) =>
-			enumValues
-				.filter((value): value is string => typeof value === "string")
-				.filter(Boolean),
+			enumValues.filter((value): value is string => typeof value === "string").filter(Boolean),
 		)
 		.filter((options) => options.length > 0);
 
@@ -74,10 +63,7 @@ export function collectFieldEnumOptions(
 		return [];
 	}
 
-	const options =
-		optionGroups.length === 1
-			? optionGroups[0]
-			: intersectOptions(optionGroups);
+	const options = optionGroups.length === 1 ? optionGroups[0] : intersectOptions(optionGroups);
 
 	return Array.from(new Set(options));
 }
@@ -130,8 +116,7 @@ export function getMediaPreview(output: unknown): MediaPreview | null {
 			}
 
 			const nestedUrl =
-				(item as Record<string, unknown>).url ||
-				(item as Record<string, unknown>).uri;
+				(item as Record<string, unknown>).url || (item as Record<string, unknown>).uri;
 			if (typeof nestedUrl === "string") {
 				return { url: nestedUrl, type: inferMediaType(nestedUrl) };
 			}
@@ -198,8 +183,7 @@ export function getCardAspectClass({
 		return selected;
 	}
 
-	const mixed =
-		mode === "video" ? videoMixedAspectClasses : imageMixedAspectClasses;
+	const mixed = mode === "video" ? videoMixedAspectClasses : imageMixedAspectClasses;
 	return mixed[index % mixed.length];
 }
 

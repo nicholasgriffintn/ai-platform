@@ -135,17 +135,7 @@ export const appSchema = z.object({
 	icon: z.string().optional(),
 	category: z.string().optional(),
 	theme: z
-		.enum([
-			"violet",
-			"indigo",
-			"pink",
-			"rose",
-			"cyan",
-			"emerald",
-			"amber",
-			"sky",
-			"slate",
-		])
+		.enum(["violet", "indigo", "pink", "rose", "cyan", "emerald", "amber", "sky", "slate"])
 		.optional(),
 	tags: z.array(z.string()).optional(),
 	featured: z.boolean().optional(),

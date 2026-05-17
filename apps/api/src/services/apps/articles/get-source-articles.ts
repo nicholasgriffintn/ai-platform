@@ -1,7 +1,4 @@
-import {
-	createServiceContext,
-	type ServiceContext,
-} from "~/lib/context/serviceContext";
+import { createServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
 import { type AppData } from "~/repositories/AppDataRepository";
 import type { IEnv } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -29,16 +26,10 @@ export async function getSourceArticles({
 	userId: number;
 }): Promise<GetSourceArticlesSuccessResponse> {
 	if (!ids || !ids.length) {
-		throw new AssistantError(
-			"Article IDs are required",
-			ErrorType.PARAMS_ERROR,
-		);
+		throw new AssistantError("Article IDs are required", ErrorType.PARAMS_ERROR);
 	}
 	if (!userId) {
-		throw new AssistantError(
-			"User ID is required for lookup",
-			ErrorType.PARAMS_ERROR,
-		);
+		throw new AssistantError("User ID is required for lookup", ErrorType.PARAMS_ERROR);
 	}
 
 	try {
@@ -52,10 +43,7 @@ export async function getSourceArticles({
 				: null);
 
 		if (!serviceContext) {
-			throw new AssistantError(
-				"Service context is required",
-				ErrorType.CONFIGURATION_ERROR,
-			);
+			throw new AssistantError("Service context is required", ErrorType.CONFIGURATION_ERROR);
 		}
 
 		serviceContext.ensureDatabase();
@@ -77,8 +65,7 @@ export async function getSourceArticles({
 				return null;
 			} catch (error) {
 				logger.error(`Error fetching article with ID ${id}:`, {
-					error_message:
-						error instanceof Error ? error.message : "Unknown error",
+					error_message: error instanceof Error ? error.message : "Unknown error",
 				});
 				return null;
 			}

@@ -4,9 +4,5 @@ export interface ArtifactProps {
 	language?: string;
 	title?: string;
 	content: string;
-	onOpen?: (
-		artifact: ArtifactProps,
-		combine?: boolean,
-		artifacts?: ArtifactProps[],
-	) => void;
+	onOpen?: (artifact: ArtifactProps, combine?: boolean, artifacts?: ArtifactProps[]) => void;
 }

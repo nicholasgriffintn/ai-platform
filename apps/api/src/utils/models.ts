@@ -8,8 +8,7 @@ export function getModelIdsByOutput(
 	return Object.entries(config)
 		.filter(
 			([, model]) =>
-				model.provider === provider &&
-				(model.modalities?.output ?? []).includes(modality),
+				model.provider === provider && (model.modalities?.output ?? []).includes(modality),
 		)
 		.map(([id]) => id);
 }

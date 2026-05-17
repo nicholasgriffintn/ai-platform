@@ -74,14 +74,11 @@ describe("errorLogger", () => {
 		it("should handle undefined error", () => {
 			logError("Undefined error occurred", undefined);
 
-			expect(mockLogger.error).toHaveBeenCalledWith(
-				"Undefined error occurred",
-				{
-					message: "undefined",
-					stack: undefined,
-					name: "undefined",
-				},
-			);
+			expect(mockLogger.error).toHaveBeenCalledWith("Undefined error occurred", {
+				message: "undefined",
+				stack: undefined,
+				name: "undefined",
+			});
 		});
 
 		it("should handle number error", () => {
@@ -238,14 +235,11 @@ describe("errorLogger", () => {
 
 			logError("Circular reference error", error);
 
-			expect(mockLogger.error).toHaveBeenCalledWith(
-				"Circular reference error",
-				{
-					message: "Circular error",
-					stack: error.stack,
-					name: "Error",
-				},
-			);
+			expect(mockLogger.error).toHaveBeenCalledWith("Circular reference error", {
+				message: "Circular error",
+				stack: error.stack,
+				name: "Error",
+			});
 		});
 	});
 });

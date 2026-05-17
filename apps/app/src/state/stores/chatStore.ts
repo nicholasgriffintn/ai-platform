@@ -71,8 +71,7 @@ export const useChatStore = create<ChatStore>()(
 			isAuthenticated: false,
 			setIsAuthenticated: (isAuthenticated) => set({ isAuthenticated }),
 			isAuthenticationLoading: true,
-			setIsAuthenticationLoading: (isAuthenticationLoading) =>
-				set({ isAuthenticationLoading }),
+			setIsAuthenticationLoading: (isAuthenticationLoading) => set({ isAuthenticationLoading }),
 			isPro: false,
 			setIsPro: (isPro) => set({ isPro }),
 
@@ -97,8 +96,7 @@ export const useChatStore = create<ChatStore>()(
 				const apiKey = await apiKeyService.getApiKey();
 				set({ hasApiKey: !!apiKey });
 
-				const localOnlyMode =
-					window.localStorage.getItem("localOnlyMode") === "true";
+				const localOnlyMode = window.localStorage.getItem("localOnlyMode") === "true";
 				set({ localOnlyMode });
 
 				const checkAuthAndSetConversation = async () => {

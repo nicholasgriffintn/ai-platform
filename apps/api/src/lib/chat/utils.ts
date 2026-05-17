@@ -16,10 +16,7 @@ export function checkContextWindowLimits(
 
 	let existingTokenCount = 0;
 	for (const msg of messages) {
-		const content =
-			typeof msg.content === "string"
-				? msg.content
-				: JSON.stringify(msg.content);
+		const content = typeof msg.content === "string" ? msg.content : JSON.stringify(msg.content);
 		existingTokenCount += estimateTokens(content);
 
 		existingTokenCount += 4;
@@ -159,11 +156,7 @@ export function getAllAttachments(contents: unknown[]): {
 	const imageAttachments = dedupeAttachments(rawImages);
 	const documentAttachments = dedupeAttachments(rawDocs);
 	const markdownAttachments = dedupeAttachments(rawMarkdown);
-	const allAttachments = [
-		...imageAttachments,
-		...documentAttachments,
-		...markdownAttachments,
-	];
+	const allAttachments = [...imageAttachments, ...documentAttachments, ...markdownAttachments];
 	enforceAttachmentLimits(allAttachments);
 	return {
 		imageAttachments,
@@ -256,9 +249,7 @@ export function sanitiseMessages(messages: Message[]): Message[] {
 			}
 			if (Array.isArray(msg.content)) {
 				const sanitisedContent = msg.content.map((part) =>
-					part.type === "text" && part.text
-						? { ...part, text: sanitiseInput(part.text) }
-						: part,
+					part.type === "text" && part.text ? { ...part, text: sanitiseInput(part.text) } : part,
 				);
 				return { ...msg, content: sanitisedContent };
 			}

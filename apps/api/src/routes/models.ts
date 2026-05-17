@@ -95,18 +95,10 @@ addRoute(app, "get", "/capabilities/:capability", {
 			};
 			const validCapabilities = listStrengths();
 			if (!validCapabilities.includes(capability)) {
-				return ResponseFactory.error(
-					context,
-					"Invalid capability parameter",
-					400,
-				);
+				return ResponseFactory.error(context, "Invalid capability parameter", 400);
 			}
 			const userId = context.get("user")?.id;
-			const models = await listModelsByStrength(
-				context.env as IEnv,
-				capability,
-				userId,
-			);
+			const models = await listModelsByStrength(context.env as IEnv, capability, userId);
 			return ResponseFactory.success(context, models);
 		})(raw),
 });
@@ -150,23 +142,11 @@ addRoute(app, "get", "/modalities/:modality", {
 			const { modality } = context.req.valid("param" as never) as {
 				modality: string;
 			};
-			if (
-				!availableModalities.includes(
-					modality as (typeof availableModalities)[number],
-				)
-			) {
-				return ResponseFactory.error(
-					context,
-					"Invalid modality parameter",
-					400,
-				);
+			if (!availableModalities.includes(modality as (typeof availableModalities)[number])) {
+				return ResponseFactory.error(context, "Invalid modality parameter", 400);
 			}
 			const userId = context.get("user")?.id;
-			const models = await listModelsByModality(
-				context.env as IEnv,
-				modality,
-				userId,
-			);
+			const models = await listModelsByModality(context.env as IEnv, modality, userId);
 			return ResponseFactory.success(context, models);
 		})(raw),
 });
@@ -193,18 +173,10 @@ addRoute(app, "get", "/output/:modality", {
 				modality: string;
 			};
 			if (!availableModalities.includes(modality as never)) {
-				return ResponseFactory.error(
-					context,
-					"Invalid modality parameter",
-					400,
-				);
+				return ResponseFactory.error(context, "Invalid modality parameter", 400);
 			}
 			const userId = context.get("user")?.id;
-			const models = await listModelsByOutputModality(
-				context.env as IEnv,
-				modality,
-				userId,
-			);
+			const models = await listModelsByOutputModality(context.env as IEnv, modality, userId);
 			return ResponseFactory.success(context, models);
 		})(raw),
 });
@@ -212,8 +184,7 @@ addRoute(app, "get", "/output/:modality", {
 addRoute(app, "get", "/:id", {
 	tags: ["models"],
 	summary: "Retrieve model",
-	description:
-		"Retrieves a model instance, providing basic information about the model.",
+	description: "Retrieves a model instance, providing basic information about the model.",
 	paramSchema: modelParamsSchema,
 	responses: {
 		200: { description: "Model details", schema: modelResponseSchema },
@@ -229,11 +200,7 @@ addRoute(app, "get", "/:id", {
 				const model = await getModelDetails(context.env as IEnv, id, userId);
 				return ResponseFactory.success(context, model);
 			} catch {
-				return ResponseFactory.error(
-					context,
-					"Model not found or user does not have access",
-					404,
-				);
+				return ResponseFactory.error(context, "Model not found or user does not have access", 404);
 			}
 		})(raw),
 });

@@ -21,9 +21,7 @@ export const removeDefaultExport = (
 
 	if (match) {
 		exportedName = match[1];
-		modifiedInput = modifiedInput
-			.replace(/export\s+default\s+function/, "function")
-			.trim();
+		modifiedInput = modifiedInput.replace(/export\s+default\s+function/, "function").trim();
 	} else {
 		match = input.match(defaultExportRegex);
 		if (match) {
@@ -271,15 +269,10 @@ export function ReactSandbox({
 			}
 
 			try {
-				const { transpiledCode, componentName } = await transformComponentCode(
-					code.content,
-				);
+				const { transpiledCode, componentName } = await transformComponentCode(code.content);
 
 				doc = doc.replace("<COMPONENT_CODE_PLACEHOLDER>", transpiledCode || "");
-				doc = doc.replace(
-					"<COMPONENT_NAME_PLACEHOLDER>",
-					componentName || "null",
-				);
+				doc = doc.replace("<COMPONENT_NAME_PLACEHOLDER>", componentName || "null");
 			} catch (err) {
 				console.error("Error transforming:", err);
 				doc = doc.replace(

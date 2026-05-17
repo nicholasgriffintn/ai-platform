@@ -47,16 +47,13 @@ export const AIFormattingModal = memo(function AIFormattingModal({
 			<DialogContent>
 				<DialogHeader>
 					<DialogTitle>AI Formatting</DialogTitle>
-					<DialogDescription>
-						Review and re-prompt AI suggestions
-					</DialogDescription>
+					<DialogDescription>Review and re-prompt AI suggestions</DialogDescription>
 				</DialogHeader>
 				<div className="mt-2 space-y-4">
 					{formatNoteMutation.status === "idle" ? (
 						<>
 							<p className="text-sm">
-								This feature restructures and refines your note for clarity and
-								organization.
+								This feature restructures and refines your note for clarity and organization.
 							</p>
 							<p className="text-sm">
 								Add additional instructions below, then click Run to format.
@@ -69,20 +66,13 @@ export const AIFormattingModal = memo(function AIFormattingModal({
 									<Loader2 className="animate-spin text-gray-500" />
 								</div>
 							) : formatNoteMutation.status === "error" ? (
-								<p className="text-red-500 p-4">
-									Formatting failed. Try again.
-								</p>
+								<p className="text-red-500 p-4">Formatting failed. Try again.</p>
 							) : (
 								<>
 									<label htmlFor="ai-result" className="sr-only">
 										AI Result
 									</label>
-									<UITextarea
-										id="ai-result"
-										value={aiResult}
-										readOnly
-										className="h-full"
-									/>
+									<UITextarea id="ai-result" value={aiResult} readOnly className="h-full" />
 								</>
 							)}
 						</div>
@@ -105,9 +95,7 @@ export const AIFormattingModal = memo(function AIFormattingModal({
 							disabled={!noteId || formatNoteMutation.status === "pending"}
 							className="mr-2"
 						>
-							{formatNoteMutation.status === "pending"
-								? "Running..."
-								: "Run Formatting"}
+							{formatNoteMutation.status === "pending" ? "Running..." : "Run Formatting"}
 						</Button>
 						<Button
 							variant="primary"

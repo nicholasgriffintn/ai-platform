@@ -30,17 +30,10 @@ export function useChats() {
 		}
 
 		const remoteIds = new Set(remoteChats.map((chat) => chat.id));
-		const uniqueLocalChats = localChats.filter(
-			(chat) => !remoteIds.has(chat.id),
-		);
+		const uniqueLocalChats = localChats.filter((chat) => !remoteIds.has(chat.id));
 
 		return [...remoteChats, ...uniqueLocalChats];
-	}, [
-		remoteChatsQuery.data,
-		localChatsQuery.data,
-		localOnlyMode,
-		isAuthenticated,
-	]);
+	}, [remoteChatsQuery.data, localChatsQuery.data, localOnlyMode, isAuthenticated]);
 
 	return {
 		data: allChats,
@@ -64,8 +57,7 @@ export function useChat(completion_id: string | undefined) {
 			if (!completion_id) return null;
 
 			const localChat = await localChatService.getLocalChat(completion_id);
-			const shouldUseLocalOnly =
-				localOnlyMode || (localChat?.isLocalOnly ?? false);
+			const shouldUseLocalOnly = localOnlyMode || (localChat?.isLocalOnly ?? false);
 
 			if (shouldUseLocalOnly || !isAuthenticated || !isPro) {
 				return localChat;
@@ -77,10 +69,7 @@ export function useChat(completion_id: string | undefined) {
 				});
 				return remoteChat || localChat;
 			} catch (error) {
-				console.error(
-					"Failed to fetch remote chat, falling back to local:",
-					error,
-				);
+				console.error("Failed to fetch remote chat, falling back to local:", error);
 				return localChat;
 			}
 		},
@@ -110,10 +99,7 @@ export function useChat(completion_id: string | undefined) {
 					const asyncInvocation = message.data?.asyncInvocation;
 					return asyncInvocation?.pollIntervalMs;
 				})
-				.filter(
-					(value): value is number =>
-						typeof value === "number" && Number.isFinite(value),
-				);
+				.filter((value): value is number => typeof value === "number" && Number.isFinite(value));
 
 			if (!pollIntervals.length) {
 				return 6000;
@@ -191,13 +177,7 @@ export function useUpdateChatTitle() {
 	const { isAuthenticated, isPro, localOnlyMode } = useChatStore();
 
 	return useMutation({
-		mutationFn: async ({
-			completion_id,
-			title,
-		}: {
-			completion_id: string;
-			title: string;
-		}) => {
+		mutationFn: async ({ completion_id, title }: { completion_id: string; title: string }) => {
 			await localChatService.updateLocalChatTitle(completion_id, title);
 
 			const localChat = await localChatService.getLocalChat(completion_id);
@@ -255,35 +235,25 @@ export function useGenerateTitle() {
 				CHATS_QUERY_KEY,
 				completion_id,
 			]);
-			const previousAllChats = queryClient.getQueryData<Conversation[]>([
-				CHATS_QUERY_KEY,
-			]);
+			const previousAllChats = queryClient.getQueryData<Conversation[]>([CHATS_QUERY_KEY]);
 
 			return { previousSingleChat, previousAllChats };
 		},
 		onError: (_, { completion_id }, context) => {
 			if (context?.previousSingleChat) {
-				queryClient.setQueryData(
-					[CHATS_QUERY_KEY, completion_id],
-					context.previousSingleChat,
-				);
+				queryClient.setQueryData([CHATS_QUERY_KEY, completion_id], context.previousSingleChat);
 			}
 			if (context?.previousAllChats) {
 				queryClient.setQueryData([CHATS_QUERY_KEY], context.previousAllChats);
 			}
 		},
 		onSuccess: (newTitle, { completion_id }) => {
-			queryClient.setQueryData<Conversation>(
-				[CHATS_QUERY_KEY, completion_id],
-				(oldData) => (oldData ? { ...oldData, title: newTitle } : oldData),
+			queryClient.setQueryData<Conversation>([CHATS_QUERY_KEY, completion_id], (oldData) =>
+				oldData ? { ...oldData, title: newTitle } : oldData,
 			);
 
-			queryClient.setQueryData<Conversation[]>(
-				[CHATS_QUERY_KEY],
-				(oldData = []) =>
-					oldData.map((chat) =>
-						chat.id === completion_id ? { ...chat, title: newTitle } : chat,
-					),
+			queryClient.setQueryData<Conversation[]>([CHATS_QUERY_KEY], (oldData = []) =>
+				oldData.map((chat) => (chat.id === completion_id ? { ...chat, title: newTitle } : chat)),
 			);
 		},
 	});

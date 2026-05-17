@@ -1,12 +1,5 @@
 import { Code2, Copy, FileText, Play, X } from "lucide-react";
-import {
-	Suspense,
-	lazy,
-	useCallback,
-	useEffect,
-	useMemo,
-	useState,
-} from "react";
+import { Suspense, lazy, useCallback, useEffect, useMemo, useState } from "react";
 
 import { MemoizedMarkdown } from "~/components/ui/Markdown";
 import { useCopyToClipboard } from "~/hooks/useCopyToClipboard";
@@ -78,9 +71,7 @@ const ContentViewer = ({
 							{artifact.language}
 						</span>
 					)}
-					<span className="font-medium">
-						{artifact.title || artifact.identifier}
-					</span>
+					<span className="font-medium">{artifact.title || artifact.identifier}</span>
 				</div>
 				{showCopyButton && (
 					<button
@@ -153,9 +144,8 @@ export const ArtifactPanel = ({
 				];
 
 				return (
-					includedLanguages.some((lang) =>
-						a.language?.toLowerCase().includes(lang),
-					) || includedTypes.some((type) => a.type?.includes(type))
+					includedLanguages.some((lang) => a.language?.toLowerCase().includes(lang)) ||
+					includedTypes.some((type) => a.type?.includes(type))
 				);
 			}),
 		[allArtifacts],
@@ -166,19 +156,13 @@ export const ArtifactPanel = ({
 		[allArtifacts],
 	);
 
-	const showPreviewTab = useMemo(
-		() => codeArtifact !== undefined,
-		[codeArtifact],
-	);
+	const showPreviewTab = useMemo(() => codeArtifact !== undefined, [codeArtifact]);
 
 	const currentArtifact = useMemo(() => {
 		return allArtifacts[activeFileIndex] || allArtifacts[0];
 	}, [allArtifacts, activeFileIndex]);
 
-	const showFileTabs = useMemo(
-		() => allArtifacts.length > 1,
-		[allArtifacts.length],
-	);
+	const showFileTabs = useMemo(() => allArtifacts.length > 1, [allArtifacts.length]);
 
 	const isCode = useMemo(() => {
 		if (!artifact) {
@@ -197,15 +181,11 @@ export const ArtifactPanel = ({
 		];
 
 		return (
-			includedLanguages.some((lang) =>
-				artifact.language?.toLowerCase().includes(lang),
-			) || includedTypes.some((type) => artifact.type?.includes(type))
+			includedLanguages.some((lang) => artifact.language?.toLowerCase().includes(lang)) ||
+			includedTypes.some((type) => artifact.type?.includes(type))
 		);
 	}, [artifact]);
-	const icon = useMemo(
-		() => (isCode ? <Code2 size={20} /> : <FileText size={20} />),
-		[isCode],
-	);
+	const icon = useMemo(() => (isCode ? <Code2 size={20} /> : <FileText size={20} />), [isCode]);
 
 	useEffect(() => {
 		setActiveFileIndex(0);
@@ -227,8 +207,7 @@ export const ArtifactPanel = ({
 	const handleCopyAllFiles = useCallback(() => {
 		const combinedContent = allArtifacts
 			.map(
-				(a) =>
-					`// ${a.title || a.identifier} (${a.language || "unknown language"})\n${a.content}`,
+				(a) => `// ${a.title || a.identifier} (${a.language || "unknown language"})\n${a.content}`,
 			)
 			.join("\n\n");
 
@@ -279,9 +258,7 @@ export const ArtifactPanel = ({
 								onClick={handleCopyCurrentFile}
 								className="p-2 rounded-md text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors"
 								title={copied ? "Copied!" : "Copy content"}
-								aria-label={
-									copied ? "Copied to clipboard" : "Copy to clipboard"
-								}
+								aria-label={copied ? "Copied to clipboard" : "Copy to clipboard"}
 							>
 								<Copy size={16} className={copied ? "text-green-500" : ""} />
 							</button>
@@ -373,9 +350,7 @@ export const ArtifactPanel = ({
 							{previewError && (
 								<div className="p-3 m-3 border border-red-300 bg-red-50 dark:bg-red-900/20 dark:border-red-800 text-red-800 dark:text-red-300 rounded text-sm">
 									<h4 className="font-medium mb-1">Error rendering preview:</h4>
-									<pre className="text-xs overflow-auto whitespace-pre-wrap">
-										{previewError}
-									</pre>
+									<pre className="text-xs overflow-auto whitespace-pre-wrap">{previewError}</pre>
 								</div>
 							)}
 

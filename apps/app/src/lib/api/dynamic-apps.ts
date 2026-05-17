@@ -76,9 +76,7 @@ export const fetchDynamicAppById = async (id: string): Promise<AppSchema> => {
 	}
 };
 
-export const fetchDynamicAppResponseById = async (
-	responseId: string,
-): Promise<AppDataItem> => {
+export const fetchDynamicAppResponseById = async (responseId: string): Promise<AppDataItem> => {
 	try {
 		let headers: Record<string, string> = {};
 		try {
@@ -93,9 +91,7 @@ export const fetchDynamicAppResponseById = async (
 		});
 
 		if (!response.ok) {
-			throw new Error(
-				`Failed to fetch dynamic app response: ${response.statusText}`,
-			);
+			throw new Error(`Failed to fetch dynamic app response: ${response.statusText}`);
 		}
 
 		const data = await returnFetchedData<{ response: AppDataItem }>(response);
@@ -106,9 +102,7 @@ export const fetchDynamicAppResponseById = async (
 	}
 };
 
-export const fetchDynamicAppResponses = async (
-	appId?: string,
-): Promise<AppDataItem[]> => {
+export const fetchDynamicAppResponses = async (appId?: string): Promise<AppDataItem[]> => {
 	try {
 		let headers: Record<string, string> = {};
 		try {
@@ -127,9 +121,7 @@ export const fetchDynamicAppResponses = async (
 		});
 
 		if (!response.ok) {
-			throw new Error(
-				`Failed to fetch dynamic app responses: ${response.statusText}`,
-			);
+			throw new Error(`Failed to fetch dynamic app responses: ${response.statusText}`);
 		}
 
 		return await returnFetchedData<AppDataItem[]>(response);
@@ -211,9 +203,7 @@ export const fetchPodcast = async (id: string): Promise<Podcast> => {
 	return data.podcast;
 };
 
-export const uploadPodcast = async (
-	params: UploadPodcastParams,
-): Promise<UploadResponse> => {
+export const uploadPodcast = async (params: UploadPodcastParams): Promise<UploadResponse> => {
 	const formData = new FormData();
 	formData.append("title", params.title);
 	if (params.description) {
@@ -300,9 +290,7 @@ export const fetchArticles = async (): Promise<ArticlesResponse> => {
 
 	if (!response.ok) {
 		const errorData = await returnFetchedData<{ message?: string }>(response);
-		throw new Error(
-			errorData?.message || `Failed to fetch articles: ${response.statusText}`,
-		);
+		throw new Error(errorData?.message || `Failed to fetch articles: ${response.statusText}`);
 	}
 	return await returnFetchedData<ArticlesResponse>(response);
 };
@@ -321,10 +309,7 @@ export const fetchArticle = async (id: string): Promise<ArticleResponse> => {
 	});
 	if (!response.ok) {
 		const errorData = await returnFetchedData<{ message?: string }>(response);
-		throw new Error(
-			errorData?.message ||
-				`Failed to fetch article report: ${response.statusText}`,
-		);
+		throw new Error(errorData?.message || `Failed to fetch article report: ${response.statusText}`);
 	}
 	return await returnFetchedData<ArticleResponse>(response);
 };
@@ -346,9 +331,7 @@ export const analyseArticle = async (
 	});
 	if (!response.ok) {
 		const errorData = await returnFetchedData<{ message?: string }>(response);
-		throw new Error(
-			errorData?.message || `Failed to analyse article: ${response.statusText}`,
-		);
+		throw new Error(errorData?.message || `Failed to analyse article: ${response.statusText}`);
 	}
 	return await returnFetchedData<AnalyseArticleResponse>(response);
 };
@@ -370,10 +353,7 @@ export const summariseArticle = async (
 	});
 	if (!response.ok) {
 		const errorData = await returnFetchedData<{ message?: string }>(response);
-		throw new Error(
-			errorData?.message ||
-				`Failed to summarise article: ${response.statusText}`,
-		);
+		throw new Error(errorData?.message || `Failed to summarise article: ${response.statusText}`);
 	}
 	return await returnFetchedData<SummariseArticleResponse>(response);
 };
@@ -395,9 +375,7 @@ export const generateReport = async (
 	});
 	if (!response.ok) {
 		const errorData = await returnFetchedData<{ message?: string }>(response);
-		throw new Error(
-			errorData?.message || `Failed to generate report: ${response.statusText}`,
-		);
+		throw new Error(errorData?.message || `Failed to generate report: ${response.statusText}`);
 	}
 	return await returnFetchedData<GenerateReportResponse>(response);
 };
@@ -407,9 +385,7 @@ export const fetchSourceArticlesByIds = async (
 ): Promise<FetchMultipleArticlesResponse> => {
 	if (!ids.length) return { status: "success", articles: [] };
 
-	const queryString = ids
-		.map((id) => `ids[]=${encodeURIComponent(id)}`)
-		.join("&");
+	const queryString = ids.map((id) => `ids[]=${encodeURIComponent(id)}`).join("&");
 	let headers = {};
 	try {
 		headers = await apiService.getHeaders();
@@ -425,8 +401,7 @@ export const fetchSourceArticlesByIds = async (
 	if (!response.ok) {
 		const errorData = await returnFetchedData<{ message?: string }>(response);
 		throw new Error(
-			errorData?.message ||
-				`Failed to fetch source articles: ${response.statusText}`,
+			errorData?.message || `Failed to fetch source articles: ${response.statusText}`,
 		);
 	}
 	return await returnFetchedData<FetchMultipleArticlesResponse>(response);
@@ -468,9 +443,7 @@ export const fetchNote = async (id: string): Promise<Note> => {
 
 	if (!response.ok) {
 		const errorData = await returnFetchedData<{ message?: string }>(response);
-		throw new Error(
-			errorData?.message || `Failed to fetch note: ${response.statusText}`,
-		);
+		throw new Error(errorData?.message || `Failed to fetch note: ${response.statusText}`);
 	}
 
 	const data = await returnFetchedData<{ note: Note }>(response);
@@ -497,9 +470,7 @@ export const createNote = async (params: {
 
 	if (!response.ok) {
 		const errorData = await returnFetchedData<{ message?: string }>(response);
-		throw new Error(
-			errorData?.message || `Failed to create note: ${response.statusText}`,
-		);
+		throw new Error(errorData?.message || `Failed to create note: ${response.statusText}`);
 	}
 
 	const data = await returnFetchedData<{ note: Note }>(response);
@@ -530,9 +501,7 @@ export const updateNote = async (params: {
 
 	if (!response.ok) {
 		const errorData = await returnFetchedData<{ message?: string }>(response);
-		throw new Error(
-			errorData?.message || `Failed to update note: ${response.statusText}`,
-		);
+		throw new Error(errorData?.message || `Failed to update note: ${response.statusText}`);
 	}
 
 	const data = await returnFetchedData<{ note: Note }>(response);
@@ -554,16 +523,11 @@ export const deleteNote = async (id: string): Promise<void> => {
 
 	if (!response.ok) {
 		const errorData = await returnFetchedData<{ message?: string }>(response);
-		throw new Error(
-			errorData?.message || `Failed to delete note: ${response.statusText}`,
-		);
+		throw new Error(errorData?.message || `Failed to delete note: ${response.statusText}`);
 	}
 };
 
-export const formatNoteAPI = async (
-	id: string,
-	prompt?: string,
-): Promise<string> => {
+export const formatNoteAPI = async (id: string, prompt?: string): Promise<string> => {
 	let headers = {};
 	try {
 		headers = await apiService.getHeaders();
@@ -579,9 +543,7 @@ export const formatNoteAPI = async (
 
 	if (!response.ok) {
 		const errorData = await returnFetchedData<{ message?: string }>(response);
-		throw new Error(
-			errorData?.message || `Failed to format note: ${response.statusText}`,
-		);
+		throw new Error(errorData?.message || `Failed to format note: ${response.statusText}`);
 	}
 
 	const data = await returnFetchedData<{ content: string }>(response);
@@ -614,8 +576,7 @@ export const extractArticleContent = async (
 	if (!response.ok) {
 		const errorData = await returnFetchedData<{ message?: string }>(response);
 		throw new Error(
-			errorData?.message ||
-				`Failed to extract article content: ${response.statusText}`,
+			errorData?.message || `Failed to extract article content: ${response.statusText}`,
 		);
 	}
 
@@ -641,8 +602,7 @@ export const prepareSessionForRerun = async (itemId: string): Promise<void> => {
 	if (!response.ok) {
 		const errorData = await returnFetchedData<{ message?: string }>(response);
 		throw new Error(
-			errorData?.message ||
-				`Failed to prepare session for rerun: ${response.statusText}`,
+			errorData?.message || `Failed to prepare session for rerun: ${response.statusText}`,
 		);
 	}
 };
@@ -696,9 +656,7 @@ export const generateNotesFromMedia = async (params: {
 
 	if (!response.ok) {
 		const errorData = await returnFetchedData<{ message?: string }>(response);
-		throw new Error(
-			errorData?.message || `Failed to generate notes: ${response.statusText}`,
-		);
+		throw new Error(errorData?.message || `Failed to generate notes: ${response.statusText}`);
 	}
 
 	return await returnFetchedData<{ content: string }>(response);

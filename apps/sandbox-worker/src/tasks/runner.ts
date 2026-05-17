@@ -1,12 +1,6 @@
 import type { SandboxTaskType } from "@assistant/schemas";
 
-import type {
-	Env,
-	TaskEventEmitter,
-	TaskParams,
-	TaskResult,
-	TaskSecrets,
-} from "../types";
+import type { Env, TaskEventEmitter, TaskParams, TaskResult, TaskSecrets } from "../types";
 
 export interface SandboxTaskRunnerContext {
 	params: TaskParams;

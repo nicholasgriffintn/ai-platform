@@ -95,19 +95,11 @@ export const ModelIcon = forwardRef<HTMLDivElement, ModelIconProps>(
 		}
 
 		const containerSize =
-			typeof size === "number"
-				? size
-				: Number.parseInt(size as string, 10) || 20;
+			typeof size === "number" ? size : Number.parseInt(size as string, 10) || 20;
 		const iconLabel = provider ? `${modelName} by ${provider}` : modelName;
 
 		if (url) {
-			return (
-				<img
-					src={url}
-					alt={modelName}
-					className="w-6 h-6 rounded-full object-cover"
-				/>
-			);
+			return <img src={url} alt={modelName} className="w-6 h-6 rounded-full object-cover" />;
 		}
 
 		return (
@@ -126,31 +118,21 @@ export const ModelIcon = forwardRef<HTMLDivElement, ModelIconProps>(
 				) : (
 					<>
 						{(iconType === "fallback" || !isLoaded) && showFallback && (
-							<TextFallback
-								text={modelName}
-								provider={provider}
-								size={containerSize}
-							/>
+							<TextFallback text={modelName} provider={provider} size={containerSize} />
 						)}
 
 						{iconType !== "fallback" && IconComponent && (
 							<Suspense
 								fallback={
 									showFallback ? null : (
-										<TextFallback
-											text={modelName}
-											provider={provider}
-											size={containerSize}
-										/>
+										<TextFallback text={modelName} provider={provider} size={containerSize} />
 									)
 								}
 							>
 								<div
 									className={`absolute inset-0 flex items-center justify-center transition-opacity duration-200 ${isLoaded ? "opacity-100" : "opacity-0"}`}
 								>
-									<div
-										className={`${mono ? "text-black dark:text-white" : ""}`}
-									>
+									<div className={`${mono ? "text-black dark:text-white" : ""}`}>
 										<IconComponent
 											size={containerSize}
 											style={{

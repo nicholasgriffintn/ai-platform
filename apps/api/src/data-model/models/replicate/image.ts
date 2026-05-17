@@ -1,16 +1,12 @@
 import type { ModelConfig } from "~/types";
-import {
-	createModelConfig,
-	createModelConfigObject,
-} from "~/lib/providers/models/utils";
+import { createModelConfig, createModelConfigObject } from "~/lib/providers/models/utils";
 
 const PROVIDER = "replicate";
 
 export const replicateModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("replicate-bytedance-sdxl-lightning-4step", PROVIDER, {
 		name: "SDXL Lightning 4-Step",
-		matchingModel:
-			"5599ed30703defd1d160a25a63321b4dec97101d98b4674bcc56e41f62f35637",
+		matchingModel: "5599ed30703defd1d160a25a63321b4dec97101d98b4674bcc56e41f62f35637",
 		description:
 			"Bytedance's SDXL Lightning model tuned for ultra-fast 4-step diffusion image generation with high fidelity outputs.",
 		strengths: ["creative"],
@@ -23,15 +19,13 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
 				{
 					name: "prompt",
 					type: "string",
-					description:
-						"Positive text prompt describing the desired image content.",
+					description: "Positive text prompt describing the desired image content.",
 					required: true,
 				},
 				{
 					name: "negative_prompt",
 					type: "string",
-					description:
-						"Text describing elements to avoid in the generated image.",
+					description: "Text describing elements to avoid in the generated image.",
 					default: "",
 				},
 				{
@@ -43,8 +37,7 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
 				{
 					name: "guidance_scale",
 					type: "number",
-					description:
-						"Classifier-free guidance scale controlling prompt adherence.",
+					description: "Classifier-free guidance scale controlling prompt adherence.",
 					default: 0,
 				},
 				{
@@ -133,8 +126,7 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
 				{
 					name: "safety_tolerance",
 					type: "integer",
-					description:
-						"Safety tolerance, 1 is most strict and 5 is most permissive",
+					description: "Safety tolerance, 1 is most strict and 5 is most permissive",
 					default: 2,
 				},
 				{
@@ -233,8 +225,7 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
 				{
 					name: "safety_tolerance",
 					type: "integer",
-					description:
-						"Safety tolerance, 1 is most strict and 5 is most permissive",
+					description: "Safety tolerance, 1 is most strict and 5 is most permissive",
 					default: 2,
 				},
 				{
@@ -326,8 +317,7 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
 				{
 					name: "safety_tolerance",
 					type: "integer",
-					description:
-						"Safety tolerance, 1 is most strict and 5 is most permissive",
+					description: "Safety tolerance, 1 is most strict and 5 is most permissive",
 					default: 2,
 				},
 				{
@@ -593,8 +583,7 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("replicate-real-esrgan", PROVIDER, {
 		name: "Real-ESRGAN",
 		matchingModel: "nightmareai/real-esrgan",
-		description:
-			"Real-ESRGAN with optional face correction and adjustable upscale",
+		description: "Real-ESRGAN with optional face correction and adjustable upscale",
 		strengths: ["creative", "analysis"],
 		supportsStreaming: false,
 		supportsAttachments: true,
@@ -674,8 +663,7 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("replicate-google-nano-banana-pro", PROVIDER, {
 		name: "Google Nano Banana Pro",
 		matchingModel: "google/nano-banana-pro",
-		description:
-			"Google's state of the art image generation and editing model 🍌🍌 ",
+		description: "Google's state of the art image generation and editing model 🍌🍌 ",
 		modalities: {
 			input: ["text", "image"],
 			output: ["image"],
@@ -693,8 +681,7 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
 				{
 					name: "image_input",
 					type: "array",
-					description:
-						"Input images to transform or use as reference (supports up to 14 images)",
+					description: "Input images to transform or use as reference (supports up to 14 images)",
 					required: false,
 				},
 				{
@@ -735,11 +722,7 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
 					type: "string",
 					description: "Output format.",
 					default: "block_only_high",
-					enum: [
-						"block_only_high",
-						"block_only_medium_and_above",
-						"block_only_low_and_above",
-					],
+					enum: ["block_only_high", "block_only_medium_and_above", "block_only_low_and_above"],
 				},
 			],
 		},
@@ -765,8 +748,7 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
 				{
 					name: "image_input",
 					type: "array",
-					description:
-						"Input images to transform or use as reference (supports multiple images)",
+					description: "Input images to transform or use as reference (supports multiple images)",
 					required: false,
 				},
 				{
@@ -823,8 +805,7 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
 				{
 					name: "image",
 					type: "array",
-					description:
-						"Images to use as reference. Must be jpeg, png, gif, or webp.",
+					description: "Images to use as reference. Must be jpeg, png, gif, or webp.",
 					required: true,
 				},
 				{

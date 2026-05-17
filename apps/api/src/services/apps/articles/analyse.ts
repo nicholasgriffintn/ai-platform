@@ -5,10 +5,7 @@ import {
 } from "~/lib/providers/models";
 import { analyseArticlePrompt } from "~/lib/prompts";
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
-import {
-	createServiceContext,
-	type ServiceContext,
-} from "~/lib/context/serviceContext";
+import { createServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
 import type { IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { extractQuotes } from "~/utils/extract";
@@ -52,10 +49,7 @@ export async function analyseArticle({
 		throw new AssistantError("Item ID is required", ErrorType.PARAMS_ERROR);
 	}
 	if (!args.article) {
-		throw new AssistantError(
-			"Article content is required",
-			ErrorType.PARAMS_ERROR,
-		);
+		throw new AssistantError("Article content is required", ErrorType.PARAMS_ERROR);
 	}
 
 	try {
@@ -69,16 +63,15 @@ export async function analyseArticle({
 				: null);
 
 		if (!serviceContext) {
-			throw new AssistantError(
-				"Service context is required",
-				ErrorType.CONFIGURATION_ERROR,
-			);
+			throw new AssistantError("Service context is required", ErrorType.CONFIGURATION_ERROR);
 		}
 
 		const sanitisedArticle = sanitiseInput(args.article);
 
-		const { model: modelToUse, provider: providerToUse } =
-			await getAuxiliaryModelForRetrieval(serviceContext.env, user);
+		const { model: modelToUse, provider: providerToUse } = await getAuxiliaryModelForRetrieval(
+			serviceContext.env,
+			user,
+		);
 		const modelConfig = await getModelConfigByMatchingModel(modelToUse);
 		const provider = getChatProvider(providerToUse, {
 			env: serviceContext.env,
@@ -104,10 +97,7 @@ export async function analyseArticle({
 		const analysisDataContent = analysisData.content || analysisData.response;
 
 		if (!analysisDataContent) {
-			throw new AssistantError(
-				"Analysis content was empty",
-				ErrorType.PARAMS_ERROR,
-			);
+			throw new AssistantError("Analysis content was empty", ErrorType.PARAMS_ERROR);
 		}
 
 		const quotes = extractQuotes(analysisDataContent);

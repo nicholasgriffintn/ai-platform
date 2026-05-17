@@ -42,10 +42,7 @@ export class ResearchPollingHandler implements TaskHandler {
 
 			const researchProvider = getResearchProvider(data.provider, { env });
 
-			const result = await researchProvider.fetchResearchResult(
-				data.runId,
-				data.options,
-			);
+			const result = await researchProvider.fetchResearchResult(data.runId, data.options);
 
 			if ("status" in result && result.status === "error") {
 				logger.warn(`Research task ${data.runId} failed: ${result.error}`);
@@ -57,10 +54,7 @@ export class ResearchPollingHandler implements TaskHandler {
 				};
 			}
 
-			const researchResult = result as Exclude<
-				ResearchResult,
-				ResearchResultError
-			>;
+			const researchResult = result as Exclude<ResearchResult, ResearchResultError>;
 			const status = researchResult.run?.status?.toLowerCase() || "unknown";
 
 			if (status === "completed") {
@@ -73,13 +67,8 @@ export class ResearchPollingHandler implements TaskHandler {
 				};
 			}
 
-			if (
-				status === "failed" ||
-				status === "errored" ||
-				status === "cancelled"
-			) {
-				const error =
-					(researchResult.run as any).error || "Research task failed";
+			if (status === "failed" || status === "errored" || status === "cancelled") {
+				const error = (researchResult.run as any).error || "Research task failed";
 				logger.warn(`Research task ${data.runId} ${status}`);
 				await this.persistError(env, data, error);
 				return {

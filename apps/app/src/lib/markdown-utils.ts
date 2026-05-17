@@ -36,10 +36,7 @@ function completeMarkdownTags(markdown: string): string {
 	const italicMarkers = contentWithoutBold.match(/\*/g) || [];
 	if (italicMarkers.length % 2 === 1) {
 		const lastItalicIndex = content.lastIndexOf("*");
-		if (
-			content[lastItalicIndex - 1] !== "*" &&
-			content[lastItalicIndex + 1] !== "*"
-		) {
+		if (content[lastItalicIndex - 1] !== "*" && content[lastItalicIndex + 1] !== "*") {
 			const contentAfterItalic = content.slice(lastItalicIndex + 1);
 			if (contentAfterItalic?.trim().length > 0) {
 				content += "*";
@@ -107,10 +104,7 @@ function isLikelyIncomplete(markdown: string): boolean {
 		italicMarkers % 2 === 1 &&
 		(() => {
 			const lastItalicIndex = trimmed.lastIndexOf("*");
-			if (
-				trimmed[lastItalicIndex - 1] === "*" ||
-				trimmed[lastItalicIndex + 1] === "*"
-			) {
+			if (trimmed[lastItalicIndex - 1] === "*" || trimmed[lastItalicIndex + 1] === "*") {
 				return false;
 			}
 			const contentAfterItalic = trimmed.slice(lastItalicIndex + 1);

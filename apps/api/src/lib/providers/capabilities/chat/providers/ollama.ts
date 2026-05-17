@@ -22,16 +22,11 @@ export class OllamaProvider extends BaseProvider {
 		super.validateParams(params);
 
 		if (params.env.OLLAMA_ENABLED !== "true") {
-			throw new AssistantError(
-				"Missing OLLAMA_ENABLED",
-				ErrorType.CONFIGURATION_ERROR,
-			);
+			throw new AssistantError("Missing OLLAMA_ENABLED", ErrorType.CONFIGURATION_ERROR);
 		}
 	}
 
-	protected async getEndpoint(
-		params: ChatCompletionParameters,
-	): Promise<string> {
+	protected async getEndpoint(params: ChatCompletionParameters): Promise<string> {
 		const ollamaUrl = params.env.OLLAMA_URL || "http://localhost:11434";
 		return `${ollamaUrl}/api/chat`;
 	}

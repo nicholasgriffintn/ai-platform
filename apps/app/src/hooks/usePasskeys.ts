@@ -1,7 +1,4 @@
-import {
-	startAuthentication,
-	startRegistration,
-} from "@simplewebauthn/browser";
+import { startAuthentication, startRegistration } from "@simplewebauthn/browser";
 import type {
 	PublicKeyCredentialCreationOptionsJSON,
 	PublicKeyCredentialRequestOptionsJSON,
@@ -44,32 +41,25 @@ export const usePasskeys = () => {
 				throw new Error("User must be authenticated to register a passkey");
 			}
 
-			const optionsResponse = await fetchApi(
-				"/auth/webauthn/registration/options",
-				{
-					method: "POST",
-					body: {},
-				},
-			);
+			const optionsResponse = await fetchApi("/auth/webauthn/registration/options", {
+				method: "POST",
+				body: {},
+			});
 
 			if (!optionsResponse.ok) {
 				throw new Error("Failed to get registration options");
 			}
 
-			const options =
-				(await optionsResponse.json()) as PublicKeyCredentialCreationOptionsJSON;
+			const options = (await optionsResponse.json()) as PublicKeyCredentialCreationOptionsJSON;
 
 			const attestationResponse = await startRegistration({
 				optionsJSON: options,
 			});
 
-			const verificationResponse = await fetchApi(
-				"/auth/webauthn/registration/verification",
-				{
-					method: "POST",
-					body: { response: attestationResponse },
-				},
-			);
+			const verificationResponse = await fetchApi("/auth/webauthn/registration/verification", {
+				method: "POST",
+				body: { response: attestationResponse },
+			});
 
 			if (!verificationResponse.ok) {
 				throw new Error("Failed to verify passkey registration");
@@ -87,44 +77,33 @@ export const usePasskeys = () => {
 		},
 	});
 
-	const authenticateWithPasskeyMutation = useMutation<
-		VerificationResponse,
-		Error
-	>({
+	const authenticateWithPasskeyMutation = useMutation<VerificationResponse, Error>({
 		mutationFn: async () => {
-			const optionsResponse = await fetchApi(
-				"/auth/webauthn/authentication/options",
-				{
-					method: "POST",
-					body: {},
-				},
-			);
+			const optionsResponse = await fetchApi("/auth/webauthn/authentication/options", {
+				method: "POST",
+				body: {},
+			});
 
 			if (!optionsResponse.ok) {
 				throw new Error("Failed to get authentication options");
 			}
 
-			const options =
-				(await optionsResponse.json()) as PublicKeyCredentialRequestOptionsJSON;
+			const options = (await optionsResponse.json()) as PublicKeyCredentialRequestOptionsJSON;
 
 			const assertionResponse = await startAuthentication({
 				optionsJSON: options,
 			});
 
-			const verificationResponse = await fetchApi(
-				"/auth/webauthn/authentication/verification",
-				{
-					method: "POST",
-					body: { response: assertionResponse },
-				},
-			);
+			const verificationResponse = await fetchApi("/auth/webauthn/authentication/verification", {
+				method: "POST",
+				body: { response: assertionResponse },
+			});
 
 			if (!verificationResponse.ok) {
 				throw new Error("Failed to verify passkey authentication");
 			}
 
-			const verification =
-				(await verificationResponse.json()) as VerificationResponse;
+			const verification = (await verificationResponse.json()) as VerificationResponse;
 
 			if (verification.verified) {
 				await authService.checkAuthStatus();
@@ -182,8 +161,7 @@ export const usePasskeys = () => {
 		return (
 			window.PublicKeyCredential !== undefined &&
 			typeof window.PublicKeyCredential === "function" &&
-			window.PublicKeyCredential.isConditionalMediationAvailable?.() !==
-				undefined
+			window.PublicKeyCredential.isConditionalMediationAvailable?.() !== undefined
 		);
 	};
 

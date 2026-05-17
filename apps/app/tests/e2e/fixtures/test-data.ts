@@ -22,8 +22,7 @@ export const TEST_MESSAGES = {
 } as const;
 
 export const MOCK_RESPONSES = {
-	greeting:
-		"Hello! I'm doing well, thank you for asking. How can I help you today?",
+	greeting: "Hello! I'm doing well, thank you for asking. How can I help you today?",
 	quantum: "Quantum computing is a revolutionary computing paradigm...",
 	fibonacci: `Here's a Python function to calculate Fibonacci numbers:
 
@@ -81,8 +80,7 @@ type PromptCheck = {
 export const CORE_PROMPTS: PromptCheck[] = [
 	{
 		name: "deterministic acknowledgement",
-		message:
-			"Respond with the exact text 'PLAYWRIGHT_HELLO'. Do not include any other characters.",
+		message: "Respond with the exact text 'PLAYWRIGHT_HELLO'. Do not include any other characters.",
 		expectations: [/PLAYWRIGHT_HELLO/],
 	},
 	{

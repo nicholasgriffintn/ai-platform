@@ -5,23 +5,13 @@ import { splitTitleAndContent } from "~/lib/text-utils";
 
 interface UseAutoSaveOptions {
 	text: string;
-	onSave: (
-		title: string,
-		content: string,
-		metadata?: Record<string, any>,
-	) => Promise<string>;
+	onSave: (title: string, content: string, metadata?: Record<string, any>) => Promise<string>;
 	tabInfo?: any;
 	metadata: Record<string, any>;
 	delay?: number;
 }
 
-export function useAutoSave({
-	text,
-	onSave,
-	tabInfo,
-	metadata,
-	delay = 1000,
-}: UseAutoSaveOptions) {
+export function useAutoSave({ text, onSave, tabInfo, metadata, delay = 1000 }: UseAutoSaveOptions) {
 	const [lastSavedText, setLastSavedText] = useState<string>(text);
 	const [isSaving, setIsSaving] = useState<boolean>(false);
 	const textRef = useRef(text);

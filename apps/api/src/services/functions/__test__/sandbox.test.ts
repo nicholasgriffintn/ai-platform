@@ -64,9 +64,7 @@ describe("run_feature_implementation", () => {
 			privateKey: "private-key",
 			installationId: 78910,
 		});
-		vi.mocked(getGitHubAppInstallationToken).mockResolvedValue(
-			"github-app-token",
-		);
+		vi.mocked(getGitHubAppInstallationToken).mockResolvedValue("github-app-token");
 	});
 
 	it("passes selected model and GitHub token to sandbox worker", async () => {
@@ -91,11 +89,7 @@ describe("run_feature_implementation", () => {
 			createToolContext(),
 		);
 
-		expect(generateJwtToken).toHaveBeenCalledWith(
-			request.user,
-			request.env.JWT_SECRET,
-			60 * 60,
-		);
+		expect(generateJwtToken).toHaveBeenCalledWith(request.user, request.env.JWT_SECRET, 60 * 60);
 		expect(sandboxFetch).toHaveBeenCalledTimes(1);
 
 		const workerRequest = sandboxFetch.mock.calls[0][0] as Request;
@@ -109,12 +103,8 @@ describe("run_feature_implementation", () => {
 			model: "mistral-large",
 			shouldCommit: true,
 		});
-		expect(workerRequest.headers.get("Authorization")).toBe(
-			"Bearer sandbox-jwt",
-		);
-		expect(workerRequest.headers.get("X-GitHub-Token")).toBe(
-			"github-app-token",
-		);
+		expect(workerRequest.headers.get("Authorization")).toBe("Bearer sandbox-jwt");
+		expect(workerRequest.headers.get("X-GitHub-Token")).toBe("github-app-token");
 		expect(result).toMatchObject({
 			success: true,
 			summary: "done",
@@ -156,12 +146,8 @@ describe("run_feature_implementation", () => {
 		});
 		expect(workerBody.githubToken).toBeUndefined();
 		expect(workerBody.userToken).toBeUndefined();
-		expect(workerRequest.headers.get("Authorization")).toBe(
-			"Bearer sandbox-jwt",
-		);
-		expect(workerRequest.headers.get("X-GitHub-Token")).toBe(
-			"github-app-token",
-		);
+		expect(workerRequest.headers.get("Authorization")).toBe("Bearer sandbox-jwt");
+		expect(workerRequest.headers.get("X-GitHub-Token")).toBe("github-app-token");
 	});
 
 	it("falls back to default model when no model and no sandbox setting are provided", async () => {

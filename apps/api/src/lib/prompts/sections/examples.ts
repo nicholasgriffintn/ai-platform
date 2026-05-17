@@ -31,25 +31,19 @@ export function buildStandardExampleOutputSection({
 	variant = "full",
 	artifactVariant,
 }: StandardExampleOptions): string {
-	const effectiveArtifactVariant =
-		artifactVariant ?? (variant === "full" ? "full" : "compact");
+	const effectiveArtifactVariant = artifactVariant ?? (variant === "full" ? "full" : "compact");
 
 	if (variant === "compact") {
 		const builder = new PromptBuilder("<example_output>\n");
 
 		if (!reasoningEnabled) {
-			builder
-				.addLine("<think>")
-				.addLine(problemBreakdownInstructions)
-				.addLine("</think>");
+			builder.addLine("<think>").addLine(problemBreakdownInstructions).addLine("</think>");
 		}
 
 		builder.addLine("<answer>").addLine(answerFormatInstructions);
 
 		if (supportsArtifacts) {
-			builder.addLine(
-				getArtifactExample(true, false, effectiveArtifactVariant),
-			);
+			builder.addLine(getArtifactExample(true, false, effectiveArtifactVariant));
 		}
 
 		builder.addLine("</answer>").addLine("</example_output>").addLine();
@@ -62,10 +56,7 @@ export function buildStandardExampleOutputSection({
 		.addLine("<example_output>");
 
 	if (!reasoningEnabled) {
-		builder
-			.addLine("<think>")
-			.addLine(problemBreakdownInstructions)
-			.addLine("</think>");
+		builder.addLine("<think>").addLine(problemBreakdownInstructions).addLine("</think>");
 	}
 
 	builder.addLine("<answer>").addLine(answerFormatInstructions);
@@ -91,8 +82,7 @@ export function buildCodingExampleOutputSection({
 }: CodingExampleOptions): string {
 	const proseLanguage = preferredLanguage || "the user's preferred language";
 	const codeLanguagePlaceholder = "{{programming_language}}";
-	const effectiveArtifactVariant =
-		artifactVariant ?? (variant === "full" ? "full" : "compact");
+	const effectiveArtifactVariant = artifactVariant ?? (variant === "full" ? "full" : "compact");
 
 	const toneHint = (() => {
 		switch (verbosity) {
@@ -121,10 +111,7 @@ export function buildCodingExampleOutputSection({
 	}
 
 	if (!reasoningEnabled) {
-		builder
-			.addLine("<think>")
-			.addLine(problemBreakdownInstructions)
-			.addLine("</think>");
+		builder.addLine("<think>").addLine(problemBreakdownInstructions).addLine("</think>");
 		if (variant === "full") {
 			builder.addLine();
 		}
@@ -147,9 +134,7 @@ export function buildCodingExampleOutputSection({
 			.addLine(
 				`- Outline the main approach, including key helpers or data structures, using ${proseLanguage}.`,
 			)
-			.addLine(
-				"- Note any assumptions or trade-offs that influenced the implementation.",
-			)
+			.addLine("- Note any assumptions or trade-offs that influenced the implementation.")
 			.addLine("</explanation>")
 			.addLine("<reference_note>")
 			.addLine(answerFormatInstructions)
@@ -164,9 +149,7 @@ export function buildCodingExampleOutputSection({
 		.addLine(
 			"<additional_info>Add best practices or alternatives when they help the user.</additional_info>",
 		)
-		.addLine(
-			"<validation>Note tests or checks you ran plus critical edge cases.</validation>",
-		)
+		.addLine("<validation>Note tests or checks you ran plus critical edge cases.</validation>")
 		.addLine(
 			"<next_steps>Offer a helpful follow-up suggestion or optimisation when relevant.</next_steps>",
 		);

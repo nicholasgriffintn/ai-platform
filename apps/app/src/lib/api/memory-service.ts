@@ -59,9 +59,7 @@ class MemoryService {
 		}
 	}
 
-	public async createGroup(
-		data: CreateGroupRequest,
-	): Promise<CreateGroupResponse> {
+	public async createGroup(data: CreateGroupRequest): Promise<CreateGroupResponse> {
 		try {
 			const response = await fetchApi("/memories/groups", {
 				method: "POST",
@@ -113,9 +111,7 @@ class MemoryService {
 				throw new Error(errorData.error || "Failed to add memories to group");
 			}
 
-			return await returnFetchedData<{ success: boolean; added_count: number }>(
-				response,
-			);
+			return await returnFetchedData<{ success: boolean; added_count: number }>(response);
 		} catch (error) {
 			console.error("Error adding memories to group:", error);
 			throw error;

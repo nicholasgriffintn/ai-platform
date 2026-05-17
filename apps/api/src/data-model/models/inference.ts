@@ -1,8 +1,5 @@
 import type { ModelConfig } from "~/types";
-import {
-	createModelConfig,
-	createModelConfigObject,
-} from "~/lib/providers/models/utils";
+import { createModelConfig, createModelConfigObject } from "~/lib/providers/models/utils";
 
 const PROVIDER = "inference";
 
@@ -210,8 +207,7 @@ export const inferenceModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("qwen/qwen3-embedding-4b", PROVIDER, {
 		name: "Qwen 3 Embedding 4B",
 		matchingModel: "qwen/qwen3-embedding-4b",
-		description:
-			"Specialized embedding model for generating high-quality text representations.",
+		description: "Specialized embedding model for generating high-quality text representations.",
 		knowledgeCutoffDate: "December 2024",
 		releaseDate: "January 1, 2025",
 		lastUpdated: "January 1, 2025",

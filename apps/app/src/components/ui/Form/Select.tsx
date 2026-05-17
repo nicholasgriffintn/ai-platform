@@ -19,19 +19,7 @@ export interface FormSelectProps extends SelectHTMLAttributes<HTMLSelectElement>
 }
 
 export const FormSelect = forwardRef<HTMLSelectElement, FormSelectProps>(
-	(
-		{
-			label,
-			description,
-			options,
-			children,
-			className,
-			fullWidth = true,
-			id,
-			...props
-		},
-		ref,
-	) => {
+	({ label, description, options, children, className, fullWidth = true, id, ...props }, ref) => {
 		return (
 			<div className={cn("space-y-1", fullWidth && "w-full")}>
 				{label && <Label htmlFor={id}>{label}</Label>}
@@ -54,9 +42,7 @@ export const FormSelect = forwardRef<HTMLSelectElement, FormSelectProps>(
 						: children}
 				</select>
 				{description && (
-					<p className="text-xs text-zinc-600 dark:text-zinc-400 mt-1">
-						{description}
-					</p>
+					<p className="text-xs text-zinc-600 dark:text-zinc-400 mt-1">{description}</p>
 				)}
 			</div>
 		);

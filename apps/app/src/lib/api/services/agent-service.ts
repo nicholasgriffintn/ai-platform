@@ -86,10 +86,9 @@ export class AgentService {
 	async listFeaturedSharedAgents(limit = 10): Promise<any[]> {
 		const params = new URLSearchParams();
 		params.append("limit", String(limit));
-		const response = await fetchApi(
-			`/agents/shared/featured?${params.toString()}`,
-			{ method: "GET" },
-		);
+		const response = await fetchApi(`/agents/shared/featured?${params.toString()}`, {
+			method: "GET",
+		});
 
 		if (!response.ok) {
 			throw new Error(`Failed to list featured agents: ${response.statusText}`);
@@ -144,11 +143,7 @@ export class AgentService {
 		return responseData || [];
 	}
 
-	async rateSharedAgent(
-		agentId: string,
-		rating: number,
-		review?: string,
-	): Promise<any> {
+	async rateSharedAgent(agentId: string, rating: number, review?: string): Promise<any> {
 		const body = { rating, review };
 		const response = await fetchApi(`/agents/shared/${agentId}/rate`, {
 			method: "POST",
@@ -167,10 +162,9 @@ export class AgentService {
 	async getAgentRatings(agentId: string, limit = 10): Promise<any[]> {
 		const params = new URLSearchParams();
 		params.append("limit", String(limit));
-		const response = await fetchApi(
-			`/agents/shared/${agentId}/ratings?${params.toString()}`,
-			{ method: "GET" },
-		);
+		const response = await fetchApi(`/agents/shared/${agentId}/ratings?${params.toString()}`, {
+			method: "GET",
+		});
 
 		if (!response.ok) {
 			throw new Error(`Failed to get agent ratings: ${response.statusText}`);
@@ -187,9 +181,7 @@ export class AgentService {
 		});
 
 		if (!response.ok) {
-			throw new Error(
-				`Failed to get shared agent categories: ${response.statusText}`,
-			);
+			throw new Error(`Failed to get shared agent categories: ${response.statusText}`);
 		}
 
 		const responseData = await returnFetchedData<any>(response);
@@ -201,9 +193,7 @@ export class AgentService {
 		const response = await fetchApi(`/agents/shared/tags`, { method: "GET" });
 
 		if (!response.ok) {
-			throw new Error(
-				`Failed to get shared agent tags: ${response.statusText}`,
-			);
+			throw new Error(`Failed to get shared agent tags: ${response.statusText}`);
 		}
 
 		const responseData = await returnFetchedData<any>(response);
@@ -294,8 +284,7 @@ export class AgentService {
 			avatar_url: data.avatar_url || undefined,
 			servers: data.servers || undefined,
 			model: data.model || undefined,
-			temperature:
-				data.temperature !== undefined ? data.temperature : undefined,
+			temperature: data.temperature !== undefined ? data.temperature : undefined,
 			max_steps: data.max_steps !== undefined ? data.max_steps : undefined,
 			system_prompt: data.system_prompt || undefined,
 			few_shot_examples: data.few_shot_examples || undefined,

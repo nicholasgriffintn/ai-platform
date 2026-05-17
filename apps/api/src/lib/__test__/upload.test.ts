@@ -47,11 +47,7 @@ describe("Upload Functions", () => {
 			});
 
 			const imageKey = "test-image.png";
-			const result = await uploadImageFromChat(
-				mockStream,
-				mockEnv as any,
-				imageKey,
-			);
+			const result = await uploadImageFromChat(mockStream, mockEnv as any, imageKey);
 
 			expect(result).toBe("test-key");
 			expect(mockStorageService.uploadObject).toHaveBeenCalledWith(
@@ -69,11 +65,7 @@ describe("Upload Functions", () => {
 				"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==";
 			const imageKey = "test-image.png";
 
-			const result = await uploadImageFromChat(
-				base64String,
-				mockEnv as any,
-				imageKey,
-			);
+			const result = await uploadImageFromChat(base64String, mockEnv as any, imageKey);
 
 			expect(result).toBe("test-key");
 			expect(mockStorageService.uploadObject).toHaveBeenCalledWith(
@@ -97,11 +89,7 @@ describe("Upload Functions", () => {
 			});
 
 			const imageKey = "test-multi-chunk.png";
-			const result = await uploadImageFromChat(
-				mockStream,
-				mockEnv as any,
-				imageKey,
-			);
+			const result = await uploadImageFromChat(mockStream, mockEnv as any, imageKey);
 
 			expect(result).toBe("test-key");
 			expect(mockStorageService.uploadObject).toHaveBeenCalledWith(
@@ -119,11 +107,7 @@ describe("Upload Functions", () => {
 				"data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQH/2wBDAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQH/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwA/gA==";
 			const imageKey = "test-jpeg.jpg";
 
-			const result = await uploadImageFromChat(
-				jpegBase64,
-				mockEnv as any,
-				imageKey,
-			);
+			const result = await uploadImageFromChat(jpegBase64, mockEnv as any, imageKey);
 
 			expect(result).toBe("test-key");
 		});
@@ -148,11 +132,7 @@ describe("Upload Functions", () => {
 			});
 
 			const audioKey = "test-audio.mp3";
-			const result = await uploadAudioFromChat(
-				mockStream,
-				mockEnv as any,
-				audioKey,
-			);
+			const result = await uploadAudioFromChat(mockStream, mockEnv as any, audioKey);
 
 			expect(result).toBe("test-key");
 			expect(mockStorageService.uploadObject).toHaveBeenCalledWith(
@@ -169,11 +149,7 @@ describe("Upload Functions", () => {
 			const base64String = "data:audio/mp3;base64,SUQzAwAAAAABAAAA";
 			const audioKey = "test-audio.mp3";
 
-			const result = await uploadAudioFromChat(
-				base64String,
-				mockEnv as any,
-				audioKey,
-			);
+			const result = await uploadAudioFromChat(base64String, mockEnv as any, audioKey);
 
 			expect(result).toBe("test-key");
 			expect(mockStorageService.uploadObject).toHaveBeenCalledWith(
@@ -191,11 +167,7 @@ describe("Upload Functions", () => {
 				"data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQQAAAA=";
 			const audioKey = "test-wav.wav";
 
-			const result = await uploadAudioFromChat(
-				wavBase64,
-				mockEnv as any,
-				audioKey,
-			);
+			const result = await uploadAudioFromChat(wavBase64, mockEnv as any, audioKey);
 
 			expect(result).toBe("test-key");
 		});
@@ -208,11 +180,7 @@ describe("Upload Functions", () => {
 			});
 
 			const audioKey = "test-empty.mp3";
-			const result = await uploadAudioFromChat(
-				mockStream,
-				mockEnv as any,
-				audioKey,
-			);
+			const result = await uploadAudioFromChat(mockStream, mockEnv as any, audioKey);
 
 			expect(result).toBe("test-key");
 			expect(mockStorageService.uploadObject).toHaveBeenCalledWith(
@@ -231,11 +199,7 @@ describe("Upload Functions", () => {
 			const emptyBase64 = "data:image/png;base64,";
 			const imageKey = "test-empty.png";
 
-			const result = await uploadImageFromChat(
-				emptyBase64,
-				mockEnv as any,
-				imageKey,
-			);
+			const result = await uploadImageFromChat(emptyBase64, mockEnv as any, imageKey);
 
 			expect(result).toBe("test-key");
 		});
@@ -245,11 +209,7 @@ describe("Upload Functions", () => {
 				"iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==";
 			const imageKey = "test-no-mime.png";
 
-			const result = await uploadImageFromChat(
-				base64WithoutMime,
-				mockEnv as any,
-				imageKey,
-			);
+			const result = await uploadImageFromChat(base64WithoutMime, mockEnv as any, imageKey);
 
 			expect(result).toBe("test-key");
 		});
@@ -263,9 +223,9 @@ describe("Upload Functions", () => {
 
 			const imageKey = "test-read-error.png";
 
-			await expect(
-				uploadImageFromChat(mockStream, mockEnv as any, imageKey),
-			).rejects.toThrow("Read error");
+			await expect(uploadImageFromChat(mockStream, mockEnv as any, imageKey)).rejects.toThrow(
+				"Read error",
+			);
 		});
 	});
 });

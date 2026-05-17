@@ -30,10 +30,7 @@ export async function validateCaptcha(c: Context, next: Next) {
 	try {
 		logger.debug("Validating captcha for anonymous user");
 
-		const userIP =
-			c.req.header("cf-connecting-ip") ||
-			c.req.header("x-forwarded-for") ||
-			"unknown";
+		const userIP = c.req.header("cf-connecting-ip") || c.req.header("x-forwarded-for") || "unknown";
 		const userAgent = c.req.header("user-agent") || "unknown";
 
 		if (anonymousUser && anonymousUser.captcha_verified === 1) {
@@ -78,18 +75,14 @@ export async function validateCaptcha(c: Context, next: Next) {
 		};
 
 		if (anonymousUser) {
-			await getRepositories().anonymousUsers.updateAnonymousUser(
-				anonymousUser.id,
-				{
-					captcha_verified: 1,
-				},
-			);
+			await getRepositories().anonymousUsers.updateAnonymousUser(anonymousUser.id, {
+				captcha_verified: 1,
+			});
 		} else {
-			const user =
-				await getRepositories().anonymousUsers.getOrCreateAnonymousUser(
-					userIP,
-					userAgent,
-				);
+			const user = await getRepositories().anonymousUsers.getOrCreateAnonymousUser(
+				userIP,
+				userAgent,
+			);
 			if (user) {
 				await getRepositories().anonymousUsers.updateAnonymousUser(user.id, {
 					captcha_verified: 1,

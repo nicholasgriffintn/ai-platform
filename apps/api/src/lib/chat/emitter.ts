@@ -13,10 +13,7 @@ const logger = getLogger({
  * @param payload - The payload of the event
  * @returns The formatted SSE event data string
  */
-export function createEventData(
-	type: string,
-	payload: SSEEventPayload = {},
-): string {
+export function createEventData(type: string, payload: SSEEventPayload = {}): string {
 	let data;
 	try {
 		data = JSON.stringify({ ...payload, type });

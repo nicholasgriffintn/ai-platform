@@ -21,10 +21,7 @@ export class LlamaGuardProvider implements GuardrailsProvider {
 		this.config = config;
 	}
 
-	async validateContent(
-		content: string,
-		source: "INPUT" | "OUTPUT",
-	): Promise<GuardrailResult> {
+	async validateContent(content: string, source: "INPUT" | "OUTPUT"): Promise<GuardrailResult> {
 		try {
 			logger.debug("Validating content with Llama Guard");
 			const unsafeCategories = `<BEGIN UNSAFE CONTENT CATEGORIES>
@@ -45,8 +42,10 @@ S13: Elections.
 
 			const role = source === "INPUT" ? "user" : "assistant";
 
-			const { model, provider: providerToUse } =
-				await getAuxiliaryGuardrailsModel(this.config.env, this.config.user);
+			const { model, provider: providerToUse } = await getAuxiliaryGuardrailsModel(
+				this.config.env,
+				this.config.user,
+			);
 
 			const provider = getChatProvider(providerToUse, {
 				env: this.config.env,
@@ -85,8 +84,7 @@ Provide your safety assessment for ONLY THE LAST ${role} in the above conversati
 			);
 
 			const responseText = response.response.toLowerCase().trim();
-			const isValid =
-				responseText.startsWith("safe") || responseText.includes("allowed");
+			const isValid = responseText.startsWith("safe") || responseText.includes("allowed");
 			const violations = isValid ? [] : [response.response];
 
 			logger.debug("Llama Guard validation result", {

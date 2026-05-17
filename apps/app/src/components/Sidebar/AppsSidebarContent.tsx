@@ -25,9 +25,7 @@ export function AppsSidebarContent({ isHome = false }) {
 	const handleCategoryClick = useCallback(
 		(category: string) => {
 			setSelectedCategory(category);
-			const categoryElement = document.querySelector(
-				`[data-category="${category}"]`,
-			);
+			const categoryElement = document.querySelector(`[data-category="${category}"]`);
 			if (categoryElement) {
 				categoryElement.scrollIntoView({ behavior: "smooth", block: "start" });
 			}

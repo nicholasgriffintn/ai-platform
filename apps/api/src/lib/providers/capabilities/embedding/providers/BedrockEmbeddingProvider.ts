@@ -36,8 +36,7 @@ export class BedrockEmbeddingProvider implements EmbeddingProvider {
 
 	constructor(config: BedrockEmbeddingProviderConfig, env: IEnv, user?: IUser) {
 		this.knowledgeBaseId = config.knowledgeBaseId;
-		this.knowledgeBaseCustomDataSourceId =
-			config.knowledgeBaseCustomDataSourceId;
+		this.knowledgeBaseCustomDataSourceId = config.knowledgeBaseCustomDataSourceId;
 		this.region = config.region || "us-east-1";
 		this.agentEndpoint = `https://bedrock-agent.${this.region}.amazonaws.com`;
 		this.agentRuntimeEndpoint = `https://bedrock-agent-runtime.${this.region}.amazonaws.com`;
@@ -55,10 +54,7 @@ export class BedrockEmbeddingProvider implements EmbeddingProvider {
 		const parts = apiKey.split(delimiter);
 
 		if (parts.length !== 2) {
-			throw new AssistantError(
-				"Invalid AWS credentials format",
-				ErrorType.CONFIGURATION_ERROR,
-			);
+			throw new AssistantError("Invalid AWS credentials format", ErrorType.CONFIGURATION_ERROR);
 		}
 
 		return { accessKey: parts[0], secretKey: parts[1] };
@@ -98,10 +94,7 @@ export class BedrockEmbeddingProvider implements EmbeddingProvider {
 		if (this.user?.id && this.env.DB) {
 			try {
 				const userSettingsRepo = new UserSettingsRepository(this.env);
-				const userApiKey = await userSettingsRepo.getProviderApiKey(
-					this.user.id,
-					"bedrock",
-				);
+				const userApiKey = await userSettingsRepo.getProviderApiKey(this.user.id, "bedrock");
 
 				if (userApiKey) {
 					const credentials = this.parseAwsCredentials(userApiKey);
@@ -114,10 +107,7 @@ export class BedrockEmbeddingProvider implements EmbeddingProvider {
 		}
 
 		if (!accessKeyId || !secretAccessKey) {
-			throw new AssistantError(
-				"No valid credentials found",
-				ErrorType.CONFIGURATION_ERROR,
-			);
+			throw new AssistantError("No valid credentials found", ErrorType.CONFIGURATION_ERROR);
 		}
 
 		const aws = new AwsClient({
@@ -156,9 +146,7 @@ export class BedrockEmbeddingProvider implements EmbeddingProvider {
 										type: embedding.metadata.contentType || "BYTE",
 										byteContent: {
 											data: embedding.metadata.fileData,
-											mimeType:
-												embedding.metadata.mimeType ||
-												"application/octet-stream",
+											mimeType: embedding.metadata.mimeType || "application/octet-stream",
 										},
 										textContent: {
 											data: embedding.metadata.content || "",
@@ -175,9 +163,7 @@ export class BedrockEmbeddingProvider implements EmbeddingProvider {
 					metadata: {
 						type: "IN_LINE_ATTRIBUTE",
 						inlineAttributes: Object.keys(embedding.metadata)
-							.filter(
-								(key) => !["fileData", "mimeType", "contentType"].includes(key),
-							)
+							.filter((key) => !["fileData", "mimeType", "contentType"].includes(key))
 							.map((key) => ({
 								key,
 								value: {
@@ -230,18 +216,14 @@ export class BedrockEmbeddingProvider implements EmbeddingProvider {
 		};
 	}
 
-	async delete(
-		_ids: string[],
-	): Promise<{ status: string; error: string | null }> {
+	async delete(_ids: string[]): Promise<{ status: string; error: string | null }> {
 		return {
 			status: "error",
 			error: "Not implemented",
 		};
 	}
 
-	async getQuery(
-		query: string,
-	): Promise<{ data: any; status: { success: boolean } }> {
+	async getQuery(query: string): Promise<{ data: any; status: { success: boolean } }> {
 		return {
 			data: query,
 			status: { success: true },
@@ -251,11 +233,7 @@ export class BedrockEmbeddingProvider implements EmbeddingProvider {
 	private buildVectorSearchConfiguration(options: RagOptions) {
 		const vectorSearchConfiguration: Record<string, unknown> = {};
 
-		if (
-			typeof options.topK === "number" &&
-			Number.isFinite(options.topK) &&
-			options.topK > 0
-		) {
+		if (typeof options.topK === "number" && Number.isFinite(options.topK) && options.topK > 0) {
 			vectorSearchConfiguration.numberOfResults = Math.trunc(options.topK);
 		}
 
@@ -275,19 +253,13 @@ export class BedrockEmbeddingProvider implements EmbeddingProvider {
 			vectorSearchConfiguration.filter = options.filter;
 		}
 
-		return Object.keys(vectorSearchConfiguration).length
-			? vectorSearchConfiguration
-			: null;
+		return Object.keys(vectorSearchConfiguration).length ? vectorSearchConfiguration : null;
 	}
 
-	async getMatches(
-		queryVector: string,
-		options: RagOptions = {},
-	): Promise<EmbeddingQueryResult> {
+	async getMatches(queryVector: string, options: RagOptions = {}): Promise<EmbeddingQueryResult> {
 		const url = `${this.agentRuntimeEndpoint}/knowledgebases/${this.knowledgeBaseId}/retrieve`;
 
-		const vectorSearchConfiguration =
-			this.buildVectorSearchConfiguration(options);
+		const vectorSearchConfiguration = this.buildVectorSearchConfiguration(options);
 
 		const payload: Record<string, unknown> = {
 			retrievalQuery: {

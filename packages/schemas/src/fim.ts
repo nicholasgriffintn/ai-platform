@@ -6,12 +6,7 @@ export const fillInMiddleRequestSchema = z.object({
 	suffix: z.string().optional().describe("The code suffix (after cursor)"),
 	max_tokens: z.number().optional().describe("Maximum tokens to generate"),
 	min_tokens: z.number().optional().describe("Minimum tokens to generate"),
-	temperature: z
-		.number()
-		.min(0)
-		.max(2)
-		.optional()
-		.describe("Sampling temperature"),
+	temperature: z.number().min(0).max(2).optional().describe("Sampling temperature"),
 	top_p: z.number().min(0).max(1).optional().describe("Nucleus sampling"),
 	stream: z.boolean().optional().describe("Enable streaming response"),
 	stop: z.array(z.string()).optional().describe("Stop sequences"),

@@ -7,13 +7,8 @@ import { useModels } from "~/hooks/useModels";
 import { useChatStore } from "~/state/stores/chatStore";
 import { useToolsStore } from "~/state/stores/toolsStore";
 
-export const ToolToggles = ({
-	isDisabled = false,
-}: {
-	isDisabled?: boolean;
-}) => {
-	const { model, chatMode, isPro, useMultiModel, setUseMultiModel } =
-		useChatStore();
+export const ToolToggles = ({ isDisabled = false }: { isDisabled?: boolean }) => {
+	const { model, chatMode, isPro, useMultiModel, setUseMultiModel } = useChatStore();
 	const { selectedTools, setSelectedTools } = useToolsStore();
 	const { data: apiModels } = useModels();
 

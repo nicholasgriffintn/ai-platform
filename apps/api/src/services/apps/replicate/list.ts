@@ -1,7 +1,4 @@
-import {
-	resolveServiceContext,
-	type ServiceContext,
-} from "~/lib/context/serviceContext";
+import { resolveServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
 import type { IEnv } from "~/types";
 import { safeParseJson } from "../../../utils/json";
 
@@ -16,11 +13,10 @@ export const listReplicatePredictions = async ({
 }) => {
 	const serviceContext = resolveServiceContext({ context, env });
 
-	const predictions =
-		await serviceContext.repositories.appData.getAppDataByUserAndApp(
-			userId,
-			"replicate",
-		);
+	const predictions = await serviceContext.repositories.appData.getAppDataByUserAndApp(
+		userId,
+		"replicate",
+	);
 
 	const results = await Promise.all(
 		predictions.map(async (prediction) => {

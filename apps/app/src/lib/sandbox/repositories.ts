@@ -40,9 +40,7 @@ export function normaliseGitHubRepoInput(value: string): string {
 	return isGitHubRepoSlug(candidate) ? candidate : trimmed;
 }
 
-export function parseGitHubRepositoryList(
-	value: string | undefined | null,
-): string[] | undefined {
+export function parseGitHubRepositoryList(value: string | undefined | null): string[] | undefined {
 	if (!value?.trim()) {
 		return undefined;
 	}

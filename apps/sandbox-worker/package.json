@@ -1,8 +1,8 @@
 {
 	"name": "@assistant/sandbox-worker",
-	"license": "Apache-2.0",
 	"version": "0.0.1",
 	"private": true,
+	"license": "Apache-2.0",
 	"main": "src/index.ts",
 	"scripts": {
 		"dev": "pnpm --filter @assistant/schemas build && wrangler dev src/index.ts",
@@ -10,8 +10,8 @@
 		"test": "vitest",
 		"coverage": "vitest run --coverage",
 		"cf-typegen": "wrangler types",
-		"format": "pnpm prettier --write .",
-		"format:check": "pnpm prettier --check .",
+		"format": "oxfmt",
+		"format:check": "oxfmt --check",
 		"lint": "pnpm oxlint",
 		"check": "pnpm lint && pnpm format:check",
 		"typecheck": "pnpm --filter @assistant/schemas build && tsc --noEmit",
@@ -21,15 +21,14 @@
 		"@assistant/agent-core": "workspace:*",
 		"@assistant/schemas": "workspace:*",
 		"@cloudflare/sandbox": "0.9.0",
-		"zod": "4.3.6"
+		"zod": "4.4.3"
 	},
 	"devDependencies": {
-		"@prettier/plugin-oxc": "0.1.4",
-		"@cloudflare/workers-types": "4.20260410.1",
-		"@types/node": "^25.2.2",
+		"@cloudflare/workers-types": "4.20260517.1",
+		"@types/node": "25.8.0",
+		"oxfmt": "0.50.0",
 		"oxlint": "1.61.0",
-		"prettier": "3.8.3",
-		"typescript": "5.9.3",
-		"wrangler": "4.85.0"
+		"typescript": "6.0.3",
+		"wrangler": "4.92.0"
 	}
 }

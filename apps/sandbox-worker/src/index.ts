@@ -59,13 +59,9 @@ export default {
 		let params: TaskParams;
 		try {
 			const rawBody = (await request.json()) as unknown;
-			const parsedPayload =
-				sandboxWorkerExecuteRequestSchema.safeParse(rawBody);
+			const parsedPayload = sandboxWorkerExecuteRequestSchema.safeParse(rawBody);
 			if (!parsedPayload.success) {
-				return Response.json(
-					{ error: "Invalid task payload" },
-					{ status: 400 },
-				);
+				return Response.json({ error: "Invalid task payload" }, { status: 400 });
 			}
 			params = parsedPayload.data;
 		} catch {
@@ -77,18 +73,12 @@ export default {
 			? authHeader.slice("Bearer ".length).trim()
 			: "";
 		if (!userToken) {
-			return Response.json(
-				{ error: "Missing authorization token" },
-				{ status: 401 },
-			);
+			return Response.json({ error: "Missing authorization token" }, { status: 401 });
 		}
 
 		const githubToken = request.headers.get("X-GitHub-Token")?.trim();
 		if (!githubToken) {
-			return Response.json(
-				{ error: "Missing GitHub installation token" },
-				{ status: 400 },
-			);
+			return Response.json({ error: "Missing GitHub installation token" }, { status: 400 });
 		}
 
 		let tokenUserId: number;
@@ -96,10 +86,7 @@ export default {
 			const verified = await verifySandboxJwt(userToken, env.JWT_SECRET.trim());
 			tokenUserId = verified.userId;
 		} catch {
-			return Response.json(
-				{ error: "Invalid sandbox authorization token" },
-				{ status: 401 },
-			);
+			return Response.json({ error: "Invalid sandbox authorization token" }, { status: 401 });
 		}
 
 		if (
@@ -125,31 +112,18 @@ export default {
 			return Response.json({ error: "Invalid task payload" }, { status: 400 });
 		}
 
-		const executeTask = async (
-			emitEvent?: (event: TaskEvent) => Promise<void> | void,
-		) => {
-			return executeSandboxTask(
-				params,
-				secrets,
-				env,
-				emitEvent,
-				request.signal,
-			);
+		const executeTask = async (emitEvent?: (event: TaskEvent) => Promise<void> | void) => {
+			return executeSandboxTask(params, secrets, env, emitEvent, request.signal);
 		};
 
-		const wantsStream = request.headers
-			.get("accept")
-			?.includes("text/event-stream");
+		const wantsStream = request.headers.get("accept")?.includes("text/event-stream");
 		if (!wantsStream) {
 			try {
 				return Response.json(await executeTask());
 			} catch (error) {
 				return Response.json(
 					{
-						error:
-							error instanceof Error
-								? error.message
-								: "Unknown task execution error",
+						error: error instanceof Error ? error.message : "Unknown task execution error",
 					},
 					{ status: 400 },
 				);
@@ -214,18 +188,12 @@ export default {
 						});
 					}
 				} catch (error) {
-					if (
-						error instanceof SandboxCancellationError ||
-						request.signal.aborted
-					) {
+					if (error instanceof SandboxCancellationError || request.signal.aborted) {
 						emitEvent({
 							type: "run_cancelled",
 							runId: params.runId,
 							completedAt: new Date().toISOString(),
-							message:
-								error instanceof Error
-									? error.message
-									: "Sandbox run cancelled",
+							message: error instanceof Error ? error.message : "Sandbox run cancelled",
 						});
 						closeStream();
 						return;
@@ -235,10 +203,7 @@ export default {
 						type: "run_failed",
 						runId: params.runId,
 						completedAt: new Date().toISOString(),
-						error:
-							error instanceof Error
-								? error.message
-								: "Unknown task execution error",
+						error: error instanceof Error ? error.message : "Unknown task execution error",
 					});
 				} finally {
 					closeStream();

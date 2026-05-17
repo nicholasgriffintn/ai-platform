@@ -1,9 +1,6 @@
-const POLYCHAT_SANDBOX_USER_AGENT =
-	"Polychat-Sandbox-Worker/1.0 (+https://polychat.app)";
+const POLYCHAT_SANDBOX_USER_AGENT = "Polychat-Sandbox-Worker/1.0 (+https://polychat.app)";
 
-const RETRYABLE_HTTP_STATUS_CODES = new Set([
-	408, 409, 425, 429, 500, 502, 503, 504,
-]);
+const RETRYABLE_HTTP_STATUS_CODES = new Set([408, 409, 425, 429, 500, 502, 503, 504]);
 const DEFAULT_MAX_ATTEMPTS = 3;
 const DEFAULT_BASE_DELAY_MS = 400;
 const DEFAULT_MAX_DELAY_MS = 3000;
@@ -40,13 +37,8 @@ export class PolychatClient {
 		this.polychatApi = polychatApi;
 	}
 
-	private async fetchPolychat(
-		path: string,
-		init: RequestInit,
-	): Promise<Response> {
-		return this.polychatApi.fetch(
-			new Request(`http://polychat-api${path}`, init),
-		);
+	private async fetchPolychat(path: string, init: RequestInit): Promise<Response> {
+		return this.polychatApi.fetch(new Request(`http://polychat-api${path}`, init));
 	}
 
 	private isRetryableError(error: unknown): boolean {
@@ -120,18 +112,9 @@ export class PolychatClient {
 		},
 		retryOptions?: PolychatRetryOptions,
 	): Promise<string> {
-		const maxAttempts = Math.max(
-			1,
-			Math.min(retryOptions?.maxAttempts ?? DEFAULT_MAX_ATTEMPTS, 5),
-		);
-		const baseDelayMs = Math.max(
-			100,
-			retryOptions?.baseDelayMs ?? DEFAULT_BASE_DELAY_MS,
-		);
-		const maxDelayMs = Math.max(
-			baseDelayMs,
-			retryOptions?.maxDelayMs ?? DEFAULT_MAX_DELAY_MS,
-		);
+		const maxAttempts = Math.max(1, Math.min(retryOptions?.maxAttempts ?? DEFAULT_MAX_ATTEMPTS, 5));
+		const baseDelayMs = Math.max(100, retryOptions?.baseDelayMs ?? DEFAULT_BASE_DELAY_MS);
+		const maxDelayMs = Math.max(baseDelayMs, retryOptions?.maxDelayMs ?? DEFAULT_MAX_DELAY_MS);
 
 		let lastError: unknown;
 		for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
@@ -144,10 +127,7 @@ export class PolychatClient {
 				}
 
 				const jitter = Math.floor(Math.random() * 125);
-				const delayMs = Math.min(
-					baseDelayMs * 2 ** (attempt - 1) + jitter,
-					maxDelayMs,
-				);
+				const delayMs = Math.min(baseDelayMs * 2 ** (attempt - 1) + jitter, maxDelayMs);
 				await sleep(delayMs);
 			}
 		}

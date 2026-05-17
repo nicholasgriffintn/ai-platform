@@ -4,21 +4,17 @@ import { assertSafeCommand, buildSummary } from "../commands";
 
 describe("assertSafeCommand", () => {
 	it("allows non-mutating commands in read-only mode", () => {
-		expect(() =>
-			assertSafeCommand("pnpm test --filter api", { readOnly: true }),
-		).not.toThrow();
+		expect(() => assertSafeCommand("pnpm test --filter api", { readOnly: true })).not.toThrow();
 	});
 
 	it("blocks mutating commands in read-only mode", () => {
-		expect(() => assertSafeCommand("git add -A", { readOnly: true })).toThrow(
-			/read-only/,
-		);
+		expect(() => assertSafeCommand("git add -A", { readOnly: true })).toThrow(/read-only/);
 	});
 
 	it("blocks shell redirection in read-only mode", () => {
-		expect(() =>
-			assertSafeCommand("echo hi > /tmp/test.txt", { readOnly: true }),
-		).toThrow(/read-only/);
+		expect(() => assertSafeCommand("echo hi > /tmp/test.txt", { readOnly: true })).toThrow(
+			/read-only/,
+		);
 	});
 
 	it("blocks interpreter commands in read-only mode", () => {

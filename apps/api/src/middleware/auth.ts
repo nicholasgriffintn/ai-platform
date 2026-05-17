@@ -83,11 +83,7 @@ function parseCookies(cookieHeader: string): Record<string, string> {
  */
 export async function authMiddleware(context: Context, next: Next) {
 	const path = context.req.path;
-	if (
-		path === "/status" ||
-		path === "/openapi" ||
-		path.startsWith("/webhooks/")
-	) {
+	if (path === "/status" || path === "/openapi" || path.startsWith("/webhooks/")) {
 		return next();
 	}
 
@@ -157,16 +153,9 @@ export async function authMiddleware(context: Context, next: Next) {
 		authPromises.push(
 			(async () => {
 				try {
-					return await getUserByJwtToken(
-						context.env,
-						authToken!,
-						context.env.JWT_SECRET!,
-					);
+					return await getUserByJwtToken(context.env, authToken!, context.env.JWT_SECRET!);
 				} catch (error) {
-					if (
-						error instanceof AssistantError &&
-						error.type === ErrorType.AUTHENTICATION_ERROR
-					) {
+					if (error instanceof AssistantError && error.type === ErrorType.AUTHENTICATION_ERROR) {
 						return null;
 					}
 
@@ -182,17 +171,13 @@ export async function authMiddleware(context: Context, next: Next) {
 		const fulfilledResult = authResults.find(
 			(result) => result.status === "fulfilled" && result.value !== null,
 		);
-		user =
-			fulfilledResult?.status === "fulfilled" ? fulfilledResult.value : null;
+		user = fulfilledResult?.status === "fulfilled" ? fulfilledResult.value : null;
 	}
 
 	const isProUser = user?.plan_id === "pro";
 
 	if (userAgent === "unknown") {
-		throw new AssistantError(
-			"Bot access is not allowed.",
-			ErrorType.AUTHENTICATION_ERROR,
-		);
+		throw new AssistantError("Bot access is not allowed.", ErrorType.AUTHENTICATION_ERROR);
 	}
 
 	let isBot = false;
@@ -203,28 +188,21 @@ export async function authMiddleware(context: Context, next: Next) {
 	}
 
 	if (isBot && !isProUser) {
-		throw new AssistantError(
-			"Bot access is not allowed.",
-			ErrorType.AUTHENTICATION_ERROR,
-		);
+		throw new AssistantError("Bot access is not allowed.", ErrorType.AUTHENTICATION_ERROR);
 	}
 
 	if (!user) {
 		try {
 			const anonymousId = getCookies()[ANONYMOUS_ID_COOKIE];
 			if (anonymousId) {
-				anonymousUser =
-					await getRepositories().anonymousUsers.getAnonymousUserById(
-						anonymousId,
-					);
+				anonymousUser = await getRepositories().anonymousUsers.getAnonymousUserById(anonymousId);
 			}
 
 			if (!anonymousUser) {
-				anonymousUser =
-					await getRepositories().anonymousUsers.getOrCreateAnonymousUser(
-						ipAddress,
-						userAgent,
-					);
+				anonymousUser = await getRepositories().anonymousUsers.getOrCreateAnonymousUser(
+					ipAddress,
+					userAgent,
+				);
 
 				if (anonymousUser) {
 					const anonymousCookie = [
@@ -284,9 +262,7 @@ export async function allowRestrictedPaths(context: Context, next: Next) {
 		const anonymousUser = context.get("anonymousUser");
 
 		if (!user && !anonymousUser) {
-			logger.warn(
-				"Missing user or anonymous user data for restricted path access",
-			);
+			logger.warn("Missing user or anonymous user data for restricted path access");
 			throw new AssistantError(
 				"User usage tracking required for this endpoint.",
 				ErrorType.AUTHENTICATION_ERROR,
@@ -297,22 +273,14 @@ export async function allowRestrictedPaths(context: Context, next: Next) {
 		const method = context.req.method;
 
 		const isGenerateTitlePath =
-			/^\/chat\/completions\/[^/]+\/generate-title$/.test(path) &&
-			method === "POST";
-		const isUpdatePath =
-			/^\/chat\/completions\/[^/]+$/.test(path) && method === "PUT";
-		const isDeletePath =
-			/^\/chat\/completions\/[^/]+$/.test(path) && method === "DELETE";
-		const isCheckPath =
-			/^\/chat\/completions\/[^/]+\/check$/.test(path) && method === "POST";
-		const isFeedbackPath =
-			/^\/chat\/completions\/[^/]+\/feedback$/.test(path) && method === "POST";
-		const isSharePath =
-			/^\/chat\/completions\/[^/]+\/share$/.test(path) && method === "POST";
-		const isUnsharePath =
-			/^\/chat\/completions\/[^/]+\/share$/.test(path) && method === "DELETE";
-		const isGetSharedPath =
-			/^\/chat\/shared\/[^/]+$/.test(path) && method === "GET";
+			/^\/chat\/completions\/[^/]+\/generate-title$/.test(path) && method === "POST";
+		const isUpdatePath = /^\/chat\/completions\/[^/]+$/.test(path) && method === "PUT";
+		const isDeletePath = /^\/chat\/completions\/[^/]+$/.test(path) && method === "DELETE";
+		const isCheckPath = /^\/chat\/completions\/[^/]+\/check$/.test(path) && method === "POST";
+		const isFeedbackPath = /^\/chat\/completions\/[^/]+\/feedback$/.test(path) && method === "POST";
+		const isSharePath = /^\/chat\/completions\/[^/]+\/share$/.test(path) && method === "POST";
+		const isUnsharePath = /^\/chat\/completions\/[^/]+\/share$/.test(path) && method === "DELETE";
+		const isGetSharedPath = /^\/chat\/shared\/[^/]+$/.test(path) && method === "GET";
 
 		const isAllowedPath =
 			isGenerateTitlePath ||

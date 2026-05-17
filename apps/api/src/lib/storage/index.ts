@@ -35,10 +35,7 @@ export class StorageService {
 
 	async downloadFile(url: string): Promise<Blob> {
 		if (!this.isValidImageUrl(url)) {
-			throw new AssistantError(
-				`Invalid image URL: ${url}`,
-				ErrorType.PARAMS_ERROR,
-			);
+			throw new AssistantError(`Invalid image URL: ${url}`, ErrorType.PARAMS_ERROR);
 		}
 
 		try {
@@ -82,12 +79,7 @@ export class StorageService {
 	}
 
 	private isSupportedImageType(contentType: string): boolean {
-		const supportedTypes = [
-			"image/png",
-			"image/jpeg",
-			"image/jpg",
-			"image/webp",
-		];
+		const supportedTypes = ["image/png", "image/jpeg", "image/jpg", "image/webp"];
 		return supportedTypes.includes(contentType.toLowerCase());
 	}
 }

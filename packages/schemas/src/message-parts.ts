@@ -15,13 +15,7 @@ export const toolUsePartSchema = partBaseSchema.extend({
 	type: z.literal("tool_use"),
 	name: z.string(),
 	toolCallId: z.string().optional(),
-	input: z
-		.union([
-			z.string(),
-			z.array(z.unknown()),
-			z.record(z.string(), z.unknown()),
-		])
-		.optional(),
+	input: z.union([z.string(), z.array(z.unknown()), z.record(z.string(), z.unknown())]).optional(),
 });
 
 export const toolResultPartSchema = partBaseSchema.extend({
@@ -30,11 +24,7 @@ export const toolResultPartSchema = partBaseSchema.extend({
 	toolCallId: z.string().optional(),
 	status: z.string().optional(),
 	content: z
-		.union([
-			z.string(),
-			z.array(z.unknown()),
-			z.record(z.string(), z.unknown()),
-		])
+		.union([z.string(), z.array(z.unknown()), z.record(z.string(), z.unknown())])
 		.optional(),
 	data: z.unknown().optional(),
 });

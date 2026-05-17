@@ -5,10 +5,7 @@ import type { IRequest, Message } from "~/types";
 import { generateId } from "~/utils/id";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
-import {
-	formatToolErrorResponse,
-	formatToolResponse,
-} from "~/utils/tool-responses";
+import { formatToolErrorResponse, formatToolResponse } from "~/utils/tool-responses";
 import { safeParseJson } from "~/utils/json";
 import { buildMessageParts } from "./messageParts";
 import z from "zod/v4";
@@ -52,10 +49,7 @@ export const handleToolCalls = async (
 
 		try {
 			if (!toolCall.id) {
-				throw new AssistantError(
-					"Missing tool call ID",
-					ErrorType.TOOL_CALL_ERROR,
-				);
+				throw new AssistantError("Missing tool call ID", ErrorType.TOOL_CALL_ERROR);
 			}
 
 			const permissionResult = permissionChecker.checkToolAccess({
@@ -86,8 +80,7 @@ export const handleToolCalls = async (
 						log_id: modelResponseLogId || "",
 						id: generateId(),
 						tool_call_id: toolCall.id,
-						tool_call_arguments:
-							toolCall.arguments || toolCall.function?.arguments,
+						tool_call_arguments: toolCall.arguments || toolCall.function?.arguments,
 						timestamp,
 						model: req.request?.model || "unknown",
 						platform: req.request?.platform || "api",
@@ -96,16 +89,10 @@ export const handleToolCalls = async (
 				continue;
 			}
 
-			if (
-				permissionResult.requiresApproval &&
-				!approvedTools.has(functionName)
-			) {
-				logger.warn(
-					`Tool "${functionName}" requires approval but was not pre-approved`,
-					{
-						mode,
-					},
-				);
+			if (permissionResult.requiresApproval && !approvedTools.has(functionName)) {
+				logger.warn(`Tool "${functionName}" requires approval but was not pre-approved`, {
+					mode,
+				});
 				const approvalError = formatToolErrorResponse(
 					functionName,
 					permissionResult.reason ??
@@ -122,8 +109,7 @@ export const handleToolCalls = async (
 						log_id: modelResponseLogId || "",
 						id: generateId(),
 						tool_call_id: toolCall.id,
-						tool_call_arguments:
-							toolCall.arguments || toolCall.function?.arguments,
+						tool_call_arguments: toolCall.arguments || toolCall.function?.arguments,
 						timestamp,
 						model: req.request?.model || "unknown",
 						platform: req.request?.platform || "api",
@@ -133,8 +119,7 @@ export const handleToolCalls = async (
 			}
 
 			if (functionName === "memory") {
-				const rawArgs =
-					toolCall.function?.arguments || toolCall.arguments || "{}";
+				const rawArgs = toolCall.function?.arguments || toolCall.arguments || "{}";
 				const memoryArgs = safeParseJson(rawArgs);
 				if (!memoryArgs) {
 					logger.error(`Failed to parse memory arguments: ${rawArgs}`);
@@ -160,8 +145,7 @@ export const handleToolCalls = async (
 					log_id: modelResponseLogId || "",
 					id: generateId(),
 					tool_call_id: toolCall.id,
-					tool_call_arguments:
-						toolCall.arguments || toolCall.function?.arguments,
+					tool_call_arguments: toolCall.arguments || toolCall.function?.arguments,
 					timestamp,
 					model: req.request?.model || "unknown",
 					platform: req.request?.platform || "api",
@@ -173,9 +157,7 @@ export const handleToolCalls = async (
 			const rawArgs = toolCall.function?.arguments || toolCall.arguments;
 			const functionArgs = safeParseJson(rawArgs);
 			if (!functionArgs) {
-				logger.error(
-					`Failed to parse arguments for ${functionName}: ${rawArgs}`,
-				);
+				logger.error(`Failed to parse arguments for ${functionName}: ${rawArgs}`);
 				throw new AssistantError(
 					`Invalid arguments for ${functionName}: ${rawArgs}`,
 					ErrorType.TOOL_CALL_ERROR,
@@ -200,10 +182,7 @@ export const handleToolCalls = async (
 					conversationManager,
 				});
 			} catch (functionError: any) {
-				logger.error(
-					`Function execution error for ${functionName}:`,
-					functionError,
-				);
+				logger.error(`Function execution error for ${functionName}:`, functionError);
 				const errorType = functionError.type || "FUNCTION_EXECUTION_ERROR";
 				const formattedError = formatToolErrorResponse(
 					functionName,
@@ -220,8 +199,7 @@ export const handleToolCalls = async (
 					log_id: modelResponseLogId || "",
 					id: generateId(),
 					tool_call_id: toolCall.id,
-					tool_call_arguments:
-						toolCall.arguments || toolCall.function?.arguments,
+					tool_call_arguments: toolCall.arguments || toolCall.function?.arguments,
 					timestamp,
 					model: req.request?.model || "unknown",
 					platform: req.request?.platform || "api",
@@ -249,8 +227,7 @@ export const handleToolCalls = async (
 						log_id: modelResponseLogId || "",
 						id: generateId(),
 						tool_call_id: toolCall.id,
-						tool_call_arguments:
-							toolCall.arguments || toolCall.function?.arguments,
+						tool_call_arguments: toolCall.arguments || toolCall.function?.arguments,
 						timestamp,
 						model: req.request?.model || "unknown",
 						platform: req.request?.platform || "api",
@@ -259,11 +236,7 @@ export const handleToolCalls = async (
 				continue;
 			}
 
-			const formattedResponse = formatToolResponse(
-				functionName,
-				result.content || "",
-				result.data,
-			);
+			const formattedResponse = formatToolResponse(functionName, result.content || "", result.data);
 
 			const message: Message = {
 				role: "tool",

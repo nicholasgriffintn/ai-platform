@@ -6,11 +6,5 @@ interface ArticleRendererProps {
 }
 
 export const ArticleRenderer = ({ data }: ArticleRendererProps) => {
-	return (
-		<ArticleView
-			report={data}
-			sourceIds={data.data.sourceItemIds || []}
-			isShared={true}
-		/>
-	);
+	return <ArticleView report={data} sourceIds={data.data.sourceItemIds || []} isShared={true} />;
 };

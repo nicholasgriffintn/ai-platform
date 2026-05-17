@@ -59,9 +59,7 @@ type GetSharedItemResponse = {
 	message?: string;
 };
 
-export async function getSharedItem({
-	share_id,
-}: GetSharedItemParams): Promise<SharedItem> {
+export async function getSharedItem({ share_id }: GetSharedItemParams): Promise<SharedItem> {
 	const response = await fetch(`${API_BASE_URL}/apps/shared/${share_id}`);
 
 	if (!response.ok) {

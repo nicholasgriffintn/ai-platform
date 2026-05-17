@@ -65,13 +65,9 @@ addRoute(app, "get", "/", {
 				}
 
 				routeLogger.error("Error fetching podcasts:", {
-					error_message:
-						error instanceof Error ? error.message : "Unknown error",
+					error_message: error instanceof Error ? error.message : "Unknown error",
 				});
-				throw new AssistantError(
-					"Failed to fetch podcasts",
-					ErrorType.UNKNOWN_ERROR,
-				);
+				throw new AssistantError("Failed to fetch podcasts", ErrorType.UNKNOWN_ERROR);
 			}
 		})(raw),
 });
@@ -106,13 +102,9 @@ addRoute(app, "get", "/:id", {
 				}
 
 				routeLogger.error("Error fetching podcast:", {
-					error_message:
-						error instanceof Error ? error.message : "Unknown error",
+					error_message: error instanceof Error ? error.message : "Unknown error",
 				});
-				throw new AssistantError(
-					"Failed to fetch podcast",
-					ErrorType.UNKNOWN_ERROR,
-				);
+				throw new AssistantError("Failed to fetch podcast", ErrorType.UNKNOWN_ERROR);
 			}
 		})(raw),
 });
@@ -134,10 +126,7 @@ addRoute(app, "post", "/upload", {
 				const audioUrl = formData.get("audioUrl") as string | null;
 
 				if (!audio && !audioUrl) {
-					throw new AssistantError(
-						"Missing audio file or URL",
-						ErrorType.PARAMS_ERROR,
-					);
+					throw new AssistantError("Missing audio file or URL", ErrorType.PARAMS_ERROR);
 				}
 
 				const user = context.get("user");
@@ -169,13 +158,9 @@ addRoute(app, "post", "/upload", {
 					throw error;
 				}
 				routeLogger.error("Error uploading podcast:", {
-					error_message:
-						error instanceof Error ? error.message : "Unknown error",
+					error_message: error instanceof Error ? error.message : "Unknown error",
 				});
-				throw new AssistantError(
-					"Failed to upload podcast",
-					ErrorType.UNKNOWN_ERROR,
-				);
+				throw new AssistantError("Failed to upload podcast", ErrorType.UNKNOWN_ERROR);
 			}
 		})(raw),
 });

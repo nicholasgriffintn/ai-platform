@@ -96,10 +96,7 @@ describe("countTokens", () => {
 			const { getModelConfigByModel } = await import("~/lib/providers/models");
 			const chatCapability = await import("~/lib/providers/capabilities/chat");
 
-			const mockModelConfig = createMockModelConfig(
-				"bedrock",
-				"claude-3-sonnet",
-			);
+			const mockModelConfig = createMockModelConfig("bedrock", "claude-3-sonnet");
 			const mockProvider = createMockProvider();
 
 			vi.mocked(getModelConfigByModel).mockResolvedValue(mockModelConfig);
@@ -133,10 +130,7 @@ describe("countTokens", () => {
 			const { getModelConfigByModel } = await import("~/lib/providers/models");
 			const chatCapability = await import("~/lib/providers/capabilities/chat");
 
-			const mockModelConfig = createMockModelConfig(
-				"bedrock",
-				"claude-3-sonnet",
-			);
+			const mockModelConfig = createMockModelConfig("bedrock", "claude-3-sonnet");
 			const mockProvider = createMockProvider(true, 25);
 
 			vi.mocked(getModelConfigByModel).mockResolvedValue(mockModelConfig);
@@ -171,10 +165,7 @@ describe("countTokens", () => {
 			const { getModelConfigByModel } = await import("~/lib/providers/models");
 			const chatCapability = await import("~/lib/providers/capabilities/chat");
 
-			const mockModelConfig = createMockModelConfig(
-				"bedrock",
-				"claude-3-sonnet",
-			);
+			const mockModelConfig = createMockModelConfig("bedrock", "claude-3-sonnet");
 			const mockProvider = createMockProvider(true, 30);
 
 			vi.mocked(getModelConfigByModel).mockResolvedValue(mockModelConfig);
@@ -216,10 +207,7 @@ describe("countTokens", () => {
 			const { getModelConfigByModel } = await import("~/lib/providers/models");
 			const chatCapability = await import("~/lib/providers/capabilities/chat");
 
-			const mockModelConfig = createMockModelConfig(
-				"unknown-provider",
-				"some-model",
-			);
+			const mockModelConfig = createMockModelConfig("unknown-provider", "some-model");
 
 			vi.mocked(getModelConfigByModel).mockResolvedValue(mockModelConfig);
 			vi.mocked(chatCapability.getChatProvider).mockReturnValue(null);
@@ -285,10 +273,7 @@ describe("countTokens", () => {
 			const chatCapability = await import("~/lib/providers/capabilities/chat");
 			const { AssistantError } = await import("~/utils/errors");
 
-			const mockModelConfig = createMockModelConfig(
-				"bedrock",
-				"claude-3-sonnet",
-			);
+			const mockModelConfig = createMockModelConfig("bedrock", "claude-3-sonnet");
 			const mockProvider = {
 				...createMockProvider(),
 				countTokens: vi.fn().mockRejectedValue(new Error("API Error")),
@@ -318,10 +303,7 @@ describe("countTokens", () => {
 			const { getModelConfigByModel } = await import("~/lib/providers/models");
 			const chatCapability = await import("~/lib/providers/capabilities/chat");
 
-			const mockModelConfig = createMockModelConfig(
-				"bedrock",
-				"claude-3-sonnet",
-			);
+			const mockModelConfig = createMockModelConfig("bedrock", "claude-3-sonnet");
 			const mockProvider = createMockProvider(true, 0);
 
 			vi.mocked(getModelConfigByModel).mockResolvedValue(mockModelConfig);
@@ -343,10 +325,7 @@ describe("countTokens", () => {
 			const { getModelConfigByModel } = await import("~/lib/providers/models");
 			const chatCapability = await import("~/lib/providers/capabilities/chat");
 
-			const mockModelConfig = createMockModelConfig(
-				"bedrock",
-				"claude-3-sonnet",
-			);
+			const mockModelConfig = createMockModelConfig("bedrock", "claude-3-sonnet");
 			const mockProvider = createMockProvider(true, 75);
 
 			const complexMessages: Message[] = [
@@ -390,10 +369,7 @@ describe("countTokens", () => {
 			const { getModelConfigByModel } = await import("~/lib/providers/models");
 			const chatCapability = await import("~/lib/providers/capabilities/chat");
 
-			const mockModelConfig = createMockModelConfig(
-				"anthropic",
-				"claude-sonnet-4-0",
-			);
+			const mockModelConfig = createMockModelConfig("anthropic", "claude-sonnet-4-0");
 			const mockProvider = createMockProvider(true, 28);
 
 			vi.mocked(getModelConfigByModel).mockResolvedValue(mockModelConfig);
@@ -425,10 +401,7 @@ describe("countTokens", () => {
 			const { getModelConfigByModel } = await import("~/lib/providers/models");
 			const chatCapability = await import("~/lib/providers/capabilities/chat");
 
-			const mockModelConfig = createMockModelConfig(
-				"anthropic",
-				"claude-3-5-haiku-latest",
-			);
+			const mockModelConfig = createMockModelConfig("anthropic", "claude-3-5-haiku-latest");
 			const mockProvider = createMockProvider(true, 15);
 
 			vi.mocked(getModelConfigByModel).mockResolvedValue(mockModelConfig);

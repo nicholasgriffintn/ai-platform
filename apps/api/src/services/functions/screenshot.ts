@@ -34,13 +34,11 @@ export const capture_screenshot: ApiToolDefinition = {
 				properties: {
 					omitBackground: {
 						type: "boolean",
-						description:
-							"Removes the default white background when taking a screenshot",
+						description: "Removes the default white background when taking a screenshot",
 					},
 					fullPage: {
 						type: "boolean",
-						description:
-							"Captures the full scrollable page instead of just the viewport",
+						description: "Captures the full scrollable page instead of just the viewport",
 					},
 				},
 			},
@@ -60,19 +58,16 @@ export const capture_screenshot: ApiToolDefinition = {
 			},
 			gotoOptions: {
 				type: "object",
-				description:
-					"Configures how and when the page is considered fully loaded",
+				description: "Configures how and when the page is considered fully loaded",
 				properties: {
 					waitUntil: {
 						type: "string",
 						enum: ["load", "domcontentloaded", "networkidle0"],
-						description:
-							"Defines when the browser considers navigation complete",
+						description: "Defines when the browser considers navigation complete",
 					},
 					timeout: {
 						type: "integer",
-						description:
-							"Maximum wait time (in milliseconds) before navigation times out",
+						description: "Maximum wait time (in milliseconds) before navigation times out",
 					},
 				},
 			},
@@ -93,16 +88,11 @@ export const capture_screenshot: ApiToolDefinition = {
 	execute: async (args, context) => {
 		const req = context.request;
 
-		const addScriptTag = args.addScriptTag
-			? [{ content: args.addScriptTag }]
-			: undefined;
-		const addStyleTag = args.addStyleTag
-			? [{ content: args.addStyleTag }]
-			: undefined;
+		const addScriptTag = args.addScriptTag ? [{ content: args.addScriptTag }] : undefined;
+		const addStyleTag = args.addStyleTag ? [{ content: args.addStyleTag }] : undefined;
 
 		const viewport = args.viewport || DEFAULT_VIEWPORT;
-		const screenshotOptions =
-			args.screenshotOptions || DEFAULT_SCREENSHOT_OPTIONS;
+		const screenshotOptions = args.screenshotOptions || DEFAULT_SCREENSHOT_OPTIONS;
 		const gotoOptions = args.gotoOptions || DEFAULT_GOTO_OPTIONS;
 
 		const result = await captureScreenshot(

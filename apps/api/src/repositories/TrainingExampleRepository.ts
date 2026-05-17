@@ -97,11 +97,7 @@ export class TrainingExampleRepository extends BaseRepository {
 				data.feedbackComment || null,
 				data.metadata ? JSON.stringify(data.metadata) : null,
 				data.qualityScore || null,
-				data.includeInTraining !== undefined
-					? data.includeInTraining
-						? 1
-						: 0
-					: 1,
+				data.includeInTraining !== undefined ? (data.includeInTraining ? 1 : 0) : 1,
 				data.taskCategory || null,
 				data.difficultyLevel || null,
 				data.languageCode || "en",
@@ -109,12 +105,8 @@ export class TrainingExampleRepository extends BaseRepository {
 				data.assistantResponseTokens || null,
 				data.responseTimeMs || null,
 				data.conversationTurn || 1,
-				data.conversationContext
-					? JSON.stringify(data.conversationContext)
-					: null,
-				data.userSatisfactionSignals
-					? JSON.stringify(data.userSatisfactionSignals)
-					: null,
+				data.conversationContext ? JSON.stringify(data.conversationContext) : null,
+				data.userSatisfactionSignals ? JSON.stringify(data.userSatisfactionSignals) : null,
 			],
 			true,
 		);
@@ -130,9 +122,7 @@ export class TrainingExampleRepository extends BaseRepository {
 		);
 	}
 
-	async findMany(
-		filters: TrainingExampleFilters = {},
-	): Promise<Record<string, any>[]> {
+	async findMany(filters: TrainingExampleFilters = {}): Promise<Record<string, any>[]> {
 		const conditions: string[] = [];
 		const params: any[] = [];
 
@@ -218,10 +208,7 @@ export class TrainingExampleRepository extends BaseRepository {
 		return result.meta.changes;
 	}
 
-	async updateIncludeInTraining(
-		id: string,
-		includeInTraining: boolean,
-	): Promise<boolean> {
+	async updateIncludeInTraining(id: string, includeInTraining: boolean): Promise<boolean> {
 		const result = await this.executeRun(
 			`UPDATE training_examples
        SET include_in_training = ?
@@ -350,10 +337,7 @@ export class TrainingExampleRepository extends BaseRepository {
 	}
 
 	async deleteById(id: string): Promise<boolean> {
-		const result = await this.executeRun(
-			"DELETE FROM training_examples WHERE id = ?",
-			[id],
-		);
+		const result = await this.executeRun("DELETE FROM training_examples WHERE id = ?", [id]);
 
 		return result.meta.changes > 0;
 	}

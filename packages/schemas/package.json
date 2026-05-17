@@ -1,8 +1,12 @@
 {
 	"name": "@assistant/schemas",
-	"license": "Apache-2.0",
 	"version": "0.0.1",
 	"private": false,
+	"license": "Apache-2.0",
+	"files": [
+		"dist",
+		"src"
+	],
 	"main": "dist/index.js",
 	"module": "dist/index.mjs",
 	"types": "dist/index.d.ts",
@@ -13,29 +17,24 @@
 			"require": "./dist/index.js"
 		}
 	},
-	"files": [
-		"dist",
-		"src"
-	],
 	"scripts": {
 		"build": "tsup",
 		"dev": "tsup --watch",
 		"typecheck": "tsc --noEmit",
-		"format": "pnpm prettier --write .",
-		"format:check": "pnpm prettier --check .",
+		"format": "oxfmt",
+		"format:check": "oxfmt --check",
 		"lint": "pnpm oxlint",
 		"check": "pnpm lint && pnpm format:check"
 	},
 	"dependencies": {
-		"zod": "4.3.6"
+		"zod": "4.4.3"
 	},
 	"devDependencies": {
-		"@prettier/plugin-oxc": "0.1.4",
-		"@types/node": "24.12.2",
+		"@types/node": "25.8.0",
+		"oxfmt": "0.50.0",
 		"oxlint": "1.61.0",
-		"prettier": "3.8.3",
 		"tsup": "8.5.1",
-		"typescript": "5.9.3"
+		"typescript": "6.0.3"
 	},
 	"peerDependencies": {
 		"zod": "4.3.6"

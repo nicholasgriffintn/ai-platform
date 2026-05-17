@@ -71,8 +71,7 @@ addRoute(app, "post", "/prompt-coach", {
 			schema: errorResponseSchema,
 		},
 		500: {
-			description:
-				"Internal server error during suggestion generation or extraction",
+			description: "Internal server error during suggestion generation or extraction",
 			schema: errorResponseSchema,
 		},
 	},

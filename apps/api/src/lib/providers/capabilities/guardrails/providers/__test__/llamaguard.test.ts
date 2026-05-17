@@ -49,10 +49,7 @@ describe("LlamaGuardProvider", () => {
 				response: "safe",
 			});
 
-			const result = await provider.validateContent(
-				"Hello, how are you?",
-				"INPUT",
-			);
+			const result = await provider.validateContent("Hello, how are you?", "INPUT");
 
 			expect(result.isValid).toBe(true);
 			expect(result.violations).toEqual([]);
@@ -66,15 +63,10 @@ describe("LlamaGuardProvider", () => {
 				response: "unsafe\nS1: Violent Crimes, S10: Hate",
 			});
 
-			const result = await provider.validateContent(
-				"violent and hateful content",
-				"INPUT",
-			);
+			const result = await provider.validateContent("violent and hateful content", "INPUT");
 
 			expect(result.isValid).toBe(false);
-			expect(result.violations).toEqual([
-				"unsafe\nS1: Violent Crimes, S10: Hate",
-			]);
+			expect(result.violations).toEqual(["unsafe\nS1: Violent Crimes, S10: Hate"]);
 			expect(result.rawResponse).toBe("unsafe\nS1: Violent Crimes, S10: Hate");
 		});
 
@@ -85,20 +77,14 @@ describe("LlamaGuardProvider", () => {
 				response: "unsafe\nS1: Violent Crimes",
 			});
 
-			const unsafeResult = await provider.validateContent(
-				"violent content",
-				"INPUT",
-			);
+			const unsafeResult = await provider.validateContent("violent content", "INPUT");
 			expect(unsafeResult.isValid).toBe(false);
 
 			mockAIProvider.getResponse.mockResolvedValue({
 				response: "safe",
 			});
 
-			const safeResult = await provider.validateContent(
-				"normal content",
-				"INPUT",
-			);
+			const safeResult = await provider.validateContent("normal content", "INPUT");
 			expect(safeResult.isValid).toBe(true);
 		});
 
@@ -109,10 +95,7 @@ describe("LlamaGuardProvider", () => {
 				response: "allowed - content is acceptable",
 			});
 
-			const result = await provider.validateContent(
-				"normal conversation",
-				"OUTPUT",
-			);
+			const result = await provider.validateContent("normal conversation", "OUTPUT");
 
 			expect(result.isValid).toBe(true);
 			expect(result.violations).toEqual([]);
@@ -182,10 +165,7 @@ describe("LlamaGuardProvider", () => {
 
 			await provider.validateContent("test content", "INPUT");
 
-			expect(mockAIProvider.getResponse).toHaveBeenCalledWith(
-				expect.any(Object),
-				"user-123",
-			);
+			expect(mockAIProvider.getResponse).toHaveBeenCalledWith(expect.any(Object), "user-123");
 		});
 
 		it("should use auxiliary guardrails model", async () => {
@@ -197,10 +177,7 @@ describe("LlamaGuardProvider", () => {
 
 			await provider.validateContent("test content", "INPUT");
 
-			expect(mockGetAuxiliaryGuardrailsModel).toHaveBeenCalledWith(
-				mockConfig.env,
-				mockConfig.user,
-			);
+			expect(mockGetAuxiliaryGuardrailsModel).toHaveBeenCalledWith(mockConfig.env, mockConfig.user);
 
 			const callArgs = mockAIProvider.getResponse.mock.calls[0][0];
 			expect(callArgs.model).toBe("llama-guard-model");
@@ -211,9 +188,7 @@ describe("LlamaGuardProvider", () => {
 		it("should handle AI provider errors", async () => {
 			const provider = new LlamaGuardProvider(mockConfig);
 
-			mockAIProvider.getResponse.mockRejectedValue(
-				new Error("AI provider error"),
-			);
+			mockAIProvider.getResponse.mockRejectedValue(new Error("AI provider error"));
 
 			const result = await provider.validateContent("test content", "INPUT");
 
@@ -223,15 +198,12 @@ describe("LlamaGuardProvider", () => {
 		it("should re-throw AssistantError", async () => {
 			const provider = new LlamaGuardProvider(mockConfig);
 
-			const assistantError = new AssistantError(
-				"Custom error",
-				ErrorType.PROVIDER_ERROR,
-			);
+			const assistantError = new AssistantError("Custom error", ErrorType.PROVIDER_ERROR);
 			mockAIProvider.getResponse.mockRejectedValue(assistantError);
 
-			await expect(
-				provider.validateContent("test content", "INPUT"),
-			).rejects.toThrow(expect.any(AssistantError));
+			await expect(provider.validateContent("test content", "INPUT")).rejects.toThrow(
+				expect.any(AssistantError),
+			);
 		});
 
 		it("should handle case-insensitive safe responses", async () => {

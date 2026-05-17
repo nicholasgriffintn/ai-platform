@@ -75,9 +75,7 @@ describe("BedrockGuardrailsProvider", () => {
 			// @ts-ignore - mockConfig is not typed
 			const provider = new BedrockGuardrailsProvider(mockConfig);
 
-			mockUserSettingsRepo.getProviderApiKey.mockResolvedValue(
-				"invalid-format",
-			);
+			mockUserSettingsRepo.getProviderApiKey.mockResolvedValue("invalid-format");
 			mockAws.fetch.mockResolvedValue({
 				ok: false,
 				status: 403,
@@ -85,9 +83,9 @@ describe("BedrockGuardrailsProvider", () => {
 				text: () => Promise.resolve("Invalid credentials"),
 			});
 
-			await expect(
-				provider.validateContent("test content", "INPUT"),
-			).rejects.toThrow(expect.any(AssistantError));
+			await expect(provider.validateContent("test content", "INPUT")).rejects.toThrow(
+				expect.any(AssistantError),
+			);
 		});
 	});
 
@@ -185,10 +183,7 @@ describe("BedrockGuardrailsProvider", () => {
 
 			mockAws.fetch.mockResolvedValue(mockResponse);
 
-			const result = await provider.validateContent(
-				"hateful content",
-				"OUTPUT",
-			);
+			const result = await provider.validateContent("hateful content", "OUTPUT");
 
 			expect(result.isValid).toBe(false);
 			expect(result.violations).toContain("Content violation: HATE");
@@ -217,10 +212,7 @@ describe("BedrockGuardrailsProvider", () => {
 
 			mockAws.fetch.mockResolvedValue(mockResponse);
 
-			const result = await provider.validateContent(
-				"Contact me at test@example.com",
-				"INPUT",
-			);
+			const result = await provider.validateContent("Contact me at test@example.com", "INPUT");
 
 			expect(result.isValid).toBe(false);
 			expect(result.violations).toContain("PII detected: EMAIL");
@@ -244,10 +236,7 @@ describe("BedrockGuardrailsProvider", () => {
 
 			await provider.validateContent("test content", "INPUT");
 
-			expect(mockUserSettingsRepo.getProviderApiKey).toHaveBeenCalledWith(
-				"user-123",
-				"bedrock",
-			);
+			expect(mockUserSettingsRepo.getProviderApiKey).toHaveBeenCalledWith("user-123", "bedrock");
 		});
 
 		it("should handle missing credentials error", async () => {
@@ -259,12 +248,12 @@ describe("BedrockGuardrailsProvider", () => {
 			// @ts-ignore - configWithoutCreds is not typed
 			const provider = new BedrockGuardrailsProvider(configWithoutCreds);
 
-			await expect(
-				provider.validateContent("test content", "INPUT"),
-			).rejects.toThrow(expect.any(AssistantError));
-			await expect(
-				provider.validateContent("test content", "INPUT"),
-			).rejects.toThrow("No valid credentials found for Bedrock Guardrails");
+			await expect(provider.validateContent("test content", "INPUT")).rejects.toThrow(
+				expect.any(AssistantError),
+			);
+			await expect(provider.validateContent("test content", "INPUT")).rejects.toThrow(
+				"No valid credentials found for Bedrock Guardrails",
+			);
 		});
 
 		it("should handle API errors", async () => {
@@ -278,18 +267,16 @@ describe("BedrockGuardrailsProvider", () => {
 				text: () => Promise.resolve("Server error"),
 			});
 
-			await expect(
-				provider.validateContent("test content", "INPUT"),
-			).rejects.toThrow(expect.any(AssistantError));
+			await expect(provider.validateContent("test content", "INPUT")).rejects.toThrow(
+				expect.any(AssistantError),
+			);
 		});
 
 		it("should handle user API key retrieval errors gracefully", async () => {
 			// @ts-ignore - mockConfig is not typed
 			const provider = new BedrockGuardrailsProvider(mockConfig, mockUser);
 
-			mockUserSettingsRepo.getProviderApiKey.mockRejectedValue(
-				new Error("Database error"),
-			);
+			mockUserSettingsRepo.getProviderApiKey.mockRejectedValue(new Error("Database error"));
 			mockAws.fetch.mockResolvedValue({
 				ok: true,
 				json: () =>

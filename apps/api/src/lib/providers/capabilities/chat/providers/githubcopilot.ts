@@ -33,34 +33,23 @@ export class GithubCopilotProvider extends BaseProvider {
 		return "https://api.githubcopilot.com/chat/completions";
 	}
 
-	private async getCopilotBearer(
-		params: ChatCompletionParameters,
-	): Promise<string> {
+	private async getCopilotBearer(params: ChatCompletionParameters): Promise<string> {
 		const userId = params.user?.id?.toString() || "anonymous";
 		const now = Date.now();
 		const cachedToken = copilotTokenCache.get(userId);
 
-		if (
-			cachedToken &&
-			(!cachedToken.expiresAt || cachedToken.expiresAt - 60_000 > now)
-		) {
+		if (cachedToken && (!cachedToken.expiresAt || cachedToken.expiresAt - 60_000 > now)) {
 			return cachedToken.token;
 		}
 
 		const hostToken = await this.getApiKey(params, params.user?.id);
-		const resp = await fetch(
-			"https://api.github.com/copilot_internal/v2/token",
-			{
-				headers: {
-					Authorization: `token ${hostToken}`,
-				},
+		const resp = await fetch("https://api.github.com/copilot_internal/v2/token", {
+			headers: {
+				Authorization: `token ${hostToken}`,
 			},
-		);
+		});
 		if (!resp.ok) {
-			throw new AssistantError(
-				"Failed to fetch GitHub Copilot token",
-				ErrorType.PROVIDER_ERROR,
-			);
+			throw new AssistantError("Failed to fetch GitHub Copilot token", ErrorType.PROVIDER_ERROR);
 		}
 		const data = (await resp.json()) as { token: string; expires_at?: string };
 		const expiresAt = data.expires_at ? Date.parse(data.expires_at) : undefined;
@@ -68,9 +57,7 @@ export class GithubCopilotProvider extends BaseProvider {
 		return data.token;
 	}
 
-	protected async getHeaders(
-		params: ChatCompletionParameters,
-	): Promise<Record<string, string>> {
+	protected async getHeaders(params: ChatCompletionParameters): Promise<Record<string, string>> {
 		const bearer = await this.getCopilotBearer(params);
 
 		if (!this.machineId) {

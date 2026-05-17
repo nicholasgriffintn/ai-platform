@@ -14,8 +14,7 @@ export const create_note: ApiToolDefinition = {
 		properties: {
 			title: {
 				type: "string",
-				description:
-					"The title of the note, this can be a summary of the content",
+				description: "The title of the note, this can be a summary of the content",
 			},
 			content: {
 				type: "string",

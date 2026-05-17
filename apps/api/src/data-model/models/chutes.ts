@@ -1,8 +1,5 @@
 import type { ModelConfig } from "~/types";
-import {
-	createModelConfig,
-	createModelConfigObject,
-} from "~/lib/providers/models/utils";
+import { createModelConfig, createModelConfigObject } from "~/lib/providers/models/utils";
 
 const PROVIDER = "chutes";
 
@@ -10,8 +7,7 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("chutesai/Devstral-Small-2505", PROVIDER, {
 		name: "Devstral Small (2505)",
 		matchingModel: "chutesai/Devstral-Small-2505",
-		description:
-			"Efficient small model optimized for fast text generation and tool use.",
+		description: "Efficient small model optimized for fast text generation and tool use.",
 		releaseDate: "May 21, 2025",
 		lastUpdated: "May 21, 2025",
 		modalities: { input: ["text"], output: ["text"] },
@@ -28,8 +24,7 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("chutesai/Mistral-Small-3.2-24B-Instruct-2506", PROVIDER, {
 		name: "Mistral Small 3.2 24B Instruct 2506",
 		matchingModel: "chutesai/Mistral-Small-3.2-24B-Instruct-2506",
-		description:
-			"Instruction-tuned 24B model for high-quality text tasks and tool calling.",
+		description: "Instruction-tuned 24B model for high-quality text tasks and tool calling.",
 		releaseDate: "December 29, 2025",
 		lastUpdated: "January 10, 2026",
 		modalities: {

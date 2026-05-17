@@ -10,9 +10,7 @@ export class MistralTranscriptionProvider extends BaseTranscriptionProvider {
 		return "MISTRAL_API_KEY";
 	}
 
-	async transcribe(
-		request: TranscriptionRequest,
-	): Promise<TranscriptionResult> {
+	async transcribe(request: TranscriptionRequest): Promise<TranscriptionResult> {
 		this.validateRequest(request);
 
 		const { audio, env, timestamps = false } = request;
@@ -34,10 +32,7 @@ export class MistralTranscriptionProvider extends BaseTranscriptionProvider {
 				formData.append("file_url", audio);
 			} else {
 				if (!(audio instanceof Blob)) {
-					throw new AssistantError(
-						"Audio must be a Blob or a URL string",
-						ErrorType.PARAMS_ERROR,
-					);
+					throw new AssistantError("Audio must be a Blob or a URL string", ErrorType.PARAMS_ERROR);
 				}
 
 				formData.append("file", audio, "audio.wav");

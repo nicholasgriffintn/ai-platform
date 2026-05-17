@@ -22,10 +22,7 @@ export function startFileWatcher(params: {
 				recursive: true,
 			});
 
-			for await (const event of parseSSEStream<FileWatchSSEEvent>(
-				stream,
-				controller.signal,
-			)) {
+			for await (const event of parseSSEStream<FileWatchSSEEvent>(stream, controller.signal)) {
 				if (event.type === "event") {
 					await emit({
 						type: "file_changed",

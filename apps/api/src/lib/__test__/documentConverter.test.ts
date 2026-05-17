@@ -36,11 +36,7 @@ describe("convertToMarkdownViaCloudflare", () => {
 			},
 		]);
 
-		const result = await convertToMarkdownViaCloudflare(
-			mockEnv,
-			mockDocumentUrl,
-			mockDocumentName,
-		);
+		const result = await convertToMarkdownViaCloudflare(mockEnv, mockDocumentUrl, mockDocumentName);
 
 		expect(result).toEqual({ result: mockMarkdownResult });
 		expect(global.fetch).toHaveBeenCalledWith(mockDocumentUrl);
@@ -72,10 +68,7 @@ describe("convertToMarkdownViaCloudflare", () => {
 			},
 		]);
 
-		const result = await convertToMarkdownViaCloudflare(
-			mockEnv,
-			mockDocumentUrl,
-		);
+		const result = await convertToMarkdownViaCloudflare(mockEnv, mockDocumentUrl);
 
 		expect(result).toEqual({ result: mockMarkdownResult });
 		expect(mockEnv.AI.toMarkdown).toHaveBeenCalledWith([
@@ -90,10 +83,7 @@ describe("convertToMarkdownViaCloudflare", () => {
 		const envWithoutAI = {} as any;
 		const mockDocumentUrl = "https://example.com/document.pdf";
 
-		const result = await convertToMarkdownViaCloudflare(
-			envWithoutAI,
-			mockDocumentUrl,
-		);
+		const result = await convertToMarkdownViaCloudflare(envWithoutAI, mockDocumentUrl);
 
 		expect(result).toEqual({
 			error: "Cloudflare AI binding not available",
@@ -111,10 +101,7 @@ describe("convertToMarkdownViaCloudflare", () => {
 
 		(global.fetch as any).mockResolvedValue(mockFileResponse);
 
-		const result = await convertToMarkdownViaCloudflare(
-			mockEnv,
-			mockDocumentUrl,
-		);
+		const result = await convertToMarkdownViaCloudflare(mockEnv, mockDocumentUrl);
 
 		expect(result).toEqual({
 			error: "Failed to download document: Not Found",
@@ -132,10 +119,7 @@ describe("convertToMarkdownViaCloudflare", () => {
 		(global.fetch as any).mockResolvedValue(mockFileResponse);
 		mockEnv.AI.toMarkdown.mockResolvedValue([]);
 
-		const result = await convertToMarkdownViaCloudflare(
-			mockEnv,
-			mockDocumentUrl,
-		);
+		const result = await convertToMarkdownViaCloudflare(mockEnv, mockDocumentUrl);
 
 		expect(result).toEqual({
 			error: "Invalid response from Cloudflare toMarkdown API",
@@ -153,10 +137,7 @@ describe("convertToMarkdownViaCloudflare", () => {
 		(global.fetch as any).mockResolvedValue(mockFileResponse);
 		mockEnv.AI.toMarkdown.mockResolvedValue(null);
 
-		const result = await convertToMarkdownViaCloudflare(
-			mockEnv,
-			mockDocumentUrl,
-		);
+		const result = await convertToMarkdownViaCloudflare(mockEnv, mockDocumentUrl);
 
 		expect(result).toEqual({
 			error: "Invalid response from Cloudflare toMarkdown API",
@@ -223,10 +204,7 @@ describe("convertToMarkdownViaCloudflare", () => {
 			},
 		]);
 
-		const result = await convertToMarkdownViaCloudflare(
-			mockEnv,
-			mockDocumentUrl,
-		);
+		const result = await convertToMarkdownViaCloudflare(mockEnv, mockDocumentUrl);
 
 		expect(result).toEqual({
 			error: "Unsupported document",
@@ -244,10 +222,7 @@ describe("convertToMarkdownViaCloudflare", () => {
 		(global.fetch as any).mockResolvedValue(mockFileResponse);
 		mockEnv.AI.toMarkdown.mockRejectedValue(new Error("AI API error"));
 
-		const result = await convertToMarkdownViaCloudflare(
-			mockEnv,
-			mockDocumentUrl,
-		);
+		const result = await convertToMarkdownViaCloudflare(mockEnv, mockDocumentUrl);
 
 		expect(result).toEqual({
 			error: "Cloudflare toMarkdown API error: AI API error",
@@ -259,10 +234,7 @@ describe("convertToMarkdownViaCloudflare", () => {
 
 		(global.fetch as any).mockRejectedValue(new Error("Network error"));
 
-		const result = await convertToMarkdownViaCloudflare(
-			mockEnv,
-			mockDocumentUrl,
-		);
+		const result = await convertToMarkdownViaCloudflare(mockEnv, mockDocumentUrl);
 
 		expect(result).toEqual({
 			error: "Network error",
@@ -279,10 +251,7 @@ describe("convertToMarkdownViaCloudflare", () => {
 
 		(global.fetch as any).mockResolvedValue(mockFileResponse);
 
-		const result = await convertToMarkdownViaCloudflare(
-			mockEnv,
-			mockDocumentUrl,
-		);
+		const result = await convertToMarkdownViaCloudflare(mockEnv, mockDocumentUrl);
 
 		expect(result).toEqual({
 			error: "Blob error",

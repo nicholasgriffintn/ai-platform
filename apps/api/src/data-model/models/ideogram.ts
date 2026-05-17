@@ -1,8 +1,5 @@
 import type { ModelConfig } from "~/types";
-import {
-	createModelConfig,
-	createModelConfigObject,
-} from "~/lib/providers/models/utils";
+import { createModelConfig, createModelConfigObject } from "~/lib/providers/models/utils";
 
 const PROVIDER = "ideogram";
 
@@ -20,8 +17,7 @@ export const ideogramModelConfig: ModelConfig = createModelConfigObject([
 			output: ["image"],
 		},
 		inputSchema: {
-			reference:
-				"https://developer.ideogram.ai/api-reference/api-reference/generate-v3",
+			reference: "https://developer.ideogram.ai/api-reference/api-reference/generate-v3",
 			fields: [
 				{
 					name: "prompt",

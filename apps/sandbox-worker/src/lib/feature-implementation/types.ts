@@ -8,10 +8,7 @@ import type { PromptStrategySelection } from "./prompt-strategy";
 
 export type SandboxInstance = ReturnType<typeof getSandbox>;
 export type SandboxExecInstance = Pick<SandboxInstance, "exec">;
-export type SandboxFileInstance = Pick<
-	SandboxInstance,
-	"readFile" | "writeFile" | "exists"
->;
+export type SandboxFileInstance = Pick<SandboxInstance, "readFile" | "writeFile" | "exists">;
 
 export interface FileContextSnippet {
 	path: string;

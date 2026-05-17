@@ -18,8 +18,7 @@ export function meta() {
 }
 
 export default function Home() {
-	const { initializeStore, showSearch, setShowSearch, setChatInput } =
-		useChatStore();
+	const { initializeStore, showSearch, setShowSearch, setChatInput } = useChatStore();
 
 	useEffect(() => {
 		const init = async () => {

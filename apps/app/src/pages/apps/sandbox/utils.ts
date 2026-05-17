@@ -7,10 +7,7 @@ export const REPO_STORAGE_PREFIX = "sandbox:last-repo";
 export const getStatusBadgeVariant = (
 	status: SandboxRunStatus,
 ): "outline" | "secondary" | "destructive" => {
-	const variants: Record<
-		SandboxRunStatus,
-		"outline" | "secondary" | "destructive"
-	> = {
+	const variants: Record<SandboxRunStatus, "outline" | "secondary" | "destructive"> = {
 		completed: "outline",
 		failed: "destructive",
 		cancelled: "secondary",
@@ -42,9 +39,7 @@ export function describeEvent(event: SandboxRunEvent): string {
 		case "agent_decision":
 			return `Agent action: ${event.action ?? "unknown"}${event.reasoning ? ` (${event.reasoning})` : ""}`;
 		case "agent_decision_invalid":
-			return event.error
-				? `Agent decision invalid: ${event.error}`
-				: "Agent decision invalid";
+			return event.error ? `Agent decision invalid: ${event.error}` : "Agent decision invalid";
 		case "agent_repetition_detected":
 			return event.message || "Repeated action detected; forcing replanning";
 		case "agent_step_budget_extended":

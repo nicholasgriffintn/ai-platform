@@ -22,8 +22,7 @@ export const retry_with_backoff: ApiToolDefinition = {
 		properties: {
 			function_name: {
 				type: "string",
-				description:
-					"The name of the function to retry (e.g., 'call_api', 'web_search')",
+				description: "The name of the function to retry (e.g., 'call_api', 'web_search')",
 			},
 			args: {
 				type: "object",
@@ -32,8 +31,7 @@ export const retry_with_backoff: ApiToolDefinition = {
 			},
 			max_attempts: {
 				type: "number",
-				description:
-					"Maximum number of retry attempts (including initial call)",
+				description: "Maximum number of retry attempts (including initial call)",
 				default: 3,
 			},
 			backoff_factor: {
@@ -145,8 +143,7 @@ export const retry_with_backoff: ApiToolDefinition = {
 				};
 			} catch (error) {
 				lastError = error as Error;
-				const errorMessage =
-					error instanceof Error ? error.message : "Unknown error";
+				const errorMessage = error instanceof Error ? error.message : "Unknown error";
 
 				logger.warn("Function call failed", {
 					function_name,
@@ -224,17 +221,11 @@ export const fallback: ApiToolDefinition = {
 			},
 			include_primary_error: {
 				type: "boolean",
-				description:
-					"Whether to include the primary function's error in the response",
+				description: "Whether to include the primary function's error in the response",
 				default: true,
 			},
 		},
-		required: [
-			"primary_function",
-			"primary_args",
-			"fallback_function",
-			"fallback_args",
-		],
+		required: ["primary_function", "primary_args", "fallback_function", "fallback_args"],
 	}),
 	execute: async (args, context) => {
 		const req = context.request;
@@ -330,8 +321,7 @@ export const fallback: ApiToolDefinition = {
 			};
 		} catch (error) {
 			primaryError = error as Error;
-			const errorMessage =
-				error instanceof Error ? error.message : "Unknown error";
+			const errorMessage = error instanceof Error ? error.message : "Unknown error";
 
 			logger.warn("Primary function failed, trying fallback", {
 				primary_function,
@@ -372,9 +362,7 @@ export const fallback: ApiToolDefinition = {
 			};
 		} catch (fallbackError) {
 			const fallbackErrorMessage =
-				fallbackError instanceof Error
-					? fallbackError.message
-					: "Unknown error";
+				fallbackError instanceof Error ? fallbackError.message : "Unknown error";
 
 			logger.error("Both primary and fallback functions failed", {
 				primary_function,

@@ -7,11 +7,7 @@ import { Logo } from "~/components/Core/Logo";
 import { Button, SearchInput } from "~/components/ui";
 import { CardSkeleton } from "~/components/ui/skeletons";
 import { useTrackEvent } from "~/hooks/use-track-event";
-import {
-	useDynamicApp,
-	useDynamicApps,
-	useExecuteDynamicApp,
-} from "~/hooks/useDynamicApps";
+import { useDynamicApp, useDynamicApps, useExecuteDynamicApp } from "~/hooks/useDynamicApps";
 import { cn } from "~/lib/utils";
 import { useChatStore } from "~/state/stores/chatStore";
 import { PageTitle } from "../Core/PageTitle";
@@ -32,11 +28,7 @@ export const DynamicApps = () => {
 	const [result, setResult] = useState<Record<string, any> | null>(null);
 	const [searchQuery, setSearchQuery] = useState("");
 
-	const {
-		data: appsData,
-		isLoading: appsLoading,
-		error: appsError,
-	} = useDynamicApps();
+	const { data: appsData, isLoading: appsLoading, error: appsError } = useDynamicApps();
 
 	const apps = appsData?.apps ?? [];
 
@@ -46,8 +38,7 @@ export const DynamicApps = () => {
 		error: appError,
 	} = useDynamicApp(selectedAppId);
 
-	const { mutateAsync: executeApp, isPending: isExecuting } =
-		useExecuteDynamicApp();
+	const { mutateAsync: executeApp, isPending: isExecuting } = useExecuteDynamicApp();
 
 	const filteredApps = useMemo(() => {
 		if (!searchQuery.trim()) return apps;
@@ -57,12 +48,8 @@ export const DynamicApps = () => {
 			const matchesName = app.name.toLowerCase().includes(query);
 			const matchesDescription = app.description?.toLowerCase().includes(query);
 			const matchesCategory = app.category?.toLowerCase().includes(query);
-			const matchesTags = app.tags?.some((tag) =>
-				tag.toLowerCase().includes(query),
-			);
-			return (
-				matchesName || matchesDescription || matchesCategory || matchesTags
-			);
+			const matchesTags = app.tags?.some((tag) => tag.toLowerCase().includes(query));
+			return matchesName || matchesDescription || matchesCategory || matchesTags;
 		});
 	}, [apps, searchQuery]);
 
@@ -189,13 +176,7 @@ export const DynamicApps = () => {
 	const responseContent = useMemo(() => {
 		if (!result || !selectedApp) return null;
 
-		return (
-			<ResponseRenderer
-				app={selectedApp}
-				result={result}
-				onReset={handleReset}
-			/>
-		);
+		return <ResponseRenderer app={selectedApp} result={result} onReset={handleReset} />;
 	}, [selectedApp, result, handleReset]);
 
 	const formContent = useMemo(() => {
@@ -244,9 +225,7 @@ export const DynamicApps = () => {
 					<PageTitle title="Apps" />
 				</PageHeader>
 				<h2 className="font-semibold mb-2">Failed to load apps</h2>
-				<p>
-					{error instanceof Error ? error.message : "Unknown error occurred"}
-				</p>
+				<p>{error instanceof Error ? error.message : "Unknown error occurred"}</p>
 				<Button
 					type="button"
 					variant="primary"
@@ -265,9 +244,7 @@ export const DynamicApps = () => {
 				<PageHeader>
 					<BackLink onClick={handleBackToApps} label="Back to Apps" />
 				</PageHeader>
-				<div className="flex-grow overflow-auto space-y-6">
-					{responseContent || formContent}
-				</div>
+				<div className="flex-grow overflow-auto space-y-6">{responseContent || formContent}</div>
 			</div>
 		);
 	}
@@ -313,9 +290,7 @@ export const DynamicApps = () => {
 						},
 					]}
 				/>
-			) : filteredApps.length === 0 &&
-			  searchQuery &&
-			  groupedApps.length === 0 ? (
+			) : filteredApps.length === 0 && searchQuery && groupedApps.length === 0 ? (
 				<EmptyState
 					icon={<Sparkles className="h-8 w-8 text-zinc-400" />}
 					title="No apps found"
@@ -327,9 +302,7 @@ export const DynamicApps = () => {
 					}
 				/>
 			) : (
-				groupedApps.map(([category, categoryApps]) =>
-					renderCategoryApps(category, categoryApps),
-				)
+				groupedApps.map(([category, categoryApps]) => renderCategoryApps(category, categoryApps))
 			)}
 		</div>
 	);

@@ -2,30 +2,26 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { IEnv } from "~/types";
 
-const {
-	mockUploadImageFromChat,
-	mockUploadAudioFromChat,
-	mockStorageService,
-	mockBucket,
-} = vi.hoisted(() => {
-	const mockUploadImageFromChat = vi.fn();
-	const mockUploadAudioFromChat = vi.fn();
-	const mockStorageService = {
-		uploadObject: vi.fn().mockResolvedValue("test-key"),
-		getObject: vi.fn(),
-	};
-	const mockBucket = {
-		put: vi.fn().mockResolvedValue(undefined),
-		get: vi.fn(),
-	};
+const { mockUploadImageFromChat, mockUploadAudioFromChat, mockStorageService, mockBucket } =
+	vi.hoisted(() => {
+		const mockUploadImageFromChat = vi.fn();
+		const mockUploadAudioFromChat = vi.fn();
+		const mockStorageService = {
+			uploadObject: vi.fn().mockResolvedValue("test-key"),
+			getObject: vi.fn(),
+		};
+		const mockBucket = {
+			put: vi.fn().mockResolvedValue(undefined),
+			get: vi.fn(),
+		};
 
-	return {
-		mockUploadImageFromChat,
-		mockUploadAudioFromChat,
-		mockStorageService,
-		mockBucket,
-	};
-});
+		return {
+			mockUploadImageFromChat,
+			mockUploadAudioFromChat,
+			mockStorageService,
+			mockBucket,
+		};
+	});
 
 vi.mock("../storage", () => ({
 	StorageService: class {
@@ -98,10 +94,7 @@ describe("ResponseFormatter", () => {
 				],
 			};
 
-			const result = await ResponseFormatter.formatResponse(
-				data,
-				"google-ai-studio",
-			);
+			const result = await ResponseFormatter.formatResponse(data, "google-ai-studio");
 
 			expect(result.response).toBe("Google response");
 			expect(result.tool_calls).toHaveLength(1);
@@ -134,10 +127,7 @@ describe("ResponseFormatter", () => {
 				choices: [{ message: { content: "Unknown provider response" } }],
 			};
 
-			const result = await ResponseFormatter.formatResponse(
-				data,
-				"unknown-provider",
-			);
+			const result = await ResponseFormatter.formatResponse(data, "unknown-provider");
 
 			expect(result.response).toBe("Unknown provider response");
 		});
@@ -158,12 +148,8 @@ describe("ResponseFormatter", () => {
 
 			expect(result.response).toHaveLength(2);
 			expect(result.response[0].type).toBe("image_url");
-			expect(result.response[0].image_url.url).toBe(
-				"https://example.com/image1.png",
-			);
-			expect(result.response[1].image_url.url).toBe(
-				"https://example.com/image2.png",
-			);
+			expect(result.response[0].image_url.url).toBe("https://example.com/image1.png");
+			expect(result.response[1].image_url.url).toBe("https://example.com/image2.png");
 		});
 
 		it("should handle image generation without env", async () => {
@@ -176,9 +162,7 @@ describe("ResponseFormatter", () => {
 			});
 
 			expect(result.response).toHaveLength(1);
-			expect(result.response[0].image_url.url).toBe(
-				"https://example.com/image.png",
-			);
+			expect(result.response[0].image_url.url).toBe("https://example.com/image.png");
 		});
 
 		it("uploads base64 image generations and strips raw payloads", async () => {
@@ -202,21 +186,17 @@ describe("ResponseFormatter", () => {
 			});
 
 			const storageCalls =
-				mockStorageService.uploadObject.mock.calls.length +
-				mockBucket.put.mock.calls.length;
+				mockStorageService.uploadObject.mock.calls.length + mockBucket.put.mock.calls.length;
 			expect(storageCalls).toBe(1);
 
 			const [key, bytes, options] =
-				mockStorageService.uploadObject.mock.calls[0] ||
-				mockBucket.put.mock.calls[0];
+				mockStorageService.uploadObject.mock.calls[0] || mockBucket.put.mock.calls[0];
 			expect(key).toContain("generations/chat_123/gpt-image-1.5/");
 			expect((options as any).contentType).toBe("image/png");
 			expect((bytes as Uint8Array).byteLength).toBeGreaterThan(0);
 
 			expect(result.response).toHaveLength(1);
-			expect(result.response[0].image_url.url).toContain(
-				mockEnv.PUBLIC_ASSETS_URL,
-			);
+			expect(result.response[0].image_url.url).toContain(mockEnv.PUBLIC_ASSETS_URL);
 			expect(result.data.assets).toHaveLength(1);
 			expect(result.data.revised_prompt).toBe("Refined hamster prompt");
 			expect(JSON.stringify(result).includes(base64Image)).toBe(false);
@@ -256,9 +236,7 @@ describe("ResponseFormatter", () => {
 					model: "qwen-qwq-32b",
 				});
 
-				expect(result.response).toBe(
-					"<think>\nSome thinking content\n</think>\nActual response",
-				);
+				expect(result.response).toBe("<think>\nSome thinking content\n</think>\nActual response");
 			});
 
 			it("should not modify content that already has <think> tag", async () => {
@@ -366,9 +344,7 @@ describe("ResponseFormatter", () => {
 					model: "QWEN-QWQ-32B",
 				});
 
-				expect(result.response).toBe(
-					"<think>\nThinking...\n</think>\nResponse",
-				);
+				expect(result.response).toBe("<think>\nThinking...\n</think>\nResponse");
 			});
 
 			it("should handle content with whitespace around <think>", async () => {
@@ -386,9 +362,7 @@ describe("ResponseFormatter", () => {
 					model: "qwq-32b",
 				});
 
-				expect(result.response).toBe(
-					"  \n  <think>Already has think tag</think>  ",
-				);
+				expect(result.response).toBe("  \n  <think>Already has think tag</think>  ");
 			});
 
 			it("should handle complex content with multiple </think> tags", async () => {
@@ -396,8 +370,7 @@ describe("ResponseFormatter", () => {
 					choices: [
 						{
 							message: {
-								content:
-									"First thought\n</think>\nSome text\n</think>\nFinal response",
+								content: "First thought\n</think>\nSome text\n</think>\nFinal response",
 							},
 						},
 					],
@@ -450,17 +423,12 @@ describe("ResponseFormatter", () => {
 				model: "replicate-image",
 			});
 
-			expect(mockFetch).toHaveBeenCalledWith(
-				"https://replicate.delivery/example/output-0.png",
-			);
+			expect(mockFetch).toHaveBeenCalledWith("https://replicate.delivery/example/output-0.png");
 			const storageCalls =
-				mockStorageService.uploadObject.mock.calls.length +
-				mockBucket.put.mock.calls.length;
+				mockStorageService.uploadObject.mock.calls.length + mockBucket.put.mock.calls.length;
 			expect(storageCalls).toBeGreaterThan(0);
 			const responseUrl = (result.response as any)[0].image_url.url as string;
-			expect(responseUrl.startsWith(mockEnv.PUBLIC_ASSETS_URL || "")).toBe(
-				true,
-			);
+			expect(responseUrl.startsWith(mockEnv.PUBLIC_ASSETS_URL || "")).toBe(true);
 			expect(result.data.assets[0].originalUrl).toBe(
 				"https://replicate.delivery/example/output-0.png",
 			);
@@ -545,10 +513,7 @@ describe("ResponseFormatter", () => {
 		it("should handle response with no candidates", async () => {
 			const data = {};
 
-			const result = await ResponseFormatter.formatResponse(
-				data,
-				"google-ai-studio",
-			);
+			const result = await ResponseFormatter.formatResponse(data, "google-ai-studio");
 
 			expect(result.response).toBe("");
 			expect(result.tool_calls).toEqual([]);
@@ -573,15 +538,10 @@ describe("ResponseFormatter", () => {
 				],
 			};
 
-			const result = await ResponseFormatter.formatResponse(
-				data,
-				"google-ai-studio",
-			);
+			const result = await ResponseFormatter.formatResponse(data, "google-ai-studio");
 
 			expect(result.response).toContain("Here's the code:");
-			expect(result.response).toContain(
-				'<artifact identifier="executable-code-1"',
-			);
+			expect(result.response).toContain('<artifact identifier="executable-code-1"');
 			expect(result.response).toContain("print('hello')");
 		});
 
@@ -603,10 +563,7 @@ describe("ResponseFormatter", () => {
 				],
 			};
 
-			const result = await ResponseFormatter.formatResponse(
-				data,
-				"google-ai-studio",
-			);
+			const result = await ResponseFormatter.formatResponse(data, "google-ai-studio");
 
 			expect(result.response).toContain("hello");
 		});
@@ -632,13 +589,9 @@ describe("ResponseFormatter", () => {
 				image: "base64imagedata",
 			};
 
-			const result = await ResponseFormatter.formatResponse(
-				data,
-				"workers-ai",
-				{
-					modalities: { input: ["text"], output: ["image"] },
-				},
-			);
+			const result = await ResponseFormatter.formatResponse(data, "workers-ai", {
+				modalities: { input: ["text"], output: ["image"] },
+			});
 
 			expect(result.response).toBe("base64imagedata");
 		});
@@ -658,15 +611,11 @@ describe("ResponseFormatter", () => {
 				result: [1, 2, 3, 4, 5],
 			};
 
-			const result = await ResponseFormatter.formatResponse(
-				data,
-				"workers-ai",
-				{
-					modalities: { input: ["text"], output: ["audio"] },
-					env: mockEnv,
-					completion_id: "test-completion",
-				},
-			);
+			const result = await ResponseFormatter.formatResponse(data, "workers-ai", {
+				modalities: { input: ["text"], output: ["audio"] },
+				env: mockEnv,
+				completion_id: "test-completion",
+			});
 
 			expect(result.response).toEqual([1, 2, 3, 4, 5]);
 		});
@@ -677,17 +626,11 @@ describe("ResponseFormatter", () => {
 					response: "Some thinking content\n</think>\nActual response",
 				};
 
-				const result = await ResponseFormatter.formatResponse(
-					data,
-					"workers-ai",
-					{
-						model: "qwq-32b",
-					},
-				);
+				const result = await ResponseFormatter.formatResponse(data, "workers-ai", {
+					model: "qwq-32b",
+				});
 
-				expect(result.response).toBe(
-					"<think>\nSome thinking content\n</think>\nActual response",
-				);
+				expect(result.response).toBe("<think>\nSome thinking content\n</think>\nActual response");
 			});
 
 			it("should add <think> tag for QwQ models with </think> but no <think> in data.result", async () => {
@@ -695,17 +638,11 @@ describe("ResponseFormatter", () => {
 					result: "Some thinking content\n</think>\nActual response",
 				};
 
-				const result = await ResponseFormatter.formatResponse(
-					data,
-					"workers-ai",
-					{
-						model: "qwq-32b",
-					},
-				);
+				const result = await ResponseFormatter.formatResponse(data, "workers-ai", {
+					model: "qwq-32b",
+				});
 
-				expect(result.response).toBe(
-					"<think>\nSome thinking content\n</think>\nActual response",
-				);
+				expect(result.response).toBe("<think>\nSome thinking content\n</think>\nActual response");
 			});
 
 			it("should not modify content that already has <think> tag in data.response", async () => {
@@ -713,13 +650,9 @@ describe("ResponseFormatter", () => {
 					response: "<think>Some thinking</think>\nResponse",
 				};
 
-				const result = await ResponseFormatter.formatResponse(
-					data,
-					"workers-ai",
-					{
-						model: "qwq-32b",
-					},
-				);
+				const result = await ResponseFormatter.formatResponse(data, "workers-ai", {
+					model: "qwq-32b",
+				});
 
 				expect(result.response).toBe("<think>Some thinking</think>\nResponse");
 			});
@@ -729,13 +662,9 @@ describe("ResponseFormatter", () => {
 					result: "<think>Some thinking</think>\nResponse",
 				};
 
-				const result = await ResponseFormatter.formatResponse(
-					data,
-					"workers-ai",
-					{
-						model: "qwq-32b",
-					},
-				);
+				const result = await ResponseFormatter.formatResponse(data, "workers-ai", {
+					model: "qwq-32b",
+				});
 
 				expect(result.response).toBe("<think>Some thinking</think>\nResponse");
 			});
@@ -745,13 +674,9 @@ describe("ResponseFormatter", () => {
 					response: "Some content\n</think>",
 				};
 
-				const result = await ResponseFormatter.formatResponse(
-					data,
-					"workers-ai",
-					{
-						model: "llama-2-7b",
-					},
-				);
+				const result = await ResponseFormatter.formatResponse(data, "workers-ai", {
+					model: "llama-2-7b",
+				});
 
 				expect(result.response).toBe("Some content\n</think>");
 			});
@@ -761,13 +686,9 @@ describe("ResponseFormatter", () => {
 					response: "",
 				};
 
-				const result = await ResponseFormatter.formatResponse(
-					data,
-					"workers-ai",
-					{
-						model: "qwq-32b",
-					},
-				);
+				const result = await ResponseFormatter.formatResponse(data, "workers-ai", {
+					model: "qwq-32b",
+				});
 
 				expect(result.response).toBe("");
 			});
@@ -777,13 +698,9 @@ describe("ResponseFormatter", () => {
 					result: "",
 				};
 
-				const result = await ResponseFormatter.formatResponse(
-					data,
-					"workers-ai",
-					{
-						model: "qwq-32b",
-					},
-				);
+				const result = await ResponseFormatter.formatResponse(data, "workers-ai", {
+					model: "qwq-32b",
+				});
 
 				expect(result.response).toBe("");
 			});
@@ -793,17 +710,11 @@ describe("ResponseFormatter", () => {
 					result: "Thinking...\n</think>\nResponse",
 				};
 
-				const result = await ResponseFormatter.formatResponse(
-					data,
-					"workers-ai",
-					{
-						model: "QWQ-32B",
-					},
-				);
+				const result = await ResponseFormatter.formatResponse(data, "workers-ai", {
+					model: "QWQ-32B",
+				});
 
-				expect(result.response).toBe(
-					"<think>\nThinking...\n</think>\nResponse",
-				);
+				expect(result.response).toBe("<think>\nThinking...\n</think>\nResponse");
 			});
 
 			it("should handle Workers formatter alias", async () => {
@@ -815,9 +726,7 @@ describe("ResponseFormatter", () => {
 					model: "qwq-32b",
 				});
 
-				expect(result.response).toBe(
-					"<think>\nThinking...\n</think>\nResponse",
-				);
+				expect(result.response).toBe("<think>\nThinking...\n</think>\nResponse");
 			});
 		});
 	});

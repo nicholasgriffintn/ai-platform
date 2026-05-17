@@ -1,15 +1,6 @@
 "use client";
 
-import {
-	Bar,
-	CartesianGrid,
-	Cell,
-	ComposedChart,
-	Legend,
-	Line,
-	XAxis,
-	YAxis,
-} from "recharts";
+import { Bar, CartesianGrid, Cell, ComposedChart, Legend, Line, XAxis, YAxis } from "recharts";
 
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "./ui/chart";
 
@@ -27,10 +18,7 @@ interface CombinedMetricsChartProps {
 	interval: number;
 }
 
-export function CombinedMetricsChart({
-	data,
-	interval = 60,
-}: CombinedMetricsChartProps) {
+export function CombinedMetricsChart({ data, interval = 60 }: CombinedMetricsChartProps) {
 	if (!data?.length) {
 		return (
 			<div className="flex h-full w-full items-center justify-center text-muted-foreground">
@@ -50,14 +38,9 @@ export function CombinedMetricsChart({
 				time,
 				provider: point.provider || "unknown",
 				latency: typeof point.latency === "number" ? point.latency : 0,
-				promptTokens:
-					typeof point.promptTokens === "number" ? point.promptTokens : 0,
-				completionTokens:
-					typeof point.completionTokens === "number"
-						? point.completionTokens
-						: 0,
-				totalTokens:
-					typeof point.totalTokens === "number" ? point.totalTokens : 0,
+				promptTokens: typeof point.promptTokens === "number" ? point.promptTokens : 0,
+				completionTokens: typeof point.completionTokens === "number" ? point.completionTokens : 0,
+				totalTokens: typeof point.totalTokens === "number" ? point.totalTokens : 0,
 			};
 		})
 		.sort((a, b) => a.time - b.time);
@@ -187,10 +170,7 @@ export function CombinedMetricsChart({
 			}}
 			className="h-full w-full"
 		>
-			<ComposedChart
-				data={extendedData}
-				margin={{ top: 0, right: 0, left: 0, bottom: 0 }}
-			>
+			<ComposedChart data={extendedData} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
 				<CartesianGrid strokeDasharray="3 3" opacity={0.2} />
 				<XAxis
 					dataKey="time"
@@ -234,13 +214,7 @@ export function CombinedMetricsChart({
 						fontSize: "12px",
 					}}
 				/>
-				<Bar
-					yAxisId="left"
-					dataKey="latency"
-					name="Latency (ms)"
-					opacity={0.9}
-					barSize={12}
-				>
+				<Bar yAxisId="left" dataKey="latency" name="Latency (ms)" opacity={0.9} barSize={12}>
 					{extendedData.map((entry, index) => (
 						<Cell
 							key={`cell-${index}-${entry.time}`}

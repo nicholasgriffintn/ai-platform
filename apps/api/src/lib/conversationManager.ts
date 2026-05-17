@@ -4,11 +4,7 @@ import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";
 import type { Database } from "./database";
 import { RepositoryManager } from "~/repositories";
-import {
-	type UsageLimits,
-	UsageManager,
-	type UsageUpdateTaskPayload,
-} from "./usageManager";
+import { type UsageLimits, UsageManager, type UsageUpdateTaskPayload } from "./usageManager";
 import { safeParseJson } from "~/utils/json";
 import type { AsyncInvocationMetadata } from "./async/asyncInvocation";
 import { isAsyncInvocationPending } from "./async/asyncInvocation";
@@ -142,10 +138,7 @@ export class ConversationManager {
 		if ((this.user || this.anonymousUser) && this.usageManager) {
 			const model = modelId || this.model;
 			if (model) {
-				await this.usageManager.checkUsageByModel(
-					model,
-					this.user?.plan_id === "pro",
-				);
+				await this.usageManager.checkUsageByModel(model, this.user?.plan_id === "pro");
 			}
 		}
 	}
@@ -156,18 +149,11 @@ export class ConversationManager {
 		costPerCall: number,
 	): Promise<void> {
 		if ((this.user || this.anonymousUser) && this.usageManager) {
-			await this.usageManager.incrementFunctionUsage(
-				functionType,
-				isPro,
-				costPerCall,
-			);
+			await this.usageManager.incrementFunctionUsage(functionType, isPro, costPerCall);
 			return;
 		}
 
-		throw new AssistantError(
-			"User required to increment function usage",
-			ErrorType.PARAMS_ERROR,
-		);
+		throw new AssistantError("User required to increment function usage", ErrorType.PARAMS_ERROR);
 	}
 
 	/**
@@ -205,10 +191,7 @@ export class ConversationManager {
 		}));
 
 		const normalisedMessages = newMessages.map((message) => {
-			const normalisedParts = normaliseMessageParts(
-				message.parts,
-				message.timestamp,
-			);
+			const normalisedParts = normaliseMessageParts(message.parts, message.timestamp);
 
 			if (normalisedParts && normalisedParts.length > 0) {
 				return { ...message, parts: normalisedParts };
@@ -235,8 +218,7 @@ export class ConversationManager {
 					}
 				} catch (error) {
 					logger.error("Failed to increment usage:", {
-						error_message:
-							error instanceof Error ? error.message : "Unknown error",
+						error_message: error instanceof Error ? error.message : "Unknown error",
 					});
 				}
 			}
@@ -254,9 +236,7 @@ export class ConversationManager {
 		}
 
 		let conversation =
-			await this.database.repositories.conversations.getConversation(
-				conversation_id,
-			);
+			await this.database.repositories.conversations.getConversation(conversation_id);
 
 		if (!conversation) {
 			let parentConversationId: string | undefined;
@@ -269,22 +249,20 @@ export class ConversationManager {
 					parentMessageId = branchData.message_id;
 				} catch (error) {
 					logger.error("Failed to parse branch_of metadata:", {
-						error_message:
-							error instanceof Error ? error.message : "Unknown error",
+						error_message: error instanceof Error ? error.message : "Unknown error",
 					});
 				}
 			}
 
-			conversation =
-				await this.database.repositories.conversations.createConversation(
-					conversation_id,
-					this.user?.id,
-					"New Conversation",
-					{
-						parent_conversation_id: parentConversationId,
-						parent_message_id: parentMessageId,
-					},
-				);
+			conversation = await this.database.repositories.conversations.createConversation(
+				conversation_id,
+				this.user?.id,
+				"New Conversation",
+				{
+					parent_conversation_id: parentConversationId,
+					parent_message_id: parentMessageId,
+				},
+			);
 		} else if (conversation.user_id !== this.user?.id) {
 			throw new AssistantError(
 				"You don't have permission to update this conversation",
@@ -314,9 +292,8 @@ export class ConversationManager {
 
 		if (this.taskService && this.user?.id) {
 			for (const message of normalisedMessages) {
-				const asyncInvocation = (
-					message.data as Record<string, any> | undefined
-				)?.asyncInvocation as AsyncInvocationMetadata | undefined;
+				const asyncInvocation = (message.data as Record<string, any> | undefined)
+					?.asyncInvocation as AsyncInvocationMetadata | undefined;
 
 				if (asyncInvocation && isAsyncInvocationPending(asyncInvocation)) {
 					try {
@@ -350,10 +327,7 @@ export class ConversationManager {
 	 * @param conversation_id - The ID of the conversation to replace messages in
 	 * @param messages - The messages to set for the conversation
 	 */
-	async replaceMessages(
-		conversation_id: string,
-		messages: Message[],
-	): Promise<Message[]> {
+	async replaceMessages(conversation_id: string, messages: Message[]): Promise<Message[]> {
 		if (!this.store) {
 			return messages;
 		}
@@ -366,9 +340,7 @@ export class ConversationManager {
 		}
 
 		const conversation =
-			await this.database.repositories.conversations.getConversation(
-				conversation_id,
-			);
+			await this.database.repositories.conversations.getConversation(conversation_id);
 		if (conversation && conversation.user_id !== this.user?.id) {
 			throw new AssistantError(
 				"You don't have permission to update this conversation",
@@ -378,17 +350,11 @@ export class ConversationManager {
 
 		if (conversation) {
 			const existingMessages =
-				await this.database.repositories.messages.getConversationMessages(
-					conversation_id,
-				);
+				await this.database.repositories.messages.getConversationMessages(conversation_id);
 
 			const deletePromises = existingMessages
 				.filter((message) => message.id)
-				.map((message) =>
-					this.database.repositories.messages.deleteMessage(
-						message.id as string,
-					),
-				);
+				.map((message) => this.database.repositories.messages.deleteMessage(message.id as string));
 
 			await Promise.all(deletePromises);
 		}
@@ -414,9 +380,7 @@ export class ConversationManager {
 		}
 
 		const conversation =
-			await this.database.repositories.conversations.getConversation(
-				conversation_id,
-			);
+			await this.database.repositories.conversations.getConversation(conversation_id);
 		if (!conversation) {
 			throw new AssistantError("Conversation not found", ErrorType.NOT_FOUND);
 		}
@@ -439,8 +403,7 @@ export class ConversationManager {
 			}
 
 			if (Array.isArray(message.parts)) {
-				updates.parts =
-					normaliseMessageParts(message.parts, message.timestamp) || [];
+				updates.parts = normaliseMessageParts(message.parts, message.timestamp) || [];
 			}
 
 			for (const [key, value] of Object.entries(message)) {
@@ -450,10 +413,7 @@ export class ConversationManager {
 			}
 
 			if (Object.keys(updates).length > 0) {
-				await this.database.repositories.messages.updateMessage(
-					message.id,
-					updates,
-				);
+				await this.database.repositories.messages.updateMessage(message.id, updates);
 			}
 		}
 	}
@@ -487,9 +447,7 @@ export class ConversationManager {
 		}
 
 		const conversation =
-			await this.database.repositories.conversations.getConversation(
-				conversation_id,
-			);
+			await this.database.repositories.conversations.getConversation(conversation_id);
 		if (!conversation) {
 			throw new AssistantError("Conversation not found", ErrorType.NOT_FOUND);
 		}
@@ -501,23 +459,19 @@ export class ConversationManager {
 			);
 		}
 
-		const messages =
-			await this.database.repositories.messages.getConversationMessages(
-				conversation_id,
-				limit,
-				after,
-				{
-					includeArchived: options?.includeArchived ?? false,
-				},
-			);
+		const messages = await this.database.repositories.messages.getConversationMessages(
+			conversation_id,
+			limit,
+			after,
+			{
+				includeArchived: options?.includeArchived ?? false,
+			},
+		);
 
 		return messages.map((dbMessage) => this.formatMessage(dbMessage));
 	}
 
-	async archiveMessages(
-		conversation_id: string,
-		messageIds: string[],
-	): Promise<void> {
+	async archiveMessages(conversation_id: string, messageIds: string[]): Promise<void> {
 		if (!this.store || messageIds.length === 0) {
 			return;
 		}
@@ -530,9 +484,7 @@ export class ConversationManager {
 		}
 
 		const conversation =
-			await this.database.repositories.conversations.getConversation(
-				conversation_id,
-			);
+			await this.database.repositories.conversations.getConversation(conversation_id);
 		if (!conversation) {
 			throw new AssistantError("Conversation not found", ErrorType.NOT_FOUND);
 		}
@@ -544,10 +496,7 @@ export class ConversationManager {
 			);
 		}
 
-		await this.database.repositories.messages.archiveMessages(
-			conversation_id,
-			messageIds,
-		);
+		await this.database.repositories.messages.archiveMessages(conversation_id, messageIds);
 	}
 
 	/**
@@ -574,13 +523,12 @@ export class ConversationManager {
 			);
 		}
 
-		const result =
-			await this.database.repositories.conversations.getUserConversations(
-				this.user?.id,
-				limit,
-				page,
-				includeArchived,
-			);
+		const result = await this.database.repositories.conversations.getUserConversations(
+			this.user?.id,
+			limit,
+			page,
+			includeArchived,
+		);
 
 		const conversations = result.conversations.map((conversation) => {
 			const messagesString = conversation.messages as string;
@@ -604,9 +552,7 @@ export class ConversationManager {
 	 * @param conversation_id - The ID of the conversation to get the details from
 	 * @returns The details of the conversation
 	 */
-	async getConversationDetails(
-		conversation_id: string,
-	): Promise<Record<string, unknown>> {
+	async getConversationDetails(conversation_id: string): Promise<Record<string, unknown>> {
 		if (!this.user?.id) {
 			throw new AssistantError(
 				"User ID is required to get conversation details",
@@ -615,9 +561,7 @@ export class ConversationManager {
 		}
 
 		const conversation =
-			await this.database.repositories.conversations.getConversation(
-				conversation_id,
-			);
+			await this.database.repositories.conversations.getConversation(conversation_id);
 		if (!conversation) {
 			throw new AssistantError("Conversation not found", ErrorType.NOT_FOUND);
 		}
@@ -629,14 +573,11 @@ export class ConversationManager {
 			);
 		}
 
-		const dbMessages =
-			await this.database.repositories.messages.getConversationMessages(
-				conversation.id as string,
-			);
-
-		const messages = dbMessages.map((dbMessage) =>
-			this.formatMessage(dbMessage),
+		const dbMessages = await this.database.repositories.messages.getConversationMessages(
+			conversation.id as string,
 		);
+
+		const messages = dbMessages.map((dbMessage) => this.formatMessage(dbMessage));
 
 		return {
 			...conversation,
@@ -669,9 +610,7 @@ export class ConversationManager {
 		}
 
 		const conversation =
-			await this.database.repositories.conversations.getConversation(
-				conversation_id,
-			);
+			await this.database.repositories.conversations.getConversation(conversation_id);
 		if (!conversation) {
 			throw new AssistantError("Conversation not found", ErrorType.NOT_FOUND);
 		}
@@ -693,15 +632,10 @@ export class ConversationManager {
 			updateObj.is_archived = updates.archived;
 		}
 
-		await this.database.repositories.conversations.updateConversation(
-			conversation_id,
-			updateObj,
-		);
+		await this.database.repositories.conversations.updateConversation(conversation_id, updateObj);
 
 		const updatedConversation =
-			await this.database.repositories.conversations.getConversation(
-				conversation_id,
-			);
+			await this.database.repositories.conversations.getConversation(conversation_id);
 		return updatedConversation || {};
 	}
 
@@ -710,9 +644,7 @@ export class ConversationManager {
 	 * @param message_id - The ID of the message to get
 	 * @returns The message that was retrieved from the database
 	 */
-	async getMessageById(
-		message_id: string,
-	): Promise<{ message: Message; conversation_id: string }> {
+	async getMessageById(message_id: string): Promise<{ message: Message; conversation_id: string }> {
 		if (!this.user?.id) {
 			throw new AssistantError(
 				"User ID is required to retrieve a message",
@@ -720,8 +652,7 @@ export class ConversationManager {
 			);
 		}
 
-		const result =
-			await this.database.repositories.messages.getMessageById(message_id);
+		const result = await this.database.repositories.messages.getMessageById(message_id);
 
 		if (!result) {
 			throw new AssistantError("Message not found", ErrorType.NOT_FOUND);
@@ -751,10 +682,7 @@ export class ConversationManager {
 		let content: Message["content"] = dbMessage.content as Message["content"];
 
 		try {
-			if (
-				typeof content === "string" &&
-				(content.startsWith("[") || content.startsWith("{"))
-			) {
+			if (typeof content === "string" && (content.startsWith("[") || content.startsWith("{"))) {
 				const parsed = safeParseJson(content);
 				content = parsed;
 			}
@@ -802,9 +730,7 @@ export class ConversationManager {
 			mode: dbMessage.mode as string,
 			data: parsedData,
 			parts: normalisedParts,
-			usage: dbMessage.usage
-				? safeParseJson(dbMessage.usage as string)
-				: undefined,
+			usage: dbMessage.usage ? safeParseJson(dbMessage.usage as string) : undefined,
 			log_id: dbMessage.log_id as string,
 		} as Message;
 
@@ -835,9 +761,7 @@ export class ConversationManager {
 	 * @param conversation_id - The ID of the conversation to share
 	 * @returns The share_id for the conversation
 	 */
-	async shareConversation(
-		conversation_id: string,
-	): Promise<{ share_id: string }> {
+	async shareConversation(conversation_id: string): Promise<{ share_id: string }> {
 		if (!this.user?.id) {
 			throw new AssistantError(
 				"User ID is required to share conversations",
@@ -846,9 +770,7 @@ export class ConversationManager {
 		}
 
 		const conversation =
-			await this.database.repositories.conversations.getConversation(
-				conversation_id,
-			);
+			await this.database.repositories.conversations.getConversation(conversation_id);
 
 		if (!conversation) {
 			throw new AssistantError("Conversation not found", ErrorType.NOT_FOUND);
@@ -861,23 +783,18 @@ export class ConversationManager {
 			);
 		}
 
-		const share_id =
-			(conversation.share_id as string) || this.generateShareId();
+		const share_id = (conversation.share_id as string) || this.generateShareId();
 
-		const updatedConversation =
-			await this.database.repositories.conversations.updateConversation(
-				conversation_id,
-				{
-					is_public: 1,
-					share_id,
-				},
-			);
+		const updatedConversation = await this.database.repositories.conversations.updateConversation(
+			conversation_id,
+			{
+				is_public: 1,
+				share_id,
+			},
+		);
 
 		if (!updatedConversation) {
-			throw new AssistantError(
-				"Failed to share conversation",
-				ErrorType.UNKNOWN_ERROR,
-			);
+			throw new AssistantError("Failed to share conversation", ErrorType.UNKNOWN_ERROR);
 		}
 
 		return { share_id };
@@ -896,9 +813,7 @@ export class ConversationManager {
 		}
 
 		const conversation =
-			await this.database.repositories.conversations.getConversation(
-				conversation_id,
-			);
+			await this.database.repositories.conversations.getConversation(conversation_id);
 
 		if (!conversation) {
 			throw new AssistantError("Conversation not found", ErrorType.NOT_FOUND);
@@ -911,19 +826,15 @@ export class ConversationManager {
 			);
 		}
 
-		const updatedConversation =
-			await this.database.repositories.conversations.updateConversation(
-				conversation_id,
-				{
-					is_public: 0,
-				},
-			);
+		const updatedConversation = await this.database.repositories.conversations.updateConversation(
+			conversation_id,
+			{
+				is_public: 0,
+			},
+		);
 
 		if (!updatedConversation) {
-			throw new AssistantError(
-				"Failed to unshare conversation",
-				ErrorType.UNKNOWN_ERROR,
-			);
+			throw new AssistantError("Failed to unshare conversation", ErrorType.UNKNOWN_ERROR);
 		}
 	}
 
@@ -943,22 +854,14 @@ export class ConversationManager {
 		},
 	): Promise<Message[]> {
 		const conversation =
-			await this.database.repositories.conversations.getConversationByShareId(
-				share_id,
-			);
+			await this.database.repositories.conversations.getConversationByShareId(share_id);
 
 		if (!conversation) {
-			throw new AssistantError(
-				"Shared conversation not found",
-				ErrorType.NOT_FOUND,
-			);
+			throw new AssistantError("Shared conversation not found", ErrorType.NOT_FOUND);
 		}
 
 		if (!conversation.is_public) {
-			throw new AssistantError(
-				"This conversation is not publicly shared",
-				ErrorType.FORBIDDEN,
-			);
+			throw new AssistantError("This conversation is not publicly shared", ErrorType.FORBIDDEN);
 		}
 
 		const messages = await this.database.repositories.messages.getMessages(

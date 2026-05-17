@@ -33,9 +33,7 @@ export function normalizeMessage(message: Message): Message {
 	let content = message.content;
 	const reasoning = message.reasoning;
 	let newReasoning: string | null = null;
-	const parts = normaliseMessageParts(
-		(message as Message & { parts?: unknown }).parts,
-	);
+	const parts = normaliseMessageParts((message as Message & { parts?: unknown }).parts);
 
 	if (typeof content === "string") {
 		const formatted = formatMessageContent(content);
@@ -45,29 +43,19 @@ export function normalizeMessage(message: Message): Message {
 			newReasoning = formatted.reasoning;
 		}
 	} else if (Array.isArray(content)) {
-		const thinkingPart = content.find(
-			(item: any) => item.type === "thinking" && item.thinking,
-		);
+		const thinkingPart = content.find((item: any) => item.type === "thinking" && item.thinking);
 		if (thinkingPart) {
 			newReasoning = thinkingPart.thinking ?? null;
 		}
-	} else if (
-		content &&
-		!Array.isArray(content) &&
-		typeof content === "object"
-	) {
+	} else if (content && !Array.isArray(content) && typeof content === "object") {
 		content = JSON.stringify(content);
 	}
 
 	if (!newReasoning && parts?.length) {
 		const reasoningFromParts = parts
 			.filter(
-				(
-					part,
-				): part is Extract<
-					NonNullable<Message["parts"]>[number],
-					{ type: "reasoning" }
-				> => part.type === "reasoning",
+				(part): part is Extract<NonNullable<Message["parts"]>[number], { type: "reasoning" }> =>
+					part.type === "reasoning",
 			)
 			.map((part) => part.text)
 			.join("\n")
@@ -77,19 +65,11 @@ export function normalizeMessage(message: Message): Message {
 		}
 	}
 
-	if (
-		typeof content === "string" &&
-		(!content || content.trim() === "") &&
-		parts?.length
-	) {
+	if (typeof content === "string" && (!content || content.trim() === "") && parts?.length) {
 		const textFromParts = parts
 			.filter(
-				(
-					part,
-				): part is Extract<
-					NonNullable<Message["parts"]>[number],
-					{ type: "text" }
-				> => part.type === "text",
+				(part): part is Extract<NonNullable<Message["parts"]>[number], { type: "text" }> =>
+					part.type === "text",
 			)
 			.map((part) => part.text)
 			.join("\n")
@@ -140,14 +120,11 @@ export function formatMessageContent(messageContent: string): {
 		};
 	}
 
-	const analysisMatch = messageContent.match(
-		/<analysis>([\s\S]*?)(?:<\/analysis>|$)/s,
-	);
+	const analysisMatch = messageContent.match(/<analysis>([\s\S]*?)(?:<\/analysis>|$)/s);
 	const thinkMatch = messageContent.match(/<think>([\s\S]*?)(?:<\/think>|$)/s);
 
 	if (analysisMatch) {
-		reasoning =
-			typeof analysisMatch[1] === "string" ? analysisMatch[1].trim() : "";
+		reasoning = typeof analysisMatch[1] === "string" ? analysisMatch[1].trim() : "";
 	}
 
 	if (thinkMatch) {
@@ -156,10 +133,7 @@ export function formatMessageContent(messageContent: string): {
 
 	let cleanedContent = messageContent;
 
-	cleanedContent = cleanedContent.replace(
-		/<analysis>.*?(?:<\/analysis>|$)/gs,
-		"",
-	);
+	cleanedContent = cleanedContent.replace(/<analysis>.*?(?:<\/analysis>|$)/gs, "");
 	cleanedContent = cleanedContent.replace(/<think>.*?(?:<\/think>|$)/gs, "");
 
 	const answerRegex = /<answer>([\s\S]*?)(<\/answer>|$)/g;
@@ -182,13 +156,9 @@ export function formatMessageContent(messageContent: string): {
 	};
 }
 
-export const formattedMessageContent = (
-	role: Message["role"],
-	originalContent: string,
-) => {
+export const formattedMessageContent = (role: Message["role"], originalContent: string) => {
 	let content = originalContent;
-	const reasoning: Array<{ type: string; content: string; isOpen: boolean }> =
-		[];
+	const reasoning: Array<{ type: string; content: string; isOpen: boolean }> = [];
 	const artifacts: Array<{
 		identifier: string;
 		type: string;
@@ -240,16 +210,12 @@ export const formattedMessageContent = (
 			}
 
 			const attributesStr = artifactMatch[1];
-			const artifactContent =
-				typeof artifactMatch[2] === "string" ? artifactMatch[2].trim() : "";
+			const artifactContent = typeof artifactMatch[2] === "string" ? artifactMatch[2].trim() : "";
 			const isOpen = !artifactMatch[0].includes("</artifact>");
 
 			const identifier = attributesStr.match(/identifier="([^"]*)"/)?.[1] || "";
 			if (!identifier) {
-				console.warn(
-					"Artifact missing identifier:",
-					artifactMatch[0]?.substring(0, 50),
-				);
+				console.warn("Artifact missing identifier:", artifactMatch[0]?.substring(0, 50));
 				continue;
 			}
 

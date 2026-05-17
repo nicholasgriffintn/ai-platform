@@ -212,8 +212,7 @@ export const ocrSchema = z.object({
 			"Specific pages user wants to process in various formats: single number, range, or list of both. Starts from 0",
 	}),
 	include_image_base64: z.boolean().optional().meta({
-		description:
-			"Whether to include the images in a base64 format in the response",
+		description: "Whether to include the images in a base64 format in the response",
 	}),
 	image_limit: z.number().optional().meta({
 		description: "Limit the number of images to extract",
@@ -278,10 +277,7 @@ export const deepResearchSchema = z.object({
 
 export const tutorSchema = z.object({
 	topic: z.string(),
-	level: z
-		.enum(["beginner", "intermediate", "advanced"])
-		.prefault("advanced")
-		.optional(),
+	level: z.enum(["beginner", "intermediate", "advanced"]).prefault("advanced").optional(),
 	options: z
 		.object({
 			search_depth: z.enum(["basic", "advanced"]).optional(),
@@ -318,17 +314,7 @@ export const appInfoSchema = z.object({
 	icon: z.string().optional(),
 	category: z.string().optional(),
 	theme: z
-		.enum([
-			"violet",
-			"indigo",
-			"pink",
-			"rose",
-			"cyan",
-			"emerald",
-			"amber",
-			"sky",
-			"slate",
-		])
+		.enum(["violet", "indigo", "pink", "rose", "cyan", "emerald", "amber", "sky", "slate"])
 		.optional(),
 	tags: z.array(z.string()).optional(),
 	featured: z.boolean().optional(),
@@ -475,9 +461,7 @@ export const noteUpdateSchema = noteCreateSchema.extend({
 			refreshMetadata: z
 				.boolean()
 				.optional()
-				.describe(
-					"When true, forces the API to regenerate AI metadata for the note",
-				),
+				.describe("When true, forces the API to regenerate AI metadata for the note"),
 		})
 		.optional(),
 });
@@ -492,8 +476,7 @@ export const noteDetailResponseSchema = z.object({
 
 export const noteFormatSchema = z.object({
 	prompt: z.string().optional().meta({
-		description:
-			"Optional additional instructions to refine the note formatting",
+		description: "Optional additional instructions to refine the note formatting",
 	}),
 });
 
@@ -536,10 +519,7 @@ export const sharedItemResponseSchema = z
 	});
 
 export const generateNotesFromMediaSchema = z.object({
-	url: z
-		.string()
-		.url()
-		.describe("The audio/video URL to transcribe and analyze."),
+	url: z.string().url().describe("The audio/video URL to transcribe and analyze."),
 	outputs: z
 		.array(
 			z.enum([
@@ -574,10 +554,7 @@ export const generateNotesFromMediaSchema = z.object({
 		.default("general")
 		.describe("Adjusts prompt style for the content type."),
 	extraPrompt: z.string().optional().describe("Additional instructions."),
-	timestamps: z
-		.boolean()
-		.optional()
-		.describe("Whether to enable timestamped transcription."),
+	timestamps: z.boolean().optional().describe("Whether to enable timestamped transcription."),
 	useVideoAnalysis: z
 		.boolean()
 		.optional()
@@ -611,12 +588,7 @@ export const strudelGenerateSchema = z.object({
 		.enum(["techno", "ambient", "house", "jazz", "drums", "experimental"])
 		.optional()
 		.describe("Musical style preset"),
-	tempo: z
-		.number()
-		.min(60)
-		.max(200)
-		.optional()
-		.describe("Beats per minute (BPM)"),
+	tempo: z.number().min(60).max(200).optional().describe("Beats per minute (BPM)"),
 	complexity: z
 		.enum(["simple", "medium", "complex"])
 		.optional()
@@ -625,13 +597,8 @@ export const strudelGenerateSchema = z.object({
 	model: z
 		.string()
 		.optional()
-		.describe(
-			"Model ID to use for generation (if not specified, uses auxiliary model)",
-		),
-	options: z
-		.record(z.string(), z.any())
-		.optional()
-		.describe("Additional generation options"),
+		.describe("Model ID to use for generation (if not specified, uses auxiliary model)"),
+	options: z.record(z.string(), z.any()).optional().describe("Additional generation options"),
 });
 
 export const strudelSavePatternSchema = z.object({
@@ -660,10 +627,7 @@ export const strudelPatternSchema = z.object({
 
 export const strudelGenerateResponseSchema = z.object({
 	code: z.string().describe("Generated Strudel pattern code"),
-	explanation: z
-		.string()
-		.optional()
-		.describe("Explanation of the generated pattern"),
+	explanation: z.string().optional().describe("Explanation of the generated pattern"),
 	generationId: z.string().describe("Unique ID for feedback tracking"),
 });
 

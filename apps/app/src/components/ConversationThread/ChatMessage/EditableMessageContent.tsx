@@ -87,13 +87,9 @@ export const EditableMessageContent = ({
 			<div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
 				<span className="text-xs text-zinc-500 dark:text-zinc-400 flex items-center gap-1 flex-wrap">
 					Press{" "}
-					<kbd className="px-1 py-0.5 bg-zinc-100 dark:bg-zinc-700 rounded text-xs">
-						Cmd+Enter
-					</kbd>
+					<kbd className="px-1 py-0.5 bg-zinc-100 dark:bg-zinc-700 rounded text-xs">Cmd+Enter</kbd>
 					to save,
-					<kbd className="px-1 py-0.5 bg-zinc-100 dark:bg-zinc-700 rounded text-xs">
-						Esc
-					</kbd>
+					<kbd className="px-1 py-0.5 bg-zinc-100 dark:bg-zinc-700 rounded text-xs">Esc</kbd>
 					to cancel
 				</span>
 				<div className="flex flex-col gap-2 w-full sm:flex-row sm:items-center sm:justify-end sm:w-auto">

@@ -23,9 +23,7 @@ export class MemorySynthesisRepository extends BaseRepository {
 				id,
 				user_id: params.user_id,
 				synthesis_text: params.synthesis_text,
-				memory_ids: params.memory_ids
-					? JSON.stringify(params.memory_ids)
-					: null,
+				memory_ids: params.memory_ids ? JSON.stringify(params.memory_ids) : null,
 				memory_count: params.memory_count ?? 0,
 				tokens_used: params.tokens_used ?? null,
 				namespace: params.namespace ?? "global",
@@ -58,9 +56,7 @@ export class MemorySynthesisRepository extends BaseRepository {
 		return result;
 	}
 
-	public async getSynthesisById(
-		synthesisId: string,
-	): Promise<MemorySynthesis | null> {
+	public async getSynthesisById(synthesisId: string): Promise<MemorySynthesis | null> {
 		const { query, values } = this.buildSelectQuery("memory_syntheses", {
 			id: synthesisId,
 		});

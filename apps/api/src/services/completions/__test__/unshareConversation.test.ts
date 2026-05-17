@@ -40,9 +40,7 @@ describe("handleUnshareConversation", () => {
 			requireUser: vi.fn().mockReturnValue(mockUser),
 		};
 
-		vi.mocked(ConversationManager.getInstance).mockReturnValue(
-			mockConversationManager,
-		);
+		vi.mocked(ConversationManager.getInstance).mockReturnValue(mockConversationManager);
 	});
 
 	afterEach(() => {
@@ -67,14 +65,9 @@ describe("handleUnshareConversation", () => {
 
 			mockConversationManager.unshareConversation.mockResolvedValue(undefined);
 
-			const result = await handleUnshareConversation(
-				mockServiceContext,
-				completionId,
-			);
+			const result = await handleUnshareConversation(mockServiceContext, completionId);
 
-			expect(mockConversationManager.unshareConversation).toHaveBeenCalledWith(
-				completionId,
-			);
+			expect(mockConversationManager.unshareConversation).toHaveBeenCalledWith(completionId);
 			expect(result).toEqual({ success: true });
 		});
 
@@ -83,9 +76,7 @@ describe("handleUnshareConversation", () => {
 
 			const result = await handleUnshareConversation(mockServiceContext, "");
 
-			expect(mockConversationManager.unshareConversation).toHaveBeenCalledWith(
-				"",
-			);
+			expect(mockConversationManager.unshareConversation).toHaveBeenCalledWith("");
 			expect(result.success).toBe(true);
 		});
 	});

@@ -31,11 +31,7 @@ interface ActionButtonsProps {
 	className?: string;
 }
 
-export function ActionButtons({
-	actions,
-	align = "right",
-	className,
-}: ActionButtonsProps) {
+export function ActionButtons({ actions, align = "right", className }: ActionButtonsProps) {
 	const alignmentClasses = {
 		left: "justify-start",
 		right: "justify-end",
@@ -43,13 +39,7 @@ export function ActionButtons({
 	};
 
 	return (
-		<div
-			className={cn(
-				"flex flex-wrap items-center gap-2",
-				alignmentClasses[align],
-				className,
-			)}
-		>
+		<div className={cn("flex flex-wrap items-center gap-2", alignmentClasses[align], className)}>
 			<div className="flex items-center space-x-1">
 				{actions.map((action) => (
 					<Button
@@ -66,16 +56,13 @@ export function ActionButtons({
 								"text-red-500 dark:text-red-400 hover:bg-red-100/50 dark:hover:bg-red-900/20",
 							action.variant === "active" &&
 								"bg-zinc-200 dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100",
-							(action.disabled || action.loading) &&
-								"opacity-50 cursor-not-allowed",
+							(action.disabled || action.loading) && "opacity-50 cursor-not-allowed",
 							action.className,
 						)}
 						title={action.loading ? `${action.label}...` : action.label}
 						aria-label={action.loading ? `${action.label}...` : action.label}
 					>
-						<span className={action.loading ? "animate-spin" : ""}>
-							{action.icon}
-						</span>
+						<span className={action.loading ? "animate-spin" : ""}>{action.icon}</span>
 					</Button>
 				))}
 			</div>

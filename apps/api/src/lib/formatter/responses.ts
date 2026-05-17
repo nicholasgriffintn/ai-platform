@@ -53,10 +53,7 @@ export class ResponseFormatter {
 	private static getFormatter(
 		provider: string,
 	): (data: any, options: ResponseFormatOptions) => any {
-		const formatters: Record<
-			string,
-			(data: any, options: ResponseFormatOptions) => any
-		> = {
+		const formatters: Record<string, (data: any, options: ResponseFormatOptions) => any> = {
 			openai: ResponseFormatter.formatOpenAIResponse,
 			anthropic: ResponseFormatter.formatAnthropicResponse,
 			"google-ai-studio": ResponseFormatter.formatGoogleStudioResponse,
@@ -86,9 +83,7 @@ export class ResponseFormatter {
 		}
 
 		if (Array.isArray(output)) {
-			return output.flatMap((item) =>
-				ResponseFormatter.collectStringsFromOutput(item),
-			);
+			return output.flatMap((item) => ResponseFormatter.collectStringsFromOutput(item));
 		}
 
 		if (output && typeof output === "object") {
@@ -100,10 +95,7 @@ export class ResponseFormatter {
 		return [];
 	}
 
-	private static filterUrlsByExtension(
-		urls: string[],
-		extensions: string[],
-	): string[] {
+	private static filterUrlsByExtension(urls: string[], extensions: string[]): string[] {
 		return urls.filter((url) => {
 			const normalized = url.split("?")[0].toLowerCase();
 			return extensions.some((extension) => normalized.endsWith(extension));
@@ -129,10 +121,7 @@ export class ResponseFormatter {
 		return fallback;
 	}
 
-	private static getContentTypeFromExtension(
-		extension: string,
-		fallback: string,
-	): string {
+	private static getContentTypeFromExtension(extension: string, fallback: string): string {
 		const mapping: Record<string, string> = {
 			png: "image/png",
 			jpg: "image/jpeg",
@@ -152,10 +141,7 @@ export class ResponseFormatter {
 		return mapping[extension] || fallback;
 	}
 
-	private static buildAssetKey(
-		options: ResponseFormatOptions,
-		extension: string,
-	): string {
+	private static buildAssetKey(options: ResponseFormatOptions, extension: string): string {
 		const completion = options.completion_id || "completion";
 		const model = options.model || "model";
 		const unique = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
@@ -176,10 +162,7 @@ export class ResponseFormatter {
 
 		const env = options.env;
 		if (!env?.ASSETS_BUCKET) {
-			throw new AssistantError(
-				"ASSETS_BUCKET is not set",
-				ErrorType.CONFIGURATION_ERROR,
-			);
+			throw new AssistantError("ASSETS_BUCKET is not set", ErrorType.CONFIGURATION_ERROR);
 		}
 
 		const storageService = new StorageService(env.ASSETS_BUCKET);
@@ -197,10 +180,7 @@ export class ResponseFormatter {
 				}
 
 				const buffer = await response.arrayBuffer();
-				const extension = ResponseFormatter.getExtensionFromUrl(
-					assetUrl,
-					fallback.extension,
-				);
+				const extension = ResponseFormatter.getExtensionFromUrl(assetUrl, fallback.extension);
 				const contentType = ResponseFormatter.getContentTypeFromExtension(
 					extension,
 					fallback.contentType,
@@ -264,10 +244,7 @@ export class ResponseFormatter {
 		const env = options.env;
 
 		if (!env?.ASSETS_BUCKET) {
-			throw new AssistantError(
-				"ASSETS_BUCKET is not set",
-				ErrorType.CONFIGURATION_ERROR,
-			);
+			throw new AssistantError("ASSETS_BUCKET is not set", ErrorType.CONFIGURATION_ERROR);
 		}
 
 		const storageService = new StorageService(env.ASSETS_BUCKET);
@@ -301,10 +278,7 @@ export class ResponseFormatter {
 	 * @param data - The data to format
 	 * @returns The formatted data
 	 */
-	private static formatGenericResponse(
-		data: any,
-		options: ResponseFormatOptions,
-	): any {
+	private static formatGenericResponse(data: any, options: ResponseFormatOptions): any {
 		if (data.response !== undefined) {
 			return data;
 		}
@@ -371,24 +345,16 @@ export class ResponseFormatter {
 		data: any,
 		options: ResponseFormatOptions,
 	): Promise<any> {
-		const modalityState = ResponseFormatter.getModalityState(
-			options.modalities,
-		);
-		const isImageType =
-			modalityState.producesImages && !modalityState.producesText;
+		const modalityState = ResponseFormatter.getModalityState(options.modalities);
+		const isImageType = modalityState.producesImages && !modalityState.producesText;
 		if (isImageType && Array.isArray(data.data)) {
 			const imageData = Array.isArray(data.data) ? data.data : [];
-			const dataImageUrls = imageData
-				.filter((item) => item.url)
-				.map((item) => item.url);
+			const dataImageUrls = imageData.filter((item) => item.url).map((item) => item.url);
 			const base64Images = imageData
 				.map((item) => item.b64_json)
-				.filter(
-					(value): value is string => typeof value === "string" && !!value,
-				);
+				.filter((value): value is string => typeof value === "string" && !!value);
 			const revisedPrompt =
-				data.revised_prompt ||
-				imageData.find((item) => item.revised_prompt)?.revised_prompt;
+				data.revised_prompt || imageData.find((item) => item.revised_prompt)?.revised_prompt;
 
 			const assets: Array<{
 				key: string;
@@ -399,11 +365,10 @@ export class ResponseFormatter {
 
 			let imageUrls: string[] = [];
 			if (dataImageUrls.length && options.env) {
-				const uploads = await ResponseFormatter.persistRemoteAssets(
-					dataImageUrls,
-					options,
-					{ extension: "png", contentType: "image/png" },
-				);
+				const uploads = await ResponseFormatter.persistRemoteAssets(dataImageUrls, options, {
+					extension: "png",
+					contentType: "image/png",
+				});
 				imageUrls = uploads.urls;
 				assets.push(...uploads.metadata);
 			} else if (dataImageUrls.length) {
@@ -411,10 +376,7 @@ export class ResponseFormatter {
 			}
 
 			if (base64Images.length) {
-				const uploads = await ResponseFormatter.persistBase64Images(
-					base64Images,
-					options,
-				);
+				const uploads = await ResponseFormatter.persistBase64Images(base64Images, options);
 				imageUrls = [...imageUrls, ...uploads.urls];
 				assets.push(...uploads.metadata);
 			}
@@ -451,10 +413,7 @@ export class ResponseFormatter {
 
 		if (!message && typeof textCompletion === "string") {
 			const processedTextCompletion = !options.is_streaming
-				? preprocessQwQResponse(
-						textCompletion,
-						options.model || data.model || "",
-					)
+				? preprocessQwQResponse(textCompletion, options.model || data.model || "")
 				: textCompletion;
 
 			return {
@@ -568,13 +527,9 @@ export class ResponseFormatter {
 		data: any,
 		options: ResponseFormatOptions = {},
 	): Promise<any> {
-		const modalityState = ResponseFormatter.getModalityState(
-			options.modalities,
-		);
-		const isImageType =
-			modalityState.producesImages && !modalityState.producesText;
-		const isAudioType =
-			modalityState.producesAudio && !modalityState.producesText;
+		const modalityState = ResponseFormatter.getModalityState(options.modalities);
+		const isImageType = modalityState.producesImages && !modalityState.producesText;
+		const isAudioType = modalityState.producesAudio && !modalityState.producesText;
 
 		if (isImageType && (data.image || typeof data === "string")) {
 			const imageContent = data.image || data;
@@ -636,13 +591,9 @@ export class ResponseFormatter {
 		data: any,
 		options: ResponseFormatOptions = {},
 	): Promise<any> {
-		const modalityState = ResponseFormatter.getModalityState(
-			options.modalities,
-		);
-		const isImageType =
-			modalityState.producesImages && !modalityState.producesText;
-		const isVideoType =
-			modalityState.producesVideo && !modalityState.producesText;
+		const modalityState = ResponseFormatter.getModalityState(options.modalities);
+		const isImageType = modalityState.producesImages && !modalityState.producesText;
+		const isVideoType = modalityState.producesVideo && !modalityState.producesText;
 
 		if (isVideoType) {
 			return { ...data, response: data };
@@ -651,10 +602,7 @@ export class ResponseFormatter {
 		if (isImageType) {
 			const images = data.images;
 			if (!images || !Array.isArray(images) || images.length === 0) {
-				throw new AssistantError(
-					"No images returned from Bedrock",
-					ErrorType.PROVIDER_ERROR,
-				);
+				throw new AssistantError("No images returned from Bedrock", ErrorType.PROVIDER_ERROR);
 			}
 
 			const image = images[0];
@@ -709,27 +657,15 @@ export class ResponseFormatter {
 			data?.data ??
 			[];
 
-		const strings = ResponseFormatter.collectStringsFromOutput(output).map(
-			(value) => value.trim(),
-		);
-		const urlStrings = strings.filter((value) =>
-			value.toLowerCase().startsWith("http"),
-		);
-		const textStrings = strings.filter(
-			(value) => !value.toLowerCase().startsWith("http") && value,
-		);
+		const strings = ResponseFormatter.collectStringsFromOutput(output).map((value) => value.trim());
+		const urlStrings = strings.filter((value) => value.toLowerCase().startsWith("http"));
+		const textStrings = strings.filter((value) => !value.toLowerCase().startsWith("http") && value);
 
-		const modalityState = ResponseFormatter.getModalityState(
-			options.modalities,
-		);
-		const isImageType =
-			modalityState.producesImages && !modalityState.producesText;
-		const isVideoType =
-			modalityState.producesVideo && !modalityState.producesText;
-		const isAudioType =
-			modalityState.producesAudio && !modalityState.producesText;
-		const isTranscriptionType =
-			modalityState.inputSet.has("audio") && modalityState.producesText;
+		const modalityState = ResponseFormatter.getModalityState(options.modalities);
+		const isImageType = modalityState.producesImages && !modalityState.producesText;
+		const isVideoType = modalityState.producesVideo && !modalityState.producesText;
+		const isAudioType = modalityState.producesAudio && !modalityState.producesText;
+		const isTranscriptionType = modalityState.inputSet.has("audio") && modalityState.producesText;
 
 		if (isImageType) {
 			const imageUrls = ResponseFormatter.filterUrlsByExtension(urlStrings, [
@@ -746,15 +682,13 @@ export class ResponseFormatter {
 			}
 
 			let persistedUrls = candidateUrls;
-			let metadata: Array<{ key: string; url: string; originalUrl: string }> =
-				[];
+			let metadata: Array<{ key: string; url: string; originalUrl: string }> = [];
 
 			if (options.env?.ASSETS_BUCKET) {
-				const uploads = await ResponseFormatter.persistRemoteAssets(
-					candidateUrls,
-					options,
-					{ extension: "png", contentType: "image/png" },
-				);
+				const uploads = await ResponseFormatter.persistRemoteAssets(candidateUrls, options, {
+					extension: "png",
+					contentType: "image/png",
+				});
 				persistedUrls = uploads.urls;
 				metadata = uploads.metadata;
 			}
@@ -784,15 +718,13 @@ export class ResponseFormatter {
 			}
 
 			let persistedUrls = candidateUrls;
-			let metadata: Array<{ key: string; url: string; originalUrl: string }> =
-				[];
+			let metadata: Array<{ key: string; url: string; originalUrl: string }> = [];
 
 			if (options.env?.ASSETS_BUCKET) {
-				const uploads = await ResponseFormatter.persistRemoteAssets(
-					candidateUrls,
-					options,
-					{ extension: "mp4", contentType: "video/mp4" },
-				);
+				const uploads = await ResponseFormatter.persistRemoteAssets(candidateUrls, options, {
+					extension: "mp4",
+					contentType: "video/mp4",
+				});
 				persistedUrls = uploads.urls;
 				metadata = uploads.metadata;
 			}
@@ -824,15 +756,13 @@ export class ResponseFormatter {
 			}
 
 			let persistedUrls = candidateUrls;
-			let metadata: Array<{ key: string; url: string; originalUrl: string }> =
-				[];
+			let metadata: Array<{ key: string; url: string; originalUrl: string }> = [];
 
 			if (options.env?.ASSETS_BUCKET) {
-				const uploads = await ResponseFormatter.persistRemoteAssets(
-					candidateUrls,
-					options,
-					{ extension: "mp3", contentType: "audio/mpeg" },
-				);
+				const uploads = await ResponseFormatter.persistRemoteAssets(candidateUrls, options, {
+					extension: "mp3",
+					contentType: "audio/mpeg",
+				});
 				persistedUrls = uploads.urls;
 				metadata = uploads.metadata;
 			}

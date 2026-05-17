@@ -26,23 +26,17 @@ export const ChatThemeDropdown = ({
 	const themeOptions: ThemeOption[] = [
 		{
 			value: "system",
-			icon: ({ className }: { className: string }) => (
-				<Monitor className={className} />
-			),
+			icon: ({ className }: { className: string }) => <Monitor className={className} />,
 			text: "System",
 		},
 		{
 			value: "light",
-			icon: ({ className }: { className: string }) => (
-				<Sun className={className} />
-			),
+			icon: ({ className }: { className: string }) => <Sun className={className} />,
 			text: "Light",
 		},
 		{
 			value: "dark",
-			icon: ({ className }: { className: string }) => (
-				<Moon className={className} />
-			),
+			icon: ({ className }: { className: string }) => <Moon className={className} />,
 			text: "Dark",
 		},
 	];
@@ -62,8 +56,7 @@ export const ChatThemeDropdown = ({
 		);
 	}
 
-	const currentTheme =
-		themeOptions.find((option) => option.value === theme) || themeOptions[0];
+	const currentTheme = themeOptions.find((option) => option.value === theme) || themeOptions[0];
 
 	return (
 		<DropdownMenu

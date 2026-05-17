@@ -3,8 +3,7 @@ import { describe, expect, it } from "vitest";
 import { verifySandboxJwt } from "../auth";
 
 function toBase64Url(input: string | Uint8Array): string {
-	const bytes =
-		typeof input === "string" ? new TextEncoder().encode(input) : input;
+	const bytes = typeof input === "string" ? new TextEncoder().encode(input) : input;
 	return Buffer.from(bytes)
 		.toString("base64")
 		.replace(/\+/g, "-")
@@ -29,11 +28,7 @@ async function createToken(payload: Record<string, unknown>, secret: string) {
 		["sign"],
 	);
 	const signature = new Uint8Array(
-		await crypto.subtle.sign(
-			"HMAC",
-			key,
-			new TextEncoder().encode(signingInput),
-		),
+		await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(signingInput)),
 	);
 
 	return `${signingInput}.${toBase64Url(signature)}`;
@@ -72,9 +67,7 @@ describe("verifySandboxJwt", () => {
 			"secret",
 		);
 
-		await expect(verifySandboxJwt(token, "secret")).rejects.toThrow(
-			"JWT is expired",
-		);
+		await expect(verifySandboxJwt(token, "secret")).rejects.toThrow("JWT is expired");
 	});
 
 	it("rejects tokens signed with a different secret", async () => {

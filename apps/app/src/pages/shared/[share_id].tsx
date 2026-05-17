@@ -26,10 +26,7 @@ const SharedHeader = () => (
 	<header className="sticky top-0 z-10 border-b border-zinc-200 bg-off-white p-4 dark:border-zinc-700 dark:bg-zinc-900">
 		<div className="mx-auto flex max-w-3xl items-center justify-between">
 			<div className="flex items-center">
-				<MessagesSquare
-					size={20}
-					className="mr-2 text-zinc-600 dark:text-zinc-400"
-				/>
+				<MessagesSquare size={20} className="mr-2 text-zinc-600 dark:text-zinc-400" />
 				<h1 className="text-lg font-semibold text-zinc-800 dark:text-zinc-200">
 					Shared Conversation
 				</h1>
@@ -52,9 +49,7 @@ export default function SharedConversationPage() {
 	const [messages, setMessages] = useState<Message[]>([]);
 	const [isLoading, setIsLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
-	const [currentArtifact, setCurrentArtifact] = useState<ArtifactProps | null>(
-		null,
-	);
+	const [currentArtifact, setCurrentArtifact] = useState<ArtifactProps | null>(null);
 	const [isPanelVisible, setIsPanelVisible] = useState(false);
 	const [currentArtifacts, setCurrentArtifacts] = useState<ArtifactProps[]>([]);
 	const [isCombinedPanel, setIsCombinedPanel] = useState(false);
@@ -73,9 +68,7 @@ export default function SharedConversationPage() {
 
 				if (!response.ok) {
 					if (response.status === 404) {
-						setError(
-							"This shared conversation was not found or is no longer available.",
-						);
+						setError("This shared conversation was not found or is no longer available.");
 					} else {
 						setError("Failed to load the shared conversation.");
 					}
@@ -190,10 +183,7 @@ export default function SharedConversationPage() {
 								</div>
 							</div>
 						) : (
-							<PageStatus
-								message="This shared conversation has no messages."
-								className="flex-1"
-							/>
+							<PageStatus message="This shared conversation has no messages." className="flex-1" />
 						)}
 					</div>
 				</div>

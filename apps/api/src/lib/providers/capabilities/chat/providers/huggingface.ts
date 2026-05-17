@@ -24,15 +24,11 @@ export class HuggingFaceProvider extends BaseProvider {
 		}
 	*/
 
-	protected async getEndpoint(
-		params: ChatCompletionParameters,
-	): Promise<string> {
+	protected async getEndpoint(params: ChatCompletionParameters): Promise<string> {
 		return `${params.model}/v1/chat/completions`;
 	}
 
-	protected async getHeaders(
-		params: ChatCompletionParameters,
-	): Promise<Record<string, string>> {
+	protected async getHeaders(params: ChatCompletionParameters): Promise<Record<string, string>> {
 		const apiKey = await this.getApiKey(params, params.user?.id);
 		return this.buildAiGatewayHeaders(params, apiKey);
 	}

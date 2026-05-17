@@ -1,8 +1,4 @@
-import {
-	APP_NAME,
-	MAGIC_LINK_EXPIRATION_MINUTES,
-	PROD_HOST,
-} from "~/constants/app";
+import { APP_NAME, MAGIC_LINK_EXPIRATION_MINUTES, PROD_HOST } from "~/constants/app";
 import { sendEmail } from "~/services/email";
 import type { IEnv } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -18,13 +14,11 @@ interface EmailTemplate {
 	userName?: string;
 }
 
-function createEmailTemplate({
-	subject,
-	title,
-	content,
-	footer,
-	userName,
-}: EmailTemplate): { subject: string; bodyText: string; bodyHtml: string } {
+function createEmailTemplate({ subject, title, content, footer, userName }: EmailTemplate): {
+	subject: string;
+	bodyText: string;
+	bodyHtml: string;
+} {
 	const greeting = userName ? `Hello ${userName}!` : "Hello!";
 	const titleWithGreeting = `${greeting}\n\n${title}`;
 
@@ -176,27 +170,15 @@ export async function sendSubscriptionEmail(
 	});
 
 	try {
-		await sendEmail(
-			env,
-			email,
-			template.subject,
-			template.bodyText,
-			template.bodyHtml,
-		);
+		await sendEmail(env, email, template.subject, template.bodyText, template.bodyHtml);
 		logger.info(`Subscription confirmation email sent to ${email}`);
 	} catch (error) {
-		logger.error(
-			`Failed to send subscription confirmation email to ${email}:`,
-			{ error },
-		);
+		logger.error(`Failed to send subscription confirmation email to ${email}:`, { error });
 		throw error;
 	}
 }
 
-export async function sendUnsubscriptionEmail(
-	env: IEnv,
-	email: string,
-): Promise<void> {
+export async function sendUnsubscriptionEmail(env: IEnv, email: string): Promise<void> {
 	const template = createEmailTemplate({
 		subject: "Subscription Cancelled",
 		title: "Your Subscription has been Cancelled",
@@ -208,19 +190,10 @@ export async function sendUnsubscriptionEmail(
 	});
 
 	try {
-		await sendEmail(
-			env,
-			email,
-			template.subject,
-			template.bodyText,
-			template.bodyHtml,
-		);
+		await sendEmail(env, email, template.subject, template.bodyText, template.bodyHtml);
 		logger.info(`Subscription cancellation email sent to ${email}`);
 	} catch (error) {
-		logger.error(
-			`Failed to send subscription cancellation email to ${email}:`,
-			{ error },
-		);
+		logger.error(`Failed to send subscription cancellation email to ${email}:`, { error });
 		throw error;
 	}
 }
@@ -240,27 +213,15 @@ export async function sendSubscriptionCancellationNoticeEmail(
 	});
 
 	try {
-		await sendEmail(
-			env,
-			email,
-			template.subject,
-			template.bodyText,
-			template.bodyHtml,
-		);
+		await sendEmail(env, email, template.subject, template.bodyText, template.bodyHtml);
 		logger.info(`Subscription cancellation notice email sent to ${email}`);
 	} catch (error) {
-		logger.error(
-			`Failed to send subscription cancellation notice email to ${email}:`,
-			{ error },
-		);
+		logger.error(`Failed to send subscription cancellation notice email to ${email}:`, { error });
 		throw error;
 	}
 }
 
-export async function sendPaymentFailedEmail(
-	env: IEnv,
-	email: string,
-): Promise<void> {
+export async function sendPaymentFailedEmail(env: IEnv, email: string): Promise<void> {
 	const template = createEmailTemplate({
 		subject: "Payment Failed",
 		title: "Your Payment has Failed",
@@ -270,13 +231,7 @@ export async function sendPaymentFailedEmail(
 	});
 
 	try {
-		await sendEmail(
-			env,
-			email,
-			template.subject,
-			template.bodyText,
-			template.bodyHtml,
-		);
+		await sendEmail(env, email, template.subject, template.bodyText, template.bodyHtml);
 		logger.info(`Payment failed email sent to ${email}`);
 	} catch (error) {
 		logger.error(`Failed to send payment failed email: ${error}`);
@@ -284,10 +239,7 @@ export async function sendPaymentFailedEmail(
 	}
 }
 
-export async function sendTrialEndingEmail(
-	env: IEnv,
-	email: string,
-): Promise<void> {
+export async function sendTrialEndingEmail(env: IEnv, email: string): Promise<void> {
 	const template = createEmailTemplate({
 		subject: "Your Trial is Ending Soon",
 		title: "Your Free Trial is Ending Soon",
@@ -299,13 +251,7 @@ export async function sendTrialEndingEmail(
 	});
 
 	try {
-		await sendEmail(
-			env,
-			email,
-			template.subject,
-			template.bodyText,
-			template.bodyHtml,
-		);
+		await sendEmail(env, email, template.subject, template.bodyText, template.bodyHtml);
 		logger.info(`Trial ending notification email sent to ${email}`);
 	} catch (error) {
 		logger.error(`Failed to send trial ending notification email: ${error}`);
@@ -362,21 +308,10 @@ export async function sendAgentModerationNotification(
 	});
 
 	try {
-		await sendEmail(
-			env,
-			userEmail,
-			template.subject,
-			template.bodyText,
-			template.bodyHtml,
-		);
-		logger.info(
-			`Sent moderation notification to ${userEmail} for agent ${agentName}`,
-		);
+		await sendEmail(env, userEmail, template.subject, template.bodyText, template.bodyHtml);
+		logger.info(`Sent moderation notification to ${userEmail} for agent ${agentName}`);
 	} catch (error) {
-		logger.error(
-			`Failed to send moderation notification to ${userEmail}:`,
-			error,
-		);
+		logger.error(`Failed to send moderation notification to ${userEmail}:`, error);
 		throw error;
 	}
 }
@@ -409,21 +344,10 @@ export async function sendAgentFeaturedNotification(
 	});
 
 	try {
-		await sendEmail(
-			env,
-			userEmail,
-			template.subject,
-			template.bodyText,
-			template.bodyHtml,
-		);
-		logger.info(
-			`Sent featured notification to ${userEmail} for agent ${agentName}`,
-		);
+		await sendEmail(env, userEmail, template.subject, template.bodyText, template.bodyHtml);
+		logger.info(`Sent featured notification to ${userEmail} for agent ${agentName}`);
 	} catch (error) {
-		logger.error(
-			`Failed to send featured notification to ${userEmail}:`,
-			error,
-		);
+		logger.error(`Failed to send featured notification to ${userEmail}:`, error);
 		throw error;
 	}
 }
@@ -455,19 +379,10 @@ export async function sendMagicLinkEmail(
 	});
 
 	try {
-		await sendEmail(
-			env,
-			email,
-			template.subject,
-			template.bodyText,
-			template.bodyHtml,
-		);
+		await sendEmail(env, email, template.subject, template.bodyText, template.bodyHtml);
 		logger.info(`Magic link email sent to ${email}`);
 	} catch (error) {
 		logger.error("Failed to send magic link email:", { error });
-		throw new AssistantError(
-			`Failed to send magic link: ${error}`,
-			ErrorType.EMAIL_SEND_FAILED,
-		);
+		throw new AssistantError(`Failed to send magic link: ${error}`, ErrorType.EMAIL_SEND_FAILED);
 	}
 }

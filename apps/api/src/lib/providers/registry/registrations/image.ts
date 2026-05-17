@@ -1,10 +1,7 @@
 import type { ProviderRegistry } from "../ProviderRegistry";
 import type { ProviderRegistration } from "../types";
 import type { ImageProvider } from "../../capabilities/image";
-import {
-	ReplicateImageProvider,
-	WorkersAiImageProvider,
-} from "../../capabilities/image/providers";
+import { ReplicateImageProvider, WorkersAiImageProvider } from "../../capabilities/image/providers";
 
 const imageProviders: ProviderRegistration<ImageProvider>[] = [
 	{

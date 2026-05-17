@@ -6,10 +6,7 @@ interface ArticleReportHeaderProps {
 	isShared?: boolean;
 }
 
-export function ArticleReportHeader({
-	report,
-	isShared,
-}: ArticleReportHeaderProps) {
+export function ArticleReportHeader({ report, isShared }: ArticleReportHeaderProps) {
 	return (
 		<div className="bg-white dark:bg-zinc-800 rounded-lg border border-zinc-200 dark:border-zinc-700 p-5 shadow-sm">
 			<div className="flex flex-col md:flex-row justify-between md:items-center gap-3">

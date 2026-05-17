@@ -1,10 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { SandboxCancellationError } from "../cancellation";
-import {
-	createExecutionControl,
-	SandboxTimeoutError,
-} from "../execution-control";
+import { createExecutionControl, SandboxTimeoutError } from "../execution-control";
 
 function toJsonResponse(payload: unknown, status = 200): Response {
 	return new Response(JSON.stringify(payload), {
@@ -75,9 +72,7 @@ describe("execution control", () => {
 			emitEvent,
 		});
 
-		const checkpointPromise = control.checkpoint(
-			"Sandbox run cancelled during execution",
-		);
+		const checkpointPromise = control.checkpoint("Sandbox run cancelled during execution");
 		await vi.advanceTimersByTimeAsync(4000);
 		await checkpointPromise;
 

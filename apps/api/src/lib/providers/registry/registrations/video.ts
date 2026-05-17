@@ -1,10 +1,7 @@
 import type { ProviderRegistry } from "../ProviderRegistry";
 import type { ProviderRegistration } from "../types";
 import type { VideoProvider } from "../../capabilities/video";
-import {
-	ReplicateVideoProvider,
-	WorkersAiVideoProvider,
-} from "../../capabilities/video/providers";
+import { ReplicateVideoProvider, WorkersAiVideoProvider } from "../../capabilities/video/providers";
 
 const videoProviders: ProviderRegistration<VideoProvider>[] = [
 	{

@@ -2,12 +2,7 @@ import { Loader2, Plus, Trash2 } from "lucide-react";
 import React, { type FormEvent } from "react";
 
 import { Button } from "~/components/ui/Button";
-import {
-	Dialog,
-	DialogContent,
-	DialogHeader,
-	DialogTitle,
-} from "~/components/ui/Dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "~/components/ui/Dialog";
 import { FormInput } from "~/components/ui/Form/Input";
 import { FormSelect } from "~/components/ui/Form/Select";
 import { Switch } from "~/components/ui/Form/Switch";
@@ -21,11 +16,7 @@ import { cn, generateId } from "~/lib/utils";
 interface AgentFormModalProps {
 	open: boolean;
 	onClose: () => void;
-	onSubmit: (
-		data: any,
-		isEdit: boolean,
-		agentId: string | null,
-	) => Promise<void>;
+	onSubmit: (data: any, isEdit: boolean, agentId: string | null) => Promise<void>;
 	isSubmitting: boolean;
 	apiModels: Record<string, any>;
 	groupedAgents: any;
@@ -84,17 +75,11 @@ export function AgentFormModal({
 		>
 			<DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
 				<DialogHeader>
-					<DialogTitle>
-						{form.isEditMode ? "Edit Agent" : "Create New Agent"}
-					</DialogTitle>
+					<DialogTitle>{form.isEditMode ? "Edit Agent" : "Create New Agent"}</DialogTitle>
 				</DialogHeader>
 
 				<form onSubmit={handleSubmit} className="space-y-6">
-					<Tabs
-						value={form.activeTab}
-						onValueChange={form.setActiveTab}
-						className="w-full"
-					>
+					<Tabs value={form.activeTab} onValueChange={form.setActiveTab} className="w-full">
 						<TabsList className="grid w-full grid-cols-5">
 							<TabsTrigger value="basic">Basic</TabsTrigger>
 							<TabsTrigger value="model">Model</TabsTrigger>
@@ -132,10 +117,7 @@ export function AgentFormModal({
 								label="Model"
 								value={form.selectedModel}
 								onChange={(e) => form.setSelectedModel(e.target.value)}
-								options={[
-									{ value: "", label: "Use chat default" },
-									...modelOptions,
-								]}
+								options={[{ value: "", label: "Use chat default" }, ...modelOptions]}
 								description="Select a model to use with this agent"
 							/>
 
@@ -147,9 +129,7 @@ export function AgentFormModal({
 									max="1"
 									step="0.1"
 									value={form.temperature}
-									onChange={(e) =>
-										form.setTemperature(Number.parseFloat(e.target.value))
-									}
+									onChange={(e) => form.setTemperature(Number.parseFloat(e.target.value))}
 									description="Controls randomness (0-1)"
 								/>
 								<FormInput
@@ -159,9 +139,7 @@ export function AgentFormModal({
 									max="50"
 									step="1"
 									value={form.maxSteps}
-									onChange={(e) =>
-										form.setMaxSteps(Number.parseInt(e.target.value))
-									}
+									onChange={(e) => form.setMaxSteps(Number.parseInt(e.target.value))}
 									description="Maximum execution steps"
 								/>
 							</div>
@@ -186,15 +164,11 @@ export function AgentFormModal({
 									onChange={(e) => form.setIsTeamAgent(e.target.checked)}
 								/>
 								<div className="space-y-1">
-									<Label
-										htmlFor="is-team-agent"
-										className="text-sm font-medium"
-									>
+									<Label htmlFor="is-team-agent" className="text-sm font-medium">
 										Team Agent
 									</Label>
 									<p className="text-xs text-muted-foreground">
-										This agent is part of a team and can collaborate with other
-										agents
+										This agent is part of a team and can collaborate with other agents
 									</p>
 								</div>
 							</div>
@@ -209,28 +183,23 @@ export function AgentFormModal({
 											placeholder="e.g., dev-team, marketing-team"
 											description="Unique identifier for the team this agent belongs to"
 										/>
-										{groupedAgents.teams &&
-											Object.keys(groupedAgents.teams).length > 0 && (
-												<div className="mt-2">
-													<p className="text-xs text-muted-foreground mb-2">
-														Existing teams:
-													</p>
-													<div className="flex flex-wrap gap-1">
-														{Object.keys(groupedAgents.teams).map(
-															(existingTeamId) => (
-																<button
-																	key={existingTeamId}
-																	type="button"
-																	onClick={() => form.setTeamId(existingTeamId)}
-																	className="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-2 py-1 rounded hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors font-mono"
-																>
-																	{existingTeamId}
-																</button>
-															),
-														)}
-													</div>
+										{groupedAgents.teams && Object.keys(groupedAgents.teams).length > 0 && (
+											<div className="mt-2">
+												<p className="text-xs text-muted-foreground mb-2">Existing teams:</p>
+												<div className="flex flex-wrap gap-1">
+													{Object.keys(groupedAgents.teams).map((existingTeamId) => (
+														<button
+															key={existingTeamId}
+															type="button"
+															onClick={() => form.setTeamId(existingTeamId)}
+															className="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-2 py-1 rounded hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors font-mono"
+														>
+															{existingTeamId}
+														</button>
+													))}
 												</div>
-											)}
+											</div>
+										)}
 									</div>
 									<FormSelect
 										label="Team Role"
@@ -274,20 +243,13 @@ export function AgentFormModal({
 								<div className="space-y-4 mt-4">
 									<Label>Servers</Label>
 									{form.servers.map((srv) => (
-										<div
-											key={srv.id}
-											className="flex items-end gap-3 p-4 border rounded-lg"
-										>
+										<div key={srv.id} className="flex items-end gap-3 p-4 border rounded-lg">
 											<FormInput
 												label="URL"
 												value={srv.url}
 												onChange={(e) => {
 													form.setServers((all) =>
-														all.map((s) =>
-															s.id === srv.id
-																? { ...s, url: e.target.value }
-																: s,
-														),
+														all.map((s) => (s.id === srv.id ? { ...s, url: e.target.value } : s)),
 													);
 												}}
 												required
@@ -320,11 +282,7 @@ export function AgentFormModal({
 												size="icon"
 												icon={<Trash2 className="h-4 w-4" />}
 												className={cn(form.servers.length <= 1 && "invisible")}
-												onClick={() =>
-													form.setServers((all) =>
-														all.filter((s) => s.id !== srv.id),
-													)
-												}
+												onClick={() => form.setServers((all) => all.filter((s) => s.id !== srv.id))}
 												disabled={form.servers.length <= 1}
 											/>
 										</div>
@@ -333,10 +291,7 @@ export function AgentFormModal({
 										type="button"
 										variant="outline"
 										onClick={() =>
-											form.setServers((all) => [
-												...all,
-												{ id: generateId(), url: "", type: "sse" },
-											])
+											form.setServers((all) => [...all, { id: generateId(), url: "", type: "sse" }])
 										}
 										icon={<Plus className="h-4 w-4" />}
 									>
@@ -348,9 +303,7 @@ export function AgentFormModal({
 
 						<TabsContent value="advanced" className="space-y-4 mt-6">
 							<div className="space-y-2">
-								<Label className="text-sm font-medium">
-									Default Enabled Tools
-								</Label>
+								<Label className="text-sm font-medium">Default Enabled Tools</Label>
 								<p className="text-xs text-muted-foreground">
 									These tools are selected automatically when using this agent.
 								</p>
@@ -359,9 +312,7 @@ export function AgentFormModal({
 										<Loader2 className="h-4 w-4 animate-spin" />
 									</div>
 								) : tools.length === 0 ? (
-									<p className="text-xs text-muted-foreground">
-										No tools available.
-									</p>
+									<p className="text-xs text-muted-foreground">No tools available.</p>
 								) : (
 									<div className="space-y-2 border rounded-lg p-3 max-h-56 overflow-y-auto">
 										{tools.map((tool: any) => {
@@ -376,15 +327,10 @@ export function AgentFormModal({
 														checked={isSelected}
 														onChange={(e) => {
 															if (e.target.checked) {
-																form.setEnabledTools([
-																	...form.enabledTools,
-																	tool.id,
-																]);
+																form.setEnabledTools([...form.enabledTools, tool.id]);
 															} else {
 																form.setEnabledTools(
-																	form.enabledTools.filter(
-																		(id) => id !== tool.id,
-																	),
+																	form.enabledTools.filter((id) => id !== tool.id),
 																);
 															}
 														}}
@@ -423,19 +369,14 @@ export function AgentFormModal({
 							{form.useFewShotExamples && (
 								<div className="space-y-4 mt-4">
 									{form.fewShotExamples.map((example, index) => (
-										<div
-											key={example.id}
-											className="p-4 border rounded-lg space-y-3"
-										>
+										<div key={example.id} className="p-4 border rounded-lg space-y-3">
 											<div className="flex justify-between items-center">
 												<h4 className="font-medium">Example {index + 1}</h4>
 												<Button
 													variant="destructive"
 													size="icon"
 													icon={<Trash2 className="h-4 w-4" />}
-													className={cn(
-														form.fewShotExamples.length <= 1 && "invisible",
-													)}
+													className={cn(form.fewShotExamples.length <= 1 && "invisible")}
 													onClick={() =>
 														form.setFewShotExamples((all) =>
 															all.filter((ex) => ex.id !== example.id),
@@ -452,9 +393,7 @@ export function AgentFormModal({
 														onChange={(e) => {
 															form.setFewShotExamples((all) =>
 																all.map((ex) =>
-																	ex.id === example.id
-																		? { ...ex, input: e.target.value }
-																		: ex,
+																	ex.id === example.id ? { ...ex, input: e.target.value } : ex,
 																),
 															);
 														}}
@@ -470,9 +409,7 @@ export function AgentFormModal({
 														onChange={(e) => {
 															form.setFewShotExamples((all) =>
 																all.map((ex) =>
-																	ex.id === example.id
-																		? { ...ex, output: e.target.value }
-																		: ex,
+																	ex.id === example.id ? { ...ex, output: e.target.value } : ex,
 																),
 															);
 														}}
@@ -505,12 +442,7 @@ export function AgentFormModal({
 					<hr className="my-4" />
 
 					<div className="flex justify-end gap-3">
-						<Button
-							type="button"
-							variant="outline"
-							onClick={onClose}
-							disabled={isSubmitting}
-						>
+						<Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting}>
 							Cancel
 						</Button>
 						<Button type="submit" disabled={!form.name || isSubmitting}>

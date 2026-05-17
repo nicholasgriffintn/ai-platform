@@ -3,11 +3,7 @@ import { getModelConfigByModel } from "~/lib/providers/models";
 import { extractGeneratedAsset } from "~/lib/providers/utils/helpers";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { buildInputSchemaInput } from "~/utils/inputSchema";
-import type {
-	MusicGenerationRequest,
-	MusicGenerationResult,
-	MusicProvider,
-} from "../index";
+import type { MusicGenerationRequest, MusicGenerationResult, MusicProvider } from "../index";
 
 const DEFAULT_MODEL = "workers-ai-minimax-music-2-6";
 
@@ -15,9 +11,7 @@ export class WorkersAiMusicProvider implements MusicProvider {
 	name = "workers-ai";
 	models = [DEFAULT_MODEL];
 
-	async generate(
-		request: MusicGenerationRequest,
-	): Promise<MusicGenerationResult> {
+	async generate(request: MusicGenerationRequest): Promise<MusicGenerationResult> {
 		const modelId = request.model || DEFAULT_MODEL;
 		const modelConfig = await getModelConfigByModel(modelId);
 

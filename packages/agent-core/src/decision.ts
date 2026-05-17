@@ -1,9 +1,7 @@
 import type { AgentDecision, ReadFileTarget } from "./types";
 import { extractCommands, safeParseJson, truncateForModel } from "./utils";
 
-function parseScriptLanguage(
-	rawLanguage: unknown,
-): "javascript" | "typescript" {
+function parseScriptLanguage(rawLanguage: unknown): "javascript" | "typescript" {
 	if (typeof rawLanguage !== "string" || !rawLanguage.trim()) {
 		return "javascript";
 	}
@@ -82,9 +80,7 @@ function extractJsonPayloadCandidates(rawResponse: string): string[] {
 		candidates.push(trimmed);
 	};
 
-	const codeBlockMatches = rawResponse.matchAll(
-		/```(?:json)?\s*([\s\S]*?)```/gi,
-	);
+	const codeBlockMatches = rawResponse.matchAll(/```(?:json)?\s*([\s\S]*?)```/gi);
 	for (const match of codeBlockMatches) {
 		pushUnique(match[1] ?? "");
 	}
@@ -159,8 +155,7 @@ function parseDecisionPayload(payload: string): Record<string, unknown> {
 	}
 
 	const repairedPayload = escapeControlCharsInJsonStrings(payload);
-	const repairedParsed =
-		safeParseJson<Record<string, unknown>>(repairedPayload);
+	const repairedParsed = safeParseJson<Record<string, unknown>>(repairedPayload);
 	if (repairedParsed) {
 		return repairedParsed;
 	}
@@ -169,11 +164,7 @@ function parseDecisionPayload(payload: string): Record<string, unknown> {
 }
 
 function parseReadFileTarget(rawTarget: unknown): ReadFileTarget {
-	if (
-		typeof rawTarget === "object" &&
-		rawTarget !== null &&
-		!Array.isArray(rawTarget)
-	) {
+	if (typeof rawTarget === "object" && rawTarget !== null && !Array.isArray(rawTarget)) {
 		const record = rawTarget as Record<string, unknown>;
 		const path = typeof record.path === "string" ? record.path.trim() : "";
 		if (!path) {
@@ -181,8 +172,7 @@ function parseReadFileTarget(rawTarget: unknown): ReadFileTarget {
 		}
 		return {
 			path,
-			startLine:
-				typeof record.startLine === "number" ? record.startLine : undefined,
+			startLine: typeof record.startLine === "number" ? record.startLine : undefined,
 			endLine: typeof record.endLine === "number" ? record.endLine : undefined,
 		};
 	}
@@ -234,17 +224,13 @@ export function parseAgentDecision(rawResponse: string): AgentDecision {
 		try {
 			const parsed = parseDecisionPayload(payload);
 			const actionRaw = inferActionFromFields(parsed);
-			const reasoning =
-				typeof parsed.reasoning === "string"
-					? parsed.reasoning.trim()
-					: undefined;
+			const reasoning = typeof parsed.reasoning === "string" ? parsed.reasoning.trim() : undefined;
 
 			switch (actionRaw) {
 				case "run_command":
 				case "execute_command":
 				case "command": {
-					const command =
-						typeof parsed.command === "string" ? parsed.command.trim() : "";
+					const command = typeof parsed.command === "string" ? parsed.command.trim() : "";
 					if (!command) {
 						throw new Error("run_command action requires a non-empty command");
 					}
@@ -260,9 +246,7 @@ export function parseAgentDecision(rawResponse: string): AgentDecision {
 				case "parallel_commands":
 				case "batch_commands": {
 					if (!Array.isArray(parsed.commands)) {
-						throw new Error(
-							"run_parallel action requires a commands string array",
-						);
+						throw new Error("run_parallel action requires a commands string array");
 					}
 
 					const commands = parsed.commands
@@ -270,9 +254,7 @@ export function parseAgentDecision(rawResponse: string): AgentDecision {
 						.map((entry) => entry.trim())
 						.filter(Boolean);
 					if (!commands.length) {
-						throw new Error(
-							"run_parallel action requires at least one non-empty command",
-						);
+						throw new Error("run_parallel action requires at least one non-empty command");
 					}
 
 					return {
@@ -283,8 +265,7 @@ export function parseAgentDecision(rawResponse: string): AgentDecision {
 				}
 				case "read_file":
 				case "read": {
-					const path =
-						typeof parsed.path === "string" ? parsed.path.trim() : "";
+					const path = typeof parsed.path === "string" ? parsed.path.trim() : "";
 					if (!path) {
 						throw new Error("read_file action requires a non-empty path");
 					}
@@ -292,12 +273,8 @@ export function parseAgentDecision(rawResponse: string): AgentDecision {
 					return {
 						action: "read_file",
 						path,
-						startLine:
-							typeof parsed.startLine === "number"
-								? parsed.startLine
-								: undefined,
-						endLine:
-							typeof parsed.endLine === "number" ? parsed.endLine : undefined,
+						startLine: typeof parsed.startLine === "number" ? parsed.startLine : undefined,
+						endLine: typeof parsed.endLine === "number" ? parsed.endLine : undefined,
 						reasoning,
 					};
 				}
@@ -310,9 +287,7 @@ export function parseAgentDecision(rawResponse: string): AgentDecision {
 
 					const files = parsed.files.map((entry) => parseReadFileTarget(entry));
 					if (!files.length) {
-						throw new Error(
-							"read_files action requires at least one file target",
-						);
+						throw new Error("read_files action requires at least one file target");
 					}
 
 					return {
@@ -323,8 +298,7 @@ export function parseAgentDecision(rawResponse: string): AgentDecision {
 				}
 				case "update_plan":
 				case "revise_plan": {
-					const plan =
-						typeof parsed.plan === "string" ? parsed.plan.trim() : "";
+					const plan = typeof parsed.plan === "string" ? parsed.plan.trim() : "";
 					if (!plan) {
 						throw new Error("update_plan action requires a non-empty plan");
 					}
@@ -339,9 +313,7 @@ export function parseAgentDecision(rawResponse: string): AgentDecision {
 				case "complete":
 				case "done": {
 					const summary =
-						typeof parsed.summary === "string"
-							? parsed.summary.trim()
-							: "Run completed.";
+						typeof parsed.summary === "string" ? parsed.summary.trim() : "Run completed.";
 
 					return {
 						action: "finish",
@@ -352,8 +324,7 @@ export function parseAgentDecision(rawResponse: string): AgentDecision {
 				case "run_script":
 				case "execute_script":
 				case "script": {
-					const code =
-						typeof parsed.code === "string" ? parsed.code.trim() : "";
+					const code = typeof parsed.code === "string" ? parsed.code.trim() : "";
 					if (!code) {
 						throw new Error("run_script action requires non-empty code");
 					}

@@ -8,12 +8,7 @@ interface ShareButtonProps {
 	className?: string;
 }
 
-export const ShareButton = ({
-	conversationId,
-	isPublic,
-	shareId,
-	className,
-}: ShareButtonProps) => {
+export const ShareButton = ({ conversationId, isPublic, shareId, className }: ShareButtonProps) => {
 	return (
 		<ShareDialog
 			type="conversation"

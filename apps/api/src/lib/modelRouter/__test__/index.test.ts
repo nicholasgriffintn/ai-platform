@@ -78,9 +78,7 @@ describe("ModelRouter", () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 
-		mockMonitoring.trackModelRoutingMetrics.mockImplementation(
-			async (fn) => await fn(),
-		);
+		mockMonitoring.trackModelRoutingMetrics.mockImplementation(async (fn) => await fn());
 
 		mockModels.getModels.mockReturnValue({});
 	});
@@ -97,9 +95,7 @@ describe("ModelRouter", () => {
 				},
 			};
 
-			mockModels.getIncludedInRouterModelsForUser.mockResolvedValue(
-				availableModels,
-			);
+			mockModels.getIncludedInRouterModelsForUser.mockResolvedValue(availableModels);
 			mockModels.getModelConfig.mockResolvedValue(mockModelConfig);
 			mockPromptAnalyzer.analyzePrompt.mockResolvedValue(mockRequirements);
 
@@ -126,13 +122,7 @@ describe("ModelRouter", () => {
 			mockModels.getIncludedInRouterModelsForUser.mockResolvedValue({});
 			mockPromptAnalyzer.analyzePrompt.mockResolvedValue(mockRequirements);
 
-			const result = await ModelRouter.selectModel(
-				mockEnv,
-				"Test prompt",
-				[],
-				undefined,
-				mockUser,
-			);
+			const result = await ModelRouter.selectModel(mockEnv, "Test prompt", [], undefined, mockUser);
 
 			expect(result).toBe("claude-3-5-sonnet-20241022");
 		});
@@ -142,13 +132,7 @@ describe("ModelRouter", () => {
 				throw new Error("Test error");
 			});
 
-			const result = await ModelRouter.selectModel(
-				mockEnv,
-				"Test prompt",
-				[],
-				undefined,
-				mockUser,
-			);
+			const result = await ModelRouter.selectModel(mockEnv, "Test prompt", [], undefined, mockUser);
 
 			expect(result).toBe("claude-3-5-sonnet-20241022");
 		});
@@ -163,9 +147,7 @@ describe("ModelRouter", () => {
 				"test-model": mockModelConfig,
 			};
 
-			mockModels.getIncludedInRouterModelsForUser.mockResolvedValue(
-				availableModels,
-			);
+			mockModels.getIncludedInRouterModelsForUser.mockResolvedValue(availableModels);
 			mockModels.getModelConfig.mockResolvedValue(mockModelConfig);
 			mockPromptAnalyzer.analyzePrompt.mockResolvedValue(criticalRequirements);
 
@@ -191,9 +173,7 @@ describe("ModelRouter", () => {
 
 			const availableModels = { "test-model": mockModelConfig };
 
-			mockModels.getIncludedInRouterModelsForUser.mockResolvedValue(
-				availableModels,
-			);
+			mockModels.getIncludedInRouterModelsForUser.mockResolvedValue(availableModels);
 			mockModels.getModelConfig.mockResolvedValue(mockModelConfig);
 			mockPromptAnalyzer.analyzePrompt.mockResolvedValue(simpleRequirements);
 
@@ -228,9 +208,7 @@ describe("ModelRouter", () => {
 				},
 			};
 
-			mockModels.getIncludedInRouterModelsForUser.mockResolvedValue(
-				availableModels,
-			);
+			mockModels.getIncludedInRouterModelsForUser.mockResolvedValue(availableModels);
 
 			mockModels.getModelConfig.mockImplementation((modelId: string) => {
 				return availableModels[modelId];
@@ -331,9 +309,7 @@ describe("ModelRouter", () => {
 				},
 			};
 
-			mockModels.getIncludedInRouterModelsForUser.mockResolvedValue(
-				availableModels,
-			);
+			mockModels.getIncludedInRouterModelsForUser.mockResolvedValue(availableModels);
 
 			mockModels.getModelConfig.mockImplementation((modelId: string) => {
 				return availableModels[modelId];
@@ -341,13 +317,7 @@ describe("ModelRouter", () => {
 
 			mockPromptAnalyzer.analyzePrompt.mockResolvedValue(mockRequirements);
 
-			const result = await ModelRouter.selectModel(
-				mockEnv,
-				"Test prompt",
-				[],
-				undefined,
-				mockUser,
-			);
+			const result = await ModelRouter.selectModel(mockEnv, "Test prompt", [], undefined, mockUser);
 
 			expect(result).toBe("perfect-match");
 		});
@@ -371,9 +341,7 @@ describe("ModelRouter", () => {
 				},
 			};
 
-			mockModels.getIncludedInRouterModelsForUser.mockResolvedValue(
-				availableModels,
-			);
+			mockModels.getIncludedInRouterModelsForUser.mockResolvedValue(availableModels);
 
 			mockModels.getModelConfig.mockImplementation((modelId: string) => {
 				return availableModels[modelId];
@@ -381,13 +349,7 @@ describe("ModelRouter", () => {
 
 			mockPromptAnalyzer.analyzePrompt.mockResolvedValue(budgetRequirements);
 
-			const result = await ModelRouter.selectModel(
-				mockEnv,
-				"Test prompt",
-				[],
-				50,
-				mockUser,
-			);
+			const result = await ModelRouter.selectModel(mockEnv, "Test prompt", [], 50, mockUser);
 
 			expect(result).toBe("cheap-model");
 		});
@@ -409,9 +371,7 @@ describe("ModelRouter", () => {
 				},
 			};
 
-			mockModels.getIncludedInRouterModelsForUser.mockResolvedValue(
-				availableModels,
-			);
+			mockModels.getIncludedInRouterModelsForUser.mockResolvedValue(availableModels);
 
 			mockModels.getModelConfig.mockImplementation((modelId: string) => {
 				return availableModels[modelId];
@@ -449,9 +409,7 @@ describe("ModelRouter", () => {
 				},
 			};
 
-			mockModels.getIncludedInRouterModelsForUser.mockResolvedValue(
-				availableModels,
-			);
+			mockModels.getIncludedInRouterModelsForUser.mockResolvedValue(availableModels);
 
 			mockModels.getModelConfig.mockImplementation((modelId: string) => {
 				return availableModels[modelId];

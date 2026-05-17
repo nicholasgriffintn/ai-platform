@@ -73,9 +73,7 @@ describe("handlePodcastGenerateImage", () => {
 			}),
 		};
 
-		mockRepositories.appData.getAppDataByUserAppAndItem.mockResolvedValue([
-			existingImage,
-		]);
+		mockRepositories.appData.getAppDataByUserAppAndItem.mockResolvedValue([existingImage]);
 
 		const result = (await handlePodcastGenerateImage({
 			context: createMockContext(),

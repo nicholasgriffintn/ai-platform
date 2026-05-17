@@ -33,10 +33,7 @@ export async function getUserByGithubId(
 		return mapToUser(result);
 	} catch (error) {
 		logger.error("Error getting user by GitHub ID:", { error });
-		throw new AssistantError(
-			"Failed to retrieve user by GitHub ID",
-			ErrorType.UNKNOWN_ERROR,
-		);
+		throw new AssistantError("Failed to retrieve user by GitHub ID", ErrorType.UNKNOWN_ERROR);
 	}
 }
 
@@ -58,10 +55,7 @@ export async function getUserBySessionId(
 		return mapToUser(result);
 	} catch (error) {
 		logger.error("Error getting user by session ID:", { error });
-		throw new AssistantError(
-			"Failed to retrieve user by session ID",
-			ErrorType.UNKNOWN_ERROR,
-		);
+		throw new AssistantError("Failed to retrieve user by session ID", ErrorType.UNKNOWN_ERROR);
 	}
 }
 
@@ -84,10 +78,7 @@ export async function getUserSettings(
 		return result;
 	} catch (error) {
 		logger.error("Error getting user settings:", { error });
-		throw new AssistantError(
-			"Failed to retrieve user settings",
-			ErrorType.UNKNOWN_ERROR,
-		);
+		throw new AssistantError("Failed to retrieve user settings", ErrorType.UNKNOWN_ERROR);
 	}
 }
 
@@ -109,27 +100,17 @@ export async function getUserById(
 		return result as unknown as User | null;
 	} catch (error) {
 		logger.error("Error getting user by ID:", { error });
-		throw new AssistantError(
-			"Failed to retrieve user by ID",
-			ErrorType.UNKNOWN_ERROR,
-		);
+		throw new AssistantError("Failed to retrieve user by ID", ErrorType.UNKNOWN_ERROR);
 	}
 }
 
-export async function createUserSettings(
-	repositories: RepositoryManager,
-	userId: number,
-) {
+export async function createUserSettings(repositories: RepositoryManager, userId: number) {
 	const result = await repositories.userSettings.createUserSettings(userId);
 	return result;
 }
 
-export async function createUserProviderSettings(
-	repositories: RepositoryManager,
-	userId: number,
-) {
-	const result =
-		await repositories.userSettings.createUserProviderSettings(userId);
+export async function createUserProviderSettings(repositories: RepositoryManager, userId: number) {
+	const result = await repositories.userSettings.createUserProviderSettings(userId);
 	return result;
 }
 
@@ -155,10 +136,7 @@ export async function createOrUpdateGithubUser(
 	},
 ): Promise<User> {
 	try {
-		const existingUser = await getUserByGithubId(
-			repositories,
-			userData.githubId,
-		);
+		const existingUser = await getUserByGithubId(repositories, userData.githubId);
 
 		if (existingUser) {
 			await repositories.users.updateUser(existingUser.id, {
@@ -182,8 +160,7 @@ export async function createOrUpdateGithubUser(
 				company: userData.company || existingUser.company,
 				location: userData.location || existingUser.location,
 				bio: userData.bio || existingUser.bio,
-				twitter_username:
-					userData.twitter_username || existingUser.twitter_username,
+				twitter_username: userData.twitter_username || existingUser.twitter_username,
 				site: userData.site || existingUser.site,
 				updated_at: new Date().toISOString(),
 			};
@@ -198,10 +175,7 @@ export async function createOrUpdateGithubUser(
 				userData.githubId,
 			);
 
-			await repositories.users.updateUserWithGithubData(
-				userByEmail.id as number,
-				userData,
-			);
+			await repositories.users.updateUserWithGithubData(userByEmail.id as number, userData);
 
 			return {
 				...(userByEmail as unknown as User),
@@ -211,8 +185,7 @@ export async function createOrUpdateGithubUser(
 				company: userData.company || userByEmail.company,
 				location: userData.location || userByEmail.location,
 				bio: userData.bio || userByEmail.bio,
-				twitter_username:
-					userData.twitter_username || userByEmail.twitter_username,
+				twitter_username: userData.twitter_username || userByEmail.twitter_username,
 				site: userData.site || userByEmail.site,
 				updated_at: new Date().toISOString(),
 			} as User;
@@ -221,10 +194,7 @@ export async function createOrUpdateGithubUser(
 		const result = await repositories.users.createUser(userData);
 
 		if (!result) {
-			throw new AssistantError(
-				"Failed to create user",
-				ErrorType.UNKNOWN_ERROR,
-			);
+			throw new AssistantError("Failed to create user", ErrorType.UNKNOWN_ERROR);
 		}
 
 		try {
@@ -243,19 +213,12 @@ export async function createOrUpdateGithubUser(
 
 		const newUser = mapToUser(result);
 
-		await repositories.users.createOauthAccount(
-			newUser.id,
-			"github",
-			userData.githubId,
-		);
+		await repositories.users.createOauthAccount(newUser.id, "github", userData.githubId);
 
 		return newUser;
 	} catch (error) {
 		logger.error("Error creating/updating user:", { error });
-		throw new AssistantError(
-			"Failed to create or update user",
-			ErrorType.UNKNOWN_ERROR,
-		);
+		throw new AssistantError("Failed to create or update user", ErrorType.UNKNOWN_ERROR);
 	}
 }
 
@@ -281,10 +244,7 @@ export async function createSession(
 		return sessionId;
 	} catch (error) {
 		logger.error("Error creating session:", { error });
-		throw new AssistantError(
-			"Failed to create session",
-			ErrorType.UNKNOWN_ERROR,
-		);
+		throw new AssistantError("Failed to create session", ErrorType.UNKNOWN_ERROR);
 	}
 }
 
@@ -301,9 +261,6 @@ export async function deleteSession(
 		await repositories.sessions.deleteSession(sessionId);
 	} catch (error) {
 		logger.error("Error deleting session:", { error });
-		throw new AssistantError(
-			"Failed to delete session",
-			ErrorType.UNKNOWN_ERROR,
-		);
+		throw new AssistantError("Failed to delete session", ErrorType.UNKNOWN_ERROR);
 	}
 }

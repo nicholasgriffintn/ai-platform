@@ -19,19 +19,14 @@ const formatTypeLabel = (type: string): string =>
 export function ReplicateModels() {
 	const { data: models, isLoading, error } = useReplicateModels();
 	const navigate = useNavigate();
-	const [selectedSignature, setSelectedSignature] = useState<string | null>(
-		null,
-	);
+	const [selectedSignature, setSelectedSignature] = useState<string | null>(null);
 	const [searchQuery, setSearchQuery] = useState("");
 
 	const signatureFilters = useMemo(
 		() =>
 			Array.from(
 				new Map(
-					(models ?? []).map((model) => [
-						model.modalitySignature,
-						model.modalityLabel,
-					]),
+					(models ?? []).map((model) => [model.modalitySignature, model.modalityLabel]),
 				).entries(),
 			)
 				.map(([signature, label]) => ({

@@ -5,22 +5,9 @@ import { useState } from "react";
 import type { Metric } from "../types";
 import { CombinedMetricsChart } from "./chart";
 import { MetricDetails } from "./details";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "./ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
 import { ScrollArea } from "./ui/scroll-area";
-import {
-	Table,
-	TableBody,
-	TableCell,
-	TableHead,
-	TableHeader,
-	TableRow,
-} from "./ui/table";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "./ui/table";
 
 const parseMetadata = (metadataString: string) => {
 	try {
@@ -40,11 +27,7 @@ interface MetricsDashboardProps {
 	limit: number;
 }
 
-export function MetricsDashboard({
-	metrics,
-	interval,
-	limit,
-}: MetricsDashboardProps) {
+export function MetricsDashboard({ metrics, interval, limit }: MetricsDashboardProps) {
 	const [selectedMetric, setSelectedMetric] = useState<Metric | null>(null);
 
 	const totalRequests = metrics.length;
@@ -77,34 +60,25 @@ export function MetricsDashboard({
 				provider: metadata.provider || "unknown",
 			};
 		})
-		.sort(
-			(a, b) =>
-				new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
-		);
+		.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
 
 	return (
 		<div className="space-y-6">
 			<div className="grid grid-cols-2 md:grid-cols-5 gap-4">
 				<Card>
 					<CardHeader className="p-4">
-						<CardTitle className="text-sm font-medium text-muted-foreground">
-							Requests
-						</CardTitle>
+						<CardTitle className="text-sm font-medium text-muted-foreground">Requests</CardTitle>
 						<CardDescription className="text-2xl font-bold">
 							{totalRequests}
 							{limit === totalRequests && (
-								<span className="ml-2 text-xs text-muted-foreground">
-									(limited to {limit})
-								</span>
+								<span className="ml-2 text-xs text-muted-foreground">(limited to {limit})</span>
 							)}
 						</CardDescription>
 					</CardHeader>
 				</Card>
 				<Card>
 					<CardHeader className="p-4">
-						<CardTitle className="text-sm font-medium text-muted-foreground">
-							Tokens
-						</CardTitle>
+						<CardTitle className="text-sm font-medium text-muted-foreground">Tokens</CardTitle>
 						<CardDescription className="text-2xl font-bold">
 							{(totalTokens / 1000).toFixed(1)}k
 						</CardDescription>
@@ -112,40 +86,28 @@ export function MetricsDashboard({
 				</Card>
 				<Card>
 					<CardHeader className="p-4">
-						<CardTitle className="text-sm font-medium text-muted-foreground">
-							Cost
-						</CardTitle>
+						<CardTitle className="text-sm font-medium text-muted-foreground">Cost</CardTitle>
 						<CardDescription className="text-2xl font-bold">
 							${totalCost.toFixed(2)}
-							<span className="ml-2 text-xs text-muted-foreground">
-								Not available
-							</span>
+							<span className="ml-2 text-xs text-muted-foreground">Not available</span>
 						</CardDescription>
 					</CardHeader>
 				</Card>
 				<Card>
 					<CardHeader className="p-4">
-						<CardTitle className="text-sm font-medium text-muted-foreground">
-							Cached
-						</CardTitle>
+						<CardTitle className="text-sm font-medium text-muted-foreground">Cached</CardTitle>
 						<CardDescription className="text-2xl font-bold">
 							{cachedPercentage}%
-							<span className="ml-2 text-xs text-muted-foreground">
-								Not available
-							</span>
+							<span className="ml-2 text-xs text-muted-foreground">Not available</span>
 						</CardDescription>
 					</CardHeader>
 				</Card>
 				<Card>
 					<CardHeader className="p-4">
-						<CardTitle className="text-sm font-medium text-muted-foreground">
-							Errors
-						</CardTitle>
+						<CardTitle className="text-sm font-medium text-muted-foreground">Errors</CardTitle>
 						<CardDescription className="text-2xl font-bold">
 							{errorRequests}
-							<span className="ml-2 text-xs text-muted-foreground">
-								Not available
-							</span>
+							<span className="ml-2 text-xs text-muted-foreground">Not available</span>
 						</CardDescription>
 					</CardHeader>
 				</Card>
@@ -160,19 +122,14 @@ export function MetricsDashboard({
 						</CardDescription>
 					</CardHeader>
 					<CardContent className="h-[400px]">
-						<CombinedMetricsChart
-							data={combinedChartData}
-							interval={interval}
-						/>
+						<CombinedMetricsChart data={combinedChartData} interval={interval} />
 					</CardContent>
 				</Card>
 
 				<Card>
 					<CardHeader>
 						<CardTitle>Metrics Details</CardTitle>
-						<CardDescription>
-							Detailed information for each metric entry
-						</CardDescription>
+						<CardDescription>Detailed information for each metric entry</CardDescription>
 					</CardHeader>
 					<CardContent className="h-[400px] p-0">
 						<ScrollArea className="h-full">
@@ -199,9 +156,7 @@ export function MetricsDashboard({
 												>
 													<TableCell>{`${metadata.provider} (${metadata.model})`}</TableCell>
 													<TableCell>{metric.value}</TableCell>
-													<TableCell>
-														{tokenUsage.total_tokens || "N/A"}
-													</TableCell>
+													<TableCell>{tokenUsage.total_tokens || "N/A"}</TableCell>
 													<TableCell>{metric.status}</TableCell>
 													<TableCell>{metric.timestamp}</TableCell>
 												</TableRow>
@@ -216,10 +171,7 @@ export function MetricsDashboard({
 			</div>
 
 			{selectedMetric && (
-				<MetricDetails
-					metric={selectedMetric}
-					onClose={() => setSelectedMetric(null)}
-				/>
+				<MetricDetails metric={selectedMetric} onClose={() => setSelectedMetric(null)} />
 			)}
 		</div>
 	);

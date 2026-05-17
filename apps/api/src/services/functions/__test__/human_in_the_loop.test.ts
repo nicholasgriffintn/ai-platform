@@ -7,10 +7,7 @@ const baseRequest: IRequest = {
 	user: { id: 1, plan_id: "pro" } as any,
 };
 
-const createToolContext = (
-	request: IRequest,
-	completionId = "completion_id",
-) => ({
+const createToolContext = (request: IRequest, completionId = "completion_id") => ({
 	completionId,
 	env: request.env,
 	user: request.user,
@@ -81,9 +78,7 @@ describe("request_approval", () => {
 	});
 
 	it("throws error for missing message", async () => {
-		await expect(
-			request_approval.execute({}, createToolContext(baseRequest)),
-		).rejects.toThrow();
+		await expect(request_approval.execute({}, createToolContext(baseRequest))).rejects.toThrow();
 	});
 });
 
@@ -163,8 +158,6 @@ describe("ask_user", () => {
 	});
 
 	it("throws error for missing question", async () => {
-		await expect(
-			ask_user.execute({}, createToolContext(baseRequest)),
-		).rejects.toThrow();
+		await expect(ask_user.execute({}, createToolContext(baseRequest))).rejects.toThrow();
 	});
 });

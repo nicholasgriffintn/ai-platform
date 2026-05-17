@@ -66,11 +66,7 @@ describe("UsageManager", () => {
 				daily_message_count: 20,
 			};
 
-			const managerWithOldUser = new UsageManager(
-				mockRepositories as any,
-				userWithOldReset,
-				null,
-			);
+			const managerWithOldUser = new UsageManager(mockRepositories as any, userWithOldReset, null);
 
 			mockRepositories.users.updateUser.mockResolvedValue(undefined);
 
@@ -86,11 +82,7 @@ describe("UsageManager", () => {
 				daily_message_count: 25,
 			};
 
-			const managerAtLimit = new UsageManager(
-				mockRepositories as any,
-				userAtLimit,
-				null,
-			);
+			const managerAtLimit = new UsageManager(mockRepositories as any, userAtLimit, null);
 
 			await expect(managerAtLimit.checkUsage()).rejects.toThrow(
 				"Daily message limit for authenticated users reached.",
@@ -98,11 +90,7 @@ describe("UsageManager", () => {
 		});
 
 		it("should throw error when no user ID", async () => {
-			const managerNoUser = new UsageManager(
-				mockRepositories as any,
-				null,
-				null,
-			);
+			const managerNoUser = new UsageManager(mockRepositories as any, null, null);
 
 			await expect(managerNoUser.checkUsage()).rejects.toThrow(
 				"User required to check authenticated usage",
@@ -133,11 +121,7 @@ describe("UsageManager", () => {
 				daily_message_count: 20,
 			};
 
-			const managerWithOldUser = new UsageManager(
-				mockRepositories as any,
-				userWithOldReset,
-				null,
-			);
+			const managerWithOldUser = new UsageManager(mockRepositories as any, userWithOldReset, null);
 
 			mockRepositories.users.updateUser.mockResolvedValue(undefined);
 
@@ -153,11 +137,7 @@ describe("UsageManager", () => {
 		});
 
 		it("should throw error when no user ID", async () => {
-			const managerNoUser = new UsageManager(
-				mockRepositories as any,
-				null,
-				null,
-			);
+			const managerNoUser = new UsageManager(mockRepositories as any, null, null);
 
 			await expect(managerNoUser.incrementUsage()).rejects.toThrow(
 				"User required to increment authenticated usage",
@@ -167,17 +147,11 @@ describe("UsageManager", () => {
 
 	describe("checkAnonymousUsage", () => {
 		it("should check usage for anonymous user", async () => {
-			const managerAnonymous = new UsageManager(
-				mockRepositories as any,
-				null,
-				mockAnonymousUser,
-			);
+			const managerAnonymous = new UsageManager(mockRepositories as any, null, mockAnonymousUser);
 
-			mockRepositories.anonymousUsers.checkAndResetDailyLimit.mockResolvedValue(
-				{
-					count: 3,
-				},
-			);
+			mockRepositories.anonymousUsers.checkAndResetDailyLimit.mockResolvedValue({
+				count: 3,
+			});
 
 			const result = await managerAnonymous.checkAnonymousUsage();
 
@@ -188,17 +162,11 @@ describe("UsageManager", () => {
 		});
 
 		it("should throw error when anonymous limit reached", async () => {
-			const managerAnonymous = new UsageManager(
-				mockRepositories as any,
-				null,
-				mockAnonymousUser,
-			);
+			const managerAnonymous = new UsageManager(mockRepositories as any, null, mockAnonymousUser);
 
-			mockRepositories.anonymousUsers.checkAndResetDailyLimit.mockResolvedValue(
-				{
-					count: 5,
-				},
-			);
+			mockRepositories.anonymousUsers.checkAndResetDailyLimit.mockResolvedValue({
+				count: 5,
+			});
 
 			await expect(managerAnonymous.checkAnonymousUsage()).rejects.toThrow(
 				"Daily message limit for anonymous users reached. Please log in for higher limits.",
@@ -206,11 +174,7 @@ describe("UsageManager", () => {
 		});
 
 		it("should throw error when no anonymous user ID", async () => {
-			const managerNoAnonymous = new UsageManager(
-				mockRepositories as any,
-				null,
-				null,
-			);
+			const managerNoAnonymous = new UsageManager(mockRepositories as any, null, null);
 
 			await expect(managerNoAnonymous.checkAnonymousUsage()).rejects.toThrow(
 				"Anonymous user required to check anonymous usage",
@@ -241,9 +205,7 @@ describe("UsageManager", () => {
 		it("should reset pro count on new day", async () => {
 			const userWithOldProReset = {
 				...mockUser,
-				daily_pro_reset: new Date(
-					Date.now() - 24 * 60 * 60 * 1000,
-				).toISOString(),
+				daily_pro_reset: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
 				daily_pro_message_count: 30,
 			};
 
@@ -272,11 +234,7 @@ describe("UsageManager", () => {
 				daily_pro_message_count: 50,
 			};
 
-			const managerAtProLimit = new UsageManager(
-				mockRepositories as any,
-				userAtProLimit,
-				null,
-			);
+			const managerAtProLimit = new UsageManager(mockRepositories as any, userAtProLimit, null);
 
 			(getModelConfigByMatchingModel as any).mockResolvedValue({
 				costPer1kInputTokens: 0.001,
@@ -295,10 +253,7 @@ describe("UsageManager", () => {
 				isFree: true,
 			});
 
-			const result = await usageManager.checkUsageByModel(
-				"gpt-3.5-turbo",
-				false,
-			);
+			const result = await usageManager.checkUsageByModel("gpt-3.5-turbo", false);
 
 			expect(result).toEqual({
 				dailyCount: 10,
@@ -311,9 +266,7 @@ describe("UsageManager", () => {
 				isFree: false,
 			});
 
-			await expect(
-				usageManager.checkUsageByModel("gpt-4", false),
-			).rejects.toThrow(
+			await expect(usageManager.checkUsageByModel("gpt-4", false)).rejects.toThrow(
 				"You are not a paid user. Please upgrade to a paid plan to use this model.",
 			);
 		});
@@ -357,11 +310,7 @@ describe("UsageManager", () => {
 				plan_id: "pro",
 			};
 
-			const proUsageManager = new UsageManager(
-				mockRepositories as any,
-				proUser,
-				null,
-			);
+			const proUsageManager = new UsageManager(mockRepositories as any, proUser, null);
 
 			const result = await proUsageManager.getUsageLimits();
 
@@ -378,17 +327,11 @@ describe("UsageManager", () => {
 		});
 
 		it("should return anonymous limits for anonymous user", async () => {
-			const anonymousManager = new UsageManager(
-				mockRepositories as any,
-				null,
-				mockAnonymousUser,
-			);
+			const anonymousManager = new UsageManager(mockRepositories as any, null, mockAnonymousUser);
 
-			mockRepositories.anonymousUsers.checkAndResetDailyLimit.mockResolvedValue(
-				{
-					count: 3,
-				},
-			);
+			mockRepositories.anonymousUsers.checkAndResetDailyLimit.mockResolvedValue({
+				count: 3,
+			});
 
 			const result = await anonymousManager.getUsageLimits();
 
@@ -401,11 +344,7 @@ describe("UsageManager", () => {
 		});
 
 		it("should throw error when no user", async () => {
-			const noUserManager = new UsageManager(
-				mockRepositories as any,
-				null,
-				null,
-			);
+			const noUserManager = new UsageManager(mockRepositories as any, null, null);
 
 			await expect(noUserManager.getUsageLimits()).rejects.toThrow(
 				"User required to get usage limits",
@@ -442,9 +381,7 @@ describe("UsageManager", () => {
 		});
 
 		it("should throw error for premium function with free user", async () => {
-			await expect(
-				usageManager.incrementFunctionUsage("premium", false, 1),
-			).rejects.toThrow(
+			await expect(usageManager.incrementFunctionUsage("premium", false, 1)).rejects.toThrow(
 				"You are not a paid user. Please upgrade to a paid plan to use premium functions.",
 			);
 		});
@@ -458,29 +395,19 @@ describe("UsageManager", () => {
 
 	describe("error handling", () => {
 		it("should handle database update errors", async () => {
-			mockRepositories.users.updateUser.mockRejectedValue(
-				new Error("Database error"),
-			);
+			mockRepositories.users.updateUser.mockRejectedValue(new Error("Database error"));
 
-			await expect(usageManager.incrementUsage()).rejects.toThrow(
-				"Failed to update usage data",
-			);
+			await expect(usageManager.incrementUsage()).rejects.toThrow("Failed to update usage data");
 		});
 
 		it("should handle anonymous database errors", async () => {
-			const anonymousManager = new UsageManager(
-				mockRepositories as any,
-				null,
-				mockAnonymousUser,
-			);
+			const anonymousManager = new UsageManager(mockRepositories as any, null, mockAnonymousUser);
 
 			mockRepositories.anonymousUsers.checkAndResetDailyLimit.mockRejectedValue(
 				new Error("Database error"),
 			);
 
-			await expect(anonymousManager.checkAnonymousUsage()).rejects.toThrow(
-				"Database error",
-			);
+			await expect(anonymousManager.checkAnonymousUsage()).rejects.toThrow("Database error");
 		});
 	});
 });

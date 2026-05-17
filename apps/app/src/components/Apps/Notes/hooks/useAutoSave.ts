@@ -1,10 +1,4 @@
-import {
-	useCallback,
-	useEffect,
-	useRef,
-	useState,
-	type MutableRefObject,
-} from "react";
+import { useCallback, useEffect, useRef, useState, type MutableRefObject } from "react";
 import { toast } from "sonner";
 
 import { splitTitleAndContent } from "~/lib/text-utils";

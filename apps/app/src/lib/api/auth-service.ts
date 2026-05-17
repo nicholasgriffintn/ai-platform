@@ -33,8 +33,7 @@ class AuthService {
 
 	public isPasskeySupported(): boolean {
 		return (
-			window.PublicKeyCredential !== undefined &&
-			typeof window.PublicKeyCredential === "function"
+			window.PublicKeyCredential !== undefined && typeof window.PublicKeyCredential === "function"
 		);
 	}
 
@@ -86,10 +85,7 @@ class AuthService {
 
 	public async getToken(): Promise<string | null> {
 		try {
-			if (
-				this.tokenExpiry &&
-				Date.now() < this.tokenExpiry.getTime() - 2 * 60 * 1000
-			) {
+			if (this.tokenExpiry && Date.now() < this.tokenExpiry.getTime() - 2 * 60 * 1000) {
 				const existingToken = await apiKeyService.getApiKey();
 				if (existingToken) {
 					return existingToken;
@@ -184,9 +180,7 @@ class AuthService {
 		return this.userSettings;
 	}
 
-	public async updateUserSettings(
-		settings: Partial<UserSettings>,
-	): Promise<boolean> {
+	public async updateUserSettings(settings: Partial<UserSettings>): Promise<boolean> {
 		try {
 			const response = await fetchApi("/user/settings", {
 				method: "PUT",
@@ -206,9 +200,7 @@ class AuthService {
 		}
 	}
 
-	public async requestMagicLink(
-		email: string,
-	): Promise<{ success: boolean; error?: string }> {
+	public async requestMagicLink(email: string): Promise<{ success: boolean; error?: string }> {
 		try {
 			const response = await fetchApi("/auth/magic-link/request", {
 				method: "POST",

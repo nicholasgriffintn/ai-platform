@@ -3,11 +3,7 @@ import { getModelConfigByModel } from "~/lib/providers/models";
 import { extractGeneratedAsset } from "~/lib/providers/utils/helpers";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { buildInputSchemaInput } from "~/utils/inputSchema";
-import type {
-	VideoGenerationRequest,
-	VideoGenerationResult,
-	VideoProvider,
-} from "../index";
+import type { VideoGenerationRequest, VideoGenerationResult, VideoProvider } from "../index";
 
 const DEFAULT_MODEL = "workers-ai-google-veo-3-fast";
 
@@ -15,9 +11,7 @@ export class WorkersAiVideoProvider implements VideoProvider {
 	name = "workers-ai";
 	models = [DEFAULT_MODEL];
 
-	async generate(
-		request: VideoGenerationRequest,
-	): Promise<VideoGenerationResult> {
+	async generate(request: VideoGenerationRequest): Promise<VideoGenerationResult> {
 		const modelId = request.model || DEFAULT_MODEL;
 		const modelConfig = await getModelConfigByModel(modelId);
 

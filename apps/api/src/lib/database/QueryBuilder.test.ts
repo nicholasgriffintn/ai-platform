@@ -12,9 +12,7 @@ describe("QueryBuilder", () => {
 				.where("id = ?", ["123"])
 				.build();
 
-			expect(result?.query).toBe(
-				"SELECT id, user_id FROM conversation WHERE id = ?",
-			);
+			expect(result?.query).toBe("SELECT id, user_id FROM conversation WHERE id = ?");
 			expect(result?.values).toEqual(["123"]);
 		});
 
@@ -34,16 +32,16 @@ describe("QueryBuilder", () => {
 
 		it("rejects dangerous column identifiers", () => {
 			const builder = new QueryBuilder();
-			expect(() =>
-				builder.select(["id; DROP TABLE users"]).from("user"),
-			).toThrowError("Invalid identifier");
+			expect(() => builder.select(["id; DROP TABLE users"]).from("user")).toThrowError(
+				"Invalid identifier",
+			);
 		});
 
 		it("rejects dangerous table identifiers", () => {
 			const builder = new QueryBuilder();
-			expect(() =>
-				builder.select().from("user; DROP TABLE users"),
-			).toThrowError("Invalid identifier");
+			expect(() => builder.select().from("user; DROP TABLE users")).toThrowError(
+				"Invalid identifier",
+			);
 		});
 
 		it("rejects unsafe WHERE clauses", () => {
@@ -86,18 +84,13 @@ describe("QueryBuilder", () => {
 				.returning("id, name")
 				.build();
 
-			expect(result?.query).toBe(
-				"INSERT INTO user (id, name) VALUES (?, ?) RETURNING id, name",
-			);
+			expect(result?.query).toBe("INSERT INTO user (id, name) VALUES (?, ?) RETURNING id, name");
 		});
 
 		it("rejects unsafe RETURNING clauses", () => {
 			const builder = new QueryBuilder();
 			expect(() =>
-				builder
-					.insert("user")
-					.values({ id: 1 })
-					.returning("id; DROP TABLE user"),
+				builder.insert("user").values({ id: 1 }).returning("id; DROP TABLE user"),
 			).toThrowError("Invalid identifier");
 		});
 
@@ -110,9 +103,7 @@ describe("QueryBuilder", () => {
 				.where("status = ?", ["active"])
 				.build();
 
-			expect(result?.query).toBe(
-				"SELECT id FROM conversation WHERE user_id = ? AND status = ?",
-			);
+			expect(result?.query).toBe("SELECT id FROM conversation WHERE user_id = ? AND status = ?");
 			expect(result?.values).toEqual([1, "active"]);
 		});
 	});
@@ -227,11 +218,7 @@ describe("QueryBuilder", () => {
 				.where("id = ?", ["msg123"])
 				.build();
 
-			expect(result?.values).toEqual([
-				'{"text":"hello"}',
-				'[{"id":"1"}]',
-				"msg123",
-			]);
+			expect(result?.values).toEqual(['{"text":"hello"}', '[{"id":"1"}]', "msg123"]);
 		});
 
 		it("should not stringify non-object fields even if in jsonFields", () => {
@@ -303,14 +290,9 @@ describe("QueryBuilder", () => {
 			const updates = { title: "New Title" };
 			const allowedFields = ["title"];
 
-			const result = builder
-				.update("table")
-				.set(updates, allowedFields)
-				.build();
+			const result = builder.update("table").set(updates, allowedFields).build();
 
-			expect(result?.query).toBe(
-				"UPDATE table SET title = ?, updated_at = datetime('now')",
-			);
+			expect(result?.query).toBe("UPDATE table SET title = ?, updated_at = datetime('now')");
 			expect(result?.values).toEqual(["New Title"]);
 		});
 
@@ -338,11 +320,7 @@ describe("QueryBuilder", () => {
 			const updates = { title: "Title" };
 			const allowedFields = ["title"];
 
-			builder
-				.update("table1")
-				.set(updates, allowedFields)
-				.where("id = ?", ["1"])
-				.build();
+			builder.update("table1").set(updates, allowedFields).where("id = ?", ["1"]).build();
 
 			builder.reset();
 
@@ -369,13 +347,7 @@ describe("QueryBuilder", () => {
 				tool_calls: [{ id: "tool_1", name: "test" }],
 				citations: { source: "doc1" },
 			};
-			const allowedFields = [
-				"content",
-				"status",
-				"tool_calls",
-				"citations",
-				"data",
-			];
+			const allowedFields = ["content", "status", "tool_calls", "citations", "data"];
 
 			const result = builder
 				.update("message")
@@ -422,12 +394,7 @@ describe("QueryBuilder", () => {
 				.where("id = ?", [conversationId])
 				.build();
 
-			expect(result?.values).toEqual([
-				"New Title",
-				true,
-				"msg_456",
-				"conv_123",
-			]);
+			expect(result?.values).toEqual(["New Title", true, "msg_456", "conv_123"]);
 		});
 
 		it("should handle SharedAgentRepository.updateSharedAgent pattern", () => {
@@ -438,13 +405,7 @@ describe("QueryBuilder", () => {
 				description: "New description",
 				tags: ["tag1", "tag2"],
 			};
-			const allowedFields = [
-				"name",
-				"description",
-				"avatar_url",
-				"category",
-				"tags",
-			];
+			const allowedFields = ["name", "description", "avatar_url", "category", "tags"];
 
 			const result = builder
 				.update("shared_agents")

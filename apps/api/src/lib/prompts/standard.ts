@@ -3,10 +3,7 @@ import { getLogger } from "~/utils/logger";
 import { PromptBuilder } from "./builder";
 import { resolvePromptLayout } from "./layout";
 import { buildAgentGuidelinesSection } from "./sections/agent-guidelines";
-import {
-	buildAssistantMetadataSection,
-	type PromptModelMetadata,
-} from "./sections/metadata";
+import { buildAssistantMetadataSection, type PromptModelMetadata } from "./sections/metadata";
 import { buildAssistantPrinciplesSection } from "./sections/principles";
 import { buildStandardExampleOutputSection } from "./sections/examples";
 import { buildUserContextSection } from "./sections/user-context";
@@ -32,8 +29,7 @@ export async function returnStandardPrompt(
 		const userTraits = userSettings?.traits || null;
 		const userPreferences = userSettings?.preferences || null;
 		const memoriesEnabled =
-			userSettings?.memories_save_enabled ||
-			userSettings?.memories_chat_history_enabled;
+			userSettings?.memories_save_enabled || userSettings?.memories_chat_history_enabled;
 
 		const latitude = request.location?.latitude || user?.latitude;
 		const longitude = request.location?.longitude || user?.longitude;
@@ -42,10 +38,7 @@ export async function returnStandardPrompt(
 		const preferredLanguage = request.lang?.trim() || null;
 
 		const isAgent =
-			chatMode === "agent" ||
-			chatMode === "plan" ||
-			chatMode === "build" ||
-			chatMode === "explore";
+			chatMode === "agent" || chatMode === "plan" || chatMode === "build" || chatMode === "explore";
 
 		const capabilities = resolvePromptCapabilities({
 			supportsToolCalls,
@@ -61,29 +54,23 @@ export async function returnStandardPrompt(
 			capabilities,
 		});
 
-		const {
-			traits,
-			preferences,
-			problemBreakdownInstructions,
-			answerFormatInstructions,
-		} = getResponseStyle(
-			verbosity,
-			capabilities.reasoningEnabled,
-			capabilities.requiresThinkingPrompt,
-			capabilities.supportsToolCalls,
-			capabilities.supportsArtifacts,
-			isAgent,
-			memoriesEnabled,
-			userTraits,
-			userPreferences,
-			false,
-			layout.instructionVariant,
-		);
+		const { traits, preferences, problemBreakdownInstructions, answerFormatInstructions } =
+			getResponseStyle(
+				verbosity,
+				capabilities.reasoningEnabled,
+				capabilities.requiresThinkingPrompt,
+				capabilities.supportsToolCalls,
+				capabilities.supportsArtifacts,
+				isAgent,
+				memoriesEnabled,
+				userTraits,
+				userPreferences,
+				false,
+				layout.instructionVariant,
+			);
 
 		const metadataSection = buildAssistantMetadataSection({
-			request: preferredLanguage
-				? { ...request, lang: preferredLanguage }
-				: request,
+			request: preferredLanguage ? { ...request, lang: preferredLanguage } : request,
 			modelId: modelMetadata?.modelId,
 			modelConfig: modelMetadata?.modelConfig,
 			format: layout.metadataFormat,

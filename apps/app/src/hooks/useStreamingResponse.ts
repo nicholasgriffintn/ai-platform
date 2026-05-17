@@ -14,10 +14,7 @@ import { useMessageOperations } from "./useMessageOperations";
  */
 export function useStreamingResponse(
 	webLLMService: any,
-	onTitleGeneration?: (
-		conversationId: string,
-		messages: Message[],
-	) => Promise<void>,
+	onTitleGeneration?: (conversationId: string, messages: Message[]) => Promise<void>,
 ) {
 	const { stopLoading } = useLoadingActions();
 	const { updateLoading } = useLoadingActions();
@@ -38,11 +35,8 @@ export function useStreamingResponse(
 	const assistantResponseRef = useRef<string>("");
 	const assistantReasoningRef = useRef<string>("");
 
-	const {
-		addMessageToConversation,
-		addAssistantMessage,
-		updateAssistantMessage,
-	} = useMessageOperations();
+	const { addMessageToConversation, addAssistantMessage, updateAssistantMessage } =
+		useMessageOperations();
 
 	const generateResponse = useCallback(
 		async (
@@ -85,9 +79,7 @@ export function useStreamingResponse(
 			try {
 				if (isLocal) {
 					if (!model) {
-						throw new Error(
-							"Cannot generate local response without a selected model.",
-						);
+						throw new Error("Cannot generate local response without a selected model.");
 					}
 					const handleProgress = (text: string) => {
 						response += text;
@@ -105,24 +97,14 @@ export function useStreamingResponse(
 					response = await webLLMService.generate(
 						String(conversationId),
 						lastMessageContent,
-						async (
-							_chatId: string,
-							content: any,
-							_model: any,
-							_mode: any,
-							role: string,
-						) => {
+						async (_chatId: string, content: any, _model: any, _mode: any, role: string) => {
 							if (role !== "user") handleMessageUpdate(content);
 							return [];
 						},
 						handleProgress,
 					);
 				} else {
-					const shouldStore =
-						isAuthenticated &&
-						isPro &&
-						!localOnlyMode &&
-						!chatSettings.localOnly;
+					const shouldStore = isAuthenticated && isPro && !localOnlyMode && !chatSettings.localOnly;
 
 					const normalizedMessages = messages.map(normalizeMessage);
 
@@ -163,9 +145,7 @@ export function useStreamingResponse(
 						shouldStore,
 						true,
 						useMultiModel,
-						chatMode === "agent"
-							? `/agents/${selectedAgentId}/completions`
-							: undefined,
+						chatMode === "agent" ? `/agents/${selectedAgentId}/completions` : undefined,
 					);
 
 					const messageContentToDisplay = assistantMessage.content;
@@ -173,9 +153,7 @@ export function useStreamingResponse(
 						typeof assistantMessage.content === "string"
 							? assistantMessage.content
 							: assistantMessage.content
-									.map((item: MessageContent) =>
-										item.type === "text" ? item.text || "" : "",
-									)
+									.map((item: MessageContent) => (item.type === "text" ? item.text || "" : ""))
 									.join("");
 
 					await updateAssistantMessage(
@@ -227,11 +205,7 @@ export function useStreamingResponse(
 			try {
 				const response = await generateResponse(messages, conversationId);
 
-				if (
-					response.status === "success" &&
-					messages.length <= 1 &&
-					onTitleGeneration
-				) {
+				if (response.status === "success" && messages.length <= 1 && onTitleGeneration) {
 					onTitleGeneration(conversationId, messages).catch((err) =>
 						console.error("Background title generation failed:", err),
 					);
@@ -270,14 +244,7 @@ export function useStreamingResponse(
 				setController(new AbortController());
 			}
 		},
-		[
-			generateResponse,
-			controller,
-			stopLoading,
-			model,
-			setModel,
-			onTitleGeneration,
-		],
+		[generateResponse, controller, stopLoading, model, setModel, onTitleGeneration],
 	);
 
 	const abortStream = useCallback(() => {

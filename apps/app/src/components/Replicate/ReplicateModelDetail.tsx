@@ -1,8 +1,5 @@
 import { useNavigate } from "react-router";
-import {
-	useReplicateModels,
-	useExecuteReplicateModel,
-} from "~/hooks/useReplicate";
+import { useReplicateModels, useExecuteReplicateModel } from "~/hooks/useReplicate";
 import { ReplicateModelForm } from "./ReplicateModelForm";
 
 interface ReplicateModelDetailProps {
@@ -28,9 +25,7 @@ export function ReplicateModelDetail({ modelId }: ReplicateModelDetailProps) {
 		return (
 			<div>
 				<div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
-					<p className="text-red-800 dark:text-red-200">
-						Failed to load model. Please try again.
-					</p>
+					<p className="text-red-800 dark:text-red-200">Failed to load model. Please try again.</p>
 				</div>
 			</div>
 		);
@@ -52,25 +47,19 @@ export function ReplicateModelDetail({ modelId }: ReplicateModelDetailProps) {
 	return (
 		<div>
 			<div className="mb-8">
-				<h1 className="text-3xl font-bold text-zinc-900 dark:text-zinc-100 mb-2">
-					{model.name}
-				</h1>
-				<p className="text-zinc-600 dark:text-zinc-400 mb-4">
-					{model.description}
-				</p>
+				<h1 className="text-3xl font-bold text-zinc-900 dark:text-zinc-100 mb-2">{model.name}</h1>
+				<p className="text-zinc-600 dark:text-zinc-400 mb-4">{model.description}</p>
 
 				{(model.tags?.length || model.modalityLabel) && (
 					<div className="flex flex-wrap gap-2 mb-4">
-						{[model.modalityLabel, ...(model.tags ?? [])]
-							.filter(Boolean)
-							.map((tag) => (
-								<span
-									key={tag}
-									className="px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 text-sm rounded-full"
-								>
-									{tag}
-								</span>
-							))}
+						{[model.modalityLabel, ...(model.tags ?? [])].filter(Boolean).map((tag) => (
+							<span
+								key={tag}
+								className="px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 text-sm rounded-full"
+							>
+								{tag}
+							</span>
+						))}
 					</div>
 				)}
 

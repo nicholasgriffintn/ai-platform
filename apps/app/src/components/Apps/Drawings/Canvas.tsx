@@ -51,19 +51,11 @@ export function Canvas({
 		const scaleY = canvasRef.current.height / rect.height;
 
 		const x =
-			(("touches" in e && e.touches[0]
-				? e.touches[0].clientX
-				: "clientX" in e
-					? e.clientX
-					: 0) -
+			(("touches" in e && e.touches[0] ? e.touches[0].clientX : "clientX" in e ? e.clientX : 0) -
 				rect.left) *
 			scaleX;
 		const y =
-			(("touches" in e && e.touches[0]
-				? e.touches[0].clientY
-				: "clientY" in e
-					? e.clientY
-					: 0) -
+			(("touches" in e && e.touches[0] ? e.touches[0].clientY : "clientY" in e ? e.clientY : 0) -
 				rect.top) *
 			scaleY;
 
@@ -146,9 +138,7 @@ export function Canvas({
 
 	return (
 		<>
-			<span className="sr-only">
-				Drawing Canvas {isReadOnly ? "ReadOnly" : "Editable"}
-			</span>
+			<span className="sr-only">Drawing Canvas {isReadOnly ? "ReadOnly" : "Editable"}</span>
 			<canvas
 				ref={canvasRef}
 				width={800}

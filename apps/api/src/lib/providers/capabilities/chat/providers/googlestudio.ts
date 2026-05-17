@@ -4,10 +4,7 @@ import type { ChatCompletionParameters } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getEffectiveMaxTokens } from "~/utils/parameters";
 import { BaseProvider } from "./base";
-import {
-	getAiGatewayMetadataHeaders,
-	resolveAiGatewayCacheTtl,
-} from "~/utils/aiGateway";
+import { getAiGatewayMetadataHeaders, resolveAiGatewayCacheTtl } from "~/utils/aiGateway";
 
 export class GoogleStudioProvider extends BaseProvider {
 	name = "google-ai-studio";
@@ -24,18 +21,14 @@ export class GoogleStudioProvider extends BaseProvider {
 		this.validateAiGatewayToken(params);
 	}
 
-	protected async getEndpoint(
-		params: ChatCompletionParameters,
-	): Promise<string> {
+	protected async getEndpoint(params: ChatCompletionParameters): Promise<string> {
 		if (params.stream) {
 			return `v1beta/models/${params.model}:streamGenerateContent?alt=sse`;
 		}
 		return `v1beta/models/${params.model}:generateContent`;
 	}
 
-	protected async getHeaders(
-		params: ChatCompletionParameters,
-	): Promise<Record<string, string>> {
+	protected async getHeaders(params: ChatCompletionParameters): Promise<Record<string, string>> {
 		const apiKey = await this.getApiKey(params, params.user?.id);
 
 		return {
@@ -61,36 +54,24 @@ export class GoogleStudioProvider extends BaseProvider {
 		}
 
 		const enabledTools = (params.enabled_tools || []).filter(
-			(tool) =>
-				!(tool === "web_search" && modelConfig?.supportsSearchGrounding),
+			(tool) => !(tool === "web_search" && modelConfig?.supportsSearchGrounding),
 		);
 		const tools = [];
 
-		if (
-			modelConfig?.supportsCodeExecution &&
-			enabledTools.includes("code_execution")
-		) {
+		if (modelConfig?.supportsCodeExecution && enabledTools.includes("code_execution")) {
 			tools.push({
 				code_execution: {},
 			});
-		} else if (
-			modelConfig?.supportsSearchGrounding &&
-			enabledTools.includes("search_grounding")
-		) {
+		} else if (modelConfig?.supportsSearchGrounding && enabledTools.includes("search_grounding")) {
 			tools.push({
 				google_search: {},
 			});
 		}
 
 		const hasEnabledExclusiveTools =
-			enabledTools.includes("code_execution") ||
-			enabledTools.includes("search_grounding");
+			enabledTools.includes("code_execution") || enabledTools.includes("search_grounding");
 
-		if (
-			modelConfig?.supportsToolCalls &&
-			!hasEnabledExclusiveTools &&
-			params.tools?.length > 0
-		) {
+		if (modelConfig?.supportsToolCalls && !hasEnabledExclusiveTools && params.tools?.length > 0) {
 			const formattedTools = params.tools.map((tool) => ({
 				name: tool.function.name,
 				description: tool.function.description,
@@ -131,10 +112,7 @@ export class GoogleStudioProvider extends BaseProvider {
 			],
 			generationConfig: {
 				temperature: params.temperature,
-				maxOutputTokens: getEffectiveMaxTokens(
-					params.max_tokens,
-					modelConfig?.maxTokens,
-				),
+				maxOutputTokens: getEffectiveMaxTokens(params.max_tokens, modelConfig?.maxTokens),
 				topP: params.top_p,
 				topK: params.top_k,
 				seed: params.seed,

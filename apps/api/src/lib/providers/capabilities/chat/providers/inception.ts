@@ -14,9 +14,7 @@ export class InceptionProvider extends BaseProvider {
 		super.validateParams(params);
 	}
 
-	protected async getEndpoint(
-		params: ChatCompletionParameters,
-	): Promise<string> {
+	protected async getEndpoint(params: ChatCompletionParameters): Promise<string> {
 		if (params.edit_operation === "next") {
 			return "https://api.inceptionlabs.ai/v1/edit/completions";
 		}
@@ -83,9 +81,7 @@ export class InceptionProvider extends BaseProvider {
 			};
 
 			return Object.fromEntries(
-				Object.entries(editParams).filter(
-					([, value]) => value !== undefined && value !== null,
-				),
+				Object.entries(editParams).filter(([, value]) => value !== undefined && value !== null),
 			);
 		}
 
@@ -103,18 +99,14 @@ export class InceptionProvider extends BaseProvider {
 			};
 
 			return Object.fromEntries(
-				Object.entries(fimParams).filter(
-					([, value]) => value !== undefined && value !== null,
-				),
+				Object.entries(fimParams).filter(([, value]) => value !== undefined && value !== null),
 			);
 		}
 
 		return await this.defaultMapParameters(params);
 	}
 
-	protected async getHeaders(
-		params: ChatCompletionParameters,
-	): Promise<Record<string, string>> {
+	protected async getHeaders(params: ChatCompletionParameters): Promise<Record<string, string>> {
 		const apiKey = await this.getApiKey(params, params.user?.id);
 
 		return {

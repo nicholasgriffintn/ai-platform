@@ -1,9 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import {
-	getResearchProvider,
-	listResearchProviders,
-} from "~/lib/providers/capabilities/research";
+import { getResearchProvider, listResearchProviders } from "~/lib/providers/capabilities/research";
 
 vi.mock("~/lib/providers/library", () => ({
 	providerLibrary: {
@@ -31,10 +28,7 @@ describe("research capability helpers", () => {
 		const context = { env: { DB: {} } as any, user: { id: 42 } as any };
 		const provider = getResearchProvider("parallel", context);
 
-		expect(mockProviderLibrary.research).toHaveBeenCalledWith(
-			"parallel",
-			context,
-		);
+		expect(mockProviderLibrary.research).toHaveBeenCalledWith("parallel", context);
 		expect(provider).toBe(fakeProvider);
 	});
 
@@ -51,8 +45,6 @@ describe("research capability helpers", () => {
 		const providers = listResearchProviders();
 
 		expect(mockProviderLibrary.list).toHaveBeenCalledWith("research");
-		expect(providers).toEqual(
-			["Exa", "Parallel", "exa-research", "parallel-research"].sort(),
-		);
+		expect(providers).toEqual(["Exa", "Parallel", "exa-research", "parallel-research"].sort());
 	});
 });

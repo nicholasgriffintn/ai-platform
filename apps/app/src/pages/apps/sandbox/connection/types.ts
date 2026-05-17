@@ -13,12 +13,7 @@ export interface ChatMessage {
 	createdAt: string;
 }
 
-export type ApprovalStatus =
-	| "pending"
-	| "escalated"
-	| "timed_out"
-	| "approved"
-	| "rejected";
+export type ApprovalStatus = "pending" | "escalated" | "timed_out" | "approved" | "rejected";
 
 export interface ApprovalInstructionItem {
 	id: string;

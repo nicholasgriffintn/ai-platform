@@ -34,9 +34,7 @@ export const memoryGroupResponseSchema = z.object({
 export const memoryGroupCreateSchema = z.object({
 	title: z.string().min(1).max(100),
 	description: z.string().max(500).optional(),
-	category: z
-		.enum(["fact", "preference", "schedule", "general", "snapshot"])
-		.optional(),
+	category: z.enum(["fact", "preference", "schedule", "general", "snapshot"]).optional(),
 });
 
 export const memoryGroupAddSchema = z.object({

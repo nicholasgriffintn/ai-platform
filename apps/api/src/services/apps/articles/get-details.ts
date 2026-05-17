@@ -1,7 +1,4 @@
-import {
-	createServiceContext,
-	type ServiceContext,
-} from "~/lib/context/serviceContext";
+import { createServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
 import { type AppData } from "~/repositories/AppDataRepository";
 import type { IEnv } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -30,10 +27,7 @@ export async function getArticleDetails({
 		throw new AssistantError("Article ID is required", ErrorType.PARAMS_ERROR);
 	}
 	if (!userId) {
-		throw new AssistantError(
-			"User ID is required for lookup",
-			ErrorType.PARAMS_ERROR,
-		);
+		throw new AssistantError("User ID is required for lookup", ErrorType.PARAMS_ERROR);
 	}
 
 	try {
@@ -47,10 +41,7 @@ export async function getArticleDetails({
 				: null);
 
 		if (!serviceContext) {
-			throw new AssistantError(
-				"Service context is required",
-				ErrorType.CONFIGURATION_ERROR,
-			);
+			throw new AssistantError("Service context is required", ErrorType.CONFIGURATION_ERROR);
 		}
 
 		serviceContext.ensureDatabase();

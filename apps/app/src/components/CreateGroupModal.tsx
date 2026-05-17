@@ -9,11 +9,7 @@ interface CreateGroupModalProps {
 	onGroupCreated: () => void;
 }
 
-export function CreateGroupModal({
-	isOpen,
-	onClose,
-	onGroupCreated,
-}: CreateGroupModalProps) {
+export function CreateGroupModal({ isOpen, onClose, onGroupCreated }: CreateGroupModalProps) {
 	const [title, setTitle] = useState("");
 	const [description, setDescription] = useState("");
 	const [category, setCategory] = useState("");

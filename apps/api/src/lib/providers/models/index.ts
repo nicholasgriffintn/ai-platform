@@ -108,10 +108,7 @@ const DEFAULT_MODALITIES: ModelModalities = {
 	output: ["text"],
 };
 
-function findModelConfigByMatchingModel(
-	matchingModel: string,
-	provider?: string,
-) {
+function findModelConfigByMatchingModel(matchingModel: string, provider?: string) {
 	let fallbackMatch: ModelConfigItem | null = null;
 
 	for (const model of Object.values(modelConfig)) {
@@ -135,14 +132,9 @@ function getModelModalities(model: ModelConfigItem): ModelModalities {
 	return model.modalities ?? DEFAULT_MODALITIES;
 }
 
-function modelSupportsModality(
-	model: ModelConfigItem,
-	modality: ModelModality,
-) {
+function modelSupportsModality(model: ModelConfigItem, modality: ModelModality) {
 	const modalities = getModelModalities(model);
-	return (
-		modalities.input.includes(modality) || modalities.output.includes(modality)
-	);
+	return modalities.input.includes(modality) || modalities.output.includes(modality);
 }
 
 function getModelCache(env: IEnv): KVCache | null {
@@ -214,10 +206,7 @@ export async function getModelConfigByModel(model: string, env?: IEnv) {
 	);
 }
 
-export async function getMatchingModel(
-	model: string = defaultModel,
-	env?: IEnv,
-) {
+export async function getMatchingModel(model: string = defaultModel, env?: IEnv) {
 	return withCache(env, "matching-model", [model], async () => {
 		const config = await getModelConfig(model, env);
 		return config?.matchingModel;
@@ -251,9 +240,7 @@ export function getModels(
 	cachedModels = Object.entries(modelConfig).reduce((acc, [key, model]) => {
 		if (
 			!model.beta &&
-			!options.excludeModalities?.some((excluded) =>
-				modelSupportsModality(model, excluded),
-			)
+			!options.excludeModalities?.some((excluded) => modelSupportsModality(model, excluded))
 		) {
 			acc[key] = model;
 		}
@@ -389,11 +376,7 @@ export async function getIncludedInRouterModelsForUser(
 export function getModelsByCapability(capability: string) {
 	return Object.entries(modelConfig).reduce(
 		(acc, [key, model]) => {
-			if (
-				model.strengths?.includes(
-					capability as (typeof availableModalities)[number],
-				)
-			) {
+			if (model.strengths?.includes(capability as (typeof availableModalities)[number])) {
 				acc[key] = model;
 			}
 			return acc;
@@ -434,10 +417,7 @@ export async function filterModelsForUserAccess(
 	options: ModelsOptions = { shouldUseCache: true },
 ): Promise<Record<string, ModelConfigItem>> {
 	const cache = getUserModelCache(env);
-	const cacheKey = KVCache.createKey(
-		"user-models",
-		userId?.toString() || "anonymous",
-	);
+	const cacheKey = KVCache.createKey("user-models", userId?.toString() || "anonymous");
 
 	if (cache && options.shouldUseCache) {
 		const cached = await cache.get<Record<string, ModelConfigItem>>(cacheKey);
@@ -448,9 +428,7 @@ export async function filterModelsForUserAccess(
 
 	const allFreeModels = getFreeModels();
 	const alwaysEnabledProvidersEnvVar = env.ALWAYS_ENABLED_PROVIDERS;
-	const alwaysEnabledProviders = new Set(
-		alwaysEnabledProvidersEnvVar?.split(",") || [],
-	);
+	const alwaysEnabledProviders = new Set(alwaysEnabledProvidersEnvVar?.split(",") || []);
 
 	const freeModels: Record<string, ModelConfigItem> = {};
 	for (const modelId in allFreeModels) {
@@ -465,10 +443,7 @@ export async function filterModelsForUserAccess(
 
 	if (!userId) {
 		for (const modelId in allModels) {
-			if (
-				freeModelIds.has(modelId) ||
-				alwaysEnabledProviders.has(allModels[modelId].provider)
-			) {
+			if (freeModelIds.has(modelId) || alwaysEnabledProviders.has(allModels[modelId].provider)) {
 				filteredModels[modelId] = allModels[modelId];
 			}
 		}
@@ -491,17 +466,14 @@ export async function filterModelsForUserAccess(
 		);
 
 		const enabledProviders = new Map(
-			userProviderSettings
-				.filter((p) => p.enabled)
-				.map((p) => [p.provider_id, true]),
+			userProviderSettings.filter((p) => p.enabled).map((p) => [p.provider_id, true]),
 		);
 
 		for (const modelId in allModels) {
 			const model = allModels[modelId];
 			const isFree = freeModelIds.has(modelId);
 			const isEnabled =
-				alwaysEnabledProviders.has(model.provider) ||
-				enabledProviders.has(model.provider);
+				alwaysEnabledProviders.has(model.provider) || enabledProviders.has(model.provider);
 
 			if (isFree || isEnabled) {
 				filteredModels[modelId] = model;
@@ -548,10 +520,7 @@ export async function getAuxiliaryModel(
 	return { model: modelConfig.matchingModel, provider: modelConfig.provider };
 }
 
-export const getAuxiliaryModelForRetrieval = async (
-	env: IEnv,
-	user?: IUser,
-) => {
+export const getAuxiliaryModelForRetrieval = async (env: IEnv, user?: IUser) => {
 	let modelToUse = "gemma-3-12b-it";
 
 	const availableModels = await getIncludedInRouterModelsForUser(env, user?.id);
@@ -612,16 +581,11 @@ export const getAuxiliarySearchProvider = async (
 
 	if (user?.id) {
 		const repositories = new RepositoryManager(env);
-		const userSettings = await withCache(
-			env,
-			"user-settings",
-			[user.id.toString()],
-			() => repositories.userSettings.getUserSettings(user.id),
+		const userSettings = await withCache(env, "user-settings", [user.id.toString()], () =>
+			repositories.userSettings.getUserSettings(user.id),
 		);
 
-		const userPreferredProvider = userSettings?.search_provider as
-			| SearchProviderName
-			| undefined;
+		const userPreferredProvider = userSettings?.search_provider as SearchProviderName | undefined;
 
 		if (userPreferredProvider) {
 			return userPreferredProvider;
@@ -648,10 +612,7 @@ export const getAuxiliaryResearchProvider = async (
 	const isProUser = user?.plan_id === "pro";
 
 	if (!isProUser) {
-		throw new AssistantError(
-			"Research tasks require a Pro plan",
-			ErrorType.AUTHORISATION_ERROR,
-		);
+		throw new AssistantError("Research tasks require a Pro plan", ErrorType.AUTHORISATION_ERROR);
 	}
 
 	if (!user?.id) {
@@ -695,8 +656,7 @@ export const getAuxiliarySpeechModel = async (
 	provider: string;
 	transcriptionProvider: string;
 }> => {
-	const transcriptionProvider =
-		userSettings?.transcription_provider || "workers";
+	const transcriptionProvider = userSettings?.transcription_provider || "workers";
 	const transcriptionModel = userSettings?.transcription_model || "whisper";
 
 	const modelConfig = await getModelConfig(transcriptionModel, env);
@@ -708,8 +668,4 @@ export const getAuxiliarySpeechModel = async (
 	};
 };
 
-export {
-	availableModalities,
-	defaultModel,
-	defaultProvider,
-} from "~/constants/models";
+export { availableModalities, defaultModel, defaultProvider } from "~/constants/models";

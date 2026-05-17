@@ -57,10 +57,7 @@ export class UploadService {
 			formData.append("convert_to_markdown", "true");
 		}
 		if (options?.conversionOptions) {
-			formData.append(
-				"conversion_options",
-				JSON.stringify(options.conversionOptions),
-			);
+			formData.append("conversion_options", JSON.stringify(options.conversionOptions));
 		}
 
 		const response = await fetchApi("/uploads", {
@@ -70,13 +67,9 @@ export class UploadService {
 		});
 
 		if (!response.ok) {
-			const errorData = await response
-				.json()
-				.catch(() => ({ error: response.statusText }));
+			const errorData = await response.json().catch(() => ({ error: response.statusText }));
 			const errorMessage =
-				typeof errorData === "object" &&
-				errorData !== null &&
-				"error" in errorData
+				typeof errorData === "object" && errorData !== null && "error" in errorData
 					? String(errorData.error)
 					: response.statusText;
 			throw new Error(`Failed to upload file: ${errorMessage}`);

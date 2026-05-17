@@ -1,10 +1,4 @@
-import type {
-	ChatMode,
-	ChatSettings,
-	Conversation,
-	Message,
-	MessageData,
-} from "~/types";
+import type { ChatMode, ChatSettings, Conversation, Message, MessageData } from "~/types";
 import { normalizeMessage } from "../../messages";
 import { fetchApi, returnFetchedData } from "../fetch-wrapper";
 
@@ -41,10 +35,7 @@ export class ChatService {
 			}>(response);
 
 			if (!data.conversations || !Array.isArray(data.conversations)) {
-				console.error(
-					"Unexpected response format from /chat/completions endpoint:",
-					data,
-				);
+				console.error("Unexpected response format from /chat/completions endpoint:", data);
 				return [];
 			}
 
@@ -108,9 +99,7 @@ export class ChatService {
 
 		const messages = conversation.messages;
 
-		const transformedMessages = messages.map((msg: any) =>
-			normalizeMessage(msg),
-		);
+		const transformedMessages = messages.map((msg: any) => normalizeMessage(msg));
 
 		return {
 			id: completion_id,
@@ -123,10 +112,7 @@ export class ChatService {
 		};
 	}
 
-	async generateTitle(
-		completion_id: string,
-		messages: Message[],
-	): Promise<string> {
+	async generateTitle(completion_id: string, messages: Message[]): Promise<string> {
 		if (!completion_id) {
 			throw new Error("No completion ID provided");
 		}
@@ -147,17 +133,14 @@ export class ChatService {
 			tool_calls: msg.tool_calls,
 		}));
 
-		const response = await fetchApi(
-			`/chat/completions/${completion_id}/generate-title`,
-			{
-				method: "POST",
-				headers,
-				body: {
-					completion_id,
-					messages: formattedMessages,
-				},
+		const response = await fetchApi(`/chat/completions/${completion_id}/generate-title`, {
+			method: "POST",
+			headers,
+			body: {
+				completion_id,
+				messages: formattedMessages,
 			},
-		);
+		});
 
 		if (!response.ok) {
 			throw new Error(`Failed to generate title: ${response.statusText}`);
@@ -167,10 +150,7 @@ export class ChatService {
 		return data.title;
 	}
 
-	async updateConversationTitle(
-		completion_id: string,
-		newTitle: string,
-	): Promise<void> {
+	async updateConversationTitle(completion_id: string, newTitle: string): Promise<void> {
 		if (!completion_id) {
 			throw new Error("No completion ID provided");
 		}
@@ -182,22 +162,17 @@ export class ChatService {
 			console.error("Error updating conversation title:", error);
 		}
 
-		const updateResponse = await fetchApi(
-			`/chat/completions/${completion_id}`,
-			{
-				method: "PUT",
-				headers,
-				body: {
-					completion_id,
-					title: newTitle,
-				},
+		const updateResponse = await fetchApi(`/chat/completions/${completion_id}`, {
+			method: "PUT",
+			headers,
+			body: {
+				completion_id,
+				title: newTitle,
 			},
-		);
+		});
 
 		if (!updateResponse.ok) {
-			throw new Error(
-				`Failed to update chat title: ${updateResponse.statusText}`,
-			);
+			throw new Error(`Failed to update chat title: ${updateResponse.statusText}`);
 		}
 	}
 
@@ -237,15 +212,11 @@ export class ChatService {
 		});
 
 		if (!response.ok) {
-			throw new Error(
-				`Failed to delete all conversations: ${response.statusText}`,
-			);
+			throw new Error(`Failed to delete all conversations: ${response.statusText}`);
 		}
 	}
 
-	async shareConversation(
-		completion_id: string,
-	): Promise<{ share_id: string }> {
+	async shareConversation(completion_id: string): Promise<{ share_id: string }> {
 		if (!completion_id) {
 			throw new Error("No completion ID provided");
 		}
@@ -257,13 +228,10 @@ export class ChatService {
 			console.error("Error sharing conversation:", error);
 		}
 
-		const response = await fetchApi(
-			`/chat/completions/${completion_id}/share`,
-			{
-				method: "POST",
-				headers,
-			},
-		);
+		const response = await fetchApi(`/chat/completions/${completion_id}/share`, {
+			method: "POST",
+			headers,
+		});
 
 		if (!response.ok) {
 			throw new Error(`Failed to share conversation: ${response.statusText}`);
@@ -284,13 +252,10 @@ export class ChatService {
 			console.error("Error unsharing conversation:", error);
 		}
 
-		const response = await fetchApi(
-			`/chat/completions/${completion_id}/share`,
-			{
-				method: "DELETE",
-				headers,
-			},
-		);
+		const response = await fetchApi(`/chat/completions/${completion_id}/share`, {
+			method: "DELETE",
+			headers,
+		});
 
 		if (!response.ok) {
 			throw new Error(`Failed to unshare conversation: ${response.statusText}`);
@@ -314,18 +279,15 @@ export class ChatService {
 			console.error("Error submitting feedback:", error);
 		}
 
-		const response = await fetchApi(
-			`/chat/completions/${completion_id}/feedback`,
-			{
-				method: "POST",
-				headers,
-				body: {
-					log_id,
-					feedback,
-					score,
-				},
+		const response = await fetchApi(`/chat/completions/${completion_id}/feedback`, {
+			method: "POST",
+			headers,
+			body: {
+				log_id,
+				feedback,
+				score,
 			},
-		);
+		});
 
 		if (!response.ok) {
 			throw new Error(`Failed to submit feedback: ${response.statusText}`);
@@ -373,10 +335,7 @@ export class ChatService {
 			return {
 				id: msg.id || undefined,
 				role: msg.role,
-				content:
-					typeof msg.content === "string"
-						? msg.content
-						: JSON.stringify(msg.content),
+				content: typeof msg.content === "string" ? msg.content : JSON.stringify(msg.content),
 				data: msg.data || undefined,
 				name: msg.name || undefined,
 			};
@@ -406,17 +365,10 @@ export class ChatService {
 		});
 
 		if (!response.ok) {
-			throw new Error(
-				`Failed to stream chat completions: ${response.statusText}`,
-			);
+			throw new Error(`Failed to stream chat completions: ${response.statusText}`);
 		}
 
-		return this.processStreamingResponse(
-			response,
-			model,
-			onProgress,
-			onStateChange,
-		);
+		return this.processStreamingResponse(response, model, onProgress, onStateChange);
 	}
 
 	private async processStreamingResponse(
@@ -479,9 +431,7 @@ export class ChatService {
 
 		let responseModel = model;
 
-		const isStreamingResponse = response.headers
-			.get("content-type")
-			?.includes("text/event-stream");
+		const isStreamingResponse = response.headers.get("content-type")?.includes("text/event-stream");
 
 		if (!isStreamingResponse) {
 			const data = await returnFetchedData<any>(response);

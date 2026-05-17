@@ -25,10 +25,7 @@ export class Database {
 
 	constructor(env: IEnv) {
 		if (!env?.DB) {
-			throw new AssistantError(
-				"Database not configured",
-				ErrorType.CONFIGURATION_ERROR,
-			);
+			throw new AssistantError("Database not configured", ErrorType.CONFIGURATION_ERROR);
 		}
 		this.env = env;
 		this._repositories = new RepositoryManager(env);
@@ -50,9 +47,7 @@ export class Database {
 		return this.env.DB;
 	}
 
-	public async createUser(
-		userData: Record<string, unknown>,
-	): Promise<User | null> {
+	public async createUser(userData: Record<string, unknown>): Promise<User | null> {
 		try {
 			const user = await this._repositories.users.createUser(userData);
 
@@ -60,19 +55,13 @@ export class Database {
 				try {
 					await this._repositories.userSettings.createUserSettings(user.id);
 				} catch (settingsError) {
-					logError(
-						"Failed to create user settings during user creation",
-						settingsError,
-						{
-							operation: "createUserSettings",
-						},
-					);
+					logError("Failed to create user settings during user creation", settingsError, {
+						operation: "createUserSettings",
+					});
 				}
 
 				try {
-					await this._repositories.userSettings.createUserProviderSettings(
-						user.id,
-					);
+					await this._repositories.userSettings.createUserProviderSettings(user.id);
 				} catch (providerSettingsError) {
 					logError(
 						"Failed to create user provider settings during user creation",
@@ -91,23 +80,13 @@ export class Database {
 				userData: { ...userData, password: "REDACTED" },
 			});
 
-			throw new AssistantError(
-				"Unable to create user account",
-				ErrorType.DATABASE_ERROR,
-				500,
-			);
+			throw new AssistantError("Unable to create user account", ErrorType.DATABASE_ERROR, 500);
 		}
 	}
 
-	public async consumeMagicLinkNonce(
-		nonce: string,
-		userId: number,
-	): Promise<boolean> {
+	public async consumeMagicLinkNonce(nonce: string, userId: number): Promise<boolean> {
 		try {
-			const foundNonce = await this._repositories.magicLinkNonces.findNonce(
-				nonce,
-				userId,
-			);
+			const foundNonce = await this._repositories.magicLinkNonces.findNonce(nonce, userId);
 
 			if (!foundNonce) {
 				return false;
@@ -123,13 +102,12 @@ export class Database {
 
 	public async deleteAllChatCompletions(userId: number): Promise<void> {
 		try {
-			const allConversations =
-				await this._repositories.conversations.getUserConversations(
-					userId,
-					1000,
-					1,
-					false,
-				);
+			const allConversations = await this._repositories.conversations.getUserConversations(
+				userId,
+				1000,
+				1,
+				false,
+			);
 
 			if (allConversations.conversations.length === 0) {
 				return;
@@ -140,9 +118,7 @@ export class Database {
 					continue;
 				}
 				await this._repositories.messages.deleteAllMessages(conversation.id);
-				await this._repositories.conversations.deleteConversation(
-					conversation.id,
-				);
+				await this._repositories.conversations.deleteConversation(conversation.id);
 			}
 
 			return;

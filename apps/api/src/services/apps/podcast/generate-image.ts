@@ -1,9 +1,6 @@
 import { gatewayId } from "~/constants/app";
 import { StorageService } from "~/lib/storage";
-import {
-	resolveServiceContext,
-	type ServiceContext,
-} from "~/lib/context/serviceContext";
+import { resolveServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
 import type { IEnv, IFunctionResponse, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
@@ -43,13 +40,12 @@ export const handlePodcastGenerateImage = async (
 		const repositories = serviceContext.repositories;
 		const runtimeEnv = serviceContext.env as IEnv;
 
-		const existingImages =
-			await repositories.appData.getAppDataByUserAppAndItem(
-				user.id,
-				"podcasts",
-				request.podcastId,
-				"image",
-			);
+		const existingImages = await repositories.appData.getAppDataByUserAppAndItem(
+			user.id,
+			"podcasts",
+			request.podcastId,
+			"image",
+		);
 
 		if (existingImages.length > 0) {
 			let imageData = safeParseJson(existingImages[0].data);
@@ -71,14 +67,11 @@ export const handlePodcastGenerateImage = async (
 		);
 
 		if (summaryData.length === 0) {
-			throw new AssistantError(
-				"Podcast summary not found. Please summarize podcast first",
-			);
+			throw new AssistantError("Podcast summary not found. Please summarize podcast first");
 		}
 
 		let parsedSummaryData = safeParseJson(summaryData[0].data);
-		const summaryContent =
-			parsedSummaryData.summary || parsedSummaryData.description;
+		const summaryContent = parsedSummaryData.summary || parsedSummaryData.description;
 		const summary = `I need a featured image for my latest podcast episode, this is the summary: ${summaryContent}`;
 
 		const data = await runtimeEnv.AI.run(
@@ -116,10 +109,7 @@ export const handlePodcastGenerateImage = async (
 			}
 		}
 		const arrayBuffer = new Uint8Array(
-			chunks.reduce(
-				(acc: number[], chunk) => acc.concat(Array.from(chunk)),
-				[] as number[],
-			),
+			chunks.reduce((acc: number[], chunk) => acc.concat(Array.from(chunk)), [] as number[]),
 		).buffer;
 		const length = arrayBuffer.byteLength;
 

@@ -96,10 +96,7 @@ export function useTrackEvent() {
 	);
 
 	const trackAuth = useCallback(
-		(
-			name: string,
-			properties?: Record<string, string | boolean | number | null | undefined>,
-		) => {
+		(name: string, properties?: Record<string, string | boolean | number | null | undefined>) => {
 			trackEvent({
 				name,
 				category: EventCategory.AUTH,
@@ -128,10 +125,7 @@ export function useTrackEvent() {
 	);
 
 	const trackFeatureUsage = useCallback(
-		(
-			name: string,
-			properties?: Record<string, string | boolean | number | null | undefined>,
-		) => {
+		(name: string, properties?: Record<string, string | boolean | number | null | undefined>) => {
 			trackEvent({
 				name,
 				category: EventCategory.FEATURE_USAGE,
@@ -142,10 +136,7 @@ export function useTrackEvent() {
 	);
 
 	const trackNavigation = useCallback(
-		(
-			path: string,
-			properties?: Record<string, string | boolean | number | null | undefined>,
-		) => {
+		(path: string, properties?: Record<string, string | boolean | number | null | undefined>) => {
 			trackEvent({
 				name: "page_view",
 				category: EventCategory.NAVIGATION,

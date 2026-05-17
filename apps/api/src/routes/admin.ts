@@ -1,11 +1,7 @@
 import { addRoute } from "~/lib/http/routeBuilder";
 import { type Context, Hono } from "hono";
 
-import {
-	setAgentFeaturedSchema,
-	moderateAgentSchema,
-	apiResponseSchema,
-} from "@assistant/schemas";
+import { setAgentFeaturedSchema, moderateAgentSchema, apiResponseSchema } from "@assistant/schemas";
 
 import { requireAdmin, requireStrictAdmin } from "~/middleware/adminMiddleware";
 import { requireAuth } from "~/middleware/auth";
@@ -56,11 +52,7 @@ addRoute(app, "put", "/shared-agents/:id/featured", {
 			});
 
 			if (!result.success) {
-				return ResponseFactory.error(
-					ctx,
-					result.error || "Failed to set featured status",
-					400,
-				);
+				return ResponseFactory.error(ctx, result.error || "Failed to set featured status", 400);
 			}
 
 			return ResponseFactory.success(ctx, result.data);
@@ -114,11 +106,7 @@ addRoute(app, "put", "/shared-agents/:id/moderate", {
 			});
 
 			if (!result.success) {
-				return ResponseFactory.error(
-					ctx,
-					result.error || "Failed to moderate agent",
-					400,
-				);
+				return ResponseFactory.error(ctx, result.error || "Failed to moderate agent", 400);
 			}
 
 			return ResponseFactory.success(ctx, result.data);

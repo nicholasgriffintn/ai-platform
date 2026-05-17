@@ -19,13 +19,7 @@ export interface CreateTaskParams {
 }
 
 export interface UpdateTaskParams {
-	status?:
-		| "pending"
-		| "queued"
-		| "running"
-		| "completed"
-		| "failed"
-		| "cancelled";
+	status?: "pending" | "queued" | "running" | "completed" | "failed" | "cancelled";
 	attempts?: number;
 	last_attempted_at?: string;
 	completed_at?: string;
@@ -106,10 +100,7 @@ export class TaskRepository extends BaseRepository {
 		return result || [];
 	}
 
-	public async updateTask(
-		taskId: string,
-		params: UpdateTaskParams,
-	): Promise<Task | null> {
+	public async updateTask(taskId: string, params: UpdateTaskParams): Promise<Task | null> {
 		const fieldsToUpdate = Object.keys(params);
 
 		const update = this.buildUpdateQuery(
@@ -210,9 +201,7 @@ export class TaskRepository extends BaseRepository {
 		return result || [];
 	}
 
-	public async getTaskExecutionById(
-		executionId: string,
-	): Promise<TaskExecution | null> {
+	public async getTaskExecutionById(executionId: string): Promise<TaskExecution | null> {
 		const { query, values } = this.buildSelectQuery("task_executions", {
 			id: executionId,
 		});

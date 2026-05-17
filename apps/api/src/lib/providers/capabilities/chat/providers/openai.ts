@@ -37,25 +37,18 @@ export class OpenAIProvider extends BaseProvider {
 		return params.model.startsWith("gpt-image-");
 	}
 
-	protected async getEndpoint(
-		params: ChatCompletionParameters,
-	): Promise<string> {
+	protected async getEndpoint(params: ChatCompletionParameters): Promise<string> {
 		if (this.isImageGeneration(params)) {
 			const hasAttachments = params.messages.some(
 				(message) =>
-					Array.isArray(message.content) &&
-					message.content.some((c) => c.type === "image_url"),
+					Array.isArray(message.content) && message.content.some((c) => c.type === "image_url"),
 			);
-			return hasAttachments
-				? "https://api.openai.com/v1/images/edits"
-				: "images/generations";
+			return hasAttachments ? "https://api.openai.com/v1/images/edits" : "images/generations";
 		}
 		return "chat/completions";
 	}
 
-	protected async getHeaders(
-		params: ChatCompletionParameters,
-	): Promise<Record<string, string>> {
+	protected async getHeaders(params: ChatCompletionParameters): Promise<Record<string, string>> {
 		const apiKey = await this.getApiKey(params, params.user?.id);
 		const endpoint = await this.getEndpoint(params);
 		const isImageEdits = endpoint.includes("images/edits");
@@ -80,10 +73,7 @@ export class OpenAIProvider extends BaseProvider {
 		return mimeTypeToExtension[blob.type] || "image.png";
 	}
 
-	private buildImageEditFormData(
-		params: ImageEditParams,
-		imageBlob: Blob,
-	): FormData {
+	private buildImageEditFormData(params: ImageEditParams, imageBlob: Blob): FormData {
 		const formData = new FormData();
 
 		formData.append("model", params.model || "gpt-image-1");
@@ -107,30 +97,19 @@ export class OpenAIProvider extends BaseProvider {
 	): Promise<FormData> {
 		const messageWithImage = params.messages.find(
 			(message) =>
-				Array.isArray(message.content) &&
-				message.content.some((item) => item.type === "image_url"),
+				Array.isArray(message.content) && message.content.some((item) => item.type === "image_url"),
 		);
 
 		if (!messageWithImage || !Array.isArray(messageWithImage.content)) {
-			throw new AssistantError(
-				"No valid image found for image editing",
-				ErrorType.PARAMS_ERROR,
-			);
+			throw new AssistantError("No valid image found for image editing", ErrorType.PARAMS_ERROR);
 		}
 
-		const imageItem = messageWithImage.content.find(
-			(item) => item.type === "image_url",
-		);
+		const imageItem = messageWithImage.content.find((item) => item.type === "image_url");
 		if (!imageItem?.image_url?.url) {
-			throw new AssistantError(
-				"No image URL found for editing",
-				ErrorType.PARAMS_ERROR,
-			);
+			throw new AssistantError("No image URL found for editing", ErrorType.PARAMS_ERROR);
 		}
 
-		const imageBlob = await storageService.downloadFile(
-			imageItem.image_url.url,
-		);
+		const imageBlob = await storageService.downloadFile(imageItem.image_url.url);
 
 		const formDataParams: ImageEditParams = {
 			model: params.model,
@@ -177,9 +156,7 @@ export class OpenAIProvider extends BaseProvider {
 		const model = body.model || "gpt-4o-realtime-preview";
 
 		const endpoint =
-			type === "transcription"
-				? "realtime/transcription_sessions"
-				: "realtime/sessions";
+			type === "transcription" ? "realtime/transcription_sessions" : "realtime/sessions";
 
 		const response = await fetch(`https://api.openai.com/v1/${endpoint}`, {
 			method: "POST",
@@ -193,10 +170,7 @@ export class OpenAIProvider extends BaseProvider {
 		});
 
 		if (!response.ok) {
-			throw new AssistantError(
-				"Failed to create realtime session",
-				ErrorType.EXTERNAL_API_ERROR,
-			);
+			throw new AssistantError("Failed to create realtime session", ErrorType.EXTERNAL_API_ERROR);
 		}
 
 		return response.json();
@@ -244,9 +218,7 @@ export class OpenAIProvider extends BaseProvider {
 		const allTools = [...tools, ...(toolsParams.tools || [])];
 
 		const openaiSpecificTools =
-			modelConfig?.supportsToolCalls && allTools.length > 0
-				? { tools: allTools }
-				: {};
+			modelConfig?.supportsToolCalls && allTools.length > 0 ? { tools: allTools } : {};
 
 		const reasoningEffort = params.reasoning_effort;
 		const thinkingParams =
@@ -257,9 +229,7 @@ export class OpenAIProvider extends BaseProvider {
 				: {};
 
 		const verbositySetting = params.verbosity;
-		const verbosityParams = verbositySetting
-			? { verbosity: verbositySetting }
-			: {};
+		const verbosityParams = verbositySetting ? { verbosity: verbositySetting } : {};
 
 		let modelSpecificParams = {};
 
@@ -275,10 +245,8 @@ export class OpenAIProvider extends BaseProvider {
 
 		const inputs = modelConfig?.modalities?.input ?? ["text"];
 		const outputs = modelConfig?.modalities?.output ?? inputs;
-		const isImageEditing =
-			outputs.includes("image") && inputs.includes("image");
-		const isTextToImage =
-			outputs.includes("image") && !inputs.includes("image");
+		const isImageEditing = outputs.includes("image") && inputs.includes("image");
+		const isTextToImage = outputs.includes("image") && !inputs.includes("image");
 
 		if (isImageEditing || isTextToImage) {
 			let prompt = "";
@@ -310,11 +278,7 @@ export class OpenAIProvider extends BaseProvider {
 						ErrorType.CONFIGURATION_ERROR,
 					);
 				}
-				return await this.handleImageEditRequest(
-					params,
-					prompt,
-					_storageService,
-				);
+				return await this.handleImageEditRequest(params, prompt, _storageService);
 			}
 
 			if (isImageEditing && hasImages) {

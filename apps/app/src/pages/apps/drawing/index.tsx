@@ -40,11 +40,7 @@ export default function DrawingsPage() {
 						<BackLink to="/apps" label="Back to Apps" />
 						<PageTitle title="Your Drawings" />
 					</PageHeader>
-					<Button
-						onClick={handleNewDrawing}
-						variant="primary"
-						icon={<Plus size={16} />}
-					>
+					<Button onClick={handleNewDrawing} variant="primary" icon={<Plus size={16} />}>
 						New Drawing
 					</Button>
 				</div>
@@ -57,9 +53,7 @@ export default function DrawingsPage() {
 			) : error ? (
 				<div className="p-4 bg-amber-100 dark:bg-amber-900/20 text-amber-800 dark:text-amber-300 rounded-md border border-amber-200 dark:border-amber-800">
 					<h3 className="font-semibold mb-2">Failed to load drawings</h3>
-					<p>
-						{error instanceof Error ? error.message : "Unknown error occurred"}
-					</p>
+					<p>{error instanceof Error ? error.message : "Unknown error occurred"}</p>
 					<Button
 						type="button"
 						variant="primary"
@@ -74,11 +68,7 @@ export default function DrawingsPage() {
 					title="No drawings yet"
 					message="Create your first drawing to get started."
 					action={
-						<Button
-							onClick={handleNewDrawing}
-							variant="primary"
-							icon={<Plus size={16} />}
-						>
+						<Button onClick={handleNewDrawing} variant="primary" icon={<Plus size={16} />}>
 							New Drawing
 						</Button>
 					}
@@ -107,10 +97,7 @@ export default function DrawingsPage() {
 										/>
 									) : (
 										<div className="flex items-center justify-center h-full">
-											<Brush
-												size={32}
-												className="text-zinc-500 dark:text-zinc-400"
-											/>
+											<Brush size={32} className="text-zinc-500 dark:text-zinc-400" />
 										</div>
 									)}
 								</div>

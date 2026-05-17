@@ -27,9 +27,7 @@ describe("Tool Response Utilities", () => {
 			expect(result.data.icon).toBe("cloud");
 			expect(result.data.formattedName).toBe("Get Weather");
 			expect(result.data.responseDisplay).toBeDefined();
-			expect(result.data.responseDisplay.template).toContain(
-				"weather-response",
-			);
+			expect(result.data.responseDisplay.template).toContain("weather-response");
 			expect(result.data.weather).toEqual(data.weather);
 		});
 

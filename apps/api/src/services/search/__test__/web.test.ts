@@ -1,19 +1,9 @@
-import {
-	type MockedFunction,
-	beforeEach,
-	describe,
-	expect,
-	it,
-	vi,
-} from "vitest";
+import { type MockedFunction, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { handleWebSearch } from "../web";
 
-import type {
-	SearchProvider,
-	SearchResult,
-} from "~/lib/providers/capabilities/search";
+import type { SearchProvider, SearchResult } from "~/lib/providers/capabilities/search";
 
 type ChatUtils = typeof import("~/lib/chat/utils");
 type ModelsLib = typeof import("~/lib/providers/models");
@@ -36,13 +26,9 @@ vi.mock("~/lib/providers/capabilities/search", () => ({
 
 describe("Web Search Service", () => {
 	let mockSanitiseInput: MockedFunction<ChatUtils["sanitiseInput"]>;
-	let mockGetSearchProvider: MockedFunction<
-		SearchCapability["getSearchProvider"]
-	>;
+	let mockGetSearchProvider: MockedFunction<SearchCapability["getSearchProvider"]>;
 	let mockSearchProvider: MockedSearchProvider;
-	let mockGetAuxiliarySearchProvider: MockedFunction<
-		ModelsLib["getAuxiliarySearchProvider"]
-	>;
+	let mockGetAuxiliarySearchProvider: MockedFunction<ModelsLib["getAuxiliarySearchProvider"]>;
 
 	beforeEach(async () => {
 		vi.clearAllMocks();
@@ -51,19 +37,14 @@ describe("Web Search Service", () => {
 		mockSanitiseInput = vi.mocked(chatUtils.sanitiseInput);
 
 		const models = await import("~/lib/providers/models");
-		mockGetAuxiliarySearchProvider = vi.mocked(
-			models.getAuxiliarySearchProvider,
-		);
+		mockGetAuxiliarySearchProvider = vi.mocked(models.getAuxiliarySearchProvider);
 		mockGetAuxiliarySearchProvider.mockResolvedValue("tavily");
 
-		const searchCapability =
-			await import("~/lib/providers/capabilities/search");
+		const searchCapability = await import("~/lib/providers/capabilities/search");
 		mockGetSearchProvider = vi.mocked(searchCapability.getSearchProvider);
 
 		mockSearchProvider = {
-			performWebSearch: vi.fn() as MockedFunction<
-				SearchProvider["performWebSearch"]
-			>,
+			performWebSearch: vi.fn() as MockedFunction<SearchProvider["performWebSearch"]>,
 		};
 		mockGetSearchProvider.mockReturnValue(mockSearchProvider);
 	});
@@ -94,19 +75,12 @@ describe("Web Search Service", () => {
 			const result = await handleWebSearch(mockRequest);
 
 			expect(mockSanitiseInput).toHaveBeenCalledWith("test query");
-			expect(mockGetAuxiliarySearchProvider).toHaveBeenCalledWith(
-				{},
-				mockRequest.user,
-				undefined,
-			);
+			expect(mockGetAuxiliarySearchProvider).toHaveBeenCalledWith({}, mockRequest.user, undefined);
 			expect(mockGetSearchProvider).toHaveBeenCalledWith("tavily", {
 				env: {},
 				user: mockRequest.user,
 			});
-			expect(mockSearchProvider.performWebSearch).toHaveBeenCalledWith(
-				"test query",
-				undefined,
-			);
+			expect(mockSearchProvider.performWebSearch).toHaveBeenCalledWith("test query", undefined);
 			expect(result).toEqual({
 				status: "success",
 				content: "Search completed",
@@ -135,11 +109,7 @@ describe("Web Search Service", () => {
 
 			const result = await handleWebSearch(requestWithProvider);
 
-			expect(mockGetAuxiliarySearchProvider).toHaveBeenCalledWith(
-				{},
-				mockRequest.user,
-				"serper",
-			);
+			expect(mockGetAuxiliarySearchProvider).toHaveBeenCalledWith({}, mockRequest.user, "serper");
 			expect(mockGetSearchProvider).toHaveBeenCalledWith("serper", {
 				env: {},
 				user: mockRequest.user,
@@ -198,15 +168,8 @@ describe("Web Search Service", () => {
 			// @ts-expect-error - mock implementation
 			await handleWebSearch(requestWithOptions);
 
-			expect(mockGetAuxiliarySearchProvider).toHaveBeenCalledWith(
-				{},
-				mockRequest.user,
-				undefined,
-			);
-			expect(mockSearchProvider.performWebSearch).toHaveBeenCalledWith(
-				"test query",
-				searchOptions,
-			);
+			expect(mockGetAuxiliarySearchProvider).toHaveBeenCalledWith({}, mockRequest.user, undefined);
+			expect(mockSearchProvider.performWebSearch).toHaveBeenCalledWith("test query", searchOptions);
 		});
 
 		it("should throw error for empty query", async () => {
@@ -235,9 +198,7 @@ describe("Web Search Service", () => {
 			const longQuery = "a".repeat(4097);
 			mockSanitiseInput.mockReturnValue(longQuery);
 
-			await expect(
-				handleWebSearch({ ...mockRequest, query: longQuery }),
-			).rejects.toMatchObject({
+			await expect(handleWebSearch({ ...mockRequest, query: longQuery })).rejects.toMatchObject({
 				message: "Query is too long",
 				type: ErrorType.PARAMS_ERROR,
 				name: "AssistantError",
@@ -268,13 +229,9 @@ describe("Web Search Service", () => {
 
 		it("should handle search service errors", async () => {
 			mockSanitiseInput.mockReturnValue("test query");
-			mockSearchProvider.performWebSearch.mockRejectedValue(
-				new Error("Search service error"),
-			);
+			mockSearchProvider.performWebSearch.mockRejectedValue(new Error("Search service error"));
 
-			await expect(handleWebSearch(mockRequest)).rejects.toThrow(
-				"Search service error",
-			);
+			await expect(handleWebSearch(mockRequest)).rejects.toThrow("Search service error");
 		});
 	});
 });

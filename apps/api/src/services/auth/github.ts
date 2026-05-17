@@ -1,9 +1,6 @@
 import { Octokit } from "@octokit/rest";
 
-import {
-	resolveServiceContext,
-	type ServiceContext,
-} from "~/lib/context/serviceContext";
+import { resolveServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
 import type { IEnv } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
@@ -32,31 +29,22 @@ export async function handleGitHubOAuthCallback({
 }): Promise<{ user: GitHubUser; sessionId: string }> {
 	const serviceContext = resolveServiceContext({ context, env });
 
-	if (
-		!serviceContext.env.GITHUB_CLIENT_ID ||
-		!serviceContext.env.GITHUB_CLIENT_SECRET
-	) {
-		throw new AssistantError(
-			"Missing GitHub OAuth configuration",
-			ErrorType.CONFIGURATION_ERROR,
-		);
+	if (!serviceContext.env.GITHUB_CLIENT_ID || !serviceContext.env.GITHUB_CLIENT_SECRET) {
+		throw new AssistantError("Missing GitHub OAuth configuration", ErrorType.CONFIGURATION_ERROR);
 	}
 
-	const tokenResponse = await fetch(
-		"https://github.com/login/oauth/access_token",
-		{
-			method: "POST",
-			headers: {
-				"Content-Type": "application/json",
-				Accept: "application/json",
-			},
-			body: JSON.stringify({
-				client_id: serviceContext.env.GITHUB_CLIENT_ID,
-				client_secret: serviceContext.env.GITHUB_CLIENT_SECRET,
-				code,
-			}),
+	const tokenResponse = await fetch("https://github.com/login/oauth/access_token", {
+		method: "POST",
+		headers: {
+			"Content-Type": "application/json",
+			Accept: "application/json",
 		},
-	);
+		body: JSON.stringify({
+			client_id: serviceContext.env.GITHUB_CLIENT_ID,
+			client_secret: serviceContext.env.GITHUB_CLIENT_SECRET,
+			code,
+		}),
+	});
 
 	const tokenData = (await tokenResponse.json()) as {
 		access_token: string;
@@ -77,30 +65,24 @@ export async function handleGitHubOAuthCallback({
 
 	const { githubUser, primaryEmail } = await getGitHubUserData(accessToken);
 
-	const user = await serviceContext.repositories.users.createOrUpdateGithubUser(
-		{
-			githubId: githubUser.id.toString(),
-			username: githubUser.login,
-			email: primaryEmail,
-			name: githubUser.name || undefined,
-			avatar_url: githubUser.avatar_url,
-			company: githubUser.company || undefined,
-			location: githubUser.location || undefined,
-			bio: githubUser.bio || undefined,
-			twitter_username: githubUser.twitter_username || undefined,
-			site: githubUser.site || undefined,
-		},
-	);
+	const user = await serviceContext.repositories.users.createOrUpdateGithubUser({
+		githubId: githubUser.id.toString(),
+		username: githubUser.login,
+		email: primaryEmail,
+		name: githubUser.name || undefined,
+		avatar_url: githubUser.avatar_url,
+		company: githubUser.company || undefined,
+		location: githubUser.location || undefined,
+		bio: githubUser.bio || undefined,
+		twitter_username: githubUser.twitter_username || undefined,
+		site: githubUser.site || undefined,
+	});
 
 	const sessionId = generateId();
 	const expiresAt = new Date();
 	expiresAt.setDate(expiresAt.getDate() + 7); // 7 days
 
-	await serviceContext.repositories.sessions.createSession(
-		sessionId,
-		user.id,
-		expiresAt,
-	);
+	await serviceContext.repositories.sessions.createSession(sessionId, user.id, expiresAt);
 
 	return {
 		user: {
@@ -130,8 +112,7 @@ async function getGitHubUserData(accessToken: string): Promise<{
 	const { data: githubUser } = await octokit.users.getAuthenticated();
 	const { data: emails } = await octokit.users.listEmailsForAuthenticatedUser();
 
-	const primaryEmail =
-		emails.find((email) => email.primary)?.email || emails[0]?.email;
+	const primaryEmail = emails.find((email) => email.primary)?.email || emails[0]?.email;
 
 	if (!primaryEmail) {
 		throw new AssistantError(
@@ -145,10 +126,7 @@ async function getGitHubUserData(accessToken: string): Promise<{
 
 export function getGitHubAuthUrl(env: IEnv): string {
 	if (!env.GITHUB_CLIENT_ID) {
-		throw new AssistantError(
-			"Missing GitHub OAuth configuration",
-			ErrorType.CONFIGURATION_ERROR,
-		);
+		throw new AssistantError("Missing GitHub OAuth configuration", ErrorType.CONFIGURATION_ERROR);
 	}
 
 	return `https://github.com/login/oauth/authorize?client_id=${env.GITHUB_CLIENT_ID}&scope=user:email`;

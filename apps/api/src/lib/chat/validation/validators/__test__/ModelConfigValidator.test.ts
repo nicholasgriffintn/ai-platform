@@ -37,18 +37,14 @@ describe("ModelConfigValidator", () => {
 	beforeEach(async () => {
 		vi.clearAllMocks();
 
-		const { selectModels } = await vi.importMock<
-			typeof import("~/lib/chat/modelSelection")
-		>("~/lib/chat/modelSelection");
+		const { selectModels } = await vi.importMock<typeof import("~/lib/chat/modelSelection")>(
+			"~/lib/chat/modelSelection",
+		);
 		const { getAllAttachments } =
-			await vi.importMock<typeof import("~/lib/chat/utils")>(
-				"~/lib/chat/utils",
-			);
-		const { getModelConfig } = await vi.importMock<
-			typeof import("~/lib/providers/models")
-		>("~/lib/providers/models");
-		const { getLogger } =
-			await vi.importMock<typeof import("~/utils/logger")>("~/utils/logger");
+			await vi.importMock<typeof import("~/lib/chat/utils")>("~/lib/chat/utils");
+		const { getModelConfig } =
+			await vi.importMock<typeof import("~/lib/providers/models")>("~/lib/providers/models");
+		const { getLogger } = await vi.importMock<typeof import("~/utils/logger")>("~/utils/logger");
 
 		mockSelectModels = vi.mocked(selectModels);
 		mockGetAllAttachments = vi.mocked(getAllAttachments);
@@ -126,10 +122,7 @@ describe("ModelConfigValidator", () => {
 				"claude-3-sonnet",
 				false,
 			);
-			expect(mockGetModelConfig).toHaveBeenCalledWith(
-				"claude-3-sonnet",
-				baseOptions.env,
-			);
+			expect(mockGetModelConfig).toHaveBeenCalledWith("claude-3-sonnet", baseOptions.env);
 		});
 
 		it("should fail validation when sanitizedMessages is missing", async () => {
@@ -137,15 +130,10 @@ describe("ModelConfigValidator", () => {
 				lastMessage: { role: "user", content: "Hello world" },
 			};
 
-			const result = await validator.validate(
-				baseOptions,
-				contextWithoutMessages,
-			);
+			const result = await validator.validate(baseOptions, contextWithoutMessages);
 
 			expect(result.validation.isValid).toBe(false);
-			expect(result.validation.error).toBe(
-				"Missing sanitized messages context",
-			);
+			expect(result.validation.error).toBe("Missing sanitized messages context");
 			expect(result.validation.validationType).toBe("model");
 			expect(result.context).toEqual({});
 		});
@@ -155,15 +143,10 @@ describe("ModelConfigValidator", () => {
 				sanitizedMessages: [{ role: "user", content: "Hello world" }],
 			};
 
-			const result = await validator.validate(
-				baseOptions,
-				contextWithoutLastMessage,
-			);
+			const result = await validator.validate(baseOptions, contextWithoutLastMessage);
 
 			expect(result.validation.isValid).toBe(false);
-			expect(result.validation.error).toBe(
-				"Missing sanitized messages context",
-			);
+			expect(result.validation.error).toBe("Missing sanitized messages context");
 			expect(result.validation.validationType).toBe("model");
 			expect(result.context).toEqual({});
 		});
@@ -195,10 +178,7 @@ describe("ModelConfigValidator", () => {
 				allAttachments: [{ type: "image", url: "data:image/jpeg;base64,..." }],
 			});
 
-			const result = await validator.validate(
-				baseOptions,
-				contextWithArrayContent,
-			);
+			const result = await validator.validate(baseOptions, contextWithArrayContent);
 
 			expect(result.validation.isValid).toBe(true);
 			expect(mockSelectModels).toHaveBeenCalledWith(
@@ -219,10 +199,7 @@ describe("ModelConfigValidator", () => {
 				lastMessage: { role: "user", content: "Simple text message" },
 			};
 
-			const result = await validator.validate(
-				baseOptions,
-				contextWithStringContent,
-			);
+			const result = await validator.validate(baseOptions, contextWithStringContent);
 
 			expect(result.validation.isValid).toBe(true);
 			expect(mockSelectModels).toHaveBeenCalledWith(
@@ -252,16 +229,11 @@ describe("ModelConfigValidator", () => {
 				],
 				lastMessage: {
 					role: "user",
-					content: [
-						{ type: "image", image_url: { url: "data:image/jpeg;base64,..." } },
-					],
+					content: [{ type: "image", image_url: { url: "data:image/jpeg;base64,..." } }],
 				},
 			};
 
-			const result = await validator.validate(
-				baseOptions,
-				contextWithNoTextContent,
-			);
+			const result = await validator.validate(baseOptions, contextWithNoTextContent);
 
 			expect(result.validation.isValid).toBe(true);
 			expect(mockSelectModels).toHaveBeenCalledWith(
@@ -303,24 +275,18 @@ describe("ModelConfigValidator", () => {
 			const result = await validator.validate(baseOptions, baseContext);
 
 			expect(result.validation.isValid).toBe(false);
-			expect(result.validation.error).toBe(
-				"Model validation failed: Model selection failed",
-			);
+			expect(result.validation.error).toBe("Model validation failed: Model selection failed");
 			expect(result.validation.validationType).toBe("model");
 			expect(result.context).toEqual({});
 		});
 
 		it("should handle getModelConfig throwing an error", async () => {
-			mockGetModelConfig.mockRejectedValue(
-				new Error("Model config fetch failed"),
-			);
+			mockGetModelConfig.mockRejectedValue(new Error("Model config fetch failed"));
 
 			const result = await validator.validate(baseOptions, baseContext);
 
 			expect(result.validation.isValid).toBe(false);
-			expect(result.validation.error).toBe(
-				"Model validation failed: Model config fetch failed",
-			);
+			expect(result.validation.error).toBe("Model validation failed: Model config fetch failed");
 			expect(result.validation.validationType).toBe("model");
 		});
 
@@ -335,10 +301,7 @@ describe("ModelConfigValidator", () => {
 			const result = await validator.validate(multiModelOptions, baseContext);
 
 			expect(result.validation.isValid).toBe(true);
-			expect(result.context.selectedModels).toEqual([
-				"claude-3-sonnet",
-				"gpt-4",
-			]);
+			expect(result.context.selectedModels).toEqual(["claude-3-sonnet", "gpt-4"]);
 			expect(mockSelectModels).toHaveBeenCalledWith(
 				baseOptions.env,
 				"Hello world",
@@ -359,10 +322,7 @@ describe("ModelConfigValidator", () => {
 				budget_constraint: undefined,
 			};
 
-			const result = await validator.validate(
-				optionsWithoutOptionalParams,
-				baseContext,
-			);
+			const result = await validator.validate(optionsWithoutOptionalParams, baseContext);
 
 			expect(result.validation.isValid).toBe(true);
 			expect(mockSelectModels).toHaveBeenCalledWith(
@@ -395,9 +355,7 @@ describe("ModelConfigValidator", () => {
 			const result = await validator.validate(baseOptions, baseContext);
 
 			expect(result.validation.isValid).toBe(false);
-			expect(result.validation.error).toBe(
-				"Model validation failed: undefined",
-			);
+			expect(result.validation.error).toBe("Model validation failed: undefined");
 			expect(result.validation.validationType).toBe("model");
 		});
 

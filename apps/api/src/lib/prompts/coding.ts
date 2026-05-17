@@ -1,10 +1,7 @@
 import type { IBody, IUserSettings } from "~/types";
 import { PromptBuilder } from "./builder";
 import { resolvePromptLayout } from "./layout";
-import {
-	buildAssistantMetadataSection,
-	type PromptModelMetadata,
-} from "./sections/metadata";
+import { buildAssistantMetadataSection, type PromptModelMetadata } from "./sections/metadata";
 import { buildAssistantPrinciplesSection } from "./sections/principles";
 import { buildCodingExampleOutputSection } from "./sections/examples";
 import { buildUserContextSection } from "./sections/user-context";
@@ -27,17 +24,13 @@ export function returnCodingPrompt(
 	const userTraits = userSettings?.traits || null;
 	const userPreferences = userSettings?.preferences || null;
 	const memoriesEnabled =
-		userSettings?.memories_save_enabled ||
-		userSettings?.memories_chat_history_enabled;
+		userSettings?.memories_save_enabled || userSettings?.memories_chat_history_enabled;
 
 	const verbosity = request.text?.verbosity ?? request.verbosity ?? "medium";
 	const preferredLanguage = request.lang?.trim() || null;
 
 	const isAgent =
-		chatMode === "agent" ||
-		chatMode === "plan" ||
-		chatMode === "build" ||
-		chatMode === "explore";
+		chatMode === "agent" || chatMode === "plan" || chatMode === "build" || chatMode === "explore";
 
 	const latitude = request.location?.latitude ?? null;
 	const longitude = request.location?.longitude ?? null;
@@ -58,29 +51,23 @@ export function returnCodingPrompt(
 		capabilities,
 	});
 
-	const {
-		traits,
-		preferences,
-		problemBreakdownInstructions,
-		answerFormatInstructions,
-	} = getResponseStyle(
-		verbosity,
-		capabilities.reasoningEnabled,
-		capabilities.requiresThinkingPrompt,
-		capabilities.supportsToolCalls,
-		capabilities.supportsArtifacts,
-		isAgent,
-		memoriesEnabled,
-		userTraits,
-		userPreferences,
-		true,
-		layout.instructionVariant,
-	);
+	const { traits, preferences, problemBreakdownInstructions, answerFormatInstructions } =
+		getResponseStyle(
+			verbosity,
+			capabilities.reasoningEnabled,
+			capabilities.requiresThinkingPrompt,
+			capabilities.supportsToolCalls,
+			capabilities.supportsArtifacts,
+			isAgent,
+			memoriesEnabled,
+			userTraits,
+			userPreferences,
+			true,
+			layout.instructionVariant,
+		);
 
 	const metadataSection = buildAssistantMetadataSection({
-		request: preferredLanguage
-			? { ...request, lang: preferredLanguage }
-			: request,
+		request: preferredLanguage ? { ...request, lang: preferredLanguage } : request,
 		modelId: modelMetadata?.modelId,
 		modelConfig: modelMetadata?.modelConfig,
 		format: layout.metadataFormat,

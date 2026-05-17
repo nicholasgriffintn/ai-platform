@@ -57,21 +57,12 @@ export class AssistantError extends Error {
 		Error.captureStackTrace(this, AssistantError);
 	}
 
-	static fromError(
-		error: Error,
-		type?: ErrorType,
-		context: ErrorContext = {},
-	): AssistantError {
-		return new AssistantError(
-			error.message,
-			type || ErrorType.UNKNOWN_ERROR,
-			500,
-			{
-				...context,
-				originalError: error.name,
-				stack: error.stack,
-			},
-		);
+	static fromError(error: Error, type?: ErrorType, context: ErrorContext = {}): AssistantError {
+		return new AssistantError(error.message, type || ErrorType.UNKNOWN_ERROR, 500, {
+			...context,
+			originalError: error.name,
+			stack: error.stack,
+		});
 	}
 
 	toJSON() {
@@ -90,8 +81,7 @@ export class AssistantError extends Error {
 	 */
 	getUserMessage(): string {
 		const userSafeMessages: Partial<Record<ErrorType, string>> = {
-			[ErrorType.AUTHENTICATION_ERROR]:
-				"Authentication failed. Please check your credentials.",
+			[ErrorType.AUTHENTICATION_ERROR]: "Authentication failed. Please check your credentials.",
 			[ErrorType.RATE_LIMIT_ERROR]: this.message,
 			[ErrorType.PARAMS_ERROR]: "Invalid request parameters.",
 			[ErrorType.NOT_FOUND]: "Requested resource not found.",
@@ -101,10 +91,7 @@ export class AssistantError extends Error {
 			[ErrorType.CONFLICT_ERROR]: "Resource conflict occurred.",
 		};
 
-		return (
-			userSafeMessages[this.type] ||
-			"An internal error occurred. Please try again later."
-		);
+		return userSafeMessages[this.type] || "An internal error occurred. Please try again later.";
 	}
 }
 
@@ -274,10 +261,7 @@ export function handleAIServiceError(error: AssistantError): Response {
 	}
 }
 
-export function getErrorMessage(
-	error: unknown,
-	fallback = "Unknown error",
-): string {
+export function getErrorMessage(error: unknown, fallback = "Unknown error"): string {
 	if (error instanceof Error && error.message.trim().length > 0) {
 		return error.message;
 	}

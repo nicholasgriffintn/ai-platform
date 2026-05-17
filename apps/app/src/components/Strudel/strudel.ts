@@ -37,8 +37,7 @@ async function prebake() {
 	aliasBank(`${ts}/tidal-drum-machines-alias.json`);
 
 	const maxPan = noteToMidi("C8");
-	const panwidth = (pan: number, width: number) =>
-		pan * width + (1 - width) / 2;
+	const panwidth = (pan: number, width: number) => pan * width + (1 - width) / 2;
 
 	type StrudelValue = Record<string, unknown>;
 

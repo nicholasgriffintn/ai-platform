@@ -50,8 +50,7 @@ export async function assertSandboxRunCanStart(params: {
 			}
 		}
 
-		const startedAtMs =
-			createdAtMs !== null ? createdAtMs : toEpochMillis(recordData?.startedAt);
+		const startedAtMs = createdAtMs !== null ? createdAtMs : toEpochMillis(recordData?.startedAt);
 		if (startedAtMs === null) {
 			continue;
 		}

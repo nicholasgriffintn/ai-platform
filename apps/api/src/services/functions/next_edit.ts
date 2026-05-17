@@ -20,8 +20,7 @@ export const next_edit_completion: ApiToolDefinition = {
 			},
 			model: {
 				type: "string",
-				description:
-					"Optional Mercury model to use for the edit (defaults to the best available).",
+				description: "Optional Mercury model to use for the edit (defaults to the best available).",
 			},
 		},
 		required: ["prompt"],

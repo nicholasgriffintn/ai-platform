@@ -1,7 +1,4 @@
-import {
-	resolveServiceContext,
-	type ServiceContext,
-} from "~/lib/context/serviceContext";
+import { resolveServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
 import type { IEnv, User } from "~/types";
 
 export interface ExportRow {
@@ -53,12 +50,11 @@ export async function handleExportChatHistory({
 			const maxIterations = 10000;
 
 			while (true) {
-				const messages =
-					await serviceContext.repositories.messages.getConversationMessages(
-						conversationId,
-						messagePageSize,
-						after,
-					);
+				const messages = await serviceContext.repositories.messages.getConversationMessages(
+					conversationId,
+					messagePageSize,
+					after,
+				);
 				if (!messages.length) break;
 
 				const endCursor = String(messages[messages.length - 1].id);

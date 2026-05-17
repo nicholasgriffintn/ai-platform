@@ -72,9 +72,7 @@ export class TaskService {
 			};
 
 			if (!this.env.TASK_QUEUE) {
-				logger.warn(
-					"TASK_QUEUE binding not available, task will remain in queued status",
-				);
+				logger.warn("TASK_QUEUE binding not available, task will remain in queued status");
 				logger.info(`Task ${task.id} created but not sent to queue`);
 				return task.id;
 			}
@@ -85,10 +83,7 @@ export class TaskService {
 				if (Number.isFinite(scheduledAtMs)) {
 					const delayMs = scheduledAtMs - Date.now();
 					if (delayMs > 0) {
-						delaySeconds = Math.min(
-							MAX_QUEUE_DELAY_SECONDS,
-							Math.ceil(delayMs / 1000),
-						);
+						delaySeconds = Math.min(MAX_QUEUE_DELAY_SECONDS, Math.ceil(delayMs / 1000));
 					}
 				}
 			}
@@ -131,9 +126,7 @@ export class TaskService {
 			throw new Error("Failed to create recurring task");
 		}
 
-		logger.info(
-			`Recurring task ${task.id} scheduled with cron: ${cronExpression}`,
-		);
+		logger.info(`Recurring task ${task.id} scheduled with cron: ${cronExpression}`);
 		return task.id;
 	}
 

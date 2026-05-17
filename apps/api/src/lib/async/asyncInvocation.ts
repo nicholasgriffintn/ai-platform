@@ -19,19 +19,15 @@ export function createAsyncInvocationMetadata(
 
 	merged.status =
 		(overrides.status as AsyncMessageStatus | undefined) ||
-		(typeof base.status === "string"
-			? (base.status as AsyncMessageStatus)
-			: undefined) ||
+		(typeof base.status === "string" ? (base.status as AsyncMessageStatus) : undefined) ||
 		"in_progress";
 
 	merged.lastCheckedAt = overrides.lastCheckedAt ?? base.lastCheckedAt ?? now;
 
-	const pollIntervalFromOverride =
-		overrides.pollIntervalMs ?? overrides.poll?.intervalMs;
+	const pollIntervalFromOverride = overrides.pollIntervalMs ?? overrides.poll?.intervalMs;
 	const pollIntervalFromBase = base.pollIntervalMs ?? base.poll?.intervalMs;
 
-	merged.pollIntervalMs =
-		pollIntervalFromOverride ?? pollIntervalFromBase ?? merged.pollIntervalMs;
+	merged.pollIntervalMs = pollIntervalFromOverride ?? pollIntervalFromBase ?? merged.pollIntervalMs;
 
 	if (merged.status === "completed") {
 		merged.completedAt = overrides.completedAt ?? base.completedAt ?? now;
@@ -53,15 +49,11 @@ export function mergeAsyncInvocationMetadata(
 	});
 }
 
-export function isAsyncInvocationPending(
-	metadata?: AsyncInvocationMetadata,
-): boolean {
+export function isAsyncInvocationPending(metadata?: AsyncInvocationMetadata): boolean {
 	return metadata?.status === "in_progress";
 }
 
-export function getAsyncPollInterval(
-	metadata?: AsyncInvocationMetadata,
-): number {
+export function getAsyncPollInterval(metadata?: AsyncInvocationMetadata): number {
 	const interval = metadata?.pollIntervalMs ?? metadata?.poll?.intervalMs ?? 0;
 
 	if (!interval || interval < 1000) {

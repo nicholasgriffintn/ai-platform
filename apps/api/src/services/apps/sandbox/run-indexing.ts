@@ -9,8 +9,7 @@ const logger = getLogger({ prefix: "services/apps/sandbox/run-indexing" });
 const MAX_INDEXED_CHARS = 12000;
 
 function toIndexableContent(run: SandboxRunData): string {
-	const summary =
-		typeof run.result?.summary === "string" ? run.result.summary : "";
+	const summary = typeof run.result?.summary === "string" ? run.result.summary : "";
 	const diff = typeof run.result?.diff === "string" ? run.result.diff : "";
 	const error = typeof run.error === "string" ? run.error : "";
 	const base = [
@@ -58,26 +57,20 @@ export async function indexSandboxRunResult(params: {
 		if (!user) {
 			return;
 		}
-		const userSettings =
-			await serviceContext.repositories.userSettings.getUserSettings(userId);
+		const userSettings = await serviceContext.repositories.userSettings.getUserSettings(userId);
 		const embeddingProvider = getEmbeddingProvider(
 			serviceContext.env,
 			user,
 			userSettings ?? undefined,
 		);
 		const embeddingId = `sandbox-run-${run.runId}`;
-		const embeddings = await embeddingProvider.generate(
-			"sandbox_run",
-			content,
-			embeddingId,
-			{
-				runId: run.runId,
-				repo: run.repo,
-				status: run.status,
-				startedAt: run.startedAt,
-				completedAt: run.completedAt ?? "",
-			},
-		);
+		const embeddings = await embeddingProvider.generate("sandbox_run", content, embeddingId, {
+			runId: run.runId,
+			repo: run.repo,
+			status: run.status,
+			startedAt: run.startedAt,
+			completedAt: run.completedAt ?? "",
+		});
 		await embeddingProvider.insert(embeddings, {
 			namespace: toSandboxRunNamespace(userId),
 			topK: 10,

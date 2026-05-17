@@ -128,18 +128,11 @@ addRoute(app, "get", "/models", {
 				const signatureDefaults = signatureMetadata[signature] || null;
 
 				const category =
-					metadata.category ||
-					signatureDefaults?.category ||
-					(DEFAULT_CATEGORY as string);
+					metadata.category || signatureDefaults?.category || (DEFAULT_CATEGORY as string);
 				const icon = metadata.icon || signatureDefaults?.icon || DEFAULT_ICON;
-				const theme =
-					metadata.theme || signatureDefaults?.theme || DEFAULT_THEME;
+				const theme = metadata.theme || signatureDefaults?.theme || DEFAULT_THEME;
 				const tags = Array.from(
-					new Set([
-						label,
-						...(model.strengths ?? []),
-						...(metadata.tags ?? []),
-					]),
+					new Set([label, ...(model.strengths ?? []), ...(metadata.tags ?? [])]),
 				);
 
 				return {
@@ -194,8 +187,7 @@ addRoute(app, "get", "/predictions", {
 				}
 
 				routeLogger.error("Error fetching predictions:", {
-					error_message:
-						error instanceof Error ? error.message : "Unknown error",
+					error_message: error instanceof Error ? error.message : "Unknown error",
 				});
 				throw new AssistantError("Failed to fetch predictions");
 			}
@@ -232,8 +224,7 @@ addRoute(app, "get", "/predictions/:id", {
 				}
 
 				routeLogger.error("Error fetching prediction:", {
-					error_message:
-						error instanceof Error ? error.message : "Unknown error",
+					error_message: error instanceof Error ? error.message : "Unknown error",
 				});
 				throw new AssistantError("Failed to fetch prediction");
 			}
@@ -250,9 +241,7 @@ addRoute(app, "post", "/execute", {
 	handler: async ({ raw }) =>
 		(async (context: Context) => {
 			const user = context.get("user") as IUser;
-			const body = context.req.valid("json" as never) as z.infer<
-				typeof executeReplicateSchema
-			>;
+			const body = context.req.valid("json" as never) as z.infer<typeof executeReplicateSchema>;
 
 			if (!user?.id) {
 				return ResponseFactory.error(context, "User not authenticated", 401);
@@ -273,8 +262,7 @@ addRoute(app, "post", "/execute", {
 				}
 
 				routeLogger.error("Error executing model:", {
-					error_message:
-						error instanceof Error ? error.message : "Unknown error",
+					error_message: error instanceof Error ? error.message : "Unknown error",
 				});
 				throw new AssistantError("Failed to execute model");
 			}

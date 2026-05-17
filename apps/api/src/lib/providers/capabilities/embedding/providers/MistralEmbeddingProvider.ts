@@ -43,10 +43,7 @@ export class MistralEmbeddingProvider implements EmbeddingProvider {
 	async fetchEmbedding(content: string, model: string) {
 		const trimmedContent = content.trim();
 		if (!trimmedContent.length) {
-			throw new AssistantError(
-				"Empty content provided for embedding",
-				ErrorType.PARAMS_ERROR,
-			);
+			throw new AssistantError("Empty content provided for embedding", ErrorType.PARAMS_ERROR);
 		}
 
 		logger.debug("Fetching embedding from Mistral", { model });
@@ -89,10 +86,7 @@ export class MistralEmbeddingProvider implements EmbeddingProvider {
 			);
 		}
 
-		if (
-			!mistralResponse.data?.length ||
-			!Array.isArray(mistralResponse.data?.[0].embedding)
-		) {
+		if (!mistralResponse.data?.length || !Array.isArray(mistralResponse.data?.[0].embedding)) {
 			throw new AssistantError(
 				"Invalid embedding format from Mistral",
 				ErrorType.EXTERNAL_API_ERROR,
@@ -113,20 +107,13 @@ export class MistralEmbeddingProvider implements EmbeddingProvider {
 		metadata: Record<string, any>,
 	): Promise<EmbeddingVector[]> {
 		if (!type || !content || !id) {
-			throw new AssistantError(
-				"Missing type, content or id from request",
-				ErrorType.PARAMS_ERROR,
-			);
+			throw new AssistantError("Missing type, content or id from request", ErrorType.PARAMS_ERROR);
 		}
 
 		logger.debug("Generating embeddings with Mistral", { type, id });
 
-		const mistralModelName =
-			type === "code" ? "codestral-embed" : "mistral-embed";
-		const mistralResponse = await this.fetchEmbedding(
-			content,
-			mistralModelName,
-		);
+		const mistralModelName = type === "code" ? "codestral-embed" : "mistral-embed";
+		const mistralResponse = await this.fetchEmbedding(content, mistralModelName);
 
 		const mergedMetadata = {
 			...metadata,
@@ -204,9 +191,7 @@ export class MistralEmbeddingProvider implements EmbeddingProvider {
 		}
 	}
 
-	async getQuery(
-		query: string,
-	): Promise<{ data: any; status: { success: boolean } }> {
+	async getQuery(query: string): Promise<{ data: any; status: { success: boolean } }> {
 		if (!query?.trim()) {
 			throw new AssistantError(
 				"Empty query provided for embeddings search",
@@ -274,16 +259,13 @@ export class MistralEmbeddingProvider implements EmbeddingProvider {
 		const mistralModelName = "mistral-embed";
 		const mistralResponse = await this.fetchEmbedding(query, mistralModelName);
 
-		const matches = await this.vector_db.query(
-			mistralResponse.data[0].embedding,
-			{
-				topK: options.topK ?? 15,
-				returnValues: options.returnValues ?? false,
-				returnMetadata: options.returnMetadata ?? "none",
-				namespace: options.namespace || "assistant-embeddings",
-				filter: options.filter,
-			},
-		);
+		const matches = await this.vector_db.query(mistralResponse.data[0].embedding, {
+			topK: options.topK ?? 15,
+			returnValues: options.returnValues ?? false,
+			returnMetadata: options.returnMetadata ?? "none",
+			namespace: options.namespace || "assistant-embeddings",
+			filter: options.filter,
+		});
 
 		if (!matches.matches?.length) {
 			throw new AssistantError("No matches found", ErrorType.NOT_FOUND);

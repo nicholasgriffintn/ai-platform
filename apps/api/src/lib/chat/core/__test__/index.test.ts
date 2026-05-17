@@ -121,13 +121,9 @@ describe("processChatRequest", () => {
 
 	describe("parameter validation", () => {
 		it("should throw error for missing required parameters", async () => {
-			mockOrchestrator.process.mockRejectedValue(
-				new Error("Missing required parameters"),
-			);
+			mockOrchestrator.process.mockRejectedValue(new Error("Missing required parameters"));
 
-			await expect(processChatRequest({} as any)).rejects.toThrow(
-				"Missing required parameters",
-			);
+			await expect(processChatRequest({} as any)).rejects.toThrow("Missing required parameters");
 		});
 
 		it("should handle different parameter combinations", async () => {

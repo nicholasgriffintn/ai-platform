@@ -44,14 +44,7 @@ export function listChatProviders(): string[] {
  * @returns Array of configurable provider names
  */
 export function listConfigurableChatProviders(): string[] {
-	const ignoredProviders = [
-		"ollama",
-		"workers",
-		"workers-ai",
-		"google",
-		"googleai",
-		"github",
-	];
+	const ignoredProviders = ["ollama", "workers", "workers-ai", "google", "googleai", "github"];
 	return providerLibrary
 		.list("chat")
 		.map((provider) => provider.name)

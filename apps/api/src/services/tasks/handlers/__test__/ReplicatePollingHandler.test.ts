@@ -133,9 +133,7 @@ describe("ReplicatePollingHandler", () => {
 				},
 			}),
 		};
-		vi.mocked(chatCapability.getChatProvider).mockReturnValue(
-			mockProvider as any,
-		);
+		vi.mocked(chatCapability.getChatProvider).mockReturnValue(mockProvider as any);
 
 		const result = await handler.handle(baseMessage, baseEnv);
 
@@ -182,9 +180,7 @@ describe("ReplicatePollingHandler", () => {
 				},
 			}),
 		};
-		vi.mocked(chatCapability.getChatProvider).mockReturnValue(
-			mockProvider as any,
-		);
+		vi.mocked(chatCapability.getChatProvider).mockReturnValue(mockProvider as any);
 
 		const result = await handler.handle(baseMessage, baseEnv);
 
@@ -224,9 +220,7 @@ describe("ReplicatePollingHandler", () => {
 				status: "in_progress",
 			}),
 		};
-		vi.mocked(chatCapability.getChatProvider).mockReturnValue(
-			mockProvider as any,
-		);
+		vi.mocked(chatCapability.getChatProvider).mockReturnValue(mockProvider as any);
 
 		const mockEnqueueTask = vi.fn().mockResolvedValue(undefined);
 		taskServiceImpl = {
@@ -283,15 +277,11 @@ describe("ReplicatePollingHandler", () => {
 		appDataRepoImpl = mockRepo;
 
 		const mockProvider = {};
-		vi.mocked(chatCapability.getChatProvider).mockReturnValue(
-			mockProvider as any,
-		);
+		vi.mocked(chatCapability.getChatProvider).mockReturnValue(mockProvider as any);
 
 		const result = await handler.handle(baseMessage, baseEnv);
 
 		expect(result.status).toBe("error");
-		expect(result.message).toContain(
-			"does not support async invocation status",
-		);
+		expect(result.message).toContain("does not support async invocation status");
 	});
 });

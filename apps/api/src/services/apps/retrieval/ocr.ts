@@ -35,16 +35,10 @@ export interface OcrResult {
  * @param req - Request object containing environment variables
  * @returns OCR result with extracted text
  */
-export const performOcr = async (
-	params: OcrParams,
-	req: IRequest,
-): Promise<OcrResult> => {
+export const performOcr = async (params: OcrParams, req: IRequest): Promise<OcrResult> => {
 	try {
 		if (!req.env.MISTRAL_API_KEY) {
-			throw new AssistantError(
-				"Mistral API key not configured",
-				ErrorType.PARAMS_ERROR,
-			);
+			throw new AssistantError("Mistral API key not configured", ErrorType.PARAMS_ERROR);
 		}
 
 		if (!params.document) {
@@ -99,9 +93,7 @@ export const performOcr = async (
 			};
 		}
 
-		const imagesFromPages = response.pages.flatMap(
-			(page: any) => page.images || [],
-		);
+		const imagesFromPages = response.pages.flatMap((page: any) => page.images || []);
 		const imageMap: Record<string, string> = {};
 		if (imagesFromPages && Array.isArray(imagesFromPages)) {
 			for (const image of imagesFromPages) {
@@ -119,10 +111,7 @@ export const performOcr = async (
 			for (const [imageId, imageBase64] of Object.entries(imageMap)) {
 				// Find all markdown image references with this image ID
 				const imagePattern = new RegExp(`!\\[(.*?)\\]\\(${imageId}\\)`, "g");
-				pageContent = pageContent.replace(
-					imagePattern,
-					`![${imageId}](${imageBase64})`,
-				);
+				pageContent = pageContent.replace(imagePattern, `![${imageId}](${imageBase64})`);
 			}
 
 			allMarkdown += `${pageContent}\n\n`;

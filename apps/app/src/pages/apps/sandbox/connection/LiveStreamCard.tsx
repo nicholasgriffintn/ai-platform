@@ -1,13 +1,6 @@
 import type { RefObject } from "react";
 
-import {
-	Badge,
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "~/components/ui";
+import { Badge, Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui";
 import { formatRelativeTime } from "~/lib/dates";
 import type { SandboxRun } from "~/types/sandbox";
 import { describeEvent } from "../utils";
@@ -22,12 +15,7 @@ interface Props {
 	timelineEndRef: RefObject<HTMLDivElement | null>;
 }
 
-export function LiveStreamCard({
-	timeline,
-	isSubmitting,
-	selectedRun,
-	timelineEndRef,
-}: Props) {
+export function LiveStreamCard({ timeline, isSubmitting, selectedRun, timelineEndRef }: Props) {
 	return (
 		<Card>
 			<CardHeader>
@@ -53,9 +41,7 @@ export function LiveStreamCard({
 			</CardHeader>
 			<CardContent className="max-h-96 overflow-auto">
 				{timeline.length === 0 ? (
-					<div className="text-sm text-muted-foreground">
-						Waiting for events...
-					</div>
+					<div className="text-sm text-muted-foreground">Waiting for events...</div>
 				) : (
 					<div className="space-y-2">
 						{timeline.map((entry) => {

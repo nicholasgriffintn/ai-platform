@@ -12,10 +12,7 @@ export interface CacheOptions {
 export class KVCache {
 	private kv: KVNamespace;
 	private defaultTTL = 7200; // 2 hours default
-	private static memoryCache = new Map<
-		string,
-		{ value: unknown; expiresAt: number }
-	>();
+	private static memoryCache = new Map<string, { value: unknown; expiresAt: number }>();
 
 	constructor(kv: KVNamespace, defaultTTL?: number) {
 		this.kv = kv;
@@ -70,11 +67,7 @@ export class KVCache {
 		}
 	}
 
-	async set<T>(
-		key: string,
-		value: T,
-		options?: CacheOptions,
-	): Promise<boolean> {
+	async set<T>(key: string, value: T, options?: CacheOptions): Promise<boolean> {
 		try {
 			logger.debug("Setting value in cache", { key, options });
 			const ttl = options?.ttl || this.defaultTTL;
@@ -158,14 +151,8 @@ export class KVCache {
 		try {
 			logger.debug("Clearing user model cache", { userId });
 			const userModelKey = KVCache.createKey("user-models", userId);
-			const providerSettingsKey = KVCache.createKey(
-				"user-provider-settings",
-				userId,
-			);
-			await Promise.all([
-				this.kv.delete(userModelKey),
-				this.kv.delete(providerSettingsKey),
-			]);
+			const providerSettingsKey = KVCache.createKey("user-provider-settings", userId);
+			await Promise.all([this.kv.delete(userModelKey), this.kv.delete(providerSettingsKey)]);
 			logger.debug("Cleared user model cache", { userId, key: userModelKey });
 			return true;
 		} catch (error) {

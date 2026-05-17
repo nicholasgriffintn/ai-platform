@@ -16,11 +16,7 @@ export interface ErrorLogContext {
  * @param error The error object that was caught
  * @param context Additional context information about the error
  */
-export function logError(
-	message: string,
-	error: unknown,
-	context: ErrorLogContext = {},
-): void {
+export function logError(message: string, error: unknown, context: ErrorLogContext = {}): void {
 	const errorDetails = {
 		message: error instanceof Error ? error.message : String(error),
 		stack: error instanceof Error ? error.stack : undefined,

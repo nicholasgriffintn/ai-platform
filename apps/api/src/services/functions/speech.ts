@@ -30,8 +30,7 @@ export const create_speech: ApiToolDefinition = {
 			},
 			lang: {
 				type: "string",
-				description:
-					"The language code for the speech (e.g., 'en-US', 'fr-FR', 'ja-JP')",
+				description: "The language code for the speech (e.g., 'en-US', 'fr-FR', 'ja-JP')",
 				default: "en-US",
 			},
 			provider: {

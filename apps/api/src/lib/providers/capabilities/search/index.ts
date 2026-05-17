@@ -1,18 +1,8 @@
 import { providerLibrary } from "../../library";
 import type { ProviderFactoryContext } from "../../registry/types";
-import type {
-	SearchProvider,
-	SearchOptions,
-	SearchProviderName,
-	SearchResult,
-} from "~/types";
+import type { SearchProvider, SearchOptions, SearchProviderName, SearchResult } from "~/types";
 
-export type {
-	SearchProvider,
-	SearchOptions,
-	SearchProviderName,
-	SearchResult,
-} from "~/types";
+export type { SearchProvider, SearchOptions, SearchProviderName, SearchResult } from "~/types";
 export * from "./providers";
 
 /**

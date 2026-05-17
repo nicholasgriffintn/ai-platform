@@ -55,16 +55,13 @@ const sandboxFunctionParameters = {
 		},
 		installationId: {
 			type: "number",
-			description:
-				"Optional GitHub App installation ID to force a specific connection",
+			description: "Optional GitHub App installation ID to force a specific connection",
 		},
 	},
 	required: ["repo", "task"],
 } as const;
 
-function parsePromptStrategy(
-	value: string | undefined,
-): SandboxPromptStrategy | undefined {
+function parsePromptStrategy(value: string | undefined): SandboxPromptStrategy | undefined {
 	const parsed = sandboxPromptStrategySchema.safeParse(
 		typeof value === "string" ? value.trim() : undefined,
 	);
@@ -72,9 +69,7 @@ function parsePromptStrategy(
 }
 
 function parseInstallationId(args: SandboxFunctionArgs): number | undefined {
-	return typeof args.installationId === "number"
-		? args.installationId
-		: undefined;
+	return typeof args.installationId === "number" ? args.installationId : undefined;
 }
 
 async function executeSandboxFunction(params: {
@@ -97,18 +92,13 @@ async function executeSandboxFunction(params: {
 		model: args.model,
 		taskType,
 		promptStrategy: parsePromptStrategy(args.promptStrategy),
-		shouldCommit:
-			typeof forceShouldCommit === "boolean"
-				? forceShouldCommit
-				: args.shouldCommit,
+		shouldCommit: typeof forceShouldCommit === "boolean" ? forceShouldCommit : args.shouldCommit,
 		installationId: parseInstallationId(args),
 	});
 
 	if (!response.ok) {
 		const errorText = await response.text();
-		throw new Error(
-			`Sandbox worker error (${response.status}): ${errorText.slice(0, 500)}`,
-		);
+		throw new Error(`Sandbox worker error (${response.status}): ${errorText.slice(0, 500)}`);
 	}
 
 	let result: SandboxWorkerSuccessResult;
@@ -156,14 +146,12 @@ function createSandboxFunction(params: {
 	};
 }
 
-export const run_feature_implementation: ApiToolDefinition =
-	createSandboxFunction({
-		name: "run_feature_implementation",
-		description:
-			"Implement a feature in a GitHub repository using the sandbox worker",
-		taskType: "feature-implementation",
-		permissions: ["sandbox", "write"],
-	});
+export const run_feature_implementation: ApiToolDefinition = createSandboxFunction({
+	name: "run_feature_implementation",
+	description: "Implement a feature in a GitHub repository using the sandbox worker",
+	taskType: "feature-implementation",
+	permissions: ["sandbox", "write"],
+});
 
 export const run_code_review: ApiToolDefinition = createSandboxFunction({
 	name: "run_code_review",
@@ -183,32 +171,28 @@ export const run_test_suite: ApiToolDefinition = createSandboxFunction({
 
 export const run_bug_fix: ApiToolDefinition = createSandboxFunction({
 	name: "run_bug_fix",
-	description:
-		"Diagnose and fix a bug in a GitHub repository using the sandbox worker",
+	description: "Diagnose and fix a bug in a GitHub repository using the sandbox worker",
 	taskType: "bug-fix",
 	permissions: ["sandbox", "write"],
 });
 
 export const run_refactoring: ApiToolDefinition = createSandboxFunction({
 	name: "run_refactoring",
-	description:
-		"Refactor existing code in a GitHub repository while preserving behaviour",
+	description: "Refactor existing code in a GitHub repository while preserving behaviour",
 	taskType: "refactoring",
 	permissions: ["sandbox", "write"],
 });
 
 export const run_documentation: ApiToolDefinition = createSandboxFunction({
 	name: "run_documentation",
-	description:
-		"Create or update documentation in a GitHub repository using the sandbox worker",
+	description: "Create or update documentation in a GitHub repository using the sandbox worker",
 	taskType: "documentation",
 	permissions: ["sandbox", "write"],
 });
 
 export const run_migration: ApiToolDefinition = createSandboxFunction({
 	name: "run_migration",
-	description:
-		"Run a migration workflow in a GitHub repository using the sandbox worker",
+	description: "Run a migration workflow in a GitHub repository using the sandbox worker",
 	taskType: "migration",
 	permissions: ["sandbox", "write"],
 });

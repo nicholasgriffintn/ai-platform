@@ -5,10 +5,7 @@ import { getLogger } from "~/utils/logger";
 const logger = getLogger({ prefix: "lib/github/installation-token" });
 const GITHUB_API_BASE = "https://api.github.com";
 
-async function getInstallationIdForRepo(
-	repo: string,
-	appJwt: string,
-): Promise<number> {
+async function getInstallationIdForRepo(repo: string, appJwt: string): Promise<number> {
 	const response = await githubApiRequest({
 		url: `${GITHUB_API_BASE}/repos/${repo}/installation`,
 		method: "GET",

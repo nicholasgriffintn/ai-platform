@@ -13,9 +13,7 @@ export function PodcastView({ podcast }: { podcast: Podcast }) {
 		const transcriptText =
 			typeof podcast.transcript === "string"
 				? podcast.transcript
-				: podcast.transcript.segments
-						.map((seg) => `[${seg.speaker}] ${seg.text}`)
-						.join("\n\n");
+				: podcast.transcript.segments.map((seg) => `[${seg.speaker}] ${seg.text}`).join("\n\n");
 
 		const blob = new Blob([transcriptText], { type: "text/plain" });
 		const url = URL.createObjectURL(blob);
@@ -48,16 +46,12 @@ export function PodcastView({ podcast }: { podcast: Podcast }) {
 							/>
 						) : (
 							<div className="w-full h-full bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center">
-								<span className="text-zinc-500 dark:text-zinc-400">
-									No image
-								</span>
+								<span className="text-zinc-500 dark:text-zinc-400">No image</span>
 							</div>
 						)}
 					</div>
 					<div className="mt-6">
-						<h3 className="text-lg font-semibold mb-3 text-zinc-800 dark:text-zinc-200">
-							Listen
-						</h3>
+						<h3 className="text-lg font-semibold mb-3 text-zinc-800 dark:text-zinc-200">Listen</h3>
 						<audio controls className="w-full" src={podcast.audioUrl}>
 							Your browser does not support the audio element.
 						</audio>
@@ -124,8 +118,7 @@ export function PodcastView({ podcast }: { podcast: Podcast }) {
 												const speakerId = segment.speaker;
 												if (!acc[speakerId]) {
 													const speakerNum = speakerId.replace("SPEAKER_", "");
-													acc[speakerId] =
-														`Speaker ${Number.parseInt(speakerNum) + 1}`;
+													acc[speakerId] = `Speaker ${Number.parseInt(speakerNum) + 1}`;
 												}
 												return acc;
 											},

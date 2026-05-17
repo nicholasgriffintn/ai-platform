@@ -29,8 +29,7 @@ export const getFunctionIcon = (name: string): string => {
 export const getFunctionResponseType = (name: string): ResponseDisplayType => {
 	if (name.includes("search")) return ResponseDisplayType.CUSTOM;
 	if (name.includes("weather")) return ResponseDisplayType.TEMPLATE;
-	if (name.includes("image") || name.includes("screenshot"))
-		return ResponseDisplayType.TEMPLATE;
+	if (name.includes("image") || name.includes("screenshot")) return ResponseDisplayType.TEMPLATE;
 	if (name.includes("video")) return ResponseDisplayType.TEMPLATE;
 	if (name.includes("extract")) return ResponseDisplayType.TEXT;
 	if (name.includes("speech")) return ResponseDisplayType.TEXT;
@@ -48,11 +47,7 @@ export const getFunctionResponseType = (name: string): ResponseDisplayType => {
 	if (name.includes("call_api")) return ResponseDisplayType.JSON;
 	if (name === "request_approval") return ResponseDisplayType.TEMPLATE;
 	if (name === "ask_user") return ResponseDisplayType.TEMPLATE;
-	if (
-		name === "compose_functions" ||
-		name === "if_then_else" ||
-		name === "parallel_execute"
-	) {
+	if (name === "compose_functions" || name === "if_then_else" || name === "parallel_execute") {
 		return ResponseDisplayType.TEMPLATE;
 	}
 	if (name.startsWith("mcp_")) return ResponseDisplayType.JSON;

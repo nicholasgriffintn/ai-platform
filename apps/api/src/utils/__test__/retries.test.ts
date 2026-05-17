@@ -77,10 +77,7 @@ describe("retries", () => {
 		});
 
 		it("should use custom base delay", async () => {
-			const mockFn = vi
-				.fn()
-				.mockRejectedValueOnce(new Error("fail"))
-				.mockResolvedValue("success");
+			const mockFn = vi.fn().mockRejectedValueOnce(new Error("fail")).mockResolvedValue("success");
 
 			const onRetry = vi.fn();
 
@@ -94,11 +91,7 @@ describe("retries", () => {
 			const result = await promise;
 
 			expect(result).toBe("success");
-			expect(onRetry).toHaveBeenCalledWith(
-				1,
-				expect.any(Error),
-				expect.any(Number),
-			);
+			expect(onRetry).toHaveBeenCalledWith(1, expect.any(Error), expect.any(Number));
 
 			const delayMs = onRetry.mock.calls[0][2];
 			expect(delayMs).toBeGreaterThanOrEqual(700);
@@ -145,9 +138,7 @@ describe("retries", () => {
 				return (error as Error).message === "retryable";
 			});
 
-			await expect(withRetry(mockFn, { isRetryableError })).rejects.toThrow(
-				"non-retryable",
-			);
+			await expect(withRetry(mockFn, { isRetryableError })).rejects.toThrow("non-retryable");
 
 			expect(mockFn).toHaveBeenCalledTimes(1);
 			expect(isRetryableError).toHaveBeenCalledWith(nonRetryableError);
@@ -155,10 +146,7 @@ describe("retries", () => {
 
 		it("should retry retryable errors", async () => {
 			const retryableError = new Error("retryable");
-			const mockFn = vi
-				.fn()
-				.mockRejectedValueOnce(retryableError)
-				.mockResolvedValue("success");
+			const mockFn = vi.fn().mockRejectedValueOnce(retryableError).mockResolvedValue("success");
 
 			const isRetryableError = vi.fn((error: unknown) => {
 				return (error as Error).message === "retryable";
@@ -204,9 +192,7 @@ describe("retries", () => {
 			const error = new Error("error");
 			const mockFn = vi.fn().mockRejectedValue(error);
 
-			await expect(withRetry(mockFn, { retryCount: 0 })).rejects.toThrow(
-				"error",
-			);
+			await expect(withRetry(mockFn, { retryCount: 0 })).rejects.toThrow("error");
 
 			expect(mockFn).toHaveBeenCalledTimes(1);
 		});
@@ -253,10 +239,7 @@ describe("retries", () => {
 		});
 
 		it("should apply jitter to delay times", async () => {
-			const mockFn = vi
-				.fn()
-				.mockRejectedValueOnce(new Error("fail"))
-				.mockResolvedValue("success");
+			const mockFn = vi.fn().mockRejectedValueOnce(new Error("fail")).mockResolvedValue("success");
 
 			const onRetry = vi.fn();
 
@@ -271,10 +254,7 @@ describe("retries", () => {
 		});
 
 		it("should handle default options", async () => {
-			const mockFn = vi
-				.fn()
-				.mockRejectedValueOnce(new Error("fail"))
-				.mockResolvedValue("success");
+			const mockFn = vi.fn().mockRejectedValueOnce(new Error("fail")).mockResolvedValue("success");
 
 			const promise = withRetry(mockFn);
 

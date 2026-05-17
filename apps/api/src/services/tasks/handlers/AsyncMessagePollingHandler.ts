@@ -70,17 +70,11 @@ export class AsyncMessagePollingHandler implements TaskHandler {
 				};
 			}
 
-			const messageAsyncInvocation = (
-				targetMessage.data as Record<string, any> | undefined
-			)?.asyncInvocation as AsyncInvocationMetadata | undefined;
+			const messageAsyncInvocation = (targetMessage.data as Record<string, any> | undefined)
+				?.asyncInvocation as AsyncInvocationMetadata | undefined;
 
-			if (
-				!messageAsyncInvocation ||
-				!isAsyncInvocationPending(messageAsyncInvocation)
-			) {
-				logger.info(
-					`Message ${data.messageId} is not pending async invocation`,
-				);
+			if (!messageAsyncInvocation || !isAsyncInvocationPending(messageAsyncInvocation)) {
+				logger.info(`Message ${data.messageId} is not pending async invocation`);
 				return {
 					status: "success",
 					message: "Message not pending async invocation",
@@ -91,21 +85,15 @@ export class AsyncMessagePollingHandler implements TaskHandler {
 				};
 			}
 
-			const result = await handleAsyncInvocation(
-				data.asyncInvocation,
-				targetMessage,
-				{
-					conversationManager,
-					conversationId: data.conversationId,
-					env,
-					user,
-				},
-			);
+			const result = await handleAsyncInvocation(data.asyncInvocation, targetMessage, {
+				conversationManager,
+				conversationId: data.conversationId,
+				env,
+				user,
+			});
 
 			if (result.status === "completed" || result.status === "failed") {
-				logger.info(
-					`Async invocation for message ${data.messageId} ${result.status}`,
-				);
+				logger.info(`Async invocation for message ${data.messageId} ${result.status}`);
 
 				return {
 					status: "success",
@@ -117,9 +105,7 @@ export class AsyncMessagePollingHandler implements TaskHandler {
 				};
 			}
 
-			logger.info(
-				`Async invocation for message ${data.messageId} still in progress, re-queuing`,
-			);
+			logger.info(`Async invocation for message ${data.messageId} still in progress, re-queuing`);
 
 			const taskRepository = new TaskRepository(env);
 			const taskService = new TaskService(env, taskRepository);

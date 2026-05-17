@@ -254,9 +254,7 @@ describe("getDrawingDetails", () => {
 	});
 
 	it("should handle repository errors gracefully", async () => {
-		mockAppDataRepo.getAppDataById.mockRejectedValue(
-			new Error("Database error"),
-		);
+		mockAppDataRepo.getAppDataById.mockRejectedValue(new Error("Database error"));
 
 		await expect(
 			getDrawingDetails({

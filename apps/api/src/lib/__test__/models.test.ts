@@ -223,9 +223,7 @@ describe("Models", () => {
 		});
 
 		it("should return null for invalid matching model", async () => {
-			const result = await getModelConfigByMatchingModel(
-				"nonexistent-matching-model",
-			);
+			const result = await getModelConfigByMatchingModel("nonexistent-matching-model");
 
 			expect(result).toBeNull();
 		});
@@ -234,15 +232,10 @@ describe("Models", () => {
 			const cachedConfig = mockModelConfig;
 			mockCache.get.mockResolvedValueOnce(cachedConfig);
 
-			const result = await getModelConfigByMatchingModel(
-				"test-matching-model",
-				mockEnv,
-			);
+			const result = await getModelConfigByMatchingModel("test-matching-model", mockEnv);
 
 			expect(result).toEqual(cachedConfig);
-			expect(mockCache.get).toHaveBeenCalledWith(
-				"model-by-matching:test-matching-model",
-			);
+			expect(mockCache.get).toHaveBeenCalledWith("model-by-matching:test-matching-model");
 		});
 
 		it("should return the provider-specific config when duplicates exist", async () => {
@@ -367,8 +360,7 @@ describe("Models", () => {
 			for (const [_key, model] of Object.entries(result)) {
 				const inputs = model.modalities?.input ?? [];
 				const outputs = model.modalities?.output ?? [];
-				const supportsModality =
-					inputs.includes("text") || outputs.includes("text");
+				const supportsModality = inputs.includes("text") || outputs.includes("text");
 				expect(supportsModality).toBe(true);
 			}
 		});
@@ -405,11 +397,7 @@ describe("Models", () => {
 				{ provider_id: "paid-provider", enabled: true },
 			]);
 
-			const result = await filterModelsForUserAccess(
-				testModels,
-				mockEnv,
-				mockUser.id,
-			);
+			const result = await filterModelsForUserAccess(testModels, mockEnv, mockUser.id);
 
 			expect(result).toHaveProperty("free-model");
 			expect(result).toHaveProperty("paid-model");
@@ -421,11 +409,7 @@ describe("Models", () => {
 				{ provider_id: "paid-provider", enabled: false },
 			]);
 
-			const result = await filterModelsForUserAccess(
-				testModels,
-				mockEnv,
-				mockUser.id,
-			);
+			const result = await filterModelsForUserAccess(testModels, mockEnv, mockUser.id);
 
 			expect(result).toHaveProperty("free-model");
 			expect(result).not.toHaveProperty("paid-model");
@@ -436,11 +420,7 @@ describe("Models", () => {
 			const cachedModels = { "cached-model": mockModelConfig };
 			mockCache.get.mockResolvedValueOnce(cachedModels);
 
-			const result = await filterModelsForUserAccess(
-				testModels,
-				mockEnv,
-				mockUser.id,
-			);
+			const result = await filterModelsForUserAccess(testModels, mockEnv, mockUser.id);
 
 			expect(result).toEqual(cachedModels);
 			expect(mockCache.get).toHaveBeenCalledWith("user-models:123");
@@ -451,11 +431,7 @@ describe("Models", () => {
 				new Error("Database error"),
 			);
 
-			const result = await filterModelsForUserAccess(
-				testModels,
-				mockEnv,
-				mockUser.id,
-			);
+			const result = await filterModelsForUserAccess(testModels, mockEnv, mockUser.id);
 
 			expect(result).toBeDefined();
 			expect(typeof result).toBe("object");
@@ -466,10 +442,7 @@ describe("Models", () => {
 				ALWAYS_ENABLED_PROVIDERS: "always-enabled-provider",
 			};
 
-			const result = await filterModelsForUserAccess(
-				testModels,
-				envWithoutCache as any,
-			);
+			const result = await filterModelsForUserAccess(testModels, envWithoutCache as any);
 
 			expect(result).toHaveProperty("free-model");
 			expect(result).toHaveProperty("always-enabled-model");
@@ -543,17 +516,14 @@ describe("Models", () => {
 		const proUser = { ...mockUser, plan_id: "pro" } as IUser;
 
 		it("should default to duckduckgo when user is not on pro plan", async () => {
-			const provider = await getAuxiliarySearchProvider(
-				mockEnv as any,
-				mockUser,
-			);
+			const provider = await getAuxiliarySearchProvider(mockEnv as any, mockUser);
 			expect(provider).toBe("duckduckgo");
 		});
 
 		it("should throw for non-pro users requesting other providers", async () => {
-			await expect(
-				getAuxiliarySearchProvider(mockEnv as any, mockUser, "tavily"),
-			).rejects.toThrow("Requested provider requires a Pro plan");
+			await expect(getAuxiliarySearchProvider(mockEnv as any, mockUser, "tavily")).rejects.toThrow(
+				"Requested provider requires a Pro plan",
+			);
 		});
 
 		it("should return user preferred provider when set in user settings", async () => {
@@ -561,46 +531,28 @@ describe("Models", () => {
 				search_provider: "parallel",
 			});
 
-			const provider = await getAuxiliarySearchProvider(
-				mockEnv as any,
-				proUser,
-			);
+			const provider = await getAuxiliarySearchProvider(mockEnv as any, proUser);
 			expect(provider).toBe("parallel");
 		});
 
 		it("should fall back to tavily when no user preference exists", async () => {
 			mockRepositories.userSettings.getUserSettings.mockResolvedValueOnce(null);
 
-			const provider = await getAuxiliarySearchProvider(
-				mockEnv as any,
-				proUser,
-			);
+			const provider = await getAuxiliarySearchProvider(mockEnv as any, proUser);
 			expect(provider).toBe("tavily");
 		});
 
 		it("should return requested serper provider", async () => {
-			const provider = await getAuxiliarySearchProvider(
-				mockEnv as any,
-				proUser,
-				"serper",
-			);
+			const provider = await getAuxiliarySearchProvider(mockEnv as any, proUser, "serper");
 			expect(provider).toBe("serper");
-			expect(
-				mockRepositories.userSettings.getUserSettings,
-			).not.toHaveBeenCalled();
+			expect(mockRepositories.userSettings.getUserSettings).not.toHaveBeenCalled();
 		});
 
 		it("should return requested provider without querying user settings", async () => {
-			const provider = await getAuxiliarySearchProvider(
-				mockEnv as any,
-				proUser,
-				"parallel",
-			);
+			const provider = await getAuxiliarySearchProvider(mockEnv as any, proUser, "parallel");
 
 			expect(provider).toBe("parallel");
-			expect(
-				mockRepositories.userSettings.getUserSettings,
-			).not.toHaveBeenCalled();
+			expect(mockRepositories.userSettings.getUserSettings).not.toHaveBeenCalled();
 		});
 	});
 

@@ -96,14 +96,11 @@ describe("Logger Middleware", () => {
 
 			const middlewarePromise = loggerMiddleware(context, mockNext as Next);
 
-			expect(mockLogger.info).toHaveBeenCalledWith(
-				"Request started: GET http://example.com/test",
-				{
-					method: "GET",
-					url: "http://example.com/test",
-					userId: "user-123",
-				},
-			);
+			expect(mockLogger.info).toHaveBeenCalledWith("Request started: GET http://example.com/test", {
+				method: "GET",
+				url: "http://example.com/test",
+				userId: "user-123",
+			});
 
 			vi.setSystemTime(startTime + 100);
 			await middlewarePromise;
@@ -134,14 +131,11 @@ describe("Logger Middleware", () => {
 
 			await loggerMiddleware(context, mockNext as Next);
 
-			expect(mockLogger.info).toHaveBeenCalledWith(
-				"Request started: GET http://example.com/test",
-				{
-					method: "GET",
-					url: "http://example.com/test",
-					userId: undefined,
-				},
-			);
+			expect(mockLogger.info).toHaveBeenCalledWith("Request started: GET http://example.com/test", {
+				method: "GET",
+				url: "http://example.com/test",
+				userId: undefined,
+			});
 		});
 
 		it("should log errors when middleware throws", async () => {
@@ -172,18 +166,15 @@ describe("Logger Middleware", () => {
 
 			await expect(middlewarePromise).rejects.toThrow("Test error");
 
-			expect(mockLogger.error).toHaveBeenCalledWith(
-				"Request failed: GET http://example.com/test",
-				{
-					method: "GET",
-					url: "http://example.com/test",
-					error: "Test error",
-					duration: "0.05s",
-					userId: "user-123",
-					userAgent: "Mozilla/5.0",
-					stack: expect.any(String),
-				},
-			);
+			expect(mockLogger.error).toHaveBeenCalledWith("Request failed: GET http://example.com/test", {
+				method: "GET",
+				url: "http://example.com/test",
+				error: "Test error",
+				duration: "0.05s",
+				userId: "user-123",
+				userAgent: "Mozilla/5.0",
+				stack: expect.any(String),
+			});
 		});
 
 		it("should handle non-Error objects thrown by middleware", async () => {
@@ -200,9 +191,7 @@ describe("Logger Middleware", () => {
 			const nonErrorValue = "String error";
 			mockNext.mockRejectedValue(nonErrorValue);
 
-			await expect(loggerMiddleware(context, mockNext as Next)).rejects.toBe(
-				nonErrorValue,
-			);
+			await expect(loggerMiddleware(context, mockNext as Next)).rejects.toBe(nonErrorValue);
 
 			expect(mockLogger.error).toHaveBeenCalledWith(
 				"Request failed: GET http://example.com/test",
@@ -227,9 +216,7 @@ describe("Logger Middleware", () => {
 			const error = new Error("Test error");
 			mockNext.mockRejectedValue(error);
 
-			await expect(loggerMiddleware(context, mockNext as Next)).rejects.toThrow(
-				"Test error",
-			);
+			await expect(loggerMiddleware(context, mockNext as Next)).rejects.toThrow("Test error");
 
 			expect(mockLogger.error).toHaveBeenCalledWith(
 				"Request failed: GET http://example.com/test",

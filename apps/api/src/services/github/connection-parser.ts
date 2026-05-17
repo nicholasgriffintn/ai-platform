@@ -15,10 +15,7 @@ export interface GitHubConnectionRecordData {
 	repositories?: string[];
 }
 
-export function parseGitHubConnectionData(params: {
-	data: unknown;
-	recordItemId?: string;
-}): {
+export function parseGitHubConnectionData(params: { data: unknown; recordItemId?: string }): {
 	data: GitHubConnectionRecordData;
 	connection: GitHubAppConnection;
 } | null {
@@ -35,16 +32,10 @@ export function parseGitHubConnectionData(params: {
 	if (typeof root.private_key !== "string" || !root.private_key.trim()) {
 		return null;
 	}
-	if (
-		typeof root.installation_id !== "number" ||
-		!Number.isFinite(root.installation_id)
-	) {
+	if (typeof root.installation_id !== "number" || !Number.isFinite(root.installation_id)) {
 		return null;
 	}
-	if (
-		root.webhook_secret !== undefined &&
-		typeof root.webhook_secret !== "string"
-	) {
+	if (root.webhook_secret !== undefined && typeof root.webhook_secret !== "string") {
 		return null;
 	}
 	if (root.repositories !== undefined && !Array.isArray(root.repositories)) {
@@ -68,10 +59,7 @@ export function parseGitHubConnectionData(params: {
 	const installationId = root.installation_id;
 	if (recordItemId) {
 		const itemInstallationId = Number.parseInt(recordItemId, 10);
-		if (
-			Number.isFinite(itemInstallationId) &&
-			itemInstallationId !== installationId
-		) {
+		if (Number.isFinite(itemInstallationId) && itemInstallationId !== installationId) {
 			return null;
 		}
 	}
@@ -95,10 +83,7 @@ export function parseGitHubConnectionData(params: {
 	};
 }
 
-export function recordAllowsRepo(
-	data: GitHubConnectionRecordData,
-	repo: string,
-): boolean {
+export function recordAllowsRepo(data: GitHubConnectionRecordData, repo: string): boolean {
 	const targetRepo = repo.trim().toLowerCase();
 	if (!targetRepo) {
 		return false;

@@ -22,9 +22,7 @@ export const autoRegisterDynamicApps = (): void => {
 	}
 };
 
-const registerFunctionAsDynamicApp = (
-	func: ReturnType<typeof listFunctionTools>[number],
-): void => {
+const registerFunctionAsDynamicApp = (func: ReturnType<typeof listFunctionTools>[number]): void => {
 	const { name, description, type, isDefault, costPerCall } = func;
 	const parameters = z.toJSONSchema(func.inputSchema);
 
@@ -100,10 +98,7 @@ const generateFieldsFromParameters = (
 	return fields;
 };
 
-const mapJsonSchemaTypeToFieldType = (
-	type: string,
-	hasEnum?: any[],
-): FieldType => {
+const mapJsonSchemaTypeToFieldType = (type: string, hasEnum?: any[]): FieldType => {
 	if (hasEnum) {
 		return FieldType.SELECT;
 	}
@@ -123,10 +118,7 @@ const mapJsonSchemaTypeToFieldType = (
 	}
 };
 
-const generateValidationFromSchema = (
-	schema: any,
-	_fieldType: FieldType,
-): any => {
+const generateValidationFromSchema = (schema: any, _fieldType: FieldType): any => {
 	const validation: any = {};
 
 	if (schema.enum) {

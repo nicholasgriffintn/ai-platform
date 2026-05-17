@@ -7,11 +7,7 @@ import { safeParseJson } from "../../utils/json";
 
 const logger = getLogger({ prefix: "services/agents/servers" });
 
-export async function getAgentServers(
-	context: ServiceContext,
-	agentId: string,
-	userId?: number,
-) {
+export async function getAgentServers(context: ServiceContext, agentId: string, userId?: number) {
 	context.ensureDatabase();
 	const agent = await getValidatedAgent(context, agentId, userId);
 
@@ -26,10 +22,7 @@ export async function getAgentServers(
 		type: "sse";
 	}>;
 	if (!serverConfigs) {
-		throw new AssistantError(
-			"Invalid servers configuration",
-			ErrorType.PARAMS_ERROR,
-		);
+		throw new AssistantError("Invalid servers configuration", ErrorType.PARAMS_ERROR);
 	}
 
 	if (!serverConfigs || serverConfigs.length === 0) {
@@ -37,10 +30,7 @@ export async function getAgentServers(
 	}
 
 	if (!context.env.MCP_STORAGE) {
-		throw new AssistantError(
-			"MCP storage not configured",
-			ErrorType.CONFIGURATION_ERROR,
-		);
+		throw new AssistantError("MCP storage not configured", ErrorType.CONFIGURATION_ERROR);
 	}
 
 	const { MCPClientManager } = await import("agents/mcp/client");
@@ -83,8 +73,7 @@ export async function getAgentServers(
 			} catch (error) {
 				logger.error("Error connecting to MCP server", {
 					server_url: server.url,
-					error_message:
-						error instanceof Error ? error.message : "Unknown error",
+					error_message: error instanceof Error ? error.message : "Unknown error",
 				});
 				return {
 					id: server.url,
@@ -98,11 +87,7 @@ export async function getAgentServers(
 	return serverDetails;
 }
 
-async function getValidatedAgent(
-	context: ServiceContext,
-	agentId: string,
-	userId?: number,
-) {
+async function getValidatedAgent(context: ServiceContext, agentId: string, userId?: number) {
 	const id = userId ?? context.requireUser().id;
 	const agent = await context.repositories.agents.getAgentById(agentId);
 

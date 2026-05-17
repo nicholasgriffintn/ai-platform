@@ -1,7 +1,4 @@
-import {
-	SANDBOX_RUN_DISPATCH_TASK_TYPE,
-	type TaskType,
-} from "@assistant/schemas";
+import { SANDBOX_RUN_DISPATCH_TASK_TYPE, type TaskType } from "@assistant/schemas";
 import { IEnv } from "~/types";
 import { getLogger } from "~/utils/logger";
 import { TaskMessage } from "./TaskService";
@@ -31,10 +28,7 @@ export class QueueExecutor {
 			["research_polling", new ResearchPollingHandler()],
 			["replicate_polling", new ReplicatePollingHandler()],
 			["async_message_polling", new AsyncMessagePollingHandler()],
-			[
-				"podcast_transcription_polling",
-				new PodcastTranscriptionPollingHandler(),
-			],
+			["podcast_transcription_polling", new PodcastTranscriptionPollingHandler()],
 			["training_quality_scoring", new TrainingQualityHandler()],
 			["usage_update", new UsageUpdateHandler()],
 			[SANDBOX_RUN_DISPATCH_TASK_TYPE, new SandboxRunDispatchHandler()],
@@ -48,17 +42,13 @@ export class QueueExecutor {
 				if (message.body.scheduled_at) {
 					const scheduledAtMs = Date.parse(message.body.scheduled_at);
 					if (Number.isFinite(scheduledAtMs) && scheduledAtMs > Date.now()) {
-						logger.info(
-							`Task ${message.body.taskId} is scheduled for later, retrying delivery`,
-						);
+						logger.info(`Task ${message.body.taskId} is scheduled for later, retrying delivery`);
 						message.retry();
 						continue;
 					}
 				}
 
-				logger.info(
-					`Processing task ${message.body.taskId} of type ${message.body.task_type}`,
-				);
+				logger.info(`Processing task ${message.body.taskId} of type ${message.body.task_type}`);
 
 				await taskExecutor.execute(message.body);
 
@@ -69,9 +59,7 @@ export class QueueExecutor {
 				logger.error(`Error processing task ${message.body.taskId}:`, error);
 				const task = await taskRepository.getTaskById(message.body.taskId);
 				if (!task || task.status === "failed" || task.status === "cancelled") {
-					logger.error(
-						`Task ${message.body.taskId} reached terminal state, acknowledging message`,
-					);
+					logger.error(`Task ${message.body.taskId} reached terminal state, acknowledging message`);
 					await taskExecutor.handleFailure(message.body, error as Error);
 					message.ack();
 					continue;

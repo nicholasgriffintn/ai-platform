@@ -54,9 +54,7 @@ export function useVoiceRecorder({ onTranscribe }: UseVoiceRecorderProps) {
 	const stopRecording = () => {
 		if (mediaRecorderRef.current && isRecording) {
 			mediaRecorderRef.current.stop();
-			mediaRecorderRef.current.stream
-				.getTracks()
-				.forEach((track) => track.stop());
+			mediaRecorderRef.current.stream.getTracks().forEach((track) => track.stop());
 			setIsRecording(false);
 		}
 	};

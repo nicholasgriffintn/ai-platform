@@ -65,8 +65,6 @@ export const imagePrompts = {
 	},
 };
 
-export function getTextToImageSystemPrompt(
-	style: keyof typeof imagePrompts,
-): string {
+export function getTextToImageSystemPrompt(style: keyof typeof imagePrompts): string {
 	return imagePrompts[style]?.prompt || imagePrompts.default.prompt;
 }

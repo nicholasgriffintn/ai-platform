@@ -111,10 +111,7 @@ export async function convertToMarkdownViaCloudflare(
 		logger.error("Error converting document to markdown:", { error });
 
 		return {
-			error:
-				error instanceof Error
-					? error.message
-					: "Unknown error during conversion",
+			error: error instanceof Error ? error.message : "Unknown error during conversion",
 		};
 	}
 }

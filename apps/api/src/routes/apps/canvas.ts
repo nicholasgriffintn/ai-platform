@@ -71,8 +71,7 @@ addRoute(app, "get", "/models", {
 
 addRoute(app, "post", "/generate", {
 	tags: ["apps"],
-	description:
-		"Queue multi-model image/video generations using a standard Canvas payload",
+	description: "Queue multi-model image/video generations using a standard Canvas payload",
 	bodySchema: generateCanvasSchema,
 	responses: {
 		200: { description: "Generation queue results", schema: z.any() },
@@ -80,9 +79,7 @@ addRoute(app, "post", "/generate", {
 	handler: async ({ raw }) =>
 		(async (context: Context) => {
 			const user = context.get("user") as IUser;
-			const body = context.req.valid("json" as never) as z.infer<
-				typeof generateCanvasSchema
-			>;
+			const body = context.req.valid("json" as never) as z.infer<typeof generateCanvasSchema>;
 
 			if (!user?.id) {
 				return ResponseFactory.error(context, "User not authenticated", 401);
@@ -103,8 +100,7 @@ addRoute(app, "post", "/generate", {
 				}
 
 				routeLogger.error("Error generating canvas outputs:", {
-					error_message:
-						error instanceof Error ? error.message : "Unknown error",
+					error_message: error instanceof Error ? error.message : "Unknown error",
 				});
 				throw new AssistantError("Failed to generate canvas outputs");
 			}
@@ -113,8 +109,7 @@ addRoute(app, "post", "/generate", {
 
 addRoute(app, "get", "/generations", {
 	tags: ["apps"],
-	description:
-		"List a user's Canvas generations with provider-agnostic status and outputs",
+	description: "List a user's Canvas generations with provider-agnostic status and outputs",
 	querySchema: listCanvasGenerationsQuerySchema,
 	responses: {
 		200: { description: "List of Canvas generations", schema: z.any() },
@@ -145,8 +140,7 @@ addRoute(app, "get", "/generations", {
 				}
 
 				routeLogger.error("Error listing Canvas generations:", {
-					error_message:
-						error instanceof Error ? error.message : "Unknown error",
+					error_message: error instanceof Error ? error.message : "Unknown error",
 				});
 				throw new AssistantError("Failed to list Canvas generations");
 			}
@@ -183,8 +177,7 @@ addRoute(app, "get", "/generations/:id", {
 				}
 
 				routeLogger.error("Error fetching Canvas generation:", {
-					error_message:
-						error instanceof Error ? error.message : "Unknown error",
+					error_message: error instanceof Error ? error.message : "Unknown error",
 				});
 				throw new AssistantError("Failed to fetch Canvas generation");
 			}

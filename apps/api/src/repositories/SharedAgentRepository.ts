@@ -1,9 +1,4 @@
-import type {
-	Agent,
-	AgentInstall,
-	AgentRating,
-	SharedAgent,
-} from "~/lib/database/schema";
+import type { Agent, AgentInstall, AgentRating, SharedAgent } from "~/lib/database/schema";
 import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -37,25 +32,21 @@ export interface SharedAgentFilters {
 }
 
 export class SharedAgentRepository extends BaseRepository {
-	public async shareAgent(
-		userId: number,
-		params: CreateSharedAgentParams,
-	): Promise<SharedAgent> {
-		const { query: agentQuery, values: agentValues } = this.buildSelectQuery(
-			"agents",
-			{ id: params.agentId, user_id: userId },
-		);
+	public async shareAgent(userId: number, params: CreateSharedAgentParams): Promise<SharedAgent> {
+		const { query: agentQuery, values: agentValues } = this.buildSelectQuery("agents", {
+			id: params.agentId,
+			user_id: userId,
+		});
 		const agent = await this.runQuery<Agent>(agentQuery, agentValues, true);
 
 		if (!agent) {
-			throw new AssistantError(
-				"Agent not found or unauthorized",
-				ErrorType.NOT_FOUND,
-			);
+			throw new AssistantError("Agent not found or unauthorized", ErrorType.NOT_FOUND);
 		}
 
-		const { query: existingSharedQuery, values: existingSharedValues } =
-			this.buildSelectQuery("shared_agents", { agent_id: params.agentId });
+		const { query: existingSharedQuery, values: existingSharedValues } = this.buildSelectQuery(
+			"shared_agents",
+			{ agent_id: params.agentId },
+		);
 		const existingShared = await this.runQuery<SharedAgent>(
 			existingSharedQuery,
 			existingSharedValues,
@@ -63,10 +54,7 @@ export class SharedAgentRepository extends BaseRepository {
 		);
 
 		if (existingShared) {
-			throw new AssistantError(
-				"Agent is already shared",
-				ErrorType.CONFLICT_ERROR,
-			);
+			throw new AssistantError("Agent is already shared", ErrorType.CONFLICT_ERROR);
 		}
 
 		const id = generateId();
@@ -82,9 +70,7 @@ export class SharedAgentRepository extends BaseRepository {
 			few_shot_examples: agent.few_shot_examples
 				? safeParseJson(agent.few_shot_examples as string)
 				: [],
-			enabled_tools: agent.enabled_tools
-				? safeParseJson(agent.enabled_tools as string)
-				: [],
+			enabled_tools: agent.enabled_tools ? safeParseJson(agent.enabled_tools as string) : [],
 		};
 
 		await this.executeRun(
@@ -125,9 +111,7 @@ export class SharedAgentRepository extends BaseRepository {
 		};
 	}
 
-	public async getSharedAgents(
-		filters: SharedAgentFilters = {},
-	): Promise<SharedAgentWithAuthor[]> {
+	public async getSharedAgents(filters: SharedAgentFilters = {}): Promise<SharedAgentWithAuthor[]> {
 		let query = `
       SELECT
         sa.id, sa.agent_id, sa.user_id, sa.name, sa.description, sa.avatar_url,
@@ -155,9 +139,7 @@ export class SharedAgentRepository extends BaseRepository {
 		}
 
 		if (filters.tags && filters.tags.length > 0) {
-			const tagConditions = filters.tags
-				.map(() => "sa.tags LIKE ?")
-				.join(" OR ");
+			const tagConditions = filters.tags.map(() => "sa.tags LIKE ?").join(" OR ");
 			query += ` AND (${tagConditions})`;
 			for (const tag of filters.tags) {
 				params.push(`%"${tag}"%`);
@@ -193,9 +175,7 @@ export class SharedAgentRepository extends BaseRepository {
 		return this.getSharedAgents({ featured: true, limit, sortBy: "popular" });
 	}
 
-	public async getSharedAgentById(
-		id: string,
-	): Promise<SharedAgentWithAuthor | null> {
+	public async getSharedAgentById(id: string): Promise<SharedAgentWithAuthor | null> {
 		return this.runQuery<SharedAgentWithAuthor>(
 			`SELECT
          sa.id, sa.agent_id, sa.user_id, sa.name, sa.description, sa.avatar_url,
@@ -210,9 +190,7 @@ export class SharedAgentRepository extends BaseRepository {
 		);
 	}
 
-	public async getSharedAgentByAgentId(
-		agentId: string,
-	): Promise<SharedAgent | null> {
+	public async getSharedAgentByAgentId(agentId: string): Promise<SharedAgent | null> {
 		return this.runQuery<SharedAgent>(
 			`SELECT
          id, agent_id, user_id, name, description, avatar_url,
@@ -258,9 +236,7 @@ export class SharedAgentRepository extends BaseRepository {
 		if (filters.tags && filters.tags.length > 0) {
 			const hasWhere = filters.category || filters.featured || filters.search;
 			query += hasWhere ? " AND" : " WHERE";
-			const tagConditions = filters.tags
-				.map(() => "sa.tags LIKE ?")
-				.join(" OR ");
+			const tagConditions = filters.tags.map(() => "sa.tags LIKE ?").join(" OR ");
 			query += ` (${tagConditions})`;
 			for (const tag of filters.tags) {
 				params.push(`%"${tag}"%`);
@@ -308,10 +284,7 @@ export class SharedAgentRepository extends BaseRepository {
 		);
 
 		if (existingInstall) {
-			throw new AssistantError(
-				"Agent already installed",
-				ErrorType.CONFLICT_ERROR,
-			);
+			throw new AssistantError("Agent already installed", ErrorType.CONFLICT_ERROR);
 		}
 
 		if (!sharedAgent.template_data) {
@@ -320,15 +293,8 @@ export class SharedAgentRepository extends BaseRepository {
 
 		let templateData = safeParseJson(sharedAgent.template_data as string);
 		if (!templateData) {
-			logger.error(
-				"Error parsing template data:",
-				{ error: "" },
-				sharedAgent.template_data,
-			);
-			throw new AssistantError(
-				"Error parsing template data",
-				ErrorType.PARAMS_ERROR,
-			);
+			logger.error("Error parsing template data:", { error: "" }, sharedAgent.template_data);
+			throw new AssistantError("Error parsing template data", ErrorType.PARAMS_ERROR);
 		}
 
 		if (templateData.team_id) {
@@ -366,10 +332,9 @@ export class SharedAgentRepository extends BaseRepository {
 			[installId, sharedAgentId, userId, agentId],
 		);
 
-		await this.executeRun(
-			"UPDATE shared_agents SET usage_count = usage_count + 1 WHERE id = ?",
-			[sharedAgentId],
-		);
+		await this.executeRun("UPDATE shared_agents SET usage_count = usage_count + 1 WHERE id = ?", [
+			sharedAgentId,
+		]);
 
 		const now = new Date().toISOString();
 		// TODO: Make team agents sharable
@@ -412,10 +377,7 @@ export class SharedAgentRepository extends BaseRepository {
 		);
 
 		if (!install) {
-			throw new AssistantError(
-				"Agent not installed by user",
-				ErrorType.NOT_FOUND,
-			);
+			throw new AssistantError("Agent not installed by user", ErrorType.NOT_FOUND);
 		}
 
 		const sharedAgent = await this.runQuery<SharedAgent>(
@@ -428,14 +390,11 @@ export class SharedAgentRepository extends BaseRepository {
 			throw new AssistantError("Shared agent not found", ErrorType.NOT_FOUND);
 		}
 
-		await this.executeRun("DELETE FROM agent_installs WHERE id = ?", [
-			install.id,
-		]);
+		await this.executeRun("DELETE FROM agent_installs WHERE id = ?", [install.id]);
 
-		await this.executeRun(
-			"UPDATE shared_agents SET usage_count = usage_count - 1 WHERE id = ?",
-			[sharedAgent.id],
-		);
+		await this.executeRun("UPDATE shared_agents SET usage_count = usage_count - 1 WHERE id = ?", [
+			sharedAgent.id,
+		]);
 	}
 
 	public async rateAgent(
@@ -445,10 +404,7 @@ export class SharedAgentRepository extends BaseRepository {
 		review?: string,
 	): Promise<AgentRating> {
 		if (rating < 1 || rating > 5) {
-			throw new AssistantError(
-				"Rating must be between 1 and 5",
-				ErrorType.PARAMS_ERROR,
-			);
+			throw new AssistantError("Rating must be between 1 and 5", ErrorType.PARAMS_ERROR);
 		}
 
 		const sharedAgent = await this.getSharedAgentById(sharedAgentId);
@@ -485,11 +441,7 @@ export class SharedAgentRepository extends BaseRepository {
 
 		await this.executeRun(
 			"UPDATE shared_agents SET rating_count = ?, rating_average = ? WHERE id = ?",
-			[
-				ratingStats?.count || 0,
-				(ratingStats?.average || 0).toFixed(1),
-				sharedAgentId,
-			],
+			[ratingStats?.count || 0, (ratingStats?.average || 0).toFixed(1), sharedAgentId],
 		);
 
 		return {
@@ -522,10 +474,7 @@ export class SharedAgentRepository extends BaseRepository {
 		userId: number,
 		sharedAgentId: string,
 		updates: Partial<
-			Pick<
-				SharedAgent,
-				"name" | "description" | "avatar_url" | "category" | "tags"
-			>
+			Pick<SharedAgent, "name" | "description" | "avatar_url" | "category" | "tags">
 		>,
 	): Promise<void> {
 		const { query, values } = this.buildSelectQuery("shared_agents", {
@@ -535,19 +484,10 @@ export class SharedAgentRepository extends BaseRepository {
 		const sharedAgent = await this.runQuery<SharedAgent>(query, values, true);
 
 		if (!sharedAgent) {
-			throw new AssistantError(
-				"Shared agent not found or unauthorized",
-				ErrorType.NOT_FOUND,
-			);
+			throw new AssistantError("Shared agent not found or unauthorized", ErrorType.NOT_FOUND);
 		}
 
-		const allowedFields = [
-			"name",
-			"description",
-			"avatar_url",
-			"category",
-			"tags",
-		] as const;
+		const allowedFields = ["name", "description", "avatar_url", "category", "tags"] as const;
 
 		const result = this.buildUpdateQuery(
 			"shared_agents",
@@ -569,10 +509,7 @@ export class SharedAgentRepository extends BaseRepository {
 		await this.executeRun(queryWithTimestamp, result.values);
 	}
 
-	public async deleteSharedAgent(
-		userId: number,
-		sharedAgentId: string,
-	): Promise<void> {
+	public async deleteSharedAgent(userId: number, sharedAgentId: string): Promise<void> {
 		const { query, values } = this.buildSelectQuery("shared_agents", {
 			id: sharedAgentId,
 			user_id: userId,
@@ -580,10 +517,7 @@ export class SharedAgentRepository extends BaseRepository {
 		const sharedAgent = await this.runQuery<SharedAgent>(query, values, true);
 
 		if (!sharedAgent) {
-			throw new AssistantError(
-				"Shared agent not found or unauthorized",
-				ErrorType.NOT_FOUND,
-			);
+			throw new AssistantError("Shared agent not found or unauthorized", ErrorType.NOT_FOUND);
 		}
 
 		const deleteRatings = this.buildDeleteQuery("agent_ratings", {
@@ -608,20 +542,14 @@ export class SharedAgentRepository extends BaseRepository {
 		}
 	}
 
-	public async setFeatured(
-		sharedAgentId: string,
-		featured: boolean,
-	): Promise<void> {
+	public async setFeatured(sharedAgentId: string, featured: boolean): Promise<void> {
 		await this.executeRun(
 			"UPDATE shared_agents SET is_featured = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
 			[featured ? 1 : 0, sharedAgentId],
 		);
 	}
 
-	public async moderateAgent(
-		sharedAgentId: string,
-		isPublic: boolean,
-	): Promise<void> {
+	public async moderateAgent(sharedAgentId: string, isPublic: boolean): Promise<void> {
 		await this.executeRun(
 			"UPDATE shared_agents SET is_public = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
 			[isPublic ? 1 : 0, sharedAgentId],

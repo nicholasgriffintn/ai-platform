@@ -1,11 +1,7 @@
 import { test, expect } from "@playwright/test";
 import { HomePage } from "../page-objects";
 import { TestHelpers } from "../utils/test-helpers";
-import {
-	TEST_MESSAGES,
-	CHAT_TEST_SCENARIOS,
-	CORE_PROMPTS,
-} from "../fixtures/test-data";
+import { TEST_MESSAGES, CHAT_TEST_SCENARIOS, CORE_PROMPTS } from "../fixtures/test-data";
 
 const PLAYWRIGHT_API_KEY = process.env.PLAYWRIGHT_API_KEY;
 
@@ -19,10 +15,7 @@ test.describe("Chat Feature", () => {
 
 	test.beforeEach(async ({ page }) => {
 		homePage = TestHelpers.createHomePage(page);
-		await TestHelpers.injectApiKeyBeforeNavigation(
-			page,
-			PLAYWRIGHT_API_KEY as string,
-		);
+		await TestHelpers.injectApiKeyBeforeNavigation(page, PLAYWRIGHT_API_KEY as string);
 		await homePage.navigate();
 		await homePage.waitForPageLoad();
 	});
@@ -66,9 +59,7 @@ test.describe("Chat Feature", () => {
 			}
 		});
 
-		test("allows starting a new chat after API interaction", async ({
-			page,
-		}) => {
+		test("allows starting a new chat after API interaction", async ({ page }) => {
 			const previousCount = await homePage.getAssistantMessageCount();
 			await homePage.sendMessage(TEST_MESSAGES.simple);
 			await homePage.waitForChatResponse(previousCount);
@@ -181,11 +172,7 @@ test.describe("Chat Feature", () => {
 		});
 
 		test("handles rapid consecutive messages", async () => {
-			const messages = [
-				TEST_MESSAGES.veryShort,
-				TEST_MESSAGES.simple,
-				TEST_MESSAGES.followUp,
-			];
+			const messages = [TEST_MESSAGES.veryShort, TEST_MESSAGES.simple, TEST_MESSAGES.followUp];
 
 			for (let i = 0; i < messages.length; i++) {
 				const previousCount = await homePage.getAssistantMessageCount();

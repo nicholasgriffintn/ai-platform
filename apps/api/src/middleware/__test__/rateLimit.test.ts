@@ -62,12 +62,8 @@ describe("Rate Limit Middleware", () => {
 				},
 			});
 
-			await expect(rateLimit(context, mockNext)).rejects.toThrow(
-				AssistantError,
-			);
-			await expect(rateLimit(context, mockNext)).rejects.toThrow(
-				"Rate limiter not configured",
-			);
+			await expect(rateLimit(context, mockNext)).rejects.toThrow(AssistantError);
+			await expect(rateLimit(context, mockNext)).rejects.toThrow("Rate limiter not configured");
 		});
 
 		it("should use PRO_RATE_LIMITER for authenticated users", async () => {
@@ -117,9 +113,7 @@ describe("Rate Limit Middleware", () => {
 
 			context.env.PRO_RATE_LIMITER.limit.mockResolvedValue({ success: false });
 
-			await expect(rateLimit(context, mockNext)).rejects.toThrow(
-				AssistantError,
-			);
+			await expect(rateLimit(context, mockNext)).rejects.toThrow(AssistantError);
 			await expect(rateLimit(context, mockNext)).rejects.toThrow(
 				"Rate limit exceeded: 100 requests per minute",
 			);
@@ -134,9 +128,7 @@ describe("Rate Limit Middleware", () => {
 
 			context.env.FREE_RATE_LIMITER.limit.mockResolvedValue({ success: false });
 
-			await expect(rateLimit(context, mockNext)).rejects.toThrow(
-				AssistantError,
-			);
+			await expect(rateLimit(context, mockNext)).rejects.toThrow(AssistantError);
 			await expect(rateLimit(context, mockNext)).rejects.toThrow(
 				"Rate limit exceeded: 10 requests per minute. Please authenticate for higher limits.",
 			);
@@ -204,11 +196,7 @@ describe("Rate Limit Middleware", () => {
 
 			await new Promise((resolve) => setTimeout(resolve, 0));
 
-			expect(mockTrackUsageMetric).toHaveBeenCalledWith(
-				undefined,
-				"speech",
-				context.env.ANALYTICS,
-			);
+			expect(mockTrackUsageMetric).toHaveBeenCalledWith(undefined, "speech", context.env.ANALYTICS);
 		});
 
 		it("should handle usage metric tracking errors gracefully", async () => {

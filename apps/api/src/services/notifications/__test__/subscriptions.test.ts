@@ -40,9 +40,9 @@ describe("Subscription Emails", () => {
 		it("should handle email sending errors", async () => {
 			mockSendEmail.mockRejectedValue(new Error("Email sending failed"));
 
-			await expect(
-				sendSubscriptionEmail(mockEnv, "test@example.com", "Pro"),
-			).rejects.toThrow("Email sending failed");
+			await expect(sendSubscriptionEmail(mockEnv, "test@example.com", "Pro")).rejects.toThrow(
+				"Email sending failed",
+			);
 		});
 	});
 
@@ -64,9 +64,9 @@ describe("Subscription Emails", () => {
 		it("should handle email sending errors", async () => {
 			mockSendEmail.mockRejectedValue(new Error("Email sending failed"));
 
-			await expect(
-				sendUnsubscriptionEmail(mockEnv, "test@example.com"),
-			).rejects.toThrow("Email sending failed");
+			await expect(sendUnsubscriptionEmail(mockEnv, "test@example.com")).rejects.toThrow(
+				"Email sending failed",
+			);
 		});
 	});
 
@@ -74,10 +74,7 @@ describe("Subscription Emails", () => {
 		it("should send cancellation notice email", async () => {
 			mockSendEmail.mockResolvedValue(undefined);
 
-			await sendSubscriptionCancellationNoticeEmail(
-				mockEnv,
-				"test@example.com",
-			);
+			await sendSubscriptionCancellationNoticeEmail(mockEnv, "test@example.com");
 
 			expect(mockSendEmail).toHaveBeenCalledWith(
 				mockEnv,
@@ -115,9 +112,9 @@ describe("Subscription Emails", () => {
 		it("should handle email sending errors", async () => {
 			mockSendEmail.mockRejectedValue(new Error("Email sending failed"));
 
-			await expect(
-				sendPaymentFailedEmail(mockEnv, "test@example.com"),
-			).rejects.toThrow("Email sending failed");
+			await expect(sendPaymentFailedEmail(mockEnv, "test@example.com")).rejects.toThrow(
+				"Email sending failed",
+			);
 		});
 	});
 
@@ -139,9 +136,9 @@ describe("Subscription Emails", () => {
 		it("should handle email sending errors", async () => {
 			mockSendEmail.mockRejectedValue(new Error("Email sending failed"));
 
-			await expect(
-				sendTrialEndingEmail(mockEnv, "test@example.com"),
-			).rejects.toThrow("Email sending failed");
+			await expect(sendTrialEndingEmail(mockEnv, "test@example.com")).rejects.toThrow(
+				"Email sending failed",
+			);
 		});
 	});
 });

@@ -7,15 +7,10 @@ import type {
 import type { CoreChatOptions } from "~/types";
 
 export class BasicInputValidator implements Validator {
-	async validate(
-		options: CoreChatOptions,
-		_context: ValidationContext,
-	): Promise<ValidatorResult> {
+	async validate(options: CoreChatOptions, _context: ValidationContext): Promise<ValidatorResult> {
 		const { messages: rawMessages } = options;
 
-		const sanitizedMessages = Array.isArray(rawMessages)
-			? sanitiseMessages(rawMessages)
-			: [];
+		const sanitizedMessages = Array.isArray(rawMessages) ? sanitiseMessages(rawMessages) : [];
 
 		if (!sanitizedMessages || sanitizedMessages.length === 0) {
 			return {

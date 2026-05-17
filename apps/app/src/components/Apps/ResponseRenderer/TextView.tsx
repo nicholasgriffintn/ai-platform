@@ -21,10 +21,7 @@ export const TextView = ({ data }: TextViewProps) => {
 	const lines = content.split("\n");
 
 	return (
-		<div
-			data-responsetype="text"
-			className="prose dark:prose-invert max-w-none"
-		>
+		<div data-responsetype="text" className="prose dark:prose-invert max-w-none">
 			{lines.map((line, index) => (
 				<p key={index} className={line.trim() === "" ? "h-4" : ""}>
 					{line}

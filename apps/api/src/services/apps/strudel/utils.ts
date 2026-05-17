@@ -53,8 +53,7 @@ export const normalizePatternPayload = (
 			: "Untitled Pattern",
 	code: typeof payload.code === "string" ? payload.code.trim() : "",
 	description:
-		typeof payload.description === "string" &&
-		payload.description.trim().length > 0
+		typeof payload.description === "string" && payload.description.trim().length > 0
 			? payload.description.trim()
 			: "",
 	tags: sanitizeTags(payload.tags),

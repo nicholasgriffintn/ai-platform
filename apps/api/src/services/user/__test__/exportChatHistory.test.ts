@@ -30,10 +30,7 @@ describe("handleExportChatHistory", () => {
 	});
 
 	it("returns empty array when no conversations", async () => {
-		vi.spyOn(
-			ConversationRepoModule,
-			"ConversationRepository",
-		).mockImplementation(
+		vi.spyOn(ConversationRepoModule, "ConversationRepository").mockImplementation(
 			// @ts-ignore
 			function () {
 				return {
@@ -64,10 +61,7 @@ describe("handleExportChatHistory", () => {
 	});
 
 	it("flattens conversations and messages", async () => {
-		vi.spyOn(
-			ConversationRepoModule,
-			"ConversationRepository",
-		).mockImplementation(
+		vi.spyOn(ConversationRepoModule, "ConversationRepository").mockImplementation(
 			// @ts-ignore
 			function () {
 				return {
@@ -141,10 +135,7 @@ describe("handleExportChatHistory", () => {
 			])
 			.mockResolvedValueOnce([]);
 
-		vi.spyOn(
-			ConversationRepoModule,
-			"ConversationRepository",
-		).mockImplementation(
+		vi.spyOn(ConversationRepoModule, "ConversationRepository").mockImplementation(
 			// @ts-ignore
 			function () {
 				return {

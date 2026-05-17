@@ -1,18 +1,9 @@
-import type {
-	DuckDuckGoSearchResult,
-	SearchOptions,
-	SearchProvider,
-	SearchResult,
-} from "~/types";
+import type { DuckDuckGoSearchResult, SearchOptions, SearchProvider, SearchResult } from "~/types";
 
-const stripHtml = (value?: string) =>
-	value?.replace(/<[^>]*>/g, "").trim() ?? "";
+const stripHtml = (value?: string) => value?.replace(/<[^>]*>/g, "").trim() ?? "";
 
 export class DuckDuckGoProvider implements SearchProvider {
-	async performWebSearch(
-		query: string,
-		_options?: SearchOptions,
-	): Promise<SearchResult> {
+	async performWebSearch(query: string, _options?: SearchOptions): Promise<SearchResult> {
 		const url = new URL("https://api.duckduckgo.com/");
 		url.searchParams.set("q", query);
 		url.searchParams.set("format", "json");
@@ -95,9 +86,7 @@ export class DuckDuckGoProvider implements SearchProvider {
 				}
 			}
 
-			const answer = stripHtml(
-				raw.Answer || raw.AbstractText || raw.Definition,
-			);
+			const answer = stripHtml(raw.Answer || raw.AbstractText || raw.Definition);
 
 			if (results.length === 0 && answer) {
 				results.push({

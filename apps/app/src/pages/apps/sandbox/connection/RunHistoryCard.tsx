@@ -33,9 +33,7 @@ export function RunHistoryCard({
 		<Card>
 			<CardHeader>
 				<CardTitle>Run history</CardTitle>
-				<CardDescription>
-					Recent executions for this installation.
-				</CardDescription>
+				<CardDescription>Recent executions for this installation.</CardDescription>
 			</CardHeader>
 			<CardContent className="max-h-[400px] overflow-auto">
 				{isRunsLoading ? (
@@ -48,9 +46,7 @@ export function RunHistoryCard({
 						</AlertDescription>
 					</Alert>
 				) : runs.length === 0 ? (
-					<div className="text-sm text-muted-foreground">
-						No runs yet for this connection.
-					</div>
+					<div className="text-sm text-muted-foreground">No runs yet for this connection.</div>
 				) : (
 					<div className="space-y-2">
 						{runs.map((run) => (
@@ -66,13 +62,9 @@ export function RunHistoryCard({
 							>
 								<div className="flex items-center justify-between gap-2">
 									<div className="truncate text-sm font-medium">{run.repo}</div>
-									<Badge variant={getStatusBadgeVariant(run.status)}>
-										{run.status}
-									</Badge>
+									<Badge variant={getStatusBadgeVariant(run.status)}>{run.status}</Badge>
 								</div>
-								<p className="mt-1 line-clamp-2 text-xs text-muted-foreground">
-									{run.task}
-								</p>
+								<p className="mt-1 line-clamp-2 text-xs text-muted-foreground">{run.task}</p>
 								<p className="mt-1 text-xs text-muted-foreground">
 									{formatRelativeTime(run.updatedAt)}
 								</p>

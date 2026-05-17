@@ -30,9 +30,7 @@ export class BedrockService {
 		logger.info(`Initialized Bedrock client in region: ${config.AWS_REGION}`);
 	}
 
-	async createFineTuningJob(
-		jobConfig: BedrockJobConfig,
-	): Promise<{ jobArn: string }> {
+	async createFineTuningJob(jobConfig: BedrockJobConfig): Promise<{ jobArn: string }> {
 		logger.info(`Creating fine-tuning job: ${jobConfig.jobName}`);
 
 		const command = new CreateModelCustomizationJobCommand({
@@ -45,8 +43,7 @@ export class BedrockService {
 				s3Uri: jobConfig.trainingDataS3Uri,
 			},
 			validationDataConfig:
-				jobConfig.customizationType !== "DISTILLATION" &&
-				jobConfig.validationDataS3Uri
+				jobConfig.customizationType !== "DISTILLATION" && jobConfig.validationDataS3Uri
 					? {
 							validators: [{ s3Uri: jobConfig.validationDataS3Uri }],
 						}
@@ -56,13 +53,11 @@ export class BedrockService {
 			},
 			hyperParameters: jobConfig.hyperParameters,
 			customizationConfig:
-				jobConfig.customizationType === "DISTILLATION" &&
-				jobConfig.distillationConfig
+				jobConfig.customizationType === "DISTILLATION" && jobConfig.distillationConfig
 					? {
 							distillationConfig: {
 								teacherModelConfig: {
-									teacherModelIdentifier:
-										jobConfig.distillationConfig.teacherModelIdentifier,
+									teacherModelIdentifier: jobConfig.distillationConfig.teacherModelIdentifier,
 								},
 							},
 						}
@@ -125,9 +120,7 @@ export class BedrockService {
 		}
 	}
 
-	async listJobs(
-		maxResults: number = 50,
-	): Promise<ModelCustomizationJobSummary[]> {
+	async listJobs(maxResults: number = 50): Promise<ModelCustomizationJobSummary[]> {
 		logger.info("Listing fine-tuning jobs...");
 
 		const command = new ListModelCustomizationJobsCommand({
@@ -236,9 +229,7 @@ export class BedrockService {
 			const studentIds = new Set(students.map((m) => m.modelId));
 			const teachers = allModels.filter((m) => !studentIds.has(m.modelId));
 
-			logger.info(
-				`Found ${teachers.length} teacher models and ${students.length} student models`,
-			);
+			logger.info(`Found ${teachers.length} teacher models and ${students.length} student models`);
 			return { teachers, students };
 		} catch (error) {
 			logger.error("Failed to list distillation models", error);
@@ -252,9 +243,7 @@ export class BedrockService {
 		},
 	): Promise<{ jobArn: string }> {
 		logger.info(`Creating distillation job: ${jobConfig.jobName}`);
-		logger.info(
-			`Teacher model: ${jobConfig.distillationConfig.teacherModelIdentifier}`,
-		);
+		logger.info(`Teacher model: ${jobConfig.distillationConfig.teacherModelIdentifier}`);
 		logger.info(`Student model: ${jobConfig.baseModelIdentifier}`);
 
 		return this.createFineTuningJob({

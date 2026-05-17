@@ -32,19 +32,13 @@ export interface EmbeddingProvider {
 		metadata: Record<string, any>,
 	): Promise<EmbeddingVector[]>;
 
-	insert(
-		embeddings: EmbeddingVector[],
-		options: RagOptions,
-	): Promise<EmbeddingMutationResult>;
+	insert(embeddings: EmbeddingVector[], options: RagOptions): Promise<EmbeddingMutationResult>;
 
 	delete(ids: string[]): Promise<EmbeddingMutationResult>;
 
 	getQuery(query: string): Promise<{ data: any; status: { success: boolean } }>;
 
-	getMatches(
-		queryVector: any,
-		options: RagOptions,
-	): Promise<EmbeddingQueryResult>;
+	getMatches(queryVector: any, options: RagOptions): Promise<EmbeddingQueryResult>;
 
 	searchSimilar(
 		query: string,

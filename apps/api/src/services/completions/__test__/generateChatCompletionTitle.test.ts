@@ -64,9 +64,7 @@ describe("handleGenerateChatCompletionTitle", () => {
 			requireUser: vi.fn().mockReturnValue(mockUser),
 		};
 
-		vi.mocked(ConversationManager.getInstance).mockReturnValue(
-			mockConversationManager,
-		);
+		vi.mocked(ConversationManager.getInstance).mockReturnValue(mockConversationManager);
 
 		mockGetAuxiliaryModel.mockResolvedValue({
 			model: "test-model",
@@ -131,16 +129,11 @@ describe("handleGenerateChatCompletionTitle", () => {
 				messages,
 			);
 
-			expect(mockConversationManager.updateConversation).toHaveBeenCalledWith(
-				completionId,
-				{ title: "Generated Title" },
-			);
+			expect(mockConversationManager.updateConversation).toHaveBeenCalledWith(completionId, {
+				title: "Generated Title",
+			});
 			expect(result).toEqual({ title: "Generated Title" });
-			expect(mockConversationManager.get).toHaveBeenCalledWith(
-				completionId,
-				undefined,
-				1,
-			);
+			expect(mockConversationManager.get).toHaveBeenCalledWith(completionId, undefined, 1);
 		});
 
 		it("should generate title from conversation messages when no messages provided", async () => {
@@ -152,10 +145,7 @@ describe("handleGenerateChatCompletionTitle", () => {
 
 			mockConversationManager.get.mockResolvedValue(conversationMessages);
 
-			const result = await handleGenerateChatCompletionTitle(
-				mockServiceContext,
-				completionId,
-			);
+			const result = await handleGenerateChatCompletionTitle(mockServiceContext, completionId);
 
 			expect(result).toEqual({ title: "Generated Title" });
 			expect(mockConversationManager.get).toHaveBeenCalledWith(
@@ -170,10 +160,7 @@ describe("handleGenerateChatCompletionTitle", () => {
 
 			mockConversationManager.get.mockResolvedValue([]);
 
-			const result = await handleGenerateChatCompletionTitle(
-				mockServiceContext,
-				completionId,
-			);
+			const result = await handleGenerateChatCompletionTitle(mockServiceContext, completionId);
 
 			expect(result).toEqual({ title: "New Conversation" });
 			expect(mockConversationManager.updateConversation).not.toHaveBeenCalled();
@@ -231,9 +218,7 @@ describe("handleGenerateChatCompletionTitle", () => {
 
 			await expect(() =>
 				handleGenerateChatCompletionTitle(mockServiceContext, completionId),
-			).rejects.toThrow(
-				"Conversation not found or you don't have access to it",
-			);
+			).rejects.toThrow("Conversation not found or you don't have access to it");
 		});
 
 		it("should handle AI provider errors", async () => {
@@ -244,16 +229,10 @@ describe("handleGenerateChatCompletionTitle", () => {
 			mockSanitiseMessages.mockReturnValue(messages);
 
 			const mockProvider = mockChatCapability.getChatProvider();
-			mockProvider.getResponse.mockRejectedValue(
-				new Error("AI provider failed"),
-			);
+			mockProvider.getResponse.mockRejectedValue(new Error("AI provider failed"));
 
 			await expect(() =>
-				handleGenerateChatCompletionTitle(
-					mockServiceContext,
-					completionId,
-					messages,
-				),
+				handleGenerateChatCompletionTitle(mockServiceContext, completionId, messages),
 			).rejects.toThrow("AI provider failed");
 		});
 	});

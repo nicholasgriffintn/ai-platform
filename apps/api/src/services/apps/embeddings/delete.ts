@@ -13,19 +13,14 @@ export interface IDeleteEmbeddingRequest extends IRequest {
 	};
 }
 
-export const deleteEmbedding = async (
-	req: IDeleteEmbeddingRequest,
-): Promise<any> => {
+export const deleteEmbedding = async (req: IDeleteEmbeddingRequest): Promise<any> => {
 	try {
 		const { request, env } = req;
 
 		const { ids } = request;
 
 		if (!ids) {
-			throw new AssistantError(
-				"Missing ids from request",
-				ErrorType.PARAMS_ERROR,
-			);
+			throw new AssistantError("Missing ids from request", ErrorType.PARAMS_ERROR);
 		}
 
 		const repositories = new RepositoryManager(env);

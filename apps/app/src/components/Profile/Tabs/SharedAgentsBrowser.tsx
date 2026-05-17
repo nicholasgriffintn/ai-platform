@@ -1,13 +1,7 @@
 import { Filter, Loader2, Search, Star } from "lucide-react";
 
 import { EmptyState } from "~/components/Core/EmptyState";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "~/components/ui/Card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/Card";
 import { FormSelect } from "~/components/ui/Form/Select";
 import { Input } from "~/components/ui/input";
 import { useAgentFilters } from "~/hooks/useAgentFilters";
@@ -19,10 +13,7 @@ interface SharedAgentsBrowserProps {
 	isInstalling: boolean;
 }
 
-export function SharedAgentsBrowser({
-	onInstall,
-	isInstalling,
-}: SharedAgentsBrowserProps) {
+export function SharedAgentsBrowser({ onInstall, isInstalling }: SharedAgentsBrowserProps) {
 	const {
 		searchTerm,
 		setSearchTerm,
@@ -53,18 +44,14 @@ export function SharedAgentsBrowser({
 					<Search className="h-5 w-5" />
 					Browse Agents
 				</CardTitle>
-				<CardDescription>
-					Search and filter community-shared agents
-				</CardDescription>
+				<CardDescription>Search and filter community-shared agents</CardDescription>
 			</CardHeader>
 			<CardContent className="space-y-6">
 				{/* Featured Agents Section */}
 				{isLoadingFeaturedAgents ? (
 					<div className="flex items-center justify-center py-12">
 						<Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-						<span className="ml-2 text-muted-foreground">
-							Loading featured agents...
-						</span>
+						<span className="ml-2 text-muted-foreground">Loading featured agents...</span>
 					</div>
 				) : featuredAgents.length === 0 ? (
 					<EmptyState
@@ -132,9 +119,7 @@ export function SharedAgentsBrowser({
 				{isLoadingSharedAgents ? (
 					<div className="flex items-center justify-center py-12">
 						<Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-						<span className="ml-2 text-muted-foreground">
-							Searching agents...
-						</span>
+						<span className="ml-2 text-muted-foreground">Searching agents...</span>
 					</div>
 				) : sharedAgents.length === 0 ? (
 					<EmptyState

@@ -58,9 +58,7 @@ describe("prompts index", () => {
 				mockUserSettings,
 			);
 
-			expect(mockGetModelConfigByMatchingModel).toHaveBeenCalledWith(
-				"unknown-model",
-			);
+			expect(mockGetModelConfigByMatchingModel).toHaveBeenCalledWith("unknown-model");
 			expect(mockReturnStandardPrompt).toHaveBeenCalledWith(
 				mockRequest,
 				mockUser,
@@ -85,12 +83,7 @@ describe("prompts index", () => {
 			mockReturnCodingPrompt.mockResolvedValue("coding prompt");
 
 			const { getSystemPrompt } = await import("../index");
-			const result = await getSystemPrompt(
-				mockRequest,
-				"coding-model",
-				mockUser,
-				mockUserSettings,
-			);
+			const result = await getSystemPrompt(mockRequest, "coding-model", mockUser, mockUserSettings);
 
 			expect(mockReturnCodingPrompt).toHaveBeenCalledWith(
 				mockRequest,
@@ -139,12 +132,7 @@ describe("prompts index", () => {
 			mockEmptyPrompt.mockReturnValue("");
 
 			const { getSystemPrompt } = await import("../index");
-			const result = await getSystemPrompt(
-				mockRequest,
-				"other-model",
-				mockUser,
-				mockUserSettings,
-			);
+			const result = await getSystemPrompt(mockRequest, "other-model", mockUser, mockUserSettings);
 
 			expect(mockEmptyPrompt).toHaveBeenCalled();
 			expect(result).toBe("");
@@ -161,12 +149,7 @@ describe("prompts index", () => {
 			mockReturnStandardPrompt.mockResolvedValue("text prompt");
 
 			const { getSystemPrompt } = await import("../index");
-			const result = await getSystemPrompt(
-				mockRequest,
-				"text-model",
-				mockUser,
-				mockUserSettings,
-			);
+			const result = await getSystemPrompt(mockRequest, "text-model", mockUser, mockUserSettings);
 
 			expect(mockReturnStandardPrompt).toHaveBeenCalledWith(
 				mockRequest,
@@ -198,12 +181,7 @@ describe("prompts index", () => {
 			mockReturnStandardPrompt.mockResolvedValue("mixed prompt");
 
 			const { getSystemPrompt } = await import("../index");
-			const result = await getSystemPrompt(
-				mockRequest,
-				"mixed-model",
-				mockUser,
-				mockUserSettings,
-			);
+			const result = await getSystemPrompt(mockRequest, "mixed-model", mockUser, mockUserSettings);
 
 			expect(mockReturnStandardPrompt).toHaveBeenCalled();
 			expect(mockReturnCodingPrompt).not.toHaveBeenCalled();
@@ -278,8 +256,7 @@ describe("prompts index", () => {
 		});
 
 		it("should generate web search questions system prompt", async () => {
-			const { webSearchSimilarQuestionsSystemPrompt } =
-				await import("../index");
+			const { webSearchSimilarQuestionsSystemPrompt } = await import("../index");
 			const result = webSearchSimilarQuestionsSystemPrompt();
 
 			expect(typeof result).toBe("string");
@@ -326,9 +303,7 @@ describe("prompts index", () => {
 			expect(typeof result).toBe("string");
 			expect(result).toContain("cat, dog");
 			expect(result).toContain("single word response");
-			expect(result).toContain(
-				"Do not use any of these previously guessed words",
-			);
+			expect(result).toContain("Do not use any of these previously guessed words");
 		});
 
 		it("should generate tutor system prompt with sources and level", async () => {

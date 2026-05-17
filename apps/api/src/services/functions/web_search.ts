@@ -27,14 +27,12 @@ export const web_search: ApiToolDefinition = {
 			},
 			include_answer: {
 				type: "boolean",
-				description:
-					"Whether to include an AI-generated answer in the response",
+				description: "Whether to include an AI-generated answer in the response",
 				default: false,
 			},
 			include_raw_content: {
 				type: "boolean",
-				description:
-					"Whether to include the raw content from the search results",
+				description: "Whether to include the raw content from the search results",
 				default: false,
 			},
 			include_images: {
@@ -50,13 +48,7 @@ export const web_search: ApiToolDefinition = {
 		const completion_id = context.completionId;
 		const conversationManager = context.conversationManager;
 
-		const {
-			query,
-			search_depth,
-			include_answer,
-			include_raw_content,
-			include_images,
-		} = args;
+		const { query, search_depth, include_answer, include_raw_content, include_images } = args;
 		const options: SearchOptions = {
 			search_depth,
 			include_answer,

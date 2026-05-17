@@ -1,9 +1,6 @@
 import type { IRequest } from "~/types";
 
-import type {
-	ContentExtractParams,
-	ExtractedContentPayload,
-} from "../../types/content-extract";
+import type { ContentExtractParams, ExtractedContentPayload } from "../../types/content-extract";
 
 const CLOUDFLARE_TERMINAL_CRAWL_STATUSES = new Set([
 	"completed",
@@ -13,13 +10,7 @@ const CLOUDFLARE_TERMINAL_CRAWL_STATUSES = new Set([
 	"errored",
 ]);
 
-type CloudflareFormat =
-	| "markdown"
-	| "content"
-	| "json"
-	| "links"
-	| "scrape"
-	| "snapshot";
+type CloudflareFormat = "markdown" | "content" | "json" | "links" | "scrape" | "snapshot";
 
 type CloudflareCrawlRecord = {
 	url: string;
@@ -56,9 +47,7 @@ function formatCloudflareValue(
 
 	if (Array.isArray(value)) {
 		return value
-			.map((entry) =>
-				typeof entry === "string" ? entry : JSON.stringify(entry),
-			)
+			.map((entry) => (typeof entry === "string" ? entry : JSON.stringify(entry)))
 			.join("\n");
 	}
 
@@ -69,10 +58,7 @@ function formatCloudflareValue(
 	return fallback;
 }
 
-function mapCloudflareResultToRawContent(
-	format: CloudflareFormat,
-	resultPayload: unknown,
-): string {
+function mapCloudflareResultToRawContent(format: CloudflareFormat, resultPayload: unknown): string {
 	if (!resultPayload || typeof resultPayload !== "object") {
 		return formatCloudflareValue(resultPayload);
 	}
@@ -92,15 +78,11 @@ function mapCloudflareResultToRawContent(
 	}
 
 	if (format === "links") {
-		return formatCloudflareValue(
-			payload.links ?? payload.urls ?? resultPayload,
-		);
+		return formatCloudflareValue(payload.links ?? payload.urls ?? resultPayload);
 	}
 
 	if (format === "scrape") {
-		return formatCloudflareValue(
-			payload.result ?? payload.results ?? resultPayload,
-		);
+		return formatCloudflareValue(payload.result ?? payload.results ?? resultPayload);
 	}
 
 	return formatCloudflareValue(payload.data ?? payload.json ?? resultPayload);
@@ -216,17 +198,12 @@ export async function extractWithCloudflare(
 		const crawlOptions = params.cloudflareCrawlOptions;
 		const crawlPayload: Record<string, unknown> = { url: urls[0] };
 
-		if (crawlOptions.limit !== undefined)
-			crawlPayload.limit = crawlOptions.limit;
-		if (crawlOptions.depth !== undefined)
-			crawlPayload.depth = crawlOptions.depth;
+		if (crawlOptions.limit !== undefined) crawlPayload.limit = crawlOptions.limit;
+		if (crawlOptions.depth !== undefined) crawlPayload.depth = crawlOptions.depth;
 		if (crawlOptions.source) crawlPayload.source = crawlOptions.source;
-		if (crawlOptions.formats?.length)
-			crawlPayload.formats = crawlOptions.formats;
-		if (crawlOptions.render !== undefined)
-			crawlPayload.render = crawlOptions.render;
-		if (crawlOptions.maxAge !== undefined)
-			crawlPayload.maxAge = crawlOptions.maxAge;
+		if (crawlOptions.formats?.length) crawlPayload.formats = crawlOptions.formats;
+		if (crawlOptions.render !== undefined) crawlPayload.render = crawlOptions.render;
+		if (crawlOptions.maxAge !== undefined) crawlPayload.maxAge = crawlOptions.maxAge;
 		if (crawlOptions.modifiedSince !== undefined) {
 			crawlPayload.modifiedSince = crawlOptions.modifiedSince;
 		}
@@ -239,8 +216,7 @@ export async function extractWithCloudflare(
 			body: crawlPayload,
 		})) as string | { id?: string };
 
-		const jobId =
-			typeof createResponse === "string" ? createResponse : createResponse.id;
+		const jobId = typeof createResponse === "string" ? createResponse : createResponse.id;
 		if (!jobId) {
 			throw new Error("Cloudflare crawl did not return a job ID");
 		}
@@ -287,12 +263,8 @@ export async function extractWithCloudflare(
 			cursor = page.cursor;
 		}
 
-		const completedRecords = allRecords.filter(
-			(record) => record.status === "completed",
-		);
-		const failedRecords = allRecords.filter(
-			(record) => record.status !== "completed",
-		);
+		const completedRecords = allRecords.filter((record) => record.status === "completed");
+		const failedRecords = allRecords.filter((record) => record.status !== "completed");
 
 		return {
 			results: completedRecords.map(mapCrawlRecordToExtractedResult),
@@ -321,10 +293,7 @@ export async function extractWithCloudflare(
 		if (format === "json" && params.cloudflareJsonOptions) {
 			Object.assign(requestBody, params.cloudflareJsonOptions);
 		}
-		if (
-			format === "scrape" &&
-			params.cloudflareScrapeOptions?.elements?.length
-		) {
+		if (format === "scrape" && params.cloudflareScrapeOptions?.elements?.length) {
 			requestBody.elements = params.cloudflareScrapeOptions.elements;
 		}
 

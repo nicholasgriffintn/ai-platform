@@ -17,10 +17,7 @@ const logger = getLogger({ prefix: "services/subscription" });
 function getStripeClient(env: IEnv): Stripe {
 	const secret = env.STRIPE_SECRET_KEY;
 	if (!secret) {
-		throw new AssistantError(
-			"Stripe secret key not configured",
-			ErrorType.CONFIGURATION_ERROR,
-		);
+		throw new AssistantError("Stripe secret key not configured", ErrorType.CONFIGURATION_ERROR);
 	}
 	return new Stripe(secret);
 }
@@ -36,15 +33,10 @@ export async function createCheckoutSession(
 
 	if (user.stripe_subscription_id) {
 		const stripe = getStripeClient(env);
-		const subscription = await stripe.subscriptions.retrieve(
-			user.stripe_subscription_id,
-		);
+		const subscription = await stripe.subscriptions.retrieve(user.stripe_subscription_id);
 
 		if (["active", "trialing"].includes(subscription.status)) {
-			throw new AssistantError(
-				"User already has an active subscription",
-				ErrorType.CONFLICT_ERROR,
-			);
+			throw new AssistantError("User already has an active subscription", ErrorType.CONFLICT_ERROR);
 		}
 	}
 
@@ -132,10 +124,7 @@ export async function getSubscriptionStatus(
 				trial_end: null,
 			};
 		}
-		throw new AssistantError(
-			`Stripe API error: ${error.message}`,
-			ErrorType.INTERNAL_ERROR,
-		);
+		throw new AssistantError(`Stripe API error: ${error.message}`, ErrorType.INTERNAL_ERROR);
 	}
 }
 
@@ -189,10 +178,7 @@ export async function cancelSubscription(
 			});
 			throw new AssistantError("Subscription not found", ErrorType.NOT_FOUND);
 		}
-		throw new AssistantError(
-			`Stripe API error: ${error.message}`,
-			ErrorType.INTERNAL_ERROR,
-		);
+		throw new AssistantError(`Stripe API error: ${error.message}`, ErrorType.INTERNAL_ERROR);
 	}
 }
 
@@ -225,10 +211,7 @@ export async function reactivateSubscription(
 			});
 			throw new AssistantError("Subscription not found", ErrorType.NOT_FOUND);
 		}
-		throw new AssistantError(
-			`Stripe API error: ${error.message}`,
-			ErrorType.INTERNAL_ERROR,
-		);
+		throw new AssistantError(`Stripe API error: ${error.message}`, ErrorType.INTERNAL_ERROR);
 	}
 }
 
@@ -239,35 +222,22 @@ export async function handleStripeWebhook(
 ): Promise<{ received: true }> {
 	const sig = signature;
 	if (!sig) {
-		throw new AssistantError(
-			"Missing Stripe signature",
-			ErrorType.AUTHENTICATION_ERROR,
-		);
+		throw new AssistantError("Missing Stripe signature", ErrorType.AUTHENTICATION_ERROR);
 	}
 
 	const webhookSecret = env.STRIPE_WEBHOOK_SECRET;
 	if (!webhookSecret) {
-		throw new AssistantError(
-			"Stripe webhook secret not configured",
-			ErrorType.CONFIGURATION_ERROR,
-		);
+		throw new AssistantError("Stripe webhook secret not configured", ErrorType.CONFIGURATION_ERROR);
 	}
 
 	const stripe = getStripeClient(env);
 
 	let event: Stripe.Event;
 	try {
-		event = await stripe.webhooks.constructEventAsync(
-			payload,
-			sig,
-			webhookSecret,
-		);
+		event = await stripe.webhooks.constructEventAsync(payload, sig, webhookSecret);
 	} catch (err: any) {
 		logger.error(`Webhook signature verification failed: ${err.message}`);
-		throw new AssistantError(
-			"Invalid webhook signature",
-			ErrorType.AUTHENTICATION_ERROR,
-		);
+		throw new AssistantError("Invalid webhook signature", ErrorType.AUTHENTICATION_ERROR);
 	}
 
 	const repositories = new RepositoryManager(env);
@@ -278,8 +248,7 @@ export async function handleStripeWebhook(
 				const customerId = session.customer as string;
 				const subscriptionId = session.subscription as string;
 				if (customerId && subscriptionId) {
-					const user =
-						await repositories.users.getUserByStripeCustomerId(customerId);
+					const user = await repositories.users.getUserByStripeCustomerId(customerId);
 					if (user?.id) {
 						await repositories.users.updateUser(user.id, {
 							stripe_customer_id: customerId,
@@ -300,8 +269,7 @@ export async function handleStripeWebhook(
 			case "customer.subscription.updated": {
 				const subscription = event.data.object as Stripe.Subscription;
 				const customerId = subscription.customer as string;
-				const user =
-					await repositories.users.getUserByStripeCustomerId(customerId);
+				const user = await repositories.users.getUserByStripeCustomerId(customerId);
 				if (user?.id) {
 					await repositories.users.updateUser(user.id, {
 						stripe_subscription_id: subscription.id,
@@ -312,8 +280,7 @@ export async function handleStripeWebhook(
 			case "customer.subscription.deleted": {
 				const subscription = event.data.object as Stripe.Subscription;
 				const customerId = subscription.customer as string;
-				const user =
-					await repositories.users.getUserByStripeCustomerId(customerId);
+				const user = await repositories.users.getUserByStripeCustomerId(customerId);
 				if (user?.id) {
 					await repositories.users.updateUser(user.id, {
 						stripe_subscription_id: null,
@@ -332,8 +299,7 @@ export async function handleStripeWebhook(
 			case "invoice.payment_failed": {
 				const invoice = event.data.object as Stripe.Invoice;
 				const customerId = invoice.customer as string;
-				const user =
-					await repositories.users.getUserByStripeCustomerId(customerId);
+				const user = await repositories.users.getUserByStripeCustomerId(customerId);
 				if (user?.id && user.email) {
 					try {
 						await sendPaymentFailedEmail(env, user.email);
@@ -346,8 +312,7 @@ export async function handleStripeWebhook(
 			case "customer.subscription.trial_will_end": {
 				const subscription = event.data.object as Stripe.Subscription;
 				const customerId = subscription.customer as string;
-				const user =
-					await repositories.users.getUserByStripeCustomerId(customerId);
+				const user = await repositories.users.getUserByStripeCustomerId(customerId);
 				if (user?.id && user.email) {
 					try {
 						await sendTrialEndingEmail(env, user.email);

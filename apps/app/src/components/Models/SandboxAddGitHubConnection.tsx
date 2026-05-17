@@ -15,10 +15,7 @@ import {
 	Button,
 	DialogClose,
 } from "~/components/ui";
-import {
-	useUpsertSandboxConnection,
-	useSandboxInstallConfig,
-} from "~/hooks/useSandbox";
+import { useUpsertSandboxConnection, useSandboxInstallConfig } from "~/hooks/useSandbox";
 import { parseGitHubRepositoryList } from "~/lib/sandbox/repositories";
 
 interface SandboxAddGitHubConnectionProps {
@@ -61,9 +58,7 @@ export const SandboxAddGitHubConnection = ({
 			onClose();
 		} catch (mutationError) {
 			toast.error(
-				mutationError instanceof Error
-					? mutationError.message
-					: "Failed to save connection",
+				mutationError instanceof Error ? mutationError.message : "Failed to save connection",
 			);
 		}
 	};
@@ -83,8 +78,8 @@ export const SandboxAddGitHubConnection = ({
 				<DialogHeader>
 					<DialogTitle>Add GitHub connection</DialogTitle>
 					<DialogDescription>
-						Use our GitHub App installation for an automated setup, or set up
-						your own connection manually.
+						Use our GitHub App installation for an automated setup, or set up your own connection
+						manually.
 					</DialogDescription>
 					<DialogClose onClick={onClose} />
 				</DialogHeader>
@@ -96,9 +91,8 @@ export const SandboxAddGitHubConnection = ({
 								Install GitHub App
 							</p>
 							<p className="mt-1 text-xs text-muted-foreground">
-								Install the GitHub App on your account or organization to allow
-								the sandbox to automatically create branches, commits, and pull
-								requests for your runs.
+								Install the GitHub App on your account or organization to allow the sandbox to
+								automatically create branches, commits, and pull requests for your runs.
 							</p>
 							<div className="mt-3">
 								<Button
@@ -115,9 +109,7 @@ export const SandboxAddGitHubConnection = ({
 						<>
 							<div className="grid gap-4 md:grid-cols-2">
 								<div className="space-y-2">
-									<Label htmlFor="sandbox-installation-id">
-										Installation ID
-									</Label>
+									<Label htmlFor="sandbox-installation-id">Installation ID</Label>
 									<Input
 										id="sandbox-installation-id"
 										type="number"
@@ -148,9 +140,7 @@ export const SandboxAddGitHubConnection = ({
 							</div>
 
 							<div className="space-y-2">
-								<Label htmlFor="sandbox-private-key">
-									GitHub App private key
-								</Label>
+								<Label htmlFor="sandbox-private-key">GitHub App private key</Label>
 								<Textarea
 									id="sandbox-private-key"
 									rows={6}
@@ -166,9 +156,7 @@ export const SandboxAddGitHubConnection = ({
 							</div>
 
 							<div className="space-y-2">
-								<Label htmlFor="sandbox-webhook-secret">
-									Webhook secret (optional)
-								</Label>
+								<Label htmlFor="sandbox-webhook-secret">Webhook secret (optional)</Label>
 								<Input
 									id="sandbox-webhook-secret"
 									placeholder="Webhook signing secret"
@@ -183,9 +171,7 @@ export const SandboxAddGitHubConnection = ({
 							</div>
 
 							<div className="space-y-2">
-								<Label htmlFor="sandbox-repositories">
-									Allowed repositories (optional)
-								</Label>
+								<Label htmlFor="sandbox-repositories">Allowed repositories (optional)</Label>
 								<Textarea
 									id="sandbox-repositories"
 									rows={3}
@@ -199,8 +185,8 @@ export const SandboxAddGitHubConnection = ({
 									}
 								/>
 								<p className="text-xs text-muted-foreground">
-									Leave blank to allow this installation to run against any
-									repository it can access.
+									Leave blank to allow this installation to run against any repository it can
+									access.
 								</p>
 							</div>
 						</>
@@ -212,18 +198,12 @@ export const SandboxAddGitHubConnection = ({
 						Cancel
 					</Button>
 					{!configureManually ? (
-						<Button
-							variant="outline"
-							onClick={() => setConfigureManually(true)}
-						>
+						<Button variant="outline" onClick={() => setConfigureManually(true)}>
 							Configure manually
 						</Button>
 					) : (
 						<>
-							<Button
-								variant="outline"
-								onClick={() => setConfigureManually(false)}
-							>
+							<Button variant="outline" onClick={() => setConfigureManually(false)}>
 								Use GitHub App installation
 							</Button>
 							<Button

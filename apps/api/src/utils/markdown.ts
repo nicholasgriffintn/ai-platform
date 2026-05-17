@@ -57,9 +57,7 @@ export function convertMarkdownToHtml(markdown: string): string {
 
 	// Process paragraphs (skip if already in a block element)
 	html = html.replace(/^\s*(\n)?(.+)/gm, (m) => {
-		return /^<(\/)?((h[1-6])|ul|ol|li|blockquote|pre|img|p)/.test(m)
-			? m
-			: `<p>${m}</p>`;
+		return /^<(\/)?((h[1-6])|ul|ol|li|blockquote|pre|img|p)/.test(m) ? m : `<p>${m}</p>`;
 	});
 
 	// Handle line breaks

@@ -4,13 +4,7 @@ import { useState } from "react";
 import { Favicon } from "~/components/ui";
 import { MemoizedMarkdown } from "~/components/ui/Markdown";
 
-export function TutorView({
-	data,
-	embedded,
-}: {
-	data: any;
-	embedded: boolean;
-}) {
+export function TutorView({ data, embedded }: { data: any; embedded: boolean }) {
 	const [showAllSources, setShowAllSources] = useState(false);
 
 	if (!data) {
@@ -26,8 +20,7 @@ export function TutorView({
 		parallel: "Parallel",
 	};
 
-	const providerLabel =
-		(provider && providerLabels[provider]) || provider || "Unknown provider";
+	const providerLabel = (provider && providerLabels[provider]) || provider || "Unknown provider";
 
 	const getDomain = (url: string) => {
 		try {
@@ -96,9 +89,7 @@ export function TutorView({
 								onClick={handleToggleSources}
 								className="flex items-center justify-center min-w-[100px] p-3 border border-gray-700 rounded-md hover:bg-gray-800 transition-colors cursor-pointer"
 							>
-								<span className="text-zinc-600 dark:text-zinc-300">
-									Show less
-								</span>
+								<span className="text-zinc-600 dark:text-zinc-300">Show less</span>
 							</button>
 						)}
 					</div>
@@ -107,9 +98,7 @@ export function TutorView({
 				{providerLabel && (
 					<div className="mt-2">
 						<div className="inline-flex items-center gap-2 bg-blue-500/10 dark:bg-blue-500/20 text-blue-600 dark:text-blue-300 px-3 py-1 rounded-full w-fit">
-							<span className="font-medium tracking-wide uppercase text-xs">
-								Provider
-							</span>
+							<span className="font-medium tracking-wide uppercase text-xs">Provider</span>
 							<span className="font-medium text-xs">{providerLabel}</span>
 						</div>
 					</div>

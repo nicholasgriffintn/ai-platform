@@ -25,8 +25,7 @@ const routeLogger = createRouteLogger("memories");
 addRoute(app, "get", "/", {
 	tags: ["memories"],
 	summary: "List user memories",
-	description:
-		"Get all memories for the authenticated user, optionally filtered by group",
+	description: "Get all memories for the authenticated user, optionally filtered by group",
 	responses: {
 		200: {
 			description: "List of user memories",
@@ -51,11 +50,7 @@ addRoute(app, "get", "/", {
 				return ResponseFactory.success(context, result);
 			} catch (error) {
 				routeLogger.error("Failed to list memories", { error });
-				return ResponseFactory.error(
-					context,
-					"Failed to retrieve memories",
-					500,
-				);
+				return ResponseFactory.error(context, "Failed to retrieve memories", 500);
 			}
 		})(raw),
 });
@@ -76,9 +71,7 @@ addRoute(app, "post", "/groups", {
 		(async (context: Context) => {
 			try {
 				const userContext = context.get("user");
-				const { title, description, category } = context.req.valid(
-					"json" as never,
-				) as {
+				const { title, description, category } = context.req.valid("json" as never) as {
 					title: string;
 					description?: string;
 					category?: string;
@@ -90,12 +83,7 @@ addRoute(app, "post", "/groups", {
 
 				const serviceContext = getServiceContext(context);
 
-				const result = await handleCreateMemoryGroup(
-					serviceContext,
-					title,
-					description,
-					category,
-				);
+				const result = await handleCreateMemoryGroup(serviceContext, title, description, category);
 
 				return ResponseFactory.success(context, result, 201);
 			} catch (error) {
@@ -132,20 +120,12 @@ addRoute(app, "post", "/groups/:group_id/memories", {
 
 				const serviceContext = getServiceContext(context);
 
-				const result = await handleAddMemoriesToGroup(
-					serviceContext,
-					groupId,
-					memory_ids,
-				);
+				const result = await handleAddMemoriesToGroup(serviceContext, groupId, memory_ids);
 
 				return ResponseFactory.success(context, result);
 			} catch (error) {
 				routeLogger.error("Failed to add memories to group", { error });
-				return ResponseFactory.error(
-					context,
-					"Failed to add memories to group",
-					500,
-				);
+				return ResponseFactory.error(context, "Failed to add memories to group", 500);
 			}
 		})(raw),
 });

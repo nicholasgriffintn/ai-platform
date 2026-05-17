@@ -34,9 +34,7 @@ export function createModelConfig(
 	];
 }
 
-export function createModelConfigObject(
-	entries: Array<[string, ModelConfigItem]>,
-): ModelConfig {
+export function createModelConfigObject(entries: Array<[string, ModelConfigItem]>): ModelConfig {
 	return Object.fromEntries(entries);
 }
 

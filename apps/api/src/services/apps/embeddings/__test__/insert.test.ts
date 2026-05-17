@@ -39,10 +39,7 @@ vi.mock("~/repositories", () => ({
 	},
 }));
 
-vi.mock(
-	"~/lib/providers/capabilities/embedding/helpers",
-	() => embeddingHelperMocks,
-);
+vi.mock("~/lib/providers/capabilities/embedding/helpers", () => embeddingHelperMocks);
 
 vi.mock("~/lib/chat/utils", () => ({
 	sanitiseInput: vi.fn((input) => input),
@@ -144,9 +141,7 @@ describe("insertEmbedding", () => {
 			},
 		};
 
-		mockRepositories.embeddings.getEmbeddingIdByType.mockResolvedValue(
-			"blog-456",
-		);
+		mockRepositories.embeddings.getEmbeddingIdByType.mockResolvedValue("blog-456");
 		mockRepositories.userSettings.getUserSettings.mockResolvedValue({});
 		mockEmbeddingProvider.generate.mockResolvedValue([{ id: "vec-2" }]);
 		mockEmbeddingProvider.insert.mockResolvedValue({ status: "success" });
@@ -154,9 +149,10 @@ describe("insertEmbedding", () => {
 		const result = await insertEmbedding(req);
 
 		expect(result.status).toBe("success");
-		expect(
-			mockRepositories.embeddings.getEmbeddingIdByType,
-		).toHaveBeenCalledWith("blog-456", "blog");
+		expect(mockRepositories.embeddings.getEmbeddingIdByType).toHaveBeenCalledWith(
+			"blog-456",
+			"blog",
+		);
 	});
 
 	it("should throw error for missing type", async () => {
@@ -173,9 +169,7 @@ describe("insertEmbedding", () => {
 		};
 
 		// @ts-ignore - req.request.type is required
-		await expect(insertEmbedding(req)).rejects.toThrow(
-			"Error inserting embedding",
-		);
+		await expect(insertEmbedding(req)).rejects.toThrow("Error inserting embedding");
 	});
 
 	it("should throw error for missing content", async () => {
@@ -192,9 +186,7 @@ describe("insertEmbedding", () => {
 		};
 
 		// @ts-ignore - req.request.content is required
-		await expect(insertEmbedding(req)).rejects.toThrow(
-			"Error inserting embedding",
-		);
+		await expect(insertEmbedding(req)).rejects.toThrow("Error inserting embedding");
 	});
 
 	it("should throw error for non-existent blog", async () => {
@@ -213,9 +205,7 @@ describe("insertEmbedding", () => {
 
 		mockRepositories.embeddings.getEmbeddingIdByType.mockResolvedValue(null);
 
-		await expect(insertEmbedding(req)).rejects.toThrow(
-			"Error inserting embedding",
-		);
+		await expect(insertEmbedding(req)).rejects.toThrow("Error inserting embedding");
 	});
 
 	it("should handle chunked content", async () => {
@@ -241,13 +231,8 @@ describe("insertEmbedding", () => {
 		const result = await insertEmbedding(req);
 
 		expect(result.status).toBe("success");
-		expect(vi.mocked(chunkText)).toHaveBeenCalledWith(
-			"Long content that needs chunking",
-			100,
-		);
-		expect(mockRepositories.embeddings.insertEmbedding).toHaveBeenCalledTimes(
-			3,
-		);
+		expect(vi.mocked(chunkText)).toHaveBeenCalledWith("Long content that needs chunking", 100);
+		expect(mockRepositories.embeddings.insertEmbedding).toHaveBeenCalledTimes(3);
 	});
 
 	it("should generate unique ID when not provided", async () => {
@@ -294,9 +279,7 @@ describe("insertEmbedding", () => {
 		mockEmbeddingProvider.generate.mockResolvedValue([{ id: "vec-1" }]);
 		mockEmbeddingProvider.insert.mockResolvedValue({ status: "error" });
 
-		await expect(insertEmbedding(req)).rejects.toThrow(
-			"Error inserting embedding",
-		);
+		await expect(insertEmbedding(req)).rejects.toThrow("Error inserting embedding");
 	});
 
 	it("should handle database errors gracefully", async () => {
@@ -313,12 +296,8 @@ describe("insertEmbedding", () => {
 			},
 		};
 
-		mockRepositories.embeddings.insertEmbedding.mockRejectedValue(
-			new Error("Database error"),
-		);
+		mockRepositories.embeddings.insertEmbedding.mockRejectedValue(new Error("Database error"));
 
-		await expect(insertEmbedding(req)).rejects.toThrow(
-			"Error inserting embedding",
-		);
+		await expect(insertEmbedding(req)).rejects.toThrow("Error inserting embedding");
 	});
 });

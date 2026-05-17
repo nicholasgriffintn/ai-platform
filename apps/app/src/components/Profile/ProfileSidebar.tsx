@@ -46,10 +46,7 @@ interface ProfileSidebarProps {
 	onSelectItem: (id: string) => void;
 }
 
-export function ProfileSidebar({
-	activeItemId,
-	onSelectItem,
-}: ProfileSidebarProps) {
+export function ProfileSidebar({ activeItemId, onSelectItem }: ProfileSidebarProps) {
 	const { sidebarVisible, isMobile, setSidebarVisible } = useUIStore();
 	const { isAuthenticated, logout, isLoggingOut } = useAuthStatus();
 
@@ -65,9 +62,7 @@ export function ProfileSidebar({
 			)}
 			<div
 				className={`fixed md:relative z-50 h-full w-64 bg-off-white dark:bg-zinc-900 transition-transform duration-300 ease-in-out border-r border-zinc-200 dark:border-zinc-800 ${
-					sidebarVisible
-						? "translate-x-0"
-						: "-translate-x-full md:translate-x-0 md:w-0 md:border-0"
+					sidebarVisible ? "translate-x-0" : "-translate-x-full md:translate-x-0 md:w-0 md:border-0"
 				}`}
 			>
 				{sidebarVisible && (

@@ -5,11 +5,7 @@ import type { IEnv, IUser, IUserSettings } from "~/types";
 import { Database } from "~/lib/database";
 import { RepositoryManager } from "~/repositories";
 import { AssistantError, ErrorType } from "~/utils/errors";
-import {
-	createRequestCache,
-	memoizeRequest,
-	type RequestCache,
-} from "~/utils/requestCache";
+import { createRequestCache, memoizeRequest, type RequestCache } from "~/utils/requestCache";
 import type { LoggerOptions } from "~/utils/logger";
 import { getLogger } from "~/utils/logger";
 
@@ -47,10 +43,7 @@ export const createServiceContext = ({
 
 	const ensureDatabase = (): D1Database => {
 		if (!env.DB) {
-			throw new AssistantError(
-				"Database not configured",
-				ErrorType.CONFIGURATION_ERROR,
-			);
+			throw new AssistantError("Database not configured", ErrorType.CONFIGURATION_ERROR);
 		}
 
 		return env.DB;
@@ -58,10 +51,7 @@ export const createServiceContext = ({
 
 	const requireUser = (): IUser => {
 		if (!user?.id) {
-			throw new AssistantError(
-				"User is not authenticated",
-				ErrorType.AUTHENTICATION_ERROR,
-			);
+			throw new AssistantError("User is not authenticated", ErrorType.AUTHENTICATION_ERROR);
 		}
 
 		return user;
@@ -78,19 +68,13 @@ export const createServiceContext = ({
 		}
 
 		if (!userSettingsPromise) {
-			userSettingsPromise = memoizeRequest(
-				requestCache,
-				`user-settings:${user.id}`,
-				async () => {
-					if (!_repositories) {
-						_repositories = new RepositoryManager(env);
-					}
-					const settings = await _repositories.userSettings.getUserSettings(
-						user.id,
-					);
-					return settings;
-				},
-			);
+			userSettingsPromise = memoizeRequest(requestCache, `user-settings:${user.id}`, async () => {
+				if (!_repositories) {
+					_repositories = new RepositoryManager(env);
+				}
+				const settings = await _repositories.userSettings.getUserSettings(user.id);
+				return settings;
+			});
 		}
 
 		cachedUserSettings = await userSettingsPromise;
@@ -153,10 +137,7 @@ export const resolveServiceContext = ({
 	}
 
 	if (!env) {
-		throw new AssistantError(
-			"Service context requires environment",
-			ErrorType.CONFIGURATION_ERROR,
-		);
+		throw new AssistantError("Service context requires environment", ErrorType.CONFIGURATION_ERROR);
 	}
 
 	return createServiceContext({

@@ -48,9 +48,7 @@ describe("image prompts", () => {
 		it("should return default prompt for valid default style", () => {
 			const result = getTextToImageSystemPrompt("default");
 			expect(result).toBe(imagePrompts.default.prompt);
-			expect(result).toContain(
-				"Create a high-quality image that is a realistic representation",
-			);
+			expect(result).toContain("Create a high-quality image that is a realistic representation");
 		});
 
 		it("should return correct prompt for specific valid styles", () => {
@@ -85,9 +83,7 @@ describe("image prompts", () => {
 		});
 
 		it("should handle all defined styles without error", () => {
-			const styleKeys = Object.keys(imagePrompts) as Array<
-				keyof typeof imagePrompts
-			>;
+			const styleKeys = Object.keys(imagePrompts) as Array<keyof typeof imagePrompts>;
 
 			styleKeys.forEach((style) => {
 				expect(() => getTextToImageSystemPrompt(style)).not.toThrow();

@@ -13,12 +13,8 @@ export const CHATS_QUERY_KEY = "chats";
 
 export const SHOW_DEV_TOOLS = IS_DEVELOPMENT;
 
-export const API_BASE_URL = IS_PRODUCTION
-	? "https://api.polychat.app"
-	: "http://localhost:8787";
-export const WS_API_URL = IS_PRODUCTION
-	? "wss://api.polychat.app"
-	: "ws://localhost:8787";
+export const API_BASE_URL = IS_PRODUCTION ? "https://api.polychat.app" : "http://localhost:8787";
+export const WS_API_URL = IS_PRODUCTION ? "wss://api.polychat.app" : "ws://localhost:8787";
 
 export const POSTHOG_CONFIG = {
 	apiKey: import.meta.env.VITE_PUBLIC_POSTHOG_KEY || "disabled",
@@ -29,8 +25,7 @@ export const POSTHOG_CONFIG = {
 
 export const BEACON_CONFIG = {
 	enabled: import.meta.env.VITE_ENABLE_BEACON === "true" || false,
-	experimentsEnabled:
-		import.meta.env.VITE_ENABLE_BEACON_EXPERIMENTS === "true" || false,
+	experimentsEnabled: import.meta.env.VITE_ENABLE_BEACON_EXPERIMENTS === "true" || false,
 	endpoint: import.meta.env.VITE_BEACON_ENDPOINT || "",
 	siteId: import.meta.env.VITE_BEACON_SITE_ID || "",
 	debug: import.meta.env.VITE_BEACON_DEBUG === "true" || false,
@@ -41,17 +36,8 @@ export const ENABLE_CAPTCHA_IN_DEV = false;
 
 const COMMON_CSP = {
 	defaultSrc: ["'self'"],
-	frameSrc: [
-		"https://hcaptcha.com",
-		"https://*.hcaptcha.com",
-		"https://strudel.cc",
-	],
-	styleSrc: [
-		"https://hcaptcha.com",
-		"https://*.hcaptcha.com",
-		"'self'",
-		"'unsafe-inline'",
-	],
+	frameSrc: ["https://hcaptcha.com", "https://*.hcaptcha.com", "https://strudel.cc"],
+	styleSrc: ["https://hcaptcha.com", "https://*.hcaptcha.com", "'self'", "'unsafe-inline'"],
 	imgSrc: [
 		"openweathermap.org",
 		"assistant-assets.nickgriffin.uk",

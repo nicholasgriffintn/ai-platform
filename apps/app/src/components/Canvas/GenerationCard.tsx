@@ -3,11 +3,7 @@ import { Clock3 } from "lucide-react";
 import { ImageModal } from "~/components/ui";
 import { cn } from "~/lib/utils";
 import type { CanvasMode } from "~/types/canvas";
-import {
-	getCardAspectClass,
-	getMediaPreview,
-	getPlaceholderPaletteClass,
-} from "./utils";
+import { getCardAspectClass, getMediaPreview, getPlaceholderPaletteClass } from "./utils";
 
 export interface CanvasRun {
 	key: string;

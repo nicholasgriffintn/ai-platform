@@ -242,9 +242,7 @@ describe("MessageFormatter", () => {
 
 			const result = MessageFormatter.formatMessages(messages);
 
-			expect(result[0].content).toContain(
-				"[Tool Response: test_tool] Response content",
-			);
+			expect(result[0].content).toContain("[Tool Response: test_tool] Response content");
 			expect(result[0].content).toContain('Data: {"key":"value"}');
 		});
 
@@ -259,9 +257,7 @@ describe("MessageFormatter", () => {
 
 			const result = MessageFormatter.formatMessages(messages);
 
-			expect(result[0].content).toContain(
-				"[Tool Response: unknown] Response content",
-			);
+			expect(result[0].content).toContain("[Tool Response: unknown] Response content");
 		});
 
 		it("should handle tool message with malformed data", () => {
@@ -279,9 +275,7 @@ describe("MessageFormatter", () => {
 
 			const result = MessageFormatter.formatMessages(messages);
 
-			expect(result[0].content).toContain(
-				"[Tool Response: test_tool] Response content",
-			);
+			expect(result[0].content).toContain("[Tool Response: test_tool] Response content");
 			expect(result[0].content).not.toContain("Data:");
 		});
 
@@ -335,9 +329,7 @@ describe("MessageFormatter", () => {
 
 	describe("content type handling", () => {
 		it("should convert single string array to text block with cache_control for anthropic", () => {
-			const messages: Message[] = [
-				{ role: "user", content: ["Single text content"] as any },
-			];
+			const messages: Message[] = [{ role: "user", content: ["Single text content"] as any }];
 
 			const result = MessageFormatter.formatMessages(messages, {
 				provider: "anthropic",

@@ -1,10 +1,4 @@
-import {
-	Loader2,
-	CheckCircle2,
-	XCircle,
-	Clock,
-	AlertCircle,
-} from "lucide-react";
+import { Loader2, CheckCircle2, XCircle, Clock, AlertCircle } from "lucide-react";
 
 export function getStatusIcon(status: string): React.ReactNode {
 	switch (status) {

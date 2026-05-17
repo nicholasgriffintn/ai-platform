@@ -8,10 +8,7 @@ import {
 } from "../dispatch";
 import { createServiceContext } from "~/lib/context/serviceContext";
 import { executeSandboxWorker } from "~/services/sandbox/worker";
-import {
-	appendRunCoordinatorEvent,
-	updateRunCoordinatorControl,
-} from "../run-coordinator";
+import { appendRunCoordinatorEvent, updateRunCoordinatorControl } from "../run-coordinator";
 import { persistSandboxRunArtifact } from "../run-artifacts";
 import { indexSandboxRunResult } from "../run-indexing";
 
@@ -175,9 +172,7 @@ describe("sandbox dispatch", () => {
 					},
 				},
 			}),
-		).rejects.toThrow(
-			"TASK_QUEUE binding is not configured for sandbox run dispatch",
-		);
+		).rejects.toThrow("TASK_QUEUE binding is not configured for sandbox run dispatch");
 	});
 
 	it("processes queued runs and persists completed state", async () => {
@@ -230,9 +225,7 @@ describe("sandbox dispatch", () => {
 	});
 
 	it("marks queued runs as failed when worker startup throws", async () => {
-		vi.mocked(executeSandboxWorker).mockRejectedValueOnce(
-			new Error("worker startup failed"),
-		);
+		vi.mocked(executeSandboxWorker).mockRejectedValueOnce(new Error("worker startup failed"));
 
 		await processSandboxRunDispatch({
 			env: {} as any,

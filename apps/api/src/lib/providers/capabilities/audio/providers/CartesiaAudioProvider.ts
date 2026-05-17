@@ -1,22 +1,13 @@
-import type {
-	AudioProvider,
-	AudioSynthesisRequest,
-	AudioSynthesisResult,
-} from "..";
+import type { AudioProvider, AudioSynthesisRequest, AudioSynthesisResult } from "..";
 import { BaseAudioProvider } from "../base";
 import { CertesiaProvider } from "~/lib/providers/capabilities/chat/providers/certesia";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
-export class CartesiaAudioProvider
-	extends BaseAudioProvider
-	implements AudioProvider
-{
+export class CartesiaAudioProvider extends BaseAudioProvider implements AudioProvider {
 	name = "cartesia";
 	private readonly provider = new CertesiaProvider();
 
-	async synthesize(
-		request: AudioSynthesisRequest,
-	): Promise<AudioSynthesisResult> {
+	async synthesize(request: AudioSynthesisRequest): Promise<AudioSynthesisResult> {
 		const storage = this.requireStorage(request);
 		const slugBase = this.resolveSlugBase(request);
 		const objectKey = this.buildObjectKey(slugBase);
@@ -30,10 +21,7 @@ export class CartesiaAudioProvider
 		});
 
 		if (!(response instanceof Response) && !(response instanceof ArrayBuffer)) {
-			throw new AssistantError(
-				"Cartesia returned an unexpected payload",
-				ErrorType.PROVIDER_ERROR,
-			);
+			throw new AssistantError("Cartesia returned an unexpected payload", ErrorType.PROVIDER_ERROR);
 		}
 
 		let audioBuffer: ArrayBuffer;
@@ -44,10 +32,7 @@ export class CartesiaAudioProvider
 		}
 
 		if (!audioBuffer || audioBuffer.byteLength === 0) {
-			throw new AssistantError(
-				"No audio data returned by Cartesia",
-				ErrorType.PROVIDER_ERROR,
-			);
+			throw new AssistantError("No audio data returned by Cartesia", ErrorType.PROVIDER_ERROR);
 		}
 
 		await storage.uploadObject(objectKey, new Uint8Array(audioBuffer));

@@ -1,7 +1,4 @@
-import {
-	resolveServiceContext,
-	type ServiceContext,
-} from "~/lib/context/serviceContext";
+import { resolveServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
 import type { IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { safeParseJson } from "../../../utils/json";
@@ -35,9 +32,7 @@ interface PodcastItem {
 	};
 }
 
-export const handlePodcastList = async (
-	req: IPodcastListRequest,
-): Promise<IPodcast[]> => {
+export const handlePodcastList = async (req: IPodcastListRequest): Promise<IPodcast[]> => {
 	const { env, context, user } = req;
 
 	if (!user?.id) {
@@ -47,10 +42,7 @@ export const handlePodcastList = async (
 	serviceContext.ensureDatabase();
 	const repositories = serviceContext.repositories;
 
-	const appDataList = await repositories.appData.getAppDataByUserAndApp(
-		user.id,
-		"podcasts",
-	);
+	const appDataList = await repositories.appData.getAppDataByUserAndApp(user.id, "podcasts");
 
 	if (!appDataList || appDataList.length === 0) {
 		return [];

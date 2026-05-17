@@ -27,12 +27,8 @@ describe("SerperProvider", () => {
 		it("should throw error when API key is missing", () => {
 			const envWithoutKey = { ...mockEnv, SERPER_API_KEY: undefined } as IEnv;
 
-			expect(() => new SerperProvider(envWithoutKey)).toThrow(
-				expect.any(AssistantError),
-			);
-			expect(() => new SerperProvider(envWithoutKey)).toThrow(
-				"SERPER_API_KEY is not set",
-			);
+			expect(() => new SerperProvider(envWithoutKey)).toThrow(expect.any(AssistantError));
+			expect(() => new SerperProvider(envWithoutKey)).toThrow("SERPER_API_KEY is not set");
 		});
 
 		it("should throw error with correct error type when API key is missing", () => {
@@ -42,9 +38,7 @@ describe("SerperProvider", () => {
 				new SerperProvider(envWithoutKey);
 			} catch (error) {
 				expect(error).toBeInstanceOf(AssistantError);
-				expect((error as AssistantError).type).toBe(
-					ErrorType.CONFIGURATION_ERROR,
-				);
+				expect((error as AssistantError).type).toBe(ErrorType.CONFIGURATION_ERROR);
 			}
 		});
 	});
@@ -160,9 +154,7 @@ describe("SerperProvider", () => {
 		it("should handle network errors", async () => {
 			vi.mocked(fetch).mockRejectedValue(new Error("Network error"));
 
-			await expect(provider.performWebSearch("test query")).rejects.toThrow(
-				"Network error",
-			);
+			await expect(provider.performWebSearch("test query")).rejects.toThrow("Network error");
 		});
 
 		it("should handle malformed JSON response", async () => {
@@ -174,21 +166,19 @@ describe("SerperProvider", () => {
 				},
 			} as Response);
 
-			await expect(provider.performWebSearch("test query")).rejects.toThrow(
-				"Invalid JSON",
-			);
+			await expect(provider.performWebSearch("test query")).rejects.toThrow("Invalid JSON");
 		});
 
 		it("should throw error if API key becomes undefined after construction", async () => {
 			const providerWithDynamicKey = new SerperProvider(mockEnv);
 			(providerWithDynamicKey as any).apiKey = undefined;
 
-			await expect(
-				providerWithDynamicKey.performWebSearch("test query"),
-			).rejects.toThrow(expect.any(AssistantError));
-			await expect(
-				providerWithDynamicKey.performWebSearch("test query"),
-			).rejects.toThrow("SERPER_API_KEY is not set");
+			await expect(providerWithDynamicKey.performWebSearch("test query")).rejects.toThrow(
+				expect.any(AssistantError),
+			);
+			await expect(providerWithDynamicKey.performWebSearch("test query")).rejects.toThrow(
+				"SERPER_API_KEY is not set",
+			);
 		});
 	});
 });

@@ -44,24 +44,15 @@ export const captureScreenshot = async (
 ): Promise<CaptureScreenshotResult> => {
 	try {
 		if (!req.env.ACCOUNT_ID) {
-			throw new AssistantError(
-				"Cloudflare Account ID not configured",
-				ErrorType.PARAMS_ERROR,
-			);
+			throw new AssistantError("Cloudflare Account ID not configured", ErrorType.PARAMS_ERROR);
 		}
 
 		if (!req.env.BROWSER_RENDERING_API_KEY) {
-			throw new AssistantError(
-				"Browser Rendering API Key not configured",
-				ErrorType.PARAMS_ERROR,
-			);
+			throw new AssistantError("Browser Rendering API Key not configured", ErrorType.PARAMS_ERROR);
 		}
 
 		if (!params.url && !params.html) {
-			throw new AssistantError(
-				"Either URL or HTML must be provided",
-				ErrorType.PARAMS_ERROR,
-			);
+			throw new AssistantError("Either URL or HTML must be provided", ErrorType.PARAMS_ERROR);
 		}
 
 		const screenshotId = generateId();

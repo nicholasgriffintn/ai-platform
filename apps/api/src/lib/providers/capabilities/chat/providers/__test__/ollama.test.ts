@@ -64,9 +64,7 @@ describe("OllamaProvider", () => {
 			expect(result.model).toBe("llama2");
 			expect(result.temperature).toBe(0.7);
 			expect(result.max_tokens).toBe(1024);
-			expect(result.tools).toEqual([
-				{ type: "function", function: { name: "test_tool" } },
-			]);
+			expect(result.tools).toEqual([{ type: "function", function: { name: "test_tool" } }]);
 			expect(result.stream).toBeUndefined(); // streaming disabled
 		});
 	});

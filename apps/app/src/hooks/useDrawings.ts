@@ -6,11 +6,7 @@ import {
 	generateImageFromDrawing,
 	guessDrawingFromImage,
 } from "~/lib/api/drawings";
-import type {
-	Drawing,
-	GenerateImageResponse,
-	GuessResponse,
-} from "~/types/drawing";
+import type { Drawing, GenerateImageResponse, GuessResponse } from "~/types/drawing";
 
 export const useFetchDrawings = () => {
 	return useQuery<Drawing[], Error>({
@@ -29,11 +25,7 @@ export const useFetchDrawing = (id: string | undefined) => {
 
 export const useGenerateDrawing = () => {
 	const queryClient = useQueryClient();
-	return useMutation<
-		GenerateImageResponse,
-		Error,
-		{ drawing: File; drawingId?: string }
-	>({
+	return useMutation<GenerateImageResponse, Error, { drawing: File; drawingId?: string }>({
 		mutationFn: (data) => generateImageFromDrawing(data),
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["drawings"] });

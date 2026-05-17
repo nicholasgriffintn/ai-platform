@@ -1,8 +1,4 @@
-import type {
-	ChatCompletionParameters,
-	Message,
-	MessageContent,
-} from "~/types";
+import type { ChatCompletionParameters, Message, MessageContent } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
 export type BedrockContentBlock =
@@ -73,50 +69,27 @@ function toBedrockContentBlock(
 			return { text: typedItem.text || "" };
 		case "image_url":
 			if (typedItem.image_url?.url) {
-				return buildMediaContent(
-					typedItem.image_url.url,
-					params,
-					"image",
-					"png",
-				);
+				return buildMediaContent(typedItem.image_url.url, params, "image", "png");
 			}
 			return null;
 		case "video_url":
 			if (typedItem.video_url?.url) {
-				return buildMediaContent(
-					typedItem.video_url.url,
-					params,
-					"video",
-					"mp4",
-				);
+				return buildMediaContent(typedItem.video_url.url, params, "video", "mp4");
 			}
 			return null;
 		case "audio_url":
 			if (typedItem.audio_url?.url) {
-				return buildMediaContent(
-					typedItem.audio_url.url,
-					params,
-					"audio",
-					"mp3",
-				);
+				return buildMediaContent(typedItem.audio_url.url, params, "audio", "mp3");
 			}
 			return null;
 		case "document_url":
 			if (typedItem.document_url?.url) {
-				return buildMediaContent(
-					typedItem.document_url.url,
-					params,
-					"document",
-					"pdf",
-				);
+				return buildMediaContent(typedItem.document_url.url, params, "document", "pdf");
 			}
 			return null;
 		case "input_audio":
 			if (typedItem.input_audio?.data) {
-				return buildInputAudioContent(
-					typedItem.input_audio.data,
-					typedItem.input_audio.format,
-				);
+				return buildInputAudioContent(typedItem.input_audio.data, typedItem.input_audio.format);
 			}
 			return null;
 		case "tool_result":
@@ -138,12 +111,7 @@ function buildMediaContent(
 	mediaKind: MediaKind,
 	defaultFormat: string,
 ): BedrockContentBlock {
-	const { format, source } = resolveMediaSource(
-		url,
-		params,
-		mediaKind,
-		defaultFormat,
-	);
+	const { format, source } = resolveMediaSource(url, params, mediaKind, defaultFormat);
 
 	return {
 		[mediaKind]: {
@@ -153,10 +121,7 @@ function buildMediaContent(
 	} as BedrockContentBlock;
 }
 
-function buildInputAudioContent(
-	data: string,
-	format?: string,
-): BedrockContentBlock {
+function buildInputAudioContent(data: string, format?: string): BedrockContentBlock {
 	if (!data) {
 		throw new AssistantError(
 			"Audio data is required for Bedrock input_audio content",
@@ -207,10 +172,7 @@ function resolveMediaSource(
 	);
 }
 
-function parseDataUrl(
-	dataUrl: string,
-	mediaKind: MediaKind,
-): { mediaType: string; data: string } {
+function parseDataUrl(dataUrl: string, mediaKind: MediaKind): { mediaType: string; data: string } {
 	const match = dataUrl.match(/^data:([^;]+);base64,(.+)$/);
 
 	if (!match) {
@@ -223,11 +185,7 @@ function parseDataUrl(
 	return { mediaType: match[1], data: match[2] };
 }
 
-function mapMediaTypeToFormat(
-	mediaType: string,
-	fallback: string,
-	mediaKind: MediaKind,
-): string {
+function mapMediaTypeToFormat(mediaType: string, fallback: string, mediaKind: MediaKind): string {
 	const [_type, rawSubtype] = mediaType.split("/");
 	const subtype = rawSubtype?.split("+")[0]?.toLowerCase();
 

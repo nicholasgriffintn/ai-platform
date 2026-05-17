@@ -43,9 +43,7 @@ export function MemoryGroups({
 	return (
 		<div className="bg-white dark:bg-zinc-800 rounded-lg shadow-sm border border-zinc-200 dark:border-zinc-700 p-4">
 			<div className="flex items-center justify-between mb-3">
-				<h2 className="text-md font-medium text-zinc-800 dark:text-zinc-100">
-					Memory Groups
-				</h2>
+				<h2 className="text-md font-medium text-zinc-800 dark:text-zinc-100">Memory Groups</h2>
 			</div>
 
 			<div className="space-y-1">
@@ -114,8 +112,7 @@ export function MemoryGroups({
 				<div className="text-center py-6">
 					<Folder className="h-8 w-8 text-zinc-400 mx-auto mb-3" />
 					<p className="text-zinc-600 dark:text-zinc-400 text-xs">
-						No memory groups yet. Create your first group to start organizing
-						your memories.
+						No memory groups yet. Create your first group to start organizing your memories.
 					</p>
 				</div>
 			)}

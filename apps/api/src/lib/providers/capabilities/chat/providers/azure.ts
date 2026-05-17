@@ -6,10 +6,7 @@ import type { ChatCompletionParameters } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { detectStreaming } from "~/utils/streaming";
 import { BaseProvider } from "./base";
-import {
-	getAiGatewayMetadataHeaders,
-	resolveAiGatewayCacheTtl,
-} from "~/utils/aiGateway";
+import { getAiGatewayMetadataHeaders, resolveAiGatewayCacheTtl } from "~/utils/aiGateway";
 
 // @ts-expect-error - AzureOpenAIProvider is different and CBA to work around it.
 export class AzureOpenAIProvider extends BaseProvider {
@@ -34,10 +31,7 @@ export class AzureOpenAIProvider extends BaseProvider {
 		const delimiter = "::@@::";
 		const parts = apiKey.split(delimiter);
 		if (parts.length !== 3) {
-			throw new AssistantError(
-				"Invalid Azure credentials format",
-				ErrorType.CONFIGURATION_ERROR,
-			);
+			throw new AssistantError("Invalid Azure credentials format", ErrorType.CONFIGURATION_ERROR);
 		}
 		return {
 			resourceName: parts[0],
@@ -55,17 +49,13 @@ export class AzureOpenAIProvider extends BaseProvider {
 		return `${resourceName}/${deployment}/chat/completions?api-version=${apiVersion}`;
 	}
 
-	async mapParameters(
-		params: ChatCompletionParameters,
-	): Promise<Record<string, any>> {
+	async mapParameters(params: ChatCompletionParameters): Promise<Record<string, any>> {
 		const mapped = await this.defaultMapParameters(params);
 		delete mapped.model;
 		return mapped;
 	}
 
-	protected async getHeaders(
-		params: ChatCompletionParameters,
-	): Promise<Record<string, string>> {
+	protected async getHeaders(params: ChatCompletionParameters): Promise<Record<string, string>> {
 		const rawKey = await this.getApiKey(params, params.user?.id);
 		let token = rawKey;
 		if (rawKey.includes("::@@::")) {
@@ -122,10 +112,7 @@ export class AzureOpenAIProvider extends BaseProvider {
 		return await this.defaultMapParameters(params, storageService, assetsUrl);
 	}
 
-	async getResponse(
-		params: ChatCompletionParameters,
-		userId?: number,
-	): Promise<any> {
+	async getResponse(params: ChatCompletionParameters, userId?: number): Promise<any> {
 		this.validateParams(params);
 
 		const isOpenAiCompatible = this.isOpenAiCompatible;
@@ -143,10 +130,7 @@ export class AzureOpenAIProvider extends BaseProvider {
 		const modelConfig = await getModelConfigByMatchingModel(params.model || "");
 
 		if (!modelConfig) {
-			throw new AssistantError(
-				`Model ${params.model} not found`,
-				ErrorType.CONFIGURATION_ERROR,
-			);
+			throw new AssistantError(`Model ${params.model} not found`, ErrorType.CONFIGURATION_ERROR);
 		}
 
 		const timeout = modelConfig.timeout || 100000;
@@ -158,11 +142,7 @@ export class AzureOpenAIProvider extends BaseProvider {
 			provider: this.name,
 			model: params.model as string,
 			operation: async () => {
-				const body = await this.getAzureParameterMapping(
-					params,
-					storageService,
-					assetsUrl,
-				);
+				const body = await this.getAzureParameterMapping(params, storageService, assetsUrl);
 				const data = await fetchAIResponse(
 					isOpenAiCompatible,
 					this.name,

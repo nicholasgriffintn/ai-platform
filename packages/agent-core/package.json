@@ -12,17 +12,15 @@
 	"scripts": {
 		"test": "vitest run --config vitest.config.ts",
 		"typecheck": "tsc --noEmit",
-		"format": "pnpm prettier --write .",
-		"format:check": "pnpm prettier --check .",
+		"format": "oxfmt",
+		"format:check": "oxfmt --check",
 		"lint": "pnpm oxlint",
 		"check": "pnpm lint && pnpm format:check"
 	},
-	"dependencies": {},
 	"devDependencies": {
-		"@prettier/plugin-oxc": "0.1.4",
-		"@types/node": "25.6.0",
+		"@types/node": "25.8.0",
+		"oxfmt": "0.50.0",
 		"oxlint": "1.61.0",
-		"prettier": "3.8.3",
-		"typescript": "5.9.3"
+		"typescript": "6.0.3"
 	}
 }

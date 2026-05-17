@@ -98,23 +98,14 @@ export class JobTracker {
 		logger.info(`Saved job: ${job.jobName}`);
 	}
 
-	updateJobStatus(
-		jobArn: string,
-		status: string,
-		metadata?: Record<string, unknown>,
-	): void {
+	updateJobStatus(jobArn: string, status: string, metadata?: Record<string, unknown>): void {
 		const stmt = this.db.prepare(`
       UPDATE jobs
       SET status = ?, updated_at = ?, metadata = ?
       WHERE job_arn = ?
     `);
 
-		stmt.run(
-			status,
-			Date.now(),
-			metadata ? JSON.stringify(metadata) : null,
-			jobArn,
-		);
+		stmt.run(status, Date.now(), metadata ? JSON.stringify(metadata) : null, jobArn);
 
 		logger.info(`Updated job ${jobArn} status: ${status}`);
 	}
@@ -150,9 +141,7 @@ export class JobTracker {
 		return rows.map((row) => this.mapJobRow(row));
 	}
 
-	saveDataset(
-		dataset: Omit<DatasetRecord, "id" | "createdAt"> & { createdAt?: number },
-	): number {
+	saveDataset(dataset: Omit<DatasetRecord, "id" | "createdAt"> & { createdAt?: number }): number {
 		const stmt = this.db.prepare(`
       INSERT INTO datasets
       (project, train_path, validation_path, s3_uri, created_at, metadata)

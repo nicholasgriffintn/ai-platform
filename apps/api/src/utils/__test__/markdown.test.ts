@@ -32,9 +32,7 @@ describe("markdown", () => {
 
 			const result = convertMarkdownToHtml(markdown);
 
-			expect(result).toContain(
-				"This is <code>inline code</code> in a sentence.",
-			);
+			expect(result).toContain("This is <code>inline code</code> in a sentence.");
 		});
 
 		it("should convert blockquotes", () => {
@@ -50,9 +48,7 @@ describe("markdown", () => {
 
 			const result = convertMarkdownToHtml(markdown);
 
-			expect(result).toContain(
-				"<ul><li>Item 1</li><li>Item 2</li><li>Item 3</li></ul>",
-			);
+			expect(result).toContain("<ul><li>Item 1</li><li>Item 2</li><li>Item 3</li></ul>");
 		});
 
 		it("should convert unordered lists with dashes", () => {
@@ -60,9 +56,7 @@ describe("markdown", () => {
 
 			const result = convertMarkdownToHtml(markdown);
 
-			expect(result).toContain(
-				"<ul><li>Item 1</li><li>Item 2</li><li>Item 3</li></ul>",
-			);
+			expect(result).toContain("<ul><li>Item 1</li><li>Item 2</li><li>Item 3</li></ul>");
 		});
 
 		it("should convert ordered lists", () => {
@@ -70,9 +64,7 @@ describe("markdown", () => {
 
 			const result = convertMarkdownToHtml(markdown);
 
-			expect(result).toContain(
-				"<ol><li>Item 1</li><li>Item 2</li><li>Item 3</li></ol>",
-			);
+			expect(result).toContain("<ol><li>Item 1</li><li>Item 2</li><li>Item 3</li></ol>");
 		});
 
 		it("should convert bold text with double asterisks", () => {
@@ -112,9 +104,7 @@ describe("markdown", () => {
 
 			const result = convertMarkdownToHtml(markdown);
 
-			expect(result).toContain(
-				'<img src="https://example.com/image.jpg" alt="Alt text">',
-			);
+			expect(result).toContain('<img src="https://example.com/image.jpg" alt="Alt text">');
 		});
 
 		it("should convert links", () => {
@@ -183,8 +173,7 @@ describe("markdown", () => {
 		});
 
 		it("should handle code blocks with different languages", () => {
-			const markdown =
-				"```python\nprint('hello')\n```\n\n```html\n<div>test</div>\n```";
+			const markdown = "```python\nprint('hello')\n```\n\n```html\n<div>test</div>\n```";
 
 			const result = convertMarkdownToHtml(markdown);
 

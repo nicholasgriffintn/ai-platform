@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "format": "pnpm -r format",
-    "lint": "pnpm -r lint",
+    "lint": "pnpm lint:monorepo && pnpm -r lint",
+    "lint:monorepo": "sherif",
     "check": "pnpm -r check",
     "typecheck": "pnpm -r typecheck",
     "test": "vitest",
@@ -26,10 +27,10 @@
   },
   "devDependencies": {
     "@playwright/test": "1.59.1",
-    "@prettier/plugin-oxc": "0.1.4",
-    "@types/node": "25.6.0",
+    "@types/node": "25.8.0",
     "@vitest/coverage-v8": "4.1.5",
-    "vitest": "4.1.5"
+    "sherif": "^1.11.1",
+    "vitest": "4.1.6"
   },
   "packageManager": "pnpm@10.33.2"
 }

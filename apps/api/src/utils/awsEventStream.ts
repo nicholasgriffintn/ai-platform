@@ -18,10 +18,7 @@ export function createEventStreamParser(): TransformStream {
 				if (asText.includes("data:") || asText.includes("event:")) {
 					isEventStreamFormat = false;
 				} else if (chunk.length >= 4) {
-					const possibleLength = new DataView(
-						chunk.buffer,
-						chunk.byteOffset,
-					).getUint32(0, false);
+					const possibleLength = new DataView(chunk.buffer, chunk.byteOffset).getUint32(0, false);
 					if (possibleLength > 0 && possibleLength < 1000000) {
 						isEventStreamFormat = true;
 					} else {
@@ -50,18 +47,9 @@ export function createEventStreamParser(): TransformStream {
 					// [payload] JSON data
 					// [4 bytes] Message CRC (big-endian)
 
-					const totalLength = new DataView(
-						buffer.buffer,
-						buffer.byteOffset,
-					).getUint32(0, false);
-					const headersLength = new DataView(
-						buffer.buffer,
-						buffer.byteOffset,
-					).getUint32(4, false);
-					const _preludeCrc = new DataView(
-						buffer.buffer,
-						buffer.byteOffset,
-					).getUint32(8, false);
+					const totalLength = new DataView(buffer.buffer, buffer.byteOffset).getUint32(0, false);
+					const headersLength = new DataView(buffer.buffer, buffer.byteOffset).getUint32(4, false);
+					const _preludeCrc = new DataView(buffer.buffer, buffer.byteOffset).getUint32(8, false);
 
 					if (buffer.length < totalLength) {
 						break;
@@ -80,9 +68,7 @@ export function createEventStreamParser(): TransformStream {
 					} catch (decodeError: any) {
 						logger.error("Could not decode bedrock payload as JSON", {
 							payloadLength: payloadBytes.length,
-							payloadString: new TextDecoder("utf-8", { fatal: false }).decode(
-								payloadBytes,
-							),
+							payloadString: new TextDecoder("utf-8", { fatal: false }).decode(payloadBytes),
 							error: decodeError.message,
 						});
 					}

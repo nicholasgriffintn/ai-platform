@@ -8,9 +8,7 @@ import {
 
 describe("sandbox repository utilities", () => {
 	it("normalises a GitHub URL to owner/repo slug", () => {
-		expect(
-			normaliseGitHubRepoInput("https://github.com/openai/codex.git"),
-		).toBe("openai/codex");
+		expect(normaliseGitHubRepoInput("https://github.com/openai/codex.git")).toBe("openai/codex");
 	});
 
 	it("returns trimmed input when URL host is not GitHub", () => {
@@ -21,9 +19,7 @@ describe("sandbox repository utilities", () => {
 
 	it("parses and deduplicates repository lists", () => {
 		expect(
-			parseGitHubRepositoryList(
-				"openai/codex, https://github.com/openai/codex\nopenai/chatgpt",
-			),
+			parseGitHubRepositoryList("openai/codex, https://github.com/openai/codex\nopenai/chatgpt"),
 		).toEqual(["openai/codex", "openai/chatgpt"]);
 	});
 

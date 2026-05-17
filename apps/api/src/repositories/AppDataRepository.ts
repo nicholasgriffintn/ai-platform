@@ -54,25 +54,15 @@ export class AppDataRepository extends BaseRepository {
 		);
 
 		if (!insert) {
-			throw new AssistantError(
-				"Failed to build app data insert query",
-				ErrorType.INTERNAL_ERROR,
-			);
+			throw new AssistantError("Failed to build app data insert query", ErrorType.INTERNAL_ERROR);
 		}
 
-		const created = await this.runQuery<AppData>(
-			insert.query,
-			insert.values,
-			true,
-		);
+		const created = await this.runQuery<AppData>(insert.query, insert.values, true);
 
 		await this.invalidateUserAppCache(userId, appId);
 
 		if (!created) {
-			throw new AssistantError(
-				"Failed to create app data",
-				ErrorType.INTERNAL_ERROR,
-			);
+			throw new AssistantError("Failed to create app data", ErrorType.INTERNAL_ERROR);
 		}
 
 		return created;
@@ -110,25 +100,15 @@ export class AppDataRepository extends BaseRepository {
 		);
 
 		if (!insert) {
-			throw new AssistantError(
-				"Failed to build app data insert query",
-				ErrorType.INTERNAL_ERROR,
-			);
+			throw new AssistantError("Failed to build app data insert query", ErrorType.INTERNAL_ERROR);
 		}
 
-		const created = await this.runQuery<AppData>(
-			insert.query,
-			insert.values,
-			true,
-		);
+		const created = await this.runQuery<AppData>(insert.query, insert.values, true);
 
 		await this.invalidateUserAppCache(userId, appId);
 
 		if (!created) {
-			throw new AssistantError(
-				"Failed to create app data",
-				ErrorType.INTERNAL_ERROR,
-			);
+			throw new AssistantError("Failed to create app data", ErrorType.INTERNAL_ERROR);
 		}
 
 		return created;
@@ -175,10 +155,7 @@ export class AppDataRepository extends BaseRepository {
 	 * @param itemId - The item ID
 	 * @returns The app data or null if not found
 	 */
-	public async getAppDataByAppAndItemId(
-		appId: string,
-		itemId: string,
-	): Promise<AppData | null> {
+	public async getAppDataByAppAndItemId(appId: string, itemId: string): Promise<AppData | null> {
 		const { query, values } = this.buildSelectQuery(
 			"app_data",
 			{
@@ -196,15 +173,8 @@ export class AppDataRepository extends BaseRepository {
 	 * @param appId - The app ID
 	 * @returns The app data
 	 */
-	public async getAppDataByUserAndApp(
-		userId: number,
-		appId: string,
-	): Promise<AppData[]> {
-		const cacheKey = KVCache.createKey(
-			"app-data-user-app",
-			userId.toString(),
-			appId,
-		);
+	public async getAppDataByUserAndApp(userId: number, appId: string): Promise<AppData[]> {
+		const cacheKey = KVCache.createKey("app-data-user-app", userId.toString(), appId);
 
 		if (this.cache) {
 			return this.cache.cacheQuery(
@@ -289,20 +259,12 @@ export class AppDataRepository extends BaseRepository {
 	 * @param id - The ID of the app data
 	 * @param data - The data to update
 	 */
-	public async updateAppData(
-		id: string,
-		data: Record<string, any>,
-	): Promise<void> {
+	public async updateAppData(id: string, data: Record<string, any>): Promise<void> {
 		const currentData = await this.getAppDataById(id);
 
-		const result = this.buildUpdateQuery(
-			"app_data",
-			{ data },
-			["data"],
-			"id = ?",
-			[id],
-			{ jsonFields: ["data"] },
-		);
+		const result = this.buildUpdateQuery("app_data", { data }, ["data"], "id = ?", [id], {
+			jsonFields: ["data"],
+		});
 
 		if (!result) {
 			return;
@@ -320,10 +282,7 @@ export class AppDataRepository extends BaseRepository {
 			await this.cache.delete(itemCacheKey);
 
 			if (currentData) {
-				await this.invalidateUserAppCache(
-					currentData.user_id,
-					currentData.app_id,
-				);
+				await this.invalidateUserAppCache(currentData.user_id, currentData.app_id);
 			}
 		}
 	}
@@ -349,10 +308,7 @@ export class AppDataRepository extends BaseRepository {
 	 * @param userId - The user ID
 	 * @param appId - The app ID
 	 */
-	public async deleteAppDataByUserAndApp(
-		userId: number,
-		appId: string,
-	): Promise<void> {
+	public async deleteAppDataByUserAndApp(userId: number, appId: string): Promise<void> {
 		const { query, values } = this.buildDeleteQuery("app_data", {
 			user_id: userId,
 			app_id: appId,
@@ -392,10 +348,7 @@ export class AppDataRepository extends BaseRepository {
 	 * @param id - The ID of the app data
 	 * @param shareId - The share ID to set
 	 */
-	public async updateAppDataWithShareId(
-		id: string,
-		shareId: string,
-	): Promise<void> {
+	public async updateAppDataWithShareId(id: string, shareId: string): Promise<void> {
 		const result = this.buildUpdateQuery(
 			"app_data",
 			{ share_id: shareId },
@@ -431,17 +384,10 @@ export class AppDataRepository extends BaseRepository {
 	/**
 	 * Cache invalidation helper
 	 */
-	private async invalidateUserAppCache(
-		userId: number,
-		appId: string,
-	): Promise<void> {
+	private async invalidateUserAppCache(userId: number, appId: string): Promise<void> {
 		if (!this.cache) return;
 
-		const userAppKey = KVCache.createKey(
-			"app-data-user-app",
-			userId.toString(),
-			appId,
-		);
+		const userAppKey = KVCache.createKey("app-data-user-app", userId.toString(), appId);
 		await this.cache.delete(userAppKey);
 	}
 }

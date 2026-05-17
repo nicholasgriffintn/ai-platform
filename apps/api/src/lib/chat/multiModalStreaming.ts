@@ -1,13 +1,6 @@
 import { getAIResponse } from "~/lib/chat/responses";
 import type { ConversationManager } from "~/lib/conversationManager";
-import type {
-	ChatMode,
-	IEnv,
-	IUser,
-	IUserSettings,
-	ModelConfigInfo,
-	Platform,
-} from "~/types";
+import type { ChatMode, IEnv, IUser, IUserSettings, ModelConfigInfo, Platform } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";
@@ -88,10 +81,9 @@ export function createMultiModelStream(
 
 						return response;
 					} catch (error) {
-						logger.error(
-							`Error getting response from secondary model ${modelConfig.model}`,
-							{ error },
-						);
+						logger.error(`Error getting response from secondary model ${modelConfig.model}`, {
+							error,
+						});
 
 						return new ReadableStream({
 							start(controller) {
@@ -121,10 +113,7 @@ export function createMultiModelStream(
 					);
 				}
 			} catch (error) {
-				logger.error(
-					"Failed to get usage limits for multi-model streaming:",
-					error,
-				);
+				logger.error("Failed to get usage limits for multi-model streaming:", error);
 			}
 
 			try {
@@ -144,9 +133,7 @@ export function createMultiModelStream(
 
 				const primaryReader = primaryProcessedStream.getReader();
 
-				const modelNames = models
-					.map((m: ModelConfigInfo) => m.displayName)
-					.join(", ");
+				const modelNames = models.map((m: ModelConfigInfo) => m.displayName).join(", ");
 				modelHeader = `Using the following models: ${modelNames}\n\n`;
 				controller.enqueue(
 					encoder.encode(
@@ -170,10 +157,7 @@ export function createMultiModelStream(
 								if (dataStr === "[DONE]") continue;
 								const data = safeParseJson(dataStr);
 								if (!data) {
-									throw new AssistantError(
-										"Failed to parse data",
-										ErrorType.PARAMS_ERROR,
-									);
+									throw new AssistantError("Failed to parse data", ErrorType.PARAMS_ERROR);
 								}
 								if (data.type === "content_block_delta" && data.content) {
 									primaryContent += data.content;
@@ -189,10 +173,7 @@ export function createMultiModelStream(
 					controller.enqueue(value);
 				}
 			} catch (error) {
-				logger.error(
-					"Error processing primary stream in multi-model setup:",
-					error,
-				);
+				logger.error("Error processing primary stream in multi-model setup:", error);
 				controller.error(error);
 				return;
 			}
@@ -228,10 +209,7 @@ export function createMultiModelStream(
 									if (dataStr === "[DONE]") continue;
 									const data = safeParseJson(dataStr);
 									if (!data) {
-										throw new AssistantError(
-											"Failed to parse data",
-											ErrorType.PARAMS_ERROR,
-										);
+										throw new AssistantError("Failed to parse data", ErrorType.PARAMS_ERROR);
 									}
 									if (data.type === "content_block_delta" && data.content) {
 										secondaryContent += data.content;
@@ -257,8 +235,7 @@ export function createMultiModelStream(
 				}
 			} catch (error) {
 				logger.error("Error processing secondary streams:", {
-					error_message:
-						error instanceof Error ? error.message : "Unknown error",
+					error_message: error instanceof Error ? error.message : "Unknown error",
 				});
 
 				const errorMessage =
@@ -278,27 +255,20 @@ export function createMultiModelStream(
 			}
 
 			try {
-				const conversation = await conversationManager.get(
-					options.completion_id,
-				);
+				const conversation = await conversationManager.get(options.completion_id);
 				if (conversation?.length > 0) {
-					const assistantMessages = conversation.filter(
-						(msg) => msg.role === "assistant",
-					);
+					const assistantMessages = conversation.filter((msg) => msg.role === "assistant");
 					if (assistantMessages.length > 0) {
 						const lastMessage = assistantMessages[assistantMessages.length - 1];
 						let storedPrimaryContent = "";
 						if (typeof lastMessage.content === "string") {
 							storedPrimaryContent = lastMessage.content;
 						} else if (Array.isArray(lastMessage.content)) {
-							const textBlock = lastMessage.content.find(
-								(block) => block.type === "text",
-							);
+							const textBlock = lastMessage.content.find((block) => block.type === "text");
 							storedPrimaryContent = textBlock?.text || "";
 						}
 
-						const finalCombinedContent =
-							modelHeader + storedPrimaryContent + secondaryContent;
+						const finalCombinedContent = modelHeader + storedPrimaryContent + secondaryContent;
 
 						await conversationManager.update(options.completion_id, [
 							{
@@ -307,14 +277,12 @@ export function createMultiModelStream(
 								data: {
 									...lastMessage.data,
 									includesSecondaryModels: true,
-									secondaryModels:
-										models.slice(1).map((m: ModelConfigInfo) => m.model) || [],
+									secondaryModels: models.slice(1).map((m: ModelConfigInfo) => m.model) || [],
 								},
 							},
 						]);
 					} else {
-						const finalCombinedContentForAdd =
-							modelHeader + primaryContent + secondaryContent;
+						const finalCombinedContentForAdd = modelHeader + primaryContent + secondaryContent;
 						await conversationManager.add(options.completion_id, {
 							role: "assistant",
 							content: finalCombinedContentForAdd,
@@ -328,8 +296,7 @@ export function createMultiModelStream(
 							usage: null,
 							data: {
 								includesSecondaryModels: true,
-								secondaryModels:
-									models.slice(1).map((m: ModelConfigInfo) => m.model) || [],
+								secondaryModels: models.slice(1).map((m: ModelConfigInfo) => m.model) || [],
 							},
 							tool_calls: null,
 						});
@@ -349,18 +316,14 @@ export function createMultiModelStream(
 						);
 					}
 				} catch (error) {
-					logger.error(
-						"Failed to get updated usage limits for multi-model streaming:",
-						error,
-					);
+					logger.error("Failed to get updated usage limits for multi-model streaming:", error);
 				}
 
 				controller.enqueue(encoder.encode("data: [DONE]\n\n"));
 				controller.close();
 			} catch (error) {
 				logger.error("Error during finalization/storage:", {
-					error_message:
-						error instanceof Error ? error.message : "Unknown error",
+					error_message: error instanceof Error ? error.message : "Unknown error",
 				});
 				controller.error(error);
 			}

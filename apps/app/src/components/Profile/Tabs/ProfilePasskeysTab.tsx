@@ -27,9 +27,7 @@ export function ProfilePasskeysTab() {
 	} = usePasskeys();
 
 	const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false);
-	const [selectedPasskeyId, setSelectedPasskeyId] = useState<number | null>(
-		null,
-	);
+	const [selectedPasskeyId, setSelectedPasskeyId] = useState<number | null>(null);
 
 	const passkeySupported = isPasskeySupported();
 
@@ -87,8 +85,8 @@ export function ProfilePasskeysTab() {
 								Passkeys not supported
 							</h3>
 							<p className="text-amber-700 dark:text-amber-400 text-sm mt-1">
-								Your browser doesn't support passkeys. Try using a newer browser
-								like Chrome, Safari, or Edge.
+								Your browser doesn't support passkeys. Try using a newer browser like Chrome,
+								Safari, or Edge.
 							</p>
 						</div>
 					</div>
@@ -111,9 +109,7 @@ export function ProfilePasskeysTab() {
 						</div>
 					) : passkeys.length === 0 ? (
 						<EmptyState
-							icon={
-								<Fingerprint className="h-6 w-6 text-zinc-600 dark:text-zinc-400" />
-							}
+							icon={<Fingerprint className="h-6 w-6 text-zinc-600 dark:text-zinc-400" />}
 							title="No passkeys added"
 							message="Add a passkey to sign in to your account without a password. Passkeys use biometrics or device PIN for secure authentication."
 							action={
@@ -131,9 +127,8 @@ export function ProfilePasskeysTab() {
 					) : (
 						<>
 							<p className="text-zinc-500 dark:text-zinc-400 text-sm mb-4">
-								Passkeys allow you to sign in to your account using biometrics
-								(like fingerprint or face recognition) or your device PIN
-								instead of a password.
+								Passkeys allow you to sign in to your account using biometrics (like fingerprint or
+								face recognition) or your device PIN instead of a password.
 							</p>
 							<ul className="space-y-1">
 								{passkeys.map((passkey) => (

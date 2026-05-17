@@ -1,11 +1,4 @@
-import {
-	ArrowDown,
-	ChevronDown,
-	ExternalLink,
-	FileText,
-	Info,
-	Loader2,
-} from "lucide-react";
+import { ArrowDown, ChevronDown, ExternalLink, FileText, Info, Loader2 } from "lucide-react";
 import { useState } from "react";
 
 import { Markdown } from "~/components/ui/Markdown";
@@ -31,19 +24,15 @@ interface ArticleSourceArticlesProps {
 	sourceIds: string[];
 }
 
-export function ArticleSourceArticles({
-	sourceIds,
-}: ArticleSourceArticlesProps) {
+export function ArticleSourceArticles({ sourceIds }: ArticleSourceArticlesProps) {
 	const { data: sourceArticles, isLoading: isLoadingSourceArticles } =
 		useFetchSourceArticlesByIds(sourceIds);
 
 	const [isSourcesExpanded, setIsSourcesExpanded] = useState(true);
-	const [expandedArticleIds, setExpandedArticleIds] = useState<
-		Record<string, boolean>
-	>({});
-	const [expandedOriginalArticles, setExpandedOriginalArticles] = useState<
-		Record<string, boolean>
-	>({});
+	const [expandedArticleIds, setExpandedArticleIds] = useState<Record<string, boolean>>({});
+	const [expandedOriginalArticles, setExpandedOriginalArticles] = useState<Record<string, boolean>>(
+		{},
+	);
 
 	const toggleArticleExpanded = (articleId: string) => {
 		setExpandedArticleIds((prev) => ({
@@ -67,10 +56,7 @@ export function ArticleSourceArticles({
 				className="w-full flex items-center justify-between p-5 text-left hover:bg-zinc-50 dark:hover:bg-zinc-700/50 transition-colors"
 			>
 				<h3 className="text-lg font-medium flex items-center text-zinc-900 dark:text-zinc-100">
-					<FileText
-						size={18}
-						className="mr-2 text-blue-500 dark:text-blue-400"
-					/>
+					<FileText size={18} className="mr-2 text-blue-500 dark:text-blue-400" />
 					Source Articles ({sourceIds.length})
 				</h3>
 				<div className="flex items-center">
@@ -92,13 +78,8 @@ export function ArticleSourceArticles({
 					{isLoadingSourceArticles ? (
 						<div className="flex justify-center items-center py-12">
 							<div className="flex flex-col items-center">
-								<Loader2
-									size={32}
-									className="animate-spin text-blue-500 mb-3"
-								/>
-								<p className="text-zinc-500 dark:text-zinc-400">
-									Loading source articles...
-								</p>
+								<Loader2 size={32} className="animate-spin text-blue-500 mb-3" />
+								<p className="text-zinc-500 dark:text-zinc-400">Loading source articles...</p>
 							</div>
 						</div>
 					) : sourceArticles && sourceArticles.length > 0 ? (
@@ -107,8 +88,7 @@ export function ArticleSourceArticles({
 								const articleData = article.data as SourceArticleData;
 								const isExpanded = !!expandedArticleIds[article.id];
 								const articleTitle =
-									articleData?.title?.replace("Analysis: ", "") ||
-									`Source Article ${index + 1}`;
+									articleData?.title?.replace("Analysis: ", "") || `Source Article ${index + 1}`;
 
 								return (
 									<div
@@ -125,10 +105,7 @@ export function ArticleSourceArticles({
 										>
 											<div className="flex items-center min-w-0">
 												<div className="bg-blue-100 dark:bg-blue-900/30 p-2 rounded-md mr-3 flex-shrink-0">
-													<FileText
-														size={18}
-														className="text-blue-500 dark:text-blue-400"
-													/>
+													<FileText size={18} className="text-blue-500 dark:text-blue-400" />
 												</div>
 												<div className="flex-grow min-w-0">
 													<h4 className="font-medium text-zinc-900 dark:text-zinc-100 truncate">
@@ -176,18 +153,14 @@ export function ArticleSourceArticles({
 																size={16}
 																className={cn(
 																	"text-zinc-400 transition-transform duration-300",
-																	expandedOriginalArticles[article.id]
-																		? "rotate-180"
-																		: "",
+																	expandedOriginalArticles[article.id] ? "rotate-180" : "",
 																)}
 															/>
 														</button>
 
 														{expandedOriginalArticles[article.id] ? (
 															<div className="prose prose-sm dark:prose-invert max-w-none animate-in slide-in-from-top-2 duration-200 p-4 bg-zinc-50 dark:bg-zinc-900/50 rounded-md border border-zinc-200 dark:border-zinc-700">
-																<Markdown>
-																	{articleData.originalArticle}
-																</Markdown>
+																<Markdown>{articleData.originalArticle}</Markdown>
 															</div>
 														) : (
 															<button
@@ -199,20 +172,12 @@ export function ArticleSourceArticles({
 																className="w-full text-left p-4 bg-zinc-50 dark:bg-zinc-900/50 rounded-md border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-900/80 transition-colors"
 															>
 																<p className="line-clamp-3 text-sm text-zinc-700 dark:text-zinc-300">
-																	{articleData.originalArticle.substring(
-																		0,
-																		200,
-																	)}
-																	{articleData.originalArticle.length > 200
-																		? "..."
-																		: ""}
+																	{articleData.originalArticle.substring(0, 200)}
+																	{articleData.originalArticle.length > 200 ? "..." : ""}
 																</p>
 																<div className="text-blue-500 dark:text-blue-400 text-xs mt-2 font-medium flex items-center">
 																	<span>Read full article</span>
-																	<ChevronDown
-																		size={14}
-																		className="ml-1 transform -rotate-90"
-																	/>
+																	<ChevronDown size={14} className="ml-1 transform -rotate-90" />
 																</div>
 															</button>
 														)}
@@ -234,9 +199,7 @@ export function ArticleSourceArticles({
 															)}
 														</h5>
 														<div className="prose prose-sm dark:prose-invert max-w-none p-4 bg-zinc-50 dark:bg-zinc-900/50 rounded-md border border-zinc-200 dark:border-zinc-700">
-															<Markdown>
-																{articleData.analysis.content}
-															</Markdown>
+															<Markdown>{articleData.analysis.content}</Markdown>
 														</div>
 
 														<div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -244,10 +207,7 @@ export function ArticleSourceArticles({
 																articleData.analysis.citations.length > 0 && (
 																	<div className="bg-zinc-50 dark:bg-zinc-900/50 p-3 rounded-md border border-zinc-200 dark:border-zinc-700">
 																		<h6 className="text-xs font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-2 flex items-center">
-																			<ExternalLink
-																				size={12}
-																				className="mr-1.5"
-																			/>
+																			<ExternalLink size={12} className="mr-1.5" />
 																			Citations
 																		</h6>
 																		<ul className="text-xs space-y-1.5 list-none pl-0">
@@ -263,9 +223,7 @@ export function ArticleSourceArticles({
 																							rel="noopener noreferrer"
 																							className="inline-flex items-center text-blue-600 dark:text-blue-400 hover:underline"
 																						>
-																							<span className="truncate">
-																								{citation}
-																							</span>
+																							<span className="truncate">{citation}</span>
 																							<ExternalLink
 																								size={10}
 																								className="ml-1 flex-shrink-0"
@@ -289,21 +247,19 @@ export function ArticleSourceArticles({
 																			<span
 																				className={cn(
 																					"px-2 py-1 rounded-full text-xs font-medium",
-																					articleData.analysis.verifiedQuotes
-																						.verified
+																					articleData.analysis.verifiedQuotes.verified
 																						? "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300"
 																						: "bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300",
 																				)}
 																			>
-																				{articleData.analysis.verifiedQuotes
-																					.verified
+																				{articleData.analysis.verifiedQuotes.verified
 																					? "Verified"
 																					: "Not Verified"}
 																			</span>
 																		</div>
 
-																		{articleData.analysis.verifiedQuotes
-																			.missingQuotes?.length > 0 && (
+																		{articleData.analysis.verifiedQuotes.missingQuotes?.length >
+																			0 && (
 																			<div>
 																				<span className="font-medium text-zinc-700 dark:text-zinc-300">
 																					Missing Quotes:
@@ -336,13 +292,8 @@ export function ArticleSourceArticles({
 						</div>
 					) : (
 						<div className="bg-zinc-50 dark:bg-zinc-900/50 rounded-lg p-6 text-center border border-zinc-200 dark:border-zinc-700">
-							<FileText
-								size={32}
-								className="mx-auto mb-3 text-zinc-400 dark:text-zinc-500"
-							/>
-							<p className="text-zinc-500 dark:text-zinc-400">
-								No source articles found.
-							</p>
+							<FileText size={32} className="mx-auto mb-3 text-zinc-400 dark:text-zinc-500" />
+							<p className="text-zinc-500 dark:text-zinc-400">No source articles found.</p>
 						</div>
 					)}
 				</div>

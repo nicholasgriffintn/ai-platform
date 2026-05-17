@@ -132,10 +132,7 @@ export interface ActionHandler<
 > {
 	name: string;
 	canHandle(decision: AgentDecision): decision is TDecision;
-	execute(
-		decision: TDecision,
-		context: AgentActionContext<TShared, TState>,
-	): Promise<void>;
+	execute(decision: TDecision, context: AgentActionContext<TShared, TState>): Promise<void>;
 }
 
 export interface ExecuteAgentLoopParams<
@@ -152,10 +149,7 @@ export interface ExecuteAgentLoopParams<
 	guardExecution?: (abortMessage: string) => Promise<void>;
 	config?: Partial<AgentConfig>;
 	getCommandCount?: (state: TState) => number;
-	serializeDecision?: (
-		decision: AgentDecision,
-		rawResponse?: string,
-	) => AgentMessage;
+	serializeDecision?: (decision: AgentDecision, rawResponse?: string) => AgentMessage;
 	buildSummary?: (context: {
 		decision: FinishDecision;
 		state: TState;
@@ -177,11 +171,7 @@ export interface ExecuteAgentLoopParams<
 		| Promise<{ extendBy: number; reason?: string } | null>
 		| { extendBy: number; reason?: string }
 		| null;
-	onPlanRecovery?: (context: {
-		reason: string;
-		recoveryReplans: number;
-		state: TState;
-	}) => void;
+	onPlanRecovery?: (context: { reason: string; recoveryReplans: number; state: TState }) => void;
 }
 
 export interface AgentLoopResult {

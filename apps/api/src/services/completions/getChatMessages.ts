@@ -13,10 +13,7 @@ export const handleGetChatMessages = async (
 	const user = context.user ?? null;
 
 	if (!user?.id) {
-		throw new AssistantError(
-			"User ID is required to get messages",
-			ErrorType.AUTHENTICATION_ERROR,
-		);
+		throw new AssistantError("User ID is required to get messages", ErrorType.AUTHENTICATION_ERROR);
 	}
 
 	context.ensureDatabase();
@@ -27,12 +24,7 @@ export const handleGetChatMessages = async (
 		anonymousUser,
 	});
 
-	const messages = await conversationManager.get(
-		completion_id,
-		undefined,
-		limit || 50,
-		after,
-	);
+	const messages = await conversationManager.get(completion_id, undefined, limit || 50, after);
 
 	return {
 		messages,

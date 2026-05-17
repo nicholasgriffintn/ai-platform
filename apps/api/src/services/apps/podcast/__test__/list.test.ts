@@ -41,9 +41,10 @@ describe("handlePodcastList", () => {
 		});
 
 		expect(result).toEqual([]);
-		expect(
-			mockRepositories.appData.getAppDataByUserAndApp,
-		).toHaveBeenCalledWith("user-123", "podcasts");
+		expect(mockRepositories.appData.getAppDataByUserAndApp).toHaveBeenCalledWith(
+			"user-123",
+			"podcasts",
+		);
 	});
 
 	it("should return podcasts with processing status", async () => {
@@ -59,9 +60,7 @@ describe("handlePodcastList", () => {
 			},
 		];
 
-		mockRepositories.appData.getAppDataByUserAndApp.mockResolvedValue(
-			mockAppData,
-		);
+		mockRepositories.appData.getAppDataByUserAndApp.mockResolvedValue(mockAppData);
 
 		const result = await handlePodcastList({
 			context: mockContext,
@@ -98,9 +97,7 @@ describe("handlePodcastList", () => {
 			},
 		];
 
-		mockRepositories.appData.getAppDataByUserAndApp.mockResolvedValue(
-			mockAppData,
-		);
+		mockRepositories.appData.getAppDataByUserAndApp.mockResolvedValue(mockAppData);
 
 		const result = await handlePodcastList({
 			context: mockContext,
@@ -133,9 +130,7 @@ describe("handlePodcastList", () => {
 			},
 		];
 
-		mockRepositories.appData.getAppDataByUserAndApp.mockResolvedValue(
-			mockAppData,
-		);
+		mockRepositories.appData.getAppDataByUserAndApp.mockResolvedValue(mockAppData);
 
 		const result = await handlePodcastList({
 			context: mockContext,
@@ -175,9 +170,7 @@ describe("handlePodcastList", () => {
 			},
 		];
 
-		mockRepositories.appData.getAppDataByUserAndApp.mockResolvedValue(
-			mockAppData,
-		);
+		mockRepositories.appData.getAppDataByUserAndApp.mockResolvedValue(mockAppData);
 
 		const result = await handlePodcastList({
 			context: mockContext,
@@ -209,9 +202,7 @@ describe("handlePodcastList", () => {
 			},
 		];
 
-		mockRepositories.appData.getAppDataByUserAndApp.mockResolvedValue(
-			mockAppData,
-		);
+		mockRepositories.appData.getAppDataByUserAndApp.mockResolvedValue(mockAppData);
 
 		const result = await handlePodcastList({
 			context: mockContext,
@@ -234,9 +225,7 @@ describe("handlePodcastList", () => {
 			},
 		];
 
-		mockRepositories.appData.getAppDataByUserAndApp.mockResolvedValue(
-			mockAppData,
-		);
+		mockRepositories.appData.getAppDataByUserAndApp.mockResolvedValue(mockAppData);
 
 		const result = await handlePodcastList({
 			context: mockContext,
@@ -255,9 +244,7 @@ describe("handlePodcastList", () => {
 			},
 		];
 
-		mockRepositories.appData.getAppDataByUserAndApp.mockResolvedValue(
-			mockAppData,
-		);
+		mockRepositories.appData.getAppDataByUserAndApp.mockResolvedValue(mockAppData);
 
 		const result = await handlePodcastList({
 			context: mockContext,
@@ -287,9 +274,7 @@ describe("handlePodcastList", () => {
 			},
 		];
 
-		mockRepositories.appData.getAppDataByUserAndApp.mockResolvedValue(
-			mockAppData,
-		);
+		mockRepositories.appData.getAppDataByUserAndApp.mockResolvedValue(mockAppData);
 
 		const result = await handlePodcastList({
 			context: mockContext,

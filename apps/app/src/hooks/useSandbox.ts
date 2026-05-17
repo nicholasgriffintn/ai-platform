@@ -34,8 +34,7 @@ export const SANDBOX_QUERY_KEYS = {
 			params.repo ?? "",
 			params.limit ?? null,
 		] as const,
-	run: (runId?: string) =>
-		[...SANDBOX_QUERY_KEYS.root, "run", runId ?? null] as const,
+	run: (runId?: string) => [...SANDBOX_QUERY_KEYS.root, "run", runId ?? null] as const,
 	runInstructions: (runId?: string) =>
 		[...SANDBOX_QUERY_KEYS.root, "run-instructions", runId ?? null] as const,
 };
@@ -139,9 +138,7 @@ export const useSandboxRunInstructions = (
 		refetchInterval?:
 			| number
 			| false
-			| ((query: {
-					state: { data?: SandboxRunInstruction[] };
-			  }) => number | false);
+			| ((query: { state: { data?: SandboxRunInstruction[] } }) => number | false);
 	},
 ) =>
 	useQuery<SandboxRunInstruction[], Error>({

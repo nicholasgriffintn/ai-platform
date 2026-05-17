@@ -37,11 +37,7 @@ import {
 	isRunStatusActive,
 	toApprovalInstructionItems,
 } from "./helpers";
-import type {
-	ApprovalInstructionItem,
-	ChatMessage,
-	TimelineEvent,
-} from "./types";
+import type { ApprovalInstructionItem, ChatMessage, TimelineEvent } from "./types";
 
 export function useSandboxRunConsole() {
 	const params = useParams();
@@ -58,8 +54,7 @@ export function useSandboxRunConsole() {
 	const timelineEndRef = useRef<HTMLDivElement>(null);
 
 	const installationId = Number(params.connectionId);
-	const hasValidInstallationId =
-		Number.isFinite(installationId) && installationId > 0;
+	const hasValidInstallationId = Number.isFinite(installationId) && installationId > 0;
 
 	const { data: connections = [], isLoading, error } = useSandboxConnections();
 	const {
@@ -81,36 +76,27 @@ export function useSandboxRunConsole() {
 	const [repo, setRepo] = useState("");
 	const [task, setTask] = useState("");
 	const [model, setModel] = useState("");
-	const [taskType, setTaskType] = useState<SandboxTaskType>(
-		"feature-implementation",
-	);
-	const [promptStrategy, setPromptStrategy] =
-		useState<SandboxPromptStrategy>("auto");
+	const [taskType, setTaskType] = useState<SandboxTaskType>("feature-implementation");
+	const [promptStrategy, setPromptStrategy] = useState<SandboxPromptStrategy>("auto");
 	const [timeoutSecondsInput, setTimeoutSecondsInput] = useState(
 		String(SANDBOX_TIMEOUT_DEFAULT_SECONDS),
 	);
 	const [shouldCommit, setShouldCommit] = useState(true);
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [activeRunId, setActiveRunId] = useState<string | undefined>();
-	const [liveRunStatus, setLiveRunStatus] = useState<
-		"running" | "paused" | undefined
-	>(undefined);
+	const [liveRunStatus, setLiveRunStatus] = useState<"running" | "paused" | undefined>(undefined);
 	const [timeline, setTimeline] = useState<TimelineEvent[]>([]);
 	const [messages, setMessages] = useState<ChatMessage[]>([]);
 	const [operatorMessage, setOperatorMessage] = useState("");
 
-	const isReadOnlyTaskType =
-		taskType === "code-review" || taskType === "test-suite";
+	const isReadOnlyTaskType = taskType === "code-review" || taskType === "test-suite";
 
 	const commandProgress = useMemo(() => {
 		const commandEvents = timeline.filter(
 			(entry) =>
-				entry.event.type === "command_started" ||
-				entry.event.type === "command_batch_ready",
+				entry.event.type === "command_started" || entry.event.type === "command_batch_ready",
 		);
-		const batchEvent = commandEvents.find(
-			(entry) => entry.event.type === "command_batch_ready",
-		);
+		const batchEvent = commandEvents.find((entry) => entry.event.type === "command_batch_ready");
 		const lastCommandEvent = commandEvents
 			.filter((entry) => entry.event.type === "command_started")
 			.pop();
@@ -132,10 +118,7 @@ export function useSandboxRunConsole() {
 
 	const connection = useMemo(
 		() =>
-			connections.find(
-				(item) =>
-					hasValidInstallationId && item.installationId === installationId,
-			),
+			connections.find((item) => hasValidInstallationId && item.installationId === installationId),
 		[connections, hasValidInstallationId, installationId],
 	);
 
@@ -170,8 +153,7 @@ export function useSandboxRunConsole() {
 	const approvalsRunId = activeRunId || targetRunId;
 
 	const selectedRunFromHistory = useMemo(
-		() =>
-			targetRunId ? runs.find((run) => run.runId === targetRunId) : undefined,
+		() => (targetRunId ? runs.find((run) => run.runId === targetRunId) : undefined),
 		[runs, targetRunId],
 	);
 
@@ -192,8 +174,7 @@ export function useSandboxRunConsole() {
 	const approvals = useMemo(
 		() =>
 			toApprovalInstructionItems(runInstructions).sort(
-				(a, b) =>
-					new Date(b.requestedAt).getTime() - new Date(a.requestedAt).getTime(),
+				(a, b) => new Date(b.requestedAt).getTime() - new Date(a.requestedAt).getTime(),
 			),
 		[runInstructions],
 	);
@@ -202,11 +183,7 @@ export function useSandboxRunConsole() {
 		() =>
 			approvals
 				.filter((a) => isApprovalPendingStatus(a.status))
-				.sort(
-					(a, b) =>
-						new Date(a.requestedAt).getTime() -
-						new Date(b.requestedAt).getTime(),
-				),
+				.sort((a, b) => new Date(a.requestedAt).getTime() - new Date(b.requestedAt).getTime()),
 		[approvals],
 	);
 
@@ -252,9 +229,7 @@ export function useSandboxRunConsole() {
 		const run = selectedRunDetails ?? selectedRunFromHistory;
 		if (activeRunId) return activeRunId;
 		if (!run) return undefined;
-		return isRunStatusActive(run.status) || run.status === "paused"
-			? run.runId
-			: undefined;
+		return isRunStatusActive(run.status) || run.status === "paused" ? run.runId : undefined;
 	}, [activeRunId, selectedRunDetails, selectedRunFromHistory]);
 
 	const shouldSubscribeToRunEvents =
@@ -269,9 +244,7 @@ export function useSandboxRunConsole() {
 		const controller = new AbortController();
 		runEventsAbortControllerRef.current = controller;
 		const knownEventCount =
-			runEventOffsetRef.current.get(targetRunId) ??
-			selectedRun?.events?.length ??
-			0;
+			runEventOffsetRef.current.get(targetRunId) ?? selectedRun?.events?.length ?? 0;
 
 		void streamSandboxRunEvents(targetRunId, {
 			signal: controller.signal,
@@ -288,8 +261,7 @@ export function useSandboxRunConsole() {
 					return next.length > 300 ? next.slice(next.length - 300) : next;
 				});
 				const assistantMessage = getAssistantMessageFromEvent(event);
-				if (assistantMessage)
-					pushAssistantMessage(assistantMessage, receivedAt);
+				if (assistantMessage) pushAssistantMessage(assistantMessage, receivedAt);
 
 				queryClient.setQueryData<SandboxRun | undefined>(
 					SANDBOX_QUERY_KEYS.run(targetRunId),
@@ -307,9 +279,7 @@ export function useSandboxRunConsole() {
 							status: nextStatus,
 							updatedAt: receivedAt,
 							completedAt:
-								nextStatus === "completed" ||
-								nextStatus === "failed" ||
-								nextStatus === "cancelled"
+								nextStatus === "completed" || nextStatus === "failed" || nextStatus === "cancelled"
 									? (event.completedAt ?? receivedAt)
 									: current.completedAt,
 							error: event.error ?? current.error,
@@ -347,18 +317,12 @@ export function useSandboxRunConsole() {
 				runEventsAbortControllerRef.current = null;
 			}
 		};
-	}, [
-		pendingApprovals.length,
-		queryClient,
-		shouldSubscribeToRunEvents,
-		targetRunId,
-	]);
+	}, [pendingApprovals.length, queryClient, shouldSubscribeToRunEvents, targetRunId]);
 
 	useEffect(() => {
 		if (!selectedRun || isSubmitting) return;
 
-		const isSameRunHydrated =
-			hydratedRunIdRef.current === selectedRun.runId && timeline.length > 0;
+		const isSameRunHydrated = hydratedRunIdRef.current === selectedRun.runId && timeline.length > 0;
 		const hasRicherServerSnapshot =
 			selectedRunDetails?.runId === selectedRun.runId &&
 			selectedRunDetails.events.length > timeline.length;
@@ -422,9 +386,7 @@ export function useSandboxRunConsole() {
 				toast.success("Cancellation requested");
 				setSelectedRunInUrl(runId, true);
 			} catch (err) {
-				toast.error(
-					err instanceof Error ? err.message : "Failed to cancel sandbox run",
-				);
+				toast.error(err instanceof Error ? err.message : "Failed to cancel sandbox run");
 			}
 		}
 
@@ -461,9 +423,7 @@ export function useSandboxRunConsole() {
 			setLiveRunStatus("paused");
 			toast.success("Pause requested");
 		} catch (err) {
-			toast.error(
-				err instanceof Error ? err.message : "Failed to pause sandbox run",
-			);
+			toast.error(err instanceof Error ? err.message : "Failed to pause sandbox run");
 		}
 	};
 
@@ -481,9 +441,7 @@ export function useSandboxRunConsole() {
 			setLiveRunStatus("running");
 			toast.success("Resume requested");
 		} catch (err) {
-			toast.error(
-				err instanceof Error ? err.message : "Failed to resume sandbox run",
-			);
+			toast.error(err instanceof Error ? err.message : "Failed to resume sandbox run");
 		}
 	};
 
@@ -506,14 +464,10 @@ export function useSandboxRunConsole() {
 						? "Approved from Sandbox run console"
 						: "Rejected from Sandbox run console",
 			});
-			toast.success(
-				status === "approved" ? "Command approved" : "Command rejected",
-			);
+			toast.success(status === "approved" ? "Command approved" : "Command rejected");
 		} catch (err) {
 			toast.error(
-				err instanceof Error
-					? err.message
-					: "Failed to submit command approval response",
+				err instanceof Error ? err.message : "Failed to submit command approval response",
 			);
 		}
 	};
@@ -546,15 +500,9 @@ export function useSandboxRunConsole() {
 				]);
 			}
 			setOperatorMessage("");
-			toast.success(
-				kind === "continue"
-					? "Continue instruction sent"
-					: "Message sent to run",
-			);
+			toast.success(kind === "continue" ? "Continue instruction sent" : "Message sent to run");
 		} catch (err) {
-			toast.error(
-				err instanceof Error ? err.message : "Failed to send instruction",
-			);
+			toast.error(err instanceof Error ? err.message : "Failed to send instruction");
 		}
 	};
 
@@ -643,8 +591,7 @@ export function useSandboxRunConsole() {
 						}
 
 						const assistantMessage = getAssistantMessageFromEvent(event);
-						if (assistantMessage)
-							pushAssistantMessage(assistantMessage, receivedAt);
+						if (assistantMessage) pushAssistantMessage(assistantMessage, receivedAt);
 					},
 					onComplete: (finalEvent) => {
 						setIsSubmitting(false);
@@ -652,8 +599,7 @@ export function useSandboxRunConsole() {
 						abortControllerRef.current = null;
 
 						if (finalEvent?.runId) setSelectedRunInUrl(finalEvent.runId, true);
-						else if (activeRunIdRef.current)
-							setSelectedRunInUrl(activeRunIdRef.current, true);
+						else if (activeRunIdRef.current) setSelectedRunInUrl(activeRunIdRef.current, true);
 
 						queryClient.invalidateQueries({
 							queryKey: SANDBOX_QUERY_KEYS.root,

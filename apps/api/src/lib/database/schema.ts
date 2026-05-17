@@ -1,11 +1,5 @@
 import { sql } from "drizzle-orm";
-import {
-	index,
-	integer,
-	primaryKey,
-	sqliteTable,
-	text,
-} from "drizzle-orm/sqlite-core";
+import { index, integer, primaryKey, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
 export const plans = sqliteTable("plans", {
 	id: text().primaryKey(),
@@ -83,9 +77,7 @@ export const oauthAccount = sqliteTable(
 			.notNull()
 			.references(() => user.id),
 	},
-	(table: any) => [
-		primaryKey({ columns: [table.provider_id, table.provider_user_id] }),
-	],
+	(table: any) => [primaryKey({ columns: [table.provider_id, table.provider_user_id] })],
 );
 
 export const session = sqliteTable("session", {
@@ -146,12 +138,10 @@ export const conversation = sqliteTable(
 		publicIdx: index("conversation_public_idx").on(table.is_public),
 		shareIdIdx: index("conversation_share_id_idx").on(table.share_id),
 		userIdIdx: index("conversation_user_id_idx").on(table.user_id),
-		parentConversationIdIdx: index(
-			"conversation_parent_conversation_id_idx",
-		).on(table.parent_conversation_id),
-		parentMessageIdIdx: index("conversation_parent_message_id_idx").on(
-			table.parent_message_id,
+		parentConversationIdIdx: index("conversation_parent_conversation_id_idx").on(
+			table.parent_conversation_id,
 		),
+		parentMessageIdIdx: index("conversation_parent_message_id_idx").on(table.parent_message_id),
 	}),
 );
 
@@ -219,13 +209,9 @@ export const message = sqliteTable(
 			.$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
 	},
 	(table) => ({
-		conversationIdx: index("message_conversation_id_idx").on(
-			table.conversation_id,
-		),
+		conversationIdx: index("message_conversation_id_idx").on(table.conversation_id),
 		archivedIdx: index("message_archived_idx").on(table.is_archived),
-		parentMessageIdx: index("message_parent_message_id_idx").on(
-			table.parent_message_id,
-		),
+		parentMessageIdx: index("message_parent_message_id_idx").on(table.parent_message_id),
 		roleIdx: index("message_role_idx").on(table.role),
 	}),
 );
@@ -328,9 +314,7 @@ export const providerSettings = sqliteTable(
 	},
 	(table) => ({
 		userIdIdx: index("provider_settings_user_id_idx").on(table.user_id),
-		providerIdIdx: index("provider_settings_provider_id_idx").on(
-			table.provider_id,
-		),
+		providerIdIdx: index("provider_settings_provider_id_idx").on(table.provider_id),
 	}),
 );
 
@@ -406,9 +390,7 @@ export const webauthnChallenge = sqliteTable(
 	(table) => ({
 		userIdIdx: index("webauthn_challenge_user_id_idx").on(table.user_id),
 		challengeIdx: index("webauthn_challenge_challenge_idx").on(table.challenge),
-		expiresAtIdx: index("webauthn_challenge_expires_at_idx").on(
-			table.expires_at,
-		),
+		expiresAtIdx: index("webauthn_challenge_expires_at_idx").on(table.expires_at),
 	}),
 );
 
@@ -564,15 +546,10 @@ export const agentInstalls = sqliteTable(
 			.notNull(),
 	},
 	(table) => ({
-		sharedAgentIdIdx: index("agent_installs_shared_agent_id_idx").on(
-			table.shared_agent_id,
-		),
+		sharedAgentIdIdx: index("agent_installs_shared_agent_id_idx").on(table.shared_agent_id),
 		userIdIdx: index("agent_installs_user_id_idx").on(table.user_id),
 		agentIdIdx: index("agent_installs_agent_id_idx").on(table.agent_id),
-		uniqueInstall: index("agent_installs_unique_idx").on(
-			table.shared_agent_id,
-			table.user_id,
-		),
+		uniqueInstall: index("agent_installs_unique_idx").on(table.shared_agent_id, table.user_id),
 	}),
 );
 
@@ -598,15 +575,10 @@ export const agentRatings = sqliteTable(
 			.$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
 	},
 	(table) => ({
-		sharedAgentIdIdx: index("agent_ratings_shared_agent_id_idx").on(
-			table.shared_agent_id,
-		),
+		sharedAgentIdIdx: index("agent_ratings_shared_agent_id_idx").on(table.shared_agent_id),
 		userIdIdx: index("agent_ratings_user_id_idx").on(table.user_id),
 		ratingIdx: index("agent_ratings_rating_idx").on(table.rating),
-		uniqueRating: index("agent_ratings_unique_idx").on(
-			table.shared_agent_id,
-			table.user_id,
-		),
+		uniqueRating: index("agent_ratings_unique_idx").on(table.shared_agent_id, table.user_id),
 	}),
 );
 
@@ -640,9 +612,7 @@ export const memories = sqliteTable(
 	(table) => ({
 		userIdIdx: index("memories_user_id_idx").on(table.user_id),
 		categoryIdx: index("memories_category_idx").on(table.category),
-		conversationIdIdx: index("memories_conversation_id_idx").on(
-			table.conversation_id,
-		),
+		conversationIdIdx: index("memories_conversation_id_idx").on(table.conversation_id),
 		vectorIdIdx: index("memories_vector_id_idx").on(table.vector_id),
 		namespaceIdx: index("memories_namespace_idx").on(table.namespace),
 		isActiveIdx: index("memories_is_active_idx").on(table.is_active),
@@ -695,13 +665,8 @@ export const memoryGroupMembers = sqliteTable(
 	},
 	(table) => ({
 		groupIdIdx: index("memory_group_members_group_id_idx").on(table.group_id),
-		memoryIdIdx: index("memory_group_members_memory_id_idx").on(
-			table.memory_id,
-		),
-		uniqueMember: index("memory_group_members_unique_idx").on(
-			table.group_id,
-			table.memory_id,
-		),
+		memoryIdIdx: index("memory_group_members_memory_id_idx").on(table.memory_id),
+		uniqueMember: index("memory_group_members_unique_idx").on(table.group_id, table.memory_id),
 	}),
 );
 
@@ -724,14 +689,7 @@ export const tasks = sqliteTable(
 			],
 		}).notNull(),
 		status: text({
-			enum: [
-				"pending",
-				"queued",
-				"running",
-				"completed",
-				"failed",
-				"cancelled",
-			],
+			enum: ["pending", "queued", "running", "completed", "failed", "cancelled"],
 		})
 			.notNull()
 			.default("pending"),
@@ -874,30 +832,18 @@ export const trainingExamples = sqliteTable(
 	},
 	(table) => ({
 		userIdIdx: index("training_examples_user_id_idx").on(table.user_id),
-		conversationIdIdx: index("training_examples_conversation_id_idx").on(
-			table.conversation_id,
-		),
+		conversationIdIdx: index("training_examples_conversation_id_idx").on(table.conversation_id),
 		sourceIdx: index("training_examples_source_idx").on(table.source),
 		appNameIdx: index("training_examples_app_name_idx").on(table.app_name),
 		exportedIdx: index("training_examples_exported_idx").on(table.exported),
 		includeInTrainingIdx: index("training_examples_include_in_training_idx").on(
 			table.include_in_training,
 		),
-		feedbackRatingIdx: index("training_examples_feedback_rating_idx").on(
-			table.feedback_rating,
-		),
-		qualityScoreIdx: index("training_examples_quality_score_idx").on(
-			table.quality_score,
-		),
-		taskCategoryIdx: index("training_examples_task_category_idx").on(
-			table.task_category,
-		),
-		difficultyLevelIdx: index("training_examples_difficulty_level_idx").on(
-			table.difficulty_level,
-		),
-		languageCodeIdx: index("training_examples_language_code_idx").on(
-			table.language_code,
-		),
+		feedbackRatingIdx: index("training_examples_feedback_rating_idx").on(table.feedback_rating),
+		qualityScoreIdx: index("training_examples_quality_score_idx").on(table.quality_score),
+		taskCategoryIdx: index("training_examples_task_category_idx").on(table.task_category),
+		difficultyLevelIdx: index("training_examples_difficulty_level_idx").on(table.difficulty_level),
+		languageCodeIdx: index("training_examples_language_code_idx").on(table.language_code),
 		conversationTurnIdx: index("training_examples_conversation_turn_idx").on(
 			table.conversation_turn,
 		),

@@ -14,17 +14,13 @@ export class ReplicateTranscriptionProvider extends BaseTranscriptionProvider {
 		return "REPLICATE_API_TOKEN";
 	}
 
-	async transcribe(
-		request: TranscriptionRequest,
-	): Promise<TranscriptionResult> {
+	async transcribe(request: TranscriptionRequest): Promise<TranscriptionResult> {
 		this.validateRequest(request);
 
 		const { audio, env, user } = request;
 
 		try {
-			const modelConfig = await getModelConfigByMatchingModel(
-				REPLICATE_TRANSCRIBE_VERSION,
-			);
+			const modelConfig = await getModelConfigByMatchingModel(REPLICATE_TRANSCRIBE_VERSION);
 			const provider = getChatProvider(modelConfig?.provider || "replicate", {
 				env,
 				user,

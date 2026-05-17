@@ -53,8 +53,7 @@ export function meta() {
 		{ title: "Sandbox Worker - Polychat" },
 		{
 			name: "description",
-			content:
-				"Connect to a GitHub repo to automate tasks in an isolated sandbox environment.",
+			content: "Connect to a GitHub repo to automate tasks in an isolated sandbox environment.",
 		},
 	];
 }
@@ -67,8 +66,7 @@ export default function SandboxConnectionsPage() {
 	const [form, setForm] = useState<ConnectionFormState>(INITIAL_FORM);
 
 	const { data: connections = [], isLoading, error } = useSandboxConnections();
-	const { data: installConfig, isLoading: isInstallConfigLoading } =
-		useSandboxInstallConfig();
+	const { data: installConfig, isLoading: isInstallConfigLoading } = useSandboxInstallConfig();
 	const {
 		data: runs = [],
 		isLoading: isRunsLoading,
@@ -78,10 +76,7 @@ export default function SandboxConnectionsPage() {
 	const deleteConnectionMutation = useDeleteSandboxConnection();
 
 	const totalRepositories = useMemo(() => {
-		return connections.reduce(
-			(total, connection) => total + connection.repositories.length,
-			0,
-		);
+		return connections.reduce((total, connection) => total + connection.repositories.length, 0);
 	}, [connections]);
 
 	useEffect(() => {
@@ -120,9 +115,7 @@ export default function SandboxConnectionsPage() {
 		}
 
 		if (!installConfig?.canAutoConnect) {
-			toast.info(
-				"GitHub install detected. Open Add connection and save it manually.",
-			);
+			toast.info("GitHub install detected. Open Add connection and save it manually.");
 			clearInstallParams();
 			setIsConnectionModalOpen(true);
 			setForm((prev) => ({
@@ -155,11 +148,7 @@ export default function SandboxConnectionsPage() {
 	]);
 
 	const handleDeleteConnection = async (installationId: number) => {
-		if (
-			!window.confirm(
-				`Delete the connection for installation ${installationId}?`,
-			)
-		) {
+		if (!window.confirm(`Delete the connection for installation ${installationId}?`)) {
 			return;
 		}
 
@@ -168,9 +157,7 @@ export default function SandboxConnectionsPage() {
 			toast.success("Connection deleted");
 		} catch (mutationError) {
 			toast.error(
-				mutationError instanceof Error
-					? mutationError.message
-					: "Failed to delete connection",
+				mutationError instanceof Error ? mutationError.message : "Failed to delete connection",
 			);
 		}
 	};
@@ -186,8 +173,8 @@ export default function SandboxConnectionsPage() {
 							<BackLink to="/apps" label="Back to Apps" />
 							<PageTitle title="Sandbox Worker" />
 							<p className="text-sm text-muted-foreground max-w-3xl">
-								Connect to your GitHub repositories and automate tasks in an
-								isolated sandbox environment.
+								Connect to your GitHub repositories and automate tasks in an isolated sandbox
+								environment.
 							</p>
 						</PageHeader>
 						<Button
@@ -218,16 +205,12 @@ export default function SandboxConnectionsPage() {
 							</CardHeader>
 							<CardContent className="max-h-[400px] overflow-y-auto">
 								{isRunsLoading ? (
-									<div className="text-sm text-muted-foreground">
-										Loading run history...
-									</div>
+									<div className="text-sm text-muted-foreground">Loading run history...</div>
 								) : runsError ? (
 									<Alert variant="destructive">
 										<AlertTitle>Unable to load runs</AlertTitle>
 										<AlertDescription>
-											{runsError instanceof Error
-												? runsError.message
-												: "Unknown error"}
+											{runsError instanceof Error ? runsError.message : "Unknown error"}
 										</AlertDescription>
 									</Alert>
 								) : runs.length === 0 ? (
@@ -240,10 +223,7 @@ export default function SandboxConnectionsPage() {
 								) : (
 									<div className="space-y-3">
 										{runs.map((run) => (
-											<div
-												key={run.runId}
-												className="rounded-lg border bg-card p-3 text-sm"
-											>
+											<div key={run.runId} className="rounded-lg border bg-card p-3 text-sm">
 												<div className="flex items-center justify-between gap-3">
 													<Link
 														to={`/apps/sandbox/${run.installationId}?runId=${run.runId}`}
@@ -251,13 +231,9 @@ export default function SandboxConnectionsPage() {
 													>
 														{run.repo}
 													</Link>
-													<Badge variant={getStatusBadgeVariant(run.status)}>
-														{run.status}
-													</Badge>
+													<Badge variant={getStatusBadgeVariant(run.status)}>{run.status}</Badge>
 												</div>
-												<p className="mt-1 text-muted-foreground line-clamp-2">
-													{run.task}
-												</p>
+												<p className="mt-1 text-muted-foreground line-clamp-2">{run.task}</p>
 												<p className="mt-1 text-xs text-muted-foreground">
 													Updated {formatRelativeTime(run.updatedAt)}
 												</p>
@@ -278,8 +254,8 @@ export default function SandboxConnectionsPage() {
 										<CardTitle>Repository connections</CardTitle>
 										<CardDescription>
 											{connections.length} installation
-											{connections.length === 1 ? "" : "s"} connected across{" "}
-											{totalRepositories} scoped repositor
+											{connections.length === 1 ? "" : "s"} connected across {totalRepositories}{" "}
+											scoped repositor
 											{totalRepositories === 1 ? "y" : "ies"}.
 										</CardDescription>
 									</div>
@@ -287,9 +263,7 @@ export default function SandboxConnectionsPage() {
 							</CardHeader>
 							<CardContent className="max-h-[400px] overflow-y-auto">
 								{isLoading ? (
-									<div className="text-sm text-muted-foreground">
-										Loading connections...
-									</div>
+									<div className="text-sm text-muted-foreground">Loading connections...</div>
 								) : error ? (
 									<Alert variant="destructive">
 										<AlertTitle>Unable to load connections</AlertTitle>
@@ -331,11 +305,7 @@ export default function SandboxConnectionsPage() {
 															variant="destructive"
 															size="sm"
 															icon={<Trash2 className="h-4 w-4" />}
-															onClick={() =>
-																handleDeleteConnection(
-																	connection.installationId,
-																)
-															}
+															onClick={() => handleDeleteConnection(connection.installationId)}
 															isLoading={deleteConnectionMutation.isPending}
 														>
 															Remove
@@ -344,11 +314,7 @@ export default function SandboxConnectionsPage() {
 															variant="primary"
 															size="sm"
 															icon={<Hammer className="h-4 w-4" />}
-															onClick={() =>
-																navigate(
-																	`/apps/sandbox/${connection.installationId}`,
-																)
-															}
+															onClick={() => navigate(`/apps/sandbox/${connection.installationId}`)}
 														>
 															Open
 														</Button>

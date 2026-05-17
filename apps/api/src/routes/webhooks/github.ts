@@ -71,9 +71,7 @@ addRoute(github, "post", "/", {
 			return c.json({ error: "GitHub webhook secret not configured" }, 503);
 		}
 
-		if (
-			!validateSignature(payload, signature, githubConnection.webhookSecret)
-		) {
+		if (!validateSignature(payload, signature, githubConnection.webhookSecret)) {
 			return c.json({ error: "Invalid signature" }, 401);
 		}
 
@@ -98,10 +96,9 @@ addRoute(github, "post", "/", {
 			return c.json({ error: "Missing repository context" }, 400);
 		}
 
-		const linkedUser =
-			await serviceContext.repositories.users.getUserByGithubId(
-				String(commenterId),
-			);
+		const linkedUser = await serviceContext.repositories.users.getUserByGithubId(
+			String(commenterId),
+		);
 
 		if (!linkedUser) {
 			logger.warn("Ignoring sandbox command from unlinked GitHub user", {
@@ -125,22 +122,15 @@ addRoute(github, "post", "/", {
 		}
 
 		try {
-			await getGitHubAppConnectionForUserInstallation(
-				serviceContext,
-				linkedUserId,
-				installationId,
-			);
+			await getGitHubAppConnectionForUserInstallation(serviceContext, linkedUserId, installationId);
 		} catch {
-			logger.warn(
-				"Ignoring sandbox command for installation not linked to user",
-				{
-					command: parsedCommand.command,
-					user_id: linkedUserId,
-					installation_id: installationId,
-					repo,
-					issue: issueNumber,
-				},
-			);
+			logger.warn("Ignoring sandbox command for installation not linked to user", {
+				command: parsedCommand.command,
+				user_id: linkedUserId,
+				installation_id: installationId,
+				repo,
+				issue: issueNumber,
+			});
 			return c.json({ success: true });
 		}
 		const result = await executeWebhookSandboxCommand({

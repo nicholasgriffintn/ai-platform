@@ -31,16 +31,11 @@ export function buildUserContextSection({
 	) {
 		builder
 			.addLine("<user_location>")
-			.addLine(
-				`<latitude>${latitude}</latitude><longitude>${longitude}</longitude>`,
-			)
+			.addLine(`<latitude>${latitude}</latitude><longitude>${longitude}</longitude>`)
 			.addLine("</user_location>");
 	}
 
-	builder.addIf(
-		!!language,
-		`<preferred_language>${language}</preferred_language>`,
-	);
+	builder.addIf(!!language, `<preferred_language>${language}</preferred_language>`);
 
 	builder.addLine("</user_context>").addLine();
 

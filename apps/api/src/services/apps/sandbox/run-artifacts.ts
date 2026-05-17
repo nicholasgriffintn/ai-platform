@@ -30,10 +30,7 @@ function buildArtifactKey(runId: string, fileName: string): string {
 	return `${ARTIFACT_PREFIX}/${toSafeRunId(runId)}/${fileName}`;
 }
 
-function buildArtifactUrl(
-	baseUrl: string | undefined,
-	key: string,
-): string | undefined {
+function buildArtifactUrl(baseUrl: string | undefined, key: string): string | undefined {
 	const trimmed = baseUrl?.trim();
 	if (!trimmed) {
 		return undefined;
@@ -45,9 +42,7 @@ function shouldPersistArtifact(run: SandboxRunData): boolean {
 	const logs = run.result?.logs;
 	const diff = run.result?.diff;
 	const hasEvents = Array.isArray(run.events) && run.events.length > 0;
-	return Boolean(
-		(typeof logs === "string" && logs.length > 0) || diff || hasEvents,
-	);
+	return Boolean((typeof logs === "string" && logs.length > 0) || diff || hasEvents);
 }
 
 async function putArtifact(params: {

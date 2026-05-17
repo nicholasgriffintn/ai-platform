@@ -1,11 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import * as embeddingHelpers from "~/lib/providers/capabilities/embedding/helpers";
-import type {
-	EmbeddingMutationResult,
-	EmbeddingVector,
-	IRequest,
-} from "~/types";
+import type { EmbeddingMutationResult, EmbeddingVector, IRequest } from "~/types";
 import type { ContentExtractParams } from "../content-extract";
 import { extractContent } from "../content-extract";
 
@@ -24,9 +20,7 @@ vi.mock("~/repositories", () => ({
 
 const mockEmbeddingProvider = {
 	generate: vi.fn(() =>
-		Promise.resolve([
-			{ id: "vec-1", values: [0.1, 0.2], metadata: {} },
-		] as EmbeddingVector[]),
+		Promise.resolve([{ id: "vec-1", values: [0.1, 0.2], metadata: {} }] as EmbeddingVector[]),
 	),
 	insert: vi.fn(() =>
 		Promise.resolve({
@@ -60,9 +54,7 @@ describe("extractContent", () => {
 		user: mockUser,
 		env: mockEnv,
 	} as any;
-	const mockedGetEmbeddingProvider = vi.mocked(
-		embeddingHelpers.getEmbeddingProvider,
-	);
+	const mockedGetEmbeddingProvider = vi.mocked(embeddingHelpers.getEmbeddingProvider);
 
 	beforeEach(() => {
 		vi.clearAllMocks();
@@ -196,9 +188,7 @@ describe("extractContent", () => {
 		} as Response);
 
 		mockRepositories.userSettings.getUserSettings.mockResolvedValue({});
-		const generatedVectors = [
-			{ id: "vec-1", values: [0.1, 0.2], metadata: {} },
-		];
+		const generatedVectors = [{ id: "vec-1", values: [0.1, 0.2], metadata: {} }];
 		mockEmbeddingProvider.generate.mockResolvedValue(generatedVectors);
 		mockEmbeddingProvider.insert.mockResolvedValue({
 			status: "success",
@@ -223,12 +213,9 @@ describe("extractContent", () => {
 			},
 		);
 
-		expect(mockEmbeddingProvider.insert).toHaveBeenCalledWith(
-			generatedVectors,
-			{
-				namespace: "custom-namespace",
-			},
-		);
+		expect(mockEmbeddingProvider.insert).toHaveBeenCalledWith(generatedVectors, {
+			namespace: "custom-namespace",
+		});
 	});
 
 	it("should use default namespace for vectorization", async () => {
@@ -340,9 +327,7 @@ describe("extractContent", () => {
 			json: () => Promise.resolve(mockTavilyResponse),
 		} as Response);
 
-		mockRepositories.userSettings.getUserSettings.mockRejectedValue(
-			new Error("Database error"),
-		);
+		mockRepositories.userSettings.getUserSettings.mockRejectedValue(new Error("Database error"));
 
 		const result = await extractContent(params, mockRequest);
 

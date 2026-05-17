@@ -27,10 +27,7 @@ vi.mock("~/repositories", () => ({
 	},
 }));
 
-vi.mock(
-	"~/lib/providers/capabilities/embedding/helpers",
-	() => embeddingHelperMocks,
-);
+vi.mock("~/lib/providers/capabilities/embedding/helpers", () => embeddingHelperMocks);
 
 vi.mock("~/utils/logger", () => ({
 	getLogger: vi.fn(() => ({
@@ -93,12 +90,9 @@ describe("queryEmbeddings", () => {
 			data: mockResults,
 		});
 
-		expect(mockEmbeddingProvider.searchSimilar).toHaveBeenCalledWith(
-			"search term",
-			{
-				namespace: "custom-namespace",
-			},
-		);
+		expect(mockEmbeddingProvider.searchSimilar).toHaveBeenCalledWith("search term", {
+			namespace: "custom-namespace",
+		});
 	});
 
 	it("should use default namespace when not provided", async () => {
@@ -133,9 +127,7 @@ describe("queryEmbeddings", () => {
 			},
 		};
 
-		await expect(queryEmbeddings(req)).rejects.toThrow(
-			"Error querying embeddings",
-		);
+		await expect(queryEmbeddings(req)).rejects.toThrow("Error querying embeddings");
 	});
 
 	it("should handle empty search results", async () => {
@@ -203,9 +195,7 @@ describe("queryEmbeddings", () => {
 		mockRepositories.userSettings.getUserSettings.mockResolvedValue({});
 		mockEmbeddingProvider.searchSimilar.mockRejectedValue(serverError);
 
-		await expect(queryEmbeddings(req)).rejects.toThrow(
-			"Error querying embeddings",
-		);
+		await expect(queryEmbeddings(req)).rejects.toThrow("Error querying embeddings");
 	});
 
 	it("should handle database errors", async () => {
@@ -219,12 +209,8 @@ describe("queryEmbeddings", () => {
 			},
 		};
 
-		mockRepositories.userSettings.getUserSettings.mockRejectedValue(
-			new Error("Database error"),
-		);
+		mockRepositories.userSettings.getUserSettings.mockRejectedValue(new Error("Database error"));
 
-		await expect(queryEmbeddings(req)).rejects.toThrow(
-			"Error querying embeddings",
-		);
+		await expect(queryEmbeddings(req)).rejects.toThrow("Error querying embeddings");
 	});
 });

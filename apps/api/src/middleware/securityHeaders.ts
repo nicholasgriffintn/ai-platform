@@ -9,10 +9,7 @@ export function securityHeaders() {
 		c.header("Cross-Origin-Resource-Policy", "same-origin");
 		c.header("X-DNS-Prefetch-Control", "off");
 		c.header("Cross-Origin-Embedder-Policy", "require-corp");
-		c.header(
-			"Strict-Transport-Security",
-			"max-age=31536000; includeSubDomains",
-		);
+		c.header("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
 		c.header("Referrer-Policy", "strict-origin-when-cross-origin");
 		c.header("Permissions-Policy", "geolocation=(), microphone=(), camera=()");
 

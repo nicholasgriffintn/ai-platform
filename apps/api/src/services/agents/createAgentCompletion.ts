@@ -1,31 +1,15 @@
 import type { MCPClientManager } from "agents/mcp/client";
 
 import { formatToolCalls } from "~/lib/chat/tools";
-import {
-	createServiceContext,
-	type ServiceContext,
-} from "~/lib/context/serviceContext";
+import { createServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
 import { getModelConfig } from "~/lib/providers/models";
 import { handleCreateChatCompletions } from "~/services/completions/createChatCompletions";
 import { registerMCPClient } from "~/services/functions/mcp";
 import { add_reasoning_step } from "~/services/functions/reasoning";
-import {
-	compose_functions,
-	if_then_else,
-	parallel_execute,
-} from "~/services/functions/workflow";
-import {
-	request_approval,
-	ask_user,
-} from "~/services/functions/human_in_the_loop";
-import {
-	retry_with_backoff,
-	fallback,
-} from "~/services/functions/error_recovery";
-import {
-	search_functions,
-	get_function_schema,
-} from "~/services/functions/discovery";
+import { compose_functions, if_then_else, parallel_execute } from "~/services/functions/workflow";
+import { request_approval, ask_user } from "~/services/functions/human_in_the_loop";
+import { retry_with_backoff, fallback } from "~/services/functions/error_recovery";
+import { search_functions, get_function_schema } from "~/services/functions/discovery";
 import {
 	delegateToTeamMember,
 	delegateToTeamMemberByRole,
@@ -83,11 +67,7 @@ export async function createAgentCompletion({
 
 	const teamDelegationTools = setupTeamDelegationTools(agent);
 
-	const functionSchemas = [
-		...CORE_AGENT_TOOLS,
-		...teamDelegationTools,
-		...mcpFunctions,
-	];
+	const functionSchemas = [...CORE_AGENT_TOOLS, ...teamDelegationTools, ...mcpFunctions];
 
 	const modelToUse = agent.model || body.model;
 	const modelDetails = await getModelConfig(modelToUse);
@@ -95,17 +75,12 @@ export async function createAgentCompletion({
 		throw new AssistantError("Invalid model", ErrorType.PARAMS_ERROR);
 	}
 
-	const formattedTools = formatToolCalls(
-		modelDetails.provider,
-		functionSchemas,
-	);
+	const formattedTools = formatToolCalls(modelDetails.provider, functionSchemas);
 
 	let fewShotExamples;
 	if (agent.few_shot_examples) {
 		try {
-			const rawFewShotExamples = safeParseJson(
-				agent.few_shot_examples as string,
-			);
+			const rawFewShotExamples = safeParseJson(agent.few_shot_examples as string);
 
 			fewShotExamples = `
         Examples:
@@ -152,15 +127,10 @@ export async function createAgentCompletion({
 		stream: false,
 		mode: "agent",
 		max_steps: agent.max_steps || body.max_steps || 20,
-		temperature:
-			Number.parseFloat(agent.temperature) || body.temperature || 0.8,
+		temperature: Number.parseFloat(agent.temperature) || body.temperature || 0.8,
 		current_agent_id: agentId,
 		platform: requestPlatform === "obsidian" ? "api" : requestPlatform,
-		stop: requestStop
-			? Array.isArray(requestStop)
-				? requestStop
-				: [requestStop]
-			: undefined,
+		stop: requestStop ? (Array.isArray(requestStop) ? requestStop : [requestStop]) : undefined,
 		tool_choice: normaliseToolChoice(requestToolChoice),
 	};
 
@@ -193,18 +163,12 @@ async function setupMCPFunctions(agent: any, env: IEnv) {
 		let serverConfigs = [];
 		serverConfigs = safeParseJson(serversJson) as Array<{ url: string }>;
 		if (!serverConfigs) {
-			throw new AssistantError(
-				"Invalid servers configuration",
-				ErrorType.PARAMS_ERROR,
-			);
+			throw new AssistantError("Invalid servers configuration", ErrorType.PARAMS_ERROR);
 		}
 
 		if (serverConfigs && serverConfigs.length > 0) {
 			if (!env.MCP_STORAGE) {
-				throw new AssistantError(
-					"MCP storage not configured",
-					ErrorType.CONFIGURATION_ERROR,
-				);
+				throw new AssistantError("MCP storage not configured", ErrorType.CONFIGURATION_ERROR);
 			}
 
 			const { MCPClientManager } = await import("agents/mcp/client");
@@ -253,8 +217,7 @@ async function setupMCPFunctions(agent: any, env: IEnv) {
 
 						if (
 							!def.parameters ||
-							(!def.parameters.properties &&
-								!def.parameters.jsonSchema.properties)
+							(!def.parameters.properties && !def.parameters.jsonSchema.properties)
 						) {
 							continue;
 						}
@@ -268,8 +231,7 @@ async function setupMCPFunctions(agent: any, env: IEnv) {
 				} catch (error) {
 					logger.error("Error connecting to MCP server", {
 						server_url: cfg.url,
-						error_message:
-							error instanceof Error ? error.message : "Unknown error",
+						error_message: error instanceof Error ? error.message : "Unknown error",
 					});
 				}
 			}
@@ -298,11 +260,7 @@ function normaliseToolChoice(
 		return undefined;
 	}
 
-	if (
-		toolChoice === "auto" ||
-		toolChoice === "none" ||
-		toolChoice === "required"
-	) {
+	if (toolChoice === "auto" || toolChoice === "none" || toolChoice === "required") {
 		return toolChoice;
 	}
 
@@ -312,11 +270,7 @@ function normaliseToolChoice(
 	};
 }
 
-async function getValidatedAgent(
-	context: ServiceContext,
-	agentId: string,
-	userId?: number,
-) {
+async function getValidatedAgent(context: ServiceContext, agentId: string, userId?: number) {
 	const repo = context.repositories.agents;
 	const agent = await repo.getAgentById(agentId);
 

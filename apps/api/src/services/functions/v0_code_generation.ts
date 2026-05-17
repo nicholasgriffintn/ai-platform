@@ -20,8 +20,7 @@ export const v0_code_generation: ApiToolDefinition = {
 			},
 			image_base_64: {
 				type: "string",
-				description:
-					"An image to include in the prompt for a multimodal input.",
+				description: "An image to include in the prompt for a multimodal input.",
 			},
 		},
 		required: ["prompt"],

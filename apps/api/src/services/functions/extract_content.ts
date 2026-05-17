@@ -14,8 +14,7 @@ export const extract_content: ApiToolDefinition = {
 		properties: {
 			urls: {
 				type: "string",
-				description:
-					"Single URL or comma-separated list of URLs to extract content from",
+				description: "Single URL or comma-separated list of URLs to extract content from",
 			},
 			extract_depth: {
 				type: "string",
@@ -30,8 +29,7 @@ export const extract_content: ApiToolDefinition = {
 			},
 			should_vectorize: {
 				type: "boolean",
-				description:
-					"Whether to store the content in the vector database for future reference",
+				description: "Whether to store the content in the vector database for future reference",
 				default: false,
 			},
 			namespace: {
@@ -48,8 +46,7 @@ export const extract_content: ApiToolDefinition = {
 			cloudflareFormat: {
 				type: "string",
 				enum: ["markdown", "content", "json", "links", "scrape", "snapshot"],
-				description:
-					"Browser Rendering endpoint format when provider is 'cloudflare'.",
+				description: "Browser Rendering endpoint format when provider is 'cloudflare'.",
 				default: "markdown",
 			},
 			cloudflareJsonOptions: {
@@ -133,9 +130,7 @@ export const extract_content: ApiToolDefinition = {
 		return {
 			status: "success",
 			name: "extract_content",
-			content:
-				aiResponse.response ||
-				"Content extracted but no summary could be generated",
+			content: aiResponse.response || "Content extracted but no summary could be generated",
 			data: {
 				...result.data,
 				summary: aiResponse.response,

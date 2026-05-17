@@ -27,10 +27,7 @@ import {
 	type SandboxPromptStrategy,
 	type SandboxTaskType,
 } from "~/types/sandbox";
-import {
-	SANDBOX_TASK_TYPE_DESCRIPTIONS,
-	SANDBOX_TASK_TYPE_LABELS,
-} from "./constants";
+import { SANDBOX_TASK_TYPE_DESCRIPTIONS, SANDBOX_TASK_TYPE_LABELS } from "./constants";
 import { parseSandboxTaskType } from "./helpers";
 import { REPO_PATTERN } from "../utils";
 
@@ -132,15 +129,13 @@ export function RunTaskForm({
 							</p>
 						) : repoSuggestions.length === 0 ? (
 							<p className="text-xs text-muted-foreground">
-								No repo suggestions yet. Paste owner/repo or a GitHub repo URL
-								and we will remember it for this installation.
+								No repo suggestions yet. Paste owner/repo or a GitHub repo URL and we will remember
+								it for this installation.
 							</p>
 						) : null}
 					</div>
 					<div className="space-y-2">
-						<Label htmlFor="sandbox-model-input">
-							Model (optional override)
-						</Label>
+						<Label htmlFor="sandbox-model-input">Model (optional override)</Label>
 						<Input
 							id="sandbox-model-input"
 							value={model}
@@ -148,8 +143,8 @@ export function RunTaskForm({
 							placeholder="e.g. mistral-large"
 						/>
 						<p className="text-xs text-muted-foreground">
-							Leave blank to use your Sandbox model setting. If none is set,
-							backend defaults to <code>mistral-large</code>.
+							Leave blank to use your Sandbox model setting. If none is set, backend defaults to{" "}
+							<code>mistral-large</code>.
 						</p>
 					</div>
 					<div className="space-y-2">
@@ -157,9 +152,7 @@ export function RunTaskForm({
 							id="sandbox-task-type"
 							label="Task type"
 							value={taskType}
-							onChange={(event) =>
-								setTaskType(parseSandboxTaskType(event.target.value))
-							}
+							onChange={(event) => setTaskType(parseSandboxTaskType(event.target.value))}
 							options={SANDBOX_TASK_TYPES.map((type) => ({
 								value: type,
 								label: SANDBOX_TASK_TYPE_LABELS[type],
@@ -175,9 +168,7 @@ export function RunTaskForm({
 							label="Prompt strategy"
 							value={promptStrategy}
 							onChange={(event) =>
-								setPromptStrategy(
-									parseSandboxPromptStrategy(event.target.value),
-								)
+								setPromptStrategy(parseSandboxPromptStrategy(event.target.value))
 							}
 							options={sandboxPromptStrategyOptions.map((option) => ({
 								value: option.value,
@@ -207,8 +198,7 @@ export function RunTaskForm({
 							</p>
 						) : (
 							<p className="text-xs text-muted-foreground">
-								Per-run execution timeout; the run will fail once this limit is
-								reached.
+								Per-run execution timeout; the run will fail once this limit is reached.
 							</p>
 						)}
 					</div>

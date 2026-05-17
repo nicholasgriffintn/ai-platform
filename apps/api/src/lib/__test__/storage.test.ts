@@ -55,17 +55,13 @@ describe("StorageService", () => {
 			};
 			mockBucket.get.mockResolvedValue(mockObject);
 
-			await expect(storageService.getObject("error-key")).rejects.toThrow(
-				"ArrayBuffer error",
-			);
+			await expect(storageService.getObject("error-key")).rejects.toThrow("ArrayBuffer error");
 		});
 
 		it("should handle bucket get errors", async () => {
 			mockBucket.get.mockRejectedValue(new Error("Bucket error"));
 
-			await expect(storageService.getObject("error-key")).rejects.toThrow(
-				"Bucket error",
-			);
+			await expect(storageService.getObject("error-key")).rejects.toThrow("Bucket error");
 		});
 	});
 
@@ -113,11 +109,7 @@ describe("StorageService", () => {
 			};
 			mockBucket.put.mockResolvedValue(undefined);
 
-			const result = await storageService.uploadObject(
-				testKey,
-				testData,
-				options,
-			);
+			const result = await storageService.uploadObject(testKey, testData, options);
 
 			expect(result).toBe(testKey);
 			expect(mockBucket.put).toHaveBeenCalledWith(testKey, testData, options);
@@ -128,9 +120,7 @@ describe("StorageService", () => {
 			const testKey = "test-error-key";
 			mockBucket.put.mockRejectedValue(new Error("Upload failed"));
 
-			await expect(
-				storageService.uploadObject(testKey, testData),
-			).rejects.toThrow("Upload failed");
+			await expect(storageService.uploadObject(testKey, testData)).rejects.toThrow("Upload failed");
 		});
 
 		it("should handle empty string data", async () => {

@@ -30,12 +30,7 @@ export const HCaptchaVerifier = ({ siteKey, onVerify }: HCaptchaProps) => {
 	const { trackEvent, trackAuth, trackError } = useTrackEvent();
 
 	const initializeCaptcha = useCallback(() => {
-		if (
-			!window.hcaptcha ||
-			!containerRef.current ||
-			captchaInitialized.current ||
-			isVerified
-		) {
+		if (!window.hcaptcha || !containerRef.current || captchaInitialized.current || isVerified) {
 			return;
 		}
 
@@ -53,14 +48,10 @@ export const HCaptchaVerifier = ({ siteKey, onVerify }: HCaptchaProps) => {
 			},
 			"error-callback": () => {
 				console.error("HCaptcha verification failed");
-				trackError(
-					"captcha_verification_failed",
-					new Error("HCaptcha verification failed"),
-					{
-						verification_method: "hcaptcha",
-						site_key: siteKey,
-					},
-				);
+				trackError("captcha_verification_failed", new Error("HCaptcha verification failed"), {
+					verification_method: "hcaptcha",
+					site_key: siteKey,
+				});
 			},
 			"expired-callback": () => {
 				setIsVerified(false);
@@ -84,15 +75,7 @@ export const HCaptchaVerifier = ({ siteKey, onVerify }: HCaptchaProps) => {
 		if (window.hcaptcha && id !== null) {
 			window.hcaptcha.execute(id);
 		}
-	}, [
-		isVerified,
-		onVerify,
-		siteKey,
-		trackAuth,
-		trackError,
-		trackEvent,
-		widgetId,
-	]);
+	}, [isVerified, onVerify, siteKey, trackAuth, trackError, trackEvent, widgetId]);
 
 	useEffect(() => {
 		if (typeof window === "undefined") {
@@ -105,9 +88,7 @@ export const HCaptchaVerifier = ({ siteKey, onVerify }: HCaptchaProps) => {
 			};
 		}
 
-		const existingScript = document.querySelector(
-			'script[src*="hcaptcha.com/1/api.js"]',
-		);
+		const existingScript = document.querySelector('script[src*="hcaptcha.com/1/api.js"]');
 
 		if (existingScript) {
 			setIsScriptLoaded(true);
@@ -115,8 +96,7 @@ export const HCaptchaVerifier = ({ siteKey, onVerify }: HCaptchaProps) => {
 		}
 
 		const script = document.createElement("script");
-		script.src =
-			"https://js.hcaptcha.com/1/api.js?render=explicit&onload=hcaptchaOnLoad";
+		script.src = "https://js.hcaptcha.com/1/api.js?render=explicit&onload=hcaptchaOnLoad";
 		script.async = true;
 		script.defer = true;
 
@@ -149,7 +129,5 @@ export const HCaptchaVerifier = ({ siteKey, onVerify }: HCaptchaProps) => {
 		};
 	}, [widgetId]);
 
-	return (
-		<div ref={containerRef} data-hcaptcha={true} style={{ display: "none" }} />
-	);
+	return <div ref={containerRef} data-hcaptcha={true} style={{ display: "none" }} />;
 };

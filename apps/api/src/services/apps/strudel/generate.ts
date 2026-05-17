@@ -1,7 +1,4 @@
-import {
-	resolveServiceContext,
-	type ServiceContext,
-} from "~/lib/context/serviceContext";
+import { resolveServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
 import { strudelGenerateResponseSchema } from "@assistant/schemas";
 import type { z } from "zod";
 import type { IEnv, IUser, Message } from "~/types";
@@ -9,11 +6,7 @@ import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import { buildStrudelSystemPrompt } from "~/lib/prompts/strudel";
-import {
-	getAuxiliaryModel,
-	getModels,
-	filterModelsForUserAccess,
-} from "~/lib/providers/models";
+import { getAuxiliaryModel, getModels, filterModelsForUserAccess } from "~/lib/providers/models";
 import { formatMessages } from "~/utils/messages";
 import { mergeParametersWithDefaults } from "~/utils/parameters";
 import { captureTrainingExample } from "~/services/training/captureTrainingExample";
@@ -51,10 +44,7 @@ export async function generateStrudelCode({
 	}
 
 	try {
-		const systemPrompt = buildStrudelSystemPrompt(
-			request.style,
-			request.complexity || "medium",
-		);
+		const systemPrompt = buildStrudelSystemPrompt(request.style, request.complexity || "medium");
 
 		let userPrompt = `Generate Strudel code for: ${request.prompt}`;
 		if (request.tempo) {
@@ -81,10 +71,7 @@ export async function generateStrudelCode({
 
 			const selectedModelConfig = accessibleModels[request.model];
 			if (!selectedModelConfig) {
-				throw new AssistantError(
-					"Selected model is not available",
-					ErrorType.PARAMS_ERROR,
-				);
+				throw new AssistantError("Selected model is not available", ErrorType.PARAMS_ERROR);
 			}
 
 			model = selectedModelConfig.matchingModel;
@@ -109,12 +96,7 @@ export async function generateStrudelCode({
 
 		let formattedMessages: Message[];
 		try {
-			formattedMessages = formatMessages(
-				provider.name,
-				baseMessages,
-				systemPrompt,
-				model,
-			);
+			formattedMessages = formatMessages(provider.name, baseMessages, systemPrompt, model);
 		} catch (error) {
 			logger.error("Failed to format messages for provider", {
 				provider: provider.name,
@@ -146,24 +128,15 @@ export async function generateStrudelCode({
 			},
 		});
 
-		const aiResponse = await provider.getResponse(
-			requestParameters,
-			user?.id || null,
-		);
+		const aiResponse = await provider.getResponse(requestParameters, user?.id || null);
 
 		const rawContent =
 			aiResponse?.response ||
-			(Array.isArray(aiResponse?.choices) &&
-				aiResponse.choices[0]?.message?.content) ||
-			(typeof aiResponse === "string"
-				? aiResponse
-				: JSON.stringify(aiResponse));
+			(Array.isArray(aiResponse?.choices) && aiResponse.choices[0]?.message?.content) ||
+			(typeof aiResponse === "string" ? aiResponse : JSON.stringify(aiResponse));
 
 		if (!rawContent) {
-			throw new AssistantError(
-				"No response from AI provider",
-				ErrorType.UNKNOWN_ERROR,
-			);
+			throw new AssistantError("No response from AI provider", ErrorType.UNKNOWN_ERROR);
 		}
 
 		let generatedCode = String(rawContent);

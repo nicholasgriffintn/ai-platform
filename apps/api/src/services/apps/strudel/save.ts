@@ -1,15 +1,8 @@
-import {
-	resolveServiceContext,
-	type ServiceContext,
-} from "~/lib/context/serviceContext";
+import { resolveServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
 import type { IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
-import {
-	STRUDEL_APP_ID,
-	buildPatternPayload,
-	mapResponseToPattern,
-} from "./utils";
+import { STRUDEL_APP_ID, buildPatternPayload, mapResponseToPattern } from "./utils";
 
 const logger = getLogger({ prefix: "services/strudel/save" });
 
@@ -36,28 +29,18 @@ export async function savePattern({
 	const { repositories } = serviceContext;
 
 	if (!request.code || !request.name) {
-		throw new AssistantError(
-			"Code and name are required",
-			ErrorType.PARAMS_ERROR,
-		);
+		throw new AssistantError("Code and name are required", ErrorType.PARAMS_ERROR);
 	}
 
 	try {
 		const payload = buildPatternPayload(request);
 
 		const record = user.id
-			? await repositories.dynamicAppResponses.createResponse(
-					user.id,
-					STRUDEL_APP_ID,
-					payload,
-				)
+			? await repositories.dynamicAppResponses.createResponse(user.id, STRUDEL_APP_ID, payload)
 			: null;
 
 		if (!record) {
-			throw new AssistantError(
-				"Failed to save Strudel pattern",
-				ErrorType.DATABASE_ERROR,
-			);
+			throw new AssistantError("Failed to save Strudel pattern", ErrorType.DATABASE_ERROR);
 		}
 
 		logger.info("Saved Strudel pattern", {
@@ -77,9 +60,6 @@ export async function savePattern({
 			throw error;
 		}
 
-		throw new AssistantError(
-			"Failed to save Strudel pattern",
-			ErrorType.UNKNOWN_ERROR,
-		);
+		throw new AssistantError("Failed to save Strudel pattern", ErrorType.UNKNOWN_ERROR);
 	}
 }

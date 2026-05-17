@@ -34,15 +34,11 @@ export class StrudelGenerator {
 		});
 	}
 
-	async generate(
-		options: GenerateOptions & { outputDir?: string },
-	): Promise<TrainingExample[]> {
+	async generate(options: GenerateOptions & { outputDir?: string }): Promise<TrainingExample[]> {
 		logger.info(`Starting dataset generation via ${options.apiUrl}`);
 		logger.info(`Target: ${options.count} examples`);
 
-		const progressFile = options.outputDir
-			? join(options.outputDir, ".progress.jsonl")
-			: null;
+		const progressFile = options.outputDir ? join(options.outputDir, ".progress.jsonl") : null;
 
 		const examples: TrainingExample[] = [];
 		if (progressFile && existsSync(progressFile)) {
@@ -54,10 +50,7 @@ export class StrudelGenerator {
 			logger.info(`Resuming from ${examples.length} existing examples`);
 		}
 
-		const combinations = this.buildCombinations(
-			options.styles,
-			options.complexities,
-		);
+		const combinations = this.buildCombinations(options.styles, options.complexities);
 		const examplesPerCombo = Math.ceil(options.count / combinations.length);
 
 		logger.info(
@@ -76,10 +69,7 @@ export class StrudelGenerator {
 				}
 
 				const prompt = this.generatePrompt(combo.style, combo.complexity, i);
-				const systemPrompt = this.buildSystemPrompt(
-					combo.style,
-					combo.complexity,
-				);
+				const systemPrompt = this.buildSystemPrompt(combo.style, combo.complexity);
 
 				try {
 					const response = await this.callAPI({
@@ -135,12 +125,8 @@ export class StrudelGenerator {
 					}
 
 					if (consecutiveErrors >= maxConsecutiveErrors) {
-						logger.error(
-							`Too many consecutive errors (${maxConsecutiveErrors}). Aborting.`,
-						);
-						throw new Error(
-							`Generation failed after ${maxConsecutiveErrors} consecutive errors`,
-						);
+						logger.error(`Too many consecutive errors (${maxConsecutiveErrors}). Aborting.`);
+						throw new Error(`Generation failed after ${maxConsecutiveErrors} consecutive errors`);
 					}
 
 					await this.sleep(1000);
@@ -169,10 +155,7 @@ export class StrudelGenerator {
 		complexity: string;
 		model?: string;
 	}): Promise<{ code: string; explanation?: string }> {
-		const estimatedTokens = TokenEstimator.estimateRequest(
-			params.systemPrompt,
-			params.prompt,
-		);
+		const estimatedTokens = TokenEstimator.estimateRequest(params.systemPrompt, params.prompt);
 		await this.rateLimiter.waitForSlot(estimatedTokens);
 
 		const headers: Record<string, string> = {
@@ -200,9 +183,7 @@ export class StrudelGenerator {
 
 		if (!response.ok) {
 			const errorText = await response.text();
-			throw new Error(
-				`API error: ${response.status} ${response.statusText}\n${errorText}`,
-			);
+			throw new Error(`API error: ${response.status} ${response.statusText}\n${errorText}`);
 		}
 
 		const responseJson = (await response.json()) as {
@@ -217,8 +198,7 @@ export class StrudelGenerator {
 
 	private buildSystemPrompt(style: string, complexity: string): string {
 		const styleGuide = this.promptConfig.styleGuides[style] || "";
-		const complexityGuide =
-			this.promptConfig.complexityGuides[complexity] || "";
+		const complexityGuide = this.promptConfig.complexityGuides[complexity] || "";
 
 		let prompt = this.promptConfig.baseSystemPrompt;
 
@@ -233,14 +213,8 @@ export class StrudelGenerator {
 		return prompt;
 	}
 
-	private generatePrompt(
-		style: string,
-		complexity: string,
-		variation: number,
-	): string {
-		const templates = this.promptConfig.promptTemplates[style] || [
-			"Create a musical pattern",
-		];
+	private generatePrompt(style: string, complexity: string, variation: number): string {
+		const templates = this.promptConfig.promptTemplates[style] || ["Create a musical pattern"];
 
 		let basePrompt = templates[variation % templates.length];
 

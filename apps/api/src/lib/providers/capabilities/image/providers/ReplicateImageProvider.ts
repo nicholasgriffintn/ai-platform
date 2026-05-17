@@ -4,11 +4,7 @@ import { validateReplicatePayload } from "~/lib/providers/models/replicateValida
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import { extractGeneratedAsset } from "~/lib/providers/utils/helpers";
 import { AssistantError, ErrorType } from "~/utils/errors";
-import type {
-	ImageGenerationRequest,
-	ImageGenerationResult,
-	ImageProvider,
-} from "../index";
+import type { ImageGenerationRequest, ImageGenerationResult, ImageProvider } from "../index";
 
 const DEFAULT_MODEL = "replicate-flux-2-pro";
 
@@ -24,9 +20,7 @@ export class ReplicateImageProvider implements ImageProvider {
 	name = "replicate";
 	models = [DEFAULT_MODEL];
 
-	async generate(
-		request: ImageGenerationRequest,
-	): Promise<ImageGenerationResult> {
+	async generate(request: ImageGenerationRequest): Promise<ImageGenerationResult> {
 		const modelId = request.model || DEFAULT_MODEL;
 		const modelConfig = await getModelConfigByModel(modelId);
 
@@ -38,9 +32,7 @@ export class ReplicateImageProvider implements ImageProvider {
 		}
 
 		const stylePrompt = resolveStylePrompt(request.style);
-		const prompt = stylePrompt
-			? `${stylePrompt}\n\n${request.prompt}`
-			: request.prompt;
+		const prompt = stylePrompt ? `${stylePrompt}\n\n${request.prompt}` : request.prompt;
 
 		const replicatePayload = Object.fromEntries(
 			Object.entries({

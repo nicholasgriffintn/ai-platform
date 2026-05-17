@@ -25,11 +25,7 @@ const MIN_APPROVAL_ESCALATE_SECONDS = 1;
 const MAX_APPROVAL_ESCALATE_SECONDS = 900;
 const APPROVAL_TIMEOUT_REASON = "Approval request timed out";
 
-function parsePositiveInt(
-	value: unknown,
-	min: number,
-	max: number,
-): number | undefined {
+function parsePositiveInt(value: unknown, min: number, max: number): number | undefined {
 	if (typeof value !== "number" || !Number.isInteger(value)) {
 		return undefined;
 	}
@@ -75,11 +71,8 @@ export class SandboxRunCoordinator implements DurableObject {
 		await this.state.storage.put(CONTROL_KEY, JSON.stringify(control));
 	}
 
-	private async appendEvent(
-		event: SandboxRunEvent,
-	): Promise<CoordinatorEventEnvelope> {
-		const currentIndex =
-			(await this.state.storage.get<number>(EVENT_INDEX_KEY)) ?? 0;
+	private async appendEvent(event: SandboxRunEvent): Promise<CoordinatorEventEnvelope> {
+		const currentIndex = (await this.state.storage.get<number>(EVENT_INDEX_KEY)) ?? 0;
 		const nextIndex = currentIndex + 1;
 		const envelope: CoordinatorEventEnvelope = {
 			index: nextIndex,
@@ -88,9 +81,7 @@ export class SandboxRunCoordinator implements DurableObject {
 		};
 
 		const raw = await this.state.storage.get<string>(EVENTS_KEY);
-		const existing = raw
-			? (safeParseJson<CoordinatorEventEnvelope[]>(raw) ?? [])
-			: [];
+		const existing = raw ? (safeParseJson<CoordinatorEventEnvelope[]>(raw) ?? []) : [];
 		const nextEvents = [...existing, envelope].slice(-500);
 
 		await this.state.storage.put(EVENT_INDEX_KEY, nextIndex);
@@ -102,8 +93,7 @@ export class SandboxRunCoordinator implements DurableObject {
 	private async appendInstruction(
 		instruction: SandboxRunInstructionRecord,
 	): Promise<CoordinatorInstructionEnvelope> {
-		const currentIndex =
-			(await this.state.storage.get<number>(INSTRUCTION_INDEX_KEY)) ?? 0;
+		const currentIndex = (await this.state.storage.get<number>(INSTRUCTION_INDEX_KEY)) ?? 0;
 		const nextIndex = currentIndex + 1;
 		const envelope: CoordinatorInstructionEnvelope = {
 			index: nextIndex,
@@ -112,33 +102,21 @@ export class SandboxRunCoordinator implements DurableObject {
 		};
 
 		const raw = await this.state.storage.get<string>(INSTRUCTIONS_KEY);
-		const existing = raw
-			? (safeParseJson<CoordinatorInstructionEnvelope[]>(raw) ?? [])
-			: [];
+		const existing = raw ? (safeParseJson<CoordinatorInstructionEnvelope[]>(raw) ?? []) : [];
 		const nextInstructions = [...existing, envelope].slice(-500);
 
 		await this.state.storage.put(INSTRUCTION_INDEX_KEY, nextIndex);
-		await this.state.storage.put(
-			INSTRUCTIONS_KEY,
-			JSON.stringify(nextInstructions),
-		);
+		await this.state.storage.put(INSTRUCTIONS_KEY, JSON.stringify(nextInstructions));
 		return envelope;
 	}
 
 	private async getInstructions(): Promise<CoordinatorInstructionEnvelope[]> {
 		const raw = await this.state.storage.get<string>(INSTRUCTIONS_KEY);
-		return raw
-			? (safeParseJson<CoordinatorInstructionEnvelope[]>(raw) ?? [])
-			: [];
+		return raw ? (safeParseJson<CoordinatorInstructionEnvelope[]>(raw) ?? []) : [];
 	}
 
-	private async putInstructions(
-		instructions: CoordinatorInstructionEnvelope[],
-	): Promise<void> {
-		await this.state.storage.put(
-			INSTRUCTIONS_KEY,
-			JSON.stringify(instructions.slice(-500)),
-		);
+	private async putInstructions(instructions: CoordinatorInstructionEnvelope[]): Promise<void> {
+		await this.state.storage.put(INSTRUCTIONS_KEY, JSON.stringify(instructions.slice(-500)));
 	}
 
 	private applyInstructionLifecycleTransitions(
@@ -189,8 +167,7 @@ export class SandboxRunCoordinator implements DurableObject {
 					approvalStatus: "timed_out",
 					timedOutAt: nextInstruction.timedOutAt ?? nowIso,
 					resolvedAt: nextInstruction.resolvedAt ?? nowIso,
-					resolutionReason:
-						nextInstruction.resolutionReason ?? APPROVAL_TIMEOUT_REASON,
+					resolutionReason: nextInstruction.resolutionReason ?? APPROVAL_TIMEOUT_REASON,
 				};
 				changed = true;
 			}
@@ -207,12 +184,9 @@ export class SandboxRunCoordinator implements DurableObject {
 		};
 	}
 
-	private async getInstructionsWithLifecycle(): Promise<
-		CoordinatorInstructionEnvelope[]
-	> {
+	private async getInstructionsWithLifecycle(): Promise<CoordinatorInstructionEnvelope[]> {
 		const instructions = await this.getInstructions();
-		const transitioned =
-			this.applyInstructionLifecycleTransitions(instructions);
+		const transitioned = this.applyInstructionLifecycleTransitions(instructions);
 		if (transitioned.changed) {
 			await this.putInstructions(transitioned.instructions);
 		}
@@ -246,10 +220,7 @@ export class SandboxRunCoordinator implements DurableObject {
 		if (pathname === "/control" && request.method === "GET") {
 			const control = await this.getControl();
 			if (!control) {
-				return Response.json(
-					{ error: "Control state not initialised" },
-					{ status: 404 },
-				);
+				return Response.json({ error: "Control state not initialised" }, { status: 404 });
 			}
 			return Response.json(control);
 		}
@@ -258,10 +229,7 @@ export class SandboxRunCoordinator implements DurableObject {
 			const payload = (await request.json()) as unknown;
 			const parsed = sandboxRunControlSchema.safeParse(payload);
 			if (!parsed.success) {
-				return Response.json(
-					{ error: "Invalid control payload" },
-					{ status: 400 },
-				);
+				return Response.json({ error: "Invalid control payload" }, { status: 400 });
 			}
 			await this.putControl(parsed.data);
 			return Response.json({ success: true });
@@ -270,10 +238,7 @@ export class SandboxRunCoordinator implements DurableObject {
 		if (pathname === "/control/update" && request.method === "POST") {
 			const existing = await this.getControl();
 			if (!existing) {
-				return Response.json(
-					{ error: "Control state not initialised" },
-					{ status: 404 },
-				);
+				return Response.json({ error: "Control state not initialised" }, { status: 404 });
 			}
 			const payload = (await request.json()) as Record<string, unknown>;
 			const nextState =
@@ -292,22 +257,15 @@ export class SandboxRunCoordinator implements DurableObject {
 				...(typeof payload.cancellationReason === "string"
 					? { cancellationReason: payload.cancellationReason }
 					: {}),
-				...(typeof payload.pauseReason === "string"
-					? { pauseReason: payload.pauseReason }
-					: {}),
+				...(typeof payload.pauseReason === "string" ? { pauseReason: payload.pauseReason } : {}),
 				...(typeof payload.timeoutSeconds === "number"
 					? { timeoutSeconds: payload.timeoutSeconds }
 					: {}),
-				...(typeof payload.timeoutAt === "string"
-					? { timeoutAt: payload.timeoutAt }
-					: {}),
+				...(typeof payload.timeoutAt === "string" ? { timeoutAt: payload.timeoutAt } : {}),
 			};
 			const validated = sandboxRunControlSchema.safeParse(next);
 			if (!validated.success) {
-				return Response.json(
-					{ error: "Invalid control update payload" },
-					{ status: 400 },
-				);
+				return Response.json({ error: "Invalid control update payload" }, { status: 400 });
 			}
 
 			await this.putControl(validated.data);
@@ -324,13 +282,9 @@ export class SandboxRunCoordinator implements DurableObject {
 			const afterRaw = url.searchParams.get("after");
 			const after = afterRaw ? Number.parseInt(afterRaw, 10) : 0;
 			const raw = await this.state.storage.get<string>(EVENTS_KEY);
-			const events = raw
-				? (safeParseJson<CoordinatorEventEnvelope[]>(raw) ?? [])
-				: [];
+			const events = raw ? (safeParseJson<CoordinatorEventEnvelope[]>(raw) ?? []) : [];
 			return Response.json({
-				events: events.filter(
-					(entry) => entry.index > (Number.isFinite(after) ? after : 0),
-				),
+				events: events.filter((entry) => entry.index > (Number.isFinite(after) ? after : 0)),
 			});
 		}
 
@@ -338,8 +292,7 @@ export class SandboxRunCoordinator implements DurableObject {
 			const body = (await request.json()) as Record<string, unknown>;
 			const parsedKind = sandboxRunInstructionKindSchema.safeParse(body.kind);
 			const kind = parsedKind.success ? parsedKind.data : "message";
-			const contentRaw =
-				typeof body.content === "string" ? body.content.trim() : "";
+			const contentRaw = typeof body.content === "string" ? body.content.trim() : "";
 			if (kind === "message" && !contentRaw) {
 				return Response.json(
 					{ error: "content is required for message instructions" },
@@ -351,13 +304,9 @@ export class SandboxRunCoordinator implements DurableObject {
 			const nowIso = new Date().toISOString();
 
 			if (kind === "approval_request") {
-				const command =
-					typeof body.command === "string" ? body.command.trim() : "";
+				const command = typeof body.command === "string" ? body.command.trim() : "";
 				if (!command) {
-					return Response.json(
-						{ error: "command is required" },
-						{ status: 400 },
-					);
+					return Response.json({ error: "command is required" }, { status: 400 });
 				}
 				const timeoutSeconds =
 					parsePositiveInt(
@@ -371,8 +320,7 @@ export class SandboxRunCoordinator implements DurableObject {
 					MAX_APPROVAL_ESCALATE_SECONDS,
 				);
 				const escalateAfterSeconds = Math.min(
-					requestedEscalateAfterSeconds ??
-						DEFAULT_APPROVAL_ESCALATE_AFTER_SECONDS,
+					requestedEscalateAfterSeconds ?? DEFAULT_APPROVAL_ESCALATE_AFTER_SECONDS,
 					Math.max(1, timeoutSeconds - 1),
 				);
 				const instruction: SandboxRunInstruction = {
@@ -393,11 +341,9 @@ export class SandboxRunCoordinator implements DurableObject {
 			}
 
 			if (kind === "approval_response") {
-				const requestId =
-					typeof body.requestId === "string" ? body.requestId.trim() : "";
+				const requestId = typeof body.requestId === "string" ? body.requestId.trim() : "";
 				const approvalStatus =
-					body.approvalStatus === "approved" ||
-					body.approvalStatus === "rejected"
+					body.approvalStatus === "approved" || body.approvalStatus === "rejected"
 						? body.approvalStatus
 						: undefined;
 				if (!requestId || !approvalStatus) {
@@ -410,14 +356,10 @@ export class SandboxRunCoordinator implements DurableObject {
 				const instructions = await this.getInstructionsWithLifecycle();
 				const requestIndex = instructions.findIndex(
 					(entry) =>
-						entry.instruction.kind === "approval_request" &&
-						entry.instruction.id === requestId,
+						entry.instruction.kind === "approval_request" && entry.instruction.id === requestId,
 				);
 				if (requestIndex < 0) {
-					return Response.json(
-						{ error: "Approval request not found" },
-						{ status: 404 },
-					);
+					return Response.json({ error: "Approval request not found" }, { status: 404 });
 				}
 
 				const requestInstruction = instructions[requestIndex].instruction;
@@ -426,10 +368,7 @@ export class SandboxRunCoordinator implements DurableObject {
 					requestInstruction.approvalStatus === "rejected" ||
 					requestInstruction.approvalStatus === "timed_out"
 				) {
-					return Response.json(
-						{ error: "Approval request already resolved" },
-						{ status: 409 },
-					);
+					return Response.json({ error: "Approval request already resolved" }, { status: 409 });
 				}
 
 				instructions[requestIndex] = {
@@ -481,10 +420,7 @@ export class SandboxRunCoordinator implements DurableObject {
 		return Response.json({ error: "Not found" }, { status: 404 });
 	}
 
-	public webSocketMessage(
-		_ws: WebSocket,
-		_message: ArrayBuffer | string,
-	): void {
+	public webSocketMessage(_ws: WebSocket, _message: ArrayBuffer | string): void {
 		// Inbound messages are currently ignored; websocket clients subscribe-only.
 	}
 

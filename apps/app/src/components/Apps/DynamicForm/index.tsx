@@ -81,27 +81,18 @@ export const DynamicForm = ({
 				switch (field.type) {
 					case "text":
 					case "textarea":
-						if (
-							field.validation?.pattern &&
-							!new RegExp(field.validation.pattern).test(value)
-						) {
+						if (field.validation?.pattern && !new RegExp(field.validation.pattern).test(value)) {
 							newErrors[field.id] = `${field.label} has an invalid format`;
 							isValid = false;
 						}
 
-						if (
-							field.validation?.minLength &&
-							value.length < field.validation.minLength
-						) {
+						if (field.validation?.minLength && value.length < field.validation.minLength) {
 							newErrors[field.id] =
 								`${field.label} must be at least ${field.validation.minLength} characters`;
 							isValid = false;
 						}
 
-						if (
-							field.validation?.maxLength &&
-							value.length > field.validation.maxLength
-						) {
+						if (field.validation?.maxLength && value.length > field.validation.maxLength) {
 							newErrors[field.id] =
 								`${field.label} must be at most ${field.validation.maxLength} characters`;
 							isValid = false;
@@ -109,21 +100,13 @@ export const DynamicForm = ({
 						break;
 
 					case "number":
-						if (
-							field.validation?.min !== undefined &&
-							value < field.validation.min
-						) {
-							newErrors[field.id] =
-								`${field.label} must be at least ${field.validation.min}`;
+						if (field.validation?.min !== undefined && value < field.validation.min) {
+							newErrors[field.id] = `${field.label} must be at least ${field.validation.min}`;
 							isValid = false;
 						}
 
-						if (
-							field.validation?.max !== undefined &&
-							value > field.validation.max
-						) {
-							newErrors[field.id] =
-								`${field.label} must be at most ${field.validation.max}`;
+						if (field.validation?.max !== undefined && value > field.validation.max) {
+							newErrors[field.id] = `${field.label} must be at most ${field.validation.max}`;
 							isValid = false;
 						}
 						break;
@@ -140,9 +123,7 @@ export const DynamicForm = ({
 
 					case "multiselect":
 						if (field.validation?.options && Array.isArray(value)) {
-							const validValues = field.validation.options.map(
-								(option) => option.value,
-							);
+							const validValues = field.validation.options.map((option) => option.value);
 							for (const item of value) {
 								if (!validValues.includes(item)) {
 									newErrors[field.id] = `${field.label} has an invalid option`;
@@ -162,9 +143,7 @@ export const DynamicForm = ({
 
 	const handleNext = () => {
 		if (validateStep(currentStepIndex)) {
-			setCurrentStepIndex((prev) =>
-				Math.min(prev + 1, app.formSchema.steps.length - 1),
-			);
+			setCurrentStepIndex((prev) => Math.min(prev + 1, app.formSchema.steps.length - 1));
 		}
 	};
 
@@ -187,9 +166,7 @@ export const DynamicForm = ({
 			console.error("Error submitting form:", error);
 			setErrors({
 				form:
-					error instanceof Error
-						? error.message
-						: "An error occurred while submitting the form",
+					error instanceof Error ? error.message : "An error occurred while submitting the form",
 			});
 		} finally {
 			setInternalIsSubmitting(false);
@@ -212,31 +189,16 @@ export const DynamicForm = ({
 			>
 				<div className="mb-6">
 					<div className="flex items-center space-x-4 mb-4">
-						<div
-							className={cn(
-								"p-3 rounded-lg shadow-sm",
-								getIconContainerClass(app.theme),
-							)}
-						>
+						<div className={cn("p-3 rounded-lg shadow-sm", getIconContainerClass(app.theme))}>
 							{getIcon(app.icon, app.theme)}
 						</div>
 						<div>
-							<h1
-								className={cn(
-									"text-2xl font-bold mb-2 text-zinc-900 dark:text-zinc-50",
-								)}
-							>
+							<h1 className={cn("text-2xl font-bold mb-2 text-zinc-900 dark:text-zinc-50")}>
 								{app.name}
 							</h1>
-							<p className={cn("text-zinc-600 dark:text-zinc-300")}>
-								{app.description}
-							</p>
+							<p className={cn("text-zinc-600 dark:text-zinc-300")}>{app.description}</p>
 							{app.costPerCall !== undefined && (
-								<p
-									className={cn(
-										"text-sm text-zinc-500 dark:text-zinc-400 mt-1",
-									)}
-								>
+								<p className={cn("text-sm text-zinc-500 dark:text-zinc-400 mt-1")}>
 									Cost per run:{" "}
 									{app.costPerCall === 0
 										? "Free"
@@ -260,15 +222,9 @@ export const DynamicForm = ({
 														: "bg-zinc-200 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-300"
 											}`}
 										>
-											{index < currentStepIndex ? (
-												<Check className="w-4 h-4" />
-											) : (
-												index + 1
-											)}
+											{index < currentStepIndex ? <Check className="w-4 h-4" /> : index + 1}
 										</div>
-										<span className="text-xs text-zinc-600 dark:text-zinc-300">
-											{step.title}
-										</span>
+										<span className="text-xs text-zinc-600 dark:text-zinc-300">{step.title}</span>
 									</div>
 								))}
 							</div>

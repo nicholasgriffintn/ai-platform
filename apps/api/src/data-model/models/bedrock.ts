@@ -1,8 +1,5 @@
 import type { ModelConfig } from "~/types";
-import {
-	createModelConfig,
-	createModelConfigObject,
-} from "~/lib/providers/models/utils";
+import { createModelConfig, createModelConfigObject } from "~/lib/providers/models/utils";
 
 const PROVIDER = "bedrock";
 
@@ -326,14 +323,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 64000,
 		costPer1kInputTokens: 0.003,
 		costPer1kOutputTokens: 0.015,
-		strengths: [
-			"chat",
-			"general_knowledge",
-			"analysis",
-			"coding",
-			"reasoning",
-			"creative",
-		],
+		strengths: ["chat", "general_knowledge", "analysis", "coding", "reasoning", "creative"],
 		contextComplexity: 5,
 		reliability: 5,
 		speed: 4,
@@ -368,14 +358,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 64000,
 		costPer1kInputTokens: 0.003,
 		costPer1kOutputTokens: 0.015,
-		strengths: [
-			"chat",
-			"general_knowledge",
-			"analysis",
-			"coding",
-			"reasoning",
-			"creative",
-		],
+		strengths: ["chat", "general_knowledge", "analysis", "coding", "reasoning", "creative"],
 		contextComplexity: 5,
 		reliability: 5,
 		speed: 4,
@@ -410,13 +393,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 8192,
 		costPer1kInputTokens: 0.001,
 		costPer1kOutputTokens: 0.005,
-		strengths: [
-			"chat",
-			"general_knowledge",
-			"analysis",
-			"reasoning",
-			"creative",
-		],
+		strengths: ["chat", "general_knowledge", "analysis", "reasoning", "creative"],
 		contextComplexity: 3,
 		reliability: 3,
 		speed: 5,
@@ -450,13 +427,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 32000,
 		costPer1kInputTokens: 0.015,
 		costPer1kOutputTokens: 0.075,
-		strengths: [
-			"chat",
-			"general_knowledge",
-			"analysis",
-			"reasoning",
-			"creative",
-		],
+		strengths: ["chat", "general_knowledge", "analysis", "reasoning", "creative"],
 		contextComplexity: 5,
 		reliability: 5,
 		speed: 3,
@@ -476,8 +447,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("anthropic.claude-opus-4-1", PROVIDER, {
 		name: "Claude Opus 4.1 (US)",
 		matchingModel: "us.anthropic.claude-opus-4-1-20250805-v1:0",
-		description:
-			"Enhanced Claude 4 Opus with improved reasoning and analysis capabilities.",
+		description: "Enhanced Claude 4 Opus with improved reasoning and analysis capabilities.",
 		knowledgeCutoffDate: "March 31, 2025",
 		releaseDate: "August 5, 2025",
 		lastUpdated: "August 5, 2025",
@@ -492,13 +462,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 32000,
 		costPer1kInputTokens: 0.015,
 		costPer1kOutputTokens: 0.075,
-		strengths: [
-			"chat",
-			"general_knowledge",
-			"analysis",
-			"reasoning",
-			"creative",
-		],
+		strengths: ["chat", "general_knowledge", "analysis", "reasoning", "creative"],
 		contextComplexity: 5,
 		reliability: 5,
 		speed: 3,
@@ -529,14 +493,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 64000,
 		costPer1kInputTokens: 0.003,
 		costPer1kOutputTokens: 0.015,
-		strengths: [
-			"chat",
-			"general_knowledge",
-			"analysis",
-			"coding",
-			"reasoning",
-			"creative",
-		],
+		strengths: ["chat", "general_knowledge", "analysis", "coding", "reasoning", "creative"],
 		contextComplexity: 5,
 		reliability: 5,
 		speed: 3,
@@ -1486,57 +1443,49 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		},
 	}),
 
-	createModelConfig(
-		"global.anthropic.claude-haiku-4-5-20251001-v1:0",
-		PROVIDER,
-		{
-			name: "Claude Haiku 4.5 (Global)",
-			matchingModel: "global.anthropic.claude-haiku-4-5-20251001-v1:0",
-			knowledgeCutoffDate: "February 28, 2025",
-			releaseDate: "October 15, 2025",
-			lastUpdated: "October 15, 2025",
-			modalities: {
-				input: ["text", "image", "pdf"],
-				output: ["text"],
-			},
-			supportsAttachments: true,
-			supportsTemperature: true,
-			supportsToolCalls: true,
-			contextWindow: 200000,
-			maxTokens: 64000,
-			costPer1kInputTokens: 0.001,
-			costPer1kOutputTokens: 0.005,
-			reasoningConfig: {
-				enabled: true,
-			},
+	createModelConfig("global.anthropic.claude-haiku-4-5-20251001-v1:0", PROVIDER, {
+		name: "Claude Haiku 4.5 (Global)",
+		matchingModel: "global.anthropic.claude-haiku-4-5-20251001-v1:0",
+		knowledgeCutoffDate: "February 28, 2025",
+		releaseDate: "October 15, 2025",
+		lastUpdated: "October 15, 2025",
+		modalities: {
+			input: ["text", "image", "pdf"],
+			output: ["text"],
 		},
-	),
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 200000,
+		maxTokens: 64000,
+		costPer1kInputTokens: 0.001,
+		costPer1kOutputTokens: 0.005,
+		reasoningConfig: {
+			enabled: true,
+		},
+	}),
 
-	createModelConfig(
-		"global.anthropic.claude-opus-4-5-20251101-v1:0",
-		PROVIDER,
-		{
-			name: "Claude Opus 4.5 (Global)",
-			matchingModel: "global.anthropic.claude-opus-4-5-20251101-v1:0",
-			knowledgeCutoffDate: "March 31, 2025",
-			releaseDate: "November 24, 2025",
-			lastUpdated: "August 1, 2025",
-			modalities: {
-				input: ["text", "image", "pdf"],
-				output: ["text"],
-			},
-			supportsAttachments: true,
-			supportsTemperature: true,
-			supportsToolCalls: true,
-			contextWindow: 200000,
-			maxTokens: 64000,
-			costPer1kInputTokens: 0.005,
-			costPer1kOutputTokens: 0.025,
-			reasoningConfig: {
-				enabled: true,
-			},
+	createModelConfig("global.anthropic.claude-opus-4-5-20251101-v1:0", PROVIDER, {
+		name: "Claude Opus 4.5 (Global)",
+		matchingModel: "global.anthropic.claude-opus-4-5-20251101-v1:0",
+		knowledgeCutoffDate: "March 31, 2025",
+		releaseDate: "November 24, 2025",
+		lastUpdated: "August 1, 2025",
+		modalities: {
+			input: ["text", "image", "pdf"],
+			output: ["text"],
 		},
-	),
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 200000,
+		maxTokens: 64000,
+		costPer1kInputTokens: 0.005,
+		costPer1kOutputTokens: 0.025,
+		reasoningConfig: {
+			enabled: true,
+		},
+	}),
 
 	createModelConfig("global.anthropic.claude-opus-4-6-v1", PROVIDER, {
 		name: "Claude Opus 4.6 (Global)",
@@ -1560,57 +1509,49 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		},
 	}),
 
-	createModelConfig(
-		"global.anthropic.claude-sonnet-4-20250514-v1:0",
-		PROVIDER,
-		{
-			name: "Claude Sonnet 4 (Global)",
-			matchingModel: "global.anthropic.claude-sonnet-4-20250514-v1:0",
-			knowledgeCutoffDate: "April 2024",
-			releaseDate: "May 22, 2025",
-			lastUpdated: "May 22, 2025",
-			modalities: {
-				input: ["text", "image", "pdf"],
-				output: ["text"],
-			},
-			supportsAttachments: true,
-			supportsTemperature: true,
-			supportsToolCalls: true,
-			contextWindow: 200000,
-			maxTokens: 64000,
-			costPer1kInputTokens: 0.003,
-			costPer1kOutputTokens: 0.015,
-			reasoningConfig: {
-				enabled: true,
-			},
+	createModelConfig("global.anthropic.claude-sonnet-4-20250514-v1:0", PROVIDER, {
+		name: "Claude Sonnet 4 (Global)",
+		matchingModel: "global.anthropic.claude-sonnet-4-20250514-v1:0",
+		knowledgeCutoffDate: "April 2024",
+		releaseDate: "May 22, 2025",
+		lastUpdated: "May 22, 2025",
+		modalities: {
+			input: ["text", "image", "pdf"],
+			output: ["text"],
 		},
-	),
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 200000,
+		maxTokens: 64000,
+		costPer1kInputTokens: 0.003,
+		costPer1kOutputTokens: 0.015,
+		reasoningConfig: {
+			enabled: true,
+		},
+	}),
 
-	createModelConfig(
-		"global.anthropic.claude-sonnet-4-5-20250929-v1:0",
-		PROVIDER,
-		{
-			name: "Claude Sonnet 4.5 (Global)",
-			matchingModel: "global.anthropic.claude-sonnet-4-5-20250929-v1:0",
-			knowledgeCutoffDate: "July 31, 2025",
-			releaseDate: "September 29, 2025",
-			lastUpdated: "September 29, 2025",
-			modalities: {
-				input: ["text", "image", "pdf"],
-				output: ["text"],
-			},
-			supportsAttachments: true,
-			supportsTemperature: true,
-			supportsToolCalls: true,
-			contextWindow: 200000,
-			maxTokens: 64000,
-			costPer1kInputTokens: 0.003,
-			costPer1kOutputTokens: 0.015,
-			reasoningConfig: {
-				enabled: true,
-			},
+	createModelConfig("global.anthropic.claude-sonnet-4-5-20250929-v1:0", PROVIDER, {
+		name: "Claude Sonnet 4.5 (Global)",
+		matchingModel: "global.anthropic.claude-sonnet-4-5-20250929-v1:0",
+		knowledgeCutoffDate: "July 31, 2025",
+		releaseDate: "September 29, 2025",
+		lastUpdated: "September 29, 2025",
+		modalities: {
+			input: ["text", "image", "pdf"],
+			output: ["text"],
 		},
-	),
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 200000,
+		maxTokens: 64000,
+		costPer1kInputTokens: 0.003,
+		costPer1kOutputTokens: 0.015,
+		reasoningConfig: {
+			enabled: true,
+		},
+	}),
 
 	createModelConfig("google.gemma-3-12b-it", PROVIDER, {
 		name: "Google Gemma 3 12B",

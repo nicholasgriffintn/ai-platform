@@ -8,10 +8,7 @@ import {
 	extractSandboxPushCommand,
 	getSandboxDynamicAppId,
 } from "./github/command";
-import {
-	formatSandboxResultComment,
-	postCommentToIssueOrPullRequest,
-} from "./github/comments";
+import { formatSandboxResultComment, postCommentToIssueOrPullRequest } from "./github/comments";
 import {
 	parseIssueNumberFromAutomationPayload,
 	parseSandboxAutomationCommand,

@@ -2,10 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { getAuxiliaryModelForRetrieval } from "~/lib/providers/models";
 import * as chatCapability from "~/lib/providers/capabilities/chat";
-import {
-	analyseHackerNewsStories,
-	retrieveHackerNewsTopStories,
-} from "../hackernews";
+import { analyseHackerNewsStories, retrieveHackerNewsTopStories } from "../hackernews";
 
 vi.mock("~/lib/providers/models", () => ({
 	getAuxiliaryModelForRetrieval: vi.fn(() =>
@@ -305,9 +302,7 @@ describe("HackerNews Services", () => {
 						}),
 						expect.objectContaining({
 							role: "user",
-							content: expect.stringContaining(
-								"1. New AI Breakthrough\n2. Startup Raises $100M",
-							),
+							content: expect.stringContaining("1. New AI Breakthrough\n2. Startup Raises $100M"),
 						}),
 					]),
 				}),
@@ -384,9 +379,7 @@ describe("HackerNews Services", () => {
 					messages: expect.arrayContaining([
 						expect.objectContaining({
 							role: "system",
-							content: expect.stringContaining(
-								"You are Sir David Attenborough",
-							),
+							content: expect.stringContaining("You are Sir David Attenborough"),
 						}),
 					]),
 				}),
@@ -442,9 +435,7 @@ describe("HackerNews Services", () => {
 		});
 
 		it("should handle AI provider errors gracefully", async () => {
-			mockProvider.getResponse.mockRejectedValue(
-				new Error("AI Provider Error"),
-			);
+			mockProvider.getResponse.mockRejectedValue(new Error("AI Provider Error"));
 
 			const result = await analyseHackerNewsStories({
 				stories: mockStories,

@@ -28,21 +28,14 @@ export function meta() {
 		{ title: "Strudel Music Patterns - Polychat" },
 		{
 			name: "description",
-			content:
-				"Generate, save, and replay Strudel music patterns directly inside Polychat.",
+			content: "Generate, save, and replay Strudel music patterns directly inside Polychat.",
 		},
 	];
 }
 
 export default function StrudelPatternsPage() {
 	const navigate = useNavigate();
-	const {
-		data: patterns = [],
-		isLoading,
-		error,
-		refetch,
-		isRefetching,
-	} = useStrudelPatterns();
+	const { data: patterns = [], isLoading, error, refetch, isRefetching } = useStrudelPatterns();
 
 	const handleCreate = useCallback(() => {
 		navigate("/apps/strudel/new");
@@ -54,15 +47,10 @@ export default function StrudelPatternsPage() {
 				<BackLink to="/apps" label="Back to Apps" />
 				<PageTitle title="Strudel Music Patterns" />
 				<p className="text-sm text-muted-foreground">
-					Bring Strudel live coding into Polychat with sharable AI-generated
-					loops.
+					Bring Strudel live coding into Polychat with sharable AI-generated loops.
 				</p>
 			</PageHeader>
-			<Button
-				variant="primary"
-				icon={<Plus className="h-4 w-4" />}
-				onClick={handleCreate}
-			>
+			<Button variant="primary" icon={<Plus className="h-4 w-4" />} onClick={handleCreate}>
 				New Pattern
 			</Button>
 		</div>
@@ -82,17 +70,8 @@ export default function StrudelPatternsPage() {
 				<Alert variant="destructive" className="flex flex-col gap-3">
 					<AlertTitle>Unable to load your Strudel library</AlertTitle>
 					<AlertDescription className="space-y-3">
-						<p>
-							{error instanceof Error
-								? error.message
-								: "Unknown error occurred"}
-						</p>
-						<Button
-							variant="primary"
-							size="sm"
-							onClick={() => refetch()}
-							isLoading={isRefetching}
-						>
+						<p>{error instanceof Error ? error.message : "Unknown error occurred"}</p>
+						<Button variant="primary" size="sm" onClick={() => refetch()} isLoading={isRefetching}>
 							Try Again
 						</Button>
 					</AlertDescription>
@@ -108,11 +87,7 @@ export default function StrudelPatternsPage() {
 					title="Compose your first Strudel pattern"
 					message="Use our AI generator or start typing live-coding patterns – they stay in sync across devices."
 					action={
-						<Button
-							variant="primary"
-							icon={<Plus className="h-4 w-4" />}
-							onClick={handleCreate}
-						>
+						<Button variant="primary" icon={<Plus className="h-4 w-4" />} onClick={handleCreate}>
 							Create a Pattern
 						</Button>
 					}
@@ -137,12 +112,9 @@ export default function StrudelPatternsPage() {
 											<Music4 className="h-5 w-5" />
 										</div>
 										<div>
-											<CardTitle className="text-base">
-												{pattern.name}
-											</CardTitle>
+											<CardTitle className="text-base">{pattern.name}</CardTitle>
 											<CardDescription>
-												Updated{" "}
-												{new Date(pattern.updatedAt).toLocaleDateString()}
+												Updated {new Date(pattern.updatedAt).toLocaleDateString()}
 											</CardDescription>
 										</div>
 									</div>
@@ -161,11 +133,7 @@ export default function StrudelPatternsPage() {
 									{pattern.tags && pattern.tags.length > 0 && (
 										<div className="flex flex-wrap gap-2">
 											{pattern.tags.map((tag) => (
-												<Badge
-													key={tag}
-													variant="outline"
-													className="text-xs capitalize"
-												>
+												<Badge key={tag} variant="outline" className="text-xs capitalize">
 													{tag}
 												</Badge>
 											))}

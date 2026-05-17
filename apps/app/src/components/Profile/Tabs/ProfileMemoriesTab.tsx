@@ -1,12 +1,4 @@
-import {
-	Loader2,
-	Play,
-	Sparkles,
-	History,
-	ChevronDown,
-	ChevronUp,
-	Plus,
-} from "lucide-react";
+import { Loader2, Play, Sparkles, History, ChevronDown, ChevronUp, Plus } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import type { MemorySynthesis } from "@assistant/schemas";
@@ -39,14 +31,10 @@ function SynthesisCard({
 					<div className="flex items-center gap-2 mb-2">
 						<Sparkles size={16} className="text-purple-600" />
 						<span className="font-semibold text-zinc-900 dark:text-zinc-100">
-							{isHistory
-								? `Version ${synthesis.synthesis_version}`
-								: "Active Memory Synthesis"}
+							{isHistory ? `Version ${synthesis.synthesis_version}` : "Active Memory Synthesis"}
 						</span>
 						{!synthesis.is_active && (
-							<span className="text-xs text-zinc-500 dark:text-zinc-400">
-								(Superseded)
-							</span>
+							<span className="text-xs text-zinc-500 dark:text-zinc-400">(Superseded)</span>
 						)}
 					</div>
 					<div className="text-xs text-zinc-600 dark:text-zinc-400 space-y-1">
@@ -81,15 +69,12 @@ function SynthesisCard({
 export function ProfileMemoriesTab() {
 	const [selectedGroup, setSelectedGroup] = useState<string | null>(null);
 	const [showCreateGroup, setShowCreateGroup] = useState(false);
-	const [confirmDeleteMemory, setConfirmDeleteMemory] = useState<string | null>(
-		null,
-	);
+	const [confirmDeleteMemory, setConfirmDeleteMemory] = useState<string | null>(null);
 
 	const { triggerSynthesis, isTriggeringSynthesis } = useTasks({
 		shouldRefetch: false,
 	});
-	const { synthesis, isLoadingSynthesis, history, isLoadingHistory } =
-		useMemorySynthesis();
+	const { synthesis, isLoadingSynthesis, history, isLoadingHistory } = useMemorySynthesis();
 	const {
 		memories,
 		groups,
@@ -127,10 +112,7 @@ export function ProfileMemoriesTab() {
 		}
 	};
 
-	const handleAddMemoriesToGroup = async (
-		groupId: string,
-		memoryIds: string[],
-	) => {
+	const handleAddMemoriesToGroup = async (groupId: string, memoryIds: string[]) => {
 		try {
 			await addMemoriesToGroup({ groupId, memoryIds });
 		} catch (error) {
@@ -240,8 +222,8 @@ export function ProfileMemoriesTab() {
 							Memory Synthesis
 						</h3>
 						<p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-							Consolidate your memories into a coherent summary using AI. This
-							helps improve conversation context and memory retrieval.
+							Consolidate your memories into a coherent summary using AI. This helps improve
+							conversation context and memory retrieval.
 						</p>
 					</div>
 					<div className="px-6 space-y-4">
@@ -252,8 +234,7 @@ export function ProfileMemoriesTab() {
 						>
 							{isTriggeringSynthesis ? (
 								<>
-									<Loader2 className="mr-2 h-4 w-4 animate-spin" /> Creating
-									Task...
+									<Loader2 className="mr-2 h-4 w-4 animate-spin" /> Creating Task...
 								</>
 							) : (
 								<>
@@ -262,8 +243,8 @@ export function ProfileMemoriesTab() {
 							)}
 						</Button>
 						<p className="text-xs text-zinc-500 dark:text-zinc-400">
-							Note: Memory synthesis runs automatically every day at 2 AM if you
-							have 5 or more new memories.
+							Note: Memory synthesis runs automatically every day at 2 AM if you have 5 or more new
+							memories.
 						</p>
 					</div>
 				</Card>

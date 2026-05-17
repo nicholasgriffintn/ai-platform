@@ -64,17 +64,11 @@ export class S3Service {
 			},
 		});
 
-		logger.info(
-			`Created S3 client for bucket ${bucket} in region: ${bucketRegion}`,
-		);
+		logger.info(`Created S3 client for bucket ${bucket} in region: ${bucketRegion}`);
 		return regionClient;
 	}
 
-	async uploadFile(
-		filePath: string,
-		bucket: string,
-		key: string,
-	): Promise<{ s3Uri: string }> {
+	async uploadFile(filePath: string, bucket: string, key: string): Promise<{ s3Uri: string }> {
 		logger.info(`Uploading ${filePath} to s3://${bucket}/${key}`);
 
 		try {
@@ -111,10 +105,7 @@ export class S3Service {
 			await client.send(command);
 			return true;
 		} catch (error: any) {
-			if (
-				error.name === "NotFound" ||
-				error.$metadata?.httpStatusCode === 404
-			) {
+			if (error.name === "NotFound" || error.$metadata?.httpStatusCode === 404) {
 				return false;
 			}
 			throw error;
@@ -135,11 +126,7 @@ export class S3Service {
 
 		logger.info(`Uploading datasets for project: ${projectName}`);
 
-		const { s3Uri: trainS3Uri } = await this.uploadFile(
-			trainPath,
-			bucket,
-			`${prefix}/train.jsonl`,
-		);
+		const { s3Uri: trainS3Uri } = await this.uploadFile(trainPath, bucket, `${prefix}/train.jsonl`);
 
 		const { s3Uri: validationS3Uri } = await this.uploadFile(
 			validationPath,

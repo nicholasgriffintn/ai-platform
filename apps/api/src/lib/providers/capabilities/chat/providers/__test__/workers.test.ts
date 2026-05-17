@@ -115,9 +115,7 @@ describe("WorkersProvider", () => {
 			const result = await provider.mapParameters(params as any);
 
 			expect(result.prompt).toBe("What's in this image?");
-			expect(result.image).toEqual([
-				98, 105, 110, 97, 114, 121, 45, 100, 97, 116, 97,
-			]);
+			expect(result.image).toEqual([98, 105, 110, 97, 114, 121, 45, 100, 97, 116, 97]);
 		});
 
 		it("should combine system and user prompts in mapParameters", async () => {

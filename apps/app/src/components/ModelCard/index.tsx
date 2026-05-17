@@ -23,12 +23,8 @@ export function ModelCard({ model }: ModelCardProps) {
 							<h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
 								{model.name || model.matchingModel}
 							</h3>
-							<small className="text-zinc-500 dark:text-zinc-400">
-								Provider: {model.provider}
-							</small>
-							<p className="text-sm text-zinc-500 dark:text-zinc-400">
-								{model.description}
-							</p>
+							<small className="text-zinc-500 dark:text-zinc-400">Provider: {model.provider}</small>
+							<p className="text-sm text-zinc-500 dark:text-zinc-400">{model.description}</p>
 						</div>
 					</div>
 					<div>

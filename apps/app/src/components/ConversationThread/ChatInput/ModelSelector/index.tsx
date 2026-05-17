@@ -10,13 +10,7 @@ import {
 	WalletCards,
 	Wand2,
 } from "lucide-react";
-import {
-	type KeyboardEvent,
-	useEffect,
-	useMemo,
-	useRef,
-	useState,
-} from "react";
+import { type KeyboardEvent, useEffect, useMemo, useRef, useState } from "react";
 
 import { ModelIcon } from "~/components/ModelIcon";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
@@ -24,6 +18,7 @@ import { useAgentToolDefaults } from "~/hooks/useAgentToolDefaults";
 import { useAgents } from "~/hooks/useAgents";
 import { useModels } from "~/hooks/useModels";
 import { useTrackEvent } from "~/hooks/use-track-event";
+import { useWebLLMModels } from "~/hooks/useWebLLMModels";
 import {
 	defaultModel,
 	getAvailableModels,
@@ -88,8 +83,7 @@ function getHoverPreviewPosition(anchorRect: DOMRect) {
 
 	const spaceOnRight = viewportWidth - anchorRect.right;
 	const spaceOnLeft = anchorRect.left;
-	const requiredSpace =
-		HOVER_PREVIEW_WIDTH + HOVER_PREVIEW_GUTTER + HOVER_PREVIEW_EDGE;
+	const requiredSpace = HOVER_PREVIEW_WIDTH + HOVER_PREVIEW_GUTTER + HOVER_PREVIEW_EDGE;
 
 	let left: number;
 	if (spaceOnRight >= requiredSpace) {
@@ -99,19 +93,13 @@ function getHoverPreviewPosition(anchorRect: DOMRect) {
 	} else {
 		left = Math.max(
 			HOVER_PREVIEW_EDGE,
-			Math.min(
-				viewportWidth - HOVER_PREVIEW_WIDTH - HOVER_PREVIEW_EDGE,
-				anchorRect.left,
-			),
+			Math.min(viewportWidth - HOVER_PREVIEW_WIDTH - HOVER_PREVIEW_EDGE, anchorRect.left),
 		);
 	}
 
 	const top = Math.min(
 		Math.max(anchorRect.top - 40, HOVER_PREVIEW_EDGE),
-		Math.max(
-			HOVER_PREVIEW_EDGE,
-			viewportHeight - HOVER_PREVIEW_HEIGHT - HOVER_PREVIEW_EDGE,
-		),
+		Math.max(HOVER_PREVIEW_EDGE, viewportHeight - HOVER_PREVIEW_HEIGHT - HOVER_PREVIEW_EDGE),
 	);
 
 	return { left, top };
@@ -122,12 +110,8 @@ function HoverPreview({ preview }: { preview: HoverPreviewState | null }) {
 
 	const model = preview.model;
 	const supportsVision =
-		model.modalities?.input?.some((modality) =>
-			["image", "video"].includes(modality),
-		) ||
-		model.modalities?.output?.some((modality) =>
-			["image", "video"].includes(modality),
-		);
+		model.modalities?.input?.some((modality) => ["image", "video"].includes(modality)) ||
+		model.modalities?.output?.some((modality) => ["image", "video"].includes(modality));
 
 	const featureTags = Array.from(
 		new Set(
@@ -199,9 +183,7 @@ function HoverPreview({ preview }: { preview: HoverPreviewState | null }) {
 					<div className="space-y-1">
 						{model.contextWindow && (
 							<div className="flex items-center justify-between gap-2">
-								<span className="text-zinc-500 dark:text-zinc-400">
-									Context Window
-								</span>
+								<span className="text-zinc-500 dark:text-zinc-400">Context Window</span>
 								<span className="text-right font-medium text-zinc-800 dark:text-zinc-100">
 									{formatTokenCount(model.contextWindow)} tokens
 								</span>
@@ -209,9 +191,7 @@ function HoverPreview({ preview }: { preview: HoverPreviewState | null }) {
 						)}
 						{model.maxTokens && (
 							<div className="flex items-center justify-between gap-2">
-								<span className="text-zinc-500 dark:text-zinc-400">
-									Max Output
-								</span>
+								<span className="text-zinc-500 dark:text-zinc-400">Max Output</span>
 								<span className="text-right font-medium text-zinc-800 dark:text-zinc-100">
 									{formatTokenCount(model.maxTokens)} tokens
 								</span>
@@ -230,9 +210,7 @@ function HoverPreview({ preview }: { preview: HoverPreviewState | null }) {
 						<div className="space-y-1">
 							{typeof model.costPer1kInputTokens === "number" && (
 								<div className="flex items-center justify-between gap-2">
-									<span className="text-zinc-500 dark:text-zinc-400">
-										Input
-									</span>
+									<span className="text-zinc-500 dark:text-zinc-400">Input</span>
 									<span className="text-right font-medium text-zinc-800 dark:text-zinc-100">
 										{formatCost(model.costPer1kInputTokens)}
 									</span>
@@ -240,9 +218,7 @@ function HoverPreview({ preview }: { preview: HoverPreviewState | null }) {
 							)}
 							{typeof model.costPer1kOutputTokens === "number" && (
 								<div className="flex items-center justify-between gap-2">
-									<span className="text-zinc-500 dark:text-zinc-400">
-										Output
-									</span>
+									<span className="text-zinc-500 dark:text-zinc-400">Output</span>
 									<span className="text-right font-medium text-zinc-800 dark:text-zinc-100">
 										{formatCost(model.costPer1kOutputTokens)}
 									</span>
@@ -278,24 +254,18 @@ export const ModelSelector = ({
 	const { chatAgents: agents, isLoadingAgents } = useAgents();
 	const [isOpen, setIsOpen] = useState(false);
 	const [searchQuery, setSearchQuery] = useState("");
-	const [selectedCapability, setSelectedCapability] = useState<string | null>(
-		null,
-	);
-	const [hoverPreview, setHoverPreview] = useState<HoverPreviewState | null>(
-		null,
-	);
+	const [selectedCapability, setSelectedCapability] = useState<string | null>(null);
+	const [hoverPreview, setHoverPreview] = useState<HoverPreviewState | null>(null);
 	const [dialogLayout, setDialogLayout] = useState<DialogLayout | null>(null);
 
 	const dropdownRef = useRef<HTMLDivElement>(null);
 	const triggerWrapperRef = useRef<HTMLDivElement>(null);
 	const searchInputRef = useRef<HTMLInputElement>(null);
-	const [selectedTab, setSelectedTab] = useState<"auto" | "agent" | "models">(
-		() => {
-			if (model === null) return "auto";
-			if (chatMode === "agent") return "agent";
-			return "models";
-		},
-	);
+	const [selectedTab, setSelectedTab] = useState<"auto" | "agent" | "models">(() => {
+		if (model === null) return "auto";
+		if (chatMode === "agent") return "agent";
+		return "models";
+	});
 
 	const automaticModelOption: ModelConfigItem = {
 		id: "auto",
@@ -308,14 +278,13 @@ export const ModelSelector = ({
 	};
 
 	const { data: apiModels = {}, isLoading: isLoadingModels } = useModels();
+	const webLLMModels = useWebLLMModels();
 	const isModelLoading = useIsLoading("model-init");
 	const modelLoadingProgress = useLoadingProgress("model-init");
 	const modelLoadingMessage = useLoadingMessage("model-init");
 
-	const availableModels = getAvailableModels(apiModels);
-	const functionModels: Record<string, ModelConfigItem> = Object.entries(
-		availableModels,
-	).reduce(
+	const availableModels = getAvailableModels(apiModels, true, webLLMModels);
+	const functionModels: Record<string, ModelConfigItem> = Object.entries(availableModels).reduce(
 		(acc, [key, modelConfig]) => {
 			if (modelConfig.supportsToolCalls) {
 				acc[key] = { ...modelConfig, id: key };
@@ -327,28 +296,21 @@ export const ModelSelector = ({
 	const featuredModelIds = getFeaturedModelIds(availableModels);
 
 	const baseFilteredModels =
-		chatMode === "agent"
-			? functionModels
-			: getModelsByMode(availableModels, chatMode);
+		chatMode === "agent" ? functionModels : getModelsByMode(availableModels, chatMode);
 
 	const filteredModels = featuredOnly
 		? Object.fromEntries(
-				Object.entries(baseFilteredModels).filter(([id]) =>
-					Boolean(featuredModelIds[id]),
-				),
+				Object.entries(baseFilteredModels).filter(([id]) => Boolean(featuredModelIds[id])),
 			)
 		: baseFilteredModels;
 
-	const selectedModelInfo =
-		model === null ? automaticModelOption : filteredModels[model];
+	const selectedModelInfo = model === null ? automaticModelOption : filteredModels[model];
 
 	const capabilities = useMemo(
 		() =>
 			Array.from(
 				new Set(
-					Object.values(filteredModels).flatMap(
-						(modelConfig) => modelConfig.strengths || [],
-					),
+					Object.values(filteredModels).flatMap((modelConfig) => modelConfig.strengths || []),
 				),
 			).sort(),
 		[filteredModels],
@@ -360,17 +322,12 @@ export const ModelSelector = ({
 		return Object.values(filteredModels).filter((modelConfig) => {
 			const matchesSearch =
 				normalizedQuery.length === 0 ||
-				(modelConfig.name || modelConfig.matchingModel)
-					.toLowerCase()
-					.includes(normalizedQuery) ||
-				(modelConfig.description || "")
-					.toLowerCase()
-					.includes(normalizedQuery) ||
+				(modelConfig.name || modelConfig.matchingModel).toLowerCase().includes(normalizedQuery) ||
+				(modelConfig.description || "").toLowerCase().includes(normalizedQuery) ||
 				(modelConfig.provider || "").toLowerCase().includes(normalizedQuery);
 
 			const matchesCapability =
-				!selectedCapability ||
-				Boolean(modelConfig.strengths?.includes(selectedCapability));
+				!selectedCapability || Boolean(modelConfig.strengths?.includes(selectedCapability));
 
 			return matchesSearch && matchesCapability;
 		});
@@ -378,10 +335,7 @@ export const ModelSelector = ({
 
 	useEffect(() => {
 		const handleClickOutside = (event: MouseEvent) => {
-			if (
-				dropdownRef.current &&
-				!dropdownRef.current.contains(event.target as Node)
-			) {
+			if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
 				setIsOpen(false);
 			}
 		};
@@ -525,11 +479,7 @@ export const ModelSelector = ({
 		: null;
 
 	useEffect(() => {
-		if (
-			chatMode === "agent" &&
-			currentAgentModel !== undefined &&
-			currentAgentModel !== model
-		) {
+		if (chatMode === "agent" && currentAgentModel !== undefined && currentAgentModel !== model) {
 			setModel(currentAgentModel);
 		}
 	}, [currentAgentModel, model, setModel, chatMode]);
@@ -554,10 +504,7 @@ export const ModelSelector = ({
 		});
 	};
 
-	const handleInfoHoverStart = (
-		modelInfo: ModelConfigItem,
-		anchorRect: DOMRect,
-	) => {
+	const handleInfoHoverStart = (modelInfo: ModelConfigItem, anchorRect: DOMRect) => {
 		if (isMobile || !isOpen) {
 			setHoverPreview(null);
 			return;
@@ -611,8 +558,7 @@ export const ModelSelector = ({
 								title={selectedModelInfo?.name || "Select model"}
 							>
 								{modelLoadingMessage}{" "}
-								{modelLoadingProgress !== undefined &&
-									`(${modelLoadingProgress}%)`}
+								{modelLoadingProgress !== undefined && `(${modelLoadingProgress}%)`}
 							</span>
 						)}
 					</div>
@@ -683,9 +629,7 @@ export const ModelSelector = ({
 								<div className="relative sm:w-48">
 									<select
 										value={selectedCapability || ""}
-										onChange={(e) =>
-											setSelectedCapability(e.target.value || null)
-										}
+										onChange={(e) => setSelectedCapability(e.target.value || null)}
 										className="w-full appearance-none rounded-md border border-zinc-200 bg-off-white py-2 pl-8 pr-3 text-sm text-zinc-900 focus:border-zinc-300 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
 										aria-label="Filter by model type"
 									>
@@ -739,24 +683,15 @@ export const ModelSelector = ({
 						className="min-h-0 flex-1 px-2 pb-2 pt-2"
 					>
 						<TabsList className="grid h-auto w-full grid-cols-3 gap-1">
-							<TabsTrigger
-								value="auto"
-								className="min-w-0 px-2 py-2 text-xs sm:text-sm"
-							>
+							<TabsTrigger value="auto" className="min-w-0 px-2 py-2 text-xs sm:text-sm">
 								<Wand2 className="h-4 w-4" />
 								Automatic
 							</TabsTrigger>
-							<TabsTrigger
-								value="agent"
-								className="min-w-0 px-2 py-2 text-xs sm:text-sm"
-							>
+							<TabsTrigger value="agent" className="min-w-0 px-2 py-2 text-xs sm:text-sm">
 								<Bot className="h-4 w-4" />
 								Agents
 							</TabsTrigger>
-							<TabsTrigger
-								value="models"
-								className="min-w-0 px-2 py-2 text-xs sm:text-sm"
-							>
+							<TabsTrigger value="models" className="min-w-0 px-2 py-2 text-xs sm:text-sm">
 								<Server className="h-4 w-4" />
 								Models
 							</TabsTrigger>
@@ -765,15 +700,11 @@ export const ModelSelector = ({
 
 						<TabsContent value="auto" className="min-h-0 overflow-y-auto">
 							<div className="p-4 text-sm text-zinc-700 dark:text-zinc-300">
-								Automatic automatically selects the best agent or model based on
-								your query.
+								Automatic automatically selects the best agent or model based on your query.
 							</div>
 						</TabsContent>
 
-						<TabsContent
-							value="agent"
-							className="flex min-h-0 flex-col overflow-hidden"
-						>
+						<TabsContent value="agent" className="flex min-h-0 flex-col overflow-hidden">
 							<div className="flex min-h-0 flex-1 flex-col gap-3 pt-2">
 								<div className="max-h-[140px] overflow-y-auto rounded-lg border border-zinc-200/70 p-2 dark:border-zinc-700/70 sm:max-h-[140px]">
 									<h3
@@ -848,16 +779,11 @@ export const ModelSelector = ({
 							</div>
 						</TabsContent>
 
-						<TabsContent
-							value="models"
-							className="flex min-h-0 flex-col overflow-hidden"
-						>
+						<TabsContent value="models" className="flex min-h-0 flex-col overflow-hidden">
 							<div className="flex min-h-0 flex-1 flex-col gap-3">
 								<div>
 									<div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-										<div className="text-xs text-zinc-500 dark:text-zinc-400">
-											Model Source:
-										</div>
+										<div className="text-xs text-zinc-500 dark:text-zinc-400">Model Source:</div>
 										<div className="inline-flex items-center rounded-md bg-zinc-100 p-0.5 dark:bg-zinc-800">
 											<button
 												type="button"
@@ -866,10 +792,7 @@ export const ModelSelector = ({
 														? "bg-zinc-200 text-zinc-900 dark:bg-zinc-700 dark:text-zinc-100"
 														: "text-zinc-600 dark:text-zinc-400"
 												}`}
-												onClick={() =>
-													chatMode !== "remote" &&
-													handleToggleModelSource("remote")
-												}
+												onClick={() => chatMode !== "remote" && handleToggleModelSource("remote")}
 												aria-pressed={chatMode === "remote"}
 											>
 												<Cloud className="h-3 w-3" />
@@ -882,10 +805,7 @@ export const ModelSelector = ({
 														? "bg-zinc-200 text-zinc-900 dark:bg-zinc-700 dark:text-zinc-100"
 														: "text-zinc-600 dark:text-zinc-400"
 												}`}
-												onClick={() =>
-													chatMode !== "local" &&
-													handleToggleModelSource("local")
-												}
+												onClick={() => chatMode !== "local" && handleToggleModelSource("local")}
 												aria-pressed={chatMode === "local"}
 											>
 												<Computer className="h-3 w-3" />

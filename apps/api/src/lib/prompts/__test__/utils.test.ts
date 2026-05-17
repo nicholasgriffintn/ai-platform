@@ -58,20 +58,14 @@ describe("prompts utils", () => {
 			it("should handle low verbosity", () => {
 				const result = getResponseStyle("low");
 				expect(result.problemBreakdownInstructions).toContain("brief");
-				expect(result.problemBreakdownInstructions).toContain(
-					"critical aspects",
-				);
-				expect(result.answerFormatInstructions).toContain(
-					"minimal explanation",
-				);
+				expect(result.problemBreakdownInstructions).toContain("critical aspects");
+				expect(result.answerFormatInstructions).toContain("minimal explanation");
 			});
 
 			it("should handle high verbosity", () => {
 				const result = getResponseStyle("high");
 				expect(result.problemBreakdownInstructions).toContain("thorough");
-				expect(result.problemBreakdownInstructions).toContain(
-					"detailed explanations",
-				);
+				expect(result.problemBreakdownInstructions).toContain("detailed explanations");
 				expect(result.answerFormatInstructions).toContain("detail");
 			});
 
@@ -81,9 +75,7 @@ describe("prompts utils", () => {
 				expect(result.answerFormatInstructions).toContain(
 					"Balance your answer with explanation, providing enough context to understand the solution without overwhelming detail.",
 				);
-				expect(result.preferences).toContain(
-					"Include 'Key steps' for complex tasks.",
-				);
+				expect(result.preferences).toContain("Include 'Key steps' for complex tasks.");
 			});
 
 			it("should fallback to medium for invalid verbosity", () => {
@@ -92,25 +84,14 @@ describe("prompts utils", () => {
 				expect(invalidResult.problemBreakdownInstructions).toBe(
 					normalResult.problemBreakdownInstructions,
 				);
-				expect(invalidResult.answerFormatInstructions).toBe(
-					normalResult.answerFormatInstructions,
-				);
+				expect(invalidResult.answerFormatInstructions).toBe(normalResult.answerFormatInstructions);
 			});
 		});
 
 		describe("agent mode handling", () => {
 			it("should return simplified structure for agent mode", () => {
-				const result = getResponseStyle(
-					"medium",
-					false,
-					false,
-					false,
-					false,
-					true,
-				);
-				expect(result.preferences).not.toContain(
-					"Please also follow these instructions",
-				);
+				const result = getResponseStyle("medium", false, false, false, false, true);
+				expect(result.preferences).not.toContain("Please also follow these instructions");
 				expect(result.problemBreakdownInstructions).toContain(
 					"Outline the key steps in your plan so the user understands how you will proceed before executing.",
 				);
@@ -120,14 +101,7 @@ describe("prompts utils", () => {
 			});
 
 			it("should not include step-by-step instructions for agent mode", () => {
-				const result = getResponseStyle(
-					"medium",
-					false,
-					false,
-					false,
-					false,
-					true,
-				);
+				const result = getResponseStyle("medium", false, false, false, false, true);
 				expect(result.preferences).not.toMatch(/\d+\./);
 			});
 		});
@@ -166,9 +140,7 @@ describe("prompts utils", () => {
 					undefined,
 					true,
 				);
-				expect(result.preferences).not.toContain(
-					"Always respond in plain text, not computer code",
-				);
+				expect(result.preferences).not.toContain("Always respond in plain text, not computer code");
 			});
 
 			it("should include plain text instruction when isCoding is false", () => {
@@ -213,9 +185,7 @@ describe("prompts utils", () => {
 				expect(result.preferences).toContain(
 					"Analyse the question and context thoroughly before answering, and outline the essential steps you will take.",
 				);
-				expect(result.preferences).toContain(
-					"Include 'Key steps' for complex tasks.",
-				);
+				expect(result.preferences).toContain("Include 'Key steps' for complex tasks.");
 			});
 
 			it("should not include thinking instructions when supportsReasoning is true and requiresThinkingPrompt is false", () => {
@@ -228,33 +198,15 @@ describe("prompts utils", () => {
 
 		describe("memories feature handling", () => {
 			it("should include memories instructions when enabled", () => {
-				const result = getResponseStyle(
-					"medium",
-					false,
-					false,
-					false,
-					false,
-					false,
-					true,
-				);
-				expect(result.preferences).toContain(
-					"Only store memories after explicit user consent",
-				);
+				const result = getResponseStyle("medium", false, false, false, false, false, true);
+				expect(result.preferences).toContain("Only store memories after explicit user consent");
 				expect(result.preferences).toContain(
 					"Never retain passwords, credentials, financial IDs, or medical details.",
 				);
 			});
 
 			it("should include disabled message when memories are disabled", () => {
-				const result = getResponseStyle(
-					"medium",
-					false,
-					false,
-					false,
-					false,
-					false,
-					false,
-				);
+				const result = getResponseStyle("medium", false, false, false, false, false, false);
 				expect(result.preferences).toContain(
 					"memories are disabled and suggest they capture the detail another way",
 				);
@@ -277,15 +229,9 @@ describe("prompts utils", () => {
 					"compact",
 				);
 
-				expect(result.preferences).toContain(
-					"Provide clear, direct answers without filler",
-				);
-				expect(result.preferences).not.toContain(
-					"Please also follow these instructions",
-				);
-				expect(result.problemBreakdownInstructions).toContain(
-					"Sketch the steps",
-				);
+				expect(result.preferences).toContain("Provide clear, direct answers without filler");
+				expect(result.preferences).not.toContain("Please also follow these instructions");
+				expect(result.problemBreakdownInstructions).toContain("Sketch the steps");
 			});
 
 			it("should include agent-specific compact guidance", () => {
@@ -309,9 +255,7 @@ describe("prompts utils", () => {
 				expect(result.preferences).toContain(
 					"Ask before storing long-term memories and refuse to keep sensitive personal data.",
 				);
-				expect(result.problemBreakdownInstructions).toContain(
-					"Sketch the steps",
-				);
+				expect(result.problemBreakdownInstructions).toContain("Sketch the steps");
 			});
 		});
 	});

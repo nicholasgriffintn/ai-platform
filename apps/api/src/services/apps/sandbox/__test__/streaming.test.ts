@@ -16,10 +16,7 @@ class MockSocket {
 		this.listeners[type]!.push(listener);
 	}
 
-	public removeEventListener(
-		type: string,
-		listener: (event?: any) => void,
-	): void {
+	public removeEventListener(type: string, listener: (event?: any) => void): void {
 		const entries = this.listeners[type];
 		if (!entries) {
 			return;
@@ -47,9 +44,7 @@ describe("sandbox streaming helpers", () => {
 	});
 
 	it("encodes SSE chunks", () => {
-		const chunk = new TextDecoder().decode(
-			toSseChunk({ type: "run_started", runId: "run-1" }),
-		);
+		const chunk = new TextDecoder().decode(toSseChunk({ type: "run_started", runId: "run-1" }));
 		expect(chunk).toContain("data: ");
 		expect(chunk).toContain('"runId":"run-1"');
 		expect(chunk.endsWith("\n\n")).toBe(true);

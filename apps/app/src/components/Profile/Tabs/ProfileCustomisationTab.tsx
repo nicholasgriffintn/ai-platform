@@ -13,10 +13,7 @@ export function ProfileCustomisationTab() {
 			</PageHeader>
 
 			<div className="space-y-6">
-				<UserSettingsForm
-					userSettings={userSettings ?? null}
-					isAuthenticated={isAuthenticated}
-				/>
+				<UserSettingsForm userSettings={userSettings ?? null} isAuthenticated={isAuthenticated} />
 			</div>
 		</div>
 	);

@@ -1,10 +1,6 @@
 import type { IDBPDatabase } from "idb";
 
-import {
-	getDatabase,
-	isIndexedDBSupported,
-	storeName,
-} from "~/hooks/useIndexedDB";
+import { getDatabase, isIndexedDBSupported, storeName } from "~/hooks/useIndexedDB";
 import type { Conversation, Message } from "~/types/chat";
 
 const LS_PREFIX = "polychat_conversation_";
@@ -23,9 +19,7 @@ class LocalChatService {
 		this.isDBSupported = isIndexedDBSupported();
 		if (!this.isDBSupported) {
 			if (typeof window !== "undefined") {
-				console.warn(
-					"IndexedDB is not supported in this browser. Using LocalStorage instead.",
-				);
+				console.warn("IndexedDB is not supported in this browser. Using LocalStorage instead.");
 			}
 		} else {
 			this.dbPromise = getDatabase();
@@ -47,10 +41,7 @@ class LocalChatService {
 	 */
 	private saveToLocalStorage(chat: Conversation): void {
 		try {
-			window.localStorage.setItem(
-				`${LS_PREFIX}${chat.id}`,
-				JSON.stringify(chat),
-			);
+			window.localStorage.setItem(`${LS_PREFIX}${chat.id}`, JSON.stringify(chat));
 		} catch (error) {
 			console.error("Error saving to LocalStorage:", error);
 		}
@@ -190,10 +181,7 @@ class LocalChatService {
 	 * @param chatId The ID of the chat to update
 	 * @param messages The new messages
 	 */
-	public async updateLocalChatMessages(
-		chatId: string,
-		messages: Message[],
-	): Promise<void> {
+	public async updateLocalChatMessages(chatId: string, messages: Message[]): Promise<void> {
 		try {
 			const chat = await this.getLocalChat(chatId);
 
@@ -211,10 +199,7 @@ class LocalChatService {
 	 * @param chatId The ID of the chat to update
 	 * @param title The new title
 	 */
-	public async updateLocalChatTitle(
-		chatId: string,
-		title: string,
-	): Promise<void> {
+	public async updateLocalChatTitle(chatId: string, title: string): Promise<void> {
 		try {
 			const chat = await this.getLocalChat(chatId);
 

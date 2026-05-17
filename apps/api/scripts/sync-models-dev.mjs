@@ -213,9 +213,7 @@ async function listTsFiles(dir) {
 }
 
 function hasExportModifier(node) {
-	return (node.modifiers ?? []).some(
-		(modifier) => modifier.kind === ts.SyntaxKind.ExportKeyword,
-	);
+	return (node.modifiers ?? []).some((modifier) => modifier.kind === ts.SyntaxKind.ExportKeyword);
 }
 
 function findModelConfigDeclaration(sourceFile) {
@@ -239,8 +237,7 @@ function findModelConfigDeclaration(sourceFile) {
 
 				if (
 					ts.isCallExpression(declaration.initializer) &&
-					declaration.initializer.expression.getText(sourceFile) ===
-						"createModelConfigObject" &&
+					declaration.initializer.expression.getText(sourceFile) === "createModelConfigObject" &&
 					declaration.initializer.arguments.length > 0 &&
 					ts.isArrayLiteralExpression(declaration.initializer.arguments[0])
 				) {
@@ -347,8 +344,7 @@ function findProviderFromConstant(sourceFile) {
 		}
 		if (
 			node.initializer &&
-			(ts.isStringLiteral(node.initializer) ||
-				ts.isNoSubstitutionTemplateLiteral(node.initializer))
+			(ts.isStringLiteral(node.initializer) || ts.isNoSubstitutionTemplateLiteral(node.initializer))
 		) {
 			provider = node.initializer.text;
 		}
@@ -418,11 +414,7 @@ function extractObjectEntries(outerObjectNode, sourceFile) {
 
 function inferProviderFromObjectEntries(entries, sourceFile) {
 	for (const entry of entries) {
-		const provider = getStringPropertyValue(
-			entry.objectNode,
-			"provider",
-			sourceFile,
-		);
+		const provider = getStringPropertyValue(entry.objectNode, "provider", sourceFile);
 		if (provider) {
 			return provider;
 		}
@@ -492,10 +484,7 @@ function normalizeModalityList(values) {
 	return filtered;
 }
 
-function normalizeModalities(
-	modalities,
-	{ defaultToText } = { defaultToText: false },
-) {
+function normalizeModalities(modalities, { defaultToText } = { defaultToText: false }) {
 	if (!modalities || typeof modalities !== "object") {
 		if (!defaultToText) {
 			return undefined;
@@ -547,8 +536,7 @@ function buildUpdateValues(
 	},
 ) {
 	const values = {};
-	const remoteId =
-		typeof remoteModel.id === "string" ? remoteModel.id : modelKey;
+	const remoteId = typeof remoteModel.id === "string" ? remoteModel.id : modelKey;
 
 	if (typeof remoteModel.name === "string" && remoteModel.name.length > 0) {
 		values.name = remoteModel.name;
@@ -819,10 +807,7 @@ function buildObjectPatches({ fileText, sourceFile, objectNode, values }) {
 			continue;
 		}
 
-		const propertyIndent = getIndentAtPosition(
-			fileText,
-			property.getStart(sourceFile),
-		);
+		const propertyIndent = getIndentAtPosition(fileText, property.getStart(sourceFile));
 		const replacementText = formatValue(nextValue, propertyIndent);
 		patches.push({
 			start: property.initializer.getStart(sourceFile),
@@ -832,10 +817,7 @@ function buildObjectPatches({ fileText, sourceFile, objectNode, values }) {
 	}
 
 	if (missingFields.length > 0) {
-		const objectIndent = getIndentAtPosition(
-			fileText,
-			objectNode.getStart(sourceFile),
-		);
+		const objectIndent = getIndentAtPosition(fileText, objectNode.getStart(sourceFile));
 		const propertyIndent = `${objectIndent}\t`;
 		const insertionText = missingFields
 			.map(([fieldName, fieldValue]) => {
@@ -897,39 +879,24 @@ function applyPatches(text, patches) {
 
 	let nextText = text;
 	for (const patch of sorted) {
-		nextText =
-			nextText.slice(0, patch.start) + patch.text + nextText.slice(patch.end);
+		nextText = nextText.slice(0, patch.start) + patch.text + nextText.slice(patch.end);
 	}
 
 	return nextText;
 }
 
-function shouldProcessProvider(
-	localProvider,
-	remoteProvider,
-	selectedProviders,
-) {
+function shouldProcessProvider(localProvider, remoteProvider, selectedProviders) {
 	if (selectedProviders.size === 0) {
 		return true;
 	}
-	return (
-		selectedProviders.has(localProvider) ||
-		selectedProviders.has(remoteProvider)
-	);
+	return selectedProviders.has(localProvider) || selectedProviders.has(remoteProvider);
 }
 
-function shouldUpdateMatchingModel({
-	modelKey,
-	existingMatchingModel,
-	remoteModelId,
-}) {
+function shouldUpdateMatchingModel({ modelKey, existingMatchingModel, remoteModelId }) {
 	if (!existingMatchingModel) {
 		return true;
 	}
-	return (
-		existingMatchingModel === modelKey ||
-		existingMatchingModel === remoteModelId
-	);
+	return existingMatchingModel === modelKey || existingMatchingModel === remoteModelId;
 }
 
 function getEntryIndentFromNodes(fileText, nodes, fallbackIndentBasePosition) {
@@ -944,22 +911,13 @@ function remoteModelsFromProvider(remoteProviderConfig) {
 	if (!remoteProviderConfig || typeof remoteProviderConfig !== "object") {
 		return null;
 	}
-	if (
-		!remoteProviderConfig.models ||
-		typeof remoteProviderConfig.models !== "object"
-	) {
+	if (!remoteProviderConfig.models || typeof remoteProviderConfig.models !== "object") {
 		return null;
 	}
 	return remoteProviderConfig.models;
 }
 
-async function processFile({
-	filePath,
-	remoteProviders,
-	write,
-	selectedProviders,
-	verbose,
-}) {
+async function processFile({ filePath, remoteProviders, write, selectedProviders, verbose }) {
 	const originalText = await fs.readFile(filePath, "utf8");
 	const sourceFile = ts.createSourceFile(
 		filePath,
@@ -1004,9 +962,7 @@ async function processFile({
 	}
 
 	const remoteProviderId = PROVIDER_ALIASES[localProvider] ?? localProvider;
-	if (
-		!shouldProcessProvider(localProvider, remoteProviderId, selectedProviders)
-	) {
+	if (!shouldProcessProvider(localProvider, remoteProviderId, selectedProviders)) {
 		return {
 			filePath,
 			status: "skipped",
@@ -1016,9 +972,7 @@ async function processFile({
 		};
 	}
 
-	const remoteModels = remoteModelsFromProvider(
-		remoteProviders[remoteProviderId],
-	);
+	const remoteModels = remoteModelsFromProvider(remoteProviders[remoteProviderId]);
 	if (!remoteModels) {
 		return {
 			filePath,
@@ -1034,11 +988,7 @@ async function processFile({
 		if (hasOwn(remoteModels, entry.modelKey)) {
 			representedRemoteModelIds.add(entry.modelKey);
 		}
-		const matchingModel = getStringPropertyValue(
-			entry.objectNode,
-			"matchingModel",
-			sourceFile,
-		);
+		const matchingModel = getStringPropertyValue(entry.objectNode, "matchingModel", sourceFile);
 		if (matchingModel && hasOwn(remoteModels, matchingModel)) {
 			representedRemoteModelIds.add(matchingModel);
 		}
@@ -1048,21 +998,15 @@ async function processFile({
 	let updatedExisting = 0;
 
 	for (const entry of entries) {
-		const matchingModel = getStringPropertyValue(
-			entry.objectNode,
-			"matchingModel",
-			sourceFile,
-		);
+		const matchingModel = getStringPropertyValue(entry.objectNode, "matchingModel", sourceFile);
 		const remoteModel =
-			remoteModels[entry.modelKey] ??
-			(matchingModel ? remoteModels[matchingModel] : undefined);
+			remoteModels[entry.modelKey] ?? (matchingModel ? remoteModels[matchingModel] : undefined);
 
 		if (!remoteModel || typeof remoteModel !== "object") {
 			continue;
 		}
 
-		const remoteModelId =
-			typeof remoteModel.id === "string" ? remoteModel.id : entry.modelKey;
+		const remoteModelId = typeof remoteModel.id === "string" ? remoteModel.id : entry.modelKey;
 		const values = buildUpdateValues(remoteModel, {
 			modelKey: remoteModelId,
 			existingMatchingModel: matchingModel,
@@ -1213,9 +1157,7 @@ async function main() {
 		const uniqueSkippedProviders = [...new Set(skippedProviders)].sort((a, b) =>
 			a.localeCompare(b),
 		);
-		console.log(
-			`Providers without models.dev mapping: ${uniqueSkippedProviders.join(", ")}`,
-		);
+		console.log(`Providers without models.dev mapping: ${uniqueSkippedProviders.join(", ")}`);
 	}
 }
 

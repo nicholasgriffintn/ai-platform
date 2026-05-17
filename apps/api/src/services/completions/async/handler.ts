@@ -8,20 +8,13 @@ import type { ChatCompletionParameters, Message } from "~/types";
 import { getLogger } from "~/utils/logger";
 import { listChatProviders } from "~/lib/providers/capabilities/chat";
 
-import type {
-	AsyncInvocationHandler,
-	AsyncRefreshContext,
-	AsyncRefreshResult,
-} from "./types";
+import type { AsyncInvocationHandler, AsyncRefreshContext, AsyncRefreshResult } from "./types";
 
 const logger = getLogger({
 	prefix: "services/completions/async/handler",
 });
 
-function buildBaseParams(
-	message: Message,
-	context: AsyncRefreshContext,
-): ChatCompletionParameters {
+function buildBaseParams(message: Message, context: AsyncRefreshContext): ChatCompletionParameters {
 	return {
 		model: message.model,
 		env: context.env,
@@ -49,9 +42,9 @@ function resolveHint(
 	metadata: AsyncInvocationMetadata,
 	key: keyof NonNullable<AsyncInvocationMetadata["contentHints"]>,
 ): Message["content"] | undefined {
-	return metadata.contentHints?.[
-		key as "placeholder" | "progress" | "failure"
-	] as Message["content"] | undefined;
+	return metadata.contentHints?.[key as "placeholder" | "progress" | "failure"] as
+		| Message["content"]
+		| undefined;
 }
 
 async function handleCompletion(
@@ -89,13 +82,10 @@ async function handleCompletion(
 		log_id: formattedResult?.log_id ?? message.log_id,
 		status: "completed",
 		tool_calls: formattedResult?.tool_calls ?? message.tool_calls,
-		usage:
-			formattedResult?.usage ?? formattedResult?.usageMetadata ?? message.usage,
+		usage: formattedResult?.usage ?? formattedResult?.usageMetadata ?? message.usage,
 	};
 
-	await context.conversationManager.update(context.conversationId, [
-		updatedMessage,
-	]);
+	await context.conversationManager.update(context.conversationId, [updatedMessage]);
 
 	return { status: "completed", message: updatedMessage };
 }
@@ -119,10 +109,7 @@ async function handleFailure(
 		lastResult: raw,
 	});
 
-	const failureContent = resolveContent(
-		message.content,
-		resolveHint(metadata, "failure"),
-	);
+	const failureContent = resolveContent(message.content, resolveHint(metadata, "failure"));
 
 	const updatedMessage: Message = {
 		...message,
@@ -135,9 +122,7 @@ async function handleFailure(
 		},
 	};
 
-	await context.conversationManager.update(context.conversationId, [
-		updatedMessage,
-	]);
+	await context.conversationManager.update(context.conversationId, [updatedMessage]);
 
 	return { status: "failed", message: updatedMessage };
 }
@@ -175,9 +160,7 @@ async function handleProgress(
 		status: "in_progress",
 	};
 
-	await context.conversationManager.update(context.conversationId, [
-		inProgressMessage,
-	]);
+	await context.conversationManager.update(context.conversationId, [inProgressMessage]);
 
 	return { status: "in_progress", message: inProgressMessage };
 }
@@ -219,20 +202,10 @@ export const handleAsyncInvocation: AsyncInvocationHandler = async (
 	const params = buildBaseParams(message, context);
 
 	try {
-		const result = await provider.getAsyncInvocationStatus(
-			metadata,
-			params,
-			context.user?.id,
-		);
+		const result = await provider.getAsyncInvocationStatus(metadata, params, context.user?.id);
 
 		if (result.status === "completed" && result.result) {
-			return handleCompletion(
-				metadata,
-				message,
-				context,
-				result.result,
-				result.raw,
-			);
+			return handleCompletion(metadata, message, context, result.result, result.raw);
 		}
 
 		if (result.status === "failed") {
@@ -248,11 +221,6 @@ export const handleAsyncInvocation: AsyncInvocationHandler = async (
 			type: metadata.type,
 		});
 
-		return handleProgress(
-			metadata,
-			message,
-			context,
-			metadata.initialResponse || {},
-		);
+		return handleProgress(metadata, message, context, metadata.initialResponse || {});
 	}
 };

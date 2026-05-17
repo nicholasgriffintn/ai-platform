@@ -90,10 +90,7 @@ export interface ResearchResultError {
 	error: string;
 }
 
-export type ResearchResult =
-	| ParallelResearchResult
-	| ExaResearchResult
-	| ResearchResultError;
+export type ResearchResult = ParallelResearchResult | ExaResearchResult | ResearchResultError;
 
 export interface ResearchTaskHandle {
 	provider: ResearchProviderName;
@@ -138,15 +135,7 @@ export interface ResearchProvider {
 		input: unknown,
 		options?: ResearchOptions,
 	): Promise<ResearchTaskHandle | ResearchResultError>;
-	fetchResearchRun(
-		runId: string,
-	): Promise<ParallelTaskRun | ExaTaskRun | ResearchResultError>;
-	fetchResearchResult(
-		runId: string,
-		options?: ResearchOptions,
-	): Promise<ResearchResult>;
-	performResearch(
-		input: unknown,
-		options?: ResearchOptions,
-	): Promise<ResearchResult>;
+	fetchResearchRun(runId: string): Promise<ParallelTaskRun | ExaTaskRun | ResearchResultError>;
+	fetchResearchResult(runId: string, options?: ResearchOptions): Promise<ResearchResult>;
+	performResearch(input: unknown, options?: ResearchOptions): Promise<ResearchResult>;
 }

@@ -16,8 +16,7 @@ interface TrainingQualityData {
 export class TrainingQualityHandler implements TaskHandler {
 	public async handle(message: TaskMessage, env: IEnv): Promise<TaskResult> {
 		try {
-			const { batchSize = 50, minDaysOld = 1 } =
-				message.task_data as TrainingQualityData;
+			const { batchSize = 50, minDaysOld = 1 } = message.task_data as TrainingQualityData;
 
 			const trainingRepository = new TrainingExampleRepository(env);
 
@@ -32,8 +31,7 @@ export class TrainingQualityHandler implements TaskHandler {
 			});
 
 			const unscoredExamples = unscored.filter(
-				(example) =>
-					example.quality_score === null || example.quality_score === undefined,
+				(example) => example.quality_score === null || example.quality_score === undefined,
 			);
 
 			if (unscoredExamples.length === 0) {
@@ -43,9 +41,7 @@ export class TrainingQualityHandler implements TaskHandler {
 				};
 			}
 
-			logger.info(
-				`Processing ${unscoredExamples.length} training examples for quality scoring`,
-			);
+			logger.info(`Processing ${unscoredExamples.length} training examples for quality scoring`);
 
 			let scoredCount = 0;
 			let errors = 0;
@@ -66,9 +62,7 @@ export class TrainingQualityHandler implements TaskHandler {
 				}
 			}
 
-			logger.info(
-				`Quality scoring completed: ${scoredCount} scored, ${errors} errors`,
-			);
+			logger.info(`Quality scoring completed: ${scoredCount} scored, ${errors} errors`);
 
 			return {
 				status: "success",
@@ -116,8 +110,7 @@ ${example.system_prompt ? `SYSTEM PROMPT:\n${example.system_prompt}` : ""}
 Respond with only a single number from 1-10 representing the quality score.`;
 
 		try {
-			const { model: modelToUse, provider: providerToUse } =
-				await getAuxiliaryModel(env);
+			const { model: modelToUse, provider: providerToUse } = await getAuxiliaryModel(env);
 			const provider = getChatProvider(providerToUse, { env, user: undefined });
 
 			const response = await provider.getResponse({
@@ -134,9 +127,7 @@ Respond with only a single number from 1-10 representing the quality score.`;
 				return Math.max(1, Math.min(10, score));
 			}
 
-			logger.warn(
-				`Could not parse quality score from response: ${response.response}`,
-			);
+			logger.warn(`Could not parse quality score from response: ${response.response}`);
 			return 5;
 		} catch (error) {
 			logger.error("Failed to generate quality score with AI:", error);

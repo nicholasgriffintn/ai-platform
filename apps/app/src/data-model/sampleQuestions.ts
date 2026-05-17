@@ -16,20 +16,17 @@ export const questionPool: QuestionPool = {
 		{
 			id: "creative-design-challenge",
 			text: "Design challenge",
-			question:
-				"How would you design a chair for someone who prefers to work standing up?",
+			question: "How would you design a chair for someone who prefers to work standing up?",
 		},
 		{
 			id: "creative-rewrite-classic",
 			text: "Rewrite a Classic",
-			question:
-				"Reimagine a well-known fairy tale as a modern dystopian story.",
+			question: "Reimagine a well-known fairy tale as a modern dystopian story.",
 		},
 		{
 			id: "creative-visual-storytelling",
 			text: "Visual Storytelling",
-			question:
-				"Describe a surreal scene where reality and fantasy blur, using vivid imagery.",
+			question: "Describe a surreal scene where reality and fantasy blur, using vivid imagery.",
 		},
 		{
 			id: "creative-narrative-ai",
@@ -54,14 +51,12 @@ export const questionPool: QuestionPool = {
 		{
 			id: "productivity-focus-technique",
 			text: "Focus technique",
-			question:
-				"Suggest a technique to maintain focus during long work sessions.",
+			question: "Suggest a technique to maintain focus during long work sessions.",
 		},
 		{
 			id: "productivity-time-management",
 			text: "Time management",
-			question:
-				"How can I structure my day to balance deep work with necessary meetings?",
+			question: "How can I structure my day to balance deep work with necessary meetings?",
 		},
 		{
 			id: "productivity-productivity-tools",
@@ -97,8 +92,7 @@ export const questionPool: QuestionPool = {
 		{
 			id: "technical-scientific-simplification",
 			text: "Scientific Simplification",
-			question:
-				"Explain a complex scientific concept (like black holes) in simple terms.",
+			question: "Explain a complex scientific concept (like black holes) in simple terms.",
 		},
 		{
 			id: "technical-debugging-challenge",
@@ -109,8 +103,7 @@ export const questionPool: QuestionPool = {
 		{
 			id: "technical-algorithm-design",
 			text: "Algorithm Design",
-			question:
-				"Design an efficient algorithm to find the shortest path in a weighted graph.",
+			question: "Design an efficient algorithm to find the shortest path in a weighted graph.",
 		},
 		{
 			id: "technical-code-optimization",
@@ -129,20 +122,17 @@ export const questionPool: QuestionPool = {
 		{
 			id: "practical-cooking-help",
 			text: "Cooking help",
-			question:
-				"What's a simple but impressive dish I could cook for a dinner party?",
+			question: "What's a simple but impressive dish I could cook for a dinner party?",
 		},
 		{
 			id: "practical-fitness-tips",
 			text: "Fitness tips",
-			question:
-				"Suggest a 15-minute morning workout routine that requires no equipment.",
+			question: "Suggest a 15-minute morning workout routine that requires no equipment.",
 		},
 		{
 			id: "practical-diy-life-hack",
 			text: "DIY Life Hack",
-			question:
-				"Suggest a simple DIY project to improve home organization on a budget.",
+			question: "Suggest a simple DIY project to improve home organization on a budget.",
 		},
 		{
 			id: "practical-diy-innovation",
@@ -153,8 +143,7 @@ export const questionPool: QuestionPool = {
 		{
 			id: "practical-coding-best-practices",
 			text: "Coding Best Practices",
-			question:
-				"What are some best practices for writing clean and maintainable code?",
+			question: "What are some best practices for writing clean and maintainable code?",
 		},
 		{
 			id: "practical-version-control",
@@ -185,8 +174,7 @@ export const questionPool: QuestionPool = {
 		{
 			id: "analytical-automation-effects",
 			text: "Automation effects",
-			question:
-				"Examine the possible consequences of widespread automation on global job markets.",
+			question: "Examine the possible consequences of widespread automation on global job markets.",
 		},
 		{
 			id: "analytical-code-review",
@@ -203,8 +191,7 @@ export const questionPool: QuestionPool = {
 		{
 			id: "analytical-data-analysis",
 			text: "Data Analysis",
-			question:
-				"Analyze a dataset and provide insights on its trends and patterns.",
+			question: "Analyze a dataset and provide insights on its trends and patterns.",
 		},
 		{
 			id: "analytical-algorithmic-trading",
@@ -221,14 +208,12 @@ export const questionPool: QuestionPool = {
 		{
 			id: "analytical-lateral-thinking",
 			text: "Lateral thinking",
-			question:
-				"Formulate a brain teaser that requires lateral thinking to solve.",
+			question: "Formulate a brain teaser that requires lateral thinking to solve.",
 		},
 		{
 			id: "analytical-deductive-scenario",
 			text: "Deductive scenario",
-			question:
-				"Show me a scenario where I must use deductive reasoning to conclude an outcome.",
+			question: "Show me a scenario where I must use deductive reasoning to conclude an outcome.",
 		},
 		{
 			id: "analytical-series-statements",
@@ -385,8 +370,7 @@ export const questionPool: QuestionPool = {
 		{
 			id: "challenging-boxes-nested",
 			text: "Counting challenge",
-			question:
-				"How many boxes do I have if I have two boxes with one box inside each?",
+			question: "How many boxes do I have if I have two boxes with one box inside each?",
 			expectedAnswer: "4 boxes",
 		},
 		{

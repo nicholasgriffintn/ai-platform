@@ -1,8 +1,4 @@
-import type {
-	AudioProvider,
-	AudioSynthesisRequest,
-	AudioSynthesisResult,
-} from ".";
+import type { AudioProvider, AudioSynthesisRequest, AudioSynthesisResult } from ".";
 import type { StorageService } from "~/lib/storage";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
@@ -30,11 +26,7 @@ export abstract class BaseAudioProvider implements AudioProvider {
 		);
 	}
 
-	protected buildObjectKey(
-		slugBase: string,
-		extension = "mp3",
-		prefix = "audio",
-	): string {
+	protected buildObjectKey(slugBase: string, extension = "mp3", prefix = "audio"): string {
 		const sanitizedBase = slugBase.replace(/^\//, "");
 		const sanitizedPrefix = prefix.replace(/\/$/, "");
 		const hasExtension = sanitizedBase.endsWith(`.${extension}`);
@@ -50,7 +42,5 @@ export abstract class BaseAudioProvider implements AudioProvider {
 		return `${envBase.replace(/\/$/, "")}/${key}`;
 	}
 
-	abstract synthesize(
-		request: AudioSynthesisRequest,
-	): Promise<AudioSynthesisResult>;
+	abstract synthesize(request: AudioSynthesisRequest): Promise<AudioSynthesisResult>;
 }

@@ -49,10 +49,7 @@ export function calculateReasoningBudget(
 		return 0;
 	}
 
-	const effectiveMaxTokens = getEffectiveMaxTokens(
-		params.max_tokens,
-		modelConfig?.maxTokens,
-	);
+	const effectiveMaxTokens = getEffectiveMaxTokens(params.max_tokens, modelConfig?.maxTokens);
 
 	if (!effectiveMaxTokens) {
 		return 1024;
@@ -86,10 +83,7 @@ function returnValidatedPenalty(
 			);
 		}
 	} else if (value < -2) {
-		throw new AssistantError(
-			`${key} must be greater than or equal to -2.`,
-			ErrorType.PARAMS_ERROR,
-		);
+		throw new AssistantError(`${key} must be greater than or equal to -2.`, ErrorType.PARAMS_ERROR);
 	}
 
 	return value;
@@ -109,9 +103,7 @@ export function createCommonParameters(
 	providerName: string,
 	isOpenAiCompatible = false,
 ): Record<string, any> {
-	const modelName = isOpenAiCompatible
-		? `${providerName}/${params.model}`
-		: params.model;
+	const modelName = isOpenAiCompatible ? `${providerName}/${params.model}` : params.model;
 
 	const commonParams: Record<string, any> = {
 		model: modelName,
@@ -150,10 +142,7 @@ export function createCommonParameters(
 		commonParams.metadata = params.metadata;
 	}
 
-	const effectiveMaxTokens = getEffectiveMaxTokens(
-		params.max_tokens,
-		modelConfig?.maxTokens,
-	);
+	const effectiveMaxTokens = getEffectiveMaxTokens(params.max_tokens, modelConfig?.maxTokens);
 
 	if (providerName === "openai") {
 		commonParams.max_completion_tokens = effectiveMaxTokens;
@@ -168,11 +157,7 @@ export function createCommonParameters(
 		}
 	}
 
-	if (
-		modelConfig.supportsTopP !== false &&
-		params.model &&
-		!params.should_think
-	) {
+	if (modelConfig.supportsTopP !== false && params.model && !params.should_think) {
 		if (modelConfig.restrictsCombinedTopPAndTemperature) {
 			if (params.temperature !== undefined && params.top_p !== undefined) {
 				commonParams.temperature = params.temperature;
@@ -219,19 +204,11 @@ export function getToolsForProvider(
 			const providedTools = params.tools;
 			const filteredFunctions = availableTools
 				.filter((func) => enabledTools.includes(func.name))
-				.filter(
-					(func) =>
-						modelConfig?.supportsSearchGrounding && func.name === "web_search",
-				);
-			const availableToolDeclarations = formatToolCalls(
-				providerName,
-				filteredFunctions,
-			);
+				.filter((func) => modelConfig?.supportsSearchGrounding && func.name === "web_search");
+			const availableToolDeclarations = formatToolCalls(providerName, filteredFunctions);
 			tools = [...availableToolDeclarations, ...providedTools];
 		} else {
-			const filteredFunctions = availableTools.filter((func) =>
-				enabledTools.includes(func.name),
-			);
+			const filteredFunctions = availableTools.filter((func) => enabledTools.includes(func.name));
 			tools = formatToolCalls(providerName, filteredFunctions);
 		}
 

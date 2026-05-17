@@ -1,9 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import {
-	getSpeechProvider,
-	listSpeechProviders,
-} from "~/lib/providers/capabilities/speech";
+import { getSpeechProvider, listSpeechProviders } from "~/lib/providers/capabilities/speech";
 
 vi.mock("~/lib/providers/library", () => ({
 	providerLibrary: {
@@ -31,10 +28,7 @@ describe("speech capability helpers", () => {
 		const context = { env: { TEST: true } as any, user: { id: 1 } as any };
 		const provider = getSpeechProvider("workers-ai", context);
 
-		expect(mockProviderLibrary.speech).toHaveBeenCalledWith(
-			"workers-ai",
-			context,
-		);
+		expect(mockProviderLibrary.speech).toHaveBeenCalledWith("workers-ai", context);
 		expect(provider).toBe(fakeProvider);
 	});
 
@@ -47,8 +41,6 @@ describe("speech capability helpers", () => {
 		const providers = listSpeechProviders();
 
 		expect(mockProviderLibrary.list).toHaveBeenCalledWith("speech");
-		expect(providers).toEqual(
-			["Replicate", "Workers AI", "replicate", "workers-ai"].sort(),
-		);
+		expect(providers).toEqual(["Replicate", "Workers AI", "replicate", "workers-ai"].sort());
 	});
 });

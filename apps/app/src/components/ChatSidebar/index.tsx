@@ -11,13 +11,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 
-import {
-	Button,
-	ConfirmationDialog,
-	HoverActions,
-	ListItem,
-	SidebarShell,
-} from "~/components/ui";
+import { Button, ConfirmationDialog, HoverActions, ListItem, SidebarShell } from "~/components/ui";
 import { useTrackEvent } from "~/hooks/use-track-event";
 import { useChats, useDeleteChat, useUpdateChatTitle } from "~/hooks/useChat";
 import { categorizeItemsByDate } from "~/lib/sidebar";
@@ -31,12 +25,7 @@ import { ChatSidebarNotifications } from "./ChatSidebarNotifications";
 
 export const ChatSidebar = () => {
 	const { trackEvent } = useTrackEvent();
-	const {
-		sidebarVisible,
-		setSidebarVisible,
-		isMobile,
-		setShowKeyboardShortcuts,
-	} = useUIStore();
+	const { sidebarVisible, setSidebarVisible, isMobile, setShowKeyboardShortcuts } = useUIStore();
 	const {
 		currentConversationId,
 		setCurrentConversationId,
@@ -90,10 +79,7 @@ export const ChatSidebar = () => {
 		}
 	};
 
-	const handleEditTitle = async (
-		completion_id: string,
-		currentTitle: string,
-	) => {
+	const handleEditTitle = async (completion_id: string, currentTitle: string) => {
 		const newTitle = prompt("Enter new title:", currentTitle);
 		if (newTitle && newTitle !== currentTitle) {
 			try {
@@ -112,10 +98,7 @@ export const ChatSidebar = () => {
 		}
 	};
 
-	const handleDeleteChat = async (
-		completion_id: string,
-		e: React.MouseEvent,
-	) => {
+	const handleDeleteChat = async (completion_id: string, e: React.MouseEvent) => {
 		e.stopPropagation();
 		setConfirmDelete(completion_id);
 	};
@@ -133,9 +116,7 @@ export const ChatSidebar = () => {
 
 			await deleteChat.mutateAsync(confirmDelete);
 			if (currentConversationId === confirmDelete) {
-				const firstConversation = conversations.find(
-					(c) => c.id !== confirmDelete,
-				);
+				const firstConversation = conversations.find((c) => c.id !== confirmDelete);
 				setCurrentConversationId(firstConversation?.id);
 			}
 			setConfirmDelete(null);
@@ -159,10 +140,7 @@ export const ChatSidebar = () => {
 		});
 	};
 
-	const renderConversationGroup = (
-		title: string,
-		conversationsList: Conversation[],
-	) => {
+	const renderConversationGroup = (title: string, conversationsList: Conversation[]) => {
 		if (!conversationsList || conversationsList.length === 0) return null;
 
 		return (
@@ -191,16 +169,12 @@ export const ChatSidebar = () => {
 											aria-label="Go to original conversation"
 											onClick={(e) => {
 												e?.stopPropagation();
-												handleConversationClick(
-													conversation.parent_conversation_id,
-												);
+												handleConversationClick(conversation.parent_conversation_id);
 											}}
 											onKeyDown={(e) => {
 												if (e.key === "Enter" || e.key === " ") {
 													e.stopPropagation();
-													handleConversationClick(
-														conversation.parent_conversation_id!,
-													);
+													handleConversationClick(conversation.parent_conversation_id!);
 												}
 											}}
 										>
@@ -221,10 +195,7 @@ export const ChatSidebar = () => {
 												label: "Edit conversation title",
 												onClick: (e) => {
 													e.stopPropagation();
-													handleEditTitle(
-														conversation.id || "",
-														conversation.title || "",
-													);
+													handleEditTitle(conversation.id || "", conversation.title || "");
 												},
 											},
 											{
@@ -255,13 +226,7 @@ export const ChatSidebar = () => {
 					variant="icon"
 					title={sidebarVisible ? "Hide sidebar" : "Show sidebar"}
 					aria-label={sidebarVisible ? "Hide sidebar" : "Show sidebar"}
-					icon={
-						sidebarVisible ? (
-							<PanelLeftClose size={20} />
-						) : (
-							<PanelLeftOpen size={20} />
-						)
-					}
+					icon={sidebarVisible ? <PanelLeftClose size={20} /> : <PanelLeftOpen size={20} />}
 					onClick={() => setSidebarVisible(!sidebarVisible)}
 				/>
 
@@ -270,19 +235,9 @@ export const ChatSidebar = () => {
 						<Button
 							type="button"
 							variant={localOnlyMode ? "iconActive" : "icon"}
-							title={
-								localOnlyMode
-									? "Switch to cloud mode"
-									: "Switch to local-only mode"
-							}
-							aria-label={
-								localOnlyMode
-									? "Switch to cloud mode"
-									: "Switch to local-only mode"
-							}
-							icon={
-								localOnlyMode ? <CloudOff size={20} /> : <Cloud size={20} />
-							}
+							title={localOnlyMode ? "Switch to cloud mode" : "Switch to local-only mode"}
+							aria-label={localOnlyMode ? "Switch to cloud mode" : "Switch to local-only mode"}
+							icon={localOnlyMode ? <CloudOff size={20} /> : <Cloud size={20} />}
 							onClick={toggleLocalOnlyMode}
 						/>
 					)}
@@ -329,10 +284,7 @@ export const ChatSidebar = () => {
 
 				{isAuthenticationLoading ? (
 					<div className="flex items-center gap-2 p-2">
-						<Loader2
-							size={20}
-							className="animate-spin text-zinc-600 dark:text-zinc-400"
-						/>
+						<Loader2 size={20} className="animate-spin text-zinc-600 dark:text-zinc-400" />
 					</div>
 				) : (
 					<div>
@@ -358,22 +310,10 @@ export const ChatSidebar = () => {
 						) : (
 							<div className="p-2">
 								{renderConversationGroup("Today", categorizedChats.today)}
-								{renderConversationGroup(
-									"Yesterday",
-									categorizedChats.yesterday,
-								)}
-								{renderConversationGroup(
-									"This Week",
-									categorizedChats.thisWeek,
-								)}
-								{renderConversationGroup(
-									"This Month",
-									categorizedChats.thisMonth,
-								)}
-								{renderConversationGroup(
-									"Last Month",
-									categorizedChats.lastMonth,
-								)}
+								{renderConversationGroup("Yesterday", categorizedChats.yesterday)}
+								{renderConversationGroup("This Week", categorizedChats.thisWeek)}
+								{renderConversationGroup("This Month", categorizedChats.thisMonth)}
+								{renderConversationGroup("Last Month", categorizedChats.lastMonth)}
 								{renderConversationGroup("Older", categorizedChats.older)}
 							</div>
 						)}

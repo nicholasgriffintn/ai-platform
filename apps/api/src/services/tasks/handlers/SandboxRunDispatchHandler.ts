@@ -34,9 +34,7 @@ export class SandboxRunDispatchHandler implements TaskHandler {
 			};
 		} catch (error) {
 			const errorMessage =
-				error instanceof Error
-					? error.message
-					: "Sandbox dispatch processing failed";
+				error instanceof Error ? error.message : "Sandbox dispatch processing failed";
 			logger.error("Sandbox run dispatch task failed", {
 				task_id: message.taskId,
 				error_message: errorMessage,

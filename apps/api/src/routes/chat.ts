@@ -81,11 +81,7 @@ const chatCompletionsListQuerySchema = z.object({
 	include_archived: z.enum(["true", "false"]).optional().default("false"),
 });
 
-function respondWithStreamOrJson(
-	_context: Context,
-	result: unknown,
-	stream?: boolean,
-): Response {
+function respondWithStreamOrJson(_context: Context, result: unknown, stream?: boolean): Response {
 	if (stream) {
 		return sseResponse(result as ReadableStream);
 	}
@@ -118,9 +114,7 @@ addRoute(app, "post", "/completions", {
 	middleware: [validateCaptcha],
 	handler: async ({ raw }) =>
 		(async (context: Context) => {
-			const body = context.req.valid(
-				"json" as never,
-			) as ChatCompletionParameters;
+			const body = context.req.valid("json" as never) as ChatCompletionParameters;
 
 			const userContext = context.get("user");
 			const anonymousUserContext = context.get("anonymousUser");
@@ -182,9 +176,7 @@ addRoute(app, "post", "/fim/completions", {
 	middleware: [validateCaptcha],
 	handler: async ({ raw }) =>
 		(async (context: Context) => {
-			const body = context.req.valid("json" as never) as z.infer<
-				typeof fillInMiddleRequestSchema
-			>;
+			const body = context.req.valid("json" as never) as z.infer<typeof fillInMiddleRequestSchema>;
 
 			const result = await handleCreateFimCompletions({
 				env: context.env as IEnv,
@@ -199,8 +191,7 @@ addRoute(app, "post", "/fim/completions", {
 addRoute(app, "post", "/edit/completions", {
 	tags: ["chat", "code"],
 	summary: "Create next edit completion",
-	description:
-		"Produces the next edit suggestion for a file using Mercury's code edit model.",
+	description: "Produces the next edit suggestion for a file using Mercury's code edit model.",
 	bodySchema: nextEditRequestSchema,
 	responses: {
 		200: {
@@ -215,9 +206,7 @@ addRoute(app, "post", "/edit/completions", {
 	middleware: [validateCaptcha],
 	handler: async ({ raw }) =>
 		(async (context: Context) => {
-			const body = context.req.valid("json" as never) as z.infer<
-				typeof nextEditRequestSchema
-			>;
+			const body = context.req.valid("json" as never) as z.infer<typeof nextEditRequestSchema>;
 
 			const result = await handleCreateNextEditCompletions({
 				env: context.env as IEnv,
@@ -232,8 +221,7 @@ addRoute(app, "post", "/edit/completions", {
 addRoute(app, "post", "/apply/completions", {
 	tags: ["chat", "code"],
 	summary: "Apply edit completion",
-	description:
-		"Applies an edit snippet to existing code using Mercury's apply edit capability.",
+	description: "Applies an edit snippet to existing code using Mercury's apply edit capability.",
 	bodySchema: applyEditRequestSchema,
 	responses: {
 		200: {
@@ -248,9 +236,7 @@ addRoute(app, "post", "/apply/completions", {
 	middleware: [validateCaptcha],
 	handler: async ({ raw }) =>
 		(async (context: Context) => {
-			const body = context.req.valid("json" as never) as z.infer<
-				typeof applyEditRequestSchema
-			>;
+			const body = context.req.valid("json" as never) as z.infer<typeof applyEditRequestSchema>;
 
 			const result = await handleCreateApplyEditCompletions({
 				env: context.env as IEnv,
@@ -461,9 +447,9 @@ addRoute(app, "get", "/completions", {
 	middleware: [validateCaptcha],
 	handler: async ({ raw }) =>
 		(async (context: Context) => {
-			const { limit, page, include_archived } = context.req.valid(
-				"query" as never,
-			) as z.infer<typeof chatCompletionsListQuerySchema>;
+			const { limit, page, include_archived } = context.req.valid("query" as never) as z.infer<
+				typeof chatCompletionsListQuerySchema
+			>;
 			const includeArchived = include_archived === "true";
 
 			const serviceContext = getServiceContext(context);
@@ -562,11 +548,7 @@ addRoute(app, "put", "/completions/:completion_id", {
 
 			const serviceContext = getServiceContext(context);
 
-			const response = await handleUpdateChatCompletion(
-				serviceContext,
-				completion_id,
-				updates,
-			);
+			const response = await handleUpdateChatCompletion(serviceContext, completion_id, updates);
 
 			return ResponseFactory.success(context, response);
 		})(raw),
@@ -599,10 +581,7 @@ addRoute(app, "delete", "/completions/:completion_id", {
 
 			const serviceContext = getServiceContext(context);
 
-			const response = await handleDeleteChatCompletion(
-				serviceContext,
-				completion_id,
-			);
+			const response = await handleDeleteChatCompletion(serviceContext, completion_id);
 
 			return ResponseFactory.success(context, response);
 		})(raw),
@@ -642,11 +621,7 @@ addRoute(app, "post", "/completions/:completion_id/check", {
 
 			const serviceContext = getServiceContext(context);
 
-			const response = await handleCheckChatCompletion(
-				serviceContext,
-				completion_id,
-				role,
-			);
+			const response = await handleCheckChatCompletion(serviceContext, completion_id, role);
 
 			return ResponseFactory.success(context, {
 				response,
@@ -685,10 +660,10 @@ addRoute(app, "post", "/completions/:completion_id/feedback", {
 
 			const serviceContext = getServiceContext(context);
 
-			const response = await handleChatCompletionFeedbackSubmission(
-				serviceContext,
-				{ request: body, completion_id },
-			);
+			const response = await handleChatCompletionFeedbackSubmission(serviceContext, {
+				request: body,
+				completion_id,
+			});
 
 			return ResponseFactory.success(context, {
 				response,
@@ -699,8 +674,7 @@ addRoute(app, "post", "/completions/:completion_id/feedback", {
 addRoute(app, "post", "/completions/:completion_id/share", {
 	tags: ["chat"],
 	summary: "Share a conversation publicly",
-	description:
-		"Make a conversation publicly accessible via a unique share link",
+	description: "Make a conversation publicly accessible via a unique share link",
 	paramSchema: shareConversationParamsSchema,
 	responses: {
 		200: {
@@ -724,10 +698,7 @@ addRoute(app, "post", "/completions/:completion_id/share", {
 
 			const serviceContext = getServiceContext(context);
 
-			const result = await handleShareConversation(
-				serviceContext,
-				completion_id,
-			);
+			const result = await handleShareConversation(serviceContext, completion_id);
 
 			return ResponseFactory.success(context, result);
 		})(raw),
@@ -762,10 +733,7 @@ addRoute(app, "delete", "/completions/:completion_id/share", {
 
 			const serviceContext = getServiceContext(context);
 
-			const result = await handleUnshareConversation(
-				serviceContext,
-				completion_id,
-			);
+			const result = await handleUnshareConversation(serviceContext, completion_id);
 
 			return ResponseFactory.success(context, result);
 		})(raw),
@@ -774,8 +742,7 @@ addRoute(app, "delete", "/completions/:completion_id/share", {
 addRoute(app, "get", "/shared/:share_id", {
 	tags: ["chat"],
 	summary: "Access a shared conversation",
-	description:
-		"Get messages from a publicly shared conversation using its share ID",
+	description: "Get messages from a publicly shared conversation using its share ID",
 	paramSchema: getSharedConversationParamsSchema,
 	querySchema: chatMessageListQuerySchema,
 	responses: {
@@ -812,12 +779,7 @@ addRoute(app, "get", "/shared/:share_id", {
 
 			const serviceContext = getServiceContext(context);
 
-			const result = await handleGetSharedConversation(
-				serviceContext,
-				share_id,
-				limit,
-				after,
-			);
+			const result = await handleGetSharedConversation(serviceContext, share_id, limit, after);
 
 			return ResponseFactory.success(context, result);
 		})(raw),

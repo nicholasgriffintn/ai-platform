@@ -4,10 +4,7 @@ import { messageSchema } from "./shared";
 import { chatCompletionResponseSchema } from "./chat";
 
 const editRequestBase = z.object({
-	model: z
-		.string()
-		.optional()
-		.describe("The Mercury model to use for the edit operation."),
+	model: z.string().optional().describe("The Mercury model to use for the edit operation."),
 	messages: z
 		.array(messageSchema)
 		.min(1)

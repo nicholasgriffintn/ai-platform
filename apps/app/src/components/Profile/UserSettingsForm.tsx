@@ -1,12 +1,6 @@
 import { type FormEvent, useState } from "react";
 
-import {
-	Button,
-	FormInput,
-	FormSelect,
-	Switch,
-	Textarea,
-} from "~/components/ui";
+import { Button, FormInput, FormSelect, Switch, Textarea } from "~/components/ui";
 import { EventCategory, useTrackEvent } from "~/hooks/use-track-event";
 import { useAuthStatus } from "~/hooks/useAuth";
 import type { UserSettings } from "~/types";
@@ -20,10 +14,7 @@ interface UserSettingsFormProps {
 	isAuthenticated: boolean;
 }
 
-export function UserSettingsForm({
-	userSettings,
-	isAuthenticated,
-}: UserSettingsFormProps) {
+export function UserSettingsForm({ userSettings, isAuthenticated }: UserSettingsFormProps) {
 	const { updateUserSettings, isUpdatingUserSettings } = useAuthStatus();
 	const { trackEvent, trackError } = useTrackEvent();
 	const [formData, setFormData] = useState({
@@ -43,8 +34,7 @@ export function UserSettingsForm({
 		s3vectors_index_name: userSettings?.s3vectors_index_name || "",
 		s3vectors_region: userSettings?.s3vectors_region || "us-east-1",
 		memories_save_enabled: userSettings?.memories_save_enabled || false,
-		memories_chat_history_enabled:
-			userSettings?.memories_chat_history_enabled || false,
+		memories_chat_history_enabled: userSettings?.memories_chat_history_enabled || false,
 		tracking_enabled: userSettings?.tracking_enabled ?? true,
 		transcription_provider: userSettings?.transcription_provider || "workers",
 		transcription_model: userSettings?.transcription_model || "whisper-1",
@@ -54,9 +44,7 @@ export function UserSettingsForm({
 	const [saveSuccess, setSaveSuccess] = useState(false);
 	const [saveError, setSaveError] = useState("");
 
-	const handleChange = (
-		e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
-	) => {
+	const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
 		const { name, value } = e.target;
 		setFormData((prev) => ({
 			...prev,
@@ -217,9 +205,7 @@ export function UserSettingsForm({
 			</div>
 
 			<div>
-				<h3 className="text-lg font-bold text-zinc-800 dark:text-zinc-100 mb-6">
-					Sandbox Worker
-				</h3>
+				<h3 className="text-lg font-bold text-zinc-800 dark:text-zinc-100 mb-6">Sandbox Worker</h3>
 			</div>
 
 			<div className="space-y-4">
@@ -231,8 +217,7 @@ export function UserSettingsForm({
 						Default Sandbox Model
 					</label>
 					<p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
-						Used for sandbox worker runs when no model override is provided in
-						the request.
+						Used for sandbox worker runs when no model override is provided in the request.
 					</p>
 					<FormInput
 						id="sandbox_model"
@@ -248,8 +233,7 @@ export function UserSettingsForm({
 								name: "sandbox_model_changed",
 								category: EventCategory.UI_INTERACTION,
 								properties: {
-									has_value:
-										e.target.value.trim().length > 0 ? "true" : "false",
+									has_value: e.target.value.trim().length > 0 ? "true" : "false",
 								},
 							});
 						}}
@@ -259,9 +243,7 @@ export function UserSettingsForm({
 				</div>
 			</div>
 			<div>
-				<h3 className="text-lg font-bold text-zinc-800 dark:text-zinc-100 mb-6">
-					Guardrails
-				</h3>
+				<h3 className="text-lg font-bold text-zinc-800 dark:text-zinc-100 mb-6">Guardrails</h3>
 			</div>
 			<div className="space-y-4">
 				<div>
@@ -340,8 +322,8 @@ export function UserSettingsForm({
 							/>
 						</div>
 						<p className="text-sm text-zinc-500 dark:text-zinc-400">
-							Please note that you will also need to configure the api key for
-							Bedrock in the providers section for this to work.
+							Please note that you will also need to configure the api key for Bedrock in the
+							providers section for this to work.
 						</p>
 					</>
 				)}
@@ -412,8 +394,8 @@ export function UserSettingsForm({
 							/>
 						</div>
 						<p className="text-sm text-zinc-500 dark:text-zinc-400">
-							Please note that you will also need to configure the api key for
-							Bedrock in the providers section for this to work.
+							Please note that you will also need to configure the api key for Bedrock in the
+							providers section for this to work.
 						</p>
 					</>
 				)}
@@ -478,18 +460,15 @@ export function UserSettingsForm({
 							</FormSelect>
 						</div>
 						<p className="text-sm text-zinc-500 dark:text-zinc-400">
-							Please note that you will also need to configure the AWS
-							credentials for S3 Vectors in the providers section for this to
-							work.
+							Please note that you will also need to configure the AWS credentials for S3 Vectors in
+							the providers section for this to work.
 						</p>
 					</>
 				)}
 			</div>
 
 			<div>
-				<h3 className="text-lg font-bold text-zinc-800 dark:text-zinc-100 mb-6">
-					Memories
-				</h3>
+				<h3 className="text-lg font-bold text-zinc-800 dark:text-zinc-100 mb-6">Memories</h3>
 			</div>
 
 			<div className="space-y-4">
@@ -563,9 +542,8 @@ export function UserSettingsForm({
 						}
 					/>
 					<p className="text-sm text-zinc-500 dark:text-zinc-400">
-						Allow Polychat to save your conversations and app interactions for
-						improving AI models. Your data helps us create better responses and
-						features. You can opt out at any time.
+						Allow Polychat to save your conversations and app interactions for improving AI models.
+						Your data helps us create better responses and features. You can opt out at any time.
 					</p>
 				</div>
 			</div>
@@ -585,8 +563,7 @@ export function UserSettingsForm({
 						Transcription Provider
 					</label>
 					<p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
-						Choose the provider for speech-to-text transcription used by
-						Polychat.
+						Choose the provider for speech-to-text transcription used by Polychat.
 					</p>
 					<FormSelect
 						id="transcription_provider"
@@ -610,8 +587,7 @@ export function UserSettingsForm({
 						Transcription Model
 					</label>
 					<p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
-						Select from the available models for the{" "}
-						{formData.transcription_provider} provider.
+						Select from the available models for the {formData.transcription_provider} provider.
 					</p>
 					<FormSelect
 						id="transcription_model"
@@ -636,9 +612,7 @@ export function UserSettingsForm({
 			</div>
 
 			<div>
-				<h3 className="text-lg font-bold text-zinc-800 dark:text-zinc-100 mb-6">
-					Web Search
-				</h3>
+				<h3 className="text-lg font-bold text-zinc-800 dark:text-zinc-100 mb-6">Web Search</h3>
 			</div>
 
 			<div className="space-y-4">
@@ -650,9 +624,8 @@ export function UserSettingsForm({
 						Search Provider
 					</label>
 					<p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
-						Choose the default search provider for web search requests. Pro
-						users can select from premium providers like Tavily, Serper, or
-						Perplexity.
+						Choose the default search provider for web search requests. Pro users can select from
+						premium providers like Tavily, Serper, or Perplexity.
 					</p>
 					<FormSelect
 						id="search_provider"
@@ -673,9 +646,7 @@ export function UserSettingsForm({
 							});
 						}}
 					>
-						<option value="">
-							Default (Tavily for Pro, DuckDuckGo for Free)
-						</option>
+						<option value="">Default (Tavily for Pro, DuckDuckGo for Free)</option>
 						<option value="duckduckgo">DuckDuckGo</option>
 						<option value="tavily">Tavily</option>
 						<option value="serper">Serper</option>
@@ -684,9 +655,8 @@ export function UserSettingsForm({
 						<option value="exa">Exa</option>
 					</FormSelect>
 					<p className="text-sm text-zinc-500 dark:text-zinc-400 mt-2">
-						Note: Premium providers (Tavily, Serper, Perplexity, Parallel, Exa)
-						require a Pro plan. You may also need to configure API keys in the
-						providers section.
+						Note: Premium providers (Tavily, Serper, Perplexity, Parallel, Exa) require a Pro plan.
+						You may also need to configure API keys in the providers section.
 					</p>
 				</div>
 			</div>
@@ -704,11 +674,7 @@ export function UserSettingsForm({
 			)}
 
 			<div className="pt-4">
-				<Button
-					type="submit"
-					variant="primary"
-					disabled={isUpdatingUserSettings}
-				>
+				<Button type="submit" variant="primary" disabled={isUpdatingUserSettings}>
 					{isUpdatingUserSettings ? "Saving..." : "Save Settings"}
 				</Button>
 			</div>

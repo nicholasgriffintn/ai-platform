@@ -25,10 +25,7 @@ export default function PodcastDetailPage() {
 
 	if (isLoading) {
 		return (
-			<PageShell
-				sidebarContent={<AppsSidebarContent />}
-				className="max-w-4xl mx-auto"
-			>
+			<PageShell sidebarContent={<AppsSidebarContent />} className="max-w-4xl mx-auto">
 				<div className="flex justify-center items-center h-64">
 					<div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 dark:border-blue-400" />
 				</div>
@@ -38,14 +35,9 @@ export default function PodcastDetailPage() {
 
 	if (error || !podcast) {
 		return (
-			<PageShell
-				sidebarContent={<AppsSidebarContent />}
-				className="max-w-4xl mx-auto"
-			>
+			<PageShell sidebarContent={<AppsSidebarContent />} className="max-w-4xl mx-auto">
 				<div className="flex flex-col justify-center items-center h-64 space-y-4">
-					<p className="text-lg text-zinc-600 dark:text-zinc-400">
-						Podcast not found
-					</p>
+					<p className="text-lg text-zinc-600 dark:text-zinc-400">Podcast not found</p>
 					<Link to="/apps/podcasts">
 						<Button variant="secondary">
 							<ChevronLeft size={16} className="mr-1" />
@@ -58,33 +50,26 @@ export default function PodcastDetailPage() {
 	}
 
 	const renderStatusIndicator = (status: string) => {
-		const statusMap: Record<
-			string,
-			{ icon: JSX.Element; text: string; className: string }
-		> = {
+		const statusMap: Record<string, { icon: JSX.Element; text: string; className: string }> = {
 			complete: {
 				icon: <CheckCircle size={16} />,
 				text: "Complete",
-				className:
-					"bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300",
+				className: "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300",
 			},
 			processing: {
 				icon: <Clock size={16} />,
 				text: "Processing",
-				className:
-					"bg-amber-100 text-amber-800 dark:bg-amber-900/20 dark:text-amber-300",
+				className: "bg-amber-100 text-amber-800 dark:bg-amber-900/20 dark:text-amber-300",
 			},
 			transcribing: {
 				icon: <Clock size={16} />,
 				text: "Transcribing",
-				className:
-					"bg-amber-100 text-amber-800 dark:bg-amber-900/20 dark:text-amber-300",
+				className: "bg-amber-100 text-amber-800 dark:bg-amber-900/20 dark:text-amber-300",
 			},
 			summarizing: {
 				icon: <Clock size={16} />,
 				text: "Summarizing",
-				className:
-					"bg-amber-100 text-amber-800 dark:bg-amber-900/20 dark:text-amber-300",
+				className: "bg-amber-100 text-amber-800 dark:bg-amber-900/20 dark:text-amber-300",
 			},
 		};
 
@@ -111,9 +96,7 @@ export default function PodcastDetailPage() {
 				<div className="flex justify-between items-center mb-6">
 					<div>
 						<BackLink to="/apps/podcasts" label="Back to Podcasts" />
-						{podcast && (
-							<PageTitle title={podcast.title || "Podcast Details"} />
-						)}
+						{podcast && <PageTitle title={podcast.title || "Podcast Details"} />}
 						<div className="flex items-center gap-2 mt-2">
 							{renderStatusIndicator(podcast.status)}
 						</div>

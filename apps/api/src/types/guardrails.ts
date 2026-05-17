@@ -1,8 +1,5 @@
 export interface GuardrailsProvider {
-	validateContent(
-		content: string,
-		source: "INPUT" | "OUTPUT",
-	): Promise<GuardrailResult>;
+	validateContent(content: string, source: "INPUT" | "OUTPUT"): Promise<GuardrailResult>;
 }
 
 export interface GuardrailConfig {

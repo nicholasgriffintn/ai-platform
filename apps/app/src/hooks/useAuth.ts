@@ -11,12 +11,7 @@ export const AUTH_QUERY_KEYS = {
 };
 
 export function useAuthStatus() {
-	const {
-		setHasApiKey,
-		setIsAuthenticated,
-		setIsAuthenticationLoading,
-		setIsPro,
-	} = useChatStore();
+	const { setHasApiKey, setIsAuthenticated, setIsAuthenticationLoading, setIsPro } = useChatStore();
 	const queryClient = useQueryClient();
 
 	const { data: isAuthenticated, isLoading: isAuthLoading } = useQuery({

@@ -22,9 +22,7 @@ export class CertesiaProvider extends BaseProvider {
 		return "tts/bytes";
 	}
 
-	protected async getHeaders(
-		params: ChatCompletionParameters,
-	): Promise<Record<string, string>> {
+	protected async getHeaders(params: ChatCompletionParameters): Promise<Record<string, string>> {
 		const apiKey = await this.getApiKey(params, params.user?.id);
 		const baseHeaders = this.buildAiGatewayHeaders(params, apiKey);
 		delete baseHeaders.Authorization;
@@ -37,10 +35,7 @@ export class CertesiaProvider extends BaseProvider {
 		};
 	}
 
-	async getResponse(
-		params: ChatCompletionParameters,
-		userId?: number,
-	): Promise<any> {
+	async getResponse(params: ChatCompletionParameters, userId?: number): Promise<any> {
 		this.validateParams(params);
 
 		const endpoint = await this.getEndpoint();

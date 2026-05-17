@@ -39,10 +39,7 @@ const renderTextContent = (
 	) => void,
 	key?: string,
 ): ReactNode => {
-	let { content, reasoning, artifacts } = formattedMessageContent(
-		role,
-		textContent,
-	);
+	let { content, reasoning, artifacts } = formattedMessageContent(role, textContent);
 	content = processCustomXmlTags(content);
 
 	const hasOpenReasoning = reasoning.some((item) => item.isOpen);
@@ -65,9 +62,7 @@ const renderTextContent = (
 		for (let i = 0; i < textParts.length; i++) {
 			if (textParts[i]) {
 				renderedParts.push(
-					<MemoizedMarkdown key={`content-${i}`}>
-						{textParts[i]}
-					</MemoizedMarkdown>,
+					<MemoizedMarkdown key={`content-${i}`}>{textParts[i]}</MemoizedMarkdown>,
 				);
 			}
 
@@ -114,9 +109,7 @@ const renderTextContent = (
 						);
 					}
 					if (attachment.type === "audio") {
-						renderedParts.push(
-							renderAudioContent(attachment.url, attachment.name),
-						);
+						renderedParts.push(renderAudioContent(attachment.url, attachment.name));
 					}
 					if (attachment.type) {
 						renderedParts.push(`[[CONTENT:${attachment.url}]]`);
@@ -135,9 +128,7 @@ const renderTextContent = (
 						<CitationList citations={messageCitations} />
 					)}
 					{messageData?.searchGrounding && (
-						<SearchGroundingSection
-							searchGrounding={messageData.searchGrounding}
-						/>
+						<SearchGroundingSection searchGrounding={messageData.searchGrounding} />
 					)}
 					{renderedParts}
 				</div>
@@ -213,9 +204,7 @@ const renderDocumentContent = (
 				<File className="h-5 w-5 text-blue-500 dark:text-blue-400" />
 				<span className="text-zinc-700 dark:text-zinc-300">
 					{documentName || "Document"}
-					{isMarkdown && (
-						<span className="text-xs ml-2 italic">(converted to text)</span>
-					)}
+					{isMarkdown && <span className="text-xs ml-2 italic">(converted to text)</span>}
 				</span>
 			</div>
 			{documentUrl && (
@@ -232,11 +221,7 @@ const renderDocumentContent = (
 	);
 };
 
-const renderAudioContent = (
-	audioUrl: string,
-	audioName?: string,
-	index?: number,
-): ReactNode => {
+const renderAudioContent = (audioUrl: string, audioName?: string, index?: number): ReactNode => {
 	return (
 		<div
 			key={`audio-attachment-${index ?? 0}`}
@@ -244,9 +229,7 @@ const renderAudioContent = (
 		>
 			<div className="flex items-center gap-2">
 				<Volume2 className="h-5 w-5 text-purple-500 dark:text-purple-400" />
-				<span className="text-zinc-700 dark:text-zinc-300">
-					{audioName || "Audio"}
-				</span>
+				<span className="text-zinc-700 dark:text-zinc-300">{audioName || "Audio"}</span>
 			</div>
 			{audioUrl && (
 				<audio controls className="w-full rounded-lg">
@@ -308,9 +291,7 @@ const renderToolResultPart = (
 			{content ? (
 				<MemoizedMarkdown className="mt-2 text-sm">{content}</MemoizedMarkdown>
 			) : (
-				<div className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">
-					No tool output
-				</div>
+				<div className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">No tool output</div>
 			)}
 		</div>
 	);
@@ -335,261 +316,243 @@ const renderSnapshotPart = (
 	);
 };
 
-export const MessageContent = memo(
-	({ message, onArtifactOpen }: MessageContentProps) => {
-		const content = useMemo(() => {
-			const handleArtifactOpen = (
-				artifact: ArtifactProps,
-				combine?: boolean,
-				artifacts?: ArtifactProps[],
-			) => {
-				if (combine) {
-					onArtifactOpen?.(artifact, true, artifacts);
-				} else {
-					onArtifactOpen?.(artifact, false);
-				}
-			};
-
-			let thinkingContent = "";
-
-			if (Array.isArray(message.content)) {
-				const thinkingBlock = message.content.find(
-					(item: MessageContentType) => item.type === "thinking",
-				);
-
-				if (thinkingBlock) {
-					thinkingContent = thinkingBlock.thinking || "";
-				}
+export const MessageContent = memo(({ message, onArtifactOpen }: MessageContentProps) => {
+	const content = useMemo(() => {
+		const handleArtifactOpen = (
+			artifact: ArtifactProps,
+			combine?: boolean,
+			artifacts?: ArtifactProps[],
+		) => {
+			if (combine) {
+				onArtifactOpen?.(artifact, true, artifacts);
+			} else {
+				onArtifactOpen?.(artifact, false);
 			}
+		};
 
-			const messageParts = Array.isArray(message.parts) ? message.parts : [];
-			const hasReasoningPart = messageParts.some(
-				(part) => part.type === "reasoning",
+		let thinkingContent = "";
+
+		if (Array.isArray(message.content)) {
+			const thinkingBlock = message.content.find(
+				(item: MessageContentType) => item.type === "thinking",
 			);
 
-			if (messageParts.length > 0) {
-				return (
+			if (thinkingBlock) {
+				thinkingContent = thinkingBlock.thinking || "";
+			}
+		}
+
+		const messageParts = Array.isArray(message.parts) ? message.parts : [];
+		const hasReasoningPart = messageParts.some((part) => part.type === "reasoning");
+
+		if (messageParts.length > 0) {
+			return (
+				<div className="space-y-4">
+					{message.citations && message.citations.length > 0 && (
+						<CitationList citations={message.citations} />
+					)}
+					{message.data?.searchGrounding && (
+						<SearchGroundingSection searchGrounding={message.data.searchGrounding} />
+					)}
+					{message.reasoning && !hasReasoningPart && (
+						<ReasoningSection reasoning={message.reasoning} />
+					)}
+					{messageParts.map((part, index) => {
+						if (part.type === "text") {
+							return renderTextContent(
+								message.role,
+								part.text,
+								undefined,
+								undefined,
+								undefined,
+								handleArtifactOpen,
+								`part-text-${index}`,
+							);
+						}
+
+						if (part.type === "reasoning") {
+							return (
+								<ReasoningSection
+									key={`part-reasoning-${index}`}
+									reasoning={{
+										content: part.text,
+										collapsed: part.collapsed ?? true,
+									}}
+								/>
+							);
+						}
+
+						if (part.type === "tool_use") {
+							return renderToolUsePart(part, index);
+						}
+
+						if (part.type === "tool_result") {
+							return renderToolResultPart(part, index);
+						}
+
+						if (part.type === "snapshot") {
+							return renderSnapshotPart(part, index);
+						}
+
+						if (part.type === "file") {
+							if (part.mimeType?.startsWith("image/") && part.url) {
+								return renderImageContent(part.url, index);
+							}
+							if (part.mimeType?.startsWith("audio/") && part.url) {
+								return renderAudioContent(part.url, part.name, index);
+							}
+							return renderDocumentContent(
+								part.url || "",
+								part.name,
+								index,
+								part.mimeType === "text/markdown",
+							);
+						}
+
+						return null;
+					})}
+				</div>
+			);
+		}
+
+		return (
+			<>
+				{typeof message.content === "string" ? (
+					renderTextContent(
+						message.role,
+						message.content,
+						message.reasoning || {
+							content: thinkingContent,
+							collapsed: true,
+						},
+						message.citations,
+						message.data,
+						handleArtifactOpen,
+					)
+				) : Array.isArray(message.content) ? (
 					<div className="space-y-4">
-						{message.citations && message.citations.length > 0 && (
-							<CitationList citations={message.citations} />
-						)}
-						{message.data?.searchGrounding && (
-							<SearchGroundingSection
-								searchGrounding={message.data.searchGrounding}
-							/>
-						)}
-						{message.reasoning && !hasReasoningPart && (
-							<ReasoningSection reasoning={message.reasoning} />
-						)}
-						{messageParts.map((part, index) => {
-							if (part.type === "text") {
+						{message.content.map((item: MessageContentType, i: number) => {
+							if (item.type === "text" && item.text) {
 								return renderTextContent(
 									message.role,
-									part.text,
-									undefined,
-									undefined,
-									undefined,
-									handleArtifactOpen,
-									`part-text-${index}`,
+									item.text,
+									message.reasoning || {
+										content: thinkingContent,
+										collapsed: true,
+									},
+									message.citations,
+									message.data,
+									onArtifactOpen,
+									`text-${i}`,
 								);
 							}
 
-							if (part.type === "reasoning") {
+							if (item.type === "image_url" && item.image_url) {
+								return renderImageContent(item.image_url.url, i);
+							}
+
+							if (item.type === "audio_url" && item.audio_url) {
+								return renderAudioContent(item.audio_url.url, undefined, i);
+							}
+
+							if (item.type === "input_audio" && item.input_audio) {
+								return renderAudioContent(item.input_audio.data || "", undefined, i);
+							}
+
+							if (item.type === "artifact" && item.artifact) {
+								const artifacts: ArtifactProps[] = Array.isArray(message.content)
+									? message.content
+											.filter(
+												(contentItem) => contentItem.type === "artifact" && contentItem.artifact,
+											)
+											.map((contentItem) => {
+												const artifact = contentItem.artifact;
+												return {
+													identifier: artifact?.identifier || "",
+													type: artifact?.type || "",
+													language: artifact?.language || "",
+													title: artifact?.title || "",
+													content: artifact?.content || "",
+												};
+											})
+									: [];
+
+								const isArtifactCombinable = canCombineArtifacts(artifacts);
+
 								return (
-									<ReasoningSection
-										key={`part-reasoning-${index}`}
-										reasoning={{
-											content: part.text,
-											collapsed: part.collapsed ?? true,
-										}}
+									<ArtifactCallout
+										key={`artifact-item-${item.artifact.identifier}`}
+										identifier={item.artifact.identifier}
+										type={item.artifact.type}
+										language={item.artifact.language}
+										title={item.artifact.title}
+										content={item.artifact.content}
+										onOpen={handleArtifactOpen}
+										isCombinable={isArtifactCombinable}
+										combinableCount={artifacts.length}
 									/>
-								);
-							}
-
-							if (part.type === "tool_use") {
-								return renderToolUsePart(part, index);
-							}
-
-							if (part.type === "tool_result") {
-								return renderToolResultPart(part, index);
-							}
-
-							if (part.type === "snapshot") {
-								return renderSnapshotPart(part, index);
-							}
-
-							if (part.type === "file") {
-								if (part.mimeType?.startsWith("image/") && part.url) {
-									return renderImageContent(part.url, index);
-								}
-								if (part.mimeType?.startsWith("audio/") && part.url) {
-									return renderAudioContent(part.url, part.name, index);
-								}
-								return renderDocumentContent(
-									part.url || "",
-									part.name,
-									index,
-									part.mimeType === "text/markdown",
 								);
 							}
 
 							return null;
 						})}
 					</div>
-				);
-			}
-
-			return (
-				<>
-					{typeof message.content === "string" ? (
-						renderTextContent(
-							message.role,
-							message.content,
-							message.reasoning || {
-								content: thinkingContent,
-								collapsed: true,
-							},
-							message.citations,
-							message.data,
-							handleArtifactOpen,
-						)
-					) : Array.isArray(message.content) ? (
-						<div className="space-y-4">
-							{message.content.map((item: MessageContentType, i: number) => {
-								if (item.type === "text" && item.text) {
-									return renderTextContent(
-										message.role,
-										item.text,
-										message.reasoning || {
-											content: thinkingContent,
-											collapsed: true,
-										},
-										message.citations,
-										message.data,
-										onArtifactOpen,
-										`text-${i}`,
-									);
-								}
-
-								if (item.type === "image_url" && item.image_url) {
-									return renderImageContent(item.image_url.url, i);
-								}
-
-								if (item.type === "audio_url" && item.audio_url) {
-									return renderAudioContent(item.audio_url.url, undefined, i);
-								}
-
-								if (item.type === "input_audio" && item.input_audio) {
-									return renderAudioContent(
-										item.input_audio.data || "",
-										undefined,
-										i,
-									);
-								}
-
-								if (item.type === "artifact" && item.artifact) {
-									const artifacts: ArtifactProps[] = Array.isArray(
-										message.content,
-									)
-										? message.content
-												.filter(
-													(contentItem) =>
-														contentItem.type === "artifact" &&
-														contentItem.artifact,
-												)
-												.map((contentItem) => {
-													const artifact = contentItem.artifact;
-													return {
-														identifier: artifact?.identifier || "",
-														type: artifact?.type || "",
-														language: artifact?.language || "",
-														title: artifact?.title || "",
-														content: artifact?.content || "",
-													};
-												})
-										: [];
-
-									const isArtifactCombinable = canCombineArtifacts(artifacts);
-
-									return (
-										<ArtifactCallout
-											key={`artifact-item-${item.artifact.identifier}`}
-											identifier={item.artifact.identifier}
-											type={item.artifact.type}
-											language={item.artifact.language}
-											title={item.artifact.title}
-											content={item.artifact.content}
-											onOpen={handleArtifactOpen}
-											isCombinable={isArtifactCombinable}
-											combinableCount={artifacts.length}
-										/>
-									);
-								}
-
-								return null;
-							})}
-						</div>
-					) : message.data &&
-					  "attachments" in message.data &&
-					  message.data.attachments ? (
-						<div className="space-y-4">
-							{message.data.attachments.map((attachment: any, i: number) => {
-								if (attachment.type === "image") {
-									return renderImageContent(attachment.url, i);
-								}
-								if (attachment.type === "document") {
-									return renderDocumentContent(
-										attachment.url,
-										attachment.name,
-										i,
-										attachment.isMarkdown,
-									);
-								}
-								if (attachment.type === "audio") {
-									return renderAudioContent(attachment.url, attachment.name, i);
-								}
-								return null;
-							})}
-						</div>
-					) : null}
-				</>
-			);
-		}, [
-			message.role,
-			message.content,
-			message.parts,
-			message.reasoning,
-			message.data,
-			message.citations,
-			onArtifactOpen,
-		]);
-
-		const asyncInvocation = message.data?.asyncInvocation;
-		const isPending = message.status === "in_progress" && asyncInvocation;
-		const isFailed = message.status === "failed";
-		const errorMessage = message.data?.error;
-		const progressHint =
-			asyncInvocation?.contentHints?.progress?.[0]?.text ??
-			asyncInvocation?.contentHints?.placeholder?.[0]?.text;
-		const failureHint = asyncInvocation?.contentHints?.failure?.[0]?.text;
-
-		return (
-			<div className="space-y-3">
-				{isPending && (
-					<div className="flex items-center gap-2 text-sm text-zinc-500 dark:text-zinc-400">
-						<Loader2 className="h-4 w-4 animate-spin" />
-						<span>{progressHint || "Content generation in progress..."}</span>
+				) : message.data && "attachments" in message.data && message.data.attachments ? (
+					<div className="space-y-4">
+						{message.data.attachments.map((attachment: any, i: number) => {
+							if (attachment.type === "image") {
+								return renderImageContent(attachment.url, i);
+							}
+							if (attachment.type === "document") {
+								return renderDocumentContent(
+									attachment.url,
+									attachment.name,
+									i,
+									attachment.isMarkdown,
+								);
+							}
+							if (attachment.type === "audio") {
+								return renderAudioContent(attachment.url, attachment.name, i);
+							}
+							return null;
+						})}
 					</div>
-				)}
-				{isFailed && (
-					<div className="text-sm text-red-500 dark:text-red-400">
-						{failureHint ||
-							errorMessage ||
-							"Generation failed. Please try again."}
-					</div>
-				)}
-				{content}
-			</div>
+				) : null}
+			</>
 		);
-	},
-);
+	}, [
+		message.role,
+		message.content,
+		message.parts,
+		message.reasoning,
+		message.data,
+		message.citations,
+		onArtifactOpen,
+	]);
+
+	const asyncInvocation = message.data?.asyncInvocation;
+	const isPending = message.status === "in_progress" && asyncInvocation;
+	const isFailed = message.status === "failed";
+	const errorMessage = message.data?.error;
+	const progressHint =
+		asyncInvocation?.contentHints?.progress?.[0]?.text ??
+		asyncInvocation?.contentHints?.placeholder?.[0]?.text;
+	const failureHint = asyncInvocation?.contentHints?.failure?.[0]?.text;
+
+	return (
+		<div className="space-y-3">
+			{isPending && (
+				<div className="flex items-center gap-2 text-sm text-zinc-500 dark:text-zinc-400">
+					<Loader2 className="h-4 w-4 animate-spin" />
+					<span>{progressHint || "Content generation in progress..."}</span>
+				</div>
+			)}
+			{isFailed && (
+				<div className="text-sm text-red-500 dark:text-red-400">
+					{failureHint || errorMessage || "Generation failed. Please try again."}
+				</div>
+			)}
+			{content}
+		</div>
+	);
+});

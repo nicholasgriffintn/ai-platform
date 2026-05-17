@@ -1,11 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { CoreChatOptions } from "~/types";
-import type {
-	ValidationContext,
-	Validator,
-	ValidatorResult,
-} from "../ValidationPipeline";
+import type { ValidationContext, Validator, ValidatorResult } from "../ValidationPipeline";
 import { ValidationPipeline } from "../ValidationPipeline";
 
 const mockBasicInputValidator = {
@@ -186,10 +182,7 @@ describe("ValidationPipeline", () => {
 				guardrails: {},
 			});
 
-			expect(mockBasicInputValidator.validate).toHaveBeenCalledWith(
-				baseOptions,
-				baseContext,
-			);
+			expect(mockBasicInputValidator.validate).toHaveBeenCalledWith(baseOptions, baseContext);
 			expect(mockAuthValidator.validate).toHaveBeenCalled();
 			expect(mockModelConfigValidator.validate).toHaveBeenCalled();
 			expect(mockContextLimitValidator.validate).toHaveBeenCalled();
@@ -307,10 +300,7 @@ describe("ValidationPipeline", () => {
 			const result = await pipeline.validate(baseOptions);
 
 			expect(result.validation.isValid).toBe(true);
-			expect(mockBasicInputValidator.validate).toHaveBeenCalledWith(
-				baseOptions,
-				{},
-			);
+			expect(mockBasicInputValidator.validate).toHaveBeenCalledWith(baseOptions, {});
 		});
 
 		it("should merge context from each validator", async () => {
@@ -391,10 +381,8 @@ describe("ValidationPipeline", () => {
 			expect(mockGuardrailsValidator.validate).toHaveBeenCalled();
 			expect(customValidator.validate).toHaveBeenCalled();
 
-			const guardrailsCall =
-				mockGuardrailsValidator.validate.mock.invocationCallOrder[0];
-			const customCall = (customValidator.validate as any).mock
-				.invocationCallOrder[0];
+			const guardrailsCall = mockGuardrailsValidator.validate.mock.invocationCallOrder[0];
+			const customCall = (customValidator.validate as any).mock.invocationCallOrder[0];
 			expect(guardrailsCall).toBeLessThan(customCall);
 		});
 

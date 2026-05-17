@@ -228,9 +228,7 @@ describe("chat utils", () => {
 				{ type: "image", url: "https://example.com/2.jpg" },
 			];
 
-			expect(() =>
-				enforceAttachmentLimits(attachments as any, 10, 1000),
-			).not.toThrow();
+			expect(() => enforceAttachmentLimits(attachments as any, 10, 1000)).not.toThrow();
 		});
 
 		it("should throw error when too many attachments", () => {
@@ -254,9 +252,9 @@ describe("chat utils", () => {
 				},
 			];
 
-			expect(() =>
-				enforceAttachmentLimits(attachments as any, 10, 1024 * 1024),
-			).toThrow("Attachments size too large");
+			expect(() => enforceAttachmentLimits(attachments as any, 10, 1024 * 1024)).toThrow(
+				"Attachments size too large",
+			);
 		});
 
 		it("should use default limits", () => {
@@ -393,8 +391,7 @@ describe("chat utils", () => {
 
 	describe("sanitiseInput", () => {
 		it("should remove instruction formats", () => {
-			const input =
-				"<INST>Do something</INST> and <system>system prompt</system>";
+			const input = "<INST>Do something</INST> and <system>system prompt</system>";
 			const result = sanitiseInput(input);
 
 			expect(result).toBe("Do something and system prompt");
@@ -429,8 +426,7 @@ describe("chat utils", () => {
 		});
 
 		it("should preserve code blocks", () => {
-			const input =
-				"Here is code:\n```javascript\nconst x = {{test}};\n```\nDone";
+			const input = "Here is code:\n```javascript\nconst x = {{test}};\n```\nDone";
 			const result = sanitiseInput(input);
 
 			expect(result).toContain("```javascript\nconst x = {{test}};\n```");

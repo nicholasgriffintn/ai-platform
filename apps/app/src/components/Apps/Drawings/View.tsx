@@ -9,9 +9,7 @@ interface DrawingViewProps {
 }
 
 export function DrawingView({ drawing }: DrawingViewProps) {
-	const [activeTab, setActiveTab] = useState<"original" | "transformed">(
-		"transformed",
-	);
+	const [activeTab, setActiveTab] = useState<"original" | "transformed">("transformed");
 
 	const handleDownload = useCallback(async (url: string, filename: string) => {
 		try {
@@ -57,12 +55,8 @@ export function DrawingView({ drawing }: DrawingViewProps) {
 					size="sm"
 					onClick={() =>
 						handleDownload(
-							activeTab === "transformed"
-								? drawing.paintingUrl
-								: drawing.drawingUrl,
-							`${
-								drawing.description || "drawing"
-							}-${activeTab}-${drawing.id.substring(0, 6)}.png`,
+							activeTab === "transformed" ? drawing.paintingUrl : drawing.drawingUrl,
+							`${drawing.description || "drawing"}-${activeTab}-${drawing.id.substring(0, 6)}.png`,
 						)
 					}
 					icon={<Download size={16} />}
@@ -73,11 +67,7 @@ export function DrawingView({ drawing }: DrawingViewProps) {
 
 			<div className="relative aspect-video w-full bg-zinc-100 dark:bg-zinc-800 rounded-lg overflow-hidden shadow-md">
 				<img
-					src={
-						activeTab === "transformed"
-							? drawing.paintingUrl
-							: drawing.drawingUrl
-					}
+					src={activeTab === "transformed" ? drawing.paintingUrl : drawing.drawingUrl}
 					alt={drawing.description || "Drawing"}
 					className="w-full h-full object-contain"
 				/>

@@ -14,20 +14,11 @@ import { cn } from "~/lib/utils";
 import type { Tool } from "~/state/stores/toolsStore";
 import { useToolsStore } from "~/state/stores/toolsStore";
 
-export const ToolSelector = ({
-	isDisabled = false,
-}: {
-	isDisabled?: boolean;
-}) => {
+export const ToolSelector = ({ isDisabled = false }: { isDisabled?: boolean }) => {
 	const [isOpen, setIsOpen] = useState(false);
 	const { data: toolsData, isLoading } = useTools();
-	const {
-		selectedTools,
-		toggleTool,
-		resetToDefaults,
-		defaultTools,
-		setDefaultTools,
-	} = useToolsStore();
+	const { selectedTools, toggleTool, resetToDefaults, defaultTools, setDefaultTools } =
+		useToolsStore();
 
 	const tools = toolsData || [];
 
@@ -61,8 +52,8 @@ export const ToolSelector = ({
 
 					<div className="space-y-4 py-4">
 						<p className="text-sm text-zinc-600 dark:text-zinc-400">
-							Select which tools to enable for the AI. These tools will be used
-							to enhance the AI's capabilities.
+							Select which tools to enable for the AI. These tools will be used to enhance the AI's
+							capabilities.
 						</p>
 
 						{isLoading ? (
@@ -125,11 +116,7 @@ export const ToolSelector = ({
 							>
 								Reset to defaults
 							</Button>
-							<Button
-								onClick={() => setIsOpen(false)}
-								variant="primary"
-								className="text-sm"
-							>
+							<Button onClick={() => setIsOpen(false)} variant="primary" className="text-sm">
 								Save
 							</Button>
 						</div>

@@ -40,9 +40,7 @@ describe("handleUpdateChatCompletion", () => {
 			requireUser: vi.fn().mockReturnValue(mockUser),
 		};
 
-		vi.mocked(ConversationManager.getInstance).mockReturnValue(
-			mockConversationManager,
-		);
+		vi.mocked(ConversationManager.getInstance).mockReturnValue(mockConversationManager);
 	});
 
 	afterEach(() => {
@@ -87,11 +85,7 @@ describe("handleUpdateChatCompletion", () => {
 
 			mockConversationManager.updateConversation.mockResolvedValue(mockResult);
 
-			const result = await handleUpdateChatCompletion(
-				mockServiceContext,
-				completionId,
-				updates,
-			);
+			const result = await handleUpdateChatCompletion(mockServiceContext, completionId, updates);
 
 			expect(mockConversationManager.updateConversation).toHaveBeenCalledWith(
 				completionId,
@@ -111,11 +105,7 @@ describe("handleUpdateChatCompletion", () => {
 
 			mockConversationManager.updateConversation.mockResolvedValue(mockResult);
 
-			const result = await handleUpdateChatCompletion(
-				mockServiceContext,
-				completionId,
-				updates,
-			);
+			const result = await handleUpdateChatCompletion(mockServiceContext, completionId, updates);
 
 			expect(mockConversationManager.updateConversation).toHaveBeenCalledWith(
 				completionId,
@@ -133,16 +123,9 @@ describe("handleUpdateChatCompletion", () => {
 
 			mockConversationManager.updateConversation.mockResolvedValue(mockResult);
 
-			const result = await handleUpdateChatCompletion(
-				mockServiceContext,
-				"",
-				updates,
-			);
+			const result = await handleUpdateChatCompletion(mockServiceContext, "", updates);
 
-			expect(mockConversationManager.updateConversation).toHaveBeenCalledWith(
-				"",
-				updates,
-			);
+			expect(mockConversationManager.updateConversation).toHaveBeenCalledWith("", updates);
 			expect(result).toEqual(mockResult);
 		});
 	});

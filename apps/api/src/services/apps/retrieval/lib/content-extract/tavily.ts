@@ -1,9 +1,6 @@
 import type { IRequest } from "~/types";
 
-import type {
-	ContentExtractParams,
-	ExtractedContentPayload,
-} from "../../types/content-extract";
+import type { ContentExtractParams, ExtractedContentPayload } from "../../types/content-extract";
 
 export async function extractWithTavily(
 	params: ContentExtractParams,

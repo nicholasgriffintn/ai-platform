@@ -14,8 +14,7 @@ export async function persistFailedRun(params: {
 	error: unknown;
 }): Promise<void> {
 	const { serviceContext, recordId, initialRunData, error } = params;
-	const errorMessage =
-		error instanceof Error ? error.message : "Sandbox execution failed";
+	const errorMessage = error instanceof Error ? error.message : "Sandbox execution failed";
 	const completedAt = new Date().toISOString();
 
 	await serviceContext.repositories.appData.updateAppData(recordId, {
@@ -43,10 +42,7 @@ export async function getPersistedRunData(params: {
 	serviceContext: ServiceContext;
 	recordId: string;
 }): Promise<SandboxRunData | null> {
-	const record =
-		await params.serviceContext.repositories.appData.getAppDataById(
-			params.recordId,
-		);
+	const record = await params.serviceContext.repositories.appData.getAppDataById(params.recordId);
 	if (!record?.data) {
 		return null;
 	}

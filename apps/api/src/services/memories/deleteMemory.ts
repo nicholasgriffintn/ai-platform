@@ -14,10 +14,7 @@ export const handleDeleteMemory = async (
 	const deleted = await memoryManager.deleteMemory(memoryId);
 
 	if (!deleted) {
-		throw new AssistantError(
-			"Memory not found or access denied",
-			ErrorType.NOT_FOUND,
-		);
+		throw new AssistantError("Memory not found or access denied", ErrorType.NOT_FOUND);
 	}
 
 	return {

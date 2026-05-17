@@ -1,8 +1,5 @@
 import type { ConversationManager } from "~/lib/conversationManager";
-import {
-	PermissionChecker,
-	resolveToolPermissions,
-} from "~/lib/permissions/PermissionChecker";
+import { PermissionChecker, resolveToolPermissions } from "~/lib/permissions/PermissionChecker";
 import { ToolRegistry } from "~/lib/tools/ToolRegistry";
 import type { IFunctionResponse, IRequest } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -23,11 +20,7 @@ import { create_speech } from "./speech";
 import { fill_in_middle_completion } from "./fill_in_middle";
 import { next_edit_completion } from "./next_edit";
 import { apply_edit_completion } from "./apply_edit";
-import {
-	delegateToTeamMember,
-	delegateToTeamMemberByRole,
-	getTeamMembers,
-} from "./teamDelegation";
+import { delegateToTeamMember, delegateToTeamMemberByRole, getTeamMembers } from "./teamDelegation";
 import { tutor } from "./tutor";
 import { v0_code_generation } from "./v0_code_generation";
 import { create_video } from "./video";
@@ -123,22 +116,12 @@ for (const fn of functionDefinitions) {
 }
 
 export const listFunctionTools = (): RegisteredFunctionTool[] =>
-	toolRegistry.listDefinitions(
-		FUNCTIONS_TOOL_CATEGORY,
-	) as RegisteredFunctionTool[];
+	toolRegistry.listDefinitions(FUNCTIONS_TOOL_CATEGORY) as RegisteredFunctionTool[];
 
-export const resolveFunctionTool = (
-	functionName: string,
-): RegisteredFunctionTool =>
-	toolRegistry.resolve(
-		FUNCTIONS_TOOL_CATEGORY,
-		functionName,
-	) as RegisteredFunctionTool;
+export const resolveFunctionTool = (functionName: string): RegisteredFunctionTool =>
+	toolRegistry.resolve(FUNCTIONS_TOOL_CATEGORY, functionName) as RegisteredFunctionTool;
 
-export const validateFunctionArgs = (
-	toolDefinition: RegisteredFunctionTool,
-	args: unknown,
-) => {
+export const validateFunctionArgs = (toolDefinition: RegisteredFunctionTool, args: unknown) => {
 	const validation = toolDefinition.inputSchema.safeParse(args);
 
 	if (!validation.success) {
@@ -167,8 +150,7 @@ function hasToolApproval(request: IRequest, functionName: string): boolean {
 	const normalisedTarget = functionName.trim().toLowerCase();
 	return approvedTools.some(
 		(tool): tool is string =>
-			typeof tool === "string" &&
-			tool.trim().toLowerCase() === normalisedTarget,
+			typeof tool === "string" && tool.trim().toLowerCase() === normalisedTarget,
 	);
 }
 
@@ -201,8 +183,7 @@ export const handleFunctions = async ({
 
 		if (!mcpPermissionResult.allowed) {
 			throw new AssistantError(
-				mcpPermissionResult.reason ||
-					`Tool "${functionName}" is not allowed in this mode`,
+				mcpPermissionResult.reason || `Tool "${functionName}" is not allowed in this mode`,
 				ErrorType.AUTHORISATION_ERROR,
 				403,
 				{
@@ -214,8 +195,7 @@ export const handleFunctions = async ({
 
 		if (mcpPermissionResult.requiresApproval && !toolPreApproved) {
 			throw new AssistantError(
-				mcpPermissionResult.reason ||
-					`Tool "${functionName}" requires approval before execution`,
+				mcpPermissionResult.reason || `Tool "${functionName}" requires approval before execution`,
 				ErrorType.AUTHORISATION_ERROR,
 				403,
 				{
@@ -231,13 +211,7 @@ export const handleFunctions = async ({
 			functionName,
 		};
 
-		return handleMCPTool(
-			completion_id,
-			args,
-			request,
-			app_url,
-			conversationManager,
-		);
+		return handleMCPTool(completion_id, args, request, app_url, conversationManager);
 	}
 
 	const foundFunction = resolveFunctionTool(functionName);
@@ -255,11 +229,8 @@ export const handleFunctions = async ({
 			permissionResult.reason === "This tool requires a premium subscription";
 
 		throw new AssistantError(
-			permissionResult.reason ||
-				`Tool "${functionName}" is not allowed in this mode`,
-			isPremiumAccessError
-				? ErrorType.AUTHENTICATION_ERROR
-				: ErrorType.AUTHORISATION_ERROR,
+			permissionResult.reason || `Tool "${functionName}" is not allowed in this mode`,
+			isPremiumAccessError ? ErrorType.AUTHENTICATION_ERROR : ErrorType.AUTHORISATION_ERROR,
 			isPremiumAccessError ? 401 : 403,
 			{
 				toolName: functionName,
@@ -270,8 +241,7 @@ export const handleFunctions = async ({
 
 	if (permissionResult.requiresApproval && !toolPreApproved) {
 		throw new AssistantError(
-			permissionResult.reason ||
-				`Tool "${functionName}" requires approval before execution`,
+			permissionResult.reason || `Tool "${functionName}" requires approval before execution`,
 			ErrorType.AUTHORISATION_ERROR,
 			403,
 			{

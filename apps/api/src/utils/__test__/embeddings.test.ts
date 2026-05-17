@@ -48,8 +48,7 @@ describe("embeddings", () => {
 			expect(
 				result.every(
 					(chunk) =>
-						!chunk.includes(" ") ||
-						chunk.split(" ").every((word) => word.length <= maxChars),
+						!chunk.includes(" ") || chunk.split(" ").every((word) => word.length <= maxChars),
 				),
 			).toBe(true);
 			expect(result.join("")).toBe(text);
@@ -104,8 +103,7 @@ describe("embeddings", () => {
 		});
 
 		it("should handle text with mixed separators", () => {
-			const text =
-				"Line 1\nLine 2 with spaces\nLine 3\n\nDouble newline section";
+			const text = "Line 1\nLine 2 with spaces\nLine 3\n\nDouble newline section";
 			const maxChars = 15;
 
 			const result = chunkText(text, maxChars);

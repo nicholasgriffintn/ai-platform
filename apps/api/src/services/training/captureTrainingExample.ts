@@ -48,8 +48,7 @@ export async function captureTrainingExample(
 		const userId = context.user?.id;
 
 		if (userId) {
-			const userSettings =
-				await context.repositories.userSettings.getUserSettings(userId);
+			const userSettings = await context.repositories.userSettings.getUserSettings(userId);
 
 			if (!userSettings?.tracking_enabled) {
 				return;
@@ -83,12 +82,9 @@ export async function captureTrainingExample(
 					},
 				);
 			} catch (error) {
-				logger.warn(
-					"Failed to generate enhanced metadata, proceeding without it",
-					{
-						error: error instanceof Error ? error.message : String(error),
-					},
-				);
+				logger.warn("Failed to generate enhanced metadata, proceeding without it", {
+					error: error instanceof Error ? error.message : String(error),
+				});
 			}
 		}
 

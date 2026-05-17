@@ -1,21 +1,12 @@
-import type {
-	AudioProvider,
-	AudioSynthesisRequest,
-	AudioSynthesisResult,
-} from "..";
+import type { AudioProvider, AudioSynthesisRequest, AudioSynthesisResult } from "..";
 import { BaseAudioProvider } from "../base";
 import { PollyProvider } from "../../chat/providers/polly";
 
-export class PollyAudioProvider
-	extends BaseAudioProvider
-	implements AudioProvider
-{
+export class PollyAudioProvider extends BaseAudioProvider implements AudioProvider {
 	name = "polly";
 	private readonly provider = new PollyProvider();
 
-	async synthesize(
-		request: AudioSynthesisRequest,
-	): Promise<AudioSynthesisResult> {
+	async synthesize(request: AudioSynthesisRequest): Promise<AudioSynthesisResult> {
 		const storage = this.requireStorage(request);
 		const slugBase = this.resolveSlugBase(request);
 

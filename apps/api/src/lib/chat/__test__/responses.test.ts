@@ -4,10 +4,7 @@ import { getModelConfigByMatchingModel } from "~/lib/providers/models";
 import * as chatCapability from "~/lib/providers/capabilities/chat";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { formatMessages } from "~/utils/messages";
-import {
-	mergeParametersWithDefaults,
-	shouldEnableStreaming,
-} from "~/utils/parameters";
+import { mergeParametersWithDefaults, shouldEnableStreaming } from "~/utils/parameters";
 import { withRetry } from "~/utils/retries";
 import { formatAssistantMessage, getAIResponse } from "../responses";
 
@@ -136,9 +133,7 @@ describe("responses", () => {
 			expect(result.thinking).toBe("I need to respond");
 			expect(result.signature).toBe("sig123");
 			expect(result.citations).toEqual([{ url: "test.com" }]);
-			expect(result.tool_calls).toEqual([
-				{ id: "tool1", function: { name: "test" } },
-			]);
+			expect(result.tool_calls).toEqual([{ id: "tool1", function: { name: "test" } }]);
 			expect(result.finish_reason).toBe("length");
 			expect(result.refusal).toBe("blocked");
 			expect(result.annotations).toEqual([{ note: "x" }]);
@@ -226,9 +221,7 @@ describe("responses", () => {
 			);
 			// @ts-expect-error - mock implementation
 			vi.mocked(chatCapability.getChatProvider).mockReturnValue(mockProvider);
-			vi.mocked(formatMessages).mockReturnValue([
-				{ role: "user", content: "Hello" },
-			]);
+			vi.mocked(formatMessages).mockReturnValue([{ role: "user", content: "Hello" }]);
 			// @ts-expect-error - mock implementation
 			vi.mocked(mergeParametersWithDefaults).mockReturnValue({ ...baseParams });
 			vi.mocked(withRetry).mockImplementation((fn) => fn());
@@ -304,9 +297,7 @@ describe("responses", () => {
 		});
 
 		it("should handle model configuration error", async () => {
-			vi.mocked(getModelConfigByMatchingModel).mockRejectedValue(
-				new Error("Config error"),
-			);
+			vi.mocked(getModelConfigByMatchingModel).mockRejectedValue(new Error("Config error"));
 
 			// @ts-expect-error - test data
 			await expect(getAIResponse(baseParams)).rejects.toThrow(
@@ -357,9 +348,7 @@ describe("responses", () => {
 		});
 
 		it("should handle no messages after filtering", async () => {
-			const messagesWithModes = [
-				{ role: "user", content: "Creative", mode: "creative" },
-			];
+			const messagesWithModes = [{ role: "user", content: "Creative", mode: "creative" }];
 
 			await expect(
 				getAIResponse({
@@ -369,10 +358,7 @@ describe("responses", () => {
 					mode: "normal",
 				}),
 			).rejects.toThrow(
-				new AssistantError(
-					"No valid messages after filtering",
-					ErrorType.PARAMS_ERROR,
-				),
+				new AssistantError("No valid messages after filtering", ErrorType.PARAMS_ERROR),
 			);
 		});
 
@@ -383,10 +369,7 @@ describe("responses", () => {
 
 			// @ts-expect-error - test data
 			await expect(getAIResponse(baseParams)).rejects.toThrow(
-				new AssistantError(
-					"Failed to format messages: Format error",
-					ErrorType.PARAMS_ERROR,
-				),
+				new AssistantError("Failed to format messages: Format error", ErrorType.PARAMS_ERROR),
 			);
 		});
 
@@ -448,10 +431,7 @@ describe("responses", () => {
 
 			// @ts-expect-error - test data
 			await expect(getAIResponse(baseParams)).rejects.toThrow(
-				new AssistantError(
-					"openai error: rate limit exceeded",
-					ErrorType.RATE_LIMIT_ERROR,
-				),
+				new AssistantError("openai error: rate limit exceeded", ErrorType.RATE_LIMIT_ERROR),
 			);
 		});
 
@@ -463,10 +443,7 @@ describe("responses", () => {
 
 			// @ts-expect-error - test data
 			await expect(getAIResponse(baseParams)).rejects.toThrow(
-				new AssistantError(
-					"openai error: unauthorized",
-					ErrorType.AUTHENTICATION_ERROR,
-				),
+				new AssistantError("openai error: unauthorized", ErrorType.AUTHENTICATION_ERROR),
 			);
 		});
 
@@ -478,10 +455,7 @@ describe("responses", () => {
 
 			// @ts-expect-error - test data
 			await expect(getAIResponse(baseParams)).rejects.toThrow(
-				new AssistantError(
-					"openai error: internal server error",
-					ErrorType.PROVIDER_ERROR,
-				),
+				new AssistantError("openai error: internal server error", ErrorType.PROVIDER_ERROR),
 			);
 		});
 
@@ -490,10 +464,7 @@ describe("responses", () => {
 
 			// @ts-expect-error - test data
 			await expect(getAIResponse(baseParams)).rejects.toThrow(
-				new AssistantError(
-					"Provider returned empty response",
-					ErrorType.PROVIDER_ERROR,
-				),
+				new AssistantError("Provider returned empty response", ErrorType.PROVIDER_ERROR),
 			);
 		});
 

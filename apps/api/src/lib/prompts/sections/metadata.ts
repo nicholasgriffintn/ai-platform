@@ -30,8 +30,7 @@ export function buildAssistantMetadataSection({
 	modelConfig,
 	format = "full",
 }: AssistantMetadataSectionOptions): string {
-	const activeModelId =
-		modelId || request.model || modelConfig?.matchingModel || "unknown";
+	const activeModelId = modelId || request.model || modelConfig?.matchingModel || "unknown";
 
 	const builder = new PromptBuilder("<session_metadata>")
 		.addLine()
@@ -46,22 +45,10 @@ export function buildAssistantMetadataSection({
 
 	builder
 		.addLine("</capabilities>")
-		.addLine(
-			`<active_mode>${request.mode ? request.mode : "standard"}</active_mode>`,
-		)
-		.addIf(
-			!!request.platform,
-			`<origin_platform>${request.platform}</origin_platform>`,
-		)
-		.addLine(
-			`<verbosity>${
-				request.text?.verbosity ?? request.verbosity ?? "medium"
-			}</verbosity>`,
-		)
-		.addIf(
-			!!request.lang,
-			`<preferred_language>${request.lang}</preferred_language>`,
-		)
+		.addLine(`<active_mode>${request.mode ? request.mode : "standard"}</active_mode>`)
+		.addIf(!!request.platform, `<origin_platform>${request.platform}</origin_platform>`)
+		.addLine(`<verbosity>${request.text?.verbosity ?? request.verbosity ?? "medium"}</verbosity>`)
+		.addIf(!!request.lang, `<preferred_language>${request.lang}</preferred_language>`)
 		.addLine("</application_info>")
 		.addLine();
 
@@ -81,17 +68,11 @@ export function buildAssistantMetadataSection({
 			.addLine("<model_info>")
 			.addLine(`<model_id>${activeModelId}</model_id>`)
 			.addLine(`<provider>${modelConfig?.provider ?? "unknown"}</provider>`)
-			.addLine(
-				`<context_window>${modelConfig?.contextWindow ?? "unspecified"}</context_window>`,
-			)
-			.addLine(
-				`<max_tokens>${modelConfig?.maxTokens ?? "unspecified"}</max_tokens>`,
-			)
+			.addLine(`<context_window>${modelConfig?.contextWindow ?? "unspecified"}</context_window>`)
+			.addLine(`<max_tokens>${modelConfig?.maxTokens ?? "unspecified"}</max_tokens>`)
 			.addLine(
 				`<enabled_capabilities>${
-					enabledCapabilities.length > 0
-						? enabledCapabilities.join(", ")
-						: "none"
+					enabledCapabilities.length > 0 ? enabledCapabilities.join(", ") : "none"
 				}</enabled_capabilities>`,
 			)
 			.addLine(
@@ -111,29 +92,15 @@ export function buildAssistantMetadataSection({
 		.addLine(
 			`<display_name>${modelConfig?.name ?? modelConfig?.matchingModel ?? activeModelId}</display_name>`,
 		)
+		.addLine(`<input_modalities>${asList(modelConfig?.modalities?.input)}</input_modalities>`)
+		.addLine(`<output_modalities>${asList(modelConfig?.modalities?.output)}</output_modalities>`)
+		.addLine(`<context_window>${modelConfig?.contextWindow ?? "unspecified"}</context_window>`)
+		.addLine(`<max_tokens>${modelConfig?.maxTokens ?? "unspecified"}</max_tokens>`)
 		.addLine(
-			`<input_modalities>${asList(modelConfig?.modalities?.input)}</input_modalities>`,
+			`<knowledge_cutoff>${modelConfig?.knowledgeCutoffDate ?? "unspecified"}</knowledge_cutoff>`,
 		)
-		.addLine(
-			`<output_modalities>${asList(modelConfig?.modalities?.output)}</output_modalities>`,
-		)
-		.addLine(
-			`<context_window>${modelConfig?.contextWindow ?? "unspecified"}</context_window>`,
-		)
-		.addLine(
-			`<max_tokens>${modelConfig?.maxTokens ?? "unspecified"}</max_tokens>`,
-		)
-		.addLine(
-			`<knowledge_cutoff>${
-				modelConfig?.knowledgeCutoffDate ?? "unspecified"
-			}</knowledge_cutoff>`,
-		)
-		.addLine(
-			`<release_date>${modelConfig?.releaseDate ?? "unspecified"}</release_date>`,
-		)
-		.addLine(
-			`<last_updated>${modelConfig?.lastUpdated ?? "unspecified"}</last_updated>`,
-		)
+		.addLine(`<release_date>${modelConfig?.releaseDate ?? "unspecified"}</release_date>`)
+		.addLine(`<last_updated>${modelConfig?.lastUpdated ?? "unspecified"}</last_updated>`)
 		.addLine(
 			`<enabled_capabilities>${
 				enabledCapabilities.length > 0 ? enabledCapabilities.join(", ") : "none"

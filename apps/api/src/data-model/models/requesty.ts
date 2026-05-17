@@ -1,8 +1,5 @@
 import type { ModelConfig } from "~/types";
-import {
-	createModelConfig,
-	createModelConfigObject,
-} from "~/lib/providers/models/utils";
+import { createModelConfig, createModelConfigObject } from "~/lib/providers/models/utils";
 
 const PROVIDER = "requesty";
 
@@ -220,8 +217,7 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("anthropic/claude-opus-4", PROVIDER, {
 		name: "Claude Opus 4",
 		matchingModel: "anthropic/claude-opus-4",
-		description:
-			"Claude's flagship Opus model with exceptional performance across all domains.",
+		description: "Claude's flagship Opus model with exceptional performance across all domains.",
 		knowledgeCutoffDate: "March 31, 2025",
 		releaseDate: "May 22, 2025",
 		lastUpdated: "May 22, 2025",
@@ -298,14 +294,7 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.00125,
 		costPer1kOutputTokens: 0.01,
-		strengths: [
-			"vision",
-			"audio",
-			"analysis",
-			"reasoning",
-			"tool_use",
-			"coding",
-		],
+		strengths: ["vision", "audio", "analysis", "reasoning", "tool_use", "coding"],
 		contextComplexity: 5,
 		reliability: 5,
 		speed: 3,

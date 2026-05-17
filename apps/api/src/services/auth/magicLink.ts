@@ -30,8 +30,7 @@ async function generateMagicLinkToken(
 	email: string,
 	jwtSecret: string,
 ): Promise<{ token: string; nonce: string }> {
-	const expirationTime =
-		Math.floor(Date.now() / 1000) + MAGIC_LINK_EXPIRATION_MINUTES * 60;
+	const expirationTime = Math.floor(Date.now() / 1000) + MAGIC_LINK_EXPIRATION_MINUTES * 60;
 
 	const payload = {
 		userId,
@@ -53,10 +52,7 @@ async function generateMagicLinkToken(
  * @param jwtSecret - The JWT secret
  * @returns The user ID or null if the token is invalid or expired
  */
-async function verifyMagicLinkToken(
-	token: string,
-	jwtSecret: string,
-): Promise<string | null> {
+async function verifyMagicLinkToken(token: string, jwtSecret: string): Promise<string | null> {
 	try {
 		const isValid = await jwt.verify(token, jwtSecret, { algorithm: "HS256" });
 		if (!isValid) {
@@ -67,10 +63,7 @@ async function verifyMagicLinkToken(
 		const { payload } = jwt.decode(token);
 		const magicLinkPayload = payload as MagicLinkPayload;
 
-		if (
-			magicLinkPayload.exp &&
-			magicLinkPayload.exp < Math.floor(Date.now() / 1000)
-		) {
+		if (magicLinkPayload.exp && magicLinkPayload.exp < Math.floor(Date.now() / 1000)) {
 			logger.info("Magic link token expired");
 			return null;
 		}
@@ -97,10 +90,7 @@ export async function requestMagicLink(
 ): Promise<{ token: string; nonce: string }> {
 	const secret = env.EMAIL_JWT_SECRET;
 	if (!secret) {
-		throw new AssistantError(
-			"JWT secret not configured",
-			ErrorType.CONFIGURATION_ERROR,
-		);
+		throw new AssistantError("JWT secret not configured", ErrorType.CONFIGURATION_ERROR);
 	}
 
 	const repositories = new RepositoryManager(env);
@@ -112,28 +102,19 @@ export async function requestMagicLink(
 			const createdUser = await repositories.users.createUser({ email });
 
 			if (!createdUser || !("id" in createdUser)) {
-				throw new AssistantError(
-					"Failed to create user",
-					ErrorType.AUTHENTICATION_ERROR,
-				);
+				throw new AssistantError("Failed to create user", ErrorType.AUTHENTICATION_ERROR);
 			}
 
 			try {
-				await repositories.userSettings.createUserSettings(
-					createdUser.id as number,
-				);
+				await repositories.userSettings.createUserSettings(createdUser.id as number);
 			} catch (settingsError) {
-				logError(
-					"Failed to create user settings during magic link registration",
-					settingsError,
-					{ operation: "createUserSettings" },
-				);
+				logError("Failed to create user settings during magic link registration", settingsError, {
+					operation: "createUserSettings",
+				});
 			}
 
 			try {
-				await repositories.userSettings.createUserProviderSettings(
-					createdUser.id as number,
-				);
+				await repositories.userSettings.createUserProviderSettings(createdUser.id as number);
 			} catch (providerSettingsError) {
 				logError(
 					"Failed to create user provider settings during magic link registration",
@@ -148,15 +129,9 @@ export async function requestMagicLink(
 		}
 	}
 
-	const { token, nonce } = await generateMagicLinkToken(
-		newUser.id.toString(),
-		email,
-		secret,
-	);
+	const { token, nonce } = await generateMagicLinkToken(newUser.id.toString(), email, secret);
 
-	const expiresAt = new Date(
-		Date.now() + MAGIC_LINK_EXPIRATION_MINUTES * 60 * 1000,
-	);
+	const expiresAt = new Date(Date.now() + MAGIC_LINK_EXPIRATION_MINUTES * 60 * 1000);
 	await repositories.magicLinkNonces.createNonce(nonce, newUser.id, expiresAt);
 
 	return { token, nonce };
@@ -165,54 +140,35 @@ export async function requestMagicLink(
 /**
  * Verify magic link: validate token and consume nonce. Returns userId.
  */
-export async function verifyMagicLink(
-	env: IEnv,
-	token: string,
-	nonce: string,
-): Promise<number> {
+export async function verifyMagicLink(env: IEnv, token: string, nonce: string): Promise<number> {
 	const secret = env.EMAIL_JWT_SECRET;
 	if (!secret) {
-		throw new AssistantError(
-			"JWT secret not configured",
-			ErrorType.CONFIGURATION_ERROR,
-		);
+		throw new AssistantError("JWT secret not configured", ErrorType.CONFIGURATION_ERROR);
 	}
 
 	const database = new Database(env);
 	const userIdString = await verifyMagicLinkToken(token, secret);
 
 	if (!userIdString) {
-		throw new AssistantError(
-			"Invalid or expired token/nonce",
-			ErrorType.AUTHENTICATION_ERROR,
-		);
+		throw new AssistantError("Invalid or expired token/nonce", ErrorType.AUTHENTICATION_ERROR);
 	}
 
 	const userId = Number.parseInt(userIdString, 10);
 	if (Number.isNaN(userId)) {
 		logger.error(`Invalid userId parsed from token: ${userIdString}`);
-		throw new AssistantError(
-			"Invalid user identifier in token",
-			ErrorType.INTERNAL_ERROR,
-		);
+		throw new AssistantError("Invalid user identifier in token", ErrorType.INTERNAL_ERROR);
 	}
 
 	const consumed = await database.consumeMagicLinkNonce(nonce, userId);
 
 	if (!consumed) {
-		throw new AssistantError(
-			"Invalid or expired token/nonce",
-			ErrorType.AUTHENTICATION_ERROR,
-		);
+		throw new AssistantError("Invalid or expired token/nonce", ErrorType.AUTHENTICATION_ERROR);
 	}
 
 	const user = await database.repositories.users.getUserById(userId);
 
 	if (!user) {
-		throw new AssistantError(
-			"User not found for valid token",
-			ErrorType.INTERNAL_ERROR,
-		);
+		throw new AssistantError("User not found for valid token", ErrorType.INTERNAL_ERROR);
 	}
 
 	return userId;

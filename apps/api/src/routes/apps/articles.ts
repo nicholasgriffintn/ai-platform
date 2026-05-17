@@ -22,10 +22,7 @@ import { generateArticlesReport } from "~/services/apps/articles/generate-report
 import { getArticleDetails } from "~/services/apps/articles/get-details";
 import { getSourceArticles } from "~/services/apps/articles/get-source-articles";
 import { listArticles } from "~/services/apps/articles/list";
-import {
-	summariseArticle,
-	cleanupArticleSession,
-} from "~/services/apps/articles/summarise";
+import { summariseArticle, cleanupArticleSession } from "~/services/apps/articles/summarise";
 import { extractContent } from "~/services/apps/retrieval/content-extract";
 import type { IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -105,9 +102,7 @@ addRoute(app, "get", "/sources", {
 				return ResponseFactory.error(context, "No article IDs provided", 400);
 			}
 
-			const validIds = ids.filter(
-				(id) => typeof id === "string" && id.trim().length > 0,
-			);
+			const validIds = ids.filter((id) => typeof id === "string" && id.trim().length > 0);
 
 			try {
 				const serviceContext = getServiceContext(context);
@@ -201,9 +196,7 @@ addRoute(app, "post", "/analyse", {
 	middleware: [requirePlan("pro")],
 	handler: async ({ raw }) =>
 		(async (context: Context) => {
-			const body = context.req.valid("json" as never) as z.infer<
-				typeof articleAnalyzeSchema
-			>;
+			const body = context.req.valid("json" as never) as z.infer<typeof articleAnalyzeSchema>;
 			const user = context.get("user") as IUser;
 
 			try {
@@ -261,9 +254,7 @@ addRoute(app, "post", "/summarise", {
 	middleware: [requirePlan("pro")],
 	handler: async ({ raw }) =>
 		(async (context: Context) => {
-			const body = context.req.valid("json" as never) as z.infer<
-				typeof articleSummariseSchema
-			>;
+			const body = context.req.valid("json" as never) as z.infer<typeof articleSummariseSchema>;
 			const user = context.get("user") as IUser;
 
 			try {
@@ -303,8 +294,7 @@ addRoute(app, "post", "/summarise", {
 
 addRoute(app, "post", "/generate-report", {
 	tags: ["apps"],
-	description:
-		"Generates a comparison report from saved articles for a specific session (itemId)",
+	description: "Generates a comparison report from saved articles for a specific session (itemId)",
 	bodySchema: generateArticlesReportSchema,
 	responses: {
 		200: {
@@ -370,8 +360,7 @@ addRoute(app, "post", "/generate-report", {
 
 addRoute(app, "post", "/prepare-rerun/:itemId", {
 	tags: ["apps"],
-	description:
-		"Prepare a session for rerun by cleaning up existing analyses and summaries",
+	description: "Prepare a session for rerun by cleaning up existing analyses and summaries",
 	responses: {
 		200: {
 			description: "Session prepared for rerun",
@@ -445,9 +434,7 @@ addRoute(app, "post", "/extract-content", {
 	middleware: [requirePlan("pro")],
 	handler: async ({ raw }) =>
 		(async (context: Context) => {
-			const body = context.req.valid("json" as never) as z.infer<
-				typeof contentExtractSchema
-			>;
+			const body = context.req.valid("json" as never) as z.infer<typeof contentExtractSchema>;
 			const user = context.get("user") as IUser;
 
 			try {
@@ -464,17 +451,11 @@ addRoute(app, "post", "/extract-content", {
 				);
 
 				if (extractResult.status === "error") {
-					return ResponseFactory.error(
-						context,
-						"Failed to extract content",
-						400,
-					);
+					return ResponseFactory.error(context, "Failed to extract content", 400);
 				}
 
 				const content =
-					extractResult.data?.extracted.results.map(
-						(result) => result.raw_content,
-					) || [];
+					extractResult.data?.extracted.results.map((result) => result.raw_content) || [];
 
 				const failedUrls = extractResult.data?.extracted.failed_results || [];
 

@@ -181,15 +181,8 @@ export const NoteEditorToolbar = memo(function NoteEditorToolbar({
 						},
 						{
 							id: "transcription",
-							icon: (
-								<Mic
-									size={16}
-									className={isSpeechDetected ? "animate-pulse" : ""}
-								/>
-							),
-							label: isTranscribing
-								? "Stop transcription"
-								: "Start transcription",
+							icon: <Mic size={16} className={isSpeechDetected ? "animate-pulse" : ""} />,
+							label: isTranscribing ? "Stop transcription" : "Start transcription",
 							onClick: onTranscriptionToggle,
 							variant: isTranscribing
 								? isSpeechDetected
@@ -202,8 +195,7 @@ export const NoteEditorToolbar = memo(function NoteEditorToolbar({
 								: "default",
 							className: cn(
 								isTranscribing &&
-									(transcriptionStatus === "connecting" ||
-										transcriptionStatus === "reconnecting")
+									(transcriptionStatus === "connecting" || transcriptionStatus === "reconnecting")
 									? "animate-pulse"
 									: "",
 							),
@@ -242,11 +234,7 @@ export const NoteEditorToolbar = memo(function NoteEditorToolbar({
 						},
 						{
 							id: "fullscreen",
-							icon: isFullBleed ? (
-								<Minimize2 size={16} />
-							) : (
-								<Maximize2 size={16} />
-							),
+							icon: isFullBleed ? <Minimize2 size={16} /> : <Maximize2 size={16} />,
 							label: "Toggle full screen mode",
 							onClick: onToggleFullBleed || (() => {}),
 						},

@@ -15,10 +15,7 @@ export const queryEmbeddings = async (req: any): Promise<any> => {
 		const { query, namespace } = request.query;
 
 		if (!query) {
-			throw new AssistantError(
-				"Missing query from request",
-				ErrorType.PARAMS_ERROR,
-			);
+			throw new AssistantError("Missing query from request", ErrorType.PARAMS_ERROR);
 		}
 
 		const repositories = new RepositoryManager(env);
@@ -40,10 +37,7 @@ export const queryEmbeddings = async (req: any): Promise<any> => {
 				namespace: finalNamespace,
 			});
 		} catch (searchError: unknown) {
-			if (
-				searchError instanceof AssistantError &&
-				searchError.type === ErrorType.NOT_FOUND
-			) {
+			if (searchError instanceof AssistantError && searchError.type === ErrorType.NOT_FOUND) {
 				logger.info("No matches found for query", {
 					query,
 					namespace: finalNamespace,

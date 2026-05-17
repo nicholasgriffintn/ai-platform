@@ -26,8 +26,7 @@ export const useUIStore = create<UIStore>()(
 			showLoginModal: false,
 			setShowLoginModal: (showLoginModal) => set({ showLoginModal }),
 			showKeyboardShortcuts: false,
-			setShowKeyboardShortcuts: (showKeyboardShortcuts) =>
-				set({ showKeyboardShortcuts }),
+			setShowKeyboardShortcuts: (showKeyboardShortcuts) => set({ showKeyboardShortcuts }),
 		}),
 		{
 			name: "ui-store",

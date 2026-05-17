@@ -10,9 +10,7 @@ export class DatasetFormatter {
 		examples: TrainingExample[],
 		trainRatio: number = 0.8,
 	): { train: TrainingExample[]; validation: TrainingExample[] } {
-		logger.info(
-			`Splitting ${examples.length} examples (${trainRatio * 100}% train)`,
-		);
+		logger.info(`Splitting ${examples.length} examples (${trainRatio * 100}% train)`);
 
 		const shuffled = [...examples];
 		for (let i = shuffled.length - 1; i > 0; i--) {
@@ -24,9 +22,7 @@ export class DatasetFormatter {
 		const train = shuffled.slice(0, trainCount);
 		const validation = shuffled.slice(trainCount);
 
-		logger.success(
-			`Split complete: ${train.length} train, ${validation.length} validation`,
-		);
+		logger.success(`Split complete: ${train.length} train, ${validation.length} validation`);
 
 		return { train, validation };
 	}
@@ -126,12 +122,8 @@ export class DatasetFormatter {
 		writeFileSync(trainPath, trainJSONL, "utf-8");
 		writeFileSync(validationPath, validationJSONL, "utf-8");
 
-		logger.success(
-			`Saved training set: ${trainPath} (${train.length} examples)`,
-		);
-		logger.success(
-			`Saved validation set: ${validationPath} (${validation.length} examples)`,
-		);
+		logger.success(`Saved training set: ${trainPath} (${train.length} examples)`);
+		logger.success(`Saved validation set: ${validationPath} (${validation.length} examples)`);
 
 		return { trainPath, validationPath };
 	}
@@ -160,8 +152,7 @@ export class DatasetFormatter {
 
 			if (complexityMatch) {
 				const complexity = complexityMatch[1];
-				complexityDistribution[complexity] =
-					(complexityDistribution[complexity] || 0) + 1;
+				complexityDistribution[complexity] = (complexityDistribution[complexity] || 0) + 1;
 			}
 
 			const totalText = example.messages

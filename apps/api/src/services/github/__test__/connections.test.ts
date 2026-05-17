@@ -71,16 +71,9 @@ describe("github connections", () => {
 			},
 		} as unknown as ServiceContext;
 
-		const connection = await getGitHubAppConnectionForUserRepo(
-			context,
-			USER_ID,
-			"owner/repo",
-		);
+		const connection = await getGitHubAppConnectionForUserRepo(context, USER_ID, "owner/repo");
 
-		expect(getAppDataByUserAndApp).toHaveBeenCalledWith(
-			USER_ID,
-			GITHUB_CONNECTION_APP_ID,
-		);
+		expect(getAppDataByUserAndApp).toHaveBeenCalledWith(USER_ID, GITHUB_CONNECTION_APP_ID);
 		expect(connection).toMatchObject({
 			appId: "123456",
 			privateKey: "line1\nline2",
@@ -106,15 +99,9 @@ describe("github connections", () => {
 			},
 		} as unknown as ServiceContext;
 
-		const connection = await getGitHubAppConnectionForInstallation(
-			context,
-			3001,
-		);
+		const connection = await getGitHubAppConnectionForInstallation(context, 3001);
 
-		expect(getAppDataByAppAndItemId).toHaveBeenCalledWith(
-			GITHUB_CONNECTION_APP_ID,
-			"3001",
-		);
+		expect(getAppDataByAppAndItemId).toHaveBeenCalledWith(GITHUB_CONNECTION_APP_ID, "3001");
 		expect(connection).toMatchObject({
 			appId: "123456",
 			installationId: 3001,
@@ -139,11 +126,7 @@ describe("github connections", () => {
 			},
 		} as unknown as ServiceContext;
 
-		const connection = await getGitHubAppConnectionForUserInstallation(
-			context,
-			USER_ID,
-			8001,
-		);
+		const connection = await getGitHubAppConnectionForUserInstallation(context, USER_ID, 8001);
 
 		expect(getAppDataByUserAppAndItem).toHaveBeenCalledWith(
 			USER_ID,
@@ -220,9 +203,7 @@ describe("github connections", () => {
 			},
 		} as unknown as ServiceContext;
 
-		await expect(
-			listGitHubAppConnectionsForUser(context, USER_ID),
-		).rejects.toMatchObject({
+		await expect(listGitHubAppConnectionsForUser(context, USER_ID)).rejects.toMatchObject({
 			message:
 				"GitHub App connection could not be decrypted. Reconnect the GitHub App installation.",
 			type: ErrorType.CONFLICT_ERROR,
@@ -247,8 +228,8 @@ describe("github connections", () => {
 			},
 		} as unknown as ServiceContext;
 
-		await expect(
-			getGitHubAppConnectionForInstallation(context, 3001),
-		).rejects.toThrow("JWT secret not configured");
+		await expect(getGitHubAppConnectionForInstallation(context, 3001)).rejects.toThrow(
+			"JWT secret not configured",
+		);
 	});
 });

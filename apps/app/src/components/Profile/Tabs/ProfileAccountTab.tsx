@@ -68,9 +68,7 @@ export function ProfileAccountTab() {
 					<h2 className="text-xl font-semibold text-zinc-800 dark:text-zinc-100">
 						{user?.name || "Your Account"}
 					</h2>
-					{user?.email && (
-						<p className="text-zinc-500 dark:text-zinc-400">{user?.email}</p>
-					)}
+					{user?.email && <p className="text-zinc-500 dark:text-zinc-400">{user?.email}</p>}
 					{user?.github_username && (
 						<p className="text-zinc-500 dark:text-zinc-400">
 							<a
@@ -96,9 +94,7 @@ export function ProfileAccountTab() {
 							<div className="space-y-3">
 								{user?.created_at && (
 									<div className="flex justify-between">
-										<span className="text-zinc-500 dark:text-zinc-400">
-											Member since
-										</span>
+										<span className="text-zinc-500 dark:text-zinc-400">Member since</span>
 										<span className="text-zinc-800 dark:text-zinc-200">
 											{formatDate(user?.created_at)}
 										</span>
@@ -112,22 +108,14 @@ export function ProfileAccountTab() {
 								</div>
 								{user?.company && (
 									<div className="flex justify-between">
-										<span className="text-zinc-500 dark:text-zinc-400">
-											Company
-										</span>
-										<span className="text-zinc-800 dark:text-zinc-200">
-											{user.company}
-										</span>
+										<span className="text-zinc-500 dark:text-zinc-400">Company</span>
+										<span className="text-zinc-800 dark:text-zinc-200">{user.company}</span>
 									</div>
 								)}
 								{user?.location && (
 									<div className="flex justify-between">
-										<span className="text-zinc-500 dark:text-zinc-400">
-											Location
-										</span>
-										<span className="text-zinc-800 dark:text-zinc-200">
-											{user.location}
-										</span>
+										<span className="text-zinc-500 dark:text-zinc-400">Location</span>
+										<span className="text-zinc-800 dark:text-zinc-200">{user.location}</span>
 									</div>
 								)}
 							</div>
@@ -136,12 +124,8 @@ export function ProfileAccountTab() {
 
 					{user?.bio && (
 						<div className="pt-4">
-							<h3 className="text-lg font-medium text-zinc-800 dark:text-zinc-100 mb-4">
-								Bio
-							</h3>
-							<p className="text-zinc-700 dark:text-zinc-300 whitespace-pre-line">
-								{user.bio}
-							</p>
+							<h3 className="text-lg font-medium text-zinc-800 dark:text-zinc-100 mb-4">Bio</h3>
+							<p className="text-zinc-700 dark:text-zinc-300 whitespace-pre-line">{user.bio}</p>
 						</div>
 					)}
 
@@ -152,11 +136,7 @@ export function ProfileAccountTab() {
 									Website
 								</h3>
 								<a
-									href={
-										user.site.startsWith("http")
-											? user.site
-											: `https://${user.site}`
-									}
+									href={user.site.startsWith("http") ? user.site : `https://${user.site}`}
 									target="_blank"
 									rel="noopener noreferrer"
 									className="text-zinc-700 dark:text-zinc-300"
@@ -185,9 +165,7 @@ export function ProfileAccountTab() {
 
 					<div className="border-t border-zinc-200 dark:border-zinc-700 pt-4 mt-6" />
 
-					<h2 className="text-2xl font-bold text-zinc-800 dark:text-zinc-100 mb-6">
-						Usage
-					</h2>
+					<h2 className="text-2xl font-bold text-zinc-800 dark:text-zinc-100 mb-6">Usage</h2>
 
 					<div className="space-y-6">
 						<div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
@@ -208,9 +186,7 @@ export function ProfileAccountTab() {
 									Last Activity
 								</h3>
 								<div className="text-zinc-700 dark:text-zinc-300 text-2xl font-medium">
-									{user?.last_active_at
-										? formatDate(user.last_active_at)
-										: "Never"}
+									{user?.last_active_at ? formatDate(user.last_active_at) : "Never"}
 								</div>
 								<div className="text-zinc-500 dark:text-zinc-400 text-sm">
 									Last time you used the platform
@@ -231,8 +207,7 @@ export function ProfileAccountTab() {
 											Standard Usage
 										</div>
 										<div className="text-zinc-700 dark:text-zinc-300 text-sm">
-											{user?.daily_message_count || 0} /{" "}
-											{AUTH_DAILY_MESSAGE_LIMIT}
+											{user?.daily_message_count || 0} / {AUTH_DAILY_MESSAGE_LIMIT}
 										</div>
 									</div>
 
@@ -264,8 +239,7 @@ export function ProfileAccountTab() {
 												Premium Usage
 											</div>
 											<div className="text-zinc-700 dark:text-zinc-300 text-sm">
-												{user?.daily_pro_message_count || 0} /{" "}
-												{DAILY_LIMIT_PRO_MODELS}
+												{user?.daily_pro_message_count || 0} / {DAILY_LIMIT_PRO_MODELS}
 											</div>
 										</div>
 
@@ -327,9 +301,9 @@ export function ProfileAccountTab() {
 								<Alert variant="info">
 									<AlertTitle>Function Call Usage</AlertTitle>
 									<AlertDescription>
-										Please note that when messages trigger a function call they
-										are counted as additional usage against your normal or
-										premium limits, depending on the function that was called.
+										Please note that when messages trigger a function call they are counted as
+										additional usage against your normal or premium limits, depending on the
+										function that was called.
 									</AlertDescription>
 								</Alert>
 							</div>

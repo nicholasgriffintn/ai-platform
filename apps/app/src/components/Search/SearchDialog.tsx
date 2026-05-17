@@ -40,25 +40,20 @@ export const SearchDialog = ({ isOpen, onClose }: SearchDialogProps) => {
 	}, [isOpen]);
 
 	const filteredChats =
-		chats?.filter((chat) =>
-			chat.title?.toLowerCase().includes(searchQuery.toLowerCase()),
-		) || [];
+		chats?.filter((chat) => chat.title?.toLowerCase().includes(searchQuery.toLowerCase())) || [];
 
 	useEffect(() => {
 		setFocusedIndex(-1);
 	}, []);
 
-	const totalItems = searchQuery
-		? filteredChats.length + 1
-		: filteredChats.length;
+	const totalItems = searchQuery ? filteredChats.length + 1 : filteredChats.length;
 
 	const handleSelectChat = (chatId: string) => {
 		const selectedChat = filteredChats.find((chat) => chat.id === chatId);
 		trackFeatureUsage("search_result_selected", {
 			query_length: searchQuery.length,
 			had_query: searchQuery.length > 0,
-			result_position:
-				filteredChats.findIndex((chat) => chat.id === chatId) + 1,
+			result_position: filteredChats.findIndex((chat) => chat.id === chatId) + 1,
 			total_results: filteredChats.length,
 			selection_method: "click",
 			chat_title: selectedChat?.title || "Untitled chat",
@@ -75,11 +70,7 @@ export const SearchDialog = ({ isOpen, onClose }: SearchDialogProps) => {
 			return;
 		}
 
-		if (
-			e.target === inputRef.current &&
-			e.key !== "Enter" &&
-			e.key !== "ArrowDown"
-		) {
+		if (e.target === inputRef.current && e.key !== "Enter" && e.key !== "ArrowDown") {
 			return;
 		}
 
@@ -113,11 +104,7 @@ export const SearchDialog = ({ isOpen, onClose }: SearchDialogProps) => {
 	};
 
 	return (
-		<Dialog
-			open={isOpen}
-			onOpenChange={(open) => !open && onClose()}
-			width="max-w-md"
-		>
+		<Dialog open={isOpen} onOpenChange={(open) => !open && onClose()} width="max-w-md">
 			<DialogContent className="p-2">
 				<div className="p-2" onKeyDown={handleKeyDown}>
 					<div className="relative mb-4">
@@ -170,9 +157,7 @@ export const SearchDialog = ({ isOpen, onClose }: SearchDialogProps) => {
 											onClick={() => handleSelectChat(chat.id || "")}
 											onMouseEnter={() => setFocusedIndex(itemIndex)}
 										>
-											<span className="truncate">
-												{chat.title || "Untitled chat"}
-											</span>
+											<span className="truncate">{chat.title || "Untitled chat"}</span>
 										</Button>
 									);
 								})}

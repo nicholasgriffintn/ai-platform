@@ -1,8 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import {
-	SANDBOX_RUN_DISPATCH_TASK_TYPE,
-	type TaskType,
-} from "@assistant/schemas";
+import { SANDBOX_RUN_DISPATCH_TASK_TYPE, type TaskType } from "@assistant/schemas";
 
 import { TaskExecutor } from "../TaskExecutor";
 import type { TaskHandler } from "../TaskHandler";
@@ -50,10 +47,7 @@ describe("TaskExecutor", () => {
 		const handler: TaskHandler = {
 			handle: vi.fn().mockResolvedValue({ status: "success" }),
 		};
-		const executor = new TaskExecutor(
-			{} as any,
-			new Map([["memory_synthesis", handler]]),
-		);
+		const executor = new TaskExecutor({} as any, new Map([["memory_synthesis", handler]]));
 
 		await executor.execute(createTaskMessage("memory_synthesis"));
 
@@ -98,10 +92,7 @@ describe("TaskExecutor", () => {
 		const handler: TaskHandler = {
 			handle: vi.fn().mockResolvedValue({ status: "success" }),
 		};
-		const executor = new TaskExecutor(
-			{} as any,
-			new Map([["usage_update", handler]]),
-		);
+		const executor = new TaskExecutor({} as any, new Map([["usage_update", handler]]));
 
 		await executor.execute(createTaskMessage("invalid_type"));
 
@@ -111,8 +102,7 @@ describe("TaskExecutor", () => {
 			"task-1",
 			expect.objectContaining({
 				status: "cancelled",
-				error_message:
-					"Task type invalid_type has no feature-flag configuration",
+				error_message: "Task type invalid_type has no feature-flag configuration",
 			}),
 		);
 	});

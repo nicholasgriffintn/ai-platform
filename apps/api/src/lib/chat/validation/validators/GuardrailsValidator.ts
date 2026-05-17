@@ -14,10 +14,7 @@ const logger = getLogger({
 });
 
 export class GuardrailsValidator implements Validator {
-	async validate(
-		options: CoreChatOptions,
-		context: ValidationContext,
-	): Promise<ValidatorResult> {
+	async validate(options: CoreChatOptions, context: ValidationContext): Promise<ValidatorResult> {
 		const { env, user, completion_id } = options;
 		const requestCache = options.context?.requestCache;
 
@@ -38,10 +35,8 @@ export class GuardrailsValidator implements Validator {
 				userSettings = await options.context.getUserSettings();
 			} else if (user?.id) {
 				const repositories = new RepositoryManager(env);
-				userSettings = await memoizeRequest(
-					requestCache,
-					`user-settings:${user.id}`,
-					() => repositories.userSettings.getUserSettings(user.id),
+				userSettings = await memoizeRequest(requestCache, `user-settings:${user.id}`, () =>
+					repositories.userSettings.getUserSettings(user.id),
 				);
 			}
 
@@ -61,8 +56,7 @@ export class GuardrailsValidator implements Validator {
 					validation: {
 						isValid: false,
 						error:
-							inputValidation?.rawResponse?.blockedResponse ||
-							"Input did not pass safety checks",
+							inputValidation?.rawResponse?.blockedResponse || "Input did not pass safety checks",
 						violations: inputValidation?.violations,
 						rawViolations: inputValidation?.rawResponse,
 						validationType: "input",

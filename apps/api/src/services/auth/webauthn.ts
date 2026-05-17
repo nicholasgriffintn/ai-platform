@@ -46,15 +46,11 @@ export async function getWebAuthnChallenge(
 		let challengeRecord;
 
 		if (challenge && userId) {
-			challengeRecord = await repositories.webAuthn.getChallenge(
-				challenge,
-				userId,
-			);
+			challengeRecord = await repositories.webAuthn.getChallenge(challenge, userId);
 		} else if (challenge) {
 			challengeRecord = await repositories.webAuthn.getChallenge(challenge);
 		} else if (userId) {
-			challengeRecord =
-				await repositories.webAuthn.getChallengeByUserId(userId);
+			challengeRecord = await repositories.webAuthn.getChallengeByUserId(userId);
 		}
 
 		if (!challengeRecord?.challenge) {
@@ -70,10 +66,7 @@ export async function getWebAuthnChallenge(
 			throw error;
 		}
 		logger.error("Error getting WebAuthn challenge:", { error });
-		throw new AssistantError(
-			"Failed to retrieve WebAuthn challenge",
-			ErrorType.UNKNOWN_ERROR,
-		);
+		throw new AssistantError("Failed to retrieve WebAuthn challenge", ErrorType.UNKNOWN_ERROR);
 	}
 }
 
@@ -111,10 +104,7 @@ export async function registerPasskey(
 		);
 	} catch (error) {
 		logger.error("Error registering passkey:", { error });
-		throw new AssistantError(
-			"Failed to register passkey",
-			ErrorType.UNKNOWN_ERROR,
-		);
+		throw new AssistantError("Failed to register passkey", ErrorType.UNKNOWN_ERROR);
 	}
 }
 
@@ -138,8 +128,7 @@ export async function getPasskeyWithUser(
 	user: Partial<User>;
 } | null> {
 	try {
-		const result =
-			await repositories.webAuthn.getPasskeyByCredentialId(credentialId);
+		const result = await repositories.webAuthn.getPasskeyByCredentialId(credentialId);
 
 		if (!result) {
 			return null;
@@ -182,17 +171,11 @@ export async function deletePasskey(
 	userId: number,
 ): Promise<boolean> {
 	try {
-		const success = await repositories.webAuthn.deletePasskey(
-			passkeyId,
-			userId,
-		);
+		const success = await repositories.webAuthn.deletePasskey(passkeyId, userId);
 		return success;
 	} catch (error) {
 		logger.error("Error deleting passkey:", { error });
-		throw new AssistantError(
-			"Failed to delete passkey",
-			ErrorType.UNKNOWN_ERROR,
-		);
+		throw new AssistantError("Failed to delete passkey", ErrorType.UNKNOWN_ERROR);
 	}
 }
 
@@ -204,10 +187,7 @@ export async function generatePasskeyRegistrationOptions(
 ): Promise<PublicKeyCredentialCreationOptionsJSON> {
 	try {
 		if (!user.id) {
-			throw new AssistantError(
-				"User ID is required",
-				ErrorType.AUTHENTICATION_ERROR,
-			);
+			throw new AssistantError("User ID is required", ErrorType.AUTHENTICATION_ERROR);
 		}
 
 		const existingCredentials = await getUserPasskeys(repositories, user.id);
@@ -258,11 +238,7 @@ export async function verifyAndRegisterPasskey(
 	expectedRPID: string,
 ): Promise<boolean> {
 	try {
-		const challenge = await getWebAuthnChallenge(
-			repositories,
-			undefined,
-			user.id,
-		);
+		const challenge = await getWebAuthnChallenge(repositories, undefined, user.id);
 
 		const verification = await verifyRegistrationResponse({
 			response,
@@ -284,9 +260,7 @@ export async function verifyAndRegisterPasskey(
 			);
 
 			if (duplicateCredential) {
-				logger.warn(
-					`Attempt to register duplicate credential ID: ${credentialId}`,
-				);
+				logger.warn(`Attempt to register duplicate credential ID: ${credentialId}`);
 				throw new AssistantError(
 					"This passkey is already registered",
 					ErrorType.AUTHENTICATION_ERROR,
@@ -305,10 +279,7 @@ export async function verifyAndRegisterPasskey(
 				);
 			} catch (err) {
 				logger.error("Database error during passkey registration:", { err });
-				throw new AssistantError(
-					"Failed to save passkey to database",
-					ErrorType.UNKNOWN_ERROR,
-				);
+				throw new AssistantError("Failed to save passkey to database", ErrorType.UNKNOWN_ERROR);
 			}
 
 			await deleteWebAuthnChallenge(repositories, challenge, user.id);
@@ -358,16 +329,10 @@ export async function verifyPasskeyAuthentication(
 	try {
 		const credentialID = response.id;
 
-		const passkeyWithUser = await getPasskeyWithUser(
-			repositories,
-			credentialID,
-		);
+		const passkeyWithUser = await getPasskeyWithUser(repositories, credentialID);
 
 		if (!passkeyWithUser) {
-			throw new AssistantError(
-				"Authenticator not registered",
-				ErrorType.AUTHENTICATION_ERROR,
-			);
+			throw new AssistantError("Authenticator not registered", ErrorType.AUTHENTICATION_ERROR);
 		}
 
 		const { credential, user } = passkeyWithUser;
@@ -378,22 +343,14 @@ export async function verifyPasskeyAuthentication(
 		clientData = safeParseJson(clientDataText);
 		if (!clientData) {
 			logger.error("Failed to parse client data", { error: clientDataText });
-			throw new AssistantError(
-				"Failed to parse client data",
-				ErrorType.AUTHENTICATION_ERROR,
-			);
+			throw new AssistantError("Failed to parse client data", ErrorType.AUTHENTICATION_ERROR);
 		}
 		const challengeFromClient = clientData.challenge;
 
-		const expectedChallenge = await getWebAuthnChallenge(
-			repositories,
-			challengeFromClient,
-		);
+		const expectedChallenge = await getWebAuthnChallenge(repositories, challengeFromClient);
 
 		const publicKeyString = credential.public_key as string;
-		const publicKeyBytes = decodeBase64Url(
-			publicKeyString,
-		) as Uint8Array<ArrayBuffer>;
+		const publicKeyBytes = decodeBase64Url(publicKeyString) as Uint8Array<ArrayBuffer>;
 
 		const verification = await verifyAuthenticationResponse({
 			response,
@@ -411,11 +368,7 @@ export async function verifyPasskeyAuthentication(
 		const { verified, authenticationInfo } = verification;
 
 		if (verified) {
-			await updatePasskeyCounter(
-				repositories,
-				credentialID,
-				authenticationInfo.newCounter,
-			);
+			await updatePasskeyCounter(repositories, credentialID, authenticationInfo.newCounter);
 
 			await deleteWebAuthnChallenge(repositories, expectedChallenge);
 
@@ -428,9 +381,6 @@ export async function verifyPasskeyAuthentication(
 		if (error instanceof AssistantError) {
 			throw error;
 		}
-		throw new AssistantError(
-			"WebAuthn authentication failed",
-			ErrorType.AUTHENTICATION_ERROR,
-		);
+		throw new AssistantError("WebAuthn authentication failed", ErrorType.AUTHENTICATION_ERROR);
 	}
 }

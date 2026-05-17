@@ -12,10 +12,7 @@ const freeUserRequest: IRequest = {
 	user: { id: 2, plan_id: "free" } as any,
 };
 
-const createToolContext = (
-	request: IRequest,
-	completionId = "completion_id",
-) => ({
+const createToolContext = (request: IRequest, completionId = "completion_id") => ({
 	completionId,
 	env: request.env,
 	user: request.user,
@@ -32,9 +29,7 @@ describe("search_functions", () => {
 		expect(result.status).toBe("success");
 		expect(result.data?.results).toBeDefined();
 		expect(result.data?.results.length).toBeGreaterThan(0);
-		expect(
-			result.data?.results.some((r: any) => r.name === "get_weather"),
-		).toBe(true);
+		expect(result.data?.results.some((r: any) => r.name === "get_weather")).toBe(true);
 	});
 
 	it("finds functions by description keywords", async () => {
@@ -46,9 +41,7 @@ describe("search_functions", () => {
 		expect(result.status).toBe("success");
 		expect(result.data?.results).toBeDefined();
 		expect(result.data?.results.length).toBeGreaterThan(0);
-		expect(result.data?.results.some((r: any) => r.name === "web_search")).toBe(
-			true,
-		);
+		expect(result.data?.results.some((r: any) => r.name === "web_search")).toBe(true);
 	});
 
 	it("limits results based on limit parameter", async () => {
@@ -68,9 +61,7 @@ describe("search_functions", () => {
 		);
 
 		expect(result.status).toBe("success");
-		const premiumResults = result.data?.results.filter(
-			(r: any) => r.type === "premium",
-		);
+		const premiumResults = result.data?.results.filter((r: any) => r.type === "premium");
 		expect(premiumResults?.length).toBe(0);
 	});
 
@@ -81,9 +72,7 @@ describe("search_functions", () => {
 		);
 
 		expect(result.status).toBe("success");
-		const researchFunc = result.data?.results.find(
-			(r: any) => r.name === "research",
-		);
+		const researchFunc = result.data?.results.find((r: any) => r.name === "research");
 		if (researchFunc) {
 			expect(researchFunc.available).toBe(false);
 		}
@@ -136,10 +125,7 @@ describe("get_function_schema", () => {
 
 	it("throws error for empty function name", async () => {
 		await expect(
-			get_function_schema.execute(
-				{ function_name: "" },
-				createToolContext(baseRequest),
-			),
+			get_function_schema.execute({ function_name: "" }, createToolContext(baseRequest)),
 		).rejects.toThrow();
 	});
 });

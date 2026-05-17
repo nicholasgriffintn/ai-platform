@@ -1,8 +1,5 @@
 import type { InputSchemaInputSchemaDescriptor, ModelConfig } from "~/types";
-import {
-	createModelConfig,
-	createModelConfigObject,
-} from "~/lib/providers/models/utils";
+import { createModelConfig, createModelConfigObject } from "~/lib/providers/models/utils";
 
 const PROVIDER = "workers-ai";
 
@@ -321,14 +318,7 @@ export const workersAiModelConfig: ModelConfig = createModelConfigObject([
 					type: "string",
 					description: "Resolution and aspect ratio",
 					default: "1280:720",
-					enum: [
-						"1280:720",
-						"720:1280",
-						"1104:832",
-						"960:960",
-						"832:1104",
-						"1584:672",
-					],
+					enum: ["1280:720", "720:1280", "1104:832", "960:960", "832:1104", "1584:672"],
 					required: true,
 				},
 				{
@@ -359,9 +349,7 @@ export const workersAiModelConfig: ModelConfig = createModelConfigObject([
 					description: "First frame image",
 					required: true,
 				},
-				...hailuo23InputSchema.fields.filter(
-					(field) => field.name !== "first_frame_image",
-				),
+				...hailuo23InputSchema.fields.filter((field) => field.name !== "first_frame_image"),
 			],
 		},
 	}),

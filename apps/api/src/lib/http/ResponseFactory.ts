@@ -23,19 +23,11 @@ export interface PaginatedResponse<T = unknown> {
 }
 
 export class ResponseFactory {
-	static success<T>(
-		context: Context,
-		data: T,
-		statusCode: ContentfulStatusCode = 200,
-	) {
+	static success<T>(context: Context, data: T, statusCode: ContentfulStatusCode = 200) {
 		return context.json(data, statusCode);
 	}
 
-	static error(
-		context: Context,
-		message: string,
-		statusCode: ContentfulStatusCode = 400,
-	) {
+	static error(context: Context, message: string, statusCode: ContentfulStatusCode = 400) {
 		return context.json(
 			{
 				status: "error" as const,
@@ -72,11 +64,7 @@ export class ResponseFactory {
 		);
 	}
 
-	static message(
-		context: Context,
-		message: string,
-		statusCode: ContentfulStatusCode = 200,
-	) {
+	static message(context: Context, message: string, statusCode: ContentfulStatusCode = 200) {
 		return context.json(
 			{
 				status: "success" as const,

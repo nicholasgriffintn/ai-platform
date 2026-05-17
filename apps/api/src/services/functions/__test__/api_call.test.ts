@@ -33,9 +33,7 @@ const createMockResponse = ({
 		status,
 		statusText,
 		headers: {
-			get: vi.fn((key: string) =>
-				key.toLowerCase() === "content-type" ? contentType : null,
-			),
+			get: vi.fn((key: string) => (key.toLowerCase() === "content-type" ? contentType : null)),
 			forEach: (cb: (value: string, key: string) => void) => {
 				cb(contentType, "content-type");
 			},
@@ -54,10 +52,7 @@ describe("call_api function", () => {
 	});
 
 	it("returns an error for invalid URLs", async () => {
-		const result = await call_api.execute(
-			{ url: "not-a-url" },
-			createToolContext(baseRequest),
-		);
+		const result = await call_api.execute({ url: "not-a-url" }, createToolContext(baseRequest));
 
 		expect(result.status).toBe("error");
 		expect(result.content).toBe("Invalid URL format");
@@ -118,9 +113,7 @@ describe("call_api function", () => {
 		);
 
 		const fetchArgs = vi.mocked(fetch).mock.calls[0]?.[1] as RequestInit;
-		const parsedBody = fetchArgs?.body
-			? JSON.parse(fetchArgs.body as string)
-			: null;
+		const parsedBody = fetchArgs?.body ? JSON.parse(fetchArgs.body as string) : null;
 
 		expect(parsedBody).toEqual({
 			query: "query GetViewer { viewer { id } }",

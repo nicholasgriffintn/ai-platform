@@ -32,10 +32,7 @@ export interface AIProvider {
 		type: string,
 		body: Record<string, any>,
 	): Promise<any>;
-	countTokens?(
-		params: ChatCompletionParameters,
-		userId?: number,
-	): Promise<{ inputTokens: number }>;
+	countTokens?(params: ChatCompletionParameters, userId?: number): Promise<{ inputTokens: number }>;
 	getAsyncInvocationStatus?(
 		metadata: AsyncInvocationMetadata,
 		params: ChatCompletionParameters,
@@ -116,17 +113,11 @@ export abstract class BaseProvider implements AIProvider {
 	 * @param userId - The user ID
 	 * @returns The API key
 	 */
-	protected async getApiKey(
-		params: ChatCompletionParameters,
-		userId?: number,
-	): Promise<string> {
+	protected async getApiKey(params: ChatCompletionParameters, userId?: number): Promise<string> {
 		if (userId && params.env.DB) {
 			const userSettingsRepo = new UserSettingsRepository(params.env);
 			try {
-				const apiKey = await userSettingsRepo.getProviderApiKey(
-					userId,
-					this.name,
-				);
+				const apiKey = await userSettingsRepo.getProviderApiKey(userId, this.name);
 				if (apiKey) {
 					return apiKey;
 				}
@@ -134,8 +125,7 @@ export abstract class BaseProvider implements AIProvider {
 				if (
 					!(
 						error instanceof AssistantError &&
-						(error.type === ErrorType.NOT_FOUND ||
-							error.type === ErrorType.PARAMS_ERROR)
+						(error.type === ErrorType.NOT_FOUND || error.type === ErrorType.PARAMS_ERROR)
 					)
 				) {
 					logger.error(`Failed to get user API key for ${this.name}:`, {
@@ -163,10 +153,7 @@ export abstract class BaseProvider implements AIProvider {
 	 */
 	protected validateParams(params: ChatCompletionParameters): void {
 		if (!params.model && !params.version) {
-			throw new AssistantError(
-				"Missing model or version",
-				ErrorType.PARAMS_ERROR,
-			);
+			throw new AssistantError("Missing model or version", ErrorType.PARAMS_ERROR);
 		}
 	}
 
@@ -200,9 +187,7 @@ export abstract class BaseProvider implements AIProvider {
 	 * @param params - The parameters of the request
 	 * @returns Settings object for metrics tracking
 	 */
-	protected buildMetricsSettings(
-		params: ChatCompletionParameters,
-	): Record<string, any> {
+	protected buildMetricsSettings(params: ChatCompletionParameters): Record<string, any> {
 		return buildMetricsSettings(params);
 	}
 
@@ -211,9 +196,7 @@ export abstract class BaseProvider implements AIProvider {
 	 * @param params - The parameters of the request
 	 * @returns The endpoint
 	 */
-	protected abstract getEndpoint(
-		params: ChatCompletionParameters,
-	): Promise<string>;
+	protected abstract getEndpoint(params: ChatCompletionParameters): Promise<string>;
 
 	/**
 	 * Gets the headers for the API call
@@ -230,10 +213,7 @@ export abstract class BaseProvider implements AIProvider {
 	 * @param params - The parameters of the request
 	 * @returns The formatted data
 	 */
-	protected async formatResponse(
-		data: any,
-		params: ChatCompletionParameters,
-	): Promise<any> {
+	protected async formatResponse(data: any, params: ChatCompletionParameters): Promise<any> {
 		const modelConfig = await getModelConfigByMatchingModel(params.model || "");
 
 		const providerName = this.isOpenAiCompatible ? "compat" : this.name;
@@ -272,10 +252,7 @@ export abstract class BaseProvider implements AIProvider {
 	 * @param userId - The user ID
 	 * @returns The response
 	 */
-	async getResponse(
-		params: ChatCompletionParameters,
-		userId?: number,
-	): Promise<any> {
+	async getResponse(params: ChatCompletionParameters, userId?: number): Promise<any> {
 		this.validateParams(params);
 
 		const headers = await this.getHeaders(params);
@@ -283,10 +260,7 @@ export abstract class BaseProvider implements AIProvider {
 		const modelConfig = await getModelConfigByMatchingModel(params.model || "");
 
 		if (!modelConfig) {
-			throw new AssistantError(
-				`Model ${params.model} not found`,
-				ErrorType.CONFIGURATION_ERROR,
-			);
+			throw new AssistantError(`Model ${params.model} not found`, ErrorType.CONFIGURATION_ERROR);
 		}
 
 		const timeout = modelConfig.timeout || 100000;
@@ -298,11 +272,7 @@ export abstract class BaseProvider implements AIProvider {
 			provider: this.name,
 			model: params.model as string,
 			operation: async () => {
-				const body = await this.getParameterMapping(
-					params,
-					storageService,
-					assetsUrl,
-				);
+				const body = await this.getParameterMapping(params, storageService, assetsUrl);
 				const endpoint = await this.getEndpoint(params);
 
 				const data = await fetchAIResponse(

@@ -16,11 +16,7 @@ interface ShareButtonProps {
 	variant?: "default" | "outline" | "secondary" | "ghost" | "link";
 }
 
-export function ShareButton({
-	appId,
-	className,
-	variant = "outline",
-}: ShareButtonProps) {
+export function ShareButton({ appId, className, variant = "outline" }: ShareButtonProps) {
 	const { mutateAsync: shareItem } = useShareItem();
 	const { trackFeatureUsage, trackError } = useTrackEvent();
 

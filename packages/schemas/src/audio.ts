@@ -14,8 +14,7 @@ export const transcribeFormSchema = z.object({
 
 export const textToSpeechSchema = z.object({
 	input: z.string().meta({
-		description:
-			"The text to generate audio for. The maximum length is 4096 characters.",
+		description: "The text to generate audio for. The maximum length is 4096 characters.",
 	}),
 	provider: z.enum(["polly", "cartesia", "elevenlabs", "melotts"]).optional(),
 	lang: z.string().optional(),

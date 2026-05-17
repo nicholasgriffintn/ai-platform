@@ -22,10 +22,7 @@ const DEFAULT_KEEP_RECENT_MESSAGES = 8;
 const DEFAULT_MIN_ARCHIVE_COUNT = 6;
 const TOOL_RESULT_SUMMARY_LIMIT = 400;
 
-function contentToText(
-	content: Message["content"],
-	role?: Message["role"],
-): string {
+function contentToText(content: Message["content"], role?: Message["role"]): string {
 	const truncateForTool = (text: string) => {
 		if (role === "tool" && text.length > TOOL_RESULT_SUMMARY_LIMIT) {
 			return text.slice(0, TOOL_RESULT_SUMMARY_LIMIT) + "…";
@@ -65,22 +62,13 @@ export function estimateMessageTokens(message: Message): number {
 	return Math.ceil(text.length / charsPerToken) + 4;
 }
 
-export function estimateConversationTokens(
-	messages: Message[],
-	latestUserMessage: string,
-): number {
-	const historyTokens = messages.reduce(
-		(sum, message) => sum + estimateMessageTokens(message),
-		0,
-	);
+export function estimateConversationTokens(messages: Message[], latestUserMessage: string): number {
+	const historyTokens = messages.reduce((sum, message) => sum + estimateMessageTokens(message), 0);
 	return historyTokens + Math.ceil(latestUserMessage.length / 4);
 }
 
 function hasSnapshotPart(message: Message): boolean {
-	return (
-		Array.isArray(message.parts) &&
-		message.parts.some((part) => part.type === "snapshot")
-	);
+	return Array.isArray(message.parts) && message.parts.some((part) => part.type === "snapshot");
 }
 
 function isCompactionCandidate(message: Message): boolean {
@@ -103,8 +91,7 @@ export function buildCompactionPlan(
 	const contextWindow = config.contextWindow || DEFAULT_CONTEXT_WINDOW;
 	const triggerRatio = config.triggerRatio || DEFAULT_TRIGGER_RATIO;
 	const minMessages = config.minMessages || DEFAULT_MIN_MESSAGES;
-	const keepRecentMessages =
-		config.keepRecentMessages || DEFAULT_KEEP_RECENT_MESSAGES;
+	const keepRecentMessages = config.keepRecentMessages || DEFAULT_KEEP_RECENT_MESSAGES;
 	const minArchiveCount = config.minArchiveCount || DEFAULT_MIN_ARCHIVE_COUNT;
 
 	if (messages.length < minMessages) {
@@ -116,10 +103,7 @@ export function buildCompactionPlan(
 		};
 	}
 
-	const estimatedTokens = estimateConversationTokens(
-		messages,
-		latestUserMessage,
-	);
+	const estimatedTokens = estimateConversationTokens(messages, latestUserMessage);
 	const compactionThreshold = Math.floor(contextWindow * triggerRatio);
 	if (estimatedTokens < compactionThreshold) {
 		return {
@@ -144,9 +128,7 @@ export function buildCompactionPlan(
 		};
 	}
 
-	const preservedHead = archiveableHead.filter(
-		(message) => !isCompactionCandidate(message),
-	);
+	const preservedHead = archiveableHead.filter((message) => !isCompactionCandidate(message));
 	const messagesToKeep = [...preservedHead, ...tail];
 
 	return {
@@ -181,10 +163,7 @@ export function buildFallbackSummary(messages: Message[]): string {
 	return `Earlier context summary:\n${lines.join("\n")}`;
 }
 
-export function formatMessagesForSummary(
-	messages: Message[],
-	maxCharacters = 16000,
-): string {
+export function formatMessagesForSummary(messages: Message[], maxCharacters = 16000): string {
 	const lines: string[] = [];
 	let remaining = maxCharacters;
 
@@ -195,10 +174,7 @@ export function formatMessagesForSummary(
 			continue;
 		}
 
-		const prefix =
-			message.role === "tool" && message.name
-				? `${label}(${message.name})`
-				: label;
+		const prefix = message.role === "tool" && message.name ? `${label}(${message.name})` : label;
 		const line = `${prefix}: ${body}`;
 
 		if (line.length > remaining) {

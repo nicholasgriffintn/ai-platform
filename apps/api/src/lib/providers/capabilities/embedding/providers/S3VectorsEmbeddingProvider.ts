@@ -37,11 +37,7 @@ export class S3VectorsEmbeddingProvider implements EmbeddingProvider {
 	private defaultSecretAccessKey: string;
 	private ai: Ai;
 
-	constructor(
-		config: S3VectorsEmbeddingProviderConfig,
-		env: IEnv,
-		user?: IUser,
-	) {
+	constructor(config: S3VectorsEmbeddingProviderConfig, env: IEnv, user?: IUser) {
 		this.bucketName = config.bucketName;
 		this.indexName = config.indexName;
 		this.region = config.region || "us-east-1";
@@ -61,10 +57,7 @@ export class S3VectorsEmbeddingProvider implements EmbeddingProvider {
 		const parts = apiKey.split(delimiter);
 
 		if (parts.length !== 2) {
-			throw new AssistantError(
-				"Invalid AWS credentials format",
-				ErrorType.CONFIGURATION_ERROR,
-			);
+			throw new AssistantError("Invalid AWS credentials format", ErrorType.CONFIGURATION_ERROR);
 		}
 
 		return { accessKey: parts[0], secretKey: parts[1] };
@@ -127,10 +120,7 @@ export class S3VectorsEmbeddingProvider implements EmbeddingProvider {
 		if (this.user?.id && this.env.DB) {
 			try {
 				const userSettingsRepo = new UserSettingsRepository(this.env);
-				const userApiKey = await userSettingsRepo.getProviderApiKey(
-					this.user.id,
-					"bedrock",
-				);
+				const userApiKey = await userSettingsRepo.getProviderApiKey(this.user.id, "bedrock");
 
 				if (userApiKey) {
 					const credentials = this.parseAwsCredentials(userApiKey);
@@ -143,10 +133,7 @@ export class S3VectorsEmbeddingProvider implements EmbeddingProvider {
 		}
 
 		if (!accessKeyId || !secretAccessKey) {
-			throw new AssistantError(
-				"No valid credentials found",
-				ErrorType.CONFIGURATION_ERROR,
-			);
+			throw new AssistantError("No valid credentials found", ErrorType.CONFIGURATION_ERROR);
 		}
 
 		const aws = new AwsClient({
@@ -209,9 +196,7 @@ export class S3VectorsEmbeddingProvider implements EmbeddingProvider {
 		};
 	}
 
-	async delete(
-		ids: string[],
-	): Promise<{ status: string; error: string | null }> {
+	async delete(ids: string[]): Promise<{ status: string; error: string | null }> {
 		try {
 			logger.debug("Deleting embeddings from S3 Vectors", { ids });
 			const url = `${this.endpoint}/DeleteVectors`;
@@ -255,9 +240,7 @@ export class S3VectorsEmbeddingProvider implements EmbeddingProvider {
 		}
 	}
 
-	async getQuery(
-		query: string,
-	): Promise<{ data: any; status: { success: boolean } }> {
+	async getQuery(query: string): Promise<{ data: any; status: { success: boolean } }> {
 		if (!query?.trim()) {
 			throw new AssistantError(
 				"Empty query provided for embeddings search",
@@ -293,10 +276,7 @@ export class S3VectorsEmbeddingProvider implements EmbeddingProvider {
 		};
 	}
 
-	async getMatches(
-		queryVector: number[],
-		options: RagOptions = {},
-	): Promise<EmbeddingQueryResult> {
+	async getMatches(queryVector: number[], options: RagOptions = {}): Promise<EmbeddingQueryResult> {
 		logger.debug("Querying S3 Vectors", { options });
 		const url = `${this.endpoint}/QueryVectors`;
 

@@ -32,10 +32,7 @@ export class MessageFormatter {
 		return messages;
 	}
 
-	static formatMessages(
-		messages: Message[],
-		options: MessageFormatOptions = {},
-	): Message[] {
+	static formatMessages(messages: Message[], options: MessageFormatOptions = {}): Message[] {
 		const {
 			maxTokens = 0,
 			truncationStrategy = "tail",
@@ -46,10 +43,7 @@ export class MessageFormatter {
 
 		let formattedMessages = messages;
 
-		if (
-			maxTokens > 0 &&
-			MessageFormatter.countTokens(formattedMessages) > maxTokens
-		) {
+		if (maxTokens > 0 && MessageFormatter.countTokens(formattedMessages) > maxTokens) {
 			formattedMessages = MessageFormatter.truncateMessages(
 				formattedMessages,
 				maxTokens,
@@ -57,10 +51,7 @@ export class MessageFormatter {
 			);
 		}
 
-		formattedMessages = MessageFormatter.formatMessageContent(
-			formattedMessages,
-			provider,
-		);
+		formattedMessages = MessageFormatter.formatMessageContent(formattedMessages, provider);
 
 		if (system_prompt) {
 			formattedMessages = MessageFormatter.addsystem_prompt(
@@ -72,16 +63,12 @@ export class MessageFormatter {
 		}
 
 		if (provider === "mistral") {
-			formattedMessages =
-				MessageFormatter.ensureAssistantAfterTool(formattedMessages);
+			formattedMessages = MessageFormatter.ensureAssistantAfterTool(formattedMessages);
 		}
 		return formattedMessages;
 	}
 
-	private static formatMessageContent(
-		messages: Message[],
-		provider: string,
-	): Message[] {
+	private static formatMessageContent(messages: Message[], provider: string): Message[] {
 		const formattedMessages: Message[] = [];
 		for (const message of messages) {
 			const content = MessageFormatter.formatContent(message.content, provider);
@@ -159,11 +146,7 @@ export class MessageFormatter {
 				case "anthropic": {
 					let formattedContent: any;
 
-					if (
-						Array.isArray(content) &&
-						content.length === 1 &&
-						typeof content[0] === "string"
-					) {
+					if (Array.isArray(content) && content.length === 1 && typeof content[0] === "string") {
 						formattedContent = [
 							{
 								type: "text" as ContentType,
@@ -198,11 +181,7 @@ export class MessageFormatter {
 					break;
 				}
 				default:
-					if (
-						Array.isArray(content) &&
-						content.length === 1 &&
-						typeof content[0] === "string"
-					) {
+					if (Array.isArray(content) && content.length === 1 && typeof content[0] === "string") {
 						const newMessage: Message = {
 							role: message.role,
 							content: content[0],
@@ -230,10 +209,7 @@ export class MessageFormatter {
 		return formattedMessages;
 	}
 
-	private static formatContent(
-		content: Message["content"],
-		provider: string,
-	): any {
+	private static formatContent(content: Message["content"], provider: string): any {
 		if (!Array.isArray(content)) {
 			return content;
 		}
@@ -255,10 +231,7 @@ export class MessageFormatter {
 			case "ollama":
 			case "github-models": {
 				const imageItem = content.find(
-					(item) =>
-						typeof item === "object" &&
-						"type" in item &&
-						item.type === "image_url",
+					(item) => typeof item === "object" && "type" in item && item.type === "image_url",
 				);
 
 				if (
@@ -271,38 +244,21 @@ export class MessageFormatter {
 				) {
 					return {
 						text: content
-							.filter(
-								(item) =>
-									typeof item === "object" &&
-									"type" in item &&
-									item.type === "text",
-							)
-							.map((item) =>
-								typeof item === "object" && "text" in item ? item.text : "",
-							)
+							.filter((item) => typeof item === "object" && "type" in item && item.type === "text")
+							.map((item) => (typeof item === "object" && "text" in item ? item.text : ""))
 							.join("\n"),
 						image: MessageFormatter.getBase64FromUrl(imageItem.image_url.url),
 					};
 				}
 
 				return content
-					.filter(
-						(item) =>
-							typeof item === "object" &&
-							"type" in item &&
-							item.type === "text",
-					)
-					.map((item) =>
-						typeof item === "object" && "text" in item ? item.text : "",
-					)
+					.filter((item) => typeof item === "object" && "type" in item && item.type === "text")
+					.map((item) => (typeof item === "object" && "text" in item ? item.text : ""))
 					.join("\n");
 			}
 			default:
 				return content.filter(
-					(item) =>
-						typeof item === "object" &&
-						"type" in item &&
-						item.type !== "markdown_document",
+					(item) => typeof item === "object" && "type" in item && item.type !== "markdown_document",
 				);
 		}
 	}
@@ -353,9 +309,7 @@ export class MessageFormatter {
 		return messages.reduce(
 			(total, msg) =>
 				total +
-				(typeof msg.content === "string"
-					? msg.content.length
-					: JSON.stringify(msg.content).length),
+				(typeof msg.content === "string" ? msg.content.length : JSON.stringify(msg.content).length),
 			0,
 		);
 	}

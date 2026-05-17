@@ -2,9 +2,7 @@ import { useEffect } from "react";
 
 import { BEACON_ALLOWED_ORIGINS, IS_PRODUCTION } from "~/constants";
 
-const BEACON_ENDPOINT = IS_PRODUCTION
-	? "https://beacon.polychat.app"
-	: "http://localhost:5173";
+const BEACON_ENDPOINT = IS_PRODUCTION ? "https://beacon.polychat.app" : "http://localhost:5173";
 
 const getAllowedOrigin = (endpoint: string) => {
 	try {
@@ -116,9 +114,7 @@ export function Analytics({
 		const beaconSrc = `${allowedOrigin}/beacon.min.js`;
 
 		if (window._beaconInitialized) {
-			const existingBeaconScript = document.querySelector(
-				`script[src="${beaconSrc}"]`,
-			);
+			const existingBeaconScript = document.querySelector(`script[src="${beaconSrc}"]`);
 			if (!existingBeaconScript) {
 				delete window._beaconInitialized;
 			} else {
@@ -198,9 +194,7 @@ export function Analytics({
 		const expBeaconSrc = `${allowedOrigin}/exp-beacon.min.js`;
 
 		if (window._expBeaconInitialized) {
-			const existingExpScript = document.querySelector(
-				`script[src="${expBeaconSrc}"]`,
-			);
+			const existingExpScript = document.querySelector(`script[src="${expBeaconSrc}"]`);
 			if (!existingExpScript) {
 				delete window._expBeaconInitialized;
 			} else {

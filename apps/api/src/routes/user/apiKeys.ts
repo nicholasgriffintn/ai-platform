@@ -11,11 +11,7 @@ import {
 import { getServiceContext } from "~/lib/context/serviceContext";
 import { requireAuth } from "~/middleware/auth";
 import { ResponseFactory } from "~/lib/http/ResponseFactory";
-import {
-	createUserApiKey,
-	deleteUserApiKey,
-	getUserApiKeys,
-} from "~/services/user/apiKeys";
+import { createUserApiKey, deleteUserApiKey, getUserApiKeys } from "~/services/user/apiKeys";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 
@@ -52,10 +48,7 @@ addRoute(app, "get", "/", {
 				if (error instanceof AssistantError) {
 					throw error;
 				}
-				throw new AssistantError(
-					"Failed to fetch API keys",
-					ErrorType.UNKNOWN_ERROR,
-				);
+				throw new AssistantError("Failed to fetch API keys", ErrorType.UNKNOWN_ERROR);
 			}
 		})(raw),
 });
@@ -81,25 +74,15 @@ addRoute(app, "post", "/", {
 			const serviceContext = getServiceContext(c);
 
 			try {
-				const { plaintextKey, metadata } = await createUserApiKey(
-					serviceContext,
-					name,
-				);
+				const { plaintextKey, metadata } = await createUserApiKey(serviceContext, name);
 
-				return ResponseFactory.success(
-					c,
-					{ apiKey: plaintextKey, ...metadata },
-					201,
-				);
+				return ResponseFactory.success(c, { apiKey: plaintextKey, ...metadata }, 201);
 			} catch (error) {
 				logger.error("Error creating API key:", { error });
 				if (error instanceof AssistantError) {
 					throw error;
 				}
-				throw new AssistantError(
-					"Failed to create API key",
-					ErrorType.UNKNOWN_ERROR,
-				);
+				throw new AssistantError("Failed to create API key", ErrorType.UNKNOWN_ERROR);
 			}
 		})(raw),
 });
@@ -127,20 +110,13 @@ addRoute(app, "delete", "/:keyId", {
 
 			try {
 				await deleteUserApiKey(serviceContext, keyId, user.id);
-				return ResponseFactory.success(
-					c,
-					{ message: "API key deleted successfully" },
-					200,
-				);
+				return ResponseFactory.success(c, { message: "API key deleted successfully" }, 200);
 			} catch (error) {
 				logger.error("Error deleting API key:", { error });
 				if (error instanceof AssistantError) {
 					throw error;
 				}
-				throw new AssistantError(
-					"Failed to delete API key",
-					ErrorType.UNKNOWN_ERROR,
-				);
+				throw new AssistantError("Failed to delete API key", ErrorType.UNKNOWN_ERROR);
 			}
 		})(raw),
 });

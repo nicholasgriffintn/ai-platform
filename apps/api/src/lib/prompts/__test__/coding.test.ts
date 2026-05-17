@@ -78,9 +78,7 @@ describe("returnCodingPrompt", () => {
 			// @ts-expect-error - mock implementation
 			const userSettings: IUserSettings = { job_role: "Senior Developer" };
 			const result = returnCodingPrompt(request, userSettings);
-			expect(result).toContain(
-				"<user_job_role>Senior Developer</user_job_role>",
-			);
+			expect(result).toContain("<user_job_role>Senior Developer</user_job_role>");
 		});
 
 		it("should handle null user settings", () => {
@@ -114,9 +112,7 @@ describe("returnCodingPrompt", () => {
 			const request: IBody = {};
 			const result = returnCodingPrompt(request);
 			expect(result).toContain("<safety_standards>");
-			expect(result).toContain(
-				"high-risk advice (medical, legal, financial, mental health)",
-			);
+			expect(result).toContain("high-risk advice (medical, legal, financial, mental health)");
 		});
 
 		it("should include instruction precedence block", () => {
@@ -134,31 +130,18 @@ describe("returnCodingPrompt", () => {
 		it("should include thinking section when supportsReasoning is false", () => {
 			// @ts-expect-error - mock implementation
 			const request: IBody = {};
-			const result = returnCodingPrompt(
-				request,
-				undefined,
-				false,
-				false,
-				false,
-			);
+			const result = returnCodingPrompt(request, undefined, false, false, false);
 			expect(result).toContain("<think>");
 		});
 
 		it("should skip thinking section when supportsReasoning is true", () => {
 			// @ts-expect-error - mock implementation
 			const request: IBody = {};
-			const result = returnCodingPrompt(
-				request,
-				undefined,
-				false,
-				false,
-				false,
-				{
-					modelConfig: {
-						reasoningConfig: { enabled: true },
-					} as any,
-				},
-			);
+			const result = returnCodingPrompt(request, undefined, false, false, false, {
+				modelConfig: {
+					reasoningConfig: { enabled: true },
+				} as any,
+			});
 			expect(result).not.toContain("<think>");
 		});
 
@@ -175,13 +158,7 @@ describe("returnCodingPrompt", () => {
 		it("should include solution section when supportsArtifacts is false", () => {
 			// @ts-expect-error - mock implementation
 			const request: IBody = {};
-			const result = returnCodingPrompt(
-				request,
-				undefined,
-				false,
-				false,
-				false,
-			);
+			const result = returnCodingPrompt(request, undefined, false, false, false);
 			expect(result).toContain("<solution>");
 			expect(result).toContain("<code_block");
 			expect(result).toContain("<reference_note>");
@@ -208,18 +185,11 @@ describe("returnCodingPrompt", () => {
 		it("should derive supportsArtifacts from model metadata when not provided", () => {
 			// @ts-expect-error - mock implementation
 			const request: IBody = {};
-			const result = returnCodingPrompt(
-				request,
-				undefined,
-				undefined,
-				undefined,
-				undefined,
-				{
-					modelConfig: {
-						supportsArtifacts: true,
-					} as any,
-				},
-			);
+			const result = returnCodingPrompt(request, undefined, undefined, undefined, undefined, {
+				modelConfig: {
+					supportsArtifacts: true,
+				} as any,
+			});
 			expect(result).toContain("artifact");
 		});
 	});
@@ -318,9 +288,7 @@ describe("returnCodingPrompt", () => {
 			// @ts-expect-error - mock implementation
 			const request: IBody = {};
 			const result = returnCodingPrompt(request);
-			expect(result).toContain(
-				"tailor your response to the specified programming language",
-			);
+			expect(result).toContain("tailor your response to the specified programming language");
 			expect(result).toContain("accuracy and professionalism");
 		});
 	});
@@ -357,13 +325,7 @@ describe("returnCodingPrompt", () => {
 		it("should use solution when artifacts not supported", () => {
 			// @ts-expect-error - mock implementation
 			const request: IBody = {};
-			const result = returnCodingPrompt(
-				request,
-				undefined,
-				false,
-				false,
-				false,
-			);
+			const result = returnCodingPrompt(request, undefined, false, false, false);
 			expect(result).toContain("<solution>");
 		});
 	});
@@ -391,13 +353,7 @@ describe("returnCodingPrompt", () => {
 				memories_save_enabled: true,
 				memories_chat_history_enabled: false,
 			};
-			const result = returnCodingPrompt(
-				request,
-				userSettings,
-				true,
-				true,
-				true,
-			);
+			const result = returnCodingPrompt(request, userSettings, true, true, true);
 			expect(typeof result).toBe("string");
 			expect(result.length).toBeGreaterThan(0);
 			expect(result).toContain("CodeMaster");

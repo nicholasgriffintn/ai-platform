@@ -24,18 +24,14 @@ describe("classifySandboxError", () => {
 	});
 
 	it("classifies command execution failures", () => {
-		const classified = classifySandboxError(
-			new Error("Command failed (1): pnpm test"),
-		);
+		const classified = classifySandboxError(new Error("Command failed (1): pnpm test"));
 
 		expect(classified.type).toBe("command_execution_error");
 		expect(classified.retryable).toBe(false);
 	});
 
 	it("classifies cancellation as a terminal cancelled state", () => {
-		const classified = classifySandboxError(
-			new SandboxCancellationError("Run cancelled by user"),
-		);
+		const classified = classifySandboxError(new SandboxCancellationError("Run cancelled by user"));
 
 		expect(classified.type).toBe("cancelled");
 		expect(classified.retryable).toBe(false);

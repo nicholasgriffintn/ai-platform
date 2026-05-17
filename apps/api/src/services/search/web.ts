@@ -1,13 +1,7 @@
 import { sanitiseInput } from "~/lib/chat/utils";
 import { getAuxiliarySearchProvider } from "~/lib/providers/models";
 import { getSearchProvider } from "~/lib/providers/capabilities/search";
-import type {
-	IEnv,
-	IFunctionResponse,
-	IUser,
-	SearchOptions,
-	SearchProviderName,
-} from "~/types";
+import type { IEnv, IFunctionResponse, IUser, SearchOptions, SearchProviderName } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
 type WebSearchRequest = {
@@ -18,9 +12,7 @@ type WebSearchRequest = {
 	options?: SearchOptions;
 };
 
-export const handleWebSearch = async (
-	req: WebSearchRequest,
-): Promise<IFunctionResponse> => {
+export const handleWebSearch = async (req: WebSearchRequest): Promise<IFunctionResponse> => {
 	const { query: rawQuery, env, provider, options, user } = req;
 
 	const query = sanitiseInput(rawQuery);
@@ -42,9 +34,7 @@ export const handleWebSearch = async (
 	}
 
 	const resultsArray =
-		"results" in response && Array.isArray(response.results)
-			? response.results
-			: [];
+		"results" in response && Array.isArray(response.results) ? response.results : [];
 
 	const warning =
 		providerToUse === "duckduckgo"

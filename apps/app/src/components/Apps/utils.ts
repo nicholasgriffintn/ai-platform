@@ -49,58 +49,44 @@ type ThemeKey = AppTheme | "default";
 const THEME_STYLES: Record<ThemeKey, ThemeStyle> = {
 	violet: {
 		iconColor: "text-violet-500 dark:text-violet-400",
-		badgeClass:
-			"bg-violet-100 text-violet-800 dark:bg-violet-900/40 dark:text-violet-200",
-		gradientClass:
-			"from-violet-50 to-white dark:from-violet-900/10 dark:to-zinc-800",
+		badgeClass: "bg-violet-100 text-violet-800 dark:bg-violet-900/40 dark:text-violet-200",
+		gradientClass: "from-violet-50 to-white dark:from-violet-900/10 dark:to-zinc-800",
 		iconContainerClass: "bg-violet-100/70 dark:bg-violet-900/20",
 	},
 	indigo: {
 		iconColor: "text-indigo-500 dark:text-indigo-400",
-		badgeClass:
-			"bg-indigo-100 text-indigo-800 dark:bg-indigo-900/40 dark:text-indigo-200",
-		gradientClass:
-			"from-indigo-50 to-white dark:from-indigo-900/10 dark:to-zinc-800",
+		badgeClass: "bg-indigo-100 text-indigo-800 dark:bg-indigo-900/40 dark:text-indigo-200",
+		gradientClass: "from-indigo-50 to-white dark:from-indigo-900/10 dark:to-zinc-800",
 		iconContainerClass: "bg-indigo-100/70 dark:bg-indigo-900/20",
 	},
 	pink: {
 		iconColor: "text-pink-500 dark:text-pink-400",
-		badgeClass:
-			"bg-pink-100 text-pink-800 dark:bg-pink-900/40 dark:text-pink-200",
-		gradientClass:
-			"from-pink-50 to-white dark:from-pink-900/10 dark:to-zinc-800",
+		badgeClass: "bg-pink-100 text-pink-800 dark:bg-pink-900/40 dark:text-pink-200",
+		gradientClass: "from-pink-50 to-white dark:from-pink-900/10 dark:to-zinc-800",
 		iconContainerClass: "bg-pink-100/70 dark:bg-pink-900/20",
 	},
 	rose: {
 		iconColor: "text-rose-500 dark:text-rose-400",
-		badgeClass:
-			"bg-rose-100 text-rose-800 dark:bg-rose-900/40 dark:text-rose-200",
-		gradientClass:
-			"from-rose-50 to-white dark:from-rose-900/10 dark:to-zinc-800",
+		badgeClass: "bg-rose-100 text-rose-800 dark:bg-rose-900/40 dark:text-rose-200",
+		gradientClass: "from-rose-50 to-white dark:from-rose-900/10 dark:to-zinc-800",
 		iconContainerClass: "bg-rose-100/70 dark:bg-rose-900/20",
 	},
 	cyan: {
 		iconColor: "text-cyan-500 dark:text-cyan-400",
-		badgeClass:
-			"bg-cyan-100 text-cyan-800 dark:bg-cyan-900/40 dark:text-cyan-200",
-		gradientClass:
-			"from-cyan-50 to-white dark:from-cyan-900/10 dark:to-zinc-800",
+		badgeClass: "bg-cyan-100 text-cyan-800 dark:bg-cyan-900/40 dark:text-cyan-200",
+		gradientClass: "from-cyan-50 to-white dark:from-cyan-900/10 dark:to-zinc-800",
 		iconContainerClass: "bg-cyan-100/70 dark:bg-cyan-900/20",
 	},
 	emerald: {
 		iconColor: "text-emerald-500 dark:text-emerald-400",
-		badgeClass:
-			"bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-200",
-		gradientClass:
-			"from-emerald-50 to-white dark:from-emerald-900/10 dark:to-zinc-800",
+		badgeClass: "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-200",
+		gradientClass: "from-emerald-50 to-white dark:from-emerald-900/10 dark:to-zinc-800",
 		iconContainerClass: "bg-emerald-100/70 dark:bg-emerald-900/20",
 	},
 	amber: {
 		iconColor: "text-amber-500 dark:text-amber-400",
-		badgeClass:
-			"bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200",
-		gradientClass:
-			"from-amber-50 to-white dark:from-amber-900/10 dark:to-zinc-800",
+		badgeClass: "bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200",
+		gradientClass: "from-amber-50 to-white dark:from-amber-900/10 dark:to-zinc-800",
 		iconContainerClass: "bg-amber-100/70 dark:bg-amber-900/20",
 	},
 	sky: {
@@ -111,26 +97,20 @@ const THEME_STYLES: Record<ThemeKey, ThemeStyle> = {
 	},
 	slate: {
 		iconColor: "text-slate-500 dark:text-slate-300",
-		badgeClass:
-			"bg-slate-100 text-slate-800 dark:bg-slate-900/40 dark:text-slate-200",
-		gradientClass:
-			"from-slate-50 to-white dark:from-slate-800/20 dark:to-zinc-800",
+		badgeClass: "bg-slate-100 text-slate-800 dark:bg-slate-900/40 dark:text-slate-200",
+		gradientClass: "from-slate-50 to-white dark:from-slate-800/20 dark:to-zinc-800",
 		iconContainerClass: "bg-slate-100/70 dark:bg-slate-800/30",
 	},
 	blue: {
 		iconColor: "text-blue-500 dark:text-blue-400",
-		badgeClass:
-			"bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-200",
-		gradientClass:
-			"from-blue-50 to-white dark:from-blue-900/10 dark:to-zinc-800",
+		badgeClass: "bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-200",
+		gradientClass: "from-blue-50 to-white dark:from-blue-900/10 dark:to-zinc-800",
 		iconContainerClass: "bg-blue-100/70 dark:bg-blue-900/20",
 	},
 	default: {
 		iconColor: "text-zinc-600 dark:text-zinc-300",
-		badgeClass:
-			"bg-off-white-highlight text-zinc-800 dark:bg-zinc-700 dark:text-zinc-200",
-		gradientClass:
-			"from-zinc-50 to-white dark:from-zinc-700/20 dark:to-zinc-800",
+		badgeClass: "bg-off-white-highlight text-zinc-800 dark:bg-zinc-700 dark:text-zinc-200",
+		gradientClass: "from-zinc-50 to-white dark:from-zinc-700/20 dark:to-zinc-800",
 		iconContainerClass: "bg-off-white dark:bg-zinc-700",
 	},
 };
@@ -238,9 +218,7 @@ export const sortAppsByName = (apps: AppListItem[]): AppListItem[] => {
 	return [...apps].sort((a, b) => a.name.localeCompare(b.name));
 };
 
-export const groupAppsByCategory = (
-	apps: AppListItem[],
-): [string, AppListItem[]][] => {
+export const groupAppsByCategory = (apps: AppListItem[]): [string, AppListItem[]][] => {
 	const featuredApps = sortAppsByName(apps.filter((app) => app.featured));
 	const nonFeaturedApps = apps.filter((app) => !app.featured);
 

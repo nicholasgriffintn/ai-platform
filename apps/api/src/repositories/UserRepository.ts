@@ -34,19 +34,10 @@ export class UserRepository extends BaseRepository {
 		return this.runQuery<User>(query, values, true);
 	}
 
-	public async updateUser(
-		userId: number,
-		userData: Record<string, unknown>,
-	): Promise<void> {
+	public async updateUser(userId: number, userData: Record<string, unknown>): Promise<void> {
 		const fieldsToUpdate = Object.keys(userData).filter((key) => key !== "id");
 
-		const result = this.buildUpdateQuery(
-			"user",
-			userData,
-			fieldsToUpdate,
-			"id = ?",
-			[userId],
-		);
+		const result = this.buildUpdateQuery("user", userData, fieldsToUpdate, "id = ?", [userId]);
 		if (!result) {
 			return;
 		}
@@ -54,9 +45,7 @@ export class UserRepository extends BaseRepository {
 		await this.executeRun(result.query, result.values);
 	}
 
-	public async createUser(
-		userData: Record<string, unknown>,
-	): Promise<User | null> {
+	public async createUser(userData: Record<string, unknown>): Promise<User | null> {
 		const result = this.runQuery<User>(
 			`INSERT INTO user (
          name, 
@@ -132,9 +121,7 @@ export class UserRepository extends BaseRepository {
 		);
 	}
 
-	public async getUserByStripeCustomerId(
-		customerId: string,
-	): Promise<User | null> {
+	public async getUserByStripeCustomerId(customerId: string): Promise<User | null> {
 		const { query, values } = this.buildSelectQuery("user", {
 			stripe_customer_id: customerId,
 		});
@@ -184,11 +171,7 @@ export class UserRepository extends BaseRepository {
 
 		if (userByEmail) {
 			// Link GitHub account to existing user
-			await this.createOauthAccount(
-				userByEmail.id,
-				"github",
-				userData.githubId,
-			);
+			await this.createOauthAccount(userByEmail.id, "github", userData.githubId);
 
 			// Update user with GitHub data
 			await this.updateUserWithGithubData(userByEmail.id, userData);

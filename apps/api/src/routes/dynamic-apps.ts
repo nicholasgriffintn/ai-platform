@@ -44,8 +44,7 @@ dynamicApps.use("*", (c, next) => {
 addRoute(dynamicApps, "get", "/", {
 	tags: ["dynamic-apps"],
 	summary: "List all available dynamic apps",
-	description:
-		"Returns a list of all registered dynamic apps with their basic information",
+	description: "Returns a list of all registered dynamic apps with their basic information",
 	responses: {
 		200: {
 			description: "Dynamic apps and featured listings",
@@ -77,10 +76,7 @@ addRoute(dynamicApps, "get", "/", {
 					...existing,
 					...featuredApp,
 					featured: true,
-					kind:
-						featuredApp.kind ??
-						existing?.kind ??
-						(featuredApp.href ? "frontend" : "dynamic"),
+					kind: featuredApp.kind ?? existing?.kind ?? (featuredApp.href ? "frontend" : "dynamic"),
 				});
 			}
 
@@ -108,11 +104,7 @@ addRoute(dynamicApps, "get", "/responses", {
 				appId?: string;
 			};
 
-			const list = await listDynamicAppResponsesForUser(
-				c.env as IEnv,
-				user.id,
-				appId,
-			);
+			const list = await listDynamicAppResponsesForUser(c.env as IEnv, user.id, appId);
 			return ResponseFactory.success(c, list);
 		})(raw),
 });
@@ -229,8 +221,7 @@ addRoute(dynamicApps, "post", "/:id/execute", {
 addRoute(dynamicApps, "get", "/responses/:responseId", {
 	tags: ["dynamic-apps"],
 	summary: "Get stored dynamic-app response",
-	description:
-		"Retrieve a stored dynamic-app response by its `id` (response_id)",
+	description: "Retrieve a stored dynamic-app response by its `id` (response_id)",
 	responses: {
 		200: {
 			description: "Stored dynamic-app response",
@@ -247,11 +238,7 @@ addRoute(dynamicApps, "get", "/responses/:responseId", {
 		(async (c: Context) => {
 			const responseId = c.req.param("responseId");
 			if (!responseId) {
-				return ResponseFactory.success(
-					c,
-					{ error: "responseId is required" },
-					400,
-				);
+				return ResponseFactory.success(c, { error: "responseId is required" }, 400);
 			}
 			const data = await getDynamicAppResponseById(c.env as IEnv, responseId);
 			if (!data) {

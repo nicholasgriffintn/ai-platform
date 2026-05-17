@@ -12,13 +12,10 @@ import {
 import { FormCheckbox } from "~/components/ui/Form/Checkbox";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { useModels } from "~/hooks/useModels";
+import { useWebLLMModels } from "~/hooks/useWebLLMModels";
 import { getAvailableModels } from "~/lib/models";
 import { useChatStore } from "~/state/stores/chatStore";
-import type {
-	ChatSettings as ChatSettingsType,
-	ReasoningEffort,
-	VerbosityLevel,
-} from "~/types";
+import type { ChatSettings as ChatSettingsType, ReasoningEffort, VerbosityLevel } from "~/types";
 import { ToolSelector } from "./ToolSelector";
 
 interface ChatSettingsProps {
@@ -36,17 +33,14 @@ export const ChatSettings = ({
 	const [showSettings, setShowSettings] = useState(false);
 	const settingsButtonRef = useRef<HTMLButtonElement>(null);
 	const { data: apiModels = {} } = useModels();
-	const availableModels = getAvailableModels(apiModels);
+	const webLLMModels = useWebLLMModels();
+	const availableModels = getAvailableModels(apiModels, true, webLLMModels);
 
 	const activeModelId = model && model.length > 0 ? model : undefined;
-	const selectedModelConfig = activeModelId
-		? availableModels[activeModelId]
-		: undefined;
+	const selectedModelConfig = activeModelId ? availableModels[activeModelId] : undefined;
 
-	const reasoningOptions =
-		selectedModelConfig?.reasoningConfig?.supportedEffortLevels ?? [];
-	const verbosityOptions =
-		selectedModelConfig?.verbosityConfig?.supportedVerbosityLevels ?? [];
+	const reasoningOptions = selectedModelConfig?.reasoningConfig?.supportedEffortLevels ?? [];
+	const verbosityOptions = selectedModelConfig?.verbosityConfig?.supportedVerbosityLevels ?? [];
 
 	const formatReasoningLabel = (value: ReasoningEffort) => {
 		switch (value) {
@@ -76,10 +70,7 @@ export const ChatSettings = ({
 		}
 	};
 
-	const handleSettingChange = (
-		key: keyof ChatSettingsType,
-		value: string | boolean,
-	) => {
+	const handleSettingChange = (key: keyof ChatSettingsType, value: string | boolean) => {
 		if (typeof value === "string") {
 			const numValue = Number.parseFloat(value);
 			if (!Number.isNaN(numValue)) {
@@ -174,9 +165,7 @@ export const ChatSettings = ({
 				aria-label="Open chat settings"
 			/>
 
-			{supportsToolCalls && (
-				<ToolSelector isDisabled={isDisabled || toolSelectionLocked} />
-			)}
+			{supportsToolCalls && <ToolSelector isDisabled={isDisabled || toolSelectionLocked} />}
 
 			<Dialog open={showSettings} onOpenChange={setShowSettings} width="640px">
 				<DialogContent>
@@ -197,9 +186,7 @@ export const ChatSettings = ({
 										id="reasoning_effort"
 										label="Reasoning depth"
 										value={chatSettings.reasoning?.effort ?? ""}
-										onChange={(e) =>
-											handleReasoningEffortChange(e.target.value)
-										}
+										onChange={(e) => handleReasoningEffortChange(e.target.value)}
 										disabled={isDisabled}
 										options={[
 											{
@@ -207,8 +194,7 @@ export const ChatSettings = ({
 												label: `Model default${
 													selectedModelConfig?.reasoningConfig?.defaultEffort
 														? ` (${formatReasoningLabel(
-																selectedModelConfig.reasoningConfig
-																	.defaultEffort,
+																selectedModelConfig.reasoningConfig.defaultEffort,
 															)})`
 														: ""
 												}`,
@@ -234,8 +220,7 @@ export const ChatSettings = ({
 												label: `Model default${
 													selectedModelConfig?.verbosityConfig?.defaultVerbosity
 														? ` (${formatVerbosityLabel(
-																selectedModelConfig.verbosityConfig
-																	.defaultVerbosity,
+																selectedModelConfig.verbosityConfig.defaultVerbosity,
 															)})`
 														: ""
 												}`,
@@ -256,9 +241,7 @@ export const ChatSettings = ({
 									max={2}
 									step={0.1}
 									value={chatSettings.temperature ?? 1}
-									onChange={(e) =>
-										handleSettingChange("temperature", e.target.value)
-									}
+									onChange={(e) => handleSettingChange("temperature", e.target.value)}
 									aria-describedby="temperature-description"
 									markers={["Precise", "Neutral", "Creative"]}
 								/>
@@ -268,14 +251,12 @@ export const ChatSettings = ({
 									label="Enable RAG"
 									labelPosition="left"
 									checked={chatSettings.use_rag ?? false}
-									onChange={(e) =>
-										handleSettingChange("use_rag", e.target.checked)
-									}
+									onChange={(e) => handleSettingChange("use_rag", e.target.checked)}
 									aria-describedby="rag-description"
 								/>
 								<p id="rag-description" className="sr-only">
-									RAG stands for Retrieval-Augmented Generation, which enhances
-									the model with external data.
+									RAG stands for Retrieval-Augmented Generation, which enhances the model with
+									external data.
 								</p>
 
 								<div>
@@ -285,10 +266,9 @@ export const ChatSettings = ({
 										</summary>
 										<div className="text-xs text-zinc-600 dark:text-zinc-400 mt-1">
 											<p>
-												<strong>Temperature:</strong> Controls randomness in
-												responses. Lower values (0) make responses more
-												deterministic and focused, while higher values (2) make
-												responses more random and creative.
+												<strong>Temperature:</strong> Controls randomness in responses. Lower values
+												(0) make responses more deterministic and focused, while higher values (2)
+												make responses more random and creative.
 											</p>
 										</div>
 									</details>
@@ -312,9 +292,7 @@ export const ChatSettings = ({
 									min={1}
 									max={4096}
 									value={chatSettings.max_tokens ?? 2048}
-									onChange={(e) =>
-										handleSettingChange("max_tokens", e.target.value)
-									}
+									onChange={(e) => handleSettingChange("max_tokens", e.target.value)}
 								/>
 
 								<RangeInput
@@ -324,9 +302,7 @@ export const ChatSettings = ({
 									max={2}
 									step={0.1}
 									value={chatSettings.presence_penalty ?? 0}
-									onChange={(e) =>
-										handleSettingChange("presence_penalty", e.target.value)
-									}
+									onChange={(e) => handleSettingChange("presence_penalty", e.target.value)}
 									markers={["-2", "0", "+2"]}
 								/>
 
@@ -337,9 +313,7 @@ export const ChatSettings = ({
 									max={2}
 									step={0.1}
 									value={chatSettings.frequency_penalty ?? 0}
-									onChange={(e) =>
-										handleSettingChange("frequency_penalty", e.target.value)
-									}
+									onChange={(e) => handleSettingChange("frequency_penalty", e.target.value)}
 									markers={["-2", "0", "+2"]}
 								/>
 
@@ -349,18 +323,16 @@ export const ChatSettings = ({
 									</summary>
 									<div className="text-xs text-zinc-600 dark:text-zinc-400 mt-2 space-y-2">
 										<p>
-											<strong>Top P:</strong> Controls diversity via nucleus
-											sampling. Lower values (0.1) make responses more focused,
-											while higher values (1.0) make responses more diverse.
+											<strong>Top P:</strong> Controls diversity via nucleus sampling. Lower values
+											(0.1) make responses more focused, while higher values (1.0) make responses
+											more diverse.
 										</p>
 										<p>
-											<strong>Max Tokens:</strong> Limits the length of
-											generated responses.
+											<strong>Max Tokens:</strong> Limits the length of generated responses.
 										</p>
 										<p>
-											<strong>Presence/Frequency Penalty:</strong> Controls
-											repetition. Positive values reduce repetition, while
-											negative values may increase it.
+											<strong>Presence/Frequency Penalty:</strong> Controls repetition. Positive
+											values reduce repetition, while negative values may increase it.
 										</p>
 									</div>
 								</details>
@@ -378,9 +350,7 @@ export const ChatSettings = ({
 											min={1}
 											max={20}
 											value={chatSettings.rag_options?.topK ?? 3}
-											onChange={(e) =>
-												handleRagOptionChange("topK", e.target.value)
-											}
+											onChange={(e) => handleRagOptionChange("topK", e.target.value)}
 										/>
 
 										<RangeInput
@@ -390,9 +360,7 @@ export const ChatSettings = ({
 											max={1}
 											step={0.05}
 											value={chatSettings.rag_options?.scoreThreshold ?? 0.5}
-											onChange={(e) =>
-												handleRagOptionChange("scoreThreshold", e.target.value)
-											}
+											onChange={(e) => handleRagOptionChange("scoreThreshold", e.target.value)}
 											markers={["0", "0.5", "1"]}
 										/>
 
@@ -400,35 +368,24 @@ export const ChatSettings = ({
 											id="rag_include_metadata"
 											label="Include Metadata"
 											labelPosition="left"
-											checked={
-												chatSettings.rag_options?.includeMetadata ?? false
-											}
-											onChange={(e) =>
-												handleRagOptionChange(
-													"includeMetadata",
-													e.target.checked,
-												)
-											}
+											checked={chatSettings.rag_options?.includeMetadata ?? false}
+											onChange={(e) => handleRagOptionChange("includeMetadata", e.target.checked)}
 											aria-describedby="metadata-description"
 										/>
 										<p id="metadata-description" className="sr-only">
-											Include additional information about the retrieved
-											documents.
+											Include additional information about the retrieved documents.
 										</p>
 
 										<FormInput
 											id="rag_namespace"
 											label="Namespace"
 											value={chatSettings.rag_options?.namespace ?? ""}
-											onChange={(e) =>
-												handleRagOptionChange("namespace", e.target.value)
-											}
+											onChange={(e) => handleRagOptionChange("namespace", e.target.value)}
 											placeholder="e.g., docs, knowledge-base"
 											aria-describedby="namespace-description"
 										/>
 										<p id="namespace-description" className="sr-only">
-											Specify a namespace to restrict document retrieval to a
-											specific collection.
+											Specify a namespace to restrict document retrieval to a specific collection.
 										</p>
 									</div>
 								)}

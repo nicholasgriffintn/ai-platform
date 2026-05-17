@@ -50,9 +50,7 @@ export class TeamDelegation {
 		const now = Date.now();
 		const windowStart = now - this.rateLimitWindowMs;
 
-		this.delegationCalls = this.delegationCalls.filter(
-			(call) => call.timestamp > windowStart,
-		);
+		this.delegationCalls = this.delegationCalls.filter((call) => call.timestamp > windowStart);
 
 		if (this.delegationCalls.length >= this.maxDelegationsPerWindow) {
 			const oldestCall = this.delegationCalls[0];
@@ -84,9 +82,7 @@ export class TeamDelegation {
 		this.checkRateLimit();
 
 		if (this.delegationStack.includes(agentId)) {
-			const cycle = this.delegationStack
-				.slice(this.delegationStack.indexOf(agentId))
-				.join(" -> ");
+			const cycle = this.delegationStack.slice(this.delegationStack.indexOf(agentId)).join(" -> ");
 			throw new AssistantError(
 				`Circular delegation detected: ${cycle} -> ${agentId}`,
 				ErrorType.PARAMS_ERROR,
@@ -126,10 +122,7 @@ export class TeamDelegation {
 			`Orchestrator ${this.context.currentAgent.name} calling team member ${agent.name}. Stack: ${this.delegationStack.join(" -> ")}`,
 		);
 
-		const { model: modelToUse } = await getAuxiliaryModel(
-			this.context.env,
-			this.context.user,
-		);
+		const { model: modelToUse } = await getAuxiliaryModel(this.context.env, this.context.user);
 
 		const agentModelConfig = agent.model
 			? await getModelConfig(agent.model, this.context.env)
@@ -141,9 +134,7 @@ export class TeamDelegation {
 			messages,
 			model: agentModelConfig?.matchingModel || modelToUse,
 			system_prompt: agent.system_prompt,
-			temperature: agent.temperature
-				? Number.parseFloat(agent.temperature)
-				: 0.7,
+			temperature: agent.temperature ? Number.parseFloat(agent.temperature) : 0.7,
 			stream: false,
 			mode: "agent",
 		});
@@ -173,9 +164,7 @@ export class TeamDelegation {
 			this.context.user.id,
 		);
 
-		return allTeamMembers.filter(
-			(agent) => agent.id !== this.context.currentAgent.id,
-		);
+		return allTeamMembers.filter((agent) => agent.id !== this.context.currentAgent.id);
 	}
 
 	/**

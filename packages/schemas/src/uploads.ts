@@ -1,13 +1,6 @@
 import z from "zod/v4";
 
-export const markdownDescriptionLanguageSchema = z.enum([
-	"en",
-	"it",
-	"de",
-	"es",
-	"fr",
-	"pt",
-]);
+export const markdownDescriptionLanguageSchema = z.enum(["en", "it", "de", "es", "fr", "pt"]);
 
 export const markdownConversionOptionsSchema = z.object({
 	image: z
@@ -28,9 +21,7 @@ export const markdownConversionOptionsSchema = z.object({
 		.optional(),
 });
 
-export type MarkdownConversionOptions = z.infer<
-	typeof markdownConversionOptionsSchema
->;
+export type MarkdownConversionOptions = z.infer<typeof markdownConversionOptionsSchema>;
 
 export const uploadRequestSchema = z.object({
 	file: z.any().refine((file) => file && file instanceof File, {

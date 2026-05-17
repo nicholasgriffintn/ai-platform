@@ -2,10 +2,7 @@ import { FileQuestion, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router";
 
-import {
-	AppContentRenderer,
-	type AppDataItem,
-} from "~/components/Apps/ContentRenderers";
+import { AppContentRenderer, type AppDataItem } from "~/components/Apps/ContentRenderers";
 import { PageShell } from "~/components/Core/PageShell";
 import { PageStatus } from "~/components/Core/PageStatus";
 import { getSharedItem } from "~/hooks/useAppsSharing";
@@ -21,13 +18,8 @@ const SharedHeader = () => (
 	<header className="sticky top-0 z-10 border-b border-zinc-200 bg-off-white p-4 dark:border-zinc-700 dark:bg-zinc-900">
 		<div className="mx-auto flex max-w-3xl items-center justify-between">
 			<div className="flex items-center">
-				<FileQuestion
-					size={20}
-					className="mr-2 text-zinc-600 dark:text-zinc-400"
-				/>
-				<h1 className="text-lg font-semibold text-zinc-800 dark:text-zinc-200">
-					Shared Content
-				</h1>
+				<FileQuestion size={20} className="mr-2 text-zinc-600 dark:text-zinc-400" />
+				<h1 className="text-lg font-semibold text-zinc-800 dark:text-zinc-200">Shared Content</h1>
 			</div>
 			<div className="flex items-center gap-2">
 				<Link
@@ -82,9 +74,7 @@ export default function SharedItemPage() {
 			>
 				<div className="flex flex-col items-center">
 					<Loader2 size={48} className="animate-spin text-blue-500 mb-4" />
-					<p className="text-zinc-600 dark:text-zinc-400">
-						Loading shared content...
-					</p>
+					<p className="text-zinc-600 dark:text-zinc-400">Loading shared content...</p>
 				</div>
 			</PageShell>
 		);

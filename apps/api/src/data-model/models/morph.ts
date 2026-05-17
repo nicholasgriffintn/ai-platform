@@ -1,8 +1,5 @@
 import type { ModelConfig } from "~/types";
-import {
-	createModelConfig,
-	createModelConfigObject,
-} from "~/lib/providers/models/utils";
+import { createModelConfig, createModelConfigObject } from "~/lib/providers/models/utils";
 
 const PROVIDER = "morph";
 
@@ -10,8 +7,7 @@ export const morphModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("morph-auto", PROVIDER, {
 		name: "Auto",
 		matchingModel: "auto",
-		description:
-			"Morph's automatic model selection that routes to the best model for the task.",
+		description: "Morph's automatic model selection that routes to the best model for the task.",
 		knowledgeCutoffDate: "June 2024",
 		releaseDate: "June 1, 2024",
 		lastUpdated: "June 1, 2024",
@@ -66,8 +62,7 @@ export const morphModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("morph-v3-fast", PROVIDER, {
 		name: "Morph v3 Fast",
 		matchingModel: "morph-v3-fast",
-		description:
-			"Morph's fast v3 model optimized for quick responses while maintaining quality.",
+		description: "Morph's fast v3 model optimized for quick responses while maintaining quality.",
 		knowledgeCutoffDate: "August 2024",
 		releaseDate: "August 15, 2024",
 		lastUpdated: "August 15, 2024",

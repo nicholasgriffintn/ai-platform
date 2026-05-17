@@ -2,10 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ChatOrchestrator } from "~/lib/chat/core/ChatOrchestrator";
 import type { CoreChatOptions, Message } from "~/types";
 import z from "zod/v4";
-import {
-	delegateToTeamMember,
-	delegateToTeamMemberByRole,
-} from "../teamDelegation";
+import { delegateToTeamMember, delegateToTeamMemberByRole } from "../teamDelegation";
 
 const {
 	mockValidator,
@@ -47,10 +44,7 @@ let guardrailsFactory: (() => any) | undefined;
 let agentRepositoryFactory: (() => any) | undefined;
 let teamDelegationFactory: (() => any) | undefined;
 
-const createToolContext = (
-	request: any,
-	completionId = "test-completion-id",
-) => ({
+const createToolContext = (request: any, completionId = "test-completion-id") => ({
 	completionId,
 	env: request.env,
 	user: request.user,
@@ -229,12 +223,8 @@ describe("Team Delegation Integration", () => {
 				role: "tool",
 			});
 
-			expect(mockAgentRepository.getAgentById).toHaveBeenCalledWith(
-				"agent-123",
-			);
-			expect(mockAgentRepository.getAgentById).toHaveBeenCalledWith(
-				"agent-456",
-			);
+			expect(mockAgentRepository.getAgentById).toHaveBeenCalledWith("agent-123");
+			expect(mockAgentRepository.getAgentById).toHaveBeenCalledWith("agent-456");
 			expect(mockTeamDelegation.callAgent).toHaveBeenCalledWith("agent-456", [
 				{ role: "user", content: "Please complete this task" },
 			]);
@@ -328,9 +318,7 @@ describe("Team Delegation Integration", () => {
 				role: "tool",
 			});
 
-			expect(mockTeamDelegation.findAgentByRole).toHaveBeenCalledWith(
-				"specialist",
-			);
+			expect(mockTeamDelegation.findAgentByRole).toHaveBeenCalledWith("specialist");
 		});
 
 		it("should fail when current_agent_id is missing", async () => {
@@ -417,9 +405,7 @@ describe("Team Delegation Integration", () => {
 			const options: CoreChatOptions = {
 				completion_id: "test-completion-id",
 				model: "test-model",
-				messages: [
-					{ role: "user", content: "Please handle this complex task" },
-				],
+				messages: [{ role: "user", content: "Please handle this complex task" }],
 				user: mockUser,
 				env: mockEnv,
 				app_url: "https://test.com",
@@ -524,8 +510,7 @@ describe("Team Delegation Integration", () => {
 					toolResponses: [
 						{
 							role: "tool",
-							content:
-								"Current agent context not available for team delegation",
+							content: "Current agent context not available for team delegation",
 							tool_call_id: "call-1",
 						},
 					],

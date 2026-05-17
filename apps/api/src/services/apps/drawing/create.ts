@@ -2,10 +2,7 @@ import { gatewayId } from "~/constants/app";
 import type { ConversationManager } from "~/lib/conversationManager";
 import { drawingDescriptionPrompt } from "~/lib/prompts";
 import { StorageService } from "~/lib/storage";
-import {
-	resolveServiceContext,
-	type ServiceContext,
-} from "~/lib/context/serviceContext";
+import { resolveServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
 import type { ChatRole, IEnv, IFunctionResponse, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
@@ -49,14 +46,10 @@ export async function generateImageFromDrawing({
 	let _drawingUrl = "";
 	try {
 		const storageService = new StorageService(runtimeEnv.ASSETS_BUCKET);
-		_drawingUrl = await storageService.uploadObject(
-			drawingImageKey,
-			arrayBuffer,
-			{
-				contentType: "image/png",
-				contentLength: length,
-			},
-		);
+		_drawingUrl = await storageService.uploadObject(drawingImageKey, arrayBuffer, {
+			contentType: "image/png",
+			contentLength: length,
+		});
 	} catch {
 		throw new AssistantError("Error uploading drawing");
 	}
@@ -82,9 +75,7 @@ export async function generateImageFromDrawing({
 	const painting = await runtimeEnv.AI.run(
 		"@cf/runwayml/stable-diffusion-v1-5-img2img",
 		{
-			prompt:
-				descriptionRequest?.description ||
-				"Convert this drawing into a painting.",
+			prompt: descriptionRequest?.description || "Convert this drawing into a painting.",
 			image: [...new Uint8Array(arrayBuffer)],
 			guidance: 8,
 			strength: 0.85,

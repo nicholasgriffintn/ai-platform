@@ -17,10 +17,7 @@ interface StrudelMirrorInstance {
 export function sanitizeStrudelCode(code: string): string {
 	return code
 		.replace(/"([^"]*)"/g, (_, content) => {
-			const sanitized = content.replace(
-				/[^a-zA-Z0-9~*/!?[\]@<>(),:._^\-\s]/g,
-				"",
-			);
+			const sanitized = content.replace(/[^a-zA-Z0-9~*/!?[\]@<>(),:._^\-\s]/g, "");
 			return `"${sanitized}"`;
 		})
 		.replace(/;+/g, "")
@@ -130,9 +127,7 @@ export function StrudelPlayer({
 			{title || subtitle ? (
 				<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-3 sm:mb-4 gap-1">
 					<div className="flex items-center gap-2">
-						{title && (
-							<h3 className="text-base sm:text-lg font-semibold">{title}</h3>
-						)}
+						{title && <h3 className="text-base sm:text-lg font-semibold">{title}</h3>}
 						{isPlaying && (
 							<span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-medium text-emerald-400 border border-emerald-500/40">
 								<span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
@@ -140,11 +135,7 @@ export function StrudelPlayer({
 							</span>
 						)}
 					</div>
-					{subtitle && (
-						<span className="text-xs sm:text-sm text-muted-foreground">
-							{subtitle}
-						</span>
-					)}
+					{subtitle && <span className="text-xs sm:text-sm text-muted-foreground">{subtitle}</span>}
 				</div>
 			) : null}
 
@@ -157,9 +148,7 @@ export function StrudelPlayer({
 					</div>
 
 					<div className="flex-1 flex items-center justify-end text-[11px] text-slate-400">
-						{isPlaying && (
-							<span className="text-emerald-300">Playing current pattern</span>
-						)}
+						{isPlaying && <span className="text-emerald-300">Playing current pattern</span>}
 					</div>
 
 					<div className="flex items-center gap-2">

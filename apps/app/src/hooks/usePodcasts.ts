@@ -1,11 +1,6 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 
-import {
-	fetchPodcast,
-	fetchPodcasts,
-	processPodcast,
-	uploadPodcast,
-} from "~/lib/api/dynamic-apps";
+import { fetchPodcast, fetchPodcasts, processPodcast, uploadPodcast } from "~/lib/api/dynamic-apps";
 import type { Podcast } from "~/types/podcast";
 
 export const useFetchPodcasts = () => {

@@ -8,10 +8,7 @@ type AudioProviderMock = {
 };
 
 const mockAudioProviders = vi.hoisted<
-	Record<
-		"polly" | "cartesia" | "elevenlabs" | "melotts" | "default",
-		AudioProviderMock
-	>
+	Record<"polly" | "cartesia" | "elevenlabs" | "melotts" | "default", AudioProviderMock>
 >(() => {
 	const createAudioProviderMock = (): AudioProviderMock => ({
 		synthesize: vi.fn(),

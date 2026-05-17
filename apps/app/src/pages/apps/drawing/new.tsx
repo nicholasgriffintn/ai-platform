@@ -207,13 +207,8 @@ export default function NewDrawingPage() {
 		>
 			<div className="text-sm text-zinc-500 dark:text-zinc-400 mb-6">
 				<p>Draw any shape, object, or scene in the canvas below.</p>
-				<p>
-					Click "Transform Drawing" to see your creation transformed into art.
-				</p>
-				<p>
-					Alternatively, click "Guess What I Drew" to have the AI try to
-					identify your drawing.
-				</p>
+				<p>Click "Transform Drawing" to see your creation transformed into art.</p>
+				<p>Alternatively, click "Guess What I Drew" to have the AI try to identify your drawing.</p>
 			</div>
 			<div className="space-y-6">
 				<Card className="p-6">
@@ -222,25 +217,16 @@ export default function NewDrawingPage() {
 							<div className="w-full sm:w-1/3 flex flex-col space-y-4">
 								<div className="space-y-4">
 									<h3 className="text-lg font-medium">Tools</h3>
-									<ToolPicker
-										isFillMode={isFillMode}
-										setIsFillMode={setIsFillMode}
-									/>
+									<ToolPicker isFillMode={isFillMode} setIsFillMode={setIsFillMode} />
 								</div>
 
 								<div className="space-y-4">
 									<h3 className="text-lg font-medium">Colors</h3>
-									<ColorPicker
-										currentColor={currentColor}
-										setCurrentColor={setCurrentColor}
-									/>
+									<ColorPicker currentColor={currentColor} setCurrentColor={setCurrentColor} />
 								</div>
 
 								<div className="space-y-4">
-									<LineWidthPicker
-										lineWidth={lineWidth}
-										setLineWidth={setLineWidth}
-									/>
+									<LineWidthPicker lineWidth={lineWidth} setLineWidth={setLineWidth} />
 								</div>
 
 								<div className="flex flex-col space-y-2">
@@ -258,10 +244,7 @@ export default function NewDrawingPage() {
 											variant="outline"
 											className="flex-1"
 											onClick={redoDrawing}
-											disabled={
-												isProcessing ||
-												currentHistoryIndex >= drawingHistory.length - 1
-											}
+											disabled={isProcessing || currentHistoryIndex >= drawingHistory.length - 1}
 											title="Redo"
 										>
 											Redo
@@ -288,9 +271,7 @@ export default function NewDrawingPage() {
 									saveToHistory={saveToHistory}
 									onDrawingComplete={handleDrawingComplete}
 									drawingData={
-										currentHistoryIndex >= 0
-											? drawingHistory[currentHistoryIndex]
-											: undefined
+										currentHistoryIndex >= 0 ? drawingHistory[currentHistoryIndex] : undefined
 									}
 								/>
 
@@ -315,11 +296,7 @@ export default function NewDrawingPage() {
 								)}
 							</div>
 							<div className="flex flex-wrap gap-2">
-								<Button
-									onClick={handleGuess}
-									variant="outline"
-									disabled={isProcessing || !preview}
-								>
+								<Button onClick={handleGuess} variant="outline" disabled={isProcessing || !preview}>
 									Guess What I Drew
 								</Button>
 								<Button

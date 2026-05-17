@@ -44,11 +44,7 @@ import { addRoute } from "./lib/http/routeBuilder";
 import { autoRegisterDynamicApps } from "./services/dynamic-apps/auto-register-apps";
 import { handleGetMetrics } from "./services/metrics/getMetrics";
 import type { IEnv } from "./types";
-import {
-	AssistantError,
-	ErrorType,
-	handleAIServiceError,
-} from "./utils/errors";
+import { AssistantError, ErrorType, handleAIServiceError } from "./utils/errors";
 import { LogLevel, getLogger } from "./utils/logger";
 import { tagDescriptions } from "./openapi/documentation";
 import { apiInfoDescription } from "./openapi/content/apiDescription";
@@ -96,12 +92,7 @@ app.use(
 	cors({
 		origin: corsOrigin,
 		allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-		allowHeaders: [
-			"Content-Type",
-			"Authorization",
-			"X-CSRF-Token",
-			"x-captcha-token",
-		],
+		allowHeaders: ["Content-Type", "Authorization", "X-CSRF-Token", "x-captcha-token"],
 		credentials: true,
 		maxAge: 86400,
 	}),
@@ -269,8 +260,7 @@ addRoute(app, "get", "/status", {
 
 			const totalResponseTime = Date.now() - startTime;
 			const allHealthy = Object.values(healthChecks).every(
-				(check) =>
-					check.status === "healthy" || check.status === "not_configured",
+				(check) => check.status === "healthy" || check.status === "not_configured",
 			);
 
 			const response = {
@@ -335,9 +325,7 @@ app.notFound((c) => c.json({ status: "not found" }, 404));
 
 app.onError((err, _c) => {
 	const error =
-		err instanceof AssistantError
-			? err
-			: AssistantError.fromError(err, ErrorType.UNKNOWN_ERROR);
+		err instanceof AssistantError ? err : AssistantError.fromError(err, ErrorType.UNKNOWN_ERROR);
 	return handleAIServiceError(error);
 });
 

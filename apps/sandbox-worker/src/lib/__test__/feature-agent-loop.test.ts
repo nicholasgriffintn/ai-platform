@@ -130,9 +130,7 @@ describe("executeAgentLoop", () => {
 
 		expect(result.summary).toBe("done");
 		expect(chatCompletion).toHaveBeenCalledTimes(3);
-		expect(
-			emitted.some((event) => event.type === "agent_decision_invalid"),
-		).toBe(true);
+		expect(emitted.some((event) => event.type === "agent_decision_invalid")).toBe(true);
 		expect(emitted.some((event) => event.type === "plan_updated")).toBe(true);
 	});
 
@@ -216,12 +214,8 @@ describe("executeAgentLoop", () => {
 
 		expect(result.summary).toBe("recovered");
 		expect(exec).toHaveBeenCalledTimes(2);
-		expect(
-			emitted.filter((event) => event.type === "command_failed"),
-		).toHaveLength(2);
-		expect(
-			emitted.some((event) => event.type === "agent_repetition_detected"),
-		).toBe(true);
+		expect(emitted.filter((event) => event.type === "command_failed")).toHaveLength(2);
+		expect(emitted.some((event) => event.type === "agent_repetition_detected")).toBe(true);
 		expect(emitted.some((event) => event.type === "plan_updated")).toBe(true);
 	});
 
@@ -295,9 +289,7 @@ describe("executeAgentLoop", () => {
 
 		expect(result.summary).toBe("parallel complete");
 		expect(exec).toHaveBeenCalledTimes(2);
-		expect(
-			emitted.filter((event) => event.type === "command_completed"),
-		).toHaveLength(2);
+		expect(emitted.filter((event) => event.type === "command_completed")).toHaveLength(2);
 	});
 
 	it("runs scripts inside repo root with isolated scope", async () => {
@@ -380,9 +372,7 @@ describe("executeAgentLoop", () => {
 			cwd: "/workspace/repo",
 		});
 		expect(runCode).toHaveBeenCalledTimes(1);
-		expect(runCode.mock.calls[0]?.[0]).toContain(
-			"const fs = require('node:fs');",
-		);
+		expect(runCode.mock.calls[0]?.[0]).toContain("const fs = require('node:fs');");
 		expect(runCode.mock.calls[0]?.[1]).toEqual({
 			context: expect.objectContaining({
 				id: "ctx-1",
@@ -390,9 +380,7 @@ describe("executeAgentLoop", () => {
 			language: "javascript",
 		});
 		expect(deleteCodeContext).toHaveBeenCalledWith("ctx-1");
-		expect(emitted.some((event) => event.type === "script_completed")).toBe(
-			true,
-		);
+		expect(emitted.some((event) => event.type === "script_completed")).toBe(true);
 	});
 
 	it("reads multiple files in one step via read_files", async () => {
@@ -465,9 +453,7 @@ describe("executeAgentLoop", () => {
 
 		expect(result.summary).toBe("read batch complete");
 		expect(exec).toHaveBeenCalledTimes(2);
-		expect(emitted.filter((event) => event.type === "file_read")).toHaveLength(
-			2,
-		);
+		expect(emitted.filter((event) => event.type === "file_read")).toHaveLength(2);
 	});
 
 	it("detects repeated actions and forces recovery", async () => {
@@ -550,9 +536,7 @@ describe("executeAgentLoop", () => {
 
 		expect(result.summary).toBe("recovered");
 		expect(exec).toHaveBeenCalledTimes(2);
-		expect(
-			emitted.some((event) => event.type === "agent_repetition_detected"),
-		).toBe(true);
+		expect(emitted.some((event) => event.type === "agent_repetition_detected")).toBe(true);
 	});
 
 	it("ingests operator instructions into model context", async () => {
@@ -620,8 +604,7 @@ describe("executeAgentLoop", () => {
 		expect(
 			firstCallMessages.some(
 				(message: { content?: string }) =>
-					typeof message.content === "string" &&
-					message.content.includes("Operator message:"),
+					typeof message.content === "string" && message.content.includes("Operator message:"),
 			),
 		).toBe(true);
 	});

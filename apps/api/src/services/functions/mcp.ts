@@ -8,10 +8,7 @@ const logger = getLogger({ prefix: "services/functions/mcp" });
 
 const mcpClients = new Map<string, MCPClientManager>();
 
-export const registerMCPClient = (
-	agentId: string,
-	client: MCPClientManager,
-): void => {
+export const registerMCPClient = (agentId: string, client: MCPClientManager): void => {
 	mcpClients.set(agentId, client);
 };
 
@@ -30,17 +27,12 @@ export const handleMCPTool = async (
 
 		const parts = functionName.split("_");
 		if (parts.length < 3 || parts[0] !== "mcp") {
-			throw new AssistantError(
-				`Invalid MCP tool format: ${functionName}`,
-				ErrorType.PARAMS_ERROR,
-			);
+			throw new AssistantError(`Invalid MCP tool format: ${functionName}`, ErrorType.PARAMS_ERROR);
 		}
 
 		const shortAgentId = parts[1];
 
-		const fullAgentId = Array.from(mcpClients.keys()).find((id) =>
-			id.startsWith(shortAgentId),
-		);
+		const fullAgentId = Array.from(mcpClients.keys()).find((id) => id.startsWith(shortAgentId));
 		if (!fullAgentId) {
 			throw new AssistantError(
 				`No agent found with ID starting with ${shortAgentId}`,
@@ -89,14 +81,7 @@ export const handleMCPTool = async (
 			);
 		}
 
-		return await executeTool(
-			client,
-			toolName,
-			args,
-			toolName,
-			completion_id,
-			conversationManager,
-		);
+		return await executeTool(client, toolName, args, toolName, completion_id, conversationManager);
 	} catch (error) {
 		logger.error("Error in MCP tool execution:", {
 			error_message: error instanceof Error ? error.message : "Unknown error",
@@ -137,9 +122,7 @@ async function executeTool(
 	}
 
 	const argsObj =
-		typeof args === "object" && args !== null
-			? (args as Record<string, unknown>)
-			: {};
+		typeof args === "object" && args !== null ? (args as Record<string, unknown>) : {};
 
 	const baseFunctionName = toolName.includes("_")
 		? toolName.substring(toolName.indexOf("_") + 1)

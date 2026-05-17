@@ -34,10 +34,7 @@ export class PollyProvider extends BaseProvider {
 		const parts = apiKey.split(delimiter);
 
 		if (parts.length !== 2) {
-			throw new AssistantError(
-				"Invalid AWS credentials format",
-				ErrorType.CONFIGURATION_ERROR,
-			);
+			throw new AssistantError("Invalid AWS credentials format", ErrorType.CONFIGURATION_ERROR);
 		}
 
 		return { accessKey: parts[0], secretKey: parts[1] };
@@ -47,9 +44,7 @@ export class PollyProvider extends BaseProvider {
 		super.validateParams(params);
 	}
 
-	protected async getEndpoint(
-		params: ChatCompletionParameters,
-	): Promise<string> {
+	protected async getEndpoint(params: ChatCompletionParameters): Promise<string> {
 		const region = params.env.AWS_REGION || "us-east-1";
 		return `https://polly.${region}.amazonaws.com/v1/synthesisTasks`;
 	}
@@ -58,10 +53,7 @@ export class PollyProvider extends BaseProvider {
 		return {};
 	}
 
-	async getResponse(
-		params: ChatCompletionParameters,
-		userId?: number,
-	): Promise<any> {
+	async getResponse(params: ChatCompletionParameters, userId?: number): Promise<any> {
 		this.validateParams(params);
 
 		const pollyUrl = await this.getEndpoint(params);
@@ -86,10 +78,9 @@ export class PollyProvider extends BaseProvider {
 							}
 						}
 					} catch (error) {
-						logger.warn(
-							"Failed to get user AWS credentials, using environment variables:",
-							{ error },
-						);
+						logger.warn("Failed to get user AWS credentials, using environment variables:", {
+							error,
+						});
 					}
 				}
 
@@ -154,10 +145,9 @@ export class PollyProvider extends BaseProvider {
 							);
 						}
 
-						const s3Response = await awsClient.fetch(
-							taskData.SynthesisTask.OutputUri,
-							{ method: "GET" },
-						);
+						const s3Response = await awsClient.fetch(taskData.SynthesisTask.OutputUri, {
+							method: "GET",
+						});
 
 						if (!s3Response.ok) {
 							const errorBody = await s3Response.text();

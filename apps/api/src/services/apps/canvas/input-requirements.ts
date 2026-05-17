@@ -26,9 +26,7 @@ function getRequiredReferenceFields(model: ModelConfigItem): string[] {
 		.map((field) => field.name);
 }
 
-export function modelRequiresCanvasReferenceImage(
-	model: ModelConfigItem,
-): boolean {
+export function modelRequiresCanvasReferenceImage(model: ModelConfigItem): boolean {
 	return getRequiredReferenceFields(model).length > 0;
 }
 
@@ -44,9 +42,7 @@ export function validateCanvasModelInputRequirements({
 		return null;
 	}
 
-	const hasReferences = (request.referenceImages ?? []).some((value) =>
-		Boolean(value?.trim()),
-	);
+	const hasReferences = (request.referenceImages ?? []).some((value) => Boolean(value?.trim()));
 
 	if (hasReferences) {
 		return null;

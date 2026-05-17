@@ -45,19 +45,13 @@ export class BedrockGuardrailsProvider implements GuardrailsProvider {
 		const parts = apiKey.split(delimiter);
 
 		if (parts.length !== 2) {
-			throw new AssistantError(
-				"Invalid AWS credentials format",
-				ErrorType.CONFIGURATION_ERROR,
-			);
+			throw new AssistantError("Invalid AWS credentials format", ErrorType.CONFIGURATION_ERROR);
 		}
 
 		return { accessKey: parts[0], secretKey: parts[1] };
 	}
 
-	async validateContent(
-		content: string,
-		source: "INPUT" | "OUTPUT",
-	): Promise<GuardrailResult> {
+	async validateContent(content: string, source: "INPUT" | "OUTPUT"): Promise<GuardrailResult> {
 		try {
 			logger.debug("Validating content with Bedrock Guardrails");
 			let accessKeyId = this.defaultAccessKeyId;
@@ -66,10 +60,7 @@ export class BedrockGuardrailsProvider implements GuardrailsProvider {
 			if (this.user?.id && this.env.DB) {
 				try {
 					const userSettingsRepo = new UserSettingsRepository(this.env);
-					const userApiKey = await userSettingsRepo.getProviderApiKey(
-						this.user.id,
-						"bedrock",
-					);
+					const userApiKey = await userSettingsRepo.getProviderApiKey(this.user.id, "bedrock");
 
 					if (userApiKey) {
 						const credentials = this.parseAwsCredentials(userApiKey);
@@ -148,25 +139,16 @@ export class BedrockGuardrailsProvider implements GuardrailsProvider {
 				if (assessment.contentPolicy?.filters) {
 					violations.push(
 						...assessment.contentPolicy.filters
-							.filter(
-								(filter: { action: string }) => filter.action === "BLOCKED",
-							)
-							.map(
-								(filter: { type: string }) =>
-									`Content violation: ${filter.type}`,
-							),
+							.filter((filter: { action: string }) => filter.action === "BLOCKED")
+							.map((filter: { type: string }) => `Content violation: ${filter.type}`),
 					);
 				}
 
 				if (assessment.sensitiveInformationPolicy?.piiEntities) {
 					violations.push(
 						...assessment.sensitiveInformationPolicy.piiEntities
-							.filter(
-								(entity: { action: string }) => entity.action === "BLOCKED",
-							)
-							.map(
-								(entity: { type: string }) => `PII detected: ${entity.type}`,
-							),
+							.filter((entity: { action: string }) => entity.action === "BLOCKED")
+							.map((entity: { type: string }) => `PII detected: ${entity.type}`),
 					);
 				}
 			}

@@ -24,9 +24,8 @@ async function uploadFromChat(
 			}
 			uploadDone = done;
 		}
-		arrayBuffer = new Uint8Array(
-			chunks.reduce((acc, chunk) => acc.concat(Array.from(chunk)), []),
-		).buffer;
+		arrayBuffer = new Uint8Array(chunks.reduce((acc, chunk) => acc.concat(Array.from(chunk)), []))
+			.buffer;
 	} else {
 		const base64Data = modelResponse.replace(
 			new RegExp(`^data:${options.mimeTypeRegex};base64,`),

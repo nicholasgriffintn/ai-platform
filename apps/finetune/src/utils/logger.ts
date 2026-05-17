@@ -5,10 +5,7 @@ export class Logger {
 
 	info(message: string, data?: any) {
 		const prefix = this.prefix ? chalk.blue(`[${this.prefix}]`) : "";
-		console.log(
-			`${prefix} ${message}`,
-			data ? JSON.stringify(data, null, 2) : "",
-		);
+		console.log(`${prefix} ${message}`, data ? JSON.stringify(data, null, 2) : "");
 	}
 
 	success(message: string, data?: any) {
@@ -42,10 +39,7 @@ export class Logger {
 	debug(message: string, data?: any) {
 		if (process.env.DEBUG) {
 			const prefix = this.prefix ? chalk.gray(`[${this.prefix}]`) : "";
-			console.debug(
-				`${prefix} ${chalk.gray(message)}`,
-				data ? JSON.stringify(data, null, 2) : "",
-			);
+			console.debug(`${prefix} ${chalk.gray(message)}`, data ? JSON.stringify(data, null, 2) : "");
 		}
 	}
 }

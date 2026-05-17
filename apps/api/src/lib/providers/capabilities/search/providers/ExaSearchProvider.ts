@@ -32,10 +32,7 @@ export class ExaSearchProvider implements SearchProvider {
 
 		if (this.user?.id && this.userSettingsRepo) {
 			try {
-				const userApiKey = await this.userSettingsRepo.getProviderApiKey(
-					this.user.id,
-					"exa",
-				);
+				const userApiKey = await this.userSettingsRepo.getProviderApiKey(this.user.id, "exa");
 				if (userApiKey) {
 					this.apiKey = userApiKey;
 					return userApiKey;
@@ -43,8 +40,7 @@ export class ExaSearchProvider implements SearchProvider {
 			} catch (error) {
 				if (
 					error instanceof AssistantError &&
-					(error.type === ErrorType.NOT_FOUND ||
-						error.type === ErrorType.PARAMS_ERROR)
+					(error.type === ErrorType.NOT_FOUND || error.type === ErrorType.PARAMS_ERROR)
 				) {
 					// Ignore missing user-specific keys so we can fall back to env key
 				} else {
@@ -55,20 +51,14 @@ export class ExaSearchProvider implements SearchProvider {
 
 		const envKey = this.env.PARALLEL_API_KEY;
 		if (!envKey) {
-			throw new AssistantError(
-				"EXA_API_KEY is not set",
-				ErrorType.CONFIGURATION_ERROR,
-			);
+			throw new AssistantError("EXA_API_KEY is not set", ErrorType.CONFIGURATION_ERROR);
 		}
 
 		this.apiKey = envKey;
 		return envKey;
 	}
 
-	async performWebSearch(
-		query: string,
-		options?: SearchOptions,
-	): Promise<SearchResult> {
+	async performWebSearch(query: string, options?: SearchOptions): Promise<SearchResult> {
 		const apiKey = await this.resolveApiKey();
 
 		const payload = options?.include_answer

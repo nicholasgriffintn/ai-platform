@@ -28,8 +28,7 @@ export const add_reasoning_step: ApiToolDefinition = {
 			nextStep: {
 				type: "string",
 				enum: ["continue", "finalAnswer"],
-				description:
-					"Whether to continue with another tool call or provide the final answer",
+				description: "Whether to continue with another tool call or provide the final answer",
 			},
 		},
 		required: ["title", "content", "nextStep"],
@@ -64,8 +63,10 @@ Respond with:
 <confidence>high OR medium OR low</confidence>
 `;
 
-			const { model: modelToUse, provider: providerToUse } =
-				await getAuxiliaryModel(req.env, req.user);
+			const { model: modelToUse, provider: providerToUse } = await getAuxiliaryModel(
+				req.env,
+				req.user,
+			);
 			const provider = getChatProvider(providerToUse, {
 				env: req.env,
 				user: req.user,
@@ -88,24 +89,18 @@ Respond with:
 			});
 
 			if (!aiResponse.response) {
-				throw new AssistantError(
-					"AI reasoning evaluation failed",
-					ErrorType.PROVIDER_ERROR,
-				);
+				throw new AssistantError("AI reasoning evaluation failed", ErrorType.PROVIDER_ERROR);
 			}
 
 			const response = aiResponse.response;
 
 			const evaluationMatch = /<evaluation>(.*?)<\/evaluation>/s.exec(response);
-			const enhancedContentMatch =
-				/<enhanced_content>(.*?)<\/enhanced_content>/s.exec(response);
+			const enhancedContentMatch = /<enhanced_content>(.*?)<\/enhanced_content>/s.exec(response);
 			const nextStepMatch = /<nextStep>(.*?)<\/nextStep>/s.exec(response);
 			const confidenceMatch = /<confidence>(.*?)<\/confidence>/s.exec(response);
 
 			const evaluation = evaluationMatch ? evaluationMatch[1].trim() : "";
-			const enhancedContent = enhancedContentMatch
-				? enhancedContentMatch[1].trim()
-				: args.content;
+			const enhancedContent = enhancedContentMatch ? enhancedContentMatch[1].trim() : args.content;
 			const nextStep = nextStepMatch ? nextStepMatch[1].trim() : args.nextStep;
 			const confidence = confidenceMatch ? confidenceMatch[1].trim() : "medium";
 

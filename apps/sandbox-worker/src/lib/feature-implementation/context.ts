@@ -45,9 +45,7 @@ function discoverRepoFiles(params: {
 }): Promise<string[]> {
 	const { sandbox, repoTargetDir, findExpression, maxFiles } = params;
 	return sandbox
-		.exec(
-			`find ${quoteForShell(repoTargetDir)} -maxdepth 4 -type f ${findExpression} | sort`,
-		)
+		.exec(`find ${quoteForShell(repoTargetDir)} -maxdepth 4 -type f ${findExpression} | sort`)
 		.then((result) => {
 			if (!result.success) {
 				return [];
@@ -76,9 +74,7 @@ export function isImplementInstructionPath(path: string): boolean {
 		return false;
 	}
 
-	return IMPLEMENT_FILE_PATH_PATTERNS.some((pattern) =>
-		pattern.test(normalisedPath),
-	);
+	return IMPLEMENT_FILE_PATH_PATTERNS.some((pattern) => pattern.test(normalisedPath));
 }
 
 interface RawRalphPrdUserStory {
@@ -94,10 +90,7 @@ function normaliseRalphPrdUserStory(
 	rawStory: RawRalphPrdUserStory,
 	index: number,
 ): RalphPrdUserStory {
-	const id =
-		typeof rawStory.id === "string" && rawStory.id.trim()
-			? rawStory.id.trim()
-			: undefined;
+	const id = typeof rawStory.id === "string" && rawStory.id.trim() ? rawStory.id.trim() : undefined;
 	const title =
 		typeof rawStory.title === "string" && rawStory.title.trim()
 			? rawStory.title.trim()
@@ -125,10 +118,7 @@ function normaliseRalphPrdUserStory(
 	};
 }
 
-export function parseRalphPrdContext(
-	path: string,
-	rawJson: string,
-): RalphPrdContext | null {
+export function parseRalphPrdContext(path: string, rawJson: string): RalphPrdContext | null {
 	const parsed = safeParseJson<Record<string, unknown>>(rawJson);
 	if (!parsed) {
 		return null;
@@ -139,17 +129,13 @@ export function parseRalphPrdContext(
 	}
 
 	const project =
-		typeof parsed.project === "string" && parsed.project.trim()
-			? parsed.project.trim()
-			: undefined;
+		typeof parsed.project === "string" && parsed.project.trim() ? parsed.project.trim() : undefined;
 	const description =
 		typeof parsed.description === "string" && parsed.description.trim()
 			? parsed.description.trim()
 			: undefined;
 
-	const userStoriesRaw = Array.isArray(parsed.userStories)
-		? parsed.userStories
-		: [];
+	const userStoriesRaw = Array.isArray(parsed.userStories) ? parsed.userStories : [];
 
 	const userStories = userStoriesRaw.flatMap((story, index) => {
 		if (!isObjectRecord(story)) {
@@ -185,10 +171,7 @@ export function summariseRalphPrdContext(prdContext: RalphPrdContext): string {
 
 	const pendingStories = userStories
 		.filter((story) => story.passes !== true)
-		.sort(
-			(a, b) =>
-				toPrioritySortValue(a.priority) - toPrioritySortValue(b.priority),
-		);
+		.sort((a, b) => toPrioritySortValue(a.priority) - toPrioritySortValue(b.priority));
 	const selectedStories = (pendingStories.length ? pendingStories : userStories)
 		.slice(0, 8)
 		.map((story) => {
@@ -206,9 +189,7 @@ export function summariseRalphPrdContext(prdContext: RalphPrdContext): string {
 		"Ralph PRD summary:",
 		`Project: ${project}`,
 		description ? `Description: ${description}` : "",
-		pendingStories.length
-			? "Pending user stories (passes=false):"
-			: "User stories:",
+		pendingStories.length ? "Pending user stories (passes=false):" : "User stories:",
 		...selectedStories,
 	]
 		.filter(Boolean)
@@ -280,11 +261,7 @@ export async function readRepositoryFileSnippet(params: {
 }): Promise<ReadFileResult> {
 	const { sandbox, repoTargetDir } = params;
 	const path = normaliseRepoRelativePath(params.path);
-	const startLine = parsePositiveInteger(
-		params.startLine,
-		1,
-		Number.MAX_SAFE_INTEGER,
-	);
+	const startLine = parsePositiveInteger(params.startLine, 1, Number.MAX_SAFE_INTEGER);
 	const requestedEndLine = parsePositiveInteger(
 		params.endLine,
 		startLine + MAX_READ_FILE_LINES - 1,
@@ -327,9 +304,7 @@ export async function collectRepositoryContext(params: {
 	repoTargetDir: string;
 }): Promise<RepositoryContext> {
 	const { sandbox, repoTargetDir } = params;
-	const topLevelResult = await sandbox.exec(
-		`ls -1 ${quoteForShell(repoTargetDir)}`,
-	);
+	const topLevelResult = await sandbox.exec(`ls -1 ${quoteForShell(repoTargetDir)}`);
 	const topLevelEntries = topLevelResult.success
 		? topLevelResult.stdout
 				.split("\n")

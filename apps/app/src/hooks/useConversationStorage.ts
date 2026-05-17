@@ -12,8 +12,7 @@ import { useChatStore } from "~/state/stores/chatStore";
  */
 export function useConversationStorage() {
 	const queryClient = useQueryClient();
-	const { isAuthenticated, isPro, localOnlyMode, chatSettings, chatMode } =
-		useChatStore();
+	const { isAuthenticated, isPro, localOnlyMode, chatSettings, chatMode } = useChatStore();
 
 	const determineStorageMode = useCallback(() => {
 		const isLocalOnly =
@@ -40,8 +39,7 @@ export function useConversationStorage() {
 				CHATS_QUERY_KEY,
 				conversationId,
 			]);
-			const allConversations =
-				queryClient.getQueryData<Conversation[]>([CHATS_QUERY_KEY]) || [];
+			const allConversations = queryClient.getQueryData<Conversation[]>([CHATS_QUERY_KEY]) || [];
 
 			const now = new Date().toISOString();
 			const updatedConversation = {
@@ -52,14 +50,9 @@ export function useConversationStorage() {
 				last_message_at: now,
 			};
 
-			queryClient.setQueryData(
-				[CHATS_QUERY_KEY, conversationId],
-				updatedConversation,
-			);
+			queryClient.setQueryData([CHATS_QUERY_KEY, conversationId], updatedConversation);
 
-			const existingIndex = allConversations.findIndex(
-				(c) => c.id === conversationId,
-			);
+			const existingIndex = allConversations.findIndex((c) => c.id === conversationId);
 			const updatedAllConversations = [...allConversations];
 
 			if (existingIndex >= 0) {
@@ -72,14 +65,9 @@ export function useConversationStorage() {
 
 			if (isLocalOnly) {
 				const localChats =
-					queryClient.getQueryData<Conversation[]>([
-						CHATS_QUERY_KEY,
-						"local",
-					]) || [];
+					queryClient.getQueryData<Conversation[]>([CHATS_QUERY_KEY, "local"]) || [];
 
-				const localExistingIndex = localChats.findIndex(
-					(c) => c.id === conversationId,
-				);
+				const localExistingIndex = localChats.findIndex((c) => c.id === conversationId);
 				const updatedLocalChats = [...localChats];
 
 				if (localExistingIndex >= 0) {
@@ -91,13 +79,8 @@ export function useConversationStorage() {
 				queryClient.setQueryData([CHATS_QUERY_KEY, "local"], updatedLocalChats);
 			} else {
 				const remoteChats =
-					queryClient.getQueryData<Conversation[]>([
-						CHATS_QUERY_KEY,
-						"remote",
-					]) || [];
-				const remoteExistingIndex = remoteChats.findIndex(
-					(c) => c.id === conversationId,
-				);
+					queryClient.getQueryData<Conversation[]>([CHATS_QUERY_KEY, "remote"]) || [];
+				const remoteExistingIndex = remoteChats.findIndex((c) => c.id === conversationId);
 				const updatedRemoteChats = [...remoteChats];
 
 				if (remoteExistingIndex >= 0) {
@@ -106,10 +89,7 @@ export function useConversationStorage() {
 					updatedRemoteChats.unshift(updatedConversation);
 				}
 
-				queryClient.setQueryData(
-					[CHATS_QUERY_KEY, "remote"],
-					updatedRemoteChats,
-				);
+				queryClient.setQueryData([CHATS_QUERY_KEY, "remote"], updatedRemoteChats);
 			}
 
 			if (isLocalOnly) {

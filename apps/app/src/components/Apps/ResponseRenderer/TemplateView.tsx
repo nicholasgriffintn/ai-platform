@@ -21,8 +21,7 @@ const getNestedValue = (obj: Record<string, any>, path: string): any => {
 };
 
 const variableRegex = /\{\{([^}]+)\}\}/g;
-const ifRegex =
-	/\{\{#if\s+([^}]+)\}\}([\s\S]*?)(?:\{\{else\}\}([\s\S]*?))?\{\{\/if\}\}/g;
+const ifRegex = /\{\{#if\s+([^}]+)\}\}([\s\S]*?)(?:\{\{else\}\}([\s\S]*?))?\{\{\/if\}\}/g;
 const eachRegex = /\{\{#each\s+([^}]+)\}\}([\s\S]*?)\{\{\/each\}\}/g;
 const thisPropertyRegex = /\{\{this\.([^}]+)\}\}/g;
 const thisValueRegex = /\{\{this\}\}/g;
@@ -53,10 +52,7 @@ const processVariable = (data: Record<string, any>, key: string): string => {
 	return String(value);
 };
 
-const renderTemplate = (
-	template: string,
-	data: Record<string, any>,
-): string => {
+const renderTemplate = (template: string, data: Record<string, any>): string => {
 	let rendered = template;
 
 	rendered = rendered.replace(eachRegex, (_match, arrayKey, content) => {
@@ -72,13 +68,10 @@ const renderTemplate = (
 				let itemContent = content;
 
 				if (typeof item === "object") {
-					itemContent = itemContent.replace(
-						thisPropertyRegex,
-						(_match: string, prop: string) => {
-							const value = item[prop.trim()];
-							return value !== undefined ? String(value) : "";
-						},
-					);
+					itemContent = itemContent.replace(thisPropertyRegex, (_match: string, prop: string) => {
+						const value = item[prop.trim()];
+						return value !== undefined ? String(value) : "";
+					});
 				} else {
 					itemContent = itemContent.replace(thisValueRegex, String(item));
 				}
@@ -88,14 +81,11 @@ const renderTemplate = (
 			.join("");
 	});
 
-	rendered = rendered.replace(
-		ifRegex,
-		(_match, condition, ifContent, elseContent = "") => {
-			const trimmedCondition = condition.trim();
-			const value = getNestedValue(data, trimmedCondition);
-			return value ? ifContent : elseContent;
-		},
-	);
+	rendered = rendered.replace(ifRegex, (_match, condition, ifContent, elseContent = "") => {
+		const trimmedCondition = condition.trim();
+		const value = getNestedValue(data, trimmedCondition);
+		return value ? ifContent : elseContent;
+	});
 
 	rendered = rendered.replace(markdownRegex, (_match, key) => {
 		const trimmedKey = key.trim();

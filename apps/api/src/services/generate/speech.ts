@@ -1,9 +1,6 @@
 import { sanitiseInput } from "~/lib/chat/utils";
 import { getSpeechProvider } from "~/lib/providers/capabilities/speech";
-import {
-	resolveServiceContext,
-	type ServiceContext,
-} from "~/lib/context/serviceContext";
+import { resolveServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
 import { getModelConfigByModel } from "~/lib/providers/models";
 import type { IEnv, IUser } from "~/types";
 
@@ -111,8 +108,7 @@ export async function generateSpeech({
 		return {
 			status: "error",
 			name: "create_speech",
-			content:
-				error instanceof Error ? error.message : "Failed to generate speech",
+			content: error instanceof Error ? error.message : "Failed to generate speech",
 			data: {},
 		};
 	}

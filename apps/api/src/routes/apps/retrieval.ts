@@ -38,14 +38,8 @@ import {
 	type DeepWebSearchParams,
 	performDeepWebSearch,
 } from "~/services/apps/retrieval/web-search";
-import {
-	type TutorRequestParams,
-	completeTutorRequest,
-} from "~/services/apps/tutor";
-import {
-	getResearchTaskStatus,
-	startResearchTask,
-} from "~/services/research/task";
+import { type TutorRequestParams, completeTutorRequest } from "~/services/apps/tutor";
+import { getResearchTaskStatus, startResearchTask } from "~/services/research/task";
 
 const app = new Hono();
 
@@ -151,9 +145,7 @@ addRoute(app, "post", "/capture-screenshot", {
 	middleware: [requirePlan("pro")],
 	handler: async ({ raw }) =>
 		(async (context: Context) => {
-			const body = context.req.valid(
-				"json" as never,
-			) as CaptureScreenshotParams;
+			const body = context.req.valid("json" as never) as CaptureScreenshotParams;
 			const response = await captureScreenshot(body, {
 				env: context.env as IEnv,
 			});
@@ -229,16 +221,11 @@ addRoute(app, "get", "/weather", {
 				latitude: string;
 			};
 
-			const longitude = query.longitude
-				? Number.parseFloat(query.longitude)
-				: 0;
+			const longitude = query.longitude ? Number.parseFloat(query.longitude) : 0;
 			const latitude = query.latitude ? Number.parseFloat(query.latitude) : 0;
 
 			if (!longitude || !latitude) {
-				throw new AssistantError(
-					"Invalid longitude or latitude",
-					ErrorType.PARAMS_ERROR,
-				);
+				throw new AssistantError("Invalid longitude or latitude", ErrorType.PARAMS_ERROR);
 			}
 
 			const response = await getWeatherForLocation(context.env as IEnv, {
@@ -269,11 +256,7 @@ addRoute(app, "post", "/web-search", {
 				return ResponseFactory.error(context, "User not authenticated", 401);
 			}
 
-			const response = await performDeepWebSearch(
-				context.env as IEnv,
-				user,
-				body,
-			);
+			const response = await performDeepWebSearch(context.env as IEnv, user, body);
 
 			return ResponseFactory.success(context, { response });
 		})(raw),
@@ -281,8 +264,7 @@ addRoute(app, "post", "/web-search", {
 
 addRoute(app, "post", "/research", {
 	tags: ["apps"],
-	description:
-		"Execute a deep research task powered by Parallel Tasks via Cloudflare AI Gateway",
+	description: "Execute a deep research task powered by Parallel Tasks via Cloudflare AI Gateway",
 	bodySchema: deepResearchSchema,
 	responses: {
 		200: { description: "Research task result", schema: apiResponseSchema },
@@ -309,8 +291,7 @@ addRoute(app, "post", "/research", {
 			});
 
 			const pollInterval =
-				body.options?.polling?.interval_ms &&
-				body.options?.polling?.interval_ms >= 500
+				body.options?.polling?.interval_ms && body.options?.polling?.interval_ms >= 500
 					? body.options.polling.interval_ms
 					: 5000;
 
@@ -339,9 +320,7 @@ addRoute(app, "get", "/research/:runId", {
 	handler: async ({ raw }) =>
 		(async (context: Context) => {
 			const runId = context.req.param("runId");
-			const providerParam = context.req.query("provider") as
-				| ResearchProviderName
-				| undefined;
+			const providerParam = context.req.query("provider") as ResearchProviderName | undefined;
 			const user = context.get("user");
 
 			if (!user?.id) {
@@ -382,11 +361,7 @@ addRoute(app, "post", "/tutor", {
 		(async (context: Context) => {
 			const body = context.req.valid("json" as never) as TutorRequestParams;
 			const user = context.get("user");
-			const response = await completeTutorRequest(
-				context.env as IEnv,
-				user,
-				body,
-			);
+			const response = await completeTutorRequest(context.env as IEnv, user, body);
 
 			return ResponseFactory.success(context, { response });
 		})(raw),

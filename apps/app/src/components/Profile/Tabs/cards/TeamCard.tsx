@@ -10,13 +10,7 @@ import {
 import { useState } from "react";
 
 import { Button } from "~/components/ui/Button";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "~/components/ui/Card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/Card";
 import { DropdownMenu, DropdownMenuItem } from "~/components/ui/DropdownMenu";
 import { cn } from "~/lib/utils";
 
@@ -45,9 +39,7 @@ export function TeamCard({
 	isDeleting = false,
 }: TeamCardProps) {
 	const [isExpanded, setIsExpanded] = useState(false);
-	const [expandedDescriptions, setExpandedDescriptions] = useState<
-		Record<string, boolean>
-	>({});
+	const [expandedDescriptions, setExpandedDescriptions] = useState<Record<string, boolean>>({});
 	const { orchestrator, members } = team;
 
 	if (!orchestrator) {
@@ -69,9 +61,7 @@ export function TeamCard({
 		const isExpanded = expandedDescriptions[agent.id];
 		const shouldTruncate = agent.description.length > 100;
 		const displayText =
-			shouldTruncate && !isExpanded
-				? `${agent.description.slice(0, 100)}...`
-				: agent.description;
+			shouldTruncate && !isExpanded ? `${agent.description.slice(0, 100)}...` : agent.description;
 
 		return (
 			<div className="text-sm text-zinc-500 dark:text-zinc-400">
@@ -250,8 +240,8 @@ export function TeamCard({
 													"bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400",
 											)}
 										>
-											{member.team_role?.charAt(0).toUpperCase() +
-												member.team_role?.slice(1) || "Member"}
+											{member.team_role?.charAt(0).toUpperCase() + member.team_role?.slice(1) ||
+												"Member"}
 										</span>
 									</div>
 									{renderDescription(member)}

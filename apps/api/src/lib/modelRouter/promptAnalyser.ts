@@ -1,8 +1,5 @@
 import { KeywordFilter } from "~/lib/keywords";
-import {
-	getAuxiliaryModel,
-	getAvailableStrengths,
-} from "~/lib/providers/models";
+import { getAuxiliaryModel, getAvailableStrengths } from "~/lib/providers/models";
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import { listFunctionTools } from "~/services/functions";
 import type { Attachment, IEnv, IUser, PromptRequirements } from "~/types";
@@ -29,12 +26,7 @@ export class PromptAnalyzer {
 		user: IUser,
 	): Promise<PromptRequirements> {
 		try {
-			const analysisResponse = await PromptAnalyzer.performAIAnalysis(
-				env,
-				prompt,
-				keywords,
-				user,
-			);
+			const analysisResponse = await PromptAnalyzer.performAIAnalysis(env, prompt, keywords, user);
 			return PromptAnalyzer.validateAndParseAnalysis(analysisResponse);
 		} catch (error) {
 			throw new AssistantError(
@@ -50,8 +42,7 @@ export class PromptAnalyzer {
 		keywords: string[],
 		user: IUser,
 	) {
-		const { model: modelToUse, provider: providerToUse } =
-			await getAuxiliaryModel(env, user);
+		const { model: modelToUse, provider: providerToUse } = await getAuxiliaryModel(env, user);
 
 		const provider = getChatProvider(providerToUse, { env, user });
 
@@ -85,10 +76,7 @@ export class PromptAnalyzer {
 					if (Object.keys(categories).length > 0) {
 						acc[domain] = acc[domain] || {};
 						for (const [category, words] of Object.entries(categories)) {
-							acc[domain][category] = [
-								...(acc[domain][category] || []),
-								...words,
-							];
+							acc[domain][category] = [...(acc[domain][category] || []), ...words];
 						}
 					}
 				}
@@ -138,18 +126,13 @@ Ensure the output is nothing but the JSON object itself.`;
 		const aiResponse = openAiResponse || workersAiResponse;
 
 		if (!aiResponse) {
-			throw new AssistantError(
-				"No valid AI response received",
-				ErrorType.PROVIDER_ERROR,
-			);
+			throw new AssistantError("No valid AI response received", ErrorType.PROVIDER_ERROR);
 		}
 
 		let cleanedContent = aiResponse.trim();
 
 		// Remove outer code block markers if present (```json ... ```)
-		cleanedContent = cleanedContent
-			.replace(/^```(?:json)?\s*\n?/i, "")
-			.replace(/\n?```$/g, "");
+		cleanedContent = cleanedContent.replace(/^```(?:json)?\s*\n?/i, "").replace(/\n?```$/g, "");
 
 		// Remove any remaining backticks that might be inside the content
 		cleanedContent = cleanedContent.replace(/`/g, "");
@@ -172,9 +155,7 @@ Ensure the output is nothing but the JSON object itself.`;
 			try {
 				const jsonMatch = aiResponse.match(/\{[\s\S]*?\}/);
 				if (jsonMatch) {
-					requirementsAnalysis = safeParseJson<Partial<PromptRequirements>>(
-						jsonMatch[0],
-					);
+					requirementsAnalysis = safeParseJson<Partial<PromptRequirements>>(jsonMatch[0]);
 					if (!requirementsAnalysis) {
 						throw new AssistantError(
 							"Invalid JSON response from AI analysis",
@@ -182,10 +163,7 @@ Ensure the output is nothing but the JSON object itself.`;
 						);
 					}
 				} else {
-					throw new AssistantError(
-						"Could not extract valid JSON",
-						ErrorType.PARAMS_ERROR,
-					);
+					throw new AssistantError("Could not extract valid JSON", ErrorType.PARAMS_ERROR);
 				}
 			} catch {
 				throw new AssistantError(
@@ -200,10 +178,7 @@ Ensure the output is nothing but the JSON object itself.`;
 			typeof requirementsAnalysis.expectedComplexity !== "number" ||
 			!Array.isArray(requirementsAnalysis.requiredStrengths)
 		) {
-			logger.error(
-				"Incomplete or invalid AI analysis structure:",
-				requirementsAnalysis,
-			);
+			logger.error("Incomplete or invalid AI analysis structure:", requirementsAnalysis);
 			throw new AssistantError(
 				"Incomplete or invalid AI analysis structure",
 				ErrorType.PROVIDER_ERROR,
@@ -213,14 +188,14 @@ Ensure the output is nothing but the JSON object itself.`;
 		return PromptAnalyzer.normalizeRequirements(requirementsAnalysis);
 	}
 
-	private static normalizeRequirements(
-		analysis: Partial<PromptRequirements>,
-	): PromptRequirements {
+	private static normalizeRequirements(analysis: Partial<PromptRequirements>): PromptRequirements {
 		return {
-			expectedComplexity: Math.max(
-				1,
-				Math.min(5, analysis.expectedComplexity || 1),
-			) as 1 | 2 | 3 | 4 | 5,
+			expectedComplexity: Math.max(1, Math.min(5, analysis.expectedComplexity || 1)) as
+				| 1
+				| 2
+				| 3
+				| 4
+				| 5,
 			requiredStrengths: analysis.requiredStrengths || [],
 			estimatedInputTokens: Math.max(0, analysis.estimatedInputTokens || 0),
 			estimatedOutputTokens: Math.max(0, analysis.estimatedOutputTokens || 0),
@@ -275,12 +250,7 @@ Ensure the output is nothing but the JSON object itself.`;
 		user?: IUser,
 	): Promise<PromptRequirements> {
 		const keywords = PromptAnalyzer.extractKeywords(prompt);
-		const aiAnalysis = await PromptAnalyzer.analyzeWithAI(
-			env,
-			prompt,
-			keywords,
-			user,
-		);
+		const aiAnalysis = await PromptAnalyzer.analyzeWithAI(env, prompt, keywords, user);
 
 		return {
 			...aiAnalysis,

@@ -13,10 +13,7 @@ export class TavilyProvider implements SearchProvider {
 		this.apiKey = env.TAVILY_API_KEY;
 	}
 
-	async performWebSearch(
-		query: string,
-		options?: SearchOptions,
-	): Promise<SearchResult> {
+	async performWebSearch(query: string, options?: SearchOptions): Promise<SearchResult> {
 		const response = await fetch("https://api.tavily.com/search", {
 			method: "POST",
 			headers: {

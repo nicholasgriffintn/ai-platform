@@ -1,7 +1,4 @@
-import {
-	getAiGatewayMetadataHeaders,
-	resolveAiGatewayCacheTtl,
-} from "~/utils/aiGateway";
+import { getAiGatewayMetadataHeaders, resolveAiGatewayCacheTtl } from "~/utils/aiGateway";
 import type { ChatCompletionParameters } from "~/types";
 import { BaseProvider } from "./base";
 import type { StorageService } from "~/lib/storage";
@@ -27,9 +24,7 @@ export class IdeogramProvider extends BaseProvider {
 		return "v1/ideogram-v3/generate";
 	}
 
-	protected async getHeaders(
-		params: ChatCompletionParameters,
-	): Promise<Record<string, string>> {
+	protected async getHeaders(params: ChatCompletionParameters): Promise<Record<string, string>> {
 		const apiKey = await this.getApiKey(params, params.user?.id);
 
 		return {
@@ -57,9 +52,7 @@ export class IdeogramProvider extends BaseProvider {
 		const { input } = buildInputSchemaInput(params, modelConfig);
 
 		const payload: Record<string, any> =
-			typeof input === "object" && input !== null
-				? { ...input }
-				: { prompt: input };
+			typeof input === "object" && input !== null ? { ...input } : { prompt: input };
 
 		if (payload.model === undefined) {
 			payload.model = modelConfig.matchingModel;

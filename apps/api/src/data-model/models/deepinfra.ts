@@ -1,8 +1,5 @@
 import type { ModelConfig } from "~/types";
-import {
-	createModelConfig,
-	createModelConfigObject,
-} from "~/lib/providers/models/utils";
+import { createModelConfig, createModelConfigObject } from "~/lib/providers/models/utils";
 
 const PROVIDER = "deepinfra";
 
@@ -112,13 +109,7 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 98304,
 		costPer1kInputTokens: 0.0006,
 		costPer1kOutputTokens: 0.0022,
-		strengths: [
-			"chat",
-			"general_knowledge",
-			"analysis",
-			"tool_use",
-			"multilingual",
-		],
+		strengths: ["chat", "general_knowledge", "analysis", "tool_use", "multilingual"],
 		contextComplexity: 4,
 		reliability: 4,
 		speed: 4,

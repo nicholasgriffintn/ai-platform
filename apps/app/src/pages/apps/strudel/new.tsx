@@ -22,16 +22,9 @@ import {
 	Label,
 	Textarea,
 } from "~/components/ui";
-import {
-	useGenerateStrudelPattern,
-	useSaveStrudelPattern,
-} from "~/hooks/useStrudel";
+import { useGenerateStrudelPattern, useSaveStrudelPattern } from "~/hooks/useStrudel";
 import { useModels } from "~/hooks/useModels";
-import {
-	defaultCode,
-	examplePatterns,
-	type PatternExample,
-} from "~/lib/strudel/examples";
+import { defaultCode, examplePatterns, type PatternExample } from "~/lib/strudel/examples";
 import { getAvailableModels } from "~/lib/models";
 import { cn } from "~/lib/utils";
 import type { StrudelComplexity, StrudelStyle } from "~/types";
@@ -63,8 +56,7 @@ export function meta() {
 		{ title: "Create Strudel Pattern - Polychat" },
 		{
 			name: "description",
-			content:
-				"Generate or live-code Strudel music loops directly in Polychat.",
+			content: "Generate or live-code Strudel music loops directly in Polychat.",
 		},
 	];
 }
@@ -84,9 +76,7 @@ export default function CreateStrudelPatternPage() {
 	const [name, setName] = useState("");
 	const [description, setDescription] = useState("");
 	const [tagsInput, setTagsInput] = useState("");
-	const [selectedExampleId, setSelectedExampleId] = useState<string | null>(
-		null,
-	);
+	const [selectedExampleId, setSelectedExampleId] = useState<string | null>(null);
 
 	const parsedTags = useMemo(() => parseTagsInput(tagsInput), [tagsInput]);
 
@@ -96,9 +86,7 @@ export default function CreateStrudelPatternPage() {
 			const inputs = model.modalities?.input ?? ["text"];
 			const outputs = model.modalities?.output ?? inputs;
 			const supportsOnlyText =
-				outputs.length === 1 &&
-				outputs[0] === "text" &&
-				inputs.includes("text");
+				outputs.length === 1 && outputs[0] === "text" && inputs.includes("text");
 			return supportsOnlyText;
 		})
 		.map(([id, model]) => ({
@@ -127,9 +115,7 @@ export default function CreateStrudelPatternPage() {
 			}
 			toast.success("Generated a new Strudel pattern");
 		} catch (err) {
-			toast.error(
-				err instanceof Error ? err.message : "Unable to generate pattern",
-			);
+			toast.error(err instanceof Error ? err.message : "Unable to generate pattern");
 		}
 	};
 
@@ -149,9 +135,7 @@ export default function CreateStrudelPatternPage() {
 			toast.success("Pattern saved");
 			navigate(`/apps/strudel/${pattern.id}`);
 		} catch (err) {
-			toast.error(
-				err instanceof Error ? err.message : "Failed to save pattern",
-			);
+			toast.error(err instanceof Error ? err.message : "Failed to save pattern");
 		}
 	};
 
@@ -169,8 +153,8 @@ export default function CreateStrudelPatternPage() {
 			<BackLink to="/apps/strudel" label="Back to Strudel" />
 			<PageTitle title="Create a Strudel pattern" />
 			<p className="text-sm text-muted-foreground">
-				Use AI to sketch a loop or load one of the baked-in examples, then play
-				it instantly in the Strudel web player.
+				Use AI to sketch a loop or load one of the baked-in examples, then play it instantly in the
+				Strudel web player.
 			</p>
 		</PageHeader>
 	);
@@ -192,8 +176,7 @@ export default function CreateStrudelPatternPage() {
 								<div>
 									<CardTitle>AI generation</CardTitle>
 									<CardDescription>
-										Describe the groove you want and we will craft a Strudel
-										seed.
+										Describe the groove you want and we will craft a Strudel seed.
 									</CardDescription>
 								</div>
 							</div>
@@ -226,9 +209,7 @@ export default function CreateStrudelPatternPage() {
 								<FormSelect
 									label="Style"
 									value={style}
-									onChange={(event) =>
-										setStyle(event.target.value as StrudelStyle | "")
-									}
+									onChange={(event) => setStyle(event.target.value as StrudelStyle | "")}
 									options={STYLE_OPTIONS.map((option) => ({
 										value: option.value,
 										label: option.label,
@@ -237,9 +218,7 @@ export default function CreateStrudelPatternPage() {
 								<FormSelect
 									label="Complexity"
 									value={complexity}
-									onChange={(event) =>
-										setComplexity(event.target.value as StrudelComplexity)
-									}
+									onChange={(event) => setComplexity(event.target.value as StrudelComplexity)}
 									options={COMPLEXITY_OPTIONS}
 								/>
 								<div className="space-y-2">
@@ -286,9 +265,7 @@ export default function CreateStrudelPatternPage() {
 					<Card>
 						<CardHeader>
 							<CardTitle>Pattern details</CardTitle>
-							<CardDescription>
-								Metadata used for sorting and sharing.
-							</CardDescription>
+							<CardDescription>Metadata used for sorting and sharing.</CardDescription>
 						</CardHeader>
 						<CardContent className="space-y-4">
 							<div className="space-y-2">
@@ -312,10 +289,7 @@ export default function CreateStrudelPatternPage() {
 							</div>
 							<div className="space-y-2">
 								<Label htmlFor="pattern-tags">
-									Tags{" "}
-									<span className="text-xs font-normal text-muted-foreground">
-										(optional)
-									</span>
+									Tags <span className="text-xs font-normal text-muted-foreground">(optional)</span>
 								</Label>
 								<Input
 									id="pattern-tags"
@@ -352,8 +326,7 @@ export default function CreateStrudelPatternPage() {
 						<CardHeader>
 							<CardTitle>Example patterns</CardTitle>
 							<CardDescription>
-								Start from a tried-and-tested groove. These load instantly—no AI
-								request needed.
+								Start from a tried-and-tested groove. These load instantly—no AI request needed.
 							</CardDescription>
 						</CardHeader>
 						<CardContent className="space-y-2 max-h-[340px] overflow-y-auto px-4">

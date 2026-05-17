@@ -6,8 +6,7 @@ const MAX_LOG_CHARS = 80000;
 
 const GITHUB_HTTPS_REPO_REGEX =
 	/^https:\/\/github\.com\/([A-Za-z0-9_.-]+)\/([A-Za-z0-9_.-]+?)(?:\.git)?\/?$/i;
-const GITHUB_SLUG_REPO_REGEX =
-	/^([A-Za-z0-9_.-]+)\/([A-Za-z0-9_.-]+?)(?:\.git)?$/;
+const GITHUB_SLUG_REPO_REGEX = /^([A-Za-z0-9_.-]+)\/([A-Za-z0-9_.-]+?)(?:\.git)?$/;
 
 const FORBIDDEN_COMMAND_PATTERNS: RegExp[] = [
 	/\brm\s+-rf\s+\/(?:\s|$)/i,
@@ -44,11 +43,7 @@ const RISKY_COMMAND_PATTERNS: RegExp[] = [
 	/\bdocker\b/i,
 ];
 
-const READ_ONLY_BLOCKED_OPERATOR_PATTERNS: RegExp[] = [
-	/(^|[^<])>(>|&)?/i,
-	/<</i,
-	/\bexec\b/i,
-];
+const READ_ONLY_BLOCKED_OPERATOR_PATTERNS: RegExp[] = [/(^|[^<])>(>|&)?/i, /<</i, /\bexec\b/i];
 
 const READ_ONLY_ALLOWED_COMMAND_PATTERNS: RegExp[] = [
 	/^git\s+(status|diff|log|show|rev-parse|ls-files|branch(?:\s+--show-current)?)(?:\s|$)/i,
@@ -67,11 +62,7 @@ interface RepoInfo {
 	checkoutAuthHeader?: string;
 }
 
-export async function execOrThrow(
-	sandbox: SandboxExecInstance,
-	command: string,
-	logs: string[],
-) {
+export async function execOrThrow(sandbox: SandboxExecInstance, command: string, logs: string[]) {
 	const result = await sandbox.exec(command);
 	logs.push(formatCommandResult(command, result));
 	if (!result.success) {
@@ -92,10 +83,7 @@ export async function execOrThrowRedacted(
 	}
 }
 
-export function resolveGitHubRepo(
-	repo: string,
-	githubToken?: string,
-): RepoInfo {
+export function resolveGitHubRepo(repo: string, githubToken?: string): RepoInfo {
 	const trimmedRepo = repo.trim();
 	if (!trimmedRepo) {
 		throw new Error("Repository is required");
@@ -198,11 +186,7 @@ export function assertSafeCommand(
 			}
 		}
 
-		if (
-			!READ_ONLY_ALLOWED_COMMAND_PATTERNS.some((pattern) =>
-				pattern.test(command),
-			)
-		) {
+		if (!READ_ONLY_ALLOWED_COMMAND_PATTERNS.some((pattern) => pattern.test(command))) {
 			throw new Error(`Command is not allowed in read-only mode: ${command}`);
 		}
 	}
@@ -223,9 +207,7 @@ export function assertSafeCommand(
 		if (!allowRisky) {
 			for (const pattern of RISKY_COMMAND_PATTERNS) {
 				if (pattern.test(command)) {
-					throw new Error(
-						`Risky command is blocked in strict mode: ${command}`,
-					);
+					throw new Error(`Risky command is blocked in strict mode: ${command}`);
 				}
 			}
 		}
@@ -234,9 +216,7 @@ export function assertSafeCommand(
 	if (trustLevel === "balanced" && !allowNetwork) {
 		for (const pattern of NETWORK_COMMAND_PATTERNS) {
 			if (pattern.test(command)) {
-				throw new Error(
-					`Network/dependency command is blocked in balanced mode: ${command}`,
-				);
+				throw new Error(`Network/dependency command is blocked in balanced mode: ${command}`);
 			}
 		}
 	}
@@ -262,12 +242,8 @@ export function formatCommandResult(
 	command: string,
 	result: { exitCode: number; stdout: string; stderr: string },
 ): string {
-	const output = [result.stdout.trim(), result.stderr.trim()]
-		.filter(Boolean)
-		.join("\n");
-	return [`$ ${command}`, `exit_code=${result.exitCode}`, output]
-		.filter(Boolean)
-		.join("\n");
+	const output = [result.stdout.trim(), result.stderr.trim()].filter(Boolean).join("\n");
+	return [`$ ${command}`, `exit_code=${result.exitCode}`, output].filter(Boolean).join("\n");
 }
 
 export function buildCommitMessage(task: string): string {

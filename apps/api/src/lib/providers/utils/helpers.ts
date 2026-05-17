@@ -1,9 +1,6 @@
 import type { ChatCompletionParameters } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
-import {
-	getAiGatewayMetadataHeaders,
-	resolveAiGatewayCacheTtl,
-} from "~/utils/aiGateway";
+import { getAiGatewayMetadataHeaders, resolveAiGatewayCacheTtl } from "~/utils/aiGateway";
 
 /**
  * Validates that AI_GATEWAY_TOKEN is present in the environment
@@ -12,10 +9,7 @@ import {
  */
 export function validateAiGatewayToken(params: ChatCompletionParameters): void {
 	if (!params.env.AI_GATEWAY_TOKEN) {
-		throw new AssistantError(
-			"Missing AI_GATEWAY_TOKEN",
-			ErrorType.CONFIGURATION_ERROR,
-		);
+		throw new AssistantError("Missing AI_GATEWAY_TOKEN", ErrorType.CONFIGURATION_ERROR);
 	}
 }
 
@@ -43,9 +37,7 @@ export function buildAiGatewayHeaders(
  * @param params - The chat completion parameters
  * @returns Settings object for analytics
  */
-export function buildMetricsSettings(
-	params: ChatCompletionParameters,
-): Record<string, any> {
+export function buildMetricsSettings(params: ChatCompletionParameters): Record<string, any> {
 	return {
 		temperature: params.temperature,
 		max_tokens: params.max_tokens,
@@ -89,10 +81,7 @@ export function parseDelimitedCredentials(
  * @returns Parsed JSON data
  * @throws AssistantError if parsing fails
  */
-export async function safeParseJSON<T = any>(
-	response: Response,
-	context: string,
-): Promise<T> {
+export async function safeParseJSON<T = any>(response: Response, context: string): Promise<T> {
 	try {
 		return (await response.json()) as T;
 	} catch (jsonError) {
@@ -127,9 +116,7 @@ type AssetResponseShape = {
  * Extracts the first generated asset from provider responses that may return
  * attachments, a direct URL, or an output array.
  */
-export function extractGeneratedAsset(
-	response: AssetResponseShape,
-): AssetReference {
+export function extractGeneratedAsset(response: AssetResponseShape): AssetReference {
 	const attachments = response?.data?.attachments ?? response?.attachments;
 	if (Array.isArray(attachments) && attachments.length > 0) {
 		const [first] = attachments;
@@ -181,11 +168,7 @@ export function normalizeAsyncStatus(
 
 	const normalized = status.toString().toUpperCase();
 
-	if (
-		normalized === "SUCCEEDED" ||
-		normalized === "SUCCESS" ||
-		normalized === "COMPLETED"
-	) {
+	if (normalized === "SUCCEEDED" || normalized === "SUCCESS" || normalized === "COMPLETED") {
 		return "completed";
 	}
 

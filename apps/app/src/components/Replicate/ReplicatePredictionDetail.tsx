@@ -5,14 +5,8 @@ interface ReplicatePredictionDetailProps {
 	predictionId: string;
 }
 
-export function ReplicatePredictionDetail({
-	predictionId,
-}: ReplicatePredictionDetailProps) {
-	const {
-		data: prediction,
-		isLoading,
-		error,
-	} = useReplicatePrediction(predictionId);
+export function ReplicatePredictionDetail({ predictionId }: ReplicatePredictionDetailProps) {
+	const { data: prediction, isLoading, error } = useReplicatePrediction(predictionId);
 
 	if (isLoading) {
 		return (
@@ -32,12 +26,9 @@ export function ReplicatePredictionDetail({
 	}
 
 	const statusColors = {
-		processing:
-			"bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200",
-		succeeded:
-			"bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200",
-		completed:
-			"bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200",
+		processing: "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200",
+		succeeded: "bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200",
+		completed: "bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200",
 		failed: "bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-200",
 	};
 
@@ -46,14 +37,10 @@ export function ReplicatePredictionDetail({
 			<div className="flex items-start justify-between gap-4">
 				<div className="flex-1 min-w-0">
 					<h1 className="text-3xl font-bold text-zinc-900 dark:text-zinc-100 mb-2 break-words">
-						{prediction.input?.prompt ||
-							prediction.modelName ||
-							prediction.modelId}
+						{prediction.input?.prompt || prediction.modelName || prediction.modelId}
 					</h1>
 					<div className="flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-400">
-						<span className="font-medium">
-							{prediction.modelName || prediction.modelId}
-						</span>
+						<span className="font-medium">{prediction.modelName || prediction.modelId}</span>
 						<span>•</span>
 						<span>{new Date(prediction.created_at).toLocaleString()}</span>
 					</div>
@@ -72,12 +59,10 @@ export function ReplicatePredictionDetail({
 					<div className="flex items-center gap-3">
 						<div className="animate-spin rounded-full h-6 w-6 border-b-2 border-yellow-800 dark:border-yellow-200"></div>
 						<div>
-							<h3 className="font-semibold text-yellow-800 dark:text-yellow-200">
-								Processing
-							</h3>
+							<h3 className="font-semibold text-yellow-800 dark:text-yellow-200">Processing</h3>
 							<p className="text-sm text-yellow-700 dark:text-yellow-300">
-								Your prediction is being processed. This page will automatically
-								update when complete.
+								Your prediction is being processed. This page will automatically update when
+								complete.
 							</p>
 						</div>
 					</div>
@@ -86,18 +71,13 @@ export function ReplicatePredictionDetail({
 
 			{prediction.status === "failed" && prediction.error && (
 				<Card className="p-6 bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800">
-					<h3 className="font-semibold text-red-800 dark:text-red-200 mb-2">
-						Prediction Failed
-					</h3>
-					<p className="text-sm text-red-700 dark:text-red-300">
-						{prediction.error}
-					</p>
+					<h3 className="font-semibold text-red-800 dark:text-red-200 mb-2">Prediction Failed</h3>
+					<p className="text-sm text-red-700 dark:text-red-300">{prediction.error}</p>
 				</Card>
 			)}
 
 			<div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-				{(prediction.status === "succeeded" ||
-					prediction.status === "completed") &&
+				{(prediction.status === "succeeded" || prediction.status === "completed") &&
 					(prediction.output ||
 						prediction.predictionData?.output ||
 						prediction.predictionData?.response) && (
@@ -128,9 +108,7 @@ export function ReplicatePredictionDetail({
 									{key}:
 								</span>
 								<span className="text-sm text-zinc-600 dark:text-zinc-400 break-all font-mono bg-zinc-100 dark:bg-zinc-900 p-2 rounded">
-									{typeof value === "object"
-										? JSON.stringify(value, null, 2)
-										: String(value)}
+									{typeof value === "object" ? JSON.stringify(value, null, 2) : String(value)}
 								</span>
 							</div>
 						))}
@@ -207,11 +185,7 @@ function OutputItem({ item }: OutputItemProps) {
 	if (isImage) {
 		return (
 			<div>
-				<img
-					src={url}
-					alt="Generated output"
-					className="max-w-full rounded-lg"
-				/>
+				<img src={url} alt="Generated output" className="max-w-full rounded-lg" />
 				<a
 					href={url}
 					target="_blank"

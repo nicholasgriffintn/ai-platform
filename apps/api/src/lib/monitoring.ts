@@ -22,17 +22,12 @@ export class Monitoring {
 
 	constructor(analyticsEngine?: AnalyticsEngineDataset) {
 		if (!analyticsEngine) {
-			throw new AssistantError(
-				"Analytics Engine not configured",
-				ErrorType.CONFIGURATION_ERROR,
-			);
+			throw new AssistantError("Analytics Engine not configured", ErrorType.CONFIGURATION_ERROR);
 		}
 		this.analyticsEngine = analyticsEngine;
 	}
 
-	public static getInstance(
-		analyticsEngine?: AnalyticsEngineDataset,
-	): Monitoring {
+	public static getInstance(analyticsEngine?: AnalyticsEngineDataset): Monitoring {
 		return new Monitoring(analyticsEngine);
 	}
 
@@ -48,10 +43,7 @@ export class Monitoring {
 			return;
 		}
 
-		if (
-			!this.analyticsEngine ||
-			typeof this.analyticsEngine.writeDataPoint !== "function"
-		) {
+		if (!this.analyticsEngine || typeof this.analyticsEngine.writeDataPoint !== "function") {
 			logger.debug(
 				`[Metric] ${metricWithTraceId.type}:${metricWithTraceId.name}`,
 				JSON.stringify(

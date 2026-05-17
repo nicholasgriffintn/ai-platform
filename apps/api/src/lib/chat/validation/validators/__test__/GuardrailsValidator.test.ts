@@ -99,9 +99,7 @@ describe("GuardrailsValidator", () => {
 			expect(result.validation.isValid).toBe(true);
 			expect(result.context.guardrails).toEqual(mockGuardrails);
 
-			expect(
-				mockRepositories.userSettings.getUserSettings,
-			).toHaveBeenCalledWith(123);
+			expect(mockRepositories.userSettings.getUserSettings).toHaveBeenCalledWith(123);
 			expect(mockGuardrails.validateInput).toHaveBeenCalledWith(
 				"Hello world",
 				123,
@@ -116,15 +114,10 @@ describe("GuardrailsValidator", () => {
 				modelConfig: baseContext.modelConfig,
 			};
 
-			const result = await validator.validate(
-				baseOptions,
-				contextWithoutMessage,
-			);
+			const result = await validator.validate(baseOptions, contextWithoutMessage);
 
 			expect(result.validation.isValid).toBe(false);
-			expect(result.validation.error).toBe(
-				"Missing message context for guardrails validation",
-			);
+			expect(result.validation.error).toBe("Missing message context for guardrails validation");
 			expect(result.validation.validationType).toBe("input");
 			expect(result.context).toEqual({});
 		});
@@ -143,10 +136,7 @@ describe("GuardrailsValidator", () => {
 
 			expect(result.validation.isValid).toBe(false);
 			expect(result.validation.error).toBe("Content contains violence");
-			expect(result.validation.violations).toEqual([
-				"Violence detected",
-				"Inappropriate content",
-			]);
+			expect(result.validation.violations).toEqual(["Violence detected", "Inappropriate content"]);
 			expect(result.validation.rawViolations).toEqual({
 				blockedResponse: "Content contains violence",
 				score: 0.95,
@@ -177,15 +167,10 @@ describe("GuardrailsValidator", () => {
 				} as any,
 			};
 
-			const result = await validator.validate(
-				optionsWithoutUserId,
-				baseContext,
-			);
+			const result = await validator.validate(optionsWithoutUserId, baseContext);
 
 			expect(result.validation.isValid).toBe(true);
-			expect(
-				mockRepositories.userSettings.getUserSettings,
-			).not.toHaveBeenCalled();
+			expect(mockRepositories.userSettings.getUserSettings).not.toHaveBeenCalled();
 			expect(mockGuardrails.validateInput).toHaveBeenCalledWith(
 				"Hello world",
 				undefined,
@@ -202,9 +187,7 @@ describe("GuardrailsValidator", () => {
 			const result = await validator.validate(optionsWithoutUser, baseContext);
 
 			expect(result.validation.isValid).toBe(true);
-			expect(
-				mockRepositories.userSettings.getUserSettings,
-			).not.toHaveBeenCalled();
+			expect(mockRepositories.userSettings.getUserSettings).not.toHaveBeenCalled();
 			expect(mockGuardrails.validateInput).toHaveBeenCalledWith(
 				"Hello world",
 				undefined,
@@ -218,17 +201,10 @@ describe("GuardrailsValidator", () => {
 				completion_id: undefined,
 			};
 
-			const result = await validator.validate(
-				optionsWithoutCompletionId,
-				baseContext,
-			);
+			const result = await validator.validate(optionsWithoutCompletionId, baseContext);
 
 			expect(result.validation.isValid).toBe(true);
-			expect(mockGuardrails.validateInput).toHaveBeenCalledWith(
-				"Hello world",
-				123,
-				undefined,
-			);
+			expect(mockGuardrails.validateInput).toHaveBeenCalledWith("Hello world", 123, undefined);
 		});
 
 		it("should handle database getUserSettings throwing an error", async () => {
@@ -247,9 +223,7 @@ describe("GuardrailsValidator", () => {
 		});
 
 		it("should handle guardrails validateInput throwing an error", async () => {
-			mockGuardrails.validateInput.mockRejectedValue(
-				new Error("Guardrails service unavailable"),
-			);
+			mockGuardrails.validateInput.mockRejectedValue(new Error("Guardrails service unavailable"));
 
 			const result = await validator.validate(baseOptions, baseContext);
 
@@ -299,9 +273,7 @@ describe("GuardrailsValidator", () => {
 			const result = await validator.validate(baseOptions, baseContext);
 
 			expect(result.validation.isValid).toBe(false);
-			expect(result.validation.error).toBe(
-				"Guardrails validation failed: undefined",
-			);
+			expect(result.validation.error).toBe("Guardrails validation failed: undefined");
 			expect(result.validation.validationType).toBe("input");
 		});
 
@@ -374,9 +346,7 @@ describe("GuardrailsValidator", () => {
 				bedrock_guardrail_id: "test-guardrail-123",
 			};
 
-			mockRepositories.userSettings.getUserSettings.mockResolvedValue(
-				userSettings,
-			);
+			mockRepositories.userSettings.getUserSettings.mockResolvedValue(userSettings);
 			mockGuardrails.validateInput.mockResolvedValue({
 				isValid: true,
 				violations: [],
@@ -385,9 +355,7 @@ describe("GuardrailsValidator", () => {
 			const result = await validator.validate(baseOptions, baseContext);
 
 			expect(result.validation.isValid).toBe(true);
-			expect(
-				mockRepositories.userSettings.getUserSettings,
-			).toHaveBeenCalledWith(123);
+			expect(mockRepositories.userSettings.getUserSettings).toHaveBeenCalledWith(123);
 		});
 
 		it("should handle user settings returning null", async () => {
@@ -407,9 +375,7 @@ describe("GuardrailsValidator", () => {
 		it("should handle user settings returning undefined", async () => {
 			vi.clearAllMocks();
 
-			mockRepositories.userSettings.getUserSettings.mockResolvedValue(
-				undefined,
-			);
+			mockRepositories.userSettings.getUserSettings.mockResolvedValue(undefined);
 			mockGuardrails.validateInput.mockResolvedValue({
 				isValid: true,
 				violations: [],

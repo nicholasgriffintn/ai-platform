@@ -1,9 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import {
-	getImageProvider,
-	listImageProviders,
-} from "~/lib/providers/capabilities/image";
+import { getImageProvider, listImageProviders } from "~/lib/providers/capabilities/image";
 
 vi.mock("~/lib/providers/library", () => ({
 	providerLibrary: {
@@ -31,10 +28,7 @@ describe("image capability helpers", () => {
 		const context = { env: { TEST: true } as any, user: { id: 1 } as any };
 		const provider = getImageProvider("workers-ai", context);
 
-		expect(mockProviderLibrary.image).toHaveBeenCalledWith(
-			"workers-ai",
-			context,
-		);
+		expect(mockProviderLibrary.image).toHaveBeenCalledWith("workers-ai", context);
 		expect(provider).toBe(fakeProvider);
 	});
 
@@ -47,8 +41,6 @@ describe("image capability helpers", () => {
 		const providers = listImageProviders();
 
 		expect(mockProviderLibrary.list).toHaveBeenCalledWith("image");
-		expect(providers).toEqual(
-			["Replicate", "Workers AI", "replicate", "workers-ai"].sort(),
-		);
+		expect(providers).toEqual(["Replicate", "Workers AI", "replicate", "workers-ai"].sort());
 	});
 });

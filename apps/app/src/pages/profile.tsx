@@ -3,10 +3,7 @@ import { useSearchParams } from "react-router";
 
 import { PageShell } from "~/components/Core/PageShell";
 import { PageStatus } from "~/components/Core/PageStatus";
-import {
-	ProfileSidebar,
-	profileSidebarItems,
-} from "~/components/Profile/ProfileSidebar";
+import { ProfileSidebar, profileSidebarItems } from "~/components/Profile/ProfileSidebar";
 import { Button } from "~/components/ui/Button";
 import { useAuthStatus } from "~/hooks/useAuth";
 import { useUIStore } from "~/state/stores/uiStore";
@@ -25,20 +22,13 @@ export default function ProfilePage() {
 
 	const activeTabId = searchParams.get("tab") || profileSidebarItems[0].id;
 
-	const ActiveComponent = profileSidebarItems.find(
-		(item) => item.id === activeTabId,
-	)?.component;
+	const ActiveComponent = profileSidebarItems.find((item) => item.id === activeTabId)?.component;
 
 	const handleSelectItem = (id: string) => {
 		setSearchParams({ tab: id });
 	};
 
-	const sidebar = (
-		<ProfileSidebar
-			activeItemId={activeTabId}
-			onSelectItem={handleSelectItem}
-		/>
-	);
+	const sidebar = <ProfileSidebar activeItemId={activeTabId} onSelectItem={handleSelectItem} />;
 
 	return (
 		<PageShell sidebarContent={sidebar} className="max-w-6xl mx-auto px-4 py-8">
@@ -65,10 +55,7 @@ export default function ProfilePage() {
 			) : ActiveComponent ? (
 				<ActiveComponent />
 			) : (
-				<PageStatus
-					message="Selected tab content not found."
-					className="h-auto min-h-[200px]"
-				/>
+				<PageStatus message="Selected tab content not found." className="h-auto min-h-[200px]" />
 			)}
 		</PageShell>
 	);

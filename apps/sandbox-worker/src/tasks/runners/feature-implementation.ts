@@ -11,10 +11,7 @@ import {
 } from "../../lib/commands";
 import { createExecutionControl } from "../../lib/execution-control";
 import { classifySandboxError } from "../../lib/errors";
-import {
-	startFileWatcher,
-	type FileWatcher,
-} from "../../lib/feature-implementation/file-watcher";
+import { startFileWatcher, type FileWatcher } from "../../lib/feature-implementation/file-watcher";
 import {
 	DEFAULT_MODEL,
 	MAX_COMMANDS,
@@ -42,10 +39,7 @@ import type {
 	Env,
 } from "../../types";
 
-function resolveAbsoluteRepoTargetDir(
-	sandboxRoot: string,
-	repoTargetDir: string,
-): string {
+function resolveAbsoluteRepoTargetDir(sandboxRoot: string, repoTargetDir: string): string {
 	if (repoTargetDir.startsWith("/")) {
 		return repoTargetDir;
 	}
@@ -98,8 +92,7 @@ export async function executeFeatureImplementation(
 				apiService: env.POLYCHAT_API,
 			})
 		: undefined;
-	const checkpoint = (abortMessage: string) =>
-		executionControl.checkpoint(abortMessage);
+	const checkpoint = (abortMessage: string) => executionControl.checkpoint(abortMessage);
 
 	try {
 		await checkpoint("Sandbox run cancelled before task start");
@@ -151,10 +144,7 @@ export async function executeFeatureImplementation(
 
 		const sandboxRootResult = await sandbox.exec("pwd");
 		if (!sandboxRootResult.success) {
-			throw new Error(
-				sandboxRootResult.stderr ||
-					"Failed to resolve sandbox working directory",
-			);
+			throw new Error(sandboxRootResult.stderr || "Failed to resolve sandbox working directory");
 		}
 		const sandboxRoot = sandboxRootResult.stdout
 			.split("\n")
@@ -164,10 +154,7 @@ export async function executeFeatureImplementation(
 		if (!sandboxRoot) {
 			throw new Error("Failed to resolve sandbox working directory");
 		}
-		const repoTargetDir = resolveAbsoluteRepoTargetDir(
-			sandboxRoot,
-			repo.targetDir,
-		);
+		const repoTargetDir = resolveAbsoluteRepoTargetDir(sandboxRoot, repo.targetDir);
 
 		fileWatcher = startFileWatcher({
 			sandbox,
@@ -195,9 +182,7 @@ export async function executeFeatureImplementation(
 			sandbox,
 			repoTargetDir,
 		});
-		await checkpoint(
-			"Sandbox run cancelled while collecting repository context",
-		);
+		await checkpoint("Sandbox run cancelled while collecting repository context");
 		await emit({
 			type: "repo_context_collected",
 			message: `Collected repository context from ${repoContext.files.length} files`,
@@ -301,9 +286,7 @@ export async function executeFeatureImplementation(
 		});
 		await checkpoint("Sandbox run cancelled during story tracking");
 
-		const diffResult = await sandbox.exec(
-			`git -C ${quoteForShell(repoTargetDir)} diff --patch`,
-		);
+		const diffResult = await sandbox.exec(`git -C ${quoteForShell(repoTargetDir)} diff --patch`);
 		await checkpoint("Sandbox run cancelled during diff generation");
 		if (!diffResult.success) {
 			throw new Error(diffResult.stderr || "Failed to generate git diff");
@@ -326,11 +309,7 @@ export async function executeFeatureImplementation(
 				`git -C ${quoteForShell(repoTargetDir)} config user.email ${quoteForShell("bot@polychat.app")}`,
 				executionLogs,
 			);
-			await execOrThrow(
-				sandbox,
-				`git -C ${quoteForShell(repoTargetDir)} add -A`,
-				executionLogs,
-			);
+			await execOrThrow(sandbox, `git -C ${quoteForShell(repoTargetDir)} add -A`, executionLogs);
 
 			const stagedStatus = await sandbox.exec(
 				`git -C ${quoteForShell(repoTargetDir)} diff --cached --quiet`,
@@ -368,13 +347,7 @@ export async function executeFeatureImplementation(
 
 		const summary = [
 			loopResult.summary ||
-				buildSummary(
-					task,
-					repo.displayName,
-					loopResult.commandCount,
-					branchName,
-					taskType,
-				),
+				buildSummary(task, repo.displayName, loopResult.commandCount, branchName, taskType),
 			qualityGateResult.summary,
 			storyTrackerResult.summary,
 			params.shouldCommit && !qualityGateResult.passed

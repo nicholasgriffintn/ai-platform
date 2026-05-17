@@ -60,24 +60,15 @@ addRoute(app, "put", "/settings", {
 	},
 	handler: async ({ raw }) =>
 		(async (c: Context) => {
-			const settings = c.req.valid(
-				"json" as never,
-			) as typeof updateUserSettingsSchema;
+			const settings = c.req.valid("json" as never) as typeof updateUserSettingsSchema;
 			const user = c.get("user");
 
 			if (!user) {
-				throw new AssistantError(
-					"Authentication required",
-					ErrorType.AUTHENTICATION_ERROR,
-				);
+				throw new AssistantError("Authentication required", ErrorType.AUTHENTICATION_ERROR);
 			}
 
 			const serviceContext = getServiceContext(c);
-			const result = await updateUserSettings(
-				serviceContext,
-				settings,
-				user.id,
-			);
+			const result = await updateUserSettings(serviceContext, settings, user.id);
 
 			return ResponseFactory.success(c, result);
 		})(raw),
@@ -102,10 +93,7 @@ addRoute(app, "get", "/models", {
 			const user = c.get("user");
 
 			if (!user) {
-				throw new AssistantError(
-					"Authentication required",
-					ErrorType.AUTHENTICATION_ERROR,
-				);
+				throw new AssistantError("Authentication required", ErrorType.AUTHENTICATION_ERROR);
 			}
 
 			const serviceContext = getServiceContext(c);
@@ -139,10 +127,7 @@ addRoute(app, "post", "/github-app-connection", {
 		(async (c: Context) => {
 			const user = c.get("user");
 			if (!user?.id) {
-				throw new AssistantError(
-					"Authentication required",
-					ErrorType.AUTHENTICATION_ERROR,
-				);
+				throw new AssistantError("Authentication required", ErrorType.AUTHENTICATION_ERROR);
 			}
 
 			const payload = c.req.valid("json" as never) as GitHubConnectionPayload;
@@ -178,19 +163,14 @@ addRoute(app, "post", "/store-provider-api-key", {
 	handler: async ({ raw }) =>
 		(async (c: Context) => {
 			const user = c.get("user");
-			const { providerId, apiKey, secretKey } = c.req.valid(
-				"json" as never,
-			) as {
+			const { providerId, apiKey, secretKey } = c.req.valid("json" as never) as {
 				providerId: string;
 				apiKey: string;
 				secretKey?: string;
 			};
 
 			if (!user) {
-				throw new AssistantError(
-					"Authentication required",
-					ErrorType.AUTHENTICATION_ERROR,
-				);
+				throw new AssistantError("Authentication required", ErrorType.AUTHENTICATION_ERROR);
 			}
 
 			const serviceContext = getServiceContext(c);
@@ -225,10 +205,7 @@ addRoute(app, "get", "/providers", {
 			const user = c.get("user");
 
 			if (!user) {
-				throw new AssistantError(
-					"Authentication required",
-					ErrorType.AUTHENTICATION_ERROR,
-				);
+				throw new AssistantError("Authentication required", ErrorType.AUTHENTICATION_ERROR);
 			}
 
 			const serviceContext = getServiceContext(c);
@@ -257,10 +234,7 @@ addRoute(app, "post", "/sync-providers", {
 			const user = c.get("user");
 
 			if (!user) {
-				throw new AssistantError(
-					"Authentication required",
-					ErrorType.AUTHENTICATION_ERROR,
-				);
+				throw new AssistantError("Authentication required", ErrorType.AUTHENTICATION_ERROR);
 			}
 
 			const serviceContext = getServiceContext(c);

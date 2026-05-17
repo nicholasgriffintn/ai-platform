@@ -76,10 +76,8 @@ export default function NewPodcastPage() {
 		generatingImage: false,
 	});
 
-	const { mutateAsync: uploadPodcast, isPending: isUploading } =
-		useUploadPodcast();
-	const { mutateAsync: processPodcast, isPending: isProcessing } =
-		useProcessPodcast();
+	const { mutateAsync: uploadPodcast, isPending: isUploading } = useUploadPodcast();
+	const { mutateAsync: processPodcast, isPending: isProcessing } = useProcessPodcast();
 
 	const handleChange = useCallback(
 		(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -139,8 +137,7 @@ export default function NewPodcastPage() {
 			try {
 				setProcessingErrors((prev) => ({
 					...prev,
-					[process === "generate-image" ? "generatingImage" : `${process}ing`]:
-						null,
+					[process === "generate-image" ? "generatingImage" : `${process}ing`]: null,
 				}));
 
 				if (process === "transcribe") {
@@ -182,11 +179,8 @@ export default function NewPodcastPage() {
 
 					return Object.entries(processes).every(([key, isRequested]) => {
 						if (!isRequested) return true;
-						const completionKey =
-							key === "generateImage" ? "generatingImage" : `${key}ing`;
-						return processingComplete[
-							completionKey as keyof typeof processingComplete
-						];
+						const completionKey = key === "generateImage" ? "generatingImage" : `${key}ing`;
+						return processingComplete[completionKey as keyof typeof processingComplete];
 					});
 				};
 
@@ -195,12 +189,10 @@ export default function NewPodcastPage() {
 				}
 			} catch (error) {
 				console.error(`${process} failed:`, error);
-				const errorMessage =
-					error instanceof Error ? error.message : "Unknown error";
+				const errorMessage = error instanceof Error ? error.message : "Unknown error";
 				setProcessingErrors((prev) => ({
 					...prev,
-					[process === "generate-image" ? "generatingImage" : `${process}ing`]:
-						errorMessage,
+					[process === "generate-image" ? "generatingImage" : `${process}ing`]: errorMessage,
 				}));
 			}
 		},
@@ -240,8 +232,7 @@ export default function NewPodcastPage() {
 				setProcessingStatus((prev) => ({ ...prev, transcribing: false }));
 				setProcessingErrors((prev) => ({
 					...prev,
-					transcribing:
-						error instanceof Error ? error.message : "Transcription failed",
+					transcribing: error instanceof Error ? error.message : "Transcription failed",
 				}));
 				return;
 			}
@@ -264,8 +255,7 @@ export default function NewPodcastPage() {
 				setProcessingStatus((prev) => ({ ...prev, summarizing: false }));
 				setProcessingErrors((prev) => ({
 					...prev,
-					summarizing:
-						error instanceof Error ? error.message : "Summarization failed",
+					summarizing: error instanceof Error ? error.message : "Summarization failed",
 				}));
 				return;
 			}
@@ -288,8 +278,7 @@ export default function NewPodcastPage() {
 				setProcessingStatus((prev) => ({ ...prev, generatingImage: false }));
 				setProcessingErrors((prev) => ({
 					...prev,
-					generatingImage:
-						error instanceof Error ? error.message : "Image generation failed",
+					generatingImage: error instanceof Error ? error.message : "Image generation failed",
 				}));
 				return;
 			}
@@ -308,8 +297,7 @@ export default function NewPodcastPage() {
 				const newSpeakers: Record<string, string> = {};
 				for (let i = 1; i <= formData.numberOfSpeakers; i++) {
 					const speakerId = i.toString();
-					newSpeakers[speakerId] =
-						formData.speakers[speakerId] || `Speaker ${i}`;
+					newSpeakers[speakerId] = formData.speakers[speakerId] || `Speaker ${i}`;
 				}
 
 				setFormData((prev) => ({

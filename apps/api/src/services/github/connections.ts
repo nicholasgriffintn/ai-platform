@@ -30,10 +30,7 @@ async function decodeConnectionRecord(
 		return null;
 	}
 	if (!context.env.JWT_SECRET) {
-		throw new AssistantError(
-			"JWT secret not configured",
-			ErrorType.CONFIGURATION_ERROR,
-		);
+		throw new AssistantError("JWT secret not configured", ErrorType.CONFIGURATION_ERROR);
 	}
 
 	const decryptedData = await decryptGitHubConnectionPayload({
@@ -57,10 +54,7 @@ async function decodeConnectionRecordOrThrow(
 }> {
 	const parsed = await decodeConnectionRecord(context, record);
 	if (!parsed) {
-		throw new AssistantError(
-			"GitHub App connection is invalid",
-			ErrorType.NOT_FOUND,
-		);
+		throw new AssistantError("GitHub App connection is invalid", ErrorType.NOT_FOUND);
 	}
 
 	return parsed;
@@ -89,10 +83,7 @@ export async function getGitHubAppConnectionForUserRepo(
 		return parsed.connection;
 	}
 
-	throw new AssistantError(
-		"GitHub App connection not found for repository",
-		ErrorType.NOT_FOUND,
-	);
+	throw new AssistantError("GitHub App connection not found for repository", ErrorType.NOT_FOUND);
 }
 
 export async function getGitHubAppConnectionForUserInstallation(
@@ -101,13 +92,12 @@ export async function getGitHubAppConnectionForUserInstallation(
 	installationId: number,
 ): Promise<GitHubAppConnection> {
 	const installationKey = String(installationId);
-	const byItemId =
-		await context.repositories.appData.getAppDataByUserAppAndItem(
-			userId,
-			GITHUB_CONNECTION_APP_ID,
-			installationKey,
-			"github_installation",
-		);
+	const byItemId = await context.repositories.appData.getAppDataByUserAppAndItem(
+		userId,
+		GITHUB_CONNECTION_APP_ID,
+		installationKey,
+		"github_installation",
+	);
 
 	if (!byItemId.length) {
 		throw new AssistantError(

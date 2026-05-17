@@ -8,9 +8,7 @@ import type {
 	CanvasModel,
 } from "~/types/canvas";
 
-export async function fetchCanvasModels(
-	mode: CanvasMode,
-): Promise<CanvasModel[]> {
+export async function fetchCanvasModels(mode: CanvasMode): Promise<CanvasModel[]> {
 	let headers = {};
 	try {
 		headers = await apiService.getHeaders();
@@ -48,17 +46,14 @@ export async function generateCanvasOutputs(
 	if (!response.ok) {
 		const errorData = await returnFetchedData<{ error?: string }>(response);
 		throw new Error(
-			errorData?.error ||
-				`Failed to generate Canvas outputs: ${response.statusText}`,
+			errorData?.error || `Failed to generate Canvas outputs: ${response.statusText}`,
 		);
 	}
 
 	return await returnFetchedData<CanvasGenerateResponse>(response);
 }
 
-export async function fetchCanvasGenerations(
-	mode?: CanvasMode,
-): Promise<CanvasGeneration[]> {
+export async function fetchCanvasGenerations(mode?: CanvasMode): Promise<CanvasGeneration[]> {
 	let headers = {};
 	try {
 		headers = await apiService.getHeaders();
@@ -73,13 +68,9 @@ export async function fetchCanvasGenerations(
 	});
 
 	if (!response.ok) {
-		throw new Error(
-			`Failed to fetch Canvas generations: ${response.statusText}`,
-		);
+		throw new Error(`Failed to fetch Canvas generations: ${response.statusText}`);
 	}
 
-	const data = await returnFetchedData<{ generations: CanvasGeneration[] }>(
-		response,
-	);
+	const data = await returnFetchedData<{ generations: CanvasGeneration[] }>(response);
 	return data.generations || [];
 }

@@ -97,8 +97,7 @@ describe("base64url", () => {
 	describe("round-trip conversion", () => {
 		it("should maintain data integrity through round-trip conversion", () => {
 			const originalData = new Uint8Array([
-				72, 101, 108, 108, 111, 32, 87, 111, 114, 108, 100, 33, 0, 1, 127, 128,
-				254, 255, 62, 63,
+				72, 101, 108, 108, 111, 32, 87, 111, 114, 108, 100, 33, 0, 1, 127, 128, 254, 255, 62, 63,
 			]);
 
 			const base64Url = encodeBase64Url(originalData);

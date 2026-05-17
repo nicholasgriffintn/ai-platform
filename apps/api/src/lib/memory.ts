@@ -187,10 +187,7 @@ export class MemoryManager {
 		}
 
 		const memories = (result.matches || [])
-			.filter(
-				(m) =>
-					m.score >= scoreThreshold && typeof m.metadata?.text === "string",
-			)
+			.filter((m) => m.score >= scoreThreshold && typeof m.metadata?.text === "string")
 			.slice(0, topK)
 			.map((m) => ({ text: m.metadata.text as string, score: m.score }));
 
@@ -218,8 +215,10 @@ export class MemoryManager {
 		if (userSettings?.memories_save_enabled) {
 			try {
 				if (lastUser.trim()) {
-					const { model: modelToUse, provider: providerToUse } =
-						await getAuxiliaryModel(this.env, this.user);
+					const { model: modelToUse, provider: providerToUse } = await getAuxiliaryModel(
+						this.env,
+						this.user,
+					);
 					const provider = getChatProvider(providerToUse, {
 						env: this.env,
 						user: this.user,
@@ -286,9 +285,9 @@ export class MemoryManager {
 									let normalized: string[] = [];
 									const response = normalizer.response?.trim() || "";
 
-									const parsedResponse = parseAIResponseJson<
-										string[] | { text: string[] }
-									>(response);
+									const parsedResponse = parseAIResponseJson<string[] | { text: string[] }>(
+										response,
+									);
 
 									if (parsedResponse) {
 										if (Array.isArray(parsedResponse.data)) {
@@ -302,16 +301,10 @@ export class MemoryManager {
 									}
 
 									normalized = normalized
-										.filter(
-											(text) =>
-												typeof text === "string" && text.trim().length > 0,
-										)
+										.filter((text) => typeof text === "string" && text.trim().length > 0)
 										.map((text) => text.trim())
 										.filter(
-											(text) =>
-												!text.includes("###") &&
-												!text.includes("**") &&
-												text.length < 200,
+											(text) => !text.includes("###") && !text.includes("**") && text.length < 200,
 										);
 
 									for (const altText of normalized) {
@@ -351,11 +344,7 @@ export class MemoryManager {
 			try {
 				const userCount = messages.filter((m) => m.role === "user").length;
 				if (userCount > 0 && userCount % 5 === 0) {
-					const recent = await conversationManager.get(
-						completionId,
-						undefined,
-						10,
-					);
+					const recent = await conversationManager.get(completionId, undefined, 10);
 					const snippet = recent
 						.map(
 							(m) =>
@@ -363,8 +352,10 @@ export class MemoryManager {
 						)
 						.join("\n");
 
-					const { model: modelToUse, provider: providerToUse } =
-						await getAuxiliaryModel(this.env, this.user);
+					const { model: modelToUse, provider: providerToUse } = await getAuxiliaryModel(
+						this.env,
+						this.user,
+					);
 					const provider = getChatProvider(providerToUse, {
 						env: this.env,
 						user: this.user,

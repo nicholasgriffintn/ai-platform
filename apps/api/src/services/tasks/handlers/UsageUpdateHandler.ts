@@ -71,31 +71,20 @@ export class UsageUpdateHandler implements TaskHandler {
 					});
 					return;
 				}
-				await UsageManager.applyProUsageUpdate(
-					repositories,
-					user,
-					payload.usageMultiplier,
-				);
+				await UsageManager.applyProUsageUpdate(repositories, user, payload.usageMultiplier);
 				return;
 			}
 			case "increment_anonymous_usage": {
 				if (!payload.anonymousUserId) {
-					logger.warn(
-						"Usage update missing anonymousUserId for increment_anonymous_usage",
-					);
+					logger.warn("Usage update missing anonymousUserId for increment_anonymous_usage");
 					return;
 				}
-				await UsageManager.applyAnonymousUsageUpdate(
-					repositories,
-					payload.anonymousUserId,
-				);
+				await UsageManager.applyAnonymousUsageUpdate(repositories, payload.anonymousUserId);
 				return;
 			}
 			case "increment_function_usage": {
 				if (!payload.userId) {
-					logger.warn(
-						"Usage update missing userId for increment_function_usage",
-					);
+					logger.warn("Usage update missing userId for increment_function_usage");
 					return;
 				}
 				const user = await repositories.users.getUserById(payload.userId);

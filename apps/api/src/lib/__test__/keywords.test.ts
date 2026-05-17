@@ -5,14 +5,7 @@ describe("KeywordFilter", () => {
 	let filter: KeywordFilter;
 
 	beforeEach(() => {
-		const keywords = [
-			"javascript",
-			"python",
-			"react",
-			"algorithm",
-			"function",
-			"programming",
-		];
+		const keywords = ["javascript", "python", "react", "algorithm", "function", "programming"];
 		filter = new KeywordFilter(keywords);
 	});
 
@@ -81,11 +74,8 @@ describe("KeywordFilter", () => {
 
 	describe("getCategorizedMatches", () => {
 		it("should categorize matched keywords", () => {
-			const codingFilter = new KeywordFilter(
-				KeywordFilter.getAllCodingKeywords(),
-			);
-			const text =
-				"I need help with JavaScript algorithms and Python functions";
+			const codingFilter = new KeywordFilter(KeywordFilter.getAllCodingKeywords());
+			const text = "I need help with JavaScript algorithms and Python functions";
 
 			const categorized = codingFilter.getCategorizedMatches(text);
 

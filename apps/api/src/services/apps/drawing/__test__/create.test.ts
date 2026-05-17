@@ -143,9 +143,7 @@ describe("generateImageFromDrawing", () => {
 			type: "image/png",
 		});
 		const mockPaintingArrayBuffer = new ArrayBuffer(200);
-		vi.spyOn(mockPaintingBlob, "arrayBuffer").mockResolvedValue(
-			mockPaintingArrayBuffer,
-		);
+		vi.spyOn(mockPaintingBlob, "arrayBuffer").mockResolvedValue(mockPaintingArrayBuffer);
 
 		global.Response = buildResponseMock(mockPaintingArrayBuffer) as any;
 
@@ -154,12 +152,8 @@ describe("generateImageFromDrawing", () => {
 			.mockResolvedValueOnce(mockPaintingBlob);
 
 		mockStorageService.uploadObject
-			.mockResolvedValueOnce(
-				"https://assets.example.com/drawings/test-drawing-id/image.png",
-			)
-			.mockResolvedValueOnce(
-				"https://assets.example.com/drawings/test-drawing-id/painting.png",
-			);
+			.mockResolvedValueOnce("https://assets.example.com/drawings/test-drawing-id/image.png")
+			.mockResolvedValueOnce("https://assets.example.com/drawings/test-drawing-id/painting.png");
 
 		mockAppDataRepo.createAppDataWithItem.mockResolvedValue({
 			id: "app-data-123",
@@ -168,10 +162,8 @@ describe("generateImageFromDrawing", () => {
 			id: "app-data-123",
 			data: JSON.stringify({
 				description: "A beautiful landscape with mountains",
-				drawingUrl:
-					"https://assets.example.com/drawings/test-drawing-id/image.png",
-				paintingUrl:
-					"https://assets.example.com/drawings/test-drawing-id/painting.png",
+				drawingUrl: "https://assets.example.com/drawings/test-drawing-id/image.png",
+				paintingUrl: "https://assets.example.com/drawings/test-drawing-id/painting.png",
 				drawingKey: "drawings/test-drawing-id/image.png",
 				paintingKey: "drawings/test-drawing-id/painting.png",
 			}),
@@ -237,10 +229,8 @@ describe("generateImageFromDrawing", () => {
 			"drawing",
 			{
 				description: "A beautiful landscape with mountains",
-				drawingUrl:
-					"https://assets.example.com/drawings/test-drawing-id/image.png",
-				paintingUrl:
-					"https://assets.example.com/drawings/test-drawing-id/painting.png",
+				drawingUrl: "https://assets.example.com/drawings/test-drawing-id/image.png",
+				paintingUrl: "https://assets.example.com/drawings/test-drawing-id/painting.png",
 				drawingKey: "drawings/test-drawing-id/image.png",
 				paintingKey: "drawings/test-drawing-id/painting.png",
 			},
@@ -252,10 +242,8 @@ describe("generateImageFromDrawing", () => {
 			completion_id: "test-drawing-id",
 			data: {
 				description: "A beautiful landscape with mountains",
-				drawingUrl:
-					"https://assets.example.com/drawings/test-drawing-id/image.png",
-				paintingUrl:
-					"https://assets.example.com/drawings/test-drawing-id/painting.png",
+				drawingUrl: "https://assets.example.com/drawings/test-drawing-id/image.png",
+				paintingUrl: "https://assets.example.com/drawings/test-drawing-id/painting.png",
 				drawingKey: "drawings/test-drawing-id/image.png",
 				paintingKey: "drawings/test-drawing-id/painting.png",
 			},
@@ -278,9 +266,7 @@ describe("generateImageFromDrawing", () => {
 			.mockResolvedValueOnce(mockDescriptionResponse)
 			.mockResolvedValueOnce(mockPaintingBlob);
 
-		mockStorageService.uploadObject.mockResolvedValue(
-			"https://example.com/test.png",
-		);
+		mockStorageService.uploadObject.mockResolvedValue("https://example.com/test.png");
 		mockAppDataRepo.createAppDataWithItem.mockResolvedValue({
 			id: "app-data-123",
 		});
@@ -319,9 +305,7 @@ describe("generateImageFromDrawing", () => {
 			.mockResolvedValueOnce(mockDescriptionResponse)
 			.mockResolvedValueOnce(mockPaintingBlob);
 
-		mockStorageService.uploadObject.mockResolvedValue(
-			"https://example.com/test.png",
-		);
+		mockStorageService.uploadObject.mockResolvedValue("https://example.com/test.png");
 		mockAppDataRepo.createAppDataWithItem.mockResolvedValue({
 			id: "app-data-123",
 		});
@@ -358,9 +342,7 @@ describe("generateImageFromDrawing", () => {
 			.mockResolvedValueOnce(mockDescriptionResponse)
 			.mockResolvedValueOnce(mockPaintingBlob);
 
-		mockStorageService.uploadObject.mockResolvedValue(
-			"https://example.com/test.png",
-		);
+		mockStorageService.uploadObject.mockResolvedValue("https://example.com/test.png");
 		mockAppDataRepo.createAppDataWithItem.mockResolvedValue({
 			id: "app-data-123",
 		});
@@ -377,29 +359,21 @@ describe("generateImageFromDrawing", () => {
 		});
 
 		expect(mockConversationManager.add).toHaveBeenCalledTimes(2);
-		expect(mockConversationManager.add).toHaveBeenNthCalledWith(
-			1,
-			"test-drawing-id",
-			{
-				role: "user",
-				content: "Generate a drawing with this prompt: A beautiful sunset",
-				app: "drawings",
-			},
-		);
+		expect(mockConversationManager.add).toHaveBeenNthCalledWith(1, "test-drawing-id", {
+			role: "user",
+			content: "Generate a drawing with this prompt: A beautiful sunset",
+			app: "drawings",
+		});
 
-		expect(mockConversationManager.add).toHaveBeenNthCalledWith(
-			2,
-			"test-drawing-id",
-			{
-				role: "assistant",
-				name: "drawing_generate",
-				content: "A beautiful sunset",
-				data: expect.objectContaining({
-					drawingUrl: expect.stringContaining("image.png"),
-					paintingUrl: expect.stringContaining("painting.png"),
-				}),
-			},
-		);
+		expect(mockConversationManager.add).toHaveBeenNthCalledWith(2, "test-drawing-id", {
+			role: "assistant",
+			name: "drawing_generate",
+			content: "A beautiful sunset",
+			data: expect.objectContaining({
+				drawingUrl: expect.stringContaining("image.png"),
+				paintingUrl: expect.stringContaining("painting.png"),
+			}),
+		});
 
 		expect(result.status).toBe("success");
 		// @ts-ignore - app_data_id exists on the returned object in tests
@@ -422,9 +396,7 @@ describe("generateImageFromDrawing", () => {
 			.mockResolvedValueOnce(mockDescriptionResponse)
 			.mockResolvedValueOnce(mockPaintingBlob);
 
-		mockStorageService.uploadObject.mockResolvedValue(
-			"https://example.com/test.png",
-		);
+		mockStorageService.uploadObject.mockResolvedValue("https://example.com/test.png");
 		mockAppDataRepo.createAppDataWithItem.mockResolvedValue({
 			id: "app-data-123",
 		});
@@ -452,9 +424,7 @@ describe("generateImageFromDrawing", () => {
 		const mockArrayBuffer = new ArrayBuffer(100);
 		vi.spyOn(mockDrawing, "arrayBuffer").mockResolvedValue(mockArrayBuffer);
 
-		mockStorageService.uploadObject.mockRejectedValue(
-			new Error("Upload failed"),
-		);
+		mockStorageService.uploadObject.mockRejectedValue(new Error("Upload failed"));
 
 		await expect(
 			generateImageFromDrawing({
@@ -507,9 +477,7 @@ describe("generateImageFromDrawing", () => {
 		const mockArrayBuffer = new ArrayBuffer(100);
 		vi.spyOn(mockDrawing, "arrayBuffer").mockResolvedValue(mockArrayBuffer);
 
-		mockStorageService.uploadObject.mockResolvedValue(
-			"https://example.com/drawing.png",
-		);
+		mockStorageService.uploadObject.mockResolvedValue("https://example.com/drawing.png");
 		mockEnv.AI.run.mockRejectedValue(new Error("AI service unavailable"));
 
 		await expect(
@@ -532,9 +500,7 @@ describe("generateImageFromDrawing", () => {
 			.mockResolvedValueOnce(mockDescriptionResponse)
 			.mockRejectedValueOnce(new Error("Painting generation failed"));
 
-		mockStorageService.uploadObject.mockResolvedValue(
-			"https://example.com/drawing.png",
-		);
+		mockStorageService.uploadObject.mockResolvedValue("https://example.com/drawing.png");
 
 		await expect(
 			generateImageFromDrawing({
@@ -561,12 +527,8 @@ describe("generateImageFromDrawing", () => {
 			.mockResolvedValueOnce(mockDescriptionResponse)
 			.mockResolvedValueOnce(mockPaintingBlob);
 
-		mockStorageService.uploadObject.mockResolvedValue(
-			"https://example.com/test.png",
-		);
-		mockAppDataRepo.createAppDataWithItem.mockRejectedValue(
-			new Error("Database error"),
-		);
+		mockStorageService.uploadObject.mockResolvedValue("https://example.com/test.png");
+		mockAppDataRepo.createAppDataWithItem.mockRejectedValue(new Error("Database error"));
 
 		await expect(
 			generateImageFromDrawing({
@@ -593,9 +555,7 @@ describe("generateImageFromDrawing", () => {
 			.mockResolvedValueOnce(mockDescriptionResponse)
 			.mockResolvedValueOnce(mockPaintingBlob);
 
-		mockStorageService.uploadObject.mockResolvedValue(
-			"https://example.com/test.png",
-		);
+		mockStorageService.uploadObject.mockResolvedValue("https://example.com/test.png");
 		mockAppDataRepo.createAppDataWithItem.mockResolvedValue({
 			id: "app-data-123",
 		});
@@ -605,9 +565,7 @@ describe("generateImageFromDrawing", () => {
 			...mockContext,
 			env: envWithoutAssets,
 		};
-		vi.mocked(resolveServiceContext).mockReturnValueOnce(
-			contextWithoutAssets as any,
-		);
+		vi.mocked(resolveServiceContext).mockReturnValueOnce(contextWithoutAssets as any);
 
 		const result = await generateImageFromDrawing({
 			env: envWithoutAssets,
@@ -616,8 +574,6 @@ describe("generateImageFromDrawing", () => {
 		});
 
 		expect(result.data.drawingUrl).toBe("/drawings/test-drawing-id/image.png");
-		expect(result.data.paintingUrl).toBe(
-			"/drawings/test-drawing-id/painting.png",
-		);
+		expect(result.data.paintingUrl).toBe("/drawings/test-drawing-id/painting.png");
 	});
 });

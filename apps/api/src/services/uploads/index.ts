@@ -61,15 +61,10 @@ function parseConversionOptions(
 	try {
 		parsedOptions = JSON.parse(value);
 	} catch {
-		throw new AssistantError(
-			"conversion_options must be valid JSON",
-			ErrorType.PARAMS_ERROR,
-			400,
-		);
+		throw new AssistantError("conversion_options must be valid JSON", ErrorType.PARAMS_ERROR, 400);
 	}
 
-	const validationResult =
-		markdownConversionOptionsSchema.safeParse(parsedOptions);
+	const validationResult = markdownConversionOptionsSchema.safeParse(parsedOptions);
 
 	if (!validationResult.success) {
 		const issue = validationResult.error.issues[0];
@@ -104,10 +99,7 @@ function buildMarkdownConversionOptions(
 		}
 	}
 
-	if (
-		mimeType === "application/pdf" &&
-		nextOptions?.pdf?.metadata === undefined
-	) {
+	if (mimeType === "application/pdf" && nextOptions?.pdf?.metadata === undefined) {
 		nextOptions = {
 			...nextOptions,
 			pdf: {
@@ -131,12 +123,7 @@ export async function handleFileUpload(
 	markdown?: string;
 }> {
 	const file = formData.get("file") as File | null;
-	const fileType = formData.get("file_type") as
-		| "image"
-		| "document"
-		| "audio"
-		| "code"
-		| null;
+	const fileType = formData.get("file_type") as "image" | "document" | "audio" | "code" | null;
 
 	if (!file) {
 		throw new AssistantError("No file uploaded", ErrorType.PARAMS_ERROR, 400);
@@ -150,8 +137,7 @@ export async function handleFileUpload(
 	}
 
 	const nameParts = file.name.split(".");
-	const inferredExtension =
-		nameParts.length > 1 ? nameParts.pop()!.toLowerCase() : "";
+	const inferredExtension = nameParts.length > 1 ? nameParts.pop()!.toLowerCase() : "";
 
 	const allowedMimeTypes: Record<string, string[]> = {
 		image: ["image/jpeg", "image/png", "image/gif", "image/webp"],
@@ -220,26 +206,19 @@ export async function handleFileUpload(
 	if (fileType === "code") {
 		const maxCodeSizeBytes = 200 * 1024;
 		if (file.size > maxCodeSizeBytes) {
-			throw new AssistantError(
-				"Code files must be 200KB or smaller",
-				ErrorType.PARAMS_ERROR,
-				400,
-			);
+			throw new AssistantError("Code files must be 200KB or smaller", ErrorType.PARAMS_ERROR, 400);
 		}
 	}
 
 	const isPdf = file.type === "application/pdf";
 	const convertFlag = formData.get("convert_to_markdown") as string | null;
-	const conversionOptions = parseConversionOptions(
-		formData.get("conversion_options"),
-	);
+	const conversionOptions = parseConversionOptions(formData.get("conversion_options"));
 	const shouldConvert =
 		(fileType === "document" && (!isPdf || convertFlag === "true")) ||
 		(fileType === "image" && convertFlag === "true");
 
 	const mimeExtension = (file.type.split("/")[1] || "").toLowerCase();
-	const fileExtension =
-		fileType === "code" ? inferredExtension || mimeExtension : mimeExtension;
+	const fileExtension = fileType === "code" ? inferredExtension || mimeExtension : mimeExtension;
 	const key = `uploads/${userId}/${fileType}s/${generateId()}.${fileExtension}`;
 
 	let arrayBuffer: ArrayBuffer;
@@ -247,17 +226,10 @@ export async function handleFileUpload(
 		arrayBuffer = await file.arrayBuffer();
 	} catch (bufferError) {
 		logger.error("Failed to convert file to arrayBuffer", {
-			error:
-				bufferError instanceof Error
-					? bufferError.message
-					: String(bufferError),
+			error: bufferError instanceof Error ? bufferError.message : String(bufferError),
 			stack: bufferError instanceof Error ? bufferError.stack : undefined,
 		});
-		throw new AssistantError(
-			"Failed to process file data",
-			ErrorType.UNKNOWN_ERROR,
-			500,
-		);
+		throw new AssistantError("Failed to process file data", ErrorType.UNKNOWN_ERROR, 500);
 	}
 
 	try {
@@ -266,25 +238,15 @@ export async function handleFileUpload(
 			contentType: file.type,
 		});
 		if (!uploaded) {
-			throw new AssistantError(
-				"Failed to upload file to storage",
-				ErrorType.STORAGE_ERROR,
-			);
+			throw new AssistantError("Failed to upload file to storage", ErrorType.STORAGE_ERROR);
 		}
 	} catch (storageError) {
 		logger.error("Failed to upload file to storage", {
-			error:
-				storageError instanceof Error
-					? storageError.message
-					: String(storageError),
+			error: storageError instanceof Error ? storageError.message : String(storageError),
 			stack: storageError instanceof Error ? storageError.stack : undefined,
 			key,
 		});
-		throw new AssistantError(
-			"Failed to store file",
-			ErrorType.EXTERNAL_API_ERROR,
-			500,
-		);
+		throw new AssistantError("Failed to store file", ErrorType.EXTERNAL_API_ERROR, 500);
 	}
 
 	const baseUrl = env.PUBLIC_ASSETS_URL ?? "";
@@ -309,10 +271,7 @@ export async function handleFileUpload(
 			}
 		} catch (markdownError) {
 			logger.error("Error during markdown conversion", {
-				error:
-					markdownError instanceof Error
-						? markdownError.message
-						: String(markdownError),
+				error: markdownError instanceof Error ? markdownError.message : String(markdownError),
 				stack: markdownError instanceof Error ? markdownError.stack : undefined,
 			});
 		}
@@ -321,8 +280,7 @@ export async function handleFileUpload(
 	if (fileType === "code") {
 		try {
 			const rawText = await file.text();
-			const lang =
-				CODE_EXTENSION_TO_LANG[(inferredExtension || "").toLowerCase()] || "";
+			const lang = CODE_EXTENSION_TO_LANG[(inferredExtension || "").toLowerCase()] || "";
 			const fence = lang ? `\`\`\`${lang}` : "```";
 			markdownContent = `${fence}\n${rawText}\n\`\`\``;
 		} catch (err) {

@@ -31,15 +31,11 @@ export function meta() {
 export default function NewArticleAnalysisPage() {
 	const navigate = useNavigate();
 	const [itemId, setItemId] = useState<string | null>(null);
-	const [articles, setArticles] = useState<ArticleInput[]>([
-		{ id: crypto.randomUUID(), text: "" },
-	]);
+	const [articles, setArticles] = useState<ArticleInput[]>([{ id: crypto.randomUUID(), text: "" }]);
 	const [processingArticles, setProcessingArticles] = useState(false);
 	const [reportGenerating, setReportGenerating] = useState(false);
 	const [processingError, setProcessingError] = useState<string | null>(null);
-	const [urlInputs, setUrlInputs] = useState<{ [articleId: string]: string }>(
-		{},
-	);
+	const [urlInputs, setUrlInputs] = useState<{ [articleId: string]: string }>({});
 	const [extractingContent, setExtractingContent] = useState<{
 		[articleId: string]: boolean;
 	}>({});
@@ -54,40 +50,27 @@ export default function NewArticleAnalysisPage() {
 	const extractContentMutation = useExtractArticleContent();
 
 	const handleAddArticle = useCallback(() => {
-		setArticles((prevArticles) => [
-			...prevArticles,
-			{ id: crypto.randomUUID(), text: "" },
-		]);
+		setArticles((prevArticles) => [...prevArticles, { id: crypto.randomUUID(), text: "" }]);
 	}, []);
 
 	const handleRemoveArticle = useCallback((idToRemove: string) => {
+		setArticles((prevArticles) => prevArticles.filter((article) => article.id !== idToRemove));
+	}, []);
+
+	const handleTextChange = useCallback((id: string, e: ChangeEvent<HTMLTextAreaElement>) => {
+		const newText = e.target.value;
 		setArticles((prevArticles) =>
-			prevArticles.filter((article) => article.id !== idToRemove),
+			prevArticles.map((article) => (article.id === id ? { ...article, text: newText } : article)),
 		);
 	}, []);
 
-	const handleTextChange = useCallback(
-		(id: string, e: ChangeEvent<HTMLTextAreaElement>) => {
-			const newText = e.target.value;
-			setArticles((prevArticles) =>
-				prevArticles.map((article) =>
-					article.id === id ? { ...article, text: newText } : article,
-				),
-			);
-		},
-		[],
-	);
-
-	const handleUrlChange = useCallback(
-		(id: string, e: ChangeEvent<HTMLInputElement>) => {
-			const newUrl = e.target.value;
-			setUrlInputs((prev) => ({
-				...prev,
-				[id]: newUrl,
-			}));
-		},
-		[],
-	);
+	const handleUrlChange = useCallback((id: string, e: ChangeEvent<HTMLInputElement>) => {
+		const newUrl = e.target.value;
+		setUrlInputs((prev) => ({
+			...prev,
+			[id]: newUrl,
+		}));
+	}, []);
 
 	const handleExtractContent = useCallback(
 		async (id: string, url: string, e?: FormEvent) => {
@@ -109,9 +92,7 @@ export default function NewArticleAnalysisPage() {
 				if (result.status === "success" && result.data?.content.length) {
 					setArticles((prevArticles) =>
 						prevArticles.map((article) =>
-							article.id === id
-								? { ...article, text: result.data?.content?.[0] || "" }
-								: article,
+							article.id === id ? { ...article, text: result.data?.content?.[0] || "" } : article,
 						),
 					);
 				} else if (result.data?.failedUrls.length) {
@@ -119,9 +100,7 @@ export default function NewArticleAnalysisPage() {
 					setProcessingError(`Failed to extract content: ${error}`);
 				}
 			} catch (error: any) {
-				setProcessingError(
-					`Error extracting content: ${error.message || "Unknown error"}`,
-				);
+				setProcessingError(`Error extracting content: ${error.message || "Unknown error"}`);
 			} finally {
 				setExtractingContent((prev) => ({
 					...prev,
@@ -179,24 +158,14 @@ export default function NewArticleAnalysisPage() {
 			);
 		} catch (error: any) {
 			setProcessingArticles(false);
-			const message =
-				error?.message || "An error occurred during article processing.";
+			const message = error?.message || "An error occurred during article processing.";
 			setProcessingError(`Article Processing Failed: ${message}`);
 		}
-	}, [
-		articles,
-		itemId,
-		analyseMutation,
-		summariseMutation,
-		generateReportMutation,
-		navigate,
-	]);
+	}, [articles, itemId, analyseMutation, summariseMutation, generateReportMutation, navigate]);
 
 	const isGenerateEnabled = useMemo(() => {
 		return (
-			!processingArticles &&
-			!reportGenerating &&
-			articles.some((a) => a.text.trim().length > 0)
+			!processingArticles && !reportGenerating && articles.some((a) => a.text.trim().length > 0)
 		);
 	}, [articles, processingArticles, reportGenerating]);
 
@@ -252,12 +221,8 @@ export default function NewArticleAnalysisPage() {
 							"mb-6 p-4 border border-red-300 bg-red-50 dark:border-red-700 dark:bg-red-900/30 rounded-md",
 						)}
 					>
-						<p className={cn("font-semibold text-red-800 dark:text-red-200")}>
-							Error
-						</p>
-						<p className={cn("text-sm text-red-700 dark:text-red-300 mt-1")}>
-							{processingError}
-						</p>
+						<p className={cn("font-semibold text-red-800 dark:text-red-200")}>Error</p>
+						<p className={cn("text-sm text-red-700 dark:text-red-300 mt-1")}>{processingError}</p>
 					</div>
 				)}
 
@@ -271,11 +236,7 @@ export default function NewArticleAnalysisPage() {
 								)}
 							>
 								<div className={cn("flex justify-between items-start mb-3")}>
-									<h2
-										className={cn(
-											"font-semibold text-lg text-zinc-800 dark:text-zinc-200",
-										)}
-									>
+									<h2 className={cn("font-semibold text-lg text-zinc-800 dark:text-zinc-200")}>
 										Article {index + 1}
 									</h2>
 									{articles.length > 1 && (
@@ -284,9 +245,7 @@ export default function NewArticleAnalysisPage() {
 											size="sm"
 											onClick={() => handleRemoveArticle(article.id)}
 											aria-label="Remove Article"
-											className={cn(
-												"text-zinc-500 hover:text-red-600 dark:hover:text-red-500",
-											)}
+											className={cn("text-zinc-500 hover:text-red-600 dark:hover:text-red-500")}
 										>
 											<Trash2 size={16} />
 										</Button>
@@ -297,11 +256,7 @@ export default function NewArticleAnalysisPage() {
 									<form
 										className={cn("flex space-x-2 mb-2")}
 										onSubmit={(e) =>
-											handleExtractContent(
-												article.id,
-												urlInputs[article.id] || "",
-												e,
-											)
+											handleExtractContent(article.id, urlInputs[article.id] || "", e)
 										}
 									>
 										<Input
@@ -311,9 +266,7 @@ export default function NewArticleAnalysisPage() {
 											onChange={(e) => handleUrlChange(article.id, e)}
 											className={cn("flex-1")}
 											disabled={
-												processingArticles ||
-												reportGenerating ||
-												extractingContent[article.id]
+												processingArticles || reportGenerating || extractingContent[article.id]
 											}
 										/>
 										<Button
@@ -331,16 +284,11 @@ export default function NewArticleAnalysisPage() {
 											) : (
 												<Link2 size={16} className="mr-1" />
 											)}
-											{extractingContent[article.id]
-												? "Fetching..."
-												: "Fetch Content"}
+											{extractingContent[article.id] ? "Fetching..." : "Fetch Content"}
 										</Button>
 									</form>
-									<div
-										className={cn("text-xs text-zinc-500 dark:text-zinc-400")}
-									>
-										Enter a URL to automatically extract article content or
-										paste it manually below
+									<div className={cn("text-xs text-zinc-500 dark:text-zinc-400")}>
+										Enter a URL to automatically extract article content or paste it manually below
 									</div>
 								</div>
 
@@ -349,11 +297,7 @@ export default function NewArticleAnalysisPage() {
 									onChange={(e) => handleTextChange(article.id, e)}
 									placeholder="Paste article content here..."
 									className={cn("min-h-[150px] mb-3")}
-									disabled={
-										processingArticles ||
-										reportGenerating ||
-										extractingContent[article.id]
-									}
+									disabled={processingArticles || reportGenerating || extractingContent[article.id]}
 								/>
 							</div>
 						);

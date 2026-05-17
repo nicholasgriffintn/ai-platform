@@ -221,9 +221,7 @@ describe("handleCreateChatCompletions", () => {
 			// @ts-expect-error - mock result
 			expect(result.choices[0].finish_reason).toBe("tool_calls");
 			// @ts-expect-error - mock result
-			expect(result.choices[0].message.tool_calls).toEqual(
-				mockResponse.response.tool_calls,
-			);
+			expect(result.choices[0].message.tool_calls).toEqual(mockResponse.response.tool_calls);
 		});
 
 		it("should generate completion_id when not provided", async () => {
@@ -326,9 +324,7 @@ describe("handleCreateChatCompletions", () => {
 			});
 
 			expect(result).toBeInstanceOf(Response);
-			expect((result as Response).headers.get("Content-Type")).toBe(
-				"text/event-stream",
-			);
+			expect((result as Response).headers.get("Content-Type")).toBe("text/event-stream");
 		});
 	});
 

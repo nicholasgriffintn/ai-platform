@@ -27,11 +27,7 @@ export const ChatMessage = ({
 }: {
 	conversationId?: string;
 	message: Message;
-	onToolInteraction?: (
-		toolName: string,
-		action: "useAsPrompt",
-		data: Record<string, any>,
-	) => void;
+	onToolInteraction?: (toolName: string, action: "useAsPrompt", data: Record<string, any>) => void;
 	onArtifactOpen?: (
 		artifact: ArtifactProps,
 		combine?: boolean,
@@ -48,9 +44,7 @@ export const ChatMessage = ({
 	isBranching?: boolean;
 }) => {
 	const { copied, copy } = useCopyToClipboard();
-	const [feedbackState, setFeedbackState] = useState<
-		"none" | "liked" | "disliked"
-	>("none");
+	const [feedbackState, setFeedbackState] = useState<"none" | "liked" | "disliked">("none");
 	const [isSubmittingFeedback, setIsSubmittingFeedback] = useState(false);
 
 	const isToolResponse = message.role === ("tool" as ChatRole) && message.name;
@@ -59,21 +53,14 @@ export const ChatMessage = ({
 		Array.isArray(message.tool_calls) &&
 		message.tool_calls.length > 0;
 	const isSystemMessage =
-		message.role === ("system" as ChatRole) ||
-		message.role === ("developer" as ChatRole);
-	const hasPartContent =
-		Array.isArray(message.parts) && message.parts.length > 0;
+		message.role === ("system" as ChatRole) || message.role === ("developer" as ChatRole);
+	const hasPartContent = Array.isArray(message.parts) && message.parts.length > 0;
 
 	if (isSystemMessage) {
 		return null;
 	}
 
-	if (
-		!message.content &&
-		!message.reasoning &&
-		!hasPartContent &&
-		!isToolResponse
-	) {
+	if (!message.content && !message.reasoning && !hasPartContent && !isToolResponse) {
 		return null;
 	}
 
@@ -121,9 +108,7 @@ export const ChatMessage = ({
 
 	return (
 		<article
-			className={`flex ${
-				message.role === "user" ? "justify-end" : "justify-start"
-			}`}
+			className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
 			data-role={message.role}
 			data-tool-response={isToolResponse}
 			data-external-function-call={isExternalFunctionCall}
@@ -142,32 +127,17 @@ export const ChatMessage = ({
 					}
 				`}
 			>
-				<div
-					className={`flex flex-col gap-2 py-2 ${
-						message.role === "user" ? "px-3" : ""
-					}`}
-				>
+				<div className={`flex flex-col gap-2 py-2 ${message.role === "user" ? "px-3" : ""}`}>
 					<div className="flex items-start gap-2">
 						{message.role === "assistant" && message.model && (
 							<div className="flex-shrink-0 mr-2 mt-1">
-								<ModelIcon
-									modelName={message.model}
-									size={24}
-									title={message.model}
-									mono={true}
-								/>
+								<ModelIcon modelName={message.model} size={24} title={message.model} mono={true} />
 							</div>
 						)}
 						<div className="flex-1 overflow-x-auto">
 							{isToolResponse ? (
-								<ToolMessage
-									message={message}
-									onToolInteraction={onToolInteraction}
-								/>
-							) : isEditing &&
-							  message.role === "user" &&
-							  onSaveEdit &&
-							  onCancelEdit ? (
+								<ToolMessage message={message} onToolInteraction={onToolInteraction} />
+							) : isEditing && message.role === "user" && onSaveEdit && onCancelEdit ? (
 								<EditableMessageContent
 									message={message}
 									onSave={onSaveEdit}
@@ -176,10 +146,7 @@ export const ChatMessage = ({
 								/>
 							) : (
 								(!isExternalFunctionCall || message?.content) && (
-									<MessageContent
-										message={message}
-										onArtifactOpen={onArtifactOpen}
-									/>
+									<MessageContent message={message} onArtifactOpen={onArtifactOpen} />
 								)
 							)}
 						</div>
@@ -196,9 +163,7 @@ export const ChatMessage = ({
 								isSubmittingFeedback={isSubmittingFeedback}
 								submitFeedback={submitFeedback}
 								isSharedView={isSharedView}
-								onRetry={
-									onRetry && message.id ? () => onRetry(message.id!) : undefined
-								}
+								onRetry={onRetry && message.id ? () => onRetry(message.id!) : undefined}
 								isRetrying={isRetrying}
 								onEdit={onEdit}
 								isEditing={isEditing}

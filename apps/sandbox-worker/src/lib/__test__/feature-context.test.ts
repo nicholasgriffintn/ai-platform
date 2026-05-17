@@ -18,9 +18,7 @@ describe("feature-implementation context helpers", () => {
 	it("detects legacy implement instruction paths", () => {
 		expect(isImplementInstructionPath(".implement")).toBe(true);
 		expect(isImplementInstructionPath(".implement.md")).toBe(true);
-		expect(isImplementInstructionPath("tasks/prd-001-user-auth.md")).toBe(
-			false,
-		);
+		expect(isImplementInstructionPath("tasks/prd-001-user-auth.md")).toBe(false);
 	});
 
 	it("summarises Ralph-style PRD JSON with pending stories first", () => {

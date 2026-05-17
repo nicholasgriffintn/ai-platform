@@ -13,9 +13,7 @@ export class HomePage extends BasePage {
 		super(page);
 		this.chatInput = page.locator("#message-input");
 		this.sendButton = page.getByRole("button", { name: /send message/i });
-		this.welcomeMessage = page
-			.getByText(/What would you like to know/i)
-			.first();
+		this.welcomeMessage = page.getByText(/What would you like to know/i).first();
 		this.modelSelector = page.getByRole("button", { name: /select model/i });
 		this.newChatButton = page.getByRole("button", { name: /New Chat/i });
 		this.assistantMessages = page.locator('[data-role="assistant"]');
@@ -52,10 +50,7 @@ export class HomePage extends BasePage {
 		if (typeof previousAssistantMessageCount === "number") {
 			await this.page.waitForFunction(
 				(prevCount) => {
-					return (
-						document.querySelectorAll('[data-role="assistant"]').length >
-						(prevCount ?? 0)
-					);
+					return document.querySelectorAll('[data-role="assistant"]').length > (prevCount ?? 0);
 				},
 				previousAssistantMessageCount,
 				{ timeout: 60000 },

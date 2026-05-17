@@ -52,13 +52,9 @@ addRoute(app, "get", "/", {
 					throw error;
 				}
 				routeLogger.error("Error listing drawings:", {
-					error_message:
-						error instanceof Error ? error.message : "Unknown error",
+					error_message: error instanceof Error ? error.message : "Unknown error",
 				});
-				throw new AssistantError(
-					"Failed to list drawings",
-					ErrorType.UNKNOWN_ERROR,
-				);
+				throw new AssistantError("Failed to list drawings", ErrorType.UNKNOWN_ERROR);
 			}
 		})(raw),
 });
@@ -90,13 +86,9 @@ addRoute(app, "get", "/:id", {
 					throw error;
 				}
 				routeLogger.error("Error fetching drawing:", {
-					error_message:
-						error instanceof Error ? error.message : "Unknown error",
+					error_message: error instanceof Error ? error.message : "Unknown error",
 				});
-				throw new AssistantError(
-					"Failed to fetch drawing",
-					ErrorType.UNKNOWN_ERROR,
-				);
+				throw new AssistantError("Failed to fetch drawing", ErrorType.UNKNOWN_ERROR);
 			}
 		})(raw),
 });
@@ -140,13 +132,9 @@ addRoute(app, "post", "/", {
 					throw error;
 				}
 				routeLogger.error("Error generating image from drawing:", {
-					error_message:
-						error instanceof Error ? error.message : "Unknown error",
+					error_message: error instanceof Error ? error.message : "Unknown error",
 				});
-				throw new AssistantError(
-					"Failed to generate image",
-					ErrorType.UNKNOWN_ERROR,
-				);
+				throw new AssistantError("Failed to generate image", ErrorType.UNKNOWN_ERROR);
 			}
 		})(raw),
 });
@@ -186,13 +174,9 @@ addRoute(app, "post", "/guess", {
 					throw error;
 				}
 				routeLogger.error("Error guessing drawing from image:", {
-					error_message:
-						error instanceof Error ? error.message : "Unknown error",
+					error_message: error instanceof Error ? error.message : "Unknown error",
 				});
-				throw new AssistantError(
-					"Failed to guess drawing",
-					ErrorType.UNKNOWN_ERROR,
-				);
+				throw new AssistantError("Failed to guess drawing", ErrorType.UNKNOWN_ERROR);
 			}
 		})(raw),
 });

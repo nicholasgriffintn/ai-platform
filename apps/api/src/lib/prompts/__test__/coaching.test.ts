@@ -73,9 +73,7 @@ describe("returnCoachingPrompt", () => {
 				prompt: testPrompt,
 				promptType: "general",
 			});
-			expect(result).toContain(
-				"Balance clarity, conciseness, and completeness",
-			);
+			expect(result).toContain("Balance clarity, conciseness, and completeness");
 		});
 
 		it("should handle invalid prompt type by returning undefined in template", () => {
@@ -99,9 +97,7 @@ describe("returnCoachingPrompt", () => {
 
 		it("should include rewrite instruction", () => {
 			const result = returnCoachingPrompt({ prompt: testPrompt });
-			expect(result).toContain(
-				"Rewrite the user's prompt to make it clear, concise, effective",
-			);
+			expect(result).toContain("Rewrite the user's prompt to make it clear, concise, effective");
 		});
 
 		it("should include step-by-step instructions", () => {

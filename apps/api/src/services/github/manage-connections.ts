@@ -23,9 +23,7 @@ function normaliseRepositories(repositories?: string[]): string[] | undefined {
 		return undefined;
 	}
 
-	const normalized = repositories
-		.map((repo) => repo.trim().toLowerCase())
-		.filter(Boolean);
+	const normalized = repositories.map((repo) => repo.trim().toLowerCase()).filter(Boolean);
 
 	if (normalized.length === 0) {
 		return undefined;
@@ -34,18 +32,13 @@ function normaliseRepositories(repositories?: string[]): string[] | undefined {
 	return Array.from(new Set(normalized));
 }
 
-function resolveDefaultGitHubAppCredentials(
-	context: ServiceContext,
-): DefaultGitHubAppCredentials {
+function resolveDefaultGitHubAppCredentials(context: ServiceContext): DefaultGitHubAppCredentials {
 	const appId = context.env.GITHUB_APP_ID?.trim();
 	const privateKeyRaw = context.env.GITHUB_APP_PRIVATE_KEY?.trim();
 	const webhookSecret = context.env.GITHUB_APP_WEBHOOK_SECRET?.trim();
 
 	if (!appId || !privateKeyRaw) {
-		throw new AssistantError(
-			"Default GitHub App is not configured",
-			ErrorType.CONFIGURATION_ERROR,
-		);
+		throw new AssistantError("Default GitHub App is not configured", ErrorType.CONFIGURATION_ERROR);
 	}
 
 	const normalizedPrivateKey = validateGitHubPrivateKey(privateKeyRaw);
@@ -63,10 +56,7 @@ export async function upsertGitHubConnectionForUser(
 	input: UpsertGitHubConnectionInput,
 ): Promise<{ installationId: number }> {
 	if (!context.env.JWT_SECRET) {
-		throw new AssistantError(
-			"JWT secret not configured",
-			ErrorType.CONFIGURATION_ERROR,
-		);
+		throw new AssistantError("JWT secret not configured", ErrorType.CONFIGURATION_ERROR);
 	}
 
 	const normalizedPrivateKey = validateGitHubPrivateKey(input.privateKey);
@@ -84,13 +74,12 @@ export async function upsertGitHubConnectionForUser(
 	});
 
 	const itemId = String(input.installationId);
-	const existing =
-		await context.repositories.appData.getAppDataByUserAppAndItem(
-			userId,
-			GITHUB_CONNECTION_APP_ID,
-			itemId,
-			"github_installation",
-		);
+	const existing = await context.repositories.appData.getAppDataByUserAppAndItem(
+		userId,
+		GITHUB_CONNECTION_APP_ID,
+		itemId,
+		"github_installation",
+	);
 
 	const data = {
 		encrypted,

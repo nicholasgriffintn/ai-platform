@@ -1,8 +1,5 @@
 import type { ChatCompletionParameters } from "~/types";
-import {
-	getAiGatewayMetadataHeaders,
-	resolveAiGatewayCacheTtl,
-} from "~/utils/aiGateway";
+import { getAiGatewayMetadataHeaders, resolveAiGatewayCacheTtl } from "~/utils/aiGateway";
 import { BaseProvider } from "./base";
 
 export class MorphProvider extends BaseProvider {
@@ -22,9 +19,7 @@ export class MorphProvider extends BaseProvider {
 		return "https://api.morphllm.com/v1";
 	}
 
-	protected async getHeaders(
-		params: ChatCompletionParameters,
-	): Promise<Record<string, string>> {
+	protected async getHeaders(params: ChatCompletionParameters): Promise<Record<string, string>> {
 		const apiKey = await this.getApiKey(params, params.user?.id);
 
 		return {

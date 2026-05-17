@@ -11,10 +11,7 @@ import {
 	getToolsForProvider,
 	shouldEnableStreaming,
 } from "~/utils/parameters";
-import {
-	getAiGatewayMetadataHeaders,
-	resolveAiGatewayCacheTtl,
-} from "~/utils/aiGateway";
+import { getAiGatewayMetadataHeaders, resolveAiGatewayCacheTtl } from "~/utils/aiGateway";
 import { BaseProvider } from "./base";
 
 const logger = getLogger({ prefix: "lib/providers/anthropic" });
@@ -38,9 +35,7 @@ export class AnthropicProvider extends BaseProvider {
 		return "v1/messages";
 	}
 
-	protected async getHeaders(
-		params: ChatCompletionParameters,
-	): Promise<Record<string, string>> {
+	protected async getHeaders(params: ChatCompletionParameters): Promise<Record<string, string>> {
 		const apiKey = await this.getApiKey(params, params.user?.id);
 		const baseHeaders = this.buildAiGatewayHeaders(params, apiKey);
 
@@ -94,10 +89,7 @@ export class AnthropicProvider extends BaseProvider {
 					max_uses: 3,
 				});
 			}
-			if (
-				modelConfig?.supportsCodeExecution &&
-				params.enabled_tools.includes("code_execution")
-			) {
+			if (modelConfig?.supportsCodeExecution && params.enabled_tools.includes("code_execution")) {
 				tools.push({
 					type: "code_execution_20250522",
 					name: "code_execution",
@@ -112,13 +104,10 @@ export class AnthropicProvider extends BaseProvider {
 		}
 
 		const anthropicSpecificTools =
-			modelConfig?.supportsToolCalls && allTools.length > 0
-				? { tools: allTools }
-				: {};
+			modelConfig?.supportsToolCalls && allTools.length > 0 ? { tools: allTools } : {};
 
 		const supportsThinking = modelConfig?.reasoningConfig?.enabled || false;
-		const shouldEnableThinking =
-			supportsThinking && params.reasoning_effort !== "none";
+		const shouldEnableThinking = supportsThinking && params.reasoning_effort !== "none";
 		const thinkingParams = shouldEnableThinking
 			? {
 					thinking: {
@@ -184,9 +173,7 @@ export class AnthropicProvider extends BaseProvider {
 					"x-api-key": apiKey,
 					"anthropic-version": "2023-06-01",
 					"Content-Type": "application/json",
-					"cf-aig-metadata": JSON.stringify(
-						getAiGatewayMetadataHeaders(params),
-					),
+					"cf-aig-metadata": JSON.stringify(getAiGatewayMetadataHeaders(params)),
 					"cf-aig-cache-ttl": resolveAiGatewayCacheTtl(params).toString(),
 				};
 

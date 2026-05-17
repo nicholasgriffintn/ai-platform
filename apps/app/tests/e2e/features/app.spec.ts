@@ -15,10 +15,7 @@ test.describe("App Features", () => {
 
 	test.beforeEach(async ({ page }) => {
 		homePage = TestHelpers.createHomePage(page);
-		await TestHelpers.injectApiKeyBeforeNavigation(
-			page,
-			PLAYWRIGHT_API_KEY as string,
-		);
+		await TestHelpers.injectApiKeyBeforeNavigation(page, PLAYWRIGHT_API_KEY as string);
 		await homePage.navigate();
 		await homePage.waitForPageLoad();
 	});
@@ -28,8 +25,7 @@ test.describe("App Features", () => {
 			await homePage.sendMessage(TEST_MESSAGES.simple);
 			await homePage.waitForChatResponse(0);
 
-			const messageCountBeforeReload =
-				await homePage.getAssistantMessageCount();
+			const messageCountBeforeReload = await homePage.getAssistantMessageCount();
 			expect(messageCountBeforeReload).toBeGreaterThan(0);
 
 			await page.reload();
@@ -105,9 +101,7 @@ test.describe("App Features", () => {
 
 			await page.keyboard.press("Tab");
 
-			const activeElement = await page.evaluate(
-				() => document.activeElement?.tagName,
-			);
+			const activeElement = await page.evaluate(() => document.activeElement?.tagName);
 			expect(activeElement).not.toBe("INPUT");
 		});
 	});

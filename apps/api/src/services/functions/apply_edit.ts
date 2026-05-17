@@ -5,8 +5,7 @@ import type { ApiToolDefinition } from "./types";
 
 export const apply_edit_completion: ApiToolDefinition = {
 	name: "apply_edit_completion",
-	description:
-		"Apply a code snippet update using Mercury Coder's apply-edit capability.",
+	description: "Apply a code snippet update using Mercury Coder's apply-edit capability.",
 	type: "premium",
 	costPerCall: 0,
 	permissions: ["network"],

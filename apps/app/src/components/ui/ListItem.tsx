@@ -57,17 +57,13 @@ export function ListItem({
 			<div
 				className={cn(
 					"overflow-hidden pr-1 transition-all duration-200 flex items-center",
-					actions
-						? "md:w-full md:group-hover:w-[calc(100%-60px)] w-[calc(100%-60px)]"
-						: "w-full",
+					actions ? "md:w-full md:group-hover:w-[calc(100%-60px)] w-[calc(100%-60px)]" : "w-full",
 				)}
 			>
 				{icon && <span className="mr-2 flex-shrink-0">{icon}</span>}
 				{badge && <span className="mr-2 flex-shrink-0">{badge}</span>}
 				<div className="flex-1 min-w-0">
-					<span className="whitespace-nowrap overflow-hidden text-ellipsis block">
-						{label}
-					</span>
+					<span className="whitespace-nowrap overflow-hidden text-ellipsis block">{label}</span>
 					{sublabel && (
 						<span className="text-xs text-zinc-500 dark:text-zinc-400 whitespace-nowrap overflow-hidden text-ellipsis block">
 							{sublabel}

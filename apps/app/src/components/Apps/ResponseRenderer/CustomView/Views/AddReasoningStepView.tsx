@@ -30,9 +30,7 @@ ${data.nextStep ? `**Next Step:** ${data.nextStep}` : ""}
 `;
 	return (
 		<div className="max-w-full overflow-x-hidden">
-			<ReasoningSection
-				reasoning={{ content: combinedContent, collapsed: embedded }}
-			/>
+			<ReasoningSection reasoning={{ content: combinedContent, collapsed: embedded }} />
 		</div>
 	);
 };

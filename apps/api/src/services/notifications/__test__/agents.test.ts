@@ -33,12 +33,7 @@ describe("Agent Notification Emails", () => {
 				moderatorName: "Admin User",
 			};
 
-			await sendAgentModerationNotification(
-				mockEnv,
-				"user@example.com",
-				"John Doe",
-				notification,
-			);
+			await sendAgentModerationNotification(mockEnv, "user@example.com", "John Doe", notification);
 
 			expect(mockSendEmail).toHaveBeenCalledWith(
 				mockEnv,
@@ -60,12 +55,7 @@ describe("Agent Notification Emails", () => {
 				moderatorName: "Admin User",
 			};
 
-			await sendAgentModerationNotification(
-				mockEnv,
-				"user@example.com",
-				"John Doe",
-				notification,
-			);
+			await sendAgentModerationNotification(mockEnv, "user@example.com", "John Doe", notification);
 
 			expect(mockSendEmail).toHaveBeenCalledWith(
 				mockEnv,
@@ -86,12 +76,7 @@ describe("Agent Notification Emails", () => {
 			};
 
 			await expect(
-				sendAgentModerationNotification(
-					mockEnv,
-					"user@example.com",
-					"John Doe",
-					notification,
-				),
+				sendAgentModerationNotification(mockEnv, "user@example.com", "John Doe", notification),
 			).rejects.toThrow("Email sending failed");
 		});
 	});
@@ -107,12 +92,7 @@ describe("Agent Notification Emails", () => {
 				moderatorName: "Admin User",
 			};
 
-			await sendAgentFeaturedNotification(
-				mockEnv,
-				"user@example.com",
-				"John Doe",
-				notification,
-			);
+			await sendAgentFeaturedNotification(mockEnv, "user@example.com", "John Doe", notification);
 
 			expect(mockSendEmail).toHaveBeenCalledWith(
 				mockEnv,
@@ -130,12 +110,7 @@ describe("Agent Notification Emails", () => {
 				isFeatured: false,
 			};
 
-			await sendAgentFeaturedNotification(
-				mockEnv,
-				"user@example.com",
-				"John Doe",
-				notification,
-			);
+			await sendAgentFeaturedNotification(mockEnv, "user@example.com", "John Doe", notification);
 
 			expect(mockSendEmail).not.toHaveBeenCalled();
 		});
@@ -150,12 +125,7 @@ describe("Agent Notification Emails", () => {
 			};
 
 			await expect(
-				sendAgentFeaturedNotification(
-					mockEnv,
-					"user@example.com",
-					"John Doe",
-					notification,
-				),
+				sendAgentFeaturedNotification(mockEnv, "user@example.com", "John Doe", notification),
 			).rejects.toThrow("Email sending failed");
 		});
 	});

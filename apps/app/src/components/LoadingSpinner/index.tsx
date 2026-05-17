@@ -6,11 +6,7 @@ interface LoadingSpinnerProps {
 	className?: string;
 }
 
-export const LoadingSpinner = ({
-	message,
-	progress,
-	className = "",
-}: LoadingSpinnerProps) => {
+export const LoadingSpinner = ({ message, progress, className = "" }: LoadingSpinnerProps) => {
 	return (
 		<div
 			className={`flex flex-col items-center justify-center gap-2 ${className}`}
@@ -27,13 +23,9 @@ export const LoadingSpinner = ({
 					</div>
 				)}
 			</div>
-			{message && (
-				<p className="text-sm text-zinc-600 dark:text-zinc-400">{message}</p>
-			)}
+			{message && <p className="text-sm text-zinc-600 dark:text-zinc-400">{message}</p>}
 			<span className="sr-only">
-				{typeof progress === "number"
-					? `, ${Math.round(progress)}% complete`
-					: ""}
+				{typeof progress === "number" ? `, ${Math.round(progress)}% complete` : ""}
 			</span>
 		</div>
 	);

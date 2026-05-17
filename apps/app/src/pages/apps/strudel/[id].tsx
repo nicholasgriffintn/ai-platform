@@ -38,8 +38,7 @@ const parseTagsInput = (value: string): string[] =>
 		.map((tag) => tag.trim())
 		.filter(Boolean);
 
-const formatTagsForInput = (tags?: string[]) =>
-	(tags ?? []).filter(Boolean).join(", ");
+const formatTagsForInput = (tags?: string[]) => (tags ?? []).filter(Boolean).join(", ");
 
 const arraysEqual = (a: string[], b: string[]) =>
 	a.length === b.length && a.every((value, index) => value === b[index]);
@@ -113,9 +112,7 @@ export default function StrudelPatternDetailPage() {
 			});
 			toast.success("Pattern updated");
 		} catch (err) {
-			toast.error(
-				err instanceof Error ? err.message : "Failed to update pattern",
-			);
+			toast.error(err instanceof Error ? err.message : "Failed to update pattern");
 		}
 	};
 
@@ -126,9 +123,7 @@ export default function StrudelPatternDetailPage() {
 			toast.success("Pattern deleted");
 			navigate("/apps/strudel", { replace: true });
 		} catch (err) {
-			toast.error(
-				err instanceof Error ? err.message : "Failed to delete pattern",
-			);
+			toast.error(err instanceof Error ? err.message : "Failed to delete pattern");
 		}
 	};
 
@@ -185,14 +180,8 @@ export default function StrudelPatternDetailPage() {
 				<Alert variant="destructive" className="flex flex-col gap-3">
 					<AlertTitle>Unable to load this pattern</AlertTitle>
 					<AlertDescription className="space-y-3">
-						<p>
-							{error instanceof Error
-								? error.message
-								: "Unknown error occurred"}
-						</p>
-						<Button onClick={() => navigate("/apps/strudel")}>
-							Return to library
-						</Button>
+						<p>{error instanceof Error ? error.message : "Unknown error occurred"}</p>
+						<Button onClick={() => navigate("/apps/strudel")}>Return to library</Button>
 					</AlertDescription>
 				</Alert>
 			) : !pattern ? (
@@ -208,9 +197,7 @@ export default function StrudelPatternDetailPage() {
 						<Card>
 							<CardHeader>
 								<CardTitle>Pattern details</CardTitle>
-								<CardDescription>
-									Update the metadata for this Strudel loop.
-								</CardDescription>
+								<CardDescription>Update the metadata for this Strudel loop.</CardDescription>
 							</CardHeader>
 							<CardContent className="space-y-4">
 								<div className="space-y-2">
@@ -235,9 +222,7 @@ export default function StrudelPatternDetailPage() {
 								<div className="space-y-2">
 									<Label htmlFor="pattern-tags">
 										Tags{" "}
-										<span className="text-xs font-normal text-muted-foreground">
-											(optional)
-										</span>
+										<span className="text-xs font-normal text-muted-foreground">(optional)</span>
 									</Label>
 									<Input
 										id="pattern-tags"
@@ -246,8 +231,7 @@ export default function StrudelPatternDetailPage() {
 										placeholder="drums, ambient, halftime"
 									/>
 									<p className="text-xs text-muted-foreground">
-										Use commas to separate tags. They help with filtering and
-										search.
+										Use commas to separate tags. They help with filtering and search.
 									</p>
 									{parsedTags.length > 0 && (
 										<div className="flex flex-wrap gap-2 pt-1">
@@ -282,9 +266,7 @@ export default function StrudelPatternDetailPage() {
 						<Card>
 							<CardHeader>
 								<CardTitle>Timeline</CardTitle>
-								<CardDescription>
-									Creation details for this pattern.
-								</CardDescription>
+								<CardDescription>Creation details for this pattern.</CardDescription>
 							</CardHeader>
 							<CardContent className="space-y-3 text-sm text-muted-foreground">
 								<div>

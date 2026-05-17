@@ -20,54 +20,25 @@ import type { Question } from "~/types/sampleQuestions";
 function getQuestionIcon(category: string) {
 	switch (category) {
 		case "creative":
-			return (
-				<Sparkles size={16} className="mr-2 text-zinc-800 dark:text-zinc-200" />
-			);
+			return <Sparkles size={16} className="mr-2 text-zinc-800 dark:text-zinc-200" />;
 		case "productivity":
-			return (
-				<Lightbulb
-					size={16}
-					className="mr-2 text-zinc-800 dark:text-zinc-200"
-				/>
-			);
+			return <Lightbulb size={16} className="mr-2 text-zinc-800 dark:text-zinc-200" />;
 		case "technical":
-			return (
-				<Code size={16} className="mr-2 text-zinc-800 dark:text-zinc-200" />
-			);
+			return <Code size={16} className="mr-2 text-zinc-800 dark:text-zinc-200" />;
 		case "practical":
-			return (
-				<HandHelping
-					size={16}
-					className="mr-2 text-zinc-800 dark:text-zinc-200"
-				/>
-			);
+			return <HandHelping size={16} className="mr-2 text-zinc-800 dark:text-zinc-200" />;
 		case "analytical":
-			return (
-				<Brain size={16} className="mr-2 text-zinc-800 dark:text-zinc-200" />
-			);
+			return <Brain size={16} className="mr-2 text-zinc-800 dark:text-zinc-200" />;
 		case "ethical":
-			return (
-				<Shield size={16} className="mr-2 text-zinc-800 dark:text-zinc-200" />
-			);
+			return <Shield size={16} className="mr-2 text-zinc-800 dark:text-zinc-200" />;
 		case "humor":
-			return (
-				<Laugh size={16} className="mr-2 text-zinc-800 dark:text-zinc-200" />
-			);
+			return <Laugh size={16} className="mr-2 text-zinc-800 dark:text-zinc-200" />;
 		case "coding":
-			return (
-				<Code size={16} className="mr-2 text-zinc-800 dark:text-zinc-200" />
-			);
+			return <Code size={16} className="mr-2 text-zinc-800 dark:text-zinc-200" />;
 		case "challenging":
-			return (
-				<Zap size={16} className="mr-2 text-orange-600 dark:text-orange-400" />
-			);
+			return <Zap size={16} className="mr-2 text-orange-600 dark:text-orange-400" />;
 		default:
-			return (
-				<SendHorizontal
-					size={16}
-					className="mr-2 text-zinc-800 dark:text-zinc-200"
-				/>
-			);
+			return <SendHorizontal size={16} className="mr-2 text-zinc-800 dark:text-zinc-200" />;
 	}
 }
 
@@ -102,24 +73,18 @@ export const SampleQuestions = ({ setInput }: SampleQuestionsProps) => {
 
 			if (showChallenging) {
 				const challengingQuestions = questionPool.challenging;
-				const shuffledQuestions = [...challengingQuestions].sort(
-					() => Math.random() - 0.5,
-				);
+				const shuffledQuestions = [...challengingQuestions].sort(() => Math.random() - 0.5);
 				const selectedQuestions = shuffledQuestions.slice(0, numQuestions);
 				selected = selectedQuestions.map((q) => ({
 					...q,
 					category: "challenging",
 				}));
 			} else {
-				const shuffledCategories = [...baseCategories].sort(
-					() => Math.random() - 0.5,
-				);
+				const shuffledCategories = [...baseCategories].sort(() => Math.random() - 0.5);
 				selectedCategories = shuffledCategories.slice(0, numQuestions);
 				selected = selectedCategories.map((category) => {
 					const categoryQuestions = questionPool[category];
-					const randomIndex = Math.floor(
-						Math.random() * categoryQuestions.length,
-					);
+					const randomIndex = Math.floor(Math.random() * categoryQuestions.length);
 					return {
 						...categoryQuestions[randomIndex],
 						category,
@@ -207,11 +172,7 @@ export const SampleQuestions = ({ setInput }: SampleQuestionsProps) => {
 					/>
 				) : (
 					questions.map((q) => (
-						<QuestionOption
-							key={q.id}
-							questionData={q}
-							onClick={() => handleClick(q)}
-						/>
+						<QuestionOption key={q.id} questionData={q} onClick={() => handleClick(q)} />
 					))
 				)}
 			</div>
@@ -235,10 +196,7 @@ export const SampleQuestions = ({ setInput }: SampleQuestionsProps) => {
 						/>
 					</div>
 					<span className="ml-2 text-xs text-zinc-500 dark:text-zinc-400">
-						<Zap
-							size={12}
-							className="inline mr-1 text-orange-600 dark:text-orange-400"
-						/>
+						<Zap size={12} className="inline mr-1 text-orange-600 dark:text-orange-400" />
 						Hard
 					</span>
 				</label>

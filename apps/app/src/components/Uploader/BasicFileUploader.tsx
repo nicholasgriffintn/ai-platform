@@ -3,17 +3,10 @@
 import { Button } from "~/components/ui/Button";
 import { useFileUpload } from "~/hooks/use-file-upload";
 
-export function BasicFileUploader({
-	id,
-	accept = "*/*",
-}: {
-	id: string;
-	accept?: string;
-}) {
-	const [{ files }, { removeFile, openFileDialog, getInputProps }] =
-		useFileUpload({
-			accept,
-		});
+export function BasicFileUploader({ id, accept = "*/*" }: { id: string; accept?: string }) {
+	const [{ files }, { removeFile, openFileDialog, getInputProps }] = useFileUpload({
+		accept,
+	});
 
 	const fileName = files[0]?.file.name || null;
 
@@ -24,12 +17,7 @@ export function BasicFileUploader({
 					<Button onClick={openFileDialog} aria-haspopup="dialog">
 						{fileName ? "Change file" : "Upload file"}
 					</Button>
-					<input
-						{...getInputProps()}
-						id={id}
-						className="sr-only"
-						aria-label="Upload file"
-					/>
+					<input {...getInputProps()} id={id} className="sr-only" aria-label="Upload file" />
 				</div>
 			</div>
 			{fileName && (

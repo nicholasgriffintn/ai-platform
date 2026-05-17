@@ -15,13 +15,8 @@ export class MistralProvider extends BaseProvider {
 		this.validateAiGatewayToken(params);
 	}
 
-	protected async getEndpoint(
-		params: ChatCompletionParameters,
-	): Promise<string> {
-		if (
-			params.model === "mistral-embed" ||
-			params.model === "codestral-embed"
-		) {
+	protected async getEndpoint(params: ChatCompletionParameters): Promise<string> {
+		if (params.model === "mistral-embed" || params.model === "codestral-embed") {
 			return "v1/embeddings";
 		}
 
@@ -41,10 +36,7 @@ export class MistralProvider extends BaseProvider {
 	}
 
 	async mapParameters(params: ChatCompletionParameters) {
-		if (
-			params.model === "mistral-embed" ||
-			params.model === "mistral-moderation-latest"
-		) {
+		if (params.model === "mistral-embed" || params.model === "mistral-moderation-latest") {
 			return {
 				model: params.model,
 				input: params.body.input,
@@ -86,18 +78,14 @@ export class MistralProvider extends BaseProvider {
 			};
 
 			return Object.fromEntries(
-				Object.entries(fimParams).filter(
-					([, value]) => value !== undefined && value !== null,
-				),
+				Object.entries(fimParams).filter(([, value]) => value !== undefined && value !== null),
 			);
 		}
 
 		return await this.defaultMapParameters(params);
 	}
 
-	protected async getHeaders(
-		params: ChatCompletionParameters,
-	): Promise<Record<string, string>> {
+	protected async getHeaders(params: ChatCompletionParameters): Promise<Record<string, string>> {
 		const apiKey = await this.getApiKey(params, params.user?.id);
 		return this.buildAiGatewayHeaders(params, apiKey);
 	}

@@ -1,10 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import {
-	getEmbeddingProvider,
-	getEmbeddingNamespace,
-	augmentPrompt,
-} from "../helpers";
+import { getEmbeddingProvider, getEmbeddingNamespace, augmentPrompt } from "../helpers";
 import { providerLibrary } from "~/lib/providers/library";
 import { getAuxiliaryModel } from "~/lib/providers/models";
 

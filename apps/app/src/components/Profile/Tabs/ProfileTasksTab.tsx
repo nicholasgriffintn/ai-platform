@@ -65,9 +65,7 @@ export function ProfileTasksTab() {
 			<div className="space-y-8">
 				<Card>
 					<div className="px-6 pb-4 border-b border-zinc-200 dark:border-zinc-700">
-						<h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
-							Recent Tasks
-						</h3>
+						<h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">Recent Tasks</h3>
 						<p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
 							View the status of your recent background tasks.
 						</p>
@@ -76,9 +74,7 @@ export function ProfileTasksTab() {
 						{isLoadingTasks ? (
 							<div className="flex items-center justify-center py-6">
 								<Loader2 className="h-6 w-6 animate-spin text-zinc-500" />
-								<span className="ml-2 text-zinc-500 dark:text-zinc-400">
-									Loading tasks...
-								</span>
+								<span className="ml-2 text-zinc-500 dark:text-zinc-400">Loading tasks...</span>
 							</div>
 						) : tasks.length === 0 ? (
 							<EmptyState

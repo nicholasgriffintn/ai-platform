@@ -136,10 +136,7 @@ export type SearchResult =
 	| SearchResultError;
 
 export interface SearchProvider {
-	performWebSearch(
-		query: string,
-		options?: SearchOptions,
-	): Promise<SearchResult>;
+	performWebSearch(query: string, options?: SearchOptions): Promise<SearchResult>;
 }
 
 export interface SearchOptions {

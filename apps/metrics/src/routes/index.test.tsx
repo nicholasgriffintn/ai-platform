@@ -28,15 +28,11 @@ describe("MetricsHome", () => {
 
 		render(<MetricsHome />, {
 			wrapper: ({ children }) => (
-				<QueryClientProvider client={queryClient}>
-					{children}
-				</QueryClientProvider>
+				<QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
 			),
 		});
 
-		expect(
-			screen.getByRole("heading", { name: "Polychat Metrics" }),
-		).toBeDefined();
+		expect(screen.getByRole("heading", { name: "Polychat Metrics" })).toBeDefined();
 		expect(await screen.findByText("No metrics found")).toBeInTheDocument();
 		expect(fetch).toHaveBeenCalledTimes(1);
 	});

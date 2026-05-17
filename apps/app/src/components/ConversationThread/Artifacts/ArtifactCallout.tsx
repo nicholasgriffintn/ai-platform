@@ -42,17 +42,11 @@ export const ArtifactCallout = memo(
 
 		const isCode = useMemo(() => {
 			const includedLanguages = ["jsx", "javascript", "html", "svg"];
-			const includedTypes = [
-				"text/jsx",
-				"text/javascript",
-				"text/html",
-				"image/svg+xml",
-			];
+			const includedTypes = ["text/jsx", "text/javascript", "text/html", "image/svg+xml"];
 
 			return (
-				includedLanguages.some((lang) =>
-					language?.toLowerCase().includes(lang),
-				) || includedTypes.some((type) => type?.includes(type))
+				includedLanguages.some((lang) => language?.toLowerCase().includes(lang)) ||
+				includedTypes.some((type) => type?.includes(type))
 			);
 		}, [language]);
 
@@ -74,9 +68,7 @@ export const ArtifactCallout = memo(
 					<div className="flex items-start gap-2">
 						<div className="flex-shrink-0 mt-1">{icon}</div>
 						<div className="flex-grow min-w-0">
-							<span className="text-sm font-medium truncate">
-								{title || "Artifact"}
-							</span>
+							<span className="text-sm font-medium truncate">{title || "Artifact"}</span>
 							<p className="text-xs text-zinc-500 dark:text-zinc-400">
 								Click here to open the {isCode ? "code" : "file"}
 							</p>

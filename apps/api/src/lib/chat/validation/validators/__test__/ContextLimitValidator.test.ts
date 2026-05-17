@@ -28,10 +28,7 @@ describe("ContextLimitValidator", () => {
 			getAllAttachments,
 			pruneMessagesToFitContext,
 			sanitiseInput,
-		} =
-			await vi.importMock<typeof import("~/lib/chat/utils")>(
-				"~/lib/chat/utils",
-			);
+		} = await vi.importMock<typeof import("~/lib/chat/utils")>("~/lib/chat/utils");
 
 		mockCheckContextWindowLimits = vi.mocked(checkContextWindowLimits);
 		mockGetAllAttachments = vi.mocked(getAllAttachments);
@@ -80,9 +77,7 @@ describe("ContextLimitValidator", () => {
 		});
 
 		mockSanitiseInput.mockReturnValue("Hello world");
-		mockPruneMessagesToFitContext.mockReturnValue([
-			{ role: "user", content: "Hello world" },
-		]);
+		mockPruneMessagesToFitContext.mockReturnValue([{ role: "user", content: "Hello world" }]);
 		mockCheckContextWindowLimits.mockReturnValue(undefined);
 	});
 
@@ -93,9 +88,7 @@ describe("ContextLimitValidator", () => {
 			expect(result.validation.isValid).toBe(true);
 			expect(result.context.messageWithContext).toBe("Hello world");
 
-			expect(mockGetAllAttachments).toHaveBeenCalledWith([
-				{ type: "text", text: "Hello world" },
-			]);
+			expect(mockGetAllAttachments).toHaveBeenCalledWith([{ type: "text", text: "Hello world" }]);
 			expect(mockSanitiseInput).toHaveBeenCalledWith("Hello world");
 			expect(mockPruneMessagesToFitContext).toHaveBeenCalledWith(
 				baseContext.sanitizedMessages,
@@ -115,15 +108,10 @@ describe("ContextLimitValidator", () => {
 				modelConfig: baseContext.modelConfig,
 			};
 
-			const result = await validator.validate(
-				baseOptions,
-				contextWithoutMessages,
-			);
+			const result = await validator.validate(baseOptions, contextWithoutMessages);
 
 			expect(result.validation.isValid).toBe(false);
-			expect(result.validation.error).toBe(
-				"Missing required context for validation",
-			);
+			expect(result.validation.error).toBe("Missing required context for validation");
 			expect(result.validation.validationType).toBe("context");
 			expect(result.context).toEqual({});
 		});
@@ -134,15 +122,10 @@ describe("ContextLimitValidator", () => {
 				modelConfig: baseContext.modelConfig,
 			};
 
-			const result = await validator.validate(
-				baseOptions,
-				contextWithoutLastMessage,
-			);
+			const result = await validator.validate(baseOptions, contextWithoutLastMessage);
 
 			expect(result.validation.isValid).toBe(false);
-			expect(result.validation.error).toBe(
-				"Missing required context for validation",
-			);
+			expect(result.validation.error).toBe("Missing required context for validation");
 			expect(result.validation.validationType).toBe("context");
 			expect(result.context).toEqual({});
 		});
@@ -153,15 +136,10 @@ describe("ContextLimitValidator", () => {
 				lastMessage: { role: "user", content: "Hello world" },
 			};
 
-			const result = await validator.validate(
-				baseOptions,
-				contextWithoutModelConfig,
-			);
+			const result = await validator.validate(baseOptions, contextWithoutModelConfig);
 
 			expect(result.validation.isValid).toBe(false);
-			expect(result.validation.error).toBe(
-				"Missing required context for validation",
-			);
+			expect(result.validation.error).toBe("Missing required context for validation");
 			expect(result.validation.validationType).toBe("context");
 			expect(result.context).toEqual({});
 		});
@@ -178,10 +156,7 @@ describe("ContextLimitValidator", () => {
 				},
 			};
 
-			const result = await validator.validate(
-				baseOptions,
-				contextWithArrayContent,
-			);
+			const result = await validator.validate(baseOptions, contextWithArrayContent);
 
 			expect(result.validation.isValid).toBe(true);
 			expect(mockGetAllAttachments).toHaveBeenCalledWith([
@@ -196,10 +171,7 @@ describe("ContextLimitValidator", () => {
 				lastMessage: { role: "user", content: "Simple text message" },
 			};
 
-			const result = await validator.validate(
-				baseOptions,
-				contextWithStringContent,
-			);
+			const result = await validator.validate(baseOptions, contextWithStringContent);
 
 			expect(result.validation.isValid).toBe(true);
 			expect(mockGetAllAttachments).toHaveBeenCalledWith([
@@ -212,16 +184,11 @@ describe("ContextLimitValidator", () => {
 				...baseContext,
 				lastMessage: {
 					role: "user",
-					content: [
-						{ type: "image", image_url: { url: "data:image/jpeg;base64,..." } },
-					],
+					content: [{ type: "image", image_url: { url: "data:image/jpeg;base64,..." } }],
 				},
 			};
 
-			const result = await validator.validate(
-				baseOptions,
-				contextWithNoTextContent,
-			);
+			const result = await validator.validate(baseOptions, contextWithNoTextContent);
 
 			expect(result.validation.isValid).toBe(true);
 			expect(mockSanitiseInput).toHaveBeenCalledWith("");
@@ -248,9 +215,7 @@ describe("ContextLimitValidator", () => {
 		});
 
 		it("should handle markdown attachments without names", async () => {
-			const markdownAttachments = [
-				{ markdown: "Document content without name" },
-			];
+			const markdownAttachments = [{ markdown: "Document content without name" }];
 
 			mockGetAllAttachments.mockReturnValue({
 				markdownAttachments,
@@ -260,8 +225,7 @@ describe("ContextLimitValidator", () => {
 
 			expect(result.validation.isValid).toBe(true);
 			expect(result.context.messageWithContext).toBe(
-				"Hello world\n\nContext from attached documents:\n" +
-					"Document content without name",
+				"Hello world\n\nContext from attached documents:\n" + "Document content without name",
 			);
 		});
 
@@ -271,10 +235,7 @@ describe("ContextLimitValidator", () => {
 				sanitizedMessages: [],
 			};
 
-			const result = await validator.validate(
-				baseOptions,
-				contextWithEmptyMessages,
-			);
+			const result = await validator.validate(baseOptions, contextWithEmptyMessages);
 
 			expect(result.validation.isValid).toBe(true);
 			expect(mockPruneMessagesToFitContext).not.toHaveBeenCalled();

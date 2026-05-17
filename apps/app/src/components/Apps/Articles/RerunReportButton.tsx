@@ -18,11 +18,7 @@ interface RerunReportButtonProps {
 	className?: string;
 }
 
-export function RerunReportButton({
-	sourceIds,
-	itemId,
-	className,
-}: RerunReportButtonProps) {
+export function RerunReportButton({ sourceIds, itemId, className }: RerunReportButtonProps) {
 	const navigate = useNavigate();
 	const [isRerunning, setIsRerunning] = useState(false);
 	const [error, setError] = useState<string | null>(null);
@@ -147,9 +143,7 @@ export function RerunReportButton({
 	};
 
 	const progressPercentage =
-		progress.total > 0
-			? Math.round((progress.completed / progress.total) * 100)
-			: 0;
+		progress.total > 0 ? Math.round((progress.completed / progress.total) * 100) : 0;
 
 	return (
 		<div className={cn("flex flex-col", className)}>

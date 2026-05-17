@@ -47,10 +47,7 @@ export class ApiError extends Error {
  * @param options Custom fetch options extending RequestInit.
  * @returns The fetch Promise.
  */
-async function performFetch(
-	path: string,
-	options: FetchApiOptions = {},
-): Promise<Response> {
+async function performFetch(path: string, options: FetchApiOptions = {}): Promise<Response> {
 	const url = `${API_BASE_URL}${path}`;
 	const { timeoutMs, ...restOptions } = options;
 
@@ -74,9 +71,7 @@ async function performFetch(
 	}
 
 	const resolvedTimeout =
-		timeoutMs === null || timeoutMs === 0
-			? null
-			: (timeoutMs ?? DEFAULT_FETCH_TIMEOUT_MS);
+		timeoutMs === null || timeoutMs === 0 ? null : (timeoutMs ?? DEFAULT_FETCH_TIMEOUT_MS);
 	let timeoutId: ReturnType<typeof setTimeout> | null = null;
 
 	const fetchOptions: RequestInit = {
@@ -89,10 +84,7 @@ async function performFetch(
 	if (!restOptions.signal) {
 		const controller = new AbortController();
 		fetchOptions.signal = controller.signal;
-		timeoutId = setTimeout(
-			() => controller.abort(),
-			resolvedTimeout ?? DEFAULT_FETCH_TIMEOUT_MS,
-		);
+		timeoutId = setTimeout(() => controller.abort(), resolvedTimeout ?? DEFAULT_FETCH_TIMEOUT_MS);
 	}
 
 	if (restOptions.body !== null && restOptions.body !== undefined) {
@@ -120,10 +112,7 @@ async function performFetch(
 	}
 }
 
-export async function fetchApi(
-	path: string,
-	options: FetchApiOptions = {},
-): Promise<Response> {
+export async function fetchApi(path: string, options: FetchApiOptions = {}): Promise<Response> {
 	let response = await performFetch(path, options);
 
 	return response;

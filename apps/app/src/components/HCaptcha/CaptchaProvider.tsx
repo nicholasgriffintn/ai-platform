@@ -9,11 +9,7 @@ const HCaptchaVerifierLazy = lazy(() =>
 	})),
 );
 
-export const CaptchaProvider = ({
-	children,
-}: {
-	children: React.ReactNode;
-}) => {
+export const CaptchaProvider = ({ children }: { children: React.ReactNode }) => {
 	const { captchaToken, setCaptchaToken, setIsVerified } = useCaptchaStore();
 
 	const handleVerify = (token: string) => {
@@ -36,10 +32,7 @@ export const CaptchaProvider = ({
 			{children}
 			{shouldEnableCaptcha() && (
 				<Suspense fallback={null}>
-					<HCaptchaVerifierLazy
-						siteKey={CAPTCHA_SITE_KEY}
-						onVerify={handleVerify}
-					/>
+					<HCaptchaVerifierLazy siteKey={CAPTCHA_SITE_KEY} onVerify={handleVerify} />
 				</Suspense>
 			)}
 		</>

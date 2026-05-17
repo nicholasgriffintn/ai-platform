@@ -117,26 +117,23 @@ describe("S3VectorsEmbeddingProvider", () => {
 
 		const result = await provider.insert(embeddings);
 
-		expect(mockFetch).toHaveBeenCalledWith(
-			"https://s3vectors.us-east-1.api.aws/PutVectors",
-			{
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify({
-					vectorBucketName: "test-bucket",
-					indexName: "test-index",
-					vectors: [
-						{
-							key: "test-1",
-							data: { float32: [0.1, 0.2, 0.3] },
-							metadata: { type: "text", content: "test" },
-						},
-					],
-				}),
+		expect(mockFetch).toHaveBeenCalledWith("https://s3vectors.us-east-1.api.aws/PutVectors", {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
 			},
-		);
+			body: JSON.stringify({
+				vectorBucketName: "test-bucket",
+				indexName: "test-index",
+				vectors: [
+					{
+						key: "test-1",
+						data: { float32: [0.1, 0.2, 0.3] },
+						metadata: { type: "text", content: "test" },
+					},
+				],
+			}),
+		});
 
 		expect(result).toEqual({
 			status: "success",
@@ -169,20 +166,17 @@ describe("S3VectorsEmbeddingProvider", () => {
 
 		const result = await provider.delete(["test-1", "test-2"]);
 
-		expect(mockFetch).toHaveBeenCalledWith(
-			"https://s3vectors.us-east-1.api.aws/DeleteVectors",
-			{
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify({
-					vectorBucketName: "test-bucket",
-					indexName: undefined,
-					keys: ["test-1", "test-2"],
-				}),
+		expect(mockFetch).toHaveBeenCalledWith("https://s3vectors.us-east-1.api.aws/DeleteVectors", {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
 			},
-		);
+			body: JSON.stringify({
+				vectorBucketName: "test-bucket",
+				indexName: undefined,
+				keys: ["test-1", "test-2"],
+			}),
+		});
 
 		expect(result).toEqual({
 			status: "success",
@@ -233,23 +227,20 @@ describe("S3VectorsEmbeddingProvider", () => {
 		const queryVector = [0.1, 0.2, 0.3, 0.4];
 		const result = await provider.getMatches(queryVector, { topK: 5 });
 
-		expect(mockFetch).toHaveBeenCalledWith(
-			"https://s3vectors.us-east-1.api.aws/QueryVectors",
-			{
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify({
-					vectorBucketName: "test-bucket",
-					topK: 5,
-					returnDistance: true,
-					returnMetadata: true,
-					queryVector: { float32: queryVector },
-					indexName: "test-index",
-				}),
+		expect(mockFetch).toHaveBeenCalledWith("https://s3vectors.us-east-1.api.aws/QueryVectors", {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
 			},
-		);
+			body: JSON.stringify({
+				vectorBucketName: "test-bucket",
+				topK: 5,
+				returnDistance: true,
+				returnMetadata: true,
+				queryVector: { float32: queryVector },
+				indexName: "test-index",
+			}),
+		});
 
 		expect(result).toEqual({
 			matches: [

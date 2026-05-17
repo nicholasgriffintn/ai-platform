@@ -34,8 +34,7 @@ export const useAgentToolDefaults = ({
 	selectedAgentId: string | null;
 	chatMode: ChatMode;
 }) => {
-	const { selectedTools, setSelectedTools, resetToDefaults, defaultTools } =
-		useToolsStore();
+	const { selectedTools, setSelectedTools, resetToDefaults, defaultTools } = useToolsStore();
 	const previousAgentIdRef = useRef<string | null>(null);
 	const pendingResetRef = useRef(false);
 

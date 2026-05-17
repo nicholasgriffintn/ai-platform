@@ -114,9 +114,7 @@ describe("Subscription Service", () => {
 				"https://cancel.com",
 			);
 
-			expect(mockRepositories.plans.getPlanById).toHaveBeenCalledWith(
-				"plan-123",
-			);
+			expect(mockRepositories.plans.getPlanById).toHaveBeenCalledWith("plan-123");
 			expect(mockStripe.customers.create).toHaveBeenCalledWith({
 				email: "test@example.com",
 				metadata: { user_id: "1" },
@@ -263,9 +261,7 @@ describe("Subscription Service", () => {
 			};
 
 			mockStripe.subscriptions.retrieve.mockResolvedValue(mockSubscription);
-			mockStripe.subscriptions.update.mockResolvedValue(
-				mockUpdatedSubscription,
-			);
+			mockStripe.subscriptions.update.mockResolvedValue(mockUpdatedSubscription);
 
 			const result = await cancelSubscription(mockEnv, userWithSubscription);
 
@@ -284,9 +280,7 @@ describe("Subscription Service", () => {
 		});
 
 		it("should throw error if no subscription", async () => {
-			await expect(cancelSubscription(mockEnv, mockUser)).rejects.toThrow(
-				"No active subscription",
-			);
+			await expect(cancelSubscription(mockEnv, mockUser)).rejects.toThrow("No active subscription");
 		});
 
 		it("should return current status if already cancelled", async () => {
@@ -332,14 +326,9 @@ describe("Subscription Service", () => {
 			};
 
 			mockStripe.subscriptions.retrieve.mockResolvedValue(mockSubscription);
-			mockStripe.subscriptions.update.mockResolvedValue(
-				mockUpdatedSubscription,
-			);
+			mockStripe.subscriptions.update.mockResolvedValue(mockUpdatedSubscription);
 
-			const result = await reactivateSubscription(
-				mockEnv,
-				userWithSubscription,
-			);
+			const result = await reactivateSubscription(mockEnv, userWithSubscription);
 
 			expect(mockStripe.subscriptions.update).toHaveBeenCalledWith("sub_123", {
 				cancel_at_period_end: false,
@@ -369,10 +358,7 @@ describe("Subscription Service", () => {
 
 			mockStripe.subscriptions.retrieve.mockResolvedValue(mockSubscription);
 
-			const result = await reactivateSubscription(
-				mockEnv,
-				userWithSubscription,
-			);
+			const result = await reactivateSubscription(mockEnv, userWithSubscription);
 
 			expect(mockStripe.subscriptions.update).not.toHaveBeenCalled();
 			expect(result).toEqual({
@@ -397,26 +383,16 @@ describe("Subscription Service", () => {
 			const mockUser = { id: 1, email: "test@example.com" };
 
 			mockStripe.webhooks.constructEventAsync.mockResolvedValue(mockEvent);
-			mockRepositories.users.getUserByStripeCustomerId.mockResolvedValue(
-				mockUser,
-			);
+			mockRepositories.users.getUserByStripeCustomerId.mockResolvedValue(mockUser);
 
-			const result = await handleStripeWebhook(
-				mockEnv,
-				"test-signature",
-				"test-payload",
-			);
+			const result = await handleStripeWebhook(mockEnv, "test-signature", "test-payload");
 
 			expect(mockRepositories.users.updateUser).toHaveBeenCalledWith(1, {
 				stripe_customer_id: "cus_123",
 				stripe_subscription_id: "sub_123",
 				plan_id: "pro",
 			});
-			expect(mockSendSubscriptionEmail).toHaveBeenCalledWith(
-				mockEnv,
-				"test@example.com",
-				"Pro",
-			);
+			expect(mockSendSubscriptionEmail).toHaveBeenCalledWith(mockEnv, "test@example.com", "Pro");
 			expect(result).toEqual({ received: true });
 		});
 
@@ -434,24 +410,15 @@ describe("Subscription Service", () => {
 			const mockUser = { id: 1, email: "test@example.com" };
 
 			mockStripe.webhooks.constructEventAsync.mockResolvedValue(mockEvent);
-			mockRepositories.users.getUserByStripeCustomerId.mockResolvedValue(
-				mockUser,
-			);
+			mockRepositories.users.getUserByStripeCustomerId.mockResolvedValue(mockUser);
 
-			const result = await handleStripeWebhook(
-				mockEnv,
-				"test-signature",
-				"test-payload",
-			);
+			const result = await handleStripeWebhook(mockEnv, "test-signature", "test-payload");
 
 			expect(mockRepositories.users.updateUser).toHaveBeenCalledWith(1, {
 				stripe_subscription_id: null,
 				plan_id: "free",
 			});
-			expect(mockSendUnsubscriptionEmail).toHaveBeenCalledWith(
-				mockEnv,
-				"test@example.com",
-			);
+			expect(mockSendUnsubscriptionEmail).toHaveBeenCalledWith(mockEnv, "test@example.com");
 			expect(result).toEqual({ received: true });
 		});
 
@@ -468,20 +435,11 @@ describe("Subscription Service", () => {
 			const mockUser = { id: 1, email: "test@example.com" };
 
 			mockStripe.webhooks.constructEventAsync.mockResolvedValue(mockEvent);
-			mockRepositories.users.getUserByStripeCustomerId.mockResolvedValue(
-				mockUser,
-			);
+			mockRepositories.users.getUserByStripeCustomerId.mockResolvedValue(mockUser);
 
-			const result = await handleStripeWebhook(
-				mockEnv,
-				"test-signature",
-				"test-payload",
-			);
+			const result = await handleStripeWebhook(mockEnv, "test-signature", "test-payload");
 
-			expect(mockSendPaymentFailedEmail).toHaveBeenCalledWith(
-				mockEnv,
-				"test@example.com",
-			);
+			expect(mockSendPaymentFailedEmail).toHaveBeenCalledWith(mockEnv, "test@example.com");
 			expect(result).toEqual({ received: true });
 		});
 

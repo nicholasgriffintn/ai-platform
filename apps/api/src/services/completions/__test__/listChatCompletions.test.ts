@@ -45,9 +45,7 @@ describe("handleListChatCompletions", () => {
 			requireUser: vi.fn().mockReturnValue(mockUser),
 		};
 
-		vi.mocked(ConversationManager.getInstance).mockReturnValue(
-			mockConversationManager,
-		);
+		vi.mocked(ConversationManager.getInstance).mockReturnValue(mockConversationManager);
 	});
 
 	afterEach(() => {
@@ -60,9 +58,9 @@ describe("handleListChatCompletions", () => {
 				throw new Error("User is not authenticated");
 			});
 
-			await expect(() =>
-				handleListChatCompletions(mockServiceContext),
-			).rejects.toThrow("User is not authenticated");
+			await expect(() => handleListChatCompletions(mockServiceContext)).rejects.toThrow(
+				"User is not authenticated",
+			);
 		});
 
 		it("should surface errors from ensureDatabase", async () => {
@@ -70,9 +68,9 @@ describe("handleListChatCompletions", () => {
 				throw new Error("Database not configured");
 			});
 
-			await expect(() =>
-				handleListChatCompletions(mockServiceContext),
-			).rejects.toThrow("Database not configured");
+			await expect(() => handleListChatCompletions(mockServiceContext)).rejects.toThrow(
+				"Database not configured",
+			);
 		});
 	});
 
@@ -107,10 +105,7 @@ describe("handleListChatCompletions", () => {
 
 			mockConversationManager.list.mockResolvedValue(mockResult);
 
-			const result = await handleListChatCompletions(
-				mockServiceContext,
-				options,
-			);
+			const result = await handleListChatCompletions(mockServiceContext, options);
 
 			expect(mockConversationManager.list).toHaveBeenCalledWith(10, 2, true);
 			expect(result).toEqual(mockResult);
@@ -135,13 +130,11 @@ describe("handleListChatCompletions", () => {
 
 	describe("error handling", () => {
 		it("should handle conversation manager errors", async () => {
-			mockConversationManager.list.mockRejectedValue(
-				new Error("Database connection failed"),
-			);
+			mockConversationManager.list.mockRejectedValue(new Error("Database connection failed"));
 
-			await expect(() =>
-				handleListChatCompletions(mockServiceContext),
-			).rejects.toThrow("Database connection failed");
+			await expect(() => handleListChatCompletions(mockServiceContext)).rejects.toThrow(
+				"Database connection failed",
+			);
 		});
 	});
 });

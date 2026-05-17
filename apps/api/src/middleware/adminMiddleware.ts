@@ -16,10 +16,7 @@ export const requireAdmin = async (ctx: Context, next: () => Promise<void>) => {
 	await next();
 };
 
-export const requireStrictAdmin = async (
-	ctx: Context,
-	next: () => Promise<void>,
-) => {
+export const requireStrictAdmin = async (ctx: Context, next: () => Promise<void>) => {
 	const user = ctx.get("user");
 
 	if (!user?.role || user.role !== "admin") {
@@ -35,10 +32,7 @@ export const requireStrictAdmin = async (
 	await next();
 };
 
-export const requireModerator = async (
-	ctx: Context,
-	next: () => Promise<void>,
-) => {
+export const requireModerator = async (ctx: Context, next: () => Promise<void>) => {
 	const user = ctx.get("user");
 
 	if (!user?.role || !["admin", "moderator"].includes(user.role)) {

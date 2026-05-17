@@ -72,8 +72,7 @@ export const googleAiStudioModelConfig: ModelConfig = {
 	"gemini-flash-lite-latest": {
 		name: "Gemini Flash-Lite Latest",
 		matchingModel: "gemini-flash-lite-latest",
-		description:
-			"A Gemini Flash model optimized for cost efficiency and low latency.",
+		description: "A Gemini Flash model optimized for cost efficiency and low latency.",
 		provider: "google-ai-studio",
 		strengths: ["coding", "analysis", "math", "multilingual"],
 		modalities: {

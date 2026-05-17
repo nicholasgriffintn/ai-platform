@@ -23,10 +23,7 @@ const ReplicatePredictionDetailRoute: FC = () => {
 			className="max-w-7xl mx-auto"
 			headerContent={
 				<PageHeader>
-					<BackLink
-						to="/apps/replicate/predictions"
-						label="Back to Predictions"
-					/>
+					<BackLink to="/apps/replicate/predictions" label="Back to Predictions" />
 				</PageHeader>
 			}
 		>

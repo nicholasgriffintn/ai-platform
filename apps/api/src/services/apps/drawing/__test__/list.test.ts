@@ -93,10 +93,7 @@ describe("listDrawings", () => {
 
 		expect(mockContext.ensureDatabase).toHaveBeenCalled();
 
-		expect(mockAppDataRepo.getAppDataByUserAndApp).toHaveBeenCalledWith(
-			123,
-			"drawings",
-		);
+		expect(mockAppDataRepo.getAppDataByUserAndApp).toHaveBeenCalledWith(123, "drawings");
 		expect(result).toHaveLength(2);
 		expect(result[0]).toEqual({
 			id: "drawing-1",
@@ -161,9 +158,7 @@ describe("listDrawings", () => {
 	});
 
 	it("should handle repository errors gracefully", async () => {
-		mockAppDataRepo.getAppDataByUserAndApp.mockRejectedValue(
-			new Error("Database error"),
-		);
+		mockAppDataRepo.getAppDataByUserAndApp.mockRejectedValue(new Error("Database error"));
 
 		await expect(
 			listDrawings({
@@ -181,10 +176,7 @@ describe("listDrawings", () => {
 			userId: 456,
 		});
 
-		expect(mockAppDataRepo.getAppDataByUserAndApp).toHaveBeenCalledWith(
-			456,
-			"drawings",
-		);
+		expect(mockAppDataRepo.getAppDataByUserAndApp).toHaveBeenCalledWith(456, "drawings");
 	});
 
 	it("should handle empty data object gracefully", async () => {

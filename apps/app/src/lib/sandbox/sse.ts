@@ -3,10 +3,7 @@ export interface SseParserOptions<T> {
 	onError?: (error: Error) => void;
 }
 
-export function parseSseBuffer<T>(
-	buffer: string,
-	options: SseParserOptions<T>,
-): string {
+export function parseSseBuffer<T>(buffer: string, options: SseParserOptions<T>): string {
 	const blocks = buffer.split("\n\n");
 	const remainingBuffer = blocks.pop() || "";
 
@@ -32,9 +29,7 @@ export function parseSseBuffer<T>(
 		try {
 			options.onEvent(JSON.parse(payload) as T);
 		} catch (error) {
-			options.onError?.(
-				error instanceof Error ? error : new Error(String(error)),
-			);
+			options.onError?.(error instanceof Error ? error : new Error(String(error)));
 		}
 	}
 

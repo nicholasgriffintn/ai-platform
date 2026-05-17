@@ -23,8 +23,7 @@ export function returnCoachingPrompt({
 		analytical: `Focus on logical structure, comprehensive coverage of factors, and clear evaluation criteria.
                  Consider elements like data requirements, analytical frameworks, key metrics, and expected output format.`,
 
-		general:
-			"Balance clarity, conciseness, and completeness for general purpose prompts.",
+		general: "Balance clarity, conciseness, and completeness for general purpose prompts.",
 	};
 
 	return `${basePrompt}

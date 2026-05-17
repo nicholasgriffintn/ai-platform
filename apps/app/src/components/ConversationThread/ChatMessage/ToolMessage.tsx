@@ -5,17 +5,10 @@ import type { Message } from "~/types";
 
 interface ToolMessageProps {
 	message: Message;
-	onToolInteraction?: (
-		toolName: string,
-		action: "useAsPrompt",
-		data: Record<string, any>,
-	) => void;
+	onToolInteraction?: (toolName: string, action: "useAsPrompt", data: Record<string, any>) => void;
 }
 
-export const ToolMessage = ({
-	message,
-	onToolInteraction,
-}: ToolMessageProps) => {
+export const ToolMessage = ({ message, onToolInteraction }: ToolMessageProps) => {
 	if (!message.data) return null;
 
 	return (
@@ -23,8 +16,7 @@ export const ToolMessage = ({
 			<div className="text-xs font-medium text-blue-700 dark:text-blue-300 pt-1">
 				<div className="flex items-start gap-2">
 					<ToolIcon />
-					{message.data?.formattedName || message.name}{" "}
-					{message.status && `(${message.status})`}
+					{message.data?.formattedName || message.name} {message.status && `(${message.status})`}
 				</div>
 			</div>
 			<div>
@@ -35,15 +27,9 @@ export const ToolMessage = ({
 						content: message.content || "",
 						data: message.data,
 					}}
-					responseType={
-						typeof message.data === "object"
-							? message.data.responseType
-							: undefined
-					}
+					responseType={typeof message.data === "object" ? message.data.responseType : undefined}
 					responseDisplay={
-						typeof message.data === "object"
-							? message.data.responseDisplay
-							: undefined
+						typeof message.data === "object" ? message.data.responseDisplay : undefined
 					}
 					className="mt-1"
 					embedded={true}
@@ -54,6 +40,4 @@ export const ToolMessage = ({
 	);
 };
 
-export const ToolIcon = () => (
-	<Terminal size={18} className="text-blue-600 dark:text-blue-400" />
-);
+export const ToolIcon = () => <Terminal size={18} className="text-blue-600 dark:text-blue-400" />;

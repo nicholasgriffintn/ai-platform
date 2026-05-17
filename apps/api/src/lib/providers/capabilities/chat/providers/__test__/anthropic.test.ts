@@ -19,8 +19,7 @@ vi.mock("../base", () => ({
 			return {
 				"Content-Type": "application/json",
 				"cf-aig-authorization": "test-token",
-				"cf-aig-metadata":
-					'{"email":"test@example.com","completionId":"test-completion-id"}',
+				"cf-aig-metadata": '{"email":"test@example.com","completionId":"test-completion-id"}',
 			};
 		}
 		validateParams() {}

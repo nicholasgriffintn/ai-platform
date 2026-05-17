@@ -46,9 +46,7 @@ describe("deleteEmbedding", () => {
 		PUBLIC_ASSETS_URL: "https://assets.test.com",
 	} as any;
 
-	const mockedGetEmbeddingProvider = vi.mocked(
-		embeddingHelpers.getEmbeddingProvider,
-	);
+	const mockedGetEmbeddingProvider = vi.mocked(embeddingHelpers.getEmbeddingProvider);
 
 	beforeEach(() => {
 		vi.clearAllMocks();
@@ -122,9 +120,7 @@ describe("deleteEmbedding", () => {
 		};
 
 		// @ts-ignore - req.request.ids is required
-		await expect(deleteEmbedding(req)).rejects.toThrow(
-			"Error deleting embedding",
-		);
+		await expect(deleteEmbedding(req)).rejects.toThrow("Error deleting embedding");
 	});
 
 	it("should throw error for null ids", async () => {
@@ -136,9 +132,7 @@ describe("deleteEmbedding", () => {
 			},
 		};
 
-		await expect(deleteEmbedding(req)).rejects.toThrow(
-			"Error deleting embedding",
-		);
+		await expect(deleteEmbedding(req)).rejects.toThrow("Error deleting embedding");
 	});
 
 	it("should throw error for empty ids array", async () => {
@@ -171,9 +165,7 @@ describe("deleteEmbedding", () => {
 		mockRepositories.userSettings.getUserSettings.mockResolvedValue({});
 		mockEmbeddingProvider.delete.mockResolvedValue({ status: "error" });
 
-		await expect(deleteEmbedding(req)).rejects.toThrow(
-			"Error deleting embedding",
-		);
+		await expect(deleteEmbedding(req)).rejects.toThrow("Error deleting embedding");
 	});
 
 	it("should handle database errors", async () => {
@@ -185,13 +177,9 @@ describe("deleteEmbedding", () => {
 			},
 		};
 
-		mockRepositories.userSettings.getUserSettings.mockRejectedValue(
-			new Error("Database error"),
-		);
+		mockRepositories.userSettings.getUserSettings.mockRejectedValue(new Error("Database error"));
 
-		await expect(deleteEmbedding(req)).rejects.toThrow(
-			"Error deleting embedding",
-		);
+		await expect(deleteEmbedding(req)).rejects.toThrow("Error deleting embedding");
 	});
 
 	it("should handle embedding service errors", async () => {
@@ -204,12 +192,8 @@ describe("deleteEmbedding", () => {
 		};
 
 		mockRepositories.userSettings.getUserSettings.mockResolvedValue({});
-		mockEmbeddingProvider.delete.mockRejectedValue(
-			new Error("Embedding service error"),
-		);
+		mockEmbeddingProvider.delete.mockRejectedValue(new Error("Embedding service error"));
 
-		await expect(deleteEmbedding(req)).rejects.toThrow(
-			"Error deleting embedding",
-		);
+		await expect(deleteEmbedding(req)).rejects.toThrow("Error deleting embedding");
 	});
 });

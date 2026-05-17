@@ -30,23 +30,13 @@ export const fewShotExampleSchema = z.object({
 
 export const createAgentSchema = z.object({
 	name: z.string().meta({ description: "Name of the agent" }),
-	description: z
-		.string()
-		.optional()
-		.meta({ description: "Optional agent description" }),
-	avatar_url: z
-		.url()
-		.nullable()
-		.optional()
-		.meta({ description: "Optional avatar image URL" }),
+	description: z.string().optional().meta({ description: "Optional agent description" }),
+	avatar_url: z.url().nullable().optional().meta({ description: "Optional avatar image URL" }),
 	servers: z
 		.array(mcpServerSchema)
 		.optional()
 		.meta({ description: "List of MCP server configurations" }),
-	model: z
-		.string()
-		.optional()
-		.meta({ description: "Model ID to use with this agent" }),
+	model: z.string().optional().meta({ description: "Model ID to use with this agent" }),
 	temperature: z
 		.number()
 		.min(0)
@@ -58,10 +48,7 @@ export const createAgentSchema = z.object({
 		.positive()
 		.optional()
 		.meta({ description: "Maximum number of steps for the agent" }),
-	system_prompt: z
-		.string()
-		.optional()
-		.meta({ description: "System prompt for the agent" }),
+	system_prompt: z.string().optional().meta({ description: "System prompt for the agent" }),
 	few_shot_examples: z
 		.array(fewShotExampleSchema)
 		.optional()
@@ -70,14 +57,8 @@ export const createAgentSchema = z.object({
 		.array(z.string())
 		.optional()
 		.meta({ description: "Tools enabled by default for this agent" }),
-	team_id: z
-		.string()
-		.optional()
-		.meta({ description: "Team ID this agent belongs to" }),
-	team_role: z
-		.string()
-		.optional()
-		.meta({ description: "Role of this agent within the team" }),
+	team_id: z.string().optional().meta({ description: "Team ID this agent belongs to" }),
+	team_role: z.string().optional().meta({ description: "Role of this agent within the team" }),
 	is_team_agent: z
 		.boolean()
 		.optional()
@@ -88,23 +69,10 @@ export const createAgentSchema = z.object({
 export const updateAgentSchema = z
 	.object({
 		name: z.string().optional().meta({ description: "New agent name" }),
-		description: z
-			.string()
-			.optional()
-			.meta({ description: "New agent description" }),
-		avatar_url: z
-			.url()
-			.optional()
-			.meta({ description: "New avatar URL" })
-			.optional(),
-		servers: z
-			.array(mcpServerSchema)
-			.optional()
-			.meta({ description: "Updated MCP servers list" }),
-		model: z
-			.string()
-			.optional()
-			.meta({ description: "Model ID to use with this agent" }),
+		description: z.string().optional().meta({ description: "New agent description" }),
+		avatar_url: z.url().optional().meta({ description: "New avatar URL" }).optional(),
+		servers: z.array(mcpServerSchema).optional().meta({ description: "Updated MCP servers list" }),
+		model: z.string().optional().meta({ description: "Model ID to use with this agent" }),
 		temperature: z
 			.number()
 			.min(0)
@@ -116,10 +84,7 @@ export const updateAgentSchema = z
 			.positive()
 			.optional()
 			.meta({ description: "Maximum number of steps for the agent" }),
-		system_prompt: z
-			.string()
-			.optional()
-			.meta({ description: "System prompt for the agent" }),
+		system_prompt: z.string().optional().meta({ description: "System prompt for the agent" }),
 		few_shot_examples: z
 			.array(fewShotExampleSchema)
 			.optional()
@@ -128,18 +93,9 @@ export const updateAgentSchema = z
 			.array(z.string())
 			.optional()
 			.meta({ description: "Tools enabled by default for this agent" }),
-		team_id: z
-			.string()
-			.optional()
-			.meta({ description: "Team ID this agent belongs to" }),
-		team_role: z
-			.string()
-			.optional()
-			.meta({ description: "Role of this agent within the team" }),
-		is_team_agent: z
-			.boolean()
-			.optional()
-			.meta({ description: "Whether this is a team agent" }),
+		team_id: z.string().optional().meta({ description: "Team ID this agent belongs to" }),
+		team_role: z.string().optional().meta({ description: "Role of this agent within the team" }),
+		is_team_agent: z.boolean().optional().meta({ description: "Whether this is a team agent" }),
 	})
 	.refine((data) => Object.keys(data).length > 0, {
 		error: "At least one field must be provided",

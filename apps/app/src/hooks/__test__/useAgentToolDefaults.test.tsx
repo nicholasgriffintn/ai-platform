@@ -37,9 +37,7 @@ describe("useAgentToolDefaults", () => {
 			}),
 		);
 
-		expect(mockStoreState.setSelectedTools).toHaveBeenCalledWith([
-			"web_search",
-		]);
+		expect(mockStoreState.setSelectedTools).toHaveBeenCalledWith(["web_search"]);
 		expect(mockStoreState.resetToDefaults).not.toHaveBeenCalled();
 	});
 

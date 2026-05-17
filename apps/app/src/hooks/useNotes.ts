@@ -29,8 +29,7 @@ export const useFetchNote = (id: string | undefined) => {
 export const useCreateNote = () => {
 	const queryClient = useQueryClient();
 	return useMutation({
-		mutationFn: (data: { title: string; content: string; metadata?: any }) =>
-			createNote(data),
+		mutationFn: (data: { title: string; content: string; metadata?: any }) => createNote(data),
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["notes"] });
 		},

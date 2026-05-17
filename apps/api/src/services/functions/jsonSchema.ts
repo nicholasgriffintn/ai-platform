@@ -46,10 +46,7 @@ function safePattern(pattern: string): RegExp | null {
 	}
 }
 
-function applyNumericRules(
-	schema: z.ZodNumber,
-	property: JsonSchemaProperty,
-): z.ZodNumber {
+function applyNumericRules(schema: z.ZodNumber, property: JsonSchemaProperty): z.ZodNumber {
 	let next = schema;
 
 	if (typeof property.minimum === "number") {
@@ -86,21 +83,13 @@ function toZodSchema(property: JsonSchemaProperty): z.ZodTypeAny {
 			return applyDescription(schema, property.description);
 		}
 		case "number":
-			return applyDescription(
-				applyNumericRules(z.number(), property),
-				property.description,
-			);
+			return applyDescription(applyNumericRules(z.number(), property), property.description);
 		case "integer":
-			return applyDescription(
-				applyNumericRules(z.number().int(), property),
-				property.description,
-			);
+			return applyDescription(applyNumericRules(z.number().int(), property), property.description);
 		case "boolean":
 			return applyDescription(z.boolean(), property.description);
 		case "array": {
-			const itemSchema = property.items
-				? toZodSchema(property.items)
-				: z.unknown();
+			const itemSchema = property.items ? toZodSchema(property.items) : z.unknown();
 			return applyDescription(z.array(itemSchema), property.description);
 		}
 		case "object":
@@ -127,18 +116,13 @@ function toZodSchema(property: JsonSchemaProperty): z.ZodTypeAny {
 	}
 }
 
-export function jsonSchemaToZod(
-	parameters: JsonObjectSchema,
-	strict = false,
-): z.ZodTypeAny {
+export function jsonSchemaToZod(parameters: JsonObjectSchema, strict = false): z.ZodTypeAny {
 	const requiredKeys = new Set(parameters.required ?? []);
 	const shape: Record<string, z.ZodTypeAny> = {};
 
 	for (const [key, property] of Object.entries(parameters.properties ?? {})) {
 		const propertySchema = toZodSchema(property);
-		shape[key] = requiredKeys.has(key)
-			? propertySchema
-			: propertySchema.optional();
+		shape[key] = requiredKeys.has(key) ? propertySchema : propertySchema.optional();
 	}
 
 	const schema = z.object(shape);

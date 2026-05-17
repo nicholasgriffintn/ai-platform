@@ -1,11 +1,4 @@
-import {
-	type MockedFunction,
-	beforeEach,
-	describe,
-	expect,
-	it,
-	vi,
-} from "vitest";
+import { type MockedFunction, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { JwtData } from "@tsndr/cloudflare-worker-jwt";
 
@@ -91,9 +84,7 @@ describe("JWT Service", () => {
 			const mockUser = { id: 123 } as any;
 			mockJwtSign.mockRejectedValue(new Error("JWT error"));
 
-			await expect(generateJwtToken(mockUser, "secret")).rejects.toThrow(
-				"JWT error",
-			);
+			await expect(generateJwtToken(mockUser, "secret")).rejects.toThrow("JWT error");
 		});
 	});
 
@@ -116,9 +107,7 @@ describe("JWT Service", () => {
 		it("should throw error for invalid token", async () => {
 			mockJwtVerify.mockResolvedValue(null);
 
-			await expect(
-				verifyJwtToken("invalid-token", "secret"),
-			).rejects.toMatchObject({
+			await expect(verifyJwtToken("invalid-token", "secret")).rejects.toMatchObject({
 				message: "Invalid or expired authentication token",
 				type: ErrorType.AUTHENTICATION_ERROR,
 				statusCode: 401,
@@ -149,11 +138,7 @@ describe("JWT Service", () => {
 			mockJwtVerify.mockResolvedValue(mockDecoded);
 			mockGetUserById.mockResolvedValue(mockUser);
 
-			const result = await getUserByJwtToken(
-				{ DB: {} } as any,
-				"valid-token",
-				"secret",
-			);
+			const result = await getUserByJwtToken({ DB: {} } as any, "valid-token", "secret");
 
 			expect(mockGetUserById).toHaveBeenCalledWith(expect.any(Object), 123);
 			expect(result).toEqual(mockUser);
@@ -168,33 +153,26 @@ describe("JWT Service", () => {
 			mockJwtVerify.mockResolvedValue(mockDecoded);
 			mockGetUserById.mockResolvedValue(null);
 
-			const result = await getUserByJwtToken(
-				{ DB: {} } as any,
-				"valid-token",
-				"secret",
-			);
+			const result = await getUserByJwtToken({ DB: {} } as any, "valid-token", "secret");
 
 			expect(result).toBeNull();
 		});
 
 		it("should propagate AssistantError from token verification", async () => {
-			const error = new AssistantError(
-				"Invalid token",
-				ErrorType.AUTHENTICATION_ERROR,
-			);
+			const error = new AssistantError("Invalid token", ErrorType.AUTHENTICATION_ERROR);
 			mockJwtVerify.mockRejectedValue(error);
 
-			await expect(
-				getUserByJwtToken({ DB: {} } as any, "invalid-token", "secret"),
-			).rejects.toThrow("Invalid or expired authentication token");
+			await expect(getUserByJwtToken({ DB: {} } as any, "invalid-token", "secret")).rejects.toThrow(
+				"Invalid or expired authentication token",
+			);
 		});
 
 		it("should wrap other errors", async () => {
 			mockJwtVerify.mockRejectedValue(new Error("Some error"));
 
-			await expect(
-				getUserByJwtToken({ DB: {} } as any, "token", "secret"),
-			).rejects.toThrow("Invalid or expired authentication token");
+			await expect(getUserByJwtToken({ DB: {} } as any, "token", "secret")).rejects.toThrow(
+				"Invalid or expired authentication token",
+			);
 		});
 	});
 });

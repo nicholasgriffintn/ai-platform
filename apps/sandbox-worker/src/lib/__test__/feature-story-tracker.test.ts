@@ -6,10 +6,7 @@ import {
 	selectStoryForTracking,
 	updatePrdStoryPassStatus,
 } from "../feature-implementation/story-tracker";
-import type {
-	RalphPrdContext,
-	SandboxFileInstance,
-} from "../feature-implementation/types";
+import type { RalphPrdContext, SandboxFileInstance } from "../feature-implementation/types";
 
 function createFileSandbox(initialFiles: Record<string, string>): {
 	sandbox: SandboxFileInstance;
@@ -214,9 +211,7 @@ describe("story tracker helpers", () => {
 
 		expect(result.prdUpdated).toBe(true);
 		expect(result.progressUpdated).toBe(true);
-		expect(files.get("repo/progress.txt")).toContain(
-			"US-001 Add logout button",
-		);
+		expect(files.get("repo/progress.txt")).toContain("US-001 Add logout button");
 	});
 
 	it("appends progress entries to an existing file", async () => {

@@ -21,10 +21,7 @@ export class MistralGuardProvider implements GuardrailsProvider {
 		this.config = config;
 	}
 
-	async validateContent(
-		content: string,
-		_source: "INPUT" | "OUTPUT",
-	): Promise<GuardrailResult> {
+	async validateContent(content: string, _source: "INPUT" | "OUTPUT"): Promise<GuardrailResult> {
 		try {
 			logger.debug("Validating content with Mistral Guard");
 

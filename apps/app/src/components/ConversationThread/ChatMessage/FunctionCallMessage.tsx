@@ -9,16 +9,11 @@ interface FunctionCallMessageProps {
 export const FunctionCallMessage = ({ message }: FunctionCallMessageProps) => {
 	return (
 		<div className="mb-2">
-			<div className="text-xs font-medium text-amber-700 dark:text-amber-300">
-				{message.name}
-			</div>
+			<div className="text-xs font-medium text-amber-700 dark:text-amber-300">{message.name}</div>
 			<div className="mt-1 space-y-2 hidden">
 				{Array.isArray(message.tool_calls) &&
 					message.tool_calls?.map((tool, i) => (
-						<div
-							key={tool.id || i}
-							className="rounded bg-amber-100/50 p-2 dark:bg-amber-900/20"
-						>
+						<div key={tool.id || i} className="rounded bg-amber-100/50 p-2 dark:bg-amber-900/20">
 							<div className="text-xs font-medium">{tool.function.name}</div>
 							<pre className="mt-1 overflow-x-auto text-xs">
 								{(() => {

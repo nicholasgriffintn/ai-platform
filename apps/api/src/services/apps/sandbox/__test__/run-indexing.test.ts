@@ -32,9 +32,7 @@ describe("run indexing", () => {
 			name: "Dev",
 		});
 		getUserSettings.mockResolvedValue({});
-		generate.mockResolvedValue([
-			{ id: "sandbox-run-run-1", values: [1, 2, 3] },
-		]);
+		generate.mockResolvedValue([{ id: "sandbox-run-run-1", values: [1, 2, 3] }]);
 		insert.mockResolvedValue({ status: "success" });
 		vi.mocked(getEmbeddingProvider).mockReturnValue({
 			generate,

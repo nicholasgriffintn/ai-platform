@@ -32,19 +32,12 @@ export function createCommandActionHandler<
 	TState extends AgentLoopState = AgentLoopState,
 >(
 	options: CommandActionHandlerOptions<TShared, TState>,
-): ActionHandler<
-	RunCommandDecision | RunParallelDecision | RunScriptDecision,
-	TShared,
-	TState
-> {
+): ActionHandler<RunCommandDecision | RunParallelDecision | RunScriptDecision, TShared, TState> {
 	return {
 		name: options.name ?? "command",
 		canHandle: (
 			decision: AgentDecision,
-		): decision is
-			| RunCommandDecision
-			| RunParallelDecision
-			| RunScriptDecision =>
+		): decision is RunCommandDecision | RunParallelDecision | RunScriptDecision =>
 			decision.action === "run_command" ||
 			decision.action === "run_parallel" ||
 			decision.action === "run_script",

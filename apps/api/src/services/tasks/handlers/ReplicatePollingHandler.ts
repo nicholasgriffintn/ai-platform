@@ -58,8 +58,9 @@ export class ReplicatePollingHandler implements TaskHandler {
 				};
 			}
 
-			const asyncInvocation = predictionData.predictionData?.data
-				?.asyncInvocation as AsyncInvocationMetadata | undefined;
+			const asyncInvocation = predictionData.predictionData?.data?.asyncInvocation as
+				| AsyncInvocationMetadata
+				| undefined;
 
 			if (!asyncInvocation || predictionData.status !== "processing") {
 				logger.info(`Prediction ${data.predictionId} not in processing state`);
@@ -73,10 +74,10 @@ export class ReplicatePollingHandler implements TaskHandler {
 				};
 			}
 
-			const provider = getChatProvider(
-				asyncInvocation.provider || "replicate",
-				{ env, user: undefined },
-			);
+			const provider = getChatProvider(asyncInvocation.provider || "replicate", {
+				env,
+				user: undefined,
+			});
 
 			if (!provider?.getAsyncInvocationStatus) {
 				return {
@@ -133,9 +134,7 @@ export class ReplicatePollingHandler implements TaskHandler {
 				};
 			}
 
-			logger.info(
-				`Prediction ${data.predictionId} still in progress, re-queuing`,
-			);
+			logger.info(`Prediction ${data.predictionId} still in progress, re-queuing`);
 
 			const taskRepository = new TaskRepository(env);
 			const taskService = new TaskService(env, taskRepository);

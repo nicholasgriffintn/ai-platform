@@ -12,9 +12,7 @@ const createAudioProvider = (name: string): AudioProvider => ({
 	},
 });
 
-const createRegistration = (
-	name = "test",
-): ProviderRegistration<AudioProvider> => ({
+const createRegistration = (name = "test"): ProviderRegistration<AudioProvider> => ({
 	name,
 	create: () => createAudioProvider(name),
 });
@@ -43,9 +41,7 @@ describe("ProviderRegistry", () => {
 		const registry = new ProviderRegistry();
 		registry.register("audio", createRegistration());
 
-		expect(() => registry.register("audio", createRegistration())).toThrowError(
-			AssistantError,
-		);
+		expect(() => registry.register("audio", createRegistration())).toThrowError(AssistantError);
 	});
 
 	it("caches singleton providers but recreates transient ones", () => {
@@ -53,9 +49,7 @@ describe("ProviderRegistry", () => {
 		const singletonProvider = createAudioProvider("singleton");
 		const singletonFactory = vi.fn(() => singletonProvider);
 		let transientCounter = 0;
-		const transientFactory = vi.fn(() =>
-			createAudioProvider(`transient-${++transientCounter}`),
-		);
+		const transientFactory = vi.fn(() => createAudioProvider(`transient-${++transientCounter}`));
 
 		registry.register("audio", { name: "singleton", create: singletonFactory });
 		registry.register("audio", {
@@ -92,13 +86,9 @@ describe("ProviderRegistry", () => {
 
 	it("throws when resolving unknown categories or providers", () => {
 		const registry = new ProviderRegistry();
-		expect(() => registry.resolve("audio", "missing")).toThrowError(
-			AssistantError,
-		);
+		expect(() => registry.resolve("audio", "missing")).toThrowError(AssistantError);
 
 		registry.register("audio", createRegistration());
-		expect(() => registry.resolve("audio", "unknown")).toThrowError(
-			AssistantError,
-		);
+		expect(() => registry.resolve("audio", "unknown")).toThrowError(AssistantError);
 	});
 });

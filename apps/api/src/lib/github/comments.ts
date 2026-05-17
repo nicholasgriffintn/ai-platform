@@ -49,9 +49,7 @@ export function formatSandboxResultComment(params: {
 			"",
 			params.error || "The sandbox task failed with an unknown error.",
 			"",
-			params.responseId
-				? `Response ID: \`${params.responseId}\``
-				: "No response ID was stored.",
+			params.responseId ? `Response ID: \`${params.responseId}\`` : "No response ID was stored.",
 		].join("\n");
 	}
 
@@ -65,16 +63,7 @@ export function formatSandboxResultComment(params: {
 		"",
 		params.responseId ? `Response ID: \`${params.responseId}\`` : "",
 		...(includeDiff
-			? [
-					"",
-					"<details>",
-					"<summary>Diff</summary>",
-					"",
-					"```diff",
-					safeDiff,
-					"```",
-					"</details>",
-				]
+			? ["", "<details>", "<summary>Diff</summary>", "", "```diff", safeDiff, "```", "</details>"]
 			: []),
 	]
 		.filter(Boolean)

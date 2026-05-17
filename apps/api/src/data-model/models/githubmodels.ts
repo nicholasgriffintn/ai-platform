@@ -33,8 +33,7 @@ export const githubModelsConfig: ModelConfig = {
 	"jamba-1-5-large-gh": {
 		name: "AI21 Jamba 1.5 Large",
 		matchingModel: "ai21-labs/ai21-jamba-1.5-large",
-		description:
-			"Large-scale hybrid architecture model for complex reasoning and analysis tasks.",
+		description: "Large-scale hybrid architecture model for complex reasoning and analysis tasks.",
 		provider: "github-models",
 		knowledgeCutoffDate: "March 2024",
 		releaseDate: "August 29, 2024",
@@ -62,8 +61,7 @@ export const githubModelsConfig: ModelConfig = {
 	"gpt-4-1-mini-gh": {
 		name: "GPT-4.1-mini",
 		matchingModel: "openai/gpt-4.1-mini",
-		description:
-			"Advanced GPT model with improved instruction following and 1M context window.",
+		description: "Advanced GPT model with improved instruction following and 1M context window.",
 		provider: "github-models",
 		knowledgeCutoffDate: "April 2024",
 		releaseDate: "April 14, 2025",
@@ -122,8 +120,7 @@ export const githubModelsConfig: ModelConfig = {
 	"o1-mini-gh": {
 		name: "OpenAI o1-mini",
 		matchingModel: "openai/o1-mini",
-		description:
-			"Compact reasoning model for mathematical and logical problem-solving.",
+		description: "Compact reasoning model for mathematical and logical problem-solving.",
 		provider: "github-models",
 		knowledgeCutoffDate: "October 2023",
 		releaseDate: "September 12, 2024",
@@ -151,8 +148,7 @@ export const githubModelsConfig: ModelConfig = {
 	"gpt-4o-mini-gh": {
 		name: "GPT-4o mini",
 		matchingModel: "openai/gpt-4o-mini",
-		description:
-			"Efficient multimodal model with support for text, image, and audio inputs.",
+		description: "Efficient multimodal model with support for text, image, and audio inputs.",
 		provider: "github-models",
 		knowledgeCutoffDate: "October 2023",
 		releaseDate: "July 18, 2024",
@@ -181,8 +177,7 @@ export const githubModelsConfig: ModelConfig = {
 	"gpt-4o-gh": {
 		name: "GPT-4o",
 		matchingModel: "openai/gpt-4o",
-		description:
-			"Advanced multimodal GPT model with enhanced vision and audio capabilities.",
+		description: "Advanced multimodal GPT model with enhanced vision and audio capabilities.",
 		provider: "github-models",
 		knowledgeCutoffDate: "October 2023",
 		releaseDate: "May 13, 2024",
@@ -211,8 +206,7 @@ export const githubModelsConfig: ModelConfig = {
 	"o3-mini-gh": {
 		name: "OpenAI o3-mini",
 		matchingModel: "openai/o3-mini",
-		description:
-			"Latest compact reasoning model with enhanced problem-solving capabilities.",
+		description: "Latest compact reasoning model with enhanced problem-solving capabilities.",
 		provider: "github-models",
 		knowledgeCutoffDate: "April 2024",
 		releaseDate: "January 31, 2025",
@@ -299,8 +293,7 @@ export const githubModelsConfig: ModelConfig = {
 	"phi-4-multimodal-gh": {
 		name: "Phi-4-multimodal-instruct",
 		matchingModel: "microsoft/phi-4-multimodal-instruct",
-		description:
-			"Multimodal version of Phi-4 with vision and audio capabilities.",
+		description: "Multimodal version of Phi-4 with vision and audio capabilities.",
 		provider: "github-models",
 		knowledgeCutoffDate: "October 2023",
 		releaseDate: "December 11, 2024",
@@ -329,8 +322,7 @@ export const githubModelsConfig: ModelConfig = {
 	"phi-4-reasoning-gh": {
 		name: "Phi-4-Reasoning",
 		matchingModel: "microsoft/phi-4-reasoning",
-		description:
-			"Specialized version of Phi-4 optimized for complex reasoning tasks.",
+		description: "Specialized version of Phi-4 optimized for complex reasoning tasks.",
 		provider: "github-models",
 		knowledgeCutoffDate: "October 2023",
 		releaseDate: "December 11, 2024",
@@ -358,8 +350,7 @@ export const githubModelsConfig: ModelConfig = {
 	"phi-3-5-vision-gh": {
 		name: "Phi-3.5-vision instruct (128k)",
 		matchingModel: "microsoft/phi-3.5-vision-instruct",
-		description:
-			"Vision-enabled Phi model for image understanding and analysis.",
+		description: "Vision-enabled Phi model for image understanding and analysis.",
 		provider: "github-models",
 		knowledgeCutoffDate: "October 2023",
 		releaseDate: "August 20, 2024",
@@ -388,8 +379,7 @@ export const githubModelsConfig: ModelConfig = {
 	"llama-3-2-90b-vision-gh": {
 		name: "Llama-3.2-90B-Vision-Instruct",
 		matchingModel: "meta/llama-3.2-90b-vision-instruct",
-		description:
-			"Large multimodal Llama model with vision and audio capabilities.",
+		description: "Large multimodal Llama model with vision and audio capabilities.",
 		provider: "github-models",
 		knowledgeCutoffDate: "December 2023",
 		releaseDate: "September 25, 2024",
@@ -418,8 +408,7 @@ export const githubModelsConfig: ModelConfig = {
 	"llama-3-1-405b-gh": {
 		name: "Meta-Llama-3.1-405B-Instruct",
 		matchingModel: "meta/meta-llama-3.1-405b-instruct",
-		description:
-			"Largest open-source language model with exceptional reasoning capabilities.",
+		description: "Largest open-source language model with exceptional reasoning capabilities.",
 		provider: "github-models",
 		knowledgeCutoffDate: "December 2023",
 		releaseDate: "July 23, 2024",
@@ -447,8 +436,7 @@ export const githubModelsConfig: ModelConfig = {
 	"deepseek-r1-gh": {
 		name: "DeepSeek-R1",
 		matchingModel: "deepseek/deepseek-r1",
-		description:
-			"Advanced reasoning model with strong mathematical and logical capabilities.",
+		description: "Advanced reasoning model with strong mathematical and logical capabilities.",
 		provider: "github-models",
 		knowledgeCutoffDate: "June 2024",
 		releaseDate: "January 20, 2025",
@@ -476,8 +464,7 @@ export const githubModelsConfig: ModelConfig = {
 	"mistral-large-2411-gh": {
 		name: "Mistral Large 24.11",
 		matchingModel: "mistral-ai/mistral-large-2411",
-		description:
-			"Latest Mistral model with enhanced reasoning and multilingual capabilities.",
+		description: "Latest Mistral model with enhanced reasoning and multilingual capabilities.",
 		provider: "github-models",
 		knowledgeCutoffDate: "September 2024",
 		releaseDate: "November 1, 2024",
@@ -505,8 +492,7 @@ export const githubModelsConfig: ModelConfig = {
 	"codestral-2501-gh": {
 		name: "Codestral 25.01",
 		matchingModel: "mistral-ai/codestral-2501",
-		description:
-			"Specialized Mistral model optimized for code generation and programming tasks.",
+		description: "Specialized Mistral model optimized for code generation and programming tasks.",
 		provider: "github-models",
 		knowledgeCutoffDate: "March 2024",
 		releaseDate: "January 1, 2025",
@@ -534,8 +520,7 @@ export const githubModelsConfig: ModelConfig = {
 	"grok-3-gh": {
 		name: "Grok 3",
 		matchingModel: "xai/grok-3",
-		description:
-			"xAI's flagship model with strong reasoning capabilities and real-time knowledge.",
+		description: "xAI's flagship model with strong reasoning capabilities and real-time knowledge.",
 		provider: "github-models",
 		knowledgeCutoffDate: "October 2024",
 		releaseDate: "December 9, 2024",
@@ -592,8 +577,7 @@ export const githubModelsConfig: ModelConfig = {
 	"command-r-gh": {
 		name: "Cohere Command R",
 		matchingModel: "cohere/cohere-command-r",
-		description:
-			"Cohere's conversational model optimized for RAG and tool use.",
+		description: "Cohere's conversational model optimized for RAG and tool use.",
 		provider: "github-models",
 		knowledgeCutoffDate: "March 2024",
 		releaseDate: "March 11, 2024",
@@ -621,8 +605,7 @@ export const githubModelsConfig: ModelConfig = {
 	"command-r-plus-gh": {
 		name: "Cohere Command R+",
 		matchingModel: "cohere/cohere-command-r-plus",
-		description:
-			"Enhanced version of Command R with improved capabilities for complex workflows.",
+		description: "Enhanced version of Command R with improved capabilities for complex workflows.",
 		provider: "github-models",
 		knowledgeCutoffDate: "March 2024",
 		releaseDate: "April 4, 2024",

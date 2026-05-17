@@ -17,36 +17,26 @@ export async function submitStrudelFeedback(
 	const { context, generationId, score, feedback } = request;
 
 	if (!generationId) {
-		throw new AssistantError(
-			"Generation ID is required",
-			ErrorType.PARAMS_ERROR,
-		);
+		throw new AssistantError("Generation ID is required", ErrorType.PARAMS_ERROR);
 	}
 
 	if (!score && !feedback) {
-		throw new AssistantError(
-			"Either score or feedback must be provided",
-			ErrorType.PARAMS_ERROR,
-		);
+		throw new AssistantError("Either score or feedback must be provided", ErrorType.PARAMS_ERROR);
 	}
 
 	try {
-		const trainingExamples =
-			await context.repositories.trainingExamples.findMany({
-				conversationId: generationId,
-				source: "app",
-				appName: "strudel",
-				limit: 1,
-			});
+		const trainingExamples = await context.repositories.trainingExamples.findMany({
+			conversationId: generationId,
+			source: "app",
+			appName: "strudel",
+			limit: 1,
+		});
 
 		if (trainingExamples.length === 0) {
 			logger.warn("No training example found for Strudel generation", {
 				generationId,
 			});
-			throw new AssistantError(
-				"Generation not found for feedback",
-				ErrorType.NOT_FOUND,
-			);
+			throw new AssistantError("Generation not found for feedback", ErrorType.NOT_FOUND);
 		}
 
 		const example = trainingExamples[0];
@@ -60,10 +50,7 @@ export async function submitStrudelFeedback(
 			updateData.feedback_comment = feedback;
 		}
 
-		await context.repositories.trainingExamples.updateById(
-			example.id,
-			updateData,
-		);
+		await context.repositories.trainingExamples.updateById(example.id, updateData);
 
 		logger.info("Updated Strudel generation with feedback", {
 			exampleId: example.id,
@@ -85,9 +72,6 @@ export async function submitStrudelFeedback(
 			generationId,
 		});
 
-		throw new AssistantError(
-			"Failed to submit feedback",
-			ErrorType.UNKNOWN_ERROR,
-		);
+		throw new AssistantError("Failed to submit feedback", ErrorType.UNKNOWN_ERROR);
 	}
 }

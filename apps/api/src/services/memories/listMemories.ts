@@ -31,10 +31,7 @@ export const handleListMemories = async (
 		memories = await repository.getMemoriesByUserId(user.id);
 	}
 
-	const allGroupMemberships = new Map<
-		string,
-		{ groupId: string; groupTitle: string }
-	>();
+	const allGroupMemberships = new Map<string, { groupId: string; groupTitle: string }>();
 
 	for (const group of groupsWithCounts) {
 		const groupMembers = await repository.getMemoryGroupMembers(group.id);

@@ -39,12 +39,8 @@ export const ModelOption = ({
 	onInfoHoverEnd,
 }: ModelOptionProps) => {
 	const supportsVision =
-		model.modalities?.input?.some((modality) =>
-			["image", "video"].includes(modality),
-		) ||
-		model.modalities?.output?.some((modality) =>
-			["image", "video"].includes(modality),
-		);
+		model.modalities?.input?.some((modality) => ["image", "video"].includes(modality)) ||
+		model.modalities?.output?.some((modality) => ["image", "video"].includes(modality));
 
 	const handleKeyDown = (e: React.KeyboardEvent) => {
 		if (e.key === "Enter" || e.key === " ") {
@@ -104,10 +100,7 @@ export const ModelOption = ({
 									className="rounded-full bg-fuchsia-100 p-0.5 dark:bg-fuchsia-900/30"
 									title="Pro"
 								>
-									<Crown
-										size={12}
-										className="text-fuchsia-800 dark:text-fuchsia-300"
-									/>
+									<Crown size={12} className="text-fuchsia-800 dark:text-fuchsia-300" />
 								</div>
 							)}
 							{isTeamAgent ? (
@@ -115,10 +108,7 @@ export const ModelOption = ({
 									className="rounded-full bg-blue-100 p-0.5 dark:bg-blue-900/30"
 									title="Team Agent"
 								>
-									<Users
-										size={12}
-										className="text-blue-600 dark:text-blue-400"
-									/>
+									<Users size={12} className="text-blue-600 dark:text-blue-400" />
 								</div>
 							) : null}
 						</div>
@@ -131,14 +121,8 @@ export const ModelOption = ({
 				</div>
 				<div className="flex w-full flex-wrap items-center gap-1.5 pl-[2.6rem] sm:w-[124px] sm:flex-shrink-0 sm:justify-end sm:pl-0">
 					{model.reasoningConfig?.enabled && (
-						<div
-							className="rounded-full bg-blue-100 p-1 dark:bg-blue-900/30"
-							title="Reasoning"
-						>
-							<BrainCircuit
-								size={12}
-								className="text-blue-600 dark:text-blue-400"
-							/>
+						<div className="rounded-full bg-blue-100 p-1 dark:bg-blue-900/30" title="Reasoning">
+							<BrainCircuit size={12} className="text-blue-600 dark:text-blue-400" />
 						</div>
 					)}
 					{model.supportsToolCalls && (
@@ -146,10 +130,7 @@ export const ModelOption = ({
 							className="rounded-full bg-amber-100 p-1 dark:bg-amber-900/30"
 							title="Tool Calling"
 						>
-							<Hammer
-								size={12}
-								className="text-amber-600 dark:text-amber-400"
-							/>
+							<Hammer size={12} className="text-amber-600 dark:text-amber-400" />
 						</div>
 					)}
 					{(model.multimodal || supportsVision) && (
@@ -159,34 +140,22 @@ export const ModelOption = ({
 					)}
 					{model.supportsSearchGrounding && (
 						<div className="rounded-full bg-amber-100 p-1 dark:bg-amber-900/30">
-							<Search
-								size={12}
-								className="text-amber-600 dark:text-amber-400"
-							/>
+							<Search size={12} className="text-amber-600 dark:text-amber-400" />
 						</div>
 					)}
 					{model.supportsCodeExecution && (
 						<div className="rounded-full bg-emerald-100 p-1 dark:bg-emerald-900/30">
-							<Code2
-								size={12}
-								className="text-emerald-600 dark:text-emerald-400"
-							/>
+							<Code2 size={12} className="text-emerald-600 dark:text-emerald-400" />
 						</div>
 					)}
 					{model.supportsAudio && (
 						<div className="rounded-full bg-green-100 p-1 dark:bg-green-900/30">
-							<AudioWaveform
-								size={12}
-								className="text-green-600 dark:text-green-400"
-							/>
+							<AudioWaveform size={12} className="text-green-600 dark:text-green-400" />
 						</div>
 					)}
 					{model.isFeatured && (
 						<div className="rounded-full bg-rose-100 p-1 dark:bg-rose-900/30">
-							<Sparkles
-								size={12}
-								className="text-rose-600 dark:text-rose-400"
-							/>
+							<Sparkles size={12} className="text-rose-600 dark:text-rose-400" />
 						</div>
 					)}
 					{canShowHoverPreview && (
@@ -196,10 +165,7 @@ export const ModelOption = ({
 							onClick={(event) => event.stopPropagation()}
 							onMouseEnter={(event) => {
 								event.stopPropagation();
-								onInfoHoverStart?.(
-									model,
-									event.currentTarget.getBoundingClientRect(),
-								);
+								onInfoHoverStart?.(model, event.currentTarget.getBoundingClientRect());
 							}}
 							onMouseLeave={() => onInfoHoverEnd?.()}
 							aria-label="View model details"

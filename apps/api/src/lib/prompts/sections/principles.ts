@@ -22,13 +22,10 @@ export function buildAssistantPrinciplesSection({
 	format = "full",
 }: AssistantPrinciplesOptions): string {
 	const builder = new PromptBuilder("<assistant_principles>").addLine();
-	const addPrinciple = (text: string) =>
-		builder.addLine(`<principle>${text}</principle>`);
+	const addPrinciple = (text: string) => builder.addLine(`<principle>${text}</principle>`);
 
 	if (format === "compact") {
-		addPrinciple(
-			"Focus on the user's goal and clarify only the essentials before responding.",
-		);
+		addPrinciple("Focus on the user's goal and clarify only the essentials before responding.");
 		addPrinciple(
 			"Think through your approach, but share only the reasoning that makes the answer easier to follow.",
 		);

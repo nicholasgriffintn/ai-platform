@@ -3,10 +3,7 @@ import type { TaskType } from "@assistant/schemas";
 import { getModelConfigByModel } from "~/lib/providers/models";
 import { validateReplicatePayload } from "~/lib/providers/models/replicateValidation";
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
-import {
-	resolveServiceContext,
-	type ServiceContext,
-} from "~/lib/context/serviceContext";
+import { resolveServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
 import { TaskRepository } from "~/repositories/TaskRepository";
 import { TaskService } from "~/services/tasks/TaskService";
 import type { IEnv, IUser } from "~/types";
@@ -63,9 +60,7 @@ function resolveStoredStatus(
 	providerResponse: Record<string, unknown> | undefined,
 ): StoredGenerationStatus {
 	const rawStatus =
-		typeof providerResponse?.status === "string"
-			? providerResponse.status.toLowerCase()
-			: "";
+		typeof providerResponse?.status === "string" ? providerResponse.status.toLowerCase() : "";
 
 	if (["failed", "error", "canceled", "cancelled"].includes(rawStatus)) {
 		return "failed";
@@ -95,10 +90,7 @@ export const executeModelGeneration = async (
 	const { params, context, env, user, app_url, storage } = req;
 
 	if (!params.modelId || !params.input) {
-		throw new AssistantError(
-			"Missing model ID or input parameters",
-			ErrorType.PARAMS_ERROR,
-		);
+		throw new AssistantError("Missing model ID or input parameters", ErrorType.PARAMS_ERROR);
 	}
 
 	if (!user?.id) {
@@ -106,10 +98,7 @@ export const executeModelGeneration = async (
 	}
 
 	const serviceContext = resolveServiceContext({ context, env, user });
-	const modelConfig = await getModelConfigByModel(
-		params.modelId,
-		serviceContext.env,
-	);
+	const modelConfig = await getModelConfigByModel(params.modelId, serviceContext.env);
 
 	if (!modelConfig) {
 		throw new AssistantError(
@@ -137,8 +126,7 @@ export const executeModelGeneration = async (
 		messages: [
 			{
 				role: "user",
-				content:
-					typeof params.input.prompt === "string" ? params.input.prompt : "",
+				content: typeof params.input.prompt === "string" ? params.input.prompt : "",
 			},
 		],
 		body: {
@@ -161,8 +149,7 @@ export const executeModelGeneration = async (
 		);
 	}
 
-	const generationOutput =
-		providerResponse?.response ?? providerResponse?.output ?? undefined;
+	const generationOutput = providerResponse?.response ?? providerResponse?.output ?? undefined;
 	const generationError = resolveGenerationError(providerResponse);
 
 	const appDataPayload: Record<string, unknown> = {
@@ -178,20 +165,16 @@ export const executeModelGeneration = async (
 		createdAt: new Date().toISOString(),
 	};
 
-	const stored =
-		await serviceContext.repositories.appData.createAppDataWithItem(
-			user.id,
-			storage.appId,
-			invocationId,
-			storage.itemType,
-			appDataPayload,
-		);
+	const stored = await serviceContext.repositories.appData.createAppDataWithItem(
+		user.id,
+		storage.appId,
+		invocationId,
+		storage.itemType,
+		appDataPayload,
+	);
 
 	if (!stored?.id) {
-		throw new AssistantError(
-			"Failed to store generation data",
-			ErrorType.STORAGE_ERROR,
-		);
+		throw new AssistantError("Failed to store generation data", ErrorType.STORAGE_ERROR);
 	}
 
 	if (status === "processing" && serviceContext.env.DB) {

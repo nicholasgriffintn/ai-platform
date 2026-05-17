@@ -34,12 +34,7 @@ describe("errors", () => {
 
 		it("should create error with context", () => {
 			const context = { userId: 123, operation: "test" };
-			const error = new AssistantError(
-				"Test error",
-				ErrorType.PARAMS_ERROR,
-				400,
-				context,
-			);
+			const error = new AssistantError("Test error", ErrorType.PARAMS_ERROR, 400, context);
 
 			expect(error.context).toEqual(context);
 		});
@@ -52,12 +47,7 @@ describe("errors", () => {
 
 		it("should convert to JSON", () => {
 			const context = { userId: 123 };
-			const error = new AssistantError(
-				"Test error",
-				ErrorType.AUTHENTICATION_ERROR,
-				401,
-				context,
-			);
+			const error = new AssistantError("Test error", ErrorType.AUTHENTICATION_ERROR, 401, context);
 
 			const json = error.toJSON();
 
@@ -73,10 +63,7 @@ describe("errors", () => {
 
 		it("should create from existing error", () => {
 			const originalError = new Error("Original error");
-			const assistantError = AssistantError.fromError(
-				originalError,
-				ErrorType.PROVIDER_ERROR,
-			);
+			const assistantError = AssistantError.fromError(originalError, ErrorType.PROVIDER_ERROR);
 
 			expect(assistantError.message).toBe("Original error");
 			expect(assistantError.type).toBe(ErrorType.PROVIDER_ERROR);
@@ -97,10 +84,7 @@ describe("errors", () => {
 
 	describe("handleAIServiceError", () => {
 		it("should handle CONFIGURATION_ERROR", () => {
-			const error = new AssistantError(
-				"Config error",
-				ErrorType.CONFIGURATION_ERROR,
-			);
+			const error = new AssistantError("Config error", ErrorType.CONFIGURATION_ERROR);
 
 			const response = handleAIServiceError(error);
 
@@ -108,10 +92,7 @@ describe("errors", () => {
 		});
 
 		it("should handle NETWORK_ERROR", () => {
-			const error = new AssistantError(
-				"Network error",
-				ErrorType.NETWORK_ERROR,
-			);
+			const error = new AssistantError("Network error", ErrorType.NETWORK_ERROR);
 
 			const response = handleAIServiceError(error);
 
@@ -119,10 +100,7 @@ describe("errors", () => {
 		});
 
 		it("should handle RATE_LIMIT_ERROR", () => {
-			const error = new AssistantError(
-				"Rate limit",
-				ErrorType.RATE_LIMIT_ERROR,
-			);
+			const error = new AssistantError("Rate limit", ErrorType.RATE_LIMIT_ERROR);
 
 			const response = handleAIServiceError(error);
 
@@ -130,10 +108,7 @@ describe("errors", () => {
 		});
 
 		it("should handle AUTHENTICATION_ERROR", () => {
-			const error = new AssistantError(
-				"Auth error",
-				ErrorType.AUTHENTICATION_ERROR,
-			);
+			const error = new AssistantError("Auth error", ErrorType.AUTHENTICATION_ERROR);
 
 			const response = handleAIServiceError(error);
 
@@ -157,10 +132,7 @@ describe("errors", () => {
 		});
 
 		it("should handle PARAMS_ERROR", () => {
-			const error = new AssistantError(
-				"Invalid params",
-				ErrorType.PARAMS_ERROR,
-			);
+			const error = new AssistantError("Invalid params", ErrorType.PARAMS_ERROR);
 
 			const response = handleAIServiceError(error);
 
@@ -176,10 +148,7 @@ describe("errors", () => {
 		});
 
 		it("should handle USER_NOT_FOUND", () => {
-			const error = new AssistantError(
-				"User not found",
-				ErrorType.USER_NOT_FOUND,
-			);
+			const error = new AssistantError("User not found", ErrorType.USER_NOT_FOUND);
 
 			const response = handleAIServiceError(error);
 
@@ -187,10 +156,7 @@ describe("errors", () => {
 		});
 
 		it("should handle PROVIDER_ERROR", () => {
-			const error = new AssistantError(
-				"Provider error",
-				ErrorType.PROVIDER_ERROR,
-			);
+			const error = new AssistantError("Provider error", ErrorType.PROVIDER_ERROR);
 
 			const response = handleAIServiceError(error);
 
@@ -198,10 +164,7 @@ describe("errors", () => {
 		});
 
 		it("should handle EXTERNAL_API_ERROR", () => {
-			const error = new AssistantError(
-				"External API error",
-				ErrorType.EXTERNAL_API_ERROR,
-			);
+			const error = new AssistantError("External API error", ErrorType.EXTERNAL_API_ERROR);
 
 			const response = handleAIServiceError(error);
 
@@ -220,10 +183,7 @@ describe("errors", () => {
 		});
 
 		it("should handle EMAIL_SEND_FAILED", () => {
-			const error = new AssistantError(
-				"Email failed",
-				ErrorType.EMAIL_SEND_FAILED,
-			);
+			const error = new AssistantError("Email failed", ErrorType.EMAIL_SEND_FAILED);
 
 			const response = handleAIServiceError(error);
 
@@ -231,10 +191,7 @@ describe("errors", () => {
 		});
 
 		it("should handle INTERNAL_ERROR", () => {
-			const error = new AssistantError(
-				"Internal error",
-				ErrorType.INTERNAL_ERROR,
-			);
+			const error = new AssistantError("Internal error", ErrorType.INTERNAL_ERROR);
 
 			const response = handleAIServiceError(error);
 
@@ -242,10 +199,7 @@ describe("errors", () => {
 		});
 
 		it("should handle USAGE_LIMIT_ERROR", () => {
-			const error = new AssistantError(
-				"Usage limit",
-				ErrorType.USAGE_LIMIT_ERROR,
-			);
+			const error = new AssistantError("Usage limit", ErrorType.USAGE_LIMIT_ERROR);
 
 			const response = handleAIServiceError(error);
 
@@ -261,10 +215,7 @@ describe("errors", () => {
 		});
 
 		it("should handle UNKNOWN_ERROR with default status", () => {
-			const error = new AssistantError(
-				"Unknown error",
-				ErrorType.UNKNOWN_ERROR,
-			);
+			const error = new AssistantError("Unknown error", ErrorType.UNKNOWN_ERROR);
 
 			const response = handleAIServiceError(error);
 
@@ -272,11 +223,7 @@ describe("errors", () => {
 		});
 
 		it("should handle custom status code", () => {
-			const error = new AssistantError(
-				"Custom error",
-				ErrorType.UNKNOWN_ERROR,
-				418,
-			);
+			const error = new AssistantError("Custom error", ErrorType.UNKNOWN_ERROR, 418);
 
 			const response = handleAIServiceError(error);
 
@@ -297,12 +244,9 @@ describe("errors", () => {
 		});
 
 		it("should log errors for appropriate types", () => {
-			const error = new AssistantError(
-				"Network error",
-				ErrorType.NETWORK_ERROR,
-				500,
-				{ details: "test" },
-			);
+			const error = new AssistantError("Network error", ErrorType.NETWORK_ERROR, 500, {
+				details: "test",
+			});
 
 			const response = handleAIServiceError(error);
 

@@ -33,10 +33,7 @@ export async function generateCanvasBatch(
 	}
 
 	if (!params.modelIds.length) {
-		throw new AssistantError(
-			"At least one model must be selected",
-			ErrorType.PARAMS_ERROR,
-		);
+		throw new AssistantError("At least one model must be selected", ErrorType.PARAMS_ERROR);
 	}
 
 	const uniqueModelIds = Array.from(new Set(params.modelIds));
@@ -67,10 +64,7 @@ export async function generateCanvasBatch(
 					request: params,
 				});
 				if (inputValidationError) {
-					throw new AssistantError(
-						inputValidationError,
-						ErrorType.PARAMS_ERROR,
-					);
+					throw new AssistantError(inputValidationError, ErrorType.PARAMS_ERROR);
 				}
 
 				const input = prepareCanvasInputForModel({
@@ -103,10 +97,7 @@ export async function generateCanvasBatch(
 						: undefined;
 
 				if (typeof generationId !== "string" || !generationId) {
-					throw new AssistantError(
-						"Queued generation missing id",
-						ErrorType.PROVIDER_ERROR,
-					);
+					throw new AssistantError("Queued generation missing id", ErrorType.PROVIDER_ERROR);
 				}
 
 				const statusCandidate =

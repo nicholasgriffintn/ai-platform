@@ -3,22 +3,14 @@ export interface PatternExample {
 	name: string;
 	description: string;
 	code: string;
-	category:
-		| "drums"
-		| "melody"
-		| "ambient"
-		| "techno"
-		| "experimental"
-		| "house"
-		| "jazz";
+	category: "drums" | "melody" | "ambient" | "techno" | "experimental" | "house" | "jazz";
 }
 
 export const examplePatterns: PatternExample[] = [
 	{
 		id: "stranger-things",
 		name: "Stranger Things",
-		description:
-			"Iconic pulsing bassline inspired by the Stranger Things theme.",
+		description: "Iconic pulsing bassline inspired by the Stranger Things theme.",
 		code: `setcps(0.7);
 
 p1: n("0 2 4 6 7 6 4 2")
@@ -69,8 +61,7 @@ const trnsp = "<0!4 1!5 2!6 3!7 4!8 ~>";
 	{
 		id: "enjoy-the-silence",
 		name: "Enjoy the Silence",
-		description:
-			"Melancholic synth pad inspired by Depeche Mode's 'Enjoy the Silence'.",
+		description: "Melancholic synth pad inspired by Depeche Mode's 'Enjoy the Silence'.",
 		code: `// "Enjoy The Silence (coda)"
 // song @by Depeche Mode
 // script @by eefano
@@ -161,8 +152,7 @@ stack(
 	{
 		id: "vine",
 		name: "Vine",
-		description:
-			"Progressive rock composition inspired by 'Vine' by Spratleys Japs.",
+		description: "Progressive rock composition inspired by 'Vine' by Spratleys Japs.",
 		code: `// "Vine" (work in progress)
 // composed @by Tim Smith of Spratleys Japs
 // script @by eefano
@@ -216,16 +206,14 @@ all(x=>x.room(.1)
 	{
 		id: "simple-drums",
 		name: "Simple Drums",
-		description:
-			"808-style kick, snare and hats using mini-notation and a drum-machine bank.",
+		description: "808-style kick, snare and hats using mini-notation and a drum-machine bank.",
 		code: 's("bd sd [~ bd] sd,hh*8").bank("RolandTR808")',
 		category: "drums",
 	},
 	{
 		id: "techno-beat",
 		name: "Techno Beat",
-		description:
-			"Driving 909-style techno beat with Euclidean clap and subtle variation.",
+		description: "Driving 909-style techno beat with Euclidean clap and subtle variation.",
 		code: 's("bd*4,hh*8,cp(3,8)").bank("RolandTR909").fast(2).degradeBy(0.1)',
 		category: "techno",
 	},
@@ -239,32 +227,28 @@ all(x=>x.room(.1)
 	{
 		id: "melody",
 		name: "Minor Motif",
-		description:
-			"Minor-scale motif voiced on piano, alternating forwards and backwards.",
+		description: "Minor-scale motif voiced on piano, alternating forwards and backwards.",
 		code: 'n("0 2 4 7 4 2").scale("C:minor").s("piano").palindrome()',
 		category: "melody",
 	},
 	{
 		id: "ambient",
 		name: "Ambient Pad",
-		description:
-			"Slow evolving sine pad with reverb, filtering and long release.",
+		description: "Slow evolving sine pad with reverb, filtering and long release.",
 		code: 'note("<c4 g4 bb4 e5> <f4 a4 c5 d5>").slow(4).s("sine").room(0.9).lpf(1500).release(2)',
 		category: "ambient",
 	},
 	{
 		id: "house-groove",
 		name: "House Groove",
-		description:
-			"Four-on-the-floor house groove with hi-hats and Euclidean claps.",
+		description: "Four-on-the-floor house groove with hi-hats and Euclidean claps.",
 		code: 's("bd*4,hh*8,cp(2,8)").bank("RolandTR909").room(0.4).degradeBy(0.05)',
 		category: "house",
 	},
 	{
 		id: "bassline",
 		name: "Techno Bassline",
-		description:
-			"Dark sawtooth bassline built from numbers in a C minor scale.",
+		description: "Dark sawtooth bassline built from numbers in a C minor scale.",
 		code: 'n("0 0 3 5 [7 5] 3 0").scale("C2:minor").sound("sawtooth").lpf(600).clip(0.8)',
 		category: "techno",
 	},
@@ -285,8 +269,7 @@ all(x=>x.room(.1)
 	{
 		id: "jazz-chords",
 		name: "Jazz Chords",
-		description:
-			"Jazz ii–V–I style chord loop voiced for piano using tonal helpers.",
+		description: "Jazz ii–V–I style chord loop voiced for piano using tonal helpers.",
 		code: 'n("0 1 2 3").chord("<Dm7 G7 Cmaj7 A7>").voicing().s("piano").slow(2)',
 		category: "jazz",
 	},
@@ -301,9 +284,7 @@ s("bd sd [~ bd] sd,hh*8").bank("RolandTR808")
 // - Add '*2' or '/2' inside the quotes to change density
 // - Add '.room(0.4)' or '.lpf(2000)' for reverb / filtering`;
 
-export function getExamplesByCategory(
-	category: PatternExample["category"],
-): PatternExample[] {
+export function getExamplesByCategory(category: PatternExample["category"]): PatternExample[] {
 	return examplePatterns.filter((pattern) => pattern.category === category);
 }
 

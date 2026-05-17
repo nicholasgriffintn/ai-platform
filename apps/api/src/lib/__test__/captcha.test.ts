@@ -27,20 +27,17 @@ describe("verifyCaptchaToken", () => {
 		const result = await verifyCaptchaToken(mockToken, mockSecret, mockSitekey);
 
 		expect(result).toEqual({ verified: true });
-		expect(global.fetch).toHaveBeenCalledWith(
-			"https://hcaptcha.com/siteverify",
-			{
-				method: "POST",
-				headers: {
-					"Content-Type": "application/x-www-form-urlencoded",
-				},
-				body: new URLSearchParams({
-					secret: mockSecret,
-					response: mockToken,
-					sitekey: mockSitekey,
-				}),
+		expect(global.fetch).toHaveBeenCalledWith("https://hcaptcha.com/siteverify", {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/x-www-form-urlencoded",
 			},
-		);
+			body: new URLSearchParams({
+				secret: mockSecret,
+				response: mockToken,
+				sitekey: mockSitekey,
+			}),
+		});
 	});
 
 	it("should return verified false with error when verification fails", async () => {

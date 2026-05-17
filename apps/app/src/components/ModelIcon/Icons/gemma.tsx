@@ -23,13 +23,7 @@ const Icon: IconType = forwardRef(({ size = "1em", style, ...rest }, ref) => {
 		>
 			<title id={titleId}>{TITLE}</title>
 			<defs>
-				<linearGradient
-					id={id}
-					x1="24.419%"
-					x2="75.194%"
-					y1="75.581%"
-					y2="25.194%"
-				>
+				<linearGradient id={id} x1="24.419%" x2="75.194%" y1="75.581%" y2="25.194%">
 					<stop offset="0%" stopColor="#446EFF" />
 					<stop offset="36.661%" stopColor="#2E96FF" />
 					<stop offset="83.221%" stopColor="#B1C5FF" />

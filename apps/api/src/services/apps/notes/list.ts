@@ -1,10 +1,7 @@
 import { sanitiseInput } from "~/lib/chat/utils";
 import { getAuxiliaryModel } from "~/lib/providers/models";
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
-import {
-	resolveServiceContext,
-	type ServiceContext,
-} from "~/lib/context/serviceContext";
+import { resolveServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
 import type { ChatRole, IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
@@ -65,10 +62,7 @@ export async function getNote({
 	noteId: string;
 }): Promise<Note> {
 	if (!userId || !noteId) {
-		throw new AssistantError(
-			"Note ID and user ID are required",
-			ErrorType.PARAMS_ERROR,
-		);
+		throw new AssistantError("Note ID and user ID are required", ErrorType.PARAMS_ERROR);
 	}
 
 	const serviceContext = resolveServiceContext({ context, env });
@@ -128,13 +122,7 @@ export async function createNote({
 		metadata: { ...generatedMetadata, ...data.metadata },
 	};
 
-	const entry = await repo.createAppDataWithItem(
-		user.id,
-		"notes",
-		noteId,
-		"note",
-		appData,
-	);
+	const entry = await repo.createAppDataWithItem(user.id, "notes", noteId, "note", appData);
 
 	const full = await repo.getAppDataById(entry.id);
 	let parsed = safeParseJson(full!.data) ?? {};
@@ -168,10 +156,7 @@ export async function updateNote({
 	};
 }): Promise<Note> {
 	if (!user?.id || !noteId) {
-		throw new AssistantError(
-			"Note ID and user ID are required",
-			ErrorType.PARAMS_ERROR,
-		);
+		throw new AssistantError("Note ID and user ID are required", ErrorType.PARAMS_ERROR);
 	}
 
 	const serviceContext = resolveServiceContext({ context, env, user });
@@ -180,18 +165,13 @@ export async function updateNote({
 	const repo = serviceContext.repositories.appData;
 	const existing = await repo.getAppDataById(noteId);
 
-	if (
-		!existing ||
-		existing.user_id !== user.id ||
-		existing.app_id !== "notes"
-	) {
+	if (!existing || existing.user_id !== user.id || existing.app_id !== "notes") {
 		throw new AssistantError("Note not found", ErrorType.NOT_FOUND);
 	}
 
 	const parsedExistingData = safeParseJson(existing.data) ?? {};
 	const existingMetadata =
-		typeof parsedExistingData.metadata === "object" &&
-		!Array.isArray(parsedExistingData.metadata)
+		typeof parsedExistingData.metadata === "object" && !Array.isArray(parsedExistingData.metadata)
 			? parsedExistingData.metadata
 			: {};
 
@@ -199,15 +179,11 @@ export async function updateNote({
 	const sanitisedContent = sanitiseInput(data.content);
 
 	const incomingMetadata =
-		data.metadata &&
-		typeof data.metadata === "object" &&
-		!Array.isArray(data.metadata)
+		data.metadata && typeof data.metadata === "object" && !Array.isArray(data.metadata)
 			? data.metadata
 			: {};
-	const hasExistingMetadata =
-		existingMetadata && Object.keys(existingMetadata).length > 0;
-	const shouldRegenerateMetadata =
-		Boolean(data.options?.refreshMetadata) || !hasExistingMetadata;
+	const hasExistingMetadata = existingMetadata && Object.keys(existingMetadata).length > 0;
+	const shouldRegenerateMetadata = Boolean(data.options?.refreshMetadata) || !hasExistingMetadata;
 
 	const wordCount = sanitisedContent.split(/\s+/).length;
 	const readingTime = wordCount
@@ -281,10 +257,7 @@ export async function deleteNote({
 	noteId: string;
 }): Promise<void> {
 	if (!user?.id || !noteId) {
-		throw new AssistantError(
-			"Note ID and user ID are required",
-			ErrorType.PARAMS_ERROR,
-		);
+		throw new AssistantError("Note ID and user ID are required", ErrorType.PARAMS_ERROR);
 	}
 
 	const serviceContext = resolveServiceContext({ context, env, user });
@@ -292,11 +265,7 @@ export async function deleteNote({
 	const repo = serviceContext.repositories.appData;
 	const existing = await repo.getAppDataById(noteId);
 
-	if (
-		!existing ||
-		existing.user_id !== user.id ||
-		existing.app_id !== "notes"
-	) {
+	if (!existing || existing.user_id !== user.id || existing.app_id !== "notes") {
 		throw new AssistantError("Note not found", ErrorType.NOT_FOUND);
 	}
 
@@ -367,8 +336,10 @@ Here is the note to format:
 ${note.content}`;
 
 	try {
-		const { model: modelToUse, provider: providerToUse } =
-			await getAuxiliaryModel(runtimeEnv, user);
+		const { model: modelToUse, provider: providerToUse } = await getAuxiliaryModel(
+			runtimeEnv,
+			user,
+		);
 		const provider = getChatProvider(providerToUse, { env: runtimeEnv, user });
 
 		const messages = [
@@ -400,8 +371,7 @@ ${note.content}`;
 
 		const content =
 			aiResult?.response ||
-			(Array.isArray(aiResult.choices) &&
-				aiResult.choices[0]?.message?.content) ||
+			(Array.isArray(aiResult.choices) && aiResult.choices[0]?.message?.content) ||
 			(typeof aiResult === "string" ? aiResult : JSON.stringify(aiResult));
 
 		return { content };
@@ -409,10 +379,7 @@ ${note.content}`;
 		if (error instanceof AssistantError) {
 			throw error;
 		}
-		throw new AssistantError(
-			"Error formatting note with AI",
-			ErrorType.EXTERNAL_API_ERROR,
-		);
+		throw new AssistantError("Error formatting note with AI", ErrorType.EXTERNAL_API_ERROR);
 	}
 }
 
@@ -447,8 +414,7 @@ Content: ${content}${tabSourceText}
 Return only valid JSON without any markdown formatting.`;
 
 	try {
-		const { model: modelToUse, provider: providerToUse } =
-			await getAuxiliaryModel(env, user);
+		const { model: modelToUse, provider: providerToUse } = await getAuxiliaryModel(env, user);
 		const provider = getChatProvider(providerToUse, { env, user });
 
 		const aiResult = await provider.getResponse(
@@ -465,8 +431,7 @@ Return only valid JSON without any markdown formatting.`;
 
 		const response =
 			aiResult?.response ||
-			(Array.isArray(aiResult.choices) &&
-				aiResult.choices[0]?.message?.content) ||
+			(Array.isArray(aiResult.choices) && aiResult.choices[0]?.message?.content) ||
 			(typeof aiResult === "string" ? aiResult : "{}");
 
 		return safeParseJson(response);

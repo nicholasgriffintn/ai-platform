@@ -7,10 +7,7 @@ export const getWeatherForLocation = async (
 ): Promise<IFunctionResponse> => {
 	try {
 		if (!env.OPENWEATHERMAP_API_KEY) {
-			throw new AssistantError(
-				"Missing OPENWEATHERMAP_API_KEY variable",
-				ErrorType.PARAMS_ERROR,
-			);
+			throw new AssistantError("Missing OPENWEATHERMAP_API_KEY variable", ErrorType.PARAMS_ERROR);
 		}
 
 		const baseUrl = "https://api.openweathermap.org/data/2.5/weather";

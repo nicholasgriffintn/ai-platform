@@ -7,21 +7,11 @@ import { PromptAnalyzer } from "../promptAnalyser";
 
 vi.mock("~/lib/keywords", () => ({
 	KeywordFilter: class MockKeywordFilter {
-		static getAllCodingKeywords = vi
-			.fn()
-			.mockReturnValue(["code", "function", "variable"]);
-		static getAllMathKeywords = vi
-			.fn()
-			.mockReturnValue(["calculate", "equation", "solve"]);
-		static getAllGeneralKeywords = vi
-			.fn()
-			.mockReturnValue(["what", "how", "why"]);
-		static getAllCreativeKeywords = vi
-			.fn()
-			.mockReturnValue(["creative", "story", "poem"]);
-		static getAllReasoningKeywords = vi
-			.fn()
-			.mockReturnValue(["analyze", "think", "reason"]);
+		static getAllCodingKeywords = vi.fn().mockReturnValue(["code", "function", "variable"]);
+		static getAllMathKeywords = vi.fn().mockReturnValue(["calculate", "equation", "solve"]);
+		static getAllGeneralKeywords = vi.fn().mockReturnValue(["what", "how", "why"]);
+		static getAllCreativeKeywords = vi.fn().mockReturnValue(["creative", "story", "poem"]);
+		static getAllReasoningKeywords = vi.fn().mockReturnValue(["analyze", "think", "reason"]);
 
 		getCategorizedMatches = vi.fn().mockReturnValue({});
 		hasKeywords = vi.fn().mockReturnValue(false);
@@ -156,9 +146,7 @@ describe("PromptAnalyzer", () => {
 				messages: [
 					{
 						role: "system",
-						content: expect.stringContaining(
-							"You are an AI assistant analyzing a user prompt",
-						),
+						content: expect.stringContaining("You are an AI assistant analyzing a user prompt"),
 					},
 					{
 						role: "user",
@@ -190,13 +178,7 @@ describe("PromptAnalyzer", () => {
 		});
 
 		it("should include budget constraint in result", async () => {
-			const result = await PromptAnalyzer.analyzePrompt(
-				mockEnv,
-				"Simple task",
-				[],
-				0.05,
-				mockUser,
-			);
+			const result = await PromptAnalyzer.analyzePrompt(mockEnv, "Simple task", [], 0.05, mockUser);
 
 			expect(result.budget_constraint).toBe(0.05);
 		});
@@ -323,13 +305,7 @@ describe("PromptAnalyzer", () => {
 			mockProvider.getResponse.mockResolvedValue({});
 
 			await expect(
-				PromptAnalyzer.analyzePrompt(
-					mockEnv,
-					"Test prompt",
-					[],
-					undefined,
-					mockUser,
-				),
+				PromptAnalyzer.analyzePrompt(mockEnv, "Test prompt", [], undefined, mockUser),
 			).rejects.toThrow("No valid AI response received");
 		});
 
@@ -347,13 +323,7 @@ describe("PromptAnalyzer", () => {
 			});
 
 			await expect(
-				PromptAnalyzer.analyzePrompt(
-					mockEnv,
-					"Test prompt",
-					[],
-					undefined,
-					mockUser,
-				),
+				PromptAnalyzer.analyzePrompt(mockEnv, "Test prompt", [], undefined, mockUser),
 			).rejects.toThrow("Incomplete or invalid AI analysis structure");
 		});
 
@@ -369,13 +339,7 @@ describe("PromptAnalyzer", () => {
 			});
 
 			await expect(
-				PromptAnalyzer.analyzePrompt(
-					mockEnv,
-					"Test prompt",
-					[],
-					undefined,
-					mockUser,
-				),
+				PromptAnalyzer.analyzePrompt(mockEnv, "Test prompt", [], undefined, mockUser),
 			).rejects.toThrow("Invalid JSON response from AI analysis");
 		});
 
@@ -383,13 +347,7 @@ describe("PromptAnalyzer", () => {
 			mockProvider.getResponse.mockRejectedValue(new Error("Provider error"));
 
 			await expect(
-				PromptAnalyzer.analyzePrompt(
-					mockEnv,
-					"Test prompt",
-					[],
-					undefined,
-					mockUser,
-				),
+				PromptAnalyzer.analyzePrompt(mockEnv, "Test prompt", [], undefined, mockUser),
 			).rejects.toThrow("Prompt analysis failed: Provider error");
 		});
 	});
@@ -430,32 +388,18 @@ describe("PromptAnalyzer", () => {
 
 	describe("system prompt construction", () => {
 		it("should include available capabilities in system prompt", async () => {
-			await PromptAnalyzer.analyzePrompt(
-				mockEnv,
-				"Test prompt",
-				[],
-				undefined,
-				mockUser,
-			);
+			await PromptAnalyzer.analyzePrompt(mockEnv, "Test prompt", [], undefined, mockUser);
 
-			const systemPrompt =
-				mockProvider.getResponse.mock.calls[0][0].messages[0].content;
+			const systemPrompt = mockProvider.getResponse.mock.calls[0][0].messages[0].content;
 			expect(systemPrompt).toContain(
 				'Only choose requiredStrengths and criticalStrengths that are available in this list: ["coding","reasoning"]',
 			);
 		});
 
 		it("should include available functions in system prompt", async () => {
-			await PromptAnalyzer.analyzePrompt(
-				mockEnv,
-				"Test prompt",
-				[],
-				undefined,
-				mockUser,
-			);
+			await PromptAnalyzer.analyzePrompt(mockEnv, "Test prompt", [], undefined, mockUser);
 
-			const systemPrompt =
-				mockProvider.getResponse.mock.calls[0][0].messages[0].content;
+			const systemPrompt = mockProvider.getResponse.mock.calls[0][0].messages[0].content;
 			expect(systemPrompt).toContain("search");
 			expect(systemPrompt).toContain("calculator");
 			expect(systemPrompt).toContain("file_reader");

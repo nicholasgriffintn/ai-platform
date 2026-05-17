@@ -36,8 +36,7 @@ export default function NotesPage() {
 		const query = searchQuery.toLowerCase();
 		return notes.filter(
 			(note) =>
-				note.title.toLowerCase().includes(query) ||
-				note.content.toLowerCase().includes(query),
+				note.title.toLowerCase().includes(query) || note.content.toLowerCase().includes(query),
 		);
 	}, [notes, searchQuery]);
 
@@ -51,11 +50,7 @@ export default function NotesPage() {
 						<BackLink to="/apps" label="Back to Apps" />
 						<PageTitle title="Your Notes" />
 					</PageHeader>
-					<Button
-						onClick={handleNewNote}
-						variant="primary"
-						icon={<Plus size={16} />}
-					>
+					<Button onClick={handleNewNote} variant="primary" icon={<Plus size={16} />}>
 						New Note
 					</Button>
 				</div>
@@ -79,9 +74,7 @@ export default function NotesPage() {
 			) : error ? (
 				<div className="p-4 bg-amber-100 dark:bg-amber-900/20 text-amber-800 dark:text-amber-300 rounded-md border border-amber-200 dark:border-amber-800">
 					<h3 className="font-semibold mb-2">Failed to load notes</h3>
-					<p>
-						{error instanceof Error ? error.message : "Unknown error occurred"}
-					</p>
+					<p>{error instanceof Error ? error.message : "Unknown error occurred"}</p>
 					<Button
 						type="button"
 						variant="primary"
@@ -103,11 +96,7 @@ export default function NotesPage() {
 						{ label: "To-do list", onClick: handleNewNote },
 					]}
 					action={
-						<Button
-							onClick={handleNewNote}
-							variant="primary"
-							icon={<Plus size={16} />}
-						>
+						<Button onClick={handleNewNote} variant="primary" icon={<Plus size={16} />}>
 							Create Your First Note
 						</Button>
 					}

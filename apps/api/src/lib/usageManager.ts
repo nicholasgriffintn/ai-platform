@@ -73,8 +73,7 @@ export class UsageManager {
 		this.anonymousUser = anonymousUser;
 		this.requestCache = options?.requestCache;
 		this.enqueueUsageTask = options?.enqueueUsageTask;
-		this.asyncUsageUpdates =
-			options?.asyncUsageUpdates ?? Boolean(options?.enqueueUsageTask);
+		this.asyncUsageUpdates = options?.asyncUsageUpdates ?? Boolean(options?.enqueueUsageTask);
 	}
 
 	private isNewUtcDay(now: Date, lastReset: Date | null): boolean {
@@ -99,9 +98,7 @@ export class UsageManager {
 		}
 
 		const now = new Date();
-		const lastReset = this.user.daily_reset
-			? new Date(this.user.daily_reset)
-			: null;
+		const lastReset = this.user.daily_reset ? new Date(this.user.daily_reset) : null;
 		const isNewDay = this.isNewUtcDay(now, lastReset);
 		const dailyCount = isNewDay ? 0 : (this.user.daily_message_count ?? 0);
 
@@ -120,10 +117,7 @@ export class UsageManager {
 
 	private getProUsageSnapshot(): { dailyCount: number; limit: number } {
 		if (!this.user?.id) {
-			throw new AssistantError(
-				"User required to check pro usage",
-				ErrorType.PARAMS_ERROR,
-			);
+			throw new AssistantError("User required to check pro usage", ErrorType.PARAMS_ERROR);
 		}
 
 		if (this.proUsageSnapshot) {
@@ -131,9 +125,7 @@ export class UsageManager {
 		}
 
 		const now = new Date();
-		const lastReset = this.user.daily_pro_reset
-			? new Date(this.user.daily_pro_reset)
-			: null;
+		const lastReset = this.user.daily_pro_reset ? new Date(this.user.daily_pro_reset) : null;
 		const isNewDay = this.isNewUtcDay(now, lastReset);
 		const dailyCount = isNewDay ? 0 : (this.user.daily_pro_message_count ?? 0);
 
@@ -162,9 +154,7 @@ export class UsageManager {
 		return memoizeRequest(this.requestCache, key, factory);
 	}
 
-	private async getModelConfig(
-		modelId: string,
-	): Promise<ModelConfigItem | undefined> {
+	private async getModelConfig(modelId: string): Promise<ModelConfigItem | undefined> {
 		return this.memoize(`usage:model-config:${modelId}`, () =>
 			getModelConfigByMatchingModel(modelId),
 		);
@@ -180,21 +170,16 @@ export class UsageManager {
 			logger.debug("Calculating function usage multiplier", { modelId });
 			const config = await this.getModelConfig(modelId);
 			if (!config) {
-				logger.warn(
-					`No config found for model: ${modelId}, using default multiplier: 1`,
-				);
+				logger.warn(`No config found for model: ${modelId}, using default multiplier: 1`);
 				return 1;
 			}
 
 			if (!config.costPer1kInputTokens && !config.costPer1kOutputTokens) {
-				logger.warn(
-					`No cost data for model: ${modelId}, using default multiplier: 1`,
-				);
+				logger.warn(`No cost data for model: ${modelId}, using default multiplier: 1`);
 				return 1;
 			}
 
-			const inputMultiplier =
-				(config.costPer1kInputTokens || 0) / USAGE_CONFIG.BASELINE_INPUT_COST;
+			const inputMultiplier = (config.costPer1kInputTokens || 0) / USAGE_CONFIG.BASELINE_INPUT_COST;
 			const outputMultiplier =
 				(config.costPer1kOutputTokens || 0) / USAGE_CONFIG.BASELINE_OUTPUT_COST;
 			const avgMultiplier = (inputMultiplier + outputMultiplier) / 2;
@@ -265,10 +250,7 @@ export class UsageManager {
 				error,
 				userId: this.user.id,
 			});
-			throw new AssistantError(
-				"Failed to update usage data",
-				ErrorType.INTERNAL_ERROR,
-			);
+			throw new AssistantError("Failed to update usage data", ErrorType.INTERNAL_ERROR);
 		}
 
 		logger.debug("Usage incremented", { userId: this.user.id });
@@ -287,10 +269,9 @@ export class UsageManager {
 		});
 
 		const dailyLimit = USAGE_CONFIG.NON_AUTH_DAILY_MESSAGE_LIMIT;
-		const { count: dailyCount } =
-			await this.repositories.anonymousUsers.checkAndResetDailyLimit(
-				this.anonymousUser.id,
-			);
+		const { count: dailyCount } = await this.repositories.anonymousUsers.checkAndResetDailyLimit(
+			this.anonymousUser.id,
+		);
 
 		if (dailyCount >= dailyLimit) {
 			throw new AssistantError(
@@ -327,10 +308,7 @@ export class UsageManager {
 			return;
 		}
 
-		await UsageManager.applyAnonymousUsageUpdate(
-			this.repositories,
-			this.anonymousUser.id,
-		);
+		await UsageManager.applyAnonymousUsageUpdate(this.repositories, this.anonymousUser.id);
 
 		logger.debug("Anonymous usage incremented", {
 			anonymousUserId: this.anonymousUser.id,
@@ -345,10 +323,7 @@ export class UsageManager {
 		const dailyProCount = snapshot.dailyCount;
 
 		if (dailyProCount >= snapshot.limit) {
-			throw new AssistantError(
-				"Daily Pro model limit reached.",
-				ErrorType.USAGE_LIMIT_ERROR,
-			);
+			throw new AssistantError("Daily Pro model limit reached.", ErrorType.USAGE_LIMIT_ERROR);
 		}
 
 		const modelConfig = await this.getModelConfig(modelId);
@@ -368,10 +343,7 @@ export class UsageManager {
 
 	async incrementProUsage(modelId: string) {
 		if (!this.user?.id) {
-			throw new AssistantError(
-				"User required to increment pro usage",
-				ErrorType.PARAMS_ERROR,
-			);
+			throw new AssistantError("User required to increment pro usage", ErrorType.PARAMS_ERROR);
 		}
 
 		logger.debug("Incrementing pro usage", { userId: this.user.id });
@@ -465,9 +437,7 @@ export class UsageManager {
 		if (!this.user?.id) {
 			if (this.anonymousUser?.id) {
 				const { count: dailyCount } =
-					await this.repositories.anonymousUsers.checkAndResetDailyLimit(
-						this.anonymousUser.id,
-					);
+					await this.repositories.anonymousUsers.checkAndResetDailyLimit(this.anonymousUser.id);
 
 				return {
 					daily: {
@@ -477,10 +447,7 @@ export class UsageManager {
 				};
 			}
 
-			throw new AssistantError(
-				"User required to get usage limits",
-				ErrorType.PARAMS_ERROR,
-			);
+			throw new AssistantError("User required to get usage limits", ErrorType.PARAMS_ERROR);
 		}
 
 		const regularSnapshot = this.getRegularUsageSnapshot();
@@ -542,10 +509,7 @@ export class UsageManager {
 		}
 
 		if (!this.user?.id) {
-			throw new AssistantError(
-				"User required to increment function usage",
-				ErrorType.PARAMS_ERROR,
-			);
+			throw new AssistantError("User required to increment function usage", ErrorType.PARAMS_ERROR);
 		}
 
 		logger.debug("Incrementing function usage", {
@@ -569,11 +533,11 @@ export class UsageManager {
 			return;
 		}
 
-		const updatedUser = await UsageManager.applyFunctionUsageUpdate(
-			this.repositories,
-			this.user,
-			{ functionType, isPro, costPerCall },
-		);
+		const updatedUser = await UsageManager.applyFunctionUsageUpdate(this.repositories, this.user, {
+			functionType,
+			isPro,
+			costPerCall,
+		});
 		this.user = updatedUser;
 		this.invalidateRegularUsageSnapshot();
 		this.invalidateProUsageSnapshot();
@@ -582,9 +546,7 @@ export class UsageManager {
 	}
 
 	private incrementLocalCounts(
-		fields: Array<
-			"message_count" | "daily_message_count" | "daily_pro_message_count"
-		>,
+		fields: Array<"message_count" | "daily_message_count" | "daily_pro_message_count">,
 		increment = 1,
 	): void {
 		if (!this.user) return;
@@ -603,9 +565,7 @@ export class UsageManager {
 		this.user.last_active_at = new Date().toISOString();
 	}
 
-	private async tryEnqueueUsageTask(
-		payload: UsageUpdateTaskInput,
-	): Promise<boolean> {
+	private async tryEnqueueUsageTask(payload: UsageUpdateTaskInput): Promise<boolean> {
 		if (!this.shouldEnqueueUsage()) {
 			return false;
 		}
@@ -662,18 +622,14 @@ export class UsageManager {
 		usageMultiplier: number,
 	): Promise<User> {
 		const now = new Date();
-		const lastReset = user.daily_pro_reset
-			? new Date(user.daily_pro_reset)
-			: null;
+		const lastReset = user.daily_pro_reset ? new Date(user.daily_pro_reset) : null;
 		const isNewDay =
 			!lastReset ||
 			now.getUTCFullYear() !== lastReset.getUTCFullYear() ||
 			now.getUTCMonth() !== lastReset.getUTCMonth() ||
 			now.getUTCDate() !== lastReset.getUTCDate();
 
-		const currentDailyCount = isNewDay
-			? 0
-			: (user.daily_pro_message_count ?? 0);
+		const currentDailyCount = isNewDay ? 0 : (user.daily_pro_message_count ?? 0);
 
 		const updates: Partial<User> & Record<string, any> = {
 			message_count: (user.message_count ?? 0) + 1,
@@ -720,8 +676,7 @@ export class UsageManager {
 		};
 
 		if (options.functionType === "premium") {
-			updates.daily_pro_message_count =
-				(user.daily_pro_message_count ?? 0) + options.costPerCall;
+			updates.daily_pro_message_count = (user.daily_pro_message_count ?? 0) + options.costPerCall;
 		}
 
 		await repositories.users.updateUser(user.id, updates);

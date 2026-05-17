@@ -54,9 +54,7 @@ vi.mock("~/lib/database", () => ({
 describe("MemoryManager", () => {
 	const mockEnv = { OPENAI_API_KEY: "test-key" } as any;
 	const mockUser = { id: 1, email: "test@example.com" } as any;
-	const mockedGetEmbeddingProvider = vi.mocked(
-		embeddingHelpers.getEmbeddingProvider,
-	);
+	const mockedGetEmbeddingProvider = vi.mocked(embeddingHelpers.getEmbeddingProvider);
 
 	beforeEach(async () => {
 		vi.clearAllMocks();
@@ -98,9 +96,7 @@ describe("MemoryManager", () => {
 				memories_chat_history_enabled: false,
 			};
 
-			const messages = [
-				{ role: "user", content: "I love Python programming" },
-			] as any;
+			const messages = [{ role: "user", content: "I love Python programming" }] as any;
 
 			const mockProvider = {
 				getResponse: vi

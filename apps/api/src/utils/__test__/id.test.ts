@@ -34,9 +34,7 @@ describe("id", () => {
 
 			expect(Math.random).toHaveBeenCalled();
 			expect(result).toHaveLength(36);
-			expect(result).toMatch(
-				/^[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}$/,
-			);
+			expect(result).toMatch(/^[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}$/);
 		});
 
 		it("should fallback to Math.random when crypto.randomUUID is not a function", () => {
@@ -47,16 +45,12 @@ describe("id", () => {
 
 			expect(Math.random).toHaveBeenCalled();
 			expect(result).toHaveLength(36);
-			expect(result).toMatch(
-				/^[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}$/,
-			);
+			expect(result).toMatch(/^[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}$/);
 		});
 
 		it("should generate different IDs on subsequent calls with Math.random fallback", () => {
 			vi.stubGlobal("crypto", undefined);
-			vi.spyOn(Math, "random")
-				.mockReturnValueOnce(0.123456789)
-				.mockReturnValueOnce(0.987654321);
+			vi.spyOn(Math, "random").mockReturnValueOnce(0.123456789).mockReturnValueOnce(0.987654321);
 
 			const result1 = generateId();
 			const result2 = generateId();
@@ -64,12 +58,8 @@ describe("id", () => {
 			expect(result1).not.toBe(result2);
 			expect(result1).toHaveLength(36);
 			expect(result2).toHaveLength(36);
-			expect(result1).toMatch(
-				/^[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}$/,
-			);
-			expect(result2).toMatch(
-				/^[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}$/,
-			);
+			expect(result1).toMatch(/^[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}$/);
+			expect(result2).toMatch(/^[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}$/);
 		});
 
 		it("should generate IDs with correct length when using Math.random fallback", () => {
@@ -79,9 +69,7 @@ describe("id", () => {
 			const result = generateId();
 
 			expect(result).toHaveLength(36);
-			expect(result).toMatch(
-				/^[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}$/,
-			);
+			expect(result).toMatch(/^[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}$/);
 		});
 
 		it("should generate valid UUID format when crypto.randomUUID is available", () => {
@@ -94,9 +82,7 @@ describe("id", () => {
 
 			const result = generateId();
 
-			expect(result).toMatch(
-				/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/,
-			);
+			expect(result).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/);
 		});
 	});
 });

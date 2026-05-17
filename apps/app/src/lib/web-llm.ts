@@ -30,10 +30,7 @@ export class WebLLMService {
 		return this.webllm;
 	}
 
-	async init(
-		model: string,
-		progressCallback?: (report: any) => void,
-	): Promise<void> {
+	async init(model: string, progressCallback?: (report: any) => void): Promise<void> {
 		if (!this.isInitialized || this.currentModel !== model) {
 			if (this.engine) {
 				await this.unload();
@@ -63,13 +60,7 @@ export class WebLLMService {
 			throw new Error("Engine or model not initialized");
 		}
 
-		await onSendMessage(
-			selectedChat,
-			prompt,
-			this.currentModel,
-			"local",
-			"user",
-		);
+		await onSendMessage(selectedChat, prompt, this.currentModel, "local", "user");
 
 		this.chatHistory.push({ role: "user", content: prompt });
 
@@ -79,8 +70,7 @@ export class WebLLMService {
 		};
 
 		let generatedContent = "";
-		const asyncChunkGenerator =
-			await this.engine.chat.completions.create(request);
+		const asyncChunkGenerator = await this.engine.chat.completions.create(request);
 
 		let hasCompleted = false;
 		for await (const chunk of asyncChunkGenerator) {
@@ -100,13 +90,7 @@ export class WebLLMService {
 		});
 
 		if (hasCompleted) {
-			await onSendMessage(
-				selectedChat,
-				generatedContent,
-				this.currentModel,
-				"local",
-				"assistant",
-			);
+			await onSendMessage(selectedChat, generatedContent, this.currentModel, "local", "assistant");
 		}
 
 		return generatedContent;

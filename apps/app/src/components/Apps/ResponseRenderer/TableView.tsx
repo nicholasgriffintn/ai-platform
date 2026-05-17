@@ -56,9 +56,7 @@ export const TableView = ({ data }: TableViewProps) => {
 									key={`${rowIndex}-${header.key}`}
 									className="px-6 py-4 whitespace-nowrap text-sm text-zinc-600 dark:text-zinc-300"
 								>
-									{row[header.key] !== undefined
-										? String(row[header.key])
-										: "—"}
+									{row[header.key] !== undefined ? String(row[header.key]) : "—"}
 								</td>
 							))}
 						</tr>

@@ -79,9 +79,9 @@ describe("getWeatherForLocation", () => {
 	it("should throw error for missing API key", async () => {
 		const envWithoutKey = {};
 
-		await expect(
-			getWeatherForLocation(envWithoutKey, mockLocation),
-		).rejects.toThrow("Error fetching weather results");
+		await expect(getWeatherForLocation(envWithoutKey, mockLocation)).rejects.toThrow(
+			"Error fetching weather results",
+		);
 	});
 
 	it("should handle API response with non-200 status", async () => {
@@ -214,8 +214,6 @@ describe("getWeatherForLocation", () => {
 		const result = await getWeatherForLocation(mockEnv, southernLocation);
 
 		expect(result.status).toBe("success");
-		expect(fetch).toHaveBeenCalledWith(
-			expect.stringContaining("lat=-33.8688&lon=151.2093"),
-		);
+		expect(fetch).toHaveBeenCalledWith(expect.stringContaining("lat=-33.8688&lon=151.2093"));
 	});
 });

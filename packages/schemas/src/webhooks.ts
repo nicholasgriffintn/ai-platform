@@ -6,17 +6,11 @@ export const replicateWebhookQuerySchema = z.object({
 });
 
 export const replicateWebhookJsonSchema = z.object({
-	id: z
-		.string()
-		.min(1, "id is required")
-		.meta({ example: "ufawqhfynnddngldkgtslldrkq" }),
+	id: z.string().min(1, "id is required").meta({ example: "ufawqhfynnddngldkgtslldrkq" }),
 	version: z.string().optional().meta({
 		example: "5c7d5dc6dd8bf75c1acaa8565735e7986bc5b66206b55cca93cb72c9bf15ccaa",
 	}),
-	created_at: z
-		.string()
-		.optional()
-		.meta({ example: "2024-01-01T00:00:00.000Z" }),
+	created_at: z.string().optional().meta({ example: "2024-01-01T00:00:00.000Z" }),
 	started_at: z.string().optional().nullable().meta({ example: null }),
 	completed_at: z.string().optional().nullable().meta({ example: null }),
 	status: z.string().optional().meta({ example: "starting" }),

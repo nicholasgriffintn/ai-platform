@@ -17,12 +17,7 @@ export interface PromptCoachResponse {
 	prompt_type?: string;
 }
 
-export type PromptType =
-	| "general"
-	| "creative"
-	| "technical"
-	| "instructional"
-	| "analytical";
+export type PromptType = "general" | "creative" | "technical" | "instructional" | "analytical";
 
 export const handlePromptCoachSuggestion = async (req: {
 	env: IEnv;
@@ -31,13 +26,7 @@ export const handlePromptCoachSuggestion = async (req: {
 	recursionDepth?: number;
 	promptType?: PromptType;
 }): Promise<PromptCoachResponse> => {
-	const {
-		env,
-		user,
-		prompt: userPrompt,
-		recursionDepth = 0,
-		promptType = "general",
-	} = req;
+	const { env, user, prompt: userPrompt, recursionDepth = 0, promptType = "general" } = req;
 
 	try {
 		const sanitisedPrompt = sanitiseInput(userPrompt);
@@ -68,44 +57,23 @@ export const handlePromptCoachSuggestion = async (req: {
 		const aiResult = await getAIResponse(payload);
 
 		if (!aiResult.response) {
-			throw new AssistantError(
-				"AI model did not return a response.",
-				ErrorType.EXTERNAL_API_ERROR,
-			);
+			throw new AssistantError("AI model did not return a response.", ErrorType.EXTERNAL_API_ERROR);
 		}
 
 		const aiResponseContent = aiResult.response;
 		logger.info("AI response content received for prompt coaching");
 
-		const extractTagContent = (
-			content: string,
-			tagName: string,
-		): string | null => {
+		const extractTagContent = (content: string, tagName: string): string | null => {
 			const regex = new RegExp(`<${tagName}>([\\s\\S]*?)</${tagName}>`, "i");
 			const match = regex.exec(content);
 			return match?.[1]?.trim() ?? null;
 		};
 
-		const suggestedPrompt = extractTagContent(
-			aiResponseContent,
-			"revised_prompt",
-		);
-		const promptAnalysis = extractTagContent(
-			aiResponseContent,
-			"prompt_analysis",
-		);
-		const suggestionsContent = extractTagContent(
-			aiResponseContent,
-			"suggestions",
-		);
-		const formatOptimization = extractTagContent(
-			aiResponseContent,
-			"format_optimization",
-		);
-		const promptTypeResult = extractTagContent(
-			aiResponseContent,
-			"prompt_type",
-		);
+		const suggestedPrompt = extractTagContent(aiResponseContent, "revised_prompt");
+		const promptAnalysis = extractTagContent(aiResponseContent, "prompt_analysis");
+		const suggestionsContent = extractTagContent(aiResponseContent, "suggestions");
+		const formatOptimization = extractTagContent(aiResponseContent, "format_optimization");
+		const promptTypeResult = extractTagContent(aiResponseContent, "prompt_type");
 
 		const suggestions = suggestionsContent
 			? suggestionsContent
@@ -117,9 +85,7 @@ export const handlePromptCoachSuggestion = async (req: {
 		const confidenceScore = calculateConfidenceScore(aiResponseContent);
 
 		if (recursionDepth > 0 && suggestedPrompt) {
-			logger.info(
-				`Performing recursive prompt improvement: depth ${recursionDepth}`,
-			);
+			logger.info(`Performing recursive prompt improvement: depth ${recursionDepth}`);
 			return handlePromptCoachSuggestion({
 				env,
 				user,

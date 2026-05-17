@@ -55,23 +55,15 @@ export default function NoteDetailPage() {
 
 	if (isLoading) {
 		return (
-			<PageShell
-				sidebarContent={<AppsSidebarContent />}
-				className="max-w-4xl mx-auto"
-			>
+			<PageShell sidebarContent={<AppsSidebarContent />} className="max-w-4xl mx-auto">
 				<div className="flex justify-center items-center h-64">Loading...</div>
 			</PageShell>
 		);
 	}
 	if (error || !note) {
 		return (
-			<PageShell
-				sidebarContent={<AppsSidebarContent />}
-				className="max-w-4xl mx-auto"
-			>
-				<div className="flex justify-center items-center h-64">
-					Note not found
-				</div>
+			<PageShell sidebarContent={<AppsSidebarContent />} className="max-w-4xl mx-auto">
+				<div className="flex justify-center items-center h-64">Note not found</div>
 			</PageShell>
 		);
 	}
@@ -82,15 +74,9 @@ export default function NoteDetailPage() {
 		<PageShell
 			sidebarContent={<AppsSidebarContent />}
 			fullBleed={isFullBleed}
-			bgClassName={
-				themeMode === "sepia"
-					? "bg-[#f8f2e3] text-[#333]"
-					: "bg-white dark:bg-zinc-900"
-			}
+			bgClassName={themeMode === "sepia" ? "bg-[#f8f2e3] text-[#333]" : "bg-white dark:bg-zinc-900"}
 			className={cn(
-				isFullBleed
-					? "flex flex-col w-full h-full"
-					: "max-w-4xl mx-auto flex flex-col h-full",
+				isFullBleed ? "flex flex-col w-full h-full" : "max-w-4xl mx-auto flex flex-col h-full",
 			)}
 			headerContent={<h1 className="sr-only">Edit Note</h1>}
 		>

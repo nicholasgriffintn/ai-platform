@@ -45,11 +45,7 @@ export const apiKeyService = {
 				const iv = window.crypto.getRandomValues(new Uint8Array(12));
 				const encoded = new TextEncoder().encode(apiKey);
 
-				const encrypted = await window.crypto.subtle.encrypt(
-					{ name: "AES-GCM", iv },
-					key,
-					encoded,
-				);
+				const encrypted = await window.crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, encoded);
 
 				const data = {
 					iv: Array.from(iv),
@@ -58,9 +54,7 @@ export const apiKeyService = {
 
 				window.localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
 			} else {
-				console.warn(
-					"Web Crypto API not available, storing API key without encryption",
-				);
+				console.warn("Web Crypto API not available, storing API key without encryption");
 				window.localStorage.setItem(FALLBACK_STORAGE_KEY, apiKey);
 			}
 		} catch (error) {

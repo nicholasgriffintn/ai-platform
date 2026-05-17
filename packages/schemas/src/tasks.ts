@@ -33,11 +33,7 @@ export const scheduleTypeSchema = z.enum([
 	"event_triggered",
 ]);
 
-export const taskExecutionStatusSchema = z.enum([
-	"running",
-	"completed",
-	"failed",
-]);
+export const taskExecutionStatusSchema = z.enum(["running", "completed", "failed"]);
 
 export const taskSchema = z.object({
 	id: z.string(),
@@ -136,15 +132,9 @@ export type Task = z.infer<typeof taskSchema>;
 export type TaskExecution = z.infer<typeof taskExecutionSchema>;
 export type MemorySynthesis = z.infer<typeof memorySynthesisSchema>;
 export type CreateTaskRequest = z.infer<typeof createTaskRequestSchema>;
-export type CreatePublicTaskRequest = z.infer<
-	typeof createPublicTaskRequestSchema
->;
+export type CreatePublicTaskRequest = z.infer<typeof createPublicTaskRequestSchema>;
 export type CreateTaskResponse = z.infer<typeof createTaskResponseSchema>;
 export type GetTaskResponse = z.infer<typeof getTaskResponseSchema>;
 export type ListTasksResponse = z.infer<typeof listTasksResponseSchema>;
-export type GetMemorySynthesisResponse = z.infer<
-	typeof getMemorySynthesisResponseSchema
->;
-export type TriggerMemorySynthesisRequest = z.infer<
-	typeof triggerMemorySynthesisRequestSchema
->;
+export type GetMemorySynthesisResponse = z.infer<typeof getMemorySynthesisResponseSchema>;
+export type TriggerMemorySynthesisRequest = z.infer<typeof triggerMemorySynthesisRequestSchema>;

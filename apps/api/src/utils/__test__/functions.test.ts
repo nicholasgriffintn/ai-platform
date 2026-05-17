@@ -115,105 +115,59 @@ describe("functions", () => {
 
 	describe("getFunctionResponseType", () => {
 		it("should return CUSTOM for search functions", () => {
-			expect(getFunctionResponseType("web_search")).toBe(
-				ResponseDisplayType.CUSTOM,
-			);
-			expect(getFunctionResponseType("search_documents")).toBe(
-				ResponseDisplayType.CUSTOM,
-			);
+			expect(getFunctionResponseType("web_search")).toBe(ResponseDisplayType.CUSTOM);
+			expect(getFunctionResponseType("search_documents")).toBe(ResponseDisplayType.CUSTOM);
 		});
 
 		it("should return TEMPLATE for weather functions", () => {
-			expect(getFunctionResponseType("get_weather")).toBe(
-				ResponseDisplayType.TEMPLATE,
-			);
-			expect(getFunctionResponseType("weather_forecast")).toBe(
-				ResponseDisplayType.TEMPLATE,
-			);
+			expect(getFunctionResponseType("get_weather")).toBe(ResponseDisplayType.TEMPLATE);
+			expect(getFunctionResponseType("weather_forecast")).toBe(ResponseDisplayType.TEMPLATE);
 		});
 
 		it("should return TEMPLATE for image functions", () => {
-			expect(getFunctionResponseType("generate_image")).toBe(
-				ResponseDisplayType.TEMPLATE,
-			);
-			expect(getFunctionResponseType("take_screenshot")).toBe(
-				ResponseDisplayType.TEMPLATE,
-			);
+			expect(getFunctionResponseType("generate_image")).toBe(ResponseDisplayType.TEMPLATE);
+			expect(getFunctionResponseType("take_screenshot")).toBe(ResponseDisplayType.TEMPLATE);
 		});
 
 		it("should return TEMPLATE for video functions", () => {
-			expect(getFunctionResponseType("create_video")).toBe(
-				ResponseDisplayType.TEMPLATE,
-			);
-			expect(getFunctionResponseType("process_video")).toBe(
-				ResponseDisplayType.TEMPLATE,
-			);
+			expect(getFunctionResponseType("create_video")).toBe(ResponseDisplayType.TEMPLATE);
+			expect(getFunctionResponseType("process_video")).toBe(ResponseDisplayType.TEMPLATE);
 		});
 
 		it("should return TEXT for extract functions", () => {
-			expect(getFunctionResponseType("extract_content")).toBe(
-				ResponseDisplayType.TEXT,
-			);
-			expect(getFunctionResponseType("extract_data")).toBe(
-				ResponseDisplayType.TEXT,
-			);
+			expect(getFunctionResponseType("extract_content")).toBe(ResponseDisplayType.TEXT);
+			expect(getFunctionResponseType("extract_data")).toBe(ResponseDisplayType.TEXT);
 		});
 
 		it("should return TEXT for speech functions", () => {
-			expect(getFunctionResponseType("text_to_speech")).toBe(
-				ResponseDisplayType.TEXT,
-			);
-			expect(getFunctionResponseType("speech_recognition")).toBe(
-				ResponseDisplayType.TEXT,
-			);
+			expect(getFunctionResponseType("text_to_speech")).toBe(ResponseDisplayType.TEXT);
+			expect(getFunctionResponseType("speech_recognition")).toBe(ResponseDisplayType.TEXT);
 		});
 
 		it("should return TEMPLATE for prompt_coach functions", () => {
-			expect(getFunctionResponseType("prompt_coach")).toBe(
-				ResponseDisplayType.TEMPLATE,
-			);
-			expect(getFunctionResponseType("prompt_coach_analyze")).toBe(
-				ResponseDisplayType.TEMPLATE,
-			);
+			expect(getFunctionResponseType("prompt_coach")).toBe(ResponseDisplayType.TEMPLATE);
+			expect(getFunctionResponseType("prompt_coach_analyze")).toBe(ResponseDisplayType.TEMPLATE);
 		});
 
 		it("should return JSON for mcp functions", () => {
-			expect(getFunctionResponseType("mcp_tool_call")).toBe(
-				ResponseDisplayType.JSON,
-			);
-			expect(getFunctionResponseType("mcp_function")).toBe(
-				ResponseDisplayType.JSON,
-			);
+			expect(getFunctionResponseType("mcp_tool_call")).toBe(ResponseDisplayType.JSON);
+			expect(getFunctionResponseType("mcp_function")).toBe(ResponseDisplayType.JSON);
 		});
 
 		it("should return TEMPLATE for analyse functions", () => {
-			expect(getFunctionResponseType("analyse_data")).toBe(
-				ResponseDisplayType.TEMPLATE,
-			);
-			expect(getFunctionResponseType("analyse_hacker_news")).toBe(
-				ResponseDisplayType.TEMPLATE,
-			);
+			expect(getFunctionResponseType("analyse_data")).toBe(ResponseDisplayType.TEMPLATE);
+			expect(getFunctionResponseType("analyse_hacker_news")).toBe(ResponseDisplayType.TEMPLATE);
 		});
 
 		it("should return TEMPLATE for workflow functions", () => {
-			expect(getFunctionResponseType("compose_functions")).toBe(
-				ResponseDisplayType.TEMPLATE,
-			);
-			expect(getFunctionResponseType("if_then_else")).toBe(
-				ResponseDisplayType.TEMPLATE,
-			);
-			expect(getFunctionResponseType("parallel_execute")).toBe(
-				ResponseDisplayType.TEMPLATE,
-			);
+			expect(getFunctionResponseType("compose_functions")).toBe(ResponseDisplayType.TEMPLATE);
+			expect(getFunctionResponseType("if_then_else")).toBe(ResponseDisplayType.TEMPLATE);
+			expect(getFunctionResponseType("parallel_execute")).toBe(ResponseDisplayType.TEMPLATE);
 		});
 
 		it("should return CUSTOM for unknown functions", () => {
-			expect(getFunctionResponseType("unknown_function")).toBe(
-				ResponseDisplayType.CUSTOM,
-			);
-			expect(getFunctionResponseType("random_name")).toBe(
-				ResponseDisplayType.CUSTOM,
-			);
+			expect(getFunctionResponseType("unknown_function")).toBe(ResponseDisplayType.CUSTOM);
+			expect(getFunctionResponseType("random_name")).toBe(ResponseDisplayType.CUSTOM);
 		});
 	});
 
@@ -306,9 +260,7 @@ describe("functions", () => {
 			expect(display.template).toContain("analysis-container");
 			expect(display.template).toContain("stories-container");
 			expect(display.template).toContain("usage-info");
-			expect(display.template).toContain(
-				"{{data.analysis.usage.total_tokens}}",
-			);
+			expect(display.template).toContain("{{data.analysis.usage.total_tokens}}");
 		});
 
 		it("should return consistent structure for all functions", () => {
@@ -338,15 +290,11 @@ describe("functions", () => {
 		it("should handle function names with multiple matching keywords", () => {
 			// Function with both "search" and "image" - should prioritize search
 			expect(getFunctionIcon("search_image_database")).toBe("search");
-			expect(getFunctionResponseType("search_image_database")).toBe(
-				ResponseDisplayType.CUSTOM,
-			);
+			expect(getFunctionResponseType("search_image_database")).toBe(ResponseDisplayType.CUSTOM);
 
 			// Function with both "create" and "extract" - should prioritize extract
 			expect(getFunctionIcon("extract_and_create_content")).toBe("file-text");
-			expect(getFunctionResponseType("extract_and_create_content")).toBe(
-				ResponseDisplayType.TEXT,
-			);
+			expect(getFunctionResponseType("extract_and_create_content")).toBe(ResponseDisplayType.TEXT);
 		});
 
 		it("should handle case sensitivity", () => {

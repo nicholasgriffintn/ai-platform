@@ -11,10 +11,7 @@ interface CitationListProps {
 	maxDisplayed?: number;
 }
 
-export const CitationList = ({
-	citations,
-	maxDisplayed = 3,
-}: CitationListProps) => {
+export const CitationList = ({ citations, maxDisplayed = 3 }: CitationListProps) => {
 	const [showAllCitations, setShowAllCitations] = useState(false);
 	const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
@@ -22,9 +19,7 @@ export const CitationList = ({
 		return null;
 	}
 
-	const displayedCitations = showAllCitations
-		? citations
-		: citations.slice(0, maxDisplayed);
+	const displayedCitations = showAllCitations ? citations : citations.slice(0, maxDisplayed);
 	const hasMoreCitations = citations.length > maxDisplayed;
 
 	if (displayedCitations.length === 0) {
@@ -33,9 +28,7 @@ export const CitationList = ({
 
 	return (
 		<div className="flex items-center mb-2 mt-2">
-			<div className="text-sm text-zinc-500 dark:text-zinc-400 mr-2">
-				Sources:
-			</div>
+			<div className="text-sm text-zinc-500 dark:text-zinc-400 mr-2">Sources:</div>
 			<div className="flex">
 				{displayedCitations.map((url, index) => (
 					<div
@@ -83,9 +76,7 @@ export const CitationList = ({
 							: `Show ${citations.length - maxDisplayed} more citations`
 					}
 				>
-					{showAllCitations
-						? "Show less"
-						: `+${citations.length - maxDisplayed} more`}
+					{showAllCitations ? "Show less" : `+${citations.length - maxDisplayed} more`}
 				</button>
 			)}
 		</div>

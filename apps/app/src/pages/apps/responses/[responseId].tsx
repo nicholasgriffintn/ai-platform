@@ -33,11 +33,7 @@ export default function DynamicAppResponsePage() {
 	} = useDynamicAppResponse(responseId || null);
 
 	const appId = responseItem?.app_id || null;
-	const {
-		data: appSchema,
-		isLoading: appLoading,
-		error: appError,
-	} = useDynamicApp(appId);
+	const { data: appSchema, isLoading: appLoading, error: appError } = useDynamicApp(appId);
 
 	const parsedData = useMemo(() => {
 		if (!responseItem) return null;
@@ -67,9 +63,7 @@ export default function DynamicAppResponsePage() {
 			>
 				<div className="flex flex-col items-center">
 					<Loader2 size={48} className="animate-spin text-blue-500 mb-4" />
-					<p className="text-zinc-600 dark:text-zinc-400">
-						Loading response...
-					</p>
+					<p className="text-zinc-600 dark:text-zinc-400">Loading response...</p>
 				</div>
 			</PageShell>
 		);
@@ -91,9 +85,7 @@ export default function DynamicAppResponsePage() {
 	return (
 		<PageShell
 			sidebarContent={<AppsSidebarContent />}
-			title={
-				appSchema ? `${appSchema.name} - Response` : "Dynamic App Response"
-			}
+			title={appSchema ? `${appSchema.name} - Response` : "Dynamic App Response"}
 			className="bg-off-white dark:bg-zinc-900"
 			headerContent={
 				<PageHeader>
@@ -104,12 +96,7 @@ export default function DynamicAppResponsePage() {
 			<div className="container mx-auto px-4 max-w-4xl py-4 space-y-8">
 				{appSchema && (
 					<div className="flex items-center gap-4">
-						<div
-							className={cn(
-								"p-3 rounded-lg shadow-sm",
-								getIconContainerClass(appSchema.theme),
-							)}
-						>
+						<div className={cn("p-3 rounded-lg shadow-sm", getIconContainerClass(appSchema.theme))}>
 							{getIcon(appSchema.icon, appSchema.theme)}
 						</div>
 						<div>
@@ -118,8 +105,7 @@ export default function DynamicAppResponsePage() {
 							</h1>
 							{parsedData?.result?.timestamp && (
 								<p className="text-sm text-zinc-600 dark:text-zinc-400">
-									Generated on:{" "}
-									{new Date(parsedData.result.timestamp).toLocaleString()}
+									Generated on: {new Date(parsedData.result.timestamp).toLocaleString()}
 								</p>
 							)}
 						</div>
@@ -139,9 +125,7 @@ export default function DynamicAppResponsePage() {
 								>
 									<dt className="font-medium col-span-1">{key}</dt>
 									<dd className="col-span-2 break-words">
-										{typeof value === "object"
-											? JSON.stringify(value)
-											: String(value)}
+										{typeof value === "object" ? JSON.stringify(value) : String(value)}
 									</dd>
 								</div>
 							))}

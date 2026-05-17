@@ -8,12 +8,7 @@ import {
 	type SandboxTaskType,
 } from "~/types/sandbox";
 
-import type {
-	ApprovalInstructionItem,
-	ApprovalStatus,
-	ChatMessage,
-	TimelineEvent,
-} from "./types";
+import type { ApprovalInstructionItem, ApprovalStatus, ChatMessage, TimelineEvent } from "./types";
 
 export function parseSandboxTaskType(
 	value: string,
@@ -58,15 +53,12 @@ export async function copyToClipboard(text: string, label: string) {
 export function buildTimelineFromRun(run: SandboxRun): TimelineEvent[] {
 	return run.events.map((event, index) => ({
 		id: `${run.runId}-event-${index}`,
-		receivedAt:
-			typeof event.timestamp === "string" ? event.timestamp : run.updatedAt,
+		receivedAt: typeof event.timestamp === "string" ? event.timestamp : run.updatedAt,
 		event,
 	}));
 }
 
-export function getAssistantMessageFromEvent(
-	event: SandboxRunEvent,
-): string | null {
+export function getAssistantMessageFromEvent(event: SandboxRunEvent): string | null {
 	if (event.type === "run_completed") {
 		return typeof event.result?.summary === "string"
 			? event.result.summary
@@ -82,24 +74,15 @@ export function getAssistantMessageFromEvent(
 	}
 
 	if (event.type === "command_approval_requested") {
-		return (
-			event.message ||
-			`Approval requested for command: ${event.command ?? "unknown command"}`
-		);
+		return event.message || `Approval requested for command: ${event.command ?? "unknown command"}`;
 	}
 
 	if (event.type === "command_approval_escalated") {
-		return (
-			event.message ||
-			`Approval escalated for command: ${event.command ?? "unknown command"}`
-		);
+		return event.message || `Approval escalated for command: ${event.command ?? "unknown command"}`;
 	}
 
 	if (event.type === "command_approval_timed_out") {
-		return (
-			event.message ||
-			`Approval timed out for command: ${event.command ?? "unknown command"}`
-		);
+		return event.message || `Approval timed out for command: ${event.command ?? "unknown command"}`;
 	}
 
 	if (event.type === "run_instruction_received") {
@@ -142,8 +125,7 @@ export function buildMessagesFromRun(run: SandboxRun): ChatMessage[] {
 			id: `${run.runId}-assistant-${messages.length}`,
 			role: "assistant",
 			content,
-			createdAt:
-				typeof event.timestamp === "string" ? event.timestamp : run.updatedAt,
+			createdAt: typeof event.timestamp === "string" ? event.timestamp : run.updatedAt,
 		});
 	}
 
@@ -172,8 +154,7 @@ export function getLatestPlanEvent(
 	for (let index = timeline.length - 1; index >= 0; index -= 1) {
 		const entry = timeline[index];
 		if (
-			(entry.event.type === "planning_completed" ||
-				entry.event.type === "plan_updated") &&
+			(entry.event.type === "planning_completed" || entry.event.type === "plan_updated") &&
 			typeof entry.event.plan === "string" &&
 			entry.event.plan.trim()
 		) {
@@ -227,10 +208,7 @@ export function getEventDetailLines(event: SandboxRunEvent): string[] {
 	if (typeof event.message === "string" && event.message.trim()) {
 		lines.push(`Message: ${event.message}`);
 	}
-	if (
-		typeof event.instructionContent === "string" &&
-		event.instructionContent.trim()
-	) {
+	if (typeof event.instructionContent === "string" && event.instructionContent.trim()) {
 		lines.push(`Instruction: ${event.instructionContent}`);
 	}
 	return lines;
@@ -276,8 +254,6 @@ export function isApprovalPendingStatus(status: ApprovalStatus): boolean {
 	return status === "pending" || status === "escalated";
 }
 
-export function isRunStatusActive(
-	status: SandboxRun["status"] | undefined,
-): boolean {
+export function isRunStatusActive(status: SandboxRun["status"] | undefined): boolean {
 	return status === "queued" || status === "running";
 }

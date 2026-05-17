@@ -8,15 +8,10 @@ export class MessageRepository extends BaseRepository {
 		content: string | Record<string, unknown>,
 		messageData: Record<string, unknown> = {},
 	): Promise<Record<string, unknown> | null> {
-		const contentStr =
-			typeof content === "object" ? JSON.stringify(content) : content;
+		const contentStr = typeof content === "object" ? JSON.stringify(content) : content;
 
-		const toolCalls = messageData.tool_calls
-			? JSON.stringify(messageData.tool_calls)
-			: null;
-		const citations = messageData.citations
-			? JSON.stringify(messageData.citations)
-			: null;
+		const toolCalls = messageData.tool_calls ? JSON.stringify(messageData.tool_calls) : null;
+		const citations = messageData.citations ? JSON.stringify(messageData.citations) : null;
 		const data = messageData.data ? JSON.stringify(messageData.data) : null;
 		const usage = messageData.usage ? JSON.stringify(messageData.usage) : null;
 		const parts = messageData.parts ? JSON.stringify(messageData.parts) : null;
@@ -75,9 +70,7 @@ export class MessageRepository extends BaseRepository {
 		return result;
 	}
 
-	public async getMessage(
-		messageId: string,
-	): Promise<Record<string, unknown> | null> {
+	public async getMessage(messageId: string): Promise<Record<string, unknown> | null> {
 		const result = this.runQuery<Record<string, unknown>>(
 			"SELECT * FROM message WHERE id = ?",
 			[messageId],
@@ -132,10 +125,7 @@ export class MessageRepository extends BaseRepository {
 		return this.getConversationMessages(conversationId, limit, after, options);
 	}
 
-	public async archiveMessages(
-		conversationId: string,
-		messageIds: string[],
-	): Promise<void> {
+	public async archiveMessages(conversationId: string, messageIds: string[]): Promise<void> {
 		if (messageIds.length === 0) {
 			return;
 		}
@@ -151,10 +141,7 @@ export class MessageRepository extends BaseRepository {
 		);
 	}
 
-	public async updateMessage(
-		messageId: string,
-		updates: Record<string, unknown>,
-	): Promise<void> {
+	public async updateMessage(messageId: string, updates: Record<string, unknown>): Promise<void> {
 		const allowedFields = [
 			"is_archived",
 			"content",
@@ -176,22 +163,15 @@ export class MessageRepository extends BaseRepository {
 			"parts",
 		];
 
-		const result = this.buildUpdateQuery(
-			"message",
-			updates,
-			allowedFields,
-			"id = ?",
-			[messageId],
-			{
-				jsonFields: ["tool_calls", "citations", "data", "usage", "parts"],
-				transformer: (field, value) => {
-					if (field === "content" && typeof value === "object") {
-						return JSON.stringify(value);
-					}
-					return value;
-				},
+		const result = this.buildUpdateQuery("message", updates, allowedFields, "id = ?", [messageId], {
+			jsonFields: ["tool_calls", "citations", "data", "usage", "parts"],
+			transformer: (field, value) => {
+				if (field === "content" && typeof value === "object") {
+					return JSON.stringify(value);
+				}
+				return value;
 			},
-		);
+		});
 		if (!result) {
 			return;
 		}

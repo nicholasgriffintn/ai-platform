@@ -29,10 +29,7 @@ describe("next_edit_completion function", () => {
 	});
 
 	it("returns error when prompt missing", async () => {
-		const result = await next_edit_completion.execute(
-			{},
-			createToolContext(baseRequest),
-		);
+		const result = await next_edit_completion.execute({}, createToolContext(baseRequest));
 
 		expect(result.status).toBe("error");
 		expect(mockHandleNextEdit).not.toHaveBeenCalled();

@@ -5,10 +5,7 @@ interface ColorPickerProps {
 	setCurrentColor: (color: string) => void;
 }
 
-export function ColorPicker({
-	currentColor,
-	setCurrentColor,
-}: ColorPickerProps) {
+export function ColorPicker({ currentColor, setCurrentColor }: ColorPickerProps) {
 	return (
 		<>
 			<div className="flex items-center gap-2">

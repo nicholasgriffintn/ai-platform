@@ -1,40 +1,22 @@
 import type { ConversationManager } from "~/lib/conversationManager";
-import {
-	handleResearchTask,
-	startResearchTask,
-} from "~/services/research/task";
-import type {
-	IRequest,
-	ResearchOptions,
-	ParallelTaskSpec,
-	ResearchProviderName,
-} from "~/types";
+import { handleResearchTask, startResearchTask } from "~/services/research/task";
+import type { IRequest, ResearchOptions, ParallelTaskSpec, ResearchProviderName } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { safeParseJson } from "../../utils/json";
 import { jsonSchemaToZod } from "./jsonSchema";
 import type { ApiToolDefinition } from "./types";
 
-function coercePollingOptions(
-	args: any,
-): ResearchOptions["polling"] | undefined {
+function coercePollingOptions(args: any): ResearchOptions["polling"] | undefined {
 	const interval =
-		typeof args?.poll_interval_ms === "number"
-			? Math.floor(args.poll_interval_ms)
-			: undefined;
+		typeof args?.poll_interval_ms === "number" ? Math.floor(args.poll_interval_ms) : undefined;
 	const timeout =
 		typeof args?.poll_timeout_seconds === "number"
 			? Math.floor(args.poll_timeout_seconds)
 			: undefined;
 	const maxAttempts =
-		typeof args?.max_poll_attempts === "number"
-			? Math.floor(args.max_poll_attempts)
-			: undefined;
+		typeof args?.max_poll_attempts === "number" ? Math.floor(args.max_poll_attempts) : undefined;
 
-	if (
-		interval === undefined &&
-		timeout === undefined &&
-		maxAttempts === undefined
-	) {
+	if (interval === undefined && timeout === undefined && maxAttempts === undefined) {
 		return undefined;
 	}
 
@@ -78,8 +60,7 @@ export const research: ApiToolDefinition = {
 		properties: {
 			input: {
 				type: "string",
-				description:
-					"Plain-text research brief. Provide this or structured_input.",
+				description: "Plain-text research brief. Provide this or structured_input.",
 			},
 			structured_input: {
 				type: "object",
@@ -111,8 +92,7 @@ export const research: ApiToolDefinition = {
 			},
 			output_description: {
 				type: "string",
-				description:
-					"Optional description to guide text outputs when output_mode is 'text'.",
+				description: "Optional description to guide text outputs when output_mode is 'text'.",
 			},
 			task_spec_json: {
 				type: "string",
@@ -126,8 +106,7 @@ export const research: ApiToolDefinition = {
 			},
 			enable_events: {
 				type: "boolean",
-				description:
-					"Enable Parallel event streaming for richer internal telemetry.",
+				description: "Enable Parallel event streaming for richer internal telemetry.",
 				default: false,
 			},
 			poll_interval_ms: {
@@ -137,8 +116,7 @@ export const research: ApiToolDefinition = {
 			},
 			poll_timeout_seconds: {
 				type: "number",
-				description:
-					"Timeout in seconds for each result poll request. Defaults to 25.",
+				description: "Timeout in seconds for each result poll request. Defaults to 25.",
 			},
 			max_poll_attempts: {
 				type: "number",
@@ -173,9 +151,7 @@ export const research: ApiToolDefinition = {
 		} = args || {};
 
 		const payload =
-			structured_input !== undefined && structured_input !== null
-				? structured_input
-				: input;
+			structured_input !== undefined && structured_input !== null ? structured_input : input;
 
 		if (
 			payload === undefined ||
@@ -212,10 +188,7 @@ export const research: ApiToolDefinition = {
 		if (typeof output_schema_json === "string") {
 			const parsed = safeParseJson(output_schema_json);
 			if (!parsed) {
-				throw new AssistantError(
-					"Invalid output_schema_json provided",
-					ErrorType.PARAMS_ERROR,
-				);
+				throw new AssistantError("Invalid output_schema_json provided", ErrorType.PARAMS_ERROR);
 			}
 			options.exa_spec = {
 				output_schema: parsed,
@@ -238,12 +211,9 @@ export const research: ApiToolDefinition = {
 				: undefined;
 
 		const waitForCompletionArg =
-			typeof args?.wait_for_completion === "boolean"
-				? args.wait_for_completion
-				: undefined;
+			typeof args?.wait_for_completion === "boolean" ? args.wait_for_completion : undefined;
 		const isDynamicApp = req.request?.platform === "dynamic-apps";
-		const shouldWait =
-			waitForCompletionArg !== undefined ? waitForCompletionArg : !isDynamicApp;
+		const shouldWait = waitForCompletionArg !== undefined ? waitForCompletionArg : !isDynamicApp;
 
 		if (shouldWait) {
 			const response = await handleResearchTask({

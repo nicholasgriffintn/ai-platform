@@ -5,9 +5,7 @@ export interface ParsedSandboxCommand {
 	task: string;
 }
 
-function normaliseCommandName(
-	value: string | undefined,
-): SandboxWebhookCommand | null {
+function normaliseCommandName(value: string | undefined): SandboxWebhookCommand | null {
 	if (!value) {
 		return null;
 	}
@@ -24,9 +22,7 @@ function normaliseCommandName(
 	}
 }
 
-export function extractSandboxCommand(
-	text: string,
-): ParsedSandboxCommand | null {
+export function extractSandboxCommand(text: string): ParsedSandboxCommand | null {
 	const match = text.match(/^\s*\/(implement|review|test|fix)\b([\s\S]*)$/im);
 	if (!match) {
 		return null;
@@ -43,9 +39,7 @@ export function extractSandboxCommand(
 	};
 }
 
-export function extractSandboxPushCommand(
-	commitMessage: string,
-): ParsedSandboxCommand | null {
+export function extractSandboxPushCommand(commitMessage: string): ParsedSandboxCommand | null {
 	const slashCommand = extractSandboxCommand(commitMessage);
 	if (slashCommand) {
 		return slashCommand;
@@ -83,9 +77,7 @@ export function getSandboxDynamicAppId(command: SandboxWebhookCommand): string {
 	}
 }
 
-export function defaultTaskForSandboxCommand(
-	command: SandboxWebhookCommand,
-): string {
+export function defaultTaskForSandboxCommand(command: SandboxWebhookCommand): string {
 	switch (command) {
 		case "review":
 			return "Review the repository and report correctness, security, and testing risks.";
@@ -99,9 +91,7 @@ export function defaultTaskForSandboxCommand(
 	}
 }
 
-export function defaultShouldCommitForSandboxCommand(
-	command: SandboxWebhookCommand,
-): boolean {
+export function defaultShouldCommitForSandboxCommand(command: SandboxWebhookCommand): boolean {
 	return command === "implement" || command === "fix";
 }
 

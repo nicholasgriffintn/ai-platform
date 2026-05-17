@@ -132,11 +132,7 @@ export const get_function_schema: ApiToolDefinition = {
 
 		const { function_name } = args;
 
-		if (
-			!function_name ||
-			typeof function_name !== "string" ||
-			function_name.trim().length === 0
-		) {
+		if (!function_name || typeof function_name !== "string" || function_name.trim().length === 0) {
 			throw new AssistantError(
 				"function_name parameter is required and must be a non-empty string",
 				ErrorType.PARAMS_ERROR,
@@ -144,9 +140,7 @@ export const get_function_schema: ApiToolDefinition = {
 		}
 
 		const availableFunctions = listFunctionTools();
-		const foundFunction = availableFunctions.find(
-			(fn) => fn && fn.name === function_name,
-		);
+		const foundFunction = availableFunctions.find((fn) => fn && fn.name === function_name);
 
 		if (!foundFunction) {
 			return {

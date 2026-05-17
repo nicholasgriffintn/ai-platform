@@ -9,11 +9,10 @@ export const USER_QUERY_KEYS = {
 export function useUser() {
 	const queryClient = useQueryClient();
 
-	const { data: providerSettings, isLoading: isLoadingProviderSettings } =
-		useQuery({
-			queryKey: USER_QUERY_KEYS.providerSettings,
-			queryFn: () => apiService.getProviderSettings(),
-		});
+	const { data: providerSettings, isLoading: isLoadingProviderSettings } = useQuery({
+		queryKey: USER_QUERY_KEYS.providerSettings,
+		queryFn: () => apiService.getProviderSettings(),
+	});
 
 	const storeProviderApiKeyMutation = useMutation({
 		mutationFn: async ({

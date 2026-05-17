@@ -1,8 +1,4 @@
-import type {
-	Ai,
-	VectorFloatArray,
-	Vectorize,
-} from "@cloudflare/workers-types";
+import type { Ai, VectorFloatArray, Vectorize } from "@cloudflare/workers-types";
 
 import { gatewayId } from "~/constants/app";
 import type { RepositoryManager } from "~/repositories";
@@ -117,9 +113,7 @@ export class VectorizeEmbeddingProvider implements EmbeddingProvider {
 			};
 		} catch (error) {
 			logger.error("Failed to insert Vectorize embeddings", { error });
-			throw error instanceof Error
-				? error
-				: new AssistantError("Vector DB insert failed");
+			throw error instanceof Error ? error : new AssistantError("Vector DB insert failed");
 		}
 	}
 
@@ -134,15 +128,11 @@ export class VectorizeEmbeddingProvider implements EmbeddingProvider {
 			};
 		} catch (error) {
 			logger.error("Failed to delete Vectorize embeddings", { error, ids });
-			throw error instanceof Error
-				? error
-				: new AssistantError("Vector DB delete failed");
+			throw error instanceof Error ? error : new AssistantError("Vector DB delete failed");
 		}
 	}
 
-	async getQuery(
-		query: string,
-	): Promise<{ data: any; status: { success: boolean } }> {
+	async getQuery(query: string): Promise<{ data: any; status: { success: boolean } }> {
 		logger.debug("Generating query embedding with Vectorize", { query });
 		const response = await this.ai.run(
 			"@cf/baai/bge-large-en-v1.5",
@@ -220,10 +210,7 @@ export class VectorizeEmbeddingProvider implements EmbeddingProvider {
 
 		const matchesWithContent = await Promise.all(
 			filteredMatches.map(async (match) => {
-				const record = await this.repositories.embeddings.getEmbedding(
-					match.id,
-					options.type,
-				);
+				const record = await this.repositories.embeddings.getEmbedding(match.id, options.type);
 
 				return {
 					match_id: match.id,

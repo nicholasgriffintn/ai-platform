@@ -2,13 +2,7 @@ import type { FormEvent } from "react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "./ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 
 interface MetricsParams {
 	status: string;
@@ -22,10 +16,7 @@ interface MetricsControlsProps {
 	onSubmit: (filters: MetricsParams) => void;
 }
 
-export function MetricsControls({
-	initialValues,
-	onSubmit,
-}: MetricsControlsProps) {
+export function MetricsControls({ initialValues, onSubmit }: MetricsControlsProps) {
 	const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
 		const formData = new FormData(e.currentTarget);
@@ -85,11 +76,7 @@ export function MetricsControls({
 					className="w-full"
 				/>
 			</div>
-			<Button
-				type="submit"
-				size="sm"
-				className="w-[calc(50%-0.5rem)] sm:w-auto"
-			>
+			<Button type="submit" size="sm" className="w-[calc(50%-0.5rem)] sm:w-auto">
 				Update
 			</Button>
 		</form>

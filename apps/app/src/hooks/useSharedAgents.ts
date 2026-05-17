@@ -21,19 +21,17 @@ export function useSharedAgents(filters?: {
 }) {
 	const queryClient = useQueryClient();
 
-	const { data: sharedAgents = [], isLoading: isLoadingSharedAgents } =
-		useQuery<any[]>({
-			queryKey: [...SHARED_AGENTS_QUERY_KEYS.all, filters],
-			queryFn: () => apiService.listSharedAgents(filters),
-			staleTime: 1000 * 60,
-		});
+	const { data: sharedAgents = [], isLoading: isLoadingSharedAgents } = useQuery<any[]>({
+		queryKey: [...SHARED_AGENTS_QUERY_KEYS.all, filters],
+		queryFn: () => apiService.listSharedAgents(filters),
+		staleTime: 1000 * 60,
+	});
 
-	const { data: featuredAgents = [], isLoading: isLoadingFeaturedAgents } =
-		useQuery<any[]>({
-			queryKey: SHARED_AGENTS_QUERY_KEYS.featured,
-			queryFn: () => apiService.listFeaturedSharedAgents(filters?.limit),
-			staleTime: 1000 * 60,
-		});
+	const { data: featuredAgents = [], isLoading: isLoadingFeaturedAgents } = useQuery<any[]>({
+		queryKey: SHARED_AGENTS_QUERY_KEYS.featured,
+		queryFn: () => apiService.listFeaturedSharedAgents(filters?.limit),
+		staleTime: 1000 * 60,
+	});
 
 	const installMutation = useMutation<any, Error, string>({
 		mutationFn: (agentId) => apiService.installSharedAgent(agentId),
@@ -75,14 +73,7 @@ export function useSharedAgents(filters?: {
 		}
 	>({
 		mutationFn: ({ agentId, name, description, avatarUrl, category, tags }) =>
-			apiService.shareAgent(
-				agentId,
-				name,
-				description,
-				avatarUrl,
-				category,
-				tags,
-			),
+			apiService.shareAgent(agentId, name, description, avatarUrl, category, tags),
 		onSuccess: () => {
 			toast.success("Agent shared successfully");
 		},

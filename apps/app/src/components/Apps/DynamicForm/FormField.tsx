@@ -12,12 +12,7 @@ interface FormFieldProps {
 	error?: string;
 }
 
-export const FormField = ({
-	field,
-	value,
-	onChange,
-	error,
-}: FormFieldProps) => {
+export const FormField = ({ field, value, onChange, error }: FormFieldProps) => {
 	const handleChange = (
 		e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
 	) => {
@@ -204,10 +199,7 @@ export const FormField = ({
 			)}
 
 			{field.description && (
-				<p
-					className="text-sm text-zinc-500 dark:text-zinc-400 mb-1"
-					id={`${field.id}-description`}
-				>
+				<p className="text-sm text-zinc-500 dark:text-zinc-400 mb-1" id={`${field.id}-description`}>
 					{field.description}
 				</p>
 			)}

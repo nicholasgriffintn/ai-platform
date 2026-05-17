@@ -6,8 +6,5 @@ export type ApiToolDefinition = Omit<
 	ToolDefinition<any, IFunctionResponse, ToolExecutionContext>,
 	"execute"
 > & {
-	execute: (
-		input: any,
-		context: ToolExecutionContext,
-	) => Promise<IFunctionResponse>;
+	execute: (input: any, context: ToolExecutionContext) => Promise<IFunctionResponse>;
 };

@@ -153,10 +153,10 @@ describe("handleChatCompletionFeedbackSubmission", () => {
 
 			mockGateway.patchLog.mockResolvedValue(undefined);
 
-			const result = await handleChatCompletionFeedbackSubmission(
-				mockServiceContext,
-				{ request, completion_id: completionId },
-			);
+			const result = await handleChatCompletionFeedbackSubmission(mockServiceContext, {
+				request,
+				completion_id: completionId,
+			});
 
 			expect(mockAI.gateway).toHaveBeenCalledWith("llm-assistant");
 			expect(mockGateway.patchLog).toHaveBeenCalledWith("log-123", {
@@ -183,10 +183,10 @@ describe("handleChatCompletionFeedbackSubmission", () => {
 
 			mockGateway.patchLog.mockResolvedValue(undefined);
 
-			const result = await handleChatCompletionFeedbackSubmission(
-				mockServiceContext,
-				{ request, completion_id: completionId },
-			);
+			const result = await handleChatCompletionFeedbackSubmission(mockServiceContext, {
+				request,
+				completion_id: completionId,
+			});
 
 			expect(mockGateway.patchLog).toHaveBeenCalledWith("log-456", {
 				feedback: "negative",
@@ -211,10 +211,10 @@ describe("handleChatCompletionFeedbackSubmission", () => {
 
 			mockGateway.patchLog.mockResolvedValue(undefined);
 
-			const result = await handleChatCompletionFeedbackSubmission(
-				mockServiceContext,
-				{ request, completion_id: completionId },
-			);
+			const result = await handleChatCompletionFeedbackSubmission(mockServiceContext, {
+				request,
+				completion_id: completionId,
+			});
 
 			expect(mockGateway.patchLog).toHaveBeenCalledWith("log-no-score", {
 				feedback: "helpful",
@@ -245,21 +245,18 @@ describe("handleChatCompletionFeedbackSubmission", () => {
 
 				mockGateway.patchLog.mockResolvedValue(undefined);
 
-				const result = await handleChatCompletionFeedbackSubmission(
-					mockServiceContext,
-					{ request, completion_id: `completion-${feedbackType}` },
-				);
+				const result = await handleChatCompletionFeedbackSubmission(mockServiceContext, {
+					request,
+					completion_id: `completion-${feedbackType}`,
+				});
 
-				expect(mockGateway.patchLog).toHaveBeenCalledWith(
-					`log-${feedbackType}`,
-					{
-						feedback: feedbackType,
-						score: 3,
-						metadata: {
-							user: "test@example.com",
-						},
+				expect(mockGateway.patchLog).toHaveBeenCalledWith(`log-${feedbackType}`, {
+					feedback: feedbackType,
+					score: 3,
+					metadata: {
+						user: "test@example.com",
 					},
-				);
+				});
 				expect(result.success).toBe(true);
 			}
 		});
@@ -276,21 +273,18 @@ describe("handleChatCompletionFeedbackSubmission", () => {
 
 				mockGateway.patchLog.mockResolvedValue(undefined);
 
-				const result = await handleChatCompletionFeedbackSubmission(
-					mockServiceContext,
-					{ request, completion_id: `completion-score-${score}` },
-				);
+				const result = await handleChatCompletionFeedbackSubmission(mockServiceContext, {
+					request,
+					completion_id: `completion-score-${score}`,
+				});
 
-				expect(mockGateway.patchLog).toHaveBeenCalledWith(
-					`log-score-${score}`,
-					{
-						feedback: "rating",
-						score,
-						metadata: {
-							user: "test@example.com",
-						},
+				expect(mockGateway.patchLog).toHaveBeenCalledWith(`log-score-${score}`, {
+					feedback: "rating",
+					score,
+					metadata: {
+						user: "test@example.com",
 					},
-				);
+				});
 				expect(result.success).toBe(true);
 			}
 		});
@@ -368,9 +362,7 @@ describe("handleChatCompletionFeedbackSubmission", () => {
 				feedback: "positive",
 			} as any;
 
-			mockGateway.patchLog.mockRejectedValue(
-				new Error("Gateway service unavailable"),
-			);
+			mockGateway.patchLog.mockRejectedValue(new Error("Gateway service unavailable"));
 
 			const result = await handleChatCompletionFeedbackSubmission(ctx, {
 				request,
@@ -460,10 +452,10 @@ describe("handleChatCompletionFeedbackSubmission", () => {
 
 			mockGateway.patchLog.mockResolvedValue(undefined);
 
-			const result = await handleChatCompletionFeedbackSubmission(
-				mockServiceContext,
-				{ request, completion_id: completionId },
-			);
+			const result = await handleChatCompletionFeedbackSubmission(mockServiceContext, {
+				request,
+				completion_id: completionId,
+			});
 
 			expect(result).toHaveProperty("success");
 			expect(result).toHaveProperty("message");

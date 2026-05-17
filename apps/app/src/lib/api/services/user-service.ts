@@ -29,11 +29,7 @@ export class UserService {
 			let message = `Failed to export chat history: ${response.statusText}`;
 			try {
 				const data = await returnFetchedData<any>(response);
-				if (
-					data &&
-					typeof data === "object" &&
-					typeof data.error === "string"
-				) {
+				if (data && typeof data === "object" && typeof data.error === "string") {
 					message = data.error;
 				}
 			} catch {}
@@ -87,11 +83,7 @@ export class UserService {
 		return responseData;
 	}
 
-	async storeProviderApiKey(
-		providerId: string,
-		apiKey: string,
-		secretKey?: string,
-	): Promise<void> {
+	async storeProviderApiKey(providerId: string, apiKey: string, secretKey?: string): Promise<void> {
 		let headers = {};
 		try {
 			headers = await this.getHeaders();
@@ -111,9 +103,7 @@ export class UserService {
 		});
 
 		if (!response.ok) {
-			throw new Error(
-				`Failed to store provider API key: ${response.statusText}`,
-			);
+			throw new Error(`Failed to store provider API key: ${response.statusText}`);
 		}
 	}
 
@@ -132,9 +122,7 @@ export class UserService {
 		});
 
 		if (!response.ok) {
-			throw new Error(
-				`Failed to get provider settings: ${response.statusText}`,
-			);
+			throw new Error(`Failed to get provider settings: ${response.statusText}`);
 		}
 
 		return await returnFetchedData<ProviderSetting[]>(response);
@@ -159,9 +147,7 @@ export class UserService {
 		}
 	}
 
-	async getUserApiKeys(): Promise<
-		{ id: string; name: string; created_at: string }[]
-	> {
+	async getUserApiKeys(): Promise<{ id: string; name: string; created_at: string }[]> {
 		let headers = {};
 		try {
 			headers = await this.getHeaders();
@@ -202,9 +188,7 @@ export class UserService {
 		});
 
 		if (!response.ok) {
-			const errorData = (await response
-				.json()
-				.catch(() => ({ error: response.statusText }))) as {
+			const errorData = (await response.json().catch(() => ({ error: response.statusText }))) as {
 				error?: string;
 			};
 			const errorMessage = errorData?.error || response.statusText;

@@ -25,18 +25,10 @@ program.on("--help", () => {
 	console.log("");
 	console.log(chalk.blue("Examples:"));
 	console.log(chalk.gray("  # Generate a dataset"));
-	console.log(
-		chalk.gray(
-			"  $ finetune dataset generate --count 300 --output ./datasets/strudel",
-		),
-	);
+	console.log(chalk.gray("  $ finetune dataset generate --count 300 --output ./datasets/strudel"));
 	console.log("");
 	console.log(chalk.gray("  # Validate dataset"));
-	console.log(
-		chalk.gray(
-			"  $ finetune dataset validate --train ./datasets/strudel/train.jsonl",
-		),
-	);
+	console.log(chalk.gray("  $ finetune dataset validate --train ./datasets/strudel/train.jsonl"));
 	console.log("");
 	console.log(chalk.gray("  # Upload to S3"));
 	console.log(

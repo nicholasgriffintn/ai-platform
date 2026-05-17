@@ -1,13 +1,7 @@
 import { resolveSandboxTaskProfile } from "./task-profile";
 import { SandboxTaskRunnerRegistry } from "./runner";
 import { AgentTaskRunner } from "./runners/feature-implementation-runner";
-import type {
-	Env,
-	TaskEventEmitter,
-	TaskParams,
-	TaskResult,
-	TaskSecrets,
-} from "../types";
+import type { Env, TaskEventEmitter, TaskParams, TaskResult, TaskSecrets } from "../types";
 
 const runnerRegistry = new SandboxTaskRunnerRegistry();
 for (const taskType of [

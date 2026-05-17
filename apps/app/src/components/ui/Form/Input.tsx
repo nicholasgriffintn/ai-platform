@@ -13,18 +13,7 @@ export interface FormInputProps extends InputHTMLAttributes<HTMLInputElement> {
 }
 
 export const FormInput = forwardRef<HTMLInputElement, FormInputProps>(
-	(
-		{
-			label,
-			description,
-			className,
-			fullWidth = true,
-			id,
-			disabled = false,
-			...props
-		},
-		ref,
-	) => {
+	({ label, description, className, fullWidth = true, id, disabled = false, ...props }, ref) => {
 		return (
 			<div className={cn("space-y-1", fullWidth && "w-full")}>
 				{label && <Label htmlFor={id}>{label}</Label>}
@@ -40,9 +29,7 @@ export const FormInput = forwardRef<HTMLInputElement, FormInputProps>(
 					{...props}
 				/>
 				{description && (
-					<p className="text-xs text-zinc-600 dark:text-zinc-400 mt-1">
-						{description}
-					</p>
+					<p className="text-xs text-zinc-600 dark:text-zinc-400 mt-1">{description}</p>
 				)}
 			</div>
 		);

@@ -33,9 +33,7 @@ describe("handleFileUpload", () => {
 	beforeEach(async () => {
 		vi.clearAllMocks();
 		const converterModule = await import("~/lib/documentConverter");
-		mockConvertToMarkdownViaCloudflare = vi.mocked(
-			converterModule.convertToMarkdownViaCloudflare,
-		);
+		mockConvertToMarkdownViaCloudflare = vi.mocked(converterModule.convertToMarkdownViaCloudflare);
 	});
 
 	describe("parameter validation", () => {
@@ -43,9 +41,7 @@ describe("handleFileUpload", () => {
 			const formData = new FormData();
 			formData.append("file_type", "image");
 
-			await expect(handleFileUpload(mockEnv, 1, formData)).rejects.toThrow(
-				"No file uploaded",
-			);
+			await expect(handleFileUpload(mockEnv, 1, formData)).rejects.toThrow("No file uploaded");
 		});
 
 		it("should throw error if no file_type provided", async () => {
@@ -72,12 +68,7 @@ describe("handleFileUpload", () => {
 
 	describe("file type validation", () => {
 		it("should accept valid image types", async () => {
-			const validImageTypes = [
-				"image/jpeg",
-				"image/png",
-				"image/gif",
-				"image/webp",
-			];
+			const validImageTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
 
 			for (const mimeType of validImageTypes) {
 				const file = new File(["test"], "test.jpg", { type: mimeType });
@@ -95,12 +86,7 @@ describe("handleFileUpload", () => {
 		});
 
 		it("should accept valid document types", async () => {
-			const validDocTypes = [
-				"application/pdf",
-				"text/html",
-				"application/xml",
-				"text/csv",
-			];
+			const validDocTypes = ["application/pdf", "text/html", "application/xml", "text/csv"];
 
 			for (const mimeType of validDocTypes) {
 				const file = new File(["test"], "test.pdf", { type: mimeType });
@@ -122,13 +108,7 @@ describe("handleFileUpload", () => {
 		});
 
 		it("should accept valid audio types", async () => {
-			const validAudioTypes = [
-				"audio/mpeg",
-				"audio/wav",
-				"audio/mp3",
-				"audio/x-wav",
-				"audio/mp4",
-			];
+			const validAudioTypes = ["audio/mpeg", "audio/wav", "audio/mp3", "audio/x-wav", "audio/mp4"];
 
 			for (const mimeType of validAudioTypes) {
 				const file = new File(["test"], "test.mp3", { type: mimeType });
@@ -563,13 +543,9 @@ describe("handleFileUpload", () => {
 			formData.append("file", file);
 			formData.append("file_type", "image");
 
-			mockStorageService.uploadObject.mockRejectedValue(
-				new Error("Storage error"),
-			);
+			mockStorageService.uploadObject.mockRejectedValue(new Error("Storage error"));
 
-			await expect(handleFileUpload(mockEnv, 1, formData)).rejects.toThrow(
-				"Failed to store file",
-			);
+			await expect(handleFileUpload(mockEnv, 1, formData)).rejects.toThrow("Failed to store file");
 		});
 
 		it("should reject invalid conversion options JSON", async () => {
@@ -591,9 +567,7 @@ describe("handleFileUpload", () => {
 			formData.append("file_type", "document");
 
 			mockStorageService.uploadObject.mockResolvedValue("test-key");
-			mockConvertToMarkdownViaCloudflare.mockRejectedValue(
-				new Error("Conversion error"),
-			);
+			mockConvertToMarkdownViaCloudflare.mockRejectedValue(new Error("Conversion error"));
 
 			const result = await handleFileUpload(mockEnv, 1, formData);
 
@@ -631,9 +605,7 @@ describe("handleFileUpload", () => {
 
 			const result = await handleFileUpload(mockEnv, 1, formData);
 
-			expect(result.url).toContain(
-				"https://assets.example.com/uploads/1/images/",
-			);
+			expect(result.url).toContain("https://assets.example.com/uploads/1/images/");
 		});
 
 		it("should handle missing PUBLIC_ASSETS_URL", async () => {

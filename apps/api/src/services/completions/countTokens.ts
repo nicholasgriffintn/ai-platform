@@ -86,9 +86,6 @@ export async function handleCountTokens(
 		};
 	} catch (error) {
 		logger.error("Token counting failed", { error, model });
-		throw new AssistantError(
-			"Failed to count tokens",
-			ErrorType.PROVIDER_ERROR,
-		);
+		throw new AssistantError("Failed to count tokens", ErrorType.PROVIDER_ERROR);
 	}
 }

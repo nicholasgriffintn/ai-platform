@@ -1,8 +1,5 @@
 import type { ModelConfig } from "~/types";
-import {
-	createModelConfig,
-	createModelConfigObject,
-} from "~/lib/providers/models/utils";
+import { createModelConfig, createModelConfigObject } from "~/lib/providers/models/utils";
 
 const PROVIDER = "openai";
 
@@ -97,14 +94,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 100000,
 		costPer1kInputTokens: 0.0011,
 		costPer1kOutputTokens: 0.0044,
-		strengths: [
-			"math",
-			"coding",
-			"reasoning",
-			"analysis",
-			"chat",
-			"general_knowledge",
-		],
+		strengths: ["math", "coding", "reasoning", "analysis", "chat", "general_knowledge"],
 		contextComplexity: 4,
 		reliability: 4,
 		speed: 4,
@@ -173,13 +163,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.0025,
 		costPer1kOutputTokens: 0.01,
-		strengths: [
-			"analysis",
-			"chat",
-			"coding",
-			"multilingual",
-			"general_knowledge",
-		],
+		strengths: ["analysis", "chat", "coding", "multilingual", "general_knowledge"],
 		contextComplexity: 4,
 		reliability: 4,
 		speed: 4,
@@ -213,13 +197,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 16484,
 		costPer1kInputTokens: 0.0025,
 		costPer1kOutputTokens: 0.01,
-		strengths: [
-			"analysis",
-			"chat",
-			"coding",
-			"multilingual",
-			"general_knowledge",
-		],
+		strengths: ["analysis", "chat", "coding", "multilingual", "general_knowledge"],
 		contextComplexity: 4,
 		reliability: 4,
 		speed: 4,
@@ -250,13 +228,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00015,
 		costPer1kOutputTokens: 0.0006,
-		strengths: [
-			"analysis",
-			"chat",
-			"coding",
-			"multilingual",
-			"general_knowledge",
-		],
+		strengths: ["analysis", "chat", "coding", "multilingual", "general_knowledge"],
 		contextComplexity: 3,
 		reliability: 3,
 		speed: 5,
@@ -289,13 +261,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 16484,
 		costPer1kInputTokens: 0.00015,
 		costPer1kOutputTokens: 0.0006,
-		strengths: [
-			"analysis",
-			"chat",
-			"coding",
-			"multilingual",
-			"general_knowledge",
-		],
+		strengths: ["analysis", "chat", "coding", "multilingual", "general_knowledge"],
 		contextComplexity: 3,
 		reliability: 3,
 		speed: 5,
@@ -374,8 +340,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("gpt-4.1-mini", PROVIDER, {
 		name: "GPT-4.1 mini",
 		matchingModel: "gpt-4.1-mini",
-		description:
-			"Balanced version of GPT-4.1 with 1M token context window and lower cost",
+		description: "Balanced version of GPT-4.1 with 1M token context window and lower cost",
 		knowledgeCutoffDate: "April 2024",
 		releaseDate: "April 14, 2025",
 		lastUpdated: "April 14, 2025",
@@ -407,8 +372,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("gpt-4.1-nano", PROVIDER, {
 		name: "GPT-4.1 nano",
 		matchingModel: "gpt-4.1-nano",
-		description:
-			"Fastest and most cost-effective version of GPT-4.1 with 1M token context window",
+		description: "Fastest and most cost-effective version of GPT-4.1 with 1M token context window",
 		knowledgeCutoffDate: "April 2024",
 		releaseDate: "April 14, 2025",
 		lastUpdated: "April 14, 2025",
@@ -600,13 +564,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		costPer1kInputTokens: 0.00175,
 		costPer1kOutputTokens: 0.014,
 		supportsTopP: false,
-		strengths: [
-			"chat",
-			"creative",
-			"analysis",
-			"general_knowledge",
-			"multilingual",
-		],
+		strengths: ["chat", "creative", "analysis", "general_knowledge", "multilingual"],
 		contextComplexity: 5,
 		reliability: 5,
 		speed: 4,

@@ -27,9 +27,7 @@ export class AnonymousUserRepository extends BaseRepository {
 		return this.runQuery<AnonymousUser>(query, values, true);
 	}
 
-	public async getAnonymousUserByIp(
-		ipAddress: string,
-	): Promise<AnonymousUser | null> {
+	public async getAnonymousUserByIp(ipAddress: string): Promise<AnonymousUser | null> {
 		const hashedIp = await this.hashIpAddress(ipAddress);
 		const { query, values } = this.buildSelectQuery("anonymous_user", {
 			ip_address: hashedIp,
@@ -87,15 +85,11 @@ export class AnonymousUserRepository extends BaseRepository {
 
 		// Filter out undefined and null values
 		const filteredUserData = Object.fromEntries(
-			Object.entries(userData).filter(
-				([_, value]) => value !== undefined && value !== null,
-			),
+			Object.entries(userData).filter(([_, value]) => value !== undefined && value !== null),
 		) as Partial<AnonymousUser>;
 
 		// Get all field names except 'id'
-		const fieldsToUpdate = Object.keys(filteredUserData).filter(
-			(key) => key !== "id",
-		);
+		const fieldsToUpdate = Object.keys(filteredUserData).filter((key) => key !== "id");
 
 		const result = this.buildUpdateQuery(
 			"anonymous_user",
@@ -158,10 +152,7 @@ export class AnonymousUserRepository extends BaseRepository {
 					return ipUser;
 				}
 
-				logger.error(
-					"Unexpected error in anonymous user creation:",
-					insertError,
-				);
+				logger.error("Unexpected error in anonymous user creation:", insertError);
 				return null;
 			}
 		} catch (error) {
@@ -172,9 +163,7 @@ export class AnonymousUserRepository extends BaseRepository {
 		}
 	}
 
-	public async checkAndResetDailyLimit(
-		id: string,
-	): Promise<{ count: number; isNewDay: boolean }> {
+	public async checkAndResetDailyLimit(id: string): Promise<{ count: number; isNewDay: boolean }> {
 		if (!id) {
 			throw new AssistantError("Invalid ID", ErrorType.PARAMS_ERROR);
 		}

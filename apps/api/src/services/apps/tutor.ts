@@ -24,20 +24,12 @@ export async function completeTutorRequest(
 	body?: TutorRequestParams,
 	conversationManager?: ConversationManager,
 ) {
-	const {
-		topic: rawTopic,
-		level = "advanced",
-		options,
-		completion_id,
-	} = body || {};
+	const { topic: rawTopic, level = "advanced", options, completion_id } = body || {};
 
 	const topic = sanitiseInput(rawTopic);
 
 	if (!topic || !options) {
-		throw new AssistantError(
-			"Missing question or options",
-			ErrorType.PARAMS_ERROR,
-		);
+		throw new AssistantError("Missing question or options", ErrorType.PARAMS_ERROR);
 	}
 
 	const query = `I want to learn about ${topic}`;
@@ -57,9 +49,7 @@ export async function completeTutorRequest(
 	});
 
 	const searchData = webSearchResults.data || {};
-	const searchResults = Array.isArray(searchData.results)
-		? searchData.results
-		: [];
+	const searchResults = Array.isArray(searchData.results) ? searchData.results : [];
 	const sources = searchResults.map((result: any) => {
 		return {
 			title: result.title,
@@ -84,8 +74,7 @@ export async function completeTutorRequest(
 
 	const systemPrompt = tutorSystemPrompt(parsedSources, level);
 
-	const { model: modelToUse, provider: providerToUse } =
-		await getAuxiliaryModel(env, user);
+	const { model: modelToUse, provider: providerToUse } = await getAuxiliaryModel(env, user);
 	const provider = getChatProvider(providerToUse, { env, user });
 
 	if (conversationManager) {

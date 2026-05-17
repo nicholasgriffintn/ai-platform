@@ -98,9 +98,7 @@ describe("awsEventStream", () => {
 		it("should handle malformed message headers", () => {
 			const parser = createEventStreamParser();
 
-			const malformedData = new Uint8Array([
-				0xff, 0xff, 0xff, 0xff, 0, 0, 0, 0, 0, 0, 0, 0,
-			]);
+			const malformedData = new Uint8Array([0xff, 0xff, 0xff, 0xff, 0, 0, 0, 0, 0, 0, 0, 0]);
 
 			expect(malformedData.length).toBe(12);
 			expect(parser).toBeInstanceOf(TransformStream);

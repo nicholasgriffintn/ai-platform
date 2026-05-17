@@ -9,14 +9,9 @@ import type {
 
 const STRUDEL_BASE_PATH = "/apps/strudel";
 
-async function parseResponse<T>(
-	response: Response,
-	errorMessage: string,
-): Promise<T> {
+async function parseResponse<T>(response: Response, errorMessage: string): Promise<T> {
 	if (!response.ok) {
-		throw new Error(
-			`${errorMessage}: ${response.status} ${response.statusText}`,
-		);
+		throw new Error(`${errorMessage}: ${response.status} ${response.statusText}`);
 	}
 	return returnFetchedData<T>(response);
 }
@@ -44,17 +39,12 @@ export const strudelService = {
 		return payload.pattern;
 	},
 
-	async generate(
-		request: GenerateStrudelRequest,
-	): Promise<GenerateStrudelResponse> {
+	async generate(request: GenerateStrudelRequest): Promise<GenerateStrudelResponse> {
 		const response = await fetchApi(`${STRUDEL_BASE_PATH}/generate`, {
 			method: "POST",
 			body: request,
 		});
-		return parseResponse<GenerateStrudelResponse>(
-			response,
-			"Failed to generate Strudel pattern",
-		);
+		return parseResponse<GenerateStrudelResponse>(response, "Failed to generate Strudel pattern");
 	},
 
 	async save(request: SaveStrudelPatternInput): Promise<StrudelPattern> {
@@ -69,10 +59,7 @@ export const strudelService = {
 		return payload.pattern;
 	},
 
-	async update(
-		id: string,
-		request: UpdateStrudelPatternInput,
-	): Promise<StrudelPattern> {
+	async update(id: string, request: UpdateStrudelPatternInput): Promise<StrudelPattern> {
 		const response = await fetchApi(`${STRUDEL_BASE_PATH}/${id}`, {
 			method: "PUT",
 			body: request,

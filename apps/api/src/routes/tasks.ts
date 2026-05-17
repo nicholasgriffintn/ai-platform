@@ -179,10 +179,7 @@ addRoute(app, "get", "/memory/synthesis", {
 				const { user, repositories } = getServiceContext(c);
 				const namespace = c.req.query("namespace") || "global";
 
-				const synthesis = await repositories.memorySyntheses.getActiveSynthesis(
-					user.id,
-					namespace,
-				);
+				const synthesis = await repositories.memorySyntheses.getActiveSynthesis(user.id, namespace);
 
 				return c.json({
 					synthesis: synthesis || null,
@@ -204,12 +201,11 @@ addRoute(app, "get", "/memory/syntheses", {
 				const namespace = c.req.query("namespace");
 				const limit = Number.parseInt(c.req.query("limit") || "10");
 
-				const syntheses =
-					await repositories.memorySyntheses.getSynthesesByUserId(
-						user.id,
-						namespace,
-						limit,
-					);
+				const syntheses = await repositories.memorySyntheses.getSynthesesByUserId(
+					user.id,
+					namespace,
+					limit,
+				);
 
 				return c.json({
 					syntheses,

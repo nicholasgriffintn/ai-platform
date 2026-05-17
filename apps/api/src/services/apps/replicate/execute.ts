@@ -21,9 +21,7 @@ export interface ExecuteReplicateModelRequest {
 	};
 }
 
-export const executeReplicateModel = async (
-	req: ExecuteReplicateModelRequest,
-) => {
+export const executeReplicateModel = async (req: ExecuteReplicateModelRequest) => {
 	const { storage } = req;
 
 	return executeModelGeneration({

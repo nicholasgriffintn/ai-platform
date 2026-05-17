@@ -45,9 +45,7 @@ export function HoverActions({
 			className={cn(
 				"absolute",
 				positionClasses[position],
-				alwaysVisible
-					? "opacity-100"
-					: "md:opacity-0 md:group-hover:opacity-100 opacity-100",
+				alwaysVisible ? "opacity-100" : "md:opacity-0 md:group-hover:opacity-100 opacity-100",
 				"transition-opacity duration-200 flex items-center space-x-1 bg-inherit",
 				className,
 			)}

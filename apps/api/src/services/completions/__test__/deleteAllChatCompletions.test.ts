@@ -40,9 +40,7 @@ describe("handleDeleteAllChatCompletions", () => {
 			requireUser: vi.fn().mockReturnValue(mockUser),
 		};
 
-		vi.mocked(ConversationManager.getInstance).mockReturnValue(
-			mockConversationManager,
-		);
+		vi.mocked(ConversationManager.getInstance).mockReturnValue(mockConversationManager);
 	});
 
 	afterEach(() => {
@@ -55,9 +53,9 @@ describe("handleDeleteAllChatCompletions", () => {
 				throw new Error("User is not authenticated");
 			});
 
-			await expect(() =>
-				handleDeleteAllChatCompletions(mockServiceContext),
-			).rejects.toThrow("User is not authenticated");
+			await expect(() => handleDeleteAllChatCompletions(mockServiceContext)).rejects.toThrow(
+				"User is not authenticated",
+			);
 		});
 
 		it("should surface errors from ensureDatabase", async () => {
@@ -65,23 +63,19 @@ describe("handleDeleteAllChatCompletions", () => {
 				throw new Error("Database not configured");
 			});
 
-			await expect(() =>
-				handleDeleteAllChatCompletions(mockServiceContext),
-			).rejects.toThrow("Database not configured");
+			await expect(() => handleDeleteAllChatCompletions(mockServiceContext)).rejects.toThrow(
+				"Database not configured",
+			);
 		});
 	});
 
 	describe("successful deletion", () => {
 		it("should delete all conversations successfully", async () => {
-			mockConversationManager.deleteAllChatCompletions.mockResolvedValue(
-				undefined,
-			);
+			mockConversationManager.deleteAllChatCompletions.mockResolvedValue(undefined);
 
 			const result = await handleDeleteAllChatCompletions(mockServiceContext);
 
-			expect(
-				mockConversationManager.deleteAllChatCompletions,
-			).toHaveBeenCalledWith("user-123");
+			expect(mockConversationManager.deleteAllChatCompletions).toHaveBeenCalledWith("user-123");
 			expect(result).toEqual({
 				success: true,
 				message: "Conversations have been deleted",
@@ -95,9 +89,9 @@ describe("handleDeleteAllChatCompletions", () => {
 				new Error("Deletion failed"),
 			);
 
-			await expect(() =>
-				handleDeleteAllChatCompletions(mockServiceContext),
-			).rejects.toThrow("Deletion failed");
+			await expect(() => handleDeleteAllChatCompletions(mockServiceContext)).rejects.toThrow(
+				"Deletion failed",
+			);
 		});
 	});
 });

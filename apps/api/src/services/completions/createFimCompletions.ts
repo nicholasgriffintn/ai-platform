@@ -1,7 +1,4 @@
-import {
-	getModelConfig,
-	getModelConfigByMatchingModel,
-} from "~/lib/providers/models";
+import { getModelConfig, getModelConfigByMatchingModel } from "~/lib/providers/models";
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import { ModelRouter } from "~/lib/modelRouter";
 import type { IEnv, IUser, ChatCompletionParameters } from "~/types";
@@ -41,10 +38,7 @@ export const handleCreateFimCompletions = async ({
 		(await getModelConfigByMatchingModel(selectedModel, env));
 
 	if (!modelConfig) {
-		throw new AssistantError(
-			`Model ${selectedModel} not found`,
-			ErrorType.PARAMS_ERROR,
-		);
+		throw new AssistantError(`Model ${selectedModel} not found`, ErrorType.PARAMS_ERROR);
 	}
 
 	if (!modelConfig.supportsFim) {

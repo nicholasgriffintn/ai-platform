@@ -121,9 +121,7 @@ describe("Auth Middleware", () => {
 				return null;
 			});
 
-			await expect(authMiddleware(context, mockNext)).rejects.toThrow(
-				"Bot access is not allowed.",
-			);
+			await expect(authMiddleware(context, mockNext)).rejects.toThrow("Bot access is not allowed.");
 
 			expect(mockNext).not.toHaveBeenCalled();
 		});
@@ -138,9 +136,7 @@ describe("Auth Middleware", () => {
 			});
 			mockIsbot.mockReturnValue(true);
 
-			await expect(authMiddleware(context, mockNext)).rejects.toThrow(
-				"Bot access is not allowed.",
-			);
+			await expect(authMiddleware(context, mockNext)).rejects.toThrow("Bot access is not allowed.");
 
 			expect(mockNext).not.toHaveBeenCalled();
 			expect(mockIsbot).toHaveBeenCalled();
@@ -186,10 +182,7 @@ describe("Auth Middleware", () => {
 
 			await authMiddleware(context, mockNext);
 
-			expect(mockGetUserBySessionId).toHaveBeenCalledWith(
-				mockRepositories,
-				"session-123",
-			);
+			expect(mockGetUserBySessionId).toHaveBeenCalledWith(mockRepositories, "session-123");
 			expect(context.set).toHaveBeenCalledWith("user", mockUser);
 			expect(mockNext).toHaveBeenCalled();
 		});
@@ -211,12 +204,8 @@ describe("Auth Middleware", () => {
 
 			await authMiddleware(context, mockNext);
 
-			expect(mockRepositories.apiKeys.findUserIdByApiKey).toHaveBeenCalledWith(
-				"ak_test123",
-			);
-			expect(mockRepositories.users.getUserById).toHaveBeenCalledWith(
-				"user-123",
-			);
+			expect(mockRepositories.apiKeys.findUserIdByApiKey).toHaveBeenCalledWith("ak_test123");
+			expect(mockRepositories.users.getUserById).toHaveBeenCalledWith("user-123");
 			expect(context.set).toHaveBeenCalledWith("user", mockUser);
 			expect(mockNext).toHaveBeenCalled();
 			expect(mockIsbot).not.toHaveBeenCalled();
@@ -257,19 +246,15 @@ describe("Auth Middleware", () => {
 				return null;
 			});
 
-			mockRepositories.anonymousUsers.getOrCreateAnonymousUser.mockResolvedValue(
-				mockAnonymousUser,
-			);
+			mockRepositories.anonymousUsers.getOrCreateAnonymousUser.mockResolvedValue(mockAnonymousUser);
 
 			await authMiddleware(context, mockNext);
 
-			expect(
-				mockRepositories.anonymousUsers.getOrCreateAnonymousUser,
-			).toHaveBeenCalledWith("127.0.0.1", "Mozilla/5.0");
-			expect(context.set).toHaveBeenCalledWith(
-				"anonymousUser",
-				mockAnonymousUser,
+			expect(mockRepositories.anonymousUsers.getOrCreateAnonymousUser).toHaveBeenCalledWith(
+				"127.0.0.1",
+				"Mozilla/5.0",
 			);
+			expect(context.set).toHaveBeenCalledWith("anonymousUser", mockAnonymousUser);
 			expect(context.header).toHaveBeenCalledWith(
 				"Set-Cookie",
 				expect.stringContaining("anon_id=anon-123"),
@@ -289,19 +274,12 @@ describe("Auth Middleware", () => {
 				return null;
 			});
 
-			mockRepositories.anonymousUsers.getAnonymousUserById.mockResolvedValue(
-				mockAnonymousUser,
-			);
+			mockRepositories.anonymousUsers.getAnonymousUserById.mockResolvedValue(mockAnonymousUser);
 
 			await authMiddleware(context, mockNext);
 
-			expect(
-				mockRepositories.anonymousUsers.getAnonymousUserById,
-			).toHaveBeenCalledWith("anon-123");
-			expect(context.set).toHaveBeenCalledWith(
-				"anonymousUser",
-				mockAnonymousUser,
-			);
+			expect(mockRepositories.anonymousUsers.getAnonymousUserById).toHaveBeenCalledWith("anon-123");
+			expect(context.set).toHaveBeenCalledWith("anonymousUser", mockAnonymousUser);
 			expect(mockNext).toHaveBeenCalled();
 		});
 
@@ -316,9 +294,7 @@ describe("Auth Middleware", () => {
 				return null;
 			});
 
-			mockRepositories.apiKeys.findUserIdByApiKey.mockRejectedValue(
-				new Error("Database error"),
-			);
+			mockRepositories.apiKeys.findUserIdByApiKey.mockRejectedValue(new Error("Database error"));
 
 			await authMiddleware(context, mockNext);
 
@@ -361,9 +337,7 @@ describe("Auth Middleware", () => {
 			// @ts-expect-error - mock implementation
 			context.get.mockReturnValue(null);
 
-			await expect(requireAuth(context, mockNext)).rejects.toThrow(
-				AssistantError,
-			);
+			await expect(requireAuth(context, mockNext)).rejects.toThrow(AssistantError);
 			await expect(requireAuth(context, mockNext)).rejects.toThrow(
 				"This endpoint requires authentication",
 			);
@@ -422,9 +396,7 @@ describe("Auth Middleware", () => {
 				return null;
 			});
 
-			await expect(allowRestrictedPaths(context, mockNext)).rejects.toThrow(
-				AssistantError,
-			);
+			await expect(allowRestrictedPaths(context, mockNext)).rejects.toThrow(AssistantError);
 			await expect(allowRestrictedPaths(context, mockNext)).rejects.toThrow(
 				"RAG features require authentication",
 			);
@@ -447,9 +419,7 @@ describe("Auth Middleware", () => {
 				return null;
 			});
 
-			await expect(allowRestrictedPaths(context, mockNext)).rejects.toThrow(
-				AssistantError,
-			);
+			await expect(allowRestrictedPaths(context, mockNext)).rejects.toThrow(AssistantError);
 			await expect(allowRestrictedPaths(context, mockNext)).rejects.toThrow(
 				"Tool usage requires authentication",
 			);
@@ -460,9 +430,7 @@ describe("Auth Middleware", () => {
 			// @ts-expect-error - mock implementation
 			context.get.mockReturnValue(null);
 
-			await expect(allowRestrictedPaths(context, mockNext)).rejects.toThrow(
-				AssistantError,
-			);
+			await expect(allowRestrictedPaths(context, mockNext)).rejects.toThrow(AssistantError);
 			await expect(allowRestrictedPaths(context, mockNext)).rejects.toThrow(
 				"User usage tracking required",
 			);
@@ -483,9 +451,7 @@ describe("Auth Middleware", () => {
 				return null;
 			});
 
-			await expect(allowRestrictedPaths(context, mockNext)).rejects.toThrow(
-				AssistantError,
-			);
+			await expect(allowRestrictedPaths(context, mockNext)).rejects.toThrow(AssistantError);
 			await expect(allowRestrictedPaths(context, mockNext)).rejects.toThrow(
 				"This endpoint requires authentication",
 			);

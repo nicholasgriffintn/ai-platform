@@ -2,18 +2,18 @@
 	"name": "@assistant/finetune",
 	"version": "0.0.1",
 	"private": true,
-	"type": "module",
 	"description": "AWS Bedrock fine-tuning toolkit for custom model training",
 	"bin": {
 		"finetune": "./dist/cli.js"
 	},
+	"type": "module",
 	"scripts": {
 		"build": "tsc",
 		"dev": "tsx src/cli.ts",
 		"typecheck": "tsc --noEmit",
 		"lint": "pnpm oxlint",
-		"format": "pnpm prettier --write .",
-		"format:check": "pnpm prettier --check .",
+		"format": "oxfmt",
+		"format:check": "oxfmt --check",
 		"check": "pnpm lint && pnpm format:check",
 		"test": "vitest"
 	},
@@ -21,21 +21,20 @@
 		"@aws-sdk/client-bedrock": "3.1037.0",
 		"@aws-sdk/client-s3": "3.1037.0",
 		"@aws-sdk/s3-request-presigner": "3.1037.0",
-		"better-sqlite3": "12.9.0",
+		"better-sqlite3": "12.10.0",
 		"chalk": "5.6.2",
 		"commander": "14.0.3",
 		"dotenv": "17.4.2",
 		"ora": "9.4.0",
-		"zod": "4.3.6"
+		"zod": "4.4.3"
 	},
 	"devDependencies": {
-		"@prettier/plugin-oxc": "0.1.4",
 		"@types/better-sqlite3": "7.6.13",
-		"@types/node": "25.6.0",
+		"@types/node": "25.8.0",
+		"oxfmt": "0.50.0",
 		"oxlint": "1.61.0",
-		"prettier": "3.8.3",
 		"tsx": "4.21.0",
-		"typescript": "5.9.3",
-		"vitest": "4.1.5"
+		"typescript": "6.0.3",
+		"vitest": "4.1.6"
 	}
 }

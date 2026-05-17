@@ -31,9 +31,7 @@ export const sessionSchema = z.object({
 });
 
 export const jwtTokenResponseSchema = z.object({
-	token: z
-		.string()
-		.meta({ example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." }),
+	token: z.string().meta({ example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." }),
 	expires_in: z.number().meta({ example: 604800 }),
 	token_type: z.literal("Bearer").meta({ example: "Bearer" }),
 });

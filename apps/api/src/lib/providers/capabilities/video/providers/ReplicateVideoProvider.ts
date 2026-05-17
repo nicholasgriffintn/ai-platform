@@ -3,11 +3,7 @@ import { validateReplicatePayload } from "~/lib/providers/models/replicateValida
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import { extractGeneratedAsset } from "~/lib/providers/utils/helpers";
 import { AssistantError, ErrorType } from "~/utils/errors";
-import type {
-	VideoGenerationRequest,
-	VideoGenerationResult,
-	VideoProvider,
-} from "../index";
+import type { VideoGenerationRequest, VideoGenerationResult, VideoProvider } from "../index";
 
 const DEFAULT_MODEL = "replicate-google-veo-3-1-fast";
 
@@ -15,9 +11,7 @@ export class ReplicateVideoProvider implements VideoProvider {
 	name = "replicate";
 	models = [DEFAULT_MODEL];
 
-	async generate(
-		request: VideoGenerationRequest,
-	): Promise<VideoGenerationResult> {
+	async generate(request: VideoGenerationRequest): Promise<VideoGenerationResult> {
 		const modelId = request.model || DEFAULT_MODEL;
 		const modelConfig = await getModelConfigByModel(modelId);
 

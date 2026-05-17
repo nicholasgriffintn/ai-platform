@@ -44,11 +44,7 @@ export default defineConfig(({ isSsrBuild, command }) => ({
 								"@strudel/webaudio",
 							],
 							"query-vendor": ["@tanstack/react-query"],
-							"markdown-vendor": [
-								"react-markdown",
-								"rehype-highlight",
-								"remark-gfm",
-							],
+							"markdown-vendor": ["react-markdown", "rehype-highlight", "remark-gfm"],
 							"icons-vendor": ["lucide-react"],
 						},
 					},

@@ -35,9 +35,7 @@ export function ConversationCard({
 		<Card>
 			<CardHeader>
 				<CardTitle>Conversation</CardTitle>
-				<CardDescription>
-					Request and outcome messages for the selected run.
-				</CardDescription>
+				<CardDescription>Request and outcome messages for the selected run.</CardDescription>
 			</CardHeader>
 			<CardContent className="space-y-3">
 				<div className="max-h-80 overflow-auto">
@@ -52,20 +50,14 @@ export function ConversationCard({
 									key={message.id}
 									className={cn(
 										"rounded-lg border p-3 text-sm",
-										message.role === "user"
-											? "bg-blue-600/5 border-blue-600/20"
-											: "bg-card",
+										message.role === "user" ? "bg-blue-600/5 border-blue-600/20" : "bg-card",
 									)}
 								>
 									<div className="mb-1 flex items-center justify-between gap-3 text-xs text-muted-foreground">
-										<span className="font-medium uppercase tracking-wide">
-											{message.role}
-										</span>
+										<span className="font-medium uppercase tracking-wide">{message.role}</span>
 										<span>{formatRelativeTime(message.createdAt)}</span>
 									</div>
-									<p className="whitespace-pre-wrap break-words">
-										{message.content}
-									</p>
+									<p className="whitespace-pre-wrap break-words">{message.content}</p>
 								</div>
 							))}
 						</div>
@@ -99,9 +91,7 @@ export function ConversationCard({
 							size="sm"
 							icon={<Send className="h-3.5 w-3.5" />}
 							onClick={() => onSubmitInstruction("message")}
-							disabled={
-								!instructionRunId || operatorMessage.trim().length === 0
-							}
+							disabled={!instructionRunId || operatorMessage.trim().length === 0}
 							isLoading={isInstructionPending}
 						>
 							Send message

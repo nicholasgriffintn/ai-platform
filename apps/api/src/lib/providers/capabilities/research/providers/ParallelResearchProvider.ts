@@ -14,10 +14,7 @@ import type {
 	ResearchTaskHandle,
 } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
-import {
-	getAiGatewayMetadataHeaders,
-	resolveAiGatewayCacheTtl,
-} from "~/utils/aiGateway";
+import { getAiGatewayMetadataHeaders, resolveAiGatewayCacheTtl } from "~/utils/aiGateway";
 
 type ParallelResultPayload = {
 	run: ParallelTaskRun;
@@ -29,10 +26,7 @@ const FAILURE_STATUSES = new Set(["failed", "cancelled", "errored", "stopped"]);
 const isResearchResultError = (
 	value: ParallelTaskRun | ResearchResultError,
 ): value is ResearchResultError => {
-	return (
-		value?.status === "error" &&
-		!Object.prototype.hasOwnProperty.call(value, "is_active")
-	);
+	return value?.status === "error" && !Object.prototype.hasOwnProperty.call(value, "is_active");
 };
 
 export class ParallelResearchProvider implements ResearchProvider {
@@ -57,10 +51,7 @@ export class ParallelResearchProvider implements ResearchProvider {
 
 		if (this.user?.id && this.userSettingsRepo) {
 			try {
-				const userApiKey = await this.userSettingsRepo.getProviderApiKey(
-					this.user.id,
-					"parallel",
-				);
+				const userApiKey = await this.userSettingsRepo.getProviderApiKey(this.user.id, "parallel");
 				if (userApiKey) {
 					this.apiKey = userApiKey;
 					return userApiKey;
@@ -68,8 +59,7 @@ export class ParallelResearchProvider implements ResearchProvider {
 			} catch (error) {
 				if (
 					error instanceof AssistantError &&
-					(error.type === ErrorType.NOT_FOUND ||
-						error.type === ErrorType.PARAMS_ERROR)
+					(error.type === ErrorType.NOT_FOUND || error.type === ErrorType.PARAMS_ERROR)
 				) {
 					// Ignore and fallback to env key
 				} else {
@@ -80,10 +70,7 @@ export class ParallelResearchProvider implements ResearchProvider {
 
 		const envKey = this.env.PARALLEL_API_KEY;
 		if (!envKey) {
-			throw new AssistantError(
-				"PARALLEL_API_KEY is not set",
-				ErrorType.CONFIGURATION_ERROR,
-			);
+			throw new AssistantError("PARALLEL_API_KEY is not set", ErrorType.CONFIGURATION_ERROR);
 		}
 
 		this.apiKey = envKey;
@@ -101,10 +88,7 @@ export class ParallelResearchProvider implements ResearchProvider {
 	private async getHeaders(): Promise<Record<string, string>> {
 		const apiKey = await this.resolveApiKey();
 		if (!this.env.AI_GATEWAY_TOKEN) {
-			throw new AssistantError(
-				"AI_GATEWAY_TOKEN is not set",
-				ErrorType.CONFIGURATION_ERROR,
-			);
+			throw new AssistantError("AI_GATEWAY_TOKEN is not set", ErrorType.CONFIGURATION_ERROR);
 		}
 
 		return {
@@ -227,9 +211,7 @@ export class ParallelResearchProvider implements ResearchProvider {
 		}
 	}
 
-	async fetchResearchRun(
-		runId: string,
-	): Promise<ParallelTaskRun | ResearchResultError> {
+	async fetchResearchRun(runId: string): Promise<ParallelTaskRun | ResearchResultError> {
 		const headers = await this.getHeaders();
 
 		try {
@@ -241,10 +223,7 @@ export class ParallelResearchProvider implements ResearchProvider {
 
 			if (!response.ok) {
 				const errorText = await response.text();
-				console.error(
-					"ParallelResearchProvider: Error fetching research run:",
-					errorText,
-				);
+				console.error("ParallelResearchProvider: Error fetching research run:", errorText);
 				return {
 					status: "error",
 					error: `Failed to fetch research run: ${errorText}`,
@@ -264,10 +243,7 @@ export class ParallelResearchProvider implements ResearchProvider {
 		}
 	}
 
-	async fetchResearchResult(
-		runId: string,
-		options?: ResearchOptions,
-	): Promise<ResearchResult> {
+	async fetchResearchResult(runId: string, options?: ResearchOptions): Promise<ResearchResult> {
 		const runStatus = await this.fetchResearchRun(runId);
 
 		if (isResearchResultError(runStatus)) {
@@ -279,9 +255,7 @@ export class ParallelResearchProvider implements ResearchProvider {
 		if (normalizedStatus && FAILURE_STATUSES.has(normalizedStatus)) {
 			return {
 				status: "error",
-				error:
-					runStatus.error ||
-					`Parallel task ${normalizedStatus} for run ${runId}`,
+				error: runStatus.error || `Parallel task ${normalizedStatus} for run ${runId}`,
 			};
 		}
 
@@ -294,13 +268,8 @@ export class ParallelResearchProvider implements ResearchProvider {
 		}
 
 		const headers = await this.getHeaders();
-		const timeoutSeconds = Math.max(
-			1,
-			Math.min(60, options?.polling?.timeout_seconds ?? 5),
-		);
-		const endpoint = this.getParallelEndpoint(
-			`/${runId}/result?timeout=${timeoutSeconds}`,
-		);
+		const timeoutSeconds = Math.max(1, Math.min(60, options?.polling?.timeout_seconds ?? 5));
+		const endpoint = this.getParallelEndpoint(`/${runId}/result?timeout=${timeoutSeconds}`);
 
 		try {
 			const response = await fetch(endpoint, {
@@ -334,10 +303,7 @@ export class ParallelResearchProvider implements ResearchProvider {
 		}
 	}
 
-	private async pollForResult(
-		runId: string,
-		options?: ResearchOptions,
-	): Promise<ResearchResult> {
+	private async pollForResult(runId: string, options?: ResearchOptions): Promise<ResearchResult> {
 		const pollingOptions = options?.polling ?? {};
 		const interval =
 			pollingOptions.interval_ms && pollingOptions.interval_ms >= 500
@@ -362,10 +328,7 @@ export class ParallelResearchProvider implements ResearchProvider {
 					poll: {
 						attempts: attempt,
 						interval_ms: interval,
-						timeout_seconds: Math.max(
-							1,
-							Math.min(60, pollingOptions.timeout_seconds ?? 5),
-						),
+						timeout_seconds: Math.max(1, Math.min(60, pollingOptions.timeout_seconds ?? 5)),
 						elapsed_ms: Date.now() - startedAt,
 					},
 				};
@@ -375,8 +338,7 @@ export class ParallelResearchProvider implements ResearchProvider {
 
 			if (FAILURE_STATUSES.has(runStatus.status)) {
 				const errorMessage =
-					runStatus.error ||
-					`Parallel research task ${runStatus.status.toLowerCase()}`;
+					runStatus.error || `Parallel research task ${runStatus.status.toLowerCase()}`;
 				return {
 					status: "error",
 					error: errorMessage,
@@ -402,10 +364,7 @@ export class ParallelResearchProvider implements ResearchProvider {
 		};
 	}
 
-	async performResearch(
-		input: unknown,
-		options?: ResearchOptions,
-	): Promise<ResearchResult> {
+	async performResearch(input: unknown, options?: ResearchOptions): Promise<ResearchResult> {
 		const creation = await this.createResearchTask(input, options);
 		if ("status" in creation) {
 			return creation;

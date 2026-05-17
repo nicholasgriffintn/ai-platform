@@ -88,9 +88,7 @@ class TaskService {
 
 			if (!response.ok) {
 				const errorData = await returnFetchedData<{ error?: string }>(response);
-				throw new Error(
-					errorData.error || "Failed to trigger memory synthesis",
-				);
+				throw new Error(errorData.error || "Failed to trigger memory synthesis");
 			}
 
 			return await returnFetchedData<CreateTaskResponse>(response);
@@ -100,16 +98,11 @@ class TaskService {
 		}
 	}
 
-	public async getActiveSynthesis(
-		namespace = "global",
-	): Promise<GetMemorySynthesisResponse> {
+	public async getActiveSynthesis(namespace = "global"): Promise<GetMemorySynthesisResponse> {
 		try {
-			const response = await fetchApi(
-				`/tasks/memory/synthesis?namespace=${namespace}`,
-				{
-					method: "GET",
-				},
-			);
+			const response = await fetchApi(`/tasks/memory/synthesis?namespace=${namespace}`, {
+				method: "GET",
+			});
 
 			if (!response.ok) {
 				throw new Error("Failed to fetch memory synthesis");

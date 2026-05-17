@@ -220,9 +220,7 @@ describe("performOcr", () => {
 				output_format: "json" as const,
 			};
 
-			mockStorageService.uploadObject.mockResolvedValue(
-				"ocr/test-uuid-123/output.json",
-			);
+			mockStorageService.uploadObject.mockResolvedValue("ocr/test-uuid-123/output.json");
 
 			const result = await performOcr(paramsWithJson, mockRequest);
 
@@ -236,9 +234,7 @@ describe("performOcr", () => {
 			);
 
 			expect(result.status).toBe("success");
-			expect(result.data?.url).toBe(
-				"https://assets.test.com/ocr/test-uuid-123/output.json",
-			);
+			expect(result.data?.url).toBe("https://assets.test.com/ocr/test-uuid-123/output.json");
 		});
 
 		it("should return HTML format when requested", async () => {
@@ -247,9 +243,7 @@ describe("performOcr", () => {
 				output_format: "html" as const,
 			};
 
-			mockStorageService.uploadObject.mockResolvedValue(
-				"ocr/test-uuid-123/output.html",
-			);
+			mockStorageService.uploadObject.mockResolvedValue("ocr/test-uuid-123/output.html");
 
 			const result = await performOcr(paramsWithHtml, mockRequest);
 
@@ -263,15 +257,11 @@ describe("performOcr", () => {
 			);
 
 			expect(result.status).toBe("success");
-			expect(result.data?.url).toBe(
-				"https://assets.test.com/ocr/test-uuid-123/output.html",
-			);
+			expect(result.data?.url).toBe("https://assets.test.com/ocr/test-uuid-123/output.html");
 		});
 
 		it("should return markdown format by default", async () => {
-			mockStorageService.uploadObject.mockResolvedValue(
-				"ocr/test-uuid-123/output.md",
-			);
+			mockStorageService.uploadObject.mockResolvedValue("ocr/test-uuid-123/output.md");
 
 			const result = await performOcr(baseMockParams, mockRequest);
 
@@ -365,9 +355,7 @@ describe("performOcr", () => {
 
 		it("should handle storage upload errors", async () => {
 			mockProvider.getResponse.mockResolvedValue(mockOcrResponse);
-			mockStorageService.uploadObject.mockRejectedValue(
-				new Error("Upload failed"),
-			);
+			mockStorageService.uploadObject.mockRejectedValue(new Error("Upload failed"));
 
 			const result = await performOcr(baseMockParams, mockRequest);
 

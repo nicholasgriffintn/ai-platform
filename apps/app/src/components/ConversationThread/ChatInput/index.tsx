@@ -41,25 +41,16 @@ const SUPPORTED_MARKDOWN_IMAGE_LANGUAGES = [
 	"fr",
 	"pt",
 ] as const satisfies ReadonlyArray<
-	NonNullable<
-		NonNullable<MarkdownConversionOptions["image"]>["descriptionLanguage"]
-	>
+	NonNullable<NonNullable<MarkdownConversionOptions["image"]>["descriptionLanguage"]>
 >;
 
-type MarkdownDescriptionLanguage =
-	(typeof SUPPORTED_MARKDOWN_IMAGE_LANGUAGES)[number];
+type MarkdownDescriptionLanguage = (typeof SUPPORTED_MARKDOWN_IMAGE_LANGUAGES)[number];
 
-function isMarkdownDescriptionLanguage(
-	value: string,
-): value is MarkdownDescriptionLanguage {
-	return SUPPORTED_MARKDOWN_IMAGE_LANGUAGES.some(
-		(language) => language === value,
-	);
+function isMarkdownDescriptionLanguage(value: string): value is MarkdownDescriptionLanguage {
+	return SUPPORTED_MARKDOWN_IMAGE_LANGUAGES.some((language) => language === value);
 }
 
-function getPreferredMarkdownImageLanguage():
-	| MarkdownDescriptionLanguage
-	| undefined {
+function getPreferredMarkdownImageLanguage(): MarkdownDescriptionLanguage | undefined {
 	if (typeof navigator === "undefined") {
 		return undefined;
 	}
@@ -86,16 +77,13 @@ interface ChatInputProps {
 }
 
 export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
-	(
-		{ handleSubmit, isLoading, streamStarted, controller, onTranscribe },
-		ref,
-	) => {
+	({ handleSubmit, isLoading, streamStarted, controller, onTranscribe }, ref) => {
 		const { isMobile } = useUIStore();
-		const { model, chatInput, setChatInput, chatMode, selectedAgentId } =
-			useChatStore();
+		const { model, chatInput, setChatInput, chatMode, selectedAgentId } = useChatStore();
 		const { isPro, currentConversationId } = useChatStore();
-		const { isRecording, isTranscribing, startRecording, stopRecording } =
-			useVoiceRecorder({ onTranscribe });
+		const { isRecording, isTranscribing, startRecording, stopRecording } = useVoiceRecorder({
+			onTranscribe,
+		});
 		const [selectedAttachment, setSelectedAttachment] = useState<{
 			type: string;
 			data: string;
@@ -145,26 +133,17 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 			const inputs = modelData?.modalities?.input ?? ["text"];
 			const outputs = modelData?.modalities?.output ?? inputs;
 			const hasTextToImage =
-				outputs.includes("image") &&
-				!outputs.includes("text") &&
-				!inputs.includes("image");
-			const hasImageToImage =
-				outputs.includes("image") && inputs.includes("image");
-			const hasImageToText =
-				outputs.includes("text") && inputs.includes("image");
+				outputs.includes("image") && !outputs.includes("text") && !inputs.includes("image");
+			const hasImageToImage = outputs.includes("image") && inputs.includes("image");
+			const hasImageToText = outputs.includes("text") && inputs.includes("image");
 			const multimodal = !!modelData?.multimodal || hasImageToText;
 			setIsMultimodalModel(multimodal);
-			const textOnlyToImage =
-				hasTextToImage && !hasImageToImage && !hasImageToText;
+			const textOnlyToImage = hasTextToImage && !hasImageToImage && !hasImageToText;
 			setIsTextToImageOnlyModel(textOnlyToImage);
-			const supportsNativeDocuments =
-				!!modelData?.supportsDocuments && !textOnlyToImage;
-			const supportsNativeAudio =
-				!!modelData?.supportsAudio && !textOnlyToImage;
+			const supportsNativeDocuments = !!modelData?.supportsDocuments && !textOnlyToImage;
+			const supportsNativeAudio = !!modelData?.supportsAudio && !textOnlyToImage;
 			const imageOnly =
-				(hasImageToImage || hasImageToText) &&
-				!supportsNativeDocuments &&
-				!supportsNativeAudio;
+				(hasImageToImage || hasImageToText) && !supportsNativeDocuments && !supportsNativeAudio;
 			setIsImageModel(imageOnly);
 			setSupportsDocuments(supportsNativeDocuments);
 			setSupportsAudio(supportsNativeAudio);
@@ -180,10 +159,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 			if (e.key === "Enter" && !e.shiftKey) {
 				e.preventDefault();
 				clearSelectedAttachment();
-				handleSubmit(
-					e as unknown as FormEvent,
-					selectedAttachment || undefined,
-				);
+				handleSubmit(e as unknown as FormEvent, selectedAttachment || undefined);
 			}
 			if (e.key === "Enter" && e.shiftKey) {
 				e.preventDefault();
@@ -195,8 +171,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 					setChatInput(`${textBeforeCursor}\n${textAfterCursor}`);
 
 					setTimeout(() => {
-						textarea.selectionStart = textarea.selectionEnd =
-							cursorPosition + 1;
+						textarea.selectionStart = textarea.selectionEnd = cursorPosition + 1;
 					}, 0);
 				}
 			}
@@ -230,20 +205,16 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 						}
 
 						const descriptionLanguage = getPreferredMarkdownImageLanguage();
-						const { url, name, markdown, type } = await apiService.uploadFile(
-							file,
-							"image",
-							{
-								convertToMarkdown: true,
-								conversionOptions: descriptionLanguage
-									? {
-											image: {
-												descriptionLanguage,
-											},
-										}
-									: undefined,
-							},
-						);
+						const { url, name, markdown, type } = await apiService.uploadFile(file, "image", {
+							convertToMarkdown: true,
+							conversionOptions: descriptionLanguage
+								? {
+										image: {
+											descriptionLanguage,
+										},
+									}
+								: undefined,
+						});
 
 						if (type === "markdown_document" && markdown) {
 							setSelectedAttachment({
@@ -256,9 +227,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 							return;
 						}
 
-						alert(
-							"This model does not support image uploads and conversion failed",
-						);
+						alert("This model does not support image uploads and conversion failed");
 						setIsUploading(false);
 						return;
 					}
@@ -292,8 +261,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 					return;
 				}
 
-				const isMarkdownDocument =
-					file.type === "text/markdown" || /\.mdx?$/i.test(file.name);
+				const isMarkdownDocument = file.type === "text/markdown" || /\.mdx?$/i.test(file.name);
 				const codeLike =
 					!isMarkdownDocument &&
 					(file.type.startsWith("text/") ||
@@ -304,10 +272,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 						));
 
 				if (codeLike) {
-					const { url, name, markdown, type } = await apiService.uploadFile(
-						file,
-						"code",
-					);
+					const { url, name, markdown, type } = await apiService.uploadFile(file, "code");
 
 					if (type === "markdown_document" && markdown) {
 						setSelectedAttachment({
@@ -330,11 +295,9 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 							name: name || file.name,
 						});
 					} else {
-						const { url, name, markdown, type } = await apiService.uploadFile(
-							file,
-							"document",
-							{ convertToMarkdown: true },
-						);
+						const { url, name, markdown, type } = await apiService.uploadFile(file, "document", {
+							convertToMarkdown: true,
+						});
 
 						if (type === "markdown_document" && markdown) {
 							setSelectedAttachment({
@@ -344,20 +307,16 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 								markdown: markdown,
 							});
 						} else {
-							alert(
-								"This model does not support document uploads and conversion failed",
-							);
+							alert("This model does not support document uploads and conversion failed");
 						}
 					}
 					setIsUploading(false);
 					return;
 				}
 
-				const { url, name, markdown, type } = await apiService.uploadFile(
-					file,
-					"document",
-					{ convertToMarkdown: true },
-				);
+				const { url, name, markdown, type } = await apiService.uploadFile(file, "document", {
+					convertToMarkdown: true,
+				});
 
 				if (type === "markdown_document" && markdown) {
 					setSelectedAttachment({
@@ -371,9 +330,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 				}
 			} catch (error) {
 				console.error("Failed to upload file:", error);
-				alert(
-					`Failed to upload file: ${error instanceof Error ? error.message : "Unknown error"}`,
-				);
+				alert(`Failed to upload file: ${error instanceof Error ? error.message : "Unknown error"}`);
 			} finally {
 				setIsUploading(false);
 			}
@@ -464,18 +421,12 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 						{supportsDocuments && <File className="h-4 w-4" />}
 						{supportsCode && <FileCode className="h-4 w-4" />}
 						{supportsAudio && <Volume2 className="h-4 w-4" />}
-						{!supportsDocuments && !supportsAudio && (
-							<Paperclip className="h-4 w-4" />
-						)}
+						{!supportsDocuments && !supportsAudio && <Paperclip className="h-4 w-4" />}
 					</span>
 				);
 			}
 			if (supportsDocuments) {
-				return supportsCode ? (
-					<FileCode className="h-4 w-4" />
-				) : (
-					<File className="h-4 w-4" />
-				);
+				return supportsCode ? <FileCode className="h-4 w-4" /> : <File className="h-4 w-4" />;
 			}
 
 			return <Paperclip className="h-4 w-4" />;
@@ -499,9 +450,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 				selectedAttachment?.type === "markdown_document"
 			) {
 				return {
-					preview: (
-						<File className="h-6 w-6 text-zinc-600 dark:text-zinc-400" />
-					),
+					preview: <File className="h-6 w-6 text-zinc-600 dark:text-zinc-400" />,
 					label:
 						selectedAttachment?.type === "markdown_document"
 							? `${selectedAttachment.name || "Document"} (converted to text)`
@@ -510,9 +459,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 			}
 			if (selectedAttachment?.type === "audio") {
 				return {
-					preview: (
-						<Volume2 className="h-6 w-6 text-zinc-600 dark:text-zinc-400" />
-					),
+					preview: <Volume2 className="h-6 w-6 text-zinc-600 dark:text-zinc-400" />,
 					label: selectedAttachment.name || "Audio attached",
 				};
 			}
@@ -525,8 +472,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 			? getAttachmentIconAndLabel()
 			: { preview: null, label: "" };
 
-		const isToolSelectionLocked =
-			chatMode === "agent" && selectedAgentId !== null;
+		const isToolSelectionLocked = chatMode === "agent" && selectedAgentId !== null;
 
 		return (
 			<div
@@ -538,9 +484,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 						<div className="px-3 pt-3">
 							<div className="relative inline-flex items-center gap-2 bg-zinc-50 dark:bg-zinc-800/50 rounded-md p-1.5 border border-zinc-200 dark:border-zinc-700">
 								{preview}
-								<span className="text-xs text-zinc-600 dark:text-zinc-400">
-									{label}
-								</span>
+								<span className="text-xs text-zinc-600 dark:text-zinc-400">{label}</span>
 								<Button
 									type="button"
 									onClick={clearSelectedAttachment}
@@ -563,9 +507,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 								onChange={handleTextAreaInput}
 								onKeyDown={handleKeyDown}
 								placeholder={
-									!currentConversationId
-										? "Ask me anything..."
-										: "Ask follow-up questions..."
+									!currentConversationId ? "Ask me anything..." : "Ask follow-up questions..."
 								}
 								disabled={isRecording || isTranscribing || isLoading}
 								className="flex-grow px-4 py-3 text-base bg-transparent resize-none focus:outline-none dark:text-white min-h-[60px] max-h-[200px]"
@@ -574,8 +516,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 								aria-describedby="message-input-help"
 							/>
 							<div id="message-input-help" className="sr-only">
-								Type your message and press Enter to send. Use Shift+Enter for a
-								new line.
+								Type your message and press Enter to send. Use Shift+Enter for a new line.
 							</div>
 
 							<div className="flex-shrink-0 flex items-center gap-1 pr-3 pt-3">
@@ -646,9 +587,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 															className="h-5 w-5 animate-spin rounded-full border-2 border-zinc-600 dark:border-zinc-400 border-t-transparent"
 															aria-hidden="true"
 														/>
-														<span className="sr-only">
-															Transcribing voice input...
-														</span>
+														<span className="sr-only">Transcribing voice input...</span>
 													</div>
 												) : (
 													<Button
@@ -670,11 +609,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 											type="submit"
 											onClick={handleFormSubmit}
 											disabled={
-												!!(
-													(!chatInput?.trim() && !selectedAttachment) ||
-													isLoading ||
-													isUploading
-												)
+												!!((!chatInput?.trim() && !selectedAttachment) || isLoading || isUploading)
 											}
 											className="cursor-pointer p-2.5 bg-black hover:bg-zinc-800 dark:bg-off-white dark:hover:bg-zinc-200 rounded-md text-white dark:text-black shadow-sm disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
 											title="Send message"

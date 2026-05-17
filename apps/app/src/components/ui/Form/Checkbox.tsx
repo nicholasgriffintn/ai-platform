@@ -4,10 +4,7 @@ import { forwardRef } from "react";
 import { cn } from "~/lib/utils";
 import { Label } from "../label";
 
-export interface FormCheckboxProps extends Omit<
-	InputHTMLAttributes<HTMLInputElement>,
-	"type"
-> {
+export interface FormCheckboxProps extends Omit<InputHTMLAttributes<HTMLInputElement>, "type"> {
 	label?: string;
 	description?: string;
 	className?: string;
@@ -15,16 +12,11 @@ export interface FormCheckboxProps extends Omit<
 }
 
 export const FormCheckbox = forwardRef<HTMLInputElement, FormCheckboxProps>(
-	(
-		{ label, description, className, labelPosition = "left", id, ...props },
-		ref,
-	) => {
+	({ label, description, className, labelPosition = "left", id, ...props }, ref) => {
 		return (
 			<div className="space-y-1">
 				<div className="flex items-center justify-between">
-					{label && labelPosition === "left" && (
-						<Label htmlFor={id}>{label}</Label>
-					)}
+					{label && labelPosition === "left" && <Label htmlFor={id}>{label}</Label>}
 					<input
 						ref={ref}
 						id={id}
@@ -35,14 +27,10 @@ export const FormCheckbox = forwardRef<HTMLInputElement, FormCheckboxProps>(
 						)}
 						{...props}
 					/>
-					{label && labelPosition === "right" && (
-						<Label htmlFor={id}>{label}</Label>
-					)}
+					{label && labelPosition === "right" && <Label htmlFor={id}>{label}</Label>}
 				</div>
 				{description && (
-					<p className="text-xs text-zinc-600 dark:text-zinc-400 mt-1">
-						{description}
-					</p>
+					<p className="text-xs text-zinc-600 dark:text-zinc-400 mt-1">{description}</p>
 				)}
 			</div>
 		);

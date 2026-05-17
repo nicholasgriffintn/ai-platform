@@ -1,7 +1,4 @@
-import {
-	createServiceContext,
-	type ServiceContext,
-} from "~/lib/context/serviceContext";
+import { createServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
 import { type AppData } from "~/repositories/AppDataRepository";
 import type { IEnv } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -53,18 +50,12 @@ export async function listArticles({
 				: null);
 
 		if (!serviceContext) {
-			throw new AssistantError(
-				"Service context is required",
-				ErrorType.CONFIGURATION_ERROR,
-			);
+			throw new AssistantError("Service context is required", ErrorType.CONFIGURATION_ERROR);
 		}
 
 		serviceContext.ensureDatabase();
 		const appDataRepo = serviceContext.repositories.appData;
-		const allArticleData = await appDataRepo.getAppDataByUserAndApp(
-			userId,
-			"articles",
-		);
+		const allArticleData = await appDataRepo.getAppDataByUserAndApp(userId, "articles");
 
 		if (!allArticleData || allArticleData.length === 0) {
 			return { status: "success", sessions: [] };
@@ -81,24 +72,16 @@ export async function listArticles({
 			sessionMap.get(itemId)!.items.push(appData);
 		}
 
-		const sessions: ArticleSessionSummary[] = Array.from(
-			sessionMap.values(),
-		).map((group) => {
-			const reportItem = group.items.find(
-				(item) => item.item_type === "report",
-			);
+		const sessions: ArticleSessionSummary[] = Array.from(sessionMap.values()).map((group) => {
+			const reportItem = group.items.find((item) => item.item_type === "report");
 			const earliestItem = group.items.reduce((earliest, current) => {
-				return new Date(current.created_at) < new Date(earliest.created_at)
-					? current
-					: earliest;
+				return new Date(current.created_at) < new Date(earliest.created_at) ? current : earliest;
 			});
 
 			let title = `Analysis Session: ${group.itemId}`;
 			let sourceArticleCount = 0;
 			let reportId: string | undefined;
-			const status: ArticleSessionSummary["status"] = reportItem
-				? "complete"
-				: "processing";
+			const status: ArticleSessionSummary["status"] = reportItem ? "complete" : "processing";
 			const createdAt = reportItem?.created_at || earliestItem.created_at;
 
 			if (reportItem?.data) {
@@ -108,10 +91,7 @@ export async function listArticles({
 					sourceArticleCount = reportData.sourceItemIds?.length || 0;
 					reportId = reportItem.id;
 				} catch (e) {
-					logger.error(
-						`Failed to parse report data for itemId ${group.itemId}`,
-						e,
-					);
+					logger.error(`Failed to parse report data for itemId ${group.itemId}`, e);
 				}
 			}
 
@@ -125,10 +105,7 @@ export async function listArticles({
 			};
 		});
 
-		sessions.sort(
-			(a, b) =>
-				new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
-		);
+		sessions.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
 		return {
 			status: "success",

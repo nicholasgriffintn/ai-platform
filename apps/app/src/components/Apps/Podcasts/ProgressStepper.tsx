@@ -19,9 +19,7 @@ export function ProgressStepper({ currentStep }: StepperProps) {
 				</div>
 				<div
 					className={`flex-1 h-1 mx-2 ${
-						currentStep >= Step.Process
-							? "bg-blue-500"
-							: "bg-zinc-200 dark:bg-zinc-700"
+						currentStep >= Step.Process ? "bg-blue-500" : "bg-zinc-200 dark:bg-zinc-700"
 					}`}
 				/>
 				<div
@@ -35,9 +33,7 @@ export function ProgressStepper({ currentStep }: StepperProps) {
 				</div>
 				<div
 					className={`flex-1 h-1 mx-2 ${
-						currentStep >= Step.Processing
-							? "bg-blue-500"
-							: "bg-zinc-200 dark:bg-zinc-700"
+						currentStep >= Step.Processing ? "bg-blue-500" : "bg-zinc-200 dark:bg-zinc-700"
 					}`}
 				/>
 				<div
@@ -51,15 +47,9 @@ export function ProgressStepper({ currentStep }: StepperProps) {
 				</div>
 			</div>
 			<div className="flex justify-between mt-2 text-sm">
-				<div className="text-center w-24 text-zinc-600 dark:text-zinc-400">
-					Upload
-				</div>
-				<div className="text-center w-24 text-zinc-600 dark:text-zinc-400">
-					Process
-				</div>
-				<div className="text-center w-24 text-zinc-600 dark:text-zinc-400">
-					Complete
-				</div>
+				<div className="text-center w-24 text-zinc-600 dark:text-zinc-400">Upload</div>
+				<div className="text-center w-24 text-zinc-600 dark:text-zinc-400">Process</div>
+				<div className="text-center w-24 text-zinc-600 dark:text-zinc-400">Complete</div>
 			</div>
 		</div>
 	);

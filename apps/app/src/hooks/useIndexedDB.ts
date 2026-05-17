@@ -17,9 +17,7 @@ export const isIndexedDBSupported = () => {
  */
 export const getDatabase = async (): Promise<IDBPDatabase> => {
 	if (!isIndexedDBSupported()) {
-		return Promise.reject(
-			new Error("IndexedDB is not supported in this browser"),
-		);
+		return Promise.reject(new Error("IndexedDB is not supported in this browser"));
 	}
 
 	if (dbInstance) {

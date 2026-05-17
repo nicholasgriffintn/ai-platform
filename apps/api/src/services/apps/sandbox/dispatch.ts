@@ -13,10 +13,7 @@ import {
 	SANDBOX_RUN_ITEM_TYPE,
 	SANDBOX_RUNS_APP_ID,
 } from "~/constants/app";
-import {
-	createServiceContext,
-	type ServiceContext,
-} from "~/lib/context/serviceContext";
+import { createServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
 import { executeSandboxWorker } from "~/services/sandbox/worker";
 import type { IEnv } from "~/types";
 import { safeParseJson } from "~/utils/json";
@@ -29,18 +26,13 @@ import {
 	type SandboxRunData as PersistedSandboxRunData,
 } from "./run-data";
 import { persistSandboxRunArtifact } from "./run-artifacts";
-import {
-	appendRunCoordinatorEvent,
-	updateRunCoordinatorControl,
-} from "./run-coordinator";
+import { appendRunCoordinatorEvent, updateRunCoordinatorControl } from "./run-coordinator";
 import { indexSandboxRunResult } from "./run-indexing";
 
 const logger = getLogger({ prefix: "services/apps/sandbox/dispatch" });
 
 function isTerminalStatus(status: SandboxRunStatus): boolean {
-	return (
-		status === "completed" || status === "failed" || status === "cancelled"
-	);
+	return status === "completed" || status === "failed" || status === "cancelled";
 }
 
 function toCoordinatorState(
@@ -70,9 +62,7 @@ export async function enqueueSandboxRunDispatchTask(params: {
 }): Promise<string> {
 	const { context, message } = params;
 	if (!context.env.TASK_QUEUE) {
-		throw new Error(
-			"TASK_QUEUE binding is not configured for sandbox run dispatch",
-		);
+		throw new Error("TASK_QUEUE binding is not configured for sandbox run dispatch");
 	}
 	const taskService = new TaskService(context.env, context.repositories.tasks);
 	return taskService.enqueueTask({
@@ -95,9 +85,7 @@ async function loadRunData(params: {
 	const context = createServiceContext({
 		env: params.env,
 	});
-	const record = await context.repositories.appData.getAppDataById(
-		params.recordId,
-	);
+	const record = await context.repositories.appData.getAppDataById(params.recordId);
 	if (!record?.data) {
 		return null;
 	}
@@ -192,8 +180,7 @@ export async function processSandboxRunDispatch(params: {
 		});
 	} catch (error) {
 		const completedAt = new Date().toISOString();
-		const errorMessage =
-			error instanceof Error ? error.message : "Failed to start sandbox worker";
+		const errorMessage = error instanceof Error ? error.message : "Failed to start sandbox worker";
 		const nextRun: PersistedSandboxRunData = {
 			...runData,
 			status: "failed",
@@ -293,8 +280,7 @@ export async function processSandboxRunDispatch(params: {
 			const now = new Date().toISOString();
 			status = payload.success ? "completed" : "failed";
 			completedAt = now;
-			errorMessage =
-				typeof payload.error === "string" ? payload.error : undefined;
+			errorMessage = typeof payload.error === "string" ? payload.error : undefined;
 			result = payload;
 			appendEvent({
 				type: status === "completed" ? "run_completed" : "run_failed",
@@ -339,10 +325,7 @@ export async function processSandboxRunDispatch(params: {
 							if (event.type === "run_failed") {
 								status = "failed";
 								completedAt = new Date().toISOString();
-								errorMessage =
-									typeof event.error === "string"
-										? event.error
-										: "Sandbox run failed";
+								errorMessage = typeof event.error === "string" ? event.error : "Sandbox run failed";
 								return;
 							}
 							if (event.type === "run_cancelled") {
@@ -360,19 +343,13 @@ export async function processSandboxRunDispatch(params: {
 							if (event.type === "run_paused") {
 								status = "paused";
 								pausedAt = new Date().toISOString();
-								pauseReason =
-									typeof event.message === "string"
-										? event.message
-										: pauseReason;
+								pauseReason = typeof event.message === "string" ? event.message : pauseReason;
 								return;
 							}
 							if (event.type === "run_resumed") {
 								status = "running";
 								resumedAt = new Date().toISOString();
-								resumeReason =
-									typeof event.message === "string"
-										? event.message
-										: resumeReason;
+								resumeReason = typeof event.message === "string" ? event.message : resumeReason;
 							}
 						},
 						onError: (error) => {
@@ -422,9 +399,7 @@ export async function processSandboxRunDispatch(params: {
 				? (runData.cancelRequestedAt ?? completedAt)
 				: runData.cancelRequestedAt,
 		cancellationReason:
-			resolvedStatus === "cancelled"
-				? cancellationReason
-				: runData.cancellationReason,
+			resolvedStatus === "cancelled" ? cancellationReason : runData.cancellationReason,
 		workflowPhase:
 			resolvedStatus === "completed"
 				? "completed"

@@ -42,8 +42,7 @@ import { openRunCoordinatorEventsSocket } from "~/services/apps/sandbox/run-coor
 export function registerSandboxRunLifecycleRoutes(app: Hono): void {
 	addRoute(app, "get", "/runs", {
 		tags: ["apps"],
-		description:
-			"List user's GitHub App runs with optional filtering by installation and repo",
+		description: "List user's GitHub App runs with optional filtering by installation and repo",
 		querySchema: listRunsQuerySchema,
 		responses: {
 			200: { description: "List of GitHub App runs" },
@@ -94,9 +93,7 @@ export function registerSandboxRunLifecycleRoutes(app: Hono): void {
 			(async (c: Context) => {
 				const user = requireAuthenticatedUser(c);
 				const { runId } = c.req.valid("param" as never) as SandboxRunParams;
-				const query = c.req.valid(
-					"query" as never,
-				) as ListRunEventsQueryPayload;
+				const query = c.req.valid("query" as never) as ListRunEventsQueryPayload;
 				const events = await listSandboxRunEventsForUser({
 					context: getServiceContext(c),
 					userId: user.id,
@@ -115,9 +112,7 @@ export function registerSandboxRunLifecycleRoutes(app: Hono): void {
 			(async (c: Context) => {
 				const user = requireAuthenticatedUser(c);
 				const { runId } = c.req.valid("param" as never) as SandboxRunParams;
-				const query = c.req.valid(
-					"query" as never,
-				) as ListRunInstructionsQueryPayload;
+				const query = c.req.valid("query" as never) as ListRunInstructionsQueryPayload;
 				const instructions = await listSandboxRunInstructionsForUser({
 					context: getServiceContext(c),
 					userId: user.id,
@@ -136,9 +131,7 @@ export function registerSandboxRunLifecycleRoutes(app: Hono): void {
 			(async (c: Context) => {
 				const user = requireAuthenticatedUser(c);
 				const { runId } = c.req.valid("param" as never) as SandboxRunParams;
-				const query = c.req.valid(
-					"query" as never,
-				) as ListRunEventsQueryPayload;
+				const query = c.req.valid("query" as never) as ListRunEventsQueryPayload;
 
 				const context = getServiceContext(c);
 				const stream = createCoordinatorEventSseStream({
@@ -184,10 +177,7 @@ export function registerSandboxRunLifecycleRoutes(app: Hono): void {
 
 				const id = c.env.SANDBOX_RUN_COORDINATOR.idFromName(runId);
 				const stub = c.env.SANDBOX_RUN_COORDINATOR.get(id);
-				return stub.fetch(
-					"https://sandbox-run-coordinator/events/ws",
-					c.req.raw,
-				);
+				return stub.fetch("https://sandbox-run-coordinator/events/ws", c.req.raw);
 			})(raw),
 	});
 
@@ -272,9 +262,7 @@ export function registerSandboxRunLifecycleRoutes(app: Hono): void {
 			(async (c: Context) => {
 				const user = requireAuthenticatedUser(c);
 				const { runId } = c.req.valid("param" as never) as SandboxRunParams;
-				const payload = c.req.valid(
-					"json" as never,
-				) as SubmitRunInstructionPayload;
+				const payload = c.req.valid("json" as never) as SubmitRunInstructionPayload;
 				const instruction = await requestSandboxRunInstruction({
 					context: getServiceContext(c),
 					userId: user.id,

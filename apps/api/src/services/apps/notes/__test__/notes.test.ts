@@ -3,13 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { resolveServiceContext } from "~/lib/context/serviceContext";
 import { getAuxiliaryModel } from "~/lib/providers/models";
 import { AssistantError } from "~/utils/errors";
-import {
-	createNote,
-	deleteNote,
-	getNote,
-	listNotes,
-	updateNote,
-} from "../list";
+import { createNote, deleteNote, getNote, listNotes, updateNote } from "../list";
 
 const mockRepo = {
 	getAppDataByUserAndApp: vi.fn(),
@@ -19,9 +13,7 @@ const mockRepo = {
 	deleteAppData: vi.fn(),
 };
 
-const mockChatProviderResponse = vi
-	.fn()
-	.mockResolvedValue({ response: JSON.stringify({}) });
+const mockChatProviderResponse = vi.fn().mockResolvedValue({ response: JSON.stringify({}) });
 
 vi.mock("~/lib/context/serviceContext", () => ({
 	resolveServiceContext: vi.fn(),
@@ -133,9 +125,7 @@ describe("notes service", () => {
 		});
 
 		it("should throw error if user ID is missing", async () => {
-			await expect(listNotes({ env: mockEnv, userId: 0 })).rejects.toThrow(
-				AssistantError,
-			);
+			await expect(listNotes({ env: mockEnv, userId: 0 })).rejects.toThrow(AssistantError);
 		});
 
 		it("should handle invalid JSON gracefully", async () => {
@@ -189,9 +179,9 @@ describe("notes service", () => {
 		it("should throw error if note not found", async () => {
 			mockRepo.getAppDataById.mockResolvedValue(null);
 
-			await expect(
-				getNote({ env: mockEnv, userId: 123, noteId: "non-existent" }),
-			).rejects.toThrow(expect.any(AssistantError));
+			await expect(getNote({ env: mockEnv, userId: 123, noteId: "non-existent" })).rejects.toThrow(
+				expect.any(AssistantError),
+			);
 		});
 
 		it("should throw error if note doesn't belong to user", async () => {
@@ -206,9 +196,9 @@ describe("notes service", () => {
 
 			mockRepo.getAppDataById.mockResolvedValue(mockNoteData);
 
-			await expect(
-				getNote({ env: mockEnv, userId: 123, noteId: "note-1" }),
-			).rejects.toThrow(expect.any(AssistantError));
+			await expect(getNote({ env: mockEnv, userId: 123, noteId: "note-1" })).rejects.toThrow(
+				expect.any(AssistantError),
+			);
 		});
 	});
 

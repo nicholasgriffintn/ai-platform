@@ -92,12 +92,7 @@ export const getSharedAgentRatings = async (
 export const updateSharedAgent = async (
 	context: ServiceContext,
 	sharedAgentId: string,
-	updates: Partial<
-		Pick<
-			SharedAgent,
-			"name" | "description" | "avatar_url" | "category" | "tags"
-		>
-	>,
+	updates: Partial<Pick<SharedAgent, "name" | "description" | "avatar_url" | "category" | "tags">>,
 	userId?: number,
 ): Promise<void> => {
 	const repo = ensureDb(context);
@@ -131,9 +126,7 @@ export const moderateSharedAgent = async (
 	await ensureDb(context).moderateAgent(sharedAgentId, isPublic);
 };
 
-export const getSharedAgentCategories = async (
-	context: ServiceContext,
-): Promise<string[]> => {
+export const getSharedAgentCategories = async (context: ServiceContext): Promise<string[]> => {
 	return ensureDb(context).getCategories();
 };
 

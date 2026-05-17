@@ -46,9 +46,9 @@ describe("handleCreateApplyEditCompletions", () => {
 	});
 
 	it("throws when messages missing", async () => {
-		await expect(
-			handleCreateApplyEditCompletions({ env, messages: [] }),
-		).rejects.toMatchObject({ type: ErrorType.PARAMS_ERROR });
+		await expect(handleCreateApplyEditCompletions({ env, messages: [] })).rejects.toMatchObject({
+			type: ErrorType.PARAMS_ERROR,
+		});
 	});
 
 	it("selects model when not provided", async () => {

@@ -24,16 +24,14 @@ export const request_approval: ApiToolDefinition = {
 			},
 			options: {
 				type: "array",
-				description:
-					"Optional array of approval options. Defaults to ['Approve', 'Reject']",
+				description: "Optional array of approval options. Defaults to ['Approve', 'Reject']",
 				items: {
 					type: "string",
 				},
 			},
 			context: {
 				type: "object",
-				description:
-					"Optional context data about what's being approved (for logging/auditing)",
+				description: "Optional context data about what's being approved (for logging/auditing)",
 			},
 		},
 		required: ["message"],
@@ -44,11 +42,7 @@ export const request_approval: ApiToolDefinition = {
 
 		const { message, options, context: requestContext } = args || {};
 
-		if (
-			!message ||
-			typeof message !== "string" ||
-			message.trim().length === 0
-		) {
+		if (!message || typeof message !== "string" || message.trim().length === 0) {
 			throw new AssistantError(
 				"message is required and must be a non-empty string",
 				ErrorType.PARAMS_ERROR,
@@ -140,16 +134,14 @@ export const ask_user: ApiToolDefinition = {
 			},
 			suggestions: {
 				type: "array",
-				description:
-					"Optional array of suggested answers to display as quick-reply buttons",
+				description: "Optional array of suggested answers to display as quick-reply buttons",
 				items: {
 					type: "string",
 				},
 			},
 			context: {
 				type: "object",
-				description:
-					"Optional context data about why this question is being asked",
+				description: "Optional context data about why this question is being asked",
 			},
 		},
 		required: ["question"],
@@ -158,18 +150,9 @@ export const ask_user: ApiToolDefinition = {
 		const req = context.request;
 		const completion_id = context.completionId;
 
-		const {
-			question,
-			expected_format,
-			suggestions,
-			context: requestContext,
-		} = args || {};
+		const { question, expected_format, suggestions, context: requestContext } = args || {};
 
-		if (
-			!question ||
-			typeof question !== "string" ||
-			question.trim().length === 0
-		) {
+		if (!question || typeof question !== "string" || question.trim().length === 0) {
 			throw new AssistantError(
 				"question is required and must be a non-empty string",
 				ErrorType.PARAMS_ERROR,

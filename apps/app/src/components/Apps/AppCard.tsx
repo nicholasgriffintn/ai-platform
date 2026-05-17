@@ -3,12 +3,7 @@ import { Card } from "~/components/ui";
 import { cn } from "~/lib/utils";
 import { useChatStore } from "~/state/stores/chatStore";
 import type { AppListItem } from "~/types/apps";
-import {
-	getBadgeClass,
-	getCardGradient,
-	getIcon,
-	getIconContainerClass,
-} from "./utils";
+import { getBadgeClass, getCardGradient, getIcon, getIconContainerClass } from "./utils";
 
 interface AppCardProps {
 	app: AppListItem;
@@ -16,11 +11,7 @@ interface AppCardProps {
 	isWrappedInGroup?: boolean;
 }
 
-export const AppCard = ({
-	app,
-	onSelect,
-	isWrappedInGroup = false,
-}: AppCardProps) => {
+export const AppCard = ({ app, onSelect, isWrappedInGroup = false }: AppCardProps) => {
 	const { isPro } = useChatStore();
 	const isPremium = app.type === "premium";
 	const isDisabled = isPremium && !isPro;
@@ -51,9 +42,7 @@ export const AppCard = ({
 					<div
 						className={cn(
 							"p-1.5 rounded-full",
-							isDisabled
-								? "bg-zinc-400 dark:bg-zinc-600"
-								: "bg-amber-500 dark:bg-amber-600",
+							isDisabled ? "bg-zinc-400 dark:bg-zinc-600" : "bg-amber-500 dark:bg-amber-600",
 						)}
 						title="Premium Feature"
 					>
@@ -62,9 +51,7 @@ export const AppCard = ({
 				</div>
 			)}
 
-			<div
-				className={cn("flex flex-col h-full", !isPro && isPremium && "pr-10")}
-			>
+			<div className={cn("flex flex-col h-full", !isPro && isPremium && "pr-10")}>
 				<div className="flex flex-col space-y-2 md:flex-row md:items-start md:space-y-0 md:space-x-4 mb-3">
 					<div
 						className={cn(

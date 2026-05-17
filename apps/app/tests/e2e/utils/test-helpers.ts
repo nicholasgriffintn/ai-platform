@@ -53,10 +53,7 @@ export class TestHelpers {
 		await page.waitForLoadState("networkidle", { timeout });
 	}
 
-	static async clearLocalStorage(
-		page: Page,
-		options?: { preserveKeys?: string[] },
-	) {
+	static async clearLocalStorage(page: Page, options?: { preserveKeys?: string[] }) {
 		try {
 			await page.evaluate(
 				({ preserveKeys }) => {

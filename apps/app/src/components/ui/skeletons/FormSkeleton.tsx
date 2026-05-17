@@ -7,10 +7,7 @@ interface FormSkeletonProps {
 	showButton?: boolean;
 }
 
-export function FormSkeleton({
-	fields = 3,
-	showButton = true,
-}: FormSkeletonProps) {
+export function FormSkeleton({ fields = 3, showButton = true }: FormSkeletonProps) {
 	return (
 		<div className="space-y-4">
 			{Array.from({ length: fields }).map((_, index) => (

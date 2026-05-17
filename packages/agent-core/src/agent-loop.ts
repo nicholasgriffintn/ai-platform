@@ -57,14 +57,7 @@ function defaultRecoveryEnforcementMessage(recoveryReason: string): string {
 }
 
 function defaultPlanUpdatedMessage(plan: string): string {
-	return [
-		"Plan updated.",
-		"",
-		"Current plan:",
-		plan,
-		"",
-		"Choose the next action.",
-	].join("\n");
+	return ["Plan updated.", "", "Current plan:", plan, "", "Choose the next action."].join("\n");
 }
 
 function resolveHandler<TShared, TState extends AgentLoopState>(
@@ -90,21 +83,17 @@ export async function executeAgentLoop<
 	};
 
 	const emit = params.emit ?? (async (_event: AgentEvent) => {});
-	const guardExecution =
-		params.guardExecution ?? (async (_abortMessage: string) => {});
+	const guardExecution = params.guardExecution ?? (async (_abortMessage: string) => {});
 	const getCommandCount = params.getCommandCount ?? defaultGetCommandCount;
 	const serializeDecision =
-		params.serializeDecision ??
-		((decision: AgentDecision) => defaultSerializeDecision(decision));
+		params.serializeDecision ?? ((decision: AgentDecision) => defaultSerializeDecision(decision));
 	const formatInvalidDecisionMessage =
 		params.formatInvalidDecisionMessage ?? defaultInvalidDecisionMessage;
 	const formatRecoveryRequiredMessage =
 		params.formatRecoveryRequiredMessage ?? defaultRecoveryRequiredMessage;
 	const formatRecoveryEnforcementMessage =
-		params.formatRecoveryEnforcementMessage ??
-		defaultRecoveryEnforcementMessage;
-	const formatPlanUpdatedMessage =
-		params.formatPlanUpdatedMessage ?? defaultPlanUpdatedMessage;
+		params.formatRecoveryEnforcementMessage ?? defaultRecoveryEnforcementMessage;
+	const formatPlanUpdatedMessage = params.formatPlanUpdatedMessage ?? defaultPlanUpdatedMessage;
 
 	const messages = params.initialMessages;
 	let currentPlan = params.initialPlan;
@@ -116,9 +105,7 @@ export async function executeAgentLoop<
 	const beginPlanRecovery = (reason: string) => {
 		recoveryReplans += 1;
 		if (recoveryReplans > config.maxRecoveryReplans) {
-			throw new Error(
-				`Agent exhausted recovery replans (${config.maxRecoveryReplans})`,
-			);
+			throw new Error(`Agent exhausted recovery replans (${config.maxRecoveryReplans})`);
 		}
 
 		requiresPlanRecovery = true;
@@ -152,11 +139,7 @@ export async function executeAgentLoop<
 			shared: params.shared,
 			state: params.state,
 		});
-		if (
-			!extension ||
-			!Number.isFinite(extension.extendBy) ||
-			extension.extendBy <= 0
-		) {
+		if (!extension || !Number.isFinite(extension.extendBy) || extension.extendBy <= 0) {
 			return false;
 		}
 
@@ -168,8 +151,7 @@ export async function executeAgentLoop<
 			agentStep: step,
 			maxSteps,
 			extendedBy: extendBy,
-			message:
-				extension.reason || `Agent step budget extended by ${extendBy} steps.`,
+			message: extension.reason || `Agent step budget extended by ${extendBy} steps.`,
 		});
 		return true;
 	};
@@ -212,9 +194,7 @@ export async function executeAgentLoop<
 		} catch (error) {
 			consecutiveDecisionFailures += 1;
 			const errorMessage =
-				error instanceof Error
-					? error.message
-					: "Failed to parse or produce an agent decision";
+				error instanceof Error ? error.message : "Failed to parse or produce an agent decision";
 			await emit({
 				type: "agent_decision_invalid",
 				agentStep: step,
@@ -236,9 +216,7 @@ export async function executeAgentLoop<
 				);
 				messages.push({
 					role: "user",
-					content: formatRecoveryRequiredMessage(
-						recoveryReason ?? "Repeated execution failures.",
-					),
+					content: formatRecoveryRequiredMessage(recoveryReason ?? "Repeated execution failures."),
 				});
 			}
 			step += 1;
@@ -255,9 +233,7 @@ export async function executeAgentLoop<
 			});
 			messages.push({
 				role: "user",
-				content: formatRecoveryEnforcementMessage(
-					recoveryReason ?? "Repeated execution failures.",
-				),
+				content: formatRecoveryEnforcementMessage(recoveryReason ?? "Repeated execution failures."),
 			});
 			step += 1;
 			continue;
@@ -271,8 +247,7 @@ export async function executeAgentLoop<
 		});
 
 		messages.push(
-			decisionResult.assistantMessage ??
-				serializeDecision(decision, decisionResult.rawResponse),
+			decisionResult.assistantMessage ?? serializeDecision(decision, decisionResult.rawResponse),
 		);
 
 		if (decision.action === "update_plan") {
@@ -319,9 +294,7 @@ export async function executeAgentLoop<
 
 		const handler = resolveHandler(params.handlers, decision);
 		if (!handler) {
-			throw new Error(
-				`No action handler registered for action "${decision.action}"`,
-			);
+			throw new Error(`No action handler registered for action "${decision.action}"`);
 		}
 
 		await handler.execute(decision, {

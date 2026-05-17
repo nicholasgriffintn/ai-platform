@@ -40,9 +40,7 @@ describe("handleDeleteChatCompletion", () => {
 			requireUser: vi.fn().mockReturnValue(mockUser),
 		};
 
-		vi.mocked(ConversationManager.getInstance).mockReturnValue(
-			mockConversationManager,
-		);
+		vi.mocked(ConversationManager.getInstance).mockReturnValue(mockConversationManager);
 	});
 
 	afterEach(() => {
@@ -77,17 +75,11 @@ describe("handleDeleteChatCompletion", () => {
 
 			mockConversationManager.updateConversation.mockResolvedValue(undefined);
 
-			const result = await handleDeleteChatCompletion(
-				mockServiceContext,
-				completionId,
-			);
+			const result = await handleDeleteChatCompletion(mockServiceContext, completionId);
 
-			expect(mockConversationManager.updateConversation).toHaveBeenCalledWith(
-				completionId,
-				{
-					archived: true,
-				},
-			);
+			expect(mockConversationManager.updateConversation).toHaveBeenCalledWith(completionId, {
+				archived: true,
+			});
 			expect(result).toEqual({
 				success: true,
 				message: "Conversation has been archived",
@@ -99,12 +91,9 @@ describe("handleDeleteChatCompletion", () => {
 
 			const result = await handleDeleteChatCompletion(mockServiceContext, "");
 
-			expect(mockConversationManager.updateConversation).toHaveBeenCalledWith(
-				"",
-				{
-					archived: true,
-				},
-			);
+			expect(mockConversationManager.updateConversation).toHaveBeenCalledWith("", {
+				archived: true,
+			});
 			expect(result.success).toBe(true);
 		});
 	});

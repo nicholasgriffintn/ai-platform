@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 
 import { ModelIcon } from "~/components/ModelIcon";
 import { useModels } from "~/hooks/useModels";
+import { useWebLLMModels } from "~/hooks/useWebLLMModels";
 import { getAvailableModels, getFeaturedModelIds } from "~/lib/models";
 import { useChatStore } from "~/state/stores/chatStore";
 
@@ -18,22 +19,19 @@ export const InlineModelSelector = ({
 }: InlineModelSelectorProps) => {
 	const { model } = useChatStore();
 	const { data: apiModels = {} } = useModels();
+	const webLLMModels = useWebLLMModels();
 	const [isOpen, setIsOpen] = useState(true);
 	const [selectedModel, setSelectedModel] = useState<string | null>(null);
 	const dropdownRef = useRef<HTMLDivElement>(null);
 
-	const availableModels = getAvailableModels(apiModels);
+	const availableModels = getAvailableModels(apiModels, true, webLLMModels);
 	const featuredModels = getFeaturedModelIds(availableModels);
 
-	const currentGlobalModel =
-		typeof model === "string" ? availableModels[model] : null;
+	const currentGlobalModel = typeof model === "string" ? availableModels[model] : null;
 
 	useEffect(() => {
 		const handleClickOutside = (event: MouseEvent) => {
-			if (
-				dropdownRef.current &&
-				!dropdownRef.current.contains(event.target as Node)
-			) {
+			if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
 				setIsOpen(false);
 				onCancel();
 			}
@@ -101,9 +99,7 @@ export const InlineModelSelector = ({
 						)}
 						{Object.values(featuredModels)
 							.filter(
-								(featuredModel) =>
-									featuredModel.id !==
-									(typeof model === "string" ? model : null),
+								(featuredModel) => featuredModel.id !== (typeof model === "string" ? model : null),
 							)
 							.slice(0, 7)
 							.map((model) => (

@@ -41,17 +41,12 @@ export function ArticleReportMetadata({ report }: ArticleReportMetadataProps) {
 					<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 						<div className="bg-zinc-50 dark:bg-zinc-900/50 p-4 rounded-lg border border-zinc-200 dark:border-zinc-700">
 							<h4 className="text-sm font-medium mb-3 flex items-center text-zinc-800 dark:text-zinc-200">
-								<Info
-									size={14}
-									className="mr-2 text-blue-500 dark:text-blue-400"
-								/>
+								<Info size={14} className="mr-2 text-blue-500 dark:text-blue-400" />
 								Basic Information
 							</h4>
 							<div className="space-y-1 text-sm">
 								<MetadataItem label="Report ID">{report.id}</MetadataItem>
-								<MetadataItem label="Session ID">
-									{report.item_id || "N/A"}
-								</MetadataItem>
+								<MetadataItem label="Session ID">{report.item_id || "N/A"}</MetadataItem>
 								<MetadataItem label="Created">
 									{new Date(report.created_at).toLocaleString()}
 								</MetadataItem>
@@ -59,24 +54,17 @@ export function ArticleReportMetadata({ report }: ArticleReportMetadataProps) {
 									{new Date(report.updated_at).toLocaleString()}
 								</MetadataItem>
 								{report.data?.report?.model && (
-									<MetadataItem label="Model">
-										{report.data.report.model}
-									</MetadataItem>
+									<MetadataItem label="Model">{report.data.report.model}</MetadataItem>
 								)}
 								{report.data?.report?.log_id && (
-									<MetadataItem label="Log ID">
-										{report.data.report.log_id}
-									</MetadataItem>
+									<MetadataItem label="Log ID">{report.data.report.log_id}</MetadataItem>
 								)}
 							</div>
 						</div>
 
 						<div className="bg-zinc-50 dark:bg-zinc-900/50 p-4 rounded-lg border border-zinc-200 dark:border-zinc-700">
 							<h4 className="text-sm font-medium mb-3 flex items-center text-zinc-800 dark:text-zinc-200">
-								<ExternalLink
-									size={14}
-									className="mr-2 text-blue-500 dark:text-blue-400"
-								/>
+								<ExternalLink size={14} className="mr-2 text-blue-500 dark:text-blue-400" />
 								Citation Information
 							</h4>
 							{report.data?.report?.citations?.length ? (
@@ -85,29 +73,22 @@ export function ArticleReportMetadata({ report }: ArticleReportMetadataProps) {
 										Citations:
 									</span>
 									<ul className="text-sm list-none pl-0 space-y-1.5">
-										{report.data.report.citations.map(
-											(citation: string, i: number) => (
-												<li
-													key={`citation-${report.id}-${i}`}
-													className="break-all bg-white dark:bg-zinc-800 p-2 rounded border border-zinc-200 dark:border-zinc-700"
+										{report.data.report.citations.map((citation: string, i: number) => (
+											<li
+												key={`citation-${report.id}-${i}`}
+												className="break-all bg-white dark:bg-zinc-800 p-2 rounded border border-zinc-200 dark:border-zinc-700"
+											>
+												<a
+													href={citation}
+													target="_blank"
+													rel="noopener noreferrer"
+													className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 inline-flex items-center transition-colors group"
 												>
-													<a
-														href={citation}
-														target="_blank"
-														rel="noopener noreferrer"
-														className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 inline-flex items-center transition-colors group"
-													>
-														<span className="truncate group-hover:underline">
-															{citation}
-														</span>
-														<ExternalLink
-															size={10}
-															className="ml-1 flex-shrink-0"
-														/>
-													</a>
-												</li>
-											),
-										)}
+													<span className="truncate group-hover:underline">{citation}</span>
+													<ExternalLink size={10} className="ml-1 flex-shrink-0" />
+												</a>
+											</li>
+										))}
 									</ul>
 								</div>
 							) : (
@@ -134,14 +115,11 @@ export function ArticleReportMetadata({ report }: ArticleReportMetadataProps) {
 														: "bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300",
 												)}
 											>
-												{report.data.report.verifiedQuotes.verified
-													? "Verified"
-													: "Not Verified"}
+												{report.data.report.verifiedQuotes.verified ? "Verified" : "Not Verified"}
 											</span>
 										</div>
 
-										{report.data.report.verifiedQuotes.missingQuotes?.length >
-											0 && (
+										{report.data.report.verifiedQuotes.missingQuotes?.length > 0 && (
 											<div className="pt-2 border-t border-zinc-200 dark:border-zinc-700">
 												<span className="font-medium text-zinc-700 dark:text-zinc-300">
 													Missing Quotes:
@@ -171,21 +149,13 @@ export function ArticleReportMetadata({ report }: ArticleReportMetadataProps) {
 	);
 }
 
-function MetadataItem({
-	label,
-	children,
-}: {
-	label: string;
-	children: React.ReactNode;
-}) {
+function MetadataItem({ label, children }: { label: string; children: React.ReactNode }) {
 	return (
 		<div className="flex flex-col sm:flex-row sm:items-start py-1.5 border-b border-zinc-200 dark:border-zinc-700 last:border-0">
 			<span className="font-medium text-zinc-700 dark:text-zinc-300 w-32 flex-shrink-0 mb-1 sm:mb-0">
 				{label}:
 			</span>
-			<span className="text-zinc-600 dark:text-zinc-400 break-words min-w-0">
-				{children}
-			</span>
+			<span className="text-zinc-600 dark:text-zinc-400 break-words min-w-0">{children}</span>
 		</div>
 	);
 }

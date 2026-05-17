@@ -1,10 +1,7 @@
 import { sanitiseInput } from "~/lib/chat/utils";
 import { getVideoProvider } from "~/lib/providers/capabilities/video";
 import { getModelConfigByModel } from "~/lib/providers/models";
-import {
-	resolveServiceContext,
-	type ServiceContext,
-} from "~/lib/context/serviceContext";
+import { resolveServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
 import type { IEnv, IUser } from "~/types";
 
 export interface VideoGenerationParams {
@@ -124,17 +121,14 @@ export async function generateVideo({
 		return {
 			status: "success",
 			name: "create_video",
-			content: isAsync
-				? "Video generation in progress"
-				: "Video generated successfully",
+			content: isAsync ? "Video generation in progress" : "Video generated successfully",
 			data: videoData,
 		};
 	} catch (error) {
 		return {
 			status: "error",
 			name: "create_video",
-			content:
-				error instanceof Error ? error.message : "Failed to generate video",
+			content: error instanceof Error ? error.message : "Failed to generate video",
 			data: {},
 		};
 	}

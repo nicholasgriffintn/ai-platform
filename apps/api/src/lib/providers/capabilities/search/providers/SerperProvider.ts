@@ -16,22 +16,13 @@ export class SerperProvider implements SearchProvider {
 		this.apiKey = env.SERPER_API_KEY;
 
 		if (!this.apiKey) {
-			throw new AssistantError(
-				"SERPER_API_KEY is not set",
-				ErrorType.CONFIGURATION_ERROR,
-			);
+			throw new AssistantError("SERPER_API_KEY is not set", ErrorType.CONFIGURATION_ERROR);
 		}
 	}
 
-	async performWebSearch(
-		query: string,
-		options?: SearchOptions,
-	): Promise<SearchResult> {
+	async performWebSearch(query: string, options?: SearchOptions): Promise<SearchResult> {
 		if (!this.apiKey) {
-			throw new AssistantError(
-				"SERPER_API_KEY is not set",
-				ErrorType.CONFIGURATION_ERROR,
-			);
+			throw new AssistantError("SERPER_API_KEY is not set", ErrorType.CONFIGURATION_ERROR);
 		}
 
 		const response = await fetch("https://google.serper.dev/search", {

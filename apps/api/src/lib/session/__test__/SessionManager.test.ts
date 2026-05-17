@@ -81,9 +81,7 @@ describe("SessionManager", () => {
 			conversationManager: mockConversationManager as any,
 		});
 
-		const messages = Array.from({ length: 30 }, (_, index) =>
-			createLongMessage(index),
-		);
+		const messages = Array.from({ length: 30 }, (_, index) => createLongMessage(index));
 
 		const result = await manager.compact({
 			completionId: "conv-2",
@@ -99,9 +97,7 @@ describe("SessionManager", () => {
 			"conv-2",
 			expect.objectContaining({
 				id: "snapshot-message-id",
-				parts: expect.arrayContaining([
-					expect.objectContaining({ type: "snapshot" }),
-				]),
+				parts: expect.arrayContaining([expect.objectContaining({ type: "snapshot" })]),
 			}),
 		);
 		expect(mockConversationManager.archiveMessages).toHaveBeenCalledWith(
@@ -115,9 +111,7 @@ describe("SessionManager", () => {
 			env,
 			conversationManager: mockConversationManager as any,
 		});
-		mockProviderGetResponse.mockRejectedValueOnce(
-			new Error("provider failure"),
-		);
+		mockProviderGetResponse.mockRejectedValueOnce(new Error("provider failure"));
 
 		const summary = await manager.summarise([
 			{

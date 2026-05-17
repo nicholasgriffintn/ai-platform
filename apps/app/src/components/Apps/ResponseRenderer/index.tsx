@@ -22,11 +22,7 @@ interface ResponseRendererProps {
 	};
 	className?: string;
 	embedded?: boolean;
-	onToolInteraction?: (
-		toolName: string,
-		action: "useAsPrompt",
-		data: Record<string, any>,
-	) => void;
+	onToolInteraction?: (toolName: string, action: "useAsPrompt", data: Record<string, any>) => void;
 }
 
 export const ResponseRenderer = ({
@@ -88,9 +84,7 @@ export const ResponseRenderer = ({
 				return <TextView data={responseData} />;
 
 			case "template":
-				return (
-					<TemplateView template={display?.template} data={responseData} />
-				);
+				return <TemplateView template={display?.template} data={responseData} />;
 
 			default:
 				return (
@@ -117,34 +111,19 @@ export const ResponseRenderer = ({
 				>
 					<div className="mb-6">
 						<div className="flex items-center space-x-4 mb-4">
-							<div
-								className={cn(
-									"p-3 rounded-lg shadow-sm",
-									getIconContainerClass(app.theme),
-								)}
-							>
+							<div className={cn("p-3 rounded-lg shadow-sm", getIconContainerClass(app.theme))}>
 								{getIcon(app.icon, app.theme)}
 							</div>
 							<div>
-								<h1
-									className={cn(
-										"text-2xl font-bold mb-2 text-zinc-900 dark:text-zinc-50",
-									)}
-								>
+								<h1 className={cn("text-2xl font-bold mb-2 text-zinc-900 dark:text-zinc-50")}>
 									{app.name} - Results
 								</h1>
 								<p className={cn("text-zinc-600 dark:text-zinc-300")}>
 									{result.data?.message || `Results for ${app.name}`}
 								</p>
 								{result.data?.timestamp && (
-									<p
-										className={cn(
-											"text-sm text-zinc-500 dark:text-zinc-400",
-											"mt-1",
-										)}
-									>
-										Generated on:{" "}
-										{new Date(result.data.timestamp).toLocaleString()}
+									<p className={cn("text-sm text-zinc-500 dark:text-zinc-400", "mt-1")}>
+										Generated on: {new Date(result.data.timestamp).toLocaleString()}
 									</p>
 								)}
 							</div>

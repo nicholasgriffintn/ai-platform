@@ -29,16 +29,11 @@ const VerifyMagicLink = () => {
 			if (data.success) {
 				navigate("/");
 			} else {
-				setError(
-					data.error ||
-						"Failed to verify magic link. Please request a new one.",
-				);
+				setError(data.error || "Failed to verify magic link. Please request a new one.");
 			}
 		},
 		onError: (err: Error) => {
-			setError(
-				err.message || "An unexpected error occurred during verification.",
-			);
+			setError(err.message || "An unexpected error occurred during verification.");
 			console.error("Magic link verification error:", err);
 		},
 	});
@@ -46,10 +41,7 @@ const VerifyMagicLink = () => {
 	useEffect(() => {
 		if (token && nonce) {
 			verify({ token, nonce });
-		} else if (
-			!isPending &&
-			(typeof token === "undefined" || typeof nonce === "undefined")
-		) {
+		} else if (!isPending && (typeof token === "undefined" || typeof nonce === "undefined")) {
 			setError("Invalid verification link. Missing required parameters.");
 		}
 	}, []);

@@ -98,8 +98,7 @@ export async function executeAgentLoop(
 		throwIfAborted(abortSignal, abortMessage);
 	};
 
-	const readOnlyCommands =
-		taskType === "code-review" || taskType === "test-suite";
+	const readOnlyCommands = taskType === "code-review" || taskType === "test-suite";
 	const trustLevel = params.trustLevel ?? "balanced";
 	const messages: AgentMessage[] = [
 		{
@@ -240,41 +239,23 @@ export async function executeAgentLoop(
 			};
 		},
 		handlers: [
-			createReadFileActionHandler<
-				SandboxAgentSharedContext,
-				SandboxAgentLoopState
-			>({
+			createReadFileActionHandler<SandboxAgentSharedContext, SandboxAgentLoopState>({
 				onReadFile: async (decision, context) => {
 					await handleReadFileAction(toSandboxActionContext(context), decision);
 				},
 				onReadFiles: async (decision, context) => {
-					await handleReadFilesAction(
-						toSandboxActionContext(context),
-						decision,
-					);
+					await handleReadFilesAction(toSandboxActionContext(context), decision);
 				},
 			}),
-			createCommandActionHandler<
-				SandboxAgentSharedContext,
-				SandboxAgentLoopState
-			>({
+			createCommandActionHandler<SandboxAgentSharedContext, SandboxAgentLoopState>({
 				onRunCommand: async (decision, context) => {
-					await handleRunCommandAction(
-						toSandboxActionContext(context),
-						decision,
-					);
+					await handleRunCommandAction(toSandboxActionContext(context), decision);
 				},
 				onRunParallel: async (decision, context) => {
-					await handleRunParallelAction(
-						toSandboxActionContext(context),
-						decision,
-					);
+					await handleRunParallelAction(toSandboxActionContext(context), decision);
 				},
 				onRunScript: async (decision, context) => {
-					await handleRunScriptAction(
-						toSandboxActionContext(context),
-						decision,
-					);
+					await handleRunScriptAction(toSandboxActionContext(context), decision);
 				},
 			}),
 		],
@@ -283,17 +264,10 @@ export async function executeAgentLoop(
 			runtimeState.lastActionSignature = undefined;
 			runtimeState.repeatedActionCount = 0;
 		},
-		onStepBudgetExceeded: async ({
-			step,
-			state: runtimeState,
-			messages: currentMessages,
-		}) => {
+		onStepBudgetExceeded: async ({ step, state: runtimeState, messages: currentMessages }) => {
 			await ingestOperatorInstructions(currentMessages, step);
 
-			if (
-				runtimeState.pendingStepExtensions > 0 &&
-				runtimeState.commandCount < MAX_COMMANDS
-			) {
+			if (runtimeState.pendingStepExtensions > 0 && runtimeState.commandCount < MAX_COMMANDS) {
 				runtimeState.pendingStepExtensions -= 1;
 				return {
 					extendBy: 24,
@@ -318,13 +292,7 @@ export async function executeAgentLoop(
 		buildSummary: ({ decision, state: runtimeState }) => {
 			return (
 				decision.summary.trim() ||
-				buildSummary(
-					task,
-					repoDisplayName,
-					runtimeState.commandCount,
-					undefined,
-					taskType,
-				)
+				buildSummary(task, repoDisplayName, runtimeState.commandCount, undefined, taskType)
 			);
 		},
 		formatRecoveryRequiredMessage: (recoveryReason) =>

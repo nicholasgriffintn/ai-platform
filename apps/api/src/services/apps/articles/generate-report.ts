@@ -4,10 +4,7 @@ import {
 } from "~/lib/providers/models";
 import { generateArticleReportPrompt } from "~/lib/prompts";
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
-import {
-	createServiceContext,
-	type ServiceContext,
-} from "~/lib/context/serviceContext";
+import { createServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
 import type { IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { extractQuotes } from "~/utils/extract";
@@ -63,10 +60,7 @@ export async function generateArticlesReport({
 				: null);
 
 		if (!serviceContext) {
-			throw new AssistantError(
-				"Service context is required",
-				ErrorType.CONFIGURATION_ERROR,
-			);
+			throw new AssistantError("Service context is required", ErrorType.CONFIGURATION_ERROR);
 		}
 
 		serviceContext.ensureDatabase();
@@ -78,9 +72,7 @@ export async function generateArticlesReport({
 			args.itemId,
 		);
 
-		const analysisItems = relatedItems.filter(
-			(item) => item.item_type === "analysis",
-		);
+		const analysisItems = relatedItems.filter((item) => item.item_type === "analysis");
 
 		if (analysisItems.length === 0) {
 			throw new AssistantError(
@@ -104,8 +96,10 @@ export async function generateArticlesReport({
 			);
 		}
 
-		const { model: modelToUse, provider: providerToUse } =
-			await getAuxiliaryModelForRetrieval(serviceContext.env, user);
+		const { model: modelToUse, provider: providerToUse } = await getAuxiliaryModelForRetrieval(
+			serviceContext.env,
+			user,
+		);
 		const modelConfig = await getModelConfigByMatchingModel(modelToUse);
 		const provider = getChatProvider(providerToUse, {
 			env: serviceContext.env,
@@ -129,14 +123,10 @@ export async function generateArticlesReport({
 			user,
 		});
 
-		const reportGenDataContent =
-			reportGenData.content || reportGenData.response;
+		const reportGenDataContent = reportGenData.content || reportGenData.response;
 
 		if (!reportGenDataContent) {
-			throw new AssistantError(
-				"Report content was empty",
-				ErrorType.PARAMS_ERROR,
-			);
+			throw new AssistantError("Report content was empty", ErrorType.PARAMS_ERROR);
 		}
 
 		const quotes = extractQuotes(reportGenDataContent);

@@ -1,10 +1,7 @@
 import { sanitiseInput } from "~/lib/chat/utils";
 import { getMusicProvider } from "~/lib/providers/capabilities/music";
 import { getModelConfigByModel } from "~/lib/providers/models";
-import {
-	resolveServiceContext,
-	type ServiceContext,
-} from "~/lib/context/serviceContext";
+import { resolveServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
 import type { IEnv, IUser } from "~/types";
 
 export interface MusicGenerationParams {
@@ -119,8 +116,7 @@ export async function generateMusic({
 		return {
 			status: "error",
 			name: "create_music",
-			content:
-				error instanceof Error ? error.message : "Failed to generate music",
+			content: error instanceof Error ? error.message : "Failed to generate music",
 			data: {},
 		};
 	}

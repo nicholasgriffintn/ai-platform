@@ -1,7 +1,4 @@
-import {
-	SANDBOX_RUN_DISPATCH_TASK_TYPE,
-	type TaskType,
-} from "@assistant/schemas";
+import { SANDBOX_RUN_DISPATCH_TASK_TYPE, type TaskType } from "@assistant/schemas";
 import { IEnv } from "../types";
 
 export const SCHEDULES = {
@@ -11,10 +8,7 @@ export const SCHEDULES = {
 
 type FeatureFlaggedTaskType = "memory_synthesis" | "training_quality_scoring";
 
-export const ENABLED_SCHEDULES_FLAGS: Record<
-	FeatureFlaggedTaskType,
-	keyof IEnv
-> = {
+export const ENABLED_SCHEDULES_FLAGS: Record<FeatureFlaggedTaskType, keyof IEnv> = {
 	memory_synthesis: "MEMORY_SYNTHESIS_ENABLED",
 	training_quality_scoring: "TRAINING_QUALITY_SCORING_ENABLED",
 };

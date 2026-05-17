@@ -58,16 +58,14 @@ export class TrainingMetadataEnhancer {
 			}
 
 			metadata.userPromptTokens = this.estimateTokenCount(userPrompt);
-			metadata.assistantResponseTokens =
-				this.estimateTokenCount(assistantResponse);
+			metadata.assistantResponseTokens = this.estimateTokenCount(assistantResponse);
 
 			if (conversationId && additionalContext?.previousMessages) {
 				metadata.conversationContext = await this.buildConversationContext(
 					conversationId,
 					additionalContext.previousMessages,
 				);
-				metadata.conversationTurn =
-					Math.floor(additionalContext.previousMessages.length / 2) + 1;
+				metadata.conversationTurn = Math.floor(additionalContext.previousMessages.length / 2) + 1;
 			}
 
 			if (additionalContext?.userBehavior) {
@@ -93,9 +91,7 @@ export class TrainingMetadataEnhancer {
 	): Promise<ConversationContext> {
 		try {
 			const conversation =
-				await this.context.repositories.conversations.getConversation(
-					conversationId,
-				);
+				await this.context.repositories.conversations.getConversation(conversationId);
 
 			return {
 				previousMessages: previousMessages.map((msg) => ({

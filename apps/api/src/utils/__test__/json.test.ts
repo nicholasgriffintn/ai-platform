@@ -63,8 +63,7 @@ describe("json", () => {
 		});
 
 		it("should extract JSON object from mixed text", () => {
-			const response =
-				'Here is the result: {"name": "John", "age": 30} as requested.';
+			const response = 'Here is the result: {"name": "John", "age": 30} as requested.';
 
 			const result = parseAIResponseJson(response);
 
@@ -73,8 +72,7 @@ describe("json", () => {
 		});
 
 		it("should extract JSON array from mixed text", () => {
-			const response =
-				'The results are: [{"name": "John"}, {"name": "Jane"}] from the data.';
+			const response = 'The results are: [{"name": "John"}, {"name": "Jane"}] from the data.';
 
 			const result = parseAIResponseJson(response);
 
@@ -157,8 +155,7 @@ describe("json", () => {
 		});
 
 		it("should handle nested JSON objects", () => {
-			const response =
-				'{"user": {"name": "John", "details": {"age": 30, "city": "NYC"}}}';
+			const response = '{"user": {"name": "John", "details": {"age": 30, "city": "NYC"}}}';
 
 			const result = parseAIResponseJson(response);
 

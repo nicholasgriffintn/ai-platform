@@ -1,10 +1,7 @@
 import { addRoute } from "~/lib/http/routeBuilder";
 import { type Context, type Hono } from "hono";
 
-import {
-	executeSandboxRunSchema,
-	type ExecuteSandboxRunPayload,
-} from "@assistant/schemas";
+import { executeSandboxRunSchema, type ExecuteSandboxRunPayload } from "@assistant/schemas";
 
 import { getServiceContext } from "~/lib/context/serviceContext";
 import { executeSandboxRunStream } from "~/services/apps/sandbox/execute-stream";
@@ -22,9 +19,7 @@ export function registerSandboxRunExecutionRoutes(app: Hono): void {
 			(async (c: Context) => {
 				const user = c.get("user") as IUser;
 				const serviceContext = getServiceContext(c);
-				const payload = c.req.valid(
-					"json" as never,
-				) as ExecuteSandboxRunPayload;
+				const payload = c.req.valid("json" as never) as ExecuteSandboxRunPayload;
 				return executeSandboxRunStream({
 					env: c.env,
 					context: serviceContext,

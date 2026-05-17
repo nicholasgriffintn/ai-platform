@@ -10,10 +10,7 @@ export type RegisteredToolDefinition<
 	TResult extends ToolResult = ToolResult,
 > = ToolDefinition<TInput, TResult, ToolExecutionContext>;
 
-export interface ToolRegistration<
-	TInput = unknown,
-	TResult extends ToolResult = ToolResult,
-> {
+export interface ToolRegistration<TInput = unknown, TResult extends ToolResult = ToolResult> {
 	name: string;
 	aliases?: string[];
 	lifecycle?: ToolLifecycle;
@@ -35,10 +32,7 @@ type InternalRegistration = ToolRegistration & {
 };
 
 export class ToolRegistry {
-	private readonly categories = new Map<
-		ToolCategory,
-		Map<string, InternalRegistration>
-	>();
+	private readonly categories = new Map<ToolCategory, Map<string, InternalRegistration>>();
 
 	register(category: ToolCategory, registration: ToolRegistration): void {
 		const key = registration.name.toLowerCase();
@@ -75,10 +69,7 @@ export class ToolRegistry {
 
 		const registration = store.get(toolName.toLowerCase());
 		if (!registration) {
-			throw new AssistantError(
-				`Unknown ${category} tool "${toolName}"`,
-				ErrorType.PARAMS_ERROR,
-			);
+			throw new AssistantError(`Unknown ${category} tool "${toolName}"`, ErrorType.PARAMS_ERROR);
 		}
 
 		if (registration.lifecycle === "singleton") {

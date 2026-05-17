@@ -2,12 +2,7 @@ import { Loader2 } from "lucide-react";
 import React, { useState } from "react";
 
 import { Button } from "~/components/ui/Button";
-import {
-	Dialog,
-	DialogContent,
-	DialogHeader,
-	DialogTitle,
-} from "~/components/ui/Dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "~/components/ui/Dialog";
 import { FormInput } from "~/components/ui/Form/Input";
 import { FormSelect } from "~/components/ui/Form/Select";
 
@@ -112,12 +107,7 @@ export function ShareAgentModal({
 					<hr className="my-4" />
 
 					<div className="flex justify-end gap-3">
-						<Button
-							type="button"
-							variant="outline"
-							onClick={onClose}
-							disabled={isSharing}
-						>
+						<Button type="button" variant="outline" onClick={onClose} disabled={isSharing}>
 							Cancel
 						</Button>
 						<Button type="submit" disabled={isSharing}>

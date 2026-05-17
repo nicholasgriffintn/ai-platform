@@ -19,10 +19,7 @@ export class PaginationHelper {
 	 * @param limit - Number of items per page
 	 * @returns Pagination result with limit and offset
 	 */
-	static calculate(
-		page: number,
-		limit: number = PaginationHelper.DEFAULT_LIMIT,
-	): PaginationResult {
+	static calculate(page: number, limit: number = PaginationHelper.DEFAULT_LIMIT): PaginationResult {
 		const safePage = Math.max(1, page);
 		const safeLimit = Math.min(Math.max(1, limit), PaginationHelper.MAX_LIMIT);
 		const offset = (safePage - 1) * safeLimit;
@@ -39,10 +36,7 @@ export class PaginationHelper {
 	 * @param limit - Number of items per page
 	 * @returns The calculated offset
 	 */
-	static calculateOffset(
-		page: number,
-		limit: number = PaginationHelper.DEFAULT_LIMIT,
-	): number {
+	static calculateOffset(page: number, limit: number = PaginationHelper.DEFAULT_LIMIT): number {
 		return PaginationHelper.calculate(page, limit).offset;
 	}
 
@@ -80,10 +74,7 @@ export class PaginationHelper {
 		page: number,
 		limit: number = PaginationHelper.DEFAULT_LIMIT,
 	): string {
-		const { limit: safeLimit, offset } = PaginationHelper.calculate(
-			page,
-			limit,
-		);
+		const { limit: safeLimit, offset } = PaginationHelper.calculate(page, limit);
 		return PaginationHelper.applyToQuery(query, safeLimit, offset);
 	}
 
@@ -93,14 +84,8 @@ export class PaginationHelper {
 	 * @param limit - Raw limit value
 	 * @returns Normalized pagination params
 	 */
-	static normalize(
-		page?: number | string,
-		limit?: number | string,
-	): PaginationParams {
-		const normalizedPage = Math.max(
-			1,
-			Number.parseInt(String(page || 1), 10) || 1,
-		);
+	static normalize(page?: number | string, limit?: number | string): PaginationParams {
+		const normalizedPage = Math.max(1, Number.parseInt(String(page || 1), 10) || 1);
 		const normalizedLimit = Math.min(
 			Math.max(
 				1,

@@ -101,9 +101,7 @@ export const useFileUpload = (
 				const acceptedTypes = accept.split(",").map((type) => type.trim());
 				const fileType = file instanceof File ? file.type || "" : file.type;
 				const fileExtension = `.${
-					file instanceof File
-						? file.name.split(".").pop()
-						: file.name.split(".").pop()
+					file instanceof File ? file.name.split(".").pop() : file.name.split(".").pop()
 				}`;
 
 				const isAccepted = acceptedTypes.some((type) => {
@@ -130,15 +128,12 @@ export const useFileUpload = (
 		[accept, maxSize],
 	);
 
-	const createPreview = useCallback(
-		(file: File | FileMetadata): string | undefined => {
-			if (file instanceof File) {
-				return URL.createObjectURL(file);
-			}
-			return file.url;
-		},
-		[],
-	);
+	const createPreview = useCallback((file: File | FileMetadata): string | undefined => {
+		if (file instanceof File) {
+			return URL.createObjectURL(file);
+		}
+		return file.url;
+	}, []);
 
 	const generateUniqueId = useCallback((file: File | FileMetadata): string => {
 		if (file instanceof File) {
@@ -150,11 +145,7 @@ export const useFileUpload = (
 	const clearFiles = useCallback(() => {
 		setState((prev) => {
 			for (const file of prev.files) {
-				if (
-					file.preview &&
-					file.file instanceof File &&
-					file.file.type.startsWith("image/")
-				) {
+				if (file.preview && file.file instanceof File && file.file.type.startsWith("image/")) {
 					URL.revokeObjectURL(file.preview);
 				}
 			}
@@ -202,8 +193,7 @@ export const useFileUpload = (
 			for (const file of newFilesArray) {
 				const isDuplicate = state.files.some(
 					(existingFile) =>
-						existingFile.file.name === file.name &&
-						existingFile.file.size === file.size,
+						existingFile.file.name === file.name && existingFile.file.size === file.size,
 				);
 
 				if (isDuplicate) {
@@ -235,9 +225,7 @@ export const useFileUpload = (
 				onFilesAdded?.(validFiles);
 
 				setState((prev) => {
-					const newFiles = !multiple
-						? validFiles
-						: [...prev.files, ...validFiles];
+					const newFiles = !multiple ? validFiles : [...prev.files, ...validFiles];
 					onFilesChange?.(newFiles);
 					return {
 						...prev,

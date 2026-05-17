@@ -72,11 +72,7 @@ export function classifySandboxError(error: unknown): ClassifiedSandboxError {
 		}
 
 		if (
-			messageIncludes(message, [
-				"git clone",
-				"Failed to generate git diff",
-				"Repository context",
-			])
+			messageIncludes(message, ["git clone", "Failed to generate git diff", "Repository context"])
 		) {
 			return {
 				type: "repository_error",

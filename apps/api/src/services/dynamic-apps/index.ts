@@ -19,10 +19,7 @@ const dynamicApps = new Map<string, AppSchema>();
  */
 export const registerDynamicApp = (app: AppSchema): AppSchema => {
 	if (dynamicApps.has(app.id)) {
-		throw new AssistantError(
-			`App with ID ${app.id} already exists`,
-			ErrorType.PARAMS_ERROR,
-		);
+		throw new AssistantError(`App with ID ${app.id} already exists`, ErrorType.PARAMS_ERROR);
 	}
 
 	dynamicApps.set(app.id, {
@@ -74,9 +71,7 @@ export const getDynamicApps = async (): Promise<
  * @param id The app ID
  * @returns The app schema or null if not found
  */
-export const getDynamicAppById = async (
-	id: string,
-): Promise<AppSchema | null> => {
+export const getDynamicAppById = async (id: string): Promise<AppSchema | null> => {
 	return dynamicApps.get(id) || null;
 };
 
@@ -95,11 +90,7 @@ export const executeDynamicApp = async (
 	const app = dynamicApps.get(id);
 
 	if (!app) {
-		throw new AssistantError(
-			`App with ID ${id} not found`,
-			ErrorType.NOT_FOUND,
-			404,
-		);
+		throw new AssistantError(`App with ID ${id} not found`, ErrorType.NOT_FOUND, 404);
 	}
 
 	validateFormData(app, formData);
@@ -199,13 +190,8 @@ export const executeDynamicApp = async (
  * @param app The app schema
  * @param formData The form data to validate
  */
-const validateFormData = (
-	app: AppSchema,
-	formData: Record<string, any>,
-): void => {
-	const fieldIds = app.formSchema.steps.flatMap((step) =>
-		step.fields.map((field) => field.id),
-	);
+const validateFormData = (app: AppSchema, formData: Record<string, any>): void => {
+	const fieldIds = app.formSchema.steps.flatMap((step) => step.fields.map((field) => field.id));
 
 	for (const step of app.formSchema.steps) {
 		for (const field of step.fields) {
@@ -215,20 +201,14 @@ const validateFormData = (
 					formData[field.id] === null ||
 					formData[field.id] === "")
 			) {
-				throw new AssistantError(
-					`Required field ${field.id} is missing`,
-					ErrorType.PARAMS_ERROR,
-				);
+				throw new AssistantError(`Required field ${field.id} is missing`, ErrorType.PARAMS_ERROR);
 			}
 		}
 	}
 
 	for (const key of Object.keys(formData)) {
 		if (!fieldIds.includes(key)) {
-			throw new AssistantError(
-				`Unknown field ${key} in form data`,
-				ErrorType.PARAMS_ERROR,
-			);
+			throw new AssistantError(`Unknown field ${key} in form data`, ErrorType.PARAMS_ERROR);
 		}
 	}
 
@@ -256,36 +236,24 @@ const validateField = (
 		case "text":
 		case "textarea":
 			if (typeof value !== "string") {
-				throw new AssistantError(
-					`Field ${field.id} must be a string`,
-					ErrorType.PARAMS_ERROR,
-				);
+				throw new AssistantError(`Field ${field.id} must be a string`, ErrorType.PARAMS_ERROR);
 			}
 
-			if (
-				validation?.minLength !== undefined &&
-				value.length < validation.minLength
-			) {
+			if (validation?.minLength !== undefined && value.length < validation.minLength) {
 				throw new AssistantError(
 					`Field ${field.id} must be at least ${validation.minLength} characters`,
 					ErrorType.PARAMS_ERROR,
 				);
 			}
 
-			if (
-				validation?.maxLength !== undefined &&
-				value.length > validation.maxLength
-			) {
+			if (validation?.maxLength !== undefined && value.length > validation.maxLength) {
 				throw new AssistantError(
 					`Field ${field.id} must be at most ${validation.maxLength} characters`,
 					ErrorType.PARAMS_ERROR,
 				);
 			}
 
-			if (
-				validation?.pattern !== undefined &&
-				!new RegExp(validation.pattern).test(value)
-			) {
+			if (validation?.pattern !== undefined && !new RegExp(validation.pattern).test(value)) {
 				throw new AssistantError(
 					`Field ${field.id} does not match the required pattern`,
 					ErrorType.PARAMS_ERROR,
@@ -295,10 +263,7 @@ const validateField = (
 
 		case "number":
 			if (typeof value !== "number") {
-				throw new AssistantError(
-					`Field ${field.id} must be a number`,
-					ErrorType.PARAMS_ERROR,
-				);
+				throw new AssistantError(`Field ${field.id} must be a number`, ErrorType.PARAMS_ERROR);
 			}
 
 			if (validation?.min !== undefined && value < validation.min) {
@@ -318,16 +283,10 @@ const validateField = (
 
 		case "select":
 			if (typeof value !== "string") {
-				throw new AssistantError(
-					`Field ${field.id} must be a string`,
-					ErrorType.PARAMS_ERROR,
-				);
+				throw new AssistantError(`Field ${field.id} must be a string`, ErrorType.PARAMS_ERROR);
 			}
 
-			if (
-				validation?.options &&
-				!validation.options.some((option) => option.value === value)
-			) {
+			if (validation?.options && !validation.options.some((option) => option.value === value)) {
 				throw new AssistantError(
 					`Field ${field.id} has an invalid option value`,
 					ErrorType.PARAMS_ERROR,
@@ -337,10 +296,7 @@ const validateField = (
 
 		case "multiselect":
 			if (!Array.isArray(value)) {
-				throw new AssistantError(
-					`Field ${field.id} must be an array`,
-					ErrorType.PARAMS_ERROR,
-				);
+				throw new AssistantError(`Field ${field.id} must be an array`, ErrorType.PARAMS_ERROR);
 			}
 
 			if (validation?.options) {
@@ -358,28 +314,19 @@ const validateField = (
 
 		case "checkbox":
 			if (typeof value !== "boolean") {
-				throw new AssistantError(
-					`Field ${field.id} must be a boolean`,
-					ErrorType.PARAMS_ERROR,
-				);
+				throw new AssistantError(`Field ${field.id} must be a boolean`, ErrorType.PARAMS_ERROR);
 			}
 			break;
 
 		case "date":
 			if (!(value instanceof Date) && Number.isNaN(Date.parse(value))) {
-				throw new AssistantError(
-					`Field ${field.id} must be a valid date`,
-					ErrorType.PARAMS_ERROR,
-				);
+				throw new AssistantError(`Field ${field.id} must be a valid date`, ErrorType.PARAMS_ERROR);
 			}
 			break;
 
 		case "file":
 			if (value === undefined) {
-				throw new AssistantError(
-					`Field ${field.id} must have a file`,
-					ErrorType.PARAMS_ERROR,
-				);
+				throw new AssistantError(`Field ${field.id} must have a file`, ErrorType.PARAMS_ERROR);
 			}
 			break;
 	}

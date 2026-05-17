@@ -40,9 +40,7 @@ describe("handleShareConversation", () => {
 			requireUser: vi.fn().mockReturnValue(mockUser),
 		};
 
-		vi.mocked(ConversationManager.getInstance).mockReturnValue(
-			mockConversationManager,
-		);
+		vi.mocked(ConversationManager.getInstance).mockReturnValue(mockConversationManager);
 	});
 
 	afterEach(() => {
@@ -70,14 +68,9 @@ describe("handleShareConversation", () => {
 
 			mockConversationManager.shareConversation.mockResolvedValue(mockResult);
 
-			const result = await handleShareConversation(
-				mockServiceContext,
-				completionId,
-			);
+			const result = await handleShareConversation(mockServiceContext, completionId);
 
-			expect(mockConversationManager.shareConversation).toHaveBeenCalledWith(
-				completionId,
-			);
+			expect(mockConversationManager.shareConversation).toHaveBeenCalledWith(completionId);
 			expect(result).toEqual({ share_id: "share-abc123" });
 		});
 
@@ -90,9 +83,7 @@ describe("handleShareConversation", () => {
 
 			const result = await handleShareConversation(mockServiceContext, "");
 
-			expect(mockConversationManager.shareConversation).toHaveBeenCalledWith(
-				"",
-			);
+			expect(mockConversationManager.shareConversation).toHaveBeenCalledWith("");
 			expect(result.share_id).toBe("empty-share-id");
 		});
 
@@ -104,10 +95,7 @@ describe("handleShareConversation", () => {
 
 			mockConversationManager.shareConversation.mockResolvedValue(mockResult);
 
-			const result = await handleShareConversation(
-				mockServiceContext,
-				completionId,
-			);
+			const result = await handleShareConversation(mockServiceContext, completionId);
 
 			expect(result.share_id).toBe("existing-share-id");
 		});
@@ -121,9 +109,9 @@ describe("handleShareConversation", () => {
 				new Error("Conversation not found"),
 			);
 
-			await expect(() =>
-				handleShareConversation(mockServiceContext, completionId),
-			).rejects.toThrow("Conversation not found");
+			await expect(() => handleShareConversation(mockServiceContext, completionId)).rejects.toThrow(
+				"Conversation not found",
+			);
 		});
 	});
 });

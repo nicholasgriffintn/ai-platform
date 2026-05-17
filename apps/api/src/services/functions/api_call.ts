@@ -73,10 +73,7 @@ const normalizeHeaders = (headers: unknown): Record<string, string> => {
 	);
 };
 
-const appendQueryParams = (
-	baseUrl: URL,
-	params: Record<string, unknown> | undefined,
-): void => {
+const appendQueryParams = (baseUrl: URL, params: Record<string, unknown> | undefined): void => {
 	if (!params) return;
 
 	for (const [key, value] of Object.entries(params)) {
@@ -103,8 +100,7 @@ const readResponseBody = async (
 	}
 
 	const contentType = response.headers.get("content-type") || "";
-	const shouldParseJson =
-		contentType.includes("application/json") || contentType.includes("+json");
+	const shouldParseJson = contentType.includes("application/json") || contentType.includes("+json");
 
 	if (shouldParseJson) {
 		return { parsed: safeParseJson(raw), raw };
@@ -153,8 +149,7 @@ export const call_api: ApiToolDefinition = {
 			},
 			body: {
 				type: "object",
-				description:
-					'JSON body for REST requests (example: {"id":123,"name":"Ada"})',
+				description: 'JSON body for REST requests (example: {"id":123,"name":"Ada"})',
 			},
 			graphql_query: {
 				type: "string",
@@ -218,8 +213,7 @@ export const call_api: ApiToolDefinition = {
 		}
 
 		const requestType = args?.request_type === "graphql" ? "graphql" : "rest";
-		const timeoutMsInput =
-			typeof args?.timeout_ms === "number" ? args.timeout_ms : undefined;
+		const timeoutMsInput = typeof args?.timeout_ms === "number" ? args.timeout_ms : undefined;
 		const timeoutMs =
 			timeoutMsInput && timeoutMsInput > 0
 				? Math.min(timeoutMsInput, MAX_TIMEOUT_MS)
@@ -236,10 +230,7 @@ export const call_api: ApiToolDefinition = {
 		let body: string | undefined;
 
 		if (requestType === "graphql") {
-			const graphqlQuery =
-				typeof args?.graphql_query === "string"
-					? args.graphql_query.trim()
-					: "";
+			const graphqlQuery = typeof args?.graphql_query === "string" ? args.graphql_query.trim() : "";
 			if (!graphqlQuery) {
 				return {
 					status: "error",
@@ -252,9 +243,7 @@ export const call_api: ApiToolDefinition = {
 			method = "POST";
 			const payload = {
 				query: graphqlQuery,
-				variables: isRecord(args?.graphql_variables)
-					? args.graphql_variables
-					: undefined,
+				variables: isRecord(args?.graphql_variables) ? args.graphql_variables : undefined,
 				operationName:
 					typeof args?.graphql_operation_name === "string"
 						? args.graphql_operation_name
@@ -265,16 +254,9 @@ export const call_api: ApiToolDefinition = {
 				headers["Content-Type"] = "application/json";
 			}
 		} else {
-			const methodInput =
-				typeof args?.method === "string"
-					? args.method.toUpperCase()
-					: undefined;
+			const methodInput = typeof args?.method === "string" ? args.method.toUpperCase() : undefined;
 			const allowedMethods = new Set(["GET", "POST", "PUT", "PATCH", "DELETE"]);
-			method = allowedMethods.has(methodInput || "")
-				? methodInput!
-				: methodInput
-					? ""
-					: "GET";
+			method = allowedMethods.has(methodInput || "") ? methodInput! : methodInput ? "" : "GET";
 
 			if (!method) {
 				return {
@@ -335,9 +317,7 @@ export const call_api: ApiToolDefinition = {
 			return {
 				status: "error",
 				name: "call_api",
-				content: isAbortError(error)
-					? "API request timed out"
-					: "API request failed",
+				content: isAbortError(error) ? "API request timed out" : "API request failed",
 				data: {
 					url: url.toString(),
 					method,
@@ -356,8 +336,7 @@ export const call_api: ApiToolDefinition = {
 		const hasJsonBody = parsed !== null;
 		const responseBody = hasJsonBody ? parsed : raw;
 
-		const graphqlErrors =
-			requestType === "graphql" && isRecord(parsed) ? parsed.errors : undefined;
+		const graphqlErrors = requestType === "graphql" && isRecord(parsed) ? parsed.errors : undefined;
 
 		const statusMessage =
 			response.ok && graphqlErrors

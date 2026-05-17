@@ -51,12 +51,9 @@ describe("VectorizeEmbeddingProvider", () => {
 				data: [[0.1, 0.2, 0.3, 0.4, 0.5]],
 			});
 
-			const result = await provider.generate(
-				"article",
-				"test content",
-				"test-id",
-				{ title: "Test Article" },
-			);
+			const result = await provider.generate("article", "test content", "test-id", {
+				title: "Test Article",
+			});
 
 			expect(result).toEqual([
 				{
@@ -83,37 +80,31 @@ describe("VectorizeEmbeddingProvider", () => {
 		});
 
 		it("should throw error for missing type", async () => {
-			await expect(provider.generate("", "content", "id", {})).rejects.toThrow(
-				AssistantError,
-			);
+			await expect(provider.generate("", "content", "id", {})).rejects.toThrow(AssistantError);
 		});
 
 		it("should throw error for missing content", async () => {
-			await expect(provider.generate("type", "", "id", {})).rejects.toThrow(
-				AssistantError,
-			);
+			await expect(provider.generate("type", "", "id", {})).rejects.toThrow(AssistantError);
 		});
 
 		it("should throw error for missing id", async () => {
-			await expect(
-				provider.generate("type", "content", "", {}),
-			).rejects.toThrow(expect.any(AssistantError));
+			await expect(provider.generate("type", "content", "", {})).rejects.toThrow(
+				expect.any(AssistantError),
+			);
 		});
 
 		it("should throw error when AI returns no data", async () => {
 			mockAi.run.mockResolvedValue({});
 
-			await expect(
-				provider.generate("article", "test content", "test-id", {}),
-			).rejects.toThrow(expect.any(AssistantError));
+			await expect(provider.generate("article", "test content", "test-id", {})).rejects.toThrow(
+				expect.any(AssistantError),
+			);
 		});
 
 		it("should handle AI API errors", async () => {
 			mockAi.run.mockRejectedValue(new Error("AI API error"));
 
-			await expect(
-				provider.generate("article", "test content", "test-id", {}),
-			).rejects.toThrow();
+			await expect(provider.generate("article", "test content", "test-id", {})).rejects.toThrow();
 		});
 	});
 
@@ -180,9 +171,7 @@ describe("VectorizeEmbeddingProvider", () => {
 				},
 			];
 
-			await expect(provider.insert(embeddings)).rejects.toThrow(
-				"Vector DB error",
-			);
+			await expect(provider.insert(embeddings)).rejects.toThrow("Vector DB error");
 		});
 	});
 
@@ -197,19 +186,13 @@ describe("VectorizeEmbeddingProvider", () => {
 				error: null,
 			});
 
-			expect(mockVectorDb.deleteByIds).toHaveBeenCalledWith([
-				"id1",
-				"id2",
-				"id3",
-			]);
+			expect(mockVectorDb.deleteByIds).toHaveBeenCalledWith(["id1", "id2", "id3"]);
 		});
 
 		it("should handle vector database delete errors", async () => {
 			mockVectorDb.deleteByIds.mockRejectedValue(new Error("Delete error"));
 
-			await expect(provider.delete(["id1", "id2"])).rejects.toThrow(
-				"Delete error",
-			);
+			await expect(provider.delete(["id1", "id2"])).rejects.toThrow("Delete error");
 		});
 	});
 
@@ -242,9 +225,7 @@ describe("VectorizeEmbeddingProvider", () => {
 		it("should handle AI API errors in getQuery", async () => {
 			mockAi.run.mockRejectedValue(new Error("AI API error"));
 
-			await expect(provider.getQuery("test query")).rejects.toThrow(
-				"AI API error",
-			);
+			await expect(provider.getQuery("test query")).rejects.toThrow("AI API error");
 		});
 	});
 
@@ -400,9 +381,7 @@ describe("VectorizeEmbeddingProvider", () => {
 		it("should throw error when no embedding data found", async () => {
 			mockAi.run.mockResolvedValue({});
 
-			await expect(provider.searchSimilar("test query")).rejects.toThrow(
-				AssistantError,
-			);
+			await expect(provider.searchSimilar("test query")).rejects.toThrow(AssistantError);
 		});
 
 		it("should throw error when no matches found", async () => {
@@ -414,9 +393,7 @@ describe("VectorizeEmbeddingProvider", () => {
 				matches: [],
 			});
 
-			await expect(provider.searchSimilar("test query")).rejects.toThrow(
-				AssistantError,
-			);
+			await expect(provider.searchSimilar("test query")).rejects.toThrow(AssistantError);
 		});
 
 		it("should handle database retrieval errors gracefully", async () => {
@@ -428,13 +405,9 @@ describe("VectorizeEmbeddingProvider", () => {
 				matches: [{ id: "match1", score: 0.95, metadata: { type: "article" } }],
 			});
 
-			mockRepositories.embeddings.getEmbedding.mockRejectedValue(
-				new Error("DB error"),
-			);
+			mockRepositories.embeddings.getEmbedding.mockRejectedValue(new Error("DB error"));
 
-			await expect(provider.searchSimilar("test query")).rejects.toThrow(
-				"DB error",
-			);
+			await expect(provider.searchSimilar("test query")).rejects.toThrow("DB error");
 		});
 	});
 });

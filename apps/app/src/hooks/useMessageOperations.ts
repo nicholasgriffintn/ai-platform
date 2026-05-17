@@ -95,9 +95,7 @@ export function useMessageOperations() {
 					typeof content === "string"
 						? content
 						: content
-								.map((item: MessageContent) =>
-									item.type === "text" ? item.text || "" : "",
-								)
+								.map((item: MessageContent) => (item.type === "text" ? item.text || "" : ""))
 								.join("");
 
 				if (!oldData) {
@@ -149,8 +147,7 @@ export function useMessageOperations() {
 					role: "assistant",
 					content,
 					created: messageData?.created || lastAssistantMessage.created || now,
-					timestamp:
-						messageData?.timestamp || lastAssistantMessage.timestamp || now,
+					timestamp: messageData?.timestamp || lastAssistantMessage.timestamp || now,
 					model: messageData?.model || currentModel,
 					reasoning: reasoning
 						? {

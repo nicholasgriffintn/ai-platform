@@ -20,10 +20,7 @@ export async function handleDeleteGroup(
 	}
 
 	if (group.user_id !== user.id) {
-		throw new AssistantError(
-			"Group not found or access denied",
-			ErrorType.FORBIDDEN,
-		);
+		throw new AssistantError("Group not found or access denied", ErrorType.FORBIDDEN);
 	}
 
 	await repository.deleteMemoryGroupMembers(groupId);

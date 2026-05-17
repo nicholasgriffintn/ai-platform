@@ -3,11 +3,7 @@ import { validateReplicatePayload } from "~/lib/providers/models/replicateValida
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import { extractGeneratedAsset } from "~/lib/providers/utils/helpers";
 import { AssistantError, ErrorType } from "~/utils/errors";
-import type {
-	SpeechGenerationRequest,
-	SpeechGenerationResult,
-	SpeechProvider,
-} from "../index";
+import type { SpeechGenerationRequest, SpeechGenerationResult, SpeechProvider } from "../index";
 
 const DEFAULT_MODEL = "replicate-chatterbox-turbo";
 
@@ -15,9 +11,7 @@ export class ReplicateSpeechProvider implements SpeechProvider {
 	name = "replicate";
 	models = [DEFAULT_MODEL];
 
-	async generate(
-		request: SpeechGenerationRequest,
-	): Promise<SpeechGenerationResult> {
+	async generate(request: SpeechGenerationRequest): Promise<SpeechGenerationResult> {
 		const modelId = request.model || DEFAULT_MODEL;
 		const modelConfig = await getModelConfigByModel(modelId);
 

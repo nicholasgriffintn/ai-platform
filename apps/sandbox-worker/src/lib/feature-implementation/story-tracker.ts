@@ -1,15 +1,6 @@
-import type {
-	RalphPrdContext,
-	RalphPrdUserStory,
-	SandboxFileInstance,
-} from "./types";
+import type { RalphPrdContext, RalphPrdUserStory, SandboxFileInstance } from "./types";
 import { safeParseJson } from "../json";
-import {
-	escapeRegExp,
-	formatStoryLabel,
-	isObjectRecord,
-	toPrioritySortValue,
-} from "./utils";
+import { escapeRegExp, formatStoryLabel, isObjectRecord, toPrioritySortValue } from "./utils";
 
 function formatIoError(error: unknown): string {
 	if (error instanceof Error && error.message.trim()) {
@@ -47,17 +38,14 @@ function scoreStoryAgainstText(story: RalphPrdUserStory, text: string): number {
 	return score;
 }
 
-function sortStoriesForSelection(
-	stories: RalphPrdUserStory[],
-): RalphPrdUserStory[] {
+function sortStoriesForSelection(stories: RalphPrdUserStory[]): RalphPrdUserStory[] {
 	return [...stories].sort((a, b) => {
 		const pendingDelta = Number(a.passes) - Number(b.passes);
 		if (pendingDelta !== 0) {
 			return pendingDelta;
 		}
 
-		const priorityDelta =
-			toPrioritySortValue(a.priority) - toPrioritySortValue(b.priority);
+		const priorityDelta = toPrioritySortValue(a.priority) - toPrioritySortValue(b.priority);
 		if (priorityDelta !== 0) {
 			return priorityDelta;
 		}
@@ -72,9 +60,7 @@ export function selectStoryForTracking(params: {
 	plan: string;
 }): RalphPrdUserStory | undefined {
 	const { prdContext, task, plan } = params;
-	const pendingStories = prdContext.userStories.filter(
-		(story) => !story.passes,
-	);
+	const pendingStories = prdContext.userStories.filter((story) => !story.passes);
 	if (pendingStories.length === 0) {
 		return undefined;
 	}
@@ -136,9 +122,7 @@ export async function updatePrdStoryPassStatus(params: {
 		};
 	}
 
-	const parsedPrd = safeParseJson<Record<string, unknown>>(
-		prdReadResult.content,
-	);
+	const parsedPrd = safeParseJson<Record<string, unknown>>(prdReadResult.content);
 	if (!parsedPrd) {
 		return {
 			updated: false,
@@ -251,8 +235,7 @@ export async function appendProgressEntry(params: {
 		currentContent = currentResult.content;
 	}
 
-	const separator =
-		currentContent.length > 0 && !currentContent.endsWith("\n") ? "\n" : "";
+	const separator = currentContent.length > 0 && !currentContent.endsWith("\n") ? "\n" : "";
 	const nextContent = `${currentContent}${separator}${entry}\n`;
 	let writeResult: Awaited<ReturnType<SandboxFileInstance["writeFile"]>>;
 	try {

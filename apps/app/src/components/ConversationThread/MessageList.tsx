@@ -18,11 +18,7 @@ import { ScrollButton } from "./ScrollButton";
 import { ShareButton } from "./ShareButton";
 
 interface MessageListProps {
-	onToolInteraction?: (
-		toolName: string,
-		action: "useAsPrompt",
-		data: Record<string, any>,
-	) => void;
+	onToolInteraction?: (toolName: string, action: "useAsPrompt", data: Record<string, any>) => void;
 	onArtifactOpen?: (
 		artifact: ArtifactProps,
 		combine?: boolean,
@@ -42,8 +38,7 @@ export const MessageList = ({
 	onBranch,
 	isBranching = false,
 }: MessageListProps) => {
-	const { currentConversationId, isAuthenticated, setCurrentConversationId } =
-		useChatStore();
+	const { currentConversationId, isAuthenticated, setCurrentConversationId } = useChatStore();
 
 	const { data: conversation, isLoading: isLoadingConversation } = useChat(
 		!isSharedView ? currentConversationId : undefined,
@@ -63,10 +58,8 @@ export const MessageList = ({
 	const isStreamLoading = useIsLoading("stream-response");
 	const isModelInitializing = useIsLoading("model-init");
 
-	const streamLoadingMessage =
-		useLoadingMessage("stream-response") || "Generating response...";
-	const modelInitMessage =
-		useLoadingMessage("model-init") || "Initializing model...";
+	const streamLoadingMessage = useLoadingMessage("stream-response") || "Generating response...";
+	const modelInitMessage = useLoadingMessage("model-init") || "Initializing model...";
 	const modelInitProgress = useLoadingProgress("model-init") || 0;
 
 	const virtualRef = useRef<VListHandle>(null);
@@ -79,10 +72,7 @@ export const MessageList = ({
 			return;
 		}
 		const lastIndex = messages.length - 1;
-		if (
-			virtualRef.current &&
-			(prevCount.current === 0 || messages.length > prevCount.current)
-		) {
+		if (virtualRef.current && (prevCount.current === 0 || messages.length > prevCount.current)) {
 			virtualRef.current.scrollToIndex(lastIndex, { align: "end" });
 		}
 		prevCount.current = messages.length;
@@ -123,17 +113,11 @@ export const MessageList = ({
 									size={16}
 									className="flex-shrink-0 text-zinc-600 dark:text-zinc-400 cursor-pointer hover:text-zinc-900 dark:hover:text-zinc-100"
 									aria-label="Go to original conversation"
-									onClick={() =>
-										setCurrentConversationId(
-											conversation.parent_conversation_id!,
-										)
-									}
+									onClick={() => setCurrentConversationId(conversation.parent_conversation_id!)}
 								/>
 							)}
 							<MessagesSquare size={16} className="flex-shrink-0" />
-							<span className="truncate">
-								{conversation?.title || "New conversation"}
-							</span>
+							<span className="truncate">{conversation?.title || "New conversation"}</span>
 						</h2>
 						{!conversation?.isLocalOnly &&
 							!isLoadingConversation &&
@@ -157,10 +141,7 @@ export const MessageList = ({
 				) : (
 					<>
 						{messages.map((message, index) => (
-							<div
-								key={`${message.id || index}-${index}`}
-								className={index > 0 ? "mt-4" : ""}
-							>
+							<div key={`${message.id || index}-${index}`} className={index > 0 ? "mt-4" : ""}>
 								<ChatMessage
 									conversationId={currentConversationId}
 									message={message}
@@ -169,11 +150,7 @@ export const MessageList = ({
 									isSharedView={isSharedView}
 									onRetry={retryMessage}
 									isRetrying={streamStarted}
-									onEdit={
-										message.id
-											? () => startEditingMessage(message.id!)
-											: undefined
-									}
+									onEdit={message.id ? () => startEditingMessage(message.id!) : undefined}
 									isEditing={editingMessageId === message.id}
 									onSaveEdit={(newContent) => {
 										if (message.id) {
@@ -198,9 +175,7 @@ export const MessageList = ({
 								<Loader2 className="h-4 w-4 animate-spin text-blue-500 flex-shrink-0" />
 								<span>
 									{modelInitMessage}
-									{modelInitProgress !== undefined
-										? ` ${Math.round(modelInitProgress)}%`
-										: null}
+									{modelInitProgress !== undefined ? ` ${Math.round(modelInitProgress)}%` : null}
 								</span>
 							</div>
 						)}

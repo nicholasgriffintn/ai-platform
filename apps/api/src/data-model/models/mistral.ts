@@ -1,8 +1,5 @@
 import type { ModelConfig } from "~/types";
-import {
-	createModelConfig,
-	createModelConfigObject,
-} from "~/lib/providers/models/utils";
+import { createModelConfig, createModelConfigObject } from "~/lib/providers/models/utils";
 
 const PROVIDER = "mistral";
 
@@ -49,13 +46,7 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.0005,
 		costPer1kOutputTokens: 0.0015,
-		strengths: [
-			"reasoning",
-			"analysis",
-			"multilingual",
-			"chat",
-			"general_knowledge",
-		],
+		strengths: ["reasoning", "analysis", "multilingual", "chat", "general_knowledge"],
 		contextComplexity: 4,
 		reliability: 4,
 		speed: 3,
@@ -68,8 +59,7 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("devstral-small", PROVIDER, {
 		name: "Devstral Small",
 		matchingModel: "devstral-small-latest",
-		description:
-			"Devstral Small is an agentic LLM for software engineering tasks.",
+		description: "Devstral Small is an agentic LLM for software engineering tasks.",
 		knowledgeCutoffDate: "May 2025",
 		releaseDate: "July 10, 2025",
 		lastUpdated: "July 10, 2025",
@@ -143,13 +133,7 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 262144,
 		costPer1kInputTokens: 0.0005,
 		costPer1kOutputTokens: 0.0015,
-		strengths: [
-			"chat",
-			"general_knowledge",
-			"analysis",
-			"creative",
-			"reasoning",
-		],
+		strengths: ["chat", "general_knowledge", "analysis", "creative", "reasoning"],
 		contextComplexity: 4,
 		reliability: 4,
 		speed: 3,
@@ -162,8 +146,7 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("open-mistral-7b", PROVIDER, {
 		name: "Mistral 7B",
 		matchingModel: "open-mistral-7b",
-		description:
-			"The first dense model released by Mistral AI, perfect for customization.",
+		description: "The first dense model released by Mistral AI, perfect for customization.",
 		knowledgeCutoffDate: "December 2023",
 		releaseDate: "September 27, 2023",
 		lastUpdated: "September 27, 2023",
@@ -313,8 +296,7 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("open-mixtral-8x7b", PROVIDER, {
 		name: "Mixtral 8x7B",
 		matchingModel: "open-mixtral-8x7b",
-		description:
-			"Sparse mixture-of-experts model outperforming Llama 2 70B on most benchmarks.",
+		description: "Sparse mixture-of-experts model outperforming Llama 2 70B on most benchmarks.",
 		knowledgeCutoffDate: "January 2024",
 		releaseDate: "December 11, 2023",
 		lastUpdated: "December 11, 2023",
@@ -341,8 +323,7 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("pixtral-12b", PROVIDER, {
 		name: "Pixtral 12B",
 		matchingModel: "pixtral-12b",
-		description:
-			"Multimodal model with vision capabilities for image understanding and analysis.",
+		description: "Multimodal model with vision capabilities for image understanding and analysis.",
 		knowledgeCutoffDate: "September 2024",
 		releaseDate: "September 1, 2024",
 		lastUpdated: "September 1, 2024",
@@ -388,14 +369,7 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.0001,
 		costPer1kOutputTokens: 0.0003,
-		strengths: [
-			"chat",
-			"general_knowledge",
-			"analysis",
-			"creative",
-			"multilingual",
-			"vision",
-		],
+		strengths: ["chat", "general_knowledge", "analysis", "creative", "multilingual", "vision"],
 		contextComplexity: 3,
 		reliability: 3,
 		speed: 4,
@@ -422,14 +396,7 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 256000,
 		costPer1kInputTokens: 0.0002,
 		costPer1kOutputTokens: 0.0002,
-		strengths: [
-			"chat",
-			"general_knowledge",
-			"analysis",
-			"creative",
-			"multilingual",
-			"vision",
-		],
+		strengths: ["chat", "general_knowledge", "analysis", "creative", "multilingual", "vision"],
 		contextComplexity: 2,
 		reliability: 3,
 		speed: 3,
@@ -456,14 +423,7 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.0001,
 		costPer1kOutputTokens: 0.0001,
-		strengths: [
-			"chat",
-			"general_knowledge",
-			"analysis",
-			"creative",
-			"multilingual",
-			"vision",
-		],
+		strengths: ["chat", "general_knowledge", "analysis", "creative", "multilingual", "vision"],
 		contextComplexity: 2,
 		reliability: 3,
 		speed: 3,
@@ -493,14 +453,7 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.00004,
 		costPer1kOutputTokens: 0.00004,
-		strengths: [
-			"chat",
-			"general_knowledge",
-			"analysis",
-			"creative",
-			"multilingual",
-			"vision",
-		],
+		strengths: ["chat", "general_knowledge", "analysis", "creative", "multilingual", "vision"],
 		contextComplexity: 1,
 		reliability: 3,
 		speed: 5,
@@ -516,8 +469,7 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("devstral-small-latest", PROVIDER, {
 		name: "Devstral Small 2505",
 		matchingModel: "devstral-small-latest",
-		description:
-			"Earlier version of Devstral Small for software engineering tasks.",
+		description: "Earlier version of Devstral Small for software engineering tasks.",
 		knowledgeCutoffDate: "May 2025",
 		releaseDate: "May 7, 2025",
 		lastUpdated: "May 7, 2025",
@@ -562,13 +514,7 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.002,
 		costPer1kOutputTokens: 0.005,
-		strengths: [
-			"reasoning",
-			"analysis",
-			"multilingual",
-			"chat",
-			"general_knowledge",
-		],
+		strengths: ["reasoning", "analysis", "multilingual", "chat", "general_knowledge"],
 		contextComplexity: 4,
 		reliability: 4,
 		speed: 3,
@@ -599,13 +545,7 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.00015,
 		costPer1kOutputTokens: 0.00015,
-		strengths: [
-			"chat",
-			"general_knowledge",
-			"analysis",
-			"creative",
-			"multilingual",
-		],
+		strengths: ["chat", "general_knowledge", "analysis", "creative", "multilingual"],
 		contextComplexity: 3,
 		reliability: 3,
 		speed: 4,

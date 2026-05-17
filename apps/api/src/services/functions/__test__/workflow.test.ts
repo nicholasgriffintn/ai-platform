@@ -8,10 +8,7 @@ const baseRequest: IRequest = {
 	user: { id: 1, plan_id: "pro" } as any,
 };
 
-const createToolContext = (
-	request: IRequest,
-	completionId = "completion_id",
-) => ({
+const createToolContext = (request: IRequest, completionId = "completion_id") => ({
 	completionId,
 	env: request.env,
 	user: request.user,
@@ -71,18 +68,14 @@ describe("compose_functions", () => {
 	});
 
 	it("parses steps when provided as JSON string", async () => {
-		const mockHandleFunctions = vi
-			.spyOn(functionsIndex, "handleFunctions")
-			.mockResolvedValue({
-				status: "success",
-				content: "ok",
-			});
+		const mockHandleFunctions = vi.spyOn(functionsIndex, "handleFunctions").mockResolvedValue({
+			status: "success",
+			content: "ok",
+		});
 
 		const result = await compose_functions.execute(
 			{
-				steps: JSON.stringify([
-					{ function: "web_search", args: { query: "test" } },
-				]),
+				steps: JSON.stringify([{ function: "web_search", args: { query: "test" } }]),
 			},
 			createToolContext(baseRequest),
 		);
@@ -216,18 +209,14 @@ describe("parallel_execute", () => {
 	});
 
 	it("parses tasks when provided as JSON string", async () => {
-		const mockHandleFunctions = vi
-			.spyOn(functionsIndex, "handleFunctions")
-			.mockResolvedValue({
-				status: "success",
-				content: "ok",
-			});
+		const mockHandleFunctions = vi.spyOn(functionsIndex, "handleFunctions").mockResolvedValue({
+			status: "success",
+			content: "ok",
+		});
 
 		const result = await parallel_execute.execute(
 			{
-				tasks: JSON.stringify([
-					{ function: "web_search", args: { query: "test" } },
-				]),
+				tasks: JSON.stringify([{ function: "web_search", args: { query: "test" } }]),
 			},
 			createToolContext(baseRequest),
 		);

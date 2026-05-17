@@ -442,9 +442,7 @@ export class QueryBuilder {
 		}
 
 		if (/[;]|--|\/\*/.test(trimmed)) {
-			throw new Error(
-				"Invalid WHERE condition: contains disallowed characters",
-			);
+			throw new Error("Invalid WHERE condition: contains disallowed characters");
 		}
 
 		return trimmed;

@@ -1,8 +1,5 @@
 import type { ModelConfig } from "~/types";
-import {
-	createModelConfig,
-	createModelConfigObject,
-} from "~/lib/providers/models/utils";
+import { createModelConfig, createModelConfigObject } from "~/lib/providers/models/utils";
 
 const PROVIDER = "replicate";
 
@@ -18,8 +15,7 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
 		supportsAttachments: false,
 		costPerRun: 1.25,
 		inputSchema: {
-			reference:
-				"https://replicate.com/turian/insanely-fast-whisper-with-video",
+			reference: "https://replicate.com/turian/insanely-fast-whisper-with-video",
 			fields: [
 				{
 					name: "audio",
@@ -49,16 +45,14 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
 				{
 					name: "batch_size",
 					type: "integer",
-					description:
-						"Number of parallel batches you want to compute. Reduce if you face OOMs.",
+					description: "Number of parallel batches you want to compute. Reduce if you face OOMs.",
 					default: 64,
 				},
 				{
 					name: "timestamp",
 					type: "string",
 					default: "chunk",
-					description:
-						"Whisper supports both chunked as well as word level timestamps.",
+					description: "Whisper supports both chunked as well as word level timestamps.",
 					enum: ["chunk", "word"],
 				},
 			],
@@ -66,8 +60,7 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
 	}),
 	createModelConfig("replicate-tencent-hunyuan-video", PROVIDER, {
 		name: "Hunyuan Video",
-		matchingModel:
-			"847dfa8b01e739637fc76f480ede0c1d76408e1d694b830b5dfb8e547bf98405",
+		matchingModel: "847dfa8b01e739637fc76f480ede0c1d76408e1d694b830b5dfb8e547bf98405",
 		description:
 			"A state-of-the-art text-to-video generation model capable of creating high-quality videos with realistic motion from text descriptions .",
 		strengths: ["creative"],
@@ -86,15 +79,13 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
 				{
 					name: "negative_prompt",
 					type: "string",
-					description:
-						"Text describing elements to avoid in the generated image.",
+					description: "Text describing elements to avoid in the generated image.",
 					default: "",
 				},
 				{
 					name: "video_length",
 					type: "number",
-					description:
-						"Number of frames to generate (must be 4k+1, ex: 49 or 129)",
+					description: "Number of frames to generate (must be 4k+1, ex: 49 or 129)",
 					default: 129,
 				},
 				{
@@ -338,8 +329,7 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
 				{
 					name: "negative_prompt",
 					type: "string",
-					description:
-						"Text describing elements to avoid in the generated video.",
+					description: "Text describing elements to avoid in the generated video.",
 					default: "",
 				},
 				{
@@ -366,8 +356,7 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("replicate-bytedance-seedance-1-5-pro", PROVIDER, {
 		name: "SeeDance 1.5 Pro",
 		matchingModel: "bytedance/seedance-1.5-pro",
-		description:
-			"A joint audio-video model that accurately follows complex instructions",
+		description: "A joint audio-video model that accurately follows complex instructions",
 		strengths: ["creative", "video"],
 		supportsStreaming: false,
 		supportsAttachments: false,
@@ -472,8 +461,7 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
 				{
 					name: "duration",
 					type: "integer",
-					description:
-						"Duration of the video in seconds (1-15). Ignored when editing a video.",
+					description: "Duration of the video in seconds (1-15). Ignored when editing a video.",
 				},
 				{
 					name: "aspect_ratio",
@@ -494,8 +482,7 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("replicate-runway-gen-4-5", PROVIDER, {
 		name: "Runway Gen-4.5",
 		matchingModel: "runwayml/gen-4.5",
-		description:
-			"State-of-the-art video motion quality, prompt adherence and visual fidelity",
+		description: "State-of-the-art video motion quality, prompt adherence and visual fidelity",
 		strengths: ["creative", "video"],
 		supportsStreaming: false,
 		supportsAttachments: false,
@@ -560,8 +547,7 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
 				{
 					name: "negative_prompt",
 					type: "string",
-					description:
-						"Things you do not want to see in the video. Max 2500 characters.",
+					description: "Things you do not want to see in the video. Max 2500 characters.",
 				},
 				{
 					name: "start_image",

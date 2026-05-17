@@ -208,9 +208,7 @@ describe("ChatOrchestrator", () => {
 				const result = await orchestrator.process(mockOptions);
 
 				expect(mockValidator.validate).toHaveBeenCalledWith(mockOptions);
-				expect(mockConversationManager.checkUsageLimits).toHaveBeenCalledWith(
-					"test-model",
-				);
+				expect(mockConversationManager.checkUsageLimits).toHaveBeenCalledWith("test-model");
 				expect(mockGuardrails.validateOutput).toHaveBeenCalled();
 				expect(mockConversationManager.add).toHaveBeenCalled();
 				expect(result).toEqual({
@@ -310,9 +308,7 @@ describe("ChatOrchestrator", () => {
 					usage: { total_tokens: 100 },
 				};
 
-				const mockToolResults = [
-					{ role: "tool", content: "tool result", tool_call_id: "tool-1" },
-				];
+				const mockToolResults = [{ role: "tool", content: "tool result", tool_call_id: "tool-1" }];
 
 				mockGetAIResponse.mockResolvedValue(mockResponse);
 				mockGuardrails.validateOutput.mockResolvedValue({ isValid: true });
@@ -335,9 +331,7 @@ describe("ChatOrchestrator", () => {
 			it("should preserve delegation context when handling tool calls", async () => {
 				const mockResponse = {
 					response: "Test response",
-					tool_calls: [
-						{ id: "tool-1", function: { name: "delegate_to_team_member" } },
-					],
+					tool_calls: [{ id: "tool-1", function: { name: "delegate_to_team_member" } }],
 					usage: { total_tokens: 100 },
 				};
 
@@ -460,15 +454,10 @@ describe("ChatOrchestrator", () => {
 			});
 
 			it("should handle AssistantError and re-throw", async () => {
-				const assistantError = new AssistantError(
-					"Test error",
-					ErrorType.PARAMS_ERROR,
-				);
+				const assistantError = new AssistantError("Test error", ErrorType.PARAMS_ERROR);
 				mockPreparer.prepare.mockRejectedValue(assistantError);
 
-				await expect(orchestrator.process(mockOptions)).rejects.toThrow(
-					assistantError,
-				);
+				await expect(orchestrator.process(mockOptions)).rejects.toThrow(assistantError);
 			});
 
 			it("should wrap network errors", async () => {
@@ -478,8 +467,7 @@ describe("ChatOrchestrator", () => {
 
 				await expect(orchestrator.process(mockOptions)).rejects.toThrow(
 					expect.objectContaining({
-						message:
-							"Connection error or timeout while communicating with AI provider",
+						message: "Connection error or timeout while communicating with AI provider",
 						type: ErrorType.NETWORK_ERROR,
 					}),
 				);
@@ -536,9 +524,7 @@ describe("ChatOrchestrator", () => {
 
 		describe("parameter handling", () => {
 			it("should throw error for missing required parameters", async () => {
-				mockValidator.validate.mockRejectedValue(
-					new Error("Missing required parameters"),
-				);
+				mockValidator.validate.mockRejectedValue(new Error("Missing required parameters"));
 
 				await expect(orchestrator.process({} as any)).rejects.toThrow(
 					"An unexpected error occurred",

@@ -57,10 +57,7 @@ export function ImageModal({
 						<img
 							src={src}
 							alt={alt}
-							className={cn(
-								"w-auto h-auto max-w-full object-contain rounded-lg",
-								imageClassName,
-							)}
+							className={cn("w-auto h-auto max-w-full object-contain rounded-lg", imageClassName)}
 							style={{ maxHeight }}
 							crossOrigin="anonymous"
 						/>

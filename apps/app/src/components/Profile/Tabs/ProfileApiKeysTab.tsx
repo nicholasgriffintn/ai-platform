@@ -168,15 +168,10 @@ export function ProfileApiKeysTab() {
 									Error: {errorCreatingApiKey.message}
 								</p>
 							)}
-							<Button
-								type="submit"
-								variant="primary"
-								disabled={isCreatingApiKey}
-							>
+							<Button type="submit" variant="primary" disabled={isCreatingApiKey}>
 								{isCreatingApiKey ? (
 									<>
-										<Loader2 className="mr-2 h-4 w-4 animate-spin" />{" "}
-										Generating...
+										<Loader2 className="mr-2 h-4 w-4 animate-spin" /> Generating...
 									</>
 								) : (
 									<>
@@ -194,17 +189,14 @@ export function ProfileApiKeysTab() {
 							Existing API Keys
 						</h3>
 						<p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-							Manage your existing API keys. Remember to delete keys that are no
-							longer needed.
+							Manage your existing API keys. Remember to delete keys that are no longer needed.
 						</p>
 					</div>
 					<div className="px-6">
 						{isLoadingApiKeys ? (
 							<div className="flex items-center justify-center py-6">
 								<Loader2 className="h-6 w-6 animate-spin text-zinc-500" />
-								<span className="ml-2 text-zinc-500 dark:text-zinc-400">
-									Loading keys...
-								</span>
+								<span className="ml-2 text-zinc-500 dark:text-zinc-400">Loading keys...</span>
 							</div>
 						) : errorLoadingApiKeys ? (
 							<p className="text-center text-red-600 dark:text-red-400 py-6">
@@ -240,8 +232,7 @@ export function ProfileApiKeysTab() {
 															e.stopPropagation();
 															handleDeleteClick(key.id, key.name);
 														},
-														disabled:
-															isDeletingApiKey && keyToDelete?.id === key.id,
+														disabled: isDeletingApiKey && keyToDelete?.id === key.id,
 													},
 												]}
 											/>

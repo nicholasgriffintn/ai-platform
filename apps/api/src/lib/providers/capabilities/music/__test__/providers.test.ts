@@ -69,8 +69,6 @@ describe("music providers", () => {
 		});
 
 		const { getModelConfigByModel } = await import("~/lib/providers/models");
-		expect(vi.mocked(getModelConfigByModel)).toHaveBeenCalledWith(
-			"replicate-elevenlabs-music",
-		);
+		expect(vi.mocked(getModelConfigByModel)).toHaveBeenCalledWith("replicate-elevenlabs-music");
 	});
 });

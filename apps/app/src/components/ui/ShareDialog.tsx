@@ -5,13 +5,7 @@ import { toast } from "sonner";
 import { useCopyToClipboard } from "~/hooks/useCopyToClipboard";
 import { cn } from "~/lib/utils";
 import { Button } from "./Button";
-import {
-	Dialog,
-	DialogClose,
-	DialogContent,
-	DialogHeader,
-	DialogTitle,
-} from "./Dialog";
+import { Dialog, DialogClose, DialogContent, DialogHeader, DialogTitle } from "./Dialog";
 
 interface ShareDialogProps {
 	/** Type of item being shared */
@@ -60,12 +54,8 @@ export function ShareDialog({
 	const [isOpen, setIsOpen] = useState(false);
 	const [isSharing, setIsSharing] = useState(false);
 	const [isUnsharing, setIsUnsharing] = useState(false);
-	const [currentShareId, setCurrentShareId] = useState<string | undefined>(
-		shareId,
-	);
-	const [currentIsPublic, setCurrentIsPublic] = useState<boolean | undefined>(
-		isPublic,
-	);
+	const [currentShareId, setCurrentShareId] = useState<string | undefined>(shareId);
+	const [currentIsPublic, setCurrentIsPublic] = useState<boolean | undefined>(isPublic);
 	const { copied, copy } = useCopyToClipboard();
 
 	useEffect(() => {
@@ -90,9 +80,7 @@ export function ShareDialog({
 			const result = await onShare(itemId);
 			setCurrentShareId(result.share_id);
 			setCurrentIsPublic(true);
-			toast.success(
-				labels?.shareButton || `${capitalize(type)} shared successfully`,
-			);
+			toast.success(labels?.shareButton || `${capitalize(type)} shared successfully`);
 		} catch (error) {
 			console.error(`Error sharing ${type}:`, error);
 			toast.error(labels?.shareButton || `Failed to share ${type}`);
@@ -190,16 +178,8 @@ export function ShareDialog({
 										onClick={copyShareLink}
 										title={copied ? "Copied!" : "Copy link"}
 										aria-label="Copy link"
-										className={
-											copied ? "text-green-500 dark:text-green-400" : ""
-										}
-										icon={
-											copied ? (
-												<Check className="h-4 w-4" />
-											) : (
-												<Copy className="h-4 w-4" />
-											)
-										}
+										className={copied ? "text-green-500 dark:text-green-400" : ""}
+										icon={copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
 									/>
 								</div>
 								<Button
@@ -208,9 +188,7 @@ export function ShareDialog({
 									isLoading={isUnsharing}
 									className="mt-4 w-full"
 								>
-									{isUnsharing
-										? "Removing Share..."
-										: finalLabels.unshareButton}
+									{isUnsharing ? "Removing Share..." : finalLabels.unshareButton}
 								</Button>
 							</>
 						) : (

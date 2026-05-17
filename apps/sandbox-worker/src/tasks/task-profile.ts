@@ -62,9 +62,7 @@ function buildMigrationTask(task: string): string {
 	].join("\n");
 }
 
-export function resolveSandboxTaskProfile(
-	params: TaskParams,
-): ResolvedSandboxTaskProfile {
+export function resolveSandboxTaskProfile(params: TaskParams): ResolvedSandboxTaskProfile {
 	const taskType = params.taskType || "feature-implementation";
 	const trimmedTask = params.task.trim();
 

@@ -58,9 +58,7 @@ describe("Captcha Middleware", () => {
 		const { RepositoryManager } = await import("~/repositories");
 
 		vi.mocked(verifyCaptchaToken).mockImplementation(mockVerifyCaptchaToken);
-		vi.mocked(RepositoryManager.getInstance).mockReturnValue(
-			mockRepositoryManager as any,
-		);
+		vi.mocked(RepositoryManager.getInstance).mockReturnValue(mockRepositoryManager as any);
 	});
 
 	afterEach(() => {
@@ -227,14 +225,11 @@ describe("Captcha Middleware", () => {
 
 			await validateCaptcha(context, mockNext);
 
-			expect(mockVerifyCaptchaToken).toHaveBeenCalledWith(
-				"valid-token",
-				"secret-key",
-				"site-key",
+			expect(mockVerifyCaptchaToken).toHaveBeenCalledWith("valid-token", "secret-key", "site-key");
+			expect(mockRepositoryManager.anonymousUsers.updateAnonymousUser).toHaveBeenCalledWith(
+				"anon-123",
+				{ captcha_verified: 1 },
 			);
-			expect(
-				mockRepositoryManager.anonymousUsers.updateAnonymousUser,
-			).toHaveBeenCalledWith("anon-123", { captcha_verified: 1 });
 			expect(mockNext).toHaveBeenCalled();
 		});
 
@@ -262,18 +257,18 @@ describe("Captcha Middleware", () => {
 				error: null,
 			});
 
-			mockRepositoryManager.anonymousUsers.getOrCreateAnonymousUser.mockResolvedValue(
-				mockNewUser,
-			);
+			mockRepositoryManager.anonymousUsers.getOrCreateAnonymousUser.mockResolvedValue(mockNewUser);
 
 			await validateCaptcha(context, mockNext);
 
-			expect(
-				mockRepositoryManager.anonymousUsers.getOrCreateAnonymousUser,
-			).toHaveBeenCalledWith("127.0.0.1", "Mozilla/5.0");
-			expect(
-				mockRepositoryManager.anonymousUsers.updateAnonymousUser,
-			).toHaveBeenCalledWith("anon-456", { captcha_verified: 1 });
+			expect(mockRepositoryManager.anonymousUsers.getOrCreateAnonymousUser).toHaveBeenCalledWith(
+				"127.0.0.1",
+				"Mozilla/5.0",
+			);
+			expect(mockRepositoryManager.anonymousUsers.updateAnonymousUser).toHaveBeenCalledWith(
+				"anon-456",
+				{ captcha_verified: 1 },
+			);
 			expect(context.set).toHaveBeenCalledWith("anonymousUser", {
 				...mockNewUser,
 				captcha_verified: 1,
@@ -359,15 +354,14 @@ describe("Captcha Middleware", () => {
 			});
 
 			const mockNewUser = { id: "anon-456", captcha_verified: 0 };
-			mockRepositoryManager.anonymousUsers.getOrCreateAnonymousUser.mockResolvedValue(
-				mockNewUser,
-			);
+			mockRepositoryManager.anonymousUsers.getOrCreateAnonymousUser.mockResolvedValue(mockNewUser);
 
 			await validateCaptcha(context, mockNext);
 
-			expect(
-				mockRepositoryManager.anonymousUsers.getOrCreateAnonymousUser,
-			).toHaveBeenCalledWith("192.168.1.1", "Mozilla/5.0");
+			expect(mockRepositoryManager.anonymousUsers.getOrCreateAnonymousUser).toHaveBeenCalledWith(
+				"192.168.1.1",
+				"Mozilla/5.0",
+			);
 		});
 
 		it("should use 'unknown' as fallback for missing IP and user agent", async () => {
@@ -388,15 +382,14 @@ describe("Captcha Middleware", () => {
 			});
 
 			const mockNewUser = { id: "anon-456", captcha_verified: 0 };
-			mockRepositoryManager.anonymousUsers.getOrCreateAnonymousUser.mockResolvedValue(
-				mockNewUser,
-			);
+			mockRepositoryManager.anonymousUsers.getOrCreateAnonymousUser.mockResolvedValue(mockNewUser);
 
 			await validateCaptcha(context, mockNext);
 
-			expect(
-				mockRepositoryManager.anonymousUsers.getOrCreateAnonymousUser,
-			).toHaveBeenCalledWith("unknown", "unknown");
+			expect(mockRepositoryManager.anonymousUsers.getOrCreateAnonymousUser).toHaveBeenCalledWith(
+				"unknown",
+				"unknown",
+			);
 		});
 	});
 });

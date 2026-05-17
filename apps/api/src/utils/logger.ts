@@ -36,11 +36,7 @@ class Logger {
 		return Logger.instances[prefix];
 	}
 
-	private formatMessage(
-		levelName: string,
-		message: string,
-		...args: any[]
-	): string {
+	private formatMessage(levelName: string, message: string, ...args: any[]): string {
 		const timestamp = new Date().toISOString();
 		const logObject: Record<string, any> = {
 			timestamp,
@@ -89,12 +85,7 @@ class Logger {
 		}
 	}
 
-	private log(
-		level: LogLevel,
-		levelName: string,
-		message: string,
-		...args: any[]
-	) {
+	private log(level: LogLevel, levelName: string, message: string, ...args: any[]) {
 		if (level > this.level) {
 			return;
 		}

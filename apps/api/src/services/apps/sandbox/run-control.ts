@@ -63,9 +63,7 @@ export function cancelActiveSandboxRun(runId: string): boolean {
 	});
 }
 
-export function getSandboxRunAbortReason(
-	signal: AbortSignal,
-): SandboxRunAbortReason | null {
+export function getSandboxRunAbortReason(signal: AbortSignal): SandboxRunAbortReason | null {
 	if (!signal.aborted) {
 		return null;
 	}

@@ -50,9 +50,7 @@ export const MediaGenerationModal = memo(function MediaGenerationModal({
 	onNotesGenerated,
 }: MediaGenerationModalProps) {
 	const [mediaUrl, setMediaUrl] = useState("");
-	const [selectedOutputs, setSelectedOutputs] = useState<OutputType[]>([
-		"concise_summary",
-	]);
+	const [selectedOutputs, setSelectedOutputs] = useState<OutputType[]>(["concise_summary"]);
 	const [noteType, setNoteType] = useState<NoteType>("general");
 	const [extraPrompt, setExtraPrompt] = useState<string>("");
 	const [withTimestamps, setWithTimestamps] = useState<boolean>(false);
@@ -91,9 +89,8 @@ export const MediaGenerationModal = memo(function MediaGenerationModal({
 				<DialogHeader>
 					<DialogTitle>Generate Notes from Media URL</DialogTitle>
 					<DialogDescription>
-						Provide an audio/video URL, choose outputs, and generate structured
-						notes. Enable video intelligence for advanced scene analysis and
-						visual insights.
+						Provide an audio/video URL, choose outputs, and generate structured notes. Enable video
+						intelligence for advanced scene analysis and visual insights.
 					</DialogDescription>
 				</DialogHeader>
 				<div className="mt-2 space-y-4">
@@ -139,10 +136,7 @@ export const MediaGenerationModal = memo(function MediaGenerationModal({
 							))}
 						</select>
 
-						<label
-							htmlFor="timestamps"
-							className="mt-3 flex items-center gap-2 text-sm"
-						>
+						<label htmlFor="timestamps" className="mt-3 flex items-center gap-2 text-sm">
 							<input
 								id="timestamps"
 								type="checkbox"
@@ -189,9 +183,7 @@ export const MediaGenerationModal = memo(function MediaGenerationModal({
 									<label
 										key={opt.id}
 										className={`flex items-center gap-2 text-sm ${
-											opt.videoOnly && !useVideoAnalysis
-												? "opacity-50 cursor-not-allowed"
-												: ""
+											opt.videoOnly && !useVideoAnalysis ? "opacity-50 cursor-not-allowed" : ""
 										}`}
 									>
 										<input
@@ -209,9 +201,7 @@ export const MediaGenerationModal = memo(function MediaGenerationModal({
 										/>
 										{opt.label}
 										{opt.videoOnly && (
-											<span className="text-xs text-blue-500 font-medium">
-												VIDEO
-											</span>
+											<span className="text-xs text-blue-500 font-medium">VIDEO</span>
 										)}
 									</label>
 								))}
@@ -223,10 +213,7 @@ export const MediaGenerationModal = memo(function MediaGenerationModal({
 									🎥 Video Intelligence
 								</h3>
 								<div className="space-y-3">
-									<label
-										htmlFor="video-analysis"
-										className="flex items-center gap-2 text-sm"
-									>
+									<label htmlFor="video-analysis" className="flex items-center gap-2 text-sm">
 										<input
 											id="video-analysis"
 											type="checkbox"
@@ -238,11 +225,9 @@ export const MediaGenerationModal = memo(function MediaGenerationModal({
 													setSelectedOutputs((prev) =>
 														prev.filter(
 															(output) =>
-																![
-																	"scene_analysis",
-																	"visual_insights",
-																	"smart_timestamps",
-																].includes(output),
+																!["scene_analysis", "visual_insights", "smart_timestamps"].includes(
+																	output,
+																),
 														),
 													);
 													setEnableVideoSearch(false);
@@ -250,12 +235,9 @@ export const MediaGenerationModal = memo(function MediaGenerationModal({
 											}}
 										/>
 										<div>
-											<span className="font-medium">
-												Advanced video analysis
-											</span>
+											<span className="font-medium">Advanced video analysis</span>
 											<p className="text-xs text-gray-600 dark:text-gray-400">
-												Analyze visual content, scenes, gestures, and on-screen
-												text
+												Analyze visual content, scenes, gestures, and on-screen text
 											</p>
 										</div>
 									</label>
@@ -276,8 +258,7 @@ export const MediaGenerationModal = memo(function MediaGenerationModal({
 										<div>
 											<span className="font-medium">Enable video search</span>
 											<p className="text-xs text-gray-600 dark:text-gray-400">
-												Generate embeddings for semantic search across video
-												content
+												Generate embeddings for semantic search across video content
 											</p>
 										</div>
 									</label>
@@ -305,9 +286,7 @@ export const MediaGenerationModal = memo(function MediaGenerationModal({
 							disabled={generateNotesMutation.status === "pending"}
 							className="mr-2"
 						>
-							{generateNotesMutation.status === "pending"
-								? "Generating..."
-								: "Generate"}
+							{generateNotesMutation.status === "pending" ? "Generating..." : "Generate"}
 						</Button>
 						<Button variant="secondary" onClick={onClose}>
 							Close

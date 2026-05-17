@@ -32,24 +32,14 @@ function wait(ms: number): Promise<void> {
 	});
 }
 
-export function createExecutionControl(
-	options: CreateExecutionControlOptions,
-): ExecutionControl {
-	const {
-		runId,
-		timeoutSeconds,
-		userToken,
-		apiService,
-		abortSignal,
-		emitEvent,
-	} = options;
+export function createExecutionControl(options: CreateExecutionControlOptions): ExecutionControl {
+	const { runId, timeoutSeconds, userToken, apiService, abortSignal, emitEvent } = options;
 
 	const timeoutMs =
 		typeof timeoutSeconds === "number" && Number.isFinite(timeoutSeconds)
 			? timeoutSeconds * 1000
 			: undefined;
-	const deadlineMs =
-		typeof timeoutMs === "number" ? Date.now() + timeoutMs : undefined;
+	const deadlineMs = typeof timeoutMs === "number" ? Date.now() + timeoutMs : undefined;
 
 	const runControlClient = runId
 		? new RunControlClient({
@@ -59,9 +49,7 @@ export function createExecutionControl(
 			})
 		: null;
 	let lastControlStateFetchedAt = 0;
-	let lastControlState: Awaited<
-		ReturnType<RunControlClient["fetchControlState"]>
-	> | null = null;
+	let lastControlState: Awaited<ReturnType<RunControlClient["fetchControlState"]>> | null = null;
 
 	const throwIfTimedOut = () => {
 		if (deadlineMs === undefined) {
@@ -73,9 +61,7 @@ export function createExecutionControl(
 		}
 
 		const seconds = Math.max(1, Math.floor((timeoutMs ?? 1000) / 1000));
-		throw new SandboxTimeoutError(
-			`Sandbox run timed out after ${seconds} seconds`,
-		);
+		throw new SandboxTimeoutError(`Sandbox run timed out after ${seconds} seconds`);
 	};
 
 	const waitWhilePaused = async (pauseReason?: string) => {
@@ -105,8 +91,7 @@ export function createExecutionControl(
 
 			if (nextControlState.state === "cancelled") {
 				throw new SandboxCancellationError(
-					nextControlState.cancellationReason ||
-						"Sandbox run cancelled while paused",
+					nextControlState.cancellationReason || "Sandbox run cancelled while paused",
 				);
 			}
 
@@ -133,19 +118,14 @@ export function createExecutionControl(
 
 	const fetchControlState = async (options?: {
 		minRefreshMs?: number;
-	}): Promise<Awaited<
-		ReturnType<RunControlClient["fetchControlState"]>
-	> | null> => {
+	}): Promise<Awaited<ReturnType<RunControlClient["fetchControlState"]>> | null> => {
 		if (!runControlClient) {
 			return null;
 		}
 
 		const now = Date.now();
 		const minRefreshMs = options?.minRefreshMs ?? CONTROL_STATE_MIN_REFRESH_MS;
-		if (
-			lastControlStateFetchedAt > 0 &&
-			now - lastControlStateFetchedAt < minRefreshMs
-		) {
+		if (lastControlStateFetchedAt > 0 && now - lastControlStateFetchedAt < minRefreshMs) {
 			return lastControlState;
 		}
 

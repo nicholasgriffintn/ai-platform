@@ -17,9 +17,7 @@ test.describe("Authentication Feature", () => {
 		await expect(loginButton).toBeVisible();
 	});
 
-	test("should open login modal when login button is clicked", async ({
-		page,
-	}) => {
+	test("should open login modal when login button is clicked", async ({ page }) => {
 		const loginButton = page.getByRole("button", { name: /login/i });
 		await loginButton.click();
 
@@ -30,9 +28,7 @@ test.describe("Authentication Feature", () => {
 		await expect(modalTitle).toBeVisible();
 	});
 
-	test("should display GitHub authentication option in modal", async ({
-		page,
-	}) => {
+	test("should display GitHub authentication option in modal", async ({ page }) => {
 		const loginButton = page.getByRole("button", { name: /login/i });
 		await loginButton.click();
 

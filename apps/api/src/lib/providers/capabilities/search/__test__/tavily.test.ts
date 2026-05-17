@@ -147,9 +147,7 @@ describe("TavilyProvider", () => {
 		it("should handle network errors", async () => {
 			vi.mocked(fetch).mockRejectedValue(new Error("Network error"));
 
-			await expect(provider.performWebSearch("test query")).rejects.toThrow(
-				"Network error",
-			);
+			await expect(provider.performWebSearch("test query")).rejects.toThrow("Network error");
 		});
 
 		it("should handle malformed JSON response", async () => {
@@ -161,9 +159,7 @@ describe("TavilyProvider", () => {
 				},
 			} as Response);
 
-			await expect(provider.performWebSearch("test query")).rejects.toThrow(
-				"Invalid JSON",
-			);
+			await expect(provider.performWebSearch("test query")).rejects.toThrow("Invalid JSON");
 		});
 
 		it("should work with undefined API key but fail at runtime", async () => {

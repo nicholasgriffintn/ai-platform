@@ -8,21 +8,11 @@ import {
 import { MemoryManager } from "~/lib/memory";
 import { getModelConfig } from "~/lib/providers/models";
 import { getSystemPrompt } from "~/lib/prompts";
-import type {
-	ChatMode,
-	CoreChatOptions,
-	Message,
-	ModelConfigInfo,
-	Platform,
-} from "~/types";
+import type { ChatMode, CoreChatOptions, Message, ModelConfigInfo, Platform } from "~/types";
 import { generateId } from "~/utils/id";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
-import {
-	getAllAttachments,
-	pruneMessagesToFitContext,
-	sanitiseInput,
-} from "../utils";
+import { getAllAttachments, pruneMessagesToFitContext, sanitiseInput } from "../utils";
 import type { ValidationContext } from "../validation/ValidationPipeline";
 import { memoizeRequest } from "~/utils/requestCache";
 
@@ -46,10 +36,7 @@ export interface PreparedRequest {
 
 export class RequestPreparer {
 	private repositories: RepositoryManager;
-	private static modelConfigCache = new Map<
-		string,
-		Promise<ProviderModelConfig | null>
-	>();
+	private static modelConfigCache = new Map<string, Promise<ProviderModelConfig | null>>();
 
 	constructor(private env: any) {
 		this.repositories = new RepositoryManager(env);
@@ -92,19 +79,10 @@ export class RequestPreparer {
 		} = validationContext;
 
 		if (!sanitizedMessages || !primaryModelConfig || !messageWithContext) {
-			throw new AssistantError(
-				"Missing required validation context",
-				ErrorType.PARAMS_ERROR,
-			);
+			throw new AssistantError("Missing required validation context", ErrorType.PARAMS_ERROR);
 		}
 
-		const {
-			platform = "api",
-			user,
-			anonymousUser,
-			mode = "normal",
-			executionCtx,
-		} = options;
+		const { platform = "api", user, anonymousUser, mode = "normal", executionCtx } = options;
 		const requestCache = options.context?.requestCache;
 		const database = options.context?.database ?? new Database(this.env);
 		const repositories = options.context?.repositories ?? database.repositories;
@@ -119,18 +97,11 @@ export class RequestPreparer {
 					)
 				: Promise.resolve(null);
 
-		const modelConfigsPromise = this.buildModelConfigs(
-			options,
-			validationContext,
-		);
+		const modelConfigsPromise = this.buildModelConfigs(options, validationContext);
 
 		const finalMessagePromise = (async () => {
 			const resolvedSettings = await userSettingsPromise;
-			return this.processMessageContent(
-				options,
-				validationContext,
-				resolvedSettings,
-			);
+			return this.processMessageContent(options, validationContext, resolvedSettings);
 		})();
 
 		const [modelConfigs, userSettings, finalMessage] = await Promise.all([
@@ -139,11 +110,7 @@ export class RequestPreparer {
 			finalMessagePromise,
 		]);
 
-		const memoriesEnabled = this.shouldUseMemories(
-			user,
-			userSettings,
-			options.store,
-		);
+		const memoriesEnabled = this.shouldUseMemories(user, userSettings, options.store);
 
 		const primaryModel = primaryModelConfig.matchingModel;
 		const primaryProvider = primaryModelConfig.provider;
@@ -238,9 +205,7 @@ export class RequestPreparer {
 		const successfulConfigs: ModelConfigInfo[] = [];
 		const seenModels = new Set<string>();
 		const addConfig = (config: ProviderModelConfig | null) => {
-			const modelKey = config
-				? `${config.provider}::${config.matchingModel}`
-				: undefined;
+			const modelKey = config ? `${config.provider}::${config.matchingModel}` : undefined;
 			if (!config || !modelKey || seenModels.has(modelKey)) {
 				return;
 			}
@@ -252,16 +217,13 @@ export class RequestPreparer {
 			});
 		};
 
-		const shouldSkipPrimaryFetch =
-			Boolean(primaryModelConfig) && selectedModels.length > 0;
+		const shouldSkipPrimaryFetch = Boolean(primaryModelConfig) && selectedModels.length > 0;
 
 		if (shouldSkipPrimaryFetch && primaryModelConfig) {
 			addConfig(primaryModelConfig);
 		}
 
-		const modelsToFetch = shouldSkipPrimaryFetch
-			? selectedModels.slice(1)
-			: selectedModels.slice();
+		const modelsToFetch = shouldSkipPrimaryFetch ? selectedModels.slice(1) : selectedModels.slice();
 
 		const configPromises = modelsToFetch.map((model) =>
 			RequestPreparer.getCachedModelConfig(model, env),
@@ -273,8 +235,7 @@ export class RequestPreparer {
 			} else {
 				logger.warn("Failed to get model configuration", {
 					model: modelsToFetch[index],
-					error:
-						result.status === "rejected" ? result.reason : "No config returned",
+					error: result.status === "rejected" ? result.reason : "No config returned",
 				});
 			}
 		});
@@ -301,8 +262,7 @@ export class RequestPreparer {
 			? lastMessage!.content
 			: [{ type: "text" as const, text: lastMessage!.content as string }];
 
-		const lastMessageContentText =
-			lastMessageContent.find((c) => c.type === "text")?.text || "";
+		const lastMessageContentText = lastMessageContent.find((c) => c.type === "text")?.text || "";
 
 		const finalUserMessage = sanitiseInput(lastMessageContentText);
 
@@ -315,9 +275,7 @@ export class RequestPreparer {
 				env,
 				user,
 			});
-			return augmentedPrompt
-				? `${finalUserMessage}\n\n${augmentedPrompt}`
-				: finalUserMessage;
+			return augmentedPrompt ? `${finalUserMessage}\n\n${augmentedPrompt}` : finalUserMessage;
 		}
 
 		return finalUserMessage;
@@ -373,20 +331,12 @@ export class RequestPreparer {
 			// We can ignore this.
 		}
 
-		if (
-			existingMessages &&
-			existingMessages?.length > options?.messages.length
-		) {
-			await conversationManager.replaceMessages(
-				options.completion_id,
-				options.messages,
-			);
+		if (existingMessages && existingMessages?.length > options?.messages.length) {
+			await conversationManager.replaceMessages(options.completion_id, options.messages);
 		} else {
-			await conversationManager.addBatch(
-				options.completion_id,
-				messagesToStore,
-				{ metadata: options.metadata || {} },
-			);
+			await conversationManager.addBatch(options.completion_id, messagesToStore, {
+				metadata: options.metadata || {},
+			});
 		}
 	}
 
@@ -398,14 +348,7 @@ export class RequestPreparer {
 		userSettings: any,
 		memoriesEnabled: boolean,
 	): Promise<string> {
-		const {
-			system_prompt,
-			mode = "normal",
-			verbosity,
-			location,
-			completion_id,
-			user,
-		} = options;
+		const { system_prompt, mode = "normal", verbosity, location, completion_id, user } = options;
 
 		const currentMode = mode;
 
@@ -414,22 +357,12 @@ export class RequestPreparer {
 		}
 
 		if (system_prompt) {
-			return this.enhanceSystemPromptWithMemory(
-				system_prompt,
-				finalMessage,
-				user,
-				memoriesEnabled,
-			);
+			return this.enhanceSystemPromptWithMemory(system_prompt, finalMessage, user, memoriesEnabled);
 		}
 
-		const systemPromptFromMessages = sanitizedMessages.find(
-			(message) => message.role === "system",
-		);
+		const systemPromptFromMessages = sanitizedMessages.find((message) => message.role === "system");
 
-		if (
-			systemPromptFromMessages?.content &&
-			typeof systemPromptFromMessages.content === "string"
-		) {
+		if (systemPromptFromMessages?.content && typeof systemPromptFromMessages.content === "string") {
 			return this.enhanceSystemPromptWithMemory(
 				systemPromptFromMessages.content,
 				finalMessage,
@@ -453,12 +386,7 @@ export class RequestPreparer {
 			userSettings,
 		);
 
-		return this.enhanceSystemPromptWithMemory(
-			generatedPrompt,
-			finalMessage,
-			user,
-			memoriesEnabled,
-		);
+		return this.enhanceSystemPromptWithMemory(generatedPrompt, finalMessage, user, memoriesEnabled);
 	}
 
 	private async enhanceSystemPromptWithMemory(
@@ -475,10 +403,7 @@ export class RequestPreparer {
 
 				const memoryManager = MemoryManager.getInstance(this.env, user);
 				const [synthesis, recentMemories] = await Promise.all([
-					this.repositories.memorySyntheses.getActiveSynthesis(
-						user.id,
-						"global",
-					),
+					this.repositories.memorySyntheses.getActiveSynthesis(user.id, "global"),
 					memoryManager.retrieveMemories(finalMessage, {
 						topK: 3,
 						scoreThreshold: 0.5,
@@ -496,9 +421,7 @@ export class RequestPreparer {
 				}
 
 				if (memoryContext) {
-					return systemPrompt
-						? `${systemPrompt}\n${memoryContext}`
-						: memoryContext;
+					return systemPrompt ? `${systemPrompt}\n${memoryContext}` : memoryContext;
 				}
 			} catch (error) {
 				logger.warn("Failed to retrieve memories", { error, userId: user?.id });
@@ -508,11 +431,7 @@ export class RequestPreparer {
 		return systemPrompt;
 	}
 
-	private shouldUseMemories(
-		user: any,
-		userSettings: any,
-		store?: boolean,
-	): boolean {
+	private shouldUseMemories(user: any, userSettings: any, store?: boolean): boolean {
 		if (store === false) {
 			return false;
 		}
@@ -522,8 +441,7 @@ export class RequestPreparer {
 		}
 
 		return Boolean(
-			userSettings?.memories_save_enabled ||
-			userSettings?.memories_chat_history_enabled,
+			userSettings?.memories_save_enabled || userSettings?.memories_chat_history_enabled,
 		);
 	}
 
@@ -534,11 +452,7 @@ export class RequestPreparer {
 	): Message[] {
 		const prunedWithAttachments =
 			sanitizedMessages.length > 0
-				? pruneMessagesToFitContext(
-						sanitizedMessages,
-						messageWithContext,
-						modelConfig,
-					)
+				? pruneMessagesToFitContext(sanitizedMessages, messageWithContext, modelConfig)
 				: [];
 
 		const chatMessages = prunedWithAttachments.map((msg, index) => {
@@ -547,9 +461,7 @@ export class RequestPreparer {
 					return {
 						...msg,
 						content: msg.content.map((part) =>
-							part.type === "text"
-								? { ...part, text: messageWithContext }
-								: part,
+							part.type === "text" ? { ...part, text: messageWithContext } : part,
 						),
 					};
 				}

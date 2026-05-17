@@ -36,9 +36,7 @@ addRoute(app, "post", "/checkout", {
 	middleware: [requireAuth],
 	handler: async ({ raw }) =>
 		(async (c: Context) => {
-			const { plan_id, success_url, cancel_url } = c.req.valid(
-				"json" as never,
-			) as {
+			const { plan_id, success_url, cancel_url } = c.req.valid("json" as never) as {
 				plan_id: string;
 				success_url: string;
 				cancel_url: string;
@@ -46,21 +44,12 @@ addRoute(app, "post", "/checkout", {
 
 			const user = c.get("user");
 			if (!user?.id) {
-				throw new AssistantError(
-					"Authentication required",
-					ErrorType.AUTHENTICATION_ERROR,
-				);
+				throw new AssistantError("Authentication required", ErrorType.AUTHENTICATION_ERROR);
 			}
 
 			const env = c.env;
 
-			const session = await createCheckoutSession(
-				env,
-				user,
-				plan_id,
-				success_url,
-				cancel_url,
-			);
+			const session = await createCheckoutSession(env, user, plan_id, success_url, cancel_url);
 			return ResponseFactory.success(c, session);
 		})(raw),
 });
@@ -78,10 +67,7 @@ addRoute(app, "get", "/subscription", {
 		(async (c: Context) => {
 			const user = c.get("user");
 			if (!user?.id) {
-				throw new AssistantError(
-					"Authentication required",
-					ErrorType.AUTHENTICATION_ERROR,
-				);
+				throw new AssistantError("Authentication required", ErrorType.AUTHENTICATION_ERROR);
 			}
 
 			const status = await getSubscriptionStatus(c.env, user);
@@ -102,10 +88,7 @@ addRoute(app, "post", "/subscription/cancel", {
 		(async (c: Context) => {
 			const user = c.get("user");
 			if (!user?.id) {
-				throw new AssistantError(
-					"Authentication required",
-					ErrorType.AUTHENTICATION_ERROR,
-				);
+				throw new AssistantError("Authentication required", ErrorType.AUTHENTICATION_ERROR);
 			}
 
 			const result = await cancelSubscription(c.env, user);
@@ -129,10 +112,7 @@ addRoute(app, "post", "/subscription/reactivate", {
 		(async (c: Context) => {
 			const user = c.get("user");
 			if (!user?.id) {
-				throw new AssistantError(
-					"Authentication required",
-					ErrorType.AUTHENTICATION_ERROR,
-				);
+				throw new AssistantError("Authentication required", ErrorType.AUTHENTICATION_ERROR);
 			}
 			const result = await reactivateSubscription(c.env, user);
 			return ResponseFactory.success(c, result);

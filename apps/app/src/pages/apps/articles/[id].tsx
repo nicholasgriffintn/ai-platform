@@ -33,9 +33,7 @@ export default function ArticleReportDetailPage() {
 				<div className="flex justify-center items-center min-h-[400px]">
 					<div className="flex flex-col items-center">
 						<Loader2 size={48} className="animate-spin text-blue-500 mb-4" />
-						<p className="text-zinc-600 dark:text-zinc-400">
-							Loading report data...
-						</p>
+						<p className="text-zinc-600 dark:text-zinc-400">Loading report data...</p>
 					</div>
 				</div>
 			</PageShell>
@@ -64,9 +62,7 @@ export default function ArticleReportDetailPage() {
 								Error Loading Report
 							</h3>
 							<p className="text-zinc-700 dark:text-zinc-300 mb-4">
-								{error instanceof Error
-									? error.message
-									: "Unknown error occurred"}
+								{error instanceof Error ? error.message : "Unknown error occurred"}
 							</p>
 							<button
 								type="button"
@@ -95,9 +91,7 @@ export default function ArticleReportDetailPage() {
 				}
 			>
 				<div className="p-6 bg-white dark:bg-zinc-800 rounded-lg border border-zinc-200 dark:border-zinc-700 shadow-sm text-center">
-					<p className="text-zinc-600 dark:text-zinc-400">
-						Report data not found.
-					</p>
+					<p className="text-zinc-600 dark:text-zinc-400">Report data not found.</p>
 				</div>
 			</PageShell>
 		);

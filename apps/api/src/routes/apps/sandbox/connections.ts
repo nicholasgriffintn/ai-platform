@@ -46,18 +46,14 @@ export function registerSandboxConnectionRoutes(app: Hono): void {
 			(async (c: Context) => {
 				const user = c.get("user") as IUser;
 				const serviceContext = getServiceContext(c);
-				const connections = await listGitHubAppConnectionsForUser(
-					serviceContext,
-					user.id,
-				);
+				const connections = await listGitHubAppConnectionsForUser(serviceContext, user.id);
 				return ResponseFactory.success(c, { connections });
 			})(raw),
 	});
 
 	addRoute(app, "get", "/github/install-config", {
 		tags: ["apps"],
-		description:
-			"List the GitHub App installation URL and auto-connect capability",
+		description: "List the GitHub App installation URL and auto-connect capability",
 		responses: {
 			200: {
 				description: "GitHub App installation URL and auto-connect capability",
@@ -120,14 +116,10 @@ export function registerSandboxConnectionRoutes(app: Hono): void {
 				const payload = c.req.valid("json" as never) as AutoConnectPayload;
 				const serviceContext = getServiceContext(c);
 
-				await upsertGitHubConnectionFromDefaultAppForUser(
-					serviceContext,
-					user.id,
-					{
-						installationId: payload.installationId,
-						repositories: payload.repositories,
-					},
-				);
+				await upsertGitHubConnectionFromDefaultAppForUser(serviceContext, user.id, {
+					installationId: payload.installationId,
+					repositories: payload.repositories,
+				});
 
 				return ResponseFactory.success(c, {
 					success: true,
@@ -156,11 +148,7 @@ export function registerSandboxConnectionRoutes(app: Hono): void {
 				}
 
 				const serviceContext = getServiceContext(c);
-				await deleteGitHubConnectionForUser(
-					serviceContext,
-					user.id,
-					installationId,
-				);
+				await deleteGitHubConnectionForUser(serviceContext, user.id, installationId);
 
 				return ResponseFactory.success(c, {
 					success: true,

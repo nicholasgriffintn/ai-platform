@@ -18,16 +18,7 @@ export interface SwitchProps extends Omit<
 
 export const Switch = forwardRef<HTMLInputElement, SwitchProps>(
 	(
-		{
-			label,
-			description,
-			className,
-			labelPosition = "left",
-			id,
-			checked,
-			onChange,
-			...props
-		},
+		{ label, description, className, labelPosition = "left", id, checked, onChange, ...props },
 		ref,
 	) => {
 		const handleToggle = () => {
@@ -45,9 +36,7 @@ export const Switch = forwardRef<HTMLInputElement, SwitchProps>(
 		return (
 			<div className="space-y-1">
 				<div className="flex items-center justify-between">
-					{label && labelPosition === "left" && (
-						<Label htmlFor={id}>{label}</Label>
-					)}
+					{label && labelPosition === "left" && <Label htmlFor={id}>{label}</Label>}
 					<button
 						type="button"
 						role="switch"
@@ -71,9 +60,7 @@ export const Switch = forwardRef<HTMLInputElement, SwitchProps>(
 						<span
 							className={cn(
 								"absolute inset-0 rounded-full transition-colors",
-								checked
-									? "bg-zinc-600 dark:bg-zinc-400"
-									: "bg-zinc-300 dark:bg-zinc-700",
+								checked ? "bg-zinc-600 dark:bg-zinc-400" : "bg-zinc-300 dark:bg-zinc-700",
 							)}
 						/>
 						<span
@@ -83,14 +70,10 @@ export const Switch = forwardRef<HTMLInputElement, SwitchProps>(
 							)}
 						/>
 					</button>
-					{label && labelPosition === "right" && (
-						<Label htmlFor={id}>{label}</Label>
-					)}
+					{label && labelPosition === "right" && <Label htmlFor={id}>{label}</Label>}
 				</div>
 				{description && (
-					<p className="text-xs text-zinc-600 dark:text-zinc-400 mt-1">
-						{description}
-					</p>
+					<p className="text-xs text-zinc-600 dark:text-zinc-400 mt-1">{description}</p>
 				)}
 			</div>
 		);

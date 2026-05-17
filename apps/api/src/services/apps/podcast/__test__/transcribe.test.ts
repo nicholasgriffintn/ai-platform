@@ -28,8 +28,7 @@ vi.mock("~/lib/providers/capabilities/chat", () => ({
 const mockModelConfig = {
 	provider: "replicate",
 	name: "Whisper Large V3",
-	matchingModel:
-		"cbd15da9f839c5f932742f86ce7def3a03c22e2b4171d42823e83e314547003f",
+	matchingModel: "cbd15da9f839c5f932742f86ce7def3a03c22e2b4171d42823e83e314547003f",
 	inputSchema: {
 		fields: [
 			{ name: "file", type: ["file", "string"], required: true },
@@ -89,9 +88,7 @@ describe("handlePodcastTranscribe", () => {
 			}),
 		};
 
-		mockRepositories.appData.getAppDataByUserAppAndItem.mockResolvedValue([
-			existingTranscription,
-		]);
+		mockRepositories.appData.getAppDataByUserAppAndItem.mockResolvedValue([existingTranscription]);
 
 		const result = (await handlePodcastTranscribe({
 			context: mockContext,
@@ -147,9 +144,7 @@ describe("handlePodcastTranscribe", () => {
 		})) as IFunctionResponse;
 
 		expect(result.status).toBe("success");
-		expect(result.content).toBe(
-			"Podcast transcription started: transcription-123",
-		);
+		expect(result.content).toBe("Podcast transcription started: transcription-123");
 		expect(mockEnqueueTask).toHaveBeenCalledWith(
 			expect.objectContaining({
 				task_type: "podcast_transcription_polling",
@@ -159,8 +154,7 @@ describe("handlePodcastTranscribe", () => {
 		expect(mockProvider.getResponse).toHaveBeenCalledWith(
 			expect.objectContaining({
 				completion_id: "podcast-123",
-				model:
-					"cbd15da9f839c5f932742f86ce7def3a03c22e2b4171d42823e83e314547003f",
+				model: "cbd15da9f839c5f932742f86ce7def3a03c22e2b4171d42823e83e314547003f",
 			}),
 		);
 	});

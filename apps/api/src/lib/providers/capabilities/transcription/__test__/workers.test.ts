@@ -97,20 +97,16 @@ describe("WorkersTranscriptionProvider", () => {
 				user: userWithoutEmail,
 			});
 
-			expect(mockAI.run).toHaveBeenCalledWith(
-				"@cf/openai/whisper",
-				expect.any(Object),
-				{
-					gateway: {
-						id: "test-gateway-id",
-						skipCache: false,
-						cacheTtl: 3360,
-						metadata: {
-							email: undefined,
-						},
+			expect(mockAI.run).toHaveBeenCalledWith("@cf/openai/whisper", expect.any(Object), {
+				gateway: {
+					id: "test-gateway-id",
+					skipCache: false,
+					cacheTtl: 3360,
+					metadata: {
+						email: undefined,
 					},
 				},
-			);
+			});
 		});
 
 		it("should convert audio blob to correct format", async () => {

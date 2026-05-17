@@ -10,9 +10,7 @@ vi.mock("~/lib/chat/utils", () => ({
 }));
 
 vi.mock("~/lib/providers/models", () => ({
-	getAuxiliaryModel: vi.fn(() =>
-		Promise.resolve({ model: "gpt-4o-mini", provider: "openai" }),
-	),
+	getAuxiliaryModel: vi.fn(() => Promise.resolve({ model: "gpt-4o-mini", provider: "openai" })),
 }));
 
 vi.mock("~/lib/providers/capabilities/chat", () => ({
@@ -138,12 +136,7 @@ describe("performDeepWebSearch", () => {
 				response: "AI is revolutionizing technology...",
 			});
 
-		const result = await performDeepWebSearch(
-			mockEnv,
-			mockUser,
-			body,
-			mockConversationManager,
-		);
+		const result = await performDeepWebSearch(mockEnv, mockUser, body, mockConversationManager);
 
 		expect(result).toEqual({
 			answer: "AI is revolutionizing technology...",
@@ -204,9 +197,9 @@ describe("performDeepWebSearch", () => {
 			query: "test query",
 		};
 
-		await expect(
-			performDeepWebSearch(mockEnv, mockUser, body as any),
-		).rejects.toThrow("Missing query or options");
+		await expect(performDeepWebSearch(mockEnv, mockUser, body as any)).rejects.toThrow(
+			"Missing query or options",
+		);
 	});
 
 	it("should generate completion ID when not provided", async () => {
@@ -253,12 +246,7 @@ describe("performDeepWebSearch", () => {
 				response: "Test answer",
 			});
 
-		await performDeepWebSearch(
-			mockEnv,
-			mockUser,
-			body,
-			mockConversationManager,
-		);
+		await performDeepWebSearch(mockEnv, mockUser, body, mockConversationManager);
 
 		expect(mockConversationManager.add).toHaveBeenCalledTimes(3);
 		expect(mockConversationManager.updateConversation).toHaveBeenCalledWith(
@@ -278,9 +266,7 @@ describe("performDeepWebSearch", () => {
 			},
 		};
 
-		vi.mocked(handleWebSearch).mockRejectedValue(
-			new Error("Web search failed"),
-		);
+		vi.mocked(handleWebSearch).mockRejectedValue(new Error("Web search failed"));
 
 		await expect(performDeepWebSearch(mockEnv, mockUser, body)).rejects.toThrow(
 			"Web search failed",

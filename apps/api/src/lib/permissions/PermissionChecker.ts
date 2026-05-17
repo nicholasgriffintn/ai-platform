@@ -37,14 +37,8 @@ function normalisePermissions(values: string[]): ToolPermission[] {
 		}
 
 		const normalisedValue = value.toLowerCase();
-		const permission = TOOL_PERMISSIONS.find(
-			(candidate) => candidate === normalisedValue,
-		);
-		if (
-			!permission ||
-			!VALID_PERMISSIONS.has(permission) ||
-			seen.has(permission)
-		) {
+		const permission = TOOL_PERMISSIONS.find((candidate) => candidate === normalisedValue);
+		if (!permission || !VALID_PERMISSIONS.has(permission) || seen.has(permission)) {
 			continue;
 		}
 
@@ -55,10 +49,7 @@ function normalisePermissions(values: string[]): ToolPermission[] {
 	return normalised;
 }
 
-function intersectPermissions(
-	permissions: ToolPermission[],
-	candidates: ToolPermission[],
-) {
+function intersectPermissions(permissions: ToolPermission[], candidates: ToolPermission[]) {
 	const candidateSet = new Set(candidates);
 	return permissions.filter((permission) => candidateSet.has(permission));
 }
@@ -70,16 +61,10 @@ export function resolveToolPermissions(
 	return normalisePermissions(explicitPermissions || []);
 }
 
-export function resolveModeMaxSteps(
-	mode?: ChatMode | string,
-	requestedMaxSteps?: number,
-): number {
+export function resolveModeMaxSteps(mode?: ChatMode | string, requestedMaxSteps?: number): number {
 	const resolvedMode = resolveAgentModeFromChatMode(mode);
 	const modeMax = AGENT_MODE_CONFIGS[resolvedMode].maxSteps;
-	if (
-		typeof requestedMaxSteps !== "number" ||
-		!Number.isFinite(requestedMaxSteps)
-	) {
+	if (typeof requestedMaxSteps !== "number" || !Number.isFinite(requestedMaxSteps)) {
 		return modeMax;
 	}
 
@@ -91,14 +76,9 @@ export class PermissionChecker {
 		const resolvedMode = resolveAgentModeFromChatMode(input.mode);
 		const config = AGENT_MODE_CONFIGS[resolvedMode];
 		const toolName = input.toolName;
-		const configuredPermissions = resolveToolPermissions(
-			toolName,
-			input.toolPermissions || [],
-		);
+		const configuredPermissions = resolveToolPermissions(toolName, input.toolPermissions || []);
 		const permissions =
-			configuredPermissions.length > 0
-				? configuredPermissions
-				: DEFAULT_TOOL_PERMISSIONS;
+			configuredPermissions.length > 0 ? configuredPermissions : DEFAULT_TOOL_PERMISSIONS;
 
 		if (input.toolType === "premium" && input.user?.plan_id !== "pro") {
 			return {
@@ -120,10 +100,7 @@ export class PermissionChecker {
 			};
 		}
 
-		if (
-			config.allowedTools.length > 0 &&
-			!config.allowedTools.includes(toolName)
-		) {
+		if (config.allowedTools.length > 0 && !config.allowedTools.includes(toolName)) {
 			return {
 				allowed: false,
 				requiresApproval: false,
@@ -133,10 +110,7 @@ export class PermissionChecker {
 			};
 		}
 
-		const deniedByPermissions = intersectPermissions(
-			permissions,
-			config.deniedPermissions,
-		);
+		const deniedByPermissions = intersectPermissions(permissions, config.deniedPermissions);
 		if (deniedByPermissions.length > 0) {
 			return {
 				allowed: false,
@@ -149,9 +123,7 @@ export class PermissionChecker {
 
 		if (config.allowedPermissions.length > 0) {
 			const allowedSet = new Set(config.allowedPermissions);
-			const disallowed = permissions.filter(
-				(permission) => !allowedSet.has(permission),
-			);
+			const disallowed = permissions.filter((permission) => !allowedSet.has(permission));
 
 			if (disallowed.length > 0) {
 				return {
@@ -164,12 +136,8 @@ export class PermissionChecker {
 			}
 		}
 
-		const requiredApprovalFor = intersectPermissions(
-			permissions,
-			config.requiresApprovalFor,
-		);
-		const requiresApproval =
-			requiredApprovalFor.length > 0 && toolName !== "request_approval";
+		const requiredApprovalFor = intersectPermissions(permissions, config.requiresApprovalFor);
+		const requiresApproval = requiredApprovalFor.length > 0 && toolName !== "request_approval";
 
 		return {
 			allowed: true,

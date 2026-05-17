@@ -15,11 +15,7 @@ interface CreateCoordinatorEventStreamParams {
 }
 
 export function isTerminalSandboxEventType(type: string): boolean {
-	return (
-		type === "run_completed" ||
-		type === "run_failed" ||
-		type === "run_cancelled"
-	);
+	return type === "run_completed" || type === "run_failed" || type === "run_cancelled";
 }
 
 export function toSseChunk(value: unknown): Uint8Array {
@@ -38,9 +34,7 @@ export function sleep(ms: number): Promise<void> {
 	return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-function parseEnvelopeFromSocketMessage(
-	data: unknown,
-): EventEnvelopeLike | null {
+function parseEnvelopeFromSocketMessage(data: unknown): EventEnvelopeLike | null {
 	if (typeof data !== "string") {
 		return null;
 	}
@@ -79,8 +73,7 @@ async function consumeSocketEvents(params: {
 	heartbeatIntervalMs: number;
 	onEnvelope: (envelope: EventEnvelopeLike) => void;
 }): Promise<{ terminalSeen: boolean; aborted: boolean }> {
-	const { socket, controller, signal, heartbeatIntervalMs, onEnvelope } =
-		params;
+	const { socket, controller, signal, heartbeatIntervalMs, onEnvelope } = params;
 	let terminalSeen = false;
 	let aborted = false;
 

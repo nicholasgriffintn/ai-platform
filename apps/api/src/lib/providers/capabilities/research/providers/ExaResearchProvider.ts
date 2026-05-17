@@ -67,10 +67,7 @@ export class ExaResearchProvider implements ResearchProvider {
 
 		if (this.user?.id && this.userSettingsRepo) {
 			try {
-				const userApiKey = await this.userSettingsRepo.getProviderApiKey(
-					this.user.id,
-					"exa",
-				);
+				const userApiKey = await this.userSettingsRepo.getProviderApiKey(this.user.id, "exa");
 				if (userApiKey) {
 					this.apiKey = userApiKey;
 					return userApiKey;
@@ -78,8 +75,7 @@ export class ExaResearchProvider implements ResearchProvider {
 			} catch (error) {
 				if (
 					error instanceof AssistantError &&
-					(error.type === ErrorType.NOT_FOUND ||
-						error.type === ErrorType.PARAMS_ERROR)
+					(error.type === ErrorType.NOT_FOUND || error.type === ErrorType.PARAMS_ERROR)
 				) {
 					// Ignore and fallback to env key
 				} else {
@@ -90,10 +86,7 @@ export class ExaResearchProvider implements ResearchProvider {
 
 		const envKey = this.env.EXA_API_KEY;
 		if (!envKey) {
-			throw new AssistantError(
-				"EXA_API_KEY is not set",
-				ErrorType.CONFIGURATION_ERROR,
-			);
+			throw new AssistantError("EXA_API_KEY is not set", ErrorType.CONFIGURATION_ERROR);
 		}
 
 		this.apiKey = envKey;
@@ -178,9 +171,7 @@ export class ExaResearchProvider implements ResearchProvider {
 		}
 	}
 
-	async fetchResearchRun(
-		runId: string,
-	): Promise<ExaTaskRun | ResearchResultError> {
+	async fetchResearchRun(runId: string): Promise<ExaTaskRun | ResearchResultError> {
 		const headers = await this.getHeaders();
 
 		try {
@@ -192,10 +183,7 @@ export class ExaResearchProvider implements ResearchProvider {
 
 			if (!response.ok) {
 				const errorText = await response.text();
-				console.error(
-					"ExaResearchProvider: Error fetching research run:",
-					errorText,
-				);
+				console.error("ExaResearchProvider: Error fetching research run:", errorText);
 				return {
 					status: "error",
 					error: `Failed to fetch Exa research run: ${errorText}`,
@@ -224,10 +212,7 @@ export class ExaResearchProvider implements ResearchProvider {
 		}
 	}
 
-	async fetchResearchResult(
-		runId: string,
-		_options?: ResearchOptions,
-	): Promise<ResearchResult> {
+	async fetchResearchResult(runId: string, _options?: ResearchOptions): Promise<ResearchResult> {
 		const runStatus = await this.fetchResearchRun(runId);
 
 		if (isResearchResultError(runStatus)) {
@@ -239,8 +224,7 @@ export class ExaResearchProvider implements ResearchProvider {
 		if (normalizedStatus && FAILURE_STATUSES.has(normalizedStatus)) {
 			return {
 				status: "error",
-				error:
-					runStatus.error || `Exa task ${normalizedStatus} for run ${runId}`,
+				error: runStatus.error || `Exa task ${normalizedStatus} for run ${runId}`,
 			};
 		}
 
@@ -303,10 +287,7 @@ export class ExaResearchProvider implements ResearchProvider {
 		}
 	}
 
-	private async pollForResult(
-		runId: string,
-		options?: ResearchOptions,
-	): Promise<ResearchResult> {
+	private async pollForResult(runId: string, options?: ResearchOptions): Promise<ResearchResult> {
 		const pollingOptions = options?.polling ?? {};
 		const interval =
 			pollingOptions.interval_ms && pollingOptions.interval_ms >= 500
@@ -331,10 +312,7 @@ export class ExaResearchProvider implements ResearchProvider {
 					poll: {
 						attempts: attempt,
 						interval_ms: interval,
-						timeout_seconds: Math.max(
-							1,
-							Math.min(60, pollingOptions.timeout_seconds ?? 5),
-						),
+						timeout_seconds: Math.max(1, Math.min(60, pollingOptions.timeout_seconds ?? 5)),
 						elapsed_ms: Date.now() - startedAt,
 					},
 				};
@@ -343,8 +321,7 @@ export class ExaResearchProvider implements ResearchProvider {
 			const runStatus = result.run as ExaTaskRun;
 
 			if (FAILURE_STATUSES.has(runStatus.status)) {
-				const errorMessage =
-					runStatus.error || `Exa research task ${runStatus.status}`;
+				const errorMessage = runStatus.error || `Exa research task ${runStatus.status}`;
 				return {
 					status: "error",
 					error: errorMessage,
@@ -370,10 +347,7 @@ export class ExaResearchProvider implements ResearchProvider {
 		};
 	}
 
-	async performResearch(
-		input: unknown,
-		options?: ResearchOptions,
-	): Promise<ResearchResult> {
+	async performResearch(input: unknown, options?: ResearchOptions): Promise<ResearchResult> {
 		const creation = await this.createResearchTask(input, options);
 		if ("status" in creation) {
 			return creation;

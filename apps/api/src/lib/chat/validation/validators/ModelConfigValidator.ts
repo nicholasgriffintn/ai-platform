@@ -14,10 +14,7 @@ const logger = getLogger({
 });
 
 export class ModelConfigValidator implements Validator {
-	async validate(
-		options: CoreChatOptions,
-		context: ValidationContext,
-	): Promise<ValidatorResult> {
+	async validate(options: CoreChatOptions, context: ValidationContext): Promise<ValidatorResult> {
 		const {
 			env,
 			user,
@@ -47,8 +44,7 @@ export class ModelConfigValidator implements Validator {
 					},
 				];
 
-		const lastMessageContentText =
-			lastMessageContent.find((c) => c.type === "text")?.text || "";
+		const lastMessageContentText = lastMessageContent.find((c) => c.type === "text")?.text || "";
 
 		const { allAttachments } = getAllAttachments(lastMessageContent);
 

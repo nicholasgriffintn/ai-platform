@@ -1,9 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import {
-	buildAgentSystemPrompt,
-	buildPlanningPrompt,
-} from "../feature-implementation/prompts";
+import { buildAgentSystemPrompt, buildPlanningPrompt } from "../feature-implementation/prompts";
 import { resolvePromptStrategy } from "../feature-implementation/prompt-strategy";
 import type { RepositoryContext } from "../feature-implementation/types";
 

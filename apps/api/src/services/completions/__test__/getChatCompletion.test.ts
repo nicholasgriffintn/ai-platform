@@ -40,9 +40,7 @@ describe("handleGetChatCompletion", () => {
 			requireUser: vi.fn().mockReturnValue(mockUser),
 		};
 
-		vi.mocked(ConversationManager.getInstance).mockReturnValue(
-			mockConversationManager,
-		);
+		vi.mocked(ConversationManager.getInstance).mockReturnValue(mockConversationManager);
 	});
 
 	afterEach(() => {
@@ -84,18 +82,11 @@ describe("handleGetChatCompletion", () => {
 				created_at: "2023-01-01T00:00:00Z",
 			};
 
-			mockConversationManager.getConversationDetails.mockResolvedValue(
-				mockConversation,
-			);
+			mockConversationManager.getConversationDetails.mockResolvedValue(mockConversation);
 
-			const result = await handleGetChatCompletion(
-				mockServiceContext,
-				completionId,
-			);
+			const result = await handleGetChatCompletion(mockServiceContext, completionId);
 
-			expect(
-				mockConversationManager.getConversationDetails,
-			).toHaveBeenCalledWith(completionId);
+			expect(mockConversationManager.getConversationDetails).toHaveBeenCalledWith(completionId);
 			expect(result).toEqual(mockConversation);
 		});
 
@@ -108,14 +99,9 @@ describe("handleGetChatCompletion", () => {
 				created_at: "2023-01-01T00:00:00Z",
 			};
 
-			mockConversationManager.getConversationDetails.mockResolvedValue(
-				mockEmptyConversation,
-			);
+			mockConversationManager.getConversationDetails.mockResolvedValue(mockEmptyConversation);
 
-			const result = await handleGetChatCompletion(
-				mockServiceContext,
-				completionId,
-			);
+			const result = await handleGetChatCompletion(mockServiceContext, completionId);
 
 			expect(result.messages).toEqual([]);
 			expect(result.id).toBe(completionId);
@@ -128,15 +114,11 @@ describe("handleGetChatCompletion", () => {
 				messages: [],
 			};
 
-			mockConversationManager.getConversationDetails.mockResolvedValue(
-				mockConversation,
-			);
+			mockConversationManager.getConversationDetails.mockResolvedValue(mockConversation);
 
 			const result = await handleGetChatCompletion(mockServiceContext, "");
 
-			expect(
-				mockConversationManager.getConversationDetails,
-			).toHaveBeenCalledWith("");
+			expect(mockConversationManager.getConversationDetails).toHaveBeenCalledWith("");
 			expect(result).toEqual(mockConversation);
 		});
 	});
@@ -149,9 +131,9 @@ describe("handleGetChatCompletion", () => {
 				new Error("Conversation not found"),
 			);
 
-			await expect(() =>
-				handleGetChatCompletion(mockServiceContext, completionId),
-			).rejects.toThrow("Conversation not found");
+			await expect(() => handleGetChatCompletion(mockServiceContext, completionId)).rejects.toThrow(
+				"Conversation not found",
+			);
 		});
 	});
 });

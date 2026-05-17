@@ -1,8 +1,7 @@
 export function detectStreaming(body: Record<string, any>, endpoint: string) {
 	const isStreaming = body?.stream === true;
 	const isEndpointStreaming =
-		endpoint.includes("streamGenerateContent") ||
-		endpoint.includes("converse-stream");
+		endpoint.includes("streamGenerateContent") || endpoint.includes("converse-stream");
 	return isStreaming || isEndpointStreaming;
 }
 
@@ -19,10 +18,7 @@ export interface SseParserOptions {
  * @param options - Callbacks for handling parsed events and errors
  * @returns The remaining buffer content that couldn't be parsed (incomplete event)
  */
-export function parseSseBuffer(
-	buffer: string,
-	options: SseParserOptions,
-): string {
+export function parseSseBuffer(buffer: string, options: SseParserOptions): string {
 	const blocks = buffer.split("\n\n");
 	const remainingBuffer = blocks.pop() || "";
 
@@ -49,9 +45,7 @@ export function parseSseBuffer(
 			const parsed = JSON.parse(payload) as Record<string, unknown>;
 			options.onEvent(parsed);
 		} catch (error) {
-			options.onError?.(
-				error instanceof Error ? error : new Error(String(error)),
-			);
+			options.onError?.(error instanceof Error ? error : new Error(String(error)));
 		}
 	}
 

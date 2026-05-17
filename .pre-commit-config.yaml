@@ -1,8 +1,8 @@
 repos:
   - repo: local
     hooks:
-      - id: prettier
-        name: prettier
+      - id: formatter
+        name: formatter
         entry: pnpm format
         language: system
         types_or: [javascript, jsx, ts, tsx, json, yaml, markdown, css, scss]

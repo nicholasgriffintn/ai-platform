@@ -123,10 +123,7 @@ describe("StreamingFormatter", () => {
 				delta: { type: "text_delta", text: "Delta text" },
 			};
 
-			const result = StreamingFormatter.extractContentFromChunk(
-				data,
-				"content_block_delta",
-			);
+			const result = StreamingFormatter.extractContentFromChunk(data, "content_block_delta");
 
 			expect(result).toBe("Delta text");
 		});
@@ -196,10 +193,7 @@ describe("StreamingFormatter", () => {
 				delta: { type: "thinking_delta", thinking: "I'm thinking..." },
 			};
 
-			const result = StreamingFormatter.extractThinkingFromChunk(
-				data,
-				"content_block_delta",
-			);
+			const result = StreamingFormatter.extractThinkingFromChunk(data, "content_block_delta");
 
 			expect(result).toBe("I'm thinking...");
 		});
@@ -209,10 +203,7 @@ describe("StreamingFormatter", () => {
 				delta: { type: "signature_delta", signature: "signature_data" },
 			};
 
-			const result = StreamingFormatter.extractThinkingFromChunk(
-				data,
-				"content_block_delta",
-			);
+			const result = StreamingFormatter.extractThinkingFromChunk(data, "content_block_delta");
 
 			expect(result).toEqual({
 				type: "signature",
@@ -225,10 +216,7 @@ describe("StreamingFormatter", () => {
 				delta: { type: "thinking_delta", thinking: "thinking" },
 			};
 
-			const result = StreamingFormatter.extractThinkingFromChunk(
-				data,
-				"other_event",
-			);
+			const result = StreamingFormatter.extractThinkingFromChunk(data, "other_event");
 
 			expect(result).toBeNull();
 		});
@@ -256,10 +244,7 @@ describe("StreamingFormatter", () => {
 		it("should return null for unrecognized formats", () => {
 			const data = { unknown: "field" };
 
-			const result = StreamingFormatter.extractThinkingFromChunk(
-				data,
-				"content_block_delta",
-			);
+			const result = StreamingFormatter.extractThinkingFromChunk(data, "content_block_delta");
 
 			expect(result).toBeNull();
 		});
@@ -368,10 +353,7 @@ describe("StreamingFormatter", () => {
 				index: 0,
 			};
 
-			const result = StreamingFormatter.extractToolCall(
-				data,
-				"content_block_start",
-			);
+			const result = StreamingFormatter.extractToolCall(data, "content_block_start");
 
 			expect(result).toEqual({
 				format: "anthropic",
@@ -390,10 +372,7 @@ describe("StreamingFormatter", () => {
 				index: 1,
 			};
 
-			const result = StreamingFormatter.extractToolCall(
-				data,
-				"content_block_delta",
-			);
+			const result = StreamingFormatter.extractToolCall(data, "content_block_delta");
 
 			expect(result).toEqual({
 				format: "anthropic_delta",
@@ -602,9 +581,7 @@ describe("StreamingFormatter", () => {
 				candidates: [
 					{
 						groundingMetadata: {
-							groundingChunks: [
-								{ web: { uri: "https://example.com", title: "Example" } },
-							],
+							groundingChunks: [{ web: { uri: "https://example.com", title: "Example" } }],
 							searchEntryPoint: { renderedContent: "Search results" },
 						},
 					},
@@ -615,9 +592,7 @@ describe("StreamingFormatter", () => {
 
 			expect(result).toEqual({
 				searchGrounding: {
-					groundingChunks: [
-						{ web: { uri: "https://example.com", title: "Example" } },
-					],
+					groundingChunks: [{ web: { uri: "https://example.com", title: "Example" } }],
 					searchEntryPoint: {
 						renderedContent: undefined,
 					},

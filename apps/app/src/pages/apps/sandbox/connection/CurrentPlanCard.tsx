@@ -1,10 +1,4 @@
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "~/components/ui";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui";
 import { formatRelativeTime } from "~/lib/dates";
 
 interface Props {

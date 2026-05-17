@@ -87,13 +87,9 @@ export async function resolveSandboxModel(params: {
 		return enforceSandboxModelPolicy(context.env, model.trim());
 	}
 
-	const settings =
-		await context.repositories.userSettings.getUserSettings(userId);
+	const settings = await context.repositories.userSettings.getUserSettings(userId);
 	if (settings?.sandbox_model?.trim()) {
-		return enforceSandboxModelPolicy(
-			context.env,
-			settings.sandbox_model.trim(),
-		);
+		return enforceSandboxModelPolicy(context.env, settings.sandbox_model.trim());
 	}
 
 	return enforceSandboxModelPolicy(context.env, DEFAULT_SANDBOX_MODEL);
@@ -113,11 +109,7 @@ async function resolveGitHubToken(params: {
 	}
 
 	const githubConnection = installationId
-		? await getGitHubAppConnectionForUserInstallation(
-				context,
-				userId,
-				installationId,
-			)
+		? await getGitHubAppConnectionForUserInstallation(context, userId, installationId)
 		: await getGitHubAppConnectionForUserRepo(context, userId, repo);
 
 	return getGitHubAppInstallationToken({
@@ -149,16 +141,10 @@ export async function executeSandboxWorker(
 	} = options;
 
 	if (!env.SANDBOX_WORKER) {
-		throw new AssistantError(
-			"Sandbox worker not available",
-			ErrorType.NOT_FOUND,
-		);
+		throw new AssistantError("Sandbox worker not available", ErrorType.NOT_FOUND);
 	}
 	if (!env.JWT_SECRET) {
-		throw new AssistantError(
-			"JWT secret not configured",
-			ErrorType.CONFIGURATION_ERROR,
-		);
+		throw new AssistantError("JWT secret not configured", ErrorType.CONFIGURATION_ERROR);
 	}
 
 	const model = await resolveSandboxModel({

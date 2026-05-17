@@ -1,14 +1,7 @@
 import type { InputSchemaInputSchemaDescriptor } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
-type ReplicateFieldType =
-	| "string"
-	| "number"
-	| "integer"
-	| "boolean"
-	| "file"
-	| "array"
-	| "object";
+type ReplicateFieldType = "string" | "number" | "integer" | "boolean" | "file" | "array" | "object";
 
 function coerceTypeList(type: ReplicateFieldType | ReplicateFieldType[]) {
 	return Array.isArray(type) ? type : [type];
@@ -94,9 +87,7 @@ export function validateReplicatePayload({
 		if (
 			value === undefined ||
 			value === null ||
-			(allowedTypes.includes("string") &&
-				typeof value === "string" &&
-				value.trim() === "")
+			(allowedTypes.includes("string") && typeof value === "string" && value.trim() === "")
 		) {
 			if (field.required) {
 				throw new AssistantError(

@@ -276,8 +276,7 @@ export const FEATURED_APPS: FeaturedAppDefinition[] = [
 	{
 		id: "featured-replicate",
 		name: "Replicate Predictions",
-		description:
-			"Generate images, videos, audio, and more with state-of-the-art AI models",
+		description: "Generate images, videos, audio, and more with state-of-the-art AI models",
 		icon: "sparkles",
 		category: "AI Generation",
 		theme: "violet",
@@ -302,8 +301,7 @@ export const FEATURED_APPS: FeaturedAppDefinition[] = [
 	{
 		id: "featured-drawing",
 		name: "Drawing",
-		description:
-			"Create drawings and get AI to enhance them or guess what they are",
+		description: "Create drawings and get AI to enhance them or guess what they are",
 		icon: "pencil",
 		category: "Media",
 		theme: "rose",
@@ -315,8 +313,7 @@ export const FEATURED_APPS: FeaturedAppDefinition[] = [
 	{
 		id: "featured-podcast-processor",
 		name: "Podcast Processor",
-		description:
-			"Upload and process your podcast to get transcription, summary, and cover image",
+		description: "Upload and process your podcast to get transcription, summary, and cover image",
 		icon: "mic",
 		category: "Media",
 		theme: "emerald",
@@ -351,9 +348,7 @@ export const FEATURED_APPS: FeaturedAppDefinition[] = [
 	},
 ];
 
-export const getFunctionMetadata = (
-	name: string,
-): DynamicAppMetadata | undefined => {
+export const getFunctionMetadata = (name: string): DynamicAppMetadata | undefined => {
 	return FUNCTION_APP_METADATA[name];
 };
 

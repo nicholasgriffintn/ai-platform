@@ -1,8 +1,5 @@
 import type { InputSchemaInputSchemaDescriptor, ModelConfig } from "~/types";
-import {
-	createModelConfig,
-	createModelConfigObject,
-} from "~/lib/providers/models/utils";
+import { createModelConfig, createModelConfigObject } from "~/lib/providers/models/utils";
 
 const PROVIDER = "workers-ai";
 
@@ -48,17 +45,7 @@ const seedream45InputSchema: InputSchemaInputSchemaDescriptor = {
 			name: "aspect_ratio",
 			type: "string",
 			description: "Aspect ratio",
-			enum: [
-				"match_input_image",
-				"1:1",
-				"4:3",
-				"3:4",
-				"16:9",
-				"9:16",
-				"3:2",
-				"2:3",
-				"21:9",
-			],
+			enum: ["match_input_image", "1:1", "4:3", "3:4", "16:9", "9:16", "3:2", "2:3", "21:9"],
 		},
 		{
 			name: "sequential_image_generation",
@@ -102,17 +89,7 @@ const seedream5LiteInputSchema: InputSchemaInputSchemaDescriptor = {
 			name: "aspect_ratio",
 			type: "string",
 			description: "Aspect ratio",
-			enum: [
-				"match_input_image",
-				"1:1",
-				"4:3",
-				"3:4",
-				"16:9",
-				"9:16",
-				"3:2",
-				"2:3",
-				"21:9",
-			],
+			enum: ["match_input_image", "1:1", "4:3", "3:4", "16:9", "9:16", "3:2", "2:3", "21:9"],
 		},
 		{
 			name: "sequential_image_generation",
@@ -152,17 +129,7 @@ const seedream40InputSchema: InputSchemaInputSchemaDescriptor = {
 			name: "aspect_ratio",
 			type: "string",
 			description: "Aspect ratio",
-			enum: [
-				"match_input_image",
-				"1:1",
-				"4:3",
-				"3:4",
-				"16:9",
-				"9:16",
-				"3:2",
-				"2:3",
-				"21:9",
-			],
+			enum: ["match_input_image", "1:1", "4:3", "3:4", "16:9", "9:16", "3:2", "2:3", "21:9"],
 		},
 		{ name: "width", type: "integer", description: "Custom width in pixels" },
 		{ name: "height", type: "integer", description: "Custom height in pixels" },

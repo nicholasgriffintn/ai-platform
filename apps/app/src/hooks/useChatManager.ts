@@ -28,26 +28,17 @@ export function useChatManager() {
 
 	const { webLLMService } = useWebLLMInitialization(apiModels);
 	const { updateConversation } = useConversationStorage();
-	const {
-		addMessageToConversation,
-		addAssistantMessage,
-		updateAssistantMessage,
-	} = useMessageOperations();
+	const { addMessageToConversation, addAssistantMessage, updateAssistantMessage } =
+		useMessageOperations();
 
 	const generateConversationTitle = useCallback(
-		async (
-			conversationId: string,
-			messages: Message[],
-			assistantMessage: Message,
-		) => {
+		async (conversationId: string, messages: Message[], assistantMessage: Message) => {
 			try {
 				const userMessage = messages[0] || { content: "" };
 				const titleText =
 					typeof userMessage.content === "string"
 						? userMessage.content
-						: userMessage.content
-								.map((item) => (item.type === "text" ? item.text : ""))
-								.join(" ");
+						: userMessage.content.map((item) => (item.type === "text" ? item.text : "")).join(" ");
 				const tempTitle = `${titleText.slice(0, 30)}${titleText.length > 30 ? "..." : ""}`;
 
 				await updateConversation(conversationId, (oldData) => ({
@@ -85,11 +76,7 @@ export function useChatManager() {
 					.find((msg) => msg.role === "assistant");
 
 				if (lastAssistantMessage) {
-					await generateConversationTitle(
-						conversationId,
-						messages,
-						lastAssistantMessage,
-					);
+					await generateConversationTitle(conversationId, messages, lastAssistantMessage);
 				}
 			}
 		},
@@ -170,17 +157,12 @@ export function useChatManager() {
 							type: "input_audio",
 							input_audio: {
 								data: attachmentData.data,
-								format: attachmentData.name?.toLowerCase().endsWith(".wav")
-									? "wav"
-									: "mp3",
+								format: attachmentData.name?.toLowerCase().endsWith(".wav") ? "wav" : "mp3",
 							},
 						});
 					}
 
-					if (
-						attachmentData?.type === "markdown_document" &&
-						attachmentData?.markdown
-					) {
+					if (attachmentData?.type === "markdown_document" && attachmentData?.markdown) {
 						contentItems.push({
 							type: "markdown_document",
 							markdown_document: {

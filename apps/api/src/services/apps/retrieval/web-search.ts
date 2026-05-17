@@ -1,10 +1,7 @@
 import { sanitiseInput } from "~/lib/chat/utils";
 import type { ConversationManager } from "~/lib/conversationManager";
 import { getAuxiliaryModel } from "~/lib/providers/models";
-import {
-	webSearchAnswerSystemPrompt,
-	webSearchSimilarQuestionsSystemPrompt,
-} from "~/lib/prompts";
+import { webSearchAnswerSystemPrompt, webSearchSimilarQuestionsSystemPrompt } from "~/lib/prompts";
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import { handleWebSearch } from "~/services/search/web";
 import type { IEnv, IUser, SearchOptions, SearchProviderName } from "~/types";
@@ -27,24 +24,15 @@ export async function performDeepWebSearch(
 	body?: DeepWebSearchParams,
 	conversationManager?: ConversationManager,
 ) {
-	const {
-		query: rawQuery,
-		options,
-		completion_id,
-		searchProvider,
-	} = body || {};
+	const { query: rawQuery, options, completion_id, searchProvider } = body || {};
 
 	const query = sanitiseInput(rawQuery);
 
 	if (!query || !options) {
-		throw new AssistantError(
-			"Missing query or options",
-			ErrorType.PARAMS_ERROR,
-		);
+		throw new AssistantError("Missing query or options", ErrorType.PARAMS_ERROR);
 	}
 
-	const { model: modelToUse, provider: providerToUse } =
-		await getAuxiliaryModel(env, user);
+	const { model: modelToUse, provider: providerToUse } = await getAuxiliaryModel(env, user);
 	const provider = getChatProvider(providerToUse, { env, user });
 
 	const [webSearchResults, similarQuestionsResponse] = await Promise.all([
@@ -129,8 +117,7 @@ export async function performDeepWebSearch(
 			score: result.score,
 			image: result.imageUrl || result.image || undefined,
 			favicon: result.favicon || undefined,
-			publishedDate:
-				result.publishedDate || result.date || result.last_updated || undefined,
+			publishedDate: result.publishedDate || result.date || result.last_updated || undefined,
 		};
 	});
 

@@ -4,11 +4,7 @@ import type { ConversationManager } from "~/lib/conversationManager";
 import type { ChatMode, IEnv, Message, IUser } from "~/types";
 import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";
-import {
-	buildCompactionPlan,
-	buildFallbackSummary,
-	formatMessagesForSummary,
-} from "./compaction";
+import { buildCompactionPlan, buildFallbackSummary, formatMessagesForSummary } from "./compaction";
 import { getSummarisePrompt } from "~/lib/prompts/summarise";
 
 const logger = getLogger({ prefix: "lib/session/SessionManager" });
@@ -46,9 +42,7 @@ export class SessionManager {
 		this.user = config.user;
 	}
 
-	public async compact(
-		input: CompactSessionInput,
-	): Promise<CompactSessionResult> {
+	public async compact(input: CompactSessionInput): Promise<CompactSessionResult> {
 		const plan = buildCompactionPlan(input.messages, input.latestUserMessage, {
 			contextWindow: input.modelConfig?.contextWindow,
 		});
@@ -66,11 +60,7 @@ export class SessionManager {
 			input.mode || plan.messagesToArchive.at(-1)?.mode,
 		);
 
-		await this.persistCompaction(
-			input.completionId,
-			plan.messagesToArchive,
-			snapshotMessage,
-		);
+		await this.persistCompaction(input.completionId, plan.messagesToArchive, snapshotMessage);
 
 		const compactedMessages = [...plan.messagesToKeep];
 		compactedMessages.splice(plan.snapshotInsertionIndex, 0, snapshotMessage);
@@ -82,10 +72,7 @@ export class SessionManager {
 		};
 	}
 
-	public async summarise(
-		messages: Message[],
-		mode?: ChatMode,
-	): Promise<string> {
+	public async summarise(messages: Message[], mode?: ChatMode): Promise<string> {
 		if (messages.length === 0) {
 			return "Conversation snapshot recorded.";
 		}

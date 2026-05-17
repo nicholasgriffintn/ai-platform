@@ -32,30 +32,20 @@ describe("messages", () => {
 			// @ts-expect-error - mockReturnValue is not a function
 			MessageFormatter.formatMessages.mockReturnValue(mockFormattedMessages);
 
-			const result = formatMessages(
-				provider,
-				mockMessageHistory,
-				systemPrompt,
-				model,
-			);
+			const result = formatMessages(provider, mockMessageHistory, systemPrompt, model);
 
-			expect(MessageFormatter.formatMessages).toHaveBeenCalledWith(
-				mockMessageHistory,
-				{
-					provider,
-					model,
-					system_prompt: systemPrompt,
-					maxTokens: 0,
-					truncationStrategy: "tail",
-				},
-			);
+			expect(MessageFormatter.formatMessages).toHaveBeenCalledWith(mockMessageHistory, {
+				provider,
+				model,
+				system_prompt: systemPrompt,
+				maxTokens: 0,
+				truncationStrategy: "tail",
+			});
 			expect(result).toEqual(mockFormattedMessages);
 		});
 
 		it("should work without optional parameters", async () => {
-			const mockMessageHistory: Message[] = [
-				{ role: "user", content: "Hello" },
-			];
+			const mockMessageHistory: Message[] = [{ role: "user", content: "Hello" }];
 			const provider = "anthropic";
 
 			const { MessageFormatter } = vi.mocked(await import("~/lib/formatter"));
@@ -64,16 +54,13 @@ describe("messages", () => {
 
 			const result = formatMessages(provider, mockMessageHistory);
 
-			expect(MessageFormatter.formatMessages).toHaveBeenCalledWith(
-				mockMessageHistory,
-				{
-					provider,
-					model: undefined,
-					system_prompt: undefined,
-					maxTokens: 0,
-					truncationStrategy: "tail",
-				},
-			);
+			expect(MessageFormatter.formatMessages).toHaveBeenCalledWith(mockMessageHistory, {
+				provider,
+				model: undefined,
+				system_prompt: undefined,
+				maxTokens: 0,
+				truncationStrategy: "tail",
+			});
 			expect(result).toEqual(mockMessageHistory);
 		});
 
@@ -87,16 +74,13 @@ describe("messages", () => {
 
 			const result = formatMessages(provider, emptyHistory);
 
-			expect(MessageFormatter.formatMessages).toHaveBeenCalledWith(
-				emptyHistory,
-				{
-					provider,
-					model: undefined,
-					system_prompt: undefined,
-					maxTokens: 0,
-					truncationStrategy: "tail",
-				},
-			);
+			expect(MessageFormatter.formatMessages).toHaveBeenCalledWith(emptyHistory, {
+				provider,
+				model: undefined,
+				system_prompt: undefined,
+				maxTokens: 0,
+				truncationStrategy: "tail",
+			});
 			expect(result).toEqual(emptyHistory);
 		});
 	});

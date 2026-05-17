@@ -57,10 +57,7 @@ describe("AuthValidator", () => {
 				},
 			};
 
-			const result = await validator.validate(
-				optionsWithAnonymousUser,
-				baseContext,
-			);
+			const result = await validator.validate(optionsWithAnonymousUser, baseContext);
 
 			expect(result.validation.isValid).toBe(true);
 			expect(result.context).toEqual({});
@@ -159,10 +156,7 @@ describe("AuthValidator", () => {
 				} as any,
 			};
 
-			const result = await validator.validate(
-				optionsWithAnonymousUserNoId,
-				baseContext,
-			);
+			const result = await validator.validate(optionsWithAnonymousUserNoId, baseContext);
 
 			expect(result.validation.isValid).toBe(false);
 			expect(result.validation.error).toBe("User or anonymousUser is required");
@@ -222,10 +216,7 @@ describe("AuthValidator", () => {
 				},
 			};
 
-			const result = await validator.validate(
-				optionsWithEmptyAnonymousId,
-				baseContext,
-			);
+			const result = await validator.validate(optionsWithEmptyAnonymousId, baseContext);
 
 			expect(result.validation.isValid).toBe(false);
 			expect(result.validation.error).toBe("User or anonymousUser is required");

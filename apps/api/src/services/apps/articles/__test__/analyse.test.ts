@@ -97,37 +97,37 @@ describe("analyseArticle", () => {
 	it("should throw error when user ID is missing", async () => {
 		const userWithoutId = { ...mockUser, id: 0 };
 
-		await expect(
-			analyseArticle({ ...mockParams, user: userWithoutId }),
-		).rejects.toThrow(expect.any(AssistantError));
+		await expect(analyseArticle({ ...mockParams, user: userWithoutId })).rejects.toThrow(
+			expect.any(AssistantError),
+		);
 
-		await expect(
-			analyseArticle({ ...mockParams, user: userWithoutId }),
-		).rejects.toThrow("User ID is required");
+		await expect(analyseArticle({ ...mockParams, user: userWithoutId })).rejects.toThrow(
+			"User ID is required",
+		);
 	});
 
 	it("should throw error when itemId is missing", async () => {
 		const argsWithoutItemId = { ...mockParams.args, itemId: "" };
 
-		await expect(
-			analyseArticle({ ...mockParams, args: argsWithoutItemId }),
-		).rejects.toThrow(expect.any(AssistantError));
+		await expect(analyseArticle({ ...mockParams, args: argsWithoutItemId })).rejects.toThrow(
+			expect.any(AssistantError),
+		);
 
-		await expect(
-			analyseArticle({ ...mockParams, args: argsWithoutItemId }),
-		).rejects.toThrow("Item ID is required");
+		await expect(analyseArticle({ ...mockParams, args: argsWithoutItemId })).rejects.toThrow(
+			"Item ID is required",
+		);
 	});
 
 	it("should throw error when article content is missing", async () => {
 		const argsWithoutArticle = { ...mockParams.args, article: "" };
 
-		await expect(
-			analyseArticle({ ...mockParams, args: argsWithoutArticle }),
-		).rejects.toThrow(expect.any(AssistantError));
+		await expect(analyseArticle({ ...mockParams, args: argsWithoutArticle })).rejects.toThrow(
+			expect.any(AssistantError),
+		);
 
-		await expect(
-			analyseArticle({ ...mockParams, args: argsWithoutArticle }),
-		).rejects.toThrow("Article content is required");
+		await expect(analyseArticle({ ...mockParams, args: argsWithoutArticle })).rejects.toThrow(
+			"Article content is required",
+		);
 	});
 
 	it("should successfully analyse article and save data", async () => {
@@ -208,32 +208,21 @@ describe("analyseArticle", () => {
 
 		mockProvider.getResponse.mockResolvedValue(mockAnalysisResponse);
 
-		await expect(analyseArticle(mockParams)).rejects.toThrow(
-			expect.any(AssistantError),
-		);
+		await expect(analyseArticle(mockParams)).rejects.toThrow(expect.any(AssistantError));
 
-		await expect(analyseArticle(mockParams)).rejects.toThrow(
-			"Analysis content was empty",
-		);
+		await expect(analyseArticle(mockParams)).rejects.toThrow("Analysis content was empty");
 	});
 
 	it("should throw AssistantError when provider throws non-AssistantError", async () => {
 		mockProvider.getResponse.mockRejectedValue(new Error("API Error"));
 
-		await expect(analyseArticle(mockParams)).rejects.toThrow(
-			expect.any(AssistantError),
-		);
+		await expect(analyseArticle(mockParams)).rejects.toThrow(expect.any(AssistantError));
 
-		await expect(analyseArticle(mockParams)).rejects.toThrow(
-			"Failed to analyse article",
-		);
+		await expect(analyseArticle(mockParams)).rejects.toThrow("Failed to analyse article");
 	});
 
 	it("should rethrow AssistantError from dependencies", async () => {
-		const originalError = new AssistantError(
-			"Custom error",
-			ErrorType.PARAMS_ERROR,
-		);
+		const originalError = new AssistantError("Custom error", ErrorType.PARAMS_ERROR);
 		mockProvider.getResponse.mockRejectedValue(originalError);
 
 		await expect(analyseArticle(mockParams)).rejects.toThrow(originalError);
@@ -251,9 +240,7 @@ describe("analyseArticle", () => {
 
 		await analyseArticle(mockParams);
 
-		expect(vi.mocked(sanitiseInput)).toHaveBeenCalledWith(
-			"This is a test article content",
-		);
+		expect(vi.mocked(sanitiseInput)).toHaveBeenCalledWith("This is a test article content");
 	});
 
 	it("should extract and verify quotes from analysis", async () => {
@@ -269,12 +256,10 @@ describe("analyseArticle", () => {
 
 		await analyseArticle(mockParams);
 
-		expect(vi.mocked(extractQuotes)).toHaveBeenCalledWith(
-			"Analysis with quotes",
-		);
-		expect(vi.mocked(verifyQuotes)).toHaveBeenCalledWith(
-			"This is a test article content",
-			["quote1", "quote2"],
-		);
+		expect(vi.mocked(extractQuotes)).toHaveBeenCalledWith("Analysis with quotes");
+		expect(vi.mocked(verifyQuotes)).toHaveBeenCalledWith("This is a test article content", [
+			"quote1",
+			"quote2",
+		]);
 	});
 });

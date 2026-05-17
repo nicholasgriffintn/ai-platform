@@ -28,18 +28,16 @@ export async function scheduleDailySynthesis(env: IEnv): Promise<void> {
 
 		for (const user of users) {
 			try {
-				const lastSynthesis =
-					await repositories.memorySyntheses.getActiveSynthesis(
-						user.id,
-						"global",
-					);
+				const lastSynthesis = await repositories.memorySyntheses.getActiveSynthesis(
+					user.id,
+					"global",
+				);
 
-				const newMemoryCount =
-					await repositories.memorySyntheses.countMemoriesSince(
-						user.id,
-						lastSynthesis?.created_at,
-						"global",
-					);
+				const newMemoryCount = await repositories.memorySyntheses.countMemoriesSince(
+					user.id,
+					lastSynthesis?.created_at,
+					"global",
+				);
 
 				if (newMemoryCount >= 5) {
 					await taskService.enqueueTask({
@@ -52,10 +50,7 @@ export async function scheduleDailySynthesis(env: IEnv): Promise<void> {
 					scheduledCount++;
 				}
 			} catch (error) {
-				logger.error(
-					`Failed to schedule synthesis for user ${user.id}:`,
-					error,
-				);
+				logger.error(`Failed to schedule synthesis for user ${user.id}:`, error);
 			}
 		}
 

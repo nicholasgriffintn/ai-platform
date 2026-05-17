@@ -22,11 +22,7 @@ export class PromptBuilder {
 		return this;
 	}
 
-	addConditional(
-		condition: boolean,
-		trueText: string,
-		falseText = "",
-	): PromptBuilder {
+	addConditional(condition: boolean, trueText: string, falseText = ""): PromptBuilder {
 		this.parts.push(condition ? trueText : falseText);
 		return this;
 	}

@@ -33,9 +33,7 @@ describe("handleGetSharedConversation", () => {
 			repositories: {} as any,
 		};
 
-		vi.mocked(ConversationManager.getInstance).mockReturnValue(
-			mockConversationManager,
-		);
+		vi.mocked(ConversationManager.getInstance).mockReturnValue(mockConversationManager);
 	});
 
 	afterEach(() => {
@@ -50,18 +48,15 @@ describe("handleGetSharedConversation", () => {
 				{ role: "assistant", content: "Hi there!" },
 			];
 
-			mockConversationManager.getPublicConversation.mockResolvedValue(
-				mockMessages,
-			);
+			mockConversationManager.getPublicConversation.mockResolvedValue(mockMessages);
 
-			const result = await handleGetSharedConversation(
-				mockServiceContext,
+			const result = await handleGetSharedConversation(mockServiceContext, shareId);
+
+			expect(mockConversationManager.getPublicConversation).toHaveBeenCalledWith(
 				shareId,
+				50,
+				undefined,
 			);
-
-			expect(
-				mockConversationManager.getPublicConversation,
-			).toHaveBeenCalledWith(shareId, 50, undefined);
 			expect(result).toEqual({
 				messages: mockMessages,
 				share_id: shareId,
@@ -73,10 +68,7 @@ describe("handleGetSharedConversation", () => {
 
 			mockConversationManager.getPublicConversation.mockResolvedValue([]);
 
-			const result = await handleGetSharedConversation(
-				mockServiceContext,
-				shareId,
-			);
+			const result = await handleGetSharedConversation(mockServiceContext, shareId);
 
 			expect(result.messages).toEqual([]);
 			expect(result.share_id).toBe(shareId);
@@ -97,20 +89,15 @@ describe("handleGetSharedConversation", () => {
 			const after = "cursor-123";
 			const mockMessages = [{ role: "user", content: "Test" }];
 
-			mockConversationManager.getPublicConversation.mockResolvedValue(
-				mockMessages,
-			);
+			mockConversationManager.getPublicConversation.mockResolvedValue(mockMessages);
 
-			const result = await handleGetSharedConversation(
-				mockServiceContext,
+			const result = await handleGetSharedConversation(mockServiceContext, shareId, limit, after);
+
+			expect(mockConversationManager.getPublicConversation).toHaveBeenCalledWith(
 				shareId,
 				limit,
 				after,
 			);
-
-			expect(
-				mockConversationManager.getPublicConversation,
-			).toHaveBeenCalledWith(shareId, limit, after);
 			expect(result).toEqual({
 				messages: mockMessages,
 				share_id: shareId,
@@ -126,9 +113,9 @@ describe("handleGetSharedConversation", () => {
 				new Error("Shared conversation not found"),
 			);
 
-			await expect(() =>
-				handleGetSharedConversation(mockServiceContext, shareId),
-			).rejects.toThrow("Shared conversation not found");
+			await expect(() => handleGetSharedConversation(mockServiceContext, shareId)).rejects.toThrow(
+				"Shared conversation not found",
+			);
 		});
 
 		it("should surface errors from ensureDatabase", async () => {

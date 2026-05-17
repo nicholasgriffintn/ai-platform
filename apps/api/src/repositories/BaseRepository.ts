@@ -12,34 +12,20 @@ export abstract class BaseRepository {
 
 	constructor(env: IEnv) {
 		if (!env?.DB) {
-			throw new AssistantError(
-				"Database not configured",
-				ErrorType.CONFIGURATION_ERROR,
-			);
+			throw new AssistantError("Database not configured", ErrorType.CONFIGURATION_ERROR);
 		}
 		this.env = env;
 	}
 
-	protected async runQuery<T>(
-		query: string,
-		params: any[],
-		returnFirst: true,
-	): Promise<T | null>;
-	protected async runQuery<T>(
-		query: string,
-		params?: any[],
-		returnFirst?: false,
-	): Promise<T[]>;
+	protected async runQuery<T>(query: string, params: any[], returnFirst: true): Promise<T | null>;
+	protected async runQuery<T>(query: string, params?: any[], returnFirst?: false): Promise<T[]>;
 	protected async runQuery<T>(
 		query: string,
 		params: any[] = [],
 		returnFirst = false,
 	): Promise<T | T[] | null> {
 		if (!this.env.DB) {
-			throw new AssistantError(
-				"DB is not configured in runQuery",
-				ErrorType.CONFIGURATION_ERROR,
-			);
+			throw new AssistantError("DB is not configured in runQuery", ErrorType.CONFIGURATION_ERROR);
 		}
 
 		try {
@@ -64,15 +50,9 @@ export abstract class BaseRepository {
 		}
 	}
 
-	protected async executeRun(
-		query: string,
-		params: any[] = [],
-	): Promise<D1Result<unknown>> {
+	protected async executeRun(query: string, params: any[] = []): Promise<D1Result<unknown>> {
 		if (!this.env.DB) {
-			throw new AssistantError(
-				"DB is not configured in executeRun",
-				ErrorType.CONFIGURATION_ERROR,
-			);
+			throw new AssistantError("DB is not configured in executeRun", ErrorType.CONFIGURATION_ERROR);
 		}
 
 		try {
@@ -81,12 +61,9 @@ export abstract class BaseRepository {
 			const result = await bound.run();
 
 			if (!result.success) {
-				throw new AssistantError(
-					"Database operation failed",
-					ErrorType.UNKNOWN_ERROR,
-					500,
-					{ meta: result.meta },
-				);
+				throw new AssistantError("Database operation failed", ErrorType.UNKNOWN_ERROR, 500, {
+					meta: result.meta,
+				});
 			}
 
 			return result;
@@ -116,12 +93,10 @@ export abstract class BaseRepository {
 			returning?: string;
 		} = {},
 	): { query: string; values: unknown[] } | null {
-		const builder = new QueryBuilder()
-			.update(table)
-			.set(updates, allowedFields, {
-				jsonFields: options.jsonFields,
-				transformer: options.transformer,
-			});
+		const builder = new QueryBuilder().update(table).set(updates, allowedFields, {
+			jsonFields: options.jsonFields,
+			transformer: options.transformer,
+		});
 
 		if (whereClause) {
 			builder.where(whereClause, whereValues);
@@ -266,10 +241,7 @@ export abstract class BaseRepository {
 	private sanitizeIdentifier(identifier: string): string {
 		const trimmed = identifier.trim();
 		if (!trimmed) {
-			throw new AssistantError(
-				"Invalid identifier: empty value",
-				ErrorType.UNKNOWN_ERROR,
-			);
+			throw new AssistantError("Invalid identifier: empty value", ErrorType.UNKNOWN_ERROR);
 		}
 
 		if (trimmed === "*") {
@@ -280,27 +252,18 @@ export abstract class BaseRepository {
 
 		const sanitizedParts = parts.map((part, index) => {
 			if (!part) {
-				throw new AssistantError(
-					`Invalid identifier: ${identifier}`,
-					ErrorType.UNKNOWN_ERROR,
-				);
+				throw new AssistantError(`Invalid identifier: ${identifier}`, ErrorType.UNKNOWN_ERROR);
 			}
 
 			if (part === "*") {
 				if (index !== parts.length - 1) {
-					throw new AssistantError(
-						`Invalid identifier: ${identifier}`,
-						ErrorType.UNKNOWN_ERROR,
-					);
+					throw new AssistantError(`Invalid identifier: ${identifier}`, ErrorType.UNKNOWN_ERROR);
 				}
 				return part;
 			}
 
 			if (!IDENTIFIER_PATTERN.test(part)) {
-				throw new AssistantError(
-					`Invalid identifier: ${identifier}`,
-					ErrorType.UNKNOWN_ERROR,
-				);
+				throw new AssistantError(`Invalid identifier: ${identifier}`, ErrorType.UNKNOWN_ERROR);
 			}
 
 			return part;

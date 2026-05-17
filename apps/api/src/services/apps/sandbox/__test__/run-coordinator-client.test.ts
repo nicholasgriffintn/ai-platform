@@ -57,9 +57,7 @@ describe("run coordinator client", () => {
 	});
 
 	it("returns an empty events list when coordinator returns non-ok", async () => {
-		const fetchMock = vi
-			.fn()
-			.mockResolvedValue(new Response("nope", { status: 500 }));
+		const fetchMock = vi.fn().mockResolvedValue(new Response("nope", { status: 500 }));
 		const env = createCoordinatorEnv(fetchMock);
 
 		const events = await listRunCoordinatorEvents({

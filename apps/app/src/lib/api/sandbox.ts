@@ -13,10 +13,7 @@ import type {
 	SandboxRunEvent,
 } from "~/types/sandbox";
 
-async function extractApiErrorMessage(
-	response: Response,
-	fallback: string,
-): Promise<string> {
+async function extractApiErrorMessage(response: Response, fallback: string): Promise<string> {
 	const bodyText = await response.text();
 	if (!bodyText.trim()) {
 		return fallback;
@@ -35,10 +32,7 @@ async function extractApiErrorMessage(
 
 		if (Array.isArray(parsed.details) && parsed.details.length > 0) {
 			const firstDetail = parsed.details[0] as { message?: unknown };
-			if (
-				typeof firstDetail?.message === "string" &&
-				firstDetail.message.trim()
-			) {
+			if (typeof firstDetail?.message === "string" && firstDetail.message.trim()) {
 				return firstDetail.message;
 			}
 		}
@@ -65,9 +59,7 @@ export async function fetchSandboxConnections(): Promise<SandboxConnection[]> {
 		);
 	}
 
-	const data = await returnFetchedData<{ connections: SandboxConnection[] }>(
-		response,
-	);
+	const data = await returnFetchedData<{ connections: SandboxConnection[] }>(response);
 	return data.connections ?? [];
 }
 
@@ -90,9 +82,7 @@ export async function fetchSandboxInstallConfig(): Promise<SandboxInstallConfig>
 	return returnFetchedData<SandboxInstallConfig>(response);
 }
 
-export async function upsertSandboxConnection(
-	input: CreateSandboxConnectionInput,
-): Promise<void> {
+export async function upsertSandboxConnection(input: CreateSandboxConnectionInput): Promise<void> {
 	const headers = await apiService.getHeaders();
 	const response = await fetchApi("/apps/sandbox/connections", {
 		method: "POST",
@@ -130,17 +120,12 @@ export async function connectSandboxInstallation(
 	}
 }
 
-export async function deleteSandboxConnection(
-	installationId: number,
-): Promise<void> {
+export async function deleteSandboxConnection(installationId: number): Promise<void> {
 	const headers = await apiService.getHeaders();
-	const response = await fetchApi(
-		`/apps/sandbox/connections/${installationId}`,
-		{
-			method: "DELETE",
-			headers,
-		},
-	);
+	const response = await fetchApi(`/apps/sandbox/connections/${installationId}`, {
+		method: "DELETE",
+		headers,
+	});
 
 	if (!response.ok) {
 		throw new Error(
@@ -171,13 +156,10 @@ export async function fetchSandboxRuns(params: {
 	}
 
 	const query = searchParams.toString();
-	const response = await fetchApi(
-		`/apps/sandbox/runs${query ? `?${query}` : ""}`,
-		{
-			method: "GET",
-			headers,
-		},
-	);
+	const response = await fetchApi(`/apps/sandbox/runs${query ? `?${query}` : ""}`, {
+		method: "GET",
+		headers,
+	});
 
 	if (!response.ok) {
 		throw new Error(
@@ -201,10 +183,7 @@ export async function fetchSandboxRun(runId: string): Promise<SandboxRun> {
 
 	if (!response.ok) {
 		throw new Error(
-			await extractApiErrorMessage(
-				response,
-				`Failed to fetch sandbox run: ${response.statusText}`,
-			),
+			await extractApiErrorMessage(response, `Failed to fetch sandbox run: ${response.statusText}`),
 		);
 	}
 
@@ -215,9 +194,7 @@ export async function fetchSandboxRun(runId: string): Promise<SandboxRun> {
 	return data.run;
 }
 
-export async function fetchSandboxRunInstructions(
-	runId: string,
-): Promise<SandboxRunInstruction[]> {
+export async function fetchSandboxRunInstructions(runId: string): Promise<SandboxRunInstruction[]> {
 	const headers = await apiService.getHeaders();
 	const response = await fetchApi(`/apps/sandbox/runs/${runId}/instructions`, {
 		method: "GET",
@@ -242,10 +219,7 @@ export async function fetchSandboxRunInstructions(
 		.filter((entry): entry is SandboxRunInstruction => Boolean(entry));
 }
 
-export async function cancelSandboxRun(
-	runId: string,
-	reason?: string,
-): Promise<SandboxRun> {
+export async function cancelSandboxRun(runId: string, reason?: string): Promise<SandboxRun> {
 	return mutateSandboxRunState({
 		runId,
 		action: "cancel",
@@ -254,10 +228,7 @@ export async function cancelSandboxRun(
 	});
 }
 
-export async function pauseSandboxRun(
-	runId: string,
-	reason?: string,
-): Promise<SandboxRun> {
+export async function pauseSandboxRun(runId: string, reason?: string): Promise<SandboxRun> {
 	return mutateSandboxRunState({
 		runId,
 		action: "pause",
@@ -266,10 +237,7 @@ export async function pauseSandboxRun(
 	});
 }
 
-export async function resumeSandboxRun(
-	runId: string,
-	reason?: string,
-): Promise<SandboxRun> {
+export async function resumeSandboxRun(runId: string, reason?: string): Promise<SandboxRun> {
 	return mutateSandboxRunState({
 		runId,
 		action: "resume",
@@ -296,10 +264,7 @@ async function mutateSandboxRunState(params: {
 
 	if (!response.ok) {
 		throw new Error(
-			await extractApiErrorMessage(
-				response,
-				`${errorFallback}: ${response.statusText}`,
-			),
+			await extractApiErrorMessage(response, `${errorFallback}: ${response.statusText}`),
 		);
 	}
 
@@ -321,22 +286,19 @@ export async function submitSandboxRunInstruction(params: {
 	escalateAfterSeconds?: number;
 }): Promise<SandboxRunInstruction> {
 	const headers = await apiService.getHeaders();
-	const response = await fetchApi(
-		`/apps/sandbox/runs/${params.runId}/instructions`,
-		{
-			method: "POST",
-			headers,
-			body: {
-				kind: params.kind ?? "message",
-				content: params.content,
-				command: params.command,
-				requestId: params.requestId,
-				approvalStatus: params.approvalStatus,
-				timeoutSeconds: params.timeoutSeconds,
-				escalateAfterSeconds: params.escalateAfterSeconds,
-			},
+	const response = await fetchApi(`/apps/sandbox/runs/${params.runId}/instructions`, {
+		method: "POST",
+		headers,
+		body: {
+			kind: params.kind ?? "message",
+			content: params.content,
+			command: params.command,
+			requestId: params.requestId,
+			approvalStatus: params.approvalStatus,
+			timeoutSeconds: params.timeoutSeconds,
+			escalateAfterSeconds: params.escalateAfterSeconds,
 		},
-	);
+	});
 
 	if (!response.ok) {
 		throw new Error(
@@ -347,9 +309,7 @@ export async function submitSandboxRunInstruction(params: {
 		);
 	}
 
-	const data = await returnFetchedData<{ instruction?: SandboxRunInstruction }>(
-		response,
-	);
+	const data = await returnFetchedData<{ instruction?: SandboxRunInstruction }>(response);
 	if (!data.instruction) {
 		throw new Error("Submitted instruction was not returned");
 	}
@@ -481,9 +441,7 @@ export async function streamSandboxRunEvents(
 	}
 	const query = params.toString();
 	const response = await fetchApi(
-		`/apps/sandbox/runs/${encodeURIComponent(runId)}/events/stream${
-			query ? `?${query}` : ""
-		}`,
+		`/apps/sandbox/runs/${encodeURIComponent(runId)}/events/stream${query ? `?${query}` : ""}`,
 		{
 			method: "GET",
 			headers: {

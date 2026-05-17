@@ -56,9 +56,7 @@ describe("logger", () => {
 
 			logger.info("Test message");
 
-			expect(consoleSpy.info).toHaveBeenCalledWith(
-				expect.stringContaining('"prefix":"TEST"'),
-			);
+			expect(consoleSpy.info).toHaveBeenCalledWith(expect.stringContaining('"prefix":"TEST"'));
 		});
 
 		it("should create logger with custom log level", () => {
@@ -92,9 +90,7 @@ describe("logger", () => {
 
 			logger.error("Error occurred");
 
-			expect(consoleSpy.error).toHaveBeenCalledWith(
-				expect.stringContaining('"level":"ERROR"'),
-			);
+			expect(consoleSpy.error).toHaveBeenCalledWith(expect.stringContaining('"level":"ERROR"'));
 			expect(consoleSpy.error).toHaveBeenCalledWith(
 				expect.stringContaining('"message":"Error occurred"'),
 			);
@@ -105,9 +101,7 @@ describe("logger", () => {
 
 			logger.warn("Warning message");
 
-			expect(consoleSpy.warn).toHaveBeenCalledWith(
-				expect.stringContaining('"level":"WARN"'),
-			);
+			expect(consoleSpy.warn).toHaveBeenCalledWith(expect.stringContaining('"level":"WARN"'));
 			expect(consoleSpy.warn).toHaveBeenCalledWith(
 				expect.stringContaining('"message":"Warning message"'),
 			);
@@ -118,9 +112,7 @@ describe("logger", () => {
 
 			logger.info("Info message");
 
-			expect(consoleSpy.info).toHaveBeenCalledWith(
-				expect.stringContaining('"level":"INFO"'),
-			);
+			expect(consoleSpy.info).toHaveBeenCalledWith(expect.stringContaining('"level":"INFO"'));
 			expect(consoleSpy.info).toHaveBeenCalledWith(
 				expect.stringContaining('"message":"Info message"'),
 			);
@@ -131,9 +123,7 @@ describe("logger", () => {
 
 			logger.debug("Debug message");
 
-			expect(consoleSpy.debug).toHaveBeenCalledWith(
-				expect.stringContaining('"level":"DEBUG"'),
-			);
+			expect(consoleSpy.debug).toHaveBeenCalledWith(expect.stringContaining('"level":"DEBUG"'));
 			expect(consoleSpy.debug).toHaveBeenCalledWith(
 				expect.stringContaining('"message":"Debug message"'),
 			);
@@ -144,9 +134,7 @@ describe("logger", () => {
 
 			logger.trace("Trace message");
 
-			expect(consoleSpy.trace).toHaveBeenCalledWith(
-				expect.stringContaining('"level":"TRACE"'),
-			);
+			expect(consoleSpy.trace).toHaveBeenCalledWith(expect.stringContaining('"level":"TRACE"'));
 			expect(consoleSpy.trace).toHaveBeenCalledWith(
 				expect.stringContaining('"message":"Trace message"'),
 			);
@@ -241,9 +229,7 @@ describe("logger", () => {
 
 			logger.info("Test message");
 
-			expect(consoleSpy.info).toHaveBeenCalledWith(
-				expect.stringContaining('"timestamp":'),
-			);
+			expect(consoleSpy.info).toHaveBeenCalledWith(expect.stringContaining('"timestamp":'));
 		});
 
 		it("should include level in log output", () => {
@@ -251,9 +237,7 @@ describe("logger", () => {
 
 			logger.error("Error message");
 
-			expect(consoleSpy.error).toHaveBeenCalledWith(
-				expect.stringContaining('"level":"ERROR"'),
-			);
+			expect(consoleSpy.error).toHaveBeenCalledWith(expect.stringContaining('"level":"ERROR"'));
 		});
 
 		it("should include prefix when provided", () => {
@@ -354,9 +338,7 @@ describe("logger", () => {
 			logger.info("Test message", circular);
 
 			expect(consoleSpy.info).toHaveBeenCalledWith(
-				expect.stringContaining(
-					'"message":"Test message [unserializable payload]"',
-				),
+				expect.stringContaining('"message":"Test message [unserializable payload]"'),
 			);
 		});
 
@@ -371,9 +353,7 @@ describe("logger", () => {
 			logger.info("Test message", unserializable);
 
 			expect(consoleSpy.info).toHaveBeenCalledWith(
-				expect.stringContaining(
-					'"message":"Test message [unserializable payload]"',
-				),
+				expect.stringContaining('"message":"Test message [unserializable payload]"'),
 			);
 		});
 	});

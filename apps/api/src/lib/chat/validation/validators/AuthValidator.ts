@@ -6,10 +6,7 @@ import type {
 import type { CoreChatOptions } from "~/types";
 
 export class AuthValidator implements Validator {
-	async validate(
-		options: CoreChatOptions,
-		_context: ValidationContext,
-	): Promise<ValidatorResult> {
+	async validate(options: CoreChatOptions, _context: ValidationContext): Promise<ValidatorResult> {
 		const { env, user, anonymousUser } = options;
 
 		if (!env.DB) {

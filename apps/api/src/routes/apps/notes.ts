@@ -67,13 +67,9 @@ addRoute(app, "get", "/", {
 					throw error;
 				}
 				routeLogger.error("Error listing notes:", {
-					error_message:
-						error instanceof Error ? error.message : "Unknown error",
+					error_message: error instanceof Error ? error.message : "Unknown error",
 				});
-				throw new AssistantError(
-					"Failed to list notes",
-					ErrorType.UNKNOWN_ERROR,
-				);
+				throw new AssistantError("Failed to list notes", ErrorType.UNKNOWN_ERROR);
 			}
 		})(raw),
 });
@@ -104,13 +100,9 @@ addRoute(app, "get", "/:id", {
 					throw error;
 				}
 				routeLogger.error("Error fetching note:", {
-					error_message:
-						error instanceof Error ? error.message : "Unknown error",
+					error_message: error instanceof Error ? error.message : "Unknown error",
 				});
-				throw new AssistantError(
-					"Failed to fetch note",
-					ErrorType.UNKNOWN_ERROR,
-				);
+				throw new AssistantError("Failed to fetch note", ErrorType.UNKNOWN_ERROR);
 			}
 		})(raw),
 });
@@ -152,13 +144,9 @@ addRoute(app, "post", "/", {
 					throw error;
 				}
 				routeLogger.error("Error creating note:", {
-					error_message:
-						error instanceof Error ? error.message : "Unknown error",
+					error_message: error instanceof Error ? error.message : "Unknown error",
 				});
-				throw new AssistantError(
-					"Failed to create note",
-					ErrorType.UNKNOWN_ERROR,
-				);
+				throw new AssistantError("Failed to create note", ErrorType.UNKNOWN_ERROR);
 			}
 		})(raw),
 });
@@ -197,13 +185,9 @@ addRoute(app, "put", "/:id", {
 					throw error;
 				}
 				routeLogger.error("Error updating note:", {
-					error_message:
-						error instanceof Error ? error.message : "Unknown error",
+					error_message: error instanceof Error ? error.message : "Unknown error",
 				});
-				throw new AssistantError(
-					"Failed to update note",
-					ErrorType.UNKNOWN_ERROR,
-				);
+				throw new AssistantError("Failed to update note", ErrorType.UNKNOWN_ERROR);
 			}
 		})(raw),
 });
@@ -235,13 +219,9 @@ addRoute(app, "delete", "/:id", {
 					throw error;
 				}
 				routeLogger.error("Error deleting note:", {
-					error_message:
-						error instanceof Error ? error.message : "Unknown error",
+					error_message: error instanceof Error ? error.message : "Unknown error",
 				});
-				throw new AssistantError(
-					"Failed to delete note",
-					ErrorType.UNKNOWN_ERROR,
-				);
+				throw new AssistantError("Failed to delete note", ErrorType.UNKNOWN_ERROR);
 			}
 		})(raw),
 });
@@ -281,13 +261,9 @@ addRoute(app, "post", "/:id/format", {
 			} catch (error) {
 				if (error instanceof AssistantError) throw error;
 				routeLogger.error("Error formatting note:", {
-					error_message:
-						error instanceof Error ? error.message : "Unknown error",
+					error_message: error instanceof Error ? error.message : "Unknown error",
 				});
-				throw new AssistantError(
-					"Failed to format note",
-					ErrorType.UNKNOWN_ERROR,
-				);
+				throw new AssistantError("Failed to format note", ErrorType.UNKNOWN_ERROR);
 			}
 		})(raw),
 });
@@ -310,9 +286,7 @@ addRoute(app, "post", "/generate-from-media", {
 	middleware: [requirePlan("pro")],
 	handler: async ({ raw }) =>
 		(async (c: Context) => {
-			const body = c.req.valid("json" as never) as z.infer<
-				typeof generateNotesFromMediaSchema
-			>;
+			const body = c.req.valid("json" as never) as z.infer<typeof generateNotesFromMediaSchema>;
 			const user = c.get("user") as IUser;
 
 			try {
@@ -333,13 +307,9 @@ addRoute(app, "post", "/generate-from-media", {
 					throw error;
 				}
 				routeLogger.error("Error generating notes from media:", {
-					error_message:
-						error instanceof Error ? error.message : "Unknown error",
+					error_message: error instanceof Error ? error.message : "Unknown error",
 				});
-				throw new AssistantError(
-					"Failed to generate notes from media",
-					ErrorType.UNKNOWN_ERROR,
-				);
+				throw new AssistantError("Failed to generate notes from media", ErrorType.UNKNOWN_ERROR);
 			}
 		})(raw),
 });

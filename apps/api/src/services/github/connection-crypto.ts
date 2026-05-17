@@ -7,20 +7,11 @@ export interface EncryptedGitHubConnectionPayload {
 	data: string;
 }
 
-async function deriveUserJwtScopedKey(
-	jwtSecret: string,
-	userId: number,
-): Promise<CryptoKey> {
+async function deriveUserJwtScopedKey(jwtSecret: string, userId: number): Promise<CryptoKey> {
 	const keyMaterial = `${jwtSecret}:${userId}:github-app-connection`;
-	const digest = await crypto.subtle.digest(
-		"SHA-256",
-		new TextEncoder().encode(keyMaterial),
-	);
+	const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(keyMaterial));
 
-	return crypto.subtle.importKey("raw", digest, { name: "AES-GCM" }, false, [
-		"encrypt",
-		"decrypt",
-	]);
+	return crypto.subtle.importKey("raw", digest, { name: "AES-GCM" }, false, ["encrypt", "decrypt"]);
 }
 
 export async function encryptGitHubConnectionPayload(params: {
@@ -34,11 +25,7 @@ export async function encryptGitHubConnectionPayload(params: {
 	const iv = crypto.getRandomValues(new Uint8Array(12));
 	const plaintext = new TextEncoder().encode(JSON.stringify(payload));
 
-	const encrypted = await crypto.subtle.encrypt(
-		{ name: "AES-GCM", iv },
-		key,
-		plaintext,
-	);
+	const encrypted = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, plaintext);
 
 	return {
 		v: 1,
@@ -54,26 +41,15 @@ export async function decryptGitHubConnectionPayload(params: {
 }): Promise<Record<string, unknown>> {
 	const { jwtSecret, userId, encrypted } = params;
 
-	if (
-		encrypted.v !== 1 ||
-		typeof encrypted.iv !== "string" ||
-		typeof encrypted.data !== "string"
-	) {
-		throw new AssistantError(
-			"GitHub App connection payload is invalid",
-			ErrorType.PARAMS_ERROR,
-		);
+	if (encrypted.v !== 1 || typeof encrypted.iv !== "string" || typeof encrypted.data !== "string") {
+		throw new AssistantError("GitHub App connection payload is invalid", ErrorType.PARAMS_ERROR);
 	}
 
 	try {
 		const key = await deriveUserJwtScopedKey(jwtSecret, userId);
 		const iv = new Uint8Array(base64ToBuffer(encrypted.iv));
 		const ciphertext = new Uint8Array(base64ToBuffer(encrypted.data));
-		const decrypted = await crypto.subtle.decrypt(
-			{ name: "AES-GCM", iv },
-			key,
-			ciphertext,
-		);
+		const decrypted = await crypto.subtle.decrypt({ name: "AES-GCM", iv }, key, ciphertext);
 		const text = new TextDecoder().decode(decrypted);
 		const parsed = JSON.parse(text);
 
@@ -94,8 +70,7 @@ export async function decryptGitHubConnectionPayload(params: {
 		if (
 			error instanceof SyntaxError ||
 			(error instanceof Error &&
-				(error.name === "OperationError" ||
-					error.name === "InvalidCharacterError"))
+				(error.name === "OperationError" || error.name === "InvalidCharacterError"))
 		) {
 			throw new AssistantError(
 				"GitHub App connection could not be decrypted. Reconnect the GitHub App installation.",

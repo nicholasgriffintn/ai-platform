@@ -1,11 +1,4 @@
-import {
-	BarChart2,
-	Grid,
-	Menu,
-	MoreVertical,
-	PanelLeftOpen,
-	X,
-} from "lucide-react";
+import { BarChart2, Grid, Menu, MoreVertical, PanelLeftOpen, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router";
 
@@ -29,10 +22,7 @@ export const ChatNavbar = ({ showSidebarToggle = true }: ChatNavbarProps) => {
 
 	useEffect(() => {
 		const handleClickOutside = (event: MouseEvent) => {
-			if (
-				mobileMenuRef.current &&
-				!mobileMenuRef.current.contains(event.target as Node)
-			) {
+			if (mobileMenuRef.current && !mobileMenuRef.current.contains(event.target as Node)) {
 				setIsMobileMenuOpen(false);
 			}
 		};
@@ -78,38 +68,27 @@ export const ChatNavbar = ({ showSidebarToggle = true }: ChatNavbarProps) => {
 								onClick={() => setSidebarVisible(!sidebarVisible)}
 								title={sidebarVisible ? "Hide sidebar" : "Show sidebar"}
 								aria-label={sidebarVisible ? "Hide sidebar" : "Show sidebar"}
-								icon={
-									isMobile ? <Menu size={20} /> : <PanelLeftOpen size={20} />
-								}
+								icon={isMobile ? <Menu size={20} /> : <PanelLeftOpen size={20} />}
 							/>
 						</div>
 					)}
 					<span className="text-base font-semibold text-zinc-600 dark:text-zinc-200 ml-2 truncate">
-						<Link
-							to="/"
-							className="hover:text-zinc-700 dark:hover:text-zinc-300 no-underline"
-						>
+						<Link to="/" className="hover:text-zinc-700 dark:hover:text-zinc-300 no-underline">
 							{APP_NAME}
 						</Link>
 					</span>
 				</div>
 				<div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
-					<div className="hidden md:flex md:items-center md:gap-2">
-						{renderNavLinks()}
-					</div>
+					<div className="hidden md:flex md:items-center md:gap-2">{renderNavLinks()}</div>
 
 					<div className="md:hidden relative" ref={mobileMenuRef}>
 						<Button
 							type="button"
 							variant="icon"
-							onClick={() =>
-								isMounted && setIsMobileMenuOpen(!isMobileMenuOpen)
-							}
+							onClick={() => isMounted && setIsMobileMenuOpen(!isMobileMenuOpen)}
 							title={isMobileMenuOpen ? "Close menu" : "Open menu"}
 							aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
-							icon={
-								isMobileMenuOpen ? <X size={16} /> : <MoreVertical size={16} />
-							}
+							icon={isMobileMenuOpen ? <X size={16} /> : <MoreVertical size={16} />}
 						/>
 
 						{isMounted && isMobileMenuOpen && (

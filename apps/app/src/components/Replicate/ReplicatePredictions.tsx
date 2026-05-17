@@ -55,32 +55,22 @@ interface PredictionCardProps {
 
 function PredictionCard({ prediction }: PredictionCardProps) {
 	const statusColors = {
-		processing:
-			"bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200",
-		succeeded:
-			"bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200",
-		completed:
-			"bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200",
+		processing: "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200",
+		succeeded: "bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200",
+		completed: "bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200",
 		failed: "bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-200",
 	};
 
 	return (
-		<Link
-			to={`/apps/replicate/predictions/${prediction.id}`}
-			className="block no-underline"
-		>
+		<Link to={`/apps/replicate/predictions/${prediction.id}`} className="block no-underline">
 			<Card className="p-6 hover:shadow-lg transition-all">
 				<div className="flex items-start justify-between gap-4 mb-4">
 					<div className="flex-1 min-w-0">
 						<h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-1 break-words">
-							{prediction.input?.prompt ||
-								prediction.modelName ||
-								prediction.modelId}
+							{prediction.input?.prompt || prediction.modelName || prediction.modelId}
 						</h3>
 						<div className="flex items-center gap-2 text-sm text-zinc-500 dark:text-zinc-400">
-							<span className="font-medium">
-								{prediction.modelName || prediction.modelId}
-							</span>
+							<span className="font-medium">{prediction.modelName || prediction.modelId}</span>
 							<span>•</span>
 							<span>{new Date(prediction.created_at).toLocaleString()}</span>
 						</div>
@@ -102,9 +92,7 @@ function PredictionCard({ prediction }: PredictionCardProps) {
 				)}
 
 				{prediction.status === "failed" && prediction.error && (
-					<p className="text-sm text-red-600 dark:text-red-400">
-						Error: {prediction.error}
-					</p>
+					<p className="text-sm text-red-600 dark:text-red-400">Error: {prediction.error}</p>
 				)}
 			</Card>
 		</Link>

@@ -104,8 +104,7 @@ export class RunControlClient {
 	constructor(options: RunControlClientOptions) {
 		this.userToken = options.userToken;
 		this.runId = options.runId;
-		this.requestTimeoutMs =
-			options.requestTimeoutMs ?? DEFAULT_CONTROL_REQUEST_TIMEOUT_MS;
+		this.requestTimeoutMs = options.requestTimeoutMs ?? DEFAULT_CONTROL_REQUEST_TIMEOUT_MS;
 		this.apiService = options.apiService;
 	}
 
@@ -113,11 +112,7 @@ export class RunControlClient {
 		return `http://polychat-api${path}`;
 	}
 
-	private async fetchApi(
-		path: string,
-		init: RequestInit,
-		signal: AbortSignal,
-	): Promise<Response> {
+	private async fetchApi(path: string, init: RequestInit, signal: AbortSignal): Promise<Response> {
 		const request = new Request(this.resolveApiRequestUrl(path), {
 			...init,
 			signal,
@@ -126,9 +121,7 @@ export class RunControlClient {
 		return this.apiService.fetch(request);
 	}
 
-	public async fetchControlState(
-		signal?: AbortSignal,
-	): Promise<SandboxRunControl | null> {
+	public async fetchControlState(signal?: AbortSignal): Promise<SandboxRunControl | null> {
 		if (!this.runId) {
 			return null;
 		}
@@ -249,8 +242,7 @@ export class RunControlClient {
 			return null;
 		}
 
-		const instruction = (payload as { instruction?: SandboxRunInstruction })
-			.instruction;
+		const instruction = (payload as { instruction?: SandboxRunInstruction }).instruction;
 		return mapApprovalInstructionToApproval(instruction ?? null, command);
 	}
 
@@ -268,8 +260,7 @@ export class RunControlClient {
 			.reverse()
 			.find(
 				(entry) =>
-					entry.instruction.kind === "approval_request" &&
-					entry.instruction.id === approvalId,
+					entry.instruction.kind === "approval_request" && entry.instruction.id === approvalId,
 			);
 		return mapApprovalInstructionToApproval(match?.instruction ?? null);
 	}
@@ -322,9 +313,7 @@ export class RunControlClient {
 		} catch {
 			return [];
 		}
-		const rawInstructions = (
-			payload as { instructions?: unknown[] | undefined }
-		).instructions;
+		const rawInstructions = (payload as { instructions?: unknown[] | undefined }).instructions;
 		if (!Array.isArray(rawInstructions)) {
 			return [];
 		}

@@ -1,8 +1,5 @@
 import { gatewayId } from "~/constants/app";
-import {
-	resolveServiceContext,
-	type ServiceContext,
-} from "~/lib/context/serviceContext";
+import { resolveServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
 import type { IEnv, IFunctionResponse, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
@@ -51,10 +48,7 @@ export const handlePodcastSummarise = async (
 	const { request, context, env, user } = req;
 
 	if (!request.podcastId || !request.speakers) {
-		throw new AssistantError(
-			"Missing podcast id or speakers",
-			ErrorType.PARAMS_ERROR,
-		);
+		throw new AssistantError("Missing podcast id or speakers", ErrorType.PARAMS_ERROR);
 	}
 
 	try {
@@ -67,13 +61,12 @@ export const handlePodcastSummarise = async (
 		const repositories = serviceContext.repositories;
 		const runtimeEnv = serviceContext.env as IEnv;
 
-		const existingSummaries =
-			await repositories.appData.getAppDataByUserAppAndItem(
-				user.id,
-				"podcasts",
-				request.podcastId,
-				"summary",
-			);
+		const existingSummaries = await repositories.appData.getAppDataByUserAppAndItem(
+			user.id,
+			"podcasts",
+			request.podcastId,
+			"summary",
+		);
 
 		if (existingSummaries.length > 0) {
 			let summaryData = safeParseJson(existingSummaries[0].data);
@@ -87,13 +80,12 @@ export const handlePodcastSummarise = async (
 			};
 		}
 
-		const transcriptionData =
-			await repositories.appData.getAppDataByUserAppAndItem(
-				user.id,
-				"podcasts",
-				request.podcastId,
-				"transcribe",
-			);
+		const transcriptionData = await repositories.appData.getAppDataByUserAppAndItem(
+			user.id,
+			"podcasts",
+			request.podcastId,
+			"transcribe",
+		);
 
 		if (transcriptionData.length === 0) {
 			throw new AssistantError(
@@ -107,10 +99,7 @@ export const handlePodcastSummarise = async (
 		const description = parsedTranscriptionData.description;
 		const transcription = parsedTranscriptionData.transcriptionData.output;
 
-		const fullTranscription = generateFullTranscription(
-			transcription,
-			request.speakers,
-		);
+		const fullTranscription = generateFullTranscription(transcription, request.speakers);
 
 		if (!fullTranscription) {
 			const appData = {

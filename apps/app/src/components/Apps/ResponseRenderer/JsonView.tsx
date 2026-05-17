@@ -5,10 +5,7 @@ interface JsonViewProps {
 	expandedByDefault?: boolean;
 }
 
-export const JsonView = ({
-	data,
-	expandedByDefault = false,
-}: JsonViewProps) => {
+export const JsonView = ({ data, expandedByDefault = false }: JsonViewProps) => {
 	const [expanded, setExpanded] = useState<Record<string, boolean>>({
 		root: expandedByDefault,
 	});
@@ -26,23 +23,15 @@ export const JsonView = ({
 		}
 
 		if (value === undefined) {
-			return (
-				<span className="text-gray-500 dark:text-zinc-400">undefined</span>
-			);
+			return <span className="text-gray-500 dark:text-zinc-400">undefined</span>;
 		}
 
 		if (typeof value === "boolean") {
-			return (
-				<span className="text-blue-600 dark:text-blue-400">
-					{value.toString()}
-				</span>
-			);
+			return <span className="text-blue-600 dark:text-blue-400">{value.toString()}</span>;
 		}
 
 		if (typeof value === "number") {
-			return (
-				<span className="text-green-600 dark:text-green-400">{value}</span>
-			);
+			return <span className="text-green-600 dark:text-green-400">{value}</span>;
 		}
 
 		if (typeof value === "string") {
@@ -76,9 +65,7 @@ export const JsonView = ({
 						<div className="pl-4 border-l border-gray-300 dark:border-zinc-600 ml-2">
 							{value.map((item, index) => (
 								<div key={`${path}-${index}`} className="my-1">
-									<span className="text-gray-500 dark:text-zinc-400">
-										{index}:{" "}
-									</span>
+									<span className="text-gray-500 dark:text-zinc-400">{index}: </span>
 									{renderValue(item, `${path}-${index}`, depth + 1)}
 								</div>
 							))}
@@ -118,9 +105,7 @@ export const JsonView = ({
 						<div className="pl-4 border-l border-gray-300 dark:border-zinc-600 ml-2">
 							{keys.map((key) => (
 								<div key={`${path}-${key}`} className="my-1">
-									<span className="text-gray-800 dark:text-zinc-200 font-medium">
-										{key}:{" "}
-									</span>
+									<span className="text-gray-800 dark:text-zinc-200 font-medium">{key}: </span>
 									{renderValue(value[key], `${path}-${key}`, depth + 1)}
 								</div>
 							))}

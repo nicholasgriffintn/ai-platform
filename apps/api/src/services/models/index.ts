@@ -40,11 +40,7 @@ export function listStrengths() {
 /**
  * Filter models by capability and user access.
  */
-export async function listModelsByStrength(
-	env: IEnv,
-	capability: string,
-	userId?: number,
-) {
+export async function listModelsByStrength(env: IEnv, capability: string, userId?: number) {
 	const models = getModelsByCapability(capability);
 	return await filterModelsForUserAccess(models, env, userId, {
 		shouldUseCache: false,
@@ -61,14 +57,8 @@ export function listModalities() {
 /**
  * Filter models by modality and user access.
  */
-export async function listModelsByModality(
-	env: IEnv,
-	modality: string,
-	userId?: number,
-) {
-	const models = getModelsByModality(
-		modality as (typeof availableModalities)[number],
-	);
+export async function listModelsByModality(env: IEnv, modality: string, userId?: number) {
+	const models = getModelsByModality(modality as (typeof availableModalities)[number]);
 	return await filterModelsForUserAccess(models, env, userId, {
 		shouldUseCache: false,
 	});
@@ -77,14 +67,8 @@ export async function listModelsByModality(
 /**
  * Filter models by output modality and user access.
  */
-export async function listModelsByOutputModality(
-	env: IEnv,
-	modality: string,
-	userId?: number,
-) {
-	const models = getModelsByOutputModality(
-		modality as (typeof availableModalities)[number],
-	);
+export async function listModelsByOutputModality(env: IEnv, modality: string, userId?: number) {
+	const models = getModelsByOutputModality(modality as (typeof availableModalities)[number]);
 	return await filterModelsForUserAccess(models, env, userId, {
 		shouldUseCache: false,
 	});
@@ -95,19 +79,11 @@ export async function listModelsByOutputModality(
  */
 export async function getModelDetails(env: IEnv, id: string, userId?: number) {
 	const model = await getModelConfig(id);
-	const accessibleModels = await filterModelsForUserAccess(
-		{ [id]: model },
-		env,
-		userId,
-		{
-			shouldUseCache: false,
-		},
-	);
+	const accessibleModels = await filterModelsForUserAccess({ [id]: model }, env, userId, {
+		shouldUseCache: false,
+	});
 	if (!accessibleModels[id]) {
-		throw new AssistantError(
-			"Model not found or user does not have access",
-			ErrorType.NOT_FOUND,
-		);
+		throw new AssistantError("Model not found or user does not have access", ErrorType.NOT_FOUND);
 	}
 	return model;
 }

@@ -1,18 +1,11 @@
 import { getModelConfigByMatchingModel } from "~/lib/providers/models";
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
-import type {
-	AssistantMessageData,
-	ChatCompletionParameters,
-	Message,
-} from "~/types";
+import type { AssistantMessageData, ChatCompletionParameters, Message } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";
 import { formatMessages } from "~/utils/messages";
-import {
-	mergeParametersWithDefaults,
-	shouldEnableStreaming,
-} from "~/utils/parameters";
+import { mergeParametersWithDefaults, shouldEnableStreaming } from "~/utils/parameters";
 import { withRetry } from "~/utils/retries";
 
 const logger = getLogger({ prefix: "lib/chat/responses" });
@@ -60,8 +53,7 @@ export function formatAssistantMessage({
 		timestamp = Date.now();
 	}
 
-	const determinedFinishReason =
-		finish_reason || (tool_calls?.length ? "tool_calls" : "stop");
+	const determinedFinishReason = finish_reason || (tool_calls?.length ? "tool_calls" : "stop");
 
 	const finalUsage = usage || {
 		prompt_tokens: 0,
@@ -177,26 +169,15 @@ export async function getAIResponse({
 
 	if (filteredMessages.length === 0) {
 		logger.warn("No messages after filtering", { mode });
-		throw new AssistantError(
-			"No valid messages after filtering",
-			ErrorType.PARAMS_ERROR,
-		);
+		throw new AssistantError("No valid messages after filtering", ErrorType.PARAMS_ERROR);
 	}
 
 	let formattedMessages;
 	try {
-		formattedMessages = formatMessages(
-			provider.name,
-			filteredMessages,
-			system_prompt,
-			model,
-		);
+		formattedMessages = formatMessages(provider.name, filteredMessages, system_prompt, model);
 	} catch (error: any) {
 		logger.error("Failed to format messages", { error });
-		throw new AssistantError(
-			`Failed to format messages: ${error.message}`,
-			ErrorType.PARAMS_ERROR,
-		);
+		throw new AssistantError(`Failed to format messages: ${error.message}`, ErrorType.PARAMS_ERROR);
 	}
 
 	const shouldStream = shouldEnableStreaming(
@@ -233,13 +214,10 @@ export async function getAIResponse({
 	let response;
 	try {
 		// TODO: Make this smarter so we don't retry if the error is not retryable
-		response = await withRetry(
-			() => provider.getResponse(parameters, user?.id),
-			{
-				retryCount: 0,
-				baseDelayMs: 1000,
-			},
-		);
+		response = await withRetry(() => provider.getResponse(parameters, user?.id), {
+			retryCount: 0,
+			baseDelayMs: 1000,
+		});
 	} catch (err: any) {
 		let errorType = ErrorType.PROVIDER_ERROR;
 		if (err.message?.includes("rate limit") || err.status === 429) {
@@ -276,10 +254,7 @@ export async function getAIResponse({
 	});
 
 	if (!response) {
-		throw new AssistantError(
-			"Provider returned empty response",
-			ErrorType.PROVIDER_ERROR,
-		);
+		throw new AssistantError("Provider returned empty response", ErrorType.PROVIDER_ERROR);
 	}
 
 	logger.debug("AI response received", { model, mode, user: user?.id });

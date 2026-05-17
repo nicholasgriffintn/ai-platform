@@ -119,14 +119,10 @@ describe("PermissionChecker", () => {
 
 describe("permission helpers", () => {
 	it("normalises explicit permissions and drops invalid values", () => {
-		expect(
-			resolveToolPermissions("any_tool", [
-				"READ",
-				"read",
-				"invalid",
-				"reasoning",
-			]),
-		).toEqual(["read", "reasoning"]);
+		expect(resolveToolPermissions("any_tool", ["READ", "read", "invalid", "reasoning"])).toEqual([
+			"read",
+			"reasoning",
+		]);
 	});
 
 	it("returns empty permissions when no explicit permissions exist", () => {

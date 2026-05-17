@@ -1,7 +1,4 @@
-import {
-	resolveServiceContext,
-	type ServiceContext,
-} from "~/lib/context/serviceContext";
+import { resolveServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
 import type { IEnv, IUser } from "~/types";
 import { getLogger } from "~/utils/logger";
 import {
@@ -44,10 +41,7 @@ export async function setAgentFeaturedStatus({
 	const serviceContext = resolveServiceContext({ context, env });
 
 	try {
-		const sharedAgent =
-			await serviceContext.repositories.sharedAgents.getSharedAgentById(
-				agentId,
-			);
+		const sharedAgent = await serviceContext.repositories.sharedAgents.getSharedAgentById(agentId);
 		if (!sharedAgent) {
 			return {
 				success: false,
@@ -55,15 +49,10 @@ export async function setAgentFeaturedStatus({
 			};
 		}
 
-		await serviceContext.repositories.sharedAgents.setFeatured(
-			agentId,
-			featured,
-		);
+		await serviceContext.repositories.sharedAgents.setFeatured(agentId, featured);
 
 		if (featured) {
-			const agentOwner = await serviceContext.repositories.users.getUserById(
-				sharedAgent.user_id,
-			);
+			const agentOwner = await serviceContext.repositories.users.getUserById(sharedAgent.user_id);
 
 			if (agentOwner?.email) {
 				await sendAgentFeaturedNotification(
@@ -93,10 +82,7 @@ export async function setAgentFeaturedStatus({
 
 		return {
 			success: false,
-			error:
-				error instanceof Error
-					? error.message
-					: "Failed to update featured status",
+			error: error instanceof Error ? error.message : "Failed to update featured status",
 		};
 	}
 }
@@ -119,10 +105,7 @@ export async function moderateAgent({
 	const serviceContext = resolveServiceContext({ context, env });
 
 	try {
-		const sharedAgent =
-			await serviceContext.repositories.sharedAgents.getSharedAgentById(
-				agentId,
-			);
+		const sharedAgent = await serviceContext.repositories.sharedAgents.getSharedAgentById(agentId);
 		if (!sharedAgent) {
 			return {
 				success: false,
@@ -130,14 +113,9 @@ export async function moderateAgent({
 			};
 		}
 
-		await serviceContext.repositories.sharedAgents.moderateAgent(
-			agentId,
-			isPublic,
-		);
+		await serviceContext.repositories.sharedAgents.moderateAgent(agentId, isPublic);
 
-		const agentOwner = await serviceContext.repositories.users.getUserById(
-			sharedAgent.user_id,
-		);
+		const agentOwner = await serviceContext.repositories.users.getUserById(sharedAgent.user_id);
 
 		if (agentOwner?.email) {
 			await sendAgentModerationNotification(
@@ -168,8 +146,7 @@ export async function moderateAgent({
 
 		return {
 			success: false,
-			error:
-				error instanceof Error ? error.message : "Failed to moderate agent",
+			error: error instanceof Error ? error.message : "Failed to moderate agent",
 		};
 	}
 }
@@ -182,9 +159,6 @@ export async function getAllSharedAgentsForAdmin({
 	env?: IEnv;
 }): Promise<Record<string, unknown>[]> {
 	const serviceContext = resolveServiceContext({ context, env });
-	const agents =
-		await serviceContext.repositories.sharedAgents.getAllSharedAgentsForAdmin(
-			{},
-		);
+	const agents = await serviceContext.repositories.sharedAgents.getAllSharedAgentsForAdmin({});
 	return agents as unknown as Record<string, unknown>[];
 }

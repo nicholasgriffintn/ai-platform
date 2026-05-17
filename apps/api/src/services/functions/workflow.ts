@@ -71,10 +71,7 @@ const resolveReference = (ref: string, outputs: WorkflowOutputs) => {
 
 	for (const part of parts) {
 		if (!current || typeof current !== "object" || !(part in current)) {
-			throw new AssistantError(
-				`Reference "${ref}" could not be resolved`,
-				ErrorType.PARAMS_ERROR,
-			);
+			throw new AssistantError(`Reference "${ref}" could not be resolved`, ErrorType.PARAMS_ERROR);
 		}
 		current = current[part];
 	}
@@ -111,8 +108,7 @@ const summarizeResult = (result: IFunctionResponse) => {
 
 	if (!content) return undefined;
 
-	const trimmed =
-		content.length > 240 ? `${content.slice(0, 237)}...` : content;
+	const trimmed = content.length > 240 ? `${content.slice(0, 237)}...` : content;
 	return trimmed;
 };
 
@@ -139,10 +135,7 @@ const parseJsonArray = (value: unknown, label: string): any[] | undefined => {
 	}
 };
 
-const parseJsonObject = (
-	value: unknown,
-	label: string,
-): Record<string, any> | undefined => {
+const parseJsonObject = (value: unknown, label: string): Record<string, any> | undefined => {
 	if (typeof value !== "string") {
 		return value as Record<string, any> | undefined;
 	}
@@ -202,17 +195,11 @@ const runSequentialSteps = async ({
 		const onError = step.on_error || "stop";
 
 		if (!step || typeof step !== "object") {
-			throw new AssistantError(
-				"Each step must be an object",
-				ErrorType.PARAMS_ERROR,
-			);
+			throw new AssistantError("Each step must be an object", ErrorType.PARAMS_ERROR);
 		}
 
 		if (!step.function || typeof step.function !== "string") {
-			throw new AssistantError(
-				"Each step requires a function name",
-				ErrorType.PARAMS_ERROR,
-			);
+			throw new AssistantError("Each step requires a function name", ErrorType.PARAMS_ERROR);
 		}
 
 		try {
@@ -240,8 +227,7 @@ const runSequentialSteps = async ({
 				result_preview: summarizeResult(result),
 			});
 		} catch (error) {
-			const errorMessage =
-				error instanceof Error ? error.message : "Unknown error";
+			const errorMessage = error instanceof Error ? error.message : "Unknown error";
 
 			logger.warn("Workflow step failed", {
 				step: step.function,
@@ -291,16 +277,10 @@ const runParallelSteps = async ({
 		const stepStart = Date.now();
 		try {
 			if (!step || typeof step !== "object") {
-				throw new AssistantError(
-					"Each task must be an object",
-					ErrorType.PARAMS_ERROR,
-				);
+				throw new AssistantError("Each task must be an object", ErrorType.PARAMS_ERROR);
 			}
 			if (!step.function || typeof step.function !== "string") {
-				throw new AssistantError(
-					"Each task requires a function name",
-					ErrorType.PARAMS_ERROR,
-				);
+				throw new AssistantError("Each task requires a function name", ErrorType.PARAMS_ERROR);
 			}
 			const parsedArgs = parseArgs(step.args);
 			const resolvedArgs = resolveArgs(parsedArgs, outputs);
@@ -319,8 +299,7 @@ const runParallelSteps = async ({
 				duration_ms: Date.now() - stepStart,
 			};
 		} catch (error) {
-			const errorMessage =
-				error instanceof Error ? error.message : "Unknown error";
+			const errorMessage = error instanceof Error ? error.message : "Unknown error";
 			return {
 				step,
 				error: errorMessage,
@@ -390,10 +369,7 @@ export const compose_functions: ApiToolDefinition = {
 
 		const steps = parseJsonArray(args?.steps, "steps");
 		if (!Array.isArray(steps) || steps.length === 0) {
-			throw new AssistantError(
-				"steps must be a non-empty array",
-				ErrorType.PARAMS_ERROR,
-			);
+			throw new AssistantError("steps must be a non-empty array", ErrorType.PARAMS_ERROR);
 		}
 
 		if (steps.length > MAX_WORKFLOW_STEPS) {
@@ -419,9 +395,7 @@ export const compose_functions: ApiToolDefinition = {
 		return {
 			name: "compose_functions",
 			status: failed ? "error" : "success",
-			content: failed
-				? "Workflow stopped due to a step error"
-				: "Workflow completed",
+			content: failed ? "Workflow stopped due to a step error" : "Workflow completed",
 			data: {
 				steps: stepResults,
 				outputs,
@@ -480,10 +454,7 @@ export const if_then_else: ApiToolDefinition = {
 		}
 
 		if (!Array.isArray(thenSteps) || !Array.isArray(elseSteps)) {
-			throw new AssistantError(
-				"then_steps and else_steps must be arrays",
-				ErrorType.PARAMS_ERROR,
-			);
+			throw new AssistantError("then_steps and else_steps must be arrays", ErrorType.PARAMS_ERROR);
 		}
 
 		let branch = "then";
@@ -493,10 +464,7 @@ export const if_then_else: ApiToolDefinition = {
 
 		try {
 			if (!condition.function || typeof condition.function !== "string") {
-				throw new AssistantError(
-					"condition.function must be a string",
-					ErrorType.PARAMS_ERROR,
-				);
+				throw new AssistantError("condition.function must be a string", ErrorType.PARAMS_ERROR);
 			}
 
 			const parsedArgs = parseArgs(condition.args);
@@ -514,8 +482,7 @@ export const if_then_else: ApiToolDefinition = {
 			conditionValue = normalizeCondition(conditionResult);
 			branch = conditionValue ? "then" : "else";
 		} catch (error) {
-			conditionError =
-				error instanceof Error ? error.message : "Unknown condition error";
+			conditionError = error instanceof Error ? error.message : "Unknown condition error";
 		}
 
 		if (conditionError) {
@@ -560,9 +527,7 @@ export const if_then_else: ApiToolDefinition = {
 				condition: {
 					status: "success",
 					name: condition.function,
-					result_preview: conditionResult
-						? summarizeResult(conditionResult)
-						: undefined,
+					result_preview: conditionResult ? summarizeResult(conditionResult) : undefined,
 				},
 				branch,
 				steps: branchResults.steps,
@@ -604,10 +569,7 @@ export const parallel_execute: ApiToolDefinition = {
 
 		const tasks = parseJsonArray(args?.tasks, "tasks");
 		if (!Array.isArray(tasks) || tasks.length === 0) {
-			throw new AssistantError(
-				"tasks must be a non-empty array",
-				ErrorType.PARAMS_ERROR,
-			);
+			throw new AssistantError("tasks must be a non-empty array", ErrorType.PARAMS_ERROR);
 		}
 
 		if (tasks.length > MAX_PARALLEL_TASKS) {

@@ -14,10 +14,7 @@ export const handleCheckChatCompletion = async (
 	const user = context.requireUser();
 
 	if (!completion_id || !role) {
-		throw new AssistantError(
-			"Missing completion_id or role",
-			ErrorType.PARAMS_ERROR,
-		);
+		throw new AssistantError("Missing completion_id or role", ErrorType.PARAMS_ERROR);
 	}
 
 	context.ensureDatabase();
@@ -55,16 +52,8 @@ export const handleCheckChatCompletion = async (
 	const guardrails = new Guardrails(context.env, user, userSettings);
 	const validation =
 		roleToCheck === "user"
-			? await guardrails.validateInput(
-					messageHistoryAsString,
-					user.id,
-					completion_id,
-				)
-			: await guardrails.validateOutput(
-					messageHistoryAsString,
-					user.id,
-					completion_id,
-				);
+			? await guardrails.validateInput(messageHistoryAsString, user.id, completion_id)
+			: await guardrails.validateOutput(messageHistoryAsString, user.id, completion_id);
 
 	return {
 		content: validation.isValid

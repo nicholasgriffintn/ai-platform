@@ -28,10 +28,7 @@ export interface ValidatorResult {
 }
 
 export interface Validator {
-	validate(
-		options: CoreChatOptions,
-		context: ValidationContext,
-	): Promise<ValidatorResult>;
+	validate(options: CoreChatOptions, context: ValidationContext): Promise<ValidatorResult>;
 }
 
 export class ValidationPipeline {
@@ -77,8 +74,6 @@ export class ValidationPipeline {
 	}
 
 	removeValidator(validatorClass: new (...args: any[]) => Validator): void {
-		this.validators = this.validators.filter(
-			(v) => !(v instanceof validatorClass),
-		);
+		this.validators = this.validators.filter((v) => !(v instanceof validatorClass));
 	}
 }

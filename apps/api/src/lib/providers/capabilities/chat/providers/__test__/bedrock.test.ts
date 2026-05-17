@@ -1,21 +1,10 @@
-import {
-	afterAll,
-	beforeAll,
-	beforeEach,
-	describe,
-	expect,
-	it,
-	vi,
-} from "vitest";
+import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { gatewayId } from "~/constants/app";
 import { getModelConfigByMatchingModel } from "~/lib/providers/models";
 import { createAsyncInvocationMetadata } from "~/lib/async/asyncInvocation";
 import { BedrockProvider } from "../bedrock";
 import type { ChatCompletionParameters } from "~/types";
-import {
-	createCommonParameters,
-	getToolsForProvider,
-} from "~/utils/parameters";
+import { createCommonParameters, getToolsForProvider } from "~/utils/parameters";
 
 const signMock = vi.fn();
 const fetchMock = vi.fn();
@@ -273,9 +262,8 @@ describe("BedrockProvider", () => {
 
 	describe("getEndpoint", () => {
 		it("should use invoke endpoint for nova-canvas", async () => {
-			const actualModels = await vi.importActual<
-				typeof import("~/lib/providers/models")
-			>("~/lib/providers/models");
+			const actualModels =
+				await vi.importActual<typeof import("~/lib/providers/models")>("~/lib/providers/models");
 
 			// @ts-ignore - getModelConfigByMatchingModel is not typed
 			vi.mocked(getModelConfigByMatchingModel).mockImplementation((model) =>
@@ -296,9 +284,8 @@ describe("BedrockProvider", () => {
 		}, 10000);
 
 		it("should use async-invoke endpoint for nova-reel", async () => {
-			const actualModels = await vi.importActual<
-				typeof import("~/lib/providers/models")
-			>("~/lib/providers/models");
+			const actualModels =
+				await vi.importActual<typeof import("~/lib/providers/models")>("~/lib/providers/models");
 
 			// @ts-ignore - getModelConfigByMatchingModel is not typed
 			vi.mocked(getModelConfigByMatchingModel).mockImplementation((model) =>
@@ -313,9 +300,7 @@ describe("BedrockProvider", () => {
 				env: { AI_GATEWAY_TOKEN: "test-token" },
 			});
 
-			expect(endpoint).toBe(
-				"https://bedrock-runtime.us-east-1.amazonaws.com/async-invoke",
-			);
+			expect(endpoint).toBe("https://bedrock-runtime.us-east-1.amazonaws.com/async-invoke");
 		});
 	});
 
@@ -390,18 +375,14 @@ describe("BedrockProvider", () => {
 			});
 
 			signMock.mockResolvedValueOnce(
-				createSignedRequest(
-					"https://bedrock-runtime.us-east-1.amazonaws.com/async-invoke",
-					{
-						method: "POST",
-						headers: new Headers(),
-						body: JSON.stringify({ body: true }),
-					},
-				),
+				createSignedRequest("https://bedrock-runtime.us-east-1.amazonaws.com/async-invoke", {
+					method: "POST",
+					headers: new Headers(),
+					body: JSON.stringify({ body: true }),
+				}),
 			);
 
-			const invocationArn =
-				"arn:aws:bedrock:us-east-1:123456789012:async-invoke/abc";
+			const invocationArn = "arn:aws:bedrock:us-east-1:123456789012:async-invoke/abc";
 
 			fetchMock.mockResolvedValueOnce({
 				ok: true,
@@ -451,8 +432,7 @@ describe("BedrockProvider", () => {
 				},
 			} as unknown as ChatCompletionParameters;
 
-			const invocationArn =
-				"arn:aws:bedrock:us-east-1:123456789012:async-invoke/def";
+			const invocationArn = "arn:aws:bedrock:us-east-1:123456789012:async-invoke/def";
 
 			signMock.mockResolvedValueOnce(
 				createSignedRequest(
@@ -511,8 +491,7 @@ describe("BedrockProvider", () => {
 				},
 			} as unknown as ChatCompletionParameters;
 
-			const invocationArn =
-				"arn:aws:bedrock:us-east-1:123456789012:async-invoke/ghi";
+			const invocationArn = "arn:aws:bedrock:us-east-1:123456789012:async-invoke/ghi";
 
 			signMock.mockResolvedValueOnce(
 				createSignedRequest(
@@ -561,8 +540,7 @@ describe("BedrockProvider", () => {
 				},
 			} as unknown as ChatCompletionParameters;
 
-			const invocationArn =
-				"arn:aws:bedrock:us-east-1:123456789012:async-invoke/jkl";
+			const invocationArn = "arn:aws:bedrock:us-east-1:123456789012:async-invoke/jkl";
 
 			signMock.mockResolvedValueOnce(
 				createSignedRequest(

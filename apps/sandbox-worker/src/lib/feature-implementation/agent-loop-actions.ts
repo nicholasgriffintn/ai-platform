@@ -72,8 +72,7 @@ async function guardAgainstRepeatedAction(
 	}
 
 	if (context.state.lastActionSignature === signature) {
-		context.state.repeatedActionCount =
-			(context.state.repeatedActionCount ?? 1) + 1;
+		context.state.repeatedActionCount = (context.state.repeatedActionCount ?? 1) + 1;
 	} else {
 		context.state.lastActionSignature = signature;
 		context.state.repeatedActionCount = 1;
@@ -146,9 +145,7 @@ export async function handleReadFilesAction(
 ): Promise<void> {
 	const repeated = await guardAgainstRepeatedAction(context, {
 		signature: `read_files:${decision.files
-			.map(
-				(file) => `${file.path}:${file.startLine ?? ""}:${file.endLine ?? ""}`,
-			)
+			.map((file) => `${file.path}:${file.startLine ?? ""}:${file.endLine ?? ""}`)
 			.join("|")}`,
 		threshold: 3,
 		action: "read_files",
@@ -162,10 +159,7 @@ export async function handleReadFilesAction(
 		(file) => typeof file.path === "string" && file.path.trim().length > 0,
 	);
 	if (!requestedFiles.length) {
-		pushUserMessage(
-			context.messages,
-			"read_files requires at least one valid file target.",
-		);
+		pushUserMessage(context.messages, "read_files requires at least one valid file target.");
 		return;
 	}
 
@@ -200,18 +194,13 @@ export async function handleReadFilesAction(
 			: "";
 	const observations = results
 		.map(
-			(result, index) =>
-				`[File ${index + 1}/${results.length}]\n${formatReadObservation(result)}`,
+			(result, index) => `[File ${index + 1}/${results.length}]\n${formatReadObservation(result)}`,
 		)
 		.join("\n\n");
 
 	pushUserMessage(
 		context.messages,
-		[
-			`Completed read_files batch for ${results.length} files.`,
-			truncatedLine,
-			observations,
-		]
+		[`Completed read_files batch for ${results.length} files.`, truncatedLine, observations]
 			.filter(Boolean)
 			.join("\n\n"),
 	);
@@ -221,9 +210,7 @@ export async function handleRunCommandAction(
 	context: AgentLoopActionContext,
 	decision: RunCommandDecision,
 ): Promise<void> {
-	await context.guardExecution(
-		"Sandbox run cancelled before command execution",
-	);
+	await context.guardExecution("Sandbox run cancelled before command execution");
 
 	const repeated = await guardAgainstRepeatedAction(context, {
 		signature: `run_command:${decision.command}`,
@@ -272,9 +259,7 @@ export async function handleRunCommandAction(
 	} catch (error) {
 		context.state.consecutiveCommandFailures += 1;
 		const errorMessage =
-			error instanceof Error
-				? error.message
-				: "Command blocked by sandbox policy";
+			error instanceof Error ? error.message : "Command blocked by sandbox policy";
 		await context.emit({
 			type: "command_failed",
 			command: decision.command,
@@ -290,10 +275,7 @@ export async function handleRunCommandAction(
 				"Choose a single safe command without shell chaining, pipes, or substitution.",
 			].join("\n"),
 		);
-		if (
-			context.state.consecutiveCommandFailures >=
-			MAX_CONSECUTIVE_COMMAND_FAILURES
-		) {
+		if (context.state.consecutiveCommandFailures >= MAX_CONSECUTIVE_COMMAND_FAILURES) {
 			context.beginPlanRecovery(
 				`Command policy/validation failed ${MAX_CONSECUTIVE_COMMAND_FAILURES} times in a row. Last error: ${truncateForModel(errorMessage, 600)}`,
 			);
@@ -325,8 +307,7 @@ export async function handleRunCommandAction(
 
 	if (!result.success) {
 		context.state.consecutiveCommandFailures += 1;
-		const failureMessage =
-			result.stderr || result.stdout || "Unknown command failure";
+		const failureMessage = result.stderr || result.stdout || "Unknown command failure";
 		await context.emit({
 			type: "command_failed",
 			command: decision.command,
@@ -345,10 +326,7 @@ export async function handleRunCommandAction(
 			}),
 		);
 
-		if (
-			context.state.consecutiveCommandFailures >=
-			MAX_CONSECUTIVE_COMMAND_FAILURES
-		) {
+		if (context.state.consecutiveCommandFailures >= MAX_CONSECUTIVE_COMMAND_FAILURES) {
 			context.beginPlanRecovery(
 				`Command execution failed ${MAX_CONSECUTIVE_COMMAND_FAILURES} times in a row. Last failure: ${truncateForModel(failureMessage, 600)}`,
 			);
@@ -385,9 +363,7 @@ export async function handleRunParallelAction(
 	context: AgentLoopActionContext,
 	decision: RunParallelDecision,
 ): Promise<void> {
-	await context.guardExecution(
-		"Sandbox run cancelled before parallel command execution",
-	);
+	await context.guardExecution("Sandbox run cancelled before parallel command execution");
 
 	const repeated = await guardAgainstRepeatedAction(context, {
 		signature: `run_parallel:${decision.commands.join("|")}`,
@@ -399,9 +375,7 @@ export async function handleRunParallelAction(
 		return;
 	}
 
-	const requestedCommands = decision.commands
-		.map((entry) => entry.trim())
-		.filter(Boolean);
+	const requestedCommands = decision.commands.map((entry) => entry.trim()).filter(Boolean);
 	if (!requestedCommands.length) {
 		pushUserMessage(
 			context.messages,
@@ -427,10 +401,7 @@ export async function handleRunParallelAction(
 		} catch (error) {
 			blockedCommand = {
 				command,
-				error:
-					error instanceof Error
-						? error.message
-						: "Command blocked by sandbox policy",
+				error: error instanceof Error ? error.message : "Command blocked by sandbox policy",
 			};
 			break;
 		}
@@ -453,10 +424,7 @@ export async function handleRunParallelAction(
 				"run_parallel supports safe read-only commands only. Revise with update_plan before retrying.",
 			].join("\n"),
 		);
-		if (
-			context.state.consecutiveCommandFailures >=
-			MAX_CONSECUTIVE_COMMAND_FAILURES
-		) {
+		if (context.state.consecutiveCommandFailures >= MAX_CONSECUTIVE_COMMAND_FAILURES) {
 			context.beginPlanRecovery(
 				`Parallel command validation failed ${MAX_CONSECUTIVE_COMMAND_FAILURES} times in a row. Last error: ${truncateForModel(blockedCommand.error, 600)}`,
 			);
@@ -479,14 +447,10 @@ export async function handleRunParallelAction(
 
 	const results = await Promise.all(
 		commands.map((command) =>
-			context.sandbox.exec(
-				`cd ${quoteForShell(context.repoTargetDir)} && ${command}`,
-			),
+			context.sandbox.exec(`cd ${quoteForShell(context.repoTargetDir)} && ${command}`),
 		),
 	);
-	await context.guardExecution(
-		"Sandbox run cancelled after parallel command execution",
-	);
+	await context.guardExecution("Sandbox run cancelled after parallel command execution");
 
 	let failedCount = 0;
 	const observationParts: string[] = [];
@@ -503,8 +467,7 @@ export async function handleRunParallelAction(
 		);
 		if (!result.success) {
 			failedCount += 1;
-			const failureMessage =
-				result.stderr || result.stdout || "Unknown command failure";
+			const failureMessage = result.stderr || result.stdout || "Unknown command failure";
 			await context.emit({
 				type: "command_failed",
 				command,
@@ -541,10 +504,7 @@ export async function handleRunParallelAction(
 				...observationParts,
 			].join("\n\n"),
 		);
-		if (
-			context.state.consecutiveCommandFailures >=
-			MAX_CONSECUTIVE_COMMAND_FAILURES
-		) {
+		if (context.state.consecutiveCommandFailures >= MAX_CONSECUTIVE_COMMAND_FAILURES) {
 			context.beginPlanRecovery(
 				`Parallel commands produced repeated failures. Failed commands in last batch: ${failedCount}.`,
 			);
@@ -608,9 +568,7 @@ export async function handleRunScriptAction(
 		commandTotal: MAX_COMMANDS,
 	});
 
-	let scriptContext:
-		| Awaited<ReturnType<typeof context.sandbox.createCodeContext>>
-		| undefined;
+	let scriptContext: Awaited<ReturnType<typeof context.sandbox.createCodeContext>> | undefined;
 	let execution: Awaited<ReturnType<typeof context.sandbox.runCode>>;
 	try {
 		scriptContext = await context.sandbox.createCodeContext({
@@ -623,8 +581,7 @@ export async function handleRunScriptAction(
 		});
 	} catch (error) {
 		context.state.consecutiveCommandFailures += 1;
-		const errorMessage =
-			error instanceof Error ? error.message : "Script execution failed";
+		const errorMessage = error instanceof Error ? error.message : "Script execution failed";
 		await context.emit({
 			type: "script_failed",
 			agentStep: context.step,
@@ -640,10 +597,7 @@ export async function handleRunScriptAction(
 				"Use javascript/typescript run_script, run_command, or read_file instead.",
 			].join("\n"),
 		);
-		if (
-			context.state.consecutiveCommandFailures >=
-			MAX_CONSECUTIVE_COMMAND_FAILURES
-		) {
+		if (context.state.consecutiveCommandFailures >= MAX_CONSECUTIVE_COMMAND_FAILURES) {
 			context.beginPlanRecovery(
 				`Script execution threw ${MAX_CONSECUTIVE_COMMAND_FAILURES} times in a row. Last error: ${truncateForModel(errorMessage, 600)}`,
 			);
@@ -695,18 +649,13 @@ export async function handleRunScriptAction(
 			const tracebackStr = Array.isArray(execution.error.traceback)
 				? execution.error.traceback.join("\n")
 				: String(execution.error.traceback);
-			errorParts.push(
-				`Traceback:\n${truncateForModel(tracebackStr, MAX_OBSERVATION_CHARS)}`,
-			);
+			errorParts.push(`Traceback:\n${truncateForModel(tracebackStr, MAX_OBSERVATION_CHARS)}`);
 		}
 		errorParts.push("Fix the issue or try a different approach.");
 
 		pushUserMessage(context.messages, errorParts.join("\n"));
 
-		if (
-			context.state.consecutiveCommandFailures >=
-			MAX_CONSECUTIVE_COMMAND_FAILURES
-		) {
+		if (context.state.consecutiveCommandFailures >= MAX_CONSECUTIVE_COMMAND_FAILURES) {
 			context.beginPlanRecovery(
 				`Script execution failed ${MAX_CONSECUTIVE_COMMAND_FAILURES} times in a row. Last error: ${truncateForModel(errorMessage, 600)}`,
 			);

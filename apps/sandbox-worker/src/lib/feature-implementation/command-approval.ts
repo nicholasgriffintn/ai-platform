@@ -83,9 +83,7 @@ export async function resolveCommandApproval(
 	}
 
 	if (!approvalClient) {
-		throw new Error(
-			`Command requires approval but approval client is unavailable: ${command}`,
-		);
+		throw new Error(`Command requires approval but approval client is unavailable: ${command}`);
 	}
 
 	const approval = await approvalClient.requestCommandApproval(
@@ -95,9 +93,7 @@ export async function resolveCommandApproval(
 		abortSignal,
 	);
 	if (!approval) {
-		throw new Error(
-			`Failed to create approval request for command: ${command}`,
-		);
+		throw new Error(`Failed to create approval request for command: ${command}`);
 	}
 	await emit({
 		type: "command_approval_requested",
@@ -112,25 +108,14 @@ export async function resolveCommandApproval(
 
 	let previousStatus = approval.status;
 	while (true) {
-		await guardExecution(
-			"Sandbox run cancelled while waiting for command approval",
-		);
+		await guardExecution("Sandbox run cancelled while waiting for command approval");
 		const control = await approvalClient.fetchControlState(abortSignal);
 		if (control?.state === "cancelled") {
-			throw new Error(
-				control.cancellationReason ||
-					"Sandbox run cancelled during approval wait",
-			);
+			throw new Error(control.cancellationReason || "Sandbox run cancelled during approval wait");
 		}
 
-		const latestApproval = await approvalClient.fetchApproval(
-			approval.id,
-			abortSignal,
-		);
-		if (
-			latestApproval?.status === "escalated" &&
-			previousStatus !== "escalated"
-		) {
+		const latestApproval = await approvalClient.fetchApproval(approval.id, abortSignal);
+		if (latestApproval?.status === "escalated" && previousStatus !== "escalated") {
 			await emit({
 				type: "command_approval_escalated",
 				command,
@@ -175,8 +160,7 @@ export async function resolveCommandApproval(
 				allowNetwork: false,
 				allowRisky: false,
 				rejected: true,
-				rejectedMessage:
-					latestApproval.resolutionReason || "Command approval rejected",
+				rejectedMessage: latestApproval.resolutionReason || "Command approval rejected",
 			};
 		}
 
@@ -185,8 +169,7 @@ export async function resolveCommandApproval(
 				type: "command_approval_timed_out",
 				command,
 				agentStep,
-				message:
-					latestApproval.resolutionReason || "Command approval timed out",
+				message: latestApproval.resolutionReason || "Command approval timed out",
 				approvalId: latestApproval.id,
 				approvalStatus: latestApproval.status,
 				approvalEscalatedAt: latestApproval.escalatedAt,

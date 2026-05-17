@@ -23,134 +23,56 @@ const Icon: IconType = forwardRef(({ size = "1em", style, ...rest }, ref) => {
 		>
 			<title id={titleId}>{TITLE}</title>
 			<defs>
-				<linearGradient
-					id={a.id}
-					x1="75.897%"
-					x2="26.312%"
-					y1="89.199%"
-					y2="12.194%"
-				>
+				<linearGradient id={a.id} x1="75.897%" x2="26.312%" y1="89.199%" y2="12.194%">
 					<stop offset=".06%" stopColor="#0867DF" />
 					<stop offset="45.39%" stopColor="#0668E1" />
 					<stop offset="85.91%" stopColor="#0064E0" />
 				</linearGradient>
-				<linearGradient
-					id={b.id}
-					x1="21.67%"
-					x2="97.068%"
-					y1="75.874%"
-					y2="23.985%"
-				>
+				<linearGradient id={b.id} x1="21.67%" x2="97.068%" y1="75.874%" y2="23.985%">
 					<stop offset="13.23%" stopColor="#0064DF" />
 					<stop offset="99.88%" stopColor="#0064E0" />
 				</linearGradient>
-				<linearGradient
-					id={c.id}
-					x1="38.263%"
-					x2="60.895%"
-					y1="89.127%"
-					y2="16.131%"
-				>
+				<linearGradient id={c.id} x1="38.263%" x2="60.895%" y1="89.127%" y2="16.131%">
 					<stop offset="1.47%" stopColor="#0072EC" />
 					<stop offset="68.81%" stopColor="#0064DF" />
 				</linearGradient>
-				<linearGradient
-					id={d.id}
-					x1="47.032%"
-					x2="52.15%"
-					y1="90.19%"
-					y2="15.745%"
-				>
+				<linearGradient id={d.id} x1="47.032%" x2="52.15%" y1="90.19%" y2="15.745%">
 					<stop offset="7.31%" stopColor="#007CF6" />
 					<stop offset="99.43%" stopColor="#0072EC" />
 				</linearGradient>
-				<linearGradient
-					id={e.id}
-					x1="52.155%"
-					x2="47.591%"
-					y1="58.301%"
-					y2="37.004%"
-				>
+				<linearGradient id={e.id} x1="52.155%" x2="47.591%" y1="58.301%" y2="37.004%">
 					<stop offset="7.31%" stopColor="#007FF9" />
 					<stop offset="100%" stopColor="#007CF6" />
 				</linearGradient>
-				<linearGradient
-					id={f.id}
-					x1="37.689%"
-					x2="61.961%"
-					y1="12.502%"
-					y2="63.624%"
-				>
+				<linearGradient id={f.id} x1="37.689%" x2="61.961%" y1="12.502%" y2="63.624%">
 					<stop offset="7.31%" stopColor="#007FF9" />
 					<stop offset="100%" stopColor="#0082FB" />
 				</linearGradient>
-				<linearGradient
-					id={g.id}
-					x1="34.808%"
-					x2="62.313%"
-					y1="68.859%"
-					y2="23.174%"
-				>
+				<linearGradient id={g.id} x1="34.808%" x2="62.313%" y1="68.859%" y2="23.174%">
 					<stop offset="27.99%" stopColor="#007FF8" />
 					<stop offset="91.41%" stopColor="#0082FB" />
 				</linearGradient>
-				<linearGradient
-					id={h.id}
-					x1="43.762%"
-					x2="57.602%"
-					y1="6.235%"
-					y2="98.514%"
-				>
+				<linearGradient id={h.id} x1="43.762%" x2="57.602%" y1="6.235%" y2="98.514%">
 					<stop offset="0%" stopColor="#0082FB" />
 					<stop offset="99.95%" stopColor="#0081FA" />
 				</linearGradient>
-				<linearGradient
-					id={i.id}
-					x1="60.055%"
-					x2="39.88%"
-					y1="4.661%"
-					y2="69.077%"
-				>
+				<linearGradient id={i.id} x1="60.055%" x2="39.88%" y1="4.661%" y2="69.077%">
 					<stop offset="6.19%" stopColor="#0081FA" />
 					<stop offset="100%" stopColor="#0080F9" />
 				</linearGradient>
-				<linearGradient
-					id={j.id}
-					x1="30.282%"
-					x2="61.081%"
-					y1="59.32%"
-					y2="33.244%"
-				>
+				<linearGradient id={j.id} x1="30.282%" x2="61.081%" y1="59.32%" y2="33.244%">
 					<stop offset="0%" stopColor="#027AF3" />
 					<stop offset="100%" stopColor="#0080F9" />
 				</linearGradient>
-				<linearGradient
-					id={k.id}
-					x1="20.433%"
-					x2="82.112%"
-					y1="50.001%"
-					y2="50.001%"
-				>
+				<linearGradient id={k.id} x1="20.433%" x2="82.112%" y1="50.001%" y2="50.001%">
 					<stop offset="0%" stopColor="#0377EF" />
 					<stop offset="99.94%" stopColor="#0279F1" />
 				</linearGradient>
-				<linearGradient
-					id={l.id}
-					x1="40.303%"
-					x2="72.394%"
-					y1="35.298%"
-					y2="57.811%"
-				>
+				<linearGradient id={l.id} x1="40.303%" x2="72.394%" y1="35.298%" y2="57.811%">
 					<stop offset=".19%" stopColor="#0471E9" />
 					<stop offset="100%" stopColor="#0377EF" />
 				</linearGradient>
-				<linearGradient
-					id={m.id}
-					x1="32.254%"
-					x2="68.003%"
-					y1="19.719%"
-					y2="84.908%"
-				>
+				<linearGradient id={m.id} x1="32.254%" x2="68.003%" y1="19.719%" y2="84.908%">
 					<stop offset="27.65%" stopColor="#0867DF" />
 					<stop offset="100%" stopColor="#0471E9" />
 				</linearGradient>

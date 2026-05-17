@@ -106,10 +106,7 @@ export class MarengoEmbeddingProvider implements EmbeddingProvider {
 				);
 			}
 
-			if (
-				!marengoResponse.embedding ||
-				!Array.isArray(marengoResponse.embedding)
-			) {
+			if (!marengoResponse.embedding || !Array.isArray(marengoResponse.embedding)) {
 				throw new AssistantError(
 					"Invalid embedding format from Marengo",
 					ErrorType.EXTERNAL_API_ERROR,
@@ -200,19 +197,14 @@ export class MarengoEmbeddingProvider implements EmbeddingProvider {
 		}
 	}
 
-	async getQuery(
-		_query: string,
-	): Promise<{ data: any; status: { success: boolean } }> {
+	async getQuery(_query: string): Promise<{ data: any; status: { success: boolean } }> {
 		throw new AssistantError(
 			"Query operation not supported by Marengo provider",
 			ErrorType.NOT_FOUND,
 		);
 	}
 
-	async getMatches(
-		_queryVector: any,
-		_options: RagOptions = {},
-	): Promise<EmbeddingQueryResult> {
+	async getMatches(_queryVector: any, _options: RagOptions = {}): Promise<EmbeddingQueryResult> {
 		throw new AssistantError(
 			"Match operation not supported by Marengo provider",
 			ErrorType.NOT_FOUND,

@@ -7,11 +7,7 @@ interface ReplicateModelFormProps {
 	isSubmitting: boolean;
 }
 
-export function ReplicateModelForm({
-	model,
-	onSubmit,
-	isSubmitting,
-}: ReplicateModelFormProps) {
+export function ReplicateModelForm({ model, onSubmit, isSubmitting }: ReplicateModelFormProps) {
 	const [formData, setFormData] = useState<Record<string, any>>({});
 	const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -102,9 +98,7 @@ function FormField({ field, value, onChange, error }: FormFieldProps) {
 			</label>
 
 			{field.description && (
-				<p className="text-sm text-zinc-500 dark:text-zinc-400 mb-2">
-					{field.description}
-				</p>
+				<p className="text-sm text-zinc-500 dark:text-zinc-400 mb-2">{field.description}</p>
 			)}
 
 			{hasEnum ? (
@@ -173,9 +167,7 @@ function FormField({ field, value, onChange, error }: FormFieldProps) {
 				/>
 			)}
 
-			{error && (
-				<p className="mt-1 text-sm text-red-600 dark:text-red-400">{error}</p>
-			)}
+			{error && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{error}</p>}
 
 			{field.default !== undefined && !value && (
 				<p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">

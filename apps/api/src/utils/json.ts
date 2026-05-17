@@ -17,9 +17,7 @@ export interface ParseResult<T> {
  * @param response Raw response text from an AI/LLM model
  * @returns Parsed JSON object or null if parsing fails
  */
-export function parseAIResponseJson<T = any>(
-	response: string | null | undefined,
-): ParseResult<T> {
+export function parseAIResponseJson<T = any>(response: string | null | undefined): ParseResult<T> {
 	if (!response) {
 		return { data: null, error: "Empty response" };
 	}
@@ -33,9 +31,7 @@ export function parseAIResponseJson<T = any>(
 		if (blockEnd > 3) {
 			// Skip the language identifier if present (e.g., ```json)
 			const contentStart = cleanedResponse.indexOf("\n") + 1;
-			cleanedResponse = cleanedResponse
-				.substring(contentStart, blockEnd)
-				.trim();
+			cleanedResponse = cleanedResponse.substring(contentStart, blockEnd).trim();
 		}
 	}
 

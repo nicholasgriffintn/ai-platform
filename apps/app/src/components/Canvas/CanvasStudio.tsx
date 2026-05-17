@@ -2,11 +2,7 @@ import { Film, Image, Layers, Sparkles } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 import { Button, Card } from "~/components/ui";
-import {
-	useCanvasGenerations,
-	useCanvasModels,
-	useGenerateCanvasOutputs,
-} from "~/hooks/useCanvas";
+import { useCanvasGenerations, useCanvasModels, useGenerateCanvasOutputs } from "~/hooks/useCanvas";
 import { cn } from "~/lib/utils";
 import type {
 	CanvasGeneration,
@@ -40,15 +36,11 @@ function mapGenerationStatus(status: string | undefined): CanvasRun["status"] {
 	}
 }
 
-function mapQueuedGenerationToRun(
-	generation: CanvasGenerationResult,
-): CanvasRun {
+function mapQueuedGenerationToRun(generation: CanvasGenerationResult): CanvasRun {
 	const generationId = generation.generationId;
 
 	return {
-		key: generationId
-			? `generation-${generationId}`
-			: `generation-${generation.modelId}`,
+		key: generationId ? `generation-${generationId}` : `generation-${generation.modelId}`,
 		modelId: generation.modelId,
 		modelName: generation.modelName,
 		generationId,
@@ -57,10 +49,7 @@ function mapQueuedGenerationToRun(
 	};
 }
 
-function mapStoredGenerationToRun(
-	generation: CanvasGeneration,
-	modelName: string,
-): CanvasRun {
+function mapStoredGenerationToRun(generation: CanvasGeneration, modelName: string): CanvasRun {
 	return {
 		key: `generation-${generation.id}`,
 		modelId: generation.modelId,
@@ -101,18 +90,9 @@ export function CanvasStudio() {
 	const [selectedModelIds, setSelectedModelIds] = useState<string[]>([]);
 	const [runs, setRuns] = useState<CanvasRun[]>([]);
 
-	const {
-		data: models,
-		isLoading: isModelsLoading,
-		error: modelsError,
-	} = useCanvasModels(mode);
-	const {
-		mutateAsync: generate,
-		isPending,
-		error: generateError,
-	} = useGenerateCanvasOutputs();
-	const { data: generations, refetch: refetchGenerations } =
-		useCanvasGenerations(mode);
+	const { data: models, isLoading: isModelsLoading, error: modelsError } = useCanvasModels(mode);
+	const { mutateAsync: generate, isPending, error: generateError } = useGenerateCanvasOutputs();
+	const { data: generations, refetch: refetchGenerations } = useCanvasGenerations(mode);
 
 	const visibleModels = useMemo(() => {
 		const source = models ?? [];
@@ -123,12 +103,7 @@ export function CanvasStudio() {
 		}
 
 		return source.filter((model) => {
-			const text = [
-				model.name,
-				model.description,
-				model.provider,
-				...(model.strengths ?? []),
-			]
+			const text = [model.name, model.description, model.provider, ...(model.strengths ?? [])]
 				.filter(Boolean)
 				.join(" ")
 				.toLowerCase();
@@ -147,11 +122,7 @@ export function CanvasStudio() {
 	);
 
 	const historicalRuns = useMemo(() => {
-		if (
-			!generations ||
-			generations.length === 0 ||
-			canvasModelLookup.size === 0
-		) {
+		if (!generations || generations.length === 0 || canvasModelLookup.size === 0) {
 			return [];
 		}
 
@@ -168,8 +139,7 @@ export function CanvasStudio() {
 			.sort(sortRunsDescendingByCreatedAt);
 	}, [generations, canvasModelLookup]);
 
-	const optionModels =
-		selectedModels.length > 0 ? selectedModels : (models ?? []);
+	const optionModels = selectedModels.length > 0 ? selectedModels : (models ?? []);
 
 	const aspectRatioOptions = useMemo(
 		() => collectFieldEnumOptions(optionModels, "aspect_ratio"),
@@ -198,9 +168,7 @@ export function CanvasStudio() {
 			return;
 		}
 
-		setAspectRatio((current) =>
-			current && aspectRatioOptions.includes(current) ? current : "",
-		);
+		setAspectRatio((current) => (current && aspectRatioOptions.includes(current) ? current : ""));
 	}, [aspectRatioOptions]);
 
 	useEffect(() => {
@@ -209,9 +177,7 @@ export function CanvasStudio() {
 			return;
 		}
 
-		setResolution((current) =>
-			current && resolutionOptions.includes(current) ? current : "",
-		);
+		setResolution((current) => (current && resolutionOptions.includes(current) ? current : ""));
 	}, [resolutionOptions]);
 
 	const handleModeChange = (nextMode: CanvasMode) => {
@@ -221,9 +187,7 @@ export function CanvasStudio() {
 
 	const handleModelToggle = (modelId: string) => {
 		setSelectedModelIds((prev) =>
-			prev.includes(modelId)
-				? prev.filter((id) => id !== modelId)
-				: [...prev, modelId],
+			prev.includes(modelId) ? prev.filter((id) => id !== modelId) : [...prev, modelId],
 		);
 	};
 
@@ -232,22 +196,18 @@ export function CanvasStudio() {
 			return;
 		}
 
-		const selectedModelLookup = new Map(
-			(models ?? []).map((model) => [model.id, model]),
-		);
+		const selectedModelLookup = new Map((models ?? []).map((model) => [model.id, model]));
 
-		const placeholderRuns: CanvasRun[] = selectedModelIds.map(
-			(modelId, index) => {
-				const model = selectedModelLookup.get(modelId);
-				return {
-					key: `${modelId}-pending-${index}`,
-					modelId,
-					modelName: model?.name ?? modelId,
-					generationId: undefined,
-					status: "queued",
-				};
-			},
-		);
+		const placeholderRuns: CanvasRun[] = selectedModelIds.map((modelId, index) => {
+			const model = selectedModelLookup.get(modelId);
+			return {
+				key: `${modelId}-pending-${index}`,
+				modelId,
+				modelName: model?.name ?? modelId,
+				generationId: undefined,
+				status: "queued",
+			};
+		});
 
 		setRuns(placeholderRuns);
 
@@ -260,19 +220,13 @@ export function CanvasStudio() {
 			aspectRatio: aspectRatio || undefined,
 			resolution: resolution || undefined,
 			durationSeconds:
-				mode === "video" && Number(durationSeconds) > 0
-					? Number(durationSeconds)
-					: undefined,
+				mode === "video" && Number(durationSeconds) > 0 ? Number(durationSeconds) : undefined,
 			generateAudio: mode === "video" ? generateAudio : undefined,
 		};
 
 		try {
 			const result = await generate(payload);
-			setRuns(
-				result.generations.map((generation) =>
-					mapQueuedGenerationToRun(generation),
-				),
-			);
+			setRuns(result.generations.map((generation) => mapQueuedGenerationToRun(generation)));
 			await refetchGenerations();
 		} catch {
 			setRuns([]);
@@ -293,9 +247,7 @@ export function CanvasStudio() {
 			}
 		}
 
-		const mergedRuns = Array.from(byKey.values()).sort(
-			sortRunsDescendingByCreatedAt,
-		);
+		const mergedRuns = Array.from(byKey.values()).sort(sortRunsDescendingByCreatedAt);
 		if (mergedRuns.length > 0) {
 			return mergedRuns;
 		}
@@ -417,12 +369,8 @@ export function CanvasStudio() {
 											)}
 										>
 											<div className="flex items-center justify-between gap-2">
-												<span className="text-sm font-medium">
-													{model.name}
-												</span>
-												<span className="text-xs uppercase">
-													{model.provider}
-												</span>
+												<span className="text-sm font-medium">{model.name}</span>
+												<span className="text-xs uppercase">{model.provider}</span>
 											</div>
 											{model.requiresReferenceImage && (
 												<p className="mt-1 text-[11px] font-medium uppercase tracking-wide opacity-80">
@@ -430,9 +378,7 @@ export function CanvasStudio() {
 												</p>
 											)}
 											{typeof model.costPerRun === "number" && (
-												<p className="mt-1 text-xs opacity-80">
-													${model.costPerRun.toFixed(3)}
-												</p>
+												<p className="mt-1 text-xs opacity-80">${model.costPerRun.toFixed(3)}</p>
 											)}
 										</button>
 									);

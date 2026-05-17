@@ -1,9 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-import {
-	deriveQualityGateCommands,
-	runQualityGate,
-} from "../feature-implementation/quality-gate";
+import { deriveQualityGateCommands, runQualityGate } from "../feature-implementation/quality-gate";
 import type { SandboxExecInstance } from "../feature-implementation/types";
 
 function buildExecResult(params: {
@@ -83,9 +80,7 @@ describe("quality gate helpers", () => {
 		expect(result.passed).toBe(true);
 		expect(result.checks).toHaveLength(2);
 		expect(logs).toHaveLength(2);
-		expect(
-			emitted.some((event) => event.type === "quality_gate_completed"),
-		).toBe(true);
+		expect(emitted.some((event) => event.type === "quality_gate_completed")).toBe(true);
 	});
 
 	it("reports failing checks without throwing", async () => {

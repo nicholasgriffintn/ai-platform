@@ -23,12 +23,7 @@ export const SANDBOX_TIMEOUT_DEFAULT_SECONDS = 900;
 export const SANDBOX_TIMEOUT_MAX_SECONDS = 7200;
 export const SANDBOX_TRUST_LEVELS = ["strict", "balanced", "trusted"] as const;
 
-export const sandboxWebhookCommandSchema = z.enum([
-	"implement",
-	"review",
-	"test",
-	"fix",
-]);
+export const sandboxWebhookCommandSchema = z.enum(["implement", "review", "test", "fix"]);
 export const sandboxRepoSchema = z
 	.string()
 	.trim()
@@ -261,15 +256,7 @@ export const sandboxRunDataSchema = z.object({
 	artifactKey: z.string().optional(),
 	artifactUrl: z.string().optional(),
 	workflowPhase: z
-		.enum([
-			"queued",
-			"dispatching",
-			"executing",
-			"finalizing",
-			"completed",
-			"failed",
-			"cancelled",
-		])
+		.enum(["queued", "dispatching", "executing", "finalizing", "completed", "failed", "cancelled"])
 		.optional(),
 	queueDispatchedAt: z.string().optional(),
 	processingStartedAt: z.string().optional(),
@@ -282,12 +269,7 @@ export const sandboxRunSchema = sandboxRunDataSchema.extend({
 export const sandboxTaskTypeSchema = z.enum(SANDBOX_TASK_TYPES);
 export const sandboxTrustLevelSchema = z.enum(SANDBOX_TRUST_LEVELS);
 
-export const sandboxRunControlStateSchema = z.enum([
-	"queued",
-	"running",
-	"paused",
-	"cancelled",
-]);
+export const sandboxRunControlStateSchema = z.enum(["queued", "running", "paused", "cancelled"]);
 
 export const sandboxRunControlSchema = z.object({
 	runId: z.string().trim().min(1),
@@ -306,9 +288,7 @@ export const sandboxRunInstructionSchema = z.object({
 	content: z.string().optional(),
 	command: z.string().optional(),
 	requestId: z.string().optional(),
-	approvalStatus: z
-		.enum(["pending", "escalated", "timed_out", "approved", "rejected"])
-		.optional(),
+	approvalStatus: z.enum(["pending", "escalated", "timed_out", "approved", "rejected"]).optional(),
 	timeoutSeconds: z.number().int().positive().optional(),
 	escalateAfterSeconds: z.number().int().positive().optional(),
 	expiresAt: z.string().optional(),
@@ -348,24 +328,14 @@ export const sandboxWorkerExecuteRequestSchema = z.object({
 
 export type GitHubConnectionPayload = z.infer<typeof githubConnectionSchema>;
 export type ExecuteSandboxRunPayload = z.infer<typeof executeSandboxRunSchema>;
-export type SandboxRunDispatchPayload = z.infer<
-	typeof sandboxRunDispatchPayloadSchema
->;
-export type SandboxRunDispatchMessage = z.infer<
-	typeof sandboxRunDispatchMessageSchema
->;
+export type SandboxRunDispatchPayload = z.infer<typeof sandboxRunDispatchPayloadSchema>;
+export type SandboxRunDispatchMessage = z.infer<typeof sandboxRunDispatchMessageSchema>;
 export type AutoConnectPayload = z.infer<typeof autoConnectSchema>;
 export type ListRunsQueryPayload = z.infer<typeof listRunsQuerySchema>;
-export type ListRunEventsQueryPayload = z.infer<
-	typeof listRunEventsQuerySchema
->;
-export type ListRunInstructionsQueryPayload = z.infer<
-	typeof listRunInstructionsQuerySchema
->;
+export type ListRunEventsQueryPayload = z.infer<typeof listRunEventsQuerySchema>;
+export type ListRunInstructionsQueryPayload = z.infer<typeof listRunInstructionsQuerySchema>;
 export type CancelRunPayload = z.infer<typeof cancelRunSchema>;
-export type SubmitRunInstructionPayload = z.infer<
-	typeof submitRunInstructionSchema
->;
+export type SubmitRunInstructionPayload = z.infer<typeof submitRunInstructionSchema>;
 export type PauseRunPayload = z.infer<typeof pauseRunSchema>;
 export type ResumeRunPayload = z.infer<typeof resumeRunSchema>;
 
@@ -381,20 +351,12 @@ export type SandboxTaskType = z.infer<typeof sandboxTaskTypeSchema>;
 export type SandboxPromptStrategy = z.infer<typeof sandboxPromptStrategySchema>;
 export type SandboxTrustLevel = z.infer<typeof sandboxTrustLevelSchema>;
 export type SandboxWebhookCommand = z.infer<typeof sandboxWebhookCommandSchema>;
-export type SandboxRunControlState = z.infer<
-	typeof sandboxRunControlStateSchema
->;
+export type SandboxRunControlState = z.infer<typeof sandboxRunControlStateSchema>;
 export type SandboxRunControl = z.infer<typeof sandboxRunControlSchema>;
-export type SandboxRunInstructionKind = z.infer<
-	typeof sandboxRunInstructionKindSchema
->;
+export type SandboxRunInstructionKind = z.infer<typeof sandboxRunInstructionKindSchema>;
 export type SandboxRunInstruction = z.infer<typeof sandboxRunInstructionSchema>;
-export type SandboxRunInstructionEnvelope = z.infer<
-	typeof sandboxRunInstructionEnvelopeSchema
->;
-export type SandboxWorkerExecuteRequest = z.infer<
-	typeof sandboxWorkerExecuteRequestSchema
->;
+export type SandboxRunInstructionEnvelope = z.infer<typeof sandboxRunInstructionEnvelopeSchema>;
+export type SandboxWorkerExecuteRequest = z.infer<typeof sandboxWorkerExecuteRequestSchema>;
 
 export type CreateSandboxConnectionInput = GitHubConnectionPayload;
 export type ConnectSandboxInstallationInput = AutoConnectPayload;

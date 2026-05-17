@@ -32,9 +32,7 @@ export function Analytics() {
 	useEffect(() => {
 		if (
 			window._beaconInitialized ||
-			document.querySelector(
-				'script[src="https://beacon.polychat.app/beacon.min.js"]',
-			)
+			document.querySelector('script[src="https://beacon.polychat.app/beacon.min.js"]')
 		) {
 			return;
 		}

@@ -57,19 +57,17 @@ export function useMemories(groupId?: string) {
 		},
 	});
 
-	const deleteMemoryMutation = useMutation<DeleteMemoryResponse, Error, string>(
-		{
-			mutationFn: async (memoryId: string) => {
-				return await memoryService.deleteMemory(memoryId);
-			},
-			onSuccess: () => {
-				queryClient.invalidateQueries({
-					queryKey: MEMORY_QUERY_KEYS.memories(),
-				});
-				queryClient.invalidateQueries({ queryKey: MEMORY_QUERY_KEYS.groups });
-			},
+	const deleteMemoryMutation = useMutation<DeleteMemoryResponse, Error, string>({
+		mutationFn: async (memoryId: string) => {
+			return await memoryService.deleteMemory(memoryId);
 		},
-	);
+		onSuccess: () => {
+			queryClient.invalidateQueries({
+				queryKey: MEMORY_QUERY_KEYS.memories(),
+			});
+			queryClient.invalidateQueries({ queryKey: MEMORY_QUERY_KEYS.groups });
+		},
+	});
 
 	const deleteGroupMutation = useMutation<DeleteGroupResponse, Error, string>({
 		mutationFn: async (groupId: string) => {

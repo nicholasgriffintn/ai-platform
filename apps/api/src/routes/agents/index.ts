@@ -87,8 +87,7 @@ addRoute(app, "get", "/teams", {
 addRoute(app, "get", "/teams/:teamId", {
 	tags: ["agents"],
 	summary: "Get agents by team ID",
-	description:
-		"Get all agents belonging to a specific team for the current user",
+	description: "Get all agents belonging to a specific team for the current user",
 	auth: true,
 	paramSchema: teamIdParamSchema,
 	responses: { 200: { description: "Success", schema: apiResponseSchema } },
@@ -153,14 +152,7 @@ addRoute(app, "post", "/:agentId/completions", {
 	bodySchema: createChatCompletionsJsonSchema,
 	middleware: [validateCaptcha],
 	responses: { 200: { description: "Success", schema: apiResponseSchema } },
-	handler: async ({
-		serviceContext,
-		raw,
-		params,
-		body,
-		user,
-		anonymousUser,
-	}) => {
+	handler: async ({ serviceContext, raw, params, body, user, anonymousUser }) => {
 		if (!user && !anonymousUser) {
 			return ResponseFactory.error(raw, "Unauthorized", 401);
 		}

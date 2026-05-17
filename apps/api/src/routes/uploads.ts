@@ -50,11 +50,7 @@ addRoute(app, "post", "/", {
 			try {
 				formData = await context.req.formData();
 			} catch {
-				throw new AssistantError(
-					"Failed to parse upload data",
-					ErrorType.PARAMS_ERROR,
-					400,
-				);
+				throw new AssistantError("Failed to parse upload data", ErrorType.PARAMS_ERROR, 400);
 			}
 
 			const user = context.get("user");

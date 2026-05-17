@@ -6,13 +6,7 @@ import {
 	getModels,
 } from "~/lib/providers/models";
 import { trackModelRoutingMetrics } from "~/lib/monitoring";
-import type {
-	Attachment,
-	IEnv,
-	IUser,
-	ModelConfigItem,
-	PromptRequirements,
-} from "~/types";
+import type { Attachment, IEnv, IUser, ModelConfigItem, PromptRequirements } from "~/types";
 import { getLogger } from "~/utils/logger";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
@@ -61,22 +55,15 @@ export class ModelRouter {
 
 	static selectFimModel(options?: { preferredProvider?: string }): string {
 		const models = getModels({ shouldUseCache: false });
-		const fimModels = Object.entries(models).filter(
-			([, config]) => config.supportsFim,
-		);
+		const fimModels = Object.entries(models).filter(([, config]) => config.supportsFim);
 
 		if (fimModels.length === 0) {
-			throw new AssistantError(
-				"No FIM-capable models available",
-				ErrorType.PARAMS_ERROR,
-			);
+			throw new AssistantError("No FIM-capable models available", ErrorType.PARAMS_ERROR);
 		}
 
 		const filteredModels =
 			options?.preferredProvider != null
-				? fimModels.filter(
-						([, config]) => config.provider === options.preferredProvider,
-					)
+				? fimModels.filter(([, config]) => config.provider === options.preferredProvider)
 				: fimModels;
 
 		if (filteredModels.length === 0) {
@@ -105,9 +92,7 @@ export class ModelRouter {
 		return ModelRouter.selectEditModel("supportsNextEdit", options);
 	}
 
-	static selectApplyEditModel(options?: {
-		preferredProvider?: string;
-	}): string {
+	static selectApplyEditModel(options?: { preferredProvider?: string }): string {
 		return ModelRouter.selectEditModel("supportsApplyEdit", options);
 	}
 
@@ -117,9 +102,7 @@ export class ModelRouter {
 	): string {
 		const models = getModels({ shouldUseCache: false });
 		const editModels = Object.entries(models).filter(([_, config]) =>
-			capability === "supportsNextEdit"
-				? config.supportsNextEdit
-				: config.supportsApplyEdit,
+			capability === "supportsNextEdit" ? config.supportsNextEdit : config.supportsApplyEdit,
 		);
 
 		if (editModels.length === 0) {
@@ -130,9 +113,7 @@ export class ModelRouter {
 		}
 
 		const filtered = options?.preferredProvider
-			? editModels.filter(
-					([, config]) => config.provider === options.preferredProvider,
-				)
+			? editModels.filter(([, config]) => config.provider === options.preferredProvider)
 			: editModels;
 
 		if (filtered.length === 0) {
@@ -203,27 +184,20 @@ export class ModelRouter {
 		return estimatedInputCost + estimatedOutputCost;
 	}
 
-	private static calculateScore(
-		requirements: PromptRequirements,
-		model: ModelConfigItem,
-	): number {
+	private static calculateScore(requirements: PromptRequirements, model: ModelConfigItem): number {
 		let score = 0;
 
 		if (model.contextComplexity) {
 			score +=
-				Math.max(
-					0,
-					5 -
-						Math.abs(requirements.expectedComplexity - model.contextComplexity),
-				) * ModelRouter.WEIGHTS.COMPLEXITY_MATCH;
+				Math.max(0, 5 - Math.abs(requirements.expectedComplexity - model.contextComplexity)) *
+				ModelRouter.WEIGHTS.COMPLEXITY_MATCH;
 		}
 
 		const inputCost = model.costPer1kInputTokens ?? 0;
 		const outputCost = model.costPer1kOutputTokens ?? 0;
 		const combinedCost = inputCost + outputCost;
 		if (combinedCost >= 0) {
-			score +=
-				(1 / (1 + combinedCost * 10)) * ModelRouter.WEIGHTS.COST_EFFICIENCY;
+			score += (1 / (1 + combinedCost * 10)) * ModelRouter.WEIGHTS.COST_EFFICIENCY;
 		}
 
 		if (model.reliability) {
@@ -248,16 +222,14 @@ export class ModelRouter {
 
 		for (const strength of requiredStrengths) {
 			const weight =
-				ModelRouter.CAPABILITY_WEIGHTS[strength] ??
-				ModelRouter.DEFAULT_CAPABILITY_WEIGHT;
+				ModelRouter.CAPABILITY_WEIGHTS[strength] ?? ModelRouter.DEFAULT_CAPABILITY_WEIGHT;
 			totalRequiredWeight += weight;
 			if (model.strengths?.includes(strength)) {
 				matchedWeight += weight;
 			}
 		}
 
-		const capabilityMatchScore =
-			totalRequiredWeight > 0 ? matchedWeight / totalRequiredWeight : 1;
+		const capabilityMatchScore = totalRequiredWeight > 0 ? matchedWeight / totalRequiredWeight : 1;
 		score += capabilityMatchScore * ModelRouter.WEIGHTS.CAPABILITY_MATCH;
 
 		if (requirements.budget_constraint && requirements.budget_constraint > 0) {
@@ -282,9 +254,7 @@ export class ModelRouter {
 		requirements: PromptRequirements,
 	): Promise<ModelScore[]> {
 		const modelScoresRaw = await Promise.all(
-			Object.keys(models).map((model) =>
-				ModelRouter.scoreModel(requirements, model),
-			),
+			Object.keys(models).map((model) => ModelRouter.scoreModel(requirements, model)),
 		);
 
 		if (modelScoresRaw.length === 0) {
@@ -301,9 +271,7 @@ export class ModelRouter {
 			normalizedScore: scoreRange > 0 ? (s.score - minScore) / scoreRange : 1,
 		}));
 
-		return modelScoresNormalized.sort(
-			(a, b) => b.normalizedScore - a.normalizedScore,
-		);
+		return modelScoresNormalized.sort((a, b) => b.normalizedScore - a.normalizedScore);
 	}
 
 	private static selectBestModel(modelScores: ModelScore[]): string {
@@ -315,9 +283,7 @@ export class ModelRouter {
 		return modelScores[0].model;
 	}
 
-	private static shouldCompareModels(
-		requirements: PromptRequirements,
-	): boolean {
+	private static shouldCompareModels(requirements: PromptRequirements): boolean {
 		return (
 			requirements.expectedComplexity >= 3 &&
 			(requirements.requiredStrengths.includes("general_knowledge") ||
@@ -326,9 +292,7 @@ export class ModelRouter {
 		);
 	}
 
-	private static async selectModelsForComparison(
-		modelScores: ModelScore[],
-	): Promise<string[]> {
+	private static async selectModelsForComparison(modelScores: ModelScore[]): Promise<string[]> {
 		if (modelScores.length <= 1) {
 			return modelScores.length === 1 ? [modelScores[0].model] : [defaultModel];
 		}
@@ -363,10 +327,7 @@ export class ModelRouter {
 	): Promise<string> {
 		return trackModelRoutingMetrics(
 			async () => {
-				const availableModels = await getIncludedInRouterModelsForUser(
-					env,
-					user?.id,
-				);
+				const availableModels = await getIncludedInRouterModelsForUser(env, user?.id);
 
 				const requirements = await PromptAnalyzer.analyzePrompt(
 					env,
@@ -376,10 +337,7 @@ export class ModelRouter {
 					user,
 				);
 
-				const modelScores = await ModelRouter.rankModels(
-					availableModels,
-					requirements,
-				);
+				const modelScores = await ModelRouter.rankModels(availableModels, requirements);
 
 				const suitableModels = modelScores.filter((model) => model.score > 0);
 
@@ -405,10 +363,7 @@ export class ModelRouter {
 	): Promise<string[]> {
 		return trackModelRoutingMetrics(
 			async () => {
-				const availableModels = await getIncludedInRouterModelsForUser(
-					env,
-					user?.id,
-				);
+				const availableModels = await getIncludedInRouterModelsForUser(env, user?.id);
 
 				const requirements = await PromptAnalyzer.analyzePrompt(
 					env,
@@ -418,15 +373,11 @@ export class ModelRouter {
 					user,
 				);
 
-				const modelScores = await ModelRouter.rankModels(
-					availableModels,
-					requirements,
-				);
+				const modelScores = await ModelRouter.rankModels(availableModels, requirements);
 
 				const suitableModels = modelScores.filter((model) => model.score > 0);
 
-				const doesComplexityRequireComparison =
-					ModelRouter.shouldCompareModels(requirements);
+				const doesComplexityRequireComparison = ModelRouter.shouldCompareModels(requirements);
 
 				if (doesComplexityRequireComparison) {
 					return await ModelRouter.selectModelsForComparison(suitableModels);

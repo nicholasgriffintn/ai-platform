@@ -29,9 +29,7 @@ export interface IInsertEmbeddingRequest extends IRequest {
 }
 
 // TODO: This still stores in the DB if the vector insertion fails
-export const insertEmbedding = async (
-	req: IInsertEmbeddingRequest,
-): Promise<any> => {
+export const insertEmbedding = async (req: IInsertEmbeddingRequest): Promise<any> => {
 	try {
 		const { request, env } = req;
 
@@ -54,16 +52,10 @@ export const insertEmbedding = async (
 		const title = requestTitle ? sanitiseInput(requestTitle) : "";
 
 		if (!type) {
-			throw new AssistantError(
-				"Missing type from request",
-				ErrorType.PARAMS_ERROR,
-			);
+			throw new AssistantError("Missing type from request", ErrorType.PARAMS_ERROR);
 		}
 		if (!content) {
-			throw new AssistantError(
-				"Missing content from request",
-				ErrorType.PARAMS_ERROR,
-			);
+			throw new AssistantError("Missing content from request", ErrorType.PARAMS_ERROR);
 		}
 
 		let uniqueId;
@@ -76,10 +68,7 @@ export const insertEmbedding = async (
 		const repositories = new RepositoryManager(env);
 
 		if (type === "blog") {
-			const blogExists = await repositories.embeddings.getEmbeddingIdByType(
-				id,
-				"blog",
-			);
+			const blogExists = await repositories.embeddings.getEmbeddingIdByType(id, "blog");
 
 			if (!blogExists) {
 				throw new AssistantError(
@@ -92,13 +81,7 @@ export const insertEmbedding = async (
 		} else {
 			uniqueId = id || `${Date.now()}-${generateId()}`;
 
-			await repositories.embeddings.insertEmbedding(
-				uniqueId,
-				newMetadata,
-				title,
-				content,
-				type,
-			);
+			await repositories.embeddings.insertEmbedding(uniqueId, newMetadata, title, content, type);
 		}
 
 		if (!uniqueId) {
@@ -143,12 +126,7 @@ export const insertEmbedding = async (
 				title,
 			});
 		}
-		const generated = await embedding.generate(
-			type,
-			content,
-			uniqueId,
-			newMetadata,
-		);
+		const generated = await embedding.generate(type, content, uniqueId, newMetadata);
 
 		const finalRagOptions = { ...rag_options, namespace: finalNamespace };
 		const inserted = await embedding.insert(generated, finalRagOptions);

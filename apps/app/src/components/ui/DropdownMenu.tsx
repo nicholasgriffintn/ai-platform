@@ -50,15 +50,11 @@ export const DropdownMenu = ({
 			switch (e.key) {
 				case "ArrowDown":
 					e.preventDefault();
-					setFocusIndex((prev) =>
-						prev < menuItemsRef.current.length - 1 ? prev + 1 : 0,
-					);
+					setFocusIndex((prev) => (prev < menuItemsRef.current.length - 1 ? prev + 1 : 0));
 					break;
 				case "ArrowUp":
 					e.preventDefault();
-					setFocusIndex((prev) =>
-						prev > 0 ? prev - 1 : menuItemsRef.current.length - 1,
-					);
+					setFocusIndex((prev) => (prev > 0 ? prev - 1 : menuItemsRef.current.length - 1));
 					break;
 				case "Home":
 					e.preventDefault();

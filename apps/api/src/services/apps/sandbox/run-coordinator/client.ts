@@ -7,15 +7,9 @@ import {
 	type SandboxRunInstruction,
 } from "@assistant/schemas";
 import type { IEnv } from "~/types";
-import type {
-	CoordinatorEventEnvelope,
-	CoordinatorInstructionEnvelope,
-} from "./types";
+import type { CoordinatorEventEnvelope, CoordinatorInstructionEnvelope } from "./types";
 
-function getCoordinatorStub(
-	env: IEnv | undefined,
-	runId: string,
-): DurableObjectStub {
+function getCoordinatorStub(env: IEnv | undefined, runId: string): DurableObjectStub {
 	if (!env?.SANDBOX_RUN_COORDINATOR) {
 		throw new Error("SANDBOX_RUN_COORDINATOR binding is not configured");
 	}
@@ -52,21 +46,18 @@ export async function updateRunCoordinatorControl(params: {
 		return null;
 	}
 	const stub = getCoordinatorStub(params.env, params.runId);
-	const response = await stub.fetch(
-		"https://sandbox-run-coordinator/control/update",
-		{
-			method: "POST",
-			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify({
-				state: params.state,
-				updatedAt: params.updatedAt,
-				cancellationReason: params.cancellationReason,
-				pauseReason: params.pauseReason,
-				timeoutSeconds: params.timeoutSeconds,
-				timeoutAt: params.timeoutAt,
-			}),
-		},
-	);
+	const response = await stub.fetch("https://sandbox-run-coordinator/control/update", {
+		method: "POST",
+		headers: { "Content-Type": "application/json" },
+		body: JSON.stringify({
+			state: params.state,
+			updatedAt: params.updatedAt,
+			cancellationReason: params.cancellationReason,
+			pauseReason: params.pauseReason,
+			timeoutSeconds: params.timeoutSeconds,
+			timeoutAt: params.timeoutAt,
+		}),
+	});
 	if (!response.ok) {
 		return null;
 	}
@@ -143,14 +134,11 @@ export async function openRunCoordinatorEventsSocket(params: {
 	}
 
 	const stub = getCoordinatorStub(params.env, params.runId);
-	const response = await stub.fetch(
-		"https://sandbox-run-coordinator/events/ws",
-		{
-			headers: {
-				Upgrade: "websocket",
-			},
+	const response = await stub.fetch("https://sandbox-run-coordinator/events/ws", {
+		headers: {
+			Upgrade: "websocket",
 		},
-	);
+	});
 
 	const socket = response.webSocket;
 	if (!socket) {
@@ -176,22 +164,19 @@ export async function submitRunCoordinatorInstruction(params: {
 		return null;
 	}
 	const stub = getCoordinatorStub(params.env, params.runId);
-	const response = await stub.fetch(
-		"https://sandbox-run-coordinator/instructions",
-		{
-			method: "POST",
-			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify({
-				kind: params.kind,
-				content: params.content,
-				command: params.command,
-				requestId: params.requestId,
-				approvalStatus: params.approvalStatus,
-				timeoutSeconds: params.timeoutSeconds,
-				escalateAfterSeconds: params.escalateAfterSeconds,
-			}),
-		},
-	);
+	const response = await stub.fetch("https://sandbox-run-coordinator/instructions", {
+		method: "POST",
+		headers: { "Content-Type": "application/json" },
+		body: JSON.stringify({
+			kind: params.kind,
+			content: params.content,
+			command: params.command,
+			requestId: params.requestId,
+			approvalStatus: params.approvalStatus,
+			timeoutSeconds: params.timeoutSeconds,
+			escalateAfterSeconds: params.escalateAfterSeconds,
+		}),
+	});
 	if (!response.ok) {
 		return null;
 	}

@@ -1,9 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import {
-	getVideoProvider,
-	listVideoProviders,
-} from "~/lib/providers/capabilities/video";
+import { getVideoProvider, listVideoProviders } from "~/lib/providers/capabilities/video";
 
 vi.mock("~/lib/providers/library", () => ({
 	providerLibrary: {
@@ -31,10 +28,7 @@ describe("video capability helpers", () => {
 		const context = { env: { TEST: true } as any, user: { id: 1 } as any };
 		const provider = getVideoProvider("replicate", context);
 
-		expect(mockProviderLibrary.video).toHaveBeenCalledWith(
-			"replicate",
-			context,
-		);
+		expect(mockProviderLibrary.video).toHaveBeenCalledWith("replicate", context);
 		expect(provider).toBe(fakeProvider);
 	});
 

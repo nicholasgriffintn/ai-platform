@@ -38,8 +38,7 @@ export const fill_in_middle_completion: ApiToolDefinition = {
 			},
 			suffix: {
 				type: "string",
-				description:
-					"Optional suffix content that appears after the cursor or gap.",
+				description: "Optional suffix content that appears after the cursor or gap.",
 			},
 			model: (() => {
 				return {
@@ -60,8 +59,7 @@ export const fill_in_middle_completion: ApiToolDefinition = {
 			},
 			temperature: {
 				type: "number",
-				description:
-					"Sampling temperature between 0 and 2 (higher is spicier). Accepts decimals.",
+				description: "Sampling temperature between 0 and 2 (higher is spicier). Accepts decimals.",
 				minimum: 0,
 				maximum: 2,
 				multipleOf: 0.01,
@@ -76,8 +74,7 @@ export const fill_in_middle_completion: ApiToolDefinition = {
 			},
 			stop: {
 				type: "string",
-				description:
-					"Comma-separated list of stop sequences that will terminate generation.",
+				description: "Comma-separated list of stop sequences that will terminate generation.",
 			},
 		},
 		required: ["prompt"],
@@ -140,9 +137,8 @@ export const fill_in_middle_completion: ApiToolDefinition = {
 			content: generatedText,
 			data: {
 				model:
-					(typeof response === "object" && response !== null
-						? response.model
-						: undefined) ?? args.model,
+					(typeof response === "object" && response !== null ? response.model : undefined) ??
+					args.model,
 				text: generatedText,
 				raw: response,
 			},

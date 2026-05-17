@@ -37,11 +37,7 @@ export default function PodcastsPage() {
 						<BackLink to="/apps" label="Back to Apps" />
 						<PageTitle title="Your Podcasts" />
 					</PageHeader>
-					<Button
-						onClick={handleNewPodcast}
-						variant="primary"
-						icon={<Plus size={16} />}
-					>
+					<Button onClick={handleNewPodcast} variant="primary" icon={<Plus size={16} />}>
 						New Podcast
 					</Button>
 				</div>
@@ -54,9 +50,7 @@ export default function PodcastsPage() {
 			) : error ? (
 				<div className="p-4 bg-amber-100 dark:bg-amber-900/20 text-amber-800 dark:text-amber-300 rounded-md border border-amber-200 dark:border-amber-800">
 					<h3 className="font-semibold mb-2">Failed to load podcasts</h3>
-					<p>
-						{error instanceof Error ? error.message : "Unknown error occurred"}
-					</p>
+					<p>{error instanceof Error ? error.message : "Unknown error occurred"}</p>
 					<Button
 						type="button"
 						variant="primary"
@@ -71,11 +65,7 @@ export default function PodcastsPage() {
 					title="No podcasts yet"
 					message="Upload your first podcast to get started. We'll help you transcribe, summarise, and create a cover image."
 					action={
-						<Button
-							onClick={handleNewPodcast}
-							variant="primary"
-							icon={<Plus size={16} />}
-						>
+						<Button onClick={handleNewPodcast} variant="primary" icon={<Plus size={16} />}>
 							Upload Podcast
 						</Button>
 					}
@@ -104,9 +94,7 @@ export default function PodcastsPage() {
 										/>
 									) : (
 										<div className="w-full h-full bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center">
-											<span className="text-zinc-500 dark:text-zinc-400">
-												No image
-											</span>
+											<span className="text-zinc-500 dark:text-zinc-400">No image</span>
 										</div>
 									)}
 									<div

@@ -645,8 +645,7 @@ export const openrouterModelConfig: ModelConfig = {
 
 	auto: {
 		name: "OpenRouter Auto",
-		description:
-			"OpenRouter's auto model, will select the best model for the task.",
+		description: "OpenRouter's auto model, will select the best model for the task.",
 		matchingModel: "openrouter/auto",
 		provider: "openrouter",
 		supportsAttachments: true,
@@ -989,8 +988,7 @@ export const openrouterModelConfig: ModelConfig = {
 
 	"cognitivecomputations/dolphin-mistral-24b-venice-edition:free": {
 		name: "Uncensored (free)",
-		matchingModel:
-			"cognitivecomputations/dolphin-mistral-24b-venice-edition:free",
+		matchingModel: "cognitivecomputations/dolphin-mistral-24b-venice-edition:free",
 		provider: "openrouter",
 		knowledgeCutoffDate: "June 2025",
 		releaseDate: "July 9, 2025",

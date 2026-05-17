@@ -81,18 +81,15 @@ describe("Guardrails", () => {
 
 			new Guardrails(mockEnv, mockUser, userSettings);
 
-			expect(mockProviderLibrary.guardrails).toHaveBeenCalledWith(
-				"llamaguard",
-				{
+			expect(mockProviderLibrary.guardrails).toHaveBeenCalledWith("llamaguard", {
+				env: mockEnv,
+				user: mockUser,
+				config: {
+					ai: mockEnv.AI,
 					env: mockEnv,
 					user: mockUser,
-					config: {
-						ai: mockEnv.AI,
-						env: mockEnv,
-						user: mockUser,
-					},
 				},
-			);
+			});
 		});
 
 		it("should throw error for bedrock without guardrail ID", () => {
@@ -158,10 +155,7 @@ describe("Guardrails", () => {
 			const instance = new Guardrails(mockEnv, mockUser, userSettings);
 			const result = await instance.validateInput("test message");
 
-			expect(mockProvider.validateContent).toHaveBeenCalledWith(
-				"test message",
-				"INPUT",
-			);
+			expect(mockProvider.validateContent).toHaveBeenCalledWith("test message", "INPUT");
 			expect(result.isValid).toBe(true);
 			expect(result.violations).toEqual([]);
 		});
@@ -178,11 +172,7 @@ describe("Guardrails", () => {
 			});
 
 			const instance = new Guardrails(mockEnv, mockUser, userSettings);
-			const result = await instance.validateInput(
-				"violent message",
-				123,
-				"completion-456",
-			);
+			const result = await instance.validateInput("violent message", 123, "completion-456");
 
 			expect(result.isValid).toBe(false);
 			expect(result.violations).toEqual(["Violence detected"]);
@@ -244,10 +234,7 @@ describe("Guardrails", () => {
 			const instance = new Guardrails(mockEnv, mockUser, userSettings);
 			const result = await instance.validateOutput("test response");
 
-			expect(mockProvider.validateContent).toHaveBeenCalledWith(
-				"test response",
-				"OUTPUT",
-			);
+			expect(mockProvider.validateContent).toHaveBeenCalledWith("test response", "OUTPUT");
 			expect(result.isValid).toBe(true);
 			expect(result.violations).toEqual([]);
 		});
@@ -264,11 +251,7 @@ describe("Guardrails", () => {
 			});
 
 			const instance = new Guardrails(mockEnv, mockUser, userSettings);
-			const result = await instance.validateOutput(
-				"inappropriate response",
-				123,
-				"completion-456",
-			);
+			const result = await instance.validateOutput("inappropriate response", 123, "completion-456");
 
 			expect(result.isValid).toBe(false);
 			expect(result.violations).toEqual(["Inappropriate content"]);
@@ -391,10 +374,7 @@ describe("Guardrails", () => {
 			} as any);
 
 			expect(provider).toBe(mockProvider);
-			expect(mockProviderLibrary.guardrails).toHaveBeenCalledWith(
-				"llamaguard",
-				expect.any(Object),
-			);
+			expect(mockProviderLibrary.guardrails).toHaveBeenCalledWith("llamaguard", expect.any(Object));
 		});
 	});
 });

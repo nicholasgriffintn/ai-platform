@@ -5,13 +5,7 @@ export interface ContentExtractParams {
 	should_vectorize?: boolean;
 	namespace?: string;
 	provider?: "auto" | "tavily" | "cloudflare";
-	cloudflareFormat?:
-		| "markdown"
-		| "content"
-		| "json"
-		| "links"
-		| "scrape"
-		| "snapshot";
+	cloudflareFormat?: "markdown" | "content" | "json" | "links" | "scrape" | "snapshot";
 	cloudflareJsonOptions?: Record<string, unknown>;
 	cloudflareScrapeOptions?: {
 		elements: Array<{

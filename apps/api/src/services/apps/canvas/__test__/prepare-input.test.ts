@@ -76,10 +76,7 @@ describe("prepareCanvasInputForModel", () => {
 			request: {
 				mode: "image",
 				prompt: "A cat",
-				referenceImages: [
-					"https://example.com/ref-1.png",
-					"https://example.com/ref-2.png",
-				],
+				referenceImages: ["https://example.com/ref-1.png", "https://example.com/ref-2.png"],
 			},
 		});
 
@@ -105,19 +102,13 @@ describe("prepareCanvasInputForModel", () => {
 			request: {
 				mode: "image",
 				prompt: "A cat",
-				referenceImages: [
-					"https://example.com/ref-1.png",
-					"https://example.com/ref-2.png",
-				],
+				referenceImages: ["https://example.com/ref-1.png", "https://example.com/ref-2.png"],
 			},
 		});
 
 		expect(result).toEqual({
 			prompt: "A cat",
-			input_images: [
-				"https://example.com/ref-1.png",
-				"https://example.com/ref-2.png",
-			],
+			input_images: ["https://example.com/ref-1.png", "https://example.com/ref-2.png"],
 		});
 	});
 });

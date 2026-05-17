@@ -11,18 +11,13 @@ import type { JobStatus } from "../types/index.js";
 
 const logger = createLogger("job");
 
-export const jobCommand = new Command("job").description(
-	"Manage Bedrock fine-tuning jobs",
-);
+export const jobCommand = new Command("job").description("Manage Bedrock fine-tuning jobs");
 
 jobCommand
 	.command("create")
 	.description("Create a new fine-tuning job in AWS Bedrock")
 	.requiredOption("--name <name>", "Job name")
-	.requiredOption(
-		"--base-model <model>",
-		"Base model identifier (e.g., amazon.nova-pro-v1:0)",
-	)
+	.requiredOption("--base-model <model>", "Base model identifier (e.g., amazon.nova-pro-v1:0)")
 	.requiredOption("--train-uri <uri>", "S3 URI for training data")
 	.option("--val-uri <uri>", "S3 URI for validation data")
 	.option("--custom-name <name>", "Custom model name (defaults to job name)")
@@ -46,10 +41,7 @@ jobCommand
 			const s3Service = new S3Service();
 
 			const customModelName = options.customName || options.name;
-			const outputS3Uri = s3Service.getOutputS3Uri(
-				options.project,
-				options.name,
-			);
+			const outputS3Uri = s3Service.getOutputS3Uri(options.project, options.name);
 
 			spinner.text = "Submitting job to Bedrock...";
 
@@ -114,22 +106,14 @@ jobCommand
 
 jobCommand
 	.command("distill")
-	.description(
-		"Create a distillation job to transfer knowledge from teacher to student model",
-	)
+	.description("Create a distillation job to transfer knowledge from teacher to student model")
 	.requiredOption("--name <name>", "Job name")
 	.requiredOption(
 		"--teacher <model>",
 		"Teacher model identifier (e.g., anthropic.claude-3-5-sonnet-20241022-v2:0)",
 	)
-	.requiredOption(
-		"--student <model>",
-		"Student model identifier (e.g., amazon.nova-lite-v1:0)",
-	)
-	.requiredOption(
-		"--train-uri <uri>",
-		"S3 URI for training prompts (can be prompt-only)",
-	)
+	.requiredOption("--student <model>", "Student model identifier (e.g., amazon.nova-lite-v1:0)")
+	.requiredOption("--train-uri <uri>", "S3 URI for training prompts (can be prompt-only)")
 	.option("--val-uri <uri>", "S3 URI for validation data")
 	.option("--custom-name <name>", "Custom model name (defaults to job name)")
 	.option("--project <name>", "Project name for organization", "strudel")
@@ -148,10 +132,7 @@ jobCommand
 			const s3Service = new S3Service();
 
 			const customModelName = options.customName || options.name;
-			const outputS3Uri = s3Service.getOutputS3Uri(
-				options.project,
-				options.name,
-			);
+			const outputS3Uri = s3Service.getOutputS3Uri(options.project, options.name);
 
 			spinner.text = "Submitting distillation job to Bedrock...";
 
@@ -195,24 +176,10 @@ jobCommand
 			console.log(chalk.gray(`  Student Model: ${options.student}`));
 			console.log(chalk.gray(`  Custom Model: ${customModelName}`));
 			console.log(chalk.blue("\n💡 About Distillation:"));
-			console.log(
-				chalk.gray(
-					"  • Transfers knowledge from larger teacher to smaller student",
-				),
-			);
-			console.log(
-				chalk.gray(
-					"  • Student model will be up to 500% faster and 75% cheaper",
-				),
-			);
-			console.log(
-				chalk.gray("  • Expected accuracy loss: <2% for most use cases"),
-			);
-			console.log(
-				chalk.gray(
-					"  • Can use prompt-only data (teacher generates responses)",
-				),
-			);
+			console.log(chalk.gray("  • Transfers knowledge from larger teacher to smaller student"));
+			console.log(chalk.gray("  • Student model will be up to 500% faster and 75% cheaper"));
+			console.log(chalk.gray("  • Expected accuracy loss: <2% for most use cases"));
+			console.log(chalk.gray("  • Can use prompt-only data (teacher generates responses)"));
 			console.log(chalk.blue("\n📊 Next Steps:"));
 			console.log(chalk.gray(`  Monitor: finetune job watch ${jobArn}`));
 			console.log(chalk.gray(`  Status: finetune job status ${jobArn}`));
@@ -248,16 +215,10 @@ jobCommand
 
 			console.log(chalk.blue("\n📅 Timestamps:"));
 			if (status.creationTime) {
-				console.log(
-					chalk.gray(`  Created: ${status.creationTime.toLocaleString()}`),
-				);
+				console.log(chalk.gray(`  Created: ${status.creationTime.toLocaleString()}`));
 			}
 			if (status.lastModifiedTime) {
-				console.log(
-					chalk.gray(
-						`  Last Modified: ${status.lastModifiedTime.toLocaleString()}`,
-					),
-				);
+				console.log(chalk.gray(`  Last Modified: ${status.lastModifiedTime.toLocaleString()}`));
 			}
 			if (status.endTime) {
 				console.log(chalk.gray(`  Ended: ${status.endTime.toLocaleString()}`));
@@ -266,18 +227,14 @@ jobCommand
 			if (status.trainingMetrics) {
 				console.log(chalk.blue("\n📊 Training Metrics:"));
 				console.log(
-					chalk.gray(
-						`  Loss: ${status.trainingMetrics.trainingLoss?.toFixed(4) || "N/A"}`,
-					),
+					chalk.gray(`  Loss: ${status.trainingMetrics.trainingLoss?.toFixed(4) || "N/A"}`),
 				);
 			}
 
 			if (status.validationMetrics) {
 				console.log(chalk.blue("\n📊 Validation Metrics:"));
 				console.log(
-					chalk.gray(
-						`  Loss: ${status.validationMetrics.validationLoss?.toFixed(4) || "N/A"}`,
-					),
+					chalk.gray(`  Loss: ${status.validationMetrics.validationLoss?.toFixed(4) || "N/A"}`),
 				);
 			}
 
@@ -285,9 +242,7 @@ jobCommand
 				console.log(chalk.blue("\n📦 Output:"));
 				console.log(chalk.gray(`  S3 URI: ${status.outputDataConfig.s3Uri}`));
 				console.log(
-					chalk.green(
-						"\n✓ Job completed! Next step: Provision throughput in AWS Console",
-					),
+					chalk.green("\n✓ Job completed! Next step: Provision throughput in AWS Console"),
 				);
 			}
 		} catch (error) {
@@ -325,9 +280,7 @@ jobCommand
 
 					if (status.trainingMetrics?.trainingLoss) {
 						console.log(
-							chalk.gray(
-								`  Training Loss: ${status.trainingMetrics.trainingLoss.toFixed(4)}`,
-							),
+							chalk.gray(`  Training Loss: ${status.trainingMetrics.trainingLoss.toFixed(4)}`),
 						);
 					}
 
@@ -347,18 +300,10 @@ jobCommand
 
 			console.log(chalk.green("\n✓ Job completed successfully!"));
 			console.log(chalk.blue("\n📦 Output:"));
-			console.log(
-				chalk.gray(`  S3 URI: ${finalStatus.outputDataConfig?.s3Uri}`),
-			);
+			console.log(chalk.gray(`  S3 URI: ${finalStatus.outputDataConfig?.s3Uri}`));
 			console.log(chalk.blue("\n📋 Next Steps:"));
-			console.log(
-				chalk.gray("  1. Provision throughput in AWS Bedrock Console"),
-			);
-			console.log(
-				chalk.gray(
-					"  2. Test the model: finetune model test <provisioned-model-arn>",
-				),
-			);
+			console.log(chalk.gray("  1. Provision throughput in AWS Bedrock Console"));
+			console.log(chalk.gray("  2. Test the model: finetune model test <provisioned-model-arn>"));
 		} catch (error) {
 			logger.error("Job watch failed", error);
 			process.exit(1);
@@ -392,11 +337,7 @@ jobCommand
 					console.log(chalk.gray(`  ARN: ${job.jobArn}`));
 					console.log(chalk.gray(`  Status: ${getStatusColor(job.status)}`));
 					console.log(chalk.gray(`  Base Model: ${job.baseModel}`));
-					console.log(
-						chalk.gray(
-							`  Created: ${new Date(job.createdAt).toLocaleString()}`,
-						),
-					);
+					console.log(chalk.gray(`  Created: ${new Date(job.createdAt).toLocaleString()}`));
 					console.log("");
 				});
 			} else {
@@ -416,14 +357,10 @@ jobCommand
 				jobs.forEach((job) => {
 					console.log(chalk.bold(job.jobName));
 					console.log(chalk.gray(`  ARN: ${job.jobArn}`));
-					console.log(
-						chalk.gray(`  Status: ${getStatusColor(job.status || "Unknown")}`),
-					);
+					console.log(chalk.gray(`  Status: ${getStatusColor(job.status || "Unknown")}`));
 					console.log(chalk.gray(`  Base Model: ${job.baseModelArn}`));
 					if (job.creationTime) {
-						console.log(
-							chalk.gray(`  Created: ${job.creationTime.toLocaleString()}`),
-						);
+						console.log(chalk.gray(`  Created: ${job.creationTime.toLocaleString()}`));
 					}
 					console.log("");
 				});
@@ -453,10 +390,7 @@ jobCommand
 
 			spinner.succeed(chalk.green("Stop request sent"));
 			console.log(
-				chalk.gray(
-					"\nThe job will stop shortly. Check status with: finetune job status " +
-						jobArn,
-				),
+				chalk.gray("\nThe job will stop shortly. Check status with: finetune job status " + jobArn),
 			);
 		} catch (error) {
 			spinner.fail(chalk.red("Failed to stop job"));

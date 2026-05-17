@@ -16,11 +16,7 @@ export function meta() {
 	};
 }
 
-export default function ErrorRoute({
-	message,
-	details,
-	stack,
-}: ErrorRouteProps) {
+export default function ErrorRoute({ message, details, stack }: ErrorRouteProps) {
 	const shouldShowStack = Boolean(stack) && shouldShowDevTools();
 
 	return (
@@ -29,13 +25,9 @@ export default function ErrorRoute({
 				<div className="text-base font-semibold text-zinc-600 dark:text-zinc-200 truncate">
 					{message}
 				</div>
-				<div className="text-sm text-zinc-500 dark:text-zinc-400">
-					{details}
-				</div>
+				<div className="text-sm text-zinc-500 dark:text-zinc-400">{details}</div>
 				{shouldShowStack ? (
-					<div className="text-sm text-zinc-500 dark:text-zinc-400 break-words">
-						{stack}
-					</div>
+					<div className="text-sm text-zinc-500 dark:text-zinc-400 break-words">{stack}</div>
 				) : null}
 				<div className="flex gap-2">
 					<button

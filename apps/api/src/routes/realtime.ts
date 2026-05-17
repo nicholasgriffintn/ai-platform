@@ -1,10 +1,7 @@
 import { addRoute } from "~/lib/http/routeBuilder";
 import { type Context, Hono } from "hono";
 
-import {
-	errorResponseSchema,
-	realtimeSessionResponseSchema,
-} from "@assistant/schemas";
+import { errorResponseSchema, realtimeSessionResponseSchema } from "@assistant/schemas";
 
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import { ResponseFactory } from "~/lib/http/ResponseFactory";
@@ -36,11 +33,7 @@ addRoute(app, "post", "/session/:type", {
 			const type = c.req.param("type");
 			const model = c.req.query("model") || "gpt-4o-mini-transcribe";
 
-			const availableModels = [
-				"gpt-4o-mini-transcribe",
-				"gpt-4o-transcribe",
-				"whisper",
-			];
+			const availableModels = ["gpt-4o-mini-transcribe", "gpt-4o-transcribe", "whisper"];
 
 			if (!availableModels.includes(model)) {
 				return ResponseFactory.error(c, "Invalid model specified", 400);
@@ -70,19 +63,10 @@ addRoute(app, "post", "/session/:type", {
 			}
 
 			const provider = getChatProvider("openai", { env, user });
-			const session = await provider.createRealtimeSession(
-				env,
-				user,
-				type,
-				body,
-			);
+			const session = await provider.createRealtimeSession(env, user, type, body);
 
 			if (!session) {
-				return ResponseFactory.error(
-					c,
-					"Failed to create realtime session",
-					500,
-				);
+				return ResponseFactory.error(c, "Failed to create realtime session", 500);
 			}
 
 			return ResponseFactory.success(c, session);

@@ -11,11 +11,7 @@ export function WebSearchView({
 }: {
 	data: any;
 	embedded: boolean;
-	onToolInteraction?: (
-		toolName: string,
-		action: "useAsPrompt",
-		data: Record<string, any>,
-	) => void;
+	onToolInteraction?: (toolName: string, action: "useAsPrompt", data: Record<string, any>) => void;
 }) {
 	const [showAllSources, setShowAllSources] = useState(false);
 
@@ -23,14 +19,7 @@ export function WebSearchView({
 		return <p className="text-red-500">No search data available</p>;
 	}
 
-	const {
-		answer,
-		sources,
-		similarQuestions,
-		completion_id,
-		provider,
-		providerWarning,
-	} = data;
+	const { answer, sources, similarQuestions, completion_id, provider, providerWarning } = data;
 
 	const providerLabels: Record<string, string> = {
 		duckduckgo: "DuckDuckGo",
@@ -39,8 +28,7 @@ export function WebSearchView({
 		parallel: "Parallel",
 	};
 
-	const providerLabel =
-		(provider && providerLabels[provider]) || provider || null;
+	const providerLabel = (provider && providerLabels[provider]) || provider || null;
 
 	const getDomain = (url: string) => {
 		try {
@@ -111,9 +99,7 @@ export function WebSearchView({
 								aria-expanded={showAllSources}
 								aria-controls="source-list"
 							>
-								<span className="text-zinc-600 dark:text-zinc-300">
-									Show less
-								</span>
+								<span className="text-zinc-600 dark:text-zinc-300">Show less</span>
 							</button>
 						)}
 					</div>
@@ -122,9 +108,7 @@ export function WebSearchView({
 				{providerLabel && (
 					<div className="mt-2">
 						<div className="inline-flex items-center gap-2 bg-blue-500/10 dark:bg-blue-500/20 text-blue-600 dark:text-blue-300 px-3 py-1 rounded-full w-fit">
-							<span className="font-medium tracking-wide uppercase text-xs">
-								Provider
-							</span>
+							<span className="font-medium tracking-wide uppercase text-xs">Provider</span>
 							<span className="font-medium text-xs">{providerLabel}</span>
 						</div>
 					</div>

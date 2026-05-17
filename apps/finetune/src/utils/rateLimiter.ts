@@ -25,8 +25,7 @@ export class RateLimiter {
 		this.maxRequests = options.maxRequests;
 		this.maxTokens = options.maxTokens || null;
 		this.windowMs = options.windowMs;
-		this.delayBetweenRequests =
-			options.delayBetweenRequests || this.windowMs / this.maxRequests;
+		this.delayBetweenRequests = options.delayBetweenRequests || this.windowMs / this.maxRequests;
 
 		const limits = [`${this.maxRequests} requests`];
 		if (this.maxTokens) {
@@ -45,10 +44,7 @@ export class RateLimiter {
 		);
 
 		const currentRequests = this.requestRecords.length;
-		const currentTokens = this.requestRecords.reduce(
-			(sum, record) => sum + record.tokens,
-			0,
-		);
+		const currentTokens = this.requestRecords.reduce((sum, record) => sum + record.tokens, 0);
 
 		if (currentRequests >= this.maxRequests) {
 			const oldestRecord = this.requestRecords[0];
@@ -62,11 +58,7 @@ export class RateLimiter {
 			return this.waitForSlot(estimatedTokens);
 		}
 
-		if (
-			this.maxTokens &&
-			estimatedTokens > 0 &&
-			currentTokens + estimatedTokens > this.maxTokens
-		) {
+		if (this.maxTokens && estimatedTokens > 0 && currentTokens + estimatedTokens > this.maxTokens) {
 			const tokensToFree = currentTokens + estimatedTokens - this.maxTokens;
 
 			let freedTokens = 0;
@@ -91,8 +83,7 @@ export class RateLimiter {
 		}
 
 		if (this.requestRecords.length > 0) {
-			const lastRequestTime =
-				this.requestRecords[this.requestRecords.length - 1].timestamp;
+			const lastRequestTime = this.requestRecords[this.requestRecords.length - 1].timestamp;
 			const timeSinceLastRequest = now - lastRequestTime;
 
 			if (timeSinceLastRequest < this.delayBetweenRequests) {
@@ -121,10 +112,7 @@ export class RateLimiter {
 
 		return {
 			requestsInWindow: recordsInWindow.length,
-			tokensInWindow: recordsInWindow.reduce(
-				(sum, record) => sum + record.tokens,
-				0,
-			),
+			tokensInWindow: recordsInWindow.reduce((sum, record) => sum + record.tokens, 0),
 			maxRequests: this.maxRequests,
 			maxTokens: this.maxTokens,
 			windowMs: this.windowMs,

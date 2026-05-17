@@ -4,9 +4,7 @@ import type { PodcastFormData } from "~/types/podcast";
 
 interface ProcessStepProps {
 	formData: PodcastFormData;
-	handleChange: (
-		e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
-	) => void;
+	handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
 	handleProcess: () => void;
 	isProcessing: boolean;
 }
@@ -35,10 +33,7 @@ export function ProcessStep({
 						/>
 					</div>
 					<div className="ml-3">
-						<label
-							htmlFor="transcribe"
-							className="font-medium text-zinc-700 dark:text-zinc-300"
-						>
+						<label htmlFor="transcribe" className="font-medium text-zinc-700 dark:text-zinc-300">
 							Transcribe Podcast
 						</label>
 						<p className="text-sm text-zinc-500 dark:text-zinc-400">
@@ -84,10 +79,7 @@ export function ProcessStep({
 						/>
 					</div>
 					<div className="ml-3">
-						<label
-							htmlFor="summarise"
-							className="font-medium text-zinc-700 dark:text-zinc-300"
-						>
+						<label htmlFor="summarise" className="font-medium text-zinc-700 dark:text-zinc-300">
 							Generate Summary
 						</label>
 						<p className="text-sm text-zinc-500 dark:text-zinc-400">
@@ -99,31 +91,26 @@ export function ProcessStep({
 								<p className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
 									Speaker Names (for summary)
 								</p>
-								{Array.from({ length: formData.numberOfSpeakers }).map(
-									(_, i) => {
-										const speakerId = String(i + 1);
-										return (
-											<div key={speakerId} className="flex items-center">
-												<label
-													htmlFor={`speaker_${speakerId}`}
-													className="text-sm text-zinc-500 dark:text-zinc-400 w-24"
-												>
-													Speaker {speakerId}:
-												</label>
-												<FormInput
-													id={`speaker_${speakerId}`}
-													name={`speaker_${speakerId}`}
-													value={
-														formData.speakers[speakerId] ||
-														`Speaker ${speakerId}`
-													}
-													onChange={handleChange}
-													className="ml-2"
-												/>
-											</div>
-										);
-									},
-								)}
+								{Array.from({ length: formData.numberOfSpeakers }).map((_, i) => {
+									const speakerId = String(i + 1);
+									return (
+										<div key={speakerId} className="flex items-center">
+											<label
+												htmlFor={`speaker_${speakerId}`}
+												className="text-sm text-zinc-500 dark:text-zinc-400 w-24"
+											>
+												Speaker {speakerId}:
+											</label>
+											<FormInput
+												id={`speaker_${speakerId}`}
+												name={`speaker_${speakerId}`}
+												value={formData.speakers[speakerId] || `Speaker ${speakerId}`}
+												onChange={handleChange}
+												className="ml-2"
+											/>
+										</div>
+									);
+								})}
 							</div>
 						)}
 					</div>
@@ -140,10 +127,7 @@ export function ProcessStep({
 						/>
 					</div>
 					<div className="ml-3">
-						<label
-							htmlFor="generateImage"
-							className="font-medium text-zinc-700 dark:text-zinc-300"
-						>
+						<label htmlFor="generateImage" className="font-medium text-zinc-700 dark:text-zinc-300">
 							Generate Cover Image
 						</label>
 						<p className="text-sm text-zinc-500 dark:text-zinc-400">
@@ -154,9 +138,7 @@ export function ProcessStep({
 
 				{formData.generateImage && (
 					<div className="ml-7">
-						<Label htmlFor="imagePrompt">
-							Image Generation Prompt (optional)
-						</Label>
+						<Label htmlFor="imagePrompt">Image Generation Prompt (optional)</Label>
 						<Textarea
 							id="imagePrompt"
 							name="imagePrompt"

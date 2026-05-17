@@ -12,8 +12,7 @@ export function meta() {
 		{ title: "Canvas - Polychat" },
 		{
 			name: "description",
-			content:
-				"Generate images and videos across multiple models with a shared canvas workflow",
+			content: "Generate images and videos across multiple models with a shared canvas workflow",
 		},
 	];
 }

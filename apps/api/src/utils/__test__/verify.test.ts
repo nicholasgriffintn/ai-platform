@@ -21,10 +21,7 @@ describe("verify", () => {
 			const result = verifyQuotes(article, quotes);
 
 			expect(result.verified).toBe(false);
-			expect(result.missingQuotes).toEqual([
-				"missing quote",
-				"another missing",
-			]);
+			expect(result.missingQuotes).toEqual(["missing quote", "another missing"]);
 		});
 
 		it("should handle case insensitive matching", () => {
@@ -109,9 +106,7 @@ describe("verify", () => {
 
 		it("should handle very long article and quotes", () => {
 			const article =
-				"Lorem ipsum ".repeat(1000) +
-				"special phrase " +
-				"dolor sit amet ".repeat(1000);
+				"Lorem ipsum ".repeat(1000) + "special phrase " + "dolor sit amet ".repeat(1000);
 			const quotes = ["lorem ipsum", "special phrase", "dolor sit amet"];
 
 			const result = verifyQuotes(article, quotes);
@@ -131,13 +126,8 @@ describe("verify", () => {
 		});
 
 		it("should handle mixed case and punctuation combinations", () => {
-			const article =
-				"Dr. Smith's research, published in 2023, shows remarkable results!";
-			const quotes = [
-				"Dr Smiths research",
-				"published in 2023",
-				"remarkable results",
-			];
+			const article = "Dr. Smith's research, published in 2023, shows remarkable results!";
+			const quotes = ["Dr Smiths research", "published in 2023", "remarkable results"];
 
 			const result = verifyQuotes(article, quotes);
 
@@ -147,20 +137,12 @@ describe("verify", () => {
 
 		it("should return correct missing quotes when some are found", () => {
 			const article = "This article contains some quotes but not all of them.";
-			const quotes = [
-				"article contains",
-				"missing quote",
-				"not all",
-				"another missing",
-			];
+			const quotes = ["article contains", "missing quote", "not all", "another missing"];
 
 			const result = verifyQuotes(article, quotes);
 
 			expect(result.verified).toBe(false);
-			expect(result.missingQuotes).toEqual([
-				"missing quote",
-				"another missing",
-			]);
+			expect(result.missingQuotes).toEqual(["missing quote", "another missing"]);
 		});
 	});
 });

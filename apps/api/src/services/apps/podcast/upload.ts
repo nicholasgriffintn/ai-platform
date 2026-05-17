@@ -1,9 +1,6 @@
 import { sanitiseInput } from "~/lib/chat/utils";
 import { StorageService } from "~/lib/storage";
-import {
-	resolveServiceContext,
-	type ServiceContext,
-} from "~/lib/context/serviceContext";
+import { resolveServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
 import type { IEnv, IFunctionResponse, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
@@ -24,9 +21,7 @@ interface IPodcastUploadResponse extends IFunctionResponse {
 	completion_id?: string;
 }
 
-export const handlePodcastUpload = async (
-	req: UploadRequest,
-): Promise<IPodcastUploadResponse> => {
+export const handlePodcastUpload = async (req: UploadRequest): Promise<IPodcastUploadResponse> => {
 	const { env, context, request, user } = req;
 
 	if (!user?.id) {
@@ -62,10 +57,7 @@ export const handlePodcastUpload = async (
 				contentLength: length,
 			});
 		} catch {
-			throw new AssistantError(
-				"Failed to upload podcast",
-				ErrorType.UNKNOWN_ERROR,
-			);
+			throw new AssistantError("Failed to upload podcast", ErrorType.UNKNOWN_ERROR);
 		}
 
 		const appData = {

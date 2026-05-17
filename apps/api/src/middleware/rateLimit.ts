@@ -8,10 +8,7 @@ const logger = getLogger({ prefix: "middleware/rateLimit" });
 
 export async function rateLimit(context: Context, next: Next) {
 	if (!context.env.FREE_RATE_LIMITER || !context.env.PRO_RATE_LIMITER) {
-		throw new AssistantError(
-			"Rate limiter not configured",
-			ErrorType.CONFIGURATION_ERROR,
-		);
+		throw new AssistantError("Rate limiter not configured", ErrorType.CONFIGURATION_ERROR);
 	}
 
 	const url = context.req.url;
@@ -34,9 +31,7 @@ export async function rateLimit(context: Context, next: Next) {
 			? `unauthenticated-${anonymousUserId}-${formattedPathname}`
 			: `unauthenticated-${formattedPathname}`;
 
-	const rateLimiter = userId
-		? context.env.PRO_RATE_LIMITER
-		: context.env.FREE_RATE_LIMITER;
+	const rateLimiter = userId ? context.env.PRO_RATE_LIMITER : context.env.FREE_RATE_LIMITER;
 
 	const result = await rateLimiter.limit({
 		key,

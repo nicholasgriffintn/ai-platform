@@ -72,16 +72,9 @@ export async function verifySandboxJwt(
 		["verify"],
 	);
 
-	const signedData = new TextEncoder().encode(
-		`${headerSegment}.${payloadSegment}`,
-	);
+	const signedData = new TextEncoder().encode(`${headerSegment}.${payloadSegment}`);
 	const signature = decodeBase64Url(signatureSegment);
-	const verified = await crypto.subtle.verify(
-		"HMAC",
-		hmacKey,
-		signature,
-		signedData,
-	);
+	const verified = await crypto.subtle.verify("HMAC", hmacKey, signature, signedData);
 
 	if (!verified) {
 		throw new Error("JWT signature verification failed");
@@ -103,8 +96,7 @@ export async function verifySandboxJwt(
 		throw new Error("JWT audience is invalid");
 	}
 
-	const userId =
-		toPositiveInteger(Number(payload.sub)) ?? toPositiveInteger(payload.sub);
+	const userId = toPositiveInteger(Number(payload.sub)) ?? toPositiveInteger(payload.sub);
 	if (!userId) {
 		throw new Error("JWT subject must be a positive integer user id");
 	}

@@ -1,7 +1,4 @@
-import {
-	resolveServiceContext,
-	type ServiceContext,
-} from "~/lib/context/serviceContext";
+import { resolveServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
 import type { IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import type { IPodcast } from "./list";
@@ -24,9 +21,7 @@ interface PodcastItem {
 	};
 }
 
-export const handlePodcastDetail = async (
-	req: IPodcastDetailRequest,
-): Promise<IPodcast> => {
+export const handlePodcastDetail = async (req: IPodcastDetailRequest): Promise<IPodcast> => {
 	const { env, context, podcastId, user } = req;
 
 	if (!user?.id) {
@@ -86,9 +81,7 @@ export const handlePodcastDetail = async (
 		audioUrl: uploadData.audioUrl,
 		duration: uploadData.duration,
 		transcript:
-			transcriptions.length > 0
-				? transcriptions[0].data?.transcriptionData?.output
-				: undefined,
+			transcriptions.length > 0 ? transcriptions[0].data?.transcriptionData?.output : undefined,
 		summary: summaries.length > 0 ? summaries[0].data.summary : undefined,
 		status,
 	};

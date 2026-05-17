@@ -8,11 +8,7 @@ import {
 	formatMessagesForSummary,
 } from "../compaction";
 
-function createMessage(
-	id: string,
-	content: string,
-	role: Message["role"] = "user",
-) {
+function createMessage(id: string, content: string, role: Message["role"] = "user") {
 	return {
 		id,
 		role,
@@ -90,12 +86,8 @@ describe("session compaction planning", () => {
 		});
 
 		expect(plan.shouldCompact).toBe(true);
-		expect(
-			plan.messagesToArchive.find((message) => message.id === "snap"),
-		).toBe(undefined);
-		expect(
-			plan.messagesToKeep.find((message) => message.id === "snap"),
-		).toBeDefined();
+		expect(plan.messagesToArchive.find((message) => message.id === "snap")).toBe(undefined);
+		expect(plan.messagesToKeep.find((message) => message.id === "snap")).toBeDefined();
 	});
 
 	it("estimates tokens for mixed message content", () => {
@@ -145,9 +137,7 @@ describe("token estimation", () => {
 		const content = "x".repeat(800);
 		const userMsg = createMessage("u", content, "user");
 		const toolMsg: Message = { id: "t", role: "tool", content } as Message;
-		expect(estimateMessageTokens(toolMsg)).toBeLessThan(
-			estimateMessageTokens(userMsg),
-		);
+		expect(estimateMessageTokens(toolMsg)).toBeLessThan(estimateMessageTokens(userMsg));
 	});
 });
 
@@ -188,9 +178,7 @@ describe("formatMessagesForSummary", () => {
 	});
 
 	it("respects maxCharacters limit", () => {
-		const messages = Array.from({ length: 10 }, (_, i) =>
-			createMessage(`m-${i}`, "a".repeat(200)),
-		);
+		const messages = Array.from({ length: 10 }, (_, i) => createMessage(`m-${i}`, "a".repeat(200)));
 		const output = formatMessagesForSummary(messages, 500);
 		expect(output.length).toBeLessThanOrEqual(520); // small slack for label overhead
 	});

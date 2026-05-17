@@ -1,11 +1,4 @@
-import {
-	type MockedFunction,
-	beforeEach,
-	describe,
-	expect,
-	it,
-	vi,
-} from "vitest";
+import { type MockedFunction, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { JwtData } from "@tsndr/cloudflare-worker-jwt";
 
@@ -88,9 +81,7 @@ describe("Magic Link Service", () => {
 	let mockJwtVerify: MockedFunction<JwtModule["verify"]>;
 	let mockJwtDecode: MockedFunction<JwtModule["decode"]>;
 	let mockAwsClient: any;
-	let mockSendMagicLinkEmail: MockedFunction<
-		NotificationsModule["sendMagicLinkEmail"]
-	>;
+	let mockSendMagicLinkEmail: MockedFunction<NotificationsModule["sendMagicLinkEmail"]>;
 
 	beforeEach(async () => {
 		vi.clearAllMocks();
@@ -116,9 +107,7 @@ describe("Magic Link Service", () => {
 		databaseFactory = () => mockDatabase;
 
 		mockRepositories.userSettings.createUserSettings.mockResolvedValue(true);
-		mockRepositories.userSettings.createUserProviderSettings.mockResolvedValue(
-			true,
-		);
+		mockRepositories.userSettings.createUserProviderSettings.mockResolvedValue(true);
 
 		const notifications = await import("~/services/notifications");
 		mockSendMagicLinkEmail = vi.mocked(notifications.sendMagicLinkEmail);
@@ -153,18 +142,11 @@ describe("Magic Link Service", () => {
 			const incompleteEnv = { SEND_EMAIL: { send: vi.fn() } } as any;
 
 			mockSendMagicLinkEmail.mockRejectedValue(
-				new AssistantError(
-					"Email configuration missing",
-					ErrorType.CONFIGURATION_ERROR,
-				),
+				new AssistantError("Email configuration missing", ErrorType.CONFIGURATION_ERROR),
 			);
 
 			await expect(
-				sendMagicLinkEmail(
-					incompleteEnv,
-					"user@example.com",
-					"https://example.com/magic",
-				),
+				sendMagicLinkEmail(incompleteEnv, "user@example.com", "https://example.com/magic"),
 			).rejects.toMatchObject({
 				message: "Email configuration missing",
 				type: ErrorType.CONFIGURATION_ERROR,
@@ -174,18 +156,11 @@ describe("Magic Link Service", () => {
 
 		it("should handle SES API errors", async () => {
 			mockSendMagicLinkEmail.mockRejectedValue(
-				new AssistantError(
-					"Failed to send magic link: error",
-					ErrorType.EMAIL_SEND_FAILED,
-				),
+				new AssistantError("Failed to send magic link: error", ErrorType.EMAIL_SEND_FAILED),
 			);
 
 			await expect(
-				sendMagicLinkEmail(
-					mockEnv,
-					"user@example.com",
-					"https://example.com/magic",
-				),
+				sendMagicLinkEmail(mockEnv, "user@example.com", "https://example.com/magic"),
 			).rejects.toThrow("Failed to send magic link");
 		});
 	});
@@ -209,9 +184,7 @@ describe("Magic Link Service", () => {
 
 			const result = await requestMagicLink(mockEnv, "user@example.com");
 
-			expect(mockRepositories.users.getUserByEmail).toHaveBeenCalledWith(
-				"user@example.com",
-			);
+			expect(mockRepositories.users.getUserByEmail).toHaveBeenCalledWith("user@example.com");
 			expect(mockJwtSign).toHaveBeenCalledWith(
 				expect.objectContaining({
 					userId: "123",
@@ -252,9 +225,7 @@ describe("Magic Link Service", () => {
 		it("should throw error for missing JWT secret", async () => {
 			const envWithoutSecret = {} as any;
 
-			await expect(
-				requestMagicLink(envWithoutSecret, "user@example.com"),
-			).rejects.toMatchObject({
+			await expect(requestMagicLink(envWithoutSecret, "user@example.com")).rejects.toMatchObject({
 				message: "JWT secret not configured",
 				type: ErrorType.CONFIGURATION_ERROR,
 				name: "AssistantError",
@@ -263,9 +234,7 @@ describe("Magic Link Service", () => {
 
 		it("should handle user creation failure", async () => {
 			mockRepositories.users.getUserByEmail.mockResolvedValue(null);
-			mockRepositories.users.createUser.mockRejectedValue(
-				new Error("DB error"),
-			);
+			mockRepositories.users.createUser.mockRejectedValue(new Error("DB error"));
 
 			const result = await requestMagicLink(mockEnv, "user@example.com");
 
@@ -298,19 +267,12 @@ describe("Magic Link Service", () => {
 			mockDatabase.consumeMagicLinkNonce.mockResolvedValue(true);
 			mockRepositories.users.getUserById.mockResolvedValue(mockUser);
 
-			const result = await verifyMagicLink(
-				mockEnv,
-				"valid-token",
-				"valid-nonce",
-			);
+			const result = await verifyMagicLink(mockEnv, "valid-token", "valid-nonce");
 
 			expect(mockJwtVerify).toHaveBeenCalledWith("valid-token", "test-secret", {
 				algorithm: "HS256",
 			});
-			expect(mockDatabase.consumeMagicLinkNonce).toHaveBeenCalledWith(
-				"valid-nonce",
-				123,
-			);
+			expect(mockDatabase.consumeMagicLinkNonce).toHaveBeenCalledWith("valid-nonce", 123);
 			expect(mockRepositories.users.getUserById).toHaveBeenCalledWith(123);
 			expect(result).toBe(123);
 		});
@@ -318,9 +280,7 @@ describe("Magic Link Service", () => {
 		it("should throw error for invalid token", async () => {
 			mockJwtVerify.mockResolvedValue(undefined);
 
-			await expect(
-				verifyMagicLink(mockEnv, "invalid-token", "nonce"),
-			).rejects.toMatchObject({
+			await expect(verifyMagicLink(mockEnv, "invalid-token", "nonce")).rejects.toMatchObject({
 				message: "Invalid or expired token/nonce",
 				type: ErrorType.AUTHENTICATION_ERROR,
 				name: "AssistantError",
@@ -342,9 +302,7 @@ describe("Magic Link Service", () => {
 				payload: expiredPayload,
 			} as JwtData);
 
-			await expect(
-				verifyMagicLink(mockEnv, "expired-token", "nonce"),
-			).rejects.toMatchObject({
+			await expect(verifyMagicLink(mockEnv, "expired-token", "nonce")).rejects.toMatchObject({
 				message: "Invalid or expired token/nonce",
 				type: ErrorType.AUTHENTICATION_ERROR,
 				name: "AssistantError",
@@ -367,9 +325,7 @@ describe("Magic Link Service", () => {
 			} as JwtData);
 			mockDatabase.consumeMagicLinkNonce.mockResolvedValue(false);
 
-			await expect(
-				verifyMagicLink(mockEnv, "token", "invalid-nonce"),
-			).rejects.toMatchObject({
+			await expect(verifyMagicLink(mockEnv, "token", "invalid-nonce")).rejects.toMatchObject({
 				message: "Invalid or expired token/nonce",
 				type: ErrorType.AUTHENTICATION_ERROR,
 				name: "AssistantError",
@@ -393,9 +349,7 @@ describe("Magic Link Service", () => {
 			mockDatabase.consumeMagicLinkNonce.mockResolvedValue(true);
 			mockRepositories.users.getUserById.mockResolvedValue(null);
 
-			await expect(
-				verifyMagicLink(mockEnv, "token", "nonce"),
-			).rejects.toMatchObject({
+			await expect(verifyMagicLink(mockEnv, "token", "nonce")).rejects.toMatchObject({
 				message: "User not found for valid token",
 				type: ErrorType.INTERNAL_ERROR,
 				name: "AssistantError",

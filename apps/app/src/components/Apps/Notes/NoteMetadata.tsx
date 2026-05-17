@@ -1,13 +1,4 @@
-import {
-	Calendar,
-	Clock,
-	Edit3,
-	FileText,
-	Hash,
-	Monitor,
-	Tag,
-	User,
-} from "lucide-react";
+import { Calendar, Clock, Edit3, FileText, Hash, Monitor, Tag, User } from "lucide-react";
 import { useState } from "react";
 import { Button } from "~/components/ui/Button";
 import { Textarea } from "~/components/ui/Textarea";
@@ -77,15 +68,11 @@ export function NoteMetadata({
 	const getSourceTypeIcon = (sourceType?: string) => {
 		switch (sourceType) {
 			case "tab_recording":
-				return (
-					<Monitor size={14} className="text-gray-600 dark:text-gray-400" />
-				);
+				return <Monitor size={14} className="text-gray-600 dark:text-gray-400" />;
 			case "manual":
 				return <User size={14} className="text-gray-600 dark:text-gray-400" />;
 			default:
-				return (
-					<FileText size={14} className="text-gray-600 dark:text-gray-400" />
-				);
+				return <FileText size={14} className="text-gray-600 dark:text-gray-400" />;
 		}
 	};
 
@@ -106,9 +93,7 @@ export function NoteMetadata({
 								onClick={onRegenerateMetadata}
 								disabled={isRegeneratingMetadata}
 							>
-								{isRegeneratingMetadata
-									? "Regenerating..."
-									: "Regenerate via AI"}
+								{isRegeneratingMetadata ? "Regenerating..." : "Regenerate via AI"}
 							</Button>
 						)}
 						<Button variant="secondary" size="sm" onClick={handleCancel}>
@@ -228,10 +213,7 @@ export function NoteMetadata({
 					{editingMetadata.tabSource && (
 						<div className="pt-4 border-t">
 							<h4 className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-3 flex items-center gap-2">
-								<Monitor
-									size={14}
-									className="text-gray-600 dark:text-gray-400"
-								/>
+								<Monitor size={14} className="text-gray-600 dark:text-gray-400" />
 								Capture Source
 							</h4>
 							<div className="grid gap-3">
@@ -303,11 +285,7 @@ export function NoteMetadata({
 						</Button>
 					)}
 					{isEditable && (
-						<Button
-							variant="ghost"
-							size="sm"
-							onClick={() => setIsEditing(true)}
-						>
+						<Button variant="ghost" size="sm" onClick={() => setIsEditing(true)}>
 							<Edit3 size={14} />
 						</Button>
 					)}
@@ -317,12 +295,8 @@ export function NoteMetadata({
 			<div className="space-y-3">
 				{metadata?.summary && (
 					<div>
-						<div className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
-							Summary
-						</div>
-						<p className="text-sm text-gray-800 dark:text-gray-200">
-							{metadata.summary}
-						</p>
+						<div className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Summary</div>
+						<p className="text-sm text-gray-800 dark:text-gray-200">{metadata.summary}</p>
 					</div>
 				)}
 
@@ -360,10 +334,7 @@ export function NoteMetadata({
 				<div className="grid grid-cols-2 gap-4 text-xs">
 					{metadata?.wordCount !== undefined && (
 						<div className="flex items-center gap-1">
-							<FileText
-								size={12}
-								className="text-gray-600 dark:text-gray-400"
-							/>
+							<FileText size={12} className="text-gray-600 dark:text-gray-400" />
 							<span className="text-gray-500 dark:text-gray-400">Words:</span>
 							<span className="text-gray-800 dark:text-gray-200">
 								{metadata.wordCount.toLocaleString()}
@@ -375,18 +346,13 @@ export function NoteMetadata({
 						<div className="flex items-center gap-1">
 							<Clock size={12} className="text-gray-600 dark:text-gray-400" />
 							<span className="text-gray-500 dark:text-gray-400">Read:</span>
-							<span className="text-gray-800 dark:text-gray-200">
-								{metadata.readingTime}min
-							</span>
+							<span className="text-gray-800 dark:text-gray-200">{metadata.readingTime}min</span>
 						</div>
 					)}
 
 					{metadata?.contentType && (
 						<div className="flex items-center gap-1">
-							<FileText
-								size={12}
-								className="text-gray-600 dark:text-gray-400"
-							/>
+							<FileText size={12} className="text-gray-600 dark:text-gray-400" />
 							<span className="text-gray-500 dark:text-gray-400">Type:</span>
 							<span className="capitalize text-gray-800 dark:text-gray-200">
 								{metadata.contentType}
@@ -427,9 +393,7 @@ export function NoteMetadata({
 						<div className="text-xs space-y-1">
 							{metadata.tabSource.title && (
 								<div>
-									<span className="text-gray-500 dark:text-gray-400">
-										Title:
-									</span>{" "}
+									<span className="text-gray-500 dark:text-gray-400">Title:</span>{" "}
 									<span className="text-gray-800 dark:text-gray-200">
 										{metadata.tabSource.title}
 									</span>
@@ -450,13 +414,8 @@ export function NoteMetadata({
 							)}
 							{metadata.tabSource.timestamp && (
 								<div className="flex items-center gap-1">
-									<Calendar
-										size={12}
-										className="text-gray-600 dark:text-gray-400"
-									/>
-									<span className="text-gray-500 dark:text-gray-400">
-										Captured:
-									</span>
+									<Calendar size={12} className="text-gray-600 dark:text-gray-400" />
+									<span className="text-gray-500 dark:text-gray-400">Captured:</span>
 									<span className="text-gray-800 dark:text-gray-200">
 										{new Date(metadata.tabSource.timestamp).toLocaleString()}
 									</span>

@@ -20,11 +20,7 @@ export class ApiKeyRepository extends BaseRepository {
 			{ user_id: userId },
 			{ columns: ["public_key"] },
 		);
-		const result = await this.runQuery<{ public_key: string }>(
-			query,
-			values,
-			true,
-		);
+		const result = await this.runQuery<{ public_key: string }>(query, values, true);
 
 		if (!result?.public_key) {
 			throw new AssistantError("User settings not found", ErrorType.NOT_FOUND);
@@ -33,10 +29,7 @@ export class ApiKeyRepository extends BaseRepository {
 		let publicKeyJwk = safeParseJson(result.public_key);
 		if (!publicKeyJwk) {
 			logger.error("Failed to parse public key", { error: "" });
-			throw new AssistantError(
-				"Failed to parse public key",
-				ErrorType.INTERNAL_ERROR,
-			);
+			throw new AssistantError("Failed to parse public key", ErrorType.INTERNAL_ERROR);
 		}
 
 		try {
@@ -52,17 +45,11 @@ export class ApiKeyRepository extends BaseRepository {
 			);
 		} catch (error) {
 			logger.error("Error importing public key:", { error });
-			throw new AssistantError(
-				"Failed to import user public key",
-				ErrorType.INTERNAL_ERROR,
-			);
+			throw new AssistantError("Failed to import user public key", ErrorType.INTERNAL_ERROR);
 		}
 	}
 
-	private async encryptApiKey(
-		apiKey: string,
-		publicKey: CryptoKey,
-	): Promise<string> {
+	private async encryptApiKey(apiKey: string, publicKey: CryptoKey): Promise<string> {
 		try {
 			const encryptedData = await crypto.subtle.encrypt(
 				{
@@ -74,10 +61,7 @@ export class ApiKeyRepository extends BaseRepository {
 			return bufferToBase64(new Uint8Array(encryptedData));
 		} catch (error) {
 			logger.error("Error encrypting API key:", { error });
-			throw new AssistantError(
-				"Failed to encrypt API key",
-				ErrorType.INTERNAL_ERROR,
-			);
+			throw new AssistantError("Failed to encrypt API key", ErrorType.INTERNAL_ERROR);
 		}
 	}
 
@@ -87,16 +71,11 @@ export class ApiKeyRepository extends BaseRepository {
 			const data = encoder.encode(apiKey);
 			const hashBuffer = await crypto.subtle.digest("SHA-256", data);
 			const hashArray = Array.from(new Uint8Array(hashBuffer));
-			const hashHex = hashArray
-				.map((b) => b.toString(16).padStart(2, "0"))
-				.join("");
+			const hashHex = hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
 			return hashHex;
 		} catch (error) {
 			logger.error("Error hashing API key:", { error });
-			throw new AssistantError(
-				"Failed to hash API key",
-				ErrorType.INTERNAL_ERROR,
-			);
+			throw new AssistantError("Failed to hash API key", ErrorType.INTERNAL_ERROR);
 		}
 	}
 
@@ -136,23 +115,13 @@ export class ApiKeyRepository extends BaseRepository {
 			);
 
 			if (!insert) {
-				throw new AssistantError(
-					"Failed to build API key insert query",
-					ErrorType.INTERNAL_ERROR,
-				);
+				throw new AssistantError("Failed to build API key insert query", ErrorType.INTERNAL_ERROR);
 			}
 
-			const metadataRow = await this.runQuery<ApiKeyMetadata>(
-				insert.query,
-				insert.values,
-				true,
-			);
+			const metadataRow = await this.runQuery<ApiKeyMetadata>(insert.query, insert.values, true);
 
 			if (!metadataRow) {
-				throw new AssistantError(
-					"Failed to create API key in database",
-					ErrorType.INTERNAL_ERROR,
-				);
+				throw new AssistantError("Failed to create API key in database", ErrorType.INTERNAL_ERROR);
 			}
 
 			const metadata: ApiKeyMetadata = {
@@ -163,11 +132,7 @@ export class ApiKeyRepository extends BaseRepository {
 
 			return { plaintextKey, metadata };
 		} catch (error: any) {
-			if (
-				error.message?.includes(
-					"UNIQUE constraint failed: user_api_keys.hashed_key",
-				)
-			) {
+			if (error.message?.includes("UNIQUE constraint failed: user_api_keys.hashed_key")) {
 				logger.error("API Key hash collision (rare):", { error });
 				throw new AssistantError(
 					"Failed to create API key due to a hash collision. Please try again.",
@@ -175,10 +140,7 @@ export class ApiKeyRepository extends BaseRepository {
 				);
 			}
 			logger.error("Error inserting API key:", { error });
-			throw new AssistantError(
-				"Failed to create API key in database",
-				ErrorType.INTERNAL_ERROR,
-			);
+			throw new AssistantError("Failed to create API key in database", ErrorType.INTERNAL_ERROR);
 		}
 	}
 
@@ -205,19 +167,13 @@ export class ApiKeyRepository extends BaseRepository {
 			return results;
 		} catch (error) {
 			logger.error("Error retrieving API keys:", { error });
-			throw new AssistantError(
-				"Failed to retrieve API keys",
-				ErrorType.INTERNAL_ERROR,
-			);
+			throw new AssistantError("Failed to retrieve API keys", ErrorType.INTERNAL_ERROR);
 		}
 	}
 
 	public async deleteApiKey(userId: number, apiKeyId: string): Promise<void> {
 		if (!userId || !apiKeyId) {
-			throw new AssistantError(
-				"User ID and API Key ID are required",
-				ErrorType.PARAMS_ERROR,
-			);
+			throw new AssistantError("User ID and API Key ID are required", ErrorType.PARAMS_ERROR);
 		}
 
 		try {
@@ -233,10 +189,7 @@ export class ApiKeyRepository extends BaseRepository {
 			}
 		} catch (error) {
 			logger.error("Error deleting API key:", { error });
-			throw new AssistantError(
-				"Failed to delete API key",
-				ErrorType.INTERNAL_ERROR,
-			);
+			throw new AssistantError("Failed to delete API key", ErrorType.INTERNAL_ERROR);
 		}
 	}
 

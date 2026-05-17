@@ -3,11 +3,7 @@ import { validateReplicatePayload } from "~/lib/providers/models/replicateValida
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import { extractGeneratedAsset } from "~/lib/providers/utils/helpers";
 import { AssistantError, ErrorType } from "~/utils/errors";
-import type {
-	MusicGenerationRequest,
-	MusicGenerationResult,
-	MusicProvider,
-} from "../index";
+import type { MusicGenerationRequest, MusicGenerationResult, MusicProvider } from "../index";
 
 const DEFAULT_MODEL = "replicate-stable-audio";
 
@@ -19,9 +15,7 @@ export class ReplicateMusicProvider implements MusicProvider {
 		return DEFAULT_MODEL;
 	}
 
-	async generate(
-		request: MusicGenerationRequest,
-	): Promise<MusicGenerationResult> {
+	async generate(request: MusicGenerationRequest): Promise<MusicGenerationResult> {
 		const modelId = request.model || this.getDefaultModel();
 		const modelConfig = await getModelConfigByModel(modelId);
 

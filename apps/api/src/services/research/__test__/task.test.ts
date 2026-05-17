@@ -3,11 +3,7 @@ import type { IEnv } from "~/types";
 import { ErrorType } from "~/utils/errors";
 import { getAuxiliaryResearchProvider } from "~/lib/providers/models";
 import { getResearchProvider } from "~/lib/providers/capabilities/research";
-import {
-	getResearchTaskStatus,
-	handleResearchTask,
-	startResearchTask,
-} from "../task";
+import { getResearchTaskStatus, handleResearchTask, startResearchTask } from "../task";
 
 vi.mock("~/lib/providers/models", () => ({
 	getAuxiliaryResearchProvider: vi.fn(),
@@ -17,9 +13,7 @@ vi.mock("~/lib/providers/capabilities/research", () => ({
 	getResearchProvider: vi.fn(),
 }));
 
-const mockedGetAuxiliaryResearchProvider = vi.mocked(
-	getAuxiliaryResearchProvider,
-);
+const mockedGetAuxiliaryResearchProvider = vi.mocked(getAuxiliaryResearchProvider);
 const mockedGetResearchProvider = vi.mocked(getResearchProvider);
 
 describe("handleResearchTask", () => {
@@ -72,19 +66,12 @@ describe("handleResearchTask", () => {
 			input: "   test query   ",
 		});
 
-		expect(mockedGetAuxiliaryResearchProvider).toHaveBeenCalledWith(
-			baseEnv,
-			undefined,
-			undefined,
-		);
+		expect(mockedGetAuxiliaryResearchProvider).toHaveBeenCalledWith(baseEnv, undefined, undefined);
 		expect(mockedGetResearchProvider).toHaveBeenCalledWith("parallel", {
 			env: baseEnv,
 			user: undefined,
 		});
-		expect(mockResearchProvider.performResearch).toHaveBeenCalledWith(
-			"test query",
-			undefined,
-		);
+		expect(mockResearchProvider.performResearch).toHaveBeenCalledWith("test query", undefined);
 		expect(response).toMatchObject({
 			status: "success",
 			data: {
@@ -176,10 +163,7 @@ describe("handleResearchTask", () => {
 			runId: "status-run",
 		});
 
-		expect(mockResearchProvider.fetchResearchResult).toHaveBeenCalledWith(
-			"status-run",
-			undefined,
-		);
+		expect(mockResearchProvider.fetchResearchResult).toHaveBeenCalledWith("status-run", undefined);
 		expect(status).toMatchObject({
 			provider: "parallel",
 			run: expect.objectContaining({ status: "running" }),

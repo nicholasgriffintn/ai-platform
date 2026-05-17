@@ -23,9 +23,7 @@ export function MemoryList({
 	isDeletingMemory,
 	isAddingToGroup,
 }: MemoryListProps) {
-	const [selectedMemories, setSelectedMemories] = useState<Set<string>>(
-		new Set(),
-	);
+	const [selectedMemories, setSelectedMemories] = useState<Set<string>>(new Set());
 	const [showAddToGroup, setShowAddToGroup] = useState(false);
 
 	const handleDelete = async (memoryId: string) => {
@@ -91,41 +89,38 @@ export function MemoryList({
 		<div className="space-y-3">
 			<div className="flex items-center justify-between">
 				<h2 className="text-lg font-medium text-zinc-800 dark:text-zinc-100">
-					{selectedGroup ? "Group Memories" : "All Memories"} ({memories.length}
-					)
+					{selectedGroup ? "Group Memories" : "All Memories"} ({memories.length})
 				</h2>
 
-				{selectedMemories.size > 0 &&
-					onAddMemoriesToGroup &&
-					availableGroups.length > 0 && (
-						<div className="relative">
-							<Button
-								variant="outline"
-								size="sm"
-								onClick={() => setShowAddToGroup(!showAddToGroup)}
-								disabled={isAddingToGroup}
-								className="flex items-center gap-2"
-							>
-								<Plus className="h-4 w-4" />
-								Add to Group ({selectedMemories.size})
-							</Button>
+				{selectedMemories.size > 0 && onAddMemoriesToGroup && availableGroups.length > 0 && (
+					<div className="relative">
+						<Button
+							variant="outline"
+							size="sm"
+							onClick={() => setShowAddToGroup(!showAddToGroup)}
+							disabled={isAddingToGroup}
+							className="flex items-center gap-2"
+						>
+							<Plus className="h-4 w-4" />
+							Add to Group ({selectedMemories.size})
+						</Button>
 
-							{showAddToGroup && (
-								<div className="absolute right-0 top-full mt-1 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg shadow-lg py-2 min-w-48 z-10">
-									{availableGroups.map((group) => (
-										<button
-											key={group.id}
-											onClick={() => handleAddToGroup(group.id)}
-											disabled={isAddingToGroup}
-											className="w-full px-3 py-2 text-left hover:bg-zinc-100 dark:hover:bg-zinc-700 text-sm text-zinc-800 dark:text-zinc-100 disabled:opacity-50"
-										>
-											{group.title}
-										</button>
-									))}
-								</div>
-							)}
-						</div>
-					)}
+						{showAddToGroup && (
+							<div className="absolute right-0 top-full mt-1 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg shadow-lg py-2 min-w-48 z-10">
+								{availableGroups.map((group) => (
+									<button
+										key={group.id}
+										onClick={() => handleAddToGroup(group.id)}
+										disabled={isAddingToGroup}
+										className="w-full px-3 py-2 text-left hover:bg-zinc-100 dark:hover:bg-zinc-700 text-sm text-zinc-800 dark:text-zinc-100 disabled:opacity-50"
+									>
+										{group.title}
+									</button>
+								))}
+							</div>
+						)}
+					</div>
+				)}
 			</div>
 
 			<div className="space-y-2">
@@ -149,9 +144,7 @@ export function MemoryList({
 												: "border-zinc-300 dark:border-zinc-600 hover:border-blue-500"
 										}`}
 									>
-										{selectedMemories.has(memory.id) && (
-											<Check className="h-3 w-3" />
-										)}
+										{selectedMemories.has(memory.id) && <Check className="h-3 w-3" />}
 									</button>
 								)}
 
@@ -192,10 +185,7 @@ export function MemoryList({
 			</div>
 
 			{showAddToGroup && (
-				<div
-					className="fixed inset-0 z-0"
-					onClick={() => setShowAddToGroup(false)}
-				/>
+				<div className="fixed inset-0 z-0" onClick={() => setShowAddToGroup(false)} />
 			)}
 		</div>
 	);

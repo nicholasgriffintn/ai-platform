@@ -39,9 +39,7 @@ export const RangeInput = forwardRef<HTMLInputElement, RangeInputProps>(
 				<div className="flex justify-between items-center">
 					{label && <Label htmlFor={id}>{label}</Label>}
 					{displayValue && (
-						<span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
-							{value}
-						</span>
+						<span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{value}</span>
 					)}
 				</div>
 				<div className="relative mt-2">
@@ -79,9 +77,7 @@ export const RangeInput = forwardRef<HTMLInputElement, RangeInputProps>(
 					</div>
 				)}
 				{description && (
-					<p className="text-xs text-zinc-600 dark:text-zinc-400 mt-1">
-						{description}
-					</p>
+					<p className="text-xs text-zinc-600 dark:text-zinc-400 mt-1">{description}</p>
 				)}
 			</div>
 		);

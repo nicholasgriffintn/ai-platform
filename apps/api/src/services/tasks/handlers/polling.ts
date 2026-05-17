@@ -6,10 +6,7 @@ export function getNextPollingSchedule(previousAttempt?: number): {
 	scheduledAt: string;
 } {
 	const nextAttempt = (previousAttempt ?? 0) + 1;
-	const delayIndex = Math.min(
-		nextAttempt - 1,
-		POLLING_DELAYS_SECONDS.length - 1,
-	);
+	const delayIndex = Math.min(nextAttempt - 1, POLLING_DELAYS_SECONDS.length - 1);
 	const delaySeconds = POLLING_DELAYS_SECONDS[delayIndex];
 	return {
 		pollAttempt: nextAttempt,

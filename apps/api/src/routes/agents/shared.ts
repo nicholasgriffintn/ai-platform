@@ -42,17 +42,14 @@ const setFeaturedBodySchema = z.object({ featured: z.boolean() });
 const moderateBodySchema = z.object({ is_public: z.boolean() });
 
 app.use("/*", async (ctx, next) => {
-	logger.info(
-		`Processing shared agents route: ${ctx.req.method} ${ctx.req.path}`,
-	);
+	logger.info(`Processing shared agents route: ${ctx.req.method} ${ctx.req.path}`);
 	return next();
 });
 
 addRoute(app, "get", "/", {
 	tags: ["shared-agents"],
 	summary: "Get a list of shared agents",
-	description:
-		"Get a list of shared agents with optional filtering and sorting",
+	description: "Get a list of shared agents with optional filtering and sorting",
 	querySchema: sharedAgentFiltersSchema,
 	responses: { 200: { description: "Success", schema: apiResponseSchema } },
 	handler: async ({ serviceContext, query }) => {
@@ -153,13 +150,7 @@ addRoute(app, "post", "/:id/rate", {
 	bodySchema: rateAgentSchema,
 	responses: { 200: { description: "Success", schema: apiResponseSchema } },
 	handler: async ({ serviceContext, params, body, user }) => {
-		return rateSharedAgent(
-			serviceContext,
-			params.id,
-			body.rating,
-			body.review,
-			user.id,
-		);
+		return rateSharedAgent(serviceContext, params.id, body.rating, body.review, user.id);
 	},
 });
 
@@ -183,10 +174,7 @@ addRoute(app, "get", "/check/:agentId", {
 	paramSchema: agentIdParamSchema,
 	responses: { 200: { description: "Success", schema: apiResponseSchema } },
 	handler: async ({ serviceContext, params }) => {
-		const sharedAgent = await getSharedAgentByAgentId(
-			serviceContext,
-			params.agentId,
-		);
+		const sharedAgent = await getSharedAgentByAgentId(serviceContext, params.agentId);
 
 		return {
 			isShared: !!sharedAgent,

@@ -18,18 +18,14 @@ export async function getPatternDetails({
 		context.ensureDatabase();
 		const { repositories } = context;
 
-		const response =
-			await repositories.dynamicAppResponses.getResponseById(patternId);
+		const response = await repositories.dynamicAppResponses.getResponseById(patternId);
 
 		if (!response) {
 			throw new AssistantError("Pattern not found", ErrorType.NOT_FOUND);
 		}
 
 		if (response.user_id !== userId) {
-			throw new AssistantError(
-				"Unauthorized access to pattern",
-				ErrorType.AUTHORISATION_ERROR,
-			);
+			throw new AssistantError("Unauthorized access to pattern", ErrorType.AUTHORISATION_ERROR);
 		}
 
 		const pattern = mapResponseToPattern(response);
@@ -51,9 +47,6 @@ export async function getPatternDetails({
 			throw error;
 		}
 
-		throw new AssistantError(
-			"Failed to get Strudel pattern details",
-			ErrorType.UNKNOWN_ERROR,
-		);
+		throw new AssistantError("Failed to get Strudel pattern details", ErrorType.UNKNOWN_ERROR);
 	}
 }

@@ -73,14 +73,11 @@ export async function storeProviderApiKey(
 		try {
 			await cache.clearUserModelCache(id.toString());
 		} catch (error) {
-			logger.error(
-				"Failed to clear user caches after provider API key update",
-				{
-					userId: id,
-					providerId,
-					error,
-				},
-			);
+			logger.error("Failed to clear user caches after provider API key update", {
+				userId: id,
+				providerId,
+				error,
+			});
 		}
 	}
 

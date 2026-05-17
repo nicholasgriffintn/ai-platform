@@ -3,10 +3,7 @@ import type {
 	InputSchemaInputFieldType,
 	ModelConfigItem,
 } from "~/types";
-import {
-	buildInputSchemaInput,
-	type InputSchemaBuildParameters,
-} from "~/utils/inputSchema";
+import { buildInputSchemaInput, type InputSchemaBuildParameters } from "~/utils/inputSchema";
 import type { CanvasGenerationInput } from "./types";
 import { isCanvasReferenceFieldName } from "./input-requirements";
 
@@ -44,9 +41,7 @@ function isAllowedEnumValue(
 	return undefined;
 }
 
-function getFieldTypes(
-	field: InputSchemaInputFieldDescriptor,
-): InputSchemaInputFieldType[] {
+function getFieldTypes(field: InputSchemaInputFieldDescriptor): InputSchemaInputFieldType[] {
 	return Array.isArray(field.type) ? field.type : [field.type];
 }
 
@@ -69,11 +64,7 @@ function getReferenceFieldValue(
 		return referenceImages;
 	}
 
-	if (
-		fieldName === "last_frame" ||
-		fieldName === "last_frame_image" ||
-		fieldName === "end_image"
-	) {
+	if (fieldName === "last_frame" || fieldName === "last_frame_image" || fieldName === "end_image") {
 		return referenceImages[1];
 	}
 
@@ -85,9 +76,7 @@ function buildCanvasInputSource(
 	model: ModelConfigItem,
 ): Record<string, unknown> {
 	const fields = model.inputSchema?.fields ?? [];
-	const aspectRatioField = fields.find(
-		(field) => field.name === "aspect_ratio",
-	);
+	const aspectRatioField = fields.find((field) => field.name === "aspect_ratio");
 	const resolutionField = fields.find((field) => field.name === "resolution");
 	const referenceImages = (request.referenceImages ?? []).filter(Boolean);
 
@@ -115,25 +104,17 @@ function buildCanvasInputSource(
 		input[field.name] = value;
 	}
 
-	const resolvedAspectRatio = isAllowedEnumValue(
-		aspectRatioField,
-		request.aspectRatio,
-	);
+	const resolvedAspectRatio = isAllowedEnumValue(aspectRatioField, request.aspectRatio);
 	if (resolvedAspectRatio) {
 		input.aspect_ratio = resolvedAspectRatio;
 	}
 
-	const resolvedResolution = isAllowedEnumValue(
-		resolutionField,
-		request.resolution,
-	);
+	const resolvedResolution = isAllowedEnumValue(resolutionField, request.resolution);
 	if (resolvedResolution) {
 		input.resolution = resolvedResolution;
 	}
 
-	return Object.fromEntries(
-		Object.entries(input).filter(([, value]) => value !== undefined),
-	);
+	return Object.fromEntries(Object.entries(input).filter(([, value]) => value !== undefined));
 }
 
 export function prepareCanvasInputForModel({

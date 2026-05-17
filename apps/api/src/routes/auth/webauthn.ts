@@ -1,8 +1,5 @@
 import { addRoute } from "~/lib/http/routeBuilder";
-import type {
-	AuthenticationResponseJSON,
-	RegistrationResponseJSON,
-} from "@simplewebauthn/types";
+import type { AuthenticationResponseJSON, RegistrationResponseJSON } from "@simplewebauthn/types";
 import { type Context, Hono } from "hono";
 
 import z from "zod/v4";
@@ -66,20 +63,12 @@ addRoute(app, "post", "/registration/options", {
 			const user = c.get("user");
 
 			if (!user?.id) {
-				throw new AssistantError(
-					"Authentication required",
-					ErrorType.AUTHENTICATION_ERROR,
-				);
+				throw new AssistantError("Authentication required", ErrorType.AUTHENTICATION_ERROR);
 			}
 
 			const { repositories } = getServiceContext(c);
 
-			const options = await generatePasskeyRegistrationOptions(
-				repositories,
-				user,
-				rpName,
-				rpID(c),
-			);
+			const options = await generatePasskeyRegistrationOptions(repositories, user, rpName, rpID(c));
 
 			return ResponseFactory.success(c, options);
 		})(raw),
@@ -107,10 +96,7 @@ addRoute(app, "post", "/registration/verification", {
 			const user = c.get("user");
 
 			if (!user?.id) {
-				throw new AssistantError(
-					"Authentication required",
-					ErrorType.AUTHENTICATION_ERROR,
-				);
+				throw new AssistantError("Authentication required", ErrorType.AUTHENTICATION_ERROR);
 			}
 
 			const { repositories } = getServiceContext(c);
@@ -148,10 +134,7 @@ addRoute(app, "post", "/authentication/options", {
 		(async (c: Context) => {
 			const { repositories } = getServiceContext(c);
 
-			const options = await generatePasskeyAuthenticationOptions(
-				repositories,
-				rpID(c),
-			);
+			const options = await generatePasskeyAuthenticationOptions(repositories, rpID(c));
 
 			return ResponseFactory.success(c, options);
 		})(raw),
@@ -227,10 +210,7 @@ addRoute(app, "get", "/passkeys", {
 			const user = c.get("user");
 
 			if (!user) {
-				throw new AssistantError(
-					"Authentication required",
-					ErrorType.AUTHENTICATION_ERROR,
-				);
+				throw new AssistantError("Authentication required", ErrorType.AUTHENTICATION_ERROR);
 			}
 
 			const { repositories } = getServiceContext(c);
@@ -276,19 +256,13 @@ addRoute(app, "delete", "/passkeys/:id", {
 			const user = c.get("user");
 
 			if (!user) {
-				throw new AssistantError(
-					"Authentication required",
-					ErrorType.AUTHENTICATION_ERROR,
-				);
+				throw new AssistantError("Authentication required", ErrorType.AUTHENTICATION_ERROR);
 			}
 
 			const passkeyId = Number.parseInt(c.req.param("id"), 10);
 
 			if (Number.isNaN(passkeyId)) {
-				throw new AssistantError(
-					"Invalid passkey ID",
-					ErrorType.AUTHENTICATION_ERROR,
-				);
+				throw new AssistantError("Invalid passkey ID", ErrorType.AUTHENTICATION_ERROR);
 			}
 
 			const { repositories } = getServiceContext(c);

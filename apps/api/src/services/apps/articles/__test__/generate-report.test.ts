@@ -112,13 +112,13 @@ describe("generateArticlesReport", () => {
 	it("should throw error when user ID is missing", async () => {
 		const userWithoutId = { ...mockUser, id: 0 };
 
-		await expect(
-			generateArticlesReport({ ...mockParams, user: userWithoutId }),
-		).rejects.toThrow(expect.any(AssistantError));
+		await expect(generateArticlesReport({ ...mockParams, user: userWithoutId })).rejects.toThrow(
+			expect.any(AssistantError),
+		);
 
-		await expect(
-			generateArticlesReport({ ...mockParams, user: userWithoutId }),
-		).rejects.toThrow("User ID is required");
+		await expect(generateArticlesReport({ ...mockParams, user: userWithoutId })).rejects.toThrow(
+			"User ID is required",
+		);
 	});
 
 	it("should throw error when itemId is missing", async () => {
@@ -136,9 +136,7 @@ describe("generateArticlesReport", () => {
 	it("should throw error when no analysis data found", async () => {
 		mockAppDataRepo.getAppDataByUserAppAndItem.mockResolvedValue([]);
 
-		await expect(generateArticlesReport(mockParams)).rejects.toThrow(
-			AssistantError,
-		);
+		await expect(generateArticlesReport(mockParams)).rejects.toThrow(AssistantError);
 
 		await expect(generateArticlesReport(mockParams)).rejects.toThrow(
 			"No analysis data found for itemId: test-item-id",
@@ -214,9 +212,7 @@ describe("generateArticlesReport", () => {
 			},
 		];
 
-		mockAppDataRepo.getAppDataByUserAppAndItem.mockResolvedValue(
-			mockAnalysisItems,
-		);
+		mockAppDataRepo.getAppDataByUserAppAndItem.mockResolvedValue(mockAnalysisItems);
 
 		const mockReportResponse = {
 			content: "Generated comprehensive report",
@@ -277,9 +273,7 @@ describe("generateArticlesReport", () => {
 			},
 		];
 
-		mockAppDataRepo.getAppDataByUserAppAndItem.mockResolvedValue(
-			mockAnalysisItems,
-		);
+		mockAppDataRepo.getAppDataByUserAppAndItem.mockResolvedValue(mockAnalysisItems);
 		mockProvider.getResponse.mockResolvedValue({
 			content: "Generated report",
 		});
@@ -306,9 +300,7 @@ describe("generateArticlesReport", () => {
 			},
 		];
 
-		mockAppDataRepo.getAppDataByUserAppAndItem.mockResolvedValue(
-			mockAnalysisItems,
-		);
+		mockAppDataRepo.getAppDataByUserAppAndItem.mockResolvedValue(mockAnalysisItems);
 		mockProvider.getResponse.mockResolvedValue({
 			content: "Generated report",
 		});
@@ -335,13 +327,9 @@ describe("generateArticlesReport", () => {
 			},
 		];
 
-		mockAppDataRepo.getAppDataByUserAppAndItem.mockResolvedValue(
-			mockAnalysisItems,
-		);
+		mockAppDataRepo.getAppDataByUserAppAndItem.mockResolvedValue(mockAnalysisItems);
 
-		await expect(generateArticlesReport(mockParams)).rejects.toThrow(
-			AssistantError,
-		);
+		await expect(generateArticlesReport(mockParams)).rejects.toThrow(AssistantError);
 
 		await expect(generateArticlesReport(mockParams)).rejects.toThrow(
 			"Could not extract article content from saved analysis data.",
@@ -357,9 +345,7 @@ describe("generateArticlesReport", () => {
 			},
 		];
 
-		mockAppDataRepo.getAppDataByUserAppAndItem.mockResolvedValue(
-			mockAnalysisItems,
-		);
+		mockAppDataRepo.getAppDataByUserAppAndItem.mockResolvedValue(mockAnalysisItems);
 
 		const mockReportResponse = {
 			content: "",
@@ -368,13 +354,9 @@ describe("generateArticlesReport", () => {
 
 		mockProvider.getResponse.mockResolvedValue(mockReportResponse);
 
-		await expect(generateArticlesReport(mockParams)).rejects.toThrow(
-			AssistantError,
-		);
+		await expect(generateArticlesReport(mockParams)).rejects.toThrow(AssistantError);
 
-		await expect(generateArticlesReport(mockParams)).rejects.toThrow(
-			"Report content was empty",
-		);
+		await expect(generateArticlesReport(mockParams)).rejects.toThrow("Report content was empty");
 	});
 
 	it("should handle report response with only response field", async () => {
@@ -386,9 +368,7 @@ describe("generateArticlesReport", () => {
 			},
 		];
 
-		mockAppDataRepo.getAppDataByUserAppAndItem.mockResolvedValue(
-			mockAnalysisItems,
-		);
+		mockAppDataRepo.getAppDataByUserAppAndItem.mockResolvedValue(mockAnalysisItems);
 
 		const mockReportResponse = {
 			response: "Report using response field",
@@ -425,9 +405,7 @@ describe("generateArticlesReport", () => {
 			},
 		];
 
-		mockAppDataRepo.getAppDataByUserAppAndItem.mockResolvedValue(
-			mockAnalysisItems,
-		);
+		mockAppDataRepo.getAppDataByUserAppAndItem.mockResolvedValue(mockAnalysisItems);
 		mockProvider.getResponse.mockResolvedValue({
 			content: "Report with quotes",
 		});
@@ -456,9 +434,7 @@ describe("generateArticlesReport", () => {
 			},
 		];
 
-		mockAppDataRepo.getAppDataByUserAppAndItem.mockResolvedValue(
-			mockAnalysisItems,
-		);
+		mockAppDataRepo.getAppDataByUserAppAndItem.mockResolvedValue(mockAnalysisItems);
 		mockProvider.getResponse.mockResolvedValue({
 			content: "Report result",
 		});
@@ -492,30 +468,19 @@ describe("generateArticlesReport", () => {
 			},
 		];
 
-		mockAppDataRepo.getAppDataByUserAppAndItem.mockResolvedValue(
-			mockAnalysisItems,
-		);
+		mockAppDataRepo.getAppDataByUserAppAndItem.mockResolvedValue(mockAnalysisItems);
 		mockProvider.getResponse.mockRejectedValue(new Error("API Error"));
 
-		await expect(generateArticlesReport(mockParams)).rejects.toThrow(
-			AssistantError,
-		);
+		await expect(generateArticlesReport(mockParams)).rejects.toThrow(AssistantError);
 
-		await expect(generateArticlesReport(mockParams)).rejects.toThrow(
-			"Failed to generate report",
-		);
+		await expect(generateArticlesReport(mockParams)).rejects.toThrow("Failed to generate report");
 	});
 
 	it("should rethrow AssistantError from dependencies", async () => {
-		const originalError = new AssistantError(
-			"Custom error",
-			ErrorType.PARAMS_ERROR,
-		);
+		const originalError = new AssistantError("Custom error", ErrorType.PARAMS_ERROR);
 		mockAppDataRepo.getAppDataByUserAppAndItem.mockRejectedValue(originalError);
 
-		await expect(generateArticlesReport(mockParams)).rejects.toThrow(
-			originalError,
-		);
+		await expect(generateArticlesReport(mockParams)).rejects.toThrow(originalError);
 	});
 
 	it("should filter out articles without originalArticle content", async () => {
@@ -542,9 +507,7 @@ describe("generateArticlesReport", () => {
 			},
 		];
 
-		mockAppDataRepo.getAppDataByUserAppAndItem.mockResolvedValue(
-			mockAnalysisItems,
-		);
+		mockAppDataRepo.getAppDataByUserAppAndItem.mockResolvedValue(mockAnalysisItems);
 		mockProvider.getResponse.mockResolvedValue({
 			content: "Generated report",
 		});

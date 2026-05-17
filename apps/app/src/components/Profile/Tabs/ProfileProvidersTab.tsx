@@ -19,12 +19,8 @@ interface ProviderModalState {
 export function ProfileProvidersTab() {
 	const { trackEvent } = useTrackEvent();
 
-	const {
-		providerSettings,
-		isLoadingProviderSettings,
-		syncProviders,
-		isSyncingProviders,
-	} = useUser();
+	const { providerSettings, isLoadingProviderSettings, syncProviders, isSyncingProviders } =
+		useUser();
 	const [modalState, setModalState] = useState<ProviderModalState>({
 		open: false,
 		providerId: "",
@@ -110,11 +106,7 @@ export function ProfileProvidersTab() {
 										actions={[
 											{
 												id: "configure",
-												icon: provider.enabled ? (
-													<Power size={14} />
-												) : (
-													<Plus size={14} />
-												),
+												icon: provider.enabled ? <Power size={14} /> : <Plus size={14} />,
 												label: provider.enabled ? "Configure" : "Enable",
 												onClick: (e) => {
 													e.stopPropagation();

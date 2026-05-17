@@ -1,10 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import {
-	getAllAttachments,
-	pruneMessagesToFitContext,
-	sanitiseInput,
-} from "~/lib/chat/utils";
+import { getAllAttachments, pruneMessagesToFitContext, sanitiseInput } from "~/lib/chat/utils";
 import { getModelConfig } from "~/lib/providers/models";
 import { getSystemPrompt } from "~/lib/prompts";
 import type { CoreChatOptions } from "~/types";
@@ -53,10 +49,7 @@ vi.mock("~/lib/conversationManager", () => ({
 	},
 }));
 
-vi.mock(
-	"~/lib/providers/capabilities/embedding/helpers",
-	() => embeddingHelperMocks,
-);
+vi.mock("~/lib/providers/capabilities/embedding/helpers", () => embeddingHelperMocks);
 
 vi.mock("~/lib/memory", () => ({
 	MemoryManager: {
@@ -160,9 +153,7 @@ describe("RequestPreparer", () => {
 			markdownAttachments: [],
 		});
 		vi.mocked(sanitiseInput).mockImplementation((input) => input);
-		vi.mocked(pruneMessagesToFitContext).mockImplementation(
-			(messages) => messages,
-		);
+		vi.mocked(pruneMessagesToFitContext).mockImplementation((messages) => messages);
 	});
 
 	describe("prepare", () => {
@@ -196,9 +187,9 @@ describe("RequestPreparer", () => {
 				sanitizedMessages: null,
 			} as any;
 
-			await expect(
-				preparer.prepare(baseOptions, invalidContext),
-			).rejects.toThrow("Missing required validation context");
+			await expect(preparer.prepare(baseOptions, invalidContext)).rejects.toThrow(
+				"Missing required validation context",
+			);
 		});
 
 		it("should handle anonymous user properly", async () => {
@@ -208,10 +199,7 @@ describe("RequestPreparer", () => {
 				anonymousUser: { id: "anon-123" },
 			};
 
-			const result = await preparer.prepare(
-				anonymousOptions,
-				baseValidationContext,
-			);
+			const result = await preparer.prepare(anonymousOptions, baseValidationContext);
 
 			expect(result.isProUser).toBe(false);
 		});
@@ -222,10 +210,7 @@ describe("RequestPreparer", () => {
 				user: { ...baseOptions.user!, plan_id: "free" },
 			};
 
-			const result = await preparer.prepare(
-				freeUserOptions,
-				baseValidationContext,
-			);
+			const result = await preparer.prepare(freeUserOptions, baseValidationContext);
 
 			expect(result.isProUser).toBe(false);
 		});
@@ -233,10 +218,7 @@ describe("RequestPreparer", () => {
 
 	describe("buildModelConfigs", () => {
 		it("should build model configs from selected models", async () => {
-			const result = await (preparer as any).buildModelConfigs(
-				baseOptions,
-				baseValidationContext,
-			);
+			const result = await (preparer as any).buildModelConfigs(baseOptions, baseValidationContext);
 
 			expect(result).toEqual([
 				{
@@ -285,10 +267,7 @@ describe("RequestPreparer", () => {
 
 			vi.mocked(getModelConfig).mockResolvedValueOnce(secondaryModel as any);
 
-			const result = await (preparer as any).buildModelConfigs(
-				baseOptions,
-				multiModelContext,
-			);
+			const result = await (preparer as any).buildModelConfigs(baseOptions, multiModelContext);
 
 			expect(getModelConfig).toHaveBeenCalledTimes(1);
 			expect(getModelConfig).toHaveBeenCalledWith("gpt-4o", mockEnv);
@@ -327,10 +306,7 @@ describe("RequestPreparer", () => {
 
 			vi.mocked(getModelConfig).mockResolvedValueOnce(vercelModel as any);
 
-			const result = await (preparer as any).buildModelConfigs(
-				baseOptions,
-				multiProviderContext,
-			);
+			const result = await (preparer as any).buildModelConfigs(baseOptions, multiProviderContext);
 
 			expect(result).toEqual([
 				{
@@ -513,9 +489,10 @@ describe("RequestPreparer", () => {
 				"normal",
 			);
 
-			expect(
-				mockConversationManagerInstance.replaceMessages,
-			).toHaveBeenCalledWith("completion-123", optionsWithRetry.messages);
+			expect(mockConversationManagerInstance.replaceMessages).toHaveBeenCalledWith(
+				"completion-123",
+				optionsWithRetry.messages,
+			);
 			expect(mockConversationManagerInstance.addBatch).not.toHaveBeenCalled();
 		});
 
@@ -561,9 +538,7 @@ describe("RequestPreparer", () => {
 					metadata: expect.any(Object),
 				},
 			);
-			expect(
-				mockConversationManagerInstance.replaceMessages,
-			).not.toHaveBeenCalled();
+			expect(mockConversationManagerInstance.replaceMessages).not.toHaveBeenCalled();
 		});
 
 		it("should store metadata when provided", async () => {
@@ -751,9 +726,7 @@ describe("RequestPreparer", () => {
 		});
 
 		it("should handle memory retrieval errors gracefully", async () => {
-			mockMemoryManager.retrieveMemories.mockRejectedValue(
-				new Error("Memory error"),
-			);
+			mockMemoryManager.retrieveMemories.mockRejectedValue(new Error("Memory error"));
 
 			const result = await (preparer as any).enhanceSystemPromptWithMemory(
 				"Base prompt",
@@ -785,9 +758,7 @@ describe("RequestPreparer", () => {
 		});
 
 		it("should skip memories when flag disabled", async () => {
-			mockMemoryManager.retrieveMemories.mockResolvedValue([
-				{ text: "Should not be used" },
-			]);
+			mockMemoryManager.retrieveMemories.mockResolvedValue([{ text: "Should not be used" }]);
 
 			const result = await (preparer as any).enhanceSystemPromptWithMemory(
 				"Base prompt",
@@ -832,17 +803,11 @@ describe("RequestPreparer", () => {
 
 			expect(result).toHaveLength(2);
 			expect(result.find((msg) => msg.role === "system")).toBeUndefined();
-			expect(result[result.length - 1].content).toBe(
-				"New message with context",
-			);
+			expect(result[result.length - 1].content).toBe("New message with context");
 		});
 
 		it("should handle empty messages array", () => {
-			const result = (preparer as any).buildFinalMessages(
-				[],
-				"New message",
-				mockModelConfig,
-			);
+			const result = (preparer as any).buildFinalMessages([], "New message", mockModelConfig);
 
 			expect(result).toEqual([]);
 		});

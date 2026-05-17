@@ -20,9 +20,7 @@ import type {
 
 type CategoryBootstrapper = (registry: ProviderRegistry) => void;
 
-const DEFAULT_BOOTSTRAPPERS: Partial<
-	Record<ProviderCategory, CategoryBootstrapper[]>
-> = {
+const DEFAULT_BOOTSTRAPPERS: Partial<Record<ProviderCategory, CategoryBootstrapper[]>> = {
 	audio: [registerAudioProviders],
 	chat: [registerChatProviders],
 	embedding: [registerEmbeddingProviders],
@@ -39,24 +37,14 @@ const DEFAULT_BOOTSTRAPPERS: Partial<
 export class ProviderLibrary {
 	private static instance: ProviderLibrary;
 	private readonly registry: ProviderRegistry;
-	private readonly bootstrappers = new Map<
-		ProviderCategory,
-		CategoryBootstrapper[]
-	>();
+	private readonly bootstrappers = new Map<ProviderCategory, CategoryBootstrapper[]>();
 	private readonly bootstrappedCategories = new Set<ProviderCategory>();
 
-	private constructor(
-		registry?: ProviderRegistry,
-		bootstrappers = DEFAULT_BOOTSTRAPPERS,
-	) {
+	private constructor(registry?: ProviderRegistry, bootstrappers = DEFAULT_BOOTSTRAPPERS) {
 		this.registry = registry ?? new ProviderRegistry();
 
-		for (const [category, categoryBootstrappers] of Object.entries(
-			bootstrappers,
-		)) {
-			this.bootstrappers.set(category as ProviderCategory, [
-				...(categoryBootstrappers ?? []),
-			]);
+		for (const [category, categoryBootstrappers] of Object.entries(bootstrappers)) {
+			this.bootstrappers.set(category as ProviderCategory, [...(categoryBootstrappers ?? [])]);
 		}
 	}
 
@@ -68,10 +56,7 @@ export class ProviderLibrary {
 		return ProviderLibrary.instance;
 	}
 
-	registerBootstrapper(
-		category: ProviderCategory,
-		bootstrapper: CategoryBootstrapper,
-	): void {
+	registerBootstrapper(category: ProviderCategory, bootstrapper: CategoryBootstrapper): void {
 		const existing = this.bootstrappers.get(category) ?? [];
 		existing.push(bootstrapper);
 		this.bootstrappers.set(category, existing);

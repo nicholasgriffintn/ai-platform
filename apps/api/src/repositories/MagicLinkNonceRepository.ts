@@ -13,11 +13,7 @@ export class MagicLinkNonceRepository extends BaseRepository {
 	 * @param userId - The user ID
 	 * @param expiresAt - The expiration date
 	 */
-	public async createNonce(
-		nonce: string,
-		userId: number,
-		expiresAt: Date,
-	): Promise<void> {
+	public async createNonce(nonce: string, userId: number, expiresAt: Date): Promise<void> {
 		const expiresTimestamp = Math.floor(expiresAt.getTime() / 1000);
 		const insert = this.buildInsertQuery("magic_link_nonce", {
 			nonce,
@@ -38,10 +34,7 @@ export class MagicLinkNonceRepository extends BaseRepository {
 	 * @param userId - The user ID
 	 * @returns The magic link nonce or null if it doesn't exist or has expired
 	 */
-	public async findNonce(
-		nonce: string,
-		userId: number,
-	): Promise<MagicLinkNonce | null> {
+	public async findNonce(nonce: string, userId: number): Promise<MagicLinkNonce | null> {
 		const nowTimestamp = Math.floor(Date.now() / 1000);
 		const result = await this.runQuery<MagicLinkNonce>(
 			"SELECT * FROM magic_link_nonce WHERE nonce = ? AND user_id = ? AND expires_at > ?",
@@ -69,9 +62,6 @@ export class MagicLinkNonceRepository extends BaseRepository {
 	 */
 	public async deleteExpiredNonces(): Promise<void> {
 		const nowTimestamp = Math.floor(Date.now() / 1000);
-		await this.executeRun(
-			"DELETE FROM magic_link_nonce WHERE expires_at <= ?",
-			[nowTimestamp],
-		);
+		await this.executeRun("DELETE FROM magic_link_nonce WHERE expires_at <= ?", [nowTimestamp]);
 	}
 }

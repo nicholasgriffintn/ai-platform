@@ -13,10 +13,7 @@ type InternalRegistration<TInstance> = ProviderRegistration<TInstance> & {
 };
 
 export class ProviderRegistry {
-	private readonly categories = new Map<
-		ProviderCategory,
-		Map<string, InternalRegistration<any>>
-	>();
+	private readonly categories = new Map<ProviderCategory, Map<string, InternalRegistration<any>>>();
 
 	register<TCategory extends ProviderCategory>(
 		category: TCategory,

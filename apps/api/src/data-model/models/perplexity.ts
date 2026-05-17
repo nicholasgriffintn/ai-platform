@@ -7,14 +7,7 @@ export const perplexityModelConfig: ModelConfig = {
 		description:
 			"Premier research offering with search grounding, supporting advanced queries and follow-ups.",
 		provider: "perplexity-ai",
-		strengths: [
-			"search",
-			"research",
-			"analysis",
-			"multilingual",
-			"academic",
-			"general_knowledge",
-		],
+		strengths: ["search", "research", "analysis", "multilingual", "academic", "general_knowledge"],
 		contextComplexity: 5,
 		reliability: 4,
 		speed: 3,
@@ -32,16 +25,9 @@ export const perplexityModelConfig: ModelConfig = {
 	"sonar-reasoning-pro": {
 		name: "Sonar Reasoning Pro",
 		matchingModel: "sonar-reasoning-pro",
-		description:
-			"Premier reasoning offering powered by DeepSeek R1 with Chain of Thought (CoT).",
+		description: "Premier reasoning offering powered by DeepSeek R1 with Chain of Thought (CoT).",
 		provider: "perplexity-ai",
-		strengths: [
-			"reasoning",
-			"multilingual",
-			"coding",
-			"analysis",
-			"general_knowledge",
-		],
+		strengths: ["reasoning", "multilingual", "coding", "analysis", "general_knowledge"],
 		contextComplexity: 5,
 		reliability: 4,
 		speed: 3,
@@ -69,17 +55,9 @@ export const perplexityModelConfig: ModelConfig = {
 	"sonar-reasoning": {
 		name: "Perplexity Sonar Reasoning",
 		matchingModel: "sonar-reasoning",
-		description:
-			"Standard reasoning offering with Chain of Thought (CoT) capabilities.",
+		description: "Standard reasoning offering with Chain of Thought (CoT) capabilities.",
 		provider: "perplexity-ai",
-		strengths: [
-			"reasoning",
-			"multilingual",
-			"coding",
-			"analysis",
-			"general_knowledge",
-			"search",
-		],
+		strengths: ["reasoning", "multilingual", "coding", "analysis", "general_knowledge", "search"],
 		contextComplexity: 5,
 		reliability: 4,
 		speed: 3,
@@ -127,8 +105,7 @@ export const perplexityModelConfig: ModelConfig = {
 	sonar: {
 		name: "Sonar",
 		matchingModel: "sonar",
-		description:
-			"Lightweight offering with search grounding, quicker and cheaper than Sonar Pro.",
+		description: "Lightweight offering with search grounding, quicker and cheaper than Sonar Pro.",
 		provider: "perplexity-ai",
 		strengths: ["search", "analysis", "summarization", "general_knowledge"],
 		contextComplexity: 4,
@@ -161,13 +138,7 @@ export const perplexityModelConfig: ModelConfig = {
 		description:
 			"R1-1776 is a version of the DeepSeek R1 model that has been post-trained to provide uncensored, unbiased, and factual information.",
 		provider: "perplexity-ai",
-		strengths: [
-			"reasoning",
-			"multilingual",
-			"coding",
-			"analysis",
-			"general_knowledge",
-		],
+		strengths: ["reasoning", "multilingual", "coding", "analysis", "general_knowledge"],
 		contextComplexity: 4,
 		reliability: 4,
 		speed: 3,

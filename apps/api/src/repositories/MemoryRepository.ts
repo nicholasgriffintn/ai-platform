@@ -1,9 +1,5 @@
 import { BaseRepository } from "./BaseRepository";
-import type {
-	MemoryGroup,
-	MemoryGroupMember,
-	Memory,
-} from "~/lib/database/schema";
+import type { MemoryGroup, MemoryGroupMember, Memory } from "~/lib/database/schema";
 import { generateId } from "~/utils/id";
 
 export class MemoryRepository extends BaseRepository {
@@ -127,9 +123,7 @@ export class MemoryRepository extends BaseRepository {
 		return result || [];
 	}
 
-	public async getMemoryGroupById(
-		groupId: string,
-	): Promise<MemoryGroup | null> {
+	public async getMemoryGroupById(groupId: string): Promise<MemoryGroup | null> {
 		const { query, values } = this.buildSelectQuery("memory_groups", {
 			id: groupId,
 		});
@@ -144,10 +138,7 @@ export class MemoryRepository extends BaseRepository {
 		return true;
 	}
 
-	public async addMemoriesToGroup(
-		groupId: string,
-		memoryIds: string[],
-	): Promise<number> {
+	public async addMemoriesToGroup(groupId: string, memoryIds: string[]): Promise<number> {
 		let addedCount = 0;
 		for (const memoryId of memoryIds) {
 			try {
@@ -171,9 +162,7 @@ export class MemoryRepository extends BaseRepository {
 		return addedCount;
 	}
 
-	public async getMemoryGroupMembers(
-		groupId: string,
-	): Promise<MemoryGroupMember[]> {
+	public async getMemoryGroupMembers(groupId: string): Promise<MemoryGroupMember[]> {
 		const { query, values } = this.buildSelectQuery(
 			"memory_group_members",
 			{ group_id: groupId },

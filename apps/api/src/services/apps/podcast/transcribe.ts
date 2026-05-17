@@ -1,10 +1,7 @@
 import { getModelConfigByModel } from "~/lib/providers/models";
 import { validateReplicatePayload } from "~/lib/providers/models/replicateValidation";
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
-import {
-	resolveServiceContext,
-	type ServiceContext,
-} from "~/lib/context/serviceContext";
+import { resolveServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
 import type { IEnv, IFunctionResponse, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
@@ -52,18 +49,15 @@ export const handlePodcastTranscribe = async (
 		const repositories = serviceContext.repositories;
 		const runtimeEnv = serviceContext.env as IEnv;
 
-		const existingTranscriptions =
-			await repositories.appData.getAppDataByUserAppAndItem(
-				user.id,
-				"podcasts",
-				request.podcastId,
-				"transcribe",
-			);
+		const existingTranscriptions = await repositories.appData.getAppDataByUserAppAndItem(
+			user.id,
+			"podcasts",
+			request.podcastId,
+			"transcribe",
+		);
 
 		if (existingTranscriptions.length > 0) {
-			let transcriptionData = safeParseJson(
-				existingTranscriptions[0].data,
-			)?.transcriptionData;
+			let transcriptionData = safeParseJson(existingTranscriptions[0].data)?.transcriptionData;
 
 			return {
 				status: "success",
@@ -160,10 +154,7 @@ export const handlePodcastTranscribe = async (
 		);
 
 		if (isAsync) {
-			const taskService = new TaskService(
-				runtimeEnv,
-				new TaskRepository(runtimeEnv),
-			);
+			const taskService = new TaskService(runtimeEnv, new TaskRepository(runtimeEnv));
 			await taskService.enqueueTask({
 				task_type: "podcast_transcription_polling",
 				user_id: user.id,

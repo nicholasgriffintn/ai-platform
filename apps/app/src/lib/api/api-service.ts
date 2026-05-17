@@ -1,11 +1,5 @@
 import { useToolsStore } from "~/state/stores/toolsStore";
-import type {
-	ChatMode,
-	ChatSettings,
-	Conversation,
-	Message,
-	ModelConfig,
-} from "~/types";
+import type { ChatMode, ChatSettings, Conversation, Message, ModelConfig } from "~/types";
 import { formatMessageContent } from "../messages";
 import { AgentService } from "./services/agent-service";
 import { ChatService } from "./services/chat-service";
@@ -63,17 +57,11 @@ class ApiService {
 		return this.chatService.getChat(completion_id, options);
 	};
 
-	generateTitle = (
-		completion_id: string,
-		messages: Message[],
-	): Promise<string> => {
+	generateTitle = (completion_id: string, messages: Message[]): Promise<string> => {
 		return this.chatService.generateTitle(completion_id, messages);
 	};
 
-	updateConversationTitle = (
-		completion_id: string,
-		newTitle: string,
-	): Promise<void> => {
+	updateConversationTitle = (completion_id: string, newTitle: string): Promise<void> => {
 		return this.chatService.updateConversationTitle(completion_id, newTitle);
 	};
 
@@ -85,9 +73,7 @@ class ApiService {
 		return this.chatService.deleteAllConversations();
 	};
 
-	shareConversation = (
-		completion_id: string,
-	): Promise<{ share_id: string }> => {
+	shareConversation = (completion_id: string): Promise<{ share_id: string }> => {
 		return this.chatService.shareConversation(completion_id);
 	};
 
@@ -101,12 +87,7 @@ class ApiService {
 		feedback: 1 | -1,
 		score = 50,
 	): Promise<void> => {
-		return this.chatService.submitFeedback(
-			completion_id,
-			log_id,
-			feedback,
-			score,
-		);
+		return this.chatService.submitFeedback(completion_id, log_id, feedback, score);
 	};
 
 	streamChatCompletions = async (
@@ -208,21 +189,10 @@ class ApiService {
 		category?: string | null,
 		tags?: string[] | null,
 	): Promise<any> => {
-		return this.agentService.shareAgent(
-			agentId,
-			name,
-			description,
-			avatarUrl,
-			category,
-			tags,
-		);
+		return this.agentService.shareAgent(agentId, name, description, avatarUrl, category, tags);
 	};
 
-	rateSharedAgent = (
-		agentId: string,
-		rating: number,
-		review?: string,
-	): Promise<any> => {
+	rateSharedAgent = (agentId: string, rating: number, review?: string): Promise<any> => {
 		return this.agentService.rateSharedAgent(agentId, rating, review);
 	};
 
@@ -306,11 +276,7 @@ class ApiService {
 		return this.userService.fetchTools();
 	};
 
-	storeProviderApiKey = (
-		providerId: string,
-		apiKey: string,
-		secretKey?: string,
-	): Promise<void> => {
+	storeProviderApiKey = (providerId: string, apiKey: string, secretKey?: string): Promise<void> => {
 		return this.userService.storeProviderApiKey(providerId, apiKey, secretKey);
 	};
 
@@ -322,9 +288,7 @@ class ApiService {
 		return this.userService.syncProviders();
 	};
 
-	getUserApiKeys = (): Promise<
-		{ id: string; name: string; created_at: string }[]
-	> => {
+	getUserApiKeys = (): Promise<{ id: string; name: string; created_at: string }[]> => {
 		return this.userService.getUserApiKeys();
 	};
 
@@ -354,11 +318,7 @@ class ApiService {
 		successUrl: string,
 		cancelUrl: string,
 	): Promise<{ url: string }> => {
-		return this.subscriptionService.createCheckoutSession(
-			planId,
-			successUrl,
-			cancelUrl,
-		);
+		return this.subscriptionService.createCheckoutSession(planId, successUrl, cancelUrl);
 	};
 
 	cancelSubscription = (): Promise<any> => {

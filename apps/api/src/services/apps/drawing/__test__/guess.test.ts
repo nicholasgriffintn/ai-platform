@@ -243,9 +243,7 @@ describe("guessDrawingFromImage", () => {
 		};
 
 		mockEnv.AI.run.mockResolvedValue(mockAIResponse);
-		mockAppDataRepo.createAppDataWithItem.mockRejectedValue(
-			new Error("Database error"),
-		);
+		mockAppDataRepo.createAppDataWithItem.mockRejectedValue(new Error("Database error"));
 
 		await expect(
 			guessDrawingFromImage({

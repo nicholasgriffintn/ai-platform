@@ -5,10 +5,7 @@ interface LineWidthPickerProps {
 	setLineWidth: (width: number) => void;
 }
 
-export function LineWidthPicker({
-	lineWidth,
-	setLineWidth,
-}: LineWidthPickerProps) {
+export function LineWidthPicker({ lineWidth, setLineWidth }: LineWidthPickerProps) {
 	return (
 		<>
 			<div className="space-y-2">

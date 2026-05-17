@@ -130,9 +130,7 @@ describe("AsyncMessagePollingHandler", () => {
 		const result = await handler.handle(message as any, baseEnv);
 
 		expect(result.status).toBe("error");
-		expect(result.message).toContain(
-			"conversationId, messageId, and asyncInvocation are required",
-		);
+		expect(result.message).toContain("conversationId, messageId, and asyncInvocation are required");
 	});
 
 	it("returns error when user not found", async () => {
@@ -151,9 +149,7 @@ describe("AsyncMessagePollingHandler", () => {
 		const mockConversationManager = {
 			get: vi.fn().mockResolvedValue([]),
 		};
-		mockedConversationManager.getInstance.mockReturnValue(
-			mockConversationManager as any,
-		);
+		mockedConversationManager.getInstance.mockReturnValue(mockConversationManager as any);
 
 		const result = await handler.handle(baseMessage, baseEnv);
 
@@ -174,9 +170,7 @@ describe("AsyncMessagePollingHandler", () => {
 				},
 			]),
 		};
-		mockedConversationManager.getInstance.mockReturnValue(
-			mockConversationManager as any,
-		);
+		mockedConversationManager.getInstance.mockReturnValue(mockConversationManager as any);
 
 		mockedIsAsyncInvocationPending.mockReturnValue(false);
 
@@ -201,9 +195,7 @@ describe("AsyncMessagePollingHandler", () => {
 				},
 			]),
 		};
-		mockedConversationManager.getInstance.mockReturnValue(
-			mockConversationManager as any,
-		);
+		mockedConversationManager.getInstance.mockReturnValue(mockConversationManager as any);
 
 		mockedIsAsyncInvocationPending.mockReturnValue(true);
 		mockedHandleAsyncInvocation.mockResolvedValue({
@@ -235,9 +227,7 @@ describe("AsyncMessagePollingHandler", () => {
 				},
 			]),
 		};
-		mockedConversationManager.getInstance.mockReturnValue(
-			mockConversationManager as any,
-		);
+		mockedConversationManager.getInstance.mockReturnValue(mockConversationManager as any);
 
 		mockedIsAsyncInvocationPending.mockReturnValue(true);
 		mockedHandleAsyncInvocation.mockResolvedValue({
@@ -264,9 +254,7 @@ describe("AsyncMessagePollingHandler", () => {
 				},
 			]),
 		};
-		mockedConversationManager.getInstance.mockReturnValue(
-			mockConversationManager as any,
-		);
+		mockedConversationManager.getInstance.mockReturnValue(mockConversationManager as any);
 
 		mockedIsAsyncInvocationPending.mockReturnValue(true);
 		mockedHandleAsyncInvocation.mockResolvedValue({

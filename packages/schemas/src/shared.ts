@@ -15,11 +15,7 @@ export const messageSchema = z.object({
 		)
 		.optional(),
 	parts: messagePartsSchema.optional(),
-	content: z.union([
-		z.string(),
-		z.array(z.unknown()),
-		z.record(z.string(), z.unknown()),
-	]),
+	content: z.union([z.string(), z.array(z.unknown()), z.record(z.string(), z.unknown())]),
 	status: z.string().optional(),
 	data: z.record(z.string(), z.any()).optional(),
 	model: z.string().optional(),
@@ -58,9 +54,7 @@ export const statusResponseSchema = z.object({
 	version: z.string().meta({ example: "1.0.0" }),
 	environment: z.string().meta({ example: "development" }),
 	responseTime: z.number().meta({ example: 100 }),
-	checks: z
-		.record(z.string(), z.any())
-		.meta({ example: { database: { status: "healthy" } } }),
+	checks: z.record(z.string(), z.any()).meta({ example: { database: { status: "healthy" } } }),
 });
 
 export const metricsParamsSchema = z.object({

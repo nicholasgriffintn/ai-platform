@@ -20,9 +20,6 @@ export const handleUpdateChatCompletion = async (
 		user,
 	});
 
-	const updatedConversation = await conversationManager.updateConversation(
-		completion_id,
-		updates,
-	);
+	const updatedConversation = await conversationManager.updateConversation(completion_id, updates);
 	return updatedConversation;
 };

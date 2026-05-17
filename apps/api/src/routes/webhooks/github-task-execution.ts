@@ -31,11 +31,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 	return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-function buildRequest(params: {
-	env: IEnv;
-	user: IUser;
-	context: ServiceContext;
-}): IRequest {
+function buildRequest(params: { env: IEnv; user: IUser; context: ServiceContext }): IRequest {
 	return {
 		app_url: params.env.APP_BASE_URL || "https://polychat.app",
 		env: params.env,
@@ -60,21 +56,11 @@ export async function executeWebhookSandboxCommand(params: {
 	context: ServiceContext;
 	user: IUser;
 }): Promise<SandboxExecutionResult> {
-	const {
-		command,
-		repo,
-		task,
-		installationId,
-		shouldCommit,
-		env,
-		context,
-		user,
-	} = params;
+	const { command, repo, task, installationId, shouldCommit, env, context, user } = params;
 
 	const appId = getSandboxDynamicAppId(command);
 	const finalTask = task.trim() || defaultTaskForSandboxCommand(command);
-	const finalShouldCommit =
-		shouldCommit ?? defaultShouldCommitForSandboxCommand(command);
+	const finalShouldCommit = shouldCommit ?? defaultShouldCommitForSandboxCommand(command);
 	const payload: Record<string, unknown> = {
 		repo,
 		task: finalTask,
@@ -91,33 +77,20 @@ export async function executeWebhookSandboxCommand(params: {
 		});
 
 		const responseId =
-			typeof execution.response_id === "string"
-				? execution.response_id
-				: undefined;
-		const resultRecord = isRecord(execution.data?.result)
-			? execution.data.result
-			: {};
+			typeof execution.response_id === "string" ? execution.response_id : undefined;
+		const resultRecord = isRecord(execution.data?.result) ? execution.data.result : {};
 
 		return {
-			success:
-				typeof resultRecord.success === "boolean" ? resultRecord.success : true,
-			summary:
-				typeof resultRecord.summary === "string"
-					? resultRecord.summary
-					: undefined,
-			diff:
-				typeof resultRecord.diff === "string" ? resultRecord.diff : undefined,
-			error:
-				typeof resultRecord.error === "string" ? resultRecord.error : undefined,
+			success: typeof resultRecord.success === "boolean" ? resultRecord.success : true,
+			summary: typeof resultRecord.summary === "string" ? resultRecord.summary : undefined,
+			diff: typeof resultRecord.diff === "string" ? resultRecord.diff : undefined,
+			error: typeof resultRecord.error === "string" ? resultRecord.error : undefined,
 			responseId,
 		};
 	} catch (error) {
 		return {
 			success: false,
-			error:
-				error instanceof Error
-					? error.message
-					: "Unknown sandbox execution error",
+			error: error instanceof Error ? error.message : "Unknown sandbox execution error",
 		};
 	}
 }

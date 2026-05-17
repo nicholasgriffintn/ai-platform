@@ -12,8 +12,7 @@ export function meta() {
 		{ title: "Replicate Models - Polychat" },
 		{
 			name: "description",
-			content:
-				"Generate images, videos, audio, and more with Replicate AI models",
+			content: "Generate images, videos, audio, and more with Replicate AI models",
 		},
 	];
 }

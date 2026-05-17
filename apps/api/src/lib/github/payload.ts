@@ -6,9 +6,7 @@ function toRecord(value: unknown): Record<string, unknown> | null {
 		: null;
 }
 
-function getPossibleContainers(
-	payload: Record<string, unknown>,
-): Record<string, unknown>[] {
+function getPossibleContainers(payload: Record<string, unknown>): Record<string, unknown>[] {
 	return [
 		payload,
 		toRecord(payload.client_payload),
@@ -46,12 +44,9 @@ export function parseSandboxAutomationCommand(
 	return null;
 }
 
-export function parseSandboxShouldCommit(
-	payload: Record<string, unknown>,
-): boolean | undefined {
+export function parseSandboxShouldCommit(payload: Record<string, unknown>): boolean | undefined {
 	for (const container of getPossibleContainers(payload)) {
-		const rawValue =
-			container.should_commit ?? container.shouldCommit ?? container.commit;
+		const rawValue = container.should_commit ?? container.shouldCommit ?? container.commit;
 		if (typeof rawValue === "boolean") {
 			return rawValue;
 		}
@@ -74,10 +69,7 @@ export function parseIssueNumberFromAutomationPayload(
 ): number | undefined {
 	for (const container of getPossibleContainers(payload)) {
 		const raw =
-			container.issue_number ??
-			container.issueNumber ??
-			container.pr_number ??
-			container.prNumber;
+			container.issue_number ?? container.issueNumber ?? container.pr_number ?? container.prNumber;
 		if (typeof raw === "number" && Number.isFinite(raw) && raw > 0) {
 			return raw;
 		}

@@ -17,10 +17,7 @@ import {
 	openRunCoordinatorEventsSocket,
 	updateRunCoordinatorControl,
 } from "./run-coordinator";
-import {
-	buildSandboxRunDispatchMessage,
-	enqueueSandboxRunDispatchTask,
-} from "./dispatch";
+import { buildSandboxRunDispatchMessage, enqueueSandboxRunDispatchTask } from "./dispatch";
 import { resolveSandboxModel } from "~/services/sandbox/worker";
 
 const logger = getLogger({ prefix: "services/apps/sandbox/execute-stream" });
@@ -72,14 +69,13 @@ export async function executeSandboxRunStream(
 		workflowPhase: "queued",
 	};
 
-	const createdRecord =
-		await serviceContext.repositories.appData.createAppDataWithItem(
-			user.id,
-			SANDBOX_RUNS_APP_ID,
-			runId,
-			SANDBOX_RUN_ITEM_TYPE,
-			runData,
-		);
+	const createdRecord = await serviceContext.repositories.appData.createAppDataWithItem(
+		user.id,
+		SANDBOX_RUNS_APP_ID,
+		runId,
+		SANDBOX_RUN_ITEM_TYPE,
+		runData,
+	);
 
 	await initRunCoordinatorControl(env, {
 		runId,
@@ -143,8 +139,7 @@ export async function executeSandboxRunStream(
 		});
 	} catch (error) {
 		const failedAt = new Date().toISOString();
-		const errorMessage =
-			error instanceof Error ? error.message : "Failed to queue sandbox run";
+		const errorMessage = error instanceof Error ? error.message : "Failed to queue sandbox run";
 		const failedRun: SandboxRunData = {
 			...runData,
 			status: "failed",
@@ -161,10 +156,7 @@ export async function executeSandboxRunStream(
 			],
 			workflowPhase: "failed",
 		};
-		await serviceContext.repositories.appData.updateAppData(
-			createdRecord.id,
-			failedRun,
-		);
+		await serviceContext.repositories.appData.updateAppData(createdRecord.id, failedRun);
 		await appendRunCoordinatorEvent({
 			env,
 			runId,

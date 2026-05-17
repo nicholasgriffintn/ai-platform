@@ -9,10 +9,7 @@ import type { ChatCompletionParameters } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { BaseProvider } from "./base";
 import { fetchAIResponse } from "../../../lib/fetch";
-import {
-	getAiGatewayMetadataHeaders,
-	resolveAiGatewayCacheTtl,
-} from "~/utils/aiGateway";
+import { getAiGatewayMetadataHeaders, resolveAiGatewayCacheTtl } from "~/utils/aiGateway";
 import { buildInputSchemaInput } from "~/utils/inputSchema";
 
 export class ReplicateProvider extends BaseProvider {
@@ -33,10 +30,7 @@ export class ReplicateProvider extends BaseProvider {
 		const hasBodyInput = Boolean(params.body?.input);
 
 		if (!hasContent && !hasBodyInput) {
-			throw new AssistantError(
-				"Missing last message content",
-				ErrorType.PARAMS_ERROR,
-			);
+			throw new AssistantError("Missing last message content", ErrorType.PARAMS_ERROR);
 		}
 	}
 
@@ -44,14 +38,11 @@ export class ReplicateProvider extends BaseProvider {
 		return "v1/predictions";
 	}
 
-	protected async getHeaders(
-		params: ChatCompletionParameters,
-	): Promise<Record<string, string>> {
+	protected async getHeaders(params: ChatCompletionParameters): Promise<Record<string, string>> {
 		const apiKey = await this.getApiKey(params, params.user?.id);
 		const waitSecondsOption = params.options?.replicateWaitSeconds;
 		const waitSeconds =
-			typeof waitSecondsOption === "number" &&
-			Number.isFinite(waitSecondsOption)
+			typeof waitSecondsOption === "number" && Number.isFinite(waitSecondsOption)
 				? Math.max(0, Math.min(60, Math.floor(waitSecondsOption)))
 				: 30;
 
@@ -92,17 +83,13 @@ export class ReplicateProvider extends BaseProvider {
 		return payload;
 	}
 
-	async getResponse(
-		params: ChatCompletionParameters,
-		userId?: number,
-	): Promise<any> {
+	async getResponse(params: ChatCompletionParameters, userId?: number): Promise<any> {
 		this.validateParams(params);
 
 		const endpoint = await this.getEndpoint();
 		const headers = await this.getHeaders(params);
 		const body = await this.mapParameters(params);
-		const resolvedModel =
-			(body?.model as string) || params.model || params.version || "unknown";
+		const resolvedModel = (body?.model as string) || params.model || params.version || "unknown";
 
 		return trackProviderMetrics({
 			provider: this.name,
@@ -197,12 +184,9 @@ export class ReplicateProvider extends BaseProvider {
 			"cf-aig-cache-ttl": resolveAiGatewayCacheTtl(params).toString(),
 		};
 
-		const response = await fetch(
-			`https://api.replicate.com/v1/predictions/${metadata.id}`,
-			{
-				headers: pollHeaders,
-			},
-		);
+		const response = await fetch(`https://api.replicate.com/v1/predictions/${metadata.id}`, {
+			headers: pollHeaders,
+		});
 
 		if (!response.ok) {
 			const errorText = await response.text();
@@ -225,11 +209,7 @@ export class ReplicateProvider extends BaseProvider {
 			};
 		}
 
-		if (
-			status === "failed" ||
-			status === "canceled" ||
-			status === "cancelled"
-		) {
+		if (status === "failed" || status === "canceled" || status === "cancelled") {
 			return {
 				status: "failed",
 				raw: data,

@@ -19,9 +19,7 @@ export class V0Provider extends BaseProvider {
 		return `${voApiBaseUrl}chat/completions`;
 	}
 
-	protected async getHeaders(
-		params: ChatCompletionParameters,
-	): Promise<Record<string, string>> {
+	protected async getHeaders(params: ChatCompletionParameters): Promise<Record<string, string>> {
 		const apiKey = await this.getApiKey(params, params.user?.id);
 
 		return {

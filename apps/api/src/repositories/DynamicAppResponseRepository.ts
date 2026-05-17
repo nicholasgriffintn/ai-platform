@@ -33,10 +33,7 @@ export class DynamicAppResponseRepository {
 		return this.repo.getAppDataByItemId(itemId);
 	}
 
-	async listResponsesForUser(
-		userId: number,
-		appId?: string,
-	): Promise<AppData[]> {
+	async listResponsesForUser(userId: number, appId?: string): Promise<AppData[]> {
 		let data: AppData[];
 
 		if (appId) {
@@ -48,10 +45,7 @@ export class DynamicAppResponseRepository {
 		return data.filter((d) => d.item_type === "dynamic_app_response");
 	}
 
-	async updateResponseData(
-		responseId: string,
-		payload: Record<string, any>,
-	): Promise<void> {
+	async updateResponseData(responseId: string, payload: Record<string, any>): Promise<void> {
 		await this.repo.updateAppData(responseId, payload);
 	}
 

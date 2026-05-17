@@ -1,11 +1,5 @@
 import { trackGuardrailViolation } from "~/lib/monitoring";
-import type {
-	GuardrailResult,
-	GuardrailsProvider,
-	IEnv,
-	IUser,
-	IUserSettings,
-} from "~/types";
+import type { GuardrailResult, GuardrailsProvider, IEnv, IUser, IUserSettings } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { providerLibrary } from "../../library";
 
@@ -22,10 +16,7 @@ export function getGuardrailsProvider(
 
 	if (userSettings.guardrails_provider === "bedrock") {
 		if (!userSettings.bedrock_guardrail_id) {
-			throw new AssistantError(
-				"Missing required guardrail ID",
-				ErrorType.PARAMS_ERROR,
-			);
+			throw new AssistantError("Missing required guardrail ID", ErrorType.PARAMS_ERROR);
 		}
 
 		return providerLibrary.guardrails("bedrock", {
@@ -34,8 +25,7 @@ export function getGuardrailsProvider(
 			config: {
 				guardrailId: userSettings.bedrock_guardrail_id,
 				guardrailVersion:
-					userSettings.bedrock_guardrail_version ||
-					DEFAULT_BEDROCK_GUARDRAIL_VERSION,
+					userSettings.bedrock_guardrail_version || DEFAULT_BEDROCK_GUARDRAIL_VERSION,
 				region: env.AWS_REGION || "us-east-1",
 				accessKeyId: env.BEDROCK_AWS_ACCESS_KEY,
 				secretAccessKey: env.BEDROCK_AWS_SECRET_KEY,

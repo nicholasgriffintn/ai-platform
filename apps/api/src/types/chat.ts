@@ -1,12 +1,7 @@
 import type { ExecutionContext } from "@cloudflare/workers-types";
 import type { MessagePart as SchemaMessagePart } from "@assistant/schemas";
 import type { ServiceContext } from "../lib/context/serviceContext";
-import type {
-	IEnv,
-	ReasoningEffortLevel,
-	RequireAtLeastOne,
-	VerbosityLevel,
-} from "./shared";
+import type { IEnv, ReasoningEffortLevel, RequireAtLeastOne, VerbosityLevel } from "./shared";
 import type { IUser } from "./user";
 
 export type Platform = "web" | "mobile" | "api" | "dynamic-apps";
@@ -309,11 +304,7 @@ interface AIResponseParamsBase extends AIControlParams {
 	// Tool names pre-approved for approval-gated modes.
 	approved_tools?: string[];
 	// The tool choice to use for the response.
-	tool_choice?:
-		| "required"
-		| "auto"
-		| "none"
-		| { type: "function"; name: string };
+	tool_choice?: "required" | "auto" | "none" | { type: "function"; name: string };
 	// Whether to enable parallel tool calls for the response.
 	parallel_tool_calls?: boolean;
 	// Additional options for the response.

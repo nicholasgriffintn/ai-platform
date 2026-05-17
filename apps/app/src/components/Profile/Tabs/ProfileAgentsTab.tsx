@@ -27,13 +27,7 @@ export function ProfileAgentsTab() {
 
 	const { data: apiModels = {} } = useModels();
 
-	const {
-		installSharedAgent,
-		isInstalling,
-		shareAgent,
-		isSharing,
-		categories,
-	} = useSharedAgents();
+	const { installSharedAgent, isInstalling, shareAgent, isSharing, categories } = useSharedAgents();
 
 	const [modalOpen, setModalOpen] = useState(false);
 	const [editingAgent, setEditingAgent] = useState<any>(null);
@@ -100,9 +94,7 @@ export function ProfileAgentsTab() {
 					setAgentToDelete(null);
 				},
 				onError: (error) => {
-					toast.error(
-						`Failed to delete agent: ${error.message || "Unknown error"}`,
-					);
+					toast.error(`Failed to delete agent: ${error.message || "Unknown error"}`);
 					console.error("Delete error:", error);
 				},
 			});
@@ -158,10 +150,7 @@ export function ProfileAgentsTab() {
 				agentToDelete={agentToDelete}
 			/>
 
-			<SharedAgentsBrowser
-				onInstall={installSharedAgent}
-				isInstalling={isInstalling}
-			/>
+			<SharedAgentsBrowser onInstall={installSharedAgent} isInstalling={isInstalling} />
 
 			<AgentFormModal
 				open={modalOpen}

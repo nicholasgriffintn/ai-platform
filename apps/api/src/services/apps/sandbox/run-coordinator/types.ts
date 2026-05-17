@@ -1,8 +1,4 @@
-import type {
-	SandboxRunControl,
-	SandboxRunEvent,
-	SandboxRunInstruction,
-} from "@assistant/schemas";
+import type { SandboxRunControl, SandboxRunEvent, SandboxRunInstruction } from "@assistant/schemas";
 
 export type CoordinatorState = SandboxRunControl;
 

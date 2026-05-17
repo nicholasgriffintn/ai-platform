@@ -53,15 +53,10 @@ function toRunControlState(run: SandboxRunData): SandboxRunControlState {
 }
 
 function isTerminalRunStatus(status: SandboxRunData["status"]): boolean {
-	return (
-		status === "completed" || status === "failed" || status === "cancelled"
-	);
+	return status === "completed" || status === "failed" || status === "cancelled";
 }
 
-function applyEventStatus(
-	run: SandboxRunData,
-	eventType: string,
-): SandboxRunStatus {
+function applyEventStatus(run: SandboxRunData, eventType: string): SandboxRunStatus {
 	switch (eventType) {
 		case "run_completed":
 			return "completed";
@@ -110,12 +105,8 @@ async function mergeCoordinatorEventsIfNewer(params: {
 	const latestEventWithTimestamp = [...events]
 		.reverse()
 		.find((event) => typeof event.timestamp === "string");
-	const derivedStatus = applyEventStatus(
-		run,
-		events[events.length - 1]?.type ?? "",
-	);
-	const completedAt =
-		terminalEvent?.completedAt ?? terminalEvent?.timestamp ?? run.completedAt;
+	const derivedStatus = applyEventStatus(run, events[events.length - 1]?.type ?? "");
+	const completedAt = terminalEvent?.completedAt ?? terminalEvent?.timestamp ?? run.completedAt;
 
 	return {
 		run: {
@@ -124,24 +115,17 @@ async function mergeCoordinatorEventsIfNewer(params: {
 			status: derivedStatus,
 			updatedAt: latestEventWithTimestamp?.timestamp ?? run.updatedAt,
 			completedAt:
-				derivedStatus === "completed" ||
-				derivedStatus === "failed" ||
-				derivedStatus === "cancelled"
+				derivedStatus === "completed" || derivedStatus === "failed" || derivedStatus === "cancelled"
 					? completedAt
 					: run.completedAt,
-			error:
-				derivedStatus === "failed"
-					? (terminalEvent?.error ?? run.error)
-					: undefined,
+			error: derivedStatus === "failed" ? (terminalEvent?.error ?? run.error) : undefined,
 			result:
 				derivedStatus === "completed" || derivedStatus === "failed"
 					? (terminalEvent?.result ?? run.result)
 					: run.result,
 			cancellationReason:
 				derivedStatus === "cancelled"
-					? (terminalEvent?.message ??
-						terminalEvent?.error ??
-						run.cancellationReason)
+					? (terminalEvent?.message ?? terminalEvent?.error ?? run.cancellationReason)
 					: run.cancellationReason,
 		},
 		merged: true,
@@ -178,10 +162,7 @@ async function getSandboxRunRecordForUser(params: {
 
 	const parsed = parseSandboxRunRecordData(records[0].data);
 	if (!parsed) {
-		throw new AssistantError(
-			"Sandbox run payload is invalid",
-			ErrorType.NOT_FOUND,
-		);
+		throw new AssistantError("Sandbox run payload is invalid", ErrorType.NOT_FOUND);
 	}
 
 	return {
@@ -268,10 +249,7 @@ export async function requestSandboxRunInstruction(params: {
 		escalateAfterSeconds,
 	});
 	if (!instruction) {
-		throw new AssistantError(
-			"Failed to submit run instruction",
-			ErrorType.UNKNOWN_ERROR,
-		);
+		throw new AssistantError("Failed to submit run instruction", ErrorType.UNKNOWN_ERROR);
 	}
 
 	await appendRunCoordinatorEvent({
@@ -292,8 +270,7 @@ export async function requestSandboxRunInstruction(params: {
 							? "Command approval response submitted"
 							: "Operator message submitted",
 			instructionContent:
-				typeof instruction.content === "string" &&
-				instruction.content.trim().length > 0
+				typeof instruction.content === "string" && instruction.content.trim().length > 0
 					? instruction.content.slice(0, 500)
 					: undefined,
 			command: instruction.command,
@@ -322,10 +299,7 @@ export async function listSandboxRunsForUser(params: {
 		.map((record) => parseSandboxRunRecordData(record.data))
 		.filter((run): run is SandboxRunData => Boolean(run))
 		.filter((run) => {
-			if (
-				installationId !== undefined &&
-				run.installationId !== installationId
-			) {
+			if (installationId !== undefined && run.installationId !== installationId) {
 				return false;
 			}
 
@@ -336,10 +310,7 @@ export async function listSandboxRunsForUser(params: {
 			return true;
 		})
 		.map((run) => toSandboxRunResponse(run))
-		.sort(
-			(a, b) =>
-				new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
-		)
+		.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
 		.slice(0, limit);
 }
 
@@ -354,10 +325,7 @@ export async function getSandboxRunForUser(params: {
 		run: runRecord.run,
 	});
 	if (merged.merged) {
-		await params.context.repositories.appData.updateAppData(
-			runRecord.recordId,
-			merged.run,
-		);
+		await params.context.repositories.appData.updateAppData(runRecord.recordId, merged.run);
 	}
 	return toSandboxRunResponse(merged.run);
 }
@@ -568,10 +536,7 @@ export async function getSandboxRunControlState(params: {
 	userId: number;
 	runId: string;
 }) {
-	const coordinator = await getRunCoordinatorControl(
-		params.context.env,
-		params.runId,
-	);
+	const coordinator = await getRunCoordinatorControl(params.context.env, params.runId);
 	if (coordinator) {
 		return coordinator;
 	}

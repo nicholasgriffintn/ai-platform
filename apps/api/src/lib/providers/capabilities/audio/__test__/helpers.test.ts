@@ -1,9 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import {
-	getAudioProvider,
-	listAudioProviders,
-} from "~/lib/providers/capabilities/audio";
+import { getAudioProvider, listAudioProviders } from "~/lib/providers/capabilities/audio";
 
 vi.mock("~/lib/providers/library", () => ({
 	providerLibrary: {
@@ -44,8 +41,6 @@ describe("audio capability helpers", () => {
 		const providers = listAudioProviders();
 
 		expect(mockProviderLibrary.list).toHaveBeenCalledWith("audio");
-		expect(providers).toEqual(
-			["Cartesia", "Polly", "aws-polly", "cartesia-tts", "polly"].sort(),
-		);
+		expect(providers).toEqual(["Cartesia", "Polly", "aws-polly", "cartesia-tts", "polly"].sort());
 	});
 });

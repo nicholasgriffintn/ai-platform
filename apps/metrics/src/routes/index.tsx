@@ -21,9 +21,7 @@ async function fetchMetrics(params: MetricsParams) {
 		type: "performance",
 	});
 
-	const response = await fetch(
-		`https://api.polychat.app/metrics?${searchParams}`,
-	);
+	const response = await fetch(`https://api.polychat.app/metrics?${searchParams}`);
 	if (!response.ok) {
 		throw new Error("Failed to fetch metrics");
 	}
@@ -88,10 +86,7 @@ export function MetricsHome() {
 						<h1 className="text-2xl md:text-4xl font-bold">Polychat Metrics</h1>
 					</div>
 					<div className="w-full">
-						<MetricsControls
-							initialValues={filters}
-							onSubmit={handleFilterChange}
-						/>
+						<MetricsControls initialValues={filters} onSubmit={handleFilterChange} />
 					</div>
 				</div>
 				{isLoading ? (
@@ -105,9 +100,7 @@ export function MetricsHome() {
 						limit={filters.limit}
 					/>
 				) : (
-					<div className="text-center text-muted-foreground">
-						No metrics found
-					</div>
+					<div className="text-center text-muted-foreground">No metrics found</div>
 				)}
 			</div>
 		</Layout>

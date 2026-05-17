@@ -25,8 +25,7 @@ function getModalityFlags(modelConfig?: ModelConfigItem) {
 		isImageToImage: inputs.includes("image") && outputs.includes("image"),
 		isTextToImage: !inputs.includes("image") && outputs.includes("image"),
 		isTextToSpeech:
-			inputs.includes("text") &&
-			(outputs.includes("audio") || outputs.includes("speech")),
+			inputs.includes("text") && (outputs.includes("audio") || outputs.includes("speech")),
 	};
 }
 
@@ -96,9 +95,7 @@ export class WorkersProvider extends BaseProvider {
 				let imageContent = null;
 				for (const message of params.messages) {
 					if (Array.isArray(message.content)) {
-						const imageContentItem = message.content.find(
-							(item) => "image_url" in item,
-						);
+						const imageContentItem = message.content.find((item) => "image_url" in item);
 						if (imageContentItem) {
 							// @ts-ignore - types are wrong
 							imageContent = imageContentItem.image_url.url;
@@ -147,18 +144,14 @@ export class WorkersProvider extends BaseProvider {
 							}
 
 							const imageKeyFromUrl = imageContent.replace(assetsUrl, "");
-							const retrievedImageData =
-								await storageService?.getObject(imageKeyFromUrl);
+							const retrievedImageData = await storageService?.getObject(imageKeyFromUrl);
 							base64Data = retrievedImageData;
 						} else {
 							base64Data = imageContent;
 						}
 
 						if (!base64Data) {
-							throw new AssistantError(
-								"No image data found",
-								ErrorType.PARAMS_ERROR,
-							);
+							throw new AssistantError("No image data found", ErrorType.PARAMS_ERROR);
 						}
 
 						try {
@@ -257,10 +250,7 @@ export class WorkersProvider extends BaseProvider {
 			}
 
 			if (!imageData && !flags.isTextToImage) {
-				throw new AssistantError(
-					"No image data found in the request",
-					ErrorType.PARAMS_ERROR,
-				);
+				throw new AssistantError("No image data found in the request", ErrorType.PARAMS_ERROR);
 			}
 
 			if (!prompt) {
@@ -296,9 +286,7 @@ export class WorkersProvider extends BaseProvider {
 		const toolsParams = getToolsForProvider(params, modelConfig, this.name);
 		const supportsToolCalls = modelConfig?.supportsToolCalls || false;
 
-		const toolConfig = supportsToolCalls
-			? { toolConfig: { tools: toolsParams.tools } }
-			: {};
+		const toolConfig = supportsToolCalls ? { toolConfig: { tools: toolsParams.tools } } : {};
 
 		return {
 			...commonParams,
@@ -311,10 +299,7 @@ export class WorkersProvider extends BaseProvider {
 		};
 	}
 
-	async getResponse(
-		params: ChatCompletionParameters,
-		userId?: number,
-	): Promise<any> {
+	async getResponse(params: ChatCompletionParameters, userId?: number): Promise<any> {
 		const { model, env, user: _user } = params;
 
 		if (!model) {
@@ -322,11 +307,7 @@ export class WorkersProvider extends BaseProvider {
 		}
 
 		const storageService = new StorageService(env.ASSETS_BUCKET);
-		const body = await this.mapParameters(
-			params,
-			storageService,
-			env.PUBLIC_ASSETS_URL,
-		);
+		const body = await this.mapParameters(params, storageService, env.PUBLIC_ASSETS_URL);
 
 		return trackProviderMetrics({
 			provider: "workers-ai",
@@ -338,16 +319,11 @@ export class WorkersProvider extends BaseProvider {
 						id: gatewayId,
 						skipCache: false,
 						cacheTtl: 7200,
-						authorization: env.AI_GATEWAY_TOKEN,
 						metadata: getAiGatewayMetadataHeaders(params),
 					},
 				});
 
-				const modelConfig = await getModelConfigByMatchingModel(
-					model,
-					env,
-					this.name,
-				);
+				const modelConfig = await getModelConfigByMatchingModel(model, env, this.name);
 				const responseFlags = getModalityFlags(modelConfig);
 
 				const responseWasStreamed = body.stream;
@@ -359,9 +335,7 @@ export class WorkersProvider extends BaseProvider {
 					responseFlags.isImageToImage
 				) {
 					try {
-						const imageKey = `generations/${
-							params.completion_id
-						}/${model}/${Date.now()}.png`;
+						const imageKey = `generations/${params.completion_id}/${model}/${Date.now()}.png`;
 						const upload = await uploadImageFromChat(
 							// @ts-ignore
 							modelResponse.image || modelResponse,
@@ -370,10 +344,7 @@ export class WorkersProvider extends BaseProvider {
 						);
 
 						if (!upload) {
-							throw new AssistantError(
-								"Failed to upload image",
-								ErrorType.PROVIDER_ERROR,
-							);
+							throw new AssistantError("Failed to upload image", ErrorType.PROVIDER_ERROR);
 						}
 
 						const baseAssetsUrl = env.PUBLIC_ASSETS_URL || "";
@@ -406,9 +377,7 @@ export class WorkersProvider extends BaseProvider {
 					(modelResponse && responseFlags.isTextToSpeech)
 				) {
 					try {
-						const audioKey = `generations/${
-							params.completion_id
-						}/${model}/${Date.now()}.mp3`;
+						const audioKey = `generations/${params.completion_id}/${model}/${Date.now()}.mp3`;
 						const upload = await uploadAudioFromChat(
 							// @ts-ignore
 							modelResponse.audio || modelResponse,
@@ -417,10 +386,7 @@ export class WorkersProvider extends BaseProvider {
 						);
 
 						if (!upload) {
-							throw new AssistantError(
-								"Failed to upload audio",
-								ErrorType.PROVIDER_ERROR,
-							);
+							throw new AssistantError("Failed to upload audio", ErrorType.PROVIDER_ERROR);
 						}
 
 						const baseAssetsUrl = env.PUBLIC_ASSETS_URL || "";

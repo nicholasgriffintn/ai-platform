@@ -30,14 +30,9 @@ export function createReadFileActionHandler<
 ): ActionHandler<ReadFileDecision | ReadFilesDecision, TShared, TState> {
 	return {
 		name: options.name ?? "read-file",
-		canHandle: (
-			decision: AgentDecision,
-		): decision is ReadFileDecision | ReadFilesDecision =>
+		canHandle: (decision: AgentDecision): decision is ReadFileDecision | ReadFilesDecision =>
 			decision.action === "read_file" || decision.action === "read_files",
-		execute: async (
-			decision: ReadFileDecision | ReadFilesDecision,
-			context,
-		) => {
+		execute: async (decision: ReadFileDecision | ReadFilesDecision, context) => {
 			if (decision.action === "read_file") {
 				await options.onReadFile(decision, context);
 				return;

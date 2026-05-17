@@ -10,13 +10,7 @@ interface PageStatusProps {
 	className?: string;
 }
 
-export const PageStatus = ({
-	icon,
-	title,
-	message,
-	children,
-	className,
-}: PageStatusProps) => {
+export const PageStatus = ({ icon, title, message, children, className }: PageStatusProps) => {
 	return (
 		<div
 			className={cn(
@@ -26,16 +20,8 @@ export const PageStatus = ({
 			)}
 		>
 			{icon && <div className="text-zinc-500 dark:text-zinc-400">{icon}</div>}
-			{title && (
-				<h2 className="text-lg font-semibold text-zinc-800 dark:text-zinc-200">
-					{title}
-				</h2>
-			)}
-			{message && (
-				<p className="text-sm text-zinc-600 dark:text-zinc-400 max-w-md">
-					{message}
-				</p>
-			)}
+			{title && <h2 className="text-lg font-semibold text-zinc-800 dark:text-zinc-200">{title}</h2>}
+			{message && <p className="text-sm text-zinc-600 dark:text-zinc-400 max-w-md">{message}</p>}
 			{children && <div className="mt-2">{children}</div>}
 		</div>
 	);

@@ -45,9 +45,7 @@ describe("parseAgentDecision", () => {
 	});
 
 	it("resolves action aliases to canonical actions", () => {
-		const decision = parseAgentDecision(
-			'{"action":"execute_command","command":"git status"}',
-		);
+		const decision = parseAgentDecision('{"action":"execute_command","command":"git status"}');
 
 		expect(decision).toEqual({
 			action: "run_command",

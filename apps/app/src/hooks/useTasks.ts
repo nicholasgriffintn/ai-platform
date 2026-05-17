@@ -11,14 +11,8 @@ import type {
 export const TASK_QUERY_KEYS = {
 	tasks: ["tasks"],
 	task: (taskId: string) => ["tasks", taskId],
-	synthesis: (namespace?: string) => [
-		"memory-synthesis",
-		namespace ?? "global",
-	],
-	synthesisHistory: (namespace?: string) => [
-		"memory-synthesis-history",
-		namespace ?? "global",
-	],
+	synthesis: (namespace?: string) => ["memory-synthesis", namespace ?? "global"],
+	synthesisHistory: (namespace?: string) => ["memory-synthesis-history", namespace ?? "global"],
 };
 
 type MemorySynthesisHistoryResponse = {
@@ -29,13 +23,12 @@ type MemorySynthesisHistoryResponse = {
 export function useTasks({ shouldRefetch = true }) {
 	const queryClient = useQueryClient();
 
-	const { data: tasksData, isLoading: isLoadingTasks } =
-		useQuery<ListTasksResponse>({
-			queryKey: TASK_QUERY_KEYS.tasks,
-			queryFn: () => taskService.listTasks(),
-			staleTime: 1000 * 10, // 10 seconds
-			refetchInterval: shouldRefetch ? 1000 * 30 : undefined, // 30 seconds
-		});
+	const { data: tasksData, isLoading: isLoadingTasks } = useQuery<ListTasksResponse>({
+		queryKey: TASK_QUERY_KEYS.tasks,
+		queryFn: () => taskService.listTasks(),
+		staleTime: 1000 * 10, // 10 seconds
+		refetchInterval: shouldRefetch ? 1000 * 30 : undefined, // 30 seconds
+	});
 
 	const triggerSynthesisMutation = useMutation<
 		CreateTaskResponse,

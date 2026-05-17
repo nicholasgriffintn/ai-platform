@@ -20,8 +20,7 @@ export const extract_text_from_document: ApiToolDefinition = {
 			},
 			model: {
 				type: "string",
-				description:
-					"The OCR model to use. Defaults to 'mistral-ocr-latest' if not specified",
+				description: "The OCR model to use. Defaults to 'mistral-ocr-latest' if not specified",
 			},
 			pages: {
 				type: "array",
@@ -33,8 +32,7 @@ export const extract_text_from_document: ApiToolDefinition = {
 			},
 			include_image_base64: {
 				type: "boolean",
-				description:
-					"Whether to include base64-encoded images in the output. Defaults to true",
+				description: "Whether to include base64-encoded images in the output. Defaults to true",
 				default: true,
 			},
 			image_limit: {

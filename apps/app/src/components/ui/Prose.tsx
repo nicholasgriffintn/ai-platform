@@ -7,9 +7,5 @@ interface ProseProps {
 }
 
 export function Prose({ children, className }: ProseProps) {
-	return (
-		<div className={cn("prose dark:prose-invert max-w-[840px]", className)}>
-			{children}
-		</div>
-	);
+	return <div className={cn("prose dark:prose-invert max-w-[840px]", className)}>{children}</div>;
 }

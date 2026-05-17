@@ -20,9 +20,7 @@ export class SubscriptionService {
 			method: "POST",
 			body: { plan_id: planId, success_url: successUrl, cancel_url: cancelUrl },
 		});
-		const data = await returnFetchedData<{ url: string; error?: string }>(
-			response,
-		);
+		const data = await returnFetchedData<{ url: string; error?: string }>(response);
 		if (!response.ok) {
 			throw new Error(data.error || "Checkout session creation failed");
 		}

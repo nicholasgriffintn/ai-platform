@@ -103,8 +103,7 @@ describe("handlePodcastUpload", () => {
 			expect.objectContaining({
 				title: "Test Podcast",
 				description: "Test Description",
-				audioUrl:
-					"https://assets.example.com/podcasts/podcast-123/recording.mp3",
+				audioUrl: "https://assets.example.com/podcasts/podcast-123/recording.mp3",
 				status: "ready",
 			}),
 		);
@@ -123,9 +122,7 @@ describe("handlePodcastUpload", () => {
 
 		expect(result.status).toBe("success");
 		expect(result.completion_id).toBe("podcast-123");
-		expect(result.content).toBe(
-			"Podcast Upload: [Listen Here](https://example.com/audio.mp3)",
-		);
+		expect(result.content).toBe("Podcast Upload: [Listen Here](https://example.com/audio.mp3)");
 		expect(mockStorageService.uploadObject).not.toHaveBeenCalled();
 		expect(mockRepositories.appData.createAppDataWithItem).toHaveBeenCalledWith(
 			"user-123",
@@ -163,9 +160,7 @@ describe("handlePodcastUpload", () => {
 
 	it("should sanitise title and description", async () => {
 		const { sanitiseInput } = await import("~/lib/chat/utils");
-		vi.mocked(sanitiseInput).mockImplementation(
-			(input) => `sanitised_${input}`,
-		);
+		vi.mocked(sanitiseInput).mockImplementation((input) => `sanitised_${input}`);
 
 		await handlePodcastUpload({
 			context: mockContext,
@@ -190,8 +185,7 @@ describe("handlePodcastUpload", () => {
 			"upload",
 			expect.objectContaining({
 				title: "sanitised_Unsafe <script>alert('xss')</script> Title",
-				description:
-					"sanitised_Unsafe <script>alert('xss')</script> Description",
+				description: "sanitised_Unsafe <script>alert('xss')</script> Description",
 			}),
 		);
 	});
@@ -221,9 +215,7 @@ describe("handlePodcastUpload", () => {
 			arrayBuffer: vi.fn().mockResolvedValue(new ArrayBuffer(1024)),
 		} as any;
 
-		mockStorageService.uploadObject.mockRejectedValue(
-			new Error("Storage failed"),
-		);
+		mockStorageService.uploadObject.mockRejectedValue(new Error("Storage failed"));
 
 		await expect(
 			handlePodcastUpload({

@@ -5,10 +5,7 @@ import { PageShell } from "~/components/Core/PageShell";
 import { AppsSidebarContent } from "~/components/Sidebar/AppsSidebarContent";
 
 export function meta() {
-	return [
-		{ title: "Apps - Polychat" },
-		{ name: "description", content: "Apps for Polychat" },
-	];
+	return [{ title: "Apps - Polychat" }, { name: "description", content: "Apps for Polychat" }];
 }
 
 const DynamicAppsRoute: FC = () => {

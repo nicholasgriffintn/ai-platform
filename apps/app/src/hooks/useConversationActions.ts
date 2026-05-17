@@ -14,10 +14,7 @@ import { useMessageOperations } from "./useMessageOperations";
  * Hook for advanced conversation actions like editing, retrying, and branching.
  */
 export function useConversationActions(
-	generateResponse: (
-		messages: Message[],
-		conversationId: string,
-	) => Promise<any>,
+	generateResponse: (messages: Message[], conversationId: string) => Promise<any>,
 	generateTitle: (
 		conversationId: string,
 		messages: Message[],
@@ -39,8 +36,7 @@ export function useConversationActions(
 	} = useChatStore();
 
 	const { updateConversation } = useConversationStorage();
-	const { addAssistantMessage, updateAssistantMessage } =
-		useMessageOperations();
+	const { addAssistantMessage, updateAssistantMessage } = useMessageOperations();
 
 	const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
 	const [isBranching, setIsBranching] = useState(false);
@@ -57,9 +53,7 @@ export function useConversationActions(
 				return;
 			}
 
-			const messageIndex = conversation.messages.findIndex(
-				(msg) => msg.id === messageId,
-			);
+			const messageIndex = conversation.messages.findIndex((msg) => msg.id === messageId);
 
 			if (messageIndex === -1) {
 				toast.error("Unable to retry: message not found");
@@ -103,9 +97,7 @@ export function useConversationActions(
 				return;
 			}
 
-			const messageIndex = conversation.messages.findIndex(
-				(msg) => msg.id === messageId,
-			);
+			const messageIndex = conversation.messages.findIndex((msg) => msg.id === messageId);
 
 			if (messageIndex === -1) {
 				toast.error("Unable to edit: message not found");
@@ -162,9 +154,7 @@ export function useConversationActions(
 				return;
 			}
 
-			const messageIndex = conversation.messages.findIndex(
-				(msg) => msg.id === messageId,
-			);
+			const messageIndex = conversation.messages.findIndex((msg) => msg.id === messageId);
 
 			if (messageIndex === -1) {
 				toast.error("Unable to branch: message not found");
@@ -174,10 +164,7 @@ export function useConversationActions(
 			try {
 				setIsBranching(true);
 
-				const messagesUpToPoint = conversation.messages.slice(
-					0,
-					messageIndex + 1,
-				);
+				const messagesUpToPoint = conversation.messages.slice(0, messageIndex + 1);
 
 				const newConversationId = `${Date.now()}-${Math.floor(Math.random() * 1000)}`;
 
@@ -188,8 +175,7 @@ export function useConversationActions(
 					}),
 				};
 
-				const shouldStore =
-					isAuthenticated && isPro && !localOnlyMode && !chatSettings.localOnly;
+				const shouldStore = isAuthenticated && isPro && !localOnlyMode && !chatSettings.localOnly;
 
 				await updateConversation(newConversationId, () => ({
 					id: newConversationId,
@@ -203,8 +189,7 @@ export function useConversationActions(
 
 				if (shouldStore) {
 					const normalizedMessages = messagesUpToPoint.map(normalizeMessage);
-					const modelToSend =
-						selectedModelId || (model === null ? undefined : model);
+					const modelToSend = selectedModelId || (model === null ? undefined : model);
 
 					const chatSettingsWithMetadata = {
 						...chatSettings,
@@ -239,29 +224,20 @@ export function useConversationActions(
 						shouldStore,
 						true,
 						useMultiModel,
-						chatMode === "agent"
-							? `/agents/${selectedAgentId}/completions`
-							: undefined,
+						chatMode === "agent" ? `/agents/${selectedAgentId}/completions` : undefined,
 					);
 
-					await updateAssistantMessage(
-						newConversationId,
-						lastContent,
-						lastReasoning,
-					);
+					await updateAssistantMessage(newConversationId, lastContent, lastReasoning);
 
 					setTimeout(() => {
 						const lastMessage = messagesUpToPoint[messagesUpToPoint.length - 1];
 						if (lastMessage) {
-							generateTitle(
-								newConversationId,
-								messagesUpToPoint.slice(0, -1),
-								lastMessage,
-							).catch((err) =>
-								console.error(
-									"Background title generation failed for branched conversation:",
-									err,
-								),
+							generateTitle(newConversationId, messagesUpToPoint.slice(0, -1), lastMessage).catch(
+								(err) =>
+									console.error(
+										"Background title generation failed for branched conversation:",
+										err,
+									),
 							);
 						}
 					}, 0);

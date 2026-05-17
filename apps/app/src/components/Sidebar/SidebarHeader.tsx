@@ -33,13 +33,7 @@ export function SidebarHeader({
 					variant="icon"
 					title={sidebarVisible ? "Hide sidebar" : "Show sidebar"}
 					aria-label={sidebarVisible ? "Hide sidebar" : "Show sidebar"}
-					icon={
-						sidebarVisible ? (
-							<PanelLeftClose size={20} />
-						) : (
-							<PanelLeftOpen size={20} />
-						)
-					}
+					icon={sidebarVisible ? <PanelLeftClose size={20} /> : <PanelLeftOpen size={20} />}
 					onClick={() => setSidebarVisible(!sidebarVisible)}
 				/>
 				<div className="flex items-center gap-2">
@@ -47,19 +41,9 @@ export function SidebarHeader({
 						<Button
 							type="button"
 							variant={localOnlyMode ? "iconActive" : "icon"}
-							title={
-								localOnlyMode
-									? "Switch to cloud mode"
-									: "Switch to local-only mode"
-							}
-							aria-label={
-								localOnlyMode
-									? "Switch to cloud mode"
-									: "Switch to local-only mode"
-							}
-							icon={
-								localOnlyMode ? <CloudOff size={20} /> : <Cloud size={20} />
-							}
+							title={localOnlyMode ? "Switch to cloud mode" : "Switch to local-only mode"}
+							aria-label={localOnlyMode ? "Switch to cloud mode" : "Switch to local-only mode"}
+							icon={localOnlyMode ? <CloudOff size={20} /> : <Cloud size={20} />}
 							onClick={toggleLocalOnlyModeHandler}
 						/>
 					)}

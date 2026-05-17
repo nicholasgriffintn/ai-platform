@@ -1,16 +1,7 @@
-import {
-	getModelConfig,
-	getModelConfigByMatchingModel,
-} from "~/lib/providers/models";
+import { getModelConfig, getModelConfigByMatchingModel } from "~/lib/providers/models";
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import { ModelRouter } from "~/lib/modelRouter";
-import type {
-	ChatCompletionParameters,
-	ChatRole,
-	IEnv,
-	IUser,
-	Message,
-} from "~/types";
+import type { ChatCompletionParameters, ChatRole, IEnv, IUser, Message } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
 interface HandleCreateApplyEditCompletionsRequest {
@@ -42,10 +33,7 @@ export const handleCreateApplyEditCompletions = async ({
 		(await getModelConfigByMatchingModel(selectedModel, env));
 
 	if (!modelConfig) {
-		throw new AssistantError(
-			`Model ${selectedModel} not found`,
-			ErrorType.PARAMS_ERROR,
-		);
+		throw new AssistantError(`Model ${selectedModel} not found`, ErrorType.PARAMS_ERROR);
 	}
 
 	if (!modelConfig.supportsApplyEdit) {

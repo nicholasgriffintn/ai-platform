@@ -9,10 +9,7 @@ import type {
 	SearchResult,
 } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
-import {
-	getAiGatewayMetadataHeaders,
-	resolveAiGatewayCacheTtl,
-} from "~/utils/aiGateway";
+import { getAiGatewayMetadataHeaders, resolveAiGatewayCacheTtl } from "~/utils/aiGateway";
 
 export class ParallelSearchProvider implements SearchProvider {
 	private env: IEnv;
@@ -36,10 +33,7 @@ export class ParallelSearchProvider implements SearchProvider {
 
 		if (this.user?.id && this.userSettingsRepo) {
 			try {
-				const userApiKey = await this.userSettingsRepo.getProviderApiKey(
-					this.user.id,
-					"parallel",
-				);
+				const userApiKey = await this.userSettingsRepo.getProviderApiKey(this.user.id, "parallel");
 				if (userApiKey) {
 					this.apiKey = userApiKey;
 					return userApiKey;
@@ -47,8 +41,7 @@ export class ParallelSearchProvider implements SearchProvider {
 			} catch (error) {
 				if (
 					error instanceof AssistantError &&
-					(error.type === ErrorType.NOT_FOUND ||
-						error.type === ErrorType.PARAMS_ERROR)
+					(error.type === ErrorType.NOT_FOUND || error.type === ErrorType.PARAMS_ERROR)
 				) {
 					// Ignore missing user-specific keys so we can fall back to env key
 				} else {
@@ -59,31 +52,21 @@ export class ParallelSearchProvider implements SearchProvider {
 
 		const envKey = this.env.PARALLEL_API_KEY;
 		if (!envKey) {
-			throw new AssistantError(
-				"PARALLEL_API_KEY is not set",
-				ErrorType.CONFIGURATION_ERROR,
-			);
+			throw new AssistantError("PARALLEL_API_KEY is not set", ErrorType.CONFIGURATION_ERROR);
 		}
 
 		this.apiKey = envKey;
 		return envKey;
 	}
 
-	async performWebSearch(
-		query: string,
-		options?: SearchOptions,
-	): Promise<SearchResult> {
+	async performWebSearch(query: string, options?: SearchOptions): Promise<SearchResult> {
 		if (!this.env.AI_GATEWAY_TOKEN) {
-			throw new AssistantError(
-				"AI_GATEWAY_TOKEN is not set",
-				ErrorType.CONFIGURATION_ERROR,
-			);
+			throw new AssistantError("AI_GATEWAY_TOKEN is not set", ErrorType.CONFIGURATION_ERROR);
 		}
 
 		const apiKey = await this.resolveApiKey();
 		const providedQueries = options?.parallel_search_queries;
-		const searchQueries =
-			providedQueries && providedQueries.length > 0 ? providedQueries : [query];
+		const searchQueries = providedQueries && providedQueries.length > 0 ? providedQueries : [query];
 		const objective = options?.system_prompt || query;
 		const payload = {
 			objective,

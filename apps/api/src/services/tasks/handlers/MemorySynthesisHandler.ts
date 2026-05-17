@@ -28,9 +28,7 @@ export class MemorySynthesisHandler implements TaskHandler {
 			const memoryRepository = new MemoryRepository(env);
 			const memorySynthesisRepository = new MemorySynthesisRepository(env);
 
-			const memories = await memoryRepository.getMemoriesByUserId(
-				message.user_id,
-			);
+			const memories = await memoryRepository.getMemoriesByUserId(message.user_id);
 
 			const activeMemories = memories.filter(
 				(m) =>
@@ -45,19 +43,14 @@ export class MemorySynthesisHandler implements TaskHandler {
 				};
 			}
 
-			const existingSynthesis =
-				await memorySynthesisRepository.getActiveSynthesis(
-					message.user_id,
-					namespace,
-				);
+			const existingSynthesis = await memorySynthesisRepository.getActiveSynthesis(
+				message.user_id,
+				namespace,
+			);
 
 			const categorized = this.categorizeMemories(activeMemories);
 
-			const synthesis = await this.generateSynthesis(
-				categorized,
-				existingSynthesis,
-				env,
-			);
+			const synthesis = await this.generateSynthesis(categorized, existingSynthesis, env);
 
 			const synthesisRecord = await memorySynthesisRepository.createSynthesis({
 				user_id: message.user_id,
@@ -151,8 +144,7 @@ Create a clear, factual synthesis that:
 Format as a structured document with clear sections.`;
 
 		try {
-			const { model: modelToUse, provider: providerToUse } =
-				await getAuxiliaryModel(env);
+			const { model: modelToUse, provider: providerToUse } = await getAuxiliaryModel(env);
 
 			const provider = getChatProvider(providerToUse, { env, user: undefined });
 

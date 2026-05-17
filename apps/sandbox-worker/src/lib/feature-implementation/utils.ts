@@ -1,9 +1,6 @@
 import { MAX_OBSERVATION_CHARS } from "./constants";
 
-export function truncateForModel(
-	value: string,
-	maxChars = MAX_OBSERVATION_CHARS,
-): string {
+export function truncateForModel(value: string, maxChars = MAX_OBSERVATION_CHARS): string {
 	if (value.length <= maxChars) {
 		return value;
 	}
@@ -45,11 +42,7 @@ export function normaliseRepoRelativePath(rawPath: string): string {
 	return normalised;
 }
 
-export function parsePositiveInteger(
-	value: unknown,
-	fallback: number,
-	maxValue: number,
-): number {
+export function parsePositiveInteger(value: unknown, fallback: number, maxValue: number): number {
 	if (typeof value !== "number" || !Number.isFinite(value)) {
 		return fallback;
 	}
@@ -62,10 +55,7 @@ export function parsePositiveInteger(
 	return Math.min(rounded, maxValue);
 }
 
-export function extractRelativePath(
-	repoTargetDir: string,
-	absolutePath: string,
-): string {
+export function extractRelativePath(repoTargetDir: string, absolutePath: string): string {
 	const normalisedPrefix = `${repoTargetDir.replace(/\/+$/, "")}/`;
 	if (absolutePath.startsWith(normalisedPrefix)) {
 		return absolutePath.slice(normalisedPrefix.length);
@@ -74,9 +64,7 @@ export function extractRelativePath(
 	return absolutePath;
 }
 
-export function isObjectRecord(
-	value: unknown,
-): value is Record<string, unknown> {
+export function isObjectRecord(value: unknown): value is Record<string, unknown> {
 	return Boolean(value) && typeof value === "object" && !Array.isArray(value);
 }
 
@@ -106,9 +94,6 @@ export function escapeRegExp(value: string): string {
 	return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
-export function formatStoryLabel(story: {
-	id?: string;
-	title: string;
-}): string {
+export function formatStoryLabel(story: { id?: string; title: string }): string {
 	return story.id ? `${story.id} ${story.title}` : story.title;
 }

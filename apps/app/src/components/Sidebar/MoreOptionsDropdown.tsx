@@ -1,10 +1,4 @@
-import {
-	ExternalLink,
-	FileText,
-	Github,
-	Keyboard,
-	MoreVertical,
-} from "lucide-react";
+import { ExternalLink, FileText, Github, Keyboard, MoreVertical } from "lucide-react";
 import { Link } from "react-router";
 
 import { DropdownMenu, DropdownMenuItem } from "~/components/ui";
@@ -54,10 +48,7 @@ export const MoreOptionsDropdown = ({
 
 			<div className="h-px my-1 bg-zinc-200 dark:bg-zinc-700" />
 
-			<DropdownMenuItem
-				icon={<Keyboard size={16} />}
-				onClick={onShowKeyboardShortcuts}
-			>
+			<DropdownMenuItem icon={<Keyboard size={16} />} onClick={onShowKeyboardShortcuts}>
 				Keyboard Shortcuts
 			</DropdownMenuItem>
 		</DropdownMenu>

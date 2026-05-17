@@ -64,9 +64,7 @@ export default function ArticlesReportsListPage() {
 					)}
 				>
 					<h3 className={cn("font-semibold mb-2")}>Failed to load reports</h3>
-					<p>
-						{error instanceof Error ? error.message : "Unknown error occurred"}
-					</p>
+					<p>{error instanceof Error ? error.message : "Unknown error occurred"}</p>
 					<Button
 						type="button"
 						variant="primary"
@@ -87,20 +85,14 @@ export default function ArticlesReportsListPage() {
 					title="No reports yet"
 					message="Start a new analysis session to compare multiple articles."
 					action={
-						<Button
-							onClick={handleNewAnalysis}
-							variant="primary"
-							icon={<Plus size={16} />}
-						>
+						<Button onClick={handleNewAnalysis} variant="primary" icon={<Plus size={16} />}>
 							Start New Analysis
 						</Button>
 					}
 					className="min-h-[400px]"
 				/>
 			) : (
-				<div
-					className={cn("grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6")}
-				>
+				<div className={cn("grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6")}>
 					{reports.map((report) => (
 						<Link
 							key={report.id}
@@ -118,12 +110,8 @@ export default function ArticlesReportsListPage() {
 										"relative aspect-video w-full rounded-lg overflow-hidden mb-4 bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center",
 									)}
 								>
-									<FileSpreadsheet
-										size={32}
-										className={cn("text-zinc-500 dark:text-zinc-400")}
-									/>
-									{report?.source_article_count &&
-									report.source_article_count > 0 ? (
+									<FileSpreadsheet size={32} className={cn("text-zinc-500 dark:text-zinc-400")} />
+									{report?.source_article_count && report.source_article_count > 0 ? (
 										<div
 											className={cn(
 												"absolute top-2 right-2 px-2 py-1 text-xs rounded-full bg-zinc-100 text-zinc-800 dark:bg-zinc-700 dark:text-zinc-300",
@@ -133,11 +121,7 @@ export default function ArticlesReportsListPage() {
 										</div>
 									) : null}
 								</div>
-								<h3
-									className={cn(
-										"font-semibold text-lg mb-1 text-zinc-800 dark:text-zinc-200",
-									)}
-								>
+								<h3 className={cn("font-semibold text-lg mb-1 text-zinc-800 dark:text-zinc-200")}>
 									{report.title || `Report (ID: ${report.id})`}
 								</h3>
 								<p className={cn("text-sm text-zinc-500 dark:text-zinc-400")}>

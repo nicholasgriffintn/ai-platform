@@ -92,9 +92,7 @@ describe("BedrockEmbeddingProvider", () => {
 
 	describe("parseAwsCredentials", () => {
 		it("should parse valid AWS credentials format", () => {
-			const result = (provider as any).parseAwsCredentials(
-				"access-key::@@::secret-key",
-			);
+			const result = (provider as any).parseAwsCredentials("access-key::@@::secret-key");
 			expect(result).toEqual({
 				accessKey: "access-key",
 				secretKey: "secret-key",
@@ -130,9 +128,7 @@ describe("BedrockEmbeddingProvider", () => {
 		});
 
 		it("should use user API key when available", async () => {
-			mockUserSettingsRepo.getProviderApiKey.mockResolvedValue(
-				"user-access::@@::user-secret",
-			);
+			mockUserSettingsRepo.getProviderApiKey.mockResolvedValue("user-access::@@::user-secret");
 
 			const client = await provider.getAwsClient();
 
@@ -158,15 +154,11 @@ describe("BedrockEmbeddingProvider", () => {
 
 			mockUserSettingsRepo.getProviderApiKey.mockResolvedValue(null);
 
-			await expect(providerWithoutCreds.getAwsClient()).rejects.toThrow(
-				AssistantError,
-			);
+			await expect(providerWithoutCreds.getAwsClient()).rejects.toThrow(AssistantError);
 		});
 
 		it("should handle user settings repository errors gracefully", async () => {
-			mockUserSettingsRepo.getProviderApiKey.mockRejectedValue(
-				new Error("DB error"),
-			);
+			mockUserSettingsRepo.getProviderApiKey.mockRejectedValue(new Error("DB error"));
 
 			const client = await provider.getAwsClient();
 
@@ -176,12 +168,9 @@ describe("BedrockEmbeddingProvider", () => {
 
 	describe("generate", () => {
 		it("should generate embedding vector with metadata", async () => {
-			const result = await provider.generate(
-				"article",
-				"test content",
-				"test-id",
-				{ title: "Test" },
-			);
+			const result = await provider.generate("article", "test content", "test-id", {
+				title: "Test",
+			});
 
 			expect(result).toEqual([
 				{
@@ -197,21 +186,17 @@ describe("BedrockEmbeddingProvider", () => {
 		});
 
 		it("should throw error for missing type", async () => {
-			await expect(provider.generate("", "content", "id", {})).rejects.toThrow(
-				AssistantError,
-			);
+			await expect(provider.generate("", "content", "id", {})).rejects.toThrow(AssistantError);
 		});
 
 		it("should throw error for missing content", async () => {
-			await expect(provider.generate("type", "", "id", {})).rejects.toThrow(
-				AssistantError,
-			);
+			await expect(provider.generate("type", "", "id", {})).rejects.toThrow(AssistantError);
 		});
 
 		it("should throw error for missing id", async () => {
-			await expect(
-				provider.generate("type", "content", "", {}),
-			).rejects.toThrow(expect.any(AssistantError));
+			await expect(provider.generate("type", "content", "", {})).rejects.toThrow(
+				expect.any(AssistantError),
+			);
 		});
 	});
 
@@ -237,9 +222,7 @@ describe("BedrockEmbeddingProvider", () => {
 				error: null,
 			});
 			expect(mockAwsClient.fetch).toHaveBeenCalledWith(
-				expect.stringContaining(
-					"/knowledgebases/test-kb-id/datasources/test-ds-id/documents",
-				),
+				expect.stringContaining("/knowledgebases/test-kb-id/datasources/test-ds-id/documents"),
 				expect.objectContaining({
 					method: "PUT",
 					headers: { "Content-Type": "application/json" },
@@ -264,9 +247,7 @@ describe("BedrockEmbeddingProvider", () => {
 				},
 			];
 
-			await expect(provider.insert(embeddings)).rejects.toThrow(
-				expect.any(AssistantError),
-			);
+			await expect(provider.insert(embeddings)).rejects.toThrow(expect.any(AssistantError));
 		});
 	});
 
@@ -394,9 +375,7 @@ describe("BedrockEmbeddingProvider", () => {
 				text: () => Promise.resolve("Server error"),
 			});
 
-			await expect(provider.getMatches("test query")).rejects.toThrow(
-				AssistantError,
-			);
+			await expect(provider.getMatches("test query")).rejects.toThrow(AssistantError);
 		});
 	});
 
@@ -439,19 +418,17 @@ describe("BedrockEmbeddingProvider", () => {
 		});
 
 		it("should forward options to getMatches", async () => {
-			const getMatchesSpy = vi
-				.spyOn(provider as any, "getMatches")
-				.mockResolvedValue({
-					matches: [
-						{
-							title: "t",
-							content: "c",
-							metadata: {},
-							score: 1,
-						},
-					],
-					count: 1,
-				});
+			const getMatchesSpy = vi.spyOn(provider as any, "getMatches").mockResolvedValue({
+				matches: [
+					{
+						title: "t",
+						content: "c",
+						metadata: {},
+						score: 1,
+					},
+				],
+				count: 1,
+			});
 
 			const options = { topK: 5 };
 
@@ -468,9 +445,7 @@ describe("BedrockEmbeddingProvider", () => {
 				json: () => Promise.resolve({ retrievalResults: [] }),
 			});
 
-			await expect(provider.searchSimilar("test query")).rejects.toThrow(
-				AssistantError,
-			);
+			await expect(provider.searchSimilar("test query")).rejects.toThrow(AssistantError);
 		});
 	});
 });

@@ -57,8 +57,9 @@ export class PodcastTranscriptionPollingHandler implements TaskHandler {
 				};
 			}
 
-			const asyncInvocation = transcriptionData.transcriptionData?.data
-				?.asyncInvocation as AsyncInvocationMetadata | undefined;
+			const asyncInvocation = transcriptionData.transcriptionData?.data?.asyncInvocation as
+				| AsyncInvocationMetadata
+				| undefined;
 			if (!asyncInvocation || transcriptionData.status !== "pending") {
 				return {
 					status: "success",
@@ -70,13 +71,10 @@ export class PodcastTranscriptionPollingHandler implements TaskHandler {
 				};
 			}
 
-			const provider = getChatProvider(
-				asyncInvocation.provider || "replicate",
-				{
-					env,
-					user: undefined,
-				},
-			);
+			const provider = getChatProvider(asyncInvocation.provider || "replicate", {
+				env,
+				user: undefined,
+			});
 			if (!provider?.getAsyncInvocationStatus) {
 				return {
 					status: "error",
@@ -99,10 +97,7 @@ export class PodcastTranscriptionPollingHandler implements TaskHandler {
 				transcriptionData.status = "complete";
 				transcriptionData.transcriptionData = result.result;
 				transcriptionData.output = result.result.response;
-				await appDataRepo.updateAppData(
-					transcriptionRecord.id,
-					transcriptionData,
-				);
+				await appDataRepo.updateAppData(transcriptionRecord.id, transcriptionData);
 				return {
 					status: "success",
 					message: "Podcast transcription completed",
@@ -113,10 +108,7 @@ export class PodcastTranscriptionPollingHandler implements TaskHandler {
 			if (result.status === "failed") {
 				transcriptionData.status = "failed";
 				transcriptionData.error = result.raw?.error || "Transcription failed";
-				await appDataRepo.updateAppData(
-					transcriptionRecord.id,
-					transcriptionData,
-				);
+				await appDataRepo.updateAppData(transcriptionRecord.id, transcriptionData);
 				return {
 					status: "success",
 					message: "Podcast transcription failed",

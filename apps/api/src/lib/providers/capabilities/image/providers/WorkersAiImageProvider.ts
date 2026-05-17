@@ -4,11 +4,7 @@ import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import { extractGeneratedAsset } from "~/lib/providers/utils/helpers";
 import { buildInputSchemaInput } from "~/utils/inputSchema";
 import { AssistantError, ErrorType } from "~/utils/errors";
-import type {
-	ImageGenerationRequest,
-	ImageGenerationResult,
-	ImageProvider,
-} from "../index";
+import type { ImageGenerationRequest, ImageGenerationResult, ImageProvider } from "../index";
 
 const DEFAULT_MODEL = "@cf/black-forest-labs/flux-2-dev";
 
@@ -24,9 +20,7 @@ export class WorkersAiImageProvider implements ImageProvider {
 	name = "workers-ai";
 	models = [DEFAULT_MODEL];
 
-	async generate(
-		request: ImageGenerationRequest,
-	): Promise<ImageGenerationResult> {
+	async generate(request: ImageGenerationRequest): Promise<ImageGenerationResult> {
 		const modelId = request.model || DEFAULT_MODEL;
 		const modelConfig = await getModelConfigByModel(modelId);
 		if (!modelConfig) {
@@ -42,9 +36,7 @@ export class WorkersAiImageProvider implements ImageProvider {
 		});
 
 		const stylePrompt = resolveStylePrompt(request.style);
-		const prompt = stylePrompt
-			? `${stylePrompt}\n\n${request.prompt}`
-			: request.prompt;
+		const prompt = stylePrompt ? `${stylePrompt}\n\n${request.prompt}` : request.prompt;
 		const input = buildInputSchemaInput(
 			{
 				messages: [{ role: "user", content: prompt }],

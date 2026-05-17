@@ -4,9 +4,7 @@ import type { CanvasMode, CanvasModelListItem } from "./types";
 import { modelRequiresCanvasReferenceImage } from "./input-requirements";
 
 function supportsCanvasGenerationPrompt(model: CanvasModelListItem): boolean {
-	return (
-		model.inputSchema?.fields?.some((field) => field.name === "prompt") ?? false
-	);
+	return model.inputSchema?.fields?.some((field) => field.name === "prompt") ?? false;
 }
 
 export async function listCanvasModels({

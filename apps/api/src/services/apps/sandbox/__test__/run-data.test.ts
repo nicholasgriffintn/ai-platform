@@ -1,10 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import {
-	appendSandboxRunEvent,
-	parseSandboxRunData,
-	toSandboxRunResponse,
-} from "../run-data";
+import { appendSandboxRunEvent, parseSandboxRunData, toSandboxRunResponse } from "../run-data";
 
 describe("sandbox run data helpers", () => {
 	it("parses valid run payloads", () => {

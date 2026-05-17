@@ -15,10 +15,7 @@ test.describe("Resilience and Error Handling", () => {
 
 	test.beforeEach(async ({ page }) => {
 		homePage = TestHelpers.createHomePage(page);
-		await TestHelpers.injectApiKeyBeforeNavigation(
-			page,
-			PLAYWRIGHT_API_KEY as string,
-		);
+		await TestHelpers.injectApiKeyBeforeNavigation(page, PLAYWRIGHT_API_KEY as string);
 		await homePage.navigate();
 		await homePage.waitForPageLoad();
 	});
@@ -35,9 +32,7 @@ test.describe("Resilience and Error Handling", () => {
 
 			await homePage.sendMessage(TEST_MESSAGES.simple);
 
-			const errorIndicator = page.locator(
-				'[data-testid="error-message"], .error, [role="alert"]',
-			);
+			const errorIndicator = page.locator('[data-testid="error-message"], .error, [role="alert"]');
 			await expect(errorIndicator.first()).toBeVisible({ timeout: 10000 });
 		});
 
@@ -52,9 +47,7 @@ test.describe("Resilience and Error Handling", () => {
 
 			await homePage.sendMessage(TEST_MESSAGES.simple);
 
-			const errorIndicator = page.locator(
-				'[data-testid="error-message"], .error, [role="alert"]',
-			);
+			const errorIndicator = page.locator('[data-testid="error-message"], .error, [role="alert"]');
 			await expect(errorIndicator.first()).toBeVisible({ timeout: 10000 });
 		});
 
@@ -166,9 +159,7 @@ test.describe("Resilience and Error Handling", () => {
 	});
 
 	test.describe("Concurrent Operations", () => {
-		test("handles creating new chat while message is loading", async ({
-			page,
-		}) => {
+		test("handles creating new chat while message is loading", async ({ page }) => {
 			await page.route("**/api/chat/completions", async (route) => {
 				await new Promise((resolve) => setTimeout(resolve, 2000));
 				await route.continue();

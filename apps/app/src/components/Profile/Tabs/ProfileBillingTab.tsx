@@ -1,12 +1,4 @@
-import {
-	Loader2,
-	Plus,
-	RefreshCw,
-	Rocket,
-	Sparkles,
-	Trash2,
-	Zap,
-} from "lucide-react";
+import { Loader2, Plus, RefreshCw, Rocket, Sparkles, Trash2, Zap } from "lucide-react";
 import type { ReactNode } from "react";
 
 import { EmptyState } from "~/components/Core/EmptyState";
@@ -35,19 +27,13 @@ type PageAction = {
 export function ProfileBillingTab() {
 	const { trackEvent } = useTrackEvent();
 
-	const {
-		data: sub,
-		isLoading: isSubLoading,
-		error: subError,
-	} = useSubscription();
+	const { data: sub, isLoading: isSubLoading, error: subError } = useSubscription();
 
-	const { mutate: checkout, status: checkoutStatus } =
-		useCreateCheckoutSession();
+	const { mutate: checkout, status: checkoutStatus } = useCreateCheckoutSession();
 
 	const { mutate: cancelSub, status: cancelStatus } = useCancelSubscription();
 
-	const { mutate: reactivateSub, status: reactivateStatus } =
-		useReactivateSubscription();
+	const { mutate: reactivateSub, status: reactivateStatus } = useReactivateSubscription();
 
 	const actions: PageAction[] = [];
 
@@ -55,10 +41,7 @@ export function ProfileBillingTab() {
 		if (sub?.status === "active" || sub?.status === "trialing") {
 			if (sub.cancel_at_period_end) {
 				actions.push({
-					label:
-						reactivateStatus === "pending"
-							? "Reactivating..."
-							: "Reactivate Subscription",
+					label: reactivateStatus === "pending" ? "Reactivating..." : "Reactivate Subscription",
 					onClick: () => reactivateSub(),
 					icon:
 						reactivateStatus === "pending" ? (
@@ -78,8 +61,7 @@ export function ProfileBillingTab() {
 				});
 			} else {
 				actions.push({
-					label:
-						cancelStatus === "pending" ? "Canceling..." : "Cancel Subscription",
+					label: cancelStatus === "pending" ? "Canceling..." : "Cancel Subscription",
 					onClick: () => cancelSub(),
 					icon:
 						cancelStatus === "pending" ? (
@@ -93,8 +75,7 @@ export function ProfileBillingTab() {
 			}
 		} else {
 			actions.push({
-				label:
-					checkoutStatus === "pending" ? "Redirecting..." : "Upgrade to Pro",
+				label: checkoutStatus === "pending" ? "Redirecting..." : "Upgrade to Pro",
 				onClick: () => {
 					trackEvent({
 						name: "upgrade_to_pro",
@@ -135,8 +116,7 @@ export function ProfileBillingTab() {
 
 			{sub?.trial_start && sub.trial_end && (
 				<div className="bg-green-100 dark:bg-green-900 p-4 rounded mb-4 text-sm text-green-800 dark:text-green-200">
-					You are in a trial until{" "}
-					{formatDate(new Date(sub.trial_end * 1000).toISOString())}.
+					You are in a trial until {formatDate(new Date(sub.trial_end * 1000).toISOString())}.
 				</div>
 			)}
 
@@ -149,46 +129,26 @@ export function ProfileBillingTab() {
 					<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 						<div>
 							<h3 className="text-sm font-medium text-zinc-500">Status</h3>
-							<p className="text-base text-zinc-800 dark:text-zinc-200">
-								{sub.status}
-							</p>
+							<p className="text-base text-zinc-800 dark:text-zinc-200">{sub.status}</p>
 						</div>
 						<div>
-							<h3 className="text-sm font-medium text-zinc-500">
-								Current Period
-							</h3>
+							<h3 className="text-sm font-medium text-zinc-500">Current Period</h3>
 							<p className="text-base text-zinc-800 dark:text-zinc-200">
-								{formatDate(
-									new Date(
-										sub.items.data[0].current_period_start * 1000,
-									).toISOString(),
-								)}{" "}
-								–{" "}
-								{formatDate(
-									new Date(
-										sub.items.data[0].current_period_end * 1000,
-									).toISOString(),
-								)}
+								{formatDate(new Date(sub.items.data[0].current_period_start * 1000).toISOString())}{" "}
+								– {formatDate(new Date(sub.items.data[0].current_period_end * 1000).toISOString())}
 							</p>
 						</div>
 						<div>
 							<h3 className="text-sm font-medium text-zinc-500">Amount</h3>
 							<p className="text-base text-zinc-800 dark:text-zinc-200">
 								{(sub.items.data[0].price.unit_amount / 100).toFixed(2)}{" "}
-								{sub.currency.toUpperCase()}/
-								{sub.items.data[0].price.recurring.interval}
+								{sub.currency.toUpperCase()}/{sub.items.data[0].price.recurring.interval}
 							</p>
 						</div>
 						<div>
-							<h3 className="text-sm font-medium text-zinc-500">
-								Next Billing
-							</h3>
+							<h3 className="text-sm font-medium text-zinc-500">Next Billing</h3>
 							<p className="text-base text-zinc-800 dark:text-zinc-200">
-								{formatDate(
-									new Date(
-										sub.items.data[0].current_period_end * 1000,
-									).toISOString(),
-								)}
+								{formatDate(new Date(sub.items.data[0].current_period_end * 1000).toISOString())}
 							</p>
 						</div>
 					</div>
@@ -202,9 +162,9 @@ export function ProfileBillingTab() {
 								Polychat is in Development
 							</h3>
 							<p className="text-sm text-blue-700 dark:text-blue-200">
-								We're offering a generous 90-day free trial during our
-								development phase, and all trials will be extended until our v1
-								release. Join us early and help shape the future of Polychat!
+								We're offering a generous 90-day free trial during our development phase, and all
+								trials will be extended until our v1 release. Join us early and help shape the
+								future of Polychat!
 							</p>
 						</div>
 					</div>
@@ -214,9 +174,7 @@ export function ProfileBillingTab() {
 								<h2 className="text-3xl font-bold mb-2">Upgrade to Pro</h2>
 								<div className="text-5xl font-bold mb-4">
 									$8
-									<span className="text-lg font-normal text-zinc-500">
-										/month
-									</span>
+									<span className="text-lg font-normal text-zinc-500">/month</span>
 								</div>
 								<div className="bg-green-100 dark:bg-green-900 px-3 py-1 rounded-full text-sm font-medium text-green-800 dark:text-green-200 mb-6">
 									<Sparkles className="inline-block mr-1 h-4 w-4" />
@@ -246,18 +204,14 @@ export function ProfileBillingTab() {
 									<span className="relative flex items-center justify-center">
 										<Zap className="mr-2 h-4 w-4 animate-pulse text-yellow-100" />
 										<span className="relative">
-											{checkoutStatus === "pending"
-												? "Redirecting..."
-												: "Upgrade to Pro"}
+											{checkoutStatus === "pending" ? "Redirecting..." : "Upgrade to Pro"}
 										</span>
 									</span>
 								</Button>
 								<p className="text-sm text-zinc-600 dark:text-zinc-400 mt-3 text-center">
 									Your trial will end on{" "}
 									{formatDate(
-										new Date(
-											Date.now() + TRIAL_DURATION * 24 * 60 * 60 * 1000,
-										).toISOString(),
+										new Date(Date.now() + TRIAL_DURATION * 24 * 60 * 60 * 1000).toISOString(),
 									)}
 									. You can always cancel before then.
 								</p>
@@ -267,12 +221,10 @@ export function ProfileBillingTab() {
 								<div className="flex items-start">
 									<Rocket className="h-6 w-6 text-indigo-500 mr-3 mt-0.5 flex-shrink-0" />
 									<div>
-										<h3 className="font-semibold mb-1">
-											Access to the best AI Models
-										</h3>
+										<h3 className="font-semibold mb-1">Access to the best AI Models</h3>
 										<p className="text-sm text-zinc-600 dark:text-zinc-400">
-											Get access to our full suite of models including Claude,
-											OpenAI, Grok, Gemini, and more!
+											Get access to our full suite of models including Claude, OpenAI, Grok, Gemini,
+											and more!
 										</p>
 									</div>
 								</div>
@@ -280,12 +232,10 @@ export function ProfileBillingTab() {
 								<div className="flex items-start">
 									<Sparkles className="h-6 w-6 text-yellow-500 mr-3 mt-0.5 flex-shrink-0" />
 									<div>
-										<h3 className="font-semibold mb-1">
-											Generous Message Limits
-										</h3>
+										<h3 className="font-semibold mb-1">Generous Message Limits</h3>
 										<p className="text-sm text-zinc-600 dark:text-zinc-400">
-											Receive 50 standard message credits per day, plus 200
-											premium credits for image gen, and premium model access.
+											Receive 50 standard message credits per day, plus 200 premium credits for
+											image gen, and premium model access.
 										</p>
 									</div>
 								</div>
@@ -295,8 +245,7 @@ export function ProfileBillingTab() {
 									<div>
 										<h3 className="font-semibold mb-1">Priority Support</h3>
 										<p className="text-sm text-zinc-600 dark:text-zinc-400">
-											Get faster responses and dedicated assistance when you
-											need help.
+											Get faster responses and dedicated assistance when you need help.
 										</p>
 									</div>
 								</div>

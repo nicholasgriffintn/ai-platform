@@ -28,9 +28,7 @@ export function AgentCard({
 					<div className="flex-1 min-w-0">
 						<div className="flex items-start justify-between gap-4">
 							<div className="min-w-0 flex-1">
-								<h3 className="font-semibold text-lg text-foreground truncate">
-									{agent.name}
-								</h3>
+								<h3 className="font-semibold text-lg text-foreground truncate">{agent.name}</h3>
 								{agent.description && (
 									<p className="text-sm text-muted-foreground mt-1 line-clamp-2">
 										{agent.description}
@@ -70,12 +68,7 @@ export function AgentCard({
 
 				<div className="flex items-center justify-between">
 					<div className="flex gap-2">
-						<Button
-							variant="outline"
-							size="sm"
-							onClick={() => onEdit(agent)}
-							disabled={isUpdating}
-						>
+						<Button variant="outline" size="sm" onClick={() => onEdit(agent)} disabled={isUpdating}>
 							{isUpdating ? (
 								<Loader2 className="h-4 w-4 animate-spin" />
 							) : (
@@ -84,12 +77,7 @@ export function AgentCard({
 							<span className="ml-2 hidden sm:inline">Edit</span>
 						</Button>
 
-						<Button
-							variant="outline"
-							size="sm"
-							onClick={() => onShare(agent)}
-							disabled={isSharing}
-						>
+						<Button variant="outline" size="sm" onClick={() => onShare(agent)} disabled={isSharing}>
 							{isSharing ? (
 								<Loader2 className="h-4 w-4 animate-spin" />
 							) : (

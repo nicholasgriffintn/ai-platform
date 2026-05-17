@@ -25,9 +25,7 @@ const transcriptionProviders: ProviderRegistration<TranscriptionProvider>[] = [
 	},
 ];
 
-export function registerTranscriptionProviders(
-	registry: ProviderRegistry,
-): void {
+export function registerTranscriptionProviders(registry: ProviderRegistry): void {
 	for (const registration of transcriptionProviders) {
 		registry.register("transcription", registration);
 	}

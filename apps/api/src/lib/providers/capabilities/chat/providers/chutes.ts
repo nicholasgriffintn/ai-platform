@@ -18,9 +18,7 @@ export class ChutesProvider extends BaseProvider {
 		return "https://llm.chutes.ai/v1/chat/completions";
 	}
 
-	protected async getHeaders(
-		params: ChatCompletionParameters,
-	): Promise<Record<string, string>> {
+	protected async getHeaders(params: ChatCompletionParameters): Promise<Record<string, string>> {
 		const apiKey = await this.getApiKey(params, params.user?.id);
 
 		return {

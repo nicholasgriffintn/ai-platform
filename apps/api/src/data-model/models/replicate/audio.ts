@@ -1,16 +1,12 @@
 import type { ModelConfig } from "~/types";
-import {
-	createModelConfig,
-	createModelConfigObject,
-} from "~/lib/providers/models/utils";
+import { createModelConfig, createModelConfigObject } from "~/lib/providers/models/utils";
 
 const PROVIDER = "replicate";
 
 export const replicateModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("replicate-musicgen", PROVIDER, {
 		name: "MusicGen",
-		matchingModel:
-			"671ac645ce5e552cc63a54a2bbff63fcf798043055d2dac5fc9e36a837eedcfb",
+		matchingModel: "671ac645ce5e552cc63a54a2bbff63fcf798043055d2dac5fc9e36a837eedcfb",
 		description:
 			"Meta's MusicGen model for prompt-based music composition supporting conditioning on input audio clips.",
 		strengths: ["creative", "audio"],
@@ -29,8 +25,7 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
 				{
 					name: "input_audio",
 					type: ["file", "string"],
-					description:
-						"Optional audio file URL or handle to condition the generation.",
+					description: "Optional audio file URL or handle to condition the generation.",
 				},
 				{
 					name: "duration",
@@ -43,12 +38,7 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
 					type: "string",
 					description: "MusicGen checkpoint to use (melody, medium, large).",
 					default: "stereo-melody-large",
-					enum: [
-						"melody-large",
-						"stereo-large",
-						"stereo-melody-large",
-						"large",
-					],
+					enum: ["melody-large", "stereo-large", "stereo-melody-large", "large"],
 				},
 				{
 					name: "top_k",
@@ -119,8 +109,7 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
 
 	createModelConfig("replicate-whisper-diarization", PROVIDER, {
 		name: "Whisper Diarization",
-		matchingModel:
-			"cbd15da9f839c5f932742f86ce7def3a03c22e2b4171d42823e83e314547003f",
+		matchingModel: "cbd15da9f839c5f932742f86ce7def3a03c22e2b4171d42823e83e314547003f",
 		description:
 			"Blazing fast audio transcription with speaker diarization | Whisper Large V3 Turbo | word & sentence level timestamps | prompt ",
 		strengths: ["ocr", "audio", "analysis"],
@@ -157,8 +146,7 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
 				{
 					name: "num_speakers",
 					type: "integer",
-					description:
-						"Number of distinct speakers expected in the transcription output.",
+					description: "Number of distinct speakers expected in the transcription output.",
 					default: 2,
 				},
 				{
@@ -184,8 +172,7 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
 	}),
 	createModelConfig("replicate-whisperx", PROVIDER, {
 		name: "WhisperX",
-		matchingModel:
-			"826801120720e563620006b99e412f7ed7b991dd4477e9160473d44a405ef9d9",
+		matchingModel: "826801120720e563620006b99e412f7ed7b991dd4477e9160473d44a405ef9d9",
 		description:
 			"Fast speech transcription with word-level timestamps and speaker diarization using Whisper large-v3.",
 		strengths: ["ocr", "audio", "analysis"],
@@ -227,8 +214,7 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
 				{
 					name: "initial_prompt",
 					type: "string",
-					description:
-						"Optional text to provide as a prompt for the first window",
+					description: "Optional text to provide as a prompt for the first window",
 				},
 				{
 					name: "batch_size",
@@ -310,15 +296,13 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
 				{
 					name: "steps",
 					type: "integer",
-					description:
-						"Number of diffusion steps (higher = better quality but slower) (4-8).",
+					description: "Number of diffusion steps (higher = better quality but slower) (4-8).",
 					default: 8,
 				},
 				{
 					name: "cfg_scale",
 					type: "number",
-					description:
-						"Classifier-free guidance scale (higher = more prompt adherence) (1-25).",
+					description: "Classifier-free guidance scale (higher = more prompt adherence) (1-25).",
 					default: 1,
 				},
 				{
@@ -365,8 +349,7 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("replicate-minimax-music-1.5", PROVIDER, {
 		name: "Music-1.5",
 		matchingModel: "minimax/music-1.5",
-		description:
-			"Full-length songs (up to 4 mins) with natural vocals & rich instrumentation",
+		description: "Full-length songs (up to 4 mins) with natural vocals & rich instrumentation",
 		strengths: ["creative", "audio"],
 		supportsStreaming: false,
 		supportsAttachments: false,
@@ -417,8 +400,7 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("replicate-chatterbox-turbo", PROVIDER, {
 		name: "Chatterbox Turbo",
 		matchingModel: "resemble-ai/chatterbox-turbo",
-		description:
-			"The fastest open source TTS model without sacrificing quality",
+		description: "The fastest open source TTS model without sacrificing quality",
 		strengths: ["creative", "audio"],
 		supportsStreaming: false,
 		supportsAttachments: false,
@@ -482,29 +464,25 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
 				{
 					name: "top_p",
 					type: "number",
-					description:
-						"Nucleus sampling threshold. Lower values make output more focused.",
+					description: "Nucleus sampling threshold. Lower values make output more focused.",
 					default: 0.95,
 				},
 				{
 					name: "top_k",
 					type: "integer",
-					description:
-						"Top-k sampling. Limits vocabulary to top k tokens at each step.",
+					description: "Top-k sampling. Limits vocabulary to top k tokens at each step.",
 					default: 1000,
 				},
 				{
 					name: "repetition_penalty",
 					type: "number",
-					description:
-						"Penalizes token repetition. Higher values reduce repetition.",
+					description: "Penalizes token repetition. Higher values reduce repetition.",
 					default: 1.2,
 				},
 				{
 					name: "seed",
 					type: "integer",
-					description:
-						"Random seed for reproducible results. Leave blank for random generation.",
+					description: "Random seed for reproducible results. Leave blank for random generation.",
 				},
 			],
 		},

@@ -1,21 +1,12 @@
-import type {
-	AudioProvider,
-	AudioSynthesisRequest,
-	AudioSynthesisResult,
-} from "..";
+import type { AudioProvider, AudioSynthesisRequest, AudioSynthesisResult } from "..";
 import { BaseAudioProvider } from "../base";
 import { WorkersProvider } from "../../chat/providers/workers";
 
-export class MelottsAudioProvider
-	extends BaseAudioProvider
-	implements AudioProvider
-{
+export class MelottsAudioProvider extends BaseAudioProvider implements AudioProvider {
 	name = "melotts";
 	private readonly workersProvider = new WorkersProvider();
 
-	async synthesize(
-		request: AudioSynthesisRequest,
-	): Promise<AudioSynthesisResult> {
+	async synthesize(request: AudioSynthesisRequest): Promise<AudioSynthesisResult> {
 		const response = await this.workersProvider.getResponse({
 			model: "@cf/myshell-ai/melotts",
 			messages: [
@@ -53,18 +44,14 @@ export class MelottsAudioProvider
 						? response.attachments
 						: [];
 			const firstAttachment =
-				attachments.length > 0 && typeof attachments[0] === "object"
-					? attachments[0]
-					: undefined;
+				attachments.length > 0 && typeof attachments[0] === "object" ? attachments[0] : undefined;
 
 			const maybeUrl =
 				firstAttachment && typeof firstAttachment.url === "string"
 					? firstAttachment.url
 					: undefined;
 			const fallbackUrl =
-				"url" in response && typeof response.url === "string"
-					? response.url
-					: undefined;
+				"url" in response && typeof response.url === "string" ? response.url : undefined;
 			const maybeKey =
 				firstAttachment && typeof firstAttachment.key === "string"
 					? firstAttachment.key

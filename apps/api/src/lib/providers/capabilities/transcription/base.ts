@@ -1,9 +1,5 @@
 import { AssistantError, ErrorType } from "~/utils/errors";
-import type {
-	TranscriptionProvider,
-	TranscriptionRequest,
-	TranscriptionResult,
-} from "./index";
+import type { TranscriptionProvider, TranscriptionRequest, TranscriptionResult } from "./index";
 
 export abstract class BaseTranscriptionProvider implements TranscriptionProvider {
 	abstract name: string;
@@ -47,7 +43,5 @@ export abstract class BaseTranscriptionProvider implements TranscriptionProvider
 		}
 	}
 
-	abstract transcribe(
-		request: TranscriptionRequest,
-	): Promise<TranscriptionResult>;
+	abstract transcribe(request: TranscriptionRequest): Promise<TranscriptionResult>;
 }

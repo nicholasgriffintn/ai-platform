@@ -43,8 +43,7 @@ export class PerplexityProvider implements SearchProvider {
 			} catch (error) {
 				if (
 					error instanceof AssistantError &&
-					(error.type === ErrorType.NOT_FOUND ||
-						error.type === ErrorType.PARAMS_ERROR)
+					(error.type === ErrorType.NOT_FOUND || error.type === ErrorType.PARAMS_ERROR)
 				) {
 					// Ignore missing user-specific keys so we can fall back to env key
 				} else {
@@ -67,10 +66,7 @@ export class PerplexityProvider implements SearchProvider {
 		return envKey;
 	}
 
-	async performWebSearch(
-		query: string,
-		options?: SearchOptions,
-	): Promise<SearchResult> {
+	async performWebSearch(query: string, options?: SearchOptions): Promise<SearchResult> {
 		const apiKey = await this.resolveApiKey();
 		const requestBody: Record<string, unknown> = {
 			query,

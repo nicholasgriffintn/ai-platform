@@ -1,8 +1,5 @@
 import type { ModelConfig } from "~/types";
-import {
-	createModelConfig,
-	createModelConfigObject,
-} from "~/lib/providers/models/utils";
+import { createModelConfig, createModelConfigObject } from "~/lib/providers/models/utils";
 
 const PROVIDER = "workers-ai";
 
@@ -215,16 +212,7 @@ export const workersAiModelConfig: ModelConfig = createModelConfigObject([
 					name: "emotion",
 					type: "string",
 					description: "Emotion control",
-					enum: [
-						"happy",
-						"sad",
-						"angry",
-						"fearful",
-						"disgusted",
-						"surprised",
-						"calm",
-						"fluent",
-					],
+					enum: ["happy", "sad", "angry", "fearful", "disgusted", "surprised", "calm", "fluent"],
 				},
 				{
 					name: "format",

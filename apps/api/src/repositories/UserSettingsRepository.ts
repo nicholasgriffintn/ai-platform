@@ -14,10 +14,7 @@ export class UserSettingsRepository extends BaseRepository {
 
 	private async getServerEncryptionKey() {
 		if (!this.env.PRIVATE_KEY) {
-			throw new AssistantError(
-				"Server key not configured",
-				ErrorType.CONFIGURATION_ERROR,
-			);
+			throw new AssistantError("Server key not configured", ErrorType.CONFIGURATION_ERROR);
 		}
 
 		return await crypto.subtle.importKey(
@@ -47,10 +44,7 @@ export class UserSettingsRepository extends BaseRepository {
 				data: bufferToBase64(new Uint8Array(encryptedData)),
 			};
 		} catch {
-			throw new AssistantError(
-				"Failed to encrypt data",
-				ErrorType.UNKNOWN_ERROR,
-			);
+			throw new AssistantError("Failed to encrypt data", ErrorType.UNKNOWN_ERROR);
 		}
 	}
 
@@ -59,10 +53,7 @@ export class UserSettingsRepository extends BaseRepository {
 			const key = await this.getServerEncryptionKey();
 			let parsedEncryptedData = safeParseJson(encryptedData);
 			if (!parsedEncryptedData) {
-				throw new AssistantError(
-					"Failed to parse encrypted data",
-					ErrorType.INTERNAL_ERROR,
-				);
+				throw new AssistantError("Failed to parse encrypted data", ErrorType.INTERNAL_ERROR);
 			}
 			const { iv, data } = parsedEncryptedData;
 
@@ -74,10 +65,7 @@ export class UserSettingsRepository extends BaseRepository {
 
 			return new TextDecoder().decode(decryptedData);
 		} catch {
-			throw new AssistantError(
-				"Failed to decrypt data",
-				ErrorType.UNKNOWN_ERROR,
-			);
+			throw new AssistantError("Failed to decrypt data", ErrorType.UNKNOWN_ERROR);
 		}
 	}
 
@@ -94,10 +82,7 @@ export class UserSettingsRepository extends BaseRepository {
 				["encrypt", "decrypt"],
 			);
 
-			const privateKey = await crypto.subtle.exportKey(
-				"jwk",
-				keyPair.privateKey,
-			);
+			const privateKey = await crypto.subtle.exportKey("jwk", keyPair.privateKey);
 			const encryptedPrivateKey = await this.encryptWithServerKey(privateKey);
 			const encryptedPrivateKeyString = JSON.stringify(encryptedPrivateKey);
 
@@ -114,18 +99,12 @@ export class UserSettingsRepository extends BaseRepository {
 			});
 
 			if (!insert) {
-				throw new AssistantError(
-					"Failed to create user settings",
-					ErrorType.UNKNOWN_ERROR,
-				);
+				throw new AssistantError("Failed to create user settings", ErrorType.UNKNOWN_ERROR);
 			}
 
 			await this.executeRun(insert.query, insert.values);
 		} catch {
-			throw new AssistantError(
-				"Failed to create user settings",
-				ErrorType.UNKNOWN_ERROR,
-			);
+			throw new AssistantError("Failed to create user settings", ErrorType.UNKNOWN_ERROR);
 		}
 	}
 
@@ -139,17 +118,9 @@ export class UserSettingsRepository extends BaseRepository {
 			traits: settings.traits ?? null,
 			preferences: settings.preferences ?? null,
 			tracking_enabled:
-				settings.tracking_enabled !== undefined
-					? settings.tracking_enabled
-						? 1
-						: 0
-					: null,
+				settings.tracking_enabled !== undefined ? (settings.tracking_enabled ? 1 : 0) : null,
 			guardrails_enabled:
-				settings.guardrails_enabled !== undefined
-					? settings.guardrails_enabled
-						? 1
-						: 0
-					: null,
+				settings.guardrails_enabled !== undefined ? (settings.guardrails_enabled ? 1 : 0) : null,
 			guardrails_provider: settings.guardrails_provider ?? null,
 			bedrock_guardrail_id: settings.bedrock_guardrail_id ?? null,
 			bedrock_guardrail_version: settings.bedrock_guardrail_version ?? null,
@@ -180,13 +151,9 @@ export class UserSettingsRepository extends BaseRepository {
 
 		const allowedFields = Object.keys(updates);
 
-		const result = this.buildUpdateQuery(
-			"user_settings",
-			updates,
-			allowedFields,
-			"user_id = ?",
-			[userId],
-		);
+		const result = this.buildUpdateQuery("user_settings", updates, allowedFields, "user_id = ?", [
+			userId,
+		]);
 
 		if (!result) {
 			return;
@@ -241,15 +208,11 @@ export class UserSettingsRepository extends BaseRepository {
 			tracking_enabled: Boolean(result.tracking_enabled),
 			guardrails_enabled: Boolean(result.guardrails_enabled),
 			memories_save_enabled: Boolean(result.memories_save_enabled),
-			memories_chat_history_enabled: Boolean(
-				result.memories_chat_history_enabled,
-			),
+			memories_chat_history_enabled: Boolean(result.memories_chat_history_enabled),
 		} as IUserSettings;
 	}
 
-	public async getUserEnabledModels(
-		userId: number,
-	): Promise<Record<string, unknown>[]> {
+	public async getUserEnabledModels(userId: number): Promise<Record<string, unknown>[]> {
 		const { query, values } = this.buildSelectQuery(
 			"model_settings",
 			{ user_id: userId },
@@ -260,9 +223,7 @@ export class UserSettingsRepository extends BaseRepository {
 			enabled: number;
 		}>(query, values)) as { model_id: string; enabled: number }[];
 
-		const userModelMap = new Map(
-			userModels.map((model) => [model.model_id, model.enabled === 1]),
-		);
+		const userModelMap = new Map(userModels.map((model) => [model.model_id, model.enabled === 1]));
 
 		const models = getModels();
 
@@ -292,26 +253,19 @@ export class UserSettingsRepository extends BaseRepository {
 		secretKey?: string,
 	): Promise<void> {
 		if (!this.env.DB) {
-			throw new AssistantError(
-				"Database is not configured",
-				ErrorType.CONFIGURATION_ERROR,
-			);
+			throw new AssistantError("Database is not configured", ErrorType.CONFIGURATION_ERROR);
 		}
 
 		if (!userId || !providerId || !apiKey) {
-			throw new AssistantError(
-				"Missing required parameters",
-				ErrorType.PARAMS_ERROR,
-			);
+			throw new AssistantError("Missing required parameters", ErrorType.PARAMS_ERROR);
 		}
 
 		try {
-			const { query: providerQuery, values: providerValues } =
-				this.buildSelectQuery(
-					"provider_settings",
-					{ user_id: userId, provider_id: providerId },
-					{ columns: ["id"] },
-				);
+			const { query: providerQuery, values: providerValues } = this.buildSelectQuery(
+				"provider_settings",
+				{ user_id: userId, provider_id: providerId },
+				{ columns: ["id"] },
+			);
 
 			const existingProviderSettings = await this.runQuery<{ id: string }>(
 				providerQuery,
@@ -320,18 +274,14 @@ export class UserSettingsRepository extends BaseRepository {
 			);
 
 			if (!existingProviderSettings) {
-				throw new AssistantError(
-					"Provider settings not found",
-					ErrorType.PARAMS_ERROR,
-				);
+				throw new AssistantError("Provider settings not found", ErrorType.PARAMS_ERROR);
 			}
 
-			const { query: publicKeyQuery, values: publicKeyValues } =
-				this.buildSelectQuery(
-					"user_settings",
-					{ user_id: userId },
-					{ columns: ["public_key"] },
-				);
+			const { query: publicKeyQuery, values: publicKeyValues } = this.buildSelectQuery(
+				"user_settings",
+				{ user_id: userId },
+				{ columns: ["public_key"] },
+			);
 			const result = await this.runQuery<{ public_key: string }>(
 				publicKeyQuery,
 				publicKeyValues,
@@ -339,18 +289,12 @@ export class UserSettingsRepository extends BaseRepository {
 			);
 
 			if (!result?.public_key) {
-				throw new AssistantError(
-					"User settings not found",
-					ErrorType.NOT_FOUND,
-				);
+				throw new AssistantError("User settings not found", ErrorType.NOT_FOUND);
 			}
 
 			let publicKeyJwk = safeParseJson(result.public_key);
 			if (!publicKeyJwk) {
-				throw new AssistantError(
-					"Failed to parse public key",
-					ErrorType.INTERNAL_ERROR,
-				);
+				throw new AssistantError("Failed to parse public key", ErrorType.INTERNAL_ERROR);
 			}
 
 			const publicKey = await crypto.subtle.importKey(
@@ -404,38 +348,25 @@ export class UserSettingsRepository extends BaseRepository {
 			if (error instanceof AssistantError) {
 				throw error;
 			}
-			throw new AssistantError(
-				"Failed to store provider API key",
-				ErrorType.UNKNOWN_ERROR,
-			);
+			throw new AssistantError("Failed to store provider API key", ErrorType.UNKNOWN_ERROR);
 		}
 	}
 
-	public async getProviderApiKey(
-		userId: number,
-		providerId: string,
-	): Promise<string | null> {
+	public async getProviderApiKey(userId: number, providerId: string): Promise<string | null> {
 		if (!this.env.DB) {
-			throw new AssistantError(
-				"Database is not configured",
-				ErrorType.CONFIGURATION_ERROR,
-			);
+			throw new AssistantError("Database is not configured", ErrorType.CONFIGURATION_ERROR);
 		}
 
 		if (!userId || !providerId) {
-			throw new AssistantError(
-				"Missing required parameters",
-				ErrorType.PARAMS_ERROR,
-			);
+			throw new AssistantError("Missing required parameters", ErrorType.PARAMS_ERROR);
 		}
 
 		try {
-			const { query: settingsQuery, values: settingsValues } =
-				this.buildSelectQuery(
-					"user_settings",
-					{ user_id: userId },
-					{ columns: ["private_key"] },
-				);
+			const { query: settingsQuery, values: settingsValues } = this.buildSelectQuery(
+				"user_settings",
+				{ user_id: userId },
+				{ columns: ["private_key"] },
+			);
 			const userSettings = await this.runQuery<{ private_key: string }>(
 				settingsQuery,
 				settingsValues,
@@ -443,21 +374,13 @@ export class UserSettingsRepository extends BaseRepository {
 			);
 
 			if (!userSettings?.private_key) {
-				throw new AssistantError(
-					"User settings not found",
-					ErrorType.NOT_FOUND,
-				);
+				throw new AssistantError("User settings not found", ErrorType.NOT_FOUND);
 			}
 
-			const decryptedPrivateKeyString = await this.decryptWithServerKey(
-				userSettings.private_key,
-			);
+			const decryptedPrivateKeyString = await this.decryptWithServerKey(userSettings.private_key);
 			let privateKeyJwk = safeParseJson(decryptedPrivateKeyString);
 			if (!privateKeyJwk) {
-				throw new AssistantError(
-					"Failed to parse private key",
-					ErrorType.INTERNAL_ERROR,
-				);
+				throw new AssistantError("Failed to parse private key", ErrorType.INTERNAL_ERROR);
 			}
 
 			const privateKey = await crypto.subtle.importKey(
@@ -471,17 +394,12 @@ export class UserSettingsRepository extends BaseRepository {
 				["decrypt"],
 			);
 
-			const { query: providerQuery, values: providerValues } =
-				this.buildSelectQuery(
-					"provider_settings",
-					{ user_id: userId, provider_id: providerId },
-					{ columns: ["api_key"] },
-				);
-			const result = await this.runQuery<{ api_key: string }>(
-				providerQuery,
-				providerValues,
-				true,
+			const { query: providerQuery, values: providerValues } = this.buildSelectQuery(
+				"provider_settings",
+				{ user_id: userId, provider_id: providerId },
+				{ columns: ["api_key"] },
 			);
+			const result = await this.runQuery<{ api_key: string }>(providerQuery, providerValues, true);
 
 			if (!result?.api_key) {
 				return null;
@@ -501,10 +419,7 @@ export class UserSettingsRepository extends BaseRepository {
 			if (error instanceof AssistantError) {
 				throw error;
 			}
-			throw new AssistantError(
-				"Failed to retrieve provider API key",
-				ErrorType.UNKNOWN_ERROR,
-			);
+			throw new AssistantError("Failed to retrieve provider API key", ErrorType.UNKNOWN_ERROR);
 		}
 	}
 
@@ -520,11 +435,7 @@ export class UserSettingsRepository extends BaseRepository {
 					{ user_id: userId, provider_id: provider },
 					{ columns: ["id"] },
 				);
-				const existingSettings = await this.runQuery<{ id: string }>(
-					query,
-					values,
-					true,
-				);
+				const existingSettings = await this.runQuery<{ id: string }>(query, values, true);
 
 				if (existingSettings) {
 					return;
@@ -548,9 +459,7 @@ export class UserSettingsRepository extends BaseRepository {
 		);
 	}
 
-	public async getUserProviderSettings(
-		userId: number,
-	): Promise<Record<string, unknown>[]> {
+	public async getUserProviderSettings(userId: number): Promise<Record<string, unknown>[]> {
 		const { query, values } = this.buildSelectQuery(
 			"provider_settings",
 			{ user_id: userId },

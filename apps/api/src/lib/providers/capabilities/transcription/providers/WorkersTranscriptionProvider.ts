@@ -8,18 +8,12 @@ import { BaseTranscriptionProvider } from "../base";
 async function getAudioForProvider(model: string, res: Response | Blob) {
 	if (model === "@cf/deepgram/nova-3") {
 		if (res instanceof Blob) {
-			throw new AssistantError(
-				"Blobs not supported with nova-3",
-				ErrorType.PARAMS_ERROR,
-			);
+			throw new AssistantError("Blobs not supported with nova-3", ErrorType.PARAMS_ERROR);
 		}
 		return res.body;
 	} else {
 		if (model === "@cf/openai/whisper-large-v3-turbo") {
-			throw new AssistantError(
-				"Not implemented",
-				ErrorType.CONFIGURATION_ERROR,
-			);
+			throw new AssistantError("Not implemented", ErrorType.CONFIGURATION_ERROR);
 		} else {
 			const audioData = await res.arrayBuffer();
 			return [...new Uint8Array(audioData)];
@@ -30,9 +24,7 @@ async function getAudioForProvider(model: string, res: Response | Blob) {
 export class WorkersTranscriptionProvider extends BaseTranscriptionProvider {
 	name = "workers";
 
-	async transcribe(
-		request: TranscriptionRequest,
-	): Promise<TranscriptionResult> {
+	async transcribe(request: TranscriptionRequest): Promise<TranscriptionResult> {
 		this.validateRequest(request);
 
 		const { audio, env, user } = request;
@@ -42,25 +34,19 @@ export class WorkersTranscriptionProvider extends BaseTranscriptionProvider {
 		}
 
 		const repositories = new RepositoryManager(env);
-		const userSettings = user?.id
-			? await repositories.userSettings.getUserSettings(user.id)
-			: null;
+		const userSettings = user?.id ? await repositories.userSettings.getUserSettings(user.id) : null;
 
-		const { model: modelToUse, provider: providerToUse } =
-			await getAuxiliarySpeechModel(env, userSettings);
+		const { model: modelToUse, provider: providerToUse } = await getAuxiliarySpeechModel(
+			env,
+			userSettings,
+		);
 
 		if (!modelToUse || !providerToUse) {
-			throw new AssistantError(
-				"Missing model or provider",
-				ErrorType.PARAMS_ERROR,
-			);
+			throw new AssistantError("Missing model or provider", ErrorType.PARAMS_ERROR);
 		}
 
 		if (providerToUse !== "workers-ai") {
-			throw new AssistantError(
-				"This provider is only for Workers AI",
-				ErrorType.PARAMS_ERROR,
-			);
+			throw new AssistantError("This provider is only for Workers AI", ErrorType.PARAMS_ERROR);
 		}
 
 		try {
@@ -103,10 +89,7 @@ export class WorkersTranscriptionProvider extends BaseTranscriptionProvider {
 
 				body.audio = await getAudioForProvider(modelToUse, audio);
 			} else {
-				throw new AssistantError(
-					"Audio must be a Blob or a URL string",
-					ErrorType.PARAMS_ERROR,
-				);
+				throw new AssistantError("Audio must be a Blob or a URL string", ErrorType.PARAMS_ERROR);
 			}
 
 			// @ts-ignore – Workers AI types require literal model keys but we use dynamic config strings.

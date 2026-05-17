@@ -11,11 +11,7 @@ import { useKeyboardShortcuts } from "~/components/Apps/Notes/hooks/useKeyboardS
 import { useNoteFormatter } from "~/hooks/useNoteFormatter";
 import { useTabAudioCapture } from "~/hooks/useTabAudioCapture";
 import { useTranscription } from "~/hooks/useTranscription";
-import {
-	formatTextWithSpacing,
-	getCharCount,
-	getWordCount,
-} from "~/lib/text-utils";
+import { formatTextWithSpacing, getCharCount, getWordCount } from "~/lib/text-utils";
 import { cn } from "~/lib/utils";
 
 interface NoteEditorProps {
@@ -114,17 +110,14 @@ export function NoteEditor({
 		}
 	}, [noteId, forceSave]);
 
-	const handleTranscriptionReceived = useCallback(
-		(newText: string, isPartial?: boolean) => {
-			if (isPartial) {
-				setPartialTranscript((prev) => formatTextWithSpacing(prev, newText));
-			} else {
-				setPartialTranscript("");
-				setText((prev) => formatTextWithSpacing(prev, newText));
-			}
-		},
-		[],
-	);
+	const handleTranscriptionReceived = useCallback((newText: string, isPartial?: boolean) => {
+		if (isPartial) {
+			setPartialTranscript((prev) => formatTextWithSpacing(prev, newText));
+		} else {
+			setPartialTranscript("");
+			setText((prev) => formatTextWithSpacing(prev, newText));
+		}
+	}, []);
 
 	const handleSpeechDetected = useCallback((isActive: boolean) => {
 		setIsSpeechDetected(isActive);
@@ -248,9 +241,7 @@ export function NoteEditor({
 					)}
 					title={isSaving ? "Saving..." : "All changes saved"}
 				/>
-				<span className="sr-only">
-					{isSaving ? "Saving..." : "All changes saved"}
-				</span>
+				<span className="sr-only">{isSaving ? "Saving..." : "All changes saved"}</span>
 			</output>
 
 			{currentMetadata && Object.keys(currentMetadata).length > 0 && (
@@ -263,9 +254,7 @@ export function NoteEditor({
 						>
 							<Hash size={14} />
 							Metadata
-							<span className="text-xs">
-								({showMetadata ? "hide" : "show"})
-							</span>
+							<span className="text-xs">({showMetadata ? "hide" : "show"})</span>
 						</button>
 					</div>
 					{showMetadata && (

@@ -1,9 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-	listFunctionTools,
-	resolveFunctionTool,
-	toolRegistry,
-} from "~/services/functions";
+import { listFunctionTools, resolveFunctionTool, toolRegistry } from "~/services/functions";
 
 describe("functions tool registry", () => {
 	it("registers every function in the tool registry", () => {

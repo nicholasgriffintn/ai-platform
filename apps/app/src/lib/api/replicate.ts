@@ -21,9 +21,7 @@ export const fetchReplicateModels = async (): Promise<ReplicateModel[]> => {
 		});
 
 		if (!response.ok) {
-			throw new Error(
-				`Failed to fetch Replicate models: ${response.statusText}`,
-			);
+			throw new Error(`Failed to fetch Replicate models: ${response.statusText}`);
 		}
 
 		const data = await returnFetchedData<{
@@ -54,8 +52,7 @@ export const executeReplicateModel = async (
 		if (!response.ok) {
 			const errorData = await returnFetchedData<{ error?: string }>(response);
 			throw new Error(
-				errorData?.error ||
-					`Failed to execute Replicate model: ${response.statusText}`,
+				errorData?.error || `Failed to execute Replicate model: ${response.statusText}`,
 			);
 		}
 
@@ -69,9 +66,7 @@ export const executeReplicateModel = async (
 	}
 };
 
-export const fetchReplicatePredictions = async (): Promise<
-	ReplicatePrediction[]
-> => {
+export const fetchReplicatePredictions = async (): Promise<ReplicatePrediction[]> => {
 	try {
 		let headers = {};
 		try {
@@ -110,13 +105,10 @@ export const fetchReplicatePrediction = async (
 			console.error("Error getting headers:", error);
 		}
 
-		const response = await fetchApi(
-			`/apps/replicate/predictions/${predictionId}`,
-			{
-				method: "GET",
-				headers,
-			},
-		);
+		const response = await fetchApi(`/apps/replicate/predictions/${predictionId}`, {
+			method: "GET",
+			headers,
+		});
 
 		if (!response.ok) {
 			throw new Error(`Failed to fetch prediction: ${response.statusText}`);

@@ -32,9 +32,7 @@ export class AgentRepository extends BaseRepository {
 				servers: servers ?? null,
 				model: model ?? null,
 				temperature:
-					temperature !== undefined && temperature !== null
-						? temperature.toString()
-						: null,
+					temperature !== undefined && temperature !== null ? temperature.toString() : null,
 				max_steps: maxSteps ?? null,
 				system_prompt: systemPrompt ?? null,
 				few_shot_examples: fewShotExamples ?? null,
@@ -50,23 +48,13 @@ export class AgentRepository extends BaseRepository {
 		);
 
 		if (!insert) {
-			throw new AssistantError(
-				"Failed to build agent insert query",
-				ErrorType.INTERNAL_ERROR,
-			);
+			throw new AssistantError("Failed to build agent insert query", ErrorType.INTERNAL_ERROR);
 		}
 
-		const created = await this.runQuery<Agent>(
-			insert.query,
-			insert.values,
-			true,
-		);
+		const created = await this.runQuery<Agent>(insert.query, insert.values, true);
 
 		if (!created) {
-			throw new AssistantError(
-				"Failed to insert agent",
-				ErrorType.INTERNAL_ERROR,
-			);
+			throw new AssistantError("Failed to insert agent", ErrorType.INTERNAL_ERROR);
 		}
 
 		return created;
@@ -120,29 +108,18 @@ export class AgentRepository extends BaseRepository {
 			"is_team_agent",
 		];
 
-		const result = this.buildUpdateQuery(
-			"agents",
-			data,
-			allowedFields,
-			"id = ?",
-			[agentId],
-			{
-				jsonFields: ["servers", "few_shot_examples", "enabled_tools"],
-				transformer: (field, value) => {
-					if (
-						field === "temperature" &&
-						value !== undefined &&
-						value !== null
-					) {
-						return value.toString();
-					}
-					if (field === "is_team_agent" && typeof value === "boolean") {
-						return value ? 1 : 0;
-					}
-					return value;
-				},
+		const result = this.buildUpdateQuery("agents", data, allowedFields, "id = ?", [agentId], {
+			jsonFields: ["servers", "few_shot_examples", "enabled_tools"],
+			transformer: (field, value) => {
+				if (field === "temperature" && value !== undefined && value !== null) {
+					return value.toString();
+				}
+				if (field === "is_team_agent" && typeof value === "boolean") {
+					return value ? 1 : 0;
+				}
+				return value;
 			},
-		);
+		});
 
 		if (!result) {
 			return;
@@ -214,10 +191,7 @@ export class AgentRepository extends BaseRepository {
 		return this.runQuery<Agent>(query, values);
 	}
 
-	public async getAgentsByTeamAndUser(
-		teamId: string,
-		userId: number,
-	): Promise<Agent[]> {
+	public async getAgentsByTeamAndUser(teamId: string, userId: number): Promise<Agent[]> {
 		const { query, values } = this.buildSelectQuery(
 			"agents",
 			{ team_id: teamId, user_id: userId },

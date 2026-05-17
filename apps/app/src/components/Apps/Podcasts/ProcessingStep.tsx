@@ -37,9 +37,7 @@ export function ProcessingStep({
 	uploadedPodcastId,
 	navigate,
 }: ProcessingStepProps) {
-	const hasErrors = Object.values(processingErrors).some(
-		(error) => error !== null,
-	);
+	const hasErrors = Object.values(processingErrors).some((error) => error !== null);
 
 	return (
 		<div className="bg-off-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg p-6">
@@ -50,11 +48,7 @@ export function ProcessingStep({
 			<div className="space-y-6">
 				{formData.transcribe && (
 					<div className="flex items-center">
-						<div
-							className={
-								processingStatus.transcribing ? "mr-4 animate-spin" : "mr-4"
-							}
-						>
+						<div className={processingStatus.transcribing ? "mr-4 animate-spin" : "mr-4"}>
 							<Mic
 								size={24}
 								className={
@@ -69,14 +63,10 @@ export function ProcessingStep({
 							/>
 						</div>
 						<div className="flex-1">
-							<p className="font-medium text-zinc-800 dark:text-zinc-200">
-								Transcribing Audio
-							</p>
+							<p className="font-medium text-zinc-800 dark:text-zinc-200">Transcribing Audio</p>
 							<p className="text-sm text-zinc-500 dark:text-zinc-400">
 								{processingErrors.transcribing ? (
-									<span className="text-red-500">
-										{processingErrors.transcribing}
-									</span>
+									<span className="text-red-500">{processingErrors.transcribing}</span>
 								) : processingStatus.transcribing ? (
 									"Converting your audio to text..."
 								) : processingComplete.transcribing ? (
@@ -102,11 +92,7 @@ export function ProcessingStep({
 
 				{formData.summarise && (
 					<div className="flex items-center">
-						<div
-							className={
-								processingStatus.summarizing ? "mr-4 animate-spin" : "mr-4"
-							}
-						>
+						<div className={processingStatus.summarizing ? "mr-4 animate-spin" : "mr-4"}>
 							<BookText
 								size={24}
 								className={
@@ -116,22 +102,17 @@ export function ProcessingStep({
 											? "text-green-500"
 											: processingStatus.summarizing
 												? "text-blue-500"
-												: !processingComplete.transcribing &&
-													  formData.transcribe
+												: !processingComplete.transcribing && formData.transcribe
 													? "text-zinc-400"
 													: "text-zinc-500"
 								}
 							/>
 						</div>
 						<div className="flex-1">
-							<p className="font-medium text-zinc-800 dark:text-zinc-200">
-								Generating Summary
-							</p>
+							<p className="font-medium text-zinc-800 dark:text-zinc-200">Generating Summary</p>
 							<p className="text-sm text-zinc-500 dark:text-zinc-400">
 								{processingErrors.summarizing ? (
-									<span className="text-red-500">
-										{processingErrors.summarizing}
-									</span>
+									<span className="text-red-500">{processingErrors.summarizing}</span>
 								) : processingStatus.summarizing ? (
 									"Creating a summary of your podcast..."
 								) : processingComplete.summarizing ? (
@@ -159,11 +140,7 @@ export function ProcessingStep({
 
 				{formData.generateImage && (
 					<div className="flex items-center">
-						<div
-							className={
-								processingStatus.generatingImage ? "mr-4 animate-spin" : "mr-4"
-							}
-						>
+						<div className={processingStatus.generatingImage ? "mr-4 animate-spin" : "mr-4"}>
 							<ImageIcon
 								size={24}
 								className={
@@ -173,24 +150,18 @@ export function ProcessingStep({
 											? "text-green-500"
 											: processingStatus.generatingImage
 												? "text-blue-500"
-												: (!processingComplete.summarizing &&
-															formData.summarise) ||
-													  (!processingComplete.transcribing &&
-															formData.transcribe)
+												: (!processingComplete.summarizing && formData.summarise) ||
+													  (!processingComplete.transcribing && formData.transcribe)
 													? "text-zinc-400"
 													: "text-zinc-500"
 								}
 							/>
 						</div>
 						<div className="flex-1">
-							<p className="font-medium text-zinc-800 dark:text-zinc-200">
-								Generating Cover Image
-							</p>
+							<p className="font-medium text-zinc-800 dark:text-zinc-200">Generating Cover Image</p>
 							<p className="text-sm text-zinc-500 dark:text-zinc-400">
 								{processingErrors.generatingImage ? (
-									<span className="text-red-500">
-										{processingErrors.generatingImage}
-									</span>
+									<span className="text-red-500">{processingErrors.generatingImage}</span>
 								) : processingStatus.generatingImage ? (
 									"Creating a cover image for your podcast..."
 								) : processingComplete.generatingImage ? (
@@ -222,8 +193,7 @@ export function ProcessingStep({
 				{hasErrors ? (
 					<div className="space-y-4">
 						<p className="text-red-500">
-							One or more processes failed. You can retry individual steps or
-							return to the form.
+							One or more processes failed. You can retry individual steps or return to the form.
 						</p>
 						<div className="flex justify-center space-x-4">
 							<Button

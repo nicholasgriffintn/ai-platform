@@ -5,10 +5,7 @@ import {
 	fetchReplicatePredictions,
 	fetchReplicatePrediction,
 } from "~/lib/api/replicate";
-import type {
-	ExecuteReplicateRequest,
-	ReplicatePrediction,
-} from "~/types/replicate";
+import type { ExecuteReplicateRequest, ReplicatePrediction } from "~/types/replicate";
 
 const REPLICATE_QUERY_KEY = "replicate";
 
@@ -28,12 +25,7 @@ export function useReplicatePredictions() {
 			const data = query.state.data as ReplicatePrediction[] | undefined;
 			if (!data) return false;
 
-			const activeStatuses = new Set([
-				"processing",
-				"queued",
-				"in_progress",
-				"starting",
-			]);
+			const activeStatuses = new Set(["processing", "queued", "in_progress", "starting"]);
 			const hasActivePredictions = data.some((pred) =>
 				activeStatuses.has(String(pred.status).toLowerCase()),
 			);
@@ -60,8 +52,7 @@ export function useExecuteReplicateModel() {
 	const queryClient = useQueryClient();
 
 	return useMutation({
-		mutationFn: (request: ExecuteReplicateRequest) =>
-			executeReplicateModel(request),
+		mutationFn: (request: ExecuteReplicateRequest) => executeReplicateModel(request),
 		onSuccess: () => {
 			queryClient.invalidateQueries({
 				queryKey: [REPLICATE_QUERY_KEY, "predictions"],

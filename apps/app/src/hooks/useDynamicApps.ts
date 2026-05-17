@@ -11,10 +11,7 @@ import {
 export const DYNAMIC_APPS_QUERY_KEYS = {
 	all: ["dynamicApps"],
 	byId: (id: string | null) => ["dynamicApp", id],
-	responseById: (responseId: string | null) => [
-		"dynamicAppResponse",
-		responseId,
-	],
+	responseById: (responseId: string | null) => ["dynamicAppResponse", responseId],
 	responsesList: (appId?: string) => ["dynamicAppResponses", appId],
 };
 
@@ -28,8 +25,7 @@ export function useDynamicApps() {
 export function useDynamicApp(id: string | null) {
 	return useQuery({
 		queryKey: DYNAMIC_APPS_QUERY_KEYS.byId(id),
-		queryFn: () =>
-			id ? fetchDynamicAppById(id) : Promise.reject("No app ID provided"),
+		queryFn: () => (id ? fetchDynamicAppById(id) : Promise.reject("No app ID provided")),
 		enabled: !!id,
 	});
 }
@@ -54,12 +50,7 @@ export function useDynamicAppResponses(appId?: string) {
 
 export function useExecuteDynamicApp() {
 	return useMutation({
-		mutationFn: ({
-			id,
-			formData,
-		}: {
-			id: string;
-			formData: Record<string, any>;
-		}) => executeDynamicApp(id, formData),
+		mutationFn: ({ id, formData }: { id: string; formData: Record<string, any> }) =>
+			executeDynamicApp(id, formData),
 	});
 }

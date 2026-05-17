@@ -29,9 +29,7 @@ describe("Monitoring", () => {
 		});
 
 		it("should throw error when analytics engine not provided", () => {
-			expect(() => Monitoring.getInstance()).toThrow(
-				"Analytics Engine not configured",
-			);
+			expect(() => Monitoring.getInstance()).toThrow("Analytics Engine not configured");
 		});
 	});
 
@@ -161,14 +159,7 @@ describe("trackUsageMetric", () => {
 		trackUsageMetric(123, "test-usage", mockAnalyticsEngine as any);
 
 		expect(mockAnalyticsEngine.writeDataPoint).toHaveBeenCalledWith({
-			blobs: [
-				"usage",
-				"test-usage",
-				"success",
-				"None",
-				"123",
-				JSON.stringify({ userId: 123 }),
-			],
+			blobs: ["usage", "test-usage", "success", "None", "123", JSON.stringify({ userId: 123 })],
 			doubles: [1, expect.any(Number)],
 			indexes: ["123"],
 		});
@@ -185,11 +176,7 @@ describe("trackUsageMetric", () => {
 	});
 
 	it("should generate traceId when userId is undefined", () => {
-		trackUsageMetric(
-			undefined as any,
-			"test-usage",
-			mockAnalyticsEngine as any,
-		);
+		trackUsageMetric(undefined as any, "test-usage", mockAnalyticsEngine as any);
 
 		expect(mockAnalyticsEngine.writeDataPoint).toHaveBeenCalledWith({
 			blobs: [
@@ -236,11 +223,7 @@ describe("trackProviderMetrics", () => {
 
 		expect(mockAnalyticsEngine.writeDataPoint).toHaveBeenCalledWith(
 			expect.objectContaining({
-				blobs: expect.arrayContaining([
-					"performance",
-					"ai_provider_response",
-					"success",
-				]),
+				blobs: expect.arrayContaining(["performance", "ai_provider_response", "success"]),
 			}),
 		);
 	});
@@ -260,11 +243,7 @@ describe("trackProviderMetrics", () => {
 
 		expect(mockAnalyticsEngine.writeDataPoint).toHaveBeenCalledWith(
 			expect.objectContaining({
-				blobs: expect.arrayContaining([
-					"error",
-					"ai_provider_response",
-					"error",
-				]),
+				blobs: expect.arrayContaining(["error", "ai_provider_response", "error"]),
 			}),
 		);
 	});
@@ -355,9 +334,7 @@ describe("trackModelRoutingMetrics", () => {
 	});
 
 	it("should track successful model routing operation", async () => {
-		const mockOperation = vi
-			.fn()
-			.mockResolvedValue({ model: "selected-model" });
+		const mockOperation = vi.fn().mockResolvedValue({ model: "selected-model" });
 
 		const result = await trackModelRoutingMetrics(
 			mockOperation,
@@ -370,11 +347,7 @@ describe("trackModelRoutingMetrics", () => {
 		expect(result).toEqual({ model: "selected-model" });
 		expect(mockAnalyticsEngine.writeDataPoint).toHaveBeenCalledWith(
 			expect.objectContaining({
-				blobs: expect.arrayContaining([
-					"performance",
-					"model_routing",
-					"success",
-				]),
+				blobs: expect.arrayContaining(["performance", "model_routing", "success"]),
 			}),
 		);
 	});

@@ -7,21 +7,10 @@ import type { ServiceContext } from "~/lib/context/serviceContext";
 import { MAX_STORED_STREAM_EVENTS } from "~/constants/app";
 import { getLogger } from "~/utils/logger";
 import { parseSseBuffer } from "~/utils/streaming";
-import {
-	appendSandboxRunEvent,
-	type SandboxRunData,
-	type SandboxRunStatus,
-} from "./run-data";
+import { appendSandboxRunEvent, type SandboxRunData, type SandboxRunStatus } from "./run-data";
 import { getSandboxRunAbortReason } from "./run-control";
-import {
-	getPersistedRunData,
-	isAbortError,
-	RUN_CANCELLATION_MESSAGE,
-} from "./run-state";
-import {
-	appendRunCoordinatorEvent,
-	updateRunCoordinatorControl,
-} from "./run-coordinator";
+import { getPersistedRunData, isAbortError, RUN_CANCELLATION_MESSAGE } from "./run-state";
+import { appendRunCoordinatorEvent, updateRunCoordinatorControl } from "./run-coordinator";
 import { persistSandboxRunArtifact } from "./run-artifacts";
 
 const logger = getLogger({ prefix: "services/apps/sandbox/stream-proxy" });
@@ -37,9 +26,7 @@ interface CreateSandboxEventProxyStreamParams {
 }
 
 function isTerminalRunStatus(status: SandboxRunStatus): boolean {
-	return (
-		status === "completed" || status === "failed" || status === "cancelled"
-	);
+	return status === "completed" || status === "failed" || status === "cancelled";
 }
 
 export function createSandboxEventProxyStream(
@@ -76,11 +63,7 @@ export function createSandboxEventProxyStream(
 			let resumeReason: string | undefined;
 
 			const pushEvent = (event: SandboxRunEvent) => {
-				const next = appendSandboxRunEvent(
-					events,
-					event,
-					MAX_STORED_STREAM_EVENTS,
-				);
+				const next = appendSandboxRunEvent(events, event, MAX_STORED_STREAM_EVENTS);
 				events.length = 0;
 				events.push(...next);
 				void appendRunCoordinatorEvent({
@@ -96,9 +79,7 @@ export function createSandboxEventProxyStream(
 					return;
 				}
 				try {
-					controller.enqueue(
-						encoder.encode(`data: ${JSON.stringify(event)}\n\n`),
-					);
+					controller.enqueue(encoder.encode(`data: ${JSON.stringify(event)}\n\n`));
 				} catch {
 					// Client stream disconnected; continue processing and persisting run state.
 					clientDisconnected = true;
@@ -118,10 +99,7 @@ export function createSandboxEventProxyStream(
 				if (parsed.type === "run_failed") {
 					status = "failed";
 					completedAt = new Date().toISOString();
-					errorMessage =
-						typeof parsed.error === "string"
-							? parsed.error
-							: "Sandbox run failed";
+					errorMessage = typeof parsed.error === "string" ? parsed.error : "Sandbox run failed";
 					return;
 				}
 
@@ -150,8 +128,7 @@ export function createSandboxEventProxyStream(
 				if (parsed.type === "run_resumed") {
 					status = "running";
 					resumedAt = new Date().toISOString();
-					resumeReason =
-						typeof parsed.message === "string" ? parsed.message : resumeReason;
+					resumeReason = typeof parsed.message === "string" ? parsed.message : resumeReason;
 					return;
 				}
 
@@ -215,9 +192,7 @@ export function createSandboxEventProxyStream(
 				}
 			} catch (error) {
 				if (isAbortError(error) || workerAbortController.signal.aborted) {
-					const abortReason = getSandboxRunAbortReason(
-						workerAbortController.signal,
-					);
+					const abortReason = getSandboxRunAbortReason(workerAbortController.signal);
 					if (abortReason?.type === "timeout") {
 						status = "failed";
 						completedAt = new Date().toISOString();
@@ -243,9 +218,7 @@ export function createSandboxEventProxyStream(
 					status = "failed";
 					completedAt = new Date().toISOString();
 					errorMessage =
-						error instanceof Error
-							? error.message
-							: "Sandbox stream unexpectedly terminated";
+						error instanceof Error ? error.message : "Sandbox stream unexpectedly terminated";
 
 					emit({
 						type: "run_failed",
@@ -258,9 +231,7 @@ export function createSandboxEventProxyStream(
 
 				if (!isTerminalRunStatus(status)) {
 					if (workerAbortController.signal.aborted) {
-						const abortReason = getSandboxRunAbortReason(
-							workerAbortController.signal,
-						);
+						const abortReason = getSandboxRunAbortReason(workerAbortController.signal);
 						if (abortReason?.type === "timeout") {
 							status = "failed";
 							completedAt = new Date().toISOString();
@@ -274,8 +245,7 @@ export function createSandboxEventProxyStream(
 						} else {
 							status = "cancelled";
 							completedAt = new Date().toISOString();
-							cancellationReason =
-								cancellationReason ?? RUN_CANCELLATION_MESSAGE;
+							cancellationReason = cancellationReason ?? RUN_CANCELLATION_MESSAGE;
 							errorMessage = undefined;
 							emit({
 								type: "run_cancelled",
@@ -303,10 +273,7 @@ export function createSandboxEventProxyStream(
 					});
 					if (latestPersistedRun?.status === "cancelled") {
 						status = "cancelled";
-						completedAt =
-							latestPersistedRun.completedAt ??
-							completedAt ??
-							new Date().toISOString();
+						completedAt = latestPersistedRun.completedAt ?? completedAt ?? new Date().toISOString();
 						cancellationReason =
 							latestPersistedRun.cancellationReason ??
 							cancellationReason ??
@@ -315,10 +282,7 @@ export function createSandboxEventProxyStream(
 					}
 				} catch (lookupError) {
 					logger.error("Failed to verify sandbox cancellation state", {
-						error_message:
-							lookupError instanceof Error
-								? lookupError.message
-								: String(lookupError),
+						error_message: lookupError instanceof Error ? lookupError.message : String(lookupError),
 						runId,
 					});
 				}
@@ -333,58 +297,42 @@ export function createSandboxEventProxyStream(
 						events,
 						updatedAt: new Date().toISOString(),
 						completedAt,
-						pausedAt:
-							pausedAt ?? latestPersistedRun?.pausedAt ?? runData.pausedAt,
-						resumedAt:
-							resumedAt ?? latestPersistedRun?.resumedAt ?? runData.resumedAt,
-						pauseReason:
-							pauseReason ??
-							latestPersistedRun?.pauseReason ??
-							runData.pauseReason,
-						resumeReason:
-							resumeReason ??
-							latestPersistedRun?.resumeReason ??
-							runData.resumeReason,
+						pausedAt: pausedAt ?? latestPersistedRun?.pausedAt ?? runData.pausedAt,
+						resumedAt: resumedAt ?? latestPersistedRun?.resumedAt ?? runData.resumedAt,
+						pauseReason: pauseReason ?? latestPersistedRun?.pauseReason ?? runData.pauseReason,
+						resumeReason: resumeReason ?? latestPersistedRun?.resumeReason ?? runData.resumeReason,
 						cancelRequestedAt:
 							status === "cancelled"
 								? (latestPersistedRun?.cancelRequestedAt ??
 									runData.cancelRequestedAt ??
 									completedAt)
-								: (latestPersistedRun?.cancelRequestedAt ??
-									runData.cancelRequestedAt),
+								: (latestPersistedRun?.cancelRequestedAt ?? runData.cancelRequestedAt),
 						cancellationReason:
 							status === "cancelled"
 								? (cancellationReason ??
 									latestPersistedRun?.cancellationReason ??
 									RUN_CANCELLATION_MESSAGE)
-								: (latestPersistedRun?.cancellationReason ??
-									runData.cancellationReason),
+								: (latestPersistedRun?.cancellationReason ?? runData.cancellationReason),
 					};
 					runData = await persistSandboxRunArtifact({
 						serviceContext,
 						run: runData,
 					});
-					await serviceContext.repositories.appData.updateAppData(
-						recordId,
-						runData,
-					);
-					const nextControlState =
-						status === "running" ? "running" : "cancelled";
+					await serviceContext.repositories.appData.updateAppData(recordId, runData);
+					const nextControlState = status === "running" ? "running" : "cancelled";
 					await updateRunCoordinatorControl({
 						env: serviceContext.env,
 						runId,
 						state: nextControlState,
 						updatedAt: runData.updatedAt,
-						cancellationReason:
-							status === "cancelled" ? runData.cancellationReason : undefined,
+						cancellationReason: status === "cancelled" ? runData.cancellationReason : undefined,
 						pauseReason: undefined,
 						timeoutSeconds: runData.timeoutSeconds,
 						timeoutAt: runData.timeoutAt,
 					});
 				} catch (dbError) {
 					logger.error("Failed to persist sandbox run final state", {
-						error_message:
-							dbError instanceof Error ? dbError.message : String(dbError),
+						error_message: dbError instanceof Error ? dbError.message : String(dbError),
 						runId,
 						status,
 					});

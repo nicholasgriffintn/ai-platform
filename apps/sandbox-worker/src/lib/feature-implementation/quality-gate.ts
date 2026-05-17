@@ -7,11 +7,7 @@ import {
 import { throwIfAborted } from "../cancellation";
 
 import { MAX_OBSERVATION_CHARS } from "./constants";
-import type {
-	QualityGateCheckResult,
-	QualityGateResult,
-	SandboxExecInstance,
-} from "./types";
+import type { QualityGateCheckResult, QualityGateResult, SandboxExecInstance } from "./types";
 import { truncateForModel } from "./utils";
 
 const VALIDATION_COMMAND_PATTERN =
@@ -36,9 +32,7 @@ function toCheckName(command: string, index: number): string {
 }
 
 function toCheckOutput(stdout: string, stderr: string): string {
-	const combinedOutput = [stdout.trim(), stderr.trim()]
-		.filter(Boolean)
-		.join("\n");
+	const combinedOutput = [stdout.trim(), stderr.trim()].filter(Boolean).join("\n");
 	return truncateForModel(combinedOutput, MAX_OBSERVATION_CHARS);
 }
 
@@ -97,15 +91,7 @@ export async function runQualityGate(params: {
 		message?: string;
 	}) => Promise<void>;
 }): Promise<QualityGateResult> {
-	const {
-		sandbox,
-		repoTargetDir,
-		commands,
-		executionLogs,
-		emit,
-		abortSignal,
-		checkpoint,
-	} = params;
+	const { sandbox, repoTargetDir, commands, executionLogs, emit, abortSignal, checkpoint } = params;
 
 	const guardExecution = async (abortMessage: string) => {
 		if (checkpoint) {
@@ -125,8 +111,7 @@ export async function runQualityGate(params: {
 		return {
 			passed: true,
 			checks: [],
-			summary:
-				"Quality gate skipped because no validation commands were found.",
+			summary: "Quality gate skipped because no validation commands were found.",
 		};
 	}
 
@@ -147,13 +132,9 @@ export async function runQualityGate(params: {
 			commandTotal: commands.length,
 		});
 
-		const result = await sandbox.exec(
-			`cd ${quoteForShell(repoTargetDir)} && ${command}`,
-		);
+		const result = await sandbox.exec(`cd ${quoteForShell(repoTargetDir)} && ${command}`);
 		await guardExecution("Sandbox run cancelled during quality gate checks");
-		executionLogs.push(
-			formatCommandResult(`[quality-gate] ${command}`, result),
-		);
+		executionLogs.push(formatCommandResult(`[quality-gate] ${command}`, result));
 
 		const check: QualityGateCheckResult = {
 			name: toCheckName(command, index),
@@ -174,8 +155,7 @@ export async function runQualityGate(params: {
 			continue;
 		}
 
-		const failureMessage =
-			result.stderr || result.stdout || "Validation command failed";
+		const failureMessage = result.stderr || result.stdout || "Validation command failed";
 		await emit({
 			type: "quality_gate_check_failed",
 			command,

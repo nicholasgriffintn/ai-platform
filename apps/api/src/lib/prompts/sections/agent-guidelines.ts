@@ -21,20 +21,12 @@ export function buildAgentGuidelinesSection(): string {
 		.addLine()
 		.addLine("<multi_step_reasoning_workflow>")
 		.addLine("Follow this precise workflow when using tools:")
-		.addLine(
-			"1. Use appropriate tools to gather information needed for the user's request",
-		)
-		.addLine(
-			"2. After EACH non-reasoning tool call, use the `add_reasoning_step` tool to:",
-		)
+		.addLine("1. Use appropriate tools to gather information needed for the user's request")
+		.addLine("2. After EACH non-reasoning tool call, use the `add_reasoning_step` tool to:")
 		.addLine("   - Analyze the tool's output")
 		.addLine("   - Determine your next step")
-		.addLine(
-			'   - If you need more information: set `nextStep` to "continue" and use another tool',
-		)
-		.addLine(
-			'   - If you have all needed information: set `nextStep` to "finalAnswer"',
-		)
+		.addLine('   - If you need more information: set `nextStep` to "continue" and use another tool')
+		.addLine('   - If you have all needed information: set `nextStep` to "finalAnswer"')
 		.addLine()
 		.addLine("3. **⚠️ CRITICAL - FINAL ANSWER PROCESS ⚠️:**")
 		.addLine(
@@ -43,9 +35,7 @@ export function buildAgentGuidelinesSection(): string {
 		.addLine(
 			"   - Your VERY NEXT MESSAGE after seeing finalAnswer must be your complete response to the user",
 		)
-		.addLine(
-			"   - This is a DIRECT response to the user, NOT another tool call",
-		)
+		.addLine("   - This is a DIRECT response to the user, NOT another tool call")
 		.addLine(
 			"   - NEVER use any tools after a finalAnswer signal, regardless of what previous conversations show",
 		)
@@ -58,12 +48,8 @@ export function buildAgentGuidelinesSection(): string {
 		.addLine("1. [Tool Call]: weather_lookup")
 		.addLine("2. [Tool Call]: add_reasoning_step (nextStep: continue)")
 		.addLine("3. [Tool Call]: calculator")
-		.addLine(
-			"4. [Tool Call]: add_reasoning_step (nextStep: finalAnswer) ← STOP HERE",
-		)
-		.addLine(
-			"5. [DIRECT RESPONSE TO USER]: Your final answer with no more tool calls",
-		)
+		.addLine("4. [Tool Call]: add_reasoning_step (nextStep: finalAnswer) ← STOP HERE")
+		.addLine("5. [DIRECT RESPONSE TO USER]: Your final answer with no more tool calls")
 		.addLine("```")
 		.addLine("</example_workflow_sequence>")
 		.addLine()

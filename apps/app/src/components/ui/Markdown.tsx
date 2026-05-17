@@ -15,12 +15,8 @@ type TableProps = ComponentPropsWithoutRef<"div"> & {
 };
 
 const components = {
-	code: ({ node: _node, ...props }: CodeProps) => (
-		<code {...props}>{props.children}</code>
-	),
-	table: ({ children }: TableProps) => (
-		<div className="overflow-x-scroll text-sm">{children}</div>
-	),
+	code: ({ node: _node, ...props }: CodeProps) => <code {...props}>{props.children}</code>,
+	table: ({ children }: TableProps) => <div className="overflow-x-scroll text-sm">{children}</div>,
 };
 
 export interface MarkdownProps {
@@ -50,9 +46,7 @@ export function Markdown({ children, className, isStreaming }: MarkdownProps) {
 			>
 				{processedMarkdown}
 			</ReactMarkdown>
-			{isStreaming && (
-				<span className="inline-block w-2 h-4 bg-blue-500 animate-pulse ml-1" />
-			)}
+			{isStreaming && <span className="inline-block w-2 h-4 bg-blue-500 animate-pulse ml-1" />}
 		</div>
 	);
 }

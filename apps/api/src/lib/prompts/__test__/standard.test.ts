@@ -54,9 +54,7 @@ describe("returnStandardPrompt", () => {
 			// @ts-expect-error - mock implementation
 			const request: IBody = { mode: "agent" };
 			const result = await returnStandardPrompt(request);
-			expect(result).toContain(
-				"helpful agent with access to a range of powerful tools",
-			);
+			expect(result).toContain("helpful agent with access to a range of powerful tools");
 		});
 
 		it("should handle standard mode explicitly", async () => {
@@ -90,11 +88,7 @@ describe("returnStandardPrompt", () => {
 			const request: IBody = {};
 			// @ts-expect-error - mock implementation
 			const userSettings: IUserSettings = { nickname: "TestUser" };
-			const result = await returnStandardPrompt(
-				request,
-				undefined,
-				userSettings,
-			);
+			const result = await returnStandardPrompt(request, undefined, userSettings);
 			expect(result).toContain("<user_nickname>TestUser</user_nickname>");
 		});
 
@@ -103,11 +97,7 @@ describe("returnStandardPrompt", () => {
 			const request: IBody = {};
 			// @ts-expect-error - mock implementation
 			const userSettings: IUserSettings = { job_role: "Developer" };
-			const result = await returnStandardPrompt(
-				request,
-				undefined,
-				userSettings,
-			);
+			const result = await returnStandardPrompt(request, undefined, userSettings);
 			expect(result).toContain("<user_job_role>Developer</user_job_role>");
 		});
 
@@ -180,14 +170,7 @@ describe("returnStandardPrompt", () => {
 		it("should include thinking example when supportsReasoning is false", async () => {
 			// @ts-expect-error - mock implementation
 			const request: IBody = {};
-			const result = await returnStandardPrompt(
-				request,
-				undefined,
-				undefined,
-				false,
-				false,
-				false,
-			);
+			const result = await returnStandardPrompt(request, undefined, undefined, false, false, false);
 			expect(result).toContain("<think>");
 		});
 
@@ -213,14 +196,7 @@ describe("returnStandardPrompt", () => {
 		it("should include artifact example when supportsArtifacts is true", async () => {
 			// @ts-expect-error - mock implementation
 			const request: IBody = {};
-			const result = await returnStandardPrompt(
-				request,
-				undefined,
-				undefined,
-				false,
-				true,
-				false,
-			);
+			const result = await returnStandardPrompt(request, undefined, undefined, false, true, false);
 			expect(result).toContain("artifact");
 		});
 
@@ -322,11 +298,7 @@ describe("returnStandardPrompt", () => {
 			const request: IBody = {};
 			// @ts-expect-error - mock implementation
 			const userSettings: IUserSettings = { memories_save_enabled: true };
-			const result = await returnStandardPrompt(
-				request,
-				undefined,
-				userSettings,
-			);
+			const result = await returnStandardPrompt(request, undefined, userSettings);
 			expect(result).toContain("<response_traits>");
 		});
 
@@ -337,11 +309,7 @@ describe("returnStandardPrompt", () => {
 			const userSettings: IUserSettings = {
 				memories_chat_history_enabled: true,
 			};
-			const result = await returnStandardPrompt(
-				request,
-				undefined,
-				userSettings,
-			);
+			const result = await returnStandardPrompt(request, undefined, userSettings);
 			expect(result).toContain("<response_traits>");
 		});
 	});
@@ -352,11 +320,7 @@ describe("returnStandardPrompt", () => {
 			const request: IBody = {};
 			// @ts-expect-error - mock implementation
 			const userSettings: IUserSettings = { traits: "custom traits" };
-			const result = await returnStandardPrompt(
-				request,
-				undefined,
-				userSettings,
-			);
+			const result = await returnStandardPrompt(request, undefined, userSettings);
 			expect(result).toContain("<response_traits>");
 		});
 
@@ -365,11 +329,7 @@ describe("returnStandardPrompt", () => {
 			const request: IBody = {};
 			// @ts-expect-error - mock implementation
 			const userSettings: IUserSettings = { preferences: "custom preferences" };
-			const result = await returnStandardPrompt(
-				request,
-				undefined,
-				userSettings,
-			);
+			const result = await returnStandardPrompt(request, undefined, userSettings);
 			expect(result).toContain("<response_preferences>");
 		});
 	});
@@ -406,16 +366,8 @@ describe("returnStandardPrompt", () => {
 			const request: IBody = { mode: "standard" };
 			// @ts-expect-error - mock implementation
 			const userSettings: IUserSettings = { nickname: "test" };
-			const result1 = await returnStandardPrompt(
-				request,
-				undefined,
-				userSettings,
-			);
-			const result2 = await returnStandardPrompt(
-				request,
-				undefined,
-				userSettings,
-			);
+			const result1 = await returnStandardPrompt(request, undefined, userSettings);
+			const result2 = await returnStandardPrompt(request, undefined, userSettings);
 			expect(result1).toBe(result2);
 		});
 
@@ -432,11 +384,7 @@ describe("returnStandardPrompt", () => {
 			const request: IBody = {};
 			// @ts-expect-error - mock implementation
 			const userSettings: IUserSettings = {};
-			const result = await returnStandardPrompt(
-				request,
-				undefined,
-				userSettings,
-			);
+			const result = await returnStandardPrompt(request, undefined, userSettings);
 			expect(typeof result).toBe("string");
 			expect(result.length).toBeGreaterThan(0);
 		});

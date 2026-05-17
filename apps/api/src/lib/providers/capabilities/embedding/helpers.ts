@@ -1,10 +1,4 @@
-import type {
-	EmbeddingProvider,
-	IEnv,
-	IUser,
-	IUserSettings,
-	RagOptions,
-} from "~/types";
+import type { EmbeddingProvider, IEnv, IUser, IUserSettings, RagOptions } from "~/types";
 import { RepositoryManager } from "~/repositories";
 import { getAuxiliaryModel } from "~/lib/providers/models";
 import { trackRagMetrics } from "~/lib/monitoring";
@@ -36,15 +30,12 @@ export function getEmbeddingProvider(
 				!userSettings?.bedrock_knowledge_base_id ||
 				!userSettings?.bedrock_knowledge_base_custom_data_source_id
 			) {
-				throw new AssistantError(
-					"Missing required AWS credentials or knowledge base IDs",
-				);
+				throw new AssistantError("Missing required AWS credentials or knowledge base IDs");
 			}
 
 			const config = {
 				knowledgeBaseId: userSettings.bedrock_knowledge_base_id,
-				knowledgeBaseCustomDataSourceId:
-					userSettings.bedrock_knowledge_base_custom_data_source_id,
+				knowledgeBaseCustomDataSourceId: userSettings.bedrock_knowledge_base_custom_data_source_id,
 				region: env.AWS_REGION || "us-east-1",
 				accessKeyId: env.BEDROCK_AWS_ACCESS_KEY || "",
 				secretAccessKey: env.BEDROCK_AWS_SECRET_KEY || "",
@@ -70,9 +61,7 @@ export function getEmbeddingProvider(
 		}
 		case "vectorize": {
 			if (!env.AI || !env.VECTOR_DB) {
-				throw new AssistantError(
-					"Vectorize embeddings require AI and Vectorize bindings",
-				);
+				throw new AssistantError("Vectorize embeddings require AI and Vectorize bindings");
 			}
 
 			const repositories = new RepositoryManager(env);
@@ -86,9 +75,7 @@ export function getEmbeddingProvider(
 		}
 		default: {
 			if (!env.VECTOR_DB) {
-				throw new AssistantError(
-					"Embedding provider requires a Vectorize binding",
-				);
+				throw new AssistantError("Embedding provider requires a Vectorize binding");
 			}
 
 			const config = { vector_db: env.VECTOR_DB };
@@ -100,17 +87,13 @@ export function getEmbeddingProvider(
 /**
  * Get the namespace for embedding operations based on user and options.
  */
-export function getEmbeddingNamespace(
-	user?: IUser,
-	options?: RagOptions,
-): string {
+export function getEmbeddingNamespace(user?: IUser, options?: RagOptions): string {
 	if (options?.namespace) {
 		const requested = options.namespace;
 
 		if (
 			user?.id &&
-			(requested.startsWith("user_kb_") ||
-				requested.startsWith("memory_user_")) &&
+			(requested.startsWith("user_kb_") || requested.startsWith("memory_user_")) &&
 			!requested.endsWith(user.id.toString())
 		) {
 			return "kb";
@@ -146,9 +129,7 @@ export async function augmentPrompt({
 		logger.debug("augmentPrompt called", { query, options });
 		const namespace = getEmbeddingNamespace(user, options);
 		const trimmedQuery = query.trim();
-		const topK =
-			options.topK ??
-			(trimmedQuery.length > 0 && trimmedQuery.length < 20 ? 1 : 3);
+		const topK = options.topK ?? (trimmedQuery.length > 0 && trimmedQuery.length < 20 ? 1 : 3);
 		const scoreThreshold = options.scoreThreshold ?? DEFAULT_SCORE_THRESHOLD;
 		const rerankCandidates =
 			options.rerankCandidates ?? Math.max(DEFAULT_RERANK_CANDIDATES, topK * 2);
@@ -189,11 +170,8 @@ export async function augmentPrompt({
 					messages: [{ role: "user", content: rerankPrompt }],
 				});
 
-				const rankedIds =
-					safeParseJson<string[]>(response.content || response.response) || [];
-				const reordered = rankedIds
-					.map((id) => docs.find((doc) => doc.id === id))
-					.filter(Boolean);
+				const rankedIds = safeParseJson<string[]>(response.content || response.response) || [];
+				const reordered = rankedIds.map((id) => docs.find((doc) => doc.id === id)).filter(Boolean);
 
 				if (reordered.length) {
 					ranked = reordered as typeof docs;
@@ -208,15 +186,13 @@ export async function augmentPrompt({
 
 		const selected = ranked.slice(0, topK);
 
-		const summaryThreshold =
-			options.summaryThreshold || DEFAULT_SUMMARY_THRESHOLD;
+		const summaryThreshold = options.summaryThreshold || DEFAULT_SUMMARY_THRESHOLD;
 
 		// Summarize long documents
 		for (const doc of selected) {
 			if (doc.content.length > summaryThreshold) {
 				try {
-					const { model: modelToUse, provider: providerToUse } =
-						await getAuxiliaryModel(env, user);
+					const { model: modelToUse, provider: providerToUse } = await getAuxiliaryModel(env, user);
 					const summarizer = getChatProvider(providerToUse, { env, user });
 					const sumPrompt = `Summarize the following context into a concise paragraph (no more than 100 words):\n\n${doc.content}`;
 					const sumRes: any = await summarizer.getResponse({

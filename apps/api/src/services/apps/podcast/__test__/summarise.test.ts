@@ -49,9 +49,7 @@ describe("handlePodcastSummarise", () => {
 			}),
 		};
 
-		mockRepositories.appData.getAppDataByUserAppAndItem.mockResolvedValue([
-			existingSummary,
-		]);
+		mockRepositories.appData.getAppDataByUserAppAndItem.mockResolvedValue([existingSummary]);
 
 		const result = (await handlePodcastSummarise({
 			context: mockContext,
@@ -105,9 +103,7 @@ describe("handlePodcastSummarise", () => {
 		})) as IFunctionResponse;
 
 		expect(result.status).toBe("success");
-		expect(result.content).toBe(
-			"This podcast features a conversation between two speakers.",
-		);
+		expect(result.content).toBe("This podcast features a conversation between two speakers.");
 		expect(mockAI.run).toHaveBeenCalledWith(
 			"@cf/facebook/bart-large-cnn",
 			{

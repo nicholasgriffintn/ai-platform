@@ -46,10 +46,7 @@ export function validateGitHubPrivateKey(privateKeyRaw: string): string {
 	}
 }
 
-export function createGitHubAppJwt(params: {
-	appId: string;
-	privateKey: string;
-}): string {
+export function createGitHubAppJwt(params: { appId: string; privateKey: string }): string {
 	const { appId, privateKey } = params;
 	const validatedKey = validateGitHubPrivateKey(privateKey);
 	const now = Math.floor(Date.now() / 1000);

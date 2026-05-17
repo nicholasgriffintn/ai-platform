@@ -14,10 +14,7 @@ import {
 } from "~/components/ui";
 import { formatRelativeTime } from "~/lib/dates";
 
-import {
-	getApprovalStatusBadgeVariant,
-	isApprovalPendingStatus,
-} from "./helpers";
+import { getApprovalStatusBadgeVariant, isApprovalPendingStatus } from "./helpers";
 import type { ApprovalInstructionItem } from "./types";
 
 interface Props {
@@ -27,10 +24,7 @@ interface Props {
 	isInstructionsLoading: boolean;
 	instructionsError: unknown;
 	isResolvePending: boolean;
-	onResolveApproval: (
-		approval: ApprovalInstructionItem,
-		status: "approved" | "rejected",
-	) => void;
+	onResolveApproval: (approval: ApprovalInstructionItem, status: "approved" | "rejected") => void;
 }
 
 export function CommandApprovalsCard({
@@ -46,9 +40,7 @@ export function CommandApprovalsCard({
 		<Card>
 			<CardHeader>
 				<CardTitle>Command approvals</CardTitle>
-				<CardDescription>
-					Approve or reject high-risk commands for the active run.
-				</CardDescription>
+				<CardDescription>Approve or reject high-risk commands for the active run.</CardDescription>
 			</CardHeader>
 			<CardContent className="space-y-3">
 				{pendingApprovals.length > 0 && (
@@ -61,16 +53,12 @@ export function CommandApprovalsCard({
 					</div>
 				)}
 				{isInstructionsLoading ? (
-					<div className="text-sm text-muted-foreground">
-						Loading run instructions...
-					</div>
+					<div className="text-sm text-muted-foreground">Loading run instructions...</div>
 				) : instructionsError ? (
 					<Alert variant="destructive">
 						<AlertTitle>Unable to load instructions</AlertTitle>
 						<AlertDescription>
-							{instructionsError instanceof Error
-								? instructionsError.message
-								: "Unknown error"}
+							{instructionsError instanceof Error ? instructionsError.message : "Unknown error"}
 						</AlertDescription>
 					</Alert>
 				) : approvalsRunId && approvals.length === 0 ? (
@@ -85,44 +73,27 @@ export function CommandApprovalsCard({
 					<div className="space-y-2">
 						{approvals
 							.slice()
-							.sort(
-								(a, b) =>
-									new Date(b.requestedAt).getTime() -
-									new Date(a.requestedAt).getTime(),
-							)
+							.sort((a, b) => new Date(b.requestedAt).getTime() - new Date(a.requestedAt).getTime())
 							.map((approval) => (
-								<div
-									key={approval.id}
-									className="rounded-md border p-3 text-xs"
-								>
+								<div key={approval.id} className="rounded-md border p-3 text-xs">
 									<div className="mb-2 flex items-center justify-between gap-2">
-										<Badge
-											variant={getApprovalStatusBadgeVariant(approval.status)}
-										>
+										<Badge variant={getApprovalStatusBadgeVariant(approval.status)}>
 											{approval.status}
 										</Badge>
 										<span className="text-muted-foreground">
 											{formatRelativeTime(approval.requestedAt)}
 										</span>
 									</div>
-									<p className="mb-2 break-words font-mono">
-										{approval.command}
-									</p>
+									<p className="mb-2 break-words font-mono">{approval.command}</p>
 									<div className="space-y-1 text-muted-foreground">
 										{approval.escalatedAt && (
-											<p>
-												Escalated {formatRelativeTime(approval.escalatedAt)}
-											</p>
+											<p>Escalated {formatRelativeTime(approval.escalatedAt)}</p>
 										)}
-										{approval.expiresAt && (
-											<p>Expires {formatRelativeTime(approval.expiresAt)}</p>
-										)}
+										{approval.expiresAt && <p>Expires {formatRelativeTime(approval.expiresAt)}</p>}
 										{approval.timedOutAt && (
 											<p>Timed out {formatRelativeTime(approval.timedOutAt)}</p>
 										)}
-										{approval.resolutionReason && (
-											<p>{approval.resolutionReason}</p>
-										)}
+										{approval.resolutionReason && <p>{approval.resolutionReason}</p>}
 									</div>
 									{isApprovalPendingStatus(approval.status) && (
 										<div className="mt-2 flex items-center gap-2">

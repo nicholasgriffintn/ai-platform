@@ -4,10 +4,7 @@ interface SafetyStandardsOptions {
 	preferredLanguage?: string | null;
 }
 
-function translateIfNeeded(
-	text: string,
-	preferredLanguage?: string | null,
-): string {
+function translateIfNeeded(text: string, preferredLanguage?: string | null): string {
 	if (!preferredLanguage || preferredLanguage.toLowerCase() === "en") {
 		return text;
 	}

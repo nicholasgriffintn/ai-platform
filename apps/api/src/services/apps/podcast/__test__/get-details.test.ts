@@ -71,9 +71,7 @@ describe("handlePodcastDetail", () => {
 			},
 		];
 
-		mockRepositories.appData.getAppDataByUserAppAndItem.mockResolvedValue(
-			mockAppData,
-		);
+		mockRepositories.appData.getAppDataByUserAppAndItem.mockResolvedValue(mockAppData);
 
 		const result = await handlePodcastDetail({
 			context: createMockContext(),
@@ -107,9 +105,7 @@ describe("handlePodcastDetail", () => {
 			},
 		];
 
-		mockRepositories.appData.getAppDataByUserAppAndItem.mockResolvedValue(
-			mockAppData,
-		);
+		mockRepositories.appData.getAppDataByUserAppAndItem.mockResolvedValue(mockAppData);
 
 		const result = await handlePodcastDetail({
 			context: createMockContext(),
@@ -141,9 +137,7 @@ describe("handlePodcastDetail", () => {
 			},
 		];
 
-		mockRepositories.appData.getAppDataByUserAppAndItem.mockResolvedValue(
-			mockAppData,
-		);
+		mockRepositories.appData.getAppDataByUserAppAndItem.mockResolvedValue(mockAppData);
 
 		const result = await handlePodcastDetail({
 			context: createMockContext(),
@@ -179,9 +173,7 @@ describe("handlePodcastDetail", () => {
 			},
 		];
 
-		mockRepositories.appData.getAppDataByUserAppAndItem.mockResolvedValue(
-			mockAppData,
-		);
+		mockRepositories.appData.getAppDataByUserAppAndItem.mockResolvedValue(mockAppData);
 
 		const result = await handlePodcastDetail({
 			context: createMockContext(),
@@ -204,9 +196,7 @@ describe("handlePodcastDetail", () => {
 			},
 		];
 
-		mockRepositories.appData.getAppDataByUserAppAndItem.mockResolvedValue(
-			mockAppData,
-		);
+		mockRepositories.appData.getAppDataByUserAppAndItem.mockResolvedValue(mockAppData);
 
 		const result = await handlePodcastDetail({
 			context: createMockContext(),
@@ -225,9 +215,7 @@ describe("handlePodcastDetail", () => {
 			},
 		];
 
-		mockRepositories.appData.getAppDataByUserAppAndItem.mockResolvedValue(
-			mockAppData,
-		);
+		mockRepositories.appData.getAppDataByUserAppAndItem.mockResolvedValue(mockAppData);
 
 		const result = await handlePodcastDetail({
 			context: createMockContext(),
@@ -272,9 +260,7 @@ describe("handlePodcastDetail", () => {
 			},
 		];
 
-		mockRepositories.appData.getAppDataByUserAppAndItem.mockResolvedValue(
-			mockAppData,
-		);
+		mockRepositories.appData.getAppDataByUserAppAndItem.mockResolvedValue(mockAppData);
 
 		const result = await handlePodcastDetail({
 			context: createMockContext(),

@@ -70,11 +70,7 @@ export function useAgents() {
 		},
 	});
 
-	const updateMutation = useMutation<
-		any,
-		Error,
-		{ id: string; data: Partial<AgentData> }
-	>({
+	const updateMutation = useMutation<any, Error, { id: string; data: Partial<AgentData> }>({
 		mutationFn: ({ id, data }) => apiService.updateAgent(id, data),
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: AGENTS_QUERY_KEYS.all });
@@ -98,9 +94,7 @@ export function useAgents() {
 			if (!acc.teams[agent.team_id]) {
 				acc.teams[agent.team_id] = {
 					id: agent.team_id,
-					name: agent.team_id
-						.replace(/-/g, " ")
-						.replace(/\b\w/g, (l: string) => l.toUpperCase()),
+					name: agent.team_id.replace(/-/g, " ").replace(/\b\w/g, (l: string) => l.toUpperCase()),
 					orchestrator: null,
 					members: [],
 				};
@@ -109,8 +103,7 @@ export function useAgents() {
 			if (agent.team_role === "orchestrator") {
 				acc.teams[agent.team_id].orchestrator = agent;
 				acc.teams[agent.team_id].name =
-					agent.name.replace(/orchestrator/i, "").trim() ||
-					acc.teams[agent.team_id].name;
+					agent.name.replace(/orchestrator/i, "").trim() || acc.teams[agent.team_id].name;
 			} else {
 				acc.teams[agent.team_id].members.push(agent);
 			}

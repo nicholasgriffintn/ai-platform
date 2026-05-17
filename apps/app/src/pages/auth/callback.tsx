@@ -25,9 +25,7 @@ export default function AuthCallbackRoute() {
 
 	return (
 		<PageShell title="Completing authentication..." displayNavBar={false}>
-			<PageStatus
-				icon={<Loader2 size={32} className="animate-spin text-blue-600" />}
-			/>
+			<PageStatus icon={<Loader2 size={32} className="animate-spin text-blue-600" />} />
 		</PageShell>
 	);
 }

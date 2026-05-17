@@ -15,10 +15,7 @@ import { requireAuth } from "~/middleware/auth";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import { ResponseFactory } from "~/lib/http/ResponseFactory";
 import { getUserSettings } from "~/services/auth/user";
-import {
-	handleGitHubOAuthCallback,
-	getGitHubAuthUrl,
-} from "~/services/auth/github";
+import { handleGitHubOAuthCallback, getGitHubAuthUrl } from "~/services/auth/github";
 import {
 	handleLogout,
 	generateUserToken,
@@ -49,8 +46,7 @@ addRoute(app, "get", "/github", {
 	querySchema: githubLoginSchema,
 	responses: {
 		200: {
-			description:
-				"Redirects to GitHub OAuth authorization page to authenticate the user",
+			description: "Redirects to GitHub OAuth authorization page to authenticate the user",
 			schema: z.object({}),
 		},
 		400: {
@@ -123,9 +119,7 @@ addRoute(app, "get", "/me", {
 			const user = c.get("user") as User | undefined;
 
 			if (!user) {
-				const anonymousUser = c.get("anonymousUser") as
-					| AnonymousUser
-					| undefined;
+				const anonymousUser = c.get("anonymousUser") as AnonymousUser | undefined;
 				if (anonymousUser) {
 					return ResponseFactory.success(c, {
 						user: null,
@@ -206,10 +200,7 @@ addRoute(app, "get", "/token", {
 			const user = c.get("user");
 
 			if (!user) {
-				throw new AssistantError(
-					"Authentication required",
-					ErrorType.AUTHENTICATION_ERROR,
-				);
+				throw new AssistantError("Authentication required", ErrorType.AUTHENTICATION_ERROR);
 			}
 
 			const cookies = c.req.header("Cookie") || "";

@@ -19,10 +19,7 @@ export function getCharCount(text: string): number {
 /**
  * Apply proper spacing between new text and existing text
  */
-export function formatTextWithSpacing(
-	existingText: string,
-	newText: string,
-): string {
+export function formatTextWithSpacing(existingText: string, newText: string): string {
 	if (existingText && !existingText.endsWith(" ") && !newText.startsWith(" ")) {
 		return `${existingText} ${newText}`;
 	}

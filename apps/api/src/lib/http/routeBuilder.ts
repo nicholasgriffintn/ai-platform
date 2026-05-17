@@ -7,10 +7,7 @@ import {
 } from "hono-openapi";
 import type { ZodType } from "zod/v4";
 
-import {
-	getServiceContext,
-	type ServiceContext,
-} from "~/lib/context/serviceContext";
+import { getServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
 import { requireAuthenticatedUser } from "~/lib/http/auth";
 import { ResponseFactory } from "~/lib/http/ResponseFactory";
 import type { AnonymousUser, IUser } from "~/types";
@@ -22,11 +19,7 @@ interface RouteResponseSpec {
 	schema?: ZodType;
 }
 
-export interface HandlerContext<
-	TBody = unknown,
-	TParams = unknown,
-	TQuery = unknown,
-> {
+export interface HandlerContext<TBody = unknown, TParams = unknown, TQuery = unknown> {
 	/** Pre-built ServiceContext for the request. */
 	serviceContext: ServiceContext;
 	/** The raw Hono context, for cases where you need direct access. */
@@ -65,9 +58,7 @@ interface RouteConfig<TBody, TParams, TQuery> {
 	/** OpenAPI response definitions. Keyed by status code. */
 	responses?: Record<number, RouteResponseSpec>;
 	/** The handler function. Return data for JSON, or a Response for streaming. */
-	handler: (
-		ctx: HandlerContext<TBody, TParams, TQuery>,
-	) => Promise<Response | unknown>;
+	handler: (ctx: HandlerContext<TBody, TParams, TQuery>) => Promise<Response | unknown>;
 }
 
 interface HonoLike {
@@ -113,24 +104,16 @@ export function addRoute<TBody = unknown, TParams = unknown, TQuery = unknown>(
 	}
 
 	if (config.paramSchema) {
-		middlewares.push(
-			zValidator("param", config.paramSchema) as unknown as MiddlewareHandler,
-		);
+		middlewares.push(zValidator("param", config.paramSchema) as unknown as MiddlewareHandler);
 	}
 	if (config.querySchema) {
-		middlewares.push(
-			zValidator("query", config.querySchema) as unknown as MiddlewareHandler,
-		);
+		middlewares.push(zValidator("query", config.querySchema) as unknown as MiddlewareHandler);
 	}
 	if (config.bodySchema) {
-		middlewares.push(
-			zValidator("json", config.bodySchema) as unknown as MiddlewareHandler,
-		);
+		middlewares.push(zValidator("json", config.bodySchema) as unknown as MiddlewareHandler);
 	}
 	if (config.formSchema) {
-		middlewares.push(
-			zValidator("form", config.formSchema) as unknown as MiddlewareHandler,
-		);
+		middlewares.push(zValidator("form", config.formSchema) as unknown as MiddlewareHandler);
 	}
 
 	if (config.middleware) {
@@ -139,22 +122,14 @@ export function addRoute<TBody = unknown, TParams = unknown, TQuery = unknown>(
 
 	const handler: MiddlewareHandler = async (c: Context) => {
 		const serviceContext = getServiceContext(c);
-		const user = config.auth
-			? requireAuthenticatedUser(c)
-			: (c.get("user") as IUser | undefined);
+		const user = config.auth ? requireAuthenticatedUser(c) : (c.get("user") as IUser | undefined);
 
 		const handlerCtx: HandlerContext<TBody, TParams, TQuery> = {
 			serviceContext,
 			raw: c,
-			body: config.bodySchema
-				? (c.req.valid("json" as never) as TBody)
-				: undefined,
-			params: config.paramSchema
-				? (c.req.valid("param" as never) as TParams)
-				: undefined,
-			query: config.querySchema
-				? (c.req.valid("query" as never) as TQuery)
-				: undefined,
+			body: config.bodySchema ? (c.req.valid("json" as never) as TBody) : undefined,
+			params: config.paramSchema ? (c.req.valid("param" as never) as TParams) : undefined,
+			query: config.querySchema ? (c.req.valid("query" as never) as TQuery) : undefined,
 			user: user as IUser,
 			anonymousUser: c.get("anonymousUser") as AnonymousUser | undefined,
 		};

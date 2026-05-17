@@ -19,10 +19,7 @@ interface Shortcut {
 	keys: string[];
 }
 
-export const KeyboardShortcutsHelp = ({
-	isOpen,
-	onClose,
-}: KeyboardShortcutsHelpProps) => {
+export const KeyboardShortcutsHelp = ({ isOpen, onClose }: KeyboardShortcutsHelpProps) => {
 	const previousActiveElement = useRef<Element | null>(null);
 	const closeButtonRef = useRef<HTMLButtonElement>(null);
 
@@ -33,10 +30,7 @@ export const KeyboardShortcutsHelp = ({
 				closeButtonRef.current?.focus();
 			}, 50);
 		} else {
-			if (
-				previousActiveElement.current &&
-				"focus" in previousActiveElement.current
-			) {
+			if (previousActiveElement.current && "focus" in previousActiveElement.current) {
 				(previousActiveElement.current as HTMLElement).focus();
 			}
 		}
@@ -79,11 +73,7 @@ export const KeyboardShortcutsHelp = ({
 	);
 
 	return (
-		<Dialog
-			open={isOpen}
-			onOpenChange={(open) => !open && onClose()}
-			width="840px"
-		>
+		<Dialog open={isOpen} onOpenChange={(open) => !open && onClose()} width="840px">
 			<DialogContent className="max-h-[90vh]">
 				<DialogHeader>
 					<DialogTitle>Keyboard Shortcuts</DialogTitle>
@@ -93,19 +83,11 @@ export const KeyboardShortcutsHelp = ({
 				<div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
 					<div className="space-y-6">
 						{shortcuts.slice(0, 4).map((shortcut) => (
-							<div
-								key={shortcut.id}
-								className="flex items-center justify-between py-2"
-							>
-								<span className="text-zinc-700 dark:text-zinc-300">
-									{shortcut.description}
-								</span>
+							<div key={shortcut.id} className="flex items-center justify-between py-2">
+								<span className="text-zinc-700 dark:text-zinc-300">{shortcut.description}</span>
 								<div className="flex gap-1">
 									{shortcut.keys.map((keyValue) => (
-										<KeyComponent
-											key={`${shortcut.id}-${keyValue}`}
-											keyValue={keyValue}
-										/>
+										<KeyComponent key={`${shortcut.id}-${keyValue}`} keyValue={keyValue} />
 									))}
 								</div>
 							</div>
@@ -113,19 +95,11 @@ export const KeyboardShortcutsHelp = ({
 					</div>
 					<div className="space-y-6">
 						{shortcuts.slice(4).map((shortcut) => (
-							<div
-								key={shortcut.id}
-								className="flex items-center justify-between py-2"
-							>
-								<span className="text-zinc-700 dark:text-zinc-300">
-									{shortcut.description}
-								</span>
+							<div key={shortcut.id} className="flex items-center justify-between py-2">
+								<span className="text-zinc-700 dark:text-zinc-300">{shortcut.description}</span>
 								<div className="flex gap-1">
 									{shortcut.keys.map((keyValue) => (
-										<KeyComponent
-											key={`${shortcut.id}-${keyValue}`}
-											keyValue={keyValue}
-										/>
+										<KeyComponent key={`${shortcut.id}-${keyValue}`} keyValue={keyValue} />
 									))}
 								</div>
 							</div>

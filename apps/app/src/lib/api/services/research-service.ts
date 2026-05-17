@@ -26,14 +26,11 @@ export class ResearchService {
 		);
 
 		if (!response.ok) {
-			throw new Error(
-				`Failed to fetch research status: ${response.statusText}`,
-			);
+			throw new Error(`Failed to fetch research status: ${response.statusText}`);
 		}
 
 		const payload = await returnFetchedData<Record<string, any>>(response);
-		const result =
-			payload?.response?.data ?? payload?.response ?? payload?.data ?? payload;
+		const result = payload?.response?.data ?? payload?.response ?? payload?.data ?? payload;
 
 		if (!result?.run) {
 			throw new Error("Invalid research status response");

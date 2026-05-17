@@ -47,10 +47,7 @@ export function useResearchStatus({
 
 			const data = query.state.data as ResearchStatus | undefined;
 			const intervalFromData = data?.poll?.interval_ms;
-			const effectiveInterval = Math.max(
-				5000,
-				Number(intervalFromData ?? sanitizedInterval) || 0,
-			);
+			const effectiveInterval = Math.max(5000, Number(intervalFromData ?? sanitizedInterval) || 0);
 
 			if (!data) {
 				return effectiveInterval;

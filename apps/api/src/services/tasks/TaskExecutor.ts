@@ -5,10 +5,7 @@ import type { TaskHandler, TaskResult } from "./TaskHandler";
 import { TaskRepository } from "~/repositories/TaskRepository";
 import { getLogger } from "~/utils/logger";
 import { generateId } from "~/utils/id";
-import {
-	ENABLED_SCHEDULES_FLAGS,
-	ALWAYS_ENABLED_SCHEDULES,
-} from "~/constants/schedules";
+import { ENABLED_SCHEDULES_FLAGS, ALWAYS_ENABLED_SCHEDULES } from "~/constants/schedules";
 
 const logger = getLogger({ prefix: "services/tasks/executor" });
 const ALWAYS_ENABLED_TASK_SET = new Set<TaskType>(ALWAYS_ENABLED_SCHEDULES);
@@ -17,9 +14,7 @@ function isAlwaysEnabledTask(taskType: TaskType): boolean {
 	return ALWAYS_ENABLED_TASK_SET.has(taskType);
 }
 
-function hasFeatureFlag(
-	taskType: TaskType,
-): taskType is keyof typeof ENABLED_SCHEDULES_FLAGS {
+function hasFeatureFlag(taskType: TaskType): taskType is keyof typeof ENABLED_SCHEDULES_FLAGS {
 	return taskType in ENABLED_SCHEDULES_FLAGS;
 }
 
@@ -59,9 +54,7 @@ export class TaskExecutor {
 						completed_at: completedAt,
 						error_message: `Task type ${message.task_type} is disabled via environment variable ${isEnabledEnvVar}`,
 					});
-					logger.info(
-						`Task type ${message.task_type} is disabled via environment variable`,
-					);
+					logger.info(`Task type ${message.task_type} is disabled via environment variable`);
 					return;
 				}
 			}
@@ -82,9 +75,7 @@ export class TaskExecutor {
 				const result = await handler.handle(message, this.env);
 
 				if (result.status === "error") {
-					throw new Error(
-						result.message || "Unknown error during task execution",
-					);
+					throw new Error(result.message || "Unknown error during task execution");
 				}
 
 				const executionTime = Date.now() - startTime;
@@ -96,17 +87,11 @@ export class TaskExecutor {
 					completed_at: new Date().toISOString(),
 				});
 
-				logger.info(
-					`Task ${message.taskId} completed successfully in ${executionTime}ms`,
-				);
+				logger.info(`Task ${message.taskId} completed successfully in ${executionTime}ms`);
 			} catch (error) {
 				const executionTime = Date.now() - startTime;
 
-				await this.recordExecutionFailure(
-					executionId,
-					executionTime,
-					error as Error,
-				);
+				await this.recordExecutionFailure(executionId, executionTime, error as Error);
 
 				const task = await this.taskRepository.getTaskById(message.taskId);
 				if (task) {
@@ -118,9 +103,7 @@ export class TaskExecutor {
 							attempts: newAttempts,
 							error_message: (error as Error).message,
 						});
-						logger.error(
-							`Task ${message.taskId} failed after ${newAttempts} attempts`,
-						);
+						logger.error(`Task ${message.taskId} failed after ${newAttempts} attempts`);
 					} else {
 						await this.taskRepository.updateTask(message.taskId, {
 							status: "queued",
@@ -142,10 +125,7 @@ export class TaskExecutor {
 	}
 
 	private async recordExecutionStart(taskId: string): Promise<string> {
-		const execution = await this.taskRepository.createTaskExecution(
-			taskId,
-			"running",
-		);
+		const execution = await this.taskRepository.createTaskExecution(taskId, "running");
 		return execution?.id || generateId();
 	}
 
@@ -177,10 +157,7 @@ export class TaskExecutor {
 		);
 	}
 
-	public async handleFailure(
-		message: TaskMessage,
-		error: Error,
-	): Promise<void> {
+	public async handleFailure(message: TaskMessage, error: Error): Promise<void> {
 		logger.error(`Task ${message.taskId} moved to DLQ:`, error);
 
 		await this.taskRepository.updateTask(message.taskId, {

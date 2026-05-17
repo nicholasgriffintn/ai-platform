@@ -2,13 +2,7 @@ import { X } from "lucide-react";
 
 import type { Metric } from "../types";
 import { Button } from "./ui/button";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "./ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
 import { ScrollArea } from "./ui/scroll-area";
 
 interface MetricDetailsProps {

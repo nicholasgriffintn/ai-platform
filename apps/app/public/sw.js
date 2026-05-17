@@ -1,6 +1,4 @@
-importScripts(
-	"https://storage.googleapis.com/workbox-cdn/releases/7.0.0/workbox-sw.js",
-);
+importScripts("https://storage.googleapis.com/workbox-cdn/releases/7.0.0/workbox-sw.js");
 
 const { registerRoute, setDefaultHandler } = workbox.routing;
 const { CacheFirst, NetworkOnly } = workbox.strategies;

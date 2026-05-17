@@ -33,8 +33,7 @@ export const handleTranscribe = async (
 				: null;
 
 			const speechModel = await getAuxiliarySpeechModel(env, userSettings);
-			selectedProvider =
-				speechModel.transcriptionProvider as TranscriptionProvider;
+			selectedProvider = speechModel.transcriptionProvider as TranscriptionProvider;
 		}
 
 		const resolvedProvider = selectedProvider || "workers";

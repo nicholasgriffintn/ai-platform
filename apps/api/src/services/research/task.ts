@@ -46,17 +46,11 @@ const normaliseInput = (input: unknown): unknown => {
 		const sanitised = sanitiseInput(input);
 
 		if (!sanitised) {
-			throw new AssistantError(
-				"Missing research input",
-				ErrorType.PARAMS_ERROR,
-			);
+			throw new AssistantError("Missing research input", ErrorType.PARAMS_ERROR);
 		}
 
 		if (sanitised.length > MAX_INPUT_LENGTH) {
-			throw new AssistantError(
-				"Research input is too long",
-				ErrorType.PARAMS_ERROR,
-			);
+			throw new AssistantError("Research input is too long", ErrorType.PARAMS_ERROR);
 		}
 
 		return sanitised;
@@ -66,19 +60,13 @@ const normaliseInput = (input: unknown): unknown => {
 		const entries = Object.entries(input as Record<string, unknown>);
 
 		if (entries.length === 0) {
-			throw new AssistantError(
-				"Research input cannot be empty",
-				ErrorType.PARAMS_ERROR,
-			);
+			throw new AssistantError("Research input cannot be empty", ErrorType.PARAMS_ERROR);
 		}
 
 		return input;
 	}
 
-	throw new AssistantError(
-		"Unsupported research input type",
-		ErrorType.PARAMS_ERROR,
-	);
+	throw new AssistantError("Unsupported research input type", ErrorType.PARAMS_ERROR);
 };
 
 const getResearchProviderInstance = async (
@@ -96,19 +84,17 @@ const getResearchProviderInstance = async (
 	};
 };
 
-export const startResearchTask = async (
-	req: ResearchTaskRequest,
-): Promise<ResearchTaskHandle> => {
+export const startResearchTask = async (req: ResearchTaskRequest): Promise<ResearchTaskHandle> => {
 	const { env, user, provider, options } = req;
 	const preparedInput = normaliseInput(req.input);
 
-	const { provider: providerToUse, researchProvider } =
-		await getResearchProviderInstance(env, user, provider);
-
-	const creation = await researchProvider.createResearchTask(
-		preparedInput,
-		options,
+	const { provider: providerToUse, researchProvider } = await getResearchProviderInstance(
+		env,
+		user,
+		provider,
 	);
+
+	const creation = await researchProvider.createResearchTask(preparedInput, options);
 
 	if ("status" in creation) {
 		throw new AssistantError(creation.error, ErrorType.EXTERNAL_API_ERROR);
@@ -153,13 +139,13 @@ export const getResearchTaskStatus = async (
 ): Promise<ResearchResult> => {
 	const { env, runId, user, provider, options } = req;
 
-	const { provider: providerToUse, researchProvider } =
-		await getResearchProviderInstance(env, user, provider);
-	const responseRepo =
-		env.DB && user?.id ? new DynamicAppResponseRepository(env) : null;
-	const existingResponse = responseRepo
-		? await responseRepo.getResponseByItemId(runId)
-		: null;
+	const { provider: providerToUse, researchProvider } = await getResearchProviderInstance(
+		env,
+		user,
+		provider,
+	);
+	const responseRepo = env.DB && user?.id ? new DynamicAppResponseRepository(env) : null;
+	const existingResponse = responseRepo ? await responseRepo.getResponseByItemId(runId) : null;
 
 	const parsePayload = (payload: string | null | undefined) => {
 		if (!payload) {
@@ -174,8 +160,7 @@ export const getResearchTaskStatus = async (
 	): ResearchResult | undefined => {
 		const data = payload?.result?.data ?? {};
 		const run = data?.run;
-		const providerValue =
-			data?.provider ?? payload?.result?.provider ?? providerToUse;
+		const providerValue = data?.provider ?? payload?.result?.provider ?? providerToUse;
 
 		if (!run || !providerValue) {
 			return undefined;
@@ -204,9 +189,7 @@ export const getResearchTaskStatus = async (
 		return undefined;
 	};
 
-	let storedPayload = existingResponse
-		? parsePayload(existingResponse.data)
-		: undefined;
+	let storedPayload = existingResponse ? parsePayload(existingResponse.data) : undefined;
 	let storedResult = extractStoredResult(storedPayload);
 
 	if (
@@ -340,14 +323,15 @@ export const getResearchTaskStatus = async (
 	return result;
 };
 
-export const handleResearchTask = async (
-	req: ResearchTaskRequest,
-): Promise<IFunctionResponse> => {
+export const handleResearchTask = async (req: ResearchTaskRequest): Promise<IFunctionResponse> => {
 	const { env, user, provider, options } = req;
 	const preparedInput = normaliseInput(req.input);
 
-	const { provider: providerToUse, researchProvider } =
-		await getResearchProviderInstance(env, user, provider);
+	const { provider: providerToUse, researchProvider } = await getResearchProviderInstance(
+		env,
+		user,
+		provider,
+	);
 
 	const result = await researchProvider.performResearch(preparedInput, options);
 

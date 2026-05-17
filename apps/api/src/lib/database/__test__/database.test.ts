@@ -50,9 +50,7 @@ describe("Database", () => {
 			const instance1 = Database.getInstance(mockEnv);
 			const instance2 = Database.getInstance(mockEnv);
 
-			expect((instance1 as any).repositories).not.toBe(
-				(instance2 as any).repositories,
-			);
+			expect((instance1 as any).repositories).not.toBe((instance2 as any).repositories);
 		});
 	});
 
@@ -110,28 +108,18 @@ describe("Database", () => {
 
 		it("should have conversation repository methods accessible", () => {
 			expect(database.repositories.conversations).toBeDefined();
-			expect(
-				database.repositories.conversations.createConversation,
-			).toBeDefined();
+			expect(database.repositories.conversations.createConversation).toBeDefined();
 			expect(database.repositories.conversations.getConversation).toBeDefined();
-			expect(
-				database.repositories.conversations.getUserConversations,
-			).toBeDefined();
-			expect(
-				database.repositories.conversations.updateConversation,
-			).toBeDefined();
-			expect(
-				database.repositories.conversations.deleteConversation,
-			).toBeDefined();
+			expect(database.repositories.conversations.getUserConversations).toBeDefined();
+			expect(database.repositories.conversations.updateConversation).toBeDefined();
+			expect(database.repositories.conversations.deleteConversation).toBeDefined();
 		});
 
 		it("should have message repository methods accessible", () => {
 			expect(database.repositories.messages).toBeDefined();
 			expect(database.repositories.messages.createMessage).toBeDefined();
 			expect(database.repositories.messages.getMessage).toBeDefined();
-			expect(
-				database.repositories.messages.getConversationMessages,
-			).toBeDefined();
+			expect(database.repositories.messages.getConversationMessages).toBeDefined();
 			expect(database.repositories.messages.updateMessage).toBeDefined();
 			expect(database.repositories.messages.deleteMessage).toBeDefined();
 		});

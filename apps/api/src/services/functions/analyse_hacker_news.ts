@@ -20,13 +20,7 @@ export const analyse_hacker_news: ApiToolDefinition = {
 			character: {
 				type: "string",
 				description: "Character to analyse the stories with",
-				enum: [
-					"normal",
-					"kermitthefrog",
-					"gordonramsay",
-					"davidattenborough",
-					"clippy",
-				],
+				enum: ["normal", "kermitthefrog", "gordonramsay", "davidattenborough", "clippy"],
 			},
 		},
 		required: ["count"],
@@ -53,9 +47,7 @@ export const analyse_hacker_news: ApiToolDefinition = {
 		return {
 			status: "success",
 			name: "analyse_hacker_news",
-			content:
-				aiResponse.response ||
-				"Content extracted but no summary could be generated",
+			content: aiResponse.response || "Content extracted but no summary could be generated",
 			data: {
 				analysis: {
 					content: aiResponse.response,

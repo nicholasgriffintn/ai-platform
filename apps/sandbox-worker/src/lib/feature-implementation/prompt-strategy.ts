@@ -1,7 +1,4 @@
-import type {
-	SandboxPromptStrategy,
-	SandboxTaskType,
-} from "@assistant/schemas";
+import type { SandboxPromptStrategy, SandboxTaskType } from "@assistant/schemas";
 
 type ResolvedPromptStrategy = Exclude<SandboxPromptStrategy, "auto">;
 
@@ -27,10 +24,7 @@ export interface PromptStrategySelection {
 	source: "explicit" | "task-type" | "task-keywords";
 }
 
-const STRATEGY_DEFINITIONS: Record<
-	ResolvedPromptStrategy,
-	PromptStrategyDefinition
-> = {
+const STRATEGY_DEFINITIONS: Record<ResolvedPromptStrategy, PromptStrategyDefinition> = {
 	"feature-delivery": {
 		strategy: "feature-delivery",
 		label: "Feature delivery",
@@ -89,8 +83,7 @@ const STRATEGY_DEFINITIONS: Record<
 		examples: [
 			{
 				title: "Fix a runtime failure",
-				situation:
-					"A request fails due to missing guardrails on input handling.",
+				situation: "A request fails due to missing guardrails on input handling.",
 				approach: [
 					"Add missing validation close to the input boundary.",
 					"Return consistent typed errors instead of throwing generic exceptions.",
@@ -132,8 +125,7 @@ const STRATEGY_DEFINITIONS: Record<
 		examples: [
 			{
 				title: "Reduce duplicated backend logic",
-				situation:
-					"Multiple services repeat the same parsing and validation flow.",
+				situation: "Multiple services repeat the same parsing and validation flow.",
 				approach: [
 					"Create one focused shared utility with clear input/output typing.",
 					"Migrate one call site at a time and run checks between changes.",
@@ -188,8 +180,7 @@ const STRATEGY_DEFINITIONS: Record<
 			},
 			{
 				title: "Harden long-running workflow tests",
-				situation:
-					"Workflow passes happy path but fails silently on intermediate errors.",
+				situation: "Workflow passes happy path but fails silently on intermediate errors.",
 				approach: [
 					"Add tests per transition step with explicit failure assertions.",
 					"Stub external dependencies at stable boundaries only.",
@@ -204,10 +195,7 @@ const STRATEGY_DEFINITIONS: Record<
 	},
 };
 
-const TASK_TYPE_DEFAULT_STRATEGY: Record<
-	SandboxTaskType,
-	ResolvedPromptStrategy
-> = {
+const TASK_TYPE_DEFAULT_STRATEGY: Record<SandboxTaskType, ResolvedPromptStrategy> = {
 	"feature-implementation": "feature-delivery",
 	"code-review": "test-hardening",
 	"test-suite": "test-hardening",
@@ -223,8 +211,7 @@ const TASK_KEYWORD_STRATEGY_RULES: Array<{
 	reason: string;
 }> = [
 	{
-		pattern:
-			/\b(bug|fix|broken|regression|error|defect|crash|failing|hotfix)\b/i,
+		pattern: /\b(bug|fix|broken|regression|error|defect|crash|failing|hotfix)\b/i,
 		strategy: "bug-fix",
 		reason: "Task text indicates bug-fixing work.",
 	},
@@ -234,16 +221,13 @@ const TASK_KEYWORD_STRATEGY_RULES: Array<{
 		reason: "Task text indicates maintainability-focused refactoring.",
 	},
 	{
-		pattern:
-			/\b(test|coverage|spec|assertion|integration test|regression test)\b/i,
+		pattern: /\b(test|coverage|spec|assertion|integration test|regression test)\b/i,
 		strategy: "test-hardening",
 		reason: "Task text indicates testing and verification focus.",
 	},
 ];
 
-function isResolvedPromptStrategy(
-	value: string,
-): value is ResolvedPromptStrategy {
+function isResolvedPromptStrategy(value: string): value is ResolvedPromptStrategy {
 	return value in STRATEGY_DEFINITIONS;
 }
 
@@ -305,14 +289,11 @@ export function formatPromptStrategyFocus(
 	definition: PromptStrategyDefinition,
 	type: "planning" | "execution",
 ): string {
-	const entries =
-		type === "planning" ? definition.planningFocus : definition.executionFocus;
+	const entries = type === "planning" ? definition.planningFocus : definition.executionFocus;
 	return entries.map((entry) => `- ${entry}`).join("\n");
 }
 
-export function formatPromptStrategyExamples(
-	definition: PromptStrategyDefinition,
-): string {
+export function formatPromptStrategyExamples(definition: PromptStrategyDefinition): string {
 	return definition.examples
 		.map((example, index) =>
 			[

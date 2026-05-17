@@ -15,19 +15,14 @@ interface LoginModalProps {
 	onKeySubmit: () => void;
 }
 
-export const LoginModal = ({
-	open,
-	onOpenChange,
-	onKeySubmit,
-}: LoginModalProps) => {
+export const LoginModal = ({ open, onOpenChange, onKeySubmit }: LoginModalProps) => {
 	const [email, setEmail] = useState("");
 	const [emailSubmitted, setEmailSubmitted] = useState(false);
 	const [isRequestingLink, setIsRequestingLink] = useState(false);
 	const [error, setError] = useState("");
 	const [awaitingGithubLogin, setAwaitingGithubLogin] = useState(false);
 	const { isAuthenticated, isLoading, loginWithGithub } = useAuthStatus();
-	const { authenticateWithPasskey, isAuthenticatingWithPasskey } =
-		usePasskeys();
+	const { authenticateWithPasskey, isAuthenticatingWithPasskey } = usePasskeys();
 	const { trackAuth, trackError } = useTrackEvent();
 	const [passkeysSupported, setPasskeysSupported] = useState(false);
 
@@ -67,9 +62,7 @@ export const LoginModal = ({
 				setEmailSubmitted(true);
 				trackAuth("magic_link_sent", { email_domain: email.split("@")[1] });
 			} else {
-				setError(
-					result.error || "Failed to send magic link. Please try again.",
-				);
+				setError(result.error || "Failed to send magic link. Please try again.");
 				trackError("magic_link_error", result.error || "Unknown error", {
 					method: "email",
 				});

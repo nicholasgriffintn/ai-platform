@@ -1,13 +1,7 @@
 import { Loader2, User } from "lucide-react";
 
 import { EmptyState } from "~/components/Core/EmptyState";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "~/components/ui/Card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/Card";
 import { AgentCard } from "./cards/AgentCard";
 import { TeamCard } from "./cards/TeamCard";
 
@@ -47,28 +41,23 @@ export function AgentsList({
 						Your Agents
 					</CardTitle>
 					<CardDescription>
-						Agents are extendable chatbots that can be used for more advanced
-						conversations within Polychat. They are configured to return within
-						a multi-step process and can be configured with fixed settings and
-						MCP connections.
+						Agents are extendable chatbots that can be used for more advanced conversations within
+						Polychat. They are configured to return within a multi-step process and can be
+						configured with fixed settings and MCP connections.
 					</CardDescription>
 				</CardHeader>
 				<CardContent>
 					<div className="flex items-center justify-center py-12">
 						<Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-						<span className="ml-2 text-muted-foreground">
-							Loading your agents...
-						</span>
+						<span className="ml-2 text-muted-foreground">Loading your agents...</span>
 					</div>
 				</CardContent>
 			</Card>
 		);
 	}
 
-	const hasTeams =
-		groupedAgents.teams && Object.values(groupedAgents.teams).length > 0;
-	const hasIndividual =
-		groupedAgents.individual && groupedAgents.individual.length > 0;
+	const hasTeams = groupedAgents.teams && Object.values(groupedAgents.teams).length > 0;
+	const hasIndividual = groupedAgents.individual && groupedAgents.individual.length > 0;
 
 	if (!hasTeams && !hasIndividual) {
 		return (
@@ -79,10 +68,9 @@ export function AgentsList({
 						Your Agents
 					</CardTitle>
 					<CardDescription>
-						Agents are extendable chatbots that can be used for more advanced
-						conversations within Polychat. They are configured to return within
-						a multi-step process and can be configured with fixed settings and
-						MCP connections.
+						Agents are extendable chatbots that can be used for more advanced conversations within
+						Polychat. They are configured to return within a multi-step process and can be
+						configured with fixed settings and MCP connections.
 					</CardDescription>
 				</CardHeader>
 				<CardContent>
@@ -104,10 +92,9 @@ export function AgentsList({
 					Your Agents
 				</CardTitle>
 				<CardDescription>
-					Agents are extendable chatbots that can be used for more advanced
-					conversations within Polychat. They are configured to return within a
-					multi-step process and can be configured with fixed settings and MCP
-					connections.
+					Agents are extendable chatbots that can be used for more advanced conversations within
+					Polychat. They are configured to return within a multi-step process and can be configured
+					with fixed settings and MCP connections.
 				</CardDescription>
 			</CardHeader>
 			<CardContent>
@@ -126,15 +113,9 @@ export function AgentsList({
 										onEdit={onEdit}
 										onShare={onShare}
 										onDelete={onDelete}
-										isUpdating={
-											isUpdating && currentAgentId === team.orchestrator?.id
-										}
-										isSharing={
-											isSharing && agentToShare?.id === team.orchestrator?.id
-										}
-										isDeleting={
-											isDeleting && agentToDelete?.id === team.orchestrator?.id
-										}
+										isUpdating={isUpdating && currentAgentId === team.orchestrator?.id}
+										isSharing={isSharing && agentToShare?.id === team.orchestrator?.id}
+										isDeleting={isDeleting && agentToDelete?.id === team.orchestrator?.id}
 									/>
 								))}
 							</div>

@@ -70,8 +70,7 @@ describe("prompt-coach service", () => {
 					"Include word count requirements.",
 					"Focus on specific applications.",
 				],
-				format_optimization:
-					"Consider using structured prompts with clear sections.",
+				format_optimization: "Consider using structured prompts with clear sections.",
 				confidence_score: expect.any(Number),
 				prompt_type: "technical",
 			});

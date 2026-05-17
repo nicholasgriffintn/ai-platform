@@ -1,11 +1,4 @@
-import {
-	type FormEvent,
-	useCallback,
-	useEffect,
-	useMemo,
-	useRef,
-	useState,
-} from "react";
+import { type FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import "~/styles/scrollbar.css";
@@ -28,22 +21,13 @@ import { WelcomeScreen } from "./WelcomeScreen";
 export const ConversationThread = () => {
 	const { trackEvent, trackFeatureUsage, trackError } = useTrackEvent();
 
-	const { currentConversationId, model, chatInput, setChatInput } =
-		useChatStore();
+	const { currentConversationId, model, chatInput, setChatInput } = useChatStore();
 	const { data: currentConversation } = useChat(currentConversationId);
-	const {
-		streamStarted,
-		controller,
-		sendMessage,
-		abortStream,
-		branchConversation,
-		isBranching,
-	} = useChatManager();
+	const { streamStarted, controller, sendMessage, abortStream, branchConversation, isBranching } =
+		useChatManager();
 	const { data: apiModels } = useModels();
 
-	const [currentArtifact, setCurrentArtifact] = useState<ArtifactProps | null>(
-		null,
-	);
+	const [currentArtifact, setCurrentArtifact] = useState<ArtifactProps | null>(null);
 	const [isPanelVisible, setIsPanelVisible] = useState(false);
 	const [currentArtifacts, setCurrentArtifacts] = useState<ArtifactProps[]>([]);
 	const [isCombinedPanel, setIsCombinedPanel] = useState(false);
@@ -59,11 +43,7 @@ export const ConversationThread = () => {
 	const chatInputRef = useRef<ChatInputHandle>(null);
 
 	const handleArtifactOpen = useCallback(
-		(
-			artifact: ArtifactProps,
-			combine?: boolean,
-			artifacts?: ArtifactProps[],
-		) => {
+		(artifact: ArtifactProps, combine?: boolean, artifacts?: ArtifactProps[]) => {
 			setCurrentArtifact(artifact);
 			setIsPanelVisible(true);
 
@@ -111,10 +91,7 @@ export const ConversationThread = () => {
 	);
 
 	const handleSubmit = useCallback(
-		async (
-			e: FormEvent,
-			attachmentData?: { type: string; data: string; name?: string },
-		) => {
+		async (e: FormEvent, attachmentData?: { type: string; data: string; name?: string }) => {
 			e.preventDefault();
 			if (!chatInput.trim() && !attachmentData) {
 				return;
@@ -124,13 +101,8 @@ export const ConversationThread = () => {
 			if (model && apiModels?.[model]) {
 				const modelConfig = apiModels[model];
 				const outputs = modelConfig.modalities?.output ?? [];
-				const isImageGenerationModel =
-					outputs.includes("image") && !outputs.includes("text");
-				if (
-					isImageGenerationModel &&
-					!modelConfig.supportsImageEdits &&
-					messages.length > 0
-				) {
+				const isImageGenerationModel = outputs.includes("image") && !outputs.includes("text");
+				if (isImageGenerationModel && !modelConfig.supportsImageEdits && messages.length > 0) {
 					toast.error(
 						"Text-to-image models only support one message per conversation. Please start a new conversation.",
 					);
@@ -261,10 +233,7 @@ export const ConversationThread = () => {
 	);
 
 	const showWelcomeScreen =
-		messages.length === 0 &&
-		!currentConversationId &&
-		!isStreamLoading &&
-		!streamStarted;
+		messages.length === 0 && !currentConversationId && !isStreamLoading && !streamStarted;
 
 	const handleBranch = useCallback(
 		(messageId: string, modelId?: string) => {

@@ -35,18 +35,14 @@ export class ConversationRepository extends BaseRepository {
 		return result;
 	}
 
-	public async getConversation(
-		conversationId: string,
-	): Promise<Record<string, unknown> | null> {
+	public async getConversation(conversationId: string): Promise<Record<string, unknown> | null> {
 		const { query, values } = this.buildSelectQuery("conversation", {
 			id: conversationId,
 		});
 		return this.runQuery<Record<string, unknown>>(query, values, true);
 	}
 
-	public async getConversationByShareId(
-		shareId: string,
-	): Promise<Record<string, unknown> | null> {
+	public async getConversationByShareId(shareId: string): Promise<Record<string, unknown> | null> {
 		const { query, values } = this.buildSelectQuery("conversation", {
 			share_id: shareId,
 		});
@@ -64,20 +60,15 @@ export class ConversationRepository extends BaseRepository {
 		pageNumber: number;
 		pageSize: number;
 	}> {
-		const { limit: safeLimit, offset } = PaginationHelper.calculate(
-			page,
-			limit,
-		);
+		const { limit: safeLimit, offset } = PaginationHelper.calculate(page, limit);
 
 		const countQuery = includeArchived
 			? "SELECT COUNT(*) as total FROM conversation WHERE user_id = ?"
 			: "SELECT COUNT(*) as total FROM conversation WHERE user_id = ? AND is_archived = 0";
 
-		const countResult = (await this.runQuery<{ total: number }>(
-			countQuery,
-			[userId],
-			true,
-		)) as { total: number } | null;
+		const countResult = (await this.runQuery<{ total: number }>(countQuery, [userId], true)) as {
+			total: number;
+		} | null;
 
 		const total = countResult?.total || 0;
 		const totalPages = Math.ceil(total / safeLimit);
@@ -100,10 +91,11 @@ export class ConversationRepository extends BaseRepository {
         LIMIT ? OFFSET ?
       `;
 
-		const conversations = (await this.runQuery<Record<string, unknown>>(
-			listQuery,
-			[userId, safeLimit, offset],
-		)) as Record<string, unknown>[];
+		const conversations = (await this.runQuery<Record<string, unknown>>(listQuery, [
+			userId,
+			safeLimit,
+			offset,
+		])) as Record<string, unknown>[];
 
 		return {
 			conversations,
@@ -127,13 +119,9 @@ export class ConversationRepository extends BaseRepository {
 			"share_id",
 		];
 
-		const result = this.buildUpdateQuery(
-			"conversation",
-			updates,
-			allowedFields,
-			"id = ?",
-			[conversationId],
-		);
+		const result = this.buildUpdateQuery("conversation", updates, allowedFields, "id = ?", [
+			conversationId,
+		]);
 
 		if (!result) {
 			return null;
@@ -156,10 +144,7 @@ export class ConversationRepository extends BaseRepository {
 		});
 
 		if (deleteConversation.query) {
-			await this.executeRun(
-				deleteConversation.query,
-				deleteConversation.values,
-			);
+			await this.executeRun(deleteConversation.query, deleteConversation.values);
 		}
 	}
 

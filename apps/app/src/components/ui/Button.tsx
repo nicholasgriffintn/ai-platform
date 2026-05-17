@@ -45,8 +45,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
 			primary: "bg-blue-600 text-white hover:bg-blue-700 shadow-sm",
 			secondary:
 				"bg-off-white-highlight dark:bg-zinc-700 text-zinc-700 dark:text-zinc-200 hover:bg-zinc-200 dark:hover:bg-zinc-600",
-			ghost:
-				"hover:bg-off-white-highlight dark:hover:bg-zinc-900 text-zinc-600 dark:text-zinc-400",
+			ghost: "hover:bg-off-white-highlight dark:hover:bg-zinc-900 text-zinc-600 dark:text-zinc-400",
 			icon: "p-2 rounded-lg hover:bg-off-white-highlight dark:hover:bg-zinc-900 text-zinc-600 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-500",
 			iconActive:
 				"p-2 rounded-lg bg-off-white-highlight dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100",

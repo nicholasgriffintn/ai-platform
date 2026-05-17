@@ -43,9 +43,7 @@ function formatRepositoryContext(repoContext: RepositoryContext): string {
 	].join("\n");
 }
 
-function formatPromptStrategySection(
-	promptStrategy: PromptStrategySelection,
-): string {
+function formatPromptStrategySection(promptStrategy: PromptStrategySelection): string {
 	return [
 		`Selected prompt strategy: ${promptStrategy.definition.label} (${promptStrategy.strategy})`,
 		`Selection reason: ${promptStrategy.reason}`,

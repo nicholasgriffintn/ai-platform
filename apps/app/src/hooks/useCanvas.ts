@@ -1,15 +1,7 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 
-import {
-	fetchCanvasGenerations,
-	fetchCanvasModels,
-	generateCanvasOutputs,
-} from "~/lib/api/canvas";
-import type {
-	CanvasGenerateRequest,
-	CanvasGeneration,
-	CanvasMode,
-} from "~/types/canvas";
+import { fetchCanvasGenerations, fetchCanvasModels, generateCanvasOutputs } from "~/lib/api/canvas";
+import type { CanvasGenerateRequest, CanvasGeneration, CanvasMode } from "~/types/canvas";
 
 export const CANVAS_QUERY_KEY = "canvas";
 
@@ -23,8 +15,7 @@ export function useCanvasModels(mode: CanvasMode) {
 
 export function useGenerateCanvasOutputs() {
 	return useMutation({
-		mutationFn: (request: CanvasGenerateRequest) =>
-			generateCanvasOutputs(request),
+		mutationFn: (request: CanvasGenerateRequest) => generateCanvasOutputs(request),
 	});
 }
 

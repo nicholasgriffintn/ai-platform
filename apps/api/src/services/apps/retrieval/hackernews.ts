@@ -17,17 +17,11 @@ export async function retrieveHackerNewsTopStories({
 }) {
 	try {
 		if (!env.ACCOUNT_ID) {
-			throw new AssistantError(
-				"Cloudflare Account ID not configured",
-				ErrorType.PARAMS_ERROR,
-			);
+			throw new AssistantError("Cloudflare Account ID not configured", ErrorType.PARAMS_ERROR);
 		}
 
 		if (!env.BROWSER_RENDERING_API_KEY) {
-			throw new AssistantError(
-				"Browser Rendering API Key not configured",
-				ErrorType.PARAMS_ERROR,
-			);
+			throw new AssistantError("Browser Rendering API Key not configured", ErrorType.PARAMS_ERROR);
 		}
 
 		const baseUrl = "https://news.ycombinator.com";
@@ -76,10 +70,7 @@ export async function retrieveHackerNewsTopStories({
 			}[];
 		};
 
-		if (
-			!responseJson?.result?.[0]?.results ||
-			responseJson.result[0].results.length === 0
-		) {
+		if (!responseJson?.result?.[0]?.results || responseJson.result[0].results.length === 0) {
 			throw new AssistantError(
 				"Error retrieving HackerNews stories: No results found",
 				ErrorType.PROVIDER_ERROR,
@@ -152,14 +143,15 @@ export async function analyseHackerNewsStories({
 				"You are a neutral AI assistant. Summarize these Hacker News posts without any personal opinions or biases.";
 		}
 
-		const { model: modelToUse, provider: providerToUse } =
-			await getAuxiliaryModelForRetrieval(env, user);
+		const { model: modelToUse, provider: providerToUse } = await getAuxiliaryModelForRetrieval(
+			env,
+			user,
+		);
 		const provider = getChatProvider(providerToUse, { env, user });
 
 		const stringifiedStories = stories
 			.map(
-				(story: { title: string; link: string }, index: number) =>
-					`${index + 1}. ${story.title}`,
+				(story: { title: string; link: string }, index: number) => `${index + 1}. ${story.title}`,
 			)
 			.join("\n");
 
@@ -187,10 +179,7 @@ export async function analyseHackerNewsStories({
 		);
 
 		if (!response.response) {
-			throw new AssistantError(
-				"Failed to analyse HackerNews stories",
-				ErrorType.PROVIDER_ERROR,
-			);
+			throw new AssistantError("Failed to analyse HackerNews stories", ErrorType.PROVIDER_ERROR);
 		}
 
 		return response;

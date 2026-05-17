@@ -8,10 +8,7 @@ const baseRequest: IRequest = {
 	user: { id: 1, plan_id: "pro" } as any,
 };
 
-const createToolContext = (
-	request: IRequest,
-	completionId = "completion_id",
-) => ({
+const createToolContext = (request: IRequest, completionId = "completion_id") => ({
 	completionId,
 	env: request.env,
 	user: request.user,
@@ -29,12 +26,10 @@ describe("retry_with_backoff", () => {
 	});
 
 	it("succeeds on first attempt", async () => {
-		const mockHandleFunctions = vi
-			.spyOn(functionsIndex, "handleFunctions")
-			.mockResolvedValue({
-				status: "success",
-				content: "Function succeeded",
-			});
+		const mockHandleFunctions = vi.spyOn(functionsIndex, "handleFunctions").mockResolvedValue({
+			status: "success",
+			content: "Function succeeded",
+		});
 
 		const resultPromise = retry_with_backoff.execute(
 			{
@@ -105,9 +100,7 @@ describe("retry_with_backoff", () => {
 	});
 
 	it("respects max_backoff limit", async () => {
-		vi.spyOn(functionsIndex, "handleFunctions").mockRejectedValue(
-			new Error("Always fails"),
-		);
+		vi.spyOn(functionsIndex, "handleFunctions").mockRejectedValue(new Error("Always fails"));
 
 		const resultPromise = retry_with_backoff.execute(
 			{
@@ -135,10 +128,7 @@ describe("retry_with_backoff", () => {
 
 	it("throws error for invalid function_name", async () => {
 		await expect(
-			retry_with_backoff.execute(
-				{ function_name: "", args: {} },
-				createToolContext(baseRequest),
-			),
+			retry_with_backoff.execute({ function_name: "", args: {} }, createToolContext(baseRequest)),
 		).rejects.toThrow();
 	});
 });
@@ -149,12 +139,10 @@ describe("fallback", () => {
 	});
 
 	it("uses primary function when it succeeds", async () => {
-		const mockHandleFunctions = vi
-			.spyOn(functionsIndex, "handleFunctions")
-			.mockResolvedValue({
-				status: "success",
-				content: "Primary succeeded",
-			});
+		const mockHandleFunctions = vi.spyOn(functionsIndex, "handleFunctions").mockResolvedValue({
+			status: "success",
+			content: "Primary succeeded",
+		});
 
 		const result = await fallback.execute(
 			{

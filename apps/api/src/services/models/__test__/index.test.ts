@@ -1,11 +1,4 @@
-import {
-	type MockedFunction,
-	beforeEach,
-	describe,
-	expect,
-	it,
-	vi,
-} from "vitest";
+import { type MockedFunction, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { ModelConfig, ModelConfigItem } from "~/types";
 
@@ -26,20 +19,14 @@ vi.mock("~/lib/providers/models", () => ({
 	getModelsByCapability: vi.fn(),
 	getModelsByModality: vi.fn(),
 	getModelConfig: vi.fn(),
-	getAvailableStrengths: vi
-		.fn()
-		.mockReturnValue(["chat", "completion", "embedding"]),
+	getAvailableStrengths: vi.fn().mockReturnValue(["chat", "completion", "embedding"]),
 	availableModalities: ["text", "image", "audio"],
 }));
 
 describe("Models Service", () => {
 	let mockGetModels: MockedFunction<ModelsLib["getModels"]>;
-	let mockFilterModelsForUserAccess: MockedFunction<
-		ModelsLib["filterModelsForUserAccess"]
-	>;
-	let mockGetModelsByCapability: MockedFunction<
-		ModelsLib["getModelsByCapability"]
-	>;
+	let mockFilterModelsForUserAccess: MockedFunction<ModelsLib["filterModelsForUserAccess"]>;
+	let mockGetModelsByCapability: MockedFunction<ModelsLib["getModelsByCapability"]>;
 	let mockGetModelsByModality: MockedFunction<ModelsLib["getModelsByModality"]>;
 	let mockGetModelConfig: MockedFunction<ModelsLib["getModelConfig"]>;
 
@@ -48,9 +35,7 @@ describe("Models Service", () => {
 
 		const modelsLib = await import("~/lib/providers/models");
 		mockGetModels = vi.mocked(modelsLib.getModels);
-		mockFilterModelsForUserAccess = vi.mocked(
-			modelsLib.filterModelsForUserAccess,
-		);
+		mockFilterModelsForUserAccess = vi.mocked(modelsLib.filterModelsForUserAccess);
 		mockGetModelsByCapability = vi.mocked(modelsLib.getModelsByCapability);
 		mockGetModelsByModality = vi.mocked(modelsLib.getModelsByModality);
 		mockGetModelConfig = vi.mocked(modelsLib.getModelConfig);
@@ -72,12 +57,9 @@ describe("Models Service", () => {
 			const result = await listModels({} as any, 123);
 
 			expect(mockGetModels).toHaveBeenCalledOnce();
-			expect(mockFilterModelsForUserAccess).toHaveBeenCalledWith(
-				mockModels,
-				{},
-				123,
-				{ shouldUseCache: false },
-			);
+			expect(mockFilterModelsForUserAccess).toHaveBeenCalledWith(mockModels, {}, 123, {
+				shouldUseCache: false,
+			});
 			expect(result).toEqual(mockFilteredModels);
 		});
 
@@ -89,12 +71,9 @@ describe("Models Service", () => {
 
 			const result = await listModels({} as any);
 
-			expect(mockFilterModelsForUserAccess).toHaveBeenCalledWith(
-				mockModels,
-				{},
-				undefined,
-				{ shouldUseCache: false },
-			);
+			expect(mockFilterModelsForUserAccess).toHaveBeenCalledWith(mockModels, {}, undefined, {
+				shouldUseCache: false,
+			});
 			expect(result).toEqual(mockModels);
 		});
 	});
@@ -120,12 +99,9 @@ describe("Models Service", () => {
 			const result = await listModelsByStrength({} as any, "chat", 123);
 
 			expect(mockGetModelsByCapability).toHaveBeenCalledWith("chat");
-			expect(mockFilterModelsForUserAccess).toHaveBeenCalledWith(
-				mockModels,
-				{},
-				123,
-				{ shouldUseCache: false },
-			);
+			expect(mockFilterModelsForUserAccess).toHaveBeenCalledWith(mockModels, {}, 123, {
+				shouldUseCache: false,
+			});
 			expect(result).toEqual(mockFilteredModels);
 		});
 	});
@@ -151,12 +127,9 @@ describe("Models Service", () => {
 			const result = await listModelsByModality({} as any, "text", 123);
 
 			expect(mockGetModelsByModality).toHaveBeenCalledWith("text");
-			expect(mockFilterModelsForUserAccess).toHaveBeenCalledWith(
-				mockModels,
-				{},
-				123,
-				{ shouldUseCache: false },
-			);
+			expect(mockFilterModelsForUserAccess).toHaveBeenCalledWith(mockModels, {}, 123, {
+				shouldUseCache: false,
+			});
 			expect(result).toEqual(mockFilteredModels);
 		});
 	});
@@ -177,12 +150,9 @@ describe("Models Service", () => {
 			const result = await getModelDetails({} as any, "gpt-4", 123);
 
 			expect(mockGetModelConfig).toHaveBeenCalledWith("gpt-4");
-			expect(mockFilterModelsForUserAccess).toHaveBeenCalledWith(
-				{ "gpt-4": mockModel },
-				{},
-				123,
-				{ shouldUseCache: false },
-			);
+			expect(mockFilterModelsForUserAccess).toHaveBeenCalledWith({ "gpt-4": mockModel }, {}, 123, {
+				shouldUseCache: false,
+			});
 			expect(result).toEqual(mockModel);
 		});
 
@@ -191,10 +161,7 @@ describe("Models Service", () => {
 				id: "gpt-4",
 				name: "GPT-4",
 			} as unknown as ModelConfigItem;
-			const mockAccessibleModels = {} as unknown as Record<
-				string,
-				ModelConfigItem
-			>;
+			const mockAccessibleModels = {} as unknown as Record<string, ModelConfigItem>;
 
 			mockGetModelConfig.mockResolvedValue(mockModel);
 			mockFilterModelsForUserAccess.mockResolvedValue(mockAccessibleModels);

@@ -3,10 +3,7 @@ import { useState } from "react";
 import { PageHeader } from "~/components/Core/PageHeader";
 import { PageTitle } from "~/components/Core/PageTitle";
 import { useTrackEvent } from "~/hooks/use-track-event";
-import {
-	useDeleteAllLocalChats,
-	useDeleteAllRemoteChats,
-} from "~/hooks/useChat";
+import { useDeleteAllLocalChats, useDeleteAllRemoteChats } from "~/hooks/useChat";
 import { apiService } from "~/lib/api/api-service";
 import { Button, ConfirmationDialog } from "~/components/ui";
 
@@ -80,9 +77,7 @@ export function ProfileHistoryTab() {
 		} catch (error) {
 			console.error("Failed to export chat history:", error);
 			alert(
-				error instanceof Error
-					? error.message
-					: "Failed to export chat history. Please try again.",
+				error instanceof Error ? error.message : "Failed to export chat history. Please try again.",
 			);
 		} finally {
 			setIsExporting(false);
@@ -104,11 +99,7 @@ export function ProfileHistoryTab() {
 						Export your history as JSON.
 					</p>
 					<div className="flex gap-2 mb-4">
-						<Button
-							variant="primary"
-							onClick={handleExportJson}
-							disabled={isExporting}
-						>
+						<Button variant="primary" onClick={handleExportJson} disabled={isExporting}>
 							{isExporting ? "Exporting..." : "Export JSON"}
 						</Button>
 					</div>
@@ -118,9 +109,7 @@ export function ProfileHistoryTab() {
 						</div>
 					)}
 					<div className="border-b border-zinc-200 dark:border-zinc-800 mb-4" />
-					<h3 className="text-lg font-medium text-zinc-800 dark:text-zinc-100 mb-4">
-						Danger Zone
-					</h3>
+					<h3 className="text-lg font-medium text-zinc-800 dark:text-zinc-100 mb-4">Danger Zone</h3>
 					<p className="text-sm text-zinc-600 dark:text-zinc-400 mb-4">
 						Permanently delete your history from your local device:
 					</p>
@@ -142,8 +131,7 @@ export function ProfileHistoryTab() {
 						Delete all remote chats
 					</Button>
 					<p className="text-sm text-zinc-600 dark:text-zinc-400 mt-4">
-						*Please note: The retention policies of our hosting partners may
-						vary.
+						*Please note: The retention policies of our hosting partners may vary.
 					</p>
 				</div>
 			</div>

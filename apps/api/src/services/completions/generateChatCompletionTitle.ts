@@ -17,10 +17,7 @@ export const handleGenerateChatCompletionTitle = async (
 	const runtimeEnv = context.env;
 
 	if (!runtimeEnv.AI) {
-		throw new AssistantError(
-			"AI binding is not available",
-			ErrorType.CONFIGURATION_ERROR,
-		);
+		throw new AssistantError("AI binding is not available", ErrorType.CONFIGURATION_ERROR);
 	}
 
 	const user = context.requireUser();
@@ -35,8 +32,7 @@ export const handleGenerateChatCompletionTitle = async (
 	let messagesToUse: Message[] = [];
 
 	const rawMessages = messages;
-	const hasProvidedMessages =
-		Array.isArray(rawMessages) && rawMessages.length > 0;
+	const hasProvidedMessages = Array.isArray(rawMessages) && rawMessages.length > 0;
 
 	if (hasProvidedMessages) {
 		try {
@@ -69,12 +65,10 @@ export const handleGenerateChatCompletionTitle = async (
 			return { title: "New Conversation" };
 		}
 
-		messagesToUse = conversationMessages
-			.slice(0, TITLE_MAX_MESSAGES)
-			.map((msg) => ({
-				role: msg.role,
-				content: msg.content,
-			}));
+		messagesToUse = conversationMessages.slice(0, TITLE_MAX_MESSAGES).map((msg) => ({
+			role: msg.role,
+			content: msg.content,
+		}));
 	}
 
 	if (!messagesToUse.length) {
@@ -94,8 +88,7 @@ export const handleGenerateChatCompletionTitle = async (
 			.join("\n")}
   `;
 
-	const { model: modelToUse, provider: providerToUse } =
-		await getAuxiliaryModel(runtimeEnv, user);
+	const { model: modelToUse, provider: providerToUse } = await getAuxiliaryModel(runtimeEnv, user);
 	const provider = getChatProvider(providerToUse, { env: runtimeEnv, user });
 	const response: any = await provider.getResponse({
 		env: runtimeEnv!,

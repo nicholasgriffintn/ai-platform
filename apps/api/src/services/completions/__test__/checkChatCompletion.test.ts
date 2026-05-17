@@ -69,9 +69,7 @@ describe("handleCheckChatCompletion", () => {
 			requireUser: vi.fn().mockReturnValue(mockUser),
 		};
 
-		vi.mocked(ConversationManager.getInstance).mockReturnValue(
-			mockConversationManager,
-		);
+		vi.mocked(ConversationManager.getInstance).mockReturnValue(mockConversationManager);
 	});
 
 	afterEach(() => {
@@ -100,9 +98,9 @@ describe("handleCheckChatCompletion", () => {
 		});
 
 		it("should throw error for missing completion_id", async () => {
-			await expect(() =>
-				handleCheckChatCompletion(mockServiceContext, "", "user"),
-			).rejects.toThrow("Missing completion_id or role");
+			await expect(() => handleCheckChatCompletion(mockServiceContext, "", "user")).rejects.toThrow(
+				"Missing completion_id or role",
+			);
 		});
 
 		it("should throw error for missing role", async () => {
@@ -140,11 +138,7 @@ describe("handleCheckChatCompletion", () => {
 			mockGuardrails.validateInput.mockResolvedValue(mockValidation);
 			mockServiceContext.getUserSettings.mockResolvedValue({});
 
-			const result = await handleCheckChatCompletion(
-				mockServiceContext,
-				completionId,
-				"user",
-			);
+			const result = await handleCheckChatCompletion(mockServiceContext, completionId, "user");
 
 			expect(mockConversationManager.get).toHaveBeenCalledWith(completionId);
 			expect(mockServiceContext.getUserSettings).toHaveBeenCalled();
@@ -185,16 +179,10 @@ describe("handleCheckChatCompletion", () => {
 			mockConversationManager.get.mockResolvedValue(mockMessages);
 			mockGuardrails.validateOutput.mockResolvedValue(mockValidation);
 
-			const result = await handleCheckChatCompletion(
-				mockServiceContext,
-				completionId,
-				"assistant",
-			);
+			const result = await handleCheckChatCompletion(mockServiceContext, completionId, "assistant");
 
 			expect(mockGuardrails.validateOutput).toHaveBeenCalledWith(
-				expect.stringContaining(
-					"assistant: Why did the chicken cross the road?",
-				),
+				expect.stringContaining("assistant: Why did the chicken cross the road?"),
 				"user-123",
 				completionId,
 			);
@@ -225,11 +213,7 @@ describe("handleCheckChatCompletion", () => {
 			mockConversationManager.get.mockResolvedValue(mockMessages);
 			mockGuardrails.validateInput.mockResolvedValue(mockValidation);
 
-			const result = await handleCheckChatCompletion(
-				mockServiceContext,
-				completionId,
-				"user",
-			);
+			const result = await handleCheckChatCompletion(mockServiceContext, completionId, "user");
 
 			expect(result).toEqual({
 				content: "Input is not valid",
@@ -264,11 +248,7 @@ describe("handleCheckChatCompletion", () => {
 			mockConversationManager.get.mockResolvedValue(mockMessages);
 			mockGuardrails.validateOutput.mockResolvedValue(mockValidation);
 
-			const result = await handleCheckChatCompletion(
-				mockServiceContext,
-				completionId,
-				"assistant",
-			);
+			const result = await handleCheckChatCompletion(mockServiceContext, completionId, "assistant");
 
 			expect(result).toEqual({
 				content: "Output is not valid",
@@ -398,15 +378,11 @@ describe("handleCheckChatCompletion", () => {
 		it("should handle conversation not found", async () => {
 			const completionId = "nonexistent-completion";
 
-			mockConversationManager.get.mockRejectedValue(
-				new Error("Conversation not found"),
-			);
+			mockConversationManager.get.mockRejectedValue(new Error("Conversation not found"));
 
 			await expect(() =>
 				handleCheckChatCompletion(mockServiceContext, completionId, "user"),
-			).rejects.toThrow(
-				"Conversation not found or you don't have access to it",
-			);
+			).rejects.toThrow("Conversation not found or you don't have access to it");
 		});
 
 		it("should handle empty conversation", async () => {
@@ -431,9 +407,7 @@ describe("handleCheckChatCompletion", () => {
 			];
 
 			mockConversationManager.get.mockResolvedValue(mockMessages);
-			mockGuardrails.validateInput.mockRejectedValue(
-				new Error("Guardrails service unavailable"),
-			);
+			mockGuardrails.validateInput.mockRejectedValue(new Error("Guardrails service unavailable"));
 
 			await expect(() =>
 				handleCheckChatCompletion(mockServiceContext, completionId, "user"),
@@ -452,9 +426,7 @@ describe("handleCheckChatCompletion", () => {
 			];
 
 			mockConversationManager.get.mockResolvedValue(mockMessages);
-			mockServiceContext.getUserSettings.mockRejectedValue(
-				new Error("Settings retrieval failed"),
-			);
+			mockServiceContext.getUserSettings.mockRejectedValue(new Error("Settings retrieval failed"));
 
 			await expect(() =>
 				handleCheckChatCompletion(mockServiceContext, completionId, "user"),
@@ -491,11 +463,7 @@ describe("handleCheckChatCompletion", () => {
 			mockConversationManager.get.mockResolvedValue(mockMessages);
 			mockGuardrails.validateOutput.mockResolvedValue(mockValidation);
 
-			const result = await handleCheckChatCompletion(
-				mockServiceContext,
-				completionId,
-				"system",
-			);
+			const result = await handleCheckChatCompletion(mockServiceContext, completionId, "system");
 
 			expect(mockGuardrails.validateOutput).toHaveBeenCalledWith(
 				expect.stringContaining("system: System message"),

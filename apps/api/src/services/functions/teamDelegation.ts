@@ -1,8 +1,5 @@
 import { TeamDelegation } from "~/lib/agents/team/TeamDelegation";
-import {
-	resolveServiceContext,
-	createServiceContext,
-} from "~/lib/context/serviceContext";
+import { resolveServiceContext, createServiceContext } from "~/lib/context/serviceContext";
 import type { IFunctionResponse, IRequest, Message } from "~/types";
 import { getLogger } from "~/utils/logger";
 import { jsonSchemaToZod } from "./jsonSchema";
@@ -26,13 +23,11 @@ export const delegateToTeamMember: ApiToolDefinition = {
 			},
 			task_description: {
 				type: "string",
-				description:
-					"Description of the task you're delegating to the team member",
+				description: "Description of the task you're delegating to the team member",
 			},
 			context_messages: {
 				type: "array",
-				description:
-					"Messages to provide as context to the team member (optional)",
+				description: "Messages to provide as context to the team member (optional)",
 			},
 		},
 		required: ["agent_id", "task_description"],
@@ -109,18 +104,14 @@ export const delegateToTeamMember: ApiToolDefinition = {
 			];
 
 			if (args.context_messages && Array.isArray(args.context_messages)) {
-				const contextMessages: Message[] = args.context_messages.map(
-					(msg: any) => ({
-						role: msg.role as any,
-						content: msg.content,
-					}),
-				);
+				const contextMessages: Message[] = args.context_messages.map((msg: any) => ({
+					role: msg.role as any,
+					content: msg.content,
+				}));
 				messages.unshift(...contextMessages);
 			}
 
-			logger.info(
-				`Delegating task to agent ${args.agent_id}: ${args.task_description}`,
-			);
+			logger.info(`Delegating task to agent ${args.agent_id}: ${args.task_description}`);
 
 			const results = await delegation.callAgent(args.agent_id, messages);
 
@@ -134,18 +125,12 @@ export const delegateToTeamMember: ApiToolDefinition = {
 
 			const response = results
 				.filter((msg) => msg.role === "assistant")
-				.map((msg) =>
-					typeof msg.content === "string"
-						? msg.content
-						: JSON.stringify(msg.content),
-				)
+				.map((msg) => (typeof msg.content === "string" ? msg.content : JSON.stringify(msg.content)))
 				.join("\n\n");
 
 			return {
 				status: "success",
-				content:
-					response ||
-					"Team member completed the task but provided no detailed response.",
+				content: response || "Team member completed the task but provided no detailed response.",
 				role: "tool",
 			};
 		} catch (error) {
@@ -182,8 +167,7 @@ export const delegateToTeamMemberByRole: ApiToolDefinition = {
 			},
 			context_messages: {
 				type: "array",
-				description:
-					"Messages to provide as context to the team member (optional)",
+				description: "Messages to provide as context to the team member (optional)",
 			},
 		},
 		required: ["role", "task_description"],

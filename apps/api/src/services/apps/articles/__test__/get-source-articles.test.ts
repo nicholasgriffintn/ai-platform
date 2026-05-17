@@ -37,13 +37,13 @@ describe("getSourceArticles", () => {
 	});
 
 	it("should throw AssistantError when ids array is empty", async () => {
-		await expect(
-			getSourceArticles({ env: mockEnv, ids: [], userId: 123 }),
-		).rejects.toThrow(expect.any(AssistantError));
+		await expect(getSourceArticles({ env: mockEnv, ids: [], userId: 123 })).rejects.toThrow(
+			expect.any(AssistantError),
+		);
 
-		await expect(
-			getSourceArticles({ env: mockEnv, ids: [], userId: 123 }),
-		).rejects.toThrow("Article IDs are required");
+		await expect(getSourceArticles({ env: mockEnv, ids: [], userId: 123 })).rejects.toThrow(
+			"Article IDs are required",
+		);
 	});
 
 	it("should throw AssistantError when ids is null", async () => {
@@ -53,13 +53,13 @@ describe("getSourceArticles", () => {
 	});
 
 	it("should throw AssistantError when userId is missing", async () => {
-		await expect(
-			getSourceArticles({ env: mockEnv, ids: ["id1"], userId: 0 }),
-		).rejects.toThrow(expect.any(AssistantError));
+		await expect(getSourceArticles({ env: mockEnv, ids: ["id1"], userId: 0 })).rejects.toThrow(
+			expect.any(AssistantError),
+		);
 
-		await expect(
-			getSourceArticles({ env: mockEnv, ids: ["id1"], userId: 0 }),
-		).rejects.toThrow("User ID is required for lookup");
+		await expect(getSourceArticles({ env: mockEnv, ids: ["id1"], userId: 0 })).rejects.toThrow(
+			"User ID is required for lookup",
+		);
 	});
 
 	it("should return articles with parsed data for valid IDs", async () => {
@@ -147,9 +147,7 @@ describe("getSourceArticles", () => {
 			data: '{"title": "Valid Article"}',
 		};
 
-		mockAppDataRepo.getAppDataById
-			.mockResolvedValueOnce(validArticle)
-			.mockResolvedValueOnce(null);
+		mockAppDataRepo.getAppDataById.mockResolvedValueOnce(validArticle).mockResolvedValueOnce(null);
 
 		const result = await getSourceArticles({
 			env: mockEnv,
@@ -279,10 +277,7 @@ describe("getSourceArticles", () => {
 	});
 
 	it("should rethrow AssistantError from dependencies", async () => {
-		const originalError = new AssistantError(
-			"Custom error",
-			ErrorType.NOT_FOUND,
-		);
+		const originalError = new AssistantError("Custom error", ErrorType.NOT_FOUND);
 
 		appDataRepoFactory = () => {
 			throw originalError;

@@ -444,9 +444,7 @@ describe("tools", () => {
 				content: "Success",
 				status: "success",
 			});
-			mockConversationManager.addBatch.mockRejectedValue(
-				new Error("Storage failed"),
-			);
+			mockConversationManager.addBatch.mockRejectedValue(new Error("Storage failed"));
 
 			const modelResponse = {
 				tool_calls: [

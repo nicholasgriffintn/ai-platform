@@ -46,15 +46,11 @@ type AsyncInvocationData = {
 const normalizeStatus = (status?: string) => status?.toLowerCase() ?? "";
 
 const ensureInterval = (value?: number | null, fallback = 5000) => {
-	const numeric =
-		typeof value === "number" && Number.isFinite(value) ? value : fallback;
+	const numeric = typeof value === "number" && Number.isFinite(value) ? value : fallback;
 	return Math.max(1000, numeric);
 };
 
-const buildInitialStatus = (
-	base: any,
-	provider: string,
-): ResearchStatus | undefined => {
+const buildInitialStatus = (base: any, provider: string): ResearchStatus | undefined => {
 	if (!base?.run) {
 		return undefined;
 	}
@@ -80,29 +76,20 @@ function extractHostname(url?: string | null) {
 	}
 }
 
-export function ResearchView({
-	data,
-	embedded,
-}: {
-	data: any;
-	embedded: boolean;
-}) {
+export function ResearchView({ data, embedded }: { data: any; embedded: boolean }) {
 	const [showAllEvidence, setShowAllEvidence] = useState(false);
 
 	if (!data) {
-		return (
-			<p className="text-red-500 dark:text-red-300">
-				No research data available
-			</p>
-		);
+		return <p className="text-red-500 dark:text-red-300">No research data available</p>;
 	}
 
 	const initialProvider = data.provider ?? data.raw?.provider ?? "parallel";
 	const providerLabel = providerLabels[initialProvider] ?? initialProvider;
 	const providerWarning = data.providerWarning ?? data.raw?.providerWarning;
 
-	const asyncInvocation = (data.asyncInvocation ??
-		data.data?.asyncInvocation) as AsyncInvocationData | undefined;
+	const asyncInvocation = (data.asyncInvocation ?? data.data?.asyncInvocation) as
+		| AsyncInvocationData
+		| undefined;
 
 	const combinedInitial = {
 		run: data.run ?? data.raw?.run ?? data.data?.run,
@@ -113,11 +100,7 @@ export function ResearchView({
 
 	const initialStatus = buildInitialStatus(combinedInitial, initialProvider);
 	const initialRunId =
-		initialStatus?.run?.run_id ??
-		asyncInvocation?.id ??
-		data.run_id ??
-		data.data?.run_id ??
-		null;
+		initialStatus?.run?.run_id ?? asyncInvocation?.id ?? data.run_id ?? data.data?.run_id ?? null;
 
 	const basePollInterval = ensureInterval(
 		initialStatus?.poll?.interval_ms ??
@@ -142,20 +125,15 @@ export function ResearchView({
 		initialData: initialStatus,
 	});
 
-	const statusData = (researchQuery.data ?? initialStatus) as
-		| ResearchStatus
-		| undefined;
+	const statusData = (researchQuery.data ?? initialStatus) as ResearchStatus | undefined;
 
 	const run = statusData?.run;
 	const runId = run?.run_id ?? initialRunId;
 	const output = statusData?.output;
 	const warnings = statusData?.warnings;
-	const normalizedStatus = normalizeStatus(
-		run?.status ?? asyncInvocation?.status,
-	);
+	const normalizedStatus = normalizeStatus(run?.status ?? asyncInvocation?.status);
 	const isFailure = FAILURE_STATUSES.has(normalizedStatus);
-	const isInProgress =
-		Boolean(runId) && !isFailure && normalizedStatus !== "completed";
+	const isInProgress = Boolean(runId) && !isFailure && normalizedStatus !== "completed";
 
 	const evidence = Array.isArray(output?.basis) ? output?.basis : [];
 	const displayedEvidence = useMemo(() => {
@@ -264,9 +242,7 @@ export function ResearchView({
 								className="text-xs font-medium text-blue-500 hover:text-blue-400 transition-colors"
 								onClick={() => setShowAllEvidence((prev) => !prev)}
 							>
-								{showAllEvidence
-									? "Show fewer citations"
-									: `Show all ${evidenceCount} citations`}
+								{showAllEvidence ? "Show fewer citations" : `Show all ${evidenceCount} citations`}
 							</button>
 						)}
 					</div>

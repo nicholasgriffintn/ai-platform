@@ -100,37 +100,37 @@ describe("summariseArticle", () => {
 	it("should throw error when user ID is missing", async () => {
 		const userWithoutId = { ...mockUser, id: 0 };
 
-		await expect(
-			summariseArticle({ ...mockParams, user: userWithoutId }),
-		).rejects.toThrow(expect.any(AssistantError));
+		await expect(summariseArticle({ ...mockParams, user: userWithoutId })).rejects.toThrow(
+			expect.any(AssistantError),
+		);
 
-		await expect(
-			summariseArticle({ ...mockParams, user: userWithoutId }),
-		).rejects.toThrow("User ID is required");
+		await expect(summariseArticle({ ...mockParams, user: userWithoutId })).rejects.toThrow(
+			"User ID is required",
+		);
 	});
 
 	it("should throw error when itemId is missing", async () => {
 		const argsWithoutItemId = { ...mockParams.args, itemId: "" };
 
-		await expect(
-			summariseArticle({ ...mockParams, args: argsWithoutItemId }),
-		).rejects.toThrow(expect.any(AssistantError));
+		await expect(summariseArticle({ ...mockParams, args: argsWithoutItemId })).rejects.toThrow(
+			expect.any(AssistantError),
+		);
 
-		await expect(
-			summariseArticle({ ...mockParams, args: argsWithoutItemId }),
-		).rejects.toThrow("Item ID is required");
+		await expect(summariseArticle({ ...mockParams, args: argsWithoutItemId })).rejects.toThrow(
+			"Item ID is required",
+		);
 	});
 
 	it("should throw error when article content is missing", async () => {
 		const argsWithoutArticle = { ...mockParams.args, article: "" };
 
-		await expect(
-			summariseArticle({ ...mockParams, args: argsWithoutArticle }),
-		).rejects.toThrow(expect.any(AssistantError));
+		await expect(summariseArticle({ ...mockParams, args: argsWithoutArticle })).rejects.toThrow(
+			expect.any(AssistantError),
+		);
 
-		await expect(
-			summariseArticle({ ...mockParams, args: argsWithoutArticle }),
-		).rejects.toThrow("Article content is required");
+		await expect(summariseArticle({ ...mockParams, args: argsWithoutArticle })).rejects.toThrow(
+			"Article content is required",
+		);
 	});
 
 	it("should successfully summarise article and save data", async () => {
@@ -217,13 +217,9 @@ describe("summariseArticle", () => {
 
 		mockProvider.getResponse.mockResolvedValue(mockSummaryResponse);
 
-		await expect(summariseArticle(mockParams)).rejects.toThrow(
-			expect.any(AssistantError),
-		);
+		await expect(summariseArticle(mockParams)).rejects.toThrow(expect.any(AssistantError));
 
-		await expect(summariseArticle(mockParams)).rejects.toThrow(
-			"Summary content was empty",
-		);
+		await expect(summariseArticle(mockParams)).rejects.toThrow("Summary content was empty");
 	});
 
 	it("should properly sanitise input article", async () => {
@@ -256,9 +252,7 @@ describe("summariseArticle", () => {
 
 		await summariseArticle(mockParams);
 
-		expect(vi.mocked(extractQuotes)).toHaveBeenCalledWith(
-			"Summary with quotes",
-		);
+		expect(vi.mocked(extractQuotes)).toHaveBeenCalledWith("Summary with quotes");
 		expect(vi.mocked(verifyQuotes)).toHaveBeenCalledWith(
 			"This is a long article that needs to be summarized",
 			["summary quote 1", "summary quote 2"],
@@ -268,20 +262,13 @@ describe("summariseArticle", () => {
 	it("should throw AssistantError when provider throws non-AssistantError", async () => {
 		mockProvider.getResponse.mockRejectedValue(new Error("API Error"));
 
-		await expect(summariseArticle(mockParams)).rejects.toThrow(
-			expect.any(AssistantError),
-		);
+		await expect(summariseArticle(mockParams)).rejects.toThrow(expect.any(AssistantError));
 
-		await expect(summariseArticle(mockParams)).rejects.toThrow(
-			"Failed to summarise article",
-		);
+		await expect(summariseArticle(mockParams)).rejects.toThrow("Failed to summarise article");
 	});
 
 	it("should rethrow AssistantError from dependencies", async () => {
-		const originalError = new AssistantError(
-			"Custom error",
-			ErrorType.PARAMS_ERROR,
-		);
+		const originalError = new AssistantError("Custom error", ErrorType.PARAMS_ERROR);
 		mockProvider.getResponse.mockRejectedValue(originalError);
 
 		await expect(summariseArticle(mockParams)).rejects.toThrow(originalError);

@@ -18,17 +18,7 @@ export const registrationVerificationSchema = z.object({
 			attestationObject: z.string().min(1),
 			authenticatorData: z.string().optional(),
 			transports: z
-				.array(
-					z.enum([
-						"ble",
-						"cable",
-						"hybrid",
-						"internal",
-						"nfc",
-						"smart-card",
-						"usb",
-					]),
-				)
+				.array(z.enum(["ble", "cable", "hybrid", "internal", "nfc", "smart-card", "usb"]))
 				.optional(),
 			publicKeyAlgorithm: z.number().optional(),
 			publicKey: z.string().optional(),

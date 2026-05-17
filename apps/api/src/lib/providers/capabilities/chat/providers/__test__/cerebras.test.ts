@@ -15,10 +15,7 @@ vi.mock("../base", () => ({
 		async getApiKey() {
 			return "test-key";
 		}
-		buildAiGatewayHeaders(
-			params: { env?: { AI_GATEWAY_TOKEN?: string } },
-			apiKey: string,
-		) {
+		buildAiGatewayHeaders(params: { env?: { AI_GATEWAY_TOKEN?: string } }, apiKey: string) {
 			return {
 				"cf-aig-authorization": params.env?.AI_GATEWAY_TOKEN || "",
 				Authorization: `Bearer ${apiKey}`,

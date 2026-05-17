@@ -17,10 +17,7 @@ export default defineConfig({
 				manualChunks: {
 					"vendor-react": ["react", "react-dom"],
 					"vendor-ui": ["lucide-react"],
-					"vendor-utils": [
-						"@tanstack/react-query",
-						"@tanstack/react-query-devtools",
-					],
+					"vendor-utils": ["@tanstack/react-query", "@tanstack/react-query-devtools"],
 				},
 			},
 		},

@@ -38,15 +38,11 @@ describe("run artifacts", () => {
 		});
 
 		expect(put).toHaveBeenCalledTimes(5);
-		expect(persisted.artifactKey).toMatch(
-			/sandbox\/runs\/run-123\/manifest\.json$/,
-		);
+		expect(persisted.artifactKey).toMatch(/sandbox\/runs\/run-123\/manifest\.json$/);
 		expect(persisted.result?.logs).toBeUndefined();
 		expect(persisted.result?.diff).toBeUndefined();
 		expect(persisted.result?.artifactItems).toHaveLength(4);
-		expect(persisted.result?.logsArtifactUrl).toMatch(
-			/^https:\/\/assets\.example\.com\//,
-		);
+		expect(persisted.result?.logsArtifactUrl).toMatch(/^https:\/\/assets\.example\.com\//);
 	});
 
 	it("returns input unchanged when there is nothing to persist", async () => {
