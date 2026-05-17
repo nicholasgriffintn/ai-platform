@@ -538,7 +538,7 @@ function buildUpdateValues(
 	const values = {};
 	const remoteId = typeof remoteModel.id === "string" ? remoteModel.id : modelKey;
 
-	if (typeof remoteModel.name === "string" && remoteModel.name.length > 0) {
+	if (isNewEntry && typeof remoteModel.name === "string" && remoteModel.name.length > 0) {
 		values.name = remoteModel.name;
 	}
 
@@ -917,7 +917,7 @@ function remoteModelsFromProvider(remoteProviderConfig) {
 	return remoteProviderConfig.models;
 }
 
-async function processFile({ filePath, remoteProviders, write, selectedProviders, verbose }) {
+async function inspectModelFile({ filePath, remoteProviders, selectedProviders }) {
 	const originalText = await fs.readFile(filePath, "utf8");
 	const sourceFile = ts.createSourceFile(
 		filePath,
@@ -994,6 +994,48 @@ async function processFile({ filePath, remoteProviders, write, selectedProviders
 		}
 	}
 
+	return {
+		filePath,
+		status: "processable",
+		originalText,
+		sourceFile,
+		declaration,
+		localProvider,
+		remoteProviderId,
+		remoteModels,
+		entries,
+		containerNode,
+		containerElements,
+		representedRemoteModelIds,
+	};
+}
+
+async function processFile({
+	filePath,
+	remoteProviders,
+	write,
+	selectedProviders,
+	verbose,
+	providerRepresentedRemoteModelIds,
+	allowAddingMissingModels,
+}) {
+	const inspection = await inspectModelFile({ filePath, remoteProviders, selectedProviders });
+	if (inspection.status !== "processable") {
+		return inspection;
+	}
+
+	const {
+		originalText,
+		sourceFile,
+		declaration,
+		localProvider,
+		remoteProviderId,
+		remoteModels,
+		entries,
+		containerNode,
+		containerElements,
+	} = inspection;
+
 	const patches = [];
 	let updatedExisting = 0;
 
@@ -1033,9 +1075,14 @@ async function processFile({ filePath, remoteProviders, write, selectedProviders
 		}
 	}
 
-	const missingRemoteModelIds = Object.keys(remoteModels)
-		.filter((remoteModelId) => !representedRemoteModelIds.has(remoteModelId))
-		.sort((left, right) => left.localeCompare(right));
+	const representedRemoteModelIds =
+		providerRepresentedRemoteModelIds ?? inspection.representedRemoteModelIds;
+
+	const missingRemoteModelIds = allowAddingMissingModels
+		? Object.keys(remoteModels)
+				.filter((remoteModelId) => !representedRemoteModelIds.has(remoteModelId))
+				.sort((left, right) => left.localeCompare(right))
+		: [];
 
 	const entryIndent = getEntryIndentFromNodes(
 		originalText,
@@ -1114,14 +1161,59 @@ async function main() {
 		.filter((filePath) => path.basename(filePath) !== "index.ts")
 		.sort((left, right) => left.localeCompare(right));
 
+	const inspections = await Promise.all(
+		files.map((filePath) =>
+			inspectModelFile({
+				filePath,
+				remoteProviders,
+				selectedProviders: options.providers,
+			}),
+		),
+	);
+	const providerRepresentedRemoteModelIds = new Map();
+	const providerFileCounts = new Map();
+
+	for (const inspection of inspections) {
+		if (inspection.status !== "processable") {
+			continue;
+		}
+
+		providerFileCounts.set(
+			inspection.remoteProviderId,
+			(providerFileCounts.get(inspection.remoteProviderId) ?? 0) + 1,
+		);
+
+		let representedRemoteModelIds = providerRepresentedRemoteModelIds.get(
+			inspection.remoteProviderId,
+		);
+		if (!representedRemoteModelIds) {
+			representedRemoteModelIds = new Set();
+			providerRepresentedRemoteModelIds.set(inspection.remoteProviderId, representedRemoteModelIds);
+		}
+
+		for (const remoteModelId of inspection.representedRemoteModelIds) {
+			representedRemoteModelIds.add(remoteModelId);
+		}
+	}
+
 	const reports = [];
 	for (const filePath of files) {
+		const inspection = inspections.find((candidate) => candidate.filePath === filePath);
+		const providerFileCount =
+			inspection?.status === "processable"
+				? (providerFileCounts.get(inspection.remoteProviderId) ?? 1)
+				: 1;
 		const report = await processFile({
 			filePath,
 			remoteProviders,
 			write: options.write,
 			selectedProviders: options.providers,
 			verbose: options.verbose,
+			providerRepresentedRemoteModelIds:
+				inspection?.status === "processable"
+					? providerRepresentedRemoteModelIds.get(inspection.remoteProviderId)
+					: undefined,
+			allowAddingMissingModels: providerFileCount === 1,
 		});
 		reports.push(report);
 	}
@@ -1147,6 +1239,15 @@ async function main() {
 
 	if (!options.write) {
 		console.log("Dry run only. Re-run with --write to apply changes.");
+	}
+
+	const splitProviders = [...providerFileCounts.entries()]
+		.filter(([, fileCount]) => fileCount > 1)
+		.map(([remoteProviderId]) => remoteProviderId)
+		.sort((left, right) => left.localeCompare(right));
+
+	if (splitProviders.length > 0) {
+		console.log(`Skipped adding missing models for split providers: ${splitProviders.join(", ")}`);
 	}
 
 	const skippedProviders = skipped
