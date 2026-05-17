@@ -94,6 +94,27 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0.0006,
 		costPer1kOutputTokens: 0.003,
 	},
+	"@cf/moonshotai/kimi-k2.6": {
+		name: "Moonshot Kimi K2.6",
+		matchingModel: "@cf/moonshotai/kimi-k2.6",
+		description:
+			"Kimi K2.6 is a frontier-scale open-source 1T parameter model with a 262.1k context window, multi-turn tool calling, vision inputs, and structured outputs for agentic workloads.",
+		provider: "workers-ai",
+		supportsToolCalls: true,
+		supportsAttachments: true,
+		modalities: {
+			input: ["text", "image"],
+			output: ["text"],
+		},
+		reasoningConfig: {
+			enabled: true,
+		},
+		contextWindow: 262144,
+		supportsTemperature: true,
+		supportsResponseFormat: true,
+		maxTokens: 262144,
+		isFeatured: true,
+	},
 	"llama-3.3-70b-instruct": {
 		name: "Llama 3.3 70B Instruct FP8 Fast",
 		matchingModel: "@cf/meta/llama-3.3-70b-instruct-fp8-fast",

@@ -305,7 +305,7 @@ export const groqModelConfig: ModelConfig = {
 			"Kimi K2 is Moonshot AI's state-of-the-art Mixture-of-Experts (MoE) language model with 1 trillion total parameters and 32 billion activated parameters. Designed for agentic intelligence, it excels at tool use, coding, and autonomous problem-solving across diverse domains.",
 		reasoningConfig: { enabled: true },
 		supportsArtifacts: true,
-		isFeatured: true,
+		isFeatured: false,
 	},
 	"llama-3.1-8b-instant": {
 		name: "Llama 3.1 8B Instant",
