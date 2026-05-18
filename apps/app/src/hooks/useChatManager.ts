@@ -6,7 +6,7 @@ import {
 	buildCouncilConclusionPrompt,
 	buildCouncilTurnPrompt,
 	getCouncilConclusionMemberId,
-	getNextCouncilMemberIds,
+	getCouncilRoutingState,
 	getOpeningCouncilMemberId,
 	resolveCouncilMemberIds,
 } from "~/lib/council";
@@ -364,7 +364,8 @@ export function useChatManager(requestOptions?: ChatRequestOptions) {
 					if (result.message) {
 						finalAssistantMessage = result.message;
 						accumulatedMessages = [...accumulatedMessages, result.message];
-						speakerQueue.push(...getNextCouncilMemberIds(result.message, memberIds));
+						const routing = getCouncilRoutingState(result.message, memberIds);
+						speakerQueue.splice(0, speakerQueue.length, ...routing.nextMemberIds);
 					}
 					turn += 1;
 				}

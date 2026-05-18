@@ -281,48 +281,48 @@ export function buildSandboxDisplayMessages({
 	if (latestPlan) {
 		displayMessages.push({
 			id: `sandbox-plan-${latestPlan.updatedAt}`,
-			role: "assistant",
-			content: `**Plan**\n\n${latestPlan.plan}`,
+			role: "tool",
+			name: "sandbox_plan",
+			status: "success",
+			content: "Sandbox plan updated",
 			created: Date.parse(latestPlan.updatedAt) || undefined,
 			data: {
-				sandbox: {
-					type: "plan",
+				formattedName: "Sandbox plan",
+				responseType: "custom",
+				result: {
+					name: "sandbox_plan",
+					data: {
+						plan: latestPlan.plan,
+						updatedAt: latestPlan.updatedAt,
+					},
 				},
 			},
 		});
 	}
 
 	for (const entry of timeline) {
-		const detailLines = getEventDetailLines(entry.event);
-		const details = detailLines.length ? `\n\n\`\`\`\n${detailLines.join("\n\n")}\n\`\`\`` : "";
 		displayMessages.push({
 			id: entry.id,
-			role: "assistant",
-			content: `**${entry.event.type}**\n\n${describeEvent(entry.event)}${details}`,
+			role: "tool",
+			name: "sandbox_event",
+			status: entry.event.type,
+			content: describeEvent(entry.event),
 			created: Date.parse(entry.receivedAt) || undefined,
-			data: {
-				sandbox: {
-					type: "event",
-					eventType: entry.event.type,
-				},
-			},
+			data: buildSandboxEventMessageData(entry),
 		});
 	}
 
 	if (selectedRun) {
-		const resultContent = getRunResultContent(selectedRun);
-		if (resultContent) {
+		const resultData = buildSandboxRunResultMessageData(selectedRun);
+		if (resultData) {
 			displayMessages.push({
 				id: `${selectedRun.runId}-result`,
-				role: "assistant",
-				content: resultContent,
+				role: "tool",
+				name: "sandbox_result",
+				status: selectedRun.status,
+				content: summariseRunResult(selectedRun),
 				created: Date.parse(selectedRun.completedAt ?? selectedRun.updatedAt) || undefined,
-				data: {
-					sandbox: {
-						type: "result",
-						status: selectedRun.status,
-					},
-				},
+				data: resultData,
 			});
 		}
 	}
@@ -330,19 +330,55 @@ export function buildSandboxDisplayMessages({
 	return displayMessages;
 }
 
-function getRunResultContent(run: SandboxRun): string | null {
+function buildSandboxEventMessageData(entry: TimelineEvent) {
+	const detailLines = getEventDetailLines(entry.event);
+
+	return {
+		formattedName: formatSandboxEventName(entry.event.type),
+		responseType: "custom" as const,
+		result: {
+			name: "sandbox_event",
+			data: {
+				type: entry.event.type,
+				description: describeEvent(entry.event),
+				receivedAt: entry.receivedAt,
+				details: detailLines,
+				event: entry.event,
+			},
+		},
+	};
+}
+
+function buildSandboxRunResultMessageData(run: SandboxRun) {
 	if (!run.result && !run.error) return null;
 
-	const parts = [`**Run ${run.status}**`, summariseRunResult(run)];
-	if (typeof run.result?.branchName === "string") {
-		parts.push(`Branch: \`${run.result.branchName}\``);
-	}
-	if (typeof run.result?.diff === "string" && run.result.diff.trim()) {
-		parts.push(`Diff:\n\n\`\`\`diff\n${run.result.diff}\n\`\`\``);
-	}
-	if (typeof run.result?.logs === "string" && run.result.logs.trim()) {
-		parts.push(`Logs:\n\n\`\`\`\n${run.result.logs}\n\`\`\``);
-	}
+	return {
+		formattedName: "Sandbox result",
+		responseType: "custom" as const,
+		result: {
+			name: "sandbox_result",
+			data: {
+				runId: run.runId,
+				repo: run.repo,
+				task: run.task,
+				taskType: run.taskType,
+				model: run.model,
+				status: run.status,
+				startedAt: run.startedAt,
+				updatedAt: run.updatedAt,
+				completedAt: run.completedAt,
+				summary: summariseRunResult(run),
+				error: run.error,
+				result: run.result,
+			},
+		},
+	};
+}
 
-	return parts.join("\n\n");
+function formatSandboxEventName(type: string): string {
+	return type
+		.split("_")
+		.filter(Boolean)
+		.map((part) => `${part.charAt(0).toUpperCase()}${part.slice(1)}`)
+		.join(" ");
 }

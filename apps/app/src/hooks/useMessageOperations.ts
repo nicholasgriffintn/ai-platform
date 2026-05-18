@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import type { Message, MessageContent } from "~/types";
+import type { Message } from "~/types";
 import { normalizeMessage } from "~/lib/messages";
 import { useConversationStorage } from "./useConversationStorage";
 import { useChatStore } from "~/state/stores/chatStore";
@@ -75,6 +75,7 @@ export function useMessageOperations() {
 			});
 
 			await addMessageToConversation(conversationId, assistantMessage);
+			return assistantMessage;
 		},
 		[model, addMessageToConversation],
 	);
@@ -85,49 +86,25 @@ export function useMessageOperations() {
 			content: Message["content"],
 			reasoning?: string,
 			messageData?: Partial<Message>,
+			options?: { messageId?: string },
 		) => {
 			await updateConversation(conversationId, (oldData) => {
 				const now = Date.now();
 				const nowISOString = new Date(now).toISOString();
 				const currentModel = model === null ? undefined : model;
 
-				const contentPreview =
-					typeof content === "string"
-						? content
-						: content
-								.map((item: MessageContent) => (item.type === "text" ? item.text || "" : ""))
-								.join("");
-
 				if (!oldData) {
-					const assistantMessage = normalizeMessage({
-						role: "assistant",
-						content,
-						id: messageData?.id || crypto.randomUUID(),
-						created: messageData?.created || now,
-						timestamp: messageData?.timestamp || now,
-						model: messageData?.model || currentModel,
-						reasoning: reasoning
-							? {
-									collapsed: true,
-									content: reasoning,
-								}
-							: undefined,
-						...messageData,
-					});
-
-					return {
-						id: conversationId,
-						title: `${contentPreview.slice(0, 20)}...`,
-						messages: [assistantMessage],
-						isLocalOnly: false,
-						created_at: nowISOString,
-						updated_at: nowISOString,
-						last_message_at: nowISOString,
-					};
+					throw new Error("No conversation found to update");
 				}
 
 				const messages = [...oldData.messages];
-				const lastAssistantIndex = (() => {
+				const assistantIndex = (() => {
+					if (options?.messageId) {
+						return messages.findIndex(
+							(message) => message.id === options.messageId && message.role === "assistant",
+						);
+					}
+
 					for (let i = messages.length - 1; i >= 0; i--) {
 						if (messages[i].role === "assistant") {
 							return i;
@@ -136,11 +113,11 @@ export function useMessageOperations() {
 					return -1;
 				})();
 
-				if (lastAssistantIndex === -1) {
+				if (assistantIndex === -1) {
 					throw new Error("No assistant message found to update");
 				}
 
-				const lastAssistantMessage = messages[lastAssistantIndex];
+				const lastAssistantMessage = messages[assistantIndex];
 				const updatedMessage = normalizeMessage({
 					...lastAssistantMessage,
 					...messageData,
@@ -157,7 +134,7 @@ export function useMessageOperations() {
 						: lastAssistantMessage.reasoning,
 				});
 
-				messages[lastAssistantIndex] = updatedMessage;
+				messages[assistantIndex] = updatedMessage;
 
 				return {
 					...oldData,

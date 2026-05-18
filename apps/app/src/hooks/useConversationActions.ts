@@ -201,7 +201,7 @@ export function useConversationActions(
 
 					setCurrentConversationId(newConversationId);
 
-					await addAssistantMessage(newConversationId, "");
+					const placeholderMessage = await addAssistantMessage(newConversationId, "");
 
 					await apiService.streamChatCompletions(
 						newConversationId,
@@ -215,9 +215,13 @@ export function useConversationActions(
 							if (reasoning) lastReasoning = reasoning;
 
 							if (done) {
-								updateAssistantMessage(newConversationId, content, reasoning);
+								updateAssistantMessage(newConversationId, content, reasoning, undefined, {
+									messageId: placeholderMessage.id,
+								});
 							} else {
-								updateAssistantMessage(newConversationId, content);
+								updateAssistantMessage(newConversationId, content, undefined, undefined, {
+									messageId: placeholderMessage.id,
+								});
 							}
 						},
 						() => {},
@@ -227,7 +231,9 @@ export function useConversationActions(
 						chatMode === "agent" ? `/agents/${selectedAgentId}/completions` : undefined,
 					);
 
-					await updateAssistantMessage(newConversationId, lastContent, lastReasoning);
+					await updateAssistantMessage(newConversationId, lastContent, lastReasoning, undefined, {
+						messageId: placeholderMessage.id,
+					});
 
 					setTimeout(() => {
 						const lastMessage = messagesUpToPoint[messagesUpToPoint.length - 1];
@@ -263,6 +269,7 @@ export function useConversationActions(
 			useMultiModel,
 			selectedAgentId,
 			updateConversation,
+			addAssistantMessage,
 			updateAssistantMessage,
 			setCurrentConversationId,
 			generateTitle,

@@ -54,7 +54,7 @@ describe("sandbox connection helpers", () => {
 		expect(isRunStatusActive("failed")).toBe(false);
 	});
 
-	it("converts sandbox events into normal chat messages", () => {
+	it("converts sandbox events into structured chat tool messages", () => {
 		const messages = buildSandboxDisplayMessages({
 			messages: [
 				{
@@ -83,10 +83,73 @@ describe("sandbox connection helpers", () => {
 			},
 		});
 
-		expect(messages.map((message) => message.role)).toEqual(["user", "assistant", "assistant"]);
-		expect(String(messages[1].content)).toContain("Run tests");
-		expect(String(messages[2].content)).toContain("command_started");
-		expect(String(messages[2].content)).toContain("pnpm test");
+		expect(messages.map((message) => message.role)).toEqual(["user", "tool", "tool"]);
+		expect(messages[1].name).toBe("sandbox_plan");
+		expect(messages[1].data).toMatchObject({
+			formattedName: "Sandbox plan",
+			responseType: "custom",
+			result: {
+				name: "sandbox_plan",
+				data: {
+					plan: "Run tests",
+				},
+			},
+		});
+		expect(messages[2].name).toBe("sandbox_event");
+		expect(messages[2].data).toMatchObject({
+			formattedName: "Command Started",
+			responseType: "custom",
+			result: {
+				name: "sandbox_event",
+				data: {
+					type: "command_started",
+					description: "Running command 1/2: pnpm test",
+				},
+			},
+		});
+	});
+
+	it("renders completed sandbox run results as structured custom tool output", () => {
+		const run = createRun({
+			status: "completed",
+			result: {
+				summary: "Done",
+				branchName: "sandbox/sw-101",
+				diff: "diff --git a/file.ts b/file.ts",
+				logs: "pnpm test passed",
+			},
+			completedAt: "2026-05-18T10:05:00.000Z",
+		});
+
+		const messages = buildSandboxDisplayMessages({
+			messages: [],
+			timeline: [],
+			selectedRun: run,
+			latestPlan: null,
+		});
+
+		expect(messages).toHaveLength(1);
+		expect(messages[0]).toMatchObject({
+			role: "tool",
+			name: "sandbox_result",
+			status: "completed",
+			content: "Done",
+		});
+		expect(messages[0].data).toMatchObject({
+			responseType: "custom",
+			result: {
+				name: "sandbox_result",
+				data: {
+					status: "completed",
+					summary: "Done",
+					result: {
+						branchName: "sandbox/sw-101",
+						diff: "diff --git a/file.ts b/file.ts",
+						logs: "pnpm test passed",
+					},
+				},
+			},
+		});
 	});
 });
 

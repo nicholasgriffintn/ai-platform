@@ -29,10 +29,15 @@ export function getCouncilConclusionMemberId(memberIds: CouncilMemberId[]): Coun
 	return getOpeningCouncilMemberId(memberIds);
 }
 
-export function getNextCouncilMemberIds(
+export interface CouncilRoutingState {
+	shouldContinue: boolean;
+	nextMemberIds: CouncilMemberId[];
+}
+
+export function getCouncilRoutingState(
 	message: Message | undefined,
 	memberIds: CouncilMemberId[],
-): CouncilMemberId[] {
+): CouncilRoutingState {
 	const allowedMemberIds = new Set(memberIds);
 	const councilData =
 		message?.data && typeof message.data === "object" && "council" in message.data
@@ -40,13 +45,26 @@ export function getNextCouncilMemberIds(
 			: undefined;
 
 	if (!councilData?.shouldContinue || !Array.isArray(councilData.nextMemberIds)) {
-		return [];
+		return {
+			shouldContinue: false,
+			nextMemberIds: [],
+		};
 	}
 
-	return councilData.nextMemberIds.filter(
-		(memberId): memberId is CouncilMemberId =>
-			typeof memberId === "string" && allowedMemberIds.has(memberId as CouncilMemberId),
+	const nextMemberIds = councilData.nextMemberIds.filter(
+		(memberId): memberId is CouncilMemberId => {
+			if (typeof memberId !== "string" || !allowedMemberIds.has(memberId as CouncilMemberId)) {
+				return false;
+			}
+			allowedMemberIds.delete(memberId as CouncilMemberId);
+			return true;
+		},
 	);
+
+	return {
+		shouldContinue: true,
+		nextMemberIds,
+	};
 }
 
 export function buildCouncilTurnPrompt({

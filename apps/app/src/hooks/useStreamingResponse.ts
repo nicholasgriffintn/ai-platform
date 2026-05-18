@@ -53,7 +53,7 @@ export function useStreamingResponse(
 			let response = "";
 			let generatedMessage: Message | undefined;
 
-			await addAssistantMessage(conversationId, "");
+			const placeholderMessage = await addAssistantMessage(conversationId, "");
 
 			const handleMessageUpdate = (
 				content: Message["content"],
@@ -62,7 +62,9 @@ export function useStreamingResponse(
 				done?: boolean,
 			) => {
 				if (done) {
-					updateAssistantMessage(conversationId, content, reasoning);
+					updateAssistantMessage(conversationId, content, reasoning, undefined, {
+						messageId: placeholderMessage.id,
+					});
 					response = "";
 					return;
 				}
@@ -76,7 +78,9 @@ export function useStreamingResponse(
 						}
 					}, 0);
 				} else {
-					updateAssistantMessage(conversationId, content, reasoning);
+					updateAssistantMessage(conversationId, content, reasoning, undefined, {
+						messageId: placeholderMessage.id,
+					});
 				}
 			};
 
@@ -89,7 +93,9 @@ export function useStreamingResponse(
 						response += text;
 						assistantResponseRef.current = response;
 
-						updateAssistantMessage(conversationId, response);
+						updateAssistantMessage(conversationId, response, undefined, undefined, {
+							messageId: placeholderMessage.id,
+						});
 					};
 
 					const lastMessage = messages[messages.length - 1];
@@ -166,6 +172,7 @@ export function useStreamingResponse(
 						messageContentToDisplay,
 						assistantMessage.reasoning?.content,
 						assistantMessage,
+						{ messageId: placeholderMessage.id },
 					);
 
 					response = textPreview;
@@ -195,6 +202,7 @@ export function useStreamingResponse(
 			model,
 			controller,
 			addMessageToConversation,
+			addAssistantMessage,
 			useMultiModel,
 			selectedAgentId,
 			updateLoading,

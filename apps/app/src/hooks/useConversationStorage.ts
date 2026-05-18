@@ -42,10 +42,11 @@ export function useConversationStorage() {
 			const allConversations = queryClient.getQueryData<Conversation[]>([CHATS_QUERY_KEY]) || [];
 
 			const now = new Date().toISOString();
+			const nextConversation = updater(currentConversation);
 			const updatedConversation = {
-				...updater(currentConversation),
-				isLocalOnly: updater(currentConversation)?.isLocalOnly || isLocalOnly,
-				created_at: updater(currentConversation)?.created_at || now,
+				...nextConversation,
+				isLocalOnly: nextConversation.isLocalOnly || isLocalOnly,
+				created_at: nextConversation.created_at || now,
 				updated_at: now,
 				last_message_at: now,
 			};

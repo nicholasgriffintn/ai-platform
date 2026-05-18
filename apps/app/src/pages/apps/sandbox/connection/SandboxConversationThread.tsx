@@ -105,8 +105,22 @@ export function SandboxConversationThread({ consoleState: c }: SandboxConversati
 								setShouldCommit={c.setShouldCommit}
 								isReadOnlyTaskType={c.isReadOnlyTaskType}
 								disabled={c.isSubmitting && !c.instructionRunId}
+								activeRunId={c.runControlRunId}
+								liveRunStatus={c.runControlStatus}
+								commandProgress={c.commandProgress}
+								pendingApprovals={c.pendingApprovals}
+								isPausePending={c.isPausePending}
+								isResumePending={c.isResumePending}
+								isCancelPending={c.isCancelPending}
+								isResolvePending={c.isInstructionPending}
+								onPause={c.handlePauseRun}
+								onResume={c.handleResumeRun}
+								onCancel={c.handleCancelRun}
+								onResolveApproval={c.handleResolveApproval}
 							/>
 						}
+						disableAttachments
+						hideDefaultControls
 					/>
 				</div>
 			</div>

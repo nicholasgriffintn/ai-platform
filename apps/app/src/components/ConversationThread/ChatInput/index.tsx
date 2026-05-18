@@ -80,11 +80,23 @@ interface ChatInputProps {
 		followUp: string;
 	};
 	controls?: ReactNode;
+	disableAttachments?: boolean;
+	hideDefaultControls?: boolean;
 }
 
 export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 	(
-		{ handleSubmit, isLoading, streamStarted, controller, onTranscribe, placeholder, controls },
+		{
+			handleSubmit,
+			isLoading,
+			streamStarted,
+			controller,
+			onTranscribe,
+			placeholder,
+			controls,
+			disableAttachments = false,
+			hideDefaultControls = false,
+		},
 		ref,
 	) => {
 		const { isMobile } = useUIStore();
@@ -475,7 +487,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 			return { preview: null, label: "" };
 		};
 
-		const canUploadFiles = !isTextToImageOnlyModel;
+		const canUploadFiles = !disableAttachments && !isTextToImageOnlyModel;
 
 		const { preview, label } = selectedAttachment
 			? getAttachmentIconAndLabel()
@@ -636,27 +648,29 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 					</div>
 
 					<div className="border-t border-zinc-200 dark:border-zinc-700 mt-2 px-3 pb-3 pt-3">
-						{controls && <div className="mb-3">{controls}</div>}
-						<div className="flex items-center justify-between gap-1 sm:gap-2">
-							<div className="flex-1 min-w-0 max-w-[70%] sm:max-w-none flex items-center gap-2">
-								<div className="min-w-0 flex-shrink">
-									<ModelSelector isDisabled={isLoading} mono={true} />
+						{controls && <div className={hideDefaultControls ? "" : "mb-3"}>{controls}</div>}
+						{!hideDefaultControls && (
+							<div className="flex items-center justify-between gap-1 sm:gap-2">
+								<div className="flex-1 min-w-0 max-w-[70%] sm:max-w-none flex items-center gap-2">
+									<div className="min-w-0 flex-shrink">
+										<ModelSelector isDisabled={isLoading} mono={true} />
+									</div>
+									<ToolToggles isDisabled={isLoading || isToolSelectionLocked} />
 								</div>
-								<ToolToggles isDisabled={isLoading || isToolSelectionLocked} />
+								<div className="flex-shrink-0 flex items-center gap-2">
+									{!isMobile && (
+										<span className="text-xs text-zinc-500 dark:text-zinc-400 hidden sm:inline">
+											Shift+Enter for new line
+										</span>
+									)}
+									<ChatSettingsComponent
+										isDisabled={isLoading}
+										toolSelectionLocked={isToolSelectionLocked}
+										supportsToolCalls={supportsToolCalls}
+									/>
+								</div>
 							</div>
-							<div className="flex-shrink-0 flex items-center gap-2">
-								{!isMobile && (
-									<span className="text-xs text-zinc-500 dark:text-zinc-400 hidden sm:inline">
-										Shift+Enter for new line
-									</span>
-								)}
-								<ChatSettingsComponent
-									isDisabled={isLoading}
-									toolSelectionLocked={isToolSelectionLocked}
-									supportsToolCalls={supportsToolCalls}
-								/>
-							</div>
-						</div>
+						)}
 					</div>
 				</div>
 			</div>

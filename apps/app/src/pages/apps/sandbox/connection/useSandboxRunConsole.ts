@@ -231,6 +231,12 @@ export function useSandboxRunConsole() {
 		if (!run) return undefined;
 		return isRunStatusActive(run.status) || run.status === "paused" ? run.runId : undefined;
 	}, [activeRunId, selectedRunDetails, selectedRunFromHistory]);
+	const runControlStatus = useMemo<"running" | "paused" | undefined>(() => {
+		if (liveRunStatus) return liveRunStatus;
+		if (selectedRun?.status === "paused") return "paused";
+		if (isRunStatusActive(selectedRun?.status)) return "running";
+		return undefined;
+	}, [liveRunStatus, selectedRun?.status]);
 
 	const shouldSubscribeToRunEvents =
 		!isSubmitting &&
@@ -383,9 +389,9 @@ export function useSandboxRunConsole() {
 
 	const handleCancelRun = async () => {
 		const controller = abortControllerRef.current;
-		if (!controller) return;
+		const runId = activeRunIdRef.current ?? instructionRunId;
+		if (!controller && !runId) return;
 
-		const runId = activeRunIdRef.current;
 		if (runId) {
 			try {
 				await cancelRunMutation.mutateAsync({
@@ -399,7 +405,7 @@ export function useSandboxRunConsole() {
 			}
 		}
 
-		controller.abort();
+		controller?.abort();
 		abortControllerRef.current = null;
 		setActiveRunId(undefined);
 		activeRunIdRef.current = undefined;
@@ -419,7 +425,7 @@ export function useSandboxRunConsole() {
 	};
 
 	const handlePauseRun = async () => {
-		const runId = activeRunIdRef.current;
+		const runId = activeRunIdRef.current ?? instructionRunId;
 		if (!runId) {
 			toast.error("Run id is not available yet");
 			return;
@@ -437,7 +443,7 @@ export function useSandboxRunConsole() {
 	};
 
 	const handleResumeRun = async () => {
-		const runId = activeRunIdRef.current;
+		const runId = activeRunIdRef.current ?? instructionRunId;
 		if (!runId) {
 			toast.error("Run id is not available yet");
 			return;
@@ -694,6 +700,8 @@ export function useSandboxRunConsole() {
 		canSubmit,
 		liveRunStatus,
 		activeRunId,
+		runControlRunId: instructionRunId,
+		runControlStatus,
 		commandProgress,
 		// Timeline / messages
 		timeline,

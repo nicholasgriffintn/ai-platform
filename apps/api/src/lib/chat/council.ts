@@ -6,7 +6,7 @@ import {
 	type CouncilMemberDefinition,
 	type CouncilMemberId,
 } from "@assistant/schemas";
-import { safeParseJson } from "~/utils/json";
+import { parseAIResponseJson } from "~/utils/json";
 
 const allCouncilMembers = councilMembers as readonly CouncilMemberDefinition[];
 const councilMemberById = new Map(allCouncilMembers.map((member) => [member.id, member]));
@@ -16,6 +16,47 @@ export interface CouncilTurnRouting {
 	shouldContinue: boolean;
 	nextMemberIds: CouncilMemberId[];
 	reason?: string;
+}
+
+function extractCouncilRoutingPayload(
+	content: string,
+): { rawPayload: string; cleanedContent: string } | null {
+	const taggedMatch = content.match(/<council_next>\s*([\s\S]*?)\s*<\/council_next>/i);
+	if (taggedMatch) {
+		return {
+			rawPayload: taggedMatch[1]?.trim() || "",
+			cleanedContent: content.replace(taggedMatch[0], "").trim(),
+		};
+	}
+
+	const labelledMatch = content.match(
+		/(?:^|\n)\s*(?:#{1,6}\s*)?Council\s+Next\s*:?\s*(```(?:json)?[\s\S]*?```|\{[\s\S]*\})\s*$/i,
+	);
+	if (!labelledMatch) {
+		return null;
+	}
+
+	return {
+		rawPayload: labelledMatch[1]?.trim() || "",
+		cleanedContent: content.replace(labelledMatch[0], "").trim(),
+	};
+}
+
+function parseRoutingBoolean(value: unknown): boolean | null {
+	if (typeof value === "boolean") {
+		return value;
+	}
+	if (typeof value !== "string") {
+		return null;
+	}
+	const normalized = value.trim().toLowerCase();
+	if (normalized === "true") {
+		return true;
+	}
+	if (normalized === "false") {
+		return false;
+	}
+	return null;
 }
 
 function resolveCouncilMembers(options: CouncilChatOptions): CouncilMemberDefinition[] {
@@ -74,13 +115,12 @@ export function extractCouncilTurnRouting(
 		return { content, routing: null };
 	}
 
-	const match = content.match(/<council_next>\s*([\s\S]*?)\s*<\/council_next>/i);
-	if (!match) {
+	const routingPayload = extractCouncilRoutingPayload(content);
+	if (!routingPayload) {
 		return { content, routing: null };
 	}
 
-	const rawPayload = match[1]?.trim();
-	const cleanedContent = content.replace(match[0], "").trim();
+	const { rawPayload, cleanedContent } = routingPayload;
 	if (parsed.data.phase === "conclusion") {
 		return { content: cleanedContent, routing: null };
 	}
@@ -89,7 +129,7 @@ export function extractCouncilTurnRouting(
 		return { content: cleanedContent, routing: null };
 	}
 
-	const payload = safeParseJson(rawPayload);
+	const { data: payload } = parseAIResponseJson(rawPayload);
 	if (!payload || typeof payload !== "object" || Array.isArray(payload)) {
 		return { content: cleanedContent, routing: null };
 	}
@@ -102,18 +142,21 @@ export function extractCouncilTurnRouting(
 	const allowedMemberIds = new Set(
 		parsed.data.memberIds?.length ? parsed.data.memberIds : defaultCouncilMemberIds,
 	);
-	const nextMemberIds = rawNextMemberIds.filter(
-		(memberId): memberId is CouncilMemberId =>
-			typeof memberId === "string" &&
-			councilMemberIds.has(memberId as CouncilMemberId) &&
-			allowedMemberIds.has(memberId as CouncilMemberId),
-	);
+	const nextMemberIds = rawNextMemberIds.filter((memberId): memberId is CouncilMemberId => {
+		if (
+			typeof memberId !== "string" ||
+			!councilMemberIds.has(memberId as CouncilMemberId) ||
+			!allowedMemberIds.has(memberId as CouncilMemberId)
+		) {
+			return false;
+		}
+		allowedMemberIds.delete(memberId as CouncilMemberId);
+		return true;
+	});
+	const explicitShouldContinue =
+		parseRoutingBoolean(payload.shouldContinue) ?? parseRoutingBoolean(payload.should_continue);
 	const shouldContinue =
-		typeof payload.shouldContinue === "boolean"
-			? payload.shouldContinue
-			: typeof payload.should_continue === "boolean"
-				? payload.should_continue
-				: nextMemberIds.length > 0;
+		explicitShouldContinue === null ? nextMemberIds.length > 0 : explicitShouldContinue;
 	const reason =
 		typeof payload.reason === "string" && payload.reason.trim() ? payload.reason.trim() : undefined;
 
@@ -121,7 +164,7 @@ export function extractCouncilTurnRouting(
 		content: cleanedContent,
 		routing: {
 			shouldContinue,
-			nextMemberIds,
+			nextMemberIds: shouldContinue ? nextMemberIds : [],
 			reason,
 		},
 	};

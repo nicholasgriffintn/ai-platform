@@ -150,6 +150,44 @@ describe("buildCouncilSystemPrompt", () => {
 		expect(result.routing).toBeNull();
 	});
 
+	it("parses model routing with markdown fenced JSON and string booleans", () => {
+		const result = extractCouncilTurnRouting(
+			'Done.\n<council_next>```json\n{"shouldContinue":"false","nextMemberIds":["sceptic"]}\n```</council_next>',
+			{
+				enabled: true,
+				responseMode: "debate",
+				memberIds: ["security", "sceptic"],
+				activeMemberId: "security",
+			},
+		);
+
+		expect(result.content).toBe("Done.");
+		expect(result.routing).toEqual({
+			shouldContinue: false,
+			nextMemberIds: [],
+			reason: undefined,
+		});
+	});
+
+	it("parses visible Council Next routing labels used by weaker models", () => {
+		const result = extractCouncilTurnRouting(
+			'Security: Risk is resolved.\n\nCouncil Next\n\n{"shouldContinue":false,"nextMemberIds":[],"reason":"done"}',
+			{
+				enabled: true,
+				responseMode: "debate",
+				memberIds: ["security", "sceptic"],
+				activeMemberId: "security",
+			},
+		);
+
+		expect(result.content).toBe("Security: Risk is resolved.");
+		expect(result.routing).toEqual({
+			shouldContinue: false,
+			nextMemberIds: [],
+			reason: "done",
+		});
+	});
+
 	it("detects synthetic council turn storage skips", () => {
 		expect(shouldSkipCouncilInputStorage({ enabled: true, skipInputStorage: true })).toBe(true);
 		expect(shouldSkipCouncilInputStorage({ enabled: true, skipInputStorage: false })).toBe(false);

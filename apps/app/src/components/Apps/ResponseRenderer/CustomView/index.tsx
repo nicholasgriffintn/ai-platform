@@ -4,6 +4,7 @@ import { AddReasoningStepView } from "./Views/AddReasoningStepView";
 import { TutorView } from "./Views/TutorView";
 import { WebSearchView } from "./Views/WebSearchView";
 import { ResearchView } from "./Views/ResearchView";
+import { SandboxView } from "./Views/SandboxView";
 
 export function CustomView({
 	messageContent,
@@ -34,6 +35,14 @@ export function CustomView({
 
 	if (data.name === "add_reasoning_step") {
 		return <AddReasoningStepView data={customData} embedded={embedded} />;
+	}
+
+	if (
+		data.name === "sandbox_plan" ||
+		data.name === "sandbox_event" ||
+		data.name === "sandbox_result"
+	) {
+		return <SandboxView type={data.name} data={customData} />;
 	}
 
 	console.info("ResponseRenderer custom response -> it's on you now!", customData);
