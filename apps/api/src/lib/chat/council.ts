@@ -134,7 +134,6 @@ export function buildCouncilSystemPrompt(value: unknown): string | null {
 	}
 
 	const members = resolveCouncilMembers(parsed.data);
-	const maxRounds = parsed.data.maxRounds ?? 3;
 	const requireConsensus = parsed.data.requireConsensus ?? true;
 	const activeMember = getCouncilMemberDefinition(parsed.data.activeMemberId);
 	const memberList = members
@@ -192,13 +191,14 @@ ${memberList}
 <debate_context>
 - This is round ${parsed.data.round ?? 1}, turn ${parsed.data.turn ?? 1}.
 - Speak only as ${activeMember.name}; do not answer as the whole council.
-- Respond to the user's problem and the prior council messages in the conversation.
-- Agree, disagree, or refine previous arguments explicitly when useful.
-- Add one clear contribution that advances the debate.
+- Stay under 120 words unless tool output forces extra detail.
+- Do not recap the whole debate. Address one specific previous point: rebut it, sharpen it, or build on it.
+- If you have no useful contribution, say "${activeMember.name}: Pass." and route a better member, or end the debate.
+- Avoid bland agreement. If you agree, add a new consequence, risk, or surprising angle.
+- If a factual, technical, or current claim needs verification, use available tools when the chat tool system exposes them. If tools are not available, mark it as [verify: claim].
 - If another selected member now has useful input, choose them for the next turn. You may choose yourself again if your role needs another turn.
-- If the council has converged, choose no next members and set shouldContinue to false.
+- If the council has converged, choose no next members and set shouldContinue to false so the chamber can conclude.
 - Do not fabricate external facts. Mark unknowns as unknown and say what would need verification.
-- Keep the response concise enough that other members can continue.
 </debate_context>
 
 <output_contract>
@@ -208,6 +208,7 @@ End with exactly one routing tag:
 <council_next>{"shouldContinue":true,"nextMemberIds":["member_id"],"reason":"short reason"}</council_next>
 Use only selected member ids from this list: ${members.map((member) => member.id).join(", ")}.
 Use {"shouldContinue":false,"nextMemberIds":[],"reason":"consensus reached"} when no member has new input.
+Choose only members with a concrete reason to speak next.
 </output_contract>`;
 	}
 
@@ -219,7 +220,7 @@ ${memberList}
 
 <council_process>
 - Treat each council member as a distinct agent with its own role, traits, and viewpoint.
-- Run up to ${maxRounds} debate round${maxRounds === 1 ? "" : "s"} internally before answering.
+- Continue the internal debate until the council reaches a result or clearly records a principled unresolved disagreement.
 - In each round, members should challenge assumptions, add evidence, identify risks, and refine the proposal.
 - ${requireConsensus ? "Continue debating until the council reaches a defensible consensus or clearly records a principled unresolved disagreement." : "Consensus is preferred, but unresolved disagreement is allowed when it improves the answer."}
 - Do not fabricate external facts. Mark unknowns as unknown and say what would need verification.

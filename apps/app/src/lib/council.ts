@@ -62,8 +62,8 @@ export function buildCouncilTurnPrompt({
 	return [
 		`Council turn ${turn}, round ${round}.`,
 		`${member.name}, respond as your council role: ${member.role}.`,
-		"Engage prior council turns, state agreement or disagreement where useful, then add one concrete contribution.",
-		"Choose whichever selected member has useful next input. You may choose yourself again. Stop only when no selected member has useful new input.",
+		"Make one sharp contribution. Rebut, sharpen, or build on one prior point. Pass if you have no useful input.",
+		"Choose only selected members with concrete useful next input. You may choose yourself again. Stop only when no selected member has useful new input.",
 	].join(" ");
 }
 

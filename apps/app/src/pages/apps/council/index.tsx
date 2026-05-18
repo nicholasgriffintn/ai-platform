@@ -36,7 +36,6 @@ export default function CouncilApp() {
 					enabled: true,
 					responseMode,
 					memberIds: selectedMemberIds,
-					maxRounds: 3,
 					requireConsensus: true,
 				},
 			},
