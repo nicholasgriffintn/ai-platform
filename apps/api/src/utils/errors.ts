@@ -134,7 +134,7 @@ export function handleAIServiceError(error: AssistantError): Response {
 					retryAfter: 60,
 					requestId: error.context.requestId,
 				},
-				{ status: 429 },
+				{ status: 429, headers: { "Retry-After": "60" } },
 			);
 		case ErrorType.AUTHENTICATION_ERROR:
 		case ErrorType.UNAUTHORIZED:

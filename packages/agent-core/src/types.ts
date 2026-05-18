@@ -160,6 +160,7 @@ export interface ExecuteAgentLoopParams<
 	formatRecoveryRequiredMessage?: (recoveryReason: string) => string;
 	formatRecoveryEnforcementMessage?: (recoveryReason: string) => string;
 	formatPlanUpdatedMessage?: (plan: string) => string;
+	shouldAbortOnDecisionError?: (error: unknown) => boolean;
 	onStepBudgetExceeded?: (context: {
 		step: number;
 		maxSteps: number;

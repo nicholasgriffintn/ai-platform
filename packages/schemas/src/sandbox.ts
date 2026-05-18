@@ -163,6 +163,7 @@ export const sandboxRunResultSchema = z
 		logsArtifactUrl: z.string().optional(),
 		error: z.string().optional(),
 		errorType: z.string().optional(),
+		retryable: z.boolean().optional(),
 		branchName: z.string().optional(),
 	})
 	.catchall(z.unknown());

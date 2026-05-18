@@ -94,6 +94,7 @@ export async function executeAgentLoop<
 	const formatRecoveryEnforcementMessage =
 		params.formatRecoveryEnforcementMessage ?? defaultRecoveryEnforcementMessage;
 	const formatPlanUpdatedMessage = params.formatPlanUpdatedMessage ?? defaultPlanUpdatedMessage;
+	const shouldAbortOnDecisionError = params.shouldAbortOnDecisionError ?? (() => false);
 
 	const messages = params.initialMessages;
 	let currentPlan = params.initialPlan;
@@ -192,9 +193,18 @@ export async function executeAgentLoop<
 			});
 			consecutiveDecisionFailures = 0;
 		} catch (error) {
-			consecutiveDecisionFailures += 1;
 			const errorMessage =
 				error instanceof Error ? error.message : "Failed to parse or produce an agent decision";
+			if (shouldAbortOnDecisionError(error)) {
+				await emit({
+					type: "agent_decision_failed",
+					agentStep: step,
+					error: truncateForModel(errorMessage, config.maxObservationChars),
+				});
+				throw error;
+			}
+
+			consecutiveDecisionFailures += 1;
 			await emit({
 				type: "agent_decision_invalid",
 				agentStep: step,

@@ -104,4 +104,34 @@ describe("PolychatClient", () => {
 		).rejects.toBeInstanceOf(PolychatApiError);
 		expect(serviceFetchMock).toHaveBeenCalledTimes(1);
 	});
+
+	it("captures retry-after metadata from rate limit responses", async () => {
+		const serviceFetchMock = vi.fn().mockResolvedValue(
+			new Response(JSON.stringify({ error: "Rate limit exceeded", retryAfter: 60 }), {
+				status: 429,
+				headers: { "Content-Type": "application/json" },
+			}),
+		);
+		const client = new PolychatClient("token-123", {
+			fetch: serviceFetchMock,
+		});
+
+		await expect(
+			client.chatCompletion(
+				{
+					messages: [{ role: "user", content: "hello" }],
+					model: "mistral-large",
+				},
+				{
+					maxAttempts: 1,
+					baseDelayMs: 1,
+					maxDelayMs: 1,
+				},
+			),
+		).rejects.toMatchObject({
+			status: 429,
+			retryable: true,
+			retryAfterMs: 60_000,
+		});
+	});
 });

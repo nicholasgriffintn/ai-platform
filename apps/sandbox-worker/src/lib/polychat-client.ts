@@ -10,6 +10,7 @@ export class PolychatApiError extends Error {
 		public readonly status: number,
 		message: string,
 		public readonly retryable: boolean,
+		public readonly retryAfterMs?: number,
 	) {
 		super(message);
 		this.name = "PolychatApiError";
@@ -26,6 +27,35 @@ function sleep(ms: number): Promise<void> {
 	return new Promise((resolve) => {
 		setTimeout(resolve, ms);
 	});
+}
+
+function parseRetryAfterMs(value: string | null): number | undefined {
+	if (!value) {
+		return undefined;
+	}
+
+	const seconds = Number(value);
+	if (Number.isFinite(seconds) && seconds >= 0) {
+		return seconds * 1000;
+	}
+
+	const dateMs = Date.parse(value);
+	if (!Number.isNaN(dateMs)) {
+		return Math.max(0, dateMs - Date.now());
+	}
+
+	return undefined;
+}
+
+function parseJsonRetryAfterMs(errorText: string): number | undefined {
+	try {
+		const data = JSON.parse(errorText) as { retryAfter?: unknown };
+		return typeof data.retryAfter === "number" && Number.isFinite(data.retryAfter)
+			? data.retryAfter * 1000
+			: undefined;
+	} catch {
+		return undefined;
+	}
 }
 
 export class PolychatClient {
@@ -85,6 +115,7 @@ export class PolychatClient {
 				response.status,
 				`Polychat API request failed (${response.status}): ${errorText.slice(0, 500)}`,
 				RETRYABLE_HTTP_STATUS_CODES.has(response.status),
+				parseRetryAfterMs(response.headers.get("Retry-After")) ?? parseJsonRetryAfterMs(errorText),
 			);
 		}
 
@@ -126,8 +157,10 @@ export class PolychatClient {
 					throw error;
 				}
 
+				const retryAfterMs = error instanceof PolychatApiError ? error.retryAfterMs : undefined;
 				const jitter = Math.floor(Math.random() * 125);
-				const delayMs = Math.min(baseDelayMs * 2 ** (attempt - 1) + jitter, maxDelayMs);
+				const exponentialDelayMs = baseDelayMs * 2 ** (attempt - 1) + jitter;
+				const delayMs = Math.min(retryAfterMs ?? exponentialDelayMs, maxDelayMs);
 				await sleep(delayMs);
 			}
 		}

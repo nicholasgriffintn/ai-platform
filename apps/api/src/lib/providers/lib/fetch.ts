@@ -6,6 +6,11 @@ import { getLogger } from "~/utils/logger";
 import { detectStreaming } from "~/utils/streaming";
 import { safeParseJson } from "~/utils/json";
 import { omitUndefinedValues } from "~/utils/objects";
+import {
+	getProviderErrorMessage,
+	isProviderRateLimit,
+	type ProviderErrorBody,
+} from "~/utils/providerErrors";
 import { appendUrlPath } from "~/utils/urls";
 
 const logger = getLogger({ prefix: "lib/providers/fetch" });
@@ -115,8 +120,20 @@ export async function fetchAIResponse<
 			);
 		}
 
-		let responseJson = safeParseJson(responseText);
+		const responseJson = safeParseJson<ProviderErrorBody>(responseText);
 		logger.error(`Failed to get response for ${provider} from ${endpointOrUrl}`, responseJson);
+
+		if (isProviderRateLimit(response.status, responseJson)) {
+			throw new AssistantError(
+				getProviderErrorMessage(responseJson) || "Rate limit exceeded",
+				ErrorType.RATE_LIMIT_ERROR,
+				response.status,
+				{
+					provider,
+					upstreamStatus: responseJson?.raw_status_code ?? response.status,
+				},
+			);
+		}
 
 		throw new AssistantError(
 			`Failed to get response for ${provider} from ${endpointOrUrl}`,

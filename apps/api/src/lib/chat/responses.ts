@@ -6,6 +6,7 @@ import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";
 import { formatMessages } from "~/utils/messages";
 import { mergeParametersWithDefaults, shouldEnableStreaming } from "~/utils/parameters";
+import { isProviderRateLimitError } from "~/utils/providerErrors";
 import { withRetry } from "~/utils/retries";
 
 const logger = getLogger({ prefix: "lib/chat/responses" });
@@ -220,7 +221,7 @@ export async function getAIResponse({
 		});
 	} catch (err: any) {
 		let errorType = ErrorType.PROVIDER_ERROR;
-		if (err.message?.includes("rate limit") || err.status === 429) {
+		if (isProviderRateLimitError(err)) {
 			errorType = ErrorType.RATE_LIMIT_ERROR;
 		} else if (err.status >= 500) {
 			errorType = ErrorType.PROVIDER_ERROR;

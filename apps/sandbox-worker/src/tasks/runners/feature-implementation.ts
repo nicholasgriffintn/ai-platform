@@ -379,6 +379,7 @@ export async function executeFeatureImplementation(
 			branchName,
 			error: classified.message,
 			errorType: classified.type,
+			retryable: classified.retryable,
 		};
 	} finally {
 		fileWatcher?.stop();

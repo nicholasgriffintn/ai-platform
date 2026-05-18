@@ -10,6 +10,7 @@ import {
 
 import { buildSummary } from "../commands";
 import { throwIfAborted } from "../cancellation";
+import { PolychatApiError } from "../polychat-client";
 import {
 	MAX_CONSECUTIVE_DECISION_FAILURES,
 	MAX_AGENT_STEPS,
@@ -215,6 +216,7 @@ export async function executeAgentLoop(
 			maxRecoveryReplans: MAX_RECOVERY_REPLANS,
 			maxObservationChars: MAX_OBSERVATION_CHARS,
 		},
+		shouldAbortOnDecisionError: (error) => error instanceof PolychatApiError,
 		getCommandCount: (runtimeState) => runtimeState.commandCount,
 		resolveDecision: async ({ messages: currentMessages, step }) => {
 			await ingestOperatorInstructions(currentMessages, step);

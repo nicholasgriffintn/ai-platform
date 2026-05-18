@@ -1,8 +1,60 @@
 import { describe, expect, it, vi } from "vitest";
 
 import { executeAgentLoop } from "../feature-implementation/agent-loop";
+import { PolychatApiError } from "../polychat-client";
 
 describe("executeAgentLoop", () => {
+	it("stops when the model provider is unavailable instead of recording invalid decisions", async () => {
+		const emitted: Array<Record<string, unknown>> = [];
+		const chatCompletion = vi
+			.fn()
+			.mockRejectedValue(
+				new PolychatApiError(429, "Polychat API request failed (429): Rate limit exceeded", true),
+			);
+
+		await expect(
+			executeAgentLoop({
+				sandbox: {
+					exec: vi.fn(),
+				} as any,
+				client: {
+					chatCompletion,
+				} as any,
+				model: "test-model",
+				repoDisplayName: "owner/repo",
+				repoTargetDir: "repo",
+				task: "test",
+				taskType: "feature-implementation",
+				promptStrategy: {
+					strategy: "feature-delivery",
+					definition: {
+						strategy: "feature-delivery",
+						label: "Feature delivery",
+						planningFocus: ["focus"],
+						executionFocus: ["focus"],
+						examples: [],
+					},
+					reason: "test",
+					source: "explicit",
+				},
+				initialPlan: "plan",
+				repoContext: {
+					topLevelEntries: [],
+					files: [],
+					taskInstructionSource: "none",
+				},
+				executionLogs: [],
+				emit: async (event) => {
+					emitted.push(event as unknown as Record<string, unknown>);
+				},
+			}),
+		).rejects.toBeInstanceOf(PolychatApiError);
+
+		expect(chatCompletion).toHaveBeenCalledTimes(1);
+		expect(emitted.some((event) => event.type === "agent_decision_failed")).toBe(true);
+		expect(emitted.some((event) => event.type === "agent_decision_invalid")).toBe(false);
+	});
+
 	it("continues after a policy-blocked command", async () => {
 		const emitted: Array<Record<string, unknown>> = [];
 		const chatCompletion = vi

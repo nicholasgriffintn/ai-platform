@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 
 import type { IEnv } from "~/types";
+import { AssistantError, ErrorType } from "~/utils/errors";
 import { fetchAIResponse } from "../fetch";
 
 describe("fetchAIResponse", () => {
@@ -162,5 +163,56 @@ describe("fetchAIResponse", () => {
 				}),
 			}),
 		);
+	});
+
+	it("classifies gateway-wrapped provider rate limits as rate limit errors", async () => {
+		const getUrl = vi.fn(async () => "https://gateway.ai.cloudflare.com/v1/account/gateway/compat");
+		const fetchMock = vi.fn(
+			async () =>
+				new Response(
+					JSON.stringify({
+						raw_status_code: 429,
+						code: "1300",
+						type: "rate_limited",
+						message: "Rate limit exceeded",
+					}),
+					{
+						status: 502,
+						headers: {
+							"content-type": "application/json",
+						},
+					},
+				),
+		);
+		const originalFetch = globalThis.fetch;
+		globalThis.fetch = fetchMock as typeof fetch;
+
+		const env = {
+			AI: {
+				gateway: vi.fn(() => ({ getUrl })),
+			},
+		};
+
+		try {
+			await expect(
+				fetchAIResponse(
+					true,
+					"groq",
+					"chat/completions",
+					{ Authorization: "Bearer test-key" },
+					{
+						model: "groq/llama-3.3-70b-versatile",
+						messages: [{ role: "user", content: "Hello" }],
+					},
+					env as unknown as IEnv,
+				),
+			).rejects.toMatchObject({
+				name: "AssistantError",
+				type: ErrorType.RATE_LIMIT_ERROR,
+				message: "Rate limit exceeded",
+			} satisfies Partial<AssistantError>);
+		} finally {
+			globalThis.fetch = originalFetch;
+		}
 	});
 });

@@ -24,6 +24,8 @@ interface SandboxWorkerSuccessResult {
 	logs?: string;
 	diff?: string;
 	error?: string;
+	errorType?: string;
+	retryable?: boolean;
 	branchName?: string;
 }
 

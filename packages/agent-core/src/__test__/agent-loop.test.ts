@@ -79,6 +79,31 @@ describe("executeAgentLoop", () => {
 		expect(result.stepsTaken).toBe(4);
 	});
 
+	it("aborts terminal decision provider errors without treating them as invalid decisions", async () => {
+		const emitted: Array<Record<string, unknown>> = [];
+		const providerError = new Error("Provider rate limited");
+
+		await expect(
+			executeAgentLoop({
+				initialMessages: [{ role: "user", content: "start" }],
+				initialPlan: "Initial plan",
+				shared: {},
+				state: { commandCount: 0 },
+				resolveDecision: async () => {
+					throw providerError;
+				},
+				shouldAbortOnDecisionError: (error) => error === providerError,
+				emit: async (event) => {
+					emitted.push(event);
+				},
+				handlers: [createRunCommandHandler()],
+			}),
+		).rejects.toThrow(providerError);
+
+		expect(emitted.some((event) => event.type === "agent_decision_failed")).toBe(true);
+		expect(emitted.some((event) => event.type === "agent_decision_invalid")).toBe(false);
+	});
+
 	it("enforces maxSteps and throws when the loop cannot finish", async () => {
 		await expect(
 			executeAgentLoop({

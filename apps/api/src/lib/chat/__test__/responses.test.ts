@@ -435,6 +435,33 @@ describe("responses", () => {
 			);
 		});
 
+		it("should handle structured provider rate limit payloads", async () => {
+			mockProvider.getResponse.mockRejectedValue({
+				message: "Rate limit exceeded",
+				status: 502,
+				raw_status_code: 429,
+				code: "1300",
+				type: "rate_limited",
+				object: "error",
+			});
+
+			// @ts-expect-error - test data
+			await expect(getAIResponse(baseParams)).rejects.toThrow(
+				new AssistantError("openai error: Rate limit exceeded", ErrorType.RATE_LIMIT_ERROR),
+			);
+		});
+
+		it("should preserve typed provider rate limit errors", async () => {
+			mockProvider.getResponse.mockRejectedValue(
+				new AssistantError("Rate limit exceeded", ErrorType.RATE_LIMIT_ERROR),
+			);
+
+			// @ts-expect-error - test data
+			await expect(getAIResponse(baseParams)).rejects.toThrow(
+				new AssistantError("openai error: Rate limit exceeded", ErrorType.RATE_LIMIT_ERROR),
+			);
+		});
+
 		it("should handle authentication errors", async () => {
 			mockProvider.getResponse.mockRejectedValue({
 				message: "unauthorized",
