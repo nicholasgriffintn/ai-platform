@@ -3,6 +3,7 @@ import { useMemo } from "react";
 
 import { CHATS_QUERY_KEY } from "~/constants";
 import { apiService } from "~/lib/api/api-service";
+import { preserveOptimisticMessages } from "~/lib/conversations";
 import { localChatService } from "~/lib/local/local-chat-service";
 import { useChatStore } from "~/state/stores/chatStore";
 import type { Conversation, Message } from "~/types";
@@ -50,27 +51,32 @@ export function useLocalChats() {
 
 export function useChat(completion_id: string | undefined) {
 	const { isAuthenticated, isPro, localOnlyMode } = useChatStore();
+	const queryClient = useQueryClient();
 
 	return useQuery({
 		queryKey: [CHATS_QUERY_KEY, completion_id],
 		queryFn: async () => {
 			if (!completion_id) return null;
 
+			const cachedConversation = queryClient.getQueryData<Conversation>([
+				CHATS_QUERY_KEY,
+				completion_id,
+			]);
 			const localChat = await localChatService.getLocalChat(completion_id);
 			const shouldUseLocalOnly = localOnlyMode || (localChat?.isLocalOnly ?? false);
 
 			if (shouldUseLocalOnly || !isAuthenticated || !isPro) {
-				return localChat;
+				return preserveOptimisticMessages(localChat, cachedConversation);
 			}
 
 			try {
 				const remoteChat = await apiService.getChat(completion_id, {
 					refreshPending: true,
 				});
-				return remoteChat || localChat;
+				return preserveOptimisticMessages(remoteChat || localChat, cachedConversation);
 			} catch (error) {
 				console.error("Failed to fetch remote chat, falling back to local:", error);
-				return localChat;
+				return preserveOptimisticMessages(localChat, cachedConversation);
 			}
 		},
 		enabled: !!completion_id,

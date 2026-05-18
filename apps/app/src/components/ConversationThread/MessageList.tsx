@@ -1,5 +1,5 @@
 import { GitBranch, Loader2, MessagesSquare } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { VList, type VListHandle } from "virtua";
 
 import { useChat } from "~/hooks/useChat";
@@ -54,6 +54,28 @@ export const MessageList = ({
 	} = useChatManager();
 
 	const messages = propMessages || conversation?.messages || [];
+	const lastMessageScrollKey = useMemo(() => {
+		const lastMessage = messages[messages.length - 1];
+		if (!lastMessage) {
+			return "empty";
+		}
+
+		const contentLength =
+			typeof lastMessage.content === "string"
+				? lastMessage.content.length
+				: Array.isArray(lastMessage.content)
+					? lastMessage.content
+							.map((item) => (item.type === "text" ? item.text?.length || 0 : 0))
+							.reduce((total, length) => total + length, 0)
+					: 0;
+		const partLength = Array.isArray(lastMessage.parts)
+			? lastMessage.parts
+					.map((part) => (part.type === "text" || part.type === "reasoning" ? part.text.length : 0))
+					.reduce((total, length) => total + length, 0)
+			: 0;
+
+		return `${messages.length}:${lastMessage.id}:${contentLength}:${partLength}`;
+	}, [messages]);
 
 	const isStreamLoading = useIsLoading("stream-response");
 	const isModelInitializing = useIsLoading("model-init");
@@ -64,6 +86,7 @@ export const MessageList = ({
 
 	const virtualRef = useRef<VListHandle>(null);
 	const prevCount = useRef(0);
+	const isNearBottomRef = useRef(true);
 
 	// scroll-to-bottom on mount and when new messages arrive, except in shared view
 	useEffect(() => {
@@ -72,11 +95,13 @@ export const MessageList = ({
 			return;
 		}
 		const lastIndex = messages.length - 1;
-		if (virtualRef.current && (prevCount.current === 0 || messages.length > prevCount.current)) {
+		const shouldFollowNewMessages = prevCount.current === 0 || isNearBottomRef.current;
+		if (virtualRef.current && shouldFollowNewMessages) {
 			virtualRef.current.scrollToIndex(lastIndex, { align: "end" });
+			isNearBottomRef.current = true;
 		}
 		prevCount.current = messages.length;
-	}, [messages.length, isSharedView]);
+	}, [lastMessageScrollKey, messages.length, isSharedView]);
 
 	// show/hide the "scroll to bottom" button when user scrolls up
 	const [showScroll, setShowScroll] = useState(false);
@@ -88,6 +113,7 @@ export const MessageList = ({
 		}
 		const { scrollSize, scrollOffset, viewportSize } = v;
 		const distance = scrollSize - (scrollOffset + viewportSize);
+		isNearBottomRef.current = distance <= 100;
 		setShowScroll(distance > 100);
 	};
 
@@ -185,11 +211,12 @@ export const MessageList = ({
 			{showScroll && !isSharedView && (
 				<div className="absolute bottom-2 right-2 z-10">
 					<ScrollButton
-						onClick={() =>
+						onClick={() => {
+							isNearBottomRef.current = true;
 							virtualRef.current?.scrollToIndex(messages.length - 1, {
 								align: "end",
-							})
-						}
+							});
+						}}
 					/>
 				</div>
 			)}
