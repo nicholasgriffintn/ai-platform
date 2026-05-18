@@ -2,10 +2,19 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useCallback } from "react";
 
 import { CHATS_QUERY_KEY } from "~/constants";
+import {
+	buildCouncilConclusionPrompt,
+	buildCouncilTurnPrompt,
+	getCouncilConclusionMemberId,
+	getNextCouncilMemberIds,
+	getOpeningCouncilMemberId,
+	resolveCouncilMemberIds,
+} from "~/lib/council";
 import { normalizeMessage } from "~/lib/messages";
 import { useLoadingActions } from "~/state/contexts/LoadingContext";
 import { useChatStore } from "~/state/stores/chatStore";
-import type { Conversation, Message } from "~/types";
+import type { ChatRequestOptions, Conversation, Message } from "~/types";
+import type { CouncilMemberId } from "@assistant/schemas";
 import { useGenerateTitle } from "./useChat";
 import { useModels } from "./useModels";
 import { useConversationActions } from "./useConversationActions";
@@ -14,11 +23,90 @@ import { useMessageOperations } from "./useMessageOperations";
 import { useStreamingResponse } from "./useStreamingResponse";
 import { useWebLLMInitialization } from "./useWebLLMInitialization";
 
+type AttachmentData = {
+	type: string;
+	data: string;
+	name?: string;
+	markdown?: string;
+};
+
+interface CouncilDebateOptions {
+	memberIds: CouncilMemberId[];
+	requireConsensus?: boolean;
+}
+
+function prepareUserMessage(
+	input: string,
+	attachmentData: AttachmentData | undefined,
+	model?: string,
+) {
+	const contentItems: any[] = [
+		{
+			type: "text",
+			text: input.trim(),
+		},
+	];
+
+	if (attachmentData) {
+		if (attachmentData.type === "image") {
+			contentItems.push({
+				type: "image_url",
+				image_url: {
+					url: attachmentData.data,
+					detail: "auto",
+				},
+			});
+		} else if (attachmentData.type === "document") {
+			contentItems.push({
+				type: "document_url",
+				document_url: {
+					url: attachmentData.data,
+					name: attachmentData.name,
+				},
+			});
+		} else if (attachmentData.type === "audio") {
+			contentItems.push({
+				type: "input_audio",
+				input_audio: {
+					data: attachmentData.data,
+					format: attachmentData.name?.toLowerCase().endsWith(".wav") ? "wav" : "mp3",
+				},
+			});
+		}
+
+		if (attachmentData?.type === "markdown_document" && attachmentData?.markdown) {
+			contentItems.push({
+				type: "markdown_document",
+				markdown_document: {
+					markdown: attachmentData.markdown,
+					name: attachmentData.name,
+				},
+			});
+		}
+
+		return normalizeMessage({
+			role: "user",
+			content: contentItems,
+			id: crypto.randomUUID(),
+			created: Date.now(),
+			model,
+		});
+	}
+
+	return normalizeMessage({
+		role: "user",
+		content: input.trim(),
+		id: crypto.randomUUID(),
+		created: Date.now(),
+		model,
+	});
+}
+
 /**
  * Main hook for managing chat operations.
  * Composes smaller hooks to handle streaming, storage, WebLLM, and conversation actions.
  */
-export function useChatManager() {
+export function useChatManager(requestOptions?: ChatRequestOptions) {
 	const queryClient = useQueryClient();
 	const generateTitleMutation = useGenerateTitle();
 	const { data: apiModels = {} } = useModels();
@@ -91,7 +179,7 @@ export function useChatManager() {
 		assistantReasoningRef,
 		streamResponse,
 		abortStream,
-	} = useStreamingResponse(webLLMService, handleTitleGeneration);
+	} = useStreamingResponse(webLLMService, handleTitleGeneration, requestOptions);
 
 	const {
 		editingMessageId,
@@ -123,72 +211,7 @@ export function useChatManager() {
 			setStreamStarted(true);
 			startLoading("stream-response", "Generating response...");
 
-			const userMessageId = crypto.randomUUID();
-			const currentTime = Date.now();
 			const currentModel = model === null ? undefined : model;
-
-			const contentItems: any[] = [
-				{
-					type: "text",
-					text: input.trim(),
-				},
-			];
-
-			const prepareUserMessage = () => {
-				if (attachmentData) {
-					if (attachmentData.type === "image") {
-						contentItems.push({
-							type: "image_url",
-							image_url: {
-								url: attachmentData.data,
-								detail: "auto",
-							},
-						});
-					} else if (attachmentData.type === "document") {
-						contentItems.push({
-							type: "document_url",
-							document_url: {
-								url: attachmentData.data,
-								name: attachmentData.name,
-							},
-						});
-					} else if (attachmentData.type === "audio") {
-						contentItems.push({
-							type: "input_audio",
-							input_audio: {
-								data: attachmentData.data,
-								format: attachmentData.name?.toLowerCase().endsWith(".wav") ? "wav" : "mp3",
-							},
-						});
-					}
-
-					if (attachmentData?.type === "markdown_document" && attachmentData?.markdown) {
-						contentItems.push({
-							type: "markdown_document",
-							markdown_document: {
-								markdown: attachmentData.markdown,
-								name: attachmentData.name,
-							},
-						});
-					}
-
-					return normalizeMessage({
-						role: "user",
-						content: contentItems,
-						id: userMessageId,
-						created: currentTime,
-						model: currentModel,
-					});
-				}
-
-				return normalizeMessage({
-					role: "user",
-					content: input.trim(),
-					id: userMessageId,
-					created: currentTime,
-					model: currentModel,
-				});
-			};
 
 			try {
 				let conversationId = currentConversationId;
@@ -197,7 +220,7 @@ export function useChatManager() {
 					startNewConversation(conversationId);
 				}
 
-				const userMessage = prepareUserMessage();
+				const userMessage = prepareUserMessage(input, attachmentData, currentModel);
 
 				const cancelQueries = async () => {
 					await Promise.all([
@@ -246,6 +269,173 @@ export function useChatManager() {
 		],
 	);
 
+	const sendCouncilDebate = useCallback(
+		async (
+			input: string,
+			attachmentData: AttachmentData | undefined,
+			debate: CouncilDebateOptions,
+		) => {
+			if (!input.trim() && !attachmentData) {
+				return {
+					status: "error",
+					response: "",
+				};
+			}
+
+			const memberIds = resolveCouncilMemberIds(debate.memberIds);
+			const currentModel = model === null ? undefined : model;
+
+			try {
+				let conversationId = currentConversationId;
+				if (!conversationId) {
+					conversationId = `${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+					startNewConversation(conversationId);
+				}
+
+				const previousConversation = queryClient.getQueryData<Conversation>([
+					CHATS_QUERY_KEY,
+					conversationId,
+				]);
+				const userMessage = prepareUserMessage(input, attachmentData, currentModel);
+
+				await Promise.all([
+					queryClient.cancelQueries({ queryKey: [CHATS_QUERY_KEY] }),
+					queryClient.cancelQueries({
+						queryKey: [CHATS_QUERY_KEY, conversationId],
+						exact: true,
+					}),
+				]);
+
+				await addMessageToConversation(conversationId, userMessage);
+
+				const baseMessages = previousConversation?.messages?.length
+					? [...previousConversation.messages, userMessage]
+					: [userMessage];
+				let accumulatedMessages = [...baseMessages];
+				let finalResponse = "";
+				let finalAssistantMessage: Message | undefined;
+				let turn = 1;
+				const speakerQueue: CouncilMemberId[] = [getOpeningCouncilMemberId(memberIds)];
+
+				while (speakerQueue.length > 0) {
+					const memberId = speakerQueue.shift()!;
+					setStreamStarted(true);
+					startLoading("stream-response", "Council debating...");
+
+					const turnPrompt = buildCouncilTurnPrompt({
+						memberId,
+						round: 1,
+						turn,
+					});
+					const turnMessage = normalizeMessage({
+						role: "user",
+						content: turnPrompt,
+						id: crypto.randomUUID(),
+						created: Date.now(),
+						model: currentModel,
+					});
+					const requestMessages =
+						turn === 1 ? accumulatedMessages : [...accumulatedMessages, turnMessage];
+
+					const result = await streamResponse(
+						requestMessages,
+						conversationId,
+						{
+							council: {
+								enabled: true,
+								responseMode: "debate",
+								phase: "debate",
+								memberIds,
+								activeMemberId: memberId,
+								round: 1,
+								turn,
+								requireConsensus: debate.requireConsensus ?? true,
+								skipInputStorage: turn > 1,
+							},
+						},
+						{ generateTitle: false },
+					);
+
+					if (result.status === "error") {
+						return result;
+					}
+
+					finalResponse = result.response;
+					if (result.message) {
+						finalAssistantMessage = result.message;
+						accumulatedMessages = [...accumulatedMessages, result.message];
+						speakerQueue.push(...getNextCouncilMemberIds(result.message, memberIds));
+					}
+					turn += 1;
+				}
+
+				const conclusionMemberId = getCouncilConclusionMemberId(memberIds);
+				const conclusionMessage = normalizeMessage({
+					role: "user",
+					content: buildCouncilConclusionPrompt(conclusionMemberId),
+					id: crypto.randomUUID(),
+					created: Date.now(),
+					model: currentModel,
+				});
+				const conclusionResult = await streamResponse(
+					[...accumulatedMessages, conclusionMessage],
+					conversationId,
+					{
+						council: {
+							enabled: true,
+							responseMode: "debate",
+							phase: "conclusion",
+							memberIds,
+							activeMemberId: conclusionMemberId,
+							round: 1,
+							turn,
+							requireConsensus: debate.requireConsensus ?? true,
+							skipInputStorage: true,
+						},
+					},
+					{ generateTitle: false },
+				);
+
+				if (conclusionResult.status === "error") {
+					return conclusionResult;
+				}
+
+				finalResponse = conclusionResult.response;
+				if (conclusionResult.message) {
+					finalAssistantMessage = conclusionResult.message;
+				}
+
+				if (baseMessages.length === 1 && finalAssistantMessage) {
+					generateConversationTitle(conversationId, baseMessages, finalAssistantMessage).catch(
+						(err) => console.error("Background title generation failed:", err),
+					);
+				}
+
+				return {
+					status: "success",
+					response: finalResponse,
+				};
+			} catch (error) {
+				console.error("Failed to run council debate:", error);
+				return {
+					status: "error",
+					response: (error as Error).message || "Failed",
+				};
+			}
+		},
+		[
+			model,
+			currentConversationId,
+			startNewConversation,
+			queryClient,
+			addMessageToConversation,
+			streamResponse,
+			startLoading,
+			setStreamStarted,
+			generateConversationTitle,
+		],
+	);
+
 	return {
 		streamStarted,
 		controller,
@@ -254,6 +444,7 @@ export function useChatManager() {
 		editingMessageId,
 		isBranching,
 		sendMessage,
+		sendCouncilDebate,
 		streamResponse,
 		abortStream,
 		addAssistantMessage,

@@ -3,7 +3,7 @@ import { toast } from "sonner";
 
 import { apiService } from "~/lib/api/api-service";
 import { normalizeMessage } from "~/lib/messages";
-import type { Message, MessageContent } from "~/types";
+import type { ChatRequestOptions, Message, MessageContent } from "~/types";
 import { useLoadingActions } from "~/state/contexts/LoadingContext";
 import { useChatStore } from "~/state/stores/chatStore";
 import { useMessageOperations } from "./useMessageOperations";
@@ -15,6 +15,7 @@ import { useMessageOperations } from "./useMessageOperations";
 export function useStreamingResponse(
 	webLLMService: any,
 	onTitleGeneration?: (conversationId: string, messages: Message[]) => Promise<void>,
+	requestOptions?: ChatRequestOptions,
 ) {
 	const { stopLoading } = useLoadingActions();
 	const { updateLoading } = useLoadingActions();
@@ -42,12 +43,15 @@ export function useStreamingResponse(
 		async (
 			messages: Message[],
 			conversationId: string,
+			overrideRequestOptions?: ChatRequestOptions,
 		): Promise<{
 			status: "success" | "error";
 			response: string;
+			message?: Message;
 		}> => {
 			const isLocal = chatMode === "local";
 			let response = "";
+			let generatedMessage: Message | undefined;
 
 			await addAssistantMessage(conversationId, "");
 
@@ -146,6 +150,7 @@ export function useStreamingResponse(
 						true,
 						useMultiModel,
 						chatMode === "agent" ? `/agents/${selectedAgentId}/completions` : undefined,
+						overrideRequestOptions ?? requestOptions,
 					);
 
 					const messageContentToDisplay = assistantMessage.content;
@@ -164,16 +169,18 @@ export function useStreamingResponse(
 					);
 
 					response = textPreview;
+					generatedMessage = assistantMessage;
 				}
 
 				return {
 					status: "success",
 					response,
+					message: generatedMessage,
 				};
 			} catch (error) {
 				if (controller.signal.aborted) {
 					console.log("Request aborted by user.");
-					return { status: "error", response: "Request aborted" };
+					return { status: "error" as const, response: "Request aborted" };
 				}
 				throw error;
 			}
@@ -192,20 +199,32 @@ export function useStreamingResponse(
 			selectedAgentId,
 			updateLoading,
 			webLLMService,
+			requestOptions,
 		],
 	);
 
 	const streamResponse = useCallback(
-		async (messages: Message[], conversationId: string) => {
+		async (
+			messages: Message[],
+			conversationId: string,
+			overrideRequestOptions?: ChatRequestOptions,
+			options?: { generateTitle?: boolean },
+		) => {
 			if (!messages.length) {
 				toast.error("No messages provided");
 				throw new Error("No messages provided");
 			}
 
 			try {
-				const response = await generateResponse(messages, conversationId);
+				const response = await generateResponse(messages, conversationId, overrideRequestOptions);
 
-				if (response.status === "success" && messages.length <= 1 && onTitleGeneration) {
+				const shouldGenerateTitle = options?.generateTitle ?? true;
+				if (
+					shouldGenerateTitle &&
+					response.status === "success" &&
+					messages.length <= 1 &&
+					onTitleGeneration
+				) {
 					onTitleGeneration(conversationId, messages).catch((err) =>
 						console.error("Background title generation failed:", err),
 					);
@@ -235,7 +254,7 @@ export function useStreamingResponse(
 					throw streamError;
 				}
 				return {
-					status: "error",
+					status: "error" as const,
 					response: (error as Error).message || "Failed",
 				};
 			} finally {

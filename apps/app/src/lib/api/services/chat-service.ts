@@ -1,4 +1,11 @@
-import type { ChatMode, ChatSettings, Conversation, Message, MessageData } from "~/types";
+import type {
+	ChatMode,
+	ChatRequestOptions,
+	ChatSettings,
+	Conversation,
+	Message,
+	MessageData,
+} from "~/types";
 import { normalizeMessage } from "../../messages";
 import { fetchApi, returnFetchedData } from "../fetch-wrapper";
 
@@ -313,6 +320,7 @@ export class ChatService {
 		use_multi_model = false,
 		endpoint = "/chat/completions",
 		selectedTools?: string[],
+		requestOptions?: ChatRequestOptions,
 	): Promise<Message> {
 		let headers = {};
 		try {
@@ -351,6 +359,7 @@ export class ChatService {
 			stream: streamingEnabled,
 			enabled_tools: selectedTools,
 			use_multi_model,
+			options: requestOptions,
 		};
 
 		if (model !== undefined) {
@@ -569,6 +578,9 @@ export class ChatService {
 									}
 									if (parsedData.citations) {
 										citations = parsedData.citations;
+									}
+									if (parsedData.data) {
+										messageData = parsedData.data;
 									}
 									if (parsedData.model) {
 										responseModel = parsedData.model;

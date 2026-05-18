@@ -1,4 +1,5 @@
 import type { MessagePart as SchemaMessagePart } from "@assistant/schemas";
+import type { CouncilChatOptions } from "@assistant/schemas";
 
 export type ChatRole = "user" | "assistant" | "system" | "tool";
 
@@ -29,6 +30,10 @@ export interface ChatSettings {
 	};
 	reasoning?: ChatReasoningSettings;
 	verbosity?: VerbosityLevel;
+}
+
+export interface ChatRequestOptions {
+	council?: CouncilChatOptions;
 }
 
 export interface MessageContent {
@@ -136,6 +141,18 @@ export interface MessageData {
 			failure?: MessageContent[];
 		};
 		[key: string]: any;
+	};
+	council?: {
+		responseMode?: "single" | "debate";
+		phase?: "debate" | "conclusion";
+		memberId?: string;
+		memberName?: string;
+		memberRole?: string;
+		round?: number;
+		turn?: number;
+		shouldContinue?: boolean;
+		nextMemberIds?: string[];
+		nextReason?: string;
 	};
 	error?: string;
 }

@@ -14,6 +14,7 @@ import {
 	type ChangeEvent,
 	type FormEvent,
 	type KeyboardEvent,
+	type ReactNode,
 	forwardRef,
 	useEffect,
 	useImperativeHandle,
@@ -74,10 +75,18 @@ interface ChatInputProps {
 	streamStarted: boolean;
 	controller: AbortController;
 	onTranscribe: (data: { response: { content: string } }) => void;
+	placeholder?: {
+		newConversation: string;
+		followUp: string;
+	};
+	controls?: ReactNode;
 }
 
 export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
-	({ handleSubmit, isLoading, streamStarted, controller, onTranscribe }, ref) => {
+	(
+		{ handleSubmit, isLoading, streamStarted, controller, onTranscribe, placeholder, controls },
+		ref,
+	) => {
 		const { isMobile } = useUIStore();
 		const { model, chatInput, setChatInput, chatMode, selectedAgentId } = useChatStore();
 		const { isPro, currentConversationId } = useChatStore();
@@ -507,7 +516,9 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 								onChange={handleTextAreaInput}
 								onKeyDown={handleKeyDown}
 								placeholder={
-									!currentConversationId ? "Ask me anything..." : "Ask follow-up questions..."
+									!currentConversationId
+										? (placeholder?.newConversation ?? "Ask me anything...")
+										: (placeholder?.followUp ?? "Ask follow-up questions...")
 								}
 								disabled={isRecording || isTranscribing || isLoading}
 								className="flex-grow px-4 py-3 text-base bg-transparent resize-none focus:outline-none dark:text-white min-h-[60px] max-h-[200px]"
@@ -625,6 +636,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 					</div>
 
 					<div className="border-t border-zinc-200 dark:border-zinc-700 mt-2 px-3 pb-3 pt-3">
+						{controls && <div className="mb-3">{controls}</div>}
 						<div className="flex items-center justify-between gap-1 sm:gap-2">
 							<div className="flex-1 min-w-0 max-w-[70%] sm:max-w-none flex items-center gap-2">
 								<div className="min-w-0 flex-shrink">

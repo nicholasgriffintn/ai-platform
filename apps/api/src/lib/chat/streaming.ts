@@ -1,5 +1,6 @@
 import { MAX_BUFFER_LENGTH, MAX_CONTENT_LENGTH, MAX_THINKING_LENGTH } from "~/constants/app";
 import { formatAssistantMessage, getAIResponse } from "~/lib/chat/responses";
+import { buildCouncilMessageData, extractCouncilTurnRouting } from "~/lib/chat/council";
 import { appendReasoningPart, appendTextPart, buildMessageParts } from "~/lib/chat/messageParts";
 import { handleToolCalls } from "~/lib/chat/tools";
 import { getToolEventPayload } from "~/lib/chat/utils";
@@ -133,6 +134,7 @@ export async function createStreamWithPostProcessing(
 		current_agent_id?: string;
 		delegation_stack?: string[];
 		max_delegation_depth?: number;
+		requestOptions?: Record<string, any>;
 	},
 	conversationManager: ConversationManager,
 ): Promise<ReadableStream> {
@@ -637,15 +639,27 @@ export async function createStreamWithPostProcessing(
 						const logId = env.AI?.aiGatewayLogId;
 
 						const processedContent = preprocessQwQResponse(fullContent, model);
+						const councilTurn = extractCouncilTurnRouting(
+							processedContent,
+							options.requestOptions?.council,
+						);
+						const responseData =
+							structuredData && typeof structuredData === "object" && !Array.isArray(structuredData)
+								? structuredData
+								: null;
+						const messageData = buildCouncilMessageData(
+							options.requestOptions?.council,
+							councilTurn.routing,
+						);
 
 						const assistantMessage = formatAssistantMessage({
-							content: processedContent,
+							content: councilTurn.content,
 							thinking: getFullThinking(),
 							signature: signature,
 							citations: citationsResponse,
 							tool_calls: toolCallsData,
 							usage: usageData,
-							data: structuredData,
+							data: messageData ? { ...responseData, ...messageData } : responseData,
 							guardrails: {
 								passed: !guardrailsFailed,
 								error: guardrailError,
@@ -690,6 +704,7 @@ export async function createStreamWithPostProcessing(
 							usage: assistantMessage.usage,
 							tool_calls: assistantMessage.tool_calls,
 							parts: messageParts,
+							data: assistantMessage.data || null,
 						});
 
 						emitEvent(controller, "message_delta", {

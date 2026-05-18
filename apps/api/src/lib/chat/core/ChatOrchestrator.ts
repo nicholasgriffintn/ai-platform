@@ -1,4 +1,5 @@
 import { createMultiModelStream } from "~/lib/chat/multiModalStreaming";
+import { buildCouncilMessageData, extractCouncilTurnRouting } from "~/lib/chat/council";
 import { RequestPreparer, type PreparedRequest } from "~/lib/chat/preparation/RequestPreparer";
 import { getAIResponse } from "~/lib/chat/responses";
 import { runAgentLoop, type ModelResponse } from "~/lib/chat/agent/runAgentLoop";
@@ -322,6 +323,7 @@ export class ChatOrchestrator {
 					current_agent_id: chatOptions.current_agent_id,
 					delegation_stack: chatOptions.delegation_stack,
 					max_delegation_depth: chatOptions.max_delegation_depth,
+					requestOptions: chatOptions.options || {},
 				},
 				conversationManager,
 			);
@@ -368,11 +370,23 @@ export class ChatOrchestrator {
 			toolResponses.push(...toolResults);
 		}
 
+		const councilTurn = extractCouncilTurnRouting(
+			response.response || "",
+			chatOptions.options?.council,
+		);
+		const responseData =
+			response.data && typeof response.data === "object" && !Array.isArray(response.data)
+				? response.data
+				: null;
+		const councilMessageData = buildCouncilMessageData(
+			chatOptions.options?.council,
+			councilTurn.routing,
+		);
 		await conversationManager.add(chatOptions.completion_id!, {
 			role: "assistant",
-			content: response.response,
+			content: councilTurn.content,
 			citations: response.citations || null,
-			data: response.data || null,
+			data: councilMessageData ? { ...responseData, ...councilMessageData } : responseData,
 			log_id: chatOptions.env.AI.aiGatewayLogId || response.log_id,
 			mode: currentMode,
 			id: generateId(),
@@ -412,7 +426,7 @@ export class ChatOrchestrator {
 		}
 
 		return {
-			response,
+			response: { ...response, response: councilTurn.content },
 			toolResponses,
 			selectedModel: primaryModel,
 			selectedModels: modelConfigs.length > 1 ? modelConfigs.map((m) => m.model) : undefined,

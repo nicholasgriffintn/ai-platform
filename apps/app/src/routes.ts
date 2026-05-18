@@ -29,6 +29,7 @@ export default [
 	route("/apps/replicate/predictions/:id", "pages/apps/replicate/predictions/[id].tsx"),
 	route("/apps/replicate/:id", "pages/apps/replicate/[id].tsx"),
 	route("/apps/canvas", "pages/apps/canvas/index.tsx"),
+	route("/apps/council", "pages/apps/council/index.tsx"),
 	route("/apps/strudel", "pages/apps/strudel/index.tsx"),
 	route("/apps/strudel/new", "pages/apps/strudel/new.tsx"),
 	route("/apps/strudel/:id", "pages/apps/strudel/[id].tsx"),

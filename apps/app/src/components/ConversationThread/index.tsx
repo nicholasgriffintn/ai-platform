@@ -1,4 +1,12 @@
-import { type FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+	type FormEvent,
+	type ReactNode,
+	useCallback,
+	useEffect,
+	useMemo,
+	useRef,
+	useState,
+} from "react";
 import { toast } from "sonner";
 
 import "~/styles/scrollbar.css";
@@ -11,6 +19,8 @@ import { useChatManager } from "~/hooks/useChatManager";
 import { useModels } from "~/hooks/useModels";
 import { useIsLoading } from "~/state/contexts/LoadingContext";
 import { useChatStore } from "~/state/stores/chatStore";
+import type { ChatRequestOptions } from "~/types";
+import type { CouncilMemberId } from "@assistant/schemas";
 import type { ArtifactProps } from "~/types/artifact";
 import { ArtifactPanel } from "./Artifacts/ArtifactPanel";
 import { ChatInput, type ChatInputHandle } from "./ChatInput";
@@ -18,13 +28,41 @@ import { FooterInfo } from "./FooterInfo";
 import { MessageList } from "./MessageList";
 import { WelcomeScreen } from "./WelcomeScreen";
 
-export const ConversationThread = () => {
+export interface ConversationThreadModeConfig {
+	requestOptions?: ChatRequestOptions;
+	welcomeTitle?: string;
+	welcomeDescription?: string;
+	inputPlaceholder?: {
+		newConversation: string;
+		followUp: string;
+	};
+	inputControls?: ReactNode;
+	analyticsSource?: string;
+	councilDebate?: {
+		enabled: boolean;
+		memberIds: CouncilMemberId[];
+		requireConsensus?: boolean;
+	};
+}
+
+interface ConversationThreadProps {
+	modeConfig?: ConversationThreadModeConfig;
+}
+
+export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
 	const { trackEvent, trackFeatureUsage, trackError } = useTrackEvent();
 
 	const { currentConversationId, model, chatInput, setChatInput } = useChatStore();
 	const { data: currentConversation } = useChat(currentConversationId);
-	const { streamStarted, controller, sendMessage, abortStream, branchConversation, isBranching } =
-		useChatManager();
+	const {
+		streamStarted,
+		controller,
+		sendMessage,
+		sendCouncilDebate,
+		abortStream,
+		branchConversation,
+		isBranching,
+	} = useChatManager(modeConfig?.requestOptions);
 	const { data: apiModels } = useModels();
 
 	const [currentArtifact, setCurrentArtifact] = useState<ArtifactProps | null>(null);
@@ -119,6 +157,7 @@ export const ConversationThread = () => {
 					category: EventCategory.CONVERSATION,
 					properties: {
 						conversation_id: currentConversationId || "new",
+						source: modeConfig?.analyticsSource,
 						model_id: model || "unknown",
 						message_length: chatInput.length,
 						has_attachment: Boolean(attachmentData),
@@ -127,7 +166,9 @@ export const ConversationThread = () => {
 					},
 				});
 
-				const result = await sendMessage(chatInput, attachmentData);
+				const result = modeConfig?.councilDebate?.enabled
+					? await sendCouncilDebate(chatInput, attachmentData, modeConfig.councilDebate)
+					: await sendMessage(chatInput, attachmentData);
 				if (result?.status === "error") {
 					setChatInput(originalInput);
 				} else {
@@ -149,10 +190,13 @@ export const ConversationThread = () => {
 			apiModels,
 			messages,
 			sendMessage,
+			sendCouncilDebate,
 			trackEvent,
 			trackError,
 			currentConversationId,
 			setChatInput,
+			modeConfig?.analyticsSource,
+			modeConfig?.councilDebate,
 		],
 	);
 
@@ -248,7 +292,11 @@ export const ConversationThread = () => {
 		>
 			{showWelcomeScreen ? (
 				<div className="flex-1 flex items-center justify-center">
-					<WelcomeScreen setInput={setChatInput} />
+					<WelcomeScreen
+						setInput={setChatInput}
+						title={modeConfig?.welcomeTitle}
+						description={modeConfig?.welcomeDescription}
+					/>
 				</div>
 			) : (
 				<div className="flex-1 px-4">
@@ -274,6 +322,8 @@ export const ConversationThread = () => {
 						streamStarted={streamStarted}
 						controller={controller}
 						onTranscribe={handleTranscribe}
+						placeholder={modeConfig?.inputPlaceholder}
+						controls={modeConfig?.inputControls}
 					/>
 				</div>
 			</div>

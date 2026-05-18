@@ -55,6 +55,17 @@ export const ChatMessage = ({
 	const isSystemMessage =
 		message.role === ("system" as ChatRole) || message.role === ("developer" as ChatRole);
 	const hasPartContent = Array.isArray(message.parts) && message.parts.length > 0;
+	const councilData =
+		message.data && typeof message.data === "object" && "council" in message.data
+			? (message.data.council as
+					| {
+							memberName?: string;
+							memberRole?: string;
+							round?: number;
+							turn?: number;
+					  }
+					| undefined)
+			: undefined;
 
 	if (isSystemMessage) {
 		return null;
@@ -135,6 +146,19 @@ export const ChatMessage = ({
 							</div>
 						)}
 						<div className="flex-1 overflow-x-auto">
+							{message.role === "assistant" && councilData?.memberName && (
+								<div className="mb-1 flex flex-wrap items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400">
+									<span className="font-medium text-zinc-700 dark:text-zinc-200">
+										{councilData.memberName}
+									</span>
+									{councilData.memberRole && <span>{councilData.memberRole}</span>}
+									{councilData.round && councilData.turn && (
+										<span>
+											Round {councilData.round}, turn {councilData.turn}
+										</span>
+									)}
+								</div>
+							)}
 							{isToolResponse ? (
 								<ToolMessage message={message} onToolInteraction={onToolInteraction} />
 							) : isEditing && message.role === "user" && onSaveEdit && onCancelEdit ? (

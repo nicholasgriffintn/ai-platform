@@ -6,6 +6,7 @@ import {
 	augmentPrompt,
 } from "~/lib/providers/capabilities/embedding/helpers";
 import { MemoryManager } from "~/lib/memory";
+import { buildCouncilSystemPrompt, shouldSkipCouncilInputStorage } from "~/lib/chat/council";
 import { getModelConfig } from "~/lib/providers/models";
 import { getSystemPrompt } from "~/lib/prompts";
 import type { ChatMode, CoreChatOptions, Message, ModelConfigInfo, Platform } from "~/types";
@@ -290,6 +291,10 @@ export class RequestPreparer {
 		platform: Platform,
 		mode: ChatMode,
 	): Promise<void> {
+		if (shouldSkipCouncilInputStorage(options.options?.council)) {
+			return;
+		}
+
 		const messageToStore: Message = {
 			role: lastMessage.role,
 			content: finalMessage,
@@ -351,24 +356,24 @@ export class RequestPreparer {
 		const { system_prompt, mode = "normal", verbosity, location, completion_id, user } = options;
 
 		const currentMode = mode;
+		const councilPrompt = buildCouncilSystemPrompt(options.options?.council);
 
 		if (currentMode === "no_system") {
 			return "";
 		}
 
 		if (system_prompt) {
-			return this.enhanceSystemPromptWithMemory(system_prompt, finalMessage, user, memoriesEnabled);
+			const prompt = councilPrompt ? `${system_prompt}\n\n${councilPrompt}` : system_prompt;
+			return this.enhanceSystemPromptWithMemory(prompt, finalMessage, user, memoriesEnabled);
 		}
 
 		const systemPromptFromMessages = sanitizedMessages.find((message) => message.role === "system");
 
 		if (systemPromptFromMessages?.content && typeof systemPromptFromMessages.content === "string") {
-			return this.enhanceSystemPromptWithMemory(
-				systemPromptFromMessages.content,
-				finalMessage,
-				user,
-				memoriesEnabled,
-			);
+			const prompt = councilPrompt
+				? `${systemPromptFromMessages.content}\n\n${councilPrompt}`
+				: systemPromptFromMessages.content;
+			return this.enhanceSystemPromptWithMemory(prompt, finalMessage, user, memoriesEnabled);
 		}
 
 		const generatedPrompt = await getSystemPrompt(
@@ -386,7 +391,8 @@ export class RequestPreparer {
 			userSettings,
 		);
 
-		return this.enhanceSystemPromptWithMemory(generatedPrompt, finalMessage, user, memoriesEnabled);
+		const prompt = councilPrompt ? `${generatedPrompt}\n\n${councilPrompt}` : generatedPrompt;
+		return this.enhanceSystemPromptWithMemory(prompt, finalMessage, user, memoriesEnabled);
 	}
 
 	private async enhanceSystemPromptWithMemory(

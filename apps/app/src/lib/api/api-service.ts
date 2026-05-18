@@ -1,5 +1,12 @@
 import { useToolsStore } from "~/state/stores/toolsStore";
-import type { ChatMode, ChatSettings, Conversation, Message, ModelConfig } from "~/types";
+import type {
+	ChatMode,
+	ChatRequestOptions,
+	ChatSettings,
+	Conversation,
+	Message,
+	ModelConfig,
+} from "~/types";
 import { formatMessageContent } from "../messages";
 import { AgentService } from "./services/agent-service";
 import { ChatService } from "./services/chat-service";
@@ -108,6 +115,7 @@ class ApiService {
 		streamingEnabled = true,
 		use_multi_model = false,
 		endpoint = "/chat/completions",
+		requestOptions?: ChatRequestOptions,
 	): Promise<Message> => {
 		const { selectedTools } = useToolsStore.getState();
 
@@ -127,6 +135,7 @@ class ApiService {
 			use_multi_model,
 			endpoint,
 			selectedTools,
+			requestOptions,
 		);
 
 		if (typeof assistantMessage.content === "string") {

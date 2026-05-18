@@ -3,6 +3,7 @@ import z from "zod/v4";
 import { messageSchema } from "./shared";
 import { messagePartsSchema } from "./message-parts";
 import { chatRequestModeSchema } from "./agent-modes";
+import { councilChatOptionsSchema } from "./council";
 
 export const chatCompletionResponseSchema = z.object({
 	id: z.string(),
@@ -353,6 +354,9 @@ export const createChatCompletionsJsonSchema = z.object({
 			cache_ttl_seconds: z.number().min(0).optional().meta({
 				description:
 					"Overrides the Cloudflare AI Gateway cache TTL (in seconds). Set to 0 to disable caching.",
+			}),
+			council: councilChatOptionsSchema.optional().meta({
+				description: "Council debate options for app-driven multi-perspective chat.",
 			}),
 		})
 		.passthrough()
