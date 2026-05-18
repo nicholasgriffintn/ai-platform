@@ -316,7 +316,7 @@ export default function SandboxConnectionsPage() {
 															icon={<Hammer className="h-4 w-4" />}
 															onClick={() => navigate(`/apps/sandbox/${connection.installationId}`)}
 														>
-															Open
+															New Chat
 														</Button>
 													</div>
 												</div>

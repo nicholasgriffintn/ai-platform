@@ -149,7 +149,7 @@ export function useSandboxRunConsole() {
 			parsedTimeoutSeconds <= SANDBOX_TIMEOUT_MAX_SECONDS);
 
 	const selectedRunId = searchParams.get("runId") || undefined;
-	const targetRunId = selectedRunId || activeRunId || runs[0]?.runId;
+	const targetRunId = selectedRunId || activeRunId;
 	const approvalsRunId = activeRunId || targetRunId;
 
 	const selectedRunFromHistory = useMemo(
@@ -333,6 +333,15 @@ export function useSandboxRunConsole() {
 		runEventOffsetRef.current.set(selectedRun.runId, selectedRun.events.length);
 		hydratedRunIdRef.current = selectedRun.runId;
 	}, [isSubmitting, selectedRun, selectedRunDetails, timeline.length]);
+
+	useEffect(() => {
+		if (targetRunId || isSubmitting) return;
+		runEventsAbortControllerRef.current?.abort();
+		runEventsAbortControllerRef.current = null;
+		hydratedRunIdRef.current = undefined;
+		setTimeline([]);
+		setMessages([]);
+	}, [isSubmitting, targetRunId]);
 
 	useEffect(() => {
 		if (isSubmitting && timeline.length > 0) {
@@ -601,6 +610,8 @@ export function useSandboxRunConsole() {
 						if (finalEvent?.runId) setSelectedRunInUrl(finalEvent.runId, true);
 						else if (activeRunIdRef.current) setSelectedRunInUrl(activeRunIdRef.current, true);
 
+						setActiveRunId(undefined);
+						activeRunIdRef.current = undefined;
 						queryClient.invalidateQueries({
 							queryKey: SANDBOX_QUERY_KEYS.root,
 						});
@@ -619,6 +630,7 @@ export function useSandboxRunConsole() {
 			setIsSubmitting(false);
 			setLiveRunStatus(undefined);
 			abortControllerRef.current = null;
+			setActiveRunId(undefined);
 			activeRunIdRef.current = undefined;
 			queryClient.invalidateQueries({ queryKey: SANDBOX_QUERY_KEYS.root });
 		}
@@ -696,3 +708,5 @@ export function useSandboxRunConsole() {
 		handleSubmitInstruction,
 	};
 }
+
+export type SandboxRunConsoleState = ReturnType<typeof useSandboxRunConsole>;
