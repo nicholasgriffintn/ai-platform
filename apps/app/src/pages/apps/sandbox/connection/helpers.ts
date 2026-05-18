@@ -9,6 +9,8 @@ import {
 } from "~/types/sandbox";
 
 import type { ApprovalInstructionItem, ApprovalStatus, ChatMessage, TimelineEvent } from "./types";
+import type { Message } from "~/types";
+import { describeEvent } from "../utils";
 
 export function parseSandboxTaskType(
 	value: string,
@@ -256,4 +258,91 @@ export function isApprovalPendingStatus(status: ApprovalStatus): boolean {
 
 export function isRunStatusActive(status: SandboxRun["status"] | undefined): boolean {
 	return status === "queued" || status === "running";
+}
+
+export function buildSandboxDisplayMessages({
+	messages,
+	timeline,
+	selectedRun,
+	latestPlan,
+}: {
+	messages: ChatMessage[];
+	timeline: TimelineEvent[];
+	selectedRun: SandboxRun | undefined;
+	latestPlan: { plan: string; updatedAt: string } | null;
+}): Message[] {
+	const displayMessages: Message[] = messages.map((message) => ({
+		id: message.id,
+		role: message.role,
+		content: message.content,
+		created: Date.parse(message.createdAt) || undefined,
+	}));
+
+	if (latestPlan) {
+		displayMessages.push({
+			id: `sandbox-plan-${latestPlan.updatedAt}`,
+			role: "assistant",
+			content: `**Plan**\n\n${latestPlan.plan}`,
+			created: Date.parse(latestPlan.updatedAt) || undefined,
+			data: {
+				sandbox: {
+					type: "plan",
+				},
+			},
+		});
+	}
+
+	for (const entry of timeline) {
+		const detailLines = getEventDetailLines(entry.event);
+		const details = detailLines.length ? `\n\n\`\`\`\n${detailLines.join("\n\n")}\n\`\`\`` : "";
+		displayMessages.push({
+			id: entry.id,
+			role: "assistant",
+			content: `**${entry.event.type}**\n\n${describeEvent(entry.event)}${details}`,
+			created: Date.parse(entry.receivedAt) || undefined,
+			data: {
+				sandbox: {
+					type: "event",
+					eventType: entry.event.type,
+				},
+			},
+		});
+	}
+
+	if (selectedRun) {
+		const resultContent = getRunResultContent(selectedRun);
+		if (resultContent) {
+			displayMessages.push({
+				id: `${selectedRun.runId}-result`,
+				role: "assistant",
+				content: resultContent,
+				created: Date.parse(selectedRun.completedAt ?? selectedRun.updatedAt) || undefined,
+				data: {
+					sandbox: {
+						type: "result",
+						status: selectedRun.status,
+					},
+				},
+			});
+		}
+	}
+
+	return displayMessages;
+}
+
+function getRunResultContent(run: SandboxRun): string | null {
+	if (!run.result && !run.error) return null;
+
+	const parts = [`**Run ${run.status}**`, summariseRunResult(run)];
+	if (typeof run.result?.branchName === "string") {
+		parts.push(`Branch: \`${run.result.branchName}\``);
+	}
+	if (typeof run.result?.diff === "string" && run.result.diff.trim()) {
+		parts.push(`Diff:\n\n\`\`\`diff\n${run.result.diff}\n\`\`\``);
+	}
+	if (typeof run.result?.logs === "string" && run.result.logs.trim()) {
+		parts.push(`Logs:\n\n\`\`\`\n${run.result.logs}\n\`\`\``);
+	}
+
+	return parts.join("\n\n");
 }

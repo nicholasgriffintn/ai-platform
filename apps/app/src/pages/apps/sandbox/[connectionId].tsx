@@ -6,7 +6,7 @@ import { PageShell } from "~/components/Core/PageShell";
 import { PageTitle } from "~/components/Core/PageTitle";
 import { AppsSidebarContent } from "~/components/Sidebar/AppsSidebarContent";
 import { Alert, AlertDescription, AlertTitle, Button } from "~/components/ui";
-import { SandboxChatConsole } from "./connection/SandboxChatConsole";
+import { SandboxConversationThread } from "./connection/SandboxConversationThread";
 import { SandboxRunSidebar } from "./connection/SandboxRunSidebar";
 import { useSandboxRunConsole } from "./connection/useSandboxRunConsole";
 
@@ -88,7 +88,7 @@ export default function SandboxConnectionPage() {
 					className="min-h-[360px]"
 				/>
 			) : (
-				<SandboxChatConsole consoleState={c} />
+				<SandboxConversationThread consoleState={c} />
 			)}
 		</PageShell>
 	);

@@ -486,7 +486,15 @@ export function useSandboxRunConsole() {
 			toast.error("No active run available for instructions");
 			return;
 		}
-		const content = operatorMessage.trim();
+		await submitInstruction(operatorMessage, kind);
+	};
+
+	const submitInstruction = async (input: string, kind: "message" | "continue" = "message") => {
+		if (!instructionRunId) {
+			toast.error("No active run available for instructions");
+			return;
+		}
+		const content = input.trim();
 		if (kind === "message" && !content) {
 			toast.error("Enter a message to send to the agent");
 			return;
@@ -516,8 +524,12 @@ export function useSandboxRunConsole() {
 	};
 
 	const handleRunTask = async () => {
+		await runTask(task);
+	};
+
+	const runTask = async (input: string) => {
 		const trimmedRepo = normalisedRepo;
-		const trimmedTask = task.trim();
+		const trimmedTask = input.trim();
 		if (!REPO_PATTERN.test(trimmedRepo)) {
 			toast.error("Repository must be in owner/repo format");
 			return;
@@ -706,6 +718,8 @@ export function useSandboxRunConsole() {
 		handleCancelRun,
 		handleResolveApproval,
 		handleSubmitInstruction,
+		runTask,
+		submitInstruction,
 	};
 }
 

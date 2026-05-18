@@ -1,7 +1,12 @@
 import { describe, expect, it } from "vitest";
 
 import type { SandboxRun, SandboxRunEvent } from "~/types/sandbox";
-import { buildMessagesFromRun, getAssistantMessageFromEvent, isRunStatusActive } from "./helpers";
+import {
+	buildMessagesFromRun,
+	buildSandboxDisplayMessages,
+	getAssistantMessageFromEvent,
+	isRunStatusActive,
+} from "./helpers";
 
 describe("sandbox connection helpers", () => {
 	it("builds chat messages from a completed sandbox run", () => {
@@ -47,6 +52,41 @@ describe("sandbox connection helpers", () => {
 		expect(isRunStatusActive("running")).toBe(true);
 		expect(isRunStatusActive("completed")).toBe(false);
 		expect(isRunStatusActive("failed")).toBe(false);
+	});
+
+	it("converts sandbox events into normal chat messages", () => {
+		const messages = buildSandboxDisplayMessages({
+			messages: [
+				{
+					id: "user-1",
+					role: "user",
+					content: "please complete SW-101",
+					createdAt: "2026-05-18T10:00:00.000Z",
+				},
+			],
+			timeline: [
+				{
+					id: "event-1",
+					receivedAt: "2026-05-18T10:01:00.000Z",
+					event: {
+						type: "command_started",
+						command: "pnpm test",
+						commandIndex: 1,
+						commandTotal: 2,
+					},
+				},
+			],
+			selectedRun: undefined,
+			latestPlan: {
+				plan: "Run tests",
+				updatedAt: "2026-05-18T10:00:30.000Z",
+			},
+		});
+
+		expect(messages.map((message) => message.role)).toEqual(["user", "assistant", "assistant"]);
+		expect(String(messages[1].content)).toContain("Run tests");
+		expect(String(messages[2].content)).toContain("command_started");
+		expect(String(messages[2].content)).toContain("pnpm test");
 	});
 });
 
