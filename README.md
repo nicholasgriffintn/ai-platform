@@ -64,9 +64,9 @@ This monorepo contains:
 
 - **[Automated Model Routing](https://nicholasgriffin.dev/blog/building-a-first-party-prompt-router)** - Smart model selection
 - **AI Council** - Multi-perspective debate mode with selectable council members and synthesis
-- **Canvas** - Multi-model image and video generation with shared prompt controls
+- **[Canvas](https://nicholasgriffin.dev/blog/building-multi-model-image-and-video-generation-in-polychat)** - Multi-model image and video generation with shared prompt controls
 - **Replicate App** - Run media and multimodal predictions from Replicate models
-- **Sandbox App** - Connect GitHub repositories and stream implementation, review, test, or bug-fix runs
+- **[Sandbox App](https://nicholasgriffin.dev/blog/building-my-own-cloud-ai-environment-with-cloudflare-containers/)** - Connect GitHub repositories and stream implementation, review, test, or bug-fix runs
 - **Strudel Music Patterns** - Generate and edit code-based music patterns
 - **Podcast, Article, and Note Workflows** - Transcribe, summarise, report, format, and regenerate content
 - **Drawing Apps** - Create drawings and ask AI to enhance or guess them
@@ -76,6 +76,8 @@ This monorepo contains:
 ### Automated Coding with Sandbox Worker
 
 The [Sandbox Worker](./apps/sandbox-worker) uses Cloudflare Sandboxes to run AI-powered code generation tasks against GitHub repositories. This enables automated feature implementation triggered via GitHub comments or the web UI.
+
+I wrote more about this in my [blog post here](https://nicholasgriffin.dev/blog/building-my-own-cloud-ai-environment-with-cloudflare-containers/).
 
 **How it works:**
 
