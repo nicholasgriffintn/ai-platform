@@ -11,12 +11,13 @@ type TextToSpeechRequest = {
 	user: IUser;
 	provider?: "polly" | "cartesia" | "elevenlabs" | "melotts";
 	lang?: string;
+	store?: boolean;
 };
 
 export const handleTextToSpeech = async (
 	req: TextToSpeechRequest,
 ): Promise<IFunctionResponse | IFunctionResponse[]> => {
-	const { input: rawInput, env, user, provider = "polly", lang = "en" } = req;
+	const { input: rawInput, env, user, provider = "melotts", lang = "en", store = true } = req;
 
 	const input = sanitiseInput(rawInput);
 
@@ -28,7 +29,7 @@ export const handleTextToSpeech = async (
 		throw new AssistantError("Input is too long", ErrorType.PARAMS_ERROR);
 	}
 
-	const storage = new StorageService(env.ASSETS_BUCKET);
+	const storage = store ? new StorageService(env.ASSETS_BUCKET) : undefined;
 	const slug = `tts/${encodeURIComponent(user?.email || "unknown").replace(/[^a-zA-Z0-9]/g, "-")}-${generateId()}`;
 
 	const audioProvider = getAudioProvider(provider, { env, user });
@@ -38,6 +39,7 @@ export const handleTextToSpeech = async (
 		user,
 		slug,
 		storage,
+		store,
 		locale: lang,
 	});
 
@@ -79,6 +81,9 @@ export const handleTextToSpeech = async (
 			provider,
 			audioKey,
 			audioUrl,
+			audioBase64: synthesisResult.audioBase64,
+			audioDataUrl: synthesisResult.audioDataUrl,
+			audioMimeType: synthesisResult.audioMimeType,
 			response: responseText,
 			metadata: synthesisResult.metadata,
 		},

@@ -1,7 +1,14 @@
 export function bufferToBase64(buffer: ArrayBuffer | Uint8Array): string {
 	const bytes = new Uint8Array(buffer);
-	const binString = String.fromCharCode.apply(null, [...bytes]);
-	return btoa(binString);
+	const chunkSize = 0x8000;
+	let binary = "";
+
+	for (let index = 0; index < bytes.length; index += chunkSize) {
+		const chunk = bytes.subarray(index, index + chunkSize);
+		binary += String.fromCharCode.apply(null, Array.from(chunk));
+	}
+
+	return btoa(binary);
 }
 
 export function base64ToBuffer(base64: string): Uint8Array {

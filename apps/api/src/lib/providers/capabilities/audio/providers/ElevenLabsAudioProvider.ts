@@ -8,7 +8,6 @@ export class ElevenLabsAudioProvider extends BaseAudioProvider implements AudioP
 	private readonly provider = new ElevenLabsProvider();
 
 	async synthesize(request: AudioSynthesisRequest): Promise<AudioSynthesisResult> {
-		const storage = this.requireStorage(request);
 		const slugBase = this.resolveSlugBase(request);
 		const objectKey = this.buildObjectKey(slugBase);
 
@@ -33,6 +32,20 @@ export class ElevenLabsAudioProvider extends BaseAudioProvider implements AudioP
 			throw new AssistantError("No audio data returned by ElevenLabs", ErrorType.PROVIDER_ERROR);
 		}
 
+		if (request.store === false) {
+			const audioDataUrl = this.buildAudioDataUrl(audioData);
+
+			return {
+				audioBase64: audioDataUrl.replace(/^data:audio\/mpeg;base64,/, ""),
+				audioDataUrl,
+				audioMimeType: "audio/mpeg",
+				metadata: {
+					voice: request.voice,
+				},
+			};
+		}
+
+		const storage = this.requireStorage(request);
 		await storage.uploadObject(objectKey, new Uint8Array(audioData));
 
 		return {

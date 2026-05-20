@@ -1,5 +1,6 @@
 import type { AudioProvider, AudioSynthesisRequest, AudioSynthesisResult } from ".";
 import type { StorageService } from "~/lib/storage";
+import { bufferToBase64 } from "~/utils/base64";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
 
@@ -40,6 +41,10 @@ export abstract class BaseAudioProvider implements AudioProvider {
 		}
 
 		return `${envBase.replace(/\/$/, "")}/${key}`;
+	}
+
+	protected buildAudioDataUrl(buffer: ArrayBuffer, mimeType = "audio/mpeg"): string {
+		return `data:${mimeType};base64,${bufferToBase64(buffer)}`;
 	}
 
 	abstract synthesize(request: AudioSynthesisRequest): Promise<AudioSynthesisResult>;

@@ -26,6 +26,7 @@ import { ArtifactPanel } from "./Artifacts/ArtifactPanel";
 import { ChatInput, type ChatInputHandle } from "./ChatInput";
 import { FooterInfo } from "./FooterInfo";
 import { MessageList } from "./MessageList";
+import { useAutoPlayResponses } from "./useAutoPlayResponses";
 import { WelcomeScreen } from "./WelcomeScreen";
 
 export interface ConversationThreadModeConfig {
@@ -69,6 +70,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
 	const [isPanelVisible, setIsPanelVisible] = useState(false);
 	const [currentArtifacts, setCurrentArtifacts] = useState<ArtifactProps[]>([]);
 	const [isCombinedPanel, setIsCombinedPanel] = useState(false);
+	const [autoPlayResponsesEnabled, setAutoPlayResponsesEnabled] = useState(false);
 
 	const isStreamLoading = useIsLoading("stream-response");
 	const isModelInitializing = useIsLoading("model-init");
@@ -79,6 +81,22 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
 	);
 
 	const chatInputRef = useRef<ChatInputHandle>(null);
+	const {
+		isGeneratingSpeech: isGeneratingAutoResponseSpeech,
+		isPlaying: isPlayingAutoResponse,
+		stopPlayback,
+	} = useAutoPlayResponses({
+		messages,
+		isEnabled: autoPlayResponsesEnabled,
+		isStreaming: isStreamLoading || streamStarted,
+	});
+
+	const handleAutoPlayToggle = useCallback(() => {
+		if (autoPlayResponsesEnabled) {
+			stopPlayback();
+		}
+		setAutoPlayResponsesEnabled(!autoPlayResponsesEnabled);
+	}, [autoPlayResponsesEnabled, stopPlayback]);
 
 	const handleArtifactOpen = useCallback(
 		(artifact: ArtifactProps, combine?: boolean, artifacts?: ArtifactProps[]) => {
@@ -324,6 +342,12 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
 						onTranscribe={handleTranscribe}
 						placeholder={modeConfig?.inputPlaceholder}
 						controls={modeConfig?.inputControls}
+						autoPlayResponses={{
+							enabled: autoPlayResponsesEnabled,
+							isGenerating: isGeneratingAutoResponseSpeech,
+							isPlaying: isPlayingAutoResponse,
+							onToggle: handleAutoPlayToggle,
+						}}
 					/>
 				</div>
 			</div>

@@ -189,6 +189,33 @@ describe("handleTextToSpeech", () => {
 			expect(result.data.provider).toBe("cartesia");
 		});
 
+		it("should pass store=false without storage when storage is disabled", async () => {
+			mockAudioProviders.cartesia.synthesize.mockResolvedValue({
+				audioDataUrl: "data:audio/mpeg;base64,YXVkaW8=",
+				audioBase64: "YXVkaW8=",
+				audioMimeType: "audio/mpeg",
+			});
+
+			const result = await handleTextToSpeech({
+				env: mockEnv,
+				input: "test input",
+				user: mockUser,
+				provider: "cartesia",
+				store: false,
+			});
+
+			expect(mockAudioProviders.cartesia.synthesize).toHaveBeenCalledWith(
+				expect.objectContaining({
+					store: false,
+					storage: undefined,
+				}),
+			);
+			if (Array.isArray(result)) {
+				throw new Error("Expected a single speech response");
+			}
+			expect(result.data.audioDataUrl).toBe("data:audio/mpeg;base64,YXVkaW8=");
+		});
+
 		it("should pass locale to melotts provider", async () => {
 			mockAudioProviders.melotts.synthesize.mockResolvedValue({
 				response: "melotts-response",

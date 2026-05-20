@@ -1,4 +1,44 @@
-import type { Message } from "~/types";
+import type { Message, MessageContent } from "~/types";
+
+type ChatRequestMessage = {
+	id?: string;
+	role: Message["role"];
+	content: Message["content"];
+	data?: Message["data"];
+	name?: Message["name"];
+	parts?: Message["parts"];
+	tool_calls?: Message["tool_calls"];
+};
+
+type ChatRequestContent =
+	| {
+			type: "text";
+			text?: string;
+	  }
+	| {
+			type: "image_url";
+			image_url: NonNullable<MessageContent["image_url"]>;
+	  }
+	| {
+			type: "input_audio";
+			input_audio: NonNullable<MessageContent["input_audio"]>;
+	  }
+	| {
+			type: "document_url";
+			document_url: NonNullable<MessageContent["document_url"]>;
+	  }
+	| {
+			type: "markdown_document";
+			markdown_document: NonNullable<MessageContent["markdown_document"]>;
+	  };
+
+const chatRequestContentTypes = new Set([
+	"text",
+	"image_url",
+	"input_audio",
+	"document_url",
+	"markdown_document",
+]);
 
 function normaliseMessageParts(parts: unknown): Message["parts"] | undefined {
 	if (!Array.isArray(parts)) {
@@ -43,7 +83,7 @@ export function normalizeMessage(message: Message): Message {
 			newReasoning = formatted.reasoning;
 		}
 	} else if (Array.isArray(content)) {
-		const thinkingPart = content.find((item: any) => item.type === "thinking" && item.thinking);
+		const thinkingPart = content.find((item) => item.type === "thinking" && item.thinking);
 		if (thinkingPart) {
 			newReasoning = thinkingPart.thinking ?? null;
 		}
@@ -105,6 +145,121 @@ export function normalizeMessage(message: Message): Message {
 		data: message.data,
 		status: message.status,
 	};
+}
+
+function toChatRequestContentPart(part: MessageContent): ChatRequestContent | null {
+	if (!chatRequestContentTypes.has(part.type)) {
+		return null;
+	}
+
+	if (part.type === "text") {
+		return { type: "text", text: part.text || "" };
+	}
+
+	if (part.type === "image_url" && part.image_url?.url) {
+		return {
+			type: "image_url",
+			image_url: {
+				url: part.image_url.url,
+				detail: part.image_url.detail,
+			},
+		};
+	}
+
+	if (part.type === "input_audio" && part.input_audio) {
+		return {
+			type: "input_audio",
+			input_audio: part.input_audio,
+		};
+	}
+
+	if (part.type === "document_url" && part.document_url?.url) {
+		return {
+			type: "document_url",
+			document_url: part.document_url,
+		};
+	}
+
+	if (part.type === "markdown_document" && part.markdown_document?.markdown) {
+		return {
+			type: "markdown_document",
+			markdown_document: {
+				markdown: part.markdown_document.markdown,
+				name: part.markdown_document.name,
+			},
+		};
+	}
+
+	return null;
+}
+
+function serialiseContentForChatRequest(message: Message): Message["content"] {
+	if (typeof message.content === "string") {
+		return message.content;
+	}
+
+	if (!Array.isArray(message.content)) {
+		return JSON.stringify(message.content);
+	}
+
+	const content = message.content
+		.map((part) => toChatRequestContentPart(part))
+		.filter((part): part is ChatRequestContent => part !== null);
+
+	if (content.length === 0) {
+		return getMessageTextContent(message);
+	}
+
+	if (message.role !== "user" && content.every((part) => part.type === "text")) {
+		return content
+			.map((part) => part.text || "")
+			.join("\n")
+			.trim();
+	}
+
+	return content;
+}
+
+export function serialiseMessageForChatRequest(message: Message): ChatRequestMessage {
+	return {
+		id: message.id || undefined,
+		role: message.role,
+		content: serialiseContentForChatRequest(message),
+		data: message.data || undefined,
+		name: message.name || undefined,
+		parts: message.parts,
+		tool_calls: message.tool_calls,
+	};
+}
+
+export function serialiseMessagesForChatRequest(messages: Message[]): ChatRequestMessage[] {
+	return messages.map((message) => serialiseMessageForChatRequest(message));
+}
+
+export function getMessageTextContent(message: Pick<Message, "content" | "parts">): string {
+	if (typeof message.content === "string") {
+		return message.content.trim();
+	}
+
+	if (Array.isArray(message.content)) {
+		const text = message.content
+			.map((item) => (item.type === "text" ? item.text || "" : ""))
+			.join("\n")
+			.trim();
+
+		if (text) {
+			return text;
+		}
+	}
+
+	if (Array.isArray(message.parts)) {
+		return message.parts
+			.map((part) => (part.type === "text" ? part.text : ""))
+			.join("\n")
+			.trim();
+	}
+
+	return "";
 }
 
 export function formatMessageContent(messageContent: string): {

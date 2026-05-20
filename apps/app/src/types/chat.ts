@@ -45,6 +45,7 @@ export interface MessageContent {
 		| "input_audio"
 		| "artifact"
 		| "document_url"
+		| "markdown_document"
 		| "thinking";
 	text?: string;
 	image_url?: {
@@ -63,6 +64,10 @@ export interface MessageContent {
 	};
 	document_url?: {
 		url: string;
+		name?: string;
+	};
+	markdown_document?: {
+		markdown: string;
 		name?: string;
 	};
 	artifact?: {

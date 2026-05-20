@@ -1,12 +1,15 @@
 import {
 	File,
 	Image,
+	Loader2,
 	Mic,
 	Paperclip,
 	Pause,
 	Send,
 	Square,
+	Volume1,
 	Volume2,
+	VolumeX,
 	X,
 	FileCode,
 } from "lucide-react";
@@ -82,6 +85,12 @@ interface ChatInputProps {
 	controls?: ReactNode;
 	disableAttachments?: boolean;
 	hideDefaultControls?: boolean;
+	autoPlayResponses?: {
+		enabled: boolean;
+		isGenerating: boolean;
+		isPlaying: boolean;
+		onToggle: () => void;
+	};
 }
 
 export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
@@ -96,6 +105,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 			controls,
 			disableAttachments = false,
 			hideDefaultControls = false,
+			autoPlayResponses,
 		},
 		ref,
 	) => {
@@ -558,6 +568,36 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 									<>
 										{isPro && (
 											<div className="flex items-center gap-1 mr-2">
+												{autoPlayResponses && (
+													<Button
+														type="button"
+														onClick={autoPlayResponses.onToggle}
+														disabled={isLoading}
+														className="cursor-pointer p-1.5 hover:bg-off-white-highlight dark:hover:bg-zinc-800 rounded-md text-zinc-600 dark:text-zinc-400 disabled:opacity-50 disabled:cursor-not-allowed"
+														title={
+															autoPlayResponses.enabled
+																? "Disable response audio"
+																: "Enable response audio"
+														}
+														aria-label={
+															autoPlayResponses.enabled
+																? "Disable response audio"
+																: "Enable response audio"
+														}
+														aria-pressed={autoPlayResponses.enabled}
+														variant="icon"
+													>
+														{autoPlayResponses.isPlaying ? (
+															<Volume1 className="h-4 w-4" />
+														) : autoPlayResponses.isGenerating ? (
+															<Loader2 className="h-4 w-4 animate-spin" />
+														) : autoPlayResponses.enabled ? (
+															<Volume2 className="h-4 w-4" />
+														) : (
+															<VolumeX className="h-4 w-4" />
+														)}
+													</Button>
+												)}
 												{canUploadFiles && (
 													<>
 														<input
@@ -648,6 +688,16 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 					</div>
 
 					<div className="border-t border-zinc-200 dark:border-zinc-700 mt-2 px-3 pb-3 pt-3">
+						{autoPlayResponses?.isGenerating && (
+							<div
+								className="mb-3 flex items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400"
+								aria-live="polite"
+								role="status"
+							>
+								<Loader2 className="h-3.5 w-3.5 animate-spin text-blue-500" aria-hidden="true" />
+								<span>Generating response audio...</span>
+							</div>
+						)}
 						{controls && <div className={hideDefaultControls ? "" : "mb-3"}>{controls}</div>}
 						{!hideDefaultControls && (
 							<div className="flex items-center justify-between gap-1 sm:gap-2">

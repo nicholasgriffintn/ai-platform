@@ -18,4 +18,7 @@ export const textToSpeechSchema = z.object({
 	}),
 	provider: z.enum(["polly", "cartesia", "elevenlabs", "melotts"]).optional(),
 	lang: z.string().optional(),
+	store: z.boolean().optional().meta({
+		description: "Whether to store the generated audio artifact.",
+	}),
 });

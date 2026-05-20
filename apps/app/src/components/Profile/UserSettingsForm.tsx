@@ -3,11 +3,13 @@ import { type FormEvent, useState } from "react";
 import { Button, FormInput, FormSelect, Switch, Textarea } from "~/components/ui";
 import { EventCategory, useTrackEvent } from "~/hooks/use-track-event";
 import { useAuthStatus } from "~/hooks/useAuth";
+import {
+	getTranscriptionModelOptions,
+	resolveTranscriptionSettings,
+	transcriptionProviderOptions,
+	type TranscriptionProviderId,
+} from "~/lib/transcription-settings";
 import type { UserSettings } from "~/types";
-
-const transcriptionProviders = {
-	workers: ["whisper", "whisper-tiny"],
-};
 
 interface UserSettingsFormProps {
 	userSettings: UserSettings | null;
@@ -17,6 +19,10 @@ interface UserSettingsFormProps {
 export function UserSettingsForm({ userSettings, isAuthenticated }: UserSettingsFormProps) {
 	const { updateUserSettings, isUpdatingUserSettings } = useAuthStatus();
 	const { trackEvent, trackError } = useTrackEvent();
+	const transcriptionSettings = resolveTranscriptionSettings(
+		userSettings?.transcription_provider,
+		userSettings?.transcription_model,
+	);
 	const [formData, setFormData] = useState({
 		nickname: userSettings?.nickname || "",
 		job_role: userSettings?.job_role || "",
@@ -36,8 +42,8 @@ export function UserSettingsForm({ userSettings, isAuthenticated }: UserSettings
 		memories_save_enabled: userSettings?.memories_save_enabled || false,
 		memories_chat_history_enabled: userSettings?.memories_chat_history_enabled || false,
 		tracking_enabled: userSettings?.tracking_enabled ?? true,
-		transcription_provider: userSettings?.transcription_provider || "workers",
-		transcription_model: userSettings?.transcription_model || "whisper-1",
+		transcription_provider: transcriptionSettings.transcription_provider,
+		transcription_model: transcriptionSettings.transcription_model,
 		search_provider: userSettings?.search_provider || "",
 		sandbox_model: userSettings?.sandbox_model || "",
 	});
@@ -62,13 +68,13 @@ export function UserSettingsForm({ userSettings, isAuthenticated }: UserSettings
 	};
 
 	const handleProviderChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-		const newProvider = e.target.value as keyof typeof transcriptionProviders;
-		const firstModelForProvider = transcriptionProviders[newProvider][0];
+		const newProvider = e.target.value as TranscriptionProviderId;
+		const [firstModelForProvider] = getTranscriptionModelOptions(newProvider);
 
 		setFormData((prev) => ({
 			...prev,
 			transcription_provider: newProvider,
-			transcription_model: firstModelForProvider,
+			transcription_model: firstModelForProvider.id,
 		}));
 
 		trackEvent({
@@ -76,7 +82,7 @@ export function UserSettingsForm({ userSettings, isAuthenticated }: UserSettings
 			category: EventCategory.UI_INTERACTION,
 			properties: {
 				provider: newProvider,
-				auto_selected_model: firstModelForProvider,
+				auto_selected_model: firstModelForProvider.id,
 			},
 		});
 	};
@@ -571,9 +577,9 @@ export function UserSettingsForm({ userSettings, isAuthenticated }: UserSettings
 						value={formData.transcription_provider}
 						onChange={handleProviderChange}
 					>
-						{Object.keys(transcriptionProviders).map((provider) => (
-							<option key={provider} value={provider}>
-								{provider.charAt(0).toUpperCase() + provider.slice(1)}
+						{transcriptionProviderOptions.map((provider) => (
+							<option key={provider.id} value={provider.id}>
+								{provider.label}
 							</option>
 						))}
 					</FormSelect>
@@ -600,11 +606,9 @@ export function UserSettingsForm({ userSettings, isAuthenticated }: UserSettings
 							})
 						}
 					>
-						{transcriptionProviders[
-							formData.transcription_provider as keyof typeof transcriptionProviders
-						]?.map((model) => (
-							<option key={model} value={model}>
-								{model}
+						{getTranscriptionModelOptions(formData.transcription_provider).map((model) => (
+							<option key={model.id} value={model.id}>
+								{model.label}
 							</option>
 						))}
 					</FormSelect>

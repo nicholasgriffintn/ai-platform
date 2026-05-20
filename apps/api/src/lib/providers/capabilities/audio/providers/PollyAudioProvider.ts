@@ -7,10 +7,10 @@ export class PollyAudioProvider extends BaseAudioProvider implements AudioProvid
 	private readonly provider = new PollyProvider();
 
 	async synthesize(request: AudioSynthesisRequest): Promise<AudioSynthesisResult> {
-		const storage = this.requireStorage(request);
 		const slugBase = this.resolveSlugBase(request);
+		const storage = request.store === false ? undefined : this.requireStorage(request);
 
-		const key = (await this.provider.getResponse({
+		const response = await this.provider.getResponse({
 			model: request.voice ?? "Ruth",
 			message: request.input,
 			env: request.env,
@@ -19,8 +19,32 @@ export class PollyAudioProvider extends BaseAudioProvider implements AudioProvid
 			options: {
 				slug: slugBase,
 				storageService: storage,
+				returnAudio: request.store === false,
 			},
-		})) as string;
+		});
+
+		if (request.store === false && response && typeof response === "object") {
+			return {
+				audioBase64:
+					"audioBase64" in response && typeof response.audioBase64 === "string"
+						? response.audioBase64
+						: undefined,
+				audioDataUrl:
+					"audioDataUrl" in response && typeof response.audioDataUrl === "string"
+						? response.audioDataUrl
+						: undefined,
+				audioMimeType:
+					"audioMimeType" in response && typeof response.audioMimeType === "string"
+						? response.audioMimeType
+						: "audio/mpeg",
+				metadata: {
+					voice: request.voice ?? "Ruth",
+					engine: "amazon-polly",
+				},
+			};
+		}
+
+		const key = response as string;
 
 		return {
 			key,

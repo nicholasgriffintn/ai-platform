@@ -6,7 +6,7 @@ import type {
 	Message,
 	MessageData,
 } from "~/types";
-import { normalizeMessage } from "../../messages";
+import { normalizeMessage, serialiseMessagesForChatRequest } from "../../messages";
 import { fetchApi, returnFetchedData } from "../fetch-wrapper";
 
 export class ChatService {
@@ -131,14 +131,7 @@ export class ChatService {
 			console.error("Error generating title:", error);
 		}
 
-		const formattedMessages = messages.map((msg) => ({
-			id: msg.id,
-			role: msg.role,
-			content: msg.content,
-			data: msg.data,
-			name: msg.name,
-			tool_calls: msg.tool_calls,
-		}));
+		const formattedMessages = serialiseMessagesForChatRequest(messages);
 
 		const response = await fetchApi(`/chat/completions/${completion_id}/generate-title`, {
 			method: "POST",
@@ -329,25 +322,7 @@ export class ChatService {
 			console.error("Error streaming chat completions:", error);
 		}
 
-		const formattedMessages = messages.map((msg) => {
-			if (Array.isArray(msg.content)) {
-				return {
-					id: msg.id || undefined,
-					role: msg.role,
-					content: msg.content,
-					data: msg.data || undefined,
-					name: msg.name || undefined,
-				};
-			}
-
-			return {
-				id: msg.id || undefined,
-				role: msg.role,
-				content: typeof msg.content === "string" ? msg.content : JSON.stringify(msg.content),
-				data: msg.data || undefined,
-				name: msg.name || undefined,
-			};
-		});
+		const formattedMessages = serialiseMessagesForChatRequest(messages);
 
 		const requestBody: Record<string, any> = {
 			...chatSettings,

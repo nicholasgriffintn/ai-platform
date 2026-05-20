@@ -2,6 +2,7 @@ import { AwsClient } from "aws4fetch";
 
 import { trackProviderMetrics } from "~/lib/monitoring";
 import type { ChatCompletionParameters } from "~/types";
+import { bufferToBase64 } from "~/utils/base64";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 import { BaseProvider } from "./base";
@@ -160,6 +161,16 @@ export class PollyProvider extends BaseProvider {
 
 						const audioBuffer = await s3Response.arrayBuffer();
 						const audioKey = `audio/${params.options?.slug}.mp3`;
+
+						if (params.options?.returnAudio === true) {
+							const audioBase64 = bufferToBase64(audioBuffer);
+
+							return {
+								audioBase64,
+								audioDataUrl: `data:audio/mpeg;base64,${audioBase64}`,
+								audioMimeType: "audio/mpeg",
+							};
+						}
 
 						await params.options?.storageService?.uploadObject(
 							audioKey,
