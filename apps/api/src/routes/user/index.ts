@@ -5,6 +5,7 @@ import {
 	githubConnectionSchema,
 	errorResponseSchema,
 	successResponseSchema,
+	deleteProviderApiKeyParamsSchema,
 	storeProviderApiKeySchema,
 	updateUserSettingsResponseSchema,
 	updateUserSettingsSchema,
@@ -19,6 +20,7 @@ import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import { ResponseFactory } from "~/lib/http/ResponseFactory";
 import {
 	updateUserSettings,
+	deleteProviderApiKey,
 	getUserEnabledModels,
 	storeProviderApiKey,
 	getUserProviderSettings,
@@ -212,6 +214,37 @@ addRoute(app, "get", "/providers", {
 			const providers = await getUserProviderSettings(serviceContext, user.id);
 
 			return ResponseFactory.success(c, providers);
+		})(raw),
+});
+
+addRoute(app, "delete", "/providers/:providerId", {
+	tags: ["user"],
+	summary: "Delete provider API key",
+	description: "Deletes the stored API key for a provider and disables it for the user",
+	paramSchema: deleteProviderApiKeyParamsSchema,
+	responses: {
+		200: {
+			description: "Provider API key deleted successfully",
+			schema: successResponseSchema,
+		},
+		401: {
+			description: "Authentication required",
+			schema: errorResponseSchema,
+		},
+	},
+	handler: async ({ raw }) =>
+		(async (c: Context) => {
+			const user = c.get("user");
+			const { providerId } = c.req.valid("param" as never) as { providerId: string };
+
+			if (!user) {
+				throw new AssistantError("Authentication required", ErrorType.AUTHENTICATION_ERROR);
+			}
+
+			const serviceContext = getServiceContext(c);
+			const result = await deleteProviderApiKey(serviceContext, providerId, user.id);
+
+			return ResponseFactory.success(c, result);
 		})(raw),
 });
 

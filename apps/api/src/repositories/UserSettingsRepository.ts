@@ -427,6 +427,38 @@ export class UserSettingsRepository extends BaseRepository {
 		}
 	}
 
+	public async deleteProviderApiKey(userId: number, providerId: string): Promise<void> {
+		if (!this.env.DB) {
+			throw new AssistantError("Database is not configured", ErrorType.CONFIGURATION_ERROR);
+		}
+
+		if (!userId || !providerId) {
+			throw new AssistantError("Missing required parameters", ErrorType.PARAMS_ERROR);
+		}
+
+		const update = this.buildUpdateQuery(
+			"provider_settings",
+			{
+				api_key: null,
+				enabled: 0,
+			},
+			["api_key", "enabled"],
+			"user_id = ? AND provider_id = ?",
+			[userId, providerId],
+		);
+
+		if (!update) {
+			return;
+		}
+
+		const queryWithTimestamp = update.query.replace(
+			"updated_at = datetime('now')",
+			"updated_at = CURRENT_TIMESTAMP",
+		);
+
+		await this.executeRun(queryWithTimestamp, update.values);
+	}
+
 	public async createUserProviderSettings(userId: number): Promise<void> {
 		const providers = listConfigurableChatProviders();
 		const alwaysEnabledProviders = this.env.ALWAYS_ENABLED_PROVIDERS || "";

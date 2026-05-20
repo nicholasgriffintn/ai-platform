@@ -7,6 +7,7 @@ export interface ProviderSetting {
 	name?: string;
 	description?: string;
 	enabled: boolean;
+	hasApiKey?: boolean;
 }
 
 export class UserService {
@@ -126,6 +127,25 @@ export class UserService {
 		}
 
 		return await returnFetchedData<ProviderSetting[]>(response);
+	}
+
+	async deleteProviderApiKey(providerId: string): Promise<void> {
+		let headers = {};
+		try {
+			headers = await this.getHeaders();
+		} catch (error) {
+			console.error("Error deleting provider API key:", error);
+		}
+
+		const response = await fetchApi(`/user/providers/${encodeURIComponent(providerId)}`, {
+			method: "DELETE",
+			headers,
+			timeoutMs: 10000,
+		});
+
+		if (!response.ok) {
+			throw new Error(`Failed to delete provider API key: ${response.statusText}`);
+		}
 	}
 
 	async syncProviders(): Promise<void> {

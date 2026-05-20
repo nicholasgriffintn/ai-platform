@@ -303,6 +303,10 @@ class ApiService {
 		return this.userService.getProviderSettings();
 	};
 
+	deleteProviderApiKey = (providerId: string): Promise<void> => {
+		return this.userService.deleteProviderApiKey(providerId);
+	};
+
 	syncProviders = (): Promise<void> => {
 		return this.userService.syncProviders();
 	};
