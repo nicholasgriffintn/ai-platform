@@ -196,7 +196,7 @@ Violations are automatically tracked to Cloudflare Analytics Engine with:
 ### Check a Conversation
 
 ~~~bash
-curl -X POST https://api.polychat.app/v1/chat/completions/cmpl_abc123/check \\
+curl -X POST https://api.polychat.app/chat/completions/cmpl_abc123/check \\
   -H "Authorization: Bearer YOUR_TOKEN" \\
   -H "Content-Type: application/json" \\
   -d '{

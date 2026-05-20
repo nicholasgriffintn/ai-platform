@@ -6,7 +6,7 @@ OpenAI-compatible API with 40+ models, built on Cloudflare Workers.
 
 The API provides a unified interface to multiple AI providers, following OpenAI's API conventions while extending functionality with agents, RAG, guardrails, and specialized code generation endpoints.
 
-**Base URL:** `https://api.polychat.app/v1`
+**Base URL:** `https://api.polychat.app`
 
 ## Documentation
 

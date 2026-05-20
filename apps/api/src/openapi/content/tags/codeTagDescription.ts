@@ -84,7 +84,7 @@ Apply code snippets or patches to existing code.
 ~~~javascript
 async function getCompletion(beforeCursor, afterCursor) {
 	const response = await fetch(
-		"https://api.polychat.app/v1/chat/fim/completions",
+		"https://api.polychat.app/chat/fim/completions",
 		{
 			method: "POST",
 			headers: {
@@ -114,7 +114,7 @@ async function suggestRefactoring(code, instruction) {
 	const prompt = \`<|fim_prefix|>\${code}<|fim_suffix|>\\n\\n<|fim_instruction|>\${instruction}<|fim_instruction|>\`;
 
 	const response = await fetch(
-		"https://api.polychat.app/v1/chat/edit/completions",
+		"https://api.polychat.app/chat/edit/completions",
 		{
 			method: "POST",
 			headers: {
@@ -155,7 +155,7 @@ async function suggestRefactoring(code, instruction) {
 ### FIM Completion
 
 ~~~bash
-curl https://api.polychat.app/v1/chat/fim/completions \\
+curl https://api.polychat.app/chat/fim/completions \\
   -H "Authorization: Bearer YOUR_TOKEN" \\
   -H "Content-Type: application/json" \\
   -d '{
@@ -170,7 +170,7 @@ curl https://api.polychat.app/v1/chat/fim/completions \\
 ### Next Edit
 
 ~~~bash
-curl https://api.polychat.app/v1/chat/edit/completions \\
+curl https://api.polychat.app/chat/edit/completions \\
   -H "Authorization: Bearer YOUR_TOKEN" \\
   -H "Content-Type": application/json" \\
   -d '{
@@ -187,7 +187,7 @@ curl https://api.polychat.app/v1/chat/edit/completions \\
 ### Apply Edit
 
 ~~~bash
-curl https://api.polychat.app/v1/chat/apply/completions \\
+curl https://api.polychat.app/chat/apply/completions \\
   -H "Authorization: Bearer YOUR_TOKEN" \\
   -H "Content-Type": application/json" \\
   -d '{

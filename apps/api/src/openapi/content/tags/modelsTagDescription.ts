@@ -138,19 +138,19 @@ Use \`auto\` as the model ID to enable automatic routing:
 ### Find Vision Models
 
 ~~~bash
-curl https://api.polychat.app/v1/models/by-capability/vision
+curl https://api.polychat.app/models/by-capability/vision
 ~~~
 
 ### Get Cheapest Chat Model
 
 ~~~bash
 # List all models and filter by pricing
-curl https://api.polychat.app/v1/models | jq '.data | sort_by(.pricing.input) | .[0]'
+curl https://api.polychat.app/models | jq '.data | sort_by(.pricing.input) | .[0]'
 ~~~
 
 ### Compare Model Context Windows
 
 ~~~bash
-curl https://api.polychat.app/v1/models | jq '.data | map({id, context_window}) | sort_by(.context_window) | reverse'
+curl https://api.polychat.app/models | jq '.data | map({id, context_window}) | sort_by(.context_window) | reverse'
 ~~~
 `;

@@ -209,7 +209,7 @@ Organize agents into teams:
 ### Create a Code Assistant
 
 ~~~bash
-curl -X POST https://api.polychat.app/v1/agents \\
+curl -X POST https://api.polychat.app/agents \\
   -H "Authorization: Bearer YOUR_TOKEN" \\
   -H "Content-Type: application/json" \\
   -d '{
@@ -223,7 +223,7 @@ curl -X POST https://api.polychat.app/v1/agents \\
 ### Use an Agent
 
 ~~~bash
-curl -X POST https://api.polychat.app/v1/agents/agent_abc123/completions \\
+curl -X POST https://api.polychat.app/agents/agent_abc123/completions \\
   -H "Authorization: Bearer YOUR_TOKEN" \\
   -H "Content-Type: application/json" \\
   -d '{
@@ -236,7 +236,7 @@ curl -X POST https://api.polychat.app/v1/agents/agent_abc123/completions \\
 ### Update an Agent
 
 ~~~bash
-curl -X PUT https://api.polychat.app/v1/agents/agent_abc123 \\
+curl -X PUT https://api.polychat.app/agents/agent_abc123 \\
   -H "Authorization: Bearer YOUR_TOKEN" \\
   -H "Content-Type": application/json" \\
   -d '{
