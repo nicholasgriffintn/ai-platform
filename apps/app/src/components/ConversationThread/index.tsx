@@ -330,7 +330,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
 				</div>
 			)}
 
-			<div className="px-4 pt-2">
+			<div className="relative z-10 px-4 pt-2">
 				<div className="max-w-3xl mx-auto">
 					<UsageLimitWarning />
 					<ChatInput
