@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import type { ModelConfig } from "~/types";
-import { getModelsByMode } from "../models";
+import { getModelProvider, getModelsByMode } from "../models";
 
 describe("getModelsByMode", () => {
 	it("excludes embedding-only models from the selector", () => {
@@ -31,5 +31,24 @@ describe("getModelsByMode", () => {
 		};
 
 		expect(Object.keys(getModelsByMode(models, "remote"))).toEqual(["kimi-k2"]);
+	});
+});
+
+describe("getModelProvider", () => {
+	it("returns the provider for a selected model id", () => {
+		const models: ModelConfig = {
+			"grok-3-gh": {
+				id: "grok-3-gh",
+				name: "Grok 3",
+				matchingModel: "xai/grok-3",
+				provider: "github-models",
+			},
+		};
+
+		expect(getModelProvider(models, "grok-3-gh")).toBe("github-models");
+	});
+
+	it("returns undefined when no model is selected", () => {
+		expect(getModelProvider({}, null)).toBeUndefined();
 	});
 });

@@ -159,6 +159,7 @@ export interface IBody {
 		longitude?: number;
 	};
 	model?: string;
+	provider?: string;
 	platform?: Platform;
 	mode?: ChatMode;
 	approved_tools?: string[];
@@ -273,6 +274,8 @@ interface AIResponseParamsBase extends AIControlParams {
 	suffix?: string;
 	// The model to use for the response.
 	model?: string;
+	// The provider to use when the model name is shared by multiple providers.
+	provider?: string;
 	// The mode to use for the response.
 	mode?: ChatMode;
 	// Desired output verbosity for providers that support the legacy knob.

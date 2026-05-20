@@ -2,7 +2,7 @@ import type { MCPClientManager } from "agents/mcp/client";
 
 import { formatToolCalls } from "~/lib/chat/tools";
 import { createServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
-import { getModelConfig } from "~/lib/providers/models";
+import { getModelConfig, getModelConfigByMatchingModel } from "~/lib/providers/models";
 import { handleCreateChatCompletions } from "~/services/completions/createChatCompletions";
 import { registerMCPClient } from "~/services/functions/mcp";
 import { add_reasoning_step } from "~/services/functions/reasoning";
@@ -70,7 +70,9 @@ export async function createAgentCompletion({
 	const functionSchemas = [...CORE_AGENT_TOOLS, ...teamDelegationTools, ...mcpFunctions];
 
 	const modelToUse = agent.model || body.model;
-	const modelDetails = await getModelConfig(modelToUse);
+	const modelDetails =
+		(await getModelConfig(modelToUse, env, body.provider)) ||
+		(await getModelConfigByMatchingModel(modelToUse || "", env, body.provider));
 	if (!modelDetails) {
 		throw new AssistantError("Invalid model", ErrorType.PARAMS_ERROR);
 	}
@@ -123,6 +125,7 @@ export async function createAgentCompletion({
 		messages: normalizedMessages,
 		system_prompt: systemPrompt,
 		model: modelToUse,
+		provider: agent.model ? modelDetails.provider : body.provider,
 		tools: formattedTools,
 		stream: false,
 		mode: "agent",

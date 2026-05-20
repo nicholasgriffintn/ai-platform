@@ -2,6 +2,10 @@ import z from "zod/v4";
 
 export const fillInMiddleRequestSchema = z.object({
 	model: z.string().optional().describe("The model to use for FIM completion"),
+	provider: z
+		.string()
+		.optional()
+		.describe("The provider to use when the model name is shared by multiple providers"),
 	prompt: z.string().describe("The code prefix (before cursor)"),
 	suffix: z.string().optional().describe("The code suffix (after cursor)"),
 	max_tokens: z.number().optional().describe("Maximum tokens to generate"),

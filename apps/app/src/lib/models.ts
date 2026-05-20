@@ -28,6 +28,11 @@ export function getFeaturedModelIds(models: ModelConfig) {
 	);
 }
 
+export function getModelProvider(models: ModelConfig, modelId?: string | null) {
+	if (!modelId) return undefined;
+	return models[modelId]?.provider;
+}
+
 export function getModelsByMode(models: ModelConfig, mode: ChatMode) {
 	return Object.entries(models).reduce(
 		(acc, [key, model]) => {

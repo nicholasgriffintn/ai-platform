@@ -14,6 +14,7 @@ vi.mock("~/lib/chat/utils", () => ({
 
 vi.mock("~/lib/providers/models", () => ({
 	getModelConfig: vi.fn(),
+	getModelConfigByMatchingModel: vi.fn(),
 }));
 
 vi.mock("~/utils/logger", () => ({
@@ -122,7 +123,11 @@ describe("ModelConfigValidator", () => {
 				"claude-3-sonnet",
 				false,
 			);
-			expect(mockGetModelConfig).toHaveBeenCalledWith("claude-3-sonnet", baseOptions.env);
+			expect(mockGetModelConfig).toHaveBeenCalledWith(
+				"claude-3-sonnet",
+				baseOptions.env,
+				undefined,
+			);
 		});
 
 		it("should fail validation when sanitizedMessages is missing", async () => {

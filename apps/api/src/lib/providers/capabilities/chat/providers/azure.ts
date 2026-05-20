@@ -127,7 +127,11 @@ export class AzureOpenAIProvider extends BaseProvider {
 			: this.getAzureEndpoint(params, resourceName, apiVersion);
 		const headers = await this.getHeaders(params);
 
-		const modelConfig = await getModelConfigByMatchingModel(params.model || "");
+		const modelConfig = await getModelConfigByMatchingModel(
+			params.model || "",
+			params.env,
+			params.provider || this.name,
+		);
 
 		if (!modelConfig) {
 			throw new AssistantError(`Model ${params.model} not found`, ErrorType.CONFIGURATION_ERROR);

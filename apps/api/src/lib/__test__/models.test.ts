@@ -130,7 +130,7 @@ describe("Models", () => {
 			const result = await getModelConfig();
 
 			expect(result).toBeDefined();
-			expect(result.provider).toBe("mistral");
+			expect(result.provider).toBe("deepseek");
 		});
 
 		it("should return specific model config when model specified", async () => {
@@ -248,6 +248,20 @@ describe("Models", () => {
 			expect(result).toBeDefined();
 			expect(result?.provider).toBe("workers-ai");
 			expect(result?.matchingModel).toBe("alibaba/qwen3-max");
+		});
+
+		it("should resolve GitHub Models Grok by provider", async () => {
+			const result = await getModelConfigByMatchingModel("xai/grok-3", undefined, "github-models");
+
+			expect(result).toBeDefined();
+			expect(result?.provider).toBe("github-models");
+			expect(result?.matchingModel).toBe("xai/grok-3");
+		});
+
+		it("should not fall back to another provider when provider is specified", async () => {
+			const result = await getModelConfigByMatchingModel("xai/grok-3", undefined, "not-a-provider");
+
+			expect(result).toBeNull();
 		});
 	});
 

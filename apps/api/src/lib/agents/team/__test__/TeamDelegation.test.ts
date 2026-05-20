@@ -101,6 +101,7 @@ describe("TeamDelegation", () => {
 				user: mockUser,
 				messages,
 				model: "mistral-medium-latest",
+				provider: "mistral",
 				system_prompt: "Target prompt",
 				temperature: 0.8,
 				stream: false,

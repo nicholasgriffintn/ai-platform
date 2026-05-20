@@ -381,6 +381,7 @@ export class RequestPreparer {
 				completion_id: completion_id!,
 				input: finalMessage,
 				model: primaryModel,
+				provider: options.provider,
 				date: new Date().toISOString().split("T")[0]!,
 				location,
 				mode: currentMode,

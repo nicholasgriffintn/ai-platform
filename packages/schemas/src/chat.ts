@@ -31,6 +31,9 @@ export const countTokensJsonSchema = z.object({
 	model: z.string().meta({
 		description: "The model to use for token counting.",
 	}),
+	provider: z.string().optional().meta({
+		description: "The provider to use when the model name is shared by multiple providers.",
+	}),
 	messages: z.array(z.any()).meta({
 		description: "The messages to count tokens for.",
 	}),
@@ -54,6 +57,9 @@ export const createChatCompletionsJsonSchema = z.object({
 	}),
 	model: z.string().optional().meta({
 		description: "The model to use for the request.",
+	}),
+	provider: z.string().optional().meta({
+		description: "The provider to use when the model name is shared by multiple providers.",
 	}),
 	mode: chatRequestModeSchema.optional().meta({
 		description: "The mode of the chat completion.",

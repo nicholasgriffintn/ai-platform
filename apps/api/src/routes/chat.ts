@@ -270,6 +270,7 @@ addRoute(app, "post", "/completions/count-tokens", {
 		(async (context: Context) => {
 			const body = context.req.valid("json" as never) as {
 				model: string;
+				provider?: string;
 				messages: Message[];
 				system_prompt?: string;
 			};

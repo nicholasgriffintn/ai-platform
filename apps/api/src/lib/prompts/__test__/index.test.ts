@@ -58,7 +58,11 @@ describe("prompts index", () => {
 				mockUserSettings,
 			);
 
-			expect(mockGetModelConfigByMatchingModel).toHaveBeenCalledWith("unknown-model");
+			expect(mockGetModelConfigByMatchingModel).toHaveBeenCalledWith(
+				"unknown-model",
+				undefined,
+				undefined,
+			);
 			expect(mockReturnStandardPrompt).toHaveBeenCalledWith(
 				mockRequest,
 				mockUser,

@@ -103,7 +103,8 @@ export function createCommonParameters(
 	providerName: string,
 	isOpenAiCompatible = false,
 ): Record<string, any> {
-	const modelName = isOpenAiCompatible ? `${providerName}/${params.model}` : params.model;
+	const resolvedModel = modelConfig.matchingModel || params.model;
+	const modelName = isOpenAiCompatible ? `${providerName}/${resolvedModel}` : resolvedModel;
 
 	const commonParams: Record<string, any> = {
 		model: modelName,

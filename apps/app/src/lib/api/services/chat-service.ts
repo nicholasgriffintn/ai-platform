@@ -298,6 +298,7 @@ export class ChatService {
 		completion_id: string,
 		messages: Message[],
 		model: string | undefined,
+		provider: string | undefined,
 		mode: ChatMode,
 		chatSettings: ChatSettings,
 		signal: AbortSignal,
@@ -339,6 +340,9 @@ export class ChatService {
 
 		if (model !== undefined) {
 			requestBody.model = model;
+		}
+		if (provider !== undefined) {
+			requestBody.provider = provider;
 		}
 
 		const response = await fetchApi(endpoint, {

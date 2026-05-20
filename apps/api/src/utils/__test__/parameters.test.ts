@@ -283,6 +283,22 @@ describe("parameters", () => {
 			});
 		});
 
+		it("should send the resolved matching model", () => {
+			const result = createCommonParameters(
+				{
+					...baseParams,
+					model: "grok-3-gh",
+				},
+				{
+					...modelConfig,
+					matchingModel: "xai/grok-3",
+				},
+				"github-models",
+			);
+
+			expect(result.model).toBe("xai/grok-3");
+		});
+
 		it("should format model name for OpenAI compatible providers", () => {
 			const result = createCommonParameters(baseParams, modelConfig, "groq", true);
 

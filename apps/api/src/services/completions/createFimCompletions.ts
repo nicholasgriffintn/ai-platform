@@ -7,6 +7,7 @@ import { AssistantError, ErrorType } from "~/utils/errors";
 interface HandleCreateFimCompletionsRequest {
 	env: IEnv;
 	model?: string;
+	provider?: string;
 	prompt: string;
 	suffix?: string;
 	max_tokens?: number;
@@ -21,6 +22,7 @@ interface HandleCreateFimCompletionsRequest {
 export const handleCreateFimCompletions = async ({
 	env,
 	model,
+	provider: requestedProvider,
 	prompt,
 	suffix,
 	max_tokens,
@@ -34,8 +36,8 @@ export const handleCreateFimCompletions = async ({
 	const selectedModel = model ?? ModelRouter.selectFimModel();
 
 	const modelConfig =
-		(await getModelConfig(selectedModel, env)) ||
-		(await getModelConfigByMatchingModel(selectedModel, env));
+		(await getModelConfig(selectedModel, env, requestedProvider)) ||
+		(await getModelConfigByMatchingModel(selectedModel, env, requestedProvider));
 
 	if (!modelConfig) {
 		throw new AssistantError(`Model ${selectedModel} not found`, ErrorType.PARAMS_ERROR);
@@ -54,6 +56,7 @@ export const handleCreateFimCompletions = async ({
 		env,
 		user,
 		model: modelConfig.matchingModel,
+		provider: modelConfig.provider,
 		message: prompt,
 		prompt,
 		suffix,

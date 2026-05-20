@@ -37,6 +37,7 @@ export function createMultiModelStream(
 	const primaryParams = {
 		...baseParams,
 		model: models[0].model,
+		provider: models[0].provider,
 		stream: true,
 	};
 
@@ -50,6 +51,7 @@ export function createMultiModelStream(
 					const secondaryParams = {
 						...baseParams,
 						model: modelConfig.model,
+						provider: modelConfig.provider,
 						stream: false,
 					};
 
@@ -127,7 +129,7 @@ export function createMultiModelStream(
 
 				const primaryProcessedStream = await createStreamWithPostProcessing(
 					primaryResponse,
-					{ ...options, model: models[0].model },
+					{ ...options, model: models[0].model, provider: models[0].provider },
 					conversationManager,
 				);
 

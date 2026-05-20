@@ -2,11 +2,13 @@ import { useCallback, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { apiService } from "~/lib/api/api-service";
+import { getModelProvider } from "~/lib/models";
 import { normalizeMessage } from "~/lib/messages";
 import type { ChatRequestOptions, Message, MessageContent } from "~/types";
 import { useLoadingActions } from "~/state/contexts/LoadingContext";
 import { useChatStore } from "~/state/stores/chatStore";
 import { useMessageOperations } from "./useMessageOperations";
+import { useModels } from "./useModels";
 
 /**
  * Hook for managing streaming responses and abort control.
@@ -35,6 +37,7 @@ export function useStreamingResponse(
 	const [controller, setController] = useState(() => new AbortController());
 	const assistantResponseRef = useRef<string>("");
 	const assistantReasoningRef = useRef<string>("");
+	const { data: apiModels = {} } = useModels();
 
 	const { addMessageToConversation, addAssistantMessage, updateAssistantMessage } =
 		useMessageOperations();
@@ -119,6 +122,7 @@ export function useStreamingResponse(
 					const normalizedMessages = messages.map(normalizeMessage);
 
 					const modelToSend = model === null ? undefined : model;
+					const providerToSend = getModelProvider(apiModels, modelToSend);
 
 					const handleStateChange = (state: string, data?: any) => {
 						let msg: string | undefined;
@@ -147,6 +151,7 @@ export function useStreamingResponse(
 						conversationId,
 						normalizedMessages,
 						modelToSend,
+						providerToSend,
 						chatMode,
 						chatSettings,
 						controller.signal,
@@ -205,6 +210,7 @@ export function useStreamingResponse(
 			addAssistantMessage,
 			useMultiModel,
 			selectedAgentId,
+			apiModels,
 			updateLoading,
 			webLLMService,
 			requestOptions,
