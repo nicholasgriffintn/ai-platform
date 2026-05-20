@@ -145,6 +145,8 @@ export class UserSettingsRepository extends BaseRepository {
 					: null,
 			transcription_provider: settings.transcription_provider ?? null,
 			transcription_model: settings.transcription_model ?? null,
+			speech_provider: settings.speech_provider ?? null,
+			speech_model: settings.speech_model ?? null,
 			search_provider: settings.search_provider ?? null,
 			sandbox_model: settings.sandbox_model ?? null,
 		};
@@ -189,6 +191,8 @@ export class UserSettingsRepository extends BaseRepository {
 			"memories_chat_history_enabled",
 			"transcription_provider",
 			"transcription_model",
+			"speech_provider",
+			"speech_model",
 			"search_provider",
 			"sandbox_model",
 		];

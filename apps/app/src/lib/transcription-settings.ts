@@ -29,6 +29,37 @@ export type ResolvedTranscriptionSettings = {
 
 const defaultTranscriptionProvider = transcriptionProviderOptions[0];
 
+export const speechProviderOptions = [
+	{
+		id: "melotts",
+		label: "MeloTTS",
+		models: [{ id: "@cf/myshell-ai/melotts", label: "MeloTTS" }],
+	},
+	{
+		id: "polly",
+		label: "Amazon Polly",
+		models: [{ id: "Ruth", label: "Ruth" }],
+	},
+	{
+		id: "cartesia",
+		label: "Cartesia",
+		models: [{ id: "sonic-3", label: "Sonic 3" }],
+	},
+	{
+		id: "elevenlabs",
+		label: "ElevenLabs",
+		models: [{ id: "eleven_multilingual_v2", label: "Multilingual v2" }],
+	},
+] as const;
+
+export type SpeechProviderId = (typeof speechProviderOptions)[number]["id"];
+export type ResolvedSpeechSettings = {
+	speech_provider: SpeechProviderId;
+	speech_model: string;
+};
+
+const defaultSpeechProvider = speechProviderOptions[0];
+
 export function getTranscriptionProviderOption(provider?: string | null) {
 	return (
 		transcriptionProviderOptions.find((option) => option.id === provider) ??
@@ -50,5 +81,26 @@ export function resolveTranscriptionSettings(
 	return {
 		transcription_provider: providerOption.id,
 		transcription_model: matchingModel?.id ?? providerOption.models[0].id,
+	};
+}
+
+export function getSpeechProviderOption(provider?: string | null) {
+	return speechProviderOptions.find((option) => option.id === provider) ?? defaultSpeechProvider;
+}
+
+export function getSpeechModelOptions(provider?: string | null) {
+	return getSpeechProviderOption(provider).models;
+}
+
+export function resolveSpeechSettings(
+	provider?: string | null,
+	model?: string | null,
+): ResolvedSpeechSettings {
+	const providerOption = getSpeechProviderOption(provider);
+	const matchingModel = providerOption.models.find((option) => option.id === model);
+
+	return {
+		speech_provider: providerOption.id,
+		speech_model: matchingModel?.id ?? providerOption.models[0].id,
 	};
 }

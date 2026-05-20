@@ -3,21 +3,68 @@ import { getAudioProvider } from "~/lib/providers/capabilities/audio";
 import type { IEnv, IFunctionResponse, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
+import { RepositoryManager } from "~/repositories";
 import { sanitiseInput } from "../../lib/chat/utils";
+
+export type SpeechProvider = "polly" | "cartesia" | "elevenlabs" | "melotts";
+
+const defaultSpeechModelsByProvider: Record<SpeechProvider, string> = {
+	polly: "Ruth",
+	cartesia: "sonic-3",
+	elevenlabs: "eleven_multilingual_v2",
+	melotts: "@cf/myshell-ai/melotts",
+};
 
 type TextToSpeechRequest = {
 	env: IEnv;
 	input: string;
 	user: IUser;
-	provider?: "polly" | "cartesia" | "elevenlabs" | "melotts";
+	provider?: SpeechProvider;
+	model?: string;
 	lang?: string;
 	store?: boolean;
 };
 
+function isSpeechProvider(provider: unknown): provider is SpeechProvider {
+	return (
+		provider === "polly" ||
+		provider === "cartesia" ||
+		provider === "elevenlabs" ||
+		provider === "melotts"
+	);
+}
+
+async function resolveSpeechSettings({
+	env,
+	user,
+	provider,
+	model,
+}: Pick<TextToSpeechRequest, "env" | "user" | "provider" | "model">): Promise<{
+	provider: SpeechProvider;
+	model: string;
+}> {
+	if (provider) {
+		return {
+			provider,
+			model: model || defaultSpeechModelsByProvider[provider],
+		};
+	}
+
+	const repositories = new RepositoryManager(env);
+	const userSettings = user?.id ? await repositories.userSettings.getUserSettings(user.id) : null;
+	const settingsProvider = userSettings?.speech_provider;
+	const resolvedProvider = isSpeechProvider(settingsProvider) ? settingsProvider : "melotts";
+
+	return {
+		provider: resolvedProvider,
+		model: userSettings?.speech_model || defaultSpeechModelsByProvider[resolvedProvider],
+	};
+}
+
 export const handleTextToSpeech = async (
 	req: TextToSpeechRequest,
 ): Promise<IFunctionResponse | IFunctionResponse[]> => {
-	const { input: rawInput, env, user, provider = "melotts", lang = "en", store = true } = req;
+	const { input: rawInput, env, user, provider, model, lang = "en", store = true } = req;
 
 	const input = sanitiseInput(rawInput);
 
@@ -29,10 +76,11 @@ export const handleTextToSpeech = async (
 		throw new AssistantError("Input is too long", ErrorType.PARAMS_ERROR);
 	}
 
+	const speechSettings = await resolveSpeechSettings({ env, user, provider, model });
 	const storage = store ? new StorageService(env.ASSETS_BUCKET) : undefined;
 	const slug = `tts/${encodeURIComponent(user?.email || "unknown").replace(/[^a-zA-Z0-9]/g, "-")}-${generateId()}`;
 
-	const audioProvider = getAudioProvider(provider, { env, user });
+	const audioProvider = getAudioProvider(speechSettings.provider, { env, user });
 	const synthesisResult = await audioProvider.synthesize({
 		input,
 		env,
@@ -40,6 +88,7 @@ export const handleTextToSpeech = async (
 		slug,
 		storage,
 		store,
+		voice: speechSettings.model,
 		locale: lang,
 	});
 
@@ -78,7 +127,8 @@ export const handleTextToSpeech = async (
 		status: "success",
 		content,
 		data: {
-			provider,
+			provider: speechSettings.provider,
+			model: speechSettings.model,
 			audioKey,
 			audioUrl,
 			audioBase64: synthesisResult.audioBase64,

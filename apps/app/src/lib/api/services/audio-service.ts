@@ -10,6 +10,7 @@ export interface SpeechGenerationResponse {
 		audioDataUrl?: string;
 		audioMimeType?: string;
 		provider?: string;
+		model?: string;
 		response?: string;
 		metadata?: Record<string, unknown>;
 	};

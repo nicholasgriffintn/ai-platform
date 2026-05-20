@@ -49,6 +49,8 @@ export interface IUserSettings {
 	memories_chat_history_enabled: boolean;
 	transcription_provider: string;
 	transcription_model: string;
+	speech_provider: string | null;
+	speech_model: string | null;
 	search_provider: string | null;
 	tracking_enabled: boolean;
 	sandbox_model: string | null;

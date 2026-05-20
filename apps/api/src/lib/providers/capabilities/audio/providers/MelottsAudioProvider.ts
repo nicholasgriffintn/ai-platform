@@ -8,7 +8,7 @@ export class MelottsAudioProvider extends BaseAudioProvider implements AudioProv
 
 	async synthesize(request: AudioSynthesisRequest): Promise<AudioSynthesisResult> {
 		const response = await this.workersProvider.getResponse({
-			model: "@cf/myshell-ai/melotts",
+			model: request.voice ?? "@cf/myshell-ai/melotts",
 			messages: [
 				{
 					role: "user",

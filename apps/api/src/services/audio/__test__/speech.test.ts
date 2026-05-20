@@ -37,6 +37,7 @@ const mockStorageService = vi.hoisted(() => ({
 const mockGenerateId = vi.hoisted(() => vi.fn(() => "test-id-123"));
 
 const mockSanitiseInput = vi.hoisted(() => vi.fn((input: string) => input));
+const mockGetUserSettings = vi.hoisted(() => vi.fn());
 
 vi.mock("~/lib/storage", () => ({
 	StorageService: class {
@@ -56,6 +57,14 @@ vi.mock("~/utils/id", () => ({
 
 vi.mock("~/lib/chat/utils", () => ({
 	sanitiseInput: mockSanitiseInput,
+}));
+
+vi.mock("~/repositories", () => ({
+	RepositoryManager: class {
+		userSettings = {
+			getUserSettings: mockGetUserSettings,
+		};
+	},
 }));
 
 import { handleTextToSpeech } from "../speech";
@@ -79,6 +88,7 @@ describe("handleTextToSpeech", () => {
 			const key = provider as keyof typeof mockAudioProviders;
 			return mockAudioProviders[key] ?? mockAudioProviders.default;
 		});
+		mockGetUserSettings.mockResolvedValue(null);
 
 		for (const provider of Object.values(mockAudioProviders)) {
 			provider.synthesize.mockReset();
@@ -131,6 +141,7 @@ describe("handleTextToSpeech", () => {
 				env: mockEnv,
 				input: "test input",
 				user: mockUser,
+				provider: "polly",
 			});
 
 			expect(mockSanitiseInput).toHaveBeenCalledWith("test input");
@@ -138,9 +149,9 @@ describe("handleTextToSpeech", () => {
 	});
 
 	describe("provider handling", () => {
-		it("should use polly provider by default", async () => {
-			mockAudioProviders.polly.synthesize.mockResolvedValue({
-				key: "polly-audio-key",
+		it("should use melotts provider by default", async () => {
+			mockAudioProviders.melotts.synthesize.mockResolvedValue({
+				key: "melotts-audio-key",
 			});
 
 			const result = await handleTextToSpeech({
@@ -149,18 +160,80 @@ describe("handleTextToSpeech", () => {
 				user: mockUser,
 			});
 
-			expect(mockProviderLibrary.audio).toHaveBeenCalledWith("polly", {
+			expect(mockProviderLibrary.audio).toHaveBeenCalledWith("melotts", {
 				env: mockEnv,
 				user: mockUser,
 			});
-			expect(mockAudioProviders.polly.synthesize).toHaveBeenCalledWith(
+			expect(mockAudioProviders.melotts.synthesize).toHaveBeenCalledWith(
 				expect.objectContaining({
 					input: "test input",
 					slug: "tts/test-40example-com-test-id-123",
+					voice: "@cf/myshell-ai/melotts",
 				}),
 			);
 			// @ts-expect-error - mock implementation
-			expect(result.data.provider).toBe("polly");
+			expect(result.data.provider).toBe("melotts");
+		});
+
+		it("should use saved speech provider and model by default", async () => {
+			mockGetUserSettings.mockResolvedValue({
+				speech_provider: "cartesia",
+				speech_model: "sonic-3",
+			});
+			mockAudioProviders.cartesia.synthesize.mockResolvedValue({
+				key: "cartesia-audio",
+			});
+
+			const result = await handleTextToSpeech({
+				env: mockEnv,
+				input: "test input",
+				user: mockUser,
+			});
+
+			expect(mockGetUserSettings).toHaveBeenCalledWith("user-123");
+			expect(mockProviderLibrary.audio).toHaveBeenCalledWith("cartesia", {
+				env: mockEnv,
+				user: mockUser,
+			});
+			expect(mockAudioProviders.cartesia.synthesize).toHaveBeenCalledWith(
+				expect.objectContaining({
+					voice: "sonic-3",
+				}),
+			);
+			if (Array.isArray(result)) {
+				throw new Error("Expected a single speech response");
+			}
+			expect(result.data.provider).toBe("cartesia");
+			expect(result.data.model).toBe("sonic-3");
+		});
+
+		it("should let request provider and model override saved speech settings", async () => {
+			mockGetUserSettings.mockResolvedValue({
+				speech_provider: "cartesia",
+				speech_model: "sonic-3",
+			});
+			mockAudioProviders.elevenlabs.synthesize.mockResolvedValue({
+				key: "elevenlabs-audio",
+			});
+
+			await handleTextToSpeech({
+				env: mockEnv,
+				input: "test input",
+				user: mockUser,
+				provider: "elevenlabs",
+				model: "eleven_multilingual_v2",
+			});
+
+			expect(mockGetUserSettings).not.toHaveBeenCalled();
+			expect(mockProviderLibrary.audio).toHaveBeenCalledWith("elevenlabs", {
+				env: mockEnv,
+				user: mockUser,
+			});
+			expect(mockAudioProviders.elevenlabs.synthesize).toHaveBeenCalledWith(
+				expect.objectContaining({
+					voice: "eleven_multilingual_v2",
+				}),
+			);
 		});
 
 		it("should use specified provider", async () => {
@@ -266,17 +339,17 @@ describe("handleTextToSpeech", () => {
 				env: mockEnv,
 				input: "test input",
 				user: mockUser,
+				provider: "polly",
 			});
 
-			expect(result).toEqual({
+			expect(result).toMatchObject({
 				status: "success",
 				content: "audio-key-123",
 				data: {
 					provider: "polly",
+					model: "Ruth",
 					audioKey: "audio-key-123",
 					audioUrl: "https://assets.test.com/audio-key-123",
-					response: undefined,
-					metadata: undefined,
 				},
 			});
 		});
@@ -294,16 +367,15 @@ describe("handleTextToSpeech", () => {
 				provider: "cartesia",
 			});
 
-			expect(result).toEqual({
+			expect(result).toMatchObject({
 				status: "success",
 				content:
 					"Audio generated successfully\n[Listen to the audio](https://example.com/audio.mp3)",
 				data: {
 					provider: "cartesia",
-					audioKey: undefined,
+					model: "sonic-3",
 					audioUrl: "https://example.com/audio.mp3",
 					response: "Audio generated successfully",
-					metadata: undefined,
 				},
 			});
 		});
@@ -318,6 +390,7 @@ describe("handleTextToSpeech", () => {
 				env: envWithoutUrl,
 				input: "test input",
 				user: mockUser,
+				provider: "polly",
 			});
 
 			// @ts-expect-error - mock implementation
@@ -347,6 +420,7 @@ describe("handleTextToSpeech", () => {
 				env: mockEnv,
 				input: "test input",
 				user: mockUser,
+				provider: "polly",
 			});
 
 			expect(mockAudioProviders.polly.synthesize).toHaveBeenCalledWith(
@@ -366,6 +440,7 @@ describe("handleTextToSpeech", () => {
 				env: mockEnv,
 				input: "test input",
 				user: userWithoutEmail,
+				provider: "polly",
 			});
 
 			expect(mockAudioProviders.polly.synthesize).toHaveBeenCalledWith(
@@ -388,6 +463,7 @@ describe("handleTextToSpeech", () => {
 				env: mockEnv,
 				input: "test input",
 				user: userWithSpecialEmail,
+				provider: "polly",
 			});
 
 			expect(mockAudioProviders.polly.synthesize).toHaveBeenCalledWith(
