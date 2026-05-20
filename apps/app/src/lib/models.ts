@@ -1,6 +1,6 @@
 import type { ChatMode, ModelConfig, ModelConfigItem } from "~/types";
 
-export const defaultModel = "mistral-medium";
+export const defaultModel = "deepseek-chat";
 
 export function getAvailableModels(
 	apiModels: ModelConfig,
