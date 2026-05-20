@@ -57,7 +57,7 @@
 		"oxlint": "1.61.0",
 		"typescript": "6.0.3",
 		"vite-tsconfig-paths": "6.1.1",
-		"vitest": "4.1.6",
+		"vitest": "4.1.7",
 		"wrangler": "4.92.0"
 	}
 }
