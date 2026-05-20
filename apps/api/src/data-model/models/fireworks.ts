@@ -643,4 +643,27 @@ export const fireworksModelConfig: ModelConfig = {
 			enabled: true,
 		},
 	},
+	"accounts/fireworks/models/deepseek-v4-flash": {
+		name: "DeepSeek V4 Flash",
+		matchingModel: "accounts/fireworks/models/deepseek-v4-flash",
+		provider: "fireworks",
+		knowledgeCutoffDate: "May 2025",
+		releaseDate: "April 24, 2026",
+		lastUpdated: "April 24, 2026",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		supportsResponseFormat: true,
+		contextWindow: 1000000,
+		maxTokens: 384000,
+		costPer1kInputTokens: 0.00014,
+		costPer1kOutputTokens: 0.00028,
+		reasoningConfig: {
+			enabled: true,
+		},
+	},
 };

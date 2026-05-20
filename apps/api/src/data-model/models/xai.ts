@@ -589,8 +589,8 @@ export const xaiModelConfig: ModelConfig = {
 		supportsToolCalls: true,
 		contextWindow: 2000000,
 		maxTokens: 30000,
-		costPer1kInputTokens: 0.002,
-		costPer1kOutputTokens: 0.006,
+		costPer1kInputTokens: 0.00125,
+		costPer1kOutputTokens: 0.0025,
 		reasoningConfig: {
 			enabled: false,
 		},
@@ -611,8 +611,8 @@ export const xaiModelConfig: ModelConfig = {
 		supportsToolCalls: true,
 		contextWindow: 2000000,
 		maxTokens: 30000,
-		costPer1kInputTokens: 0.002,
-		costPer1kOutputTokens: 0.006,
+		costPer1kInputTokens: 0.00125,
+		costPer1kOutputTokens: 0.0025,
 		reasoningConfig: {
 			enabled: true,
 		},
@@ -633,8 +633,8 @@ export const xaiModelConfig: ModelConfig = {
 		supportsToolCalls: false,
 		contextWindow: 2000000,
 		maxTokens: 30000,
-		costPer1kInputTokens: 0.002,
-		costPer1kOutputTokens: 0.006,
+		costPer1kInputTokens: 0.00125,
+		costPer1kOutputTokens: 0.0025,
 		reasoningConfig: {
 			enabled: true,
 		},
@@ -644,8 +644,8 @@ export const xaiModelConfig: ModelConfig = {
 		name: "Grok 4.3",
 		matchingModel: "grok-4.3",
 		provider: "grok",
-		releaseDate: "May 1, 2026",
-		lastUpdated: "May 1, 2026",
+		releaseDate: "April 17, 2026",
+		lastUpdated: "April 17, 2026",
 		modalities: {
 			input: ["text", "image"],
 			output: ["text"],
@@ -666,8 +666,8 @@ export const xaiModelConfig: ModelConfig = {
 		name: "Grok Imagine Image",
 		matchingModel: "grok-imagine-image",
 		provider: "grok",
-		releaseDate: "March 2026",
-		lastUpdated: "May 16, 2026",
+		releaseDate: "January 28, 2026",
+		lastUpdated: "January 28, 2026",
 		modalities: {
 			input: ["text", "image"],
 			output: ["image"],
@@ -675,7 +675,7 @@ export const xaiModelConfig: ModelConfig = {
 		supportsAttachments: true,
 		supportsTemperature: false,
 		supportsToolCalls: false,
-		contextWindow: 1024,
+		contextWindow: 8000,
 		maxTokens: 0,
 		reasoningConfig: {
 			enabled: false,
@@ -686,8 +686,8 @@ export const xaiModelConfig: ModelConfig = {
 		name: "Grok Imagine Image Quality",
 		matchingModel: "grok-imagine-image-quality",
 		provider: "grok",
-		releaseDate: "April 2026",
-		lastUpdated: "May 16, 2026",
+		releaseDate: "April 3, 2026",
+		lastUpdated: "April 3, 2026",
 		modalities: {
 			input: ["text", "image"],
 			output: ["image"],
@@ -695,7 +695,7 @@ export const xaiModelConfig: ModelConfig = {
 		supportsAttachments: true,
 		supportsTemperature: false,
 		supportsToolCalls: false,
-		contextWindow: 1024,
+		contextWindow: 8000,
 		maxTokens: 0,
 		reasoningConfig: {
 			enabled: false,
@@ -706,8 +706,8 @@ export const xaiModelConfig: ModelConfig = {
 		name: "Grok Imagine Video",
 		matchingModel: "grok-imagine-video",
 		provider: "grok",
-		releaseDate: "March 2026",
-		lastUpdated: "May 16, 2026",
+		releaseDate: "January 28, 2026",
+		lastUpdated: "January 28, 2026",
 		modalities: {
 			input: ["text", "image", "video"],
 			output: ["video"],
@@ -719,6 +719,28 @@ export const xaiModelConfig: ModelConfig = {
 		maxTokens: 0,
 		reasoningConfig: {
 			enabled: false,
+		},
+	},
+	"grok-build-0.1": {
+		name: "Grok Build 0.1",
+		matchingModel: "grok-build-0.1",
+		provider: "grok",
+		releaseDate: "May 20, 2026",
+		lastUpdated: "May 20, 2026",
+		modalities: {
+			input: ["text", "image", "pdf"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		supportsResponseFormat: true,
+		contextWindow: 256000,
+		maxTokens: 256000,
+		costPer1kInputTokens: 0.001,
+		costPer1kOutputTokens: 0.002,
+		reasoningConfig: {
+			enabled: true,
 		},
 	},
 };

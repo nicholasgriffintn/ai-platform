@@ -4,23 +4,6 @@ import { createModelConfig, createModelConfigObject } from "~/lib/providers/mode
 const PROVIDER = "github-copilot";
 
 export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
-	createModelConfig("ghcopilot/anthropic/claude-sonnet-4", PROVIDER, {
-		name: "Claude Sonnet 4",
-		matchingModel: "claude-sonnet-4",
-		supportsAttachments: true,
-		reasoningConfig: { enabled: true },
-		supportsTemperature: true,
-		supportsToolCalls: true,
-		knowledgeCutoffDate: "March 31, 2025",
-		releaseDate: "May 22, 2025",
-		lastUpdated: "May 22, 2025",
-		modalities: { input: ["text", "image"], output: ["text"] },
-		contextWindow: 216000,
-		maxTokens: 16000,
-		costPer1kInputTokens: 0,
-		costPer1kOutputTokens: 0,
-	}),
-
 	createModelConfig("ghcopilot/openai/o4-mini", PROVIDER, {
 		name: "o4-mini (Preview)",
 		matchingModel: "o4-mini",
@@ -278,28 +261,6 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
 		},
 	}),
 
-	createModelConfig("ghcopilot/anthropic/claude-opus-41", PROVIDER, {
-		name: "Claude Opus 4.1",
-		matchingModel: "claude-opus-41",
-		knowledgeCutoffDate: "March 31, 2025",
-		releaseDate: "August 5, 2025",
-		lastUpdated: "August 5, 2025",
-		modalities: {
-			input: ["text", "image"],
-			output: ["text"],
-		},
-		supportsAttachments: true,
-		supportsTemperature: true,
-		supportsToolCalls: false,
-		contextWindow: 80000,
-		maxTokens: 16000,
-		costPer1kInputTokens: 0,
-		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: true,
-		},
-	}),
-
 	createModelConfig("ghcopilot/anthropic/claude-sonnet-4.5", PROVIDER, {
 		name: "Claude Sonnet 4.5",
 		matchingModel: "claude-sonnet-4.5",
@@ -345,51 +306,6 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
 		},
 	}),
 
-	createModelConfig("ghcopilot/google/gemini-3-pro-preview", PROVIDER, {
-		name: "Gemini 3 Pro Preview",
-		matchingModel: "gemini-3-pro-preview",
-		knowledgeCutoffDate: "January 2025",
-		releaseDate: "November 18, 2025",
-		lastUpdated: "November 18, 2025",
-		modalities: {
-			input: ["text", "image", "audio", "video"],
-			output: ["text"],
-		},
-		supportsAttachments: true,
-		supportsTemperature: true,
-		supportsToolCalls: true,
-		supportsResponseFormat: true,
-		contextWindow: 128000,
-		maxTokens: 64000,
-		costPer1kInputTokens: 0,
-		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: true,
-		},
-	}),
-
-	createModelConfig("ghcopilot/openai/gpt-5", PROVIDER, {
-		name: "GPT-5",
-		matchingModel: "gpt-5",
-		knowledgeCutoffDate: "October 2024",
-		releaseDate: "August 7, 2025",
-		lastUpdated: "August 7, 2025",
-		modalities: {
-			input: ["text", "image"],
-			output: ["text"],
-		},
-		supportsAttachments: true,
-		supportsTemperature: true,
-		supportsToolCalls: true,
-		contextWindow: 128000,
-		maxTokens: 128000,
-		costPer1kInputTokens: 0,
-		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: true,
-		},
-	}),
-
 	createModelConfig("ghcopilot/openai/gpt-5-mini", PROVIDER, {
 		name: "GPT-5-mini",
 		matchingModel: "gpt-5-mini",
@@ -405,94 +321,6 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
 		supportsToolCalls: true,
 		contextWindow: 264000,
 		maxTokens: 64000,
-		costPer1kInputTokens: 0,
-		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: true,
-		},
-	}),
-
-	createModelConfig("ghcopilot/openai/gpt-5.1", PROVIDER, {
-		name: "GPT-5.1",
-		matchingModel: "gpt-5.1",
-		knowledgeCutoffDate: "September 30, 2024",
-		releaseDate: "November 13, 2025",
-		lastUpdated: "November 13, 2025",
-		modalities: {
-			input: ["text", "image"],
-			output: ["text"],
-		},
-		supportsAttachments: true,
-		supportsTemperature: false,
-		supportsToolCalls: true,
-		contextWindow: 264000,
-		maxTokens: 64000,
-		costPer1kInputTokens: 0,
-		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: true,
-		},
-	}),
-
-	createModelConfig("ghcopilot/openai/gpt-5.1-codex", PROVIDER, {
-		name: "GPT-5.1-Codex",
-		matchingModel: "gpt-5.1-codex",
-		knowledgeCutoffDate: "September 30, 2024",
-		releaseDate: "November 13, 2025",
-		lastUpdated: "November 13, 2025",
-		modalities: {
-			input: ["text", "image"],
-			output: ["text"],
-		},
-		supportsAttachments: false,
-		supportsTemperature: false,
-		supportsToolCalls: true,
-		contextWindow: 400000,
-		maxTokens: 128000,
-		costPer1kInputTokens: 0,
-		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: true,
-		},
-	}),
-
-	createModelConfig("ghcopilot/openai/gpt-5.1-codex-max", PROVIDER, {
-		name: "GPT-5.1-Codex-max",
-		matchingModel: "gpt-5.1-codex-max",
-		knowledgeCutoffDate: "September 30, 2024",
-		releaseDate: "December 4, 2025",
-		lastUpdated: "December 4, 2025",
-		modalities: {
-			input: ["text", "image"],
-			output: ["text"],
-		},
-		supportsAttachments: true,
-		supportsTemperature: false,
-		supportsToolCalls: true,
-		contextWindow: 400000,
-		maxTokens: 128000,
-		costPer1kInputTokens: 0,
-		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: true,
-		},
-	}),
-
-	createModelConfig("ghcopilot/openai/gpt-5.1-codex-mini", PROVIDER, {
-		name: "GPT-5.1-Codex-mini",
-		matchingModel: "gpt-5.1-codex-mini",
-		knowledgeCutoffDate: "September 30, 2024",
-		releaseDate: "November 13, 2025",
-		lastUpdated: "November 13, 2025",
-		modalities: {
-			input: ["text", "image"],
-			output: ["text"],
-		},
-		supportsAttachments: false,
-		supportsTemperature: false,
-		supportsToolCalls: true,
-		contextWindow: 400000,
-		maxTokens: 128000,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
 		reasoningConfig: {

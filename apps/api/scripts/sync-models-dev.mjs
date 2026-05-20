@@ -380,6 +380,7 @@ function extractArrayEntries(arrayNode, sourceFile) {
 
 		entries.push({
 			modelKey: keyArg.text,
+			entryNode: element,
 			objectNode: configArg,
 		});
 	}
@@ -405,6 +406,7 @@ function extractObjectEntries(outerObjectNode, sourceFile) {
 
 		entries.push({
 			modelKey,
+			entryNode: property,
 			objectNode: property.initializer,
 		});
 	}
@@ -424,6 +426,14 @@ function inferProviderFromObjectEntries(entries, sourceFile) {
 
 function hasOwn(objectValue, key) {
 	return Object.prototype.hasOwnProperty.call(objectValue, key);
+}
+
+function hasDeprecatedStatus(remoteConfig) {
+	return (
+		remoteConfig !== null &&
+		typeof remoteConfig === "object" &&
+		remoteConfig.status === "deprecated"
+	);
 }
 
 function formatMonth(year, month) {
@@ -885,6 +895,36 @@ function applyPatches(text, patches) {
 	return nextText;
 }
 
+function buildRemoveEntryPatch(fileText, entryNode, sourceFile) {
+	const start = getLineStart(fileText, entryNode.getStart(sourceFile));
+	let end = entryNode.end;
+
+	while (fileText[end] === " " || fileText[end] === "\t") {
+		end += 1;
+	}
+	if (fileText[end] === ",") {
+		end += 1;
+	}
+	while (fileText[end] === " " || fileText[end] === "\t") {
+		end += 1;
+	}
+	if (fileText[end] === "\r" && fileText[end + 1] === "\n") {
+		end += 2;
+	} else if (fileText[end] === "\n") {
+		end += 1;
+	}
+
+	if (fileText.slice(end, end + 1) === "\n") {
+		end += 1;
+	}
+
+	return {
+		start,
+		end,
+		text: "",
+	};
+}
+
 function shouldProcessProvider(localProvider, remoteProvider, selectedProviders) {
 	if (selectedProviders.size === 0) {
 		return true;
@@ -972,8 +1012,10 @@ async function inspectModelFile({ filePath, remoteProviders, selectedProviders }
 		};
 	}
 
-	const remoteModels = remoteModelsFromProvider(remoteProviders[remoteProviderId]);
-	if (!remoteModels) {
+	const remoteProviderConfig = remoteProviders[remoteProviderId];
+	const remoteProviderDeprecated = hasDeprecatedStatus(remoteProviderConfig);
+	const remoteModels = remoteModelsFromProvider(remoteProviderConfig);
+	if (!remoteModels && !remoteProviderDeprecated) {
 		return {
 			filePath,
 			status: "skipped",
@@ -985,11 +1027,11 @@ async function inspectModelFile({ filePath, remoteProviders, selectedProviders }
 
 	const representedRemoteModelIds = new Set();
 	for (const entry of entries) {
-		if (hasOwn(remoteModels, entry.modelKey)) {
+		if (remoteModels && hasOwn(remoteModels, entry.modelKey)) {
 			representedRemoteModelIds.add(entry.modelKey);
 		}
 		const matchingModel = getStringPropertyValue(entry.objectNode, "matchingModel", sourceFile);
-		if (matchingModel && hasOwn(remoteModels, matchingModel)) {
+		if (matchingModel && remoteModels && hasOwn(remoteModels, matchingModel)) {
 			representedRemoteModelIds.add(matchingModel);
 		}
 	}
@@ -1002,7 +1044,8 @@ async function inspectModelFile({ filePath, remoteProviders, selectedProviders }
 		declaration,
 		localProvider,
 		remoteProviderId,
-		remoteModels,
+		remoteProviderDeprecated,
+		remoteModels: remoteModels ?? {},
 		entries,
 		containerNode,
 		containerElements,
@@ -1030,6 +1073,7 @@ async function processFile({
 		declaration,
 		localProvider,
 		remoteProviderId,
+		remoteProviderDeprecated,
 		remoteModels,
 		entries,
 		containerNode,
@@ -1038,11 +1082,18 @@ async function processFile({
 
 	const patches = [];
 	let updatedExisting = 0;
+	let removedDeprecatedModels = 0;
 
 	for (const entry of entries) {
 		const matchingModel = getStringPropertyValue(entry.objectNode, "matchingModel", sourceFile);
 		const remoteModel =
 			remoteModels[entry.modelKey] ?? (matchingModel ? remoteModels[matchingModel] : undefined);
+
+		if (remoteProviderDeprecated || hasDeprecatedStatus(remoteModel)) {
+			removedDeprecatedModels += 1;
+			patches.push(buildRemoveEntryPatch(originalText, entry.entryNode, sourceFile));
+			continue;
+		}
 
 		if (!remoteModel || typeof remoteModel !== "object") {
 			continue;
@@ -1078,11 +1129,13 @@ async function processFile({
 	const representedRemoteModelIds =
 		providerRepresentedRemoteModelIds ?? inspection.representedRemoteModelIds;
 
-	const missingRemoteModelIds = allowAddingMissingModels
-		? Object.keys(remoteModels)
-				.filter((remoteModelId) => !representedRemoteModelIds.has(remoteModelId))
-				.sort((left, right) => left.localeCompare(right))
-		: [];
+	const missingRemoteModelIds =
+		allowAddingMissingModels && !remoteProviderDeprecated
+			? Object.keys(remoteModels)
+					.filter((remoteModelId) => !representedRemoteModelIds.has(remoteModelId))
+					.filter((remoteModelId) => !hasDeprecatedStatus(remoteModels[remoteModelId]))
+					.sort((left, right) => left.localeCompare(right))
+			: [];
 
 	const entryIndent = getEntryIndentFromNodes(
 		originalText,
@@ -1124,6 +1177,7 @@ async function processFile({
 			remoteProviderId,
 			updatedExisting: 0,
 			addedModels: 0,
+			removedDeprecatedModels: 0,
 		};
 	}
 
@@ -1135,7 +1189,7 @@ async function processFile({
 	if (verbose) {
 		const modeLabel = write ? "wrote" : "dry-run";
 		console.log(
-			`[${modeLabel}] ${path.relative(API_ROOT, filePath)} (${localProvider} -> ${remoteProviderId}) updated=${updatedExisting} added=${newEntries.length}`,
+			`[${modeLabel}] ${path.relative(API_ROOT, filePath)} (${localProvider} -> ${remoteProviderId}) updated=${updatedExisting} added=${newEntries.length} removedDeprecated=${removedDeprecatedModels}`,
 		);
 	}
 
@@ -1146,6 +1200,7 @@ async function processFile({
 		remoteProviderId,
 		updatedExisting,
 		addedModels: newEntries.length,
+		removedDeprecatedModels,
 	};
 }
 
@@ -1230,11 +1285,15 @@ async function main() {
 		return total + (report.addedModels ?? 0);
 	}, 0);
 
+	const totalRemovedDeprecatedModels = changed.reduce((total, report) => {
+		return total + (report.removedDeprecatedModels ?? 0);
+	}, 0);
+
 	console.log(
 		`Processed ${reports.length} files (${changed.length} changed, ${unchanged.length} unchanged, ${skipped.length} skipped).`,
 	);
 	console.log(
-		`Updated existing models: ${totalUpdatedExisting}. Added new models: ${totalAddedModels}.`,
+		`Updated existing models: ${totalUpdatedExisting}. Added new models: ${totalAddedModels}. Removed deprecated models: ${totalRemovedDeprecatedModels}.`,
 	);
 
 	if (!options.write) {

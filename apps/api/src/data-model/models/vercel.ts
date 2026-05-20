@@ -659,23 +659,6 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		costPer1kOutputTokens: 0.006,
 	}),
 
-	createModelConfig("moonshotai/kimi-k2", PROVIDER, {
-		name: "Kimi K2 Instruct",
-		matchingModel: "moonshotai/kimi-k2",
-		supportsAttachments: false,
-		reasoningConfig: { enabled: false },
-		supportsTemperature: true,
-		supportsToolCalls: true,
-		knowledgeCutoffDate: "October 2024",
-		releaseDate: "July 14, 2025",
-		lastUpdated: "July 14, 2025",
-		modalities: { input: ["text"], output: ["text"] },
-		contextWindow: 131072,
-		maxTokens: 16384,
-		costPer1kInputTokens: 0.001,
-		costPer1kOutputTokens: 0.003,
-	}),
-
 	createModelConfig("cerebras/qwen3-coder", PROVIDER, {
 		name: "Qwen 3 Coder 480B",
 		matchingModel: "cerebras/qwen3-coder",

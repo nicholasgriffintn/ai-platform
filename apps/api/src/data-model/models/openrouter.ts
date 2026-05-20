@@ -1179,7 +1179,7 @@ export const openrouterModelConfig: ModelConfig = {
 		reasoningConfig: {
 			enabled: true,
 		},
-		supportsResponseFormat: true,
+		supportsResponseFormat: false,
 	},
 
 	"deepseek/deepseek-r1-distill-qwen-14b": {
@@ -1360,7 +1360,7 @@ export const openrouterModelConfig: ModelConfig = {
 		supportsAttachments: true,
 		supportsTemperature: true,
 		supportsToolCalls: true,
-		contextWindow: 1048576,
+		contextWindow: 1000000,
 		maxTokens: 8192,
 		costPer1kInputTokens: 0.0001,
 		costPer1kOutputTokens: 0.0004,
@@ -1911,7 +1911,7 @@ export const openrouterModelConfig: ModelConfig = {
 		reasoningConfig: {
 			enabled: false,
 		},
-		supportsResponseFormat: true,
+		supportsResponseFormat: false,
 	},
 
 	"meta-llama/llama-3.2-3b-instruct:free": {
@@ -2327,7 +2327,7 @@ export const openrouterModelConfig: ModelConfig = {
 		supportsTemperature: true,
 		supportsToolCalls: false,
 		contextWindow: 128000,
-		maxTokens: 8192,
+		maxTokens: 128000,
 		costPer1kInputTokens: 0.000351,
 		costPer1kOutputTokens: 0.000555,
 		reasoningConfig: {
@@ -2568,7 +2568,7 @@ export const openrouterModelConfig: ModelConfig = {
 		reasoningConfig: {
 			enabled: true,
 		},
-		supportsResponseFormat: true,
+		supportsResponseFormat: false,
 	},
 
 	"nousresearch/hermes-4-70b": {
@@ -2592,7 +2592,7 @@ export const openrouterModelConfig: ModelConfig = {
 		reasoningConfig: {
 			enabled: true,
 		},
-		supportsResponseFormat: true,
+		supportsResponseFormat: false,
 	},
 
 	"nvidia/nemotron-3-nano-30b-a3b:free": {
@@ -2664,7 +2664,7 @@ export const openrouterModelConfig: ModelConfig = {
 		reasoningConfig: {
 			enabled: true,
 		},
-		supportsResponseFormat: true,
+		supportsResponseFormat: false,
 	},
 
 	"nvidia/nemotron-nano-9b-v2:free": {
@@ -3093,7 +3093,7 @@ export const openrouterModelConfig: ModelConfig = {
 		reasoningConfig: {
 			enabled: true,
 		},
-		supportsResponseFormat: true,
+		supportsResponseFormat: false,
 	},
 
 	"openrouter/sherlock-dash-alpha": {
@@ -3157,7 +3157,7 @@ export const openrouterModelConfig: ModelConfig = {
 		supportsTemperature: true,
 		supportsToolCalls: false,
 		contextWindow: 32768,
-		maxTokens: 8192,
+		maxTokens: 32768,
 		costPer1kInputTokens: 0.00066,
 		costPer1kOutputTokens: 0.001,
 		reasoningConfig: {
@@ -3577,7 +3577,7 @@ export const openrouterModelConfig: ModelConfig = {
 		supportsAttachments: false,
 		supportsTemperature: true,
 		supportsToolCalls: true,
-		supportsResponseFormat: true,
+		supportsResponseFormat: false,
 		contextWindow: 1000000,
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.000195,
@@ -3631,7 +3631,7 @@ export const openrouterModelConfig: ModelConfig = {
 			enabled: true,
 		},
 		knowledgeCutoffDate: "June 30, 2025",
-		supportsResponseFormat: true,
+		supportsResponseFormat: false,
 	},
 
 	"qwen/qwen3-next-80b-a3b-instruct": {
@@ -3866,7 +3866,7 @@ export const openrouterModelConfig: ModelConfig = {
 		reasoningConfig: {
 			enabled: true,
 		},
-		supportsResponseFormat: true,
+		supportsResponseFormat: false,
 	},
 
 	"stepfun/step-3.5-flash:free": {
@@ -4120,7 +4120,7 @@ export const openrouterModelConfig: ModelConfig = {
 		reasoningConfig: {
 			enabled: true,
 		},
-		supportsResponseFormat: true,
+		supportsResponseFormat: false,
 	},
 
 	"z-ai/glm-4.5": {
@@ -4144,7 +4144,7 @@ export const openrouterModelConfig: ModelConfig = {
 		reasoningConfig: {
 			enabled: true,
 		},
-		supportsResponseFormat: true,
+		supportsResponseFormat: false,
 	},
 
 	"z-ai/glm-4.5-air": {
@@ -4216,7 +4216,7 @@ export const openrouterModelConfig: ModelConfig = {
 		reasoningConfig: {
 			enabled: true,
 		},
-		supportsResponseFormat: true,
+		supportsResponseFormat: false,
 	},
 
 	"z-ai/glm-4.6": {
@@ -4420,12 +4420,13 @@ export const openrouterModelConfig: ModelConfig = {
 		supportsResponseFormat: true,
 		contextWindow: 1048576,
 		maxTokens: 65536,
-		costPer1kInputTokens: 0.0005,
-		costPer1kOutputTokens: 0.003,
-		costPer1kReasoningTokens: 0.003,
+		costPer1kInputTokens: 0.0015,
+		costPer1kOutputTokens: 0.009,
+		costPer1kReasoningTokens: 0.009,
 		reasoningConfig: {
 			enabled: true,
 		},
+		knowledgeCutoffDate: "January 1, 2025",
 	},
 
 	"~google/gemini-pro-latest": {
@@ -4537,7 +4538,7 @@ export const openrouterModelConfig: ModelConfig = {
 		supportsAttachments: false,
 		supportsTemperature: true,
 		supportsToolCalls: true,
-		supportsResponseFormat: true,
+		supportsResponseFormat: false,
 		contextWindow: 256000,
 		maxTokens: 4096,
 		costPer1kInputTokens: 0.002,
@@ -4843,7 +4844,7 @@ export const openrouterModelConfig: ModelConfig = {
 		supportsAttachments: false,
 		supportsTemperature: true,
 		supportsToolCalls: false,
-		supportsResponseFormat: true,
+		supportsResponseFormat: false,
 		contextWindow: 16384,
 		maxTokens: 2048,
 		costPer1kInputTokens: 0.003,
@@ -5244,7 +5245,7 @@ export const openrouterModelConfig: ModelConfig = {
 		supportsAttachments: false,
 		supportsTemperature: true,
 		supportsToolCalls: false,
-		supportsResponseFormat: true,
+		supportsResponseFormat: false,
 		contextWindow: 123000,
 		maxTokens: 12000,
 		costPer1kInputTokens: 0.00028,
@@ -6053,7 +6054,7 @@ export const openrouterModelConfig: ModelConfig = {
 		supportsAttachments: true,
 		supportsTemperature: true,
 		supportsToolCalls: true,
-		supportsResponseFormat: true,
+		supportsResponseFormat: false,
 		contextWindow: 262144,
 		maxTokens: 32768,
 		costPer1kInputTokens: 0,
@@ -6101,7 +6102,7 @@ export const openrouterModelConfig: ModelConfig = {
 		supportsAttachments: true,
 		supportsTemperature: true,
 		supportsToolCalls: true,
-		supportsResponseFormat: true,
+		supportsResponseFormat: false,
 		contextWindow: 262144,
 		maxTokens: 32768,
 		costPer1kInputTokens: 0,
@@ -6124,7 +6125,7 @@ export const openrouterModelConfig: ModelConfig = {
 		supportsAttachments: true,
 		supportsTemperature: true,
 		supportsToolCalls: false,
-		supportsResponseFormat: true,
+		supportsResponseFormat: false,
 		contextWindow: 1048576,
 		maxTokens: 65536,
 		costPer1kInputTokens: 0,
@@ -6147,7 +6148,7 @@ export const openrouterModelConfig: ModelConfig = {
 		supportsAttachments: true,
 		supportsTemperature: true,
 		supportsToolCalls: false,
-		supportsResponseFormat: true,
+		supportsResponseFormat: false,
 		contextWindow: 1048576,
 		maxTokens: 65536,
 		costPer1kInputTokens: 0,
@@ -6309,7 +6310,7 @@ export const openrouterModelConfig: ModelConfig = {
 		supportsAttachments: false,
 		supportsTemperature: true,
 		supportsToolCalls: true,
-		supportsResponseFormat: true,
+		supportsResponseFormat: false,
 		contextWindow: 262144,
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.000075,
@@ -6427,7 +6428,7 @@ export const openrouterModelConfig: ModelConfig = {
 		supportsAttachments: false,
 		supportsTemperature: true,
 		supportsToolCalls: false,
-		supportsResponseFormat: true,
+		supportsResponseFormat: false,
 		contextWindow: 8000,
 		maxTokens: 2000,
 		costPer1kInputTokens: 0.00075,
@@ -6475,7 +6476,7 @@ export const openrouterModelConfig: ModelConfig = {
 		supportsAttachments: false,
 		supportsTemperature: true,
 		supportsToolCalls: false,
-		supportsResponseFormat: true,
+		supportsResponseFormat: false,
 		contextWindow: 8192,
 		maxTokens: 8192,
 		costPer1kInputTokens: 0.00004,
@@ -6691,7 +6692,7 @@ export const openrouterModelConfig: ModelConfig = {
 		supportsAttachments: true,
 		supportsTemperature: true,
 		supportsToolCalls: false,
-		supportsResponseFormat: true,
+		supportsResponseFormat: false,
 		contextWindow: 163840,
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00018,
@@ -6762,7 +6763,7 @@ export const openrouterModelConfig: ModelConfig = {
 		supportsAttachments: false,
 		supportsTemperature: true,
 		supportsToolCalls: false,
-		supportsResponseFormat: true,
+		supportsResponseFormat: false,
 		contextWindow: 65535,
 		maxTokens: 8000,
 		costPer1kInputTokens: 0.00062,
@@ -6831,7 +6832,7 @@ export const openrouterModelConfig: ModelConfig = {
 		supportsAttachments: false,
 		supportsTemperature: true,
 		supportsToolCalls: true,
-		supportsResponseFormat: true,
+		supportsResponseFormat: false,
 		contextWindow: 196608,
 		maxTokens: 8192,
 		costPer1kInputTokens: 0,
@@ -7444,7 +7445,7 @@ export const openrouterModelConfig: ModelConfig = {
 		supportsAttachments: false,
 		supportsTemperature: true,
 		supportsToolCalls: true,
-		supportsResponseFormat: true,
+		supportsResponseFormat: false,
 		contextWindow: 131072,
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.0001,
@@ -7467,7 +7468,7 @@ export const openrouterModelConfig: ModelConfig = {
 		supportsAttachments: false,
 		supportsTemperature: true,
 		supportsToolCalls: true,
-		supportsResponseFormat: true,
+		supportsResponseFormat: false,
 		contextWindow: 262144,
 		maxTokens: 228000,
 		costPer1kInputTokens: 0.00005,
@@ -7514,7 +7515,7 @@ export const openrouterModelConfig: ModelConfig = {
 		supportsAttachments: false,
 		supportsTemperature: true,
 		supportsToolCalls: true,
-		supportsResponseFormat: true,
+		supportsResponseFormat: false,
 		contextWindow: 262144,
 		maxTokens: 262144,
 		costPer1kInputTokens: 0.00009,
@@ -8834,7 +8835,7 @@ export const openrouterModelConfig: ModelConfig = {
 		supportsAttachments: false,
 		supportsTemperature: true,
 		supportsToolCalls: true,
-		supportsResponseFormat: true,
+		supportsResponseFormat: false,
 		contextWindow: 32768,
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.00004,
@@ -8858,7 +8859,7 @@ export const openrouterModelConfig: ModelConfig = {
 		supportsAttachments: false,
 		supportsTemperature: true,
 		supportsToolCalls: true,
-		supportsResponseFormat: true,
+		supportsResponseFormat: false,
 		contextWindow: 1000000,
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.00026,
@@ -8954,7 +8955,7 @@ export const openrouterModelConfig: ModelConfig = {
 		supportsAttachments: false,
 		supportsTemperature: true,
 		supportsToolCalls: true,
-		supportsResponseFormat: true,
+		supportsResponseFormat: false,
 		contextWindow: 131072,
 		maxTokens: 8192,
 		costPer1kInputTokens: 0.000455,
@@ -9168,7 +9169,7 @@ export const openrouterModelConfig: ModelConfig = {
 		supportsAttachments: true,
 		supportsTemperature: true,
 		supportsToolCalls: true,
-		supportsResponseFormat: true,
+		supportsResponseFormat: false,
 		contextWindow: 131072,
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.00026,
@@ -9239,7 +9240,7 @@ export const openrouterModelConfig: ModelConfig = {
 		supportsAttachments: true,
 		supportsTemperature: true,
 		supportsToolCalls: true,
-		supportsResponseFormat: true,
+		supportsResponseFormat: false,
 		contextWindow: 131072,
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.000104,
@@ -9357,7 +9358,7 @@ export const openrouterModelConfig: ModelConfig = {
 		supportsResponseFormat: true,
 		contextWindow: 262144,
 		maxTokens: 81920,
-		costPer1kInputTokens: 0.00014,
+		costPer1kInputTokens: 0.000139,
 		costPer1kOutputTokens: 0.001,
 		reasoningConfig: {
 			enabled: true,
@@ -9520,7 +9521,7 @@ export const openrouterModelConfig: ModelConfig = {
 		supportsResponseFormat: true,
 		contextWindow: 262144,
 		maxTokens: 262144,
-		costPer1kInputTokens: 0.00015,
+		costPer1kInputTokens: 0.000149,
 		costPer1kOutputTokens: 0.001,
 		reasoningConfig: {
 			enabled: true,
@@ -10106,7 +10107,7 @@ export const openrouterModelConfig: ModelConfig = {
 		supportsAttachments: true,
 		supportsTemperature: true,
 		supportsToolCalls: true,
-		supportsResponseFormat: true,
+		supportsResponseFormat: false,
 		contextWindow: 262144,
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.0004,
@@ -10129,7 +10130,7 @@ export const openrouterModelConfig: ModelConfig = {
 		supportsAttachments: false,
 		supportsTemperature: true,
 		supportsToolCalls: true,
-		supportsResponseFormat: true,
+		supportsResponseFormat: false,
 		contextWindow: 1048576,
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.001,
@@ -10152,7 +10153,7 @@ export const openrouterModelConfig: ModelConfig = {
 		supportsAttachments: true,
 		supportsTemperature: true,
 		supportsToolCalls: true,
-		supportsResponseFormat: true,
+		supportsResponseFormat: false,
 		contextWindow: 1048576,
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.0004,
@@ -10245,7 +10246,7 @@ export const openrouterModelConfig: ModelConfig = {
 		supportsAttachments: false,
 		supportsTemperature: true,
 		supportsToolCalls: true,
-		supportsResponseFormat: true,
+		supportsResponseFormat: false,
 		contextWindow: 202752,
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.0012,
@@ -10269,10 +10270,10 @@ export const openrouterModelConfig: ModelConfig = {
 		supportsTemperature: true,
 		supportsToolCalls: true,
 		supportsResponseFormat: true,
-		contextWindow: 202752,
-		maxTokens: 131072,
-		costPer1kInputTokens: 0.00098,
-		costPer1kOutputTokens: 0.00308,
+		contextWindow: 202800,
+		maxTokens: 202800,
+		costPer1kInputTokens: 0,
+		costPer1kOutputTokens: 0,
 		reasoningConfig: {
 			enabled: true,
 		},
@@ -10291,11 +10292,35 @@ export const openrouterModelConfig: ModelConfig = {
 		supportsAttachments: true,
 		supportsTemperature: true,
 		supportsToolCalls: true,
-		supportsResponseFormat: true,
+		supportsResponseFormat: false,
 		contextWindow: 202752,
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.0012,
 		costPer1kOutputTokens: 0.004,
+		reasoningConfig: {
+			enabled: true,
+		},
+	},
+	"google/gemini-3.5-flash": {
+		name: "Gemini 3.5 Flash",
+		matchingModel: "google/gemini-3.5-flash",
+		provider: "openrouter",
+		knowledgeCutoffDate: "January 1, 2025",
+		releaseDate: "May 19, 2026",
+		lastUpdated: "May 19, 2026",
+		modalities: {
+			input: ["text", "image", "video", "pdf", "audio"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		supportsResponseFormat: true,
+		contextWindow: 1048576,
+		maxTokens: 65536,
+		costPer1kInputTokens: 0.0015,
+		costPer1kOutputTokens: 0.009,
+		costPer1kReasoningTokens: 0.009,
 		reasoningConfig: {
 			enabled: true,
 		},
