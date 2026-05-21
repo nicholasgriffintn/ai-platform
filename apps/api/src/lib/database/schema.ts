@@ -250,7 +250,7 @@ export const userSettings = sqliteTable(
 		}).default("workers"),
 		transcription_model: text().default("whisper"),
 		speech_provider: text({
-			enum: ["polly", "cartesia", "elevenlabs", "melotts"],
+			enum: ["polly", "cartesia", "elevenlabs", "melotts", "mistral"],
 		}).default("melotts"),
 		speech_model: text().default("@cf/myshell-ai/melotts"),
 		search_provider: text({

@@ -87,13 +87,17 @@ addRoute(app, "post", "/speech", {
 	},
 	handler: async ({ raw }) =>
 		(async (context: Context) => {
-			const { input, provider, model, lang, store } = context.req.valid("json" as never) as {
-				input: string;
-				provider?: "polly" | "cartesia" | "elevenlabs" | "melotts";
-				model?: string;
-				lang?: string;
-				store?: boolean;
-			};
+			const { input, provider, model, lang, store, voice_id, ref_audio, response_format } =
+				context.req.valid("json" as never) as {
+					input: string;
+					provider?: "polly" | "cartesia" | "elevenlabs" | "melotts" | "mistral";
+					model?: string;
+					lang?: string;
+					store?: boolean;
+					voice_id?: string;
+					ref_audio?: string;
+					response_format?: "mp3" | "wav" | "pcm" | "flac" | "opus";
+				};
 			const user = context.get("user");
 
 			const response = await handleTextToSpeech({
@@ -103,6 +107,9 @@ addRoute(app, "post", "/speech", {
 				model,
 				lang,
 				store,
+				voice_id,
+				ref_audio,
+				response_format,
 				user,
 			});
 

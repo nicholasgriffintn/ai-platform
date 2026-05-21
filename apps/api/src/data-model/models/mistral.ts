@@ -579,6 +579,44 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		supportsAudio: true,
 	}),
 
+	createModelConfig("voxtral-mini-tts", PROVIDER, {
+		name: "Voxtral Mini TTS",
+		matchingModel: "voxtral-mini-tts-2603",
+		description:
+			"Mistral text-to-speech model that generates speech from text using either a saved voice or one-off reference audio.",
+		modalities: {
+			input: ["text"],
+			output: ["speech"],
+		},
+		inputSchema: {
+			fields: [
+				{
+					name: "input",
+					type: "string",
+					description: "Text to generate speech for",
+					required: true,
+				},
+				{
+					name: "voice_id",
+					type: "string",
+					description: "Saved Mistral voice identifier",
+				},
+				{
+					name: "ref_audio",
+					type: "string",
+					description: "Base64-encoded reference audio for one-off voice cloning",
+				},
+				{
+					name: "response_format",
+					type: "string",
+					description: "Response audio format",
+					default: "mp3",
+					enum: ["mp3", "wav", "pcm", "flac", "opus"],
+				},
+			],
+		},
+	}),
+
 	createModelConfig("mistral-embed", PROVIDER, {
 		name: "Mistral Embed",
 		matchingModel: "mistral-embed",

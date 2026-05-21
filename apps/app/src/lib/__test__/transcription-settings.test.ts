@@ -42,6 +42,18 @@ describe("speech settings", () => {
 		expect(getSpeechModelOptions("cartesia")).toEqual([{ id: "sonic-3", label: "Sonic 3" }]);
 	});
 
+	it("keeps saved Mistral speech settings selectable", () => {
+		expect(resolveSpeechSettings("mistral", "e3596645-b1af-469e-b857-f18ddedc7652")).toEqual({
+			speech_provider: "mistral",
+			speech_model: "e3596645-b1af-469e-b857-f18ddedc7652",
+		});
+
+		expect(getSpeechModelOptions("mistral")[0]).toEqual({
+			id: "82c99ee6-f932-423f-a4a3-d403c8914b8d",
+			label: "Jane - Neutral",
+		});
+	});
+
 	it("falls back to a valid speech provider model pair", () => {
 		expect(resolveSpeechSettings("cartesia", "unknown")).toEqual({
 			speech_provider: "cartesia",

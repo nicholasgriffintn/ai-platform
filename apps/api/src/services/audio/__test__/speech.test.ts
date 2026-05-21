@@ -8,7 +8,7 @@ type AudioProviderMock = {
 };
 
 const mockAudioProviders = vi.hoisted<
-	Record<"polly" | "cartesia" | "elevenlabs" | "melotts" | "default", AudioProviderMock>
+	Record<"polly" | "cartesia" | "elevenlabs" | "melotts" | "mistral" | "default", AudioProviderMock>
 >(() => {
 	const createAudioProviderMock = (): AudioProviderMock => ({
 		synthesize: vi.fn(),
@@ -19,6 +19,7 @@ const mockAudioProviders = vi.hoisted<
 		cartesia: createAudioProviderMock(),
 		elevenlabs: createAudioProviderMock(),
 		melotts: createAudioProviderMock(),
+		mistral: createAudioProviderMock(),
 		default: createAudioProviderMock(),
 	};
 });
@@ -114,22 +115,38 @@ describe("handleTextToSpeech", () => {
 			expect(mockProviderLibrary.audio).not.toHaveBeenCalled();
 		});
 
-		it("should throw error for input too long", async () => {
+		it("should truncate input that is too long for the provider", async () => {
 			const longInput = "a".repeat(4097);
-
-			await expect(
-				handleTextToSpeech({
-					env: mockEnv,
-					input: longInput,
-					user: mockUser,
-				}),
-			).rejects.toMatchObject({
-				message: "Input is too long",
-				type: ErrorType.PARAMS_ERROR,
-				name: "AssistantError",
+			mockAudioProviders.melotts.synthesize.mockResolvedValue({
+				key: "audio-key",
 			});
 
-			expect(mockProviderLibrary.audio).not.toHaveBeenCalled();
+			const result = await handleTextToSpeech({
+				env: mockEnv,
+				input: longInput,
+				user: mockUser,
+			});
+
+			expect(mockAudioProviders.melotts.synthesize).toHaveBeenCalledWith(
+				expect.objectContaining({
+					input: "a".repeat(4096),
+					metadata: {
+						inputTruncated: true,
+						originalInputLength: 4097,
+						truncatedInputLength: 4096,
+						maxCharacters: 4096,
+						maxWords: undefined,
+					},
+				}),
+			);
+			if (Array.isArray(result)) {
+				throw new Error("Expected a single speech response");
+			}
+			expect(result.data.metadata).toMatchObject({
+				inputTruncated: true,
+				originalInputLength: 4097,
+				truncatedInputLength: 4096,
+			});
 		});
 
 		it("should sanitize input", async () => {
@@ -326,6 +343,80 @@ describe("handleTextToSpeech", () => {
 					locale: "en",
 				}),
 			);
+		});
+
+		it("should pass Mistral reference audio and response format", async () => {
+			mockAudioProviders.mistral.synthesize.mockResolvedValue({
+				audioDataUrl: "data:audio/wav;base64,YXVkaW8=",
+				audioBase64: "YXVkaW8=",
+				audioMimeType: "audio/wav",
+			});
+
+			const result = await handleTextToSpeech({
+				env: mockEnv,
+				input: "test input",
+				user: mockUser,
+				provider: "mistral",
+				model: "e3596645-b1af-469e-b857-f18ddedc7652",
+				voice_id: "82c99ee6-f932-423f-a4a3-d403c8914b8d",
+				ref_audio: "cmVmLWF1ZGlv",
+				response_format: "wav",
+				store: false,
+			});
+
+			expect(mockProviderLibrary.audio).toHaveBeenCalledWith("mistral", {
+				env: mockEnv,
+				user: mockUser,
+			});
+			expect(mockAudioProviders.mistral.synthesize).toHaveBeenCalledWith(
+				expect.objectContaining({
+					voice: "82c99ee6-f932-423f-a4a3-d403c8914b8d",
+					refAudio: "cmVmLWF1ZGlv",
+					responseFormat: "wav",
+					store: false,
+				}),
+			);
+			if (Array.isArray(result)) {
+				throw new Error("Expected a single speech response");
+			}
+			expect(result.data.provider).toBe("mistral");
+			expect(result.data.audioMimeType).toBe("audio/wav");
+		});
+
+		it("should truncate Mistral input to its provider word limit", async () => {
+			const words = Array.from({ length: 301 }, (_, index) => `word-${index + 1}`);
+			mockAudioProviders.mistral.synthesize.mockResolvedValue({
+				audioBase64: "YXVkaW8=",
+			});
+
+			const result = await handleTextToSpeech({
+				env: mockEnv,
+				input: words.join(" "),
+				user: mockUser,
+				provider: "mistral",
+				store: false,
+			});
+
+			const expectedInput = words.slice(0, 300).join(" ");
+			expect(mockAudioProviders.mistral.synthesize).toHaveBeenCalledWith(
+				expect.objectContaining({
+					input: expectedInput,
+					metadata: {
+						inputTruncated: true,
+						originalInputLength: words.join(" ").length,
+						truncatedInputLength: expectedInput.length,
+						maxCharacters: 4096,
+						maxWords: 300,
+					},
+				}),
+			);
+			if (Array.isArray(result)) {
+				throw new Error("Expected a single speech response");
+			}
+			expect(result.data.metadata).toMatchObject({
+				inputTruncated: true,
+				maxWords: 300,
+			});
 		});
 	});
 
