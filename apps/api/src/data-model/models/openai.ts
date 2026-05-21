@@ -1521,4 +1521,85 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 			enabled: true,
 		},
 	}),
+
+	createModelConfig("gpt-realtime-whisper", PROVIDER, {
+		name: "GPT Realtime Whisper",
+		matchingModel: "gpt-realtime-whisper",
+		description:
+			"Streaming speech-to-text model for low-latency realtime transcription with transcript deltas.",
+		knowledgeCutoffDate: "September 2024",
+		modalities: {
+			input: ["audio", "text"],
+			output: ["text"],
+		},
+		strengths: ["transcription"],
+		contextWindow: 16000,
+		maxTokens: 2000,
+		supportsAttachments: false,
+		supportsTemperature: false,
+		supportsToolCalls: false,
+		supportsStreaming: true,
+		hiddenFromDefaultList: true,
+		reasoningConfig: {
+			enabled: false,
+		},
+	}),
+
+	createModelConfig("gpt-4o-mini-transcribe", PROVIDER, {
+		name: "GPT-4o Mini Transcribe",
+		matchingModel: "gpt-4o-mini-transcribe",
+		description: "Lower-cost speech-to-text model for transcription workflows.",
+		modalities: {
+			input: ["audio"],
+			output: ["text"],
+		},
+		strengths: ["transcription"],
+		contextWindow: 16000,
+		supportsAttachments: false,
+		supportsTemperature: false,
+		supportsToolCalls: false,
+		hiddenFromDefaultList: true,
+		reasoningConfig: {
+			enabled: false,
+		},
+	}),
+
+	createModelConfig("gpt-4o-transcribe", PROVIDER, {
+		name: "GPT-4o Transcribe",
+		matchingModel: "gpt-4o-transcribe",
+		description: "Higher-accuracy speech-to-text model for transcription workflows.",
+		modalities: {
+			input: ["audio"],
+			output: ["text"],
+		},
+		strengths: ["transcription"],
+		contextWindow: 16000,
+		supportsAttachments: false,
+		supportsTemperature: false,
+		supportsToolCalls: false,
+		hiddenFromDefaultList: true,
+		reasoningConfig: {
+			enabled: false,
+		},
+	}),
+
+	createModelConfig("openai-whisper", PROVIDER, {
+		name: "Whisper",
+		matchingModel: "whisper-1",
+		description: "OpenAI Whisper transcription model for existing speech-to-text integrations.",
+		modalities: {
+			input: ["audio"],
+			output: ["text"],
+		},
+		strengths: ["transcription"],
+		contextWindow: 448,
+		maxTokens: 448,
+		supportsAttachments: false,
+		supportsTemperature: false,
+		supportsToolCalls: false,
+		hiddenFromDefaultList: true,
+		reasoningConfig: {
+			enabled: false,
+		},
+	}),
 ]);

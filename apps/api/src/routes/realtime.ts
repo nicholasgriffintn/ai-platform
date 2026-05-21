@@ -6,7 +6,11 @@ import { errorResponseSchema, realtimeSessionResponseSchema } from "@assistant/s
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import { ResponseFactory } from "~/lib/http/ResponseFactory";
 import type { IEnv } from "~/types";
-import { getChatProvider } from "~/lib/providers/capabilities/chat";
+import {
+	getRealtimeProvider,
+	listRealtimeProviders,
+	type RealtimeTranscriptionDelay,
+} from "~/lib/providers/capabilities/realtime";
 
 const app = new Hono();
 const routeLogger = createRouteLogger("realtime");
@@ -31,13 +35,10 @@ addRoute(app, "post", "/session/:type", {
 			const env = c.env as IEnv;
 			const user = c.get("user");
 			const type = c.req.param("type");
-			const model = c.req.query("model") || "gpt-4o-mini-transcribe";
-
-			const availableModels = ["gpt-4o-mini-transcribe", "gpt-4o-transcribe", "whisper"];
-
-			if (!availableModels.includes(model)) {
-				return ResponseFactory.error(c, "Invalid model specified", 400);
-			}
+			const model = c.req.query("model");
+			const language = c.req.query("language");
+			const delay = c.req.query("delay") as RealtimeTranscriptionDelay | undefined;
+			const providerName = c.req.query("provider") || "openai";
 
 			if (!user?.id) {
 				return ResponseFactory.error(c, "Unauthorized", 401);
@@ -47,23 +48,23 @@ addRoute(app, "post", "/session/:type", {
 				return ResponseFactory.error(c, "Invalid session type", 400);
 			}
 
-			const body: Record<string, any> = {};
-
-			if (type === "transcription") {
-				body.input_audio_transcription = {
-					model,
-					language: "en",
-				};
-				body.turn_detection = {
-					type: "server_vad",
-					threshold: 0.4,
-					prefix_padding_ms: 400,
-					silence_duration_ms: 1000,
-				};
+			if (!listRealtimeProviders().includes(providerName)) {
+				return ResponseFactory.error(c, "Invalid provider specified", 400);
 			}
 
-			const provider = getChatProvider("openai", { env, user });
-			const session = await provider.createRealtimeSession(env, user, type, body);
+			const provider = getRealtimeProvider(providerName, { env, user });
+			if (model && provider.models && !provider.models.includes(model)) {
+				return ResponseFactory.error(c, "Invalid model specified", 400);
+			}
+
+			const session = await provider.createSession({
+				env,
+				user,
+				type,
+				model,
+				language,
+				delay,
+			});
 
 			if (!session) {
 				return ResponseFactory.error(c, "Failed to create realtime session", 500);

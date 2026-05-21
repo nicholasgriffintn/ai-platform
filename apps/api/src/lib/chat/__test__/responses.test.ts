@@ -220,7 +220,6 @@ describe("responses", () => {
 				// @ts-expect-error - mock implementation
 				mockModelConfig,
 			);
-			// @ts-expect-error - mock implementation
 			vi.mocked(chatCapability.getChatProvider).mockReturnValue(mockProvider);
 			vi.mocked(formatMessages).mockReturnValue([{ role: "user", content: "Hello" }]);
 			// @ts-expect-error - mock implementation

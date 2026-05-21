@@ -3,10 +3,10 @@ import { getModelConfigByMatchingModel } from "~/lib/providers/models";
 import type { AsyncInvocationMetadata } from "~/lib/async/asyncInvocation";
 import { trackProviderMetrics } from "~/lib/monitoring";
 import { StorageService } from "~/lib/storage";
-import { UserSettingsRepository } from "~/repositories/UserSettingsRepository";
-import type { ChatCompletionParameters, IEnv, IUser } from "~/types";
+import type { ChatCompletionParameters } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
+import { resolveProviderApiKey } from "~/lib/providers/utils/apiKeys";
 import {
 	createCommonParameters,
 	getToolsForProvider,
@@ -26,12 +26,6 @@ export interface AIProvider {
 	name: string;
 	supportsStreaming: boolean;
 	getResponse(params: ChatCompletionParameters, userId?: number): Promise<any>;
-	createRealtimeSession(
-		env: IEnv,
-		user: IUser,
-		type: string,
-		body: Record<string, any>,
-	): Promise<any>;
 	countTokens?(params: ChatCompletionParameters, userId?: number): Promise<{ inputTokens: number }>;
 	getAsyncInvocationStatus?(
 		metadata: AsyncInvocationMetadata,
@@ -118,36 +112,13 @@ export abstract class BaseProvider implements AIProvider {
 	 * @returns The API key
 	 */
 	protected async getApiKey(params: ChatCompletionParameters, userId?: number): Promise<string> {
-		if (userId && params.env.DB) {
-			const userSettingsRepo = new UserSettingsRepository(params.env);
-			try {
-				const apiKey = await userSettingsRepo.getProviderApiKey(userId, this.name);
-				if (apiKey) {
-					return apiKey;
-				}
-			} catch (error) {
-				if (
-					!(
-						error instanceof AssistantError &&
-						(error.type === ErrorType.NOT_FOUND || error.type === ErrorType.PARAMS_ERROR)
-					)
-				) {
-					logger.error(`Failed to get user API key for ${this.name}:`, {
-						error,
-					});
-				}
-			}
-		}
-
-		const envKey = params.env[this.getProviderKeyName()];
-		if (!envKey) {
-			throw new AssistantError(
-				`Missing ${this.getProviderKeyName()}`,
-				ErrorType.CONFIGURATION_ERROR,
-			);
-		}
-
-		return envKey;
+		return resolveProviderApiKey({
+			env: params.env,
+			providerName: this.name,
+			envKeyName: this.getProviderKeyName(),
+			userId,
+			logger,
+		});
 	}
 
 	/**
@@ -311,20 +282,5 @@ export abstract class BaseProvider implements AIProvider {
 			userId,
 			completion_id: params.completion_id,
 		});
-	}
-
-	/**
-	 * Creates a realtime session
-	 * @param env - The environment variables
-	 * @param user - The user
-	 * @returns The realtime session
-	 */
-	async createRealtimeSession(
-		_env: IEnv,
-		_user: IUser,
-		_type: string,
-		_body: Record<string, any>,
-	): Promise<any> {
-		return null;
 	}
 }
