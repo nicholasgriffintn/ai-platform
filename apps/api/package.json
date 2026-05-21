@@ -53,7 +53,7 @@
 		"@types/node": "25.9.1",
 		"better-sqlite3": "12.10.0",
 		"drizzle-kit": "0.31.10",
-		"oxfmt": "0.50.0",
+		"oxfmt": "0.51.0",
 		"oxlint": "1.61.0",
 		"typescript": "6.0.3",
 		"vite-tsconfig-paths": "6.1.1",
