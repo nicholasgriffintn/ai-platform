@@ -12,7 +12,7 @@ export type SpeechProvider = "polly" | "cartesia" | "elevenlabs" | "melotts" | "
 
 const defaultSpeechModelsByProvider: Record<SpeechProvider, string> = {
 	polly: "Ruth",
-	cartesia: "sonic-3",
+	cartesia: "sonic-3.5",
 	elevenlabs: "eleven_multilingual_v2",
 	melotts: "@cf/myshell-ai/melotts",
 	mistral: "82c99ee6-f932-423f-a4a3-d403c8914b8d",

@@ -195,7 +195,7 @@ describe("handleTextToSpeech", () => {
 		it("should use saved speech provider and model by default", async () => {
 			mockGetUserSettings.mockResolvedValue({
 				speech_provider: "cartesia",
-				speech_model: "sonic-3",
+				speech_model: "sonic-3.5",
 			});
 			mockAudioProviders.cartesia.synthesize.mockResolvedValue({
 				key: "cartesia-audio",
@@ -214,20 +214,20 @@ describe("handleTextToSpeech", () => {
 			});
 			expect(mockAudioProviders.cartesia.synthesize).toHaveBeenCalledWith(
 				expect.objectContaining({
-					voice: "sonic-3",
+					voice: "sonic-3.5",
 				}),
 			);
 			if (Array.isArray(result)) {
 				throw new Error("Expected a single speech response");
 			}
 			expect(result.data.provider).toBe("cartesia");
-			expect(result.data.model).toBe("sonic-3");
+			expect(result.data.model).toBe("sonic-3.5");
 		});
 
 		it("should let request provider and model override saved speech settings", async () => {
 			mockGetUserSettings.mockResolvedValue({
 				speech_provider: "cartesia",
-				speech_model: "sonic-3",
+				speech_model: "sonic-3.5",
 			});
 			mockAudioProviders.elevenlabs.synthesize.mockResolvedValue({
 				key: "elevenlabs-audio",
@@ -464,7 +464,7 @@ describe("handleTextToSpeech", () => {
 					"Audio generated successfully\n[Listen to the audio](https://example.com/audio.mp3)",
 				data: {
 					provider: "cartesia",
-					model: "sonic-3",
+					model: "sonic-3.5",
 					audioUrl: "https://example.com/audio.mp3",
 					response: "Audio generated successfully",
 				},

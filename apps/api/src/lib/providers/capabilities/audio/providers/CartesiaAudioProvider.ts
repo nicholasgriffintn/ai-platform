@@ -12,7 +12,7 @@ export class CartesiaAudioProvider extends BaseAudioProvider implements AudioPro
 		const objectKey = this.buildObjectKey(slugBase);
 
 		const response = await this.provider.getResponse({
-			model: request.voice ?? "sonic-3",
+			model: request.voice ?? "sonic-3.5",
 			message: request.input,
 			env: request.env,
 			messages: [],
