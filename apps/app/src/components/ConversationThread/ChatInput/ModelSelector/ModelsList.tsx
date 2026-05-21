@@ -1,5 +1,5 @@
 import { Sparkles } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { ModelIcon } from "~/components/ModelIcon";
 import { useTrackEvent } from "~/hooks/use-track-event";
@@ -41,6 +41,11 @@ function formatProviderLabel(provider: string) {
 		.join(" ");
 }
 
+function getSelectedModelProvider(models: ModelConfigItem[], selectedId?: string | null) {
+	if (!selectedId) return null;
+	return models.find((model) => model.id === selectedId)?.provider || null;
+}
+
 export function ModelsList({
 	models,
 	featuredModelIds,
@@ -55,7 +60,15 @@ export function ModelsList({
 	onInfoHoverEnd,
 }: ModelsListProps) {
 	const { trackFeatureUsage } = useTrackEvent();
-	const [selectedProvider, setSelectedProvider] = useState<string>(FEATURED_PROVIDER_KEY);
+	const modelListRef = useRef<HTMLDivElement>(null);
+	const syncedSelectedIdRef = useRef<string | null | undefined>(undefined);
+	const selectedModelProvider = useMemo(
+		() => getSelectedModelProvider(models, selectedId),
+		[models, selectedId],
+	);
+	const [selectedProvider, setSelectedProvider] = useState<string>(
+		() => selectedModelProvider || FEATURED_PROVIDER_KEY,
+	);
 
 	const handleModelSelect = (modelId: string, modelInfo: ModelConfigItem) => {
 		trackFeatureUsage("model_selected", {
@@ -121,12 +134,29 @@ export function ModelsList({
 		);
 		if (providerExists) return;
 
+		const selectedProviderExists = providerEntries.some(
+			(providerEntry) => providerEntry.key === selectedModelProvider,
+		);
 		const fallbackProvider =
+			(selectedProviderExists && selectedModelProvider) ||
 			providerEntries.find((providerEntry) => providerEntry.key === FEATURED_PROVIDER_KEY)?.key ||
 			providerEntries[0].key;
 
 		setSelectedProvider(fallbackProvider);
-	}, [providerEntries, selectedProvider]);
+	}, [providerEntries, selectedModelProvider, selectedProvider]);
+
+	useEffect(() => {
+		if (!selectedModelProvider) return;
+		const selectedProviderExists = providerEntries.some(
+			(providerEntry) => providerEntry.key === selectedModelProvider,
+		);
+		if (!selectedProviderExists) return;
+		if (syncedSelectedIdRef.current === selectedId) return;
+
+		syncedSelectedIdRef.current = selectedId;
+
+		setSelectedProvider(selectedModelProvider);
+	}, [providerEntries, selectedId, selectedModelProvider]);
 
 	const selectedProviderEntry =
 		providerEntries.find((entry) => entry.key === selectedProvider) || providerEntries[0];
@@ -134,6 +164,16 @@ export function ModelsList({
 	const searchResultEntries = providerEntries.filter(
 		(providerEntry) => providerEntry.key !== FEATURED_PROVIDER_KEY,
 	);
+
+	useEffect(() => {
+		if (isSearchActive || !selectedId) return;
+		if (!visibleModels.some((modelItem) => modelItem.id === selectedId)) return;
+
+		const selectedModelOption = modelListRef.current?.querySelector<HTMLElement>(
+			'[role="option"][aria-selected="true"]',
+		);
+		selectedModelOption?.scrollIntoView({ block: "center" });
+	}, [isSearchActive, selectedId, visibleModels]);
 
 	if (!providerEntries.length) {
 		return (
@@ -209,6 +249,7 @@ export function ModelsList({
 						</div>
 					</div>
 					<div
+						ref={modelListRef}
 						className="flex-1 overflow-y-auto overflow-x-hidden px-3 py-2"
 						onMouseLeave={() => onInfoHoverEnd?.()}
 					>
