@@ -298,19 +298,6 @@ export const FEATURED_APPS: FeaturedAppDefinition[] = [
 		kind: "frontend",
 	},
 	{
-		id: "featured-canvas",
-		name: "Canvas",
-		description:
-			"Generate images or videos across multiple models in one run with shared prompt controls",
-		icon: "layout-grid",
-		category: "AI Generation",
-		theme: "pink",
-		tags: ["image", "video", "multi-model"],
-		href: "/apps/canvas",
-		type: "premium",
-		kind: "frontend",
-	},
-	{
 		id: "featured-drawing",
 		name: "Drawing",
 		description: "Create drawings and get AI to enhance them or guess what they are",

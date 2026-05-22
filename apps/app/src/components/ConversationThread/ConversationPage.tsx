@@ -1,5 +1,8 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { useLocation } from "react-router";
 
+import { CanvasGenerationsView } from "~/components/Canvas/CanvasGenerationsView";
+import { useCanvasStudio } from "~/components/Canvas/useCanvasStudio";
 import { ChatSidebar } from "~/components/ChatSidebar";
 import { PageShell } from "~/components/Core/PageShell";
 import { PageTitle } from "~/components/Core/PageTitle";
@@ -14,6 +17,10 @@ interface ConversationPageProps {
 
 export function ConversationPage({ title, modeConfig }: ConversationPageProps) {
 	const { initializeStore, showSearch, setShowSearch, setChatInput } = useChatStore();
+	const location = useLocation();
+	const isHomePage = location.pathname === "/";
+	const [canvasMode, setCanvasMode] = useState(false);
+	const canvas = useCanvasStudio({ enabled: isHomePage && canvasMode });
 
 	useEffect(() => {
 		const init = async () => {
@@ -33,14 +40,24 @@ export function ConversationPage({ title, modeConfig }: ConversationPageProps) {
 
 	return (
 		<PageShell
-			sidebarContent={<ChatSidebar />}
+			sidebarContent={
+				<ChatSidebar
+					canvas={isHomePage ? canvas : undefined}
+					isCanvasMode={isHomePage && canvasMode}
+					onCanvasModeChange={isHomePage ? setCanvasMode : undefined}
+				/>
+			}
 			fullBleed={true}
 			headerContent={<PageTitle title={title} className="sr-only" />}
 		>
 			<div className="flex flex-row flex-grow flex-1 overflow-hidden relative h-full">
 				<div className="flex flex-col flex-grow h-full w-full">
 					<div className="flex-1 overflow-hidden relative">
-						<ConversationThread modeConfig={modeConfig} />
+						{isHomePage && canvasMode ? (
+							<CanvasGenerationsView canvas={canvas} />
+						) : (
+							<ConversationThread modeConfig={modeConfig} />
+						)}
 					</div>
 				</div>
 			</div>
