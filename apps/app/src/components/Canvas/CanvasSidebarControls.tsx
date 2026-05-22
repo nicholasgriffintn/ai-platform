@@ -71,30 +71,34 @@ export function CanvasSidebarControls({ canvas }: { canvas: CanvasStudioState })
 						/>
 					</div>
 
-					<div className="space-y-2">
-						<label className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-							Negative Prompt
-						</label>
-						<input
-							value={canvas.negativePrompt}
-							onChange={(event) => canvas.setNegativePrompt(event.target.value)}
-							className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:border-zinc-400 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100"
-							placeholder="Optional"
-						/>
-					</div>
+					{canvas.mediaMode === "image" && (
+						<div className="space-y-2">
+							<label className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+								Negative Prompt
+							</label>
+							<input
+								value={canvas.negativePrompt}
+								onChange={(event) => canvas.setNegativePrompt(event.target.value)}
+								className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:border-zinc-400 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100"
+								placeholder="Optional"
+							/>
+						</div>
+					)}
 
-					<div className="space-y-2">
-						<label className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-							Reference Images
-						</label>
-						<textarea
-							value={canvas.referenceInput}
-							onChange={(event) => canvas.setReferenceInput(event.target.value)}
-							rows={3}
-							className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:border-zinc-400 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100"
-							placeholder="One URL per line"
-						/>
-					</div>
+					{canvas.mediaMode === "image" && (
+						<div className="space-y-2">
+							<label className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+								Reference Images
+							</label>
+							<textarea
+								value={canvas.referenceInput}
+								onChange={(event) => canvas.setReferenceInput(event.target.value)}
+								rows={3}
+								className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:border-zinc-400 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100"
+								placeholder="One URL per line"
+							/>
+						</div>
+					)}
 
 					<div className="space-y-2">
 						<div className="flex items-center justify-between">
@@ -155,33 +159,6 @@ export function CanvasSidebarControls({ canvas }: { canvas: CanvasStudioState })
 						values={canvas.modelOptionValues}
 						onChange={canvas.setModelOptionValue}
 					/>
-
-					{canvas.mode === "video" && (
-						<div className="space-y-2">
-							<div className="space-y-1">
-								<label className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-									Duration (sec)
-								</label>
-								<input
-									type="number"
-									min={1}
-									max={20}
-									value={canvas.durationSeconds}
-									onChange={(event) => canvas.setDurationSeconds(event.target.value)}
-									className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:border-zinc-400 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100"
-									placeholder="Optional"
-								/>
-							</div>
-							<label className="flex items-center gap-2 rounded-xl border border-zinc-200 px-3 py-2 text-sm text-zinc-700 dark:border-zinc-700 dark:text-zinc-200">
-								<input
-									type="checkbox"
-									checked={canvas.generateAudio}
-									onChange={(event) => canvas.setGenerateAudio(event.target.checked)}
-								/>
-								Generate audio
-							</label>
-						</div>
-					)}
 
 					<Button
 						variant="primary"

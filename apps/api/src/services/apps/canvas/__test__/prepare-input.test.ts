@@ -177,4 +177,43 @@ describe("prepareCanvasInputForModel", () => {
 			size: "2048x2048",
 		});
 	});
+
+	it("maps video schema options for duration, audio, and reference fields", () => {
+		const videoModel: ModelConfigItem = {
+			matchingModel: "test-video-model",
+			provider: "replicate",
+			modalities: { input: ["text", "image"], output: ["video"] },
+			inputSchema: {
+				fields: [
+					{ name: "prompt", type: "string", required: true },
+					{ name: "negative_prompt", type: "string" },
+					{ name: "reference_images", type: "array" },
+					{ name: "duration", type: "integer" },
+					{ name: "generate_audio", type: "boolean", default: true },
+				],
+			},
+		};
+
+		const result = prepareCanvasInputForModel({
+			model: videoModel,
+			request: {
+				mode: "video",
+				prompt: "A cat",
+				modelOptions: {
+					negative_prompt: "low quality",
+					reference_images: ["https://example.com/ref-1.png"],
+					duration: 5,
+					generate_audio: false,
+				},
+			},
+		});
+
+		expect(result).toEqual({
+			prompt: "A cat",
+			negative_prompt: "low quality",
+			reference_images: ["https://example.com/ref-1.png"],
+			duration: 5,
+			generate_audio: false,
+		});
+	});
 });

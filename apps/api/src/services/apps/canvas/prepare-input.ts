@@ -49,26 +49,18 @@ function isReferenceField(fieldName: string): boolean {
 	return isCanvasReferenceFieldName(fieldName);
 }
 
-const reservedCanvasOptionFieldNames = new Set([
-	"prompt",
-	"negative_prompt",
-	"aspect_ratio",
-	"resolution",
-	"duration",
-	"seconds",
-	"generate_audio",
-]);
+const reservedCanvasOptionFieldNames = new Set(["prompt", "aspect_ratio", "resolution"]);
 
 function getCanvasModelOptions(
 	fields: InputSchemaInputFieldDescriptor[],
 	request: CanvasGenerationInput,
-): Record<string, string | number | boolean> {
+): Record<string, string | number | boolean | string[]> {
 	const values = request.modelOptions ?? {};
 	const fieldNames = new Set(
 		fields
 			.filter((field) => {
 				const name = field.name.toLowerCase();
-				return !reservedCanvasOptionFieldNames.has(name) && !isReferenceField(name);
+				return !reservedCanvasOptionFieldNames.has(name);
 			})
 			.map((field) => field.name),
 	);
@@ -77,6 +69,10 @@ function getCanvasModelOptions(
 		Object.entries(values).filter(([name, value]) => {
 			if (!fieldNames.has(name)) {
 				return false;
+			}
+
+			if (Array.isArray(value)) {
+				return value.some((entry) => typeof entry === "string" && entry.trim().length > 0);
 			}
 
 			return typeof value === "boolean" || (typeof value === "number" && Number.isFinite(value))

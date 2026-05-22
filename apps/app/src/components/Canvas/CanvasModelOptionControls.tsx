@@ -55,6 +55,11 @@ function getFieldHelpText(field: CanvasInputField): string {
 }
 
 function getFieldPlaceholder(field: CanvasInputField): string {
+	const fieldTypes = getFieldTypes(field);
+	if (fieldTypes.includes("array")) {
+		return "One URL per line";
+	}
+
 	switch (field.name) {
 		case "size":
 			return "e.g. 1024x1024";
@@ -169,6 +174,25 @@ export function CanvasModelOptionControls({
 									checked={value === true}
 									onChange={(event) => onChange(field.name, event.target.checked)}
 									className="h-5 w-5 shrink-0 rounded border-zinc-300 text-zinc-900 focus:ring-zinc-400 dark:border-zinc-600 dark:bg-zinc-950"
+								/>
+							</div>
+						);
+					}
+
+					if (fieldTypes.includes("array")) {
+						return (
+							<div
+								key={field.name}
+								className="space-y-1.5 border-b border-zinc-200 px-3 py-2.5 last:border-b-0 dark:border-zinc-700"
+							>
+								<FieldLabel field={field} label={label} />
+								<textarea
+									id={`canvas-option-${field.name}`}
+									value={typeof value === "string" ? value : ""}
+									onChange={(event) => onChange(field.name, event.target.value)}
+									rows={3}
+									className="w-full rounded-lg border border-zinc-200 bg-white px-2.5 py-2 text-sm text-zinc-900 outline-none transition focus:border-zinc-400 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100"
+									placeholder={getFieldPlaceholder(field)}
 								/>
 							</div>
 						);

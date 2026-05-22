@@ -60,17 +60,39 @@ const canvasReferenceFieldNames = new Set([
 	"first_frame_image",
 	"last_frame",
 	"last_frame_image",
+	"reference_audios",
+	"reference_videos",
 	"start_image",
 	"end_image",
 ]);
+
+interface CanvasModelOptionFieldOptions {
+	includeReservedFields?: boolean;
+	includeReferenceFields?: boolean;
+}
 
 function getFieldTypes(field: CanvasInputField): string[] {
 	return Array.isArray(field.type) ? field.type : [field.type];
 }
 
-function isCanvasModelOptionField(field: CanvasInputField): boolean {
+function isCanvasModelOptionField(
+	field: CanvasInputField,
+	options: CanvasModelOptionFieldOptions = {},
+): boolean {
 	const name = field.name.toLowerCase();
-	return !reservedCanvasOptionFieldNames.has(name) && !canvasReferenceFieldNames.has(name);
+	if (name === "prompt") {
+		return false;
+	}
+
+	if (!options.includeReservedFields && reservedCanvasOptionFieldNames.has(name)) {
+		return false;
+	}
+
+	if (!options.includeReferenceFields && canvasReferenceFieldNames.has(name)) {
+		return false;
+	}
+
+	return true;
 }
 
 export function parseReferenceImages(value: string): string[] {
@@ -101,12 +123,15 @@ export function collectFieldEnumOptions(models: CanvasModel[], fieldName: string
 	return Array.from(new Set(options));
 }
 
-export function collectCanvasModelOptionFields(models: CanvasModel[]): CanvasInputField[] {
+export function collectCanvasModelOptionFields(
+	models: CanvasModel[],
+	options: CanvasModelOptionFieldOptions = {},
+): CanvasInputField[] {
 	const fieldsByName = new Map<string, CanvasInputField>();
 
 	for (const model of models) {
 		for (const field of model.inputSchema?.fields ?? []) {
-			if (!isCanvasModelOptionField(field) || fieldsByName.has(field.name)) {
+			if (!isCanvasModelOptionField(field, options) || fieldsByName.has(field.name)) {
 				continue;
 			}
 
@@ -132,8 +157,8 @@ export function formatCanvasFieldLabel(fieldName: string): string {
 export function buildCanvasModelOptions(
 	fields: CanvasInputField[],
 	values: Record<string, string | boolean>,
-): Record<string, string | number | boolean> | undefined {
-	const result: Record<string, string | number | boolean> = {};
+): Record<string, string | number | boolean | string[]> | undefined {
+	const result: Record<string, string | number | boolean | string[]> = {};
 
 	for (const field of fields) {
 		const value = values[field.name];
@@ -149,6 +174,14 @@ export function buildCanvasModelOptions(
 		}
 
 		if (typeof value !== "string" || value.trim() === "") {
+			continue;
+		}
+
+		if (fieldTypes.includes("array")) {
+			const entries = parseReferenceImages(value);
+			if (entries.length > 0) {
+				result[field.name] = entries;
+			}
 			continue;
 		}
 

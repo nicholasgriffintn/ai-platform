@@ -27,6 +27,23 @@ const imageModel: CanvasModel = {
 	},
 };
 
+const videoModel: CanvasModel = {
+	id: "replicate-bytedance-seedance-2-0",
+	name: "Seedance 2.0",
+	provider: "replicate",
+	modalities: { input: ["text", "image", "video", "audio"], output: ["video"] },
+	inputSchema: {
+		fields: [
+			{ name: "prompt", type: "string", required: true },
+			{ name: "negative_prompt", type: "string" },
+			{ name: "image", type: ["file", "string"] },
+			{ name: "reference_images", type: "array" },
+			{ name: "duration", type: "integer" },
+			{ name: "generate_audio", type: "boolean", default: true },
+		],
+	},
+};
+
 describe("Canvas utils", () => {
 	it("collects configurable model option fields from input schemas", () => {
 		const fields = collectCanvasModelOptionFields([imageModel]);
@@ -73,6 +90,40 @@ describe("Canvas utils", () => {
 
 		expect(options).toEqual({
 			prompt_upsampling: false,
+		});
+	});
+
+	it("collects schema-driven video fields as options", () => {
+		const fields = collectCanvasModelOptionFields([videoModel], {
+			includeReservedFields: true,
+			includeReferenceFields: true,
+		});
+
+		expect(fields.map((field) => field.name)).toEqual([
+			"negative_prompt",
+			"image",
+			"reference_images",
+			"duration",
+			"generate_audio",
+		]);
+	});
+
+	it("builds array model options from newline-delimited values", () => {
+		const fields = collectCanvasModelOptionFields([videoModel], {
+			includeReservedFields: true,
+			includeReferenceFields: true,
+		});
+
+		const options = buildCanvasModelOptions(fields, {
+			reference_images: "https://example.com/one.png\nhttps://example.com/two.png",
+			duration: "5",
+			generate_audio: false,
+		});
+
+		expect(options).toEqual({
+			reference_images: ["https://example.com/one.png", "https://example.com/two.png"],
+			duration: 5,
+			generate_audio: false,
 		});
 	});
 });

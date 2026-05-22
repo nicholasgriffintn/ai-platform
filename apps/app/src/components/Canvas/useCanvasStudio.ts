@@ -94,8 +94,6 @@ export function useCanvasStudio({ enabled = true }: UseCanvasStudioOptions = {})
 	const [referenceInput, setReferenceInput] = useState("");
 	const [aspectRatio, setAspectRatio] = useState("");
 	const [resolution, setResolution] = useState("");
-	const [durationSeconds, setDurationSeconds] = useState("");
-	const [generateAudio, setGenerateAudio] = useState(false);
 	const [modelSearch, setModelSearch] = useState("");
 	const [modelOptionValues, setModelOptionValues] = useState<Record<string, string | boolean>>({});
 	const [selectedModelIds, setSelectedModelIds] = useState<string[]>([]);
@@ -172,8 +170,12 @@ export function useCanvasStudio({ enabled = true }: UseCanvasStudioOptions = {})
 		[optionModels],
 	);
 	const modelOptionFields = useMemo(
-		() => collectCanvasModelOptionFields(selectedModels),
-		[selectedModels],
+		() =>
+			collectCanvasModelOptionFields(selectedModels, {
+				includeReservedFields: mediaMode === "video",
+				includeReferenceFields: mediaMode === "video",
+			}),
+		[mediaMode, selectedModels],
 	);
 
 	useEffect(() => {
@@ -302,13 +304,10 @@ export function useCanvasStudio({ enabled = true }: UseCanvasStudioOptions = {})
 			mode: mediaMode,
 			prompt: prompt.trim(),
 			modelIds: selectedModelIds,
-			referenceImages: parseReferenceImages(referenceInput),
-			negativePrompt: negativePrompt.trim() || undefined,
+			referenceImages: mediaMode === "image" ? parseReferenceImages(referenceInput) : undefined,
+			negativePrompt: mediaMode === "image" ? negativePrompt.trim() || undefined : undefined,
 			aspectRatio: aspectRatio || undefined,
 			resolution: resolution || undefined,
-			durationSeconds:
-				mediaMode === "video" && Number(durationSeconds) > 0 ? Number(durationSeconds) : undefined,
-			generateAudio: mediaMode === "video" ? generateAudio : undefined,
 			modelOptions: buildCanvasModelOptions(modelOptionFields, modelOptionValues),
 		};
 
@@ -363,8 +362,6 @@ export function useCanvasStudio({ enabled = true }: UseCanvasStudioOptions = {})
 		referenceInput,
 		aspectRatio,
 		resolution,
-		durationSeconds,
-		generateAudio,
 		modelSearch,
 		modelOptionFields,
 		modelOptionValues: canvasOptionValues,
@@ -381,8 +378,6 @@ export function useCanvasStudio({ enabled = true }: UseCanvasStudioOptions = {})
 		setReferenceInput,
 		setAspectRatio,
 		setResolution,
-		setDurationSeconds,
-		setGenerateAudio,
 		setModelSearch,
 		setModelOptionValue: setCanvasOptionValue,
 		handleModeChange,
