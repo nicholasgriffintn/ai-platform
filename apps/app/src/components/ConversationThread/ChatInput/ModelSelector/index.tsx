@@ -12,7 +12,7 @@ import {
 	WalletCards,
 	Wand2,
 } from "lucide-react";
-import { type KeyboardEvent, useEffect, useMemo, useRef, useState } from "react";
+import { type KeyboardEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { ModelIcon } from "~/components/ModelIcon";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
@@ -21,6 +21,7 @@ import { useAgents } from "~/hooks/useAgents";
 import { useModels } from "~/hooks/useModels";
 import { useTrackEvent } from "~/hooks/use-track-event";
 import { useWebLLMModels } from "~/hooks/useWebLLMModels";
+import { applyModelResponseDefaults } from "~/lib/chat-settings";
 import {
 	defaultModel,
 	getAvailableModels,
@@ -35,7 +36,7 @@ import {
 } from "~/state/contexts/LoadingContext";
 import { useChatStore } from "~/state/stores/chatStore";
 import { useUIStore } from "~/state/stores/uiStore";
-import type { ChatMode, ModelConfigItem } from "~/types";
+import type { ChatMode, ChatSettings, ModelConfigItem } from "~/types";
 import { ModelOption } from "./ModelOption";
 import { ModelsList } from "./ModelsList";
 
@@ -337,6 +338,20 @@ export const ModelSelector = ({
 	}, [filteredModels, searchQuery, selectedCapability]);
 	const isModelSearchActive = searchQuery.trim().length > 0;
 
+	const getSettingsForModel = useCallback(
+		(nextModel: string | null, settings: ChatSettings) =>
+			applyModelResponseDefaults(settings, nextModel ? availableModels[nextModel] : undefined),
+		[availableModels],
+	);
+
+	const selectModelWithDefaults = useCallback(
+		(nextModel: string | null, settings: ChatSettings = chatSettings) => {
+			setModel(nextModel);
+			setChatSettings(getSettingsForModel(nextModel, settings));
+		},
+		[chatSettings, getSettingsForModel, setChatSettings, setModel],
+	);
+
 	useEffect(() => {
 		const handleClickOutside = (event: MouseEvent) => {
 			if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -444,17 +459,17 @@ export const ModelSelector = ({
 		setChatMode(newChatMode);
 
 		if (newChatMode === "local") {
-			setChatSettings({
+			const nextSettings = {
 				...chatSettings,
 				localOnly: true,
-			});
-			setModel("");
+			};
+			selectModelWithDefaults("", nextSettings);
 		} else {
-			setChatSettings({
+			const nextSettings = {
 				...chatSettings,
 				localOnly: false,
-			});
-			setModel(defaultModel);
+			};
+			selectModelWithDefaults(defaultModel, nextSettings);
 		}
 
 		if (newChatMode !== "agent") {
@@ -484,9 +499,9 @@ export const ModelSelector = ({
 
 	useEffect(() => {
 		if (chatMode === "agent" && currentAgentModel !== undefined && currentAgentModel !== model) {
-			setModel(currentAgentModel);
+			selectModelWithDefaults(currentAgentModel);
 		}
-	}, [currentAgentModel, model, setModel, chatMode]);
+	}, [currentAgentModel, model, selectModelWithDefaults, chatMode]);
 
 	if (isLoadingModels) {
 		return (
@@ -498,7 +513,7 @@ export const ModelSelector = ({
 	}
 
 	const handleModelChange = (newModel: string) => {
-		setModel(newModel);
+		selectModelWithDefaults(newModel);
 
 		trackEvent({
 			name: "set_model",
@@ -665,28 +680,28 @@ export const ModelSelector = ({
 							setSelectedTab(tab);
 							if (tab === "auto") {
 								setChatMode("remote");
-								setModel(null);
 								setSelectedAgentId(null);
-								setChatSettings({
+								const nextSettings = {
 									...chatSettings,
 									localOnly: false,
-								});
+								};
+								selectModelWithDefaults(null, nextSettings);
 							} else if (tab === "agent") {
 								setChatMode("agent");
-								setModel(defaultModel);
 								setSelectedAgentId(null);
-								setChatSettings({
+								const nextSettings = {
 									...chatSettings,
 									localOnly: false,
-								});
+								};
+								selectModelWithDefaults(defaultModel, nextSettings);
 							} else if (tab === "models") {
 								setChatMode("remote");
-								setModel(defaultModel);
 								setSelectedAgentId(null);
-								setChatSettings({
+								const nextSettings = {
 									...chatSettings,
 									localOnly: false,
-								});
+								};
+								selectModelWithDefaults(defaultModel, nextSettings);
 							}
 						}}
 						className="min-h-0 flex-1 px-2 pb-2 pt-2"
