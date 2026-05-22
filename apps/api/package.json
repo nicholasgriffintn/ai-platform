@@ -48,7 +48,7 @@
 		"zod-openapi": "5.4.6"
 	},
 	"devDependencies": {
-		"@cloudflare/workers-types": "4.20260521.1",
+		"@cloudflare/workers-types": "4.20260522.1",
 		"@simplewebauthn/types": "12.0.0",
 		"@types/node": "25.9.1",
 		"better-sqlite3": "12.10.0",
