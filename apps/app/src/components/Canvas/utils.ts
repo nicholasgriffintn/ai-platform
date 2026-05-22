@@ -1,4 +1,4 @@
-import type { CanvasMode, CanvasModel } from "~/types/canvas";
+import type { CanvasInputField, CanvasMode, CanvasModel } from "~/types/canvas";
 
 interface MediaPreview {
 	url: string;
@@ -40,6 +40,39 @@ function intersectOptions(optionGroups: string[][]): string[] {
 	return optionGroups.reduce((acc, group) => acc.filter((option) => group.includes(option)));
 }
 
+const reservedCanvasOptionFieldNames = new Set([
+	"prompt",
+	"negative_prompt",
+	"duration",
+	"seconds",
+	"generate_audio",
+]);
+
+const canvasReferenceFieldNames = new Set([
+	"input_images",
+	"reference_images",
+	"input_references",
+	"input_reference",
+	"input_image",
+	"image",
+	"image_input",
+	"image_inputs",
+	"first_frame_image",
+	"last_frame",
+	"last_frame_image",
+	"start_image",
+	"end_image",
+]);
+
+function getFieldTypes(field: CanvasInputField): string[] {
+	return Array.isArray(field.type) ? field.type : [field.type];
+}
+
+function isCanvasModelOptionField(field: CanvasInputField): boolean {
+	const name = field.name.toLowerCase();
+	return !reservedCanvasOptionFieldNames.has(name) && !canvasReferenceFieldNames.has(name);
+}
+
 export function parseReferenceImages(value: string): string[] {
 	return value
 		.split(/\n|,/)
@@ -66,6 +99,72 @@ export function collectFieldEnumOptions(models: CanvasModel[], fieldName: string
 	const options = optionGroups.length === 1 ? optionGroups[0] : intersectOptions(optionGroups);
 
 	return Array.from(new Set(options));
+}
+
+export function collectCanvasModelOptionFields(models: CanvasModel[]): CanvasInputField[] {
+	const fieldsByName = new Map<string, CanvasInputField>();
+
+	for (const model of models) {
+		for (const field of model.inputSchema?.fields ?? []) {
+			if (!isCanvasModelOptionField(field) || fieldsByName.has(field.name)) {
+				continue;
+			}
+
+			const enumOptions = collectFieldEnumOptions(models, field.name);
+			fieldsByName.set(field.name, {
+				...field,
+				enum: enumOptions.length > 0 ? enumOptions : field.enum,
+			});
+		}
+	}
+
+	return Array.from(fieldsByName.values());
+}
+
+export function formatCanvasFieldLabel(fieldName: string): string {
+	return fieldName
+		.split("_")
+		.filter(Boolean)
+		.map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+		.join(" ");
+}
+
+export function buildCanvasModelOptions(
+	fields: CanvasInputField[],
+	values: Record<string, string | boolean>,
+): Record<string, string | number | boolean> | undefined {
+	const result: Record<string, string | number | boolean> = {};
+
+	for (const field of fields) {
+		const value = values[field.name];
+		const fieldTypes = getFieldTypes(field);
+
+		if (fieldTypes.includes("boolean")) {
+			if (value === true) {
+				result[field.name] = true;
+			}
+			continue;
+		}
+
+		if (typeof value !== "string" || value.trim() === "") {
+			continue;
+		}
+
+		if (fieldTypes.includes("integer") || fieldTypes.includes("number")) {
+			const parsed = Number(value);
+			if (
+				Number.isFinite(parsed) &&
+				(!fieldTypes.includes("integer") || Number.isInteger(parsed))
+			) {
+				result[field.name] = parsed;
+			}
+			continue;
+		}
+
+		result[field.name] = value.trim();
+	}
+
+	return Object.keys(result).length > 0 ? result : undefined;
 }
 
 function inferMediaType(url: string): MediaPreview["type"] {

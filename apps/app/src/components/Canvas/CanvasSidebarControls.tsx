@@ -2,6 +2,7 @@ import { Brush, Film, Image } from "lucide-react";
 
 import { Button } from "~/components/ui";
 import { cn } from "~/lib/utils";
+import { CanvasModelOptionControls } from "./CanvasModelOptionControls";
 import { DrawingSidebarControls } from "./Drawing/DrawingSidebarControls";
 import type { CanvasStudioState } from "./useCanvasStudio";
 
@@ -149,42 +150,11 @@ export function CanvasSidebarControls({ canvas }: { canvas: CanvasStudioState })
 						</div>
 					</div>
 
-					<div className="grid grid-cols-2 gap-2">
-						<div className="space-y-1">
-							<label className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-								Aspect
-							</label>
-							<select
-								value={canvas.aspectRatio}
-								onChange={(event) => canvas.setAspectRatio(event.target.value)}
-								className="w-full rounded-xl border border-zinc-200 bg-white px-2 py-2 text-sm text-zinc-900 outline-none focus:border-zinc-400 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100"
-							>
-								<option value="">Default</option>
-								{canvas.aspectRatioOptions.map((option) => (
-									<option key={option} value={option}>
-										{option}
-									</option>
-								))}
-							</select>
-						</div>
-						<div className="space-y-1">
-							<label className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-								Resolution
-							</label>
-							<select
-								value={canvas.resolution}
-								onChange={(event) => canvas.setResolution(event.target.value)}
-								className="w-full rounded-xl border border-zinc-200 bg-white px-2 py-2 text-sm text-zinc-900 outline-none focus:border-zinc-400 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100"
-							>
-								<option value="">Default</option>
-								{canvas.resolutionOptions.map((option) => (
-									<option key={option} value={option}>
-										{option}
-									</option>
-								))}
-							</select>
-						</div>
-					</div>
+					<CanvasModelOptionControls
+						fields={canvas.modelOptionFields}
+						values={canvas.modelOptionValues}
+						onChange={canvas.setModelOptionValue}
+					/>
 
 					{canvas.mode === "video" && (
 						<div className="space-y-2">

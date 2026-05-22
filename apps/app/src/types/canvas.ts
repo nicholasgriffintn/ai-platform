@@ -5,7 +5,7 @@ export interface CanvasInputField {
 	name: string;
 	type: string | string[];
 	description?: string;
-	required: boolean;
+	required?: boolean;
 	default?: unknown;
 	enum?: unknown[];
 }
@@ -41,6 +41,7 @@ export interface CanvasGenerateRequest {
 	height?: number;
 	durationSeconds?: number;
 	generateAudio?: boolean;
+	modelOptions?: Record<string, string | number | boolean>;
 }
 
 export interface CanvasGenerationResult {

@@ -10,13 +10,11 @@ import {
 	shouldEnableStreaming,
 } from "~/utils/parameters";
 import { BaseProvider } from "./base";
-
-interface ImageEditParams {
-	model: string;
-	prompt: string;
-	size?: string;
-	n?: number;
-}
+import {
+	getOpenAIImageRequestInput,
+	OPENAI_IMAGE_PARAMETER_NAMES,
+	type OpenAIImageParams,
+} from "./openaiImage";
 
 const DEFAULT_IMAGE_SIZE = "1024x1024";
 const DEFAULT_IMAGE_COUNT = 1;
@@ -75,18 +73,21 @@ export class OpenAIProvider extends BaseProvider {
 		return mimeTypeToExtension[blob.type] || "image.png";
 	}
 
-	private buildImageEditFormData(params: ImageEditParams, imageBlob: Blob): FormData {
+	private buildImageEditFormData(params: OpenAIImageParams, imageBlob: Blob): FormData {
 		const formData = new FormData();
 
 		formData.append("model", params.model || "gpt-image-1");
 		formData.append("prompt", params.prompt);
 		formData.append("image", imageBlob, this.getImageFileName(imageBlob));
 
-		if (params.size) {
-			formData.append("size", params.size);
-		}
-		if (params.n) {
-			formData.append("n", params.n.toString());
+		for (const [name, value] of Object.entries(params)) {
+			if (!OPENAI_IMAGE_PARAMETER_NAMES.has(name) || name === "prompt") {
+				continue;
+			}
+
+			if (value !== undefined) {
+				formData.append(name, value.toString());
+			}
 		}
 
 		return formData;
@@ -96,6 +97,7 @@ export class OpenAIProvider extends BaseProvider {
 		params: ChatCompletionParameters,
 		prompt: string,
 		storageService: StorageService,
+		imageRequestInput: Partial<OpenAIImageParams>,
 	): Promise<FormData> {
 		const messageWithImage = params.messages.find(
 			(message) =>
@@ -113,11 +115,12 @@ export class OpenAIProvider extends BaseProvider {
 
 		const imageBlob = await storageService.downloadFile(imageItem.image_url.url);
 
-		const formDataParams: ImageEditParams = {
+		const formDataParams: OpenAIImageParams = {
 			model: params.model,
 			prompt,
 			size: DEFAULT_IMAGE_SIZE,
 			n: DEFAULT_IMAGE_COUNT,
+			...imageRequestInput,
 		};
 
 		return this.buildImageEditFormData(formDataParams, imageBlob);
@@ -227,6 +230,7 @@ export class OpenAIProvider extends BaseProvider {
 		const isTextToImage = outputs.includes("image") && !inputs.includes("image");
 
 		if (isImageEditing || isTextToImage) {
+			const imageRequestInput = getOpenAIImageRequestInput(params, modelConfig);
 			let prompt = "";
 			if (params.messages.length > 1) {
 				const content = params.messages[1].content;
@@ -240,6 +244,7 @@ export class OpenAIProvider extends BaseProvider {
 							? content[0]?.text || ""
 							: "";
 			}
+			prompt = imageRequestInput.prompt || prompt;
 
 			const hasImages = params.messages.some(
 				(message) =>
@@ -256,7 +261,12 @@ export class OpenAIProvider extends BaseProvider {
 						ErrorType.CONFIGURATION_ERROR,
 					);
 				}
-				return await this.handleImageEditRequest(params, prompt, _storageService);
+				return await this.handleImageEditRequest(
+					params,
+					prompt,
+					_storageService,
+					imageRequestInput,
+				);
 			}
 
 			if (isImageEditing && hasImages) {
@@ -266,6 +276,7 @@ export class OpenAIProvider extends BaseProvider {
 			return {
 				model: params.model,
 				prompt,
+				...imageRequestInput,
 			};
 		}
 

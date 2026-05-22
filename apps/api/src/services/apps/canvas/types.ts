@@ -14,6 +14,7 @@ export interface CanvasGenerationInput {
 	height?: number;
 	durationSeconds?: number;
 	generateAudio?: boolean;
+	modelOptions?: Record<string, string | number | boolean>;
 }
 
 export interface CanvasGenerateParams extends CanvasGenerationInput {

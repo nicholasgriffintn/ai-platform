@@ -1,7 +1,80 @@
-import type { ModelConfig } from "~/types";
+import type { InputSchemaInputSchemaDescriptor, ModelConfig } from "~/types";
 import { createModelConfig, createModelConfigObject } from "~/lib/providers/models/utils";
 
 const PROVIDER = "openai";
+
+const gptImageCommonInputSchema: InputSchemaInputSchemaDescriptor = {
+	reference: "https://developers.openai.com/api/docs/guides/image-generation",
+	fields: [
+		{
+			name: "prompt",
+			type: "string",
+			description: "Text prompt for image generation or editing.",
+			required: true,
+		},
+		{
+			name: "size",
+			type: "string",
+			description: "Output size.",
+		},
+		{
+			name: "quality",
+			type: "string",
+			description: "Rendering quality.",
+			enum: ["low", "medium", "high", "auto"],
+		},
+		{
+			name: "output_format",
+			type: "string",
+			description: "Output image format.",
+			enum: ["png", "jpeg", "webp"],
+		},
+		{
+			name: "output_compression",
+			type: "integer",
+			description: "Compression level for JPEG and WebP outputs.",
+		},
+		{
+			name: "moderation",
+			type: "string",
+			description: "Image moderation strictness.",
+			enum: ["auto", "low"],
+		},
+		{
+			name: "n",
+			type: "integer",
+			description: "Number of images to generate.",
+		},
+	],
+};
+
+const gptImage1InputSchema: InputSchemaInputSchemaDescriptor = {
+	...gptImageCommonInputSchema,
+	fields: [
+		...gptImageCommonInputSchema.fields.slice(0, 5),
+		{
+			name: "background",
+			type: "string",
+			description: "Background handling. Transparent backgrounds are not supported.",
+			enum: ["auto", "opaque", "transparent"],
+		},
+		...gptImageCommonInputSchema.fields.slice(5),
+	],
+};
+
+const gptImage2InputSchema: InputSchemaInputSchemaDescriptor = {
+	...gptImageCommonInputSchema,
+	fields: [
+		...gptImageCommonInputSchema.fields.slice(0, 5),
+		{
+			name: "background",
+			type: "string",
+			description: "Background handling. Transparent backgrounds are not supported.",
+			enum: ["auto", "opaque"],
+		},
+		...gptImageCommonInputSchema.fields.slice(5),
+	],
+};
 
 export const openaiModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("o1", PROVIDER, {
@@ -656,6 +729,30 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		},
 	}),
 
+	createModelConfig("gpt-image-2", PROVIDER, {
+		name: "gpt-image-2",
+		matchingModel: "gpt-image-2",
+		description:
+			"OpenAI's latest GPT Image model for image generation and high-fidelity image edits.",
+		strengths: ["creative"],
+		contextComplexity: 4,
+		reliability: 4,
+		speed: 3,
+		isFeatured: false,
+		supportsImageEdits: true,
+		timeout: 1000000,
+		modalities: {
+			input: ["text", "image"],
+			output: ["image"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: false,
+		supportsToolCalls: false,
+		contextWindow: 0,
+		maxTokens: 0,
+		inputSchema: gptImage2InputSchema,
+	}),
+
 	createModelConfig("gpt-image-1", PROVIDER, {
 		name: "gpt-image-1",
 		matchingModel: "gpt-image-1",
@@ -680,6 +777,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		supportsToolCalls: false,
 		contextWindow: 0,
 		maxTokens: 0,
+		inputSchema: gptImage1InputSchema,
 	}),
 
 	createModelConfig("gpt-image-1-mini", PROVIDER, {
@@ -706,6 +804,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		supportsToolCalls: false,
 		contextWindow: 0,
 		maxTokens: 0,
+		inputSchema: gptImage1InputSchema,
 	}),
 
 	createModelConfig("gpt-image-1.5", PROVIDER, {
@@ -733,6 +832,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		supportsToolCalls: false,
 		contextWindow: 0,
 		maxTokens: 0,
+		inputSchema: gptImage1InputSchema,
 	}),
 	createModelConfig("codex-mini-latest", PROVIDER, {
 		name: "Codex Mini",

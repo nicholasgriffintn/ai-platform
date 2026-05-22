@@ -173,6 +173,25 @@ describe("Models", () => {
 			expect(result.provider).toBe("openai");
 		});
 
+		it("should return GPT Image 2 with image generation schema", async () => {
+			const result = await getModelConfigByModel("gpt-image-2");
+
+			expect(result).toBeDefined();
+			expect(result?.provider).toBe("openai");
+			expect(result?.matchingModel).toBe("gpt-image-2");
+			expect(result?.supportsImageEdits).toBe(true);
+			expect(result?.inputSchema?.fields.map((field) => field.name)).toEqual([
+				"prompt",
+				"size",
+				"quality",
+				"output_format",
+				"output_compression",
+				"background",
+				"moderation",
+				"n",
+			]);
+		});
+
 		it("should return undefined for invalid model", async () => {
 			const result = await getModelConfigByModel("nonexistent-model");
 

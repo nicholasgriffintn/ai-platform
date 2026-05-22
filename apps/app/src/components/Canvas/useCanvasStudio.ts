@@ -9,7 +9,12 @@ import type {
 } from "~/types/canvas";
 import { useDrawingStudio } from "./Drawing/useDrawingStudio";
 import type { CanvasRun } from "./GenerationCard";
-import { collectFieldEnumOptions, parseReferenceImages } from "./utils";
+import {
+	buildCanvasModelOptions,
+	collectCanvasModelOptionFields,
+	collectFieldEnumOptions,
+	parseReferenceImages,
+} from "./utils";
 
 export type CanvasStudioMode = CanvasMode | "drawing";
 
@@ -91,6 +96,7 @@ export function useCanvasStudio({ enabled = true }: UseCanvasStudioOptions = {})
 	const [durationSeconds, setDurationSeconds] = useState("");
 	const [generateAudio, setGenerateAudio] = useState(false);
 	const [modelSearch, setModelSearch] = useState("");
+	const [modelOptionValues, setModelOptionValues] = useState<Record<string, string | boolean>>({});
 	const [selectedModelIds, setSelectedModelIds] = useState<string[]>([]);
 	const [runs, setRuns] = useState<CanvasRun[]>([]);
 
@@ -164,6 +170,10 @@ export function useCanvasStudio({ enabled = true }: UseCanvasStudioOptions = {})
 		() => collectFieldEnumOptions(optionModels, "resolution"),
 		[optionModels],
 	);
+	const modelOptionFields = useMemo(
+		() => collectCanvasModelOptionFields(selectedModels),
+		[selectedModels],
+	);
 
 	useEffect(() => {
 		if (!models || models.length === 0) {
@@ -195,6 +205,29 @@ export function useCanvasStudio({ enabled = true }: UseCanvasStudioOptions = {})
 		setResolution((current) => (current && resolutionOptions.includes(current) ? current : ""));
 	}, [resolutionOptions]);
 
+	useEffect(() => {
+		const fieldsByName = new Map(modelOptionFields.map((field) => [field.name, field]));
+
+		setModelOptionValues((current) => {
+			const next = Object.fromEntries(
+				Object.entries(current).filter(([name, value]) => {
+					const field = fieldsByName.get(name);
+					if (!field) {
+						return false;
+					}
+
+					if (field.enum?.length && typeof value === "string") {
+						return field.enum.map(String).includes(value);
+					}
+
+					return true;
+				}),
+			);
+
+			return Object.keys(next).length === Object.keys(current).length ? current : next;
+		});
+	}, [modelOptionFields]);
+
 	const handleModeChange = (nextMode: CanvasStudioMode) => {
 		setMode(nextMode);
 		setRuns([]);
@@ -204,6 +237,43 @@ export function useCanvasStudio({ enabled = true }: UseCanvasStudioOptions = {})
 		setSelectedModelIds((prev) =>
 			prev.includes(modelId) ? prev.filter((id) => id !== modelId) : [...prev, modelId],
 		);
+	};
+
+	const setModelOptionValue = (fieldName: string, value: string | boolean) => {
+		setModelOptionValues((current) => {
+			if (value === "" || value === false) {
+				const { [fieldName]: _removed, ...rest } = current;
+				return rest;
+			}
+
+			return {
+				...current,
+				[fieldName]: value,
+			};
+		});
+	};
+
+	const canvasOptionValues = useMemo(
+		() => ({
+			...modelOptionValues,
+			...(aspectRatio ? { aspect_ratio: aspectRatio } : {}),
+			...(resolution ? { resolution } : {}),
+		}),
+		[aspectRatio, modelOptionValues, resolution],
+	);
+
+	const setCanvasOptionValue = (fieldName: string, value: string | boolean) => {
+		if (fieldName === "aspect_ratio") {
+			setAspectRatio(typeof value === "string" ? value : "");
+			return;
+		}
+
+		if (fieldName === "resolution") {
+			setResolution(typeof value === "string" ? value : "");
+			return;
+		}
+
+		setModelOptionValue(fieldName, value);
 	};
 
 	const handleGenerate = async () => {
@@ -237,6 +307,7 @@ export function useCanvasStudio({ enabled = true }: UseCanvasStudioOptions = {})
 			durationSeconds:
 				mediaMode === "video" && Number(durationSeconds) > 0 ? Number(durationSeconds) : undefined,
 			generateAudio: mediaMode === "video" ? generateAudio : undefined,
+			modelOptions: buildCanvasModelOptions(modelOptionFields, modelOptionValues),
 		};
 
 		try {
@@ -293,6 +364,8 @@ export function useCanvasStudio({ enabled = true }: UseCanvasStudioOptions = {})
 		durationSeconds,
 		generateAudio,
 		modelSearch,
+		modelOptionFields,
+		modelOptionValues: canvasOptionValues,
 		selectedModelIds,
 		visibleModels,
 		aspectRatioOptions,
@@ -309,6 +382,7 @@ export function useCanvasStudio({ enabled = true }: UseCanvasStudioOptions = {})
 		setDurationSeconds,
 		setGenerateAudio,
 		setModelSearch,
+		setModelOptionValue: setCanvasOptionValue,
 		handleModeChange,
 		handleModelToggle,
 		handleGenerate,
