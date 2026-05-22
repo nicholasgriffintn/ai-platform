@@ -11,6 +11,7 @@ import { useDrawingStudio } from "./Drawing/useDrawingStudio";
 import type { CanvasRun } from "./GenerationCard";
 import {
 	buildCanvasModelOptions,
+	buildCanvasModelOptionControlValues,
 	collectCanvasModelOptionFields,
 	collectFieldEnumOptions,
 	parseReferenceImages,
@@ -241,7 +242,7 @@ export function useCanvasStudio({ enabled = true }: UseCanvasStudioOptions = {})
 
 	const setModelOptionValue = (fieldName: string, value: string | boolean) => {
 		setModelOptionValues((current) => {
-			if (value === "" || value === false) {
+			if (value === "") {
 				const { [fieldName]: _removed, ...rest } = current;
 				return rest;
 			}
@@ -254,12 +255,13 @@ export function useCanvasStudio({ enabled = true }: UseCanvasStudioOptions = {})
 	};
 
 	const canvasOptionValues = useMemo(
-		() => ({
-			...modelOptionValues,
-			...(aspectRatio ? { aspect_ratio: aspectRatio } : {}),
-			...(resolution ? { resolution } : {}),
-		}),
-		[aspectRatio, modelOptionValues, resolution],
+		() =>
+			buildCanvasModelOptionControlValues(modelOptionFields, {
+				...modelOptionValues,
+				...(aspectRatio ? { aspect_ratio: aspectRatio } : {}),
+				...(resolution ? { resolution } : {}),
+			}),
+		[aspectRatio, modelOptionFields, modelOptionValues, resolution],
 	);
 
 	const setCanvasOptionValue = (fieldName: string, value: string | boolean) => {

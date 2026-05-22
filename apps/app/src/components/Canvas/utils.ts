@@ -142,6 +142,8 @@ export function buildCanvasModelOptions(
 		if (fieldTypes.includes("boolean")) {
 			if (value === true) {
 				result[field.name] = true;
+			} else if (value === false && field.default === true) {
+				result[field.name] = false;
 			}
 			continue;
 		}
@@ -165,6 +167,26 @@ export function buildCanvasModelOptions(
 	}
 
 	return Object.keys(result).length > 0 ? result : undefined;
+}
+
+export function buildCanvasModelOptionControlValues(
+	fields: CanvasInputField[],
+	values: Record<string, string | boolean>,
+): Record<string, string | boolean> {
+	const result: Record<string, string | boolean> = { ...values };
+
+	for (const field of fields) {
+		const fieldTypes = getFieldTypes(field);
+		if (
+			fieldTypes.includes("boolean") &&
+			field.default === true &&
+			!Object.prototype.hasOwnProperty.call(result, field.name)
+		) {
+			result[field.name] = true;
+		}
+	}
+
+	return result;
 }
 
 function inferMediaType(url: string): MediaPreview["type"] {

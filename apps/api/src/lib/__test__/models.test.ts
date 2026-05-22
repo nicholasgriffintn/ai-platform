@@ -192,6 +192,32 @@ describe("Models", () => {
 			]);
 		});
 
+		it("should return featured Seedance 2.0 with reference media fields", async () => {
+			const result = await getModelConfigByModel("replicate-bytedance-seedance-2-0");
+
+			expect(result).toBeDefined();
+			expect(result?.provider).toBe("replicate");
+			expect(result?.matchingModel).toBe("bytedance/seedance-2.0");
+			expect(result?.isFeatured).toBe(true);
+			expect(result?.modalities).toEqual({
+				input: ["text", "image", "video", "audio"],
+				output: ["video"],
+			});
+			expect(result?.inputSchema?.fields.map((field) => field.name)).toEqual([
+				"prompt",
+				"image",
+				"last_frame_image",
+				"reference_images",
+				"reference_videos",
+				"reference_audios",
+				"duration",
+				"resolution",
+				"aspect_ratio",
+				"generate_audio",
+				"seed",
+			]);
+		});
+
 		it("should return undefined for invalid model", async () => {
 			const result = await getModelConfigByModel("nonexistent-model");
 

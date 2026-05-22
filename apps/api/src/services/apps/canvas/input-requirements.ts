@@ -7,6 +7,8 @@ const canvasReferenceFieldNames = new Set([
 	"input_references",
 	"input_reference",
 	"input_image",
+	"image_input",
+	"image_inputs",
 	"image",
 	"first_frame_image",
 	"last_frame",

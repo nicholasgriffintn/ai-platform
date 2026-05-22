@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 import type { CanvasModel } from "~/types/canvas";
-import { buildCanvasModelOptions, collectCanvasModelOptionFields } from "./utils";
+import {
+	buildCanvasModelOptions,
+	buildCanvasModelOptionControlValues,
+	collectCanvasModelOptionFields,
+} from "./utils";
 
 const imageModel: CanvasModel = {
 	id: "gpt-image-2",
@@ -16,6 +20,8 @@ const imageModel: CanvasModel = {
 			{ name: "quality", type: "string", enum: ["low", "medium", "high", "auto"] },
 			{ name: "output_compression", type: "integer" },
 			{ name: "background", type: "string", enum: ["auto", "opaque"] },
+			{ name: "prompt_upsampling", type: "boolean", default: true },
+			{ name: "draft", type: "boolean", default: false },
 			{ name: "size", type: "string" },
 		],
 	},
@@ -30,6 +36,8 @@ describe("Canvas utils", () => {
 			"quality",
 			"output_compression",
 			"background",
+			"prompt_upsampling",
+			"draft",
 			"size",
 		]);
 	});
@@ -48,6 +56,23 @@ describe("Canvas utils", () => {
 			quality: "high",
 			output_compression: 60,
 			size: "2048x2048",
+		});
+	});
+
+	it("uses boolean defaults for controls and sends false overrides for true defaults", () => {
+		const fields = collectCanvasModelOptionFields([imageModel]);
+
+		expect(buildCanvasModelOptionControlValues(fields, {})).toMatchObject({
+			prompt_upsampling: true,
+		});
+
+		const options = buildCanvasModelOptions(fields, {
+			prompt_upsampling: false,
+			draft: false,
+		});
+
+		expect(options).toEqual({
+			prompt_upsampling: false,
 		});
 	});
 });

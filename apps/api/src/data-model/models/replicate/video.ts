@@ -426,6 +426,155 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
 			],
 		},
 	}),
+	createModelConfig("replicate-bytedance-seedance-2-0", PROVIDER, {
+		name: "Seedance 2.0",
+		matchingModel: "bytedance/seedance-2.0",
+		description:
+			"ByteDance video generation model with first-frame, last-frame, reference image, reference video, and reference audio support.",
+		strengths: ["creative", "video"],
+		isFeatured: true,
+		supportsStreaming: false,
+		supportsAttachments: false,
+		modalities: {
+			input: ["text", "image", "video", "audio"],
+			output: ["video"],
+		},
+		inputSchema: {
+			reference: "https://replicate.com/bytedance/seedance-2.0",
+			fields: [
+				{
+					name: "prompt",
+					type: "string",
+					description: "Text prompt for video generation",
+					required: true,
+				},
+				{
+					name: "image",
+					type: ["file", "string"],
+					description:
+						"Input image for image-to-video generation (first frame). Cannot be combined with reference images.",
+				},
+				{
+					name: "last_frame_image",
+					type: ["file", "string"],
+					description:
+						"Input image for last frame generation. Only works if a first frame image is also provided. Cannot be combined with reference images.",
+				},
+				{
+					name: "reference_images",
+					type: "array",
+					description:
+						"Reference images (up to 9) for character consistency, style guidance, and scene composition. Cannot be used together with first/last frame images. You can reference them in your prompt as [Image1], [Image2], etc.",
+					default: [],
+				},
+				{
+					name: "reference_videos",
+					type: "array",
+					description:
+						"Reference videos (up to 3, total duration max 15s) for motion transfer, style reference, and editing. Reference them in your prompt as [Video1], [Video2], etc.",
+					default: [],
+				},
+				{
+					name: "reference_audios",
+					type: "array",
+					description:
+						"Reference audio files (up to 3, total duration max 15s) for audio-driven generation and lip-sync. Requires at least one reference image or video. Reference them in your prompt as [Audio1], [Audio2], etc.",
+					default: [],
+				},
+				{
+					name: "duration",
+					type: "integer",
+					description:
+						"Video duration in seconds. Set to -1 for intelligent duration (model picks the best length).",
+					default: 5,
+				},
+				{
+					name: "resolution",
+					type: "string",
+					description: "Video resolution.",
+					default: "720p",
+					enum: ["480p", "720p", "1080p"],
+				},
+				{
+					name: "aspect_ratio",
+					type: "string",
+					description:
+						"Video aspect ratio. Set to 'adaptive' to let the model choose the best ratio based on inputs.",
+					default: "16:9",
+					enum: ["16:9", "4:3", "1:1", "3:4", "9:16", "21:9", "9:21", "adaptive"],
+				},
+				{
+					name: "generate_audio",
+					type: "boolean",
+					description:
+						"Generate synchronized audio with the video, including dialogue (use double quotes in prompt), sound effects, and background music.",
+					default: true,
+				},
+				{
+					name: "seed",
+					type: "integer",
+					description: "Random seed. Set for reproducible generation.",
+				},
+			],
+		},
+	}),
+	createModelConfig("replicate-alibaba-happyhorse-1-0", PROVIDER, {
+		name: "HappyHorse 1.0",
+		matchingModel: "alibaba/happyhorse-1.0",
+		description:
+			"Alibaba text-to-video and image-to-video generation model with configurable duration and resolution.",
+		strengths: ["creative", "video"],
+		supportsStreaming: false,
+		supportsAttachments: false,
+		modalities: {
+			input: ["text", "image"],
+			output: ["video"],
+		},
+		inputSchema: {
+			reference: "https://replicate.com/alibaba/happyhorse-1.0",
+			fields: [
+				{
+					name: "prompt",
+					type: "string",
+					description: "Text prompt for video generation. Optional when an image is provided.",
+					default: "",
+				},
+				{
+					name: "image",
+					type: ["file", "string"],
+					description:
+						"First-frame image to animate. When provided, the model runs in image-to-video mode. Accepts jpg/png/bmp/webp, <=10MB, aspect ratio between 1:2.5 and 2.5:1, each side >=300px.",
+				},
+				{
+					name: "resolution",
+					type: "string",
+					description: "Output video resolution",
+					default: "1080p",
+					enum: ["720p", "1080p"],
+				},
+				{
+					name: "aspect_ratio",
+					type: "string",
+					description:
+						"Aspect ratio of the generated video. Only applies to text-to-video - when an image is provided, the image's aspect ratio is used.",
+					default: "16:9",
+					enum: ["16:9", "9:16", "1:1", "4:3", "3:4"],
+				},
+				{
+					name: "duration",
+					type: "integer",
+					description: "Duration of the generated video in seconds",
+					default: 5,
+					enum: [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
+				},
+				{
+					name: "seed",
+					type: "integer",
+					description: "Random seed for reproducible generation. Range: 0-2147483647",
+				},
+			],
+		},
+	}),
 	createModelConfig("replicate-xai-grok-imagine-video", PROVIDER, {
 		name: "Grok Imagine Video",
 		matchingModel: "xai/grok-imagine-video",
@@ -462,19 +611,126 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
 					name: "duration",
 					type: "integer",
 					description: "Duration of the video in seconds (1-15). Ignored when editing a video.",
+					default: 5,
 				},
 				{
 					name: "aspect_ratio",
 					type: "string",
 					description:
 						"Aspect ratio of the video. For text-to-video, defaults to 16:9. For image-to-video, defaults to the input image's native aspect ratio. Ignored when editing a video.",
-					enum: ["16:9", "9:16", "1:1", "4:3", "3:4", "3:2", "2:3"],
+					default: "auto",
+					enum: ["auto", "16:9", "4:3", "1:1", "9:16", "3:4", "3:2", "2:3"],
 				},
 				{
 					name: "resolution",
 					type: "string",
 					description: "Resolution of the video. Ignored when editing a video.",
-					enum: ["480p", "720p"],
+					default: "720p",
+					enum: ["720p", "480p"],
+				},
+			],
+		},
+	}),
+	createModelConfig("replicate-prunaai-p-video", PROVIDER, {
+		name: "P-Video",
+		matchingModel: "prunaai/p-video",
+		description:
+			"PrunaAI video generation model for text-to-video, image-to-video, last-frame control, and audio-conditioned generation.",
+		strengths: ["creative", "video"],
+		supportsStreaming: false,
+		supportsAttachments: false,
+		modalities: {
+			input: ["text", "image", "audio"],
+			output: ["video"],
+		},
+		inputSchema: {
+			reference: "https://replicate.com/prunaai/p-video",
+			fields: [
+				{
+					name: "prompt",
+					type: "string",
+					description: "Text prompt for video generation.",
+					required: true,
+				},
+				{
+					name: "image",
+					type: ["file", "string"],
+					description:
+						"Input image to generate video from (image-to-video). Supports jpg, jpeg, png, webp.",
+				},
+				{
+					name: "last_frame_image",
+					type: ["file", "string"],
+					description:
+						"Reference image for the last frame of the video. Supports jpg, jpeg, png, webp.",
+				},
+				{
+					name: "audio",
+					type: ["file", "string"],
+					description: "Input audio to condition video generation. Supports flac, mp3, wav.",
+				},
+				{
+					name: "duration",
+					type: "integer",
+					description: "Duration of the video in seconds (1-20). Ignored when audio is provided.",
+					default: 5,
+				},
+				{
+					name: "aspect_ratio",
+					type: "string",
+					description: "Aspect ratio of the video. Ignored when an input image is provided.",
+					default: "16:9",
+					enum: ["16:9", "9:16", "4:3", "3:4", "3:2", "2:3", "1:1"],
+				},
+				{
+					name: "resolution",
+					type: "string",
+					description: "Resolution of the video.",
+					default: "720p",
+					enum: ["720p", "1080p"],
+				},
+				{
+					name: "fps",
+					type: "integer",
+					description: "Frames per second of the video.",
+					default: 24,
+					enum: [24, 48],
+				},
+				{
+					name: "draft",
+					type: "boolean",
+					description: "Draft mode. Generates a lower-quality preview of the video.",
+					default: false,
+				},
+				{
+					name: "prompt_upsampling",
+					type: "boolean",
+					description: "Use prompt upsampling to enhance the prompt.",
+					default: true,
+				},
+				{
+					name: "disable_safety_filter",
+					type: "boolean",
+					description:
+						"Disable safety filter for prompts and input image. When disabled, prompts are not checked for unsafe content before generation.",
+					default: true,
+				},
+				{
+					name: "save_audio",
+					type: "boolean",
+					description: "Save the video with audio.",
+					default: true,
+				},
+				{
+					name: "seed",
+					type: "integer",
+					description: "Random seed. Set for reproducible generation.",
+				},
+				{
+					name: "no_op",
+					type: "boolean",
+					description: "Health check mode - returns status without inference.",
+					default: false,
 				},
 			],
 		},

@@ -112,6 +112,32 @@ describe("prepareCanvasInputForModel", () => {
 		});
 	});
 
+	it("maps image references to image_input array fields", () => {
+		const modelWithImageInput: ModelConfigItem = {
+			...imageModel,
+			inputSchema: {
+				fields: [
+					{ name: "prompt", type: "string", required: true },
+					{ name: "image_input", type: "array" },
+				],
+			},
+		};
+
+		const result = prepareCanvasInputForModel({
+			model: modelWithImageInput,
+			request: {
+				mode: "image",
+				prompt: "A cat",
+				referenceImages: ["https://example.com/ref-1.png", "https://example.com/ref-2.png"],
+			},
+		});
+
+		expect(result).toEqual({
+			prompt: "A cat",
+			image_input: ["https://example.com/ref-1.png", "https://example.com/ref-2.png"],
+		});
+	});
+
 	it("maps schema-driven model options and ignores reserved or unsupported options", () => {
 		const modelWithOptions: ModelConfigItem = {
 			...imageModel,
