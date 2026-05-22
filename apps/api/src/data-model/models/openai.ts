@@ -405,6 +405,15 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		includedInRouter: true,
 		supportsArtifacts: true,
 		supportsResponseFormat: true,
+
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "low", "medium", "high"],
+			defaultEffort: "medium",
+		},
+		verbosityConfig: {
+			supportedVerbosityLevels: ["low", "medium", "high"],
+			defaultVerbosity: "medium",
+		},
 	}),
 	createModelConfig("gpt-5-mini", PROVIDER, {
 		name: "GPT-5 Mini",
@@ -436,6 +445,15 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		includedInRouter: true,
 		supportsArtifacts: true,
 		supportsResponseFormat: true,
+
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "low", "medium", "high"],
+			defaultEffort: "medium",
+		},
+		verbosityConfig: {
+			supportedVerbosityLevels: ["low", "medium", "high"],
+			defaultVerbosity: "medium",
+		},
 	}),
 	createModelConfig("gpt-5-nano", PROVIDER, {
 		name: "GPT-5 Nano",
@@ -467,6 +485,15 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		includedInRouter: true,
 		supportsArtifacts: true,
 		supportsResponseFormat: true,
+
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "low", "medium", "high"],
+			defaultEffort: "medium",
+		},
+		verbosityConfig: {
+			supportedVerbosityLevels: ["low", "medium", "high"],
+			defaultVerbosity: "medium",
+		},
 	}),
 
 	createModelConfig("gpt-5.2", PROVIDER, {
@@ -494,6 +521,11 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		reliability: 5,
 		speed: 4,
 		multimodal: true,
+		includedInRouter: true,
+		supportsArtifacts: true,
+		isFeatured: false,
+		supportsResponseFormat: true,
+
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "low", "medium", "high"],
 			defaultEffort: "medium",
@@ -502,10 +534,6 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 			supportedVerbosityLevels: ["low", "medium", "high"],
 			defaultVerbosity: "medium",
 		},
-		includedInRouter: true,
-		supportsArtifacts: true,
-		isFeatured: false,
-		supportsResponseFormat: true,
 	}),
 	createModelConfig("gpt-5.2-chat", PROVIDER, {
 		name: "GPT-5.2 Chat",
@@ -532,6 +560,11 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		reliability: 5,
 		speed: 4,
 		multimodal: true,
+		includedInRouter: true,
+		supportsArtifacts: true,
+		isFeatured: false,
+		supportsResponseFormat: true,
+
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "low", "medium", "high"],
 			defaultEffort: "medium",
@@ -540,10 +573,6 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 			supportedVerbosityLevels: ["low", "medium", "high"],
 			defaultVerbosity: "medium",
 		},
-		includedInRouter: true,
-		supportsArtifacts: true,
-		isFeatured: false,
-		supportsResponseFormat: true,
 	}),
 
 	createModelConfig("gpt-5.1-codex", PROVIDER, {
@@ -572,6 +601,11 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		reliability: 5,
 		speed: 4,
 		multimodal: true,
+		includedInRouter: true,
+		supportsArtifacts: true,
+		isFeatured: false,
+		supportsResponseFormat: true,
+
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "low", "medium", "high"],
 			defaultEffort: "medium",
@@ -580,10 +614,6 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 			supportedVerbosityLevels: ["low", "medium", "high"],
 			defaultVerbosity: "medium",
 		},
-		includedInRouter: true,
-		supportsArtifacts: true,
-		isFeatured: false,
-		supportsResponseFormat: true,
 	}),
 	createModelConfig("gpt-5.1-codex-mini", PROVIDER, {
 		name: "GPT-5.1 Codex mini",
@@ -611,6 +641,11 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		reliability: 5,
 		speed: 5,
 		multimodal: true,
+		includedInRouter: true,
+		supportsArtifacts: true,
+		isFeatured: false,
+		supportsResponseFormat: true,
+
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "low", "medium", "high"],
 			defaultEffort: "medium",
@@ -619,10 +654,6 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 			supportedVerbosityLevels: ["low", "medium", "high"],
 			defaultVerbosity: "medium",
 		},
-		includedInRouter: true,
-		supportsArtifacts: true,
-		isFeatured: false,
-		supportsResponseFormat: true,
 	}),
 
 	createModelConfig("gpt-image-1", PROVIDER, {
@@ -860,6 +891,15 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.00125,
 		costPer1kOutputTokens: 0.01,
+
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "low", "medium", "high"],
+			defaultEffort: "medium",
+		},
+		verbosityConfig: {
+			supportedVerbosityLevels: ["low", "medium", "high"],
+			defaultVerbosity: "medium",
+		},
 	}),
 
 	createModelConfig("gpt-5-codex", PROVIDER, {
@@ -880,6 +920,15 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.00125,
 		costPer1kOutputTokens: 0.01,
+
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "low", "medium", "high"],
+			defaultEffort: "medium",
+		},
+		verbosityConfig: {
+			supportedVerbosityLevels: ["low", "medium", "high"],
+			defaultVerbosity: "medium",
+		},
 	}),
 
 	createModelConfig("gpt-5-pro", PROVIDER, {
@@ -900,6 +949,15 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 272000,
 		costPer1kInputTokens: 0.015,
 		costPer1kOutputTokens: 0.12,
+
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "low", "medium", "high"],
+			defaultEffort: "medium",
+		},
+		verbosityConfig: {
+			supportedVerbosityLevels: ["low", "medium", "high"],
+			defaultVerbosity: "medium",
+		},
 	}),
 
 	createModelConfig("gpt-5.1", PROVIDER, {
@@ -920,6 +978,15 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.00125,
 		costPer1kOutputTokens: 0.01,
+
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "low", "medium", "high"],
+			defaultEffort: "medium",
+		},
+		verbosityConfig: {
+			supportedVerbosityLevels: ["low", "medium", "high"],
+			defaultVerbosity: "medium",
+		},
 	}),
 
 	createModelConfig("gpt-5.1-chat-latest", PROVIDER, {
@@ -940,6 +1007,15 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00125,
 		costPer1kOutputTokens: 0.01,
+
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "low", "medium", "high"],
+			defaultEffort: "medium",
+		},
+		verbosityConfig: {
+			supportedVerbosityLevels: ["low", "medium", "high"],
+			defaultVerbosity: "medium",
+		},
 	}),
 
 	createModelConfig("gpt-5.1-codex-max", PROVIDER, {
@@ -960,6 +1036,15 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.00125,
 		costPer1kOutputTokens: 0.01,
+
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "low", "medium", "high"],
+			defaultEffort: "medium",
+		},
+		verbosityConfig: {
+			supportedVerbosityLevels: ["low", "medium", "high"],
+			defaultVerbosity: "medium",
+		},
 	}),
 
 	createModelConfig("gpt-5.2-codex", PROVIDER, {
@@ -980,6 +1065,15 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.00175,
 		costPer1kOutputTokens: 0.014,
+
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "low", "medium", "high"],
+			defaultEffort: "medium",
+		},
+		verbosityConfig: {
+			supportedVerbosityLevels: ["low", "medium", "high"],
+			defaultVerbosity: "medium",
+		},
 	}),
 
 	createModelConfig("gpt-5.2-pro", PROVIDER, {
@@ -1000,6 +1094,15 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.021,
 		costPer1kOutputTokens: 0.168,
+
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "low", "medium", "high"],
+			defaultEffort: "medium",
+		},
+		verbosityConfig: {
+			supportedVerbosityLevels: ["low", "medium", "high"],
+			defaultVerbosity: "medium",
+		},
 	}),
 
 	createModelConfig("gpt-5.3-codex", PROVIDER, {
@@ -1020,6 +1123,15 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.00175,
 		costPer1kOutputTokens: 0.014,
+
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "low", "medium", "high"],
+			defaultEffort: "medium",
+		},
+		verbosityConfig: {
+			supportedVerbosityLevels: ["low", "medium", "high"],
+			defaultVerbosity: "medium",
+		},
 	}),
 
 	createModelConfig("gpt-5.3-codex-spark", PROVIDER, {
@@ -1040,6 +1152,15 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 32000,
 		costPer1kInputTokens: 0.00175,
 		costPer1kOutputTokens: 0.014,
+
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "low", "medium", "high"],
+			defaultEffort: "medium",
+		},
+		verbosityConfig: {
+			supportedVerbosityLevels: ["low", "medium", "high"],
+			defaultVerbosity: "medium",
+		},
 	}),
 
 	createModelConfig("o1-mini", PROVIDER, {
@@ -1249,6 +1370,15 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00175,
 		costPer1kOutputTokens: 0.014,
+
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "low", "medium", "high"],
+			defaultEffort: "medium",
+		},
+		verbosityConfig: {
+			supportedVerbosityLevels: ["low", "medium", "high"],
+			defaultVerbosity: "medium",
+		},
 	}),
 
 	createModelConfig("gpt-5.4", PROVIDER, {
@@ -1269,6 +1399,15 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.0025,
 		costPer1kOutputTokens: 0.015,
+
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "low", "medium", "high"],
+			defaultEffort: "medium",
+		},
+		verbosityConfig: {
+			supportedVerbosityLevels: ["low", "medium", "high"],
+			defaultVerbosity: "medium",
+		},
 	}),
 
 	createModelConfig("gpt-5.4-mini", PROVIDER, {
@@ -1290,6 +1429,15 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		costPer1kInputTokens: 0.00075,
 		costPer1kOutputTokens: 0.0045,
 		isFeatured: true,
+
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "low", "medium", "high"],
+			defaultEffort: "medium",
+		},
+		verbosityConfig: {
+			supportedVerbosityLevels: ["low", "medium", "high"],
+			defaultVerbosity: "medium",
+		},
 	}),
 
 	createModelConfig("gpt-5.4-nano", PROVIDER, {
@@ -1310,6 +1458,15 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.0002,
 		costPer1kOutputTokens: 0.00125,
+
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "low", "medium", "high"],
+			defaultEffort: "medium",
+		},
+		verbosityConfig: {
+			supportedVerbosityLevels: ["low", "medium", "high"],
+			defaultVerbosity: "medium",
+		},
 	}),
 
 	createModelConfig("gpt-5.4-pro", PROVIDER, {
@@ -1331,6 +1488,15 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		costPer1kInputTokens: 0.03,
 		costPer1kOutputTokens: 0.18,
 		isFeatured: true,
+
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "low", "medium", "high"],
+			defaultEffort: "medium",
+		},
+		verbosityConfig: {
+			supportedVerbosityLevels: ["low", "medium", "high"],
+			defaultVerbosity: "medium",
+		},
 	}),
 
 	createModelConfig("gpt-5.5", PROVIDER, {
@@ -1352,6 +1518,15 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		costPer1kInputTokens: 0.005,
 		costPer1kOutputTokens: 0.03,
 		isFeatured: true,
+
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "low", "medium", "high"],
+			defaultEffort: "medium",
+		},
+		verbosityConfig: {
+			supportedVerbosityLevels: ["low", "medium", "high"],
+			defaultVerbosity: "medium",
+		},
 	}),
 
 	createModelConfig("gpt-5.5-pro", PROVIDER, {
@@ -1372,6 +1547,15 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.03,
 		costPer1kOutputTokens: 0.18,
+
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "low", "medium", "high"],
+			defaultEffort: "medium",
+		},
+		verbosityConfig: {
+			supportedVerbosityLevels: ["low", "medium", "high"],
+			defaultVerbosity: "medium",
+		},
 	}),
 
 	createModelConfig("gpt-realtime-whisper", PROVIDER, {
