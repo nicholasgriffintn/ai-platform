@@ -1,5 +1,7 @@
 import {
 	Bot,
+	ChevronDown,
+	ChevronUp,
 	Cloud,
 	Computer,
 	Filter,
@@ -25,6 +27,7 @@ import {
 	getFeaturedModelIds,
 	getModelsByMode,
 } from "~/lib/models";
+import { hasProviderReasoningOptions } from "~/lib/reasoning";
 import {
 	useIsLoading,
 	useLoadingMessage,
@@ -117,7 +120,7 @@ function HoverPreview({ preview }: { preview: HoverPreviewState | null }) {
 		new Set(
 			[
 				model.supportsToolCalls ? "Tool Calling" : null,
-				model.reasoningConfig?.enabled ? "Reasoning" : null,
+				hasProviderReasoningOptions(model) ? "Reasoning" : null,
 				model.supportsSearchGrounding ? "Web Grounding" : null,
 				model.supportsCodeExecution ? "Code Execution" : null,
 				model.supportsAudio ? "Audio" : null,
@@ -589,6 +592,11 @@ export const ModelSelector = ({
 							</span>
 						)}
 					</>
+				)}
+				{isOpen ? (
+					<ChevronUp className="h-3.5 w-3.5 flex-shrink-0" aria-hidden="true" />
+				) : (
+					<ChevronDown className="h-3.5 w-3.5 flex-shrink-0" aria-hidden="true" />
 				)}
 			</button>
 

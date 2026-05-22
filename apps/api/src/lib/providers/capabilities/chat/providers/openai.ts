@@ -1,4 +1,6 @@
 import { getModelConfigByMatchingModel } from "~/lib/providers/models";
+import { shouldSendProviderReasoningEffort } from "~/lib/providers/models/reasoning";
+import { shouldSendProviderVerbosity } from "~/lib/providers/models/verbosity";
 import type { StorageService } from "~/lib/storage";
 import type { ChatCompletionParameters } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -196,15 +198,16 @@ export class OpenAIProvider extends BaseProvider {
 			modelConfig?.supportsToolCalls && allTools.length > 0 ? { tools: allTools } : {};
 
 		const reasoningEffort = params.reasoning_effort;
-		const thinkingParams =
-			modelConfig?.reasoningConfig?.enabled && reasoningEffort
-				? {
-						reasoning_effort: reasoningEffort,
-					}
-				: {};
+		const thinkingParams = shouldSendProviderReasoningEffort(modelConfig, reasoningEffort)
+			? {
+					reasoning_effort: reasoningEffort,
+				}
+			: {};
 
 		const verbositySetting = params.verbosity;
-		const verbosityParams = verbositySetting ? { verbosity: verbositySetting } : {};
+		const verbosityParams = shouldSendProviderVerbosity(modelConfig, verbositySetting)
+			? { verbosity: verbositySetting }
+			: {};
 
 		let modelSpecificParams = {};
 

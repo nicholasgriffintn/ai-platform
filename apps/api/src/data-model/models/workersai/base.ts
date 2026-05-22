@@ -65,9 +65,6 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 	"@cf/moonshotai/kimi-k2.5": {
 		name: "Moonshot Kimi K2.5",
@@ -80,9 +77,6 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 		modalities: {
 			input: ["text", "image"],
 			output: ["text"],
-		},
-		reasoningConfig: {
-			enabled: true,
 		},
 		contextWindow: 256000,
 		knowledgeCutoffDate: "January 2025",
@@ -105,9 +99,6 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 		modalities: {
 			input: ["text", "image"],
 			output: ["text"],
-		},
-		reasoningConfig: {
-			enabled: true,
 		},
 		contextWindow: 262144,
 		supportsTemperature: true,
@@ -144,9 +135,6 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 		maxTokens: 24000,
 		costPer1kInputTokens: 0.000293,
 		costPer1kOutputTokens: 0.002253,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 	"llama-3.2-1b-instruct": {
 		name: "Llama 3.2 1B Instruct",
@@ -171,9 +159,6 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 		maxTokens: 60000,
 		costPer1kInputTokens: 0.000027,
 		costPer1kOutputTokens: 0.000201,
-		reasoningConfig: {
-			enabled: false,
-		},
 		supportsResponseFormat: false,
 	},
 	"llama-3.2-3b-instruct": {
@@ -199,9 +184,6 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 		maxTokens: 80000,
 		costPer1kInputTokens: 0.0000509,
 		costPer1kOutputTokens: 0.000335,
-		reasoningConfig: {
-			enabled: false,
-		},
 		supportsResponseFormat: false,
 	},
 	"llama-3.1-70b-instruct": {
@@ -227,7 +209,6 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 			"Meta's Llama 4 Scout is a 17 billion parameter model with 16 experts that is natively multimodal. These models leverage a mixture-of-experts architecture to offer industry-leading performance in text and image understanding.",
 		provider: "workers-ai",
 		supportsToolCalls: true,
-		isFeatured: true,
 		multimodal: true,
 		strengths: ["vision", "reasoning", "instruction", "general_knowledge", "chat"],
 		speed: 4,
@@ -245,9 +226,6 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00027,
 		costPer1kOutputTokens: 0.00085,
-		reasoningConfig: {
-			enabled: false,
-		},
 		supportsResponseFormat: false,
 	},
 	"hermes-2-pro-mistral-7b": {
@@ -280,6 +258,7 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 		reliability: 4,
 		contextComplexity: 3,
 		multimodal: true,
+		isFeatured: true,
 		modalities: {
 			input: ["image"],
 			output: ["text"],
@@ -325,6 +304,7 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 		speed: 4,
 		reliability: 4,
 		contextComplexity: 3,
+		isFeatured: true,
 		modalities: {
 			input: ["text"],
 			output: ["image"],
@@ -466,9 +446,6 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.000067,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 	"bge-large-en-v1.5": {
 		name: "BGE Large EN v1.5",
@@ -491,9 +468,6 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.0002,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 	"bge-m3": {
 		name: "BGE M3",
@@ -518,9 +492,6 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.000012,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 	"bge-reranker-base": {
 		name: "BGE Reranker Base",
@@ -545,9 +516,6 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.0000031,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 	"gemma-3-12b-it": {
 		name: "Gemma 3 12B IT",
@@ -574,9 +542,6 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 		maxTokens: 80000,
 		costPer1kInputTokens: 0.000345,
 		costPer1kOutputTokens: 0.000556,
-		reasoningConfig: {
-			enabled: false,
-		},
 		supportsResponseFormat: false,
 	},
 	"gemma-4-26b-a4b-it": {
@@ -599,9 +564,6 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 		supportsToolCalls: true,
 		costPer1kInputTokens: 0.0001,
 		costPer1kOutputTokens: 0.0003,
-		reasoningConfig: {
-			enabled: true,
-		},
 		supportsResponseFormat: true,
 	},
 	"qwq-32b": {
@@ -615,7 +577,6 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 		speed: 3,
 		reliability: 5,
 		contextComplexity: 5,
-		reasoningConfig: { enabled: true },
 		modalities: {
 			input: ["text"],
 			output: ["text"],
@@ -625,6 +586,7 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 		supportsAttachments: false,
 		supportsTemperature: true,
 		supportsToolCalls: false,
+		isFeatured: true,
 		contextWindow: 24000,
 		maxTokens: 24000,
 		costPer1kInputTokens: 0.00066,
@@ -655,9 +617,6 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.00066,
 		costPer1kOutputTokens: 0.001,
-		reasoningConfig: {
-			enabled: false,
-		},
 		supportsResponseFormat: false,
 	},
 	"@cf/meta/llama-guard-3-8b": {
@@ -678,9 +637,6 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.000484,
 		costPer1kOutputTokens: 0.00003,
-		reasoningConfig: {
-			enabled: false,
-		},
 		supportsResponseFormat: false,
 	},
 	"lucid-origin": {
@@ -751,9 +707,6 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 	"smart-turn-v2": {
 		name: "Pipecat Smart Turn v2",
@@ -778,9 +731,6 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 	"embeddinggemma-300m": {
 		name: "EmbeddingGemma 300M",
@@ -812,9 +762,6 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00034,
 		costPer1kOutputTokens: 0.00034,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"@cf/aisingapore/gemma-sea-lion-v4-27b-it": {
@@ -834,9 +781,6 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.000351,
 		costPer1kOutputTokens: 0.000555,
-		reasoningConfig: {
-			enabled: false,
-		},
 		supportsResponseFormat: false,
 	},
 
@@ -857,9 +801,6 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00002,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"@cf/deepgram/aura-2-en": {
@@ -879,9 +820,6 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"@cf/deepgram/aura-2-es": {
@@ -901,9 +839,6 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"@cf/deepseek-ai/deepseek-r1-distill-qwen-32b": {
@@ -923,9 +858,6 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 		maxTokens: 80000,
 		costPer1kInputTokens: 0.000497,
 		costPer1kOutputTokens: 0.004881,
-		reasoningConfig: {
-			enabled: false,
-		},
 		supportsResponseFormat: false,
 	},
 
@@ -946,9 +878,6 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"@cf/huggingface/distilbert-sst-2-int8": {
@@ -968,9 +897,6 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.000026,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"@cf/ibm-granite/granite-4.0-h-micro": {
@@ -990,9 +916,6 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 		maxTokens: 131000,
 		costPer1kInputTokens: 0.000017,
 		costPer1kOutputTokens: 0.000112,
-		reasoningConfig: {
-			enabled: false,
-		},
 		supportsResponseFormat: false,
 	},
 
@@ -1013,9 +936,6 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 		maxTokens: 4096,
 		costPer1kInputTokens: 0.000556,
 		costPer1kOutputTokens: 0.006667,
-		reasoningConfig: {
-			enabled: false,
-		},
 		supportsResponseFormat: false,
 	},
 
@@ -1036,9 +956,6 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 		maxTokens: 7968,
 		costPer1kInputTokens: 0.000282,
 		costPer1kOutputTokens: 0.000827,
-		reasoningConfig: {
-			enabled: false,
-		},
 		supportsResponseFormat: false,
 	},
 
@@ -1059,9 +976,6 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 		maxTokens: 8192,
 		costPer1kInputTokens: 0.000123,
 		costPer1kOutputTokens: 0.000266,
-		reasoningConfig: {
-			enabled: false,
-		},
 		supportsResponseFormat: false,
 	},
 
@@ -1082,9 +996,6 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00028,
 		costPer1kOutputTokens: 0.00083,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"@cf/meta/llama-3.1-8b-instruct-awq": {
@@ -1104,9 +1015,6 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 		maxTokens: 8192,
 		costPer1kInputTokens: 0.000123,
 		costPer1kOutputTokens: 0.000266,
-		reasoningConfig: {
-			enabled: false,
-		},
 		supportsResponseFormat: false,
 	},
 
@@ -1127,9 +1035,6 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 		maxTokens: 32000,
 		costPer1kInputTokens: 0.000152,
 		costPer1kOutputTokens: 0.000287,
-		reasoningConfig: {
-			enabled: false,
-		},
 		supportsResponseFormat: false,
 	},
 
@@ -1150,9 +1055,6 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.0000485,
 		costPer1kOutputTokens: 0.000676,
-		reasoningConfig: {
-			enabled: false,
-		},
 		supportsResponseFormat: false,
 	},
 
@@ -1173,9 +1075,6 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00034,
 		costPer1kOutputTokens: 0.00034,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"@cf/mistral/mistral-7b-instruct-v0.1": {
@@ -1195,9 +1094,6 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 		maxTokens: 2824,
 		costPer1kInputTokens: 0.00011,
 		costPer1kOutputTokens: 0.00019,
-		reasoningConfig: {
-			enabled: false,
-		},
 		supportsResponseFormat: false,
 	},
 
@@ -1218,9 +1114,6 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.000351,
 		costPer1kOutputTokens: 0.000555,
-		reasoningConfig: {
-			enabled: false,
-		},
 		supportsResponseFormat: false,
 	},
 
@@ -1243,9 +1136,6 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 		maxTokens: 256000,
 		costPer1kInputTokens: 0.0005,
 		costPer1kOutputTokens: 0.0015,
-		reasoningConfig: {
-			enabled: true,
-		},
 		supportsResponseFormat: true,
 	},
 
@@ -1265,13 +1155,11 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 		releaseDate: "January 19, 2026",
 		lastUpdated: "January 19, 2026",
 		supportsAttachments: false,
+		isFeatured: true,
 		supportsTemperature: true,
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.0000605,
 		costPer1kOutputTokens: 0.0004,
-		reasoningConfig: {
-			enabled: true,
-		},
 		supportsResponseFormat: true,
 	},
 
@@ -1288,13 +1176,11 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 		supportsAttachments: false,
 		supportsTemperature: true,
 		supportsToolCalls: true,
+		isFeatured: true,
 		contextWindow: 128000,
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00035,
 		costPer1kOutputTokens: 0.00075,
-		reasoningConfig: {
-			enabled: false,
-		},
 		supportsResponseFormat: true,
 	},
 
@@ -1311,13 +1197,11 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 		supportsAttachments: false,
 		supportsTemperature: true,
 		supportsToolCalls: true,
+		isFeatured: true,
 		contextWindow: 128000,
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.0002,
 		costPer1kOutputTokens: 0.0003,
-		reasoningConfig: {
-			enabled: false,
-		},
 		supportsResponseFormat: true,
 	},
 
@@ -1338,9 +1222,6 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.000019,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"@cf/qwen/qwen3-30b-a3b-fp8": {
@@ -1356,13 +1237,11 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 		supportsAttachments: false,
 		supportsTemperature: true,
 		supportsToolCalls: true,
+		isFeatured: true,
 		contextWindow: 32768,
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.0000509,
 		costPer1kOutputTokens: 0.000335,
-		reasoningConfig: {
-			enabled: false,
-		},
 		supportsResponseFormat: false,
 	},
 
@@ -1383,8 +1262,5 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.000012,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 };

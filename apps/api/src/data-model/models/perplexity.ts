@@ -29,9 +29,6 @@ export const perplexityModelConfig: ModelConfig = {
 		supportsToolCalls: false,
 		contextWindow: 128000,
 		maxTokens: 32768,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 	"sonar-reasoning-pro": {
 		name: "Sonar Reasoning Pro",
@@ -59,9 +56,6 @@ export const perplexityModelConfig: ModelConfig = {
 		supportsToolCalls: false,
 		contextWindow: 128000,
 		maxTokens: 4096,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 	"sonar-reasoning": {
 		name: "Perplexity Sonar Reasoning",
@@ -109,9 +103,6 @@ export const perplexityModelConfig: ModelConfig = {
 		supportsToolCalls: false,
 		contextWindow: 200000,
 		maxTokens: 8192,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 	sonar: {
 		name: "Sonar",
@@ -139,9 +130,6 @@ export const perplexityModelConfig: ModelConfig = {
 		supportsToolCalls: false,
 		contextWindow: 128000,
 		maxTokens: 4096,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 	"r1-1776": {
 		name: "Perplexity R1 1776",

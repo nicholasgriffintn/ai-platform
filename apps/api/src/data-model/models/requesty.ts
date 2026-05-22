@@ -18,7 +18,6 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 		},
 		supportsAttachments: true,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: false },
 		supportsToolCalls: true,
 		contextWindow: 1047576,
 		maxTokens: 32768,
@@ -48,7 +47,6 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 		},
 		supportsAttachments: true,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: true },
 		supportsToolCalls: true,
 		contextWindow: 200000,
 		maxTokens: 100000,
@@ -78,7 +76,6 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 		},
 		supportsAttachments: true,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: false },
 		supportsToolCalls: true,
 		contextWindow: 128000,
 		maxTokens: 16384,
@@ -108,7 +105,6 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 		},
 		supportsAttachments: true,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: false },
 		supportsToolCalls: true,
 		contextWindow: 1047576,
 		maxTokens: 32768,
@@ -138,7 +134,6 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 		},
 		supportsAttachments: true,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: true },
 		supportsToolCalls: true,
 		contextWindow: 200000,
 		maxTokens: 64000,
@@ -168,7 +163,6 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 		},
 		supportsAttachments: true,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: true },
 		supportsToolCalls: true,
 		contextWindow: 200000,
 		maxTokens: 64000,
@@ -198,7 +192,6 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 		},
 		supportsAttachments: true,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: true },
 		supportsToolCalls: true,
 		contextWindow: 200000,
 		maxTokens: 32000,
@@ -227,7 +220,6 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 		},
 		supportsAttachments: true,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: true },
 		supportsToolCalls: true,
 		contextWindow: 200000,
 		maxTokens: 32000,
@@ -257,7 +249,6 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 		},
 		supportsAttachments: true,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: true },
 		supportsToolCalls: true,
 		contextWindow: 1048576,
 		maxTokens: 65536,
@@ -288,7 +279,6 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 		},
 		supportsAttachments: true,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: true },
 		supportsToolCalls: true,
 		contextWindow: 1048576,
 		maxTokens: 65536,
@@ -321,9 +311,6 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 62000,
 		costPer1kInputTokens: 0.001,
 		costPer1kOutputTokens: 0.005,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("anthropic/claude-opus-4-1", PROVIDER, {
@@ -343,9 +330,6 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 32000,
 		costPer1kInputTokens: 0.015,
 		costPer1kOutputTokens: 0.075,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("anthropic/claude-opus-4-5", PROVIDER, {
@@ -365,9 +349,6 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 64000,
 		costPer1kInputTokens: 0.005,
 		costPer1kOutputTokens: 0.025,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("anthropic/claude-sonnet-4", PROVIDER, {
@@ -387,9 +368,6 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 64000,
 		costPer1kInputTokens: 0.003,
 		costPer1kOutputTokens: 0.015,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("anthropic/claude-sonnet-4-5", PROVIDER, {
@@ -409,9 +387,6 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 64000,
 		costPer1kInputTokens: 0.003,
 		costPer1kOutputTokens: 0.015,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("google/gemini-3-flash-preview", PROVIDER, {
@@ -431,9 +406,6 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.0005,
 		costPer1kOutputTokens: 0.003,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("google/gemini-3-pro-preview", PROVIDER, {
@@ -453,9 +425,6 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.002,
 		costPer1kOutputTokens: 0.012,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("openai/gpt-5", PROVIDER, {
@@ -475,9 +444,6 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.00125,
 		costPer1kOutputTokens: 0.01,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("openai/gpt-5-mini", PROVIDER, {
@@ -497,9 +463,6 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 32000,
 		costPer1kInputTokens: 0.00025,
 		costPer1kOutputTokens: 0.002,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("openai/gpt-5-nano", PROVIDER, {
@@ -519,9 +482,6 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 4000,
 		costPer1kInputTokens: 0.00005,
 		costPer1kOutputTokens: 0.0004,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("xai/grok-4", PROVIDER, {
@@ -541,9 +501,6 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 64000,
 		costPer1kInputTokens: 0.003,
 		costPer1kOutputTokens: 0.015,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("xai/grok-4-fast", PROVIDER, {
@@ -563,9 +520,6 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 64000,
 		costPer1kInputTokens: 0.0002,
 		costPer1kOutputTokens: 0.0005,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 	createModelConfig("anthropic/claude-opus-4-6", PROVIDER, {
 		name: "Claude Opus 4.6",
@@ -585,9 +539,6 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.005,
 		costPer1kOutputTokens: 0.025,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("anthropic/claude-sonnet-4-6", PROVIDER, {
@@ -608,9 +559,6 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.003,
 		costPer1kOutputTokens: 0.015,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("openai/gpt-5-chat", PROVIDER, {
@@ -631,9 +579,6 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.00125,
 		costPer1kOutputTokens: 0.01,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("openai/gpt-5-codex", PROVIDER, {
@@ -654,9 +599,6 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.00125,
 		costPer1kOutputTokens: 0.01,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("openai/gpt-5-image", PROVIDER, {
@@ -677,9 +619,6 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.005,
 		costPer1kOutputTokens: 0.01,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("openai/gpt-5-pro", PROVIDER, {
@@ -700,9 +639,6 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 272000,
 		costPer1kInputTokens: 0.015,
 		costPer1kOutputTokens: 0.12,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("openai/gpt-5.1", PROVIDER, {
@@ -723,9 +659,6 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.00125,
 		costPer1kOutputTokens: 0.01,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("openai/gpt-5.1-chat", PROVIDER, {
@@ -746,9 +679,6 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00125,
 		costPer1kOutputTokens: 0.01,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("openai/gpt-5.1-codex", PROVIDER, {
@@ -769,9 +699,6 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.00125,
 		costPer1kOutputTokens: 0.01,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("openai/gpt-5.1-codex-max", PROVIDER, {
@@ -792,9 +719,6 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.0011,
 		costPer1kOutputTokens: 0.009,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("openai/gpt-5.1-codex-mini", PROVIDER, {
@@ -815,9 +739,6 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 100000,
 		costPer1kInputTokens: 0.00025,
 		costPer1kOutputTokens: 0.002,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("openai/gpt-5.2", PROVIDER, {
@@ -838,9 +759,6 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.00175,
 		costPer1kOutputTokens: 0.014,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("openai/gpt-5.2-chat", PROVIDER, {
@@ -861,9 +779,6 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00175,
 		costPer1kOutputTokens: 0.014,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("openai/gpt-5.2-codex", PROVIDER, {
@@ -884,9 +799,6 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.00175,
 		costPer1kOutputTokens: 0.014,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("openai/gpt-5.2-pro", PROVIDER, {
@@ -907,9 +819,6 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.021,
 		costPer1kOutputTokens: 0.168,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("openai/gpt-5.3-codex", PROVIDER, {
@@ -930,9 +839,6 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.00175,
 		costPer1kOutputTokens: 0.014,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("openai/gpt-5.4", PROVIDER, {
@@ -953,9 +859,6 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.0025,
 		costPer1kOutputTokens: 0.015,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("openai/gpt-5.4-pro", PROVIDER, {
@@ -976,8 +879,5 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.03,
 		costPer1kOutputTokens: 0.18,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 ]);

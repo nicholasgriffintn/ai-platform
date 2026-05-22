@@ -40,7 +40,6 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		},
 		supportsAttachments: false,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: true },
 		supportsToolCalls: true,
 		contextWindow: 128000,
 		maxTokens: 128000,
@@ -53,7 +52,6 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		isFeatured: true,
 		includedInRouter: true,
 		supportsArtifacts: true,
-		requiresThinkingPrompt: true,
 	}),
 
 	createModelConfig("devstral-small", PROVIDER, {
@@ -69,7 +67,6 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		},
 		supportsAttachments: false,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: false },
 		supportsToolCalls: true,
 		contextWindow: 128000,
 		maxTokens: 128000,
@@ -98,7 +95,6 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		},
 		supportsAttachments: false,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: false },
 		supportsToolCalls: true,
 		contextWindow: 64000,
 		maxTokens: 64000,
@@ -126,7 +122,6 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		},
 		supportsAttachments: true,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: false },
 		supportsToolCalls: true,
 		card: "https://www.prompthub.us/models/mistral-large",
 		contextWindow: 262144,
@@ -156,7 +151,6 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		},
 		supportsAttachments: false,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: false },
 		supportsToolCalls: true,
 		contextWindow: 8000,
 		maxTokens: 8000,
@@ -184,7 +178,6 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		},
 		supportsAttachments: true,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: false },
 		supportsToolCalls: true,
 		card: "https://www.prompthub.us/models/pixtral",
 		contextWindow: 128000,
@@ -215,7 +208,6 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		},
 		supportsAttachments: true,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: false },
 		supportsToolCalls: true,
 		card: "https://www.prompthub.us/models/mistral-medium",
 		contextWindow: 262144,
@@ -247,7 +239,6 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		},
 		supportsAttachments: false,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: false },
 		supportsToolCalls: true,
 		card: "https://www.prompthub.us/models/codestral",
 		contextWindow: 256000,
@@ -278,7 +269,6 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		},
 		supportsAttachments: false,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: false },
 		supportsToolCalls: true,
 		contextWindow: 128000,
 		maxTokens: 128000,
@@ -307,7 +297,6 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		},
 		supportsAttachments: false,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: false },
 		supportsToolCalls: true,
 		contextWindow: 32000,
 		maxTokens: 32000,
@@ -334,7 +323,6 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		},
 		supportsAttachments: true,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: false },
 		supportsToolCalls: true,
 		contextWindow: 128000,
 		maxTokens: 128000,
@@ -363,7 +351,6 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		},
 		supportsAttachments: true,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: false },
 		supportsToolCalls: true,
 		card: "https://www.prompthub.us/models/mistral-small",
 		contextWindow: 256000,
@@ -391,7 +378,6 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		},
 		supportsAttachments: true,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: false },
 		supportsToolCalls: true,
 		contextWindow: 256000,
 		maxTokens: 256000,
@@ -418,7 +404,6 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		},
 		supportsAttachments: false,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: false },
 		supportsToolCalls: true,
 		contextWindow: 128000,
 		maxTokens: 128000,
@@ -448,7 +433,6 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		},
 		supportsAttachments: false,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: false },
 		supportsToolCalls: true,
 		contextWindow: 128000,
 		maxTokens: 128000,
@@ -480,7 +464,6 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		},
 		supportsAttachments: false,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: false },
 		supportsToolCalls: true,
 		contextWindow: 128000,
 		maxTokens: 128000,
@@ -509,7 +492,6 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		},
 		supportsAttachments: false,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: true },
 		supportsToolCalls: true,
 		contextWindow: 128000,
 		maxTokens: 16384,
@@ -522,7 +504,6 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		isFeatured: true,
 		includedInRouter: true,
 		supportsArtifacts: true,
-		requiresThinkingPrompt: true,
 	}),
 
 	createModelConfig("mistral-tiny", PROVIDER, {
@@ -539,7 +520,6 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		},
 		supportsAttachments: false,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: false },
 		supportsToolCalls: true,
 		card: "https://www.prompthub.us/models/mistral-nemo",
 		contextWindow: 128000,
@@ -634,9 +614,6 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 3072,
 		costPer1kInputTokens: 0.0001,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("codestral-embed", PROVIDER, {
@@ -675,9 +652,6 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 262144,
 		costPer1kInputTokens: 0.0004,
 		costPer1kOutputTokens: 0.002,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("devstral-medium-latest", PROVIDER, {
@@ -697,9 +671,6 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 262144,
 		costPer1kInputTokens: 0.0004,
 		costPer1kOutputTokens: 0.002,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("devstral-small-2505", PROVIDER, {
@@ -719,9 +690,6 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.0001,
 		costPer1kOutputTokens: 0.0003,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("devstral-small-2507", PROVIDER, {
@@ -741,9 +709,6 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.0001,
 		costPer1kOutputTokens: 0.0003,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("labs-devstral-small-2512", PROVIDER, {
@@ -763,9 +728,6 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 256000,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("mistral-large-2411", PROVIDER, {
@@ -785,9 +747,6 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.002,
 		costPer1kOutputTokens: 0.006,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("mistral-large-2512", PROVIDER, {
@@ -807,9 +766,6 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 262144,
 		costPer1kInputTokens: 0.0005,
 		costPer1kOutputTokens: 0.0015,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("mistral-medium-2505", PROVIDER, {
@@ -829,9 +785,6 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.0004,
 		costPer1kOutputTokens: 0.002,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("mistral-medium-2508", PROVIDER, {
@@ -851,9 +804,6 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 262144,
 		costPer1kInputTokens: 0.0004,
 		costPer1kOutputTokens: 0.002,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("mistral-nemo", PROVIDER, {
@@ -873,9 +823,6 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.00015,
 		costPer1kOutputTokens: 0.00015,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("mistral-small-2506", PROVIDER, {
@@ -895,9 +842,6 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.0001,
 		costPer1kOutputTokens: 0.0003,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 	createModelConfig("mistral-medium-2604", PROVIDER, {
 		name: "Mistral Medium 3.5",
@@ -916,9 +860,6 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 262144,
 		costPer1kInputTokens: 0.0015,
 		costPer1kOutputTokens: 0.0075,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("mistral-small-2603", PROVIDER, {
@@ -938,8 +879,5 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 256000,
 		costPer1kInputTokens: 0.00015,
 		costPer1kOutputTokens: 0.0006,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 ]);

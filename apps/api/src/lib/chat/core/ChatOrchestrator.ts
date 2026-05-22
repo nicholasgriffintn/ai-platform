@@ -105,7 +105,6 @@ export class ChatOrchestrator {
 			stop,
 			logit_bias,
 			metadata,
-			reasoning_effort,
 			verbosity,
 			store = true,
 			tools,
@@ -116,6 +115,7 @@ export class ChatOrchestrator {
 			current_step,
 			max_steps,
 		} = chatOptions;
+		const reasoning_effort = chatOptions.reasoning?.effort ?? chatOptions.reasoning_effort;
 
 		const startTime = Date.now();
 

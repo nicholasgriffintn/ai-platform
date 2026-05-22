@@ -18,7 +18,6 @@ export async function returnStandardPrompt(
 	userSettings?: IUserSettings,
 	supportsToolCalls?: boolean,
 	supportsArtifacts?: boolean,
-	requiresThinkingPrompt?: boolean,
 	modelMetadata?: PromptModelMetadata,
 ): Promise<string> {
 	try {
@@ -35,6 +34,8 @@ export async function returnStandardPrompt(
 		const longitude = request.location?.longitude || user?.longitude;
 		const date = request.date || new Date().toISOString().split("T")[0];
 		const verbosity = request.text?.verbosity ?? request.verbosity ?? "medium";
+		const reasoningEffort = request.reasoning?.effort ?? request.reasoning_effort ?? "none";
+		const simulatedThinking = reasoningEffort === "simulated-thinking";
 		const preferredLanguage = request.lang?.trim() || null;
 
 		const isAgent =
@@ -43,7 +44,7 @@ export async function returnStandardPrompt(
 		const capabilities = resolvePromptCapabilities({
 			supportsToolCalls,
 			supportsArtifacts,
-			requiresThinkingPrompt,
+			simulatedThinking,
 			modelMetadata,
 		});
 
@@ -57,8 +58,7 @@ export async function returnStandardPrompt(
 		const { traits, preferences, problemBreakdownInstructions, answerFormatInstructions } =
 			getResponseStyle(
 				verbosity,
-				capabilities.reasoningEnabled,
-				capabilities.requiresThinkingPrompt,
+				capabilities.simulatedThinking,
 				capabilities.supportsToolCalls,
 				capabilities.supportsArtifacts,
 				isAgent,
@@ -80,7 +80,7 @@ export async function returnStandardPrompt(
 			isAgent,
 			supportsToolCalls: capabilities.supportsToolCalls,
 			supportsArtifacts: capabilities.supportsArtifacts,
-			reasoningEnabled: capabilities.reasoningEnabled,
+			simulatedThinking: capabilities.simulatedThinking,
 			verbosity,
 			preferredLanguage,
 			format: layout.principlesFormat,
@@ -119,7 +119,7 @@ export async function returnStandardPrompt(
 		if (layout.exampleVariant !== "omit") {
 			builder.add(
 				buildStandardExampleOutputSection({
-					reasoningEnabled: capabilities.reasoningEnabled,
+					simulatedThinking: capabilities.simulatedThinking,
 					supportsArtifacts: capabilities.supportsArtifacts,
 					problemBreakdownInstructions,
 					answerFormatInstructions,

@@ -353,7 +353,17 @@ export class RequestPreparer {
 		userSettings: any,
 		memoriesEnabled: boolean,
 	): Promise<string> {
-		const { system_prompt, mode = "normal", verbosity, location, completion_id, user } = options;
+		const {
+			system_prompt,
+			mode = "normal",
+			verbosity,
+			reasoning,
+			reasoning_effort,
+			location,
+			completion_id,
+			user,
+		} = options;
+		const requestedReasoningEffort = reasoning?.effort ?? reasoning_effort;
 
 		const currentMode = mode;
 		const councilPrompt = buildCouncilSystemPrompt(options.options?.council);
@@ -386,6 +396,7 @@ export class RequestPreparer {
 				location,
 				mode: currentMode,
 				verbosity,
+				reasoning_effort: requestedReasoningEffort,
 			},
 			primaryModel,
 			user || undefined,

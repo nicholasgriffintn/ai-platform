@@ -17,7 +17,6 @@ export const groqModelConfig: ModelConfig = {
 		contextWindow: 128000,
 		maxTokens: 16384,
 		card: "https://huggingface.co/deepseek-ai/DeepSeek-R1-Distill-Qwen-32B",
-		reasoningConfig: { enabled: true },
 		includedInRouter: true,
 		costPer1kInputTokens: 0.0002,
 		costPer1kOutputTokens: 0.0003,
@@ -44,7 +43,6 @@ export const groqModelConfig: ModelConfig = {
 		contextWindow: 128000,
 		maxTokens: 16384,
 		card: "https://huggingface.co/deepseek-ai/DeepSeek-R1-Distill-Llama-70B",
-		reasoningConfig: { enabled: true },
 		includedInRouter: true,
 		costPer1kInputTokens: 0.0002,
 		costPer1kOutputTokens: 0.0004,
@@ -68,7 +66,6 @@ export const groqModelConfig: ModelConfig = {
 		},
 		supportsAttachments: false,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: false },
 		supportsToolCalls: true,
 		includedInRouter: true,
 		contextWindow: 8192,
@@ -94,7 +91,6 @@ export const groqModelConfig: ModelConfig = {
 		},
 		supportsAttachments: false,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: false },
 		supportsToolCalls: true,
 		includedInRouter: true,
 		contextWindow: 8192,
@@ -120,7 +116,6 @@ export const groqModelConfig: ModelConfig = {
 		},
 		supportsAttachments: false,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: false },
 		supportsToolCalls: true,
 		card: "https://www.prompthub.us/models/llama-3-3-70b",
 		contextWindow: 131072,
@@ -148,9 +143,8 @@ export const groqModelConfig: ModelConfig = {
 		},
 		supportsAttachments: false,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: false },
 		supportsToolCalls: true,
-		isFeatured: true,
+		isFeatured: false,
 		includedInRouter: true,
 		multimodal: true,
 		contextWindow: 131072,
@@ -185,7 +179,6 @@ export const groqModelConfig: ModelConfig = {
 		},
 		supportsAttachments: false,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: false },
 		supportsToolCalls: true,
 		contextWindow: 131072,
 		maxTokens: 131072,
@@ -211,7 +204,6 @@ export const groqModelConfig: ModelConfig = {
 		},
 		supportsAttachments: false,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: true },
 		supportsToolCalls: true,
 		contextWindow: 32768,
 		maxTokens: 32768,
@@ -237,7 +229,6 @@ export const groqModelConfig: ModelConfig = {
 		},
 		supportsAttachments: false,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: false },
 		supportsToolCalls: true,
 		contextWindow: 8192,
 		maxTokens: 8192,
@@ -263,7 +254,6 @@ export const groqModelConfig: ModelConfig = {
 		},
 		supportsAttachments: false,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: true },
 		supportsToolCalls: true,
 		contextWindow: 8192,
 		maxTokens: 8192,
@@ -290,7 +280,6 @@ export const groqModelConfig: ModelConfig = {
 		},
 		supportsAttachments: false,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: true },
 		supportsToolCalls: true,
 		contextWindow: 131072,
 		maxTokens: 65536,
@@ -300,6 +289,7 @@ export const groqModelConfig: ModelConfig = {
 		contextComplexity: 4,
 		reliability: 4,
 		speed: 4,
+		isFeatured: true,
 		includedInRouter: true,
 		supportsArtifacts: true,
 		supportsResponseFormat: true,
@@ -318,7 +308,6 @@ export const groqModelConfig: ModelConfig = {
 		},
 		supportsAttachments: false,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: true },
 		supportsToolCalls: true,
 		contextWindow: 131072,
 		maxTokens: 65536,
@@ -328,6 +317,7 @@ export const groqModelConfig: ModelConfig = {
 		contextComplexity: 5,
 		reliability: 4,
 		speed: 2,
+		isFeatured: true,
 		includedInRouter: true,
 		supportsArtifacts: true,
 		supportsResponseFormat: true,
@@ -351,9 +341,6 @@ export const groqModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.001,
 		costPer1kOutputTokens: 0.003,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"qwen/qwen3-32b": {
@@ -374,9 +361,6 @@ export const groqModelConfig: ModelConfig = {
 		maxTokens: 40960,
 		costPer1kInputTokens: 0.00029,
 		costPer1kOutputTokens: 0.00059,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 	"allam-2-7b": {
 		name: "ALLaM-2-7b",
@@ -396,9 +380,6 @@ export const groqModelConfig: ModelConfig = {
 		maxTokens: 4096,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"canopylabs/orpheus-arabic-saudi": {
@@ -419,9 +400,6 @@ export const groqModelConfig: ModelConfig = {
 		maxTokens: 50000,
 		costPer1kInputTokens: 0.04,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"canopylabs/orpheus-v1-english": {
@@ -442,9 +420,6 @@ export const groqModelConfig: ModelConfig = {
 		maxTokens: 50000,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"groq/compound": {
@@ -465,9 +440,7 @@ export const groqModelConfig: ModelConfig = {
 		maxTokens: 8192,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: true,
-		},
+		isFeatured: true,
 	},
 
 	"groq/compound-mini": {
@@ -488,9 +461,6 @@ export const groqModelConfig: ModelConfig = {
 		maxTokens: 8192,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"meta-llama/llama-prompt-guard-2-22m": {
@@ -511,9 +481,6 @@ export const groqModelConfig: ModelConfig = {
 		maxTokens: 512,
 		costPer1kInputTokens: 0.00003,
 		costPer1kOutputTokens: 0.00003,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"meta-llama/llama-prompt-guard-2-86m": {
@@ -534,9 +501,6 @@ export const groqModelConfig: ModelConfig = {
 		maxTokens: 512,
 		costPer1kInputTokens: 0.00004,
 		costPer1kOutputTokens: 0.00004,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"openai/gpt-oss-safeguard-20b": {
@@ -556,9 +520,6 @@ export const groqModelConfig: ModelConfig = {
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.000075,
 		costPer1kOutputTokens: 0.0003,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"whisper-large-v3": {
@@ -579,9 +540,6 @@ export const groqModelConfig: ModelConfig = {
 		maxTokens: 448,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"whisper-large-v3-turbo": {
@@ -602,8 +560,5 @@ export const groqModelConfig: ModelConfig = {
 		maxTokens: 448,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 };

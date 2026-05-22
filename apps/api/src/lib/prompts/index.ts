@@ -16,7 +16,6 @@ export async function getSystemPrompt(
 	const modelConfig = await getModelConfigByMatchingModel(model, undefined, request.provider);
 	const supportsToolCalls = modelConfig?.supportsToolCalls || false;
 	const supportsArtifacts = modelConfig?.supportsArtifacts || false;
-	const requiresThinkingPrompt = modelConfig?.requiresThinkingPrompt || false;
 
 	let prompt: string;
 
@@ -27,7 +26,6 @@ export async function getSystemPrompt(
 			userSettings,
 			supportsToolCalls,
 			supportsArtifacts,
-			requiresThinkingPrompt,
 			{ modelId: model },
 		);
 	} else {
@@ -37,14 +35,10 @@ export async function getSystemPrompt(
 			outputs.includes("text") || (!outputs.length && inputs.includes("text"));
 		const isCodingModel = modelConfig?.promptTemplate === "coding";
 		if (isCodingModel) {
-			prompt = returnCodingPrompt(
-				request,
-				userSettings,
-				supportsToolCalls,
-				supportsArtifacts,
-				requiresThinkingPrompt,
-				{ modelId: model, modelConfig },
-			);
+			prompt = returnCodingPrompt(request, userSettings, supportsToolCalls, supportsArtifacts, {
+				modelId: model,
+				modelConfig,
+			});
 		} else {
 			const isTextToImageModel = outputs.includes("image") && !supportsTextOutput;
 			if (isTextToImageModel) {
@@ -58,7 +52,6 @@ export async function getSystemPrompt(
 					userSettings,
 					supportsToolCalls,
 					supportsArtifacts,
-					requiresThinkingPrompt,
 					{ modelId: model, modelConfig },
 				);
 			}

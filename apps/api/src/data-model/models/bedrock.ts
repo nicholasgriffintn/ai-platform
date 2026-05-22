@@ -57,9 +57,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		supportsDocuments: true,
 		supportsToolCalls: true,
 		supportsPromptCaching: true,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("nova-micro", PROVIDER, {
@@ -88,9 +85,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		includedInRouter: true,
 		supportsToolCalls: true,
 		supportsPromptCaching: true,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("nova-pro", PROVIDER, {
@@ -119,9 +113,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		supportsDocuments: true,
 		supportsToolCalls: true,
 		supportsPromptCaching: true,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("nova-canvas", PROVIDER, {
@@ -185,9 +176,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00015,
 		costPer1kOutputTokens: 0.0006,
-		reasoningConfig: {
-			enabled: false,
-		},
 		supportsResponseFormat: true,
 	}),
 
@@ -209,9 +197,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00007,
 		costPer1kOutputTokens: 0.0002,
-		reasoningConfig: {
-			enabled: false,
-		},
 		supportsResponseFormat: true,
 	}),
 
@@ -234,9 +219,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		supportsResponseFormat: false,
 		costPer1kInputTokens: 0.0003,
 		costPer1kOutputTokens: 0.0012,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("moonshot.kimi-k2-thinking", PROVIDER, {
@@ -248,7 +230,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			input: ["text"],
 			output: ["text"],
 		},
-		reasoningConfig: { enabled: true },
 		contextWindow: 262143,
 		maxTokens: 16000,
 		releaseDate: "December 2, 2025",
@@ -279,9 +260,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		supportsToolCalls: true,
 		costPer1kInputTokens: 0.0002,
 		costPer1kOutputTokens: 0.0006,
-		reasoningConfig: {
-			enabled: false,
-		},
 		supportsResponseFormat: true,
 	}),
 
@@ -303,9 +281,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 4096,
 		costPer1kInputTokens: 0.00006,
 		costPer1kOutputTokens: 0.00023,
-		reasoningConfig: {
-			enabled: false,
-		},
 		supportsResponseFormat: true,
 	}),
 
@@ -333,8 +308,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		reliability: 5,
 		speed: 4,
 		multimodal: true,
-		reasoningConfig: { enabled: false },
-		isFeatured: true,
+		isFeatured: false,
 		includedInRouter: true,
 		supportsArtifacts: true,
 		supportsToolCalls: true,
@@ -369,8 +343,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		reliability: 5,
 		speed: 4,
 		multimodal: true,
-		reasoningConfig: { enabled: false },
-		isFeatured: true,
+		isFeatured: false,
 		includedInRouter: true,
 		supportsArtifacts: true,
 		supportsToolCalls: true,
@@ -445,9 +418,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		supportsTokenCounting: true,
 		isFeatured: false,
 		supportsPromptCaching: true,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("anthropic.claude-opus-4-1", PROVIDER, {
@@ -473,7 +443,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		reliability: 5,
 		speed: 3,
 		multimodal: true,
-		reasoningConfig: { enabled: true },
 		supportsArtifacts: true,
 		supportsToolCalls: true,
 		isFeatured: false,
@@ -504,7 +473,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		reliability: 5,
 		speed: 3,
 		multimodal: true,
-		reasoningConfig: { enabled: true },
 		supportsArtifacts: true,
 		supportsToolCalls: true,
 		supportsTokenCounting: true,
@@ -555,9 +523,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		reliability: 3,
 		speed: 3,
 		supportsToolCalls: true,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("cohere.command-r-plus", PROVIDER, {
@@ -583,9 +548,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		reliability: 4,
 		speed: 2,
 		supportsToolCalls: true,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("ai21.jamba-1-5-large", PROVIDER, {
@@ -611,9 +573,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		reliability: 4,
 		speed: 3,
 		supportsToolCalls: true,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("ai21.jamba-1-5-mini", PROVIDER, {
@@ -639,9 +598,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		reliability: 3,
 		speed: 4,
 		supportsToolCalls: true,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("ai21.jamba-instruct", PROVIDER, {
@@ -691,7 +647,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		reliability: 5,
 		speed: 2,
 		multimodal: true,
-		reasoningConfig: { enabled: true },
 		supportsToolCalls: true,
 		supportsDocuments: true,
 		supportsPromptCaching: true,
@@ -721,9 +676,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		speed: 3,
 		multimodal: true,
 		supportsToolCalls: true,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("meta/llama-3-1-70b-bedrock", PROVIDER, {
@@ -749,9 +701,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		reliability: 4,
 		speed: 3,
 		supportsToolCalls: true,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("deepseek.r1-bedrock", PROVIDER, {
@@ -776,7 +725,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		contextComplexity: 5,
 		reliability: 4,
 		speed: 3,
-		reasoningConfig: { enabled: true },
 		supportsToolCalls: true,
 	}),
 
@@ -852,9 +800,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 4096,
 		costPer1kInputTokens: 0.00033,
 		costPer1kOutputTokens: 0.00275,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("amazon.titan-text-express-v1", PROVIDER, {
@@ -873,9 +818,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 4096,
 		costPer1kInputTokens: 0.0002,
 		costPer1kOutputTokens: 0.0006,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("amazon.titan-text-express-v1:0:8k", PROVIDER, {
@@ -894,9 +836,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 4096,
 		costPer1kInputTokens: 0.0002,
 		costPer1kOutputTokens: 0.0006,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("anthropic.claude-3-5-haiku-20241022-v1:0", PROVIDER, {
@@ -916,9 +855,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 8192,
 		costPer1kInputTokens: 0.0008,
 		costPer1kOutputTokens: 0.004,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("anthropic.claude-3-5-sonnet-20240620-v1:0", PROVIDER, {
@@ -938,9 +874,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 8192,
 		costPer1kInputTokens: 0.003,
 		costPer1kOutputTokens: 0.015,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("anthropic.claude-3-5-sonnet-20241022-v2:0", PROVIDER, {
@@ -960,9 +893,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 8192,
 		costPer1kInputTokens: 0.003,
 		costPer1kOutputTokens: 0.015,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("anthropic.claude-3-7-sonnet-20250219-v1:0", PROVIDER, {
@@ -982,9 +912,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 8192,
 		costPer1kInputTokens: 0.003,
 		costPer1kOutputTokens: 0.015,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("anthropic.claude-3-haiku-20240307-v1:0", PROVIDER, {
@@ -1004,9 +931,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 4096,
 		costPer1kInputTokens: 0.00025,
 		costPer1kOutputTokens: 0.00125,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("anthropic.claude-3-opus-20240229-v1:0", PROVIDER, {
@@ -1026,9 +950,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 4096,
 		costPer1kInputTokens: 0.015,
 		costPer1kOutputTokens: 0.075,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("anthropic.claude-3-sonnet-20240229-v1:0", PROVIDER, {
@@ -1048,9 +969,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 4096,
 		costPer1kInputTokens: 0.003,
 		costPer1kOutputTokens: 0.015,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("anthropic.claude-haiku-4-5-20251001-v1:0", PROVIDER, {
@@ -1070,9 +988,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 64000,
 		costPer1kInputTokens: 0.001,
 		costPer1kOutputTokens: 0.005,
-		reasoningConfig: {
-			enabled: true,
-		},
 		supportsResponseFormat: true,
 	}),
 
@@ -1093,9 +1008,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 4096,
 		costPer1kInputTokens: 0.0008,
 		costPer1kOutputTokens: 0.0024,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("anthropic.claude-opus-4-1-20250805-v1:0", PROVIDER, {
@@ -1115,9 +1027,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 32000,
 		costPer1kInputTokens: 0.015,
 		costPer1kOutputTokens: 0.075,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("anthropic.claude-opus-4-20250514-v1:0", PROVIDER, {
@@ -1137,9 +1046,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 32000,
 		costPer1kInputTokens: 0.015,
 		costPer1kOutputTokens: 0.075,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("anthropic.claude-opus-4-5-20251101-v1:0", PROVIDER, {
@@ -1159,9 +1065,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 64000,
 		costPer1kInputTokens: 0.005,
 		costPer1kOutputTokens: 0.025,
-		reasoningConfig: {
-			enabled: true,
-		},
 		supportsResponseFormat: true,
 	}),
 
@@ -1182,9 +1085,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.005,
 		costPer1kOutputTokens: 0.025,
-		reasoningConfig: {
-			enabled: true,
-		},
 		supportsResponseFormat: true,
 	}),
 
@@ -1205,9 +1105,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 64000,
 		costPer1kInputTokens: 0.003,
 		costPer1kOutputTokens: 0.015,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("anthropic.claude-sonnet-4-5-20250929-v1:0", PROVIDER, {
@@ -1227,9 +1124,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 64000,
 		costPer1kInputTokens: 0.003,
 		costPer1kOutputTokens: 0.015,
-		reasoningConfig: {
-			enabled: true,
-		},
 		supportsResponseFormat: true,
 	}),
 
@@ -1250,9 +1144,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 4096,
 		costPer1kInputTokens: 0.008,
 		costPer1kOutputTokens: 0.024,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("anthropic.claude-v2:1", PROVIDER, {
@@ -1272,9 +1163,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 4096,
 		costPer1kInputTokens: 0.008,
 		costPer1kOutputTokens: 0.024,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("cohere.command-light-text-v14", PROVIDER, {
@@ -1294,9 +1182,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 4096,
 		costPer1kInputTokens: 0.0003,
 		costPer1kOutputTokens: 0.0006,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("cohere.command-text-v14", PROVIDER, {
@@ -1316,9 +1201,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 4096,
 		costPer1kInputTokens: 0.0015,
 		costPer1kOutputTokens: 0.002,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("deepseek.v3-v1:0", PROVIDER, {
@@ -1338,9 +1220,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 81920,
 		costPer1kInputTokens: 0.00058,
 		costPer1kOutputTokens: 0.00168,
-		reasoningConfig: {
-			enabled: true,
-		},
 		supportsResponseFormat: true,
 	}),
 
@@ -1361,9 +1240,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 64000,
 		costPer1kInputTokens: 0.001,
 		costPer1kOutputTokens: 0.005,
-		reasoningConfig: {
-			enabled: true,
-		},
 		supportsResponseFormat: true,
 	}),
 
@@ -1384,9 +1260,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 64000,
 		costPer1kInputTokens: 0.005,
 		costPer1kOutputTokens: 0.025,
-		reasoningConfig: {
-			enabled: true,
-		},
 		supportsResponseFormat: true,
 	}),
 
@@ -1407,9 +1280,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.005,
 		costPer1kOutputTokens: 0.025,
-		reasoningConfig: {
-			enabled: true,
-		},
 		supportsResponseFormat: true,
 	}),
 
@@ -1430,9 +1300,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 64000,
 		costPer1kInputTokens: 0.003,
 		costPer1kOutputTokens: 0.015,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("eu.anthropic.claude-sonnet-4-5-20250929-v1:0", PROVIDER, {
@@ -1452,9 +1319,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 64000,
 		costPer1kInputTokens: 0.003,
 		costPer1kOutputTokens: 0.015,
-		reasoningConfig: {
-			enabled: true,
-		},
 		supportsResponseFormat: true,
 	}),
 
@@ -1475,9 +1339,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 64000,
 		costPer1kInputTokens: 0.001,
 		costPer1kOutputTokens: 0.005,
-		reasoningConfig: {
-			enabled: true,
-		},
 		supportsResponseFormat: true,
 	}),
 
@@ -1498,9 +1359,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 64000,
 		costPer1kInputTokens: 0.005,
 		costPer1kOutputTokens: 0.025,
-		reasoningConfig: {
-			enabled: true,
-		},
 		supportsResponseFormat: true,
 	}),
 
@@ -1521,9 +1379,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.005,
 		costPer1kOutputTokens: 0.025,
-		reasoningConfig: {
-			enabled: true,
-		},
 		supportsResponseFormat: true,
 	}),
 
@@ -1544,9 +1399,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 64000,
 		costPer1kInputTokens: 0.003,
 		costPer1kOutputTokens: 0.015,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("global.anthropic.claude-sonnet-4-5-20250929-v1:0", PROVIDER, {
@@ -1566,9 +1418,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 64000,
 		costPer1kInputTokens: 0.003,
 		costPer1kOutputTokens: 0.015,
-		reasoningConfig: {
-			enabled: true,
-		},
 		supportsResponseFormat: true,
 	}),
 
@@ -1589,9 +1438,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 8192,
 		costPer1kInputTokens: 0.00005,
 		costPer1kOutputTokens: 0.0001,
-		reasoningConfig: {
-			enabled: false,
-		},
 		supportsResponseFormat: true,
 	}),
 
@@ -1612,9 +1458,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 8192,
 		costPer1kInputTokens: 0.00012,
 		costPer1kOutputTokens: 0.0002,
-		reasoningConfig: {
-			enabled: false,
-		},
 		supportsResponseFormat: true,
 	}),
 
@@ -1634,9 +1477,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 4096,
 		costPer1kInputTokens: 0.00004,
 		costPer1kOutputTokens: 0.00008,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("meta.llama3-1-8b-instruct-v1:0", PROVIDER, {
@@ -1656,9 +1496,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 4096,
 		costPer1kInputTokens: 0.00022,
 		costPer1kOutputTokens: 0.00022,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("meta.llama3-2-11b-instruct-v1:0", PROVIDER, {
@@ -1678,9 +1515,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 4096,
 		costPer1kInputTokens: 0.00016,
 		costPer1kOutputTokens: 0.00016,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("meta.llama3-2-1b-instruct-v1:0", PROVIDER, {
@@ -1700,9 +1534,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 4096,
 		costPer1kInputTokens: 0.0001,
 		costPer1kOutputTokens: 0.0001,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("meta.llama3-2-3b-instruct-v1:0", PROVIDER, {
@@ -1722,9 +1553,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 4096,
 		costPer1kInputTokens: 0.00015,
 		costPer1kOutputTokens: 0.00015,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("meta.llama3-3-70b-instruct-v1:0", PROVIDER, {
@@ -1744,9 +1572,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 4096,
 		costPer1kInputTokens: 0.00072,
 		costPer1kOutputTokens: 0.00072,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("meta.llama3-70b-instruct-v1:0", PROVIDER, {
@@ -1766,9 +1591,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 2048,
 		costPer1kInputTokens: 0.00265,
 		costPer1kOutputTokens: 0.0035,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("meta.llama3-8b-instruct-v1:0", PROVIDER, {
@@ -1788,9 +1610,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 2048,
 		costPer1kInputTokens: 0.0003,
 		costPer1kOutputTokens: 0.0006,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("meta.llama4-maverick-17b-instruct-v1:0", PROVIDER, {
@@ -1810,9 +1629,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00024,
 		costPer1kOutputTokens: 0.00097,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("meta.llama4-scout-17b-instruct-v1:0", PROVIDER, {
@@ -1832,9 +1648,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00017,
 		costPer1kOutputTokens: 0.00066,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("minimax.minimax-m2.1", PROVIDER, {
@@ -1854,9 +1667,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.0003,
 		costPer1kOutputTokens: 0.0012,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("mistral.ministral-3-14b-instruct", PROVIDER, {
@@ -1875,9 +1685,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 4096,
 		costPer1kInputTokens: 0.0002,
 		costPer1kOutputTokens: 0.0002,
-		reasoningConfig: {
-			enabled: false,
-		},
 		supportsResponseFormat: true,
 	}),
 
@@ -1897,9 +1704,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 4096,
 		costPer1kInputTokens: 0.00015,
 		costPer1kOutputTokens: 0.00015,
-		reasoningConfig: {
-			enabled: false,
-		},
 		supportsResponseFormat: true,
 	}),
 
@@ -1920,9 +1724,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 127000,
 		costPer1kInputTokens: 0.00011,
 		costPer1kOutputTokens: 0.00011,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("mistral.mistral-large-2402-v1:0", PROVIDER, {
@@ -1941,9 +1742,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 4096,
 		costPer1kInputTokens: 0.0005,
 		costPer1kOutputTokens: 0.0015,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("mistral.mixtral-8x7b-instruct-v0:1", PROVIDER, {
@@ -1963,9 +1761,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 32000,
 		costPer1kInputTokens: 0.0007,
 		costPer1kOutputTokens: 0.0007,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("mistral.voxtral-mini-3b-2507", PROVIDER, {
@@ -1984,9 +1779,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 4096,
 		costPer1kInputTokens: 0.00004,
 		costPer1kOutputTokens: 0.00004,
-		reasoningConfig: {
-			enabled: false,
-		},
 		supportsResponseFormat: true,
 	}),
 
@@ -2006,9 +1798,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 8192,
 		costPer1kInputTokens: 0.00015,
 		costPer1kOutputTokens: 0.00035,
-		reasoningConfig: {
-			enabled: false,
-		},
 		supportsResponseFormat: true,
 	}),
 
@@ -2028,9 +1817,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 16000,
 		costPer1kInputTokens: 0.0006,
 		costPer1kOutputTokens: 0.003,
-		reasoningConfig: {
-			enabled: true,
-		},
 		supportsResponseFormat: true,
 	}),
 
@@ -2050,9 +1836,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00015,
 		costPer1kOutputTokens: 0.0006,
-		reasoningConfig: {
-			enabled: false,
-		},
 		supportsResponseFormat: true,
 	}),
 
@@ -2072,9 +1855,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00007,
 		costPer1kOutputTokens: 0.0003,
-		reasoningConfig: {
-			enabled: false,
-		},
 		supportsResponseFormat: true,
 	}),
 
@@ -2095,9 +1875,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.00022,
 		costPer1kOutputTokens: 0.00088,
-		reasoningConfig: {
-			enabled: false,
-		},
 		supportsResponseFormat: true,
 	}),
 
@@ -2118,9 +1895,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00015,
 		costPer1kOutputTokens: 0.0006,
-		reasoningConfig: {
-			enabled: true,
-		},
 		supportsResponseFormat: true,
 	}),
 
@@ -2141,9 +1915,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.00015,
 		costPer1kOutputTokens: 0.0006,
-		reasoningConfig: {
-			enabled: false,
-		},
 		supportsResponseFormat: true,
 	}),
 
@@ -2164,9 +1935,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.00022,
 		costPer1kOutputTokens: 0.0018,
-		reasoningConfig: {
-			enabled: false,
-		},
 		supportsResponseFormat: true,
 	}),
 
@@ -2187,9 +1955,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 262000,
 		costPer1kInputTokens: 0.00014,
 		costPer1kOutputTokens: 0.0014,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("qwen.qwen3-vl-235b-a22b", PROVIDER, {
@@ -2209,9 +1974,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 262000,
 		costPer1kInputTokens: 0.0003,
 		costPer1kOutputTokens: 0.0015,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("us.anthropic.claude-haiku-4-5-20251001-v1:0", PROVIDER, {
@@ -2231,9 +1993,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 64000,
 		costPer1kInputTokens: 0.001,
 		costPer1kOutputTokens: 0.005,
-		reasoningConfig: {
-			enabled: true,
-		},
 		supportsResponseFormat: true,
 	}),
 
@@ -2254,9 +2013,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 64000,
 		costPer1kInputTokens: 0.005,
 		costPer1kOutputTokens: 0.025,
-		reasoningConfig: {
-			enabled: true,
-		},
 		supportsResponseFormat: true,
 	}),
 
@@ -2277,9 +2033,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.005,
 		costPer1kOutputTokens: 0.025,
-		reasoningConfig: {
-			enabled: true,
-		},
 		supportsResponseFormat: true,
 	}),
 
@@ -2300,9 +2053,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.0006,
 		costPer1kOutputTokens: 0.0022,
-		reasoningConfig: {
-			enabled: true,
-		},
 		supportsResponseFormat: true,
 	}),
 
@@ -2323,9 +2073,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.00007,
 		costPer1kOutputTokens: 0.0004,
-		reasoningConfig: {
-			enabled: true,
-		},
 		supportsResponseFormat: true,
 	}),
 	createModelConfig("anthropic.claude-opus-4-7", PROVIDER, {
@@ -2345,9 +2092,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.005,
 		costPer1kOutputTokens: 0.025,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("anthropic.claude-sonnet-4-6", PROVIDER, {
@@ -2368,9 +2112,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 64000,
 		costPer1kInputTokens: 0.003,
 		costPer1kOutputTokens: 0.015,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("au.anthropic.claude-haiku-4-5-20251001-v1:0", PROVIDER, {
@@ -2391,9 +2132,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 64000,
 		costPer1kInputTokens: 0.001,
 		costPer1kOutputTokens: 0.005,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("au.anthropic.claude-opus-4-6-v1", PROVIDER, {
@@ -2414,9 +2152,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.0165,
 		costPer1kOutputTokens: 0.0825,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("au.anthropic.claude-sonnet-4-5-20250929-v1:0", PROVIDER, {
@@ -2437,9 +2172,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 64000,
 		costPer1kInputTokens: 0.003,
 		costPer1kOutputTokens: 0.015,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("au.anthropic.claude-sonnet-4-6", PROVIDER, {
@@ -2460,9 +2192,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.0033,
 		costPer1kOutputTokens: 0.0165,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("deepseek.v3.2", PROVIDER, {
@@ -2483,9 +2212,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 81920,
 		costPer1kInputTokens: 0.00062,
 		costPer1kOutputTokens: 0.00185,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("eu.anthropic.claude-opus-4-7", PROVIDER, {
@@ -2505,9 +2231,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.005,
 		costPer1kOutputTokens: 0.025,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("eu.anthropic.claude-sonnet-4-6", PROVIDER, {
@@ -2528,9 +2251,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 64000,
 		costPer1kInputTokens: 0.003,
 		costPer1kOutputTokens: 0.015,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("global.anthropic.claude-opus-4-7", PROVIDER, {
@@ -2550,9 +2270,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.005,
 		costPer1kOutputTokens: 0.025,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("global.anthropic.claude-sonnet-4-6", PROVIDER, {
@@ -2573,9 +2290,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 64000,
 		costPer1kInputTokens: 0.003,
 		costPer1kOutputTokens: 0.015,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("jp.anthropic.claude-opus-4-7", PROVIDER, {
@@ -2595,9 +2309,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.005,
 		costPer1kOutputTokens: 0.025,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("jp.anthropic.claude-sonnet-4-5-20250929-v1:0", PROVIDER, {
@@ -2618,9 +2329,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 64000,
 		costPer1kInputTokens: 0.003,
 		costPer1kOutputTokens: 0.015,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("jp.anthropic.claude-sonnet-4-6", PROVIDER, {
@@ -2641,9 +2349,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 64000,
 		costPer1kInputTokens: 0.003,
 		costPer1kOutputTokens: 0.015,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("minimax.minimax-m2.5", PROVIDER, {
@@ -2663,9 +2368,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 98304,
 		costPer1kInputTokens: 0.0003,
 		costPer1kOutputTokens: 0.0012,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("mistral.devstral-2-123b", PROVIDER, {
@@ -2685,9 +2387,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 8192,
 		costPer1kInputTokens: 0.0004,
 		costPer1kOutputTokens: 0.002,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("mistral.magistral-small-2509", PROVIDER, {
@@ -2707,9 +2406,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 40000,
 		costPer1kInputTokens: 0.0005,
 		costPer1kOutputTokens: 0.0015,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("mistral.ministral-3-3b-instruct", PROVIDER, {
@@ -2729,9 +2425,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 8192,
 		costPer1kInputTokens: 0.0001,
 		costPer1kOutputTokens: 0.0001,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("mistral.mistral-large-3-675b-instruct", PROVIDER, {
@@ -2751,9 +2444,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 8192,
 		costPer1kInputTokens: 0.0005,
 		costPer1kOutputTokens: 0.0015,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("mistral.pixtral-large-2502-v1:0", PROVIDER, {
@@ -2772,9 +2462,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 8192,
 		costPer1kInputTokens: 0.002,
 		costPer1kOutputTokens: 0.006,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("nvidia.nemotron-nano-3-30b", PROVIDER, {
@@ -2794,9 +2481,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 4096,
 		costPer1kInputTokens: 0.00006,
 		costPer1kOutputTokens: 0.00024,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("nvidia.nemotron-super-3-120b", PROVIDER, {
@@ -2816,9 +2500,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.00015,
 		costPer1kOutputTokens: 0.00065,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("qwen.qwen3-coder-next", PROVIDER, {
@@ -2838,9 +2519,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.00022,
 		costPer1kOutputTokens: 0.0018,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("us.anthropic.claude-opus-4-7", PROVIDER, {
@@ -2860,9 +2538,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.005,
 		costPer1kOutputTokens: 0.025,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("us.anthropic.claude-sonnet-4-6", PROVIDER, {
@@ -2883,9 +2558,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 64000,
 		costPer1kInputTokens: 0.003,
 		costPer1kOutputTokens: 0.015,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("us.deepseek.r1-v1:0", PROVIDER, {
@@ -2905,9 +2577,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.00135,
 		costPer1kOutputTokens: 0.0054,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("us.meta.llama4-maverick-17b-instruct-v1:0", PROVIDER, {
@@ -2927,9 +2596,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00024,
 		costPer1kOutputTokens: 0.00097,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("us.meta.llama4-scout-17b-instruct-v1:0", PROVIDER, {
@@ -2949,9 +2615,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00017,
 		costPer1kOutputTokens: 0.00066,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("writer.palmyra-x4-v1:0", PROVIDER, {
@@ -2970,9 +2633,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 8192,
 		costPer1kInputTokens: 0.0025,
 		costPer1kOutputTokens: 0.01,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("writer.palmyra-x5-v1:0", PROVIDER, {
@@ -2991,9 +2651,6 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 8192,
 		costPer1kInputTokens: 0.0006,
 		costPer1kOutputTokens: 0.006,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("zai.glm-5", PROVIDER, {
@@ -3013,8 +2670,5 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 101376,
 		costPer1kInputTokens: 0.001,
 		costPer1kOutputTokens: 0.0032,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 ]);

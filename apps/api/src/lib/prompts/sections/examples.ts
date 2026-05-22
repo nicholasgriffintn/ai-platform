@@ -4,7 +4,7 @@ import type { PromptExampleVariant } from "../layout";
 import { getArtifactExample } from "../utils";
 
 interface StandardExampleOptions {
-	reasoningEnabled?: boolean;
+	simulatedThinking?: boolean;
 	supportsArtifacts?: boolean;
 	problemBreakdownInstructions: string;
 	answerFormatInstructions: string;
@@ -13,7 +13,7 @@ interface StandardExampleOptions {
 }
 
 interface CodingExampleOptions {
-	reasoningEnabled?: boolean;
+	simulatedThinking?: boolean;
 	supportsArtifacts?: boolean;
 	problemBreakdownInstructions: string;
 	answerFormatInstructions: string;
@@ -24,7 +24,7 @@ interface CodingExampleOptions {
 }
 
 export function buildStandardExampleOutputSection({
-	reasoningEnabled,
+	simulatedThinking,
 	supportsArtifacts,
 	problemBreakdownInstructions,
 	answerFormatInstructions,
@@ -36,7 +36,7 @@ export function buildStandardExampleOutputSection({
 	if (variant === "compact") {
 		const builder = new PromptBuilder("<example_output>\n");
 
-		if (!reasoningEnabled) {
+		if (simulatedThinking) {
 			builder.addLine("<think>").addLine(problemBreakdownInstructions).addLine("</think>");
 		}
 
@@ -55,7 +55,7 @@ export function buildStandardExampleOutputSection({
 		.addLine("Here is an example of the output you should provide:")
 		.addLine("<example_output>");
 
-	if (!reasoningEnabled) {
+	if (simulatedThinking) {
 		builder.addLine("<think>").addLine(problemBreakdownInstructions).addLine("</think>");
 	}
 
@@ -71,7 +71,7 @@ export function buildStandardExampleOutputSection({
 }
 
 export function buildCodingExampleOutputSection({
-	reasoningEnabled,
+	simulatedThinking,
 	supportsArtifacts,
 	problemBreakdownInstructions,
 	answerFormatInstructions,
@@ -86,6 +86,8 @@ export function buildCodingExampleOutputSection({
 
 	const toneHint = (() => {
 		switch (verbosity) {
+			case "caveman":
+				return "<tone_hint>Use caveman brevity: terse fragments, exact technical terms, no filler, complete substance.</tone_hint>";
 			case "low":
 				return "<tone_hint>Keep explanations crisp and focus on the actionable answer.</tone_hint>";
 			case "high":
@@ -110,7 +112,7 @@ export function buildCodingExampleOutputSection({
 		builder.addLine("<example_output>").addLine("<answer>");
 	}
 
-	if (!reasoningEnabled) {
+	if (simulatedThinking) {
 		builder.addLine("<think>").addLine(problemBreakdownInstructions).addLine("</think>");
 		if (variant === "full") {
 			builder.addLine();

@@ -26,9 +26,6 @@ export const togetherAiModelConfig: ModelConfig = {
 		supportsAttachments: false,
 		supportsTemperature: true,
 		supportsToolCalls: true,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 	"meta-llama/Llama-3.3-70B-Instruct-Turbo-Free": {
 		name: "Meta Llama 3.3 70B Instruct Turbo Free",
@@ -124,7 +121,7 @@ export const togetherAiModelConfig: ModelConfig = {
 		contextComplexity: 5,
 		reliability: 5,
 		speed: 4,
-		isFeatured: true,
+		isFeatured: false,
 		includedInRouter: true,
 		modalities: {
 			input: ["text", "image"],
@@ -162,7 +159,7 @@ export const togetherAiModelConfig: ModelConfig = {
 		speed: 4,
 		contextWindow: 1000000,
 		maxTokens: 16384,
-		isFeatured: true,
+		isFeatured: false,
 		includedInRouter: true,
 		multimodal: true,
 		modalities: {
@@ -218,9 +215,6 @@ export const togetherAiModelConfig: ModelConfig = {
 		maxTokens: 163839,
 		costPer1kInputTokens: 0.003,
 		costPer1kOutputTokens: 0.007,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"deepseek-ai/DeepSeek-V3": {
@@ -241,9 +235,6 @@ export const togetherAiModelConfig: ModelConfig = {
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.00125,
 		costPer1kOutputTokens: 0.00125,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"deepseek-ai/DeepSeek-V3-1": {
@@ -264,9 +255,6 @@ export const togetherAiModelConfig: ModelConfig = {
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.0006,
 		costPer1kOutputTokens: 0.0017,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"essentialai/Rnj-1-Instruct": {
@@ -287,9 +275,6 @@ export const togetherAiModelConfig: ModelConfig = {
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.00015,
 		costPer1kOutputTokens: 0.00015,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"moonshotai/Kimi-K2-Instruct": {
@@ -310,9 +295,6 @@ export const togetherAiModelConfig: ModelConfig = {
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.001,
 		costPer1kOutputTokens: 0.003,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"moonshotai/Kimi-K2-Instruct-0905": {
@@ -333,9 +315,6 @@ export const togetherAiModelConfig: ModelConfig = {
 		maxTokens: 262144,
 		costPer1kInputTokens: 0.001,
 		costPer1kOutputTokens: 0.003,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"moonshotai/Kimi-K2-Thinking": {
@@ -356,9 +335,6 @@ export const togetherAiModelConfig: ModelConfig = {
 		maxTokens: 262144,
 		costPer1kInputTokens: 0.0012,
 		costPer1kOutputTokens: 0.004,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"moonshotai/Kimi-K2.5": {
@@ -379,9 +355,6 @@ export const togetherAiModelConfig: ModelConfig = {
 		maxTokens: 262144,
 		costPer1kInputTokens: 0.0005,
 		costPer1kOutputTokens: 0.0028,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"openai/gpt-oss-120b": {
@@ -402,9 +375,6 @@ export const togetherAiModelConfig: ModelConfig = {
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.00015,
 		costPer1kOutputTokens: 0.0006,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"Qwen/Qwen3-235B-A22B-Instruct-2507-tput": {
@@ -425,9 +395,6 @@ export const togetherAiModelConfig: ModelConfig = {
 		maxTokens: 262144,
 		costPer1kInputTokens: 0.0002,
 		costPer1kOutputTokens: 0.0006,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"Qwen/Qwen3-Coder-480B-A35B-Instruct-FP8": {
@@ -448,9 +415,6 @@ export const togetherAiModelConfig: ModelConfig = {
 		maxTokens: 262144,
 		costPer1kInputTokens: 0.002,
 		costPer1kOutputTokens: 0.002,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"Qwen/Qwen3-Coder-Next-FP8": {
@@ -471,9 +435,6 @@ export const togetherAiModelConfig: ModelConfig = {
 		maxTokens: 262144,
 		costPer1kInputTokens: 0.0005,
 		costPer1kOutputTokens: 0.0012,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"Qwen/Qwen3-Next-80B-A3B-Instruct": {
@@ -494,9 +455,6 @@ export const togetherAiModelConfig: ModelConfig = {
 		maxTokens: 262144,
 		costPer1kInputTokens: 0.00015,
 		costPer1kOutputTokens: 0.0015,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"zai-org/GLM-4.6": {
@@ -517,9 +475,6 @@ export const togetherAiModelConfig: ModelConfig = {
 		maxTokens: 200000,
 		costPer1kInputTokens: 0.0006,
 		costPer1kOutputTokens: 0.0022,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"zai-org/GLM-4.7": {
@@ -540,9 +495,6 @@ export const togetherAiModelConfig: ModelConfig = {
 		maxTokens: 200000,
 		costPer1kInputTokens: 0.00045,
 		costPer1kOutputTokens: 0.002,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 	"deepseek-ai/DeepSeek-V4-Pro": {
 		name: "DeepSeek V4 Pro",
@@ -562,9 +514,6 @@ export const togetherAiModelConfig: ModelConfig = {
 		maxTokens: 384000,
 		costPer1kInputTokens: 0.0021,
 		costPer1kOutputTokens: 0.0044,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"google/gemma-4-31B-it": {
@@ -585,9 +534,6 @@ export const togetherAiModelConfig: ModelConfig = {
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.0002,
 		costPer1kOutputTokens: 0.0005,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"MiniMaxAI/MiniMax-M2.5": {
@@ -607,9 +553,6 @@ export const togetherAiModelConfig: ModelConfig = {
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.0003,
 		costPer1kOutputTokens: 0.0012,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"MiniMaxAI/MiniMax-M2.7": {
@@ -630,9 +573,6 @@ export const togetherAiModelConfig: ModelConfig = {
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.0003,
 		costPer1kOutputTokens: 0.0012,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"moonshotai/Kimi-K2.6": {
@@ -654,9 +594,6 @@ export const togetherAiModelConfig: ModelConfig = {
 		maxTokens: 131000,
 		costPer1kInputTokens: 0.0012,
 		costPer1kOutputTokens: 0.0045,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"Qwen/Qwen3.5-397B-A17B": {
@@ -676,9 +613,6 @@ export const togetherAiModelConfig: ModelConfig = {
 		maxTokens: 130000,
 		costPer1kInputTokens: 0.0006,
 		costPer1kOutputTokens: 0.0036,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"Qwen/Qwen3.6-Plus": {
@@ -698,9 +632,6 @@ export const togetherAiModelConfig: ModelConfig = {
 		maxTokens: 500000,
 		costPer1kInputTokens: 0.0005,
 		costPer1kOutputTokens: 0.003,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"zai-org/GLM-5.1": {
@@ -722,8 +653,5 @@ export const togetherAiModelConfig: ModelConfig = {
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.0014,
 		costPer1kOutputTokens: 0.0044,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 };

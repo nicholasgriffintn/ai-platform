@@ -28,9 +28,6 @@ export const ollamaModelConfig: ModelConfig = {
 		supportsAttachments: true,
 		supportsToolCalls: false,
 		maxTokens: 131072,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 	"ollama-gemma3-12b": {
 		name: "gemma3:12b",
@@ -48,9 +45,6 @@ export const ollamaModelConfig: ModelConfig = {
 		supportsAttachments: true,
 		supportsToolCalls: false,
 		maxTokens: 131072,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 	"ollama-gemma3-27b": {
 		name: "gemma3:27b",
@@ -68,9 +62,6 @@ export const ollamaModelConfig: ModelConfig = {
 		supportsAttachments: true,
 		supportsToolCalls: false,
 		maxTokens: 131072,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 	"cogito-2.1:671b": {
 		name: "cogito-2.1:671b",
@@ -86,9 +77,6 @@ export const ollamaModelConfig: ModelConfig = {
 		supportsToolCalls: true,
 		contextWindow: 163840,
 		maxTokens: 32000,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"deepseek-v3.1:671b": {
@@ -105,9 +93,6 @@ export const ollamaModelConfig: ModelConfig = {
 		supportsToolCalls: true,
 		contextWindow: 163840,
 		maxTokens: 163840,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"deepseek-v3.2": {
@@ -124,9 +109,6 @@ export const ollamaModelConfig: ModelConfig = {
 		supportsToolCalls: true,
 		contextWindow: 163840,
 		maxTokens: 65536,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"devstral-2:123b": {
@@ -143,9 +125,6 @@ export const ollamaModelConfig: ModelConfig = {
 		supportsToolCalls: true,
 		contextWindow: 262144,
 		maxTokens: 262144,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"devstral-small-2:24b": {
@@ -162,9 +141,6 @@ export const ollamaModelConfig: ModelConfig = {
 		supportsToolCalls: true,
 		contextWindow: 262144,
 		maxTokens: 262144,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"gemini-3-flash-preview": {
@@ -182,9 +158,6 @@ export const ollamaModelConfig: ModelConfig = {
 		supportsToolCalls: true,
 		contextWindow: 1048576,
 		maxTokens: 65536,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"gemini-3-pro-preview": {
@@ -201,9 +174,6 @@ export const ollamaModelConfig: ModelConfig = {
 		supportsToolCalls: true,
 		contextWindow: 1048576,
 		maxTokens: 64000,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"glm-4.6": {
@@ -220,9 +190,6 @@ export const ollamaModelConfig: ModelConfig = {
 		supportsToolCalls: true,
 		contextWindow: 202752,
 		maxTokens: 131072,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"glm-4.7": {
@@ -239,9 +206,6 @@ export const ollamaModelConfig: ModelConfig = {
 		supportsToolCalls: true,
 		contextWindow: 202752,
 		maxTokens: 131072,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"glm-5": {
@@ -258,9 +222,6 @@ export const ollamaModelConfig: ModelConfig = {
 		supportsToolCalls: true,
 		contextWindow: 202752,
 		maxTokens: 131072,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"gpt-oss:120b": {
@@ -277,9 +238,6 @@ export const ollamaModelConfig: ModelConfig = {
 		supportsToolCalls: true,
 		contextWindow: 131072,
 		maxTokens: 32768,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"gpt-oss:20b": {
@@ -296,9 +254,6 @@ export const ollamaModelConfig: ModelConfig = {
 		supportsToolCalls: true,
 		contextWindow: 131072,
 		maxTokens: 32768,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"kimi-k2-thinking": {
@@ -316,9 +271,6 @@ export const ollamaModelConfig: ModelConfig = {
 		supportsToolCalls: true,
 		contextWindow: 262144,
 		maxTokens: 262144,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"kimi-k2:1t": {
@@ -336,9 +288,6 @@ export const ollamaModelConfig: ModelConfig = {
 		supportsToolCalls: true,
 		contextWindow: 262144,
 		maxTokens: 262144,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"kimi-k2.5": {
@@ -355,9 +304,6 @@ export const ollamaModelConfig: ModelConfig = {
 		supportsToolCalls: true,
 		contextWindow: 262144,
 		maxTokens: 262144,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"minimax-m2": {
@@ -374,9 +320,6 @@ export const ollamaModelConfig: ModelConfig = {
 		supportsToolCalls: true,
 		contextWindow: 204800,
 		maxTokens: 128000,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"minimax-m2.1": {
@@ -393,9 +336,6 @@ export const ollamaModelConfig: ModelConfig = {
 		supportsToolCalls: true,
 		contextWindow: 204800,
 		maxTokens: 131072,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"ministral-3:14b": {
@@ -412,9 +352,6 @@ export const ollamaModelConfig: ModelConfig = {
 		supportsToolCalls: true,
 		contextWindow: 262144,
 		maxTokens: 128000,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"ministral-3:3b": {
@@ -431,9 +368,6 @@ export const ollamaModelConfig: ModelConfig = {
 		supportsToolCalls: true,
 		contextWindow: 262144,
 		maxTokens: 128000,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"ministral-3:8b": {
@@ -450,9 +384,6 @@ export const ollamaModelConfig: ModelConfig = {
 		supportsToolCalls: true,
 		contextWindow: 262144,
 		maxTokens: 128000,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"mistral-large-3:675b": {
@@ -469,9 +400,6 @@ export const ollamaModelConfig: ModelConfig = {
 		supportsToolCalls: true,
 		contextWindow: 262144,
 		maxTokens: 262144,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"nemotron-3-nano:30b": {
@@ -488,9 +416,6 @@ export const ollamaModelConfig: ModelConfig = {
 		supportsToolCalls: true,
 		contextWindow: 1048576,
 		maxTokens: 131072,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"qwen3-coder-next": {
@@ -507,9 +432,6 @@ export const ollamaModelConfig: ModelConfig = {
 		supportsToolCalls: true,
 		contextWindow: 262144,
 		maxTokens: 65536,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"qwen3-coder:480b": {
@@ -526,9 +448,6 @@ export const ollamaModelConfig: ModelConfig = {
 		supportsToolCalls: true,
 		contextWindow: 262144,
 		maxTokens: 65536,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"qwen3-next:80b": {
@@ -545,9 +464,6 @@ export const ollamaModelConfig: ModelConfig = {
 		supportsToolCalls: true,
 		contextWindow: 262144,
 		maxTokens: 32768,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"qwen3-vl:235b": {
@@ -564,9 +480,6 @@ export const ollamaModelConfig: ModelConfig = {
 		supportsToolCalls: true,
 		contextWindow: 262144,
 		maxTokens: 32768,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"qwen3-vl:235b-instruct": {
@@ -583,9 +496,6 @@ export const ollamaModelConfig: ModelConfig = {
 		supportsToolCalls: true,
 		contextWindow: 262144,
 		maxTokens: 131072,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"rnj-1:8b": {
@@ -602,9 +512,6 @@ export const ollamaModelConfig: ModelConfig = {
 		supportsToolCalls: true,
 		contextWindow: 32768,
 		maxTokens: 4096,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 	"deepseek-v4-flash": {
 		name: "deepseek-v4-flash",
@@ -620,9 +527,6 @@ export const ollamaModelConfig: ModelConfig = {
 		supportsToolCalls: true,
 		contextWindow: 1048576,
 		maxTokens: 1048576,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"deepseek-v4-pro": {
@@ -639,9 +543,6 @@ export const ollamaModelConfig: ModelConfig = {
 		supportsToolCalls: true,
 		contextWindow: 1048576,
 		maxTokens: 1048576,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"gemma4:31b": {
@@ -659,9 +560,6 @@ export const ollamaModelConfig: ModelConfig = {
 		supportsToolCalls: true,
 		contextWindow: 262144,
 		maxTokens: 262144,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"glm-5.1": {
@@ -678,9 +576,6 @@ export const ollamaModelConfig: ModelConfig = {
 		supportsToolCalls: true,
 		contextWindow: 202752,
 		maxTokens: 131072,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"kimi-k2.6": {
@@ -697,9 +592,6 @@ export const ollamaModelConfig: ModelConfig = {
 		supportsToolCalls: true,
 		contextWindow: 262144,
 		maxTokens: 262144,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"minimax-m2.5": {
@@ -717,9 +609,6 @@ export const ollamaModelConfig: ModelConfig = {
 		supportsToolCalls: true,
 		contextWindow: 204800,
 		maxTokens: 131072,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"minimax-m2.7": {
@@ -736,9 +625,6 @@ export const ollamaModelConfig: ModelConfig = {
 		supportsToolCalls: true,
 		contextWindow: 196608,
 		maxTokens: 196608,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"nemotron-3-super": {
@@ -755,9 +641,6 @@ export const ollamaModelConfig: ModelConfig = {
 		supportsToolCalls: true,
 		contextWindow: 262144,
 		maxTokens: 65536,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"qwen3.5:397b": {
@@ -774,8 +657,5 @@ export const ollamaModelConfig: ModelConfig = {
 		supportsToolCalls: true,
 		contextWindow: 262144,
 		maxTokens: 65536,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 };

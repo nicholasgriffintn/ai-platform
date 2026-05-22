@@ -231,6 +231,10 @@ interface AIControlParams {
 	metadata?: Record<string, any>;
 	// The reasoning effort to use for the response (legacy alias).
 	reasoning_effort?: ReasoningEffortLevel;
+	// Structured reasoning controls.
+	reasoning?: {
+		effort?: ReasoningEffortLevel;
+	};
 	// Whether to store the response.
 	store?: boolean;
 	// The current step to use for the response.

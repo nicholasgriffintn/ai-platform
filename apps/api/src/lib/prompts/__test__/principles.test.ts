@@ -6,7 +6,7 @@ describe("buildAssistantPrinciplesSection", () => {
 		isAgent: false,
 		supportsToolCalls: false,
 		supportsArtifacts: false,
-		reasoningEnabled: true,
+		simulatedThinking: false,
 		verbosity: "medium",
 		preferredLanguage: null,
 	} as const;
@@ -28,7 +28,7 @@ describe("buildAssistantPrinciplesSection", () => {
 			...baseOptions,
 			supportsToolCalls: true,
 			supportsArtifacts: true,
-			reasoningEnabled: false,
+			simulatedThinking: true,
 			format: "compact",
 			verbosity: "low",
 			preferredLanguage: "fr",
@@ -46,7 +46,7 @@ describe("buildAssistantPrinciplesSection", () => {
 		);
 		expect(result).toContain("Use artifacts for sizeable or reusable work");
 		expect(result).toContain(
-			"When native reasoning traces are unavailable, keep your reasoning summary clear while avoiding private scratchpads.",
+			"Use the simulated thinking guidance in this prompt, then share only the useful summary.",
 		);
 		expect(result).toContain("Keep answers tight but complete");
 		expect(result).toContain("Default to replying in fr");

@@ -14,7 +14,6 @@ export const huggingfaceModelConfig: ModelConfig = {
 		},
 		supportsAttachments: false,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: true },
 		supportsToolCalls: true,
 		contextWindow: 163840,
 		maxTokens: 163840,
@@ -40,7 +39,6 @@ export const huggingfaceModelConfig: ModelConfig = {
 		},
 		supportsAttachments: false,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: false },
 		supportsToolCalls: true,
 		contextWindow: 16384,
 		maxTokens: 8192,
@@ -66,7 +64,6 @@ export const huggingfaceModelConfig: ModelConfig = {
 		},
 		supportsAttachments: false,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: false },
 		supportsToolCalls: true,
 		contextWindow: 131072,
 		maxTokens: 16384,
@@ -92,7 +89,6 @@ export const huggingfaceModelConfig: ModelConfig = {
 		},
 		supportsAttachments: false,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: false },
 		supportsToolCalls: true,
 		contextWindow: 262144,
 		maxTokens: 66536,
@@ -118,7 +114,6 @@ export const huggingfaceModelConfig: ModelConfig = {
 		},
 		supportsAttachments: false,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: true },
 		supportsToolCalls: true,
 		contextWindow: 262144,
 		maxTokens: 131072,
@@ -144,7 +139,6 @@ export const huggingfaceModelConfig: ModelConfig = {
 		},
 		supportsAttachments: false,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: true },
 		supportsToolCalls: true,
 		contextWindow: 131072,
 		maxTokens: 98304,
@@ -170,7 +164,6 @@ export const huggingfaceModelConfig: ModelConfig = {
 		},
 		supportsAttachments: false,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: true },
 		supportsToolCalls: true,
 		contextWindow: 128000,
 		maxTokens: 96000,
@@ -201,9 +194,6 @@ export const huggingfaceModelConfig: ModelConfig = {
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.00028,
 		costPer1kOutputTokens: 0.0004,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"MiniMaxAI/MiniMax-M2.1": {
@@ -224,9 +214,6 @@ export const huggingfaceModelConfig: ModelConfig = {
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.0003,
 		costPer1kOutputTokens: 0.0012,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"moonshotai/Kimi-K2-Instruct-0905": {
@@ -247,9 +234,6 @@ export const huggingfaceModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.001,
 		costPer1kOutputTokens: 0.003,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"moonshotai/Kimi-K2-Thinking": {
@@ -270,9 +254,6 @@ export const huggingfaceModelConfig: ModelConfig = {
 		maxTokens: 262144,
 		costPer1kInputTokens: 0.0006,
 		costPer1kOutputTokens: 0.0025,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"moonshotai/Kimi-K2.5": {
@@ -293,9 +274,6 @@ export const huggingfaceModelConfig: ModelConfig = {
 		maxTokens: 262144,
 		costPer1kInputTokens: 0.0006,
 		costPer1kOutputTokens: 0.003,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"Qwen/Qwen3-Embedding-4B": {
@@ -316,9 +294,6 @@ export const huggingfaceModelConfig: ModelConfig = {
 		maxTokens: 2048,
 		costPer1kInputTokens: 0.00001,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"Qwen/Qwen3-Embedding-8B": {
@@ -339,9 +314,6 @@ export const huggingfaceModelConfig: ModelConfig = {
 		maxTokens: 4096,
 		costPer1kInputTokens: 0.00001,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"Qwen/Qwen3-Next-80B-A3B-Instruct": {
@@ -362,9 +334,6 @@ export const huggingfaceModelConfig: ModelConfig = {
 		maxTokens: 66536,
 		costPer1kInputTokens: 0.00025,
 		costPer1kOutputTokens: 0.001,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"Qwen/Qwen3-Next-80B-A3B-Thinking": {
@@ -385,9 +354,6 @@ export const huggingfaceModelConfig: ModelConfig = {
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.0003,
 		costPer1kOutputTokens: 0.002,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"XiaomiMiMo/MiMo-V2-Flash": {
@@ -408,9 +374,6 @@ export const huggingfaceModelConfig: ModelConfig = {
 		maxTokens: 4096,
 		costPer1kInputTokens: 0.0001,
 		costPer1kOutputTokens: 0.0003,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"zai-org/GLM-4.7": {
@@ -431,9 +394,6 @@ export const huggingfaceModelConfig: ModelConfig = {
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.0006,
 		costPer1kOutputTokens: 0.0022,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"zai-org/GLM-4.7-Flash": {
@@ -454,9 +414,6 @@ export const huggingfaceModelConfig: ModelConfig = {
 		maxTokens: 128000,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"zai-org/GLM-5": {
@@ -476,9 +433,6 @@ export const huggingfaceModelConfig: ModelConfig = {
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.001,
 		costPer1kOutputTokens: 0.0032,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 	"deepseek-ai/DeepSeek-V4-Pro": {
 		name: "DeepSeek V4 Pro",
@@ -499,9 +453,6 @@ export const huggingfaceModelConfig: ModelConfig = {
 		maxTokens: 393216,
 		costPer1kInputTokens: 0.00174,
 		costPer1kOutputTokens: 0.00348,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"MiniMaxAI/MiniMax-M2.5": {
@@ -521,9 +472,6 @@ export const huggingfaceModelConfig: ModelConfig = {
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.0003,
 		costPer1kOutputTokens: 0.0012,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"MiniMaxAI/MiniMax-M2.7": {
@@ -544,9 +492,6 @@ export const huggingfaceModelConfig: ModelConfig = {
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.0003,
 		costPer1kOutputTokens: 0.0012,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"moonshotai/Kimi-K2.6": {
@@ -567,9 +512,6 @@ export const huggingfaceModelConfig: ModelConfig = {
 		maxTokens: 262144,
 		costPer1kInputTokens: 0.00095,
 		costPer1kOutputTokens: 0.004,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"Qwen/Qwen3-Coder-Next": {
@@ -590,9 +532,6 @@ export const huggingfaceModelConfig: ModelConfig = {
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.0002,
 		costPer1kOutputTokens: 0.0015,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"Qwen/Qwen3.5-397B-A17B": {
@@ -613,9 +552,6 @@ export const huggingfaceModelConfig: ModelConfig = {
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.0006,
 		costPer1kOutputTokens: 0.0036,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"zai-org/GLM-5.1": {
@@ -635,8 +571,5 @@ export const huggingfaceModelConfig: ModelConfig = {
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.001,
 		costPer1kOutputTokens: 0.0032,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 };

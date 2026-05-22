@@ -4291,7 +4291,7 @@ type ResponseCompletedEvent = {
 };
 type ResponseTextConfig = {
 	format?: ResponseFormatTextConfig;
-	verbosity?: "low" | "medium" | "high" | null;
+	verbosity?: "low" | "medium" | "high" | "caveman" | null;
 };
 type ResponseTextDeltaEvent = {
 	content_index: number;

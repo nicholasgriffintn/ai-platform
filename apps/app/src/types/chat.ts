@@ -5,8 +5,14 @@ export type ChatRole = "user" | "assistant" | "system" | "tool";
 
 export type ChatMode = "remote" | "local" | "tool" | "agent";
 
-export type ReasoningEffort = "none" | "low" | "medium" | "high";
-export type VerbosityLevel = "low" | "medium" | "high";
+export type ReasoningEffort =
+	| "none"
+	| "simulated-thinking"
+	| "thinking"
+	| "low"
+	| "medium"
+	| "high";
+export type VerbosityLevel = "low" | "medium" | "high" | "caveman";
 
 export interface ChatReasoningSettings {
 	effort?: ReasoningEffort;

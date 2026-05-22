@@ -14,7 +14,6 @@ export const upstageModelConfig: ModelConfig = createModelConfigObject([
 		modalities: { input: ["text"], output: ["text"] },
 		supportsAttachments: false,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: false },
 		supportsToolCalls: true,
 		contextWindow: 32768,
 		maxTokens: 4096,
@@ -38,7 +37,6 @@ export const upstageModelConfig: ModelConfig = createModelConfigObject([
 		modalities: { input: ["text"], output: ["text"] },
 		supportsAttachments: false,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: true },
 		supportsToolCalls: true,
 		contextWindow: 65536,
 		maxTokens: 8192,
@@ -50,7 +48,7 @@ export const upstageModelConfig: ModelConfig = createModelConfigObject([
 		speed: 4,
 		includedInRouter: true,
 		supportsArtifacts: true,
-		isFeatured: true,
+		isFeatured: false,
 	}),
 	createModelConfig("solar-pro3", PROVIDER, {
 		name: "solar-pro3",
@@ -69,8 +67,5 @@ export const upstageModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 8192,
 		costPer1kInputTokens: 0.00025,
 		costPer1kOutputTokens: 0.00025,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 ]);

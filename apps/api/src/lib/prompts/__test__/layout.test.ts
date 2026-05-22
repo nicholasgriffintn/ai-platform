@@ -5,8 +5,7 @@ import type { PromptCapabilities } from "../utils";
 const baseCapabilities: PromptCapabilities = {
 	supportsToolCalls: false,
 	supportsArtifacts: false,
-	reasoningEnabled: true,
-	requiresThinkingPrompt: false,
+	simulatedThinking: false,
 };
 
 describe("resolvePromptLayout", () => {
@@ -40,14 +39,14 @@ describe("resolvePromptLayout", () => {
 		expect(layout.artifactExampleVariant).toBe("compact");
 	});
 
-	it("promotes example variant when reasoning traces are unavailable", () => {
+	it("promotes example variant when simulated thinking is enabled", () => {
 		const layout = resolvePromptLayout({
 			contextWindow: 3500,
 			isAgent: false,
 			isCoding: false,
 			capabilities: {
 				...baseCapabilities,
-				reasoningEnabled: false,
+				simulatedThinking: true,
 			},
 		});
 

@@ -8,7 +8,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		name: "GPT-4 Turbo Vision",
 		matchingModel: "gpt-4-turbo-vision",
 		supportsAttachments: true,
-		reasoningConfig: { enabled: false },
 		supportsTemperature: true,
 		supportsToolCalls: true,
 		knowledgeCutoffDate: "November 2023",
@@ -25,7 +24,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		name: "GPT-4",
 		matchingModel: "gpt-4",
 		supportsAttachments: false,
-		reasoningConfig: { enabled: false },
 		supportsTemperature: true,
 		supportsToolCalls: true,
 		knowledgeCutoffDate: "November 2023",
@@ -42,7 +40,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		name: "GPT-3.5 Turbo 0125",
 		matchingModel: "gpt-3.5-turbo-0125",
 		supportsAttachments: false,
-		reasoningConfig: { enabled: false },
 		supportsTemperature: true,
 		supportsToolCalls: false,
 		knowledgeCutoffDate: "August 2021",
@@ -59,7 +56,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		name: "GPT-4.1 mini",
 		matchingModel: "gpt-4.1-mini",
 		supportsAttachments: true,
-		reasoningConfig: { enabled: false },
 		supportsTemperature: true,
 		supportsToolCalls: true,
 		knowledgeCutoffDate: "April 2024",
@@ -76,7 +72,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		name: "o4-mini",
 		matchingModel: "o4-mini",
 		supportsAttachments: true,
-		reasoningConfig: { enabled: true },
 		supportsTemperature: false,
 		supportsToolCalls: true,
 		knowledgeCutoffDate: "May 2024",
@@ -93,7 +88,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		name: "GPT-3.5 Turbo 0613",
 		matchingModel: "gpt-3.5-turbo-0613",
 		supportsAttachments: false,
-		reasoningConfig: { enabled: false },
 		supportsTemperature: true,
 		supportsToolCalls: false,
 		knowledgeCutoffDate: "August 2021",
@@ -110,7 +104,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		name: "o1-mini",
 		matchingModel: "o1-mini",
 		supportsAttachments: false,
-		reasoningConfig: { enabled: true },
 		supportsTemperature: false,
 		supportsToolCalls: true,
 		knowledgeCutoffDate: "September 2023",
@@ -127,7 +120,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		name: "Codex Mini",
 		matchingModel: "codex-mini",
 		supportsAttachments: true,
-		reasoningConfig: { enabled: true },
 		supportsTemperature: false,
 		supportsToolCalls: true,
 		knowledgeCutoffDate: "April 2024",
@@ -144,7 +136,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		name: "GPT-4.1 nano",
 		matchingModel: "gpt-4.1-nano",
 		supportsAttachments: true,
-		reasoningConfig: { enabled: false },
 		supportsTemperature: true,
 		supportsToolCalls: true,
 		knowledgeCutoffDate: "April 2024",
@@ -161,7 +152,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		name: "o1-preview",
 		matchingModel: "o1-preview",
 		supportsAttachments: false,
-		reasoningConfig: { enabled: true },
 		supportsTemperature: false,
 		supportsToolCalls: true,
 		knowledgeCutoffDate: "September 2023",
@@ -178,7 +168,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		name: "GPT-3.5 Turbo 1106",
 		matchingModel: "gpt-3.5-turbo-1106",
 		supportsAttachments: false,
-		reasoningConfig: { enabled: false },
 		supportsTemperature: true,
 		supportsToolCalls: false,
 		knowledgeCutoffDate: "August 2021",
@@ -195,7 +184,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		name: "GPT-3.5 Turbo Instruct",
 		matchingModel: "gpt-3.5-turbo-instruct",
 		supportsAttachments: false,
-		reasoningConfig: { enabled: false },
 		supportsTemperature: true,
 		supportsToolCalls: false,
 		knowledgeCutoffDate: "August 2021",
@@ -212,7 +200,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		name: "GPT-4o mini",
 		matchingModel: "gpt-4o-mini",
 		supportsAttachments: true,
-		reasoningConfig: { enabled: false },
 		supportsTemperature: true,
 		supportsToolCalls: true,
 		knowledgeCutoffDate: "September 2023",
@@ -229,7 +216,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		name: "GPT-4 Turbo",
 		matchingModel: "gpt-4-turbo",
 		supportsAttachments: true,
-		reasoningConfig: { enabled: false },
 		supportsTemperature: true,
 		supportsToolCalls: true,
 		knowledgeCutoffDate: "December 2023",
@@ -246,7 +232,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		name: "o3-mini",
 		matchingModel: "o3-mini",
 		supportsAttachments: false,
-		reasoningConfig: { enabled: true },
 		supportsTemperature: false,
 		supportsToolCalls: true,
 		knowledgeCutoffDate: "May 2024",
@@ -263,7 +248,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		name: "GPT-3.5 Turbo 0301",
 		matchingModel: "gpt-3.5-turbo-0301",
 		supportsAttachments: false,
-		reasoningConfig: { enabled: false },
 		supportsTemperature: true,
 		supportsToolCalls: false,
 		knowledgeCutoffDate: "August 2021",
@@ -280,7 +264,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		name: "o1",
 		matchingModel: "o1",
 		supportsAttachments: false,
-		reasoningConfig: { enabled: true },
 		supportsTemperature: false,
 		supportsToolCalls: true,
 		knowledgeCutoffDate: "September 2023",
@@ -297,7 +280,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		name: "GPT-4.1",
 		matchingModel: "gpt-4.1",
 		supportsAttachments: true,
-		reasoningConfig: { enabled: false },
 		supportsTemperature: true,
 		supportsToolCalls: true,
 		knowledgeCutoffDate: "April 2024",
@@ -314,7 +296,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		name: "GPT-4o",
 		matchingModel: "gpt-4o",
 		supportsAttachments: true,
-		reasoningConfig: { enabled: false },
 		supportsTemperature: true,
 		supportsToolCalls: true,
 		knowledgeCutoffDate: "September 2023",
@@ -331,7 +312,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		name: "GPT-4 32K",
 		matchingModel: "gpt-4-32k",
 		supportsAttachments: false,
-		reasoningConfig: { enabled: false },
 		supportsTemperature: true,
 		supportsToolCalls: true,
 		knowledgeCutoffDate: "November 2023",
@@ -348,7 +328,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		name: "o3",
 		matchingModel: "o3",
 		supportsAttachments: true,
-		reasoningConfig: { enabled: true },
 		supportsTemperature: false,
 		supportsToolCalls: true,
 		knowledgeCutoffDate: "May 2024",
@@ -378,9 +357,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 64000,
 		costPer1kInputTokens: 0.001,
 		costPer1kOutputTokens: 0.005,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("anthropic/claude-opus-4-1", PROVIDER, {
@@ -401,9 +377,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 32000,
 		costPer1kInputTokens: 0.015,
 		costPer1kOutputTokens: 0.075,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("anthropic/claude-opus-4-5", PROVIDER, {
@@ -423,9 +396,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 64000,
 		costPer1kInputTokens: 0.005,
 		costPer1kOutputTokens: 0.025,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("anthropic/claude-opus-4-6", PROVIDER, {
@@ -445,9 +415,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.005,
 		costPer1kOutputTokens: 0.025,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("anthropic/claude-sonnet-4-5", PROVIDER, {
@@ -468,9 +435,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 64000,
 		costPer1kInputTokens: 0.003,
 		costPer1kOutputTokens: 0.015,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("mistral/codestral-2501", PROVIDER, {
@@ -490,9 +454,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 256000,
 		costPer1kInputTokens: 0.0003,
 		costPer1kOutputTokens: 0.0009,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("cohere/command-a", PROVIDER, {
@@ -512,9 +473,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 8000,
 		costPer1kInputTokens: 0.0025,
 		costPer1kOutputTokens: 0.01,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("cohere/command-r-08-2024", PROVIDER, {
@@ -534,9 +492,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 4000,
 		costPer1kInputTokens: 0.00015,
 		costPer1kOutputTokens: 0.0006,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("cohere/command-r-plus-08-2024", PROVIDER, {
@@ -556,9 +511,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 4000,
 		costPer1kInputTokens: 0.0025,
 		costPer1kOutputTokens: 0.01,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("cohere/embed-v-4-0", PROVIDER, {
@@ -577,9 +529,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 1536,
 		costPer1kInputTokens: 0.00012,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("cohere/embed-v3-english", PROVIDER, {
@@ -598,9 +547,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 1024,
 		costPer1kInputTokens: 0.0001,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("cohere/embed-v3-multilingual", PROVIDER, {
@@ -619,9 +565,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 1024,
 		costPer1kInputTokens: 0.0001,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("deepseek/r1", PROVIDER, {
@@ -641,9 +584,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 163840,
 		costPer1kInputTokens: 0.00135,
 		costPer1kOutputTokens: 0.0054,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("deepseek/r1-0528", PROVIDER, {
@@ -663,9 +603,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 163840,
 		costPer1kInputTokens: 0.00135,
 		costPer1kOutputTokens: 0.0054,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("deepseek/v3-0324", PROVIDER, {
@@ -685,9 +622,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.00114,
 		costPer1kOutputTokens: 0.00456,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("deepseek/v3.1", PROVIDER, {
@@ -707,9 +641,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.00056,
 		costPer1kOutputTokens: 0.00168,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("deepseek/v3.2", PROVIDER, {
@@ -729,9 +660,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.00058,
 		costPer1kOutputTokens: 0.00168,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("deepseek/v3.2-speciale", PROVIDER, {
@@ -751,9 +679,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.00058,
 		costPer1kOutputTokens: 0.00168,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("openai/gpt-5", PROVIDER, {
@@ -773,9 +698,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.00125,
 		costPer1kOutputTokens: 0.01,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("openai/gpt-5-chat", PROVIDER, {
@@ -795,9 +717,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00125,
 		costPer1kOutputTokens: 0.01,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("openai/gpt-5-codex", PROVIDER, {
@@ -817,9 +736,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.00125,
 		costPer1kOutputTokens: 0.01,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("openai/gpt-5-mini", PROVIDER, {
@@ -839,9 +755,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.00025,
 		costPer1kOutputTokens: 0.002,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("openai/gpt-5-nano", PROVIDER, {
@@ -861,9 +774,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.00005,
 		costPer1kOutputTokens: 0.0004,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("openai/gpt-5-pro", PROVIDER, {
@@ -884,9 +794,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 272000,
 		costPer1kInputTokens: 0.015,
 		costPer1kOutputTokens: 0.12,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("openai/gpt-5.1", PROVIDER, {
@@ -906,9 +813,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.00125,
 		costPer1kOutputTokens: 0.01,
-		reasoningConfig: {
-			enabled: true,
-		},
 		supportsResponseFormat: true,
 	}),
 
@@ -929,9 +833,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00125,
 		costPer1kOutputTokens: 0.01,
-		reasoningConfig: {
-			enabled: true,
-		},
 		supportsResponseFormat: true,
 	}),
 
@@ -952,9 +853,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.00125,
 		costPer1kOutputTokens: 0.01,
-		reasoningConfig: {
-			enabled: true,
-		},
 		supportsResponseFormat: true,
 	}),
 
@@ -976,9 +874,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.00125,
 		costPer1kOutputTokens: 0.01,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("openai/gpt-5.1-codex-mini", PROVIDER, {
@@ -998,9 +893,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.00025,
 		costPer1kOutputTokens: 0.002,
-		reasoningConfig: {
-			enabled: true,
-		},
 		supportsResponseFormat: true,
 	}),
 
@@ -1021,9 +913,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.00175,
 		costPer1kOutputTokens: 0.014,
-		reasoningConfig: {
-			enabled: true,
-		},
 		supportsResponseFormat: true,
 	}),
 
@@ -1045,9 +934,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00175,
 		costPer1kOutputTokens: 0.014,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("openai/gpt-5.2-codex", PROVIDER, {
@@ -1067,9 +953,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.00175,
 		costPer1kOutputTokens: 0.014,
-		reasoningConfig: {
-			enabled: true,
-		},
 		supportsResponseFormat: true,
 	}),
 
@@ -1090,9 +973,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 8192,
 		costPer1kInputTokens: 0.003,
 		costPer1kOutputTokens: 0.015,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("xai/grok-3-mini", PROVIDER, {
@@ -1113,9 +993,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		costPer1kInputTokens: 0.0003,
 		costPer1kOutputTokens: 0.0005,
 		costPer1kReasoningTokens: 0.0005,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("xai/grok-4", PROVIDER, {
@@ -1136,9 +1013,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		costPer1kInputTokens: 0.003,
 		costPer1kOutputTokens: 0.015,
 		costPer1kReasoningTokens: 0.015,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("xai/grok-4-fast-non-reasoning", PROVIDER, {
@@ -1158,9 +1032,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 30000,
 		costPer1kInputTokens: 0.0002,
 		costPer1kOutputTokens: 0.0005,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("xai/grok-4-fast-reasoning", PROVIDER, {
@@ -1180,9 +1051,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 30000,
 		costPer1kInputTokens: 0.0002,
 		costPer1kOutputTokens: 0.0005,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("xai/grok-code-fast-1", PROVIDER, {
@@ -1202,9 +1070,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 10000,
 		costPer1kInputTokens: 0.0002,
 		costPer1kOutputTokens: 0.0015,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("monshot/kimi-k2-thinking", PROVIDER, {
@@ -1224,9 +1089,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 262144,
 		costPer1kInputTokens: 0.0006,
 		costPer1kOutputTokens: 0.0025,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("monshot/kimi-k2.5", PROVIDER, {
@@ -1247,9 +1109,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 262144,
 		costPer1kInputTokens: 0.0006,
 		costPer1kOutputTokens: 0.003,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("meta/llama-3.2-11b-vision-instruct", PROVIDER, {
@@ -1269,9 +1128,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 8192,
 		costPer1kInputTokens: 0.00037,
 		costPer1kOutputTokens: 0.00037,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("meta/llama-3.2-90b-vision-instruct", PROVIDER, {
@@ -1291,9 +1147,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 8192,
 		costPer1kInputTokens: 0.00204,
 		costPer1kOutputTokens: 0.00204,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("meta/llama-3.3-70b-instruct", PROVIDER, {
@@ -1313,9 +1166,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.00071,
 		costPer1kOutputTokens: 0.00071,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("meta/llama-4-maverick-17b-128e-instruct-fp8", PROVIDER, {
@@ -1335,9 +1185,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 8192,
 		costPer1kInputTokens: 0.00025,
 		costPer1kOutputTokens: 0.001,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("meta/llama-4-scout-17b-16e-instruct", PROVIDER, {
@@ -1357,9 +1204,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 8192,
 		costPer1kInputTokens: 0.0002,
 		costPer1kOutputTokens: 0.00078,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("microsoft/mai-ds-r1", PROVIDER, {
@@ -1379,9 +1223,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 8192,
 		costPer1kInputTokens: 0.00135,
 		costPer1kOutputTokens: 0.0054,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("meta/llama-3-70b-instruct", PROVIDER, {
@@ -1401,9 +1242,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 2048,
 		costPer1kInputTokens: 0.00268,
 		costPer1kOutputTokens: 0.00354,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("meta/llama-3-8b-instruct", PROVIDER, {
@@ -1423,9 +1261,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 2048,
 		costPer1kInputTokens: 0.0003,
 		costPer1kOutputTokens: 0.00061,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("meta/llama-3.1-405b-instruct", PROVIDER, {
@@ -1445,9 +1280,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.00533,
 		costPer1kOutputTokens: 0.016,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("meta/llama-3.1-70b-instruct", PROVIDER, {
@@ -1467,9 +1299,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.00268,
 		costPer1kOutputTokens: 0.00354,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("meta/llama-3.1-8b-instruct", PROVIDER, {
@@ -1489,9 +1318,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.0003,
 		costPer1kOutputTokens: 0.00061,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("mistral/ministral-3b", PROVIDER, {
@@ -1511,9 +1337,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 8192,
 		costPer1kInputTokens: 0.00004,
 		costPer1kOutputTokens: 0.00004,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("mistral/mistral-large-2411", PROVIDER, {
@@ -1533,9 +1356,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.002,
 		costPer1kOutputTokens: 0.006,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("mistral/medium-2505", PROVIDER, {
@@ -1555,9 +1375,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.0004,
 		costPer1kOutputTokens: 0.002,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("mistral/mistral-nemo", PROVIDER, {
@@ -1577,9 +1394,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.00015,
 		costPer1kOutputTokens: 0.00015,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("mistral/mistral-small-2503", PROVIDER, {
@@ -1599,9 +1413,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.0001,
 		costPer1kOutputTokens: 0.0003,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("azure/model-router", PROVIDER, {
@@ -1619,9 +1430,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00014,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("microsoft/phi-3-medium-128k-instruct", PROVIDER, {
@@ -1641,9 +1449,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 4096,
 		costPer1kInputTokens: 0.00017,
 		costPer1kOutputTokens: 0.00068,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("microsoft/phi-3-medium-4k-instruct", PROVIDER, {
@@ -1663,9 +1468,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 1024,
 		costPer1kInputTokens: 0.00017,
 		costPer1kOutputTokens: 0.00068,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("microsoft/phi-3-mini-128k-instruct", PROVIDER, {
@@ -1685,9 +1487,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 4096,
 		costPer1kInputTokens: 0.00013,
 		costPer1kOutputTokens: 0.00052,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("microsoft/phi-3-mini-4k-instruct", PROVIDER, {
@@ -1707,9 +1506,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 1024,
 		costPer1kInputTokens: 0.00013,
 		costPer1kOutputTokens: 0.00052,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("microsoft/phi-3-small-128k-instruct", PROVIDER, {
@@ -1729,9 +1525,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 4096,
 		costPer1kInputTokens: 0.00015,
 		costPer1kOutputTokens: 0.0006,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("microsoft/phi-3-small-8k-instruct", PROVIDER, {
@@ -1751,9 +1544,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 2048,
 		costPer1kInputTokens: 0.00015,
 		costPer1kOutputTokens: 0.0006,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("microsoft/phi-3.5-mini-instruct", PROVIDER, {
@@ -1773,9 +1563,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 4096,
 		costPer1kInputTokens: 0.00013,
 		costPer1kOutputTokens: 0.00052,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("microsoft/phi-3.5-moe-instruct", PROVIDER, {
@@ -1795,9 +1582,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 4096,
 		costPer1kInputTokens: 0.00016,
 		costPer1kOutputTokens: 0.00064,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("microsoft/phi-4", PROVIDER, {
@@ -1817,9 +1601,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 4096,
 		costPer1kInputTokens: 0.000125,
 		costPer1kOutputTokens: 0.0005,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("microsoft/phi-4-mini", PROVIDER, {
@@ -1839,9 +1620,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 4096,
 		costPer1kInputTokens: 0.000075,
 		costPer1kOutputTokens: 0.0003,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("microsoft/phi-4-mini-reasoning", PROVIDER, {
@@ -1861,9 +1639,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 4096,
 		costPer1kInputTokens: 0.000075,
 		costPer1kOutputTokens: 0.0003,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("microsoft/phi-4-multimodal", PROVIDER, {
@@ -1883,9 +1658,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 4096,
 		costPer1kInputTokens: 0.00008,
 		costPer1kOutputTokens: 0.00032,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("microsoft/phi-4-reasoning", PROVIDER, {
@@ -1905,9 +1677,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 4096,
 		costPer1kInputTokens: 0.000125,
 		costPer1kOutputTokens: 0.0005,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("microsoft/phi-4-reasoning-plus", PROVIDER, {
@@ -1927,9 +1696,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 4096,
 		costPer1kInputTokens: 0.000125,
 		costPer1kOutputTokens: 0.0005,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("microsoft/text-embedding-3-large", PROVIDER, {
@@ -1947,9 +1713,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 3072,
 		costPer1kInputTokens: 0.00013,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("microsoft/text-embedding-3-small", PROVIDER, {
@@ -1967,9 +1730,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 1536,
 		costPer1kInputTokens: 0.00002,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("microsoft/text-embedding-ada-002", PROVIDER, {
@@ -1987,9 +1747,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 1536,
 		costPer1kInputTokens: 0.0001,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 	createModelConfig("claude-sonnet-4-6", PROVIDER, {
 		name: "Claude Sonnet 4.6",
@@ -2009,9 +1766,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 64000,
 		costPer1kInputTokens: 0.003,
 		costPer1kOutputTokens: 0.015,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("gpt-5.3-chat", PROVIDER, {
@@ -2032,9 +1786,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00175,
 		costPer1kOutputTokens: 0.014,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("gpt-5.3-codex", PROVIDER, {
@@ -2055,9 +1806,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.00175,
 		costPer1kOutputTokens: 0.014,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("gpt-5.4", PROVIDER, {
@@ -2078,9 +1826,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.0025,
 		costPer1kOutputTokens: 0.015,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("gpt-5.4-mini", PROVIDER, {
@@ -2101,9 +1846,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.00075,
 		costPer1kOutputTokens: 0.0045,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("gpt-5.4-nano", PROVIDER, {
@@ -2124,9 +1866,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.0002,
 		costPer1kOutputTokens: 0.00125,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("gpt-5.4-pro", PROVIDER, {
@@ -2147,9 +1886,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.03,
 		costPer1kOutputTokens: 0.18,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("gpt-5.5", PROVIDER, {
@@ -2170,9 +1906,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.005,
 		costPer1kOutputTokens: 0.03,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("grok-4-1-fast-non-reasoning", PROVIDER, {
@@ -2191,9 +1924,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 8192,
 		costPer1kInputTokens: 0.0002,
 		costPer1kOutputTokens: 0.0005,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("grok-4-1-fast-reasoning", PROVIDER, {
@@ -2212,9 +1942,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 8192,
 		costPer1kInputTokens: 0.0002,
 		costPer1kOutputTokens: 0.0005,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("grok-4-20-non-reasoning", PROVIDER, {
@@ -2234,9 +1961,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 8192,
 		costPer1kInputTokens: 0.002,
 		costPer1kOutputTokens: 0.006,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("grok-4-20-reasoning", PROVIDER, {
@@ -2256,9 +1980,6 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 8192,
 		costPer1kInputTokens: 0.002,
 		costPer1kOutputTokens: 0.006,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("kimi-k2.6", PROVIDER, {
@@ -2279,8 +2000,5 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 262144,
 		costPer1kInputTokens: 0.00095,
 		costPer1kOutputTokens: 0.004,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 ]);

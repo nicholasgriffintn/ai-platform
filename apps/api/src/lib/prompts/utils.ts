@@ -4,21 +4,20 @@ import type { PromptModelMetadata } from "./sections/metadata";
 export interface PromptCapabilities {
 	supportsToolCalls: boolean;
 	supportsArtifacts: boolean;
-	reasoningEnabled: boolean;
-	requiresThinkingPrompt: boolean;
+	simulatedThinking: boolean;
 }
 
 interface ResolvePromptCapabilityArgs {
 	supportsToolCalls?: boolean;
 	supportsArtifacts?: boolean;
-	requiresThinkingPrompt?: boolean;
+	simulatedThinking?: boolean;
 	modelMetadata?: PromptModelMetadata;
 }
 
 export function resolvePromptCapabilities({
 	supportsToolCalls,
 	supportsArtifacts,
-	requiresThinkingPrompt,
+	simulatedThinking,
 	modelMetadata,
 }: ResolvePromptCapabilityArgs): PromptCapabilities {
 	const metadata = modelMetadata?.modelConfig;
@@ -26,15 +25,13 @@ export function resolvePromptCapabilities({
 	return {
 		supportsToolCalls: supportsToolCalls ?? metadata?.supportsToolCalls ?? false,
 		supportsArtifacts: supportsArtifacts ?? metadata?.supportsArtifacts ?? false,
-		reasoningEnabled: metadata?.reasoningConfig?.enabled ?? false,
-		requiresThinkingPrompt: requiresThinkingPrompt ?? metadata?.requiresThinkingPrompt ?? false,
+		simulatedThinking: simulatedThinking ?? false,
 	};
 }
 
 export function getResponseStyle(
 	verbosity?: VerbosityLevel,
-	reasoningEnabled = false,
-	requiresThinkingPrompt = false,
+	simulatedThinking = false,
 	supportsToolCalls = false,
 	supportsArtifacts = false,
 	isAgent = false,
@@ -49,6 +46,28 @@ export function getResponseStyle(
 	problemBreakdownInstructions: string;
 	answerFormatInstructions: string;
 } {
+	if (verbosity === "caveman") {
+		const cavemanPreferences = `- Respond terse like smart caveman: all technical substance stays, fluff dies.
+  - Drop articles (a/an/the), filler, pleasantries, hedging, and redundant transitions.
+  - Fragments are fine. Prefer short synonyms and common technical abbreviations such as DB, auth, config, req, res, fn, and impl.
+  - Use arrows for causality where clear, for example: "X -> Y".
+  - Preserve exact technical terms, code, commands, filenames, errors, API names, and quoted text.
+  - Prefer pattern: "[thing] [action] [reason]. [next step]."
+  - Stay accurate and complete; never omit required warnings, constraints, validation results, or user-requested detail.
+  - Temporarily use normal clear prose for security warnings, irreversible action confirmations, multi-step instructions where fragments could be misread, or when the user asks for clarification. Resume caveman style after the clear part.`;
+
+		return {
+			traits:
+				"terse, technical, direct, compressed, practical, caveman-style without losing accuracy",
+			preferences: userPreferences
+				? `${cavemanPreferences}\n- Also respect these user preferences when they do not conflict with caveman brevity:\n${userPreferences}`
+				: cavemanPreferences,
+			problemBreakdownInstructions:
+				"Use a tiny breakdown only when needed. Fragments OK. Keep causality clear with arrows.",
+			answerFormatInstructions: `Deliver ${isCoding ? "code" : "answer"} in compressed caveman style. Keep all technical substance; remove filler.`,
+		};
+	}
+
 	const normalizedVerbosity: VerbosityLevel =
 		verbosity === "low" || verbosity === "high" ? verbosity : "medium";
 
@@ -139,7 +158,7 @@ export function getResponseStyle(
 
 		const additionalGuidelines: string[] = [];
 
-		if (!reasoningEnabled || requiresThinkingPrompt) {
+		if (simulatedThinking) {
 			additionalGuidelines.push(
 				"Before answering, outline the essential steps you will take and share them briefly with the user.",
 			);
@@ -221,7 +240,7 @@ export function getResponseStyle(
 	PREFERENCES_WITH_INSTRUCTIONS += `${step++}. Read and understand questions carefully.\n`;
 	PREFERENCES_WITH_INSTRUCTIONS += `${step++}. If the question is unclear or lacks necessary information, ask for clarification.\n`;
 
-	if (!reasoningEnabled || requiresThinkingPrompt) {
+	if (simulatedThinking) {
 		PREFERENCES_WITH_INSTRUCTIONS += `${step}. Analyse the question and context thoroughly before answering, and outline the essential steps you will take.\n`;
 		if (isCoding) {
 			PREFERENCES_WITH_INSTRUCTIONS += `${step}.1 Break down the problem into smaller components.\n`;
@@ -267,6 +286,12 @@ export function getResponseStyle(
 	}
 
 	PREFERENCES_WITH_INSTRUCTIONS += `${step++}. If you're unsure or don't have the information to answer, say "I don't know" or offer to find more information safely.\n`;
+
+	if (supportsToolCalls && !simulatedThinking) {
+		PREFERENCES_WITH_INSTRUCTIONS += `${step++}. Determine whether the query can be resolved directly or if a tool is required. Prefer the lightest option (internal knowledge → retrieval → browsing → code execution).\n`;
+		PREFERENCES_WITH_INSTRUCTIONS += `${step++}. When using a tool, include a short outcome summary only if it helps the user.\n`;
+		PREFERENCES_WITH_INSTRUCTIONS += `${step++}. Stop calling tools once you have enough information to answer confidently.\n`;
+	}
 
 	if (isCoding) {
 		PREFERENCES_WITH_INSTRUCTIONS += `${step}. When coding, present runnable code in fenced blocks or artifacts and call out assumptions or edge cases.\n`;

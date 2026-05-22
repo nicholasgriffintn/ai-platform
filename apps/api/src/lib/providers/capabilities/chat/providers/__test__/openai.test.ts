@@ -168,7 +168,7 @@ describe("OpenAIProvider", () => {
 			vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
 				name: "gpt-4-thinking",
 				modalities: { input: ["text"], output: ["text"] },
-				reasoningConfig: { enabled: true },
+				reasoningConfig: { supportedEffortLevels: ["none", "thinking", "low", "medium", "high"] },
 			});
 
 			vi.mocked(createCommonParameters).mockReturnValue({
@@ -194,11 +194,77 @@ describe("OpenAIProvider", () => {
 			expect(result.reasoning).toBeUndefined();
 		});
 
+		it("should omit simulated thinking from provider reasoning parameters", async () => {
+			// @ts-ignore - getModelConfigByMatchingModel is not typed
+			vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
+				name: "gpt-4-thinking",
+				modalities: { input: ["text"], output: ["text"] },
+				reasoningConfig: { supportedEffortLevels: ["none", "thinking", "low", "medium", "high"] },
+			});
+
+			vi.mocked(createCommonParameters).mockReturnValue({
+				model: "gpt-4-thinking",
+				temperature: 0.7,
+			});
+
+			vi.mocked(shouldEnableStreaming).mockReturnValue(false);
+			vi.mocked(getToolsForProvider).mockReturnValue({ tools: [] });
+
+			const provider = new OpenAIProvider();
+
+			const params = {
+				model: "gpt-4-thinking",
+				messages: [{ role: "user", content: "Think about this problem" }],
+				env: { AI_GATEWAY_TOKEN: "test-token" },
+				reasoning_effort: "simulated-thinking",
+			};
+
+			const result = await provider.mapParameters(params as any);
+
+			expect(result.reasoning_effort).toBeUndefined();
+			expect(result.reasoning).toBeUndefined();
+		});
+
+		it("should omit none from provider reasoning parameters", async () => {
+			// @ts-ignore - getModelConfigByMatchingModel is not typed
+			vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
+				name: "gpt-4-thinking",
+				modalities: { input: ["text"], output: ["text"] },
+				reasoningConfig: { supportedEffortLevels: ["none", "thinking", "low", "medium", "high"] },
+			});
+
+			vi.mocked(createCommonParameters).mockReturnValue({
+				model: "gpt-4-thinking",
+				temperature: 0.7,
+			});
+
+			vi.mocked(shouldEnableStreaming).mockReturnValue(false);
+			vi.mocked(getToolsForProvider).mockReturnValue({ tools: [] });
+
+			const provider = new OpenAIProvider();
+
+			const params = {
+				model: "gpt-4-thinking",
+				messages: [{ role: "user", content: "No extra reasoning" }],
+				env: { AI_GATEWAY_TOKEN: "test-token" },
+				reasoning_effort: "none",
+			};
+
+			const result = await provider.mapParameters(params as any);
+
+			expect(result.reasoning_effort).toBeUndefined();
+			expect(result.reasoning).toBeUndefined();
+		});
+
 		it("should include verbosity controls when provided", async () => {
 			// @ts-ignore - getModelConfigByMatchingModel is not typed
 			vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
 				name: "gpt-5.1",
 				modalities: { input: ["text"], output: ["text"] },
+				verbosityConfig: {
+					supportedVerbosityLevels: ["low", "medium", "high"],
+					defaultVerbosity: "medium",
+				},
 			});
 
 			vi.mocked(createCommonParameters).mockReturnValue({
@@ -222,6 +288,68 @@ describe("OpenAIProvider", () => {
 
 			expect(result.verbosity).toBe("low");
 			expect(result.text).toBeUndefined();
+		});
+
+		it("should omit verbosity controls when the model does not support provider verbosity", async () => {
+			// @ts-ignore - getModelConfigByMatchingModel is not typed
+			vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
+				name: "gpt-4o",
+				modalities: { input: ["text"], output: ["text"] },
+			});
+
+			vi.mocked(createCommonParameters).mockReturnValue({
+				model: "gpt-4o",
+				temperature: 0.7,
+			});
+
+			vi.mocked(shouldEnableStreaming).mockReturnValue(false);
+			vi.mocked(getToolsForProvider).mockReturnValue({ tools: [] });
+
+			const provider = new OpenAIProvider();
+
+			const params = {
+				model: "gpt-4o",
+				messages: [{ role: "user", content: "Keep it brief" }],
+				env: { AI_GATEWAY_TOKEN: "test-token" },
+				verbosity: "low",
+			};
+
+			const result = await provider.mapParameters(params as any);
+
+			expect(result.verbosity).toBeUndefined();
+		});
+
+		it("should never send caveman as provider verbosity", async () => {
+			// @ts-ignore - getModelConfigByMatchingModel is not typed
+			vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
+				name: "gpt-5.1",
+				modalities: { input: ["text"], output: ["text"] },
+				verbosityConfig: {
+					supportedVerbosityLevels: ["low", "medium", "high", "caveman"],
+					defaultVerbosity: "medium",
+				},
+			});
+
+			vi.mocked(createCommonParameters).mockReturnValue({
+				model: "gpt-5.1",
+				temperature: 0.7,
+			});
+
+			vi.mocked(shouldEnableStreaming).mockReturnValue(false);
+			vi.mocked(getToolsForProvider).mockReturnValue({ tools: [] });
+
+			const provider = new OpenAIProvider();
+
+			const params = {
+				model: "gpt-5.1",
+				messages: [{ role: "user", content: "Use caveman" }],
+				env: { AI_GATEWAY_TOKEN: "test-token" },
+				verbosity: "caveman",
+			};
+
+			const result = await provider.mapParameters(params as any);
+
+			expect(result.verbosity).toBeUndefined();
 		});
 	});
 });

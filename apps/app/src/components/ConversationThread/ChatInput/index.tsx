@@ -35,6 +35,7 @@ import { useUIStore } from "~/state/stores/uiStore";
 import type { ModelConfigItem } from "~/types";
 import { ChatSettings as ChatSettingsComponent } from "./ChatSettings";
 import { ToolToggles } from "./ChatSettings/ToolToggles";
+import { InlineResponseControls } from "./InlineResponseControls";
 import { ModelSelector } from "./ModelSelector";
 
 const SUPPORTED_MARKDOWN_IMAGE_LANGUAGES = [
@@ -705,11 +706,12 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 									<div className="min-w-0 flex-shrink">
 										<ModelSelector isDisabled={isLoading} mono={true} />
 									</div>
+									<InlineResponseControls isDisabled={isLoading} />
 									<ToolToggles isDisabled={isLoading || isToolSelectionLocked} />
 								</div>
 								<div className="flex-shrink-0 flex items-center gap-2">
 									{!isMobile && (
-										<span className="text-xs text-zinc-500 dark:text-zinc-400 hidden sm:inline">
+										<span className="hidden text-xs text-zinc-500 lg:inline dark:text-zinc-400">
 											Shift+Enter for new line
 										</span>
 									)}

@@ -328,6 +328,32 @@ function getStringPropertyValue(objectNode, propertyName, sourceFile) {
 	return undefined;
 }
 
+function getObjectPropertyValue(objectNode, propertyName, sourceFile) {
+	const property = getPropertyAssignment(objectNode, propertyName, sourceFile);
+	if (!property || !ts.isObjectLiteralExpression(property.initializer)) {
+		return undefined;
+	}
+
+	const parsed = parseLiteralValue(property.initializer, sourceFile);
+	return parsed !== UNPARSEABLE && parsed && typeof parsed === "object" && !Array.isArray(parsed)
+		? parsed
+		: undefined;
+}
+
+function getReasoningOverrideModelIds(objectNode, sourceFile) {
+	const reasoningConfig = getObjectPropertyValue(objectNode, "reasoningConfig", sourceFile);
+	if (!reasoningConfig) {
+		return [];
+	}
+
+	const modelOverrides = reasoningConfig.modelOverrides;
+	if (!modelOverrides || typeof modelOverrides !== "object" || Array.isArray(modelOverrides)) {
+		return [];
+	}
+
+	return Object.values(modelOverrides).filter((value) => typeof value === "string");
+}
+
 function findProviderFromConstant(sourceFile) {
 	let provider = null;
 
@@ -623,9 +649,10 @@ function buildUpdateValues(
 		}
 	}
 
-	if (hasOwn(remoteModel, "reasoning")) {
+	if (hasOwn(remoteModel, "reasoning") && remoteModel.reasoning) {
 		values.reasoningConfig = {
-			enabled: Boolean(remoteModel.reasoning),
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
 		};
 	}
 
@@ -1033,6 +1060,11 @@ async function inspectModelFile({ filePath, remoteProviders, selectedProviders }
 		const matchingModel = getStringPropertyValue(entry.objectNode, "matchingModel", sourceFile);
 		if (matchingModel && remoteModels && hasOwn(remoteModels, matchingModel)) {
 			representedRemoteModelIds.add(matchingModel);
+		}
+		for (const overrideModelId of getReasoningOverrideModelIds(entry.objectNode, sourceFile)) {
+			if (remoteModels && hasOwn(remoteModels, overrideModelId)) {
+				representedRemoteModelIds.add(overrideModelId);
+			}
 		}
 	}
 

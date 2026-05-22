@@ -14,6 +14,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { useModels } from "~/hooks/useModels";
 import { useWebLLMModels } from "~/hooks/useWebLLMModels";
 import { getAvailableModels } from "~/lib/models";
+import {
+	formatReasoningLabel,
+	getDefaultReasoningEffort,
+	getReasoningOptions,
+} from "~/lib/reasoning";
+import { formatVerbosityLabel, getDefaultVerbosity, getVerbosityOptions } from "~/lib/verbosity";
 import { useChatStore } from "~/state/stores/chatStore";
 import type { ChatSettings as ChatSettingsType, ReasoningEffort, VerbosityLevel } from "~/types";
 import { ToolSelector } from "./ToolSelector";
@@ -39,36 +45,10 @@ export const ChatSettings = ({
 	const activeModelId = model && model.length > 0 ? model : undefined;
 	const selectedModelConfig = activeModelId ? availableModels[activeModelId] : undefined;
 
-	const reasoningOptions = selectedModelConfig?.reasoningConfig?.supportedEffortLevels ?? [];
-	const verbosityOptions = selectedModelConfig?.verbosityConfig?.supportedVerbosityLevels ?? [];
-
-	const formatReasoningLabel = (value: ReasoningEffort) => {
-		switch (value) {
-			case "none":
-				return "None (fastest)";
-			case "low":
-				return "Low (quick)";
-			case "medium":
-				return "Medium (balanced)";
-			case "high":
-				return "High (thorough)";
-			default:
-				return value;
-		}
-	};
-
-	const formatVerbosityLabel = (value: VerbosityLevel) => {
-		switch (value) {
-			case "low":
-				return "Low (concise)";
-			case "medium":
-				return "Medium (balanced)";
-			case "high":
-				return "High (detailed)";
-			default:
-				return value;
-		}
-	};
+	const reasoningOptions = getReasoningOptions(selectedModelConfig);
+	const defaultReasoningEffort = getDefaultReasoningEffort(selectedModelConfig);
+	const verbosityOptions = getVerbosityOptions(selectedModelConfig);
+	const defaultVerbosity = getDefaultVerbosity(selectedModelConfig);
 
 	const handleSettingChange = (key: keyof ChatSettingsType, value: string | boolean) => {
 		if (typeof value === "string") {
@@ -185,54 +165,28 @@ export const ChatSettings = ({
 									<FormSelect
 										id="reasoning_effort"
 										label="Reasoning depth"
-										value={chatSettings.reasoning?.effort ?? ""}
+										value={chatSettings.reasoning?.effort ?? defaultReasoningEffort}
 										onChange={(e) => handleReasoningEffortChange(e.target.value)}
 										disabled={isDisabled}
-										options={[
-											{
-												value: "",
-												label: `Model default${
-													selectedModelConfig?.reasoningConfig?.defaultEffort
-														? ` (${formatReasoningLabel(
-																selectedModelConfig.reasoningConfig.defaultEffort,
-															)})`
-														: ""
-												}`,
-											},
-											...reasoningOptions.map((option) => ({
-												value: option,
-												label: formatReasoningLabel(option),
-											})),
-										]}
-										description="Controls how much time the model spends thinking before responding."
+										options={reasoningOptions.map((option) => ({
+											value: option,
+											label: formatReasoningLabel(option),
+										}))}
+										description="Controls prompt-level simulated thinking or configured provider thinking."
 									/>
 								)}
-								{verbosityOptions.length > 0 && (
-									<FormSelect
-										id="text_verbosity"
-										label="Verbosity"
-										value={chatSettings?.verbosity ?? ""}
-										onChange={(e) => handleVerbosityChange(e.target.value)}
-										disabled={isDisabled}
-										options={[
-											{
-												value: "",
-												label: `Model default${
-													selectedModelConfig?.verbosityConfig?.defaultVerbosity
-														? ` (${formatVerbosityLabel(
-																selectedModelConfig.verbosityConfig.defaultVerbosity,
-															)})`
-														: ""
-												}`,
-											},
-											...verbosityOptions.map((option) => ({
-												value: option,
-												label: formatVerbosityLabel(option),
-											})),
-										]}
-										description="Adjusts how detailed or concise the response should be."
-									/>
-								)}
+								<FormSelect
+									id="text_verbosity"
+									label="Verbosity"
+									value={chatSettings?.verbosity ?? defaultVerbosity}
+									onChange={(e) => handleVerbosityChange(e.target.value)}
+									disabled={isDisabled}
+									options={verbosityOptions.map((option) => ({
+										value: option,
+										label: formatVerbosityLabel(option),
+									}))}
+									description="Adjusts how detailed or concise the response should be."
+								/>
 
 								<RangeInput
 									id="temperature"

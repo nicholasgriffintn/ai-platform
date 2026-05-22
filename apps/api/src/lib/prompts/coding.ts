@@ -13,8 +13,6 @@ export function returnCodingPrompt(
 	userSettings?: IUserSettings,
 	supportsToolCalls?: boolean,
 	supportsArtifacts?: boolean,
-
-	requiresThinkingPrompt?: boolean,
 	modelMetadata?: PromptModelMetadata,
 ): string {
 	const chatMode = request.mode || "standard";
@@ -27,6 +25,8 @@ export function returnCodingPrompt(
 		userSettings?.memories_save_enabled || userSettings?.memories_chat_history_enabled;
 
 	const verbosity = request.text?.verbosity ?? request.verbosity ?? "medium";
+	const reasoningEffort = request.reasoning?.effort ?? request.reasoning_effort ?? "none";
+	const simulatedThinking = reasoningEffort === "simulated-thinking";
 	const preferredLanguage = request.lang?.trim() || null;
 
 	const isAgent =
@@ -40,7 +40,7 @@ export function returnCodingPrompt(
 		supportsToolCalls,
 		supportsArtifacts,
 
-		requiresThinkingPrompt,
+		simulatedThinking,
 		modelMetadata,
 	});
 
@@ -54,8 +54,7 @@ export function returnCodingPrompt(
 	const { traits, preferences, problemBreakdownInstructions, answerFormatInstructions } =
 		getResponseStyle(
 			verbosity,
-			capabilities.reasoningEnabled,
-			capabilities.requiresThinkingPrompt,
+			capabilities.simulatedThinking,
 			capabilities.supportsToolCalls,
 			capabilities.supportsArtifacts,
 			isAgent,
@@ -77,7 +76,7 @@ export function returnCodingPrompt(
 		isAgent,
 		supportsToolCalls: capabilities.supportsToolCalls,
 		supportsArtifacts: capabilities.supportsArtifacts,
-		reasoningEnabled: capabilities.reasoningEnabled,
+		simulatedThinking: capabilities.simulatedThinking,
 		preferredLanguage,
 		verbosity,
 		format: layout.principlesFormat,
@@ -115,7 +114,7 @@ export function returnCodingPrompt(
 	builder
 		.add(
 			buildCodingExampleOutputSection({
-				reasoningEnabled: capabilities.reasoningEnabled,
+				simulatedThinking: capabilities.simulatedThinking,
 				supportsArtifacts: capabilities.supportsArtifacts,
 				problemBreakdownInstructions,
 				answerFormatInstructions,

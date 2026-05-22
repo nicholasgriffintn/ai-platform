@@ -14,7 +14,6 @@ export const xaiModelConfig: ModelConfig = {
 		},
 		supportsAttachments: false,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: true },
 		supportsToolCalls: true,
 		contextWindow: 131072,
 		maxTokens: 8192,
@@ -42,7 +41,6 @@ export const xaiModelConfig: ModelConfig = {
 		},
 		supportsAttachments: true,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: false },
 		supportsToolCalls: true,
 		contextWindow: 8192,
 		maxTokens: 4096,
@@ -70,7 +68,6 @@ export const xaiModelConfig: ModelConfig = {
 		},
 		supportsAttachments: false,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: false },
 		supportsToolCalls: true,
 		contextWindow: 131072,
 		maxTokens: 8192,
@@ -99,7 +96,6 @@ export const xaiModelConfig: ModelConfig = {
 		},
 		supportsAttachments: false,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: true },
 		supportsToolCalls: true,
 		contextWindow: 131072,
 		maxTokens: 8192,
@@ -109,7 +105,7 @@ export const xaiModelConfig: ModelConfig = {
 		contextComplexity: 3,
 		reliability: 4,
 		speed: 4,
-		isFeatured: true,
+		isFeatured: false,
 		includedInRouter: true,
 		supportsArtifacts: true,
 		costPer1kReasoningTokens: 0.0005,
@@ -128,7 +124,6 @@ export const xaiModelConfig: ModelConfig = {
 		},
 		supportsAttachments: false,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: false },
 		supportsToolCalls: true,
 		contextWindow: 131072,
 		maxTokens: 8192,
@@ -157,7 +152,6 @@ export const xaiModelConfig: ModelConfig = {
 		},
 		supportsAttachments: false,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: false },
 		supportsToolCalls: true,
 		contextWindow: 131072,
 		maxTokens: 8192,
@@ -167,7 +161,7 @@ export const xaiModelConfig: ModelConfig = {
 		contextComplexity: 4,
 		reliability: 4,
 		speed: 3,
-		isFeatured: true,
+		isFeatured: false,
 		includedInRouter: true,
 		supportsArtifacts: true,
 	},
@@ -185,7 +179,6 @@ export const xaiModelConfig: ModelConfig = {
 		},
 		supportsAttachments: false,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: true },
 		supportsToolCalls: true,
 		contextWindow: 131072,
 		maxTokens: 8192,
@@ -213,7 +206,6 @@ export const xaiModelConfig: ModelConfig = {
 		},
 		supportsAttachments: false,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: true },
 		supportsToolCalls: true,
 		contextWindow: 131072,
 		maxTokens: 8192,
@@ -241,7 +233,6 @@ export const xaiModelConfig: ModelConfig = {
 		},
 		supportsAttachments: false,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: false },
 		supportsToolCalls: true,
 		contextWindow: 131072,
 		maxTokens: 8192,
@@ -270,7 +261,6 @@ export const xaiModelConfig: ModelConfig = {
 		},
 		supportsAttachments: false,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: true },
 		supportsToolCalls: true,
 		contextWindow: 256000,
 		maxTokens: 64000,
@@ -280,7 +270,7 @@ export const xaiModelConfig: ModelConfig = {
 		contextComplexity: 5,
 		reliability: 5,
 		speed: 2,
-		isFeatured: true,
+		isFeatured: false,
 		includedInRouter: false,
 		supportsArtifacts: true,
 		supportsPresencePenalty: false,
@@ -300,7 +290,6 @@ export const xaiModelConfig: ModelConfig = {
 		},
 		supportsAttachments: true,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: false },
 		supportsToolCalls: true,
 		contextWindow: 8192,
 		maxTokens: 4096,
@@ -328,7 +317,6 @@ export const xaiModelConfig: ModelConfig = {
 		},
 		supportsAttachments: false,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: false },
 		supportsToolCalls: true,
 		contextWindow: 131072,
 		maxTokens: 8192,
@@ -355,7 +343,6 @@ export const xaiModelConfig: ModelConfig = {
 		},
 		supportsAttachments: false,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: false },
 		supportsToolCalls: true,
 		contextWindow: 131072,
 		maxTokens: 8192,
@@ -386,9 +373,6 @@ export const xaiModelConfig: ModelConfig = {
 		maxTokens: 8192,
 		costPer1kInputTokens: 0.002,
 		costPer1kOutputTokens: 0.01,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"grok-2-vision": {
@@ -409,9 +393,6 @@ export const xaiModelConfig: ModelConfig = {
 		maxTokens: 4096,
 		costPer1kInputTokens: 0.002,
 		costPer1kOutputTokens: 0.01,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"grok-2-vision-1212": {
@@ -432,9 +413,6 @@ export const xaiModelConfig: ModelConfig = {
 		maxTokens: 4096,
 		costPer1kInputTokens: 0.002,
 		costPer1kOutputTokens: 0.01,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"grok-4-1-fast": {
@@ -455,9 +433,6 @@ export const xaiModelConfig: ModelConfig = {
 		maxTokens: 30000,
 		costPer1kInputTokens: 0.0002,
 		costPer1kOutputTokens: 0.0005,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"grok-4-1-fast-non-reasoning": {
@@ -478,9 +453,6 @@ export const xaiModelConfig: ModelConfig = {
 		maxTokens: 30000,
 		costPer1kInputTokens: 0.0002,
 		costPer1kOutputTokens: 0.0005,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"grok-4-fast": {
@@ -501,9 +473,6 @@ export const xaiModelConfig: ModelConfig = {
 		maxTokens: 30000,
 		costPer1kInputTokens: 0.0002,
 		costPer1kOutputTokens: 0.0005,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"grok-4-fast-non-reasoning": {
@@ -524,9 +493,6 @@ export const xaiModelConfig: ModelConfig = {
 		maxTokens: 30000,
 		costPer1kInputTokens: 0.0002,
 		costPer1kOutputTokens: 0.0005,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"grok-beta": {
@@ -547,9 +513,6 @@ export const xaiModelConfig: ModelConfig = {
 		maxTokens: 4096,
 		costPer1kInputTokens: 0.005,
 		costPer1kOutputTokens: 0.015,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"grok-code-fast-1": {
@@ -570,9 +533,6 @@ export const xaiModelConfig: ModelConfig = {
 		maxTokens: 10000,
 		costPer1kInputTokens: 0.0002,
 		costPer1kOutputTokens: 0.0015,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 	"grok-4.20-0309-non-reasoning": {
 		name: "Grok 4.20 (Non-Reasoning)",
@@ -591,9 +551,6 @@ export const xaiModelConfig: ModelConfig = {
 		maxTokens: 30000,
 		costPer1kInputTokens: 0.00125,
 		costPer1kOutputTokens: 0.0025,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"grok-4.20-0309-reasoning": {
@@ -613,9 +570,6 @@ export const xaiModelConfig: ModelConfig = {
 		maxTokens: 30000,
 		costPer1kInputTokens: 0.00125,
 		costPer1kOutputTokens: 0.0025,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"grok-4.20-multi-agent-0309": {
@@ -635,9 +589,6 @@ export const xaiModelConfig: ModelConfig = {
 		maxTokens: 30000,
 		costPer1kInputTokens: 0.00125,
 		costPer1kOutputTokens: 0.0025,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"grok-4.3": {
@@ -657,9 +608,6 @@ export const xaiModelConfig: ModelConfig = {
 		maxTokens: 30000,
 		costPer1kInputTokens: 0.00125,
 		costPer1kOutputTokens: 0.0025,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"grok-imagine-image": {
@@ -677,9 +625,6 @@ export const xaiModelConfig: ModelConfig = {
 		supportsToolCalls: false,
 		contextWindow: 8000,
 		maxTokens: 0,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"grok-imagine-image-quality": {
@@ -697,9 +642,6 @@ export const xaiModelConfig: ModelConfig = {
 		supportsToolCalls: false,
 		contextWindow: 8000,
 		maxTokens: 0,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"grok-imagine-video": {
@@ -717,9 +659,6 @@ export const xaiModelConfig: ModelConfig = {
 		supportsToolCalls: false,
 		contextWindow: 1024,
 		maxTokens: 0,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 	"grok-build-0.1": {
 		name: "Grok Build 0.1",
@@ -739,8 +678,5 @@ export const xaiModelConfig: ModelConfig = {
 		maxTokens: 256000,
 		costPer1kInputTokens: 0.001,
 		costPer1kOutputTokens: 0.002,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 };
