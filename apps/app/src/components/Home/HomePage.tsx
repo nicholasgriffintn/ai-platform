@@ -1,19 +1,18 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
+import { CanvasGenerationsView } from "~/components/Canvas/CanvasGenerationsView";
+import { useCanvasStudio } from "~/components/Canvas/useCanvasStudio";
 import { ChatSidebar } from "~/components/ChatSidebar";
+import { ConversationThread } from "~/components/ConversationThread";
 import { PageShell } from "~/components/Core/PageShell";
 import { PageTitle } from "~/components/Core/PageTitle";
 import { SearchDialog } from "~/components/Search/SearchDialog";
 import { useChatStore } from "~/state/stores/chatStore";
-import { ConversationThread, type ConversationThreadModeConfig } from ".";
 
-interface ConversationPageProps {
-	title: string;
-	modeConfig?: ConversationThreadModeConfig;
-}
-
-export function ConversationPage({ title, modeConfig }: ConversationPageProps) {
+export function HomePage() {
 	const { initializeStore, showSearch, setShowSearch, setChatInput } = useChatStore();
+	const [isCanvasMode, setIsCanvasMode] = useState(false);
+	const canvas = useCanvasStudio({ enabled: isCanvasMode });
 
 	useEffect(() => {
 		const init = async () => {
@@ -33,14 +32,20 @@ export function ConversationPage({ title, modeConfig }: ConversationPageProps) {
 
 	return (
 		<PageShell
-			sidebarContent={<ChatSidebar />}
+			sidebarContent={
+				<ChatSidebar
+					canvas={canvas}
+					isCanvasMode={isCanvasMode}
+					onCanvasModeChange={setIsCanvasMode}
+				/>
+			}
 			fullBleed={true}
-			headerContent={<PageTitle title={title} className="sr-only" />}
+			headerContent={<PageTitle title="Conversation" className="sr-only" />}
 		>
-			<div className="flex flex-row flex-grow flex-1 overflow-hidden relative h-full">
-				<div className="flex flex-col flex-grow h-full w-full">
-					<div className="flex-1 overflow-hidden relative">
-						<ConversationThread modeConfig={modeConfig} />
+			<div className="flex h-full flex-1 flex-row overflow-hidden">
+				<div className="flex h-full w-full flex-1 flex-col">
+					<div className="relative flex-1 overflow-hidden">
+						{isCanvasMode ? <CanvasGenerationsView canvas={canvas} /> : <ConversationThread />}
 					</div>
 				</div>
 			</div>

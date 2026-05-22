@@ -8,10 +8,11 @@ import {
 } from "~/lib/api/drawings";
 import type { Drawing, GenerateImageResponse, GuessResponse } from "~/types/drawing";
 
-export const useFetchDrawings = () => {
+export const useFetchDrawings = (enabled = true) => {
 	return useQuery<Drawing[], Error>({
 		queryKey: ["drawings"],
 		queryFn: fetchDrawings,
+		enabled,
 	});
 };
 

@@ -298,18 +298,6 @@ export const FEATURED_APPS: FeaturedAppDefinition[] = [
 		kind: "frontend",
 	},
 	{
-		id: "featured-drawing",
-		name: "Drawing",
-		description: "Create drawings and get AI to enhance them or guess what they are",
-		icon: "pencil",
-		category: "Media",
-		theme: "rose",
-		tags: ["creative", "canvas"],
-		href: "/apps/drawing",
-		type: "premium",
-		kind: "frontend",
-	},
-	{
 		id: "featured-podcast-processor",
 		name: "Podcast Processor",
 		description: "Upload and process your podcast to get transcription, summary, and cover image",

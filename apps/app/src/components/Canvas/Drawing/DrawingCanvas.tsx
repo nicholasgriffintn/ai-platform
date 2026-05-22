@@ -11,7 +11,7 @@ interface CanvasProps {
 	drawingData?: string;
 }
 
-export function Canvas({
+export function DrawingCanvas({
 	canvasRef,
 	isFillMode,
 	currentColor,
@@ -26,7 +26,6 @@ export function Canvas({
 	const lastY = useRef(0);
 
 	useEffect(() => {
-		console.log("drawingData", drawingData);
 		if (!drawingData || !canvasRef?.current) return;
 
 		const image = new Image();

@@ -7,8 +7,11 @@ import type {
 	CanvasGenerationResult,
 	CanvasMode,
 } from "~/types/canvas";
+import { useDrawingStudio } from "./Drawing/useDrawingStudio";
 import type { CanvasRun } from "./GenerationCard";
 import { collectFieldEnumOptions, parseReferenceImages } from "./utils";
+
+export type CanvasStudioMode = CanvasMode | "drawing";
 
 function mapGenerationStatus(status: string | undefined): CanvasRun["status"] {
 	const normalized = (status || "").toLowerCase();
@@ -79,7 +82,7 @@ interface UseCanvasStudioOptions {
 }
 
 export function useCanvasStudio({ enabled = true }: UseCanvasStudioOptions = {}) {
-	const [mode, setMode] = useState<CanvasMode>("image");
+	const [mode, setMode] = useState<CanvasStudioMode>("image");
 	const [prompt, setPrompt] = useState("");
 	const [negativePrompt, setNegativePrompt] = useState("");
 	const [referenceInput, setReferenceInput] = useState("");
@@ -91,13 +94,20 @@ export function useCanvasStudio({ enabled = true }: UseCanvasStudioOptions = {})
 	const [selectedModelIds, setSelectedModelIds] = useState<string[]>([]);
 	const [runs, setRuns] = useState<CanvasRun[]>([]);
 
+	const mediaMode: CanvasMode = mode === "drawing" ? "image" : mode;
+	const mediaEnabled = enabled && mode !== "drawing";
+	const drawing = useDrawingStudio(enabled && mode === "drawing");
+
 	const {
 		data: models,
 		isLoading: isModelsLoading,
 		error: modelsError,
-	} = useCanvasModels(mode, enabled);
+	} = useCanvasModels(mediaMode, mediaEnabled);
 	const { mutateAsync: generate, isPending, error: generateError } = useGenerateCanvasOutputs();
-	const { data: generations, refetch: refetchGenerations } = useCanvasGenerations(mode, enabled);
+	const { data: generations, refetch: refetchGenerations } = useCanvasGenerations(
+		mediaMode,
+		mediaEnabled,
+	);
 
 	const visibleModels = useMemo(() => {
 		const source = models ?? [];
@@ -185,7 +195,7 @@ export function useCanvasStudio({ enabled = true }: UseCanvasStudioOptions = {})
 		setResolution((current) => (current && resolutionOptions.includes(current) ? current : ""));
 	}, [resolutionOptions]);
 
-	const handleModeChange = (nextMode: CanvasMode) => {
+	const handleModeChange = (nextMode: CanvasStudioMode) => {
 		setMode(nextMode);
 		setRuns([]);
 	};
@@ -217,7 +227,7 @@ export function useCanvasStudio({ enabled = true }: UseCanvasStudioOptions = {})
 		setRuns(placeholderRuns);
 
 		const payload: CanvasGenerateRequest = {
-			mode,
+			mode: mediaMode,
 			prompt: prompt.trim(),
 			modelIds: selectedModelIds,
 			referenceImages: parseReferenceImages(referenceInput),
@@ -225,8 +235,8 @@ export function useCanvasStudio({ enabled = true }: UseCanvasStudioOptions = {})
 			aspectRatio: aspectRatio || undefined,
 			resolution: resolution || undefined,
 			durationSeconds:
-				mode === "video" && Number(durationSeconds) > 0 ? Number(durationSeconds) : undefined,
-			generateAudio: mode === "video" ? generateAudio : undefined,
+				mediaMode === "video" && Number(durationSeconds) > 0 ? Number(durationSeconds) : undefined,
+			generateAudio: mediaMode === "video" ? generateAudio : undefined,
 		};
 
 		try {
@@ -273,6 +283,8 @@ export function useCanvasStudio({ enabled = true }: UseCanvasStudioOptions = {})
 
 	return {
 		mode,
+		mediaMode,
+		drawing,
 		prompt,
 		negativePrompt,
 		referenceInput,

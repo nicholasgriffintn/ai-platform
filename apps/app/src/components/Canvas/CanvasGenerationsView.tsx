@@ -1,6 +1,7 @@
 import { Layers, Sparkles } from "lucide-react";
 
 import { cn } from "~/lib/utils";
+import { DrawingWorkspace } from "./Drawing/DrawingWorkspace";
 import { GenerationCard } from "./GenerationCard";
 import type { CanvasStudioState } from "./useCanvasStudio";
 
@@ -11,13 +12,29 @@ export function CanvasGenerationsView({
 	canvas: CanvasStudioState;
 	className?: string;
 }) {
+	if (canvas.mode === "drawing") {
+		return (
+			<section className={cn("h-full overflow-auto p-4", className)}>
+				<div className="mx-auto max-w-[1400px]">
+					<div className="mb-4 flex items-center gap-2">
+						<div className="rounded-lg bg-zinc-900 p-2 text-white dark:bg-zinc-100 dark:text-zinc-900">
+							<Layers className="h-4 w-4" />
+						</div>
+						<div>
+							<h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">Drawings</h2>
+							<p className="text-sm text-zinc-500 dark:text-zinc-400">
+								Past drawings and transformed outputs appear here.
+							</p>
+						</div>
+					</div>
+					<DrawingWorkspace drawing={canvas.drawing} />
+				</div>
+			</section>
+		);
+	}
+
 	return (
-		<section
-			className={cn(
-				"h-full overflow-auto bg-gradient-to-br from-zinc-50 via-white to-zinc-100 p-4 dark:from-zinc-900 dark:via-zinc-950 dark:to-zinc-900",
-				className,
-			)}
-		>
+		<section className={cn("h-full overflow-auto p-4", className)}>
 			<div className="mx-auto max-w-[1400px]">
 				<div className="mb-4 flex items-center justify-between">
 					<div className="flex items-center gap-2">
@@ -63,7 +80,7 @@ export function CanvasGenerationsView({
 							key={run.key}
 							run={run}
 							index={index}
-							mode={canvas.mode}
+							mode={canvas.mediaMode}
 							aspectRatio={canvas.aspectRatio || undefined}
 						/>
 					))}
