@@ -1,6 +1,6 @@
 import type { ModelConfig } from "~/types";
 
-export const oldWorkersAiModelConfig: ModelConfig = {
+export const workersAiModelConfig: ModelConfig = {
 	"whisper-tiny": {
 		name: "OpenAI Whisper",
 		matchingModel: "@cf/openai/whisper-tiny-en",
