@@ -1,5 +1,19 @@
 export class Sandbox {}
 
+export class RPCTransportError extends Error {
+	constructor(message: string) {
+		super(message);
+		this.name = "RPCTransportError";
+	}
+}
+
+export class SessionTerminatedError extends Error {
+	constructor(public readonly exitCode: number | null = null) {
+		super("Session terminated");
+		this.name = "SessionTerminatedError";
+	}
+}
+
 export function getSandbox(): never {
 	throw new Error("Cloudflare Sandbox runtime is not available in unit tests");
 }

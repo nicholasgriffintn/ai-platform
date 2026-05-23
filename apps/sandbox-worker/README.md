@@ -31,9 +31,10 @@ Here's the current workflow:
 
 ### Environment Variables
 
-| Variable     | Description                                             |
-| ------------ | ------------------------------------------------------- |
-| `JWT_SECRET` | Secret for JWT token verification. This must match API. |
+| Variable            | Description                                                                                            |
+| ------------------- | ------------------------------------------------------------------------------------------------------ |
+| `JWT_SECRET`        | Secret for JWT token verification. This must match API.                                                |
+| `SANDBOX_TRANSPORT` | Set to `rpc` so long-running agent runs can multiplex Sandbox SDK calls over one persistent transport. |
 
 ### Bindings
 

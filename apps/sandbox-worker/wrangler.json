@@ -5,6 +5,12 @@
 	"compatibility_flags": ["nodejs_compat"],
 	"workers_dev": false,
 	"preview_urls": false,
+	"dev": {
+		"port": 8788
+	},
+	"vars": {
+		"SANDBOX_TRANSPORT": "rpc"
+	},
 	"placement": {
 		"mode": "smart"
 	},

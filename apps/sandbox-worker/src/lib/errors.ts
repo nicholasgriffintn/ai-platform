@@ -1,3 +1,4 @@
+import { RPCTransportError, SessionTerminatedError } from "@cloudflare/sandbox";
 import { PolychatApiError } from "./polychat-client";
 import { SandboxCancellationError } from "./cancellation";
 import { SandboxTimeoutError } from "./execution-control";
@@ -9,6 +10,7 @@ export type SandboxErrorType =
 	| "repository_error"
 	| "model_request_error"
 	| "model_response_error"
+	| "sandbox_transport_error"
 	| "command_policy_error"
 	| "command_execution_error"
 	| "agent_loop_error"
@@ -50,6 +52,26 @@ export function classifySandboxError(error: unknown): ClassifiedSandboxError {
 			type: "model_request_error",
 			message,
 			retryable: error.retryable,
+		};
+	}
+
+	if (error instanceof RPCTransportError) {
+		return {
+			type: "sandbox_transport_error",
+			message: "The sandbox transport connection failed. Please retry this run.",
+			retryable: true,
+		};
+	}
+
+	if (error instanceof SessionTerminatedError) {
+		const exitCode = error.exitCode;
+		return {
+			type: "command_execution_error",
+			message:
+				typeof exitCode === "number"
+					? `The sandbox shell exited with code ${exitCode}. Retry with a safer command.`
+					: "The sandbox shell exited unexpectedly. Retry with a safer command.",
+			retryable: false,
 		};
 	}
 
