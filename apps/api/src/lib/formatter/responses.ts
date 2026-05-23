@@ -148,6 +148,85 @@ export class ResponseFormatter {
 		return `generations/${completion}/${model}/${unique}.${extension}`;
 	}
 
+	private static getAudioContentType(format: string): string {
+		return ResponseFormatter.getContentTypeFromExtension(format, "audio/mpeg");
+	}
+
+	private static async persistOpenAIMessageAudio(
+		audio: Record<string, unknown>,
+		options: ResponseFormatOptions,
+	): Promise<{ key?: string; url: string; format: string }> {
+		const audioData = audio.data;
+		if (typeof audioData !== "string" || !audioData) {
+			throw new AssistantError(
+				"OpenAI audio response did not include audio data",
+				ErrorType.PROVIDER_ERROR,
+			);
+		}
+
+		const format = typeof audio.format === "string" ? audio.format : "mp3";
+		const contentType = ResponseFormatter.getAudioContentType(format);
+
+		if (!options.env) {
+			return {
+				format,
+				url: audioData.startsWith("data:") ? audioData : `data:${contentType};base64,${audioData}`,
+			};
+		}
+
+		const audioKey = ResponseFormatter.buildAssetKey(options, format);
+		await uploadAudioFromChat(audioData, options.env, audioKey);
+		const baseAssetsUrl = options.env.PUBLIC_ASSETS_URL || "";
+
+		return {
+			key: audioKey,
+			format,
+			url: baseAssetsUrl ? `${baseAssetsUrl}/${audioKey}` : audioKey,
+		};
+	}
+
+	private static async formatOpenAIMessageAudio(
+		data: any,
+		message: any,
+		textContent: string,
+		options: ResponseFormatOptions,
+	): Promise<any | undefined> {
+		if (!message?.audio || typeof message.audio !== "object") {
+			return undefined;
+		}
+
+		const audio = message.audio as Record<string, unknown>;
+		if (typeof audio.data !== "string" || !audio.data) {
+			return undefined;
+		}
+
+		const persisted = await ResponseFormatter.persistOpenAIMessageAudio(audio, options);
+		const transcript =
+			typeof audio.transcript === "string" && audio.transcript ? audio.transcript : textContent;
+		const response = [
+			...(transcript ? [{ type: "text" as const, text: transcript }] : []),
+			{
+				type: "audio_url" as const,
+				audio_url: { url: persisted.url },
+			},
+		];
+		const { data: _audioData, ...safeAudio } = audio;
+
+		return {
+			...data,
+			...message,
+			response,
+			data: {
+				...data.data,
+				audio: {
+					...safeAudio,
+					...persisted,
+					transcript,
+				},
+			},
+		};
+	}
+
 	private static async persistRemoteAssets(
 		assetUrls: string[],
 		options: ResponseFormatOptions,
@@ -383,7 +462,7 @@ export class ResponseFormatter {
 				...(toolCalls.length ? { tool_calls: toolCalls } : {}),
 				annotations,
 				data: {
-					...(data.data || {}),
+					...data.data,
 					openai_response_id: data.id,
 					output: data.output,
 				},
@@ -472,6 +551,16 @@ export class ResponseFormatter {
 		const processedTextContent = !options.is_streaming
 			? preprocessQwQResponse(textContent, options.model || data.model || "")
 			: textContent;
+
+		const audioResponse = await ResponseFormatter.formatOpenAIMessageAudio(
+			data,
+			message,
+			processedTextContent,
+			options,
+		);
+		if (audioResponse) {
+			return audioResponse;
+		}
 
 		return { ...data, response: processedTextContent, ...message };
 	}

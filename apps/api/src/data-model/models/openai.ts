@@ -105,6 +105,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		},
 		supportsAttachments: true,
 		supportsTemperature: false,
+		deprecated: true,
 		card: "https://www.prompthub.us/models/o1",
 		contextWindow: 200000,
 		maxTokens: 100000,
@@ -136,6 +137,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		knowledgeCutoffDate: "May 2024",
 		releaseDate: "April 16, 2025",
 		lastUpdated: "April 16, 2025",
+		deprecated: true,
 		modalities: {
 			input: ["text", "image", "pdf"],
 			output: ["text"],
@@ -171,6 +173,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		knowledgeCutoffDate: "May 2024",
 		releaseDate: "April 16, 2025",
 		lastUpdated: "April 16, 2025",
+		deprecated: true,
 		modalities: {
 			input: ["text", "image"],
 			output: ["text"],
@@ -206,6 +209,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		knowledgeCutoffDate: "May 2024",
 		releaseDate: "December 20, 2024",
 		lastUpdated: "January 29, 2025",
+		deprecated: true,
 		modalities: {
 			input: ["text"],
 			output: ["text"],
@@ -242,6 +246,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		knowledgeCutoffDate: "September 2023",
 		releaseDate: "May 13, 2024",
 		lastUpdated: "August 6, 2024",
+		deprecated: true,
 		modalities: {
 			input: ["text", "image", "pdf"],
 			output: ["text"],
@@ -273,6 +278,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		knowledgeCutoffDate: "October 2023",
 		releaseDate: "May 13, 2024",
 		lastUpdated: "May 13, 2024",
+		deprecated: true,
 		modalities: {
 			input: ["text", "image"],
 			output: ["text"],
@@ -324,6 +330,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		includedInRouter: true,
 		supportsResponseFormat: true,
 		supportsArtifacts: true,
+		deprecated: true,
 	}),
 
 	createModelConfig("gpt-4o-mini-search", PROVIDER, {
@@ -354,6 +361,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		includedInRouter: true,
 		supportsResponseFormat: true,
 		supportsArtifacts: true,
+		deprecated: true,
 	}),
 
 	createModelConfig("gpt-4.5", PROVIDER, {
@@ -386,6 +394,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		supportsResponseFormat: true,
 		supportsArtifacts: true,
 		timeout: 1000000,
+		deprecated: true,
 	}),
 
 	createModelConfig("gpt-4.1", PROVIDER, {
@@ -419,6 +428,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		includedInRouter: true,
 		timeout: 1000000,
 		supportsResponseFormat: true,
+		deprecated: true,
 	}),
 	createModelConfig("gpt-4.1-mini", PROVIDER, {
 		name: "GPT-4.1 mini",
@@ -449,6 +459,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		isFeatured: false,
 		includedInRouter: true,
 		supportsResponseFormat: true,
+		deprecated: true,
 	}),
 	createModelConfig("gpt-4.1-nano", PROVIDER, {
 		name: "GPT-4.1 nano",
@@ -479,6 +490,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		isFeatured: false,
 		includedInRouter: true,
 		supportsResponseFormat: true,
+		deprecated: true,
 	}),
 
 	createModelConfig("gpt-5", PROVIDER, {
@@ -512,6 +524,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		includedInRouter: true,
 		supportsArtifacts: true,
 		supportsResponseFormat: true,
+		deprecated: true,
 
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "low", "medium", "high"],
@@ -553,6 +566,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		includedInRouter: true,
 		supportsArtifacts: true,
 		supportsResponseFormat: true,
+		deprecated: true,
 
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "low", "medium", "high"],
@@ -594,6 +608,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		includedInRouter: true,
 		supportsArtifacts: true,
 		supportsResponseFormat: true,
+		deprecated: true,
 
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "low", "medium", "high"],
@@ -634,7 +649,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		supportsArtifacts: true,
 		isFeatured: false,
 		supportsResponseFormat: true,
-
+		deprecated: true,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "low", "medium", "high"],
 			defaultEffort: "medium",
@@ -656,6 +671,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 			input: ["text", "image"],
 			output: ["text"],
 		},
+		deprecated: true,
 		supportsAttachments: true,
 		supportsTemperature: false,
 		supportsToolCalls: true,
@@ -696,6 +712,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 			input: ["text", "image"],
 			output: ["text"],
 		},
+		deprecated: true,
 		strengths: ["coding", "reasoning", "analysis"],
 		supportsAttachments: true,
 		supportsTemperature: false,
@@ -732,6 +749,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		knowledgeCutoffDate: "September 30, 2024",
 		releaseDate: "November 13, 2025",
 		lastUpdated: "November 13, 2025",
+		deprecated: true,
 		modalities: {
 			input: ["text", "image"],
 			output: ["text"],
@@ -794,6 +812,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "gpt-image-1",
 		description: "OpenAI's model for image generation.",
 		strengths: ["creative"],
+		deprecated: true,
 		costPer1kInputTokens: 0.005,
 		costPer1kOutputTokens: 0.001,
 		contextComplexity: 3,
@@ -876,6 +895,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		knowledgeCutoffDate: "April 2024",
 		releaseDate: "May 16, 2025",
 		lastUpdated: "May 16, 2025",
+		deprecated: true,
 		modalities: {
 			input: ["text"],
 			output: ["text"],
@@ -895,6 +915,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		knowledgeCutoffDate: "September 1, 2021",
 		releaseDate: "March 1, 2023",
 		lastUpdated: "November 6, 2023",
+		deprecated: true,
 		modalities: {
 			input: ["text"],
 			output: ["text"],
@@ -915,6 +936,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		knowledgeCutoffDate: "November 2023",
 		releaseDate: "November 6, 2023",
 		lastUpdated: "April 9, 2024",
+		deprecated: true,
 		modalities: {
 			input: ["text"],
 			output: ["text"],
@@ -939,6 +961,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 			input: ["text", "image"],
 			output: ["text"],
 		},
+		deprecated: true,
 		supportsAttachments: true,
 		supportsTemperature: true,
 		supportsToolCalls: true,
@@ -959,6 +982,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 			input: ["text", "image"],
 			output: ["text"],
 		},
+		deprecated: true,
 		supportsAttachments: true,
 		supportsTemperature: true,
 		supportsToolCalls: false,
@@ -988,6 +1012,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 			input: ["text", "image"],
 			output: ["text"],
 		},
+		deprecated: true,
 		supportsAttachments: false,
 		supportsTemperature: false,
 		supportsToolCalls: true,
@@ -1017,6 +1042,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 			input: ["text", "image"],
 			output: ["text"],
 		},
+		deprecated: true,
 		supportsAttachments: true,
 		supportsTemperature: false,
 		supportsToolCalls: true,
@@ -1049,6 +1075,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 			input: ["text", "image"],
 			output: ["text"],
 		},
+		deprecated: true,
 		supportsAttachments: true,
 		supportsTemperature: false,
 		supportsToolCalls: true,
@@ -1081,6 +1108,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 			input: ["text", "image"],
 			output: ["text"],
 		},
+		deprecated: true,
 		supportsAttachments: true,
 		supportsTemperature: false,
 		supportsToolCalls: true,
@@ -1112,6 +1140,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 			input: ["text", "image"],
 			output: ["text"],
 		},
+		deprecated: true,
 		supportsAttachments: true,
 		supportsTemperature: false,
 		supportsToolCalls: true,
@@ -1141,6 +1170,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 			input: ["text", "image", "pdf"],
 			output: ["text"],
 		},
+		deprecated: true,
 		supportsAttachments: true,
 		supportsTemperature: false,
 		supportsToolCalls: true,
@@ -1170,6 +1200,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 			input: ["text", "image"],
 			output: ["text"],
 		},
+		deprecated: true,
 		supportsAttachments: true,
 		supportsTemperature: false,
 		supportsToolCalls: true,
@@ -1193,6 +1224,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 
 	createModelConfig("gpt-5.3-codex", PROVIDER, {
 		name: "GPT-5.3 Codex",
+		description: "The most capable agentic coding model to date.",
 		matchingModel: "gpt-5.3-codex",
 		knowledgeCutoffDate: "August 31, 2025",
 		releaseDate: "February 5, 2026",
@@ -1232,6 +1264,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 			input: ["text", "image", "pdf"],
 			output: ["text"],
 		},
+		deprecated: true,
 		supportsAttachments: true,
 		supportsTemperature: false,
 		supportsToolCalls: true,
@@ -1264,6 +1297,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 			input: ["text"],
 			output: ["text"],
 		},
+		deprecated: true,
 		supportsAttachments: false,
 		supportsTemperature: false,
 		supportsToolCalls: false,
@@ -1288,6 +1322,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 			input: ["text"],
 			output: ["text"],
 		},
+		deprecated: true,
 		supportsAttachments: false,
 		supportsTemperature: true,
 		supportsToolCalls: false,
@@ -1311,6 +1346,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 			input: ["text", "image"],
 			output: ["text"],
 		},
+		deprecated: true,
 		supportsAttachments: true,
 		supportsTemperature: false,
 		supportsToolCalls: true,
@@ -1335,6 +1371,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 			input: ["text", "image"],
 			output: ["text"],
 		},
+		deprecated: true,
 		supportsAttachments: true,
 		supportsTemperature: false,
 		supportsToolCalls: true,
@@ -1358,6 +1395,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 			input: ["text", "image"],
 			output: ["text"],
 		},
+		deprecated: true,
 		supportsAttachments: true,
 		supportsTemperature: false,
 		supportsToolCalls: true,
@@ -1382,6 +1420,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 			input: ["text", "image"],
 			output: ["text"],
 		},
+		deprecated: true,
 		supportsAttachments: true,
 		supportsTemperature: false,
 		supportsToolCalls: true,
@@ -1397,6 +1436,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 
 	createModelConfig("text-embedding-3-large", PROVIDER, {
 		name: "text-embedding-3-large",
+		description: "Most capable embedding model",
 		matchingModel: "text-embedding-3-large",
 		knowledgeCutoffDate: "January 2024",
 		releaseDate: "January 25, 2024",
@@ -1416,6 +1456,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 
 	createModelConfig("text-embedding-3-small", PROVIDER, {
 		name: "text-embedding-3-small",
+		description: "small embedding model",
 		matchingModel: "text-embedding-3-small",
 		knowledgeCutoffDate: "January 2024",
 		releaseDate: "January 25, 2024",
@@ -1435,10 +1476,12 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 
 	createModelConfig("text-embedding-ada-002", PROVIDER, {
 		name: "text-embedding-ada-002",
+		description: "Older embedding model",
 		matchingModel: "text-embedding-ada-002",
 		knowledgeCutoffDate: "December 2022",
 		releaseDate: "December 15, 2022",
 		lastUpdated: "December 15, 2022",
+		deprecated: true,
 		modalities: {
 			input: ["text"],
 			output: ["embedding"],
@@ -1453,6 +1496,8 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 	}),
 	createModelConfig("chatgpt-image-latest", PROVIDER, {
 		name: "chatgpt-image-latest",
+		description:
+			"This points to the Image snapshot previously used in ChatGPT. We recommend GPT Image 2 for API use.",
 		matchingModel: "chatgpt-image-latest",
 		releaseDate: "December 16, 2025",
 		lastUpdated: "December 16, 2025",
@@ -1477,6 +1522,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 			input: ["text", "image"],
 			output: ["text"],
 		},
+		deprecated: true,
 		supportsAttachments: true,
 		supportsTemperature: true,
 		supportsToolCalls: true,
@@ -1497,6 +1543,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 
 	createModelConfig("gpt-5.4", PROVIDER, {
 		name: "GPT-5.4",
+		description: "A more affordable model for coding and professional work.",
 		matchingModel: "gpt-5.4",
 		knowledgeCutoffDate: "August 31, 2025",
 		releaseDate: "March 5, 2026",
@@ -1528,6 +1575,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 
 	createModelConfig("gpt-5.4-mini", PROVIDER, {
 		name: "GPT-5.4 mini",
+		description: "Our strongest mini model yet for coding, computer use, and subagents",
 		matchingModel: "gpt-5.4-mini",
 		knowledgeCutoffDate: "August 31, 2025",
 		releaseDate: "March 17, 2026",
@@ -1561,6 +1609,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 
 	createModelConfig("gpt-5.4-nano", PROVIDER, {
 		name: "GPT-5.4 nano",
+		description: "Our cheapest GPT-5.4-class model for simple high-volume tasks",
 		matchingModel: "gpt-5.4-nano",
 		knowledgeCutoffDate: "August 31, 2025",
 		releaseDate: "March 17, 2026",
@@ -1593,6 +1642,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 
 	createModelConfig("gpt-5.4-pro", PROVIDER, {
 		name: "GPT-5.4 Pro",
+		description: "Version of GPT-5.4 that produces smarter and more precise responses.",
 		matchingModel: "gpt-5.4-pro",
 		knowledgeCutoffDate: "August 31, 2025",
 		releaseDate: "March 5, 2026",
@@ -1627,6 +1677,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("gpt-5.5", PROVIDER, {
 		name: "GPT-5.5",
 		matchingModel: "gpt-5.5",
+		description: "A new class of intelligence for coding and professional work.",
 		knowledgeCutoffDate: "December 1, 2025",
 		releaseDate: "April 23, 2026",
 		lastUpdated: "April 23, 2026",
@@ -1660,6 +1711,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("gpt-5.5-pro", PROVIDER, {
 		name: "GPT-5.5 Pro",
 		matchingModel: "gpt-5.5-pro",
+		description: "Version of GPT-5.5 that produces smarter and more precise responses.",
 		knowledgeCutoffDate: "December 1, 2025",
 		releaseDate: "April 23, 2026",
 		lastUpdated: "April 23, 2026",
@@ -1687,6 +1739,146 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 			supportedVerbosityLevels: ["low", "medium", "high"],
 			defaultVerbosity: "medium",
 		},
+	}),
+
+	createModelConfig("gpt-realtime-2", PROVIDER, {
+		name: "GPT Realtime 2",
+		matchingModel: "gpt-realtime-2",
+		description:
+			"OpenAI's most capable realtime voice model, with speech-to-speech interactions, configurable reasoning effort, stronger instruction following, and more reliable tool use.",
+		knowledgeCutoffDate: "September 30, 2024",
+		modalities: {
+			input: ["text", "audio", "image"],
+			output: ["text", "audio"],
+		},
+		supportsAttachments: true,
+		supportsAudio: true,
+		supportsTemperature: false,
+		supportsTopP: false,
+		supportsToolCalls: true,
+		supportsRealtimeSession: true,
+		supportsResponseFormat: false,
+		contextWindow: 128000,
+		maxTokens: 32000,
+		costPer1kInputTokens: 0.004,
+		costPer1kOutputTokens: 0.024,
+		strengths: ["audio", "chat", "reasoning", "vision"],
+		contextComplexity: 5,
+		reliability: 5,
+		speed: 4,
+		multimodal: true,
+		includedInRouter: false,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "low", "medium", "high"],
+			defaultEffort: "low",
+		},
+	}),
+
+	createModelConfig("gpt-realtime-translate", PROVIDER, {
+		name: "GPT Realtime Translate",
+		matchingModel: "gpt-realtime-translate",
+		description:
+			"Streaming speech-to-speech translation model for live multilingual audio experiences.",
+		knowledgeCutoffDate: "September 30, 2024",
+		modalities: {
+			input: ["audio"],
+			output: ["audio", "text"],
+		},
+		supportsAttachments: false,
+		supportsAudio: true,
+		supportsTemperature: false,
+		supportsToolCalls: false,
+		supportsStreaming: true,
+		supportsRealtimeTranslationSession: true,
+		supportsResponseFormat: false,
+		contextWindow: 16000,
+		maxTokens: 2000,
+		strengths: ["multilingual", "audio"],
+		contextComplexity: 3,
+		reliability: 4,
+		speed: 5,
+		hiddenFromDefaultList: true,
+		includedInRouter: false,
+	}),
+
+	createModelConfig("gpt-realtime-mini", PROVIDER, {
+		name: "GPT Realtime Mini",
+		matchingModel: "gpt-realtime-mini",
+		description:
+			"Cost-efficient realtime model for responding to audio and text inputs over WebRTC, WebSocket, or SIP connections.",
+		knowledgeCutoffDate: "October 1, 2023",
+		modalities: {
+			input: ["text", "image", "audio"],
+			output: ["text", "audio"],
+		},
+		supportsAttachments: true,
+		supportsAudio: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		supportsRealtimeSession: true,
+		supportsResponseFormat: false,
+		contextWindow: 32000,
+		maxTokens: 4096,
+		costPer1kInputTokens: 0.0006,
+		costPer1kOutputTokens: 0.0024,
+		strengths: ["audio", "chat", "vision"],
+		contextComplexity: 3,
+		reliability: 4,
+		speed: 5,
+		multimodal: true,
+		includedInRouter: false,
+	}),
+
+	createModelConfig("gpt-audio-1.5", PROVIDER, {
+		name: "GPT Audio 1.5",
+		matchingModel: "gpt-audio-1.5",
+		description: "General availability audio model for audio-in, audio-out Chat Completions.",
+		knowledgeCutoffDate: "September 30, 2024",
+		modalities: {
+			input: ["text", "audio"],
+			output: ["text", "audio"],
+		},
+		supportsAttachments: true,
+		supportsAudio: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		supportsResponseFormat: false,
+		contextWindow: 128000,
+		maxTokens: 16384,
+		costPer1kInputTokens: 0.0025,
+		costPer1kOutputTokens: 0.01,
+		strengths: ["audio", "chat", "general_knowledge"],
+		contextComplexity: 4,
+		reliability: 4,
+		speed: 3,
+		multimodal: true,
+		includedInRouter: false,
+	}),
+
+	createModelConfig("gpt-audio-mini", PROVIDER, {
+		name: "GPT Audio Mini",
+		matchingModel: "gpt-audio-mini",
+		description: "Cost-efficient audio model for audio-in, audio-out Chat Completions.",
+		knowledgeCutoffDate: "October 1, 2023",
+		modalities: {
+			input: ["text", "audio"],
+			output: ["text", "audio"],
+		},
+		supportsAttachments: true,
+		supportsAudio: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		supportsResponseFormat: false,
+		contextWindow: 128000,
+		maxTokens: 16384,
+		costPer1kInputTokens: 0.0006,
+		costPer1kOutputTokens: 0.0024,
+		strengths: ["audio", "chat", "general_knowledge"],
+		contextComplexity: 3,
+		reliability: 4,
+		speed: 5,
+		multimodal: true,
+		includedInRouter: false,
 	}),
 
 	createModelConfig("gpt-realtime-whisper", PROVIDER, {

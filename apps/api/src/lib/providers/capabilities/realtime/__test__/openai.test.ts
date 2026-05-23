@@ -112,6 +112,95 @@ describe("OpenAIRealtimeProvider", () => {
 		});
 	});
 
+	it("creates a realtime voice-agent session with the current default realtime model", async () => {
+		const provider = new OpenAIRealtimeProvider();
+
+		await provider.createSession({
+			env: { OPENAI_API_KEY: "test-key" } as any,
+			user: { id: 1 } as any,
+			type: "realtime",
+			instructions: "Be concise.",
+		});
+
+		expect(fetchMock).toHaveBeenCalledWith(
+			"https://api.openai.com/v1/realtime/client_secrets",
+			expect.any(Object),
+		);
+		const [, init] = fetchMock.mock.calls[0];
+		expect(JSON.parse(init.body)).toEqual({
+			session: {
+				type: "realtime",
+				model: "gpt-realtime-2",
+				instructions: "Be concise.",
+				audio: {
+					input: {
+						format: {
+							type: "audio/pcm",
+							rate: 24000,
+						},
+						turn_detection: {
+							type: "server_vad",
+							threshold: 0.4,
+							prefix_padding_ms: 400,
+							silence_duration_ms: 1000,
+						},
+					},
+					output: {
+						format: {
+							type: "audio/pcm",
+							rate: 24000,
+						},
+						voice: "marin",
+					},
+				},
+			},
+		});
+	});
+
+	it("creates a dedicated realtime translation session", async () => {
+		const provider = new OpenAIRealtimeProvider();
+
+		await provider.createSession({
+			env: { OPENAI_API_KEY: "test-key" } as any,
+			user: { id: 1 } as any,
+			type: "translation",
+			sourceLanguage: "fr",
+			targetLanguage: "en",
+			voice: "cedar",
+		});
+
+		expect(fetchMock).toHaveBeenCalledWith(
+			"https://api.openai.com/v1/realtime/translations/client_secrets",
+			expect.any(Object),
+		);
+		const [, init] = fetchMock.mock.calls[0];
+		expect(JSON.parse(init.body)).toEqual({
+			session: {
+				type: "translation",
+				model: "gpt-realtime-translate",
+				audio: {
+					input: {
+						format: {
+							type: "audio/pcm",
+							rate: 24000,
+						},
+					},
+					output: {
+						format: {
+							type: "audio/pcm",
+							rate: 24000,
+						},
+						voice: "cedar",
+					},
+				},
+				translation: {
+					source_language: "fr",
+					target_language: "en",
+				},
+			},
+		});
+	});
+
 	it("maps the public whisper model id to OpenAI's realtime model id", async () => {
 		const provider = new OpenAIRealtimeProvider();
 
@@ -150,6 +239,20 @@ describe("OpenAIRealtimeProvider", () => {
 				user: { id: 1 } as any,
 				type: "transcription",
 				model: "gpt-5.5",
+			}),
+		).rejects.toThrow(AssistantError);
+		expect(fetchMock).not.toHaveBeenCalled();
+	});
+
+	it("rejects models that are valid for a different realtime session type", async () => {
+		const provider = new OpenAIRealtimeProvider();
+
+		await expect(
+			provider.createSession({
+				env: { OPENAI_API_KEY: "test-key" } as any,
+				user: { id: 1 } as any,
+				type: "transcription",
+				model: "gpt-realtime-2",
 			}),
 		).rejects.toThrow(AssistantError);
 		expect(fetchMock).not.toHaveBeenCalled();

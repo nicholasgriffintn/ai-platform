@@ -18,4 +18,27 @@ describe("openaiModelConfig", () => {
 		expect(openaiModelConfig["gpt-5.4-pro"]?.supportsHostedShell).toBeUndefined();
 		expect(openaiModelConfig["gpt-5.4-pro"]?.supportsToolSearch).toBe(true);
 	});
+
+	it("registers current OpenAI realtime and audio models with usable capabilities", () => {
+		expect(openaiModelConfig["gpt-realtime-2"]).toMatchObject({
+			matchingModel: "gpt-realtime-2",
+			supportsRealtimeSession: true,
+			supportsAudio: true,
+			modalities: {
+				input: ["text", "audio", "image"],
+				output: ["text", "audio"],
+			},
+		});
+		expect(openaiModelConfig["gpt-realtime-translate"]).toMatchObject({
+			matchingModel: "gpt-realtime-translate",
+			supportsRealtimeTranslationSession: true,
+			modalities: {
+				input: ["audio"],
+				output: ["audio", "text"],
+			},
+		});
+		expect(openaiModelConfig["gpt-realtime-mini"]?.supportsRealtimeSession).toBe(true);
+		expect(openaiModelConfig["gpt-audio-1.5"]?.supportsAudio).toBe(true);
+		expect(openaiModelConfig["gpt-audio-mini"]?.supportsAudio).toBe(true);
+	});
 });

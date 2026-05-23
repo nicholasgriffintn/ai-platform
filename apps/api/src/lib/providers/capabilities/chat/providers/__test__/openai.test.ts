@@ -620,5 +620,49 @@ describe("OpenAIProvider", () => {
 
 			expect(result.verbosity).toBeUndefined();
 		});
+
+		it("should request audio output for OpenAI audio chat models", async () => {
+			vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
+				name: "gpt-audio-1.5",
+				matchingModel: "gpt-audio-1.5",
+				provider: "openai",
+				modalities: { input: ["text", "audio"], output: ["text", "audio"] },
+				supportsToolCalls: true,
+			} as ModelConfigItem);
+			vi.mocked(createCommonParameters).mockReturnValue({
+				model: "gpt-audio-1.5",
+				messages: [{ role: "user", content: "Say hello" }],
+				max_completion_tokens: 16384,
+			});
+			vi.mocked(shouldEnableStreaming).mockReturnValue(true);
+			vi.mocked(getToolsForProvider).mockReturnValue({ tools: [] });
+
+			const provider = new OpenAIProvider();
+
+			const result = await provider.mapParameters({
+				model: "gpt-audio-1.5",
+				messages: [{ role: "user", content: "Say hello" }],
+				env: { AI_GATEWAY_TOKEN: "test-token" },
+				stream: true,
+				options: {
+					openai: {
+						audio: {
+							voice: "cedar",
+							format: "wav",
+						},
+					},
+				},
+			} as any);
+
+			expect(result).toMatchObject({
+				model: "gpt-audio-1.5",
+				modalities: ["text", "audio"],
+				audio: {
+					voice: "cedar",
+					format: "wav",
+				},
+			});
+			expect(result.stream).toBeUndefined();
+		});
 	});
 });

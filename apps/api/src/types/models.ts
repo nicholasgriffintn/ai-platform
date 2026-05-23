@@ -91,6 +91,8 @@ export type ModelConfigItem = {
 	supportsImageEdits?: boolean;
 	timeout?: number;
 	supportsAudio?: boolean;
+	supportsRealtimeSession?: boolean;
+	supportsRealtimeTranslationSession?: boolean;
 	knowledgeCutoffDate?: string;
 	releaseDate?: string;
 	lastUpdated?: string;

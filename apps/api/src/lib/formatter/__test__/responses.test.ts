@@ -61,6 +61,47 @@ describe("ResponseFormatter", () => {
 			expect(result.response).toBe("OpenAI response");
 		});
 
+		it("should persist OpenAI chat audio responses", async () => {
+			const data = {
+				choices: [
+					{
+						message: {
+							content: "Spoken response",
+							audio: {
+								id: "audio_123",
+								data: "YXVkaW8=",
+								transcript: "Spoken response",
+								format: "mp3",
+							},
+						},
+					},
+				],
+			};
+
+			const result = await ResponseFormatter.formatResponse(data, "openai", {
+				env: mockEnv,
+				model: "gpt-audio-1.5",
+				completion_id: "completion-123",
+			});
+
+			const storageCalls =
+				mockStorageService.uploadObject.mock.calls.length + mockBucket.put.mock.calls.length;
+			expect(storageCalls).toBeGreaterThan(0);
+			expect(result.response).toEqual([
+				{ type: "text", text: "Spoken response" },
+				{
+					type: "audio_url",
+					audio_url: { url: expect.stringContaining("https://assets.example.com/") },
+				},
+			]);
+			expect(result.data.audio).toMatchObject({
+				id: "audio_123",
+				transcript: "Spoken response",
+				format: "mp3",
+			});
+			expect(result.data.audio.data).toBeUndefined();
+		});
+
 		it("should format Anthropic response", async () => {
 			const data = {
 				content: [
