@@ -3,7 +3,10 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router";
 
 import { CouncilChatControls } from "~/components/Council/CouncilChatControls";
-import type { ConversationThreadModeConfig } from "~/components/ConversationThread";
+import {
+	ConversationThread,
+	type ConversationThreadModeConfig,
+} from "~/components/ConversationThread";
 import { useChat } from "~/hooks/useChat";
 import {
 	useSandboxConnections,
@@ -30,7 +33,13 @@ import { type HomeChatModeId, resolveHomeChatModeId } from "./chatModes";
 
 type CouncilResponseMode = "debate" | "single";
 
-export function useHomeChatModeConfig(): {
+export function HomeConversationThread() {
+	const { modeConfig } = useHomeChatModeConfig();
+
+	return <ConversationThread modeConfig={modeConfig} />;
+}
+
+function useHomeChatModeConfig(): {
 	activeModeId: HomeChatModeId;
 	modeConfig: ConversationThreadModeConfig;
 } {
