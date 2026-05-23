@@ -43,7 +43,7 @@ export class MistralRealtimeProvider implements RealtimeProvider {
 
 		const apiKey = await this.getApiKey(request);
 		const model = await this.resolveModel(request);
-		const wsBaseUrl = request.env.MISTRAL_BASE_URL || DEFAULT_WS_URL;
+		const wsBaseUrl = DEFAULT_WS_URL;
 
 		return {
 			id: crypto.randomUUID(),

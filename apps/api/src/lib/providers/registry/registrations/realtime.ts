@@ -1,5 +1,8 @@
 import type { RealtimeProvider } from "../../capabilities/realtime";
-import { MistralRealtimeProvider, OpenAIRealtimeProvider } from "../../capabilities/realtime/providers";
+import {
+	MistralRealtimeProvider,
+	OpenAIRealtimeProvider,
+} from "../../capabilities/realtime/providers";
 import type { ProviderRegistry } from "../ProviderRegistry";
 import type { ProviderRegistration } from "../types";
 
