@@ -285,6 +285,34 @@ describe("StreamingFormatter", () => {
 			});
 		});
 
+		it("should extract OpenAI Responses function calls", () => {
+			const data = {
+				type: "response.output_item.done",
+				item: {
+					type: "function_call",
+					call_id: "call_123",
+					name: "get_weather",
+					arguments: '{"location":"London"}',
+				},
+			};
+
+			const result = StreamingFormatter.extractToolCall(data);
+
+			expect(result).toEqual({
+				format: "direct",
+				toolCalls: [
+					{
+						id: "call_123",
+						type: "function",
+						function: {
+							name: "get_weather",
+							arguments: '{"location":"London"}',
+						},
+					},
+				],
+			});
+		});
+
 		it("should extract Google-style function calls", () => {
 			const data = {
 				candidates: [

@@ -1,7 +1,12 @@
 import { describe, expect, it } from "vitest";
 
 import type { ModelConfig } from "~/types";
-import { getModelProvider, getModelsByMode, isTextOnlyModel } from "../models";
+import {
+	getModelProvider,
+	getModelsByMode,
+	isTextInputChatModel,
+	isTextOnlyModel,
+} from "../models";
 
 describe("getModelsByMode", () => {
 	it("excludes embedding-only models from the selector", () => {
@@ -28,9 +33,34 @@ describe("getModelsByMode", () => {
 				modalities: { input: ["text"], output: ["text"] },
 				hiddenFromDefaultList: true,
 			},
+			"vision-chat": {
+				id: "vision-chat",
+				name: "Vision Chat",
+				matchingModel: "vision-chat",
+				provider: "openai",
+				modalities: { input: ["text", "image", "pdf"], output: ["text"] },
+			},
+			"text-to-image": {
+				id: "text-to-image",
+				name: "Text to Image",
+				matchingModel: "text-to-image",
+				provider: "openai",
+				modalities: { input: ["text", "image"], output: ["image"] },
+			},
+			"audio-transcribe": {
+				id: "audio-transcribe",
+				name: "Audio Transcribe",
+				matchingModel: "audio-transcribe",
+				provider: "openai",
+				modalities: { input: ["audio"], output: ["text"] },
+			},
 		};
 
-		expect(Object.keys(getModelsByMode(models, "remote"))).toEqual(["kimi-k2"]);
+		expect(Object.keys(getModelsByMode(models, "remote"))).toEqual([
+			"kimi-k2",
+			"vision-chat",
+			"text-to-image",
+		]);
 	});
 });
 
@@ -84,6 +114,42 @@ describe("isTextOnlyModel", () => {
 				matchingModel: "image-model",
 				provider: "replicate",
 				modalities: { input: ["text"], output: ["image"] },
+			}),
+		).toBe(false);
+	});
+});
+
+describe("isTextInputChatModel", () => {
+	it("allows text input models with text or image output", () => {
+		expect(
+			isTextInputChatModel({
+				id: "vision-chat",
+				name: "Vision Chat",
+				matchingModel: "vision-chat",
+				provider: "openai",
+				modalities: { input: ["text", "image", "pdf"], output: ["text"] },
+			}),
+		).toBe(true);
+
+		expect(
+			isTextInputChatModel({
+				id: "text-to-image",
+				name: "Text to Image",
+				matchingModel: "text-to-image",
+				provider: "openai",
+				modalities: { input: ["text", "image"], output: ["image"] },
+			}),
+		).toBe(true);
+	});
+
+	it("excludes models without text input", () => {
+		expect(
+			isTextInputChatModel({
+				id: "audio-transcribe",
+				name: "Audio Transcribe",
+				matchingModel: "audio-transcribe",
+				provider: "openai",
+				modalities: { input: ["audio"], output: ["text"] },
 			}),
 		).toBe(false);
 	});

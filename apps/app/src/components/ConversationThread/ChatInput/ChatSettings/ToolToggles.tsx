@@ -1,9 +1,19 @@
-import { Code, Layers, Search, type LucideIcon } from "lucide-react";
+import {
+	Code,
+	Image,
+	Layers,
+	Link,
+	ListFilter,
+	Search,
+	Terminal,
+	type LucideIcon,
+} from "lucide-react";
 import * as React from "react";
 
 import { Toggle } from "~/components/ui/toggle";
 import { ToggleGroup, ToggleGroupItem } from "~/components/ui/toggle-group";
 import { useModels } from "~/hooks/useModels";
+import { getAvailableModelTools, type ModelToolId } from "~/lib/model-tools";
 import { cn } from "~/lib/utils";
 import { useChatStore } from "~/state/stores/chatStore";
 import { useToolsStore } from "~/state/stores/toolsStore";
@@ -13,30 +23,14 @@ interface ToolTogglesProps {
 	variant?: "inline" | "menu";
 }
 
-interface ToolToggleDefinition {
-	id: "code_execution" | "search_grounding";
-	icon: LucideIcon;
-	label: string;
-	isAvailable: (capabilities: {
-		supportsCodeExecution?: boolean;
-		supportsSearchGrounding?: boolean;
-	}) => boolean;
-}
-
-const MODEL_TOOL_TOGGLES: ToolToggleDefinition[] = [
-	{
-		id: "code_execution",
-		icon: Code,
-		label: "Code execution",
-		isAvailable: ({ supportsCodeExecution }) => Boolean(supportsCodeExecution),
-	},
-	{
-		id: "search_grounding",
-		icon: Search,
-		label: "Search grounding",
-		isAvailable: ({ supportsSearchGrounding }) => Boolean(supportsSearchGrounding),
-	},
-];
+const MODEL_TOOL_ICONS: Record<ModelToolId, LucideIcon> = {
+	code_execution: Code,
+	hosted_shell: Terminal,
+	image_generation: Image,
+	search_grounding: Search,
+	tool_search: ListFilter,
+	web_fetch: Link,
+};
 
 interface MenuToggleButtonProps {
 	icon: React.ReactNode;
@@ -86,15 +80,10 @@ export const ToolToggles = ({ isDisabled = false, variant = "inline" }: ToolTogg
 	const modelCapabilities = model ? apiModels?.[model] : undefined;
 
 	const supportsToolCalls = modelCapabilities?.supportsToolCalls;
-	const supportsSearchGrounding = modelCapabilities?.supportsSearchGrounding;
-	const supportsCodeExecution = modelCapabilities?.supportsCodeExecution;
 
 	const availableToolOptions = React.useMemo(
-		() =>
-			MODEL_TOOL_TOGGLES.filter((tool) =>
-				tool.isAvailable({ supportsCodeExecution, supportsSearchGrounding }),
-			),
-		[supportsCodeExecution, supportsSearchGrounding],
+		() => getAvailableModelTools(modelCapabilities),
+		[modelCapabilities],
 	);
 
 	const handleValueChange = (value: string[]) => {
@@ -127,7 +116,7 @@ export const ToolToggles = ({ isDisabled = false, variant = "inline" }: ToolTogg
 					}
 				: null,
 			...availableToolOptions.map((tool) => {
-				const Icon = tool.icon;
+				const Icon = MODEL_TOOL_ICONS[tool.id];
 				return {
 					key: tool.id,
 					icon: <Icon className="h-5 w-5 shrink-0" aria-hidden="true" />,
@@ -189,7 +178,7 @@ export const ToolToggles = ({ isDisabled = false, variant = "inline" }: ToolTogg
 					className="ml-1"
 				>
 					{availableToolOptions.map((tool) => {
-						const Icon = tool.icon;
+						const Icon = MODEL_TOOL_ICONS[tool.id];
 						const isSelected = selectedTools.includes(tool.id);
 						return (
 							<ToggleGroupItem

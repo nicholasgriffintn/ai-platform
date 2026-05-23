@@ -228,6 +228,95 @@ describe("MessageFormatter", () => {
 		});
 	});
 
+	describe("formatOpenAIResponsesInput", () => {
+		it("should convert multimodal messages and skip instruction messages", () => {
+			const messages: Message[] = [
+				{ role: "developer", content: "Follow the rules" },
+				{
+					role: "user",
+					content: [
+						{ type: "text", text: "Describe this" },
+						{ type: "image_url", image_url: { url: "https://example.com/image.png" } },
+						{ type: "document_url", document_url: { url: "https://example.com/file.pdf" } },
+					],
+				},
+			];
+
+			const result = MessageFormatter.formatOpenAIResponsesInput(messages);
+
+			expect(result).toEqual([
+				{
+					type: "message",
+					role: "user",
+					content: [
+						{ type: "input_text", text: "Describe this" },
+						{ type: "input_image", image_url: "https://example.com/image.png" },
+						{ type: "input_file", file_url: "https://example.com/file.pdf" },
+					],
+				},
+			]);
+		});
+
+		it("should preserve assistant function calls before tool outputs", () => {
+			const messages: Message[] = [
+				{ role: "user", content: "Look this up" },
+				{
+					role: "assistant",
+					content: "",
+					tool_calls: [
+						{
+							id: "call_lookup",
+							type: "function",
+							function: {
+								name: "lookup",
+								arguments: '{"query":"status"}',
+							},
+						},
+					],
+				},
+				{
+					role: "tool",
+					tool_call_id: "call_lookup",
+					content: "status: green",
+				},
+			];
+
+			const result = MessageFormatter.formatOpenAIResponsesInput(messages);
+
+			expect(result).toEqual([
+				{ type: "message", role: "user", content: "Look this up" },
+				{
+					type: "function_call",
+					call_id: "call_lookup",
+					name: "lookup",
+					arguments: '{"query":"status"}',
+				},
+				{
+					type: "function_call_output",
+					call_id: "call_lookup",
+					output: "status: green",
+				},
+			]);
+		});
+	});
+
+	describe("formatOpenAIResponsesInstructions", () => {
+		it("should dedupe system prompt text already present in developer messages", () => {
+			const messages: Message[] = [
+				{ role: "developer", content: "Follow the repository rules." },
+				{ role: "developer", content: "Keep answers concise." },
+				{ role: "user", content: "Hello" },
+			];
+
+			const result = MessageFormatter.formatOpenAIResponsesInstructions(
+				messages,
+				"Follow the repository rules.",
+			);
+
+			expect(result).toBe("Follow the repository rules.\n\nKeep answers concise.");
+		});
+	});
+
 	describe("tool message formatting", () => {
 		it("should format tool message with data field", () => {
 			const messages: Message[] = [

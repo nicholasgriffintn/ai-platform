@@ -50,6 +50,7 @@ export function CompactSettingSelect({
 }
 
 interface CompactSettingNumberProps {
+	disabled?: boolean;
 	id: string;
 	label: string;
 	max?: number;
@@ -59,6 +60,7 @@ interface CompactSettingNumberProps {
 }
 
 export function CompactSettingNumber({
+	disabled,
 	id,
 	label,
 	max,
@@ -77,8 +79,9 @@ export function CompactSettingNumber({
 				min={min}
 				max={max}
 				value={value}
+				disabled={disabled}
 				onChange={(event) => onChange(event.target.value)}
-				className="h-8 w-24 rounded-md border border-zinc-200 bg-off-white px-2 text-right text-sm text-zinc-900 outline-none transition-colors focus:border-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:focus:border-zinc-500"
+				className="h-8 w-24 rounded-md border border-zinc-200 bg-off-white px-2 text-right text-sm text-zinc-900 outline-none transition-colors focus:border-zinc-400 disabled:cursor-not-allowed disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:focus:border-zinc-500"
 			/>
 		</div>
 	);

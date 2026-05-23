@@ -172,6 +172,7 @@ export async function createStreamWithPostProcessing(
 	let usageData: any = null;
 	let structuredData: any = null;
 	let postProcessingDone = false;
+	let streamFailed = false;
 	let currentEventType = "";
 	const currentToolCalls: Record<string, any> = {};
 	let isFirstContentChunk = true;
@@ -272,6 +273,10 @@ export async function createStreamWithPostProcessing(
 				}
 			},
 			async transform(chunk, controller) {
+				if (streamFailed) {
+					return;
+				}
+
 				let text: string;
 				try {
 					text = new TextDecoder().decode(chunk);
@@ -308,7 +313,7 @@ export async function createStreamWithPostProcessing(
 						const dataStr = line.substring(6).trim();
 
 						if (dataStr === "[DONE]") {
-							if (!postProcessingDone) {
+							if (!streamFailed && !postProcessingDone) {
 								if (Object.keys(currentToolCalls).length > 0 && toolCallsData.length === 0) {
 									const completeToolCalls = Object.values(currentToolCalls);
 									toolCallsData = completeToolCalls;
@@ -326,12 +331,16 @@ export async function createStreamWithPostProcessing(
 							}
 							logger.trace("Parsed SSE data", { currentEventType, data });
 
-							if (data.error) {
+							const streamError =
+								data.error || (data.type === "response.failed" ? data.response?.error : null);
+							if (streamError) {
+								streamFailed = true;
+								postProcessingDone = true;
 								emitEvent(controller, "error", {
-									error: data.error,
+									error: streamError,
 								});
 								emitDoneEvent(controller);
-								logger.error("Error in data", { error: data.error });
+								logger.error("Error in data", { error: streamError });
 								return;
 							}
 
@@ -452,14 +461,22 @@ export async function createStreamWithPostProcessing(
 											toolCallData.partial_json;
 									}
 								} else if (toolCallData.format === "direct") {
-									toolCallsData = [...toolCallsData, ...toolCallData.toolCalls];
+									const seenToolCallIds = new Set(
+										toolCallsData.map((toolCall) => toolCall.id).filter(Boolean),
+									);
+									for (const toolCall of toolCallData.toolCalls) {
+										if (toolCall.id && seenToolCallIds.has(toolCall.id)) {
+											continue;
+										}
+										if (toolCall.id) {
+											seenToolCallIds.add(toolCall.id);
+										}
+										toolCallsData.push(toolCall);
+									}
 								}
 							}
 
 							if (
-								currentEventType === "message_start" ||
-								currentEventType === "message_delta" ||
-								currentEventType === "message_stop" ||
 								currentEventType === "content_block_start" ||
 								currentEventType === "content_block_stop"
 							) {
@@ -514,10 +531,6 @@ export async function createStreamWithPostProcessing(
 									};
 
 									toolCallsData.push(toolCall);
-								}
-
-								if (currentEventType === "message_stop" && !postProcessingDone) {
-									await handlePostProcessing();
 								}
 							}
 

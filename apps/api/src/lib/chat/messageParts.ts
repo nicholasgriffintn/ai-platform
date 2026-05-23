@@ -1,5 +1,6 @@
 import type { Message, MessageContent, MessagePart } from "~/types";
 import { safeParseJson } from "~/utils/json";
+import { isRecord, isObjectOrArray } from "~/utils/objects";
 
 type UnknownRecord = Record<string, unknown>;
 
@@ -10,14 +11,6 @@ const FILE_ATTACHMENT_MIME_TYPES: Record<string, string> = {
 	audio: "audio/*",
 	video: "video/*",
 };
-
-function isRecord(value: unknown): value is UnknownRecord {
-	return typeof value === "object" && value !== null && !Array.isArray(value);
-}
-
-function isObjectOrArray(value: unknown): value is UnknownRecord | unknown[] {
-	return isRecord(value) || Array.isArray(value);
-}
 
 function extractTimestamp(value: unknown, fallbackTimestamp?: number): number | undefined {
 	if (typeof value === "number" && Number.isFinite(value)) {

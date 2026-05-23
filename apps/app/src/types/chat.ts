@@ -19,6 +19,18 @@ export interface ChatReasoningSettings {
 	effort?: ReasoningEffort;
 }
 
+export interface HostedToolSettings {
+	image_generation?: {
+		size?: string;
+		quality?: string;
+	};
+	shell?: {
+		environment?: {
+			type?: string;
+		};
+	};
+}
+
 export interface ChatSettings {
 	temperature?: number;
 	top_p?: number;
@@ -37,9 +49,10 @@ export interface ChatSettings {
 	};
 	reasoning?: ChatReasoningSettings;
 	verbosity?: VerbosityLevel;
+	tool_options?: HostedToolSettings;
 }
 
-export interface ChatRequestOptions {
+export interface ChatRequestOptions extends HostedToolSettings {
 	council?: CouncilChatOptions;
 	sandbox?: {
 		enabled: boolean;

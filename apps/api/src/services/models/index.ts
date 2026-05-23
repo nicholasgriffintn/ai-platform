@@ -79,6 +79,10 @@ export async function listModelsByOutputModality(env: IEnv, modality: string, us
  */
 export async function getModelDetails(env: IEnv, id: string, userId?: number) {
 	const model = await getModelConfig(id);
+	if (!model) {
+		throw new AssistantError("Model not found or user does not have access", ErrorType.NOT_FOUND);
+	}
+
 	const accessibleModels = await filterModelsForUserAccess({ [id]: model }, env, userId, {
 		shouldUseCache: false,
 	});

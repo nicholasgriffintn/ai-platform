@@ -1,5 +1,8 @@
 import type { ContentType, Message, MessageContent } from "~/types";
 import { safeParseJson } from "~/utils/json";
+import { isRecord } from "~/utils/objects";
+
+type OpenAIResponsesInputItem = Record<string, unknown>;
 
 interface MessageFormatOptions {
 	maxTokens?: number;
@@ -17,6 +20,55 @@ interface MessageFormatOptions {
  * @returns The formatted messages
  */
 export class MessageFormatter {
+	static stringifyMessageContent(content: unknown): string {
+		if (typeof content === "string") {
+			return content;
+		}
+
+		if (Array.isArray(content)) {
+			return content.map((item) => MessageFormatter.stringifyMessageContent(item)).join("\n");
+		}
+
+		if (isRecord(content)) {
+			if (typeof content.text === "string") {
+				return content.text;
+			}
+
+			if (typeof content.content === "string") {
+				return content.content;
+			}
+
+			return JSON.stringify(content);
+		}
+
+		return "";
+	}
+
+	static formatOpenAIResponsesInput(messages: Message[]): OpenAIResponsesInputItem[] {
+		return messages.flatMap((message) => MessageFormatter.formatOpenAIResponsesMessage(message));
+	}
+
+	static formatOpenAIResponsesInstructions(
+		messages: Message[],
+		systemPrompt?: string,
+	): string | undefined {
+		const seen = new Set<string>();
+		const instructionParts: string[] = [];
+
+		MessageFormatter.appendUniqueInstructionPart(instructionParts, seen, systemPrompt);
+		for (const message of messages) {
+			if (message.role === "system" || message.role === "developer") {
+				MessageFormatter.appendUniqueInstructionPart(
+					instructionParts,
+					seen,
+					MessageFormatter.stringifyMessageContent(message.content),
+				);
+			}
+		}
+
+		return instructionParts.length ? instructionParts.join("\n\n") : undefined;
+	}
+
 	static ensureAssistantAfterTool(messages: Message[]): Message[] {
 		if (
 			messages.length >= 2 &&
@@ -350,6 +402,174 @@ export class MessageFormatter {
 				);
 			}
 		}
+	}
+
+	private static appendUniqueInstructionPart(
+		parts: string[],
+		seen: Set<string>,
+		value: unknown,
+	): void {
+		if (typeof value !== "string") {
+			return;
+		}
+
+		const text = value.trim();
+		if (!text || seen.has(text)) {
+			return;
+		}
+
+		seen.add(text);
+		parts.push(text);
+	}
+
+	private static formatOpenAIResponsesMessagePart(
+		part: MessageContent,
+	): OpenAIResponsesInputItem | null {
+		if (part.type === "text" && part.text) {
+			return {
+				type: "input_text",
+				text: part.text,
+			};
+		}
+
+		if (part.type === "image_url" && part.image_url?.url) {
+			return {
+				type: "input_image",
+				image_url: part.image_url.url,
+			};
+		}
+
+		if (part.type === "document_url" && part.document_url?.url) {
+			return {
+				type: "input_file",
+				file_url: part.document_url.url,
+			};
+		}
+
+		const text = MessageFormatter.stringifyMessageContent(part);
+		return text ? { type: "input_text", text } : null;
+	}
+
+	private static stringifyFunctionArguments(value: unknown): string {
+		if (typeof value === "string") {
+			return value;
+		}
+
+		if (value === undefined || value === null) {
+			return "";
+		}
+
+		try {
+			return JSON.stringify(value);
+		} catch {
+			return String(value);
+		}
+	}
+
+	private static getResponseFunctionName(tool: Record<string, unknown>): string | undefined {
+		if (typeof tool.name === "string") {
+			return tool.name;
+		}
+
+		if (isRecord(tool.function) && typeof tool.function.name === "string") {
+			return tool.function.name;
+		}
+
+		return undefined;
+	}
+
+	private static getResponseFunctionArguments(tool: Record<string, unknown>): unknown {
+		return isRecord(tool.function) ? tool.function.arguments : tool.arguments;
+	}
+
+	private static formatOpenAIResponsesFunctionCall(
+		toolCall: Record<string, unknown>,
+	): OpenAIResponsesInputItem | null {
+		const name = MessageFormatter.getResponseFunctionName(toolCall);
+		const callId =
+			typeof toolCall.call_id === "string"
+				? toolCall.call_id
+				: typeof toolCall.id === "string"
+					? toolCall.id
+					: undefined;
+
+		if (!name || !callId) {
+			return null;
+		}
+
+		return {
+			type: "function_call",
+			...(toolCall.type === "function_call" && typeof toolCall.id === "string"
+				? { id: toolCall.id }
+				: {}),
+			call_id: callId,
+			name,
+			arguments: MessageFormatter.stringifyFunctionArguments(
+				MessageFormatter.getResponseFunctionArguments(toolCall),
+			),
+			...(typeof toolCall.status === "string" ? { status: toolCall.status } : {}),
+		};
+	}
+
+	private static formatOpenAIResponsesToolCalls(message: Message): OpenAIResponsesInputItem[] {
+		if (message.role !== "assistant" || !Array.isArray(message.tool_calls)) {
+			return [];
+		}
+
+		return message.tool_calls
+			.map((toolCall) => MessageFormatter.formatOpenAIResponsesFunctionCall(toolCall))
+			.filter((toolCall): toolCall is OpenAIResponsesInputItem => toolCall !== null);
+	}
+
+	private static formatOpenAIResponsesMessageItem(
+		message: Message,
+	): OpenAIResponsesInputItem | null {
+		if (message.role === "system" || message.role === "developer") {
+			return null;
+		}
+
+		if (message.role === "tool") {
+			if (!message.tool_call_id) {
+				return null;
+			}
+
+			return {
+				type: "function_call_output",
+				call_id: message.tool_call_id,
+				output: MessageFormatter.stringifyMessageContent(message.content),
+			};
+		}
+
+		if (Array.isArray(message.content)) {
+			const content = message.content
+				.map((part) => MessageFormatter.formatOpenAIResponsesMessagePart(part))
+				.filter((part): part is OpenAIResponsesInputItem => part !== null);
+
+			return {
+				type: "message",
+				role: message.role,
+				content,
+			};
+		}
+
+		return {
+			type: "message",
+			role: message.role,
+			content: MessageFormatter.stringifyMessageContent(message.content),
+		};
+	}
+
+	private static formatOpenAIResponsesMessage(message: Message): OpenAIResponsesInputItem[] {
+		const messageItem = MessageFormatter.formatOpenAIResponsesMessageItem(message);
+		const toolCalls = MessageFormatter.formatOpenAIResponsesToolCalls(message);
+
+		if (message.role === "assistant" && toolCalls.length > 0 && messageItem?.content === "") {
+			return toolCalls;
+		}
+
+		return [messageItem, ...toolCalls].filter(
+			(item): item is OpenAIResponsesInputItem => item !== null,
+		);
 	}
 
 	private static formatGoogleAIContent(item: MessageContent): any {

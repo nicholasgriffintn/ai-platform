@@ -220,6 +220,61 @@ describe("ResponseFormatter", () => {
 			expect(result.tool_calls).toHaveLength(1);
 		});
 
+		it("should handle OpenAI Responses API output", async () => {
+			const data = {
+				id: "resp_123",
+				object: "response",
+				model: "gpt-5.5",
+				output: [
+					{
+						type: "message",
+						content: [
+							{
+								type: "output_text",
+								text: "Responses output",
+								annotations: [{ type: "url_citation", url: "https://example.com" }],
+							},
+						],
+					},
+				],
+			};
+
+			const result = await ResponseFormatter.formatResponse(data, "openai");
+
+			expect(result.response).toBe("Responses output");
+			expect(result.annotations).toEqual([{ type: "url_citation", url: "https://example.com" }]);
+			expect(result.data.openai_response_id).toBe("resp_123");
+		});
+
+		it("should extract OpenAI Responses API function calls", async () => {
+			const data = {
+				id: "resp_123",
+				object: "response",
+				model: "gpt-5.5",
+				output: [
+					{
+						type: "function_call",
+						call_id: "call_123",
+						name: "get_weather",
+						arguments: '{"location":"London"}',
+					},
+				],
+			};
+
+			const result = await ResponseFormatter.formatResponse(data, "openai");
+
+			expect(result.tool_calls).toEqual([
+				{
+					id: "call_123",
+					type: "function",
+					function: {
+						name: "get_weather",
+						arguments: '{"location":"London"}',
+					},
+				},
+			]);
+		});
+
 		describe("QwQ preprocessing", () => {
 			it("should add <think> tag for QwQ models with </think> but no <think>", async () => {
 				const data = {

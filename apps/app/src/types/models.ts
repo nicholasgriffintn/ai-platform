@@ -44,6 +44,10 @@ export interface ModelConfigItem {
 	supportsDocuments?: boolean;
 	supportsSearchGrounding?: boolean;
 	supportsCodeExecution?: boolean;
+	supportsImageGenerationTool?: boolean;
+	supportsToolSearch?: boolean;
+	supportsHostedShell?: boolean;
+	supportsWebFetch?: boolean;
 	supportsAudio?: boolean;
 	supportsFim?: boolean;
 	supportsNextEdit?: boolean;

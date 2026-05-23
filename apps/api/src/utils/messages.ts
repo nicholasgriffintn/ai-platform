@@ -15,3 +15,7 @@ export function formatMessages(
 		truncationStrategy: "tail",
 	});
 }
+
+export function stringifyMessageContent(content: unknown): string {
+	return MessageFormatter.stringifyMessageContent(content);
+}

@@ -120,6 +120,7 @@ class ApiService {
 			reasoning?: string,
 			toolResponses?: Message[],
 			done?: boolean,
+			assistantMessage?: Message,
 		) => void,
 		onStateChange: (state: string, data?: any) => void,
 		store = true,
@@ -138,8 +139,8 @@ class ApiService {
 			mode,
 			chatSettings,
 			signal,
-			(text, reasoning, toolResponses, done) => {
-				onProgress(text, reasoning, toolResponses, done);
+			(text, reasoning, toolResponses, done, assistantMessage) => {
+				onProgress(text, reasoning, toolResponses, done, assistantMessage);
 			},
 			onStateChange,
 			store,

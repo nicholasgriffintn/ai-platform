@@ -45,20 +45,31 @@ export function isTextOnlyModel(model: ModelConfigItem) {
 	);
 }
 
+export function isTextInputChatModel(model: ModelConfigItem) {
+	const inputs = model.modalities?.input ?? ["text"];
+	const outputs = model.modalities?.output ?? inputs;
+
+	return (
+		inputs.includes("text") &&
+		outputs.some((modality) => modality === "text" || modality === "image")
+	);
+}
+
 export function getModelsByMode(models: ModelConfig, mode: ChatMode) {
 	return Object.entries(models).reduce(
 		(acc, [key, model]) => {
 			const hasIncompatibleProvider = model.provider === "ollama";
 			const inputs = model.modalities?.input ?? ["text"];
 			const outputs = model.modalities?.output ?? inputs;
-			const supportsText = outputs.includes("text");
 			const isEmbeddingOnly =
 				outputs.length > 0 && outputs.every((modality) => modality === "embedding");
 			const isAudioOnly = outputs.length > 0 && outputs.every((modality) => modality === "audio");
 			const isVideoOnly = outputs.length > 0 && outputs.every((modality) => modality === "video");
 			const isIncompatible =
 				hasIncompatibleProvider ||
-				(!supportsText && (isAudioOnly || isVideoOnly)) ||
+				!isTextInputChatModel(model) ||
+				isAudioOnly ||
+				isVideoOnly ||
 				isEmbeddingOnly ||
 				model.hiddenFromDefaultList;
 

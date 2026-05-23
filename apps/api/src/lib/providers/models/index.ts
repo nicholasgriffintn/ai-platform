@@ -48,6 +48,7 @@ import { exaModelConfig } from "~/data-model/models/exa";
 import { cerebrasModelConfig } from "~/data-model/models/cerebras";
 import { falModelConfig } from "~/data-model/models/fal";
 import { ideogramModelConfig } from "~/data-model/models/ideogram";
+import { mergeModelConfigs } from "./utils";
 
 const logger = getLogger({ prefix: "lib/models" });
 
@@ -62,42 +63,42 @@ export interface ModelsOptions {
 	excludeModalities?: ModelModality[];
 }
 
-const modelConfig: ModelConfig = {
-	...openaiModelConfig,
-	...anthropicModelConfig,
-	...mistralModelConfig,
-	...morphModelConfig,
-	...ollamaModelConfig,
-	...bedrockModelConfig,
-	...deepinfraModelConfig,
-	...deepseekModelConfig,
-	...azureModelConfig,
-	...githubModelsConfig,
-	...xaiModelConfig,
-	...groqModelConfig,
-	...huggingfaceModelConfig,
-	...openrouterModelConfig,
-	...parallelModelConfig,
-	...perplexityModelConfig,
-	...requestyModelConfig,
-	...workersAiModelConfig,
-	...togetherAiModelConfig,
-	...googleAiStudioModelConfig,
-	...fireworksModelConfig,
-	...hyperbolicModelConfig,
-	...inferenceModelConfig,
-	...chutesModelConfig,
-	...vercelModelConfig,
-	...upstageModelConfig,
-	...githubCopilotModelConfig,
-	...inceptionModelConfig,
-	...v0ModelConfig,
-	...replicateModelConfig,
-	...exaModelConfig,
-	...falModelConfig,
-	...ideogramModelConfig,
-	...cerebrasModelConfig,
-};
+const modelConfig: ModelConfig = mergeModelConfigs(
+	openaiModelConfig,
+	anthropicModelConfig,
+	mistralModelConfig,
+	morphModelConfig,
+	ollamaModelConfig,
+	bedrockModelConfig,
+	deepinfraModelConfig,
+	deepseekModelConfig,
+	azureModelConfig,
+	githubModelsConfig,
+	xaiModelConfig,
+	groqModelConfig,
+	huggingfaceModelConfig,
+	openrouterModelConfig,
+	parallelModelConfig,
+	perplexityModelConfig,
+	requestyModelConfig,
+	workersAiModelConfig,
+	togetherAiModelConfig,
+	googleAiStudioModelConfig,
+	fireworksModelConfig,
+	hyperbolicModelConfig,
+	inferenceModelConfig,
+	chutesModelConfig,
+	vercelModelConfig,
+	upstageModelConfig,
+	githubCopilotModelConfig,
+	inceptionModelConfig,
+	v0ModelConfig,
+	replicateModelConfig,
+	exaModelConfig,
+	falModelConfig,
+	ideogramModelConfig,
+	cerebrasModelConfig,
+);
 
 const MODEL_CACHE_TTL = 14400;
 const USER_MODEL_CACHE_TTL = 3600;

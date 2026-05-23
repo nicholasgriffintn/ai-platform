@@ -25,7 +25,7 @@ import {
 	getAvailableModels,
 	getFeaturedModelIds,
 	getModelsByMode,
-	isTextOnlyModel,
+	isTextInputChatModel,
 } from "~/lib/models";
 import { hasProviderReasoningOptions } from "~/lib/reasoning";
 import {
@@ -312,7 +312,7 @@ export const ModelSelector = ({
 				Object.entries(baseFilteredModels).filter(
 					([id, modelConfig]) =>
 						(!featuredOnly || Boolean(featuredModelIds[id])) &&
-						(!isTextOnlyScope || isTextOnlyModel(modelConfig)),
+						(!isTextOnlyScope || isTextInputChatModel(modelConfig)),
 				),
 			),
 		[baseFilteredModels, featuredModelIds, featuredOnly, isTextOnlyScope],
