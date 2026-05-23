@@ -1,19 +1,4 @@
-import {
-	File,
-	Image,
-	Loader2,
-	Mic,
-	Paperclip,
-	Pause,
-	Plus,
-	Send,
-	Square,
-	Volume1,
-	Volume2,
-	VolumeX,
-	X,
-	FileCode,
-} from "lucide-react";
+import { File, Image, Loader2, Paperclip, Pause, Send, Volume2, X, FileCode } from "lucide-react";
 import {
 	type ChangeEvent,
 	type FormEvent,
@@ -21,22 +6,24 @@ import {
 	type ReactNode,
 	forwardRef,
 	useEffect,
+	useId,
 	useImperativeHandle,
 	useRef,
 	useState,
 } from "react";
 import type { MarkdownConversionOptions } from "@assistant/schemas";
 
-import { Button, Popover, PopoverContent, PopoverTrigger } from "~/components/ui";
+import { Button } from "~/components/ui";
 import { useModels } from "~/hooks/useModels";
 import { useVoiceRecorder } from "~/hooks/useVoiceRecorder";
 import { apiService } from "~/lib/api/api-service";
-import { cn } from "~/lib/utils";
 import { useChatStore } from "~/state/stores/chatStore";
 import { useUIStore } from "~/state/stores/uiStore";
 import type { ModelConfigItem } from "~/types";
 import { ChatSettings as ChatSettingsComponent } from "./ChatSettings";
 import { ToolToggles } from "./ChatSettings/ToolToggles";
+import { ComposerActionMenu } from "./ComposerActionMenu";
+import { ComposerModeMenu } from "./ComposerModeMenu";
 import { InlineResponseControls } from "./InlineResponseControls";
 import { ModelSelector } from "./ModelSelector";
 
@@ -90,6 +77,7 @@ interface ChatInputProps {
 		menu: ReactNode;
 		activeControl?: ReactNode;
 		onClearActive?: () => void;
+		trigger?: ReactNode;
 	};
 	modelScope?: "default" | "text-only";
 	disableAttachments?: boolean;
@@ -139,11 +127,14 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 		const [supportsAudio, setSupportsAudio] = useState(false);
 		const [supportsCode, setSupportsCode] = useState(false);
 		const [supportsToolCalls, setsupportsToolCalls] = useState(false);
+		const [supportsCodeExecution, setSupportsCodeExecution] = useState(false);
+		const [supportsSearchGrounding, setSupportsSearchGrounding] = useState(false);
 		const { data: apiModels } = useModels();
 		const [isUploading, setIsUploading] = useState(false);
 
 		const textareaRef = useRef<HTMLTextAreaElement>(null);
 		const fileInputRef = useRef<HTMLInputElement>(null);
+		const fileInputId = useId();
 
 		useImperativeHandle(ref, () => ({
 			focus: () => {
@@ -167,6 +158,8 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 				setSupportsAudio(false);
 				setSupportsCode(false);
 				setsupportsToolCalls(false);
+				setSupportsCodeExecution(false);
+				setSupportsSearchGrounding(false);
 				return;
 			}
 
@@ -191,6 +184,8 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 			setSupportsAudio(supportsNativeAudio);
 			setSupportsCode(supportsNativeDocuments);
 			setsupportsToolCalls(!!modelData?.supportsToolCalls);
+			setSupportsCodeExecution(!!modelData?.supportsCodeExecution);
+			setSupportsSearchGrounding(!!modelData?.supportsSearchGrounding);
 		}, [model, apiModels]);
 
 		const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
@@ -526,7 +521,11 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 			: { preview: null, label: "" };
 
 		const isToolSelectionLocked = chatMode === "agent" && selectedAgentId !== null;
-		const hasModeControls = Boolean(controls);
+		const canUseProComposerActions = isPro;
+		const canShowToolMenu =
+			(isPro && !model && chatMode === "remote") ||
+			(supportsToolCalls && (supportsCodeExecution || supportsSearchGrounding));
+		const canShowActionMenu = canUseProComposerActions || canShowToolMenu;
 
 		return (
 			<div
@@ -552,10 +551,29 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 							</div>
 						</div>
 					)}
+					{canUploadFiles && (
+						<input
+							type="file"
+							ref={fileInputRef}
+							accept={getFileTypeAccept()}
+							onChange={handleFileUpload}
+							className="hidden"
+							id={fileInputId}
+							aria-label="Upload a file (images, documents, audio, and code)"
+						/>
+					)}
 					<div className="relative">
-						<div className="flex flex-col sm:flex-row sm:items-start">
+						<div className="flex items-start">
 							<div className="flex min-w-0 flex-grow items-start gap-2 px-4 py-3">
-								{modeControls?.activeControl}
+								{!hideDefaultControls && (
+									<ComposerModeMenu
+										align="start"
+										isDisabled={isLoading}
+										menu={modeControls?.menu}
+										side="bottom"
+										trigger={modeControls?.trigger ?? modeControls?.activeControl}
+									/>
+								)}
 								<textarea
 									id="message-input"
 									ref={textareaRef}
@@ -578,7 +596,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 								Type your message and press Enter to send. Use Shift+Enter for a new line.
 							</div>
 
-							<div className="flex flex-shrink-0 items-center justify-end gap-1 px-3 pb-3 pt-0 sm:justify-start sm:pb-0 sm:pl-0 sm:pt-3">
+							<div className="flex flex-shrink-0 items-center gap-1 pr-3 pt-3">
 								{isLoading && streamStarted ? (
 									<Button
 										type="button"
@@ -592,108 +610,6 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 									</Button>
 								) : (
 									<>
-										{isPro && (
-											<div className="flex items-center gap-1 mr-2">
-												{autoPlayResponses && (
-													<Button
-														type="button"
-														onClick={autoPlayResponses.onToggle}
-														disabled={isLoading}
-														className="cursor-pointer p-1.5 hover:bg-off-white-highlight dark:hover:bg-zinc-800 rounded-md text-zinc-600 dark:text-zinc-400 disabled:opacity-50 disabled:cursor-not-allowed"
-														title={
-															autoPlayResponses.enabled
-																? "Disable response audio"
-																: "Enable response audio"
-														}
-														aria-label={
-															autoPlayResponses.enabled
-																? "Disable response audio"
-																: "Enable response audio"
-														}
-														aria-pressed={autoPlayResponses.enabled}
-														variant="icon"
-													>
-														{autoPlayResponses.isPlaying ? (
-															<Volume1 className="h-4 w-4" />
-														) : autoPlayResponses.isGenerating ? (
-															<Loader2 className="h-4 w-4 animate-spin" />
-														) : autoPlayResponses.enabled ? (
-															<Volume2 className="h-4 w-4" />
-														) : (
-															<VolumeX className="h-4 w-4" />
-														)}
-													</Button>
-												)}
-												{canUploadFiles && (
-													<>
-														<input
-															type="file"
-															ref={fileInputRef}
-															accept={getFileTypeAccept()}
-															onChange={handleFileUpload}
-															className="hidden"
-															id="file-upload"
-															aria-label="Upload a file (images, documents, audio, and code)"
-														/>
-														<Button
-															type="button"
-															onClick={() => fileInputRef.current?.click()}
-															disabled={isLoading || isUploading}
-															className="cursor-pointer p-1.5 hover:bg-off-white-highlight dark:hover:bg-zinc-800 rounded-md text-zinc-600 dark:text-zinc-400 disabled:opacity-50 disabled:cursor-not-allowed"
-															title={`Upload ${isMultimodalModel || supportsAudio ? "files (images, audio, documents, code)" : "a Document or Code file"}`}
-															aria-label={`Upload ${isMultimodalModel || supportsAudio ? "files (images, audio, documents, code)" : "a Document or Code file"}`}
-															variant="icon"
-															aria-haspopup="dialog"
-															aria-controls="file-upload"
-														>
-															{isUploading ? (
-																<div className="h-4 w-4 animate-spin rounded-full border-2 border-zinc-600 dark:border-zinc-400 border-t-transparent" />
-															) : (
-																getUploadButtonIcon()
-															)}
-														</Button>
-													</>
-												)}
-												{isRecording ? (
-													<Button
-														type="button"
-														onClick={stopRecording}
-														disabled={isLoading}
-														className="cursor-pointer p-1.5 hover:bg-red-100 dark:hover:bg-red-900/30 rounded-md text-red-600 dark:text-red-400 disabled:opacity-50 disabled:cursor-not-allowed"
-														title="Stop Recording"
-														aria-label="Stop Recording"
-														variant="icon"
-													>
-														<Square className="h-4 w-4" />
-													</Button>
-												) : isTranscribing ? (
-													<div
-														className="p-2 text-zinc-600 dark:text-zinc-400"
-														aria-live="polite"
-														role="status"
-													>
-														<div
-															className="h-5 w-5 animate-spin rounded-full border-2 border-zinc-600 dark:border-zinc-400 border-t-transparent"
-															aria-hidden="true"
-														/>
-														<span className="sr-only">Transcribing voice input...</span>
-													</div>
-												) : (
-													<Button
-														type="button"
-														onClick={startRecording}
-														disabled={isLoading}
-														className="cursor-pointer p-1.5 hover:bg-off-white-highlight dark:hover:bg-zinc-800 rounded-md text-zinc-600 dark:text-zinc-400 disabled:opacity-50 disabled:cursor-not-allowed"
-														title="Start Recording"
-														aria-label="Start Recording"
-														variant="icon"
-													>
-														<Mic className="h-4 w-4" />
-													</Button>
-												)}
-											</div>
-										)}
-
 										<Button
 											type="submit"
 											onClick={handleFormSubmit}
@@ -724,46 +640,33 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 								<span>Generating response audio...</span>
 							</div>
 						)}
-						{controls && (
-							<div
-								className={cn(
-									hideDefaultControls ? "" : "mb-3",
-									hasModeControls &&
-										"max-h-[min(16rem,42dvh)] overflow-y-auto overscroll-contain pr-1 sm:max-h-none sm:overflow-visible sm:pr-0",
-								)}
-							>
-								{controls}
-							</div>
-						)}
+						{hideDefaultControls && controls && <div>{controls}</div>}
 						{!hideDefaultControls && (
 							<div className="flex items-center justify-between gap-1 sm:gap-2">
 								<div className="flex-1 min-w-0 max-w-[70%] sm:max-w-none flex items-center gap-2">
-									{modeControls?.menu && (
-										<Popover>
-											<PopoverTrigger asChild>
-												<Button
-													type="button"
-													variant="icon"
-													className="h-8 w-8 shrink-0 p-1.5"
-													title="Open mode menu"
-													aria-label="Open mode menu"
-												>
-													<Plus className="h-4 w-4" />
-												</Button>
-											</PopoverTrigger>
-											<PopoverContent
-												side="top"
-												align="start"
-												sideOffset={10}
-												className="w-80 rounded-xl p-2"
-											>
-												{modeControls.menu}
-												<ToolToggles
-													isDisabled={isLoading || isToolSelectionLocked}
-													variant="menu"
-												/>
-											</PopoverContent>
-										</Popover>
+									{canShowActionMenu && (
+										<ComposerActionMenu
+											autoPlayResponses={canUseProComposerActions ? autoPlayResponses : undefined}
+											canUseVoice={canUseProComposerActions}
+											canUploadFiles={canUseProComposerActions && canUploadFiles}
+											isDisabled={isLoading}
+											isRecording={isRecording}
+											isTranscribing={isTranscribing}
+											isUploading={isUploading}
+											onStartRecording={startRecording}
+											onStopRecording={stopRecording}
+											onUploadClick={() => fileInputRef.current?.click()}
+											tools={
+												canShowToolMenu ? (
+													<ToolToggles
+														isDisabled={isLoading || isToolSelectionLocked}
+														variant="menu"
+													/>
+												) : undefined
+											}
+											uploadIcon={getUploadButtonIcon()}
+											uploadLabel={`Upload ${isMultimodalModel || supportsAudio ? "files (images, audio, documents, code)" : "a Document or Code file"}`}
+										/>
 									)}
 									<div className="min-w-0 flex-shrink">
 										<ModelSelector isDisabled={isLoading} mono={true} modelScope={modelScope} />

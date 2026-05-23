@@ -1,14 +1,13 @@
 import {
 	Check,
 	ChevronDown,
-	ChevronRight,
 	ChevronUp,
-	Clock,
+	CogIcon,
 	GitBranch,
 	ListTodo,
 	MessageSquareText,
 } from "lucide-react";
-import { type ReactNode, useEffect, useState } from "react";
+import { type ReactNode, useState } from "react";
 import { Link } from "react-router";
 
 import { Checkbox, Input } from "~/components/ui";
@@ -68,7 +67,7 @@ interface SandboxChatModeControlsProps {
 	canSaveRepo?: boolean;
 	isSavingRepo?: boolean;
 	onSaveRepo?: () => void;
-	hasConversationMessages?: boolean;
+	showHeader?: boolean;
 }
 
 interface InlineSandboxControlProps {
@@ -154,212 +153,201 @@ export function SandboxChatModeControls({
 	canSaveRepo = false,
 	isSavingRepo = false,
 	onSaveRepo,
-	hasConversationMessages = false,
+	showHeader = true,
 }: SandboxChatModeControlsProps) {
-	const [isExpanded, setIsExpanded] = useState(() => !hasConversationMessages);
 	const hasRepoOptions = repoOptions.length > 0;
 	const selectedRepoOption = repoOptions.find((option) => option.key === selectedRepoKey);
 	const taskLabel = SANDBOX_TASK_TYPE_LABELS[taskType];
 	const promptLabel =
 		sandboxPromptStrategyOptions.find((option) => option.value === promptStrategy)?.label ?? "Auto";
-	const timeoutLabel = hasValidTimeout
+	const settingsLabel = hasValidTimeout
 		? `${timeoutSecondsInput.trim() || SANDBOX_TIMEOUT_DEFAULT_SECONDS}s`
 		: "Invalid timeout";
 
-	useEffect(() => {
-		if (hasConversationMessages) {
-			setIsExpanded(false);
-		}
-	}, [hasConversationMessages]);
-
 	return (
 		<div className="space-y-2">
-			<div className="flex min-w-0 flex-wrap items-center justify-between gap-2">
-				<button
-					type="button"
-					onClick={() => setIsExpanded((value) => !value)}
-					className="flex min-w-0 items-center gap-2 rounded-md px-1 py-1 text-left text-sm font-medium text-zinc-800 transition-colors hover:bg-zinc-100 dark:text-zinc-200 dark:hover:bg-zinc-800"
-					aria-expanded={isExpanded}
-				>
-					{isExpanded ? (
-						<ChevronDown className="h-4 w-4 shrink-0" />
-					) : (
-						<ChevronRight className="h-4 w-4 shrink-0" />
-					)}
-					<GitBranch className="h-4 w-4 shrink-0" />
-					<span>Sandbox</span>
-					<span className="min-w-0 truncate text-xs font-normal text-zinc-500 dark:text-zinc-400">
-						{normalisedRepo || (isLoadingRepos ? "Loading repositories" : "No repository")}
-					</span>
-				</button>
-				{!hasConnection && (
-					<Link
-						to="/profile?tab=sandbox"
-						className="rounded px-2 py-1 text-xs text-zinc-600 no-underline hover:bg-off-white-highlight dark:text-zinc-400 dark:hover:bg-zinc-900"
-					>
-						Connect GitHub
-					</Link>
-				)}
-			</div>
-			{isExpanded && (
-				<>
-					<div className="flex flex-wrap items-center gap-1">
-						<InlineSandboxControl
-							id="sandbox-repo-control"
-							label="Repository"
-							icon={<GitBranch className="h-4 w-4" />}
-							displayLabel={
-								normalisedRepo || (isLoadingRepos ? "Loading repositories" : "No repository")
-							}
-							isDisabled={!hasRepoOptions}
-						>
-							{(close) => (
-								<div role="menu" aria-labelledby="sandbox-repo-control" className="space-y-1">
-									{hasRepoOptions ? (
-										repoOptions.map((option) => {
-											const isSelected = option.key === selectedRepoKey;
-											return (
-												<button
-													key={option.key}
-													type="button"
-													role="menuitemradio"
-													aria-checked={isSelected}
-													onClick={() => {
-														setSelectedRepoKey(option.key);
-														close();
-													}}
-													className={cn(
-														"flex w-full items-center justify-between gap-2 rounded px-2 py-1.5 text-left text-sm text-zinc-700 hover:bg-zinc-100 dark:text-zinc-200 dark:hover:bg-zinc-800",
-														isSelected && "bg-zinc-100 font-medium dark:bg-zinc-800",
-													)}
-												>
-													<span className="min-w-0 truncate">{option.repo}</span>
-													{isSelected && <Check className="h-3.5 w-3.5 shrink-0" />}
-												</button>
-											);
-										})
-									) : (
-										<div className="px-2 py-1.5 text-sm text-zinc-500 dark:text-zinc-400">
-											{hasConnection ? "No repositories available" : "Connect GitHub first"}
-										</div>
-									)}
-									{canSaveRepo && onSaveRepo && selectedRepoOption && (
-										<button
-											type="button"
-											onClick={onSaveRepo}
-											disabled={isSavingRepo}
-											className="mt-1 w-full rounded border border-zinc-200 px-2 py-1.5 text-left text-xs font-medium text-zinc-700 hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-800"
-										>
-											{isSavingRepo ? "Saving..." : "Add repository"}
-										</button>
-									)}
-								</div>
-							)}
-						</InlineSandboxControl>
-						<InlineSandboxControl
-							id="sandbox-task-control"
-							label="Task"
-							icon={<ListTodo className="h-4 w-4" />}
-							displayLabel={taskLabel}
-						>
-							{(close) => (
-								<div role="menu" aria-labelledby="sandbox-task-control">
-									{SANDBOX_TASK_TYPES.map((type) => {
-										const isSelected = type === taskType;
-										return (
-											<button
-												key={type}
-												type="button"
-												role="menuitemradio"
-												aria-checked={isSelected}
-												onClick={() => {
-													setTaskType(parseSandboxTaskType(type));
-													close();
-												}}
-												className={cn(
-													"flex w-full items-center justify-between gap-2 rounded px-2 py-1.5 text-left text-sm text-zinc-700 hover:bg-zinc-100 dark:text-zinc-200 dark:hover:bg-zinc-800",
-													isSelected && "bg-zinc-100 font-medium dark:bg-zinc-800",
-												)}
-											>
-												<span>{SANDBOX_TASK_TYPE_LABELS[type]}</span>
-												{isSelected && <Check className="h-3.5 w-3.5 shrink-0" />}
-											</button>
-										);
-									})}
-								</div>
-							)}
-						</InlineSandboxControl>
-						<InlineSandboxControl
-							id="sandbox-prompt-control"
-							label="Prompt"
-							icon={<MessageSquareText className="h-4 w-4" />}
-							displayLabel={promptLabel}
-						>
-							{(close) => (
-								<div role="menu" aria-labelledby="sandbox-prompt-control">
-									{sandboxPromptStrategyOptions.map((option) => {
-										const isSelected = option.value === promptStrategy;
-										return (
-											<button
-												key={option.value}
-												type="button"
-												role="menuitemradio"
-												aria-checked={isSelected}
-												onClick={() => {
-													setPromptStrategy(parseSandboxPromptStrategy(option.value));
-													close();
-												}}
-												className={cn(
-													"flex w-full items-center justify-between gap-2 rounded px-2 py-1.5 text-left text-sm text-zinc-700 hover:bg-zinc-100 dark:text-zinc-200 dark:hover:bg-zinc-800",
-													isSelected && "bg-zinc-100 font-medium dark:bg-zinc-800",
-												)}
-											>
-												<span>{option.label}</span>
-												{isSelected && <Check className="h-3.5 w-3.5 shrink-0" />}
-											</button>
-										);
-									})}
-								</div>
-							)}
-						</InlineSandboxControl>
-						<InlineSandboxControl
-							id="sandbox-timeout-control"
-							label="Timeout"
-							icon={<Clock className="h-4 w-4" />}
-							displayLabel={timeoutLabel}
-						>
-							{() => (
-								<div className="space-y-2 px-2 pb-2">
-									<Input
-										id="sandbox-timeout-input"
-										type="number"
-										min={SANDBOX_TIMEOUT_MIN_SECONDS}
-										max={SANDBOX_TIMEOUT_MAX_SECONDS}
-										step={1}
-										value={timeoutSecondsInput}
-										onChange={(event) => setTimeoutSecondsInput(event.target.value)}
-										placeholder={String(SANDBOX_TIMEOUT_DEFAULT_SECONDS)}
-										className="h-8 px-2 text-xs"
-									/>
-									<label className="flex h-8 items-center gap-2 rounded-md text-xs text-zinc-700 dark:text-zinc-300">
-										<Checkbox
-											checked={shouldCommit}
-											disabled={isReadOnlyTaskType}
-											onCheckedChange={(checked) => setShouldCommit(Boolean(checked))}
-										/>
-										Commit changes
-									</label>
-								</div>
-							)}
-						</InlineSandboxControl>
+			{showHeader && (
+				<div className="flex min-w-0 flex-wrap items-center justify-between gap-2">
+					<div className="flex min-w-0 items-center gap-2 px-1 py-1 text-sm font-medium text-zinc-800 dark:text-zinc-200">
+						<GitBranch className="h-4 w-4 shrink-0" />
+						<span>Sandbox</span>
+						<span className="min-w-0 truncate text-xs font-normal text-zinc-500 dark:text-zinc-400">
+							{normalisedRepo || (isLoadingRepos ? "Loading repositories" : "No repository")}
+						</span>
 					</div>
-					{!hasValidTimeout && (
-						<p className="text-xs text-red-600 dark:text-red-400">
-							Timeout must be between {SANDBOX_TIMEOUT_MIN_SECONDS} and{" "}
-							{SANDBOX_TIMEOUT_MAX_SECONDS} seconds.
-						</p>
+					{!hasConnection && (
+						<Link
+							to="/profile?tab=sandbox"
+							className="rounded px-2 py-1 text-xs text-zinc-600 no-underline hover:bg-off-white-highlight dark:text-zinc-400 dark:hover:bg-zinc-900"
+						>
+							Connect GitHub
+						</Link>
 					)}
-				</>
+				</div>
+			)}
+			{!showHeader && !hasConnection && (
+				<Link
+					to="/profile?tab=sandbox"
+					className="inline-flex rounded px-1 py-1 text-xs text-zinc-600 no-underline hover:bg-off-white-highlight dark:text-zinc-400 dark:hover:bg-zinc-900"
+				>
+					Connect GitHub
+				</Link>
+			)}
+			<div className="flex flex-wrap items-center gap-1">
+				<InlineSandboxControl
+					id="sandbox-repo-control"
+					label="Repository"
+					icon={<GitBranch className="h-4 w-4" />}
+					displayLabel={
+						normalisedRepo || (isLoadingRepos ? "Loading repositories" : "No repository")
+					}
+					isDisabled={!hasRepoOptions}
+				>
+					{(close) => (
+						<div role="menu" aria-labelledby="sandbox-repo-control" className="space-y-1">
+							{hasRepoOptions ? (
+								repoOptions.map((option) => {
+									const isSelected = option.key === selectedRepoKey;
+									return (
+										<button
+											key={option.key}
+											type="button"
+											role="menuitemradio"
+											aria-checked={isSelected}
+											onClick={() => {
+												setSelectedRepoKey(option.key);
+												close();
+											}}
+											className={cn(
+												"flex w-full items-center justify-between gap-2 rounded px-2 py-1.5 text-left text-sm text-zinc-700 hover:bg-zinc-100 dark:text-zinc-200 dark:hover:bg-zinc-800",
+												isSelected && "bg-zinc-100 font-medium dark:bg-zinc-800",
+											)}
+										>
+											<span className="min-w-0 truncate">{option.repo}</span>
+											{isSelected && <Check className="h-3.5 w-3.5 shrink-0" />}
+										</button>
+									);
+								})
+							) : (
+								<div className="px-2 py-1.5 text-sm text-zinc-500 dark:text-zinc-400">
+									{hasConnection ? "No repositories available" : "Connect GitHub first"}
+								</div>
+							)}
+							{canSaveRepo && onSaveRepo && selectedRepoOption && (
+								<button
+									type="button"
+									onClick={onSaveRepo}
+									disabled={isSavingRepo}
+									className="mt-1 w-full rounded border border-zinc-200 px-2 py-1.5 text-left text-xs font-medium text-zinc-700 hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-800"
+								>
+									{isSavingRepo ? "Saving..." : "Add repository"}
+								</button>
+							)}
+						</div>
+					)}
+				</InlineSandboxControl>
+				<InlineSandboxControl
+					id="sandbox-task-control"
+					label="Task"
+					icon={<ListTodo className="h-4 w-4" />}
+					displayLabel={taskLabel}
+				>
+					{(close) => (
+						<div role="menu" aria-labelledby="sandbox-task-control">
+							{SANDBOX_TASK_TYPES.map((type) => {
+								const isSelected = type === taskType;
+								return (
+									<button
+										key={type}
+										type="button"
+										role="menuitemradio"
+										aria-checked={isSelected}
+										onClick={() => {
+											setTaskType(parseSandboxTaskType(type));
+											close();
+										}}
+										className={cn(
+											"flex w-full items-center justify-between gap-2 rounded px-2 py-1.5 text-left text-sm text-zinc-700 hover:bg-zinc-100 dark:text-zinc-200 dark:hover:bg-zinc-800",
+											isSelected && "bg-zinc-100 font-medium dark:bg-zinc-800",
+										)}
+									>
+										<span>{SANDBOX_TASK_TYPE_LABELS[type]}</span>
+										{isSelected && <Check className="h-3.5 w-3.5 shrink-0" />}
+									</button>
+								);
+							})}
+						</div>
+					)}
+				</InlineSandboxControl>
+				<InlineSandboxControl
+					id="sandbox-prompt-control"
+					label="Prompt"
+					icon={<MessageSquareText className="h-4 w-4" />}
+					displayLabel={promptLabel}
+				>
+					{(close) => (
+						<div role="menu" aria-labelledby="sandbox-prompt-control">
+							{sandboxPromptStrategyOptions.map((option) => {
+								const isSelected = option.value === promptStrategy;
+								return (
+									<button
+										key={option.value}
+										type="button"
+										role="menuitemradio"
+										aria-checked={isSelected}
+										onClick={() => {
+											setPromptStrategy(parseSandboxPromptStrategy(option.value));
+											close();
+										}}
+										className={cn(
+											"flex w-full items-center justify-between gap-2 rounded px-2 py-1.5 text-left text-sm text-zinc-700 hover:bg-zinc-100 dark:text-zinc-200 dark:hover:bg-zinc-800",
+											isSelected && "bg-zinc-100 font-medium dark:bg-zinc-800",
+										)}
+									>
+										<span>{option.label}</span>
+										{isSelected && <Check className="h-3.5 w-3.5 shrink-0" />}
+									</button>
+								);
+							})}
+						</div>
+					)}
+				</InlineSandboxControl>
+				<InlineSandboxControl
+					id="sandbox-settings-control"
+					label="Settings"
+					icon={<CogIcon className="h-4 w-4" />}
+					displayLabel={settingsLabel}
+				>
+					{() => (
+						<div className="space-y-2 px-2 pb-2">
+							<Input
+								id="sandbox-timeout-input"
+								type="number"
+								min={SANDBOX_TIMEOUT_MIN_SECONDS}
+								max={SANDBOX_TIMEOUT_MAX_SECONDS}
+								step={1}
+								value={timeoutSecondsInput}
+								onChange={(event) => setTimeoutSecondsInput(event.target.value)}
+								placeholder={String(SANDBOX_TIMEOUT_DEFAULT_SECONDS)}
+								className="h-8 px-2 text-xs"
+							/>
+							<label className="flex h-8 items-center gap-2 rounded-md text-xs text-zinc-700 dark:text-zinc-300">
+								<Checkbox
+									checked={shouldCommit}
+									disabled={isReadOnlyTaskType}
+									onCheckedChange={(checked) => setShouldCommit(Boolean(checked))}
+								/>
+								Commit changes
+							</label>
+						</div>
+					)}
+				</InlineSandboxControl>
+			</div>
+			{!hasValidTimeout && (
+				<p className="text-xs text-red-600 dark:text-red-400">
+					Timeout must be between {SANDBOX_TIMEOUT_MIN_SECONDS} and {SANDBOX_TIMEOUT_MAX_SECONDS}{" "}
+					seconds.
+				</p>
 			)}
 		</div>
 	);

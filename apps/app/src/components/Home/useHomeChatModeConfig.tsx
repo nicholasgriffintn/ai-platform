@@ -24,7 +24,7 @@ import {
 	type SandboxPromptStrategy,
 	type SandboxTaskType,
 } from "~/types/sandbox";
-import { ActiveHomeChatModeControl, HomeChatModeMenu } from "./HomeChatModeControls";
+import { HomeChatModeMenu, HomeChatModeTrigger } from "./HomeChatModeControls";
 import { SandboxChatModeControls } from "./SandboxChatModeControls";
 import { type HomeChatModeId, resolveHomeChatModeId } from "./chatModes";
 
@@ -45,7 +45,6 @@ export function useHomeChatModeConfig(): {
 		setSandboxModeSettings,
 	} = useChatStore();
 	const { data: currentConversation } = useChat(currentConversationId);
-	const hasConversationMessages = Boolean(currentConversation?.messages?.length);
 	const conversationModeMetadata = useMemo(
 		() => getConversationModeMetadata(currentConversation),
 		[currentConversation],
@@ -237,17 +236,9 @@ export function useHomeChatModeConfig(): {
 				onSelectedMemberIdsChange={setSelectedCouncilMemberIds}
 				responseMode={councilResponseMode}
 				onResponseModeChange={setCouncilResponseMode}
-				hasConversationMessages={hasConversationMessages}
+				showHeader={activeModeId !== "council"}
 			/>
 		);
-		const modeControls = {
-			menu: <HomeChatModeMenu activeModeId={activeModeId} onModeChange={handleModeChange} />,
-			activeControl:
-				activeModeId === "chat" ? undefined : (
-					<ActiveHomeChatModeControl activeModeId={activeModeId} onModeChange={handleModeChange} />
-				),
-			onClearActive: activeModeId === "chat" ? undefined : () => handleModeChange("chat"),
-		};
 		const sandboxRequestOptions = {
 			sandbox: {
 				enabled: true,
@@ -285,9 +276,26 @@ export function useHomeChatModeConfig(): {
 				canSaveRepo={canSaveSandboxRepo}
 				isSavingRepo={updateSandboxConnectionRepositories.isPending}
 				onSaveRepo={handleSaveSandboxRepo}
-				hasConversationMessages={hasConversationMessages}
+				showHeader={activeModeId !== "sandbox"}
 			/>
 		);
+		const activeModeControls =
+			activeModeId === "council"
+				? councilControls
+				: activeModeId === "sandbox"
+					? sandboxControls
+					: undefined;
+		const modeControls = {
+			menu: (
+				<HomeChatModeMenu
+					activeModeControls={activeModeControls}
+					activeModeId={activeModeId}
+					onModeChange={handleModeChange}
+				/>
+			),
+			onClearActive: activeModeId === "chat" ? undefined : () => handleModeChange("chat"),
+			trigger: <HomeChatModeTrigger activeModeId={activeModeId} />,
+		};
 
 		if (activeModeId === "sandbox") {
 			return {
@@ -338,7 +346,6 @@ export function useHomeChatModeConfig(): {
 						requestOptions: sandboxRequestOptions,
 						sandboxSettings,
 					}),
-					inputControls: sandboxControls,
 					modeControls,
 				},
 			};
@@ -387,7 +394,6 @@ export function useHomeChatModeConfig(): {
 								requireConsensus: true,
 							}
 						: undefined,
-				inputControls: councilControls,
 				modeControls,
 			},
 		};
@@ -415,6 +421,5 @@ export function useHomeChatModeConfig(): {
 		parsedSandboxTimeoutSeconds,
 		sandboxModelSettings,
 		sandboxSettings,
-		hasConversationMessages,
 	]);
 }

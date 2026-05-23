@@ -5,21 +5,21 @@ import { defaultCouncilMemberIds } from "@assistant/schemas";
 import { CouncilChatControls } from "./CouncilChatControls";
 
 describe("CouncilChatControls", () => {
-	it("collapses expanded member controls when conversation messages exist", () => {
+	it("shows member controls without a secondary collapse step", () => {
 		const props = {
-			selectedMemberIds: [...defaultCouncilMemberIds],
+			selectedMemberIds: [defaultCouncilMemberIds[0]],
 			onSelectedMemberIdsChange: vi.fn(),
 			responseMode: "debate" as const,
 			onResponseModeChange: vi.fn(),
 		};
 
-		const { rerender } = render(<CouncilChatControls {...props} />);
+		render(<CouncilChatControls {...props} />);
 
-		fireEvent.click(screen.getByRole("button", { name: /Council/i }));
 		expect(screen.getByRole("button", { name: "Chamber" })).toBeInTheDocument();
+		expect(screen.getByRole("button", { name: "Single" })).toBeInTheDocument();
 
-		rerender(<CouncilChatControls {...props} hasConversationMessages={true} />);
+		fireEvent.click(screen.getByRole("button", { name: "All" }));
 
-		expect(screen.queryByRole("button", { name: "Chamber" })).not.toBeInTheDocument();
+		expect(props.onSelectedMemberIdsChange).toHaveBeenCalledWith([...defaultCouncilMemberIds]);
 	});
 });

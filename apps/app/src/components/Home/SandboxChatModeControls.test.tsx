@@ -30,29 +30,36 @@ const defaultProps = {
 };
 
 describe("SandboxChatModeControls", () => {
-	it("starts collapsed when conversation messages already exist", () => {
-		render(<SandboxChatModeControls {...defaultProps} hasConversationMessages={true} />);
+	it("shows sandbox controls without a secondary collapse step", () => {
+		render(<SandboxChatModeControls {...defaultProps} />);
 
 		expect(
-			screen.queryByRole("button", { name: /Repository: nicholasgriffintn\/ai-platform/i }),
-		).not.toBeInTheDocument();
-		expect(screen.getByRole("button", { name: /Sandbox/i })).toHaveAttribute(
-			"aria-expanded",
-			"false",
-		);
+			screen.getByRole("button", { name: /Repository: nicholasgriffintn\/ai-platform/i }),
+		).toBeInTheDocument();
+		expect(
+			screen.getByRole("button", { name: /Task: Feature implementation/i }),
+		).toBeInTheDocument();
+		expect(screen.getByRole("button", { name: /Prompt: Auto/i })).toBeInTheDocument();
+		expect(
+			screen.getByRole("button", {
+				name: new RegExp(`Settings: ${SANDBOX_TIMEOUT_DEFAULT_SECONDS}s`, "i"),
+			}),
+		).toBeInTheDocument();
 	});
 
-	it("collapses expanded sandbox controls when conversation messages appear", () => {
+	it("keeps controls visible across rerenders", () => {
 		const { rerender } = render(<SandboxChatModeControls {...defaultProps} />);
 
 		expect(
 			screen.getByRole("button", { name: /Repository: nicholasgriffintn\/ai-platform/i }),
 		).toBeInTheDocument();
 
-		rerender(<SandboxChatModeControls {...defaultProps} hasConversationMessages={true} />);
+		rerender(
+			<SandboxChatModeControls {...defaultProps} normalisedRepo="nicholasgriffintn/assistant" />,
+		);
 
 		expect(
-			screen.queryByRole("button", { name: /Repository: nicholasgriffintn\/ai-platform/i }),
-		).not.toBeInTheDocument();
+			screen.getByRole("button", { name: /Repository: nicholasgriffintn\/assistant/i }),
+		).toBeInTheDocument();
 	});
 });
