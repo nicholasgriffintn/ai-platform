@@ -1,5 +1,5 @@
 import type { RealtimeProvider } from "../../capabilities/realtime";
-import { OpenAIRealtimeProvider } from "../../capabilities/realtime/providers";
+import { MistralRealtimeProvider, OpenAIRealtimeProvider } from "../../capabilities/realtime/providers";
 import type { ProviderRegistry } from "../ProviderRegistry";
 import type { ProviderRegistration } from "../types";
 
@@ -9,6 +9,12 @@ const realtimeProviders: ProviderRegistration<RealtimeProvider>[] = [
 		aliases: ["gpt"],
 		create: () => new OpenAIRealtimeProvider(),
 		metadata: { vendor: "OpenAI", categories: ["realtime"], tags: ["transcription"] },
+	},
+	{
+		name: "mistral",
+		aliases: ["voxtral"],
+		create: () => new MistralRealtimeProvider(),
+		metadata: { vendor: "Mistral", categories: ["realtime"], tags: ["transcription"] },
 	},
 ];
 
