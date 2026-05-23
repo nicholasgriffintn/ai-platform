@@ -63,7 +63,7 @@ export class MistralRealtimeProvider implements RealtimeProvider {
 				language: request.language,
 			},
 			client_secret: {
-				value: apiKey,
+				value: "NA",
 				expires_at: Math.floor(Date.now() / 1000) + 60,
 			},
 		};
