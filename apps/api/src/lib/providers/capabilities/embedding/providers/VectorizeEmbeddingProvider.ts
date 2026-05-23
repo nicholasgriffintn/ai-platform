@@ -11,6 +11,11 @@ import type {
 } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
+import {
+	buildVectorizeMetadataFilter,
+	getEmbeddingContentType,
+	withEmbeddingScopeMetadata,
+} from "~/lib/providers/capabilities/embedding/utils/scope";
 
 const logger = getLogger({ prefix: "lib/embedding/vectorize" });
 
@@ -98,7 +103,7 @@ export class VectorizeEmbeddingProvider implements EmbeddingProvider {
 				embeddings.map((embedding) => ({
 					id: embedding.id,
 					values: embedding.values,
-					metadata: embedding.metadata,
+					metadata: withEmbeddingScopeMetadata(embedding.metadata, options),
 					namespace: options.namespace || "assistant-embeddings",
 				})),
 			);
@@ -165,12 +170,15 @@ export class VectorizeEmbeddingProvider implements EmbeddingProvider {
 		options: RagOptions = {},
 	): Promise<EmbeddingQueryResult> {
 		logger.debug("Querying Vectorize Vector DB", { queryVector });
-		const matches = await this.vector_db.query(queryVector, {
+		const metadataFilter = buildVectorizeMetadataFilter(options);
+		const queryOptions = {
 			topK: options.topK ?? 15,
 			returnValues: options.returnValues ?? false,
 			returnMetadata: options.returnMetadata ?? "none",
 			namespace: options.namespace || "assistant-embeddings",
-		});
+			...(metadataFilter && { filter: metadataFilter }),
+		};
+		const matches = await this.vector_db.query(queryVector, queryOptions);
 
 		logger.debug("Vectorize Vector DB query response", { matches });
 
@@ -193,12 +201,15 @@ export class VectorizeEmbeddingProvider implements EmbeddingProvider {
 			throw new AssistantError("No embedding data found", ErrorType.NOT_FOUND);
 		}
 
-		const matches = await this.vector_db.query(queryVector.data[0], {
+		const metadataFilter = buildVectorizeMetadataFilter(options);
+		const queryOptions = {
 			topK: options.topK ?? 15,
 			returnValues: options.returnValues ?? false,
 			returnMetadata: options.returnMetadata ?? "none",
 			namespace: options.namespace || "assistant-embeddings",
-		});
+			...(metadataFilter && { filter: metadataFilter }),
+		};
+		const matches = await this.vector_db.query(queryVector.data[0], queryOptions);
 
 		if (!matches.matches?.length) {
 			throw new AssistantError("No matches found", ErrorType.NOT_FOUND);
@@ -210,7 +221,16 @@ export class VectorizeEmbeddingProvider implements EmbeddingProvider {
 
 		const matchesWithContent = await Promise.all(
 			filteredMatches.map(async (match) => {
-				const record = await this.repositories.embeddings.getEmbedding(match.id, options.type);
+				const record = await this.repositories.embeddings.getEmbedding(match.id, {
+					type: getEmbeddingContentType(options),
+					namespace: options.namespace,
+					userId: options.userId,
+					allowUnscopedFallback: true,
+				});
+
+				if (!record) {
+					return null;
+				}
 
 				return {
 					match_id: match.id,
@@ -229,6 +249,6 @@ export class VectorizeEmbeddingProvider implements EmbeddingProvider {
 
 		logger.debug("Vectorize search similar embeddings result", { query });
 
-		return matchesWithContent;
+		return matchesWithContent.filter(Boolean);
 	}
 }

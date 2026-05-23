@@ -1,9 +1,7 @@
 import { sanitiseInput } from "~/lib/chat/utils";
 import { insertEmbedding } from "~/services/apps/embeddings/insert";
-import type { IRequest } from "~/types";
 import { jsonSchemaToZod } from "./jsonSchema";
 import type { ApiToolDefinition } from "./types";
-import { AssistantError, ErrorType } from "../../utils/errors";
 
 export const create_note: ApiToolDefinition = {
 	name: "create_note",
@@ -32,14 +30,6 @@ export const create_note: ApiToolDefinition = {
 	permissions: ["write"],
 	execute: async (args, context) => {
 		const req = context.request;
-
-		// TODO: Remove this once we have a proper way to handle this
-		if (req.user?.github_username !== "nicholasgriffintn") {
-			throw new AssistantError(
-				"This function is not designed for general use yet.",
-				ErrorType.AUTHENTICATION_ERROR,
-			);
-		}
 
 		const sanitisedTitle = sanitiseInput(args.title);
 		const sanitisedContent = sanitiseInput(args.content);

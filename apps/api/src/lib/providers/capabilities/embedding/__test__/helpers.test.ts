@@ -67,11 +67,18 @@ describe("embedding helpers", () => {
 	});
 
 	describe("getEmbeddingNamespace", () => {
-		it("should fall back to kb when namespace mismatches user", () => {
+		it("should fall back to the current user's namespace when namespace mismatches user", () => {
 			const namespace = getEmbeddingNamespace({ id: 123 } as any, {
 				namespace: "user_kb_456",
 			});
-			expect(namespace).toBe("kb");
+			expect(namespace).toBe("user_kb_123");
+		});
+
+		it("should require an exact user-scoped namespace match", () => {
+			const namespace = getEmbeddingNamespace({ id: 23 } as any, {
+				namespace: "user_kb_123",
+			});
+			expect(namespace).toBe("user_kb_23");
 		});
 
 		it("should honor namespace when matching user", () => {

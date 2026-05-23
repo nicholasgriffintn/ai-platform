@@ -1,8 +1,6 @@
 import { queryEmbeddings } from "~/services/apps/embeddings/query";
-import type { IRequest } from "~/types";
 import { jsonSchemaToZod } from "./jsonSchema";
 import type { ApiToolDefinition } from "./types";
-import { AssistantError, ErrorType } from "../../utils/errors";
 
 export const get_note: ApiToolDefinition = {
 	name: "get_note",
@@ -24,14 +22,6 @@ export const get_note: ApiToolDefinition = {
 	execute: async (args, context) => {
 		const req = context.request;
 
-		// TODO: Remove this once we have a proper way to handle this
-		if (req.user?.github_username !== "nicholasgriffintn") {
-			throw new AssistantError(
-				"This function is not designed for general use yet.",
-				ErrorType.AUTHENTICATION_ERROR,
-			);
-		}
-
 		if (!args.query) {
 			return {
 				status: "error",
@@ -43,8 +33,10 @@ export const get_note: ApiToolDefinition = {
 
 		const response = await queryEmbeddings({
 			request: {
-				type: "note",
-				...args,
+				query: {
+					query: args.query,
+					type: "note",
+				},
 			},
 			env: req.env,
 			user: req.user,

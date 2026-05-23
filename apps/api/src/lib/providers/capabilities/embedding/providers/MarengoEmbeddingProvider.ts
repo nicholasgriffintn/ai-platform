@@ -13,6 +13,7 @@ import type {
 } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
+import { withEmbeddingScopeMetadata } from "~/lib/providers/capabilities/embedding/utils/scope";
 import { safeParseJson } from "~/utils/json";
 
 const logger = getLogger({ prefix: "lib/embedding/marengo" });
@@ -158,7 +159,7 @@ export class MarengoEmbeddingProvider implements EmbeddingProvider {
 				embeddings.map((embedding) => ({
 					id: embedding.id,
 					values: embedding.values,
-					metadata: embedding.metadata,
+					metadata: withEmbeddingScopeMetadata(embedding.metadata, options),
 					namespace: options.namespace || "assistant-embeddings",
 				})),
 			);

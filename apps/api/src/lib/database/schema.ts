@@ -92,20 +92,34 @@ export const session = sqliteTable("session", {
 
 export type Session = typeof session.$inferSelect;
 
-export const embedding = sqliteTable("embedding", {
-	id: text().primaryKey(),
-	metadata: text(),
-	title: text(),
-	content: text(),
-	type: text(),
-	namespace: text(),
-	created_at: text()
-		.default(sql`(CURRENT_TIMESTAMP)`)
-		.notNull(),
-	updated_at: text()
-		.default(sql`(CURRENT_TIMESTAMP)`)
-		.$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
-});
+export const embedding = sqliteTable(
+	"embedding",
+	{
+		id: text().primaryKey(),
+		metadata: text(),
+		title: text(),
+		content: text(),
+		type: text(),
+		namespace: text(),
+		user_id: integer().references(() => user.id),
+		created_at: text()
+			.default(sql`(CURRENT_TIMESTAMP)`)
+			.notNull(),
+		updated_at: text()
+			.default(sql`(CURRENT_TIMESTAMP)`)
+			.$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
+	},
+	(table) => ({
+		namespaceIdx: index("embedding_namespace_idx").on(table.namespace),
+		userIdIdx: index("embedding_user_id_idx").on(table.user_id),
+		scopeLookupIdx: index("embedding_scope_lookup_idx").on(
+			table.id,
+			table.type,
+			table.namespace,
+			table.user_id,
+		),
+	}),
+);
 
 export type Embedding = typeof embedding.$inferSelect;
 

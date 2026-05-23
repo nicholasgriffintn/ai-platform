@@ -12,6 +12,7 @@ const logger = getLogger({ prefix: "lib/embedding/helpers" });
 const DEFAULT_SCORE_THRESHOLD = 0.7;
 const DEFAULT_RERANK_CANDIDATES = 10;
 const DEFAULT_SUMMARY_THRESHOLD = 750;
+const USER_SCOPED_NAMESPACE_PREFIXES = ["user_kb_", "memory_user_", "sandbox_runs_user_"];
 
 /**
  * Get an embedding provider based on user settings.
@@ -90,13 +91,19 @@ export function getEmbeddingProvider(
 export function getEmbeddingNamespace(user?: IUser, options?: RagOptions): string {
 	if (options?.namespace) {
 		const requested = options.namespace;
+		const requestedUserScopedNamespace = USER_SCOPED_NAMESPACE_PREFIXES.some((prefix) =>
+			requested.startsWith(prefix),
+		);
+		const permittedUserScopedNamespaces = USER_SCOPED_NAMESPACE_PREFIXES.map(
+			(prefix) => `${prefix}${user?.id}`,
+		);
 
 		if (
 			user?.id &&
-			(requested.startsWith("user_kb_") || requested.startsWith("memory_user_")) &&
-			!requested.endsWith(user.id.toString())
+			requestedUserScopedNamespace &&
+			!permittedUserScopedNamespaces.includes(requested)
 		) {
-			return "kb";
+			return `user_kb_${user.id}`;
 		}
 
 		return requested;

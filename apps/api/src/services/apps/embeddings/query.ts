@@ -12,7 +12,7 @@ export const queryEmbeddings = async (req: any): Promise<any> => {
 	try {
 		const { request, env } = req;
 
-		const { query, namespace } = request.query;
+		const { query, namespace, type } = request.query;
 
 		if (!query) {
 			throw new AssistantError("Missing query from request", ErrorType.PARAMS_ERROR);
@@ -35,6 +35,8 @@ export const queryEmbeddings = async (req: any): Promise<any> => {
 		try {
 			matchesWithContent = await embedding.searchSimilar(query, {
 				namespace: finalNamespace,
+				contentType: type,
+				userId: req.user?.id,
 			});
 		} catch (searchError: unknown) {
 			if (searchError instanceof AssistantError && searchError.type === ErrorType.NOT_FOUND) {

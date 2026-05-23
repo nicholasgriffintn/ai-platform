@@ -22,6 +22,7 @@ export const insertEmbeddingSchema = z.object({
 export const queryEmbeddingsSchema = z.object({
 	query: z.string(),
 	namespace: z.string().optional(),
+	type: z.string().optional(),
 });
 
 export const deleteEmbeddingSchema = z.object({

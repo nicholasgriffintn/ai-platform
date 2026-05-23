@@ -14,6 +14,11 @@ import { getLogger } from "~/utils/logger";
 import { getModelConfig } from "~/lib/providers/models";
 import { getChatProvider } from "../../chat";
 import { safeParseJson } from "~/utils/json";
+import {
+	buildVectorizeMetadataFilter,
+	getEmbeddingContentType,
+	withEmbeddingScopeMetadata,
+} from "~/lib/providers/capabilities/embedding/utils/scope";
 
 const logger = getLogger({ prefix: "lib/embedding/mistral" });
 
@@ -148,7 +153,7 @@ export class MistralEmbeddingProvider implements EmbeddingProvider {
 				embeddings.map((embedding) => ({
 					id: embedding.id,
 					values: embedding.values,
-					metadata: embedding.metadata,
+					metadata: withEmbeddingScopeMetadata(embedding.metadata, options),
 					namespace: options.namespace || "assistant-embeddings",
 				})),
 			);
@@ -214,13 +219,15 @@ export class MistralEmbeddingProvider implements EmbeddingProvider {
 	): Promise<EmbeddingQueryResult> {
 		logger.debug("Querying Mistral Vector DB", { queryVector, options });
 
-		const matches = await this.vector_db.query(queryVector, {
+		const metadataFilter = buildVectorizeMetadataFilter(options);
+		const queryOptions = {
 			topK: options.topK ?? 15,
 			returnValues: options.returnValues ?? false,
 			returnMetadata: options.returnMetadata ?? "none",
 			namespace: options.namespace || "assistant-embeddings",
-			filter: options.filter,
-		});
+			...(metadataFilter && { filter: metadataFilter }),
+		};
+		const matches = await this.vector_db.query(queryVector, queryOptions);
 
 		logger.debug("Mistral Vector DB query response", { matches });
 
@@ -259,13 +266,15 @@ export class MistralEmbeddingProvider implements EmbeddingProvider {
 		const mistralModelName = "mistral-embed";
 		const mistralResponse = await this.fetchEmbedding(query, mistralModelName);
 
-		const matches = await this.vector_db.query(mistralResponse.data[0].embedding, {
+		const metadataFilter = buildVectorizeMetadataFilter(options);
+		const queryOptions = {
 			topK: options.topK ?? 15,
 			returnValues: options.returnValues ?? false,
 			returnMetadata: options.returnMetadata ?? "none",
 			namespace: options.namespace || "assistant-embeddings",
-			filter: options.filter,
-		});
+			...(metadataFilter && { filter: metadataFilter }),
+		};
+		const matches = await this.vector_db.query(mistralResponse.data[0].embedding, queryOptions);
 
 		if (!matches.matches?.length) {
 			throw new AssistantError("No matches found", ErrorType.NOT_FOUND);
@@ -279,7 +288,7 @@ export class MistralEmbeddingProvider implements EmbeddingProvider {
 				content: (match.metadata?.content as string) || "",
 				metadata: match.metadata || {},
 				score: match.score || 0,
-				type: (match.metadata?.type as string) || options.type || "unknown",
+				type: (match.metadata?.type as string) || getEmbeddingContentType(options) || "unknown",
 			}));
 
 		logger.debug("Mistral Vector DB query result", { data });

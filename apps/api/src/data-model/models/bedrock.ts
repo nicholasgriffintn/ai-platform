@@ -3,7 +3,6 @@ import { createModelConfig, createModelConfigObject } from "~/lib/providers/mode
 
 const PROVIDER = "bedrock";
 
-// TODO: Cohere need a different input to nova, need to check others as well.
 export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("nova-2-lite", PROVIDER, {
 		name: "Amazon Nova 2 Lite",

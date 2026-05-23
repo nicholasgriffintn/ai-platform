@@ -154,7 +154,7 @@ describe("VectorizeEmbeddingProvider", () => {
 				{
 					id: "test-id",
 					values: [0.1, 0.2, 0.3],
-					metadata: { type: "article" },
+					metadata: { type: "article", namespace: "custom-namespace" },
 					namespace: "custom-namespace",
 				},
 			]);
@@ -408,6 +408,39 @@ describe("VectorizeEmbeddingProvider", () => {
 			mockRepositories.embeddings.getEmbedding.mockRejectedValue(new Error("DB error"));
 
 			await expect(provider.searchSimilar("test query")).rejects.toThrow("DB error");
+		});
+
+		it("should not return content when scoped database lookup misses", async () => {
+			mockAi.run.mockResolvedValue({
+				data: [[0.1, 0.2, 0.3, 0.4, 0.5]],
+			});
+
+			mockVectorDb.query.mockResolvedValue({
+				matches: [{ id: "match1", score: 0.95, metadata: { type: "note" } }],
+			});
+
+			mockRepositories.embeddings.getEmbedding.mockResolvedValue(null);
+
+			const result = await provider.searchSimilar("test query", {
+				namespace: "user_kb_2",
+				type: "note",
+				userId: 2,
+			});
+
+			expect(mockVectorDb.query).toHaveBeenCalledWith(
+				[0.1, 0.2, 0.3, 0.4, 0.5],
+				expect.objectContaining({
+					namespace: "user_kb_2",
+					filter: { type: "note" },
+				}),
+			);
+			expect(mockRepositories.embeddings.getEmbedding).toHaveBeenCalledWith("match1", {
+				type: "note",
+				namespace: "user_kb_2",
+				userId: 2,
+				allowUnscopedFallback: true,
+			});
+			expect(result).toEqual([]);
 		});
 	});
 });
