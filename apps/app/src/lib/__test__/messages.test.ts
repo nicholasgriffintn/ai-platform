@@ -58,4 +58,28 @@ describe("serialiseMessagesForChatRequest", () => {
 			}).success,
 		).toBe(true);
 	});
+
+	it("omits null tool calls from chat request messages", () => {
+		const messages = JSON.parse(`[
+			{
+				"id": "user-1",
+				"role": "user",
+				"content": "How would you design a chair for someone who prefers to work standing up?",
+				"tool_calls": null
+			}
+		]`);
+
+		const requestMessages = serialiseMessagesForChatRequest(messages);
+
+		expect(requestMessages[0]).not.toHaveProperty("tool_calls");
+		expect(
+			createChatCompletionsJsonSchema.safeParse({
+				completion_id: "conversation-1",
+				mode: "remote",
+				model: "deepseek-v4-flash",
+				provider: "deepseek",
+				messages: requestMessages,
+			}).success,
+		).toBe(true);
+	});
 });

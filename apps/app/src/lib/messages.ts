@@ -220,16 +220,26 @@ function serialiseContentForChatRequest(message: Message): Message["content"] {
 	return content;
 }
 
+function serialiseToolCallsForChatRequest(toolCalls: Message["tool_calls"]): Message["tool_calls"] {
+	return Array.isArray(toolCalls) ? toolCalls : undefined;
+}
+
 export function serialiseMessageForChatRequest(message: Message): ChatRequestMessage {
-	return {
+	const requestMessage: ChatRequestMessage = {
 		id: message.id || undefined,
 		role: message.role,
 		content: serialiseContentForChatRequest(message),
 		data: message.data || undefined,
 		name: message.name || undefined,
 		parts: message.parts,
-		tool_calls: message.tool_calls,
 	};
+
+	const toolCalls = serialiseToolCallsForChatRequest(message.tool_calls);
+	if (toolCalls) {
+		requestMessage.tool_calls = toolCalls;
+	}
+
+	return requestMessage;
 }
 
 export function serialiseMessagesForChatRequest(messages: Message[]): ChatRequestMessage[] {
