@@ -30,6 +30,6 @@
 		"oxfmt": "0.51.0",
 		"oxlint": "1.66.0",
 		"typescript": "6.0.3",
-		"wrangler": "4.92.0"
+		"wrangler": "4.94.0"
 	}
 }
