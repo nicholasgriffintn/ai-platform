@@ -37,6 +37,34 @@ describe("composer command parsing", () => {
 		);
 	});
 
+	it("removes the full directive token when the cursor is inside it", () => {
+		const directive = getComposerDirectiveQuery("/sandbox implement this", 4);
+
+		expect(directive).toMatchObject({
+			trigger: "/",
+			query: "san",
+			start: 0,
+			end: 8,
+		});
+		expect(directive && removeComposerDirective("/sandbox implement this", directive)).toBe(
+			"implement this",
+		);
+	});
+
+	it("removes the full mention token when the cursor is inside it", () => {
+		const directive = getComposerDirectiveQuery("ask @reviewer to check this", 8);
+
+		expect(directive).toMatchObject({
+			trigger: "@",
+			query: "rev",
+			start: 4,
+			end: 13,
+		});
+		expect(directive && removeComposerDirective("ask @reviewer to check this", directive)).toBe(
+			"ask to check this",
+		);
+	});
+
 	it("matches commands by label, command, or description", () => {
 		expect(matchesComposerCommand("sand", ["Sandbox", "sandbox", "Run repository tasks"])).toBe(
 			true,

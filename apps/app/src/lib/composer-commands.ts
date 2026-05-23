@@ -21,11 +21,12 @@ export function getComposerDirectiveQuery(
 
 	const token = match[2];
 	const start = beforeCursor.length - token.length;
+	const tokenSuffix = input.slice(cursorPosition).match(/^[^\s]*/)?.[0] ?? "";
 	return {
 		trigger: token[0] as ComposerCommandTrigger,
 		query: token.slice(1).toLowerCase(),
 		start,
-		end: cursorPosition,
+		end: cursorPosition + tokenSuffix.length,
 	};
 }
 
