@@ -52,7 +52,12 @@ function InlineSettingSelect<T extends string>({
 					aria-label={`${label}: ${displayLabel}`}
 					aria-haspopup="menu"
 					aria-expanded={isOpen}
-					className="inline-flex h-8 min-w-8 items-center gap-1.5 rounded-md bg-off-white-highlight px-2 text-xs text-zinc-700 transition-colors hover:bg-zinc-200 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700"
+					className={cn(
+						"inline-flex h-8 min-w-8 items-center gap-1.5 rounded-md px-2 text-xs transition-colors disabled:cursor-not-allowed disabled:opacity-60",
+						isOpen
+							? "bg-off-white-highlight text-zinc-900 dark:bg-zinc-900 dark:text-zinc-100"
+							: "text-zinc-700 hover:bg-off-white-highlight dark:text-zinc-200 dark:hover:bg-zinc-900",
+					)}
 				>
 					<span
 						className="flex h-4 w-4 flex-shrink-0 items-center justify-center"
