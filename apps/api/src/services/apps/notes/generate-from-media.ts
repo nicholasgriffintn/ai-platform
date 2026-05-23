@@ -133,11 +133,13 @@ ${extraPrompt ? `Additional context: ${extraPrompt}` : ""}`;
 					const embedding = getEmbeddingProvider(env, user, userSettings);
 
 					const videoId = `video-${Date.now()}-${generateId()}`;
+					const namespace = `user_kb_${user.id}`;
 					const metadata = {
 						url,
 						type: "video",
 						timestamp: new Date().toISOString(),
 						userId: user.id.toString(),
+						namespace,
 					};
 
 					const embeddings = await embedding.generate(
@@ -148,8 +150,9 @@ ${extraPrompt ? `Additional context: ${extraPrompt}` : ""}`;
 					);
 
 					await embedding.insert(embeddings, {
-						namespace: `user_kb_${user.id}`,
+						namespace,
 						type: "video",
+						userId: user.id,
 					});
 
 					await repositories.embeddings.insertEmbedding(
@@ -158,6 +161,7 @@ ${extraPrompt ? `Additional context: ${extraPrompt}` : ""}`;
 						`Video: ${url}`,
 						`Video content from ${url}`,
 						"video",
+						{ namespace, userId: user.id },
 					);
 				} catch (error) {
 					console.warn("Video embedding generation failed:", error);

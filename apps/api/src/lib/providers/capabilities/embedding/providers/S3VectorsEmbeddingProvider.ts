@@ -14,6 +14,10 @@ import type {
 } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
+import {
+	buildS3VectorsMetadataFilter,
+	withEmbeddingScopeMetadata,
+} from "~/lib/providers/capabilities/embedding/utils/scope";
 
 const logger = getLogger({ prefix: "lib/embedding/s3vectors" });
 
@@ -148,7 +152,7 @@ export class S3VectorsEmbeddingProvider implements EmbeddingProvider {
 
 	async insert(
 		embeddings: EmbeddingVector[],
-		_options: RagOptions = {},
+		options: RagOptions = {},
 	): Promise<EmbeddingMutationResult> {
 		logger.debug("Inserting embeddings into S3 Vectors", {
 			count: embeddings.length,
@@ -161,7 +165,7 @@ export class S3VectorsEmbeddingProvider implements EmbeddingProvider {
 			data: {
 				float32: embedding.values,
 			},
-			metadata: embedding.metadata,
+			metadata: withEmbeddingScopeMetadata(embedding.metadata, options),
 		}));
 
 		const body = JSON.stringify({
@@ -294,8 +298,9 @@ export class S3VectorsEmbeddingProvider implements EmbeddingProvider {
 			request.indexName = this.indexName;
 		}
 
-		if (options.filter) {
-			request.filter = options.filter;
+		const metadataFilter = buildS3VectorsMetadataFilter(options);
+		if (metadataFilter) {
+			request.filter = metadataFilter;
 		}
 
 		const body = JSON.stringify(request);

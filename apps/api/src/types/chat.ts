@@ -185,6 +185,9 @@ export type RagOptions = {
 	includeMetadata?: boolean;
 	namespace?: string;
 	type?: string;
+	contentType?: string;
+	embeddingType?: string;
+	userId?: number | string;
 	chunkSize?: number;
 	summaryThreshold?: number;
 	returnValues?: boolean;

@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 const mockEmbeddingProvider = {
 	generate: vi.fn(),
 	insert: vi.fn(),
+	delete: vi.fn(),
 };
 
 const embeddingHelperMocks = vi.hoisted(() => ({
@@ -25,6 +26,7 @@ const mockRepositories = {
 	embeddings: {
 		getEmbeddingIdByType: vi.fn(),
 		insertEmbedding: vi.fn(),
+		deleteEmbedding: vi.fn(),
 	},
 	userSettings: {
 		getUserSettings: vi.fn(() => Promise.resolve({})),
@@ -72,10 +74,12 @@ describe("insertEmbedding", () => {
 		vi.clearAllMocks();
 		mockRepositories.embeddings.getEmbeddingIdByType.mockResolvedValue(null);
 		mockRepositories.embeddings.insertEmbedding.mockResolvedValue(undefined);
+		mockRepositories.embeddings.deleteEmbedding.mockResolvedValue(undefined);
 		mockRepositories.userSettings.getUserSettings.mockResolvedValue({});
 		mockGetEmbeddingNamespace.mockReturnValue("default-namespace");
 		mockEmbeddingProvider.generate.mockResolvedValue([{ id: "vec-1" }]);
 		mockEmbeddingProvider.insert.mockResolvedValue({ status: "success" });
+		mockEmbeddingProvider.delete.mockResolvedValue({ status: "success" });
 		mockGetEmbeddingProvider.mockReturnValue(mockEmbeddingProvider as any);
 		vi.mocked(chunkText).mockReturnValue(["single chunk"]);
 		vi.mocked(generateId).mockReturnValue("generated-id");
@@ -120,11 +124,22 @@ describe("insertEmbedding", () => {
 
 		expect(mockRepositories.embeddings.insertEmbedding).toHaveBeenCalledWith(
 			"doc-123",
-			{ author: "test", title: "Test Document" },
+			{
+				author: "test",
+				title: "Test Document",
+				namespace: "custom-ns",
+				userId: "user-123",
+			},
 			"Test Document",
 			"This is test content",
 			"document",
+			{ namespace: "custom-ns", userId: "user-123" },
 		);
+		expect(mockEmbeddingProvider.insert).toHaveBeenCalledWith([{ id: "vec-1" }], {
+			namespace: "custom-ns",
+			chunkSize: 1000,
+			userId: "user-123",
+		});
 	});
 
 	it("should handle blog type embeddings", async () => {
@@ -280,6 +295,7 @@ describe("insertEmbedding", () => {
 		mockEmbeddingProvider.insert.mockResolvedValue({ status: "error" });
 
 		await expect(insertEmbedding(req)).rejects.toThrow("Error inserting embedding");
+		expect(mockRepositories.embeddings.insertEmbedding).not.toHaveBeenCalled();
 	});
 
 	it("should handle database errors gracefully", async () => {
@@ -299,5 +315,34 @@ describe("insertEmbedding", () => {
 		mockRepositories.embeddings.insertEmbedding.mockRejectedValue(new Error("Database error"));
 
 		await expect(insertEmbedding(req)).rejects.toThrow("Error inserting embedding");
+		expect(mockEmbeddingProvider.delete).toHaveBeenCalledWith(["vec-1"]);
+	});
+
+	it("should roll back inserted database records when a later database insert fails", async () => {
+		const req = {
+			user: mockUser,
+			env: mockEnv,
+			request: {
+				type: "document",
+				content: "Long content that needs chunking",
+				id: "long-doc",
+				metadata: {},
+				title: "Long Document",
+				rag_options: { chunkSize: 100 },
+			},
+		};
+
+		vi.mocked(chunkText).mockReturnValue(["Chunk 1", "Chunk 2"]);
+		mockEmbeddingProvider.generate
+			.mockResolvedValueOnce([{ id: "long-doc-0" }])
+			.mockResolvedValueOnce([{ id: "long-doc-1" }]);
+		mockRepositories.embeddings.insertEmbedding
+			.mockResolvedValueOnce(undefined)
+			.mockRejectedValueOnce(new Error("Database error"));
+
+		await expect(insertEmbedding(req)).rejects.toThrow("Error inserting embedding");
+
+		expect(mockRepositories.embeddings.deleteEmbedding).toHaveBeenCalledWith("long-doc");
+		expect(mockEmbeddingProvider.delete).toHaveBeenCalledWith(["long-doc-0", "long-doc-1"]);
 	});
 });

@@ -21,7 +21,6 @@ const ANTHROPIC_BETA_FEATURES = ["code-execution-2025-08-25", "web-fetch-2026-02
 export class AnthropicProvider extends BaseProvider {
 	name = "anthropic";
 	supportsStreaming = true;
-	// TODO: Work out if we should use OpenAI compatible mode - it might take away some of the Anthropic-specific features
 	isOpenAiCompatible = false;
 
 	protected getProviderKeyName(): string {

@@ -74,6 +74,7 @@ describe("run indexing", () => {
 			namespace: "sandbox_runs_user_7",
 			topK: 10,
 			returnMetadata: "none",
+			userId: 7,
 		});
 	});
 

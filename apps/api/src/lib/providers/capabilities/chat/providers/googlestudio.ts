@@ -9,7 +9,6 @@ import { getAiGatewayMetadataHeaders, resolveAiGatewayCacheTtl } from "~/utils/a
 export class GoogleStudioProvider extends BaseProvider {
 	name = "google-ai-studio";
 	supportsStreaming = true;
-	// TODO: Work out if we should use OpenAI compatible mode - it might take away some of the Google-specific features
 	isOpenAiCompatible = false;
 
 	protected getProviderKeyName(): string {

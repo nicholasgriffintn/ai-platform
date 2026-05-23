@@ -92,6 +92,8 @@ describe("queryEmbeddings", () => {
 
 		expect(mockEmbeddingProvider.searchSimilar).toHaveBeenCalledWith("search term", {
 			namespace: "custom-namespace",
+			contentType: undefined,
+			userId: "user-123",
 		});
 	});
 
@@ -115,6 +117,30 @@ describe("queryEmbeddings", () => {
 		expect(result.status).toBe("success");
 		expect(mockGetEmbeddingNamespace).toHaveBeenCalledWith(mockUser, {
 			namespace: undefined,
+		});
+	});
+
+	it("should pass type filters to the embedding provider", async () => {
+		const req = {
+			user: mockUser,
+			env: mockEnv,
+			request: {
+				query: {
+					query: "search term",
+					type: "note",
+				},
+			},
+		};
+
+		mockRepositories.userSettings.getUserSettings.mockResolvedValue({});
+		mockEmbeddingProvider.searchSimilar.mockResolvedValue([]);
+
+		await queryEmbeddings(req);
+
+		expect(mockEmbeddingProvider.searchSimilar).toHaveBeenCalledWith("search term", {
+			namespace: "default-namespace",
+			contentType: "note",
+			userId: "user-123",
 		});
 	});
 

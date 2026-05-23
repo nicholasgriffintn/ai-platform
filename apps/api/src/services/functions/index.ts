@@ -9,6 +9,8 @@ import { call_api } from "./api_call";
 import { search_functions, get_function_schema } from "./discovery";
 import { retry_with_backoff, fallback } from "./error_recovery";
 import { extract_content } from "./extract_content";
+import { create_note } from "./create_note";
+import { get_note } from "./get_note";
 import { request_approval, ask_user } from "./human_in_the_loop";
 import { create_image } from "./image";
 import { handleMCPTool } from "./mcp";
@@ -56,6 +58,8 @@ const functionDefinitions: ApiToolDefinition[] = [
 	call_api,
 	research,
 	extract_content,
+	create_note,
+	get_note,
 	extract_text_from_document,
 	capture_screenshot,
 	create_speech,

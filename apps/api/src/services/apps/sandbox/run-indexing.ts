@@ -75,6 +75,7 @@ export async function indexSandboxRunResult(params: {
 			namespace: toSandboxRunNamespace(userId),
 			topK: 10,
 			returnMetadata: "none",
+			userId,
 		});
 	} catch (error) {
 		logger.warn("Sandbox run indexing failed", {

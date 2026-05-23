@@ -12,6 +12,10 @@ import type {
 } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
+import {
+	buildBedrockRetrievalFilter,
+	withEmbeddingScopeMetadata,
+} from "~/lib/providers/capabilities/embedding/utils/scope";
 
 const logger = getLogger({ prefix: "lib/embedding/bedrock" });
 
@@ -122,7 +126,7 @@ export class BedrockEmbeddingProvider implements EmbeddingProvider {
 
 	async insert(
 		embeddings: EmbeddingVector[],
-		_options: RagOptions = {},
+		options: RagOptions = {},
 	): Promise<EmbeddingMutationResult> {
 		logger.debug("Inserting embeddings into Bedrock Knowledge Base", {
 			count: embeddings.length,
@@ -131,7 +135,8 @@ export class BedrockEmbeddingProvider implements EmbeddingProvider {
 
 		const body = JSON.stringify({
 			documents: embeddings.map((embedding) => {
-				const hasFileData = embedding.metadata.fileData;
+				const metadata = withEmbeddingScopeMetadata(embedding.metadata, options);
+				const hasFileData = metadata.fileData;
 
 				return {
 					content: {
@@ -143,32 +148,32 @@ export class BedrockEmbeddingProvider implements EmbeddingProvider {
 							sourceType: "IN_LINE",
 							inlineContent: hasFileData
 								? {
-										type: embedding.metadata.contentType || "BYTE",
+										type: metadata.contentType || "BYTE",
 										byteContent: {
-											data: embedding.metadata.fileData,
-											mimeType: embedding.metadata.mimeType || "application/octet-stream",
+											data: metadata.fileData,
+											mimeType: metadata.mimeType || "application/octet-stream",
 										},
 										textContent: {
-											data: embedding.metadata.content || "",
+											data: metadata.content || "",
 										},
 									}
 								: {
 										type: "TEXT",
 										textContent: {
-											data: embedding.metadata.content || "",
+											data: metadata.content || "",
 										},
 									},
 						},
 					},
 					metadata: {
 						type: "IN_LINE_ATTRIBUTE",
-						inlineAttributes: Object.keys(embedding.metadata)
+						inlineAttributes: Object.keys(metadata)
 							.filter((key) => !["fileData", "mimeType", "contentType"].includes(key))
 							.map((key) => ({
 								key,
 								value: {
 									type: "STRING",
-									stringValue: String(embedding.metadata[key]),
+									stringValue: String(metadata[key]),
 								},
 							})),
 					},
@@ -245,12 +250,9 @@ export class BedrockEmbeddingProvider implements EmbeddingProvider {
 			}
 		}
 
-		if (
-			options.filter &&
-			typeof options.filter === "object" &&
-			Object.keys(options.filter).length > 0
-		) {
-			vectorSearchConfiguration.filter = options.filter;
+		const metadataFilter = buildBedrockRetrievalFilter(options);
+		if (metadataFilter) {
+			vectorSearchConfiguration.filter = metadataFilter;
 		}
 
 		return Object.keys(vectorSearchConfiguration).length ? vectorSearchConfiguration : null;
