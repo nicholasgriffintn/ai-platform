@@ -69,6 +69,7 @@ export function ModelsList({
 	const [selectedProvider, setSelectedProvider] = useState<string>(
 		() => selectedModelProvider || FEATURED_PROVIDER_KEY,
 	);
+	const [showDeprecatedByProvider, setShowDeprecatedByProvider] = useState<Record<string, boolean>>({});
 
 	const handleModelSelect = (modelId: string, modelInfo: ModelConfigItem) => {
 		trackFeatureUsage("model_selected", {
@@ -161,6 +162,9 @@ export function ModelsList({
 	const selectedProviderEntry =
 		providerEntries.find((entry) => entry.key === selectedProvider) || providerEntries[0];
 	const visibleModels = selectedProviderEntry?.models || [];
+	const visibleActiveModels = visibleModels.filter((model) => !model.deprecated);
+	const visibleDeprecatedModels = visibleModels.filter((model) => model.deprecated);
+	const showDeprecatedForSelectedProvider = showDeprecatedByProvider[selectedProviderEntry?.key || ""] ?? false;
 	const searchResultEntries = providerEntries.filter(
 		(providerEntry) => providerEntry.key !== FEATURED_PROVIDER_KEY,
 	);
@@ -256,9 +260,13 @@ export function ModelsList({
 						<fieldset role="listbox" aria-label="Available models">
 							{isSearchActive ? (
 								<div className="space-y-4">
-									{searchResultEntries.map((providerEntry) => (
+									{searchResultEntries.map((providerEntry) => {
+										const activeModels = providerEntry.models.filter((model) => !model.deprecated);
+										const deprecatedModels = providerEntry.models.filter((model) => model.deprecated);
+										const showDeprecated = showDeprecatedByProvider[providerEntry.key] ?? false;
+										return (
 										<div key={providerEntry.key} className="space-y-1">
-											<div className="flex items-center justify-between gap-2 px-1">
+											<div className="flex items-center justify-between gap-2 px-1 py-1">
 												<h5 className="text-xs font-semibold uppercase text-zinc-500 dark:text-zinc-400">
 													{providerEntry.label}
 												</h5>
@@ -266,7 +274,7 @@ export function ModelsList({
 													{providerEntry.models.length}
 												</span>
 											</div>
-											{providerEntry.models.map((modelItem) => {
+											{activeModels.map((modelItem) => {
 												const disabledOption =
 													isDisabled || (!isPro && !modelItem.isFree) || disabled;
 												return (
@@ -283,12 +291,50 @@ export function ModelsList({
 													/>
 												);
 											})}
+											{deprecatedModels.length > 0 && (
+												<div className="pt-1">
+													<button
+														type="button"
+														className="w-full rounded-md border border-zinc-200 px-2 py-1 text-left text-xs text-zinc-600 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
+														onClick={() =>
+															setShowDeprecatedByProvider((prev) => ({
+																...prev,
+																[providerEntry.key]: !showDeprecated,
+															}))
+														}
+													>
+														{showDeprecated ? "Hide" : "Show"} deprecated models (
+														{deprecatedModels.length})
+													</button>
+													{showDeprecated && (
+														<div className="mt-1 space-y-1">
+															{deprecatedModels.map((modelItem) => {
+																const disabledOption =
+																	isDisabled || (!isPro && !modelItem.isFree) || disabled;
+																return (
+																	<ModelOption
+																		key={modelItem.id}
+																		model={modelItem}
+																		isSelected={modelItem.id === selectedId}
+																		isActive={false}
+																		onClick={() => handleModelSelect(modelItem.id, modelItem)}
+																		disabled={disabledOption}
+																		mono={mono}
+																		onInfoHoverStart={onInfoHoverStart}
+																		onInfoHoverEnd={onInfoHoverEnd}
+																	/>
+																);
+															})}
+														</div>
+													)}
+												</div>
+											)}
 										</div>
-									))}
+									)})}
 								</div>
 							) : (
 								<div className="space-y-1">
-									{visibleModels.map((modelItem) => {
+									{visibleActiveModels.map((modelItem) => {
 										const disabledOption = isDisabled || (!isPro && !modelItem.isFree) || disabled;
 										return (
 											<ModelOption
@@ -304,10 +350,48 @@ export function ModelsList({
 											/>
 										);
 									})}
+									{visibleDeprecatedModels.length > 0 && (
+										<div className="pt-1">
+											<button
+												type="button"
+												className="w-full rounded-md border border-zinc-200 px-2 py-1 text-left text-xs text-zinc-600 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
+												onClick={() =>
+													setShowDeprecatedByProvider((prev) => ({
+														...prev,
+														[selectedProviderEntry.key]: !showDeprecatedForSelectedProvider,
+													}))
+												}
+											>
+												{showDeprecatedForSelectedProvider ? "Hide" : "Show"} deprecated models (
+												{visibleDeprecatedModels.length})
+											</button>
+											{showDeprecatedForSelectedProvider && (
+												<div className="mt-1 space-y-1">
+													{visibleDeprecatedModels.map((modelItem) => {
+														const disabledOption =
+															isDisabled || (!isPro && !modelItem.isFree) || disabled;
+														return (
+															<ModelOption
+																key={modelItem.id}
+																model={modelItem}
+																isSelected={modelItem.id === selectedId}
+																isActive={false}
+																onClick={() => handleModelSelect(modelItem.id, modelItem)}
+																disabled={disabledOption}
+																mono={mono}
+																onInfoHoverStart={onInfoHoverStart}
+																onInfoHoverEnd={onInfoHoverEnd}
+															/>
+														);
+													})}
+												</div>
+											)}
+										</div>
+									)}
 								</div>
 							)}
 						</fieldset>
-						{!isSearchActive && visibleModels.length === 0 && (
+						{!isSearchActive && visibleActiveModels.length === 0 && (
 							<div className="rounded-lg border border-dashed border-zinc-300 p-3 text-xs text-zinc-500 dark:border-zinc-700 dark:text-zinc-400">
 								No models available in this category.
 							</div>
