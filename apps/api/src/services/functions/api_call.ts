@@ -12,7 +12,6 @@ const logger = getLogger({ prefix: "services/functions/api_call" });
 const DEFAULT_TIMEOUT_MS = 15000;
 const MAX_TIMEOUT_MS = 60000;
 
-
 const isPrivateHostname = (hostname: string): boolean => {
 	const normalized = hostname.toLowerCase();
 	if (
@@ -219,9 +218,7 @@ export const call_api: ApiToolDefinition = {
 				: DEFAULT_TIMEOUT_MS;
 
 		const headers = normalizeHeaders(args?.headers);
-		const queryParams = isRecord(args?.query_params)
-			? (args.query_params as Record<string, unknown>)
-			: undefined;
+		const queryParams = isPlainObject(args?.query_params) ? args.query_params : undefined;
 
 		appendQueryParams(url, queryParams);
 
@@ -242,7 +239,7 @@ export const call_api: ApiToolDefinition = {
 			method = "POST";
 			const payload = {
 				query: graphqlQuery,
-				variables: isRecord(args?.graphql_variables) ? args.graphql_variables : undefined,
+				variables: isPlainObject(args?.graphql_variables) ? args.graphql_variables : undefined,
 				operationName:
 					typeof args?.graphql_operation_name === "string"
 						? args.graphql_operation_name
@@ -278,7 +275,7 @@ export const call_api: ApiToolDefinition = {
 
 				if (typeof args.body === "string") {
 					body = args.body;
-				} else if (isRecord(args.body) || Array.isArray(args.body)) {
+				} else if (isPlainObject(args.body) || Array.isArray(args.body)) {
 					body = JSON.stringify(args.body);
 					if (!headers["Content-Type"] && !headers["content-type"]) {
 						headers["Content-Type"] = "application/json";
@@ -335,7 +332,8 @@ export const call_api: ApiToolDefinition = {
 		const hasJsonBody = parsed !== null;
 		const responseBody = hasJsonBody ? parsed : raw;
 
-		const graphqlErrors = requestType === "graphql" && isRecord(parsed) ? parsed.errors : undefined;
+		const graphqlErrors =
+			requestType === "graphql" && isPlainObject(parsed) ? parsed.errors : undefined;
 
 		const statusMessage =
 			response.ok && graphqlErrors

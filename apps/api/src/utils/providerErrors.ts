@@ -8,7 +8,6 @@ export interface ProviderErrorBody {
 	error?: unknown;
 }
 
-
 export function getProviderErrorMessage(
 	responseJson: ProviderErrorBody | null,
 ): string | undefined {

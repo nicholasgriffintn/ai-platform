@@ -65,7 +65,6 @@ export interface AgentLoopExecutionResult {
 	toolResponses: Message[];
 }
 
-
 function isMessageContentArray(value: unknown[]): value is MessageContent[] {
 	return value.every(
 		(entry) =>

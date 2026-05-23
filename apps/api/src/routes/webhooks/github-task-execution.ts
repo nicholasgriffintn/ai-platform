@@ -28,7 +28,6 @@ export interface SandboxExecutionResult {
 	responseId?: string;
 }
 
-
 function buildRequest(params: { env: IEnv; user: IUser; context: ServiceContext }): IRequest {
 	return {
 		app_url: params.env.APP_BASE_URL || "https://polychat.app",
