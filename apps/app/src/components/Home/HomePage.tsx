@@ -3,18 +3,16 @@ import { useEffect, useState } from "react";
 import { CanvasGenerationsView } from "~/components/Canvas/CanvasGenerationsView";
 import { useCanvasStudio } from "~/components/Canvas/useCanvasStudio";
 import { ChatSidebar } from "~/components/ChatSidebar";
-import { ConversationThread } from "~/components/ConversationThread";
 import { PageShell } from "~/components/Core/PageShell";
 import { PageTitle } from "~/components/Core/PageTitle";
 import { SearchDialog } from "~/components/Search/SearchDialog";
 import { useChatStore } from "~/state/stores/chatStore";
-import { useHomeChatModeConfig } from "./useHomeChatModeConfig";
+import { HomeConversationThread } from "./HomeConversationThread";
 
 export function HomePage() {
 	const { initializeStore, showSearch, setShowSearch, setChatInput } = useChatStore();
 	const [isCanvasMode, setIsCanvasMode] = useState(false);
 	const canvas = useCanvasStudio({ enabled: isCanvasMode });
-	const { modeConfig } = useHomeChatModeConfig();
 
 	useEffect(() => {
 		const init = async () => {
@@ -47,11 +45,7 @@ export function HomePage() {
 			<div className="flex h-full min-h-0 flex-1 flex-row overflow-hidden">
 				<div className="flex h-full min-h-0 w-full flex-1 flex-col">
 					<div className="relative min-h-0 flex-1 overflow-hidden">
-						{isCanvasMode ? (
-							<CanvasGenerationsView canvas={canvas} />
-						) : (
-							<ConversationThread modeConfig={modeConfig} />
-						)}
+						{isCanvasMode ? <CanvasGenerationsView canvas={canvas} /> : <HomeConversationThread />}
 					</div>
 				</div>
 			</div>
