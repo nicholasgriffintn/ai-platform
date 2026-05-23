@@ -1,13 +1,16 @@
 import {
 	sandboxRunControlSchema,
+	type SandboxRunDispatchMessage,
 	sandboxRunInstructionEnvelopeSchema,
 	sandboxRunInstructionSchema,
 	type SandboxRunControl,
 	type SandboxRunEvent,
 	type SandboxRunInstruction,
 } from "@assistant/schemas";
+import type { StartFiberResult } from "agents";
 import type { IEnv } from "~/types";
 import type { CoordinatorEventEnvelope, CoordinatorInstructionEnvelope } from "./types";
+import { isStartFiberResult } from "./fibers";
 
 function getCoordinatorStub(env: IEnv | undefined, runId: string): DurableObjectStub {
 	if (!env?.SANDBOX_RUN_COORDINATOR) {
@@ -30,6 +33,27 @@ export async function initRunCoordinatorControl(
 		headers: { "Content-Type": "application/json" },
 		body: JSON.stringify(control),
 	});
+}
+
+export async function startRunCoordinatorDispatchFiber(params: {
+	env: IEnv | undefined;
+	runId: string;
+	message: SandboxRunDispatchMessage;
+}): Promise<StartFiberResult | null> {
+	if (!params.env?.SANDBOX_RUN_COORDINATOR) {
+		return null;
+	}
+	const stub = getCoordinatorStub(params.env, params.runId);
+	const response = await stub.fetch("https://sandbox-run-coordinator/dispatch/fiber", {
+		method: "POST",
+		headers: { "Content-Type": "application/json" },
+		body: JSON.stringify(params.message),
+	});
+	if (!response.ok) {
+		return null;
+	}
+	const payload = (await response.json()) as unknown;
+	return isStartFiberResult(payload) ? payload : null;
 }
 
 export async function updateRunCoordinatorControl(params: {

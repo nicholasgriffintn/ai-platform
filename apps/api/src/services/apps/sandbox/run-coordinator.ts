@@ -1,4 +1,3 @@
-export { SandboxRunCoordinator } from "./run-coordinator/object";
 export {
 	appendRunCoordinatorEvent,
 	getRunCoordinatorControl,
@@ -6,6 +5,7 @@ export {
 	listRunCoordinatorEvents,
 	listRunCoordinatorInstructions,
 	openRunCoordinatorEventsSocket,
+	startRunCoordinatorDispatchFiber,
 	submitRunCoordinatorInstruction,
 	updateRunCoordinatorControl,
 } from "./run-coordinator/client";

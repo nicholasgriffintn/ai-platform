@@ -1,9 +1,7 @@
 import type { IEnv } from "~/types";
 import { getLogger } from "~/utils/logger";
-import {
-	isSandboxRunDispatchMessage,
-	processSandboxRunDispatch,
-} from "~/services/apps/sandbox/dispatch";
+import { isSandboxRunDispatchMessage } from "~/services/apps/sandbox/dispatch";
+import { startRunCoordinatorDispatchFiber } from "~/services/apps/sandbox/run-coordinator";
 import type { TaskHandler, TaskResult } from "../TaskHandler";
 import type { TaskMessage } from "../TaskService";
 
@@ -21,15 +19,25 @@ export class SandboxRunDispatchHandler implements TaskHandler {
 		}
 
 		try {
-			await processSandboxRunDispatch({
+			const fiber = await startRunCoordinatorDispatchFiber({
 				env,
+				runId: message.task_data.runId,
 				message: message.task_data,
 			});
+			if (!fiber) {
+				return {
+					status: "error",
+					message: "Sandbox run coordinator did not accept dispatch fiber",
+				};
+			}
 			return {
 				status: "success",
-				message: "Sandbox run dispatch processed",
+				message: "Sandbox run dispatch accepted",
 				data: {
 					runId: message.task_data.runId,
+					fiberId: fiber.fiberId,
+					fiberStatus: fiber.status,
+					accepted: fiber.accepted,
 				},
 			};
 		} catch (error) {

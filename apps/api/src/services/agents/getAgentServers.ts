@@ -1,6 +1,7 @@
 import type { MCPClientManager } from "agents/mcp/client";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
+import { connectMCPServerReady, type MCPServerConfig } from "~/services/agents/mcp-client";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 import { safeParseJson } from "../../utils/json";
@@ -15,12 +16,9 @@ export async function getAgentServers(context: ServiceContext, agentId: string, 
 		return [];
 	}
 
-	let serverConfigs: Array<{ url: string; type: "sse" }> = [];
+	let serverConfigs: MCPServerConfig[] = [];
 	const serversJson = agent.servers as string;
-	serverConfigs = safeParseJson(serversJson) as Array<{
-		url: string;
-		type: "sse";
-	}>;
+	serverConfigs = safeParseJson(serversJson) as MCPServerConfig[];
 	if (!serverConfigs) {
 		throw new AssistantError("Invalid servers configuration", ErrorType.PARAMS_ERROR);
 	}
@@ -41,23 +39,20 @@ export async function getAgentServers(context: ServiceContext, agentId: string, 
 	const serverDetails = await Promise.all(
 		serverConfigs.map(async (server) => {
 			try {
-				const { id } = await mcp.connect(server.url);
-
-				const connection = mcp.mcpConnections[id];
-				const deadline = Date.now() + 10_000;
-				while (connection.connectionState !== "ready") {
-					if (Date.now() > deadline) {
-						logger.error("MCP connection timed out waiting for ready state", {
-							server_url: server.url,
-						});
-						return {
-							id,
-							connectionState: "timeout",
-							error: "Connection timed out waiting for ready state",
-						};
-					}
-					await new Promise((resolve) => setTimeout(resolve, 50));
+				const readyConnection = await connectMCPServerReady(mcp, server);
+				if ("error" in readyConnection) {
+					logger.error("MCP connection failed", {
+						server_id: readyConnection.id,
+						server_url: server.url,
+						error_message: readyConnection.error,
+					});
+					return {
+						id: readyConnection.id,
+						connectionState: "error",
+						error: readyConnection.error,
+					};
 				}
+				const { id, connection } = readyConnection;
 
 				const tools = connection.tools;
 				const prompts = connection.prompts;
