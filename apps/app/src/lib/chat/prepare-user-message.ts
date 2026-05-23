@@ -1,14 +1,8 @@
 import type { ConversationModeMetadata } from "@assistant/schemas";
 
+import type { AttachmentData } from "~/lib/chat/attachments";
 import { normalizeMessage } from "~/lib/messages";
 import type { MessageContent } from "~/types";
-
-export type AttachmentData = {
-	type: string;
-	data: string;
-	name?: string;
-	markdown?: string;
-};
 
 export function prepareUserMessage(
 	input: string,

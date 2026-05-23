@@ -11,7 +11,8 @@ import {
 	getOpeningCouncilMemberId,
 	resolveCouncilMemberIds,
 } from "~/lib/council";
-import { prepareUserMessage, type AttachmentData } from "~/lib/chat/prepare-user-message";
+import type { AttachmentData } from "~/lib/chat/attachments";
+import { prepareUserMessage } from "~/lib/chat/prepare-user-message";
 import { createConversationId } from "~/lib/conversations";
 import { normalizeMessage } from "~/lib/messages";
 import { useLoadingActions } from "~/state/contexts/LoadingContext";

@@ -1,7 +1,7 @@
 import type { MarkdownConversionOptions } from "@assistant/schemas";
 
 import { apiService } from "~/lib/api/api-service";
-import type { AttachmentData } from "~/lib/chat/prepare-user-message";
+import type { AttachmentData } from "~/lib/chat/attachments";
 
 const SUPPORTED_MARKDOWN_IMAGE_LANGUAGES = [
 	"en",
@@ -15,6 +15,9 @@ const SUPPORTED_MARKDOWN_IMAGE_LANGUAGES = [
 >;
 
 type MarkdownDescriptionLanguage = (typeof SUPPORTED_MARKDOWN_IMAGE_LANGUAGES)[number];
+
+const CODE_LIKE_EXTENSION_PATTERN =
+	/\.(ts|tsx|js|jsx|json|py|go|java|rb|php|rs|cs|kt|swift|scala|sh|yml|yaml|sql|toml|c|cc|cpp|cxx|hpp|h)$/i;
 
 export interface ComposerAttachmentUploadContext {
 	isImageModel: boolean;
@@ -54,10 +57,27 @@ function isCodeLikeFile(file: File) {
 		(file.type.startsWith("text/") ||
 			file.type === "application/javascript" ||
 			file.type === "application/typescript" ||
-			/\.(ts|tsx|js|jsx|json|py|go|java|rb|php|rs|cs|kt|swift|scala|sh|yml|yaml|sql|toml|c|cc|cpp|cxx|hpp|h)$/i.test(
-				file.name,
-			))
+			CODE_LIKE_EXTENSION_PATTERN.test(file.name))
 	);
+}
+
+function markdownDocumentAttachment({
+	file,
+	markdown,
+	name,
+	url,
+}: {
+	file: File;
+	markdown: string;
+	name?: string;
+	url: string;
+}): AttachmentData {
+	return {
+		type: "markdown_document",
+		data: url,
+		name: name || file.name,
+		markdown,
+	};
 }
 
 export async function uploadComposerAttachment(
@@ -92,12 +112,7 @@ export async function uploadComposerAttachment(
 
 			if (type === "markdown_document" && markdown) {
 				return {
-					attachment: {
-						type: "markdown_document",
-						data: url,
-						name: name || file.name,
-						markdown,
-					},
+					attachment: markdownDocumentAttachment({ file, markdown, name, url }),
 				};
 			}
 
@@ -136,12 +151,7 @@ export async function uploadComposerAttachment(
 
 		if (type === "markdown_document" && markdown) {
 			return {
-				attachment: {
-					type: "markdown_document",
-					data: url,
-					name: name || file.name,
-					markdown,
-				},
+				attachment: markdownDocumentAttachment({ file, markdown, name, url }),
 			};
 		}
 	}
@@ -164,12 +174,7 @@ export async function uploadComposerAttachment(
 
 		if (type === "markdown_document" && markdown) {
 			return {
-				attachment: {
-					type: "markdown_document",
-					data: url,
-					name: name || file.name,
-					markdown,
-				},
+				attachment: markdownDocumentAttachment({ file, markdown, name, url }),
 			};
 		}
 
@@ -182,12 +187,7 @@ export async function uploadComposerAttachment(
 
 	if (type === "markdown_document" && markdown) {
 		return {
-			attachment: {
-				type: "markdown_document",
-				data: url,
-				name: name || file.name,
-				markdown,
-			},
+			attachment: markdownDocumentAttachment({ file, markdown, name, url }),
 		};
 	}
 

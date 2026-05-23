@@ -14,7 +14,7 @@ import {
 import { Button } from "~/components/ui";
 import { useModels } from "~/hooks/useModels";
 import { useVoiceRecorder } from "~/hooks/useVoiceRecorder";
-import type { AttachmentData } from "~/lib/chat/prepare-user-message";
+import type { AttachmentData } from "~/lib/chat/attachments";
 import { useChatStore } from "~/state/stores/chatStore";
 import { useUIStore } from "~/state/stores/uiStore";
 import type { ModelConfigItem } from "~/types";
@@ -231,20 +231,30 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 			try {
 				setIsUploading(true);
 				const uploadedAttachments: AttachmentData[] = [];
+				const uploadResults = await Promise.allSettled(
+					files.map((file) =>
+						uploadComposerAttachment(file, {
+							isImageModel,
+							isMultimodalModel,
+							isTextToImageOnlyModel,
+							supportsAudio,
+							supportsDocuments,
+						}),
+					),
+				);
 
-				for (const file of files) {
-					const result = await uploadComposerAttachment(file, {
-						isImageModel,
-						isMultimodalModel,
-						isTextToImageOnlyModel,
-						supportsAudio,
-						supportsDocuments,
-					});
+				for (const result of uploadResults) {
+					if (result.status === "rejected") {
+						alert(
+							`Failed to upload file: ${result.reason instanceof Error ? result.reason.message : "Unknown error"}`,
+						);
+						continue;
+					}
 
-					if ("error" in result) {
-						alert(result.error);
+					if ("error" in result.value) {
+						alert(result.value.error);
 					} else {
-						uploadedAttachments.push(result.attachment);
+						uploadedAttachments.push(result.value.attachment);
 					}
 				}
 

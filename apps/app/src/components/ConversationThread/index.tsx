@@ -18,7 +18,7 @@ import { EventCategory, useTrackEvent } from "~/hooks/use-track-event";
 import { useChat } from "~/hooks/useChat";
 import { useChatManager } from "~/hooks/useChatManager";
 import { useModels } from "~/hooks/useModels";
-import type { AttachmentData } from "~/lib/chat/prepare-user-message";
+import type { AttachmentData } from "~/lib/chat/attachments";
 import { useIsLoading } from "~/state/contexts/LoadingContext";
 import { useChatStore } from "~/state/stores/chatStore";
 import type { ChatRequestOptions } from "~/types";
