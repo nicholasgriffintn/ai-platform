@@ -2,6 +2,7 @@ import { getModelConfigByModel } from "~/lib/providers/models";
 import { resolveProviderApiKey } from "~/lib/providers/utils/apiKeys";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import type { RealtimeProvider, RealtimeSessionRequest } from "../index";
+import { generateId } from "~/utils/id";
 
 const DEFAULT_TRANSCRIPTION_MODEL = "voxtral-mini-transcribe-realtime";
 const DEFAULT_WS_URL = "wss://api.mistral.ai";
@@ -10,11 +11,15 @@ export class MistralRealtimeProvider implements RealtimeProvider {
 	name = "mistral";
 	models = [DEFAULT_TRANSCRIPTION_MODEL];
 
+	private getProviderKeyName(): string {
+		return "MISTRAL_API_KEY";
+	}
+
 	private async getApiKey(request: RealtimeSessionRequest): Promise<string> {
 		return resolveProviderApiKey({
 			env: request.env,
 			providerName: this.name,
-			envKeyName: "MISTRAL_API_KEY",
+			envKeyName: this.getProviderKeyName(),
 			userId: request.user.id,
 		});
 	}
@@ -46,7 +51,7 @@ export class MistralRealtimeProvider implements RealtimeProvider {
 		const wsBaseUrl = DEFAULT_WS_URL;
 
 		return {
-			id: crypto.randomUUID(),
+			id: generateId(),
 			object: "realtime.transcription.session",
 			type: "transcription",
 			provider: this.name,
