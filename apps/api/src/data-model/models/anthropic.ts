@@ -413,6 +413,7 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 		supportsAttachments: true,
 		supportsTemperature: true,
 		supportsToolCalls: true,
+		isFeatured: true,
 		...anthropicServerTools,
 		...anthropicWebFetchTool,
 		contextWindow: 1000000,

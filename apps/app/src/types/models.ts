@@ -41,6 +41,7 @@ export interface ModelConfigItem {
 	multimodal?: boolean;
 	includedInRouter?: boolean;
 	isFeatured?: boolean;
+	deprecated?: boolean;
 	supportsDocuments?: boolean;
 	supportsSearchGrounding?: boolean;
 	supportsCodeExecution?: boolean;

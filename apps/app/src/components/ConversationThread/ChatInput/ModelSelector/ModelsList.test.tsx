@@ -104,4 +104,49 @@ describe("ModelsList", () => {
 			within(moonshotSection!).getByRole("option", { name: /Moonshot Kimi K2.6/i }),
 		).toBeInTheDocument();
 	});
+
+	it("opens deprecated models when the selected model is deprecated", () => {
+		render(
+			<ModelsList
+				models={[
+					makeModel("claude-sonnet", "Claude Sonnet", "anthropic", { isFeatured: true }),
+					makeModel("deepseek-chat", "DeepSeek Chat", "deepseek"),
+					makeModel("deepseek-legacy", "DeepSeek Legacy", "deepseek", { deprecated: true }),
+				]}
+				featuredModelIds={{
+					"claude-sonnet": makeModel("claude-sonnet", "Claude Sonnet", "anthropic", {
+						isFeatured: true,
+					}),
+				}}
+				isPro={true}
+				onSelect={vi.fn()}
+				selectedId="deepseek-legacy"
+			/>,
+		);
+
+		expect(screen.getByRole("heading", { name: "Deepseek" })).toBeInTheDocument();
+		expect(
+			screen.getByRole("button", { name: /Hide deprecated models \(1\)/i }),
+		).toBeInTheDocument();
+		expect(screen.getByRole("option", { name: /DeepSeek Legacy/i })).toHaveAttribute(
+			"aria-selected",
+			"true",
+		);
+	});
+
+	it("does not show an empty-state message when deprecated models exist", () => {
+		render(
+			<ModelsList
+				models={[makeModel("legacy-only", "Legacy Only", "provider", { deprecated: true })]}
+				featuredModelIds={{}}
+				isPro={true}
+				onSelect={vi.fn()}
+			/>,
+		);
+
+		expect(
+			screen.getByRole("button", { name: /Show deprecated models \(1\)/i }),
+		).toBeInTheDocument();
+		expect(screen.queryByText("No models available in this category.")).not.toBeInTheDocument();
+	});
 });
