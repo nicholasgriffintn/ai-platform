@@ -33,6 +33,8 @@ export const deepseekModelConfig: ModelConfig = {
 	},
 	"deepseek-reasoner": {
 		name: "DeepSeek Reasoner",
+		description:
+			"Before delivering the final answer, the model first generates a Chain of Thought (CoT) to enhance the accuracy of its responses.",
 		matchingModel: "deepseek-reasoner",
 		provider: "deepseek",
 		knowledgeCutoffDate: "September 2025",
@@ -65,6 +67,8 @@ export const deepseekModelConfig: ModelConfig = {
 	},
 	"deepseek-v4-flash": {
 		name: "DeepSeek V4 Flash",
+		description:
+			"DeepSeek-V4-Flash is a preview of the DeepSeek-V4 series, a Mixture-of-Experts model with 284B total parameters and 13B activated, built for efficient reasoning across a 1M-token context window.",
 		matchingModel: "deepseek-v4-flash",
 		provider: "deepseek",
 		knowledgeCutoffDate: "May 2025",
@@ -91,6 +95,8 @@ export const deepseekModelConfig: ModelConfig = {
 
 	"deepseek-v4-pro": {
 		name: "DeepSeek V4 Pro",
+		description:
+			"DeepSeek-V4-Pro is a frontier Mixture-of-Experts model with a 1M-token context window and three reasoning modes.",
 		matchingModel: "deepseek-v4-pro",
 		provider: "deepseek",
 		knowledgeCutoffDate: "May 2025",
