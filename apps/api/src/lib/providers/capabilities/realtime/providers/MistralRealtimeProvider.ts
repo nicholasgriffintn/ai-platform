@@ -46,9 +46,10 @@ export class MistralRealtimeProvider implements RealtimeProvider {
 			throw new AssistantError("Invalid session type", ErrorType.PARAMS_ERROR);
 		}
 
-		const apiKey = await this.getApiKey(request);
 		const model = await this.resolveModel(request);
 		const wsBaseUrl = DEFAULT_WS_URL;
+
+		// TODO: Work out how to do this, I think we might have to proxy Mistral.
 
 		return {
 			id: generateId(),
