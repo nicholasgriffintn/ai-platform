@@ -20,6 +20,10 @@ const PROVIDER_ALIASES = {
 	"perplexity-ai": "perplexity",
 };
 
+const LATEST_TAGS = new Set(["latest", "current", "recommended", "default", "flagship", "stable"]);
+const OUTDATED_TAGS = new Set(["deprecated", "legacy", "retired", "obsolete", "outdated"]);
+const VERSION_SUFFIX_REGEX = /^(.*?)[-_:]((?:19|20)\d{2}(?:[-_]?\d{2}){1,2}|v?\d{4,})$/i;
+
 const SUPPORTED_MODALITIES = new Set([
 	"text",
 	"image",
@@ -460,6 +464,69 @@ function hasDeprecatedStatus(remoteConfig) {
 		typeof remoteConfig === "object" &&
 		remoteConfig.status === "deprecated"
 	);
+}
+
+function normalizeTags(remoteModel) {
+	if (!remoteModel || typeof remoteModel !== "object") {
+		return [];
+	}
+	const tags = remoteModel.tags;
+	if (!Array.isArray(tags)) {
+		return [];
+	}
+	return tags.filter((tag) => typeof tag === "string").map((tag) => tag.toLowerCase());
+}
+
+function hasAnyTag(remoteModel, tagSet) {
+	return normalizeTags(remoteModel).some((tag) => tagSet.has(tag));
+}
+
+function modelFamilyKey(modelId) {
+	const match = VERSION_SUFFIX_REGEX.exec(modelId);
+	return match ? match[1] : modelId;
+}
+
+function buildProviderModelStatus(remoteModels) {
+	const latestModelIds = new Set();
+	const outdatedModelIds = new Set();
+	const familyMembers = new Map();
+	const familyLatest = new Map();
+
+	for (const [modelId, remoteModel] of Object.entries(remoteModels)) {
+		if (!remoteModel || typeof remoteModel !== "object") {
+			continue;
+		}
+		const family = modelFamilyKey(modelId);
+		if (!familyMembers.has(family)) {
+			familyMembers.set(family, []);
+		}
+		familyMembers.get(family).push(modelId);
+
+		if (hasDeprecatedStatus(remoteModel) || hasAnyTag(remoteModel, OUTDATED_TAGS)) {
+			outdatedModelIds.add(modelId);
+		}
+		if (
+			remoteModel.latest === true ||
+			remoteModel.is_latest === true ||
+			hasAnyTag(remoteModel, LATEST_TAGS)
+		) {
+			latestModelIds.add(modelId);
+			familyLatest.set(family, modelId);
+		}
+	}
+
+	for (const [family, modelIds] of familyMembers) {
+		if (familyLatest.has(family)) {
+			const latestId = familyLatest.get(family);
+			for (const modelId of modelIds) {
+				if (modelId !== latestId) {
+					outdatedModelIds.add(modelId);
+				}
+			}
+		}
+	}
+
+	return { latestModelIds, outdatedModelIds };
 }
 
 function formatMonth(year, month) {
@@ -1042,6 +1109,7 @@ async function inspectModelFile({ filePath, remoteProviders, selectedProviders }
 	const remoteProviderConfig = remoteProviders[remoteProviderId];
 	const remoteProviderDeprecated = hasDeprecatedStatus(remoteProviderConfig);
 	const remoteModels = remoteModelsFromProvider(remoteProviderConfig);
+	const providerModelStatus = buildProviderModelStatus(remoteModels ?? {});
 	if (!remoteModels && !remoteProviderDeprecated) {
 		return {
 			filePath,
@@ -1078,6 +1146,7 @@ async function inspectModelFile({ filePath, remoteProviders, selectedProviders }
 		remoteProviderId,
 		remoteProviderDeprecated,
 		remoteModels: remoteModels ?? {},
+		providerModelStatus,
 		entries,
 		containerNode,
 		containerElements,
@@ -1107,6 +1176,7 @@ async function processFile({
 		remoteProviderId,
 		remoteProviderDeprecated,
 		remoteModels,
+		providerModelStatus,
 		entries,
 		containerNode,
 		containerElements,
@@ -1121,7 +1191,20 @@ async function processFile({
 		const remoteModel =
 			remoteModels[entry.modelKey] ?? (matchingModel ? remoteModels[matchingModel] : undefined);
 
-		if (remoteProviderDeprecated || hasDeprecatedStatus(remoteModel)) {
+		const remoteModelIdForStatus =
+			typeof remoteModel?.id === "string"
+				? remoteModel.id
+				: matchingModel ?? entry.modelKey;
+		const isOutdatedModel = providerModelStatus.outdatedModelIds.has(remoteModelIdForStatus);
+		const shouldRemoveBecauseNotLatest =
+			providerModelStatus.latestModelIds.size > 0 &&
+			!providerModelStatus.latestModelIds.has(remoteModelIdForStatus);
+		if (
+			remoteProviderDeprecated ||
+			hasDeprecatedStatus(remoteModel) ||
+			isOutdatedModel ||
+			shouldRemoveBecauseNotLatest
+		) {
 			removedDeprecatedModels += 1;
 			patches.push(buildRemoveEntryPatch(originalText, entry.entryNode, sourceFile));
 			continue;
@@ -1166,6 +1249,13 @@ async function processFile({
 			? Object.keys(remoteModels)
 					.filter((remoteModelId) => !representedRemoteModelIds.has(remoteModelId))
 					.filter((remoteModelId) => !hasDeprecatedStatus(remoteModels[remoteModelId]))
+					.filter((remoteModelId) => !providerModelStatus.outdatedModelIds.has(remoteModelId))
+					.filter((remoteModelId) => {
+						if (providerModelStatus.latestModelIds.size === 0) {
+							return true;
+						}
+						return providerModelStatus.latestModelIds.has(remoteModelId);
+					})
 					.sort((left, right) => left.localeCompare(right))
 			: [];
 
