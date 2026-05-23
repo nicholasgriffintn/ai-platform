@@ -44,12 +44,25 @@ export function useUser() {
 		},
 	});
 
+	const deleteProviderApiKeyMutation = useMutation({
+		mutationFn: async ({ providerId }: { providerId: string }) => {
+			await apiService.deleteProviderApiKey(providerId);
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries({
+				queryKey: USER_QUERY_KEYS.providerSettings,
+			});
+		},
+	});
+
 	return {
 		providerSettings: providerSettings ?? [],
 		isLoadingProviderSettings,
-		storeProviderApiKey: storeProviderApiKeyMutation.mutate,
+		storeProviderApiKey: storeProviderApiKeyMutation.mutateAsync,
 		isStoringProviderApiKey: storeProviderApiKeyMutation.isPending,
 		syncProviders: syncProvidersMutation.mutate,
 		isSyncingProviders: syncProvidersMutation.isPending,
+		deleteProviderApiKey: deleteProviderApiKeyMutation.mutateAsync,
+		isDeletingProviderApiKey: deleteProviderApiKeyMutation.isPending,
 	};
 }

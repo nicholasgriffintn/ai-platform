@@ -1,4 +1,4 @@
-import { getModelConfigByModel } from "~/lib/providers/models";
+import { getModelConfig, getModelConfigByMatchingModel } from "~/lib/providers/models";
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import type { ChatCompletionParameters, Message } from "~/types";
@@ -9,6 +9,7 @@ const logger = getLogger({ prefix: "services/completions/countTokens" });
 
 interface CountTokensRequest {
 	model: string;
+	provider?: string;
 	messages: Message[];
 	system_prompt?: string;
 }
@@ -24,12 +25,14 @@ export async function handleCountTokens(
 	context: ServiceContext,
 	request: CountTokensRequest,
 ): Promise<CountTokensResponse> {
-	const { model, messages, system_prompt } = request;
+	const { model, provider: requestedProvider, messages, system_prompt } = request;
 	const { env, user } = context;
 
 	logger.info("Processing token count request", { model });
 
-	const modelConfig = await getModelConfigByModel(model, env);
+	const modelConfig =
+		(await getModelConfig(model, env, requestedProvider)) ||
+		(await getModelConfigByMatchingModel(model, env, requestedProvider));
 	if (!modelConfig) {
 		return {
 			status: "error",
@@ -71,6 +74,7 @@ export async function handleCountTokens(
 
 	const params: ChatCompletionParameters = {
 		model: matchingModel,
+		provider: modelConfig.provider,
 		messages,
 		system_prompt,
 		env,

@@ -4,11 +4,14 @@ import { toast } from "sonner";
 
 import { CHATS_QUERY_KEY } from "~/constants";
 import { apiService } from "~/lib/api/api-service";
+import { createConversationId } from "~/lib/conversations";
+import { getModelProvider } from "~/lib/models";
 import { normalizeMessage } from "~/lib/messages";
 import type { Conversation, Message } from "~/types";
 import { useChatStore } from "~/state/stores/chatStore";
 import { useConversationStorage } from "./useConversationStorage";
 import { useMessageOperations } from "./useMessageOperations";
+import { useModels } from "./useModels";
 
 /**
  * Hook for advanced conversation actions like editing, retrying, and branching.
@@ -37,6 +40,7 @@ export function useConversationActions(
 
 	const { updateConversation } = useConversationStorage();
 	const { addAssistantMessage, updateAssistantMessage } = useMessageOperations();
+	const { data: apiModels = {} } = useModels();
 
 	const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
 	const [isBranching, setIsBranching] = useState(false);
@@ -166,7 +170,7 @@ export function useConversationActions(
 
 				const messagesUpToPoint = conversation.messages.slice(0, messageIndex + 1);
 
-				const newConversationId = `${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+				const newConversationId = createConversationId();
 
 				const branchMetadata = {
 					branch_of: JSON.stringify({
@@ -190,6 +194,7 @@ export function useConversationActions(
 				if (shouldStore) {
 					const normalizedMessages = messagesUpToPoint.map(normalizeMessage);
 					const modelToSend = selectedModelId || (model === null ? undefined : model);
+					const providerToSend = getModelProvider(apiModels, modelToSend);
 
 					const chatSettingsWithMetadata = {
 						...chatSettings,
@@ -207,6 +212,7 @@ export function useConversationActions(
 						newConversationId,
 						normalizedMessages,
 						modelToSend,
+						providerToSend,
 						chatMode,
 						chatSettingsWithMetadata,
 						new AbortController().signal,
@@ -268,6 +274,7 @@ export function useConversationActions(
 			chatMode,
 			useMultiModel,
 			selectedAgentId,
+			apiModels,
 			updateConversation,
 			addAssistantMessage,
 			updateAssistantMessage,

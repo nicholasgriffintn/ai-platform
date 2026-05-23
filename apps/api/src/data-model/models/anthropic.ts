@@ -25,7 +25,7 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 		reliability: 5,
 		speed: 3,
 		multimodal: true,
-		isFeatured: false,
+		isFeatured: true,
 		supportsToolCalls: true,
 		supportsSearchGrounding: true,
 		supportsCodeExecution: true,
@@ -34,9 +34,6 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 		supportsTopP: false,
 		releaseDate: "February 5, 2026",
 		lastUpdated: "March 13, 2026",
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 	createModelConfig("claude-4-5-sonnet", PROVIDER, {
 		name: "Claude Sonnet 4.5 (latest)",
@@ -62,43 +59,10 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 		reliability: 5,
 		speed: 4,
 		multimodal: true,
-		reasoningConfig: { enabled: false },
-		isFeatured: true,
-		includedInRouter: true,
-		supportsArtifacts: true,
-		supportsToolCalls: true,
-		supportsSearchGrounding: true,
-		supportsCodeExecution: true,
-		supportsDocuments: true,
-		supportsTokenCounting: true,
-		restrictsCombinedTopPAndTemperature: true,
-	}),
-
-	createModelConfig("claude-4-5-sonnet-thinking", PROVIDER, {
-		name: "Claude Sonnet 4.5 (Thinking)",
-		matchingModel: "claude-sonnet-4-5-20250929",
-		description:
-			"Combined with state-of-the-art coding, vision, and writing skills, you can use this model for a variety of use cases.",
-		knowledgeCutoffDate: "July 31, 2025",
-		releaseDate: "September 29, 2025",
-		lastUpdated: "September 29, 2025",
-		modalities: {
-			input: ["text", "image", "pdf"],
-			output: ["text"],
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
 		},
-		supportsAttachments: true,
-		supportsTemperature: true,
-		card: "https://www.prompthub.us/models/claude-sonnet-4-5",
-		contextWindow: 200000,
-		maxTokens: 64000,
-		costPer1kInputTokens: 0.003,
-		costPer1kOutputTokens: 0.015,
-		strengths: ["chat", "general_knowledge", "analysis", "coding", "reasoning", "creative"],
-		contextComplexity: 5,
-		reliability: 5,
-		speed: 4,
-		multimodal: true,
-		reasoningConfig: { enabled: true },
 		isFeatured: true,
 		includedInRouter: true,
 		supportsArtifacts: true,
@@ -134,43 +98,10 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 		reliability: 5,
 		speed: 4,
 		multimodal: true,
-		reasoningConfig: { enabled: false },
-		isFeatured: true,
-		includedInRouter: true,
-		supportsArtifacts: true,
-		supportsToolCalls: true,
-		supportsSearchGrounding: true,
-		supportsCodeExecution: true,
-		supportsDocuments: true,
-		supportsTokenCounting: true,
-	}),
-
-	createModelConfig("claude-4-sonnet-thinking", PROVIDER, {
-		name: "Claude Sonnet 4 (Thinking)",
-		matchingModel: "claude-sonnet-4-20250514",
-		description:
-			"Combined with state-of-the-art coding, vision, and writing skills, you can use this model for a variety of use cases.",
-		knowledgeCutoffDate: "March 31, 2025",
-		releaseDate: "May 22, 2025",
-		lastUpdated: "May 22, 2025",
-		modalities: {
-			input: ["text", "image", "pdf"],
-			output: ["text"],
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
 		},
-		supportsAttachments: true,
-		supportsTemperature: true,
-		card: "https://www.prompthub.us/models/claude-sonnet-4",
-		contextWindow: 200000,
-		maxTokens: 64000,
-		costPer1kInputTokens: 0.003,
-		costPer1kOutputTokens: 0.015,
-		strengths: ["chat", "general_knowledge", "analysis", "coding", "reasoning", "creative"],
-		contextComplexity: 5,
-		reliability: 5,
-		speed: 4,
-		multimodal: true,
-		reasoningConfig: { enabled: true },
-		isFeatured: true,
 		includedInRouter: true,
 		supportsArtifacts: true,
 		supportsToolCalls: true,
@@ -243,9 +174,6 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 		supportsCodeExecution: true,
 		includedInRouter: true,
 		supportsTokenCounting: true,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("claude-4-opus", PROVIDER, {
@@ -278,9 +206,6 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 		supportsCodeExecution: true,
 		supportsDocuments: true,
 		supportsTokenCounting: true,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("claude-4.5-opus", PROVIDER, {
@@ -314,9 +239,6 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 		supportsDocuments: true,
 		supportsTokenCounting: true,
 		supportsTopP: false,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("claude-4.1-opus", PROVIDER, {
@@ -342,7 +264,6 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 		reliability: 5,
 		speed: 3,
 		multimodal: true,
-		reasoningConfig: { enabled: true },
 		supportsArtifacts: true,
 		supportsToolCalls: true,
 		supportsTokenCounting: true,
@@ -372,7 +293,6 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 		reliability: 5,
 		speed: 3,
 		multimodal: true,
-		reasoningConfig: { enabled: true },
 		supportsArtifacts: true,
 		supportsToolCalls: true,
 		supportsTokenCounting: true,
@@ -394,9 +314,6 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 8192,
 		costPer1kInputTokens: 0.0008,
 		costPer1kOutputTokens: 0.004,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("claude-3-5-sonnet-20240620", PROVIDER, {
@@ -416,9 +333,6 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 8192,
 		costPer1kInputTokens: 0.003,
 		costPer1kOutputTokens: 0.015,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("claude-3-5-sonnet-20241022", PROVIDER, {
@@ -438,9 +352,6 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 8192,
 		costPer1kInputTokens: 0.003,
 		costPer1kOutputTokens: 0.015,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("claude-3-7-sonnet-latest", PROVIDER, {
@@ -460,9 +371,6 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 64000,
 		costPer1kInputTokens: 0.003,
 		costPer1kOutputTokens: 0.015,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("claude-3-haiku-20240307", PROVIDER, {
@@ -482,9 +390,6 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 4096,
 		costPer1kInputTokens: 0.00025,
 		costPer1kOutputTokens: 0.00125,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("claude-3-opus-20240229", PROVIDER, {
@@ -504,9 +409,6 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 4096,
 		costPer1kInputTokens: 0.015,
 		costPer1kOutputTokens: 0.075,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("claude-3-sonnet-20240229", PROVIDER, {
@@ -526,9 +428,6 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 4096,
 		costPer1kInputTokens: 0.003,
 		costPer1kOutputTokens: 0.015,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("claude-haiku-4-5", PROVIDER, {
@@ -548,9 +447,6 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 64000,
 		costPer1kInputTokens: 0.001,
 		costPer1kOutputTokens: 0.005,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("claude-haiku-4-5-20251001", PROVIDER, {
@@ -570,9 +466,6 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 64000,
 		costPer1kInputTokens: 0.001,
 		costPer1kOutputTokens: 0.005,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("claude-opus-4-0", PROVIDER, {
@@ -592,9 +485,6 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 32000,
 		costPer1kInputTokens: 0.015,
 		costPer1kOutputTokens: 0.075,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("claude-opus-4-1-20250805", PROVIDER, {
@@ -614,9 +504,6 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 32000,
 		costPer1kInputTokens: 0.015,
 		costPer1kOutputTokens: 0.075,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("claude-opus-4-5", PROVIDER, {
@@ -636,9 +523,6 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 64000,
 		costPer1kInputTokens: 0.005,
 		costPer1kOutputTokens: 0.025,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 	createModelConfig("claude-opus-4-7", PROVIDER, {
 		name: "Claude Opus 4.7",
@@ -653,13 +537,11 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 		supportsAttachments: true,
 		supportsTemperature: false,
 		supportsToolCalls: true,
+		isFeatured: true,
 		contextWindow: 1000000,
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.005,
 		costPer1kOutputTokens: 0.025,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("claude-sonnet-4-6", PROVIDER, {
@@ -679,8 +561,5 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 64000,
 		costPer1kInputTokens: 0.003,
 		costPer1kOutputTokens: 0.015,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 ]);

@@ -62,10 +62,7 @@ export function resolvePromptLayout({
 		exampleVariant = "full";
 	}
 
-	if (
-		(!capabilities.reasoningEnabled || capabilities.requiresThinkingPrompt) &&
-		exampleVariant === "omit"
-	) {
+	if (capabilities.simulatedThinking && exampleVariant === "omit") {
 		exampleVariant = "compact";
 	}
 

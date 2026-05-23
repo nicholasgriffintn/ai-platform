@@ -116,6 +116,10 @@ describe("ChatOrchestrator", () => {
 			model: "test-model",
 			messages: [{ role: "user", content: "Hello" }],
 			user: { id: "test-user" },
+			context: {
+				requestId: "request-123",
+				requireUser: vi.fn(),
+			},
 			env: mockEnv,
 			app_url: "https://test.com",
 		} as any;
@@ -291,7 +295,9 @@ describe("ChatOrchestrator", () => {
 
 				expect(mockCreateStreamWithPostProcessing).toHaveBeenCalledWith(
 					mockStream,
-					expect.any(Object),
+					expect.objectContaining({
+						context: mockOptions.context,
+					}),
 					mockConversationManager,
 				);
 				expect(result).toEqual({
@@ -321,7 +327,9 @@ describe("ChatOrchestrator", () => {
 					"test-completion-id",
 					mockResponse,
 					mockConversationManager,
-					expect.any(Object),
+					expect.objectContaining({
+						context: mockOptions.context,
+					}),
 				);
 				if ("toolResponses" in result) {
 					expect(result.toolResponses).toEqual(mockToolResults);
@@ -362,6 +370,7 @@ describe("ChatOrchestrator", () => {
 					mockResponse,
 					mockConversationManager,
 					expect.objectContaining({
+						context: mockOptions.context,
 						request: expect.objectContaining({
 							current_agent_id: "agent-123",
 							delegation_stack: ["agent-456"],
@@ -405,7 +414,9 @@ describe("ChatOrchestrator", () => {
 						delegation_stack: ["agent-101"],
 						max_delegation_depth: 5,
 					}),
-					expect.any(Object),
+					expect.objectContaining({
+						context: mockOptions.context,
+					}),
 					mockConversationManager,
 				);
 			});

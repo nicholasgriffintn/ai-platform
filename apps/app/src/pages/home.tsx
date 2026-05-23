@@ -1,4 +1,4 @@
-import { ConversationPage } from "~/components/ConversationThread/ConversationPage";
+import { HomePage } from "~/components/Home/HomePage";
 
 export function meta() {
 	return [
@@ -11,5 +11,5 @@ export function meta() {
 }
 
 export default function Home() {
-	return <ConversationPage title="Conversation" />;
+	return <HomePage />;
 }

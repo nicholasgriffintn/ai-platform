@@ -27,15 +27,9 @@ describe("returnStandardPrompt", () => {
 		it("should include session metadata and model information", async () => {
 			// @ts-expect-error - mock implementation
 			const request: IBody = {};
-			const result = await returnStandardPrompt(
-				request,
-				undefined,
-				undefined,
-				false,
-				false,
-				false,
-				{ modelId: "test-model" },
-			);
+			const result = await returnStandardPrompt(request, undefined, undefined, false, false, {
+				modelId: "test-model",
+			});
 			expect(result).toContain("<session_metadata>");
 			expect(result).toContain("<model_info>");
 			expect(result).toContain("<model_id>test-model</model_id>");
@@ -79,6 +73,15 @@ describe("returnStandardPrompt", () => {
 			expect(result).toContain("<response_traits>");
 			expect(result).toContain("<response_preferences>");
 			expect(result).toContain("Favor brevity");
+		});
+
+		it("should handle caveman verbosity", async () => {
+			// @ts-expect-error - mock implementation
+			const request: IBody = { verbosity: "caveman" };
+			const result = await returnStandardPrompt(request);
+			expect(result).toContain("<verbosity>caveman</verbosity>");
+			expect(result).toContain("Respond terse like smart caveman");
+			expect(result).toContain("Use caveman brevity");
 		});
 	});
 
@@ -167,36 +170,35 @@ describe("returnStandardPrompt", () => {
 	});
 
 	describe("feature flags handling", () => {
-		it("should include thinking example when supportsReasoning is false", async () => {
+		it("should not include thinking example by default", async () => {
 			// @ts-expect-error - mock implementation
 			const request: IBody = {};
-			const result = await returnStandardPrompt(request, undefined, undefined, false, false, false);
+			const result = await returnStandardPrompt(request, undefined, undefined, false, false);
+			expect(result).not.toContain("<think>");
+		});
+
+		it("should include thinking example for simulated thinking", async () => {
+			// @ts-expect-error - mock implementation
+			const request: IBody = { reasoning_effort: "simulated-thinking" };
+			const result = await returnStandardPrompt(request, undefined, undefined, false, false);
 			expect(result).toContain("<think>");
 		});
 
-		it("should skip thinking example when supportsReasoning is true", async () => {
+		it("should skip thinking example when reasoning effort is none even if reasoning is supported", async () => {
 			// @ts-expect-error - mock implementation
-			const request: IBody = {};
-			const result = await returnStandardPrompt(
-				request,
-				undefined,
-				undefined,
-				false,
-				false,
-				false,
-				{
-					modelConfig: {
-						reasoningConfig: { enabled: true },
-					} as any,
-				},
-			);
+			const request: IBody = { reasoning_effort: "none" };
+			const result = await returnStandardPrompt(request, undefined, undefined, false, false, {
+				modelConfig: {
+					reasoningConfig: { supportedEffortLevels: ["none", "thinking", "low", "medium", "high"] },
+				} as any,
+			});
 			expect(result).not.toContain("<think>");
 		});
 
 		it("should include artifact example when supportsArtifacts is true", async () => {
 			// @ts-expect-error - mock implementation
 			const request: IBody = {};
-			const result = await returnStandardPrompt(request, undefined, undefined, false, true, false);
+			const result = await returnStandardPrompt(request, undefined, undefined, false, true);
 			expect(result).toContain("artifact");
 		});
 
@@ -209,33 +211,33 @@ describe("returnStandardPrompt", () => {
 				undefined,
 				undefined,
 				undefined,
-				false,
 				{
 					modelConfig: {
-						reasoningConfig: { enabled: true },
+						reasoningConfig: {
+							supportedEffortLevels: ["none", "thinking", "low", "medium", "high"],
+						},
 					} as any,
 				},
 			);
 			expect(result).not.toContain("<example_output>");
 		});
 
-		it("should include compact example for agent mode when reasoning traces are unavailable", async () => {
+		it("should include compact example for agent mode when simulated thinking is enabled", async () => {
 			// @ts-expect-error - mock implementation
-			const request: IBody = { mode: "agent" };
+			const request: IBody = { mode: "agent", reasoning_effort: "simulated-thinking" };
 			const result = await returnStandardPrompt(
 				request,
 				undefined,
 				undefined,
 				undefined,
 				undefined,
-				false,
 			);
 
 			expect(result).toContain("<example_output>");
 			expect(result).toContain("<think>");
 		});
 
-		it("should derive supportsReasoning from model metadata when not provided", async () => {
+		it("should not derive thinking examples from model metadata when not provided", async () => {
 			// @ts-expect-error - mock implementation
 			const request: IBody = {};
 			const result = await returnStandardPrompt(
@@ -244,10 +246,11 @@ describe("returnStandardPrompt", () => {
 				undefined,
 				undefined,
 				undefined,
-				undefined,
 				{
 					modelConfig: {
-						reasoningConfig: { enabled: true },
+						reasoningConfig: {
+							supportedEffortLevels: ["none", "thinking", "low", "medium", "high"],
+						},
 					} as any,
 				},
 			);

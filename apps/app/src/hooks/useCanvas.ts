@@ -5,11 +5,12 @@ import type { CanvasGenerateRequest, CanvasGeneration, CanvasMode } from "~/type
 
 export const CANVAS_QUERY_KEY = "canvas";
 
-export function useCanvasModels(mode: CanvasMode) {
+export function useCanvasModels(mode: CanvasMode, enabled = true) {
 	return useQuery({
 		queryKey: [CANVAS_QUERY_KEY, "models", mode],
 		queryFn: () => fetchCanvasModels(mode),
 		staleTime: 1000 * 60 * 5,
+		enabled,
 	});
 }
 
@@ -19,10 +20,11 @@ export function useGenerateCanvasOutputs() {
 	});
 }
 
-export function useCanvasGenerations(mode?: CanvasMode) {
+export function useCanvasGenerations(mode?: CanvasMode, enabled = true) {
 	return useQuery({
 		queryKey: [CANVAS_QUERY_KEY, "generations", mode ?? "all"],
 		queryFn: () => fetchCanvasGenerations(mode),
+		enabled,
 		refetchInterval: (query) => {
 			const data = query.state.data as CanvasGeneration[] | undefined;
 			if (!data?.length) {

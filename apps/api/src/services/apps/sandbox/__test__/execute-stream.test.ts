@@ -82,6 +82,13 @@ describe("executeSandboxRunStream", () => {
 				installationId: 99,
 				repo: "owner/repo",
 				task: "Implement feature",
+				modelSettings: {
+					temperature: 0.2,
+					reasoning: {
+						effort: "high",
+					},
+					verbosity: "low",
+				},
 			},
 		});
 
@@ -91,6 +98,17 @@ describe("executeSandboxRunStream", () => {
 			expect.objectContaining({
 				task_type: SANDBOX_RUN_DISPATCH_TASK_TYPE,
 				user_id: 42,
+				task_data: expect.objectContaining({
+					payload: expect.objectContaining({
+						modelSettings: {
+							temperature: 0.2,
+							reasoning: {
+								effort: "high",
+							},
+							verbosity: "low",
+						},
+					}),
+				}),
 			}),
 		);
 		expect(mockCreateAppDataWithItem).toHaveBeenCalledWith(

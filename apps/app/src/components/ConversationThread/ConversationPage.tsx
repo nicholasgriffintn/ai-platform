@@ -37,9 +37,9 @@ export function ConversationPage({ title, modeConfig }: ConversationPageProps) {
 			fullBleed={true}
 			headerContent={<PageTitle title={title} className="sr-only" />}
 		>
-			<div className="flex flex-row flex-grow flex-1 overflow-hidden relative h-full">
-				<div className="flex flex-col flex-grow h-full w-full">
-					<div className="flex-1 overflow-hidden relative">
+			<div className="relative flex h-full min-h-0 flex-1 flex-grow flex-row overflow-hidden">
+				<div className="flex h-full min-h-0 w-full flex-grow flex-col">
+					<div className="relative min-h-0 flex-1 overflow-hidden">
 						<ConversationThread modeConfig={modeConfig} />
 					</div>
 				</div>

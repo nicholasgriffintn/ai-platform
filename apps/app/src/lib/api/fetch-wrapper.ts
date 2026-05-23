@@ -81,10 +81,10 @@ async function performFetch(path: string, options: FetchApiOptions = {}): Promis
 		body: undefined,
 	};
 
-	if (!restOptions.signal) {
+	if (!restOptions.signal && resolvedTimeout !== null) {
 		const controller = new AbortController();
 		fetchOptions.signal = controller.signal;
-		timeoutId = setTimeout(() => controller.abort(), resolvedTimeout ?? DEFAULT_FETCH_TIMEOUT_MS);
+		timeoutId = setTimeout(() => controller.abort(), resolvedTimeout);
 	}
 
 	if (restOptions.body !== null && restOptions.body !== undefined) {

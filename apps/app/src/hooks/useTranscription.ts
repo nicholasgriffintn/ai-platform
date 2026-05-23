@@ -9,6 +9,11 @@ interface TranscriptionOptions {
 	inputStream?: MediaStream;
 }
 
+interface RealtimeSession {
+	client_secret?: { value: string };
+	id?: string;
+}
+
 export function useTranscription({
 	onTranscriptionReceived,
 	onSpeechDetected,
@@ -222,19 +227,16 @@ export function useTranscription({
 			}
 
 			const sessionJson = (await sessionRes.json()) as {
-				data: {
-					client_secret: { value: string };
-					id: string;
-					input_audio_transcription?: { model: string };
-					model: string;
-				};
+				data?: RealtimeSession;
+				client_secret?: { value: string };
+				id?: string;
 			};
 
-			if (!sessionJson.data?.client_secret?.value) {
+			const session = sessionJson.data ?? sessionJson;
+			if (!session.client_secret?.value || !session.id) {
 				throw new Error("Invalid session response");
 			}
 
-			const session = sessionJson.data;
 			const clientSecret = session.client_secret.value;
 			const sessionId = session.id;
 

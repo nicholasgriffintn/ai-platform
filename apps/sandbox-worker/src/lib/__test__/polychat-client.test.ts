@@ -26,6 +26,12 @@ describe("PolychatClient", () => {
 		const result = await client.chatCompletion({
 			messages: [{ role: "user", content: "hello" }],
 			model: "mistral-large",
+			temperature: 0.2,
+			top_p: 0.9,
+			reasoning: {
+				effort: "high",
+			},
+			verbosity: "low",
 		});
 
 		expect(result).toBe("ok");
@@ -37,6 +43,15 @@ describe("PolychatClient", () => {
 		expect(request.headers.get("User-Agent")).toBe(
 			"Polychat-Sandbox-Worker/1.0 (+https://polychat.app)",
 		);
+		await expect(request.json()).resolves.toMatchObject({
+			model: "mistral-large",
+			temperature: 0.2,
+			top_p: 0.9,
+			reasoning: {
+				effort: "high",
+			},
+			verbosity: "low",
+		});
 	});
 
 	it("retries retryable API failures", async () => {

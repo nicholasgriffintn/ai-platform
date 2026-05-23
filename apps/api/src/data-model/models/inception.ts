@@ -18,7 +18,6 @@ export const inceptionModelConfig: ModelConfig = createModelConfigObject([
 		},
 		supportsAttachments: false,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: false },
 		supportsToolCalls: true,
 		contextWindow: 128000,
 		maxTokens: 16384,
@@ -28,7 +27,7 @@ export const inceptionModelConfig: ModelConfig = createModelConfigObject([
 		contextComplexity: 4,
 		reliability: 4,
 		speed: 4,
-		isFeatured: true,
+		isFeatured: false,
 		includedInRouter: true,
 		supportsNextEdit: true,
 		supportsApplyEdit: true,
@@ -50,7 +49,6 @@ export const inceptionModelConfig: ModelConfig = createModelConfigObject([
 		},
 		supportsAttachments: false,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: false },
 		supportsToolCalls: true,
 		contextWindow: 128000,
 		maxTokens: 16384,
@@ -60,7 +58,7 @@ export const inceptionModelConfig: ModelConfig = createModelConfigObject([
 		contextComplexity: 4,
 		reliability: 4,
 		speed: 4,
-		isFeatured: true,
+		isFeatured: false,
 		includedInRouter: true,
 		supportsArtifacts: true,
 	}),
@@ -82,9 +80,6 @@ export const inceptionModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 50000,
 		costPer1kInputTokens: 0.00025,
 		costPer1kOutputTokens: 0.00075,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("mercury-edit-2", PROVIDER, {
@@ -103,8 +98,5 @@ export const inceptionModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 8192,
 		costPer1kInputTokens: 0.00025,
 		costPer1kOutputTokens: 0.00075,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 ]);

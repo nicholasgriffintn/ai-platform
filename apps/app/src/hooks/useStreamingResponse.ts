@@ -2,11 +2,13 @@ import { useCallback, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { apiService } from "~/lib/api/api-service";
+import { getModelProvider } from "~/lib/models";
 import { normalizeMessage } from "~/lib/messages";
 import type { ChatRequestOptions, Message, MessageContent } from "~/types";
 import { useLoadingActions } from "~/state/contexts/LoadingContext";
 import { useChatStore } from "~/state/stores/chatStore";
 import { useMessageOperations } from "./useMessageOperations";
+import { useModels } from "./useModels";
 
 /**
  * Hook for managing streaming responses and abort control.
@@ -35,6 +37,7 @@ export function useStreamingResponse(
 	const [controller, setController] = useState(() => new AbortController());
 	const assistantResponseRef = useRef<string>("");
 	const assistantReasoningRef = useRef<string>("");
+	const { data: apiModels = {} } = useModels();
 
 	const { addMessageToConversation, addAssistantMessage, updateAssistantMessage } =
 		useMessageOperations();
@@ -54,17 +57,48 @@ export function useStreamingResponse(
 			let generatedMessage: Message | undefined;
 
 			const placeholderMessage = await addAssistantMessage(conversationId, "");
+			let activeAssistantMessage: Message | undefined = placeholderMessage;
+			let activeAssistantMessagePromise: Promise<Message> | null =
+				Promise.resolve(placeholderMessage);
+
+			const ensureActiveAssistantMessage = () => {
+				if (activeAssistantMessage) {
+					return Promise.resolve(activeAssistantMessage);
+				}
+
+				if (activeAssistantMessagePromise) {
+					return activeAssistantMessagePromise;
+				}
+
+				activeAssistantMessagePromise = addAssistantMessage(conversationId, "").then((message) => {
+					activeAssistantMessage = message;
+					return message;
+				});
+				return activeAssistantMessagePromise;
+			};
 
 			const handleMessageUpdate = (
 				content: Message["content"],
 				reasoning?: string,
 				toolResponses?: Message[],
 				done?: boolean,
+				assistantMessage?: Message,
 			) => {
-				if (done) {
-					updateAssistantMessage(conversationId, content, reasoning, undefined, {
-						messageId: placeholderMessage.id,
+				if (done && assistantMessage) {
+					ensureActiveAssistantMessage().then((message) => {
+						updateAssistantMessage(
+							conversationId,
+							assistantMessage.content,
+							assistantMessage.reasoning?.content || reasoning,
+							assistantMessage,
+							{
+								messageId: message.id,
+							},
+						);
+						activeAssistantMessage = undefined;
+						activeAssistantMessagePromise = null;
 					});
+					generatedMessage = assistantMessage;
 					response = "";
 					return;
 				}
@@ -78,8 +112,10 @@ export function useStreamingResponse(
 						}
 					}, 0);
 				} else {
-					updateAssistantMessage(conversationId, content, reasoning, undefined, {
-						messageId: placeholderMessage.id,
+					ensureActiveAssistantMessage().then((message) => {
+						updateAssistantMessage(conversationId, content, reasoning, undefined, {
+							messageId: message.id,
+						});
 					});
 				}
 			};
@@ -119,6 +155,7 @@ export function useStreamingResponse(
 					const normalizedMessages = messages.map(normalizeMessage);
 
 					const modelToSend = model === null ? undefined : model;
+					const providerToSend = getModelProvider(apiModels, modelToSend);
 
 					const handleStateChange = (state: string, data?: any) => {
 						let msg: string | undefined;
@@ -147,6 +184,7 @@ export function useStreamingResponse(
 						conversationId,
 						normalizedMessages,
 						modelToSend,
+						providerToSend,
 						chatMode,
 						chatSettings,
 						controller.signal,
@@ -167,13 +205,16 @@ export function useStreamingResponse(
 									.map((item: MessageContent) => (item.type === "text" ? item.text || "" : ""))
 									.join("");
 
-					await updateAssistantMessage(
-						conversationId,
-						messageContentToDisplay,
-						assistantMessage.reasoning?.content,
-						assistantMessage,
-						{ messageId: placeholderMessage.id },
-					);
+					if (generatedMessage?.id !== assistantMessage.id) {
+						const targetMessage = activeAssistantMessage || placeholderMessage;
+						await updateAssistantMessage(
+							conversationId,
+							messageContentToDisplay,
+							assistantMessage.reasoning?.content,
+							assistantMessage,
+							{ messageId: targetMessage.id },
+						);
+					}
 
 					response = textPreview;
 					generatedMessage = assistantMessage;
@@ -205,6 +246,7 @@ export function useStreamingResponse(
 			addAssistantMessage,
 			useMultiModel,
 			selectedAgentId,
+			apiModels,
 			updateLoading,
 			webLLMService,
 			requestOptions,

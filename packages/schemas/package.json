@@ -30,13 +30,13 @@
 		"zod": "4.4.3"
 	},
 	"devDependencies": {
-		"@types/node": "25.8.0",
-		"oxfmt": "0.50.0",
-		"oxlint": "1.61.0",
+		"@types/node": "25.9.1",
+		"oxfmt": "0.51.0",
+		"oxlint": "1.66.0",
 		"tsup": "8.5.1",
 		"typescript": "6.0.3"
 	},
 	"peerDependencies": {
-		"zod": "4.3.6"
+		"zod": "4.4.3"
 	}
 }

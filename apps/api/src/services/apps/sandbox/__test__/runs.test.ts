@@ -1,10 +1,15 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import {
-	getSandboxRunControlState,
-	requestSandboxRunPause,
-	requestSandboxRunResume,
-} from "../runs";
+import { getSandboxRunControlState } from "../runs";
+import { getRunCoordinatorControl } from "../run-coordinator";
+
+vi.mock("../run-coordinator", async (importOriginal) => {
+	const actual = await importOriginal<typeof import("../run-coordinator")>();
+	return {
+		...actual,
+		getRunCoordinatorControl: vi.fn(),
+	};
+});
 
 function buildRunData(overrides: Record<string, unknown> = {}) {
 	return JSON.stringify({
@@ -23,13 +28,13 @@ function buildRunData(overrides: Record<string, unknown> = {}) {
 
 describe("sandbox runs service", () => {
 	const mockGetAppDataByUserAppAndItem = vi.fn();
-	const mockUpdateAppData = vi.fn();
+	const mockGetRunCoordinatorControl = vi.mocked(getRunCoordinatorControl);
 
 	const context = {
+		env: {},
 		repositories: {
 			appData: {
 				getAppDataByUserAppAndItem: mockGetAppDataByUserAppAndItem,
-				updateAppData: mockUpdateAppData,
 			},
 		},
 	} as any;
@@ -38,62 +43,8 @@ describe("sandbox runs service", () => {
 		vi.clearAllMocks();
 	});
 
-	it("pauses a running run", async () => {
-		mockGetAppDataByUserAppAndItem.mockResolvedValue([
-			{
-				id: "record-1",
-				data: buildRunData(),
-			},
-		]);
-
-		const result = await requestSandboxRunPause({
-			context,
-			userId: 42,
-			runId: "run-123",
-			reason: "Paused from test",
-		});
-
-		expect(result.paused).toBe(true);
-		expect(result.run.status).toBe("paused");
-		expect(mockUpdateAppData).toHaveBeenCalledWith(
-			"record-1",
-			expect.objectContaining({
-				status: "paused",
-				pauseReason: "Paused from test",
-			}),
-		);
-	});
-
-	it("resumes a paused run", async () => {
-		mockGetAppDataByUserAppAndItem.mockResolvedValue([
-			{
-				id: "record-1",
-				data: buildRunData({
-					status: "paused",
-					pausedAt: "2026-02-17T12:00:30.000Z",
-				}),
-			},
-		]);
-
-		const result = await requestSandboxRunResume({
-			context,
-			userId: 42,
-			runId: "run-123",
-			reason: "Resumed from test",
-		});
-
-		expect(result.resumed).toBe(true);
-		expect(result.run.status).toBe("running");
-		expect(mockUpdateAppData).toHaveBeenCalledWith(
-			"record-1",
-			expect.objectContaining({
-				status: "running",
-				resumeReason: "Resumed from test",
-			}),
-		);
-	});
-
 	it("returns paused control state for paused runs", async () => {
+		mockGetRunCoordinatorControl.mockResolvedValue(null);
 		mockGetAppDataByUserAppAndItem.mockResolvedValue([
 			{
 				id: "record-1",
@@ -117,5 +68,27 @@ describe("sandbox runs service", () => {
 			pauseReason: "Paused from dashboard",
 			timeoutSeconds: 1200,
 		});
+	});
+
+	it("uses coordinator control when available", async () => {
+		mockGetRunCoordinatorControl.mockResolvedValue({
+			runId: "run-123",
+			state: "running",
+			updatedAt: "2026-02-17T12:00:10.000Z",
+			timeoutSeconds: 1200,
+		});
+
+		const control = await getSandboxRunControlState({
+			context,
+			userId: 42,
+			runId: "run-123",
+		});
+
+		expect(control).toMatchObject({
+			runId: "run-123",
+			state: "running",
+			timeoutSeconds: 1200,
+		});
+		expect(mockGetAppDataByUserAppAndItem).not.toHaveBeenCalled();
 	});
 });

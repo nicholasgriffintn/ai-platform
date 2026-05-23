@@ -7,10 +7,14 @@ const canvasReferenceFieldNames = new Set([
 	"input_references",
 	"input_reference",
 	"input_image",
+	"image_input",
+	"image_inputs",
 	"image",
 	"first_frame_image",
 	"last_frame",
 	"last_frame_image",
+	"reference_audios",
+	"reference_videos",
 	"start_image",
 	"end_image",
 ]);
@@ -43,8 +47,15 @@ export function validateCanvasModelInputRequirements({
 	}
 
 	const hasReferences = (request.referenceImages ?? []).some((value) => Boolean(value?.trim()));
+	const hasModelOptionReference = requiredReferenceFields.some((fieldName) => {
+		const value = request.modelOptions?.[fieldName];
+		if (Array.isArray(value)) {
+			return value.some((entry) => Boolean(entry.trim()));
+		}
+		return typeof value === "string" && value.trim().length > 0;
+	});
 
-	if (hasReferences) {
+	if (hasReferences || hasModelOptionReference) {
 		return null;
 	}
 

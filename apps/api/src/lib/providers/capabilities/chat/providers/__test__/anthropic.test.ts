@@ -132,11 +132,11 @@ describe("AnthropicProvider", () => {
 			});
 		});
 
-		it("should handle thinking model parameters in mapParameters", async () => {
+		it("should handle provider thinking parameters in mapParameters", async () => {
 			// @ts-ignore - getModelConfigByMatchingModel is not typed
 			vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
 				name: "claude-3-thinking",
-				reasoningConfig: { enabled: true },
+				reasoningConfig: { supportedEffortLevels: ["none", "thinking"] },
 			});
 
 			vi.mocked(createCommonParameters).mockReturnValue({
@@ -155,7 +155,7 @@ describe("AnthropicProvider", () => {
 				model: "claude-3-thinking",
 				messages: [{ role: "user", content: "Hello" }],
 				env: { AI_GATEWAY_TOKEN: "test-token" },
-				reasoning_effort: "high",
+				reasoning_effort: "thinking",
 			};
 
 			const result = await provider.mapParameters(params as any);
@@ -172,7 +172,7 @@ describe("AnthropicProvider", () => {
 			// @ts-ignore - getModelConfigByMatchingModel is not typed
 			vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
 				name: "claude-3-thinking",
-				reasoningConfig: { enabled: true },
+				reasoningConfig: { supportedEffortLevels: ["none", "thinking", "low", "medium", "high"] },
 			});
 
 			vi.mocked(createCommonParameters).mockReturnValue({
@@ -191,6 +191,37 @@ describe("AnthropicProvider", () => {
 				messages: [{ role: "user", content: "Hello" }],
 				env: { AI_GATEWAY_TOKEN: "test-token" },
 				reasoning_effort: "none",
+			};
+
+			const result = await provider.mapParameters(params as any);
+
+			expect(result.thinking).toBeUndefined();
+			expect(calculateReasoningBudget).not.toHaveBeenCalled();
+		});
+
+		it("should skip thinking params when reasoning effort is simulated thinking", async () => {
+			// @ts-ignore - getModelConfigByMatchingModel is not typed
+			vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
+				name: "claude-3-thinking",
+				reasoningConfig: { supportedEffortLevels: ["none", "thinking", "low", "medium", "high"] },
+			});
+
+			vi.mocked(createCommonParameters).mockReturnValue({
+				model: "claude-3-thinking",
+				temperature: 0.7,
+				max_tokens: 1024,
+			});
+
+			vi.mocked(shouldEnableStreaming).mockReturnValue(false);
+			vi.mocked(getToolsForProvider).mockReturnValue({ tools: [] });
+
+			const provider = new AnthropicProvider();
+
+			const params = {
+				model: "claude-3-thinking",
+				messages: [{ role: "user", content: "Hello" }],
+				env: { AI_GATEWAY_TOKEN: "test-token" },
+				reasoning_effort: "simulated-thinking",
 			};
 
 			const result = await provider.mapParameters(params as any);

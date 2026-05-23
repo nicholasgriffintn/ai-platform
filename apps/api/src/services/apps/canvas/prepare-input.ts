@@ -49,6 +49,39 @@ function isReferenceField(fieldName: string): boolean {
 	return isCanvasReferenceFieldName(fieldName);
 }
 
+const reservedCanvasOptionFieldNames = new Set(["prompt", "aspect_ratio", "resolution"]);
+
+function getCanvasModelOptions(
+	fields: InputSchemaInputFieldDescriptor[],
+	request: CanvasGenerationInput,
+): Record<string, string | number | boolean | string[]> {
+	const values = request.modelOptions ?? {};
+	const fieldNames = new Set(
+		fields
+			.filter((field) => {
+				const name = field.name.toLowerCase();
+				return !reservedCanvasOptionFieldNames.has(name);
+			})
+			.map((field) => field.name),
+	);
+
+	return Object.fromEntries(
+		Object.entries(values).filter(([name, value]) => {
+			if (!fieldNames.has(name)) {
+				return false;
+			}
+
+			if (Array.isArray(value)) {
+				return value.some((entry) => typeof entry === "string" && entry.trim().length > 0);
+			}
+
+			return typeof value === "boolean" || (typeof value === "number" && Number.isFinite(value))
+				? true
+				: typeof value === "string" && value.trim().length > 0;
+		}),
+	);
+}
+
 function getReferenceFieldValue(
 	field: InputSchemaInputFieldDescriptor,
 	referenceImages: string[],
@@ -79,6 +112,7 @@ function buildCanvasInputSource(
 	const aspectRatioField = fields.find((field) => field.name === "aspect_ratio");
 	const resolutionField = fields.find((field) => field.name === "resolution");
 	const referenceImages = (request.referenceImages ?? []).filter(Boolean);
+	const modelOptions = getCanvasModelOptions(fields, request);
 
 	const input: Record<string, unknown> = {
 		prompt: request.prompt,
@@ -88,6 +122,7 @@ function buildCanvasInputSource(
 		duration: request.durationSeconds,
 		seconds: request.durationSeconds,
 		generate_audio: request.generateAudio,
+		...modelOptions,
 	};
 
 	for (const field of fields) {

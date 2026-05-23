@@ -8,6 +8,7 @@ import {
 	useState,
 } from "react";
 import { toast } from "sonner";
+import type { ConversationModeMetadata } from "@assistant/schemas";
 
 import "~/styles/scrollbar.css";
 import "~/styles/github.css";
@@ -26,17 +27,31 @@ import { ArtifactPanel } from "./Artifacts/ArtifactPanel";
 import { ChatInput, type ChatInputHandle } from "./ChatInput";
 import { FooterInfo } from "./FooterInfo";
 import { MessageList } from "./MessageList";
+import { useAutoPlayResponses } from "./useAutoPlayResponses";
 import { WelcomeScreen } from "./WelcomeScreen";
 
 export interface ConversationThreadModeConfig {
 	requestOptions?: ChatRequestOptions;
+	conversationMode?: ConversationModeMetadata;
 	welcomeTitle?: string;
 	welcomeDescription?: string;
+	welcomeSampleQuestions?: Array<{
+		id: string;
+		text: string;
+		question: string;
+		category: string;
+	}> | null;
 	inputPlaceholder?: {
 		newConversation: string;
 		followUp: string;
 	};
 	inputControls?: ReactNode;
+	modeControls?: {
+		menu: ReactNode;
+		activeControl?: ReactNode;
+		onClearActive?: () => void;
+	};
+	modelScope?: "default" | "text-only";
 	analyticsSource?: string;
 	councilDebate?: {
 		enabled: boolean;
@@ -62,13 +77,14 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
 		abortStream,
 		branchConversation,
 		isBranching,
-	} = useChatManager(modeConfig?.requestOptions);
+	} = useChatManager(modeConfig?.requestOptions, modeConfig?.conversationMode);
 	const { data: apiModels } = useModels();
 
 	const [currentArtifact, setCurrentArtifact] = useState<ArtifactProps | null>(null);
 	const [isPanelVisible, setIsPanelVisible] = useState(false);
 	const [currentArtifacts, setCurrentArtifacts] = useState<ArtifactProps[]>([]);
 	const [isCombinedPanel, setIsCombinedPanel] = useState(false);
+	const [autoPlayResponsesEnabled, setAutoPlayResponsesEnabled] = useState(false);
 
 	const isStreamLoading = useIsLoading("stream-response");
 	const isModelInitializing = useIsLoading("model-init");
@@ -79,6 +95,22 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
 	);
 
 	const chatInputRef = useRef<ChatInputHandle>(null);
+	const {
+		isGeneratingSpeech: isGeneratingAutoResponseSpeech,
+		isPlaying: isPlayingAutoResponse,
+		stopPlayback,
+	} = useAutoPlayResponses({
+		messages,
+		isEnabled: autoPlayResponsesEnabled,
+		isStreaming: isStreamLoading || streamStarted,
+	});
+
+	const handleAutoPlayToggle = useCallback(() => {
+		if (autoPlayResponsesEnabled) {
+			stopPlayback();
+		}
+		setAutoPlayResponsesEnabled(!autoPlayResponsesEnabled);
+	}, [autoPlayResponsesEnabled, stopPlayback]);
 
 	const handleArtifactOpen = useCallback(
 		(artifact: ArtifactProps, combine?: boolean, artifacts?: ArtifactProps[]) => {
@@ -288,18 +320,21 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
 
 	return (
 		<div
-			className={`flex flex-col h-[calc(100%-3rem)] w-full ${isPanelVisible ? "pr-[90%] sm:pr-[350px] md:pr-[400px] lg:pr-[650px]" : ""}`}
+			className={`relative flex h-full min-h-0 w-full flex-col ${isPanelVisible ? "pr-[90%] sm:pr-[350px] md:pr-[400px] lg:pr-[650px]" : ""}`}
 		>
 			{showWelcomeScreen ? (
-				<div className="flex-1 flex items-center justify-center">
-					<WelcomeScreen
-						setInput={setChatInput}
-						title={modeConfig?.welcomeTitle}
-						description={modeConfig?.welcomeDescription}
-					/>
+				<div className="flex min-h-0 flex-1 items-start justify-center overflow-y-auto px-0 py-6 sm:py-8">
+					<div className="my-auto w-full">
+						<WelcomeScreen
+							setInput={setChatInput}
+							title={modeConfig?.welcomeTitle}
+							description={modeConfig?.welcomeDescription}
+							sampleQuestions={modeConfig?.welcomeSampleQuestions}
+						/>
+					</div>
 				</div>
 			) : (
-				<div className="flex-1 px-4">
+				<div className="min-h-0 flex-1 px-4">
 					<div className="mx-auto w-full max-w-3xl h-full flex flex-col gap-8">
 						<MessageList
 							messages={messages}
@@ -312,7 +347,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
 				</div>
 			)}
 
-			<div className="px-4 pt-2">
+			<div className="relative z-10 shrink-0 px-4 pt-2">
 				<div className="max-w-3xl mx-auto">
 					<UsageLimitWarning />
 					<ChatInput
@@ -324,6 +359,14 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
 						onTranscribe={handleTranscribe}
 						placeholder={modeConfig?.inputPlaceholder}
 						controls={modeConfig?.inputControls}
+						modeControls={modeConfig?.modeControls}
+						modelScope={modeConfig?.modelScope}
+						autoPlayResponses={{
+							enabled: autoPlayResponsesEnabled,
+							isGenerating: isGeneratingAutoResponseSpeech,
+							isPlaying: isPlayingAutoResponse,
+							onToggle: handleAutoPlayToggle,
+						}}
 					/>
 				</div>
 			</div>

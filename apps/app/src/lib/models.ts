@@ -1,6 +1,6 @@
 import type { ChatMode, ModelConfig, ModelConfigItem } from "~/types";
 
-export const defaultModel = "mistral-medium";
+export const defaultModel = "deepseek-chat";
 
 export function getAvailableModels(
 	apiModels: ModelConfig,
@@ -25,6 +25,23 @@ export function getFeaturedModelIds(models: ModelConfig) {
 			return acc;
 		},
 		{} as Record<string, ModelConfigItem>,
+	);
+}
+
+export function getModelProvider(models: ModelConfig, modelId?: string | null) {
+	if (!modelId) return undefined;
+	return models[modelId]?.provider;
+}
+
+export function isTextOnlyModel(model: ModelConfigItem) {
+	const inputs = model.modalities?.input ?? ["text"];
+	const outputs = model.modalities?.output ?? inputs;
+
+	return (
+		inputs.length > 0 &&
+		outputs.length > 0 &&
+		inputs.every((modality) => modality === "text") &&
+		outputs.every((modality) => modality === "text")
 	);
 }
 

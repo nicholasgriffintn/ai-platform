@@ -12,7 +12,6 @@ export const googleAiStudioModelConfig: ModelConfig = {
 		supportsToolCalls: true,
 		supportsSearchGrounding: true,
 		supportsCodeExecution: true,
-		reasoningConfig: { enabled: true },
 		supportsAttachments: true,
 		supportsTemperature: true,
 		modalities: {
@@ -20,12 +19,12 @@ export const googleAiStudioModelConfig: ModelConfig = {
 			output: ["text"],
 		},
 		knowledgeCutoffDate: "January 2025",
-		contextWindow: 1000000,
-		maxTokens: 64000,
+		contextWindow: 1048576,
+		maxTokens: 65536,
 		costPer1kInputTokens: 0.002,
 		costPer1kOutputTokens: 0.012,
 		supportsArtifacts: true,
-		isFeatured: true,
+		isFeatured: false,
 		isFree: true,
 		includedInRouter: true,
 		contextComplexity: 5,
@@ -50,7 +49,6 @@ export const googleAiStudioModelConfig: ModelConfig = {
 		supportsToolCalls: true,
 		supportsCodeExecution: true,
 		supportsSearchGrounding: true,
-		reasoningConfig: { enabled: true },
 		supportsTemperature: true,
 		multimodal: true,
 		knowledgeCutoffDate: "January 2025",
@@ -58,7 +56,7 @@ export const googleAiStudioModelConfig: ModelConfig = {
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.0005,
 		costPer1kOutputTokens: 0.003,
-		isFeatured: true,
+		isFeatured: false,
 		includedInRouter: true,
 		supportsArtifacts: true,
 		isFree: true,
@@ -96,9 +94,6 @@ export const googleAiStudioModelConfig: ModelConfig = {
 		releaseDate: "September 25, 2025",
 		lastUpdated: "September 25, 2025",
 		supportsResponseFormat: true,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 	"gemini-1.5-flash": {
 		name: "Gemini 1.5 Flash",
@@ -118,9 +113,6 @@ export const googleAiStudioModelConfig: ModelConfig = {
 		maxTokens: 8192,
 		costPer1kInputTokens: 0.000075,
 		costPer1kOutputTokens: 0.0003,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"gemini-1.5-flash-8b": {
@@ -141,9 +133,6 @@ export const googleAiStudioModelConfig: ModelConfig = {
 		maxTokens: 8192,
 		costPer1kInputTokens: 0.0000375,
 		costPer1kOutputTokens: 0.00015,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"gemini-1.5-pro": {
@@ -164,9 +153,6 @@ export const googleAiStudioModelConfig: ModelConfig = {
 		maxTokens: 8192,
 		costPer1kInputTokens: 0.00125,
 		costPer1kOutputTokens: 0.005,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"gemini-2.0-flash": {
@@ -188,9 +174,6 @@ export const googleAiStudioModelConfig: ModelConfig = {
 		maxTokens: 8192,
 		costPer1kInputTokens: 0.0001,
 		costPer1kOutputTokens: 0.0004,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"gemini-2.0-flash-lite": {
@@ -212,9 +195,6 @@ export const googleAiStudioModelConfig: ModelConfig = {
 		maxTokens: 8192,
 		costPer1kInputTokens: 0.000075,
 		costPer1kOutputTokens: 0.0003,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"gemini-2.5-flash": {
@@ -236,9 +216,6 @@ export const googleAiStudioModelConfig: ModelConfig = {
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.0003,
 		costPer1kOutputTokens: 0.0025,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"gemini-2.5-flash-image": {
@@ -259,9 +236,6 @@ export const googleAiStudioModelConfig: ModelConfig = {
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.0003,
 		costPer1kOutputTokens: 0.03,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"gemini-2.5-flash-image-preview": {
@@ -282,9 +256,6 @@ export const googleAiStudioModelConfig: ModelConfig = {
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.0003,
 		costPer1kOutputTokens: 0.03,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"gemini-2.5-flash-lite": {
@@ -306,9 +277,6 @@ export const googleAiStudioModelConfig: ModelConfig = {
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.0001,
 		costPer1kOutputTokens: 0.0004,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"gemini-2.5-flash-lite-preview-06-17": {
@@ -329,9 +297,6 @@ export const googleAiStudioModelConfig: ModelConfig = {
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.0001,
 		costPer1kOutputTokens: 0.0004,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"gemini-2.5-flash-lite-preview-09-2025": {
@@ -353,9 +318,6 @@ export const googleAiStudioModelConfig: ModelConfig = {
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.0001,
 		costPer1kOutputTokens: 0.0004,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"gemini-2.5-flash-preview-04-17": {
@@ -376,9 +338,6 @@ export const googleAiStudioModelConfig: ModelConfig = {
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.00015,
 		costPer1kOutputTokens: 0.0006,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"gemini-2.5-flash-preview-05-20": {
@@ -400,9 +359,6 @@ export const googleAiStudioModelConfig: ModelConfig = {
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.00015,
 		costPer1kOutputTokens: 0.0006,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"gemini-2.5-flash-preview-09-2025": {
@@ -424,9 +380,6 @@ export const googleAiStudioModelConfig: ModelConfig = {
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.0003,
 		costPer1kOutputTokens: 0.0025,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"gemini-2.5-flash-preview-tts": {
@@ -441,15 +394,12 @@ export const googleAiStudioModelConfig: ModelConfig = {
 			output: ["audio"],
 		},
 		supportsAttachments: false,
-		supportsTemperature: false,
+		supportsTemperature: true,
 		supportsToolCalls: false,
-		contextWindow: 8000,
-		maxTokens: 16000,
+		contextWindow: 8192,
+		maxTokens: 16384,
 		costPer1kInputTokens: 0.0005,
 		costPer1kOutputTokens: 0.01,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"gemini-2.5-pro": {
@@ -471,9 +421,6 @@ export const googleAiStudioModelConfig: ModelConfig = {
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.00125,
 		costPer1kOutputTokens: 0.01,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"gemini-2.5-pro-preview-05-06": {
@@ -495,9 +442,6 @@ export const googleAiStudioModelConfig: ModelConfig = {
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.00125,
 		costPer1kOutputTokens: 0.01,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"gemini-2.5-pro-preview-06-05": {
@@ -519,9 +463,6 @@ export const googleAiStudioModelConfig: ModelConfig = {
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.00125,
 		costPer1kOutputTokens: 0.01,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"gemini-2.5-pro-preview-tts": {
@@ -536,15 +477,12 @@ export const googleAiStudioModelConfig: ModelConfig = {
 			output: ["audio"],
 		},
 		supportsAttachments: false,
-		supportsTemperature: false,
+		supportsTemperature: true,
 		supportsToolCalls: false,
-		contextWindow: 8000,
-		maxTokens: 16000,
+		contextWindow: 8192,
+		maxTokens: 16384,
 		costPer1kInputTokens: 0.001,
 		costPer1kOutputTokens: 0.02,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"gemini-embedding-001": {
@@ -562,12 +500,9 @@ export const googleAiStudioModelConfig: ModelConfig = {
 		supportsTemperature: false,
 		supportsToolCalls: false,
 		contextWindow: 2048,
-		maxTokens: 3072,
+		maxTokens: 1,
 		costPer1kInputTokens: 0.00015,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"gemini-flash-latest": {
@@ -589,9 +524,6 @@ export const googleAiStudioModelConfig: ModelConfig = {
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.0003,
 		costPer1kOutputTokens: 0.0025,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"gemini-live-2.5-flash": {
@@ -612,9 +544,6 @@ export const googleAiStudioModelConfig: ModelConfig = {
 		maxTokens: 8000,
 		costPer1kInputTokens: 0.0005,
 		costPer1kOutputTokens: 0.002,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"gemini-live-2.5-flash-preview-native-audio": {
@@ -635,9 +564,6 @@ export const googleAiStudioModelConfig: ModelConfig = {
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.0005,
 		costPer1kOutputTokens: 0.002,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 	"gemini-3.1-flash-image-preview": {
 		name: "Gemini 3.1 Flash Image (Preview)",
@@ -653,13 +579,10 @@ export const googleAiStudioModelConfig: ModelConfig = {
 		supportsAttachments: true,
 		supportsTemperature: true,
 		supportsToolCalls: false,
-		contextWindow: 131072,
-		maxTokens: 32768,
+		contextWindow: 65536,
+		maxTokens: 65536,
 		costPer1kInputTokens: 0.0005,
 		costPer1kOutputTokens: 0.06,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"gemini-3.1-flash-lite": {
@@ -681,9 +604,6 @@ export const googleAiStudioModelConfig: ModelConfig = {
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.00025,
 		costPer1kOutputTokens: 0.0015,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"gemini-3.1-flash-lite-preview": {
@@ -705,9 +625,6 @@ export const googleAiStudioModelConfig: ModelConfig = {
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.00025,
 		costPer1kOutputTokens: 0.0015,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"gemini-3.1-pro-preview": {
@@ -729,9 +646,7 @@ export const googleAiStudioModelConfig: ModelConfig = {
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.002,
 		costPer1kOutputTokens: 0.012,
-		reasoningConfig: {
-			enabled: true,
-		},
+		isFeatured: true,
 	},
 
 	"gemini-3.1-pro-preview-customtools": {
@@ -753,9 +668,6 @@ export const googleAiStudioModelConfig: ModelConfig = {
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.002,
 		costPer1kOutputTokens: 0.012,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"gemma-3-12b-it": {
@@ -777,9 +689,6 @@ export const googleAiStudioModelConfig: ModelConfig = {
 		maxTokens: 8192,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"gemma-3-27b-it": {
@@ -801,9 +710,6 @@ export const googleAiStudioModelConfig: ModelConfig = {
 		maxTokens: 8192,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"gemma-3-4b-it": {
@@ -824,9 +730,6 @@ export const googleAiStudioModelConfig: ModelConfig = {
 		maxTokens: 8192,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"gemma-3n-e2b-it": {
@@ -847,9 +750,6 @@ export const googleAiStudioModelConfig: ModelConfig = {
 		maxTokens: 2000,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"gemma-3n-e4b-it": {
@@ -870,9 +770,6 @@ export const googleAiStudioModelConfig: ModelConfig = {
 		maxTokens: 2000,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"gemma-4-26b-a4b-it": {
@@ -885,15 +782,12 @@ export const googleAiStudioModelConfig: ModelConfig = {
 			input: ["text", "image"],
 			output: ["text"],
 		},
-		supportsAttachments: false,
+		supportsAttachments: true,
 		supportsTemperature: true,
 		supportsToolCalls: true,
 		supportsResponseFormat: true,
-		contextWindow: 256000,
-		maxTokens: 8192,
-		reasoningConfig: {
-			enabled: true,
-		},
+		contextWindow: 262144,
+		maxTokens: 32768,
 	},
 
 	"gemma-4-31b-it": {
@@ -906,14 +800,32 @@ export const googleAiStudioModelConfig: ModelConfig = {
 			input: ["text", "image"],
 			output: ["text"],
 		},
-		supportsAttachments: false,
+		supportsAttachments: true,
 		supportsTemperature: true,
 		supportsToolCalls: true,
 		supportsResponseFormat: true,
-		contextWindow: 256000,
-		maxTokens: 8192,
-		reasoningConfig: {
-			enabled: true,
+		contextWindow: 262144,
+		maxTokens: 32768,
+	},
+	"gemini-3.5-flash": {
+		name: "Gemini 3.5 Flash",
+		matchingModel: "gemini-3.5-flash",
+		provider: "google-ai-studio",
+		knowledgeCutoffDate: "January 2025",
+		releaseDate: "May 19, 2026",
+		lastUpdated: "May 19, 2026",
+		modalities: {
+			input: ["text", "image", "video", "audio", "pdf"],
+			output: ["text"],
 		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		supportsResponseFormat: true,
+		contextWindow: 1048576,
+		maxTokens: 65536,
+		costPer1kInputTokens: 0.0015,
+		costPer1kOutputTokens: 0.009,
+		isFeatured: true,
 	},
 };

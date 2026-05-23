@@ -57,6 +57,25 @@ describe("Tool Response Utilities", () => {
 			expect(result.data.provider).toBe("duckduckgo");
 			expect(result.data.providerWarning).toBe("Results may be limited");
 		});
+
+		it("should preserve explicit display metadata from a tool response", () => {
+			const result = formatToolResponse("run_feature_implementation", "done", {
+				responseType: ResponseDisplayType.CUSTOM,
+				formattedName: "Sandbox result",
+				name: "sandbox_result",
+				result: {
+					name: "sandbox_result",
+					data: {
+						status: "completed",
+					},
+				},
+			});
+
+			expect(result.data.responseType).toBe(ResponseDisplayType.CUSTOM);
+			expect(result.data.formattedName).toBe("Sandbox result");
+			expect(result.data.name).toBe("sandbox_result");
+			expect(result.data.result.name).toBe("sandbox_result");
+		});
 	});
 
 	describe("formatToolErrorResponse", () => {

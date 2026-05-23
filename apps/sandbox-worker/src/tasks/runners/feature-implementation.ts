@@ -221,6 +221,7 @@ export async function executeFeatureImplementation(
 					},
 				],
 				model,
+				...params.modelSettings,
 			},
 			MODEL_RETRY_OPTIONS,
 		);
@@ -240,6 +241,7 @@ export async function executeFeatureImplementation(
 			sandbox,
 			client,
 			model,
+			modelSettings: params.modelSettings,
 			repoDisplayName: repo.displayName,
 			repoTargetDir,
 			task,

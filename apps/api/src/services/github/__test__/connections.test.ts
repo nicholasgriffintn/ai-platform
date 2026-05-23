@@ -1,5 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 
+import { getGitHubAppInstallationToken } from "~/lib/github";
+import { githubApiRequest } from "~/lib/github/api-client";
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import type { AppData } from "~/repositories/AppDataRepository";
 import { ErrorType } from "~/utils/errors";
@@ -10,7 +12,16 @@ import {
 	getGitHubAppConnectionForUserInstallation,
 	getGitHubAppConnectionForUserRepo,
 	listGitHubAppConnectionsForUser,
+	listGitHubInstallationRepositoriesForUser,
 } from "../connections";
+
+vi.mock("~/lib/github", () => ({
+	getGitHubAppInstallationToken: vi.fn(),
+}));
+
+vi.mock("~/lib/github/api-client", () => ({
+	githubApiRequest: vi.fn(),
+}));
 
 const JWT_SECRET = "jwt-secret";
 const USER_ID = 42;
@@ -183,6 +194,54 @@ describe("github connections", () => {
 			repositories: ["owner/old"],
 			hasWebhookSecret: false,
 		});
+	});
+
+	it("lists repositories available to a user installation", async () => {
+		const getAppDataByUserAppAndItem = vi.fn().mockResolvedValue([
+			await createEncryptedRecord({
+				recordId: "record-installation-user",
+				installationId: 8002,
+			}),
+		]);
+		vi.mocked(getGitHubAppInstallationToken).mockResolvedValue("installation-token");
+		vi.mocked(githubApiRequest)
+			.mockResolvedValueOnce(
+				new Response(
+					JSON.stringify({
+						repositories: [{ full_name: "Owner/Repo" }, { full_name: "owner/Second" }],
+					}),
+				),
+			)
+			.mockResolvedValueOnce(
+				new Response(
+					JSON.stringify({
+						repositories: [],
+					}),
+				),
+			);
+
+		const context = {
+			env: { JWT_SECRET },
+			repositories: {
+				appData: {
+					getAppDataByUserAppAndItem,
+				},
+			},
+		} as unknown as ServiceContext;
+
+		const repositories = await listGitHubInstallationRepositoriesForUser(context, USER_ID, 8002);
+
+		expect(getGitHubAppInstallationToken).toHaveBeenCalledWith({
+			appId: "123456",
+			privateKey: "line1\nline2",
+			installationId: 8002,
+		});
+		expect(githubApiRequest).toHaveBeenCalledWith({
+			url: "https://api.github.com/installation/repositories?per_page=100&page=1",
+			method: "GET",
+			bearerToken: "installation-token",
+		});
+		expect(repositories).toEqual(["owner/repo", "owner/second"]);
 	});
 
 	it("throws a reconnect error when a stored connection cannot be decrypted", async () => {

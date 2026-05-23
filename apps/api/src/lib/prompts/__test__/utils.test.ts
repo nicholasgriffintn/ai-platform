@@ -24,16 +24,7 @@ describe("prompts utils", () => {
 
 			it("should use custom user traits when provided", () => {
 				const customTraits = "custom trait set";
-				const result = getResponseStyle(
-					"medium",
-					false,
-					false,
-					false,
-					false,
-					false,
-					false,
-					customTraits,
-				);
+				const result = getResponseStyle("medium", false, false, false, false, false, customTraits);
 				expect(result.traits).toBe(customTraits);
 			});
 
@@ -41,7 +32,6 @@ describe("prompts utils", () => {
 				const customPreferences = "custom preferences";
 				const result = getResponseStyle(
 					"medium",
-					false,
 					false,
 					false,
 					false,
@@ -86,11 +76,20 @@ describe("prompts utils", () => {
 				);
 				expect(invalidResult.answerFormatInstructions).toBe(normalResult.answerFormatInstructions);
 			});
+
+			it("should handle caveman verbosity as a prompt-only compressed style", () => {
+				const result = getResponseStyle("caveman");
+
+				expect(result.traits).toContain("caveman-style");
+				expect(result.preferences).toContain("Respond terse like smart caveman");
+				expect(result.preferences).toContain("Preserve exact technical terms");
+				expect(result.answerFormatInstructions).toContain("compressed caveman style");
+			});
 		});
 
 		describe("agent mode handling", () => {
 			it("should return simplified structure for agent mode", () => {
-				const result = getResponseStyle("medium", false, false, false, false, true);
+				const result = getResponseStyle("medium", false, false, false, true);
 				expect(result.preferences).not.toContain("Please also follow these instructions");
 				expect(result.problemBreakdownInstructions).toContain(
 					"Outline the key steps in your plan so the user understands how you will proceed before executing.",
@@ -101,7 +100,7 @@ describe("prompts utils", () => {
 			});
 
 			it("should not include step-by-step instructions for agent mode", () => {
-				const result = getResponseStyle("medium", false, false, false, false, true);
+				const result = getResponseStyle("medium", false, false, false, true);
 				expect(result.preferences).not.toMatch(/\d+\./);
 			});
 		});
@@ -110,7 +109,6 @@ describe("prompts utils", () => {
 			it("should include coding-specific instructions when isCoding is true", () => {
 				const result = getResponseStyle(
 					"medium",
-					false,
 					false,
 					false,
 					false,
@@ -135,7 +133,6 @@ describe("prompts utils", () => {
 					false,
 					false,
 					false,
-					false,
 					undefined,
 					undefined,
 					true,
@@ -146,7 +143,6 @@ describe("prompts utils", () => {
 			it("should include plain text instruction when isCoding is false", () => {
 				const result = getResponseStyle(
 					"medium",
-					false,
 					false,
 					false,
 					false,
@@ -164,7 +160,7 @@ describe("prompts utils", () => {
 
 		describe("function support adjustments", () => {
 			it("should include function instructions when supportsToolCalls is true", () => {
-				const result = getResponseStyle("medium", false, false, true);
+				const result = getResponseStyle("medium", false, true);
 				expect(result.preferences).toContain(
 					"Prefer the lightest option (internal knowledge → retrieval → browsing → code execution)",
 				);
@@ -174,31 +170,31 @@ describe("prompts utils", () => {
 			});
 
 			it("should not include function instructions when supportsToolCalls is false", () => {
-				const result = getResponseStyle("medium", false, false, false);
+				const result = getResponseStyle("medium", false, false);
 				expect(result.preferences).not.toContain("tool is required");
 			});
 		});
 
 		describe("thinking mode adjustments", () => {
-			it("should include thinking instructions when supportsReasoning is false or requiresThinkingPrompt is true", () => {
-				const result = getResponseStyle("medium", false, false);
+			it("should include thinking instructions for simulated thinking", () => {
+				const result = getResponseStyle("medium", true);
 				expect(result.preferences).toContain(
 					"Analyse the question and context thoroughly before answering, and outline the essential steps you will take.",
 				);
 				expect(result.preferences).toContain("Include 'Key steps' for complex tasks.");
 			});
 
-			it("should not include thinking instructions when supportsReasoning is true and requiresThinkingPrompt is false", () => {
-				const result = getResponseStyle("medium", true, false);
+			it("should not include thinking instructions when simulated thinking is disabled", () => {
+				const result = getResponseStyle("medium", false);
 				expect(result.preferences).not.toContain(
-					"Analyze the question and context thoroughly before answering",
+					"Analyse the question and context thoroughly before answering",
 				);
 			});
 		});
 
 		describe("memories feature handling", () => {
 			it("should include memories instructions when enabled", () => {
-				const result = getResponseStyle("medium", false, false, false, false, false, true);
+				const result = getResponseStyle("medium", false, false, false, false, true);
 				expect(result.preferences).toContain("Only store memories after explicit user consent");
 				expect(result.preferences).toContain(
 					"Never retain passwords, credentials, financial IDs, or medical details.",
@@ -206,7 +202,7 @@ describe("prompts utils", () => {
 			});
 
 			it("should include disabled message when memories are disabled", () => {
-				const result = getResponseStyle("medium", false, false, false, false, false, false);
+				const result = getResponseStyle("medium", false, false, false, false, false);
 				expect(result.preferences).toContain(
 					"memories are disabled and suggest they capture the detail another way",
 				);
@@ -217,7 +213,6 @@ describe("prompts utils", () => {
 			it("should return condensed preferences when instructionVariant is compact", () => {
 				const result = getResponseStyle(
 					"medium",
-					false,
 					false,
 					false,
 					false,
@@ -237,7 +232,6 @@ describe("prompts utils", () => {
 			it("should include agent-specific compact guidance", () => {
 				const result = getResponseStyle(
 					"medium",
-					false,
 					false,
 					true,
 					true,

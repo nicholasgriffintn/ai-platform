@@ -4,7 +4,7 @@ import { UserSettingsForm } from "~/components/Profile/UserSettingsForm";
 import { useAuthStatus } from "~/hooks/useAuth";
 
 export function ProfileCustomisationTab() {
-	const { userSettings, isAuthenticated } = useAuthStatus();
+	const { user, userSettings, isAuthenticated } = useAuthStatus();
 
 	return (
 		<div>
@@ -13,7 +13,11 @@ export function ProfileCustomisationTab() {
 			</PageHeader>
 
 			<div className="space-y-6">
-				<UserSettingsForm userSettings={userSettings ?? null} isAuthenticated={isAuthenticated} />
+				<UserSettingsForm
+					userSettings={userSettings ?? null}
+					isAuthenticated={isAuthenticated}
+					isPro={user?.plan_id === "pro"}
+				/>
 			</div>
 		</div>
 	);

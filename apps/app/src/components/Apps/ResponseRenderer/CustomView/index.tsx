@@ -1,10 +1,6 @@
 import { MemoizedMarkdown } from "~/components/ui/Markdown";
 import { JsonView } from "../JsonView";
-import { AddReasoningStepView } from "./Views/AddReasoningStepView";
-import { TutorView } from "./Views/TutorView";
-import { WebSearchView } from "./Views/WebSearchView";
-import { ResearchView } from "./Views/ResearchView";
-import { SandboxView } from "./Views/SandboxView";
+import { renderCustomView } from "./registry";
 
 export function CustomView({
 	messageContent,
@@ -18,31 +14,14 @@ export function CustomView({
 	onToolInteraction?: (toolName: string, action: "useAsPrompt", data: Record<string, any>) => void;
 }) {
 	const customData = data.data || data;
+	const registeredView = renderCustomView(data.name, {
+		data: customData,
+		embedded,
+		onToolInteraction,
+	});
 
-	if (data.name === "web_search") {
-		return (
-			<WebSearchView data={customData} embedded={embedded} onToolInteraction={onToolInteraction} />
-		);
-	}
-
-	if (data.name === "research") {
-		return <ResearchView data={customData} embedded={embedded} />;
-	}
-
-	if (data.name === "tutor") {
-		return <TutorView data={customData} embedded={embedded} />;
-	}
-
-	if (data.name === "add_reasoning_step") {
-		return <AddReasoningStepView data={customData} embedded={embedded} />;
-	}
-
-	if (
-		data.name === "sandbox_plan" ||
-		data.name === "sandbox_event" ||
-		data.name === "sandbox_result"
-	) {
-		return <SandboxView type={data.name} data={customData} />;
+	if (registeredView) {
+		return registeredView;
 	}
 
 	console.info("ResponseRenderer custom response -> it's on you now!", customData);

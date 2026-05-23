@@ -75,6 +75,7 @@ describe("handleCreateNextEditCompletions", () => {
 			env,
 			user: undefined,
 			model: "mercury-coder",
+			provider: "inception",
 			messages: [
 				{
 					role: "user",

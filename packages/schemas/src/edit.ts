@@ -5,6 +5,10 @@ import { chatCompletionResponseSchema } from "./chat";
 
 const editRequestBase = z.object({
 	model: z.string().optional().describe("The Mercury model to use for the edit operation."),
+	provider: z
+		.string()
+		.optional()
+		.describe("The provider to use when the model name is shared by multiple providers."),
 	messages: z
 		.array(messageSchema)
 		.min(1)

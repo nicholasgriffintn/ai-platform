@@ -1,5 +1,6 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback } from "react";
+import type { ConversationModeMetadata } from "@assistant/schemas";
 
 import { CHATS_QUERY_KEY } from "~/constants";
 import {
@@ -10,6 +11,8 @@ import {
 	getOpeningCouncilMemberId,
 	resolveCouncilMemberIds,
 } from "~/lib/council";
+import { prepareUserMessage, type AttachmentData } from "~/lib/chat/prepare-user-message";
+import { createConversationId } from "~/lib/conversations";
 import { normalizeMessage } from "~/lib/messages";
 import { useLoadingActions } from "~/state/contexts/LoadingContext";
 import { useChatStore } from "~/state/stores/chatStore";
@@ -23,90 +26,19 @@ import { useMessageOperations } from "./useMessageOperations";
 import { useStreamingResponse } from "./useStreamingResponse";
 import { useWebLLMInitialization } from "./useWebLLMInitialization";
 
-type AttachmentData = {
-	type: string;
-	data: string;
-	name?: string;
-	markdown?: string;
-};
-
 interface CouncilDebateOptions {
 	memberIds: CouncilMemberId[];
 	requireConsensus?: boolean;
-}
-
-function prepareUserMessage(
-	input: string,
-	attachmentData: AttachmentData | undefined,
-	model?: string,
-) {
-	const contentItems: any[] = [
-		{
-			type: "text",
-			text: input.trim(),
-		},
-	];
-
-	if (attachmentData) {
-		if (attachmentData.type === "image") {
-			contentItems.push({
-				type: "image_url",
-				image_url: {
-					url: attachmentData.data,
-					detail: "auto",
-				},
-			});
-		} else if (attachmentData.type === "document") {
-			contentItems.push({
-				type: "document_url",
-				document_url: {
-					url: attachmentData.data,
-					name: attachmentData.name,
-				},
-			});
-		} else if (attachmentData.type === "audio") {
-			contentItems.push({
-				type: "input_audio",
-				input_audio: {
-					data: attachmentData.data,
-					format: attachmentData.name?.toLowerCase().endsWith(".wav") ? "wav" : "mp3",
-				},
-			});
-		}
-
-		if (attachmentData?.type === "markdown_document" && attachmentData?.markdown) {
-			contentItems.push({
-				type: "markdown_document",
-				markdown_document: {
-					markdown: attachmentData.markdown,
-					name: attachmentData.name,
-				},
-			});
-		}
-
-		return normalizeMessage({
-			role: "user",
-			content: contentItems,
-			id: crypto.randomUUID(),
-			created: Date.now(),
-			model,
-		});
-	}
-
-	return normalizeMessage({
-		role: "user",
-		content: input.trim(),
-		id: crypto.randomUUID(),
-		created: Date.now(),
-		model,
-	});
 }
 
 /**
  * Main hook for managing chat operations.
  * Composes smaller hooks to handle streaming, storage, WebLLM, and conversation actions.
  */
-export function useChatManager(requestOptions?: ChatRequestOptions) {
+export function useChatManager(
+	requestOptions?: ChatRequestOptions,
+	conversationMode?: ConversationModeMetadata,
+) {
 	const queryClient = useQueryClient();
 	const generateTitleMutation = useGenerateTitle();
 	const { data: apiModels = {} } = useModels();
@@ -216,11 +148,16 @@ export function useChatManager(requestOptions?: ChatRequestOptions) {
 			try {
 				let conversationId = currentConversationId;
 				if (!conversationId) {
-					conversationId = `${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+					conversationId = createConversationId();
 					startNewConversation(conversationId);
 				}
 
-				const userMessage = prepareUserMessage(input, attachmentData, currentModel);
+				const userMessage = prepareUserMessage(
+					input,
+					attachmentData,
+					currentModel,
+					conversationMode,
+				);
 
 				const cancelQueries = async () => {
 					await Promise.all([
@@ -266,6 +203,7 @@ export function useChatManager(requestOptions?: ChatRequestOptions) {
 			startLoading,
 			addMessageToConversation,
 			setStreamStarted,
+			conversationMode,
 		],
 	);
 
@@ -288,7 +226,7 @@ export function useChatManager(requestOptions?: ChatRequestOptions) {
 			try {
 				let conversationId = currentConversationId;
 				if (!conversationId) {
-					conversationId = `${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+					conversationId = createConversationId();
 					startNewConversation(conversationId);
 				}
 
@@ -296,7 +234,12 @@ export function useChatManager(requestOptions?: ChatRequestOptions) {
 					CHATS_QUERY_KEY,
 					conversationId,
 				]);
-				const userMessage = prepareUserMessage(input, attachmentData, currentModel);
+				const userMessage = prepareUserMessage(
+					input,
+					attachmentData,
+					currentModel,
+					conversationMode,
+				);
 
 				await Promise.all([
 					queryClient.cancelQueries({ queryKey: [CHATS_QUERY_KEY] }),
@@ -434,6 +377,7 @@ export function useChatManager(requestOptions?: ChatRequestOptions) {
 			startLoading,
 			setStreamStarted,
 			generateConversationTitle,
+			conversationMode,
 		],
 	);
 

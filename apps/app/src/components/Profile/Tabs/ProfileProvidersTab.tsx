@@ -1,10 +1,10 @@
-import { Plus, Power, RefreshCcw } from "lucide-react";
+import { Loader2, Plus, Power, RefreshCcw, Trash2 } from "lucide-react";
 import { useState } from "react";
 
 import { EmptyState } from "~/components/Core/EmptyState";
 import { PageHeader } from "~/components/Core/PageHeader";
 import { PageTitle } from "~/components/Core/PageTitle";
-import { HoverActions, ListItem } from "~/components/ui";
+import { ConfirmationDialog, HoverActions, ListItem } from "~/components/ui";
 import { useTrackEvent } from "~/hooks/use-track-event";
 import { useUser } from "~/hooks/useUser";
 import type { ProviderSetting } from "~/lib/api/services/user-service";
@@ -16,16 +16,28 @@ interface ProviderModalState {
 	providerName: string;
 }
 
+interface ProviderDeleteState {
+	providerId: string;
+	providerName: string;
+}
+
 export function ProfileProvidersTab() {
 	const { trackEvent } = useTrackEvent();
 
-	const { providerSettings, isLoadingProviderSettings, syncProviders, isSyncingProviders } =
-		useUser();
+	const {
+		providerSettings,
+		isLoadingProviderSettings,
+		syncProviders,
+		isSyncingProviders,
+		deleteProviderApiKey,
+		isDeletingProviderApiKey,
+	} = useUser();
 	const [modalState, setModalState] = useState<ProviderModalState>({
 		open: false,
 		providerId: "",
 		providerName: "",
 	});
+	const [providerToDelete, setProviderToDelete] = useState<ProviderDeleteState | null>(null);
 
 	const handleEnableProvider = (providerId: string, providerName: string) => {
 		trackEvent({
@@ -53,6 +65,21 @@ export function ProfileProvidersTab() {
 			providerId: "",
 			providerName: "",
 		});
+	};
+
+	const handleDeleteProvider = async () => {
+		if (!providerToDelete) {
+			return;
+		}
+
+		trackEvent({
+			name: "delete_provider_api_key",
+			category: "profile",
+			label: "delete_provider",
+			value: providerToDelete.providerId,
+		});
+		await deleteProviderApiKey({ providerId: providerToDelete.providerId });
+		setProviderToDelete(null);
 	};
 
 	return (
@@ -116,6 +143,31 @@ export function ProfileProvidersTab() {
 													);
 												},
 											},
+											...(provider.enabled
+												? [
+														{
+															id: "delete",
+															icon:
+																isDeletingProviderApiKey &&
+																providerToDelete?.providerId === provider.provider_id ? (
+																	<Loader2 size={14} className="animate-spin" />
+																) : (
+																	<Trash2 size={14} />
+																),
+															label: `Delete provider ${provider.name || provider.provider_id}`,
+															onClick: (e: React.MouseEvent) => {
+																e.stopPropagation();
+																setProviderToDelete({
+																	providerId: provider.provider_id,
+																	providerName: provider.name || provider.provider_id,
+																});
+															},
+															disabled:
+																isDeletingProviderApiKey &&
+																providerToDelete?.providerId === provider.provider_id,
+														},
+													]
+												: []),
 										]}
 									/>
 								}
@@ -130,6 +182,20 @@ export function ProfileProvidersTab() {
 				onOpenChange={handleCloseModal}
 				providerId={modalState.providerId}
 				providerName={modalState.providerName}
+			/>
+			<ConfirmationDialog
+				open={providerToDelete !== null}
+				onOpenChange={(open) => !open && setProviderToDelete(null)}
+				title="Delete Provider"
+				description={
+					providerToDelete
+						? `Delete the stored credentials for ${providerToDelete.providerName}? The provider will be disabled until you add a new key.`
+						: ""
+				}
+				confirmText="Delete Provider"
+				variant="destructive"
+				onConfirm={handleDeleteProvider}
+				isLoading={isDeletingProviderApiKey}
 			/>
 		</div>
 	);

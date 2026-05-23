@@ -130,7 +130,7 @@ describe("Models", () => {
 			const result = await getModelConfig();
 
 			expect(result).toBeDefined();
-			expect(result.provider).toBe("mistral");
+			expect(result.provider).toBe("deepseek");
 		});
 
 		it("should return specific model config when model specified", async () => {
@@ -171,6 +171,51 @@ describe("Models", () => {
 
 			expect(result).toBeDefined();
 			expect(result.provider).toBe("openai");
+		});
+
+		it("should return GPT Image 2 with image generation schema", async () => {
+			const result = await getModelConfigByModel("gpt-image-2");
+
+			expect(result).toBeDefined();
+			expect(result?.provider).toBe("openai");
+			expect(result?.matchingModel).toBe("gpt-image-2");
+			expect(result?.supportsImageEdits).toBe(true);
+			expect(result?.inputSchema?.fields.map((field) => field.name)).toEqual([
+				"prompt",
+				"size",
+				"quality",
+				"output_format",
+				"output_compression",
+				"background",
+				"moderation",
+				"n",
+			]);
+		});
+
+		it("should return featured Seedance 2.0 with reference media fields", async () => {
+			const result = await getModelConfigByModel("replicate-bytedance-seedance-2-0");
+
+			expect(result).toBeDefined();
+			expect(result?.provider).toBe("replicate");
+			expect(result?.matchingModel).toBe("bytedance/seedance-2.0");
+			expect(result?.isFeatured).toBe(true);
+			expect(result?.modalities).toEqual({
+				input: ["text", "image", "video", "audio"],
+				output: ["video"],
+			});
+			expect(result?.inputSchema?.fields.map((field) => field.name)).toEqual([
+				"prompt",
+				"image",
+				"last_frame_image",
+				"reference_images",
+				"reference_videos",
+				"reference_audios",
+				"duration",
+				"resolution",
+				"aspect_ratio",
+				"generate_audio",
+				"seed",
+			]);
 		});
 
 		it("should return undefined for invalid model", async () => {
@@ -248,6 +293,20 @@ describe("Models", () => {
 			expect(result).toBeDefined();
 			expect(result?.provider).toBe("workers-ai");
 			expect(result?.matchingModel).toBe("alibaba/qwen3-max");
+		});
+
+		it("should resolve GitHub Models Grok by provider", async () => {
+			const result = await getModelConfigByMatchingModel("xai/grok-3", undefined, "github-models");
+
+			expect(result).toBeDefined();
+			expect(result?.provider).toBe("github-models");
+			expect(result?.matchingModel).toBe("xai/grok-3");
+		});
+
+		it("should not fall back to another provider when provider is specified", async () => {
+			const result = await getModelConfigByMatchingModel("xai/grok-3", undefined, "not-a-provider");
+
+			expect(result).toBeNull();
 		});
 	});
 

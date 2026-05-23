@@ -36,4 +36,19 @@ describe("UserSettingsRepository", () => {
 		expect(runQuerySpy.mock.calls[0]?.[1]).toEqual([42, "cartesia"]);
 		expect(executeRunSpy).toHaveBeenCalledTimes(1);
 	});
+
+	it("clears provider credentials and disables the provider by provider_id", async () => {
+		const repo = new UserSettingsRepository({ DB: {} as any } as IEnv);
+		const executeRunSpy = vi
+			.spyOn(repo as any, "executeRun")
+			.mockResolvedValue({ success: true } as any);
+
+		await repo.deleteProviderApiKey(42, "cartesia");
+
+		expect(executeRunSpy).toHaveBeenCalledTimes(1);
+		expect(executeRunSpy.mock.calls[0]?.[0]).toContain("api_key = ?");
+		expect(executeRunSpy.mock.calls[0]?.[0]).toContain("enabled = ?");
+		expect(executeRunSpy.mock.calls[0]?.[0]).toContain("provider_id = ?");
+		expect(executeRunSpy.mock.calls[0]?.[1]).toEqual([null, 0, 42, "cartesia"]);
+	});
 });

@@ -1,7 +1,10 @@
 import { AlertTriangle, CheckCircle2, Clock, GitBranch, Terminal } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
 
-import { Badge } from "~/components/ui";
+import { Badge, Button } from "~/components/ui";
 import { MemoizedMarkdown } from "~/components/ui/Markdown";
+import { submitSandboxRunInstruction } from "~/lib/api/sandbox";
 
 interface SandboxViewProps {
 	type: string;
@@ -82,9 +85,45 @@ function SandboxResultView({ data }: { data: Record<string, unknown> }) {
 }
 
 function SandboxEventView({ data }: { data: Record<string, unknown> }) {
+	const [resolutionStatus, setResolutionStatus] = useState<"approved" | "rejected" | null>(null);
+	const [isResolving, setIsResolving] = useState(false);
 	const event = asRecord(data.event);
-	const approvalRequired = data.type === "command_approval_requested";
+	const eventType = typeof data.type === "string" ? data.type : "";
+	const approvalStatus =
+		typeof event.approvalStatus === "string" ? event.approvalStatus : undefined;
+	const approvalRequired =
+		(eventType === "command_approval_requested" || eventType === "command_approval_escalated") &&
+		(!approvalStatus || approvalStatus === "pending" || approvalStatus === "escalated") &&
+		!resolutionStatus;
 	const output = typeof event.output === "string" ? event.output : "";
+	const runId = typeof event.runId === "string" ? event.runId : undefined;
+	const approvalId =
+		typeof event.approvalId === "string"
+			? event.approvalId
+			: typeof event.instructionId === "string"
+				? event.instructionId
+				: undefined;
+	const command = typeof event.command === "string" ? event.command : undefined;
+
+	const resolveApproval = async (status: "approved" | "rejected") => {
+		if (!runId || !approvalId) return;
+		setIsResolving(true);
+		try {
+			await submitSandboxRunInstruction({
+				runId,
+				kind: "approval_response",
+				requestId: approvalId,
+				command,
+				approvalStatus: status,
+			});
+			setResolutionStatus(status);
+			toast.success(status === "approved" ? "Command approved" : "Command rejected");
+		} catch (error) {
+			toast.error(error instanceof Error ? error.message : "Failed to resolve command approval");
+		} finally {
+			setIsResolving(false);
+		}
+	};
 
 	return (
 		<div className="space-y-2 rounded-md border border-zinc-200 bg-zinc-50 p-3 text-sm dark:border-zinc-700 dark:bg-zinc-900/50">
@@ -110,6 +149,34 @@ function SandboxEventView({ data }: { data: Record<string, unknown> }) {
 			{typeof event.error === "string" && event.error.trim() && (
 				<div className="rounded border border-red-200 bg-red-50 p-2 text-xs text-red-800 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-200">
 					{event.error}
+				</div>
+			)}
+			{approvalRequired && runId && approvalId && (
+				<div className="flex flex-wrap items-center gap-2 pt-1">
+					<Button
+						type="button"
+						size="xs"
+						variant="outline"
+						onClick={() => void resolveApproval("approved")}
+						disabled={isResolving}
+					>
+						Approve
+					</Button>
+					<Button
+						type="button"
+						size="xs"
+						variant="ghost"
+						onClick={() => void resolveApproval("rejected")}
+						disabled={isResolving}
+						className="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
+					>
+						Reject
+					</Button>
+				</div>
+			)}
+			{resolutionStatus && (
+				<div className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
+					Approval {resolutionStatus}.
 				</div>
 			)}
 		</div>

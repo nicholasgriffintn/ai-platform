@@ -1,290 +1,227 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { generateJwtToken } from "~/services/auth/jwt";
-import { getGitHubAppInstallationToken } from "~/lib/github";
-import { getGitHubAppConnectionForUserRepo } from "~/services/github/connections";
+import { executeSandboxRunStream } from "~/services/apps/sandbox/execute-stream";
 import type { IRequest } from "~/types";
-import {
-	run_bug_fix,
-	run_code_review,
-	run_feature_implementation,
-	run_test_suite,
-} from "../sandbox";
+import { run_code_review, run_feature_implementation, run_test_suite } from "../sandbox";
 
-vi.mock("~/services/auth/jwt", () => ({
-	generateJwtToken: vi.fn(),
-}));
-vi.mock("~/lib/github", () => ({
-	getGitHubAppInstallationToken: vi.fn(),
-}));
-vi.mock("~/services/github/connections", () => ({
-	getGitHubAppConnectionForUserRepo: vi.fn(),
+vi.mock("~/services/apps/sandbox/execute-stream", () => ({
+	executeSandboxRunStream: vi.fn(),
 }));
 
-describe("run_feature_implementation", () => {
-	const sandboxFetch = vi.fn();
-	const getUserSettings = vi.fn();
+function createSandboxStream(events: unknown[], runId = "run-123"): Response {
+	const encoder = new TextEncoder();
+	return new Response(
+		new ReadableStream({
+			start(controller) {
+				for (const event of events) {
+					controller.enqueue(encoder.encode(`data: ${JSON.stringify(event)}\n\n`));
+				}
+				controller.enqueue(encoder.encode("data: [DONE]\n\n"));
+				controller.close();
+			},
+		}),
+		{
+			headers: {
+				"Content-Type": "text/event-stream",
+				"X-Sandbox-Run-Id": runId,
+			},
+		},
+	);
+}
 
+describe("sandbox function tools", () => {
 	const request: IRequest = {
 		env: {
 			ENV: "production",
 			API_BASE_URL: "https://api.polychat.app",
-			JWT_SECRET: "secret",
-			SANDBOX_WORKER: {
-				fetch: sandboxFetch,
-			},
 		} as any,
 		user: {
 			id: 42,
 		} as any,
-		context: {
-			env: {
-				JWT_SECRET: "secret",
+		context: {} as any,
+		request: {
+			model: "gpt-5.4",
+			temperature: 0.2,
+			top_p: 0.9,
+			max_tokens: 4096,
+			reasoning: {
+				effort: "high",
 			},
-			repositories: {
-				userSettings: {
-					getUserSettings,
+			verbosity: "low",
+			options: {
+				sandbox: {
+					installationId: 78910,
+					repo: "owner/repo",
+					promptStrategy: "auto",
+					shouldCommit: true,
+					timeoutSeconds: 900,
 				},
 			},
 		} as any,
 	};
 
-	const createToolContext = (completionId = "completion-id") => ({
-		completionId,
+	const createToolContext = (emitToolResult = vi.fn()) => ({
+		completionId: "completion-id",
 		env: request.env,
 		user: request.user,
 		request,
+		emitToolResult,
 	});
 
 	beforeEach(() => {
 		vi.clearAllMocks();
-		vi.mocked(generateJwtToken).mockResolvedValue("sandbox-jwt");
-		vi.mocked(getGitHubAppConnectionForUserRepo).mockResolvedValue({
-			appId: "123456",
-			privateKey: "private-key",
-			installationId: 78910,
-		});
-		vi.mocked(getGitHubAppInstallationToken).mockResolvedValue("github-app-token");
+		vi.mocked(executeSandboxRunStream).mockImplementation(async () =>
+			createSandboxStream([
+				{
+					type: "run_queued",
+					runId: "run-123",
+					repo: "owner/repo",
+					timestamp: "2026-05-23T10:00:00.000Z",
+				},
+				{
+					type: "planning_completed",
+					runId: "run-123",
+					plan: "- Add tests",
+					timestamp: "2026-05-23T10:00:01.000Z",
+				},
+				{
+					type: "run_completed",
+					runId: "run-123",
+					completedAt: "2026-05-23T10:00:02.000Z",
+					timestamp: "2026-05-23T10:00:02.000Z",
+					result: {
+						success: true,
+						summary: "done",
+						logs: "logs",
+						diff: "diff",
+						branchName: "sandbox/run-123",
+					},
+				},
+			]),
+		);
 	});
 
-	it("passes selected model and GitHub token to sandbox worker", async () => {
-		getUserSettings.mockResolvedValue({ sandbox_model: "mistral-large" });
-		sandboxFetch.mockResolvedValue({
-			ok: true,
-			status: 200,
-			json: vi.fn().mockResolvedValue({
-				success: true,
-				summary: "done",
-				logs: "logs",
-				diff: "diff",
-			}),
-		});
+	it("starts a persisted sandbox run and streams structured chat messages", async () => {
+		const emitToolResult = vi.fn();
 
 		const result = await run_feature_implementation.execute(
 			{
+				task: "Add tests",
+			},
+			createToolContext(emitToolResult),
+		);
+
+		expect(executeSandboxRunStream).toHaveBeenCalledWith({
+			env: request.env,
+			context: request.context,
+			user: request.user,
+			payload: expect.objectContaining({
+				installationId: 78910,
 				repo: "owner/repo",
 				task: "Add tests",
+				taskType: "feature-implementation",
+				model: "gpt-5.4",
+				promptStrategy: "auto",
 				shouldCommit: true,
-			},
-			createToolContext(),
-		);
-
-		expect(generateJwtToken).toHaveBeenCalledWith(request.user, request.env.JWT_SECRET, 60 * 60);
-		expect(sandboxFetch).toHaveBeenCalledTimes(1);
-
-		const workerRequest = sandboxFetch.mock.calls[0][0] as Request;
-		const workerBody = JSON.parse(await workerRequest.text());
-
-		expect(workerBody).toMatchObject({
-			userId: 42,
-			taskType: "feature-implementation",
-			repo: "owner/repo",
-			task: "Add tests",
-			model: "mistral-large",
-			shouldCommit: true,
+				timeoutSeconds: 900,
+				modelSettings: expect.objectContaining({
+					temperature: 0.2,
+					top_p: 0.9,
+					max_tokens: 4096,
+					reasoning_effort: "high",
+					reasoning: {
+						effort: "high",
+					},
+					verbosity: "low",
+				}),
+			}),
 		});
-		expect(workerRequest.headers.get("Authorization")).toBe("Bearer sandbox-jwt");
-		expect(workerRequest.headers.get("X-GitHub-Token")).toBe("github-app-token");
+		expect(emitToolResult).toHaveBeenCalledWith(
+			expect.objectContaining({
+				name: "sandbox_event",
+				status: "run_queued",
+			}),
+		);
+		expect(emitToolResult).toHaveBeenCalledWith(
+			expect.objectContaining({
+				name: "sandbox_plan",
+				data: expect.objectContaining({
+					responseType: "custom",
+					modelContext: false,
+				}),
+			}),
+		);
 		expect(result).toMatchObject({
-			success: true,
-			summary: "done",
-			logs: "logs",
-			diff: "diff",
-		});
-	});
-
-	it("requests a GitHub App installation token for the target repo", async () => {
-		getUserSettings.mockResolvedValue({ sandbox_model: "mistral-large" });
-		sandboxFetch.mockResolvedValue({
-			ok: true,
-			status: 200,
-			json: vi.fn().mockResolvedValue({
-				success: true,
-			}),
-		});
-
-		await run_feature_implementation.execute(
-			{
-				repo: "owner/repo",
-				task: "Add tests",
-			},
-			createToolContext(),
-		);
-
-		const workerRequest = sandboxFetch.mock.calls[0][0] as Request;
-		const workerBody = JSON.parse(await workerRequest.text());
-
-		expect(getGitHubAppConnectionForUserRepo).toHaveBeenCalledWith(
-			request.context,
-			42,
-			"owner/repo",
-		);
-		expect(getGitHubAppInstallationToken).toHaveBeenCalledWith({
-			appId: "123456",
-			privateKey: "private-key",
-			installationId: 78910,
-		});
-		expect(workerBody.githubToken).toBeUndefined();
-		expect(workerBody.userToken).toBeUndefined();
-		expect(workerRequest.headers.get("Authorization")).toBe("Bearer sandbox-jwt");
-		expect(workerRequest.headers.get("X-GitHub-Token")).toBe("github-app-token");
-	});
-
-	it("falls back to default model when no model and no sandbox setting are provided", async () => {
-		getUserSettings.mockResolvedValue({ sandbox_model: null });
-		sandboxFetch.mockResolvedValue({
-			ok: true,
-			status: 200,
-			json: vi.fn().mockResolvedValue({
-				success: true,
-				summary: "done",
-			}),
-		});
-
-		await run_feature_implementation.execute(
-			{
-				repo: "owner/repo",
-				task: "Add tests",
-			},
-			createToolContext(),
-		);
-
-		const workerRequest = sandboxFetch.mock.calls[0][0] as Request;
-		const workerBody = JSON.parse(await workerRequest.text());
-		expect(workerBody.model).toBe("mistral-large");
-	});
-
-	it("throws when sandbox worker responds with a non-2xx status", async () => {
-		getUserSettings.mockResolvedValue({ sandbox_model: "mistral-large" });
-		sandboxFetch.mockResolvedValue({
-			ok: false,
-			status: 500,
-			text: vi.fn().mockResolvedValue("sandbox failed"),
-		});
-
-		await expect(
-			run_feature_implementation.execute(
-				{
-					repo: "owner/repo",
-					task: "Add tests",
+			status: "completed",
+			content: "done",
+			data: {
+				responseType: "custom",
+				result: {
+					name: "sandbox_result",
+					data: {
+						runId: "run-123",
+						status: "completed",
+						summary: "done",
+						result: {
+							diff: "diff",
+							branchName: "sandbox/run-123",
+						},
+					},
 				},
-				createToolContext(),
-			),
-		).rejects.toThrow("Sandbox worker error (500): sandbox failed");
-	});
-
-	it("throws when GitHub App token creation fails", async () => {
-		getUserSettings.mockResolvedValue({ sandbox_model: "mistral-large" });
-		vi.mocked(getGitHubAppInstallationToken).mockRejectedValueOnce(
-			new Error("No GitHub App installation found for owner/repo"),
-		);
-
-		await expect(
-			run_feature_implementation.execute(
-				{
-					repo: "owner/repo",
-					task: "Add tests",
-				},
-				createToolContext(),
-			),
-		).rejects.toThrow("No GitHub App installation found for owner/repo");
-	});
-
-	it("maps code-review function calls to code-review task type and no commit", async () => {
-		getUserSettings.mockResolvedValue({ sandbox_model: "mistral-large" });
-		sandboxFetch.mockResolvedValue({
-			ok: true,
-			status: 200,
-			json: vi.fn().mockResolvedValue({
-				success: true,
-			}),
+			},
 		});
+	});
 
+	it("forces read-only sandbox task types to run without commits", async () => {
 		await run_code_review.execute(
 			{
-				repo: "owner/repo",
 				task: "Review auth middleware",
 				shouldCommit: true,
 			},
 			createToolContext(),
 		);
 
-		const workerRequest = sandboxFetch.mock.calls[0][0] as Request;
-		const workerBody = JSON.parse(await workerRequest.text());
-
-		expect(workerBody.taskType).toBe("code-review");
-		expect(workerBody.shouldCommit).toBe(false);
-	});
-
-	it("maps test-suite function calls to test-suite task type and no commit", async () => {
-		getUserSettings.mockResolvedValue({ sandbox_model: "mistral-large" });
-		sandboxFetch.mockResolvedValue({
-			ok: true,
-			status: 200,
-			json: vi.fn().mockResolvedValue({
-				success: true,
-			}),
+		expect(vi.mocked(executeSandboxRunStream).mock.calls[0]?.[0].payload).toMatchObject({
+			taskType: "code-review",
+			shouldCommit: false,
 		});
 
+		vi.mocked(executeSandboxRunStream).mockClear();
 		await run_test_suite.execute(
 			{
-				repo: "owner/repo",
 				task: "Run API tests",
 				shouldCommit: true,
 			},
 			createToolContext(),
 		);
 
-		const workerRequest = sandboxFetch.mock.calls[0][0] as Request;
-		const workerBody = JSON.parse(await workerRequest.text());
-
-		expect(workerBody.taskType).toBe("test-suite");
-		expect(workerBody.shouldCommit).toBe(false);
+		expect(vi.mocked(executeSandboxRunStream).mock.calls[0]?.[0].payload).toMatchObject({
+			taskType: "test-suite",
+			shouldCommit: false,
+		});
 	});
 
-	it("maps bug-fix function calls to bug-fix task type", async () => {
-		getUserSettings.mockResolvedValue({ sandbox_model: "mistral-large" });
-		sandboxFetch.mockResolvedValue({
-			ok: true,
-			status: 200,
-			json: vi.fn().mockResolvedValue({
-				success: true,
-			}),
-		});
-
-		await run_bug_fix.execute(
-			{
-				repo: "owner/repo",
-				task: "Fix timeout handling",
-				shouldCommit: true,
-			},
-			createToolContext(),
-		);
-
-		const workerRequest = sandboxFetch.mock.calls[0][0] as Request;
-		const workerBody = JSON.parse(await workerRequest.text());
-
-		expect(workerBody.taskType).toBe("bug-fix");
-		expect(workerBody.shouldCommit).toBe(true);
+	it("requires a configured GitHub installation", async () => {
+		await expect(
+			run_feature_implementation.execute(
+				{
+					repo: "owner/repo",
+					task: "Add tests",
+				},
+				{
+					...createToolContext(),
+					request: {
+						...request,
+						request: {
+							options: {
+								sandbox: {
+									repo: "owner/repo",
+								},
+							},
+						} as any,
+					},
+				},
+			),
+		).rejects.toThrow("Sandbox GitHub installation is required");
 	});
 });

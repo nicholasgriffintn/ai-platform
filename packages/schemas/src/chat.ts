@@ -31,6 +31,9 @@ export const countTokensJsonSchema = z.object({
 	model: z.string().meta({
 		description: "The model to use for token counting.",
 	}),
+	provider: z.string().optional().meta({
+		description: "The provider to use when the model name is shared by multiple providers.",
+	}),
 	messages: z.array(z.any()).meta({
 		description: "The messages to count tokens for.",
 	}),
@@ -54,6 +57,9 @@ export const createChatCompletionsJsonSchema = z.object({
 	}),
 	model: z.string().optional().meta({
 		description: "The model to use for the request.",
+	}),
+	provider: z.string().optional().meta({
+		description: "The provider to use when the model name is shared by multiple providers.",
 	}),
 	mode: chatRequestModeSchema.optional().meta({
 		description: "The mode of the chat completion.",
@@ -276,24 +282,31 @@ export const createChatCompletionsJsonSchema = z.object({
 	parallel_tool_calls: z.boolean().optional().meta({
 		description: "Whether to enable parallel tool calls for the response.",
 	}),
-	reasoning_effort: z.enum(["none", "low", "medium", "high"]).prefault("medium").optional().meta({
-		description:
-			"Constrains effort on reasoning for reasoning models. Reducing reasoning effort can result in faster responses and fewer tokens used on reasoning in a response. Only supported in certain reasoning models.",
-	}),
+	reasoning_effort: z
+		.enum(["none", "simulated-thinking", "thinking", "low", "medium", "high"])
+		.prefault("none")
+		.optional()
+		.meta({
+			description:
+				'Controls reasoning depth. Use "simulated-thinking" for prompt-level thinking guidance. Use "thinking" for provider-native thinking on configured models.',
+		}),
 	reasoning: z
 		.object({
-			effort: z.enum(["none", "low", "medium", "high"]).optional(),
+			effort: z
+				.enum(["none", "simulated-thinking", "thinking", "low", "medium", "high"])
+				.optional(),
 		})
 		.optional()
 		.meta({
 			description:
-				'Structured reasoning controls for advanced models. Use effort="none" to disable provider-specific reasoning boosts.',
+				'Structured reasoning controls. Use effort="none" to disable prompt-level and provider-specific reasoning boosts.',
 		}),
 	store: z.boolean().prefault(false).meta({
 		description: "Whether to store the output of the completion.",
 	}),
-	verbosity: z.enum(["low", "medium", "high"]).optional().meta({
-		description: "Verbosity toggle to control the level of detail in the response.",
+	verbosity: z.enum(["low", "medium", "high", "caveman"]).optional().meta({
+		description:
+			"Verbosity toggle to control the level of detail in the response. Caveman is prompt-only and is not sent to providers as a native verbosity control.",
 	}),
 	response_format: z
 		.object({

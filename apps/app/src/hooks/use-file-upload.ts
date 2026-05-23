@@ -1,7 +1,5 @@
 // Source: https://originui.com/file-upload
 
-"use client";
-
 import type React from "react";
 import {
 	type ChangeEvent,
@@ -11,6 +9,7 @@ import {
 	useRef,
 	useState,
 } from "react";
+import { generateId } from "~/lib/utils";
 
 export type FileMetadata = {
 	name: string;
@@ -137,7 +136,7 @@ export const useFileUpload = (
 
 	const generateUniqueId = useCallback((file: File | FileMetadata): string => {
 		if (file instanceof File) {
-			return `${file.name}-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+			return `${file.name}-${generateId()}`;
 		}
 		return file.id;
 	}, []);

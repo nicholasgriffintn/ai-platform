@@ -13,6 +13,7 @@ interface CouncilChatControlsProps {
 	responseMode: CouncilResponseMode;
 	onResponseModeChange: (mode: CouncilResponseMode) => void;
 	disabled?: boolean;
+	showHeader?: boolean;
 }
 
 export function CouncilChatControls({
@@ -21,6 +22,7 @@ export function CouncilChatControls({
 	responseMode,
 	onResponseModeChange,
 	disabled,
+	showHeader = true,
 }: CouncilChatControlsProps) {
 	const selected = useMemo(() => new Set(selectedMemberIds), [selectedMemberIds]);
 
@@ -38,22 +40,30 @@ export function CouncilChatControls({
 
 	return (
 		<div className="space-y-2">
-			<div className="flex items-center justify-between gap-3">
-				<div className="flex min-w-0 items-center gap-2 text-sm font-medium text-zinc-800 dark:text-zinc-200">
-					<UsersRound className="h-4 w-4 shrink-0" />
-					<span>Council</span>
-					<span className="text-xs font-normal text-zinc-500 dark:text-zinc-400">
-						{selectedMemberIds.length}/{councilMembers.length}
-					</span>
+			<div className="flex items-center justify-between gap-3 px-1">
+				{showHeader ? (
+					<div className="flex min-w-0 items-center gap-2 text-sm font-medium text-zinc-800 dark:text-zinc-200">
+						<UsersRound className="h-4 w-4 shrink-0" />
+						<span>Council</span>
+						<span className="text-xs font-normal text-zinc-500 dark:text-zinc-400">
+							{selectedMemberIds.length}/{councilMembers.length}
+						</span>
+					</div>
+				) : (
+					<div className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
+						{selectedMemberIds.length}/{councilMembers.length} members
+					</div>
+				)}
+				<div className="flex items-center gap-2">
+					<button
+						type="button"
+						onClick={selectAll}
+						disabled={disabled || selectedMemberIds.length === councilMembers.length}
+						className="text-xs font-medium text-zinc-600 underline-offset-2 hover:underline disabled:cursor-not-allowed disabled:opacity-50 dark:text-zinc-300"
+					>
+						All
+					</button>
 				</div>
-				<button
-					type="button"
-					onClick={selectAll}
-					disabled={disabled || selectedMemberIds.length === councilMembers.length}
-					className="text-xs font-medium text-zinc-600 underline-offset-2 hover:underline disabled:cursor-not-allowed disabled:opacity-50 dark:text-zinc-300"
-				>
-					All
-				</button>
 			</div>
 			<div className="grid grid-cols-2 gap-1 rounded-md border border-zinc-200 p-1 dark:border-zinc-700">
 				{(["debate", "single"] as const).map((mode) => (
@@ -73,7 +83,7 @@ export function CouncilChatControls({
 					</button>
 				))}
 			</div>
-			<div className="grid max-h-36 grid-cols-1 gap-2 overflow-y-auto pr-1 sm:grid-cols-2">
+			<div className="grid max-h-28 grid-cols-1 gap-2 overflow-y-auto pr-1 sm:max-h-36 sm:grid-cols-2">
 				{councilMembers.map((member) => {
 					const isSelected = selected.has(member.id);
 					return (

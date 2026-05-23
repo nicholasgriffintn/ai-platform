@@ -15,11 +15,10 @@ import { ResponseFactory } from "~/lib/http/ResponseFactory";
 import {
 	executeDynamicApp,
 	getDynamicAppById,
-	getDynamicApps,
+	getDynamicAppCatalog,
 	listDynamicAppResponsesForUser,
 	getDynamicAppResponseById,
 } from "~/services/dynamic-apps";
-import { getFeaturedApps } from "~/services/dynamic-apps/config";
 import { appSchema } from "~/types/app-schema";
 import type { IRequest } from "~/types/chat";
 import type { IEnv } from "~/types/shared";
@@ -57,31 +56,8 @@ addRoute(dynamicApps, "get", "/", {
 	},
 	handler: async ({ raw }) =>
 		(async (c) => {
-			const apps = await getDynamicApps();
-			const featuredApps = getFeaturedApps();
-
-			const mergedApps = new Map<string, any>();
-
-			for (const app of apps) {
-				mergedApps.set(app.id, {
-					...app,
-					featured: app.featured ?? false,
-					kind: app.kind ?? "dynamic",
-				});
-			}
-
-			for (const featuredApp of featuredApps) {
-				const existing = mergedApps.get(featuredApp.id);
-				mergedApps.set(featuredApp.id, {
-					...existing,
-					...featuredApp,
-					featured: true,
-					kind: featuredApp.kind ?? existing?.kind ?? (featuredApp.href ? "frontend" : "dynamic"),
-				});
-			}
-
 			return ResponseFactory.success(c, {
-				apps: Array.from(mergedApps.values()),
+				apps: await getDynamicAppCatalog(),
 			});
 		})(raw),
 });

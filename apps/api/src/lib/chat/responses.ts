@@ -110,6 +110,7 @@ export async function getAIResponse({
 	user,
 	mode,
 	model,
+	provider: requestedProvider,
 	messages,
 	message,
 	enabled_tools,
@@ -127,11 +128,11 @@ export async function getAIResponse({
 		);
 	}
 
-	logger.debug("Getting AI response", { model, mode, user: user?.id });
+	logger.debug("Getting AI response", { model, provider: requestedProvider, mode, user: user?.id });
 
 	let modelConfig;
 	try {
-		modelConfig = await getModelConfigByMatchingModel(model);
+		modelConfig = await getModelConfigByMatchingModel(model, env, requestedProvider);
 		if (!modelConfig) {
 			throw new AssistantError(
 				`Model configuration not found for ${model}`,
@@ -174,8 +175,14 @@ export async function getAIResponse({
 	}
 
 	let formattedMessages;
+	const resolvedModel = modelConfig.matchingModel;
 	try {
-		formattedMessages = formatMessages(provider.name, filteredMessages, system_prompt, model);
+		formattedMessages = formatMessages(
+			provider.name,
+			filteredMessages,
+			system_prompt,
+			resolvedModel,
+		);
 	} catch (error: any) {
 		logger.error("Failed to format messages", { error });
 		throw new AssistantError(`Failed to format messages: ${error.message}`, ErrorType.PARAMS_ERROR);
@@ -191,7 +198,8 @@ export async function getAIResponse({
 	try {
 		parameters = mergeParametersWithDefaults({
 			...params,
-			model,
+			model: resolvedModel,
+			provider: modelConfig.provider,
 			messages: formattedMessages,
 			message,
 			mode,

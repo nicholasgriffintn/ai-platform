@@ -5,9 +5,20 @@ interface WelcomeScreenProps {
 	setInput: (input: string) => void;
 	title?: string;
 	description?: string;
+	sampleQuestions?: Array<{
+		id: string;
+		text: string;
+		question: string;
+		category: string;
+	}> | null;
 }
 
-export const WelcomeScreen = ({ setInput, title, description }: WelcomeScreenProps) => {
+export const WelcomeScreen = ({
+	setInput,
+	title,
+	description,
+	sampleQuestions,
+}: WelcomeScreenProps) => {
 	return (
 		<div className="w-full text-center px-4 pt-4 pb-2">
 			<div className="w-32 h-32 mx-auto">
@@ -20,7 +31,7 @@ export const WelcomeScreen = ({ setInput, title, description }: WelcomeScreenPro
 				{description ??
 					"I'm a helpful assistant that can answer questions about basically anything."}
 			</p>
-			<SampleQuestions setInput={setInput} />
+			<SampleQuestions setInput={setInput} questionsOverride={sampleQuestions} />
 		</div>
 	);
 };

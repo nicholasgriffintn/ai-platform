@@ -65,9 +65,6 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 	"@cf/moonshotai/kimi-k2.5": {
 		name: "Moonshot Kimi K2.5",
@@ -80,9 +77,6 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 		modalities: {
 			input: ["text", "image"],
 			output: ["text"],
-		},
-		reasoningConfig: {
-			enabled: true,
 		},
 		contextWindow: 256000,
 		knowledgeCutoffDate: "January 2025",
@@ -106,14 +100,16 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 			input: ["text", "image"],
 			output: ["text"],
 		},
-		reasoningConfig: {
-			enabled: true,
-		},
 		contextWindow: 262144,
 		supportsTemperature: true,
 		supportsResponseFormat: true,
-		maxTokens: 262144,
+		maxTokens: 256000,
 		isFeatured: true,
+		knowledgeCutoffDate: "January 2025",
+		releaseDate: "April 20, 2026",
+		lastUpdated: "April 20, 2026",
+		costPer1kInputTokens: 0.00095,
+		costPer1kOutputTokens: 0.004,
 	},
 	"llama-3.3-70b-instruct": {
 		name: "Llama 3.3 70B Instruct FP8 Fast",
@@ -121,27 +117,24 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 		description:
 			"Meta's new 70B model that claims to have the same performance as the 450B model but more cost effective.",
 		provider: "workers-ai",
-		supportsResponseFormat: true,
+		supportsResponseFormat: false,
 		strengths: ["instruction", "general_knowledge", "coding", "reasoning", "multilingual"],
 		speed: 4,
 		reliability: 5,
 		contextComplexity: 5,
-		supportsToolCalls: false,
+		supportsToolCalls: true,
 		modalities: {
 			input: ["text"],
 			output: ["text"],
 		},
-		releaseDate: "April 3, 2025",
-		lastUpdated: "April 3, 2025",
+		releaseDate: "December 6, 2024",
+		lastUpdated: "December 6, 2024",
 		supportsAttachments: false,
 		supportsTemperature: true,
-		contextWindow: 128000,
-		maxTokens: 16384,
-		costPer1kInputTokens: 0.00029,
-		costPer1kOutputTokens: 0.00225,
-		reasoningConfig: {
-			enabled: false,
-		},
+		contextWindow: 24000,
+		maxTokens: 24000,
+		costPer1kInputTokens: 0.000293,
+		costPer1kOutputTokens: 0.002253,
 	},
 	"llama-3.2-1b-instruct": {
 		name: "Llama 3.2 1B Instruct",
@@ -157,18 +150,16 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 			input: ["text"],
 			output: ["text"],
 		},
-		releaseDate: "April 3, 2025",
-		lastUpdated: "April 3, 2025",
+		releaseDate: "September 25, 2024",
+		lastUpdated: "September 25, 2024",
 		supportsAttachments: false,
 		supportsTemperature: true,
 		supportsToolCalls: false,
-		contextWindow: 128000,
-		maxTokens: 16384,
+		contextWindow: 60000,
+		maxTokens: 60000,
 		costPer1kInputTokens: 0.000027,
-		costPer1kOutputTokens: 0.0002,
-		reasoningConfig: {
-			enabled: false,
-		},
+		costPer1kOutputTokens: 0.000201,
+		supportsResponseFormat: false,
 	},
 	"llama-3.2-3b-instruct": {
 		name: "Llama 3.2 3B Instruct",
@@ -184,18 +175,16 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 			input: ["text"],
 			output: ["text"],
 		},
-		releaseDate: "April 3, 2025",
-		lastUpdated: "April 3, 2025",
+		releaseDate: "September 25, 2024",
+		lastUpdated: "September 25, 2024",
 		supportsAttachments: false,
 		supportsTemperature: true,
 		supportsToolCalls: false,
-		contextWindow: 128000,
-		maxTokens: 16384,
-		costPer1kInputTokens: 0.000051,
-		costPer1kOutputTokens: 0.00034,
-		reasoningConfig: {
-			enabled: false,
-		},
+		contextWindow: 80000,
+		maxTokens: 80000,
+		costPer1kInputTokens: 0.0000509,
+		costPer1kOutputTokens: 0.000335,
+		supportsResponseFormat: false,
 	},
 	"llama-3.1-70b-instruct": {
 		name: "Meta Llama 3.1 70B Instruct",
@@ -220,7 +209,6 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 			"Meta's Llama 4 Scout is a 17 billion parameter model with 16 experts that is natively multimodal. These models leverage a mixture-of-experts architecture to offer industry-leading performance in text and image understanding.",
 		provider: "workers-ai",
 		supportsToolCalls: true,
-		isFeatured: true,
 		multimodal: true,
 		strengths: ["vision", "reasoning", "instruction", "general_knowledge", "chat"],
 		speed: 4,
@@ -234,13 +222,11 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 		lastUpdated: "April 16, 2025",
 		supportsAttachments: true,
 		supportsTemperature: true,
-		contextWindow: 128000,
+		contextWindow: 131000,
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00027,
 		costPer1kOutputTokens: 0.00085,
-		reasoningConfig: {
-			enabled: false,
-		},
+		supportsResponseFormat: false,
 	},
 	"hermes-2-pro-mistral-7b": {
 		name: "Hermes 2 Pro Mistral 7B",
@@ -272,6 +258,7 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 		reliability: 4,
 		contextComplexity: 3,
 		multimodal: true,
+		isFeatured: true,
 		modalities: {
 			input: ["image"],
 			output: ["text"],
@@ -317,6 +304,7 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 		speed: 4,
 		reliability: 4,
 		contextComplexity: 3,
+		isFeatured: true,
 		modalities: {
 			input: ["text"],
 			output: ["image"],
@@ -458,9 +446,6 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.000067,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 	"bge-large-en-v1.5": {
 		name: "BGE Large EN v1.5",
@@ -483,9 +468,6 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.0002,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 	"bge-m3": {
 		name: "BGE M3",
@@ -510,9 +492,6 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.000012,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 	"bge-reranker-base": {
 		name: "BGE Reranker Base",
@@ -537,9 +516,6 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.0000031,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 	"gemma-3-12b-it": {
 		name: "Gemma 3 12B IT",
@@ -557,18 +533,16 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 			input: ["text"],
 			output: ["text"],
 		},
-		releaseDate: "April 11, 2025",
-		lastUpdated: "April 11, 2025",
+		releaseDate: "March 18, 2025",
+		lastUpdated: "March 18, 2025",
 		supportsAttachments: false,
 		supportsTemperature: true,
 		supportsToolCalls: false,
-		contextWindow: 128000,
-		maxTokens: 16384,
-		costPer1kInputTokens: 0.00035,
-		costPer1kOutputTokens: 0.00056,
-		reasoningConfig: {
-			enabled: false,
-		},
+		contextWindow: 80000,
+		maxTokens: 80000,
+		costPer1kInputTokens: 0.000345,
+		costPer1kOutputTokens: 0.000556,
+		supportsResponseFormat: false,
 	},
 	"gemma-4-26b-a4b-it": {
 		name: "Gemma 4 26B A4B IT",
@@ -590,9 +564,7 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 		supportsToolCalls: true,
 		costPer1kInputTokens: 0.0001,
 		costPer1kOutputTokens: 0.0003,
-		reasoningConfig: {
-			enabled: true,
-		},
+		supportsResponseFormat: true,
 	},
 	"qwq-32b": {
 		name: "QwQ 32B",
@@ -605,20 +577,21 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 		speed: 3,
 		reliability: 5,
 		contextComplexity: 5,
-		reasoningConfig: { enabled: true },
 		modalities: {
 			input: ["text"],
 			output: ["text"],
 		},
-		releaseDate: "April 11, 2025",
-		lastUpdated: "April 11, 2025",
+		releaseDate: "March 5, 2025",
+		lastUpdated: "March 5, 2025",
 		supportsAttachments: false,
 		supportsTemperature: true,
 		supportsToolCalls: false,
-		contextWindow: 128000,
-		maxTokens: 16384,
+		isFeatured: true,
+		contextWindow: 24000,
+		maxTokens: 24000,
 		costPer1kInputTokens: 0.00066,
 		costPer1kOutputTokens: 0.001,
+		supportsResponseFormat: false,
 	},
 	"qwen2.5-coder-32b": {
 		name: "Qwen 2.5 Coder 32B Instruct",
@@ -635,18 +608,16 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 			input: ["text"],
 			output: ["text"],
 		},
-		releaseDate: "April 11, 2025",
-		lastUpdated: "April 11, 2025",
+		releaseDate: "February 27, 2025",
+		lastUpdated: "February 27, 2025",
 		supportsAttachments: false,
 		supportsTemperature: true,
 		supportsToolCalls: false,
-		contextWindow: 128000,
-		maxTokens: 16384,
+		contextWindow: 32768,
+		maxTokens: 32768,
 		costPer1kInputTokens: 0.00066,
 		costPer1kOutputTokens: 0.001,
-		reasoningConfig: {
-			enabled: false,
-		},
+		supportsResponseFormat: false,
 	},
 	"@cf/meta/llama-guard-3-8b": {
 		name: "Llama Guard 3 8B",
@@ -657,18 +628,16 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 			input: ["text"],
 			output: ["text"],
 		},
-		releaseDate: "April 3, 2025",
-		lastUpdated: "April 3, 2025",
+		releaseDate: "January 22, 2025",
+		lastUpdated: "January 22, 2025",
 		supportsAttachments: false,
 		supportsTemperature: true,
 		supportsToolCalls: false,
-		contextWindow: 128000,
-		maxTokens: 16384,
-		costPer1kInputTokens: 0.00048,
+		contextWindow: 131072,
+		maxTokens: 131072,
+		costPer1kInputTokens: 0.000484,
 		costPer1kOutputTokens: 0.00003,
-		reasoningConfig: {
-			enabled: false,
-		},
+		supportsResponseFormat: false,
 	},
 	"lucid-origin": {
 		name: "Leonardo Lucid Origin",
@@ -738,9 +707,6 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 	"smart-turn-v2": {
 		name: "Pipecat Smart Turn v2",
@@ -765,9 +731,6 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 	"embeddinggemma-300m": {
 		name: "EmbeddingGemma 300M",
@@ -799,17 +762,14 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00034,
 		costPer1kOutputTokens: 0.00034,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"@cf/aisingapore/gemma-sea-lion-v4-27b-it": {
 		name: "Gemma SEA-LION v4 27B IT",
 		matchingModel: "@cf/aisingapore/gemma-sea-lion-v4-27b-it",
 		provider: "workers-ai",
-		releaseDate: "September 25, 2025",
-		lastUpdated: "September 25, 2025",
+		releaseDate: "September 23, 2025",
+		lastUpdated: "September 23, 2025",
 		modalities: {
 			input: ["text"],
 			output: ["text"],
@@ -818,12 +778,10 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 		supportsTemperature: true,
 		supportsToolCalls: false,
 		contextWindow: 128000,
-		maxTokens: 16384,
-		costPer1kInputTokens: 0.00035,
-		costPer1kOutputTokens: 0.00056,
-		reasoningConfig: {
-			enabled: false,
-		},
+		maxTokens: 128000,
+		costPer1kInputTokens: 0.000351,
+		costPer1kOutputTokens: 0.000555,
+		supportsResponseFormat: false,
 	},
 
 	"@cf/baai/bge-small-en-v1.5": {
@@ -843,9 +801,6 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00002,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"@cf/deepgram/aura-2-en": {
@@ -865,9 +820,6 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"@cf/deepgram/aura-2-es": {
@@ -887,17 +839,14 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"@cf/deepseek-ai/deepseek-r1-distill-qwen-32b": {
 		name: "DeepSeek R1 Distill Qwen 32B",
 		matchingModel: "@cf/deepseek-ai/deepseek-r1-distill-qwen-32b",
 		provider: "workers-ai",
-		releaseDate: "April 3, 2025",
-		lastUpdated: "April 3, 2025",
+		releaseDate: "January 22, 2025",
+		lastUpdated: "January 22, 2025",
 		modalities: {
 			input: ["text"],
 			output: ["text"],
@@ -905,13 +854,11 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 		supportsAttachments: false,
 		supportsTemperature: true,
 		supportsToolCalls: false,
-		contextWindow: 128000,
-		maxTokens: 16384,
-		costPer1kInputTokens: 0.0005,
-		costPer1kOutputTokens: 0.00488,
-		reasoningConfig: {
-			enabled: false,
-		},
+		contextWindow: 80000,
+		maxTokens: 80000,
+		costPer1kInputTokens: 0.000497,
+		costPer1kOutputTokens: 0.004881,
+		supportsResponseFormat: false,
 	},
 
 	"@cf/facebook/bart-large-cnn": {
@@ -931,9 +878,6 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"@cf/huggingface/distilbert-sst-2-int8": {
@@ -953,39 +897,34 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.000026,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"@cf/ibm-granite/granite-4.0-h-micro": {
 		name: "IBM Granite 4.0 H Micro",
 		matchingModel: "@cf/ibm-granite/granite-4.0-h-micro",
 		provider: "workers-ai",
-		releaseDate: "October 15, 2025",
-		lastUpdated: "October 15, 2025",
+		releaseDate: "October 7, 2025",
+		lastUpdated: "October 7, 2025",
 		modalities: {
 			input: ["text"],
 			output: ["text"],
 		},
 		supportsAttachments: false,
 		supportsTemperature: true,
-		supportsToolCalls: false,
-		contextWindow: 128000,
-		maxTokens: 16384,
+		supportsToolCalls: true,
+		contextWindow: 131000,
+		maxTokens: 131000,
 		costPer1kInputTokens: 0.000017,
-		costPer1kOutputTokens: 0.00011,
-		reasoningConfig: {
-			enabled: false,
-		},
+		costPer1kOutputTokens: 0.000112,
+		supportsResponseFormat: false,
 	},
 
 	"@cf/meta/llama-2-7b-chat-fp16": {
 		name: "Llama 2 7B Chat FP16",
 		matchingModel: "@cf/meta/llama-2-7b-chat-fp16",
 		provider: "workers-ai",
-		releaseDate: "April 3, 2025",
-		lastUpdated: "April 3, 2025",
+		releaseDate: "November 7, 2023",
+		lastUpdated: "November 7, 2023",
 		modalities: {
 			input: ["text"],
 			output: ["text"],
@@ -993,21 +932,19 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 		supportsAttachments: false,
 		supportsTemperature: true,
 		supportsToolCalls: false,
-		contextWindow: 128000,
-		maxTokens: 16384,
-		costPer1kInputTokens: 0.00056,
-		costPer1kOutputTokens: 0.00667,
-		reasoningConfig: {
-			enabled: false,
-		},
+		contextWindow: 4096,
+		maxTokens: 4096,
+		costPer1kInputTokens: 0.000556,
+		costPer1kOutputTokens: 0.006667,
+		supportsResponseFormat: false,
 	},
 
 	"@cf/meta/llama-3-8b-instruct": {
 		name: "Llama 3 8B Instruct",
 		matchingModel: "@cf/meta/llama-3-8b-instruct",
 		provider: "workers-ai",
-		releaseDate: "April 3, 2025",
-		lastUpdated: "April 3, 2025",
+		releaseDate: "April 18, 2024",
+		lastUpdated: "April 18, 2024",
 		modalities: {
 			input: ["text"],
 			output: ["text"],
@@ -1015,21 +952,19 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 		supportsAttachments: false,
 		supportsTemperature: true,
 		supportsToolCalls: false,
-		contextWindow: 128000,
-		maxTokens: 16384,
-		costPer1kInputTokens: 0.00028,
-		costPer1kOutputTokens: 0.00083,
-		reasoningConfig: {
-			enabled: false,
-		},
+		contextWindow: 7968,
+		maxTokens: 7968,
+		costPer1kInputTokens: 0.000282,
+		costPer1kOutputTokens: 0.000827,
+		supportsResponseFormat: false,
 	},
 
 	"@cf/meta/llama-3-8b-instruct-awq": {
 		name: "Llama 3 8B Instruct AWQ",
 		matchingModel: "@cf/meta/llama-3-8b-instruct-awq",
 		provider: "workers-ai",
-		releaseDate: "April 3, 2025",
-		lastUpdated: "April 3, 2025",
+		releaseDate: "May 9, 2024",
+		lastUpdated: "May 9, 2024",
 		modalities: {
 			input: ["text"],
 			output: ["text"],
@@ -1037,13 +972,11 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 		supportsAttachments: false,
 		supportsTemperature: true,
 		supportsToolCalls: false,
-		contextWindow: 128000,
-		maxTokens: 16384,
-		costPer1kInputTokens: 0.00012,
-		costPer1kOutputTokens: 0.00027,
-		reasoningConfig: {
-			enabled: false,
-		},
+		contextWindow: 8192,
+		maxTokens: 8192,
+		costPer1kInputTokens: 0.000123,
+		costPer1kOutputTokens: 0.000266,
+		supportsResponseFormat: false,
 	},
 
 	"@cf/meta/llama-3.1-8b-instruct": {
@@ -1063,17 +996,14 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00028,
 		costPer1kOutputTokens: 0.00083,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"@cf/meta/llama-3.1-8b-instruct-awq": {
 		name: "Llama 3.1 8B Instruct AWQ",
 		matchingModel: "@cf/meta/llama-3.1-8b-instruct-awq",
 		provider: "workers-ai",
-		releaseDate: "April 3, 2025",
-		lastUpdated: "April 3, 2025",
+		releaseDate: "July 25, 2024",
+		lastUpdated: "July 25, 2024",
 		modalities: {
 			input: ["text"],
 			output: ["text"],
@@ -1081,21 +1011,19 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 		supportsAttachments: false,
 		supportsTemperature: true,
 		supportsToolCalls: false,
-		contextWindow: 128000,
-		maxTokens: 16384,
-		costPer1kInputTokens: 0.00012,
-		costPer1kOutputTokens: 0.00027,
-		reasoningConfig: {
-			enabled: false,
-		},
+		contextWindow: 8192,
+		maxTokens: 8192,
+		costPer1kInputTokens: 0.000123,
+		costPer1kOutputTokens: 0.000266,
+		supportsResponseFormat: false,
 	},
 
 	"@cf/meta/llama-3.1-8b-instruct-fp8": {
 		name: "Llama 3.1 8B Instruct FP8",
 		matchingModel: "@cf/meta/llama-3.1-8b-instruct-fp8",
 		provider: "workers-ai",
-		releaseDate: "April 3, 2025",
-		lastUpdated: "April 3, 2025",
+		releaseDate: "July 25, 2024",
+		lastUpdated: "July 25, 2024",
 		modalities: {
 			input: ["text"],
 			output: ["text"],
@@ -1103,35 +1031,31 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 		supportsAttachments: false,
 		supportsTemperature: true,
 		supportsToolCalls: false,
-		contextWindow: 128000,
-		maxTokens: 16384,
-		costPer1kInputTokens: 0.00015,
-		costPer1kOutputTokens: 0.00029,
-		reasoningConfig: {
-			enabled: false,
-		},
+		contextWindow: 32000,
+		maxTokens: 32000,
+		costPer1kInputTokens: 0.000152,
+		costPer1kOutputTokens: 0.000287,
+		supportsResponseFormat: false,
 	},
 
 	"@cf/meta/llama-3.2-11b-vision-instruct": {
 		name: "Llama 3.2 11B Vision Instruct",
 		matchingModel: "@cf/meta/llama-3.2-11b-vision-instruct",
 		provider: "workers-ai",
-		releaseDate: "April 3, 2025",
-		lastUpdated: "April 3, 2025",
+		releaseDate: "September 25, 2024",
+		lastUpdated: "September 25, 2024",
 		modalities: {
 			input: ["text"],
 			output: ["text"],
 		},
-		supportsAttachments: false,
+		supportsAttachments: true,
 		supportsTemperature: true,
 		supportsToolCalls: false,
 		contextWindow: 128000,
-		maxTokens: 16384,
-		costPer1kInputTokens: 0.000049,
-		costPer1kOutputTokens: 0.00068,
-		reasoningConfig: {
-			enabled: false,
-		},
+		maxTokens: 128000,
+		costPer1kInputTokens: 0.0000485,
+		costPer1kOutputTokens: 0.000676,
+		supportsResponseFormat: false,
 	},
 
 	"@cf/meta/m2m100-1.2b": {
@@ -1151,17 +1075,14 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00034,
 		costPer1kOutputTokens: 0.00034,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"@cf/mistral/mistral-7b-instruct-v0.1": {
 		name: "Mistral 7B Instruct v0.1",
 		matchingModel: "@cf/mistral/mistral-7b-instruct-v0.1",
 		provider: "workers-ai",
-		releaseDate: "April 3, 2025",
-		lastUpdated: "April 3, 2025",
+		releaseDate: "November 7, 2023",
+		lastUpdated: "November 7, 2023",
 		modalities: {
 			input: ["text"],
 			output: ["text"],
@@ -1169,35 +1090,31 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 		supportsAttachments: false,
 		supportsTemperature: true,
 		supportsToolCalls: false,
-		contextWindow: 128000,
-		maxTokens: 16384,
+		contextWindow: 2824,
+		maxTokens: 2824,
 		costPer1kInputTokens: 0.00011,
 		costPer1kOutputTokens: 0.00019,
-		reasoningConfig: {
-			enabled: false,
-		},
+		supportsResponseFormat: false,
 	},
 
 	"@cf/mistralai/mistral-small-3.1-24b-instruct": {
 		name: "Mistral Small 3.1 24B Instruct",
 		matchingModel: "@cf/mistralai/mistral-small-3.1-24b-instruct",
 		provider: "workers-ai",
-		releaseDate: "April 11, 2025",
-		lastUpdated: "April 11, 2025",
+		releaseDate: "March 18, 2025",
+		lastUpdated: "March 18, 2025",
 		modalities: {
 			input: ["text"],
 			output: ["text"],
 		},
 		supportsAttachments: false,
 		supportsTemperature: true,
-		supportsToolCalls: false,
+		supportsToolCalls: true,
 		contextWindow: 128000,
-		maxTokens: 16384,
-		costPer1kInputTokens: 0.00035,
-		costPer1kOutputTokens: 0.00056,
-		reasoningConfig: {
-			enabled: false,
-		},
+		maxTokens: 128000,
+		costPer1kInputTokens: 0.000351,
+		costPer1kOutputTokens: 0.000555,
+		supportsResponseFormat: false,
 	},
 
 	"@cf/nvidia/nemotron-3-120b-a12b": {
@@ -1219,9 +1136,7 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 		maxTokens: 256000,
 		costPer1kInputTokens: 0.0005,
 		costPer1kOutputTokens: 0.0015,
-		reasoningConfig: {
-			enabled: true,
-		},
+		supportsResponseFormat: true,
 	},
 
 	"@cf/zai-org/glm-4.7-flash": {
@@ -1240,13 +1155,12 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 		releaseDate: "January 19, 2026",
 		lastUpdated: "January 19, 2026",
 		supportsAttachments: false,
+		isFeatured: true,
 		supportsTemperature: true,
 		maxTokens: 131072,
-		costPer1kInputTokens: 0.00006,
+		costPer1kInputTokens: 0.0000605,
 		costPer1kOutputTokens: 0.0004,
-		reasoningConfig: {
-			enabled: true,
-		},
+		supportsResponseFormat: true,
 	},
 
 	"@cf/openai/gpt-oss-120b": {
@@ -1262,13 +1176,12 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 		supportsAttachments: false,
 		supportsTemperature: true,
 		supportsToolCalls: true,
+		isFeatured: true,
 		contextWindow: 128000,
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00035,
 		costPer1kOutputTokens: 0.00075,
-		reasoningConfig: {
-			enabled: false,
-		},
+		supportsResponseFormat: true,
 	},
 
 	"@cf/openai/gpt-oss-20b": {
@@ -1284,13 +1197,12 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 		supportsAttachments: false,
 		supportsTemperature: true,
 		supportsToolCalls: true,
+		isFeatured: true,
 		contextWindow: 128000,
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.0002,
 		costPer1kOutputTokens: 0.0003,
-		reasoningConfig: {
-			enabled: false,
-		},
+		supportsResponseFormat: true,
 	},
 
 	"@cf/pfnet/plamo-embedding-1b": {
@@ -1310,31 +1222,27 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.000019,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"@cf/qwen/qwen3-30b-a3b-fp8": {
 		name: "Qwen3 30B A3B FP8",
 		matchingModel: "@cf/qwen/qwen3-30b-a3b-fp8",
 		provider: "workers-ai",
-		releaseDate: "November 14, 2025",
-		lastUpdated: "November 14, 2025",
+		releaseDate: "April 30, 2025",
+		lastUpdated: "April 30, 2025",
 		modalities: {
 			input: ["text"],
 			output: ["text"],
 		},
 		supportsAttachments: false,
 		supportsTemperature: true,
-		supportsToolCalls: false,
-		contextWindow: 128000,
-		maxTokens: 16384,
-		costPer1kInputTokens: 0.000051,
-		costPer1kOutputTokens: 0.00034,
-		reasoningConfig: {
-			enabled: false,
-		},
+		supportsToolCalls: true,
+		isFeatured: true,
+		contextWindow: 32768,
+		maxTokens: 32768,
+		costPer1kInputTokens: 0.0000509,
+		costPer1kOutputTokens: 0.000335,
+		supportsResponseFormat: false,
 	},
 
 	"@cf/qwen/qwen3-embedding-0.6b": {
@@ -1354,8 +1262,5 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.000012,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 };

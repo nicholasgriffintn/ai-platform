@@ -114,6 +114,7 @@ export async function executeSandboxRunStream(
 				shouldCommit: Boolean(payload.shouldCommit),
 				timeoutSeconds: timeoutConfig.timeoutSeconds,
 				trustLevel: payload.trustLevel ?? "balanced",
+				modelSettings: payload.modelSettings,
 			},
 		});
 		await enqueueSandboxRunDispatchTask({

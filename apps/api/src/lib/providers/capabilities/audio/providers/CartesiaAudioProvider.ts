@@ -8,12 +8,11 @@ export class CartesiaAudioProvider extends BaseAudioProvider implements AudioPro
 	private readonly provider = new CertesiaProvider();
 
 	async synthesize(request: AudioSynthesisRequest): Promise<AudioSynthesisResult> {
-		const storage = this.requireStorage(request);
 		const slugBase = this.resolveSlugBase(request);
 		const objectKey = this.buildObjectKey(slugBase);
 
 		const response = await this.provider.getResponse({
-			model: request.voice ?? "sonic-3",
+			model: request.voice ?? "sonic-3.5",
 			message: request.input,
 			env: request.env,
 			messages: [],
@@ -35,6 +34,21 @@ export class CartesiaAudioProvider extends BaseAudioProvider implements AudioPro
 			throw new AssistantError("No audio data returned by Cartesia", ErrorType.PROVIDER_ERROR);
 		}
 
+		if (request.store === false) {
+			const audioDataUrl = this.buildAudioDataUrl(audioBuffer);
+
+			return {
+				audioBase64: audioDataUrl.replace(/^data:audio\/mpeg;base64,/, ""),
+				audioDataUrl,
+				audioMimeType: "audio/mpeg",
+				metadata: {
+					voice: request.voice,
+					engine: "cartesia",
+				},
+			};
+		}
+
+		const storage = this.requireStorage(request);
 		await storage.uploadObject(objectKey, new Uint8Array(audioBuffer));
 
 		return {

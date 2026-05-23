@@ -9,7 +9,7 @@ export const hyperbolicModelConfig: ModelConfig = {
 		provider: "hyperbolic",
 		supportsToolCalls: true,
 		isFree: false,
-		isFeatured: true,
+		isFeatured: false,
 		supportsResponseFormat: true,
 		contextWindow: 24000,
 		maxTokens: 1024,

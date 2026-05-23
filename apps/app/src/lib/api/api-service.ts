@@ -9,6 +9,7 @@ import type {
 } from "~/types";
 import { formatMessageContent } from "../messages";
 import { AgentService } from "./services/agent-service";
+import { AudioService, type SpeechGenerationResponse } from "./services/audio-service";
 import { ChatService } from "./services/chat-service";
 import { ResearchService } from "./services/research-service";
 import { SubscriptionService } from "./services/subscription-service";
@@ -27,6 +28,7 @@ class ApiService {
 	private static instance: ApiService;
 
 	private chatService: ChatService;
+	private audioService: AudioService;
 	private agentService: AgentService;
 	private userService: UserService;
 	private subscriptionService: SubscriptionService;
@@ -35,6 +37,7 @@ class ApiService {
 
 	private constructor() {
 		this.chatService = new ChatService(getHeaders);
+		this.audioService = new AudioService(getHeaders);
 		this.agentService = new AgentService(getHeaders);
 		this.userService = new UserService(getHeaders);
 		this.subscriptionService = new SubscriptionService();
@@ -97,10 +100,18 @@ class ApiService {
 		return this.chatService.submitFeedback(completion_id, log_id, feedback, score);
 	};
 
+	generateSpeech = (
+		input: string,
+		options?: { store?: boolean },
+	): Promise<SpeechGenerationResponse> => {
+		return this.audioService.generateSpeech(input, options);
+	};
+
 	streamChatCompletions = async (
 		completion_id: string,
 		messages: Message[],
 		model: string | undefined,
+		provider: string | undefined,
 		mode: ChatMode,
 		chatSettings: ChatSettings,
 		signal: AbortSignal,
@@ -123,6 +134,7 @@ class ApiService {
 			completion_id,
 			messages,
 			model,
+			provider,
 			mode,
 			chatSettings,
 			signal,
@@ -291,6 +303,10 @@ class ApiService {
 
 	getProviderSettings = (): Promise<ProviderSetting[]> => {
 		return this.userService.getProviderSettings();
+	};
+
+	deleteProviderApiKey = (providerId: string): Promise<void> => {
+		return this.userService.deleteProviderApiKey(providerId);
 	};
 
 	syncProviders = (): Promise<void> => {

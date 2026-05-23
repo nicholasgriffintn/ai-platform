@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 
 import { ModelIcon } from "~/components/ModelIcon";
+import { hasProviderReasoningOptions } from "~/lib/reasoning";
 import { cn } from "~/lib/utils";
 import type { ModelConfigItem } from "~/types";
 
@@ -120,7 +121,7 @@ export const ModelOption = ({
 					</div>
 				</div>
 				<div className="flex w-full flex-wrap items-center gap-1.5 pl-[2.6rem] sm:w-[124px] sm:flex-shrink-0 sm:justify-end sm:pl-0">
-					{model.reasoningConfig?.enabled && (
+					{hasProviderReasoningOptions(model) && (
 						<div className="rounded-full bg-blue-100 p-1 dark:bg-blue-900/30" title="Reasoning">
 							<BrainCircuit size={12} className="text-blue-600 dark:text-blue-400" />
 						</div>

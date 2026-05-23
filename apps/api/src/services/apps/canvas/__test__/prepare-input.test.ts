@@ -111,4 +111,109 @@ describe("prepareCanvasInputForModel", () => {
 			input_images: ["https://example.com/ref-1.png", "https://example.com/ref-2.png"],
 		});
 	});
+
+	it("maps image references to image_input array fields", () => {
+		const modelWithImageInput: ModelConfigItem = {
+			...imageModel,
+			inputSchema: {
+				fields: [
+					{ name: "prompt", type: "string", required: true },
+					{ name: "image_input", type: "array" },
+				],
+			},
+		};
+
+		const result = prepareCanvasInputForModel({
+			model: modelWithImageInput,
+			request: {
+				mode: "image",
+				prompt: "A cat",
+				referenceImages: ["https://example.com/ref-1.png", "https://example.com/ref-2.png"],
+			},
+		});
+
+		expect(result).toEqual({
+			prompt: "A cat",
+			image_input: ["https://example.com/ref-1.png", "https://example.com/ref-2.png"],
+		});
+	});
+
+	it("maps schema-driven model options and ignores reserved or unsupported options", () => {
+		const modelWithOptions: ModelConfigItem = {
+			...imageModel,
+			inputSchema: {
+				fields: [
+					{ name: "prompt", type: "string", required: true },
+					{ name: "aspect_ratio", type: "string", enum: ["1:1", "16:9"] },
+					{ name: "quality", type: "string", enum: ["low", "medium", "high", "auto"] },
+					{ name: "output_compression", type: "integer" },
+					{ name: "size", type: "string" },
+				],
+			},
+		};
+
+		const result = prepareCanvasInputForModel({
+			model: modelWithOptions,
+			request: {
+				mode: "image",
+				prompt: "A cat",
+				aspectRatio: "16:9",
+				modelOptions: {
+					prompt: "Do not override",
+					aspect_ratio: "1:1",
+					quality: "high",
+					output_compression: "60",
+					size: "2048x2048",
+					unsupported: "ignored",
+				},
+			},
+		});
+
+		expect(result).toEqual({
+			prompt: "A cat",
+			aspect_ratio: "16:9",
+			quality: "high",
+			output_compression: 60,
+			size: "2048x2048",
+		});
+	});
+
+	it("maps video schema options for duration, audio, and reference fields", () => {
+		const videoModel: ModelConfigItem = {
+			matchingModel: "test-video-model",
+			provider: "replicate",
+			modalities: { input: ["text", "image"], output: ["video"] },
+			inputSchema: {
+				fields: [
+					{ name: "prompt", type: "string", required: true },
+					{ name: "negative_prompt", type: "string" },
+					{ name: "reference_images", type: "array" },
+					{ name: "duration", type: "integer" },
+					{ name: "generate_audio", type: "boolean", default: true },
+				],
+			},
+		};
+
+		const result = prepareCanvasInputForModel({
+			model: videoModel,
+			request: {
+				mode: "video",
+				prompt: "A cat",
+				modelOptions: {
+					negative_prompt: "low quality",
+					reference_images: ["https://example.com/ref-1.png"],
+					duration: 5,
+					generate_audio: false,
+				},
+			},
+		});
+
+		expect(result).toEqual({
+			prompt: "A cat",
+			negative_prompt: "low quality",
+			reference_images: ["https://example.com/ref-1.png"],
+			duration: 5,
+			generate_audio: false,
+		});
+	});
 });

@@ -31,5 +31,5 @@ export const availableModalities = [
 	"transcription",
 ] as const;
 
-export const defaultModel = "mistral-medium";
-export const defaultProvider = "mistral";
+export const defaultModel = "deepseek-chat";
+export const defaultProvider = "deepseek";

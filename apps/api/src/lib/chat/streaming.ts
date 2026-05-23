@@ -1,11 +1,14 @@
 import { MAX_BUFFER_LENGTH, MAX_CONTENT_LENGTH, MAX_THINKING_LENGTH } from "~/constants/app";
+import { buildAssistantMessageData } from "~/lib/chat/mode-metadata";
 import { formatAssistantMessage, getAIResponse } from "~/lib/chat/responses";
-import { buildCouncilMessageData, extractCouncilTurnRouting } from "~/lib/chat/council";
+import { extractCouncilTurnRouting } from "~/lib/chat/council";
 import { appendReasoningPart, appendTextPart, buildMessageParts } from "~/lib/chat/messageParts";
 import { handleToolCalls } from "~/lib/chat/tools";
+import { shouldContinueAfterToolResults } from "~/lib/chat/tool-results";
 import { getToolEventPayload } from "~/lib/chat/utils";
 import { preprocessQwQResponse } from "~/lib/chat/utils/qwq";
 import type { ConversationManager } from "~/lib/conversationManager";
+import type { ServiceContext } from "~/lib/context/serviceContext";
 import { ResponseFormatter, StreamingFormatter } from "~/lib/formatter";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { Guardrails } from "~/lib/providers/capabilities/guardrails";
@@ -123,6 +126,7 @@ export async function createStreamWithPostProcessing(
 		provider: string;
 		platform?: Platform;
 		user?: IUser;
+		context?: ServiceContext;
 		userSettings?: IUserSettings;
 		app_url?: string;
 		mode?: ChatMode;
@@ -144,6 +148,7 @@ export async function createStreamWithPostProcessing(
 		model,
 		platform = "api",
 		user,
+		context,
 		userSettings,
 		app_url,
 		mode,
@@ -242,7 +247,7 @@ export async function createStreamWithPostProcessing(
 	};
 
 	const guardrails = new Guardrails(env, user, userSettings);
-	const modelConfig = await getModelConfigByMatchingModel(model);
+	const modelConfig = await getModelConfigByMatchingModel(model, env, options.provider);
 
 	return providerStream.pipeThrough(
 		new TransformStream({
@@ -643,14 +648,11 @@ export async function createStreamWithPostProcessing(
 							processedContent,
 							options.requestOptions?.council,
 						);
-						const responseData =
-							structuredData && typeof structuredData === "object" && !Array.isArray(structuredData)
-								? structuredData
-								: null;
-						const messageData = buildCouncilMessageData(
-							options.requestOptions?.council,
-							councilTurn.routing,
-						);
+						const messageData = buildAssistantMessageData({
+							responseData: structuredData,
+							requestOptions: options.requestOptions,
+							councilRouting: councilTurn.routing,
+						});
 
 						const assistantMessage = formatAssistantMessage({
 							content: councilTurn.content,
@@ -659,7 +661,7 @@ export async function createStreamWithPostProcessing(
 							citations: citationsResponse,
 							tool_calls: toolCallsData,
 							usage: usageData,
-							data: messageData ? { ...responseData, ...messageData } : responseData,
+							data: messageData,
 							guardrails: {
 								passed: !guardrailsFailed,
 								error: guardrailError,
@@ -709,6 +711,7 @@ export async function createStreamWithPostProcessing(
 
 						emitEvent(controller, "message_delta", {
 							id: completion_id,
+							message_id: assistantMessage.id,
 							object: "chat.completion",
 							created: assistantMessage.timestamp,
 							model: assistantMessage.model,
@@ -726,6 +729,7 @@ export async function createStreamWithPostProcessing(
 
 						emitEvent(controller, "message_stop", {});
 
+						let toolResults: Message[] = [];
 						if (toolCallsData.length > 0) {
 							for (const toolCall of toolCallsData) {
 								try {
@@ -763,7 +767,7 @@ export async function createStreamWithPostProcessing(
 								tool_calls: toolCallsData,
 							});
 
-							const toolResults = await handleToolCalls(
+							toolResults = await handleToolCalls(
 								completion_id,
 								{ response: fullContent || "", tool_calls: toolCallsData },
 								conversationManager,
@@ -777,21 +781,24 @@ export async function createStreamWithPostProcessing(
 										mode: options.mode,
 										date: new Date().toISOString().split("T")[0],
 										approved_tools: approved_tools,
+										options: options.requestOptions || {},
 										current_agent_id: options.current_agent_id,
 										delegation_stack: options.delegation_stack,
 										max_delegation_depth: options.max_delegation_depth,
 									},
 									app_url,
 									user: user?.id ? user : undefined,
+									context,
+								},
+								{
+									onToolResult: (toolResult) => {
+										emitEvent(controller, "tool_response", {
+											tool_id: toolResult.id,
+											result: toolResult,
+										});
+									},
 								},
 							);
-
-							for (const toolResult of toolResults) {
-								emitEvent(controller, "tool_response", {
-									tool_id: toolResult.id,
-									result: toolResult,
-								});
-							}
 
 							emitEvent(controller, "tool_response_end", {});
 						}
@@ -810,20 +817,19 @@ export async function createStreamWithPostProcessing(
 						}
 
 						if (toolCallsData.length > 0 && max_steps && current_step < max_steps) {
-							const history = await conversationManager.get(completion_id);
-							const lastToolResponses = history
-								.filter((msg) => msg.role === "tool")
-								.slice(-toolCallsData.length);
+							const shouldContinue = shouldContinueAfterToolResults(toolCallsData, toolResults);
 
-							const hasToolErrors = lastToolResponses.some((message) => message.status === "error");
-
-							if (hasToolErrors) {
-								logger.warn("Tool errors detected, stopping multi-step execution", {
-									completion_id,
-									current_step,
-								});
+							if (!shouldContinue) {
+								logger.warn(
+									"Tool execution did not complete successfully, stopping multi-step execution",
+									{
+										completion_id,
+										current_step,
+									},
+								);
 							} else {
 								try {
+									const history = await conversationManager.get(completion_id);
 									const nextStream = await getAIResponse({
 										...options,
 										messages: history,

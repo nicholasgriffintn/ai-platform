@@ -15,7 +15,6 @@ export const fireworksModelConfig: ModelConfig = {
 		},
 		supportsAttachments: false,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: true },
 		supportsToolCalls: true,
 		contextWindow: 131072,
 		maxTokens: 32768,
@@ -43,7 +42,6 @@ export const fireworksModelConfig: ModelConfig = {
 		},
 		supportsAttachments: false,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: true },
 		supportsToolCalls: true,
 		contextWindow: 131072,
 		maxTokens: 32768,
@@ -72,7 +70,6 @@ export const fireworksModelConfig: ModelConfig = {
 		},
 		supportsAttachments: false,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: true },
 		supportsToolCalls: true,
 		contextWindow: 160000,
 		maxTokens: 16384,
@@ -101,7 +98,6 @@ export const fireworksModelConfig: ModelConfig = {
 		},
 		supportsAttachments: false,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: true },
 		supportsToolCalls: true,
 		contextWindow: 128000,
 		maxTokens: 16384,
@@ -130,7 +126,6 @@ export const fireworksModelConfig: ModelConfig = {
 		},
 		supportsAttachments: false,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: false },
 		supportsToolCalls: true,
 		contextWindow: 160000,
 		maxTokens: 16384,
@@ -159,7 +154,6 @@ export const fireworksModelConfig: ModelConfig = {
 		},
 		supportsAttachments: false,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: false },
 		supportsToolCalls: true,
 		contextWindow: 128000,
 		maxTokens: 16384,
@@ -190,9 +184,6 @@ export const fireworksModelConfig: ModelConfig = {
 		maxTokens: 163840,
 		costPer1kInputTokens: 0.00056,
 		costPer1kOutputTokens: 0.00168,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"accounts/fireworks/models/deepseek-v3p2": {
@@ -213,9 +204,6 @@ export const fireworksModelConfig: ModelConfig = {
 		maxTokens: 160000,
 		costPer1kInputTokens: 0.00056,
 		costPer1kOutputTokens: 0.00168,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"accounts/fireworks/models/glm-4p5": {
@@ -236,9 +224,6 @@ export const fireworksModelConfig: ModelConfig = {
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.00055,
 		costPer1kOutputTokens: 0.00219,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"accounts/fireworks/models/glm-4p5-air": {
@@ -259,9 +244,6 @@ export const fireworksModelConfig: ModelConfig = {
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.00022,
 		costPer1kOutputTokens: 0.00088,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"accounts/fireworks/models/glm-4p6": {
@@ -282,9 +264,6 @@ export const fireworksModelConfig: ModelConfig = {
 		maxTokens: 198000,
 		costPer1kInputTokens: 0.00055,
 		costPer1kOutputTokens: 0.00219,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"accounts/fireworks/models/glm-4p7": {
@@ -305,9 +284,6 @@ export const fireworksModelConfig: ModelConfig = {
 		maxTokens: 198000,
 		costPer1kInputTokens: 0.0006,
 		costPer1kOutputTokens: 0.0022,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"accounts/fireworks/models/gpt-oss-120b": {
@@ -327,9 +303,6 @@ export const fireworksModelConfig: ModelConfig = {
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.00015,
 		costPer1kOutputTokens: 0.0006,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"accounts/fireworks/models/gpt-oss-20b": {
@@ -349,9 +322,6 @@ export const fireworksModelConfig: ModelConfig = {
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.00005,
 		costPer1kOutputTokens: 0.0002,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"accounts/fireworks/models/kimi-k2-thinking": {
@@ -371,9 +341,6 @@ export const fireworksModelConfig: ModelConfig = {
 		maxTokens: 256000,
 		costPer1kInputTokens: 0.0006,
 		costPer1kOutputTokens: 0.0025,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"accounts/fireworks/models/kimi-k2p5": {
@@ -394,9 +361,6 @@ export const fireworksModelConfig: ModelConfig = {
 		maxTokens: 256000,
 		costPer1kInputTokens: 0.0006,
 		costPer1kOutputTokens: 0.003,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"accounts/fireworks/models/minimax-m2": {
@@ -417,9 +381,6 @@ export const fireworksModelConfig: ModelConfig = {
 		maxTokens: 192000,
 		costPer1kInputTokens: 0.0003,
 		costPer1kOutputTokens: 0.0012,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"accounts/fireworks/models/minimax-m2p1": {
@@ -439,9 +400,6 @@ export const fireworksModelConfig: ModelConfig = {
 		maxTokens: 200000,
 		costPer1kInputTokens: 0.0003,
 		costPer1kOutputTokens: 0.0012,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"accounts/fireworks/models/qwen3-coder-480b-a35b-instruct": {
@@ -461,9 +419,6 @@ export const fireworksModelConfig: ModelConfig = {
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.00045,
 		costPer1kOutputTokens: 0.0018,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 	"accounts/fireworks/models/deepseek-v4-pro": {
 		name: "DeepSeek V4 Pro",
@@ -484,9 +439,6 @@ export const fireworksModelConfig: ModelConfig = {
 		maxTokens: 384000,
 		costPer1kInputTokens: 0.00174,
 		costPer1kOutputTokens: 0.00348,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"accounts/fireworks/models/glm-5": {
@@ -506,9 +458,6 @@ export const fireworksModelConfig: ModelConfig = {
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.001,
 		costPer1kOutputTokens: 0.0032,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"accounts/fireworks/models/glm-5p1": {
@@ -528,9 +477,6 @@ export const fireworksModelConfig: ModelConfig = {
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.0014,
 		costPer1kOutputTokens: 0.0044,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"accounts/fireworks/models/kimi-k2p6": {
@@ -550,9 +496,6 @@ export const fireworksModelConfig: ModelConfig = {
 		maxTokens: 262000,
 		costPer1kInputTokens: 0.00095,
 		costPer1kOutputTokens: 0.004,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"accounts/fireworks/models/minimax-m2p5": {
@@ -572,9 +515,6 @@ export const fireworksModelConfig: ModelConfig = {
 		maxTokens: 196608,
 		costPer1kInputTokens: 0.0003,
 		costPer1kOutputTokens: 0.0012,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"accounts/fireworks/models/minimax-m2p7": {
@@ -594,9 +534,6 @@ export const fireworksModelConfig: ModelConfig = {
 		maxTokens: 196608,
 		costPer1kInputTokens: 0.0003,
 		costPer1kOutputTokens: 0.0012,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"accounts/fireworks/models/qwen3p6-plus": {
@@ -616,9 +553,6 @@ export const fireworksModelConfig: ModelConfig = {
 		maxTokens: 8192,
 		costPer1kInputTokens: 0.0005,
 		costPer1kOutputTokens: 0.003,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"accounts/fireworks/routers/kimi-k2p5-turbo": {
@@ -639,8 +573,25 @@ export const fireworksModelConfig: ModelConfig = {
 		maxTokens: 256000,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: true,
+	},
+	"accounts/fireworks/models/deepseek-v4-flash": {
+		name: "DeepSeek V4 Flash",
+		matchingModel: "accounts/fireworks/models/deepseek-v4-flash",
+		provider: "fireworks",
+		knowledgeCutoffDate: "May 2025",
+		releaseDate: "April 24, 2026",
+		lastUpdated: "April 24, 2026",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
 		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		supportsResponseFormat: true,
+		contextWindow: 1000000,
+		maxTokens: 384000,
+		costPer1kInputTokens: 0.00014,
+		costPer1kOutputTokens: 0.00028,
 	},
 };

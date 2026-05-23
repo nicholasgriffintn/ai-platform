@@ -1,4 +1,9 @@
 import type { Conversation } from "~/types";
+import { generateId } from "./utils";
+
+export function createConversationId(): string {
+	return generateId();
+}
 
 export function preserveOptimisticMessages(
 	fetchedConversation: Conversation | null | undefined,

@@ -24,6 +24,9 @@ export const handleToolCalls = async (
 	modelResponse: any,
 	conversationManager: ConversationManager,
 	req: IRequest,
+	options?: {
+		onToolResult?: (message: Message) => Promise<void> | void;
+	},
 ): Promise<Message[]> => {
 	const withDerivedParts = (message: Message): Message => ({
 		...message,
@@ -31,8 +34,30 @@ export const handleToolCalls = async (
 	});
 
 	const functionResults: Message[] = [];
+	const shouldPersistAsRecorded = Boolean(options?.onToolResult);
 	const modelResponseLogId = req.env.AI.aiGatewayLogId;
 	const timestamp = Date.now();
+
+	const recordToolResult = async (message: Message) => {
+		const messageWithParts = withDerivedParts(message);
+		functionResults.push(messageWithParts);
+
+		if (!options?.onToolResult) {
+			return;
+		}
+
+		try {
+			await conversationManager.add(completion_id, messageWithParts);
+		} catch (error) {
+			logger.error("Failed to store streamed tool call result:", {
+				error,
+				completion_id,
+				tool_name: messageWithParts.name,
+			});
+		}
+
+		await options.onToolResult(messageWithParts);
+	};
 
 	const toolCalls = modelResponse.tool_calls || [];
 	if (!toolCalls || !Array.isArray(toolCalls) || toolCalls.length === 0) {
@@ -70,22 +95,20 @@ export const handleToolCalls = async (
 						`Tool "${functionName}" is not permitted in ${permissionResult.mode} mode`,
 					"PERMISSION_DENIED",
 				);
-				functionResults.push(
-					withDerivedParts({
-						role: "tool",
-						name: functionName,
-						content: blockedError.content,
-						status: "error",
-						data: blockedError.data,
-						log_id: modelResponseLogId || "",
-						id: generateId(),
-						tool_call_id: toolCall.id,
-						tool_call_arguments: toolCall.arguments || toolCall.function?.arguments,
-						timestamp,
-						model: req.request?.model || "unknown",
-						platform: req.request?.platform || "api",
-					}),
-				);
+				await recordToolResult({
+					role: "tool",
+					name: functionName,
+					content: blockedError.content,
+					status: "error",
+					data: blockedError.data,
+					log_id: modelResponseLogId || "",
+					id: generateId(),
+					tool_call_id: toolCall.id,
+					tool_call_arguments: toolCall.arguments || toolCall.function?.arguments,
+					timestamp,
+					model: req.request?.model || "unknown",
+					platform: req.request?.platform || "api",
+				});
 				continue;
 			}
 
@@ -99,22 +122,20 @@ export const handleToolCalls = async (
 						`Tool "${functionName}" requires explicit approval before it can run. Ask the user to confirm.`,
 					"APPROVAL_REQUIRED",
 				);
-				functionResults.push(
-					withDerivedParts({
-						role: "tool",
-						name: functionName,
-						content: approvalError.content,
-						status: "error",
-						data: approvalError.data,
-						log_id: modelResponseLogId || "",
-						id: generateId(),
-						tool_call_id: toolCall.id,
-						tool_call_arguments: toolCall.arguments || toolCall.function?.arguments,
-						timestamp,
-						model: req.request?.model || "unknown",
-						platform: req.request?.platform || "api",
-					}),
-				);
+				await recordToolResult({
+					role: "tool",
+					name: functionName,
+					content: approvalError.content,
+					status: "error",
+					data: approvalError.data,
+					log_id: modelResponseLogId || "",
+					id: generateId(),
+					tool_call_id: toolCall.id,
+					tool_call_arguments: toolCall.arguments || toolCall.function?.arguments,
+					timestamp,
+					model: req.request?.model || "unknown",
+					platform: req.request?.platform || "api",
+				});
 				continue;
 			}
 
@@ -150,7 +171,7 @@ export const handleToolCalls = async (
 					model: req.request?.model || "unknown",
 					platform: req.request?.platform || "api",
 				};
-				functionResults.push(withDerivedParts(memMessage));
+				await recordToolResult(memMessage);
 				continue;
 			}
 
@@ -180,6 +201,28 @@ export const handleToolCalls = async (
 					args: functionArgs,
 					request: req,
 					conversationManager,
+					emitToolResult: async (toolResult) => {
+						const toolResultName = toolResult.name || functionName;
+						const formattedResponse = formatToolResponse(
+							toolResultName,
+							toolResult.content || "",
+							toolResult.data,
+						);
+						await recordToolResult({
+							role: toolResult.role || "tool",
+							name: toolResultName,
+							content: formattedResponse.content,
+							status: toolResult.status || "success",
+							data: formattedResponse.data,
+							log_id: toolResult.log_id || modelResponseLogId || "",
+							id: toolResult.id || generateId(),
+							tool_call_id: toolCall.id,
+							tool_call_arguments: toolCall.arguments || toolCall.function?.arguments,
+							timestamp: toolResult.timestamp || Date.now(),
+							model: toolResult.model || req.request?.model || "unknown",
+							platform: toolResult.platform || req.request?.platform || "api",
+						});
+					},
 				});
 			} catch (functionError: any) {
 				logger.error(`Function execution error for ${functionName}:`, functionError);
@@ -205,7 +248,7 @@ export const handleToolCalls = async (
 					platform: req.request?.platform || "api",
 				};
 
-				functionResults.push(withDerivedParts(errorMessage));
+				await recordToolResult(errorMessage);
 				continue;
 			}
 
@@ -217,22 +260,20 @@ export const handleToolCalls = async (
 					"EMPTY_RESULT",
 				);
 
-				functionResults.push(
-					withDerivedParts({
-						role: "tool",
-						name: functionName,
-						content: nullResultError.content,
-						status: "error",
-						data: nullResultError.data,
-						log_id: modelResponseLogId || "",
-						id: generateId(),
-						tool_call_id: toolCall.id,
-						tool_call_arguments: toolCall.arguments || toolCall.function?.arguments,
-						timestamp,
-						model: req.request?.model || "unknown",
-						platform: req.request?.platform || "api",
-					}),
-				);
+				await recordToolResult({
+					role: "tool",
+					name: functionName,
+					content: nullResultError.content,
+					status: "error",
+					data: nullResultError.data,
+					log_id: modelResponseLogId || "",
+					id: generateId(),
+					tool_call_id: toolCall.id,
+					tool_call_arguments: toolCall.arguments || toolCall.function?.arguments,
+					timestamp,
+					model: req.request?.model || "unknown",
+					platform: req.request?.platform || "api",
+				});
 				continue;
 			}
 
@@ -248,12 +289,12 @@ export const handleToolCalls = async (
 				id: generateId(),
 				tool_call_id: toolCall.id,
 				tool_call_arguments: toolCall.arguments || toolCall.function?.arguments,
-				timestamp,
+				timestamp: Date.now(),
 				model: req.request?.model || "unknown",
 				platform: req.request?.platform || "api",
 			};
 
-			functionResults.push(withDerivedParts(message));
+			await recordToolResult(message);
 		} catch (error) {
 			const functionError = error as ToolCallError;
 			const errorType = functionError.type || "TOOL_CALL_ERROR";
@@ -285,11 +326,11 @@ export const handleToolCalls = async (
 				platform: req.request?.platform || "api",
 			};
 
-			functionResults.push(withDerivedParts(errorMessage));
+			await recordToolResult(errorMessage);
 		}
 	}
 
-	if (functionResults.length > 0) {
+	if (!shouldPersistAsRecorded && functionResults.length > 0) {
 		try {
 			await conversationManager.addBatch(completion_id, functionResults);
 		} catch (error) {

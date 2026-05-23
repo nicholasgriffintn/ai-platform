@@ -1,6 +1,7 @@
 import { listFunctionTools } from "~/services/functions";
 import type { ChatCompletionParameters, ModelConfigItem } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
+import { resolveReasoningModel } from "../lib/providers/models/reasoning";
 import { formatToolCalls } from "../lib/chat/tools";
 
 /**
@@ -45,7 +46,7 @@ export function calculateReasoningBudget(
 ): number {
 	const reasoningEffort = params.reasoning_effort;
 
-	if (reasoningEffort === "none") {
+	if (reasoningEffort === "none" || reasoningEffort === "simulated-thinking") {
 		return 0;
 	}
 
@@ -103,7 +104,11 @@ export function createCommonParameters(
 	providerName: string,
 	isOpenAiCompatible = false,
 ): Record<string, any> {
-	const modelName = isOpenAiCompatible ? `${providerName}/${params.model}` : params.model;
+	const resolvedModel =
+		resolveReasoningModel(modelConfig, params.reasoning_effort) ||
+		modelConfig.matchingModel ||
+		params.model;
+	const modelName = isOpenAiCompatible ? `${providerName}/${resolvedModel}` : resolvedModel;
 
 	const commonParams: Record<string, any> = {
 		model: modelName,

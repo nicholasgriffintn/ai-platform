@@ -5,6 +5,7 @@ export * from "./apps";
 export * from "./audio";
 export * from "./auth";
 export * from "./chat";
+export * from "./chat-mode";
 export * from "./council";
 export * from "./edit";
 export * from "./fim";

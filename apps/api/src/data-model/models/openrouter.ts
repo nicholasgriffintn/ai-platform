@@ -13,7 +13,6 @@ export const openrouterModelConfig: ModelConfig = {
 		},
 		supportsAttachments: false,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: true },
 		supportsToolCalls: true,
 		contextWindow: 131072,
 		maxTokens: 32768,
@@ -42,7 +41,6 @@ export const openrouterModelConfig: ModelConfig = {
 		},
 		supportsAttachments: true,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: false },
 		supportsToolCalls: true,
 		contextWindow: 1047576,
 		maxTokens: 32768,
@@ -71,7 +69,6 @@ export const openrouterModelConfig: ModelConfig = {
 		},
 		supportsAttachments: true,
 		supportsTemperature: false,
-		reasoningConfig: { enabled: true },
 		supportsToolCalls: true,
 		contextWindow: 200000,
 		maxTokens: 100000,
@@ -100,7 +97,6 @@ export const openrouterModelConfig: ModelConfig = {
 		},
 		supportsAttachments: true,
 		supportsTemperature: false,
-		reasoningConfig: { enabled: true },
 		supportsToolCalls: true,
 		contextWindow: 400000,
 		maxTokens: 128000,
@@ -129,7 +125,6 @@ export const openrouterModelConfig: ModelConfig = {
 		},
 		supportsAttachments: true,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: false },
 		supportsToolCalls: true,
 		contextWindow: 128000,
 		maxTokens: 16384,
@@ -158,7 +153,6 @@ export const openrouterModelConfig: ModelConfig = {
 		},
 		supportsAttachments: true,
 		supportsTemperature: false,
-		reasoningConfig: { enabled: true },
 		supportsToolCalls: true,
 		contextWindow: 400000,
 		maxTokens: 128000,
@@ -169,7 +163,7 @@ export const openrouterModelConfig: ModelConfig = {
 		reliability: 5,
 		speed: 2,
 		multimodal: true,
-		isFeatured: true,
+		isFeatured: false,
 		includedInRouter: false,
 		supportsArtifacts: true,
 		supportsResponseFormat: true,
@@ -187,7 +181,6 @@ export const openrouterModelConfig: ModelConfig = {
 		},
 		supportsAttachments: false,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: true },
 		supportsToolCalls: true,
 		contextWindow: 131072,
 		maxTokens: 131072,
@@ -216,7 +209,6 @@ export const openrouterModelConfig: ModelConfig = {
 		},
 		supportsAttachments: true,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: false },
 		supportsToolCalls: true,
 		contextWindow: 1047576,
 		maxTokens: 32768,
@@ -245,7 +237,6 @@ export const openrouterModelConfig: ModelConfig = {
 		},
 		supportsAttachments: true,
 		supportsTemperature: false,
-		reasoningConfig: { enabled: true },
 		supportsToolCalls: true,
 		contextWindow: 400000,
 		maxTokens: 128000,
@@ -274,7 +265,6 @@ export const openrouterModelConfig: ModelConfig = {
 		},
 		supportsAttachments: false,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: true },
 		supportsToolCalls: true,
 		contextWindow: 163840,
 		maxTokens: 163840,
@@ -302,7 +292,6 @@ export const openrouterModelConfig: ModelConfig = {
 		},
 		supportsAttachments: false,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: true },
 		supportsToolCalls: false,
 		contextWindow: 163840,
 		maxTokens: 163840,
@@ -330,7 +319,6 @@ export const openrouterModelConfig: ModelConfig = {
 		},
 		supportsAttachments: true,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: true },
 		supportsToolCalls: true,
 		contextWindow: 1000000,
 		maxTokens: 64000,
@@ -341,7 +329,7 @@ export const openrouterModelConfig: ModelConfig = {
 		reliability: 5,
 		speed: 3,
 		multimodal: true,
-		isFeatured: true,
+		isFeatured: false,
 		includedInRouter: false,
 		supportsArtifacts: true,
 		supportsResponseFormat: false,
@@ -360,7 +348,6 @@ export const openrouterModelConfig: ModelConfig = {
 		},
 		supportsAttachments: true,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: true },
 		supportsToolCalls: true,
 		contextWindow: 200000,
 		maxTokens: 32000,
@@ -371,7 +358,7 @@ export const openrouterModelConfig: ModelConfig = {
 		reliability: 5,
 		speed: 2,
 		multimodal: true,
-		isFeatured: true,
+		isFeatured: false,
 		includedInRouter: false,
 		supportsArtifacts: true,
 		supportsResponseFormat: false,
@@ -390,7 +377,6 @@ export const openrouterModelConfig: ModelConfig = {
 		},
 		supportsAttachments: true,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: false },
 		supportsToolCalls: true,
 		contextWindow: 200000,
 		maxTokens: 8192,
@@ -419,7 +405,6 @@ export const openrouterModelConfig: ModelConfig = {
 		},
 		supportsAttachments: false,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: false },
 		supportsToolCalls: true,
 		contextWindow: 131072,
 		maxTokens: 8192,
@@ -446,7 +431,6 @@ export const openrouterModelConfig: ModelConfig = {
 		},
 		supportsAttachments: false,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: true },
 		supportsToolCalls: true,
 		contextWindow: 131072,
 		maxTokens: 8192,
@@ -473,7 +457,6 @@ export const openrouterModelConfig: ModelConfig = {
 		},
 		supportsAttachments: false,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: false },
 		supportsToolCalls: true,
 		contextWindow: 131072,
 		maxTokens: 32768,
@@ -503,7 +486,6 @@ export const openrouterModelConfig: ModelConfig = {
 		},
 		supportsAttachments: false,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: true },
 		supportsToolCalls: true,
 		contextWindow: 262144,
 		maxTokens: 262144,
@@ -533,7 +515,6 @@ export const openrouterModelConfig: ModelConfig = {
 		},
 		supportsAttachments: true,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: true },
 		supportsToolCalls: true,
 		contextWindow: 1048576,
 		maxTokens: 65536,
@@ -563,7 +544,6 @@ export const openrouterModelConfig: ModelConfig = {
 		},
 		supportsAttachments: true,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: true },
 		supportsToolCalls: true,
 		contextWindow: 1048576,
 		maxTokens: 65535,
@@ -593,7 +573,6 @@ export const openrouterModelConfig: ModelConfig = {
 		},
 		supportsAttachments: false,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: false },
 		supportsToolCalls: true,
 		contextWindow: 65536,
 		maxTokens: 131072,
@@ -622,7 +601,6 @@ export const openrouterModelConfig: ModelConfig = {
 		},
 		supportsAttachments: false,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: false },
 		supportsToolCalls: true,
 		contextWindow: 262000,
 		maxTokens: 262000,
@@ -651,7 +629,6 @@ export const openrouterModelConfig: ModelConfig = {
 		},
 		supportsAttachments: true,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: false },
 		supportsToolCalls: true,
 		contextWindow: 131072,
 		maxTokens: 131072,
@@ -673,7 +650,6 @@ export const openrouterModelConfig: ModelConfig = {
 		provider: "openrouter",
 		supportsAttachments: true,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: true },
 		supportsToolCalls: true,
 		contextWindow: 2000000,
 		maxTokens: 2000000,
@@ -708,9 +684,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 36864,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"anthropic/claude-3.7-sonnet": {
@@ -731,9 +704,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.015,
 		costPer1kOutputTokens: 0.075,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"anthropic/claude-haiku-4.5": {
@@ -754,9 +724,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 64000,
 		costPer1kInputTokens: 0.001,
 		costPer1kOutputTokens: 0.005,
-		reasoningConfig: {
-			enabled: true,
-		},
 		supportsResponseFormat: true,
 	},
 
@@ -778,9 +745,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 32000,
 		costPer1kInputTokens: 0.015,
 		costPer1kOutputTokens: 0.075,
-		reasoningConfig: {
-			enabled: true,
-		},
 		supportsResponseFormat: true,
 	},
 
@@ -802,9 +766,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 64000,
 		costPer1kInputTokens: 0.005,
 		costPer1kOutputTokens: 0.025,
-		reasoningConfig: {
-			enabled: true,
-		},
 		supportsResponseFormat: true,
 	},
 
@@ -826,9 +787,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.005,
 		costPer1kOutputTokens: 0.025,
-		reasoningConfig: {
-			enabled: true,
-		},
 		supportsResponseFormat: true,
 	},
 
@@ -850,9 +808,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 64000,
 		costPer1kInputTokens: 0.003,
 		costPer1kOutputTokens: 0.015,
-		reasoningConfig: {
-			enabled: true,
-		},
 		supportsResponseFormat: true,
 	},
 
@@ -874,9 +829,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 131072,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"arcee-ai/trinity-mini:free": {
@@ -897,9 +849,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 131072,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"black-forest-labs/flux.2-flex": {
@@ -920,9 +869,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 67344,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"black-forest-labs/flux.2-klein-4b": {
@@ -943,9 +889,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 40960,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"black-forest-labs/flux.2-max": {
@@ -966,9 +909,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 46864,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"black-forest-labs/flux.2-pro": {
@@ -989,9 +929,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 46864,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"bytedance-seed/seedream-4.5": {
@@ -1012,9 +949,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 4096,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"cognitivecomputations/dolphin-mistral-24b-venice-edition:free": {
@@ -1035,9 +969,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 32768,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: false,
-		},
 		supportsResponseFormat: true,
 	},
 
@@ -1059,9 +990,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 8192,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"cognitivecomputations/dolphin3.0-r1-mistral-24b": {
@@ -1082,9 +1010,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 8192,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"deepseek/deepseek-chat-v3-0324": {
@@ -1105,9 +1030,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.0002,
 		costPer1kOutputTokens: 0.00077,
-		reasoningConfig: {
-			enabled: false,
-		},
 		supportsResponseFormat: true,
 	},
 
@@ -1129,9 +1051,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.00021,
 		costPer1kOutputTokens: 0.00079,
-		reasoningConfig: {
-			enabled: true,
-		},
 		supportsResponseFormat: true,
 	},
 
@@ -1153,9 +1072,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 131072,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"deepseek/deepseek-r1-distill-llama-70b": {
@@ -1176,10 +1092,7 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.0007,
 		costPer1kOutputTokens: 0.0008,
-		reasoningConfig: {
-			enabled: true,
-		},
-		supportsResponseFormat: true,
+		supportsResponseFormat: false,
 	},
 
 	"deepseek/deepseek-r1-distill-qwen-14b": {
@@ -1200,9 +1113,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 8192,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"deepseek/deepseek-v3-base:free": {
@@ -1223,9 +1133,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 163840,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"deepseek/deepseek-v3.1-terminus": {
@@ -1246,9 +1153,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.00027,
 		costPer1kOutputTokens: 0.00095,
-		reasoningConfig: {
-			enabled: true,
-		},
 		supportsResponseFormat: true,
 	},
 
@@ -1270,9 +1174,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.00027,
 		costPer1kOutputTokens: 0.001,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"deepseek/deepseek-v3.2": {
@@ -1293,9 +1194,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.000252,
 		costPer1kOutputTokens: 0.000378,
-		reasoningConfig: {
-			enabled: true,
-		},
 		supportsResponseFormat: true,
 	},
 
@@ -1317,9 +1215,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 163840,
 		costPer1kInputTokens: 0.000287,
 		costPer1kOutputTokens: 0.000431,
-		reasoningConfig: {
-			enabled: true,
-		},
 		supportsResponseFormat: true,
 	},
 
@@ -1341,9 +1236,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 8192,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"google/gemini-2.0-flash-001": {
@@ -1360,13 +1252,10 @@ export const openrouterModelConfig: ModelConfig = {
 		supportsAttachments: true,
 		supportsTemperature: true,
 		supportsToolCalls: true,
-		contextWindow: 1048576,
+		contextWindow: 1000000,
 		maxTokens: 8192,
 		costPer1kInputTokens: 0.0001,
 		costPer1kOutputTokens: 0.0004,
-		reasoningConfig: {
-			enabled: false,
-		},
 		supportsResponseFormat: true,
 	},
 
@@ -1388,9 +1277,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 1048576,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"google/gemini-2.5-flash-lite": {
@@ -1411,9 +1297,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 65535,
 		costPer1kInputTokens: 0.0001,
 		costPer1kOutputTokens: 0.0004,
-		reasoningConfig: {
-			enabled: true,
-		},
 		supportsResponseFormat: true,
 		costPer1kReasoningTokens: 0.0004,
 	},
@@ -1436,9 +1319,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 65535,
 		costPer1kInputTokens: 0.0001,
 		costPer1kOutputTokens: 0.0004,
-		reasoningConfig: {
-			enabled: true,
-		},
 		supportsResponseFormat: true,
 		costPer1kReasoningTokens: 0.0004,
 	},
@@ -1461,9 +1341,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.0003,
 		costPer1kOutputTokens: 0.0025,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"google/gemini-2.5-pro-preview-05-06": {
@@ -1484,9 +1361,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 65535,
 		costPer1kInputTokens: 0.00125,
 		costPer1kOutputTokens: 0.01,
-		reasoningConfig: {
-			enabled: true,
-		},
 		supportsResponseFormat: true,
 		costPer1kReasoningTokens: 0.01,
 	},
@@ -1509,9 +1383,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.00125,
 		costPer1kOutputTokens: 0.01,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"google/gemini-3-flash-preview": {
@@ -1532,9 +1403,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.0005,
 		costPer1kOutputTokens: 0.003,
-		reasoningConfig: {
-			enabled: true,
-		},
 		supportsResponseFormat: true,
 		costPer1kReasoningTokens: 0.003,
 	},
@@ -1557,9 +1425,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 66000,
 		costPer1kInputTokens: 0.002,
 		costPer1kOutputTokens: 0.012,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"google/gemma-2-9b-it": {
@@ -1580,9 +1445,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 8192,
 		costPer1kInputTokens: 0.00003,
 		costPer1kOutputTokens: 0.00009,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"google/gemma-3-12b-it": {
@@ -1603,9 +1465,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00004,
 		costPer1kOutputTokens: 0.00013,
-		reasoningConfig: {
-			enabled: false,
-		},
 		supportsResponseFormat: true,
 	},
 
@@ -1627,9 +1486,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 8192,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"google/gemma-3-27b-it": {
@@ -1650,9 +1506,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00008,
 		costPer1kOutputTokens: 0.00016,
-		reasoningConfig: {
-			enabled: false,
-		},
 		supportsResponseFormat: true,
 	},
 
@@ -1674,9 +1527,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 8192,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"google/gemma-3-4b-it": {
@@ -1697,9 +1547,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00004,
 		costPer1kOutputTokens: 0.00008,
-		reasoningConfig: {
-			enabled: false,
-		},
 		supportsResponseFormat: true,
 	},
 
@@ -1721,9 +1568,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 8192,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"google/gemma-3n-e2b-it:free": {
@@ -1744,9 +1588,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 2000,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"google/gemma-3n-e4b-it": {
@@ -1767,9 +1608,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.00006,
 		costPer1kOutputTokens: 0.00012,
-		reasoningConfig: {
-			enabled: false,
-		},
 		supportsResponseFormat: false,
 	},
 
@@ -1791,9 +1629,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 2000,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"kwaipilot/kat-coder-pro:free": {
@@ -1814,9 +1649,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 65536,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"liquid/lfm-2.5-1.2b-instruct:free": {
@@ -1837,9 +1669,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 32768,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: false,
-		},
 		supportsResponseFormat: false,
 	},
 
@@ -1861,9 +1690,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 32768,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: true,
-		},
 		supportsResponseFormat: false,
 	},
 
@@ -1885,9 +1711,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 131072,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"meta-llama/llama-3.2-11b-vision-instruct": {
@@ -1908,10 +1731,7 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.000245,
 		costPer1kOutputTokens: 0.000245,
-		reasoningConfig: {
-			enabled: false,
-		},
-		supportsResponseFormat: true,
+		supportsResponseFormat: false,
 	},
 
 	"meta-llama/llama-3.2-3b-instruct:free": {
@@ -1932,9 +1752,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 131072,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: false,
-		},
 		supportsResponseFormat: false,
 	},
 
@@ -1956,9 +1773,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 64000,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"microsoft/mai-ds-r1:free": {
@@ -1979,9 +1793,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 163840,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"minimax/minimax-01": {
@@ -2001,9 +1812,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 1000192,
 		costPer1kInputTokens: 0.0002,
 		costPer1kOutputTokens: 0.0011,
-		reasoningConfig: {
-			enabled: true,
-		},
 		knowledgeCutoffDate: "March 31, 2024",
 		supportsResponseFormat: false,
 	},
@@ -2025,9 +1833,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 40000,
 		costPer1kInputTokens: 0.0004,
 		costPer1kOutputTokens: 0.0022,
-		reasoningConfig: {
-			enabled: true,
-		},
 		knowledgeCutoffDate: "June 30, 2024",
 		supportsResponseFormat: false,
 	},
@@ -2049,9 +1854,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 196608,
 		costPer1kInputTokens: 0.000255,
 		costPer1kOutputTokens: 0.001,
-		reasoningConfig: {
-			enabled: true,
-		},
 		supportsResponseFormat: true,
 	},
 
@@ -2072,9 +1874,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 196608,
 		costPer1kInputTokens: 0.00029,
 		costPer1kOutputTokens: 0.00095,
-		reasoningConfig: {
-			enabled: true,
-		},
 		supportsResponseFormat: true,
 	},
 
@@ -2096,9 +1895,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 256000,
 		costPer1kInputTokens: 0.0003,
 		costPer1kOutputTokens: 0.0009,
-		reasoningConfig: {
-			enabled: false,
-		},
 		supportsResponseFormat: true,
 	},
 
@@ -2120,9 +1916,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 262144,
 		costPer1kInputTokens: 0.0004,
 		costPer1kOutputTokens: 0.002,
-		reasoningConfig: {
-			enabled: false,
-		},
 		supportsResponseFormat: true,
 	},
 
@@ -2144,9 +1937,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 262144,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"mistralai/devstral-medium-2507": {
@@ -2167,9 +1957,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.0004,
 		costPer1kOutputTokens: 0.002,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"mistralai/devstral-small-2505": {
@@ -2190,9 +1977,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.00006,
 		costPer1kOutputTokens: 0.00012,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"mistralai/devstral-small-2505:free": {
@@ -2213,9 +1997,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 32768,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"mistralai/mistral-7b-instruct:free": {
@@ -2236,9 +2017,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 32768,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"mistralai/mistral-medium-3": {
@@ -2259,9 +2037,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.0004,
 		costPer1kOutputTokens: 0.002,
-		reasoningConfig: {
-			enabled: false,
-		},
 		supportsResponseFormat: true,
 	},
 
@@ -2283,9 +2058,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 262144,
 		costPer1kInputTokens: 0.0004,
 		costPer1kOutputTokens: 0.002,
-		reasoningConfig: {
-			enabled: false,
-		},
 		supportsResponseFormat: true,
 	},
 
@@ -2307,9 +2079,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 131072,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"mistralai/mistral-small-3.1-24b-instruct": {
@@ -2327,12 +2096,9 @@ export const openrouterModelConfig: ModelConfig = {
 		supportsTemperature: true,
 		supportsToolCalls: false,
 		contextWindow: 128000,
-		maxTokens: 8192,
+		maxTokens: 128000,
 		costPer1kInputTokens: 0.000351,
 		costPer1kOutputTokens: 0.000555,
-		reasoningConfig: {
-			enabled: false,
-		},
 		supportsResponseFormat: false,
 	},
 
@@ -2354,9 +2120,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.000075,
 		costPer1kOutputTokens: 0.0002,
-		reasoningConfig: {
-			enabled: false,
-		},
 		supportsResponseFormat: true,
 	},
 
@@ -2378,9 +2141,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 96000,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"moonshotai/kimi-dev-72b:free": {
@@ -2401,9 +2161,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 131072,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"moonshotai/kimi-k2-0905": {
@@ -2424,9 +2181,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 262144,
 		costPer1kInputTokens: 0.0006,
 		costPer1kOutputTokens: 0.0025,
-		reasoningConfig: {
-			enabled: false,
-		},
 		supportsResponseFormat: true,
 	},
 
@@ -2448,9 +2202,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.0006,
 		costPer1kOutputTokens: 0.0025,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"moonshotai/kimi-k2:free": {
@@ -2471,9 +2222,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 32800,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"moonshotai/kimi-k2.5": {
@@ -2494,9 +2242,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 262144,
 		costPer1kInputTokens: 0.0004,
 		costPer1kOutputTokens: 0.0019,
-		reasoningConfig: {
-			enabled: true,
-		},
 		supportsResponseFormat: true,
 	},
 
@@ -2518,9 +2263,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 8192,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"nousresearch/hermes-3-llama-3.1-405b:free": {
@@ -2541,9 +2283,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 131072,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: true,
-		},
 		supportsResponseFormat: false,
 	},
 
@@ -2565,10 +2304,7 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.001,
 		costPer1kOutputTokens: 0.003,
-		reasoningConfig: {
-			enabled: true,
-		},
-		supportsResponseFormat: true,
+		supportsResponseFormat: false,
 	},
 
 	"nousresearch/hermes-4-70b": {
@@ -2589,10 +2325,7 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.00013,
 		costPer1kOutputTokens: 0.0004,
-		reasoningConfig: {
-			enabled: true,
-		},
-		supportsResponseFormat: true,
+		supportsResponseFormat: false,
 	},
 
 	"nvidia/nemotron-3-nano-30b-a3b:free": {
@@ -2613,9 +2346,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 256000,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: true,
-		},
 		supportsResponseFormat: false,
 	},
 
@@ -2637,9 +2367,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 128000,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: true,
-		},
 		supportsResponseFormat: false,
 	},
 
@@ -2661,10 +2388,7 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00004,
 		costPer1kOutputTokens: 0.00016,
-		reasoningConfig: {
-			enabled: true,
-		},
-		supportsResponseFormat: true,
+		supportsResponseFormat: false,
 	},
 
 	"nvidia/nemotron-nano-9b-v2:free": {
@@ -2685,9 +2409,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 128000,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: true,
-		},
 		supportsResponseFormat: true,
 	},
 
@@ -2709,9 +2430,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00125,
 		costPer1kOutputTokens: 0.01,
-		reasoningConfig: {
-			enabled: true,
-		},
 		supportsResponseFormat: true,
 	},
 
@@ -2733,9 +2451,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.00125,
 		costPer1kOutputTokens: 0.01,
-		reasoningConfig: {
-			enabled: true,
-		},
 		supportsResponseFormat: true,
 	},
 
@@ -2757,9 +2472,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.01,
 		costPer1kOutputTokens: 0.01,
-		reasoningConfig: {
-			enabled: true,
-		},
 		supportsResponseFormat: true,
 	},
 
@@ -2781,9 +2493,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.015,
 		costPer1kOutputTokens: 0.12,
-		reasoningConfig: {
-			enabled: true,
-		},
 		supportsResponseFormat: true,
 	},
 
@@ -2806,9 +2515,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.00125,
 		costPer1kOutputTokens: 0.01,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"openai/gpt-5.1-chat": {
@@ -2830,9 +2536,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00125,
 		costPer1kOutputTokens: 0.01,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"openai/gpt-5.1-codex": {
@@ -2854,9 +2557,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.00125,
 		costPer1kOutputTokens: 0.01,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"openai/gpt-5.1-codex-max": {
@@ -2878,9 +2578,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.00125,
 		costPer1kOutputTokens: 0.01,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"openai/gpt-5.1-codex-mini": {
@@ -2902,9 +2599,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.00025,
 		costPer1kOutputTokens: 0.002,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"openai/gpt-5.2": {
@@ -2925,9 +2619,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.00175,
 		costPer1kOutputTokens: 0.014,
-		reasoningConfig: {
-			enabled: true,
-		},
 		supportsResponseFormat: true,
 	},
 
@@ -2950,9 +2641,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 32000,
 		costPer1kInputTokens: 0.00175,
 		costPer1kOutputTokens: 0.014,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"openai/gpt-5.2-codex": {
@@ -2974,9 +2662,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.00175,
 		costPer1kOutputTokens: 0.014,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"openai/gpt-5.2-pro": {
@@ -2998,9 +2683,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.021,
 		costPer1kOutputTokens: 0.168,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"openai/gpt-oss-120b:exacto": {
@@ -3020,9 +2702,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.00005,
 		costPer1kOutputTokens: 0.00024,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"openai/gpt-oss-120b:free": {
@@ -3042,9 +2721,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 131072,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: true,
-		},
 		knowledgeCutoffDate: "June 30, 2024",
 		supportsResponseFormat: false,
 	},
@@ -3066,9 +2742,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 8192,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: true,
-		},
 		knowledgeCutoffDate: "June 30, 2024",
 		supportsResponseFormat: false,
 	},
@@ -3090,10 +2763,7 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.000075,
 		costPer1kOutputTokens: 0.0003,
-		reasoningConfig: {
-			enabled: true,
-		},
-		supportsResponseFormat: true,
+		supportsResponseFormat: false,
 	},
 
 	"openrouter/sherlock-dash-alpha": {
@@ -3114,9 +2784,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 0,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"openrouter/sherlock-think-alpha": {
@@ -3137,9 +2804,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 0,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"qwen/qwen-2.5-coder-32b-instruct": {
@@ -3157,12 +2821,9 @@ export const openrouterModelConfig: ModelConfig = {
 		supportsTemperature: true,
 		supportsToolCalls: false,
 		contextWindow: 32768,
-		maxTokens: 8192,
+		maxTokens: 32768,
 		costPer1kInputTokens: 0.00066,
 		costPer1kOutputTokens: 0.001,
-		reasoningConfig: {
-			enabled: false,
-		},
 		supportsResponseFormat: false,
 	},
 
@@ -3184,9 +2845,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 32768,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"qwen/qwen2.5-vl-32b-instruct:free": {
@@ -3207,9 +2865,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 8192,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"qwen/qwen2.5-vl-72b-instruct": {
@@ -3230,9 +2885,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 8192,
 		costPer1kInputTokens: 0.00025,
 		costPer1kOutputTokens: 0.00075,
-		reasoningConfig: {
-			enabled: false,
-		},
 		supportsResponseFormat: true,
 	},
 
@@ -3254,9 +2906,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 32768,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"qwen/qwen3-14b:free": {
@@ -3277,9 +2926,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 40960,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"qwen/qwen3-235b-a22b-07-25": {
@@ -3300,9 +2946,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.00015,
 		costPer1kOutputTokens: 0.00085,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"qwen/qwen3-235b-a22b-07-25:free": {
@@ -3323,9 +2966,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 131072,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"qwen/qwen3-235b-a22b-thinking-2507": {
@@ -3346,9 +2986,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 81920,
 		costPer1kInputTokens: 0.0001495,
 		costPer1kOutputTokens: 0.001495,
-		reasoningConfig: {
-			enabled: true,
-		},
 		supportsResponseFormat: true,
 	},
 
@@ -3370,9 +3007,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 131072,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"qwen/qwen3-30b-a3b-instruct-2507": {
@@ -3393,9 +3027,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 262144,
 		costPer1kInputTokens: 0.00009,
 		costPer1kOutputTokens: 0.0003,
-		reasoningConfig: {
-			enabled: false,
-		},
 		supportsResponseFormat: true,
 	},
 
@@ -3417,9 +3048,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.00008,
 		costPer1kOutputTokens: 0.0004,
-		reasoningConfig: {
-			enabled: true,
-		},
 		supportsResponseFormat: true,
 	},
 
@@ -3441,9 +3069,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 40960,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"qwen/qwen3-32b:free": {
@@ -3464,9 +3089,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 40960,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"qwen/qwen3-4b:free": {
@@ -3487,9 +3109,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 40960,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"qwen/qwen3-8b:free": {
@@ -3510,9 +3129,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 40960,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"qwen/qwen3-coder": {
@@ -3533,9 +3149,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.00022,
 		costPer1kOutputTokens: 0.0018,
-		reasoningConfig: {
-			enabled: false,
-		},
 		supportsResponseFormat: true,
 	},
 
@@ -3557,9 +3170,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.00007,
 		costPer1kOutputTokens: 0.00027,
-		reasoningConfig: {
-			enabled: false,
-		},
 		supportsResponseFormat: true,
 	},
 
@@ -3577,14 +3187,11 @@ export const openrouterModelConfig: ModelConfig = {
 		supportsAttachments: false,
 		supportsTemperature: true,
 		supportsToolCalls: true,
-		supportsResponseFormat: true,
+		supportsResponseFormat: false,
 		contextWindow: 1000000,
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.000195,
 		costPer1kOutputTokens: 0.000975,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"qwen/qwen3-coder:exacto": {
@@ -3605,9 +3212,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.00038,
 		costPer1kOutputTokens: 0.00153,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"qwen/qwen3-max": {
@@ -3627,11 +3231,8 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.00078,
 		costPer1kOutputTokens: 0.0039,
-		reasoningConfig: {
-			enabled: true,
-		},
 		knowledgeCutoffDate: "June 30, 2025",
-		supportsResponseFormat: true,
+		supportsResponseFormat: false,
 	},
 
 	"qwen/qwen3-next-80b-a3b-instruct": {
@@ -3652,9 +3253,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00009,
 		costPer1kOutputTokens: 0.0011,
-		reasoningConfig: {
-			enabled: false,
-		},
 		supportsResponseFormat: true,
 	},
 
@@ -3676,9 +3274,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 262144,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: false,
-		},
 		supportsResponseFormat: true,
 	},
 
@@ -3700,9 +3295,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.0000975,
 		costPer1kOutputTokens: 0.00078,
-		reasoningConfig: {
-			enabled: true,
-		},
 		supportsResponseFormat: true,
 	},
 
@@ -3724,9 +3316,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 32768,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"rekaai/reka-flash-3": {
@@ -3747,9 +3336,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.0001,
 		costPer1kOutputTokens: 0.0002,
-		reasoningConfig: {
-			enabled: true,
-		},
 		supportsResponseFormat: false,
 	},
 
@@ -3771,9 +3357,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 32768,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"sourceful/riverflow-v2-fast-preview": {
@@ -3794,9 +3377,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 8192,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"sourceful/riverflow-v2-max-preview": {
@@ -3817,9 +3397,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 8192,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"sourceful/riverflow-v2-standard-preview": {
@@ -3840,9 +3417,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 8192,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"stepfun/step-3.5-flash": {
@@ -3863,10 +3437,7 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.0001,
 		costPer1kOutputTokens: 0.0003,
-		reasoningConfig: {
-			enabled: true,
-		},
-		supportsResponseFormat: true,
+		supportsResponseFormat: false,
 	},
 
 	"stepfun/step-3.5-flash:free": {
@@ -3887,9 +3458,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 256000,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"thudm/glm-z1-32b:free": {
@@ -3910,9 +3478,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 32768,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"tngtech/deepseek-r1t2-chimera:free": {
@@ -3933,9 +3498,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 163840,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"tngtech/tng-r1t-chimera:free": {
@@ -3956,9 +3518,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 163840,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"x-ai/grok-3-beta": {
@@ -3979,9 +3538,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 8192,
 		costPer1kInputTokens: 0.003,
 		costPer1kOutputTokens: 0.015,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"x-ai/grok-3-mini-beta": {
@@ -4002,9 +3558,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 8192,
 		costPer1kInputTokens: 0.0003,
 		costPer1kOutputTokens: 0.0005,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"x-ai/grok-4": {
@@ -4025,9 +3578,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 64000,
 		costPer1kInputTokens: 0.003,
 		costPer1kOutputTokens: 0.015,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"x-ai/grok-4-fast": {
@@ -4048,9 +3598,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 30000,
 		costPer1kInputTokens: 0.0002,
 		costPer1kOutputTokens: 0.0005,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"x-ai/grok-4.1-fast": {
@@ -4071,9 +3618,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 30000,
 		costPer1kInputTokens: 0.0002,
 		costPer1kOutputTokens: 0.0005,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"x-ai/grok-code-fast-1": {
@@ -4094,9 +3638,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 10000,
 		costPer1kInputTokens: 0.0002,
 		costPer1kOutputTokens: 0.0015,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"xiaomi/mimo-v2-flash": {
@@ -4117,10 +3658,7 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.0001,
 		costPer1kOutputTokens: 0.0003,
-		reasoningConfig: {
-			enabled: true,
-		},
-		supportsResponseFormat: true,
+		supportsResponseFormat: false,
 	},
 
 	"z-ai/glm-4.5": {
@@ -4141,10 +3679,7 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 98304,
 		costPer1kInputTokens: 0.0006,
 		costPer1kOutputTokens: 0.0022,
-		reasoningConfig: {
-			enabled: true,
-		},
-		supportsResponseFormat: true,
+		supportsResponseFormat: false,
 	},
 
 	"z-ai/glm-4.5-air": {
@@ -4165,9 +3700,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 98304,
 		costPer1kInputTokens: 0.00013,
 		costPer1kOutputTokens: 0.00085,
-		reasoningConfig: {
-			enabled: true,
-		},
 		supportsResponseFormat: false,
 	},
 
@@ -4189,9 +3721,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 96000,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: true,
-		},
 		supportsResponseFormat: false,
 	},
 
@@ -4213,10 +3742,7 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.0006,
 		costPer1kOutputTokens: 0.0018,
-		reasoningConfig: {
-			enabled: true,
-		},
-		supportsResponseFormat: true,
+		supportsResponseFormat: false,
 	},
 
 	"z-ai/glm-4.6": {
@@ -4237,9 +3763,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.00043,
 		costPer1kOutputTokens: 0.00174,
-		reasoningConfig: {
-			enabled: true,
-		},
 		supportsResponseFormat: true,
 	},
 
@@ -4261,9 +3784,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.0006,
 		costPer1kOutputTokens: 0.0019,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"z-ai/glm-4.7": {
@@ -4284,9 +3804,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.0004,
 		costPer1kOutputTokens: 0.00175,
-		reasoningConfig: {
-			enabled: true,
-		},
 		supportsResponseFormat: true,
 	},
 
@@ -4308,9 +3825,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00006,
 		costPer1kOutputTokens: 0.0004,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"z-ai/glm-5": {
@@ -4331,9 +3845,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 131000,
 		costPer1kInputTokens: 0.0006,
 		costPer1kOutputTokens: 0.00192,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 	"~anthropic/claude-haiku-latest": {
 		name: "Anthropic Claude Haiku Latest",
@@ -4353,9 +3864,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 64000,
 		costPer1kInputTokens: 0.001,
 		costPer1kOutputTokens: 0.005,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"~anthropic/claude-opus-latest": {
@@ -4376,9 +3884,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.005,
 		costPer1kOutputTokens: 0.025,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"~anthropic/claude-sonnet-latest": {
@@ -4399,9 +3904,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.003,
 		costPer1kOutputTokens: 0.015,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"~google/gemini-flash-latest": {
@@ -4420,12 +3922,10 @@ export const openrouterModelConfig: ModelConfig = {
 		supportsResponseFormat: true,
 		contextWindow: 1048576,
 		maxTokens: 65536,
-		costPer1kInputTokens: 0.0005,
-		costPer1kOutputTokens: 0.003,
-		costPer1kReasoningTokens: 0.003,
-		reasoningConfig: {
-			enabled: true,
-		},
+		costPer1kInputTokens: 0.0015,
+		costPer1kOutputTokens: 0.009,
+		costPer1kReasoningTokens: 0.009,
+		knowledgeCutoffDate: "January 1, 2025",
 	},
 
 	"~google/gemini-pro-latest": {
@@ -4447,9 +3947,6 @@ export const openrouterModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0.002,
 		costPer1kOutputTokens: 0.012,
 		costPer1kReasoningTokens: 0.012,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"~moonshotai/kimi-latest": {
@@ -4470,9 +3967,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 262142,
 		costPer1kInputTokens: 0.00073,
 		costPer1kOutputTokens: 0.00349,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"~openai/gpt-latest": {
@@ -4494,9 +3988,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.005,
 		costPer1kOutputTokens: 0.03,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"~openai/gpt-mini-latest": {
@@ -4518,9 +4009,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.00075,
 		costPer1kOutputTokens: 0.0045,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"ai21/jamba-large-1.7": {
@@ -4537,14 +4025,11 @@ export const openrouterModelConfig: ModelConfig = {
 		supportsAttachments: false,
 		supportsTemperature: true,
 		supportsToolCalls: true,
-		supportsResponseFormat: true,
+		supportsResponseFormat: false,
 		contextWindow: 256000,
 		maxTokens: 4096,
 		costPer1kInputTokens: 0.002,
 		costPer1kOutputTokens: 0.008,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"aion-labs/aion-1.0": {
@@ -4565,9 +4050,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.004,
 		costPer1kOutputTokens: 0.008,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"aion-labs/aion-1.0-mini": {
@@ -4588,9 +4070,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.0007,
 		costPer1kOutputTokens: 0.0014,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"aion-labs/aion-2.0": {
@@ -4611,9 +4090,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.0008,
 		costPer1kOutputTokens: 0.0016,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"aion-labs/aion-rp-llama-3.1-8b": {
@@ -4635,9 +4111,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.0008,
 		costPer1kOutputTokens: 0.0016,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"alfredpros/codellama-7b-instruct-solidity": {
@@ -4659,9 +4132,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 4096,
 		costPer1kInputTokens: 0.0008,
 		costPer1kOutputTokens: 0.0012,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"alibaba/tongyi-deepresearch-30b-a3b": {
@@ -4683,9 +4153,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.00009,
 		costPer1kOutputTokens: 0.00045,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"allenai/olmo-3-32b-think": {
@@ -4706,9 +4173,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.00015,
 		costPer1kOutputTokens: 0.0005,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"amazon/nova-2-lite-v1": {
@@ -4729,9 +4193,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 65535,
 		costPer1kInputTokens: 0.0003,
 		costPer1kOutputTokens: 0.0025,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"amazon/nova-lite-v1": {
@@ -4753,9 +4214,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 5120,
 		costPer1kInputTokens: 0.00006,
 		costPer1kOutputTokens: 0.00024,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"amazon/nova-micro-v1": {
@@ -4777,9 +4235,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 5120,
 		costPer1kInputTokens: 0.000035,
 		costPer1kOutputTokens: 0.00014,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"amazon/nova-premier-v1": {
@@ -4800,9 +4255,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 32000,
 		costPer1kInputTokens: 0.0025,
 		costPer1kOutputTokens: 0.0125,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"amazon/nova-pro-v1": {
@@ -4824,9 +4276,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 5120,
 		costPer1kInputTokens: 0.0008,
 		costPer1kOutputTokens: 0.0032,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"anthracite-org/magnum-v4-72b": {
@@ -4843,14 +4292,11 @@ export const openrouterModelConfig: ModelConfig = {
 		supportsAttachments: false,
 		supportsTemperature: true,
 		supportsToolCalls: false,
-		supportsResponseFormat: true,
+		supportsResponseFormat: false,
 		contextWindow: 16384,
 		maxTokens: 2048,
 		costPer1kInputTokens: 0.003,
 		costPer1kOutputTokens: 0.005,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"anthropic/claude-3-haiku": {
@@ -4872,9 +4318,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 4096,
 		costPer1kInputTokens: 0.00025,
 		costPer1kOutputTokens: 0.00125,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"anthropic/claude-opus-4.6-fast": {
@@ -4895,9 +4338,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.03,
 		costPer1kOutputTokens: 0.15,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"anthropic/claude-opus-4.7": {
@@ -4919,9 +4359,7 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.005,
 		costPer1kOutputTokens: 0.025,
-		reasoningConfig: {
-			enabled: true,
-		},
+		isFeatured: true,
 	},
 
 	"anthropic/claude-opus-4.7-fast": {
@@ -4942,9 +4380,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.03,
 		costPer1kOutputTokens: 0.15,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"anthropic/claude-sonnet-4.6": {
@@ -4966,9 +4401,7 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.003,
 		costPer1kOutputTokens: 0.015,
-		reasoningConfig: {
-			enabled: true,
-		},
+		isFeatured: true,
 	},
 
 	"arcee-ai/coder-large": {
@@ -4990,9 +4423,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.0005,
 		costPer1kOutputTokens: 0.0008,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"arcee-ai/maestro-reasoning": {
@@ -5014,9 +4444,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 32000,
 		costPer1kInputTokens: 0.0009,
 		costPer1kOutputTokens: 0.0033,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"arcee-ai/spotlight": {
@@ -5038,9 +4465,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 65537,
 		costPer1kInputTokens: 0.00018,
 		costPer1kOutputTokens: 0.00018,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"arcee-ai/trinity-large-preview": {
@@ -5061,9 +4485,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 131000,
 		costPer1kInputTokens: 0.00015,
 		costPer1kOutputTokens: 0.00045,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"arcee-ai/trinity-large-thinking": {
@@ -5084,9 +4505,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 262144,
 		costPer1kInputTokens: 0.00022,
 		costPer1kOutputTokens: 0.00085,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"arcee-ai/trinity-large-thinking:free": {
@@ -5107,9 +4525,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 80000,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"arcee-ai/trinity-mini": {
@@ -5130,9 +4545,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.000045,
 		costPer1kOutputTokens: 0.00015,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"arcee-ai/virtuoso-large": {
@@ -5154,9 +4566,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 64000,
 		costPer1kInputTokens: 0.00075,
 		costPer1kOutputTokens: 0.0012,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"baidu/cobuddy:free": {
@@ -5177,9 +4586,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 65536,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"baidu/ernie-4.5-21b-a3b": {
@@ -5201,9 +4607,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 8000,
 		costPer1kInputTokens: 0.00007,
 		costPer1kOutputTokens: 0.00028,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"baidu/ernie-4.5-21b-a3b-thinking": {
@@ -5225,9 +4628,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.00007,
 		costPer1kOutputTokens: 0.00028,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"baidu/ernie-4.5-300b-a47b": {
@@ -5244,14 +4644,11 @@ export const openrouterModelConfig: ModelConfig = {
 		supportsAttachments: false,
 		supportsTemperature: true,
 		supportsToolCalls: false,
-		supportsResponseFormat: true,
+		supportsResponseFormat: false,
 		contextWindow: 123000,
 		maxTokens: 12000,
 		costPer1kInputTokens: 0.00028,
 		costPer1kOutputTokens: 0.0011,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"baidu/ernie-4.5-vl-28b-a3b": {
@@ -5273,9 +4670,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 8000,
 		costPer1kInputTokens: 0.00014,
 		costPer1kOutputTokens: 0.00056,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"baidu/ernie-4.5-vl-424b-a47b": {
@@ -5297,9 +4691,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 16000,
 		costPer1kInputTokens: 0.00042,
 		costPer1kOutputTokens: 0.00125,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"baidu/qianfan-ocr-fast": {
@@ -5320,9 +4711,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 28672,
 		costPer1kInputTokens: 0.00068,
 		costPer1kOutputTokens: 0.00281,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"bytedance-seed/seed-1.6": {
@@ -5343,9 +4731,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.00025,
 		costPer1kOutputTokens: 0.002,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"bytedance-seed/seed-1.6-flash": {
@@ -5366,9 +4751,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.000075,
 		costPer1kOutputTokens: 0.0003,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"bytedance-seed/seed-2.0-lite": {
@@ -5389,9 +4771,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.00025,
 		costPer1kOutputTokens: 0.002,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"bytedance-seed/seed-2.0-mini": {
@@ -5412,9 +4791,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.0001,
 		costPer1kOutputTokens: 0.0004,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"bytedance/ui-tars-1.5-7b": {
@@ -5436,9 +4812,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 2048,
 		costPer1kInputTokens: 0.0001,
 		costPer1kOutputTokens: 0.0002,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"cohere/command-a": {
@@ -5460,9 +4833,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 8192,
 		costPer1kInputTokens: 0.0025,
 		costPer1kOutputTokens: 0.01,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"cohere/command-r-08-2024": {
@@ -5484,9 +4854,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 4000,
 		costPer1kInputTokens: 0.00015,
 		costPer1kOutputTokens: 0.0006,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"cohere/command-r-plus-08-2024": {
@@ -5508,9 +4875,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 4000,
 		costPer1kInputTokens: 0.0025,
 		costPer1kOutputTokens: 0.01,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"cohere/command-r7b-12-2024": {
@@ -5532,9 +4896,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 4000,
 		costPer1kInputTokens: 0.0000375,
 		costPer1kOutputTokens: 0.00015,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"deepcogito/cogito-v2.1-671b": {
@@ -5555,9 +4916,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.00125,
 		costPer1kOutputTokens: 0.00125,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"deepseek/deepseek-chat": {
@@ -5579,9 +4937,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00032,
 		costPer1kOutputTokens: 0.00089,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"deepseek/deepseek-r1": {
@@ -5603,9 +4958,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 16000,
 		costPer1kInputTokens: 0.0007,
 		costPer1kOutputTokens: 0.0025,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"deepseek/deepseek-r1-0528": {
@@ -5627,9 +4979,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.0005,
 		costPer1kOutputTokens: 0.00215,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"deepseek/deepseek-r1-distill-qwen-32b": {
@@ -5651,9 +5000,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.00029,
 		costPer1kOutputTokens: 0.00029,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"deepseek/deepseek-v3.2-exp": {
@@ -5675,9 +5021,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.00027,
 		costPer1kOutputTokens: 0.00041,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"deepseek/deepseek-v4-flash": {
@@ -5698,9 +5041,7 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.000112,
 		costPer1kOutputTokens: 0.000224,
-		reasoningConfig: {
-			enabled: true,
-		},
+		isFeatured: true,
 	},
 
 	"deepseek/deepseek-v4-flash:free": {
@@ -5721,9 +5062,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 384000,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"deepseek/deepseek-v4-pro": {
@@ -5744,9 +5082,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 384000,
 		costPer1kInputTokens: 0.000435,
 		costPer1kOutputTokens: 0.00087,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"essentialai/rnj-1-instruct": {
@@ -5767,9 +5102,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.00015,
 		costPer1kOutputTokens: 0.00015,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"google/gemini-2.0-flash-lite-001": {
@@ -5791,9 +5123,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 8192,
 		costPer1kInputTokens: 0.000075,
 		costPer1kOutputTokens: 0.0003,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"google/gemini-2.5-flash-image": {
@@ -5815,9 +5144,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.0003,
 		costPer1kOutputTokens: 0.0025,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"google/gemini-2.5-pro-preview": {
@@ -5840,9 +5166,6 @@ export const openrouterModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0.00125,
 		costPer1kOutputTokens: 0.01,
 		costPer1kReasoningTokens: 0.01,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"google/gemini-3-pro-image-preview": {
@@ -5864,9 +5187,6 @@ export const openrouterModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0.002,
 		costPer1kOutputTokens: 0.012,
 		costPer1kReasoningTokens: 0.012,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"google/gemini-3.1-flash-image-preview": {
@@ -5888,9 +5208,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.0005,
 		costPer1kOutputTokens: 0.003,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"google/gemini-3.1-flash-lite": {
@@ -5912,9 +5229,6 @@ export const openrouterModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0.00025,
 		costPer1kOutputTokens: 0.0015,
 		costPer1kReasoningTokens: 0.0015,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"google/gemini-3.1-flash-lite-preview": {
@@ -5936,9 +5250,6 @@ export const openrouterModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0.00025,
 		costPer1kOutputTokens: 0.0015,
 		costPer1kReasoningTokens: 0.0015,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"google/gemini-3.1-pro-preview": {
@@ -5961,9 +5272,6 @@ export const openrouterModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0.002,
 		costPer1kOutputTokens: 0.012,
 		costPer1kReasoningTokens: 0.012,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"google/gemini-3.1-pro-preview-customtools": {
@@ -5986,9 +5294,6 @@ export const openrouterModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0.002,
 		costPer1kOutputTokens: 0.012,
 		costPer1kReasoningTokens: 0.012,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"google/gemma-2-27b-it": {
@@ -6010,9 +5315,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 2048,
 		costPer1kInputTokens: 0.00065,
 		costPer1kOutputTokens: 0.00065,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"google/gemma-4-26b-a4b-it": {
@@ -6034,9 +5336,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 262144,
 		costPer1kInputTokens: 0.00006,
 		costPer1kOutputTokens: 0.00033,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"google/gemma-4-26b-a4b-it:free": {
@@ -6053,14 +5352,11 @@ export const openrouterModelConfig: ModelConfig = {
 		supportsAttachments: true,
 		supportsTemperature: true,
 		supportsToolCalls: true,
-		supportsResponseFormat: true,
+		supportsResponseFormat: false,
 		contextWindow: 262144,
 		maxTokens: 32768,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"google/gemma-4-31b-it": {
@@ -6082,9 +5378,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00012,
 		costPer1kOutputTokens: 0.00037,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"google/gemma-4-31b-it:free": {
@@ -6101,14 +5394,11 @@ export const openrouterModelConfig: ModelConfig = {
 		supportsAttachments: true,
 		supportsTemperature: true,
 		supportsToolCalls: true,
-		supportsResponseFormat: true,
+		supportsResponseFormat: false,
 		contextWindow: 262144,
 		maxTokens: 32768,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"google/lyria-3-clip-preview": {
@@ -6124,14 +5414,11 @@ export const openrouterModelConfig: ModelConfig = {
 		supportsAttachments: true,
 		supportsTemperature: true,
 		supportsToolCalls: false,
-		supportsResponseFormat: true,
+		supportsResponseFormat: false,
 		contextWindow: 1048576,
 		maxTokens: 65536,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"google/lyria-3-pro-preview": {
@@ -6147,14 +5434,11 @@ export const openrouterModelConfig: ModelConfig = {
 		supportsAttachments: true,
 		supportsTemperature: true,
 		supportsToolCalls: false,
-		supportsResponseFormat: true,
+		supportsResponseFormat: false,
 		contextWindow: 1048576,
 		maxTokens: 65536,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"gryphe/mythomax-l2-13b": {
@@ -6176,9 +5460,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 4096,
 		costPer1kInputTokens: 0.00006,
 		costPer1kOutputTokens: 0.00006,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"ibm-granite/granite-4.0-h-micro": {
@@ -6199,9 +5480,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 131000,
 		costPer1kInputTokens: 0.000017,
 		costPer1kOutputTokens: 0.000112,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"ibm-granite/granite-4.1-8b": {
@@ -6222,9 +5500,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.00005,
 		costPer1kOutputTokens: 0.0001,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"inception/mercury-2": {
@@ -6245,9 +5520,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 50000,
 		costPer1kInputTokens: 0.00025,
 		costPer1kOutputTokens: 0.00075,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"inclusionai/ling-2.6-1t": {
@@ -6268,9 +5540,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.0003,
 		costPer1kOutputTokens: 0.0025,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"inclusionai/ling-2.6-flash": {
@@ -6291,9 +5560,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.00001,
 		costPer1kOutputTokens: 0.00003,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"inclusionai/ring-2.6-1t": {
@@ -6309,14 +5575,11 @@ export const openrouterModelConfig: ModelConfig = {
 		supportsAttachments: false,
 		supportsTemperature: true,
 		supportsToolCalls: true,
-		supportsResponseFormat: true,
+		supportsResponseFormat: false,
 		contextWindow: 262144,
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.000075,
 		costPer1kOutputTokens: 0.000625,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"inflection/inflection-3-pi": {
@@ -6338,9 +5601,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 1024,
 		costPer1kInputTokens: 0.0025,
 		costPer1kOutputTokens: 0.01,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"inflection/inflection-3-productivity": {
@@ -6362,9 +5622,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 1024,
 		costPer1kInputTokens: 0.0025,
 		costPer1kOutputTokens: 0.01,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"kwaipilot/kat-coder-pro-v2": {
@@ -6385,9 +5642,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 80000,
 		costPer1kInputTokens: 0.0003,
 		costPer1kOutputTokens: 0.0012,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"liquid/lfm-2-24b-a2b": {
@@ -6408,9 +5662,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.00003,
 		costPer1kOutputTokens: 0.00012,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"mancer/weaver": {
@@ -6427,14 +5678,11 @@ export const openrouterModelConfig: ModelConfig = {
 		supportsAttachments: false,
 		supportsTemperature: true,
 		supportsToolCalls: false,
-		supportsResponseFormat: true,
+		supportsResponseFormat: false,
 		contextWindow: 8000,
 		maxTokens: 2000,
 		costPer1kInputTokens: 0.00075,
 		costPer1kOutputTokens: 0.001,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"meta-llama/llama-3-70b-instruct": {
@@ -6456,9 +5704,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 8000,
 		costPer1kInputTokens: 0.00051,
 		costPer1kOutputTokens: 0.00074,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"meta-llama/llama-3-8b-instruct": {
@@ -6475,14 +5720,11 @@ export const openrouterModelConfig: ModelConfig = {
 		supportsAttachments: false,
 		supportsTemperature: true,
 		supportsToolCalls: false,
-		supportsResponseFormat: true,
+		supportsResponseFormat: false,
 		contextWindow: 8192,
 		maxTokens: 8192,
 		costPer1kInputTokens: 0.00004,
 		costPer1kOutputTokens: 0.00004,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"meta-llama/llama-3.1-70b-instruct": {
@@ -6504,9 +5746,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.0004,
 		costPer1kOutputTokens: 0.0004,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"meta-llama/llama-3.1-8b-instruct": {
@@ -6528,9 +5767,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00002,
 		costPer1kOutputTokens: 0.00005,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"meta-llama/llama-3.2-1b-instruct": {
@@ -6552,9 +5788,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 60000,
 		costPer1kInputTokens: 0.000027,
 		costPer1kOutputTokens: 0.000201,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"meta-llama/llama-3.2-3b-instruct": {
@@ -6576,9 +5809,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 80000,
 		costPer1kInputTokens: 0.0000509,
 		costPer1kOutputTokens: 0.000335,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"meta-llama/llama-3.3-70b-instruct": {
@@ -6600,9 +5830,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.0001,
 		costPer1kOutputTokens: 0.00032,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"meta-llama/llama-4-maverick": {
@@ -6624,9 +5851,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00015,
 		costPer1kOutputTokens: 0.0006,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"meta-llama/llama-4-scout": {
@@ -6648,9 +5872,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00008,
 		costPer1kOutputTokens: 0.0003,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"meta-llama/llama-guard-3-8b": {
@@ -6672,9 +5893,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.000484,
 		costPer1kOutputTokens: 0.00003,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"meta-llama/llama-guard-4-12b": {
@@ -6691,14 +5909,11 @@ export const openrouterModelConfig: ModelConfig = {
 		supportsAttachments: true,
 		supportsTemperature: true,
 		supportsToolCalls: false,
-		supportsResponseFormat: true,
+		supportsResponseFormat: false,
 		contextWindow: 163840,
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00018,
 		costPer1kOutputTokens: 0.00018,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"microsoft/phi-4": {
@@ -6720,9 +5935,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.000065,
 		costPer1kOutputTokens: 0.00014,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"microsoft/phi-4-mini-instruct": {
@@ -6743,9 +5955,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.00008,
 		costPer1kOutputTokens: 0.00035,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"microsoft/wizardlm-2-8x22b": {
@@ -6762,14 +5971,11 @@ export const openrouterModelConfig: ModelConfig = {
 		supportsAttachments: false,
 		supportsTemperature: true,
 		supportsToolCalls: false,
-		supportsResponseFormat: true,
+		supportsResponseFormat: false,
 		contextWindow: 65535,
 		maxTokens: 8000,
 		costPer1kInputTokens: 0.00062,
 		costPer1kOutputTokens: 0.00062,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"minimax/minimax-m2-her": {
@@ -6790,9 +5996,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 2048,
 		costPer1kInputTokens: 0.0003,
 		costPer1kOutputTokens: 0.0012,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"minimax/minimax-m2.5": {
@@ -6813,9 +6016,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 196608,
 		costPer1kInputTokens: 0.00015,
 		costPer1kOutputTokens: 0.00115,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"minimax/minimax-m2.5:free": {
@@ -6831,14 +6031,11 @@ export const openrouterModelConfig: ModelConfig = {
 		supportsAttachments: false,
 		supportsTemperature: true,
 		supportsToolCalls: true,
-		supportsResponseFormat: true,
+		supportsResponseFormat: false,
 		contextWindow: 196608,
 		maxTokens: 8192,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"minimax/minimax-m2.7": {
@@ -6859,9 +6056,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.000279,
 		costPer1kOutputTokens: 0.0012,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"mistralai/devstral-medium": {
@@ -6883,9 +6077,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.0004,
 		costPer1kOutputTokens: 0.002,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"mistralai/ministral-14b-2512": {
@@ -6906,9 +6097,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 262144,
 		costPer1kInputTokens: 0.0002,
 		costPer1kOutputTokens: 0.0002,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"mistralai/ministral-3b-2512": {
@@ -6929,9 +6117,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.0001,
 		costPer1kOutputTokens: 0.0001,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"mistralai/ministral-8b-2512": {
@@ -6952,9 +6137,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 262144,
 		costPer1kInputTokens: 0.00015,
 		costPer1kOutputTokens: 0.00015,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"mistralai/mistral-7b-instruct-v0.1": {
@@ -6976,9 +6158,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 2824,
 		costPer1kInputTokens: 0.00011,
 		costPer1kOutputTokens: 0.00019,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"mistralai/mistral-large": {
@@ -7000,9 +6179,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.002,
 		costPer1kOutputTokens: 0.006,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"mistralai/mistral-large-2407": {
@@ -7024,9 +6200,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.002,
 		costPer1kOutputTokens: 0.006,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"mistralai/mistral-large-2411": {
@@ -7048,9 +6221,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.002,
 		costPer1kOutputTokens: 0.006,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"mistralai/mistral-large-2512": {
@@ -7071,9 +6241,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 262144,
 		costPer1kInputTokens: 0.0005,
 		costPer1kOutputTokens: 0.0015,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"mistralai/mistral-medium-3-5": {
@@ -7094,9 +6261,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 262144,
 		costPer1kInputTokens: 0.0015,
 		costPer1kOutputTokens: 0.0075,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"mistralai/mistral-nemo": {
@@ -7118,9 +6282,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.00002,
 		costPer1kOutputTokens: 0.00003,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"mistralai/mistral-saba": {
@@ -7142,9 +6303,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.0002,
 		costPer1kOutputTokens: 0.0006,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"mistralai/mistral-small-24b-instruct-2501": {
@@ -7166,9 +6324,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00005,
 		costPer1kOutputTokens: 0.00008,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"mistralai/mistral-small-2603": {
@@ -7190,9 +6345,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 262144,
 		costPer1kInputTokens: 0.00015,
 		costPer1kOutputTokens: 0.0006,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"mistralai/mixtral-8x22b-instruct": {
@@ -7214,9 +6366,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.002,
 		costPer1kOutputTokens: 0.006,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"mistralai/pixtral-large-2411": {
@@ -7238,9 +6387,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.002,
 		costPer1kOutputTokens: 0.006,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"mistralai/voxtral-small-24b-2507": {
@@ -7261,9 +6407,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 32000,
 		costPer1kInputTokens: 0.0001,
 		costPer1kOutputTokens: 0.0003,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"moonshotai/kimi-k2.6": {
@@ -7284,9 +6427,7 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 262142,
 		costPer1kInputTokens: 0.00073,
 		costPer1kOutputTokens: 0.00349,
-		reasoningConfig: {
-			enabled: true,
-		},
+		isFeatured: true,
 	},
 
 	"morph/morph-v3-fast": {
@@ -7307,9 +6448,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 38000,
 		costPer1kInputTokens: 0.0008,
 		costPer1kOutputTokens: 0.0012,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"morph/morph-v3-large": {
@@ -7330,9 +6468,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.0009,
 		costPer1kOutputTokens: 0.0019,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"nex-agi/deepseek-v3.1-nex-n1": {
@@ -7353,9 +6488,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 163840,
 		costPer1kInputTokens: 0.000135,
 		costPer1kOutputTokens: 0.0005,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"nousresearch/hermes-2-pro-llama-3-8b": {
@@ -7377,9 +6509,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 8192,
 		costPer1kInputTokens: 0.00014,
 		costPer1kOutputTokens: 0.00014,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"nousresearch/hermes-3-llama-3.1-405b": {
@@ -7401,9 +6530,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.001,
 		costPer1kOutputTokens: 0.001,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"nousresearch/hermes-3-llama-3.1-70b": {
@@ -7425,9 +6551,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.0003,
 		costPer1kOutputTokens: 0.0003,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"nvidia/llama-3.3-nemotron-super-49b-v1.5": {
@@ -7444,14 +6567,11 @@ export const openrouterModelConfig: ModelConfig = {
 		supportsAttachments: false,
 		supportsTemperature: true,
 		supportsToolCalls: true,
-		supportsResponseFormat: true,
+		supportsResponseFormat: false,
 		contextWindow: 131072,
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.0001,
 		costPer1kOutputTokens: 0.0004,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"nvidia/nemotron-3-nano-30b-a3b": {
@@ -7467,14 +6587,11 @@ export const openrouterModelConfig: ModelConfig = {
 		supportsAttachments: false,
 		supportsTemperature: true,
 		supportsToolCalls: true,
-		supportsResponseFormat: true,
+		supportsResponseFormat: false,
 		contextWindow: 262144,
 		maxTokens: 228000,
 		costPer1kInputTokens: 0.00005,
 		costPer1kOutputTokens: 0.0002,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free": {
@@ -7495,9 +6612,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 65536,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"nvidia/nemotron-3-super-120b-a12b": {
@@ -7514,14 +6628,11 @@ export const openrouterModelConfig: ModelConfig = {
 		supportsAttachments: false,
 		supportsTemperature: true,
 		supportsToolCalls: true,
-		supportsResponseFormat: true,
+		supportsResponseFormat: false,
 		contextWindow: 262144,
 		maxTokens: 262144,
 		costPer1kInputTokens: 0.00009,
 		costPer1kOutputTokens: 0.00045,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"nvidia/nemotron-3-super-120b-a12b:free": {
@@ -7543,9 +6654,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 262144,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"openai/gpt-3.5-turbo": {
@@ -7567,9 +6675,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 4096,
 		costPer1kInputTokens: 0.0005,
 		costPer1kOutputTokens: 0.0015,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"openai/gpt-3.5-turbo-0613": {
@@ -7591,9 +6696,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 4096,
 		costPer1kInputTokens: 0.001,
 		costPer1kOutputTokens: 0.002,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"openai/gpt-3.5-turbo-16k": {
@@ -7615,9 +6717,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 4096,
 		costPer1kInputTokens: 0.003,
 		costPer1kOutputTokens: 0.004,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"openai/gpt-3.5-turbo-instruct": {
@@ -7639,9 +6738,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 4096,
 		costPer1kInputTokens: 0.0015,
 		costPer1kOutputTokens: 0.002,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"openai/gpt-4": {
@@ -7663,9 +6759,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 4096,
 		costPer1kInputTokens: 0.03,
 		costPer1kOutputTokens: 0.06,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"openai/gpt-4-0314": {
@@ -7687,9 +6780,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 4096,
 		costPer1kInputTokens: 0.03,
 		costPer1kOutputTokens: 0.06,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"openai/gpt-4-1106-preview": {
@@ -7711,9 +6801,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 4096,
 		costPer1kInputTokens: 0.01,
 		costPer1kOutputTokens: 0.03,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"openai/gpt-4-turbo": {
@@ -7735,9 +6822,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 4096,
 		costPer1kInputTokens: 0.01,
 		costPer1kOutputTokens: 0.03,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"openai/gpt-4-turbo-preview": {
@@ -7759,9 +6843,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 4096,
 		costPer1kInputTokens: 0.01,
 		costPer1kOutputTokens: 0.03,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"openai/gpt-4.1-nano": {
@@ -7783,9 +6864,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.0001,
 		costPer1kOutputTokens: 0.0004,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"openai/gpt-4o": {
@@ -7807,9 +6885,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.0025,
 		costPer1kOutputTokens: 0.01,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"openai/gpt-4o-2024-05-13": {
@@ -7831,9 +6906,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 4096,
 		costPer1kInputTokens: 0.005,
 		costPer1kOutputTokens: 0.015,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"openai/gpt-4o-2024-08-06": {
@@ -7855,9 +6927,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.0025,
 		costPer1kOutputTokens: 0.01,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"openai/gpt-4o-2024-11-20": {
@@ -7879,9 +6948,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.0025,
 		costPer1kOutputTokens: 0.01,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"openai/gpt-4o-audio-preview": {
@@ -7903,9 +6969,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.0025,
 		costPer1kOutputTokens: 0.01,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"openai/gpt-4o-mini-2024-07-18": {
@@ -7927,9 +6990,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00015,
 		costPer1kOutputTokens: 0.0006,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"openai/gpt-4o-mini-search-preview": {
@@ -7951,9 +7011,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00015,
 		costPer1kOutputTokens: 0.0006,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"openai/gpt-4o-search-preview": {
@@ -7975,9 +7032,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.0025,
 		costPer1kOutputTokens: 0.01,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"openai/gpt-5-image-mini": {
@@ -7998,9 +7052,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.0025,
 		costPer1kOutputTokens: 0.002,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"openai/gpt-5.3-chat": {
@@ -8021,9 +7072,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00175,
 		costPer1kOutputTokens: 0.014,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"openai/gpt-5.3-codex": {
@@ -8045,9 +7093,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.00175,
 		costPer1kOutputTokens: 0.014,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"openai/gpt-5.4": {
@@ -8068,9 +7113,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.0025,
 		costPer1kOutputTokens: 0.015,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"openai/gpt-5.4-image-2": {
@@ -8091,9 +7133,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.008,
 		costPer1kOutputTokens: 0.015,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"openai/gpt-5.4-mini": {
@@ -8115,9 +7154,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.00075,
 		costPer1kOutputTokens: 0.0045,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"openai/gpt-5.4-nano": {
@@ -8139,9 +7175,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.0002,
 		costPer1kOutputTokens: 0.00125,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"openai/gpt-5.4-pro": {
@@ -8163,9 +7196,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.03,
 		costPer1kOutputTokens: 0.18,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"openai/gpt-5.5": {
@@ -8187,9 +7217,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.005,
 		costPer1kOutputTokens: 0.03,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"openai/gpt-5.5-pro": {
@@ -8211,9 +7238,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.03,
 		costPer1kOutputTokens: 0.18,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"openai/gpt-audio": {
@@ -8234,9 +7258,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.0025,
 		costPer1kOutputTokens: 0.01,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"openai/gpt-audio-mini": {
@@ -8257,9 +7278,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.0006,
 		costPer1kOutputTokens: 0.0024,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"openai/gpt-chat-latest": {
@@ -8280,9 +7298,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.005,
 		costPer1kOutputTokens: 0.03,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"openai/o1": {
@@ -8304,9 +7319,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 100000,
 		costPer1kInputTokens: 0.015,
 		costPer1kOutputTokens: 0.06,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"openai/o1-pro": {
@@ -8328,9 +7340,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 100000,
 		costPer1kInputTokens: 0.15,
 		costPer1kOutputTokens: 0.6,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"openai/o3": {
@@ -8352,9 +7361,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 100000,
 		costPer1kInputTokens: 0.002,
 		costPer1kOutputTokens: 0.008,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"openai/o3-deep-research": {
@@ -8375,9 +7381,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 100000,
 		costPer1kInputTokens: 0.01,
 		costPer1kOutputTokens: 0.04,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"openai/o3-mini": {
@@ -8399,9 +7402,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 100000,
 		costPer1kInputTokens: 0.0011,
 		costPer1kOutputTokens: 0.0044,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"openai/o3-mini-high": {
@@ -8423,9 +7423,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 100000,
 		costPer1kInputTokens: 0.0011,
 		costPer1kOutputTokens: 0.0044,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"openai/o3-pro": {
@@ -8447,9 +7444,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 100000,
 		costPer1kInputTokens: 0.02,
 		costPer1kOutputTokens: 0.08,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"openai/o4-mini-deep-research": {
@@ -8470,9 +7464,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 100000,
 		costPer1kInputTokens: 0.002,
 		costPer1kOutputTokens: 0.008,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"openai/o4-mini-high": {
@@ -8494,9 +7485,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 100000,
 		costPer1kInputTokens: 0.0011,
 		costPer1kOutputTokens: 0.0044,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"openrouter/bodybuilder": {
@@ -8515,9 +7503,6 @@ export const openrouterModelConfig: ModelConfig = {
 		supportsResponseFormat: false,
 		contextWindow: 128000,
 		maxTokens: 128000,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"openrouter/free": {
@@ -8538,9 +7523,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 8000,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"openrouter/owl-alpha": {
@@ -8561,9 +7543,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 262144,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"openrouter/pareto-code": {
@@ -8582,9 +7561,6 @@ export const openrouterModelConfig: ModelConfig = {
 		supportsResponseFormat: false,
 		contextWindow: 2000000,
 		maxTokens: 200000,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"perceptron/perceptron-mk1": {
@@ -8605,9 +7581,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 8192,
 		costPer1kInputTokens: 0.00015,
 		costPer1kOutputTokens: 0.0015,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"perplexity/sonar": {
@@ -8628,9 +7601,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 127072,
 		costPer1kInputTokens: 0.001,
 		costPer1kOutputTokens: 0.001,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"perplexity/sonar-deep-research": {
@@ -8652,9 +7622,6 @@ export const openrouterModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0.002,
 		costPer1kOutputTokens: 0.008,
 		costPer1kReasoningTokens: 0.003,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"perplexity/sonar-pro": {
@@ -8675,9 +7642,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 8000,
 		costPer1kInputTokens: 0.003,
 		costPer1kOutputTokens: 0.015,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"perplexity/sonar-pro-search": {
@@ -8698,9 +7662,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 8000,
 		costPer1kInputTokens: 0.003,
 		costPer1kOutputTokens: 0.015,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"perplexity/sonar-reasoning-pro": {
@@ -8721,9 +7682,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.002,
 		costPer1kOutputTokens: 0.008,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"poolside/laguna-m.1:free": {
@@ -8744,9 +7702,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 8192,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"poolside/laguna-xs.2:free": {
@@ -8767,9 +7722,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 8192,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"prime-intellect/intellect-3": {
@@ -8791,9 +7743,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.0002,
 		costPer1kOutputTokens: 0.0011,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"qwen/qwen-2.5-72b-instruct": {
@@ -8815,9 +7764,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00036,
 		costPer1kOutputTokens: 0.0004,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"qwen/qwen-2.5-7b-instruct": {
@@ -8834,14 +7780,11 @@ export const openrouterModelConfig: ModelConfig = {
 		supportsAttachments: false,
 		supportsTemperature: true,
 		supportsToolCalls: true,
-		supportsResponseFormat: true,
+		supportsResponseFormat: false,
 		contextWindow: 32768,
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.00004,
 		costPer1kOutputTokens: 0.0001,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"qwen/qwen-plus": {
@@ -8858,14 +7801,11 @@ export const openrouterModelConfig: ModelConfig = {
 		supportsAttachments: false,
 		supportsTemperature: true,
 		supportsToolCalls: true,
-		supportsResponseFormat: true,
+		supportsResponseFormat: false,
 		contextWindow: 1000000,
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.00026,
 		costPer1kOutputTokens: 0.00078,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"qwen/qwen-plus-2025-07-28": {
@@ -8887,9 +7827,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.00026,
 		costPer1kOutputTokens: 0.00078,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"qwen/qwen-plus-2025-07-28:thinking": {
@@ -8911,9 +7848,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.00026,
 		costPer1kOutputTokens: 0.00078,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"qwen/qwen3-14b": {
@@ -8935,9 +7869,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 40960,
 		costPer1kInputTokens: 0.0001,
 		costPer1kOutputTokens: 0.00024,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"qwen/qwen3-235b-a22b": {
@@ -8954,14 +7885,11 @@ export const openrouterModelConfig: ModelConfig = {
 		supportsAttachments: false,
 		supportsTemperature: true,
 		supportsToolCalls: true,
-		supportsResponseFormat: true,
+		supportsResponseFormat: false,
 		contextWindow: 131072,
 		maxTokens: 8192,
 		costPer1kInputTokens: 0.000455,
 		costPer1kOutputTokens: 0.00182,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"qwen/qwen3-235b-a22b-2507": {
@@ -8983,9 +7911,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.000071,
 		costPer1kOutputTokens: 0.0001,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"qwen/qwen3-30b-a3b": {
@@ -9007,9 +7932,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 20000,
 		costPer1kInputTokens: 0.00009,
 		costPer1kOutputTokens: 0.00045,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"qwen/qwen3-32b": {
@@ -9031,9 +7953,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00008,
 		costPer1kOutputTokens: 0.00028,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"qwen/qwen3-8b": {
@@ -9055,9 +7974,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 8192,
 		costPer1kInputTokens: 0.00005,
 		costPer1kOutputTokens: 0.0004,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"qwen/qwen3-coder-next": {
@@ -9078,9 +7994,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 262144,
 		costPer1kInputTokens: 0.00011,
 		costPer1kOutputTokens: 0.0008,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"qwen/qwen3-coder-plus": {
@@ -9102,9 +8015,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.00065,
 		costPer1kOutputTokens: 0.00325,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"qwen/qwen3-max-thinking": {
@@ -9125,9 +8035,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.00078,
 		costPer1kOutputTokens: 0.0039,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"qwen/qwen3-vl-235b-a22b-instruct": {
@@ -9149,9 +8056,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.0002,
 		costPer1kOutputTokens: 0.00088,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"qwen/qwen3-vl-235b-a22b-thinking": {
@@ -9168,14 +8072,11 @@ export const openrouterModelConfig: ModelConfig = {
 		supportsAttachments: true,
 		supportsTemperature: true,
 		supportsToolCalls: true,
-		supportsResponseFormat: true,
+		supportsResponseFormat: false,
 		contextWindow: 131072,
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.00026,
 		costPer1kOutputTokens: 0.0026,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"qwen/qwen3-vl-30b-a3b-instruct": {
@@ -9197,9 +8098,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.00013,
 		costPer1kOutputTokens: 0.00052,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"qwen/qwen3-vl-30b-a3b-thinking": {
@@ -9221,9 +8119,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.00013,
 		costPer1kOutputTokens: 0.00156,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"qwen/qwen3-vl-32b-instruct": {
@@ -9239,14 +8134,11 @@ export const openrouterModelConfig: ModelConfig = {
 		supportsAttachments: true,
 		supportsTemperature: true,
 		supportsToolCalls: true,
-		supportsResponseFormat: true,
+		supportsResponseFormat: false,
 		contextWindow: 131072,
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.000104,
 		costPer1kOutputTokens: 0.000416,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"qwen/qwen3-vl-8b-instruct": {
@@ -9267,9 +8159,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.00008,
 		costPer1kOutputTokens: 0.0005,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"qwen/qwen3-vl-8b-thinking": {
@@ -9290,9 +8179,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.000117,
 		costPer1kOutputTokens: 0.001365,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"qwen/qwen3.5-122b-a10b": {
@@ -9313,9 +8199,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.00026,
 		costPer1kOutputTokens: 0.00208,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"qwen/qwen3.5-27b": {
@@ -9336,9 +8219,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.000195,
 		costPer1kOutputTokens: 0.00156,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"qwen/qwen3.5-35b-a3b": {
@@ -9357,11 +8237,8 @@ export const openrouterModelConfig: ModelConfig = {
 		supportsResponseFormat: true,
 		contextWindow: 262144,
 		maxTokens: 81920,
-		costPer1kInputTokens: 0.00014,
+		costPer1kInputTokens: 0.000139,
 		costPer1kOutputTokens: 0.001,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"qwen/qwen3.5-397b-a17b": {
@@ -9383,9 +8260,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.00039,
 		costPer1kOutputTokens: 0.00234,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"qwen/qwen3.5-9b": {
@@ -9406,9 +8280,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 81920,
 		costPer1kInputTokens: 0.00004,
 		costPer1kOutputTokens: 0.00015,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"qwen/qwen3.5-flash-02-23": {
@@ -9429,9 +8300,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.000065,
 		costPer1kOutputTokens: 0.00026,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"qwen/qwen3.5-plus-02-15": {
@@ -9453,9 +8321,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.00026,
 		costPer1kOutputTokens: 0.00156,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"qwen/qwen3.5-plus-20260420": {
@@ -9476,9 +8341,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.0003,
 		costPer1kOutputTokens: 0.0018,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"qwen/qwen3.6-27b": {
@@ -9499,9 +8361,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 81920,
 		costPer1kInputTokens: 0.00032,
 		costPer1kOutputTokens: 0.0032,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"qwen/qwen3.6-35b-a3b": {
@@ -9520,11 +8379,8 @@ export const openrouterModelConfig: ModelConfig = {
 		supportsResponseFormat: true,
 		contextWindow: 262144,
 		maxTokens: 262144,
-		costPer1kInputTokens: 0.00015,
+		costPer1kInputTokens: 0.000149,
 		costPer1kOutputTokens: 0.001,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"qwen/qwen3.6-flash": {
@@ -9545,9 +8401,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.0001875,
 		costPer1kOutputTokens: 0.001125,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"qwen/qwen3.6-max-preview": {
@@ -9568,9 +8421,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.00104,
 		costPer1kOutputTokens: 0.00624,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"qwen/qwen3.6-plus": {
@@ -9592,9 +8442,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.000325,
 		costPer1kOutputTokens: 0.00195,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"rekaai/reka-edge": {
@@ -9615,9 +8462,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.0001,
 		costPer1kOutputTokens: 0.0001,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"relace/relace-apply-3": {
@@ -9638,9 +8482,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.00085,
 		costPer1kOutputTokens: 0.00125,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"relace/relace-search": {
@@ -9661,9 +8502,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.001,
 		costPer1kOutputTokens: 0.003,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"sao10k/l3-euryale-70b": {
@@ -9685,9 +8523,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 8192,
 		costPer1kInputTokens: 0.00148,
 		costPer1kOutputTokens: 0.00148,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"sao10k/l3-lunaris-8b": {
@@ -9709,9 +8544,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00004,
 		costPer1kOutputTokens: 0.00005,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"sao10k/l3.1-70b-hanami-x1": {
@@ -9733,9 +8565,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 16000,
 		costPer1kInputTokens: 0.003,
 		costPer1kOutputTokens: 0.003,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"sao10k/l3.1-euryale-70b": {
@@ -9757,9 +8586,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00085,
 		costPer1kOutputTokens: 0.00085,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"sao10k/l3.3-euryale-70b": {
@@ -9781,9 +8607,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00065,
 		costPer1kOutputTokens: 0.00075,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"switchpoint/router": {
@@ -9804,9 +8627,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.00085,
 		costPer1kOutputTokens: 0.0034,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"tencent/hunyuan-a13b-instruct": {
@@ -9828,9 +8648,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.00014,
 		costPer1kOutputTokens: 0.00057,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"tencent/hy3-preview": {
@@ -9851,9 +8668,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 262144,
 		costPer1kInputTokens: 0.000066,
 		costPer1kOutputTokens: 0.00026,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"thedrummer/cydonia-24b-v4.1": {
@@ -9875,9 +8689,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.0003,
 		costPer1kOutputTokens: 0.0005,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"thedrummer/rocinante-12b": {
@@ -9899,9 +8710,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.00017,
 		costPer1kOutputTokens: 0.00043,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"thedrummer/skyfall-36b-v2": {
@@ -9923,9 +8731,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.00055,
 		costPer1kOutputTokens: 0.0008,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"thedrummer/unslopnemo-12b": {
@@ -9947,9 +8752,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.0004,
 		costPer1kOutputTokens: 0.0004,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"undi95/remm-slerp-l2-13b": {
@@ -9971,9 +8773,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 4096,
 		costPer1kInputTokens: 0.00045,
 		costPer1kOutputTokens: 0.00065,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"upstage/solar-pro-3": {
@@ -9994,9 +8793,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.00015,
 		costPer1kOutputTokens: 0.0006,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"writer/palmyra-x5": {
@@ -10017,9 +8813,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 8192,
 		costPer1kInputTokens: 0.0006,
 		costPer1kOutputTokens: 0.006,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"x-ai/grok-4.20": {
@@ -10041,9 +8834,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 2000000,
 		costPer1kInputTokens: 0.00125,
 		costPer1kOutputTokens: 0.0025,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"x-ai/grok-4.20-multi-agent": {
@@ -10065,9 +8855,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 2000000,
 		costPer1kInputTokens: 0.002,
 		costPer1kOutputTokens: 0.006,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"x-ai/grok-4.3": {
@@ -10088,9 +8875,7 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 1000000,
 		costPer1kInputTokens: 0.00125,
 		costPer1kOutputTokens: 0.0025,
-		reasoningConfig: {
-			enabled: true,
-		},
+		isFeatured: true,
 	},
 
 	"xiaomi/mimo-v2-omni": {
@@ -10106,14 +8891,11 @@ export const openrouterModelConfig: ModelConfig = {
 		supportsAttachments: true,
 		supportsTemperature: true,
 		supportsToolCalls: true,
-		supportsResponseFormat: true,
+		supportsResponseFormat: false,
 		contextWindow: 262144,
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.0004,
 		costPer1kOutputTokens: 0.002,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"xiaomi/mimo-v2-pro": {
@@ -10129,14 +8911,11 @@ export const openrouterModelConfig: ModelConfig = {
 		supportsAttachments: false,
 		supportsTemperature: true,
 		supportsToolCalls: true,
-		supportsResponseFormat: true,
+		supportsResponseFormat: false,
 		contextWindow: 1048576,
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.001,
 		costPer1kOutputTokens: 0.003,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"xiaomi/mimo-v2.5": {
@@ -10152,14 +8931,11 @@ export const openrouterModelConfig: ModelConfig = {
 		supportsAttachments: true,
 		supportsTemperature: true,
 		supportsToolCalls: true,
-		supportsResponseFormat: true,
+		supportsResponseFormat: false,
 		contextWindow: 1048576,
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.0004,
 		costPer1kOutputTokens: 0.002,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"xiaomi/mimo-v2.5-pro": {
@@ -10180,9 +8956,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.001,
 		costPer1kOutputTokens: 0.003,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"z-ai/glm-4-32b": {
@@ -10204,9 +8977,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.0001,
 		costPer1kOutputTokens: 0.0001,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"z-ai/glm-4.6v": {
@@ -10227,9 +8997,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 24000,
 		costPer1kInputTokens: 0.0003,
 		costPer1kOutputTokens: 0.0009,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"z-ai/glm-5-turbo": {
@@ -10245,14 +9012,11 @@ export const openrouterModelConfig: ModelConfig = {
 		supportsAttachments: false,
 		supportsTemperature: true,
 		supportsToolCalls: true,
-		supportsResponseFormat: true,
+		supportsResponseFormat: false,
 		contextWindow: 202752,
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.0012,
 		costPer1kOutputTokens: 0.004,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"z-ai/glm-5.1": {
@@ -10269,13 +9033,10 @@ export const openrouterModelConfig: ModelConfig = {
 		supportsTemperature: true,
 		supportsToolCalls: true,
 		supportsResponseFormat: true,
-		contextWindow: 202752,
-		maxTokens: 131072,
-		costPer1kInputTokens: 0.00098,
-		costPer1kOutputTokens: 0.00308,
-		reasoningConfig: {
-			enabled: true,
-		},
+		contextWindow: 202800,
+		maxTokens: 202800,
+		costPer1kInputTokens: 0,
+		costPer1kOutputTokens: 0,
 	},
 
 	"z-ai/glm-5v-turbo": {
@@ -10291,13 +9052,32 @@ export const openrouterModelConfig: ModelConfig = {
 		supportsAttachments: true,
 		supportsTemperature: true,
 		supportsToolCalls: true,
-		supportsResponseFormat: true,
+		supportsResponseFormat: false,
 		contextWindow: 202752,
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.0012,
 		costPer1kOutputTokens: 0.004,
-		reasoningConfig: {
-			enabled: true,
+	},
+	"google/gemini-3.5-flash": {
+		name: "Gemini 3.5 Flash",
+		matchingModel: "google/gemini-3.5-flash",
+		provider: "openrouter",
+		knowledgeCutoffDate: "January 1, 2025",
+		releaseDate: "May 19, 2026",
+		lastUpdated: "May 19, 2026",
+		modalities: {
+			input: ["text", "image", "video", "pdf", "audio"],
+			output: ["text"],
 		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		supportsResponseFormat: true,
+		contextWindow: 1048576,
+		maxTokens: 65536,
+		costPer1kInputTokens: 0.0015,
+		costPer1kOutputTokens: 0.009,
+		costPer1kReasoningTokens: 0.009,
+		isFeatured: true,
 	},
 };

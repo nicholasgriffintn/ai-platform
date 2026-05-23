@@ -19,9 +19,6 @@ export const cerebrasModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 8000,
 		costPer1kInputTokens: 0.0001,
 		costPer1kOutputTokens: 0.0001,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 	createModelConfig("cerebras/llama-3.3-70b", PROVIDER, {
 		name: "Cerebras Llama 3.3 70B",
@@ -44,9 +41,6 @@ export const cerebrasModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.00025,
 		costPer1kOutputTokens: 0.00069,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 	createModelConfig("cerebras/qwen-3-32b", PROVIDER, {
 		name: "Cerebras Qwen 3 32B",
@@ -76,9 +70,6 @@ export const cerebrasModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 40000,
 		costPer1kInputTokens: 0.00225,
 		costPer1kOutputTokens: 0.00275,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 	createModelConfig("cerebras/qwen-3-235b-a22b-instruct-2507", PROVIDER, {
 		name: "Qwen 3 235B Instruct",
@@ -97,8 +88,5 @@ export const cerebrasModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 32000,
 		costPer1kInputTokens: 0.0006,
 		costPer1kOutputTokens: 0.0012,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 ]);

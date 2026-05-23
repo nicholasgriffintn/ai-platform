@@ -145,6 +145,8 @@ export class UserSettingsRepository extends BaseRepository {
 					: null,
 			transcription_provider: settings.transcription_provider ?? null,
 			transcription_model: settings.transcription_model ?? null,
+			speech_provider: settings.speech_provider ?? null,
+			speech_model: settings.speech_model ?? null,
 			search_provider: settings.search_provider ?? null,
 			sandbox_model: settings.sandbox_model ?? null,
 		};
@@ -189,6 +191,8 @@ export class UserSettingsRepository extends BaseRepository {
 			"memories_chat_history_enabled",
 			"transcription_provider",
 			"transcription_model",
+			"speech_provider",
+			"speech_model",
 			"search_provider",
 			"sandbox_model",
 		];
@@ -421,6 +425,38 @@ export class UserSettingsRepository extends BaseRepository {
 			}
 			throw new AssistantError("Failed to retrieve provider API key", ErrorType.UNKNOWN_ERROR);
 		}
+	}
+
+	public async deleteProviderApiKey(userId: number, providerId: string): Promise<void> {
+		if (!this.env.DB) {
+			throw new AssistantError("Database is not configured", ErrorType.CONFIGURATION_ERROR);
+		}
+
+		if (!userId || !providerId) {
+			throw new AssistantError("Missing required parameters", ErrorType.PARAMS_ERROR);
+		}
+
+		const update = this.buildUpdateQuery(
+			"provider_settings",
+			{
+				api_key: null,
+				enabled: 0,
+			},
+			["api_key", "enabled"],
+			"user_id = ? AND provider_id = ?",
+			[userId, providerId],
+		);
+
+		if (!update) {
+			return;
+		}
+
+		const queryWithTimestamp = update.query.replace(
+			"updated_at = datetime('now')",
+			"updated_at = CURRENT_TIMESTAMP",
+		);
+
+		await this.executeRun(queryWithTimestamp, update.values);
 	}
 
 	public async createUserProviderSettings(userId: number): Promise<void> {

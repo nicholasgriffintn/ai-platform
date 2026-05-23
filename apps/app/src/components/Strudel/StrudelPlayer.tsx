@@ -1,28 +1,15 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { Play, Pause } from "lucide-react";
-import { StrudelMirror } from "@strudel/codemirror";
-import { getAudioContext, webaudioOutput } from "@strudel/webaudio";
-import { transpiler } from "@strudel/transpiler";
 
 import { Button } from "~/components/ui/Button";
-import { prebake } from "./strudel";
+import { loadStrudelRuntime, sanitizeStrudelCode } from "./strudel";
 
 interface StrudelMirrorInstance {
 	code: string;
-	evaluate: (arg?: string) => Promise<void>;
-	stop: () => void;
+	evaluate: (autostart?: boolean) => Promise<void>;
+	stop: () => Promise<void>;
 	setCode: (code: string) => void;
-}
-
-export function sanitizeStrudelCode(code: string): string {
-	return code
-		.replace(/"([^"]*)"/g, (_, content) => {
-			const sanitized = content.replace(/[^a-zA-Z0-9~*/!?[\]@<>(),:._^\-\s]/g, "");
-			return `"${sanitized}"`;
-		})
-		.replace(/;+/g, "")
-		.replace(/```[a-z]*|```/g, "")
-		.trim();
+	clear: () => void;
 }
 
 interface StrudelPlayerProps {
@@ -45,37 +32,58 @@ export function StrudelPlayer({
 
 	const editorContainerRef = useRef<HTMLDivElement>(null);
 	const editorRef = useRef<StrudelMirrorInstance | null>(null);
+	const latestCodeRef = useRef(code);
+	const onChangeRef = useRef(onChange);
 
 	useEffect(() => {
-		if (!editorContainerRef.current || editorRef.current) return;
+		latestCodeRef.current = code;
+		onChangeRef.current = onChange;
+	}, [code, onChange]);
 
-		// @ts-expect-error - StrudelMirror is a class but TS sees it as a React component
-		const editor = new StrudelMirror({
-			theme: "teletext",
-			defaultOutput: webaudioOutput,
-			getTime: () => getAudioContext().currentTime,
-			transpiler,
-			root: editorContainerRef.current,
-			initialCode: sanitizeStrudelCode(code),
-			drawTime: [-2, 2],
-			prebake,
-			onChange: (update: any) => {
-				if (update.docChanged) {
-					onChange?.(update.state.doc.toString());
-				}
-			},
-		});
+	useEffect(() => {
+		if (readOnly || !editorContainerRef.current || editorRef.current) return;
 
-		editor.setTheme("tokyoNight");
+		const root = editorContainerRef.current;
+		let isMounted = true;
 
-		editorRef.current = editor;
+		loadStrudelRuntime()
+			.then(({ StrudelMirror, getAudioContext, webaudioOutput, transpiler, prebake }) => {
+				if (!isMounted || editorRef.current) return;
+
+				const editor = new StrudelMirror({
+					theme: "teletext",
+					defaultOutput: webaudioOutput,
+					getTime: () => getAudioContext().currentTime,
+					transpiler,
+					root,
+					initialCode: sanitizeStrudelCode(latestCodeRef.current),
+					drawTime: [-2, 2],
+					prebake,
+					onChange: (update) => {
+						if (update.docChanged) {
+							onChangeRef.current?.(update.state.doc.toString());
+						}
+					},
+				});
+
+				editor.setTheme("tokyoNight");
+				editorRef.current = editor;
+				setError(null);
+			})
+			.catch((err: unknown) => {
+				if (!isMounted) return;
+				setError(err instanceof Error ? err.message : "Unable to load Strudel runtime");
+			});
 
 		return () => {
+			isMounted = false;
 			if (editorRef.current) {
-				editorRef.current.stop();
+				void editorRef.current.stop();
+				editorRef.current.clear();
+				editorRef.current = null;
 			}
 		};
-	}, []);
+	}, [readOnly]);
 
 	useEffect(() => {
 		if (editorRef.current) {

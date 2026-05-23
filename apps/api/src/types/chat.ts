@@ -1,5 +1,9 @@
 import type { ExecutionContext } from "@cloudflare/workers-types";
-import type { CouncilChatOptions, MessagePart as SchemaMessagePart } from "@assistant/schemas";
+import type {
+	CouncilChatOptions,
+	MessagePart as SchemaMessagePart,
+	SandboxModelSettings,
+} from "@assistant/schemas";
 import type { ServiceContext } from "../lib/context/serviceContext";
 import type { IEnv, ReasoningEffortLevel, RequireAtLeastOne, VerbosityLevel } from "./shared";
 import type { IUser } from "./user";
@@ -159,6 +163,7 @@ export interface IBody {
 		longitude?: number;
 	};
 	model?: string;
+	provider?: string;
 	platform?: Platform;
 	mode?: ChatMode;
 	approved_tools?: string[];
@@ -230,6 +235,10 @@ interface AIControlParams {
 	metadata?: Record<string, any>;
 	// The reasoning effort to use for the response (legacy alias).
 	reasoning_effort?: ReasoningEffortLevel;
+	// Structured reasoning controls.
+	reasoning?: {
+		effort?: ReasoningEffortLevel;
+	};
 	// Whether to store the response.
 	store?: boolean;
 	// The current step to use for the response.
@@ -243,6 +252,18 @@ interface AIControlParams {
 export interface ChatRequestOptions extends Record<string, any> {
 	cache_ttl_seconds?: number;
 	council?: CouncilChatOptions;
+	sandbox?: {
+		enabled: boolean;
+		repo?: string;
+		installationId?: number;
+		model?: string;
+		taskType?: string;
+		promptStrategy?: string;
+		shouldCommit?: boolean;
+		timeoutSeconds?: number;
+		maxSteps?: number;
+		modelSettings?: SandboxModelSettings;
+	};
 	replicateWaitSeconds?: number;
 }
 
@@ -273,6 +294,8 @@ interface AIResponseParamsBase extends AIControlParams {
 	suffix?: string;
 	// The model to use for the response.
 	model?: string;
+	// The provider to use when the model name is shared by multiple providers.
+	provider?: string;
 	// The mode to use for the response.
 	mode?: ChatMode;
 	// Desired output verbosity for providers that support the legacy knob.

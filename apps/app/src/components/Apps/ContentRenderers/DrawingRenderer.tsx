@@ -1,5 +1,5 @@
 import type { Drawing } from "~/types/drawing";
-import { DrawingView } from "../Drawings/View";
+import { DrawingView } from "~/components/Canvas/Drawing/DrawingView";
 
 interface DrawingRendererProps {
 	data: Drawing;

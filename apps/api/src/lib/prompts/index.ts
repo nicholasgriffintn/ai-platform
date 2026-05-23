@@ -2,23 +2,37 @@ import { getModelConfigByMatchingModel } from "~/lib/providers/models";
 import type { ChatMode, IBody, IUser, IUserSettings } from "~/types";
 import { trimTemplateWhitespace } from "~/utils/strings";
 import { returnCodingPrompt } from "./coding";
+import { returnCouncilPrompt } from "./council";
 import { getTextToImageSystemPrompt } from "./image";
+import { returnSandboxPrompt } from "./sandbox";
 import { returnStandardPrompt } from "./standard";
 import { emptyPrompt } from "./utils";
 import { buildAssistantMetadataSection, type PromptModelMetadata } from "./sections/metadata";
 
+export type PromptMode = "council" | "sandbox";
+export type PromptRequest = IBody & { promptMode?: PromptMode };
+
 export async function getSystemPrompt(
-	request: IBody,
+	request: PromptRequest,
 	model: string,
 	user?: IUser,
 	userSettings?: IUserSettings,
 ): Promise<string> {
-	const modelConfig = await getModelConfigByMatchingModel(model);
+	const modelConfig = await getModelConfigByMatchingModel(model, undefined, request.provider);
 	const supportsToolCalls = modelConfig?.supportsToolCalls || false;
 	const supportsArtifacts = modelConfig?.supportsArtifacts || false;
-	const requiresThinkingPrompt = modelConfig?.requiresThinkingPrompt || false;
 
 	let prompt: string;
+	const promptMode = request.promptMode;
+	const modelMetadata = modelConfig ? { modelId: model, modelConfig } : { modelId: model };
+
+	if (promptMode === "sandbox" || request.options?.sandbox?.enabled) {
+		return trimTemplateWhitespace(returnSandboxPrompt(request, userSettings, modelMetadata));
+	}
+
+	if (promptMode === "council" || request.options?.council?.enabled) {
+		return trimTemplateWhitespace(returnCouncilPrompt(request.options?.council));
+	}
 
 	if (!modelConfig) {
 		prompt = await returnStandardPrompt(
@@ -27,7 +41,6 @@ export async function getSystemPrompt(
 			userSettings,
 			supportsToolCalls,
 			supportsArtifacts,
-			requiresThinkingPrompt,
 			{ modelId: model },
 		);
 	} else {
@@ -37,14 +50,10 @@ export async function getSystemPrompt(
 			outputs.includes("text") || (!outputs.length && inputs.includes("text"));
 		const isCodingModel = modelConfig?.promptTemplate === "coding";
 		if (isCodingModel) {
-			prompt = returnCodingPrompt(
-				request,
-				userSettings,
-				supportsToolCalls,
-				supportsArtifacts,
-				requiresThinkingPrompt,
-				{ modelId: model, modelConfig },
-			);
+			prompt = returnCodingPrompt(request, userSettings, supportsToolCalls, supportsArtifacts, {
+				modelId: model,
+				modelConfig,
+			});
 		} else {
 			const isTextToImageModel = outputs.includes("image") && !supportsTextOutput;
 			if (isTextToImageModel) {
@@ -58,7 +67,6 @@ export async function getSystemPrompt(
 					userSettings,
 					supportsToolCalls,
 					supportsArtifacts,
-					requiresThinkingPrompt,
 					{ modelId: model, modelConfig },
 				);
 			}

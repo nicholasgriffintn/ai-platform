@@ -76,7 +76,11 @@ export class BedrockProvider extends BaseProvider {
 
 	protected async getEndpoint(params: ChatCompletionParameters): Promise<string> {
 		const region = this.getRegion();
-		const modelConfig = await getModelConfigByMatchingModel(params.model || "");
+		const modelConfig = await getModelConfigByMatchingModel(
+			params.model || "",
+			params.env,
+			params.provider || this.name,
+		);
 		const operationPath = this.resolveOperationPath(params, modelConfig);
 
 		const { awsUrl } = this.buildOperationPaths(params, operationPath, region);
@@ -280,7 +284,11 @@ export class BedrockProvider extends BaseProvider {
 		_storageService?: StorageService,
 		_assetsUrl?: string,
 	): Promise<Record<string, any>> {
-		const modelConfig = await getModelConfigByMatchingModel(params.model || "");
+		const modelConfig = await getModelConfigByMatchingModel(
+			params.model || "",
+			params.env,
+			params.provider || this.name,
+		);
 		if (!modelConfig) {
 			throw new AssistantError(
 				`Model configuration not found for ${params.model}`,
@@ -470,7 +478,11 @@ export class BedrockProvider extends BaseProvider {
 		_userId?: number,
 	): Promise<any> {
 		try {
-			const modelConfig = await getModelConfigByMatchingModel(params.model || "");
+			const modelConfig = await getModelConfigByMatchingModel(
+				params.model || "",
+				params.env,
+				params.provider || this.name,
+			);
 			const modalityInfo = getModalityInfo(modelConfig);
 			const isVideoType = modalityInfo.outputSet.has("video");
 
@@ -612,7 +624,11 @@ export class BedrockProvider extends BaseProvider {
 		this.validateParams(params);
 
 		const region = this.getRegion();
-		const modelConfig = await getModelConfigByMatchingModel(params.model || "");
+		const modelConfig = await getModelConfigByMatchingModel(
+			params.model || "",
+			params.env,
+			params.provider || this.name,
+		);
 		const operationPath = this.resolveOperationPath(params, modelConfig);
 		const { awsUrl: bedrockUrl, cloudflarePath } = this.buildOperationPaths(
 			params,

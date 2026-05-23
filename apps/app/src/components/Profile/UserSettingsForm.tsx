@@ -3,20 +3,39 @@ import { type FormEvent, useState } from "react";
 import { Button, FormInput, FormSelect, Switch, Textarea } from "~/components/ui";
 import { EventCategory, useTrackEvent } from "~/hooks/use-track-event";
 import { useAuthStatus } from "~/hooks/useAuth";
+import {
+	getSpeechModelOptions,
+	getTranscriptionModelOptions,
+	resolveSpeechSettings,
+	resolveTranscriptionSettings,
+	speechProviderOptions,
+	type SpeechProviderId,
+	transcriptionProviderOptions,
+	type TranscriptionProviderId,
+} from "~/lib/transcription-settings";
 import type { UserSettings } from "~/types";
-
-const transcriptionProviders = {
-	workers: ["whisper", "whisper-tiny"],
-};
 
 interface UserSettingsFormProps {
 	userSettings: UserSettings | null;
 	isAuthenticated: boolean;
+	isPro?: boolean;
 }
 
-export function UserSettingsForm({ userSettings, isAuthenticated }: UserSettingsFormProps) {
+export function UserSettingsForm({
+	userSettings,
+	isAuthenticated,
+	isPro = false,
+}: UserSettingsFormProps) {
 	const { updateUserSettings, isUpdatingUserSettings } = useAuthStatus();
 	const { trackEvent, trackError } = useTrackEvent();
+	const transcriptionSettings = resolveTranscriptionSettings(
+		userSettings?.transcription_provider,
+		userSettings?.transcription_model,
+	);
+	const speechSettings = resolveSpeechSettings(
+		userSettings?.speech_provider,
+		userSettings?.speech_model,
+	);
 	const [formData, setFormData] = useState({
 		nickname: userSettings?.nickname || "",
 		job_role: userSettings?.job_role || "",
@@ -36,8 +55,10 @@ export function UserSettingsForm({ userSettings, isAuthenticated }: UserSettings
 		memories_save_enabled: userSettings?.memories_save_enabled || false,
 		memories_chat_history_enabled: userSettings?.memories_chat_history_enabled || false,
 		tracking_enabled: userSettings?.tracking_enabled ?? true,
-		transcription_provider: userSettings?.transcription_provider || "workers",
-		transcription_model: userSettings?.transcription_model || "whisper-1",
+		transcription_provider: transcriptionSettings.transcription_provider,
+		transcription_model: transcriptionSettings.transcription_model,
+		speech_provider: speechSettings.speech_provider,
+		speech_model: speechSettings.speech_model,
 		search_provider: userSettings?.search_provider || "",
 		sandbox_model: userSettings?.sandbox_model || "",
 	});
@@ -61,14 +82,14 @@ export function UserSettingsForm({ userSettings, isAuthenticated }: UserSettings
 		});
 	};
 
-	const handleProviderChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-		const newProvider = e.target.value as keyof typeof transcriptionProviders;
-		const firstModelForProvider = transcriptionProviders[newProvider][0];
+	const handleTranscriptionProviderChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+		const newProvider = e.target.value as TranscriptionProviderId;
+		const [firstModelForProvider] = getTranscriptionModelOptions(newProvider);
 
 		setFormData((prev) => ({
 			...prev,
 			transcription_provider: newProvider,
-			transcription_model: firstModelForProvider,
+			transcription_model: firstModelForProvider.id,
 		}));
 
 		trackEvent({
@@ -76,7 +97,27 @@ export function UserSettingsForm({ userSettings, isAuthenticated }: UserSettings
 			category: EventCategory.UI_INTERACTION,
 			properties: {
 				provider: newProvider,
-				auto_selected_model: firstModelForProvider,
+				auto_selected_model: firstModelForProvider.id,
+			},
+		});
+	};
+
+	const handleSpeechProviderChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+		const newProvider = e.target.value as SpeechProviderId;
+		const [firstModelForProvider] = getSpeechModelOptions(newProvider);
+
+		setFormData((prev) => ({
+			...prev,
+			speech_provider: newProvider,
+			speech_model: firstModelForProvider.id,
+		}));
+
+		trackEvent({
+			name: "speech_provider_changed",
+			category: EventCategory.UI_INTERACTION,
+			properties: {
+				provider: newProvider,
+				auto_selected_model: firstModelForProvider.id,
 			},
 		});
 	};
@@ -97,7 +138,32 @@ export function UserSettingsForm({ userSettings, isAuthenticated }: UserSettings
 		});
 
 		try {
-			await updateUserSettings(formData);
+			const settingsPayload = isPro
+				? formData
+				: {
+						nickname: formData.nickname,
+						job_role: formData.job_role,
+						traits: formData.traits,
+						preferences: formData.preferences,
+						guardrails_enabled: formData.guardrails_enabled,
+						guardrails_provider: formData.guardrails_provider,
+						bedrock_guardrail_id: formData.bedrock_guardrail_id,
+						bedrock_guardrail_version: formData.bedrock_guardrail_version,
+						embedding_provider: formData.embedding_provider,
+						bedrock_knowledge_base_id: formData.bedrock_knowledge_base_id,
+						bedrock_knowledge_base_custom_data_source_id:
+							formData.bedrock_knowledge_base_custom_data_source_id,
+						s3vectors_bucket_name: formData.s3vectors_bucket_name,
+						s3vectors_index_name: formData.s3vectors_index_name,
+						s3vectors_region: formData.s3vectors_region,
+						memories_save_enabled: formData.memories_save_enabled,
+						memories_chat_history_enabled: formData.memories_chat_history_enabled,
+						tracking_enabled: formData.tracking_enabled,
+						search_provider: formData.search_provider,
+						sandbox_model: formData.sandbox_model,
+					};
+
+			await updateUserSettings(settingsPayload);
 			setSaveSuccess(true);
 
 			trackEvent({
@@ -548,68 +614,122 @@ export function UserSettingsForm({ userSettings, isAuthenticated }: UserSettings
 				</div>
 			</div>
 
-			<div>
-				<h3 className="text-lg font-bold text-zinc-800 dark:text-zinc-100 mb-6">
-					Speech Transcription
-				</h3>
-			</div>
+			{isPro && (
+				<>
+					<div>
+						<h3 className="text-lg font-bold text-zinc-800 dark:text-zinc-100 mb-6">Audio</h3>
+					</div>
 
-			<div className="space-y-4">
-				<div>
-					<label
-						htmlFor="transcription_provider"
-						className="block text-sm font-medium text-zinc-800 dark:text-zinc-200 mb-1"
-					>
-						Transcription Provider
-					</label>
-					<p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
-						Choose the provider for speech-to-text transcription used by Polychat.
-					</p>
-					<FormSelect
-						id="transcription_provider"
-						name="transcription_provider"
-						value={formData.transcription_provider}
-						onChange={handleProviderChange}
-					>
-						{Object.keys(transcriptionProviders).map((provider) => (
-							<option key={provider} value={provider}>
-								{provider.charAt(0).toUpperCase() + provider.slice(1)}
-							</option>
-						))}
-					</FormSelect>
-				</div>
+					<div className="space-y-4">
+						<div>
+							<label
+								htmlFor="transcription_provider"
+								className="block text-sm font-medium text-zinc-800 dark:text-zinc-200 mb-1"
+							>
+								Transcription Provider
+							</label>
+							<p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
+								Choose the provider for speech-to-text transcription used by Polychat.
+							</p>
+							<FormSelect
+								id="transcription_provider"
+								name="transcription_provider"
+								value={formData.transcription_provider}
+								onChange={handleTranscriptionProviderChange}
+							>
+								{transcriptionProviderOptions.map((provider) => (
+									<option key={provider.id} value={provider.id}>
+										{provider.label}
+									</option>
+								))}
+							</FormSelect>
+						</div>
 
-				<div>
-					<label
-						htmlFor="transcription_model"
-						className="block text-sm font-medium text-zinc-800 dark:text-zinc-200 mb-1"
-					>
-						Transcription Model
-					</label>
-					<p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
-						Select from the available models for the {formData.transcription_provider} provider.
-					</p>
-					<FormSelect
-						id="transcription_model"
-						name="transcription_model"
-						value={formData.transcription_model}
-						onChange={(e) =>
-							setFormData({
-								...formData,
-								transcription_model: e.target.value,
-							})
-						}
-					>
-						{transcriptionProviders[
-							formData.transcription_provider as keyof typeof transcriptionProviders
-						]?.map((model) => (
-							<option key={model} value={model}>
-								{model}
-							</option>
-						))}
-					</FormSelect>
-				</div>
-			</div>
+						<div>
+							<label
+								htmlFor="transcription_model"
+								className="block text-sm font-medium text-zinc-800 dark:text-zinc-200 mb-1"
+							>
+								Transcription Model
+							</label>
+							<p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
+								Select from the available models for the {formData.transcription_provider} provider.
+							</p>
+							<FormSelect
+								id="transcription_model"
+								name="transcription_model"
+								value={formData.transcription_model}
+								onChange={(e) =>
+									setFormData({
+										...formData,
+										transcription_model: e.target.value,
+									})
+								}
+							>
+								{getTranscriptionModelOptions(formData.transcription_provider).map((model) => (
+									<option key={model.id} value={model.id}>
+										{model.label}
+									</option>
+								))}
+							</FormSelect>
+						</div>
+
+						<div>
+							<label
+								htmlFor="speech_provider"
+								className="block text-sm font-medium text-zinc-800 dark:text-zinc-200 mb-1"
+							>
+								Speech Provider
+							</label>
+							<p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
+								Choose the provider for text-to-speech response audio.
+							</p>
+							<FormSelect
+								id="speech_provider"
+								name="speech_provider"
+								value={formData.speech_provider}
+								onChange={handleSpeechProviderChange}
+							>
+								{speechProviderOptions.map((provider) => (
+									<option key={provider.id} value={provider.id}>
+										{provider.label}
+									</option>
+								))}
+							</FormSelect>
+						</div>
+
+						<div>
+							<label
+								htmlFor="speech_model"
+								className="block text-sm font-medium text-zinc-800 dark:text-zinc-200 mb-1"
+							>
+								Speech Model
+							</label>
+							<p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
+								Select from the available voices or models for the {formData.speech_provider}{" "}
+								provider.
+							</p>
+							<FormSelect
+								id="speech_model"
+								name="speech_model"
+								value={formData.speech_model}
+								onChange={(e) =>
+									setFormData({
+										...formData,
+										speech_model: e.target.value,
+									})
+								}
+							>
+								{getSpeechModelOptions(formData.speech_provider).map((model) => (
+									<option key={model.id} value={model.id}>
+										{model.label}
+									</option>
+								))}
+							</FormSelect>
+						</div>
+					</div>
+				</>
+			)}
 
 			<div>
 				<h3 className="text-lg font-bold text-zinc-800 dark:text-zinc-100 mb-6">Web Search</h3>

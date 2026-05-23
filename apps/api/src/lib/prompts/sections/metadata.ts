@@ -1,4 +1,5 @@
 import { APP_DESCRIPTION, APP_NAME } from "~/constants/app";
+import { hasProviderReasoningOptions } from "~/lib/providers/models/reasoning";
 import type { IBody, ModelConfigItem } from "~/types";
 import { PromptBuilder } from "../builder";
 
@@ -55,7 +56,7 @@ export function buildAssistantMetadataSection({
 	const enabledCapabilities = [
 		modelConfig?.supportsToolCalls ? "tool_calls" : null,
 		modelConfig?.supportsArtifacts ? "artifacts" : null,
-		modelConfig?.reasoningConfig?.enabled ? "reasoning" : null,
+		hasProviderReasoningOptions(modelConfig) ? "reasoning" : null,
 		modelConfig?.supportsDocuments ? "documents" : null,
 		modelConfig?.supportsSearchGrounding ? "search_grounding" : null,
 		modelConfig?.supportsCodeExecution ? "code_execution" : null,

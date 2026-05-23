@@ -16,7 +16,6 @@ export const deepseekModelConfig: ModelConfig = {
 		},
 		supportsAttachments: true,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: true },
 		supportsToolCalls: true,
 		card: "https://www.prompthub.us/models/deepseek-v3",
 		contextWindow: 1000000,
@@ -45,7 +44,6 @@ export const deepseekModelConfig: ModelConfig = {
 		},
 		supportsAttachments: true,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: true },
 		supportsToolCalls: true,
 		card: "https://www.prompthub.us/models/deepseek-reasoner-r1",
 		contextWindow: 1000000,
@@ -76,13 +74,11 @@ export const deepseekModelConfig: ModelConfig = {
 		supportsTemperature: true,
 		supportsToolCalls: true,
 		supportsResponseFormat: true,
+		isFeatured: true,
 		contextWindow: 1000000,
 		maxTokens: 384000,
 		costPer1kInputTokens: 0.00014,
 		costPer1kOutputTokens: 0.00028,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"deepseek-v4-pro": {
@@ -100,12 +96,10 @@ export const deepseekModelConfig: ModelConfig = {
 		supportsTemperature: true,
 		supportsToolCalls: true,
 		supportsResponseFormat: true,
+		isFeatured: true,
 		contextWindow: 1000000,
 		maxTokens: 384000,
 		costPer1kInputTokens: 0.00174,
 		costPer1kOutputTokens: 0.00348,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 };

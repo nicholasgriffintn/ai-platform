@@ -1,6 +1,8 @@
 import { createMultiModelStream } from "~/lib/chat/multiModalStreaming";
-import { buildCouncilMessageData, extractCouncilTurnRouting } from "~/lib/chat/council";
+import { extractCouncilTurnRouting } from "~/lib/chat/council";
+import { buildAssistantMessageData, isAgentExecutionMode } from "~/lib/chat/mode-metadata";
 import { RequestPreparer, type PreparedRequest } from "~/lib/chat/preparation/RequestPreparer";
+import { buildToolRequestContext } from "~/lib/chat/core/request-context";
 import { getAIResponse } from "~/lib/chat/responses";
 import { runAgentLoop, type ModelResponse } from "~/lib/chat/agent/runAgentLoop";
 import { createStreamWithPostProcessing } from "~/lib/chat/streaming";
@@ -12,27 +14,13 @@ import { Guardrails } from "~/lib/providers/capabilities/guardrails";
 import { SessionManager } from "~/lib/session/SessionManager";
 import { captureTrainingExample } from "~/services/training/captureTrainingExample";
 import { resolveServiceContext } from "~/lib/context/serviceContext";
-import type { CoreChatOptions, IRequest, Message } from "~/types";
+import type { CoreChatOptions, Message } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";
 import { isAbortError } from "~/utils/abort";
 
 const logger = getLogger({ prefix: "lib/chat/core/ChatOrchestrator" });
-const AGENT_EXECUTION_MODES = new Set(["agent", "plan", "build", "explore"]);
-
-function buildToolPermissionsMap(tools?: Record<string, any>[]): Record<string, string[]> {
-	if (!tools?.length) return {};
-	const map: Record<string, string[]> = {};
-	for (const tool of tools) {
-		const name = tool.name || tool.function?.name;
-		const permissions = tool.permissions;
-		if (name && Array.isArray(permissions) && permissions.length > 0) {
-			map[name] = permissions;
-		}
-	}
-	return map;
-}
 
 export class ChatOrchestrator {
 	private validator: ValidationPipeline;
@@ -105,7 +93,6 @@ export class ChatOrchestrator {
 			stop,
 			logit_bias,
 			metadata,
-			reasoning_effort,
 			verbosity,
 			store = true,
 			tools,
@@ -116,6 +103,7 @@ export class ChatOrchestrator {
 			current_step,
 			max_steps,
 		} = chatOptions;
+		const reasoning_effort = chatOptions.reasoning?.effort ?? chatOptions.reasoning_effort;
 
 		const startTime = Date.now();
 
@@ -153,7 +141,7 @@ export class ChatOrchestrator {
 			messages = compactedSession.messages;
 		}
 		messages = pruneMessagesToFitContext(messages, messageWithContext, primaryModelConfig);
-		if (AGENT_EXECUTION_MODES.has(currentMode) && stream) {
+		if (isAgentExecutionMode(currentMode) && stream) {
 			throw new AssistantError(
 				"Agent modes (agent, plan, build, explore) do not support streaming. Set stream: false.",
 				ErrorType.PARAMS_ERROR,
@@ -168,11 +156,13 @@ export class ChatOrchestrator {
 					system_prompt: systemPrompt,
 					env: chatOptions.env,
 					user: chatOptions.user?.id ? chatOptions.user : undefined,
+					context: chatOptions.context,
 					disable_functions,
 					completion_id: chatOptions.completion_id,
 					messages,
 					message: messageWithContext,
 					models: modelConfigs,
+					provider: primaryProvider,
 					mode: currentMode,
 					should_think,
 					response_format,
@@ -209,6 +199,7 @@ export class ChatOrchestrator {
 					provider: primaryProvider,
 					platform: platform || "api",
 					user: chatOptions.user,
+					context: chatOptions.context,
 					userSettings,
 					app_url: chatOptions.app_url,
 					mode: currentMode,
@@ -236,6 +227,7 @@ export class ChatOrchestrator {
 			messages,
 			message: messageWithContext,
 			model: primaryModel,
+			provider: primaryProvider,
 			mode: currentMode,
 			should_think,
 			response_format,
@@ -265,30 +257,20 @@ export class ChatOrchestrator {
 			options: chatOptions.options || {},
 		};
 
-		const toolPermissionsMap = buildToolPermissionsMap(chatOptions.tools);
-
-		const toolRequestContext: IRequest = {
-			env: chatOptions.env,
-			mode: currentMode,
-			request: {
-				completion_id: chatOptions.completion_id!,
-				input: messageWithContext,
-				model: primaryModel,
-				mode: currentMode,
-				date: new Date().toISOString().split("T")[0]!,
-				approved_tools: approved_tools,
-				tool_permissions_map: toolPermissionsMap,
-				current_agent_id: chatOptions.current_agent_id,
-				delegation_stack: chatOptions.delegation_stack,
-				max_delegation_depth: chatOptions.max_delegation_depth,
+		const toolRequestContext = buildToolRequestContext({
+			chatOptions: {
+				...chatOptions,
+				approved_tools,
 			},
-			app_url: chatOptions.app_url,
-			user: chatOptions.user?.id ? chatOptions.user : undefined,
-		};
+			input: messageWithContext,
+			mode: currentMode,
+			model: primaryModel,
+			provider: primaryProvider,
+		});
 
 		const toolResponses: Message[] = [];
 		let response: ModelResponse | ReadableStream;
-		if (AGENT_EXECUTION_MODES.has(currentMode) && !stream) {
+		if (isAgentExecutionMode(currentMode) && !stream) {
 			const agentResult = await runAgentLoop({
 				requestParams,
 				completionId: chatOptions.completion_id!,
@@ -312,6 +294,7 @@ export class ChatOrchestrator {
 					provider: primaryProvider,
 					platform: platform || "api",
 					user: chatOptions.user,
+					context: chatOptions.context,
 					userSettings,
 					app_url: chatOptions.app_url,
 					mode: currentMode,
@@ -374,19 +357,15 @@ export class ChatOrchestrator {
 			response.response || "",
 			chatOptions.options?.council,
 		);
-		const responseData =
-			response.data && typeof response.data === "object" && !Array.isArray(response.data)
-				? response.data
-				: null;
-		const councilMessageData = buildCouncilMessageData(
-			chatOptions.options?.council,
-			councilTurn.routing,
-		);
 		await conversationManager.add(chatOptions.completion_id!, {
 			role: "assistant",
 			content: councilTurn.content,
 			citations: response.citations || null,
-			data: councilMessageData ? { ...responseData, ...councilMessageData } : responseData,
+			data: buildAssistantMessageData({
+				responseData: response.data,
+				requestOptions: chatOptions.options,
+				councilRouting: councilTurn.routing,
+			}),
 			log_id: chatOptions.env.AI.aiGatewayLogId || response.log_id,
 			mode: currentMode,
 			id: generateId(),

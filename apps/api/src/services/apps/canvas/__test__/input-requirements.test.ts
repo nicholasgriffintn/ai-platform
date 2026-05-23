@@ -55,4 +55,31 @@ describe("canvas input requirements", () => {
 			}),
 		).toBeNull();
 	});
+
+	it("passes when required references are provided through model options", () => {
+		const model: ModelConfigItem = {
+			matchingModel: "test-video-model",
+			provider: "replicate",
+			modalities: { input: ["text", "image"], output: ["video"] },
+			inputSchema: {
+				fields: [
+					{ name: "prompt", type: "string", required: true },
+					{ name: "reference_images", type: "array", required: true },
+				],
+			},
+		};
+
+		expect(
+			validateCanvasModelInputRequirements({
+				model,
+				request: {
+					mode: "video",
+					prompt: "Animate this scene",
+					modelOptions: {
+						reference_images: ["https://example.com/ref.png"],
+					},
+				},
+			}),
+		).toBeNull();
+	});
 });

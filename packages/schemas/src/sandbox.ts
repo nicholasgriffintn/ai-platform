@@ -38,6 +38,26 @@ export const githubConnectionSchema = z.object({
 	repositories: z.array(z.string().trim().min(1)).optional(),
 });
 
+export const sandboxModelSettingsSchema = z.object({
+	temperature: z.number().optional(),
+	top_p: z.number().optional(),
+	top_k: z.number().optional(),
+	max_tokens: z.number().int().positive().optional(),
+	presence_penalty: z.number().optional(),
+	frequency_penalty: z.number().optional(),
+	reasoning_effort: z
+		.enum(["none", "simulated-thinking", "thinking", "low", "medium", "high"])
+		.optional(),
+	reasoning: z
+		.object({
+			effort: z
+				.enum(["none", "simulated-thinking", "thinking", "low", "medium", "high"])
+				.optional(),
+		})
+		.optional(),
+	verbosity: z.enum(["low", "medium", "high", "caveman"]).optional(),
+});
+
 export const executeSandboxRunSchema = z.object({
 	installationId: z.number().int().positive(),
 	repo: sandboxRepoSchema,
@@ -53,6 +73,7 @@ export const executeSandboxRunSchema = z.object({
 		.max(SANDBOX_TIMEOUT_MAX_SECONDS)
 		.optional(),
 	trustLevel: z.enum(SANDBOX_TRUST_LEVELS).optional(),
+	modelSettings: sandboxModelSettingsSchema.optional(),
 });
 
 export const sandboxRunDispatchPayloadSchema = z.object({
@@ -65,6 +86,7 @@ export const sandboxRunDispatchPayloadSchema = z.object({
 	shouldCommit: z.boolean(),
 	timeoutSeconds: z.number().int().positive().optional(),
 	trustLevel: z.enum(SANDBOX_TRUST_LEVELS).optional(),
+	modelSettings: sandboxModelSettingsSchema.optional(),
 });
 
 export const sandboxRunDispatchMessageSchema = z.object({
@@ -80,28 +102,18 @@ export const autoConnectSchema = z.object({
 	repositories: z.array(z.string().trim().min(1)).optional(),
 });
 
+export const sandboxConnectionRepositoriesSchema = z.object({
+	repositories: z.array(sandboxRepoSchema),
+});
+
 export const sandboxRunParamsSchema = z.object({
 	runId: z.string().trim().min(1),
 });
 
 export type SandboxRunParams = z.infer<typeof sandboxRunParamsSchema>;
 
-export const listRunsQuerySchema = z.object({
-	installationId: z.coerce.number().int().positive().optional(),
-	repo: z.string().trim().min(1).optional(),
-	limit: z.coerce.number().int().min(1).max(100).default(30),
-});
-
-export const listRunEventsQuerySchema = z.object({
-	after: z.coerce.number().int().min(0).optional(),
-});
-
 export const listRunInstructionsQuerySchema = z.object({
 	after: z.coerce.number().int().min(0).optional(),
-});
-
-export const cancelRunSchema = z.object({
-	reason: z.string().trim().min(1).max(280).optional(),
 });
 
 export const sandboxRunInstructionKindSchema = z.enum([
@@ -119,14 +131,6 @@ export const submitRunInstructionSchema = z.object({
 	approvalStatus: z.enum(["approved", "rejected"]).optional(),
 	timeoutSeconds: z.number().int().min(5).max(1800).optional(),
 	escalateAfterSeconds: z.number().int().min(1).max(900).optional(),
-});
-
-export const pauseRunSchema = z.object({
-	reason: z.string().trim().min(1).max(280).optional(),
-});
-
-export const resumeRunSchema = z.object({
-	reason: z.string().trim().min(1).max(280).optional(),
 });
 
 export const sandboxConnectionSchema = z.object({
@@ -268,10 +272,6 @@ export const sandboxRunDataSchema = z.object({
 	processingStartedAt: z.string().optional(),
 });
 
-export const sandboxRunSchema = sandboxRunDataSchema.extend({
-	events: z.array(sandboxRunEventSchema).default([]),
-});
-
 export const sandboxTaskTypeSchema = z.enum(SANDBOX_TASK_TYPES);
 export const sandboxTrustLevelSchema = z.enum(SANDBOX_TRUST_LEVELS);
 
@@ -330,6 +330,7 @@ export const sandboxWorkerExecuteRequestSchema = z.object({
 	polychatApiUrl: z.url(),
 	installationId: z.number().int().positive().optional(),
 	runId: z.string().trim().min(1).optional(),
+	modelSettings: sandboxModelSettingsSchema.optional(),
 });
 
 export type GitHubConnectionPayload = z.infer<typeof githubConnectionSchema>;
@@ -337,13 +338,12 @@ export type ExecuteSandboxRunPayload = z.infer<typeof executeSandboxRunSchema>;
 export type SandboxRunDispatchPayload = z.infer<typeof sandboxRunDispatchPayloadSchema>;
 export type SandboxRunDispatchMessage = z.infer<typeof sandboxRunDispatchMessageSchema>;
 export type AutoConnectPayload = z.infer<typeof autoConnectSchema>;
-export type ListRunsQueryPayload = z.infer<typeof listRunsQuerySchema>;
-export type ListRunEventsQueryPayload = z.infer<typeof listRunEventsQuerySchema>;
+export type SandboxConnectionRepositoriesPayload = z.infer<
+	typeof sandboxConnectionRepositoriesSchema
+>;
+export type SandboxModelSettings = z.infer<typeof sandboxModelSettingsSchema>;
 export type ListRunInstructionsQueryPayload = z.infer<typeof listRunInstructionsQuerySchema>;
-export type CancelRunPayload = z.infer<typeof cancelRunSchema>;
 export type SubmitRunInstructionPayload = z.infer<typeof submitRunInstructionSchema>;
-export type PauseRunPayload = z.infer<typeof pauseRunSchema>;
-export type ResumeRunPayload = z.infer<typeof resumeRunSchema>;
 
 export type SandboxConnection = z.infer<typeof sandboxConnectionSchema>;
 export type SandboxInstallConfig = z.infer<typeof sandboxInstallConfigSchema>;
@@ -352,7 +352,6 @@ export type SandboxRunResult = z.infer<typeof sandboxRunResultSchema>;
 export type SandboxTaskResult = z.infer<typeof sandboxTaskResultSchema>;
 export type SandboxRunEvent = z.infer<typeof sandboxRunEventSchema>;
 export type SandboxRunData = z.infer<typeof sandboxRunDataSchema>;
-export type SandboxRun = z.infer<typeof sandboxRunSchema>;
 export type SandboxTaskType = z.infer<typeof sandboxTaskTypeSchema>;
 export type SandboxPromptStrategy = z.infer<typeof sandboxPromptStrategySchema>;
 export type SandboxTrustLevel = z.infer<typeof sandboxTrustLevelSchema>;

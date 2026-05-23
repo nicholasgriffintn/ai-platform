@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import type { Conversation } from "~/types";
-import { preserveOptimisticMessages } from "../conversations";
+import { createConversationId, preserveOptimisticMessages } from "../conversations";
 
 function conversation(id: string, messages: Conversation["messages"]): Conversation {
 	return {
@@ -32,5 +32,12 @@ describe("preserveOptimisticMessages", () => {
 		]);
 
 		expect(preserveOptimisticMessages(fetched, cached)).toBe(fetched);
+	});
+});
+
+describe("createConversationId", () => {
+	it("creates IDs through the shared conversation helper", () => {
+		expect(createConversationId()).toEqual(expect.any(String));
+		expect(createConversationId().length).toBeGreaterThan(0);
 	});
 });

@@ -125,7 +125,7 @@ function findModelConfigByMatchingModel(matchingModel: string, provider?: string
 		}
 	}
 
-	return fallbackMatch;
+	return provider ? null : fallbackMatch;
 }
 
 function getModelModalities(model: ModelConfigItem): ModelModalities {
@@ -186,15 +186,16 @@ async function withCache<T>(
 	return result;
 }
 
-export async function getModelConfig(model?: string, env?: IEnv) {
+export async function getModelConfig(model?: string, env?: IEnv, provider?: string) {
 	const key = model || defaultModel;
+	const cacheParts = provider ? [key, provider] : [key];
 
-	return withCache(
-		env,
-		"model-config",
-		[key],
-		() => (model && modelConfig[model]) || modelConfig[defaultModel],
-	);
+	return withCache(env, "model-config", cacheParts, () => {
+		const config = modelConfig[key];
+		if (!config) return undefined;
+		if (provider && config.provider !== provider) return undefined;
+		return config;
+	});
 }
 
 export async function getModelConfigByModel(model: string, env?: IEnv) {

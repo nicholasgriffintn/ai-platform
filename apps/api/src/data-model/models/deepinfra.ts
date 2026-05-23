@@ -18,7 +18,6 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 		},
 		supportsAttachments: false,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: false },
 		supportsToolCalls: true,
 		contextWindow: 131072,
 		maxTokens: 32768,
@@ -46,7 +45,6 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 		},
 		supportsAttachments: false,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: false },
 		supportsToolCalls: true,
 		contextWindow: 262144,
 		maxTokens: 66536,
@@ -74,7 +72,6 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 		},
 		supportsAttachments: false,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: false },
 		supportsToolCalls: true,
 		contextWindow: 262144,
 		maxTokens: 66536,
@@ -84,38 +81,11 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 		contextComplexity: 5,
 		reliability: 4,
 		speed: 4,
-		isFeatured: true,
+		isFeatured: false,
 		includedInRouter: true,
 		supportsArtifacts: true,
 	}),
 
-	createModelConfig("zai-org/GLM-4.5", PROVIDER, {
-		name: "GLM-4.5",
-		matchingModel: "zai-org/GLM-4.5",
-		description:
-			"GLM-4.5 is a powerful open-weights model with advanced text generation and tool calling capabilities.",
-		knowledgeCutoffDate: "April 2025",
-		releaseDate: "July 28, 2025",
-		lastUpdated: "July 28, 2025",
-		modalities: {
-			input: ["text"],
-			output: ["text"],
-		},
-		supportsAttachments: false,
-		supportsTemperature: true,
-		reasoningConfig: { enabled: false },
-		supportsToolCalls: true,
-		contextWindow: 131072,
-		maxTokens: 98304,
-		costPer1kInputTokens: 0.0006,
-		costPer1kOutputTokens: 0.0022,
-		strengths: ["chat", "general_knowledge", "analysis", "tool_use", "multilingual"],
-		contextComplexity: 4,
-		reliability: 4,
-		speed: 4,
-		includedInRouter: true,
-		supportsArtifacts: true,
-	}),
 	createModelConfig("anthropic/claude-3-7-sonnet-latest", PROVIDER, {
 		name: "Claude Sonnet 3.7 (Latest)",
 		matchingModel: "anthropic/claude-3-7-sonnet-latest",
@@ -133,9 +103,6 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 64000,
 		costPer1kInputTokens: 0.0033,
 		costPer1kOutputTokens: 0.0165,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("anthropic/claude-4-opus", PROVIDER, {
@@ -155,9 +122,6 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 32000,
 		costPer1kInputTokens: 0.0165,
 		costPer1kOutputTokens: 0.0825,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("deepseek-ai/DeepSeek-R1-0528", PROVIDER, {
@@ -177,9 +141,6 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 64000,
 		costPer1kInputTokens: 0.0005,
 		costPer1kOutputTokens: 0.00215,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("deepseek-ai/DeepSeek-V3.2", PROVIDER, {
@@ -199,9 +160,6 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 64000,
 		costPer1kInputTokens: 0.00026,
 		costPer1kOutputTokens: 0.00038,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("MiniMaxAI/MiniMax-M2", PROVIDER, {
@@ -221,9 +179,6 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.000254,
 		costPer1kOutputTokens: 0.00102,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("MiniMaxAI/MiniMax-M2.1", PROVIDER, {
@@ -243,9 +198,6 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 196608,
 		costPer1kInputTokens: 0.00028,
 		costPer1kOutputTokens: 0.0012,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("moonshotai/Kimi-K2-Thinking", PROVIDER, {
@@ -265,9 +217,6 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.00047,
 		costPer1kOutputTokens: 0.002,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("moonshotai/Kimi-K2.5", PROVIDER, {
@@ -288,9 +237,6 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.0005,
 		costPer1kOutputTokens: 0.0028,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("openai/gpt-oss-120b", PROVIDER, {
@@ -309,9 +255,6 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00005,
 		costPer1kOutputTokens: 0.00024,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("openai/gpt-oss-20b", PROVIDER, {
@@ -330,9 +273,6 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00003,
 		costPer1kOutputTokens: 0.00014,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("zai-org/GLM-4.7", PROVIDER, {
@@ -352,9 +292,6 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00043,
 		costPer1kOutputTokens: 0.00175,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("zai-org/GLM-4.7-Flash", PROVIDER, {
@@ -374,9 +311,6 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00006,
 		costPer1kOutputTokens: 0.0004,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 	createModelConfig("deepseek-ai/DeepSeek-V4-Flash", PROVIDER, {
 		name: "DeepSeek V4 Flash",
@@ -396,9 +330,6 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 384000,
 		costPer1kInputTokens: 0.00014,
 		costPer1kOutputTokens: 0.00028,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("deepseek-ai/DeepSeek-V4-Pro", PROVIDER, {
@@ -419,9 +350,6 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.00174,
 		costPer1kOutputTokens: 0.00348,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("google/gemma-4-26B-A4B-it", PROVIDER, {
@@ -433,17 +361,14 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 			input: ["text", "image"],
 			output: ["text"],
 		},
-		supportsAttachments: false,
+		supportsAttachments: true,
 		supportsTemperature: true,
 		supportsToolCalls: true,
 		supportsResponseFormat: true,
-		contextWindow: 256000,
-		maxTokens: 8192,
+		contextWindow: 262144,
+		maxTokens: 32768,
 		costPer1kInputTokens: 0.00007,
 		costPer1kOutputTokens: 0.00034,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("google/gemma-4-31B-it", PROVIDER, {
@@ -455,17 +380,14 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 			input: ["text", "image"],
 			output: ["text"],
 		},
-		supportsAttachments: false,
+		supportsAttachments: true,
 		supportsTemperature: true,
 		supportsToolCalls: true,
 		supportsResponseFormat: true,
-		contextWindow: 256000,
-		maxTokens: 8192,
+		contextWindow: 262144,
+		maxTokens: 32768,
 		costPer1kInputTokens: 0.00013,
 		costPer1kOutputTokens: 0.00038,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("meta-llama/Llama-3.1-70B-Instruct", PROVIDER, {
@@ -483,9 +405,6 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.0004,
 		costPer1kOutputTokens: 0.0004,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("meta-llama/Llama-3.1-70B-Instruct-Turbo", PROVIDER, {
@@ -503,9 +422,6 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.0004,
 		costPer1kOutputTokens: 0.0004,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("meta-llama/Llama-3.1-8B-Instruct", PROVIDER, {
@@ -523,9 +439,6 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00002,
 		costPer1kOutputTokens: 0.00005,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("meta-llama/Llama-3.1-8B-Instruct-Turbo", PROVIDER, {
@@ -543,9 +456,6 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00002,
 		costPer1kOutputTokens: 0.00003,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("meta-llama/Llama-3.3-70B-Instruct-Turbo", PROVIDER, {
@@ -563,9 +473,6 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.0001,
 		costPer1kOutputTokens: 0.00032,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8", PROVIDER, {
@@ -583,9 +490,6 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00015,
 		costPer1kOutputTokens: 0.0006,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("meta-llama/Llama-4-Scout-17B-16E-Instruct", PROVIDER, {
@@ -603,9 +507,6 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00008,
 		costPer1kOutputTokens: 0.0003,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("MiniMaxAI/MiniMax-M2.5", PROVIDER, {
@@ -625,9 +526,6 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.00027,
 		costPer1kOutputTokens: 0.00095,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("moonshotai/Kimi-K2-Instruct-0905", PROVIDER, {
@@ -647,9 +545,6 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 262144,
 		costPer1kInputTokens: 0.0004,
 		costPer1kOutputTokens: 0.002,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("moonshotai/Kimi-K2.6", PROVIDER, {
@@ -670,9 +565,6 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00075,
 		costPer1kOutputTokens: 0.0035,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("Qwen/Qwen3.5-35B-A3B", PROVIDER, {
@@ -692,9 +584,6 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 81920,
 		costPer1kInputTokens: 0.0002,
 		costPer1kOutputTokens: 0.00095,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("Qwen/Qwen3.5-397B-A17B", PROVIDER, {
@@ -714,9 +603,6 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 81920,
 		costPer1kInputTokens: 0.00054,
 		costPer1kOutputTokens: 0.0034,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("Qwen/Qwen3.6-35B-A3B", PROVIDER, {
@@ -735,9 +621,6 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 81920,
 		costPer1kInputTokens: 0.0002,
 		costPer1kOutputTokens: 0.001,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("xiaomi/mimo-v2.5", PROVIDER, {
@@ -757,9 +640,6 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.0004,
 		costPer1kOutputTokens: 0.002,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("xiaomi/mimo-v2.5-pro", PROVIDER, {
@@ -779,9 +659,6 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.001,
 		costPer1kOutputTokens: 0.003,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("zai-org/GLM-4.6", PROVIDER, {
@@ -801,9 +678,6 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.00043,
 		costPer1kOutputTokens: 0.00174,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("zai-org/GLM-4.6V", PROVIDER, {
@@ -823,9 +697,6 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.0003,
 		costPer1kOutputTokens: 0.0009,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("zai-org/GLM-5", PROVIDER, {
@@ -845,9 +716,6 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.0008,
 		costPer1kOutputTokens: 0.00256,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("zai-org/GLM-5.1", PROVIDER, {
@@ -868,8 +736,5 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.0014,
 		costPer1kOutputTokens: 0.0044,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 ]);

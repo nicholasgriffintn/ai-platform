@@ -87,6 +87,34 @@ export async function storeProviderApiKey(
 	};
 }
 
+export async function deleteProviderApiKey(
+	context: ServiceContext,
+	providerId: string,
+	userId?: number,
+): Promise<{ success: boolean; message: string }> {
+	const repo = ensureRepo(context);
+	const id = userId ?? context.requireUser().id;
+	await repo.deleteProviderApiKey(id, providerId);
+
+	const cache = getUserCache(context.env);
+	if (cache) {
+		try {
+			await cache.clearUserModelCache(id.toString());
+		} catch (error) {
+			logger.error("Failed to clear user caches after provider API key deletion", {
+				userId: id,
+				providerId,
+				error,
+			});
+		}
+	}
+
+	return {
+		success: true,
+		message: "Provider API key deleted successfully",
+	};
+}
+
 export async function getUserProviderSettings(
 	context: ServiceContext,
 	userId?: number,

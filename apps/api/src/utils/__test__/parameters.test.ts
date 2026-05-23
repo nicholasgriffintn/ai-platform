@@ -185,6 +185,17 @@ describe("parameters", () => {
 			expect(result).toBe(0);
 		});
 
+		it("should return 0 when reasoning effort is simulated thinking", () => {
+			const params = {
+				reasoning_effort: "simulated-thinking",
+				max_tokens: 2000,
+			} as ChatCompletionParameters;
+
+			const result = calculateReasoningBudget(params);
+
+			expect(result).toBe(0);
+		});
+
 		it("should use default (medium) for undefined reasoning effort", () => {
 			const params = { max_tokens: 2000 } as ChatCompletionParameters;
 
@@ -281,6 +292,44 @@ describe("parameters", () => {
 				metadata: undefined,
 				top_p: undefined,
 			});
+		});
+
+		it("should send the resolved matching model", () => {
+			const result = createCommonParameters(
+				{
+					...baseParams,
+					model: "grok-3-gh",
+				},
+				{
+					...modelConfig,
+					matchingModel: "xai/grok-3",
+				},
+				"github-models",
+			);
+
+			expect(result.model).toBe("xai/grok-3");
+		});
+
+		it("should use configured model override for provider thinking", () => {
+			const result = createCommonParameters(
+				{
+					...baseParams,
+					reasoning_effort: "thinking",
+				},
+				{
+					...modelConfig,
+					matchingModel: "provider/base-model",
+					reasoningConfig: {
+						supportedEffortLevels: ["none", "thinking"],
+						modelOverrides: {
+							thinking: "provider/thinking-model",
+						},
+					},
+				},
+				"vercel",
+			);
+
+			expect(result.model).toBe("provider/thinking-model");
 		});
 
 		it("should format model name for OpenAI compatible providers", () => {

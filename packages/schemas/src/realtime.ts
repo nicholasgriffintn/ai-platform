@@ -1,26 +1,55 @@
 import z from "zod/v4";
 
-export const realtimeSessionResponseSchema = z.object({
-	id: z.string(),
-	object: z.string(),
-	modalities: z.array(z.string()),
-	turn_detection: z.object({
-		type: z.string(),
-		threshold: z.number(),
-		prefix_padding_ms: z.number(),
-		silence_duration_ms: z.number(),
-	}),
-	input_audio_format: z.string(),
-	input_audio_transcription: z.object({
-		model: z.string(),
-		language: z.string(),
-		language_code: z.string(),
-	}),
-	client_secret: z.object({
-		expires_at: z.number(),
-		value: z.string(),
-	}),
-});
+export const realtimeSessionResponseSchema = z
+	.object({
+		id: z.string(),
+		object: z.string(),
+		type: z.string().optional(),
+		audio: z
+			.object({
+				input: z
+					.object({
+						format: z
+							.object({
+								type: z.string(),
+								rate: z.number().optional(),
+							})
+							.optional(),
+						transcription: z
+							.object({
+								model: z.string(),
+								language: z.string().optional(),
+								delay: z.enum(["minimal", "low", "medium", "high", "xhigh"]).optional(),
+							})
+							.optional(),
+						turn_detection: z.unknown().optional().nullable(),
+					})
+					.optional(),
+			})
+			.optional(),
+		modalities: z.array(z.string()).optional(),
+		turn_detection: z
+			.object({
+				type: z.string(),
+				threshold: z.number(),
+				prefix_padding_ms: z.number(),
+				silence_duration_ms: z.number(),
+			})
+			.optional(),
+		input_audio_format: z.string().optional(),
+		input_audio_transcription: z
+			.object({
+				model: z.string(),
+				language: z.string().optional(),
+				language_code: z.string().optional(),
+			})
+			.optional(),
+		client_secret: z.object({
+			expires_at: z.number(),
+			value: z.string(),
+		}),
+	})
+	.passthrough();
 
 export const realtimeSessionCreateSchema = z.object({
 	model: z.string().optional(),

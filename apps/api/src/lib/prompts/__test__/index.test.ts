@@ -58,12 +58,15 @@ describe("prompts index", () => {
 				mockUserSettings,
 			);
 
-			expect(mockGetModelConfigByMatchingModel).toHaveBeenCalledWith("unknown-model");
+			expect(mockGetModelConfigByMatchingModel).toHaveBeenCalledWith(
+				"unknown-model",
+				undefined,
+				undefined,
+			);
 			expect(mockReturnStandardPrompt).toHaveBeenCalledWith(
 				mockRequest,
 				mockUser,
 				mockUserSettings,
-				false,
 				false,
 				false,
 				{ modelId: "unknown-model" },
@@ -77,8 +80,6 @@ describe("prompts index", () => {
 				promptTemplate: "coding",
 				supportsToolCalls: true,
 				supportsArtifacts: true,
-				reasoningConfig: { enabled: false },
-				requiresThinkingPrompt: false,
 			});
 			mockReturnCodingPrompt.mockResolvedValue("coding prompt");
 
@@ -90,7 +91,6 @@ describe("prompts index", () => {
 				mockUserSettings,
 				true,
 				true,
-				false,
 				{
 					modelId: "coding-model",
 					modelConfig: {
@@ -98,8 +98,6 @@ describe("prompts index", () => {
 						promptTemplate: "coding",
 						supportsToolCalls: true,
 						supportsArtifacts: true,
-						reasoningConfig: { enabled: false },
-						requiresThinkingPrompt: false,
 					},
 				},
 			);
@@ -143,8 +141,7 @@ describe("prompts index", () => {
 				modalities: { input: ["text"], output: ["text"] },
 				supportsToolCalls: false,
 				supportsArtifacts: false,
-				reasoningConfig: { enabled: true },
-				requiresThinkingPrompt: true,
+				reasoningConfig: { supportedEffortLevels: ["none", "thinking", "low", "medium", "high"] },
 			});
 			mockReturnStandardPrompt.mockResolvedValue("text prompt");
 
@@ -157,15 +154,15 @@ describe("prompts index", () => {
 				mockUserSettings,
 				false,
 				false,
-				true,
 				{
 					modelId: "text-model",
 					modelConfig: {
 						modalities: { input: ["text"], output: ["text"] },
 						supportsToolCalls: false,
 						supportsArtifacts: false,
-						reasoningConfig: { enabled: true },
-						requiresThinkingPrompt: true,
+						reasoningConfig: {
+							supportedEffortLevels: ["none", "thinking", "low", "medium", "high"],
+						},
 					},
 				},
 			);
@@ -203,7 +200,6 @@ describe("prompts index", () => {
 				mockRequest,
 				undefined,
 				undefined,
-				false,
 				false,
 				false,
 				{ modelId: "test-model" },

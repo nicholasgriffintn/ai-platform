@@ -107,5 +107,11 @@ export type IEnv = {
 	SEND_EMAIL?: SendEmail;
 };
 
-export type ReasoningEffortLevel = "none" | "low" | "medium" | "high";
-export type VerbosityLevel = "low" | "medium" | "high";
+export type ReasoningEffortLevel =
+	| "none"
+	| "simulated-thinking"
+	| "thinking"
+	| "low"
+	| "medium"
+	| "high";
+export type VerbosityLevel = "low" | "medium" | "high" | "caveman";

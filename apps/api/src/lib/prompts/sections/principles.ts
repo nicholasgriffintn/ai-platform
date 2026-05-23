@@ -6,7 +6,7 @@ interface AssistantPrinciplesOptions {
 	isAgent: boolean;
 	supportsToolCalls?: boolean;
 	supportsArtifacts?: boolean;
-	reasoningEnabled?: boolean;
+	simulatedThinking?: boolean;
 	verbosity?: VerbosityLevel;
 	preferredLanguage?: string | null;
 	format?: "full" | "compact";
@@ -16,7 +16,7 @@ export function buildAssistantPrinciplesSection({
 	isAgent,
 	supportsToolCalls,
 	supportsArtifacts,
-	reasoningEnabled,
+	simulatedThinking,
 	verbosity,
 	preferredLanguage,
 	format = "full",
@@ -58,6 +58,10 @@ export function buildAssistantPrinciplesSection({
 
 	const modeSpecificPrinciple = (() => {
 		switch (verbosity) {
+			case "caveman":
+				return format === "compact"
+					? "Use caveman brevity: terse fragments, exact technical terms, no filler, complete substance."
+					: "Use caveman brevity: terse fragments, exact technical terms, no filler, complete substance, and normal clear prose only when safety or irreversible actions require it.";
 			case "low":
 				return format === "compact"
 					? "Keep answers tight but complete; avoid restating obvious context."
@@ -76,9 +80,11 @@ export function buildAssistantPrinciplesSection({
 	addPrinciple(modeSpecificPrinciple);
 
 	addPrinciple(
-		format === "compact"
-			? "For complex tasks, include a short 'Key steps' summary before the final answer."
-			: "For complex tasks, include a short 'Key steps' summary before the final answer so the user can follow your reasoning.",
+		verbosity === "caveman"
+			? "For complex tasks, include tiny 'Key steps' only when it prevents confusion."
+			: format === "compact"
+				? "For complex tasks, include a short 'Key steps' summary before the final answer."
+				: "For complex tasks, include a short 'Key steps' summary before the final answer so the user can follow your reasoning.",
 	);
 
 	if (supportsToolCalls || isAgent) {
@@ -100,11 +106,11 @@ export function buildAssistantPrinciplesSection({
 		);
 	}
 
-	if (!reasoningEnabled) {
+	if (simulatedThinking) {
 		addPrinciple(
 			format === "compact"
-				? "When native reasoning traces are unavailable, keep your reasoning summary clear while avoiding private scratchpads."
-				: "When native reasoning traces are unavailable, make your reasoning summary especially clear without exposing private scratchpads.",
+				? "Use the simulated thinking guidance in this prompt, then share only the useful summary."
+				: "Use the simulated thinking guidance in this prompt to reason through the task, then share only the useful summary without exposing private scratchpads.",
 		);
 	}
 

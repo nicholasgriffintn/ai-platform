@@ -1,5 +1,3 @@
-"use client";
-
 import { Wand2 } from "lucide-react";
 import type { ComponentProps, FC } from "react";
 import { Suspense, forwardRef, lazy, useMemo, useState } from "react";

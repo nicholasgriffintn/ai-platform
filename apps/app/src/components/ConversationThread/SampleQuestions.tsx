@@ -55,14 +55,17 @@ const baseCategories = [
 
 interface SampleQuestionsProps {
 	setInput: (text: string) => void;
+	questionsOverride?: Question[] | null;
 }
 
-export const SampleQuestions = ({ setInput }: SampleQuestionsProps) => {
+export const SampleQuestions = ({ setInput, questionsOverride }: SampleQuestionsProps) => {
 	const { trackEvent } = useTrackEvent();
 
 	const { isMobile, isMobileLoading } = useUIStore();
 	const [questions, setQuestions] = useState<Question[]>([]);
 	const [showChallenging, setShowChallenging] = useState(false);
+	const displayedQuestions = questionsOverride ?? questions;
+	const hasQuestionOverride = questionsOverride !== undefined;
 
 	const refreshQuestions = useCallback(
 		(force = false) => {
@@ -109,8 +112,11 @@ export const SampleQuestions = ({ setInput }: SampleQuestionsProps) => {
 	);
 
 	useEffect(() => {
+		if (hasQuestionOverride) {
+			return;
+		}
 		refreshQuestions(false);
-	}, [showChallenging]);
+	}, [hasQuestionOverride, refreshQuestions]);
 
 	const handleClick = (question: Question) => {
 		trackEvent({
@@ -141,7 +147,7 @@ export const SampleQuestions = ({ setInput }: SampleQuestionsProps) => {
 		return null;
 	}
 
-	if (questions.length === 0) {
+	if (questionsOverride === null || displayedQuestions.length === 0) {
 		return null;
 	}
 
@@ -152,55 +158,59 @@ export const SampleQuestions = ({ setInput }: SampleQuestionsProps) => {
 					Try asking about...
 				</h3>
 				<div className="flex items-center gap-3">
-					<Button
-						type="button"
-						onClick={() => refreshQuestions(true)}
-						variant="ghost"
-						className="cursor-pointer flex items-center text-xs text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200 transition-colors"
-					>
-						<Sparkles size={14} className="mr-1" />
-						<span>Refresh</span>
-					</Button>
+					{!hasQuestionOverride && (
+						<Button
+							type="button"
+							onClick={() => refreshQuestions(true)}
+							variant="ghost"
+							className="cursor-pointer flex items-center text-xs text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200 transition-colors"
+						>
+							<Sparkles size={14} className="mr-1" />
+							<span>Refresh</span>
+						</Button>
+					)}
 				</div>
 			</div>
 			<div className="grid grid-cols-1 md:grid-cols-2 gap-3">
 				{isMobile ? (
 					<QuestionOption
-						key={questions[0].id}
-						questionData={questions[0]}
-						onClick={() => handleClick(questions[0])}
+						key={displayedQuestions[0].id}
+						questionData={displayedQuestions[0]}
+						onClick={() => handleClick(displayedQuestions[0])}
 					/>
 				) : (
-					questions.map((q) => (
+					displayedQuestions.map((q) => (
 						<QuestionOption key={q.id} questionData={q} onClick={() => handleClick(q)} />
 					))
 				)}
 			</div>
-			<div className="flex items-center justify-end gap-3 w-full mt-3">
-				<label className="flex items-center cursor-pointer">
-					<input
-						type="checkbox"
-						checked={showChallenging}
-						onChange={handleToggleChallenging}
-						className="sr-only"
-					/>
-					<div
-						className={`relative inline-block w-8 h-4 rounded-full transition-colors ${
-							showChallenging ? "bg-orange-500" : "bg-zinc-300 dark:bg-zinc-600"
-						}`}
-					>
-						<div
-							className={`absolute top-0.5 left-0.5 w-3 h-3 bg-white rounded-full transition-transform ${
-								showChallenging ? "translate-x-4" : "translate-x-0"
-							}`}
+			{!hasQuestionOverride && (
+				<div className="flex items-center justify-end gap-3 w-full mt-3">
+					<label className="flex items-center cursor-pointer">
+						<input
+							type="checkbox"
+							checked={showChallenging}
+							onChange={handleToggleChallenging}
+							className="sr-only"
 						/>
-					</div>
-					<span className="ml-2 text-xs text-zinc-500 dark:text-zinc-400">
-						<Zap size={12} className="inline mr-1 text-orange-600 dark:text-orange-400" />
-						Hard
-					</span>
-				</label>
-			</div>
+						<div
+							className={`relative inline-block w-8 h-4 rounded-full transition-colors ${
+								showChallenging ? "bg-orange-500" : "bg-zinc-300 dark:bg-zinc-600"
+							}`}
+						>
+							<div
+								className={`absolute top-0.5 left-0.5 w-3 h-3 bg-white rounded-full transition-transform ${
+									showChallenging ? "translate-x-4" : "translate-x-0"
+								}`}
+							/>
+						</div>
+						<span className="ml-2 text-xs text-zinc-500 dark:text-zinc-400">
+							<Zap size={12} className="inline mr-1 text-orange-600 dark:text-orange-400" />
+							Hard
+						</span>
+					</label>
+				</div>
+			)}
 		</div>
 	);
 };

@@ -42,6 +42,7 @@ const generateCanvasSchema = z.object({
 	height: z.number().int().positive().optional(),
 	durationSeconds: z.number().int().positive().max(20).optional(),
 	generateAudio: z.boolean().optional(),
+	modelOptions: z.record(z.string(), z.union([z.string(), z.number(), z.boolean()])).optional(),
 });
 
 addRoute(app, "get", "/models", {

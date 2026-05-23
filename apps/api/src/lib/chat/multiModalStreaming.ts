@@ -1,5 +1,6 @@
 import { getAIResponse } from "~/lib/chat/responses";
 import type { ConversationManager } from "~/lib/conversationManager";
+import type { ServiceContext } from "~/lib/context/serviceContext";
 import type { ChatMode, IEnv, IUser, IUserSettings, ModelConfigInfo, Platform } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
@@ -25,6 +26,7 @@ export function createMultiModelStream(
 		provider: string;
 		platform?: Platform;
 		user?: IUser;
+		context?: ServiceContext;
 		userSettings?: IUserSettings;
 		app_url?: string;
 		mode?: ChatMode;
@@ -37,6 +39,7 @@ export function createMultiModelStream(
 	const primaryParams = {
 		...baseParams,
 		model: models[0].model,
+		provider: models[0].provider,
 		stream: true,
 	};
 
@@ -50,6 +53,7 @@ export function createMultiModelStream(
 					const secondaryParams = {
 						...baseParams,
 						model: modelConfig.model,
+						provider: modelConfig.provider,
 						stream: false,
 					};
 
@@ -127,7 +131,7 @@ export function createMultiModelStream(
 
 				const primaryProcessedStream = await createStreamWithPostProcessing(
 					primaryResponse,
-					{ ...options, model: models[0].model },
+					{ ...options, model: models[0].model, provider: models[0].provider },
 					conversationManager,
 				);
 

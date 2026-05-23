@@ -122,7 +122,7 @@ The chat API supports general RAG via the \`use_rag\` and \`rag_options\` parame
 ### Check Your Memories
 
 ~~~bash
-curl https://api.polychat.app/v1/memories \\
+curl https://api.polychat.app/memories \\
   -H "Authorization: Bearer YOUR_TOKEN"
 ~~~
 
@@ -130,7 +130,7 @@ curl https://api.polychat.app/v1/memories \\
 
 ~~~bash
 # Create a group
-curl https://api.polychat.app/v1/memories/groups \\
+curl https://api.polychat.app/memories/groups \\
   -H "Authorization: Bearer YOUR_TOKEN" \\
   -H "Content-Type: application/json" \\
   -d '{
@@ -140,7 +140,7 @@ curl https://api.polychat.app/v1/memories/groups \\
   }'
 
 # Add memories to the group
-curl https://api.polychat.app/v1/memories/groups/grp_xyz789/memories \\
+curl https://api.polychat.app/memories/groups/grp_xyz789/memories \\
   -H "Authorization: Bearer YOUR_TOKEN" \\
   -H "Content-Type": application/json" \\
   -d '{
@@ -151,7 +151,7 @@ curl https://api.polychat.app/v1/memories/groups/grp_xyz789/memories \\
 ### Delete a Memory
 
 ~~~bash
-curl -X DELETE https://api.polychat.app/v1/memories/mem_abc123 \\
+curl -X DELETE https://api.polychat.app/memories/mem_abc123 \\
   -H "Authorization: Bearer YOUR_TOKEN"
 ~~~
 `;

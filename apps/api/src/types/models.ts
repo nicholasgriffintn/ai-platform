@@ -40,9 +40,9 @@ export type ModelModalities = {
 };
 
 export interface ModelReasoningConfig {
-	enabled: boolean;
 	supportedEffortLevels?: ReasoningEffortLevel[];
 	defaultEffort?: ReasoningEffortLevel;
+	modelOverrides?: Partial<Record<ReasoningEffortLevel, string>>;
 }
 
 export interface ModelVerbosityConfig {
@@ -71,7 +71,6 @@ export type ModelConfigItem = {
 	reliability?: ModelRanking;
 	speed?: ModelRanking;
 	multimodal?: boolean;
-	requiresThinkingPrompt?: boolean;
 	includedInRouter?: boolean;
 	isFeatured?: boolean;
 	hiddenFromDefaultList?: boolean;

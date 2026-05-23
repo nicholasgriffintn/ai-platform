@@ -5,6 +5,7 @@ import {
 	CartesiaAudioProvider,
 	ElevenLabsAudioProvider,
 	MelottsAudioProvider,
+	MistralAudioProvider,
 	PollyAudioProvider,
 } from "../../capabilities/audio/providers";
 
@@ -33,6 +34,11 @@ const audioProviders: ProviderRegistration<AudioProvider>[] = [
 			categories: ["audio"],
 			tags: ["tts", "workers-ai"],
 		},
+	},
+	{
+		name: "mistral",
+		create: () => new MistralAudioProvider(),
+		metadata: { vendor: "Mistral", categories: ["audio"], tags: ["tts", "voxtral"] },
 	},
 ];
 

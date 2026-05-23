@@ -5,9 +5,9 @@ export type ModelRanking = 1 | 2 | 3 | 4 | 5;
 export type ModelModality = "text" | "image" | "audio" | "video" | "pdf" | "document" | "embedding";
 
 export interface ModelReasoningConfig {
-	enabled: boolean;
 	supportedEffortLevels?: ReasoningEffort[];
 	defaultEffort?: ReasoningEffort;
+	modelOverrides?: Partial<Record<ReasoningEffort, string>>;
 }
 
 export interface ModelVerbosityConfig {

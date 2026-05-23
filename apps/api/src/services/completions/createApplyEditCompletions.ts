@@ -7,6 +7,7 @@ import { AssistantError, ErrorType } from "~/utils/errors";
 interface HandleCreateApplyEditCompletionsRequest {
 	env: IEnv;
 	model?: string;
+	provider?: string;
 	messages: Array<{ role: string; content?: any; [key: string]: any }>;
 	stream?: boolean;
 	user?: IUser;
@@ -15,6 +16,7 @@ interface HandleCreateApplyEditCompletionsRequest {
 export const handleCreateApplyEditCompletions = async ({
 	env,
 	model,
+	provider: requestedProvider,
 	messages,
 	stream,
 	user,
@@ -29,8 +31,8 @@ export const handleCreateApplyEditCompletions = async ({
 	const selectedModel = model ?? ModelRouter.selectApplyEditModel();
 
 	const modelConfig =
-		(await getModelConfig(selectedModel, env)) ||
-		(await getModelConfigByMatchingModel(selectedModel, env));
+		(await getModelConfig(selectedModel, env, requestedProvider)) ||
+		(await getModelConfigByMatchingModel(selectedModel, env, requestedProvider));
 
 	if (!modelConfig) {
 		throw new AssistantError(`Model ${selectedModel} not found`, ErrorType.PARAMS_ERROR);
@@ -66,6 +68,7 @@ export const handleCreateApplyEditCompletions = async ({
 		env,
 		user,
 		model: modelConfig.matchingModel,
+		provider: modelConfig.provider,
 		messages: normalizedMessages,
 		stream,
 		edit_operation: "apply",

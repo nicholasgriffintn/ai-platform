@@ -16,7 +16,6 @@ export const githubModelsConfig: ModelConfig = {
 		},
 		supportsAttachments: false,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: true },
 		supportsToolCalls: true,
 		contextWindow: 256000,
 		maxTokens: 4096,
@@ -44,7 +43,6 @@ export const githubModelsConfig: ModelConfig = {
 		},
 		supportsAttachments: false,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: true },
 		supportsToolCalls: true,
 		contextWindow: 256000,
 		maxTokens: 4096,
@@ -72,7 +70,6 @@ export const githubModelsConfig: ModelConfig = {
 		},
 		supportsAttachments: true,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: false },
 		supportsToolCalls: true,
 		contextWindow: 128000,
 		maxTokens: 16384,
@@ -102,7 +99,6 @@ export const githubModelsConfig: ModelConfig = {
 		},
 		supportsAttachments: false,
 		supportsTemperature: false,
-		reasoningConfig: { enabled: true },
 		supportsToolCalls: false,
 		contextWindow: 200000,
 		maxTokens: 100000,
@@ -131,7 +127,6 @@ export const githubModelsConfig: ModelConfig = {
 		},
 		supportsAttachments: false,
 		supportsTemperature: false,
-		reasoningConfig: { enabled: true },
 		supportsToolCalls: false,
 		contextWindow: 128000,
 		maxTokens: 65536,
@@ -159,7 +154,6 @@ export const githubModelsConfig: ModelConfig = {
 		},
 		supportsAttachments: true,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: false },
 		supportsToolCalls: true,
 		contextWindow: 128000,
 		maxTokens: 16384,
@@ -188,7 +182,6 @@ export const githubModelsConfig: ModelConfig = {
 		},
 		supportsAttachments: true,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: false },
 		supportsToolCalls: true,
 		contextWindow: 128000,
 		maxTokens: 16384,
@@ -217,7 +210,6 @@ export const githubModelsConfig: ModelConfig = {
 		},
 		supportsAttachments: false,
 		supportsTemperature: false,
-		reasoningConfig: { enabled: true },
 		supportsToolCalls: false,
 		contextWindow: 200000,
 		maxTokens: 100000,
@@ -246,7 +238,6 @@ export const githubModelsConfig: ModelConfig = {
 		},
 		supportsAttachments: false,
 		supportsTemperature: false,
-		reasoningConfig: { enabled: true },
 		supportsToolCalls: false,
 		contextWindow: 200000,
 		maxTokens: 100000,
@@ -276,7 +267,6 @@ export const githubModelsConfig: ModelConfig = {
 		},
 		supportsAttachments: false,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: true },
 		supportsToolCalls: true,
 		contextWindow: 16000,
 		maxTokens: 4096,
@@ -304,7 +294,6 @@ export const githubModelsConfig: ModelConfig = {
 		},
 		supportsAttachments: false,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: true },
 		supportsToolCalls: true,
 		contextWindow: 128000,
 		maxTokens: 4096,
@@ -333,7 +322,6 @@ export const githubModelsConfig: ModelConfig = {
 		},
 		supportsAttachments: false,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: true },
 		supportsToolCalls: true,
 		contextWindow: 128000,
 		maxTokens: 4096,
@@ -361,7 +349,6 @@ export const githubModelsConfig: ModelConfig = {
 		},
 		supportsAttachments: false,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: true },
 		supportsToolCalls: true,
 		contextWindow: 128000,
 		maxTokens: 4096,
@@ -390,7 +377,6 @@ export const githubModelsConfig: ModelConfig = {
 		},
 		supportsAttachments: false,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: true },
 		supportsToolCalls: true,
 		contextWindow: 128000,
 		maxTokens: 8192,
@@ -419,7 +405,6 @@ export const githubModelsConfig: ModelConfig = {
 		},
 		supportsAttachments: false,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: true },
 		supportsToolCalls: true,
 		contextWindow: 128000,
 		maxTokens: 32768,
@@ -447,7 +432,6 @@ export const githubModelsConfig: ModelConfig = {
 		},
 		supportsAttachments: false,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: true },
 		supportsToolCalls: true,
 		contextWindow: 65536,
 		maxTokens: 8192,
@@ -475,7 +459,6 @@ export const githubModelsConfig: ModelConfig = {
 		},
 		supportsAttachments: false,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: true },
 		supportsToolCalls: true,
 		contextWindow: 128000,
 		maxTokens: 32768,
@@ -503,7 +486,6 @@ export const githubModelsConfig: ModelConfig = {
 		},
 		supportsAttachments: false,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: true },
 		supportsToolCalls: true,
 		contextWindow: 32000,
 		maxTokens: 8192,
@@ -531,7 +513,6 @@ export const githubModelsConfig: ModelConfig = {
 		},
 		supportsAttachments: false,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: true },
 		supportsToolCalls: true,
 		contextWindow: 128000,
 		maxTokens: 8192,
@@ -560,7 +541,6 @@ export const githubModelsConfig: ModelConfig = {
 		},
 		supportsAttachments: false,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: true },
 		supportsToolCalls: true,
 		contextWindow: 128000,
 		maxTokens: 8192,
@@ -588,7 +568,6 @@ export const githubModelsConfig: ModelConfig = {
 		},
 		supportsAttachments: false,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: true },
 		supportsToolCalls: true,
 		contextWindow: 128000,
 		maxTokens: 4096,
@@ -616,7 +595,6 @@ export const githubModelsConfig: ModelConfig = {
 		},
 		supportsAttachments: false,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: true },
 		supportsToolCalls: true,
 		contextWindow: 128000,
 		maxTokens: 4096,
@@ -647,9 +625,6 @@ export const githubModelsConfig: ModelConfig = {
 		maxTokens: 4096,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"cohere/cohere-command-r-08-2024": {
@@ -670,9 +645,6 @@ export const githubModelsConfig: ModelConfig = {
 		maxTokens: 4096,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"cohere/cohere-command-r-plus-08-2024": {
@@ -693,9 +665,6 @@ export const githubModelsConfig: ModelConfig = {
 		maxTokens: 4096,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"core42/jais-30b-chat": {
@@ -716,9 +685,6 @@ export const githubModelsConfig: ModelConfig = {
 		maxTokens: 2048,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"deepseek/deepseek-r1-0528": {
@@ -739,9 +705,6 @@ export const githubModelsConfig: ModelConfig = {
 		maxTokens: 8192,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"deepseek/deepseek-v3-0324": {
@@ -762,9 +725,6 @@ export const githubModelsConfig: ModelConfig = {
 		maxTokens: 8192,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"meta/llama-3.2-11b-vision-instruct": {
@@ -785,9 +745,6 @@ export const githubModelsConfig: ModelConfig = {
 		maxTokens: 8192,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"meta/llama-3.3-70b-instruct": {
@@ -808,9 +765,6 @@ export const githubModelsConfig: ModelConfig = {
 		maxTokens: 32768,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"meta/llama-4-maverick-17b-128e-instruct-fp8": {
@@ -831,9 +785,6 @@ export const githubModelsConfig: ModelConfig = {
 		maxTokens: 8192,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"meta/llama-4-scout-17b-16e-instruct": {
@@ -854,9 +805,6 @@ export const githubModelsConfig: ModelConfig = {
 		maxTokens: 8192,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"meta/meta-llama-3-70b-instruct": {
@@ -877,9 +825,6 @@ export const githubModelsConfig: ModelConfig = {
 		maxTokens: 2048,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"meta/meta-llama-3-8b-instruct": {
@@ -900,9 +845,6 @@ export const githubModelsConfig: ModelConfig = {
 		maxTokens: 2048,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"meta/meta-llama-3.1-70b-instruct": {
@@ -923,9 +865,6 @@ export const githubModelsConfig: ModelConfig = {
 		maxTokens: 32768,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"meta/meta-llama-3.1-8b-instruct": {
@@ -946,9 +885,6 @@ export const githubModelsConfig: ModelConfig = {
 		maxTokens: 32768,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"microsoft/mai-ds-r1": {
@@ -969,9 +905,6 @@ export const githubModelsConfig: ModelConfig = {
 		maxTokens: 8192,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"microsoft/phi-3-medium-128k-instruct": {
@@ -992,9 +925,6 @@ export const githubModelsConfig: ModelConfig = {
 		maxTokens: 4096,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"microsoft/phi-3-medium-4k-instruct": {
@@ -1015,9 +945,6 @@ export const githubModelsConfig: ModelConfig = {
 		maxTokens: 1024,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"microsoft/phi-3-mini-128k-instruct": {
@@ -1038,9 +965,6 @@ export const githubModelsConfig: ModelConfig = {
 		maxTokens: 4096,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"microsoft/phi-3-mini-4k-instruct": {
@@ -1061,9 +985,6 @@ export const githubModelsConfig: ModelConfig = {
 		maxTokens: 1024,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"microsoft/phi-3-small-128k-instruct": {
@@ -1084,9 +1005,6 @@ export const githubModelsConfig: ModelConfig = {
 		maxTokens: 4096,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"microsoft/phi-3-small-8k-instruct": {
@@ -1107,9 +1025,6 @@ export const githubModelsConfig: ModelConfig = {
 		maxTokens: 2048,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"microsoft/phi-3.5-mini-instruct": {
@@ -1130,9 +1045,6 @@ export const githubModelsConfig: ModelConfig = {
 		maxTokens: 4096,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"microsoft/phi-3.5-moe-instruct": {
@@ -1153,9 +1065,6 @@ export const githubModelsConfig: ModelConfig = {
 		maxTokens: 4096,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"microsoft/phi-4-mini-instruct": {
@@ -1176,9 +1085,6 @@ export const githubModelsConfig: ModelConfig = {
 		maxTokens: 4096,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"microsoft/phi-4-mini-reasoning": {
@@ -1199,9 +1105,6 @@ export const githubModelsConfig: ModelConfig = {
 		maxTokens: 4096,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"mistral-ai/ministral-3b": {
@@ -1222,9 +1125,6 @@ export const githubModelsConfig: ModelConfig = {
 		maxTokens: 8192,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"mistral-ai/mistral-medium-2505": {
@@ -1245,9 +1145,6 @@ export const githubModelsConfig: ModelConfig = {
 		maxTokens: 32768,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"mistral-ai/mistral-nemo": {
@@ -1268,9 +1165,6 @@ export const githubModelsConfig: ModelConfig = {
 		maxTokens: 8192,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"mistral-ai/mistral-small-2503": {
@@ -1291,9 +1185,6 @@ export const githubModelsConfig: ModelConfig = {
 		maxTokens: 32768,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"openai/gpt-4.1": {
@@ -1314,9 +1205,6 @@ export const githubModelsConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"openai/gpt-4.1-nano": {
@@ -1337,9 +1225,6 @@ export const githubModelsConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: false,
-		},
 	},
 
 	"openai/o1-preview": {
@@ -1360,9 +1245,6 @@ export const githubModelsConfig: ModelConfig = {
 		maxTokens: 32768,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 
 	"openai/o3": {
@@ -1383,8 +1265,5 @@ export const githubModelsConfig: ModelConfig = {
 		maxTokens: 100000,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: true,
-		},
 	},
 };

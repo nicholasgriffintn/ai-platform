@@ -2,6 +2,7 @@ import type { StorageService } from "~/lib/storage";
 import type { IEnv, IUser } from "~/types";
 import { providerLibrary } from "../../library";
 import type { ProviderFactoryContext } from "../../registry/types";
+import type { AudioResponseFormat } from "./formats";
 
 export interface AudioSynthesisRequest {
 	input: string;
@@ -9,14 +10,20 @@ export interface AudioSynthesisRequest {
 	user: IUser;
 	slug?: string;
 	storage?: StorageService;
+	store?: boolean;
 	voice?: string;
 	locale?: string;
+	refAudio?: string;
+	responseFormat?: AudioResponseFormat;
 	metadata?: Record<string, unknown>;
 }
 
 export interface AudioSynthesisResult {
 	key?: string;
 	url?: string;
+	audioBase64?: string;
+	audioDataUrl?: string;
+	audioMimeType?: string;
 	response?: string;
 	metadata?: Record<string, unknown>;
 	raw?: unknown;

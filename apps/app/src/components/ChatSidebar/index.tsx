@@ -3,7 +3,9 @@ import {
 	CloudOff,
 	Edit,
 	GitBranch,
+	Image as ImageIcon,
 	Loader2,
+	MessageCircle,
 	PanelLeftClose,
 	PanelLeftOpen,
 	SquarePen,
@@ -11,6 +13,8 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 
+import { CanvasSidebarControls } from "~/components/Canvas/CanvasSidebarControls";
+import type { CanvasStudioState } from "~/components/Canvas/useCanvasStudio";
 import { Button, ConfirmationDialog, HoverActions, ListItem, SidebarShell } from "~/components/ui";
 import { useTrackEvent } from "~/hooks/use-track-event";
 import { useChats, useDeleteChat, useUpdateChatTitle } from "~/hooks/useChat";
@@ -23,7 +27,17 @@ import { MoreOptionsDropdown } from "../Sidebar/MoreOptionsDropdown";
 import { UserMenuItem } from "../Sidebar/UserMenuItem";
 import { ChatSidebarNotifications } from "./ChatSidebarNotifications";
 
-export const ChatSidebar = () => {
+interface ChatSidebarProps {
+	canvas?: CanvasStudioState;
+	isCanvasMode?: boolean;
+	onCanvasModeChange?: (isCanvasMode: boolean) => void;
+}
+
+export const ChatSidebar = ({
+	canvas,
+	isCanvasMode = false,
+	onCanvasModeChange,
+}: ChatSidebarProps) => {
 	const { trackEvent } = useTrackEvent();
 	const { sidebarVisible, setSidebarVisible, isMobile, setShowKeyboardShortcuts } = useUIStore();
 	const {
@@ -140,6 +154,17 @@ export const ChatSidebar = () => {
 		});
 	};
 
+	const toggleCanvasMode = () => {
+		onCanvasModeChange?.(!isCanvasMode);
+
+		trackEvent({
+			name: isCanvasMode ? "switch_to_chat" : "switch_to_canvas",
+			category: "sidebar",
+			label: isCanvasMode ? "switch_to_chat" : "switch_to_canvas",
+			value: 1,
+		});
+	};
+
 	const renderConversationGroup = (title: string, conversationsList: Conversation[]) => {
 		if (!conversationsList || conversationsList.length === 0) return null;
 
@@ -231,6 +256,16 @@ export const ChatSidebar = () => {
 				/>
 
 				<div className="flex items-center gap-2">
+					{canvas && onCanvasModeChange && (
+						<Button
+							type="button"
+							variant={isCanvasMode ? "iconActive" : "icon"}
+							title={isCanvasMode ? "Switch to chat" : "Switch to image generation"}
+							aria-label={isCanvasMode ? "Switch to chat" : "Switch to image generation"}
+							icon={isCanvasMode ? <MessageCircle size={20} /> : <ImageIcon size={20} />}
+							onClick={toggleCanvasMode}
+						/>
+					)}
 					{isAuthenticated && (
 						<Button
 							type="button"
@@ -272,7 +307,7 @@ export const ChatSidebar = () => {
 				header={sidebarHeader}
 				footer={sidebarFooter}
 			>
-				{sidebarVisible && !isAuthenticationLoading && (
+				{sidebarVisible && !isCanvasMode && !isAuthenticationLoading && (
 					<div>
 						<ChatSidebarNotifications
 							isAuthenticated={isAuthenticated}
@@ -282,7 +317,9 @@ export const ChatSidebar = () => {
 					</div>
 				)}
 
-				{isAuthenticationLoading ? (
+				{isCanvasMode && canvas ? (
+					<CanvasSidebarControls canvas={canvas} />
+				) : isAuthenticationLoading ? (
 					<div className="flex items-center gap-2 p-2">
 						<Loader2 size={20} className="animate-spin text-zinc-600 dark:text-zinc-400" />
 					</div>

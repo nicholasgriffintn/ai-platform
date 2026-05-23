@@ -109,7 +109,6 @@ export const workersAiModelConfig: ModelConfig = createModelConfigObject([
 		modalities: { input: ["text"], output: ["text"] },
 		supportsToolCalls: true,
 		supportsResponseFormat: true,
-		reasoningConfig: { enabled: true },
 	}),
 	createModelConfig("workers-ai-openai-gpt-4-1", PROVIDER, {
 		name: "GPT-4.1",
@@ -133,7 +132,6 @@ export const workersAiModelConfig: ModelConfig = createModelConfigObject([
 		modalities: { input: ["text"], output: ["text"] },
 		supportsToolCalls: true,
 		supportsResponseFormat: true,
-		reasoningConfig: { enabled: true },
 	}),
 	createModelConfig("workers-ai-openai-gpt-5-4", PROVIDER, {
 		name: "GPT-5.4",
@@ -141,7 +139,6 @@ export const workersAiModelConfig: ModelConfig = createModelConfigObject([
 		modalities: { input: ["text"], output: ["text"] },
 		supportsToolCalls: true,
 		supportsResponseFormat: true,
-		reasoningConfig: { enabled: true },
 	}),
 	createModelConfig("workers-ai-openai-gpt-5-4-mini", PROVIDER, {
 		name: "GPT-5.4 Mini",
@@ -149,7 +146,6 @@ export const workersAiModelConfig: ModelConfig = createModelConfigObject([
 		modalities: { input: ["text"], output: ["text"] },
 		supportsToolCalls: true,
 		supportsResponseFormat: true,
-		reasoningConfig: { enabled: true },
 	}),
 	createModelConfig("workers-ai-openai-gpt-5-4-nano", PROVIDER, {
 		name: "GPT-5.4 Nano",
@@ -157,7 +153,6 @@ export const workersAiModelConfig: ModelConfig = createModelConfigObject([
 		modalities: { input: ["text"], output: ["text"] },
 		supportsToolCalls: true,
 		supportsResponseFormat: true,
-		reasoningConfig: { enabled: true },
 	}),
 	createModelConfig("workers-ai-moonshotai-kimi-k2-5", PROVIDER, {
 		name: "Kimi K2.5",

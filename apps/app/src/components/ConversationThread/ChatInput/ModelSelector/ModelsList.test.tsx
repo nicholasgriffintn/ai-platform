@@ -1,5 +1,5 @@
 import { render, screen, within } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import type { ModelConfigItem } from "~/types";
 import { ModelsList } from "./ModelsList";
@@ -13,6 +13,10 @@ vi.mock("~/hooks/use-track-event", () => ({
 vi.mock("~/components/ModelIcon", () => ({
 	ModelIcon: ({ modelName }: { modelName: string }) => <span>{modelName}</span>,
 }));
+
+afterEach(() => {
+	vi.restoreAllMocks();
+});
 
 const makeModel = (
 	id: string,
@@ -30,6 +34,43 @@ const makeModel = (
 });
 
 describe("ModelsList", () => {
+	it("opens the selected model provider and scrolls to the selected model", () => {
+		const scrollIntoView = vi.fn();
+		Object.defineProperty(Element.prototype, "scrollIntoView", {
+			configurable: true,
+			value: scrollIntoView,
+		});
+
+		render(
+			<ModelsList
+				models={[
+					makeModel("claude-sonnet", "Claude Sonnet", "anthropic", { isFeatured: true }),
+					makeModel("deepseek-chat", "DeepSeek Chat", "deepseek"),
+					makeModel("deepseek-reasoner", "DeepSeek Reasoner", "deepseek"),
+				]}
+				featuredModelIds={{
+					"claude-sonnet": makeModel("claude-sonnet", "Claude Sonnet", "anthropic", {
+						isFeatured: true,
+					}),
+				}}
+				isPro={true}
+				onSelect={vi.fn()}
+				selectedId="deepseek-reasoner"
+			/>,
+		);
+
+		expect(screen.getByRole("heading", { name: "Deepseek" })).toBeInTheDocument();
+		expect(screen.getByRole("button", { name: /Deepseek/i })).toHaveAttribute(
+			"aria-pressed",
+			"true",
+		);
+		expect(screen.getByRole("option", { name: /DeepSeek Reasoner/i })).toHaveAttribute(
+			"aria-selected",
+			"true",
+		);
+		expect(scrollIntoView).toHaveBeenCalledWith({ block: "center" });
+	});
+
 	it("shows active search results as provider sections", () => {
 		render(
 			<ModelsList

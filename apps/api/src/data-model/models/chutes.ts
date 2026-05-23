@@ -13,7 +13,6 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		modalities: { input: ["text"], output: ["text"] },
 		supportsAttachments: false,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: false },
 		supportsToolCalls: true,
 		contextWindow: 32768,
 		maxTokens: 32768,
@@ -33,7 +32,6 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		},
 		supportsAttachments: false,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: false },
 		supportsToolCalls: true,
 		contextWindow: 131072,
 		maxTokens: 131072,
@@ -51,7 +49,6 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		modalities: { input: ["text"], output: ["text"] },
 		supportsAttachments: false,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: false },
 		supportsToolCalls: true,
 		contextWindow: 75000,
 		maxTokens: 163840,
@@ -68,7 +65,6 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		modalities: { input: ["text"], output: ["text"] },
 		supportsAttachments: false,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: true },
 		supportsToolCalls: true,
 		contextWindow: 75000,
 		maxTokens: 163840,
@@ -86,7 +82,6 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		modalities: { input: ["text"], output: ["text"] },
 		supportsAttachments: false,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: true },
 		supportsToolCalls: true,
 		contextWindow: 131072,
 		maxTokens: 131072,
@@ -105,7 +100,6 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		modalities: { input: ["text"], output: ["text"] },
 		supportsAttachments: false,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: true },
 		supportsToolCalls: true,
 		contextWindow: 131072,
 		maxTokens: 131072,
@@ -122,7 +116,6 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		modalities: { input: ["text"], output: ["text"] },
 		supportsAttachments: false,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: false },
 		supportsToolCalls: true,
 		contextWindow: 75000,
 		maxTokens: 75000,
@@ -140,7 +133,6 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		modalities: { input: ["text"], output: ["text"] },
 		supportsAttachments: false,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: true },
 		supportsToolCalls: true,
 		contextWindow: 40960,
 		maxTokens: 40960,
@@ -159,7 +151,6 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		modalities: { input: ["text"], output: ["text"] },
 		supportsAttachments: false,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: false },
 		supportsToolCalls: true,
 		contextWindow: 262144,
 		maxTokens: 131072,
@@ -176,7 +167,6 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		modalities: { input: ["text"], output: ["text"] },
 		supportsAttachments: false,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: false },
 		supportsToolCalls: true,
 		contextWindow: 262144,
 		maxTokens: 262144,
@@ -194,7 +184,6 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		modalities: { input: ["text"], output: ["text"] },
 		supportsAttachments: false,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: true },
 		supportsToolCalls: true,
 		contextWindow: 262144,
 		maxTokens: 262144,
@@ -213,7 +202,6 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		modalities: { input: ["text"], output: ["text"] },
 		supportsAttachments: false,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: true },
 		supportsToolCalls: true,
 		contextWindow: 163840,
 		maxTokens: 163840,
@@ -232,7 +220,6 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		modalities: { input: ["text"], output: ["text"] },
 		supportsAttachments: false,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: true },
 		supportsToolCalls: false,
 		contextWindow: 163840,
 		maxTokens: 163840,
@@ -251,7 +238,6 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		modalities: { input: ["text"], output: ["text"] },
 		supportsAttachments: false,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: true },
 		supportsToolCalls: true,
 		contextWindow: 131072,
 		maxTokens: 131072,
@@ -270,7 +256,6 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		modalities: { input: ["text"], output: ["text"] },
 		supportsAttachments: false,
 		supportsTemperature: true,
-		reasoningConfig: { enabled: true },
 		supportsToolCalls: true,
 		contextWindow: 131072,
 		maxTokens: 65536,
@@ -295,9 +280,6 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.00003,
 		costPer1kOutputTokens: 0.00011,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("deepseek-ai/DeepSeek-R1-0528-TEE", PROVIDER, {
@@ -317,9 +299,6 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.00045,
 		costPer1kOutputTokens: 0.00215,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("deepseek-ai/DeepSeek-R1-TEE", PROVIDER, {
@@ -339,9 +318,6 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 163840,
 		costPer1kInputTokens: 0.0003,
 		costPer1kOutputTokens: 0.0012,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("deepseek-ai/DeepSeek-V3", PROVIDER, {
@@ -361,9 +337,6 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 163840,
 		costPer1kInputTokens: 0.0003,
 		costPer1kOutputTokens: 0.0012,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("deepseek-ai/DeepSeek-V3-0324-TEE", PROVIDER, {
@@ -383,9 +356,6 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.00025,
 		costPer1kOutputTokens: 0.001,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("deepseek-ai/DeepSeek-V3.1-TEE", PROVIDER, {
@@ -405,9 +375,6 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.00027,
 		costPer1kOutputTokens: 0.001,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("deepseek-ai/DeepSeek-V3.1-Terminus-TEE", PROVIDER, {
@@ -427,9 +394,6 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.00023,
 		costPer1kOutputTokens: 0.0009,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("deepseek-ai/DeepSeek-V3.2-Speciale-TEE", PROVIDER, {
@@ -449,9 +413,6 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.00027,
 		costPer1kOutputTokens: 0.00041,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("deepseek-ai/DeepSeek-V3.2-TEE", PROVIDER, {
@@ -471,9 +432,6 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.00028,
 		costPer1kOutputTokens: 0.00042,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("MiniMaxAI/MiniMax-M2.1-TEE", PROVIDER, {
@@ -493,9 +451,6 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.00027,
 		costPer1kOutputTokens: 0.00112,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("miromind-ai/MiroThinker-v1.5-235B", PROVIDER, {
@@ -515,9 +470,6 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 8192,
 		costPer1kInputTokens: 0.0003,
 		costPer1kOutputTokens: 0.0012,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("mistralai/Devstral-2-123B-Instruct-2512-TEE", PROVIDER, {
@@ -537,9 +489,6 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.00005,
 		costPer1kOutputTokens: 0.00022,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("moonshotai/Kimi-K2-Instruct-0905", PROVIDER, {
@@ -559,9 +508,6 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 262144,
 		costPer1kInputTokens: 0.00039,
 		costPer1kOutputTokens: 0.0019,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("moonshotai/Kimi-K2-Thinking-TEE", PROVIDER, {
@@ -581,9 +527,6 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 65535,
 		costPer1kInputTokens: 0.0004,
 		costPer1kOutputTokens: 0.00175,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("moonshotai/Kimi-K2.5-TEE", PROVIDER, {
@@ -604,9 +547,6 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 65535,
 		costPer1kInputTokens: 0.00044,
 		costPer1kOutputTokens: 0.002,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("NousResearch/DeepHermes-3-Mistral-24B-Preview", PROVIDER, {
@@ -626,9 +566,6 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.0000245,
 		costPer1kOutputTokens: 0.0000978,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("NousResearch/Hermes-4-14B", PROVIDER, {
@@ -648,9 +585,6 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 40960,
 		costPer1kInputTokens: 0.0000136,
 		costPer1kOutputTokens: 0.0000543,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("NousResearch/Hermes-4-405B-FP8-TEE", PROVIDER, {
@@ -670,9 +604,6 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.0003,
 		costPer1kOutputTokens: 0.0012,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("NousResearch/Hermes-4-70B", PROVIDER, {
@@ -692,9 +623,6 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.00011,
 		costPer1kOutputTokens: 0.00038,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("NousResearch/Hermes-4.3-36B", PROVIDER, {
@@ -714,9 +642,6 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 8192,
 		costPer1kInputTokens: 0.0001,
 		costPer1kOutputTokens: 0.00039,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-BF16", PROVIDER, {
@@ -736,9 +661,6 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 262144,
 		costPer1kInputTokens: 0.00006,
 		costPer1kOutputTokens: 0.00024,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("openai/gpt-oss-120b-TEE", PROVIDER, {
@@ -758,9 +680,6 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.00009,
 		costPer1kOutputTokens: 0.00036,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("openai/gpt-oss-20b", PROVIDER, {
@@ -780,9 +699,6 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.00002,
 		costPer1kOutputTokens: 0.0001,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("OpenGVLab/InternVL3-78B-TEE", PROVIDER, {
@@ -802,9 +718,6 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.0001,
 		costPer1kOutputTokens: 0.00039,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("Qwen/Qwen2.5-72B-Instruct", PROVIDER, {
@@ -824,9 +737,6 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.0002989,
 		costPer1kOutputTokens: 0.0011957,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("Qwen/Qwen2.5-Coder-32B-Instruct", PROVIDER, {
@@ -846,9 +756,6 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.0000272,
 		costPer1kOutputTokens: 0.0001087,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("Qwen/Qwen2.5-VL-32B-Instruct", PROVIDER, {
@@ -868,9 +775,6 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.0000543,
 		costPer1kOutputTokens: 0.0002174,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("Qwen/Qwen2.5-VL-72B-Instruct-TEE", PROVIDER, {
@@ -890,9 +794,6 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.00015,
 		costPer1kOutputTokens: 0.0006,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("Qwen/Qwen3-14B", PROVIDER, {
@@ -912,9 +813,6 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 40960,
 		costPer1kInputTokens: 0.00005,
 		costPer1kOutputTokens: 0.00022,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("Qwen/Qwen3-235B-A22B", PROVIDER, {
@@ -934,9 +832,6 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 40960,
 		costPer1kInputTokens: 0.0003,
 		costPer1kOutputTokens: 0.0012,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("Qwen/Qwen3-235B-A22B-Instruct-2507-TEE", PROVIDER, {
@@ -956,9 +851,6 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.0001,
 		costPer1kOutputTokens: 0.0006,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("Qwen/Qwen3-30B-A3B-Instruct-2507", PROVIDER, {
@@ -978,9 +870,6 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 262144,
 		costPer1kInputTokens: 0.00008,
 		costPer1kOutputTokens: 0.00033,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("Qwen/Qwen3-32B", PROVIDER, {
@@ -1000,9 +889,6 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 40960,
 		costPer1kInputTokens: 0.00008,
 		costPer1kOutputTokens: 0.00024,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("Qwen/Qwen3-Coder-480B-A35B-Instruct-FP8-TEE", PROVIDER, {
@@ -1022,9 +908,6 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 262144,
 		costPer1kInputTokens: 0.00022,
 		costPer1kOutputTokens: 0.00095,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("Qwen/Qwen3-Coder-Next", PROVIDER, {
@@ -1044,9 +927,6 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.00007,
 		costPer1kOutputTokens: 0.0003,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("Qwen/Qwen3-Next-80B-A3B-Instruct", PROVIDER, {
@@ -1066,9 +946,6 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 262144,
 		costPer1kInputTokens: 0.0001,
 		costPer1kOutputTokens: 0.0008,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("Qwen/Qwen3-VL-235B-A22B-Instruct", PROVIDER, {
@@ -1088,9 +965,6 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 262144,
 		costPer1kInputTokens: 0.0003,
 		costPer1kOutputTokens: 0.0012,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("Qwen/Qwen3Guard-Gen-0.6B", PROVIDER, {
@@ -1110,9 +984,6 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 8192,
 		costPer1kInputTokens: 0.00001,
 		costPer1kOutputTokens: 0.0000109,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("rednote-hilab/dots.ocr", PROVIDER, {
@@ -1132,9 +1003,6 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.00001,
 		costPer1kOutputTokens: 0.0000109,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("tngtech/TNG-R1T-Chimera-TEE", PROVIDER, {
@@ -1154,9 +1022,6 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.00025,
 		costPer1kOutputTokens: 0.00085,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("tngtech/TNG-R1T-Chimera-Turbo", PROVIDER, {
@@ -1176,9 +1041,6 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.00022,
 		costPer1kOutputTokens: 0.0006,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("unsloth/gemma-3-12b-it", PROVIDER, {
@@ -1198,9 +1060,6 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.00003,
 		costPer1kOutputTokens: 0.0001,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("unsloth/gemma-3-27b-it", PROVIDER, {
@@ -1220,9 +1079,6 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.0000272,
 		costPer1kOutputTokens: 0.0001087,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("unsloth/gemma-3-4b-it", PROVIDER, {
@@ -1242,9 +1098,6 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 96000,
 		costPer1kInputTokens: 0.00001,
 		costPer1kOutputTokens: 0.0000272,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("unsloth/Llama-3.2-1B-Instruct", PROVIDER, {
@@ -1264,9 +1117,6 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 8192,
 		costPer1kInputTokens: 0.00001,
 		costPer1kOutputTokens: 0.0000109,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("unsloth/Mistral-Nemo-Instruct-2407", PROVIDER, {
@@ -1286,9 +1136,6 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.00002,
 		costPer1kOutputTokens: 0.00004,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("unsloth/Mistral-Small-24B-Instruct-2501", PROVIDER, {
@@ -1308,9 +1155,6 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.00003,
 		costPer1kOutputTokens: 0.00011,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("XiaomiMiMo/MiMo-V2-Flash", PROVIDER, {
@@ -1330,9 +1174,6 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 8192,
 		costPer1kInputTokens: 0.00009,
 		costPer1kOutputTokens: 0.00029,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("zai-org/GLM-4.5-TEE", PROVIDER, {
@@ -1352,9 +1193,6 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.00035,
 		costPer1kOutputTokens: 0.00155,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("zai-org/GLM-4.6-FP8", PROVIDER, {
@@ -1374,9 +1212,6 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 65535,
 		costPer1kInputTokens: 0.0003,
 		costPer1kOutputTokens: 0.0012,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("zai-org/GLM-4.6-TEE", PROVIDER, {
@@ -1396,9 +1231,6 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.00035,
 		costPer1kOutputTokens: 0.0015,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("zai-org/GLM-4.6V", PROVIDER, {
@@ -1418,9 +1250,6 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.0003,
 		costPer1kOutputTokens: 0.0009,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("zai-org/GLM-4.7-Flash", PROVIDER, {
@@ -1440,9 +1269,6 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 65535,
 		costPer1kInputTokens: 0.00006,
 		costPer1kOutputTokens: 0.00035,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("zai-org/GLM-4.7-FP8", PROVIDER, {
@@ -1462,9 +1288,6 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 65535,
 		costPer1kInputTokens: 0.0002989,
 		costPer1kOutputTokens: 0.0011957,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("zai-org/GLM-4.7-TEE", PROVIDER, {
@@ -1484,9 +1307,6 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 65535,
 		costPer1kInputTokens: 0.00039,
 		costPer1kOutputTokens: 0.00175,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 	createModelConfig("google/gemma-4-31B-turbo-TEE", PROVIDER, {
 		name: "gemma 4 31B turbo TEE",
@@ -1505,9 +1325,6 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.00013,
 		costPer1kOutputTokens: 0.00038,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("MiniMaxAI/MiniMax-M2.5-TEE", PROVIDER, {
@@ -1527,9 +1344,6 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.00015,
 		costPer1kOutputTokens: 0.0012,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("moonshotai/Kimi-K2.6-TEE", PROVIDER, {
@@ -1550,9 +1364,6 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 65535,
 		costPer1kInputTokens: 0.00095,
 		costPer1kOutputTokens: 0.004,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("Qwen/Qwen3-32B-TEE", PROVIDER, {
@@ -1572,9 +1383,6 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 40960,
 		costPer1kInputTokens: 0.00008,
 		costPer1kOutputTokens: 0.00024,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("Qwen/Qwen3-Coder-Next-TEE", PROVIDER, {
@@ -1594,9 +1402,6 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.00012,
 		costPer1kOutputTokens: 0.00075,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("Qwen/Qwen3.5-397B-A17B-TEE", PROVIDER, {
@@ -1616,9 +1421,6 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.00039,
 		costPer1kOutputTokens: 0.00234,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("Qwen/Qwen3.6-27B-TEE", PROVIDER, {
@@ -1638,9 +1440,6 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.000195,
 		costPer1kOutputTokens: 0.00156,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("tngtech/DeepSeek-TNG-R1T2-Chimera-TEE", PROVIDER, {
@@ -1660,9 +1459,6 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 163840,
 		costPer1kInputTokens: 0.0003,
 		costPer1kOutputTokens: 0.0011,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("unsloth/Llama-3.2-3B-Instruct", PROVIDER, {
@@ -1681,9 +1477,6 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00001,
 		costPer1kOutputTokens: 0.0000136,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("XiaomiMiMo/MiMo-V2-Flash-TEE", PROVIDER, {
@@ -1703,9 +1496,6 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.00009,
 		costPer1kOutputTokens: 0.00029,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("zai-org/GLM-5-TEE", PROVIDER, {
@@ -1725,9 +1515,6 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 65535,
 		costPer1kInputTokens: 0.00095,
 		costPer1kOutputTokens: 0.00255,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("zai-org/GLM-5-Turbo", PROVIDER, {
@@ -1747,9 +1534,6 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 65535,
 		costPer1kInputTokens: 0.0004891,
 		costPer1kOutputTokens: 0.0019565,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("zai-org/GLM-5.1-TEE", PROVIDER, {
@@ -1769,8 +1553,5 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 65535,
 		costPer1kInputTokens: 0.00105,
 		costPer1kOutputTokens: 0.0035,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 ]);

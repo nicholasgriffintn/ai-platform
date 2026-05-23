@@ -1,5 +1,6 @@
 import { gatewayId } from "~/constants/app";
 import { getModelConfigByMatchingModel } from "~/lib/providers/models";
+import { shouldEnableProviderThinking } from "~/lib/providers/models/reasoning";
 import { trackProviderMetrics } from "~/lib/monitoring";
 import type { StorageService } from "~/lib/storage";
 import type { ChatCompletionParameters } from "~/types";
@@ -52,7 +53,11 @@ export class AnthropicProvider extends BaseProvider {
 		_storageService?: StorageService,
 		_assetsUrl?: string,
 	): Promise<Record<string, any>> {
-		const modelConfig = await getModelConfigByMatchingModel(params.model || "");
+		const modelConfig = await getModelConfigByMatchingModel(
+			params.model || "",
+			params.env,
+			params.provider || this.name,
+		);
 		if (!modelConfig) {
 			throw new AssistantError(
 				`Model configuration not found for ${params.model}`,
@@ -106,8 +111,7 @@ export class AnthropicProvider extends BaseProvider {
 		const anthropicSpecificTools =
 			modelConfig?.supportsToolCalls && allTools.length > 0 ? { tools: allTools } : {};
 
-		const supportsThinking = modelConfig?.reasoningConfig?.enabled || false;
-		const shouldEnableThinking = supportsThinking && params.reasoning_effort !== "none";
+		const shouldEnableThinking = shouldEnableProviderThinking(modelConfig, params.reasoning_effort);
 		const thinkingParams = shouldEnableThinking
 			? {
 					thinking: {
@@ -149,7 +153,11 @@ export class AnthropicProvider extends BaseProvider {
 	): Promise<{ inputTokens: number }> {
 		this.validateParams(params);
 
-		const modelConfig = await getModelConfigByMatchingModel(params.model || "");
+		const modelConfig = await getModelConfigByMatchingModel(
+			params.model || "",
+			params.env,
+			params.provider || this.name,
+		);
 		if (!modelConfig) {
 			throw new AssistantError(
 				`Model configuration not found for ${params.model}`,

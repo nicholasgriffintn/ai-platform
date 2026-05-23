@@ -1,5 +1,3 @@
-"use client";
-
 import { Info, Loader2 } from "lucide-react";
 import { useParams } from "react-router";
 

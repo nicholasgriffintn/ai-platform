@@ -204,6 +204,7 @@ describe("responses", () => {
 
 		const mockModelConfig = {
 			provider: "openai",
+			matchingModel: "gpt-4",
 			modalities: { input: ["text"], output: ["text"] },
 			supportsStreaming: true,
 		};
@@ -219,7 +220,6 @@ describe("responses", () => {
 				// @ts-expect-error - mock implementation
 				mockModelConfig,
 			);
-			// @ts-expect-error - mock implementation
 			vi.mocked(chatCapability.getChatProvider).mockReturnValue(mockProvider);
 			vi.mocked(formatMessages).mockReturnValue([{ role: "user", content: "Hello" }]);
 			// @ts-expect-error - mock implementation
@@ -235,7 +235,11 @@ describe("responses", () => {
 			// @ts-expect-error - test data
 			const result = await getAIResponse(baseParams);
 
-			expect(getModelConfigByMatchingModel).toHaveBeenCalledWith("gpt-4");
+			expect(getModelConfigByMatchingModel).toHaveBeenCalledWith(
+				"gpt-4",
+				baseParams.env,
+				undefined,
+			);
 			expect(chatCapability.getChatProvider).toHaveBeenCalledWith("openai", {
 				env: baseParams.env,
 				user: baseParams.user,
@@ -250,6 +254,42 @@ describe("responses", () => {
 				content: "Hello back",
 				usage: { total_tokens: 10 },
 			});
+		});
+
+		it("should use provider when resolving shared matching models", async () => {
+			const env = {};
+			vi.mocked(getModelConfigByMatchingModel).mockResolvedValueOnce({
+				...mockModelConfig,
+				provider: "github-models",
+				matchingModel: "xai/grok-3",
+			} as any);
+			vi.mocked(chatCapability.getChatProvider).mockReturnValueOnce({
+				...mockProvider,
+				name: "github-models",
+			} as any);
+
+			await getAIResponse({
+				...baseParams,
+				env,
+				model: "xai/grok-3",
+				provider: "github-models",
+			} as any);
+
+			expect(getModelConfigByMatchingModel).toHaveBeenCalledWith(
+				"xai/grok-3",
+				env,
+				"github-models",
+			);
+			expect(chatCapability.getChatProvider).toHaveBeenCalledWith("github-models", {
+				env,
+				user: baseParams.user,
+			});
+			expect(mergeParametersWithDefaults).toHaveBeenCalledWith(
+				expect.objectContaining({
+					model: "xai/grok-3",
+					provider: "github-models",
+				}),
+			);
 		});
 
 		it("should throw error when model is missing", async () => {
@@ -390,7 +430,6 @@ describe("responses", () => {
 
 		it("should disable streaming for non-text model types", async () => {
 			vi.mocked(shouldEnableStreaming).mockReturnValue(false);
-			// @ts-expect-error - mock implementation
 			vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
 				...mockModelConfig,
 				modalities: { input: ["text"], output: ["image"] },

@@ -1,7 +1,80 @@
-import type { ModelConfig } from "~/types";
+import type { InputSchemaInputSchemaDescriptor, ModelConfig } from "~/types";
 import { createModelConfig, createModelConfigObject } from "~/lib/providers/models/utils";
 
 const PROVIDER = "openai";
+
+const gptImageCommonInputSchema: InputSchemaInputSchemaDescriptor = {
+	reference: "https://developers.openai.com/api/docs/guides/image-generation",
+	fields: [
+		{
+			name: "prompt",
+			type: "string",
+			description: "Text prompt for image generation or editing.",
+			required: true,
+		},
+		{
+			name: "size",
+			type: "string",
+			description: "Output size.",
+		},
+		{
+			name: "quality",
+			type: "string",
+			description: "Rendering quality.",
+			enum: ["low", "medium", "high", "auto"],
+		},
+		{
+			name: "output_format",
+			type: "string",
+			description: "Output image format.",
+			enum: ["png", "jpeg", "webp"],
+		},
+		{
+			name: "output_compression",
+			type: "integer",
+			description: "Compression level for JPEG and WebP outputs.",
+		},
+		{
+			name: "moderation",
+			type: "string",
+			description: "Image moderation strictness.",
+			enum: ["auto", "low"],
+		},
+		{
+			name: "n",
+			type: "integer",
+			description: "Number of images to generate.",
+		},
+	],
+};
+
+const gptImage1InputSchema: InputSchemaInputSchemaDescriptor = {
+	...gptImageCommonInputSchema,
+	fields: [
+		...gptImageCommonInputSchema.fields.slice(0, 5),
+		{
+			name: "background",
+			type: "string",
+			description: "Background handling. Transparent backgrounds are not supported.",
+			enum: ["auto", "opaque", "transparent"],
+		},
+		...gptImageCommonInputSchema.fields.slice(5),
+	],
+};
+
+const gptImage2InputSchema: InputSchemaInputSchemaDescriptor = {
+	...gptImageCommonInputSchema,
+	fields: [
+		...gptImageCommonInputSchema.fields.slice(0, 5),
+		{
+			name: "background",
+			type: "string",
+			description: "Background handling. Transparent backgrounds are not supported.",
+			enum: ["auto", "opaque"],
+		},
+		...gptImageCommonInputSchema.fields.slice(5),
+	],
+};
 
 export const openaiModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("o1", PROVIDER, {
@@ -35,9 +108,6 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		supportsToolCalls: true,
 		supportsResponseFormat: true,
 		supportsArtifacts: true,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("o3", PROVIDER, {
@@ -69,9 +139,6 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		supportsArtifacts: true,
 		timeout: 1000000,
 		supportsTemperature: false,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("o4-mini", PROVIDER, {
@@ -103,9 +170,6 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		includedInRouter: false,
 		supportsResponseFormat: true,
 		supportsArtifacts: true,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("o3-mini", PROVIDER, {
@@ -137,9 +201,6 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		includedInRouter: false,
 		supportsResponseFormat: true,
 		supportsArtifacts: true,
-		reasoningConfig: {
-			enabled: true,
-		},
 		supportsToolCalls: true,
 	}),
 
@@ -172,9 +233,6 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		includedInRouter: true,
 		supportsResponseFormat: true,
 		supportsArtifacts: true,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("gpt-4o-search-preview", PROVIDER, {
@@ -236,9 +294,6 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		includedInRouter: true,
 		supportsResponseFormat: true,
 		supportsArtifacts: true,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("gpt-4o-mini-search", PROVIDER, {
@@ -333,9 +388,6 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		includedInRouter: true,
 		timeout: 1000000,
 		supportsResponseFormat: true,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 	createModelConfig("gpt-4.1-mini", PROVIDER, {
 		name: "GPT-4.1 mini",
@@ -365,9 +417,6 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		isFeatured: false,
 		includedInRouter: true,
 		supportsResponseFormat: true,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 	createModelConfig("gpt-4.1-nano", PROVIDER, {
 		name: "GPT-4.1 nano",
@@ -397,9 +446,6 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		isFeatured: false,
 		includedInRouter: true,
 		supportsResponseFormat: true,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("gpt-5", PROVIDER, {
@@ -432,8 +478,14 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		includedInRouter: true,
 		supportsArtifacts: true,
 		supportsResponseFormat: true,
+
 		reasoningConfig: {
-			enabled: true,
+			supportedEffortLevels: ["none", "low", "medium", "high"],
+			defaultEffort: "medium",
+		},
+		verbosityConfig: {
+			supportedVerbosityLevels: ["low", "medium", "high"],
+			defaultVerbosity: "medium",
 		},
 	}),
 	createModelConfig("gpt-5-mini", PROVIDER, {
@@ -466,8 +518,14 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		includedInRouter: true,
 		supportsArtifacts: true,
 		supportsResponseFormat: true,
+
 		reasoningConfig: {
-			enabled: true,
+			supportedEffortLevels: ["none", "low", "medium", "high"],
+			defaultEffort: "medium",
+		},
+		verbosityConfig: {
+			supportedVerbosityLevels: ["low", "medium", "high"],
+			defaultVerbosity: "medium",
 		},
 	}),
 	createModelConfig("gpt-5-nano", PROVIDER, {
@@ -500,8 +558,14 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		includedInRouter: true,
 		supportsArtifacts: true,
 		supportsResponseFormat: true,
+
 		reasoningConfig: {
-			enabled: true,
+			supportedEffortLevels: ["none", "low", "medium", "high"],
+			defaultEffort: "medium",
+		},
+		verbosityConfig: {
+			supportedVerbosityLevels: ["low", "medium", "high"],
+			defaultVerbosity: "medium",
 		},
 	}),
 
@@ -530,8 +594,12 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		reliability: 5,
 		speed: 4,
 		multimodal: true,
+		includedInRouter: true,
+		supportsArtifacts: true,
+		isFeatured: false,
+		supportsResponseFormat: true,
+
 		reasoningConfig: {
-			enabled: true,
 			supportedEffortLevels: ["none", "low", "medium", "high"],
 			defaultEffort: "medium",
 		},
@@ -539,10 +607,6 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 			supportedVerbosityLevels: ["low", "medium", "high"],
 			defaultVerbosity: "medium",
 		},
-		includedInRouter: true,
-		supportsArtifacts: true,
-		isFeatured: true,
-		supportsResponseFormat: true,
 	}),
 	createModelConfig("gpt-5.2-chat", PROVIDER, {
 		name: "GPT-5.2 Chat",
@@ -569,8 +633,12 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		reliability: 5,
 		speed: 4,
 		multimodal: true,
+		includedInRouter: true,
+		supportsArtifacts: true,
+		isFeatured: false,
+		supportsResponseFormat: true,
+
 		reasoningConfig: {
-			enabled: true,
 			supportedEffortLevels: ["none", "low", "medium", "high"],
 			defaultEffort: "medium",
 		},
@@ -578,10 +646,6 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 			supportedVerbosityLevels: ["low", "medium", "high"],
 			defaultVerbosity: "medium",
 		},
-		includedInRouter: true,
-		supportsArtifacts: true,
-		isFeatured: true,
-		supportsResponseFormat: true,
 	}),
 
 	createModelConfig("gpt-5.1-codex", PROVIDER, {
@@ -610,8 +674,12 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		reliability: 5,
 		speed: 4,
 		multimodal: true,
+		includedInRouter: true,
+		supportsArtifacts: true,
+		isFeatured: false,
+		supportsResponseFormat: true,
+
 		reasoningConfig: {
-			enabled: true,
 			supportedEffortLevels: ["none", "low", "medium", "high"],
 			defaultEffort: "medium",
 		},
@@ -619,10 +687,6 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 			supportedVerbosityLevels: ["low", "medium", "high"],
 			defaultVerbosity: "medium",
 		},
-		includedInRouter: true,
-		supportsArtifacts: true,
-		isFeatured: true,
-		supportsResponseFormat: true,
 	}),
 	createModelConfig("gpt-5.1-codex-mini", PROVIDER, {
 		name: "GPT-5.1 Codex mini",
@@ -650,8 +714,12 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		reliability: 5,
 		speed: 5,
 		multimodal: true,
+		includedInRouter: true,
+		supportsArtifacts: true,
+		isFeatured: false,
+		supportsResponseFormat: true,
+
 		reasoningConfig: {
-			enabled: true,
 			supportedEffortLevels: ["none", "low", "medium", "high"],
 			defaultEffort: "medium",
 		},
@@ -659,10 +727,30 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 			supportedVerbosityLevels: ["low", "medium", "high"],
 			defaultVerbosity: "medium",
 		},
-		includedInRouter: true,
-		supportsArtifacts: true,
-		isFeatured: true,
-		supportsResponseFormat: true,
+	}),
+
+	createModelConfig("gpt-image-2", PROVIDER, {
+		name: "gpt-image-2",
+		matchingModel: "gpt-image-2",
+		description:
+			"OpenAI's latest GPT Image model for image generation and high-fidelity image edits.",
+		strengths: ["creative"],
+		contextComplexity: 4,
+		reliability: 4,
+		speed: 3,
+		isFeatured: false,
+		supportsImageEdits: true,
+		timeout: 1000000,
+		modalities: {
+			input: ["text", "image"],
+			output: ["image"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: false,
+		supportsToolCalls: false,
+		contextWindow: 0,
+		maxTokens: 0,
+		inputSchema: gptImage2InputSchema,
 	}),
 
 	createModelConfig("gpt-image-1", PROVIDER, {
@@ -689,9 +777,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		supportsToolCalls: false,
 		contextWindow: 0,
 		maxTokens: 0,
-		reasoningConfig: {
-			enabled: false,
-		},
+		inputSchema: gptImage1InputSchema,
 	}),
 
 	createModelConfig("gpt-image-1-mini", PROVIDER, {
@@ -704,7 +790,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		contextComplexity: 2,
 		reliability: 4,
 		speed: 4,
-		isFeatured: true,
+		isFeatured: false,
 		supportsImageEdits: true,
 		timeout: 1000000,
 		modalities: {
@@ -718,9 +804,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		supportsToolCalls: false,
 		contextWindow: 0,
 		maxTokens: 0,
-		reasoningConfig: {
-			enabled: false,
-		},
+		inputSchema: gptImage1InputSchema,
 	}),
 
 	createModelConfig("gpt-image-1.5", PROVIDER, {
@@ -734,7 +818,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		contextComplexity: 3,
 		reliability: 4,
 		speed: 3,
-		isFeatured: true,
+		isFeatured: false,
 		supportsImageEdits: true,
 		timeout: 1000000,
 		modalities: {
@@ -748,9 +832,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		supportsToolCalls: false,
 		contextWindow: 0,
 		maxTokens: 0,
-		reasoningConfig: {
-			enabled: false,
-		},
+		inputSchema: gptImage1InputSchema,
 	}),
 	createModelConfig("codex-mini-latest", PROVIDER, {
 		name: "Codex Mini",
@@ -769,9 +851,6 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 100000,
 		costPer1kInputTokens: 0.0015,
 		costPer1kOutputTokens: 0.006,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("gpt-3.5-turbo", PROVIDER, {
@@ -792,9 +871,6 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 4096,
 		costPer1kInputTokens: 0.0005,
 		costPer1kOutputTokens: 0.0015,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("gpt-4", PROVIDER, {
@@ -815,9 +891,6 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 8192,
 		costPer1kInputTokens: 0.03,
 		costPer1kOutputTokens: 0.06,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("gpt-4-turbo", PROVIDER, {
@@ -838,9 +911,6 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 4096,
 		costPer1kInputTokens: 0.01,
 		costPer1kOutputTokens: 0.03,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("gpt-4o-2024-05-13", PROVIDER, {
@@ -861,9 +931,6 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 4096,
 		costPer1kInputTokens: 0.005,
 		costPer1kOutputTokens: 0.015,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("gpt-4o-2024-08-06", PROVIDER, {
@@ -884,9 +951,6 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.0025,
 		costPer1kOutputTokens: 0.01,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("gpt-4o-2024-11-20", PROVIDER, {
@@ -907,9 +971,6 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.0025,
 		costPer1kOutputTokens: 0.01,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("gpt-5-chat-latest", PROVIDER, {
@@ -930,8 +991,14 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.00125,
 		costPer1kOutputTokens: 0.01,
+
 		reasoningConfig: {
-			enabled: true,
+			supportedEffortLevels: ["none", "low", "medium", "high"],
+			defaultEffort: "medium",
+		},
+		verbosityConfig: {
+			supportedVerbosityLevels: ["low", "medium", "high"],
+			defaultVerbosity: "medium",
 		},
 	}),
 
@@ -953,8 +1020,14 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.00125,
 		costPer1kOutputTokens: 0.01,
+
 		reasoningConfig: {
-			enabled: true,
+			supportedEffortLevels: ["none", "low", "medium", "high"],
+			defaultEffort: "medium",
+		},
+		verbosityConfig: {
+			supportedVerbosityLevels: ["low", "medium", "high"],
+			defaultVerbosity: "medium",
 		},
 	}),
 
@@ -976,8 +1049,14 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 272000,
 		costPer1kInputTokens: 0.015,
 		costPer1kOutputTokens: 0.12,
+
 		reasoningConfig: {
-			enabled: true,
+			supportedEffortLevels: ["none", "low", "medium", "high"],
+			defaultEffort: "medium",
+		},
+		verbosityConfig: {
+			supportedVerbosityLevels: ["low", "medium", "high"],
+			defaultVerbosity: "medium",
 		},
 	}),
 
@@ -999,8 +1078,14 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.00125,
 		costPer1kOutputTokens: 0.01,
+
 		reasoningConfig: {
-			enabled: true,
+			supportedEffortLevels: ["none", "low", "medium", "high"],
+			defaultEffort: "medium",
+		},
+		verbosityConfig: {
+			supportedVerbosityLevels: ["low", "medium", "high"],
+			defaultVerbosity: "medium",
 		},
 	}),
 
@@ -1022,8 +1107,14 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00125,
 		costPer1kOutputTokens: 0.01,
+
 		reasoningConfig: {
-			enabled: true,
+			supportedEffortLevels: ["none", "low", "medium", "high"],
+			defaultEffort: "medium",
+		},
+		verbosityConfig: {
+			supportedVerbosityLevels: ["low", "medium", "high"],
+			defaultVerbosity: "medium",
 		},
 	}),
 
@@ -1045,8 +1136,14 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.00125,
 		costPer1kOutputTokens: 0.01,
+
 		reasoningConfig: {
-			enabled: true,
+			supportedEffortLevels: ["none", "low", "medium", "high"],
+			defaultEffort: "medium",
+		},
+		verbosityConfig: {
+			supportedVerbosityLevels: ["low", "medium", "high"],
+			defaultVerbosity: "medium",
 		},
 	}),
 
@@ -1068,8 +1165,14 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.00175,
 		costPer1kOutputTokens: 0.014,
+
 		reasoningConfig: {
-			enabled: true,
+			supportedEffortLevels: ["none", "low", "medium", "high"],
+			defaultEffort: "medium",
+		},
+		verbosityConfig: {
+			supportedVerbosityLevels: ["low", "medium", "high"],
+			defaultVerbosity: "medium",
 		},
 	}),
 
@@ -1091,8 +1194,14 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.021,
 		costPer1kOutputTokens: 0.168,
+
 		reasoningConfig: {
-			enabled: true,
+			supportedEffortLevels: ["none", "low", "medium", "high"],
+			defaultEffort: "medium",
+		},
+		verbosityConfig: {
+			supportedVerbosityLevels: ["low", "medium", "high"],
+			defaultVerbosity: "medium",
 		},
 	}),
 
@@ -1114,8 +1223,14 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.00175,
 		costPer1kOutputTokens: 0.014,
+
 		reasoningConfig: {
-			enabled: true,
+			supportedEffortLevels: ["none", "low", "medium", "high"],
+			defaultEffort: "medium",
+		},
+		verbosityConfig: {
+			supportedVerbosityLevels: ["low", "medium", "high"],
+			defaultVerbosity: "medium",
 		},
 	}),
 
@@ -1137,8 +1252,14 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 32000,
 		costPer1kInputTokens: 0.00175,
 		costPer1kOutputTokens: 0.014,
+
 		reasoningConfig: {
-			enabled: true,
+			supportedEffortLevels: ["none", "low", "medium", "high"],
+			defaultEffort: "medium",
+		},
+		verbosityConfig: {
+			supportedVerbosityLevels: ["low", "medium", "high"],
+			defaultVerbosity: "medium",
 		},
 	}),
 
@@ -1160,9 +1281,6 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.0011,
 		costPer1kOutputTokens: 0.0044,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("o1-preview", PROVIDER, {
@@ -1182,9 +1300,6 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.015,
 		costPer1kOutputTokens: 0.06,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("o1-pro", PROVIDER, {
@@ -1205,9 +1320,6 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 100000,
 		costPer1kInputTokens: 0.15,
 		costPer1kOutputTokens: 0.6,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("o3-deep-research", PROVIDER, {
@@ -1227,9 +1339,6 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 100000,
 		costPer1kInputTokens: 0.01,
 		costPer1kOutputTokens: 0.04,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("o3-pro", PROVIDER, {
@@ -1250,9 +1359,6 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 100000,
 		costPer1kInputTokens: 0.02,
 		costPer1kOutputTokens: 0.08,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("o4-mini-deep-research", PROVIDER, {
@@ -1272,9 +1378,6 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 100000,
 		costPer1kInputTokens: 0.002,
 		costPer1kOutputTokens: 0.008,
-		reasoningConfig: {
-			enabled: true,
-		},
 	}),
 
 	createModelConfig("text-embedding-3-large", PROVIDER, {
@@ -1294,9 +1397,6 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 3072,
 		costPer1kInputTokens: 0.00013,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("text-embedding-3-small", PROVIDER, {
@@ -1316,9 +1416,6 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 1536,
 		costPer1kInputTokens: 0.00002,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("text-embedding-ada-002", PROVIDER, {
@@ -1338,9 +1435,6 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 1536,
 		costPer1kInputTokens: 0.0001,
 		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 	createModelConfig("chatgpt-image-latest", PROVIDER, {
 		name: "chatgpt-image-latest",
@@ -1356,9 +1450,6 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		supportsToolCalls: false,
 		contextWindow: 0,
 		maxTokens: 0,
-		reasoningConfig: {
-			enabled: false,
-		},
 	}),
 
 	createModelConfig("gpt-5.3-chat-latest", PROVIDER, {
@@ -1379,8 +1470,14 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00175,
 		costPer1kOutputTokens: 0.014,
+
 		reasoningConfig: {
-			enabled: false,
+			supportedEffortLevels: ["none", "low", "medium", "high"],
+			defaultEffort: "medium",
+		},
+		verbosityConfig: {
+			supportedVerbosityLevels: ["low", "medium", "high"],
+			defaultVerbosity: "medium",
 		},
 	}),
 
@@ -1402,8 +1499,14 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.0025,
 		costPer1kOutputTokens: 0.015,
+
 		reasoningConfig: {
-			enabled: true,
+			supportedEffortLevels: ["none", "low", "medium", "high"],
+			defaultEffort: "medium",
+		},
+		verbosityConfig: {
+			supportedVerbosityLevels: ["low", "medium", "high"],
+			defaultVerbosity: "medium",
 		},
 	}),
 
@@ -1425,8 +1528,15 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.00075,
 		costPer1kOutputTokens: 0.0045,
+		isFeatured: true,
+
 		reasoningConfig: {
-			enabled: true,
+			supportedEffortLevels: ["none", "low", "medium", "high"],
+			defaultEffort: "medium",
+		},
+		verbosityConfig: {
+			supportedVerbosityLevels: ["low", "medium", "high"],
+			defaultVerbosity: "medium",
 		},
 	}),
 
@@ -1448,8 +1558,14 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.0002,
 		costPer1kOutputTokens: 0.00125,
+
 		reasoningConfig: {
-			enabled: true,
+			supportedEffortLevels: ["none", "low", "medium", "high"],
+			defaultEffort: "medium",
+		},
+		verbosityConfig: {
+			supportedVerbosityLevels: ["low", "medium", "high"],
+			defaultVerbosity: "medium",
 		},
 	}),
 
@@ -1471,8 +1587,15 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.03,
 		costPer1kOutputTokens: 0.18,
+		isFeatured: true,
+
 		reasoningConfig: {
-			enabled: true,
+			supportedEffortLevels: ["none", "low", "medium", "high"],
+			defaultEffort: "medium",
+		},
+		verbosityConfig: {
+			supportedVerbosityLevels: ["low", "medium", "high"],
+			defaultVerbosity: "medium",
 		},
 	}),
 
@@ -1494,8 +1617,15 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.005,
 		costPer1kOutputTokens: 0.03,
+		isFeatured: true,
+
 		reasoningConfig: {
-			enabled: true,
+			supportedEffortLevels: ["none", "low", "medium", "high"],
+			defaultEffort: "medium",
+		},
+		verbosityConfig: {
+			supportedVerbosityLevels: ["low", "medium", "high"],
+			defaultVerbosity: "medium",
 		},
 	}),
 
@@ -1517,8 +1647,83 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.03,
 		costPer1kOutputTokens: 0.18,
+
 		reasoningConfig: {
-			enabled: true,
+			supportedEffortLevels: ["none", "low", "medium", "high"],
+			defaultEffort: "medium",
 		},
+		verbosityConfig: {
+			supportedVerbosityLevels: ["low", "medium", "high"],
+			defaultVerbosity: "medium",
+		},
+	}),
+
+	createModelConfig("gpt-realtime-whisper", PROVIDER, {
+		name: "GPT Realtime Whisper",
+		matchingModel: "gpt-realtime-whisper",
+		description:
+			"Streaming speech-to-text model for low-latency realtime transcription with transcript deltas.",
+		knowledgeCutoffDate: "September 2024",
+		modalities: {
+			input: ["audio", "text"],
+			output: ["text"],
+		},
+		strengths: ["transcription"],
+		contextWindow: 16000,
+		maxTokens: 2000,
+		supportsAttachments: false,
+		supportsTemperature: false,
+		supportsToolCalls: false,
+		supportsStreaming: true,
+		hiddenFromDefaultList: true,
+	}),
+
+	createModelConfig("gpt-4o-mini-transcribe", PROVIDER, {
+		name: "GPT-4o Mini Transcribe",
+		matchingModel: "gpt-4o-mini-transcribe",
+		description: "Lower-cost speech-to-text model for transcription workflows.",
+		modalities: {
+			input: ["audio"],
+			output: ["text"],
+		},
+		strengths: ["transcription"],
+		contextWindow: 16000,
+		supportsAttachments: false,
+		supportsTemperature: false,
+		supportsToolCalls: false,
+		hiddenFromDefaultList: true,
+	}),
+
+	createModelConfig("gpt-4o-transcribe", PROVIDER, {
+		name: "GPT-4o Transcribe",
+		matchingModel: "gpt-4o-transcribe",
+		description: "Higher-accuracy speech-to-text model for transcription workflows.",
+		modalities: {
+			input: ["audio"],
+			output: ["text"],
+		},
+		strengths: ["transcription"],
+		contextWindow: 16000,
+		supportsAttachments: false,
+		supportsTemperature: false,
+		supportsToolCalls: false,
+		hiddenFromDefaultList: true,
+	}),
+
+	createModelConfig("openai-whisper", PROVIDER, {
+		name: "Whisper",
+		matchingModel: "whisper-1",
+		description: "OpenAI Whisper transcription model for existing speech-to-text integrations.",
+		modalities: {
+			input: ["audio"],
+			output: ["text"],
+		},
+		strengths: ["transcription"],
+		contextWindow: 448,
+		maxTokens: 448,
+		supportsAttachments: false,
+		supportsTemperature: false,
+		supportsToolCalls: false,
+		hiddenFromDefaultList: true,
 	}),
 ]);

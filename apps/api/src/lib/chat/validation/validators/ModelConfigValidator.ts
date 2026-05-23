@@ -5,7 +5,7 @@ import type {
 	Validator,
 	ValidatorResult,
 } from "~/lib/chat/validation/ValidationPipeline";
-import { getModelConfig } from "~/lib/providers/models";
+import { getModelConfig, getModelConfigByMatchingModel } from "~/lib/providers/models";
 import type { CoreChatOptions } from "~/types";
 import { getLogger } from "~/utils/logger";
 
@@ -19,6 +19,7 @@ export class ModelConfigValidator implements Validator {
 			env,
 			user,
 			model: requestedModel,
+			provider: requestedProvider,
 			completion_id,
 			use_multi_model = false,
 			budget_constraint,
@@ -74,7 +75,9 @@ export class ModelConfigValidator implements Validator {
 			}
 
 			const primaryModelName = selectedModels[0];
-			const primaryModelConfig = await getModelConfig(primaryModelName, env);
+			const primaryModelConfig =
+				(await getModelConfig(primaryModelName, env, requestedProvider)) ||
+				(await getModelConfigByMatchingModel(primaryModelName, env, requestedProvider));
 
 			if (!primaryModelConfig) {
 				return {

@@ -122,7 +122,10 @@ export class TeamDelegation {
 			`Orchestrator ${this.context.currentAgent.name} calling team member ${agent.name}. Stack: ${this.delegationStack.join(" -> ")}`,
 		);
 
-		const { model: modelToUse } = await getAuxiliaryModel(this.context.env, this.context.user);
+		const { model: modelToUse, provider: providerToUse } = await getAuxiliaryModel(
+			this.context.env,
+			this.context.user,
+		);
 
 		const agentModelConfig = agent.model
 			? await getModelConfig(agent.model, this.context.env)
@@ -133,6 +136,7 @@ export class TeamDelegation {
 			user: this.context.user,
 			messages,
 			model: agentModelConfig?.matchingModel || modelToUse,
+			provider: agentModelConfig?.provider || providerToUse,
 			system_prompt: agent.system_prompt,
 			temperature: agent.temperature ? Number.parseFloat(agent.temperature) : 0.7,
 			stream: false,
