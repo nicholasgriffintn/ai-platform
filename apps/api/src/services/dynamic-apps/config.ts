@@ -248,18 +248,6 @@ export const FUNCTION_APP_METADATA: Record<string, DynamicAppMetadata> = {
 
 export const FEATURED_APPS: FeaturedAppDefinition[] = [
 	{
-		id: "featured-council",
-		name: "AI Council",
-		description: "Use the main chat interface with selected AI council members debating a problem",
-		icon: "users-round",
-		category: "Agents & Delegation",
-		theme: "violet",
-		tags: ["agents", "debate", "multi-agent"],
-		href: "/apps/council",
-		type: "normal",
-		kind: "frontend",
-	},
-	{
 		id: "featured-sandbox-worker",
 		name: "Sandbox Worker",
 		description:

@@ -5,6 +5,7 @@ import {
 	Mic,
 	Paperclip,
 	Pause,
+	Plus,
 	Send,
 	Square,
 	Volume1,
@@ -26,7 +27,7 @@ import {
 } from "react";
 import type { MarkdownConversionOptions } from "@assistant/schemas";
 
-import { Button } from "~/components/ui";
+import { Button, Popover, PopoverContent, PopoverTrigger } from "~/components/ui";
 import { useModels } from "~/hooks/useModels";
 import { useVoiceRecorder } from "~/hooks/useVoiceRecorder";
 import { apiService } from "~/lib/api/api-service";
@@ -84,6 +85,11 @@ interface ChatInputProps {
 		followUp: string;
 	};
 	controls?: ReactNode;
+	modeControls?: {
+		menu: ReactNode;
+		activeControl?: ReactNode;
+		onClearActive?: () => void;
+	};
 	disableAttachments?: boolean;
 	hideDefaultControls?: boolean;
 	autoPlayResponses?: {
@@ -104,6 +110,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 			onTranscribe,
 			placeholder,
 			controls,
+			modeControls,
 			disableAttachments = false,
 			hideDefaultControls = false,
 			autoPlayResponses,
@@ -184,6 +191,17 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 		}, [model, apiModels]);
 
 		const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
+			if (
+				e.key === "Backspace" &&
+				e.currentTarget.selectionStart === 0 &&
+				e.currentTarget.selectionEnd === 0 &&
+				modeControls?.onClearActive
+			) {
+				e.preventDefault();
+				modeControls.onClearActive();
+				return;
+			}
+
 			if (isMobile && e.key === "Enter") {
 				return;
 			}
@@ -532,23 +550,26 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 					)}
 					<div className="relative">
 						<div className="flex items-start">
-							<textarea
-								id="message-input"
-								ref={textareaRef}
-								value={chatInput}
-								onChange={handleTextAreaInput}
-								onKeyDown={handleKeyDown}
-								placeholder={
-									!currentConversationId
-										? (placeholder?.newConversation ?? "Ask me anything...")
-										: (placeholder?.followUp ?? "Ask follow-up questions...")
-								}
-								disabled={isRecording || isTranscribing || isLoading}
-								className="flex-grow px-4 py-3 text-base bg-transparent resize-none focus:outline-none dark:text-white min-h-[60px] max-h-[200px]"
-								rows={1}
-								aria-label="Message input"
-								aria-describedby="message-input-help"
-							/>
+							<div className="flex min-w-0 flex-grow items-start gap-2 px-4 py-3">
+								{modeControls?.activeControl}
+								<textarea
+									id="message-input"
+									ref={textareaRef}
+									value={chatInput}
+									onChange={handleTextAreaInput}
+									onKeyDown={handleKeyDown}
+									placeholder={
+										!currentConversationId
+											? (placeholder?.newConversation ?? "Ask me anything...")
+											: (placeholder?.followUp ?? "Ask follow-up questions...")
+									}
+									disabled={isRecording || isTranscribing || isLoading}
+									className="min-h-[36px] max-h-[200px] min-w-0 flex-grow resize-none bg-transparent p-0 text-base focus:outline-none dark:text-white"
+									rows={1}
+									aria-label="Message input"
+									aria-describedby="message-input-help"
+								/>
+							</div>
 							<div id="message-input-help" className="sr-only">
 								Type your message and press Enter to send. Use Shift+Enter for a new line.
 							</div>
@@ -703,6 +724,29 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 						{!hideDefaultControls && (
 							<div className="flex items-center justify-between gap-1 sm:gap-2">
 								<div className="flex-1 min-w-0 max-w-[70%] sm:max-w-none flex items-center gap-2">
+									{modeControls?.menu && (
+										<Popover>
+											<PopoverTrigger asChild>
+												<Button
+													type="button"
+													variant="icon"
+													className="h-8 w-8 shrink-0 p-1.5"
+													title="Open mode menu"
+													aria-label="Open mode menu"
+												>
+													<Plus className="h-4 w-4" />
+												</Button>
+											</PopoverTrigger>
+											<PopoverContent
+												side="top"
+												align="start"
+												sideOffset={10}
+												className="w-80 rounded-xl p-2"
+											>
+												{modeControls.menu}
+											</PopoverContent>
+										</Popover>
+									)}
 									<div className="min-w-0 flex-shrink">
 										<ModelSelector isDisabled={isLoading} mono={true} />
 									</div>

@@ -38,6 +38,11 @@ export interface ConversationThreadModeConfig {
 		followUp: string;
 	};
 	inputControls?: ReactNode;
+	modeControls?: {
+		menu: ReactNode;
+		activeControl?: ReactNode;
+		onClearActive?: () => void;
+	};
 	analyticsSource?: string;
 	councilDebate?: {
 		enabled: boolean;
@@ -342,6 +347,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
 						onTranscribe={handleTranscribe}
 						placeholder={modeConfig?.inputPlaceholder}
 						controls={modeConfig?.inputControls}
+						modeControls={modeConfig?.modeControls}
 						autoPlayResponses={{
 							enabled: autoPlayResponsesEnabled,
 							isGenerating: isGeneratingAutoResponseSpeech,

@@ -8,11 +8,13 @@ import { PageShell } from "~/components/Core/PageShell";
 import { PageTitle } from "~/components/Core/PageTitle";
 import { SearchDialog } from "~/components/Search/SearchDialog";
 import { useChatStore } from "~/state/stores/chatStore";
+import { useHomeChatModeConfig } from "./useHomeChatModeConfig";
 
 export function HomePage() {
 	const { initializeStore, showSearch, setShowSearch, setChatInput } = useChatStore();
 	const [isCanvasMode, setIsCanvasMode] = useState(false);
 	const canvas = useCanvasStudio({ enabled: isCanvasMode });
+	const { modeConfig } = useHomeChatModeConfig();
 
 	useEffect(() => {
 		const init = async () => {
@@ -45,7 +47,11 @@ export function HomePage() {
 			<div className="flex h-full flex-1 flex-row overflow-hidden">
 				<div className="flex h-full w-full flex-1 flex-col">
 					<div className="relative flex-1 overflow-hidden">
-						{isCanvasMode ? <CanvasGenerationsView canvas={canvas} /> : <ConversationThread />}
+						{isCanvasMode ? (
+							<CanvasGenerationsView canvas={canvas} />
+						) : (
+							<ConversationThread modeConfig={modeConfig} />
+						)}
 					</div>
 				</div>
 			</div>

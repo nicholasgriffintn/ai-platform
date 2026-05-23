@@ -1,4 +1,13 @@
-import { AlertTriangle, GitBranch, Pause, Play, Square } from "lucide-react";
+import {
+	AlertTriangle,
+	ChevronDown,
+	ChevronRight,
+	GitBranch,
+	Pause,
+	Play,
+	Square,
+} from "lucide-react";
+import { useState } from "react";
 
 import { Button, Checkbox, FormSelect, Input, Label } from "~/components/ui";
 import {
@@ -88,17 +97,28 @@ export function SandboxChatControls({
 }: SandboxChatControlsProps) {
 	const hasActiveRun = Boolean(activeRunId);
 	const isPaused = liveRunStatus === "paused";
+	const [isExpanded, setIsExpanded] = useState(false);
 
 	return (
 		<div className="space-y-3">
 			<div className="flex min-w-0 flex-wrap items-center justify-between gap-2">
-				<div className="flex min-w-0 items-center gap-2 text-sm font-medium text-zinc-800 dark:text-zinc-200">
+				<button
+					type="button"
+					onClick={() => setIsExpanded((value) => !value)}
+					className="flex min-w-0 items-center gap-2 rounded-md px-1 py-1 text-left text-sm font-medium text-zinc-800 transition-colors hover:bg-zinc-100 dark:text-zinc-200 dark:hover:bg-zinc-800"
+					aria-expanded={isExpanded}
+				>
+					{isExpanded ? (
+						<ChevronDown className="h-4 w-4 shrink-0" />
+					) : (
+						<ChevronRight className="h-4 w-4 shrink-0" />
+					)}
 					<GitBranch className="h-4 w-4 shrink-0" />
 					<span>Sandbox</span>
 					<span className="truncate text-xs font-normal text-zinc-500 dark:text-zinc-400">
 						{normalisedRepo || "Choose repository"}
 					</span>
-				</div>
+				</button>
 				{hasActiveRun && (
 					<div className="flex items-center gap-1">
 						<span className="mr-1 text-xs text-zinc-500 dark:text-zinc-400">
@@ -186,95 +206,101 @@ export function SandboxChatControls({
 					</div>
 				</div>
 			)}
-			<div className="grid gap-3 sm:grid-cols-2">
-				<div className="space-y-1">
-					<Label htmlFor="sandbox-repo-input">Repository</Label>
-					<Input
-						id="sandbox-repo-input"
-						list="sandbox-repo-options"
-						value={repo}
-						onChange={(event) => setRepo(event.target.value)}
-						onBlur={() => setRepo(normaliseGitHubRepoInput(repo))}
-						placeholder="owner/repo"
-						disabled={disabled}
-					/>
-					<datalist id="sandbox-repo-options">
-						{repoSuggestions.map((repository) => (
-							<option key={repository} value={repository} />
-						))}
-					</datalist>
-				</div>
-				<FormSelect
-					id="sandbox-task-type"
-					label="Task type"
-					value={taskType}
-					onChange={(event) => setTaskType(parseSandboxTaskType(event.target.value))}
-					disabled={disabled}
-					options={SANDBOX_TASK_TYPES.map((type) => ({
-						value: type,
-						label: SANDBOX_TASK_TYPE_LABELS[type],
-					}))}
-				/>
-				<div className="space-y-1">
-					<Label htmlFor="sandbox-model-input">Model</Label>
-					<Input
-						id="sandbox-model-input"
-						value={model}
-						onChange={(event) => setModel(event.target.value)}
-						placeholder="Default sandbox model"
-						disabled={disabled}
-					/>
-				</div>
-				<FormSelect
-					id="sandbox-prompt-strategy"
-					label="Prompt strategy"
-					value={promptStrategy}
-					onChange={(event) => setPromptStrategy(parseSandboxPromptStrategy(event.target.value))}
-					disabled={disabled}
-					options={sandboxPromptStrategyOptions.map((option) => ({
-						value: option.value,
-						label: option.label,
-					}))}
-				/>
-			</div>
-			<div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto]">
-				<div className="space-y-1">
-					<Label htmlFor="sandbox-timeout-input">Timeout seconds</Label>
-					<Input
-						id="sandbox-timeout-input"
-						type="number"
-						min={SANDBOX_TIMEOUT_MIN_SECONDS}
-						max={SANDBOX_TIMEOUT_MAX_SECONDS}
-						step={1}
-						value={timeoutSecondsInput}
-						onChange={(event) => setTimeoutSecondsInput(event.target.value)}
-						placeholder={String(SANDBOX_TIMEOUT_DEFAULT_SECONDS)}
-						disabled={disabled}
-					/>
-				</div>
-				<label className="flex items-end gap-2 pb-2 text-sm text-zinc-700 dark:text-zinc-300">
-					<Checkbox
-						checked={shouldCommit}
-						disabled={disabled || isReadOnlyTaskType}
-						onCheckedChange={(checked) => setShouldCommit(Boolean(checked))}
-					/>
-					Commit changes
-				</label>
-			</div>
-			{repo.trim() && !REPO_PATTERN.test(normalisedRepo) && (
-				<p className="text-xs text-red-600 dark:text-red-400">
-					Repository must use owner/repo format or a GitHub repo URL.
-				</p>
+			{isExpanded && (
+				<>
+					<div className="grid gap-3 sm:grid-cols-2">
+						<div className="space-y-1">
+							<Label htmlFor="sandbox-repo-input">Repository</Label>
+							<Input
+								id="sandbox-repo-input"
+								list="sandbox-repo-options"
+								value={repo}
+								onChange={(event) => setRepo(event.target.value)}
+								onBlur={() => setRepo(normaliseGitHubRepoInput(repo))}
+								placeholder="owner/repo"
+								disabled={disabled}
+							/>
+							<datalist id="sandbox-repo-options">
+								{repoSuggestions.map((repository) => (
+									<option key={repository} value={repository} />
+								))}
+							</datalist>
+						</div>
+						<FormSelect
+							id="sandbox-task-type"
+							label="Task type"
+							value={taskType}
+							onChange={(event) => setTaskType(parseSandboxTaskType(event.target.value))}
+							disabled={disabled}
+							options={SANDBOX_TASK_TYPES.map((type) => ({
+								value: type,
+								label: SANDBOX_TASK_TYPE_LABELS[type],
+							}))}
+						/>
+						<div className="space-y-1">
+							<Label htmlFor="sandbox-model-input">Model</Label>
+							<Input
+								id="sandbox-model-input"
+								value={model}
+								onChange={(event) => setModel(event.target.value)}
+								placeholder="Default sandbox model"
+								disabled={disabled}
+							/>
+						</div>
+						<FormSelect
+							id="sandbox-prompt-strategy"
+							label="Prompt strategy"
+							value={promptStrategy}
+							onChange={(event) =>
+								setPromptStrategy(parseSandboxPromptStrategy(event.target.value))
+							}
+							disabled={disabled}
+							options={sandboxPromptStrategyOptions.map((option) => ({
+								value: option.value,
+								label: option.label,
+							}))}
+						/>
+					</div>
+					<div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto]">
+						<div className="space-y-1">
+							<Label htmlFor="sandbox-timeout-input">Timeout seconds</Label>
+							<Input
+								id="sandbox-timeout-input"
+								type="number"
+								min={SANDBOX_TIMEOUT_MIN_SECONDS}
+								max={SANDBOX_TIMEOUT_MAX_SECONDS}
+								step={1}
+								value={timeoutSecondsInput}
+								onChange={(event) => setTimeoutSecondsInput(event.target.value)}
+								placeholder={String(SANDBOX_TIMEOUT_DEFAULT_SECONDS)}
+								disabled={disabled}
+							/>
+						</div>
+						<label className="flex items-end gap-2 pb-2 text-sm text-zinc-700 dark:text-zinc-300">
+							<Checkbox
+								checked={shouldCommit}
+								disabled={disabled || isReadOnlyTaskType}
+								onCheckedChange={(checked) => setShouldCommit(Boolean(checked))}
+							/>
+							Commit changes
+						</label>
+					</div>
+					{repo.trim() && !REPO_PATTERN.test(normalisedRepo) && (
+						<p className="text-xs text-red-600 dark:text-red-400">
+							Repository must use owner/repo format or a GitHub repo URL.
+						</p>
+					)}
+					{!hasValidTimeout && (
+						<p className="text-xs text-red-600 dark:text-red-400">
+							Timeout must be between {SANDBOX_TIMEOUT_MIN_SECONDS} and{" "}
+							{SANDBOX_TIMEOUT_MAX_SECONDS} seconds.
+						</p>
+					)}
+					<p className="text-xs text-zinc-500 dark:text-zinc-400">
+						{getSandboxPromptStrategyDescription(promptStrategy)}
+					</p>
+				</>
 			)}
-			{!hasValidTimeout && (
-				<p className="text-xs text-red-600 dark:text-red-400">
-					Timeout must be between {SANDBOX_TIMEOUT_MIN_SECONDS} and {SANDBOX_TIMEOUT_MAX_SECONDS}{" "}
-					seconds.
-				</p>
-			)}
-			<p className="text-xs text-zinc-500 dark:text-zinc-400">
-				{getSandboxPromptStrategyDescription(promptStrategy)}
-			</p>
 		</div>
 	);
 }
