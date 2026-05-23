@@ -9,9 +9,43 @@ export interface ProviderErrorBody {
 }
 
 interface ProviderErrorLike extends ProviderErrorBody {
+	name?: unknown;
 	status?: unknown;
 	statusCode?: unknown;
 }
+
+const retryableNetworkErrorCodes = new Set([
+	"ECONNRESET",
+	"ECONNABORTED",
+	"ETIMEDOUT",
+	"ENOTFOUND",
+	"ECONNREFUSED",
+	"ENETUNREACH",
+]);
+
+const retryableErrorNames = new Set(["AbortError", "FetchError", "TimeoutError"]);
+
+const nonRetryableErrorTypes = new Set([
+	"AUTHENTICATION_ERROR",
+	"AUTHORISATION_ERROR",
+	"CONFIGURATION_ERROR",
+	"CONTEXT_WINDOW_EXCEEDED",
+	"CONFLICT_ERROR",
+	"DATABASE_ERROR",
+	"EMAIL_SEND_FAILED",
+	"FORBIDDEN",
+	"INTERNAL_ERROR",
+	"NOT_FOUND",
+	"PARAMS_ERROR",
+	"STORAGE_ERROR",
+	"TOOL_CALL_ERROR",
+	"UNAUTHORIZED",
+	"UNKNOWN_ERROR",
+	"USAGE_LIMIT_ERROR",
+	"USER_NOT_FOUND",
+]);
+
+const retryableStatusCodes = new Set([408, 409, 425]);
 
 function isProviderErrorLike(error: unknown): error is ProviderErrorLike {
 	return typeof error === "object" && error !== null && !Array.isArray(error);
@@ -65,4 +99,37 @@ export function isProviderRateLimitError(error: unknown): boolean {
 	}
 
 	return isPlainObject(error.error) && isProviderRateLimit(0, error.error);
+}
+
+function getProviderErrorStatus(error: ProviderErrorLike): number | undefined {
+	if (typeof error.status === "number") {
+		return error.status;
+	}
+
+	return typeof error.statusCode === "number" ? error.statusCode : undefined;
+}
+
+export function isRetryableProviderError(error: unknown): boolean {
+	if (!isProviderErrorLike(error)) {
+		return false;
+	}
+
+	if (isProviderRateLimitError(error) || error.type === "NETWORK_ERROR") {
+		return true;
+	}
+
+	if (typeof error.type === "string" && nonRetryableErrorTypes.has(error.type)) {
+		return false;
+	}
+
+	if (typeof error.code === "string" && retryableNetworkErrorCodes.has(error.code)) {
+		return true;
+	}
+
+	if (typeof error.name === "string" && retryableErrorNames.has(error.name)) {
+		return true;
+	}
+
+	const status = getProviderErrorStatus(error);
+	return status !== undefined && (retryableStatusCodes.has(status) || status >= 500);
 }

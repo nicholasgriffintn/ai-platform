@@ -256,6 +256,25 @@ describe("responses", () => {
 			});
 		});
 
+		it("should retry only retryable provider errors", async () => {
+			// @ts-expect-error - test data
+			await getAIResponse(baseParams);
+
+			expect(withRetry).toHaveBeenCalledWith(
+				expect.any(Function),
+				expect.objectContaining({
+					retryCount: 2,
+					baseDelayMs: 1000,
+					isRetryableError: expect.any(Function),
+					onRetry: expect.any(Function),
+				}),
+			);
+
+			const retryOptions = vi.mocked(withRetry).mock.calls[0]?.[1];
+			expect(retryOptions?.isRetryableError?.({ status: 500 })).toBe(true);
+			expect(retryOptions?.isRetryableError?.({ status: 400 })).toBe(false);
+		});
+
 		it("should use provider when resolving shared matching models", async () => {
 			const env = {};
 			vi.mocked(getModelConfigByMatchingModel).mockResolvedValueOnce({

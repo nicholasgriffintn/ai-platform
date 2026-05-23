@@ -6,7 +6,7 @@ import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";
 import { formatMessages } from "~/utils/messages";
 import { mergeParametersWithDefaults, shouldEnableStreaming } from "~/utils/parameters";
-import { isProviderRateLimitError } from "~/utils/providerErrors";
+import { isProviderRateLimitError, isRetryableProviderError } from "~/utils/providerErrors";
 import { withRetry } from "~/utils/retries";
 
 const logger = getLogger({ prefix: "lib/chat/responses" });
@@ -222,10 +222,19 @@ export async function getAIResponse({
 	const startTime = Date.now();
 	let response;
 	try {
-		// TODO: Make this smarter so we don't retry if the error is not retryable
 		response = await withRetry(() => provider.getResponse(parameters, user?.id), {
-			retryCount: 0,
+			retryCount: 2,
 			baseDelayMs: 1000,
+			isRetryableError: isRetryableProviderError,
+			onRetry: (attempt, error, delayMs) => {
+				logger.warn("Retrying model invocation after retryable provider error", {
+					model,
+					provider: provider.name,
+					attempt,
+					delayMs,
+					error,
+				});
+			},
 		});
 	} catch (err: any) {
 		let errorType = ErrorType.PROVIDER_ERROR;
