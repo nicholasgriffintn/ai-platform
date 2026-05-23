@@ -345,6 +345,51 @@ export class ResponseFormatter {
 		data: any,
 		options: ResponseFormatOptions,
 	): Promise<any> {
+		if (data.object === "response" || Array.isArray(data.output)) {
+			const outputText =
+				typeof data.output_text === "string"
+					? data.output_text
+					: ResponseFormatter.extractOpenAIResponsesText(data.output);
+			const base64Images = ResponseFormatter.extractOpenAIResponsesImages(data.output);
+			const annotations = ResponseFormatter.extractOpenAIResponsesAnnotations(data.output);
+			const toolCalls = ResponseFormatter.extractOpenAIResponsesToolCalls(data.output);
+			const processedTextContent = !options.is_streaming
+				? preprocessQwQResponse(outputText, options.model || data.model || "")
+				: outputText;
+
+			if (base64Images.length) {
+				const uploads = await ResponseFormatter.persistBase64Images(base64Images, options);
+				const imagesContent = uploads.urls.map((url) => ({
+					type: "image_url",
+					image_url: { url },
+				}));
+
+				return {
+					...data,
+					response: imagesContent,
+					...(toolCalls.length ? { tool_calls: toolCalls } : {}),
+					annotations,
+					data: {
+						openai_response_id: data.id,
+						output: data.output,
+						assets: uploads.metadata,
+					},
+				};
+			}
+
+			return {
+				...data,
+				response: processedTextContent,
+				...(toolCalls.length ? { tool_calls: toolCalls } : {}),
+				annotations,
+				data: {
+					...(data.data || {}),
+					openai_response_id: data.id,
+					output: data.output,
+				},
+			};
+		}
+
 		const modalityState = ResponseFormatter.getModalityState(options.modalities);
 		const isImageType = modalityState.producesImages && !modalityState.producesText;
 		if (isImageType && Array.isArray(data.data)) {
@@ -429,6 +474,73 @@ export class ResponseFormatter {
 			: textContent;
 
 		return { ...data, response: processedTextContent, ...message };
+	}
+
+	private static extractOpenAIResponsesText(output: any): string {
+		if (!Array.isArray(output)) {
+			return "";
+		}
+
+		return output
+			.flatMap((item: any) => {
+				if (typeof item?.text === "string") {
+					return [item.text];
+				}
+
+				if (Array.isArray(item?.content)) {
+					return item.content
+						.map((content: any) => content?.text)
+						.filter((text: unknown): text is string => typeof text === "string");
+				}
+
+				return [];
+			})
+			.join("");
+	}
+
+	private static extractOpenAIResponsesImages(output: any): string[] {
+		if (!Array.isArray(output)) {
+			return [];
+		}
+
+		return output
+			.filter(
+				(item: any) => item?.type === "image_generation_call" && typeof item.result === "string",
+			)
+			.map((item: any) => item.result);
+	}
+
+	private static extractOpenAIResponsesToolCalls(output: any): any[] {
+		if (!Array.isArray(output)) {
+			return [];
+		}
+
+		return output
+			.filter((item: any) => item?.type === "function_call" && item.call_id && item.name)
+			.map((item: any) => ({
+				id: item.call_id,
+				type: "function",
+				function: {
+					name: item.name,
+					arguments: item.arguments || "{}",
+				},
+			}));
+	}
+
+	private static extractOpenAIResponsesAnnotations(output: any): any[] {
+		if (!Array.isArray(output)) {
+			return [];
+		}
+
+		return output.flatMap((item: any) => {
+			if (!Array.isArray(item?.content)) {
+				return [];
+			}
+
+			return item.content.flatMap((content: any) =>
+				Array.isArray(content?.annotations) ? content.annotations : [],
+			);
+		});
 	}
 
 	private static formatOpenRouterResponse(data: any): any {

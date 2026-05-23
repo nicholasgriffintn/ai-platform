@@ -34,3 +34,10 @@ export function splitTitleAndContent(text: string): [string, string] {
 	const [firstLine, ...rest] = text.split("\n");
 	return [firstLine, rest.join("\n")];
 }
+
+export function parseCommaSeparatedList(value: string): string[] {
+	return value
+		.split(",")
+		.map((item) => item.trim())
+		.filter(Boolean);
+}

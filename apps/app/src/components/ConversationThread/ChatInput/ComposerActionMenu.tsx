@@ -1,4 +1,4 @@
-import { Loader2, Mic, Paperclip, Square, Volume1, Volume2, VolumeX } from "lucide-react";
+import { Loader2, Mic, Plus, Square, Volume1, Volume2, VolumeX } from "lucide-react";
 import type { ReactNode } from "react";
 
 import { Button, Popover, PopoverContent, PopoverTrigger } from "~/components/ui";
@@ -105,7 +105,7 @@ export function ComposerActionMenu({
 					{isUploading ? (
 						<Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
 					) : (
-						<Paperclip className="h-4 w-4" aria-hidden="true" />
+						<Plus className="h-4 w-4" aria-hidden="true" />
 					)}
 				</Button>
 			</PopoverTrigger>

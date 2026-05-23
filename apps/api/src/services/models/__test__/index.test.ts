@@ -170,5 +170,14 @@ describe("Models Service", () => {
 				"Model not found or user does not have access",
 			);
 		});
+
+		it("should throw error for unknown model without filtering an undefined entry", async () => {
+			mockGetModelConfig.mockResolvedValue(undefined);
+
+			await expect(getModelDetails({} as any, "gpt-4", 123)).rejects.toThrow(
+				"Model not found or user does not have access",
+			);
+			expect(mockFilterModelsForUserAccess).not.toHaveBeenCalled();
+		});
 	});
 });

@@ -38,4 +38,33 @@ export function createModelConfigObject(entries: Array<[string, ModelConfigItem]
 	return Object.fromEntries(entries);
 }
 
+function getUniqueModelId(models: ModelConfig, modelId: string, model: ModelConfigItem): string {
+	if (!Object.prototype.hasOwnProperty.call(models, modelId)) {
+		return modelId;
+	}
+
+	const providerModelId = `${model.provider}/${modelId}`;
+	if (!Object.prototype.hasOwnProperty.call(models, providerModelId)) {
+		return providerModelId;
+	}
+
+	let suffix = 2;
+	let uniqueModelId = `${providerModelId}-${suffix}`;
+	while (Object.prototype.hasOwnProperty.call(models, uniqueModelId)) {
+		suffix += 1;
+		uniqueModelId = `${providerModelId}-${suffix}`;
+	}
+
+	return uniqueModelId;
+}
+
+export function mergeModelConfigs(...configs: ModelConfig[]): ModelConfig {
+	return configs.reduce((models, config) => {
+		for (const [modelId, model] of Object.entries(config)) {
+			models[getUniqueModelId(models, modelId, model)] = model;
+		}
+		return models;
+	}, {} as ModelConfig);
+}
+
 export { availableModalities };

@@ -17,6 +17,11 @@ export class StreamingFormatter {
 			return data.choices[0].delta.content || "";
 		}
 
+		// OpenAI Responses API streaming text delta
+		if (data.type === "response.output_text.delta" && data.delta !== undefined) {
+			return data.delta || "";
+		}
+
 		// Regular OpenAI-like message format
 		if (data.choices?.[0]?.message?.content) {
 			return data.choices[0].message.content;
@@ -125,6 +130,31 @@ export class StreamingFormatter {
 	 * @returns The extracted tool call
 	 */
 	static extractToolCall(data: any, currentEventType = "") {
+		const responseOutputItems =
+			data.type === "response.completed" && Array.isArray(data.response?.output)
+				? data.response.output
+				: data.type === "response.output_item.done" && data.item
+					? [data.item]
+					: [];
+		const responseFunctionCalls = responseOutputItems
+			.filter((item: any) => item?.type === "function_call")
+			.map((item: any) => ({
+				id: item.call_id || item.id,
+				type: "function",
+				function: {
+					name: item.name,
+					arguments: item.arguments || "{}",
+				},
+			}))
+			.filter((toolCall: any) => toolCall.id && toolCall.function.name);
+
+		if (responseFunctionCalls.length > 0) {
+			return {
+				format: "direct",
+				toolCalls: responseFunctionCalls,
+			};
+		}
+
 		// OpenAI-like tool calls
 		if (data.choices?.[0]?.delta?.tool_calls) {
 			return {
@@ -225,6 +255,10 @@ export class StreamingFormatter {
 			return true;
 		}
 
+		if (data.type === "response.completed" || data.type === "response.failed") {
+			return true;
+		}
+
 		// Google format
 		const googleFinishReason = data.candidates?.[0]?.finishReason?.toLowerCase();
 		if (googleFinishReason === "stop" || googleFinishReason === "length") {
@@ -248,6 +282,10 @@ export class StreamingFormatter {
 	static extractUsageData(data: any): any {
 		if (data.usage) {
 			return data.usage;
+		}
+
+		if (data.response?.usage) {
+			return data.response.usage;
 		}
 
 		if (data.usageMetadata) {
@@ -354,6 +392,16 @@ export class StreamingFormatter {
 		// Direct field
 		if (data?.annotations !== undefined) {
 			return data.annotations;
+		}
+
+		if (Array.isArray(data?.item?.content)) {
+			const annotations = data.item.content.flatMap((content: any) =>
+				Array.isArray(content?.annotations) ? content.annotations : [],
+			);
+
+			if (annotations.length) {
+				return annotations;
+			}
 		}
 
 		return null;

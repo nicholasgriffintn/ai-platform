@@ -20,6 +20,13 @@ const defaultSettings: ChatSettings = {
 		includeMetadata: false,
 		namespace: "",
 	},
+	tool_options: {
+		shell: {
+			environment: {
+				type: "container_auto",
+			},
+		},
+	},
 };
 
 export interface ChatStore {

@@ -1,6 +1,10 @@
 import { getModelConfigByMatchingModel } from "~/lib/providers/models";
 import { shouldSendProviderReasoningEffort } from "~/lib/providers/models/reasoning";
 import { shouldSendProviderVerbosity } from "~/lib/providers/models/verbosity";
+import {
+	buildOpenAIResponsesBody,
+	shouldUseOpenAIResponsesApi,
+} from "~/lib/providers/utils/openaiResponses";
 import type { StorageService } from "~/lib/storage";
 import type { ChatCompletionParameters } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -45,6 +49,16 @@ export class OpenAIProvider extends BaseProvider {
 			);
 			return hasAttachments ? "https://api.openai.com/v1/images/edits" : "images/generations";
 		}
+
+		const modelConfig = await getModelConfigByMatchingModel(
+			params.model || "",
+			params.env,
+			params.provider || this.name,
+		);
+		if (modelConfig && shouldUseOpenAIResponsesApi(params, modelConfig)) {
+			return "responses";
+		}
+
 		return "chat/completions";
 	}
 
@@ -185,13 +199,11 @@ export class OpenAIProvider extends BaseProvider {
 			: {};
 
 		const toolsParams = getToolsForProvider(params, modelConfig, this.name);
+		const enabledTools = params.enabled_tools || [];
 
 		const tools = [];
 		if (modelConfig?.supportsToolCalls) {
-			if (
-				modelConfig?.supportsSearchGrounding &&
-				params.enabled_tools.includes("search_grounding")
-			) {
+			if (modelConfig?.supportsSearchGrounding && enabledTools.includes("search_grounding")) {
 				tools.push({ type: "web_search_preview" });
 			}
 		}
@@ -278,6 +290,15 @@ export class OpenAIProvider extends BaseProvider {
 				prompt,
 				...imageRequestInput,
 			};
+		}
+
+		if (shouldUseOpenAIResponsesApi(params, modelConfig)) {
+			return buildOpenAIResponsesBody(
+				params,
+				modelConfig,
+				toolsParams.tools || [],
+				streamingParams,
+			);
 		}
 
 		return {

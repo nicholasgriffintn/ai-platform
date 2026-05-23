@@ -30,6 +30,7 @@ vi.mock("~/utils/parameters", () => ({
 	createCommonParameters: vi.fn(),
 	getToolsForProvider: vi.fn(),
 	shouldEnableStreaming: vi.fn(),
+	getEffectiveMaxTokens: vi.fn((_requested, modelMaxTokens) => modelMaxTokens || 4096),
 	getReasoningEffortSetting: vi.fn(),
 }));
 
@@ -191,7 +192,7 @@ describe("OpenAIProvider", () => {
 			expect(result.top_p).toBeUndefined();
 		});
 
-		it("should add web search tool when search grounding enabled", async () => {
+		it("should route OpenAI hosted search through Responses API", async () => {
 			// @ts-ignore - getModelConfigByMatchingModel is not typed
 			vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
 				name: "gpt-4",
@@ -219,7 +220,122 @@ describe("OpenAIProvider", () => {
 
 			const result = await provider.mapParameters(params as any);
 
-			expect(result.tools).toContainEqual({ type: "web_search_preview" });
+			expect(result.input).toEqual([
+				{ type: "message", role: "user", content: "Search for something" },
+			]);
+			expect(result.tools).toContainEqual({ type: "web_search" });
+			expect(result.max_output_tokens).toBe(4096);
+		});
+
+		it("should format assistant history as Responses API input text", async () => {
+			// @ts-ignore - getModelConfigByMatchingModel is not typed
+			vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
+				name: "gpt-5.4",
+				matchingModel: "gpt-5.4",
+				modalities: { input: ["text"], output: ["text"] },
+				supportsToolCalls: true,
+				supportsSearchGrounding: true,
+			});
+
+			vi.mocked(createCommonParameters).mockReturnValue({ model: "gpt-5.4" });
+			vi.mocked(shouldEnableStreaming).mockReturnValue(false);
+			vi.mocked(getToolsForProvider).mockReturnValue({ tools: [] });
+
+			const provider = new OpenAIProvider();
+
+			const result = await provider.mapParameters({
+				model: "gpt-5.4",
+				messages: [
+					{ role: "user", content: "Hello" },
+					{
+						role: "assistant",
+						content: [{ type: "text", text: "Hi there" }],
+					},
+					{ role: "user", content: "Search for something" },
+				],
+				enabled_tools: ["search_grounding"],
+				env: { AI_GATEWAY_TOKEN: "test-token" },
+			} as any);
+
+			expect(result.input[1]).toEqual({
+				type: "message",
+				role: "assistant",
+				content: [{ type: "input_text", text: "Hi there" }],
+			});
+		});
+
+		it("should configure hosted tool search with deferred app tools", async () => {
+			// @ts-ignore - getModelConfigByMatchingModel is not typed
+			vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
+				name: "gpt-5.4",
+				matchingModel: "gpt-5.4",
+				modalities: { input: ["text"], output: ["text"] },
+				supportsToolCalls: true,
+				supportsToolSearch: true,
+			});
+
+			vi.mocked(createCommonParameters).mockReturnValue({ model: "gpt-5.4" });
+			vi.mocked(shouldEnableStreaming).mockReturnValue(false);
+			vi.mocked(getToolsForProvider).mockReturnValue({ tools: [] });
+
+			const provider = new OpenAIProvider();
+
+			const result = await provider.mapParameters({
+				model: "gpt-5.4",
+				messages: [{ role: "user", content: "Find the right tool" }],
+				enabled_tools: ["tool_search"],
+				env: { AI_GATEWAY_TOKEN: "test-token" },
+			} as any);
+
+			const namespace = result.tools.find((tool: any) => tool.type === "namespace");
+			expect(result.tools).toContainEqual({ type: "tool_search" });
+			expect(namespace).toMatchObject({
+				type: "namespace",
+				name: "assistant_tools_1",
+			});
+			expect(namespace.tools[0]).toMatchObject({
+				type: "function",
+				defer_loading: true,
+			});
+		});
+
+		it("should add OpenAI image generation as a Responses API tool", async () => {
+			// @ts-ignore - getModelConfigByMatchingModel is not typed
+			vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
+				name: "gpt-5.5",
+				matchingModel: "gpt-5.5",
+				modalities: { input: ["text"], output: ["text"] },
+				supportsToolCalls: true,
+				supportsImageGenerationTool: true,
+				maxTokens: 128000,
+			});
+
+			vi.mocked(createCommonParameters).mockReturnValue({ model: "gpt-5.5" });
+			vi.mocked(shouldEnableStreaming).mockReturnValue(false);
+			vi.mocked(getToolsForProvider).mockReturnValue({ tools: [] });
+
+			const provider = new OpenAIProvider();
+
+			const result = await provider.mapParameters({
+				model: "gpt-5.5",
+				messages: [{ role: "user", content: "Generate an image" }],
+				enabled_tools: ["image_generation"],
+				options: {
+					openai: {
+						image_generation: {
+							size: "1536x1024",
+							quality: "high",
+						},
+					},
+				},
+				env: { AI_GATEWAY_TOKEN: "test-token" },
+			} as any);
+
+			expect(result.tools).toContainEqual({
+				type: "image_generation",
+				size: "1536x1024",
+				quality: "high",
+			});
 		});
 
 		it("should handle thinking model parameters in mapParameters", async () => {

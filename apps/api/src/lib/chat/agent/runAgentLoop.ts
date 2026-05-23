@@ -11,6 +11,7 @@ import { handleToolCalls } from "~/lib/chat/tools";
 import type { IRequest, Message, MessageContent } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
+import { isRecord } from "~/utils/objects";
 
 const DEFAULT_AGENT_MAX_STEPS = 8;
 const AGENT_MAX_RECOVERY_REPLANS = 2;
@@ -62,10 +63,6 @@ export interface AgentLoopExecutionParams {
 export interface AgentLoopExecutionResult {
 	response: ModelResponse;
 	toolResponses: Message[];
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-	return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
 function isMessageContentArray(value: unknown[]): value is MessageContent[] {

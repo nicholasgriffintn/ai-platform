@@ -7,6 +7,14 @@ export function isPlainObject(value: unknown): value is Record<string, unknown> 
 	return prototype === Object.prototype || prototype === null;
 }
 
+export function isRecord(value: unknown): value is Record<string, unknown> {
+	return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+export function isObjectOrArray(value: unknown): value is Record<string, unknown> | unknown[] {
+	return isRecord(value) || Array.isArray(value);
+}
+
 export function omitUndefinedValues<T>(value: T): T {
 	if (Array.isArray(value)) {
 		return value.map((item) => (item === undefined ? null : omitUndefinedValues(item))) as T;

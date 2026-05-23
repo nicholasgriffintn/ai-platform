@@ -84,7 +84,7 @@ describe("AnthropicProvider", () => {
 				"cf-aig-authorization": "test-token",
 				"x-api-key": "test-key",
 				"anthropic-version": "2023-06-01",
-				"anthropic-beta": "code-execution-2025-05-22",
+				"anthropic-beta": "code-execution-2025-08-25,web-fetch-2026-02-09",
 				"Content-Type": "application/json",
 				"cf-aig-metadata": JSON.stringify({
 					email: "test@example.com",
@@ -128,6 +128,43 @@ describe("AnthropicProvider", () => {
 				type: "web_search_20250305",
 				name: "web_search",
 				max_uses: 3,
+				cache_control: { type: "ephemeral" },
+			});
+		});
+
+		it("should add web fetch tool when enabled", async () => {
+			// @ts-ignore - getModelConfigByMatchingModel is not typed
+			vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
+				name: "claude-opus-4-7",
+				supportsToolCalls: true,
+				supportsWebFetch: true,
+				supportsCodeExecution: true,
+			});
+
+			vi.mocked(createCommonParameters).mockReturnValue({
+				model: "claude-opus-4-7",
+				temperature: 0.7,
+				max_tokens: 1024,
+			});
+
+			vi.mocked(shouldEnableStreaming).mockReturnValue(false);
+			vi.mocked(getToolsForProvider).mockReturnValue({ tools: [] });
+			vi.mocked(calculateReasoningBudget).mockReturnValue(2000);
+
+			const provider = new AnthropicProvider();
+
+			const result = await provider.mapParameters({
+				model: "claude-opus-4-7",
+				messages: [{ role: "user", content: "Fetch https://example.com" }],
+				enabled_tools: ["web_fetch", "code_execution"],
+				env: { AI_GATEWAY_TOKEN: "test-token" },
+			} as any);
+
+			expect(result.tools).toContainEqual({
+				type: "web_fetch_20260209",
+				name: "web_fetch",
+				max_uses: 5,
+				citations: { enabled: true },
 				cache_control: { type: "ephemeral" },
 			});
 		});

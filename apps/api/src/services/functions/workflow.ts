@@ -3,7 +3,9 @@ import type { IFunctionResponse, IRequest } from "~/types";
 import { jsonSchemaToZod } from "./jsonSchema";
 import type { ApiToolDefinition } from "./types";
 import { AssistantError, ErrorType } from "~/utils/errors";
+import { safeParseJson } from "~/utils/json";
 import { getLogger } from "~/utils/logger";
+import { isRecord } from "~/utils/objects";
 import { handleFunctions } from "./index";
 
 const logger = getLogger({ prefix: "services/functions/workflow" });
@@ -29,28 +31,20 @@ type WorkflowStepResult = {
 
 type WorkflowOutputs = Record<string, IFunctionResponse>;
 
-const parseArgs = (args?: Record<string, any> | string) => {
+const parseArgs = (args?: Record<string, any> | string): Record<string, any> => {
 	if (args === undefined) return {};
 	if (typeof args === "string") {
-		try {
-			const parsed = JSON.parse(args);
-			if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
-				throw new AssistantError(
-					"args must be a JSON object when provided as a string",
-					ErrorType.PARAMS_ERROR,
-				);
-			}
-			return parsed;
-		} catch (error) {
-			if (error instanceof AssistantError) throw error;
+		const parsed = safeParseJson(args);
+		if (!isRecord(parsed)) {
 			throw new AssistantError(
-				"args must be valid JSON when provided as a string",
+				"args must be a valid JSON object when provided as a string",
 				ErrorType.PARAMS_ERROR,
 			);
 		}
+		return parsed;
 	}
 
-	if (!args || typeof args !== "object" || Array.isArray(args)) {
+	if (!isRecord(args)) {
 		throw new AssistantError("args must be an object", ErrorType.PARAMS_ERROR);
 	}
 
@@ -112,50 +106,108 @@ const summarizeResult = (result: IFunctionResponse) => {
 	return trimmed;
 };
 
-const parseJsonArray = (value: unknown, label: string): any[] | undefined => {
-	if (typeof value !== "string") {
-		return value as any[] | undefined;
+const parseJsonArrayArgument = (value: unknown, label: string): unknown[] | undefined => {
+	if (value === undefined) {
+		return undefined;
 	}
 
-	try {
-		const parsed = JSON.parse(value);
-		if (!Array.isArray(parsed)) {
-			throw new AssistantError(
-				`${label} must be a JSON array when provided as a string`,
-				ErrorType.PARAMS_ERROR,
-			);
-		}
-		return parsed;
-	} catch (error) {
-		if (error instanceof AssistantError) throw error;
+	if (Array.isArray(value)) {
+		return value;
+	}
+
+	if (typeof value !== "string") {
+		throw new AssistantError(`${label} must be a JSON array`, ErrorType.PARAMS_ERROR);
+	}
+
+	const parsed = safeParseJson(value);
+	if (!Array.isArray(parsed)) {
 		throw new AssistantError(
-			`${label} must be valid JSON when provided as a string`,
+			`${label} must be a valid JSON array when provided as a string`,
 			ErrorType.PARAMS_ERROR,
 		);
 	}
+
+	return parsed;
+};
+
+const parseWorkflowSteps = (value: unknown, label: string): WorkflowStep[] | undefined => {
+	const steps = parseJsonArrayArgument(value, label);
+	if (!steps) {
+		return undefined;
+	}
+
+	return steps.map((step, index) => {
+		if (!isRecord(step)) {
+			throw new AssistantError(`${label}[${index}] must be an object`, ErrorType.PARAMS_ERROR);
+		}
+
+		if (typeof step.function !== "string") {
+			throw new AssistantError(
+				`${label}[${index}].function must be a string`,
+				ErrorType.PARAMS_ERROR,
+			);
+		}
+
+		const parsedStep: WorkflowStep = {
+			function: step.function,
+		};
+
+		if (step.args !== undefined) {
+			if (typeof step.args !== "string" && !isRecord(step.args)) {
+				throw new AssistantError(
+					`${label}[${index}].args must be an object or JSON string`,
+					ErrorType.PARAMS_ERROR,
+				);
+			}
+			parsedStep.args = step.args;
+		}
+
+		if (step.output_var !== undefined) {
+			if (typeof step.output_var !== "string") {
+				throw new AssistantError(
+					`${label}[${index}].output_var must be a string`,
+					ErrorType.PARAMS_ERROR,
+				);
+			}
+			parsedStep.output_var = step.output_var;
+		}
+
+		if (step.on_error !== undefined) {
+			if (step.on_error !== "stop" && step.on_error !== "skip") {
+				throw new AssistantError(
+					`${label}[${index}].on_error must be "stop" or "skip"`,
+					ErrorType.PARAMS_ERROR,
+				);
+			}
+			parsedStep.on_error = step.on_error;
+		}
+
+		return parsedStep;
+	});
 };
 
 const parseJsonObject = (value: unknown, label: string): Record<string, any> | undefined => {
-	if (typeof value !== "string") {
-		return value as Record<string, any> | undefined;
+	if (value === undefined) {
+		return undefined;
 	}
 
-	try {
-		const parsed = JSON.parse(value);
-		if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
-			throw new AssistantError(
-				`${label} must be a JSON object when provided as a string`,
-				ErrorType.PARAMS_ERROR,
-			);
-		}
-		return parsed;
-	} catch (error) {
-		if (error instanceof AssistantError) throw error;
+	if (isRecord(value)) {
+		return value;
+	}
+
+	if (typeof value !== "string") {
+		throw new AssistantError(`${label} must be a JSON object`, ErrorType.PARAMS_ERROR);
+	}
+
+	const parsed = safeParseJson(value);
+	if (!isRecord(parsed)) {
 		throw new AssistantError(
-			`${label} must be valid JSON when provided as a string`,
+			`${label} must be a valid JSON object when provided as a string`,
 			ErrorType.PARAMS_ERROR,
 		);
 	}
+
+	return parsed;
 };
 
 const normalizeCondition = (result: IFunctionResponse) => {
@@ -367,7 +419,7 @@ export const compose_functions: ApiToolDefinition = {
 		const app_url = context.appUrl;
 		const conversationManager = context.conversationManager;
 
-		const steps = parseJsonArray(args?.steps, "steps");
+		const steps = parseWorkflowSteps(args?.steps, "steps");
 		if (!Array.isArray(steps) || steps.length === 0) {
 			throw new AssistantError("steps must be a non-empty array", ErrorType.PARAMS_ERROR);
 		}
@@ -443,8 +495,8 @@ export const if_then_else: ApiToolDefinition = {
 		const conversationManager = context.conversationManager;
 
 		const condition = parseJsonObject(args?.condition, "condition");
-		const thenSteps = parseJsonArray(args?.then_steps, "then_steps");
-		const elseSteps = parseJsonArray(args?.else_steps, "else_steps");
+		const thenSteps = parseWorkflowSteps(args?.then_steps, "then_steps");
+		const elseSteps = parseWorkflowSteps(args?.else_steps, "else_steps");
 
 		if (!condition || typeof condition !== "object") {
 			throw new AssistantError(
@@ -567,7 +619,7 @@ export const parallel_execute: ApiToolDefinition = {
 		const app_url = context.appUrl;
 		const conversationManager = context.conversationManager;
 
-		const tasks = parseJsonArray(args?.tasks, "tasks");
+		const tasks = parseWorkflowSteps(args?.tasks, "tasks");
 		if (!Array.isArray(tasks) || tasks.length === 0) {
 			throw new AssistantError("tasks must be a non-empty array", ErrorType.PARAMS_ERROR);
 		}

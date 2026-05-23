@@ -110,4 +110,93 @@ describe("ChatService streaming", () => {
 		expect(result.id).toBe("assistant-2");
 		expect(result.content).toBe("Second turn");
 	});
+
+	it("sends provider options inside request options", async () => {
+		const fetchMock = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) =>
+			createSseResponse([data("[DONE]")]),
+		);
+		vi.stubGlobal("fetch", fetchMock);
+
+		const service = new ChatService(async () => ({}));
+
+		await service.streamChatCompletions(
+			"conversation-1",
+			[{ role: "user", content: "hello" } as Message],
+			"gpt-5",
+			"openai",
+			"remote",
+			{
+				tool_options: {
+					image_generation: {
+						size: "1024x1024",
+					},
+				},
+			},
+			new AbortController().signal,
+			() => {},
+			() => {},
+			true,
+			true,
+			false,
+			"/chat/completions",
+			["image_generation"],
+			{
+				image_generation: {
+					size: "1536x1024",
+					quality: "high",
+				},
+			},
+		);
+
+		const [, request] = fetchMock.mock.calls[0];
+		const body = JSON.parse(String(request?.body));
+
+		expect(body.tool_options).toBeUndefined();
+		expect(body.options.image_generation).toEqual({
+			size: "1536x1024",
+			quality: "high",
+		});
+		expect(body.enabled_tools).toEqual(["image_generation"]);
+	});
+
+	it("throws streamed provider errors without finalizing an empty assistant message", async () => {
+		vi.stubGlobal(
+			"fetch",
+			vi.fn(async () =>
+				createSseResponse([
+					data({
+						type: "error",
+						error: {
+							type: "insufficient_quota",
+							code: "insufficient_quota",
+							message: "Quota exceeded",
+						},
+					}),
+					data("[DONE]"),
+				]),
+			),
+		);
+
+		const service = new ChatService(async () => ({}));
+		const onProgress = vi.fn();
+
+		await expect(
+			service.streamChatCompletions(
+				"conversation-1",
+				[{ role: "user", content: "hello" } as Message],
+				"gpt-5.4-mini",
+				"openai",
+				"remote",
+				{},
+				new AbortController().signal,
+				onProgress,
+				() => {},
+			),
+		).rejects.toMatchObject({
+			code: "insufficient_quota",
+			message: "Quota exceeded",
+			status: 429,
+		});
+		expect(onProgress).not.toHaveBeenCalled();
+	});
 });

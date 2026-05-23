@@ -8,7 +8,52 @@ import type {
 } from "~/types";
 import { getSandboxModeToolNames } from "~/lib/sandbox/chat-mode";
 import { normalizeMessage, serialiseMessagesForChatRequest } from "../../messages";
-import { fetchApi, returnFetchedData } from "../fetch-wrapper";
+import { ApiError, fetchApi, returnFetchedData } from "../fetch-wrapper";
+
+const STREAM_ERROR_STATUS_BY_CODE: Record<string, number> = {
+	authentication_error: 401,
+	invalid_api_key: 401,
+	insufficient_quota: 429,
+	model_not_found: 404,
+	quota_exceeded: 429,
+	rate_limit_exceeded: 429,
+};
+
+function createStreamingApiError(errorPayload: unknown): ApiError {
+	if (!errorPayload || typeof errorPayload !== "object") {
+		return new ApiError("Streaming response failed", 500, errorPayload);
+	}
+
+	const payload = errorPayload as Record<string, unknown>;
+	const code =
+		typeof payload.code === "string"
+			? payload.code
+			: typeof payload.type === "string"
+				? payload.type
+				: undefined;
+	const message =
+		typeof payload.message === "string" && payload.message.trim().length > 0
+			? payload.message
+			: "Streaming response failed";
+	const status =
+		typeof payload.status === "number"
+			? payload.status
+			: code
+				? (STREAM_ERROR_STATUS_BY_CODE[code] ?? 500)
+				: 500;
+
+	return new ApiError(message, status, errorPayload, code);
+}
+
+function mergeRequestOptions(
+	chatSettings: ChatSettings,
+	requestOptions?: ChatRequestOptions,
+): ChatRequestOptions {
+	return {
+		...(chatSettings.tool_options || {}),
+		...(requestOptions || {}),
+	};
+}
 
 export class ChatService {
 	constructor(private getHeaders: () => Promise<Record<string, string>>) {}
@@ -336,8 +381,9 @@ export class ChatService {
 			? getSandboxModeToolNames(sandboxOptions.taskType)
 			: undefined;
 
+		const { tool_options: _toolOptions, ...requestSettings } = chatSettings;
 		const requestBody: Record<string, any> = {
-			...chatSettings,
+			...requestSettings,
 			completion_id,
 			mode,
 			messages: formattedMessages,
@@ -348,7 +394,7 @@ export class ChatService {
 			approved_tools: requestApprovedTools,
 			max_steps: sandboxOptions?.maxSteps ?? (sandboxOptions ? 2 : undefined),
 			use_multi_model,
-			options: requestOptions,
+			options: mergeRequestOptions(chatSettings, requestOptions),
 		};
 
 		if (model !== undefined) {
@@ -542,7 +588,9 @@ export class ChatService {
 							try {
 								const parsedData = JSON.parse(data);
 
-								if (parsedData.type === "content_block_delta") {
+								if (parsedData.type === "error") {
+									throw createStreamingApiError(parsedData.error);
+								} else if (parsedData.type === "content_block_delta") {
 									if (currentAssistantFinalized) {
 										resetAssistantState();
 									}
@@ -657,6 +705,9 @@ export class ChatService {
 									currentAssistantFinalized = true;
 								}
 							} catch (e) {
+								if (e instanceof ApiError) {
+									throw e;
+								}
 								console.error("Error parsing SSE data:", e, data);
 							}
 						}

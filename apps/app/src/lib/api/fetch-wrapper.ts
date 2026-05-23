@@ -29,14 +29,70 @@ type FetchApiOptions = Omit<RequestInit, "body"> & {
 
 export class ApiError extends Error {
 	status: number;
+	code?: string;
 	data?: unknown;
 
-	constructor(message: string, status: number, data?: unknown) {
+	constructor(message: string, status: number, data?: unknown, code?: string) {
 		super(message);
 		this.name = "ApiError";
 		this.status = status;
 		this.data = data;
+		this.code = code;
 	}
+}
+
+function extractApiErrorCode(parsed: unknown): string | undefined {
+	if (
+		parsed &&
+		typeof parsed === "object" &&
+		"error" in parsed &&
+		parsed.error &&
+		typeof parsed.error === "object" &&
+		"code" in parsed.error &&
+		typeof parsed.error.code === "string"
+	) {
+		return parsed.error.code;
+	}
+
+	if (parsed && typeof parsed === "object" && "code" in parsed && typeof parsed.code === "string") {
+		return parsed.code;
+	}
+
+	return undefined;
+}
+
+function extractApiErrorMessage(parsed: unknown, fallback: string): string {
+	if (
+		parsed &&
+		typeof parsed === "object" &&
+		"error" in parsed &&
+		parsed.error &&
+		typeof parsed.error === "object" &&
+		"message" in parsed.error &&
+		typeof parsed.error.message === "string"
+	) {
+		return parsed.error.message;
+	}
+
+	if (
+		parsed &&
+		typeof parsed === "object" &&
+		"error" in parsed &&
+		typeof parsed.error === "string"
+	) {
+		return parsed.error;
+	}
+
+	if (
+		parsed &&
+		typeof parsed === "object" &&
+		"message" in parsed &&
+		typeof parsed.message === "string"
+	) {
+		return parsed.message;
+	}
+
+	return fallback;
 }
 
 /**
@@ -138,12 +194,9 @@ export async function fetchApiOrThrow(
 		parsed = undefined;
 	}
 
-	const message =
-		parsed && typeof parsed === "object" && "error" in parsed && parsed.error
-			? String((parsed as { error: string }).error)
-			: response.statusText || "Request failed";
+	const message = extractApiErrorMessage(parsed, response.statusText || "Request failed");
 
-	throw new ApiError(message, response.status, parsed);
+	throw new ApiError(message, response.status, parsed, extractApiErrorCode(parsed));
 }
 
 export async function returnFetchedData<T>(response: Response): Promise<T> {

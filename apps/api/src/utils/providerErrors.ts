@@ -1,13 +1,11 @@
+import { isRecord } from "./objects";
+
 export interface ProviderErrorBody {
 	raw_status_code?: unknown;
 	code?: unknown;
 	type?: unknown;
 	message?: unknown;
 	error?: unknown;
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-	return typeof value === "object" && value !== null;
 }
 
 export function getProviderErrorMessage(

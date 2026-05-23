@@ -66,16 +66,15 @@ export class GoogleStudioProvider extends BaseProvider {
 			tools.push({
 				code_execution: {},
 			});
-		} else if (modelConfig?.supportsSearchGrounding && enabledTools.includes("search_grounding")) {
+		}
+
+		if (modelConfig?.supportsSearchGrounding && enabledTools.includes("search_grounding")) {
 			tools.push({
 				google_search: {},
 			});
 		}
 
-		const hasEnabledExclusiveTools =
-			enabledTools.includes("code_execution") || enabledTools.includes("search_grounding");
-
-		if (modelConfig?.supportsToolCalls && !hasEnabledExclusiveTools && params.tools?.length > 0) {
+		if (modelConfig?.supportsToolCalls && params.tools?.length > 0) {
 			const formattedTools = params.tools.map((tool) => ({
 				name: tool.function.name,
 				description: tool.function.description,

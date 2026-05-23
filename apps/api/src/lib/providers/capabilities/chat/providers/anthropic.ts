@@ -16,6 +16,7 @@ import { getAiGatewayMetadataHeaders, resolveAiGatewayCacheTtl } from "~/utils/a
 import { BaseProvider } from "./base";
 
 const logger = getLogger({ prefix: "lib/providers/anthropic" });
+const ANTHROPIC_BETA_FEATURES = ["code-execution-2025-08-25", "web-fetch-2026-02-09"].join(",");
 
 export class AnthropicProvider extends BaseProvider {
 	name = "anthropic";
@@ -44,7 +45,7 @@ export class AnthropicProvider extends BaseProvider {
 			...baseHeaders,
 			"x-api-key": apiKey,
 			"anthropic-version": "2023-06-01",
-			"anthropic-beta": "code-execution-2025-05-22",
+			"anthropic-beta": ANTHROPIC_BETA_FEATURES,
 		};
 	}
 
@@ -81,23 +82,31 @@ export class AnthropicProvider extends BaseProvider {
 			: {};
 
 		const toolsParams = getToolsForProvider(params, modelConfig, this.name);
+		const enabledTools = params.enabled_tools || [];
 
 		const tools = [];
 		if (modelConfig?.supportsToolCalls) {
-			if (
-				modelConfig?.supportsSearchGrounding &&
-				params.enabled_tools.includes("search_grounding")
-			) {
+			if (modelConfig?.supportsSearchGrounding && enabledTools.includes("search_grounding")) {
 				tools.push({
 					type: "web_search_20250305",
 					name: "web_search",
 					max_uses: 3,
 				});
 			}
-			if (modelConfig?.supportsCodeExecution && params.enabled_tools.includes("code_execution")) {
+			if (modelConfig?.supportsCodeExecution && enabledTools.includes("code_execution")) {
 				tools.push({
-					type: "code_execution_20250522",
+					type: "code_execution_20250825",
 					name: "code_execution",
+				});
+			}
+			if (modelConfig?.supportsWebFetch && enabledTools.includes("web_fetch")) {
+				const usesDynamicFiltering =
+					modelConfig?.supportsCodeExecution && enabledTools.includes("code_execution");
+				tools.push({
+					type: usesDynamicFiltering ? "web_fetch_20260209" : "web_fetch_20250910",
+					name: "web_fetch",
+					max_uses: 5,
+					citations: { enabled: true },
 				});
 			}
 		}

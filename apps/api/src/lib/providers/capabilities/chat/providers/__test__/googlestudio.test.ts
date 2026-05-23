@@ -135,5 +135,28 @@ describe("GoogleStudioProvider", () => {
 			});
 			expect(result.tools).toHaveLength(1);
 		});
+
+		it("should combine code execution and search grounding when both are enabled", async () => {
+			// @ts-ignore - getModelConfigByMatchingModel is not typed
+			vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
+				name: "gemini-pro",
+				supportsToolCalls: true,
+				supportsCodeExecution: true,
+				supportsSearchGrounding: true,
+			});
+
+			vi.mocked(getEffectiveMaxTokens).mockReturnValue(1024);
+
+			const provider = new GoogleStudioProvider();
+
+			const result = await provider.mapParameters({
+				model: "gemini-pro",
+				messages: [{ role: "user", content: "Search and calculate" }],
+				enabled_tools: ["code_execution", "search_grounding"],
+				env: { AI_GATEWAY_TOKEN: "test-token" },
+			} as any);
+
+			expect(result.tools).toEqual([{ code_execution: {} }, { google_search: {} }]);
+		});
 	});
 });

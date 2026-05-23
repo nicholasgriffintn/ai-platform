@@ -20,6 +20,7 @@ import {
 	CompactSettingSelect,
 	CompactSettingSwitch,
 } from "./CompactSettingControls";
+import { HostedToolSettings } from "./HostedToolSettings";
 import { ToolSelector } from "./ToolSelector";
 
 interface ChatSettingsProps {
@@ -335,6 +336,13 @@ export const ChatSettings = ({
 										</div>
 									</div>
 								)}
+
+								<HostedToolSettings
+									chatSettings={chatSettings}
+									isDisabled={isDisabled}
+									model={selectedModelConfig}
+									setChatSettings={setChatSettings}
+								/>
 							</TabsContent>
 						</Tabs>
 

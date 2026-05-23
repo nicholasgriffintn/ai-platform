@@ -81,6 +81,10 @@ export type ModelConfigItem = {
 	beta?: boolean;
 	supportsSearchGrounding?: boolean;
 	supportsCodeExecution?: boolean;
+	supportsImageGenerationTool?: boolean;
+	supportsToolSearch?: boolean;
+	supportsHostedShell?: boolean;
+	supportsWebFetch?: boolean;
 	supportsFim?: boolean;
 	supportsNextEdit?: boolean;
 	supportsApplyEdit?: boolean;

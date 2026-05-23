@@ -12,6 +12,7 @@ import type { ServiceContext } from "~/lib/context/serviceContext";
 import { executeDynamicApp } from "~/services/dynamic-apps";
 import type { IEnv, IRequest, IUser } from "~/types";
 import { generateId } from "~/utils/id";
+import { isRecord } from "~/utils/objects";
 
 interface GitHubConnectionCredentials {
 	appId: string;
@@ -25,10 +26,6 @@ export interface SandboxExecutionResult {
 	diff?: string;
 	error?: string;
 	responseId?: string;
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-	return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
 function buildRequest(params: { env: IEnv; user: IUser; context: ServiceContext }): IRequest {
