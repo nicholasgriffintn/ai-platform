@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import type { ModelConfig } from "~/types";
-import { getModelProvider, getModelsByMode } from "../models";
+import { getModelProvider, getModelsByMode, isTextOnlyModel } from "../models";
 
 describe("getModelsByMode", () => {
 	it("excludes embedding-only models from the selector", () => {
@@ -50,5 +50,41 @@ describe("getModelProvider", () => {
 
 	it("returns undefined when no model is selected", () => {
 		expect(getModelProvider({}, null)).toBeUndefined();
+	});
+});
+
+describe("isTextOnlyModel", () => {
+	it("allows models with only text input and output", () => {
+		expect(
+			isTextOnlyModel({
+				id: "deepseek-chat",
+				name: "DeepSeek Chat",
+				matchingModel: "deepseek-chat",
+				provider: "deepseek",
+				modalities: { input: ["text"], output: ["text"] },
+			}),
+		).toBe(true);
+	});
+
+	it("excludes multimodal and image output models", () => {
+		expect(
+			isTextOnlyModel({
+				id: "vision-model",
+				name: "Vision Model",
+				matchingModel: "vision-model",
+				provider: "openai",
+				modalities: { input: ["text", "image"], output: ["text"] },
+			}),
+		).toBe(false);
+
+		expect(
+			isTextOnlyModel({
+				id: "image-model",
+				name: "Image Model",
+				matchingModel: "image-model",
+				provider: "replicate",
+				modalities: { input: ["text"], output: ["image"] },
+			}),
+		).toBe(false);
 	});
 });

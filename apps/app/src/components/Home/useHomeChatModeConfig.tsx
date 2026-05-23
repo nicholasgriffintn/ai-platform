@@ -329,6 +329,7 @@ export function useHomeChatModeConfig(): {
 					requestOptions: {
 						...sandboxRequestOptions,
 					},
+					modelScope: "text-only",
 					conversationMode: buildConversationModeMetadata({
 						mode: "sandbox",
 						requestOptions: sandboxRequestOptions,
@@ -370,6 +371,7 @@ export function useHomeChatModeConfig(): {
 					followUp: "Ask the council to refine its decision...",
 				},
 				requestOptions: councilRequestOptions,
+				modelScope: "text-only",
 				conversationMode: buildConversationModeMetadata({
 					mode: "council",
 					requestOptions: councilRequestOptions,

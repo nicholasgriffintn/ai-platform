@@ -90,6 +90,7 @@ interface ChatInputProps {
 		activeControl?: ReactNode;
 		onClearActive?: () => void;
 	};
+	modelScope?: "default" | "text-only";
 	disableAttachments?: boolean;
 	hideDefaultControls?: boolean;
 	autoPlayResponses?: {
@@ -111,6 +112,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 			placeholder,
 			controls,
 			modeControls,
+			modelScope = "default",
 			disableAttachments = false,
 			hideDefaultControls = false,
 			autoPlayResponses,
@@ -744,14 +746,17 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 												className="w-80 rounded-xl p-2"
 											>
 												{modeControls.menu}
+												<ToolToggles
+													isDisabled={isLoading || isToolSelectionLocked}
+													variant="menu"
+												/>
 											</PopoverContent>
 										</Popover>
 									)}
 									<div className="min-w-0 flex-shrink">
-										<ModelSelector isDisabled={isLoading} mono={true} />
+										<ModelSelector isDisabled={isLoading} mono={true} modelScope={modelScope} />
 									</div>
 									<InlineResponseControls isDisabled={isLoading} />
-									<ToolToggles isDisabled={isLoading || isToolSelectionLocked} />
 								</div>
 								<div className="flex-shrink-0 flex items-center gap-2">
 									<ChatSettingsComponent

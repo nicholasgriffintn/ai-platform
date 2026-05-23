@@ -33,6 +33,18 @@ export function getModelProvider(models: ModelConfig, modelId?: string | null) {
 	return models[modelId]?.provider;
 }
 
+export function isTextOnlyModel(model: ModelConfigItem) {
+	const inputs = model.modalities?.input ?? ["text"];
+	const outputs = model.modalities?.output ?? inputs;
+
+	return (
+		inputs.length > 0 &&
+		outputs.length > 0 &&
+		inputs.every((modality) => modality === "text") &&
+		outputs.every((modality) => modality === "text")
+	);
+}
+
 export function getModelsByMode(models: ModelConfig, mode: ChatMode) {
 	return Object.entries(models).reduce(
 		(acc, [key, model]) => {

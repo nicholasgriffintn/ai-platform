@@ -51,6 +51,7 @@ export interface ConversationThreadModeConfig {
 		activeControl?: ReactNode;
 		onClearActive?: () => void;
 	};
+	modelScope?: "default" | "text-only";
 	analyticsSource?: string;
 	councilDebate?: {
 		enabled: boolean;
@@ -357,6 +358,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
 						placeholder={modeConfig?.inputPlaceholder}
 						controls={modeConfig?.inputControls}
 						modeControls={modeConfig?.modeControls}
+						modelScope={modeConfig?.modelScope}
 						autoPlayResponses={{
 							enabled: autoPlayResponsesEnabled,
 							isGenerating: isGeneratingAutoResponseSpeech,
