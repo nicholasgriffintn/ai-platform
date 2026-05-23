@@ -18,6 +18,7 @@ import { EventCategory, useTrackEvent } from "~/hooks/use-track-event";
 import { useChat } from "~/hooks/useChat";
 import { useChatManager } from "~/hooks/useChatManager";
 import { useModels } from "~/hooks/useModels";
+import type { AttachmentData } from "~/lib/chat/prepare-user-message";
 import { useIsLoading } from "~/state/contexts/LoadingContext";
 import { useChatStore } from "~/state/stores/chatStore";
 import type { ChatRequestOptions } from "~/types";
@@ -162,9 +163,9 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
 	);
 
 	const handleSubmit = useCallback(
-		async (e: FormEvent, attachmentData?: { type: string; data: string; name?: string }) => {
+		async (e: FormEvent, attachments?: AttachmentData[]) => {
 			e.preventDefault();
-			if (!chatInput.trim() && !attachmentData) {
+			if (!chatInput.trim() && !attachments?.length) {
 				return;
 			}
 
@@ -193,15 +194,17 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
 						source: modeConfig?.analyticsSource,
 						model_id: model || "unknown",
 						message_length: chatInput.length,
-						has_attachment: Boolean(attachmentData),
-						attachment_type: attachmentData ? attachmentData.type : undefined,
+						has_attachment: Boolean(attachments?.length),
+						attachment_count: attachments?.length ?? 0,
+						attachment_type: attachments?.[0]?.type,
+						attachment_types: attachments?.map((attachment) => attachment.type).join(","),
 						is_first_message: messages.length === 0,
 					},
 				});
 
 				const result = modeConfig?.councilDebate?.enabled
-					? await sendCouncilDebate(chatInput, attachmentData, modeConfig.councilDebate)
-					: await sendMessage(chatInput, attachmentData);
+					? await sendCouncilDebate(chatInput, attachments, modeConfig.councilDebate)
+					: await sendMessage(chatInput, attachments);
 				if (result?.status === "error") {
 					setChatInput(originalInput);
 				} else {

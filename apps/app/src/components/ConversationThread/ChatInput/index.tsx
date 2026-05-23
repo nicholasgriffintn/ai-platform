@@ -11,12 +11,10 @@ import {
 	useRef,
 	useState,
 } from "react";
-import type { MarkdownConversionOptions } from "@assistant/schemas";
-
 import { Button } from "~/components/ui";
 import { useModels } from "~/hooks/useModels";
 import { useVoiceRecorder } from "~/hooks/useVoiceRecorder";
-import { apiService } from "~/lib/api/api-service";
+import type { AttachmentData } from "~/lib/chat/prepare-user-message";
 import { useChatStore } from "~/state/stores/chatStore";
 import { useUIStore } from "~/state/stores/uiStore";
 import type { ModelConfigItem } from "~/types";
@@ -32,44 +30,14 @@ import type { ComposerCommandAction } from "./composerCommandTypes";
 import { InlineResponseControls } from "./InlineResponseControls";
 import { ModelSelector } from "./ModelSelector";
 import { useComposerCommandController } from "./useComposerCommandController";
-
-const SUPPORTED_MARKDOWN_IMAGE_LANGUAGES = [
-	"en",
-	"it",
-	"de",
-	"es",
-	"fr",
-	"pt",
-] as const satisfies ReadonlyArray<
-	NonNullable<NonNullable<MarkdownConversionOptions["image"]>["descriptionLanguage"]>
->;
-
-type MarkdownDescriptionLanguage = (typeof SUPPORTED_MARKDOWN_IMAGE_LANGUAGES)[number];
-
-function isMarkdownDescriptionLanguage(value: string): value is MarkdownDescriptionLanguage {
-	return SUPPORTED_MARKDOWN_IMAGE_LANGUAGES.some((language) => language === value);
-}
-
-function getPreferredMarkdownImageLanguage(): MarkdownDescriptionLanguage | undefined {
-	if (typeof navigator === "undefined") {
-		return undefined;
-	}
-
-	const preferredLanguage = navigator.language.split("-")[0]?.toLowerCase();
-	return preferredLanguage && isMarkdownDescriptionLanguage(preferredLanguage)
-		? preferredLanguage
-		: undefined;
-}
+import { uploadComposerAttachment } from "./uploadAttachment";
 
 export interface ChatInputHandle {
 	focus: () => void;
 }
 
 interface ChatInputProps {
-	handleSubmit: (
-		e: FormEvent,
-		attachmentData?: { type: string; data: string; name?: string },
-	) => void;
+	handleSubmit: (e: FormEvent, attachments?: AttachmentData[]) => void;
 	isLoading: boolean;
 	streamStarted: boolean;
 	controller: AbortController;
@@ -119,12 +87,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 		const { isRecording, isTranscribing, startRecording, stopRecording } = useVoiceRecorder({
 			onTranscribe,
 		});
-		const [selectedAttachment, setSelectedAttachment] = useState<{
-			type: string;
-			data: string;
-			name?: string;
-			markdown?: string;
-		} | null>(null);
+		const [selectedAttachments, setSelectedAttachments] = useState<AttachmentData[]>([]);
 		const [isMultimodalModel, setIsMultimodalModel] = useState(false);
 		const [isImageModel, setIsImageModel] = useState(false);
 		const [isTextToImageOnlyModel, setIsTextToImageOnlyModel] = useState(false);
@@ -234,8 +197,9 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 
 			if (e.key === "Enter" && !e.shiftKey) {
 				e.preventDefault();
-				clearSelectedAttachment();
-				handleSubmit(e as unknown as FormEvent, selectedAttachment || undefined);
+				const attachments = selectedAttachments.length > 0 ? selectedAttachments : undefined;
+				clearSelectedAttachments();
+				handleSubmit(e as unknown as FormEvent, attachments);
 			}
 			if (e.key === "Enter" && e.shiftKey) {
 				e.preventDefault();
@@ -259,170 +223,65 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 		};
 
 		const handleFileUpload = async (e: ChangeEvent<HTMLInputElement>) => {
-			const file = e.target.files?.[0];
-			if (!file) return;
-			if (isTextToImageOnlyModel) {
-				alert("This model does not support file uploads");
-				return;
-			}
-			if (isImageModel && !file.type.startsWith("image/")) {
-				alert("This model only supports image uploads");
+			const files = Array.from(e.target.files ?? []);
+			if (files.length === 0) {
 				return;
 			}
 
 			try {
 				setIsUploading(true);
+				const uploadedAttachments: AttachmentData[] = [];
 
-				if (file.type.startsWith("image/")) {
-					if (!isMultimodalModel && !isImageModel) {
-						if (!supportsDocuments) {
-							alert("This model does not support image uploads");
-							setIsUploading(false);
-							return;
-						}
-
-						const descriptionLanguage = getPreferredMarkdownImageLanguage();
-						const { url, name, markdown, type } = await apiService.uploadFile(file, "image", {
-							convertToMarkdown: true,
-							conversionOptions: descriptionLanguage
-								? {
-										image: {
-											descriptionLanguage,
-										},
-									}
-								: undefined,
-						});
-
-						if (type === "markdown_document" && markdown) {
-							setSelectedAttachment({
-								type: "markdown_document",
-								data: url,
-								name: name || file.name,
-								markdown,
-							});
-							setIsUploading(false);
-							return;
-						}
-
-						alert("This model does not support image uploads and conversion failed");
-						setIsUploading(false);
-						return;
-					}
-
-					const { url } = await apiService.uploadFile(file, "image");
-
-					setSelectedAttachment({
-						type: "image",
-						data: url,
-						name: file.name,
+				for (const file of files) {
+					const result = await uploadComposerAttachment(file, {
+						isImageModel,
+						isMultimodalModel,
+						isTextToImageOnlyModel,
+						supportsAudio,
+						supportsDocuments,
 					});
-					setIsUploading(false);
-					return;
-				}
 
-				if (file.type.startsWith("audio/")) {
-					if (!supportsAudio) {
-						alert("This model does not support audio uploads");
-						setIsUploading(false);
-						return;
-					}
-
-					const { url } = await apiService.uploadFile(file, "audio");
-
-					setSelectedAttachment({
-						type: "audio",
-						data: url,
-						name: file.name,
-					});
-					setIsUploading(false);
-					return;
-				}
-
-				const isMarkdownDocument = file.type === "text/markdown" || /\.mdx?$/i.test(file.name);
-				const codeLike =
-					!isMarkdownDocument &&
-					(file.type.startsWith("text/") ||
-						file.type === "application/javascript" ||
-						file.type === "application/typescript" ||
-						file.name.match(
-							/\.(ts|tsx|js|jsx|json|py|go|java|rb|php|rs|cs|kt|swift|scala|sh|yml|yaml|sql|toml|c|cc|cpp|cxx|hpp|h)$/i,
-						));
-
-				if (codeLike) {
-					const { url, name, markdown, type } = await apiService.uploadFile(file, "code");
-
-					if (type === "markdown_document" && markdown) {
-						setSelectedAttachment({
-							type: "markdown_document",
-							data: url,
-							name: name || file.name,
-							markdown: markdown,
-						});
-						setIsUploading(false);
-						return;
-					}
-				}
-
-				if (file.type === "application/pdf") {
-					if (supportsDocuments) {
-						const { url, name } = await apiService.uploadFile(file, "document");
-						setSelectedAttachment({
-							type: "document",
-							data: url,
-							name: name || file.name,
-						});
+					if ("error" in result) {
+						alert(result.error);
 					} else {
-						const { url, name, markdown, type } = await apiService.uploadFile(file, "document", {
-							convertToMarkdown: true,
-						});
-
-						if (type === "markdown_document" && markdown) {
-							setSelectedAttachment({
-								type: "markdown_document",
-								data: url,
-								name: name || file.name,
-								markdown: markdown,
-							});
-						} else {
-							alert("This model does not support document uploads and conversion failed");
-						}
+						uploadedAttachments.push(result.attachment);
 					}
-					setIsUploading(false);
-					return;
 				}
 
-				const { url, name, markdown, type } = await apiService.uploadFile(file, "document", {
-					convertToMarkdown: true,
-				});
-
-				if (type === "markdown_document" && markdown) {
-					setSelectedAttachment({
-						type: "markdown_document",
-						data: url,
-						name: name || file.name,
-						markdown: markdown,
-					});
-				} else {
-					alert("Unsupported file type or conversion failed");
+				if (uploadedAttachments.length > 0) {
+					setSelectedAttachments((currentAttachments) => [
+						...currentAttachments,
+						...uploadedAttachments,
+					]);
 				}
 			} catch (error) {
 				console.error("Failed to upload file:", error);
 				alert(`Failed to upload file: ${error instanceof Error ? error.message : "Unknown error"}`);
 			} finally {
 				setIsUploading(false);
+				if (fileInputRef.current) {
+					fileInputRef.current.value = "";
+				}
 			}
 		};
 
-		const clearSelectedAttachment = () => {
-			setSelectedAttachment(null);
+		const clearSelectedAttachments = () => {
+			setSelectedAttachments([]);
 			if (fileInputRef.current) {
 				fileInputRef.current.value = "";
 			}
 		};
 
+		const removeSelectedAttachment = (indexToRemove: number) => {
+			setSelectedAttachments((currentAttachments) =>
+				currentAttachments.filter((_, index) => index !== indexToRemove),
+			);
+		};
+
 		const handleFormSubmit = (e: FormEvent) => {
-			clearSelectedAttachment();
-			handleSubmit(e, selectedAttachment || undefined);
+			const attachments = selectedAttachments.length > 0 ? selectedAttachments : undefined;
+			clearSelectedAttachments();
+			handleSubmit(e, attachments);
 		};
 
 		const getFileTypeAccept = () => {
@@ -509,35 +368,28 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 			return <Paperclip className="h-4 w-4" />;
 		};
 
-		const getAttachmentIconAndLabel = () => {
-			if (selectedAttachment?.type === "image") {
+		const getAttachmentIconAndLabel = (attachment: AttachmentData) => {
+			if (attachment.type === "image") {
 				return {
 					preview: (
-						<img
-							src={selectedAttachment.data}
-							alt="Selected"
-							className="h-4 w-4 rounded object-cover"
-						/>
+						<img src={attachment.data} alt="Selected" className="h-4 w-4 rounded object-cover" />
 					),
 					label: "Image attached",
 				};
 			}
-			if (
-				selectedAttachment?.type === "document" ||
-				selectedAttachment?.type === "markdown_document"
-			) {
+			if (attachment.type === "document" || attachment.type === "markdown_document") {
 				return {
 					preview: <File className="h-3.5 w-3.5" aria-hidden="true" />,
 					label:
-						selectedAttachment?.type === "markdown_document"
-							? `${selectedAttachment.name || "Document"} (converted to text)`
-							: selectedAttachment.name || "Document attached",
+						attachment.type === "markdown_document"
+							? `${attachment.name || "Document"} (converted to text)`
+							: attachment.name || "Document attached",
 				};
 			}
-			if (selectedAttachment?.type === "audio") {
+			if (attachment.type === "audio") {
 				return {
 					preview: <Volume2 className="h-3.5 w-3.5" aria-hidden="true" />,
-					label: selectedAttachment.name || "Audio attached",
+					label: attachment.name || "Audio attached",
 				};
 			}
 			return { preview: null, label: "" };
@@ -545,9 +397,18 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 
 		const canUploadFiles = !disableAttachments && !isTextToImageOnlyModel;
 
-		const { preview, label } = selectedAttachment
-			? getAttachmentIconAndLabel()
-			: { preview: null, label: "" };
+		const attachmentChips = selectedAttachments.flatMap((attachment, index) => {
+			const { preview, label } = getAttachmentIconAndLabel(attachment);
+			return preview
+				? [
+						{
+							label,
+							onClear: () => removeSelectedAttachment(index),
+							preview,
+						},
+					]
+				: [];
+		});
 
 		const isToolSelectionLocked = chatMode === "agent" && selectedAgentId !== null;
 		const canUseProComposerActions = isPro;
@@ -564,15 +425,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 				<div className="flex flex-col">
 					<ComposerCommandChips
 						{...commandState}
-						attachment={
-							selectedAttachment && preview
-								? {
-										label,
-										onClear: clearSelectedAttachment,
-										preview,
-									}
-								: undefined
-						}
+						attachments={attachmentChips}
 						onClearMode={modeControls?.onClearActive}
 					/>
 					{canUploadFiles && (
@@ -584,6 +437,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 							className="hidden"
 							id={fileInputId}
 							aria-label="Upload a file (images, documents, audio, and code)"
+							multiple
 						/>
 					)}
 					<div className="relative">
@@ -657,7 +511,11 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 											type="submit"
 											onClick={handleFormSubmit}
 											disabled={
-												!!((!chatInput?.trim() && !selectedAttachment) || isLoading || isUploading)
+												!!(
+													(!chatInput?.trim() && selectedAttachments.length === 0) ||
+													isLoading ||
+													isUploading
+												)
 											}
 											className="cursor-pointer p-2.5 bg-black hover:bg-zinc-800 dark:bg-off-white dark:hover:bg-zinc-200 rounded-md text-white dark:text-black shadow-sm disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
 											title="Send message"

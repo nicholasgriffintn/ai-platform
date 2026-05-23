@@ -124,16 +124,8 @@ export function useChatManager(
 	} = useConversationActions(streamResponse, generateConversationTitle);
 
 	const sendMessage = useCallback(
-		async (
-			input: string,
-			attachmentData?: {
-				type: string;
-				data: string;
-				name?: string;
-				markdown?: string;
-			},
-		) => {
-			if (!input.trim() && !attachmentData) {
+		async (input: string, attachments?: AttachmentData[]) => {
+			if (!input.trim() && !attachments?.length) {
 				return {
 					status: "error",
 					response: "",
@@ -152,12 +144,7 @@ export function useChatManager(
 					startNewConversation(conversationId);
 				}
 
-				const userMessage = prepareUserMessage(
-					input,
-					attachmentData,
-					currentModel,
-					conversationMode,
-				);
+				const userMessage = prepareUserMessage(input, attachments, currentModel, conversationMode);
 
 				const cancelQueries = async () => {
 					await Promise.all([
@@ -210,10 +197,10 @@ export function useChatManager(
 	const sendCouncilDebate = useCallback(
 		async (
 			input: string,
-			attachmentData: AttachmentData | undefined,
+			attachments: AttachmentData[] | undefined,
 			debate: CouncilDebateOptions,
 		) => {
-			if (!input.trim() && !attachmentData) {
+			if (!input.trim() && !attachments?.length) {
 				return {
 					status: "error",
 					response: "",
@@ -234,12 +221,7 @@ export function useChatManager(
 					CHATS_QUERY_KEY,
 					conversationId,
 				]);
-				const userMessage = prepareUserMessage(
-					input,
-					attachmentData,
-					currentModel,
-					conversationMode,
-				);
+				const userMessage = prepareUserMessage(input, attachments, currentModel, conversationMode);
 
 				await Promise.all([
 					queryClient.cancelQueries({ queryKey: [CHATS_QUERY_KEY] }),

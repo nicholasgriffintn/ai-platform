@@ -119,16 +119,24 @@ describe("ComposerCommandSurface", () => {
 						isActive: true,
 					}),
 				]}
-				attachment={{
-					label: "README.md (converted to text)",
-					onClear: vi.fn(),
-					preview: <span aria-hidden="true">F</span>,
-				}}
+				attachments={[
+					{
+						label: "README.md (converted to text)",
+						onClear: vi.fn(),
+						preview: <span aria-hidden="true">F</span>,
+					},
+					{
+						label: "SPEC.md (converted to text)",
+						onClear: vi.fn(),
+						preview: <span aria-hidden="true">F</span>,
+					},
+				]}
 				setChatInput={vi.fn()}
 			/>,
 		);
 
 		expect(screen.getByText("README.md (converted to text)")).toBeInTheDocument();
+		expect(screen.getByText("SPEC.md (converted to text)")).toBeInTheDocument();
 		expect(screen.getByText("Sandbox")).toBeInTheDocument();
 		expect(screen.getByText("Reviewer")).toBeInTheDocument();
 		expect(document.querySelector('[data-composer-context-chip="attachment"]')).toHaveClass(

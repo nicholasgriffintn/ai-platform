@@ -24,12 +24,14 @@ describe("prepareUserMessage", () => {
 	it("builds multimodal content for markdown document attachments", () => {
 		const message = prepareUserMessage(
 			"review this",
-			{
-				type: "markdown_document",
-				data: "https://files.test/doc.md",
-				name: "doc.md",
-				markdown: "# Heading",
-			},
+			[
+				{
+					type: "markdown_document",
+					data: "https://files.test/doc.md",
+					name: "doc.md",
+					markdown: "# Heading",
+				},
+			],
 			"model-1",
 		);
 
@@ -48,11 +50,13 @@ describe("prepareUserMessage", () => {
 	it("builds audio content with the expected format", () => {
 		const message = prepareUserMessage(
 			"transcribe",
-			{
-				type: "audio",
-				data: "https://files.test/audio.wav",
-				name: "audio.wav",
-			},
+			[
+				{
+					type: "audio",
+					data: "https://files.test/audio.wav",
+					name: "audio.wav",
+				},
+			],
 			"model-1",
 		);
 
@@ -63,6 +67,44 @@ describe("prepareUserMessage", () => {
 				input_audio: {
 					data: "https://files.test/audio.wav",
 					format: "wav",
+				},
+			},
+		]);
+	});
+
+	it("builds multimodal content for multiple attachments", () => {
+		const message = prepareUserMessage(
+			"compare these",
+			[
+				{
+					type: "document",
+					data: "https://files.test/spec.pdf",
+					name: "spec.pdf",
+				},
+				{
+					type: "markdown_document",
+					data: "https://files.test/readme.md",
+					name: "readme.md",
+					markdown: "# Readme",
+				},
+			],
+			"model-1",
+		);
+
+		expect(message.content).toEqual([
+			{ type: "text", text: "compare these" },
+			{
+				type: "document_url",
+				document_url: {
+					url: "https://files.test/spec.pdf",
+					name: "spec.pdf",
+				},
+			},
+			{
+				type: "markdown_document",
+				markdown_document: {
+					markdown: "# Readme",
+					name: "readme.md",
 				},
 			},
 		]);

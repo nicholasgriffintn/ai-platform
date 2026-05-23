@@ -165,7 +165,7 @@ interface ComposerAttachmentChipState {
 
 export function ComposerCommandChips(
 	props: ComposerCommandsState & {
-		attachment?: ComposerAttachmentChipState;
+		attachments?: ComposerAttachmentChipState[];
 		onClearMode?: () => void;
 	},
 ) {
@@ -174,28 +174,29 @@ export function ComposerCommandChips(
 		(command) => command.isActive && command.command !== "chat",
 	);
 
-	if (!props.attachment && !activeMode && !selectedAgent) {
+	if (!props.attachments?.length && !activeMode && !selectedAgent) {
 		return null;
 	}
 
 	return (
 		<div className="flex flex-wrap items-center gap-2 px-3 pt-3">
-			{props.attachment && (
+			{props.attachments?.map((attachment, index) => (
 				<ContextChip
-					kind="attachment"
+					key={`${attachment.label}-${index}`}
 					className="border-amber-200 bg-amber-50 text-amber-900 dark:border-amber-900/60 dark:bg-amber-950/35 dark:text-amber-100"
+					kind="attachment"
 				>
 					<span className="flex h-4 w-4 shrink-0 items-center justify-center text-amber-700 dark:text-amber-200">
-						{props.attachment.preview}
+						{attachment.preview}
 					</span>
-					<span className="truncate">{props.attachment.label}</span>
+					<span className="truncate">{attachment.label}</span>
 					<ChipRemoveButton
-						onClick={props.attachment.onClear}
+						onClick={attachment.onClear}
 						className="rounded-sm text-amber-700 hover:text-amber-950 dark:text-amber-200 dark:hover:text-amber-50"
 						label="Remove attachment"
 					/>
 				</ContextChip>
-			)}
+			))}
 			{activeMode && (
 				<ContextChip
 					kind="mode"
