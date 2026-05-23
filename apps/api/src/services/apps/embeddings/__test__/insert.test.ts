@@ -170,6 +170,44 @@ describe("insertEmbedding", () => {
 		);
 	});
 
+	it("should preserve file metadata for single-chunk embeddings", async () => {
+		const req = {
+			user: mockUser,
+			env: mockEnv,
+			request: {
+				type: "document",
+				content: "Extracted file text",
+				file: {
+					data: "base64-file-data",
+					mimeType: "application/pdf",
+				},
+				id: "file-doc",
+				metadata: { author: "test" },
+				title: "File Document",
+				rag_options: { namespace: "custom-ns" },
+			},
+		};
+
+		mockGetEmbeddingNamespace.mockReturnValue("custom-ns");
+
+		const result = await insertEmbedding(req);
+
+		expect(result.status).toBe("success");
+		expect(mockEmbeddingProvider.generate).toHaveBeenCalledWith(
+			"document",
+			"Extracted file text",
+			"file-doc",
+			expect.objectContaining({
+				author: "test",
+				title: "File Document",
+				namespace: "custom-ns",
+				userId: "user-123",
+				fileData: "base64-file-data",
+				mimeType: "application/pdf",
+			}),
+		);
+	});
+
 	it("should throw error for missing type", async () => {
 		const req = {
 			user: mockUser,

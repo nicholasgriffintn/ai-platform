@@ -37,6 +37,12 @@ export class EmbeddingRepository extends BaseRepository {
 		if (!embedding && options.allowUnscopedFallback && options.namespace) {
 			embedding = await this.findEmbedding({
 				...conditions,
+				user_id: null,
+			});
+		}
+		if (!embedding && options.allowUnscopedFallback && options.namespace) {
+			embedding = await this.findEmbedding({
+				...conditions,
 				namespace: null,
 				user_id: null,
 			});

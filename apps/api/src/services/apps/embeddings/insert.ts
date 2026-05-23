@@ -145,7 +145,7 @@ export const insertEmbedding = async (req: IInsertEmbeddingRequest): Promise<any
 				allGenerated.push(...vecs);
 			}
 		} else {
-			allGenerated = await embedding.generate(type, content, id || uniqueId, scopedMetadata);
+			allGenerated = await embedding.generate(type, content, id || uniqueId, newMetadata);
 		}
 
 		const finalRagOptions = { ...rag_options, namespace: finalNamespace, userId: req.user?.id };
