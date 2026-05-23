@@ -1,35 +1,35 @@
 {
-	"name": "@assistant/sandbox-worker",
-	"version": "0.0.1",
-	"private": true,
-	"license": "Apache-2.0",
-	"main": "src/index.ts",
-	"scripts": {
-		"dev": "pnpm --filter @assistant/schemas build && wrangler dev src/index.ts",
-		"start": "pnpm --filter @assistant/schemas build && wrangler dev src/index.ts",
-		"test": "vitest run",
-		"test:watch": "vitest",
-		"coverage": "vitest run --coverage",
-		"cf-typegen": "wrangler types",
-		"format": "oxfmt",
-		"format:check": "oxfmt --check",
-		"lint": "pnpm oxlint",
-		"check": "pnpm lint && pnpm format:check",
-		"typecheck": "pnpm --filter @assistant/schemas build && tsc --noEmit",
-		"deploy": "pnpm --filter @assistant/schemas build && pnpm typecheck && wrangler deploy"
-	},
-	"dependencies": {
-		"@assistant/agent-core": "workspace:*",
-		"@assistant/schemas": "workspace:*",
-		"@cloudflare/sandbox": "0.10.2",
-		"zod": "4.4.3"
-	},
-	"devDependencies": {
-		"@cloudflare/workers-types": "4.20260523.1",
-		"@types/node": "25.9.1",
-		"oxfmt": "0.51.0",
-		"oxlint": "1.66.0",
-		"typescript": "6.0.3",
-		"wrangler": "4.94.0"
-	}
+  "name": "@assistant/sandbox-worker",
+  "version": "0.0.1",
+  "private": true,
+  "license": "Apache-2.0",
+  "main": "src/index.ts",
+  "scripts": {
+    "dev": "pnpm --filter @assistant/schemas build && wrangler dev src/index.ts",
+    "start": "pnpm --filter @assistant/schemas build && wrangler dev src/index.ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "coverage": "vitest run --coverage",
+    "cf-typegen": "wrangler types",
+    "format": "oxfmt",
+    "format:check": "oxfmt --check",
+    "lint": "pnpm oxlint",
+    "check": "pnpm lint && pnpm format:check",
+    "typecheck": "pnpm --filter @assistant/schemas build && tsc --noEmit",
+    "deploy": "pnpm --filter @assistant/schemas build && pnpm typecheck && wrangler deploy"
+  },
+  "dependencies": {
+    "@assistant/agent-core": "workspace:*",
+    "@assistant/schemas": "workspace:*",
+    "@cloudflare/sandbox": "0.10.2",
+    "zod": "4.4.3"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "4.20260521.1",
+    "@types/node": "25.9.1",
+    "oxfmt": "0.51.0",
+    "oxlint": "1.66.0",
+    "typescript": "6.0.3",
+    "wrangler": "4.94.0"
+  }
 }

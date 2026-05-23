@@ -4,3 +4,18 @@ packages:
 
 onlyBuiltDependencies:
   - better-sqlite3
+
+overrides:
+  '@ai-sdk/gateway': 3.0.119
+  ai: 6.0.190
+  '@aws-sdk/client-s3': 3.1052.0
+  '@aws-sdk/s3-request-presigner': 3.1052.0
+  '@aws-sdk/token-providers': 3.1052.0
+  '@scalar/client-side-rendering': 0.1.11
+  '@scalar/schemas': 0.3.1
+  '@scalar/types': 0.12.1
+  '@tanstack/query-core': 5.100.12
+  '@tanstack/query-devtools': 5.100.12
+  tinyexec: 1.2.0
+  tldts: 7.0.31
+  tldts-core: 7.0.31
