@@ -27,9 +27,13 @@ import {
 	type SandboxPromptStrategy,
 	type SandboxTaskType,
 } from "~/types/sandbox";
-import { HomeChatModeMenu, HomeChatModeTrigger } from "./HomeChatModeControls";
 import { SandboxChatModeControls } from "./SandboxChatModeControls";
-import { type HomeChatModeId, resolveHomeChatModeId } from "./chatModes";
+import {
+	HOME_CHAT_MODE_OPTIONS,
+	getHomeChatModeAvailability,
+	type HomeChatModeId,
+	resolveHomeChatModeId,
+} from "./chatModes";
 
 type CouncilResponseMode = "debate" | "single";
 
@@ -48,6 +52,8 @@ function useHomeChatModeConfig(): {
 		currentConversationId,
 		homeChatMode,
 		setHomeChatMode,
+		setChatMode,
+		setSelectedAgentId,
 		model: selectedModel,
 		chatSettings,
 		sandboxModeSettings,
@@ -116,6 +122,14 @@ function useHomeChatModeConfig(): {
 		}
 	}, [conversationModeMetadata, currentConversationId]);
 
+	useEffect(() => {
+		if (activeModeId === "chat") {
+			return;
+		}
+		setSelectedAgentId(null);
+		setChatMode("remote");
+	}, [activeModeId, setChatMode, setSelectedAgentId]);
+
 	const handleModeChange = useCallback(
 		(modeId: HomeChatModeId) => {
 			setActiveModeId(modeId);
@@ -125,10 +139,12 @@ function useHomeChatModeConfig(): {
 				next.delete("mode");
 			} else {
 				next.set("mode", modeId);
+				setSelectedAgentId(null);
+				setChatMode("remote");
 			}
 			setSearchParams(next, { replace: true });
 		},
-		[searchParams, setHomeChatMode, setSearchParams],
+		[searchParams, setChatMode, setHomeChatMode, setSearchParams, setSelectedAgentId],
 	);
 
 	const selectedSandboxRepoOption = useMemo(
@@ -295,15 +311,23 @@ function useHomeChatModeConfig(): {
 					? sandboxControls
 					: undefined;
 		const modeControls = {
-			menu: (
-				<HomeChatModeMenu
-					activeModeControls={activeModeControls}
-					activeModeId={activeModeId}
-					onModeChange={handleModeChange}
-				/>
-			),
+			activeModeControls,
+			commands: HOME_CHAT_MODE_OPTIONS.map((option) => {
+				const availability = getHomeChatModeAvailability(option, activeModeId);
+				const Icon = option.icon;
+				return {
+					id: option.id,
+					label: option.label,
+					description: option.description,
+					command: option.id,
+					icon: <Icon className="h-4 w-4" aria-hidden="true" />,
+					isActive: activeModeId === option.id,
+					disabled: availability.disabled,
+					disabledReason: availability.reason,
+					onSelect: () => handleModeChange(option.id),
+				};
+			}),
 			onClearActive: activeModeId === "chat" ? undefined : () => handleModeChange("chat"),
-			trigger: <HomeChatModeTrigger activeModeId={activeModeId} />,
 		};
 
 		if (activeModeId === "sandbox") {

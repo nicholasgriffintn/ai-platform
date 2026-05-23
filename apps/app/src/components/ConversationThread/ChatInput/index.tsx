@@ -1,4 +1,4 @@
-import { File, Image, Loader2, Paperclip, Pause, Send, Volume2, X, FileCode } from "lucide-react";
+import { File, Image, Loader2, Paperclip, Pause, Send, Volume2, FileCode } from "lucide-react";
 import {
 	type ChangeEvent,
 	type FormEvent,
@@ -23,9 +23,15 @@ import type { ModelConfigItem } from "~/types";
 import { ChatSettings as ChatSettingsComponent } from "./ChatSettings";
 import { ToolToggles } from "./ChatSettings/ToolToggles";
 import { ComposerActionMenu } from "./ComposerActionMenu";
-import { ComposerModeMenu } from "./ComposerModeMenu";
+import {
+	ComposerCommandButton,
+	ComposerCommandChips,
+	ComposerCommandSuggestions,
+} from "./ComposerCommandSurface";
+import type { ComposerCommandAction } from "./composerCommandTypes";
 import { InlineResponseControls } from "./InlineResponseControls";
 import { ModelSelector } from "./ModelSelector";
+import { useComposerCommandController } from "./useComposerCommandController";
 
 const SUPPORTED_MARKDOWN_IMAGE_LANGUAGES = [
 	"en",
@@ -74,10 +80,9 @@ interface ChatInputProps {
 	};
 	controls?: ReactNode;
 	modeControls?: {
-		menu: ReactNode;
-		activeControl?: ReactNode;
+		activeModeControls?: ReactNode;
+		commands?: ComposerCommandAction[];
 		onClearActive?: () => void;
-		trigger?: ReactNode;
 	};
 	modelScope?: "default" | "text-only";
 	disableAttachments?: boolean;
@@ -135,6 +140,13 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 		const textareaRef = useRef<HTMLTextAreaElement>(null);
 		const fileInputRef = useRef<HTMLInputElement>(null);
 		const fileInputId = useId();
+		const {
+			applyDirectiveSelection,
+			commandState,
+			directiveQuery,
+			moveActiveSuggestion,
+			setTextareaCursorPosition,
+		} = useComposerCommandController({ isLoading, modeControls });
 
 		useImperativeHandle(ref, () => ({
 			focus: () => {
@@ -189,6 +201,22 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 		}, [model, apiModels]);
 
 		const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
+			if ((e.key === "ArrowDown" || e.key === "ArrowUp") && directiveQuery) {
+				const didMove = moveActiveSuggestion(e.key === "ArrowDown" ? 1 : -1);
+				if (didMove) {
+					e.preventDefault();
+					return;
+				}
+			}
+
+			if ((e.key === "Enter" || e.key === "Tab") && directiveQuery) {
+				const didApplyDirective = applyDirectiveSelection();
+				if (didApplyDirective) {
+					e.preventDefault();
+					return;
+				}
+			}
+
 			if (
 				e.key === "Backspace" &&
 				e.currentTarget.selectionStart === 0 &&
@@ -226,6 +254,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 		};
 
 		const handleTextAreaInput = (e: ChangeEvent<HTMLTextAreaElement>) => {
+			setTextareaCursorPosition(e.target.selectionStart);
 			setChatInput(e.target.value);
 		};
 
@@ -487,7 +516,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 						<img
 							src={selectedAttachment.data}
 							alt="Selected"
-							className="h-6 w-6 rounded object-cover"
+							className="h-4 w-4 rounded object-cover"
 						/>
 					),
 					label: "Image attached",
@@ -498,7 +527,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 				selectedAttachment?.type === "markdown_document"
 			) {
 				return {
-					preview: <File className="h-6 w-6 text-zinc-600 dark:text-zinc-400" />,
+					preview: <File className="h-3.5 w-3.5" aria-hidden="true" />,
 					label:
 						selectedAttachment?.type === "markdown_document"
 							? `${selectedAttachment.name || "Document"} (converted to text)`
@@ -507,7 +536,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 			}
 			if (selectedAttachment?.type === "audio") {
 				return {
-					preview: <Volume2 className="h-6 w-6 text-zinc-600 dark:text-zinc-400" />,
+					preview: <Volume2 className="h-3.5 w-3.5" aria-hidden="true" />,
 					label: selectedAttachment.name || "Audio attached",
 				};
 			}
@@ -533,24 +562,19 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 				className="relative rounded-lg border border-zinc-200 dark:border-zinc-700 bg-off-white dark:bg-[#121212] shadow-sm hover:border-zinc-300 dark:hover:border-zinc-600 focus-within:border-zinc-300 dark:focus-within:border-zinc-500 transition-colors"
 			>
 				<div className="flex flex-col">
-					{selectedAttachment && (
-						<div className="px-3 pt-3">
-							<div className="relative inline-flex items-center gap-2 bg-zinc-50 dark:bg-zinc-800/50 rounded-md p-1.5 border border-zinc-200 dark:border-zinc-700">
-								{preview}
-								<span className="text-xs text-zinc-600 dark:text-zinc-400">{label}</span>
-								<Button
-									type="button"
-									onClick={clearSelectedAttachment}
-									variant="icon"
-									className="ml-1 text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200"
-									title="Remove attachment"
-									aria-label="Remove attachment"
-								>
-									<X size={14} />
-								</Button>
-							</div>
-						</div>
-					)}
+					<ComposerCommandChips
+						{...commandState}
+						attachment={
+							selectedAttachment && preview
+								? {
+										label,
+										onClear: clearSelectedAttachment,
+										preview,
+									}
+								: undefined
+						}
+						onClearMode={modeControls?.onClearActive}
+					/>
 					{canUploadFiles && (
 						<input
 							type="file"
@@ -563,22 +587,16 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 						/>
 					)}
 					<div className="relative">
+						<ComposerCommandSuggestions {...commandState} />
 						<div className="flex items-start">
 							<div className="flex min-w-0 flex-grow items-start gap-2 px-4 py-3">
-								{!hideDefaultControls && (
-									<ComposerModeMenu
-										align="start"
-										isDisabled={isLoading}
-										menu={modeControls?.menu}
-										side="bottom"
-										trigger={modeControls?.trigger ?? modeControls?.activeControl}
-									/>
-								)}
 								<textarea
 									id="message-input"
 									ref={textareaRef}
 									value={chatInput}
 									onChange={handleTextAreaInput}
+									onClick={(e) => setTextareaCursorPosition(e.currentTarget.selectionStart)}
+									onKeyUp={(e) => setTextareaCursorPosition(e.currentTarget.selectionStart)}
 									onKeyDown={handleKeyDown}
 									placeholder={
 										!currentConversationId
@@ -610,6 +628,31 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 									</Button>
 								) : (
 									<>
+										{!hideDefaultControls && canShowActionMenu && (
+											<ComposerActionMenu
+												autoPlayResponses={canUseProComposerActions ? autoPlayResponses : undefined}
+												canUseVoice={canUseProComposerActions}
+												canUploadFiles={canUseProComposerActions && canUploadFiles}
+												isDisabled={isLoading}
+												isRecording={isRecording}
+												isTranscribing={isTranscribing}
+												isUploading={isUploading}
+												onStartRecording={startRecording}
+												onStopRecording={stopRecording}
+												onUploadClick={() => fileInputRef.current?.click()}
+												tools={
+													canShowToolMenu ? (
+														<ToolToggles
+															isDisabled={isLoading || isToolSelectionLocked}
+															variant="menu"
+														/>
+													) : undefined
+												}
+												uploadIcon={getUploadButtonIcon()}
+												uploadLabel={`Upload ${isMultimodalModel || supportsAudio ? "files (images, audio, documents, code)" : "a Document or Code file"}`}
+											/>
+										)}
+										{!hideDefaultControls && <ComposerCommandButton {...commandState} />}
 										<Button
 											type="submit"
 											onClick={handleFormSubmit}
@@ -644,30 +687,6 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 						{!hideDefaultControls && (
 							<div className="flex items-center justify-between gap-1 sm:gap-2">
 								<div className="flex-1 min-w-0 max-w-[70%] sm:max-w-none flex items-center gap-2">
-									{canShowActionMenu && (
-										<ComposerActionMenu
-											autoPlayResponses={canUseProComposerActions ? autoPlayResponses : undefined}
-											canUseVoice={canUseProComposerActions}
-											canUploadFiles={canUseProComposerActions && canUploadFiles}
-											isDisabled={isLoading}
-											isRecording={isRecording}
-											isTranscribing={isTranscribing}
-											isUploading={isUploading}
-											onStartRecording={startRecording}
-											onStopRecording={stopRecording}
-											onUploadClick={() => fileInputRef.current?.click()}
-											tools={
-												canShowToolMenu ? (
-													<ToolToggles
-														isDisabled={isLoading || isToolSelectionLocked}
-														variant="menu"
-													/>
-												) : undefined
-											}
-											uploadIcon={getUploadButtonIcon()}
-											uploadLabel={`Upload ${isMultimodalModel || supportsAudio ? "files (images, audio, documents, code)" : "a Document or Code file"}`}
-										/>
-									)}
 									<div className="min-w-0 flex-shrink">
 										<ModelSelector isDisabled={isLoading} mono={true} modelScope={modelScope} />
 									</div>

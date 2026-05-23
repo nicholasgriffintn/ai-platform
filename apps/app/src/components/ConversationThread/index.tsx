@@ -25,6 +25,7 @@ import type { CouncilMemberId } from "@assistant/schemas";
 import type { ArtifactProps } from "~/types/artifact";
 import { ArtifactPanel } from "./Artifacts/ArtifactPanel";
 import { ChatInput, type ChatInputHandle } from "./ChatInput";
+import type { ComposerCommandAction } from "./ChatInput/composerCommandTypes";
 import { FooterInfo } from "./FooterInfo";
 import { MessageList } from "./MessageList";
 import { useAutoPlayResponses } from "./useAutoPlayResponses";
@@ -47,8 +48,8 @@ export interface ConversationThreadModeConfig {
 	};
 	inputControls?: ReactNode;
 	modeControls?: {
-		menu: ReactNode;
-		activeControl?: ReactNode;
+		activeModeControls?: ReactNode;
+		commands?: ComposerCommandAction[];
 		onClearActive?: () => void;
 	};
 	modelScope?: "default" | "text-only";

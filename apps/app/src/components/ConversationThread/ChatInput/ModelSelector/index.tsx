@@ -1,5 +1,4 @@
 import {
-	Bot,
 	ChevronDown,
 	ChevronUp,
 	Cloud,
@@ -16,7 +15,6 @@ import { type KeyboardEvent, useCallback, useEffect, useMemo, useRef, useState }
 
 import { ModelIcon } from "~/components/ModelIcon";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
-import { useAgentToolDefaults } from "~/hooks/useAgentToolDefaults";
 import { useAgents } from "~/hooks/useAgents";
 import { useModels } from "~/hooks/useModels";
 import { useTrackEvent } from "~/hooks/use-track-event";
@@ -38,7 +36,6 @@ import {
 import { useChatStore } from "~/state/stores/chatStore";
 import { useUIStore } from "~/state/stores/uiStore";
 import type { ChatMode, ChatSettings, ModelConfigItem } from "~/types";
-import { ModelOption } from "./ModelOption";
 import { ModelsList } from "./ModelsList";
 
 interface ModelSelectorProps {
@@ -258,7 +255,7 @@ export const ModelSelector = ({
 		selectedAgentId,
 		setSelectedAgentId,
 	} = useChatStore();
-	const { chatAgents: agents, isLoadingAgents } = useAgents();
+	const { chatAgents: agents } = useAgents();
 	const [isOpen, setIsOpen] = useState(false);
 	const [searchQuery, setSearchQuery] = useState("");
 	const [selectedCapability, setSelectedCapability] = useState<string | null>(null);
@@ -269,10 +266,9 @@ export const ModelSelector = ({
 	const dropdownRef = useRef<HTMLDivElement>(null);
 	const triggerWrapperRef = useRef<HTMLDivElement>(null);
 	const searchInputRef = useRef<HTMLInputElement>(null);
-	const [selectedTab, setSelectedTab] = useState<"auto" | "agent" | "models">(() => {
+	const [selectedTab, setSelectedTab] = useState<"auto" | "models">(() => {
 		if (modelScope === "text-only") return "models";
 		if (model === null) return "auto";
-		if (chatMode === "agent") return "agent";
 		return "models";
 	});
 
@@ -541,12 +537,6 @@ export const ModelSelector = ({
 	const selectedAgent = agents.find((agent) => agent.id === selectedAgentId);
 	const isModelLockedByAgent = Boolean(selectedAgent?.model);
 
-	useAgentToolDefaults({
-		agents,
-		selectedAgentId,
-		chatMode,
-	});
-
 	const currentAgentModel = selectedAgentId
 		? agents.find((agent) => agent.id === selectedAgentId)?.model
 		: null;
@@ -610,8 +600,6 @@ export const ModelSelector = ({
 							setSelectedTab("models");
 						} else if (model === null) {
 							setSelectedTab("auto");
-						} else if (chatMode === "agent") {
-							setSelectedTab("agent");
 						} else {
 							setSelectedTab("models");
 						}
@@ -732,7 +720,7 @@ export const ModelSelector = ({
 					<Tabs
 						value={selectedTab}
 						onValueChange={(value) => {
-							const tab = value as "auto" | "agent" | "models";
+							const tab = value as "auto" | "models";
 							if (isTextOnlyScope && tab !== "models") {
 								return;
 							}
@@ -745,14 +733,6 @@ export const ModelSelector = ({
 									localOnly: false,
 								};
 								selectModelWithDefaults(null, nextSettings);
-							} else if (tab === "agent") {
-								setChatMode("agent");
-								setSelectedAgentId(null);
-								const nextSettings = {
-									...chatSettings,
-									localOnly: false,
-								};
-								selectModelWithDefaults(defaultModel, nextSettings);
 							} else if (tab === "models") {
 								setChatMode("remote");
 								setSelectedAgentId(null);
@@ -767,14 +747,10 @@ export const ModelSelector = ({
 					>
 						{!isTextOnlyScope && (
 							<>
-								<TabsList className="grid h-auto w-full grid-cols-3 gap-1">
+								<TabsList className="grid h-auto w-full grid-cols-2 gap-1">
 									<TabsTrigger value="auto" className="min-w-0 px-2 py-2 text-xs sm:text-sm">
 										<Wand2 className="h-4 w-4" />
 										Automatic
-									</TabsTrigger>
-									<TabsTrigger value="agent" className="min-w-0 px-2 py-2 text-xs sm:text-sm">
-										<Bot className="h-4 w-4" />
-										Agents
 									</TabsTrigger>
 									<TabsTrigger value="models" className="min-w-0 px-2 py-2 text-xs sm:text-sm">
 										<Server className="h-4 w-4" />
@@ -786,82 +762,6 @@ export const ModelSelector = ({
 								<TabsContent value="auto" className="min-h-0 overflow-y-auto">
 									<div className="p-4 text-sm text-zinc-700 dark:text-zinc-300">
 										Automatic automatically selects the best agent or model based on your query.
-									</div>
-								</TabsContent>
-
-								<TabsContent value="agent" className="flex min-h-0 flex-col overflow-hidden">
-									<div className="flex min-h-0 flex-1 flex-col gap-3 pt-2">
-										<div className="max-h-[140px] overflow-y-auto rounded-lg border border-zinc-200/70 p-2 dark:border-zinc-700/70 sm:max-h-[140px]">
-											<h3
-												id="agents-heading"
-												className="mb-2 text-sm font-medium text-zinc-900 dark:text-zinc-100"
-											>
-												Agents
-											</h3>
-											<fieldset aria-labelledby="agents-heading">
-												{isLoadingAgents ? (
-													<div className="flex justify-center py-2">
-														<Loader2 className="h-5 w-5 animate-spin" />
-													</div>
-												) : agents.length === 0 ? (
-													<p className="text-xs text-zinc-500 dark:text-zinc-400">
-														No agents available.
-													</p>
-												) : (
-													<div className="space-y-1">
-														{agents.map((agent) => (
-															<ModelOption
-																key={agent.id}
-																model={{
-																	id: agent.id,
-																	matchingModel: agent.id,
-																	name: agent.name,
-																	provider: "agent",
-																	modalities: {
-																		input: ["text"],
-																		output: ["text"],
-																	},
-																	strengths: [],
-																	isFree: false,
-																	description: agent.description,
-																	avatarUrl: agent.avatar_url,
-																}}
-																isSelected={selectedAgentId === agent.id}
-																isActive={false}
-																onClick={() => {
-																	setSelectedAgentId(agent.id);
-																	setChatMode("agent");
-																	if (agent.model) {
-																		handleModelChange(agent.model);
-																		setIsOpen(false);
-																	}
-																}}
-																disabled={isDisabled}
-																mono={mono}
-																isTeamAgent={agent.is_team_agent}
-															/>
-														))}
-													</div>
-												)}
-											</fieldset>
-										</div>
-
-										<ModelsList
-											disabled={isModelLockedByAgent}
-											models={filteredModelList}
-											featuredModelIds={featuredModelIds}
-											isDisabled={isDisabled}
-											isPro={isPro}
-											selectedId={selectedModelInfo?.id}
-											onSelect={(id) => {
-												handleModelChange(id);
-												setIsOpen(false);
-											}}
-											mono={mono}
-											isSearchActive={isModelSearchActive}
-											onInfoHoverStart={handleInfoHoverStart}
-											onInfoHoverEnd={handleInfoHoverEnd}
-										/>
 									</div>
 								</TabsContent>
 							</>
@@ -904,6 +804,7 @@ export const ModelSelector = ({
 								</div>
 
 								<ModelsList
+									disabled={isModelLockedByAgent}
 									models={filteredModelList}
 									featuredModelIds={featuredModelIds}
 									isDisabled={isDisabled}
