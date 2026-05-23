@@ -1,4 +1,4 @@
-import { isRecord } from "./objects";
+import { isPlainObject } from "~/utils/objects";
 
 export interface ProviderErrorBody {
 	raw_status_code?: unknown;
@@ -43,7 +43,7 @@ export function isProviderRateLimit(
 }
 
 export function isProviderRateLimitError(error: unknown): boolean {
-	if (!isRecord(error)) {
+	if (!isPlainObject(error)) {
 		return false;
 	}
 
@@ -55,5 +55,5 @@ export function isProviderRateLimitError(error: unknown): boolean {
 		return true;
 	}
 
-	return isRecord(error.error) && isProviderRateLimit(0, error.error);
+	return isPlainObject(error.error) && isProviderRateLimit(0, error.error);
 }

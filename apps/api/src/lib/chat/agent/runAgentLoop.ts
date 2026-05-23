@@ -11,7 +11,7 @@ import { handleToolCalls } from "~/lib/chat/tools";
 import type { IRequest, Message, MessageContent } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
-import { isRecord } from "~/utils/objects";
+import { isPlainObject } from "~/utils/objects";
 
 const DEFAULT_AGENT_MAX_STEPS = 8;
 const AGENT_MAX_RECOVERY_REPLANS = 2;
@@ -96,7 +96,7 @@ function normaliseAgentContentForProvider(content: AgentMessage["content"]): Mes
 }
 
 function isMessage(value: unknown): value is Message {
-	if (!isRecord(value)) {
+	if (!isPlainObject(value)) {
 		return false;
 	}
 
@@ -143,7 +143,7 @@ function toProviderMessages(messages: AgentMessage[]): Message[] {
 
 		if ("tool_call_arguments" in message) {
 			const toolCallArguments = message.tool_call_arguments;
-			if (typeof toolCallArguments === "string" || isRecord(toolCallArguments)) {
+			if (typeof toolCallArguments === "string" || isPlainObject(toolCallArguments)) {
 				providerMessage.tool_call_arguments = toolCallArguments;
 			}
 		}
@@ -157,19 +157,19 @@ function toProviderMessages(messages: AgentMessage[]): Message[] {
 }
 
 function isModelToolCall(value: unknown): value is ModelToolCall {
-	if (!isRecord(value)) {
+	if (!isPlainObject(value)) {
 		return false;
 	}
 
 	if ("function" in value && value.function !== undefined && value.function !== null) {
-		return isRecord(value.function);
+		return isPlainObject(value.function);
 	}
 
 	return true;
 }
 
 function normaliseModelResponse(value: unknown): ModelResponse {
-	if (!isRecord(value)) {
+	if (!isPlainObject(value)) {
 		throw new AssistantError(
 			"Provider returned an invalid response shape",
 			ErrorType.PROVIDER_ERROR,
@@ -190,8 +190,8 @@ function normaliseModelResponse(value: unknown): ModelResponse {
 		citations,
 		data: value.data,
 		log_id: typeof value.log_id === "string" ? value.log_id : undefined,
-		usage: isRecord(value.usage) ? value.usage : undefined,
-		usageMetadata: isRecord(value.usageMetadata) ? value.usageMetadata : undefined,
+		usage: isPlainObject(value.usage) ? value.usage : undefined,
+		usageMetadata: isPlainObject(value.usageMetadata) ? value.usageMetadata : undefined,
 		status: typeof value.status === "string" ? value.status : undefined,
 		refusal:
 			typeof value.refusal === "string" ? value.refusal : value.refusal === null ? null : undefined,
@@ -210,7 +210,7 @@ function toToolCallInvocations(toolCalls: ModelToolCall[]): ToolCallInvocation[]
 
 function normaliseProviderToolCalls(toolCalls: ToolCallInvocation[]): Record<string, unknown>[] {
 	return toolCalls.map((toolCall) => {
-		if (isRecord(toolCall.raw)) {
+		if (isPlainObject(toolCall.raw)) {
 			return toolCall.raw;
 		}
 

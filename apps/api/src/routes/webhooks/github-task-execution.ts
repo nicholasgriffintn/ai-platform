@@ -12,7 +12,7 @@ import type { ServiceContext } from "~/lib/context/serviceContext";
 import { executeDynamicApp } from "~/services/dynamic-apps";
 import type { IEnv, IRequest, IUser } from "~/types";
 import { generateId } from "~/utils/id";
-import { isRecord } from "~/utils/objects";
+import { isPlainObject } from "~/utils/objects";
 
 interface GitHubConnectionCredentials {
 	appId: string;
@@ -75,7 +75,7 @@ export async function executeWebhookSandboxCommand(params: {
 
 		const responseId =
 			typeof execution.response_id === "string" ? execution.response_id : undefined;
-		const resultRecord = isRecord(execution.data?.result) ? execution.data.result : {};
+		const resultRecord = isPlainObject(execution.data?.result) ? execution.data.result : {};
 
 		return {
 			success: typeof resultRecord.success === "boolean" ? resultRecord.success : true,
