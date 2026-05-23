@@ -93,7 +93,7 @@
 		"terser": "5.48.0",
 		"typescript": "6.0.3",
 		"vite": "7.3.3",
-		"vite-plugin-babel": "1.6.0",
+		"vite-plugin-babel": "1.7.3",
 		"vite-tsconfig-paths": "6.1.1",
 		"vitest": "4.1.7",
 		"wrangler": "4.92.0"
