@@ -8,7 +8,7 @@
     "lint": "pnpm lint:monorepo && pnpm -r lint",
     "lint:monorepo": "sherif",
     "check": "pnpm -r check",
-    "typecheck": "pnpm -r typecheck",
+    "typecheck": "pnpm -r --workspace-concurrency=1 typecheck",
     "test": "vitest",
     "coverage": "vitest run --coverage",
     "dev:api": "pnpm --filter @assistant/api dev",

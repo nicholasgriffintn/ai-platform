@@ -1,13 +1,58 @@
-import { evalScope, noteToMidi, valueToMidi, Pattern } from "@strudel/core";
-import {
-	initAudioOnFirstClick,
-	registerSynthSounds,
-	samples,
-	aliasBank,
-	registerZZFXSounds,
-} from "@strudel/webaudio";
+import type { Pattern } from "@strudel/core";
 
-async function prebake() {
+type StrudelCoreModule = typeof import("@strudel/core");
+type StrudelWebAudioModule = typeof import("@strudel/webaudio");
+type StrudelCodeMirrorModule = typeof import("@strudel/codemirror");
+type StrudelTranspilerModule = typeof import("@strudel/transpiler");
+
+export interface StrudelRuntime {
+	StrudelMirror: StrudelCodeMirrorModule["StrudelMirror"];
+	getAudioContext: StrudelWebAudioModule["getAudioContext"];
+	webaudioOutput: StrudelWebAudioModule["webaudioOutput"];
+	transpiler: StrudelTranspilerModule["transpiler"];
+	prebake: () => Promise<void>;
+}
+
+let runtimePromise: Promise<StrudelRuntime> | null = null;
+
+export function sanitizeStrudelCode(code: string): string {
+	return code
+		.replace(/"([^"]*)"/g, (_, content: string) => {
+			const sanitized = content.replace(/[^a-zA-Z0-9~*/!?[\]@<>(),:._^\-\s]/g, "");
+			return `"${sanitized}"`;
+		})
+		.replace(/;+/g, "")
+		.replace(/```[a-z]*|```/g, "")
+		.trim();
+}
+
+export function loadStrudelRuntime(): Promise<StrudelRuntime> {
+	runtimePromise ??= loadRuntimeModules();
+	return runtimePromise;
+}
+
+async function loadRuntimeModules(): Promise<StrudelRuntime> {
+	const [core, webaudio, codemirror, transpiler] = await Promise.all([
+		import("@strudel/core"),
+		import("@strudel/webaudio"),
+		import("@strudel/codemirror"),
+		import("@strudel/transpiler"),
+	]);
+
+	return {
+		StrudelMirror: codemirror.StrudelMirror,
+		getAudioContext: webaudio.getAudioContext,
+		webaudioOutput: webaudio.webaudioOutput,
+		transpiler: transpiler.transpiler,
+		prebake: () => prebake(core, webaudio),
+	};
+}
+
+async function prebake(core: StrudelCoreModule, webaudio: StrudelWebAudioModule) {
+	const { evalScope, noteToMidi, valueToMidi, Pattern } = core;
+	const { initAudioOnFirstClick, registerSynthSounds, samples, aliasBank, registerZZFXSounds } =
+		webaudio;
+
 	initAudioOnFirstClick();
 
 	const modulesLoading = evalScope(
@@ -41,7 +86,13 @@ async function prebake() {
 
 	type StrudelValue = Record<string, unknown>;
 
-	Pattern.prototype.piano = function (this: any) {
+	type PianoPattern = Pattern & {
+		fmap(mapper: (value: unknown) => StrudelValue): PianoPattern;
+		s(sound: string): PianoPattern;
+		release(value: number): PianoPattern;
+	};
+
+	Pattern.prototype.piano = function (this: PianoPattern) {
 		return this.fmap((v: unknown) => {
 			const vObj = v as StrudelValue;
 			return {
@@ -63,5 +114,3 @@ async function prebake() {
 			});
 	};
 }
-
-export { prebake };
