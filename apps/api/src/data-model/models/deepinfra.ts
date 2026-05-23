@@ -87,7 +87,7 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 	}),
 
 	createModelConfig("anthropic/claude-3-7-sonnet-latest", PROVIDER, {
-		name: "Claude Sonnet 3.7 (Latest)",
+		name: "Claude Sonnet 3.7",
 		matchingModel: "anthropic/claude-3-7-sonnet-latest",
 		knowledgeCutoffDate: "October 31, 2024",
 		releaseDate: "March 13, 2025",
@@ -103,6 +103,10 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 64000,
 		costPer1kInputTokens: 0.0033,
 		costPer1kOutputTokens: 0.0165,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("anthropic/claude-4-opus", PROVIDER, {
@@ -122,6 +126,10 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 32000,
 		costPer1kInputTokens: 0.0165,
 		costPer1kOutputTokens: 0.0825,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("deepseek-ai/DeepSeek-R1-0528", PROVIDER, {
@@ -141,6 +149,10 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 64000,
 		costPer1kInputTokens: 0.0005,
 		costPer1kOutputTokens: 0.00215,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("deepseek-ai/DeepSeek-V3.2", PROVIDER, {
@@ -160,6 +172,10 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 64000,
 		costPer1kInputTokens: 0.00026,
 		costPer1kOutputTokens: 0.00038,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("MiniMaxAI/MiniMax-M2", PROVIDER, {
@@ -179,6 +195,10 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.000254,
 		costPer1kOutputTokens: 0.00102,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("MiniMaxAI/MiniMax-M2.1", PROVIDER, {
@@ -198,6 +218,10 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 196608,
 		costPer1kInputTokens: 0.00028,
 		costPer1kOutputTokens: 0.0012,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("moonshotai/Kimi-K2-Thinking", PROVIDER, {
@@ -217,6 +241,10 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.00047,
 		costPer1kOutputTokens: 0.002,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("moonshotai/Kimi-K2.5", PROVIDER, {
@@ -237,6 +265,10 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.0005,
 		costPer1kOutputTokens: 0.0028,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("openai/gpt-oss-120b", PROVIDER, {
@@ -255,6 +287,10 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00005,
 		costPer1kOutputTokens: 0.00024,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("openai/gpt-oss-20b", PROVIDER, {
@@ -273,6 +309,10 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00003,
 		costPer1kOutputTokens: 0.00014,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("zai-org/GLM-4.7", PROVIDER, {
@@ -292,6 +332,10 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00043,
 		costPer1kOutputTokens: 0.00175,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("zai-org/GLM-4.7-Flash", PROVIDER, {
@@ -311,6 +355,10 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00006,
 		costPer1kOutputTokens: 0.0004,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 	createModelConfig("deepseek-ai/DeepSeek-V4-Flash", PROVIDER, {
 		name: "DeepSeek V4 Flash",
@@ -330,6 +378,10 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 384000,
 		costPer1kInputTokens: 0.00014,
 		costPer1kOutputTokens: 0.00028,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("deepseek-ai/DeepSeek-V4-Pro", PROVIDER, {
@@ -350,6 +402,10 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.00174,
 		costPer1kOutputTokens: 0.00348,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("google/gemma-4-26B-A4B-it", PROVIDER, {
@@ -369,6 +425,10 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.00007,
 		costPer1kOutputTokens: 0.00034,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("google/gemma-4-31B-it", PROVIDER, {
@@ -388,6 +448,10 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.00013,
 		costPer1kOutputTokens: 0.00038,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("meta-llama/Llama-3.1-70B-Instruct", PROVIDER, {
@@ -526,25 +590,10 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.00027,
 		costPer1kOutputTokens: 0.00095,
-	}),
-
-	createModelConfig("moonshotai/Kimi-K2-Instruct-0905", PROVIDER, {
-		name: "Kimi K2 0905",
-		matchingModel: "moonshotai/Kimi-K2-Instruct-0905",
-		knowledgeCutoffDate: "October 2024",
-		releaseDate: "September 5, 2025",
-		lastUpdated: "September 5, 2025",
-		modalities: {
-			input: ["text"],
-			output: ["text"],
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
 		},
-		supportsAttachments: false,
-		supportsTemperature: true,
-		supportsToolCalls: true,
-		contextWindow: 262144,
-		maxTokens: 262144,
-		costPer1kInputTokens: 0.0004,
-		costPer1kOutputTokens: 0.002,
 	}),
 
 	createModelConfig("moonshotai/Kimi-K2.6", PROVIDER, {
@@ -565,6 +614,10 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00075,
 		costPer1kOutputTokens: 0.0035,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("Qwen/Qwen3.5-35B-A3B", PROVIDER, {
@@ -584,6 +637,10 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 81920,
 		costPer1kInputTokens: 0.0002,
 		costPer1kOutputTokens: 0.00095,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("Qwen/Qwen3.5-397B-A17B", PROVIDER, {
@@ -603,6 +660,10 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 81920,
 		costPer1kInputTokens: 0.00054,
 		costPer1kOutputTokens: 0.0034,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("Qwen/Qwen3.6-35B-A3B", PROVIDER, {
@@ -621,6 +682,10 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 81920,
 		costPer1kInputTokens: 0.0002,
 		costPer1kOutputTokens: 0.001,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("xiaomi/mimo-v2.5", PROVIDER, {
@@ -640,6 +705,10 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.0004,
 		costPer1kOutputTokens: 0.002,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("xiaomi/mimo-v2.5-pro", PROVIDER, {
@@ -659,6 +728,10 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.001,
 		costPer1kOutputTokens: 0.003,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("zai-org/GLM-4.6", PROVIDER, {
@@ -678,6 +751,10 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.00043,
 		costPer1kOutputTokens: 0.00174,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("zai-org/GLM-4.6V", PROVIDER, {
@@ -697,6 +774,10 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.0003,
 		costPer1kOutputTokens: 0.0009,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("zai-org/GLM-5", PROVIDER, {
@@ -716,6 +797,10 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.0008,
 		costPer1kOutputTokens: 0.00256,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("zai-org/GLM-5.1", PROVIDER, {
@@ -736,5 +821,9 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.0014,
 		costPer1kOutputTokens: 0.0044,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 ]);

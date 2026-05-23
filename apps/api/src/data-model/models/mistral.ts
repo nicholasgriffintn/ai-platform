@@ -52,33 +52,10 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		isFeatured: true,
 		includedInRouter: true,
 		supportsArtifacts: true,
-	}),
-
-	createModelConfig("devstral-small", PROVIDER, {
-		name: "Devstral Small",
-		matchingModel: "devstral-small-latest",
-		description: "Devstral Small is an agentic LLM for software engineering tasks.",
-		knowledgeCutoffDate: "May 2025",
-		releaseDate: "July 10, 2025",
-		lastUpdated: "July 10, 2025",
-		modalities: {
-			input: ["text"],
-			output: ["text"],
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
 		},
-		supportsAttachments: false,
-		supportsTemperature: true,
-		supportsToolCalls: true,
-		contextWindow: 128000,
-		maxTokens: 128000,
-		costPer1kInputTokens: 0.0001,
-		costPer1kOutputTokens: 0.0003,
-		strengths: ["coding", "analysis", "agents"],
-		contextComplexity: 3,
-		reliability: 4,
-		speed: 4,
-		includedInRouter: true,
-		supportsFim: true,
-		supportsArtifacts: true,
 	}),
 
 	createModelConfig("open-mixtral-8x22b", PROVIDER, {
@@ -109,7 +86,7 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 	}),
 
 	createModelConfig("mistral-large", PROVIDER, {
-		name: "Mistral Large (latest)",
+		name: "Mistral Large",
 		matchingModel: "mistral-large-latest",
 		description:
 			"Capable in code generation, mathematics, and reasoning with support for dozens of languages.",
@@ -165,7 +142,7 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 	}),
 
 	createModelConfig("pixtral-large", PROVIDER, {
-		name: "Pixtral Large (latest)",
+		name: "Pixtral Large",
 		matchingModel: "pixtral-large-latest",
 		description:
 			"Latest multimodal model with advanced vision capabilities for image understanding and analysis.",
@@ -195,7 +172,7 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 	}),
 
 	createModelConfig("mistral-medium", PROVIDER, {
-		name: "Mistral Medium (latest)",
+		name: "Mistral Medium",
 		matchingModel: "mistral-medium-latest",
 		description:
 			"Capable in code generation, mathematics, and reasoning with support for dozens of languages.",
@@ -223,10 +200,14 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		includedInRouter: true,
 		supportsArtifacts: true,
 		supportsResponseFormat: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("codestral", PROVIDER, {
-		name: "Codestral (latest)",
+		name: "Codestral",
 		matchingModel: "codestral-latest",
 		description:
 			"Codestral is Mistral AI's first-ever code model designed for code generation tasks.",
@@ -253,35 +234,6 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		includedInRouter: true,
 		supportsFim: true,
 		supportsArtifacts: true,
-	}),
-
-	createModelConfig("devstral-medium", PROVIDER, {
-		name: "Devstral Medium",
-		matchingModel: "devstral-medium-2507",
-		description:
-			"Devstral Medium offers exceptional performance at a competitive price point for software engineering.",
-		knowledgeCutoffDate: "May 2025",
-		releaseDate: "July 10, 2025",
-		lastUpdated: "July 10, 2025",
-		modalities: {
-			input: ["text"],
-			output: ["text"],
-		},
-		supportsAttachments: false,
-		supportsTemperature: true,
-		supportsToolCalls: true,
-		contextWindow: 128000,
-		maxTokens: 128000,
-		costPer1kInputTokens: 0.0004,
-		costPer1kOutputTokens: 0.002,
-		strengths: ["coding", "analysis", "agents"],
-		contextComplexity: 4,
-		reliability: 4,
-		speed: 3,
-		isFeatured: true,
-		includedInRouter: true,
-		supportsArtifacts: true,
-		supportsFim: true,
 	}),
 
 	createModelConfig("open-mixtral-8x7b", PROVIDER, {
@@ -338,7 +290,7 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 	}),
 
 	createModelConfig("mistral-small", PROVIDER, {
-		name: "Mistral Small (latest)",
+		name: "Mistral Small",
 		matchingModel: "mistral-small-latest",
 		description:
 			"Mistral Small is a lightweight model designed for cost-effective use in tasks like translation and summarization.",
@@ -365,6 +317,10 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		isFeatured: true,
 		includedInRouter: true,
 		supportsArtifacts: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("ministral-14b", PROVIDER, {
@@ -394,7 +350,7 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 	}),
 
 	createModelConfig("ministral-8b", PROVIDER, {
-		name: "Ministral 8B (latest)",
+		name: "Ministral 8B",
 		matchingModel: "ministral-8b-latest",
 		description:
 			"Ministral 3 8B is a powerful and efficient model in the Ministral 3 family, offering best-in-class text and vision capabilities. Built for edge deployment, it delivers high performance across diverse hardware, including local setups.",
@@ -423,7 +379,7 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 	}),
 
 	createModelConfig("ministral-3-3b", PROVIDER, {
-		name: "Ministral 3B (latest)",
+		name: "Ministral 3B",
 		matchingModel: "ministral-3b-latest",
 		description:
 			"Ministral 3 3B is the smallest and most efficient model in the Ministral 3 family, offering robust language and vision capabilities in a compact package. Designed for edge deployment, it delivers high performance across diverse hardware, including local setups.",
@@ -451,35 +407,8 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		lastUpdated: "October 4, 2024",
 	}),
 
-	createModelConfig("devstral-small-latest", PROVIDER, {
-		name: "Devstral Small 2505",
-		matchingModel: "devstral-small-latest",
-		description: "Earlier version of Devstral Small for software engineering tasks.",
-		knowledgeCutoffDate: "May 2025",
-		releaseDate: "May 7, 2025",
-		lastUpdated: "May 7, 2025",
-		modalities: {
-			input: ["text"],
-			output: ["text"],
-		},
-		supportsAttachments: false,
-		supportsTemperature: true,
-		supportsToolCalls: true,
-		contextWindow: 128000,
-		maxTokens: 128000,
-		costPer1kInputTokens: 0.0001,
-		costPer1kOutputTokens: 0.0003,
-		strengths: ["coding", "analysis"],
-		contextComplexity: 3,
-		reliability: 3,
-		speed: 4,
-		includedInRouter: false,
-		supportsArtifacts: true,
-		supportsFim: true,
-	}),
-
 	createModelConfig("magistral-medium", PROVIDER, {
-		name: "Magistral Medium (latest)",
+		name: "Magistral Medium",
 		matchingModel: "magistral-medium-latest",
 		description:
 			"Enhanced reasoning model by Mistral AI with improved capabilities for complex problem-solving.",
@@ -504,6 +433,10 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		isFeatured: true,
 		includedInRouter: true,
 		supportsArtifacts: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("mistral-tiny", PROVIDER, {
@@ -655,7 +588,7 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 	}),
 
 	createModelConfig("devstral-medium-latest", PROVIDER, {
-		name: "Devstral 2 (latest)",
+		name: "Devstral 2",
 		matchingModel: "devstral-medium-latest",
 		knowledgeCutoffDate: "December 2025",
 		releaseDate: "December 2, 2025",
@@ -671,25 +604,6 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 262144,
 		costPer1kInputTokens: 0.0004,
 		costPer1kOutputTokens: 0.002,
-	}),
-
-	createModelConfig("devstral-small-2505", PROVIDER, {
-		name: "Devstral Small 2505",
-		matchingModel: "devstral-small-2505",
-		knowledgeCutoffDate: "May 2025",
-		releaseDate: "May 7, 2025",
-		lastUpdated: "May 7, 2025",
-		modalities: {
-			input: ["text"],
-			output: ["text"],
-		},
-		supportsAttachments: false,
-		supportsTemperature: true,
-		supportsToolCalls: true,
-		contextWindow: 128000,
-		maxTokens: 128000,
-		costPer1kInputTokens: 0.0001,
-		costPer1kOutputTokens: 0.0003,
 	}),
 
 	createModelConfig("devstral-small-2507", PROVIDER, {
@@ -730,82 +644,6 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		costPer1kOutputTokens: 0,
 	}),
 
-	createModelConfig("mistral-large-2411", PROVIDER, {
-		name: "Mistral Large 2.1",
-		matchingModel: "mistral-large-2411",
-		knowledgeCutoffDate: "November 2024",
-		releaseDate: "November 1, 2024",
-		lastUpdated: "November 4, 2024",
-		modalities: {
-			input: ["text"],
-			output: ["text"],
-		},
-		supportsAttachments: false,
-		supportsTemperature: true,
-		supportsToolCalls: true,
-		contextWindow: 131072,
-		maxTokens: 16384,
-		costPer1kInputTokens: 0.002,
-		costPer1kOutputTokens: 0.006,
-	}),
-
-	createModelConfig("mistral-large-2512", PROVIDER, {
-		name: "Mistral Large 3",
-		matchingModel: "mistral-large-2512",
-		knowledgeCutoffDate: "November 2024",
-		releaseDate: "November 1, 2024",
-		lastUpdated: "December 2, 2025",
-		modalities: {
-			input: ["text", "image"],
-			output: ["text"],
-		},
-		supportsAttachments: true,
-		supportsTemperature: true,
-		supportsToolCalls: true,
-		contextWindow: 262144,
-		maxTokens: 262144,
-		costPer1kInputTokens: 0.0005,
-		costPer1kOutputTokens: 0.0015,
-	}),
-
-	createModelConfig("mistral-medium-2505", PROVIDER, {
-		name: "Mistral Medium 3",
-		matchingModel: "mistral-medium-2505",
-		knowledgeCutoffDate: "May 2025",
-		releaseDate: "May 7, 2025",
-		lastUpdated: "May 7, 2025",
-		modalities: {
-			input: ["text", "image"],
-			output: ["text"],
-		},
-		supportsAttachments: true,
-		supportsTemperature: true,
-		supportsToolCalls: true,
-		contextWindow: 131072,
-		maxTokens: 131072,
-		costPer1kInputTokens: 0.0004,
-		costPer1kOutputTokens: 0.002,
-	}),
-
-	createModelConfig("mistral-medium-2508", PROVIDER, {
-		name: "Mistral Medium 3.1",
-		matchingModel: "mistral-medium-2508",
-		knowledgeCutoffDate: "May 2025",
-		releaseDate: "August 12, 2025",
-		lastUpdated: "August 12, 2025",
-		modalities: {
-			input: ["text", "image"],
-			output: ["text"],
-		},
-		supportsAttachments: true,
-		supportsTemperature: true,
-		supportsToolCalls: true,
-		contextWindow: 262144,
-		maxTokens: 262144,
-		costPer1kInputTokens: 0.0004,
-		costPer1kOutputTokens: 0.002,
-	}),
-
 	createModelConfig("mistral-nemo", PROVIDER, {
 		name: "Mistral Nemo",
 		matchingModel: "mistral-nemo",
@@ -823,61 +661,5 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.00015,
 		costPer1kOutputTokens: 0.00015,
-	}),
-
-	createModelConfig("mistral-small-2506", PROVIDER, {
-		name: "Mistral Small 3.2",
-		matchingModel: "mistral-small-2506",
-		knowledgeCutoffDate: "March 2025",
-		releaseDate: "June 20, 2025",
-		lastUpdated: "June 20, 2025",
-		modalities: {
-			input: ["text", "image"],
-			output: ["text"],
-		},
-		supportsAttachments: false,
-		supportsTemperature: true,
-		supportsToolCalls: true,
-		contextWindow: 128000,
-		maxTokens: 16384,
-		costPer1kInputTokens: 0.0001,
-		costPer1kOutputTokens: 0.0003,
-	}),
-	createModelConfig("mistral-medium-2604", PROVIDER, {
-		name: "Mistral Medium 3.5",
-		matchingModel: "mistral-medium-2604",
-		releaseDate: "April 29, 2026",
-		lastUpdated: "April 29, 2026",
-		modalities: {
-			input: ["text", "image"],
-			output: ["text"],
-		},
-		supportsAttachments: true,
-		supportsTemperature: true,
-		supportsToolCalls: true,
-		supportsResponseFormat: true,
-		contextWindow: 262144,
-		maxTokens: 262144,
-		costPer1kInputTokens: 0.0015,
-		costPer1kOutputTokens: 0.0075,
-	}),
-
-	createModelConfig("mistral-small-2603", PROVIDER, {
-		name: "Mistral Small 4",
-		matchingModel: "mistral-small-2603",
-		knowledgeCutoffDate: "June 2025",
-		releaseDate: "March 16, 2026",
-		lastUpdated: "March 16, 2026",
-		modalities: {
-			input: ["text", "image"],
-			output: ["text"],
-		},
-		supportsAttachments: true,
-		supportsTemperature: true,
-		supportsToolCalls: true,
-		contextWindow: 256000,
-		maxTokens: 256000,
-		costPer1kInputTokens: 0.00015,
-		costPer1kOutputTokens: 0.0006,
 	}),
 ]);

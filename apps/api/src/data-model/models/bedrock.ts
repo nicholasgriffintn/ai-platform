@@ -219,6 +219,10 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		supportsResponseFormat: false,
 		costPer1kInputTokens: 0.0003,
 		costPer1kOutputTokens: 0.0012,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("moonshot.kimi-k2-thinking", PROVIDER, {
@@ -240,6 +244,10 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		costPer1kInputTokens: 0.0006,
 		costPer1kOutputTokens: 0.0025,
 		supportsResponseFormat: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("nvidia.nemotron-nano-12b-v2", PROVIDER, {
@@ -317,6 +325,10 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		supportsDocuments: true,
 		supportsPromptCaching: true,
 		supportsResponseFormat: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("anthropic.claude-sonnet-4", PROVIDER, {
@@ -447,6 +459,10 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		supportsToolCalls: true,
 		isFeatured: false,
 		supportsPromptCaching: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("anthropic.claude-3-7-sonnet", PROVIDER, {
@@ -726,6 +742,10 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		reliability: 4,
 		speed: 3,
 		supportsToolCalls: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("twelvelabs.marengo-embed-2-7-v1", PROVIDER, {
@@ -989,6 +1009,10 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		costPer1kInputTokens: 0.001,
 		costPer1kOutputTokens: 0.005,
 		supportsResponseFormat: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("anthropic.claude-instant-v1", PROVIDER, {
@@ -1027,6 +1051,10 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 32000,
 		costPer1kInputTokens: 0.015,
 		costPer1kOutputTokens: 0.075,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("anthropic.claude-opus-4-20250514-v1:0", PROVIDER, {
@@ -1066,6 +1094,10 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		costPer1kInputTokens: 0.005,
 		costPer1kOutputTokens: 0.025,
 		supportsResponseFormat: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("anthropic.claude-opus-4-6-v1", PROVIDER, {
@@ -1086,6 +1118,10 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		costPer1kInputTokens: 0.005,
 		costPer1kOutputTokens: 0.025,
 		supportsResponseFormat: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("anthropic.claude-sonnet-4-20250514-v1:0", PROVIDER, {
@@ -1125,6 +1161,10 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		costPer1kInputTokens: 0.003,
 		costPer1kOutputTokens: 0.015,
 		supportsResponseFormat: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("anthropic.claude-v2", PROVIDER, {
@@ -1221,6 +1261,10 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		costPer1kInputTokens: 0.00058,
 		costPer1kOutputTokens: 0.00168,
 		supportsResponseFormat: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("eu.anthropic.claude-haiku-4-5-20251001-v1:0", PROVIDER, {
@@ -1241,6 +1285,10 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		costPer1kInputTokens: 0.001,
 		costPer1kOutputTokens: 0.005,
 		supportsResponseFormat: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("eu.anthropic.claude-opus-4-5-20251101-v1:0", PROVIDER, {
@@ -1261,6 +1309,10 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		costPer1kInputTokens: 0.005,
 		costPer1kOutputTokens: 0.025,
 		supportsResponseFormat: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("eu.anthropic.claude-opus-4-6-v1", PROVIDER, {
@@ -1281,6 +1333,10 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		costPer1kInputTokens: 0.005,
 		costPer1kOutputTokens: 0.025,
 		supportsResponseFormat: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("eu.anthropic.claude-sonnet-4-20250514-v1:0", PROVIDER, {
@@ -1320,6 +1376,10 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		costPer1kInputTokens: 0.003,
 		costPer1kOutputTokens: 0.015,
 		supportsResponseFormat: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("global.anthropic.claude-haiku-4-5-20251001-v1:0", PROVIDER, {
@@ -1340,6 +1400,10 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		costPer1kInputTokens: 0.001,
 		costPer1kOutputTokens: 0.005,
 		supportsResponseFormat: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("global.anthropic.claude-opus-4-5-20251101-v1:0", PROVIDER, {
@@ -1360,6 +1424,10 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		costPer1kInputTokens: 0.005,
 		costPer1kOutputTokens: 0.025,
 		supportsResponseFormat: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("global.anthropic.claude-opus-4-6-v1", PROVIDER, {
@@ -1380,6 +1448,10 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		costPer1kInputTokens: 0.005,
 		costPer1kOutputTokens: 0.025,
 		supportsResponseFormat: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("global.anthropic.claude-sonnet-4-20250514-v1:0", PROVIDER, {
@@ -1419,6 +1491,10 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		costPer1kInputTokens: 0.003,
 		costPer1kOutputTokens: 0.015,
 		supportsResponseFormat: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("google.gemma-3-12b-it", PROVIDER, {
@@ -1667,6 +1743,10 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.0003,
 		costPer1kOutputTokens: 0.0012,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("mistral.ministral-3-14b-instruct", PROVIDER, {
@@ -1818,6 +1898,10 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		costPer1kInputTokens: 0.0006,
 		costPer1kOutputTokens: 0.003,
 		supportsResponseFormat: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("openai.gpt-oss-120b-1:0", PROVIDER, {
@@ -1896,6 +1980,10 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		costPer1kInputTokens: 0.00015,
 		costPer1kOutputTokens: 0.0006,
 		supportsResponseFormat: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("qwen.qwen3-coder-30b-a3b-v1:0", PROVIDER, {
@@ -1994,6 +2082,10 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		costPer1kInputTokens: 0.001,
 		costPer1kOutputTokens: 0.005,
 		supportsResponseFormat: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("us.anthropic.claude-opus-4-5-20251101-v1:0", PROVIDER, {
@@ -2014,6 +2106,10 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		costPer1kInputTokens: 0.005,
 		costPer1kOutputTokens: 0.025,
 		supportsResponseFormat: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("us.anthropic.claude-opus-4-6-v1", PROVIDER, {
@@ -2034,6 +2130,10 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		costPer1kInputTokens: 0.005,
 		costPer1kOutputTokens: 0.025,
 		supportsResponseFormat: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("zai.glm-4.7", PROVIDER, {
@@ -2054,6 +2154,10 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		costPer1kInputTokens: 0.0006,
 		costPer1kOutputTokens: 0.0022,
 		supportsResponseFormat: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("zai.glm-4.7-flash", PROVIDER, {
@@ -2074,6 +2178,10 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		costPer1kInputTokens: 0.00007,
 		costPer1kOutputTokens: 0.0004,
 		supportsResponseFormat: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 	createModelConfig("anthropic.claude-opus-4-7", PROVIDER, {
 		name: "Claude Opus 4.7",
@@ -2092,6 +2200,10 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.005,
 		costPer1kOutputTokens: 0.025,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("anthropic.claude-sonnet-4-6", PROVIDER, {
@@ -2112,6 +2224,10 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 64000,
 		costPer1kInputTokens: 0.003,
 		costPer1kOutputTokens: 0.015,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("au.anthropic.claude-haiku-4-5-20251001-v1:0", PROVIDER, {
@@ -2132,6 +2248,10 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 64000,
 		costPer1kInputTokens: 0.001,
 		costPer1kOutputTokens: 0.005,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("au.anthropic.claude-opus-4-6-v1", PROVIDER, {
@@ -2152,6 +2272,10 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.0165,
 		costPer1kOutputTokens: 0.0825,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("au.anthropic.claude-sonnet-4-5-20250929-v1:0", PROVIDER, {
@@ -2172,6 +2296,10 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 64000,
 		costPer1kInputTokens: 0.003,
 		costPer1kOutputTokens: 0.015,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("au.anthropic.claude-sonnet-4-6", PROVIDER, {
@@ -2192,6 +2320,10 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.0033,
 		costPer1kOutputTokens: 0.0165,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("deepseek.v3.2", PROVIDER, {
@@ -2212,6 +2344,10 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 81920,
 		costPer1kInputTokens: 0.00062,
 		costPer1kOutputTokens: 0.00185,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("eu.anthropic.claude-opus-4-7", PROVIDER, {
@@ -2231,6 +2367,10 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.005,
 		costPer1kOutputTokens: 0.025,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("eu.anthropic.claude-sonnet-4-6", PROVIDER, {
@@ -2251,6 +2391,10 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 64000,
 		costPer1kInputTokens: 0.003,
 		costPer1kOutputTokens: 0.015,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("global.anthropic.claude-opus-4-7", PROVIDER, {
@@ -2270,6 +2414,10 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.005,
 		costPer1kOutputTokens: 0.025,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("global.anthropic.claude-sonnet-4-6", PROVIDER, {
@@ -2290,6 +2438,10 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 64000,
 		costPer1kInputTokens: 0.003,
 		costPer1kOutputTokens: 0.015,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("jp.anthropic.claude-opus-4-7", PROVIDER, {
@@ -2309,6 +2461,10 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.005,
 		costPer1kOutputTokens: 0.025,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("jp.anthropic.claude-sonnet-4-5-20250929-v1:0", PROVIDER, {
@@ -2329,6 +2485,10 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 64000,
 		costPer1kInputTokens: 0.003,
 		costPer1kOutputTokens: 0.015,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("jp.anthropic.claude-sonnet-4-6", PROVIDER, {
@@ -2349,6 +2509,10 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 64000,
 		costPer1kInputTokens: 0.003,
 		costPer1kOutputTokens: 0.015,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("minimax.minimax-m2.5", PROVIDER, {
@@ -2368,6 +2532,10 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 98304,
 		costPer1kInputTokens: 0.0003,
 		costPer1kOutputTokens: 0.0012,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("mistral.devstral-2-123b", PROVIDER, {
@@ -2406,6 +2574,10 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 40000,
 		costPer1kInputTokens: 0.0005,
 		costPer1kOutputTokens: 0.0015,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("mistral.ministral-3-3b-instruct", PROVIDER, {
@@ -2481,6 +2653,10 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 4096,
 		costPer1kInputTokens: 0.00006,
 		costPer1kOutputTokens: 0.00024,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("nvidia.nemotron-super-3-120b", PROVIDER, {
@@ -2500,6 +2676,10 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.00015,
 		costPer1kOutputTokens: 0.00065,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("qwen.qwen3-coder-next", PROVIDER, {
@@ -2519,6 +2699,10 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.00022,
 		costPer1kOutputTokens: 0.0018,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("us.anthropic.claude-opus-4-7", PROVIDER, {
@@ -2538,6 +2722,10 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.005,
 		costPer1kOutputTokens: 0.025,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("us.anthropic.claude-sonnet-4-6", PROVIDER, {
@@ -2558,6 +2746,10 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 64000,
 		costPer1kInputTokens: 0.003,
 		costPer1kOutputTokens: 0.015,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("us.deepseek.r1-v1:0", PROVIDER, {
@@ -2577,6 +2769,10 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.00135,
 		costPer1kOutputTokens: 0.0054,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("us.meta.llama4-maverick-17b-instruct-v1:0", PROVIDER, {
@@ -2633,6 +2829,10 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 8192,
 		costPer1kInputTokens: 0.0025,
 		costPer1kOutputTokens: 0.01,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("writer.palmyra-x5-v1:0", PROVIDER, {
@@ -2651,6 +2851,10 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 8192,
 		costPer1kInputTokens: 0.0006,
 		costPer1kOutputTokens: 0.006,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("zai.glm-5", PROVIDER, {
@@ -2670,5 +2874,9 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 101376,
 		costPer1kInputTokens: 0.001,
 		costPer1kOutputTokens: 0.0032,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 ]);

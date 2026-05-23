@@ -25,6 +25,10 @@ export const huggingfaceModelConfig: ModelConfig = {
 		speed: 3,
 		includedInRouter: false,
 		supportsArtifacts: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 	"deepseek-ai/Deepseek-V3-0324": {
 		name: "DeepSeek-V3-0324",
@@ -125,6 +129,10 @@ export const huggingfaceModelConfig: ModelConfig = {
 		speed: 2,
 		includedInRouter: false,
 		supportsArtifacts: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 	"zai-org/GLM-4.5": {
 		name: "GLM-4.5",
@@ -194,6 +202,10 @@ export const huggingfaceModelConfig: ModelConfig = {
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.00028,
 		costPer1kOutputTokens: 0.0004,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"MiniMaxAI/MiniMax-M2.1": {
@@ -214,26 +226,10 @@ export const huggingfaceModelConfig: ModelConfig = {
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.0003,
 		costPer1kOutputTokens: 0.0012,
-	},
-
-	"moonshotai/Kimi-K2-Instruct-0905": {
-		name: "Kimi-K2-Instruct-0905",
-		matchingModel: "moonshotai/Kimi-K2-Instruct-0905",
-		provider: "huggingface",
-		knowledgeCutoffDate: "October 2024",
-		releaseDate: "September 4, 2025",
-		lastUpdated: "September 4, 2025",
-		modalities: {
-			input: ["text"],
-			output: ["text"],
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
 		},
-		supportsAttachments: false,
-		supportsTemperature: true,
-		supportsToolCalls: true,
-		contextWindow: 262144,
-		maxTokens: 16384,
-		costPer1kInputTokens: 0.001,
-		costPer1kOutputTokens: 0.003,
 	},
 
 	"moonshotai/Kimi-K2-Thinking": {
@@ -254,6 +250,10 @@ export const huggingfaceModelConfig: ModelConfig = {
 		maxTokens: 262144,
 		costPer1kInputTokens: 0.0006,
 		costPer1kOutputTokens: 0.0025,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"moonshotai/Kimi-K2.5": {
@@ -274,6 +274,10 @@ export const huggingfaceModelConfig: ModelConfig = {
 		maxTokens: 262144,
 		costPer1kInputTokens: 0.0006,
 		costPer1kOutputTokens: 0.003,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"Qwen/Qwen3-Embedding-4B": {
@@ -374,6 +378,10 @@ export const huggingfaceModelConfig: ModelConfig = {
 		maxTokens: 4096,
 		costPer1kInputTokens: 0.0001,
 		costPer1kOutputTokens: 0.0003,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"zai-org/GLM-4.7": {
@@ -394,6 +402,10 @@ export const huggingfaceModelConfig: ModelConfig = {
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.0006,
 		costPer1kOutputTokens: 0.0022,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"zai-org/GLM-4.7-Flash": {
@@ -414,6 +426,10 @@ export const huggingfaceModelConfig: ModelConfig = {
 		maxTokens: 128000,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"zai-org/GLM-5": {
@@ -433,6 +449,10 @@ export const huggingfaceModelConfig: ModelConfig = {
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.001,
 		costPer1kOutputTokens: 0.0032,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 	"deepseek-ai/DeepSeek-V4-Pro": {
 		name: "DeepSeek V4 Pro",
@@ -453,6 +473,10 @@ export const huggingfaceModelConfig: ModelConfig = {
 		maxTokens: 393216,
 		costPer1kInputTokens: 0.00174,
 		costPer1kOutputTokens: 0.00348,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"MiniMaxAI/MiniMax-M2.5": {
@@ -472,6 +496,10 @@ export const huggingfaceModelConfig: ModelConfig = {
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.0003,
 		costPer1kOutputTokens: 0.0012,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"MiniMaxAI/MiniMax-M2.7": {
@@ -492,6 +520,10 @@ export const huggingfaceModelConfig: ModelConfig = {
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.0003,
 		costPer1kOutputTokens: 0.0012,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"moonshotai/Kimi-K2.6": {
@@ -512,6 +544,10 @@ export const huggingfaceModelConfig: ModelConfig = {
 		maxTokens: 262144,
 		costPer1kInputTokens: 0.00095,
 		costPer1kOutputTokens: 0.004,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"Qwen/Qwen3-Coder-Next": {
@@ -552,6 +588,10 @@ export const huggingfaceModelConfig: ModelConfig = {
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.0006,
 		costPer1kOutputTokens: 0.0036,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"zai-org/GLM-5.1": {
@@ -571,5 +611,9 @@ export const huggingfaceModelConfig: ModelConfig = {
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.001,
 		costPer1kOutputTokens: 0.0032,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 };

@@ -77,6 +77,10 @@ export const ollamaModelConfig: ModelConfig = {
 		supportsToolCalls: true,
 		contextWindow: 163840,
 		maxTokens: 32000,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"deepseek-v3.1:671b": {
@@ -93,6 +97,10 @@ export const ollamaModelConfig: ModelConfig = {
 		supportsToolCalls: true,
 		contextWindow: 163840,
 		maxTokens: 163840,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"deepseek-v3.2": {
@@ -109,6 +117,10 @@ export const ollamaModelConfig: ModelConfig = {
 		supportsToolCalls: true,
 		contextWindow: 163840,
 		maxTokens: 65536,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"devstral-2:123b": {
@@ -158,6 +170,10 @@ export const ollamaModelConfig: ModelConfig = {
 		supportsToolCalls: true,
 		contextWindow: 1048576,
 		maxTokens: 65536,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"gemini-3-pro-preview": {
@@ -190,6 +206,10 @@ export const ollamaModelConfig: ModelConfig = {
 		supportsToolCalls: true,
 		contextWindow: 202752,
 		maxTokens: 131072,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"glm-4.7": {
@@ -206,6 +226,10 @@ export const ollamaModelConfig: ModelConfig = {
 		supportsToolCalls: true,
 		contextWindow: 202752,
 		maxTokens: 131072,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"glm-5": {
@@ -222,6 +246,10 @@ export const ollamaModelConfig: ModelConfig = {
 		supportsToolCalls: true,
 		contextWindow: 202752,
 		maxTokens: 131072,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"gpt-oss:120b": {
@@ -238,6 +266,10 @@ export const ollamaModelConfig: ModelConfig = {
 		supportsToolCalls: true,
 		contextWindow: 131072,
 		maxTokens: 32768,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"gpt-oss:20b": {
@@ -254,6 +286,10 @@ export const ollamaModelConfig: ModelConfig = {
 		supportsToolCalls: true,
 		contextWindow: 131072,
 		maxTokens: 32768,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"kimi-k2-thinking": {
@@ -271,6 +307,10 @@ export const ollamaModelConfig: ModelConfig = {
 		supportsToolCalls: true,
 		contextWindow: 262144,
 		maxTokens: 262144,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"kimi-k2:1t": {
@@ -304,6 +344,10 @@ export const ollamaModelConfig: ModelConfig = {
 		supportsToolCalls: true,
 		contextWindow: 262144,
 		maxTokens: 262144,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"minimax-m2": {
@@ -336,6 +380,10 @@ export const ollamaModelConfig: ModelConfig = {
 		supportsToolCalls: true,
 		contextWindow: 204800,
 		maxTokens: 131072,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"ministral-3:14b": {
@@ -416,6 +464,10 @@ export const ollamaModelConfig: ModelConfig = {
 		supportsToolCalls: true,
 		contextWindow: 1048576,
 		maxTokens: 131072,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"qwen3-coder-next": {
@@ -464,6 +516,10 @@ export const ollamaModelConfig: ModelConfig = {
 		supportsToolCalls: true,
 		contextWindow: 262144,
 		maxTokens: 32768,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"qwen3-vl:235b": {
@@ -480,6 +536,10 @@ export const ollamaModelConfig: ModelConfig = {
 		supportsToolCalls: true,
 		contextWindow: 262144,
 		maxTokens: 32768,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"qwen3-vl:235b-instruct": {
@@ -527,6 +587,10 @@ export const ollamaModelConfig: ModelConfig = {
 		supportsToolCalls: true,
 		contextWindow: 1048576,
 		maxTokens: 1048576,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"deepseek-v4-pro": {
@@ -543,6 +607,10 @@ export const ollamaModelConfig: ModelConfig = {
 		supportsToolCalls: true,
 		contextWindow: 1048576,
 		maxTokens: 1048576,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"gemma4:31b": {
@@ -560,6 +628,10 @@ export const ollamaModelConfig: ModelConfig = {
 		supportsToolCalls: true,
 		contextWindow: 262144,
 		maxTokens: 262144,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"glm-5.1": {
@@ -576,6 +648,10 @@ export const ollamaModelConfig: ModelConfig = {
 		supportsToolCalls: true,
 		contextWindow: 202752,
 		maxTokens: 131072,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"kimi-k2.6": {
@@ -592,6 +668,10 @@ export const ollamaModelConfig: ModelConfig = {
 		supportsToolCalls: true,
 		contextWindow: 262144,
 		maxTokens: 262144,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"minimax-m2.5": {
@@ -609,6 +689,10 @@ export const ollamaModelConfig: ModelConfig = {
 		supportsToolCalls: true,
 		contextWindow: 204800,
 		maxTokens: 131072,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"minimax-m2.7": {
@@ -625,6 +709,10 @@ export const ollamaModelConfig: ModelConfig = {
 		supportsToolCalls: true,
 		contextWindow: 196608,
 		maxTokens: 196608,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"nemotron-3-super": {
@@ -641,6 +729,10 @@ export const ollamaModelConfig: ModelConfig = {
 		supportsToolCalls: true,
 		contextWindow: 262144,
 		maxTokens: 65536,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"qwen3.5:397b": {
@@ -657,5 +749,9 @@ export const ollamaModelConfig: ModelConfig = {
 		supportsToolCalls: true,
 		contextWindow: 262144,
 		maxTokens: 65536,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 };

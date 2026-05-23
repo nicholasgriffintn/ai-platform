@@ -206,4 +206,111 @@ export const testProviderModelConfig: ModelConfig = createModelConfigObject([
 		expect(syncedFile).toContain('createModelConfig("acme-chat-2025-02-01"');
 		expect(syncedFile).toContain('createModelConfig("solo-model"');
 	});
+
+	it("does not add dated snapshots when a current alias represents the family", async () => {
+		const modelsDir = await createModelsDirectory();
+		const modelFile = path.join(modelsDir, "test-provider.ts");
+		await fs.writeFile(
+			modelFile,
+			`import type { ModelConfig } from "~/types";
+import { createModelConfig, createModelConfigObject } from "~/lib/providers/models/utils";
+
+const PROVIDER = "test-provider";
+
+export const testProviderModelConfig: ModelConfig = createModelConfigObject([
+\tcreateModelConfig("acme-chat", PROVIDER, {
+\t\tname: "Acme Chat",
+\t\tmatchingModel: "acme-chat-0",
+\t}),
+]);
+`,
+			"utf8",
+		);
+
+		const apiUrl = modelsDevUrl({
+			"test-provider": {
+				models: {
+					"acme-chat-0": {
+						id: "acme-chat-0",
+						name: "Acme Chat (latest)",
+						release_date: "2025-05-22",
+					},
+					"acme-chat-20250514": {
+						id: "acme-chat-20250514",
+						name: "Acme Chat",
+						release_date: "2025-05-22",
+					},
+				},
+			},
+		});
+
+		const { stdout } = await execFileAsync("node", [
+			SCRIPT_PATH,
+			"--write",
+			"--api-url",
+			apiUrl,
+			"--models-dir",
+			modelsDir,
+		]);
+		const syncedFile = await fs.readFile(modelFile, "utf8");
+
+		expect(stdout).toContain("Added new models: 0.");
+		expect(syncedFile).toContain('matchingModel: "acme-chat-0"');
+		expect(syncedFile).not.toContain("acme-chat-20250514");
+	});
+
+	it("removes stale local aliases when the remote family has current members", async () => {
+		const modelsDir = await createModelsDirectory();
+		const modelFile = path.join(modelsDir, "test-provider.ts");
+		await fs.writeFile(
+			modelFile,
+			`import type { ModelConfig } from "~/types";
+import { createModelConfig, createModelConfigObject } from "~/lib/providers/models/utils";
+
+const PROVIDER = "test-provider";
+
+export const testProviderModelConfig: ModelConfig = createModelConfigObject([
+\tcreateModelConfig("acme-chat-latest", PROVIDER, {
+\t\tname: "Old Alias",
+\t\tmatchingModel: "acme-chat-latest",
+\t}),
+
+\tcreateModelConfig("acme-chat-2507", PROVIDER, {
+\t\tname: "Current",
+\t\tmatchingModel: "acme-chat-2507",
+\t}),
+]);
+`,
+			"utf8",
+		);
+
+		const apiUrl = modelsDevUrl({
+			"test-provider": {
+				models: {
+					"acme-chat-2505": {
+						id: "acme-chat-2505",
+						release_date: "2025-05-07",
+					},
+					"acme-chat-2507": {
+						id: "acme-chat-2507",
+						release_date: "2025-07-10",
+					},
+				},
+			},
+		});
+
+		const { stdout } = await execFileAsync("node", [
+			SCRIPT_PATH,
+			"--write",
+			"--api-url",
+			apiUrl,
+			"--models-dir",
+			modelsDir,
+		]);
+		const syncedFile = await fs.readFile(modelFile, "utf8");
+
+		expect(stdout).toContain("Removed deprecated models: 1.");
+		expect(syncedFile).not.toContain("acme-chat-latest");
+		expect(syncedFile).toContain('createModelConfig("acme-chat-2507"');
+	});
 });

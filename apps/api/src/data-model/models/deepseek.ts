@@ -58,6 +58,10 @@ export const deepseekModelConfig: ModelConfig = {
 		includedInRouter: true,
 		supportsArtifacts: true,
 		isFree: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 	"deepseek-v4-flash": {
 		name: "DeepSeek V4 Flash",
@@ -79,6 +83,10 @@ export const deepseekModelConfig: ModelConfig = {
 		maxTokens: 384000,
 		costPer1kInputTokens: 0.00014,
 		costPer1kOutputTokens: 0.00028,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"deepseek-v4-pro": {
@@ -101,5 +109,9 @@ export const deepseekModelConfig: ModelConfig = {
 		maxTokens: 384000,
 		costPer1kInputTokens: 0.00174,
 		costPer1kOutputTokens: 0.00348,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 };

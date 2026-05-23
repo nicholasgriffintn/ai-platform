@@ -28,6 +28,10 @@ export const v0ModelConfig: ModelConfig = {
 		isFeatured: false,
 		includedInRouter: false,
 		supportsArtifacts: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"v0-1.5-md": {
@@ -57,6 +61,10 @@ export const v0ModelConfig: ModelConfig = {
 		isFeatured: false,
 		includedInRouter: false,
 		supportsArtifacts: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"v0-1.5-lg": {
@@ -86,5 +94,9 @@ export const v0ModelConfig: ModelConfig = {
 		isFeatured: false,
 		includedInRouter: false,
 		supportsArtifacts: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 };

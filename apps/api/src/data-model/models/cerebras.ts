@@ -41,6 +41,10 @@ export const cerebrasModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.00025,
 		costPer1kOutputTokens: 0.00069,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 	createModelConfig("cerebras/qwen-3-32b", PROVIDER, {
 		name: "Cerebras Qwen 3 32B",

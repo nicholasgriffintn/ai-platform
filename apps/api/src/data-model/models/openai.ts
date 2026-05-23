@@ -122,6 +122,10 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		supportsToolCalls: true,
 		supportsResponseFormat: true,
 		supportsArtifacts: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("o3", PROVIDER, {
@@ -153,6 +157,10 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		supportsArtifacts: true,
 		timeout: 1000000,
 		supportsTemperature: false,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("o4-mini", PROVIDER, {
@@ -184,6 +192,10 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		includedInRouter: false,
 		supportsResponseFormat: true,
 		supportsArtifacts: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("o3-mini", PROVIDER, {
@@ -216,6 +228,10 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		supportsResponseFormat: true,
 		supportsArtifacts: true,
 		supportsToolCalls: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("gpt-4o", PROVIDER, {
@@ -933,68 +949,8 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		costPer1kOutputTokens: 0.03,
 	}),
 
-	createModelConfig("gpt-4o-2024-05-13", PROVIDER, {
-		name: "GPT-4o (2024-05-13)",
-		matchingModel: "gpt-4o-2024-05-13",
-		knowledgeCutoffDate: "September 2023",
-		releaseDate: "May 13, 2024",
-		lastUpdated: "May 13, 2024",
-		modalities: {
-			input: ["text", "image"],
-			output: ["text"],
-		},
-		supportsAttachments: true,
-		supportsTemperature: true,
-		supportsToolCalls: true,
-		supportsResponseFormat: true,
-		contextWindow: 128000,
-		maxTokens: 4096,
-		costPer1kInputTokens: 0.005,
-		costPer1kOutputTokens: 0.015,
-	}),
-
-	createModelConfig("gpt-4o-2024-08-06", PROVIDER, {
-		name: "GPT-4o (2024-08-06)",
-		matchingModel: "gpt-4o-2024-08-06",
-		knowledgeCutoffDate: "September 2023",
-		releaseDate: "August 6, 2024",
-		lastUpdated: "August 6, 2024",
-		modalities: {
-			input: ["text", "image"],
-			output: ["text"],
-		},
-		supportsAttachments: true,
-		supportsTemperature: true,
-		supportsToolCalls: true,
-		supportsResponseFormat: true,
-		contextWindow: 128000,
-		maxTokens: 16384,
-		costPer1kInputTokens: 0.0025,
-		costPer1kOutputTokens: 0.01,
-	}),
-
-	createModelConfig("gpt-4o-2024-11-20", PROVIDER, {
-		name: "GPT-4o (2024-11-20)",
-		matchingModel: "gpt-4o-2024-11-20",
-		knowledgeCutoffDate: "September 2023",
-		releaseDate: "November 20, 2024",
-		lastUpdated: "November 20, 2024",
-		modalities: {
-			input: ["text", "image"],
-			output: ["text"],
-		},
-		supportsAttachments: true,
-		supportsTemperature: true,
-		supportsToolCalls: true,
-		supportsResponseFormat: true,
-		contextWindow: 128000,
-		maxTokens: 16384,
-		costPer1kInputTokens: 0.0025,
-		costPer1kOutputTokens: 0.01,
-	}),
-
 	createModelConfig("gpt-5-chat-latest", PROVIDER, {
-		name: "GPT-5 Chat (latest)",
+		name: "GPT-5 Chat",
 		matchingModel: "gpt-5-chat-latest",
 		knowledgeCutoffDate: "September 30, 2024",
 		releaseDate: "August 7, 2025",
@@ -1316,6 +1272,10 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.0011,
 		costPer1kOutputTokens: 0.0044,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("o1-preview", PROVIDER, {
@@ -1335,6 +1295,10 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.015,
 		costPer1kOutputTokens: 0.06,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("o1-pro", PROVIDER, {
@@ -1355,6 +1319,10 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 100000,
 		costPer1kInputTokens: 0.15,
 		costPer1kOutputTokens: 0.6,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("o3-deep-research", PROVIDER, {
@@ -1374,6 +1342,10 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 100000,
 		costPer1kInputTokens: 0.01,
 		costPer1kOutputTokens: 0.04,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("o3-pro", PROVIDER, {
@@ -1394,6 +1366,10 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 100000,
 		costPer1kInputTokens: 0.02,
 		costPer1kOutputTokens: 0.08,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("o4-mini-deep-research", PROVIDER, {
@@ -1413,6 +1389,10 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 100000,
 		costPer1kInputTokens: 0.002,
 		costPer1kOutputTokens: 0.008,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("text-embedding-3-large", PROVIDER, {
@@ -1488,7 +1468,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 	}),
 
 	createModelConfig("gpt-5.3-chat-latest", PROVIDER, {
-		name: "GPT-5.3 Chat (latest)",
+		name: "GPT-5.3 Chat",
 		matchingModel: "gpt-5.3-chat-latest",
 		knowledgeCutoffDate: "August 31, 2025",
 		releaseDate: "March 3, 2026",

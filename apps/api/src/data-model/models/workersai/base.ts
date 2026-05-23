@@ -87,6 +87,10 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 		maxTokens: 256000,
 		costPer1kInputTokens: 0.0006,
 		costPer1kOutputTokens: 0.003,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 	"@cf/moonshotai/kimi-k2.6": {
 		name: "Moonshot Kimi K2.6",
@@ -110,6 +114,10 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 		lastUpdated: "April 20, 2026",
 		costPer1kInputTokens: 0.00095,
 		costPer1kOutputTokens: 0.004,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 	"llama-3.3-70b-instruct": {
 		name: "Llama 3.3 70B Instruct FP8 Fast",
@@ -565,6 +573,10 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0.0001,
 		costPer1kOutputTokens: 0.0003,
 		supportsResponseFormat: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 	"qwq-32b": {
 		name: "QwQ 32B",
@@ -592,6 +604,10 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0.00066,
 		costPer1kOutputTokens: 0.001,
 		supportsResponseFormat: false,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 	"qwen2.5-coder-32b": {
 		name: "Qwen 2.5 Coder 32B Instruct",
@@ -859,6 +875,10 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0.000497,
 		costPer1kOutputTokens: 0.004881,
 		supportsResponseFormat: false,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"@cf/facebook/bart-large-cnn": {
@@ -1137,6 +1157,10 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0.0005,
 		costPer1kOutputTokens: 0.0015,
 		supportsResponseFormat: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"@cf/zai-org/glm-4.7-flash": {
@@ -1161,6 +1185,10 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0.0000605,
 		costPer1kOutputTokens: 0.0004,
 		supportsResponseFormat: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"@cf/openai/gpt-oss-120b": {
@@ -1182,6 +1210,10 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0.00035,
 		costPer1kOutputTokens: 0.00075,
 		supportsResponseFormat: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"@cf/openai/gpt-oss-20b": {
@@ -1203,6 +1235,10 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0.0002,
 		costPer1kOutputTokens: 0.0003,
 		supportsResponseFormat: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"@cf/pfnet/plamo-embedding-1b": {
@@ -1243,6 +1279,10 @@ export const oldWorkersAiModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0.0000509,
 		costPer1kOutputTokens: 0.000335,
 		supportsResponseFormat: false,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"@cf/qwen/qwen3-embedding-0.6b": {

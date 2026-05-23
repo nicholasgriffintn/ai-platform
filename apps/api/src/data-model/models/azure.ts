@@ -82,22 +82,10 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 100000,
 		costPer1kInputTokens: 0.0011,
 		costPer1kOutputTokens: 0.0044,
-	}),
-
-	createModelConfig("openai/gpt-3.5-turbo-0613", PROVIDER, {
-		name: "GPT-3.5 Turbo 0613",
-		matchingModel: "gpt-3.5-turbo-0613",
-		supportsAttachments: false,
-		supportsTemperature: true,
-		supportsToolCalls: false,
-		knowledgeCutoffDate: "August 2021",
-		releaseDate: "June 13, 2023",
-		lastUpdated: "June 13, 2023",
-		modalities: { input: ["text"], output: ["text"] },
-		contextWindow: 16384,
-		maxTokens: 16384,
-		costPer1kInputTokens: 0.003,
-		costPer1kOutputTokens: 0.004,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("openai/o1-mini", PROVIDER, {
@@ -114,6 +102,10 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.0011,
 		costPer1kOutputTokens: 0.0044,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("openai/codex-mini", PROVIDER, {
@@ -130,6 +122,10 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 100000,
 		costPer1kInputTokens: 0.0015,
 		costPer1kOutputTokens: 0.006,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("openai/gpt-4.1-nano", PROVIDER, {
@@ -162,22 +158,10 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.0165,
 		costPer1kOutputTokens: 0.066,
-	}),
-
-	createModelConfig("openai/gpt-3.5-turbo-1106", PROVIDER, {
-		name: "GPT-3.5 Turbo 1106",
-		matchingModel: "gpt-3.5-turbo-1106",
-		supportsAttachments: false,
-		supportsTemperature: true,
-		supportsToolCalls: false,
-		knowledgeCutoffDate: "August 2021",
-		releaseDate: "November 6, 2023",
-		lastUpdated: "November 6, 2023",
-		modalities: { input: ["text"], output: ["text"] },
-		contextWindow: 16384,
-		maxTokens: 16384,
-		costPer1kInputTokens: 0.001,
-		costPer1kOutputTokens: 0.002,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("openai/gpt-3.5-turbo-instruct", PROVIDER, {
@@ -242,22 +226,10 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 100000,
 		costPer1kInputTokens: 0.0011,
 		costPer1kOutputTokens: 0.0044,
-	}),
-
-	createModelConfig("openai/gpt-3.5-turbo-0301", PROVIDER, {
-		name: "GPT-3.5 Turbo 0301",
-		matchingModel: "gpt-3.5-turbo-0301",
-		supportsAttachments: false,
-		supportsTemperature: true,
-		supportsToolCalls: false,
-		knowledgeCutoffDate: "August 2021",
-		releaseDate: "March 1, 2023",
-		lastUpdated: "March 1, 2023",
-		modalities: { input: ["text"], output: ["text"] },
-		contextWindow: 4096,
-		maxTokens: 4096,
-		costPer1kInputTokens: 0.0015,
-		costPer1kOutputTokens: 0.002,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("openai/o1", PROVIDER, {
@@ -274,6 +246,10 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 100000,
 		costPer1kInputTokens: 0.015,
 		costPer1kOutputTokens: 0.06,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("openai/gpt-4.1", PROVIDER, {
@@ -338,6 +314,10 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 100000,
 		costPer1kInputTokens: 0.002,
 		costPer1kOutputTokens: 0.008,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 	createModelConfig("anthropic/claude-haiku-4-5", PROVIDER, {
 		name: "Claude Haiku 4.5",
@@ -357,6 +337,10 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 64000,
 		costPer1kInputTokens: 0.001,
 		costPer1kOutputTokens: 0.005,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("anthropic/claude-opus-4-1", PROVIDER, {
@@ -377,6 +361,10 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 32000,
 		costPer1kInputTokens: 0.015,
 		costPer1kOutputTokens: 0.075,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("anthropic/claude-opus-4-5", PROVIDER, {
@@ -396,6 +384,10 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 64000,
 		costPer1kInputTokens: 0.005,
 		costPer1kOutputTokens: 0.025,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("anthropic/claude-opus-4-6", PROVIDER, {
@@ -415,6 +407,10 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.005,
 		costPer1kOutputTokens: 0.025,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("anthropic/claude-sonnet-4-5", PROVIDER, {
@@ -435,6 +431,10 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 64000,
 		costPer1kInputTokens: 0.003,
 		costPer1kOutputTokens: 0.015,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("mistral/codestral-2501", PROVIDER, {
@@ -473,6 +473,10 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 8000,
 		costPer1kInputTokens: 0.0025,
 		costPer1kOutputTokens: 0.01,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("cohere/command-r-08-2024", PROVIDER, {
@@ -584,25 +588,10 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 163840,
 		costPer1kInputTokens: 0.00135,
 		costPer1kOutputTokens: 0.0054,
-	}),
-
-	createModelConfig("deepseek/r1-0528", PROVIDER, {
-		name: "DeepSeek-R1-0528",
-		matchingModel: "deepseek-r1-0528",
-		knowledgeCutoffDate: "July 2024",
-		releaseDate: "May 28, 2025",
-		lastUpdated: "May 28, 2025",
-		modalities: {
-			input: ["text"],
-			output: ["text"],
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
 		},
-		supportsAttachments: false,
-		supportsTemperature: true,
-		supportsToolCalls: true,
-		contextWindow: 163840,
-		maxTokens: 163840,
-		costPer1kInputTokens: 0.00135,
-		costPer1kOutputTokens: 0.0054,
 	}),
 
 	createModelConfig("deepseek/v3-0324", PROVIDER, {
@@ -641,6 +630,10 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.00056,
 		costPer1kOutputTokens: 0.00168,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("deepseek/v3.2", PROVIDER, {
@@ -660,6 +653,10 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.00058,
 		costPer1kOutputTokens: 0.00168,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("deepseek/v3.2-speciale", PROVIDER, {
@@ -679,6 +676,10 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.00058,
 		costPer1kOutputTokens: 0.00168,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("openai/gpt-5", PROVIDER, {
@@ -698,6 +699,10 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.00125,
 		costPer1kOutputTokens: 0.01,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("openai/gpt-5-chat", PROVIDER, {
@@ -717,6 +722,10 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00125,
 		costPer1kOutputTokens: 0.01,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("openai/gpt-5-codex", PROVIDER, {
@@ -736,6 +745,10 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.00125,
 		costPer1kOutputTokens: 0.01,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("openai/gpt-5-mini", PROVIDER, {
@@ -755,6 +768,10 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.00025,
 		costPer1kOutputTokens: 0.002,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("openai/gpt-5-nano", PROVIDER, {
@@ -774,6 +791,10 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.00005,
 		costPer1kOutputTokens: 0.0004,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("openai/gpt-5-pro", PROVIDER, {
@@ -794,6 +815,10 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 272000,
 		costPer1kInputTokens: 0.015,
 		costPer1kOutputTokens: 0.12,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("openai/gpt-5.1", PROVIDER, {
@@ -814,6 +839,10 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		costPer1kInputTokens: 0.00125,
 		costPer1kOutputTokens: 0.01,
 		supportsResponseFormat: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("openai/gpt-5.1-chat", PROVIDER, {
@@ -834,6 +863,10 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		costPer1kInputTokens: 0.00125,
 		costPer1kOutputTokens: 0.01,
 		supportsResponseFormat: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("openai/gpt-5.1-codex", PROVIDER, {
@@ -854,6 +887,10 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		costPer1kInputTokens: 0.00125,
 		costPer1kOutputTokens: 0.01,
 		supportsResponseFormat: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("openai/gpt-5.1-codex-max", PROVIDER, {
@@ -874,6 +911,10 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.00125,
 		costPer1kOutputTokens: 0.01,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("openai/gpt-5.1-codex-mini", PROVIDER, {
@@ -894,6 +935,10 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		costPer1kInputTokens: 0.00025,
 		costPer1kOutputTokens: 0.002,
 		supportsResponseFormat: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("openai/gpt-5.2", PROVIDER, {
@@ -914,6 +959,10 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		costPer1kInputTokens: 0.00175,
 		costPer1kOutputTokens: 0.014,
 		supportsResponseFormat: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("openai/gpt-5.2-chat", PROVIDER, {
@@ -934,6 +983,10 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00175,
 		costPer1kOutputTokens: 0.014,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("openai/gpt-5.2-codex", PROVIDER, {
@@ -954,6 +1007,10 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		costPer1kInputTokens: 0.00175,
 		costPer1kOutputTokens: 0.014,
 		supportsResponseFormat: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("xai/grok-3", PROVIDER, {
@@ -1051,6 +1108,10 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 30000,
 		costPer1kInputTokens: 0.0002,
 		costPer1kOutputTokens: 0.0005,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("xai/grok-code-fast-1", PROVIDER, {
@@ -1089,6 +1150,10 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 262144,
 		costPer1kInputTokens: 0.0006,
 		costPer1kOutputTokens: 0.0025,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("monshot/kimi-k2.5", PROVIDER, {
@@ -1109,6 +1174,10 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 262144,
 		costPer1kInputTokens: 0.0006,
 		costPer1kOutputTokens: 0.003,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("meta/llama-3.2-11b-vision-instruct", PROVIDER, {
@@ -1223,6 +1292,10 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 8192,
 		costPer1kInputTokens: 0.00135,
 		costPer1kOutputTokens: 0.0054,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("meta/llama-3-70b-instruct", PROVIDER, {
@@ -1639,6 +1712,10 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 4096,
 		costPer1kInputTokens: 0.000075,
 		costPer1kOutputTokens: 0.0003,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("microsoft/phi-4-multimodal", PROVIDER, {
@@ -1677,6 +1754,10 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 4096,
 		costPer1kInputTokens: 0.000125,
 		costPer1kOutputTokens: 0.0005,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("microsoft/phi-4-reasoning-plus", PROVIDER, {
@@ -1696,6 +1777,10 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 4096,
 		costPer1kInputTokens: 0.000125,
 		costPer1kOutputTokens: 0.0005,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("microsoft/text-embedding-3-large", PROVIDER, {
@@ -1766,6 +1851,10 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 64000,
 		costPer1kInputTokens: 0.003,
 		costPer1kOutputTokens: 0.015,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("gpt-5.3-chat", PROVIDER, {
@@ -1786,6 +1875,10 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00175,
 		costPer1kOutputTokens: 0.014,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("gpt-5.3-codex", PROVIDER, {
@@ -1806,6 +1899,10 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.00175,
 		costPer1kOutputTokens: 0.014,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("gpt-5.4", PROVIDER, {
@@ -1826,6 +1923,10 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.0025,
 		costPer1kOutputTokens: 0.015,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("gpt-5.4-mini", PROVIDER, {
@@ -1846,6 +1947,10 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.00075,
 		costPer1kOutputTokens: 0.0045,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("gpt-5.4-nano", PROVIDER, {
@@ -1866,6 +1971,10 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.0002,
 		costPer1kOutputTokens: 0.00125,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("gpt-5.4-pro", PROVIDER, {
@@ -1886,6 +1995,10 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.03,
 		costPer1kOutputTokens: 0.18,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("gpt-5.5", PROVIDER, {
@@ -1906,6 +2019,10 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.005,
 		costPer1kOutputTokens: 0.03,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("grok-4-1-fast-non-reasoning", PROVIDER, {
@@ -1942,6 +2059,10 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 8192,
 		costPer1kInputTokens: 0.0002,
 		costPer1kOutputTokens: 0.0005,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("grok-4-20-non-reasoning", PROVIDER, {
@@ -1980,6 +2101,10 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 8192,
 		costPer1kInputTokens: 0.002,
 		costPer1kOutputTokens: 0.006,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("kimi-k2.6", PROVIDER, {
@@ -2000,5 +2125,9 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 262144,
 		costPer1kInputTokens: 0.00095,
 		costPer1kOutputTokens: 0.004,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 ]);

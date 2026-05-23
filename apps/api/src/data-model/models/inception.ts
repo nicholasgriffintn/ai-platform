@@ -80,6 +80,10 @@ export const inceptionModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 50000,
 		costPer1kInputTokens: 0.00025,
 		costPer1kOutputTokens: 0.00075,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("mercury-edit-2", PROVIDER, {
@@ -98,5 +102,9 @@ export const inceptionModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 8192,
 		costPer1kInputTokens: 0.00025,
 		costPer1kOutputTokens: 0.00075,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 ]);

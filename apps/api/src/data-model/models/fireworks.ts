@@ -303,6 +303,10 @@ export const fireworksModelConfig: ModelConfig = {
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.00015,
 		costPer1kOutputTokens: 0.0006,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"accounts/fireworks/models/gpt-oss-20b": {
@@ -320,8 +324,12 @@ export const fireworksModelConfig: ModelConfig = {
 		supportsToolCalls: true,
 		contextWindow: 131072,
 		maxTokens: 32768,
-		costPer1kInputTokens: 0.00005,
-		costPer1kOutputTokens: 0.0002,
+		costPer1kInputTokens: 0.00007,
+		costPer1kOutputTokens: 0.0003,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"accounts/fireworks/models/kimi-k2-thinking": {
@@ -361,6 +369,10 @@ export const fireworksModelConfig: ModelConfig = {
 		maxTokens: 256000,
 		costPer1kInputTokens: 0.0006,
 		costPer1kOutputTokens: 0.003,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"accounts/fireworks/models/minimax-m2": {
@@ -439,6 +451,10 @@ export const fireworksModelConfig: ModelConfig = {
 		maxTokens: 384000,
 		costPer1kInputTokens: 0.00174,
 		costPer1kOutputTokens: 0.00348,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"accounts/fireworks/models/glm-5": {
@@ -477,6 +493,10 @@ export const fireworksModelConfig: ModelConfig = {
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.0014,
 		costPer1kOutputTokens: 0.0044,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"accounts/fireworks/models/kimi-k2p6": {
@@ -496,6 +516,10 @@ export const fireworksModelConfig: ModelConfig = {
 		maxTokens: 262000,
 		costPer1kInputTokens: 0.00095,
 		costPer1kOutputTokens: 0.004,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"accounts/fireworks/models/minimax-m2p5": {
@@ -515,6 +539,10 @@ export const fireworksModelConfig: ModelConfig = {
 		maxTokens: 196608,
 		costPer1kInputTokens: 0.0003,
 		costPer1kOutputTokens: 0.0012,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"accounts/fireworks/models/minimax-m2p7": {
@@ -534,6 +562,10 @@ export const fireworksModelConfig: ModelConfig = {
 		maxTokens: 196608,
 		costPer1kInputTokens: 0.0003,
 		costPer1kOutputTokens: 0.0012,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"accounts/fireworks/models/qwen3p6-plus": {
@@ -553,6 +585,10 @@ export const fireworksModelConfig: ModelConfig = {
 		maxTokens: 8192,
 		costPer1kInputTokens: 0.0005,
 		costPer1kOutputTokens: 0.003,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"accounts/fireworks/routers/kimi-k2p5-turbo": {
@@ -593,5 +629,54 @@ export const fireworksModelConfig: ModelConfig = {
 		maxTokens: 384000,
 		costPer1kInputTokens: 0.00014,
 		costPer1kOutputTokens: 0.00028,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
+	},
+	"accounts/fireworks/routers/glm-5p1-fast": {
+		name: "GLM 5.1 Fast",
+		matchingModel: "accounts/fireworks/routers/glm-5p1-fast",
+		provider: "fireworks",
+		releaseDate: "April 1, 2026",
+		lastUpdated: "April 1, 2026",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 202800,
+		maxTokens: 131072,
+		costPer1kInputTokens: 0.0028,
+		costPer1kOutputTokens: 0.0088,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
+	},
+
+	"accounts/fireworks/routers/kimi-k2p6-turbo": {
+		name: "Kimi K2.6 Turbo",
+		matchingModel: "accounts/fireworks/routers/kimi-k2p6-turbo",
+		provider: "fireworks",
+		releaseDate: "April 17, 2026",
+		lastUpdated: "April 17, 2026",
+		modalities: {
+			input: ["text", "image"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 262000,
+		maxTokens: 262000,
+		costPer1kInputTokens: 0.002,
+		costPer1kOutputTokens: 0.008,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 };

@@ -29,6 +29,10 @@ export const perplexityModelConfig: ModelConfig = {
 		supportsToolCalls: false,
 		contextWindow: 128000,
 		maxTokens: 32768,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 	"sonar-reasoning-pro": {
 		name: "Sonar Reasoning Pro",
@@ -56,6 +60,10 @@ export const perplexityModelConfig: ModelConfig = {
 		supportsToolCalls: false,
 		contextWindow: 128000,
 		maxTokens: 4096,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 	"sonar-reasoning": {
 		name: "Perplexity Sonar Reasoning",

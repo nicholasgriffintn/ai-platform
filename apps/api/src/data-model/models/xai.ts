@@ -570,6 +570,10 @@ export const xaiModelConfig: ModelConfig = {
 		maxTokens: 30000,
 		costPer1kInputTokens: 0.00125,
 		costPer1kOutputTokens: 0.0025,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"grok-4.20-multi-agent-0309": {
@@ -589,6 +593,10 @@ export const xaiModelConfig: ModelConfig = {
 		maxTokens: 30000,
 		costPer1kInputTokens: 0.00125,
 		costPer1kOutputTokens: 0.0025,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"grok-4.3": {
@@ -608,6 +616,10 @@ export const xaiModelConfig: ModelConfig = {
 		maxTokens: 30000,
 		costPer1kInputTokens: 0.00125,
 		costPer1kOutputTokens: 0.0025,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"grok-imagine-image": {
@@ -664,8 +676,8 @@ export const xaiModelConfig: ModelConfig = {
 		name: "Grok Build 0.1",
 		matchingModel: "grok-build-0.1",
 		provider: "grok",
-		releaseDate: "May 20, 2026",
-		lastUpdated: "May 20, 2026",
+		releaseDate: "April 16, 2026",
+		lastUpdated: "April 16, 2026",
 		modalities: {
 			input: ["text", "image", "pdf"],
 			output: ["text"],
@@ -678,5 +690,9 @@ export const xaiModelConfig: ModelConfig = {
 		maxTokens: 256000,
 		costPer1kInputTokens: 0.001,
 		costPer1kOutputTokens: 0.002,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 };

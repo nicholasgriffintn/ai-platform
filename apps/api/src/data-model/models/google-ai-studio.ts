@@ -33,6 +33,10 @@ export const googleAiStudioModelConfig: ModelConfig = {
 		releaseDate: "November 18, 2025",
 		lastUpdated: "November 18, 2025",
 		supportsResponseFormat: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 	"gemini-3-flash-preview": {
 		name: "Gemini 3 Flash Preview",
@@ -66,6 +70,10 @@ export const googleAiStudioModelConfig: ModelConfig = {
 		releaseDate: "December 17, 2025",
 		lastUpdated: "December 17, 2025",
 		supportsResponseFormat: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 	"gemini-flash-lite-latest": {
 		name: "Gemini Flash-Lite Latest",
@@ -94,6 +102,10 @@ export const googleAiStudioModelConfig: ModelConfig = {
 		releaseDate: "September 25, 2025",
 		lastUpdated: "September 25, 2025",
 		supportsResponseFormat: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 	"gemini-1.5-flash": {
 		name: "Gemini 1.5 Flash",
@@ -216,6 +228,10 @@ export const googleAiStudioModelConfig: ModelConfig = {
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.0003,
 		costPer1kOutputTokens: 0.0025,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"gemini-2.5-flash-image": {
@@ -236,6 +252,10 @@ export const googleAiStudioModelConfig: ModelConfig = {
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.0003,
 		costPer1kOutputTokens: 0.03,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"gemini-2.5-flash-image-preview": {
@@ -277,6 +297,10 @@ export const googleAiStudioModelConfig: ModelConfig = {
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.0001,
 		costPer1kOutputTokens: 0.0004,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"gemini-2.5-flash-lite-preview-06-17": {
@@ -421,6 +445,10 @@ export const googleAiStudioModelConfig: ModelConfig = {
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.00125,
 		costPer1kOutputTokens: 0.01,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"gemini-2.5-pro-preview-05-06": {
@@ -524,6 +552,10 @@ export const googleAiStudioModelConfig: ModelConfig = {
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.0003,
 		costPer1kOutputTokens: 0.0025,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"gemini-live-2.5-flash": {
@@ -583,6 +615,10 @@ export const googleAiStudioModelConfig: ModelConfig = {
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.0005,
 		costPer1kOutputTokens: 0.06,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"gemini-3.1-flash-lite": {
@@ -604,6 +640,10 @@ export const googleAiStudioModelConfig: ModelConfig = {
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.00025,
 		costPer1kOutputTokens: 0.0015,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"gemini-3.1-flash-lite-preview": {
@@ -625,6 +665,10 @@ export const googleAiStudioModelConfig: ModelConfig = {
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.00025,
 		costPer1kOutputTokens: 0.0015,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"gemini-3.1-pro-preview": {
@@ -647,6 +691,10 @@ export const googleAiStudioModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0.002,
 		costPer1kOutputTokens: 0.012,
 		isFeatured: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"gemini-3.1-pro-preview-customtools": {
@@ -668,6 +716,10 @@ export const googleAiStudioModelConfig: ModelConfig = {
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.002,
 		costPer1kOutputTokens: 0.012,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"gemma-3-12b-it": {
@@ -788,6 +840,10 @@ export const googleAiStudioModelConfig: ModelConfig = {
 		supportsResponseFormat: true,
 		contextWindow: 262144,
 		maxTokens: 32768,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"gemma-4-31b-it": {
@@ -806,6 +862,10 @@ export const googleAiStudioModelConfig: ModelConfig = {
 		supportsResponseFormat: true,
 		contextWindow: 262144,
 		maxTokens: 32768,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 	"gemini-3.5-flash": {
 		name: "Gemini 3.5 Flash",
@@ -827,5 +887,9 @@ export const googleAiStudioModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0.0015,
 		costPer1kOutputTokens: 0.009,
 		isFeatured: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 };

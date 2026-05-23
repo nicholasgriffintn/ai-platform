@@ -27,6 +27,10 @@ export const githubModelsConfig: ModelConfig = {
 		speed: 4,
 		includedInRouter: false,
 		supportsArtifacts: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"jamba-1-5-large-gh": {
@@ -54,6 +58,10 @@ export const githubModelsConfig: ModelConfig = {
 		speed: 3,
 		includedInRouter: false,
 		supportsArtifacts: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"gpt-4-1-mini-gh": {
@@ -111,6 +119,10 @@ export const githubModelsConfig: ModelConfig = {
 		multimodal: true,
 		includedInRouter: false,
 		supportsArtifacts: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"o1-mini-gh": {
@@ -138,6 +150,10 @@ export const githubModelsConfig: ModelConfig = {
 		speed: 4,
 		includedInRouter: false,
 		supportsArtifacts: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"gpt-4o-mini-gh": {
@@ -221,6 +237,10 @@ export const githubModelsConfig: ModelConfig = {
 		speed: 4,
 		includedInRouter: false,
 		supportsArtifacts: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"o1-gh": {
@@ -250,6 +270,10 @@ export const githubModelsConfig: ModelConfig = {
 		multimodal: true,
 		includedInRouter: false,
 		supportsArtifacts: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"phi-4-gh": {
@@ -278,6 +302,10 @@ export const githubModelsConfig: ModelConfig = {
 		speed: 4,
 		includedInRouter: false,
 		supportsArtifacts: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"phi-4-multimodal-gh": {
@@ -306,6 +334,10 @@ export const githubModelsConfig: ModelConfig = {
 		multimodal: true,
 		includedInRouter: false,
 		supportsArtifacts: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"phi-4-reasoning-gh": {
@@ -333,6 +365,10 @@ export const githubModelsConfig: ModelConfig = {
 		speed: 3,
 		includedInRouter: false,
 		supportsArtifacts: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"phi-3-5-vision-gh": {
@@ -361,6 +397,10 @@ export const githubModelsConfig: ModelConfig = {
 		multimodal: true,
 		includedInRouter: false,
 		supportsArtifacts: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"llama-3-2-90b-vision-gh": {
@@ -389,6 +429,10 @@ export const githubModelsConfig: ModelConfig = {
 		multimodal: true,
 		includedInRouter: false,
 		supportsArtifacts: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"llama-3-1-405b-gh": {
@@ -416,6 +460,10 @@ export const githubModelsConfig: ModelConfig = {
 		speed: 1,
 		includedInRouter: false,
 		supportsArtifacts: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"deepseek-r1-gh": {
@@ -443,6 +491,10 @@ export const githubModelsConfig: ModelConfig = {
 		speed: 3,
 		includedInRouter: false,
 		supportsArtifacts: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"mistral-large-2411-gh": {
@@ -470,6 +522,10 @@ export const githubModelsConfig: ModelConfig = {
 		speed: 3,
 		includedInRouter: false,
 		supportsArtifacts: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"codestral-2501-gh": {
@@ -497,6 +553,10 @@ export const githubModelsConfig: ModelConfig = {
 		speed: 3,
 		includedInRouter: false,
 		supportsArtifacts: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"grok-3-gh": {
@@ -524,6 +584,10 @@ export const githubModelsConfig: ModelConfig = {
 		speed: 3,
 		includedInRouter: false,
 		supportsArtifacts: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"grok-3-mini-gh": {
@@ -552,6 +616,10 @@ export const githubModelsConfig: ModelConfig = {
 		speed: 4,
 		includedInRouter: false,
 		supportsArtifacts: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"command-r-gh": {
@@ -579,6 +647,10 @@ export const githubModelsConfig: ModelConfig = {
 		speed: 3,
 		includedInRouter: false,
 		supportsArtifacts: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"command-r-plus-gh": {
@@ -625,6 +697,10 @@ export const githubModelsConfig: ModelConfig = {
 		maxTokens: 4096,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"cohere/cohere-command-r-08-2024": {
@@ -685,26 +761,10 @@ export const githubModelsConfig: ModelConfig = {
 		maxTokens: 2048,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-	},
-
-	"deepseek/deepseek-r1-0528": {
-		name: "DeepSeek-R1-0528",
-		matchingModel: "deepseek/deepseek-r1-0528",
-		provider: "github-models",
-		knowledgeCutoffDate: "June 2024",
-		releaseDate: "May 28, 2025",
-		lastUpdated: "May 28, 2025",
-		modalities: {
-			input: ["text"],
-			output: ["text"],
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
 		},
-		supportsAttachments: false,
-		supportsTemperature: true,
-		supportsToolCalls: true,
-		contextWindow: 65536,
-		maxTokens: 8192,
-		costPer1kInputTokens: 0,
-		costPer1kOutputTokens: 0,
 	},
 
 	"deepseek/deepseek-v3-0324": {
@@ -725,6 +785,10 @@ export const githubModelsConfig: ModelConfig = {
 		maxTokens: 8192,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"meta/llama-3.2-11b-vision-instruct": {
@@ -745,6 +809,10 @@ export const githubModelsConfig: ModelConfig = {
 		maxTokens: 8192,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"meta/llama-3.3-70b-instruct": {
@@ -765,6 +833,10 @@ export const githubModelsConfig: ModelConfig = {
 		maxTokens: 32768,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"meta/llama-4-maverick-17b-128e-instruct-fp8": {
@@ -785,6 +857,10 @@ export const githubModelsConfig: ModelConfig = {
 		maxTokens: 8192,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"meta/llama-4-scout-17b-16e-instruct": {
@@ -805,6 +881,10 @@ export const githubModelsConfig: ModelConfig = {
 		maxTokens: 8192,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"meta/meta-llama-3-70b-instruct": {
@@ -825,6 +905,10 @@ export const githubModelsConfig: ModelConfig = {
 		maxTokens: 2048,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"meta/meta-llama-3-8b-instruct": {
@@ -845,6 +929,10 @@ export const githubModelsConfig: ModelConfig = {
 		maxTokens: 2048,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"meta/meta-llama-3.1-70b-instruct": {
@@ -865,6 +953,10 @@ export const githubModelsConfig: ModelConfig = {
 		maxTokens: 32768,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"meta/meta-llama-3.1-8b-instruct": {
@@ -885,6 +977,10 @@ export const githubModelsConfig: ModelConfig = {
 		maxTokens: 32768,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"microsoft/mai-ds-r1": {
@@ -905,6 +1001,10 @@ export const githubModelsConfig: ModelConfig = {
 		maxTokens: 8192,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"microsoft/phi-3-medium-128k-instruct": {
@@ -925,6 +1025,10 @@ export const githubModelsConfig: ModelConfig = {
 		maxTokens: 4096,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"microsoft/phi-3-medium-4k-instruct": {
@@ -945,6 +1049,10 @@ export const githubModelsConfig: ModelConfig = {
 		maxTokens: 1024,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"microsoft/phi-3-mini-128k-instruct": {
@@ -965,6 +1073,10 @@ export const githubModelsConfig: ModelConfig = {
 		maxTokens: 4096,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"microsoft/phi-3-mini-4k-instruct": {
@@ -985,6 +1097,10 @@ export const githubModelsConfig: ModelConfig = {
 		maxTokens: 1024,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"microsoft/phi-3-small-128k-instruct": {
@@ -1005,6 +1121,10 @@ export const githubModelsConfig: ModelConfig = {
 		maxTokens: 4096,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"microsoft/phi-3-small-8k-instruct": {
@@ -1025,6 +1145,10 @@ export const githubModelsConfig: ModelConfig = {
 		maxTokens: 2048,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"microsoft/phi-3.5-mini-instruct": {
@@ -1045,6 +1169,10 @@ export const githubModelsConfig: ModelConfig = {
 		maxTokens: 4096,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"microsoft/phi-3.5-moe-instruct": {
@@ -1065,6 +1193,10 @@ export const githubModelsConfig: ModelConfig = {
 		maxTokens: 4096,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"microsoft/phi-4-mini-instruct": {
@@ -1085,6 +1217,10 @@ export const githubModelsConfig: ModelConfig = {
 		maxTokens: 4096,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"microsoft/phi-4-mini-reasoning": {
@@ -1105,6 +1241,10 @@ export const githubModelsConfig: ModelConfig = {
 		maxTokens: 4096,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"mistral-ai/ministral-3b": {
@@ -1125,6 +1265,10 @@ export const githubModelsConfig: ModelConfig = {
 		maxTokens: 8192,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"mistral-ai/mistral-medium-2505": {
@@ -1145,6 +1289,10 @@ export const githubModelsConfig: ModelConfig = {
 		maxTokens: 32768,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"mistral-ai/mistral-nemo": {
@@ -1165,6 +1313,10 @@ export const githubModelsConfig: ModelConfig = {
 		maxTokens: 8192,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"mistral-ai/mistral-small-2503": {
@@ -1185,6 +1337,10 @@ export const githubModelsConfig: ModelConfig = {
 		maxTokens: 32768,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"openai/gpt-4.1": {
@@ -1245,6 +1401,10 @@ export const githubModelsConfig: ModelConfig = {
 		maxTokens: 32768,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"openai/o3": {
@@ -1265,5 +1425,9 @@ export const githubModelsConfig: ModelConfig = {
 		maxTokens: 100000,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 };

@@ -22,6 +22,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		costPer1kInputTokens: 0.002,
 		costPer1kOutputTokens: 0.008,
 		supportsResponseFormat: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("openai/gpt-4o", PROVIDER, {
@@ -59,6 +63,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		costPer1kInputTokens: 0.00025,
 		costPer1kOutputTokens: 0.002,
 		supportsResponseFormat: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("openai/gpt-4.1", PROVIDER, {
@@ -96,6 +104,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		costPer1kInputTokens: 0.00125,
 		costPer1kOutputTokens: 0.01,
 		supportsResponseFormat: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("openai/o1", PROVIDER, {
@@ -116,6 +128,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		costPer1kInputTokens: 0.015,
 		costPer1kOutputTokens: 0.06,
 		supportsResponseFormat: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("openai/o3-mini", PROVIDER, {
@@ -133,6 +149,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		costPer1kInputTokens: 0.0011,
 		costPer1kOutputTokens: 0.0044,
 		supportsResponseFormat: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("openai/gpt-4-turbo", PROVIDER, {
@@ -204,6 +224,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		costPer1kInputTokens: 0.00005,
 		costPer1kOutputTokens: 0.0004,
 		supportsResponseFormat: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("openai/o4-mini", PROVIDER, {
@@ -221,6 +245,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		costPer1kInputTokens: 0.0011,
 		costPer1kOutputTokens: 0.0044,
 		supportsResponseFormat: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("openai/gpt-4.1-mini", PROVIDER, {
@@ -273,6 +301,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.00135,
 		costPer1kOutputTokens: 0.0054,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("anthropic/claude-4-1-opus", PROVIDER, {
@@ -346,6 +378,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 64000,
 		costPer1kInputTokens: 0.003,
 		costPer1kOutputTokens: 0.015,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("anthropic/claude-3-5-haiku", PROVIDER, {
@@ -464,7 +500,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	}),
 
 	createModelConfig("mistral/ministral-8b", PROVIDER, {
-		name: "Ministral 8B (latest)",
+		name: "Ministral 8B",
 		matchingModel: "mistral/ministral-8b",
 		supportsAttachments: false,
 		supportsTemperature: true,
@@ -480,7 +516,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	}),
 
 	createModelConfig("mistral/magistral-medium", PROVIDER, {
-		name: "Magistral Medium (latest)",
+		name: "Magistral Medium",
 		matchingModel: "mistral/magistral-medium",
 		supportsAttachments: false,
 		supportsTemperature: true,
@@ -493,10 +529,14 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.002,
 		costPer1kOutputTokens: 0.005,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("mistral/codestral", PROVIDER, {
-		name: "Codestral (latest)",
+		name: "Codestral",
 		matchingModel: "mistral/codestral",
 		supportsAttachments: false,
 		supportsTemperature: true,
@@ -512,7 +552,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	}),
 
 	createModelConfig("mistral/pixtral-large", PROVIDER, {
-		name: "Pixtral Large (latest)",
+		name: "Pixtral Large",
 		matchingModel: "mistral/pixtral-large",
 		supportsAttachments: true,
 		supportsTemperature: true,
@@ -544,7 +584,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	}),
 
 	createModelConfig("mistral/ministral-3b", PROVIDER, {
-		name: "Ministral 3B (latest)",
+		name: "Ministral 3B",
 		matchingModel: "mistral/ministral-3b",
 		supportsAttachments: false,
 		supportsTemperature: true,
@@ -560,7 +600,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	}),
 
 	createModelConfig("mistral/mistral-small", PROVIDER, {
-		name: "Mistral Small (latest)",
+		name: "Mistral Small",
 		matchingModel: "mistral/mistral-small",
 		supportsAttachments: true,
 		supportsTemperature: true,
@@ -573,6 +613,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 256000,
 		costPer1kInputTokens: 0.00015,
 		costPer1kOutputTokens: 0.0006,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("mistral/mixtral-8x22b-instruct", PROVIDER, {
@@ -605,6 +649,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.0005,
 		costPer1kOutputTokens: 0.0015,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("mistral/mistral-large", PROVIDER, {
@@ -655,6 +703,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00006,
 		costPer1kOutputTokens: 0.00024,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("alibaba/qwen-3-235b", PROVIDER, {
@@ -700,6 +752,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00008,
 		costPer1kOutputTokens: 0.00029,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("alibaba/qwen-3-32b", PROVIDER, {
@@ -719,6 +775,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.0001,
 		costPer1kOutputTokens: 0.0003,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("alibaba/qwen3-coder", PROVIDER, {
@@ -757,6 +817,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.00007,
 		costPer1kOutputTokens: 0.00027,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("alibaba/qwen3-coder-plus", PROVIDER, {
@@ -913,6 +977,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.00015,
 		costPer1kOutputTokens: 0.0015,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("alibaba/qwen3-vl-instruct", PROVIDER, {
@@ -951,6 +1019,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 129024,
 		costPer1kInputTokens: 0.0007,
 		costPer1kOutputTokens: 0.0084,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("amazon/nova-2-lite", PROVIDER, {
@@ -970,6 +1042,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 1000000,
 		costPer1kInputTokens: 0.0003,
 		costPer1kOutputTokens: 0.0025,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("amazon/titan-embed-text-v2", PROVIDER, {
@@ -1009,25 +1085,6 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		costPer1kOutputTokens: 0.004,
 	}),
 
-	createModelConfig("anthropic/claude-3.5-sonnet-20240620", PROVIDER, {
-		name: "Claude 3.5 Sonnet (2024-06-20)",
-		matchingModel: "anthropic/claude-3.5-sonnet-20240620",
-		knowledgeCutoffDate: "April 2024",
-		releaseDate: "June 20, 2024",
-		lastUpdated: "June 20, 2024",
-		modalities: {
-			input: ["text", "image", "pdf"],
-			output: ["text"],
-		},
-		supportsAttachments: true,
-		supportsTemperature: true,
-		supportsToolCalls: true,
-		contextWindow: 200000,
-		maxTokens: 8192,
-		costPer1kInputTokens: 0.003,
-		costPer1kOutputTokens: 0.015,
-	}),
-
 	createModelConfig("anthropic/claude-haiku-4.5", PROVIDER, {
 		name: "Claude Haiku 4.5",
 		matchingModel: "anthropic/claude-haiku-4.5",
@@ -1045,6 +1102,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 64000,
 		costPer1kInputTokens: 0.001,
 		costPer1kOutputTokens: 0.005,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("anthropic/claude-opus-4", PROVIDER, {
@@ -1064,6 +1125,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 32000,
 		costPer1kInputTokens: 0.015,
 		costPer1kOutputTokens: 0.075,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("anthropic/claude-opus-4.1", PROVIDER, {
@@ -1083,6 +1148,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 32000,
 		costPer1kInputTokens: 0.015,
 		costPer1kOutputTokens: 0.075,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("anthropic/claude-opus-4.5", PROVIDER, {
@@ -1102,6 +1171,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 64000,
 		costPer1kInputTokens: 0.005,
 		costPer1kOutputTokens: 0.025,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("anthropic/claude-opus-4.6", PROVIDER, {
@@ -1121,6 +1194,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.005,
 		costPer1kOutputTokens: 0.025,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("anthropic/claude-sonnet-4", PROVIDER, {
@@ -1140,6 +1217,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 64000,
 		costPer1kInputTokens: 0.003,
 		costPer1kOutputTokens: 0.015,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("anthropic/claude-sonnet-4.5", PROVIDER, {
@@ -1159,6 +1240,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 64000,
 		costPer1kInputTokens: 0.003,
 		costPer1kOutputTokens: 0.015,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("arcee-ai/trinity-large-preview", PROVIDER, {
@@ -1296,6 +1381,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 32000,
 		costPer1kInputTokens: 0.00025,
 		costPer1kOutputTokens: 0.002,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("bytedance/seed-1.8", PROVIDER, {
@@ -1315,6 +1404,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 64000,
 		costPer1kInputTokens: 0.00025,
 		costPer1kOutputTokens: 0.002,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("cohere/command-a", PROVIDER, {
@@ -1390,6 +1483,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.0003,
 		costPer1kOutputTokens: 0.001,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("deepseek/deepseek-v3.1-terminus", PROVIDER, {
@@ -1409,6 +1506,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.00027,
 		costPer1kOutputTokens: 0.001,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("deepseek/deepseek-v3.2", PROVIDER, {
@@ -1454,6 +1555,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 163840,
 		costPer1kInputTokens: 0.00027,
 		costPer1kOutputTokens: 0.0004,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("google/gemini-2.0-flash", PROVIDER, {
@@ -1514,6 +1619,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.0003,
 		costPer1kOutputTokens: 0.0025,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("google/gemini-2.5-flash-image", PROVIDER, {
@@ -1571,6 +1680,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.0001,
 		costPer1kOutputTokens: 0.0004,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("google/gemini-2.5-flash-lite-preview-09-2025", PROVIDER, {
@@ -1590,6 +1703,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.0001,
 		costPer1kOutputTokens: 0.0004,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("google/gemini-2.5-flash-preview-09-2025", PROVIDER, {
@@ -1609,6 +1726,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.0003,
 		costPer1kOutputTokens: 0.0025,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("google/gemini-2.5-pro", PROVIDER, {
@@ -1629,6 +1750,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.00125,
 		costPer1kOutputTokens: 0.01,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("google/gemini-3-flash", PROVIDER, {
@@ -1648,6 +1773,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 64000,
 		costPer1kInputTokens: 0.0005,
 		costPer1kOutputTokens: 0.003,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("google/gemini-3-pro-image", PROVIDER, {
@@ -1686,6 +1815,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 64000,
 		costPer1kInputTokens: 0.002,
 		costPer1kOutputTokens: 0.012,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("google/gemini-embedding-001", PROVIDER, {
@@ -1824,6 +1957,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		supportsToolCalls: false,
 		contextWindow: 256000,
 		maxTokens: 32000,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("meituan/longcat-flash-chat", PROVIDER, {
@@ -1860,6 +1997,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 8192,
 		costPer1kInputTokens: 0.00015,
 		costPer1kOutputTokens: 0.0015,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("meta/llama-3.1-70b", PROVIDER, {
@@ -2050,6 +2191,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 262114,
 		costPer1kInputTokens: 0.00027,
 		costPer1kOutputTokens: 0.00115,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("minimax/minimax-m2.1", PROVIDER, {
@@ -2069,6 +2214,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.0003,
 		costPer1kOutputTokens: 0.0012,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("minimax/minimax-m2.1-lightning", PROVIDER, {
@@ -2088,6 +2237,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.0003,
 		costPer1kOutputTokens: 0.0024,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("mistral/codestral-embed", PROVIDER, {
@@ -2255,25 +2408,6 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		costPer1kOutputTokens: 0.00017,
 	}),
 
-	createModelConfig("moonshotai/kimi-k2-0905", PROVIDER, {
-		name: "Kimi K2 0905",
-		matchingModel: "moonshotai/kimi-k2-0905",
-		knowledgeCutoffDate: "October 2024",
-		releaseDate: "September 5, 2025",
-		lastUpdated: "September 5, 2025",
-		modalities: {
-			input: ["text"],
-			output: ["text"],
-		},
-		supportsAttachments: false,
-		supportsTemperature: true,
-		supportsToolCalls: false,
-		contextWindow: 131072,
-		maxTokens: 16384,
-		costPer1kInputTokens: 0.0006,
-		costPer1kOutputTokens: 0.0025,
-	}),
-
 	createModelConfig("moonshotai/kimi-k2-thinking", PROVIDER, {
 		name: "Kimi K2 Thinking",
 		matchingModel: "moonshotai/kimi-k2-thinking",
@@ -2291,6 +2425,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 216144,
 		costPer1kInputTokens: 0.00047,
 		costPer1kOutputTokens: 0.002,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("moonshotai/kimi-k2-turbo", PROVIDER, {
@@ -2336,6 +2474,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 262144,
 		costPer1kInputTokens: 0.0006,
 		costPer1kOutputTokens: 0.0012,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("morph/morph-v3-fast", PROVIDER, {
@@ -2391,6 +2533,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 262144,
 		costPer1kInputTokens: 0.00006,
 		costPer1kOutputTokens: 0.00024,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("nvidia/nemotron-nano-12b-v2-vl", PROVIDER, {
@@ -2410,6 +2556,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.0002,
 		costPer1kOutputTokens: 0.0006,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("nvidia/nemotron-nano-9b-v2", PROVIDER, {
@@ -2429,6 +2579,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.00004,
 		costPer1kOutputTokens: 0.00016,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("openai/codex-mini", PROVIDER, {
@@ -2448,6 +2602,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 100000,
 		costPer1kInputTokens: 0.0015,
 		costPer1kOutputTokens: 0.006,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("openai/gpt-3.5-turbo", PROVIDER, {
@@ -2525,6 +2683,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00125,
 		costPer1kOutputTokens: 0.01,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("openai/gpt-5-codex", PROVIDER, {
@@ -2545,6 +2707,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.00125,
 		costPer1kOutputTokens: 0.01,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("openai/gpt-5-pro", PROVIDER, {
@@ -2564,6 +2730,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 272000,
 		costPer1kInputTokens: 0.015,
 		costPer1kOutputTokens: 0.12,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("openai/gpt-5.1-codex", PROVIDER, {
@@ -2583,6 +2753,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.00125,
 		costPer1kOutputTokens: 0.01,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("openai/gpt-5.1-codex-max", PROVIDER, {
@@ -2602,6 +2776,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.00125,
 		costPer1kOutputTokens: 0.01,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("openai/gpt-5.1-codex-mini", PROVIDER, {
@@ -2621,6 +2799,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.00025,
 		costPer1kOutputTokens: 0.002,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("openai/gpt-5.1-instant", PROVIDER, {
@@ -2640,6 +2822,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00125,
 		costPer1kOutputTokens: 0.01,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("openai/gpt-5.1-thinking", PROVIDER, {
@@ -2659,6 +2845,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.00125,
 		costPer1kOutputTokens: 0.01,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("openai/gpt-5.2", PROVIDER, {
@@ -2678,6 +2868,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.00175,
 		costPer1kOutputTokens: 0.014,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("openai/gpt-5.2-chat", PROVIDER, {
@@ -2697,6 +2891,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00175,
 		costPer1kOutputTokens: 0.014,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("openai/gpt-5.2-codex", PROVIDER, {
@@ -2716,6 +2914,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.00175,
 		costPer1kOutputTokens: 0.014,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("openai/gpt-5.2-pro", PROVIDER, {
@@ -2735,6 +2937,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.021,
 		costPer1kOutputTokens: 0.168,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("openai/gpt-oss-120b", PROVIDER, {
@@ -2754,6 +2960,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.0001,
 		costPer1kOutputTokens: 0.0005,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("openai/gpt-oss-20b", PROVIDER, {
@@ -2773,6 +2983,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.00007,
 		costPer1kOutputTokens: 0.0003,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("openai/gpt-oss-safeguard-20b", PROVIDER, {
@@ -2792,6 +3006,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.00008,
 		costPer1kOutputTokens: 0.0003,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("openai/o3-deep-research", PROVIDER, {
@@ -2811,6 +3029,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 100000,
 		costPer1kInputTokens: 0.01,
 		costPer1kOutputTokens: 0.04,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("openai/o3-pro", PROVIDER, {
@@ -2830,6 +3052,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 100000,
 		costPer1kInputTokens: 0.02,
 		costPer1kOutputTokens: 0.08,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("openai/text-embedding-3-large", PROVIDER, {
@@ -2941,6 +3167,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 8000,
 		costPer1kInputTokens: 0.001,
 		costPer1kOutputTokens: 0.005,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("perplexity/sonar-reasoning-pro", PROVIDER, {
@@ -2960,6 +3190,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 8000,
 		costPer1kInputTokens: 0.002,
 		costPer1kOutputTokens: 0.008,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("prime-intellect/intellect-3", PROVIDER, {
@@ -2979,6 +3213,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.0002,
 		costPer1kOutputTokens: 0.0011,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("recraft/recraft-v2", PROVIDER, {
@@ -3029,6 +3267,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 32000,
 		costPer1kInputTokens: 0.003,
 		costPer1kOutputTokens: 0.015,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("vercel/v0-1.5-md", PROVIDER, {
@@ -3047,6 +3289,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 32000,
 		costPer1kInputTokens: 0.003,
 		costPer1kOutputTokens: 0.015,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("voyage/voyage-3-large", PROVIDER, {
@@ -3328,6 +3574,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 256000,
 		costPer1kInputTokens: 0.0002,
 		costPer1kOutputTokens: 0.0005,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("xai/grok-4.1-fast-non-reasoning", PROVIDER, {
@@ -3366,6 +3616,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 30000,
 		costPer1kInputTokens: 0.0002,
 		costPer1kOutputTokens: 0.0005,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("xai/grok-code-fast-1", PROVIDER, {
@@ -3404,6 +3658,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 32000,
 		costPer1kInputTokens: 0.0001,
 		costPer1kOutputTokens: 0.00029,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("zai/glm-4.5", PROVIDER, {
@@ -3423,6 +3681,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.0006,
 		costPer1kOutputTokens: 0.0022,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("zai/glm-4.5-air", PROVIDER, {
@@ -3442,6 +3704,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 96000,
 		costPer1kInputTokens: 0.0002,
 		costPer1kOutputTokens: 0.0011,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("zai/glm-4.5v", PROVIDER, {
@@ -3461,6 +3727,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 66000,
 		costPer1kInputTokens: 0.0006,
 		costPer1kOutputTokens: 0.0018,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("zai/glm-4.6", PROVIDER, {
@@ -3480,6 +3750,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 96000,
 		costPer1kInputTokens: 0.00045,
 		costPer1kOutputTokens: 0.0018,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("zai/glm-4.6v", PROVIDER, {
@@ -3499,6 +3773,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 24000,
 		costPer1kInputTokens: 0.0003,
 		costPer1kOutputTokens: 0.0009,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("zai/glm-4.6v-flash", PROVIDER, {
@@ -3516,6 +3794,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		supportsToolCalls: true,
 		contextWindow: 128000,
 		maxTokens: 24000,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("zai/glm-4.7", PROVIDER, {
@@ -3535,6 +3817,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 120000,
 		costPer1kInputTokens: 0.00043,
 		costPer1kOutputTokens: 0.00175,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("zai/glm-4.7-flashx", PROVIDER, {
@@ -3554,6 +3840,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.00006,
 		costPer1kOutputTokens: 0.0004,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 	createModelConfig("alibaba/qwen-3.6-max-preview", PROVIDER, {
 		name: "Qwen 3.6 Max Preview",
@@ -3571,6 +3861,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 64000,
 		costPer1kInputTokens: 0.0013,
 		costPer1kOutputTokens: 0.0078,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("alibaba/qwen3-coder-next", PROVIDER, {
@@ -3589,6 +3883,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 256000,
 		costPer1kInputTokens: 0.0005,
 		costPer1kOutputTokens: 0.0012,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("alibaba/qwen3-vl-235b-a22b-instruct", PROVIDER, {
@@ -3625,6 +3923,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 64000,
 		costPer1kInputTokens: 0.0001,
 		costPer1kOutputTokens: 0.0004,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("alibaba/qwen3.5-plus", PROVIDER, {
@@ -3643,6 +3945,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 64000,
 		costPer1kInputTokens: 0.0004,
 		costPer1kOutputTokens: 0.0024,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("alibaba/qwen3.6-27b", PROVIDER, {
@@ -3661,6 +3967,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 256000,
 		costPer1kInputTokens: 0.0006,
 		costPer1kOutputTokens: 0.0036,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("alibaba/qwen3.6-plus", PROVIDER, {
@@ -3679,6 +3989,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 64000,
 		costPer1kInputTokens: 0.0005,
 		costPer1kOutputTokens: 0.003,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("anthropic/claude-opus-4.7", PROVIDER, {
@@ -3697,6 +4011,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.005,
 		costPer1kOutputTokens: 0.025,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("anthropic/claude-sonnet-4.6", PROVIDER, {
@@ -3716,6 +4034,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.003,
 		costPer1kOutputTokens: 0.015,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("arcee-ai/trinity-large-thinking", PROVIDER, {
@@ -3734,6 +4056,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 80000,
 		costPer1kInputTokens: 0.00025,
 		costPer1kOutputTokens: 0.0009,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("deepseek/deepseek-v4-flash", PROVIDER, {
@@ -3752,6 +4078,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 384000,
 		costPer1kInputTokens: 0.00014,
 		costPer1kOutputTokens: 0.00028,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("deepseek/deepseek-v4-pro", PROVIDER, {
@@ -3770,6 +4100,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 384000,
 		costPer1kInputTokens: 0.00174,
 		costPer1kOutputTokens: 0.00348,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("google/gemini-3.1-flash-image-preview", PROVIDER, {
@@ -3788,6 +4122,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.0005,
 		costPer1kOutputTokens: 0.003,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("google/gemini-3.1-flash-lite", PROVIDER, {
@@ -3806,6 +4144,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 65000,
 		costPer1kInputTokens: 0.00025,
 		costPer1kOutputTokens: 0.0015,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("google/gemini-3.1-flash-lite-preview", PROVIDER, {
@@ -3824,6 +4166,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 65000,
 		costPer1kInputTokens: 0.00025,
 		costPer1kOutputTokens: 0.0015,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("google/gemini-3.1-pro-preview", PROVIDER, {
@@ -3842,6 +4188,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 64000,
 		costPer1kInputTokens: 0.002,
 		costPer1kOutputTokens: 0.012,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("google/gemini-embedding-2", PROVIDER, {
@@ -3876,6 +4226,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.00013,
 		costPer1kOutputTokens: 0.0004,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("google/gemma-4-31b-it", PROVIDER, {
@@ -3894,6 +4248,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.00014,
 		costPer1kOutputTokens: 0.0004,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("inception/mercury-2", PROVIDER, {
@@ -3912,6 +4270,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.00025,
 		costPer1kOutputTokens: 0.00075,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("inception/mercury-edit-2", PROVIDER, {
@@ -3930,6 +4292,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 8192,
 		costPer1kInputTokens: 0.00025,
 		costPer1kOutputTokens: 0.00075,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("interfaze/interfaze-beta", PROVIDER, {
@@ -3948,6 +4314,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 32000,
 		costPer1kInputTokens: 0.0015,
 		costPer1kOutputTokens: 0.0035,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("kwaipilot/kat-coder-pro-v2", PROVIDER, {
@@ -3966,22 +4336,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 256000,
 		costPer1kInputTokens: 0.0003,
 		costPer1kOutputTokens: 0.0012,
-	}),
-
-	createModelConfig("meituan/longcat-flash-thinking-2601", PROVIDER, {
-		name: "LongCat Flash Thinking 2601",
-		matchingModel: "meituan/longcat-flash-thinking-2601",
-		releaseDate: "March 13, 2026",
-		lastUpdated: "March 13, 2026",
-		modalities: {
-			input: ["text"],
-			output: ["text"],
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
 		},
-		supportsAttachments: false,
-		supportsTemperature: true,
-		supportsToolCalls: false,
-		contextWindow: 32768,
-		maxTokens: 32768,
 	}),
 
 	createModelConfig("minimax/minimax-m2.5", PROVIDER, {
@@ -4000,6 +4358,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 131000,
 		costPer1kInputTokens: 0.0003,
 		costPer1kOutputTokens: 0.0012,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("minimax/minimax-m2.5-highspeed", PROVIDER, {
@@ -4018,6 +4380,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 0,
 		costPer1kInputTokens: 0.0006,
 		costPer1kOutputTokens: 0.0024,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("minimax/minimax-m2.7", PROVIDER, {
@@ -4036,6 +4402,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 131000,
 		costPer1kInputTokens: 0.0003,
 		costPer1kOutputTokens: 0.0012,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("minimax/minimax-m2.7-highspeed", PROVIDER, {
@@ -4054,6 +4424,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 131100,
 		costPer1kInputTokens: 0.0006,
 		costPer1kOutputTokens: 0.0024,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("moonshotai/kimi-k2.6", PROVIDER, {
@@ -4072,6 +4446,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 262000,
 		costPer1kInputTokens: 0.00095,
 		costPer1kOutputTokens: 0.004,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("nvidia/nemotron-3-super-120b-a12b", PROVIDER, {
@@ -4108,6 +4486,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00175,
 		costPer1kOutputTokens: 0.014,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("openai/gpt-5.3-codex", PROVIDER, {
@@ -4126,6 +4508,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.00175,
 		costPer1kOutputTokens: 0.014,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("openai/gpt-5.4", PROVIDER, {
@@ -4144,6 +4530,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.0025,
 		costPer1kOutputTokens: 0.015,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("openai/gpt-5.4-mini", PROVIDER, {
@@ -4162,6 +4552,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.00075,
 		costPer1kOutputTokens: 0.0045,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("openai/gpt-5.4-nano", PROVIDER, {
@@ -4180,6 +4574,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.0002,
 		costPer1kOutputTokens: 0.00125,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("openai/gpt-5.4-pro", PROVIDER, {
@@ -4198,6 +4596,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.03,
 		costPer1kOutputTokens: 0.18,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("openai/gpt-5.5", PROVIDER, {
@@ -4216,6 +4618,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.005,
 		costPer1kOutputTokens: 0.03,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("openai/gpt-5.5-pro", PROVIDER, {
@@ -4234,6 +4640,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.03,
 		costPer1kOutputTokens: 0.18,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("voyage/voyage-4", PROVIDER, {
@@ -4300,6 +4710,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 2000000,
 		costPer1kInputTokens: 0.002,
 		costPer1kOutputTokens: 0.006,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("xai/grok-4.20-multi-agent-beta", PROVIDER, {
@@ -4318,6 +4732,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 2000000,
 		costPer1kInputTokens: 0.002,
 		costPer1kOutputTokens: 0.006,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("xai/grok-4.20-non-reasoning", PROVIDER, {
@@ -4372,6 +4790,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 2000000,
 		costPer1kInputTokens: 0.002,
 		costPer1kOutputTokens: 0.006,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("xai/grok-4.20-reasoning-beta", PROVIDER, {
@@ -4390,6 +4812,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 2000000,
 		costPer1kInputTokens: 0.002,
 		costPer1kOutputTokens: 0.006,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("xai/grok-4.3", PROVIDER, {
@@ -4408,6 +4834,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 1000000,
 		costPer1kInputTokens: 0.00125,
 		costPer1kOutputTokens: 0.0025,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("xai/grok-imagine-image", PROVIDER, {
@@ -4458,6 +4888,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.001,
 		costPer1kOutputTokens: 0.003,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("xiaomi/mimo-v2.5", PROVIDER, {
@@ -4476,6 +4910,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 131100,
 		costPer1kInputTokens: 0.0004,
 		costPer1kOutputTokens: 0.002,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("xiaomi/mimo-v2.5-pro", PROVIDER, {
@@ -4494,6 +4932,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 131000,
 		costPer1kInputTokens: 0.001,
 		costPer1kOutputTokens: 0.003,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("zai/glm-4.7-flash", PROVIDER, {
@@ -4512,6 +4954,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 131000,
 		costPer1kInputTokens: 0.00007,
 		costPer1kOutputTokens: 0.0004,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("zai/glm-5", PROVIDER, {
@@ -4530,6 +4976,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.001,
 		costPer1kOutputTokens: 0.0032,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("zai/glm-5-turbo", PROVIDER, {
@@ -4548,6 +4998,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 131100,
 		costPer1kInputTokens: 0.0012,
 		costPer1kOutputTokens: 0.004,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("zai/glm-5.1", PROVIDER, {
@@ -4566,6 +5020,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 202752,
 		costPer1kInputTokens: 0.0014,
 		costPer1kOutputTokens: 0.0044,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("zai/glm-5v-turbo", PROVIDER, {
@@ -4584,5 +5042,96 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.0012,
 		costPer1kOutputTokens: 0.004,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
+	}),
+	createModelConfig("alibaba/qwen3.7-max", PROVIDER, {
+		name: "Qwen 3.7 Max",
+		matchingModel: "alibaba/qwen3.7-max",
+		releaseDate: "May 21, 2026",
+		lastUpdated: "May 21, 2026",
+		modalities: {
+			input: ["text", "image", "pdf"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 991000,
+		maxTokens: 64000,
+		costPer1kInputTokens: 0.0025,
+		costPer1kOutputTokens: 0.0075,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
+	}),
+
+	createModelConfig("google/gemini-3.5-flash", PROVIDER, {
+		name: "Gemini 3.5 Flash",
+		matchingModel: "google/gemini-3.5-flash",
+		releaseDate: "May 19, 2026",
+		lastUpdated: "May 21, 2026",
+		modalities: {
+			input: ["text", "image", "pdf"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 1000000,
+		maxTokens: 64000,
+		costPer1kInputTokens: 0.0015,
+		costPer1kOutputTokens: 0.009,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
+	}),
+
+	createModelConfig("mistral/mistral-medium-3.5", PROVIDER, {
+		name: "Mistral Medium Latest",
+		matchingModel: "mistral/mistral-medium-3.5",
+		releaseDate: "May 21, 2026",
+		lastUpdated: "May 21, 2026",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 256000,
+		maxTokens: 256000,
+		costPer1kInputTokens: 0.0015,
+		costPer1kOutputTokens: 0.0075,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
+	}),
+
+	createModelConfig("xai/grok-build-0.1", PROVIDER, {
+		name: "Grok Build 0.1",
+		matchingModel: "xai/grok-build-0.1",
+		releaseDate: "May 20, 2026",
+		lastUpdated: "May 21, 2026",
+		modalities: {
+			input: ["text", "image"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 256000,
+		maxTokens: 256000,
+		costPer1kInputTokens: 0.001,
+		costPer1kOutputTokens: 0.002,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 ]);

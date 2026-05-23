@@ -26,13 +26,17 @@ export const openrouterModelConfig: ModelConfig = {
 		supportsArtifacts: true,
 		knowledgeCutoffDate: "June 30, 2024",
 		supportsResponseFormat: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"openai/gpt-4.1-mini": {
 		name: "GPT-4.1 Mini",
 		matchingModel: "openai/gpt-4.1-mini",
 		provider: "openrouter",
-		knowledgeCutoffDate: "June 30, 2024",
+		knowledgeCutoffDate: "April 2024",
 		releaseDate: "April 14, 2025",
 		lastUpdated: "April 14, 2025",
 		modalities: {
@@ -60,7 +64,7 @@ export const openrouterModelConfig: ModelConfig = {
 		name: "o4 Mini",
 		matchingModel: "openai/o4-mini",
 		provider: "openrouter",
-		knowledgeCutoffDate: "June 30, 2024",
+		knowledgeCutoffDate: "May 2024",
 		releaseDate: "April 16, 2025",
 		lastUpdated: "April 16, 2025",
 		modalities: {
@@ -82,13 +86,17 @@ export const openrouterModelConfig: ModelConfig = {
 		includedInRouter: false,
 		supportsArtifacts: true,
 		supportsResponseFormat: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"openai/gpt-5-nano": {
 		name: "GPT-5 Nano",
 		matchingModel: "openai/gpt-5-nano",
 		provider: "openrouter",
-		knowledgeCutoffDate: "May 31, 2024",
+		knowledgeCutoffDate: "May 30, 2024",
 		releaseDate: "August 7, 2025",
 		lastUpdated: "August 7, 2025",
 		modalities: {
@@ -110,13 +118,17 @@ export const openrouterModelConfig: ModelConfig = {
 		includedInRouter: true,
 		supportsArtifacts: true,
 		supportsResponseFormat: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"openai/gpt-4o-mini-openrouter": {
 		name: "GPT-4o-mini",
 		matchingModel: "openai/gpt-4o-mini",
 		provider: "openrouter",
-		knowledgeCutoffDate: "October 31, 2023",
+		knowledgeCutoffDate: "September 2023",
 		releaseDate: "July 18, 2024",
 		lastUpdated: "July 18, 2024",
 		modalities: {
@@ -167,6 +179,10 @@ export const openrouterModelConfig: ModelConfig = {
 		includedInRouter: false,
 		supportsArtifacts: true,
 		supportsResponseFormat: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"openai/gpt-oss-20b": {
@@ -194,13 +210,17 @@ export const openrouterModelConfig: ModelConfig = {
 		supportsArtifacts: true,
 		knowledgeCutoffDate: "June 30, 2024",
 		supportsResponseFormat: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"openai/gpt-4.1": {
 		name: "GPT-4.1",
 		matchingModel: "openai/gpt-4.1",
 		provider: "openrouter",
-		knowledgeCutoffDate: "June 30, 2024",
+		knowledgeCutoffDate: "April 2024",
 		releaseDate: "April 14, 2025",
 		lastUpdated: "April 14, 2025",
 		modalities: {
@@ -228,7 +248,7 @@ export const openrouterModelConfig: ModelConfig = {
 		name: "GPT-5 Mini",
 		matchingModel: "openai/gpt-5-mini",
 		provider: "openrouter",
-		knowledgeCutoffDate: "May 31, 2024",
+		knowledgeCutoffDate: "May 30, 2024",
 		releaseDate: "August 7, 2025",
 		lastUpdated: "August 7, 2025",
 		modalities: {
@@ -250,6 +270,10 @@ export const openrouterModelConfig: ModelConfig = {
 		includedInRouter: true,
 		supportsArtifacts: true,
 		supportsResponseFormat: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"deepseek/deepseek-r1-free": {
@@ -333,6 +357,10 @@ export const openrouterModelConfig: ModelConfig = {
 		includedInRouter: false,
 		supportsArtifacts: true,
 		supportsResponseFormat: false,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"anthropic/claude-opus-4": {
@@ -362,6 +390,10 @@ export const openrouterModelConfig: ModelConfig = {
 		includedInRouter: false,
 		supportsArtifacts: true,
 		supportsResponseFormat: false,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"anthropic/claude-haiku-3.5": {
@@ -500,15 +532,19 @@ export const openrouterModelConfig: ModelConfig = {
 		description:
 			"Kimi K2 Thinking is Moonshot AI’s most advanced open reasoning model to date, extending the K2 series into agentic, long-horizon reasoning.",
 		supportsResponseFormat: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"google/gemini-2.5-pro": {
 		name: "Gemini 2.5 Pro",
 		matchingModel: "google/gemini-2.5-pro",
 		provider: "openrouter",
-		knowledgeCutoffDate: "January 31, 2025",
-		releaseDate: "June 17, 2025",
-		lastUpdated: "June 17, 2025",
+		knowledgeCutoffDate: "January 2025",
+		releaseDate: "March 20, 2025",
+		lastUpdated: "June 5, 2025",
 		modalities: {
 			input: ["text", "image", "pdf", "audio", "video"],
 			output: ["text"],
@@ -529,15 +565,19 @@ export const openrouterModelConfig: ModelConfig = {
 		supportsArtifacts: true,
 		supportsResponseFormat: true,
 		costPer1kReasoningTokens: 0.01,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"google/gemini-2.5-flash": {
 		name: "Gemini 2.5 Flash",
 		matchingModel: "google/gemini-2.5-flash",
 		provider: "openrouter",
-		knowledgeCutoffDate: "January 31, 2025",
-		releaseDate: "June 17, 2025",
-		lastUpdated: "June 17, 2025",
+		knowledgeCutoffDate: "January 2025",
+		releaseDate: "March 20, 2025",
+		lastUpdated: "June 5, 2025",
 		modalities: {
 			input: ["pdf", "image", "text", "audio", "video"],
 			output: ["text"],
@@ -558,13 +598,17 @@ export const openrouterModelConfig: ModelConfig = {
 		supportsArtifacts: true,
 		supportsResponseFormat: true,
 		costPer1kReasoningTokens: 0.0025,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"meta-llama/llama-3.3-70b-free": {
 		name: "Llama 3.3 70B Instruct (free)",
 		matchingModel: "meta-llama/llama-3.3-70b-instruct:free",
 		provider: "openrouter",
-		knowledgeCutoffDate: "December 31, 2023",
+		knowledgeCutoffDate: "December 2023",
 		releaseDate: "December 6, 2024",
 		lastUpdated: "December 6, 2024",
 		modalities: {
@@ -665,6 +709,10 @@ export const openrouterModelConfig: ModelConfig = {
 		releaseDate: "November 8, 2023",
 		lastUpdated: "November 8, 2023",
 		supportsResponseFormat: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 	"allenai/molmo-2-8b:free": {
 		name: "Molmo2 8B (free)",
@@ -725,13 +773,17 @@ export const openrouterModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0.001,
 		costPer1kOutputTokens: 0.005,
 		supportsResponseFormat: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"anthropic/claude-opus-4.1": {
 		name: "Claude Opus 4.1",
 		matchingModel: "anthropic/claude-opus-4.1",
 		provider: "openrouter",
-		knowledgeCutoffDate: "January 31, 2025",
+		knowledgeCutoffDate: "March 31, 2025",
 		releaseDate: "August 5, 2025",
 		lastUpdated: "August 5, 2025",
 		modalities: {
@@ -746,13 +798,17 @@ export const openrouterModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0.015,
 		costPer1kOutputTokens: 0.075,
 		supportsResponseFormat: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"anthropic/claude-opus-4.5": {
 		name: "Claude Opus 4.5",
 		matchingModel: "anthropic/claude-opus-4.5",
 		provider: "openrouter",
-		knowledgeCutoffDate: "May 30, 2025",
+		knowledgeCutoffDate: "March 31, 2025",
 		releaseDate: "November 24, 2025",
 		lastUpdated: "November 24, 2025",
 		modalities: {
@@ -767,6 +823,10 @@ export const openrouterModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0.005,
 		costPer1kOutputTokens: 0.025,
 		supportsResponseFormat: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"anthropic/claude-opus-4.6": {
@@ -774,8 +834,8 @@ export const openrouterModelConfig: ModelConfig = {
 		matchingModel: "anthropic/claude-opus-4.6",
 		provider: "openrouter",
 		knowledgeCutoffDate: "May 31, 2025",
-		releaseDate: "February 4, 2026",
-		lastUpdated: "February 4, 2026",
+		releaseDate: "February 5, 2026",
+		lastUpdated: "March 13, 2026",
 		modalities: {
 			input: ["text", "image", "pdf"],
 			output: ["text"],
@@ -788,13 +848,17 @@ export const openrouterModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0.005,
 		costPer1kOutputTokens: 0.025,
 		supportsResponseFormat: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"anthropic/claude-sonnet-4.5": {
 		name: "Claude Sonnet 4.5",
 		matchingModel: "anthropic/claude-sonnet-4.5",
 		provider: "openrouter",
-		knowledgeCutoffDate: "January 31, 2025",
+		knowledgeCutoffDate: "July 31, 2025",
 		releaseDate: "September 29, 2025",
 		lastUpdated: "September 29, 2025",
 		modalities: {
@@ -809,6 +873,10 @@ export const openrouterModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0.003,
 		costPer1kOutputTokens: 0.015,
 		supportsResponseFormat: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"arcee-ai/trinity-large-preview:free": {
@@ -1052,6 +1120,10 @@ export const openrouterModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0.00021,
 		costPer1kOutputTokens: 0.00079,
 		supportsResponseFormat: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"deepseek/deepseek-r1-0528-qwen3-8b:free": {
@@ -1093,6 +1165,10 @@ export const openrouterModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0.0007,
 		costPer1kOutputTokens: 0.0008,
 		supportsResponseFormat: false,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"deepseek/deepseek-r1-distill-qwen-14b": {
@@ -1154,6 +1230,10 @@ export const openrouterModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0.00027,
 		costPer1kOutputTokens: 0.00095,
 		supportsResponseFormat: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"deepseek/deepseek-v3.1-terminus:exacto": {
@@ -1195,6 +1275,10 @@ export const openrouterModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0.000252,
 		costPer1kOutputTokens: 0.000378,
 		supportsResponseFormat: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"deepseek/deepseek-v3.2-speciale": {
@@ -1216,6 +1300,10 @@ export const openrouterModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0.000287,
 		costPer1kOutputTokens: 0.000431,
 		supportsResponseFormat: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"featherless/qwerky-72b": {
@@ -1283,9 +1371,9 @@ export const openrouterModelConfig: ModelConfig = {
 		name: "Gemini 2.5 Flash Lite",
 		matchingModel: "google/gemini-2.5-flash-lite",
 		provider: "openrouter",
-		knowledgeCutoffDate: "January 31, 2025",
-		releaseDate: "July 22, 2025",
-		lastUpdated: "July 22, 2025",
+		knowledgeCutoffDate: "January 2025",
+		releaseDate: "June 17, 2025",
+		lastUpdated: "June 17, 2025",
 		modalities: {
 			input: ["text", "image", "pdf", "audio", "video"],
 			output: ["text"],
@@ -1299,6 +1387,10 @@ export const openrouterModelConfig: ModelConfig = {
 		costPer1kOutputTokens: 0.0004,
 		supportsResponseFormat: true,
 		costPer1kReasoningTokens: 0.0004,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"google/gemini-2.5-flash-lite-preview-09-2025": {
@@ -1321,6 +1413,10 @@ export const openrouterModelConfig: ModelConfig = {
 		costPer1kOutputTokens: 0.0004,
 		supportsResponseFormat: true,
 		costPer1kReasoningTokens: 0.0004,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"google/gemini-2.5-flash-preview-09-2025": {
@@ -1363,6 +1459,10 @@ export const openrouterModelConfig: ModelConfig = {
 		costPer1kOutputTokens: 0.01,
 		supportsResponseFormat: true,
 		costPer1kReasoningTokens: 0.01,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"google/gemini-2.5-pro-preview-06-05": {
@@ -1405,6 +1505,10 @@ export const openrouterModelConfig: ModelConfig = {
 		costPer1kOutputTokens: 0.003,
 		supportsResponseFormat: true,
 		costPer1kReasoningTokens: 0.003,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"google/gemini-3-pro-preview": {
@@ -1691,6 +1795,10 @@ export const openrouterModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
 		supportsResponseFormat: false,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"meta-llama/llama-3.1-405b-instruct:free": {
@@ -1835,14 +1943,18 @@ export const openrouterModelConfig: ModelConfig = {
 		costPer1kOutputTokens: 0.0022,
 		knowledgeCutoffDate: "June 30, 2024",
 		supportsResponseFormat: false,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"minimax/minimax-m2": {
 		name: "MiniMax M2",
 		matchingModel: "minimax/minimax-m2",
 		provider: "openrouter",
-		releaseDate: "October 23, 2025",
-		lastUpdated: "October 23, 2025",
+		releaseDate: "October 27, 2025",
+		lastUpdated: "October 27, 2025",
 		modalities: {
 			input: ["text"],
 			output: ["text"],
@@ -1855,6 +1967,10 @@ export const openrouterModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0.000255,
 		costPer1kOutputTokens: 0.001,
 		supportsResponseFormat: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"minimax/minimax-m2.1": {
@@ -1875,6 +1991,10 @@ export const openrouterModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0.00029,
 		costPer1kOutputTokens: 0.00095,
 		supportsResponseFormat: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"mistralai/codestral-2508": {
@@ -1937,46 +2057,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 262144,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
-	},
-
-	"mistralai/devstral-medium-2507": {
-		name: "Devstral Medium",
-		matchingModel: "mistralai/devstral-medium-2507",
-		provider: "openrouter",
-		knowledgeCutoffDate: "May 2025",
-		releaseDate: "July 10, 2025",
-		lastUpdated: "July 10, 2025",
-		modalities: {
-			input: ["text"],
-			output: ["text"],
-		},
-		supportsAttachments: false,
-		supportsTemperature: true,
-		supportsToolCalls: true,
-		contextWindow: 131072,
-		maxTokens: 131072,
-		costPer1kInputTokens: 0.0004,
-		costPer1kOutputTokens: 0.002,
-	},
-
-	"mistralai/devstral-small-2505": {
-		name: "Devstral Small",
-		matchingModel: "mistralai/devstral-small-2505",
-		provider: "openrouter",
-		knowledgeCutoffDate: "May 2025",
-		releaseDate: "May 7, 2025",
-		lastUpdated: "May 7, 2025",
-		modalities: {
-			input: ["text"],
-			output: ["text"],
-		},
-		supportsAttachments: false,
-		supportsTemperature: true,
-		supportsToolCalls: true,
-		contextWindow: 128000,
-		maxTokens: 128000,
-		costPer1kInputTokens: 0.00006,
-		costPer1kOutputTokens: 0.00012,
 	},
 
 	"mistralai/devstral-small-2505:free": {
@@ -2163,27 +2243,6 @@ export const openrouterModelConfig: ModelConfig = {
 		costPer1kOutputTokens: 0,
 	},
 
-	"moonshotai/kimi-k2-0905": {
-		name: "Kimi K2 0905",
-		matchingModel: "moonshotai/kimi-k2-0905",
-		provider: "openrouter",
-		knowledgeCutoffDate: "December 31, 2024",
-		releaseDate: "September 4, 2025",
-		lastUpdated: "September 4, 2025",
-		modalities: {
-			input: ["text"],
-			output: ["text"],
-		},
-		supportsAttachments: false,
-		supportsTemperature: true,
-		supportsToolCalls: true,
-		contextWindow: 262144,
-		maxTokens: 262144,
-		costPer1kInputTokens: 0.0006,
-		costPer1kOutputTokens: 0.0025,
-		supportsResponseFormat: true,
-	},
-
 	"moonshotai/kimi-k2-0905:exacto": {
 		name: "Kimi K2 Instruct 0905 (exacto)",
 		matchingModel: "moonshotai/kimi-k2-0905:exacto",
@@ -2229,8 +2288,8 @@ export const openrouterModelConfig: ModelConfig = {
 		matchingModel: "moonshotai/kimi-k2.5",
 		provider: "openrouter",
 		knowledgeCutoffDate: "January 2025",
-		releaseDate: "January 27, 2026",
-		lastUpdated: "January 27, 2026",
+		releaseDate: "January 2026",
+		lastUpdated: "January 2026",
 		modalities: {
 			input: ["text", "image"],
 			output: ["text"],
@@ -2243,6 +2302,10 @@ export const openrouterModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0.0004,
 		costPer1kOutputTokens: 0.0019,
 		supportsResponseFormat: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"nousresearch/deephermes-3-llama-3-8b-preview": {
@@ -2305,6 +2368,10 @@ export const openrouterModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0.001,
 		costPer1kOutputTokens: 0.003,
 		supportsResponseFormat: false,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"nousresearch/hermes-4-70b": {
@@ -2326,6 +2393,10 @@ export const openrouterModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0.00013,
 		costPer1kOutputTokens: 0.0004,
 		supportsResponseFormat: false,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"nvidia/nemotron-3-nano-30b-a3b:free": {
@@ -2347,6 +2418,10 @@ export const openrouterModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
 		supportsResponseFormat: false,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"nvidia/nemotron-nano-12b-v2-vl:free": {
@@ -2368,6 +2443,10 @@ export const openrouterModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
 		supportsResponseFormat: false,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"nvidia/nemotron-nano-9b-v2": {
@@ -2389,6 +2468,10 @@ export const openrouterModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0.00004,
 		costPer1kOutputTokens: 0.00016,
 		supportsResponseFormat: false,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"nvidia/nemotron-nano-9b-v2:free": {
@@ -2410,6 +2493,10 @@ export const openrouterModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
 		supportsResponseFormat: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"openai/gpt-5-chat": {
@@ -2438,8 +2525,8 @@ export const openrouterModelConfig: ModelConfig = {
 		matchingModel: "openai/gpt-5-codex",
 		provider: "openrouter",
 		knowledgeCutoffDate: "September 30, 2024",
-		releaseDate: "September 23, 2025",
-		lastUpdated: "September 23, 2025",
+		releaseDate: "September 15, 2025",
+		lastUpdated: "September 15, 2025",
 		modalities: {
 			input: ["text", "image"],
 			output: ["text"],
@@ -2452,6 +2539,10 @@ export const openrouterModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0.00125,
 		costPer1kOutputTokens: 0.01,
 		supportsResponseFormat: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"openai/gpt-5-image": {
@@ -2473,6 +2564,10 @@ export const openrouterModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0.01,
 		costPer1kOutputTokens: 0.01,
 		supportsResponseFormat: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"openai/gpt-5-pro": {
@@ -2494,6 +2589,10 @@ export const openrouterModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0.015,
 		costPer1kOutputTokens: 0.12,
 		supportsResponseFormat: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"openai/gpt-5.1": {
@@ -2515,6 +2614,10 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.00125,
 		costPer1kOutputTokens: 0.01,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"openai/gpt-5.1-chat": {
@@ -2557,6 +2660,10 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.00125,
 		costPer1kOutputTokens: 0.01,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"openai/gpt-5.1-codex-max": {
@@ -2564,8 +2671,8 @@ export const openrouterModelConfig: ModelConfig = {
 		matchingModel: "openai/gpt-5.1-codex-max",
 		provider: "openrouter",
 		knowledgeCutoffDate: "September 30, 2024",
-		releaseDate: "December 4, 2025",
-		lastUpdated: "December 4, 2025",
+		releaseDate: "November 13, 2025",
+		lastUpdated: "November 13, 2025",
 		modalities: {
 			input: ["text", "image"],
 			output: ["text"],
@@ -2578,6 +2685,10 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.00125,
 		costPer1kOutputTokens: 0.01,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"openai/gpt-5.1-codex-mini": {
@@ -2599,6 +2710,10 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.00025,
 		costPer1kOutputTokens: 0.002,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"openai/gpt-5.2": {
@@ -2606,8 +2721,8 @@ export const openrouterModelConfig: ModelConfig = {
 		matchingModel: "openai/gpt-5.2",
 		provider: "openrouter",
 		knowledgeCutoffDate: "August 31, 2025",
-		releaseDate: "December 10, 2025",
-		lastUpdated: "December 10, 2025",
+		releaseDate: "December 11, 2025",
+		lastUpdated: "December 11, 2025",
 		modalities: {
 			input: ["pdf", "image", "text"],
 			output: ["text"],
@@ -2620,6 +2735,10 @@ export const openrouterModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0.00175,
 		costPer1kOutputTokens: 0.014,
 		supportsResponseFormat: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"openai/gpt-5.2-chat": {
@@ -2648,8 +2767,8 @@ export const openrouterModelConfig: ModelConfig = {
 		matchingModel: "openai/gpt-5.2-codex",
 		provider: "openrouter",
 		knowledgeCutoffDate: "August 31, 2025",
-		releaseDate: "January 14, 2026",
-		lastUpdated: "January 14, 2026",
+		releaseDate: "December 11, 2025",
+		lastUpdated: "December 11, 2025",
 		modalities: {
 			input: ["text", "image"],
 			output: ["text"],
@@ -2662,6 +2781,10 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.00175,
 		costPer1kOutputTokens: 0.014,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"openai/gpt-5.2-pro": {
@@ -2669,8 +2792,8 @@ export const openrouterModelConfig: ModelConfig = {
 		matchingModel: "openai/gpt-5.2-pro",
 		provider: "openrouter",
 		knowledgeCutoffDate: "August 31, 2025",
-		releaseDate: "December 10, 2025",
-		lastUpdated: "December 10, 2025",
+		releaseDate: "December 11, 2025",
+		lastUpdated: "December 11, 2025",
 		modalities: {
 			input: ["image", "text", "pdf"],
 			output: ["text"],
@@ -2683,6 +2806,10 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.021,
 		costPer1kOutputTokens: 0.168,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"openai/gpt-oss-120b:exacto": {
@@ -2723,6 +2850,10 @@ export const openrouterModelConfig: ModelConfig = {
 		costPer1kOutputTokens: 0,
 		knowledgeCutoffDate: "June 30, 2024",
 		supportsResponseFormat: false,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"openai/gpt-oss-20b:free": {
@@ -2744,6 +2875,10 @@ export const openrouterModelConfig: ModelConfig = {
 		costPer1kOutputTokens: 0,
 		knowledgeCutoffDate: "June 30, 2024",
 		supportsResponseFormat: false,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"openai/gpt-oss-safeguard-20b": {
@@ -2764,6 +2899,10 @@ export const openrouterModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0.000075,
 		costPer1kOutputTokens: 0.0003,
 		supportsResponseFormat: false,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"openrouter/sherlock-dash-alpha": {
@@ -2987,6 +3126,10 @@ export const openrouterModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0.0001495,
 		costPer1kOutputTokens: 0.001495,
 		supportsResponseFormat: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"qwen/qwen3-235b-a22b:free": {
@@ -3049,6 +3192,10 @@ export const openrouterModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0.00008,
 		costPer1kOutputTokens: 0.0004,
 		supportsResponseFormat: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"qwen/qwen3-30b-a3b:free": {
@@ -3296,6 +3443,10 @@ export const openrouterModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0.0000975,
 		costPer1kOutputTokens: 0.00078,
 		supportsResponseFormat: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"qwen/qwq-32b:free": {
@@ -3337,6 +3488,10 @@ export const openrouterModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0.0001,
 		costPer1kOutputTokens: 0.0002,
 		supportsResponseFormat: false,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"sarvamai/sarvam-m:free": {
@@ -3434,10 +3589,14 @@ export const openrouterModelConfig: ModelConfig = {
 		supportsTemperature: true,
 		supportsToolCalls: true,
 		contextWindow: 262144,
-		maxTokens: 65536,
-		costPer1kInputTokens: 0.0001,
+		maxTokens: 16384,
+		costPer1kInputTokens: 0.00009,
 		costPer1kOutputTokens: 0.0003,
 		supportsResponseFormat: false,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"stepfun/step-3.5-flash:free": {
@@ -3644,9 +3803,9 @@ export const openrouterModelConfig: ModelConfig = {
 		name: "MiMo-V2-Flash",
 		matchingModel: "xiaomi/mimo-v2-flash",
 		provider: "openrouter",
-		knowledgeCutoffDate: "December 2024",
-		releaseDate: "December 14, 2025",
-		lastUpdated: "December 14, 2025",
+		knowledgeCutoffDate: "December 1, 2024",
+		releaseDate: "December 16, 2025",
+		lastUpdated: "February 4, 2026",
 		modalities: {
 			input: ["text"],
 			output: ["text"],
@@ -3659,15 +3818,19 @@ export const openrouterModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0.0001,
 		costPer1kOutputTokens: 0.0003,
 		supportsResponseFormat: false,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"z-ai/glm-4.5": {
 		name: "GLM 4.5",
 		matchingModel: "z-ai/glm-4.5",
 		provider: "openrouter",
-		knowledgeCutoffDate: "December 31, 2024",
-		releaseDate: "July 25, 2025",
-		lastUpdated: "July 25, 2025",
+		knowledgeCutoffDate: "April 2025",
+		releaseDate: "July 28, 2025",
+		lastUpdated: "July 28, 2025",
 		modalities: {
 			input: ["text"],
 			output: ["text"],
@@ -3680,15 +3843,19 @@ export const openrouterModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0.0006,
 		costPer1kOutputTokens: 0.0022,
 		supportsResponseFormat: false,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"z-ai/glm-4.5-air": {
 		name: "GLM 4.5 Air",
 		matchingModel: "z-ai/glm-4.5-air",
 		provider: "openrouter",
-		knowledgeCutoffDate: "December 31, 2024",
-		releaseDate: "July 25, 2025",
-		lastUpdated: "July 25, 2025",
+		knowledgeCutoffDate: "April 2025",
+		releaseDate: "July 28, 2025",
+		lastUpdated: "July 28, 2025",
 		modalities: {
 			input: ["text"],
 			output: ["text"],
@@ -3701,15 +3868,19 @@ export const openrouterModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0.00013,
 		costPer1kOutputTokens: 0.00085,
 		supportsResponseFormat: false,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"z-ai/glm-4.5-air:free": {
 		name: "GLM 4.5 Air (free)",
 		matchingModel: "z-ai/glm-4.5-air:free",
 		provider: "openrouter",
-		knowledgeCutoffDate: "December 31, 2024",
-		releaseDate: "July 25, 2025",
-		lastUpdated: "July 25, 2025",
+		knowledgeCutoffDate: "April 2025",
+		releaseDate: "July 28, 2025",
+		lastUpdated: "July 28, 2025",
 		modalities: {
 			input: ["text"],
 			output: ["text"],
@@ -3722,13 +3893,17 @@ export const openrouterModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
 		supportsResponseFormat: false,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"z-ai/glm-4.5v": {
 		name: "GLM 4.5V",
 		matchingModel: "z-ai/glm-4.5v",
 		provider: "openrouter",
-		knowledgeCutoffDate: "December 31, 2024",
+		knowledgeCutoffDate: "April 2025",
 		releaseDate: "August 11, 2025",
 		lastUpdated: "August 11, 2025",
 		modalities: {
@@ -3743,13 +3918,17 @@ export const openrouterModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0.0006,
 		costPer1kOutputTokens: 0.0018,
 		supportsResponseFormat: false,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"z-ai/glm-4.6": {
 		name: "GLM 4.6",
 		matchingModel: "z-ai/glm-4.6",
 		provider: "openrouter",
-		knowledgeCutoffDate: "March 31, 2025",
+		knowledgeCutoffDate: "April 2025",
 		releaseDate: "September 30, 2025",
 		lastUpdated: "September 30, 2025",
 		modalities: {
@@ -3764,6 +3943,10 @@ export const openrouterModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0.00043,
 		costPer1kOutputTokens: 0.00174,
 		supportsResponseFormat: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"z-ai/glm-4.6:exacto": {
@@ -3805,6 +3988,10 @@ export const openrouterModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0.0004,
 		costPer1kOutputTokens: 0.00175,
 		supportsResponseFormat: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"z-ai/glm-4.7-flash": {
@@ -3825,6 +4012,11 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00006,
 		costPer1kOutputTokens: 0.0004,
+		knowledgeCutoffDate: "April 2025",
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"z-ai/glm-5": {
@@ -3845,6 +4037,10 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 131000,
 		costPer1kInputTokens: 0.0006,
 		costPer1kOutputTokens: 0.00192,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 	"~anthropic/claude-haiku-latest": {
 		name: "Anthropic Claude Haiku Latest",
@@ -3864,6 +4060,10 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 64000,
 		costPer1kInputTokens: 0.001,
 		costPer1kOutputTokens: 0.005,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"~anthropic/claude-opus-latest": {
@@ -3884,6 +4084,10 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.005,
 		costPer1kOutputTokens: 0.025,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"~anthropic/claude-sonnet-latest": {
@@ -3904,6 +4108,10 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.003,
 		costPer1kOutputTokens: 0.015,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"~google/gemini-flash-latest": {
@@ -3926,6 +4134,10 @@ export const openrouterModelConfig: ModelConfig = {
 		costPer1kOutputTokens: 0.009,
 		costPer1kReasoningTokens: 0.009,
 		knowledgeCutoffDate: "January 1, 2025",
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"~google/gemini-pro-latest": {
@@ -3947,6 +4159,10 @@ export const openrouterModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0.002,
 		costPer1kOutputTokens: 0.012,
 		costPer1kReasoningTokens: 0.012,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"~moonshotai/kimi-latest": {
@@ -3967,6 +4183,10 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 262142,
 		costPer1kInputTokens: 0.00073,
 		costPer1kOutputTokens: 0.00349,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"~openai/gpt-latest": {
@@ -3988,6 +4208,10 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.005,
 		costPer1kOutputTokens: 0.03,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"~openai/gpt-mini-latest": {
@@ -4009,6 +4233,10 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.00075,
 		costPer1kOutputTokens: 0.0045,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"ai21/jamba-large-1.7": {
@@ -4050,6 +4278,10 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.004,
 		costPer1kOutputTokens: 0.008,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"aion-labs/aion-1.0-mini": {
@@ -4070,6 +4302,10 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.0007,
 		costPer1kOutputTokens: 0.0014,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"aion-labs/aion-2.0": {
@@ -4090,6 +4326,10 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.0008,
 		costPer1kOutputTokens: 0.0016,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"aion-labs/aion-rp-llama-3.1-8b": {
@@ -4153,6 +4393,10 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.00009,
 		costPer1kOutputTokens: 0.00045,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"allenai/olmo-3-32b-think": {
@@ -4173,6 +4417,10 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.00015,
 		costPer1kOutputTokens: 0.0005,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"amazon/nova-2-lite-v1": {
@@ -4193,6 +4441,10 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 65535,
 		costPer1kInputTokens: 0.0003,
 		costPer1kOutputTokens: 0.0025,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"amazon/nova-lite-v1": {
@@ -4338,6 +4590,10 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.03,
 		costPer1kOutputTokens: 0.15,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"anthropic/claude-opus-4.7": {
@@ -4360,6 +4616,10 @@ export const openrouterModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0.005,
 		costPer1kOutputTokens: 0.025,
 		isFeatured: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"anthropic/claude-opus-4.7-fast": {
@@ -4380,6 +4640,10 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.03,
 		costPer1kOutputTokens: 0.15,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"anthropic/claude-sonnet-4.6": {
@@ -4388,7 +4652,7 @@ export const openrouterModelConfig: ModelConfig = {
 		provider: "openrouter",
 		knowledgeCutoffDate: "August 31, 2025",
 		releaseDate: "February 17, 2026",
-		lastUpdated: "February 17, 2026",
+		lastUpdated: "March 13, 2026",
 		modalities: {
 			input: ["text", "image", "pdf"],
 			output: ["text"],
@@ -4402,6 +4666,10 @@ export const openrouterModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0.003,
 		costPer1kOutputTokens: 0.015,
 		isFeatured: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"arcee-ai/coder-large": {
@@ -4505,6 +4773,10 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 262144,
 		costPer1kInputTokens: 0.00022,
 		costPer1kOutputTokens: 0.00085,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"arcee-ai/trinity-large-thinking:free": {
@@ -4525,6 +4797,10 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 80000,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"arcee-ai/trinity-mini": {
@@ -4545,6 +4821,10 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.000045,
 		costPer1kOutputTokens: 0.00015,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"arcee-ai/virtuoso-large": {
@@ -4586,6 +4866,10 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 65536,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"baidu/ernie-4.5-21b-a3b": {
@@ -4628,6 +4912,10 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.00007,
 		costPer1kOutputTokens: 0.00028,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"baidu/ernie-4.5-300b-a47b": {
@@ -4670,6 +4958,10 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 8000,
 		costPer1kInputTokens: 0.00014,
 		costPer1kOutputTokens: 0.00056,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"baidu/ernie-4.5-vl-424b-a47b": {
@@ -4691,6 +4983,10 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 16000,
 		costPer1kInputTokens: 0.00042,
 		costPer1kOutputTokens: 0.00125,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"baidu/qianfan-ocr-fast": {
@@ -4711,6 +5007,10 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 28672,
 		costPer1kInputTokens: 0.00068,
 		costPer1kOutputTokens: 0.00281,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"bytedance-seed/seed-1.6": {
@@ -4731,6 +5031,10 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.00025,
 		costPer1kOutputTokens: 0.002,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"bytedance-seed/seed-1.6-flash": {
@@ -4751,6 +5055,10 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.000075,
 		costPer1kOutputTokens: 0.0003,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"bytedance-seed/seed-2.0-lite": {
@@ -4771,6 +5079,10 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.00025,
 		costPer1kOutputTokens: 0.002,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"bytedance-seed/seed-2.0-mini": {
@@ -4791,6 +5103,10 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.0001,
 		costPer1kOutputTokens: 0.0004,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"bytedance/ui-tars-1.5-7b": {
@@ -4839,7 +5155,7 @@ export const openrouterModelConfig: ModelConfig = {
 		name: "Command R (08-2024)",
 		matchingModel: "cohere/command-r-08-2024",
 		provider: "openrouter",
-		knowledgeCutoffDate: "March 31, 2024",
+		knowledgeCutoffDate: "June 1, 2024",
 		releaseDate: "August 30, 2024",
 		lastUpdated: "August 30, 2024",
 		modalities: {
@@ -4860,7 +5176,7 @@ export const openrouterModelConfig: ModelConfig = {
 		name: "Command R+ (08-2024)",
 		matchingModel: "cohere/command-r-plus-08-2024",
 		provider: "openrouter",
-		knowledgeCutoffDate: "March 31, 2024",
+		knowledgeCutoffDate: "June 1, 2024",
 		releaseDate: "August 30, 2024",
 		lastUpdated: "August 30, 2024",
 		modalities: {
@@ -4881,9 +5197,9 @@ export const openrouterModelConfig: ModelConfig = {
 		name: "Command R7B (12-2024)",
 		matchingModel: "cohere/command-r7b-12-2024",
 		provider: "openrouter",
-		knowledgeCutoffDate: "August 31, 2024",
-		releaseDate: "December 14, 2024",
-		lastUpdated: "December 14, 2024",
+		knowledgeCutoffDate: "June 1, 2024",
+		releaseDate: "February 27, 2024",
+		lastUpdated: "February 27, 2024",
 		modalities: {
 			input: ["text"],
 			output: ["text"],
@@ -4916,15 +5232,19 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.00125,
 		costPer1kOutputTokens: 0.00125,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"deepseek/deepseek-chat": {
 		name: "DeepSeek V3",
 		matchingModel: "deepseek/deepseek-chat",
 		provider: "openrouter",
-		knowledgeCutoffDate: "July 31, 2024",
-		releaseDate: "December 26, 2024",
-		lastUpdated: "December 26, 2024",
+		knowledgeCutoffDate: "September 2025",
+		releaseDate: "December 1, 2025",
+		lastUpdated: "February 28, 2026",
 		modalities: {
 			input: ["text"],
 			output: ["text"],
@@ -4958,27 +5278,10 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 16000,
 		costPer1kInputTokens: 0.0007,
 		costPer1kOutputTokens: 0.0025,
-	},
-
-	"deepseek/deepseek-r1-0528": {
-		name: "R1 0528",
-		matchingModel: "deepseek/deepseek-r1-0528",
-		provider: "openrouter",
-		knowledgeCutoffDate: "March 31, 2025",
-		releaseDate: "May 28, 2025",
-		lastUpdated: "May 28, 2025",
-		modalities: {
-			input: ["text"],
-			output: ["text"],
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
 		},
-		supportsAttachments: false,
-		supportsTemperature: true,
-		supportsToolCalls: true,
-		supportsResponseFormat: true,
-		contextWindow: 163840,
-		maxTokens: 32768,
-		costPer1kInputTokens: 0.0005,
-		costPer1kOutputTokens: 0.00215,
 	},
 
 	"deepseek/deepseek-r1-distill-qwen-32b": {
@@ -5000,6 +5303,10 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.00029,
 		costPer1kOutputTokens: 0.00029,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"deepseek/deepseek-v3.2-exp": {
@@ -5021,6 +5328,10 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.00027,
 		costPer1kOutputTokens: 0.00041,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"deepseek/deepseek-v4-flash": {
@@ -5037,11 +5348,16 @@ export const openrouterModelConfig: ModelConfig = {
 		supportsTemperature: true,
 		supportsToolCalls: true,
 		supportsResponseFormat: true,
-		contextWindow: 1048575,
-		maxTokens: 131072,
-		costPer1kInputTokens: 0.000112,
-		costPer1kOutputTokens: 0.000224,
+		contextWindow: 1048576,
+		maxTokens: 16384,
+		costPer1kInputTokens: 0.0001,
+		costPer1kOutputTokens: 0.0002,
 		isFeatured: true,
+		knowledgeCutoffDate: "May 2025",
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"deepseek/deepseek-v4-flash:free": {
@@ -5062,6 +5378,11 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 384000,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
+		knowledgeCutoffDate: "May 2025",
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"deepseek/deepseek-v4-pro": {
@@ -5082,6 +5403,11 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 384000,
 		costPer1kInputTokens: 0.000435,
 		costPer1kOutputTokens: 0.00087,
+		knowledgeCutoffDate: "May 2025",
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"essentialai/rnj-1-instruct": {
@@ -5129,9 +5455,9 @@ export const openrouterModelConfig: ModelConfig = {
 		name: "Nano Banana (Gemini 2.5 Flash Image)",
 		matchingModel: "google/gemini-2.5-flash-image",
 		provider: "openrouter",
-		knowledgeCutoffDate: "January 31, 2025",
-		releaseDate: "October 7, 2025",
-		lastUpdated: "October 7, 2025",
+		knowledgeCutoffDate: "June 2025",
+		releaseDate: "August 26, 2025",
+		lastUpdated: "August 26, 2025",
 		modalities: {
 			input: ["image", "text"],
 			output: ["image", "text"],
@@ -5166,6 +5492,10 @@ export const openrouterModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0.00125,
 		costPer1kOutputTokens: 0.01,
 		costPer1kReasoningTokens: 0.01,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"google/gemini-3-pro-image-preview": {
@@ -5187,6 +5517,10 @@ export const openrouterModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0.002,
 		costPer1kOutputTokens: 0.012,
 		costPer1kReasoningTokens: 0.012,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"google/gemini-3.1-flash-image-preview": {
@@ -5208,6 +5542,10 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.0005,
 		costPer1kOutputTokens: 0.003,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"google/gemini-3.1-flash-lite": {
@@ -5229,6 +5567,11 @@ export const openrouterModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0.00025,
 		costPer1kOutputTokens: 0.0015,
 		costPer1kReasoningTokens: 0.0015,
+		knowledgeCutoffDate: "January 2025",
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"google/gemini-3.1-flash-lite-preview": {
@@ -5250,6 +5593,11 @@ export const openrouterModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0.00025,
 		costPer1kOutputTokens: 0.0015,
 		costPer1kReasoningTokens: 0.0015,
+		knowledgeCutoffDate: "January 2025",
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"google/gemini-3.1-pro-preview": {
@@ -5272,6 +5620,10 @@ export const openrouterModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0.002,
 		costPer1kOutputTokens: 0.012,
 		costPer1kReasoningTokens: 0.012,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"google/gemini-3.1-pro-preview-customtools": {
@@ -5279,8 +5631,8 @@ export const openrouterModelConfig: ModelConfig = {
 		matchingModel: "google/gemini-3.1-pro-preview-customtools",
 		provider: "openrouter",
 		knowledgeCutoffDate: "January 2025",
-		releaseDate: "February 25, 2026",
-		lastUpdated: "February 25, 2026",
+		releaseDate: "February 19, 2026",
+		lastUpdated: "February 19, 2026",
 		modalities: {
 			input: ["text", "audio", "image", "video", "pdf"],
 			output: ["text"],
@@ -5294,6 +5646,10 @@ export const openrouterModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0.002,
 		costPer1kOutputTokens: 0.012,
 		costPer1kReasoningTokens: 0.012,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"google/gemma-2-27b-it": {
@@ -5322,8 +5678,8 @@ export const openrouterModelConfig: ModelConfig = {
 		matchingModel: "google/gemma-4-26b-a4b-it",
 		provider: "openrouter",
 		knowledgeCutoffDate: "January 2025",
-		releaseDate: "April 3, 2026",
-		lastUpdated: "April 3, 2026",
+		releaseDate: "April 2, 2026",
+		lastUpdated: "April 2, 2026",
 		modalities: {
 			input: ["image", "text", "video"],
 			output: ["text"],
@@ -5336,6 +5692,10 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 262144,
 		costPer1kInputTokens: 0.00006,
 		costPer1kOutputTokens: 0.00033,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"google/gemma-4-26b-a4b-it:free": {
@@ -5343,8 +5703,8 @@ export const openrouterModelConfig: ModelConfig = {
 		matchingModel: "google/gemma-4-26b-a4b-it:free",
 		provider: "openrouter",
 		knowledgeCutoffDate: "January 2025",
-		releaseDate: "April 3, 2026",
-		lastUpdated: "April 3, 2026",
+		releaseDate: "April 2, 2026",
+		lastUpdated: "April 2, 2026",
 		modalities: {
 			input: ["image", "text", "video"],
 			output: ["text"],
@@ -5357,6 +5717,10 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 32768,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"google/gemma-4-31b-it": {
@@ -5378,6 +5742,10 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00012,
 		costPer1kOutputTokens: 0.00037,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"google/gemma-4-31b-it:free": {
@@ -5399,6 +5767,10 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 32768,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"google/lyria-3-clip-preview": {
@@ -5520,6 +5892,10 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 50000,
 		costPer1kInputTokens: 0.00025,
 		costPer1kOutputTokens: 0.00075,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"inclusionai/ling-2.6-1t": {
@@ -5538,8 +5914,8 @@ export const openrouterModelConfig: ModelConfig = {
 		supportsResponseFormat: true,
 		contextWindow: 262144,
 		maxTokens: 32768,
-		costPer1kInputTokens: 0.0003,
-		costPer1kOutputTokens: 0.0025,
+		costPer1kInputTokens: 0.000075,
+		costPer1kOutputTokens: 0.000625,
 	},
 
 	"inclusionai/ling-2.6-flash": {
@@ -5580,6 +5956,10 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.000075,
 		costPer1kOutputTokens: 0.000625,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"inflection/inflection-3-pi": {
@@ -5815,7 +6195,7 @@ export const openrouterModelConfig: ModelConfig = {
 		name: "Llama 3.3 70B Instruct",
 		matchingModel: "meta-llama/llama-3.3-70b-instruct",
 		provider: "openrouter",
-		knowledgeCutoffDate: "December 31, 2023",
+		knowledgeCutoffDate: "December 2023",
 		releaseDate: "December 6, 2024",
 		lastUpdated: "December 6, 2024",
 		modalities: {
@@ -6016,6 +6396,10 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 196608,
 		costPer1kInputTokens: 0.00015,
 		costPer1kOutputTokens: 0.00115,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"minimax/minimax-m2.5:free": {
@@ -6036,6 +6420,10 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 8192,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"minimax/minimax-m2.7": {
@@ -6056,6 +6444,10 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.000279,
 		costPer1kOutputTokens: 0.0012,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"mistralai/devstral-medium": {
@@ -6181,68 +6573,6 @@ export const openrouterModelConfig: ModelConfig = {
 		costPer1kOutputTokens: 0.006,
 	},
 
-	"mistralai/mistral-large-2407": {
-		name: "Mistral Large 2407",
-		matchingModel: "mistralai/mistral-large-2407",
-		provider: "openrouter",
-		knowledgeCutoffDate: "March 31, 2024",
-		releaseDate: "November 19, 2024",
-		lastUpdated: "November 19, 2024",
-		modalities: {
-			input: ["text", "pdf"],
-			output: ["text"],
-		},
-		supportsAttachments: true,
-		supportsTemperature: true,
-		supportsToolCalls: true,
-		supportsResponseFormat: true,
-		contextWindow: 131072,
-		maxTokens: 131072,
-		costPer1kInputTokens: 0.002,
-		costPer1kOutputTokens: 0.006,
-	},
-
-	"mistralai/mistral-large-2411": {
-		name: "Mistral Large 2411",
-		matchingModel: "mistralai/mistral-large-2411",
-		provider: "openrouter",
-		knowledgeCutoffDate: "July 31, 2024",
-		releaseDate: "November 19, 2024",
-		lastUpdated: "November 19, 2024",
-		modalities: {
-			input: ["text", "pdf"],
-			output: ["text"],
-		},
-		supportsAttachments: true,
-		supportsTemperature: true,
-		supportsToolCalls: true,
-		supportsResponseFormat: true,
-		contextWindow: 131072,
-		maxTokens: 131072,
-		costPer1kInputTokens: 0.002,
-		costPer1kOutputTokens: 0.006,
-	},
-
-	"mistralai/mistral-large-2512": {
-		name: "Mistral Large 3 2512",
-		matchingModel: "mistralai/mistral-large-2512",
-		provider: "openrouter",
-		releaseDate: "December 1, 2025",
-		lastUpdated: "December 1, 2025",
-		modalities: {
-			input: ["text", "image", "pdf"],
-			output: ["text"],
-		},
-		supportsAttachments: true,
-		supportsTemperature: true,
-		supportsToolCalls: true,
-		supportsResponseFormat: true,
-		contextWindow: 262144,
-		maxTokens: 262144,
-		costPer1kInputTokens: 0.0005,
-		costPer1kOutputTokens: 0.0015,
-	},
-
 	"mistralai/mistral-medium-3-5": {
 		name: "Mistral Medium 3.5",
 		matchingModel: "mistralai/mistral-medium-3-5",
@@ -6261,15 +6591,19 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 262144,
 		costPer1kInputTokens: 0.0015,
 		costPer1kOutputTokens: 0.0075,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"mistralai/mistral-nemo": {
 		name: "Mistral Nemo",
 		matchingModel: "mistralai/mistral-nemo",
 		provider: "openrouter",
-		knowledgeCutoffDate: "April 30, 2024",
-		releaseDate: "July 19, 2024",
-		lastUpdated: "July 19, 2024",
+		knowledgeCutoffDate: "July 2024",
+		releaseDate: "July 1, 2024",
+		lastUpdated: "July 1, 2024",
 		modalities: {
 			input: ["text"],
 			output: ["text"],
@@ -6345,6 +6679,10 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 262144,
 		costPer1kInputTokens: 0.00015,
 		costPer1kOutputTokens: 0.0006,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"mistralai/mixtral-8x22b-instruct": {
@@ -6413,8 +6751,8 @@ export const openrouterModelConfig: ModelConfig = {
 		name: "Kimi K2.6",
 		matchingModel: "moonshotai/kimi-k2.6",
 		provider: "openrouter",
-		releaseDate: "April 20, 2026",
-		lastUpdated: "April 20, 2026",
+		releaseDate: "April 21, 2026",
+		lastUpdated: "April 21, 2026",
 		modalities: {
 			input: ["text", "image"],
 			output: ["text"],
@@ -6428,6 +6766,11 @@ export const openrouterModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0.00073,
 		costPer1kOutputTokens: 0.00349,
 		isFeatured: true,
+		knowledgeCutoffDate: "January 2025",
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"morph/morph-v3-fast": {
@@ -6572,6 +6915,10 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.0001,
 		costPer1kOutputTokens: 0.0004,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"nvidia/nemotron-3-nano-30b-a3b": {
@@ -6592,6 +6939,10 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 228000,
 		costPer1kInputTokens: 0.00005,
 		costPer1kOutputTokens: 0.0002,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free": {
@@ -6612,6 +6963,10 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 65536,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"nvidia/nemotron-3-super-120b-a12b": {
@@ -6633,6 +6988,10 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 262144,
 		costPer1kInputTokens: 0.00009,
 		costPer1kOutputTokens: 0.00045,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"nvidia/nemotron-3-super-120b-a12b:free": {
@@ -6654,15 +7013,19 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 262144,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"openai/gpt-3.5-turbo": {
 		name: "GPT-3.5 Turbo",
 		matchingModel: "openai/gpt-3.5-turbo",
 		provider: "openrouter",
-		knowledgeCutoffDate: "September 30, 2021",
-		releaseDate: "May 28, 2023",
-		lastUpdated: "May 28, 2023",
+		knowledgeCutoffDate: "September 1, 2021",
+		releaseDate: "March 1, 2023",
+		lastUpdated: "November 6, 2023",
 		modalities: {
 			input: ["text"],
 			output: ["text"],
@@ -6675,27 +7038,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 4096,
 		costPer1kInputTokens: 0.0005,
 		costPer1kOutputTokens: 0.0015,
-	},
-
-	"openai/gpt-3.5-turbo-0613": {
-		name: "GPT-3.5 Turbo (older v0613)",
-		matchingModel: "openai/gpt-3.5-turbo-0613",
-		provider: "openrouter",
-		knowledgeCutoffDate: "September 30, 2021",
-		releaseDate: "January 25, 2024",
-		lastUpdated: "January 25, 2024",
-		modalities: {
-			input: ["text"],
-			output: ["text"],
-		},
-		supportsAttachments: false,
-		supportsTemperature: true,
-		supportsToolCalls: true,
-		supportsResponseFormat: true,
-		contextWindow: 4095,
-		maxTokens: 4096,
-		costPer1kInputTokens: 0.001,
-		costPer1kOutputTokens: 0.002,
 	},
 
 	"openai/gpt-3.5-turbo-16k": {
@@ -6744,30 +7086,9 @@ export const openrouterModelConfig: ModelConfig = {
 		name: "GPT-4",
 		matchingModel: "openai/gpt-4",
 		provider: "openrouter",
-		knowledgeCutoffDate: "September 30, 2021",
-		releaseDate: "May 28, 2023",
-		lastUpdated: "May 28, 2023",
-		modalities: {
-			input: ["text"],
-			output: ["text"],
-		},
-		supportsAttachments: false,
-		supportsTemperature: true,
-		supportsToolCalls: true,
-		supportsResponseFormat: true,
-		contextWindow: 8191,
-		maxTokens: 4096,
-		costPer1kInputTokens: 0.03,
-		costPer1kOutputTokens: 0.06,
-	},
-
-	"openai/gpt-4-0314": {
-		name: "GPT-4 (older v0314)",
-		matchingModel: "openai/gpt-4-0314",
-		provider: "openrouter",
-		knowledgeCutoffDate: "September 30, 2021",
-		releaseDate: "May 28, 2023",
-		lastUpdated: "May 28, 2023",
+		knowledgeCutoffDate: "November 2023",
+		releaseDate: "November 6, 2023",
+		lastUpdated: "April 9, 2024",
 		modalities: {
 			input: ["text"],
 			output: ["text"],
@@ -6807,8 +7128,8 @@ export const openrouterModelConfig: ModelConfig = {
 		name: "GPT-4 Turbo",
 		matchingModel: "openai/gpt-4-turbo",
 		provider: "openrouter",
-		knowledgeCutoffDate: "December 31, 2023",
-		releaseDate: "April 9, 2024",
+		knowledgeCutoffDate: "December 2023",
+		releaseDate: "November 6, 2023",
 		lastUpdated: "April 9, 2024",
 		modalities: {
 			input: ["text", "image"],
@@ -6849,7 +7170,7 @@ export const openrouterModelConfig: ModelConfig = {
 		name: "GPT-4.1 Nano",
 		matchingModel: "openai/gpt-4.1-nano",
 		provider: "openrouter",
-		knowledgeCutoffDate: "June 30, 2024",
+		knowledgeCutoffDate: "April 2024",
 		releaseDate: "April 14, 2025",
 		lastUpdated: "April 14, 2025",
 		modalities: {
@@ -6870,72 +7191,9 @@ export const openrouterModelConfig: ModelConfig = {
 		name: "GPT-4o",
 		matchingModel: "openai/gpt-4o",
 		provider: "openrouter",
-		knowledgeCutoffDate: "October 31, 2023",
+		knowledgeCutoffDate: "September 2023",
 		releaseDate: "May 13, 2024",
-		lastUpdated: "May 13, 2024",
-		modalities: {
-			input: ["text", "image", "pdf"],
-			output: ["text"],
-		},
-		supportsAttachments: true,
-		supportsTemperature: true,
-		supportsToolCalls: true,
-		supportsResponseFormat: true,
-		contextWindow: 128000,
-		maxTokens: 16384,
-		costPer1kInputTokens: 0.0025,
-		costPer1kOutputTokens: 0.01,
-	},
-
-	"openai/gpt-4o-2024-05-13": {
-		name: "GPT-4o (2024-05-13)",
-		matchingModel: "openai/gpt-4o-2024-05-13",
-		provider: "openrouter",
-		knowledgeCutoffDate: "October 31, 2023",
-		releaseDate: "May 13, 2024",
-		lastUpdated: "May 13, 2024",
-		modalities: {
-			input: ["text", "image", "pdf"],
-			output: ["text"],
-		},
-		supportsAttachments: true,
-		supportsTemperature: true,
-		supportsToolCalls: true,
-		supportsResponseFormat: true,
-		contextWindow: 128000,
-		maxTokens: 4096,
-		costPer1kInputTokens: 0.005,
-		costPer1kOutputTokens: 0.015,
-	},
-
-	"openai/gpt-4o-2024-08-06": {
-		name: "GPT-4o (2024-08-06)",
-		matchingModel: "openai/gpt-4o-2024-08-06",
-		provider: "openrouter",
-		knowledgeCutoffDate: "October 31, 2023",
-		releaseDate: "August 6, 2024",
 		lastUpdated: "August 6, 2024",
-		modalities: {
-			input: ["text", "image", "pdf"],
-			output: ["text"],
-		},
-		supportsAttachments: true,
-		supportsTemperature: true,
-		supportsToolCalls: true,
-		supportsResponseFormat: true,
-		contextWindow: 128000,
-		maxTokens: 16384,
-		costPer1kInputTokens: 0.0025,
-		costPer1kOutputTokens: 0.01,
-	},
-
-	"openai/gpt-4o-2024-11-20": {
-		name: "GPT-4o (2024-11-20)",
-		matchingModel: "openai/gpt-4o-2024-11-20",
-		provider: "openrouter",
-		knowledgeCutoffDate: "October 31, 2023",
-		releaseDate: "November 20, 2024",
-		lastUpdated: "November 20, 2024",
 		modalities: {
 			input: ["text", "image", "pdf"],
 			output: ["text"],
@@ -6969,27 +7227,6 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.0025,
 		costPer1kOutputTokens: 0.01,
-	},
-
-	"openai/gpt-4o-mini-2024-07-18": {
-		name: "GPT-4o-mini (2024-07-18)",
-		matchingModel: "openai/gpt-4o-mini-2024-07-18",
-		provider: "openrouter",
-		knowledgeCutoffDate: "October 31, 2023",
-		releaseDate: "July 18, 2024",
-		lastUpdated: "July 18, 2024",
-		modalities: {
-			input: ["text", "image", "pdf"],
-			output: ["text"],
-		},
-		supportsAttachments: true,
-		supportsTemperature: true,
-		supportsToolCalls: true,
-		supportsResponseFormat: true,
-		contextWindow: 128000,
-		maxTokens: 16384,
-		costPer1kInputTokens: 0.00015,
-		costPer1kOutputTokens: 0.0006,
 	},
 
 	"openai/gpt-4o-mini-search-preview": {
@@ -7052,6 +7289,10 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.0025,
 		costPer1kOutputTokens: 0.002,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"openai/gpt-5.3-chat": {
@@ -7079,8 +7320,8 @@ export const openrouterModelConfig: ModelConfig = {
 		matchingModel: "openai/gpt-5.3-codex",
 		provider: "openrouter",
 		knowledgeCutoffDate: "August 31, 2025",
-		releaseDate: "February 24, 2026",
-		lastUpdated: "February 24, 2026",
+		releaseDate: "February 5, 2026",
+		lastUpdated: "February 5, 2026",
 		modalities: {
 			input: ["text", "image", "pdf"],
 			output: ["text"],
@@ -7093,6 +7334,10 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.00175,
 		costPer1kOutputTokens: 0.014,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"openai/gpt-5.4": {
@@ -7113,6 +7358,11 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.0025,
 		costPer1kOutputTokens: 0.015,
+		knowledgeCutoffDate: "August 31, 2025",
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"openai/gpt-5.4-image-2": {
@@ -7133,6 +7383,10 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.008,
 		costPer1kOutputTokens: 0.015,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"openai/gpt-5.4-mini": {
@@ -7154,6 +7408,10 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.00075,
 		costPer1kOutputTokens: 0.0045,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"openai/gpt-5.4-nano": {
@@ -7175,6 +7433,10 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.0002,
 		costPer1kOutputTokens: 0.00125,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"openai/gpt-5.4-pro": {
@@ -7196,6 +7458,10 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.03,
 		costPer1kOutputTokens: 0.18,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"openai/gpt-5.5": {
@@ -7203,8 +7469,8 @@ export const openrouterModelConfig: ModelConfig = {
 		matchingModel: "openai/gpt-5.5",
 		provider: "openrouter",
 		knowledgeCutoffDate: "December 1, 2025",
-		releaseDate: "April 24, 2026",
-		lastUpdated: "April 24, 2026",
+		releaseDate: "April 23, 2026",
+		lastUpdated: "April 23, 2026",
 		modalities: {
 			input: ["pdf", "image", "text"],
 			output: ["text"],
@@ -7217,6 +7483,10 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.005,
 		costPer1kOutputTokens: 0.03,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"openai/gpt-5.5-pro": {
@@ -7224,8 +7494,8 @@ export const openrouterModelConfig: ModelConfig = {
 		matchingModel: "openai/gpt-5.5-pro",
 		provider: "openrouter",
 		knowledgeCutoffDate: "December 1, 2025",
-		releaseDate: "April 24, 2026",
-		lastUpdated: "April 24, 2026",
+		releaseDate: "April 23, 2026",
+		lastUpdated: "April 23, 2026",
 		modalities: {
 			input: ["pdf", "image", "text"],
 			output: ["text"],
@@ -7238,6 +7508,10 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.03,
 		costPer1kOutputTokens: 0.18,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"openai/gpt-audio": {
@@ -7304,9 +7578,9 @@ export const openrouterModelConfig: ModelConfig = {
 		name: "o1",
 		matchingModel: "openai/o1",
 		provider: "openrouter",
-		knowledgeCutoffDate: "October 31, 2023",
-		releaseDate: "December 17, 2024",
-		lastUpdated: "December 17, 2024",
+		knowledgeCutoffDate: "September 2023",
+		releaseDate: "December 5, 2024",
+		lastUpdated: "December 5, 2024",
 		modalities: {
 			input: ["text", "image", "pdf"],
 			output: ["text"],
@@ -7319,13 +7593,17 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 100000,
 		costPer1kInputTokens: 0.015,
 		costPer1kOutputTokens: 0.06,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"openai/o1-pro": {
 		name: "o1-pro",
 		matchingModel: "openai/o1-pro",
 		provider: "openrouter",
-		knowledgeCutoffDate: "October 31, 2023",
+		knowledgeCutoffDate: "September 2023",
 		releaseDate: "March 19, 2025",
 		lastUpdated: "March 19, 2025",
 		modalities: {
@@ -7340,13 +7618,17 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 100000,
 		costPer1kInputTokens: 0.15,
 		costPer1kOutputTokens: 0.6,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"openai/o3": {
 		name: "o3",
 		matchingModel: "openai/o3",
 		provider: "openrouter",
-		knowledgeCutoffDate: "June 30, 2024",
+		knowledgeCutoffDate: "May 2024",
 		releaseDate: "April 16, 2025",
 		lastUpdated: "April 16, 2025",
 		modalities: {
@@ -7361,14 +7643,18 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 100000,
 		costPer1kInputTokens: 0.002,
 		costPer1kOutputTokens: 0.008,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"openai/o3-deep-research": {
 		name: "o3 Deep Research",
 		matchingModel: "openai/o3-deep-research",
 		provider: "openrouter",
-		releaseDate: "October 10, 2025",
-		lastUpdated: "October 10, 2025",
+		releaseDate: "June 26, 2024",
+		lastUpdated: "June 26, 2024",
 		modalities: {
 			input: ["image", "text", "pdf"],
 			output: ["text"],
@@ -7381,15 +7667,20 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 100000,
 		costPer1kInputTokens: 0.01,
 		costPer1kOutputTokens: 0.04,
+		knowledgeCutoffDate: "May 2024",
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"openai/o3-mini": {
 		name: "o3 Mini",
 		matchingModel: "openai/o3-mini",
 		provider: "openrouter",
-		knowledgeCutoffDate: "October 31, 2023",
-		releaseDate: "January 31, 2025",
-		lastUpdated: "January 31, 2025",
+		knowledgeCutoffDate: "May 2024",
+		releaseDate: "December 20, 2024",
+		lastUpdated: "January 29, 2025",
 		modalities: {
 			input: ["text", "pdf"],
 			output: ["text"],
@@ -7402,6 +7693,10 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 100000,
 		costPer1kInputTokens: 0.0011,
 		costPer1kOutputTokens: 0.0044,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"openai/o3-mini-high": {
@@ -7423,13 +7718,17 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 100000,
 		costPer1kInputTokens: 0.0011,
 		costPer1kOutputTokens: 0.0044,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"openai/o3-pro": {
 		name: "o3 Pro",
 		matchingModel: "openai/o3-pro",
 		provider: "openrouter",
-		knowledgeCutoffDate: "June 30, 2024",
+		knowledgeCutoffDate: "May 2024",
 		releaseDate: "June 10, 2025",
 		lastUpdated: "June 10, 2025",
 		modalities: {
@@ -7444,14 +7743,18 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 100000,
 		costPer1kInputTokens: 0.02,
 		costPer1kOutputTokens: 0.08,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"openai/o4-mini-deep-research": {
 		name: "o4 Mini Deep Research",
 		matchingModel: "openai/o4-mini-deep-research",
 		provider: "openrouter",
-		releaseDate: "October 10, 2025",
-		lastUpdated: "October 10, 2025",
+		releaseDate: "June 26, 2024",
+		lastUpdated: "June 26, 2024",
 		modalities: {
 			input: ["pdf", "image", "text"],
 			output: ["text"],
@@ -7464,6 +7767,11 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 100000,
 		costPer1kInputTokens: 0.002,
 		costPer1kOutputTokens: 0.008,
+		knowledgeCutoffDate: "May 2024",
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"openai/o4-mini-high": {
@@ -7485,6 +7793,10 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 100000,
 		costPer1kInputTokens: 0.0011,
 		costPer1kOutputTokens: 0.0044,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"openrouter/bodybuilder": {
@@ -7523,6 +7835,10 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 8000,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"openrouter/owl-alpha": {
@@ -7581,6 +7897,10 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 8192,
 		costPer1kInputTokens: 0.00015,
 		costPer1kOutputTokens: 0.0015,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"perplexity/sonar": {
@@ -7622,6 +7942,10 @@ export const openrouterModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0.002,
 		costPer1kOutputTokens: 0.008,
 		costPer1kReasoningTokens: 0.003,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"perplexity/sonar-pro": {
@@ -7662,6 +7986,10 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 8000,
 		costPer1kInputTokens: 0.003,
 		costPer1kOutputTokens: 0.015,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"perplexity/sonar-reasoning-pro": {
@@ -7682,6 +8010,10 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.002,
 		costPer1kOutputTokens: 0.008,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"poolside/laguna-m.1:free": {
@@ -7702,6 +8034,10 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 8192,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"poolside/laguna-xs.2:free": {
@@ -7722,6 +8058,10 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 8192,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"prime-intellect/intellect-3": {
@@ -7743,6 +8083,10 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.0002,
 		costPer1kOutputTokens: 0.0011,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"qwen/qwen-2.5-72b-instruct": {
@@ -7808,27 +8152,6 @@ export const openrouterModelConfig: ModelConfig = {
 		costPer1kOutputTokens: 0.00078,
 	},
 
-	"qwen/qwen-plus-2025-07-28": {
-		name: "Qwen Plus 0728",
-		matchingModel: "qwen/qwen-plus-2025-07-28",
-		provider: "openrouter",
-		knowledgeCutoffDate: "March 31, 2025",
-		releaseDate: "September 8, 2025",
-		lastUpdated: "September 8, 2025",
-		modalities: {
-			input: ["text"],
-			output: ["text"],
-		},
-		supportsAttachments: false,
-		supportsTemperature: true,
-		supportsToolCalls: true,
-		supportsResponseFormat: true,
-		contextWindow: 1000000,
-		maxTokens: 32768,
-		costPer1kInputTokens: 0.00026,
-		costPer1kOutputTokens: 0.00078,
-	},
-
 	"qwen/qwen-plus-2025-07-28:thinking": {
 		name: "Qwen Plus 0728 (thinking)",
 		matchingModel: "qwen/qwen-plus-2025-07-28:thinking",
@@ -7848,6 +8171,10 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.00026,
 		costPer1kOutputTokens: 0.00078,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"qwen/qwen3-14b": {
@@ -7869,6 +8196,10 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 40960,
 		costPer1kInputTokens: 0.0001,
 		costPer1kOutputTokens: 0.00024,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"qwen/qwen3-235b-a22b": {
@@ -7890,27 +8221,10 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 8192,
 		costPer1kInputTokens: 0.000455,
 		costPer1kOutputTokens: 0.00182,
-	},
-
-	"qwen/qwen3-235b-a22b-2507": {
-		name: "Qwen3 235B A22B Instruct 2507",
-		matchingModel: "qwen/qwen3-235b-a22b-2507",
-		provider: "openrouter",
-		knowledgeCutoffDate: "June 30, 2025",
-		releaseDate: "July 21, 2025",
-		lastUpdated: "July 21, 2025",
-		modalities: {
-			input: ["text"],
-			output: ["text"],
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
 		},
-		supportsAttachments: false,
-		supportsTemperature: true,
-		supportsToolCalls: true,
-		supportsResponseFormat: true,
-		contextWindow: 262144,
-		maxTokens: 16384,
-		costPer1kInputTokens: 0.000071,
-		costPer1kOutputTokens: 0.0001,
 	},
 
 	"qwen/qwen3-30b-a3b": {
@@ -7932,6 +8246,10 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 20000,
 		costPer1kInputTokens: 0.00009,
 		costPer1kOutputTokens: 0.00045,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"qwen/qwen3-32b": {
@@ -7953,6 +8271,10 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00008,
 		costPer1kOutputTokens: 0.00028,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"qwen/qwen3-8b": {
@@ -7974,6 +8296,10 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 8192,
 		costPer1kInputTokens: 0.00005,
 		costPer1kOutputTokens: 0.0004,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"qwen/qwen3-coder-next": {
@@ -8035,6 +8361,10 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.00078,
 		costPer1kOutputTokens: 0.0039,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"qwen/qwen3-vl-235b-a22b-instruct": {
@@ -8077,6 +8407,10 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.00026,
 		costPer1kOutputTokens: 0.0026,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"qwen/qwen3-vl-30b-a3b-instruct": {
@@ -8119,6 +8453,10 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.00013,
 		costPer1kOutputTokens: 0.00156,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"qwen/qwen3-vl-32b-instruct": {
@@ -8179,6 +8517,10 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.000117,
 		costPer1kOutputTokens: 0.001365,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"qwen/qwen3.5-122b-a10b": {
@@ -8196,9 +8538,13 @@ export const openrouterModelConfig: ModelConfig = {
 		supportsToolCalls: true,
 		supportsResponseFormat: true,
 		contextWindow: 262144,
-		maxTokens: 65536,
+		maxTokens: 262144,
 		costPer1kInputTokens: 0.00026,
 		costPer1kOutputTokens: 0.00208,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"qwen/qwen3.5-27b": {
@@ -8219,6 +8565,10 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.000195,
 		costPer1kOutputTokens: 0.00156,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"qwen/qwen3.5-35b-a3b": {
@@ -8239,6 +8589,10 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 81920,
 		costPer1kInputTokens: 0.000139,
 		costPer1kOutputTokens: 0.001,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"qwen/qwen3.5-397b-a17b": {
@@ -8260,6 +8614,10 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.00039,
 		costPer1kOutputTokens: 0.00234,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"qwen/qwen3.5-9b": {
@@ -8280,6 +8638,10 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 81920,
 		costPer1kInputTokens: 0.00004,
 		costPer1kOutputTokens: 0.00015,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"qwen/qwen3.5-flash-02-23": {
@@ -8300,6 +8662,10 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.000065,
 		costPer1kOutputTokens: 0.00026,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"qwen/qwen3.5-plus-02-15": {
@@ -8321,6 +8687,10 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.00026,
 		costPer1kOutputTokens: 0.00156,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"qwen/qwen3.5-plus-20260420": {
@@ -8341,6 +8711,10 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.0003,
 		costPer1kOutputTokens: 0.0018,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"qwen/qwen3.6-27b": {
@@ -8358,9 +8732,13 @@ export const openrouterModelConfig: ModelConfig = {
 		supportsToolCalls: true,
 		supportsResponseFormat: true,
 		contextWindow: 262144,
-		maxTokens: 81920,
-		costPer1kInputTokens: 0.00032,
+		maxTokens: 262144,
+		costPer1kInputTokens: 0.0003,
 		costPer1kOutputTokens: 0.0032,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"qwen/qwen3.6-35b-a3b": {
@@ -8377,10 +8755,14 @@ export const openrouterModelConfig: ModelConfig = {
 		supportsTemperature: true,
 		supportsToolCalls: true,
 		supportsResponseFormat: true,
-		contextWindow: 262144,
-		maxTokens: 262144,
-		costPer1kInputTokens: 0.000149,
+		contextWindow: 262140,
+		maxTokens: 262140,
+		costPer1kInputTokens: 0.00015,
 		costPer1kOutputTokens: 0.001,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"qwen/qwen3.6-flash": {
@@ -8401,6 +8783,10 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.0001875,
 		costPer1kOutputTokens: 0.001125,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"qwen/qwen3.6-max-preview": {
@@ -8421,6 +8807,10 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.00104,
 		costPer1kOutputTokens: 0.00624,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"qwen/qwen3.6-plus": {
@@ -8442,6 +8832,10 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.000325,
 		costPer1kOutputTokens: 0.00195,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"rekaai/reka-edge": {
@@ -8627,6 +9021,10 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.00085,
 		costPer1kOutputTokens: 0.0034,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"tencent/hunyuan-a13b-instruct": {
@@ -8648,6 +9046,10 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.00014,
 		costPer1kOutputTokens: 0.00057,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"tencent/hy3-preview": {
@@ -8668,6 +9070,10 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 262144,
 		costPer1kInputTokens: 0.000066,
 		costPer1kOutputTokens: 0.00026,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"thedrummer/cydonia-24b-v4.1": {
@@ -8793,6 +9199,10 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.00015,
 		costPer1kOutputTokens: 0.0006,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"writer/palmyra-x5": {
@@ -8834,6 +9244,10 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 2000000,
 		costPer1kInputTokens: 0.00125,
 		costPer1kOutputTokens: 0.0025,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"x-ai/grok-4.20-multi-agent": {
@@ -8855,14 +9269,18 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 2000000,
 		costPer1kInputTokens: 0.002,
 		costPer1kOutputTokens: 0.006,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"x-ai/grok-4.3": {
 		name: "Grok 4.3",
 		matchingModel: "x-ai/grok-4.3",
 		provider: "openrouter",
-		releaseDate: "April 30, 2026",
-		lastUpdated: "April 30, 2026",
+		releaseDate: "April 17, 2026",
+		lastUpdated: "April 17, 2026",
 		modalities: {
 			input: ["text", "image"],
 			output: ["text"],
@@ -8876,6 +9294,10 @@ export const openrouterModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0.00125,
 		costPer1kOutputTokens: 0.0025,
 		isFeatured: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"xiaomi/mimo-v2-omni": {
@@ -8896,6 +9318,11 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.0004,
 		costPer1kOutputTokens: 0.002,
+		knowledgeCutoffDate: "December 2024",
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"xiaomi/mimo-v2-pro": {
@@ -8916,6 +9343,11 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.001,
 		costPer1kOutputTokens: 0.003,
+		knowledgeCutoffDate: "December 2024",
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"xiaomi/mimo-v2.5": {
@@ -8936,6 +9368,11 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.0004,
 		costPer1kOutputTokens: 0.002,
+		knowledgeCutoffDate: "December 2024",
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"xiaomi/mimo-v2.5-pro": {
@@ -8956,6 +9393,11 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.001,
 		costPer1kOutputTokens: 0.003,
+		knowledgeCutoffDate: "December 2024",
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"z-ai/glm-4-32b": {
@@ -8997,14 +9439,19 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 24000,
 		costPer1kInputTokens: 0.0003,
 		costPer1kOutputTokens: 0.0009,
+		knowledgeCutoffDate: "April 2025",
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"z-ai/glm-5-turbo": {
 		name: "GLM 5 Turbo",
 		matchingModel: "z-ai/glm-5-turbo",
 		provider: "openrouter",
-		releaseDate: "March 15, 2026",
-		lastUpdated: "March 15, 2026",
+		releaseDate: "March 16, 2026",
+		lastUpdated: "March 16, 2026",
 		modalities: {
 			input: ["text"],
 			output: ["text"],
@@ -9017,14 +9464,18 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.0012,
 		costPer1kOutputTokens: 0.004,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"z-ai/glm-5.1": {
 		name: "GLM 5.1",
 		matchingModel: "z-ai/glm-5.1",
 		provider: "openrouter",
-		releaseDate: "April 7, 2026",
-		lastUpdated: "April 7, 2026",
+		releaseDate: "March 27, 2026",
+		lastUpdated: "March 27, 2026",
 		modalities: {
 			input: ["text"],
 			output: ["text"],
@@ -9033,10 +9484,14 @@ export const openrouterModelConfig: ModelConfig = {
 		supportsTemperature: true,
 		supportsToolCalls: true,
 		supportsResponseFormat: true,
-		contextWindow: 202800,
+		contextWindow: 202752,
 		maxTokens: 202800,
-		costPer1kInputTokens: 0,
-		costPer1kOutputTokens: 0,
+		costPer1kInputTokens: 0.00098,
+		costPer1kOutputTokens: 0.00308,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"z-ai/glm-5v-turbo": {
@@ -9057,12 +9512,16 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.0012,
 		costPer1kOutputTokens: 0.004,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 	"google/gemini-3.5-flash": {
 		name: "Gemini 3.5 Flash",
 		matchingModel: "google/gemini-3.5-flash",
 		provider: "openrouter",
-		knowledgeCutoffDate: "January 1, 2025",
+		knowledgeCutoffDate: "January 2025",
 		releaseDate: "May 19, 2026",
 		lastUpdated: "May 19, 2026",
 		modalities: {
@@ -9079,5 +9538,56 @@ export const openrouterModelConfig: ModelConfig = {
 		costPer1kOutputTokens: 0.009,
 		costPer1kReasoningTokens: 0.009,
 		isFeatured: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
+	},
+	"qwen/qwen3.7-max": {
+		name: "Qwen3.7 Max",
+		matchingModel: "qwen/qwen3.7-max",
+		provider: "openrouter",
+		releaseDate: "May 21, 2026",
+		lastUpdated: "May 21, 2026",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		supportsResponseFormat: true,
+		contextWindow: 1000000,
+		maxTokens: 65536,
+		costPer1kInputTokens: 0.0025,
+		costPer1kOutputTokens: 0.0075,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
+	},
+
+	"x-ai/grok-build-0.1": {
+		name: "Grok Build 0.1",
+		matchingModel: "x-ai/grok-build-0.1",
+		provider: "openrouter",
+		releaseDate: "April 16, 2026",
+		lastUpdated: "April 16, 2026",
+		modalities: {
+			input: ["text", "image"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		supportsResponseFormat: true,
+		contextWindow: 256000,
+		maxTokens: 256000,
+		costPer1kInputTokens: 0.001,
+		costPer1kOutputTokens: 0.002,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 };

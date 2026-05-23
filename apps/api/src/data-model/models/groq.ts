@@ -293,6 +293,10 @@ export const groqModelConfig: ModelConfig = {
 		includedInRouter: true,
 		supportsArtifacts: true,
 		supportsResponseFormat: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 	"groq-openai-gpt-oss-120b": {
 		name: "GPT OSS 120B",
@@ -321,28 +325,11 @@ export const groqModelConfig: ModelConfig = {
 		includedInRouter: true,
 		supportsArtifacts: true,
 		supportsResponseFormat: true,
-	},
-	"moonshotai/kimi-k2-instruct-0905": {
-		name: "Kimi K2 Instruct 0905",
-		matchingModel: "moonshotai/kimi-k2-instruct-0905",
-		provider: "groq",
-		knowledgeCutoffDate: "October 2024",
-		releaseDate: "September 5, 2025",
-		lastUpdated: "September 5, 2025",
-		modalities: {
-			input: ["text"],
-			output: ["text"],
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
 		},
-		supportsAttachments: false,
-		supportsTemperature: true,
-		supportsToolCalls: true,
-		supportsResponseFormat: true,
-		contextWindow: 262144,
-		maxTokens: 16384,
-		costPer1kInputTokens: 0.001,
-		costPer1kOutputTokens: 0.003,
 	},
-
 	"qwen/qwen3-32b": {
 		name: "Qwen3 32B",
 		matchingModel: "qwen/qwen3-32b",
@@ -361,6 +348,10 @@ export const groqModelConfig: ModelConfig = {
 		maxTokens: 40960,
 		costPer1kInputTokens: 0.00029,
 		costPer1kOutputTokens: 0.00059,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 	"allam-2-7b": {
 		name: "ALLaM-2-7b",
@@ -441,6 +432,10 @@ export const groqModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
 		isFeatured: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"groq/compound-mini": {
@@ -461,6 +456,10 @@ export const groqModelConfig: ModelConfig = {
 		maxTokens: 8192,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"meta-llama/llama-prompt-guard-2-22m": {
@@ -520,6 +519,10 @@ export const groqModelConfig: ModelConfig = {
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.000075,
 		costPer1kOutputTokens: 0.0003,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"whisper-large-v3": {

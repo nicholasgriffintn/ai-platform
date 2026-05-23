@@ -88,6 +88,10 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		costPer1kInputTokens: 0.0000272,
 		costPer1kOutputTokens: 0.0001087,
 		supportsResponseFormat: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("deepseek-ai/DeepSeek-R1-0528-Qwen3-8B", PROVIDER, {
@@ -139,6 +143,10 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		costPer1kInputTokens: 0.00006,
 		costPer1kOutputTokens: 0.00022,
 		supportsResponseFormat: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("Qwen/Qwen3-235B-A22B-Instruct-2507", PROVIDER, {
@@ -190,6 +198,10 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		costPer1kInputTokens: 0.00011,
 		costPer1kOutputTokens: 0.0006,
 		supportsResponseFormat: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("tngtech/DeepSeek-TNG-R1T2-Chimera", PROVIDER, {
@@ -299,6 +311,10 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.00045,
 		costPer1kOutputTokens: 0.00215,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("deepseek-ai/DeepSeek-R1-TEE", PROVIDER, {
@@ -375,6 +391,10 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.00027,
 		costPer1kOutputTokens: 0.001,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("deepseek-ai/DeepSeek-V3.1-Terminus-TEE", PROVIDER, {
@@ -432,6 +452,10 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.00028,
 		costPer1kOutputTokens: 0.00042,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("MiniMaxAI/MiniMax-M2.1-TEE", PROVIDER, {
@@ -547,6 +571,10 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 65535,
 		costPer1kInputTokens: 0.00044,
 		costPer1kOutputTokens: 0.002,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("NousResearch/DeepHermes-3-Mistral-24B-Preview", PROVIDER, {
@@ -585,6 +613,10 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 40960,
 		costPer1kInputTokens: 0.0000136,
 		costPer1kOutputTokens: 0.0000543,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("NousResearch/Hermes-4-405B-FP8-TEE", PROVIDER, {
@@ -680,6 +712,10 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.00009,
 		costPer1kOutputTokens: 0.00036,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("openai/gpt-oss-20b", PROVIDER, {
@@ -1250,6 +1286,10 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.0003,
 		costPer1kOutputTokens: 0.0009,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("zai-org/GLM-4.7-Flash", PROVIDER, {
@@ -1288,6 +1328,10 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 65535,
 		costPer1kInputTokens: 0.0002989,
 		costPer1kOutputTokens: 0.0011957,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("zai-org/GLM-4.7-TEE", PROVIDER, {
@@ -1307,6 +1351,10 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 65535,
 		costPer1kInputTokens: 0.00039,
 		costPer1kOutputTokens: 0.00175,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 	createModelConfig("google/gemma-4-31B-turbo-TEE", PROVIDER, {
 		name: "gemma 4 31B turbo TEE",
@@ -1325,6 +1373,10 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.00013,
 		costPer1kOutputTokens: 0.00038,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("MiniMaxAI/MiniMax-M2.5-TEE", PROVIDER, {
@@ -1344,6 +1396,10 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.00015,
 		costPer1kOutputTokens: 0.0012,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("moonshotai/Kimi-K2.6-TEE", PROVIDER, {
@@ -1364,6 +1420,10 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 65535,
 		costPer1kInputTokens: 0.00095,
 		costPer1kOutputTokens: 0.004,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("Qwen/Qwen3-32B-TEE", PROVIDER, {
@@ -1383,6 +1443,10 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 40960,
 		costPer1kInputTokens: 0.00008,
 		costPer1kOutputTokens: 0.00024,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("Qwen/Qwen3-Coder-Next-TEE", PROVIDER, {
@@ -1421,6 +1485,10 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.00039,
 		costPer1kOutputTokens: 0.00234,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("Qwen/Qwen3.6-27B-TEE", PROVIDER, {
@@ -1440,6 +1508,10 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.000195,
 		costPer1kOutputTokens: 0.00156,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("tngtech/DeepSeek-TNG-R1T2-Chimera-TEE", PROVIDER, {
@@ -1459,6 +1531,10 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 163840,
 		costPer1kInputTokens: 0.0003,
 		costPer1kOutputTokens: 0.0011,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("unsloth/Llama-3.2-3B-Instruct", PROVIDER, {
@@ -1515,6 +1591,10 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 65535,
 		costPer1kInputTokens: 0.00095,
 		costPer1kOutputTokens: 0.00255,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("zai-org/GLM-5-Turbo", PROVIDER, {
@@ -1534,6 +1614,10 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 65535,
 		costPer1kInputTokens: 0.0004891,
 		costPer1kOutputTokens: 0.0019565,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("zai-org/GLM-5.1-TEE", PROVIDER, {
@@ -1553,5 +1637,9 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 65535,
 		costPer1kInputTokens: 0.00105,
 		costPer1kOutputTokens: 0.0035,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 ]);

@@ -215,6 +215,10 @@ export const togetherAiModelConfig: ModelConfig = {
 		maxTokens: 163839,
 		costPer1kInputTokens: 0.003,
 		costPer1kOutputTokens: 0.007,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"deepseek-ai/DeepSeek-V3": {
@@ -235,6 +239,10 @@ export const togetherAiModelConfig: ModelConfig = {
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.00125,
 		costPer1kOutputTokens: 0.00125,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"deepseek-ai/DeepSeek-V3-1": {
@@ -255,6 +263,10 @@ export const togetherAiModelConfig: ModelConfig = {
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.0006,
 		costPer1kOutputTokens: 0.0017,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"essentialai/Rnj-1-Instruct": {
@@ -355,6 +367,10 @@ export const togetherAiModelConfig: ModelConfig = {
 		maxTokens: 262144,
 		costPer1kInputTokens: 0.0005,
 		costPer1kOutputTokens: 0.0028,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"openai/gpt-oss-120b": {
@@ -375,6 +391,10 @@ export const togetherAiModelConfig: ModelConfig = {
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.00015,
 		costPer1kOutputTokens: 0.0006,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"Qwen/Qwen3-235B-A22B-Instruct-2507-tput": {
@@ -395,6 +415,10 @@ export const togetherAiModelConfig: ModelConfig = {
 		maxTokens: 262144,
 		costPer1kInputTokens: 0.0002,
 		costPer1kOutputTokens: 0.0006,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"Qwen/Qwen3-Coder-480B-A35B-Instruct-FP8": {
@@ -435,6 +459,10 @@ export const togetherAiModelConfig: ModelConfig = {
 		maxTokens: 262144,
 		costPer1kInputTokens: 0.0005,
 		costPer1kOutputTokens: 0.0012,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"Qwen/Qwen3-Next-80B-A3B-Instruct": {
@@ -514,6 +542,10 @@ export const togetherAiModelConfig: ModelConfig = {
 		maxTokens: 384000,
 		costPer1kInputTokens: 0.0021,
 		costPer1kOutputTokens: 0.0044,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"google/gemma-4-31B-it": {
@@ -534,6 +566,10 @@ export const togetherAiModelConfig: ModelConfig = {
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.0002,
 		costPer1kOutputTokens: 0.0005,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"MiniMaxAI/MiniMax-M2.5": {
@@ -553,6 +589,10 @@ export const togetherAiModelConfig: ModelConfig = {
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.0003,
 		costPer1kOutputTokens: 0.0012,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"MiniMaxAI/MiniMax-M2.7": {
@@ -573,6 +613,10 @@ export const togetherAiModelConfig: ModelConfig = {
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.0003,
 		costPer1kOutputTokens: 0.0012,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"moonshotai/Kimi-K2.6": {
@@ -594,6 +638,10 @@ export const togetherAiModelConfig: ModelConfig = {
 		maxTokens: 131000,
 		costPer1kInputTokens: 0.0012,
 		costPer1kOutputTokens: 0.0045,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"Qwen/Qwen3.5-397B-A17B": {
@@ -613,6 +661,10 @@ export const togetherAiModelConfig: ModelConfig = {
 		maxTokens: 130000,
 		costPer1kInputTokens: 0.0006,
 		costPer1kOutputTokens: 0.0036,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"Qwen/Qwen3.6-Plus": {
@@ -632,6 +684,10 @@ export const togetherAiModelConfig: ModelConfig = {
 		maxTokens: 500000,
 		costPer1kInputTokens: 0.0005,
 		costPer1kOutputTokens: 0.003,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 
 	"zai-org/GLM-5.1": {
@@ -653,5 +709,31 @@ export const togetherAiModelConfig: ModelConfig = {
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.0014,
 		costPer1kOutputTokens: 0.0044,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
+	},
+	"Qwen/Qwen3.7-Max": {
+		name: "Qwen3.7 Max",
+		matchingModel: "Qwen/Qwen3.7-Max",
+		provider: "together-ai",
+		releaseDate: "May 21, 2026",
+		lastUpdated: "May 21, 2026",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 1000000,
+		maxTokens: 500000,
+		costPer1kInputTokens: 0.0025,
+		costPer1kOutputTokens: 0.0075,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 };

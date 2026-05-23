@@ -23,6 +23,7 @@ const PROVIDER_ALIASES = {
 const LATEST_TAGS = new Set(["latest", "current", "recommended", "default", "flagship", "stable"]);
 const OUTDATED_TAGS = new Set(["deprecated", "legacy", "retired", "obsolete", "outdated"]);
 const VERSION_SUFFIX_REGEX = /^(.*?)[-_:]((?:19|20)\d{2}(?:[-_]?\d{2}){1,2}|v?\d{4,})$/i;
+const CURRENT_ALIAS_SUFFIX_REGEX = /^(.*?)[-_:](0|latest)$/i;
 
 const SUPPORTED_MODALITIES = new Set([
 	"text",
@@ -483,7 +484,11 @@ function hasAnyTag(remoteModel, tagSet) {
 
 function modelFamilyKey(modelId) {
 	const match = VERSION_SUFFIX_REGEX.exec(modelId);
-	return match ? match[1] : modelId;
+	if (match) {
+		return match[1];
+	}
+	const currentAliasMatch = CURRENT_ALIAS_SUFFIX_REGEX.exec(modelId);
+	return currentAliasMatch ? currentAliasMatch[1] : modelId;
 }
 
 function getRemoteModelDateValue(remoteModel) {
@@ -514,6 +519,13 @@ function inferPreferredFamilyModelIds(modelIds, remoteModels) {
 		return new Set(unversionedModelIds);
 	}
 
+	const currentAliasModelIds = modelIds.filter((modelId) => {
+		return CURRENT_ALIAS_SUFFIX_REGEX.test(modelId);
+	});
+	if (currentAliasModelIds.length > 0) {
+		return new Set(currentAliasModelIds);
+	}
+
 	let bestScore = Number.NEGATIVE_INFINITY;
 	const preferredModelIds = new Set();
 	for (const modelId of modelIds) {
@@ -537,6 +549,21 @@ function inferPreferredFamilyModelIds(modelIds, remoteModels) {
 	}
 
 	return preferredModelIds;
+}
+
+function buildProviderModelFamilies(remoteModels) {
+	const families = new Map();
+	for (const [modelId, remoteModel] of Object.entries(remoteModels)) {
+		if (!remoteModel || typeof remoteModel !== "object") {
+			continue;
+		}
+		const family = modelFamilyKey(modelId);
+		if (!families.has(family)) {
+			families.set(family, new Set());
+		}
+		families.get(family).add(modelId);
+	}
+	return families;
 }
 
 function buildProviderModelStatus(remoteModels) {
@@ -1109,6 +1136,14 @@ function resolveEntryRemoteModel(entry, remoteModels, sourceFile) {
 	return { matchingModel, remoteModel, remoteModelId };
 }
 
+function isStaleUnmatchedFamilyEntry({ remoteModel, remoteModelId, remoteModelFamilies }) {
+	if (remoteModel && typeof remoteModel === "object") {
+		return false;
+	}
+	const family = modelFamilyKey(remoteModelId);
+	return remoteModelFamilies.has(family);
+}
+
 function findDuplicateRemoteModelEntryNodes(entries, remoteModels, sourceFile) {
 	const preferredEntriesByResolvedModelId = new Map();
 	const duplicateEntryNodes = new Set();
@@ -1211,6 +1246,7 @@ async function inspectModelFile({ filePath, remoteProviders, selectedProviders }
 	const remoteProviderDeprecated = hasDeprecatedStatus(remoteProviderConfig);
 	const remoteModels = remoteModelsFromProvider(remoteProviderConfig);
 	const providerModelStatus = buildProviderModelStatus(remoteModels ?? {});
+	const remoteModelFamilies = buildProviderModelFamilies(remoteModels ?? {});
 	if (!remoteModels && !remoteProviderDeprecated) {
 		return {
 			filePath,
@@ -1248,6 +1284,7 @@ async function inspectModelFile({ filePath, remoteProviders, selectedProviders }
 		remoteProviderDeprecated,
 		remoteModels: remoteModels ?? {},
 		providerModelStatus,
+		remoteModelFamilies,
 		entries,
 		containerNode,
 		containerElements,
@@ -1278,6 +1315,7 @@ async function processFile({
 		remoteProviderDeprecated,
 		remoteModels,
 		providerModelStatus,
+		remoteModelFamilies,
 		entries,
 		containerNode,
 		containerElements,
@@ -1310,7 +1348,8 @@ async function processFile({
 			remoteProviderDeprecated ||
 			hasDeprecatedStatus(remoteModel) ||
 			isOutdatedModel ||
-			shouldRemoveBecauseNotLatest
+			shouldRemoveBecauseNotLatest ||
+			isStaleUnmatchedFamilyEntry({ remoteModel, remoteModelId, remoteModelFamilies })
 		) {
 			removedDeprecatedModels += 1;
 			patches.push(buildRemoveEntryPatch(originalText, entry.entryNode, sourceFile));

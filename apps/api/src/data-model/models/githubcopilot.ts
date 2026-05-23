@@ -200,6 +200,10 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 32000,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("ghcopilot/anthropic/claude-opus-4.5", PROVIDER, {
@@ -219,6 +223,10 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 32000,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("ghcopilot/anthropic/claude-opus-4.6", PROVIDER, {
@@ -238,6 +246,10 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 64000,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("ghcopilot/anthropic/claude-sonnet-4.5", PROVIDER, {
@@ -257,6 +269,10 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 32000,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("ghcopilot/google/gemini-3-flash-preview", PROVIDER, {
@@ -277,6 +293,10 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 64000,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("ghcopilot/openai/gpt-5-mini", PROVIDER, {
@@ -296,6 +316,10 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 64000,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("ghcopilot/openai/gpt-5.2", PROVIDER, {
@@ -315,6 +339,10 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 64000,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("ghcopilot/openai/gpt-5.2-codex", PROVIDER, {
@@ -334,6 +362,10 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("ghcopilot/xai/grok-code-fast-1", PROVIDER, {
@@ -353,6 +385,10 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 64000,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 	createModelConfig("claude-opus-4.7", PROVIDER, {
 		name: "Claude Opus 4.7",
@@ -371,6 +407,10 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 64000,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("claude-sonnet-4.6", PROVIDER, {
@@ -390,6 +430,10 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 32000,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("gemini-3.1-pro-preview", PROVIDER, {
@@ -410,6 +454,10 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 64000,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("gpt-5.3-codex", PROVIDER, {
@@ -429,6 +477,10 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("gpt-5.4", PROVIDER, {
@@ -448,6 +500,10 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("gpt-5.4-mini", PROVIDER, {
@@ -468,6 +524,10 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("gpt-5.5", PROVIDER, {
@@ -487,5 +547,32 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
+	}),
+	createModelConfig("gemini-3.5-flash", PROVIDER, {
+		name: "Gemini 3.5 Flash",
+		matchingModel: "gemini-3.5-flash",
+		knowledgeCutoffDate: "January 2025",
+		releaseDate: "May 19, 2026",
+		lastUpdated: "May 19, 2026",
+		modalities: {
+			input: ["text", "image", "audio", "video"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		supportsResponseFormat: true,
+		contextWindow: 128000,
+		maxTokens: 64000,
+		costPer1kInputTokens: 0,
+		costPer1kOutputTokens: 0,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 ]);
