@@ -286,22 +286,22 @@ describe("RequestPreparer", () => {
 		});
 
 		it("should keep duplicate matching models when providers differ", async () => {
-			const workersModel = {
-				matchingModel: "alibaba/qwen3-max",
-				provider: "workers-ai",
-				name: "Qwen3 Max (Workers AI)",
+			const githubModelsModel = {
+				matchingModel: "xai/grok-3",
+				provider: "github-models",
+				name: "Grok 3 (GitHub Models)",
 			};
 
 			const vercelModel = {
-				matchingModel: "alibaba/qwen3-max",
+				matchingModel: "xai/grok-3",
 				provider: "vercel",
-				name: "Qwen3 Max",
+				name: "Grok 3",
 			};
 
 			const multiProviderContext = {
 				...baseValidationContext,
-				modelConfig: workersModel,
-				selectedModels: ["workers-ai-alibaba-qwen3-max", "alibaba/qwen3-max"],
+				modelConfig: githubModelsModel,
+				selectedModels: ["grok-3-gh", "xai/grok-3"],
 			};
 
 			vi.mocked(getModelConfig).mockResolvedValueOnce(vercelModel as any);
@@ -310,14 +310,14 @@ describe("RequestPreparer", () => {
 
 			expect(result).toEqual([
 				{
-					model: "alibaba/qwen3-max",
-					provider: "workers-ai",
-					displayName: "Qwen3 Max (Workers AI)",
+					model: "xai/grok-3",
+					provider: "github-models",
+					displayName: "Grok 3 (GitHub Models)",
 				},
 				{
-					model: "alibaba/qwen3-max",
+					model: "xai/grok-3",
 					provider: "vercel",
-					displayName: "Qwen3 Max",
+					displayName: "Grok 3",
 				},
 			]);
 		});

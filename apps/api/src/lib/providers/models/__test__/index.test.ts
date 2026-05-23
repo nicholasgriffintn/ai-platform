@@ -20,6 +20,5 @@ describe("getModels", () => {
 		expect(models["github-copilot/gpt-5.4"]?.provider).toBe("github-copilot");
 		expect(models["openai/gpt-5.4"]?.provider).toBe("openrouter");
 		expect(models["vercel/openai/gpt-5.4"]?.provider).toBe("vercel");
-		expect(models["workers-ai-openai-gpt-5-4"]?.provider).toBe("workers-ai");
 	});
 });
