@@ -104,6 +104,8 @@ const mockUser = {
 	plan_id: "free",
 } as IUser;
 
+const mockProUser = { ...mockUser, plan_id: "pro" } as IUser;
+
 describe("Models", () => {
 	let mockCache: any;
 	let mockEnv: any;
@@ -123,6 +125,7 @@ describe("Models", () => {
 		mockCache.set.mockResolvedValue(true);
 		mockRepositories.userSettings.getUserProviderSettings.mockResolvedValue([]);
 		mockRepositories.userSettings.getUserSettings.mockResolvedValue(null);
+		mockRepositories.users.getUserById.mockResolvedValue(mockUser);
 	});
 
 	describe("getModelConfig", () => {
@@ -496,50 +499,49 @@ describe("Models", () => {
 		});
 	});
 
-	// TODO: fix these
-	describe.skip("getAuxiliaryModel", () => {
+	describe("getAuxiliaryModel", () => {
 		it("should return default model when no groq models available", async () => {
 			const result = await getAuxiliaryModel(mockEnv, mockUser);
 
 			expect(result.model).toBe("@cf/google/gemma-3-12b-it");
-			expect(result.provider).toBeDefined();
+			expect(result.provider).toBe("workers-ai");
 		});
 
 		it("should prefer groq model when available", async () => {
+			mockRepositories.users.getUserById.mockResolvedValue(mockProUser);
 			mockRepositories.userSettings.getUserProviderSettings.mockResolvedValue([
 				{ provider_id: "groq", enabled: true },
 			]);
 
-			const result = await getAuxiliaryModel(mockEnv, mockUser);
+			const result = await getAuxiliaryModel(mockEnv, mockProUser);
 
 			expect(result.model).toBe("llama-3.3-70b-versatile");
 			expect(result.provider).toBe("groq");
 		});
 	});
 
-	// TODO: fix these
-	describe.skip("getAuxiliaryModelForRetrieval", () => {
+	describe("getAuxiliaryModelForRetrieval", () => {
 		it("should return default model when no perplexity models available", async () => {
 			const result = await getAuxiliaryModelForRetrieval(mockEnv, mockUser);
 
 			expect(result.model).toBe("@cf/google/gemma-3-12b-it");
-			expect(result.provider).toBeDefined();
+			expect(result.provider).toBe("workers-ai");
 		});
 
 		it("should prefer perplexity model when available", async () => {
+			mockRepositories.users.getUserById.mockResolvedValue(mockProUser);
 			mockRepositories.userSettings.getUserProviderSettings.mockResolvedValue([
 				{ provider_id: "perplexity-ai", enabled: true },
 			]);
 
-			const result = await getAuxiliaryModelForRetrieval(mockEnv, mockUser);
+			const result = await getAuxiliaryModelForRetrieval(mockEnv, mockProUser);
 
 			expect(result.model).toBe("sonar");
 			expect(result.provider).toBe("perplexity-ai");
 		});
 	});
 
-	// TODO: fix these
-	describe.skip("getAuxiliaryGuardrailsModel", () => {
+	describe("getAuxiliaryGuardrailsModel", () => {
 		it("should return default model when no groq models available", async () => {
 			const result = await getAuxiliaryGuardrailsModel(mockEnv, mockUser);
 
@@ -548,11 +550,12 @@ describe("Models", () => {
 		});
 
 		it("should prefer groq model when available", async () => {
+			mockRepositories.users.getUserById.mockResolvedValue(mockProUser);
 			mockRepositories.userSettings.getUserProviderSettings.mockResolvedValue([
 				{ provider_id: "groq", enabled: true },
 			]);
 
-			const result = await getAuxiliaryGuardrailsModel(mockEnv, mockUser);
+			const result = await getAuxiliaryGuardrailsModel(mockEnv, mockProUser);
 
 			expect(result.model).toBe("meta-llama/llama-guard-4-12b");
 			expect(result.provider).toBe("groq");
@@ -560,8 +563,6 @@ describe("Models", () => {
 	});
 
 	describe("getAuxiliarySearchProvider", () => {
-		const proUser = { ...mockUser, plan_id: "pro" } as IUser;
-
 		it("should default to duckduckgo when user is not on pro plan", async () => {
 			const provider = await getAuxiliarySearchProvider(mockEnv as any, mockUser);
 			expect(provider).toBe("duckduckgo");
@@ -578,25 +579,25 @@ describe("Models", () => {
 				search_provider: "parallel",
 			});
 
-			const provider = await getAuxiliarySearchProvider(mockEnv as any, proUser);
+			const provider = await getAuxiliarySearchProvider(mockEnv as any, mockProUser);
 			expect(provider).toBe("parallel");
 		});
 
 		it("should fall back to tavily when no user preference exists", async () => {
 			mockRepositories.userSettings.getUserSettings.mockResolvedValueOnce(null);
 
-			const provider = await getAuxiliarySearchProvider(mockEnv as any, proUser);
+			const provider = await getAuxiliarySearchProvider(mockEnv as any, mockProUser);
 			expect(provider).toBe("tavily");
 		});
 
 		it("should return requested serper provider", async () => {
-			const provider = await getAuxiliarySearchProvider(mockEnv as any, proUser, "serper");
+			const provider = await getAuxiliarySearchProvider(mockEnv as any, mockProUser, "serper");
 			expect(provider).toBe("serper");
 			expect(mockRepositories.userSettings.getUserSettings).not.toHaveBeenCalled();
 		});
 
 		it("should return requested provider without querying user settings", async () => {
-			const provider = await getAuxiliarySearchProvider(mockEnv as any, proUser, "parallel");
+			const provider = await getAuxiliarySearchProvider(mockEnv as any, mockProUser, "parallel");
 
 			expect(provider).toBe("parallel");
 			expect(mockRepositories.userSettings.getUserSettings).not.toHaveBeenCalled();
