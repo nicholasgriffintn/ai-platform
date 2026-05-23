@@ -1,6 +1,7 @@
-import { ExternalLink, FileText, Github, Keyboard, MoreVertical } from "lucide-react";
+import { ExternalLink, FileText, Keyboard, MoreVertical } from "lucide-react";
 import { Link } from "react-router";
 
+import GithubIcon from "~/components/ModelIcon/Icons/github";
 import { DropdownMenu, DropdownMenuItem } from "~/components/ui";
 
 interface MoreOptionsDropdownProps {
@@ -33,7 +34,7 @@ export const MoreOptionsDropdown = ({
 					Privacy
 				</Link>
 			</DropdownMenuItem>
-			<DropdownMenuItem icon={<Github size={16} />}>
+			<DropdownMenuItem icon={<GithubIcon size={16} />}>
 				<a
 					href="https://github.com/nicholasgriffintn/personal-ai-assistant"
 					target="_blank"

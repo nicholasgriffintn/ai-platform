@@ -1,6 +1,7 @@
-import { Github, KeySquare, Loader2, Mail } from "lucide-react";
+import { KeySquare, Loader2, Mail } from "lucide-react";
 import { useEffect, useState } from "react";
 
+import GithubIcon from "~/components/ModelIcon/Icons/github";
 import { Button, FormInput } from "~/components/ui";
 import { Dialog, DialogContent } from "~/components/ui/Dialog";
 import { APP_NAME } from "~/constants";
@@ -158,7 +159,7 @@ export const LoginModal = ({ open, onOpenChange, onKeySubmit }: LoginModalProps)
 							onClick={handleGithubLogin}
 							className="w-full bg-zinc-800 text-white hover:bg-zinc-700"
 							disabled={awaitingGithubLogin}
-							icon={<Github size={18} />}
+							icon={<GithubIcon size={18} />}
 							isLoading={awaitingGithubLogin}
 						>
 							Sign in with GitHub
