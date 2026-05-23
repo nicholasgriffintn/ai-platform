@@ -299,6 +299,100 @@ describe("OpenAIProvider", () => {
 			});
 		});
 
+		it("should not duplicate system prompts in Responses API instructions", async () => {
+			// @ts-ignore - getModelConfigByMatchingModel is not typed
+			vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
+				name: "gpt-5.4",
+				matchingModel: "gpt-5.4",
+				modalities: { input: ["text"], output: ["text"] },
+				supportsToolCalls: true,
+				supportsSearchGrounding: true,
+			});
+
+			vi.mocked(createCommonParameters).mockReturnValue({ model: "gpt-5.4" });
+			vi.mocked(shouldEnableStreaming).mockReturnValue(false);
+			vi.mocked(getToolsForProvider).mockReturnValue({ tools: [] });
+
+			const provider = new OpenAIProvider();
+
+			const result = await provider.mapParameters({
+				model: "gpt-5.4",
+				system_prompt: "Follow the repository rules.",
+				messages: [
+					{ role: "developer", content: "Follow the repository rules." },
+					{ role: "developer", content: "Keep answers concise." },
+					{ role: "user", content: "Hello" },
+				],
+				enabled_tools: ["search_grounding"],
+				env: { AI_GATEWAY_TOKEN: "test-token" },
+			} as any);
+
+			expect(result.instructions).toBe("Follow the repository rules.\n\nKeep answers concise.");
+			expect(result.input).toEqual([{ type: "message", role: "user", content: "Hello" }]);
+		});
+
+		it("should preserve assistant tool calls in Responses API input history", async () => {
+			// @ts-ignore - getModelConfigByMatchingModel is not typed
+			vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
+				name: "gpt-5.4",
+				matchingModel: "gpt-5.4",
+				modalities: { input: ["text"], output: ["text"] },
+				supportsToolCalls: true,
+				supportsSearchGrounding: true,
+			});
+
+			vi.mocked(createCommonParameters).mockReturnValue({ model: "gpt-5.4" });
+			vi.mocked(shouldEnableStreaming).mockReturnValue(false);
+			vi.mocked(getToolsForProvider).mockReturnValue({ tools: [] });
+
+			const provider = new OpenAIProvider();
+
+			const result = await provider.mapParameters({
+				model: "gpt-5.4",
+				messages: [
+					{ role: "user", content: "Look this up" },
+					{
+						role: "assistant",
+						content: "",
+						tool_calls: [
+							{
+								id: "call_lookup",
+								type: "function",
+								function: {
+									name: "lookup",
+									arguments: '{"query":"status"}',
+								},
+							},
+						],
+					},
+					{
+						role: "tool",
+						tool_call_id: "call_lookup",
+						content: "status: green",
+					},
+					{ role: "user", content: "Continue" },
+				],
+				enabled_tools: ["search_grounding"],
+				env: { AI_GATEWAY_TOKEN: "test-token" },
+			} as any);
+
+			expect(result.input).toEqual([
+				{ type: "message", role: "user", content: "Look this up" },
+				{
+					type: "function_call",
+					call_id: "call_lookup",
+					name: "lookup",
+					arguments: '{"query":"status"}',
+				},
+				{
+					type: "function_call_output",
+					call_id: "call_lookup",
+					output: "status: green",
+				},
+				{ type: "message", role: "user", content: "Continue" },
+			]);
+		});
+
 		it("should add OpenAI image generation as a Responses API tool", async () => {
 			// @ts-ignore - getModelConfigByMatchingModel is not typed
 			vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({

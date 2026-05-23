@@ -1,7 +1,7 @@
-import type { ChatCompletionParameters, Message, MessageContent, ModelConfigItem } from "~/types";
+import type { ChatCompletionParameters, ModelConfigItem } from "~/types";
 import { formatToolCalls } from "~/lib/chat/tools";
+import { MessageFormatter } from "~/lib/formatter";
 import { listFunctionTools } from "~/services/functions";
-import { stringifyMessageContent } from "~/utils/messages";
 import { getEffectiveMaxTokens } from "~/utils/parameters";
 
 type OpenAIOptions = Record<string, any>;
@@ -133,79 +133,6 @@ function buildOpenAIResponsesTools(
 	return tools;
 }
 
-function formatResponsesMessagePart(part: MessageContent): any | null {
-	if (part.type === "text" && part.text) {
-		return {
-			type: "input_text",
-			text: part.text,
-		};
-	}
-
-	if (part.type === "image_url" && part.image_url?.url) {
-		return {
-			type: "input_image",
-			image_url: part.image_url.url,
-		};
-	}
-
-	if (part.type === "document_url" && part.document_url?.url) {
-		return {
-			type: "input_file",
-			file_url: part.document_url.url,
-		};
-	}
-
-	const text = stringifyMessageContent(part);
-	return text ? { type: "input_text", text } : null;
-}
-
-function formatResponsesMessage(message: Message): any | null {
-	if (message.role === "system" || message.role === "developer") {
-		return null;
-	}
-
-	if (message.role === "tool") {
-		return {
-			type: "function_call_output",
-			call_id: message.tool_call_id,
-			output: stringifyMessageContent(message.content),
-		};
-	}
-
-	if (Array.isArray(message.content)) {
-		const content = message.content
-			.map((part) => formatResponsesMessagePart(part))
-			.filter((part) => part !== null);
-
-		return {
-			type: "message",
-			role: message.role,
-			content,
-		};
-	}
-
-	return {
-		type: "message",
-		role: message.role,
-		content: stringifyMessageContent(message.content),
-	};
-}
-
-function buildInput(params: ChatCompletionParameters): any[] {
-	return (params.messages || []).map(formatResponsesMessage).filter((message) => message !== null);
-}
-
-function buildInstructions(params: ChatCompletionParameters): string | undefined {
-	const instructionParts = [
-		params.system_prompt,
-		...(params.messages || [])
-			.filter((message) => message.role === "system" || message.role === "developer")
-			.map((message) => stringifyMessageContent(message.content)),
-	].filter((part): part is string => typeof part === "string" && part.trim().length > 0);
-
-	return instructionParts.length ? instructionParts.join("\n\n") : undefined;
-}
-
 export function shouldUseOpenAIResponsesApi(
 	params: ChatCompletionParameters,
 	modelConfig: ModelConfigItem,
@@ -245,8 +172,11 @@ export function buildOpenAIResponsesBody(
 
 	return {
 		model: modelConfig.matchingModel || params.model,
-		input: buildInput(params),
-		instructions: buildInstructions(params),
+		input: MessageFormatter.formatOpenAIResponsesInput(params.messages || []),
+		instructions: MessageFormatter.formatOpenAIResponsesInstructions(
+			params.messages || [],
+			params.system_prompt,
+		),
 		...(tools.length ? { tools } : {}),
 		...streamingParams,
 		...textParams,
