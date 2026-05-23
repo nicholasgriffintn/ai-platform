@@ -324,12 +324,14 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
 		>
 			{showWelcomeScreen ? (
 				<div className="flex min-h-0 flex-1 items-start justify-center overflow-y-auto px-0 py-6 sm:py-8">
-					<WelcomeScreen
-						setInput={setChatInput}
-						title={modeConfig?.welcomeTitle}
-						description={modeConfig?.welcomeDescription}
-						sampleQuestions={modeConfig?.welcomeSampleQuestions}
-					/>
+					<div className="my-auto w-full">
+						<WelcomeScreen
+							setInput={setChatInput}
+							title={modeConfig?.welcomeTitle}
+							description={modeConfig?.welcomeDescription}
+							sampleQuestions={modeConfig?.welcomeSampleQuestions}
+						/>
+					</div>
 				</div>
 			) : (
 				<div className="min-h-0 flex-1 px-4">
