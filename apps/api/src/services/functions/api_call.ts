@@ -5,14 +5,13 @@ import type { ApiToolDefinition } from "./types";
 import { getLogger } from "~/utils/logger";
 import { safeParseJson } from "~/utils/json";
 import { isAbortError } from "~/utils/abort";
+import { isPlainObject } from "~/utils/objects";
 
 const logger = getLogger({ prefix: "services/functions/api_call" });
 
 const DEFAULT_TIMEOUT_MS = 15000;
 const MAX_TIMEOUT_MS = 60000;
 
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-	typeof value === "object" && value !== null && !Array.isArray(value);
 
 const isPrivateHostname = (hostname: string): boolean => {
 	const normalized = hostname.toLowerCase();
@@ -62,7 +61,7 @@ const isPrivateHostname = (hostname: string): boolean => {
 };
 
 const normalizeHeaders = (headers: unknown): Record<string, string> => {
-	if (!isRecord(headers)) {
+	if (!isPlainObject(headers)) {
 		return {};
 	}
 
