@@ -45,6 +45,7 @@ export function useHomeChatModeConfig(): {
 		setSandboxModeSettings,
 	} = useChatStore();
 	const { data: currentConversation } = useChat(currentConversationId);
+	const hasConversationMessages = Boolean(currentConversation?.messages?.length);
 	const conversationModeMetadata = useMemo(
 		() => getConversationModeMetadata(currentConversation),
 		[currentConversation],
@@ -236,6 +237,7 @@ export function useHomeChatModeConfig(): {
 				onSelectedMemberIdsChange={setSelectedCouncilMemberIds}
 				responseMode={councilResponseMode}
 				onResponseModeChange={setCouncilResponseMode}
+				hasConversationMessages={hasConversationMessages}
 			/>
 		);
 		const modeControls = {
@@ -283,6 +285,7 @@ export function useHomeChatModeConfig(): {
 				canSaveRepo={canSaveSandboxRepo}
 				isSavingRepo={updateSandboxConnectionRepositories.isPending}
 				onSaveRepo={handleSaveSandboxRepo}
+				hasConversationMessages={hasConversationMessages}
 			/>
 		);
 
@@ -412,5 +415,6 @@ export function useHomeChatModeConfig(): {
 		parsedSandboxTimeoutSeconds,
 		sandboxModelSettings,
 		sandboxSettings,
+		hasConversationMessages,
 	]);
 }

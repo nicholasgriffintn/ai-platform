@@ -8,7 +8,7 @@ import {
 	ListTodo,
 	MessageSquareText,
 } from "lucide-react";
-import { type ReactNode, useState } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 import { Link } from "react-router";
 
 import { Checkbox, Input } from "~/components/ui";
@@ -68,6 +68,7 @@ interface SandboxChatModeControlsProps {
 	canSaveRepo?: boolean;
 	isSavingRepo?: boolean;
 	onSaveRepo?: () => void;
+	hasConversationMessages?: boolean;
 }
 
 interface InlineSandboxControlProps {
@@ -153,8 +154,9 @@ export function SandboxChatModeControls({
 	canSaveRepo = false,
 	isSavingRepo = false,
 	onSaveRepo,
+	hasConversationMessages = false,
 }: SandboxChatModeControlsProps) {
-	const [isExpanded, setIsExpanded] = useState(true);
+	const [isExpanded, setIsExpanded] = useState(() => !hasConversationMessages);
 	const hasRepoOptions = repoOptions.length > 0;
 	const selectedRepoOption = repoOptions.find((option) => option.key === selectedRepoKey);
 	const taskLabel = SANDBOX_TASK_TYPE_LABELS[taskType];
@@ -163,6 +165,12 @@ export function SandboxChatModeControls({
 	const timeoutLabel = hasValidTimeout
 		? `${timeoutSecondsInput.trim() || SANDBOX_TIMEOUT_DEFAULT_SECONDS}s`
 		: "Invalid timeout";
+
+	useEffect(() => {
+		if (hasConversationMessages) {
+			setIsExpanded(false);
+		}
+	}, [hasConversationMessages]);
 
 	return (
 		<div className="space-y-2">
@@ -180,7 +188,7 @@ export function SandboxChatModeControls({
 					)}
 					<GitBranch className="h-4 w-4 shrink-0" />
 					<span>Sandbox</span>
-					<span className="truncate text-xs font-normal text-zinc-500 dark:text-zinc-400">
+					<span className="min-w-0 truncate text-xs font-normal text-zinc-500 dark:text-zinc-400">
 						{normalisedRepo || (isLoadingRepos ? "Loading repositories" : "No repository")}
 					</span>
 				</button>

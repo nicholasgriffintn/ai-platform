@@ -31,6 +31,7 @@ import { Button, Popover, PopoverContent, PopoverTrigger } from "~/components/ui
 import { useModels } from "~/hooks/useModels";
 import { useVoiceRecorder } from "~/hooks/useVoiceRecorder";
 import { apiService } from "~/lib/api/api-service";
+import { cn } from "~/lib/utils";
 import { useChatStore } from "~/state/stores/chatStore";
 import { useUIStore } from "~/state/stores/uiStore";
 import type { ModelConfigItem } from "~/types";
@@ -525,6 +526,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 			: { preview: null, label: "" };
 
 		const isToolSelectionLocked = chatMode === "agent" && selectedAgentId !== null;
+		const hasModeControls = Boolean(controls);
 
 		return (
 			<div
@@ -551,7 +553,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 						</div>
 					)}
 					<div className="relative">
-						<div className="flex items-start">
+						<div className="flex flex-col sm:flex-row sm:items-start">
 							<div className="flex min-w-0 flex-grow items-start gap-2 px-4 py-3">
 								{modeControls?.activeControl}
 								<textarea
@@ -576,7 +578,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 								Type your message and press Enter to send. Use Shift+Enter for a new line.
 							</div>
 
-							<div className="flex-shrink-0 flex items-center gap-1 pr-3 pt-3">
+							<div className="flex flex-shrink-0 items-center justify-end gap-1 px-3 pb-3 pt-0 sm:justify-start sm:pb-0 sm:pl-0 sm:pt-3">
 								{isLoading && streamStarted ? (
 									<Button
 										type="button"
@@ -711,7 +713,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 						</div>
 					</div>
 
-					<div className="border-t border-zinc-200 dark:border-zinc-700 mt-2 px-3 pb-3 pt-3">
+					<div className="mt-2 border-t border-zinc-200 px-3 pb-3 pt-3 dark:border-zinc-700">
 						{autoPlayResponses?.isGenerating && (
 							<div
 								className="mb-3 flex items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400"
@@ -722,7 +724,17 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 								<span>Generating response audio...</span>
 							</div>
 						)}
-						{controls && <div className={hideDefaultControls ? "" : "mb-3"}>{controls}</div>}
+						{controls && (
+							<div
+								className={cn(
+									hideDefaultControls ? "" : "mb-3",
+									hasModeControls &&
+										"max-h-[min(16rem,42dvh)] overflow-y-auto overscroll-contain pr-1 sm:max-h-none sm:overflow-visible sm:pr-0",
+								)}
+							>
+								{controls}
+							</div>
+						)}
 						{!hideDefaultControls && (
 							<div className="flex items-center justify-between gap-1 sm:gap-2">
 								<div className="flex-1 min-w-0 max-w-[70%] sm:max-w-none flex items-center gap-2">

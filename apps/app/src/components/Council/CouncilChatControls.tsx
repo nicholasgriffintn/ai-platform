@@ -1,6 +1,6 @@
 import { defaultCouncilMemberIds, councilMembers, type CouncilMemberId } from "@assistant/schemas";
 import { ChevronDown, ChevronRight, UsersRound } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { Button } from "~/components/ui";
 import { Checkbox } from "~/components/ui/Checkbox";
@@ -14,6 +14,7 @@ interface CouncilChatControlsProps {
 	responseMode: CouncilResponseMode;
 	onResponseModeChange: (mode: CouncilResponseMode) => void;
 	disabled?: boolean;
+	hasConversationMessages?: boolean;
 }
 
 export function CouncilChatControls({
@@ -22,9 +23,16 @@ export function CouncilChatControls({
 	responseMode,
 	onResponseModeChange,
 	disabled,
+	hasConversationMessages = false,
 }: CouncilChatControlsProps) {
 	const selected = useMemo(() => new Set(selectedMemberIds), [selectedMemberIds]);
 	const [isExpanded, setIsExpanded] = useState(false);
+
+	useEffect(() => {
+		if (hasConversationMessages) {
+			setIsExpanded(false);
+		}
+	}, [hasConversationMessages]);
 
 	const toggleMember = (memberId: CouncilMemberId, checked: boolean) => {
 		if (checked) {
@@ -91,7 +99,7 @@ export function CouncilChatControls({
 							</button>
 						))}
 					</div>
-					<div className="grid max-h-36 grid-cols-1 gap-2 overflow-y-auto pr-1 sm:grid-cols-2">
+					<div className="grid max-h-28 grid-cols-1 gap-2 overflow-y-auto pr-1 sm:max-h-36 sm:grid-cols-2">
 						{councilMembers.map((member) => {
 							const isSelected = selected.has(member.id);
 							return (
