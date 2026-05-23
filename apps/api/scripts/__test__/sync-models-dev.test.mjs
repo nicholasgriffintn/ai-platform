@@ -313,4 +313,61 @@ export const testProviderModelConfig: ModelConfig = createModelConfigObject([
 		expect(syncedFile).not.toContain("acme-chat-latest");
 		expect(syncedFile).toContain('createModelConfig("acme-chat-2507"');
 	});
+
+	it("removes stale Anthropic aliases that use an older model ID word order", async () => {
+		const modelsDir = await createModelsDirectory();
+		const modelFile = path.join(modelsDir, "anthropic.ts");
+		await fs.writeFile(
+			modelFile,
+			`import type { ModelConfig } from "~/types";
+import { createModelConfig, createModelConfigObject } from "~/lib/providers/models/utils";
+
+const PROVIDER = "anthropic";
+
+export const anthropicModelConfig: ModelConfig = createModelConfigObject([
+\tcreateModelConfig("claude-4.5-haiku", PROVIDER, {
+\t\tname: "Claude 4.5 Haiku",
+\t\tmatchingModel: "claude-4-5-haiku-latest",
+\t}),
+
+\tcreateModelConfig("claude-haiku-4-5", PROVIDER, {
+\t\tname: "Claude Haiku 4.5",
+\t\tmatchingModel: "claude-haiku-4-5",
+\t}),
+]);
+`,
+			"utf8",
+		);
+
+		const apiUrl = modelsDevUrl({
+			anthropic: {
+				models: {
+					"claude-haiku-4-5": {
+						id: "claude-haiku-4-5",
+						name: "Claude Haiku 4.5 (latest)",
+						release_date: "2025-10-15",
+					},
+					"claude-haiku-4-5-20251001": {
+						id: "claude-haiku-4-5-20251001",
+						name: "Claude Haiku 4.5",
+						release_date: "2025-10-15",
+					},
+				},
+			},
+		});
+
+		const { stdout } = await execFileAsync("node", [
+			SCRIPT_PATH,
+			"--write",
+			"--api-url",
+			apiUrl,
+			"--models-dir",
+			modelsDir,
+		]);
+		const syncedFile = await fs.readFile(modelFile, "utf8");
+
+		expect(stdout).toContain("Removed deprecated models: 1.");
+		expect(syncedFile).not.toContain("claude-4-5-haiku-latest");
+		expect(syncedFile).toContain('createModelConfig("claude-haiku-4-5"');
+	});
 });

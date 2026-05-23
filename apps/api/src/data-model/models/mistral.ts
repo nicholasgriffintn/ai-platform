@@ -14,6 +14,7 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 			output: ["text"],
 		},
 		contextWindow: 32768,
+		deprecated: true,
 	}),
 
 	createModelConfig("mistral-ocr-latest", PROVIDER, {
@@ -26,6 +27,35 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 			output: ["text"],
 		},
 	}),
+
+	createModelConfig("leanstral", PROVIDER, {
+		name: "Leanstral",
+		matchingModel: "labs-leanstral-2603",
+		description:
+			"Open-source code agent designed for Lean 4 and formal proof engineering in realistic repositories.",
+		releaseDate: "March 16, 2026",
+		lastUpdated: "March 16, 2026",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		card: "https://docs.mistral.ai/models/model-cards/leanstral-26-03",
+		contextWindow: 256000,
+		maxTokens: 256000,
+		costPer1kInputTokens: 0,
+		costPer1kOutputTokens: 0,
+		strengths: ["coding", "reasoning", "academic", "agents"],
+		contextComplexity: 4,
+		reliability: 3,
+		speed: 3,
+		isFree: true,
+		supportsArtifacts: true,
+		supportsResponseFormat: true,
+	}),
+
 	createModelConfig("magistral-small", PROVIDER, {
 		name: "Magistral Small",
 		matchingModel: "magistral-small-latest",
@@ -149,6 +179,7 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		knowledgeCutoffDate: "November 2024",
 		releaseDate: "November 1, 2024",
 		lastUpdated: "November 4, 2024",
+		deprecated: true,
 		modalities: {
 			input: ["text", "image"],
 			output: ["text"],
@@ -269,6 +300,7 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		knowledgeCutoffDate: "September 2024",
 		releaseDate: "September 1, 2024",
 		lastUpdated: "September 1, 2024",
+		deprecated: true,
 		modalities: {
 			input: ["text", "image"],
 			output: ["text"],
@@ -387,6 +419,7 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 			input: ["text"],
 			output: ["text"],
 		},
+		deprecated: true,
 		supportsAttachments: false,
 		supportsTemperature: true,
 		supportsToolCalls: true,
@@ -492,6 +525,25 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		supportsAudio: true,
 	}),
 
+	createModelConfig("voxtral-mini-transcribe-realtime", PROVIDER, {
+		name: "Voxtral Mini Transcribe Realtime",
+		matchingModel: "voxtral-mini-transcribe-realtime-latest",
+		description:
+			"Efficient audio input model fine-tuned and optimized for live transcription purposes only.",
+		releaseDate: "February 4, 2026",
+		lastUpdated: "February 4, 2026",
+		modalities: {
+			input: ["audio"],
+			output: ["transcription", "speech"],
+		},
+		supportsAudio: true,
+		supportsStreaming: true,
+		supportsTemperature: false,
+		supportsToolCalls: false,
+		card: "https://docs.mistral.ai/models/model-cards/voxtral-mini-transcribe-realtime-26-02",
+		strengths: ["audio", "transcription"],
+	}),
+
 	createModelConfig("voxtral-mini-tts", PROVIDER, {
 		name: "Voxtral Mini TTS",
 		matchingModel: "voxtral-mini-tts-2603",
@@ -568,9 +620,11 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 			output: ["moderation"],
 		},
 	}),
-	createModelConfig("devstral-2512", PROVIDER, {
-		name: "Devstral 2",
-		matchingModel: "devstral-2512",
+	createModelConfig("devstral-latest", PROVIDER, {
+		name: "Devstral",
+		description:
+			"Our frontier code agents model for solving software engineering tasks; excels at using tools to explore codebases, editing multiple files and power software engineering agents.",
+		matchingModel: "devstral-latest",
 		knowledgeCutoffDate: "December 2025",
 		releaseDate: "December 9, 2025",
 		lastUpdated: "December 9, 2025",
@@ -593,6 +647,7 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		knowledgeCutoffDate: "December 2025",
 		releaseDate: "December 2, 2025",
 		lastUpdated: "December 2, 2025",
+		deprecated: true,
 		modalities: {
 			input: ["text"],
 			output: ["text"],
@@ -612,6 +667,7 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		knowledgeCutoffDate: "May 2025",
 		releaseDate: "July 10, 2025",
 		lastUpdated: "July 10, 2025",
+		deprecated: true,
 		modalities: {
 			input: ["text"],
 			output: ["text"],
@@ -631,6 +687,7 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		knowledgeCutoffDate: "December 2025",
 		releaseDate: "December 9, 2025",
 		lastUpdated: "December 9, 2025",
+		deprecated: true,
 		modalities: {
 			input: ["text", "image"],
 			output: ["text"],
@@ -644,9 +701,10 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		costPer1kOutputTokens: 0,
 	}),
 
-	createModelConfig("mistral-nemo", PROVIDER, {
+	createModelConfig("open-mistral-nemo", PROVIDER, {
 		name: "Mistral Nemo",
-		matchingModel: "mistral-nemo",
+		description: "Our best multilingual open source model released July 2024.",
+		matchingModel: "open-mistral-nemo",
 		knowledgeCutoffDate: "July 2024",
 		releaseDate: "July 1, 2024",
 		lastUpdated: "July 1, 2024",

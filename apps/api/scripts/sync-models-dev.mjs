@@ -482,7 +482,37 @@ function hasAnyTag(remoteModel, tagSet) {
 	return normalizeTags(remoteModel).some((tag) => tagSet.has(tag));
 }
 
-function modelFamilyKey(modelId) {
+function anthropicModelFamilyKey(modelId) {
+	if (!modelId.startsWith("claude-")) {
+		return modelId;
+	}
+
+	const tokens = modelId
+		.replace(/^claude-/, "")
+		.replace(/-(latest|0)$/i, "")
+		.replace(/-20\d{6}$/i, "")
+		.split(/[-.]/);
+	const modelClass = tokens.find((token) => ["opus", "sonnet", "haiku"].includes(token));
+	if (!modelClass) {
+		return modelId;
+	}
+
+	const versionTokens = tokens.filter((token) => /^\d+$/.test(token) && token.length < 6);
+	if (versionTokens[1] === "0") {
+		return `claude-${modelClass}-${versionTokens[0]}`;
+	}
+	if (versionTokens.length > 0) {
+		return `claude-${modelClass}-${versionTokens.slice(0, 2).join("-")}`;
+	}
+
+	return `claude-${modelClass}`;
+}
+
+function modelFamilyKey(modelId, provider) {
+	if (provider === "anthropic") {
+		return anthropicModelFamilyKey(modelId);
+	}
+
 	const match = VERSION_SUFFIX_REGEX.exec(modelId);
 	if (match) {
 		return match[1];
@@ -513,8 +543,10 @@ function getVersionSuffixValue(modelId) {
 	return Number(match[2].replace(/\D/g, ""));
 }
 
-function inferPreferredFamilyModelIds(modelIds, remoteModels) {
-	const unversionedModelIds = modelIds.filter((modelId) => modelFamilyKey(modelId) === modelId);
+function inferPreferredFamilyModelIds(modelIds, remoteModels, provider) {
+	const unversionedModelIds = modelIds.filter(
+		(modelId) => modelFamilyKey(modelId, provider) === modelId,
+	);
 	if (unversionedModelIds.length > 0) {
 		return new Set(unversionedModelIds);
 	}
@@ -551,13 +583,13 @@ function inferPreferredFamilyModelIds(modelIds, remoteModels) {
 	return preferredModelIds;
 }
 
-function buildProviderModelFamilies(remoteModels) {
+function buildProviderModelFamilies(remoteModels, provider) {
 	const families = new Map();
 	for (const [modelId, remoteModel] of Object.entries(remoteModels)) {
 		if (!remoteModel || typeof remoteModel !== "object") {
 			continue;
 		}
-		const family = modelFamilyKey(modelId);
+		const family = modelFamilyKey(modelId, provider);
 		if (!families.has(family)) {
 			families.set(family, new Set());
 		}
@@ -566,7 +598,7 @@ function buildProviderModelFamilies(remoteModels) {
 	return families;
 }
 
-function buildProviderModelStatus(remoteModels) {
+function buildProviderModelStatus(remoteModels, provider) {
 	const latestModelIds = new Set();
 	const outdatedModelIds = new Set();
 	const familyMembers = new Map();
@@ -576,7 +608,7 @@ function buildProviderModelStatus(remoteModels) {
 		if (!remoteModel || typeof remoteModel !== "object") {
 			continue;
 		}
-		const family = modelFamilyKey(modelId);
+		const family = modelFamilyKey(modelId, provider);
 		if (!familyMembers.has(family)) {
 			familyMembers.set(family, []);
 		}
@@ -610,7 +642,7 @@ function buildProviderModelStatus(remoteModels) {
 		}
 
 		if (modelIds.length > 1) {
-			const preferredModelIds = inferPreferredFamilyModelIds(modelIds, remoteModels);
+			const preferredModelIds = inferPreferredFamilyModelIds(modelIds, remoteModels, provider);
 			for (const modelId of modelIds) {
 				if (!preferredModelIds.has(modelId)) {
 					outdatedModelIds.add(modelId);
@@ -1136,11 +1168,16 @@ function resolveEntryRemoteModel(entry, remoteModels, sourceFile) {
 	return { matchingModel, remoteModel, remoteModelId };
 }
 
-function isStaleUnmatchedFamilyEntry({ remoteModel, remoteModelId, remoteModelFamilies }) {
+function isStaleUnmatchedFamilyEntry({
+	remoteModel,
+	remoteModelId,
+	remoteModelFamilies,
+	provider,
+}) {
 	if (remoteModel && typeof remoteModel === "object") {
 		return false;
 	}
-	const family = modelFamilyKey(remoteModelId);
+	const family = modelFamilyKey(remoteModelId, provider);
 	return remoteModelFamilies.has(family);
 }
 
@@ -1245,8 +1282,8 @@ async function inspectModelFile({ filePath, remoteProviders, selectedProviders }
 	const remoteProviderConfig = remoteProviders[remoteProviderId];
 	const remoteProviderDeprecated = hasDeprecatedStatus(remoteProviderConfig);
 	const remoteModels = remoteModelsFromProvider(remoteProviderConfig);
-	const providerModelStatus = buildProviderModelStatus(remoteModels ?? {});
-	const remoteModelFamilies = buildProviderModelFamilies(remoteModels ?? {});
+	const providerModelStatus = buildProviderModelStatus(remoteModels ?? {}, remoteProviderId);
+	const remoteModelFamilies = buildProviderModelFamilies(remoteModels ?? {}, remoteProviderId);
 	if (!remoteModels && !remoteProviderDeprecated) {
 		return {
 			filePath,
@@ -1349,7 +1386,12 @@ async function processFile({
 			hasDeprecatedStatus(remoteModel) ||
 			isOutdatedModel ||
 			shouldRemoveBecauseNotLatest ||
-			isStaleUnmatchedFamilyEntry({ remoteModel, remoteModelId, remoteModelFamilies })
+			isStaleUnmatchedFamilyEntry({
+				remoteModel,
+				remoteModelId,
+				remoteModelFamilies,
+				provider: remoteProviderId,
+			})
 		) {
 			removedDeprecatedModels += 1;
 			patches.push(buildRemoveEntryPatch(originalText, entry.entryNode, sourceFile));
