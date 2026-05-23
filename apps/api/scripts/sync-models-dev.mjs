@@ -486,6 +486,59 @@ function modelFamilyKey(modelId) {
 	return match ? match[1] : modelId;
 }
 
+function getRemoteModelDateValue(remoteModel) {
+	for (const fieldName of ["last_updated", "release_date"]) {
+		const value = remoteModel[fieldName];
+		if (typeof value !== "string") {
+			continue;
+		}
+		const timestamp = Date.parse(value);
+		if (Number.isFinite(timestamp)) {
+			return timestamp;
+		}
+	}
+	return undefined;
+}
+
+function getVersionSuffixValue(modelId) {
+	const match = VERSION_SUFFIX_REGEX.exec(modelId);
+	if (!match) {
+		return undefined;
+	}
+	return Number(match[2].replace(/\D/g, ""));
+}
+
+function inferPreferredFamilyModelIds(modelIds, remoteModels) {
+	const unversionedModelIds = modelIds.filter((modelId) => modelFamilyKey(modelId) === modelId);
+	if (unversionedModelIds.length > 0) {
+		return new Set(unversionedModelIds);
+	}
+
+	let bestScore = Number.NEGATIVE_INFINITY;
+	const preferredModelIds = new Set();
+	for (const modelId of modelIds) {
+		const remoteModel = remoteModels[modelId];
+		const dateValue = getRemoteModelDateValue(remoteModel);
+		const versionValue = getVersionSuffixValue(modelId);
+		const score = dateValue ?? versionValue;
+		if (score === undefined) {
+			preferredModelIds.add(modelId);
+			continue;
+		}
+		if (score > bestScore) {
+			bestScore = score;
+			preferredModelIds.clear();
+			preferredModelIds.add(modelId);
+			continue;
+		}
+		if (score === bestScore) {
+			preferredModelIds.add(modelId);
+		}
+	}
+
+	return preferredModelIds;
+}
+
 function buildProviderModelStatus(remoteModels) {
 	const latestModelIds = new Set();
 	const outdatedModelIds = new Set();
@@ -523,6 +576,16 @@ function buildProviderModelStatus(remoteModels) {
 			const familyLatestIds = familyLatestModelIds.get(family);
 			for (const modelId of modelIds) {
 				if (!familyLatestIds.has(modelId)) {
+					outdatedModelIds.add(modelId);
+				}
+			}
+			continue;
+		}
+
+		if (modelIds.length > 1) {
+			const preferredModelIds = inferPreferredFamilyModelIds(modelIds, remoteModels);
+			for (const modelId of modelIds) {
+				if (!preferredModelIds.has(modelId)) {
 					outdatedModelIds.add(modelId);
 				}
 			}
@@ -1047,24 +1110,21 @@ function resolveEntryRemoteModel(entry, remoteModels, sourceFile) {
 }
 
 function findDuplicateRemoteModelEntryNodes(entries, remoteModels, sourceFile) {
-	const preferredEntriesByRemoteModelId = new Map();
+	const preferredEntriesByResolvedModelId = new Map();
 	const duplicateEntryNodes = new Set();
 
 	for (const entry of entries) {
-		const { remoteModel, remoteModelId } = resolveEntryRemoteModel(entry, remoteModels, sourceFile);
-		if (!remoteModel || typeof remoteModel !== "object") {
-			continue;
-		}
+		const { remoteModelId } = resolveEntryRemoteModel(entry, remoteModels, sourceFile);
 
-		const existingEntry = preferredEntriesByRemoteModelId.get(remoteModelId);
+		const existingEntry = preferredEntriesByResolvedModelId.get(remoteModelId);
 		if (!existingEntry) {
-			preferredEntriesByRemoteModelId.set(remoteModelId, entry);
+			preferredEntriesByResolvedModelId.set(remoteModelId, entry);
 			continue;
 		}
 
 		if (entry.modelKey === remoteModelId && existingEntry.modelKey !== remoteModelId) {
 			duplicateEntryNodes.add(existingEntry.entryNode);
-			preferredEntriesByRemoteModelId.set(remoteModelId, entry);
+			preferredEntriesByResolvedModelId.set(remoteModelId, entry);
 			continue;
 		}
 

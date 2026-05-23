@@ -124,12 +124,7 @@ export const testProviderModelConfig: ModelConfig = createModelConfigObject([
 
 		const apiUrl = modelsDevUrl({
 			"test-provider": {
-				models: {
-					"acme-chat-2025-01-01": {
-						id: "acme-chat-2025-01-01",
-						latest: true,
-					},
-				},
+				models: {},
 			},
 		});
 
@@ -146,5 +141,69 @@ export const testProviderModelConfig: ModelConfig = createModelConfigObject([
 		expect(stdout).toContain("Removed duplicate models: 1.");
 		expect(syncedFile).toContain('createModelConfig("acme-chat-2025-01-01"');
 		expect(syncedFile).not.toContain('createModelConfig("acme-chat-old-alias"');
+	});
+
+	it("removes older remote family versions without removing unrelated models", async () => {
+		const modelsDir = await createModelsDirectory();
+		const modelFile = path.join(modelsDir, "test-provider.ts");
+		await fs.writeFile(
+			modelFile,
+			`import type { ModelConfig } from "~/types";
+import { createModelConfig, createModelConfigObject } from "~/lib/providers/models/utils";
+
+const PROVIDER = "test-provider";
+
+export const testProviderModelConfig: ModelConfig = createModelConfigObject([
+\tcreateModelConfig("acme-chat-2025-01-01", PROVIDER, {
+\t\tname: "January",
+\t\tmatchingModel: "acme-chat-2025-01-01",
+\t}),
+
+\tcreateModelConfig("acme-chat-2025-02-01", PROVIDER, {
+\t\tname: "February",
+\t\tmatchingModel: "acme-chat-2025-02-01",
+\t}),
+
+\tcreateModelConfig("solo-model", PROVIDER, {
+\t\tname: "Solo",
+\t\tmatchingModel: "solo-model",
+\t}),
+]);
+`,
+			"utf8",
+		);
+
+		const apiUrl = modelsDevUrl({
+			"test-provider": {
+				models: {
+					"acme-chat-2025-01-01": {
+						id: "acme-chat-2025-01-01",
+						release_date: "2025-01-01",
+					},
+					"acme-chat-2025-02-01": {
+						id: "acme-chat-2025-02-01",
+						release_date: "2025-02-01",
+					},
+					"solo-model": {
+						id: "solo-model",
+					},
+				},
+			},
+		});
+
+		const { stdout } = await execFileAsync("node", [
+			SCRIPT_PATH,
+			"--write",
+			"--api-url",
+			apiUrl,
+			"--models-dir",
+			modelsDir,
+		]);
+		const syncedFile = await fs.readFile(modelFile, "utf8");
+
+		expect(stdout).toContain("Removed deprecated models: 1.");
+		expect(syncedFile).not.toContain('createModelConfig("acme-chat-2025-01-01"');
+		expect(syncedFile).toContain('createModelConfig("acme-chat-2025-02-01"');
+		expect(syncedFile).toContain('createModelConfig("solo-model"');
 	});
 });
