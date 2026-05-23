@@ -1036,6 +1036,44 @@ function shouldUpdateMatchingModel({ modelKey, existingMatchingModel, remoteMode
 	return existingMatchingModel === modelKey || existingMatchingModel === remoteModelId;
 }
 
+function resolveEntryRemoteModel(entry, remoteModels, sourceFile) {
+	const matchingModel = getStringPropertyValue(entry.objectNode, "matchingModel", sourceFile);
+	const remoteModel =
+		remoteModels[entry.modelKey] ?? (matchingModel ? remoteModels[matchingModel] : undefined);
+	const remoteModelId =
+		typeof remoteModel?.id === "string" ? remoteModel.id : (matchingModel ?? entry.modelKey);
+
+	return { matchingModel, remoteModel, remoteModelId };
+}
+
+function findDuplicateRemoteModelEntryNodes(entries, remoteModels, sourceFile) {
+	const preferredEntriesByRemoteModelId = new Map();
+	const duplicateEntryNodes = new Set();
+
+	for (const entry of entries) {
+		const { remoteModel, remoteModelId } = resolveEntryRemoteModel(entry, remoteModels, sourceFile);
+		if (!remoteModel || typeof remoteModel !== "object") {
+			continue;
+		}
+
+		const existingEntry = preferredEntriesByRemoteModelId.get(remoteModelId);
+		if (!existingEntry) {
+			preferredEntriesByRemoteModelId.set(remoteModelId, entry);
+			continue;
+		}
+
+		if (entry.modelKey === remoteModelId && existingEntry.modelKey !== remoteModelId) {
+			duplicateEntryNodes.add(existingEntry.entryNode);
+			preferredEntriesByRemoteModelId.set(remoteModelId, entry);
+			continue;
+		}
+
+		duplicateEntryNodes.add(entry.entryNode);
+	}
+
+	return duplicateEntryNodes;
+}
+
 function getEntryIndentFromNodes(fileText, nodes, fallbackIndentBasePosition) {
 	if (nodes.length > 0) {
 		return getIndentAtPosition(fileText, nodes[0].getStart());
@@ -1188,18 +1226,26 @@ async function processFile({
 	const patches = [];
 	let updatedExisting = 0;
 	let removedDeprecatedModels = 0;
+	let removedDuplicateModels = 0;
+	const duplicateEntryNodes = findDuplicateRemoteModelEntryNodes(entries, remoteModels, sourceFile);
 
 	for (const entry of entries) {
-		const matchingModel = getStringPropertyValue(entry.objectNode, "matchingModel", sourceFile);
-		const remoteModel =
-			remoteModels[entry.modelKey] ?? (matchingModel ? remoteModels[matchingModel] : undefined);
+		const { matchingModel, remoteModel, remoteModelId } = resolveEntryRemoteModel(
+			entry,
+			remoteModels,
+			sourceFile,
+		);
 
-		const remoteModelIdForStatus =
-			typeof remoteModel?.id === "string" ? remoteModel.id : (matchingModel ?? entry.modelKey);
-		const isOutdatedModel = providerModelStatus.outdatedModelIds.has(remoteModelIdForStatus);
+		if (duplicateEntryNodes.has(entry.entryNode)) {
+			removedDuplicateModels += 1;
+			patches.push(buildRemoveEntryPatch(originalText, entry.entryNode, sourceFile));
+			continue;
+		}
+
+		const isOutdatedModel = providerModelStatus.outdatedModelIds.has(remoteModelId);
 		const shouldRemoveBecauseNotLatest =
 			providerModelStatus.latestModelIds.size > 0 &&
-			!providerModelStatus.latestModelIds.has(remoteModelIdForStatus);
+			!providerModelStatus.latestModelIds.has(remoteModelId);
 		if (
 			remoteProviderDeprecated ||
 			hasDeprecatedStatus(remoteModel) ||
@@ -1215,7 +1261,6 @@ async function processFile({
 			continue;
 		}
 
-		const remoteModelId = typeof remoteModel.id === "string" ? remoteModel.id : entry.modelKey;
 		const values = buildUpdateValues(remoteModel, {
 			modelKey: remoteModelId,
 			existingMatchingModel: matchingModel,
@@ -1301,6 +1346,7 @@ async function processFile({
 			updatedExisting: 0,
 			addedModels: 0,
 			removedDeprecatedModels: 0,
+			removedDuplicateModels: 0,
 		};
 	}
 
@@ -1312,7 +1358,7 @@ async function processFile({
 	if (verbose) {
 		const modeLabel = write ? "wrote" : "dry-run";
 		console.log(
-			`[${modeLabel}] ${path.relative(API_ROOT, filePath)} (${localProvider} -> ${remoteProviderId}) updated=${updatedExisting} added=${newEntries.length} removedDeprecated=${removedDeprecatedModels}`,
+			`[${modeLabel}] ${path.relative(API_ROOT, filePath)} (${localProvider} -> ${remoteProviderId}) updated=${updatedExisting} added=${newEntries.length} removedDeprecated=${removedDeprecatedModels} removedDuplicates=${removedDuplicateModels}`,
 		);
 	}
 
@@ -1324,6 +1370,7 @@ async function processFile({
 		updatedExisting,
 		addedModels: newEntries.length,
 		removedDeprecatedModels,
+		removedDuplicateModels,
 	};
 }
 
@@ -1412,11 +1459,15 @@ async function main() {
 		return total + (report.removedDeprecatedModels ?? 0);
 	}, 0);
 
+	const totalRemovedDuplicateModels = changed.reduce((total, report) => {
+		return total + (report.removedDuplicateModels ?? 0);
+	}, 0);
+
 	console.log(
 		`Processed ${reports.length} files (${changed.length} changed, ${unchanged.length} unchanged, ${skipped.length} skipped).`,
 	);
 	console.log(
-		`Updated existing models: ${totalUpdatedExisting}. Added new models: ${totalAddedModels}. Removed deprecated models: ${totalRemovedDeprecatedModels}.`,
+		`Updated existing models: ${totalUpdatedExisting}. Added new models: ${totalAddedModels}. Removed deprecated models: ${totalRemovedDeprecatedModels}. Removed duplicate models: ${totalRemovedDuplicateModels}.`,
 	);
 
 	if (!options.write) {

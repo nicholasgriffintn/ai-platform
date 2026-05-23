@@ -96,4 +96,55 @@ export const testProviderModelConfig: ModelConfig = createModelConfigObject([
 		expect(syncedFile).toContain('createModelConfig("acme-chat-2025-02-01"');
 		expect(syncedFile).not.toContain('createModelConfig("acme-chat-2024-12-01"');
 	});
+
+	it("removes duplicate entries that resolve to the same remote model", async () => {
+		const modelsDir = await createModelsDirectory();
+		const modelFile = path.join(modelsDir, "test-provider.ts");
+		await fs.writeFile(
+			modelFile,
+			`import type { ModelConfig } from "~/types";
+import { createModelConfig, createModelConfigObject } from "~/lib/providers/models/utils";
+
+const PROVIDER = "test-provider";
+
+export const testProviderModelConfig: ModelConfig = createModelConfigObject([
+\tcreateModelConfig("acme-chat-old-alias", PROVIDER, {
+\t\tname: "Old Alias",
+\t\tmatchingModel: "acme-chat-2025-01-01",
+\t}),
+
+\tcreateModelConfig("acme-chat-2025-01-01", PROVIDER, {
+\t\tname: "Canonical",
+\t\tmatchingModel: "acme-chat-2025-01-01",
+\t}),
+]);
+`,
+			"utf8",
+		);
+
+		const apiUrl = modelsDevUrl({
+			"test-provider": {
+				models: {
+					"acme-chat-2025-01-01": {
+						id: "acme-chat-2025-01-01",
+						latest: true,
+					},
+				},
+			},
+		});
+
+		const { stdout } = await execFileAsync("node", [
+			SCRIPT_PATH,
+			"--write",
+			"--api-url",
+			apiUrl,
+			"--models-dir",
+			modelsDir,
+		]);
+		const syncedFile = await fs.readFile(modelFile, "utf8");
+
+		expect(stdout).toContain("Removed duplicate models: 1.");
+		expect(syncedFile).toContain('createModelConfig("acme-chat-2025-01-01"');
+		expect(syncedFile).not.toContain('createModelConfig("acme-chat-old-alias"');
+	});
 });
