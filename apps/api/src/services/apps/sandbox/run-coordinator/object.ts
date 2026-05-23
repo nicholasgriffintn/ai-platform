@@ -1,9 +1,13 @@
 import {
+	sandboxRunDispatchMessageSchema,
 	sandboxRunControlSchema,
 	sandboxRunInstructionKindSchema,
+	type SandboxRunDispatchMessage,
 	type SandboxRunEvent,
 	type SandboxRunInstruction,
 } from "@assistant/schemas";
+import { Agent, type FiberContext, type FiberRecoveryContext } from "agents";
+import type { IEnv } from "~/types";
 import { safeParseJson } from "~/utils/json";
 import type {
 	CoordinatorEventEnvelope,
@@ -11,6 +15,11 @@ import type {
 	CoordinatorState,
 	SandboxRunInstructionRecord,
 } from "./types";
+import {
+	parseSandboxDispatchRecoveryMessage,
+	SANDBOX_RUN_DISPATCH_FIBER_NAME,
+	type SandboxDispatchFiberSnapshot,
+} from "./fibers";
 
 const CONTROL_KEY = "control";
 const EVENTS_KEY = "events";
@@ -39,12 +48,14 @@ function addSecondsIso(isoTimestamp: string, seconds: number): string {
 	return new Date(Date.parse(isoTimestamp) + seconds * 1000).toISOString();
 }
 
-export class SandboxRunCoordinator implements DurableObject {
-	constructor(private readonly state: DurableObjectState) {}
+export class SandboxRunCoordinator extends Agent<IEnv> {
+	private get storage(): DurableObjectStorage {
+		return this.ctx.storage;
+	}
 
 	private broadcastEnvelope(envelope: CoordinatorEventEnvelope): void {
 		const payload = JSON.stringify(envelope);
-		for (const socket of this.state.getWebSockets()) {
+		for (const socket of this.ctx.getWebSockets()) {
 			try {
 				socket.send(payload);
 			} catch {
@@ -58,7 +69,7 @@ export class SandboxRunCoordinator implements DurableObject {
 	}
 
 	private async getControl(): Promise<CoordinatorState | null> {
-		const raw = await this.state.storage.get<string>(CONTROL_KEY);
+		const raw = await this.storage.get<string>(CONTROL_KEY);
 		if (!raw) {
 			return null;
 		}
@@ -68,11 +79,11 @@ export class SandboxRunCoordinator implements DurableObject {
 	}
 
 	private async putControl(control: CoordinatorState): Promise<void> {
-		await this.state.storage.put(CONTROL_KEY, JSON.stringify(control));
+		await this.storage.put(CONTROL_KEY, JSON.stringify(control));
 	}
 
 	private async appendEvent(event: SandboxRunEvent): Promise<CoordinatorEventEnvelope> {
-		const currentIndex = (await this.state.storage.get<number>(EVENT_INDEX_KEY)) ?? 0;
+		const currentIndex = (await this.storage.get<number>(EVENT_INDEX_KEY)) ?? 0;
 		const nextIndex = currentIndex + 1;
 		const envelope: CoordinatorEventEnvelope = {
 			index: nextIndex,
@@ -80,12 +91,12 @@ export class SandboxRunCoordinator implements DurableObject {
 			recordedAt: new Date().toISOString(),
 		};
 
-		const raw = await this.state.storage.get<string>(EVENTS_KEY);
+		const raw = await this.storage.get<string>(EVENTS_KEY);
 		const existing = raw ? (safeParseJson<CoordinatorEventEnvelope[]>(raw) ?? []) : [];
 		const nextEvents = [...existing, envelope].slice(-500);
 
-		await this.state.storage.put(EVENT_INDEX_KEY, nextIndex);
-		await this.state.storage.put(EVENTS_KEY, JSON.stringify(nextEvents));
+		await this.storage.put(EVENT_INDEX_KEY, nextIndex);
+		await this.storage.put(EVENTS_KEY, JSON.stringify(nextEvents));
 		this.broadcastEnvelope(envelope);
 		return envelope;
 	}
@@ -93,7 +104,7 @@ export class SandboxRunCoordinator implements DurableObject {
 	private async appendInstruction(
 		instruction: SandboxRunInstructionRecord,
 	): Promise<CoordinatorInstructionEnvelope> {
-		const currentIndex = (await this.state.storage.get<number>(INSTRUCTION_INDEX_KEY)) ?? 0;
+		const currentIndex = (await this.storage.get<number>(INSTRUCTION_INDEX_KEY)) ?? 0;
 		const nextIndex = currentIndex + 1;
 		const envelope: CoordinatorInstructionEnvelope = {
 			index: nextIndex,
@@ -101,22 +112,22 @@ export class SandboxRunCoordinator implements DurableObject {
 			recordedAt: new Date().toISOString(),
 		};
 
-		const raw = await this.state.storage.get<string>(INSTRUCTIONS_KEY);
+		const raw = await this.storage.get<string>(INSTRUCTIONS_KEY);
 		const existing = raw ? (safeParseJson<CoordinatorInstructionEnvelope[]>(raw) ?? []) : [];
 		const nextInstructions = [...existing, envelope].slice(-500);
 
-		await this.state.storage.put(INSTRUCTION_INDEX_KEY, nextIndex);
-		await this.state.storage.put(INSTRUCTIONS_KEY, JSON.stringify(nextInstructions));
+		await this.storage.put(INSTRUCTION_INDEX_KEY, nextIndex);
+		await this.storage.put(INSTRUCTIONS_KEY, JSON.stringify(nextInstructions));
 		return envelope;
 	}
 
 	private async getInstructions(): Promise<CoordinatorInstructionEnvelope[]> {
-		const raw = await this.state.storage.get<string>(INSTRUCTIONS_KEY);
+		const raw = await this.storage.get<string>(INSTRUCTIONS_KEY);
 		return raw ? (safeParseJson<CoordinatorInstructionEnvelope[]>(raw) ?? []) : [];
 	}
 
 	private async putInstructions(instructions: CoordinatorInstructionEnvelope[]): Promise<void> {
-		await this.state.storage.put(INSTRUCTIONS_KEY, JSON.stringify(instructions.slice(-500)));
+		await this.storage.put(INSTRUCTIONS_KEY, JSON.stringify(instructions.slice(-500)));
 	}
 
 	private applyInstructionLifecycleTransitions(
@@ -193,9 +204,87 @@ export class SandboxRunCoordinator implements DurableObject {
 		return transitioned.instructions;
 	}
 
-	public async fetch(request: Request): Promise<Response> {
+	private async executeDispatchFiber(
+		message: SandboxRunDispatchMessage,
+		fiberContext?: Pick<FiberContext, "stash">,
+	): Promise<void> {
+		const stash = (phase: SandboxDispatchFiberSnapshot["phase"], error?: string) => {
+			fiberContext?.stash({
+				message,
+				phase,
+				updatedAt: new Date().toISOString(),
+				...(error ? { error } : {}),
+			} satisfies SandboxDispatchFiberSnapshot);
+		};
+
+		stash("running");
+		try {
+			const { processSandboxRunDispatch } = await import("../dispatch");
+			await processSandboxRunDispatch({
+				env: this.env,
+				message,
+			});
+			stash("completed");
+		} catch (error) {
+			stash("error", error instanceof Error ? error.message : "Sandbox dispatch failed");
+			throw error;
+		}
+	}
+
+	private async startDispatchFiber(message: SandboxRunDispatchMessage) {
+		return this.startFiber(
+			SANDBOX_RUN_DISPATCH_FIBER_NAME,
+			async (fiberContext) => {
+				await this.executeDispatchFiber(message, fiberContext);
+			},
+			{
+				idempotencyKey: message.runId,
+				metadata: { message },
+				waitForCompletion: false,
+			},
+		);
+	}
+
+	public override async onFiberRecovered(
+		context: FiberRecoveryContext,
+	): Promise<{ status: "completed" } | { status: "error"; error: string } | void> {
+		if (context.name !== SANDBOX_RUN_DISPATCH_FIBER_NAME) {
+			return;
+		}
+
+		const message = parseSandboxDispatchRecoveryMessage(context);
+		if (!message) {
+			return {
+				status: "error",
+				error: "Recovered sandbox dispatch fiber is missing a valid message",
+			};
+		}
+
+		try {
+			await this.executeDispatchFiber(message);
+			return { status: "completed" };
+		} catch (error) {
+			return {
+				status: "error",
+				error: error instanceof Error ? error.message : "Recovered sandbox dispatch failed",
+			};
+		}
+	}
+
+	public override async fetch(request: Request): Promise<Response> {
 		const url = new URL(request.url);
 		const pathname = url.pathname;
+
+		if (pathname === "/dispatch/fiber" && request.method === "POST") {
+			const payload = (await request.json()) as unknown;
+			const parsed = sandboxRunDispatchMessageSchema.safeParse(payload);
+			if (!parsed.success) {
+				return Response.json({ error: "Invalid sandbox dispatch payload" }, { status: 400 });
+			}
+
+			const result = await this.startDispatchFiber(parsed.data);
+			return Response.json(result);
+		}
 
 		if (
 			pathname === "/events/ws" &&
@@ -204,7 +293,7 @@ export class SandboxRunCoordinator implements DurableObject {
 			const pair = new WebSocketPair();
 			const client = pair[0];
 			const server = pair[1];
-			this.state.acceptWebSocket(server);
+			this.ctx.acceptWebSocket(server);
 			server.send(
 				JSON.stringify({
 					type: "ready",
@@ -281,7 +370,7 @@ export class SandboxRunCoordinator implements DurableObject {
 		if (pathname === "/events" && request.method === "GET") {
 			const afterRaw = url.searchParams.get("after");
 			const after = afterRaw ? Number.parseInt(afterRaw, 10) : 0;
-			const raw = await this.state.storage.get<string>(EVENTS_KEY);
+			const raw = await this.storage.get<string>(EVENTS_KEY);
 			const events = raw ? (safeParseJson<CoordinatorEventEnvelope[]>(raw) ?? []) : [];
 			return Response.json({
 				events: events.filter((entry) => entry.index > (Number.isFinite(after) ? after : 0)),
@@ -420,11 +509,14 @@ export class SandboxRunCoordinator implements DurableObject {
 		return Response.json({ error: "Not found" }, { status: 404 });
 	}
 
-	public webSocketMessage(_ws: WebSocket, _message: ArrayBuffer | string): void {
+	public override async webSocketMessage(
+		_ws: WebSocket,
+		_message: ArrayBuffer | string,
+	): Promise<void> {
 		// Inbound messages are currently ignored; websocket clients subscribe-only.
 	}
 
-	public webSocketClose(ws: WebSocket): void {
+	public override async webSocketClose(ws: WebSocket): Promise<void> {
 		try {
 			ws.close(1000, "Closed");
 		} catch {

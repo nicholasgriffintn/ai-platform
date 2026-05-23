@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
 	listRunCoordinatorEvents,
 	openRunCoordinatorEventsSocket,
+	startRunCoordinatorDispatchFiber,
 	updateRunCoordinatorControl,
 } from "../run-coordinator/client";
 
@@ -84,6 +85,47 @@ describe("run coordinator client", () => {
 		});
 
 		expect(result).toBeNull();
+	});
+
+	it("starts dispatch work as an idempotent managed fiber", async () => {
+		const fetchMock = vi.fn().mockResolvedValue(
+			Response.json({
+				fiberId: "fiber-1",
+				name: "sandbox-run-dispatch",
+				status: "running",
+				accepted: true,
+				createdAt: 1773576000000,
+			}),
+		);
+		const env = createCoordinatorEnv(fetchMock);
+
+		const result = await startRunCoordinatorDispatchFiber({
+			env,
+			runId: "run-123",
+			message: {
+				kind: "sandbox_run_dispatch",
+				runId: "run-123",
+				recordId: "record-1",
+				userId: 7,
+				payload: {
+					installationId: 1,
+					repo: "owner/repo",
+					task: "Task",
+					shouldCommit: false,
+				},
+			},
+		});
+
+		expect(fetchMock).toHaveBeenCalledWith(
+			"https://sandbox-run-coordinator/dispatch/fiber",
+			expect.objectContaining({
+				method: "POST",
+			}),
+		);
+		expect(result).toMatchObject({
+			fiberId: "fiber-1",
+			accepted: true,
+		});
 	});
 
 	it("opens and accepts coordinator websocket subscriptions", async () => {

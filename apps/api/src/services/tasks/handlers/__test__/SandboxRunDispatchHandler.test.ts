@@ -2,10 +2,9 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { SANDBOX_RUN_DISPATCH_TASK_TYPE } from "@assistant/schemas";
 
 import { SandboxRunDispatchHandler } from "../SandboxRunDispatchHandler";
-import { processSandboxRunDispatch } from "~/services/apps/sandbox/dispatch";
+import { startRunCoordinatorDispatchFiber } from "~/services/apps/sandbox/run-coordinator";
 
 vi.mock("~/services/apps/sandbox/dispatch", () => ({
-	processSandboxRunDispatch: vi.fn(),
 	isSandboxRunDispatchMessage: vi.fn((value: unknown) => {
 		return (
 			!!value &&
@@ -13,6 +12,9 @@ vi.mock("~/services/apps/sandbox/dispatch", () => ({
 			(value as { kind?: unknown }).kind === SANDBOX_RUN_DISPATCH_TASK_TYPE
 		);
 	}),
+}));
+vi.mock("~/services/apps/sandbox/run-coordinator", () => ({
+	startRunCoordinatorDispatchFiber: vi.fn(),
 }));
 
 describe("SandboxRunDispatchHandler", () => {
@@ -34,11 +36,17 @@ describe("SandboxRunDispatchHandler", () => {
 
 		expect(result.status).toBe("error");
 		expect(result.message).toContain("Invalid sandbox dispatch");
-		expect(processSandboxRunDispatch).not.toHaveBeenCalled();
+		expect(startRunCoordinatorDispatchFiber).not.toHaveBeenCalled();
 	});
 
 	it("processes valid sandbox dispatch messages", async () => {
-		vi.mocked(processSandboxRunDispatch).mockResolvedValue(undefined);
+		vi.mocked(startRunCoordinatorDispatchFiber).mockResolvedValue({
+			fiberId: "fiber-1",
+			name: "sandbox-run-dispatch",
+			status: "running",
+			accepted: true,
+			createdAt: 1773576000000,
+		});
 		const handler = new SandboxRunDispatchHandler();
 		const result = await handler.handle(
 			{
@@ -62,8 +70,14 @@ describe("SandboxRunDispatchHandler", () => {
 		);
 
 		expect(result.status).toBe("success");
-		expect(processSandboxRunDispatch).toHaveBeenCalledWith({
+		expect(result.data).toMatchObject({
+			runId: "run-123",
+			fiberId: "fiber-1",
+			accepted: true,
+		});
+		expect(startRunCoordinatorDispatchFiber).toHaveBeenCalledWith({
 			env: {},
+			runId: "run-123",
 			message: expect.objectContaining({
 				kind: SANDBOX_RUN_DISPATCH_TASK_TYPE,
 				runId: "run-123",

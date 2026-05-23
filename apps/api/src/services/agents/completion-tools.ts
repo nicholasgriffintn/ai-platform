@@ -12,6 +12,7 @@ import {
 	delegateToTeamMemberByRole,
 	getTeamMembers,
 } from "~/services/functions/teamDelegation";
+import { connectMCPServerReady, type MCPServerConfig } from "~/services/agents/mcp-client";
 import type { ApiToolDefinition } from "~/services/functions/types";
 import type { IEnv } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -146,14 +147,14 @@ async function setupMCPFunctions(agent: CompletionAgent, env: IEnv) {
 	return mcpFunctions;
 }
 
-function parseMCPServerConfigs(servers: unknown): Array<{ url: string }> {
+function parseMCPServerConfigs(servers: unknown): MCPServerConfig[] {
 	const parsed = typeof servers === "string" ? safeParseJson(servers) : servers;
 	if (!Array.isArray(parsed)) {
 		throw new AssistantError("Invalid servers configuration", ErrorType.PARAMS_ERROR);
 	}
 
 	return parsed.filter(
-		(config): config is { url: string } =>
+		(config): config is MCPServerConfig =>
 			typeof config === "object" &&
 			config !== null &&
 			typeof (config as { url?: unknown }).url === "string",
@@ -163,7 +164,7 @@ function parseMCPServerConfigs(servers: unknown): Array<{ url: string }> {
 async function collectServerTools(
 	agent: CompletionAgent,
 	mcp: MCPClientManager,
-	cfg: { url: string },
+	cfg: MCPServerConfig,
 	mcpFunctions: Array<{
 		name: string;
 		description?: string;
@@ -171,29 +172,13 @@ async function collectServerTools(
 	}>,
 ) {
 	try {
-		const { id } = await mcp.connect(cfg.url);
-
-		if (!id) {
-			logger.error("No ID returned from MCP connect");
+		const readyConnection = await connectMCPServerReady(mcp, cfg);
+		if ("error" in readyConnection) {
+			logger.error("MCP connection failed", {
+				server_url: cfg.url,
+				error_message: readyConnection.error,
+			});
 			return;
-		}
-
-		const connection = mcp.mcpConnections[id];
-
-		if (!connection?.connectionState) {
-			logger.error("No connection found for ID:", id);
-			return;
-		}
-
-		const connectionDeadline = Date.now() + 10_000;
-		while (connection.connectionState !== "ready") {
-			if (Date.now() > connectionDeadline) {
-				logger.error("MCP connection timed out waiting for ready state", {
-					server_url: cfg.url,
-				});
-				return;
-			}
-			await new Promise((resolve) => setTimeout(resolve, 50));
 		}
 
 		const rawTools = await mcp.getAITools();
