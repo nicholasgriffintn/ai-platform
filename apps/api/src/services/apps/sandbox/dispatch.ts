@@ -174,6 +174,7 @@ export async function processSandboxRunDispatch(params: {
 			shouldCommit: message.payload.shouldCommit,
 			timeoutSeconds: message.payload.timeoutSeconds,
 			trustLevel: message.payload.trustLevel,
+			modelSettings: message.payload.modelSettings,
 			installationId: message.payload.installationId,
 			stream: true,
 			runId: message.runId,

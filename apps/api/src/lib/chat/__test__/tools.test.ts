@@ -182,14 +182,17 @@ describe("tools", () => {
 				mockRequest as any,
 			);
 
-			expect(handleFunctions).toHaveBeenCalledWith({
-				completion_id: "completion-123",
-				app_url: "https://test.com",
-				functionName: "search",
-				args: { query: "test query" },
-				request: mockRequest,
-				conversationManager: mockConversationManager,
-			});
+			expect(handleFunctions).toHaveBeenCalledWith(
+				expect.objectContaining({
+					completion_id: "completion-123",
+					app_url: "https://test.com",
+					functionName: "search",
+					args: { query: "test query" },
+					request: mockRequest,
+					conversationManager: mockConversationManager,
+					emitToolResult: expect.any(Function),
+				}),
+			);
 
 			expect(result).toHaveLength(1);
 			expect(result[0].role).toBe("tool");

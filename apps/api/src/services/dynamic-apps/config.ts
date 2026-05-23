@@ -248,19 +248,6 @@ export const FUNCTION_APP_METADATA: Record<string, DynamicAppMetadata> = {
 
 export const FEATURED_APPS: FeaturedAppDefinition[] = [
 	{
-		id: "featured-sandbox-worker",
-		name: "Sandbox Worker",
-		description:
-			"Connect GitHub repositories and run streamed implementation tasks in isolated sandboxes",
-		icon: "hammer",
-		category: "Code Assistance",
-		theme: "slate",
-		tags: ["github", "sandbox", "automation"],
-		href: "/apps/sandbox",
-		type: "premium",
-		kind: "frontend",
-	},
-	{
 		id: "featured-strudel",
 		name: "Strudel Music Patterns",
 		description:

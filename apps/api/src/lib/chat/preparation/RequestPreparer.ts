@@ -6,7 +6,8 @@ import {
 	augmentPrompt,
 } from "~/lib/providers/capabilities/embedding/helpers";
 import { MemoryManager } from "~/lib/memory";
-import { buildCouncilSystemPrompt, shouldSkipCouncilInputStorage } from "~/lib/chat/council";
+import { shouldSkipCouncilInputStorage } from "~/lib/chat/council";
+import { buildConversationModeMetadataFromRequestOptions } from "~/lib/chat/mode-metadata";
 import { getModelConfig } from "~/lib/providers/models";
 import { getSystemPrompt } from "~/lib/prompts";
 import type { ChatMode, CoreChatOptions, Message, ModelConfigInfo, Platform } from "~/types";
@@ -294,10 +295,12 @@ export class RequestPreparer {
 		if (shouldSkipCouncilInputStorage(options.options?.council)) {
 			return;
 		}
+		const conversationMode = buildConversationModeMetadataFromRequestOptions(options.options);
 
 		const messageToStore: Message = {
 			role: lastMessage.role,
 			content: finalMessage,
+			data: conversationMode ? { conversationMode } : undefined,
 			id: generateId(),
 			timestamp: Date.now(),
 			model: primaryModel,
@@ -366,24 +369,29 @@ export class RequestPreparer {
 		const requestedReasoningEffort = reasoning?.effort ?? reasoning_effort;
 
 		const currentMode = mode;
-		const councilPrompt = buildCouncilSystemPrompt(options.options?.council);
+		const promptMode = options.options?.sandbox?.enabled
+			? "sandbox"
+			: options.options?.council?.enabled
+				? "council"
+				: undefined;
 
 		if (currentMode === "no_system") {
 			return "";
 		}
 
 		if (system_prompt) {
-			const prompt = councilPrompt ? `${system_prompt}\n\n${councilPrompt}` : system_prompt;
-			return this.enhanceSystemPromptWithMemory(prompt, finalMessage, user, memoriesEnabled);
+			return this.enhanceSystemPromptWithMemory(system_prompt, finalMessage, user, memoriesEnabled);
 		}
 
 		const systemPromptFromMessages = sanitizedMessages.find((message) => message.role === "system");
 
 		if (systemPromptFromMessages?.content && typeof systemPromptFromMessages.content === "string") {
-			const prompt = councilPrompt
-				? `${systemPromptFromMessages.content}\n\n${councilPrompt}`
-				: systemPromptFromMessages.content;
-			return this.enhanceSystemPromptWithMemory(prompt, finalMessage, user, memoriesEnabled);
+			return this.enhanceSystemPromptWithMemory(
+				systemPromptFromMessages.content,
+				finalMessage,
+				user,
+				memoriesEnabled,
+			);
 		}
 
 		const generatedPrompt = await getSystemPrompt(
@@ -395,16 +403,18 @@ export class RequestPreparer {
 				date: new Date().toISOString().split("T")[0]!,
 				location,
 				mode: currentMode,
+				promptMode,
 				verbosity,
 				reasoning_effort: requestedReasoningEffort,
+				reasoning,
+				options: options.options,
 			},
 			primaryModel,
 			user || undefined,
 			userSettings,
 		);
 
-		const prompt = councilPrompt ? `${generatedPrompt}\n\n${councilPrompt}` : generatedPrompt;
-		return this.enhanceSystemPromptWithMemory(prompt, finalMessage, user, memoriesEnabled);
+		return this.enhanceSystemPromptWithMemory(generatedPrompt, finalMessage, user, memoriesEnabled);
 	}
 
 	private async enhanceSystemPromptWithMemory(

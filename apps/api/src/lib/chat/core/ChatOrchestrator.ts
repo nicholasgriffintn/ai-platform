@@ -168,6 +168,7 @@ export class ChatOrchestrator {
 					system_prompt: systemPrompt,
 					env: chatOptions.env,
 					user: chatOptions.user?.id ? chatOptions.user : undefined,
+					context: chatOptions.context,
 					disable_functions,
 					completion_id: chatOptions.completion_id,
 					messages,
@@ -210,6 +211,7 @@ export class ChatOrchestrator {
 					provider: primaryProvider,
 					platform: platform || "api",
 					user: chatOptions.user,
+					context: chatOptions.context,
 					userSettings,
 					app_url: chatOptions.app_url,
 					mode: currentMode,
@@ -281,12 +283,14 @@ export class ChatOrchestrator {
 				date: new Date().toISOString().split("T")[0]!,
 				approved_tools: approved_tools,
 				tool_permissions_map: toolPermissionsMap,
+				options: chatOptions.options || {},
 				current_agent_id: chatOptions.current_agent_id,
 				delegation_stack: chatOptions.delegation_stack,
 				max_delegation_depth: chatOptions.max_delegation_depth,
 			},
 			app_url: chatOptions.app_url,
 			user: chatOptions.user?.id ? chatOptions.user : undefined,
+			context: chatOptions.context,
 		};
 
 		const toolResponses: Message[] = [];
@@ -315,6 +319,7 @@ export class ChatOrchestrator {
 					provider: primaryProvider,
 					platform: platform || "api",
 					user: chatOptions.user,
+					context: chatOptions.context,
 					userSettings,
 					app_url: chatOptions.app_url,
 					mode: currentMode,

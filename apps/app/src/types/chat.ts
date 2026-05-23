@@ -1,5 +1,6 @@
 import type { MessagePart as SchemaMessagePart } from "@assistant/schemas";
-import type { CouncilChatOptions } from "@assistant/schemas";
+import type { ConversationModeMetadata, CouncilChatOptions } from "@assistant/schemas";
+import type { SandboxModelSettings, SandboxPromptStrategy, SandboxTaskType } from "./sandbox";
 
 export type ChatRole = "user" | "assistant" | "system" | "tool";
 
@@ -40,6 +41,18 @@ export interface ChatSettings {
 
 export interface ChatRequestOptions {
 	council?: CouncilChatOptions;
+	sandbox?: {
+		enabled: boolean;
+		repo?: string;
+		installationId?: number;
+		model?: string;
+		taskType?: SandboxTaskType;
+		promptStrategy?: SandboxPromptStrategy;
+		shouldCommit?: boolean;
+		timeoutSeconds?: number;
+		maxSteps?: number;
+		modelSettings?: SandboxModelSettings;
+	};
 }
 
 export interface MessageContent {
@@ -96,6 +109,7 @@ export interface Attachment {
 }
 
 export interface MessageData {
+	conversationMode?: ConversationModeMetadata;
 	responseType?: "table" | "json" | "text" | "template" | "custom";
 	responseDisplay?: {
 		fields?: {

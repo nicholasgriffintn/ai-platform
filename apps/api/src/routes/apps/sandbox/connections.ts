@@ -5,14 +5,20 @@ import {
 	autoConnectSchema,
 	errorResponseSchema,
 	githubConnectionSchema,
+	sandboxConnectionRepositoriesSchema,
 	type AutoConnectPayload,
 	type GitHubConnectionPayload,
+	type SandboxConnectionRepositoriesPayload,
 } from "@assistant/schemas";
 
 import { getServiceContext } from "~/lib/context/serviceContext";
 import { ResponseFactory } from "~/lib/http/ResponseFactory";
 import type { IUser } from "~/types";
-import { listGitHubAppConnectionsForUser } from "~/services/github/connections";
+import {
+	getGitHubAppConnectionForUserInstallation,
+	listGitHubAppConnectionsForUser,
+	listGitHubInstallationRepositoriesForUser,
+} from "~/services/github/connections";
 import {
 	deleteGitHubConnectionForUser,
 	upsertGitHubConnectionFromDefaultAppForUser,
@@ -66,7 +72,7 @@ export function registerSandboxConnectionRoutes(app: Hono): void {
 					c.env.GITHUB_APP_ID?.trim() && c.env.GITHUB_APP_PRIVATE_KEY?.trim(),
 				);
 				const callbackUrl = c.env.APP_BASE_URL
-					? `${c.env.APP_BASE_URL.replace(/\/$/, "")}/apps/sandbox`
+					? `${c.env.APP_BASE_URL.replace(/\/$/, "")}/profile?tab=sandbox`
 					: undefined;
 
 				return ResponseFactory.success(c, {
@@ -124,6 +130,78 @@ export function registerSandboxConnectionRoutes(app: Hono): void {
 				return ResponseFactory.success(c, {
 					success: true,
 					message: "GitHub App installation connected successfully",
+				});
+			})(raw),
+	});
+
+	addRoute(app, "get", "/connections/:installationId/repositories", {
+		tags: ["apps"],
+		description: "List repositories available to a connected GitHub App installation",
+		responses: {
+			200: { description: "List of repositories available to the installation" },
+			401: { description: "Unauthorized", schema: errorResponseSchema },
+		},
+		handler: async ({ raw }) =>
+			(async (c: Context) => {
+				const user = c.get("user") as IUser;
+				const installationIdRaw = c.req.param("installationId");
+				const installationId = Number.parseInt(installationIdRaw || "", 10);
+				if (!Number.isFinite(installationId) || installationId <= 0) {
+					throw new AssistantError(
+						"installationId must be a positive integer",
+						ErrorType.PARAMS_ERROR,
+					);
+				}
+
+				const serviceContext = getServiceContext(c);
+				const repositories = await listGitHubInstallationRepositoriesForUser(
+					serviceContext,
+					user.id,
+					installationId,
+				);
+
+				return ResponseFactory.success(c, { repositories });
+			})(raw),
+	});
+
+	addRoute(app, "put", "/connections/:installationId/repositories", {
+		tags: ["apps"],
+		description: "Replace the configured repositories for a GitHub App connection",
+		bodySchema: sandboxConnectionRepositoriesSchema,
+		responses: {
+			200: { description: "GitHub App connection repositories updated successfully" },
+			401: { description: "Unauthorized", schema: errorResponseSchema },
+		},
+		handler: async ({ raw }) =>
+			(async (c: Context) => {
+				const user = c.get("user") as IUser;
+				const installationIdRaw = c.req.param("installationId");
+				const installationId = Number.parseInt(installationIdRaw || "", 10);
+				if (!Number.isFinite(installationId) || installationId <= 0) {
+					throw new AssistantError(
+						"installationId must be a positive integer",
+						ErrorType.PARAMS_ERROR,
+					);
+				}
+
+				const payload = c.req.valid("json" as never) as SandboxConnectionRepositoriesPayload;
+				const serviceContext = getServiceContext(c);
+				const existingConnection = await getGitHubAppConnectionForUserInstallation(
+					serviceContext,
+					user.id,
+					installationId,
+				);
+				await upsertGitHubConnectionForUser(serviceContext, user.id, {
+					installationId,
+					appId: existingConnection.appId,
+					privateKey: existingConnection.privateKey,
+					webhookSecret: existingConnection.webhookSecret,
+					repositories: payload.repositories,
+				});
+
+				return ResponseFactory.success(c, {
+					success: true,
+					message: "GitHub App connection repositories updated",
 				});
 			})(raw),
 	});

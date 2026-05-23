@@ -37,6 +37,20 @@ export function useMessageOperations() {
 					};
 				}
 
+				const existingMessageIndex = oldData.messages.findIndex(
+					(message) => message.id === normalizedMessage.id,
+				);
+				if (existingMessageIndex !== -1) {
+					const messages = [...oldData.messages];
+					messages[existingMessageIndex] = normalizedMessage;
+					return {
+						...oldData,
+						messages,
+						updated_at: new Date().toISOString(),
+						last_message_at: new Date().toISOString(),
+					};
+				}
+
 				return {
 					...oldData,
 					messages: [...oldData.messages, normalizedMessage],

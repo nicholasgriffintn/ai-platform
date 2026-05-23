@@ -1,9 +1,17 @@
+import type { SandboxModelSettings } from "@assistant/schemas";
+
 const POLYCHAT_SANDBOX_USER_AGENT = "Polychat-Sandbox-Worker/1.0 (+https://polychat.app)";
 
 const RETRYABLE_HTTP_STATUS_CODES = new Set([408, 409, 425, 429, 500, 502, 503, 504]);
 const DEFAULT_MAX_ATTEMPTS = 3;
 const DEFAULT_BASE_DELAY_MS = 400;
 const DEFAULT_MAX_DELAY_MS = 3000;
+
+interface PolychatChatCompletionParams extends SandboxModelSettings {
+	messages: Array<{ role: string; content: string }>;
+	model: string;
+	stream?: boolean;
+}
 
 export class PolychatApiError extends Error {
 	constructor(
@@ -87,11 +95,7 @@ export class PolychatClient {
 		return error.name === "TypeError";
 	}
 
-	private async requestChatCompletion(params: {
-		messages: Array<{ role: string; content: string }>;
-		model: string;
-		stream?: boolean;
-	}): Promise<string> {
+	private async requestChatCompletion(params: PolychatChatCompletionParams): Promise<string> {
 		const chatId = crypto.randomUUID();
 
 		const response = await this.fetchPolychat("/chat/completions", {
@@ -136,11 +140,7 @@ export class PolychatClient {
 	}
 
 	async chatCompletion(
-		params: {
-			messages: Array<{ role: string; content: string }>;
-			model: string;
-			stream?: boolean;
-		},
+		params: PolychatChatCompletionParams,
 		retryOptions?: PolychatRetryOptions,
 	): Promise<string> {
 		const maxAttempts = Math.max(1, Math.min(retryOptions?.maxAttempts ?? DEFAULT_MAX_ATTEMPTS, 5));

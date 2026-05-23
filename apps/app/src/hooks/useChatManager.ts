@@ -1,5 +1,6 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback } from "react";
+import type { ConversationModeMetadata } from "@assistant/schemas";
 
 import { CHATS_QUERY_KEY } from "~/constants";
 import {
@@ -39,6 +40,7 @@ function prepareUserMessage(
 	input: string,
 	attachmentData: AttachmentData | undefined,
 	model?: string,
+	conversationMode?: ConversationModeMetadata,
 ) {
 	const contentItems: any[] = [
 		{
@@ -90,6 +92,7 @@ function prepareUserMessage(
 			id: crypto.randomUUID(),
 			created: Date.now(),
 			model,
+			data: conversationMode ? { conversationMode } : undefined,
 		});
 	}
 
@@ -99,6 +102,7 @@ function prepareUserMessage(
 		id: crypto.randomUUID(),
 		created: Date.now(),
 		model,
+		data: conversationMode ? { conversationMode } : undefined,
 	});
 }
 
@@ -106,7 +110,10 @@ function prepareUserMessage(
  * Main hook for managing chat operations.
  * Composes smaller hooks to handle streaming, storage, WebLLM, and conversation actions.
  */
-export function useChatManager(requestOptions?: ChatRequestOptions) {
+export function useChatManager(
+	requestOptions?: ChatRequestOptions,
+	conversationMode?: ConversationModeMetadata,
+) {
 	const queryClient = useQueryClient();
 	const generateTitleMutation = useGenerateTitle();
 	const { data: apiModels = {} } = useModels();
@@ -220,7 +227,12 @@ export function useChatManager(requestOptions?: ChatRequestOptions) {
 					startNewConversation(conversationId);
 				}
 
-				const userMessage = prepareUserMessage(input, attachmentData, currentModel);
+				const userMessage = prepareUserMessage(
+					input,
+					attachmentData,
+					currentModel,
+					conversationMode,
+				);
 
 				const cancelQueries = async () => {
 					await Promise.all([
@@ -266,6 +278,7 @@ export function useChatManager(requestOptions?: ChatRequestOptions) {
 			startLoading,
 			addMessageToConversation,
 			setStreamStarted,
+			conversationMode,
 		],
 	);
 
@@ -296,7 +309,12 @@ export function useChatManager(requestOptions?: ChatRequestOptions) {
 					CHATS_QUERY_KEY,
 					conversationId,
 				]);
-				const userMessage = prepareUserMessage(input, attachmentData, currentModel);
+				const userMessage = prepareUserMessage(
+					input,
+					attachmentData,
+					currentModel,
+					conversationMode,
+				);
 
 				await Promise.all([
 					queryClient.cancelQueries({ queryKey: [CHATS_QUERY_KEY] }),
@@ -434,6 +452,7 @@ export function useChatManager(requestOptions?: ChatRequestOptions) {
 			startLoading,
 			setStreamStarted,
 			generateConversationTitle,
+			conversationMode,
 		],
 	);
 

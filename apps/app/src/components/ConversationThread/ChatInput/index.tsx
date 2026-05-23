@@ -754,11 +754,6 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 									<ToolToggles isDisabled={isLoading || isToolSelectionLocked} />
 								</div>
 								<div className="flex-shrink-0 flex items-center gap-2">
-									{!isMobile && (
-										<span className="hidden text-xs text-zinc-500 lg:inline dark:text-zinc-400">
-											Shift+Enter for new line
-										</span>
-									)}
 									<ChatSettingsComponent
 										isDisabled={isLoading}
 										toolSelectionLocked={isToolSelectionLocked}

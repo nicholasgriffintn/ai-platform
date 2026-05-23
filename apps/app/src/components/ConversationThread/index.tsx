@@ -8,6 +8,7 @@ import {
 	useState,
 } from "react";
 import { toast } from "sonner";
+import type { ConversationModeMetadata } from "@assistant/schemas";
 
 import "~/styles/scrollbar.css";
 import "~/styles/github.css";
@@ -31,8 +32,15 @@ import { WelcomeScreen } from "./WelcomeScreen";
 
 export interface ConversationThreadModeConfig {
 	requestOptions?: ChatRequestOptions;
+	conversationMode?: ConversationModeMetadata;
 	welcomeTitle?: string;
 	welcomeDescription?: string;
+	welcomeSampleQuestions?: Array<{
+		id: string;
+		text: string;
+		question: string;
+		category: string;
+	}> | null;
 	inputPlaceholder?: {
 		newConversation: string;
 		followUp: string;
@@ -68,7 +76,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
 		abortStream,
 		branchConversation,
 		isBranching,
-	} = useChatManager(modeConfig?.requestOptions);
+	} = useChatManager(modeConfig?.requestOptions, modeConfig?.conversationMode);
 	const { data: apiModels } = useModels();
 
 	const [currentArtifact, setCurrentArtifact] = useState<ArtifactProps | null>(null);
@@ -319,6 +327,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
 						setInput={setChatInput}
 						title={modeConfig?.welcomeTitle}
 						description={modeConfig?.welcomeDescription}
+						sampleQuestions={modeConfig?.welcomeSampleQuestions}
 					/>
 				</div>
 			) : (

@@ -1,10 +1,31 @@
 import { defaultCouncilMemberIds, type CouncilMemberId } from "@assistant/schemas";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router";
 
 import { CouncilChatControls } from "~/components/Council/CouncilChatControls";
 import type { ConversationThreadModeConfig } from "~/components/ConversationThread";
+import { useChat } from "~/hooks/useChat";
+import {
+	useSandboxConnections,
+	useSandboxRepositoryOptions,
+	useUpdateSandboxConnectionRepositories,
+} from "~/hooks/useSandbox";
+import {
+	buildConversationModeMetadata,
+	getConversationModeMetadata,
+} from "~/lib/home-chat-modes/conversation-mode";
+import { normaliseGitHubRepoInput } from "~/lib/sandbox/repositories";
+import { useChatStore } from "~/state/stores/chatStore";
+import {
+	SANDBOX_TIMEOUT_DEFAULT_SECONDS,
+	SANDBOX_TIMEOUT_MAX_SECONDS,
+	SANDBOX_TIMEOUT_MIN_SECONDS,
+	type SandboxModelSettings,
+	type SandboxPromptStrategy,
+	type SandboxTaskType,
+} from "~/types/sandbox";
 import { ActiveHomeChatModeControl, HomeChatModeMenu } from "./HomeChatModeControls";
+import { SandboxChatModeControls } from "./SandboxChatModeControls";
 import { type HomeChatModeId, resolveHomeChatModeId } from "./chatModes";
 
 type CouncilResponseMode = "debate" | "single";
@@ -14,21 +35,82 @@ export function useHomeChatModeConfig(): {
 	modeConfig: ConversationThreadModeConfig;
 } {
 	const [searchParams, setSearchParams] = useSearchParams();
+	const {
+		currentConversationId,
+		homeChatMode,
+		setHomeChatMode,
+		model: selectedModel,
+		chatSettings,
+		sandboxModeSettings,
+		setSandboxModeSettings,
+	} = useChatStore();
+	const { data: currentConversation } = useChat(currentConversationId);
+	const conversationModeMetadata = useMemo(
+		() => getConversationModeMetadata(currentConversation),
+		[currentConversation],
+	);
 	const [activeModeId, setActiveModeId] = useState<HomeChatModeId>(() =>
-		resolveHomeChatModeId(searchParams.get("mode")),
+		searchParams.has("mode") ? resolveHomeChatModeId(searchParams.get("mode")) : homeChatMode,
 	);
 	const [selectedCouncilMemberIds, setSelectedCouncilMemberIds] = useState<CouncilMemberId[]>([
 		...defaultCouncilMemberIds,
 	]);
 	const [councilResponseMode, setCouncilResponseMode] = useState<CouncilResponseMode>("debate");
+	const { data: sandboxConnections = [] } = useSandboxConnections();
+	const { repoOptions: sandboxRepoOptions, isLoading: isLoadingSandboxRepos } =
+		useSandboxRepositoryOptions(sandboxConnections);
+	const updateSandboxConnectionRepositories = useUpdateSandboxConnectionRepositories();
+	const [sandboxRepoKey, setSandboxRepoKey] = useState(sandboxModeSettings.repoKey ?? "");
+	const [sandboxTaskType, setSandboxTaskType] = useState<SandboxTaskType>(
+		sandboxModeSettings.taskType ?? "feature-implementation",
+	);
+	const [sandboxPromptStrategy, setSandboxPromptStrategy] = useState<SandboxPromptStrategy>(
+		sandboxModeSettings.promptStrategy ?? "auto",
+	);
+	const [sandboxTimeoutSecondsInput, setSandboxTimeoutSecondsInput] = useState(
+		sandboxModeSettings.timeoutSecondsInput ?? String(SANDBOX_TIMEOUT_DEFAULT_SECONDS),
+	);
+	const [sandboxShouldCommit, setSandboxShouldCommit] = useState(
+		sandboxModeSettings.shouldCommit ?? true,
+	);
+	const hydratedConversationIdRef = useRef<string | undefined>(undefined);
 
 	useEffect(() => {
-		setActiveModeId(resolveHomeChatModeId(searchParams.get("mode")));
-	}, [searchParams]);
+		if (currentConversationId && conversationModeMetadata) {
+			return;
+		}
+		setActiveModeId(
+			searchParams.has("mode") ? resolveHomeChatModeId(searchParams.get("mode")) : homeChatMode,
+		);
+	}, [conversationModeMetadata, currentConversationId, homeChatMode, searchParams]);
+
+	useEffect(() => {
+		if (!currentConversationId) {
+			hydratedConversationIdRef.current = undefined;
+			return;
+		}
+		if (!conversationModeMetadata || hydratedConversationIdRef.current === currentConversationId) {
+			return;
+		}
+
+		hydratedConversationIdRef.current = currentConversationId;
+		setActiveModeId(conversationModeMetadata.mode);
+		if (conversationModeMetadata.sandboxSettings) {
+			const settings = conversationModeMetadata.sandboxSettings;
+			setSandboxRepoKey(settings.repoKey ?? "");
+			setSandboxTaskType(settings.taskType ?? "feature-implementation");
+			setSandboxPromptStrategy(settings.promptStrategy ?? "auto");
+			setSandboxTimeoutSecondsInput(
+				settings.timeoutSecondsInput ?? String(SANDBOX_TIMEOUT_DEFAULT_SECONDS),
+			);
+			setSandboxShouldCommit(settings.shouldCommit ?? true);
+		}
+	}, [conversationModeMetadata, currentConversationId]);
 
 	const handleModeChange = useCallback(
 		(modeId: HomeChatModeId) => {
 			setActiveModeId(modeId);
+			setHomeChatMode(modeId);
 			const next = new URLSearchParams(searchParams);
 			if (modeId === "chat") {
 				next.delete("mode");
@@ -37,8 +119,112 @@ export function useHomeChatModeConfig(): {
 			}
 			setSearchParams(next, { replace: true });
 		},
-		[searchParams, setSearchParams],
+		[searchParams, setHomeChatMode, setSearchParams],
 	);
+
+	const selectedSandboxRepoOption = useMemo(
+		() => sandboxRepoOptions.find((option) => option.key === sandboxRepoKey),
+		[sandboxRepoKey, sandboxRepoOptions],
+	);
+	const normalisedSandboxRepo = selectedSandboxRepoOption?.repo ?? "";
+	const selectedSandboxConnection = useMemo(
+		() =>
+			selectedSandboxRepoOption
+				? sandboxConnections.find(
+						(connection) => connection.installationId === selectedSandboxRepoOption.installationId,
+					)
+				: undefined,
+		[sandboxConnections, selectedSandboxRepoOption],
+	);
+	const canSaveSandboxRepo = Boolean(
+		selectedSandboxRepoOption &&
+		selectedSandboxConnection &&
+		!selectedSandboxRepoOption.isConfigured,
+	);
+	const handleSaveSandboxRepo = useCallback(() => {
+		if (!selectedSandboxRepoOption || !selectedSandboxConnection) {
+			return;
+		}
+		const repositories = Array.from(
+			new Set([
+				...selectedSandboxConnection.repositories.map((repo) => normaliseGitHubRepoInput(repo)),
+				selectedSandboxRepoOption.repo,
+			]),
+		).filter(Boolean);
+
+		updateSandboxConnectionRepositories.mutate({
+			installationId: selectedSandboxRepoOption.installationId,
+			input: { repositories },
+		});
+	}, [selectedSandboxConnection, selectedSandboxRepoOption, updateSandboxConnectionRepositories]);
+	const sandboxModelSettings = useMemo<SandboxModelSettings>(
+		() => ({
+			temperature: chatSettings.temperature,
+			top_p: chatSettings.top_p,
+			max_tokens: chatSettings.max_tokens,
+			presence_penalty: chatSettings.presence_penalty,
+			frequency_penalty: chatSettings.frequency_penalty,
+			reasoning_effort: chatSettings.reasoning?.effort,
+			reasoning: chatSettings.reasoning,
+			verbosity: chatSettings.verbosity,
+		}),
+		[
+			chatSettings.temperature,
+			chatSettings.top_p,
+			chatSettings.max_tokens,
+			chatSettings.presence_penalty,
+			chatSettings.frequency_penalty,
+			chatSettings.reasoning,
+			chatSettings.verbosity,
+		],
+	);
+	const parsedSandboxTimeoutSeconds = useMemo(() => {
+		const raw = sandboxTimeoutSecondsInput.trim();
+		if (!raw) return undefined;
+		const parsed = Number.parseInt(raw, 10);
+		return Number.isFinite(parsed) ? parsed : Number.NaN;
+	}, [sandboxTimeoutSecondsInput]);
+	const hasValidSandboxTimeout =
+		parsedSandboxTimeoutSeconds === undefined ||
+		(Number.isFinite(parsedSandboxTimeoutSeconds) &&
+			parsedSandboxTimeoutSeconds >= SANDBOX_TIMEOUT_MIN_SECONDS &&
+			parsedSandboxTimeoutSeconds <= SANDBOX_TIMEOUT_MAX_SECONDS);
+	const isReadOnlySandboxTaskType =
+		sandboxTaskType === "code-review" || sandboxTaskType === "test-suite";
+
+	useEffect(() => {
+		if (sandboxRepoOptions.length === 0) {
+			if (!isLoadingSandboxRepos && sandboxRepoKey) setSandboxRepoKey("");
+			return;
+		}
+		if (selectedSandboxRepoOption) return;
+		setSandboxRepoKey(sandboxRepoOptions[0].key);
+	}, [isLoadingSandboxRepos, sandboxRepoKey, sandboxRepoOptions, selectedSandboxRepoOption]);
+
+	useEffect(() => {
+		if (isReadOnlySandboxTaskType && sandboxShouldCommit) setSandboxShouldCommit(false);
+	}, [isReadOnlySandboxTaskType, sandboxShouldCommit]);
+
+	const sandboxSettings = useMemo(
+		() => ({
+			repoKey: sandboxRepoKey || undefined,
+			taskType: sandboxTaskType,
+			promptStrategy: sandboxPromptStrategy,
+			timeoutSecondsInput: sandboxTimeoutSecondsInput,
+			shouldCommit: sandboxShouldCommit,
+		}),
+		[
+			sandboxRepoKey,
+			sandboxTaskType,
+			sandboxPromptStrategy,
+			sandboxTimeoutSecondsInput,
+			sandboxShouldCommit,
+		],
+	);
+
+	useEffect(() => {
+		setSandboxModeSettings(sandboxSettings);
+	}, [sandboxSettings, setSandboxModeSettings]);
 
 	return useMemo<{
 		activeModeId: HomeChatModeId;
@@ -60,6 +246,99 @@ export function useHomeChatModeConfig(): {
 				),
 			onClearActive: activeModeId === "chat" ? undefined : () => handleModeChange("chat"),
 		};
+		const sandboxRequestOptions = {
+			sandbox: {
+				enabled: true,
+				repo: normalisedSandboxRepo || undefined,
+				installationId: selectedSandboxRepoOption?.installationId,
+				model: selectedModel ?? undefined,
+				taskType: sandboxTaskType,
+				promptStrategy: sandboxPromptStrategy,
+				shouldCommit: isReadOnlySandboxTaskType ? false : sandboxShouldCommit,
+				timeoutSeconds: Number.isFinite(parsedSandboxTimeoutSeconds)
+					? parsedSandboxTimeoutSeconds
+					: undefined,
+				maxSteps: 2,
+				modelSettings: sandboxModelSettings,
+			},
+		};
+		const sandboxControls = (
+			<SandboxChatModeControls
+				selectedRepoKey={sandboxRepoKey}
+				setSelectedRepoKey={setSandboxRepoKey}
+				repoOptions={sandboxRepoOptions}
+				normalisedRepo={normalisedSandboxRepo}
+				taskType={sandboxTaskType}
+				setTaskType={setSandboxTaskType}
+				promptStrategy={sandboxPromptStrategy}
+				setPromptStrategy={setSandboxPromptStrategy}
+				timeoutSecondsInput={sandboxTimeoutSecondsInput}
+				setTimeoutSecondsInput={setSandboxTimeoutSecondsInput}
+				hasValidTimeout={hasValidSandboxTimeout}
+				shouldCommit={sandboxShouldCommit}
+				setShouldCommit={setSandboxShouldCommit}
+				isReadOnlyTaskType={isReadOnlySandboxTaskType}
+				hasConnection={sandboxConnections.length > 0}
+				isLoadingRepos={isLoadingSandboxRepos}
+				canSaveRepo={canSaveSandboxRepo}
+				isSavingRepo={updateSandboxConnectionRepositories.isPending}
+				onSaveRepo={handleSaveSandboxRepo}
+			/>
+		);
+
+		if (activeModeId === "sandbox") {
+			return {
+				activeModeId,
+				modeConfig: {
+					analyticsSource: "sandbox",
+					welcomeTitle: "What should the sandbox work on?",
+					welcomeDescription:
+						"Choose repository settings, describe the task, and the normal chat pipeline will run the sandbox tool inside this conversation.",
+					welcomeSampleQuestions: [
+						{
+							id: "sandbox-feature",
+							category: "coding",
+							text: "Implement a focused feature",
+							question: "Implement the smallest maintainable version of the feature we discussed.",
+						},
+						{
+							id: "sandbox-review",
+							category: "analytical",
+							text: "Review a risky change",
+							question:
+								"Review the current implementation and report the highest-risk issues first.",
+						},
+						{
+							id: "sandbox-tests",
+							category: "technical",
+							text: "Add regression coverage",
+							question: "Add focused tests for the behaviour that is most likely to regress.",
+						},
+						{
+							id: "sandbox-bug-fix",
+							category: "practical",
+							text: "Diagnose and fix a bug",
+							question:
+								"Diagnose the failing path, patch the root cause, and keep the change scoped.",
+						},
+					],
+					inputPlaceholder: {
+						newConversation: "Ask the sandbox to implement, review, test, or fix something...",
+						followUp: "Ask a follow-up or run another sandbox task...",
+					},
+					requestOptions: {
+						...sandboxRequestOptions,
+					},
+					conversationMode: buildConversationModeMetadata({
+						mode: "sandbox",
+						requestOptions: sandboxRequestOptions,
+						sandboxSettings,
+					}),
+					inputControls: sandboxControls,
+					modeControls,
+				},
+			};
+		}
 
 		if (activeModeId !== "council") {
 			return {
@@ -69,6 +348,15 @@ export function useHomeChatModeConfig(): {
 				},
 			};
 		}
+
+		const councilRequestOptions = {
+			council: {
+				enabled: true,
+				responseMode: councilResponseMode,
+				memberIds: selectedCouncilMemberIds,
+				requireConsensus: true,
+			},
+		};
 
 		return {
 			activeModeId,
@@ -81,14 +369,11 @@ export function useHomeChatModeConfig(): {
 					newConversation: "Give the council a problem to debate...",
 					followUp: "Ask the council to refine its decision...",
 				},
-				requestOptions: {
-					council: {
-						enabled: true,
-						responseMode: councilResponseMode,
-						memberIds: selectedCouncilMemberIds,
-						requireConsensus: true,
-					},
-				},
+				requestOptions: councilRequestOptions,
+				conversationMode: buildConversationModeMetadata({
+					mode: "council",
+					requestOptions: councilRequestOptions,
+				}),
 				councilDebate:
 					councilResponseMode === "debate"
 						? {
@@ -101,5 +386,29 @@ export function useHomeChatModeConfig(): {
 				modeControls,
 			},
 		};
-	}, [activeModeId, handleModeChange, selectedCouncilMemberIds, councilResponseMode]);
+	}, [
+		activeModeId,
+		handleModeChange,
+		selectedCouncilMemberIds,
+		councilResponseMode,
+		sandboxRepoKey,
+		sandboxRepoOptions,
+		normalisedSandboxRepo,
+		selectedSandboxRepoOption,
+		sandboxConnections,
+		isLoadingSandboxRepos,
+		canSaveSandboxRepo,
+		updateSandboxConnectionRepositories.isPending,
+		handleSaveSandboxRepo,
+		selectedModel,
+		sandboxTaskType,
+		sandboxPromptStrategy,
+		sandboxTimeoutSecondsInput,
+		hasValidSandboxTimeout,
+		sandboxShouldCommit,
+		isReadOnlySandboxTaskType,
+		parsedSandboxTimeoutSeconds,
+		sandboxModelSettings,
+		sandboxSettings,
+	]);
 }

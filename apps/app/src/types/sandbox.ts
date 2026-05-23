@@ -1,16 +1,13 @@
 export type {
 	ConnectSandboxInstallationInput,
 	CreateSandboxConnectionInput,
-	ExecuteSandboxRunInput,
 	SandboxConnection,
 	SandboxInstallConfig,
+	SandboxModelSettings,
+	SandboxConnectionRepositoriesPayload,
 	SandboxPromptStrategy,
 	SandboxRunInstruction,
 	SandboxRunInstructionKind,
-	SandboxRun,
-	SandboxRunEvent,
-	SandboxRunResult,
-	SandboxRunStatus,
 	SandboxTaskType,
 } from "@assistant/schemas";
 

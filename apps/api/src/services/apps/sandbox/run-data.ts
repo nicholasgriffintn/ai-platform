@@ -1,5 +1,4 @@
 import {
-	type SandboxRun,
 	type SandboxRunData,
 	type SandboxRunEvent,
 	type SandboxRunStatus,
@@ -24,37 +23,4 @@ export function appendSandboxRunEvent(
 	}
 
 	return next.slice(next.length - maxEvents);
-}
-
-export function toSandboxRunResponse(data: SandboxRunData): SandboxRun {
-	return {
-		runId: data.runId,
-		installationId: data.installationId,
-		repo: data.repo,
-		task: data.task,
-		model: data.model,
-		trustLevel: data.trustLevel,
-		promptStrategy: data.promptStrategy,
-		shouldCommit: data.shouldCommit,
-		status: data.status,
-		startedAt: data.startedAt,
-		updatedAt: data.updatedAt,
-		completedAt: data.completedAt,
-		error: data.error,
-		result: data.result,
-		events: data.events ?? [],
-		cancelRequestedAt: data.cancelRequestedAt,
-		cancellationReason: data.cancellationReason,
-		timeoutSeconds: data.timeoutSeconds,
-		timeoutAt: data.timeoutAt,
-		pausedAt: data.pausedAt,
-		resumedAt: data.resumedAt,
-		pauseReason: data.pauseReason,
-		resumeReason: data.resumeReason,
-		artifactKey: data.artifactKey,
-		artifactUrl: data.artifactUrl,
-		workflowPhase: data.workflowPhase,
-		queueDispatchedAt: data.queueDispatchedAt,
-		processingStartedAt: data.processingStartedAt,
-	};
 }

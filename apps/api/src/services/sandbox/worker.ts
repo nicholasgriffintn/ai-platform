@@ -3,6 +3,7 @@ import type {
 	SandboxPromptStrategy,
 	SandboxTaskType,
 	SandboxTrustLevel,
+	SandboxModelSettings,
 	SandboxWorkerExecuteRequest,
 } from "@assistant/schemas";
 import type { IEnv, IUser } from "~/types";
@@ -64,6 +65,7 @@ export interface ExecuteSandboxWorkerOptions {
 	shouldCommit?: boolean;
 	timeoutSeconds?: number;
 	trustLevel?: SandboxTrustLevel;
+	modelSettings?: SandboxModelSettings;
 	installationId?: number;
 	stream?: boolean;
 	runId?: string;
@@ -133,6 +135,7 @@ export async function executeSandboxWorker(
 		shouldCommit,
 		timeoutSeconds,
 		trustLevel,
+		modelSettings,
 		installationId,
 		stream,
 		runId,
@@ -175,6 +178,7 @@ export async function executeSandboxWorker(
 		shouldCommit: Boolean(shouldCommit),
 		timeoutSeconds,
 		trustLevel,
+		modelSettings,
 		polychatApiUrl: resolveApiBaseUrl(env),
 		installationId,
 		runId,

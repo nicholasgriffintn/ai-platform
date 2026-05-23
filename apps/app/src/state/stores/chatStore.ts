@@ -1,3 +1,4 @@
+import type { HomeChatModeId, SandboxChatModeSettings } from "@assistant/schemas";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
@@ -39,6 +40,10 @@ export interface ChatStore {
 	setLocalOnlyMode: (localOnly: boolean) => void;
 	chatMode: ChatMode;
 	setChatMode: (mode: ChatMode) => void;
+	homeChatMode: HomeChatModeId;
+	setHomeChatMode: (mode: HomeChatModeId) => void;
+	sandboxModeSettings: SandboxChatModeSettings;
+	setSandboxModeSettings: (settings: SandboxChatModeSettings) => void;
 	model: string | null;
 	setModel: (model: string | null) => void;
 	useMultiModel: boolean;
@@ -79,6 +84,10 @@ export const useChatStore = create<ChatStore>()(
 			setLocalOnlyMode: (localOnly) => set({ localOnlyMode: localOnly }),
 			chatMode: "remote" as ChatMode,
 			setChatMode: (mode) => set({ chatMode: mode }),
+			homeChatMode: "chat",
+			setHomeChatMode: (mode) => set({ homeChatMode: mode }),
+			sandboxModeSettings: {},
+			setSandboxModeSettings: (settings) => set({ sandboxModeSettings: settings }),
 			model: null,
 			setModel: (model) => set({ model }),
 			useMultiModel: false,
@@ -133,6 +142,8 @@ export const useChatStore = create<ChatStore>()(
 			partialize: (state) => ({
 				localOnlyMode: state.localOnlyMode,
 				chatMode: state.chatMode,
+				homeChatMode: state.homeChatMode,
+				sandboxModeSettings: state.sandboxModeSettings,
 				model: state.model,
 				useMultiModel: state.useMultiModel,
 				chatSettings: state.chatSettings,

@@ -1,4 +1,6 @@
 import type { ServiceContext } from "~/lib/context/serviceContext";
+import { githubApiRequest } from "~/lib/github/api-client";
+import { getGitHubAppInstallationToken } from "~/lib/github";
 import type { AppData } from "~/repositories/AppDataRepository";
 import type { SandboxConnection } from "@assistant/schemas";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -17,6 +19,8 @@ import { safeParseJson } from "~/utils/json";
 export const GITHUB_CONNECTION_APP_ID = "github_app_connection";
 
 export type GitHubAppConnectionSummary = SandboxConnection;
+
+const GITHUB_API_BASE = "https://api.github.com";
 
 async function decodeConnectionRecord(
 	context: ServiceContext,
@@ -178,4 +182,46 @@ export async function listGitHubAppConnectionsForUser(
 		const bTime = new Date(b.updatedAt).getTime();
 		return bTime - aTime;
 	});
+}
+
+export async function listGitHubInstallationRepositoriesForUser(
+	context: ServiceContext,
+	userId: number,
+	installationId: number,
+): Promise<string[]> {
+	const githubConnection = await getGitHubAppConnectionForUserInstallation(
+		context,
+		userId,
+		installationId,
+	);
+	const token = await getGitHubAppInstallationToken({
+		appId: githubConnection.appId,
+		privateKey: githubConnection.privateKey,
+		installationId: githubConnection.installationId,
+	});
+
+	const repositories: string[] = [];
+	let page = 1;
+	while (page <= 10) {
+		const response = await githubApiRequest({
+			url: `${GITHUB_API_BASE}/installation/repositories?per_page=100&page=${page}`,
+			method: "GET",
+			bearerToken: token,
+		});
+		const data = (await response.json()) as {
+			repositories?: Array<{ full_name?: unknown }>;
+		};
+		const pageRepositories = Array.isArray(data.repositories) ? data.repositories : [];
+		for (const repository of pageRepositories) {
+			if (typeof repository.full_name === "string" && repository.full_name.trim()) {
+				repositories.push(repository.full_name.trim().toLowerCase());
+			}
+		}
+		if (pageRepositories.length < 100) {
+			break;
+		}
+		page += 1;
+	}
+
+	return Array.from(new Set(repositories)).sort((a, b) => a.localeCompare(b));
 }

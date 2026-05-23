@@ -1,42 +1,27 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueries, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import {
-	cancelSandboxRun,
-	pauseSandboxRun,
-	resumeSandboxRun,
 	connectSandboxInstallation,
 	fetchSandboxInstallConfig,
 	deleteSandboxConnection,
+	fetchSandboxConnectionRepositories,
 	fetchSandboxConnections,
-	fetchSandboxRun,
-	fetchSandboxRunInstructions,
-	fetchSandboxRuns,
-	submitSandboxRunInstruction,
+	updateSandboxConnectionRepositories,
 	upsertSandboxConnection,
 } from "~/lib/api/sandbox";
 import type {
 	ConnectSandboxInstallationInput,
 	CreateSandboxConnectionInput,
-	SandboxRunInstructionKind,
-	SandboxRun,
-	SandboxRunInstruction,
+	SandboxConnection,
+	SandboxConnectionRepositoriesPayload,
 } from "~/types/sandbox";
 
 export const SANDBOX_QUERY_KEYS = {
 	root: ["sandbox"] as const,
 	installConfig: () => [...SANDBOX_QUERY_KEYS.root, "install-config"] as const,
 	connections: () => [...SANDBOX_QUERY_KEYS.root, "connections"] as const,
-	runs: (params: { installationId?: number; repo?: string; limit?: number }) =>
-		[
-			...SANDBOX_QUERY_KEYS.root,
-			"runs",
-			params.installationId ?? null,
-			params.repo ?? "",
-			params.limit ?? null,
-		] as const,
-	run: (runId?: string) => [...SANDBOX_QUERY_KEYS.root, "run", runId ?? null] as const,
-	runInstructions: (runId?: string) =>
-		[...SANDBOX_QUERY_KEYS.root, "run-instructions", runId ?? null] as const,
+	connectionRepositories: (installationId: number) =>
+		[...SANDBOX_QUERY_KEYS.root, "connections", installationId, "repositories"] as const,
 };
 
 export const useSandboxConnections = () =>
@@ -50,6 +35,74 @@ export const useSandboxInstallConfig = () =>
 		queryKey: SANDBOX_QUERY_KEYS.installConfig(),
 		queryFn: () => fetchSandboxInstallConfig(),
 	});
+
+export const useSandboxConnectionRepositories = (installationId?: number) =>
+	useQuery({
+		queryKey: SANDBOX_QUERY_KEYS.connectionRepositories(installationId ?? 0),
+		queryFn: () => fetchSandboxConnectionRepositories(installationId!),
+		enabled: Boolean(installationId),
+	});
+
+export function useSandboxRepositoryOptions(connections: SandboxConnection[]) {
+	const results = useQueries({
+		queries: connections.map((connection) => ({
+			queryKey: SANDBOX_QUERY_KEYS.connectionRepositories(connection.installationId),
+			queryFn: () => fetchSandboxConnectionRepositories(connection.installationId),
+			staleTime: 60_000,
+		})),
+	});
+
+	const configuredRepos = new Set<string>();
+	const options = new Map<
+		string,
+		{ key: string; repo: string; installationId: number; isConfigured: boolean }
+	>();
+
+	connections.forEach((connection) => {
+		connection.repositories.forEach((repo) => {
+			const normalisedRepo = repo.trim().toLowerCase();
+			if (!normalisedRepo) {
+				return;
+			}
+			configuredRepos.add(`${connection.installationId}:${normalisedRepo}`);
+			options.set(`${connection.installationId}:${normalisedRepo}`, {
+				key: `${connection.installationId}:${normalisedRepo}`,
+				repo: normalisedRepo,
+				installationId: connection.installationId,
+				isConfigured: true,
+			});
+		});
+	});
+
+	results.forEach((result, index) => {
+		const connection = connections[index];
+		if (!connection || !Array.isArray(result.data)) {
+			return;
+		}
+		result.data.forEach((repo) => {
+			const normalisedRepo = repo.trim().toLowerCase();
+			if (!normalisedRepo) {
+				return;
+			}
+			const key = `${connection.installationId}:${normalisedRepo}`;
+			if (options.has(key)) {
+				return;
+			}
+			options.set(key, {
+				key,
+				repo: normalisedRepo,
+				installationId: connection.installationId,
+				isConfigured: configuredRepos.has(key),
+			});
+		});
+	});
+
+	return {
+		repoOptions: Array.from(options.values()).sort((a, b) => a.repo.localeCompare(b.repo)),
+		isLoading: results.some((result) => result.isLoading),
+		error: results.find((result) => result.error)?.error as Error | undefined,
+	};
+}
 
 export const useUpsertSandboxConnection = () => {
 	const queryClient = useQueryClient();
@@ -93,136 +146,21 @@ export const useConnectSandboxInstallation = () => {
 	});
 };
 
-export const useSandboxRuns = (
-	params: {
-		installationId?: number;
-		repo?: string;
-		limit?: number;
-	},
-	options?: { enabled?: boolean },
-) =>
-	useQuery<SandboxRun[], Error>({
-		queryKey: SANDBOX_QUERY_KEYS.runs(params),
-		queryFn: () => fetchSandboxRuns(params),
-		enabled: options?.enabled ?? true,
-	});
-
-export const useSandboxRun = (
-	runId?: string,
-	options?: {
-		enabled?: boolean;
-		refetchInterval?:
-			| number
-			| false
-			| ((query: { state: { data?: SandboxRun } }) => number | false);
-		refetchIntervalInBackground?: boolean;
-	},
-) =>
-	useQuery<SandboxRun, Error>({
-		queryKey: SANDBOX_QUERY_KEYS.run(runId),
-		queryFn: () => {
-			if (!runId) {
-				throw new Error("Run ID is required");
-			}
-			return fetchSandboxRun(runId);
-		},
-		enabled: Boolean(runId) && (options?.enabled ?? true),
-		refetchInterval: options?.refetchInterval,
-		refetchIntervalInBackground: options?.refetchIntervalInBackground,
-	});
-
-export const useSandboxRunInstructions = (
-	runId?: string,
-	options?: {
-		enabled?: boolean;
-		refetchInterval?:
-			| number
-			| false
-			| ((query: { state: { data?: SandboxRunInstruction[] } }) => number | false);
-	},
-) =>
-	useQuery<SandboxRunInstruction[], Error>({
-		queryKey: SANDBOX_QUERY_KEYS.runInstructions(runId),
-		queryFn: () => {
-			if (!runId) {
-				throw new Error("Run ID is required");
-			}
-			return fetchSandboxRunInstructions(runId);
-		},
-		enabled: Boolean(runId) && (options?.enabled ?? true),
-		refetchInterval: options?.refetchInterval,
-	});
-
-export const useCancelSandboxRun = () => {
-	const queryClient = useQueryClient();
-	return useMutation<SandboxRun, Error, { runId: string; reason?: string }>({
-		mutationFn: ({ runId, reason }) => cancelSandboxRun(runId, reason),
-		onSuccess: (_run, variables) => {
-			queryClient.invalidateQueries({
-				queryKey: SANDBOX_QUERY_KEYS.root,
-			});
-			queryClient.invalidateQueries({
-				queryKey: SANDBOX_QUERY_KEYS.run(variables.runId),
-			});
-		},
-	});
-};
-
-export const usePauseSandboxRun = () => {
-	const queryClient = useQueryClient();
-	return useMutation<SandboxRun, Error, { runId: string; reason?: string }>({
-		mutationFn: ({ runId, reason }) => pauseSandboxRun(runId, reason),
-		onSuccess: (_run, variables) => {
-			queryClient.invalidateQueries({
-				queryKey: SANDBOX_QUERY_KEYS.root,
-			});
-			queryClient.invalidateQueries({
-				queryKey: SANDBOX_QUERY_KEYS.run(variables.runId),
-			});
-		},
-	});
-};
-
-export const useResumeSandboxRun = () => {
-	const queryClient = useQueryClient();
-	return useMutation<SandboxRun, Error, { runId: string; reason?: string }>({
-		mutationFn: ({ runId, reason }) => resumeSandboxRun(runId, reason),
-		onSuccess: (_run, variables) => {
-			queryClient.invalidateQueries({
-				queryKey: SANDBOX_QUERY_KEYS.root,
-			});
-			queryClient.invalidateQueries({
-				queryKey: SANDBOX_QUERY_KEYS.run(variables.runId),
-			});
-		},
-	});
-};
-
-export const useSubmitSandboxRunInstruction = () => {
+export const useUpdateSandboxConnectionRepositories = () => {
 	const queryClient = useQueryClient();
 	return useMutation<
 		void,
 		Error,
-		{
-			runId: string;
-			kind?: SandboxRunInstructionKind;
-			content?: string;
-			command?: string;
-			requestId?: string;
-			approvalStatus?: "approved" | "rejected";
-			timeoutSeconds?: number;
-			escalateAfterSeconds?: number;
-		}
+		{ installationId: number; input: SandboxConnectionRepositoriesPayload }
 	>({
-		mutationFn: async (payload) => {
-			await submitSandboxRunInstruction(payload);
-		},
+		mutationFn: ({ installationId, input }) =>
+			updateSandboxConnectionRepositories(installationId, input),
 		onSuccess: (_result, variables) => {
 			queryClient.invalidateQueries({
-				queryKey: SANDBOX_QUERY_KEYS.run(variables.runId),
+				queryKey: SANDBOX_QUERY_KEYS.connections(),
 			});
 			queryClient.invalidateQueries({
-				queryKey: SANDBOX_QUERY_KEYS.runInstructions(variables.runId),
+				queryKey: SANDBOX_QUERY_KEYS.connectionRepositories(variables.installationId),
 			});
 		},
 	});

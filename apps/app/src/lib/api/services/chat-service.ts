@@ -6,6 +6,7 @@ import type {
 	Message,
 	MessageData,
 } from "~/types";
+import { getSandboxModeToolNames } from "~/lib/sandbox/chat-mode";
 import { normalizeMessage, serialiseMessagesForChatRequest } from "../../messages";
 import { fetchApi, returnFetchedData } from "../fetch-wrapper";
 
@@ -307,6 +308,7 @@ export class ChatService {
 			reasoning?: string,
 			toolResponses?: Message[],
 			done?: boolean,
+			assistantMessage?: Message,
 		) => void,
 		onStateChange: (state: string, data?: any) => void,
 		store = true,
@@ -324,6 +326,15 @@ export class ChatService {
 		}
 
 		const formattedMessages = serialiseMessagesForChatRequest(messages);
+		const sandboxOptions = requestOptions?.sandbox?.enabled ? requestOptions.sandbox : undefined;
+		const requestEnabledTools = sandboxOptions
+			? Array.from(
+					new Set([...(selectedTools || []), ...getSandboxModeToolNames(sandboxOptions.taskType)]),
+				)
+			: selectedTools;
+		const requestApprovedTools = sandboxOptions
+			? getSandboxModeToolNames(sandboxOptions.taskType)
+			: undefined;
 
 		const requestBody: Record<string, any> = {
 			...chatSettings,
@@ -333,7 +344,9 @@ export class ChatService {
 			platform: "web",
 			store,
 			stream: streamingEnabled,
-			enabled_tools: selectedTools,
+			enabled_tools: requestEnabledTools,
+			approved_tools: requestApprovedTools,
+			max_steps: sandboxOptions?.maxSteps ?? (sandboxOptions ? 2 : undefined),
 			use_multi_model,
 			options: requestOptions,
 		};
@@ -367,6 +380,7 @@ export class ChatService {
 			reasoning?: string,
 			toolResponses?: Message[],
 			done?: boolean,
+			assistantMessage?: Message,
 		) => void,
 		onStateChange: (state: string, data?: any) => void,
 	): Promise<Message> {
@@ -377,16 +391,71 @@ export class ChatService {
 		let messageData: MessageData | Record<string, any> | undefined = undefined;
 		let reasoning = "";
 		let thinking = "";
-		const streamedParts: NonNullable<Message["parts"]> = [];
+		let streamedParts: NonNullable<Message["parts"]> = [];
 		let finalParts: Message["parts"] | undefined = undefined;
 		let citations: string[] | null = null;
 		let usage: Message["usage"] = undefined;
 		let id: string = crypto.randomUUID();
 		let created: number | undefined = undefined;
 		let logId: string | undefined = undefined;
-		const toolCalls: any[] = [];
+		let toolCalls: any[] = [];
 		const pendingToolCalls: Record<string, any> = {};
 		const toolResponses: Message[] = [];
+		let responseModel = model;
+		let currentAssistantFinalized = false;
+		let lastAssistantMessage: Message | undefined;
+
+		const resetAssistantState = () => {
+			content = "";
+			messageData = undefined;
+			reasoning = "";
+			thinking = "";
+			streamedParts = [];
+			finalParts = undefined;
+			citations = null;
+			usage = undefined;
+			id = crypto.randomUUID();
+			created = undefined;
+			logId = undefined;
+			toolCalls = [];
+			responseModel = model;
+			currentAssistantFinalized = false;
+		};
+
+		const buildAssistantMessage = (messageId?: string) =>
+			normalizeMessage({
+				role: "assistant",
+				content,
+				parts:
+					finalParts && finalParts.length > 0
+						? finalParts
+						: streamedParts.length > 0
+							? streamedParts
+							: undefined,
+				data: messageData,
+				reasoning: reasoning
+					? {
+							collapsed: false,
+							content: reasoning,
+						}
+					: undefined,
+				id: messageId || id,
+				created,
+				model: responseModel,
+				citations: citations || null,
+				usage,
+				tool_calls: toolCalls.length > 0 ? toolCalls : undefined,
+				log_id: logId,
+			});
+
+		const hasAssistantPayload = () =>
+			Boolean(
+				content ||
+				reasoning ||
+				(finalParts && finalParts.length > 0) ||
+				streamedParts.length > 0 ||
+				toolCalls.length > 0,
+			);
 
 		const appendTextPart = (text: string) => {
 			if (!text) return;
@@ -416,8 +485,6 @@ export class ChatService {
 				timestamp: Date.now(),
 			});
 		};
-
-		let responseModel = model;
 
 		const isStreamingResponse = response.headers.get("content-type")?.includes("text/event-stream");
 
@@ -464,7 +531,11 @@ export class ChatService {
 							const data = line.substring(6);
 
 							if (data === "[DONE]") {
-								onProgress(content, reasoning, undefined, true);
+								if (!currentAssistantFinalized && hasAssistantPayload()) {
+									lastAssistantMessage = buildAssistantMessage();
+									onProgress(content, reasoning, undefined, true, lastAssistantMessage);
+									currentAssistantFinalized = true;
+								}
 								continue;
 							}
 
@@ -472,6 +543,9 @@ export class ChatService {
 								const parsedData = JSON.parse(data);
 
 								if (parsedData.type === "content_block_delta") {
+									if (currentAssistantFinalized) {
+										resetAssistantState();
+									}
 									content += parsedData.content;
 									appendTextPart(parsedData.content);
 									onProgress(content, reasoning, undefined, false);
@@ -480,6 +554,9 @@ export class ChatService {
 									appendTextPart(parsedData.choices[0].delta.content);
 									onProgress(content, reasoning, undefined, false);
 								} else if (parsedData.type === "message_stop") {
+									if (currentAssistantFinalized) {
+										continue;
+									}
 									onProgress(content, reasoning, undefined, true);
 								} else if (parsedData.type === "state") {
 									onStateChange(parsedData.state, parsedData);
@@ -513,27 +590,29 @@ export class ChatService {
 								} else if (parsedData.type === "tool_use_stop") {
 									if (pendingToolCalls[parsedData.tool_id]) {
 										toolCalls.push(pendingToolCalls[parsedData.tool_id]);
-										streamedParts.push({
-											type: "tool_use",
-											name: pendingToolCalls[parsedData.tool_id].name || "tool",
-											toolCallId: parsedData.tool_id,
-											input: pendingToolCalls[parsedData.tool_id].parameters,
-											timestamp: Date.now(),
-										});
+										if (!currentAssistantFinalized) {
+											streamedParts.push({
+												type: "tool_use",
+												name: pendingToolCalls[parsedData.tool_id].name || "tool",
+												toolCallId: parsedData.tool_id,
+												input: pendingToolCalls[parsedData.tool_id].parameters,
+												timestamp: Date.now(),
+											});
+										}
 										delete pendingToolCalls[parsedData.tool_id];
 									}
 									onStateChange("tool_use_stop", parsedData);
 								} else if (parsedData.type === "tool_response") {
-									if (toolResponses.find((tool) => tool.id === parsedData.id)) {
+									const toolResult = parsedData.result;
+									const toolResponseId = toolResult.id || parsedData.tool_id;
+									if (toolResponses.find((tool) => tool.id === toolResponseId)) {
 										continue;
 									}
-
-									const toolResult = parsedData.result;
 									const toolResponseData = toolResult.data || null;
 
 									const toolResponse = normalizeMessage({
 										role: toolResult.role || "tool",
-										id: toolResult.id || crypto.randomUUID(),
+										id: toolResponseId || crypto.randomUUID(),
 										content: toolResult.content || "",
 										name: toolResult.name,
 										status: toolResult.status || null,
@@ -548,6 +627,10 @@ export class ChatService {
 
 									toolResponses.push(toolResponse);
 									onProgress("", "", [toolResponse]);
+								} else if (parsedData.type === "tool_response_end") {
+									if (currentAssistantFinalized) {
+										resetAssistantState();
+									}
 								} else if (parsedData.type === "message_delta") {
 									if (parsedData.usage) {
 										usage = parsedData.usage;
@@ -567,6 +650,11 @@ export class ChatService {
 									if (Array.isArray(parsedData.parts)) {
 										finalParts = parsedData.parts as Message["parts"];
 									}
+									id = parsedData.message_id || id;
+									created = parsedData.created || created;
+									lastAssistantMessage = buildAssistantMessage(id);
+									onProgress(content, reasoning, undefined, true, lastAssistantMessage);
+									currentAssistantFinalized = true;
 								}
 							} catch (e) {
 								console.error("Error parsing SSE data:", e, data);
@@ -588,29 +676,6 @@ export class ChatService {
 			reasoning = thinking;
 		}
 
-		return normalizeMessage({
-			role: "assistant",
-			content,
-			parts:
-				finalParts && finalParts.length > 0
-					? finalParts
-					: streamedParts.length > 0
-						? streamedParts
-						: undefined,
-			data: messageData,
-			reasoning: reasoning
-				? {
-						collapsed: false,
-						content: reasoning,
-					}
-				: undefined,
-			id: id,
-			created: created,
-			model: responseModel,
-			citations: citations || null,
-			usage: usage,
-			tool_calls: toolCalls.length > 0 ? toolCalls : undefined,
-			log_id: logId,
-		});
+		return lastAssistantMessage || buildAssistantMessage();
 	}
 }

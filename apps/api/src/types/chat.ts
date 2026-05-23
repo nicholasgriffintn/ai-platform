@@ -1,5 +1,9 @@
 import type { ExecutionContext } from "@cloudflare/workers-types";
-import type { CouncilChatOptions, MessagePart as SchemaMessagePart } from "@assistant/schemas";
+import type {
+	CouncilChatOptions,
+	MessagePart as SchemaMessagePart,
+	SandboxModelSettings,
+} from "@assistant/schemas";
 import type { ServiceContext } from "../lib/context/serviceContext";
 import type { IEnv, ReasoningEffortLevel, RequireAtLeastOne, VerbosityLevel } from "./shared";
 import type { IUser } from "./user";
@@ -248,6 +252,18 @@ interface AIControlParams {
 export interface ChatRequestOptions extends Record<string, any> {
 	cache_ttl_seconds?: number;
 	council?: CouncilChatOptions;
+	sandbox?: {
+		enabled: boolean;
+		repo?: string;
+		installationId?: number;
+		model?: string;
+		taskType?: string;
+		promptStrategy?: string;
+		shouldCommit?: boolean;
+		timeoutSeconds?: number;
+		maxSteps?: number;
+		modelSettings?: SandboxModelSettings;
+	};
 	replicateWaitSeconds?: number;
 }
 

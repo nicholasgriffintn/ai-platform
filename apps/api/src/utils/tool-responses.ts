@@ -22,10 +22,10 @@ export const formatToolResponse = (
 	content: string | MessageContent[];
 	data: Record<string, any>;
 } => {
-	const responseType = getFunctionResponseType(toolName);
-	const responseDisplay = getFunctionResponseDisplay(toolName);
-	const icon = getFunctionIcon(toolName);
-	const formattedName = formatFunctionName(toolName);
+	const responseType = data?.responseType ?? getFunctionResponseType(toolName);
+	const responseDisplay = data?.responseDisplay ?? getFunctionResponseDisplay(toolName);
+	const icon = data?.icon ?? getFunctionIcon(toolName);
+	const formattedName = data?.formattedName ?? formatFunctionName(toolName);
 
 	return {
 		content,
@@ -35,7 +35,7 @@ export const formatToolResponse = (
 			responseDisplay,
 			icon,
 			formattedName,
-			name: toolName,
+			name: data?.name ?? toolName,
 		},
 	};
 };

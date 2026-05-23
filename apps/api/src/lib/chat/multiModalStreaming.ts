@@ -1,5 +1,6 @@
 import { getAIResponse } from "~/lib/chat/responses";
 import type { ConversationManager } from "~/lib/conversationManager";
+import type { ServiceContext } from "~/lib/context/serviceContext";
 import type { ChatMode, IEnv, IUser, IUserSettings, ModelConfigInfo, Platform } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
@@ -25,6 +26,7 @@ export function createMultiModelStream(
 		provider: string;
 		platform?: Platform;
 		user?: IUser;
+		context?: ServiceContext;
 		userSettings?: IUserSettings;
 		app_url?: string;
 		mode?: ChatMode;

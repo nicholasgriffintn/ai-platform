@@ -74,6 +74,15 @@ export class MessageFormatter {
 			const content = MessageFormatter.formatContent(message.content, provider);
 
 			if (message.role === "tool") {
+				if (
+					message.data &&
+					typeof message.data === "object" &&
+					!Array.isArray(message.data) &&
+					(message.data as { modelContext?: unknown }).modelContext === false
+				) {
+					continue;
+				}
+
 				if (!message.tool_call_id && provider !== "anthropic") {
 					continue;
 				}

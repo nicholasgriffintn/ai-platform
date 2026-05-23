@@ -77,6 +77,7 @@ export async function executeAgentLoop(
 		sandbox,
 		client,
 		model,
+		modelSettings,
 		repoDisplayName,
 		repoTargetDir,
 		task,
@@ -231,6 +232,7 @@ export async function executeAgentLoop(
 								: JSON.stringify(message.content),
 					})),
 					model,
+					...modelSettings,
 				},
 				MODEL_RETRY_OPTIONS,
 			);

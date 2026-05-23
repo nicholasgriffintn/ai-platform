@@ -161,6 +161,7 @@ export const handleFunctions = async ({
 	args,
 	request,
 	conversationManager,
+	emitToolResult,
 }: {
 	completion_id: string;
 	app_url: string | undefined;
@@ -168,6 +169,7 @@ export const handleFunctions = async ({
 	args: unknown;
 	request: IRequest;
 	conversationManager?: ConversationManager;
+	emitToolResult?: (response: IFunctionResponse) => Promise<void> | void;
 }): Promise<IFunctionResponse> => {
 	const requestMode = request.request?.mode || request.mode;
 	const toolPreApproved = hasToolApproval(request, functionName);
@@ -274,6 +276,7 @@ export const handleFunctions = async ({
 		request,
 		appUrl: app_url,
 		conversationManager,
+		emitToolResult,
 	});
 
 	if (conversationManager) {

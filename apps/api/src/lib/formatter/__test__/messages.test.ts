@@ -306,6 +306,30 @@ describe("MessageFormatter", () => {
 			expect(result[1].role).toBe("assistant");
 		});
 
+		it("should skip UI-only tool messages for provider context", () => {
+			const messages: Message[] = [
+				{
+					role: "tool",
+					content: "Sandbox event",
+					name: "sandbox_event",
+					data: {
+						modelContext: false,
+					},
+				},
+				{
+					role: "user",
+					content: "Continue",
+				},
+			];
+
+			const result = MessageFormatter.formatMessages(messages, {
+				provider: "anthropic",
+			});
+
+			expect(result).toHaveLength(1);
+			expect(result[0].role).toBe("user");
+		});
+
 		it("should still process tool message without tool_call_id for anthropic provider", () => {
 			const messages: Message[] = [
 				{

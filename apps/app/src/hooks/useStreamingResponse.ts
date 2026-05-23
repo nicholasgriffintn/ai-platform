@@ -57,17 +57,48 @@ export function useStreamingResponse(
 			let generatedMessage: Message | undefined;
 
 			const placeholderMessage = await addAssistantMessage(conversationId, "");
+			let activeAssistantMessage: Message | undefined = placeholderMessage;
+			let activeAssistantMessagePromise: Promise<Message> | null =
+				Promise.resolve(placeholderMessage);
+
+			const ensureActiveAssistantMessage = () => {
+				if (activeAssistantMessage) {
+					return Promise.resolve(activeAssistantMessage);
+				}
+
+				if (activeAssistantMessagePromise) {
+					return activeAssistantMessagePromise;
+				}
+
+				activeAssistantMessagePromise = addAssistantMessage(conversationId, "").then((message) => {
+					activeAssistantMessage = message;
+					return message;
+				});
+				return activeAssistantMessagePromise;
+			};
 
 			const handleMessageUpdate = (
 				content: Message["content"],
 				reasoning?: string,
 				toolResponses?: Message[],
 				done?: boolean,
+				assistantMessage?: Message,
 			) => {
-				if (done) {
-					updateAssistantMessage(conversationId, content, reasoning, undefined, {
-						messageId: placeholderMessage.id,
+				if (done && assistantMessage) {
+					ensureActiveAssistantMessage().then((message) => {
+						updateAssistantMessage(
+							conversationId,
+							assistantMessage.content,
+							assistantMessage.reasoning?.content || reasoning,
+							assistantMessage,
+							{
+								messageId: message.id,
+							},
+						);
+						activeAssistantMessage = undefined;
+						activeAssistantMessagePromise = null;
 					});
+					generatedMessage = assistantMessage;
 					response = "";
 					return;
 				}
@@ -81,8 +112,10 @@ export function useStreamingResponse(
 						}
 					}, 0);
 				} else {
-					updateAssistantMessage(conversationId, content, reasoning, undefined, {
-						messageId: placeholderMessage.id,
+					ensureActiveAssistantMessage().then((message) => {
+						updateAssistantMessage(conversationId, content, reasoning, undefined, {
+							messageId: message.id,
+						});
 					});
 				}
 			};
@@ -172,13 +205,16 @@ export function useStreamingResponse(
 									.map((item: MessageContent) => (item.type === "text" ? item.text || "" : ""))
 									.join("");
 
-					await updateAssistantMessage(
-						conversationId,
-						messageContentToDisplay,
-						assistantMessage.reasoning?.content,
-						assistantMessage,
-						{ messageId: placeholderMessage.id },
-					);
+					if (generatedMessage?.id !== assistantMessage.id) {
+						const targetMessage = activeAssistantMessage || placeholderMessage;
+						await updateAssistantMessage(
+							conversationId,
+							messageContentToDisplay,
+							assistantMessage.reasoning?.content,
+							assistantMessage,
+							{ messageId: targetMessage.id },
+						);
+					}
 
 					response = textPreview;
 					generatedMessage = assistantMessage;

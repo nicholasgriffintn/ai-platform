@@ -7,6 +7,7 @@ import { JsonView } from "./JsonView";
 import { TableView } from "./TableView";
 import { TemplateView } from "./TemplateView";
 import { TextView } from "./TextView";
+import { resolveResponseData, resolveTextResponseData } from "./response-data";
 
 interface ResponseRendererProps {
 	app?: AppSchema;
@@ -37,18 +38,10 @@ export const ResponseRenderer = ({
 }: ResponseRendererProps) => {
 	const renderResponse = () => {
 		const type = responseType || app?.responseSchema.type;
-		const resultData = result.data || result;
-
-		let responseData;
-		if (app && resultData?.result) {
-			responseData = resultData.result;
-		} else if (responseType && "result" in resultData) {
-			responseData = resultData.result;
-		} else if (responseType && "results" in resultData) {
-			responseData = resultData.results;
-		} else {
-			responseData = resultData;
-		}
+		const responseData = resolveResponseData(result, {
+			hasAppSchema: Boolean(app),
+			responseType,
+		});
 
 		const display = responseDisplay || app?.responseSchema.display;
 
@@ -78,10 +71,7 @@ export const ResponseRenderer = ({
 				return <JsonView data={responseData} />;
 
 			case "text":
-				if (typeof responseData === "string") {
-					return <TextView data={{ content: responseData }} />;
-				}
-				return <TextView data={responseData} />;
+				return <TextView data={resolveTextResponseData(result, responseData)} />;
 
 			case "template":
 				return <TemplateView template={display?.template} data={responseData} />;
