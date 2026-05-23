@@ -1192,9 +1192,7 @@ async function processFile({
 			remoteModels[entry.modelKey] ?? (matchingModel ? remoteModels[matchingModel] : undefined);
 
 		const remoteModelIdForStatus =
-			typeof remoteModel?.id === "string"
-				? remoteModel.id
-				: matchingModel ?? entry.modelKey;
+			typeof remoteModel?.id === "string" ? remoteModel.id : (matchingModel ?? entry.modelKey);
 		const isOutdatedModel = providerModelStatus.outdatedModelIds.has(remoteModelIdForStatus);
 		const shouldRemoveBecauseNotLatest =
 			providerModelStatus.latestModelIds.size > 0 &&
