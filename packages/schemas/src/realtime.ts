@@ -5,6 +5,7 @@ export const realtimeSessionResponseSchema = z
 		id: z.string(),
 		object: z.string(),
 		type: z.string().optional(),
+		model: z.string().optional(),
 		audio: z
 			.object({
 				input: z
@@ -44,6 +45,12 @@ export const realtimeSessionResponseSchema = z
 				language_code: z.string().optional(),
 			})
 			.optional(),
+		translation: z
+			.object({
+				source_language: z.string().optional(),
+				target_language: z.string().optional(),
+			})
+			.optional(),
 		client_secret: z.object({
 			expires_at: z.number(),
 			value: z.string(),
@@ -53,5 +60,5 @@ export const realtimeSessionResponseSchema = z
 
 export const realtimeSessionCreateSchema = z.object({
 	model: z.string().optional(),
-	type: z.enum(["transcription"]),
+	type: z.enum(["realtime", "translation", "transcription"]),
 });

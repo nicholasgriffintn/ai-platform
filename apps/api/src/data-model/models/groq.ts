@@ -415,6 +415,8 @@ export const groqModelConfig: ModelConfig = {
 
 	"groq/compound": {
 		name: "Compound",
+		description:
+			"Groq's Compound system integrates OpenAI's GPT-OSS 120B and Llama 4 models with external tools like web search and code execution.",
 		matchingModel: "groq/compound",
 		provider: "groq",
 		knowledgeCutoffDate: "September 4, 2025",
