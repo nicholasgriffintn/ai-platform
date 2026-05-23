@@ -54,6 +54,7 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 		knowledgeCutoffDate: "July 31, 2025",
 		releaseDate: "September 29, 2025",
 		lastUpdated: "September 29, 2025",
+		deprecated: true,
 		modalities: {
 			input: ["text", "image", "pdf"],
 			output: ["text"],
@@ -92,6 +93,7 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 		knowledgeCutoffDate: "March 31, 2025",
 		releaseDate: "May 22, 2025",
 		lastUpdated: "May 22, 2025",
+		deprecated: true,
 		modalities: {
 			input: ["text", "image", "pdf"],
 			output: ["text"],
@@ -120,37 +122,6 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 		supportsTokenCounting: true,
 	}),
 
-	createModelConfig("claude-4.5-haiku", PROVIDER, {
-		name: "Claude 4.5 Haiku",
-		matchingModel: "claude-4-5-haiku-latest",
-		description:
-			"With fast speeds, improved instruction following, and more accurate tool use, Claude 4.5 Haiku is well suited for user-facing products, specialized sub-agent tasks, and generating personalized experiences from huge volumes of data.",
-		knowledgeCutoffDate: "July 2024",
-		releaseDate: "October 22, 2024",
-		lastUpdated: "October 22, 2024",
-		modalities: {
-			input: ["text", "image"],
-			output: ["text"],
-		},
-		supportsAttachments: true,
-		supportsTemperature: true,
-		contextWindow: 200000,
-		maxTokens: 64000,
-		costPer1kInputTokens: 0.001,
-		costPer1kOutputTokens: 0.005,
-		strengths: ["chat", "general_knowledge", "analysis", "reasoning", "creative"],
-		contextComplexity: 3,
-		reliability: 3,
-		speed: 5,
-		isFeatured: false,
-		multimodal: true,
-		supportsArtifacts: true,
-		supportsToolCalls: true,
-		...anthropicServerTools,
-		includedInRouter: true,
-		supportsTokenCounting: true,
-	}),
-
 	createModelConfig("claude-3.5-haiku", PROVIDER, {
 		name: "Claude Haiku 3.5",
 		matchingModel: "claude-3-5-haiku-latest",
@@ -159,6 +130,7 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 		knowledgeCutoffDate: "July 31, 2024",
 		releaseDate: "October 22, 2024",
 		lastUpdated: "October 22, 2024",
+		deprecated: true,
 		modalities: {
 			input: ["text", "image", "pdf"],
 			output: ["text"],
@@ -190,6 +162,7 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 		knowledgeCutoffDate: "March 31, 2025",
 		releaseDate: "August 5, 2025",
 		lastUpdated: "August 5, 2025",
+		deprecated: true,
 		modalities: {
 			input: ["text", "image", "pdf"],
 			output: ["text"],
@@ -223,6 +196,7 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 		knowledgeCutoffDate: "October 31, 2024",
 		releaseDate: "February 19, 2025",
 		lastUpdated: "February 19, 2025",
+		deprecated: true,
 		modalities: {
 			input: ["text", "image", "pdf"],
 			output: ["text"],
@@ -253,6 +227,7 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 		knowledgeCutoffDate: "April 30, 2024",
 		releaseDate: "October 22, 2024",
 		lastUpdated: "October 22, 2024",
+		deprecated: true,
 		modalities: {
 			input: ["text", "image", "pdf"],
 			output: ["text"],
@@ -272,6 +247,7 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 		knowledgeCutoffDate: "August 31, 2023",
 		releaseDate: "March 13, 2024",
 		lastUpdated: "March 13, 2024",
+		deprecated: true,
 		modalities: {
 			input: ["text", "image", "pdf"],
 			output: ["text"],
@@ -291,6 +267,7 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 		knowledgeCutoffDate: "August 31, 2023",
 		releaseDate: "February 29, 2024",
 		lastUpdated: "February 29, 2024",
+		deprecated: true,
 		modalities: {
 			input: ["text", "image", "pdf"],
 			output: ["text"],
@@ -310,6 +287,7 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 		knowledgeCutoffDate: "August 31, 2023",
 		releaseDate: "March 4, 2024",
 		lastUpdated: "March 4, 2024",
+		deprecated: true,
 		modalities: {
 			input: ["text", "image", "pdf"],
 			output: ["text"],
@@ -352,6 +330,7 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 		knowledgeCutoffDate: "March 31, 2025",
 		releaseDate: "May 22, 2025",
 		lastUpdated: "May 22, 2025",
+		deprecated: true,
 		modalities: {
 			input: ["text", "image", "pdf"],
 			output: ["text"],
@@ -375,6 +354,7 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 		knowledgeCutoffDate: "March 31, 2025",
 		releaseDate: "November 24, 2025",
 		lastUpdated: "November 24, 2025",
+		deprecated: true,
 		modalities: {
 			input: ["text", "image", "pdf"],
 			output: ["text"],
@@ -393,6 +373,8 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 	}),
 	createModelConfig("claude-opus-4-7", PROVIDER, {
 		name: "Claude Opus 4.7",
+		description:
+			"Our most capable generally available model for complex reasoning and agentic coding",
 		matchingModel: "claude-opus-4-7",
 		knowledgeCutoffDate: "January 31, 2026",
 		releaseDate: "April 16, 2026",
@@ -419,6 +401,7 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 
 	createModelConfig("claude-sonnet-4-6", PROVIDER, {
 		name: "Claude Sonnet 4.6",
+		description: "The best combination of speed and intelligence",
 		matchingModel: "claude-sonnet-4-6",
 		knowledgeCutoffDate: "August 31, 2025",
 		releaseDate: "February 17, 2026",

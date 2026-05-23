@@ -2,7 +2,7 @@ import type { IEnv, IUser } from "~/types";
 import { providerLibrary } from "../../library";
 import type { ProviderFactoryContext } from "../../registry/types";
 
-export type RealtimeSessionType = "transcription";
+export type RealtimeSessionType = "realtime" | "translation" | "transcription";
 export type RealtimeTranscriptionDelay = "minimal" | "low" | "medium" | "high" | "xhigh";
 
 export interface RealtimeSessionRequest {
@@ -11,6 +11,10 @@ export interface RealtimeSessionRequest {
 	type: RealtimeSessionType;
 	model?: string;
 	language?: string;
+	sourceLanguage?: string;
+	targetLanguage?: string;
+	voice?: string;
+	instructions?: string;
 	delay?: RealtimeTranscriptionDelay;
 }
 

@@ -22,6 +22,8 @@ import {
 
 const DEFAULT_IMAGE_SIZE = "1024x1024";
 const DEFAULT_IMAGE_COUNT = 1;
+const DEFAULT_AUDIO_VOICE = "marin";
+const DEFAULT_AUDIO_FORMAT = "mp3";
 
 export class OpenAIProvider extends BaseProvider {
 	name = "openai";
@@ -166,6 +168,30 @@ export class OpenAIProvider extends BaseProvider {
 		};
 	}
 
+	private getOpenAIOptions(params: ChatCompletionParameters): Record<string, any> {
+		const options = params.options || {};
+		return {
+			...options,
+			...(options.openai && typeof options.openai === "object" ? options.openai : {}),
+		};
+	}
+
+	private buildAudioOutputParams(params: ChatCompletionParameters): Record<string, any> {
+		const options = this.getOpenAIOptions(params);
+		const audioOptions =
+			options.audio && typeof options.audio === "object" && !Array.isArray(options.audio)
+				? options.audio
+				: {};
+
+		return {
+			modalities: ["text", "audio"],
+			audio: {
+				voice: audioOptions.voice || options.voice || DEFAULT_AUDIO_VOICE,
+				format: audioOptions.format || options.audio_format || DEFAULT_AUDIO_FORMAT,
+			},
+		};
+	}
+
 	async mapParameters(
 		params: ChatCompletionParameters,
 		_storageService?: StorageService,
@@ -240,6 +266,7 @@ export class OpenAIProvider extends BaseProvider {
 		const outputs = modelConfig?.modalities?.output ?? inputs;
 		const isImageEditing = outputs.includes("image") && inputs.includes("image");
 		const isTextToImage = outputs.includes("image") && !inputs.includes("image");
+		const producesAudio = outputs.includes("audio");
 
 		if (isImageEditing || isTextToImage) {
 			const imageRequestInput = getOpenAIImageRequestInput(params, modelConfig);
@@ -303,11 +330,12 @@ export class OpenAIProvider extends BaseProvider {
 
 		return {
 			...commonParams,
-			...streamingParams,
+			...(producesAudio ? {} : streamingParams),
 			...toolsParams,
 			...openaiSpecificTools,
 			...thinkingParams,
 			...verbosityParams,
+			...(producesAudio ? this.buildAudioOutputParams(params) : {}),
 			...modelSpecificParams,
 			store: params.store,
 			logit_bias: params.logit_bias,

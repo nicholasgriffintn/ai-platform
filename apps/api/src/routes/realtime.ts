@@ -37,6 +37,10 @@ addRoute(app, "post", "/session/:type", {
 			const type = c.req.param("type");
 			const model = c.req.query("model");
 			const language = c.req.query("language");
+			const sourceLanguage = c.req.query("source_language");
+			const targetLanguage = c.req.query("target_language");
+			const voice = c.req.query("voice");
+			const instructions = c.req.query("instructions");
 			const delay = c.req.query("delay") as RealtimeTranscriptionDelay | undefined;
 			const providerName = c.req.query("provider") || "openai";
 
@@ -44,7 +48,7 @@ addRoute(app, "post", "/session/:type", {
 				return ResponseFactory.error(c, "Unauthorized", 401);
 			}
 
-			if (type !== "transcription") {
+			if (type !== "realtime" && type !== "translation" && type !== "transcription") {
 				return ResponseFactory.error(c, "Invalid session type", 400);
 			}
 
@@ -63,6 +67,10 @@ addRoute(app, "post", "/session/:type", {
 				type,
 				model,
 				language,
+				sourceLanguage,
+				targetLanguage,
+				voice,
+				instructions,
 				delay,
 			});
 
