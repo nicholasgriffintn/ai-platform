@@ -2,7 +2,6 @@ import { reactRouter } from "@react-router/dev/vite";
 import { cloudflareDevProxy } from "@react-router/dev/vite/cloudflare";
 import tailwindcss from "@tailwindcss/vite";
 import { defineConfig } from "vite";
-import tsconfigPaths from "vite-tsconfig-paths";
 import { visualizer } from "rollup-plugin-visualizer";
 
 export default defineConfig(({ isSsrBuild, command }) => ({
@@ -34,10 +33,6 @@ export default defineConfig(({ isSsrBuild, command }) => ({
 		}),
 		tailwindcss(),
 		reactRouter(),
-		tsconfigPaths({
-			projectDiscovery: "lazy",
-			logFile: false,
-		}),
 		command === "build" &&
 			visualizer({
 				filename: "dist/stats.html",
@@ -46,6 +41,9 @@ export default defineConfig(({ isSsrBuild, command }) => ({
 				brotliSize: true,
 			}),
 	].filter(Boolean),
+	resolve: {
+		tsconfigPaths: true,
+	},
 	optimizeDeps: {
 		include: [
 			"react",

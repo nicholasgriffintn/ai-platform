@@ -94,7 +94,6 @@
 		"typescript": "6.0.3",
 		"vite": "8.0.14",
 		"vite-plugin-babel": "1.7.3",
-		"vite-tsconfig-paths": "6.1.1",
 		"vitest": "4.1.7",
 		"wrangler": "4.94.0"
 	}
