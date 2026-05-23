@@ -8,29 +8,97 @@ import {
 } from "../feature-implementation/story-tracker";
 import type { RalphPrdContext, SandboxFileInstance } from "../feature-implementation/types";
 
+type ReadFileTextOptions = {
+	encoding?: "utf-8" | "utf8" | "base64";
+	sessionId?: string;
+};
+
+type ReadFileStreamOptions = {
+	encoding: "none";
+	sessionId?: string;
+};
+
+interface ReadFileTextFixtureResult {
+	success: boolean;
+	path: string;
+	content: string;
+	timestamp: string;
+	encoding?: "utf-8" | "base64";
+	isBinary?: boolean;
+	mimeType?: string;
+	size?: number;
+}
+
+interface ReadFileStreamFixtureResult {
+	success: true;
+	path: string;
+	content: ReadableStream<Uint8Array>;
+	size: number;
+	mimeType: string;
+	timestamp: string;
+}
+
 function createFileSandbox(initialFiles: Record<string, string>): {
 	sandbox: SandboxFileInstance;
 	files: Map<string, string>;
 } {
 	const files = new Map(Object.entries(initialFiles));
-	const sandbox: SandboxFileInstance = {
-		readFile: async (path) => {
-			if (!files.has(path)) {
-				return {
-					success: false,
-					path,
-					content: "",
-					timestamp: new Date().toISOString(),
-				};
+	async function readFile(
+		path: string,
+		options: ReadFileStreamOptions,
+	): Promise<ReadFileStreamFixtureResult>;
+	async function readFile(
+		path: string,
+		options?: ReadFileTextOptions,
+	): Promise<ReadFileTextFixtureResult>;
+	async function readFile(
+		path: string,
+		options?: ReadFileStreamOptions | ReadFileTextOptions,
+	): Promise<ReadFileStreamFixtureResult | ReadFileTextFixtureResult> {
+		const content = files.get(path);
+		const timestamp = new Date().toISOString();
+		if (options?.encoding === "none") {
+			if (content === undefined) {
+				throw new Error(`File not found: ${path}`);
 			}
+			const bytes = new TextEncoder().encode(content);
 			return {
 				success: true,
 				path,
-				content: files.get(path) ?? "",
-				timestamp: new Date().toISOString(),
+				content: new Blob([bytes]).stream(),
+				size: bytes.byteLength,
+				mimeType: "text/plain",
+				timestamp,
 			};
-		},
+		}
+		if (content === undefined) {
+			return {
+				success: false,
+				path,
+				content: "",
+				timestamp,
+			};
+		}
+		return {
+			success: true,
+			path,
+			content,
+			timestamp,
+			size: new TextEncoder().encode(content).byteLength,
+			mimeType: "text/plain",
+		};
+	}
+
+	const sandbox: SandboxFileInstance = {
+		readFile,
 		writeFile: async (path, content) => {
+			if (typeof content !== "string") {
+				return {
+					success: false,
+					path,
+					timestamp: new Date().toISOString(),
+				};
+			}
 			files.set(path, content);
 			return {
 				success: true,
