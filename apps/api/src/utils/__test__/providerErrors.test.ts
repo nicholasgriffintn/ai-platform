@@ -5,6 +5,7 @@ import {
 	isProviderRateLimit,
 	isProviderRateLimitError,
 } from "../providerErrors";
+import { AssistantError, ErrorType } from "../errors";
 
 describe("providerErrors", () => {
 	it("reads provider messages from common error payload shapes", () => {
@@ -36,6 +37,14 @@ describe("providerErrors", () => {
 				message: "Rate limit exceeded",
 				object: "error",
 			}),
+		).toBe(true);
+	});
+
+	it("identifies typed assistant rate limit errors", () => {
+		expect(
+			isProviderRateLimitError(
+				new AssistantError("Rate limit exceeded", ErrorType.RATE_LIMIT_ERROR),
+			),
 		).toBe(true);
 	});
 

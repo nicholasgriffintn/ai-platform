@@ -8,6 +8,15 @@ export interface ProviderErrorBody {
 	error?: unknown;
 }
 
+interface ProviderErrorLike extends ProviderErrorBody {
+	status?: unknown;
+	statusCode?: unknown;
+}
+
+function isProviderErrorLike(error: unknown): error is ProviderErrorLike {
+	return typeof error === "object" && error !== null && !Array.isArray(error);
+}
+
 export function getProviderErrorMessage(
 	responseJson: ProviderErrorBody | null,
 ): string | undefined {
@@ -43,7 +52,7 @@ export function isProviderRateLimit(
 }
 
 export function isProviderRateLimitError(error: unknown): boolean {
-	if (!isPlainObject(error)) {
+	if (!isProviderErrorLike(error)) {
 		return false;
 	}
 
