@@ -538,6 +538,7 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		},
 		supportsAudio: true,
 		supportsStreaming: true,
+		supportsRealtimeSession: true,
 		supportsTemperature: false,
 		supportsToolCalls: false,
 		card: "https://docs.mistral.ai/models/model-cards/voxtral-mini-transcribe-realtime-26-02",

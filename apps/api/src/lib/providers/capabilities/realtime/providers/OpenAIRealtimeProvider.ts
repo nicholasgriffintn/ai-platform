@@ -68,7 +68,7 @@ export class OpenAIRealtimeProvider implements RealtimeProvider {
 		return "OPENAI_API_KEY";
 	}
 
-	private async getApiKey(request: RealtimeSessionRequest): Promise<string> {
+	async getApiKey(request: RealtimeSessionRequest): Promise<string> {
 		return resolveProviderApiKey({
 			env: request.env,
 			providerName: this.name,
@@ -77,7 +77,7 @@ export class OpenAIRealtimeProvider implements RealtimeProvider {
 		});
 	}
 
-	private getDefaultModel(type: RealtimeSessionRequest["type"]): string {
+	getDefaultModel(type: RealtimeSessionRequest["type"]): string {
 		switch (type) {
 			case "realtime":
 				return DEFAULT_REALTIME_MODEL;
@@ -108,14 +108,14 @@ export class OpenAIRealtimeProvider implements RealtimeProvider {
 		return modelConfig.matchingModel;
 	}
 
-	private buildAudioFormat(): Record<string, unknown> {
+	buildAudioFormat(): Record<string, unknown> {
 		return {
 			type: "audio/pcm",
 			rate: 24000,
 		};
 	}
 
-	private getTranscriptionDelay(request: RealtimeSessionRequest): RealtimeTranscriptionDelay {
+	getTranscriptionDelay(request: RealtimeSessionRequest): RealtimeTranscriptionDelay {
 		const delay = request.delay ?? DEFAULT_TRANSCRIPTION_DELAY;
 		if (!TRANSCRIPTION_DELAYS.includes(delay)) {
 			throw new AssistantError("Invalid transcription delay specified", ErrorType.PARAMS_ERROR);

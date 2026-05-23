@@ -1,16 +1,16 @@
-import { addRoute } from "~/lib/http/routeBuilder";
 import { type Context, Hono } from "hono";
 
+import { addRoute } from "~/lib/http/routeBuilder";
 import { errorResponseSchema, realtimeSessionResponseSchema } from "@assistant/schemas";
-
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import { ResponseFactory } from "~/lib/http/ResponseFactory";
-import type { IEnv } from "~/types";
+import type { IEnv, IUser } from "~/types";
 import {
 	getRealtimeProvider,
 	listRealtimeProviders,
 	type RealtimeTranscriptionDelay,
 } from "~/lib/providers/capabilities/realtime";
+import { createMistralRealtimeProxyResponse } from "~/services/realtime/mistral";
 
 const app = new Hono();
 const routeLogger = createRouteLogger("realtime");
@@ -80,6 +80,24 @@ addRoute(app, "post", "/session/:type", {
 
 			return ResponseFactory.success(c, session);
 		})(raw),
+});
+
+app.get("/mistral/transcription", async (c: Context) => {
+	const env = c.env as IEnv;
+	const user = c.get("user") as IUser | undefined;
+
+	if (!user?.id) {
+		return ResponseFactory.error(c, "Unauthorized", 401);
+	}
+
+	const model = c.req.query("model");
+
+	return createMistralRealtimeProxyResponse({
+		context: c,
+		env,
+		user,
+		model,
+	});
 });
 
 export default app;

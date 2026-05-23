@@ -38,6 +38,12 @@ export const realtimeSessionResponseSchema = z
 			})
 			.optional(),
 		input_audio_format: z.string().optional(),
+		audio_format: z
+			.object({
+				encoding: z.string(),
+				sample_rate: z.number(),
+			})
+			.optional(),
 		input_audio_transcription: z
 			.object({
 				model: z.string(),
@@ -51,10 +57,13 @@ export const realtimeSessionResponseSchema = z
 				target_language: z.string().optional(),
 			})
 			.optional(),
-		client_secret: z.object({
-			expires_at: z.number(),
-			value: z.string(),
-		}),
+		target_streaming_delay_ms: z.number().optional(),
+		client_secret: z
+			.object({
+				expires_at: z.number(),
+				value: z.string(),
+			})
+			.optional(),
 	})
 	.passthrough();
 

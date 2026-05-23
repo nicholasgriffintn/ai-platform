@@ -9,6 +9,7 @@ export interface RealtimeSessionRequest {
 	env: IEnv;
 	user: IUser;
 	type: RealtimeSessionType;
+	apiBaseUrl?: string;
 	model?: string;
 	language?: string;
 	sourceLanguage?: string;
@@ -21,6 +22,12 @@ export interface RealtimeSessionRequest {
 export interface RealtimeProvider {
 	name: string;
 	models?: string[];
+	getApiKey?: (request: RealtimeSessionRequest) => Promise<string>;
+	getDefaultModel: (type: RealtimeSessionRequest["type"]) => string;
+	getTranscriptionDelay?: (
+		request: RealtimeSessionRequest,
+	) => RealtimeTranscriptionDelay | undefined;
+	buildAudioFormat?: () => Record<string, unknown>;
 	createSession(request: RealtimeSessionRequest): Promise<unknown>;
 }
 
