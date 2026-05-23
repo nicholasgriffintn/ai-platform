@@ -490,7 +490,7 @@ function buildProviderModelStatus(remoteModels) {
 	const latestModelIds = new Set();
 	const outdatedModelIds = new Set();
 	const familyMembers = new Map();
-	const familyLatest = new Map();
+	const familyLatestModelIds = new Map();
 
 	for (const [modelId, remoteModel] of Object.entries(remoteModels)) {
 		if (!remoteModel || typeof remoteModel !== "object") {
@@ -511,15 +511,18 @@ function buildProviderModelStatus(remoteModels) {
 			hasAnyTag(remoteModel, LATEST_TAGS)
 		) {
 			latestModelIds.add(modelId);
-			familyLatest.set(family, modelId);
+			if (!familyLatestModelIds.has(family)) {
+				familyLatestModelIds.set(family, new Set());
+			}
+			familyLatestModelIds.get(family).add(modelId);
 		}
 	}
 
 	for (const [family, modelIds] of familyMembers) {
-		if (familyLatest.has(family)) {
-			const latestId = familyLatest.get(family);
+		if (familyLatestModelIds.has(family)) {
+			const familyLatestIds = familyLatestModelIds.get(family);
 			for (const modelId of modelIds) {
-				if (modelId !== latestId) {
+				if (!familyLatestIds.has(modelId)) {
 					outdatedModelIds.add(modelId);
 				}
 			}
