@@ -1,7 +1,5 @@
 // Source: https://originui.com/file-upload
 
-"use client";
-
 import type React from "react";
 import {
 	type ChangeEvent,
