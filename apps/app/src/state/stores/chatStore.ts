@@ -3,6 +3,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
 import { apiKeyService } from "~/lib/api/api-key";
+import { createConversationId } from "~/lib/conversations";
 import type { ChatMode, ChatSettings } from "~/types";
 
 const defaultSettings: ChatSettings = {
@@ -65,10 +66,8 @@ export const useChatStore = create<ChatStore>()(
 		(set, get) => ({
 			currentConversationId: undefined,
 			setCurrentConversationId: (id) => set({ currentConversationId: id }),
-			startNewConversation: (id?: string) => {
-				const newId = id || `${Date.now()}-${Math.floor(Math.random() * 1000)}`;
-				set({ currentConversationId: newId });
-			},
+			startNewConversation: (id?: string) =>
+				set({ currentConversationId: id || createConversationId() }),
 			clearCurrentConversation: () => set({ currentConversationId: undefined }),
 
 			hasApiKey: false,

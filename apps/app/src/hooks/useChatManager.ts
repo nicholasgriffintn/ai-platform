@@ -11,6 +11,8 @@ import {
 	getOpeningCouncilMemberId,
 	resolveCouncilMemberIds,
 } from "~/lib/council";
+import { prepareUserMessage, type AttachmentData } from "~/lib/chat/prepare-user-message";
+import { createConversationId } from "~/lib/conversations";
 import { normalizeMessage } from "~/lib/messages";
 import { useLoadingActions } from "~/state/contexts/LoadingContext";
 import { useChatStore } from "~/state/stores/chatStore";
@@ -24,86 +26,9 @@ import { useMessageOperations } from "./useMessageOperations";
 import { useStreamingResponse } from "./useStreamingResponse";
 import { useWebLLMInitialization } from "./useWebLLMInitialization";
 
-type AttachmentData = {
-	type: string;
-	data: string;
-	name?: string;
-	markdown?: string;
-};
-
 interface CouncilDebateOptions {
 	memberIds: CouncilMemberId[];
 	requireConsensus?: boolean;
-}
-
-function prepareUserMessage(
-	input: string,
-	attachmentData: AttachmentData | undefined,
-	model?: string,
-	conversationMode?: ConversationModeMetadata,
-) {
-	const contentItems: any[] = [
-		{
-			type: "text",
-			text: input.trim(),
-		},
-	];
-
-	if (attachmentData) {
-		if (attachmentData.type === "image") {
-			contentItems.push({
-				type: "image_url",
-				image_url: {
-					url: attachmentData.data,
-					detail: "auto",
-				},
-			});
-		} else if (attachmentData.type === "document") {
-			contentItems.push({
-				type: "document_url",
-				document_url: {
-					url: attachmentData.data,
-					name: attachmentData.name,
-				},
-			});
-		} else if (attachmentData.type === "audio") {
-			contentItems.push({
-				type: "input_audio",
-				input_audio: {
-					data: attachmentData.data,
-					format: attachmentData.name?.toLowerCase().endsWith(".wav") ? "wav" : "mp3",
-				},
-			});
-		}
-
-		if (attachmentData?.type === "markdown_document" && attachmentData?.markdown) {
-			contentItems.push({
-				type: "markdown_document",
-				markdown_document: {
-					markdown: attachmentData.markdown,
-					name: attachmentData.name,
-				},
-			});
-		}
-
-		return normalizeMessage({
-			role: "user",
-			content: contentItems,
-			id: crypto.randomUUID(),
-			created: Date.now(),
-			model,
-			data: conversationMode ? { conversationMode } : undefined,
-		});
-	}
-
-	return normalizeMessage({
-		role: "user",
-		content: input.trim(),
-		id: crypto.randomUUID(),
-		created: Date.now(),
-		model,
-		data: conversationMode ? { conversationMode } : undefined,
-	});
 }
 
 /**
@@ -223,7 +148,7 @@ export function useChatManager(
 			try {
 				let conversationId = currentConversationId;
 				if (!conversationId) {
-					conversationId = `${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+					conversationId = createConversationId();
 					startNewConversation(conversationId);
 				}
 
@@ -301,7 +226,7 @@ export function useChatManager(
 			try {
 				let conversationId = currentConversationId;
 				if (!conversationId) {
-					conversationId = `${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+					conversationId = createConversationId();
 					startNewConversation(conversationId);
 				}
 

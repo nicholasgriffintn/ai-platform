@@ -4,6 +4,7 @@ import { toast } from "sonner";
 
 import { CHATS_QUERY_KEY } from "~/constants";
 import { apiService } from "~/lib/api/api-service";
+import { createConversationId } from "~/lib/conversations";
 import { getModelProvider } from "~/lib/models";
 import { normalizeMessage } from "~/lib/messages";
 import type { Conversation, Message } from "~/types";
@@ -169,7 +170,7 @@ export function useConversationActions(
 
 				const messagesUpToPoint = conversation.messages.slice(0, messageIndex + 1);
 
-				const newConversationId = `${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+				const newConversationId = createConversationId();
 
 				const branchMetadata = {
 					branch_of: JSON.stringify({

@@ -1,4 +1,4 @@
-import { Code, Layers, Search } from "lucide-react";
+import { Code, Layers, Search, type LucideIcon } from "lucide-react";
 import * as React from "react";
 
 import { Toggle } from "~/components/ui/toggle";
@@ -12,6 +12,31 @@ interface ToolTogglesProps {
 	isDisabled?: boolean;
 	variant?: "inline" | "menu";
 }
+
+interface ToolToggleDefinition {
+	id: "code_execution" | "search_grounding";
+	icon: LucideIcon;
+	label: string;
+	isAvailable: (capabilities: {
+		supportsCodeExecution?: boolean;
+		supportsSearchGrounding?: boolean;
+	}) => boolean;
+}
+
+const MODEL_TOOL_TOGGLES: ToolToggleDefinition[] = [
+	{
+		id: "code_execution",
+		icon: Code,
+		label: "Code execution",
+		isAvailable: ({ supportsCodeExecution }) => Boolean(supportsCodeExecution),
+	},
+	{
+		id: "search_grounding",
+		icon: Search,
+		label: "Search grounding",
+		isAvailable: ({ supportsSearchGrounding }) => Boolean(supportsSearchGrounding),
+	},
+];
 
 interface MenuToggleButtonProps {
 	icon: React.ReactNode;
@@ -64,12 +89,13 @@ export const ToolToggles = ({ isDisabled = false, variant = "inline" }: ToolTogg
 	const supportsSearchGrounding = modelCapabilities?.supportsSearchGrounding;
 	const supportsCodeExecution = modelCapabilities?.supportsCodeExecution;
 
-	const availableTools = React.useMemo(() => {
-		const tools: string[] = [];
-		if (supportsCodeExecution) tools.push("code_execution");
-		if (supportsSearchGrounding) tools.push("search_grounding");
-		return tools;
-	}, [supportsCodeExecution, supportsSearchGrounding]);
+	const availableToolOptions = React.useMemo(
+		() =>
+			MODEL_TOOL_TOGGLES.filter((tool) =>
+				tool.isAvailable({ supportsCodeExecution, supportsSearchGrounding }),
+			),
+		[supportsCodeExecution, supportsSearchGrounding],
+	);
 
 	const handleValueChange = (value: string[]) => {
 		setSelectedTools(value);
@@ -85,7 +111,7 @@ export const ToolToggles = ({ isDisabled = false, variant = "inline" }: ToolTogg
 
 	const showMultiModelToggle = isPro && !model && chatMode === "remote";
 
-	if (!showMultiModelToggle && (!supportsToolCalls || availableTools.length === 0)) {
+	if (!showMultiModelToggle && (!supportsToolCalls || availableToolOptions.length === 0)) {
 		return null;
 	}
 
@@ -100,24 +126,16 @@ export const ToolToggles = ({ isDisabled = false, variant = "inline" }: ToolTogg
 						onToggle: () => setUseMultiModel(!useMultiModel),
 					}
 				: null,
-			supportsCodeExecution
-				? {
-						key: "code-execution",
-						icon: <Code className="h-5 w-5 shrink-0" aria-hidden="true" />,
-						isPressed: selectedTools.includes("code_execution"),
-						label: "Code execution",
-						onToggle: () => toggleTool("code_execution"),
-					}
-				: null,
-			supportsSearchGrounding
-				? {
-						key: "search-grounding",
-						icon: <Search className="h-5 w-5 shrink-0" aria-hidden="true" />,
-						isPressed: selectedTools.includes("search_grounding"),
-						label: "Search grounding",
-						onToggle: () => toggleTool("search_grounding"),
-					}
-				: null,
+			...availableToolOptions.map((tool) => {
+				const Icon = tool.icon;
+				return {
+					key: tool.id,
+					icon: <Icon className="h-5 w-5 shrink-0" aria-hidden="true" />,
+					isPressed: selectedTools.includes(tool.id),
+					label: tool.label,
+					onToggle: () => toggleTool(tool.id),
+				};
+			}),
 		].filter((option) => option !== null);
 
 		return (
@@ -158,42 +176,32 @@ export const ToolToggles = ({ isDisabled = false, variant = "inline" }: ToolTogg
 				</div>
 			)}
 
-			{supportsToolCalls && availableTools.length !== 0 ? (
+			{supportsToolCalls && availableToolOptions.length !== 0 ? (
 				<ToggleGroup
 					type="multiple"
 					size="sm"
-					value={selectedTools.filter((tool) => availableTools.includes(tool))}
+					value={selectedTools.filter((tool) =>
+						availableToolOptions.some((option) => option.id === tool),
+					)}
 					onValueChange={handleValueChange}
 					disabled={isDisabled}
 					aria-label="Select tools"
 					className="ml-1"
 				>
-					{supportsCodeExecution && (
-						<ToggleGroupItem
-							value="code_execution"
-							aria-label="Toggle code execution"
-							title={
-								selectedTools.includes("code_execution")
-									? "Disable code execution"
-									: "Enable code execution"
-							}
-						>
-							<Code className="h-4 w-4" />
-						</ToggleGroupItem>
-					)}
-					{supportsSearchGrounding && (
-						<ToggleGroupItem
-							value="search_grounding"
-							aria-label="Toggle search grounding"
-							title={
-								selectedTools.includes("search_grounding")
-									? "Disable search grounding"
-									: "Enable search grounding"
-							}
-						>
-							<Search className="h-4 w-4" />
-						</ToggleGroupItem>
-					)}
+					{availableToolOptions.map((tool) => {
+						const Icon = tool.icon;
+						const isSelected = selectedTools.includes(tool.id);
+						return (
+							<ToggleGroupItem
+								key={tool.id}
+								value={tool.id}
+								aria-label={`Toggle ${tool.label.toLowerCase()}`}
+								title={isSelected ? `Disable ${tool.label}` : `Enable ${tool.label}`}
+							>
+								<Icon className="h-4 w-4" />
+							</ToggleGroupItem>
+						);
+					})}
 				</ToggleGroup>
 			) : null}
 		</div>

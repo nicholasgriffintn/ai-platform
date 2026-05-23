@@ -1,41 +1,11 @@
-import type { MCPClientManager } from "agents/mcp/client";
-
 import { formatToolCalls } from "~/lib/chat/tools";
 import { createServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
 import { getModelConfig, getModelConfigByMatchingModel } from "~/lib/providers/models";
 import { handleCreateChatCompletions } from "~/services/completions/createChatCompletions";
-import { registerMCPClient } from "~/services/functions/mcp";
-import { add_reasoning_step } from "~/services/functions/reasoning";
-import { compose_functions, if_then_else, parallel_execute } from "~/services/functions/workflow";
-import { request_approval, ask_user } from "~/services/functions/human_in_the_loop";
-import { retry_with_backoff, fallback } from "~/services/functions/error_recovery";
-import { search_functions, get_function_schema } from "~/services/functions/discovery";
-import {
-	delegateToTeamMember,
-	delegateToTeamMemberByRole,
-	getTeamMembers,
-} from "~/services/functions/teamDelegation";
-import type { ApiToolDefinition } from "~/services/functions/types";
 import type { ChatCompletionRequestBody } from "@assistant/schemas";
 import type { ChatCompletionParameters, IEnv, IUser, Message } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
-import { getLogger } from "~/utils/logger";
-import { safeParseJson } from "../../utils/json";
-
-const logger = getLogger({ prefix: "services/agents/completions" });
-
-const CORE_AGENT_TOOLS: ApiToolDefinition[] = [
-	add_reasoning_step,
-	compose_functions,
-	if_then_else,
-	parallel_execute,
-	request_approval,
-	ask_user,
-	retry_with_backoff,
-	fallback,
-	search_functions,
-	get_function_schema,
-];
+import { buildAgentCompletionTools, buildAgentSystemPrompt } from "./completion-tools";
 
 export async function createAgentCompletion({
 	env,
@@ -63,11 +33,7 @@ export async function createAgentCompletion({
 
 	const agent = await getValidatedAgent(serviceContext, agentId, user?.id);
 
-	const mcpFunctions = await setupMCPFunctions(agent, serviceContext.env);
-
-	const teamDelegationTools = setupTeamDelegationTools(agent);
-
-	const functionSchemas = [...CORE_AGENT_TOOLS, ...teamDelegationTools, ...mcpFunctions];
+	const functionSchemas = await buildAgentCompletionTools(agent, serviceContext.env);
 
 	const modelToUse = agent.model || body.model;
 	const modelDetails =
@@ -79,33 +45,7 @@ export async function createAgentCompletion({
 
 	const formattedTools = formatToolCalls(modelDetails.provider, functionSchemas);
 
-	let fewShotExamples;
-	if (agent.few_shot_examples) {
-		try {
-			const rawFewShotExamples = safeParseJson(agent.few_shot_examples as string);
-
-			fewShotExamples = `
-        Examples:
-        ${rawFewShotExamples
-					.map(
-						(example: { input: string; output: string }) => `
-          User: ${example.input}
-          Assistant: ${example.output}
-        `,
-					)
-					.join("\n")}
-      `;
-		} catch (error) {
-			logger.error("Error parsing few-shot examples", {
-				error_message: error instanceof Error ? error.message : "Unknown error",
-			});
-		}
-	}
-
-	let systemPrompt = agent.system_prompt || "";
-	if (fewShotExamples) {
-		systemPrompt = `${systemPrompt}\n\n${fewShotExamples}`;
-	}
+	const systemPrompt = buildAgentSystemPrompt(agent);
 
 	const {
 		user: _requestUser,
@@ -146,114 +86,6 @@ export async function createAgentCompletion({
 	});
 
 	return response;
-}
-
-async function setupMCPFunctions(agent: any, env: IEnv) {
-	const mcpFunctions: Array<{
-		name: string;
-		description?: string;
-		parameters: Record<string, any>;
-	}> = [];
-
-	if (!agent.servers) {
-		return mcpFunctions;
-	}
-
-	let mcp: MCPClientManager | null = null;
-
-	try {
-		const serversJson = agent.servers as string;
-		let serverConfigs = [];
-		serverConfigs = safeParseJson(serversJson) as Array<{ url: string }>;
-		if (!serverConfigs) {
-			throw new AssistantError("Invalid servers configuration", ErrorType.PARAMS_ERROR);
-		}
-
-		if (serverConfigs && serverConfigs.length > 0) {
-			if (!env.MCP_STORAGE) {
-				throw new AssistantError("MCP storage not configured", ErrorType.CONFIGURATION_ERROR);
-			}
-
-			const { MCPClientManager } = await import("agents/mcp/client");
-
-			mcp = new MCPClientManager(agent.id, "1.0.0", {
-				storage: env.MCP_STORAGE,
-			});
-			registerMCPClient(agent.id, mcp);
-
-			for (const cfg of serverConfigs) {
-				try {
-					const { id } = await mcp.connect(cfg.url);
-
-					if (!id) {
-						logger.error("No ID returned from MCP connect");
-						continue;
-					}
-
-					const connection = mcp.mcpConnections[id];
-
-					if (!connection?.connectionState) {
-						logger.error("No connection found for ID:", id);
-						continue;
-					}
-
-					const connectionDeadline = Date.now() + 10_000;
-					while (connection.connectionState !== "ready") {
-						if (Date.now() > connectionDeadline) {
-							logger.error("MCP connection timed out waiting for ready state", {
-								server_url: cfg.url,
-							});
-							break;
-						}
-						await new Promise((resolve) => setTimeout(resolve, 50));
-					}
-					if (connection.connectionState !== "ready") {
-						continue;
-					}
-
-					const rawTools = await mcp.getAITools();
-					const defs = Object.entries(rawTools) as [string, any][];
-
-					for (const [name, def] of defs) {
-						const shortAgentId = agent.id.substring(0, 8);
-						const toolName = `mcp_${shortAgentId}_${name}`;
-
-						if (
-							!def.parameters ||
-							(!def.parameters.properties && !def.parameters.jsonSchema.properties)
-						) {
-							continue;
-						}
-
-						mcpFunctions.push({
-							name: toolName,
-							description: def.description as string,
-							parameters: def.parameters as Record<string, any>,
-						});
-					}
-				} catch (error) {
-					logger.error("Error connecting to MCP server", {
-						server_url: cfg.url,
-						error_message: error instanceof Error ? error.message : "Unknown error",
-					});
-				}
-			}
-		}
-	} catch (error) {
-		logger.error("Error setting up MCP functions", {
-			error_message: error instanceof Error ? error.message : "Unknown error",
-		});
-	}
-
-	return mcpFunctions;
-}
-
-function setupTeamDelegationTools(agent: any): ApiToolDefinition[] {
-	if (agent.team_role !== "orchestrator") {
-		return [];
-	}
-
-	return [delegateToTeamMember, delegateToTeamMemberByRole, getTeamMembers];
 }
 
 function normaliseToolChoice(

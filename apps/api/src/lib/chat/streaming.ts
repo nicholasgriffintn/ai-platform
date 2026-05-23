@@ -1,6 +1,7 @@
 import { MAX_BUFFER_LENGTH, MAX_CONTENT_LENGTH, MAX_THINKING_LENGTH } from "~/constants/app";
+import { buildAssistantMessageData } from "~/lib/chat/mode-metadata";
 import { formatAssistantMessage, getAIResponse } from "~/lib/chat/responses";
-import { buildCouncilMessageData, extractCouncilTurnRouting } from "~/lib/chat/council";
+import { extractCouncilTurnRouting } from "~/lib/chat/council";
 import { appendReasoningPart, appendTextPart, buildMessageParts } from "~/lib/chat/messageParts";
 import { handleToolCalls } from "~/lib/chat/tools";
 import { shouldContinueAfterToolResults } from "~/lib/chat/tool-results";
@@ -647,14 +648,11 @@ export async function createStreamWithPostProcessing(
 							processedContent,
 							options.requestOptions?.council,
 						);
-						const responseData =
-							structuredData && typeof structuredData === "object" && !Array.isArray(structuredData)
-								? structuredData
-								: null;
-						const messageData = buildCouncilMessageData(
-							options.requestOptions?.council,
-							councilTurn.routing,
-						);
+						const messageData = buildAssistantMessageData({
+							responseData: structuredData,
+							requestOptions: options.requestOptions,
+							councilRouting: councilTurn.routing,
+						});
 
 						const assistantMessage = formatAssistantMessage({
 							content: councilTurn.content,
@@ -663,7 +661,7 @@ export async function createStreamWithPostProcessing(
 							citations: citationsResponse,
 							tool_calls: toolCallsData,
 							usage: usageData,
-							data: messageData ? { ...responseData, ...messageData } : responseData,
+							data: messageData,
 							guardrails: {
 								passed: !guardrailsFailed,
 								error: guardrailError,

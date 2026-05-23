@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 
-import { buildConversationModeMetadataFromRequestOptions } from "../mode-metadata";
+import {
+	buildAssistantMessageData,
+	buildConversationModeMetadataFromRequestOptions,
+	resolveChatPromptMode,
+} from "../mode-metadata";
 
 describe("buildConversationModeMetadataFromRequestOptions", () => {
 	it("builds sandbox metadata from request options", () => {
@@ -51,6 +55,42 @@ describe("buildConversationModeMetadataFromRequestOptions", () => {
 					responseMode: "debate",
 					memberIds: ["chair"],
 				},
+			},
+		});
+	});
+
+	it("uses the same mode precedence for prompt and conversation metadata", () => {
+		const options = {
+			council: { enabled: true, responseMode: "debate" },
+			sandbox: { enabled: true, repo: "owner/repo" },
+		};
+
+		expect(resolveChatPromptMode(options as any)).toBe("sandbox");
+		expect(buildConversationModeMetadataFromRequestOptions(options as any)?.mode).toBe("sandbox");
+	});
+
+	it("merges provider response data with council turn metadata", () => {
+		expect(
+			buildAssistantMessageData({
+				responseData: { responseType: "custom" },
+				requestOptions: {
+					council: {
+						enabled: true,
+						responseMode: "debate",
+						activeMemberId: "security",
+						phase: "debate",
+					},
+				},
+				councilRouting: {
+					shouldContinue: false,
+					nextMemberIds: [],
+				},
+			}),
+		).toMatchObject({
+			responseType: "custom",
+			council: {
+				memberId: "security",
+				shouldContinue: false,
 			},
 		});
 	});

@@ -7,7 +7,10 @@ import {
 } from "~/lib/providers/capabilities/embedding/helpers";
 import { MemoryManager } from "~/lib/memory";
 import { shouldSkipCouncilInputStorage } from "~/lib/chat/council";
-import { buildConversationModeMetadataFromRequestOptions } from "~/lib/chat/mode-metadata";
+import {
+	buildConversationModeMetadataFromRequestOptions,
+	resolveChatPromptMode,
+} from "~/lib/chat/mode-metadata";
 import { getModelConfig } from "~/lib/providers/models";
 import { getSystemPrompt } from "~/lib/prompts";
 import type { ChatMode, CoreChatOptions, Message, ModelConfigInfo, Platform } from "~/types";
@@ -369,11 +372,7 @@ export class RequestPreparer {
 		const requestedReasoningEffort = reasoning?.effort ?? reasoning_effort;
 
 		const currentMode = mode;
-		const promptMode = options.options?.sandbox?.enabled
-			? "sandbox"
-			: options.options?.council?.enabled
-				? "council"
-				: undefined;
+		const promptMode = resolveChatPromptMode(options.options);
 
 		if (currentMode === "no_system") {
 			return "";

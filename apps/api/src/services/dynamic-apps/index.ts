@@ -1,6 +1,7 @@
 import { ConversationManager } from "~/lib/conversationManager";
 import { Database } from "~/lib/database";
 import { DynamicAppResponseRepository } from "~/repositories/DynamicAppResponseRepository";
+import { getFeaturedApps, type FeaturedAppDefinition } from "~/services/dynamic-apps/config";
 import { handleFunctions } from "~/services/functions";
 import type { AppSchema } from "~/types/app-schema";
 import type { IRequest, IEnv } from "~/types";
@@ -64,6 +65,36 @@ export const getDynamicApps = async (): Promise<
 			kind: "dynamic" as const,
 		}),
 	);
+};
+
+type DynamicAppCatalogItem =
+	| (Omit<AppSchema, "formSchema" | "responseSchema"> & { kind: "dynamic" })
+	| (FeaturedAppDefinition & { featured: true });
+
+export const getDynamicAppCatalog = async (): Promise<DynamicAppCatalogItem[]> => {
+	const apps = await getDynamicApps();
+	const featuredApps = getFeaturedApps();
+	const mergedApps = new Map<string, DynamicAppCatalogItem>();
+
+	for (const app of apps) {
+		mergedApps.set(app.id, {
+			...app,
+			featured: app.featured ?? false,
+			kind: app.kind ?? "dynamic",
+		});
+	}
+
+	for (const featuredApp of featuredApps) {
+		const existing = mergedApps.get(featuredApp.id);
+		mergedApps.set(featuredApp.id, {
+			...existing,
+			...featuredApp,
+			featured: true,
+			kind: featuredApp.kind ?? existing?.kind ?? (featuredApp.href ? "frontend" : "dynamic"),
+		} as DynamicAppCatalogItem);
+	}
+
+	return Array.from(mergedApps.values());
 };
 
 /**
