@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { AssistantError } from "~/utils/errors";
-import { getSharedItem, shareItem } from "../shared";
+import { getSharedItem, shareItem, unshareItem } from "../shared";
 
 const mockAppDataRepo = {
 	getAppDataByItemId: vi.fn(),
@@ -108,6 +108,62 @@ describe("shared services", () => {
 
 			await expect(
 				shareItem({
+					userId: 123,
+					id: "item-1",
+					env: mockEnv,
+				}),
+			).rejects.toThrow(expect.any(AssistantError));
+		});
+	});
+
+	describe("unshareItem", () => {
+		it("should clear an existing share ID", async () => {
+			const mockAppData = {
+				id: "item-1",
+				user_id: 123,
+				share_id: "existing-share-id",
+			};
+
+			mockAppDataRepo.getAppDataByItemId.mockResolvedValue(mockAppData);
+
+			await unshareItem({
+				userId: 123,
+				id: "item-1",
+				env: mockEnv,
+			});
+
+			expect(mockAppDataRepo.updateAppDataWithShareId).toHaveBeenCalledWith("item-1", null);
+		});
+
+		it("should not update an item that is already private", async () => {
+			const mockAppData = {
+				id: "item-1",
+				user_id: 123,
+				share_id: null,
+			};
+
+			mockAppDataRepo.getAppDataByItemId.mockResolvedValue(mockAppData);
+
+			await unshareItem({
+				userId: 123,
+				id: "item-1",
+				env: mockEnv,
+			});
+
+			expect(mockAppDataRepo.updateAppDataWithShareId).not.toHaveBeenCalled();
+		});
+
+		it("should throw error if item doesn't belong to user", async () => {
+			const mockAppData = {
+				id: "item-1",
+				user_id: 456,
+				share_id: "existing-share-id",
+			};
+
+			mockAppDataRepo.getAppDataByItemId.mockResolvedValue(mockAppData);
+
+			await expect(
+				unshareItem({
 					userId: 123,
 					id: "item-1",
 					env: mockEnv,

@@ -11,7 +11,7 @@ export interface AppData {
 	item_id?: string;
 	item_type?: string;
 	data: string;
-	share_id?: string;
+	share_id?: string | null;
 	created_at: string;
 	updated_at: string;
 }
@@ -348,7 +348,8 @@ export class AppDataRepository extends BaseRepository {
 	 * @param id - The ID of the app data
 	 * @param shareId - The share ID to set
 	 */
-	public async updateAppDataWithShareId(id: string, shareId: string): Promise<void> {
+	public async updateAppDataWithShareId(id: string, shareId: string | null): Promise<void> {
+		const currentData = await this.getAppDataById(id);
 		const result = this.buildUpdateQuery(
 			"app_data",
 			{ share_id: shareId },
@@ -367,6 +368,12 @@ export class AppDataRepository extends BaseRepository {
 		);
 
 		await this.executeRun(queryWithTimestamp, result.values);
+
+		if (this.cache && currentData) {
+			const itemCacheKey = KVCache.createKey("app-data", id);
+			await this.cache.delete(itemCacheKey);
+			await this.invalidateUserAppCache(currentData.user_id, currentData.app_id);
+		}
 	}
 
 	/**

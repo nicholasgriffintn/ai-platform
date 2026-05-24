@@ -38,6 +38,23 @@ export function useShareItem() {
 	});
 }
 
+export function useUnshareItem() {
+	return useMutation<void, Error, ShareItemParams>({
+		mutationFn: async ({ app_id }: ShareItemParams) => {
+			const response = await fetch(`${API_BASE_URL}/apps/shared/${app_id}`, {
+				method: "DELETE",
+				credentials: "include",
+			});
+
+			const data = await returnFetchedData<ShareItemResponse>(response);
+
+			if (!response.ok) {
+				throw new Error(data.message || "Failed to unshare item");
+			}
+		},
+	});
+}
+
 type GetSharedItemParams = {
 	share_id: string;
 };

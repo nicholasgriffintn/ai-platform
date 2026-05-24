@@ -11,6 +11,8 @@ export interface ShareItemParams {
 	env?: IEnv;
 }
 
+export type UnshareItemParams = ShareItemParams;
+
 export interface SharedItem {
 	id: string;
 	userId: number;
@@ -59,6 +61,41 @@ export async function shareItem(params: ShareItemParams): Promise<{ shareId: str
 	const shareId = generateId();
 	await appDataRepo.updateAppDataWithShareId(appData.id, shareId);
 	return { shareId };
+}
+
+export async function unshareItem(params: UnshareItemParams): Promise<void> {
+	const { userId, id, context, env } = params;
+
+	if (!userId) {
+		throw new AssistantError("User ID is required", ErrorType.PARAMS_ERROR);
+	}
+
+	const serviceContext =
+		context ??
+		(env
+			? createServiceContext({
+					env,
+					user: null,
+				})
+			: null);
+
+	if (!serviceContext) {
+		throw new AssistantError("Service context is required", ErrorType.CONFIGURATION_ERROR);
+	}
+
+	serviceContext.ensureDatabase();
+	const appDataRepo = serviceContext.repositories.appData;
+	const appData = await appDataRepo.getAppDataByItemId(id);
+
+	if (!appData || appData.user_id !== userId) {
+		throw new AssistantError("Item not found or does not belong to user", ErrorType.NOT_FOUND);
+	}
+
+	if (!appData.share_id) {
+		return;
+	}
+
+	await appDataRepo.updateAppDataWithShareId(appData.id, null);
 }
 
 export async function getSharedItem({

@@ -11,7 +11,7 @@ import {
 import { getServiceContext } from "~/lib/context/serviceContext";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import { ResponseFactory } from "~/lib/http/ResponseFactory";
-import { getSharedItem, shareItem } from "~/services/apps/shared";
+import { getSharedItem, shareItem, unshareItem } from "~/services/apps/shared";
 import type { IEnv, IUser } from "~/types";
 import { AssistantError } from "~/utils/errors";
 
@@ -124,6 +124,55 @@ addRoute(app, "get", "/:share_id", {
 				}
 
 				return ResponseFactory.error(c, "Failed to retrieve shared item", 500);
+			}
+		})(raw),
+});
+
+addRoute(app, "delete", "/:app_id", {
+	tags: ["apps"],
+	description: "Remove a share ID from an app item",
+	responses: {
+		200: {
+			description: "Share ID removed successfully",
+			schema: apiResponseSchema,
+		},
+		400: { description: "Bad request", schema: errorResponseSchema },
+		401: { description: "Unauthorized", schema: errorResponseSchema },
+		404: { description: "Item not found", schema: errorResponseSchema },
+		500: { description: "Server error", schema: errorResponseSchema },
+	},
+	handler: async ({ raw }) =>
+		(async (c: Context) => {
+			const user = c.get("user") as IUser;
+
+			if (!user?.id) {
+				return ResponseFactory.error(c, "Unauthorized", 401);
+			}
+
+			const app_id = c.req.param("app_id");
+			if (!app_id) {
+				return ResponseFactory.error(c, "App item ID is required", 400);
+			}
+
+			try {
+				const serviceContext = getServiceContext(c);
+				await unshareItem({
+					userId: user.id,
+					id: app_id,
+					context: serviceContext,
+				});
+
+				return ResponseFactory.success(c, { message: "Share removed" });
+			} catch (error) {
+				routeLogger.error("Error unsharing item:", {
+					error_message: error instanceof Error ? error.message : "Unknown error",
+				});
+
+				if (error instanceof AssistantError) {
+					return ResponseFactory.error(c, error.message);
+				}
+
+				return ResponseFactory.error(c, "Failed to unshare item", 500);
 			}
 		})(raw),
 });

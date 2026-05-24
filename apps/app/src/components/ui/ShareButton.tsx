@@ -1,7 +1,7 @@
 import { useCallback } from "react";
 
 import { useTrackEvent } from "~/hooks/use-track-event";
-import { useShareItem } from "~/hooks/useAppsSharing";
+import { useShareItem, useUnshareItem } from "~/hooks/useAppsSharing";
 
 type ShareItemResponse = {
 	status: "success" | "error";
@@ -18,6 +18,7 @@ interface ShareButtonProps {
 
 export function ShareButton({ appId, className, variant = "outline" }: ShareButtonProps) {
 	const { mutateAsync: shareItem } = useShareItem();
+	const { mutateAsync: unshareItem } = useUnshareItem();
 	const { trackFeatureUsage, trackError } = useTrackEvent();
 
 	const handleShare = useCallback(
@@ -54,13 +55,21 @@ export function ShareButton({ appId, className, variant = "outline" }: ShareButt
 
 	const handleUnshare = useCallback(
 		async (id: string) => {
-			// TODO: Apps don't currently support unsharing, so this is a no-op
-			trackFeatureUsage("share_removed", {
-				content_type: "app",
-				content_id: id,
-			});
+			try {
+				await unshareItem({ app_id: id });
+				trackFeatureUsage("share_removed", {
+					content_type: "app",
+					content_id: id,
+				});
+			} catch (error) {
+				trackError("unshare_failed", error as Error, {
+					content_type: "app",
+					content_id: id,
+				});
+				throw error;
+			}
 		},
-		[trackFeatureUsage],
+		[unshareItem, trackFeatureUsage, trackError],
 	);
 
 	return (
