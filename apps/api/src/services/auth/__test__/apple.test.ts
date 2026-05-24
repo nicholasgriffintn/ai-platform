@@ -28,7 +28,7 @@ describe("Apple auth service", () => {
 				APPLE_IOS_CLIENT_ID: "com.polychat-app.app",
 				APPLE_WEB_CLIENT_ID: "com.polychat.web",
 			}),
-		).toEqual(["com.polychat.shared", "com.polychat-app.app", "com.polychat.web"]);
+		).toEqual(["com.polychat-app.app", "com.polychat.web"]);
 	});
 
 	it("verifies a valid Apple identity token", async () => {
