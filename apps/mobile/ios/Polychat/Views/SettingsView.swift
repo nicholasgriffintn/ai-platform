@@ -95,8 +95,8 @@ struct SettingsView: View {
                         authManager.logout()
                     }
                 } else {
-                    Button("Log In with GitHub") {
-                        authManager.loginWithGitHub()
+                    Button("Refresh Login") {
+						authManager.logout()
                     }
                 }
             }

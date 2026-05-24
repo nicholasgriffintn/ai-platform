@@ -15,7 +15,7 @@ export const SHOW_DEV_TOOLS = IS_DEVELOPMENT;
 
 export const API_BASE_URL = IS_PRODUCTION ? "https://api.polychat.app" : "http://localhost:8787";
 export const WS_API_URL = IS_PRODUCTION ? "wss://api.polychat.app" : "ws://localhost:8787";
-export const APPLE_SIGN_IN_CLIENT_ID = import.meta.env.VITE_APPLE_CLIENT_ID || "";
+export const APPLE_SIGN_IN_CLIENT_ID = import.meta.env.VITE_APPLE_CLIENT_ID || "com.polychat.web";
 
 export const POSTHOG_CONFIG = {
 	apiKey: import.meta.env.VITE_PUBLIC_POSTHOG_KEY || "disabled",
