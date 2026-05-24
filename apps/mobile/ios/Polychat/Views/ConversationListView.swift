@@ -32,8 +32,12 @@ struct ConversationListView: View {
     }
 
     var body: some View {
-        ZStack {
-            List(selection: $selectedConversationID) {
+        List(selection: $selectedConversationID) {
+            if conversationManager.isLoading && conversationManager.conversations.isEmpty {
+                ConversationListLoadingRow()
+                    .listRowBackground(Color.clear)
+                    .listRowSeparator(.hidden)
+            } else {
                 ForEach(categorizedConversations) { section in
                     Section(header: Text(section.title.uppercased()).font(.caption.weight(.semibold)).foregroundStyle(.secondary)) {
                         ForEach(section.conversations) { conversation in
@@ -71,18 +75,11 @@ struct ConversationListView: View {
                     .listRowBackground(Color.clear)
                 }
             }
-            .listStyle(.plain)
-            .scrollContentBackground(.hidden)
-            .refreshable {
-                await conversationManager.refreshConversations()
-            }
-
-            if conversationManager.isLoading && conversationManager.conversations.isEmpty {
-                ProgressView("Loading conversations...")
-                    .padding()
-                    .background(Color.polychat.elevatedBackground)
-                    .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
-            }
+        }
+        .listStyle(.plain)
+        .scrollContentBackground(.hidden)
+        .refreshable {
+            await conversationManager.refreshConversations()
         }
         .background(Color.polychat.sidebarBackground)
         .toolbarBackground(Color.polychat.sidebarBackground, for: .navigationBar)
@@ -93,18 +90,19 @@ struct ConversationListView: View {
                 PolychatLogoView(size: 28)
             }
 
-            ToolbarItemGroup(placement: .topBarTrailing) {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button(action: startNewConversation) {
+                    Image(systemName: "square.and.pencil")
+                }
+                .accessibilityLabel("New Message")
+            }
+
+            ToolbarItem(placement: .secondaryAction) {
                 Button {
                     onShowSettings()
                 } label: {
-                    Image(systemName: "gearshape")
+                    Label("Settings", systemImage: "gearshape")
                 }
-                .accessibilityLabel("Settings")
-
-                Button(action: startNewConversation) {
-                    Image(systemName: "plus")
-                }
-                .accessibilityLabel("New Conversation")
             }
         }
         .alert("Error", isPresented: .constant(conversationManager.error != nil)) {
@@ -129,6 +127,17 @@ struct ConversationListView: View {
                 let conversation = conversations[index]
                 await conversationManager.deleteConversation(conversation)
             }
+        }
+    }
+}
+
+private struct ConversationListLoadingRow: View {
+    var body: some View {
+        HStack {
+            Spacer()
+            ProgressView("Loading conversations...")
+                .padding(.vertical, 40)
+            Spacer()
         }
     }
 }

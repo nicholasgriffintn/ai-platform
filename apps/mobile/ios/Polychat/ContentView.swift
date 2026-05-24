@@ -29,10 +29,10 @@ struct ContentView: View {
                         showingSettings = true
                     }
                 } detail: {
-                    if isLoadingSelectedConversation {
-                        ConversationLoadingView()
-                    } else if conversationManager.currentConversation != nil {
+                    if conversationManager.currentConversation != nil {
                         ChatView()
+                    } else if isLoadingSelectedConversation {
+                        ConversationLoadingView()
                     } else {
                         EmptyConversationView()
                     }

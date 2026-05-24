@@ -89,29 +89,22 @@ struct ChatView: View {
         .navigationBarTitleDisplayMode(.inline)
         #endif
         .toolbar {
-            ToolbarItem(placement: .navigationBarTrailing) {
-                HStack(spacing: 12) {
-                    Button(action: {
-                        showingArtifacts = true
-                    }) {
-                        ZStack(alignment: .topTrailing) {
-                            Image(systemName: "doc.text")
-                            if !allArtifacts.isEmpty {
-                                Circle()
-                                    .fill(Color.blue)
-                                    .frame(width: 8, height: 8)
-                                    .offset(x: 4, y: -4)
-                            }
-                        }
-                    }
-                    .disabled(allArtifacts.isEmpty)
-
-                    Button(action: {
-                        _ = conversationManager.startNewConversation()
-                    }) {
-                        Image(systemName: "plus")
-                    }
+            ToolbarItem(placement: .topBarTrailing) {
+                Button(action: {
+                    _ = conversationManager.startNewConversation()
+                }) {
+                    Image(systemName: "square.and.pencil")
                 }
+                .accessibilityLabel("New Message")
+            }
+
+            ToolbarItem(placement: .secondaryAction) {
+                Button(action: {
+                    showingArtifacts = true
+                }) {
+                    Label("Artifacts", systemImage: "doc.text")
+                }
+                .disabled(allArtifacts.isEmpty)
             }
         }
         .sheet(isPresented: $showingModelSelector) {
