@@ -15,7 +15,9 @@ struct ContentView: View {
                 LaunchLoadingView()
             } else if authManager.isAuthenticated {
                 NavigationSplitView(columnVisibility: $columnVisibility) {
-                    ConversationListView(selectedConversationID: $selectedConversationID)
+                    ConversationListView(selectedConversationID: $selectedConversationID) {
+                        showingSettings = true
+                    }
                 } detail: {
                     if conversationManager.currentConversation != nil {
                         ChatView()
@@ -25,15 +27,6 @@ struct ContentView: View {
                 }
                 .sheet(isPresented: $showingSettings) {
                     SettingsView()
-                }
-                .toolbar {
-                    ToolbarItem(placement: .topBarTrailing) {
-                        Button {
-                            showingSettings = true
-                        } label: {
-                            Image(systemName: "gearshape")
-                        }
-                    }
                 }
                 .task(id: authManager.isAuthenticated) {
                     if authManager.isAuthenticated {
