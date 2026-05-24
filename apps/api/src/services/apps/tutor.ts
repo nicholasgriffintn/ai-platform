@@ -16,8 +16,6 @@ export interface TutorRequestParams {
 	store?: boolean;
 }
 
-// TODO: At the moment, this is all one shot. We should make multiple API calls on the frontend so the user isn't waiting too long for the response.
-// TODO: Figure out how we can build this into the frontend via dynamic apps and tool calls.
 export async function completeTutorRequest(
 	env: IEnv,
 	user?: IUser,
@@ -34,7 +32,6 @@ export async function completeTutorRequest(
 
 	const query = `I want to learn about ${topic}`;
 
-	// TODO: Maybe we need to scrape to get the full content or force include raw content?
 	const webSearchResults = await handleWebSearch({
 		query,
 		options: {

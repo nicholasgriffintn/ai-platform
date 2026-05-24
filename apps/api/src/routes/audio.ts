@@ -69,7 +69,6 @@ addRoute(app, "post", "/transcribe", {
 		})(raw),
 });
 
-// TODO: Expand this for more control over the output.
 addRoute(app, "post", "/speech", {
 	tags: ["audio"],
 	summary: "Create speech",
@@ -118,7 +117,5 @@ addRoute(app, "post", "/speech", {
 			});
 		})(raw),
 });
-
-// TODO: Add a route for translating audio.
 
 export default app;

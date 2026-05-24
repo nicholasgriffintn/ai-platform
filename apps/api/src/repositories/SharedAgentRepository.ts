@@ -337,7 +337,6 @@ export class SharedAgentRepository extends BaseRepository {
 		]);
 
 		const now = new Date().toISOString();
-		// TODO: Make team agents sharable
 		const agent: Agent = {
 			id: agentId,
 			user_id: userId,

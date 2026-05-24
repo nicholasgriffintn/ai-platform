@@ -89,6 +89,7 @@ export interface PerplexitySearchResult {
 		last_updated?: string;
 	}>;
 	id?: string;
+	server_time?: string | null;
 }
 
 export interface ExaSearchResult {

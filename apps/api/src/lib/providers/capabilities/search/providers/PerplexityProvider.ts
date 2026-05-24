@@ -10,6 +10,8 @@ import type {
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { gatewayId } from "~/constants/app";
 
+type PerplexitySearchApiResponse = Omit<PerplexitySearchResult, "provider">;
+
 export class PerplexityProvider implements SearchProvider {
 	private env: IEnv;
 	private user?: IUser;
@@ -101,14 +103,13 @@ export class PerplexityProvider implements SearchProvider {
 			};
 		}
 
-		// TODO: Perplexity doesn't return answers, should it?
-
-		const data = (await response.json()) as PerplexitySearchResult;
+		const data = (await response.json()) as PerplexitySearchApiResponse;
 
 		const result: PerplexitySearchResult = {
 			provider: "perplexity",
-			results: data.results || [],
+			results: Array.isArray(data.results) ? data.results : [],
 			id: data.id,
+			server_time: data.server_time,
 		};
 
 		return result;
