@@ -188,3 +188,4 @@ test-results
 playwright-report
 
 .claude
+apps/mobile/ios/Polychat.xcodeproj/project.xcworkspace/*

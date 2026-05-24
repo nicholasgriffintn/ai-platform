@@ -25,8 +25,8 @@ describe("Apple auth service", () => {
 	it("parses configured Apple client IDs", () => {
 		expect(
 			getAllowedAppleClientIds({
-				APPLE_CLIENT_IDS: "com.polychat-app.app, com.polychat.web",
-				APPLE_CLIENT_ID: "com.polychat.shared",
+				APPLE_IOS_CLIENT_ID: "com.polychat-app.app",
+				APPLE_WEB_CLIENT_ID: "com.polychat.web",
 			}),
 		).toEqual(["com.polychat.shared", "com.polychat-app.app", "com.polychat.web"]);
 	});

@@ -9,10 +9,7 @@ import { compactNonEmptyStrings } from "~/utils/strings";
 const APPLE_KEYS_URL = "https://appleid.apple.com/auth/keys";
 const APPLE_ISSUER = "https://appleid.apple.com";
 
-type AppleAuthEnv = Pick<
-	IEnv,
-	"APPLE_CLIENT_ID" | "APPLE_CLIENT_IDS" | "APPLE_IOS_CLIENT_ID" | "APPLE_WEB_CLIENT_ID"
->;
+type AppleAuthEnv = Pick<IEnv, "APPLE_IOS_CLIENT_ID" | "APPLE_WEB_CLIENT_ID">;
 
 interface AppleIdentityTokenHeader {
 	alg: string;
@@ -125,12 +122,7 @@ export async function verifyAppleIdentityToken({
 }
 
 export function getAllowedAppleClientIds(env: AppleAuthEnv): string[] {
-	const values = compactNonEmptyStrings([
-		env.APPLE_CLIENT_ID,
-		env.APPLE_IOS_CLIENT_ID,
-		env.APPLE_WEB_CLIENT_ID,
-		...(env.APPLE_CLIENT_IDS?.split(",") ?? []),
-	]);
+	const values = compactNonEmptyStrings([env.APPLE_IOS_CLIENT_ID, env.APPLE_WEB_CLIENT_ID]);
 
 	const uniqueValues = Array.from(new Set(values));
 
