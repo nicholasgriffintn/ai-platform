@@ -151,7 +151,7 @@ struct ConversationRow: View {
     }
 
     private var messageCount: Int {
-        conversation.messages.filter { $0.role == "user" || $0.role == "assistant" }.count
+        conversation.messageCount
     }
 
     var body: some View {
@@ -191,7 +191,7 @@ struct ConversationRow: View {
                         .font(.caption)
                         .foregroundColor(.secondary)
 
-                    Text(relativeDate(from: conversation.createdAt))
+                    Text(relativeDate(from: conversation.lastMessageAt ?? conversation.createdAt))
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }

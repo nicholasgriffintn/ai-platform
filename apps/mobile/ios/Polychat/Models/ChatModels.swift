@@ -45,6 +45,9 @@ public enum MessageContent: Codable, Equatable {
 public enum MessageContentBlock: Codable, Equatable {
     case text(TextBlock)
     case imageUrl(ImageUrlBlock)
+    case inputAudio(InputAudioBlock)
+    case documentUrl(DocumentUrlBlock)
+    case markdownDocument(MarkdownDocumentBlock)
 
     public struct TextBlock: Codable, Equatable {
         public let type: String = "text"
@@ -79,12 +82,75 @@ public enum MessageContentBlock: Codable, Equatable {
         }
     }
 
+    public struct InputAudioBlock: Codable, Equatable {
+        public let type: String = "input_audio"
+        public let inputAudio: InputAudio
+
+        public struct InputAudio: Codable, Equatable {
+            public let data: String
+            public let format: String?
+        }
+
+        enum CodingKeys: String, CodingKey {
+            case type
+            case inputAudio = "input_audio"
+        }
+
+        public init(data: String, format: String? = nil) {
+            self.inputAudio = InputAudio(data: data, format: format)
+        }
+    }
+
+    public struct DocumentUrlBlock: Codable, Equatable {
+        public let type: String = "document_url"
+        public let documentUrl: DocumentUrl
+
+        public struct DocumentUrl: Codable, Equatable {
+            public let url: String
+            public let name: String?
+        }
+
+        enum CodingKeys: String, CodingKey {
+            case type
+            case documentUrl = "document_url"
+        }
+
+        public init(url: String, name: String? = nil) {
+            self.documentUrl = DocumentUrl(url: url, name: name)
+        }
+    }
+
+    public struct MarkdownDocumentBlock: Codable, Equatable {
+        public let type: String = "markdown_document"
+        public let markdownDocument: MarkdownDocument
+
+        public struct MarkdownDocument: Codable, Equatable {
+            public let markdown: String
+            public let name: String?
+        }
+
+        enum CodingKeys: String, CodingKey {
+            case type
+            case markdownDocument = "markdown_document"
+        }
+
+        public init(markdown: String, name: String? = nil) {
+            self.markdownDocument = MarkdownDocument(markdown: markdown, name: name)
+        }
+    }
+
     public func encode(to encoder: Encoder) throws {
         var container = encoder.singleValueContainer()
         switch self {
         case .text(let block):
             try container.encode(block)
         case .imageUrl(let block):
+            try container.encode(block)
+        case .inputAudio(let block):
+            try container.encode(block)
+        case .documentUrl(let block):
+            try container.encode(block)
+        case .markdownDocument(let block):
             try container.encode(block)
         }
     }
@@ -95,6 +161,12 @@ public enum MessageContentBlock: Codable, Equatable {
             self = .text(textBlock)
         } else if let imageBlock = try? container.decode(ImageUrlBlock.self) {
             self = .imageUrl(imageBlock)
+        } else if let audioBlock = try? container.decode(InputAudioBlock.self) {
+            self = .inputAudio(audioBlock)
+        } else if let documentBlock = try? container.decode(DocumentUrlBlock.self) {
+            self = .documentUrl(documentBlock)
+        } else if let markdownBlock = try? container.decode(MarkdownDocumentBlock.self) {
+            self = .markdownDocument(markdownBlock)
         } else {
             throw DecodingError.dataCorruptedError(in: container, debugDescription: "Unknown content block type")
         }
@@ -106,7 +178,7 @@ public struct ChatMessage: Codable, Identifiable, Equatable {
         lhs.id == rhs.id
     }
 
-    public let id: UUID
+    public let id: String
     public let role: String
     public let content: MessageContent
     public var artifacts: [Artifact]?
@@ -128,7 +200,7 @@ public struct ChatMessage: Codable, Identifiable, Equatable {
 
     // Simple text message initializer
     public init(
-        id: UUID = UUID(),
+        id: String = UUID().uuidString,
         role: String,
         content: String,
         artifacts: [Artifact]? = nil
@@ -141,7 +213,7 @@ public struct ChatMessage: Codable, Identifiable, Equatable {
 
     // Multimodal message initializer
     public init(
-        id: UUID = UUID(),
+        id: String = UUID().uuidString,
         role: String,
         contentBlocks: [MessageContentBlock],
         artifacts: [Artifact]? = nil
@@ -153,14 +225,14 @@ public struct ChatMessage: Codable, Identifiable, Equatable {
     }
 
     enum CodingKeys: String, CodingKey {
-        case role, content
+        case id, role, content
     }
 
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         role = try container.decode(String.self, forKey: .role)
         content = try container.decode(MessageContent.self, forKey: .content)
-        id = UUID()
+        id = (try? container.decode(String.self, forKey: .id)) ?? UUID().uuidString
         artifacts = nil
     }
 
@@ -234,35 +306,97 @@ public struct ChatCompletionResponse: Codable {
 
 public struct ChatCompletionRequest: Codable {
     let messages: [ChatMessage]
-    let model: String
+    let model: String?
     let platform: String
+    let mode: String
     let store: Bool
+    let stream: Bool
     let completionId: String?
     let temperature: Double?
     let topP: Double?
     let maxTokens: Int?
+    let presencePenalty: Double?
+    let frequencyPenalty: Double?
+    let useRag: Bool?
+    let ragOptions: RagOptions?
+    let reasoning: ReasoningSettings?
+    let reasoningEffort: String?
+    let verbosity: String?
+    let enabledTools: [String]?
 
     enum CodingKeys: String, CodingKey {
-        case messages, model, platform, store, temperature
+        case messages, model, platform, mode, store, stream, temperature, reasoning, verbosity
         case completionId = "completion_id"
         case topP = "top_p"
         case maxTokens = "max_tokens"
+        case presencePenalty = "presence_penalty"
+        case frequencyPenalty = "frequency_penalty"
+        case useRag = "use_rag"
+        case ragOptions = "rag_options"
+        case reasoningEffort = "reasoning_effort"
+        case enabledTools = "enabled_tools"
     }
 
-    public init(messages: [ChatMessage], model: String, store: Bool = true, completionId: String? = nil, settings: ChatSettings? = nil) {
+    public init(
+        messages: [ChatMessage],
+        model: String?,
+        store: Bool = true,
+        completionId: String? = nil,
+        settings: ChatSettings? = nil
+    ) {
         self.messages = messages
         self.model = model
         self.platform = "mobile"
+        self.mode = "remote"
         self.store = store
+        self.stream = false
         self.completionId = completionId
         self.temperature = settings?.temperature
         self.topP = settings?.topP
         self.maxTokens = settings?.maxTokens
+        self.presencePenalty = settings?.presencePenalty
+        self.frequencyPenalty = settings?.frequencyPenalty
+        self.useRag = settings?.useRag == true ? true : nil
+        self.ragOptions = settings?.useRag == true ? settings?.ragOptions : nil
+        self.reasoning = settings?.reasoningEffort.map { ReasoningSettings(effort: $0.rawValue) }
+        self.reasoningEffort = settings?.reasoningEffort?.rawValue
+        self.verbosity = settings?.verbosity?.rawValue
+        self.enabledTools = settings?.enabledTools.isEmpty == false ? settings?.enabledTools : nil
     }
 }
 
+public struct ReasoningSettings: Codable, Equatable {
+    public let effort: String
+}
+
+public struct RagOptions: Codable, Equatable {
+    public var topK: Int
+    public var scoreThreshold: Double
+    public var includeMetadata: Bool
+    public var namespace: String
+
+    public static let `default` = RagOptions(
+        topK: 3,
+        scoreThreshold: 0.5,
+        includeMetadata: false,
+        namespace: ""
+    )
+}
+
 public struct TranscriptionResponse: Codable {
-    let text: String
+    let response: FunctionResponse
+}
+
+public struct FunctionResponse: Codable {
+    let status: String?
+    let content: String
+}
+
+public struct UploadResponse: Codable {
+    let url: String
+    let type: String
+    let name: String
+    let markdown: String?
 }
 
 public struct ErrorResponse: Codable {
@@ -310,10 +444,13 @@ public struct ModelConfigItem: Codable, Identifiable {
     }
 }
 
-public struct ModelsResponse: Codable {
-    public let success: Bool
-    public let message: String?
-    public let data: [String: ModelConfigItem]
+public typealias ModelsResponse = [String: ModelConfigItem]
+
+public struct ToolDefinition: Codable, Identifiable, Equatable {
+    public let id: String
+    public let name: String
+    public let description: String
+    public let isDefault: Bool?
 }
 
 public struct TitleGenerationRequest: Codable {
@@ -321,13 +458,7 @@ public struct TitleGenerationRequest: Codable {
 }
 
 public struct TitleGenerationResponse: Codable {
-    public let success: Bool
-    public let message: String?
-    public let data: TitleData?
-    
-    public struct TitleData: Codable {
-        public let title: String
-    }
+    public let title: String
 }
 
 public struct UpdateConversationRequest: Codable {
@@ -348,11 +479,10 @@ public struct UpdateConversationResponse: Codable {
 
 // Conversation List Response
 public struct ConversationListResponse: Codable {
-    public let data: [ConversationSummary]
-    public let total: Int
-    public let page: Int
-    public let limit: Int
-    public let pages: Int
+    public let conversations: [ConversationSummary]
+    public let totalPages: Int
+    public let pageNumber: Int
+    public let pageSize: Int
 
     public struct ConversationSummary: Codable, Identifiable {
         public let id: String
@@ -361,16 +491,36 @@ public struct ConversationListResponse: Codable {
         public let updatedAt: String
         public let model: String?
         public let isArchived: Bool
-        public let userId: String
+        public let userId: Int?
         public let shareId: String?
+        public let messages: [String]
+        public let lastMessageAt: String?
+        public let messageCount: Int?
 
         enum CodingKeys: String, CodingKey {
-            case id, title, model
+            case id, title, model, messages
             case createdAt = "created_at"
             case updatedAt = "updated_at"
             case isArchived = "is_archived"
             case userId = "user_id"
             case shareId = "share_id"
+            case lastMessageAt = "last_message_at"
+            case messageCount = "message_count"
+        }
+
+        public init(from decoder: Decoder) throws {
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+            id = try container.decode(String.self, forKey: .id)
+            title = try container.decodeIfPresent(String.self, forKey: .title)
+            createdAt = try container.decode(String.self, forKey: .createdAt)
+            updatedAt = try container.decode(String.self, forKey: .updatedAt)
+            model = try container.decodeIfPresent(String.self, forKey: .model)
+            isArchived = try container.decodeFlexibleBool(forKey: .isArchived)
+            userId = try container.decodeFlexibleIntIfPresent(forKey: .userId)
+            shareId = try container.decodeIfPresent(String.self, forKey: .shareId)
+            messages = try container.decodeIfPresent([String].self, forKey: .messages) ?? []
+            lastMessageAt = try container.decodeIfPresent(String.self, forKey: .lastMessageAt)
+            messageCount = try container.decodeIfPresent(Int.self, forKey: .messageCount)
         }
     }
 }
@@ -384,12 +534,32 @@ public struct ConversationDetailResponse: Codable {
     public let model: String?
     public let isArchived: Bool
     public let messages: [ChatMessage]
+    public let shareId: String?
+    public let lastMessageAt: String?
+    public let messageCount: Int?
 
     enum CodingKeys: String, CodingKey {
         case id, title, model, messages
         case createdAt = "created_at"
         case updatedAt = "updated_at"
         case isArchived = "is_archived"
+        case shareId = "share_id"
+        case lastMessageAt = "last_message_at"
+        case messageCount = "message_count"
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(String.self, forKey: .id)
+        title = try container.decodeIfPresent(String.self, forKey: .title)
+        createdAt = try container.decode(String.self, forKey: .createdAt)
+        updatedAt = try container.decode(String.self, forKey: .updatedAt)
+        model = try container.decodeIfPresent(String.self, forKey: .model)
+        isArchived = try container.decodeFlexibleBool(forKey: .isArchived)
+        messages = try container.decodeIfPresent([ChatMessage].self, forKey: .messages) ?? []
+        shareId = try container.decodeIfPresent(String.self, forKey: .shareId)
+        lastMessageAt = try container.decodeIfPresent(String.self, forKey: .lastMessageAt)
+        messageCount = try container.decodeIfPresent(Int.self, forKey: .messageCount)
     }
 }
 
@@ -398,43 +568,165 @@ public struct ChatSettings: Codable, Equatable {
     public var temperature: Double
     public var topP: Double
     public var maxTokens: Int?
-    public var responseMode: ResponseMode
+    public var presencePenalty: Double
+    public var frequencyPenalty: Double
+    public var useRag: Bool
+    public var ragOptions: RagOptions
+    public var reasoningEffort: ReasoningEffort?
+    public var verbosity: VerbosityLevel?
+    public var enabledTools: [String]
 
-    public enum ResponseMode: String, Codable, CaseIterable {
-        case normal = "normal"
-        case concise = "concise"
-        case explanatory = "explanatory"
-        case formal = "formal"
+    public enum ReasoningEffort: String, Codable, CaseIterable {
+        case none = "none"
+        case simulatedThinking = "simulated-thinking"
+        case thinking = "thinking"
+        case low = "low"
+        case medium = "medium"
+        case high = "high"
+
+        public var displayName: String {
+            switch self {
+            case .none:
+                return "None"
+            case .simulatedThinking:
+                return "Thinking"
+            case .thinking:
+                return "Thinking"
+            case .low:
+                return "Low"
+            case .medium:
+                return "Medium"
+            case .high:
+                return "High"
+            }
+        }
+    }
+
+    public enum VerbosityLevel: String, Codable, CaseIterable {
+        case low = "low"
+        case medium = "medium"
+        case high = "high"
+        case caveman = "caveman"
 
         public var displayName: String {
             rawValue.capitalized
-        }
-
-        public var description: String {
-            switch self {
-            case .normal:
-                return "Balanced responses"
-            case .concise:
-                return "Brief and to the point"
-            case .explanatory:
-                return "Detailed explanations"
-            case .formal:
-                return "Professional tone"
-            }
         }
     }
 
     public static let `default` = ChatSettings(
         temperature: 0.7,
-        topP: 0.9,
+        topP: 0.8,
         maxTokens: nil,
-        responseMode: .normal
+        presencePenalty: 0,
+        frequencyPenalty: 0,
+        useRag: false,
+        ragOptions: .default,
+        reasoningEffort: nil,
+        verbosity: nil,
+        enabledTools: []
     )
 
-    public init(temperature: Double = 0.7, topP: Double = 0.9, maxTokens: Int? = nil, responseMode: ResponseMode = .normal) {
+    public init(
+        temperature: Double = 0.7,
+        topP: Double = 0.8,
+        maxTokens: Int? = nil,
+        presencePenalty: Double = 0,
+        frequencyPenalty: Double = 0,
+        useRag: Bool = false,
+        ragOptions: RagOptions = .default,
+        reasoningEffort: ReasoningEffort? = nil,
+        verbosity: VerbosityLevel? = nil,
+        enabledTools: [String] = []
+    ) {
         self.temperature = temperature
         self.topP = topP
         self.maxTokens = maxTokens
-        self.responseMode = responseMode
+        self.presencePenalty = presencePenalty
+        self.frequencyPenalty = frequencyPenalty
+        self.useRag = useRag
+        self.ragOptions = ragOptions
+        self.reasoningEffort = reasoningEffort
+        self.verbosity = verbosity
+        self.enabledTools = enabledTools
+    }
+}
+
+public struct AuthUser: Codable, Equatable {
+    public let id: Int
+    public let name: String?
+    public let avatarUrl: String?
+    public let email: String
+    public let githubUsername: String?
+    public let planId: String?
+
+    enum CodingKeys: String, CodingKey {
+        case id, name, email
+        case avatarUrl = "avatar_url"
+        case githubUsername = "github_username"
+        case planId = "plan_id"
+    }
+}
+
+public struct AuthStatusResponse: Codable {
+    public let user: AuthUser?
+}
+
+public struct TokenResponse: Codable {
+    public let token: String
+    public let expiresIn: Int
+    public let tokenType: String?
+
+    enum CodingKeys: String, CodingKey {
+        case token
+        case expiresIn = "expires_in"
+        case tokenType = "token_type"
+    }
+}
+
+public struct MagicLinkRequest: Codable {
+    public let email: String
+    public let redirectUri: String
+
+    enum CodingKeys: String, CodingKey {
+        case email
+        case redirectUri = "redirect_uri"
+    }
+}
+
+public struct MagicLinkVerifyRequest: Codable {
+    public let token: String
+    public let nonce: String
+}
+
+public struct MobileAuthExchangeRequest: Codable {
+    public let code: String
+}
+
+public struct SuccessResponse: Codable {
+    public let success: Bool
+}
+
+private extension KeyedDecodingContainer {
+    func decodeFlexibleBool(forKey key: Key) throws -> Bool {
+        if let value = try? decode(Bool.self, forKey: key) {
+            return value
+        }
+        if let value = try? decode(Int.self, forKey: key) {
+            return value != 0
+        }
+        if let value = try? decode(String.self, forKey: key) {
+            return value == "true" || value == "1"
+        }
+        return false
+    }
+
+    func decodeFlexibleIntIfPresent(forKey key: Key) throws -> Int? {
+        if let value = try? decodeIfPresent(Int.self, forKey: key) {
+            return value
+        }
+        if let value = try? decodeIfPresent(String.self, forKey: key) {
+            return Int(value)
+        }
+        return nil
     }
 }

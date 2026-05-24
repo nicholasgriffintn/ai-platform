@@ -24,7 +24,7 @@ class ModelsStore: ObservableObject {
         do {
             let response = try await apiClient.fetchModels()
             // Convert dictionary to array, using the key as the id
-            models = response.data.map { (key, model) in
+            models = response.map { (key, model) in
                 ModelConfigItem(
                     id: key,
                     name: model.name ?? key,

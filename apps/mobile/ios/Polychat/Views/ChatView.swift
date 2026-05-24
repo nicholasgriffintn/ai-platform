@@ -3,12 +3,18 @@ import SwiftUI
 struct ChatView: View {
     @EnvironmentObject var conversationManager: ConversationManager
     @EnvironmentObject var modelsStore: ModelsStore
+    @EnvironmentObject var apiClient: APIClient
     @State private var messageText = ""
-    @State private var selectedImages: [UIImage] = []
+    @State private var selectedAttachments: [ComposerAttachment] = []
+    @State private var isUploadingAttachments = false
+    @State private var isTranscribingVoice = false
+    @State private var uploadError: String?
+    @State private var voiceError: String?
     @State private var showingModelSelector = false
     @State private var showingChatSettings = false
     @State private var showingArtifacts = false
     @State private var chatSettings = ChatSettings.default
+    @StateObject private var voiceRecorder = VoiceRecorder()
     @FocusState private var isInputFocused: Bool
 
     private var messages: [ChatMessage] {
@@ -30,7 +36,14 @@ struct ChatView: View {
             MessageListView(messages: messages)
             MessageInputView(
                 messageText: $messageText,
-                selectedImages: $selectedImages,
+                selectedAttachments: $selectedAttachments,
+                isUploadingAttachments: isUploadingAttachments,
+                isRecordingVoice: voiceRecorder.isRecording,
+                isTranscribingVoice: isTranscribingVoice,
+                uploadError: uploadError,
+                voiceError: voiceError,
+                onFilesPicked: uploadFiles,
+                onVoiceTapped: toggleVoiceRecording,
                 sendMessage: sendMessage
             )
         }
@@ -107,33 +120,30 @@ struct ChatView: View {
     
     private func sendMessage() {
         let text = messageText
-        let images = selectedImages
-        guard !text.isEmpty || !images.isEmpty else { return }
+        let attachments = selectedAttachments
+        guard !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || !attachments.isEmpty else { return }
+        guard !isUploadingAttachments else { return }
 
         messageText = ""
-        selectedImages = []
+        selectedAttachments = []
 
         Task {
             do {
                 let userMessage: ChatMessage
 
-                if images.isEmpty {
-                    // Simple text message
-                    userMessage = ChatMessage(role: "user", content: text)
+                if attachments.isEmpty {
+                    userMessage = ChatMessage(role: "user", content: text.trimmingCharacters(in: .whitespacesAndNewlines))
                 } else {
-                    // Multimodal message with images
                     var contentBlocks: [MessageContentBlock] = []
 
-                    // Add text block if present
-                    if !text.isEmpty {
-                        contentBlocks.append(.text(MessageContentBlock.TextBlock(text: text)))
+                    let trimmedText = text.trimmingCharacters(in: .whitespacesAndNewlines)
+                    if !trimmedText.isEmpty {
+                        contentBlocks.append(.text(MessageContentBlock.TextBlock(text: trimmedText)))
                     }
 
-                    // Add image blocks
-                    for image in images {
-                        if let base64 = encodeImageToBase64(image) {
-                            let dataUrl = "data:image/jpeg;base64,\(base64)"
-                            contentBlocks.append(.imageUrl(MessageContentBlock.ImageUrlBlock(url: dataUrl, detail: "auto")))
+                    for attachment in attachments {
+                        if attachment.type != .markdownDocument || attachment.markdown?.isEmpty == false {
+                            contentBlocks.append(attachment.contentBlock())
                         }
                     }
 
@@ -147,29 +157,106 @@ struct ChatView: View {
         }
     }
 
-    private func encodeImageToBase64(_ image: UIImage) -> String? {
-        // Resize image if too large to avoid huge payloads
-        let maxDimension: CGFloat = 2048
-        let resizedImage: UIImage
+    private func uploadFiles(_ files: [PickedComposerFile]) {
+        guard !files.isEmpty else { return }
 
-        if image.size.width > maxDimension || image.size.height > maxDimension {
-            let scale = min(maxDimension / image.size.width, maxDimension / image.size.height)
-            let newSize = CGSize(width: image.size.width * scale, height: image.size.height * scale)
+        isUploadingAttachments = true
+        uploadError = nil
 
-            UIGraphicsBeginImageContextWithOptions(newSize, false, 1.0)
-            image.draw(in: CGRect(origin: .zero, size: newSize))
-            resizedImage = UIGraphicsGetImageFromCurrentImageContext() ?? image
-            UIGraphicsEndImageContext()
-        } else {
-            resizedImage = image
+        Task {
+            var uploadedAttachments: [ComposerAttachment] = []
+
+            do {
+                for file in files {
+                    let response = try await apiClient.uploadFile(
+                        data: file.data,
+                        fileName: file.fileName,
+                        mimeType: file.mimeType,
+                        fileType: file.fileType,
+                        convertToMarkdown: file.convertToMarkdown
+                    )
+                    uploadedAttachments.append(
+                        ComposerAttachment(
+                            type: attachmentType(from: response, fallbackFileType: file.fileType),
+                            url: response.url,
+                            name: response.name,
+                            markdown: response.markdown,
+                            thumbnail: file.thumbnail
+                        )
+                    )
+                }
+
+                await MainActor.run {
+                    selectedAttachments.append(contentsOf: uploadedAttachments)
+                    isUploadingAttachments = false
+                }
+            } catch {
+                await MainActor.run {
+                    uploadError = error.localizedDescription
+                    isUploadingAttachments = false
+                }
+            }
+        }
+    }
+
+    private func toggleVoiceRecording() {
+        if voiceRecorder.isRecording {
+            guard let recordingURL = voiceRecorder.stop() else { return }
+            transcribeRecording(at: recordingURL)
+            return
         }
 
-        // Convert to JPEG with 0.8 quality
-        guard let imageData = resizedImage.jpegData(compressionQuality: 0.8) else {
-            return nil
+        voiceError = nil
+        Task {
+            do {
+                try await voiceRecorder.start()
+            } catch {
+                await MainActor.run {
+                    voiceError = error.localizedDescription
+                }
+            }
+        }
+    }
+
+    private func transcribeRecording(at url: URL) {
+        isTranscribingVoice = true
+        voiceError = nil
+
+        Task {
+            do {
+                let data = try Data(contentsOf: url)
+                let response = try await apiClient.transcribeAudio(
+                    data: data,
+                    fileName: url.lastPathComponent,
+                    mimeType: "audio/mp4"
+                )
+                await MainActor.run {
+                    let separator = messageText.isEmpty ? "" : "\n"
+                    messageText += "\(separator)\(response.response.content)"
+                    isTranscribingVoice = false
+                }
+            } catch {
+                await MainActor.run {
+                    voiceError = error.localizedDescription
+                    isTranscribingVoice = false
+                }
+            }
+        }
+    }
+
+    private func attachmentType(from response: UploadResponse, fallbackFileType: String) -> ComposerAttachmentType {
+        if response.type == "markdown_document" {
+            return .markdownDocument
         }
 
-        return imageData.base64EncodedString()
+        switch fallbackFileType {
+        case "image":
+            return .image
+        case "audio":
+            return .audio
+        default:
+            return .document
+        }
     }
 }
 
@@ -202,20 +289,45 @@ struct MessageListView: View {
 // A subview for the text input field and send button.
 struct MessageInputView: View {
     @Binding var messageText: String
-    @Binding var selectedImages: [UIImage]
+    @Binding var selectedAttachments: [ComposerAttachment]
+    let isUploadingAttachments: Bool
+    let isRecordingVoice: Bool
+    let isTranscribingVoice: Bool
+    let uploadError: String?
+    let voiceError: String?
+    let onFilesPicked: ([PickedComposerFile]) -> Void
+    let onVoiceTapped: () -> Void
     let sendMessage: () -> Void
     @FocusState private var isInputFocused: Bool
 
+    private var canSend: Bool {
+        (!messageText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || !selectedAttachments.isEmpty) && !isUploadingAttachments
+    }
+
     var body: some View {
         VStack(spacing: 0) {
-            if !selectedImages.isEmpty {
-                SelectedImagesView(images: $selectedImages)
+            if !selectedAttachments.isEmpty || isUploadingAttachments {
+                SelectedAttachmentsView(
+                    attachments: selectedAttachments,
+                    isUploading: isUploadingAttachments
+                ) { attachmentId in
+                    selectedAttachments.removeAll { $0.id == attachmentId }
+                }
                     .transition(.move(edge: .bottom).combined(with: .opacity))
             }
 
+            if let inputError = uploadError ?? voiceError {
+                Text(inputError)
+                    .font(.caption)
+                    .foregroundStyle(Color.polychat.error)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, 16)
+                    .padding(.top, 8)
+            }
+
             HStack(alignment: .bottom, spacing: 12) {
-                ImagePickerView(selectedImages: $selectedImages)
-                    .foregroundColor(.blue)
+                AttachmentPickerView(disabled: isUploadingAttachments, onFilesPicked: onFilesPicked)
+                    .foregroundColor(Color.polychat.primary)
                     .padding(.bottom, 8)
 
                 ZStack(alignment: .topLeading) {
@@ -241,15 +353,26 @@ struct MessageInputView: View {
                         .stroke(isInputFocused ? Color.blue.opacity(0.3) : Color(.systemGray4), lineWidth: isInputFocused ? 2 : 1)
                 )
 
+                Button(action: onVoiceTapped) {
+                    Image(systemName: voiceButtonIcon)
+                        .font(.system(size: 17, weight: .semibold))
+                        .foregroundColor(isRecordingVoice ? .white : Color.polychat.primary)
+                        .frame(width: 32, height: 32)
+                        .background(isRecordingVoice ? Color.red : Color.polychat.primary.opacity(0.12))
+                        .clipShape(Circle())
+                }
+                .disabled(isTranscribingVoice)
+                .padding(.bottom, 8)
+
                 Button(action: sendMessage) {
                     Image(systemName: "arrow.up")
                         .font(.system(size: 18, weight: .semibold))
                         .foregroundColor(.white)
                         .frame(width: 32, height: 32)
-                        .background((messageText.isEmpty && selectedImages.isEmpty) ? Color.gray : Color.blue)
+                        .background(canSend ? Color.polychat.primary : Color.gray)
                         .clipShape(Circle())
                 }
-                .disabled(messageText.isEmpty && selectedImages.isEmpty)
+                .disabled(!canSend)
                 .padding(.bottom, 8)
             }
             .padding(.horizontal, 16)
@@ -263,6 +386,16 @@ struct MessageInputView: View {
             alignment: .top
         )
         .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: -2)
+    }
+
+    private var voiceButtonIcon: String {
+        if isRecordingVoice {
+            return "stop.fill"
+        }
+        if isTranscribingVoice {
+            return "waveform"
+        }
+        return "mic"
     }
 }
 
@@ -313,7 +446,7 @@ struct MessageBubble: View {
                         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
                     } else {
                         // Regular message with markdown support
-                        MarkdownText(content: message.textContent, isUser: message.role == "user")
+                        MarkdownText(content: displayContent, isUser: message.role == "user")
                             .padding(.horizontal, 16)
                             .padding(.vertical, 12)
                             .background(messageBackground)
@@ -363,12 +496,44 @@ struct MessageBubble: View {
     private var messageBackground: Color {
         switch message.role {
         case "user":
-            return Color.blue
+            return Color.polychat.primary
         case "assistant":
             return Color(.systemGray5)
         default:
             return Color.gray.opacity(0.2)
         }
+    }
+
+    private var displayContent: String {
+        let text = message.textContent
+        if !text.isEmpty {
+            return text
+        }
+
+        return attachmentPreviewText
+    }
+
+    private var attachmentPreviewText: String {
+        guard case .multimodal(let blocks) = message.content else {
+            return "Attachment"
+        }
+
+        let names = blocks.compactMap { block -> String? in
+            switch block {
+            case .imageUrl:
+                return "Image"
+            case .documentUrl(let document):
+                return document.documentUrl.name ?? "Document"
+            case .inputAudio:
+                return "Audio"
+            case .markdownDocument(let markdown):
+                return markdown.markdownDocument.name ?? "Document"
+            case .text:
+                return nil
+            }
+        }
+
+        return names.isEmpty ? "Attachment" : names.joined(separator: ", ")
     }
 
     private func regenerateMessage() {
