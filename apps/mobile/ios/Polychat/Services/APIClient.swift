@@ -107,9 +107,9 @@ final class APIClient: ObservableObject {
         )
 
         return AsyncThrowingStream { continuation in
-            let task = Task {
+            let task = Task.detached(priority: .userInitiated) {
                 do {
-                    try await stream(path: "/chat/completions", method: "POST", body: requestBody, continuation: continuation)
+                    try await self.stream(path: "/chat/completions", method: "POST", body: requestBody, continuation: continuation)
                 } catch {
                     continuation.finish(throwing: error)
                 }
@@ -299,17 +299,53 @@ final class APIClient: ObservableObject {
             contentType: "application/json"
         )
 
-        let (bytes, response) = try await session.bytes(for: request)
-        try validate(response: response, data: Data())
+        var isServerSentEventResponse = false
+        var hasReceivedResponse = false
+        var responseData = Data()
+        var pendingDecodeData = Data()
+        var buffer = ""
 
-        let contentType = (response as? HTTPURLResponse)?.value(forHTTPHeaderField: "Content-Type") ?? ""
-        guard contentType.localizedCaseInsensitiveContains("text/event-stream") else {
-            var data = Data()
-            for try await byte in bytes {
-                data.append(byte)
+        for try await event in streamResponse(for: request) {
+            if Task.isCancelled {
+                return
             }
 
-            let response = try JSONDecoder().decode(ChatCompletionResponse.self, from: data)
+            switch event {
+            case .response(let response):
+                try validate(response: response, data: Data())
+                let contentType = (response as? HTTPURLResponse)?.value(forHTTPHeaderField: "Content-Type") ?? ""
+                isServerSentEventResponse = contentType.localizedCaseInsensitiveContains("text/event-stream")
+                hasReceivedResponse = true
+
+            case .data(let data):
+                guard hasReceivedResponse else {
+                    responseData.append(data)
+                    continue
+                }
+
+                guard isServerSentEventResponse else {
+                    responseData.append(data)
+                    continue
+                }
+
+                pendingDecodeData.append(data)
+                guard let chunk = String(data: pendingDecodeData, encoding: .utf8) else {
+                    continue
+                }
+
+                buffer += chunk
+                pendingDecodeData.removeAll(keepingCapacity: true)
+
+                while let range = buffer.range(of: "\n\n") {
+                    let eventBlock = String(buffer[..<range.lowerBound])
+                    buffer.removeSubrange(buffer.startIndex..<range.upperBound)
+                    try processServerSentEventBlock(eventBlock, continuation: continuation)
+                }
+            }
+        }
+
+        guard isServerSentEventResponse else {
+            let response = try JSONDecoder().decode(ChatCompletionResponse.self, from: responseData)
             let content = response.choices.first?.message.content.textValue ?? ""
             if !content.isEmpty {
                 continuation.yield(.content(content))
@@ -319,31 +355,7 @@ final class APIClient: ObservableObject {
             return
         }
 
-        var pendingBytes = Data()
-        var buffer = ""
-
-        for try await byte in bytes {
-            if Task.isCancelled {
-                return
-            }
-
-            pendingBytes.append(byte)
-
-            guard byte == 10, let chunk = String(data: pendingBytes, encoding: .utf8) else {
-                continue
-            }
-
-            buffer += chunk
-            pendingBytes.removeAll(keepingCapacity: true)
-
-            while let range = buffer.range(of: "\n\n") {
-                let eventBlock = String(buffer[..<range.lowerBound])
-                buffer.removeSubrange(buffer.startIndex..<range.upperBound)
-                try processServerSentEventBlock(eventBlock, continuation: continuation)
-            }
-        }
-
-        if !pendingBytes.isEmpty, let chunk = String(data: pendingBytes, encoding: .utf8) {
+        if !pendingDecodeData.isEmpty, let chunk = String(data: pendingDecodeData, encoding: .utf8) {
             buffer += chunk
         }
 
@@ -352,6 +364,25 @@ final class APIClient: ObservableObject {
         }
 
         continuation.finish()
+    }
+
+    private func streamResponse(for request: URLRequest) -> AsyncThrowingStream<URLSessionStreamEvent, Error> {
+        AsyncThrowingStream { continuation in
+            let delegate = StreamingDataDelegate(continuation: continuation)
+            let configuration = URLSessionConfiguration.default
+            configuration.requestCachePolicy = .reloadIgnoringLocalCacheData
+            configuration.timeoutIntervalForRequest = 60
+            let streamingSession = URLSession(configuration: configuration, delegate: delegate, delegateQueue: nil)
+            let task = streamingSession.dataTask(with: request)
+
+            continuation.onTermination = { _ in
+                task.cancel()
+                streamingSession.invalidateAndCancel()
+                _ = delegate
+            }
+
+            task.resume()
+        }
     }
 
     private func makeRequest(
@@ -669,6 +700,41 @@ enum ChatStreamEvent {
     case state(String)
     case metadata(ChatStreamMetadata)
     case done
+}
+
+private enum URLSessionStreamEvent {
+    case response(URLResponse)
+    case data(Data)
+}
+
+private final class StreamingDataDelegate: NSObject, URLSessionDataDelegate {
+    private let continuation: AsyncThrowingStream<URLSessionStreamEvent, Error>.Continuation
+
+    init(continuation: AsyncThrowingStream<URLSessionStreamEvent, Error>.Continuation) {
+        self.continuation = continuation
+    }
+
+    func urlSession(
+        _ session: URLSession,
+        dataTask: URLSessionDataTask,
+        didReceive response: URLResponse,
+        completionHandler: @escaping (URLSession.ResponseDisposition) -> Void
+    ) {
+        continuation.yield(.response(response))
+        completionHandler(.allow)
+    }
+
+    func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) {
+        continuation.yield(.data(data))
+    }
+
+    func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
+        if let error {
+            continuation.finish(throwing: error)
+        } else {
+            continuation.finish()
+        }
+    }
 }
 
 struct ChatStreamMetadata: Decodable {

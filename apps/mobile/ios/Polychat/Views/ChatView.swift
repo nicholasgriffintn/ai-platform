@@ -314,10 +314,8 @@ struct MessageListView: View {
 
 private struct WelcomePromptView: View {
     private let suggestions = [
-        ("brain.head.profile", "Data Analysis", "Analyze this CSV and summarize the strongest trends."),
         ("shield", "Existential inquiry", "What makes an answer useful when the question is ambiguous?"),
-        ("face.smiling", "Satirical news", "Write a short satirical news brief about robots asking for coffee breaks."),
-        ("chevron.left.forwardslash.chevron.right", "Code Optimization", "Review this SwiftUI view and suggest performance improvements.")
+        ("face.smiling", "Satirical news", "Write a short satirical news brief about robots asking for coffee breaks.")
     ]
     let onSuggestionSelected: (String) -> Void
 
@@ -894,9 +892,16 @@ private struct ReasoningSectionView: View {
                 .buttonStyle(.plain)
 
                 if !collapsed {
-                    MarkdownText(content: reasoning.content, isUser: false)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                    MarkdownText(
+                        content: reasoning.content,
+                        isUser: false,
+                        font: .caption,
+                        foregroundColor: Color(light: Color.polychat.zinc500, dark: Color.polychat.zinc400),
+                        lineSpacing: 3,
+                        paragraphSpacing: 8,
+                        splitsSingleNewlinesIntoParagraphs: true
+                    )
+                    .frame(maxWidth: 640, alignment: .leading)
                 }
             }
         }
@@ -1264,13 +1269,24 @@ private struct AsyncInvocationStatusView: View {
 struct MarkdownText: View {
     let content: String
     let isUser: Bool
+    var font: Font = .body
+    var foregroundColor: Color = .primary
+    var lineSpacing: CGFloat = 4
+    var paragraphSpacing: CGFloat? = nil
+    var splitsSingleNewlinesIntoParagraphs: Bool = false
 
     var body: some View {
-        VStack(alignment: .leading, spacing: isUser ? 6 : 14) {
+        VStack(alignment: .leading, spacing: paragraphSpacing ?? (isUser ? 6 : 14)) {
             ForEach(MarkdownBlock.blocks(from: MarkdownFixer.fix(content))) { block in
                 switch block.kind {
                 case .markdown:
-                    MarkdownProse(text: block.content, isUser: isUser)
+                    MarkdownProse(
+                        text: block.content,
+                        font: font,
+                        foregroundColor: foregroundColor,
+                        lineSpacing: lineSpacing,
+                        splitsSingleNewlinesIntoParagraphs: splitsSingleNewlinesIntoParagraphs
+                    )
                 case .code(let language):
                     CodeBlockView(code: block.content, language: language)
                 case .table(let table):
@@ -1284,20 +1300,42 @@ struct MarkdownText: View {
 
 private struct MarkdownProse: View {
     let text: String
-    let isUser: Bool
+    let font: Font
+    let foregroundColor: Color
+    let lineSpacing: CGFloat
+    let splitsSingleNewlinesIntoParagraphs: Bool
+
+    private var paragraphs: [String] {
+        let separator = splitsSingleNewlinesIntoParagraphs ? "\n" : "\n\n"
+        return text
+            .components(separatedBy: separator)
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty }
+    }
 
     var body: some View {
-        Group {
-            if let attributedString = try? AttributedString(markdown: text) {
-                Text(attributedString)
-            } else {
-                Text(text)
+        VStack(alignment: .leading, spacing: 10) {
+            ForEach(Array(paragraphs.enumerated()), id: \.offset) { _, paragraph in
+                if let attributedString = try? AttributedString(markdown: markdownWithHardLineBreaks(paragraph)) {
+                    Text(attributedString)
+                } else {
+                    Text(paragraph)
+                }
             }
         }
-        .font(.body)
-        .lineSpacing(4)
-        .foregroundColor(isUser ? .primary : .primary)
+        .font(font)
+        .lineSpacing(lineSpacing)
+        .foregroundColor(foregroundColor)
         .textSelection(.enabled)
+    }
+
+    private func markdownWithHardLineBreaks(_ paragraph: String) -> String {
+        paragraph
+            .components(separatedBy: "\n")
+            .map { line in
+                line.isEmpty || line.hasSuffix("  ") ? line : "\(line)  "
+            }
+            .joined(separator: "\n")
     }
 }
 
