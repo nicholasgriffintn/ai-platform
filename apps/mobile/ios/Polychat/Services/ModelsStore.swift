@@ -57,7 +57,11 @@ class ModelsStore: ObservableObject {
     
     func getSelectedModel() -> ModelConfigItem? {
         guard let selectedModelId = selectedModelId else { return nil }
-        return models.first { $0.id == selectedModelId }
+        return model(withId: selectedModelId)
+    }
+
+    func model(withId modelId: String) -> ModelConfigItem? {
+        models.first { $0.id == modelId }
     }
     
     func refreshModels() async {

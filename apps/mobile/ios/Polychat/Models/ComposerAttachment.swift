@@ -35,8 +35,7 @@ struct ComposerAttachment: Identifiable, Equatable {
         case .document:
             return .documentUrl(MessageContentBlock.DocumentUrlBlock(url: url, name: name))
         case .audio:
-            let format = name.lowercased().hasSuffix(".wav") ? "wav" : "mp3"
-            return .inputAudio(MessageContentBlock.InputAudioBlock(data: url, format: format))
+            return .documentUrl(MessageContentBlock.DocumentUrlBlock(url: url, name: name))
         case .markdownDocument:
             return .markdownDocument(
                 MessageContentBlock.MarkdownDocumentBlock(markdown: markdown ?? "", name: name)

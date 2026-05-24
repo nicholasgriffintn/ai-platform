@@ -5,14 +5,17 @@ final class APIClient: ObservableObject {
 
     private let baseURL: URL
     private let session: URLSession
+    private let userAgent: String
     private var authToken: String?
 
     private init(
         baseURL: URL = APIClient.defaultBaseURL(),
-        session: URLSession = .shared
+        session: URLSession = .shared,
+        userAgent: String = APIClient.defaultUserAgent()
     ) {
         self.baseURL = baseURL
         self.session = session
+        self.userAgent = userAgent
     }
 
     func setAuthToken(_ token: String?) {
@@ -225,7 +228,7 @@ final class APIClient: ObservableObject {
         var request = URLRequest(url: buildURL(path: path, queryItems: queryItems))
         request.httpMethod = method
         request.setValue("mobile", forHTTPHeaderField: "X-Platform")
-        request.setValue("Polychat iOS", forHTTPHeaderField: "User-Agent")
+        request.setValue(userAgent, forHTTPHeaderField: "User-Agent")
 
         if let contentType {
             request.setValue(contentType, forHTTPHeaderField: "Content-Type")
@@ -284,6 +287,11 @@ final class APIClient: ObservableObject {
         }
 
         return URL(string: "https://api.polychat.app")!
+    }
+
+    private static func defaultUserAgent() -> String {
+        let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0"
+        return "Polychat/\(version) CFNetwork Darwin"
     }
 }
 

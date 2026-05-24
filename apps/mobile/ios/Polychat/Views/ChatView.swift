@@ -15,10 +15,23 @@ struct ChatView: View {
     @State private var showingArtifacts = false
     @State private var chatSettings = ChatSettings.default
     @StateObject private var voiceRecorder = VoiceRecorder()
-    @FocusState private var isInputFocused: Bool
 
     private var messages: [ChatMessage] {
         conversationManager.currentConversation?.messages ?? []
+    }
+
+    private var activeModelId: String? {
+        conversationManager.currentConversation?.modelId ??
+        conversationManager.selectedModelId ??
+        modelsStore.selectedModelId
+    }
+
+    private var activeModelName: String {
+        guard let activeModelId else {
+            return "Select model"
+        }
+
+        return modelsStore.model(withId: activeModelId)?.name ?? activeModelId
     }
 
     private var allArtifacts: [Artifact] {
@@ -32,7 +45,7 @@ struct ChatView: View {
     }
 
     var body: some View {
-        VStack {
+        VStack(spacing: 0) {
             MessageListView(messages: messages)
             MessageInputView(
                 messageText: $messageText,
@@ -42,43 +55,24 @@ struct ChatView: View {
                 isTranscribingVoice: isTranscribingVoice,
                 uploadError: uploadError,
                 voiceError: voiceError,
+                activeModelName: activeModelName,
                 onFilesPicked: uploadFiles,
                 onVoiceTapped: toggleVoiceRecording,
+                onModelTapped: {
+                    showingModelSelector = true
+                },
+                onSettingsTapped: {
+                    showingChatSettings = true
+                },
                 sendMessage: sendMessage
             )
         }
+        .background(Color(.systemGroupedBackground))
         .navigationTitle(conversationManager.currentConversation?.title ?? "New Chat")
         #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
         #endif
         .toolbar {
-            ToolbarItem(placement: .navigationBarLeading) {
-                Menu {
-                    Button(action: {
-                        showingModelSelector = true
-                    }) {
-                        Label("Change Model", systemImage: "brain.head.profile")
-                    }
-
-                    Button(action: {
-                        showingChatSettings = true
-                    }) {
-                        Label("Chat Settings", systemImage: "slider.horizontal.3")
-                    }
-                } label: {
-                    HStack(spacing: 4) {
-                        Image(systemName: "brain.head.profile")
-                        if let selectedModel = modelsStore.getSelectedModel() {
-                            Text(selectedModel.name ?? selectedModel.id)
-                                .font(.caption)
-                                .lineLimit(1)
-                        }
-                        Image(systemName: "chevron.down")
-                            .font(.caption2)
-                    }
-                }
-            }
-
             ToolbarItem(placement: .navigationBarTrailing) {
                 HStack(spacing: 12) {
                     Button(action: {
@@ -105,16 +99,15 @@ struct ChatView: View {
             }
         }
         .sheet(isPresented: $showingModelSelector) {
-            ModelSelectorView()
+            ModelSelectorView { modelId in
+                conversationManager.setModelForCurrentConversation(modelId)
+            }
         }
         .sheet(isPresented: $showingChatSettings) {
             ChatSettingsView(settings: $chatSettings)
         }
         .sheet(isPresented: $showingArtifacts) {
             ArtifactsView(artifacts: allArtifacts)
-        }
-        .onTapGesture {
-            isInputFocused = false
         }
     }
     
@@ -283,6 +276,7 @@ struct MessageListView: View {
                 }
             }
         }
+        .background(Color(.systemGroupedBackground))
     }
 }
 
@@ -295,8 +289,11 @@ struct MessageInputView: View {
     let isTranscribingVoice: Bool
     let uploadError: String?
     let voiceError: String?
+    let activeModelName: String
     let onFilesPicked: ([PickedComposerFile]) -> Void
     let onVoiceTapped: () -> Void
+    let onModelTapped: () -> Void
+    let onSettingsTapped: () -> Void
     let sendMessage: () -> Void
     @FocusState private var isInputFocused: Bool
 
@@ -325,60 +322,91 @@ struct MessageInputView: View {
                     .padding(.top, 8)
             }
 
-            HStack(alignment: .bottom, spacing: 12) {
-                AttachmentPickerView(disabled: isUploadingAttachments, onFilesPicked: onFilesPicked)
-                    .foregroundColor(Color.polychat.primary)
-                    .padding(.bottom, 8)
-
+            VStack(spacing: 0) {
                 ZStack(alignment: .topLeading) {
-                    // Placeholder text
                     if messageText.isEmpty {
                         Text("Message...")
                             .foregroundColor(Color(.systemGray3))
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 12)
+                            .padding(.horizontal, 14)
+                            .padding(.vertical, 14)
                     }
 
                     TextEditor(text: $messageText)
                         .focused($isInputFocused)
                         .scrollContentBackground(.hidden)
-                        .frame(minHeight: 40, maxHeight: 120)
-                        .padding(.horizontal, 12)
+                        .frame(minHeight: 86, maxHeight: 150)
+                        .padding(.horizontal, 10)
                         .padding(.vertical, 8)
                 }
-                .background(Color(.systemGray6))
-                .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 20, style: .continuous)
-                        .stroke(isInputFocused ? Color.blue.opacity(0.3) : Color(.systemGray4), lineWidth: isInputFocused ? 2 : 1)
-                )
 
-                Button(action: onVoiceTapped) {
-                    Image(systemName: voiceButtonIcon)
-                        .font(.system(size: 17, weight: .semibold))
-                        .foregroundColor(isRecordingVoice ? .white : Color.polychat.primary)
-                        .frame(width: 32, height: 32)
-                        .background(isRecordingVoice ? Color.red : Color.polychat.primary.opacity(0.12))
-                        .clipShape(Circle())
-                }
-                .disabled(isTranscribingVoice)
-                .padding(.bottom, 8)
+                Divider()
 
-                Button(action: sendMessage) {
-                    Image(systemName: "arrow.up")
-                        .font(.system(size: 18, weight: .semibold))
-                        .foregroundColor(.white)
-                        .frame(width: 32, height: 32)
-                        .background(canSend ? Color.polychat.primary : Color.gray)
-                        .clipShape(Circle())
+                HStack(spacing: 10) {
+                    AttachmentPickerView(disabled: isUploadingAttachments, onFilesPicked: onFilesPicked)
+                        .foregroundColor(Color.polychat.primary)
+
+                    Button(action: onModelTapped) {
+                        HStack(spacing: 6) {
+                            Text(activeModelName)
+                                .font(.subheadline.weight(.medium))
+                                .lineLimit(1)
+                                .truncationMode(.tail)
+                                .frame(maxWidth: 150, alignment: .leading)
+                            Image(systemName: "chevron.down")
+                                .font(.caption.weight(.semibold))
+                        }
+                        .foregroundColor(.primary)
+                        .padding(.horizontal, 10)
+                        .frame(height: 34)
+                        .background(Color(.secondarySystemBackground))
+                        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("Select model")
+
+                    Button(action: onSettingsTapped) {
+                        Image(systemName: "slider.horizontal.3")
+                            .font(.system(size: 17, weight: .semibold))
+                            .foregroundColor(.secondary)
+                            .frame(width: 34, height: 34)
+                    }
+                    .accessibilityLabel("Chat settings")
+
+                    Spacer(minLength: 4)
+
+                    Button(action: onVoiceTapped) {
+                        Image(systemName: voiceButtonIcon)
+                            .font(.system(size: 17, weight: .semibold))
+                            .foregroundColor(isRecordingVoice ? .white : Color.polychat.primary)
+                            .frame(width: 34, height: 34)
+                            .background(isRecordingVoice ? Color.red : Color.polychat.primary.opacity(0.12))
+                            .clipShape(Circle())
+                    }
+                    .disabled(isTranscribingVoice)
+
+                    Button(action: sendMessage) {
+                        Image(systemName: "arrow.up")
+                            .font(.system(size: 18, weight: .semibold))
+                            .foregroundColor(.white)
+                            .frame(width: 34, height: 34)
+                            .background(canSend ? Color.polychat.primary : Color(.systemGray3))
+                            .clipShape(Circle())
+                    }
+                    .disabled(!canSend)
                 }
-                .disabled(!canSend)
-                .padding(.bottom, 8)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 8)
             }
+            .background(Color(.systemBackground))
+            .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: 8, style: .continuous)
+                    .stroke(isInputFocused ? Color.polychat.primary.opacity(0.45) : Color(.systemGray4), lineWidth: 1)
+            )
             .padding(.horizontal, 16)
             .padding(.vertical, 12)
         }
-        .background(Color(.systemBackground))
+        .background(.regularMaterial)
         .overlay(
             Rectangle()
                 .frame(height: 0.5)

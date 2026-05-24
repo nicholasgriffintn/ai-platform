@@ -44,10 +44,10 @@ class ConversationManager: ObservableObject {
                     id: summary.id,
                     title: summary.title ?? "New Conversation",
                     messages: [],
-                    createdAt: ISO8601DateFormatter().date(from: summary.createdAt) ?? Date(),
+                    createdAt: AppDateParser.parse(summary.createdAt, fallback: Date()),
                     modelId: summary.model,
                     isLoadedFromAPI: true,
-                    lastMessageAt: ISO8601DateFormatter().date(from: summary.lastMessageAt ?? summary.updatedAt),
+                    lastMessageAt: AppDateParser.parse(summary.lastMessageAt ?? summary.updatedAt),
                     messageCount: summary.messageCount ?? summary.messages.count
                 )
             }
@@ -70,16 +70,24 @@ class ConversationManager: ObservableObject {
     func refreshConversations() async {
         await loadConversations()
     }
+
+    func loadConversationMessages(id conversationId: String) async {
+        guard let conversation = conversations.first(where: { $0.id == conversationId }) else {
+            return
+        }
+
+        await loadConversationMessages(conversation)
+    }
     
     func loadConversationMessages(_ conversation: Conversation) async {
+        currentConversation = conversation
+
         // If messages already loaded, skip
         if !conversation.messages.isEmpty {
-            currentConversation = conversation
             return
         }
 
         guard let apiClient = apiClient, conversation.isLoadedFromAPI else {
-            currentConversation = conversation
             return
         }
 
@@ -91,7 +99,7 @@ class ConversationManager: ObservableObject {
             updatedConversation.messages = detail.messages
             updatedConversation.title = detail.title ?? conversation.title
             updatedConversation.modelId = detail.model
-            updatedConversation.lastMessageAt = ISO8601DateFormatter().date(from: detail.lastMessageAt ?? detail.updatedAt)
+            updatedConversation.lastMessageAt = AppDateParser.parse(detail.lastMessageAt ?? detail.updatedAt)
             updatedConversation.messageCount = detail.messageCount ?? detail.messages.count
 
             // Update in array
@@ -192,6 +200,7 @@ class ConversationManager: ObservableObject {
     
     func setModelForCurrentConversation(_ modelId: String) {
         selectedModelId = modelId
+        modelsStore?.selectModel(modelId)
         currentConversation?.modelId = modelId
         if let conversation = currentConversation {
             updateConversationInArray(conversation)

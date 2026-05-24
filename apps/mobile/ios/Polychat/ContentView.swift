@@ -6,6 +6,7 @@ struct ContentView: View {
     @EnvironmentObject var modelsStore: ModelsStore
     @EnvironmentObject var toolsStore: ToolsStore
     @State private var columnVisibility = NavigationSplitViewVisibility.doubleColumn
+    @State private var selectedConversationID: String?
     @State private var showingSettings = false
 
     var body: some View {
@@ -14,7 +15,7 @@ struct ContentView: View {
                 LaunchLoadingView()
             } else if authManager.isAuthenticated {
                 NavigationSplitView(columnVisibility: $columnVisibility) {
-                    ConversationListView()
+                    ConversationListView(selectedConversationID: $selectedConversationID)
                 } detail: {
                     if conversationManager.currentConversation != nil {
                         ChatView()
@@ -41,6 +42,21 @@ struct ContentView: View {
                         await toolsStore.fetchTools()
                     } else {
                         conversationManager.reset()
+                        selectedConversationID = nil
+                    }
+                }
+                .onChange(of: selectedConversationID) { _, conversationID in
+                    guard let conversationID else {
+                        return
+                    }
+
+                    Task {
+                        await conversationManager.loadConversationMessages(id: conversationID)
+                    }
+                }
+                .onChange(of: conversationManager.currentConversation?.id) { _, conversationID in
+                    if selectedConversationID != conversationID {
+                        selectedConversationID = conversationID
                     }
                 }
             } else {

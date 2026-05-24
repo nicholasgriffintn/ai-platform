@@ -4,12 +4,14 @@ import { resolveServiceContext, type ServiceContext } from "~/lib/context/servic
 import { generateJwtToken } from "~/services/auth/jwt";
 import type { IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
+import { generateId } from "~/utils/id";
 
 const MOBILE_AUTH_CODE_EXPIRES_IN_SECONDS = 60;
 const MOBILE_AUTH_CODE_PURPOSE = "mobile_auth_exchange";
 
 interface MobileAuthCodePayload {
 	purpose: typeof MOBILE_AUTH_CODE_PURPOSE;
+	jti: string;
 	sub: string;
 	session_id: string;
 	iss: "assistant";
@@ -115,6 +117,7 @@ export async function generateMobileAuthExchangeCode({
 	const now = Math.floor(Date.now() / 1000);
 	const payload: MobileAuthCodePayload = {
 		purpose: MOBILE_AUTH_CODE_PURPOSE,
+		jti: generateId(),
 		sub: userId.toString(),
 		session_id: sessionId,
 		iss: "assistant",
@@ -169,16 +172,17 @@ export async function exchangeMobileAuthCode({
 		);
 	}
 
-	const { payload } = jwt.decode(code) as { payload?: Partial<MobileAuthCodePayload> };
+	const { payload } = jwt.decode<Partial<MobileAuthCodePayload>>(code);
 	const now = Math.floor(Date.now() / 1000);
 
 	if (
 		payload?.purpose !== MOBILE_AUTH_CODE_PURPOSE ||
 		payload.iss !== "assistant" ||
 		payload.aud !== "assistant-mobile" ||
+		typeof payload.jti !== "string" ||
 		!payload.sub ||
 		!payload.session_id ||
-		!payload.exp ||
+		typeof payload.exp !== "number" ||
 		payload.exp < now
 	) {
 		throw new AssistantError(
@@ -197,6 +201,21 @@ export async function exchangeMobileAuthCode({
 	if (!session || session.user_id !== userId) {
 		throw new AssistantError(
 			"Invalid or expired mobile session",
+			ErrorType.AUTHENTICATION_ERROR,
+			401,
+		);
+	}
+
+	const consumed = await serviceContext.repositories.sessions.consumeMobileAuthCode({
+		jti: payload.jti,
+		sessionId: payload.session_id,
+		userId,
+		expiresAt: new Date(payload.exp * 1000),
+	});
+
+	if (!consumed) {
+		throw new AssistantError(
+			"Invalid or expired mobile auth code",
 			ErrorType.AUTHENTICATION_ERROR,
 			401,
 		);

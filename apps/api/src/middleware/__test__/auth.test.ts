@@ -142,6 +142,24 @@ describe("Auth Middleware", () => {
 			expect(mockIsbot).toHaveBeenCalled();
 		});
 
+		it("should allow native mobile app user agents that are not classified as bots", async () => {
+			const mockAnonymousUser = { id: "anon-123", ip_address: "127.0.0.1" };
+			const context = createMockContext();
+			// @ts-expect-error - mock implementation
+			context.req.header.mockImplementation((name: string) => {
+				if (name === "user-agent") return "Polychat/1.0 CFNetwork Darwin";
+				if (name === "CF-Connecting-IP") return "127.0.0.1";
+				return null;
+			});
+			mockRepositories.anonymousUsers.getOrCreateAnonymousUser.mockResolvedValue(mockAnonymousUser);
+
+			await authMiddleware(context, mockNext);
+
+			expect(mockIsbot).toHaveBeenCalledWith("Polychat/1.0 CFNetwork Darwin");
+			expect(context.set).toHaveBeenCalledWith("anonymousUser", mockAnonymousUser);
+			expect(mockNext).toHaveBeenCalled();
+		});
+
 		it("should allow pro user bots", async () => {
 			const mockProUser = {
 				id: "user-123",
