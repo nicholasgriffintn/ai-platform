@@ -18,6 +18,7 @@ repos:
       - id: trufflehog
         name: TruffleHog
         description: Detect secrets in your data.
-        entry: bash -c 'docker run -v "$(pwd):/workdir" --rm us-docker.pkg.dev/thog-artifacts/public/scanner:latest git main HEAD /workdir'
+        entry: bash scripts/trufflehog-pre-commit.sh
         language: system
+        pass_filenames: false
         stages: ["pre-commit", "pre-push"]
