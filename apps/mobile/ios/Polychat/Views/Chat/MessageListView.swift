@@ -2,13 +2,17 @@ import SwiftUI
 struct MessageListView: View {
     let messages: [ChatMessage]
     let conversationModelId: String?
+    let isLoadingConversation: Bool
     let onSuggestionSelected: (String) -> Void
     
     var body: some View {
         ScrollView {
             ScrollViewReader { proxy in
                 LazyVStack(spacing: 22) {
-                    if messages.isEmpty {
+                    if isLoadingConversation {
+                        LoadingConversationMessagesView()
+                            .padding(.top, 150)
+                    } else if messages.isEmpty {
                         WelcomePromptView(onSuggestionSelected: onSuggestionSelected)
                             .padding(.top, 150)
                     } else {
@@ -40,6 +44,17 @@ struct MessageListView: View {
             }
         }
         .background(Color.polychat.background)
+    }
+}
+
+private struct LoadingConversationMessagesView: View {
+    var body: some View {
+        VStack(spacing: 12) {
+            ProgressView()
+            Text("Loading conversation...")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+        }
     }
 }
 

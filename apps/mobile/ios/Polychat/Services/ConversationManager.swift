@@ -7,6 +7,7 @@ class ConversationManager: ObservableObject {
     @Published var conversations: [Conversation] = []
     @Published var selectedModelId: String?
     @Published var isLoading: Bool = false
+    @Published var loadingConversationID: String?
     @Published var error: String?
 
     private var apiClient: APIClient?
@@ -24,6 +25,7 @@ class ConversationManager: ObservableObject {
         conversations = []
         selectedModelId = nil
         isLoading = false
+        loadingConversationID = nil
         error = nil
     }
 
@@ -78,6 +80,12 @@ class ConversationManager: ObservableObject {
     }
     
     func loadConversationMessages(_ conversation: Conversation) async {
+        guard !Task.isCancelled else {
+            return
+        }
+
+        let shouldLoadMessages = conversation.messages.isEmpty && conversation.isLoadedFromAPI
+        loadingConversationID = shouldLoadMessages ? conversation.id : nil
         currentConversation = conversation
 
         if !conversation.messages.isEmpty {
@@ -85,11 +93,20 @@ class ConversationManager: ObservableObject {
         }
 
         guard let apiClient = apiClient, conversation.isLoadedFromAPI else {
+            if loadingConversationID == conversation.id {
+                loadingConversationID = nil
+            }
             return
         }
 
         do {
             let detail = try await apiClient.fetchConversation(id: conversation.id)
+            guard !Task.isCancelled else {
+                if loadingConversationID == conversation.id {
+                    loadingConversationID = nil
+                }
+                return
+            }
 
             var updatedConversation = conversation
             updatedConversation.messages = detail.messages
@@ -102,10 +119,23 @@ class ConversationManager: ObservableObject {
                 conversations[index] = updatedConversation
             }
 
-            currentConversation = updatedConversation
+            if loadingConversationID == conversation.id || currentConversation?.id == conversation.id {
+                currentConversation = updatedConversation
+            }
+        } catch is CancellationError {
+            if loadingConversationID == conversation.id {
+                loadingConversationID = nil
+            }
+            return
         } catch {
             self.error = "Failed to load conversation: \(error.localizedDescription)"
-            currentConversation = conversation
+            if loadingConversationID == conversation.id || currentConversation?.id == conversation.id {
+                currentConversation = conversation
+            }
+        }
+
+        if loadingConversationID == conversation.id {
+            loadingConversationID = nil
         }
     }
 

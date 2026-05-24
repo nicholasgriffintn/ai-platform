@@ -57,6 +57,7 @@ struct ChatView: View {
             MessageListView(
                 messages: messages,
                 conversationModelId: activeModelId,
+                isLoadingConversation: conversationManager.loadingConversationID == conversationManager.currentConversation?.id,
                 onSuggestionSelected: { suggestion in
                     messageText = suggestion
                 }

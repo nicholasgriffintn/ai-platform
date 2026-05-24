@@ -8,6 +8,16 @@ struct ContentView: View {
     @State private var columnVisibility = NavigationSplitViewVisibility.doubleColumn
     @State private var selectedConversationID: String?
     @State private var showingSettings = false
+    @State private var conversationLoadTask: Task<Void, Never>?
+
+    private var isLoadingSelectedConversation: Bool {
+        guard let selectedConversationID else {
+            return false
+        }
+
+        return conversationManager.currentConversation?.id != selectedConversationID ||
+        conversationManager.loadingConversationID == selectedConversationID
+    }
 
     var body: some View {
         Group {
@@ -19,7 +29,9 @@ struct ContentView: View {
                         showingSettings = true
                     }
                 } detail: {
-                    if conversationManager.currentConversation != nil {
+                    if isLoadingSelectedConversation {
+                        ConversationLoadingView()
+                    } else if conversationManager.currentConversation != nil {
                         ChatView()
                     } else {
                         EmptyConversationView()
@@ -43,7 +55,8 @@ struct ContentView: View {
                         return
                     }
 
-                    Task {
+                    conversationLoadTask?.cancel()
+                    conversationLoadTask = Task {
                         await conversationManager.loadConversationMessages(id: conversationID)
                     }
                 }
@@ -59,6 +72,19 @@ struct ContentView: View {
         .onOpenURL { url in
             authManager.handleOpenURL(url)
         }
+    }
+}
+
+private struct ConversationLoadingView: View {
+    var body: some View {
+        VStack(spacing: 12) {
+            ProgressView()
+            Text("Loading conversation...")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color.polychat.background)
     }
 }
 
