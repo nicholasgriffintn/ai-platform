@@ -150,10 +150,12 @@ class ConversationManager: ObservableObject {
                            selectedModelId ??
                            currentSelectedModelId ??
                            "mistral-small"
+            let providerToUse = modelsStore?.model(withId: modelToUse)?.provider
 
             guard let stream = apiClient?.streamChatCompletion(
                 messages: Array(conversation.messages.dropLast()),
                 modelId: modelToUse,
+                provider: providerToUse,
                 completionId: conversation.id,
                 settings: settings
             ) else {

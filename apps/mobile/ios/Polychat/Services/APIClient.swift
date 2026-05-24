@@ -73,12 +73,14 @@ final class APIClient: ObservableObject {
     func createChatCompletion(
         messages: [ChatMessage],
         modelId: String?,
+        provider: String? = nil,
         completionId: String? = nil,
         settings: ChatSettings? = nil
     ) async throws -> ChatCompletionResponse {
         let requestBody = ChatCompletionRequest(
             messages: messages,
             model: modelId,
+            provider: provider,
             store: true,
             completionId: completionId,
             settings: settings
@@ -90,12 +92,14 @@ final class APIClient: ObservableObject {
     func streamChatCompletion(
         messages: [ChatMessage],
         modelId: String?,
+        provider: String? = nil,
         completionId: String? = nil,
         settings: ChatSettings? = nil
     ) -> AsyncThrowingStream<ChatStreamEvent, Error> {
         let requestBody = ChatCompletionRequest(
             messages: messages,
             model: modelId,
+            provider: provider,
             store: true,
             completionId: completionId,
             settings: settings,
@@ -315,26 +319,36 @@ final class APIClient: ObservableObject {
             return
         }
 
-        var eventData = ""
-        for try await line in bytes.lines {
+        var pendingBytes = Data()
+        var buffer = ""
+
+        for try await byte in bytes {
             if Task.isCancelled {
                 return
             }
 
-            if line.isEmpty {
-                try processServerSentEvent(eventData, continuation: continuation)
-                eventData = ""
+            pendingBytes.append(byte)
+
+            guard byte == 10, let chunk = String(data: pendingBytes, encoding: .utf8) else {
                 continue
             }
 
-            if line.hasPrefix("data:") {
-                let dataLine = String(line.dropFirst(5)).trimmingCharacters(in: .whitespaces)
-                eventData += dataLine
+            buffer += chunk
+            pendingBytes.removeAll(keepingCapacity: true)
+
+            while let range = buffer.range(of: "\n\n") {
+                let eventBlock = String(buffer[..<range.lowerBound])
+                buffer.removeSubrange(buffer.startIndex..<range.upperBound)
+                try processServerSentEventBlock(eventBlock, continuation: continuation)
             }
         }
 
-        if !eventData.isEmpty {
-            try processServerSentEvent(eventData, continuation: continuation)
+        if !pendingBytes.isEmpty, let chunk = String(data: pendingBytes, encoding: .utf8) {
+            buffer += chunk
+        }
+
+        if !buffer.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            try processServerSentEventBlock(buffer, continuation: continuation)
         }
 
         continuation.finish()
@@ -436,6 +450,24 @@ final class APIClient: ObservableObject {
         }
     }
 
+    private func processServerSentEventBlock(
+        _ block: String,
+        continuation: AsyncThrowingStream<ChatStreamEvent, Error>.Continuation
+    ) throws {
+        let data = block
+            .split(separator: "\n", omittingEmptySubsequences: false)
+            .compactMap { line -> String? in
+                let trimmed = line.trimmingCharacters(in: .whitespacesAndNewlines)
+                guard trimmed.hasPrefix("data:") else {
+                    return nil
+                }
+                return String(trimmed.dropFirst(5)).trimmingCharacters(in: .whitespaces)
+            }
+            .joined(separator: "\n")
+
+        try processServerSentEvent(data, continuation: continuation)
+    }
+
     private static func extractContentDelta(from object: [String: Any]) -> String? {
         if let content = object["content"] as? String {
             return content
@@ -470,6 +502,15 @@ final class APIClient: ObservableObject {
             if let message = choices.first?["message"] as? [String: Any],
                let content = message["content"] as? String {
                 return content
+            }
+        }
+
+        if let candidates = object["candidates"] as? [[String: Any]],
+           let content = candidates.first?["content"] as? [String: Any],
+           let parts = content["parts"] as? [[String: Any]] {
+            let text = parts.compactMap { $0["text"] as? String }.joined()
+            if !text.isEmpty {
+                return text
             }
         }
 

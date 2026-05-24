@@ -707,11 +707,13 @@ public struct ChatCompletionResponse: Codable {
 public struct ChatCompletionRequest: Codable {
     let messages: [ChatMessage]
     let model: String?
+    let provider: String?
     let platform: String
     let mode: String
     let store: Bool
     let stream: Bool
     let completionId: String?
+    let options: [String: JSONValue]
     let temperature: Double?
     let topP: Double?
     let maxTokens: Int?
@@ -725,7 +727,7 @@ public struct ChatCompletionRequest: Codable {
     let enabledTools: [String]?
 
     enum CodingKeys: String, CodingKey {
-        case messages, model, platform, mode, store, stream, temperature, reasoning, verbosity
+        case messages, model, provider, platform, mode, store, stream, temperature, reasoning, verbosity, options
         case completionId = "completion_id"
         case topP = "top_p"
         case maxTokens = "max_tokens"
@@ -740,6 +742,7 @@ public struct ChatCompletionRequest: Codable {
     public init(
         messages: [ChatMessage],
         model: String?,
+        provider: String? = nil,
         store: Bool = true,
         completionId: String? = nil,
         settings: ChatSettings? = nil,
@@ -747,11 +750,13 @@ public struct ChatCompletionRequest: Codable {
     ) {
         self.messages = messages
         self.model = model
+        self.provider = provider
         self.platform = "mobile"
         self.mode = "remote"
         self.store = store
         self.stream = stream
         self.completionId = completionId
+        self.options = settings?.toolOptions ?? [:]
         self.temperature = settings?.temperature
         self.topP = settings?.topP
         self.maxTokens = settings?.maxTokens
@@ -1025,6 +1030,7 @@ public struct ChatSettings: Codable, Equatable {
     public var reasoningEffort: ReasoningEffort?
     public var verbosity: VerbosityLevel?
     public var enabledTools: [String]
+    public var toolOptions: [String: JSONValue]
 
     public enum ReasoningEffort: String, Codable, CaseIterable {
         case none = "none"
@@ -1073,7 +1079,8 @@ public struct ChatSettings: Codable, Equatable {
         ragOptions: .default,
         reasoningEffort: nil,
         verbosity: nil,
-        enabledTools: []
+        enabledTools: [],
+        toolOptions: [:]
     )
 
     public init(
@@ -1086,7 +1093,8 @@ public struct ChatSettings: Codable, Equatable {
         ragOptions: RagOptions = .default,
         reasoningEffort: ReasoningEffort? = nil,
         verbosity: VerbosityLevel? = nil,
-        enabledTools: [String] = []
+        enabledTools: [String] = [],
+        toolOptions: [String: JSONValue] = [:]
     ) {
         self.temperature = temperature
         self.topP = topP
@@ -1098,6 +1106,7 @@ public struct ChatSettings: Codable, Equatable {
         self.reasoningEffort = reasoningEffort
         self.verbosity = verbosity
         self.enabledTools = enabledTools
+        self.toolOptions = toolOptions
     }
 }
 
