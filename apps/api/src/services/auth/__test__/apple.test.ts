@@ -98,6 +98,34 @@ describe("Apple auth service", () => {
 			type: ErrorType.AUTHENTICATION_ERROR,
 		});
 	});
+
+	it("rejects identity tokens with malformed signature encoding as authentication errors", async () => {
+		const encodedHeader = encodeJsonWebTokenPart({
+			alg: "RS256",
+			kid: "apple-key-id",
+		});
+		const encodedPayload = encodeJsonWebTokenPart({
+			iss: "https://appleid.apple.com",
+			aud: "com.polychat-app.app",
+			exp: Math.floor(Date.now() / 1000) + 300,
+			sub: "apple-user-sub",
+			nonce: await sha256Hex("raw-nonce"),
+		});
+
+		await expect(
+			verifyAppleIdentityToken({
+				env: {
+					APPLE_IOS_CLIENT_ID: "com.polychat-app.app",
+				},
+				identityToken: `${encodedHeader}.${encodedPayload}.%%%`,
+				nonce: "raw-nonce",
+			}),
+		).rejects.toMatchObject({
+			message: "Invalid Apple identity token",
+			statusCode: 401,
+			type: ErrorType.AUTHENTICATION_ERROR,
+		});
+	});
 });
 
 async function createAppleIdentityToken({

@@ -16,12 +16,19 @@ export function splitCompactJwt(token: string): CompactJwtParts | null {
 		return null;
 	}
 
+	let signature: Uint8Array;
+	try {
+		signature = decodeBase64Url(encodedSignature);
+	} catch {
+		return null;
+	}
+
 	return {
 		encodedHeader,
 		encodedPayload,
 		encodedSignature,
 		signingInput: new TextEncoder().encode(`${encodedHeader}.${encodedPayload}`),
-		signature: decodeBase64Url(encodedSignature),
+		signature,
 	};
 }
 
