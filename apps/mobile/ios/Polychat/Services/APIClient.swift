@@ -390,13 +390,25 @@ final class APIClient: ObservableObject {
                     "Streaming failed"
                 throw APIClientError.streaming(message)
             case "content_block_delta":
-                if let content = object["content"] as? String {
+                if let content = Self.extractContentDelta(from: object) {
+                    continuation.yield(.content(content))
+                }
+            case "response.output_text.delta":
+                if let content = Self.extractContentDelta(from: object) {
                     continuation.yield(.content(content))
                 }
             case "thinking_delta":
-                if let thinking = object["thinking"] as? String {
+                if let thinking = Self.extractReasoningDelta(from: object) {
                     continuation.yield(.reasoning(thinking))
                 }
+            case "signature_delta", "content_block_start", "content_block_stop", "message_start":
+                break
+            case "tool_use_start":
+                continuation.yield(.state("tool_use_start"))
+            case "tool_use_stop":
+                continuation.yield(.state("tool_use_stop"))
+            case "tool_response", "tool_response_start", "tool_response_end", "tool_use_delta":
+                break
             case "state":
                 if let state = object["state"] as? String {
                     continuation.yield(.state(state))
@@ -404,13 +416,17 @@ final class APIClient: ObservableObject {
             case "message_stop":
                 continuation.yield(.done)
             case "message_delta":
-                if let messageId = object["message_id"] as? String {
-                    continuation.yield(.metadata(messageId: messageId))
-                }
+                continuation.yield(.metadata(Self.extractStreamMetadata(from: object)))
                 continuation.yield(.done)
             default:
                 break
             }
+            return
+        }
+
+        if let content = Self.extractContentDelta(from: object) {
+            continuation.yield(.content(content))
+            return
         }
 
         if let choices = object["choices"] as? [[String: Any]],
@@ -418,6 +434,126 @@ final class APIClient: ObservableObject {
            let content = delta["content"] as? String {
             continuation.yield(.content(content))
         }
+    }
+
+    private static func extractContentDelta(from object: [String: Any]) -> String? {
+        if let content = object["content"] as? String {
+            return content
+        }
+
+        if let delta = object["delta"] as? String {
+            return delta
+        }
+
+        if let response = object["response"] as? String {
+            return response
+        }
+
+        if let text = object["text"] as? String {
+            return text
+        }
+
+        if let delta = object["delta"] as? [String: Any] {
+            if let text = delta["text"] as? String {
+                return text
+            }
+            if let content = delta["content"] as? String {
+                return content
+            }
+        }
+
+        if let choices = object["choices"] as? [[String: Any]] {
+            if let delta = choices.first?["delta"] as? [String: Any],
+               let content = delta["content"] as? String {
+                return content
+            }
+            if let message = choices.first?["message"] as? [String: Any],
+               let content = message["content"] as? String {
+                return content
+            }
+        }
+
+        if let message = object["message"] as? [String: Any],
+           let content = message["content"] as? String {
+            return content
+        }
+
+        if let message = object["message"] as? [String: Any],
+           let blocks = message["content"] as? [[String: Any]] {
+            let text = blocks.compactMap { block -> String? in
+                guard block["type"] as? String == "text" else { return nil }
+                return block["text"] as? String
+            }.joined()
+            return text.isEmpty ? nil : text
+        }
+
+        return nil
+    }
+
+    private static func extractReasoningDelta(from object: [String: Any]) -> String? {
+        if let thinking = object["thinking"] as? String {
+            return thinking
+        }
+
+        if let delta = object["delta"] as? [String: Any] {
+            if let thinking = delta["thinking"] as? String {
+                return thinking
+            }
+            if let text = delta["text"] as? String {
+                return text
+            }
+        }
+
+        return nil
+    }
+
+    private static func extractFinalContent(from object: [String: Any]) -> String? {
+        if let content = object["content"] as? String, !content.isEmpty {
+            return content
+        }
+
+        if let message = object["message"] as? [String: Any],
+           let content = message["content"] as? String,
+           !content.isEmpty {
+            return content
+        }
+
+        guard let parts = object["parts"] as? [[String: Any]] else {
+            return nil
+        }
+
+        let textParts = parts.compactMap { part -> String? in
+            guard part["type"] as? String == "text" else {
+                return nil
+            }
+            return part["text"] as? String
+        }
+
+        let content = textParts.joined(separator: "\n").trimmingCharacters(in: .whitespacesAndNewlines)
+        return content.isEmpty ? nil : content
+    }
+
+    private static func extractStreamMetadata(from object: [String: Any]) -> ChatStreamMetadata {
+        let decoded: ChatStreamMetadata?
+        if let data = try? JSONSerialization.data(withJSONObject: object) {
+            decoded = try? JSONDecoder().decode(ChatStreamMetadata.self, from: data)
+        } else {
+            decoded = nil
+        }
+
+        return ChatStreamMetadata(
+            messageId: decoded?.messageId ?? object["message_id"] as? String,
+            content: decoded?.content ?? extractFinalContent(from: object),
+            model: decoded?.model ?? object["model"] as? String,
+            parts: decoded?.parts,
+            reasoning: decoded?.reasoning,
+            citations: decoded?.citations,
+            data: decoded?.data,
+            name: decoded?.name,
+            status: decoded?.status,
+            logId: decoded?.logId,
+            created: decoded?.created
+        )
     }
 
     private func validate(response: URLResponse, data: Data) throws {
@@ -490,8 +626,28 @@ enum ChatStreamEvent {
     case content(String)
     case reasoning(String)
     case state(String)
-    case metadata(messageId: String)
+    case metadata(ChatStreamMetadata)
     case done
+}
+
+struct ChatStreamMetadata: Decodable {
+    let messageId: String?
+    let content: String?
+    let model: String?
+    let parts: [ChatMessagePart]?
+    let reasoning: ChatReasoning?
+    let citations: [ChatCitation]?
+    let data: ChatMessageData?
+    let name: String?
+    let status: String?
+    let logId: String?
+    let created: Double?
+
+    enum CodingKeys: String, CodingKey {
+        case content, model, parts, reasoning, citations, data, name, status, created
+        case messageId = "message_id"
+        case logId = "log_id"
+    }
 }
 
 private extension Data {

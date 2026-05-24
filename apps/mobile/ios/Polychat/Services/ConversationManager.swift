@@ -161,7 +161,9 @@ class ConversationManager: ObservableObject {
             }
 
             var streamedContent = ""
+            var streamedReasoning = ""
             var finalMessageId = assistantMessageId
+            var responseModelId = modelToUse
 
             for try await event in stream {
                 switch event {
@@ -171,26 +173,36 @@ class ConversationManager: ObservableObject {
                         conversationId: conversation.id,
                         messageId: finalMessageId,
                         content: streamedContent,
-                        modelId: modelToUse
+                        modelId: responseModelId
                     )
                 case .reasoning(let delta):
+                    streamedReasoning += delta
                     if streamedContent.isEmpty {
                         updateAssistantMessage(
                             conversationId: conversation.id,
                             messageId: finalMessageId,
-                            content: delta,
-                            modelId: modelToUse
+                            content: "<think>\n\(streamedReasoning)",
+                            modelId: responseModelId
                         )
                     }
                 case .state:
                     break
-                case .metadata(let messageId):
-                    finalMessageId = messageId
+                case .metadata(let metadata):
+                    if let model = metadata.model {
+                        responseModelId = model
+                    }
+                    if let messageId = metadata.messageId {
+                        finalMessageId = messageId
+                    }
+                    if let content = metadata.content, !content.isEmpty {
+                        streamedContent = content
+                    }
                     updateAssistantMessage(
                         conversationId: conversation.id,
                         messageId: finalMessageId,
                         content: streamedContent,
-                        modelId: modelToUse
+                        modelId: responseModelId,
+                        metadata: metadata
                     )
                 case .done:
                     break
@@ -198,12 +210,12 @@ class ConversationManager: ObservableObject {
             }
 
             if streamedContent.isEmpty {
-                streamedContent = "No response"
+                streamedContent = streamedReasoning.isEmpty ? "No response" : "<think>\n\(streamedReasoning)"
                 updateAssistantMessage(
                     conversationId: conversation.id,
                     messageId: finalMessageId,
                     content: streamedContent,
-                    modelId: modelToUse
+                    modelId: responseModelId
                 )
             }
 
@@ -224,14 +236,21 @@ class ConversationManager: ObservableObject {
         conversationId: String,
         messageId: String,
         content: String,
-        modelId: String?
+        modelId: String?,
+        metadata: ChatStreamMetadata? = nil
     ) {
         guard let index = conversations.firstIndex(where: { $0.id == conversationId }) else {
             return
         }
 
         var conversation = conversations[index]
-        guard let messageIndex = conversation.messages.lastIndex(where: { $0.role == "assistant" }) else {
+        let messageIndex = conversation.messages.lastIndex { message in
+            message.id == messageId
+        } ?? conversation.messages.lastIndex { message in
+            message.role == "assistant"
+        }
+
+        guard let messageIndex else {
             return
         }
 
@@ -239,7 +258,16 @@ class ConversationManager: ObservableObject {
             id: messageId,
             role: "assistant",
             content: content,
-            model: modelId
+            model: modelId,
+            parts: metadata?.parts,
+            reasoning: metadata?.reasoning,
+            citations: metadata?.citations,
+            data: metadata?.data,
+            name: metadata?.name,
+            status: metadata?.status,
+            logId: metadata?.logId,
+            created: metadata?.created,
+            timestamp: metadata?.created
         )
         conversation.isLoadedFromAPI = true
         conversation.modelId = modelId
