@@ -1,6 +1,8 @@
 import SwiftUI
 
 struct ModelSelectorView: View {
+    var onSelectModel: ((String) -> Void)?
+
     @EnvironmentObject var modelsStore: ModelsStore
     @Environment(\.dismiss) private var dismiss
     
@@ -66,6 +68,7 @@ struct ModelSelectorView: View {
                                         isSelected: model.id == modelsStore.selectedModelId
                                     ) {
                                         modelsStore.selectModel(model.id)
+                                        onSelectModel?(model.id)
                                         dismiss()
                                     }
                                 }

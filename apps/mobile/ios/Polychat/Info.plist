@@ -14,6 +14,17 @@
 	<string>$(PRODUCT_NAME)</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>com.polychat-app.app.auth</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>polychat</string>
+			</array>
+		</dict>
+	</array>
 	<key>CFBundleShortVersionString</key>
 	<string>1.0</string>
 	<key>CFBundleVersion</key>
@@ -62,7 +73,7 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
-	<key>APIKey</key>
-	<string>${API_KEY}</string>
+	<key>APIBaseURL</key>
+	<string>https://api.polychat.app</string>
 </dict>
 </plist>

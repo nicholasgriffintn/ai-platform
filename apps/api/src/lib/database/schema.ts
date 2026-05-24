@@ -92,6 +92,27 @@ export const session = sqliteTable("session", {
 
 export type Session = typeof session.$inferSelect;
 
+export const mobileAuthExchangeCodes = sqliteTable(
+	"mobile_auth_exchange_code",
+	{
+		jti: text().primaryKey(),
+		session_id: text()
+			.notNull()
+			.references(() => session.id, { onDelete: "cascade" }),
+		user_id: integer()
+			.notNull()
+			.references(() => user.id),
+		expires_at: text().notNull(),
+		consumed_at: text()
+			.default(sql`(CURRENT_TIMESTAMP)`)
+			.notNull(),
+	},
+	(table) => ({
+		expiresAtIdx: index("mobile_auth_exchange_code_expires_at_idx").on(table.expires_at),
+		sessionIdx: index("mobile_auth_exchange_code_session_idx").on(table.session_id),
+	}),
+);
+
 export const embedding = sqliteTable(
 	"embedding",
 	{

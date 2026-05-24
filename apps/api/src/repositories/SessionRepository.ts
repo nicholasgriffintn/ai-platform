@@ -1,5 +1,12 @@
 import { BaseRepository } from "./BaseRepository";
 
+interface ConsumeMobileAuthCodeOptions {
+	jti: string;
+	sessionId: string;
+	userId: number;
+	expiresAt: Date;
+}
+
 export class SessionRepository extends BaseRepository {
 	public async deleteSession(sessionId: string): Promise<void> {
 		const { query, values } = this.buildDeleteQuery("session", {
@@ -63,5 +70,30 @@ export class SessionRepository extends BaseRepository {
 		}
 
 		await this.executeRun(insert.query, insert.values);
+	}
+
+	public async consumeMobileAuthCode({
+		jti,
+		sessionId,
+		userId,
+		expiresAt,
+	}: ConsumeMobileAuthCodeOptions): Promise<boolean> {
+		await this.executeRun(
+			`DELETE FROM mobile_auth_exchange_code
+       WHERE datetime(expires_at) <= datetime('now')`,
+		);
+
+		const result = await this.executeRun(
+			`INSERT OR IGNORE INTO mobile_auth_exchange_code (
+         jti,
+         session_id,
+         user_id,
+         expires_at
+       )
+       VALUES (?, ?, ?, ?)`,
+			[jti, sessionId, userId, expiresAt.toISOString()],
+		);
+
+		return Number(result.meta.changes ?? 0) > 0;
 	}
 }

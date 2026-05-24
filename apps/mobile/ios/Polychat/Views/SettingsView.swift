@@ -10,7 +10,8 @@ struct SettingsView: View {
     @State private var showingHelp = false
     
     var body: some View {
-        List {
+        NavigationStack {
+            List {
             Section(header: Text("Model Settings")) {
                 HStack {
                     Text("Current Model")
@@ -79,12 +80,23 @@ struct SettingsView: View {
             
             Section(header: Text("Account")) {
                 if authManager.isAuthenticated {
+                    if let user = authManager.user {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(user.email)
+                                .font(.subheadline)
+                            if let name = user.name {
+                                Text(name)
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                        }
+                    }
                     Button("Log Out", role: .destructive) {
                         authManager.logout()
                     }
                 } else {
-                    Button("Log In") {
-                        authManager.login()
+                    Button("Log In with GitHub") {
+                        authManager.loginWithGitHub()
                     }
                 }
             }
@@ -134,31 +146,32 @@ struct SettingsView: View {
                 Text("Version 1.0.0")
                     .foregroundColor(.gray)
             }
-        }
-        .navigationTitle("Settings")
-        .sheet(isPresented: $showingModelSelector) {
-            ModelSelectorView()
-        }
-        .sheet(isPresented: $showingPrivacyPolicy) {
-            WebViewScreen(
-                url: URL(string: "https://polychat.app/privacy")!,
-                title: "Privacy Policy"
-            )
-        }
-        .sheet(isPresented: $showingTerms) {
-            WebViewScreen(
-                url: URL(string: "https://polychat.app/terms")!,
-                title: "Terms of Service"
-            )
-        }
-        .sheet(isPresented: $showingHelp) {
-            WebViewScreen(
-                url: URL(string: "https://nicholasgriffin.dev/contact")!,
-                title: "Help & Support"
-            )
-        }
-        .onAppear {
-            autoTitleGeneration = UserDefaults.standard.bool(forKey: "autoTitleGeneration")
+            }
+            .navigationTitle("Settings")
+            .sheet(isPresented: $showingModelSelector) {
+                ModelSelectorView()
+            }
+            .sheet(isPresented: $showingPrivacyPolicy) {
+                WebViewScreen(
+                    url: URL(string: "https://polychat.app/privacy")!,
+                    title: "Privacy Policy"
+                )
+            }
+            .sheet(isPresented: $showingTerms) {
+                WebViewScreen(
+                    url: URL(string: "https://polychat.app/terms")!,
+                    title: "Terms of Service"
+                )
+            }
+            .sheet(isPresented: $showingHelp) {
+                WebViewScreen(
+                    url: URL(string: "https://nicholasgriffin.dev/contact")!,
+                    title: "Help & Support"
+                )
+            }
+            .onAppear {
+                autoTitleGeneration = UserDefaults.standard.object(forKey: "autoTitleGeneration") as? Bool ?? true
+            }
         }
     }
 }

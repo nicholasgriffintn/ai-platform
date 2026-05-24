@@ -10,6 +10,7 @@ import {
 
 import { getServiceContext } from "~/lib/context/serviceContext";
 import { ResponseFactory } from "~/lib/http/ResponseFactory";
+import { buildMobileRedirectUri, requireMobileRedirectUri } from "~/services/auth/mobile";
 import { requestMagicLink, verifyMagicLink } from "~/services/auth/magicLink";
 import { createSession } from "~/services/auth/user";
 import { sendMagicLinkEmail } from "~/services/notifications";
@@ -36,13 +37,21 @@ addRoute(app, "post", "/request", {
 	},
 	handler: async ({ raw }) =>
 		(async (c: Context) => {
-			const { email } = c.req.valid("json" as never) as { email: string };
+			const { email, redirect_uri } = c.req.valid("json" as never) as {
+				email: string;
+				redirect_uri?: string;
+			};
 			const { token, nonce } = await requestMagicLink(c.env, email);
 
 			const baseUrl = c.env.APP_BASE_URL;
 
 			if (token && nonce && baseUrl) {
-				const link = `${baseUrl}/auth/verify-magic-link?token=${token}&nonce=${nonce}`;
+				const mobileRedirectUri = redirect_uri
+					? requireMobileRedirectUri(redirect_uri, "/magic-link")
+					: undefined;
+				const link = mobileRedirectUri
+					? buildMobileRedirectUri(mobileRedirectUri, { token, nonce })
+					: `${baseUrl}/auth/verify-magic-link?token=${token}&nonce=${nonce}`;
 				await sendMagicLinkEmail(c.env, email, link);
 			}
 			return ResponseFactory.success(c, { success: true });

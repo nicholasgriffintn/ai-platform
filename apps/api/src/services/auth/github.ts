@@ -124,10 +124,18 @@ async function getGitHubUserData(accessToken: string): Promise<{
 	return { githubUser, primaryEmail };
 }
 
-export function getGitHubAuthUrl(env: IEnv): string {
+export function getGitHubAuthUrl(env: IEnv, options?: { state?: string }): string {
 	if (!env.GITHUB_CLIENT_ID) {
 		throw new AssistantError("Missing GitHub OAuth configuration", ErrorType.CONFIGURATION_ERROR);
 	}
 
-	return `https://github.com/login/oauth/authorize?client_id=${env.GITHUB_CLIENT_ID}&scope=user:email`;
+	const authUrl = new URL("https://github.com/login/oauth/authorize");
+	authUrl.searchParams.set("client_id", env.GITHUB_CLIENT_ID);
+	authUrl.searchParams.set("scope", "user:email");
+
+	if (options?.state) {
+		authUrl.searchParams.set("state", options.state);
+	}
+
+	return authUrl.toString();
 }

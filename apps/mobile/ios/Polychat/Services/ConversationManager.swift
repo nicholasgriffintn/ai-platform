@@ -17,11 +17,14 @@ class ConversationManager: ObservableObject {
         self.apiClient = apiClient
         self.authManager = authManager
         self.modelsStore = modelsStore
+    }
 
-        // Load conversations from API on startup
-        Task {
-            await loadConversations()
-        }
+    func reset() {
+        currentConversation = nil
+        conversations = []
+        selectedModelId = nil
+        isLoading = false
+        error = nil
     }
 
     func loadConversations() async {
@@ -36,15 +39,16 @@ class ConversationManager: ObservableObject {
 
             let response = try await apiClient.fetchConversations()
 
-            // Convert API response to local Conversation models
-            conversations = response.data.map { summary in
+            conversations = response.conversations.map { summary in
                 Conversation(
                     id: summary.id,
                     title: summary.title ?? "New Conversation",
-                    messages: [], // Messages loaded on demand
-                    createdAt: ISO8601DateFormatter().date(from: summary.createdAt) ?? Date(),
+                    messages: [],
+                    createdAt: AppDateParser.parse(summary.createdAt, fallback: Date()),
                     modelId: summary.model,
-                    isLoadedFromAPI: true
+                    isLoadedFromAPI: true,
+                    lastMessageAt: AppDateParser.parse(summary.lastMessageAt ?? summary.updatedAt),
+                    messageCount: summary.messageCount ?? summary.messages.count
                 )
             }
 
@@ -66,16 +70,24 @@ class ConversationManager: ObservableObject {
     func refreshConversations() async {
         await loadConversations()
     }
+
+    func loadConversationMessages(id conversationId: String) async {
+        guard let conversation = conversations.first(where: { $0.id == conversationId }) else {
+            return
+        }
+
+        await loadConversationMessages(conversation)
+    }
     
     func loadConversationMessages(_ conversation: Conversation) async {
+        currentConversation = conversation
+
         // If messages already loaded, skip
         if !conversation.messages.isEmpty {
-            currentConversation = conversation
             return
         }
 
         guard let apiClient = apiClient, conversation.isLoadedFromAPI else {
-            currentConversation = conversation
             return
         }
 
@@ -86,6 +98,9 @@ class ConversationManager: ObservableObject {
             var updatedConversation = conversation
             updatedConversation.messages = detail.messages
             updatedConversation.title = detail.title ?? conversation.title
+            updatedConversation.modelId = detail.model
+            updatedConversation.lastMessageAt = AppDateParser.parse(detail.lastMessageAt ?? detail.updatedAt)
+            updatedConversation.messageCount = detail.messageCount ?? detail.messages.count
 
             // Update in array
             if let index = conversations.firstIndex(where: { $0.id == conversation.id }) {
@@ -107,7 +122,9 @@ class ConversationManager: ObservableObject {
             messages: [],
             createdAt: Date(),
             modelId: modelId,
-            isLoadedFromAPI: false
+            isLoadedFromAPI: false,
+            lastMessageAt: nil,
+            messageCount: 0
         )
         currentConversation = newConversation
         conversations.insert(newConversation, at: 0)
@@ -122,6 +139,8 @@ class ConversationManager: ObservableObject {
 
         // Add user message
         conversation.messages.append(message)
+        conversation.lastMessageAt = Date()
+        conversation.messageCount = conversation.messages.count
         currentConversation = conversation
         updateConversationInArray(conversation)
 
@@ -153,6 +172,10 @@ class ConversationManager: ObservableObject {
                 let assistantMessage = ChatMessage(role: "assistant",
                                                  content: contentText)
                 conversation.messages.append(assistantMessage)
+                conversation.isLoadedFromAPI = true
+                conversation.modelId = modelToUse
+                conversation.lastMessageAt = Date()
+                conversation.messageCount = conversation.messages.count
                 currentConversation = conversation
                 updateConversationInArray(conversation)
                 
@@ -177,6 +200,7 @@ class ConversationManager: ObservableObject {
     
     func setModelForCurrentConversation(_ modelId: String) {
         selectedModelId = modelId
+        modelsStore?.selectModel(modelId)
         currentConversation?.modelId = modelId
         if let conversation = currentConversation {
             updateConversationInArray(conversation)
@@ -184,6 +208,11 @@ class ConversationManager: ObservableObject {
     }
     
     func generateTitleIfNeeded(for conversation: Conversation) async {
+        let shouldGenerateTitles = UserDefaults.standard.object(forKey: "autoTitleGeneration") as? Bool ?? true
+        guard shouldGenerateTitles else {
+            return
+        }
+
         // Only generate title if we have at least 2 messages and the title is still default
         guard conversation.messages.count >= 2,
               conversation.title == "New Conversation" || conversation.title.hasPrefix("New Conversation") else {
@@ -192,7 +221,7 @@ class ConversationManager: ObservableObject {
         
         do {
             let titleResponse = try await apiClient?.generateTitle(conversationId: conversation.id, messages: conversation.messages)
-            if let title = titleResponse?.data?.title {
+            if let title = titleResponse?.title {
                 await updateConversationTitle(conversation.id, title: title)
             }
         } catch {
@@ -252,6 +281,8 @@ struct Conversation: Identifiable, Equatable {
     let createdAt: Date
     var modelId: String?
     var isLoadedFromAPI: Bool
+    var lastMessageAt: Date?
+    var messageCount: Int
 
     static func == (lhs: Conversation, rhs: Conversation) -> Bool {
         return lhs.id == rhs.id

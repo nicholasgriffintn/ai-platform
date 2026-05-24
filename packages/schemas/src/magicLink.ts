@@ -7,4 +7,5 @@ export const magicLinkVerifySchema = z.object({
 
 export const magicLinkRequestSchema = z.object({
 	email: z.email(),
+	redirect_uri: z.string().optional(),
 });

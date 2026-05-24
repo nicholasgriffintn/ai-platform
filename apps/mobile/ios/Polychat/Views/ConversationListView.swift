@@ -2,6 +2,7 @@ import SwiftUI
 
 struct ConversationListView: View {
     @EnvironmentObject var conversationManager: ConversationManager
+    @Binding var selectedConversationID: String?
     @State private var searchText = ""
 
     private var filteredConversations: [Conversation] {
@@ -29,13 +30,15 @@ struct ConversationListView: View {
         ]
 
         for conversation in filteredConversations {
-            if calendar.isDateInToday(conversation.createdAt) {
+            let activityDate = conversation.activityDate
+
+            if calendar.isDateInToday(activityDate) {
                 categories["Today"]?.append(conversation)
-            } else if calendar.isDateInYesterday(conversation.createdAt) {
+            } else if calendar.isDateInYesterday(activityDate) {
                 categories["Yesterday"]?.append(conversation)
-            } else if calendar.isDate(conversation.createdAt, equalTo: now, toGranularity: .weekOfYear) {
+            } else if calendar.isDate(activityDate, equalTo: now, toGranularity: .weekOfYear) {
                 categories["This Week"]?.append(conversation)
-            } else if calendar.isDate(conversation.createdAt, equalTo: now, toGranularity: .month) {
+            } else if calendar.isDate(activityDate, equalTo: now, toGranularity: .month) {
                 categories["This Month"]?.append(conversation)
             } else {
                 categories["Older"]?.append(conversation)
@@ -53,23 +56,20 @@ struct ConversationListView: View {
 
     var body: some View {
         ZStack {
-            List {
+            List(selection: $selectedConversationID) {
                 ForEach(categorizedConversations, id: \.0) { category, conversations in
                     Section(header: Text(category).font(.subheadline).fontWeight(.semibold)) {
                         ForEach(conversations) { conversation in
-                            Button(action: {
-                                Task {
-                                    await conversationManager.loadConversationMessages(conversation)
-                                }
-                            }) {
+                            NavigationLink(value: conversation.id) {
                                 ConversationRow(
                                     conversation: conversation,
-                                    isSelected: conversation.id == conversationManager.currentConversation?.id
+                                    isSelected: conversation.id == selectedConversationID
                                 )
                             }
                             .buttonStyle(PlainButtonStyle())
                             .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
                             .listRowBackground(Color.clear)
+                            .listRowSeparator(.hidden)
                         }
                         .onDelete { offsets in
                             deleteConversations(from: conversations, at: offsets)
@@ -95,6 +95,7 @@ struct ConversationListView: View {
                 }
             }
             .listStyle(.plain)
+            .scrollContentBackground(.hidden)
             .refreshable {
                 await conversationManager.refreshConversations()
             }
@@ -107,6 +108,7 @@ struct ConversationListView: View {
                     .shadow(radius: 5)
             }
         }
+        .background(Color(.systemGroupedBackground))
         .searchable(text: $searchText, prompt: "Search conversations...")
         .navigationTitle("Conversations")
         .toolbar {
@@ -126,7 +128,8 @@ struct ConversationListView: View {
     }
 
     private func startNewConversation() {
-        _ = conversationManager.startNewConversation()
+        let conversation = conversationManager.startNewConversation()
+        selectedConversationID = conversation.id
     }
 
     private func deleteConversations(from conversations: [Conversation], at offsets: IndexSet) {
@@ -151,64 +154,96 @@ struct ConversationRow: View {
     }
 
     private var messageCount: Int {
-        conversation.messages.filter { $0.role == "user" || $0.role == "assistant" }.count
+        conversation.messageCount
+    }
+
+    private var messageCountText: String {
+        if messageCount == 0 {
+            return "No messages"
+        }
+
+        if messageCount == 1 {
+            return "1 message"
+        }
+
+        return "\(messageCount) messages"
+    }
+
+    private var activityText: String {
+        let prefix = conversation.lastMessageAt == nil ? "Created" : "Updated"
+        return "\(prefix) \(relativeDate(from: conversation.activityDate))"
     }
 
     var body: some View {
-        HStack(spacing: 12) {
-            // Icon
-            ZStack {
-                Circle()
-                    .fill(isSelected ? Color.blue.opacity(0.1) : Color(.systemGray6))
-                    .frame(width: 40, height: 40)
-                Image(systemName: "message.fill")
-                    .font(.system(size: 16))
-                    .foregroundColor(isSelected ? .blue : .secondary)
-            }
-
-            // Content
-            VStack(alignment: .leading, spacing: 4) {
+        HStack(alignment: .center, spacing: 12) {
+            VStack(alignment: .leading, spacing: 5) {
                 HStack {
                     Text(conversation.title)
                         .font(.headline)
                         .foregroundColor(.primary)
                         .lineLimit(1)
                     Spacer()
-                    if isSelected {
-                        Image(systemName: "checkmark.circle.fill")
-                            .foregroundColor(.blue)
-                            .font(.subheadline)
-                    }
                 }
 
                 Text(lastMessagePreview)
                     .font(.subheadline)
                     .foregroundColor(.secondary)
-                    .lineLimit(2)
+                    .lineLimit(1)
 
-                HStack(spacing: 8) {
-                    Label("\(messageCount)", systemImage: "bubble.left.and.bubble.right")
+                HStack(spacing: 6) {
+                    Text(messageCountText)
                         .font(.caption)
                         .foregroundColor(.secondary)
 
-                    Text(relativeDate(from: conversation.createdAt))
+                    Text("•")
+                        .font(.caption)
+                        .foregroundColor(Color(.tertiaryLabel))
+
+                    Text(activityText)
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
+                .lineLimit(1)
             }
         }
-        .padding(.vertical, 8)
+        .padding(.vertical, 12)
         .padding(.horizontal, 12)
         .background(
-            RoundedRectangle(cornerRadius: 0)
-                .fill(isSelected ? Color.blue.opacity(0.05) : Color(.systemBackground))
+            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                .fill(isSelected ? Color.polychat.primary.opacity(0.1) : Color(.systemGray6))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                .stroke(isSelected ? Color.polychat.primary.opacity(0.25) : Color(.systemGray5), lineWidth: 1)
         )
         .contentShape(Rectangle())
     }
 
     private func relativeDate(from date: Date) -> String {
+        let now = Date()
+        let seconds = date.timeIntervalSince(now)
+
+        if seconds > 0 || abs(seconds) < 60 {
+            return "just now"
+        }
+
         let formatter = RelativeDateTimeFormatter()
         formatter.unitsStyle = .abbreviated
-        return formatter.localizedString(for: date, relativeTo: Date())
+        return formatter.localizedString(for: date, relativeTo: now)
+    }
+}
+
+private extension Conversation {
+    var activityDate: Date {
+        lastMessageAt ?? createdAt
+    }
+}
+
+#Preview {
+    NavigationSplitView {
+        ConversationListView(selectedConversationID: .constant(nil))
+            .environmentObject(ConversationManager())
+    } detail: {
+        Text("Conversation")
     }
 }

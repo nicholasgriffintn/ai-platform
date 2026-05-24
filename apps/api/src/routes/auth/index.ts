@@ -6,6 +6,7 @@ import {
 	githubCallbackSchema,
 	githubLoginSchema,
 	jwtTokenResponseSchema,
+	mobileAuthExchangeSchema,
 	userSchema,
 	errorResponseSchema,
 } from "@assistant/schemas";
@@ -17,7 +18,15 @@ import { ResponseFactory } from "~/lib/http/ResponseFactory";
 import { getUserSettings } from "~/services/auth/user";
 import { handleGitHubOAuthCallback, getGitHubAuthUrl } from "~/services/auth/github";
 import {
+	buildMobileRedirectUri,
+	createMobileOAuthState,
+	parseMobileOAuthState,
+	requireMobileRedirectUri,
+} from "~/services/auth/mobile";
+import {
 	handleLogout,
+	exchangeMobileAuthCode,
+	generateMobileAuthExchangeCode,
 	generateUserToken,
 	extractSessionIdFromCookies,
 	createLogoutCookie,
@@ -60,7 +69,15 @@ addRoute(app, "get", "/github", {
 	},
 	handler: async ({ raw }) =>
 		(async (c: Context) => {
-			const githubAuthUrl = getGitHubAuthUrl(c.env);
+			const { platform, redirect_uri } = c.req.valid("query" as never) as {
+				platform?: "web" | "mobile";
+				redirect_uri?: string;
+			};
+			const mobileRedirectUri =
+				platform === "mobile" ? requireMobileRedirectUri(redirect_uri, "/callback") : undefined;
+			const githubAuthUrl = getGitHubAuthUrl(c.env, {
+				state: mobileRedirectUri ? createMobileOAuthState(mobileRedirectUri) : undefined,
+			});
 			return c.redirect(githubAuthUrl);
 		})(raw),
 });
@@ -83,13 +100,28 @@ addRoute(app, "get", "/github/callback", {
 	},
 	handler: async ({ raw }) =>
 		(async (c: Context) => {
-			const { code } = c.req.valid("query" as never) as { code: string };
+			const { code, state } = c.req.valid("query" as never) as {
+				code: string;
+				state?: string;
+			};
 
 			const serviceContext = getServiceContext(c);
-			const { user: _user, sessionId } = await handleGitHubOAuthCallback({
+			const { user, sessionId } = await handleGitHubOAuthCallback({
 				context: serviceContext,
 				code,
 			});
+
+			const mobileState = parseMobileOAuthState(state);
+			if (mobileState) {
+				const mobileRedirectUri = requireMobileRedirectUri(mobileState.redirect_uri, "/callback");
+				const { code: mobileCode } = await generateMobileAuthExchangeCode({
+					context: serviceContext,
+					userId: user.id,
+					sessionId,
+				});
+
+				return c.redirect(buildMobileRedirectUri(mobileRedirectUri, { code: mobileCode }));
+			}
 
 			c.header("Set-Cookie", createSessionCookie(sessionId));
 
@@ -216,6 +248,43 @@ addRoute(app, "get", "/token", {
 			return ResponseFactory.success(c, {
 				token,
 				expires_in: expires_in,
+				token_type: "Bearer",
+			});
+		})(raw),
+});
+
+addRoute(app, "post", "/mobile/exchange", {
+	tags: ["auth"],
+	summary: "Exchange mobile auth code for a user token",
+	bodySchema: mobileAuthExchangeSchema,
+	responses: {
+		200: {
+			description: "Returns a JWT token for the authenticated mobile user",
+			schema: jwtTokenResponseSchema,
+		},
+		401: {
+			description: "Invalid or expired mobile auth code",
+			schema: errorResponseSchema,
+		},
+		500: {
+			description: "JWT secret not configured",
+			schema: errorResponseSchema,
+		},
+	},
+	handler: async ({ raw }) =>
+		(async (c: Context) => {
+			const { code } = c.req.valid("json" as never) as { code: string };
+			const serviceContext = getServiceContext(c);
+			const { token, expires_in, sessionId } = await exchangeMobileAuthCode({
+				context: serviceContext,
+				code,
+			});
+
+			c.header("Set-Cookie", createSessionCookie(sessionId));
+
+			return ResponseFactory.success(c, {
+				token,
+				expires_in,
 				token_type: "Bearer",
 			});
 		})(raw),
