@@ -42,6 +42,14 @@ final class APIClient: ObservableObject {
         )
     }
 
+    func signInWithApple(identityToken: String, nonce: String, fullName: String?) async throws -> TokenResponse {
+        try await send(
+            path: "/auth/apple",
+            method: "POST",
+            body: AppleSignInRequest(identityToken: identityToken, nonce: nonce, fullName: fullName)
+        )
+    }
+
     func requestMagicLink(email: String, redirectUri: String) async throws -> SuccessResponse {
         try await send(
             path: "/auth/magic-link/request",

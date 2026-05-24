@@ -64,6 +64,10 @@ export type IEnv = {
 	BROWSER_RENDERING_API_KEY?: string;
 	GITHUB_CLIENT_ID?: string;
 	GITHUB_CLIENT_SECRET?: string;
+	APPLE_CLIENT_ID?: string;
+	APPLE_CLIENT_IDS?: string;
+	APPLE_IOS_CLIENT_ID?: string;
+	APPLE_WEB_CLIENT_ID?: string;
 	GITHUB_APP_ID?: string;
 	GITHUB_APP_PRIVATE_KEY?: string;
 	GITHUB_APP_WEBHOOK_SECRET?: string;

@@ -2,15 +2,22 @@ import type { User } from "~/types";
 import { BaseRepository } from "./BaseRepository";
 
 export class UserRepository extends BaseRepository {
-	public async getUserByGithubId(githubId: string): Promise<User | null> {
+	public async getUserByOauthAccount(
+		providerId: string,
+		providerUserId: string,
+	): Promise<User | null> {
 		const result = this.runQuery<User>(
 			`SELECT u.* FROM user u
        JOIN oauth_account oa ON u.id = oa.user_id
-       WHERE oa.provider_id = 'github' AND oa.provider_user_id = ?`,
-			[githubId],
+       WHERE oa.provider_id = ? AND oa.provider_user_id = ?`,
+			[providerId, providerUserId],
 			true,
 		);
 		return result;
+	}
+
+	public async getUserByGithubId(githubId: string): Promise<User | null> {
+		return this.getUserByOauthAccount("github", githubId);
 	}
 
 	public async getUserBySessionId(sessionId: string): Promise<User | null> {
@@ -111,13 +118,13 @@ export class UserRepository extends BaseRepository {
 
 	public async createOauthAccount(
 		userId: number,
-		_providerId: string,
+		providerId: string,
 		providerUserId: string,
 	): Promise<void> {
 		await this.executeRun(
 			`INSERT INTO oauth_account (provider_id, provider_user_id, user_id)
-       VALUES ('github', ?, ?)`,
-			[providerUserId, userId],
+       VALUES (?, ?, ?)`,
+			[providerId, providerUserId, userId],
 		);
 	}
 

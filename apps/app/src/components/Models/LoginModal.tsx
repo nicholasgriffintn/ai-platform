@@ -1,6 +1,7 @@
 import { KeySquare, Loader2, Mail } from "lucide-react";
 import { useEffect, useState } from "react";
 
+import { SignInWithAppleWebButton } from "~/components/Auth/SignInWithAppleWebButton";
 import GithubIcon from "~/components/ModelIcon/Icons/github";
 import { Button, FormInput } from "~/components/ui";
 import { Dialog, DialogContent } from "~/components/ui/Dialog";
@@ -149,9 +150,25 @@ export const LoginModal = ({ open, onOpenChange, onKeySubmit }: LoginModalProps)
 								Sign in to {APP_NAME}
 							</h2>
 							<p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-								Sign in with GitHub, Passkey, or use a Magic Link to continue.
+								Sign in with Apple, GitHub, Passkey, or use a Magic Link to continue.
 							</p>
 						</div>
+
+						<SignInWithAppleWebButton
+							disabled={awaitingGithubLogin || isAuthenticatingWithPasskey || isRequestingLink}
+							onAttempt={() => {
+								setError("");
+								trackAuth("auth_attempt", { method: "apple" });
+							}}
+							onSuccess={() => {
+								trackAuth("auth_success", { method: "apple" });
+								onKeySubmit();
+							}}
+							onError={(message) => {
+								setError(message);
+								trackAuth("auth_failure", { method: "apple", reason: message });
+							}}
+						/>
 
 						<Button
 							type="button"

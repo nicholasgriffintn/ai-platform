@@ -14,6 +14,12 @@ export const mobileAuthExchangeSchema = z.object({
 	code: z.string().min(1),
 });
 
+export const appleLoginSchema = z.object({
+	identity_token: z.string().min(1),
+	nonce: z.string().min(1),
+	full_name: z.string().trim().min(1).max(200).optional(),
+});
+
 export const userSchema = z.object({
 	id: z.number(),
 	name: z.string().nullable(),

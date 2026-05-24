@@ -50,7 +50,7 @@ public enum MessageContentBlock: Codable, Equatable {
     case markdownDocument(MarkdownDocumentBlock)
 
     public struct TextBlock: Codable, Equatable {
-        public let type: String = "text"
+		public var type: String = "text"
         public let text: String
 
         public init(text: String) {
@@ -700,6 +700,18 @@ public struct MagicLinkVerifyRequest: Codable {
 
 public struct MobileAuthExchangeRequest: Codable {
     public let code: String
+}
+
+public struct AppleSignInRequest: Codable {
+    public let identityToken: String
+    public let nonce: String
+    public let fullName: String?
+
+    enum CodingKeys: String, CodingKey {
+        case identityToken = "identity_token"
+        case nonce
+        case fullName = "full_name"
+    }
 }
 
 public struct SuccessResponse: Codable {

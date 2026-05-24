@@ -15,6 +15,7 @@ export const SHOW_DEV_TOOLS = IS_DEVELOPMENT;
 
 export const API_BASE_URL = IS_PRODUCTION ? "https://api.polychat.app" : "http://localhost:8787";
 export const WS_API_URL = IS_PRODUCTION ? "wss://api.polychat.app" : "ws://localhost:8787";
+export const APPLE_SIGN_IN_CLIENT_ID = import.meta.env.VITE_APPLE_CLIENT_ID || "";
 
 export const POSTHOG_CONFIG = {
 	apiKey: import.meta.env.VITE_PUBLIC_POSTHOG_KEY || "disabled",
@@ -36,9 +37,15 @@ export const ENABLE_CAPTCHA_IN_DEV = false;
 
 const COMMON_CSP = {
 	defaultSrc: ["'self'"],
-	frameSrc: ["https://hcaptcha.com", "https://*.hcaptcha.com", "https://strudel.cc"],
+	frameSrc: [
+		"https://appleid.apple.com",
+		"https://hcaptcha.com",
+		"https://*.hcaptcha.com",
+		"https://strudel.cc",
+	],
 	styleSrc: ["https://hcaptcha.com", "https://*.hcaptcha.com", "'self'", "'unsafe-inline'"],
 	imgSrc: [
+		"https://appleid.apple.com",
 		"openweathermap.org",
 		"assistant-assets.nickgriffin.uk",
 		"icons.duckduckgo.com",
@@ -54,6 +61,7 @@ const COMMON_CSP = {
 		"eu.i.posthog.com",
 		"eu-assets.i.posthog.com",
 		"beacon.polychat.app",
+		"https://appleid.apple.com",
 		"https://hcaptcha.com",
 		"https://*.hcaptcha.com",
 		"api.openai.com/v1/realtime",
@@ -70,6 +78,7 @@ const SCRIPT_SRC = [
 	"eu.i.posthog.com",
 	"eu-assets.i.posthog.com",
 	"beacon.polychat.app",
+	"https://appleid.cdn-apple.com",
 	"https://unpkg.com/react@18/umd/react.development.js",
 	"https://unpkg.com/react-dom@18/umd/react-dom.development.js",
 	"https://unpkg.com/@strudel/embed@latest",

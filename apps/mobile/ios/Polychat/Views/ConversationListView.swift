@@ -1,9 +1,19 @@
 import SwiftUI
 
 struct ConversationListView: View {
+    @EnvironmentObject var authManager: AuthenticationManager
     @EnvironmentObject var conversationManager: ConversationManager
     @Binding var selectedConversationID: String?
     @State private var searchText = ""
+    let onShowSettings: () -> Void
+
+    init(
+        selectedConversationID: Binding<String?>,
+        onShowSettings: @escaping () -> Void = {}
+    ) {
+        self._selectedConversationID = selectedConversationID
+        self.onShowSettings = onShowSettings
+    }
 
     private var filteredConversations: [Conversation] {
         if searchText.isEmpty {
@@ -17,49 +27,16 @@ struct ConversationListView: View {
         }
     }
 
-    private var categorizedConversations: [(String, [Conversation])] {
-        let calendar = Calendar.current
-        let now = Date()
-
-        var categories: [String: [Conversation]] = [
-            "Today": [],
-            "Yesterday": [],
-            "This Week": [],
-            "This Month": [],
-            "Older": []
-        ]
-
-        for conversation in filteredConversations {
-            let activityDate = conversation.activityDate
-
-            if calendar.isDateInToday(activityDate) {
-                categories["Today"]?.append(conversation)
-            } else if calendar.isDateInYesterday(activityDate) {
-                categories["Yesterday"]?.append(conversation)
-            } else if calendar.isDate(activityDate, equalTo: now, toGranularity: .weekOfYear) {
-                categories["This Week"]?.append(conversation)
-            } else if calendar.isDate(activityDate, equalTo: now, toGranularity: .month) {
-                categories["This Month"]?.append(conversation)
-            } else {
-                categories["Older"]?.append(conversation)
-            }
-        }
-
-        return [
-            ("Today", categories["Today"] ?? []),
-            ("Yesterday", categories["Yesterday"] ?? []),
-            ("This Week", categories["This Week"] ?? []),
-            ("This Month", categories["This Month"] ?? []),
-            ("Older", categories["Older"] ?? [])
-        ].filter { !$0.1.isEmpty }
+    private var categorizedConversations: [ConversationListSection] {
+        ConversationListSectionBuilder.sections(for: filteredConversations)
     }
 
     var body: some View {
         ZStack {
             List(selection: $selectedConversationID) {
-                ForEach(categorizedConversations, id: \.0) { category, conversations in
-                    Section(header: Text(category).font(.subheadline).fontWeight(.semibold)) {
-                        ForEach(conversations) { conversation in
+                ForEach(categorizedConversations) { section in
+                    Section(header: Text(section.title).font(.subheadline).fontWeight(.semibold)) {
+                        ForEach(section.conversations) { conversation in
                             NavigationLink(value: conversation.id) {
                                 ConversationRow(
                                     conversation: conversation,
@@ -72,7 +49,7 @@ struct ConversationListView: View {
                             .listRowSeparator(.hidden)
                         }
                         .onDelete { offsets in
-                            deleteConversations(from: conversations, at: offsets)
+                            deleteConversations(from: section.conversations, at: offsets)
                         }
                     }
                 }
@@ -112,8 +89,26 @@ struct ConversationListView: View {
         .searchable(text: $searchText, prompt: "Search conversations...")
         .navigationTitle("Conversations")
         .toolbar {
-            Button(action: startNewConversation) {
-                Image(systemName: "plus")
+            ToolbarItem(placement: .topBarLeading) {
+                HStack(spacing: 8) {
+                    PolychatLogoView(size: 26)
+                    Text("Polychat")
+                        .font(.headline)
+                }
+            }
+
+            ToolbarItemGroup(placement: .topBarTrailing) {
+                Button {
+                    onShowSettings()
+                } label: {
+                    Image(systemName: "gearshape")
+                }
+                .accessibilityLabel("Settings")
+
+                Button(action: startNewConversation) {
+                    Image(systemName: "plus")
+                }
+                .accessibilityLabel("New Conversation")
             }
         }
         .alert("Error", isPresented: .constant(conversationManager.error != nil)) {
@@ -242,6 +237,7 @@ private extension Conversation {
 #Preview {
     NavigationSplitView {
         ConversationListView(selectedConversationID: .constant(nil))
+            .environmentObject(AuthenticationManager())
             .environmentObject(ConversationManager())
     } detail: {
         Text("Conversation")

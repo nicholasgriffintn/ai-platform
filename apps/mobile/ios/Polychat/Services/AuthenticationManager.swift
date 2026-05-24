@@ -22,6 +22,7 @@ final class AuthenticationManager: NSObject, ObservableObject {
     private let tokenStore: KeychainTokenStore
     private var apiClient: APIClient?
     private var authSession: ASWebAuthenticationSession?
+    private var currentAppleSignInNonce: String?
 
     init(tokenStore: KeychainTokenStore = .shared) {
         self.tokenStore = tokenStore
@@ -96,6 +97,30 @@ final class AuthenticationManager: NSObject, ObservableObject {
         if !session.start() {
             isAuthenticating = false
             self.error = "Unable to start the login session."
+        }
+    }
+
+    func prepareAppleSignInRequest(_ request: ASAuthorizationAppleIDRequest) {
+        let nonce: String
+        do {
+            nonce = try SecureNonceGenerator.randomString()
+        } catch {
+            self.error = error.localizedDescription
+            isAuthenticating = false
+            return
+        }
+
+        currentAppleSignInNonce = nonce
+        isAuthenticating = true
+        error = nil
+        statusMessage = nil
+        request.requestedScopes = [.fullName, .email]
+        request.nonce = SHA256Hasher.hexDigest(nonce)
+    }
+
+    func handleAppleSignInCompletion(_ result: Result<ASAuthorization, Error>) {
+        Task {
+            await completeAppleSignIn(result)
         }
     }
 
@@ -176,6 +201,58 @@ final class AuthenticationManager: NSObject, ObservableObject {
         }
 
         await exchangeMobileCode(from: url)
+    }
+
+    private func completeAppleSignIn(_ result: Result<ASAuthorization, Error>) async {
+        defer {
+            currentAppleSignInNonce = nil
+            isAuthenticating = false
+        }
+
+        switch result {
+        case .success(let authorization):
+            guard let credential = authorization.credential as? ASAuthorizationAppleIDCredential else {
+                error = "Apple sign in did not return valid credentials."
+                return
+            }
+
+            guard let identityTokenData = credential.identityToken,
+                  let identityToken = String(data: identityTokenData, encoding: .utf8) else {
+                error = "Apple sign in did not return an identity token."
+                return
+            }
+
+            guard let nonce = currentAppleSignInNonce else {
+                error = "Apple sign in state expired. Please try again."
+                return
+            }
+
+            let fullName = credential.fullName.flatMap { components in
+                let formattedName = PersonNameComponentsFormatter().string(from: components)
+                return formattedName.isEmpty ? nil : formattedName
+            }
+
+            do {
+                if let token = try await apiClient?.signInWithApple(
+                    identityToken: identityToken,
+                    nonce: nonce,
+                    fullName: fullName
+                ) {
+                    try applyToken(token)
+                    _ = await refreshUser()
+                }
+            } catch {
+                self.error = error.localizedDescription
+            }
+
+        case .failure(let signInError):
+            if let authorizationError = signInError as? ASAuthorizationError,
+               authorizationError.code == .canceled {
+                return
+            }
+
+            error = signInError.localizedDescription
+        }
     }
 
     private func exchangeMobileCode(from url: URL) async {
@@ -266,6 +343,7 @@ final class AuthenticationManager: NSObject, ObservableObject {
             }
         }
     }
+
 }
 
 extension AuthenticationManager: ASWebAuthenticationPresentationContextProviding {
