@@ -87,6 +87,36 @@ final class APIClient: ObservableObject {
         return try await send(path: "/chat/completions", method: "POST", body: requestBody)
     }
 
+    func streamChatCompletion(
+        messages: [ChatMessage],
+        modelId: String?,
+        completionId: String? = nil,
+        settings: ChatSettings? = nil
+    ) -> AsyncThrowingStream<ChatStreamEvent, Error> {
+        let requestBody = ChatCompletionRequest(
+            messages: messages,
+            model: modelId,
+            store: true,
+            completionId: completionId,
+            settings: settings,
+            stream: true
+        )
+
+        return AsyncThrowingStream { continuation in
+            let task = Task {
+                do {
+                    try await stream(path: "/chat/completions", method: "POST", body: requestBody, continuation: continuation)
+                } catch {
+                    continuation.finish(throwing: error)
+                }
+            }
+
+            continuation.onTermination = { _ in
+                task.cancel()
+            }
+        }
+    }
+
     func fetchModels() async throws -> ModelsResponse {
         try await send(path: "/models", method: "GET")
     }
@@ -233,6 +263,90 @@ final class APIClient: ObservableObject {
         bodyData: Data?,
         contentType: String?
     ) async throws -> T {
+        let request = makeRequest(
+            path: path,
+            method: method,
+            queryItems: queryItems,
+            bodyData: bodyData,
+            contentType: contentType
+        )
+
+        let (data, response) = try await session.data(for: request)
+        try validate(response: response, data: data)
+
+        if T.self == EmptyResponse.self {
+            return EmptyResponse() as! T
+        }
+
+        return try JSONDecoder().decode(T.self, from: data)
+    }
+
+    private func stream<Body: Encodable>(
+        path: String,
+        method: String,
+        body: Body,
+        continuation: AsyncThrowingStream<ChatStreamEvent, Error>.Continuation
+    ) async throws {
+        let bodyData = try JSONEncoder().encode(body)
+        let request = makeRequest(
+            path: path,
+            method: method,
+            bodyData: bodyData,
+            contentType: "application/json"
+        )
+
+        let (bytes, response) = try await session.bytes(for: request)
+        try validate(response: response, data: Data())
+
+        let contentType = (response as? HTTPURLResponse)?.value(forHTTPHeaderField: "Content-Type") ?? ""
+        guard contentType.localizedCaseInsensitiveContains("text/event-stream") else {
+            var data = Data()
+            for try await byte in bytes {
+                data.append(byte)
+            }
+
+            let response = try JSONDecoder().decode(ChatCompletionResponse.self, from: data)
+            let content = response.choices.first?.message.content.textValue ?? ""
+            if !content.isEmpty {
+                continuation.yield(.content(content))
+            }
+            continuation.yield(.done)
+            continuation.finish()
+            return
+        }
+
+        var eventData = ""
+        for try await line in bytes.lines {
+            if Task.isCancelled {
+                return
+            }
+
+            if line.isEmpty {
+                try processServerSentEvent(eventData, continuation: continuation)
+                eventData = ""
+                continue
+            }
+
+            if line.hasPrefix("data:") {
+                let dataLine = String(line.dropFirst(5)).trimmingCharacters(in: .whitespaces)
+                eventData += dataLine
+            }
+        }
+
+        if !eventData.isEmpty {
+            try processServerSentEvent(eventData, continuation: continuation)
+        }
+
+        continuation.finish()
+    }
+
+    private func makeRequest(
+        path: String,
+        method: String,
+        queryItems: [URLQueryItem] = [],
+        bodyData: Data?,
+        contentType: String?
+    ) -> URLRequest {
         var request = URLRequest(url: buildURL(path: path, queryItems: queryItems))
         request.httpMethod = method
         request.setValue("mobile", forHTTPHeaderField: "X-Platform")
@@ -247,15 +361,63 @@ final class APIClient: ObservableObject {
         }
 
         request.httpBody = bodyData
+        return request
+    }
 
-        let (data, response) = try await session.data(for: request)
-        try validate(response: response, data: data)
-
-        if T.self == EmptyResponse.self {
-            return EmptyResponse() as! T
+    private func processServerSentEvent(
+        _ data: String,
+        continuation: AsyncThrowingStream<ChatStreamEvent, Error>.Continuation
+    ) throws {
+        guard !data.isEmpty else {
+            return
         }
 
-        return try JSONDecoder().decode(T.self, from: data)
+        if data == "[DONE]" {
+            continuation.yield(.done)
+            return
+        }
+
+        guard let jsonData = data.data(using: .utf8),
+              let object = try JSONSerialization.jsonObject(with: jsonData) as? [String: Any] else {
+            return
+        }
+
+        if let type = object["type"] as? String {
+            switch type {
+            case "error":
+                let message = ((object["error"] as? [String: Any])?["message"] as? String) ??
+                    (object["error"] as? String) ??
+                    "Streaming failed"
+                throw APIClientError.streaming(message)
+            case "content_block_delta":
+                if let content = object["content"] as? String {
+                    continuation.yield(.content(content))
+                }
+            case "thinking_delta":
+                if let thinking = object["thinking"] as? String {
+                    continuation.yield(.reasoning(thinking))
+                }
+            case "state":
+                if let state = object["state"] as? String {
+                    continuation.yield(.state(state))
+                }
+            case "message_stop":
+                continuation.yield(.done)
+            case "message_delta":
+                if let messageId = object["message_id"] as? String {
+                    continuation.yield(.metadata(messageId: messageId))
+                }
+                continuation.yield(.done)
+            default:
+                break
+            }
+        }
+
+        if let choices = object["choices"] as? [[String: Any]],
+           let delta = choices.first?["delta"] as? [String: Any],
+           let content = delta["content"] as? String {
+            continuation.yield(.content(content))
+        }
     }
 
     private func validate(response: URLResponse, data: Data) throws {
@@ -312,13 +474,24 @@ private struct APIErrorResponse: Decodable {
 
 enum APIClientError: LocalizedError {
     case httpStatus(Int, String)
+    case streaming(String)
 
     var errorDescription: String? {
         switch self {
         case .httpStatus(let status, let message):
             return "API returned \(status): \(message)"
+        case .streaming(let message):
+            return message
         }
     }
+}
+
+enum ChatStreamEvent {
+    case content(String)
+    case reasoning(String)
+    case state(String)
+    case metadata(messageId: String)
+    case done
 }
 
 private extension Data {

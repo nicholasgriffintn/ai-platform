@@ -52,3 +52,10 @@ struct WebViewScreen: View {
         }
     }
 }
+#Preview {
+    WebViewScreen(
+        url: URL(string: "https://polychat.app/privacy")!,
+        title: "Privacy Policy"
+    )
+}
+

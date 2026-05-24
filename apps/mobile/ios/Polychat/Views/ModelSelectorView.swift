@@ -7,10 +7,31 @@ struct ModelSelectorView: View {
     @Environment(\.dismiss) private var dismiss
     
     @State private var searchText = ""
+    @State private var showingFeaturedOnly = true
+    @State private var showingDeprecated = false
+    @State private var selectedProvider: String?
     @State private var showingError = false
     
     var filteredModels: [ModelConfigItem] {
-        modelsStore.searchModels(query: searchText)
+        var models = modelsStore.searchModels(query: searchText)
+
+        if showingFeaturedOnly {
+            models = models.filter { $0.isFeatured == true }
+        }
+
+        if !showingDeprecated {
+            models = models.filter { $0.isDeprecated != true }
+        }
+
+        if let selectedProvider {
+            models = models.filter { $0.provider == selectedProvider }
+        }
+
+        return models
+    }
+
+    var availableProviders: [String] {
+        Array(Set(modelsStore.models.map(\.provider))).sorted()
     }
     
     var modelsByProvider: [String: [ModelConfigItem]] {
@@ -46,47 +67,53 @@ struct ModelSelectorView: View {
                         .buttonStyle(.borderedProminent)
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
-                } else if filteredModels.isEmpty && !searchText.isEmpty {
-                    VStack(spacing: 16) {
-                        Image(systemName: "magnifyingglass")
-                            .font(.system(size: 50))
-                            .foregroundColor(.gray)
-                        Text("No models found")
-                            .font(.headline)
-                        Text("Try a different search term")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-                    }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else {
-                    List {
-                        ForEach(modelsByProvider.keys.sorted(), id: \.self) { provider in
-                            Section {
-                                ForEach(modelsByProvider[provider] ?? [], id: \.id) { model in
-                                    ModelRow(
-                                        model: model,
-                                        isSelected: model.id == modelsStore.selectedModelId
-                                    ) {
-                                        modelsStore.selectModel(model.id)
-                                        onSelectModel?(model.id)
-                                        dismiss()
+                    VStack(spacing: 0) {
+                        filterBar
+
+                        if filteredModels.isEmpty {
+                            ContentUnavailableView(
+                                "No models found",
+                                systemImage: "magnifyingglass",
+                                description: Text(emptyStateDescription)
+                            )
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        } else {
+                            List {
+                                ForEach(modelsByProvider.keys.sorted(), id: \.self) { provider in
+                                    Section {
+                                        ForEach(modelsByProvider[provider] ?? [], id: \.id) { model in
+                                            ModelRow(
+                                                model: model,
+                                                isSelected: model.id == modelsStore.selectedModelId
+                                            ) {
+                                                modelsStore.selectModel(model.id)
+                                                onSelectModel?(model.id)
+                                                dismiss()
+                                            }
+                                        }
+                                    } header: {
+                                        HStack {
+                                            ModelIconView(
+                                                modelName: provider,
+                                                provider: provider,
+                                                size: 16
+                                            )
+                                            Text(provider)
+                                            Spacer()
+                                            Text("\(modelsByProvider[provider]?.count ?? 0)")
+                                                .font(.caption)
+                                                .foregroundColor(.secondary)
+                                        }
                                     }
                                 }
-                            } header: {
-                                HStack {
-                                    Text(provider)
-                                    Spacer()
-                                    Text("\(modelsByProvider[provider]?.count ?? 0)")
-                                        .font(.caption)
-                                        .foregroundColor(.secondary)
-                                }
+                            }
+                            .refreshable {
+                                await modelsStore.refreshModels()
                             }
                         }
                     }
                     .searchable(text: $searchText, prompt: "Search models...")
-                    .refreshable {
-                        await modelsStore.refreshModels()
-                    }
                 }
             }
             .navigationTitle("Select Model")
@@ -115,6 +142,48 @@ struct ModelSelectorView: View {
             showingError = newValue != nil
         }
     }
+
+    private var filterBar: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 8) {
+                Toggle(isOn: $showingFeaturedOnly) {
+                    Label("Featured", systemImage: "star.fill")
+                }
+                .toggleStyle(.button)
+                .buttonStyle(.bordered)
+
+                Menu {
+                    Picker("Provider", selection: $selectedProvider) {
+                        Text("All Providers").tag(String?.none)
+
+                        ForEach(availableProviders, id: \.self) { provider in
+                            Text(provider).tag(String?.some(provider))
+                        }
+                    }
+                } label: {
+                    Label(selectedProvider ?? "All Providers", systemImage: "building.2")
+                }
+                .buttonStyle(.bordered)
+
+                Toggle(isOn: $showingDeprecated) {
+                    Label("Deprecated", systemImage: showingDeprecated ? "eye" : "eye.slash")
+                }
+                .toggleStyle(.button)
+                .buttonStyle(.bordered)
+            }
+            .padding(.horizontal)
+            .padding(.vertical, 8)
+        }
+        .background(Color(.systemGroupedBackground))
+    }
+
+    private var emptyStateDescription: String {
+        if !searchText.isEmpty {
+            return "Try a different search term or adjust your filters."
+        }
+
+        return "Adjust your filters to include more models."
+    }
 }
 
 struct ModelRow: View {
@@ -124,7 +193,14 @@ struct ModelRow: View {
 
     var body: some View {
         Button(action: onSelect) {
-            HStack(spacing: 12) {
+            HStack(alignment: .top, spacing: 12) {
+                ModelIconView(
+                    modelName: model.name ?? model.id,
+                    provider: model.provider,
+                    size: 32
+                )
+                .padding(.top, 1)
+
                 VStack(alignment: .leading, spacing: 6) {
                     Text(model.name ?? model.id)
                         .font(.headline)
@@ -155,6 +231,14 @@ struct ModelRow: View {
                     }
 
                     HStack(spacing: 8) {
+                        if model.isFeatured == true {
+                            CapabilityBadge(icon: "star.fill", text: "Featured", color: .yellow)
+                        }
+
+                        if model.isDeprecated == true {
+                            CapabilityBadge(icon: "exclamationmark.triangle", text: "Deprecated", color: .orange)
+                        }
+
                         if model.supportsFunctions == true {
                             CapabilityBadge(icon: "function", text: "Functions", color: .green)
                         }

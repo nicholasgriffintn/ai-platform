@@ -175,3 +175,27 @@ struct SettingsView: View {
         }
     }
 }
+
+#Preview {
+    let modelsStore = ModelsStore()
+    modelsStore.models = [
+        ModelConfigItem(
+            id: "gpt-4o",
+            name: "GPT-4o",
+            provider: "openai",
+            description: "Fast multimodal model for everyday work.",
+            strengths: ["Reasoning", "Vision", "Code"],
+            contextWindow: 128000,
+            pricing: nil,
+            modalities: nil,
+            supportsFunctions: true,
+            multimodal: true,
+            isFeatured: true
+        )
+    ]
+    modelsStore.selectModel("gpt-4o")
+
+    return SettingsView()
+        .environmentObject(AuthenticationManager())
+        .environmentObject(modelsStore)
+}

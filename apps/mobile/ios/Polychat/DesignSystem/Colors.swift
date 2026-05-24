@@ -1,4 +1,7 @@
 import SwiftUI
+#if os(iOS)
+import UIKit
+#endif
 
 extension Color {
     static let polychat = PolychatColors()
@@ -7,6 +10,8 @@ extension Color {
 struct PolychatColors {
     let primary = Color(red: 37/255, green: 99/255, blue: 235/255)
     let primaryHover = Color(red: 29/255, green: 78/255, blue: 216/255)
+    let offWhite = Color(red: 250/255, green: 250/255, blue: 248/255)
+    let offWhiteHighlight = Color(red: 244/255, green: 244/255, blue: 242/255)
 
     let success = Color(red: 34/255, green: 197/255, blue: 94/255)
     let warning = Color(red: 251/255, green: 191/255, blue: 36/255)
@@ -24,23 +29,47 @@ struct PolychatColors {
     let zinc900 = Color(red: 24/255, green: 24/255, blue: 27/255)
 
     var messageUserBackground: Color {
-        primary
+        Color(light: offWhiteHighlight, dark: zinc800)
     }
 
     var messageAssistantBackground: Color {
-        Color(.systemGray6)
+        Color.clear
     }
 
     var border: Color {
-        Color(.systemGray4)
+        Color(light: zinc200, dark: zinc700)
     }
 
     var background: Color {
-        Color(.systemBackground)
+        Color(light: offWhite, dark: Color(red: 18/255, green: 18/255, blue: 20/255))
     }
 
     var secondaryBackground: Color {
-        Color(.secondarySystemBackground)
+        Color(light: zinc50, dark: zinc900)
+    }
+
+    var sidebarBackground: Color {
+        Color(light: zinc50, dark: Color(red: 20/255, green: 20/255, blue: 23/255))
+    }
+
+    var composerBackground: Color {
+        Color(light: offWhite, dark: Color(red: 18/255, green: 18/255, blue: 18/255))
+    }
+
+    var elevatedBackground: Color {
+        Color(light: .white, dark: zinc800)
+    }
+}
+
+extension Color {
+    init(light: Color, dark: Color) {
+        #if os(iOS)
+        self.init(uiColor: UIColor { traits in
+            traits.userInterfaceStyle == .dark ? UIColor(dark) : UIColor(light)
+        })
+        #else
+        self = light
+        #endif
     }
 }
 

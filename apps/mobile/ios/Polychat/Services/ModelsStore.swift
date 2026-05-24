@@ -23,7 +23,6 @@ class ModelsStore: ObservableObject {
         
         do {
             let response = try await apiClient.fetchModels()
-            // Convert dictionary to array, using the key as the id
             models = response.map { (key, model) in
                 ModelConfigItem(
                     id: key,
@@ -35,11 +34,12 @@ class ModelsStore: ObservableObject {
                     pricing: model.pricing,
                     modalities: model.modalities,
                     supportsFunctions: model.supportsFunctions,
-                    multimodal: model.multimodal
+                    multimodal: model.multimodal,
+                    isFeatured: model.isFeatured,
+                    isDeprecated: model.isDeprecated
                 )
             }
             
-            // If no model is selected, select the first available model
             if selectedModelId == nil && !models.isEmpty {
                 selectModel(models[0].id)
             }

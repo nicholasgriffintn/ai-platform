@@ -1,6 +1,5 @@
 import Foundation
 
-// Message content can be either simple text or multimodal content blocks
 public enum MessageContent: Codable, Equatable {
     case text(String)
     case multimodal([MessageContentBlock])
@@ -41,7 +40,6 @@ public enum MessageContent: Codable, Equatable {
     }
 }
 
-// Content block types for multimodal messages
 public enum MessageContentBlock: Codable, Equatable {
     case text(TextBlock)
     case imageUrl(ImageUrlBlock)
@@ -182,6 +180,7 @@ public struct ChatMessage: Codable, Identifiable, Equatable {
     public let role: String
     public let content: MessageContent
     public var artifacts: [Artifact]?
+    public let model: String?
 
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
@@ -193,39 +192,41 @@ public struct ChatMessage: Codable, Identifiable, Equatable {
         role == "user"
     }
 
-    // Convenience computed property for text content
     public var textContent: String {
         content.textValue
     }
 
-    // Simple text message initializer
     public init(
         id: String = UUID().uuidString,
         role: String,
         content: String,
-        artifacts: [Artifact]? = nil
+        artifacts: [Artifact]? = nil,
+        model: String? = nil
     ) {
         self.id = id
         self.role = role
         self.content = .text(content)
         self.artifacts = artifacts
+        self.model = model
     }
 
-    // Multimodal message initializer
     public init(
         id: String = UUID().uuidString,
         role: String,
         contentBlocks: [MessageContentBlock],
-        artifacts: [Artifact]? = nil
+        artifacts: [Artifact]? = nil,
+        model: String? = nil
     ) {
         self.id = id
         self.role = role
         self.content = .multimodal(contentBlocks)
         self.artifacts = artifacts
+        self.model = model
     }
 
     enum CodingKeys: String, CodingKey {
-        case id, role, content
+        case id, role, content, model
+        case modelId = "model_id"
     }
 
     public init(from decoder: Decoder) throws {
@@ -234,6 +235,8 @@ public struct ChatMessage: Codable, Identifiable, Equatable {
         content = try container.decode(MessageContent.self, forKey: .content)
         id = (try? container.decode(String.self, forKey: .id)) ?? UUID().uuidString
         artifacts = nil
+        model = try container.decodeIfPresent(String.self, forKey: .model)
+            ?? container.decodeIfPresent(String.self, forKey: .modelId)
     }
 
     public mutating func extractArtifacts() {
@@ -342,14 +345,15 @@ public struct ChatCompletionRequest: Codable {
         model: String?,
         store: Bool = true,
         completionId: String? = nil,
-        settings: ChatSettings? = nil
+        settings: ChatSettings? = nil,
+        stream: Bool = false
     ) {
         self.messages = messages
         self.model = model
         self.platform = "mobile"
         self.mode = "remote"
         self.store = store
-        self.stream = false
+        self.stream = stream
         self.completionId = completionId
         self.temperature = settings?.temperature
         self.topP = settings?.topP
@@ -404,7 +408,7 @@ public struct ErrorResponse: Codable {
 }
 
 public struct ModelConfigItem: Codable, Identifiable {
-    public var id: String = "" // Will be set from dictionary key
+    public var id: String = ""
     public let name: String?
     public let provider: String
     public let description: String?
@@ -414,6 +418,8 @@ public struct ModelConfigItem: Codable, Identifiable {
     public let modalities: ModelModalities?
     public let supportsFunctions: Bool?
     public let multimodal: Bool?
+    public let isFeatured: Bool?
+    public let isDeprecated: Bool?
     
     public struct ModelPricing: Codable {
         public let costPer1kInputTokens: Double?
@@ -425,12 +431,26 @@ public struct ModelConfigItem: Codable, Identifiable {
         public let output: [String]?
     }
     
-    // Custom coding keys that excludes 'id' since it comes from the dictionary key
     enum CodingKeys: String, CodingKey {
         case name, provider, description, strengths, contextWindow, pricing, modalities, supportsFunctions, multimodal
+        case isFeatured, featured
+        case isDeprecated, deprecated
     }
     
-    public init(id: String, name: String?, provider: String, description: String?, strengths: [String]?, contextWindow: Int?, pricing: ModelPricing?, modalities: ModelModalities?, supportsFunctions: Bool?, multimodal: Bool?) {
+    public init(
+        id: String,
+        name: String?,
+        provider: String,
+        description: String?,
+        strengths: [String]?,
+        contextWindow: Int?,
+        pricing: ModelPricing?,
+        modalities: ModelModalities?,
+        supportsFunctions: Bool?,
+        multimodal: Bool?,
+        isFeatured: Bool? = nil,
+        isDeprecated: Bool? = nil
+    ) {
         self.id = id
         self.name = name
         self.provider = provider
@@ -441,6 +461,42 @@ public struct ModelConfigItem: Codable, Identifiable {
         self.modalities = modalities
         self.supportsFunctions = supportsFunctions
         self.multimodal = multimodal
+        self.isFeatured = isFeatured
+        self.isDeprecated = isDeprecated
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+
+        name = try container.decodeIfPresent(String.self, forKey: .name)
+        provider = try container.decode(String.self, forKey: .provider)
+        description = try container.decodeIfPresent(String.self, forKey: .description)
+        strengths = try container.decodeIfPresent([String].self, forKey: .strengths)
+        contextWindow = try container.decodeIfPresent(Int.self, forKey: .contextWindow)
+        pricing = try container.decodeIfPresent(ModelPricing.self, forKey: .pricing)
+        modalities = try container.decodeIfPresent(ModelModalities.self, forKey: .modalities)
+        supportsFunctions = try container.decodeIfPresent(Bool.self, forKey: .supportsFunctions)
+        multimodal = try container.decodeIfPresent(Bool.self, forKey: .multimodal)
+        isFeatured = try container.decodeIfPresent(Bool.self, forKey: .isFeatured)
+            ?? container.decodeIfPresent(Bool.self, forKey: .featured)
+        isDeprecated = try container.decodeIfPresent(Bool.self, forKey: .isDeprecated)
+            ?? container.decodeIfPresent(Bool.self, forKey: .deprecated)
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+
+        try container.encodeIfPresent(name, forKey: .name)
+        try container.encode(provider, forKey: .provider)
+        try container.encodeIfPresent(description, forKey: .description)
+        try container.encodeIfPresent(strengths, forKey: .strengths)
+        try container.encodeIfPresent(contextWindow, forKey: .contextWindow)
+        try container.encodeIfPresent(pricing, forKey: .pricing)
+        try container.encodeIfPresent(modalities, forKey: .modalities)
+        try container.encodeIfPresent(supportsFunctions, forKey: .supportsFunctions)
+        try container.encodeIfPresent(multimodal, forKey: .multimodal)
+        try container.encodeIfPresent(isFeatured, forKey: .isFeatured)
+        try container.encodeIfPresent(isDeprecated, forKey: .isDeprecated)
     }
 }
 
@@ -477,7 +533,6 @@ public struct UpdateConversationResponse: Codable {
     }
 }
 
-// Conversation List Response
 public struct ConversationListResponse: Codable {
     public let conversations: [ConversationSummary]
     public let totalPages: Int
@@ -525,7 +580,6 @@ public struct ConversationListResponse: Codable {
     }
 }
 
-// Conversation Detail Response
 public struct ConversationDetailResponse: Codable {
     public let id: String
     public let title: String?
@@ -563,7 +617,6 @@ public struct ConversationDetailResponse: Codable {
     }
 }
 
-// Chat Settings
 public struct ChatSettings: Codable, Equatable {
     public var temperature: Double
     public var topP: Double

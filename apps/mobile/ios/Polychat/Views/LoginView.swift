@@ -6,6 +6,10 @@ struct LoginView: View {
     @Environment(\.colorScheme) private var colorScheme
     @State private var email = ""
 
+    private let authControlHeight: CGFloat = 48
+    private let authControlCornerRadius: CGFloat = 10
+    private let authControlFont = Font.system(size: 19, weight: .semibold)
+
     var body: some View {
         NavigationStack {
             VStack(spacing: 28) {
@@ -31,21 +35,26 @@ struct LoginView: View {
                         onCompletion: authManager.handleAppleSignInCompletion
                     )
                     .signInWithAppleButtonStyle(colorScheme == .dark ? .white : .black)
-                    .frame(height: 48)
-                    .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                    .frame(maxWidth: .infinity)
+                    .frame(height: authControlHeight)
+                    .clipShape(RoundedRectangle(cornerRadius: authControlCornerRadius, style: .continuous))
                     .disabled(authManager.isAuthenticating)
 
                     Button {
                         authManager.loginWithGitHub()
                     } label: {
-                        HStack {
+                        HStack(spacing: 10) {
                             Image(systemName: "person.crop.circle.badge.checkmark")
                             Text(authManager.isAuthenticating ? "Signing in..." : "Continue with GitHub")
-                                .fontWeight(.semibold)
                         }
+                        .font(authControlFont)
+                        .foregroundStyle(.white)
                         .frame(maxWidth: .infinity)
+                        .frame(height: authControlHeight)
+                        .background(Color.blue)
+                        .clipShape(RoundedRectangle(cornerRadius: authControlCornerRadius, style: .continuous))
                     }
-                    .buttonStyle(.borderedProminent)
+                    .buttonStyle(.plain)
                     .disabled(authManager.isAuthenticating)
 
                     HStack(spacing: 12) {
@@ -62,13 +71,16 @@ struct LoginView: View {
 
                     VStack(spacing: 10) {
                         TextField("Email address", text: $email)
+                            .font(authControlFont)
                             .textContentType(.emailAddress)
                             .keyboardType(.emailAddress)
                             .textInputAutocapitalization(.never)
                             .autocorrectionDisabled()
-                            .padding(12)
+                            .padding(.horizontal, 20)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: authControlHeight)
                             .background(Color(.secondarySystemBackground))
-                            .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                            .clipShape(RoundedRectangle(cornerRadius: authControlCornerRadius, style: .continuous))
 
                         Button {
                             Task {
@@ -76,9 +88,14 @@ struct LoginView: View {
                             }
                         } label: {
                             Label("Email me a login link", systemImage: "envelope")
+                                .font(authControlFont)
+                                .foregroundStyle(Color.blue)
                                 .frame(maxWidth: .infinity)
+                                .frame(height: authControlHeight)
+                                .background(Color(.secondarySystemBackground))
+                                .clipShape(RoundedRectangle(cornerRadius: authControlCornerRadius, style: .continuous))
                         }
-                        .buttonStyle(.bordered)
+                        .buttonStyle(.plain)
                         .disabled(authManager.isAuthenticating)
                     }
                 }

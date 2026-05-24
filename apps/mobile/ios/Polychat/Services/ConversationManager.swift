@@ -52,13 +52,11 @@ class ConversationManager: ObservableObject {
                 )
             }
 
-            // If no current conversation, start a new one
             if currentConversation == nil && conversations.isEmpty {
                 _ = startNewConversation()
             }
         } catch {
             self.error = "Failed to load conversations: \(error.localizedDescription)"
-            // Create a new conversation as fallback
             if conversations.isEmpty {
                 _ = startNewConversation()
             }
@@ -82,7 +80,6 @@ class ConversationManager: ObservableObject {
     func loadConversationMessages(_ conversation: Conversation) async {
         currentConversation = conversation
 
-        // If messages already loaded, skip
         if !conversation.messages.isEmpty {
             return
         }
@@ -94,7 +91,6 @@ class ConversationManager: ObservableObject {
         do {
             let detail = try await apiClient.fetchConversation(id: conversation.id)
 
-            // Update conversation with messages
             var updatedConversation = conversation
             updatedConversation.messages = detail.messages
             updatedConversation.title = detail.title ?? conversation.title
@@ -102,7 +98,6 @@ class ConversationManager: ObservableObject {
             updatedConversation.lastMessageAt = AppDateParser.parse(detail.lastMessageAt ?? detail.updatedAt)
             updatedConversation.messageCount = detail.messageCount ?? detail.messages.count
 
-            // Update in array
             if let index = conversations.firstIndex(where: { $0.id == conversation.id }) {
                 conversations[index] = updatedConversation
             }
@@ -137,58 +132,123 @@ class ConversationManager: ObservableObject {
                          userInfo: [NSLocalizedDescriptionKey: "No active conversation"])
         }
 
-        // Add user message
         conversation.messages.append(message)
         conversation.lastMessageAt = Date()
         conversation.messageCount = conversation.messages.count
         currentConversation = conversation
         updateConversationInArray(conversation)
 
-        // Add loading indicator
-        let loadingMessage = ChatMessage(role: "assistant", content: "...")
+        let assistantMessageId = UUID().uuidString
+        let loadingMessage = ChatMessage(id: assistantMessageId, role: "assistant", content: "")
         conversation.messages.append(loadingMessage)
         currentConversation = conversation
         updateConversationInArray(conversation)
 
         do {
-            // Get the model to use - from conversation, selected, or default
             let currentSelectedModelId = await MainActor.run { modelsStore?.selectedModelId }
             let modelToUse = conversation.modelId ??
                            selectedModelId ??
                            currentSelectedModelId ??
                            "mistral-small"
 
-            // Get API response with store:true, completion_id, and settings
-            if let response = try await apiClient?.createChatCompletion(
+            guard let stream = apiClient?.streamChatCompletion(
                 messages: Array(conversation.messages.dropLast()),
                 modelId: modelToUse,
                 completionId: conversation.id,
                 settings: settings
-            ) {
-                // Remove loading message
-                conversation.messages.removeLast()
+            ) else {
+                return
+            }
 
-                let contentText = response.choices.first?.message.content.textValue ?? "No response"
-                let assistantMessage = ChatMessage(role: "assistant",
-                                                 content: contentText)
-                conversation.messages.append(assistantMessage)
-                conversation.isLoadedFromAPI = true
-                conversation.modelId = modelToUse
-                conversation.lastMessageAt = Date()
-                conversation.messageCount = conversation.messages.count
-                currentConversation = conversation
-                updateConversationInArray(conversation)
-                
-                // Generate title if needed
-                await generateTitleIfNeeded(for: conversation)
+            var streamedContent = ""
+            var finalMessageId = assistantMessageId
+
+            for try await event in stream {
+                switch event {
+                case .content(let delta):
+                    streamedContent += delta
+                    updateAssistantMessage(
+                        conversationId: conversation.id,
+                        messageId: finalMessageId,
+                        content: streamedContent,
+                        modelId: modelToUse
+                    )
+                case .reasoning(let delta):
+                    if streamedContent.isEmpty {
+                        updateAssistantMessage(
+                            conversationId: conversation.id,
+                            messageId: finalMessageId,
+                            content: delta,
+                            modelId: modelToUse
+                        )
+                    }
+                case .state:
+                    break
+                case .metadata(let messageId):
+                    finalMessageId = messageId
+                    updateAssistantMessage(
+                        conversationId: conversation.id,
+                        messageId: finalMessageId,
+                        content: streamedContent,
+                        modelId: modelToUse
+                    )
+                case .done:
+                    break
+                }
+            }
+
+            if streamedContent.isEmpty {
+                streamedContent = "No response"
+                updateAssistantMessage(
+                    conversationId: conversation.id,
+                    messageId: finalMessageId,
+                    content: streamedContent,
+                    modelId: modelToUse
+                )
+            }
+
+            if let updatedConversation = currentConversation, updatedConversation.id == conversation.id {
+                await generateTitleIfNeeded(for: updatedConversation)
             }
         } catch {
-            // Remove loading message and add error message
-            conversation.messages.removeLast()
-            let errorMessage = ChatMessage(role: "assistant", content: "Error: \(error.localizedDescription)")
-            conversation.messages.append(errorMessage)
+            updateAssistantMessage(
+                conversationId: conversation.id,
+                messageId: assistantMessageId,
+                content: "Error: \(error.localizedDescription)",
+                modelId: conversation.modelId
+            )
+        }
+    }
+
+    private func updateAssistantMessage(
+        conversationId: String,
+        messageId: String,
+        content: String,
+        modelId: String?
+    ) {
+        guard let index = conversations.firstIndex(where: { $0.id == conversationId }) else {
+            return
+        }
+
+        var conversation = conversations[index]
+        guard let messageIndex = conversation.messages.lastIndex(where: { $0.role == "assistant" }) else {
+            return
+        }
+
+        conversation.messages[messageIndex] = ChatMessage(
+            id: messageId,
+            role: "assistant",
+            content: content,
+            model: modelId
+        )
+        conversation.isLoadedFromAPI = true
+        conversation.modelId = modelId
+        conversation.lastMessageAt = Date()
+        conversation.messageCount = conversation.messages.count
+        conversations[index] = conversation
+
+        if currentConversation?.id == conversationId {
             currentConversation = conversation
-            updateConversationInArray(conversation)
         }
     }
     
@@ -213,7 +273,6 @@ class ConversationManager: ObservableObject {
             return
         }
 
-        // Only generate title if we have at least 2 messages and the title is still default
         guard conversation.messages.count >= 2,
               conversation.title == "New Conversation" || conversation.title.hasPrefix("New Conversation") else {
             return
@@ -225,7 +284,6 @@ class ConversationManager: ObservableObject {
                 await updateConversationTitle(conversation.id, title: title)
             }
         } catch {
-            // If title generation fails, use truncated first message as fallback
             if let firstUserMessage = conversation.messages.first(where: { $0.role == "user" }) {
                 let truncatedTitle = String(firstUserMessage.content.textValue.prefix(30))
                 await updateConversationTitle(conversation.id, title: truncatedTitle)
@@ -240,7 +298,6 @@ class ConversationManager: ObservableObject {
                 currentConversation?.title = title
             }
 
-            // Update on server if it's from API
             if conversations[index].isLoadedFromAPI {
                 do {
                     try await apiClient?.updateConversation(id: conversationId, title: title)
@@ -252,7 +309,6 @@ class ConversationManager: ObservableObject {
     }
 
     func deleteConversation(_ conversation: Conversation) async {
-        // Delete from server if it's from API
         if conversation.isLoadedFromAPI {
             do {
                 try await apiClient?.deleteConversation(id: conversation.id)
@@ -262,12 +318,10 @@ class ConversationManager: ObservableObject {
             }
         }
 
-        // Remove from local array
         if let index = conversations.firstIndex(where: { $0.id == conversation.id }) {
             conversations.remove(at: index)
         }
 
-        // Clear current if deleted
         if currentConversation?.id == conversation.id {
             currentConversation = nil
         }
