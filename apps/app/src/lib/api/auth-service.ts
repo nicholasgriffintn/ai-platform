@@ -11,6 +11,12 @@ interface MagicLinkErrorResponse {
 	error: string;
 }
 
+interface AppleSignInRequest {
+	identityToken: string;
+	nonce: string;
+	fullName?: string;
+}
+
 class AuthService {
 	private static instance: AuthService;
 	private user: User | null = null;
@@ -222,6 +228,55 @@ class AuthService {
 			return { success: data.success };
 		} catch (error: any) {
 			console.error("Error requesting magic link:", error);
+			return {
+				success: false,
+				error: error.message || "An unexpected error occurred.",
+			};
+		}
+	}
+
+	public async signInWithApple({
+		identityToken,
+		nonce,
+		fullName,
+	}: AppleSignInRequest): Promise<{ success: boolean; error?: string }> {
+		try {
+			const response = await fetchApi("/auth/apple", {
+				method: "POST",
+				body: {
+					identity_token: identityToken,
+					nonce,
+					full_name: fullName,
+				},
+				timeoutMs: 10000,
+			});
+
+			if (!response.ok) {
+				const errorData = (await response
+					.json()
+					.catch(() => ({}))) as Partial<MagicLinkErrorResponse>;
+				return {
+					success: false,
+					error: errorData.error || "Failed to sign in with Apple.",
+				};
+			}
+
+			const data = await returnFetchedData<{
+				token: string;
+				expires_in: number;
+			}>(response);
+
+			if (data?.token && data?.expires_in) {
+				this.tokenExpiry = new Date(Date.now() + data.expires_in * 1000);
+				this.scheduleTokenRefresh();
+				await apiKeyService.setApiKey(data.token);
+			}
+
+			await this.checkAuthStatus();
+
+			return { success: true };
+		} catch (error: any) {
+			console.error("Error signing in with Apple:", error);
 			return {
 				success: false,
 				error: error.message || "An unexpected error occurred.",

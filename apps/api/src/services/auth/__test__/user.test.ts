@@ -2,9 +2,11 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { ErrorType } from "~/utils/errors";
 import {
+	createOrUpdateAppleUser,
 	createOrUpdateGithubUser,
 	createSession,
 	deleteSession,
+	getUserByOauthAccount,
 	getUserByGithubId,
 	getUserById,
 	getUserBySessionId,
@@ -14,6 +16,7 @@ import {
 const mockRepositories = {
 	users: {
 		getUserByGithubId: vi.fn(),
+		getUserByOauthAccount: vi.fn(),
 		getUserBySessionId: vi.fn(),
 		getUserById: vi.fn(),
 		createUser: vi.fn(),
@@ -76,6 +79,39 @@ describe("User Service", () => {
 
 			await expect(getUserByGithubId(mockRepositories as any, "github123")).rejects.toMatchObject({
 				message: "Failed to retrieve user by GitHub ID",
+				type: ErrorType.UNKNOWN_ERROR,
+				name: "AssistantError",
+			});
+		});
+	});
+
+	describe("getUserByOauthAccount", () => {
+		it("should return user for a linked OAuth account", async () => {
+			const mockUser = {
+				id: 123,
+				email: "user@example.com",
+				github_username: null,
+				name: "Test User",
+			};
+
+			mockRepositories.users.getUserByOauthAccount.mockResolvedValue(mockUser);
+
+			const result = await getUserByOauthAccount(mockRepositories as any, "apple", "apple-sub");
+
+			expect(mockRepositories.users.getUserByOauthAccount).toHaveBeenCalledWith(
+				"apple",
+				"apple-sub",
+			);
+			expect(result).toEqual(mockUser);
+		});
+
+		it("should handle database errors", async () => {
+			mockRepositories.users.getUserByOauthAccount.mockRejectedValue(new Error("DB error"));
+
+			await expect(
+				getUserByOauthAccount(mockRepositories as any, "apple", "apple-sub"),
+			).rejects.toMatchObject({
+				message: "Failed to retrieve user by OAuth account",
 				type: ErrorType.UNKNOWN_ERROR,
 				name: "AssistantError",
 			});
@@ -170,6 +206,133 @@ describe("User Service", () => {
 			await expect(getUserById(mockRepositories as any, 123)).rejects.toMatchObject({
 				message: "Failed to retrieve user by ID",
 				type: ErrorType.UNKNOWN_ERROR,
+				name: "AssistantError",
+			});
+		});
+	});
+
+	describe("createOrUpdateAppleUser", () => {
+		const mockUserData = {
+			appleId: "apple-sub",
+			email: "relay@example.com",
+			name: "Apple User",
+		};
+
+		it("should update an existing Apple-linked user", async () => {
+			const existingUser = {
+				id: 123,
+				email: "old@example.com",
+				github_username: null,
+				name: null,
+				avatar_url: null,
+				company: null,
+				site: null,
+				location: null,
+				bio: null,
+				twitter_username: null,
+				role: null,
+				created_at: "2024-01-01",
+				updated_at: "2024-01-01",
+				setup_at: null,
+				terms_accepted_at: null,
+				plan_id: null,
+				last_active_at: null,
+				stripe_customer_id: null,
+				stripe_subscription_id: null,
+			};
+
+			mockRepositories.users.getUserByOauthAccount.mockResolvedValue(existingUser);
+			mockRepositories.users.updateUser.mockResolvedValue(true);
+
+			const result = await createOrUpdateAppleUser(mockRepositories as any, mockUserData);
+
+			expect(mockRepositories.users.getUserByOauthAccount).toHaveBeenCalledWith(
+				"apple",
+				"apple-sub",
+			);
+			expect(mockRepositories.users.updateUser).toHaveBeenCalledWith(123, {
+				email: "relay@example.com",
+				name: "Apple User",
+			});
+			expect(result.email).toBe("relay@example.com");
+		});
+
+		it("should link Apple to an existing email user", async () => {
+			const existingEmailUser = {
+				id: 456,
+				email: "relay@example.com",
+				name: null,
+				github_username: "github-user",
+				avatar_url: null,
+				company: null,
+				location: null,
+				bio: null,
+				twitter_username: null,
+				site: null,
+				created_at: "2024-01-01",
+				updated_at: "2024-01-01",
+				setup_at: null,
+				terms_accepted_at: null,
+				role: null,
+				plan_id: null,
+			};
+
+			mockRepositories.users.getUserByOauthAccount.mockResolvedValue(null);
+			mockRepositories.users.getUserByEmail.mockResolvedValue(existingEmailUser);
+			mockRepositories.users.createOauthAccount.mockResolvedValue(true);
+			mockRepositories.users.updateUser.mockResolvedValue(true);
+
+			const result = await createOrUpdateAppleUser(mockRepositories as any, mockUserData);
+
+			expect(mockRepositories.users.createOauthAccount).toHaveBeenCalledWith(
+				456,
+				"apple",
+				"apple-sub",
+			);
+			expect(mockRepositories.users.updateUser).toHaveBeenCalledWith(456, {
+				name: "Apple User",
+			});
+			expect(result.id).toBe(456);
+		});
+
+		it("should create a new Apple user", async () => {
+			const newUser = {
+				id: 789,
+				email: "relay@example.com",
+				github_username: null,
+				name: "Apple User",
+			};
+
+			mockRepositories.users.getUserByOauthAccount.mockResolvedValue(null);
+			mockRepositories.users.getUserByEmail.mockResolvedValue(null);
+			mockRepositories.users.createUser.mockResolvedValue(newUser);
+			mockRepositories.userSettings.createUserSettings.mockResolvedValue(true);
+			mockRepositories.userSettings.createUserProviderSettings.mockResolvedValue(true);
+			mockRepositories.users.createOauthAccount.mockResolvedValue(true);
+
+			const result = await createOrUpdateAppleUser(mockRepositories as any, mockUserData);
+
+			expect(mockRepositories.users.createUser).toHaveBeenCalledWith({
+				email: "relay@example.com",
+				name: "Apple User",
+				username: null,
+			});
+			expect(mockRepositories.users.createOauthAccount).toHaveBeenCalledWith(
+				789,
+				"apple",
+				"apple-sub",
+			);
+			expect(result.id).toBe(789);
+		});
+
+		it("should reject new Apple users when Apple omits email", async () => {
+			mockRepositories.users.getUserByOauthAccount.mockResolvedValue(null);
+
+			await expect(
+				createOrUpdateAppleUser(mockRepositories as any, { appleId: "apple-sub" }),
+			).rejects.toMatchObject({
+				message: "Apple did not provide an email address for this account.",
+				type: ErrorType.AUTHENTICATION_ERROR,
 				name: "AssistantError",
 			});
 		});

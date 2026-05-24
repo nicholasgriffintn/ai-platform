@@ -37,6 +37,23 @@ export async function getUserByGithubId(
 	}
 }
 
+export async function getUserByOauthAccount(
+	repositories: RepositoryManager,
+	providerId: string,
+	providerUserId: string,
+): Promise<User | null> {
+	try {
+		const result = await repositories.users.getUserByOauthAccount(providerId, providerUserId);
+
+		if (!result) return null;
+
+		return mapToUser(result);
+	} catch (error) {
+		logger.error("Error getting user by OAuth account:", { error });
+		throw new AssistantError("Failed to retrieve user by OAuth account", ErrorType.UNKNOWN_ERROR);
+	}
+}
+
 /**
  * Get a user by their session ID
  * @param repositories - The repository manager instance
@@ -218,6 +235,103 @@ export async function createOrUpdateGithubUser(
 		return newUser;
 	} catch (error) {
 		logger.error("Error creating/updating user:", { error });
+		throw new AssistantError("Failed to create or update user", ErrorType.UNKNOWN_ERROR);
+	}
+}
+
+export async function createOrUpdateAppleUser(
+	repositories: RepositoryManager,
+	userData: {
+		appleId: string;
+		email?: string;
+		name?: string;
+	},
+): Promise<User> {
+	try {
+		const existingUser = await getUserByOauthAccount(repositories, "apple", userData.appleId);
+
+		if (existingUser) {
+			const updates: Record<string, string | null> = {};
+
+			if (userData.email) {
+				updates.email = userData.email;
+			}
+
+			if (userData.name) {
+				updates.name = userData.name;
+			}
+
+			if (Object.keys(updates).length > 0) {
+				await repositories.users.updateUser(existingUser.id, updates);
+			}
+
+			return {
+				...existingUser,
+				email: userData.email || existingUser.email,
+				name: userData.name || existingUser.name,
+				updated_at: new Date().toISOString(),
+			};
+		}
+
+		if (!userData.email) {
+			throw new AssistantError(
+				"Apple did not provide an email address for this account.",
+				ErrorType.AUTHENTICATION_ERROR,
+				401,
+			);
+		}
+
+		const userByEmail = await repositories.users.getUserByEmail(userData.email);
+
+		if (userByEmail) {
+			await repositories.users.createOauthAccount(userByEmail.id, "apple", userData.appleId);
+
+			if (userData.name) {
+				await repositories.users.updateUser(userByEmail.id, { name: userData.name });
+			}
+
+			return {
+				...userByEmail,
+				name: userData.name || userByEmail.name,
+				updated_at: new Date().toISOString(),
+			};
+		}
+
+		const result = await repositories.users.createUser({
+			email: userData.email,
+			name: userData.name || null,
+			username: null,
+		});
+
+		if (!result) {
+			throw new AssistantError("Failed to create user", ErrorType.UNKNOWN_ERROR);
+		}
+
+		try {
+			await repositories.userSettings.createUserSettings(result.id);
+		} catch (settingsError) {
+			logger.error("Failed to create user settings:", { settingsError });
+		}
+
+		try {
+			await repositories.userSettings.createUserProviderSettings(result.id);
+		} catch (providerSettingsError) {
+			logger.error("Failed to create user provider settings:", {
+				providerSettingsError,
+			});
+		}
+
+		const newUser = mapToUser(result);
+
+		await repositories.users.createOauthAccount(newUser.id, "apple", userData.appleId);
+
+		return newUser;
+	} catch (error) {
+		if (error instanceof AssistantError) {
+			throw error;
+		}
+
+		logger.error("Error creating/updating Apple user:", { error });
 		throw new AssistantError("Failed to create or update user", ErrorType.UNKNOWN_ERROR);
 	}
 }

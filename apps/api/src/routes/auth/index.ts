@@ -3,6 +3,7 @@ import { type Context, Hono } from "hono";
 
 import z from "zod/v4";
 import {
+	appleLoginSchema,
 	githubCallbackSchema,
 	githubLoginSchema,
 	jwtTokenResponseSchema,
@@ -15,6 +16,7 @@ import { getServiceContext } from "~/lib/context/serviceContext";
 import { requireAuth } from "~/middleware/auth";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import { ResponseFactory } from "~/lib/http/ResponseFactory";
+import { handleAppleIdentityTokenSignIn } from "~/services/auth/apple";
 import { getUserSettings } from "~/services/auth/user";
 import { handleGitHubOAuthCallback, getGitHubAuthUrl } from "~/services/auth/github";
 import {
@@ -127,6 +129,60 @@ addRoute(app, "get", "/github/callback", {
 
 			const redirectUri = `${c.env.APP_BASE_URL}/auth/callback`;
 			return c.redirect(redirectUri);
+		})(raw),
+});
+
+addRoute(app, "post", "/apple", {
+	tags: ["auth"],
+	summary: "Sign in with Apple",
+	bodySchema: appleLoginSchema,
+	responses: {
+		200: {
+			description: "Returns a JWT token for the authenticated Apple user",
+			schema: jwtTokenResponseSchema,
+		},
+		400: {
+			description: "Bad request or validation error",
+			schema: errorResponseSchema,
+		},
+		401: {
+			description: "Invalid Apple identity token",
+			schema: errorResponseSchema,
+		},
+		500: {
+			description: "JWT secret or Apple configuration missing",
+			schema: errorResponseSchema,
+		},
+	},
+	handler: async ({ raw }) =>
+		(async (c: Context) => {
+			const { identity_token, nonce, full_name } = c.req.valid("json" as never) as {
+				identity_token: string;
+				nonce: string;
+				full_name?: string;
+			};
+
+			const serviceContext = getServiceContext(c);
+			const { user, sessionId } = await handleAppleIdentityTokenSignIn({
+				context: serviceContext,
+				identityToken: identity_token,
+				nonce,
+				fullName: full_name,
+			});
+
+			c.header("Set-Cookie", createSessionCookie(sessionId));
+
+			const { token, expires_in } = await generateUserToken({
+				context: serviceContext,
+				user,
+				sessionId,
+			});
+
+			return ResponseFactory.success(c, {
+				token,
+				expires_in,
+				token_type: "Bearer",
+			});
 		})(raw),
 });
 

@@ -1,7 +1,9 @@
+import AuthenticationServices
 import SwiftUI
 
 struct LoginView: View {
     @EnvironmentObject var authManager: AuthenticationManager
+    @Environment(\.colorScheme) private var colorScheme
     @State private var email = ""
 
     var body: some View {
@@ -23,6 +25,16 @@ struct LoginView: View {
                 }
 
                 VStack(spacing: 14) {
+                    SignInWithAppleButton(
+                        .signIn,
+                        onRequest: authManager.prepareAppleSignInRequest,
+                        onCompletion: authManager.handleAppleSignInCompletion
+                    )
+                    .signInWithAppleButtonStyle(colorScheme == .dark ? .white : .black)
+                    .frame(height: 48)
+                    .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                    .disabled(authManager.isAuthenticating)
+
                     Button {
                         authManager.loginWithGitHub()
                     } label: {

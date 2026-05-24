@@ -15,6 +15,10 @@ export function isObjectOrArray(value: unknown): value is Record<string, unknown
 	return isRecord(value) || Array.isArray(value);
 }
 
+export function isStringArray(value: unknown): value is string[] {
+	return Array.isArray(value) && value.every((item) => typeof item === "string");
+}
+
 export function omitUndefinedValues<T>(value: T): T {
 	if (Array.isArray(value)) {
 		return value.map((item) => (item === undefined ? null : omitUndefinedValues(item))) as T;

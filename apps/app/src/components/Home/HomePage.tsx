@@ -4,10 +4,10 @@ import { CanvasGenerationsView } from "~/components/Canvas/CanvasGenerationsView
 import { useCanvasStudio } from "~/components/Canvas/useCanvasStudio";
 import { ChatSidebar } from "~/components/ChatSidebar";
 import { PageShell } from "~/components/Core/PageShell";
-import { PageTitle } from "~/components/Core/PageTitle";
 import { SearchDialog } from "~/components/Search/SearchDialog";
 import { useChatStore } from "~/state/stores/chatStore";
 import { HomeConversationThread } from "./HomeConversationThread";
+import { HomeHeader } from "./HomeHeader";
 
 export function HomePage() {
 	const { initializeStore, showSearch, setShowSearch, setChatInput } = useChatStore();
@@ -40,7 +40,7 @@ export function HomePage() {
 				/>
 			}
 			fullBleed={true}
-			headerContent={<PageTitle title="Conversation" className="sr-only" />}
+			headerContent={<HomeHeader />}
 		>
 			<div className="flex h-full min-h-0 flex-1 flex-row overflow-hidden">
 				<div className="flex h-full min-h-0 w-full flex-1 flex-col">
