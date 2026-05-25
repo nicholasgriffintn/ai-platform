@@ -4,6 +4,7 @@ struct MessageListView: View {
     let conversationModelId: String?
     let isLoadingConversation: Bool
     let onSuggestionSelected: (String) -> Void
+    let onDismissKeyboard: () -> Void
     
     var body: some View {
         ScrollView {
@@ -44,6 +45,11 @@ struct MessageListView: View {
             }
         }
         .background(Color.polychat.background)
+        .contentShape(Rectangle())
+        .onTapGesture(perform: onDismissKeyboard)
+        #if os(iOS)
+        .scrollDismissesKeyboard(.interactively)
+        #endif
     }
 }
 

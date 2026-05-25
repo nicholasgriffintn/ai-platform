@@ -15,6 +15,7 @@ struct ChatView: View {
     @State private var showingArtifacts = false
     @State private var chatSettings = ChatSettings.default
     @StateObject private var voiceRecorder = VoiceRecorder()
+    @FocusState private var isMessageInputFocused: Bool
 
     private var messages: [ChatMessage] {
         conversationManager.currentConversation?.messages ?? []
@@ -60,11 +61,15 @@ struct ChatView: View {
                 isLoadingConversation: conversationManager.loadingConversationID == conversationManager.currentConversation?.id,
                 onSuggestionSelected: { suggestion in
                     messageText = suggestion
+                },
+                onDismissKeyboard: {
+                    isMessageInputFocused = false
                 }
             )
             MessageInputView(
                 messageText: $messageText,
                 selectedAttachments: $selectedAttachments,
+                inputFocus: $isMessageInputFocused,
                 isUploadingAttachments: isUploadingAttachments,
                 isRecordingVoice: voiceRecorder.isRecording,
                 isTranscribingVoice: isTranscribingVoice,
@@ -73,11 +78,16 @@ struct ChatView: View {
                 activeModelName: activeModelName,
                 activeModelProvider: activeModelProvider,
                 onFilesPicked: uploadFiles,
-                onVoiceTapped: toggleVoiceRecording,
+                onVoiceTapped: {
+                    isMessageInputFocused = false
+                    toggleVoiceRecording()
+                },
                 onModelTapped: {
+                    isMessageInputFocused = false
                     showingModelSelector = true
                 },
                 onSettingsTapped: {
+                    isMessageInputFocused = false
                     showingChatSettings = true
                 },
                 sendMessage: sendMessage
@@ -91,6 +101,7 @@ struct ChatView: View {
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button(action: {
+                    isMessageInputFocused = false
                     _ = conversationManager.startNewConversation()
                 }) {
                     Image(systemName: "square.and.pencil")
@@ -100,6 +111,7 @@ struct ChatView: View {
 
             ToolbarItem(placement: .secondaryAction) {
                 Button(action: {
+                    isMessageInputFocused = false
                     showingArtifacts = true
                 }) {
                     Label("Artifacts", systemImage: "doc.text")

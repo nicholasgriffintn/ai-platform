@@ -2,6 +2,7 @@ import SwiftUI
 struct MessageInputView: View {
     @Binding var messageText: String
     @Binding var selectedAttachments: [ComposerAttachment]
+    let inputFocus: FocusState<Bool>.Binding
     let isUploadingAttachments: Bool
     let isRecordingVoice: Bool
     let isTranscribingVoice: Bool
@@ -14,7 +15,6 @@ struct MessageInputView: View {
     let onModelTapped: () -> Void
     let onSettingsTapped: () -> Void
     let sendMessage: () -> Void
-    @FocusState private var isInputFocused: Bool
 
     private var canSend: Bool {
         (!messageText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || !selectedAttachments.isEmpty) && !isUploadingAttachments
@@ -43,7 +43,7 @@ struct MessageInputView: View {
 
             VStack(spacing: 0) {
                 TextField("Ask me anything...", text: $messageText, axis: .vertical)
-                    .focused($isInputFocused)
+                    .focused(inputFocus)
                     .textFieldStyle(.plain)
                     .font(.body)
                     .lineLimit(1...4)
@@ -126,7 +126,7 @@ struct MessageInputView: View {
             .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: 8, style: .continuous)
-                    .stroke(isInputFocused ? Color.polychat.zinc500 : Color.polychat.border, lineWidth: 1)
+                    .stroke(inputFocus.wrappedValue ? Color.polychat.zinc500 : Color.polychat.border, lineWidth: 1)
             )
             .padding(.horizontal, 16)
             .padding(.vertical, 12)
