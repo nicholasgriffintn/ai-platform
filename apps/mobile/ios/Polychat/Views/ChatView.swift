@@ -203,8 +203,12 @@ struct ChatView: View {
 
     private func toggleVoiceRecording() {
         if voiceRecorder.isRecording {
-            guard let recordingURL = voiceRecorder.stop() else { return }
-            transcribeRecording(at: recordingURL)
+            do {
+                let recordingURL = try voiceRecorder.stop()
+                transcribeRecording(at: recordingURL)
+            } catch {
+                voiceError = error.localizedDescription
+            }
             return
         }
 
@@ -226,6 +230,10 @@ struct ChatView: View {
 
         Task {
             do {
+                defer {
+                    try? FileManager.default.removeItem(at: url)
+                }
+
                 let data = try Data(contentsOf: url)
                 let response = try await apiClient.transcribeAudio(
                     data: data,

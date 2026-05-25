@@ -15,7 +15,11 @@ final class VoiceRecorder: NSObject, ObservableObject, AVAudioRecorderDelegate {
         }
 
         let session = AVAudioSession.sharedInstance()
-        try session.setCategory(.playAndRecord, mode: .spokenAudio, options: [.defaultToSpeaker])
+        try session.setCategory(
+            .playAndRecord,
+            mode: .spokenAudio,
+            options: [.defaultToSpeaker, .allowBluetoothHFP, .allowBluetoothA2DP]
+        )
         try session.setActive(true)
 
         let url = FileManager.default.temporaryDirectory
@@ -29,17 +33,32 @@ final class VoiceRecorder: NSObject, ObservableObject, AVAudioRecorderDelegate {
 
         let recorder = try AVAudioRecorder(url: url, settings: settings)
         recorder.delegate = self
-        recorder.record()
+        guard recorder.prepareToRecord(), recorder.record() else {
+            try? session.setActive(false, options: .notifyOthersOnDeactivation)
+            throw VoiceRecorderError.failedToStart
+        }
 
         self.recorder = recorder
         self.recordingURL = url
         self.isRecording = true
     }
 
-    func stop() -> URL? {
-        recorder?.stop()
-        recorder = nil
+    func stop() throws -> URL {
+        guard let activeRecorder = recorder, let recordingURL else {
+            throw VoiceRecorderError.noActiveRecording
+        }
+
+        activeRecorder.stop()
+        self.recorder = nil
+        self.recordingURL = nil
         isRecording = false
+        try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
+
+        let fileSize = (try? recordingURL.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? 0
+        guard fileSize > 0 else {
+            throw VoiceRecorderError.emptyRecording
+        }
+
         return recordingURL
     }
 
@@ -58,8 +77,20 @@ final class VoiceRecorder: NSObject, ObservableObject, AVAudioRecorderDelegate {
 
 enum VoiceRecorderError: LocalizedError {
     case permissionDenied
+    case failedToStart
+    case noActiveRecording
+    case emptyRecording
 
     var errorDescription: String? {
-        "Microphone access is required for voice input."
+        switch self {
+        case .permissionDenied:
+            return "Microphone access is required for voice input."
+        case .failedToStart:
+            return "Voice recording could not start."
+        case .noActiveRecording:
+            return "There is no active voice recording."
+        case .emptyRecording:
+            return "Voice recording did not capture any audio."
+        }
     }
 }

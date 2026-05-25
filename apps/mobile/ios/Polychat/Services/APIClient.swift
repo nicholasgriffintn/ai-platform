@@ -8,7 +8,7 @@ final class APIClient: ObservableObject {
     private let userAgent: String
     private var authToken: String?
 
-    private init(
+    init(
         baseURL: URL = APIClient.defaultBaseURL(),
         session: URLSession = .shared,
         userAgent: String = APIClient.defaultUserAgent()
@@ -178,49 +178,61 @@ final class APIClient: ObservableObject {
         fileName: String,
         mimeType: String,
         fileType: String,
-        convertToMarkdown: Bool = false
+        convertToMarkdown: Bool = false,
+        conversionOptions: MarkdownConversionOptions? = nil
     ) async throws -> UploadResponse {
-        let boundary = "Boundary-\(UUID().uuidString)"
-        var body = Data()
-        body.appendMultipartField(name: "file_type", value: fileType, boundary: boundary)
-        if convertToMarkdown {
-            body.appendMultipartField(name: "convert_to_markdown", value: "true", boundary: boundary)
-        }
-        body.appendMultipartFile(
+        var formData = MultipartFormData()
+        formData.appendFile(
             name: "file",
             fileName: fileName,
             mimeType: mimeType,
-            data: data,
-            boundary: boundary
+            data: data
         )
-        body.append("--\(boundary)--\r\n".data(using: .utf8)!)
+        formData.appendField(name: "file_type", value: fileType)
+        if convertToMarkdown {
+            formData.appendField(name: "convert_to_markdown", value: "true")
+        }
+        if let conversionOptions {
+            let optionsData = try JSONEncoder().encode(conversionOptions)
+            formData.appendField(
+                name: "conversion_options",
+                value: String(decoding: optionsData, as: UTF8.self)
+            )
+        }
 
         return try await send(
             path: "/uploads",
             method: "POST",
-            bodyData: body,
-            contentType: "multipart/form-data; boundary=\(boundary)"
+            bodyData: formData.finalizedBody(),
+            contentType: formData.contentType
         )
     }
 
     func transcribeAudio(data: Data, fileName: String, mimeType: String) async throws -> TranscriptionResponse {
-        let boundary = "Boundary-\(UUID().uuidString)"
-        var body = Data()
-        body.appendMultipartFile(
+        var formData = MultipartFormData()
+        formData.appendFile(
             name: "audio",
             fileName: fileName,
             mimeType: mimeType,
-            data: data,
-            boundary: boundary
+            data: data
         )
-        body.append("--\(boundary)--\r\n".data(using: .utf8)!)
 
         return try await send(
             path: "/audio/transcribe",
             method: "POST",
-            bodyData: body,
-            contentType: "multipart/form-data; boundary=\(boundary)"
+            bodyData: formData.finalizedBody(),
+            contentType: formData.contentType
         )
+    }
+
+    func generateSpeech(input: String, store: Bool = true) async throws -> SpeechGenerationResponse {
+        let envelope: SpeechGenerationEnvelope = try await send(
+            path: "/audio/speech",
+            method: "POST",
+            body: SpeechGenerationRequest(input: input, store: store)
+        )
+
+        return envelope.response
     }
 
     func initialize() async throws {
@@ -278,11 +290,7 @@ final class APIClient: ObservableObject {
         let (data, response) = try await session.data(for: request)
         try validate(response: response, data: data)
 
-        if T.self == EmptyResponse.self {
-            return EmptyResponse() as! T
-        }
-
-        return try JSONDecoder().decode(T.self, from: data)
+        return try decodeResponse(T.self, from: data)
     }
 
     private func stream<Body: Encodable>(
@@ -296,56 +304,26 @@ final class APIClient: ObservableObject {
             path: path,
             method: method,
             bodyData: bodyData,
-            contentType: "application/json"
+            contentType: "application/json",
+            additionalHeaders: [
+                "Accept": "text/event-stream",
+                "Accept-Encoding": "identity",
+                "Cache-Control": "no-cache"
+            ]
         )
 
-        var isServerSentEventResponse = false
-        var hasReceivedResponse = false
-        var responseData = Data()
-        var pendingDecodeData = Data()
-        var buffer = ""
+        let (bytes, response) = try await session.bytes(for: request)
+        let contentType = (response as? HTTPURLResponse)?.value(forHTTPHeaderField: "Content-Type") ?? ""
+        let isServerSentEventResponse = contentType.localizedCaseInsensitiveContains("text/event-stream")
 
-        for try await event in streamResponse(for: request) {
-            if Task.isCancelled {
-                return
-            }
-
-            switch event {
-            case .response(let response):
-                try validate(response: response, data: Data())
-                let contentType = (response as? HTTPURLResponse)?.value(forHTTPHeaderField: "Content-Type") ?? ""
-                isServerSentEventResponse = contentType.localizedCaseInsensitiveContains("text/event-stream")
-                hasReceivedResponse = true
-
-            case .data(let data):
-                guard hasReceivedResponse else {
-                    responseData.append(data)
-                    continue
-                }
-
-                guard isServerSentEventResponse else {
-                    responseData.append(data)
-                    continue
-                }
-
-                pendingDecodeData.append(data)
-                guard let chunk = String(data: pendingDecodeData, encoding: .utf8) else {
-                    continue
-                }
-
-                buffer += chunk
-                pendingDecodeData.removeAll(keepingCapacity: true)
-
-                while let range = buffer.range(of: "\n\n") {
-                    let eventBlock = String(buffer[..<range.lowerBound])
-                    buffer.removeSubrange(buffer.startIndex..<range.upperBound)
-                    try processServerSentEventBlock(eventBlock, continuation: continuation)
-                }
-            }
+        if let httpResponse = response as? HTTPURLResponse, !(200...299).contains(httpResponse.statusCode) {
+            let errorData = try await collectResponseData(bytes)
+            try validate(response: response, data: errorData)
         }
 
         guard isServerSentEventResponse else {
-            let response = try JSONDecoder().decode(ChatCompletionResponse.self, from: responseData)
+            let responseData = try await collectResponseData(bytes)
+            let response = try decodeResponse(ChatCompletionResponse.self, from: responseData)
             let content = response.choices.first?.message.content.textValue ?? ""
             if !content.isEmpty {
                 continuation.yield(.content(content))
@@ -355,34 +333,49 @@ final class APIClient: ObservableObject {
             return
         }
 
-        if !pendingDecodeData.isEmpty, let chunk = String(data: pendingDecodeData, encoding: .utf8) {
-            buffer += chunk
-        }
-
-        if !buffer.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            try processServerSentEventBlock(buffer, continuation: continuation)
-        }
-
+        try await processServerSentEventStream(bytes, continuation: continuation)
         continuation.finish()
     }
 
-    private func streamResponse(for request: URLRequest) -> AsyncThrowingStream<URLSessionStreamEvent, Error> {
-        AsyncThrowingStream { continuation in
-            let delegate = StreamingDataDelegate(continuation: continuation)
-            let configuration = URLSessionConfiguration.default
-            configuration.requestCachePolicy = .reloadIgnoringLocalCacheData
-            configuration.timeoutIntervalForRequest = 60
-            let streamingSession = URLSession(configuration: configuration, delegate: delegate, delegateQueue: nil)
-            let task = streamingSession.dataTask(with: request)
+    private func processServerSentEventStream(
+        _ bytes: URLSession.AsyncBytes,
+        continuation: AsyncThrowingStream<ChatStreamEvent, Error>.Continuation
+    ) async throws {
+        var dataLines: [String] = []
 
-            continuation.onTermination = { _ in
-                task.cancel()
-                streamingSession.invalidateAndCancel()
-                _ = delegate
+        for try await line in bytes.lines {
+            if Task.isCancelled {
+                return
             }
 
-            task.resume()
+            let trimmedLine = line.trimmingCharacters(in: .whitespacesAndNewlines)
+
+            if trimmedLine.isEmpty {
+                if !dataLines.isEmpty {
+                    try processServerSentEvent(dataLines.joined(separator: "\n"), continuation: continuation)
+                    dataLines.removeAll(keepingCapacity: true)
+                }
+                continue
+            }
+
+            guard trimmedLine.hasPrefix("data:") else {
+                continue
+            }
+
+            dataLines.append(String(trimmedLine.dropFirst(5)).trimmingCharacters(in: .whitespaces))
         }
+
+        if !dataLines.isEmpty {
+            try processServerSentEvent(dataLines.joined(separator: "\n"), continuation: continuation)
+        }
+    }
+
+    private func collectResponseData(_ bytes: URLSession.AsyncBytes) async throws -> Data {
+        var data = Data()
+        for try await byte in bytes {
+            data.append(byte)
+        }
+        return data
     }
 
     private func makeRequest(
@@ -390,7 +383,8 @@ final class APIClient: ObservableObject {
         method: String,
         queryItems: [URLQueryItem] = [],
         bodyData: Data?,
-        contentType: String?
+        contentType: String?,
+        additionalHeaders: [String: String] = [:]
     ) -> URLRequest {
         var request = URLRequest(url: buildURL(path: path, queryItems: queryItems))
         request.httpMethod = method
@@ -403,6 +397,10 @@ final class APIClient: ObservableObject {
 
         if let authToken {
             request.setValue("Bearer \(authToken)", forHTTPHeaderField: "Authorization")
+        }
+
+        for (field, value) in additionalHeaders {
+            request.setValue(value, forHTTPHeaderField: field)
         }
 
         request.httpBody = bodyData
@@ -479,24 +477,6 @@ final class APIClient: ObservableObject {
            let content = delta["content"] as? String {
             continuation.yield(.content(content))
         }
-    }
-
-    private func processServerSentEventBlock(
-        _ block: String,
-        continuation: AsyncThrowingStream<ChatStreamEvent, Error>.Continuation
-    ) throws {
-        let data = block
-            .split(separator: "\n", omittingEmptySubsequences: false)
-            .compactMap { line -> String? in
-                let trimmed = line.trimmingCharacters(in: .whitespacesAndNewlines)
-                guard trimmed.hasPrefix("data:") else {
-                    return nil
-                }
-                return String(trimmed.dropFirst(5)).trimmingCharacters(in: .whitespaces)
-            }
-            .joined(separator: "\n")
-
-        try processServerSentEvent(data, continuation: continuation)
     }
 
     private static func extractContentDelta(from object: [String: Any]) -> String? {
@@ -651,6 +631,20 @@ final class APIClient: ObservableObject {
         return String(data: data, encoding: .utf8)
     }
 
+    private func decodeResponse<T: Decodable>(_ type: T.Type, from data: Data) throws -> T {
+        let responseData = data.isEmpty ? Data("{}".utf8) : data
+        let decoder = JSONDecoder()
+
+        do {
+            return try decoder.decode(type, from: responseData)
+        } catch {
+            if let envelope = try? decoder.decode(APIDataEnvelope<T>.self, from: responseData) {
+                return envelope.data
+            }
+            throw error
+        }
+    }
+
     private func buildURL(path: String, queryItems: [URLQueryItem] = []) -> URL {
         let trimmedPath = path.hasPrefix("/") ? String(path.dropFirst()) : path
         var components = URLComponents(url: baseURL.appendingPathComponent(trimmedPath), resolvingAgainstBaseURL: false)!
@@ -680,6 +674,10 @@ private struct APIErrorResponse: Decodable {
     let message: String?
 }
 
+private struct APIDataEnvelope<T: Decodable>: Decodable {
+    let data: T
+}
+
 enum APIClientError: LocalizedError {
     case httpStatus(Int, String)
     case streaming(String)
@@ -702,41 +700,6 @@ enum ChatStreamEvent {
     case done
 }
 
-private enum URLSessionStreamEvent {
-    case response(URLResponse)
-    case data(Data)
-}
-
-private final class StreamingDataDelegate: NSObject, URLSessionDataDelegate {
-    private let continuation: AsyncThrowingStream<URLSessionStreamEvent, Error>.Continuation
-
-    init(continuation: AsyncThrowingStream<URLSessionStreamEvent, Error>.Continuation) {
-        self.continuation = continuation
-    }
-
-    func urlSession(
-        _ session: URLSession,
-        dataTask: URLSessionDataTask,
-        didReceive response: URLResponse,
-        completionHandler: @escaping (URLSession.ResponseDisposition) -> Void
-    ) {
-        continuation.yield(.response(response))
-        completionHandler(.allow)
-    }
-
-    func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) {
-        continuation.yield(.data(data))
-    }
-
-    func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
-        if let error {
-            continuation.finish(throwing: error)
-        } else {
-            continuation.finish()
-        }
-    }
-}
-
 struct ChatStreamMetadata: Decodable {
     let messageId: String?
     let content: String?
@@ -754,30 +717,5 @@ struct ChatStreamMetadata: Decodable {
         case content, model, parts, reasoning, citations, data, name, status, created
         case messageId = "message_id"
         case logId = "log_id"
-    }
-}
-
-private extension Data {
-    mutating func appendMultipartField(name: String, value: String, boundary: String) {
-        append("--\(boundary)\r\n".data(using: .utf8)!)
-        append("Content-Disposition: form-data; name=\"\(name)\"\r\n\r\n".data(using: .utf8)!)
-        append("\(value)\r\n".data(using: .utf8)!)
-    }
-
-    mutating func appendMultipartFile(
-        name: String,
-        fileName: String,
-        mimeType: String,
-        data: Data,
-        boundary: String
-    ) {
-        append("--\(boundary)\r\n".data(using: .utf8)!)
-        append(
-            "Content-Disposition: form-data; name=\"\(name)\"; filename=\"\(fileName)\"\r\n"
-                .data(using: .utf8)!
-        )
-        append("Content-Type: \(mimeType)\r\n\r\n".data(using: .utf8)!)
-        append(data)
-        append("\r\n".data(using: .utf8)!)
     }
 }

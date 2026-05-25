@@ -101,6 +101,71 @@ public struct FunctionResponse: Codable {
     let content: String
 }
 
+public struct SpeechGenerationRequest: Codable {
+    let input: String
+    let store: Bool
+}
+
+public struct SpeechGenerationEnvelope: Codable {
+    let response: SpeechGenerationResponse
+}
+
+public struct SpeechGenerationResponse: Codable {
+    let status: String
+    let content: String
+    let data: SpeechGenerationData
+}
+
+public struct SpeechGenerationData: Codable {
+    let audioKey: String?
+    let audioUrl: String?
+    let audioBase64: String?
+    let audioDataUrl: String?
+    let audioMimeType: String?
+    let provider: String?
+    let model: String?
+    let response: String?
+    let metadata: JSONValue?
+}
+
+public struct MarkdownConversionOptions: Codable, Equatable {
+    public var image: ImageOptions?
+    public var html: HTMLOptions?
+    public var pdf: PDFOptions?
+
+    public init(image: ImageOptions? = nil, html: HTMLOptions? = nil, pdf: PDFOptions? = nil) {
+        self.image = image
+        self.html = html
+        self.pdf = pdf
+    }
+
+    public struct ImageOptions: Codable, Equatable {
+        public var descriptionLanguage: String?
+
+        public init(descriptionLanguage: String? = nil) {
+            self.descriptionLanguage = descriptionLanguage
+        }
+    }
+
+    public struct HTMLOptions: Codable, Equatable {
+        public var hostname: String?
+        public var cssSelector: String?
+
+        public init(hostname: String? = nil, cssSelector: String? = nil) {
+            self.hostname = hostname
+            self.cssSelector = cssSelector
+        }
+    }
+
+    public struct PDFOptions: Codable, Equatable {
+        public var metadata: Bool?
+
+        public init(metadata: Bool? = nil) {
+            self.metadata = metadata
+        }
+    }
+}
+
 public struct UploadResponse: Codable {
     let url: String
     let type: String
