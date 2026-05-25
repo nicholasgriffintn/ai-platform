@@ -7,8 +7,8 @@ public struct ChatCompletionResponse: Codable {
     }
 }
 
-public struct ChatCompletionRequest: Codable {
-    let messages: [ChatMessage]
+public struct ChatCompletionRequest: Encodable {
+    let messages: [ChatRequestMessage]
     let model: String?
     let provider: String?
     let platform: String
@@ -51,7 +51,7 @@ public struct ChatCompletionRequest: Codable {
         settings: ChatSettings? = nil,
         stream: Bool = false
     ) {
-        self.messages = messages
+        self.messages = messages.map(ChatRequestMessage.init)
         self.model = model
         self.provider = provider
         self.platform = "mobile"

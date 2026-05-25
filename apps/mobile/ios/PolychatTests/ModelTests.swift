@@ -83,4 +83,41 @@ struct ModelTests {
         #expect(model.isFeatured == true)
         #expect(model.isDeprecated == true)
     }
+
+    @Test func chatCompletionRequestSerializesMessagesForAPI() throws {
+        let message = ChatMessage(
+            id: "user-1",
+            role: "user",
+            contentBlocks: [
+                .text(MessageContentBlock.TextBlock(text: "Hi")),
+                .audioUrl(MessageContentBlock.AudioUrlBlock(url: "https://example.com/audio.mp3")),
+                .imageUrl(MessageContentBlock.ImageUrlBlock(url: "https://example.com/image.png"))
+            ]
+        )
+
+        let request = ChatCompletionRequest(
+            messages: [message],
+            model: "deepseek-chat",
+            provider: "deepseek",
+            completionId: "conversation-1",
+            settings: .default,
+            stream: true
+        )
+
+        let data = try JSONEncoder().encode(request)
+        let json = try #require(JSONSerialization.jsonObject(with: data) as? [String: Any])
+        let messages = try #require(json["messages"] as? [[String: Any]])
+        let firstMessage = try #require(messages.first)
+        let content = try #require(firstMessage["content"] as? [[String: Any]])
+
+        #expect(firstMessage["id"] as? String == "user-1")
+        #expect(firstMessage["role"] as? String == "user")
+        #expect(content.compactMap { $0["type"] as? String } == ["text", "image_url"])
+        #expect(json["completion_id"] as? String == "conversation-1")
+        #expect(json["stream"] as? Bool == true)
+        #expect(json["platform"] as? String == "mobile")
+        #expect(json["use_rag"] == nil)
+        #expect(json["rag_options"] == nil)
+        #expect(json["enabled_tools"] == nil)
+    }
 }
