@@ -107,7 +107,7 @@ final class APIClient: ObservableObject {
         )
 
         return AsyncThrowingStream { continuation in
-            let task = Task.detached(priority: .userInitiated) {
+            let task = Task(priority: .userInitiated) {
                 do {
                     try await self.stream(path: "/chat/completions", method: "POST", body: requestBody, continuation: continuation)
                 } catch {
@@ -312,17 +312,40 @@ final class APIClient: ObservableObject {
             ]
         )
 
-        let (bytes, response) = try await session.bytes(for: request)
-        let contentType = (response as? HTTPURLResponse)?.value(forHTTPHeaderField: "Content-Type") ?? ""
-        let isServerSentEventResponse = contentType.localizedCaseInsensitiveContains("text/event-stream")
+        let streamClient = URLSessionStreamClient(configuration: session.configuration, request: request)
+        var response: URLResponse?
+        var responseData = Data()
+        var isServerSentEventResponse = false
+        var eventParser = ChatStreamEventChunkParser()
 
-        if let httpResponse = response as? HTTPURLResponse, !(200...299).contains(httpResponse.statusCode) {
-            let errorData = try await collectResponseData(bytes)
-            try validate(response: response, data: errorData)
+        for try await streamEvent in streamClient.stream() {
+            switch streamEvent {
+            case .response(let urlResponse):
+                response = urlResponse
+                let contentType = (urlResponse as? HTTPURLResponse)?.value(forHTTPHeaderField: "Content-Type") ?? ""
+                let isSuccessfulHTTPResponse = (urlResponse as? HTTPURLResponse)
+                    .map { (200...299).contains($0.statusCode) } ?? true
+                isServerSentEventResponse = isSuccessfulHTTPResponse &&
+                    contentType.localizedCaseInsensitiveContains("text/event-stream")
+            case .data(let data):
+                if isServerSentEventResponse {
+                    yieldStreamEvents(from: try eventParser.append(data), continuation: continuation)
+                } else {
+                    responseData.append(data)
+                }
+            }
         }
 
-        guard isServerSentEventResponse else {
-            let responseData = try await collectResponseData(bytes)
+        guard let response else {
+            throw URLError(.badServerResponse)
+        }
+
+        try validate(response: response, data: responseData)
+
+        if isServerSentEventResponse {
+            yieldStreamEvents(from: try eventParser.finish(), continuation: continuation)
+            continuation.finish()
+        } else {
             let response = try decodeResponse(ChatCompletionResponse.self, from: responseData)
             let content = response.choices.first?.message.content.textValue ?? ""
             if !content.isEmpty {
@@ -330,52 +353,16 @@ final class APIClient: ObservableObject {
             }
             continuation.yield(.done)
             continuation.finish()
-            return
         }
-
-        try await processServerSentEventStream(bytes, continuation: continuation)
-        continuation.finish()
     }
 
-    private func processServerSentEventStream(
-        _ bytes: URLSession.AsyncBytes,
+    private func yieldStreamEvents(
+        from events: [ChatStreamEvent],
         continuation: AsyncThrowingStream<ChatStreamEvent, Error>.Continuation
-    ) async throws {
-        var dataLines: [String] = []
-
-        for try await line in bytes.lines {
-            if Task.isCancelled {
-                return
-            }
-
-            let trimmedLine = line.trimmingCharacters(in: .whitespacesAndNewlines)
-
-            if trimmedLine.isEmpty {
-                if !dataLines.isEmpty {
-                    try processServerSentEvent(dataLines.joined(separator: "\n"), continuation: continuation)
-                    dataLines.removeAll(keepingCapacity: true)
-                }
-                continue
-            }
-
-            guard trimmedLine.hasPrefix("data:") else {
-                continue
-            }
-
-            dataLines.append(String(trimmedLine.dropFirst(5)).trimmingCharacters(in: .whitespaces))
+    ) {
+        for event in events {
+            continuation.yield(event)
         }
-
-        if !dataLines.isEmpty {
-            try processServerSentEvent(dataLines.joined(separator: "\n"), continuation: continuation)
-        }
-    }
-
-    private func collectResponseData(_ bytes: URLSession.AsyncBytes) async throws -> Data {
-        var data = Data()
-        for try await byte in bytes {
-            data.append(byte)
-        }
-        return data
     }
 
     private func makeRequest(
@@ -405,15 +392,6 @@ final class APIClient: ObservableObject {
 
         request.httpBody = bodyData
         return request
-    }
-
-    private func processServerSentEvent(
-        _ data: String,
-        continuation: AsyncThrowingStream<ChatStreamEvent, Error>.Continuation
-    ) throws {
-        for event in try ChatStreamEventParser.events(from: data) {
-            continuation.yield(event)
-        }
     }
 
     private func validate(response: URLResponse, data: Data) throws {

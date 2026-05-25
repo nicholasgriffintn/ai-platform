@@ -32,6 +32,24 @@ enum ChatStreamEventParser {
         return []
     }
 
+    static func events(fromServerSentEvent event: String) throws -> [ChatStreamEvent] {
+        let dataLines = event
+            .components(separatedBy: .newlines)
+            .compactMap { line -> String? in
+                let trimmedLine = line.trimmingCharacters(in: .whitespacesAndNewlines)
+                guard trimmedLine.hasPrefix("data:") else {
+                    return nil
+                }
+                return String(trimmedLine.dropFirst(5)).trimmingCharacters(in: .whitespaces)
+            }
+
+        guard !dataLines.isEmpty else {
+            return []
+        }
+
+        return try events(from: dataLines.joined(separator: "\n"))
+    }
+
     private static func events(forType type: String, object: [String: Any]) throws -> [ChatStreamEvent] {
         switch type {
         case "error":
@@ -189,5 +207,50 @@ enum ChatStreamEventParser {
             logId: decoded?.logId,
             created: decoded?.created
         )
+    }
+}
+
+struct ChatStreamEventChunkParser {
+    private var buffer = Data()
+
+    mutating func append(_ data: Data) throws -> [ChatStreamEvent] {
+        buffer.append(data)
+        return try drainCompletedEvents()
+    }
+
+    mutating func finish() throws -> [ChatStreamEvent] {
+        guard !buffer.isEmpty else {
+            return []
+        }
+
+        let eventData = buffer
+        buffer.removeAll(keepingCapacity: true)
+        return try ChatStreamEventParser.events(fromServerSentEvent: String(decoding: eventData, as: UTF8.self))
+    }
+
+    private mutating func drainCompletedEvents() throws -> [ChatStreamEvent] {
+        var events: [ChatStreamEvent] = []
+
+        while let delimiterRange = firstEventDelimiterRange(in: buffer) {
+            let eventData = buffer[..<delimiterRange.lowerBound]
+            buffer.removeSubrange(..<delimiterRange.upperBound)
+            events.append(
+                contentsOf: try ChatStreamEventParser.events(
+                    fromServerSentEvent: String(decoding: eventData, as: UTF8.self)
+                )
+            )
+        }
+
+        return events
+    }
+
+    private func firstEventDelimiterRange(in data: Data) -> Range<Data.Index>? {
+        [
+            Data("\r\n\r\n".utf8),
+            Data("\n\n".utf8),
+            Data("\r\r".utf8)
+        ]
+        .compactMap { data.range(of: $0) }
+        .min { lhs, rhs in lhs.lowerBound < rhs.lowerBound }
     }
 }
