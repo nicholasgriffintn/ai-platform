@@ -6,9 +6,9 @@ final class ToolsStore: ObservableObject {
     @Published var isLoading = false
     @Published var error: String?
 
-    private let apiClient: APIClient
+    private let apiClient: any ToolsAPIClient
 
-    init(apiClient: APIClient = .shared) {
+    init(apiClient: any ToolsAPIClient = APIClient.shared) {
         self.apiClient = apiClient
     }
 

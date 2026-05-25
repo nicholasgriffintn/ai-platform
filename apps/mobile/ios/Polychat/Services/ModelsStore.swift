@@ -8,12 +8,13 @@ class ModelsStore: ObservableObject {
     @Published var isLoading: Bool = false
     @Published var error: String? = nil
     
-    private let apiClient: APIClient
-    private let userDefaults = UserDefaults.standard
+    private let apiClient: any ModelsAPIClient
+    private let userDefaults: UserDefaults
     private let selectedModelKey = "selectedModelId"
     
-    init(apiClient: APIClient = APIClient.shared) {
+    init(apiClient: any ModelsAPIClient = APIClient.shared, userDefaults: UserDefaults = .standard) {
         self.apiClient = apiClient
+        self.userDefaults = userDefaults
         loadSelectedModel()
     }
     
@@ -85,16 +86,6 @@ class ModelsStore: ObservableObject {
     }
     
     func searchModels(query: String) -> [ModelConfigItem] {
-        if query.isEmpty {
-            return models
-        }
-        return models.filter { model in
-            (model.name ?? model.id).lowercased().contains(query.lowercased()) ||
-            model.provider.lowercased().contains(query.lowercased()) ||
-            (model.modalities?.input.contains { $0.lowercased().contains(query.lowercased()) } == true) ||
-            (model.modalities?.output?.contains { $0.lowercased().contains(query.lowercased()) } == true) ||
-            (model.strengths?.contains { $0.lowercased().contains(query.lowercased()) } == true) ||
-            (model.description?.lowercased().contains(query.lowercased()) == true)
-        }
+        ModelSearch.filter(models, query: query)
     }
 }

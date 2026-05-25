@@ -221,3 +221,18 @@ public enum MessageContentBlock: Codable, Equatable {
         }
     }
 }
+
+extension Array where Element == MessageContentBlock {
+    var textContent: String {
+        compactMap { block -> String? in
+            switch block {
+            case .text(let text):
+                return text.text
+            case .thinking(let thinking):
+                return thinking.thinking
+            default:
+                return nil
+            }
+        }.joined(separator: "\n")
+    }
+}

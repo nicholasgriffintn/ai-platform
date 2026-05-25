@@ -35,7 +35,7 @@ struct ComposerAttachment: Identifiable, Equatable {
         case .document:
             return .documentUrl(MessageContentBlock.DocumentUrlBlock(url: url, name: name))
         case .audio:
-            return .documentUrl(MessageContentBlock.DocumentUrlBlock(url: url, name: name))
+            return .audioUrl(MessageContentBlock.AudioUrlBlock(url: url))
         case .markdownDocument:
             return .markdownDocument(
                 MessageContentBlock.MarkdownDocumentBlock(markdown: markdown ?? "", name: name)

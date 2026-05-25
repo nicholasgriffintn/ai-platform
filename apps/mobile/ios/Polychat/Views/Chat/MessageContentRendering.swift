@@ -125,7 +125,7 @@ private struct MessageContentBlocksView: View {
                         DocumentAttachmentView(urlString: "", name: document.markdownDocument.name, isMarkdown: true)
                         MarkdownText(content: document.markdownDocument.markdown, isUser: message.role == "user")
                     case .artifact(let artifact):
-                        InlineArtifactCalloutView(artifact: Artifact(webArtifact: artifact.artifact))
+                        InlineArtifactCalloutView(artifact: Artifact(inlineArtifact: artifact.artifact))
                     case .thinking:
                         EmptyView()
                     default:
@@ -199,32 +199,5 @@ private struct ArtifactSplitContentView: View {
                 }
             }
         }
-    }
-}
-
-extension Array where Element == MessageContentBlock {
-    var textContent: String {
-        compactMap { block -> String? in
-            switch block {
-            case .text(let text):
-                return text.text
-            case .thinking(let thinking):
-                return thinking.thinking
-            default:
-                return nil
-            }
-        }.joined(separator: "\n")
-    }
-}
-
-extension Artifact {
-    init(webArtifact: MessageContentBlock.ArtifactBlock.InlineArtifact) {
-        self.init(
-            id: webArtifact.identifier,
-            type: Artifact.ArtifactType(webType: webArtifact.type, language: webArtifact.language),
-            title: webArtifact.title ?? "Artifact",
-            content: webArtifact.content,
-            language: webArtifact.language ?? webArtifact.type
-        )
     }
 }

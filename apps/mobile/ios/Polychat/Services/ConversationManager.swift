@@ -10,13 +10,11 @@ class ConversationManager: ObservableObject {
     @Published var loadingConversationID: String?
     @Published var error: String?
 
-    private var apiClient: APIClient?
-    private var authManager: AuthenticationManager?
+    private var apiClient: (any ConversationAPIClient)?
     private var modelsStore: ModelsStore?
 
-    func configure(apiClient: APIClient, authManager: AuthenticationManager, modelsStore: ModelsStore? = nil) {
+    func configure(apiClient: any ConversationAPIClient, modelsStore: ModelsStore? = nil) {
         self.apiClient = apiClient
-        self.authManager = authManager
         self.modelsStore = modelsStore
     }
 
@@ -385,20 +383,5 @@ class ConversationManager: ObservableObject {
         if currentConversation?.id == conversation.id {
             currentConversation = nil
         }
-    }
-}
-
-struct Conversation: Identifiable, Equatable {
-    let id: String
-    var title: String
-    var messages: [ChatMessage]
-    let createdAt: Date
-    var modelId: String?
-    var isLoadedFromAPI: Bool
-    var lastMessageAt: Date?
-    var messageCount: Int
-
-    static func == (lhs: Conversation, rhs: Conversation) -> Bool {
-        return lhs.id == rhs.id
     }
 }

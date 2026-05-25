@@ -119,14 +119,18 @@ private struct DocumentPicker: UIViewControllerRepresentable {
                 let fileName = resourceValues?.name ?? url.lastPathComponent
                 let contentType = resourceValues?.contentType ?? UTType(filenameExtension: url.pathExtension)
                 let mimeType = contentType?.preferredMIMEType ?? "application/octet-stream"
-                let fileType = inferUploadType(mimeType: mimeType, fileName: fileName, contentType: contentType)
+                let fileType = AttachmentFileClassifier.inferUploadType(
+                    mimeType: mimeType,
+                    fileName: fileName,
+                    contentType: contentType
+                )
 
                 return PickedComposerFile(
                     data: data,
                     fileName: fileName,
                     mimeType: mimeType,
                     fileType: fileType,
-                    convertToMarkdown: shouldConvertToMarkdown(fileType: fileType, mimeType: mimeType),
+                    convertToMarkdown: AttachmentFileClassifier.shouldConvertToMarkdown(fileType: fileType, mimeType: mimeType),
                     thumbnail: nil
                 )
             }
@@ -134,33 +138,6 @@ private struct DocumentPicker: UIViewControllerRepresentable {
             if !files.isEmpty {
                 onFilesPicked(files)
             }
-        }
-
-        private func inferUploadType(mimeType: String, fileName: String, contentType: UTType?) -> String {
-            if mimeType.hasPrefix("image/") {
-                return "image"
-            }
-            if mimeType.hasPrefix("audio/") {
-                return "audio"
-            }
-            if isCodeLikeFile(fileName: fileName, mimeType: mimeType, contentType: contentType) {
-                return "code"
-            }
-            return "document"
-        }
-
-        private func shouldConvertToMarkdown(fileType: String, mimeType: String) -> Bool {
-            fileType == "document" && mimeType != "application/pdf"
-        }
-
-        private func isCodeLikeFile(fileName: String, mimeType: String, contentType: UTType?) -> Bool {
-            let codeExtensions: Set<String> = [
-                "ts", "tsx", "js", "jsx", "json", "py", "go", "java", "rb", "php", "rs",
-                "cs", "kt", "swift", "scala", "sh", "yml", "yaml", "sql", "toml", "c",
-                "cc", "cpp", "cxx", "hpp", "h"
-            ]
-            let ext = URL(fileURLWithPath: fileName).pathExtension.lowercased()
-            return mimeType.hasPrefix("text/") || codeExtensions.contains(ext) || contentType?.conforms(to: .sourceCode) == true
         }
     }
 }

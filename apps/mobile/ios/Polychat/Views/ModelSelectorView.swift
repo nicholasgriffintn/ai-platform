@@ -12,26 +12,21 @@ struct ModelSelectorView: View {
     @State private var selectedProvider: String?
     @State private var showingError = false
     
+    private var modelFilter: ModelSelectionFilter {
+        ModelSelectionFilter(
+            searchText: searchText,
+            showsFeaturedOnly: showingFeaturedOnly,
+            showsDeprecated: showingDeprecated,
+            selectedProvider: selectedProvider
+        )
+    }
+
     var filteredModels: [ModelConfigItem] {
-        var models = modelsStore.searchModels(query: searchText)
-
-        if showingFeaturedOnly {
-            models = models.filter { $0.isFeatured == true }
-        }
-
-        if !showingDeprecated {
-            models = models.filter { $0.isDeprecated != true }
-        }
-
-        if let selectedProvider {
-            models = models.filter { $0.provider == selectedProvider }
-        }
-
-        return models
+        modelFilter.apply(to: modelsStore.models)
     }
 
     var availableProviders: [String] {
-        Array(Set(modelsStore.models.map(\.provider))).sorted()
+        ModelSelectionFilter.availableProviders(in: modelsStore.models)
     }
     
     var modelsByProvider: [String: [ModelConfigItem]] {
@@ -178,11 +173,7 @@ struct ModelSelectorView: View {
     }
 
     private var emptyStateDescription: String {
-        if !searchText.isEmpty {
-            return "Try a different search term or adjust your filters."
-        }
-
-        return "Adjust your filters to include more models."
+        modelFilter.emptyStateDescription
     }
 }
 

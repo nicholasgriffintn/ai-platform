@@ -1,14 +1,6 @@
-//
-//  PolychatUITestsLaunchTests.swift
-//  PolychatUITests
-//
-//  Created by Nicholas Griffin on 10/07/2025.
-//
-
 import XCTest
 
 final class PolychatUITestsLaunchTests: XCTestCase {
-
     override class var runsForEachTargetApplicationUIConfiguration: Bool {
         true
     }
@@ -22,8 +14,16 @@ final class PolychatUITestsLaunchTests: XCTestCase {
         let app = XCUIApplication()
         app.launch()
 
-        // Insert steps here to perform after app launch but before taking a screenshot,
-        // such as logging into a test account or navigating somewhere in the app
+        XCTAssertTrue(
+            waitForAnyElement(
+                [
+                    app.staticTexts["Polychat"],
+                    app.navigationBars["Conversations"],
+                    app.staticTexts["Loading Polychat..."]
+                ],
+                timeout: 10
+            )
+        )
 
         let attachment = XCTAttachment(screenshot: app.screenshot())
         attachment.name = "Launch Screen"

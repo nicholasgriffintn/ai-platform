@@ -18,7 +18,7 @@ struct PolychatApp: App {
                 .environmentObject(toolsStore)
                 .onAppear {
                     authManager.configure(apiClient: apiClient)
-                    conversationManager.configure(apiClient: apiClient, authManager: authManager, modelsStore: modelsStore)
+                    conversationManager.configure(apiClient: apiClient, modelsStore: modelsStore)
                 }
         }
     }

@@ -373,46 +373,7 @@ public struct ChatMessage: Codable, Identifiable, Equatable {
             }
         }
 
-        let text = textContent
-        guard let regex = try? NSRegularExpression(pattern: "<artifact\\s+([^>]*)>([\\s\\S]*?)(</artifact>|$)") else {
-            return extracted
-        }
-
-        let nsText = text as NSString
-        let matches = regex.matches(in: text, range: NSRange(location: 0, length: nsText.length))
-        for match in matches where match.numberOfRanges >= 3 {
-            let attributes = nsText.substring(with: match.range(at: 1))
-            guard let identifier = Self.attribute("identifier", in: attributes), !identifier.isEmpty else {
-                continue
-            }
-            let type = Self.attribute("type", in: attributes) ?? "text"
-            let language = Self.attribute("language", in: attributes) ?? type
-            let title = Self.attribute("title", in: attributes) ?? "Artifact"
-            let content = nsText.substring(with: match.range(at: 2)).trimmingCharacters(in: .whitespacesAndNewlines)
-            extracted.append(
-                Artifact(
-                    id: identifier,
-                    type: Artifact.ArtifactType(webType: type, language: language),
-                    title: title,
-                    content: content,
-                    language: language
-                )
-            )
-        }
-
+        extracted.append(contentsOf: InlineArtifactParser.artifacts(in: textContent))
         return extracted
-    }
-
-    private static func attribute(_ name: String, in attributes: String) -> String? {
-        guard let regex = try? NSRegularExpression(pattern: "\(name)=\"([^\"]*)\"", options: .caseInsensitive) else {
-            return nil
-        }
-
-        let nsAttributes = attributes as NSString
-        guard let match = regex.firstMatch(in: attributes, range: NSRange(location: 0, length: nsAttributes.length)),
-              match.numberOfRanges >= 2 else {
-            return nil
-        }
-        return nsAttributes.substring(with: match.range(at: 1))
     }
 }

@@ -26,14 +26,9 @@ enum MessageFormatting {
         extractReasoning(tag: "analysis", from: &content, into: &reasoning)
 
         if role == "assistant" {
-            artifacts = extractArtifacts(from: content)
-            for artifact in artifacts {
-                let pattern = "<artifact[^>]*identifier=\"\(NSRegularExpression.escapedPattern(for: artifact.id))\"[^>]*>[\\s\\S]*?(?:</artifact>|$)"
-                content = content.replacingOccurrences(
-                    of: pattern,
-                    with: "[[ARTIFACT:\(artifact.id)]]",
-                    options: .regularExpression
-                )
+            artifacts = InlineArtifactParser.artifacts(in: content)
+            content = InlineArtifactParser.replacingArtifacts(in: content) { artifact in
+                "[[ARTIFACT:\(artifact.id)]]"
             }
         }
 
@@ -102,42 +97,6 @@ enum MessageFormatting {
             reasoning.insert(FormattedMessageContent.ReasoningItem(content: value, isOpen: !full.contains("</\(tag)>")), at: 0)
             content = (content as NSString).replacingCharacters(in: match.range, with: "")
         }
-    }
-
-    private static func extractArtifacts(from content: String) -> [Artifact] {
-        let pattern = "<artifact\\s+([^>]*)>([\\s\\S]*?)(</artifact>|$)"
-        guard let regex = try? NSRegularExpression(pattern: pattern) else {
-            return []
-        }
-
-        let nsContent = content as NSString
-        return regex.matches(in: content, range: NSRange(location: 0, length: nsContent.length)).compactMap { match in
-            guard match.numberOfRanges >= 3 else { return nil }
-            let attributes = nsContent.substring(with: match.range(at: 1))
-            guard let identifier = attribute("identifier", in: attributes), !identifier.isEmpty else {
-                return nil
-            }
-
-            let type = attribute("type", in: attributes) ?? "text"
-            let language = attribute("language", in: attributes) ?? type
-            let title = attribute("title", in: attributes) ?? "Artifact"
-            let artifactContent = nsContent.substring(with: match.range(at: 2)).trimmingCharacters(in: .whitespacesAndNewlines)
-            return Artifact(id: identifier, type: Artifact.ArtifactType(webType: type, language: language), title: title, content: artifactContent, language: language)
-        }
-    }
-
-    private static func attribute(_ name: String, in attributes: String) -> String? {
-        let pattern = "\(name)=\"([^\"]*)\""
-        guard let regex = try? NSRegularExpression(pattern: pattern, options: .caseInsensitive) else {
-            return nil
-        }
-
-        let nsAttributes = attributes as NSString
-        guard let match = regex.firstMatch(in: attributes, range: NSRange(location: 0, length: nsAttributes.length)),
-              match.numberOfRanges >= 2 else {
-            return nil
-        }
-        return nsAttributes.substring(with: match.range(at: 1))
     }
 
     private static func unwrapTag(_ tag: String, in content: String) -> String {

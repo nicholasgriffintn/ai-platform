@@ -46,11 +46,12 @@ enum ConversationListSectionBuilder {
     }
 
     private static func title(for activityDate: Date, calendar: Calendar, now: Date) -> String {
-        if calendar.isDateInToday(activityDate) {
+        if calendar.isDate(activityDate, inSameDayAs: now) {
             return "Today"
         }
 
-        if calendar.isDateInYesterday(activityDate) {
+        if let yesterday = calendar.date(byAdding: .day, value: -1, to: now),
+           calendar.isDate(activityDate, inSameDayAs: yesterday) {
             return "Yesterday"
         }
 
