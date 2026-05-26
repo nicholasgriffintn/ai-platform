@@ -2,12 +2,19 @@ import { createModelConfig, createModelConfigObject } from "~/lib/providers/mode
 import type { ModelConfig } from "~/types";
 
 const PROVIDER = "anthropic";
-const anthropicServerTools = {
+const anthropicLatestSearchTool = {
 	supportsSearchGrounding: true,
+};
+const anthropicLatestCodeExecutionTool = {
 	supportsCodeExecution: true,
 };
-const anthropicWebFetchTool = {
+const anthropicLatestWebFetchTool = {
 	supportsWebFetch: true,
+};
+const anthropicLatestHostedTools = {
+	...anthropicLatestSearchTool,
+	...anthropicLatestCodeExecutionTool,
+	...anthropicLatestWebFetchTool,
 };
 
 export const anthropicModelConfig: ModelConfig = createModelConfigObject([
@@ -34,8 +41,7 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 		multimodal: true,
 		isFeatured: true,
 		supportsToolCalls: true,
-		...anthropicServerTools,
-		...anthropicWebFetchTool,
+		...anthropicLatestHostedTools,
 		supportsDocuments: true,
 		supportsTokenCounting: true,
 		supportsTopP: false,
@@ -79,7 +85,7 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 		includedInRouter: true,
 		supportsArtifacts: true,
 		supportsToolCalls: true,
-		...anthropicServerTools,
+		...anthropicLatestCodeExecutionTool,
 		supportsDocuments: true,
 		supportsTokenCounting: true,
 		restrictsCombinedTopPAndTemperature: true,
@@ -117,7 +123,6 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 		includedInRouter: true,
 		supportsArtifacts: true,
 		supportsToolCalls: true,
-		...anthropicServerTools,
 		supportsDocuments: true,
 		supportsTokenCounting: true,
 	}),
@@ -150,7 +155,6 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 		multimodal: true,
 		supportsArtifacts: true,
 		supportsToolCalls: true,
-		...anthropicServerTools,
 		includedInRouter: true,
 		supportsTokenCounting: true,
 	}),
@@ -362,6 +366,7 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 		supportsAttachments: true,
 		supportsTemperature: true,
 		supportsToolCalls: true,
+		...anthropicLatestCodeExecutionTool,
 		contextWindow: 200000,
 		maxTokens: 64000,
 		costPer1kInputTokens: 0.005,
@@ -386,8 +391,7 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 		supportsAttachments: true,
 		supportsTemperature: false,
 		supportsToolCalls: true,
-		...anthropicServerTools,
-		...anthropicWebFetchTool,
+		...anthropicLatestHostedTools,
 		isFeatured: true,
 		contextWindow: 1000000,
 		maxTokens: 128000,
@@ -414,8 +418,7 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 		supportsTemperature: true,
 		supportsToolCalls: true,
 		isFeatured: true,
-		...anthropicServerTools,
-		...anthropicWebFetchTool,
+		...anthropicLatestHostedTools,
 		contextWindow: 1000000,
 		maxTokens: 64000,
 		costPer1kInputTokens: 0.003,

@@ -84,7 +84,6 @@ describe("AnthropicProvider", () => {
 				"cf-aig-authorization": "test-token",
 				"x-api-key": "test-key",
 				"anthropic-version": "2023-06-01",
-				"anthropic-beta": "code-execution-2025-08-25,web-fetch-2026-02-09",
 				"Content-Type": "application/json",
 				"cf-aig-metadata": JSON.stringify({
 					email: "test@example.com",
@@ -125,19 +124,18 @@ describe("AnthropicProvider", () => {
 			const result = await provider.mapParameters(params as any);
 
 			expect(result.tools).toContainEqual({
-				type: "web_search_20250305",
+				type: "web_search_20260209",
 				name: "web_search",
 				max_uses: 3,
 				cache_control: { type: "ephemeral" },
 			});
 		});
 
-		it("should add web fetch tool when enabled", async () => {
+		it("should add latest code execution tool when enabled", async () => {
 			// @ts-ignore - getModelConfigByMatchingModel is not typed
 			vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
 				name: "claude-opus-4-7",
 				supportsToolCalls: true,
-				supportsWebFetch: true,
 				supportsCodeExecution: true,
 			});
 
@@ -155,16 +153,65 @@ describe("AnthropicProvider", () => {
 
 			const result = await provider.mapParameters({
 				model: "claude-opus-4-7",
+				messages: [{ role: "user", content: "Run a calculation" }],
+				enabled_tools: ["code_execution"],
+				options: {
+					code_execution: {
+						type: "ignored_type",
+						name: "ignored_name",
+					},
+				},
+				env: { AI_GATEWAY_TOKEN: "test-token" },
+			} as any);
+
+			expect(result.tools).toContainEqual({
+				type: "code_execution_20260120",
+				name: "code_execution",
+				cache_control: { type: "ephemeral" },
+			});
+		});
+
+		it("should add latest web fetch tool when enabled", async () => {
+			// @ts-ignore - getModelConfigByMatchingModel is not typed
+			vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
+				name: "claude-opus-4-7",
+				supportsToolCalls: true,
+				supportsWebFetch: true,
+			});
+
+			vi.mocked(createCommonParameters).mockReturnValue({
+				model: "claude-opus-4-7",
+				temperature: 0.7,
+				max_tokens: 1024,
+			});
+
+			vi.mocked(shouldEnableStreaming).mockReturnValue(false);
+			vi.mocked(getToolsForProvider).mockReturnValue({ tools: [] });
+			vi.mocked(calculateReasoningBudget).mockReturnValue(2000);
+
+			const provider = new AnthropicProvider();
+
+			const result = await provider.mapParameters({
+				model: "claude-opus-4-7",
 				messages: [{ role: "user", content: "Fetch https://example.com" }],
-				enabled_tools: ["web_fetch", "code_execution"],
+				enabled_tools: ["web_fetch"],
+				options: {
+					web_fetch: {
+						type: "ignored_type",
+						name: "ignored_name",
+						max_uses: 2,
+						max_content_tokens: 20_000,
+					},
+				},
 				env: { AI_GATEWAY_TOKEN: "test-token" },
 			} as any);
 
 			expect(result.tools).toContainEqual({
 				type: "web_fetch_20260209",
 				name: "web_fetch",
-				max_uses: 5,
+				max_uses: 2,
 				citations: { enabled: true },
+				max_content_tokens: 20_000,
 				cache_control: { type: "ephemeral" },
 			});
 		});

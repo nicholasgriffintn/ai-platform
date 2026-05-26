@@ -1,9 +1,11 @@
 import { gatewayId } from "~/constants/app";
+import { trackProviderMetrics } from "~/lib/monitoring";
 import { getModelConfigByMatchingModel } from "~/lib/providers/models";
 import { shouldEnableProviderThinking } from "~/lib/providers/models/reasoning";
-import { trackProviderMetrics } from "~/lib/monitoring";
+import { buildAnthropicHostedTools } from "~/lib/providers/utils/anthropicTools";
 import type { StorageService } from "~/lib/storage";
 import type { ChatCompletionParameters } from "~/types";
+import { getAiGatewayMetadataHeaders, resolveAiGatewayCacheTtl } from "~/utils/aiGateway";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 import {
@@ -12,11 +14,9 @@ import {
 	getToolsForProvider,
 	shouldEnableStreaming,
 } from "~/utils/parameters";
-import { getAiGatewayMetadataHeaders, resolveAiGatewayCacheTtl } from "~/utils/aiGateway";
 import { BaseProvider } from "./base";
 
 const logger = getLogger({ prefix: "lib/providers/anthropic" });
-const ANTHROPIC_BETA_FEATURES = ["code-execution-2025-08-25", "web-fetch-2026-02-09"].join(",");
 
 export class AnthropicProvider extends BaseProvider {
 	name = "anthropic";
@@ -44,7 +44,6 @@ export class AnthropicProvider extends BaseProvider {
 			...baseHeaders,
 			"x-api-key": apiKey,
 			"anthropic-version": "2023-06-01",
-			"anthropic-beta": ANTHROPIC_BETA_FEATURES,
 		};
 	}
 
@@ -81,34 +80,7 @@ export class AnthropicProvider extends BaseProvider {
 			: {};
 
 		const toolsParams = getToolsForProvider(params, modelConfig, this.name);
-		const enabledTools = params.enabled_tools || [];
-
-		const tools = [];
-		if (modelConfig?.supportsToolCalls) {
-			if (modelConfig?.supportsSearchGrounding && enabledTools.includes("search_grounding")) {
-				tools.push({
-					type: "web_search_20250305",
-					name: "web_search",
-					max_uses: 3,
-				});
-			}
-			if (modelConfig?.supportsCodeExecution && enabledTools.includes("code_execution")) {
-				tools.push({
-					type: "code_execution_20250825",
-					name: "code_execution",
-				});
-			}
-			if (modelConfig?.supportsWebFetch && enabledTools.includes("web_fetch")) {
-				const usesDynamicFiltering =
-					modelConfig?.supportsCodeExecution && enabledTools.includes("code_execution");
-				tools.push({
-					type: usesDynamicFiltering ? "web_fetch_20260209" : "web_fetch_20250910",
-					name: "web_fetch",
-					max_uses: 5,
-					citations: { enabled: true },
-				});
-			}
-		}
+		const tools = buildAnthropicHostedTools(params, modelConfig);
 		const allTools = [...tools, ...(toolsParams.tools || [])];
 
 		if (allTools.length > 0) {
