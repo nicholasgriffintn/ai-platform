@@ -12,6 +12,6 @@ export function bufferToBase64(buffer: ArrayBuffer | Uint8Array): string {
 }
 
 export function base64ToBuffer(base64: string): Uint8Array {
-	const binString = atob(base64);
+	const binString = atob(base64.replace(/\s/g, ""));
 	return Uint8Array.from(binString, (char) => char.charCodeAt(0));
 }

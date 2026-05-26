@@ -1,6 +1,8 @@
 import { preprocessQwQResponse } from "~/lib/chat/utils/qwq";
 import type { IEnv, ModelModalities } from "~/types";
+import { base64ToBuffer } from "~/utils/base64";
 import { AssistantError, ErrorType } from "~/utils/errors";
+import { getExtensionFromMimeType } from "~/utils/mime";
 import { StorageService } from "../storage";
 import { uploadAudioFromChat, uploadImageFromChat } from "../upload";
 
@@ -148,6 +150,117 @@ export class ResponseFormatter {
 		return `generations/${completion}/${model}/${unique}.${extension}`;
 	}
 
+	private static getGoogleInlineData(
+		part: Record<string, any>,
+	): { data: string; mimeType?: string } | undefined {
+		const inlineData = part.inlineData ?? part.inline_data;
+		if (!inlineData || typeof inlineData !== "object") {
+			return undefined;
+		}
+
+		const data = inlineData.data;
+		if (typeof data !== "string" || data.length === 0) {
+			return undefined;
+		}
+
+		const mimeType =
+			typeof inlineData.mimeType === "string"
+				? inlineData.mimeType
+				: typeof inlineData.mime_type === "string"
+					? inlineData.mime_type
+					: undefined;
+
+		return { data, mimeType };
+	}
+
+	private static resolveGoogleInlineAssetKind(
+		mimeType: string | undefined,
+		options: ResponseFormatOptions,
+	): "image" | "audio" | undefined {
+		if (mimeType?.startsWith("image/")) {
+			return "image";
+		}
+
+		if (mimeType?.startsWith("audio/")) {
+			return "audio";
+		}
+
+		const modalityState = ResponseFormatter.getModalityState(options.modalities);
+		if (modalityState.producesImages) {
+			return "image";
+		}
+
+		if (modalityState.producesAudio) {
+			return "audio";
+		}
+
+		return undefined;
+	}
+
+	private static async persistGoogleInlineAsset(
+		asset: { data: string; mimeType?: string },
+		kind: "image" | "audio",
+		options: ResponseFormatOptions,
+	): Promise<{ key?: string; url: string; mimeType: string }> {
+		const mimeType = asset.mimeType || (kind === "image" ? "image/png" : "audio/pcm;rate=24000");
+		const extension = getExtensionFromMimeType(mimeType, kind === "image" ? "png" : "pcm");
+		const dataUrl = `data:${mimeType};base64,${asset.data}`;
+
+		if (!options.env?.ASSETS_BUCKET) {
+			return { url: dataUrl, mimeType };
+		}
+
+		const bytes = base64ToBuffer(asset.data);
+		const key = ResponseFormatter.buildAssetKey(options, extension);
+		const storageService = new StorageService(options.env.ASSETS_BUCKET);
+		await storageService.uploadObject(key, bytes, {
+			contentType: mimeType,
+			contentLength: bytes.byteLength,
+		});
+
+		const baseAssetsUrl = options.env.PUBLIC_ASSETS_URL || "";
+		return {
+			key,
+			mimeType,
+			url: baseAssetsUrl ? `${baseAssetsUrl}/${key}` : key,
+		};
+	}
+
+	private static stripGoogleInlineDataPayload(part: Record<string, any>): Record<string, any> {
+		const inlineData = part.inlineData ?? part.inline_data;
+		if (!inlineData || typeof inlineData !== "object") {
+			return part;
+		}
+
+		const { data: _data, ...safeInlineData } = inlineData;
+		if (part.inlineData) {
+			return { ...part, inlineData: safeInlineData };
+		}
+
+		return { ...part, inline_data: safeInlineData };
+	}
+
+	private static stripGoogleResponseInlineData(data: any): any {
+		if (!Array.isArray(data.candidates)) {
+			return data;
+		}
+
+		return {
+			...data,
+			candidates: data.candidates.map((candidate: any) => ({
+				...candidate,
+				content: {
+					...candidate.content,
+					parts: Array.isArray(candidate.content?.parts)
+						? candidate.content.parts.map((part: any) =>
+								ResponseFormatter.stripGoogleInlineDataPayload(part),
+							)
+						: candidate.content?.parts,
+				},
+			})),
+		};
+	}
+
 	private static getAudioContentType(format: string): string {
 		return ResponseFormatter.getContentTypeFromExtension(format, "audio/mpeg");
 	}
@@ -287,28 +400,6 @@ export class ResponseFormatter {
 		};
 	}
 
-	private static decodeBase64Image(image: string): Uint8Array {
-		const normalized = image.replace(/\s/g, "");
-
-		if (typeof atob === "function") {
-			const binaryString = atob(normalized);
-			const bytes = new Uint8Array(binaryString.length);
-			for (let i = 0; i < binaryString.length; i++) {
-				bytes[i] = binaryString.charCodeAt(i);
-			}
-			return bytes;
-		}
-
-		if (typeof Buffer !== "undefined") {
-			return Uint8Array.from(Buffer.from(normalized, "base64"));
-		}
-
-		throw new AssistantError(
-			"Base64 decoding is not supported in this environment",
-			ErrorType.UNKNOWN_ERROR,
-		);
-	}
-
 	private static async persistBase64Images(
 		base64Images: string[],
 		options: ResponseFormatOptions,
@@ -331,7 +422,7 @@ export class ResponseFormatter {
 
 		const uploads = await Promise.all(
 			base64Images.map(async (image) => {
-				const bytes = ResponseFormatter.decodeBase64Image(image);
+				const bytes = base64ToBuffer(image);
 				const key = ResponseFormatter.buildAssetKey(options, "png");
 
 				await storageService.uploadObject(key, bytes, {
@@ -664,19 +755,30 @@ export class ResponseFormatter {
 		};
 	}
 
-	private static formatGoogleStudioResponse(data: any): any {
+	private static async formatGoogleStudioResponse(
+		data: any,
+		options: ResponseFormatOptions = {},
+	): Promise<any> {
 		if (!data.candidates || !data.candidates[0]?.content?.parts) {
 			return { ...data, response: "", tool_calls: [] };
 		}
 
 		const parts = data.candidates[0].content.parts;
 		const toolCalls: Record<string, any>[] = [];
+		const responseParts: Array<Record<string, any>> = [];
+		const assets: Array<{ key?: string; url: string; mimeType: string; type: "image" | "audio" }> =
+			[];
 
 		let textResponse = "";
+		let thinkingResponse = "";
 
-		parts.forEach((part: any, index: number) => {
+		for (const [index, part] of parts.entries()) {
 			if (part.text) {
-				textResponse += (textResponse ? "\n" : "") + part.text;
+				if (part.thought) {
+					thinkingResponse += (thinkingResponse ? "\n" : "") + part.text;
+				} else {
+					textResponse += (textResponse ? "\n" : "") + part.text;
+				}
 			} else if (part.functionCall) {
 				const fc = part.functionCall;
 				toolCalls.push({ name: fc.name, arguments: fc.args });
@@ -689,8 +791,30 @@ export class ResponseFormatter {
 				if (result.output) {
 					textResponse += `\n\n${result.output}\n\n`;
 				}
+			} else {
+				const inlineAsset = ResponseFormatter.getGoogleInlineData(part);
+				const kind = ResponseFormatter.resolveGoogleInlineAssetKind(inlineAsset?.mimeType, options);
+				if (inlineAsset && kind) {
+					const persisted = await ResponseFormatter.persistGoogleInlineAsset(
+						inlineAsset,
+						kind,
+						options,
+					);
+					assets.push({ ...persisted, type: kind });
+					responseParts.push(
+						kind === "image"
+							? {
+									type: "image_url",
+									image_url: { url: persisted.url },
+								}
+							: {
+									type: "audio_url",
+									audio_url: { url: persisted.url },
+								},
+					);
+				}
 			}
-		});
+		}
 
 		let newData = data.data;
 		const searchGrounding = data.candidates[0].groundingMetadata;
@@ -712,9 +836,35 @@ export class ResponseFormatter {
 			newData.searchGrounding = cleanedSearchGrounding;
 		}
 
+		const urlContextMetadata =
+			data.candidates[0].urlContextMetadata ?? data.candidates[0].url_context_metadata;
+		if (urlContextMetadata) {
+			if (!newData) {
+				newData = {};
+			}
+
+			newData.urlContext = urlContextMetadata;
+		}
+
+		if (assets.length > 0) {
+			if (!newData) {
+				newData = {};
+			}
+
+			newData.assets = assets;
+		}
+
+		const response =
+			responseParts.length > 0
+				? [...(textResponse ? [{ type: "text", text: textResponse }] : []), ...responseParts]
+				: textResponse;
+		const safeData =
+			assets.length > 0 ? ResponseFormatter.stripGoogleResponseInlineData(data) : data;
+
 		return {
-			...data,
-			response: textResponse,
+			...safeData,
+			response,
+			thinking: thinkingResponse,
 			data: newData,
 			tool_calls: toolCalls,
 		};

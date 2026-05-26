@@ -663,6 +663,97 @@ describe("ResponseFormatter", () => {
 
 			expect(result.response).toContain("hello");
 		});
+
+		it("should split thought summaries from answer text", async () => {
+			const data = {
+				candidates: [
+					{
+						content: {
+							parts: [{ text: "Reasoning summary", thought: true }, { text: "Final answer" }],
+						},
+					},
+				],
+			};
+
+			const result = await ResponseFormatter.formatResponse(data, "google-ai-studio");
+
+			expect(result.thinking).toBe("Reasoning summary");
+			expect(result.response).toBe("Final answer");
+		});
+
+		it("should format native inline image and audio outputs", async () => {
+			const data = {
+				candidates: [
+					{
+						content: {
+							parts: [
+								{ text: "Generated assets" },
+								{
+									inlineData: {
+										mimeType: "image/png",
+										data: "aW1hZ2U=",
+									},
+								},
+								{
+									inlineData: {
+										mimeType: "audio/pcm;rate=24000",
+										data: "YXVkaW8=",
+									},
+								},
+							],
+						},
+					},
+				],
+			};
+
+			const result = await ResponseFormatter.formatResponse(data, "google-ai-studio");
+
+			expect(result.response).toEqual([
+				{ type: "text", text: "Generated assets" },
+				{
+					type: "image_url",
+					image_url: { url: "data:image/png;base64,aW1hZ2U=" },
+				},
+				{
+					type: "audio_url",
+					audio_url: { url: "data:audio/pcm;rate=24000;base64,YXVkaW8=" },
+				},
+			]);
+			expect(result.data.assets).toEqual([
+				{
+					type: "image",
+					url: "data:image/png;base64,aW1hZ2U=",
+					mimeType: "image/png",
+				},
+				{
+					type: "audio",
+					url: "data:audio/pcm;rate=24000;base64,YXVkaW8=",
+					mimeType: "audio/pcm;rate=24000",
+				},
+			]);
+			expect(result.candidates[0].content.parts[1].inlineData.data).toBeUndefined();
+			expect(result.candidates[0].content.parts[2].inlineData.data).toBeUndefined();
+		});
+
+		it("should expose URL context metadata", async () => {
+			const urlContextMetadata = {
+				urlMetadata: [{ retrievedUrl: "https://example.com", urlRetrievalStatus: "SUCCESS" }],
+			};
+			const data = {
+				candidates: [
+					{
+						content: {
+							parts: [{ text: "URL summary" }],
+						},
+						urlContextMetadata,
+					},
+				],
+			};
+
+			const result = await ResponseFormatter.formatResponse(data, "google-ai-studio");
+
+			expect(result.data.urlContext).toEqual(urlContextMetadata);
+		});
 	});
 
 	describe("formatOllamaResponse", () => {

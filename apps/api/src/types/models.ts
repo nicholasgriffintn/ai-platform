@@ -80,6 +80,7 @@ export type ModelConfigItem = {
 	supportsDocuments?: boolean;
 	beta?: boolean;
 	supportsSearchGrounding?: boolean;
+	supportsUrlContext?: boolean;
 	supportsCodeExecution?: boolean;
 	supportsFileSearch?: boolean;
 	supportsMcp?: boolean;

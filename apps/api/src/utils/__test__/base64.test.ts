@@ -80,6 +80,13 @@ describe("base64", () => {
 			const result = base64ToBuffer(base64);
 			expect(result).toEqual(new Uint8Array([0, 1, 254, 255]));
 		});
+
+		it("should ignore whitespace in base64 strings", () => {
+			const base64 = "SGVs\n bG8=";
+
+			const result = base64ToBuffer(base64);
+			expect(result).toEqual(new Uint8Array([72, 101, 108, 108, 111]));
+		});
 	});
 
 	describe("round-trip conversion", () => {

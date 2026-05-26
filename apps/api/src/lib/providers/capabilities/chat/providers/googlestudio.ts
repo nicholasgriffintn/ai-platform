@@ -1,10 +1,17 @@
 import { getModelConfigByMatchingModel } from "~/lib/providers/models";
 import type { StorageService } from "~/lib/storage";
+import {
+	buildGoogleStudioGenerationConfig,
+	buildGoogleStudioSystemInstruction,
+	buildGoogleStudioTools,
+	formatGoogleStudioContents,
+	GOOGLE_STUDIO_SAFETY_SETTINGS,
+} from "~/lib/providers/utils/googleStudio";
 import type { ChatCompletionParameters } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
-import { getEffectiveMaxTokens } from "~/utils/parameters";
 import { BaseProvider } from "./base";
 import { getAiGatewayMetadataHeaders, resolveAiGatewayCacheTtl } from "~/utils/aiGateway";
+import { omitUndefinedValues } from "~/utils/objects";
 
 export class GoogleStudioProvider extends BaseProvider {
 	name = "google-ai-studio";
@@ -56,91 +63,13 @@ export class GoogleStudioProvider extends BaseProvider {
 			);
 		}
 
-		const enabledTools = (params.enabled_tools || []).filter(
-			(tool) => !(tool === "web_search" && modelConfig?.supportsSearchGrounding),
-		);
-		const tools = [];
-
-		if (modelConfig?.supportsCodeExecution && enabledTools.includes("code_execution")) {
-			tools.push({
-				code_execution: {},
-			});
-		}
-
-		if (modelConfig?.supportsSearchGrounding && enabledTools.includes("search_grounding")) {
-			tools.push({
-				google_search: {},
-			});
-		}
-
-		if (modelConfig?.supportsToolCalls && params.tools?.length > 0) {
-			const formattedTools = params.tools.map((tool) => ({
-				name: tool.function.name,
-				description: tool.function.description,
-				parameters: {
-					type: tool.function.parameters.type,
-					properties: tool.function.parameters.properties,
-				},
-				required: tool.function.required,
-			}));
-			tools.push({
-				functionDeclarations: formattedTools,
-			});
-		}
-
-		return {
+		return omitUndefinedValues({
 			model: params.model,
-			contents: this.formatGoogleStudioContents(params),
-			tools: modelConfig?.supportsToolCalls ? tools : undefined,
-			systemInstruction: {
-				role: "system",
-				parts: [
-					{
-						text: params.system_prompt,
-					},
-				],
-			},
-			safetySettings: [
-				{
-					category: "HARM_CATEGORY_DANGEROUS_CONTENT",
-					threshold: "BLOCK_NONE",
-				},
-				{ category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
-				{ category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
-				{
-					category: "HARM_CATEGORY_SEXUALLY_EXPLICIT",
-					threshold: "BLOCK_NONE",
-				},
-			],
-			generationConfig: {
-				temperature: params.temperature,
-				maxOutputTokens: getEffectiveMaxTokens(params.max_tokens, modelConfig?.maxTokens),
-				topP: params.top_p,
-				topK: params.top_k,
-				seed: params.seed,
-				repetitionPenalty: params.repetition_penalty,
-				frequencyPenalty: params.frequency_penalty,
-				presencePenalty: params.presence_penalty,
-				stopSequences: params.stop,
-			},
-		};
-	}
-
-	/**
-	 * Format messages for Google Studio models
-	 * @param params - The chat completion parameters
-	 * @returns The formatted messages
-	 */
-	private formatGoogleStudioContents(params: ChatCompletionParameters): any[] {
-		const contents = [];
-
-		params.messages.forEach((message) => {
-			contents.push({
-				role: message.role === "assistant" ? "model" : message.role,
-				parts: message.parts,
-			});
+			contents: formatGoogleStudioContents(params),
+			tools: buildGoogleStudioTools(params, modelConfig),
+			systemInstruction: buildGoogleStudioSystemInstruction(params.system_prompt),
+			safetySettings: GOOGLE_STUDIO_SAFETY_SETTINGS,
+			generationConfig: buildGoogleStudioGenerationConfig(params, modelConfig),
 		});
-
-		return contents;
 	}
 }

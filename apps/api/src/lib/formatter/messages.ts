@@ -605,6 +605,22 @@ export class MessageFormatter {
 				},
 			};
 		}
+		if (item.type === "input_audio" && item.input_audio?.data) {
+			return {
+				inlineData: {
+					mimeType: `audio/${item.input_audio.format || "mp3"}`,
+					data: item.input_audio.data,
+				},
+			};
+		}
+		if (item.type === "audio_url" && item.audio_url?.url) {
+			return {
+				inlineData: {
+					mimeType: MessageFormatter.resolveType(item.audio_url.url),
+					data: MessageFormatter.getBase64FromUrl(item.audio_url.url),
+				},
+			};
+		}
 		if (item.type === "markdown_document") {
 			return null;
 		}

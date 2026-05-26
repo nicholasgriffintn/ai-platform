@@ -148,6 +148,29 @@ describe("MessageFormatter", () => {
 			});
 		});
 
+		it("should format audio content for google-ai-studio provider", () => {
+			const messages: Message[] = [
+				{
+					role: "user",
+					content: [
+						{ type: "text", text: "Transcribe this" },
+						{ type: "input_audio", input_audio: { data: "YXVkaW8=", format: "wav" } },
+						{ type: "audio_url", audio_url: { url: "data:audio/mpeg;base64,bXAz" } },
+					],
+				},
+			];
+
+			const result = MessageFormatter.formatMessages(messages, {
+				provider: "google-ai-studio",
+			});
+
+			expect(result[0].parts).toEqual([
+				{ text: "Transcribe this" },
+				{ inlineData: { mimeType: "audio/wav", data: "YXVkaW8=" } },
+				{ inlineData: { mimeType: "audio/mpeg", data: "bXAz" } },
+			]);
+		});
+
 		it("should handle array content for anthropic provider", () => {
 			const messages: Message[] = [
 				{

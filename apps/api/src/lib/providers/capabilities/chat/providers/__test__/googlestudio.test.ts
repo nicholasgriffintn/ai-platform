@@ -158,5 +158,107 @@ describe("GoogleStudioProvider", () => {
 
 			expect(result.tools).toEqual([{ code_execution: {} }, { google_search: {} }]);
 		});
+
+		it("should add URL context without requiring function declarations", async () => {
+			// @ts-ignore - getModelConfigByMatchingModel is not typed
+			vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
+				name: "gemini-3.5-flash",
+				supportsToolCalls: false,
+				supportsUrlContext: true,
+				modalities: { input: ["text"], output: ["text"] },
+			});
+
+			vi.mocked(getEffectiveMaxTokens).mockReturnValue(1024);
+
+			const provider = new GoogleStudioProvider();
+
+			const result = await provider.mapParameters({
+				model: "gemini-3.5-flash",
+				messages: [{ role: "user", parts: [{ text: "Summarise https://example.com" }] }],
+				enabled_tools: ["url_context"],
+				env: { AI_GATEWAY_TOKEN: "test-token" },
+			} as any);
+
+			expect(result.tools).toEqual([{ url_context: {} }]);
+		});
+
+		it("should map image output modalities and image response format", async () => {
+			// @ts-ignore - getModelConfigByMatchingModel is not typed
+			vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
+				name: "gemini-3.1-flash-image-preview",
+				modalities: { input: ["text", "image"], output: ["text", "image"] },
+				supportsResponseFormat: true,
+			});
+
+			vi.mocked(getEffectiveMaxTokens).mockReturnValue(2048);
+
+			const provider = new GoogleStudioProvider();
+
+			const result = await provider.mapParameters({
+				model: "gemini-3.1-flash-image-preview",
+				messages: [{ role: "user", parts: [{ text: "Make an image" }] }],
+				response_format: { image: { aspectRatio: "16:9", imageSize: "2K" } },
+				env: { AI_GATEWAY_TOKEN: "test-token" },
+			} as any);
+
+			expect(result.generationConfig.responseModalities).toEqual(["TEXT", "IMAGE"]);
+			expect(result.generationConfig.responseFormat).toEqual({
+				image: { aspectRatio: "16:9", imageSize: "2K" },
+			});
+		});
+
+		it("should map audio output to TTS generation config", async () => {
+			// @ts-ignore - getModelConfigByMatchingModel is not typed
+			vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
+				name: "gemini-3.1-flash-tts-preview",
+				modalities: { input: ["text"], output: ["audio"] },
+			});
+
+			vi.mocked(getEffectiveMaxTokens).mockReturnValue(2048);
+
+			const provider = new GoogleStudioProvider();
+
+			const result = await provider.mapParameters({
+				model: "gemini-3.1-flash-tts-preview",
+				messages: [{ role: "user", parts: [{ text: "Say hello" }] }],
+				options: { voice: "Puck" },
+				env: { AI_GATEWAY_TOKEN: "test-token" },
+			} as any);
+
+			expect(result.generationConfig.responseModalities).toEqual(["AUDIO"]);
+			expect(result.generationConfig.speechConfig).toEqual({
+				voiceConfig: {
+					prebuiltVoiceConfig: {
+						voiceName: "Puck",
+					},
+				},
+			});
+		});
+
+		it("should map Gemini 3 reasoning effort to thinking level", async () => {
+			// @ts-ignore - getModelConfigByMatchingModel is not typed
+			vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
+				name: "gemini-3.5-flash",
+				modalities: { input: ["text"], output: ["text"] },
+				reasoningConfig: { supportedEffortLevels: ["none", "thinking", "low", "medium", "high"] },
+			});
+
+			vi.mocked(getEffectiveMaxTokens).mockReturnValue(2048);
+
+			const provider = new GoogleStudioProvider();
+
+			const result = await provider.mapParameters({
+				model: "gemini-3.5-flash",
+				messages: [{ role: "user", parts: [{ text: "Think" }] }],
+				reasoning_effort: "high",
+				options: { include_thoughts: true },
+				env: { AI_GATEWAY_TOKEN: "test-token" },
+			} as any);
+
+			expect(result.generationConfig.thinkingConfig).toEqual({
+				thinkingLevel: "high",
+				includeThoughts: true,
+			});
+		});
 	});
 });
