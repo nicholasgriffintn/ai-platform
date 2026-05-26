@@ -4,6 +4,7 @@ import { messageSchema } from "./shared";
 import { messagePartsSchema } from "./message-parts";
 import { chatRequestModeSchema } from "./agent-modes";
 import { councilChatOptionsSchema } from "./council";
+import { reasoningEffortSchema, reasoningSettingsSchema } from "./reasoning";
 
 export const chatCompletionResponseSchema = z.object({
 	id: z.string(),
@@ -282,25 +283,14 @@ export const createChatCompletionsJsonSchema = z.object({
 	parallel_tool_calls: z.boolean().optional().meta({
 		description: "Whether to enable parallel tool calls for the response.",
 	}),
-	reasoning_effort: z
-		.enum(["none", "simulated-thinking", "thinking", "low", "medium", "high"])
-		.prefault("none")
-		.optional()
-		.meta({
-			description:
-				'Controls reasoning depth. Use "simulated-thinking" for prompt-level thinking guidance. Use "thinking" for provider-native thinking on configured models.',
-		}),
-	reasoning: z
-		.object({
-			effort: z
-				.enum(["none", "simulated-thinking", "thinking", "low", "medium", "high"])
-				.optional(),
-		})
-		.optional()
-		.meta({
-			description:
-				'Structured reasoning controls. Use effort="none" to disable prompt-level and provider-specific reasoning boosts.',
-		}),
+	reasoning_effort: reasoningEffortSchema.prefault("none").optional().meta({
+		description:
+			'Controls reasoning depth. Use "simulated-thinking" for prompt-level thinking guidance. Use "thinking" for provider-native thinking on configured models.',
+	}),
+	reasoning: reasoningSettingsSchema.optional().meta({
+		description:
+			'Structured reasoning controls. Use effort="none" to disable prompt-level and provider-specific reasoning boosts.',
+	}),
 	store: z.boolean().prefault(false).meta({
 		description: "Whether to store the output of the completion.",
 	}),

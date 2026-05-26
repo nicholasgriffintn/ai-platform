@@ -36,6 +36,8 @@ export function formatReasoningLabel(value: ReasoningEffort): string {
 			return "Medium";
 		case "high":
 			return "High";
+		case "xhigh":
+			return "X-high";
 		default:
 			return value;
 	}

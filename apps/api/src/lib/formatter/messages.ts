@@ -521,6 +521,22 @@ export class MessageFormatter {
 			.filter((toolCall): toolCall is OpenAIResponsesInputItem => toolCall !== null);
 	}
 
+	private static getStoredOpenAIResponsesOutput(
+		message: Message,
+	): OpenAIResponsesInputItem[] | null {
+		if (message.role !== "assistant" || !isRecord(message.data)) {
+			return null;
+		}
+
+		const output = message.data.output;
+		if (!Array.isArray(output)) {
+			return null;
+		}
+
+		const outputItems = output.filter((item): item is OpenAIResponsesInputItem => isRecord(item));
+		return outputItems.length ? outputItems : null;
+	}
+
 	private static formatOpenAIResponsesMessageItem(
 		message: Message,
 	): OpenAIResponsesInputItem | null {
@@ -560,6 +576,11 @@ export class MessageFormatter {
 	}
 
 	private static formatOpenAIResponsesMessage(message: Message): OpenAIResponsesInputItem[] {
+		const storedOutput = MessageFormatter.getStoredOpenAIResponsesOutput(message);
+		if (storedOutput) {
+			return storedOutput;
+		}
+
 		const messageItem = MessageFormatter.formatOpenAIResponsesMessageItem(message);
 		const toolCalls = MessageFormatter.formatOpenAIResponsesToolCalls(message);
 

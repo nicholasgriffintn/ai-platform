@@ -4,6 +4,7 @@ import type { ChatCompletionParameters } from "~/types";
 import {
 	calculateReasoningBudget,
 	createCommonParameters,
+	createSamplingParameters,
 	getEffectiveMaxTokens,
 	getToolsForProvider,
 	mergeParametersWithDefaults,
@@ -174,6 +175,17 @@ describe("parameters", () => {
 			expect(result).toBe(1800); // Math.floor(2000 * 0.9)
 		});
 
+		it("should calculate budget for xhigh reasoning effort", () => {
+			const params = {
+				reasoning_effort: "xhigh",
+				max_tokens: 2000,
+			} as ChatCompletionParameters;
+
+			const result = calculateReasoningBudget(params);
+
+			expect(result).toBe(2000);
+		});
+
 		it("should return 0 when reasoning effort is none", () => {
 			const params = {
 				reasoning_effort: "none",
@@ -261,6 +273,38 @@ describe("parameters", () => {
 			const result = calculateReasoningBudget(params, modelConfig);
 
 			expect(result).toBe(1024);
+		});
+	});
+
+	describe("createSamplingParameters", () => {
+		it("builds provider sampling controls from model support flags", () => {
+			const params = {
+				temperature: 0.7,
+				top_p: 0.9,
+			} as ChatCompletionParameters;
+
+			expect(
+				createSamplingParameters(params, {
+					matchingModel: "test",
+					provider: "test",
+					modalities: { input: ["text"], output: ["text"] },
+					supportsTemperature: false,
+				}),
+			).toEqual({
+				top_p: 0.9,
+			});
+			expect(
+				createSamplingParameters(
+					{ ...params, should_think: true },
+					{
+						matchingModel: "test",
+						provider: "test",
+						modalities: { input: ["text"], output: ["text"] },
+					},
+				),
+			).toEqual({
+				temperature: 0.7,
+			});
 		});
 	});
 

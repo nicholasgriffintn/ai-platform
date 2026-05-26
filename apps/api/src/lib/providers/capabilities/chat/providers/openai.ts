@@ -5,14 +5,23 @@ import {
 	buildOpenAIResponsesBody,
 	shouldUseOpenAIResponsesApi,
 } from "~/lib/providers/utils/openaiResponses";
+import {
+	createAsyncInvocationMetadata,
+	type AsyncInvocationMetadata,
+} from "~/lib/async/asyncInvocation";
+import { gatewayId } from "~/constants/app";
 import type { StorageService } from "~/lib/storage";
 import type { ChatCompletionParameters } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
+import { isRecord } from "~/utils/objects";
+import { readOptionBag } from "~/utils/options";
+import { appendUrlPath } from "~/utils/urls";
 import {
 	createCommonParameters,
 	getToolsForProvider,
 	shouldEnableStreaming,
 } from "~/utils/parameters";
+import { safeParseJSON } from "~/lib/providers/utils/helpers";
 import { BaseProvider } from "./base";
 import {
 	getOpenAIImageRequestInput,
@@ -168,20 +177,9 @@ export class OpenAIProvider extends BaseProvider {
 		};
 	}
 
-	private getOpenAIOptions(params: ChatCompletionParameters): Record<string, any> {
-		const options = params.options || {};
-		return {
-			...options,
-			...(options.openai && typeof options.openai === "object" ? options.openai : {}),
-		};
-	}
-
 	private buildAudioOutputParams(params: ChatCompletionParameters): Record<string, any> {
-		const options = this.getOpenAIOptions(params);
-		const audioOptions =
-			options.audio && typeof options.audio === "object" && !Array.isArray(options.audio)
-				? options.audio
-				: {};
+		const options = readOptionBag(params.options);
+		const audioOptions = isRecord(options.audio) ? options.audio : {};
 
 		return {
 			modalities: ["text", "audio"],
@@ -189,6 +187,129 @@ export class OpenAIProvider extends BaseProvider {
 				voice: audioOptions.voice || options.voice || DEFAULT_AUDIO_VOICE,
 				format: audioOptions.format || options.audio_format || DEFAULT_AUDIO_FORMAT,
 			},
+		};
+	}
+
+	private isBackgroundResponsePending(data: any): boolean {
+		return (
+			data?.object === "response" &&
+			data?.background === true &&
+			(data?.status === "queued" || data?.status === "in_progress")
+		);
+	}
+
+	protected async formatResponse(data: any, params: ChatCompletionParameters): Promise<any> {
+		if (!this.isBackgroundResponsePending(data)) {
+			return await super.formatResponse(data, params);
+		}
+
+		const placeholderContent = [
+			{
+				type: "text" as const,
+				text: "Response is running in the background. We'll update this message once it completes.",
+			},
+		];
+
+		const asyncInvocation = createAsyncInvocationMetadata({
+			provider: this.name,
+			id: data.id,
+			type: "openai.response",
+			pollIntervalMs: 4000,
+			initialResponse: data,
+			context: {
+				model: params.model,
+			},
+			contentHints: {
+				placeholder: placeholderContent,
+				progress: placeholderContent,
+				failure: [
+					{
+						type: "text",
+						text: "Background response failed. Please try again.",
+					},
+				],
+			},
+		});
+
+		return {
+			...data,
+			response: placeholderContent,
+			status: "in_progress",
+			data: {
+				...data.data,
+				openai_response_id: data.id,
+				output: data.output,
+				asyncInvocation,
+			},
+		};
+	}
+
+	private async fetchStoredResponse(
+		responseId: string,
+		params: ChatCompletionParameters,
+		userId?: number,
+	): Promise<Record<string, any>> {
+		const endpoint = `responses/${encodeURIComponent(responseId)}`;
+		const apiKey = await this.getApiKey(params, userId);
+		const headers = this.buildAiGatewayHeaders(params, apiKey);
+		const response = params.env?.AI
+			? await fetch(
+					appendUrlPath(await params.env.AI.gateway(gatewayId).getUrl(this.name), endpoint),
+					{
+						method: "GET",
+						headers,
+					},
+				)
+			: await fetch(`https://api.openai.com/v1/${endpoint}`, {
+					method: "GET",
+					headers: {
+						Authorization: headers.Authorization,
+						"Content-Type": headers["Content-Type"],
+					},
+				});
+
+		if (!response.ok) {
+			throw new AssistantError(
+				`Failed to retrieve OpenAI response ${responseId}`,
+				ErrorType.PROVIDER_ERROR,
+				response.status,
+			);
+		}
+
+		return await safeParseJSON(response, this.name);
+	}
+
+	async getAsyncInvocationStatus(
+		metadata: AsyncInvocationMetadata,
+		params: ChatCompletionParameters,
+		userId?: number,
+	): Promise<{
+		status: "in_progress" | "completed" | "failed";
+		result?: any;
+		raw: Record<string, any>;
+	}> {
+		const responseId = metadata.id;
+		const raw = await this.fetchStoredResponse(responseId, params, userId);
+		const status = typeof raw.status === "string" ? raw.status : "in_progress";
+
+		if (status === "completed") {
+			return {
+				status: "completed",
+				result: await super.formatResponse(raw, params),
+				raw,
+			};
+		}
+
+		if (status === "failed" || status === "cancelled" || status === "incomplete") {
+			return {
+				status: "failed",
+				raw,
+			};
+		}
+
+		return {
+			status: "in_progress",
+			raw,
 		};
 	}
 

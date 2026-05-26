@@ -115,5 +115,6 @@ export type ReasoningEffortLevel =
 	| "thinking"
 	| "low"
 	| "medium"
-	| "high";
+	| "high"
+	| "xhigh";
 export type VerbosityLevel = "low" | "medium" | "high" | "caveman";

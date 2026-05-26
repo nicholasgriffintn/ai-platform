@@ -29,5 +29,6 @@ describe("reasoning options", () => {
 		expect(formatReasoningLabel("simulated-thinking")).toBe("Simulated");
 		expect(formatReasoningLabel("thinking")).toBe("Thinking");
 		expect(formatReasoningLabel("high")).toBe("High");
+		expect(formatReasoningLabel("xhigh")).toBe("X-high");
 	});
 });

@@ -19,6 +19,14 @@ export function isStringArray(value: unknown): value is string[] {
 	return Array.isArray(value) && value.every((item) => typeof item === "string");
 }
 
+export function coerceStringArray(value: unknown): string[] {
+	if (Array.isArray(value)) {
+		return value.filter((item): item is string => typeof item === "string");
+	}
+
+	return typeof value === "string" ? [value] : [];
+}
+
 export function omitUndefinedValues<T>(value: T): T {
 	if (Array.isArray(value)) {
 		return value.map((item) => (item === undefined ? null : omitUndefinedValues(item))) as T;

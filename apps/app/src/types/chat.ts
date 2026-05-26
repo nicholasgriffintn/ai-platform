@@ -12,7 +12,8 @@ export type ReasoningEffort =
 	| "thinking"
 	| "low"
 	| "medium"
-	| "high";
+	| "high"
+	| "xhigh";
 export type VerbosityLevel = "low" | "medium" | "high" | "caveman";
 
 export interface ChatReasoningSettings {
@@ -20,6 +21,11 @@ export interface ChatReasoningSettings {
 }
 
 export interface HostedToolSettings {
+	code_interpreter?: Record<string, unknown>;
+	web_search?: Record<string, unknown>;
+	file_search?: Record<string, unknown>;
+	mcp_servers?: Record<string, unknown>[];
+	computer_use?: Record<string, unknown>;
 	image_generation?: {
 		size?: string;
 		quality?: string;
@@ -29,6 +35,8 @@ export interface HostedToolSettings {
 			type?: string;
 		};
 	};
+	tool_search?: Record<string, unknown>;
+	responses_tools?: Record<string, unknown>[];
 }
 
 export interface ChatSettings {

@@ -298,6 +298,46 @@ describe("MessageFormatter", () => {
 				},
 			]);
 		});
+
+		it("should reuse stored Responses API output items for assistant history", () => {
+			const messages: Message[] = [
+				{ role: "user", content: "Think carefully" },
+				{
+					role: "assistant",
+					content: "Done",
+					data: {
+						output: [
+							{
+								type: "reasoning",
+								encrypted_content: "encrypted-reasoning",
+							},
+							{
+								type: "message",
+								role: "assistant",
+								content: [{ type: "output_text", text: "Done" }],
+							},
+						],
+					},
+				},
+				{ role: "user", content: "Continue" },
+			];
+
+			const result = MessageFormatter.formatOpenAIResponsesInput(messages);
+
+			expect(result).toEqual([
+				{ type: "message", role: "user", content: "Think carefully" },
+				{
+					type: "reasoning",
+					encrypted_content: "encrypted-reasoning",
+				},
+				{
+					type: "message",
+					role: "assistant",
+					content: [{ type: "output_text", text: "Done" }],
+				},
+				{ type: "message", role: "user", content: "Continue" },
+			]);
+		});
 	});
 
 	describe("formatOpenAIResponsesInstructions", () => {

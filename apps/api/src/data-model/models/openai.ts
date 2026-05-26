@@ -79,6 +79,8 @@ const gptImage2InputSchema: InputSchemaInputSchemaDescriptor = {
 const openaiResponsesHostedTools = {
 	supportsSearchGrounding: true,
 	supportsCodeExecution: true,
+	supportsFileSearch: true,
+	supportsMcp: true,
 	supportsImageGenerationTool: true,
 };
 
@@ -88,6 +90,10 @@ const openaiHostedShellTools = {
 
 const openaiToolSearchTool = {
 	supportsToolSearch: true,
+};
+
+const openaiComputerUseTool = {
+	supportsComputerUse: true,
 };
 
 export const openaiModelConfig: ModelConfig = createModelConfigObject([
@@ -1558,13 +1564,14 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		...openaiResponsesHostedTools,
 		...openaiHostedShellTools,
 		...openaiToolSearchTool,
+		...openaiComputerUseTool,
 		supportsResponseFormat: true,
 		contextWindow: 1050000,
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.0025,
 		costPer1kOutputTokens: 0.015,
 		reasoningConfig: {
-			supportedEffortLevels: ["none", "low", "medium", "high"],
+			supportedEffortLevels: ["none", "low", "medium", "high", "xhigh"],
 			defaultEffort: "medium",
 		},
 		verbosityConfig: {
@@ -1590,6 +1597,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		...openaiResponsesHostedTools,
 		...openaiHostedShellTools,
 		...openaiToolSearchTool,
+		...openaiComputerUseTool,
 		supportsResponseFormat: true,
 		contextWindow: 400000,
 		maxTokens: 128000,
@@ -1598,7 +1606,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		isFeatured: true,
 
 		reasoningConfig: {
-			supportedEffortLevels: ["none", "low", "medium", "high"],
+			supportedEffortLevels: ["none", "low", "medium", "high", "xhigh"],
 			defaultEffort: "medium",
 		},
 		verbosityConfig: {
@@ -1623,7 +1631,6 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		supportsToolCalls: true,
 		...openaiResponsesHostedTools,
 		...openaiHostedShellTools,
-		...openaiToolSearchTool,
 		supportsResponseFormat: true,
 		contextWindow: 400000,
 		maxTokens: 128000,
@@ -1631,7 +1638,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		costPer1kOutputTokens: 0.00125,
 
 		reasoningConfig: {
-			supportedEffortLevels: ["none", "low", "medium", "high"],
+			supportedEffortLevels: ["none", "low", "medium", "high", "xhigh"],
 			defaultEffort: "medium",
 		},
 		verbosityConfig: {
@@ -1657,6 +1664,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		...openaiResponsesHostedTools,
 		supportsCodeExecution: false,
 		...openaiToolSearchTool,
+		...openaiComputerUseTool,
 		supportsResponseFormat: false,
 		contextWindow: 1050000,
 		maxTokens: 128000,
@@ -1665,7 +1673,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		isFeatured: true,
 
 		reasoningConfig: {
-			supportedEffortLevels: ["none", "low", "medium", "high"],
+			supportedEffortLevels: ["none", "low", "medium", "high", "xhigh"],
 			defaultEffort: "medium",
 		},
 		verbosityConfig: {
@@ -1691,6 +1699,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		...openaiResponsesHostedTools,
 		...openaiHostedShellTools,
 		...openaiToolSearchTool,
+		...openaiComputerUseTool,
 		supportsResponseFormat: true,
 		contextWindow: 1050000,
 		maxTokens: 128000,
@@ -1699,7 +1708,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		isFeatured: true,
 
 		reasoningConfig: {
-			supportedEffortLevels: ["none", "low", "medium", "high"],
+			supportedEffortLevels: ["none", "low", "medium", "high", "xhigh"],
 			defaultEffort: "medium",
 		},
 		verbosityConfig: {
@@ -1724,7 +1733,6 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		supportsToolCalls: true,
 		...openaiResponsesHostedTools,
 		supportsHostedShell: true,
-		...openaiToolSearchTool,
 		supportsResponseFormat: true,
 		contextWindow: 1050000,
 		maxTokens: 128000,
@@ -1732,7 +1740,7 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		costPer1kOutputTokens: 0.18,
 
 		reasoningConfig: {
-			supportedEffortLevels: ["none", "low", "medium", "high"],
+			supportedEffortLevels: ["none", "low", "medium", "high", "xhigh"],
 			defaultEffort: "medium",
 		},
 		verbosityConfig: {

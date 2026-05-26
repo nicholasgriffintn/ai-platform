@@ -1,6 +1,11 @@
 import type { ModelConfigItem, ReasoningEffortLevel } from "~/types";
 
-const PROVIDER_REASONING_EFFORTS = new Set<ReasoningEffortLevel>(["low", "medium", "high"]);
+const PROVIDER_REASONING_EFFORTS = new Set<ReasoningEffortLevel>([
+	"low",
+	"medium",
+	"high",
+	"xhigh",
+]);
 const PROMPT_ONLY_REASONING_EFFORTS = new Set<ReasoningEffortLevel>(["none", "simulated-thinking"]);
 
 export function isConfiguredReasoningEffort(

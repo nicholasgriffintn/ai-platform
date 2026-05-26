@@ -40,6 +40,16 @@ export function mergeParametersWithDefaults(
 	} as ChatCompletionParameters;
 }
 
+export function createSamplingParameters(
+	params: ChatCompletionParameters,
+	modelConfig: ModelConfigItem,
+): Record<string, any> {
+	return {
+		...(modelConfig.supportsTemperature !== false ? { temperature: params.temperature } : {}),
+		...(modelConfig.supportsTopP !== false && !params.should_think ? { top_p: params.top_p } : {}),
+	};
+}
+
 export function calculateReasoningBudget(
 	params: ChatCompletionParameters,
 	modelConfig?: ModelConfigItem,
@@ -63,6 +73,8 @@ export function calculateReasoningBudget(
 			return Math.max(Math.floor(effectiveMaxTokens * 0.75), 1024);
 		case "high":
 			return Math.max(Math.floor(effectiveMaxTokens * 0.9), 1024);
+		case "xhigh":
+			return effectiveMaxTokens;
 		default:
 			return Math.max(Math.floor(effectiveMaxTokens * 0.75), 1024);
 	}

@@ -1,4 +1,5 @@
 import z from "zod/v4";
+import { reasoningEffortSchema, reasoningSettingsSchema } from "./reasoning";
 import { SANDBOX_RUN_DISPATCH_TASK_TYPE } from "./tasks";
 
 export const SANDBOX_PROMPT_STRATEGIES = [
@@ -45,16 +46,8 @@ export const sandboxModelSettingsSchema = z.object({
 	max_tokens: z.number().int().positive().optional(),
 	presence_penalty: z.number().optional(),
 	frequency_penalty: z.number().optional(),
-	reasoning_effort: z
-		.enum(["none", "simulated-thinking", "thinking", "low", "medium", "high"])
-		.optional(),
-	reasoning: z
-		.object({
-			effort: z
-				.enum(["none", "simulated-thinking", "thinking", "low", "medium", "high"])
-				.optional(),
-		})
-		.optional(),
+	reasoning_effort: reasoningEffortSchema.optional(),
+	reasoning: reasoningSettingsSchema.optional(),
 	verbosity: z.enum(["low", "medium", "high", "caveman"]).optional(),
 });
 
