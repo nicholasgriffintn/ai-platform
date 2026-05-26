@@ -96,5 +96,6 @@ describe("feature prompt strategies", () => {
 		expect(prompt).toContain("If a command/script is blocked or fails");
 		expect(prompt).toContain("run_parallel");
 		expect(prompt).toContain("read_files");
+		expect(prompt).toContain("Supported languages: python, javascript, typescript");
 	});
 });

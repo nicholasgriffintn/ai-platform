@@ -38,10 +38,12 @@ export interface FinishDecision {
 	reasoning?: string;
 }
 
+export type ScriptLanguage = "python" | "javascript" | "typescript";
+
 export interface RunScriptDecision {
 	action: "run_script";
 	code: string;
-	language?: "javascript" | "typescript";
+	language?: ScriptLanguage;
 	reasoning?: string;
 }
 

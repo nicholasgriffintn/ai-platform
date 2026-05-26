@@ -627,7 +627,7 @@ export async function handleRunScriptAction(
 			[
 				"Script execution failed.",
 				`Error: ${truncateForModel(errorMessage, MAX_OBSERVATION_CHARS)}`,
-				"Use javascript/typescript run_script, run_command, or read_file instead.",
+				"Use python/javascript/typescript run_script, run_command, or read_file instead.",
 			].join("\n"),
 		);
 		if (context.state.consecutiveCommandFailures >= MAX_CONSECUTIVE_COMMAND_FAILURES) {

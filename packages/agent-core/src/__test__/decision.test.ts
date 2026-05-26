@@ -44,6 +44,19 @@ describe("parseAgentDecision", () => {
 		});
 	});
 
+	it("accepts Python run_script decisions", () => {
+		const decision = parseAgentDecision(
+			'{"action":"run_script","language":"python","code":"print(\\"ok\\")"}',
+		);
+
+		expect(decision).toEqual({
+			action: "run_script",
+			language: "python",
+			code: 'print("ok")',
+			reasoning: undefined,
+		});
+	});
+
 	it("resolves action aliases to canonical actions", () => {
 		const decision = parseAgentDecision('{"action":"execute_command","command":"git status"}');
 

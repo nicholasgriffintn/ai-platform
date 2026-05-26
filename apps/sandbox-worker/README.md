@@ -92,8 +92,8 @@ pnpm run deploy
 - Command isolation blocks shell chaining, pipes, and substitution for agent-generated commands.
 - Shallow clone only (full history not available)
 - Log truncation at 80,000 characters
-- Python code interpreter execution is not exposed to agent decisions yet.
-- Full execution logs are still returned inline until R2 artifact storage is wired.
+- Agent script execution uses the Sandbox code interpreter for Python, JavaScript, and TypeScript.
+- The worker still returns terminal results inline to the API, but the API persists logs, diffs, events, and result manifests to R2 when `ASSETS_BUCKET` is configured.
 
 ## Roadmap - Generated with AI Assistance
 
@@ -181,7 +181,8 @@ This section outlines planned improvements to make the sandbox worker production
 
 **Planned improvements:**
 
-- [ ] Store full execution logs in R2 with presigned URLs
+- [x] Store terminal run logs, diffs, events, and result manifests in R2-backed artifacts from the API dispatcher
+- [ ] Add signed URL support for private artifact retrieval
 - [ ] Implement log retention policies (configurable per user/org)
 - [ ] Add user controls for log storage (auto-delete, archive)
 - [ ] Add execution metrics and dashboards

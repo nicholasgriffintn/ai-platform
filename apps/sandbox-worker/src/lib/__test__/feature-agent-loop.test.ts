@@ -344,15 +344,15 @@ describe("executeAgentLoop", () => {
 		expect(emitted.filter((event) => event.type === "command_completed")).toHaveLength(2);
 	});
 
-	it("runs scripts inside repo root with isolated scope", async () => {
+	it("runs Python scripts inside repo root with isolated scope", async () => {
 		const emitted: Array<Record<string, unknown>> = [];
 		const chatCompletion = vi
 			.fn()
 			.mockResolvedValueOnce(
 				JSON.stringify({
 					action: "run_script",
-					language: "javascript",
-					code: "const fs = require('node:fs');\nconsole.log(fs.existsSync('README.md'));",
+					language: "python",
+					code: "from pathlib import Path\nprint(Path('README.md').exists())",
 				}),
 			)
 			.mockResolvedValueOnce(
@@ -371,7 +371,7 @@ describe("executeAgentLoop", () => {
 		});
 		const createCodeContext = vi.fn().mockResolvedValue({
 			id: "ctx-1",
-			language: "javascript",
+			language: "python",
 			cwd: "/workspace/repo",
 			createdAt: new Date(),
 			lastUsed: new Date(),
@@ -420,16 +420,16 @@ describe("executeAgentLoop", () => {
 		expect(result.summary).toBe("script complete");
 		expect(createCodeContext).toHaveBeenCalledTimes(1);
 		expect(createCodeContext).toHaveBeenCalledWith({
-			language: "javascript",
+			language: "python",
 			cwd: "/workspace/repo",
 		});
 		expect(runCode).toHaveBeenCalledTimes(1);
-		expect(runCode.mock.calls[0]?.[0]).toContain("const fs = require('node:fs');");
+		expect(runCode.mock.calls[0]?.[0]).toContain("from pathlib import Path");
 		expect(runCode.mock.calls[0]?.[1]).toEqual({
 			context: expect.objectContaining({
 				id: "ctx-1",
 			}),
-			language: "javascript",
+			language: "python",
 		});
 		expect(deleteCodeContext).toHaveBeenCalledWith("ctx-1");
 		expect(emitted.some((event) => event.type === "script_completed")).toBe(true);

@@ -1,13 +1,13 @@
-import type { AgentDecision, ReadFileTarget } from "./types";
+import type { AgentDecision, ReadFileTarget, ScriptLanguage } from "./types";
 import { extractCommands, safeParseJson, truncateForModel } from "./utils";
 
-function parseScriptLanguage(rawLanguage: unknown): "javascript" | "typescript" {
+function parseScriptLanguage(rawLanguage: unknown): ScriptLanguage {
 	if (typeof rawLanguage !== "string" || !rawLanguage.trim()) {
 		return "javascript";
 	}
 
 	const normalised = rawLanguage.trim().toLowerCase();
-	if (normalised === "javascript" || normalised === "typescript") {
+	if (normalised === "python" || normalised === "javascript" || normalised === "typescript") {
 		return normalised;
 	}
 

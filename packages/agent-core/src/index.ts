@@ -43,6 +43,7 @@ export type {
 	RunCommandDecision,
 	RunParallelDecision,
 	RunScriptDecision,
+	ScriptLanguage,
 	ToolCallInvocation,
 	ToolCallsDecision,
 	UpdatePlanDecision,
