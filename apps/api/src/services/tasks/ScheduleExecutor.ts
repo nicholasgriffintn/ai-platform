@@ -6,7 +6,7 @@ import { scheduleDailySynthesis, scheduleTrainingQualityScoring } from "./schedu
 const logger = getLogger({ prefix: "services/tasks/schedule-executor" });
 
 export class ScheduleExecutor {
-	public static async respondToCronSchedules(env: IEnv, event: ScheduledEvent): Promise<void> {
+	public static async respondToCronSchedules(env: IEnv, event: ScheduledController): Promise<void> {
 		switch (event.cron) {
 			case SCHEDULES.MEMORIES_SYNTHESIS:
 				const isMemorySynthesisEnabled = env.MEMORY_SYNTHESIS_ENABLED === "true";

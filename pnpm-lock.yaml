@@ -44,6 +44,9 @@ importers:
       '@scalar/hono-api-reference':
         specifier: 0.10.19
         version: 0.10.19(hono@4.12.22)
+      '@sentry/cloudflare':
+        specifier: 10.53.1
+        version: 10.53.1(@cloudflare/workers-types@4.20260523.1)
       '@simplewebauthn/server':
         specifier: 13.3.0
         version: 13.3.0
@@ -259,6 +262,9 @@ importers:
         specifier: 5.0.13
         version: 5.0.13(@types/react@19.2.15)(immer@11.1.8)(react@19.2.6)(use-sync-external-store@1.6.0(react@19.2.6))
     devDependencies:
+      '@babel/preset-typescript':
+        specifier: 7.28.5
+        version: 7.28.5(@babel/core@7.29.0)
       '@cloudflare/workers-types':
         specifier: 4.20260523.1
         version: 4.20260523.1
@@ -3374,6 +3380,19 @@ packages:
   '@scalar/validation@0.6.0':
     resolution: {integrity: sha512-tpmmG+/xRE2Kn9RpflU3AIyZv08v10+E1ZrJCx7z6+/91zHVxy0M73kC1LT4/8PbYNt85ywyC8+n+D99JdMcGA==}
     engines: {node: '>=20'}
+
+  '@sentry/cloudflare@10.53.1':
+    resolution: {integrity: sha512-iSohVibGRAKg7zLUflfA2ePG69Uw6bqm6iCQLM18hoG2gT4DGigaKcjJmZLTfAtW1DInMCb0DYc/mltCznxMrQ==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      '@cloudflare/workers-types': ^4.x
+    peerDependenciesMeta:
+      '@cloudflare/workers-types':
+        optional: true
+
+  '@sentry/core@10.53.1':
+    resolution: {integrity: sha512-XG4ezlkyuAPjBC5+9kXC94rXXuqYTw9NRhfaDHssbTFaGnqBR8vQX2UUgZfY7ucbeelRDGfBu1sywoU+mB04uA==}
+    engines: {node: '>=18'}
 
   '@simplewebauthn/browser@13.3.0':
     resolution: {integrity: sha512-BE/UWv6FOToAdVk0EokzkqQQDOWtNydYlY6+OrmiZ5SCNmb41VehttboTetUM3T/fr6EAFYVXjz4My2wg230rQ==}
@@ -9264,6 +9283,15 @@ snapshots:
       zod: 4.4.3
 
   '@scalar/validation@0.6.0': {}
+
+  '@sentry/cloudflare@10.53.1(@cloudflare/workers-types@4.20260523.1)':
+    dependencies:
+      '@opentelemetry/api': 1.9.1
+      '@sentry/core': 10.53.1
+    optionalDependencies:
+      '@cloudflare/workers-types': 4.20260523.1
+
+  '@sentry/core@10.53.1': {}
 
   '@simplewebauthn/browser@13.3.0': {}
 

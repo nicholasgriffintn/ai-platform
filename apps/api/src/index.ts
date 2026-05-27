@@ -1,4 +1,5 @@
 import { Scalar } from "@scalar/hono-api-reference";
+import { withSentry } from "@sentry/cloudflare";
 import { type Context, Hono } from "hono";
 import { openAPIRouteHandler } from "hono-openapi";
 
@@ -52,6 +53,7 @@ import { TaskMessage } from "./services/tasks/TaskService";
 import { ScheduleExecutor } from "./services/tasks/ScheduleExecutor";
 import { QueueExecutor } from "./services/tasks/QueueExecutor";
 import { SandboxRunCoordinator } from "./services/apps/sandbox/run-coordinator/object";
+import { captureApiError, getSentryOptions } from "./utils/sentry";
 
 const app = new Hono<{
 	Bindings: IEnv;
@@ -326,12 +328,13 @@ app.notFound((c) => c.json({ status: "not found" }, 404));
 app.onError((err, _c) => {
 	const error =
 		err instanceof AssistantError ? err : AssistantError.fromError(err, ErrorType.UNKNOWN_ERROR);
+	captureApiError(error, err);
 	return handleAIServiceError(error);
 });
 
 let hasLoggedStart = false;
 
-export default {
+const handler = {
 	async fetch(request: Request, env: IEnv, ctx: ExecutionContext) {
 		const logLevel = LogLevel[env.LOG_LEVEL?.toUpperCase()] ?? LogLevel.INFO;
 
@@ -344,7 +347,7 @@ export default {
 
 		return app.fetch(request, env, ctx);
 	},
-	async scheduled(event: ScheduledEvent, env: IEnv): Promise<void> {
+	async scheduled(event: ScheduledController, env: IEnv): Promise<void> {
 		await ScheduleExecutor.respondToCronSchedules(env, event);
 	},
 	async queue(batch: MessageBatch<unknown>, env: IEnv): Promise<void> {
@@ -353,6 +356,8 @@ export default {
 			messages: batch.messages as Message<TaskMessage>[],
 		} as MessageBatch<TaskMessage>);
 	},
-};
+} satisfies ExportedHandler<IEnv>;
+
+export default withSentry<IEnv>(getSentryOptions, handler);
 
 export { SandboxRunCoordinator };

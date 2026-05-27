@@ -38,6 +38,7 @@ interface Env {
 	GROQ_API_KEY: string;
 	ANALYTICS_API_KEY: string;
 	LOG_LEVEL?: string;
+	SENTRY_DSN?: string;
 	ASSETS_BUCKET: R2Bucket;
 	DB: D1Database;
 	ANALYTICS: AnalyticsEngineDataset;

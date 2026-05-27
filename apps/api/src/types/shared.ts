@@ -96,6 +96,7 @@ export type IEnv = {
 	PRIVATE_KEY?: string;
 	ALWAYS_ENABLED_PROVIDERS?: string;
 	LOG_LEVEL?: string;
+	SENTRY_DSN?: string;
 	STRIPE_SECRET_KEY?: string;
 	STRIPE_WEBHOOK_SECRET?: string;
 	SES_EMAIL_FROM?: string;
