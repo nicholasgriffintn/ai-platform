@@ -111,10 +111,14 @@ function useHomeChatModeConfig(): {
 	});
 	const {
 		error: liveError,
+		isMicrophoneEnabled: liveMicrophoneEnabled,
+		isVideoEnabled: liveVideoEnabled,
 		lastEvent: liveLastEvent,
 		lastTranscript: liveLastTranscript,
 		provider: liveProvider,
+		setMicrophoneEnabled: setLiveMicrophoneEnabled,
 		setProvider: setLiveProvider,
+		setVideoEnabled: setLiveVideoEnabled,
 		start: startLiveSession,
 		status: liveStatus,
 		stop: stopLiveSession,
@@ -175,7 +179,6 @@ function useHomeChatModeConfig(): {
 			if (modeId === "live") {
 				const liveModelId = getDefaultLiveModelId(liveProvider);
 				setModel(liveModelId);
-				void startLiveSession(undefined, liveModelId);
 			} else if (activeModeId === "live") {
 				stopLiveSession();
 			}
@@ -190,7 +193,6 @@ function useHomeChatModeConfig(): {
 			setModel,
 			setSearchParams,
 			setSelectedAgentId,
-			startLiveSession,
 			stopLiveSession,
 		],
 	);
@@ -364,13 +366,17 @@ function useHomeChatModeConfig(): {
 				error={liveError}
 				lastEvent={liveLastEvent}
 				lastTranscript={liveLastTranscript}
+				microphoneEnabled={liveMicrophoneEnabled}
 				onProviderChange={handleLiveProviderChange}
+				onMicrophoneEnabledChange={setLiveMicrophoneEnabled}
 				onStart={() => void startLiveSession(undefined, selectedModel)}
 				onStop={stopLiveSession}
+				onVideoEnabledChange={setLiveVideoEnabled}
 				provider={liveProvider}
 				showHeader={activeModeId !== "live"}
 				showSessionControls={activeModeId !== "live"}
 				status={liveStatus}
+				videoEnabled={liveVideoEnabled}
 			/>
 		);
 		const liveInputControls = (
@@ -378,9 +384,14 @@ function useHomeChatModeConfig(): {
 				error={liveError}
 				lastEvent={liveLastEvent}
 				lastTranscript={liveLastTranscript}
+				microphoneEnabled={liveMicrophoneEnabled}
+				onMicrophoneEnabledChange={setLiveMicrophoneEnabled}
 				onStart={() => void startLiveSession(undefined, selectedModel)}
 				onStop={stopLiveSession}
+				onVideoEnabledChange={setLiveVideoEnabled}
 				status={liveStatus}
+				videoEnabled={liveVideoEnabled}
+				videoSupported={liveProvider === "google-ai-studio"}
 			/>
 		);
 		const activeModeControls =
@@ -561,10 +572,14 @@ function useHomeChatModeConfig(): {
 		sandboxModelSettings,
 		sandboxSettings,
 		liveError,
+		liveMicrophoneEnabled,
+		liveVideoEnabled,
 		liveLastEvent,
 		liveLastTranscript,
 		liveProvider,
 		liveStatus,
+		setLiveMicrophoneEnabled,
+		setLiveVideoEnabled,
 		startLiveSession,
 		stopLiveSession,
 	]);

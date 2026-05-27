@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { createRealtimeSession } from "~/lib/api/realtime-service";
+import { getErrorMessage } from "~/lib/errors";
 import {
 	connectGeminiLiveWebSocket,
 	connectOpenAIRealtimeWebRTC,
@@ -21,8 +22,10 @@ import {
 import {
 	extractGeminiAudioChunks,
 	extractRealtimeTranscript,
+	isGeminiSetupCompleteMessage,
 	parseRealtimeJsonMessage,
 } from "~/lib/realtime/messages";
+import { formatRealtimeWebSocketCloseError } from "~/lib/realtime/errors";
 import {
 	getRealtimeLiveProviderOption,
 	type RealtimeLiveProviderId,
@@ -35,48 +38,56 @@ interface UseRealtimeLiveSessionOptions {
 	onTranscript?: (text: string) => void;
 }
 
-interface MediaStreams {
-	audio: MediaStream;
-	video?: MediaStream;
-}
+const AUDIO_CONSTRAINTS: MediaTrackConstraints = {
+	autoGainControl: true,
+	echoCancellation: true,
+	noiseSuppression: true,
+};
+
+const VIDEO_CONSTRAINTS: MediaTrackConstraints = {
+	frameRate: { ideal: 1, max: 2 },
+	height: { ideal: 360 },
+	width: { ideal: 640 },
+};
 
 function stopStream(stream?: MediaStream | null): void {
 	stream?.getTracks().forEach((track) => track.stop());
 }
 
-function requestMediaStreams(provider: RealtimeLiveProviderId): Promise<MediaStreams> {
-	if (provider === "google-ai-studio") {
-		return navigator.mediaDevices
-			.getUserMedia({
-				audio: {
-					autoGainControl: true,
-					echoCancellation: true,
-					noiseSuppression: true,
-				},
-				video: {
-					frameRate: { ideal: 1, max: 2 },
-					height: { ideal: 360 },
-					width: { ideal: 640 },
-				},
-			})
-			.then((stream) => ({ audio: stream, video: stream }));
-	}
+function setStreamTrackEnabled(
+	stream: MediaStream | null | undefined,
+	kind: MediaStreamTrack["kind"],
+	enabled: boolean,
+): void {
+	stream
+		?.getTracks()
+		.filter((track) => track.kind === kind)
+		.forEach((track) => {
+			track.enabled = enabled;
+		});
+}
 
-	return navigator.mediaDevices
-		.getUserMedia({
-			audio: {
-				autoGainControl: true,
-				echoCancellation: true,
-				noiseSuppression: true,
-			},
-		})
-		.then((stream) => ({ audio: stream }));
+function requestAudioStream(): Promise<MediaStream> {
+	return navigator.mediaDevices.getUserMedia({ audio: AUDIO_CONSTRAINTS });
+}
+
+function requestVideoStream(): Promise<MediaStream> {
+	return navigator.mediaDevices.getUserMedia({ video: VIDEO_CONSTRAINTS });
 }
 
 function sendJsonWhenOpen(connection: RealtimeWebSocketConnection, payload: unknown): void {
 	if (connection.socket.readyState === WebSocket.OPEN) {
 		connection.sendJson(payload);
 	}
+}
+
+function sendGeminiSetup(connection: RealtimeWebSocketConnection): void {
+	const { setup } = connection.session;
+	if (!setup) {
+		throw new Error("Gemini Live session setup missing");
+	}
+
+	connection.sendJson({ setup });
 }
 
 export function useRealtimeLiveSession({
@@ -94,10 +105,15 @@ export function useRealtimeLiveSession({
 	const connectionRef = useRef<RealtimeConnection | null>(null);
 	const inputAudioControllerRef = useRef<RealtimeMediaController | null>(null);
 	const inputVideoControllerRef = useRef<RealtimeMediaController | null>(null);
-	const mediaStreamRef = useRef<MediaStream | null>(null);
+	const audioStreamRef = useRef<MediaStream | null>(null);
+	const videoStreamRef = useRef<MediaStream | null>(null);
+	const microphoneEnabledRef = useRef(true);
+	const videoEnabledRef = useRef(false);
 	const remoteAudioRef = useRef<HTMLAudioElement | null>(null);
 	const statusRef = useRef(status);
 	const stoppingRef = useRef(false);
+	const [isMicrophoneEnabled, setIsMicrophoneEnabledState] = useState(true);
+	const [isVideoEnabled, setIsVideoEnabledState] = useState(false);
 
 	const setLiveStatus = useCallback((nextStatus: RealtimeLiveStatus) => {
 		statusRef.current = nextStatus;
@@ -120,16 +136,149 @@ export function useRealtimeLiveSession({
 		[onTranscript],
 	);
 
+	const ensureAudioStream = useCallback(async (): Promise<MediaStream> => {
+		if (audioStreamRef.current) {
+			return audioStreamRef.current;
+		}
+
+		const stream = await requestAudioStream();
+		setStreamTrackEnabled(stream, "audio", microphoneEnabledRef.current);
+		audioStreamRef.current = stream;
+		return stream;
+	}, []);
+
+	const ensureVideoStream = useCallback(async (): Promise<MediaStream> => {
+		if (videoStreamRef.current) {
+			return videoStreamRef.current;
+		}
+
+		const stream = await requestVideoStream();
+		videoStreamRef.current = stream;
+		return stream;
+	}, []);
+
+	const stopInputAudio = useCallback((notifyProvider = false) => {
+		inputAudioControllerRef.current?.stop();
+		inputAudioControllerRef.current = null;
+
+		const connection = connectionRef.current;
+		if (notifyProvider && connection?.session.provider === "google-ai-studio") {
+			sendJsonWhenOpen(connection as RealtimeWebSocketConnection, {
+				realtimeInput: { audioStreamEnd: true },
+			});
+		}
+
+		if (connection?.session.provider === "openai") {
+			setStreamTrackEnabled(audioStreamRef.current, "audio", false);
+			return;
+		}
+
+		stopStream(audioStreamRef.current);
+		audioStreamRef.current = null;
+	}, []);
+
+	const stopInputVideo = useCallback(() => {
+		inputVideoControllerRef.current?.stop();
+		inputVideoControllerRef.current = null;
+		stopStream(videoStreamRef.current);
+		videoStreamRef.current = null;
+	}, []);
+
+	const startInputAudio = useCallback(
+		async (connection: RealtimeWebSocketConnection) => {
+			if (inputAudioControllerRef.current || !microphoneEnabledRef.current) {
+				return;
+			}
+
+			const stream = await ensureAudioStream();
+			if (connection.session.provider === "google-ai-studio") {
+				const controller = await startPcm16MicrophoneStream({
+					stream,
+					onChunk: (chunk) =>
+						sendJsonWhenOpen(connection, {
+							realtimeInput: {
+								audio: {
+									data: arrayBufferToBase64(chunk),
+									mimeType: "audio/pcm;rate=16000",
+								},
+							},
+						}),
+				});
+				if (
+					connectionRef.current !== connection ||
+					stoppingRef.current ||
+					!microphoneEnabledRef.current
+				) {
+					controller.stop();
+					return;
+				}
+				inputAudioControllerRef.current = controller;
+				return;
+			}
+
+			if (connection.session.provider === "mistral") {
+				const controller = await startPcm16MicrophoneStream({
+					stream,
+					onChunk: (chunk) =>
+						sendJsonWhenOpen(connection, {
+							type: "input_audio.append",
+							audio: arrayBufferToBase64(chunk),
+						}),
+				});
+				if (
+					connectionRef.current !== connection ||
+					stoppingRef.current ||
+					!microphoneEnabledRef.current
+				) {
+					controller.stop();
+					return;
+				}
+				inputAudioControllerRef.current = controller;
+			}
+		},
+		[ensureAudioStream],
+	);
+
+	const startInputVideo = useCallback(
+		async (connection: RealtimeWebSocketConnection) => {
+			if (
+				inputVideoControllerRef.current ||
+				!videoEnabledRef.current ||
+				connection.session.provider !== "google-ai-studio"
+			) {
+				return;
+			}
+
+			const stream = await ensureVideoStream();
+			const controller = await startJpegFrameStream({
+				stream,
+				onFrame: (frame) =>
+					sendJsonWhenOpen(connection, {
+						realtimeInput: {
+							video: {
+								data: frame.data,
+								mimeType: frame.mimeType,
+							},
+						},
+					}),
+			});
+			if (connectionRef.current !== connection || stoppingRef.current || !videoEnabledRef.current) {
+				controller.stop();
+				return;
+			}
+			inputVideoControllerRef.current = controller;
+		},
+		[ensureVideoStream],
+	);
+
 	const cleanup = useCallback(
 		(nextStatus: RealtimeLiveStatus = "idle", updateState = true) => {
 			stoppingRef.current = true;
 			abortControllerRef.current?.abort();
 			abortControllerRef.current = null;
 
-			inputAudioControllerRef.current?.stop();
-			inputAudioControllerRef.current = null;
-			inputVideoControllerRef.current?.stop();
-			inputVideoControllerRef.current = null;
+			stopInputAudio();
+			stopInputVideo();
 			audioPlayerRef.current?.stop();
 			audioPlayerRef.current = null;
 
@@ -150,8 +299,10 @@ export function useRealtimeLiveSession({
 			remoteAudioRef.current?.load();
 			remoteAudioRef.current = null;
 
-			stopStream(mediaStreamRef.current);
-			mediaStreamRef.current = null;
+			stopStream(audioStreamRef.current);
+			audioStreamRef.current = null;
+			stopStream(videoStreamRef.current);
+			videoStreamRef.current = null;
 
 			if (updateState) {
 				setLiveStatus(nextStatus);
@@ -161,13 +312,26 @@ export function useRealtimeLiveSession({
 			}
 			stoppingRef.current = false;
 		},
-		[setLiveStatus],
+		[setLiveStatus, stopInputAudio, stopInputVideo],
+	);
+
+	const failSession = useCallback(
+		(message: string) => {
+			if (stoppingRef.current) {
+				return;
+			}
+
+			setError(message);
+			setLastEvent("Connection failed");
+			toast.error(message);
+			cleanup("error");
+		},
+		[cleanup],
 	);
 
 	const startOpenAI = useCallback(
 		async (signal: AbortSignal, selectedModel?: string | null) => {
-			const streams = await requestMediaStreams("openai");
-			mediaStreamRef.current = streams.audio;
+			const audioStream = await ensureAudioStream();
 
 			const session = await createRealtimeSession({
 				type: "realtime",
@@ -185,7 +349,7 @@ export function useRealtimeLiveSession({
 
 			const connection = await connectOpenAIRealtimeWebRTC({
 				session,
-				stream: streams.audio,
+				stream: audioStream,
 				signal,
 				configurePeerConnection: preferOpusAudioCodec,
 				onDataChannelMessage: (event) => {
@@ -203,14 +367,11 @@ export function useRealtimeLiveSession({
 			setLastEvent("OpenAI Realtime connected");
 			setLiveStatus("active");
 		},
-		[handleTranscript, setLiveStatus],
+		[ensureAudioStream, handleTranscript, setLiveStatus],
 	);
 
 	const startGemini = useCallback(
 		async (signal: AbortSignal, selectedModel?: string | null) => {
-			const streams = await requestMediaStreams("google-ai-studio");
-			mediaStreamRef.current = streams.audio;
-
 			const session = await createRealtimeSession({
 				type: "realtime",
 				provider: "google-ai-studio",
@@ -224,65 +385,66 @@ export function useRealtimeLiveSession({
 			audioPlayerRef.current = createPcm16AudioPlayer({ sampleRate: 24000 });
 
 			let connection: RealtimeWebSocketConnection;
+			let hasStartedMedia = false;
+			const startGeminiMedia = async () => {
+				if (hasStartedMedia) {
+					return;
+				}
+				hasStartedMedia = true;
+
+				try {
+					setLastEvent("Starting Gemini Live media");
+					await startInputAudio(connection);
+					await startInputVideo(connection);
+
+					setLastEvent("Gemini Live connected");
+					setLiveStatus("active");
+				} catch (openError) {
+					if (connectionRef.current === connection && !stoppingRef.current) {
+						failSession(getErrorMessage(openError, "Failed to start Gemini Live media"));
+					}
+				}
+			};
 			connection = connectGeminiLiveWebSocket({
 				session,
-				onClose: () => {
+				onClose: (event) => {
 					if (connectionRef.current === connection && !stoppingRef.current) {
-						cleanup("idle");
+						failSession(formatRealtimeWebSocketCloseError("Gemini Live", event));
 					}
 				},
 				onError: () => {
 					if (connectionRef.current === connection && !stoppingRef.current) {
-						setError("Gemini Live connection failed");
-						setLiveStatus("error");
+						failSession("Gemini Live connection failed");
 					}
 				},
 				onMessage: (event) => {
 					const payload = parseRealtimeJsonMessage(event.data);
+					if (isGeminiSetupCompleteMessage(payload)) {
+						void startGeminiMedia();
+					}
 					handleTranscript(payload);
 					for (const chunk of extractGeminiAudioChunks(payload)) {
 						audioPlayerRef.current?.playBase64(chunk);
 					}
 				},
-				onOpen: async () => {
-					setLastEvent("Gemini Live connected");
-					setLiveStatus("active");
-					inputAudioControllerRef.current = await startPcm16MicrophoneStream({
-						stream: streams.audio,
-						onChunk: (chunk) =>
-							sendJsonWhenOpen(connection, {
-								realtimeInput: {
-									audio: {
-										data: arrayBufferToBase64(chunk),
-										mimeType: "audio/pcm;rate=16000",
-									},
-								},
-							}),
-					});
-					inputVideoControllerRef.current = await startJpegFrameStream({
-						stream: streams.video ?? streams.audio,
-						onFrame: (frame) =>
-							sendJsonWhenOpen(connection, {
-								realtimeInput: {
-									video: {
-										data: frame.data,
-										mimeType: frame.mimeType,
-									},
-								},
-							}),
-					});
+				onOpen: () => {
+					try {
+						sendGeminiSetup(connection);
+						setLastEvent("Waiting for Gemini Live setup");
+					} catch (openError) {
+						if (connectionRef.current === connection && !stoppingRef.current) {
+							failSession(getErrorMessage(openError, "Failed to start Gemini Live media"));
+						}
+					}
 				},
 			});
 			connectionRef.current = connection;
 		},
-		[cleanup, handleTranscript, setLiveStatus],
+		[failSession, handleTranscript, setLiveStatus, startInputAudio, startInputVideo],
 	);
 
 	const startMistral = useCallback(
 		async (signal: AbortSignal, selectedModel?: string | null) => {
-			const streams = await requestMediaStreams("mistral");
-			mediaStreamRef.current = streams.audio;
-
 			const session = await createRealtimeSession({
 				type: "transcription",
 				provider: "mistral",
@@ -295,36 +457,43 @@ export function useRealtimeLiveSession({
 			let connection: RealtimeWebSocketConnection;
 			connection = connectRealtimeWebSocket({
 				session,
-				onClose: () => {
+				onClose: (event) => {
 					if (connectionRef.current === connection && !stoppingRef.current) {
-						cleanup("idle");
+						failSession(formatRealtimeWebSocketCloseError("Mistral realtime transcription", event));
 					}
 				},
 				onError: () => {
 					if (connectionRef.current === connection && !stoppingRef.current) {
-						setError("Mistral realtime transcription failed");
-						setLiveStatus("error");
+						failSession("Mistral realtime transcription failed");
 					}
 				},
 				onMessage: (event) => {
 					handleTranscript(parseRealtimeJsonMessage(event.data));
 				},
-				onOpen: async () => {
-					setLastEvent("Mistral realtime transcription connected");
-					setLiveStatus("active");
-					inputAudioControllerRef.current = await startPcm16MicrophoneStream({
-						stream: streams.audio,
-						onChunk: (chunk) =>
-							sendJsonWhenOpen(connection, {
-								type: "input_audio.append",
-								audio: arrayBufferToBase64(chunk),
-							}),
-					});
+				onOpen: () => {
+					void (async () => {
+						try {
+							setLastEvent("Starting Mistral microphone");
+							await startInputAudio(connection);
+
+							setLastEvent("Mistral realtime transcription connected");
+							setLiveStatus("active");
+						} catch (openError) {
+							if (connectionRef.current === connection && !stoppingRef.current) {
+								failSession(
+									getErrorMessage(
+										openError,
+										"Failed to start Mistral realtime transcription media",
+									),
+								);
+							}
+						}
+					})();
 				},
 			});
 			connectionRef.current = connection;
 		},
-		[cleanup, handleTranscript, setLiveStatus],
+		[failSession, handleTranscript, setLiveStatus, startInputAudio],
 	);
 
 	const start = useCallback(
@@ -356,31 +525,79 @@ export function useRealtimeLiveSession({
 					return;
 				}
 
-				const message =
-					startError instanceof Error ? startError.message : "Failed to start live session";
-				setError(message);
-				setLastEvent("Connection failed");
-				setLiveStatus("error");
-				toast.error(message);
-				cleanup("error");
+				failSession(getErrorMessage(startError, "Failed to start live session"));
 			}
 		},
-		[cleanup, model, provider, setLiveStatus, startGemini, startMistral, startOpenAI],
+		[cleanup, failSession, model, provider, startGemini, startMistral, startOpenAI],
 	);
 
 	const stop = useCallback(() => {
 		cleanup("idle");
 	}, [cleanup]);
 
-	const changeProvider = useCallback((nextProvider: RealtimeLiveProviderId) => {
-		if (statusRef.current === "active" || statusRef.current === "connecting") {
-			return;
-		}
-		setProvider(nextProvider);
-		setLastTranscript(null);
-		setLastEvent("Idle");
-		setError(null);
-	}, []);
+	const setMicrophoneEnabled = useCallback(
+		(enabled: boolean) => {
+			microphoneEnabledRef.current = enabled;
+			setIsMicrophoneEnabledState(enabled);
+
+			const connection = connectionRef.current;
+			if (!connection) {
+				return;
+			}
+
+			if (connection.session.provider === "openai") {
+				setStreamTrackEnabled(audioStreamRef.current, "audio", enabled);
+				return;
+			}
+
+			if (!enabled) {
+				stopInputAudio(true);
+				return;
+			}
+
+			void startInputAudio(connection as RealtimeWebSocketConnection).catch((toggleError) => {
+				failSession(getErrorMessage(toggleError, "Failed to start microphone input"));
+			});
+		},
+		[failSession, startInputAudio, stopInputAudio],
+	);
+
+	const setVideoEnabled = useCallback(
+		(enabled: boolean) => {
+			const nextEnabled = provider === "google-ai-studio" && enabled;
+			videoEnabledRef.current = nextEnabled;
+			setIsVideoEnabledState(nextEnabled);
+
+			if (!nextEnabled) {
+				stopInputVideo();
+				return;
+			}
+
+			const connection = connectionRef.current;
+			if (connection?.session.provider !== "google-ai-studio") {
+				return;
+			}
+
+			void startInputVideo(connection as RealtimeWebSocketConnection).catch((toggleError) => {
+				failSession(getErrorMessage(toggleError, "Failed to start video input"));
+			});
+		},
+		[failSession, provider, startInputVideo, stopInputVideo],
+	);
+
+	const changeProvider = useCallback(
+		(nextProvider: RealtimeLiveProviderId) => {
+			if (statusRef.current === "active" || statusRef.current === "connecting") {
+				return;
+			}
+			setProvider(nextProvider);
+			setVideoEnabled(false);
+			setLastTranscript(null);
+			setLastEvent("Idle");
+			setError(null);
+		},
+		[setVideoEnabled],
+	);
 
 	useEffect(() => () => cleanup("idle", false), [cleanup]);
 
@@ -388,10 +605,14 @@ export function useRealtimeLiveSession({
 		error,
 		isActive: status === "active",
 		isConnecting: status === "connecting",
+		isMicrophoneEnabled,
+		isVideoEnabled,
 		lastEvent,
 		lastTranscript,
 		provider,
+		setMicrophoneEnabled,
 		setProvider: changeProvider,
+		setVideoEnabled,
 		start,
 		status,
 		stop,

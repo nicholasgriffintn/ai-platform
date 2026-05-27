@@ -9,6 +9,13 @@ export interface Pcm16AudioPlayer {
 
 const PCM_SAMPLE_MAX = 0x7fff;
 const PCM_SAMPLE_MIN = 0x8000;
+const MICROPHONE_BUFFER_SIZE = 4096;
+const MICROPHONE_WORKLET_MODULE_URL = "/realtime/pcm16-microphone-processor.js";
+const MICROPHONE_WORKLET_PROCESSOR_NAME = "pcm16-microphone-processor";
+
+interface Pcm16MicrophoneWorkletMessage {
+	input?: Float32Array;
+}
 
 function getAudioContextConstructor(): typeof AudioContext {
 	const AudioContextConstructor =
@@ -108,6 +115,95 @@ export async function startPcm16MicrophoneStream({
 	const AudioContextConstructor = getAudioContextConstructor();
 	const audioContext = new AudioContextConstructor();
 	const source = audioContext.createMediaStreamSource(stream);
+
+	if (supportsAudioWorklet(audioContext)) {
+		return startPcm16MicrophoneWorkletStream({ audioContext, onChunk, sampleRate, source });
+	}
+
+	return startPcm16MicrophoneScriptProcessorStream({ audioContext, onChunk, sampleRate, source });
+}
+
+function supportsAudioWorklet(audioContext: AudioContext): boolean {
+	const audioWorklet = (audioContext as AudioContext & { audioWorklet?: AudioWorklet })
+		.audioWorklet;
+	const AudioWorkletNodeConstructor = (
+		window as unknown as { AudioWorkletNode?: typeof AudioWorkletNode }
+	).AudioWorkletNode;
+
+	return Boolean(
+		audioWorklet && typeof audioWorklet.addModule === "function" && AudioWorkletNodeConstructor,
+	);
+}
+
+async function startPcm16MicrophoneWorkletStream({
+	audioContext,
+	onChunk,
+	sampleRate,
+	source,
+}: {
+	audioContext: AudioContext;
+	onChunk: (chunk: ArrayBuffer) => void;
+	sampleRate: number;
+	source: MediaStreamAudioSourceNode;
+}): Promise<RealtimeMediaController> {
+	try {
+		await audioContext.audioWorklet.addModule(MICROPHONE_WORKLET_MODULE_URL);
+	} catch (error) {
+		void audioContext.close();
+		throw error;
+	}
+
+	const AudioWorkletNodeConstructor = (
+		window as unknown as { AudioWorkletNode: typeof AudioWorkletNode }
+	).AudioWorkletNode;
+	const worklet = new AudioWorkletNodeConstructor(audioContext, MICROPHONE_WORKLET_PROCESSOR_NAME, {
+		numberOfInputs: 1,
+		numberOfOutputs: 1,
+		outputChannelCount: [1],
+		processorOptions: {
+			bufferSize: MICROPHONE_BUFFER_SIZE,
+		},
+	});
+	const silentOutput = audioContext.createGain();
+	silentOutput.gain.value = 0;
+
+	worklet.port.onmessage = (event: MessageEvent<Pcm16MicrophoneWorkletMessage>) => {
+		const input = event.data.input;
+		if (!input) {
+			return;
+		}
+
+		const sampled = downsampleFloat32Buffer(input, audioContext.sampleRate, sampleRate);
+		onChunk(encodePcm16Audio(sampled));
+	};
+
+	source.connect(worklet);
+	worklet.connect(silentOutput);
+	silentOutput.connect(audioContext.destination);
+
+	return {
+		stop: () => {
+			worklet.port.postMessage({ type: "stop" });
+			worklet.port.onmessage = null;
+			worklet.disconnect();
+			source.disconnect();
+			silentOutput.disconnect();
+			void audioContext.close();
+		},
+	};
+}
+
+function startPcm16MicrophoneScriptProcessorStream({
+	audioContext,
+	onChunk,
+	sampleRate,
+	source,
+}: {
+	audioContext: AudioContext;
+	onChunk: (chunk: ArrayBuffer) => void;
+	sampleRate: number;
+	source: MediaStreamAudioSourceNode;
+}): RealtimeMediaController {
 	const processor = audioContext.createScriptProcessor(4096, 1, 1);
 	const silentOutput = audioContext.createGain();
 	silentOutput.gain.value = 0;

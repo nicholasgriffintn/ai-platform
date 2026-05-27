@@ -126,3 +126,11 @@ export function extractGeminiAudioChunks(payload: unknown): string[] {
 
 	return chunks;
 }
+
+export function isGeminiSetupCompleteMessage(payload: unknown): boolean {
+	if (!isRecord(payload)) {
+		return false;
+	}
+
+	return isRecord(payload.setupComplete) || isRecord(payload.setup_complete);
+}

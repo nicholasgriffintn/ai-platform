@@ -1,4 +1,4 @@
-import { Check, Loader2, Mic, RadioTower, Square, Video } from "lucide-react";
+import { Check, Loader2, Mic, MicOff, RadioTower, Square, Video, VideoOff } from "lucide-react";
 
 import type { RealtimeLiveStatus } from "~/hooks/useRealtimeLiveSession";
 import {
@@ -11,23 +11,32 @@ interface LiveChatModeControlsProps {
 	error?: string | null;
 	lastEvent: string;
 	lastTranscript?: string | null;
+	microphoneEnabled: boolean;
 	onProviderChange: (provider: RealtimeLiveProviderId) => void;
+	onMicrophoneEnabledChange: (enabled: boolean) => void;
 	onStart: () => void;
 	onStop: () => void;
+	onVideoEnabledChange: (enabled: boolean) => void;
 	provider: RealtimeLiveProviderId;
 	showHeader?: boolean;
 	showSessionControls?: boolean;
 	status: RealtimeLiveStatus;
+	videoEnabled: boolean;
 }
 
 interface LiveSessionControlsProps {
 	error?: string | null;
 	lastEvent: string;
 	lastTranscript?: string | null;
+	microphoneEnabled: boolean;
+	onMicrophoneEnabledChange: (enabled: boolean) => void;
 	onStart: () => void;
 	onStop: () => void;
+	onVideoEnabledChange: (enabled: boolean) => void;
 	status: RealtimeLiveStatus;
 	variant?: "panel" | "composer";
+	videoEnabled: boolean;
+	videoSupported: boolean;
 }
 
 function ProviderIcon({ provider }: { provider: RealtimeLiveProviderId }) {
@@ -53,14 +62,84 @@ function getStatusCopy(status: RealtimeLiveStatus): string {
 	}
 }
 
+function LiveMediaControls({
+	microphoneEnabled,
+	onMicrophoneEnabledChange,
+	onVideoEnabledChange,
+	videoEnabled,
+	videoSupported,
+}: Pick<
+	LiveSessionControlsProps,
+	| "microphoneEnabled"
+	| "onMicrophoneEnabledChange"
+	| "onVideoEnabledChange"
+	| "videoEnabled"
+	| "videoSupported"
+>) {
+	return (
+		<div className="flex shrink-0 items-center gap-1">
+			<button
+				type="button"
+				aria-label={microphoneEnabled ? "Turn microphone off" : "Turn microphone on"}
+				aria-pressed={microphoneEnabled}
+				title={microphoneEnabled ? "Turn microphone off" : "Turn microphone on"}
+				onClick={() => onMicrophoneEnabledChange(!microphoneEnabled)}
+				className={cn(
+					"flex h-8 w-8 items-center justify-center rounded-md transition-colors",
+					microphoneEnabled
+						? "bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-950/30 dark:text-emerald-300 dark:hover:bg-emerald-950/50"
+						: "bg-zinc-100 text-zinc-500 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700",
+				)}
+			>
+				{microphoneEnabled ? (
+					<Mic className="h-4 w-4" aria-hidden="true" />
+				) : (
+					<MicOff className="h-4 w-4" aria-hidden="true" />
+				)}
+			</button>
+			<button
+				type="button"
+				aria-label={videoEnabled ? "Turn camera off" : "Turn camera on"}
+				aria-pressed={videoEnabled}
+				disabled={!videoSupported}
+				title={
+					videoSupported
+						? videoEnabled
+							? "Turn camera off"
+							: "Turn camera on"
+						: "Camera is available with Gemini Live"
+				}
+				onClick={() => onVideoEnabledChange(!videoEnabled)}
+				className={cn(
+					"flex h-8 w-8 items-center justify-center rounded-md transition-colors disabled:cursor-not-allowed disabled:opacity-50",
+					videoEnabled
+						? "bg-sky-50 text-sky-700 hover:bg-sky-100 dark:bg-sky-950/30 dark:text-sky-300 dark:hover:bg-sky-950/50"
+						: "bg-zinc-100 text-zinc-500 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700",
+				)}
+			>
+				{videoEnabled ? (
+					<Video className="h-4 w-4" aria-hidden="true" />
+				) : (
+					<VideoOff className="h-4 w-4" aria-hidden="true" />
+				)}
+			</button>
+		</div>
+	);
+}
+
 function LiveSessionControls({
 	error,
 	lastEvent,
 	lastTranscript,
+	microphoneEnabled,
+	onMicrophoneEnabledChange,
 	onStart,
 	onStop,
+	onVideoEnabledChange,
 	status,
 	variant = "panel",
+	videoEnabled,
+	videoSupported,
 }: LiveSessionControlsProps) {
 	const isActive = status === "active";
 	const isConnecting = status === "connecting";
@@ -101,27 +180,36 @@ function LiveSessionControls({
 					{detail}
 				</div>
 			</div>
-			<button
-				type="button"
-				disabled={isConnecting}
-				onClick={isActive ? onStop : onStart}
-				className={cn(
-					"flex h-8 items-center justify-center gap-2 rounded-md px-3 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-60",
-					isComposer ? "w-full shrink-0 sm:w-auto" : "w-full",
-					isActive
-						? "bg-red-50 text-red-700 hover:bg-red-100 dark:bg-red-950/30 dark:text-red-300 dark:hover:bg-red-950/50"
-						: "bg-zinc-950 text-white hover:bg-zinc-800 dark:bg-off-white dark:text-zinc-950 dark:hover:bg-zinc-200",
-				)}
-			>
-				{isConnecting ? (
-					<Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
-				) : isActive ? (
-					<Square className="h-4 w-4" aria-hidden="true" />
-				) : (
-					<RadioTower className="h-4 w-4" aria-hidden="true" />
-				)}
-				{isActive ? "Stop live session" : "Start live session"}
-			</button>
+			<div className={cn("flex shrink-0 items-center gap-2", isComposer && "w-full sm:w-auto")}>
+				<LiveMediaControls
+					microphoneEnabled={microphoneEnabled}
+					onMicrophoneEnabledChange={onMicrophoneEnabledChange}
+					onVideoEnabledChange={onVideoEnabledChange}
+					videoEnabled={videoEnabled}
+					videoSupported={videoSupported}
+				/>
+				<button
+					type="button"
+					disabled={isConnecting}
+					onClick={isActive ? onStop : onStart}
+					className={cn(
+						"flex h-8 items-center justify-center gap-2 rounded-md px-3 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-60",
+						isComposer ? "min-w-0 flex-1 sm:flex-none" : "flex-1",
+						isActive
+							? "bg-red-50 text-red-700 hover:bg-red-100 dark:bg-red-950/30 dark:text-red-300 dark:hover:bg-red-950/50"
+							: "bg-zinc-950 text-white hover:bg-zinc-800 dark:bg-off-white dark:text-zinc-950 dark:hover:bg-zinc-200",
+					)}
+				>
+					{isConnecting ? (
+						<Loader2 className="h-4 w-4 shrink-0 animate-spin" aria-hidden="true" />
+					) : isActive ? (
+						<Square className="h-4 w-4 shrink-0" aria-hidden="true" />
+					) : (
+						<RadioTower className="h-4 w-4 shrink-0" aria-hidden="true" />
+					)}
+					<span className="truncate">{isActive ? "Stop live session" : "Start live session"}</span>
+				</button>
+			</div>
 		</div>
 	);
 }
@@ -134,13 +222,17 @@ export function LiveChatModeControls({
 	error,
 	lastEvent,
 	lastTranscript,
+	microphoneEnabled,
 	onProviderChange,
+	onMicrophoneEnabledChange,
 	onStart,
 	onStop,
+	onVideoEnabledChange,
 	provider,
 	showHeader = true,
 	showSessionControls = true,
 	status,
+	videoEnabled,
 }: LiveChatModeControlsProps) {
 	const isActive = status === "active";
 	const isConnecting = status === "connecting";
@@ -204,9 +296,14 @@ export function LiveChatModeControls({
 					error={error}
 					lastEvent={lastEvent}
 					lastTranscript={lastTranscript}
+					microphoneEnabled={microphoneEnabled}
+					onMicrophoneEnabledChange={onMicrophoneEnabledChange}
 					onStart={onStart}
 					onStop={onStop}
+					onVideoEnabledChange={onVideoEnabledChange}
 					status={status}
+					videoEnabled={videoEnabled}
+					videoSupported={provider === "google-ai-studio"}
 				/>
 			)}
 		</div>

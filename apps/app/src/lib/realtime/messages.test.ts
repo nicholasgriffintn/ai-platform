@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
 	extractGeminiAudioChunks,
 	extractRealtimeTranscript,
+	isGeminiSetupCompleteMessage,
 	parseRealtimeJsonMessage,
 } from "./messages";
 
@@ -41,5 +42,11 @@ describe("realtime message helpers", () => {
 
 	it("ignores malformed JSON messages", () => {
 		expect(parseRealtimeJsonMessage("{")).toBeUndefined();
+	});
+
+	it("detects Gemini setup complete messages", () => {
+		expect(isGeminiSetupCompleteMessage({ setupComplete: {} })).toBe(true);
+		expect(isGeminiSetupCompleteMessage({ setup_complete: {} })).toBe(true);
+		expect(isGeminiSetupCompleteMessage({ serverContent: {} })).toBe(false);
 	});
 });
