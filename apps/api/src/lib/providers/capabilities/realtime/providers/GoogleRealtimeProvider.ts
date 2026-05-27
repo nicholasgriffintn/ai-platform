@@ -1,4 +1,5 @@
 import { getModelConfigByModel } from "~/lib/providers/models";
+import { formatGoogleStudioModelResource } from "~/lib/providers/utils/googleStudio";
 import { resolveProviderApiKey } from "~/lib/providers/utils/apiKeys";
 import { createProviderResponseError } from "~/lib/providers/utils/errors";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -21,7 +22,7 @@ const SESSION_MODELS_BY_TYPE: Record<RealtimeSessionRequest["type"], string[]> =
 };
 const LIVE_WEBSOCKET_URL =
 	"wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1alpha.GenerativeService.BidiGenerateContentConstrained";
-const AUTH_TOKEN_ENDPOINT = "https://generativelanguage.googleapis.com/v1alpha/authTokens";
+const AUTH_TOKEN_ENDPOINT = "https://generativelanguage.googleapis.com/v1alpha/auth_tokens";
 const DEFAULT_VOICE = "Kore";
 const DEFAULT_TRANSPORT: RealtimeTransport = "websocket";
 
@@ -162,7 +163,7 @@ export class GoogleRealtimeProvider implements RealtimeProvider {
 		const realtimeInputConfig = this.buildRealtimeInputConfig(inputModalities);
 
 		return {
-			model,
+			model: formatGoogleStudioModelResource(model),
 			generationConfig: {
 				responseModalities,
 				...(outputModalities.includes("audio")
@@ -196,17 +197,15 @@ export class GoogleRealtimeProvider implements RealtimeProvider {
 	): Record<string, unknown> {
 		const now = Date.now();
 		return {
-			authToken: {
-				uses: 1,
-				expireTime: new Date(now + 30 * 60 * 1000).toISOString(),
-				newSessionExpireTime: new Date(now + 60 * 1000).toISOString(),
-				bidiGenerateContentSetup: this.buildLiveSetup({
-					request,
-					model,
-					inputModalities,
-					outputModalities,
-				}),
-			},
+			uses: 1,
+			expireTime: new Date(now + 30 * 60 * 1000).toISOString(),
+			newSessionExpireTime: new Date(now + 60 * 1000).toISOString(),
+			bidiGenerateContentSetup: this.buildLiveSetup({
+				request,
+				model,
+				inputModalities,
+				outputModalities,
+			}),
 		};
 	}
 

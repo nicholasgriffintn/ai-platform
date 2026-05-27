@@ -29,7 +29,7 @@ import {
 	type SandboxPromptStrategy,
 	type SandboxTaskType,
 } from "~/types/sandbox";
-import { LiveChatModeControls } from "./LiveChatModeControls";
+import { LiveChatModeControls, LiveSessionComposerControls } from "./LiveChatModeControls";
 import { SandboxChatModeControls } from "./SandboxChatModeControls";
 import {
 	HOME_CHAT_MODE_OPTIONS,
@@ -369,6 +369,17 @@ function useHomeChatModeConfig(): {
 				onStop={stopLiveSession}
 				provider={liveProvider}
 				showHeader={activeModeId !== "live"}
+				showSessionControls={activeModeId !== "live"}
+				status={liveStatus}
+			/>
+		);
+		const liveInputControls = (
+			<LiveSessionComposerControls
+				error={liveError}
+				lastEvent={liveLastEvent}
+				lastTranscript={liveLastTranscript}
+				onStart={() => void startLiveSession(undefined, selectedModel)}
+				onStop={stopLiveSession}
 				status={liveStatus}
 			/>
 		);
@@ -466,6 +477,7 @@ function useHomeChatModeConfig(): {
 						newConversation: "Live mode is running. Transcripts can still be edited here...",
 						followUp: "Live mode is running. Add notes or follow-up text...",
 					},
+					inputControls: liveInputControls,
 					modelScope: "live",
 					modelProviderFilter: liveProvider,
 					hideTextInput: true,

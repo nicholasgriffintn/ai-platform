@@ -450,6 +450,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 			(isPro && !model && chatMode === "remote") ||
 			(supportsToolCalls && (supportsCodeExecution || supportsSearchGrounding));
 		const canShowActionMenu = canUseProComposerActions || canShowToolMenu;
+		const shouldRenderInputControls = hideTextInput && controls;
 
 		return (
 			<div
@@ -476,7 +477,12 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 					)}
 					<div className="relative">
 						<ComposerCommandSuggestions {...commandState} />
-						<div className={hideTextInput ? "flex items-start justify-end" : "flex items-start"}>
+						<div className="flex items-start">
+							{shouldRenderInputControls && (
+								<div className="flex min-h-[60px] min-w-0 flex-grow items-center px-4 py-3">
+									{controls}
+								</div>
+							)}
 							{!hideTextInput && (
 								<div className="flex min-w-0 flex-grow items-start gap-2 px-4 py-3">
 									<textarea
@@ -579,7 +585,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 								<span>Generating response audio...</span>
 							</div>
 						)}
-						{hideDefaultControls && controls && <div>{controls}</div>}
+						{hideDefaultControls && controls && !shouldRenderInputControls && <div>{controls}</div>}
 						{!hideDefaultControls && (
 							<div className="flex items-center justify-between gap-1 sm:gap-2">
 								<div className="flex-1 min-w-0 max-w-[70%] sm:max-w-none flex items-center gap-2">

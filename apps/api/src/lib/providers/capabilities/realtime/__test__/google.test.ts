@@ -55,7 +55,7 @@ describe("GoogleRealtimeProvider", () => {
 			expect.any(Object),
 		);
 		expect(fetchMock).toHaveBeenCalledWith(
-			"https://generativelanguage.googleapis.com/v1alpha/authTokens",
+			"https://generativelanguage.googleapis.com/v1alpha/auth_tokens",
 			expect.objectContaining({
 				method: "POST",
 				headers: {
@@ -67,28 +67,26 @@ describe("GoogleRealtimeProvider", () => {
 
 		const [, init] = fetchMock.mock.calls[0];
 		expect(JSON.parse(init.body)).toEqual({
-			authToken: {
-				uses: 1,
-				expireTime: "2026-05-26T12:30:00.000Z",
-				newSessionExpireTime: "2026-05-26T12:01:00.000Z",
-				bidiGenerateContentSetup: {
-					model: "gemini-3.1-flash-live-preview",
-					generationConfig: {
-						responseModalities: ["AUDIO"],
-						speechConfig: {
-							voiceConfig: {
-								prebuiltVoiceConfig: {
-									voiceName: "Puck",
-								},
+			uses: 1,
+			expireTime: "2026-05-26T12:30:00.000Z",
+			newSessionExpireTime: "2026-05-26T12:01:00.000Z",
+			bidiGenerateContentSetup: {
+				model: "models/gemini-3.1-flash-live-preview",
+				generationConfig: {
+					responseModalities: ["AUDIO"],
+					speechConfig: {
+						voiceConfig: {
+							prebuiltVoiceConfig: {
+								voiceName: "Puck",
 							},
 						},
 					},
-					realtimeInputConfig: {
-						turnCoverage: "TURN_INCLUDES_AUDIO_ACTIVITY_AND_ALL_VIDEO",
-					},
-					systemInstruction: {
-						parts: [{ text: "Be concise." }],
-					},
+				},
+				realtimeInputConfig: {
+					turnCoverage: "TURN_INCLUDES_AUDIO_ACTIVITY_AND_ALL_VIDEO",
+				},
+				systemInstruction: {
+					parts: [{ text: "Be concise." }],
 				},
 			},
 		});
@@ -124,7 +122,7 @@ describe("GoogleRealtimeProvider", () => {
 			},
 			url: "wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1alpha.GenerativeService.BidiGenerateContentConstrained?access_token=authTokens%2Flive-token",
 			setup: {
-				model: "gemini-3.1-flash-live-preview",
+				model: "models/gemini-3.1-flash-live-preview",
 				generationConfig: {
 					responseModalities: ["AUDIO"],
 					speechConfig: {
@@ -169,8 +167,8 @@ describe("GoogleRealtimeProvider", () => {
 		});
 
 		const [, init] = fetchMock.mock.calls[0];
-		expect(JSON.parse(init.body).authToken.bidiGenerateContentSetup).toEqual({
-			model: "gemini-3.1-flash-live-preview",
+		expect(JSON.parse(init.body).bidiGenerateContentSetup).toEqual({
+			model: "models/gemini-3.1-flash-live-preview",
 			generationConfig: {
 				responseModalities: ["TEXT"],
 			},

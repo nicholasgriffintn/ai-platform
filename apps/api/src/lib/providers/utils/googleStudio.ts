@@ -21,6 +21,14 @@ export const GOOGLE_STUDIO_SAFETY_SETTINGS = [
 	},
 ];
 
+export function formatGoogleStudioModelResource(model: string): string {
+	if (model.startsWith("models/") || model.startsWith("tunedModels/")) {
+		return model;
+	}
+
+	return `models/${model}`;
+}
+
 export function formatGoogleStudioContents(params: ChatCompletionParameters): any[] {
 	return params.messages.map((message) => ({
 		role: message.role === "assistant" ? "model" : message.role,

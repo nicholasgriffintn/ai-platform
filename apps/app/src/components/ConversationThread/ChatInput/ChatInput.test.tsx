@@ -91,4 +91,21 @@ describe("ChatInput", () => {
 		expect(screen.getByText("Inline response controls")).toBeInTheDocument();
 		expect(screen.getByRole("button", { name: "Chat settings" })).toBeInTheDocument();
 	});
+
+	it("uses the hidden textarea space for mode controls", () => {
+		render(
+			<ChatInput
+				controller={new AbortController()}
+				handleSubmit={vi.fn()}
+				isLoading={false}
+				onTranscribe={vi.fn()}
+				streamStarted={false}
+				hideTextInput={true}
+				controls={<div>Live session controls</div>}
+			/>,
+		);
+
+		expect(screen.queryByLabelText("Message input")).not.toBeInTheDocument();
+		expect(screen.getByText("Live session controls")).toBeInTheDocument();
+	});
 });

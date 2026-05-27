@@ -3,12 +3,15 @@ import { type Context } from "hono";
 import type { IEnv, IUser } from "~/types";
 import { bufferToBase64 } from "~/utils/base64";
 import { AssistantError, ErrorType } from "~/utils/errors";
+import { getLogger } from "~/utils/logger";
 import {
 	getRealtimeProvider,
 	type RealtimeTranscriptionDelay,
 } from "~/lib/providers/capabilities/realtime";
 import { getMistralTargetStreamingDelayMs } from "~/lib/providers/capabilities/realtime/providers";
 import { ResponseFactory } from "~/lib/http/ResponseFactory";
+
+const logger = getLogger({ prefix: "services/realtime/mistral" });
 
 function sanitizeMistralClientMessage(data: string): string {
 	let payload: unknown;
@@ -82,6 +85,19 @@ function normaliseClientMessage(data: unknown): string {
 	}
 
 	throw new TypeError("Unsupported realtime message payload");
+}
+
+function getMistralProxyFailureStatus(providerStatus: number): 400 | 401 | 403 | 404 | 429 | 502 {
+	switch (providerStatus) {
+		case 400:
+		case 401:
+		case 403:
+		case 404:
+		case 429:
+			return providerStatus;
+		default:
+			return 502;
+	}
 }
 
 function bridgeMistralRealtimeSockets({
@@ -204,13 +220,25 @@ export async function createMistralRealtimeProxyResponse({
 
 	if (upstreamResponse.status !== 101 || !upstreamResponse.webSocket) {
 		const upstreamBody = await upstreamResponse.text().catch(() => "");
+		const status = getMistralProxyFailureStatus(upstreamResponse.status);
+		const correlationId =
+			upstreamResponse.headers.get("mistral-correlation-id") ??
+			upstreamResponse.headers.get("x-kong-request-id");
+		logger.error("Mistral realtime handshake failed", {
+			model: modelToUse,
+			providerStatus: upstreamResponse.status,
+			providerStatusText: upstreamResponse.statusText,
+			providerResponse: upstreamBody,
+			providerCorrelationId: correlationId,
+		});
 		const details = [
 			`Failed to connect to Mistral realtime: ${upstreamResponse.status} ${upstreamResponse.statusText}`,
 			upstreamBody.trim(),
+			correlationId ? `correlation_id=${correlationId}` : "",
 		]
 			.filter(Boolean)
 			.join(" - ");
-		return ResponseFactory.error(context, details, 502);
+		return ResponseFactory.error(context, details, status);
 	}
 
 	const pair = new WebSocketPair();

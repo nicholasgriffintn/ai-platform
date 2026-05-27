@@ -16,7 +16,18 @@ interface LiveChatModeControlsProps {
 	onStop: () => void;
 	provider: RealtimeLiveProviderId;
 	showHeader?: boolean;
+	showSessionControls?: boolean;
 	status: RealtimeLiveStatus;
+}
+
+interface LiveSessionControlsProps {
+	error?: string | null;
+	lastEvent: string;
+	lastTranscript?: string | null;
+	onStart: () => void;
+	onStop: () => void;
+	status: RealtimeLiveStatus;
+	variant?: "panel" | "composer";
 }
 
 function ProviderIcon({ provider }: { provider: RealtimeLiveProviderId }) {
@@ -42,6 +53,83 @@ function getStatusCopy(status: RealtimeLiveStatus): string {
 	}
 }
 
+function LiveSessionControls({
+	error,
+	lastEvent,
+	lastTranscript,
+	onStart,
+	onStop,
+	status,
+	variant = "panel",
+}: LiveSessionControlsProps) {
+	const isActive = status === "active";
+	const isConnecting = status === "connecting";
+	const statusCopy = getStatusCopy(status);
+	const detail = error ?? lastTranscript ?? lastEvent;
+	const isComposer = variant === "composer";
+
+	return (
+		<div
+			className={cn(
+				isComposer
+					? "flex w-full min-w-0 flex-col gap-2 sm:flex-row sm:items-center sm:justify-between"
+					: "space-y-2",
+			)}
+		>
+			<div className={cn("min-w-0", isComposer && "flex-1")}>
+				{isComposer && (
+					<div className="mb-1 flex min-w-0 items-center gap-2 text-sm font-medium text-zinc-800 dark:text-zinc-200">
+						<span
+							className={cn(
+								"h-2 w-2 shrink-0 rounded-full",
+								isActive ? "bg-green-500" : status === "error" ? "bg-red-500" : "bg-zinc-400",
+							)}
+							aria-hidden="true"
+						/>
+						<span>Live session</span>
+						<span className="truncate text-xs font-normal text-zinc-500 dark:text-zinc-400">
+							{statusCopy}
+						</span>
+					</div>
+				)}
+				<div
+					className={cn(
+						"min-h-5 truncate text-xs text-zinc-500 dark:text-zinc-400",
+						!isComposer && "px-1",
+					)}
+				>
+					{detail}
+				</div>
+			</div>
+			<button
+				type="button"
+				disabled={isConnecting}
+				onClick={isActive ? onStop : onStart}
+				className={cn(
+					"flex h-8 items-center justify-center gap-2 rounded-md px-3 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-60",
+					isComposer ? "w-full shrink-0 sm:w-auto" : "w-full",
+					isActive
+						? "bg-red-50 text-red-700 hover:bg-red-100 dark:bg-red-950/30 dark:text-red-300 dark:hover:bg-red-950/50"
+						: "bg-zinc-950 text-white hover:bg-zinc-800 dark:bg-off-white dark:text-zinc-950 dark:hover:bg-zinc-200",
+				)}
+			>
+				{isConnecting ? (
+					<Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+				) : isActive ? (
+					<Square className="h-4 w-4" aria-hidden="true" />
+				) : (
+					<RadioTower className="h-4 w-4" aria-hidden="true" />
+				)}
+				{isActive ? "Stop live session" : "Start live session"}
+			</button>
+		</div>
+	);
+}
+
+export function LiveSessionComposerControls(props: Omit<LiveSessionControlsProps, "variant">) {
+	return <LiveSessionControls {...props} variant="composer" />;
+}
+
 export function LiveChatModeControls({
 	error,
 	lastEvent,
@@ -51,6 +139,7 @@ export function LiveChatModeControls({
 	onStop,
 	provider,
 	showHeader = true,
+	showSessionControls = true,
 	status,
 }: LiveChatModeControlsProps) {
 	const isActive = status === "active";
@@ -110,29 +199,16 @@ export function LiveChatModeControls({
 					);
 				})}
 			</div>
-			<button
-				type="button"
-				disabled={isConnecting}
-				onClick={isActive ? onStop : onStart}
-				className={cn(
-					"flex h-8 w-full items-center justify-center gap-2 rounded-md px-3 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-60",
-					isActive
-						? "bg-red-50 text-red-700 hover:bg-red-100 dark:bg-red-950/30 dark:text-red-300 dark:hover:bg-red-950/50"
-						: "bg-zinc-950 text-white hover:bg-zinc-800 dark:bg-off-white dark:text-zinc-950 dark:hover:bg-zinc-200",
-				)}
-			>
-				{isConnecting ? (
-					<Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
-				) : isActive ? (
-					<Square className="h-4 w-4" aria-hidden="true" />
-				) : (
-					<RadioTower className="h-4 w-4" aria-hidden="true" />
-				)}
-				{isActive ? "Stop live session" : "Start live session"}
-			</button>
-			<div className="min-h-5 truncate px-1 text-xs text-zinc-500 dark:text-zinc-400">
-				{error ?? lastTranscript ?? lastEvent}
-			</div>
+			{showSessionControls && (
+				<LiveSessionControls
+					error={error}
+					lastEvent={lastEvent}
+					lastTranscript={lastTranscript}
+					onStart={onStart}
+					onStop={onStop}
+					status={status}
+				/>
+			)}
 		</div>
 	);
 }
