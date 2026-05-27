@@ -38,7 +38,7 @@
 		"@sentry/cloudflare": "10.53.1",
 		"@simplewebauthn/server": "13.3.0",
 		"@tsndr/cloudflare-worker-jwt": "3.2.1",
-		"agents": "0.13.2",
+		"agents": "0.13.3",
 		"aws4fetch": "1.0.20",
 		"drizzle-orm": "0.45.2",
 		"hono": "4.12.22",
