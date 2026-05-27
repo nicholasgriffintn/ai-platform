@@ -12,13 +12,13 @@ const realtimeProviders: ProviderRegistration<RealtimeProvider>[] = [
 		name: "openai",
 		aliases: ["gpt"],
 		create: () => new OpenAIRealtimeProvider(),
-		metadata: { vendor: "OpenAI", categories: ["realtime"], tags: ["transcription"] },
+		metadata: { vendor: "OpenAI", categories: ["realtime"], tags: ["webrtc", "voice"] },
 	},
 	{
 		name: "google-ai-studio",
 		aliases: ["google", "googleai"],
 		create: () => new GoogleRealtimeProvider(),
-		metadata: { vendor: "Google", categories: ["realtime"], tags: ["live-api"] },
+		metadata: { vendor: "Google", categories: ["realtime"], tags: ["live-api", "voice", "vision"] },
 	},
 	{
 		name: "mistral",

@@ -1,16 +1,24 @@
 import { getModelConfigByModel } from "~/lib/providers/models";
 import { resolveProviderApiKey } from "~/lib/providers/utils/apiKeys";
 import { createProviderResponseError } from "~/lib/providers/utils/errors";
+import { sha256Hex } from "~/utils/crypto";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import type {
 	RealtimeProvider,
+	RealtimeSessionType,
 	RealtimeSessionRequest,
 	RealtimeTranscriptionDelay,
 } from "../index";
+import {
+	validateRealtimeModalities,
+	type RealtimeModality,
+	type RealtimeTransport,
+} from "../modalities";
 
 const DEFAULT_REALTIME_MODEL = "gpt-realtime-2";
 const DEFAULT_TRANSLATION_MODEL = "gpt-realtime-translate";
 const DEFAULT_TRANSCRIPTION_MODEL = "gpt-realtime-whisper";
+const OPENAI_WEBRTC_CALL_URL = "https://api.openai.com/v1/realtime/calls";
 const MODEL_ALIASES: Record<string, string> = {
 	whisper: "openai-whisper",
 };
@@ -27,6 +35,7 @@ const SESSION_MODELS_BY_TYPE: Record<RealtimeSessionRequest["type"], string[]> =
 };
 const REALTIME_WHISPER_MODEL = "gpt-realtime-whisper";
 const DEFAULT_VOICE = "marin";
+const DEFAULT_TRANSPORT: RealtimeTransport = "webrtc";
 const DEFAULT_TRANSCRIPTION_DELAY: RealtimeTranscriptionDelay = "low";
 const TRANSCRIPTION_DELAYS: RealtimeTranscriptionDelay[] = [
 	"minimal",
@@ -41,6 +50,30 @@ const TRANSCRIPTION_TURN_DETECTION = {
 	threshold: 0.4,
 	prefix_padding_ms: 400,
 	silence_duration_ms: 1000,
+};
+
+const SUPPORTED_INPUT_MODALITIES_BY_TYPE: Record<RealtimeSessionType, RealtimeModality[]> = {
+	realtime: ["text", "audio", "image"],
+	translation: ["audio"],
+	transcription: ["audio"],
+};
+
+const SUPPORTED_OUTPUT_MODALITIES_BY_TYPE: Record<RealtimeSessionType, RealtimeModality[]> = {
+	realtime: ["text", "audio"],
+	translation: ["text", "audio"],
+	transcription: ["text"],
+};
+
+const DEFAULT_INPUT_MODALITIES_BY_TYPE: Record<RealtimeSessionType, RealtimeModality[]> = {
+	realtime: ["text", "audio"],
+	translation: ["audio"],
+	transcription: ["audio"],
+};
+
+const DEFAULT_OUTPUT_MODALITIES_BY_TYPE: Record<RealtimeSessionType, RealtimeModality[]> = {
+	realtime: ["audio"],
+	translation: ["text", "audio"],
+	transcription: ["text"],
 };
 
 interface OpenAIRealtimeClientSecretResponse {
@@ -77,6 +110,10 @@ export class OpenAIRealtimeProvider implements RealtimeProvider {
 		});
 	}
 
+	private async getSafetyIdentifier(request: RealtimeSessionRequest): Promise<string> {
+		return sha256Hex(`user:${request.user.id}`);
+	}
+
 	getDefaultModel(type: RealtimeSessionRequest["type"]): string {
 		switch (type) {
 			case "realtime":
@@ -106,6 +143,47 @@ export class OpenAIRealtimeProvider implements RealtimeProvider {
 		}
 
 		return modelConfig.matchingModel;
+	}
+
+	private getTransport(request: RealtimeSessionRequest): RealtimeTransport {
+		const transport = request.transport ?? DEFAULT_TRANSPORT;
+		if (transport !== "webrtc") {
+			throw new AssistantError("Unsupported realtime transport specified", ErrorType.PARAMS_ERROR);
+		}
+
+		return transport;
+	}
+
+	private getInputModalities(request: RealtimeSessionRequest): RealtimeModality[] {
+		validateRealtimeModalities({
+			requested: request.inputModalities,
+			supported: SUPPORTED_INPUT_MODALITIES_BY_TYPE[request.type],
+			label: "input",
+		});
+
+		return request.inputModalities ?? DEFAULT_INPUT_MODALITIES_BY_TYPE[request.type];
+	}
+
+	private getOutputModalities(request: RealtimeSessionRequest): RealtimeModality[] {
+		validateRealtimeModalities({
+			requested: request.outputModalities,
+			supported: SUPPORTED_OUTPUT_MODALITIES_BY_TYPE[request.type],
+			label: "output",
+		});
+
+		const modalities = request.outputModalities ?? DEFAULT_OUTPUT_MODALITIES_BY_TYPE[request.type];
+		if (
+			request.type === "realtime" &&
+			modalities.includes("audio") &&
+			modalities.includes("text")
+		) {
+			throw new AssistantError(
+				"OpenAI realtime sessions support audio or text output, not both",
+				ErrorType.PARAMS_ERROR,
+			);
+		}
+
+		return modalities;
 	}
 
 	buildAudioFormat(): Record<string, unknown> {
@@ -160,21 +238,28 @@ export class OpenAIRealtimeProvider implements RealtimeProvider {
 		request: RealtimeSessionRequest,
 	): Promise<Record<string, unknown>> {
 		const model = await this.resolveModel(request);
+		const outputModalities = this.getOutputModalities(request);
+		const audioOutput = outputModalities.includes("audio")
+			? {
+					output: {
+						format: this.buildAudioFormat(),
+						voice: request.voice ?? DEFAULT_VOICE,
+					},
+				}
+			: {};
 
 		return {
 			session: {
 				type: "realtime",
 				model,
+				output_modalities: outputModalities,
 				...(request.instructions ? { instructions: request.instructions } : {}),
 				audio: {
 					input: {
 						format: this.buildAudioFormat(),
 						turn_detection: TRANSCRIPTION_TURN_DETECTION,
 					},
-					output: {
-						format: this.buildAudioFormat(),
-						voice: request.voice ?? DEFAULT_VOICE,
-					},
+					...audioOutput,
 				},
 			},
 		};
@@ -210,6 +295,9 @@ export class OpenAIRealtimeProvider implements RealtimeProvider {
 		const session = response.session;
 		return {
 			...session,
+			provider: this.name,
+			transport: DEFAULT_TRANSPORT,
+			url: OPENAI_WEBRTC_CALL_URL,
 			client_secret: {
 				value: response.value,
 				expires_at: response.expires_at,
@@ -226,6 +314,9 @@ export class OpenAIRealtimeProvider implements RealtimeProvider {
 			throw new AssistantError("Invalid session type", ErrorType.PARAMS_ERROR);
 		}
 
+		const transport = this.getTransport(request);
+		const inputModalities = this.getInputModalities(request);
+		const outputModalities = this.getOutputModalities(request);
 		const apiKey = await this.getApiKey(request);
 		const body =
 			request.type === "realtime"
@@ -243,6 +334,7 @@ export class OpenAIRealtimeProvider implements RealtimeProvider {
 			headers: {
 				Authorization: `Bearer ${apiKey}`,
 				"Content-Type": "application/json",
+				"OpenAI-Safety-Identifier": await this.getSafetyIdentifier(request),
 			},
 			body: JSON.stringify(body),
 		});
@@ -252,6 +344,12 @@ export class OpenAIRealtimeProvider implements RealtimeProvider {
 		}
 
 		const clientSecret = (await response.json()) as OpenAIRealtimeClientSecretResponse;
-		return this.normalizeClientSecretResponse(clientSecret);
+		return {
+			...(this.normalizeClientSecretResponse(clientSecret) as Record<string, unknown>),
+			transport,
+			input_modalities: inputModalities,
+			output_modalities: outputModalities,
+			modalities: outputModalities,
+		};
 	}
 }

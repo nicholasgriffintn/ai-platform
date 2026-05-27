@@ -8,6 +8,8 @@ import type { IEnv, IUser } from "~/types";
 import {
 	getRealtimeProvider,
 	listRealtimeProviders,
+	parseRealtimeModalities,
+	parseRealtimeTransport,
 	type RealtimeTranscriptionDelay,
 } from "~/lib/providers/capabilities/realtime";
 import { createMistralRealtimeProxyResponse } from "~/services/realtime/mistral";
@@ -42,6 +44,12 @@ addRoute(app, "post", "/session/:type", {
 			const voice = c.req.query("voice");
 			const instructions = c.req.query("instructions");
 			const delay = c.req.query("delay") as RealtimeTranscriptionDelay | undefined;
+			const transportQuery = c.req.query("transport");
+			const inputModalitiesQuery = c.req.query("input_modalities");
+			const outputModalitiesQuery =
+				c.req.query("output_modalities") ||
+				c.req.query("response_modalities") ||
+				c.req.query("modalities");
 			const providerName = c.req.query("provider") || "openai";
 
 			if (!user?.id) {
@@ -61,6 +69,10 @@ addRoute(app, "post", "/session/:type", {
 				return ResponseFactory.error(c, "Invalid model specified", 400);
 			}
 
+			const transport = parseRealtimeTransport(transportQuery);
+			const inputModalities = parseRealtimeModalities(inputModalitiesQuery);
+			const outputModalities = parseRealtimeModalities(outputModalitiesQuery);
+
 			const session = await provider.createSession({
 				env,
 				user,
@@ -72,6 +84,9 @@ addRoute(app, "post", "/session/:type", {
 				voice,
 				instructions,
 				delay,
+				transport,
+				inputModalities,
+				outputModalities,
 			});
 
 			if (!session) {
@@ -91,9 +106,11 @@ app.get("/mistral/transcription", async (c: Context) => {
 	}
 
 	const model = c.req.query("model");
+	const delay = c.req.query("delay") as RealtimeTranscriptionDelay | undefined;
 
 	return createMistralRealtimeProxyResponse({
 		context: c,
+		delay,
 		env,
 		user,
 		model,

@@ -1,6 +1,7 @@
 import type { IEnv, IUser } from "~/types";
 import { providerLibrary } from "../../library";
 import type { ProviderFactoryContext } from "../../registry/types";
+import type { RealtimeModality, RealtimeTransport } from "./modalities";
 
 export type RealtimeSessionType = "realtime" | "translation" | "transcription";
 export type RealtimeTranscriptionDelay = "minimal" | "low" | "medium" | "high" | "xhigh";
@@ -17,6 +18,9 @@ export interface RealtimeSessionRequest {
 	voice?: string;
 	instructions?: string;
 	delay?: RealtimeTranscriptionDelay;
+	transport?: RealtimeTransport;
+	inputModalities?: RealtimeModality[];
+	outputModalities?: RealtimeModality[];
 }
 
 export interface RealtimeProvider {
@@ -57,3 +61,10 @@ export function listRealtimeProviders(): string[] {
 
 	return Array.from(names).sort();
 }
+
+export {
+	parseRealtimeModalities,
+	parseRealtimeTransport,
+	validateRealtimeModalities,
+} from "./modalities";
+export type { RealtimeModality, RealtimeTransport } from "./modalities";

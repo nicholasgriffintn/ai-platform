@@ -8,6 +8,7 @@ import {
 	type ConversationThreadModeConfig,
 } from "~/components/ConversationThread";
 import { useChat } from "~/hooks/useChat";
+import { useRealtimeLiveSession } from "~/hooks/useRealtimeLiveSession";
 import {
 	useSandboxConnections,
 	useSandboxRepositoryOptions,
@@ -17,6 +18,7 @@ import {
 	buildConversationModeMetadata,
 	getConversationModeMetadata,
 } from "~/lib/home-chat-modes/conversation-mode";
+import { getDefaultLiveModelId, type RealtimeLiveProviderId } from "~/lib/realtime/live-providers";
 import { normaliseGitHubRepoInput } from "~/lib/sandbox/repositories";
 import { useChatStore } from "~/state/stores/chatStore";
 import {
@@ -27,6 +29,7 @@ import {
 	type SandboxPromptStrategy,
 	type SandboxTaskType,
 } from "~/types/sandbox";
+import { LiveChatModeControls } from "./LiveChatModeControls";
 import { SandboxChatModeControls } from "./SandboxChatModeControls";
 import {
 	HOME_CHAT_MODE_OPTIONS,
@@ -55,6 +58,8 @@ function useHomeChatModeConfig(): {
 		setChatMode,
 		setSelectedAgentId,
 		model: selectedModel,
+		setModel,
+		setChatInput,
 		chatSettings,
 		sandboxModeSettings,
 		setSandboxModeSettings,
@@ -89,6 +94,31 @@ function useHomeChatModeConfig(): {
 		sandboxModeSettings.shouldCommit ?? true,
 	);
 	const hydratedConversationIdRef = useRef<string | undefined>(undefined);
+	const appendLiveTranscript = useCallback(
+		(text: string) => {
+			const trimmedText = text.trim();
+			if (!trimmedText) {
+				return;
+			}
+			const currentInput = useChatStore.getState().chatInput;
+			setChatInput(currentInput.trim() ? `${currentInput.trimEnd()} ${trimmedText}` : trimmedText);
+		},
+		[setChatInput],
+	);
+	const liveSession = useRealtimeLiveSession({
+		model: selectedModel,
+		onTranscript: appendLiveTranscript,
+	});
+	const {
+		error: liveError,
+		lastEvent: liveLastEvent,
+		lastTranscript: liveLastTranscript,
+		provider: liveProvider,
+		setProvider: setLiveProvider,
+		start: startLiveSession,
+		status: liveStatus,
+		stop: stopLiveSession,
+	} = liveSession;
 
 	useEffect(() => {
 		if (currentConversationId && conversationModeMetadata) {
@@ -142,9 +172,34 @@ function useHomeChatModeConfig(): {
 				setSelectedAgentId(null);
 				setChatMode("remote");
 			}
+			if (modeId === "live") {
+				const liveModelId = getDefaultLiveModelId(liveProvider);
+				setModel(liveModelId);
+				void startLiveSession(undefined, liveModelId);
+			} else if (activeModeId === "live") {
+				stopLiveSession();
+			}
 			setSearchParams(next, { replace: true });
 		},
-		[searchParams, setChatMode, setHomeChatMode, setSearchParams, setSelectedAgentId],
+		[
+			activeModeId,
+			liveProvider,
+			searchParams,
+			setChatMode,
+			setHomeChatMode,
+			setModel,
+			setSearchParams,
+			setSelectedAgentId,
+			startLiveSession,
+			stopLiveSession,
+		],
+	);
+	const handleLiveProviderChange = useCallback(
+		(provider: RealtimeLiveProviderId) => {
+			setLiveProvider(provider);
+			setModel(getDefaultLiveModelId(provider));
+		},
+		[setLiveProvider, setModel],
 	);
 
 	const selectedSandboxRepoOption = useMemo(
@@ -304,12 +359,27 @@ function useHomeChatModeConfig(): {
 				showHeader={activeModeId !== "sandbox"}
 			/>
 		);
+		const liveControls = (
+			<LiveChatModeControls
+				error={liveError}
+				lastEvent={liveLastEvent}
+				lastTranscript={liveLastTranscript}
+				onProviderChange={handleLiveProviderChange}
+				onStart={() => void startLiveSession(undefined, selectedModel)}
+				onStop={stopLiveSession}
+				provider={liveProvider}
+				showHeader={activeModeId !== "live"}
+				status={liveStatus}
+			/>
+		);
 		const activeModeControls =
 			activeModeId === "council"
 				? councilControls
 				: activeModeId === "sandbox"
 					? sandboxControls
-					: undefined;
+					: activeModeId === "live"
+						? liveControls
+						: undefined;
 		const modeControls = {
 			activeModeControls,
 			commands: HOME_CHAT_MODE_OPTIONS.map((option) => {
@@ -384,6 +454,29 @@ function useHomeChatModeConfig(): {
 			};
 		}
 
+		if (activeModeId === "live") {
+			return {
+				activeModeId,
+				modeConfig: {
+					analyticsSource: "live",
+					welcomeTitle: "Start a live session",
+					welcomeDescription:
+						"Choose a live-capable model, then use voice or camera input in the active session.",
+					inputPlaceholder: {
+						newConversation: "Live mode is running. Transcripts can still be edited here...",
+						followUp: "Live mode is running. Add notes or follow-up text...",
+					},
+					modelScope: "live",
+					modelProviderFilter: liveProvider,
+					hideTextInput: true,
+					conversationMode: buildConversationModeMetadata({
+						mode: "live",
+					}),
+					modeControls,
+				},
+			};
+		}
+
 		if (activeModeId !== "council") {
 			return {
 				activeModeId,
@@ -433,6 +526,7 @@ function useHomeChatModeConfig(): {
 	}, [
 		activeModeId,
 		handleModeChange,
+		handleLiveProviderChange,
 		selectedCouncilMemberIds,
 		councilResponseMode,
 		sandboxRepoKey,
@@ -454,5 +548,12 @@ function useHomeChatModeConfig(): {
 		parsedSandboxTimeoutSeconds,
 		sandboxModelSettings,
 		sandboxSettings,
+		liveError,
+		liveLastEvent,
+		liveLastTranscript,
+		liveProvider,
+		liveStatus,
+		startLiveSession,
+		stopLiveSession,
 	]);
 }

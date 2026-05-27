@@ -38,6 +38,12 @@ describe("OpenAIRealtimeProvider", () => {
 			id: "sess_123",
 			object: "realtime.transcription_session",
 			type: "transcription",
+			provider: "openai",
+			transport: "webrtc",
+			url: "https://api.openai.com/v1/realtime/calls",
+			input_modalities: ["audio"],
+			output_modalities: ["text"],
+			modalities: ["text"],
 			client_secret: {
 				value: "ek_test",
 				expires_at: 1779324000,
@@ -47,10 +53,11 @@ describe("OpenAIRealtimeProvider", () => {
 			"https://api.openai.com/v1/realtime/client_secrets",
 			expect.objectContaining({
 				method: "POST",
-				headers: {
+				headers: expect.objectContaining({
 					Authorization: "Bearer test-key",
 					"Content-Type": "application/json",
-				},
+					"OpenAI-Safety-Identifier": expect.any(String),
+				}),
 			}),
 		);
 
@@ -131,6 +138,7 @@ describe("OpenAIRealtimeProvider", () => {
 			session: {
 				type: "realtime",
 				model: "gpt-realtime-2",
+				output_modalities: ["audio"],
 				instructions: "Be concise.",
 				audio: {
 					input: {
@@ -151,6 +159,49 @@ describe("OpenAIRealtimeProvider", () => {
 							rate: 24000,
 						},
 						voice: "marin",
+					},
+				},
+			},
+		});
+	});
+
+	it("configures OpenAI realtime WebRTC sessions for text output", async () => {
+		const provider = new OpenAIRealtimeProvider();
+
+		const session = await provider.createSession({
+			env: { OPENAI_API_KEY: "test-key" } as any,
+			user: { id: 1 } as any,
+			type: "realtime",
+			inputModalities: ["text", "audio", "image"],
+			outputModalities: ["text"],
+		});
+
+		expect(session).toMatchObject({
+			transport: "webrtc",
+			url: "https://api.openai.com/v1/realtime/calls",
+			input_modalities: ["text", "audio", "image"],
+			output_modalities: ["text"],
+			modalities: ["text"],
+		});
+
+		const [, init] = fetchMock.mock.calls[0];
+		expect(JSON.parse(init.body)).toEqual({
+			session: {
+				type: "realtime",
+				model: "gpt-realtime-2",
+				output_modalities: ["text"],
+				audio: {
+					input: {
+						format: {
+							type: "audio/pcm",
+							rate: 24000,
+						},
+						turn_detection: {
+							type: "server_vad",
+							threshold: 0.4,
+							prefix_padding_ms: 400,
+							silence_duration_ms: 1000,
+						},
 					},
 				},
 			},
@@ -253,6 +304,20 @@ describe("OpenAIRealtimeProvider", () => {
 				user: { id: 1 } as any,
 				type: "transcription",
 				model: "gpt-realtime-2",
+			}),
+		).rejects.toThrow(AssistantError);
+		expect(fetchMock).not.toHaveBeenCalled();
+	});
+
+	it("rejects OpenAI realtime sessions that request audio and text output together", async () => {
+		const provider = new OpenAIRealtimeProvider();
+
+		await expect(
+			provider.createSession({
+				env: { OPENAI_API_KEY: "test-key" } as any,
+				user: { id: 1 } as any,
+				type: "realtime",
+				outputModalities: ["audio", "text"],
 			}),
 		).rejects.toThrow(AssistantError);
 		expect(fetchMock).not.toHaveBeenCalled();

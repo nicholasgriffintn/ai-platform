@@ -10,6 +10,7 @@ import { useComposerCommandActions } from "./useComposerCommandActions";
 interface ComposerCommandControls {
 	activeModeControls?: ReactNode;
 	commands?: ComposerCommandAction[];
+	includeSettingCommands?: boolean;
 }
 
 export function useComposerCommandController({
@@ -28,6 +29,7 @@ export function useComposerCommandController({
 	const commandActions = useComposerCommandActions({
 		chatInput,
 		directive: directiveQuery,
+		includeSettingCommands: modeControls?.includeSettingCommands,
 		modeCommands,
 		setChatInput,
 	});
@@ -86,6 +88,7 @@ export function useComposerCommandController({
 			chatInput,
 			directive: directiveQuery,
 			activeModeControls: modeControls?.activeModeControls,
+			includeSettingCommands: modeControls?.includeSettingCommands,
 			isDisabled: isLoading,
 			modeCommands,
 			setChatInput,

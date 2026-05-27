@@ -25,8 +25,10 @@ import {
 	getAvailableModels,
 	getFeaturedModelIds,
 	getModelsByMode,
+	getRealtimeSessionModelsByProvider,
 	isTextInputChatModel,
 } from "~/lib/models";
+import { getDefaultLiveModelId } from "~/lib/realtime/live-providers";
 import { hasProviderReasoningOptions } from "~/lib/reasoning";
 import {
 	useIsLoading,
@@ -43,7 +45,8 @@ interface ModelSelectorProps {
 	minimal?: boolean;
 	mono?: boolean;
 	featuredOnly?: boolean;
-	modelScope?: "default" | "text-only";
+	modelProviderFilter?: string;
+	modelScope?: "default" | "text-only" | "live";
 }
 
 interface HoverPreviewState {
@@ -240,6 +243,7 @@ export const ModelSelector = ({
 	minimal = false,
 	mono = false,
 	featuredOnly = false,
+	modelProviderFilter,
 	modelScope = "default",
 }: ModelSelectorProps) => {
 	const { trackEvent } = useTrackEvent();
@@ -262,12 +266,14 @@ export const ModelSelector = ({
 	const [hoverPreview, setHoverPreview] = useState<HoverPreviewState | null>(null);
 	const [dialogLayout, setDialogLayout] = useState<DialogLayout | null>(null);
 	const isTextOnlyScope = modelScope === "text-only";
+	const isLiveScope = modelScope === "live";
+	const isModelListOnlyScope = isTextOnlyScope || isLiveScope;
 
 	const dropdownRef = useRef<HTMLDivElement>(null);
 	const triggerWrapperRef = useRef<HTMLDivElement>(null);
 	const searchInputRef = useRef<HTMLInputElement>(null);
 	const [selectedTab, setSelectedTab] = useState<"auto" | "models">(() => {
-		if (modelScope === "text-only") return "models";
+		if (modelScope === "text-only" || modelScope === "live") return "models";
 		if (model === null) return "auto";
 		return "models";
 	});
@@ -300,9 +306,10 @@ export const ModelSelector = ({
 	);
 	const featuredModelIds = getFeaturedModelIds(availableModels);
 
-	const modelListChatMode = isTextOnlyScope && chatMode === "agent" ? "remote" : chatMode;
-	const baseFilteredModels =
-		!isTextOnlyScope && chatMode === "agent"
+	const modelListChatMode = isModelListOnlyScope && chatMode === "agent" ? "remote" : chatMode;
+	const baseFilteredModels = isLiveScope
+		? getRealtimeSessionModelsByProvider(availableModels, modelProviderFilter)
+		: !isTextOnlyScope && chatMode === "agent"
 			? functionModels
 			: getModelsByMode(availableModels, modelListChatMode);
 
@@ -363,7 +370,7 @@ export const ModelSelector = ({
 	);
 
 	useEffect(() => {
-		if (!isTextOnlyScope) {
+		if (!isModelListOnlyScope) {
 			return;
 		}
 
@@ -380,9 +387,15 @@ export const ModelSelector = ({
 			return;
 		}
 
-		const fallbackModel = filteredModels[defaultModel]
-			? defaultModel
-			: Object.keys(filteredModels)[0];
+		const defaultScopedModel =
+			isLiveScope && modelProviderFilter
+				? getDefaultLiveModelId(modelProviderFilter)
+				: defaultModel;
+		const fallbackModel = filteredModels[defaultScopedModel]
+			? defaultScopedModel
+			: filteredModels[defaultModel]
+				? defaultModel
+				: Object.keys(filteredModels)[0];
 		if (fallbackModel) {
 			selectModelWithDefaults(fallbackModel, {
 				...chatSettings,
@@ -393,8 +406,10 @@ export const ModelSelector = ({
 		chatMode,
 		chatSettings,
 		filteredModels,
-		isTextOnlyScope,
+		isLiveScope,
+		isModelListOnlyScope,
 		model,
+		modelProviderFilter,
 		modelListChatMode,
 		selectModelWithDefaults,
 		selectedTab,
@@ -596,7 +611,7 @@ export const ModelSelector = ({
 				onClick={() => {
 					const opening = !isOpen;
 					if (opening) {
-						if (isTextOnlyScope) {
+						if (isModelListOnlyScope) {
 							setSelectedTab("models");
 						} else if (model === null) {
 							setSelectedTab("auto");
@@ -721,7 +736,7 @@ export const ModelSelector = ({
 						value={selectedTab}
 						onValueChange={(value) => {
 							const tab = value as "auto" | "models";
-							if (isTextOnlyScope && tab !== "models") {
+							if (isModelListOnlyScope && tab !== "models") {
 								return;
 							}
 							setSelectedTab(tab);
@@ -745,7 +760,7 @@ export const ModelSelector = ({
 						}}
 						className="min-h-0 flex-1 px-2 pb-2 pt-2"
 					>
-						{!isTextOnlyScope && (
+						{!isModelListOnlyScope && (
 							<>
 								<TabsList className="grid h-auto w-full grid-cols-2 gap-1">
 									<TabsTrigger value="auto" className="min-w-0 px-2 py-2 text-xs sm:text-sm">
@@ -769,39 +784,41 @@ export const ModelSelector = ({
 
 						<TabsContent value="models" className="flex min-h-0 flex-col overflow-hidden">
 							<div className="flex min-h-0 flex-1 flex-col gap-3">
-								<div>
-									<div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-										<div className="text-xs text-zinc-500 dark:text-zinc-400">Model Source:</div>
-										<div className="inline-flex items-center rounded-md bg-zinc-100 p-0.5 dark:bg-zinc-800">
-											<button
-												type="button"
-												className={`cursor-pointer flex items-center justify-center gap-1 rounded px-2 py-1 text-xs ${
-													chatMode === "remote"
-														? "bg-zinc-200 text-zinc-900 dark:bg-zinc-700 dark:text-zinc-100"
-														: "text-zinc-600 dark:text-zinc-400"
-												}`}
-												onClick={() => chatMode !== "remote" && handleToggleModelSource("remote")}
-												aria-pressed={chatMode === "remote"}
-											>
-												<Cloud className="h-3 w-3" />
-												Remote
-											</button>
-											<button
-												type="button"
-												className={`cursor-pointer flex items-center justify-center gap-1 rounded px-2 py-1 text-xs ${
-													chatMode === "local"
-														? "bg-zinc-200 text-zinc-900 dark:bg-zinc-700 dark:text-zinc-100"
-														: "text-zinc-600 dark:text-zinc-400"
-												}`}
-												onClick={() => chatMode !== "local" && handleToggleModelSource("local")}
-												aria-pressed={chatMode === "local"}
-											>
-												<Computer className="h-3 w-3" />
-												Local
-											</button>
+								{!isLiveScope && (
+									<div>
+										<div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+											<div className="text-xs text-zinc-500 dark:text-zinc-400">Model Source:</div>
+											<div className="inline-flex items-center rounded-md bg-zinc-100 p-0.5 dark:bg-zinc-800">
+												<button
+													type="button"
+													className={`cursor-pointer flex items-center justify-center gap-1 rounded px-2 py-1 text-xs ${
+														chatMode === "remote"
+															? "bg-zinc-200 text-zinc-900 dark:bg-zinc-700 dark:text-zinc-100"
+															: "text-zinc-600 dark:text-zinc-400"
+													}`}
+													onClick={() => chatMode !== "remote" && handleToggleModelSource("remote")}
+													aria-pressed={chatMode === "remote"}
+												>
+													<Cloud className="h-3 w-3" />
+													Remote
+												</button>
+												<button
+													type="button"
+													className={`cursor-pointer flex items-center justify-center gap-1 rounded px-2 py-1 text-xs ${
+														chatMode === "local"
+															? "bg-zinc-200 text-zinc-900 dark:bg-zinc-700 dark:text-zinc-100"
+															: "text-zinc-600 dark:text-zinc-400"
+													}`}
+													onClick={() => chatMode !== "local" && handleToggleModelSource("local")}
+													aria-pressed={chatMode === "local"}
+												>
+													<Computer className="h-3 w-3" />
+													Local
+												</button>
+											</div>
 										</div>
 									</div>
-								</div>
+								)}
 
 								<ModelsList
 									disabled={isModelLockedByAgent}

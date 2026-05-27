@@ -2,7 +2,12 @@ import { getModelConfigByModel } from "~/lib/providers/models";
 import { resolveProviderApiKey } from "~/lib/providers/utils/apiKeys";
 import { createProviderResponseError } from "~/lib/providers/utils/errors";
 import { AssistantError, ErrorType } from "~/utils/errors";
-import type { RealtimeProvider, RealtimeSessionRequest } from "../index";
+import type { RealtimeProvider, RealtimeSessionRequest, RealtimeSessionType } from "../index";
+import {
+	validateRealtimeModalities,
+	type RealtimeModality,
+	type RealtimeTransport,
+} from "../modalities";
 
 const DEFAULT_REALTIME_MODEL = "gemini-3.1-flash-live-preview";
 const SESSION_MODELS_BY_TYPE: Record<RealtimeSessionRequest["type"], string[]> = {
@@ -18,6 +23,31 @@ const LIVE_WEBSOCKET_URL =
 	"wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1alpha.GenerativeService.BidiGenerateContentConstrained";
 const AUTH_TOKEN_ENDPOINT = "https://generativelanguage.googleapis.com/v1alpha/authTokens";
 const DEFAULT_VOICE = "Kore";
+const DEFAULT_TRANSPORT: RealtimeTransport = "websocket";
+
+const SUPPORTED_INPUT_MODALITIES_BY_TYPE: Record<RealtimeSessionType, RealtimeModality[]> = {
+	realtime: ["text", "audio", "image", "video"],
+	translation: [],
+	transcription: [],
+};
+
+const SUPPORTED_OUTPUT_MODALITIES_BY_TYPE: Record<RealtimeSessionType, RealtimeModality[]> = {
+	realtime: ["text", "audio"],
+	translation: [],
+	transcription: [],
+};
+
+const DEFAULT_INPUT_MODALITIES_BY_TYPE: Record<RealtimeSessionType, RealtimeModality[]> = {
+	realtime: ["audio"],
+	translation: [],
+	transcription: [],
+};
+
+const DEFAULT_OUTPUT_MODALITIES_BY_TYPE: Record<RealtimeSessionType, RealtimeModality[]> = {
+	realtime: ["audio"],
+	translation: [],
+	transcription: [],
+};
 
 interface GoogleAuthTokenResponse {
 	name: string;
@@ -76,19 +106,78 @@ export class GoogleRealtimeProvider implements RealtimeProvider {
 		return modelConfig.matchingModel;
 	}
 
-	private buildLiveSetup(request: RealtimeSessionRequest, model: string): Record<string, unknown> {
+	private getTransport(request: RealtimeSessionRequest): RealtimeTransport {
+		const transport = request.transport ?? DEFAULT_TRANSPORT;
+		if (transport !== "websocket") {
+			throw new AssistantError("Unsupported realtime transport specified", ErrorType.PARAMS_ERROR);
+		}
+
+		return transport;
+	}
+
+	private getInputModalities(request: RealtimeSessionRequest): RealtimeModality[] {
+		validateRealtimeModalities({
+			requested: request.inputModalities,
+			supported: SUPPORTED_INPUT_MODALITIES_BY_TYPE[request.type],
+			label: "input",
+		});
+
+		return request.inputModalities ?? DEFAULT_INPUT_MODALITIES_BY_TYPE[request.type];
+	}
+
+	private getOutputModalities(request: RealtimeSessionRequest): RealtimeModality[] {
+		validateRealtimeModalities({
+			requested: request.outputModalities,
+			supported: SUPPORTED_OUTPUT_MODALITIES_BY_TYPE[request.type],
+			label: "output",
+		});
+
+		return request.outputModalities ?? DEFAULT_OUTPUT_MODALITIES_BY_TYPE[request.type];
+	}
+
+	private buildRealtimeInputConfig(
+		inputModalities: RealtimeModality[],
+	): Record<string, unknown> | undefined {
+		if (!inputModalities.includes("video")) {
+			return undefined;
+		}
+
+		return {
+			turnCoverage: "TURN_INCLUDES_AUDIO_ACTIVITY_AND_ALL_VIDEO",
+		};
+	}
+
+	private buildLiveSetup({
+		request,
+		model,
+		inputModalities,
+		outputModalities,
+	}: {
+		request: RealtimeSessionRequest;
+		model: string;
+		inputModalities: RealtimeModality[];
+		outputModalities: RealtimeModality[];
+	}): Record<string, unknown> {
+		const responseModalities = outputModalities.map((modality) => modality.toUpperCase());
+		const realtimeInputConfig = this.buildRealtimeInputConfig(inputModalities);
+
 		return {
 			model,
 			generationConfig: {
-				responseModalities: ["AUDIO"],
-				speechConfig: {
-					voiceConfig: {
-						prebuiltVoiceConfig: {
-							voiceName: request.voice ?? DEFAULT_VOICE,
-						},
-					},
-				},
+				responseModalities,
+				...(outputModalities.includes("audio")
+					? {
+							speechConfig: {
+								voiceConfig: {
+									prebuiltVoiceConfig: {
+										voiceName: request.voice ?? DEFAULT_VOICE,
+									},
+								},
+							},
+						}
+					: {}),
 			},
+			...(realtimeInputConfig ? { realtimeInputConfig } : {}),
 			...(request.instructions
 				? {
 						systemInstruction: {
@@ -102,6 +191,8 @@ export class GoogleRealtimeProvider implements RealtimeProvider {
 	private buildTokenRequestBody(
 		request: RealtimeSessionRequest,
 		model: string,
+		inputModalities: RealtimeModality[],
+		outputModalities: RealtimeModality[],
 	): Record<string, unknown> {
 		const now = Date.now();
 		return {
@@ -109,7 +200,12 @@ export class GoogleRealtimeProvider implements RealtimeProvider {
 				uses: 1,
 				expireTime: new Date(now + 30 * 60 * 1000).toISOString(),
 				newSessionExpireTime: new Date(now + 60 * 1000).toISOString(),
-				bidiGenerateContentSetup: this.buildLiveSetup(request, model),
+				bidiGenerateContentSetup: this.buildLiveSetup({
+					request,
+					model,
+					inputModalities,
+					outputModalities,
+				}),
 			},
 		};
 	}
@@ -125,10 +221,18 @@ export class GoogleRealtimeProvider implements RealtimeProvider {
 			throw new AssistantError("Invalid session type", ErrorType.PARAMS_ERROR);
 		}
 
+		const transport = this.getTransport(request);
+		const inputModalities = this.getInputModalities(request);
+		const outputModalities = this.getOutputModalities(request);
 		const model = await this.resolveModel(request);
 		const apiKey = await this.getApiKey(request);
-		const setup = this.buildLiveSetup(request, model);
-		const body = this.buildTokenRequestBody(request, model);
+		const setup = this.buildLiveSetup({
+			request,
+			model,
+			inputModalities,
+			outputModalities,
+		});
+		const body = this.buildTokenRequestBody(request, model, inputModalities, outputModalities);
 
 		const response = await fetch(AUTH_TOKEN_ENDPOINT, {
 			method: "POST",
@@ -148,12 +252,26 @@ export class GoogleRealtimeProvider implements RealtimeProvider {
 			throw new AssistantError("Gemini Live session token missing", ErrorType.PROVIDER_ERROR);
 		}
 
+		const audioOutput = outputModalities.includes("audio")
+			? {
+					output: {
+						format: this.buildAudioFormat(),
+						voice: request.voice ?? DEFAULT_VOICE,
+					},
+				}
+			: {};
+
 		return {
 			id: token.name,
 			object: "realtime.session",
 			type: "realtime",
+			provider: this.name,
+			transport,
+			protocol: "gemini-live",
 			model,
-			modalities: ["audio"],
+			input_modalities: inputModalities,
+			output_modalities: outputModalities,
+			modalities: outputModalities,
 			audio: {
 				input: {
 					format: {
@@ -161,10 +279,7 @@ export class GoogleRealtimeProvider implements RealtimeProvider {
 						rate: 16000,
 					},
 				},
-				output: {
-					format: this.buildAudioFormat(),
-					voice: request.voice ?? DEFAULT_VOICE,
-				},
+				...audioOutput,
 			},
 			client_secret: {
 				value: token.name,

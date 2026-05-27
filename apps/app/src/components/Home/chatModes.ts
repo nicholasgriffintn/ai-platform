@@ -1,4 +1,4 @@
-import { GitBranch, MessageCircle, UsersRound, type LucideIcon } from "lucide-react";
+import { GitBranch, MessageCircle, RadioTower, UsersRound, type LucideIcon } from "lucide-react";
 import type { HomeChatModeId } from "@assistant/schemas";
 
 export type { HomeChatModeId };
@@ -34,14 +34,21 @@ export const HOME_CHAT_MODE_OPTIONS: HomeChatModeOption[] = [
 		icon: GitBranch,
 		exclusiveGroup: "chat-orchestration",
 	},
+	{
+		id: "live",
+		label: "Live",
+		description: "Start a low-latency voice or vision session.",
+		icon: RadioTower,
+		exclusiveGroup: "chat-orchestration",
+	},
 ];
 
 export function resolveHomeChatModeId(value: string | null): HomeChatModeId {
-	return value === "council" || value === "sandbox" ? value : "chat";
+	return value === "council" || value === "sandbox" || value === "live" ? value : "chat";
 }
 
 export function isSelectableHomeChatModeId(value: string): value is HomeChatModeId {
-	return value === "chat" || value === "council" || value === "sandbox";
+	return value === "chat" || value === "council" || value === "sandbox" || value === "live";
 }
 
 export function getHomeChatModeAvailability(

@@ -47,6 +47,7 @@ describe("GoogleRealtimeProvider", () => {
 			type: "realtime",
 			instructions: "Be concise.",
 			voice: "Puck",
+			inputModalities: ["audio", "video"],
 		});
 
 		expect(getModelConfigByModel).toHaveBeenCalledWith(
@@ -82,6 +83,9 @@ describe("GoogleRealtimeProvider", () => {
 							},
 						},
 					},
+					realtimeInputConfig: {
+						turnCoverage: "TURN_INCLUDES_AUDIO_ACTIVITY_AND_ALL_VIDEO",
+					},
 					systemInstruction: {
 						parts: [{ text: "Be concise." }],
 					},
@@ -92,7 +96,12 @@ describe("GoogleRealtimeProvider", () => {
 			id: "authTokens/live-token",
 			object: "realtime.session",
 			type: "realtime",
+			provider: "google-ai-studio",
+			transport: "websocket",
+			protocol: "gemini-live",
 			model: "gemini-3.1-flash-live-preview",
+			input_modalities: ["audio", "video"],
+			output_modalities: ["audio"],
 			modalities: ["audio"],
 			audio: {
 				input: {
@@ -126,6 +135,9 @@ describe("GoogleRealtimeProvider", () => {
 						},
 					},
 				},
+				realtimeInputConfig: {
+					turnCoverage: "TURN_INCLUDES_AUDIO_ACTIVITY_AND_ALL_VIDEO",
+				},
 				systemInstruction: {
 					parts: [{ text: "Be concise." }],
 				},
@@ -144,5 +156,32 @@ describe("GoogleRealtimeProvider", () => {
 			}),
 		).rejects.toThrow(AssistantError);
 		expect(fetchMock).not.toHaveBeenCalled();
+	});
+
+	it("configures Gemini Live sessions for text output", async () => {
+		const provider = new GoogleRealtimeProvider();
+
+		const session = await provider.createSession({
+			env: { GOOGLE_STUDIO_API_KEY: "test-key" } as any,
+			user: { id: 1 } as any,
+			type: "realtime",
+			outputModalities: ["text"],
+		});
+
+		const [, init] = fetchMock.mock.calls[0];
+		expect(JSON.parse(init.body).authToken.bidiGenerateContentSetup).toEqual({
+			model: "gemini-3.1-flash-live-preview",
+			generationConfig: {
+				responseModalities: ["TEXT"],
+			},
+		});
+		expect(session).toMatchObject({
+			transport: "websocket",
+			protocol: "gemini-live",
+			input_modalities: ["audio"],
+			output_modalities: ["text"],
+			modalities: ["text"],
+		});
+		expect((session as any).audio.output).toBeUndefined();
 	});
 });

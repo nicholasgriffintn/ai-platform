@@ -25,6 +25,7 @@ interface ComposerCommandsState {
 	setChatInput: (value: string) => void;
 	isDisabled?: boolean;
 	activeSuggestionIndex?: number;
+	includeSettingCommands?: boolean;
 	onActiveSuggestionIndexChange?: (index: number) => void;
 }
 
@@ -412,26 +413,28 @@ export function ComposerCommandButton(props: ComposerCommandsState) {
 								</div>
 							)}
 						</div>
-						<div>
-							<SectionLabel>Settings</SectionLabel>
-							<div className="space-y-1">
-								{settingCommands.map((command) => (
-									<CommandRow
-										key={command.id}
-										icon={command.icon}
-										description={`/${command.command} - ${command.description}`}
-										isActive={command.isActive}
-										isDisabled={command.disabled}
-										onClick={() => selectSlashCommand(command)}
-										title={
-											command.disabled ? (command.disabledReason ?? command.label) : command.label
-										}
-									>
-										{command.label}
-									</CommandRow>
-								))}
+						{settingCommands.length > 0 && (
+							<div>
+								<SectionLabel>Settings</SectionLabel>
+								<div className="space-y-1">
+									{settingCommands.map((command) => (
+										<CommandRow
+											key={command.id}
+											icon={command.icon}
+											description={`/${command.command} - ${command.description}`}
+											isActive={command.isActive}
+											isDisabled={command.disabled}
+											onClick={() => selectSlashCommand(command)}
+											title={
+												command.disabled ? (command.disabledReason ?? command.label) : command.label
+											}
+										>
+											{command.label}
+										</CommandRow>
+									))}
+								</div>
 							</div>
-						</div>
+						)}
 						{canUseAgents && (
 							<div>
 								<SectionLabel>Agents</SectionLabel>

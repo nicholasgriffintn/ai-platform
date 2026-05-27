@@ -56,11 +56,13 @@ interface AgentCommand {
 export function useComposerCommandActions({
 	chatInput,
 	directive,
+	includeSettingCommands = true,
 	modeCommands,
 	setChatInput,
 }: {
 	chatInput: string;
 	directive: ComposerDirectiveQuery | null;
+	includeSettingCommands?: boolean;
 	modeCommands: ComposerCommandAction[];
 	setChatInput: (value: string) => void;
 }) {
@@ -132,6 +134,10 @@ export function useComposerCommandActions({
 	);
 
 	const settingCommands = useMemo<ComposerCommandAction[]>(() => {
+		if (!includeSettingCommands) {
+			return [];
+		}
+
 		const reasoningOptions = getReasoningOptions(selectedModelConfig);
 		const defaultReasoningEffort = getDefaultReasoningEffort(selectedModelConfig);
 		const selectedReasoning = chatSettings.reasoning?.effort ?? defaultReasoningEffort;
@@ -221,6 +227,7 @@ export function useComposerCommandActions({
 	}, [
 		chatMode,
 		chatSettings,
+		includeSettingCommands,
 		isPro,
 		model,
 		modelCapabilities,

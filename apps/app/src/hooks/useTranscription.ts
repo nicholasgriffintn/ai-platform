@@ -1,17 +1,17 @@
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
-import { fetchApi } from "~/lib/api/fetch-wrapper";
+import { createRealtimeSession } from "~/lib/api/realtime-service";
+import {
+	connectOpenAIRealtimeWebRTC,
+	preferOpusAudioCodec,
+	type RealtimeWebRTCConnection,
+} from "~/lib/realtime";
 
 interface TranscriptionOptions {
 	onTranscriptionReceived: (text: string, isPartial?: boolean) => void;
 	onSpeechDetected?: (isActive: boolean) => void;
 	inputStream?: MediaStream;
-}
-
-interface RealtimeSession {
-	client_secret?: { value: string };
-	id?: string;
 }
 
 export function useTranscription({
@@ -26,6 +26,7 @@ export function useTranscription({
 
 	const pcRef = useRef<RTCPeerConnection | null>(null);
 	const dcRef = useRef<RTCDataChannel | null>(null);
+	const realtimeConnectionRef = useRef<RealtimeWebRTCConnection | null>(null);
 	const mediaStreamRef = useRef<MediaStream | null>(null);
 	const connectionTimeoutRef = useRef<number | null>(null);
 	const connectionMonitorRef = useRef<number | null>(null);
@@ -215,225 +216,188 @@ export function useTranscription({
 			const controller = new AbortController();
 			const timeoutId = setTimeout(() => controller.abort(), 10000);
 
-			const sessionRes = await fetchApi("/realtime/session/transcription", {
-				method: "POST",
-				signal: controller.signal,
-			});
+			const session = await (async () => {
+				try {
+					return await createRealtimeSession({
+						type: "transcription",
+						provider: "openai",
+						transport: "webrtc",
+						signal: controller.signal,
+					});
+				} finally {
+					clearTimeout(timeoutId);
+				}
+			})();
 
-			clearTimeout(timeoutId);
-
-			if (!sessionRes.ok) {
-				throw new Error(`Failed to create realtime session: ${sessionRes.status}`);
-			}
-
-			const sessionJson = (await sessionRes.json()) as {
-				data?: RealtimeSession;
-				client_secret?: { value: string };
-				id?: string;
-			};
-
-			const session = sessionJson.data ?? sessionJson;
 			if (!session.client_secret?.value || !session.id) {
 				throw new Error("Invalid session response");
 			}
-
-			const clientSecret = session.client_secret.value;
-			const sessionId = session.id;
 
 			const stream = externalStream ?? inputStream ?? (await getOptimalAudioStream());
 			mediaStreamRef.current = stream;
 
 			setupAudioAnalysis(stream);
 
-			const pc = new RTCPeerConnection({
-				iceServers: [
-					{ urls: "stun:stun.l.google.com:19302" },
-					{ urls: "stun:stun1.l.google.com:19302" },
-					{ urls: "stun:stun2.l.google.com:19302" },
-					{ urls: "stun:stun3.l.google.com:19302" },
-					{ urls: "stun:stun4.l.google.com:19302" },
-				],
-				iceTransportPolicy: "all",
-				rtcpMuxPolicy: "require",
-				bundlePolicy: "max-bundle",
-				iceCandidatePoolSize: 10,
-			});
-
-			pcRef.current = pc;
-
-			for (const track of stream.getTracks()) {
-				pc.addTrack(track, stream);
-			}
-
-			const transceivers = pc.getTransceivers();
-			const audioTransceiver = transceivers.find((t) => t.receiver.track.kind === "audio");
-
-			if (audioTransceiver) {
-				const codecs = RTCRtpSender.getCapabilities("audio")?.codecs || [];
-				const opusCodec = codecs.find((c) => c.mimeType === "audio/opus" && c.clockRate === 48000);
-
-				if (opusCodec) {
-					audioTransceiver.setCodecPreferences([opusCodec]);
-				}
-			}
-
-			pc.oniceconnectionstatechange = () => {
-				switch (pc.iceConnectionState) {
-					case "connected":
-					case "completed":
-						setStatus("active");
-						break;
-
-					case "disconnected":
-						setStatus("reconnecting");
-						toast.warning("Connection interrupted - attempting to recover");
-						setTimeout(() => {
-							if (pc.iceConnectionState === "disconnected" && isTranscribing) {
-								try {
-									pc.restartIce();
-								} catch (err) {
-									console.error("Failed to restart ICE", err);
-								}
-							}
-						}, 2000);
-						break;
-
-					case "failed":
-						setStatus("error");
-						toast.error("Connection lost - retrying");
-						if (retryCountRef.current < MAX_RETRIES) {
-							retryCountRef.current++;
-							setTimeout(() => {
-								if (isTranscribing) {
-									stopTranscription(false);
-									startTranscription();
-								}
-							}, RETRY_DELAY);
-						} else {
-							toast.error("Failed to establish a stable connection after multiple attempts.");
-							stopTranscription(true);
-						}
-						break;
-
-					case "closed":
-						if (isTranscribing) {
-							setStatus("idle");
-						}
-						break;
-				}
-			};
-
-			monitorConnection(pc);
-
-			const dc = pc.createDataChannel("oai-events", {
-				ordered: true,
-				maxRetransmits: 10,
-			});
-			dcRef.current = dc;
-
-			dc.onopen = () => {
-				setStatus("active");
-			};
-
-			dc.onclose = () => {
-				if (isTranscribing) {
-					setStatus("reconnecting");
-				} else {
-					setStatus("idle");
-				}
-			};
-
-			dc.onerror = (err) => {
-				console.error("Data channel error:", err);
-				setStatus("error");
-			};
-
-			dc.onmessage = (ev) => {
-				let msg;
-				try {
-					msg = JSON.parse(ev.data);
-				} catch (err) {
-					console.error("Failed to parse transcription message", err);
-					return;
-				}
-
-				const {
-					item_id: itemId,
-					type,
-					delta,
-					transcript,
-				} = msg as {
-					item_id: string;
-					type: string;
-					delta?: string;
-					transcript?: string;
-				};
-
-				if (lastProcessedItemsRef.current.has(itemId)) {
-					return;
-				}
-
-				if (type.endsWith(".delta") && typeof delta === "string") {
-					const processedDelta = delta.trim();
-
-					if (processedDelta) {
-						const existingDelta = pendingDeltasRef.current.get(itemId) || "";
-						const needsSpace = existingDelta && !existingDelta.endsWith(" ");
-						const updatedDelta = existingDelta + (needsSpace ? " " : "") + processedDelta;
-						pendingDeltasRef.current.set(itemId, updatedDelta);
-
-						onTranscriptionReceived(processedDelta, true);
-					}
-				} else if (type.endsWith(".completed") && typeof transcript === "string") {
-					lastProcessedItemsRef.current.add(itemId);
-
-					const hasPendingDelta = pendingDeltasRef.current.has(itemId);
-					if (hasPendingDelta) {
-						pendingDeltasRef.current.delete(itemId);
-					}
-
-					const processedText = processTranscriptText(transcript, transcriptBufferRef.current);
-
-					if (processedText) {
-						const needsSpace =
-							transcriptBufferRef.current && !transcriptBufferRef.current.endsWith(" ");
-						transcriptBufferRef.current += (needsSpace ? " " : "") + processedText;
-
-						onTranscriptionReceived(processedText, false);
-					}
-				}
-			};
-
-			const baseUrl = "https://api.openai.com/v1/realtime";
-
-			const offer = await pc.createOffer({
-				offerToReceiveAudio: true,
-				offerToReceiveVideo: false,
-			});
-
-			await pc.setLocalDescription(offer);
-
 			const answerController = new AbortController();
 			const answerTimeoutId = setTimeout(() => answerController.abort(), 10000);
 
-			const answerRes = await fetch(`${baseUrl}?session_id=${sessionId}`, {
-				method: "POST",
-				body: offer.sdp,
-				headers: {
-					Authorization: `Bearer ${clientSecret}`,
-					"Content-Type": "application/sdp",
-				},
-				signal: answerController.signal,
-			});
+			const connection = await (async () => {
+				try {
+					return await connectOpenAIRealtimeWebRTC({
+						session,
+						stream,
+						peerConnectionConfig: {
+							iceServers: [
+								{ urls: "stun:stun.l.google.com:19302" },
+								{ urls: "stun:stun1.l.google.com:19302" },
+								{ urls: "stun:stun2.l.google.com:19302" },
+								{ urls: "stun:stun3.l.google.com:19302" },
+								{ urls: "stun:stun4.l.google.com:19302" },
+							],
+							iceTransportPolicy: "all",
+							rtcpMuxPolicy: "require",
+							bundlePolicy: "max-bundle",
+							iceCandidatePoolSize: 10,
+						},
+						dataChannelInit: {
+							ordered: true,
+							maxRetransmits: 10,
+						},
+						offerOptions: {
+							offerToReceiveAudio: true,
+							offerToReceiveVideo: false,
+						},
+						signal: answerController.signal,
+						onPeerConnection: (peerConnection) => {
+							pcRef.current = peerConnection;
+							monitorConnection(peerConnection);
+						},
+						configurePeerConnection: preferOpusAudioCodec,
+						onIceConnectionStateChange: (peerConnection) => {
+							switch (peerConnection.iceConnectionState) {
+								case "connected":
+								case "completed":
+									setStatus("active");
+									break;
 
-			clearTimeout(answerTimeoutId);
+								case "disconnected":
+									setStatus("reconnecting");
+									toast.warning("Connection interrupted - attempting to recover");
+									setTimeout(() => {
+										if (peerConnection.iceConnectionState === "disconnected" && isTranscribing) {
+											try {
+												peerConnection.restartIce();
+											} catch (err) {
+												console.error("Failed to restart ICE", err);
+											}
+										}
+									}, 2000);
+									break;
 
-			if (!answerRes.ok) {
-				throw new Error(`Failed to get SDP answer: ${answerRes.status}`);
-			}
+								case "failed":
+									setStatus("error");
+									toast.error("Connection lost - retrying");
+									if (retryCountRef.current < MAX_RETRIES) {
+										retryCountRef.current++;
+										setTimeout(() => {
+											if (isTranscribing) {
+												stopTranscription(false);
+												startTranscription();
+											}
+										}, RETRY_DELAY);
+									} else {
+										toast.error("Failed to establish a stable connection after multiple attempts.");
+										stopTranscription(true);
+									}
+									break;
 
-			const answerSdp = await answerRes.text();
-			await pc.setRemoteDescription({ type: "answer", sdp: answerSdp });
+								case "closed":
+									if (isTranscribing) {
+										setStatus("idle");
+									}
+									break;
+							}
+						},
+						onDataChannelOpen: () => {
+							setStatus("active");
+						},
+						onDataChannelClose: () => {
+							if (isTranscribing) {
+								setStatus("reconnecting");
+							} else {
+								setStatus("idle");
+							}
+						},
+						onDataChannelError: (err) => {
+							console.error("Data channel error:", err);
+							setStatus("error");
+						},
+						onDataChannelMessage: (ev) => {
+							let msg;
+							try {
+								msg = JSON.parse(ev.data);
+							} catch (err) {
+								console.error("Failed to parse transcription message", err);
+								return;
+							}
+
+							const {
+								item_id: itemId,
+								type,
+								delta,
+								transcript,
+							} = msg as {
+								item_id: string;
+								type: string;
+								delta?: string;
+								transcript?: string;
+							};
+
+							if (lastProcessedItemsRef.current.has(itemId)) {
+								return;
+							}
+
+							if (type.endsWith(".delta") && typeof delta === "string") {
+								const processedDelta = delta.trim();
+
+								if (processedDelta) {
+									const existingDelta = pendingDeltasRef.current.get(itemId) || "";
+									const needsSpace = existingDelta && !existingDelta.endsWith(" ");
+									const updatedDelta = existingDelta + (needsSpace ? " " : "") + processedDelta;
+									pendingDeltasRef.current.set(itemId, updatedDelta);
+
+									onTranscriptionReceived(processedDelta, true);
+								}
+							} else if (type.endsWith(".completed") && typeof transcript === "string") {
+								lastProcessedItemsRef.current.add(itemId);
+
+								const hasPendingDelta = pendingDeltasRef.current.has(itemId);
+								if (hasPendingDelta) {
+									pendingDeltasRef.current.delete(itemId);
+								}
+
+								const processedText = processTranscriptText(
+									transcript,
+									transcriptBufferRef.current,
+								);
+
+								if (processedText) {
+									const needsSpace =
+										transcriptBufferRef.current && !transcriptBufferRef.current.endsWith(" ");
+									transcriptBufferRef.current += (needsSpace ? " " : "") + processedText;
+
+									onTranscriptionReceived(processedText, false);
+								}
+							}
+						},
+					});
+				} finally {
+					clearTimeout(answerTimeoutId);
+				}
+			})();
+
+			realtimeConnectionRef.current = connection;
+			dcRef.current = connection.dataChannel;
 		} catch (err) {
 			console.error("Error starting transcription:", err);
 			toast.error(`Transcription error: ${err instanceof Error ? err.message : "Unknown error"}`);
@@ -473,12 +437,17 @@ export function useTranscription({
 
 		audioAnalyserRef.current = null;
 
-		if (dcRef.current) {
+		if (realtimeConnectionRef.current) {
+			realtimeConnectionRef.current.close();
+			realtimeConnectionRef.current = null;
+			dcRef.current = null;
+			pcRef.current = null;
+		} else if (dcRef.current) {
 			dcRef.current.close();
 			dcRef.current = null;
 		}
 
-		if (pcRef.current) {
+		if (!realtimeConnectionRef.current && pcRef.current) {
 			try {
 				pcRef.current.close();
 			} catch (err) {

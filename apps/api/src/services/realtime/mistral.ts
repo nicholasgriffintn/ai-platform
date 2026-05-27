@@ -3,7 +3,11 @@ import { type Context } from "hono";
 import type { IEnv, IUser } from "~/types";
 import { bufferToBase64 } from "~/utils/base64";
 import { AssistantError, ErrorType } from "~/utils/errors";
-import { getRealtimeProvider } from "~/lib/providers/capabilities/realtime";
+import {
+	getRealtimeProvider,
+	type RealtimeTranscriptionDelay,
+} from "~/lib/providers/capabilities/realtime";
+import { getMistralTargetStreamingDelayMs } from "~/lib/providers/capabilities/realtime/providers";
 import { ResponseFactory } from "~/lib/http/ResponseFactory";
 
 function sanitizeMistralClientMessage(data: string): string {
@@ -150,11 +154,13 @@ function bridgeMistralRealtimeSockets({
 
 export async function createMistralRealtimeProxyResponse({
 	context,
+	delay,
 	env,
 	user,
 	model,
 }: {
 	context: Context;
+	delay?: RealtimeTranscriptionDelay;
 	env: IEnv;
 	user: IUser;
 	model?: string;
@@ -197,7 +203,14 @@ export async function createMistralRealtimeProxyResponse({
 	});
 
 	if (upstreamResponse.status !== 101 || !upstreamResponse.webSocket) {
-		return new Response("Failed to connect to Mistral realtime", { status: 502 });
+		const upstreamBody = await upstreamResponse.text().catch(() => "");
+		const details = [
+			`Failed to connect to Mistral realtime: ${upstreamResponse.status} ${upstreamResponse.statusText}`,
+			upstreamBody.trim(),
+		]
+			.filter(Boolean)
+			.join(" - ");
+		return ResponseFactory.error(context, details, 502);
 	}
 
 	const pair = new WebSocketPair();
@@ -207,11 +220,14 @@ export async function createMistralRealtimeProxyResponse({
 
 	const audioFormat = provider.buildAudioFormat ? provider.buildAudioFormat() : undefined;
 	const targetStreamingDelayMs = provider.getTranscriptionDelay
-		? provider.getTranscriptionDelay({
-				env,
-				user,
-				type: "transcription",
-			})
+		? getMistralTargetStreamingDelayMs(
+				provider.getTranscriptionDelay({
+					delay,
+					env,
+					user,
+					type: "transcription",
+				}),
+			)
 		: undefined;
 
 	bridgeMistralRealtimeSockets({

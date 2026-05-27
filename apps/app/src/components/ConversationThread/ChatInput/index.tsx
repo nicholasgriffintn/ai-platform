@@ -50,11 +50,16 @@ interface ChatInputProps {
 	modeControls?: {
 		activeModeControls?: ReactNode;
 		commands?: ComposerCommandAction[];
+		includeSettingCommands?: boolean;
 		onClearActive?: () => void;
 	};
-	modelScope?: "default" | "text-only";
+	modelProviderFilter?: string;
+	modelScope?: "default" | "text-only" | "live";
 	disableAttachments?: boolean;
 	hideDefaultControls?: boolean;
+	hideTextInput?: boolean;
+	hideInlineResponseControls?: boolean;
+	hideChatSettings?: boolean;
 	autoPlayResponses?: {
 		enabled: boolean;
 		isGenerating: boolean;
@@ -74,9 +79,13 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 			placeholder,
 			controls,
 			modeControls,
+			modelProviderFilter,
 			modelScope = "default",
 			disableAttachments = false,
 			hideDefaultControls = false,
+			hideTextInput = false,
+			hideInlineResponseControls = false,
+			hideChatSettings = false,
 			autoPlayResponses,
 		},
 		ref,
@@ -109,20 +118,35 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 			directiveQuery,
 			moveActiveSuggestion,
 			setTextareaCursorPosition,
-		} = useComposerCommandController({ isLoading, modeControls });
-
-		useImperativeHandle(ref, () => ({
-			focus: () => {
-				textareaRef.current?.focus();
+		} = useComposerCommandController({
+			isLoading,
+			modeControls: {
+				...modeControls,
+				includeSettingCommands: modeControls?.includeSettingCommands ?? !hideChatSettings,
 			},
-		}));
+		});
+
+		useImperativeHandle(
+			ref,
+			() => ({
+				focus: () => {
+					if (!hideTextInput) {
+						textareaRef.current?.focus();
+					}
+				},
+			}),
+			[hideTextInput],
+		);
 
 		useEffect(() => {
+			if (hideTextInput) {
+				return;
+			}
 			if (textareaRef.current) {
 				textareaRef.current.style.height = "auto";
 				textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
 			}
-		}, [chatInput]);
+		}, [chatInput, hideTextInput]);
 
 		useEffect(() => {
 			if (!apiModels || !model) {
@@ -452,31 +476,35 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 					)}
 					<div className="relative">
 						<ComposerCommandSuggestions {...commandState} />
-						<div className="flex items-start">
-							<div className="flex min-w-0 flex-grow items-start gap-2 px-4 py-3">
-								<textarea
-									id="message-input"
-									ref={textareaRef}
-									value={chatInput}
-									onChange={handleTextAreaInput}
-									onClick={(e) => setTextareaCursorPosition(e.currentTarget.selectionStart)}
-									onKeyUp={(e) => setTextareaCursorPosition(e.currentTarget.selectionStart)}
-									onKeyDown={handleKeyDown}
-									placeholder={
-										!currentConversationId
-											? (placeholder?.newConversation ?? "Ask me anything...")
-											: (placeholder?.followUp ?? "Ask follow-up questions...")
-									}
-									disabled={isRecording || isTranscribing || isLoading}
-									className="min-h-[36px] max-h-[200px] min-w-0 flex-grow resize-none bg-transparent p-0 text-base focus:outline-none dark:text-white"
-									rows={1}
-									aria-label="Message input"
-									aria-describedby="message-input-help"
-								/>
-							</div>
-							<div id="message-input-help" className="sr-only">
-								Type your message and press Enter to send. Use Shift+Enter for a new line.
-							</div>
+						<div className={hideTextInput ? "flex items-start justify-end" : "flex items-start"}>
+							{!hideTextInput && (
+								<div className="flex min-w-0 flex-grow items-start gap-2 px-4 py-3">
+									<textarea
+										id="message-input"
+										ref={textareaRef}
+										value={chatInput}
+										onChange={handleTextAreaInput}
+										onClick={(e) => setTextareaCursorPosition(e.currentTarget.selectionStart)}
+										onKeyUp={(e) => setTextareaCursorPosition(e.currentTarget.selectionStart)}
+										onKeyDown={handleKeyDown}
+										placeholder={
+											!currentConversationId
+												? (placeholder?.newConversation ?? "Ask me anything...")
+												: (placeholder?.followUp ?? "Ask follow-up questions...")
+										}
+										disabled={isRecording || isTranscribing || isLoading}
+										className="min-h-[36px] max-h-[200px] min-w-0 flex-grow resize-none bg-transparent p-0 text-base focus:outline-none dark:text-white"
+										rows={1}
+										aria-label="Message input"
+										aria-describedby="message-input-help"
+									/>
+								</div>
+							)}
+							{!hideTextInput && (
+								<div id="message-input-help" className="sr-only">
+									Type your message and press Enter to send. Use Shift+Enter for a new line.
+								</div>
+							)}
 
 							<div className="flex flex-shrink-0 items-center gap-1 pr-3 pt-3">
 								{isLoading && streamStarted ? (
@@ -556,16 +584,23 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 							<div className="flex items-center justify-between gap-1 sm:gap-2">
 								<div className="flex-1 min-w-0 max-w-[70%] sm:max-w-none flex items-center gap-2">
 									<div className="min-w-0 flex-shrink">
-										<ModelSelector isDisabled={isLoading} mono={true} modelScope={modelScope} />
+										<ModelSelector
+											isDisabled={isLoading}
+											mono={true}
+											modelProviderFilter={modelProviderFilter}
+											modelScope={modelScope}
+										/>
 									</div>
-									<InlineResponseControls isDisabled={isLoading} />
+									{!hideInlineResponseControls && <InlineResponseControls isDisabled={isLoading} />}
 								</div>
 								<div className="flex-shrink-0 flex items-center gap-2">
-									<ChatSettingsComponent
-										isDisabled={isLoading}
-										toolSelectionLocked={isToolSelectionLocked}
-										supportsToolCalls={supportsToolCalls}
-									/>
+									{!hideChatSettings && (
+										<ChatSettingsComponent
+											isDisabled={isLoading}
+											toolSelectionLocked={isToolSelectionLocked}
+											supportsToolCalls={supportsToolCalls}
+										/>
+									)}
 								</div>
 							</div>
 						)}

@@ -1,6 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { getRealtimeProvider, listRealtimeProviders } from "~/lib/providers/capabilities/realtime";
+import {
+	getRealtimeProvider,
+	listRealtimeProviders,
+	parseRealtimeModalities,
+	parseRealtimeTransport,
+} from "~/lib/providers/capabilities/realtime";
+import { AssistantError } from "~/utils/errors";
 
 vi.mock("~/lib/providers/library", () => ({
 	providerLibrary: {
@@ -41,5 +47,12 @@ describe("realtime capability helpers", () => {
 
 		expect(mockProviderLibrary.list).toHaveBeenCalledWith("realtime");
 		expect(providers).toEqual(["OpenAI", "gpt", "openai"].sort());
+	});
+
+	it("parses realtime transport and modality query values", () => {
+		expect(parseRealtimeTransport("WebRTC")).toBe("webrtc");
+		expect(parseRealtimeModalities("audio, video, audio")).toEqual(["audio", "video"]);
+		expect(() => parseRealtimeTransport("sse")).toThrow(AssistantError);
+		expect(() => parseRealtimeModalities("audio,file")).toThrow(AssistantError);
 	});
 });

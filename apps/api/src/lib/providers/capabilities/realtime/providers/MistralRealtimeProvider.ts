@@ -1,9 +1,12 @@
 import { getModelConfigByModel } from "~/lib/providers/models";
+import { resolveProviderApiKey } from "~/lib/providers/utils/apiKeys";
 import { generateId } from "~/utils/id";
 import { AssistantError, ErrorType } from "~/utils/errors";
-import type { RealtimeProvider, RealtimeSessionRequest } from "../index";
-import { resolveProviderApiKey } from "~/lib/providers/utils/apiKeys";
-import { RealtimeTranscriptionDelay } from "../index";
+import type {
+	RealtimeProvider,
+	RealtimeSessionRequest,
+	RealtimeTranscriptionDelay,
+} from "../index";
 
 export const DEFAULT_TRANSCRIPTION_MODEL = "voxtral-mini-transcribe-realtime";
 const SESSION_MODELS_BY_TYPE: Record<RealtimeSessionRequest["type"], string[]> = {
@@ -14,6 +17,19 @@ const SESSION_MODELS_BY_TYPE: Record<RealtimeSessionRequest["type"], string[]> =
 
 const MISTRAL_REALTIME_PROXY_PATH = "/realtime/mistral/transcription";
 const DEFAULT_TRANSCRIPTION_DELAY: RealtimeTranscriptionDelay = "low";
+const MISTRAL_TARGET_DELAY_MS_BY_DELAY: Record<NonNullable<RealtimeTranscriptionDelay>, number> = {
+	minimal: 240,
+	low: 500,
+	medium: 1000,
+	high: 2400,
+	xhigh: 5000,
+};
+
+export function getMistralTargetStreamingDelayMs(
+	delay?: RealtimeTranscriptionDelay,
+): number | undefined {
+	return delay ? MISTRAL_TARGET_DELAY_MS_BY_DELAY[delay] : undefined;
+}
 
 export class MistralRealtimeProvider implements RealtimeProvider {
 	name = "mistral";
@@ -32,10 +48,11 @@ export class MistralRealtimeProvider implements RealtimeProvider {
 	}
 
 	getDefaultModel(type: RealtimeSessionRequest["type"]): string {
-		switch (type) {
-			case "transcription":
-				return DEFAULT_TRANSCRIPTION_MODEL;
+		if (type !== "transcription") {
+			throw new AssistantError("Invalid session type", ErrorType.PARAMS_ERROR);
 		}
+
+		return DEFAULT_TRANSCRIPTION_MODEL;
 	}
 
 	private async resolveModel(request: RealtimeSessionRequest): Promise<string> {
@@ -70,13 +87,6 @@ export class MistralRealtimeProvider implements RealtimeProvider {
 		if (!delay) {
 			return undefined;
 		}
-		const MISTRAL_TARGET_DELAY_MS_BY_DELAY = {
-			minimal: 240,
-			low: 500,
-			medium: 1000,
-			high: 2400,
-			xhigh: 5000,
-		};
 		const TRANSCRIPTION_DELAYS = Object.keys(
 			MISTRAL_TARGET_DELAY_MS_BY_DELAY,
 		) as RealtimeTranscriptionDelay[];
@@ -88,17 +98,14 @@ export class MistralRealtimeProvider implements RealtimeProvider {
 	}
 
 	private buildMistralRealtimeProxyUrl({
+		apiBaseUrl,
 		model,
 		delay,
 	}: {
+		apiBaseUrl: string;
 		model: string;
 		delay?: string;
 	}): string {
-		const apiBaseUrl = process.env.API_BASE_URL;
-		if (!apiBaseUrl) {
-			throw new AssistantError("Missing API base URL", ErrorType.CONFIGURATION_ERROR);
-		}
-
 		const url = new URL(MISTRAL_REALTIME_PROXY_PATH, apiBaseUrl);
 		if (url.protocol === "http:") {
 			url.protocol = "ws:";
@@ -121,7 +128,9 @@ export class MistralRealtimeProvider implements RealtimeProvider {
 
 		const model = await this.resolveModel(request);
 
-		const targetStreamingDelayMs = this.getTranscriptionDelay(request);
+		const targetStreamingDelayMs = getMistralTargetStreamingDelayMs(
+			this.getTranscriptionDelay(request),
+		);
 		const apiBaseUrl = request.apiBaseUrl ?? request.env.API_BASE_URL;
 
 		if (!apiBaseUrl) {
@@ -135,6 +144,7 @@ export class MistralRealtimeProvider implements RealtimeProvider {
 			provider: this.name,
 			transport: "websocket",
 			url: this.buildMistralRealtimeProxyUrl({
+				apiBaseUrl,
 				model,
 				delay: request.delay,
 			}),

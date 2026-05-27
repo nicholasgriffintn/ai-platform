@@ -55,6 +55,25 @@ export function isTextInputChatModel(model: ModelConfigItem) {
 	);
 }
 
+export function isRealtimeSessionModel(model: ModelConfigItem) {
+	return Boolean(model.supportsRealtimeSession);
+}
+
+export function getRealtimeSessionModelsByProvider(models: ModelConfig, provider?: string | null) {
+	return Object.entries(models).reduce(
+		(acc, [key, model]) => {
+			if (isRealtimeSessionModel(model) && (!provider || model.provider === provider)) {
+				acc[key] = {
+					...model,
+					id: key,
+				};
+			}
+			return acc;
+		},
+		{} as Record<string, ModelConfigItem>,
+	);
+}
+
 export function getModelsByMode(models: ModelConfig, mode: ChatMode) {
 	return Object.entries(models).reduce(
 		(acc, [key, model]) => {

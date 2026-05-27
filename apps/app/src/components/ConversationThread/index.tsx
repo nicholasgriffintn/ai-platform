@@ -51,9 +51,14 @@ export interface ConversationThreadModeConfig {
 	modeControls?: {
 		activeModeControls?: ReactNode;
 		commands?: ComposerCommandAction[];
+		includeSettingCommands?: boolean;
 		onClearActive?: () => void;
 	};
-	modelScope?: "default" | "text-only";
+	modelProviderFilter?: string;
+	modelScope?: "default" | "text-only" | "live";
+	hideTextInput?: boolean;
+	hideInlineResponseControls?: boolean;
+	hideChatSettings?: boolean;
 	analyticsSource?: string;
 	councilDebate?: {
 		enabled: boolean;
@@ -364,7 +369,11 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
 						placeholder={modeConfig?.inputPlaceholder}
 						controls={modeConfig?.inputControls}
 						modeControls={modeConfig?.modeControls}
+						modelProviderFilter={modeConfig?.modelProviderFilter}
 						modelScope={modeConfig?.modelScope}
+						hideTextInput={modeConfig?.hideTextInput}
+						hideInlineResponseControls={modeConfig?.hideInlineResponseControls}
+						hideChatSettings={modeConfig?.hideChatSettings}
 						autoPlayResponses={{
 							enabled: autoPlayResponsesEnabled,
 							isGenerating: isGeneratingAutoResponseSpeech,

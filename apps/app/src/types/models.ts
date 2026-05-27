@@ -2,7 +2,16 @@ import type { ReasoningEffort, VerbosityLevel } from "./chat";
 
 export type ModelRanking = 1 | 2 | 3 | 4 | 5;
 
-export type ModelModality = "text" | "image" | "audio" | "video" | "pdf" | "document" | "embedding";
+export type ModelModality =
+	| "text"
+	| "image"
+	| "audio"
+	| "video"
+	| "pdf"
+	| "document"
+	| "embedding"
+	| "speech"
+	| "transcription";
 
 export interface ModelReasoningConfig {
 	supportedEffortLevels?: ReasoningEffort[];
@@ -53,6 +62,8 @@ export interface ModelConfigItem {
 	supportsHostedShell?: boolean;
 	supportsWebFetch?: boolean;
 	supportsAudio?: boolean;
+	supportsRealtimeSession?: boolean;
+	supportsRealtimeTranslationSession?: boolean;
 	supportsFim?: boolean;
 	supportsNextEdit?: boolean;
 	supportsApplyEdit?: boolean;

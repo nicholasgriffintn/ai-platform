@@ -4,6 +4,7 @@ import type { ModelConfig } from "~/types";
 import {
 	getModelProvider,
 	getModelsByMode,
+	getRealtimeSessionModelsByProvider,
 	isTextInputChatModel,
 	isTextOnlyModel,
 } from "../models";
@@ -80,6 +81,40 @@ describe("getModelProvider", () => {
 
 	it("returns undefined when no model is selected", () => {
 		expect(getModelProvider({}, null)).toBeUndefined();
+	});
+});
+
+describe("getRealtimeSessionModelsByProvider", () => {
+	it("returns only realtime-capable models for the selected provider", () => {
+		const models: ModelConfig = {
+			"gpt-realtime-2": {
+				id: "gpt-realtime-2",
+				name: "GPT Realtime 2",
+				matchingModel: "gpt-realtime-2",
+				provider: "openai",
+				modalities: { input: ["audio"], output: ["audio"] },
+				supportsRealtimeSession: true,
+			},
+			"gpt-5.4": {
+				id: "gpt-5.4",
+				name: "GPT 5.4",
+				matchingModel: "gpt-5.4",
+				provider: "openai",
+				modalities: { input: ["text"], output: ["text"] },
+			},
+			"gemini-live": {
+				id: "gemini-live",
+				name: "Gemini Live",
+				matchingModel: "gemini-live",
+				provider: "google-ai-studio",
+				modalities: { input: ["audio", "video"], output: ["audio"] },
+				supportsRealtimeSession: true,
+			},
+		};
+
+		expect(Object.keys(getRealtimeSessionModelsByProvider(models, "openai"))).toEqual([
+			"gpt-realtime-2",
+		]);
 	});
 });
 

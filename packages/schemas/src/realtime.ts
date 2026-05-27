@@ -5,6 +5,10 @@ export const realtimeSessionResponseSchema = z
 		id: z.string(),
 		object: z.string(),
 		type: z.string().optional(),
+		provider: z.string().optional(),
+		transport: z.enum(["webrtc", "websocket"]).optional(),
+		protocol: z.string().optional(),
+		url: z.string().url().optional(),
 		model: z.string().optional(),
 		audio: z
 			.object({
@@ -26,9 +30,22 @@ export const realtimeSessionResponseSchema = z
 						turn_detection: z.unknown().optional().nullable(),
 					})
 					.optional(),
+				output: z
+					.object({
+						format: z
+							.object({
+								type: z.string(),
+								rate: z.number().optional(),
+							})
+							.optional(),
+						voice: z.string().optional(),
+					})
+					.optional(),
 			})
 			.optional(),
 		modalities: z.array(z.string()).optional(),
+		input_modalities: z.array(z.enum(["text", "audio", "image", "video"])).optional(),
+		output_modalities: z.array(z.enum(["text", "audio"])).optional(),
 		turn_detection: z
 			.object({
 				type: z.string(),
@@ -60,14 +77,19 @@ export const realtimeSessionResponseSchema = z
 		target_streaming_delay_ms: z.number().optional(),
 		client_secret: z
 			.object({
-				expires_at: z.number(),
+				expires_at: z.number().optional(),
 				value: z.string(),
 			})
 			.optional(),
+		setup: z.record(z.string(), z.unknown()).optional(),
 	})
 	.passthrough();
 
 export const realtimeSessionCreateSchema = z.object({
 	model: z.string().optional(),
 	type: z.enum(["realtime", "translation", "transcription"]),
+	provider: z.string().optional(),
+	transport: z.enum(["webrtc", "websocket"]).optional(),
+	input_modalities: z.array(z.enum(["text", "audio", "image", "video"])).optional(),
+	output_modalities: z.array(z.enum(["text", "audio"])).optional(),
 });
