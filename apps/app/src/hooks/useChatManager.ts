@@ -12,6 +12,7 @@ import {
 	resolveCouncilMemberIds,
 } from "~/lib/council";
 import type { AttachmentData } from "~/lib/chat/attachments";
+import { normalizeSelectedModel } from "~/lib/chat/model-selection";
 import { prepareUserMessage } from "~/lib/chat/prepare-user-message";
 import { createConversationId } from "~/lib/conversations";
 import { normalizeMessage } from "~/lib/messages";
@@ -136,7 +137,7 @@ export function useChatManager(
 			setStreamStarted(true);
 			startLoading("stream-response", "Generating response...");
 
-			const currentModel = model === null ? undefined : model;
+			const currentModel = normalizeSelectedModel(model);
 
 			try {
 				let conversationId = currentConversationId;
@@ -209,7 +210,7 @@ export function useChatManager(
 			}
 
 			const memberIds = resolveCouncilMemberIds(debate.memberIds);
-			const currentModel = model === null ? undefined : model;
+			const currentModel = normalizeSelectedModel(model);
 
 			try {
 				let conversationId = currentConversationId;

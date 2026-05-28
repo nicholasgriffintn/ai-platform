@@ -6,15 +6,21 @@ import { getErrorMessage } from "~/lib/errors";
 import {
 	connectRealtimeWebRTC,
 	connectRealtimeWebSocket,
+	isRealtimeWebSocketConnection,
 	preferOpusAudioCodec,
+	sendJsonWhenOpen,
 	type RealtimeConnection,
 	type RealtimeWebSocketConnection,
 } from "~/lib/realtime";
 import {
 	arrayBufferToBase64,
 	createPcm16AudioPlayer,
+	requestRealtimeAudioStream,
+	requestRealtimeVideoStream,
+	setMediaStreamTrackEnabled,
 	startJpegFrameStream,
 	startPcm16MicrophoneStream,
+	stopMediaStream,
 	type Pcm16AudioPlayer,
 	type RealtimeMediaController,
 } from "~/lib/realtime/audio";
@@ -47,60 +53,6 @@ interface UseRealtimeLiveSessionOptions {
 
 interface CleanupOptions {
 	closeConnection?: boolean;
-}
-
-const AUDIO_CONSTRAINTS: MediaTrackConstraints = {
-	autoGainControl: false,
-	echoCancellation: true,
-	noiseSuppression: true,
-};
-
-const VIDEO_CONSTRAINTS: MediaTrackConstraints = {
-	frameRate: { ideal: 1, max: 2 },
-	height: { ideal: 360 },
-	width: { ideal: 640 },
-};
-
-function stopStream(stream?: MediaStream | null): void {
-	stream?.getTracks().forEach((track) => track.stop());
-}
-
-function setStreamTrackEnabled(
-	stream: MediaStream | null | undefined,
-	kind: MediaStreamTrack["kind"],
-	enabled: boolean,
-): void {
-	stream
-		?.getTracks()
-		.filter((track) => track.kind === kind)
-		.forEach((track) => {
-			track.enabled = enabled;
-		});
-}
-
-function requestAudioStream(): Promise<MediaStream> {
-	return navigator.mediaDevices.getUserMedia({ audio: AUDIO_CONSTRAINTS });
-}
-
-function requestVideoStream(): Promise<MediaStream> {
-	return navigator.mediaDevices.getUserMedia({ video: VIDEO_CONSTRAINTS });
-}
-
-function sendJsonWhenOpen(connection: RealtimeWebSocketConnection, payload: unknown): void {
-	if (connection.socket.readyState === WebSocket.OPEN) {
-		connection.sendJson(payload);
-	}
-}
-
-function isRealtimeWebSocketConnection(
-	connection: RealtimeConnection | null,
-): connection is RealtimeWebSocketConnection {
-	return Boolean(
-		connection &&
-		connection.session.transport === "websocket" &&
-		"socket" in connection &&
-		"sendJson" in connection,
-	);
 }
 
 function getConnectionProviderOption(connection: RealtimeConnection): RealtimeLiveProviderOption {
@@ -190,8 +142,8 @@ export function useRealtimeLiveSession({
 			return audioStreamRef.current;
 		}
 
-		const stream = await requestAudioStream();
-		setStreamTrackEnabled(stream, "audio", microphoneEnabledRef.current);
+		const stream = await requestRealtimeAudioStream();
+		setMediaStreamTrackEnabled(stream, "audio", microphoneEnabledRef.current);
 		audioStreamRef.current = stream;
 		return stream;
 	}, []);
@@ -201,7 +153,7 @@ export function useRealtimeLiveSession({
 			return videoStreamRef.current;
 		}
 
-		const stream = await requestVideoStream();
+		const stream = await requestRealtimeVideoStream();
 		videoStreamRef.current = stream;
 		return stream;
 	}, []);
@@ -216,18 +168,18 @@ export function useRealtimeLiveSession({
 		}
 
 		if (connection?.session.transport === "webrtc") {
-			setStreamTrackEnabled(audioStreamRef.current, "audio", false);
+			setMediaStreamTrackEnabled(audioStreamRef.current, "audio", false);
 			return;
 		}
 
-		stopStream(audioStreamRef.current);
+		stopMediaStream(audioStreamRef.current);
 		audioStreamRef.current = null;
 	}, []);
 
 	const stopInputVideo = useCallback(() => {
 		inputVideoControllerRef.current?.stop();
 		inputVideoControllerRef.current = null;
-		stopStream(videoStreamRef.current);
+		stopMediaStream(videoStreamRef.current);
 		videoStreamRef.current = null;
 	}, []);
 
@@ -332,9 +284,9 @@ export function useRealtimeLiveSession({
 			remoteAudioRef.current?.load();
 			remoteAudioRef.current = null;
 
-			stopStream(audioStreamRef.current);
+			stopMediaStream(audioStreamRef.current);
 			audioStreamRef.current = null;
-			stopStream(videoStreamRef.current);
+			stopMediaStream(videoStreamRef.current);
 			videoStreamRef.current = null;
 
 			if (updateState) {
@@ -623,7 +575,7 @@ export function useRealtimeLiveSession({
 			}
 
 			if (connection.session.transport === "webrtc") {
-				setStreamTrackEnabled(audioStreamRef.current, "audio", enabled);
+				setMediaStreamTrackEnabled(audioStreamRef.current, "audio", enabled);
 				return;
 			}
 

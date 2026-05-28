@@ -106,6 +106,7 @@ export type ModelConfigItem = {
 	supportsTemperature?: boolean;
 	supportsTopP?: boolean;
 	supportsTokenCounting?: boolean;
+	apiOperation?: string;
 	bedrockApiOperation?: string;
 	bedrockStreamingApiOperation?: string;
 	supportsRepetitionPenalty?: boolean;

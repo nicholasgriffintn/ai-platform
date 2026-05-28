@@ -20,6 +20,7 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("mistral-ocr-latest", PROVIDER, {
 		name: "Mistral OCR",
 		matchingModel: "mistral-ocr-latest",
+		apiOperation: "ocr",
 		description:
 			"A document OCR (Optical Character Recognition) processor that works with PDFs and images.",
 		modalities: {
@@ -586,6 +587,7 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("mistral-embed", PROVIDER, {
 		name: "Mistral Embed",
 		matchingModel: "mistral-embed",
+		apiOperation: "embeddings",
 		description: "An embedding model for text content",
 		modalities: {
 			input: ["text"],
@@ -605,6 +607,7 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("codestral-embed", PROVIDER, {
 		name: "Codestral Embed",
 		matchingModel: "codestral-embed",
+		apiOperation: "codestralEmbeddings",
 		description: "An embedding model for code content",
 		modalities: {
 			input: ["text"],
@@ -615,6 +618,7 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("mistral-moderation-latest", PROVIDER, {
 		name: "Mistral Moderation",
 		matchingModel: "mistral-moderation-latest",
+		apiOperation: "moderations",
 		description: "A moderation model for content filtering",
 		modalities: {
 			input: ["moderation"],

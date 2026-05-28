@@ -1,10 +1,19 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { connectGeminiLiveWebSocket, connectRealtimeWebSocket } from "./websocket";
+import {
+	connectGeminiLiveWebSocket,
+	connectRealtimeWebSocket,
+	isRealtimeWebSocketConnection,
+	sendJsonWhenOpen,
+} from "./websocket";
 
 class FakeWebSocket extends EventTarget {
+	static CLOSED = 3;
+	static OPEN = 1;
+
 	sent: string[] = [];
 	closed = false;
+	readyState = FakeWebSocket.OPEN;
 
 	constructor(
 		public url: string,
@@ -19,6 +28,7 @@ class FakeWebSocket extends EventTarget {
 
 	close() {
 		this.closed = true;
+		this.readyState = FakeWebSocket.CLOSED;
 	}
 }
 
@@ -47,6 +57,28 @@ describe("realtime websocket clients", () => {
 			JSON.stringify({ realtimeInput: { text: "hello" } }),
 		]);
 		expect((connection.socket as unknown as FakeWebSocket).closed).toBe(true);
+	});
+
+	it("identifies WebSocket connections and sends only while open", () => {
+		vi.stubGlobal("WebSocket", FakeWebSocket);
+
+		const connection = connectRealtimeWebSocket({
+			session: {
+				transport: "websocket",
+				url: "wss://example.test/live",
+			},
+		});
+
+		expect(isRealtimeWebSocketConnection(connection)).toBe(true);
+		expect(isRealtimeWebSocketConnection(null)).toBe(false);
+
+		sendJsonWhenOpen(connection, { type: "input_audio.flush" });
+		connection.close();
+		sendJsonWhenOpen(connection, { type: "input_audio.end" });
+
+		expect((connection.socket as unknown as FakeWebSocket).sent).toEqual([
+			JSON.stringify({ type: "input_audio.flush" }),
+		]);
 	});
 
 	it("rejects non-WebSocket sessions before opening a socket", () => {

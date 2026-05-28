@@ -1,5 +1,6 @@
 import { useCallback } from "react";
 import type { Message } from "~/types";
+import { normalizeSelectedModel } from "~/lib/chat/model-selection";
 import { normalizeMessage } from "~/lib/messages";
 import { useConversationStorage } from "./useConversationStorage";
 import { useChatStore } from "~/state/stores/chatStore";
@@ -70,7 +71,7 @@ export function useMessageOperations() {
 			messageData?: Partial<Message>,
 		) => {
 			const now = Date.now();
-			const currentModel = model === null ? undefined : model;
+			const currentModel = normalizeSelectedModel(model);
 
 			const assistantMessage = normalizeMessage({
 				role: "assistant",
@@ -105,7 +106,7 @@ export function useMessageOperations() {
 			await updateConversation(conversationId, (oldData) => {
 				const now = Date.now();
 				const nowISOString = new Date(now).toISOString();
-				const currentModel = model === null ? undefined : model;
+				const currentModel = normalizeSelectedModel(model);
 
 				if (!oldData) {
 					throw new Error("No conversation found to update");

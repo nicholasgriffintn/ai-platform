@@ -2,6 +2,7 @@ import { useCallback, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { apiService } from "~/lib/api/api-service";
+import { normalizeSelectedModel } from "~/lib/chat/model-selection";
 import { getModelProvider } from "~/lib/models";
 import { normalizeMessage } from "~/lib/messages";
 import type { ChatRequestOptions, Message, MessageContent } from "~/types";
@@ -154,7 +155,7 @@ export function useStreamingResponse(
 
 					const normalizedMessages = messages.map(normalizeMessage);
 
-					const modelToSend = model === null ? undefined : model;
+					const modelToSend = normalizeSelectedModel(model);
 					const providerToSend = getModelProvider(apiModels, modelToSend);
 
 					const handleStateChange = (state: string, data?: any) => {

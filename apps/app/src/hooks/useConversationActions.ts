@@ -4,6 +4,7 @@ import { toast } from "sonner";
 
 import { CHATS_QUERY_KEY } from "~/constants";
 import { apiService } from "~/lib/api/api-service";
+import { resolveRequestModel } from "~/lib/chat/model-selection";
 import { createConversationId } from "~/lib/conversations";
 import { getModelProvider } from "~/lib/models";
 import { normalizeMessage } from "~/lib/messages";
@@ -193,7 +194,7 @@ export function useConversationActions(
 
 				if (shouldStore) {
 					const normalizedMessages = messagesUpToPoint.map(normalizeMessage);
-					const modelToSend = selectedModelId || (model === null ? undefined : model);
+					const modelToSend = resolveRequestModel(model, selectedModelId);
 					const providerToSend = getModelProvider(apiModels, modelToSend);
 
 					const chatSettingsWithMetadata = {

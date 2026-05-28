@@ -20,6 +20,8 @@ export {
 export {
 	connectGeminiLiveWebSocket,
 	connectRealtimeWebSocket,
+	isRealtimeWebSocketConnection,
+	sendJsonWhenOpen,
 	type ConnectRealtimeWebSocketOptions,
 	type RealtimeWebSocketConnection,
 } from "./websocket";

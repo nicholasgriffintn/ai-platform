@@ -28,6 +28,23 @@ function validateWebSocketSession(session: RealtimeSession): void {
 	}
 }
 
+export function isRealtimeWebSocketConnection(
+	connection: RealtimeConnection | null,
+): connection is RealtimeWebSocketConnection {
+	return Boolean(
+		connection &&
+		connection.session.transport === "websocket" &&
+		"socket" in connection &&
+		"sendJson" in connection,
+	);
+}
+
+export function sendJsonWhenOpen(connection: RealtimeWebSocketConnection, payload: unknown): void {
+	if (connection.socket.readyState === WebSocket.OPEN) {
+		connection.sendJson(payload);
+	}
+}
+
 export function connectRealtimeWebSocket({
 	session,
 	protocols,

@@ -7,6 +7,18 @@ export interface Pcm16AudioPlayer {
 	stop: () => void;
 }
 
+export const REALTIME_AUDIO_CONSTRAINTS: MediaTrackConstraints = {
+	autoGainControl: false,
+	echoCancellation: true,
+	noiseSuppression: true,
+};
+
+export const REALTIME_VIDEO_CONSTRAINTS: MediaTrackConstraints = {
+	frameRate: { ideal: 1, max: 2 },
+	height: { ideal: 360 },
+	width: { ideal: 640 },
+};
+
 const PCM_SAMPLE_MAX = 0x7fff;
 const PCM_SAMPLE_MIN = 0x8000;
 const MICROPHONE_BUFFER_SIZE = 4096;
@@ -47,6 +59,31 @@ export function base64ToArrayBuffer(base64: string): ArrayBuffer {
 	}
 
 	return bytes.buffer;
+}
+
+export function stopMediaStream(stream?: MediaStream | null): void {
+	stream?.getTracks().forEach((track) => track.stop());
+}
+
+export function setMediaStreamTrackEnabled(
+	stream: MediaStream | null | undefined,
+	kind: MediaStreamTrack["kind"],
+	enabled: boolean,
+): void {
+	stream
+		?.getTracks()
+		.filter((track) => track.kind === kind)
+		.forEach((track) => {
+			track.enabled = enabled;
+		});
+}
+
+export function requestRealtimeAudioStream(): Promise<MediaStream> {
+	return navigator.mediaDevices.getUserMedia({ audio: REALTIME_AUDIO_CONSTRAINTS });
+}
+
+export function requestRealtimeVideoStream(): Promise<MediaStream> {
+	return navigator.mediaDevices.getUserMedia({ video: REALTIME_VIDEO_CONSTRAINTS });
 }
 
 export function downsampleFloat32Buffer(

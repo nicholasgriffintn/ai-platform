@@ -9,9 +9,26 @@ const mocks = vi.hoisted(() => ({
 	connectRealtimeWebSocket: vi.fn(),
 	createPcm16AudioPlayer: vi.fn(() => ({ playBase64: vi.fn(), stop: vi.fn() })),
 	createRealtimeSession: vi.fn(),
+	isRealtimeWebSocketConnection: vi.fn((connection) =>
+		Boolean(
+			connection &&
+			connection.session.transport === "websocket" &&
+			"socket" in connection &&
+			"sendJson" in connection,
+		),
+	),
 	preferOpusAudioCodec: vi.fn(),
+	requestRealtimeAudioStream: vi.fn(),
+	requestRealtimeVideoStream: vi.fn(),
+	sendJsonWhenOpen: vi.fn((connection, payload) => {
+		if (connection.socket.readyState === WebSocket.OPEN) {
+			connection.sendJson(payload);
+		}
+	}),
+	setMediaStreamTrackEnabled: vi.fn(),
 	startJpegFrameStream: vi.fn(),
 	startPcm16MicrophoneStream: vi.fn(),
+	stopMediaStream: vi.fn(),
 	toastError: vi.fn(),
 }));
 
@@ -22,14 +39,20 @@ vi.mock("~/lib/api/realtime-service", () => ({
 vi.mock("~/lib/realtime", () => ({
 	connectRealtimeWebRTC: mocks.connectRealtimeWebRTC,
 	connectRealtimeWebSocket: mocks.connectRealtimeWebSocket,
+	isRealtimeWebSocketConnection: mocks.isRealtimeWebSocketConnection,
 	preferOpusAudioCodec: mocks.preferOpusAudioCodec,
+	sendJsonWhenOpen: mocks.sendJsonWhenOpen,
 }));
 
 vi.mock("~/lib/realtime/audio", () => ({
 	arrayBufferToBase64: mocks.arrayBufferToBase64,
 	createPcm16AudioPlayer: mocks.createPcm16AudioPlayer,
+	requestRealtimeAudioStream: mocks.requestRealtimeAudioStream,
+	requestRealtimeVideoStream: mocks.requestRealtimeVideoStream,
+	setMediaStreamTrackEnabled: mocks.setMediaStreamTrackEnabled,
 	startJpegFrameStream: mocks.startJpegFrameStream,
 	startPcm16MicrophoneStream: mocks.startPcm16MicrophoneStream,
+	stopMediaStream: mocks.stopMediaStream,
 }));
 
 vi.mock("sonner", () => ({
@@ -171,6 +194,8 @@ describe("useRealtimeLiveSession", () => {
 				getUserMedia: vi.fn().mockResolvedValue(stream),
 			},
 		});
+		mocks.requestRealtimeAudioStream.mockResolvedValue(stream);
+		mocks.requestRealtimeVideoStream.mockResolvedValue(stream);
 
 		mocks.createRealtimeSession.mockResolvedValue({
 			provider: "mistral",
