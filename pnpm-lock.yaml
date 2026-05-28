@@ -54,8 +54,8 @@ importers:
         specifier: 3.2.1
         version: 3.2.1
       agents:
-        specifier: 0.13.2
-        version: 0.13.2(@babel/core@7.29.0)(@babel/runtime@7.29.2)(@cloudflare/workers-types@4.20260523.1)(ai@6.0.191(zod@4.4.3))(react@19.2.6)(rolldown@1.0.2)(vite@8.0.14(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.48.0)(tsx@4.22.3))(zod@4.4.3)
+        specifier: 0.13.3
+        version: 0.13.3(@babel/core@7.29.0)(@babel/runtime@7.29.2)(@cloudflare/workers-types@4.20260523.1)(ai@6.0.191(zod@4.4.3))(react@19.2.6)(rolldown@1.0.2)(vite@8.0.14(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.48.0)(tsx@4.22.3))(zod@4.4.3)
       aws4fetch:
         specifier: 1.0.20
         version: 1.0.20
@@ -3985,8 +3985,8 @@ packages:
     engines: {node: '>=0.4.0'}
     hasBin: true
 
-  agents@0.13.2:
-    resolution: {integrity: sha512-s4v/e+BHrDKowsfjoCbQVA9FGPZgWz+1QCX41rR7UA2CHh90ZkARej3qrHhT+YxzYUfuWwbR9yQGFzP7/8rLsQ==}
+  agents@0.13.3:
+    resolution: {integrity: sha512-sanbvHT9rdMuxq9rsBukqqVr88W7s0t6WXFuRdA0uxqikTMCb7Oki9aGWcgjoUN0qvaV/qlJ9RLTQAVSw/eLNg==}
     hasBin: true
     peerDependencies:
       '@cloudflare/ai-chat': '>=0.6.1 <1.0.0'
@@ -10001,7 +10001,7 @@ snapshots:
 
   acorn@8.16.0: {}
 
-  agents@0.13.2(@babel/core@7.29.0)(@babel/runtime@7.29.2)(@cloudflare/workers-types@4.20260523.1)(ai@6.0.191(zod@4.4.3))(react@19.2.6)(rolldown@1.0.2)(vite@8.0.14(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.48.0)(tsx@4.22.3))(zod@4.4.3):
+  agents@0.13.3(@babel/core@7.29.0)(@babel/runtime@7.29.2)(@cloudflare/workers-types@4.20260523.1)(ai@6.0.191(zod@4.4.3))(react@19.2.6)(rolldown@1.0.2)(vite@8.0.14(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.48.0)(tsx@4.22.3))(zod@4.4.3):
     dependencies:
       '@babel/plugin-proposal-decorators': 7.29.0(@babel/core@7.29.0)
       '@cfworker/json-schema': 4.1.1
