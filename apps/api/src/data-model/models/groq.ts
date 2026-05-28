@@ -273,7 +273,7 @@ export const groqModelConfig: ModelConfig = {
 			"Efficient 20B parameter open-source GPT model for fast reasoning and general tasks.",
 		provider: "groq",
 		releaseDate: "August 5, 2025",
-		lastUpdated: "August 5, 2025",
+		lastUpdated: "May 27, 2026",
 		modalities: {
 			input: ["text"],
 			output: ["text"],
@@ -305,7 +305,7 @@ export const groqModelConfig: ModelConfig = {
 			"Large 120B parameter open-source GPT model optimized for reasoning and complex tasks.",
 		provider: "groq",
 		releaseDate: "August 5, 2025",
-		lastUpdated: "August 5, 2025",
+		lastUpdated: "May 27, 2026",
 		modalities: {
 			input: ["text"],
 			output: ["text"],

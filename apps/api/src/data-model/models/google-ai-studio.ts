@@ -673,8 +673,8 @@ export const googleAiStudioModelConfig: ModelConfig = {
 		supportsToolCalls: false,
 		supportsSearchGrounding: true,
 		supportsResponseFormat: true,
-		contextWindow: 131072,
-		maxTokens: 32768,
+		contextWindow: 65536,
+		maxTokens: 65536,
 		costPer1kInputTokens: 0.0005,
 		costPer1kOutputTokens: 0.06,
 		reasoningConfig: {

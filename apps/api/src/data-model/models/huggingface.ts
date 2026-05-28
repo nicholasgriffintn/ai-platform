@@ -471,8 +471,8 @@ export const huggingfaceModelConfig: ModelConfig = {
 		supportsResponseFormat: true,
 		contextWindow: 1048576,
 		maxTokens: 393216,
-		costPer1kInputTokens: 0.00174,
-		costPer1kOutputTokens: 0.00348,
+		costPer1kInputTokens: 0.000435,
+		costPer1kOutputTokens: 0.00087,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",

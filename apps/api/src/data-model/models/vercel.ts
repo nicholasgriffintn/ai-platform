@@ -5134,4 +5134,25 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			defaultEffort: "none",
 		},
 	}),
+	createModelConfig("anthropic/claude-opus-4.8", PROVIDER, {
+		name: "Claude Opus 4.8",
+		matchingModel: "anthropic/claude-opus-4.8",
+		releaseDate: "May 28, 2026",
+		lastUpdated: "May 28, 2026",
+		modalities: {
+			input: ["text", "image", "pdf"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 1000000,
+		maxTokens: 128000,
+		costPer1kInputTokens: 0.005,
+		costPer1kOutputTokens: 0.025,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
+	}),
 ]);
