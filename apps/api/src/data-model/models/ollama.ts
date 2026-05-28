@@ -1,6 +1,6 @@
 import type { ModelConfig } from "~/types";
 
-export const ollamaModelConfig: ModelConfig = {
+const rawOllamaModelConfig: ModelConfig = {
 	"ollama-gemma3-1b": {
 		name: "Ollama Gemma 3 1B",
 		matchingModel: "gemma3:1b",
@@ -755,3 +755,13 @@ export const ollamaModelConfig: ModelConfig = {
 		},
 	},
 };
+
+export const ollamaModelConfig: ModelConfig = Object.fromEntries(
+	Object.entries(rawOllamaModelConfig).map(([modelId, model]) => [
+		modelId,
+		{
+			...model,
+			hiddenFromDefaultList: model.hiddenFromDefaultList ?? true,
+		},
+	]),
+);

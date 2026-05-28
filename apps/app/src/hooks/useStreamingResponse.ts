@@ -180,22 +180,22 @@ export function useStreamingResponse(
 						}
 						updateLoading("stream-response", undefined, msg);
 					};
-					const assistantMessage = await apiService.streamChatCompletions(
-						conversationId,
-						normalizedMessages,
-						modelToSend,
-						providerToSend,
-						chatMode,
+					const assistantMessage = await apiService.streamChatCompletions({
 						chatSettings,
-						controller.signal,
-						handleMessageUpdate,
-						handleStateChange,
-						shouldStore,
-						true,
+						completionId: conversationId,
+						endpoint: chatMode === "agent" ? `/agents/${selectedAgentId}/completions` : undefined,
+						messages: normalizedMessages,
+						mode: chatMode,
+						model: modelToSend,
+						onProgress: handleMessageUpdate,
+						onStateChange: handleStateChange,
+						provider: providerToSend,
+						requestOptions: overrideRequestOptions ?? requestOptions,
+						signal: controller.signal,
+						store: shouldStore,
+						streamingEnabled: true,
 						useMultiModel,
-						chatMode === "agent" ? `/agents/${selectedAgentId}/completions` : undefined,
-						overrideRequestOptions ?? requestOptions,
-					);
+					});
 
 					const messageContentToDisplay = assistantMessage.content;
 					const textPreview =

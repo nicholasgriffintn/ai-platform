@@ -82,15 +82,13 @@ describe("ChatService streaming", () => {
 		const toolMessages: Message[] = [];
 		const service = new ChatService(async () => ({}));
 
-		const result = await service.streamChatCompletions(
-			"conversation-1",
-			[{ role: "user", content: "hello" } as Message],
-			"test-model",
-			undefined,
-			"remote",
-			{},
-			new AbortController().signal,
-			(_text, _reasoning, toolResponses, _done, assistantMessage) => {
+		const result = await service.streamChatCompletions({
+			chatSettings: {},
+			completionId: "conversation-1",
+			messages: [{ role: "user", content: "hello" } as Message],
+			mode: "remote",
+			model: "test-model",
+			onProgress: (_text, _reasoning, toolResponses, _done, assistantMessage) => {
 				if (assistantMessage) {
 					assistantMessages.push(assistantMessage);
 				}
@@ -98,8 +96,9 @@ describe("ChatService streaming", () => {
 					toolMessages.push(...toolResponses);
 				}
 			},
-			() => {},
-		);
+			onStateChange: () => {},
+			signal: new AbortController().signal,
+		});
 
 		expect(assistantMessages.map((message) => message.id)).toEqual(["assistant-1", "assistant-2"]);
 		expect(assistantMessages.map((message) => message.content)).toEqual([
@@ -119,34 +118,34 @@ describe("ChatService streaming", () => {
 
 		const service = new ChatService(async () => ({}));
 
-		await service.streamChatCompletions(
-			"conversation-1",
-			[{ role: "user", content: "hello" } as Message],
-			"gpt-5",
-			"openai",
-			"remote",
-			{
+		await service.streamChatCompletions({
+			chatSettings: {
 				tool_options: {
 					image_generation: {
 						size: "1024x1024",
 					},
 				},
 			},
-			new AbortController().signal,
-			() => {},
-			() => {},
-			true,
-			true,
-			false,
-			"/chat/completions",
-			["image_generation"],
-			{
+			completionId: "conversation-1",
+			endpoint: "/chat/completions",
+			messages: [{ role: "user", content: "hello" } as Message],
+			mode: "remote",
+			model: "gpt-5",
+			onProgress: () => {},
+			onStateChange: () => {},
+			provider: "openai",
+			requestOptions: {
 				image_generation: {
 					size: "1536x1024",
 					quality: "high",
 				},
 			},
-		);
+			selectedTools: ["image_generation"],
+			signal: new AbortController().signal,
+			store: true,
+			streamingEnabled: true,
+			useMultiModel: false,
+		});
 
 		const [, request] = fetchMock.mock.calls[0];
 		const body = JSON.parse(String(request?.body));
@@ -181,17 +180,17 @@ describe("ChatService streaming", () => {
 		const onProgress = vi.fn();
 
 		await expect(
-			service.streamChatCompletions(
-				"conversation-1",
-				[{ role: "user", content: "hello" } as Message],
-				"gpt-5.4-mini",
-				"openai",
-				"remote",
-				{},
-				new AbortController().signal,
+			service.streamChatCompletions({
+				chatSettings: {},
+				completionId: "conversation-1",
+				messages: [{ role: "user", content: "hello" } as Message],
+				mode: "remote",
+				model: "gpt-5.4-mini",
 				onProgress,
-				() => {},
-			),
+				onStateChange: () => {},
+				provider: "openai",
+				signal: new AbortController().signal,
+			}),
 		).rejects.toMatchObject({
 			code: "insufficient_quota",
 			message: "Quota exceeded",

@@ -466,14 +466,22 @@ describe("Models", () => {
 			expect(result).toHaveProperty("always-enabled-model");
 		});
 
-		it("should use cache when available", async () => {
-			const cachedModels = { "cached-model": mockModelConfig };
-			mockCache.get.mockResolvedValueOnce(cachedModels);
+		it("should only return accessible models from the requested model set", async () => {
+			mockRepositories.userSettings.getUserProviderSettings.mockResolvedValue([
+				{ provider_id: "paid-provider", enabled: true },
+			]);
 
-			const result = await filterModelsForUserAccess(testModels, mockEnv, mockUser.id);
+			await filterModelsForUserAccess(testModels, mockEnv, mockUser.id);
 
-			expect(result).toEqual(cachedModels);
-			expect(mockCache.get).toHaveBeenCalledWith("user-models:123");
+			const result = await filterModelsForUserAccess(
+				{ "paid-model": testModels["paid-model"] },
+				mockEnv,
+				mockUser.id,
+			);
+
+			expect(result).toEqual({
+				"paid-model": testModels["paid-model"],
+			});
 		});
 
 		it("should handle database errors gracefully", async () => {

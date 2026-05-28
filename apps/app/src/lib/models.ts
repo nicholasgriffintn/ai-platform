@@ -1,6 +1,7 @@
 import type { ChatMode, ModelConfig, ModelConfigItem } from "~/types";
 
 export const defaultModel = "deepseek-chat";
+const LOCAL_MODEL_PROVIDER = "web-llm";
 
 export function getAvailableModels(
 	apiModels: ModelConfig,
@@ -77,7 +78,6 @@ export function getRealtimeSessionModelsByProvider(models: ModelConfig, provider
 export function getModelsByMode(models: ModelConfig, mode: ChatMode) {
 	return Object.entries(models).reduce(
 		(acc, [key, model]) => {
-			const hasIncompatibleProvider = model.provider === "ollama";
 			const inputs = model.modalities?.input ?? ["text"];
 			const outputs = model.modalities?.output ?? inputs;
 			const isEmbeddingOnly =
@@ -85,17 +85,14 @@ export function getModelsByMode(models: ModelConfig, mode: ChatMode) {
 			const isAudioOnly = outputs.length > 0 && outputs.every((modality) => modality === "audio");
 			const isVideoOnly = outputs.length > 0 && outputs.every((modality) => modality === "video");
 			const isIncompatible =
-				hasIncompatibleProvider ||
 				!isTextInputChatModel(model) ||
 				isAudioOnly ||
 				isVideoOnly ||
 				isEmbeddingOnly ||
 				model.hiddenFromDefaultList;
+			const isLocalModel = model.provider === LOCAL_MODEL_PROVIDER;
 
-			if (
-				!isIncompatible &&
-				(mode === "local" ? model.provider === "web-llm" : model.provider !== "web-llm")
-			) {
+			if (!isIncompatible && (mode === "local" ? isLocalModel : !isLocalModel)) {
 				acc[key] = {
 					...model,
 					id: key,

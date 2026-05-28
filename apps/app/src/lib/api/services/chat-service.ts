@@ -29,6 +29,32 @@ interface ConversationUpdateRequest {
 	title?: string;
 }
 
+type StreamProgressHandler = (
+	text: string,
+	reasoning?: string,
+	toolResponses?: Message[],
+	done?: boolean,
+	assistantMessage?: Message,
+) => void;
+
+export interface StreamChatCompletionsParams {
+	chatSettings: ChatSettings;
+	completionId: string;
+	endpoint?: string;
+	messages: Message[];
+	mode: ChatMode;
+	model?: string;
+	onProgress: StreamProgressHandler;
+	onStateChange: (state: string, data?: any) => void;
+	provider?: string;
+	requestOptions?: ChatRequestOptions;
+	selectedTools?: string[];
+	signal: AbortSignal;
+	store?: boolean;
+	streamingEnabled?: boolean;
+	useMultiModel?: boolean;
+}
+
 function createStreamingApiError(errorPayload: unknown): ApiError {
 	if (!errorPayload || typeof errorPayload !== "object") {
 		return new ApiError("Streaming response failed", 500, errorPayload);
@@ -365,29 +391,23 @@ export class ChatService {
 		}
 	}
 
-	async streamChatCompletions(
-		completion_id: string,
-		messages: Message[],
-		model: string | undefined,
-		provider: string | undefined,
-		mode: ChatMode,
-		chatSettings: ChatSettings,
-		signal: AbortSignal,
-		onProgress: (
-			text: string,
-			reasoning?: string,
-			toolResponses?: Message[],
-			done?: boolean,
-			assistantMessage?: Message,
-		) => void,
-		onStateChange: (state: string, data?: any) => void,
+	async streamChatCompletions({
+		chatSettings,
+		completionId,
+		endpoint = "/chat/completions",
+		messages,
+		mode,
+		model,
+		onProgress,
+		onStateChange,
+		provider,
+		requestOptions,
+		selectedTools,
+		signal,
 		store = true,
 		streamingEnabled = true,
-		use_multi_model = false,
-		endpoint = "/chat/completions",
-		selectedTools?: string[],
-		requestOptions?: ChatRequestOptions,
-	): Promise<Message> {
+		useMultiModel = false,
+	}: StreamChatCompletionsParams): Promise<Message> {
 		let headers = {};
 		try {
 			headers = await this.getHeaders();
@@ -409,7 +429,7 @@ export class ChatService {
 		const { tool_options: _toolOptions, ...requestSettings } = chatSettings;
 		const requestBody: Record<string, any> = {
 			...requestSettings,
-			completion_id,
+			completion_id: completionId,
 			mode,
 			messages: formattedMessages,
 			platform: "web",
@@ -418,7 +438,7 @@ export class ChatService {
 			enabled_tools: requestEnabledTools,
 			approved_tools: requestApprovedTools,
 			max_steps: sandboxOptions?.maxSteps ?? (sandboxOptions ? 2 : undefined),
-			use_multi_model,
+			use_multi_model: useMultiModel,
 			options: mergeRequestOptions(chatSettings, requestOptions),
 		};
 

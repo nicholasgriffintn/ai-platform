@@ -101,7 +101,6 @@ const modelConfig: ModelConfig = mergeModelConfigs(
 );
 
 const MODEL_CACHE_TTL = 14400;
-const USER_MODEL_CACHE_TTL = 3600;
 let modelCache: KVCache | null = null;
 
 const DEFAULT_MODALITIES: ModelModalities = {
@@ -145,12 +144,6 @@ function getModelCache(env: IEnv): KVCache | null {
 		modelCache = new KVCache(env.CACHE, MODEL_CACHE_TTL);
 	}
 	return modelCache;
-}
-
-function getUserModelCache(env: IEnv): KVCache | null {
-	if (!env.CACHE) return null;
-
-	return new KVCache(env.CACHE, USER_MODEL_CACHE_TTL);
 }
 
 /**
@@ -418,16 +411,6 @@ export async function filterModelsForUserAccess(
 	userId?: number,
 	options: ModelsOptions = { shouldUseCache: true },
 ): Promise<Record<string, ModelConfigItem>> {
-	const cache = getUserModelCache(env);
-	const cacheKey = KVCache.createKey("user-models", userId?.toString() || "anonymous");
-
-	if (cache && options.shouldUseCache) {
-		const cached = await cache.get<Record<string, ModelConfigItem>>(cacheKey);
-		if (cached) {
-			return cached;
-		}
-	}
-
 	const allFreeModels = getFreeModels();
 	const alwaysEnabledProvidersEnvVar = env.ALWAYS_ENABLED_PROVIDERS;
 	const alwaysEnabledProviders = new Set(alwaysEnabledProvidersEnvVar?.split(",") || []);
@@ -450,22 +433,18 @@ export async function filterModelsForUserAccess(
 			}
 		}
 
-		if (cache && options.shouldUseCache) {
-			cache.set(cacheKey, filteredModels).catch(() => {});
-		}
-
 		return filteredModels;
 	}
 
 	try {
 		const repositories = new RepositoryManager(env);
 
-		const userProviderSettings = await withCache(
-			env,
-			"user-provider-settings",
-			[userId.toString()],
-			() => repositories.userSettings.getUserProviderSettings(userId),
-		);
+		const userProviderSettings =
+			options.shouldUseCache === false
+				? await repositories.userSettings.getUserProviderSettings(userId)
+				: await withCache(env, "user-provider-settings", [userId.toString()], () =>
+						repositories.userSettings.getUserProviderSettings(userId),
+					);
 
 		const enabledProviders = new Map(
 			userProviderSettings.filter((p) => p.enabled).map((p) => [p.provider_id, true]),
@@ -480,10 +459,6 @@ export async function filterModelsForUserAccess(
 			if (isFree || isEnabled) {
 				filteredModels[modelId] = model;
 			}
-		}
-
-		if (cache) {
-			cache.set(cacheKey, filteredModels).catch(() => {});
 		}
 
 		return filteredModels;

@@ -1,16 +1,9 @@
 import { useToolsStore } from "~/state/stores/toolsStore";
-import type {
-	ChatMode,
-	ChatRequestOptions,
-	ChatSettings,
-	Conversation,
-	Message,
-	ModelConfig,
-} from "~/types";
+import type { Conversation, Message, ModelConfig } from "~/types";
 import { formatMessageContent } from "../messages";
 import { AgentService } from "./services/agent-service";
 import { AudioService, type SpeechGenerationResponse } from "./services/audio-service";
-import { ChatService } from "./services/chat-service";
+import { ChatService, type StreamChatCompletionsParams } from "./services/chat-service";
 import { ResearchService } from "./services/research-service";
 import { SubscriptionService } from "./services/subscription-service";
 import { UploadService } from "./services/upload-service";
@@ -114,49 +107,19 @@ class ApiService {
 		return this.audioService.generateSpeech(input, options);
 	};
 
-	streamChatCompletions = async (
-		completion_id: string,
-		messages: Message[],
-		model: string | undefined,
-		provider: string | undefined,
-		mode: ChatMode,
-		chatSettings: ChatSettings,
-		signal: AbortSignal,
-		onProgress: (
-			text: string,
-			reasoning?: string,
-			toolResponses?: Message[],
-			done?: boolean,
-			assistantMessage?: Message,
-		) => void,
-		onStateChange: (state: string, data?: any) => void,
-		store = true,
-		streamingEnabled = true,
-		use_multi_model = false,
-		endpoint = "/chat/completions",
-		requestOptions?: ChatRequestOptions,
-	): Promise<Message> => {
+	streamChatCompletions = async ({
+		onProgress,
+		...params
+	}: Omit<StreamChatCompletionsParams, "selectedTools">): Promise<Message> => {
 		const { selectedTools } = useToolsStore.getState();
 
-		const assistantMessage = await this.chatService.streamChatCompletions(
-			completion_id,
-			messages,
-			model,
-			provider,
-			mode,
-			chatSettings,
-			signal,
-			(text, reasoning, toolResponses, done, assistantMessage) => {
+		const assistantMessage = await this.chatService.streamChatCompletions({
+			...params,
+			onProgress: (text, reasoning, toolResponses, done, assistantMessage) => {
 				onProgress(text, reasoning, toolResponses, done, assistantMessage);
 			},
-			onStateChange,
-			store,
-			streamingEnabled,
-			use_multi_model,
-			endpoint,
 			selectedTools,
-			requestOptions,
-		);
+		});
 
 		if (typeof assistantMessage.content === "string") {
 			const { content: formattedContent, reasoning: extractedReasoning } =

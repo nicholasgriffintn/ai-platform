@@ -63,6 +63,28 @@ describe("getModelsByMode", () => {
 			"text-to-image",
 		]);
 	});
+
+	it("uses model visibility config instead of provider-specific exclusions", () => {
+		const models: ModelConfig = {
+			"configured-provider-model": {
+				id: "configured-provider-model",
+				name: "Configured Provider Model",
+				matchingModel: "configured-provider-model",
+				provider: "ollama",
+				modalities: { input: ["text"], output: ["text"] },
+			},
+			"hidden-configured-provider-model": {
+				id: "hidden-configured-provider-model",
+				name: "Hidden Configured Provider Model",
+				matchingModel: "hidden-configured-provider-model",
+				provider: "ollama",
+				modalities: { input: ["text"], output: ["text"] },
+				hiddenFromDefaultList: true,
+			},
+		};
+
+		expect(Object.keys(getModelsByMode(models, "remote"))).toEqual(["configured-provider-model"]);
+	});
 });
 
 describe("getModelProvider", () => {

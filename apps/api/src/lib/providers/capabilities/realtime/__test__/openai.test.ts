@@ -83,7 +83,7 @@ describe("OpenAIRealtimeProvider", () => {
 		});
 	});
 
-	it("creates a VAD-backed session for transcription models that support it", async () => {
+	it("creates a semantic VAD-backed session for transcription models that support it", async () => {
 		const provider = new OpenAIRealtimeProvider();
 
 		await provider.createSession({
@@ -108,10 +108,8 @@ describe("OpenAIRealtimeProvider", () => {
 							language: "en",
 						},
 						turn_detection: {
-							type: "server_vad",
-							threshold: 0.4,
-							prefix_padding_ms: 400,
-							silence_duration_ms: 1000,
+							type: "semantic_vad",
+							eagerness: "auto",
 						},
 					},
 				},

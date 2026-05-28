@@ -208,15 +208,14 @@ export function useConversationActions(
 
 					const placeholderMessage = await addAssistantMessage(newConversationId, "");
 
-					await apiService.streamChatCompletions(
-						newConversationId,
-						normalizedMessages,
-						modelToSend,
-						providerToSend,
-						chatMode,
-						chatSettingsWithMetadata,
-						new AbortController().signal,
-						(content, reasoning, _toolResponses, done) => {
+					await apiService.streamChatCompletions({
+						chatSettings: chatSettingsWithMetadata,
+						completionId: newConversationId,
+						endpoint: chatMode === "agent" ? `/agents/${selectedAgentId}/completions` : undefined,
+						messages: normalizedMessages,
+						mode: chatMode,
+						model: modelToSend,
+						onProgress: (content, reasoning, _toolResponses, done) => {
 							lastContent = content;
 							if (reasoning) lastReasoning = reasoning;
 
@@ -230,12 +229,13 @@ export function useConversationActions(
 								});
 							}
 						},
-						() => {},
-						shouldStore,
-						true,
+						onStateChange: () => {},
+						provider: providerToSend,
+						signal: new AbortController().signal,
+						store: shouldStore,
+						streamingEnabled: true,
 						useMultiModel,
-						chatMode === "agent" ? `/agents/${selectedAgentId}/completions` : undefined,
-					);
+					});
 
 					await updateAssistantMessage(newConversationId, lastContent, lastReasoning, undefined, {
 						messageId: placeholderMessage.id,
