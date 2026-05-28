@@ -47,10 +47,8 @@ const TRANSCRIPTION_DELAYS: RealtimeTranscriptionDelay[] = [
 ];
 
 const BASE_TURN_DETECTION = {
-	type: "server_vad",
-	threshold: 0.4,
-	prefix_padding_ms: 400,
-	silence_duration_ms: 1000,
+	type: "semantic_vad",
+	eagerness: "auto",
 };
 const TRANSCRIPTION_TURN_DETECTION = BASE_TURN_DETECTION;
 const REALTIME_TURN_DETECTION = {

@@ -46,7 +46,7 @@ interface UseRealtimeLiveSessionOptions {
 }
 
 const AUDIO_CONSTRAINTS: MediaTrackConstraints = {
-	autoGainControl: true,
+	autoGainControl: false,
 	echoCancellation: true,
 	noiseSuppression: true,
 };
