@@ -52,4 +52,19 @@ describe("openaiModelConfig", () => {
 		expect(openaiModelConfig["gpt-audio-1.5"]?.supportsAudio).toBe(true);
 		expect(openaiModelConfig["gpt-audio-mini"]?.supportsAudio).toBe(true);
 	});
+
+	it("keeps search-preview parameter exclusions in model config", () => {
+		expect(openaiModelConfig["gpt-4o-search-preview"]).toMatchObject({
+			supportsTemperature: false,
+			supportsTopP: false,
+			supportsFrequencyPenalty: false,
+			supportsPresencePenalty: false,
+		});
+		expect(openaiModelConfig["gpt-4o-mini-search"]).toMatchObject({
+			supportsTemperature: false,
+			supportsTopP: false,
+			supportsFrequencyPenalty: false,
+			supportsPresencePenalty: false,
+		});
+	});
 });

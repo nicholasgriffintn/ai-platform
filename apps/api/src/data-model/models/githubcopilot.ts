@@ -176,6 +176,7 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
 		supportsAttachments: true,
 		supportsTemperature: false,
 		supportsToolCalls: true,
+		supportsParallelToolCalls: false,
 		knowledgeCutoffDate: "May 2024",
 		releaseDate: "April 16, 2025",
 		lastUpdated: "April 16, 2025",

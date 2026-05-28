@@ -162,40 +162,6 @@ describe("OpenAIProvider", () => {
 			expect(result.image).toEqual(["data:image/jpeg;base64,..."]);
 		});
 
-		it("should handle search preview model parameters in mapParameters", async () => {
-			// @ts-ignore - getModelConfigByMatchingModel is not typed
-			vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
-				name: "gpt-4o-search-preview",
-				modalities: { input: ["text"], output: ["text"] },
-			});
-
-			vi.mocked(createCommonParameters).mockReturnValue({
-				model: "gpt-4o-search-preview",
-				temperature: 0.7,
-				top_p: 0.9,
-				frequency_penalty: 0.1,
-				presence_penalty: 0.1,
-			});
-
-			vi.mocked(shouldEnableStreaming).mockReturnValue(false);
-			vi.mocked(getToolsForProvider).mockReturnValue({ tools: [] });
-
-			const provider = new OpenAIProvider();
-
-			const params = {
-				model: "gpt-4o-search-preview",
-				messages: [{ role: "user", content: "Hello" }],
-				env: { AI_GATEWAY_TOKEN: "test-token" },
-			};
-
-			const result = await provider.mapParameters(params as any);
-
-			expect(result.frequency_penalty).toBeUndefined();
-			expect(result.presence_penalty).toBeUndefined();
-			expect(result.temperature).toBeUndefined();
-			expect(result.top_p).toBeUndefined();
-		});
-
 		it("should route OpenAI hosted search through Responses API", async () => {
 			// @ts-ignore - getModelConfigByMatchingModel is not typed
 			vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({

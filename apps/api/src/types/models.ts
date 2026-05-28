@@ -87,6 +87,7 @@ export type ModelConfigItem = {
 	supportsComputerUse?: boolean;
 	supportsImageGenerationTool?: boolean;
 	supportsToolSearch?: boolean;
+	supportsParallelToolCalls?: boolean;
 	supportsHostedShell?: boolean;
 	supportsWebFetch?: boolean;
 	supportsFim?: boolean;
@@ -107,6 +108,8 @@ export type ModelConfigItem = {
 	supportsTokenCounting?: boolean;
 	bedrockApiOperation?: string;
 	bedrockStreamingApiOperation?: string;
+	supportsRepetitionPenalty?: boolean;
+	supportsFrequencyPenalty?: boolean;
 	supportsPresencePenalty?: boolean;
 	restrictsCombinedTopPAndTemperature?: boolean;
 	InputSchemaInputSchema?: InputSchemaInputSchemaDescriptor;

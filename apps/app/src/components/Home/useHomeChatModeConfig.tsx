@@ -16,7 +16,11 @@ import {
 	buildConversationModeMetadata,
 	getConversationModeMetadata,
 } from "~/lib/home-chat-modes/conversation-mode";
-import { getDefaultLiveModelId, type RealtimeLiveProviderId } from "~/lib/realtime/live-providers";
+import {
+	getDefaultLiveModelId,
+	supportsRealtimeLiveVideoInput,
+	type RealtimeLiveProviderId,
+} from "~/lib/realtime/live-providers";
 import { normaliseGitHubRepoInput } from "~/lib/sandbox/repositories";
 import { useChatStore } from "~/state/stores/chatStore";
 import {
@@ -391,7 +395,7 @@ export function useHomeChatModeConfig(): {
 				onVideoEnabledChange={setLiveVideoEnabled}
 				status={liveStatus}
 				videoEnabled={liveVideoEnabled}
-				videoSupported={liveProvider === "google-ai-studio"}
+				videoSupported={supportsRealtimeLiveVideoInput(liveProvider)}
 			/>
 		);
 		const activeModeControls =

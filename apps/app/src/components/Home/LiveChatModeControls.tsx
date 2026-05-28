@@ -4,6 +4,8 @@ import type { RealtimeLiveStatus } from "~/hooks/useRealtimeLiveSession";
 import {
 	REALTIME_LIVE_PROVIDER_OPTIONS,
 	type RealtimeLiveProviderId,
+	type RealtimeLiveProviderOption,
+	supportsRealtimeLiveVideoInput,
 } from "~/lib/realtime/live-providers";
 import { cn } from "~/lib/utils";
 
@@ -39,11 +41,11 @@ interface LiveSessionControlsProps {
 	videoSupported: boolean;
 }
 
-function ProviderIcon({ provider }: { provider: RealtimeLiveProviderId }) {
-	if (provider === "google-ai-studio") {
+function ProviderIcon({ option }: { option: RealtimeLiveProviderOption }) {
+	if (option.inputModalities.includes("video")) {
 		return <Video className="h-4 w-4" aria-hidden="true" />;
 	}
-	if (provider === "mistral") {
+	if (option.sessionType === "transcription") {
 		return <Mic className="h-4 w-4" aria-hidden="true" />;
 	}
 	return <RadioTower className="h-4 w-4" aria-hidden="true" />;
@@ -278,7 +280,7 @@ export function LiveChatModeControls({
 							)}
 						>
 							<span className="flex h-5 w-5 shrink-0 items-center justify-center">
-								<ProviderIcon provider={option.id} />
+								<ProviderIcon option={option} />
 							</span>
 							<span className="min-w-0 flex-1">
 								<span className="block font-medium leading-5">{option.label}</span>
@@ -303,7 +305,7 @@ export function LiveChatModeControls({
 					onVideoEnabledChange={onVideoEnabledChange}
 					status={status}
 					videoEnabled={videoEnabled}
-					videoSupported={provider === "google-ai-studio"}
+					videoSupported={supportsRealtimeLiveVideoInput(provider)}
 				/>
 			)}
 		</div>

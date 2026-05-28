@@ -427,6 +427,35 @@ describe("parameters", () => {
 			expect(result.metadata).toEqual({ userId: "123" });
 		});
 
+		it("should exclude optional parameters disabled by model config", () => {
+			const paramsWithOptionalControls = {
+				...baseParams,
+				top_p: 0.9,
+				repetition_penalty: 1.1,
+				frequency_penalty: 0.1,
+				presence_penalty: 0.1,
+			} as ChatCompletionParameters;
+
+			const result = createCommonParameters(
+				paramsWithOptionalControls,
+				{
+					...modelConfig,
+					supportsTemperature: false,
+					supportsTopP: false,
+					supportsRepetitionPenalty: false,
+					supportsFrequencyPenalty: false,
+					supportsPresencePenalty: false,
+				},
+				"openai",
+			);
+
+			expect(result.temperature).toBeUndefined();
+			expect(result.top_p).toBeUndefined();
+			expect(result.repetition_penalty).toBeUndefined();
+			expect(result.frequency_penalty).toBeUndefined();
+			expect(result.presence_penalty).toBeUndefined();
+		});
+
 		it("should include response_format when supported", () => {
 			const paramsWithFormat = {
 				...baseParams,
@@ -574,26 +603,20 @@ describe("parameters", () => {
 			expect(result.parallel_tool_calls).toBe(true);
 		});
 
-		it("should not set parallel_tool_calls for o1 models", () => {
-			const paramsWithO1 = {
+		it("should not set parallel_tool_calls when disabled by model config", () => {
+			const paramsWithParallel = {
 				...baseParams,
-				model: "o1",
 				parallel_tool_calls: true,
 			} as ChatCompletionParameters;
 
-			const result = getToolsForProvider(paramsWithO1, modelConfig, "openai");
-
-			expect(result.parallel_tool_calls).toBeUndefined();
-		});
-
-		it("should not set parallel_tool_calls for o3 models", () => {
-			const paramsWithO3 = {
-				...baseParams,
-				model: "o3",
-				parallel_tool_calls: true,
-			} as ChatCompletionParameters;
-
-			const result = getToolsForProvider(paramsWithO3, modelConfig, "openai");
+			const result = getToolsForProvider(
+				paramsWithParallel,
+				{
+					...modelConfig,
+					supportsParallelToolCalls: false,
+				},
+				"openai",
+			);
 
 			expect(result.parallel_tool_calls).toBeUndefined();
 		});

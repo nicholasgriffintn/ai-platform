@@ -32,6 +32,7 @@ import { formatRealtimeWebSocketCloseError } from "~/lib/realtime/errors";
 import {
 	DEFAULT_REALTIME_LIVE_PROVIDER_ID,
 	getRealtimeLiveProviderOption,
+	supportsRealtimeLiveVideoInput,
 	type RealtimeLiveProviderId,
 	type RealtimeLiveProviderOption,
 } from "~/lib/realtime/live-providers";
@@ -133,10 +134,6 @@ function isConfiguredAudioEndEvent(
 	const eventType =
 		getConnectionProviderOption(connection).websocket?.audioInput?.waitForFinalEventTypeOnStop;
 	return Boolean(eventType && extractRealtimeEventType(payload) === eventType);
-}
-
-function providerSupportsVideoInput(provider: string): boolean {
-	return Boolean(getRealtimeLiveProviderOption(provider).websocket?.videoInput);
 }
 
 export function useRealtimeLiveSession({
@@ -648,7 +645,7 @@ export function useRealtimeLiveSession({
 
 	const setVideoEnabled = useCallback(
 		(enabled: boolean) => {
-			const nextEnabled = providerSupportsVideoInput(provider) && enabled;
+			const nextEnabled = supportsRealtimeLiveVideoInput(provider) && enabled;
 			videoEnabledRef.current = nextEnabled;
 			setIsVideoEnabledState(nextEnabled);
 

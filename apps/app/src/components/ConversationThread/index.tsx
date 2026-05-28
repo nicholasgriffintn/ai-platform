@@ -19,6 +19,7 @@ import { useChat } from "~/hooks/useChat";
 import { useChatManager } from "~/hooks/useChatManager";
 import { useModels } from "~/hooks/useModels";
 import type { AttachmentData } from "~/lib/chat/attachments";
+import { isImageGenerationOutputModel } from "~/lib/models";
 import { useIsLoading } from "~/state/contexts/LoadingContext";
 import { useChatStore } from "~/state/stores/chatStore";
 import type { ChatRequestOptions } from "~/types";
@@ -177,9 +178,11 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
 			// For text-to-image models, only allow the first message unless they support image edits
 			if (model && apiModels?.[model]) {
 				const modelConfig = apiModels[model];
-				const outputs = modelConfig.modalities?.output ?? [];
-				const isImageGenerationModel = outputs.includes("image") && !outputs.includes("text");
-				if (isImageGenerationModel && !modelConfig.supportsImageEdits && messages.length > 0) {
+				if (
+					isImageGenerationOutputModel(modelConfig) &&
+					!modelConfig.supportsImageEdits &&
+					messages.length > 0
+				) {
 					toast.error(
 						"Text-to-image models only support one message per conversation. Please start a new conversation.",
 					);

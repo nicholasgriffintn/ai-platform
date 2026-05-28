@@ -371,18 +371,6 @@ export class OpenAIProvider extends BaseProvider {
 			? { verbosity: verbositySetting }
 			: {};
 
-		let modelSpecificParams = {};
-
-		if (params.model.includes("-search-preview")) {
-			modelSpecificParams = {
-				...modelSpecificParams,
-				frequency_penalty: undefined,
-				presence_penalty: undefined,
-				temperature: undefined,
-				top_p: undefined,
-			};
-		}
-
 		const inputs = modelConfig?.modalities?.input ?? ["text"];
 		const outputs = modelConfig?.modalities?.output ?? inputs;
 		const isImageEditing = outputs.includes("image") && inputs.includes("image");
@@ -457,7 +445,6 @@ export class OpenAIProvider extends BaseProvider {
 			...thinkingParams,
 			...verbosityParams,
 			...(producesAudio ? this.buildAudioOutputParams(params) : {}),
-			...modelSpecificParams,
 			store: params.store,
 			logit_bias: params.logit_bias,
 			n: params.n,

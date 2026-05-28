@@ -169,3 +169,7 @@ export function getRealtimeLiveProviderOption(provider: string): RealtimeLivePro
 export function getDefaultLiveModelId(provider: string): string {
 	return getRealtimeLiveProviderOption(provider).defaultModelId;
 }
+
+export function supportsRealtimeLiveVideoInput(provider: string): boolean {
+	return Boolean(getRealtimeLiveProviderOption(provider).websocket?.videoInput);
+}

@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 
 import { ModelIcon } from "~/components/ModelIcon";
+import { modelSupportsVisualModality } from "~/lib/models";
 import { hasProviderReasoningOptions } from "~/lib/reasoning";
 import { cn } from "~/lib/utils";
 import type { ModelConfigItem } from "~/types";
@@ -39,10 +40,6 @@ export const ModelOption = ({
 	onInfoHoverStart,
 	onInfoHoverEnd,
 }: ModelOptionProps) => {
-	const supportsVision =
-		model.modalities?.input?.some((modality) => ["image", "video"].includes(modality)) ||
-		model.modalities?.output?.some((modality) => ["image", "video"].includes(modality));
-
 	const handleKeyDown = (e: React.KeyboardEvent) => {
 		if (e.key === "Enter" || e.key === " ") {
 			e.preventDefault();
@@ -134,7 +131,7 @@ export const ModelOption = ({
 							<Hammer size={12} className="text-amber-600 dark:text-amber-400" />
 						</div>
 					)}
-					{(model.multimodal || supportsVision) && (
+					{modelSupportsVisualModality(model) && (
 						<div className="rounded-full bg-blue-100 p-1 dark:bg-blue-900/30">
 							<Eye size={12} className="text-blue-600 dark:text-blue-400" />
 						</div>

@@ -273,6 +273,8 @@ export const xaiModelConfig: ModelConfig = {
 		isFeatured: false,
 		includedInRouter: false,
 		supportsArtifacts: true,
+		supportsRepetitionPenalty: false,
+		supportsFrequencyPenalty: false,
 		supportsPresencePenalty: false,
 		costPer1kReasoningTokens: 0.015,
 	},

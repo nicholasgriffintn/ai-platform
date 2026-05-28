@@ -27,6 +27,7 @@ import {
 	getModelsByMode,
 	getRealtimeSessionModelsByProvider,
 	isTextInputChatModel,
+	modelSupportsVisualModality,
 } from "~/lib/models";
 import { getDefaultLiveModelId } from "~/lib/realtime/live-providers";
 import { hasProviderReasoningOptions } from "~/lib/reasoning";
@@ -115,9 +116,6 @@ function HoverPreview({ preview }: { preview: HoverPreviewState | null }) {
 	if (!preview) return null;
 
 	const model = preview.model;
-	const supportsVision =
-		model.modalities?.input?.some((modality) => ["image", "video"].includes(modality)) ||
-		model.modalities?.output?.some((modality) => ["image", "video"].includes(modality));
 
 	const featureTags = Array.from(
 		new Set(
@@ -127,7 +125,7 @@ function HoverPreview({ preview }: { preview: HoverPreviewState | null }) {
 				model.supportsSearchGrounding ? "Web Grounding" : null,
 				model.supportsCodeExecution ? "Code Execution" : null,
 				model.supportsAudio ? "Audio" : null,
-				model.multimodal || supportsVision ? "Vision" : null,
+				modelSupportsVisualModality(model) ? "Vision" : null,
 				...(model.strengths || []),
 			].filter(Boolean) as string[],
 		),

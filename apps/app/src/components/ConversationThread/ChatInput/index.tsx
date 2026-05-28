@@ -8,6 +8,7 @@ import {
 	useEffect,
 	useId,
 	useImperativeHandle,
+	useMemo,
 	useRef,
 	useState,
 } from "react";
@@ -15,9 +16,9 @@ import { Button } from "~/components/ui";
 import { useModels } from "~/hooks/useModels";
 import { useVoiceRecorder } from "~/hooks/useVoiceRecorder";
 import type { AttachmentData } from "~/lib/chat/attachments";
+import { getModelInteractionCapabilities } from "~/lib/models";
 import { useChatStore } from "~/state/stores/chatStore";
 import { useUIStore } from "~/state/stores/uiStore";
-import type { ModelConfigItem } from "~/types";
 import { ChatSettings as ChatSettingsComponent } from "./ChatSettings";
 import { ToolToggles } from "./ChatSettings/ToolToggles";
 import { ComposerActionMenu } from "./ComposerActionMenu";
@@ -97,17 +98,23 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 			onTranscribe,
 		});
 		const [selectedAttachments, setSelectedAttachments] = useState<AttachmentData[]>([]);
-		const [isMultimodalModel, setIsMultimodalModel] = useState(false);
-		const [isImageModel, setIsImageModel] = useState(false);
-		const [isTextToImageOnlyModel, setIsTextToImageOnlyModel] = useState(false);
-		const [supportsDocuments, setSupportsDocuments] = useState(false);
-		const [supportsAudio, setSupportsAudio] = useState(false);
-		const [supportsCode, setSupportsCode] = useState(false);
-		const [supportsToolCalls, setsupportsToolCalls] = useState(false);
-		const [supportsCodeExecution, setSupportsCodeExecution] = useState(false);
-		const [supportsSearchGrounding, setSupportsSearchGrounding] = useState(false);
 		const { data: apiModels } = useModels();
 		const [isUploading, setIsUploading] = useState(false);
+		const modelCapabilities = useMemo(
+			() => getModelInteractionCapabilities(model ? apiModels?.[model] : undefined),
+			[apiModels, model],
+		);
+		const {
+			isImageModel,
+			isMultimodalModel,
+			isTextToImageOnlyModel,
+			supportsAudio,
+			supportsCode,
+			supportsCodeExecution,
+			supportsDocuments,
+			supportsSearchGrounding,
+			supportsToolCalls,
+		} = modelCapabilities;
 
 		const textareaRef = useRef<HTMLTextAreaElement>(null);
 		const fileInputRef = useRef<HTMLInputElement>(null);
@@ -147,45 +154,6 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 				textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
 			}
 		}, [chatInput, hideTextInput]);
-
-		useEffect(() => {
-			if (!apiModels || !model) {
-				setIsMultimodalModel(false);
-				setIsImageModel(false);
-				setIsTextToImageOnlyModel(false);
-				setSupportsDocuments(false);
-				setSupportsAudio(false);
-				setSupportsCode(false);
-				setsupportsToolCalls(false);
-				setSupportsCodeExecution(false);
-				setSupportsSearchGrounding(false);
-				return;
-			}
-
-			const modelData = apiModels[model] as ModelConfigItem | undefined;
-
-			const inputs = modelData?.modalities?.input ?? ["text"];
-			const outputs = modelData?.modalities?.output ?? inputs;
-			const hasTextToImage =
-				outputs.includes("image") && !outputs.includes("text") && !inputs.includes("image");
-			const hasImageToImage = outputs.includes("image") && inputs.includes("image");
-			const hasImageToText = outputs.includes("text") && inputs.includes("image");
-			const multimodal = !!modelData?.multimodal || hasImageToText;
-			setIsMultimodalModel(multimodal);
-			const textOnlyToImage = hasTextToImage && !hasImageToImage && !hasImageToText;
-			setIsTextToImageOnlyModel(textOnlyToImage);
-			const supportsNativeDocuments = !!modelData?.supportsDocuments && !textOnlyToImage;
-			const supportsNativeAudio = !!modelData?.supportsAudio && !textOnlyToImage;
-			const imageOnly =
-				(hasImageToImage || hasImageToText) && !supportsNativeDocuments && !supportsNativeAudio;
-			setIsImageModel(imageOnly);
-			setSupportsDocuments(supportsNativeDocuments);
-			setSupportsAudio(supportsNativeAudio);
-			setSupportsCode(supportsNativeDocuments);
-			setsupportsToolCalls(!!modelData?.supportsToolCalls);
-			setSupportsCodeExecution(!!modelData?.supportsCodeExecution);
-			setSupportsSearchGrounding(!!modelData?.supportsSearchGrounding);
-		}, [model, apiModels]);
 
 		const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
 			if ((e.key === "ArrowDown" || e.key === "ArrowUp") && directiveQuery) {

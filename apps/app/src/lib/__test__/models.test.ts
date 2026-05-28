@@ -1,12 +1,15 @@
 import { describe, expect, it } from "vitest";
 
-import type { ModelConfig } from "~/types";
+import type { ModelConfig, ModelConfigItem } from "~/types";
 import {
+	getModelInteractionCapabilities,
 	getModelProvider,
 	getModelsByMode,
 	getRealtimeSessionModelsByProvider,
+	isImageGenerationOutputModel,
 	isTextInputChatModel,
 	isTextOnlyModel,
+	modelSupportsVisualModality,
 } from "../models";
 
 describe("getModelsByMode", () => {
@@ -103,6 +106,78 @@ describe("getModelProvider", () => {
 
 	it("returns undefined when no model is selected", () => {
 		expect(getModelProvider({}, null)).toBeUndefined();
+	});
+});
+
+describe("getModelInteractionCapabilities", () => {
+	it("derives composer capabilities from model modalities and flags", () => {
+		const capabilities = getModelInteractionCapabilities({
+			id: "vision-chat",
+			name: "Vision Chat",
+			matchingModel: "vision-chat",
+			provider: "openai",
+			modalities: { input: ["text", "image"], output: ["text"] },
+			supportsDocuments: true,
+			supportsAudio: true,
+			supportsToolCalls: true,
+			supportsCodeExecution: true,
+			supportsSearchGrounding: true,
+		} as ModelConfigItem);
+
+		expect(capabilities).toMatchObject({
+			isMultimodalModel: true,
+			isTextToImageOnlyModel: false,
+			supportsAudio: true,
+			supportsCode: true,
+			supportsDocuments: true,
+			supportsToolCalls: true,
+			supportsCodeExecution: true,
+			supportsSearchGrounding: true,
+		});
+	});
+
+	it("disables native attachments for text-only image generation models", () => {
+		const model = {
+			id: "text-to-image",
+			name: "Text to Image",
+			matchingModel: "text-to-image",
+			provider: "openai",
+			modalities: { input: ["text"], output: ["image"] },
+			supportsDocuments: true,
+			supportsAudio: true,
+		} as ModelConfigItem;
+
+		expect(isImageGenerationOutputModel(model)).toBe(true);
+		expect(getModelInteractionCapabilities(model)).toMatchObject({
+			isTextToImageOnlyModel: true,
+			supportsAudio: false,
+			supportsCode: false,
+			supportsDocuments: false,
+		});
+	});
+});
+
+describe("modelSupportsVisualModality", () => {
+	it("detects visual input or output from model config", () => {
+		expect(
+			modelSupportsVisualModality({
+				id: "image-output",
+				name: "Image Output",
+				matchingModel: "image-output",
+				provider: "openai",
+				modalities: { input: ["text"], output: ["image"] },
+			} as ModelConfigItem),
+		).toBe(true);
+
+		expect(
+			modelSupportsVisualModality({
+				id: "text-only",
+				name: "Text Only",
+				matchingModel: "text-only",
+				provider: "openai",
+				modalities: { input: ["text"], output: ["text"] },
+			} as ModelConfigItem),
+		).toBe(false);
 	});
 });
 

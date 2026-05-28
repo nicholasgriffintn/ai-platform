@@ -137,21 +137,23 @@ export function createCommonParameters(
 
 	if (providerName !== "anthropic") {
 		commonParams.seed = params.seed;
-		if (modelConfig.matchingModel !== "grok-4-latest") {
+		if (modelConfig.supportsRepetitionPenalty !== false) {
 			commonParams.repetition_penalty = returnValidatedPenalty(
 				"repetition_penalty",
 				params.repetition_penalty,
 			);
+		}
+		if (modelConfig.supportsFrequencyPenalty !== false) {
 			commonParams.frequency_penalty = returnValidatedPenalty(
 				"frequency_penalty",
 				params.frequency_penalty,
 			);
-			if (modelConfig.supportsPresencePenalty !== false) {
-				commonParams.presence_penalty = returnValidatedPenalty(
-					"presence_penalty",
-					params.presence_penalty,
-				);
-			}
+		}
+		if (modelConfig.supportsPresencePenalty !== false) {
+			commonParams.presence_penalty = returnValidatedPenalty(
+				"presence_penalty",
+				params.presence_penalty,
+			);
 		}
 	}
 
@@ -239,12 +241,7 @@ export function getToolsForProvider(
 			result.tools = tools;
 		}
 
-		if (
-			params.model !== "o1" &&
-			params.model !== "o3" &&
-			params.model !== "o3-mini" &&
-			params.model !== "o4-mini"
-		) {
+		if (modelConfig?.supportsParallelToolCalls !== false) {
 			result.parallel_tool_calls = params.parallel_tool_calls;
 		}
 

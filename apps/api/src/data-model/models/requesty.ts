@@ -48,6 +48,7 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 		supportsAttachments: true,
 		supportsTemperature: true,
 		supportsToolCalls: true,
+		supportsParallelToolCalls: false,
 		contextWindow: 200000,
 		maxTokens: 100000,
 		costPer1kInputTokens: 0.0011,
