@@ -440,6 +440,7 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 		...anthropicLatestHostedTools,
 		supportsAttachments: true,
 		supportsTemperature: false,
+		supportsTopP: false,
 		supportsToolCalls: true,
 		isFeatured: false,
 		contextWindow: 1000000,

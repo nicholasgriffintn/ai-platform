@@ -131,6 +131,51 @@ describe("AnthropicProvider", () => {
 			});
 		});
 
+		it("should keep Anthropic tool names unique when hosted and app tools overlap", async () => {
+			// @ts-ignore - getModelConfigByMatchingModel is not typed
+			vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
+				name: "claude-opus-4-8",
+				supportsToolCalls: true,
+				supportsSearchGrounding: true,
+			});
+
+			vi.mocked(createCommonParameters).mockReturnValue({
+				model: "claude-opus-4-8",
+				temperature: 0.7,
+				max_tokens: 1024,
+			});
+
+			vi.mocked(shouldEnableStreaming).mockReturnValue(false);
+			vi.mocked(getToolsForProvider).mockReturnValue({
+				tools: [
+					{
+						name: "web_search",
+						description: "Local web search",
+						input_schema: { type: "object", properties: {}, required: [] },
+					},
+				],
+			});
+			vi.mocked(calculateReasoningBudget).mockReturnValue(2000);
+
+			const provider = new AnthropicProvider();
+
+			const result = await provider.mapParameters({
+				model: "claude-opus-4-8",
+				messages: [{ role: "user", content: "Search for recent news" }],
+				enabled_tools: ["search_grounding", "web_search"],
+				env: { AI_GATEWAY_TOKEN: "test-token" },
+			} as any);
+
+			expect(result.tools).toEqual([
+				{
+					type: "web_search_20260209",
+					name: "web_search",
+					max_uses: 3,
+					cache_control: { type: "ephemeral" },
+				},
+			]);
+		});
+
 		it("should add latest code execution tool when enabled", async () => {
 			// @ts-ignore - getModelConfigByMatchingModel is not typed
 			vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({

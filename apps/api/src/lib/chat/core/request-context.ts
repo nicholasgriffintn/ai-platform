@@ -1,10 +1,7 @@
 import type { CoreChatOptions, IRequest, ChatMode } from "~/types";
+import { getToolDefinitionName, type ToolDefinitionLike } from "~/utils/toolNames";
 
-interface ToolDefinition {
-	name?: unknown;
-	function?: {
-		name?: unknown;
-	};
+interface ToolDefinition extends ToolDefinitionLike {
 	permissions?: unknown;
 }
 
@@ -13,12 +10,7 @@ export function buildToolPermissionsMap(tools?: ToolDefinition[]): Record<string
 
 	const permissionsByTool: Record<string, string[]> = {};
 	for (const tool of tools) {
-		const name =
-			typeof tool.name === "string"
-				? tool.name
-				: typeof tool.function?.name === "string"
-					? tool.function.name
-					: undefined;
+		const name = getToolDefinitionName(tool);
 		const permissions = tool.permissions;
 		if (name && Array.isArray(permissions) && permissions.length > 0) {
 			const toolPermissions = permissions.filter(

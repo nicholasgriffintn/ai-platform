@@ -13,6 +13,7 @@ import { AssistantError, ErrorType } from "~/utils/errors";
 import { coerceStringArray, isRecord } from "~/utils/objects";
 import { type OptionBag, readOptionBag, readRecordOption } from "~/utils/options";
 import { createSamplingParameters, getEffectiveMaxTokens } from "~/utils/parameters";
+import { getToolDefinitionName } from "~/utils/toolNames";
 
 const TOOL_SEARCH_NAMESPACE_SIZE = 10;
 
@@ -157,18 +158,10 @@ function convertFunctionToolsToResponsesTools(tools: any[] = []): any[] {
 	});
 }
 
-function getResponseFunctionName(tool: any): string | undefined {
-	return typeof tool?.name === "string"
-		? tool.name
-		: typeof tool?.function?.name === "string"
-			? tool.function.name
-			: undefined;
-}
-
 function buildToolSearchNamespaces(immediateFunctionTools: any[]): any[] {
 	const immediateNames = new Set(
 		immediateFunctionTools
-			.map((tool) => getResponseFunctionName(tool))
+			.map((tool) => getToolDefinitionName(tool))
 			.filter((name): name is string => typeof name === "string"),
 	);
 	const deferredFunctions = listFunctionTools().filter((tool) => !immediateNames.has(tool.name));

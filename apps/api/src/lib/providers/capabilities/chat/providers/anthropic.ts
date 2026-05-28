@@ -8,6 +8,7 @@ import type { ChatCompletionParameters } from "~/types";
 import { getAiGatewayMetadataHeaders, resolveAiGatewayCacheTtl } from "~/utils/aiGateway";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
+import { mergeToolDefinitionsByName } from "~/utils/toolNames";
 import {
 	calculateReasoningBudget,
 	createCommonParameters,
@@ -81,7 +82,7 @@ export class AnthropicProvider extends BaseProvider {
 
 		const toolsParams = getToolsForProvider(params, modelConfig, this.name);
 		const tools = buildAnthropicHostedTools(params, modelConfig);
-		const allTools = [...tools, ...(toolsParams.tools || [])];
+		const allTools = mergeToolDefinitionsByName(tools, toolsParams.tools || []);
 
 		if (allTools.length > 0) {
 			const lastTool = allTools[allTools.length - 1];
