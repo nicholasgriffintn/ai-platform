@@ -25,6 +25,8 @@ export interface ConnectOpenAIRealtimeWebRTCOptions {
 	onDataChannelMessage?: (event: MessageEvent) => void;
 }
 
+export type ConnectRealtimeWebRTCOptions = ConnectOpenAIRealtimeWebRTCOptions;
+
 export function preferOpusAudioCodec(peerConnection: RTCPeerConnection): void {
 	const audioTransceiver = peerConnection
 		.getTransceivers()
@@ -165,4 +167,10 @@ export async function connectOpenAIRealtimeWebRTC({
 		closeWebRTCConnection(peerConnection, dataChannel);
 		throw error;
 	}
+}
+
+export function connectRealtimeWebRTC(
+	options: ConnectRealtimeWebRTCOptions,
+): Promise<RealtimeWebRTCConnection> {
+	return connectOpenAIRealtimeWebRTC(options);
 }

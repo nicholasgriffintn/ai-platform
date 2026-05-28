@@ -10,8 +10,10 @@ export type {
 	RealtimeTransport,
 } from "./types";
 export {
+	connectRealtimeWebRTC,
 	connectOpenAIRealtimeWebRTC,
 	preferOpusAudioCodec,
+	type ConnectRealtimeWebRTCOptions,
 	type ConnectOpenAIRealtimeWebRTCOptions,
 	type RealtimeWebRTCConnection,
 } from "./webrtc";

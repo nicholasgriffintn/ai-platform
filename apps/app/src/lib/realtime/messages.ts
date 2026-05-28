@@ -88,6 +88,9 @@ function getTranscriptSource(value: Record<string, unknown>): RealtimeTranscript
 	if (type.includes("input")) {
 		return "input";
 	}
+	if (type.startsWith("transcription.")) {
+		return "input";
+	}
 	if (type.includes("output") || type.includes("response")) {
 		return "output";
 	}
@@ -105,6 +108,26 @@ function getTranscriptSource(value: Record<string, unknown>): RealtimeTranscript
 	}
 
 	return "unknown";
+}
+
+function isRealtimeTranscriptDelta(type: string): boolean {
+	return type.includes("delta");
+}
+
+function isRealtimeTranscriptFinal(type: string): boolean {
+	if (type === "transcription.text.delta") {
+		return false;
+	}
+	if (type === "transcription.segment" || type === "transcription.done") {
+		return true;
+	}
+
+	return (
+		type.includes("completed") ||
+		type.includes("final") ||
+		type.includes("done") ||
+		!isRealtimeTranscriptDelta(type)
+	);
 }
 
 export function parseRealtimeJsonMessage(data: unknown): unknown | undefined {
@@ -217,23 +240,23 @@ export function extractRealtimeTranscript(payload: unknown): RealtimeTranscriptR
 	}
 
 	const type = getString(payload.type)?.toLowerCase() ?? "";
+	if (type === "transcription.done") {
+		return undefined;
+	}
+
 	const itemId = getRealtimeItemId(payload);
 	const responseId = getRealtimeResponseId(payload);
 	return {
 		text: directTranscript,
-		isDelta: type.includes("delta"),
-		isFinal:
-			type.includes("completed") ||
-			type.includes("final") ||
-			type.includes("done") ||
-			!type.includes("delta"),
+		isDelta: isRealtimeTranscriptDelta(type),
+		isFinal: isRealtimeTranscriptFinal(type),
 		...(itemId ? { itemId } : {}),
 		...(responseId ? { responseId } : {}),
 		source: getTranscriptSource(payload),
 	};
 }
 
-export function extractGeminiAudioChunks(payload: unknown): string[] {
+export function extractInlineAudioChunks(payload: unknown): string[] {
 	if (!isRecord(payload)) {
 		return [];
 	}
@@ -255,7 +278,7 @@ export function extractGeminiAudioChunks(payload: unknown): string[] {
 	return chunks;
 }
 
-export function isGeminiSetupCompleteMessage(payload: unknown): boolean {
+export function isRealtimeSetupCompleteMessage(payload: unknown): boolean {
 	if (!isRecord(payload)) {
 		return false;
 	}

@@ -5,8 +5,7 @@ import { useRealtimeLiveSession } from "../useRealtimeLiveSession";
 
 const mocks = vi.hoisted(() => ({
 	arrayBufferToBase64: vi.fn(() => "audio-base64"),
-	connectGeminiLiveWebSocket: vi.fn(),
-	connectOpenAIRealtimeWebRTC: vi.fn(),
+	connectRealtimeWebRTC: vi.fn(),
 	connectRealtimeWebSocket: vi.fn(),
 	createPcm16AudioPlayer: vi.fn(() => ({ playBase64: vi.fn(), stop: vi.fn() })),
 	createRealtimeSession: vi.fn(),
@@ -21,8 +20,7 @@ vi.mock("~/lib/api/realtime-service", () => ({
 }));
 
 vi.mock("~/lib/realtime", () => ({
-	connectGeminiLiveWebSocket: mocks.connectGeminiLiveWebSocket,
-	connectOpenAIRealtimeWebRTC: mocks.connectOpenAIRealtimeWebRTC,
+	connectRealtimeWebRTC: mocks.connectRealtimeWebRTC,
 	connectRealtimeWebSocket: mocks.connectRealtimeWebSocket,
 	preferOpusAudioCodec: mocks.preferOpusAudioCodec,
 }));
@@ -235,7 +233,7 @@ describe("useRealtimeLiveSession", () => {
 	it("surfaces OpenAI Realtime data channel lifecycle events", async () => {
 		const connection = createOpenAIConnection();
 		mocks.createRealtimeSession.mockResolvedValueOnce(connection.session);
-		mocks.connectOpenAIRealtimeWebRTC.mockResolvedValueOnce(connection);
+		mocks.connectRealtimeWebRTC.mockResolvedValueOnce(connection);
 		const { result } = renderHook(() => useRealtimeLiveSession());
 
 		await act(async () => {
@@ -244,7 +242,7 @@ describe("useRealtimeLiveSession", () => {
 
 		await waitFor(() => expect(result.current.status).toBe("active"));
 
-		const connectOptions = mocks.connectOpenAIRealtimeWebRTC.mock.calls[0][0];
+		const connectOptions = mocks.connectRealtimeWebRTC.mock.calls[0][0];
 		act(() => {
 			connectOptions.onDataChannelOpen?.(new Event("open"));
 		});
@@ -275,7 +273,7 @@ describe("useRealtimeLiveSession", () => {
 	it("fails OpenAI Realtime sessions when the data channel emits an error", async () => {
 		const connection = createOpenAIConnection();
 		mocks.createRealtimeSession.mockResolvedValueOnce(connection.session);
-		mocks.connectOpenAIRealtimeWebRTC.mockResolvedValueOnce(connection);
+		mocks.connectRealtimeWebRTC.mockResolvedValueOnce(connection);
 		const { result } = renderHook(() => useRealtimeLiveSession());
 
 		await act(async () => {
@@ -284,7 +282,7 @@ describe("useRealtimeLiveSession", () => {
 
 		await waitFor(() => expect(result.current.status).toBe("active"));
 
-		const connectOptions = mocks.connectOpenAIRealtimeWebRTC.mock.calls[0][0];
+		const connectOptions = mocks.connectRealtimeWebRTC.mock.calls[0][0];
 		act(() => {
 			connectOptions.onDataChannelMessage?.(
 				new MessageEvent("message", {
@@ -308,7 +306,7 @@ describe("useRealtimeLiveSession", () => {
 	it("waits for Gemini setup completion before starting microphone streams", async () => {
 		const connection = createGeminiConnection();
 		mocks.createRealtimeSession.mockResolvedValueOnce(connection.session);
-		mocks.connectGeminiLiveWebSocket.mockReturnValueOnce(connection);
+		mocks.connectRealtimeWebSocket.mockReturnValueOnce(connection);
 		const callOrder: string[] = [];
 		connection.sendJson.mockImplementation(() => {
 			callOrder.push("setup");
@@ -323,7 +321,7 @@ describe("useRealtimeLiveSession", () => {
 			await result.current.start("google-ai-studio", "gemini-3.1-flash-live-preview");
 		});
 
-		const connectOptions = mocks.connectGeminiLiveWebSocket.mock.calls[0][0];
+		const connectOptions = mocks.connectRealtimeWebSocket.mock.calls[0][0];
 		act(() => {
 			connectOptions.onOpen?.(new Event("open"));
 		});
@@ -350,7 +348,7 @@ describe("useRealtimeLiveSession", () => {
 	it("starts Gemini video only when video input is enabled", async () => {
 		const connection = createGeminiConnection();
 		mocks.createRealtimeSession.mockResolvedValueOnce(connection.session);
-		mocks.connectGeminiLiveWebSocket.mockReturnValueOnce(connection);
+		mocks.connectRealtimeWebSocket.mockReturnValueOnce(connection);
 		const callOrder: string[] = [];
 		connection.sendJson.mockImplementation(() => {
 			callOrder.push("setup");
@@ -376,7 +374,7 @@ describe("useRealtimeLiveSession", () => {
 			await result.current.start("google-ai-studio", "gemini-3.1-flash-live-preview");
 		});
 
-		const connectOptions = mocks.connectGeminiLiveWebSocket.mock.calls[0][0];
+		const connectOptions = mocks.connectRealtimeWebSocket.mock.calls[0][0];
 		act(() => {
 			connectOptions.onOpen?.(new Event("open"));
 			connectOptions.onMessage?.(
@@ -426,5 +424,70 @@ describe("useRealtimeLiveSession", () => {
 
 		await waitFor(() => expect(mocks.startPcm16MicrophoneStream).toHaveBeenCalledTimes(2));
 		expect(secondController.stop).not.toHaveBeenCalled();
+	});
+
+	it("flushes Mistral realtime audio before ending transcription on stop", async () => {
+		const connection = createMistralConnection();
+		mocks.connectRealtimeWebSocket.mockReturnValueOnce(connection);
+		const { result } = renderHook(() => useRealtimeLiveSession());
+
+		await act(async () => {
+			await result.current.start("mistral", "voxtral-mini-transcribe-realtime");
+		});
+
+		const connectOptions = mocks.connectRealtimeWebSocket.mock.calls[0][0];
+		act(() => {
+			connectOptions.onOpen?.(new Event("open"));
+		});
+
+		await waitFor(() => expect(result.current.status).toBe("active"));
+
+		act(() => {
+			result.current.stop();
+		});
+
+		expect(connection.sendJson).toHaveBeenNthCalledWith(1, { type: "input_audio.flush" });
+		expect(connection.sendJson).toHaveBeenNthCalledWith(2, { type: "input_audio.end" });
+	});
+
+	it("waits for Mistral transcription done before closing after stop", async () => {
+		const connection = createMistralConnection();
+		mocks.connectRealtimeWebSocket.mockReturnValueOnce(connection);
+		const { result } = renderHook(() => useRealtimeLiveSession());
+
+		await act(async () => {
+			await result.current.start("mistral", "voxtral-mini-transcribe-realtime");
+		});
+
+		const connectOptions = mocks.connectRealtimeWebSocket.mock.calls[0][0];
+		act(() => {
+			connectOptions.onOpen?.(new Event("open"));
+		});
+
+		await waitFor(() => expect(result.current.status).toBe("active"));
+
+		act(() => {
+			result.current.stop();
+		});
+
+		expect(connection.close).not.toHaveBeenCalled();
+		expect(result.current.status).toBe("idle");
+
+		act(() => {
+			connectOptions.onMessage?.(
+				new MessageEvent("message", {
+					data: JSON.stringify({
+						type: "transcription.done",
+						text: "Final transcript",
+						model: "voxtral-mini-transcribe-realtime-latest",
+						segments: [],
+						usage: {},
+						language: "en",
+					}),
+				}),
+			);
+		});
+
+		expect(connection.close).toHaveBeenCalled();
 	});
 });

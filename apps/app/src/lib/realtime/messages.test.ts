@@ -4,9 +4,9 @@ import {
 	extractRealtimeErrorMessage,
 	extractRealtimeEvent,
 	extractRealtimeEventLabel,
-	extractGeminiAudioChunks,
+	extractInlineAudioChunks,
 	extractRealtimeTranscript,
-	isGeminiSetupCompleteMessage,
+	isRealtimeSetupCompleteMessage,
 	parseRealtimeJsonMessage,
 } from "./messages";
 
@@ -43,6 +43,36 @@ describe("realtime message helpers", () => {
 		});
 	});
 
+	it("extracts Mistral realtime transcription text deltas as input transcripts", () => {
+		const transcript = extractRealtimeTranscript({
+			type: "transcription.text.delta",
+			text: "Hello",
+		});
+
+		expect(transcript).toEqual({
+			text: "Hello",
+			isDelta: true,
+			isFinal: false,
+			source: "input",
+		});
+	});
+
+	it("extracts Mistral realtime transcription segments as final input transcripts", () => {
+		const transcript = extractRealtimeTranscript({
+			type: "transcription.segment",
+			text: "Hello there.",
+			start: 0,
+			end: 1.2,
+		});
+
+		expect(transcript).toEqual({
+			text: "Hello there.",
+			isDelta: false,
+			isFinal: true,
+			source: "input",
+		});
+	});
+
 	it("extracts realtime event ids for live turn correlation", () => {
 		expect(
 			extractRealtimeEvent({
@@ -69,9 +99,9 @@ describe("realtime message helpers", () => {
 		});
 	});
 
-	it("extracts Gemini audio chunks from server content", () => {
+	it("extracts inline audio chunks from server content", () => {
 		expect(
-			extractGeminiAudioChunks({
+			extractInlineAudioChunks({
 				serverContent: {
 					modelTurn: {
 						parts: [
@@ -149,9 +179,9 @@ describe("realtime message helpers", () => {
 		).toBeUndefined();
 	});
 
-	it("detects Gemini setup complete messages", () => {
-		expect(isGeminiSetupCompleteMessage({ setupComplete: {} })).toBe(true);
-		expect(isGeminiSetupCompleteMessage({ setup_complete: {} })).toBe(true);
-		expect(isGeminiSetupCompleteMessage({ serverContent: {} })).toBe(false);
+	it("detects realtime setup complete messages by payload shape", () => {
+		expect(isRealtimeSetupCompleteMessage({ setupComplete: {} })).toBe(true);
+		expect(isRealtimeSetupCompleteMessage({ setup_complete: {} })).toBe(true);
+		expect(isRealtimeSetupCompleteMessage({ serverContent: {} })).toBe(false);
 	});
 });
