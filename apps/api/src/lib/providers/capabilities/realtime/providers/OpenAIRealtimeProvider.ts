@@ -18,6 +18,7 @@ import {
 const DEFAULT_REALTIME_MODEL = "gpt-realtime-2";
 const DEFAULT_TRANSLATION_MODEL = "gpt-realtime-translate";
 const DEFAULT_TRANSCRIPTION_MODEL = "gpt-realtime-whisper";
+const DEFAULT_REALTIME_INPUT_TRANSCRIPTION_MODEL = "gpt-4o-mini-transcribe";
 const OPENAI_WEBRTC_CALL_URL = "https://api.openai.com/v1/realtime/calls";
 const MODEL_ALIASES: Record<string, string> = {
 	whisper: "openai-whisper",
@@ -45,11 +46,17 @@ const TRANSCRIPTION_DELAYS: RealtimeTranscriptionDelay[] = [
 	"xhigh",
 ];
 
-const TRANSCRIPTION_TURN_DETECTION = {
+const BASE_TURN_DETECTION = {
 	type: "server_vad",
 	threshold: 0.4,
 	prefix_padding_ms: 400,
 	silence_duration_ms: 1000,
+};
+const TRANSCRIPTION_TURN_DETECTION = BASE_TURN_DETECTION;
+const REALTIME_TURN_DETECTION = {
+	...BASE_TURN_DETECTION,
+	create_response: true,
+	interrupt_response: true,
 };
 
 const SUPPORTED_INPUT_MODALITIES_BY_TYPE: Record<RealtimeSessionType, RealtimeModality[]> = {
@@ -257,7 +264,11 @@ export class OpenAIRealtimeProvider implements RealtimeProvider {
 				audio: {
 					input: {
 						format: this.buildAudioFormat(),
-						turn_detection: TRANSCRIPTION_TURN_DETECTION,
+						transcription: {
+							model: DEFAULT_REALTIME_INPUT_TRANSCRIPTION_MODEL,
+							language: request.language ?? "en",
+						},
+						turn_detection: REALTIME_TURN_DETECTION,
 					},
 					...audioOutput,
 				},

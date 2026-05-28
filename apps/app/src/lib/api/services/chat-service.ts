@@ -7,8 +7,12 @@ import type {
 	MessageData,
 } from "~/types";
 import { getSandboxModeToolNames } from "~/lib/sandbox/chat-mode";
-import { normalizeMessage, serialiseMessagesForChatRequest } from "../../messages";
-import { ApiError, fetchApi, returnFetchedData } from "../fetch-wrapper";
+import {
+	normalizeMessage,
+	serialiseMessagesForChatRequest,
+	serialiseMessagesForConversationUpdate,
+} from "../../messages";
+import { ApiError, fetchApi, fetchApiOrThrow, returnFetchedData } from "../fetch-wrapper";
 
 const STREAM_ERROR_STATUS_BY_CODE: Record<string, number> = {
 	authentication_error: 401,
@@ -18,6 +22,12 @@ const STREAM_ERROR_STATUS_BY_CODE: Record<string, number> = {
 	quota_exceeded: 429,
 	rate_limit_exceeded: 429,
 };
+
+interface ConversationUpdateRequest {
+	archived?: boolean;
+	messages?: Message[];
+	title?: string;
+}
 
 function createStreamingApiError(errorPayload: unknown): ApiError {
 	if (!errorPayload || typeof errorPayload !== "object") {
@@ -50,8 +60,8 @@ function mergeRequestOptions(
 	requestOptions?: ChatRequestOptions,
 ): ChatRequestOptions {
 	return {
-		...(chatSettings.tool_options || {}),
-		...(requestOptions || {}),
+		...chatSettings.tool_options,
+		...requestOptions,
 	};
 }
 
@@ -197,6 +207,13 @@ export class ChatService {
 	}
 
 	async updateConversationTitle(completion_id: string, newTitle: string): Promise<void> {
+		await this.updateConversation(completion_id, { title: newTitle });
+	}
+
+	async updateConversation(
+		completion_id: string,
+		updates: ConversationUpdateRequest,
+	): Promise<Conversation> {
 		if (!completion_id) {
 			throw new Error("No completion ID provided");
 		}
@@ -205,21 +222,29 @@ export class ChatService {
 		try {
 			headers = await this.getHeaders();
 		} catch (error) {
-			console.error("Error updating conversation title:", error);
+			console.error("Error updating conversation:", error);
 		}
 
-		const updateResponse = await fetchApi(`/chat/completions/${completion_id}`, {
+		const updateResponse = await fetchApiOrThrow(`/chat/completions/${completion_id}`, {
 			method: "PUT",
 			headers,
 			body: {
 				completion_id,
-				title: newTitle,
+				...updates,
+				messages: updates.messages
+					? serialiseMessagesForConversationUpdate(updates.messages)
+					: undefined,
 			},
 		});
 
-		if (!updateResponse.ok) {
-			throw new Error(`Failed to update chat title: ${updateResponse.statusText}`);
-		}
+		const data = await returnFetchedData<Conversation>(updateResponse);
+		return {
+			...data,
+			id: data.id || completion_id,
+			messages: Array.isArray(data.messages)
+				? data.messages.map((message) => normalizeMessage(message))
+				: [],
+		};
 	}
 
 	async deleteConversation(completion_id: string): Promise<void> {

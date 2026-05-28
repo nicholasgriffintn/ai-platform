@@ -28,6 +28,8 @@ describe("handleUpdateChatCompletion", () => {
 		const { ConversationManager } = await import("~/lib/conversationManager");
 
 		mockConversationManager = {
+			getConversationDetails: vi.fn(),
+			replaceMessages: vi.fn(),
 			updateConversation: vi.fn(),
 		};
 
@@ -112,6 +114,65 @@ describe("handleUpdateChatCompletion", () => {
 				updates,
 			);
 			expect(result.archived).toBe(true);
+		});
+
+		it("should replace stored messages", async () => {
+			const completionId = "completion-live";
+			const messages = [
+				{
+					id: "message-1",
+					role: "user",
+					content: "Hello",
+				},
+			] as any;
+			const mockResult = {
+				id: completionId,
+				title: "Live",
+				messages,
+			};
+
+			mockConversationManager.getConversationDetails.mockResolvedValue(mockResult);
+
+			const result = await handleUpdateChatCompletion(mockServiceContext, completionId, {
+				messages,
+			});
+
+			expect(mockConversationManager.replaceMessages).toHaveBeenCalledWith(completionId, messages);
+			expect(mockConversationManager.updateConversation).not.toHaveBeenCalled();
+			expect(result).toEqual(mockResult);
+		});
+
+		it("should replace messages before applying conversation metadata", async () => {
+			const completionId = "completion-live";
+			const messages = [
+				{
+					id: "message-1",
+					role: "user",
+					content: "Hello",
+				},
+			] as any;
+			const mockResult = {
+				id: completionId,
+				title: "Live title",
+				messages,
+			};
+
+			mockConversationManager.updateConversation.mockResolvedValue({
+				id: completionId,
+				title: "Live title",
+			});
+			mockConversationManager.getConversationDetails.mockResolvedValue(mockResult);
+
+			const result = await handleUpdateChatCompletion(mockServiceContext, completionId, {
+				title: "Live title",
+				messages,
+			});
+
+			expect(mockConversationManager.replaceMessages).toHaveBeenCalledWith(completionId, messages);
+			expect(mockConversationManager.updateConversation).toHaveBeenCalledWith(completionId, {
+				title: "Live title",
+			});
+			expect(result).toEqual(mockResult);
 		});
 
 		it("should handle empty completion ID", async () => {

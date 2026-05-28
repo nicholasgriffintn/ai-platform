@@ -1,5 +1,14 @@
 import { BaseRepository } from "./BaseRepository";
 
+const LIVE_TURN_ORDER_EXPRESSION =
+	"CASE WHEN json_valid(data) THEN CAST(json_extract(data, '$.realtime.turnStartedAt') AS INTEGER) END";
+const LIVE_SEQUENCE_ORDER_EXPRESSION =
+	"CASE WHEN json_valid(data) THEN CAST(json_extract(data, '$.realtime.sequence') AS INTEGER) END";
+const MESSAGE_ORDER_EXPRESSION = `COALESCE(${LIVE_TURN_ORDER_EXPRESSION}, timestamp, CAST(strftime('%s', created_at) AS INTEGER) * 1000)`;
+const MESSAGE_SEQUENCE_EXPRESSION = `COALESCE(${LIVE_SEQUENCE_ORDER_EXPRESSION}, 0)`;
+const MESSAGE_TIMESTAMP_TIE_EXPRESSION = "COALESCE(timestamp, 0)";
+const MESSAGE_ORDER_BY = `${MESSAGE_ORDER_EXPRESSION} ASC, ${MESSAGE_SEQUENCE_EXPRESSION} ASC, ${MESSAGE_TIMESTAMP_TIE_EXPRESSION} ASC, created_at ASC, id ASC`;
+
 export class MessageRepository extends BaseRepository {
 	public async createMessage(
 		messageId: string,
@@ -91,18 +100,54 @@ export class MessageRepository extends BaseRepository {
 		const archivedClause = includeArchived ? "" : " AND is_archived = 0";
 		let query = `
       SELECT * FROM message WHERE conversation_id = ?${archivedClause}
-      ORDER BY created_at ASC
+      ORDER BY ${MESSAGE_ORDER_BY}
     `;
 
 		const params: Array<string | number> = [conversationId];
 
 		if (after) {
 			query = `
-        SELECT * FROM message
-        WHERE conversation_id = ?${archivedClause} AND id > ?
-        ORDER BY created_at ASC
+        WITH cursor_message AS (
+          SELECT
+            ${MESSAGE_ORDER_EXPRESSION} AS cursor_order_value,
+            ${MESSAGE_SEQUENCE_EXPRESSION} AS cursor_sequence_value,
+            ${MESSAGE_TIMESTAMP_TIE_EXPRESSION} AS cursor_timestamp_value,
+            created_at AS cursor_created_at,
+            id AS cursor_id
+          FROM message
+          WHERE conversation_id = ? AND id = ?
+        )
+        SELECT message.* FROM message, cursor_message
+        WHERE conversation_id = ?${archivedClause}
+        AND (
+          ${MESSAGE_ORDER_EXPRESSION} > cursor_order_value
+          OR (
+            ${MESSAGE_ORDER_EXPRESSION} = cursor_order_value
+            AND ${MESSAGE_SEQUENCE_EXPRESSION} > cursor_sequence_value
+          )
+          OR (
+            ${MESSAGE_ORDER_EXPRESSION} = cursor_order_value
+            AND ${MESSAGE_SEQUENCE_EXPRESSION} = cursor_sequence_value
+            AND ${MESSAGE_TIMESTAMP_TIE_EXPRESSION} > cursor_timestamp_value
+          )
+          OR (
+            ${MESSAGE_ORDER_EXPRESSION} = cursor_order_value
+            AND ${MESSAGE_SEQUENCE_EXPRESSION} = cursor_sequence_value
+            AND ${MESSAGE_TIMESTAMP_TIE_EXPRESSION} = cursor_timestamp_value
+            AND created_at > cursor_created_at
+          )
+          OR (
+            ${MESSAGE_ORDER_EXPRESSION} = cursor_order_value
+            AND ${MESSAGE_SEQUENCE_EXPRESSION} = cursor_sequence_value
+            AND ${MESSAGE_TIMESTAMP_TIE_EXPRESSION} = cursor_timestamp_value
+            AND created_at = cursor_created_at
+            AND id > cursor_id
+          )
+        )
+        ORDER BY ${MESSAGE_ORDER_BY}
       `;
-			params.push(after);
+			params.length = 0;
+			params.push(conversationId, after, conversationId);
 		}
 
 		if (limit) {

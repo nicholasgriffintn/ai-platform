@@ -20,7 +20,7 @@ export const messageSchema = z.object({
 	data: z.record(z.string(), z.any()).optional(),
 	model: z.string().optional(),
 	log_id: z.string().optional(),
-	citations: z.array(z.string()).optional(),
+	citations: z.array(z.string()).nullable().optional(),
 	app: z.string().optional(),
 	mode: z.enum(["chat", "tool"]).optional(),
 	id: z.string().optional(),

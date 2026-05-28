@@ -10,6 +10,15 @@ type ChatRequestMessage = {
 	tool_calls?: Message["tool_calls"];
 };
 
+type ConversationUpdateMessage = ChatRequestMessage & {
+	citations?: string[];
+	log_id?: string;
+	model?: string;
+	platform?: string;
+	status?: string;
+	timestamp?: number;
+};
+
 type ChatRequestContent =
 	| {
 			type: "text";
@@ -244,6 +253,40 @@ export function serialiseMessageForChatRequest(message: Message): ChatRequestMes
 
 export function serialiseMessagesForChatRequest(messages: Message[]): ChatRequestMessage[] {
 	return messages.map((message) => serialiseMessageForChatRequest(message));
+}
+
+export function serialiseMessageForConversationUpdate(message: Message): ConversationUpdateMessage {
+	const normalizedMessage = normalizeMessage(message);
+	const requestMessage: ConversationUpdateMessage = {
+		id: normalizedMessage.id || undefined,
+		role: normalizedMessage.role,
+		content: serialiseContentForChatRequest(normalizedMessage),
+		data: normalizedMessage.data || undefined,
+		name: normalizedMessage.name || undefined,
+		parts: normalizedMessage.parts,
+		model: normalizedMessage.model || undefined,
+		log_id: normalizedMessage.log_id || undefined,
+		platform: normalizedMessage.platform || undefined,
+		status: normalizedMessage.status || undefined,
+		timestamp: normalizedMessage.timestamp,
+	};
+
+	const toolCalls = serialiseToolCallsForChatRequest(normalizedMessage.tool_calls);
+	if (toolCalls) {
+		requestMessage.tool_calls = toolCalls;
+	}
+
+	if (Array.isArray(normalizedMessage.citations)) {
+		requestMessage.citations = normalizedMessage.citations;
+	}
+
+	return requestMessage;
+}
+
+export function serialiseMessagesForConversationUpdate(
+	messages: Message[],
+): ConversationUpdateMessage[] {
+	return messages.map((message) => serialiseMessageForConversationUpdate(message));
 }
 
 export function getMessageTextContent(message: Pick<Message, "content" | "parts">): string {

@@ -146,11 +146,17 @@ describe("OpenAIRealtimeProvider", () => {
 							type: "audio/pcm",
 							rate: 24000,
 						},
+						transcription: {
+							model: "gpt-4o-mini-transcribe",
+							language: "en",
+						},
 						turn_detection: {
 							type: "server_vad",
 							threshold: 0.4,
 							prefix_padding_ms: 400,
 							silence_duration_ms: 1000,
+							create_response: true,
+							interrupt_response: true,
 						},
 					},
 					output: {
@@ -196,11 +202,17 @@ describe("OpenAIRealtimeProvider", () => {
 							type: "audio/pcm",
 							rate: 24000,
 						},
+						transcription: {
+							model: "gpt-4o-mini-transcribe",
+							language: "en",
+						},
 						turn_detection: {
 							type: "server_vad",
 							threshold: 0.4,
 							prefix_padding_ms: 400,
 							silence_duration_ms: 1000,
+							create_response: true,
+							interrupt_response: true,
 						},
 					},
 				},

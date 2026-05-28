@@ -75,6 +75,13 @@ class ApiService {
 		return this.chatService.updateConversationTitle(completion_id, newTitle);
 	};
 
+	updateConversation = (
+		completion_id: string,
+		updates: { archived?: boolean; messages?: Message[]; title?: string },
+	): Promise<Conversation> => {
+		return this.chatService.updateConversation(completion_id, updates);
+	};
+
 	deleteConversation = (completion_id: string): Promise<void> => {
 		return this.chatService.deleteConversation(completion_id);
 	};

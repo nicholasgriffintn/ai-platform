@@ -1,8 +1,32 @@
-interface TranscriptResult {
+export interface RealtimeTranscriptResult {
+	isDelta: boolean;
 	isFinal: boolean;
+	itemId?: string;
+	responseId?: string;
 	source: "input" | "output" | "unknown";
 	text: string;
 }
+
+export interface RealtimeEventResult {
+	itemId?: string;
+	label?: string;
+	responseId?: string;
+	type: string;
+}
+
+const REALTIME_EVENT_LABELS: Record<string, string> = {
+	"session.created": "Realtime session ready",
+	"session.updated": "Realtime session configured",
+	"input_audio_buffer.speech_started": "Listening",
+	"input_audio_buffer.speech_stopped": "Processing speech",
+	"input_audio_buffer.committed": "Speech captured",
+	"response.created": "Assistant responding",
+	"response.output_item.added": "Assistant responding",
+	"response.content_part.added": "Assistant responding",
+	"response.output_audio.delta": "Assistant speaking",
+	"response.output_audio.done": "Assistant audio complete",
+	"response.done": "Assistant response complete",
+};
 
 function isRecord(value: unknown): value is Record<string, unknown> {
 	return typeof value === "object" && value !== null;
@@ -37,7 +61,29 @@ function getTranscriptFromRecord(value: unknown): string | undefined {
 	);
 }
 
-function getTranscriptSource(value: Record<string, unknown>): TranscriptResult["source"] {
+function getRealtimeItemId(value: Record<string, unknown>): string | undefined {
+	return getString(value.item_id) ?? getString(value.itemId);
+}
+
+function getRealtimeResponseId(value: Record<string, unknown>): string | undefined {
+	const response = getNestedRecord(value, "response");
+	return getString(value.response_id) ?? getString(value.responseId) ?? getString(response?.id);
+}
+
+function getTextFromParts(parts: unknown): string | undefined {
+	if (!Array.isArray(parts)) {
+		return undefined;
+	}
+
+	const text = parts
+		.map((part) => (isRecord(part) ? getString(part.text) : undefined))
+		.filter((partText): partText is string => Boolean(partText))
+		.join("");
+
+	return text.length > 0 ? text : undefined;
+}
+
+function getTranscriptSource(value: Record<string, unknown>): RealtimeTranscriptResult["source"] {
 	const type = getString(value.type)?.toLowerCase() ?? "";
 	if (type.includes("input")) {
 		return "input";
@@ -73,18 +119,95 @@ export function parseRealtimeJsonMessage(data: unknown): unknown | undefined {
 	}
 }
 
-export function extractRealtimeTranscript(payload: unknown): TranscriptResult | undefined {
+export function extractRealtimeErrorMessage(payload: unknown): string | undefined {
+	if (!isRecord(payload)) {
+		return undefined;
+	}
+
+	const type = getString(payload.type)?.toLowerCase() ?? "";
+	const error = getNestedRecord(payload, "error");
+	if (error) {
+		return (
+			getString(error.message) ??
+			getString(error.code) ??
+			getString(error.type) ??
+			"Realtime session error"
+		);
+	}
+
+	if (type.includes("error")) {
+		return (
+			getString(payload.message) ??
+			getString(payload.code) ??
+			getString(payload.type) ??
+			"Realtime session error"
+		);
+	}
+
+	return undefined;
+}
+
+export function extractRealtimeEventLabel(payload: unknown): string | undefined {
+	if (!isRecord(payload)) {
+		return undefined;
+	}
+
+	const type = extractRealtimeEventType(payload);
+	if (!type || type.includes("transcript")) {
+		return undefined;
+	}
+
+	return REALTIME_EVENT_LABELS[type];
+}
+
+export function extractRealtimeEvent(payload: unknown): RealtimeEventResult | undefined {
+	if (!isRecord(payload)) {
+		return undefined;
+	}
+
+	const type = extractRealtimeEventType(payload);
+	if (!type) {
+		return undefined;
+	}
+
+	const itemId = getRealtimeItemId(payload);
+	const responseId = getRealtimeResponseId(payload);
+	return {
+		...(itemId ? { itemId } : {}),
+		label: extractRealtimeEventLabel(payload),
+		...(responseId ? { responseId } : {}),
+		type,
+	};
+}
+
+export function extractRealtimeEventType(payload: unknown): string | undefined {
+	if (!isRecord(payload)) {
+		return undefined;
+	}
+
+	return getString(payload.type);
+}
+
+export function extractRealtimeTranscript(payload: unknown): RealtimeTranscriptResult | undefined {
 	if (!isRecord(payload)) {
 		return undefined;
 	}
 
 	const serverContent = getNestedRecord(payload, "serverContent");
-	const serverTranscript = getTranscriptFromRecord(serverContent);
+	const modelTurn =
+		getNestedRecord(serverContent, "modelTurn") ?? getNestedRecord(serverContent, "model_turn");
+	const serverTranscript =
+		getTranscriptFromRecord(serverContent) ?? getTextFromParts(modelTurn?.parts);
 	if (serverContent && serverTranscript) {
+		const itemId = getRealtimeItemId(payload);
+		const responseId = getRealtimeResponseId(payload);
 		return {
 			text: serverTranscript,
+			isDelta: false,
 			isFinal: true,
-			source: getTranscriptSource(serverContent),
+			...(itemId ? { itemId } : {}),
+			...(responseId ? { responseId } : {}),
+			source: modelTurn ? "output" : getTranscriptSource(serverContent),
 		};
 	}
 
@@ -94,13 +217,18 @@ export function extractRealtimeTranscript(payload: unknown): TranscriptResult | 
 	}
 
 	const type = getString(payload.type)?.toLowerCase() ?? "";
+	const itemId = getRealtimeItemId(payload);
+	const responseId = getRealtimeResponseId(payload);
 	return {
 		text: directTranscript,
+		isDelta: type.includes("delta"),
 		isFinal:
 			type.includes("completed") ||
 			type.includes("final") ||
 			type.includes("done") ||
 			!type.includes("delta"),
+		...(itemId ? { itemId } : {}),
+		...(responseId ? { responseId } : {}),
 		source: getTranscriptSource(payload),
 	};
 }

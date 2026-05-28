@@ -1,0 +1,385 @@
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { act, renderHook, waitFor } from "@testing-library/react";
+import type { ConversationModeMetadata } from "@assistant/schemas";
+import type { ReactNode } from "react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+import { CHATS_QUERY_KEY } from "~/constants";
+import { apiService } from "~/lib/api/api-service";
+import { useChatStore } from "~/state/stores/chatStore";
+import type { Conversation } from "~/types";
+import { useLiveConversationMessages } from "../useLiveConversationMessages";
+
+vi.mock("~/lib/api/api-service", () => ({
+	apiService: {
+		generateTitle: vi.fn().mockResolvedValue("Driving Choices"),
+		updateConversation: vi.fn().mockResolvedValue({ messages: [] }),
+	},
+}));
+
+const liveConversationMode = {
+	mode: "live",
+} as ConversationModeMetadata;
+
+function createQueryClient() {
+	return new QueryClient({
+		defaultOptions: {
+			queries: {
+				retry: false,
+			},
+		},
+	});
+}
+
+function wrapperFor(queryClient: QueryClient) {
+	return function Wrapper({ children }: { children: ReactNode }) {
+		return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
+	};
+}
+
+describe("useLiveConversationMessages", () => {
+	beforeEach(() => {
+		vi.clearAllMocks();
+		vi.mocked(apiService.generateTitle).mockResolvedValue("Driving Choices");
+		vi.mocked(apiService.updateConversation).mockResolvedValue({
+			messages: [],
+			title: "Driving Choices",
+		} as Conversation);
+		useChatStore.setState({
+			chatMode: "remote",
+			chatSettings: {
+				...useChatStore.getState().chatSettings,
+				localOnly: false,
+			},
+			currentConversationId: undefined,
+			isAuthenticated: true,
+			isPro: true,
+			localOnlyMode: false,
+			model: "gpt-realtime-2",
+		});
+	});
+
+	it("stores final input transcripts as normal user messages", async () => {
+		const queryClient = createQueryClient();
+		const { result } = renderHook(
+			() =>
+				useLiveConversationMessages({
+					conversationMode: liveConversationMode,
+					model: "gpt-realtime-2",
+				}),
+			{ wrapper: wrapperFor(queryClient) },
+		);
+
+		act(() => {
+			result.current.handleTranscript({
+				isDelta: false,
+				isFinal: true,
+				source: "input",
+				text: "Book the train for noon.",
+			});
+		});
+
+		await waitFor(() => {
+			const conversationId = useChatStore.getState().currentConversationId;
+			expect(conversationId).toBeTruthy();
+			const conversation = queryClient.getQueryData<Conversation>([
+				CHATS_QUERY_KEY,
+				conversationId,
+			]);
+			expect(conversation?.messages).toEqual([
+				expect.objectContaining({
+					content: "Book the train for noon.",
+					role: "user",
+				}),
+			]);
+		});
+
+		const conversationId = useChatStore.getState().currentConversationId;
+		expect(apiService.updateConversation).toHaveBeenCalledWith(
+			conversationId,
+			expect.objectContaining({
+				messages: [
+					expect.objectContaining({
+						content: "Book the train for noon.",
+						data: expect.objectContaining({
+							conversationMode: liveConversationMode,
+							realtime: expect.objectContaining({ source: "input" }),
+						}),
+						role: "user",
+					}),
+				],
+			}),
+		);
+	});
+
+	it("streams output transcript deltas after a real user message before persisting", async () => {
+		const queryClient = createQueryClient();
+		queryClient.setQueryData<Conversation>([CHATS_QUERY_KEY, "conversation-1"], {
+			id: "conversation-1",
+			title: "Live",
+			isLocalOnly: false,
+			messages: [],
+		});
+		useChatStore.setState({ currentConversationId: "conversation-1" });
+
+		const { result } = renderHook(
+			() =>
+				useLiveConversationMessages({
+					conversationMode: liveConversationMode,
+					model: "gpt-realtime-2",
+				}),
+			{ wrapper: wrapperFor(queryClient) },
+		);
+
+		act(() => {
+			result.current.handleTranscript({
+				isDelta: false,
+				isFinal: true,
+				source: "input",
+				text: "What car would you drive?",
+			});
+		});
+
+		await waitFor(() => {
+			const conversation = queryClient.getQueryData<Conversation>([
+				CHATS_QUERY_KEY,
+				"conversation-1",
+			]);
+			expect(conversation?.messages).toEqual([
+				expect.objectContaining({
+					content: "What car would you drive?",
+					role: "user",
+				}),
+			]);
+		});
+		vi.mocked(apiService.updateConversation).mockClear();
+
+		act(() => {
+			result.current.handleTranscript({
+				isDelta: true,
+				isFinal: false,
+				source: "output",
+				text: "Hello",
+			});
+		});
+
+		await waitFor(() => {
+			const conversation = queryClient.getQueryData<Conversation>([
+				CHATS_QUERY_KEY,
+				"conversation-1",
+			]);
+			expect(conversation?.messages[0]).toEqual(
+				expect.objectContaining({
+					content: "What car would you drive?",
+					role: "user",
+				}),
+			);
+			expect(conversation?.messages[1]).toEqual(
+				expect.objectContaining({
+					content: "Hello",
+					role: "assistant",
+					status: "in_progress",
+				}),
+			);
+		});
+		expect(apiService.updateConversation).not.toHaveBeenCalled();
+
+		act(() => {
+			result.current.handleTranscript({
+				isDelta: true,
+				isFinal: false,
+				source: "output",
+				text: " there",
+			});
+		});
+
+		await waitFor(() => {
+			const conversation = queryClient.getQueryData<Conversation>([
+				CHATS_QUERY_KEY,
+				"conversation-1",
+			]);
+			expect(conversation?.messages[1]?.content).toBe("Hello there");
+		});
+
+		act(() => {
+			result.current.handleRealtimeEvent({ type: "response.done" });
+		});
+
+		await waitFor(() => {
+			const conversation = queryClient.getQueryData<Conversation>([
+				CHATS_QUERY_KEY,
+				"conversation-1",
+			]);
+			expect(conversation?.messages[1]?.status).toBeUndefined();
+			expect(apiService.updateConversation).toHaveBeenCalledWith(
+				"conversation-1",
+				expect.objectContaining({
+					messages: [
+						expect.objectContaining({
+							content: "What car would you drive?",
+							role: "user",
+						}),
+						expect.objectContaining({
+							content: "Hello there",
+							role: "assistant",
+						}),
+					],
+				}),
+			);
+		});
+	});
+
+	it("buffers assistant output until user transcript anchors the visible turn", async () => {
+		const queryClient = createQueryClient();
+		const { result } = renderHook(
+			() =>
+				useLiveConversationMessages({
+					conversationMode: liveConversationMode,
+					model: "gpt-realtime-2",
+				}),
+			{ wrapper: wrapperFor(queryClient) },
+		);
+
+		act(() => {
+			result.current.handleTranscript({
+				isDelta: true,
+				isFinal: false,
+				responseId: "response-1",
+				source: "output",
+				text: "Small and efficient.",
+			});
+		});
+
+		await waitFor(() => {
+			const conversationId = useChatStore.getState().currentConversationId;
+			const conversation = queryClient.getQueryData<Conversation>([
+				CHATS_QUERY_KEY,
+				conversationId,
+			]);
+			expect(conversation?.messages ?? []).toEqual([]);
+		});
+		expect(apiService.updateConversation).not.toHaveBeenCalled();
+
+		act(() => {
+			result.current.handleTranscript({
+				isDelta: false,
+				isFinal: true,
+				itemId: "input-1",
+				source: "input",
+				text: "What car would you drive?",
+			});
+			result.current.handleRealtimeEvent({ responseId: "response-1", type: "response.done" });
+		});
+
+		await waitFor(() => {
+			const conversationId = useChatStore.getState().currentConversationId;
+			const conversation = queryClient.getQueryData<Conversation>([
+				CHATS_QUERY_KEY,
+				conversationId,
+			]);
+			expect(conversation?.messages).toEqual([
+				expect.objectContaining({
+					content: "What car would you drive?",
+					role: "user",
+					status: undefined,
+				}),
+				expect.objectContaining({
+					content: "Small and efficient.",
+					role: "assistant",
+					status: undefined,
+				}),
+			]);
+			expect(conversation?.title).toBe("Driving Choices");
+		});
+
+		expect(apiService.generateTitle).toHaveBeenCalledWith(
+			useChatStore.getState().currentConversationId,
+			[
+				expect.objectContaining({
+					content: "What car would you drive?",
+					role: "user",
+				}),
+				expect.objectContaining({
+					content: "Small and efficient.",
+					role: "assistant",
+				}),
+			],
+		);
+	});
+
+	it("keeps overlapping live turns visually ordered by their provider event ids", async () => {
+		const queryClient = createQueryClient();
+		const { result } = renderHook(
+			() =>
+				useLiveConversationMessages({
+					conversationMode: liveConversationMode,
+					model: "gpt-realtime-2",
+				}),
+			{ wrapper: wrapperFor(queryClient) },
+		);
+
+		act(() => {
+			result.current.handleRealtimeEvent({ type: "input_audio_buffer.speech_started" });
+			result.current.handleRealtimeEvent({
+				itemId: "input-1",
+				type: "input_audio_buffer.committed",
+			});
+			result.current.handleRealtimeEvent({
+				responseId: "response-1",
+				type: "response.created",
+			});
+			result.current.handleTranscript({
+				isDelta: true,
+				isFinal: false,
+				responseId: "response-1",
+				source: "output",
+				text: "First answer",
+			});
+			result.current.handleRealtimeEvent({ type: "input_audio_buffer.speech_started" });
+			result.current.handleRealtimeEvent({
+				itemId: "input-2",
+				type: "input_audio_buffer.committed",
+			});
+		});
+
+		await waitFor(() => {
+			const conversationId = useChatStore.getState().currentConversationId;
+			const conversation = queryClient.getQueryData<Conversation>([
+				CHATS_QUERY_KEY,
+				conversationId,
+			]);
+			expect(conversation?.messages ?? []).toEqual([]);
+		});
+
+		act(() => {
+			result.current.handleTranscript({
+				isDelta: false,
+				isFinal: true,
+				itemId: "input-1",
+				source: "input",
+				text: "First question",
+			});
+			result.current.handleRealtimeEvent({ responseId: "response-1", type: "response.done" });
+			result.current.handleTranscript({
+				isDelta: false,
+				isFinal: true,
+				itemId: "input-2",
+				source: "input",
+				text: "Second question",
+			});
+		});
+
+		await waitFor(() => {
+			const conversationId = useChatStore.getState().currentConversationId;
+			const conversation = queryClient.getQueryData<Conversation>([
+				CHATS_QUERY_KEY,
+				conversationId,
+			]);
+			expect(conversation?.messages.map((message) => [message.role, message.content])).toEqual([
+				["user", "First question"],
+				["assistant", "First answer"],
+				["user", "Second question"],
+			]);
+		});
+	});
+});

@@ -200,3 +200,63 @@ describe("ChatService streaming", () => {
 		expect(onProgress).not.toHaveBeenCalled();
 	});
 });
+
+describe("ChatService conversation updates", () => {
+	afterEach(() => {
+		vi.unstubAllGlobals();
+	});
+
+	it("updates stored messages through the existing completion update endpoint", async () => {
+		const fetchMock = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) =>
+			Response.json({
+				data: {
+					id: "conversation-1",
+					title: "Live notes",
+					messages: [
+						{
+							id: "message-1",
+							role: "user",
+							content: "Hello",
+							timestamp: 1000,
+						},
+					],
+				},
+			}),
+		);
+		vi.stubGlobal("fetch", fetchMock);
+
+		const service = new ChatService(async () => ({}));
+		const result = await service.updateConversation("conversation-1", {
+			messages: [
+				{
+					id: "message-1",
+					role: "user",
+					content: "Hello",
+					citations: null,
+					timestamp: 1000,
+				} as Message,
+			],
+		});
+
+		const [url, request] = fetchMock.mock.calls[0];
+		const body = JSON.parse(String(request?.body));
+
+		expect(String(url)).toContain("/chat/completions/conversation-1");
+		expect(request?.method).toBe("PUT");
+		expect(body.messages).toEqual([
+			expect.objectContaining({
+				content: "Hello",
+				id: "message-1",
+				role: "user",
+			}),
+		]);
+		expect(body.messages[0]).not.toHaveProperty("citations");
+		expect(result.messages).toEqual([
+			expect.objectContaining({
+				content: "Hello",
+				id: "message-1",
+				role: "user",
+			}),
+		]);
+	});
+});

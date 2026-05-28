@@ -55,6 +55,26 @@ interface MockWebSocketConnection {
 	};
 }
 
+interface MockWebRTCConnection {
+	close: ReturnType<typeof vi.fn>;
+	dataChannel: {
+		close: ReturnType<typeof vi.fn>;
+		readyState: "open";
+		send: ReturnType<typeof vi.fn>;
+	};
+	peerConnection: {
+		close: ReturnType<typeof vi.fn>;
+	};
+	session: {
+		client_secret: {
+			value: string;
+		};
+		provider: "openai";
+		transport: "webrtc";
+		url: string;
+	};
+}
+
 const geminiSetup = {
 	model: "models/gemini-3.1-flash-live-preview",
 	generationConfig: {
@@ -96,6 +116,28 @@ function createGeminiConnection(): MockWebSocketConnection {
 	};
 }
 
+function createOpenAIConnection(): MockWebRTCConnection {
+	return {
+		close: vi.fn(),
+		dataChannel: {
+			close: vi.fn(),
+			readyState: "open",
+			send: vi.fn(),
+		},
+		peerConnection: {
+			close: vi.fn(),
+		},
+		session: {
+			provider: "openai",
+			transport: "webrtc",
+			url: "https://api.openai.com/v1/realtime/calls",
+			client_secret: {
+				value: "ek_test",
+			},
+		},
+	};
+}
+
 function createCloseEvent(init: Pick<CloseEvent, "code" | "reason" | "wasClean">): CloseEvent {
 	return init as CloseEvent;
 }
@@ -108,6 +150,17 @@ describe("useRealtimeLiveSession", () => {
 			class FakeWebSocket {
 				static CLOSED = 3;
 				static OPEN = 1;
+			},
+		);
+		vi.stubGlobal(
+			"Audio",
+			class FakeAudio {
+				autoplay = false;
+				srcObject: MediaStream | null = null;
+				load = vi.fn();
+				pause = vi.fn();
+				play = vi.fn().mockResolvedValue(undefined);
+				removeAttribute = vi.fn();
 			},
 		);
 
@@ -176,6 +229,79 @@ describe("useRealtimeLiveSession", () => {
 		expect(result.current.error).toBe("AudioWorklet module failed");
 		expect(result.current.lastEvent).toBe("Connection failed");
 		expect(mocks.toastError).toHaveBeenCalledWith("AudioWorklet module failed");
+		expect(connection.close).toHaveBeenCalled();
+	});
+
+	it("surfaces OpenAI Realtime data channel lifecycle events", async () => {
+		const connection = createOpenAIConnection();
+		mocks.createRealtimeSession.mockResolvedValueOnce(connection.session);
+		mocks.connectOpenAIRealtimeWebRTC.mockResolvedValueOnce(connection);
+		const { result } = renderHook(() => useRealtimeLiveSession());
+
+		await act(async () => {
+			await result.current.start("openai", "gpt-realtime-2");
+		});
+
+		await waitFor(() => expect(result.current.status).toBe("active"));
+
+		const connectOptions = mocks.connectOpenAIRealtimeWebRTC.mock.calls[0][0];
+		act(() => {
+			connectOptions.onDataChannelOpen?.(new Event("open"));
+		});
+
+		expect(result.current.lastEvent).toBe("Realtime session listening");
+
+		act(() => {
+			connectOptions.onDataChannelMessage?.(
+				new MessageEvent("message", {
+					data: JSON.stringify({ type: "input_audio_buffer.speech_started" }),
+				}),
+			);
+		});
+
+		expect(result.current.lastEvent).toBe("Listening");
+
+		act(() => {
+			connectOptions.onDataChannelMessage?.(
+				new MessageEvent("message", {
+					data: JSON.stringify({ type: "response.output_audio.delta" }),
+				}),
+			);
+		});
+
+		expect(result.current.lastEvent).toBe("Assistant speaking");
+	});
+
+	it("fails OpenAI Realtime sessions when the data channel emits an error", async () => {
+		const connection = createOpenAIConnection();
+		mocks.createRealtimeSession.mockResolvedValueOnce(connection.session);
+		mocks.connectOpenAIRealtimeWebRTC.mockResolvedValueOnce(connection);
+		const { result } = renderHook(() => useRealtimeLiveSession());
+
+		await act(async () => {
+			await result.current.start("openai", "gpt-realtime-2");
+		});
+
+		await waitFor(() => expect(result.current.status).toBe("active"));
+
+		const connectOptions = mocks.connectOpenAIRealtimeWebRTC.mock.calls[0][0];
+		act(() => {
+			connectOptions.onDataChannelMessage?.(
+				new MessageEvent("message", {
+					data: JSON.stringify({
+						type: "error",
+						error: {
+							message: "Realtime failed",
+						},
+					}),
+				}),
+			);
+		});
+
+		expect(result.current.status).toBe("error");
+		expect(result.current.error).toBe("Realtime failed");
+		expect(result.current.lastEvent).toBe("Connection failed");
+		expect(mocks.toastError).toHaveBeenCalledWith("Realtime failed");
 		expect(connection.close).toHaveBeenCalled();
 	});
 

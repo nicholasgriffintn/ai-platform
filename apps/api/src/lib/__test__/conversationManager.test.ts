@@ -232,6 +232,57 @@ describe("ConversationManager", () => {
 			expect(mockDatabase.createMessage).toHaveBeenCalled();
 		});
 
+		it("should keep batch storage order stable when message timestamps arrive out of order", async () => {
+			const conversationId = "conv-live";
+			const messages = [
+				{
+					id: "user-message",
+					role: "user",
+					content: "What car would you drive?",
+					timestamp: 2000,
+				},
+				{
+					id: "assistant-message",
+					role: "assistant",
+					content: "Small and efficient.",
+					timestamp: 1000,
+				},
+			] as any[];
+
+			mockDatabase.getConversation.mockResolvedValue({
+				id: conversationId,
+				user_id: mockUser.id,
+			});
+			mockDatabase.createMessage.mockResolvedValue(undefined);
+			mockDatabase.updateConversationAfterMessage.mockResolvedValue(undefined);
+
+			const manager = ConversationManager.getInstance({
+				database: mockDatabase as any,
+				user: mockUser,
+			});
+
+			await manager.addBatch(conversationId, messages);
+
+			expect(
+				mockDatabase.createMessage.mock.calls.map(([messageId, , role, , messageData]) => ({
+					id: messageId,
+					role,
+					timestamp: messageData.timestamp,
+				})),
+			).toEqual([
+				{
+					id: "user-message",
+					role: "user",
+					timestamp: 2000,
+				},
+				{
+					id: "assistant-message",
+					role: "assistant",
+					timestamp: 2001,
+				},
+			]);
+		});
+
 		it("should create conversation if it doesn't exist", async () => {
 			const conversationId = "conv-new";
 			const message = {

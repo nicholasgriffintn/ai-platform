@@ -20,10 +20,16 @@ import {
 	type RealtimeMediaController,
 } from "~/lib/realtime/audio";
 import {
+	extractRealtimeErrorMessage,
+	extractRealtimeEvent,
+	extractRealtimeEventLabel,
+	extractRealtimeEventType,
 	extractGeminiAudioChunks,
 	extractRealtimeTranscript,
 	isGeminiSetupCompleteMessage,
 	parseRealtimeJsonMessage,
+	type RealtimeEventResult,
+	type RealtimeTranscriptResult,
 } from "~/lib/realtime/messages";
 import { formatRealtimeWebSocketCloseError } from "~/lib/realtime/errors";
 import {
@@ -35,7 +41,8 @@ export type RealtimeLiveStatus = "idle" | "connecting" | "active" | "error";
 
 interface UseRealtimeLiveSessionOptions {
 	model?: string | null;
-	onTranscript?: (text: string) => void;
+	onEvent?: (event: RealtimeEventResult) => void;
+	onTranscript?: (transcript: RealtimeTranscriptResult) => void;
 }
 
 const AUDIO_CONSTRAINTS: MediaTrackConstraints = {
@@ -92,6 +99,7 @@ function sendGeminiSetup(connection: RealtimeWebSocketConnection): void {
 
 export function useRealtimeLiveSession({
 	model,
+	onEvent,
 	onTranscript,
 }: UseRealtimeLiveSessionOptions = {}) {
 	const [provider, setProvider] = useState<RealtimeLiveProviderId>("openai");
@@ -121,17 +129,16 @@ export function useRealtimeLiveSession({
 	}, []);
 
 	const handleTranscript = useCallback(
-		(payload: unknown) => {
+		(payload: unknown): boolean => {
 			const transcript = extractRealtimeTranscript(payload);
 			if (!transcript) {
-				return;
+				return false;
 			}
 
 			setLastTranscript(transcript.text);
 			setLastEvent(transcript.source === "output" ? "Assistant transcript" : "Input transcript");
-			if (transcript.isFinal && transcript.source !== "output") {
-				onTranscript?.(transcript.text);
-			}
+			onTranscript?.(transcript);
+			return true;
 		},
 		[onTranscript],
 	);
@@ -329,6 +336,33 @@ export function useRealtimeLiveSession({
 		[cleanup],
 	);
 
+	const handleRealtimePayload = useCallback(
+		(payload: unknown) => {
+			const errorMessage = extractRealtimeErrorMessage(payload);
+			if (errorMessage) {
+				failSession(errorMessage);
+				return;
+			}
+
+			if (handleTranscript(payload)) {
+				return;
+			}
+
+			const event = extractRealtimeEvent(payload);
+			const eventLabel = event?.label ?? extractRealtimeEventLabel(payload);
+			const eventType = event?.type ?? extractRealtimeEventType(payload);
+			if (eventLabel) {
+				setLastEvent(eventLabel);
+			}
+			if (event) {
+				onEvent?.(event);
+			} else if (eventType) {
+				onEvent?.({ label: eventLabel, type: eventType });
+			}
+		},
+		[failSession, handleTranscript, onEvent],
+	);
+
 	const startOpenAI = useCallback(
 		async (signal: AbortSignal, selectedModel?: string | null) => {
 			const audioStream = await ensureAudioStream();
@@ -352,8 +386,21 @@ export function useRealtimeLiveSession({
 				stream: audioStream,
 				signal,
 				configurePeerConnection: preferOpusAudioCodec,
+				onDataChannelClose: () => {
+					if (statusRef.current === "active" && !stoppingRef.current) {
+						failSession("Realtime data channel closed");
+					}
+				},
+				onDataChannelError: () => {
+					if (!stoppingRef.current) {
+						failSession("Realtime data channel failed");
+					}
+				},
 				onDataChannelMessage: (event) => {
-					handleTranscript(parseRealtimeJsonMessage(event.data));
+					handleRealtimePayload(parseRealtimeJsonMessage(event.data));
+				},
+				onDataChannelOpen: () => {
+					setLastEvent("Realtime session listening");
 				},
 				onTrack: (event) => {
 					remoteAudio.srcObject = event.streams[0] ?? new MediaStream([event.track]);
@@ -364,10 +411,10 @@ export function useRealtimeLiveSession({
 			});
 
 			connectionRef.current = connection;
-			setLastEvent("OpenAI Realtime connected");
+			setLastEvent("Realtime session listening");
 			setLiveStatus("active");
 		},
-		[ensureAudioStream, handleTranscript, setLiveStatus],
+		[ensureAudioStream, failSession, handleRealtimePayload, setLiveStatus],
 	);
 
 	const startGemini = useCallback(
@@ -422,7 +469,7 @@ export function useRealtimeLiveSession({
 					if (isGeminiSetupCompleteMessage(payload)) {
 						void startGeminiMedia();
 					}
-					handleTranscript(payload);
+					handleRealtimePayload(payload);
 					for (const chunk of extractGeminiAudioChunks(payload)) {
 						audioPlayerRef.current?.playBase64(chunk);
 					}
@@ -440,7 +487,7 @@ export function useRealtimeLiveSession({
 			});
 			connectionRef.current = connection;
 		},
-		[failSession, handleTranscript, setLiveStatus, startInputAudio, startInputVideo],
+		[failSession, handleRealtimePayload, setLiveStatus, startInputAudio, startInputVideo],
 	);
 
 	const startMistral = useCallback(
@@ -468,7 +515,7 @@ export function useRealtimeLiveSession({
 					}
 				},
 				onMessage: (event) => {
-					handleTranscript(parseRealtimeJsonMessage(event.data));
+					handleRealtimePayload(parseRealtimeJsonMessage(event.data));
 				},
 				onOpen: () => {
 					void (async () => {
@@ -493,7 +540,7 @@ export function useRealtimeLiveSession({
 			});
 			connectionRef.current = connection;
 		},
-		[failSession, handleTranscript, setLiveStatus, startInputAudio],
+		[failSession, handleRealtimePayload, setLiveStatus, startInputAudio],
 	);
 
 	const start = useCallback(

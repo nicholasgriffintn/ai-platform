@@ -8,6 +8,7 @@ import {
 	type ConversationThreadModeConfig,
 } from "~/components/ConversationThread";
 import { useChat } from "~/hooks/useChat";
+import { useLiveConversationMessages } from "~/hooks/useLiveConversationMessages";
 import { useRealtimeLiveSession } from "~/hooks/useRealtimeLiveSession";
 import {
 	useSandboxConnections,
@@ -59,7 +60,6 @@ function useHomeChatModeConfig(): {
 		setSelectedAgentId,
 		model: selectedModel,
 		setModel,
-		setChatInput,
 		chatSettings,
 		sandboxModeSettings,
 		setSandboxModeSettings,
@@ -94,20 +94,25 @@ function useHomeChatModeConfig(): {
 		sandboxModeSettings.shouldCommit ?? true,
 	);
 	const hydratedConversationIdRef = useRef<string | undefined>(undefined);
-	const appendLiveTranscript = useCallback(
-		(text: string) => {
-			const trimmedText = text.trim();
-			if (!trimmedText) {
-				return;
-			}
-			const currentInput = useChatStore.getState().chatInput;
-			setChatInput(currentInput.trim() ? `${currentInput.trimEnd()} ${trimmedText}` : trimmedText);
-		},
-		[setChatInput],
+	const liveConversationMode = useMemo(
+		() =>
+			buildConversationModeMetadata({
+				mode: "live",
+			}),
+		[],
 	);
+	const {
+		flushLiveMessages,
+		handleRealtimeEvent: handleLiveRealtimeEvent,
+		handleTranscript: handleLiveTranscript,
+	} = useLiveConversationMessages({
+		conversationMode: liveConversationMode,
+		model: selectedModel,
+	});
 	const liveSession = useRealtimeLiveSession({
 		model: selectedModel,
-		onTranscript: appendLiveTranscript,
+		onEvent: handleLiveRealtimeEvent,
+		onTranscript: handleLiveTranscript,
 	});
 	const {
 		error: liveError,
@@ -123,6 +128,10 @@ function useHomeChatModeConfig(): {
 		status: liveStatus,
 		stop: stopLiveSession,
 	} = liveSession;
+	const stopLiveSessionAndFlush = useCallback(() => {
+		flushLiveMessages();
+		stopLiveSession();
+	}, [flushLiveMessages, stopLiveSession]);
 
 	useEffect(() => {
 		if (currentConversationId && conversationModeMetadata) {
@@ -180,7 +189,7 @@ function useHomeChatModeConfig(): {
 				const liveModelId = getDefaultLiveModelId(liveProvider);
 				setModel(liveModelId);
 			} else if (activeModeId === "live") {
-				stopLiveSession();
+				stopLiveSessionAndFlush();
 			}
 			setSearchParams(next, { replace: true });
 		},
@@ -193,7 +202,7 @@ function useHomeChatModeConfig(): {
 			setModel,
 			setSearchParams,
 			setSelectedAgentId,
-			stopLiveSession,
+			stopLiveSessionAndFlush,
 		],
 	);
 	const handleLiveProviderChange = useCallback(
@@ -370,7 +379,7 @@ function useHomeChatModeConfig(): {
 				onProviderChange={handleLiveProviderChange}
 				onMicrophoneEnabledChange={setLiveMicrophoneEnabled}
 				onStart={() => void startLiveSession(undefined, selectedModel)}
-				onStop={stopLiveSession}
+				onStop={stopLiveSessionAndFlush}
 				onVideoEnabledChange={setLiveVideoEnabled}
 				provider={liveProvider}
 				showHeader={activeModeId !== "live"}
@@ -387,7 +396,7 @@ function useHomeChatModeConfig(): {
 				microphoneEnabled={liveMicrophoneEnabled}
 				onMicrophoneEnabledChange={setLiveMicrophoneEnabled}
 				onStart={() => void startLiveSession(undefined, selectedModel)}
-				onStop={stopLiveSession}
+				onStop={stopLiveSessionAndFlush}
 				onVideoEnabledChange={setLiveVideoEnabled}
 				status={liveStatus}
 				videoEnabled={liveVideoEnabled}
@@ -484,6 +493,7 @@ function useHomeChatModeConfig(): {
 					welcomeTitle: "Start a live session",
 					welcomeDescription:
 						"Choose a live-capable model, then use voice or camera input in the active session.",
+					welcomeSampleQuestions: [],
 					inputPlaceholder: {
 						newConversation: "Live mode is running. Transcripts can still be edited here...",
 						followUp: "Live mode is running. Add notes or follow-up text...",
@@ -492,9 +502,7 @@ function useHomeChatModeConfig(): {
 					modelScope: "live",
 					modelProviderFilter: liveProvider,
 					hideTextInput: true,
-					conversationMode: buildConversationModeMetadata({
-						mode: "live",
-					}),
+					conversationMode: liveConversationMode,
 					modeControls,
 				},
 			};
@@ -578,9 +586,10 @@ function useHomeChatModeConfig(): {
 		liveLastTranscript,
 		liveProvider,
 		liveStatus,
+		liveConversationMode,
 		setLiveMicrophoneEnabled,
 		setLiveVideoEnabled,
 		startLiveSession,
-		stopLiveSession,
+		stopLiveSessionAndFlush,
 	]);
 }

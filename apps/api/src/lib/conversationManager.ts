@@ -11,6 +11,7 @@ import { isAsyncInvocationPending } from "./async/asyncInvocation";
 import { TaskRepository } from "~/repositories/TaskRepository";
 import { TaskService } from "~/services/tasks/TaskService";
 import { buildMessageParts, normaliseMessageParts } from "./chat/messageParts";
+import { normaliseMessageTimestampsForStorage } from "./chat/messageOrdering";
 
 const logger = getLogger({ prefix: "lib/conversationManager" });
 
@@ -182,10 +183,10 @@ export class ConversationManager {
 	): Promise<Message[]> {
 		if (!messages.length) return [];
 
-		const newMessages = messages.map((message) => ({
+		const orderedMessages = normaliseMessageTimestampsForStorage(messages);
+		const newMessages = orderedMessages.map((message) => ({
 			...message,
 			id: message.id || generateId(),
-			timestamp: message.timestamp || Date.now(),
 			model: message.model || this.model,
 			platform: message.platform || this.platform,
 		}));

@@ -520,19 +520,11 @@ addRoute(app, "put", "/completions/:completion_id", {
 	responses: {
 		200: {
 			description: "Updated completion details",
-			schema: z.object({
-				success: z.boolean(),
-				data: z.object({
-					id: z.string(),
-					title: z.string().nullable(),
-					created_at: z.string(),
-					updated_at: z.string(),
-					model: z.string(),
-					is_archived: z.boolean(),
-					user_id: z.string(),
-					share_id: z.string().nullable(),
-				}),
-			}),
+			schema: getChatCompletionResponseSchema
+				.extend({
+					messages: z.array(messageSchema).optional(),
+				})
+				.passthrough(),
 		},
 		400: {
 			description: "Bad request or validation error",
