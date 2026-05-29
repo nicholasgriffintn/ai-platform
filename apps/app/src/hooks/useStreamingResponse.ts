@@ -11,6 +11,11 @@ import { useChatStore } from "~/state/stores/chatStore";
 import { useMessageOperations } from "./useMessageOperations";
 import { useModels } from "./useModels";
 
+export interface StreamResponseOptions {
+	generateTitle?: boolean;
+	model?: string;
+}
+
 /**
  * Hook for managing streaming responses and abort control.
  * Handles both local WebLLM and remote API streaming.
@@ -48,6 +53,7 @@ export function useStreamingResponse(
 			messages: Message[],
 			conversationId: string,
 			overrideRequestOptions?: ChatRequestOptions,
+			options?: Pick<StreamResponseOptions, "model">,
 		): Promise<{
 			status: "success" | "error";
 			response: string;
@@ -123,7 +129,8 @@ export function useStreamingResponse(
 
 			try {
 				if (isLocal) {
-					if (!model) {
+					const currentModel = normalizeSelectedModel(options?.model ?? model);
+					if (!currentModel) {
 						throw new Error("Cannot generate local response without a selected model.");
 					}
 					const handleProgress = (text: string) => {
@@ -155,7 +162,7 @@ export function useStreamingResponse(
 
 					const normalizedMessages = messages.map(normalizeMessage);
 
-					const modelToSend = normalizeSelectedModel(model);
+					const modelToSend = normalizeSelectedModel(options?.model ?? model);
 					const providerToSend = getModelProvider(apiModels, modelToSend);
 
 					const handleStateChange = (state: string, data?: any) => {
@@ -259,7 +266,7 @@ export function useStreamingResponse(
 			messages: Message[],
 			conversationId: string,
 			overrideRequestOptions?: ChatRequestOptions,
-			options?: { generateTitle?: boolean },
+			options?: StreamResponseOptions,
 		) => {
 			if (!messages.length) {
 				toast.error("No messages provided");
@@ -267,7 +274,9 @@ export function useStreamingResponse(
 			}
 
 			try {
-				const response = await generateResponse(messages, conversationId, overrideRequestOptions);
+				const response = await generateResponse(messages, conversationId, overrideRequestOptions, {
+					model: options?.model,
+				});
 
 				const shouldGenerateTitle = options?.generateTitle ?? true;
 				if (

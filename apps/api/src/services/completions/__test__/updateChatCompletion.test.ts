@@ -2,6 +2,14 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { handleUpdateChatCompletion } from "../updateChatCompletion";
 
+vi.mock("~/utils/id", () => ({
+	generateId: vi
+		.fn()
+		.mockReturnValueOnce("branch-copy-1")
+		.mockReturnValueOnce("branch-copy-2")
+		.mockReturnValue("branch-copy-extra"),
+}));
+
 vi.mock("~/lib/conversationManager", () => ({
 	ConversationManager: {
 		getInstance: vi.fn(),
@@ -172,6 +180,52 @@ describe("handleUpdateChatCompletion", () => {
 			expect(mockConversationManager.updateConversation).toHaveBeenCalledWith(completionId, {
 				title: "Live title",
 			});
+			expect(result).toEqual(mockResult);
+		});
+
+		it("should pass branch metadata when creating branched messages", async () => {
+			const completionId = "branch-live";
+			const messages = [
+				{
+					id: "assistant-1",
+					role: "assistant",
+					content: "Answer",
+				},
+			] as any;
+			const mockResult = {
+				id: completionId,
+				title: "Branch",
+				messages,
+			};
+
+			mockConversationManager.getConversationDetails.mockResolvedValue(mockResult);
+
+			const result = await handleUpdateChatCompletion(mockServiceContext, completionId, {
+				messages,
+				parent_conversation_id: "conversation-1",
+				parent_message_id: "assistant-1",
+			});
+
+			expect(mockConversationManager.replaceMessages).toHaveBeenCalledWith(
+				completionId,
+				[
+					{
+						id: "branch-copy-1",
+						parent_message_id: "assistant-1",
+						role: "assistant",
+						content: "Answer",
+					},
+				],
+				{
+					metadata: {
+						branch_of: JSON.stringify({
+							conversation_id: "conversation-1",
+							message_id: "assistant-1",
+						}),
+					},
+				},
+			);
+			expect(mockConversationManager.updateConversation).not.toHaveBeenCalled();
 			expect(result).toEqual(mockResult);
 		});
 

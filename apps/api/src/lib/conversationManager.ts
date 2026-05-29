@@ -328,7 +328,11 @@ export class ConversationManager {
 	 * @param conversation_id - The ID of the conversation to replace messages in
 	 * @param messages - The messages to set for the conversation
 	 */
-	async replaceMessages(conversation_id: string, messages: Message[]): Promise<Message[]> {
+	async replaceMessages(
+		conversation_id: string,
+		messages: Message[],
+		options?: { metadata?: Record<string, string> },
+	): Promise<Message[]> {
 		if (!this.store) {
 			return messages;
 		}
@@ -360,7 +364,7 @@ export class ConversationManager {
 			await Promise.all(deletePromises);
 		}
 
-		return await this.addBatch(conversation_id, messages);
+		return await this.addBatch(conversation_id, messages, options);
 	}
 
 	/**

@@ -1,7 +1,8 @@
 import { Check, Copy, Edit, GitBranch, RefreshCw, ThumbsDown, ThumbsUp } from "lucide-react";
 import { useCallback, useState } from "react";
 
-import { Button } from "~/components/ui";
+import { Button, Popover, PopoverContent, PopoverTrigger } from "~/components/ui";
+import { canBranchFromMessage } from "~/lib/chat/branching";
 import type { Message } from "~/types";
 import { MessageInfo } from "./MessageInfo";
 import { InlineModelSelector } from "../InlineModelSelector";
@@ -38,13 +39,14 @@ export const MessageActions = ({
 	isBranching = false,
 }: MessageActionsProps) => {
 	const [showBranchModelSelector, setShowBranchModelSelector] = useState(false);
+	const canBranch = Boolean(onBranch && !isSharedView && canBranchFromMessage(message));
 
-	const handleBranchClick = useCallback(() => {
+	const handleAssistantBranchClick = useCallback(() => {
 		if (!onBranch) {
 			return;
 		}
-		setShowBranchModelSelector(true);
-	}, [onBranch]);
+		onBranch(message.id);
+	}, [message.id, onBranch]);
 
 	const handleModelSelected = useCallback(
 		(modelId: string) => {
@@ -109,28 +111,52 @@ export const MessageActions = ({
 						<RefreshCw size={14} className={isRetrying ? "animate-spin" : ""} />
 					</Button>
 				)}
-				{message.role === "user" && onBranch && !isSharedView && (
+				{canBranch && (
 					<div className="relative flex items-center">
-						<Button
-							type="button"
-							variant="icon"
-							onClick={handleBranchClick}
-							disabled={isBranching}
-							className={`cursor-pointer p-1 hover:bg-zinc-200/50 dark:hover:bg-zinc-600/50 rounded-lg transition-colors duration-200 flex items-center text-zinc-500 dark:text-zinc-400 ${
-								isBranching ? "opacity-50 cursor-not-allowed" : ""
-							}`}
-							title={isBranching ? "Branching..." : "Branch conversation"}
-							aria-label={isBranching ? "Branching..." : "Branch conversation"}
-						>
-							<GitBranch size={14} />
-						</Button>
-						{showBranchModelSelector && (
-							<div className="absolute top-full right-0 mt-1 z-50">
-								<InlineModelSelector
-									onModelSelect={handleModelSelected}
-									onCancel={handleCancelModelSelection}
-								/>
-							</div>
+						{message.role === "user" ? (
+							<Popover open={showBranchModelSelector} onOpenChange={setShowBranchModelSelector}>
+								<PopoverTrigger asChild>
+									<Button
+										type="button"
+										variant="icon"
+										disabled={isBranching}
+										className={`cursor-pointer p-1 hover:bg-zinc-200/50 dark:hover:bg-zinc-600/50 rounded-lg transition-colors duration-200 flex items-center text-zinc-500 dark:text-zinc-400 ${
+											isBranching ? "opacity-50 cursor-not-allowed" : ""
+										}`}
+										title={isBranching ? "Branching..." : "Branch conversation"}
+										aria-label={isBranching ? "Branching..." : "Branch conversation"}
+									>
+										<GitBranch size={14} />
+									</Button>
+								</PopoverTrigger>
+								<PopoverContent
+									side="top"
+									align="end"
+									sideOffset={8}
+									collisionPadding={{ top: 64, right: 8, bottom: 112, left: 8 }}
+									className="w-[calc(100vw-1rem)] max-w-[22rem] overflow-hidden border-zinc-200 bg-white p-0 shadow-2xl dark:border-zinc-700 dark:bg-zinc-900"
+								>
+									<InlineModelSelector
+										onModelSelect={handleModelSelected}
+										onCancel={handleCancelModelSelection}
+										className="w-full"
+									/>
+								</PopoverContent>
+							</Popover>
+						) : (
+							<Button
+								type="button"
+								variant="icon"
+								onClick={handleAssistantBranchClick}
+								disabled={isBranching}
+								className={`cursor-pointer p-1 hover:bg-zinc-200/50 dark:hover:bg-zinc-600/50 rounded-lg transition-colors duration-200 flex items-center text-zinc-500 dark:text-zinc-400 ${
+									isBranching ? "opacity-50 cursor-not-allowed" : ""
+								}`}
+								title={isBranching ? "Branching..." : "Branch conversation"}
+								aria-label={isBranching ? "Branching..." : "Branch conversation"}
+							>
+								<GitBranch size={14} />
+							</Button>
 						)}
 					</div>
 				)}

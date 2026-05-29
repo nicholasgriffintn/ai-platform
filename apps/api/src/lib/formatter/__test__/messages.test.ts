@@ -72,6 +72,49 @@ describe("MessageFormatter", () => {
 			expect(result[1].role).toBe("assistant");
 		});
 
+		it("should omit empty assistant tool calls for OpenAI-compatible providers", () => {
+			const messages: Message[] = [
+				{ role: "user", content: "Hello" },
+				{ role: "assistant", content: "Hi there", tool_calls: [] },
+			];
+
+			const result = MessageFormatter.formatMessages(messages, {
+				provider: "deepseek",
+			});
+
+			expect(result[1]).toEqual({
+				role: "assistant",
+				content: "Hi there",
+			});
+		});
+
+		it("should preserve non-empty assistant tool calls", () => {
+			const toolCalls = [
+				{
+					id: "call_1",
+					type: "function",
+					function: {
+						name: "lookup",
+						arguments: '{"query":"status"}',
+					},
+				},
+			];
+			const messages: Message[] = [
+				{ role: "user", content: "Hello" },
+				{ role: "assistant", content: "", tool_calls: toolCalls },
+			];
+
+			const result = MessageFormatter.formatMessages(messages, {
+				provider: "deepseek",
+			});
+
+			expect(result[1]).toEqual({
+				role: "assistant",
+				content: "",
+				tool_calls: toolCalls,
+			});
+		});
+
 		it("should add system prompt when provided", () => {
 			const messages: Message[] = [{ role: "user", content: "Hello" }];
 
@@ -144,7 +187,6 @@ describe("MessageFormatter", () => {
 				role: "user",
 				parts: [{ text: "Hello world" }],
 				content: "",
-				tool_calls: undefined,
 			});
 		});
 

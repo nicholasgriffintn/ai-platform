@@ -19,6 +19,7 @@ import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";
 import { isAbortError } from "~/utils/abort";
+import { nonEmptyToolCallsOrNull } from "~/utils/toolCalls";
 
 const logger = getLogger({ prefix: "lib/chat/core/ChatOrchestrator" });
 
@@ -373,7 +374,7 @@ export class ChatOrchestrator {
 			model: primaryModel,
 			platform: platform || "api",
 			usage: response.usage || response.usageMetadata,
-			tool_calls: response.tool_calls || null,
+			tool_calls: nonEmptyToolCallsOrNull(response.tool_calls),
 			status: response.status || undefined,
 		});
 

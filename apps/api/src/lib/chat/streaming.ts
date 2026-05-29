@@ -28,6 +28,7 @@ import {
 } from "~/types";
 import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";
+import { nonEmptyToolCallsOrNull } from "~/utils/toolCalls";
 import { emitDoneEvent, emitEvent } from "./emitter";
 import { safeParseJson } from "~/utils/json";
 
@@ -717,7 +718,7 @@ export async function createStreamWithPostProcessing(
 							model: assistantMessage.model,
 							platform: assistantMessage.platform,
 							usage: assistantMessage.usage,
-							tool_calls: assistantMessage.tool_calls,
+							tool_calls: nonEmptyToolCallsOrNull(assistantMessage.tool_calls),
 							parts: messageParts,
 							data: assistantMessage.data || null,
 						});

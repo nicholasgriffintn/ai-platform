@@ -407,6 +407,8 @@ export const updateChatCompletionJsonSchema = z
 		title: z.string().optional(),
 		archived: z.boolean().optional(),
 		messages: z.array(messageSchema).min(1).optional(),
+		parent_conversation_id: z.string().optional(),
+		parent_message_id: z.string().optional(),
 	})
 	.refine((data) => Object.keys(data).length > 0, {
 		error: "At least one field must be provided for update",

@@ -54,6 +54,54 @@ export function getFeaturedModelIds(models: ModelConfig) {
 	);
 }
 
+export function getModelDisplayName(model: Pick<ModelConfigItem, "matchingModel" | "name">) {
+	return model.name || model.matchingModel;
+}
+
+export function sortModelsByDisplayName(models: ModelConfigItem[]) {
+	return [...models].sort((a, b) => getModelDisplayName(a).localeCompare(getModelDisplayName(b)));
+}
+
+export function getFeaturedModels(models: ModelConfig) {
+	return sortModelsByDisplayName(
+		Object.entries(models).flatMap(([key, model]) =>
+			model.isFeatured
+				? [
+						{
+							...model,
+							id: key,
+						},
+					]
+				: [],
+		),
+	);
+}
+
+export function searchModelList(models: ModelConfigItem[], query: string) {
+	const normalizedQuery = query.trim().toLowerCase();
+	if (!normalizedQuery) {
+		return [];
+	}
+
+	return sortModelsByDisplayName(
+		models.filter((model) => {
+			const searchText = [
+				model.id,
+				model.matchingModel,
+				model.name,
+				model.provider,
+				model.description,
+				...(model.strengths || []),
+			]
+				.filter(Boolean)
+				.join(" ")
+				.toLowerCase();
+
+			return searchText.includes(normalizedQuery);
+		}),
+	);
+}
+
 export function getModelProvider(models: ModelConfig, modelId?: string | null) {
 	if (!modelId) return undefined;
 	return models[modelId]?.provider;

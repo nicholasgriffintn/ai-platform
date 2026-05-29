@@ -541,6 +541,41 @@ describe("RequestPreparer", () => {
 			expect(mockConversationManagerInstance.replaceMessages).not.toHaveBeenCalled();
 		});
 
+		it("should not duplicate a matching pre-created branch history", async () => {
+			mockConversationManagerInstance.get.mockResolvedValueOnce([
+				{ id: "branch-1", parent_message_id: "1", role: "user", content: "First message" },
+				{
+					id: "branch-2",
+					parent_message_id: "2",
+					role: "assistant",
+					content: "First response",
+				},
+				{ id: "branch-3", parent_message_id: "3", role: "user", content: "Branch point" },
+			]);
+
+			const optionsWithBranchHistory = {
+				...baseOptions,
+				messages: [
+					{ id: "1", role: "user", content: "First message" },
+					{ id: "2", role: "assistant", content: "First response" },
+					{ id: "3", role: "user", content: "Branch point" },
+				],
+			};
+
+			await (preparer as any).storeMessages(
+				optionsWithBranchHistory,
+				mockConversationManagerInstance,
+				{ role: "user", content: "Branch point" },
+				"Branch point",
+				"claude-3-sonnet",
+				"api",
+				"normal",
+			);
+
+			expect(mockConversationManagerInstance.addBatch).not.toHaveBeenCalled();
+			expect(mockConversationManagerInstance.replaceMessages).not.toHaveBeenCalled();
+		});
+
 		it("should store metadata when provided", async () => {
 			const optionsWithMetadata = {
 				...baseOptions,

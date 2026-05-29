@@ -23,9 +23,11 @@ const STREAM_ERROR_STATUS_BY_CODE: Record<string, number> = {
 	rate_limit_exceeded: 429,
 };
 
-interface ConversationUpdateRequest {
+export interface ConversationUpdateRequest {
 	archived?: boolean;
 	messages?: Message[];
+	parent_conversation_id?: string;
+	parent_message_id?: string;
 	title?: string;
 }
 

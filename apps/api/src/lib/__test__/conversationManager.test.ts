@@ -316,6 +316,48 @@ describe("ConversationManager", () => {
 			);
 		});
 
+		it("should create branched conversation metadata when provided", async () => {
+			const conversationId = "conv-branch";
+			const message = {
+				role: "assistant",
+				content: "Hello",
+			} as any;
+
+			mockDatabase.getConversation.mockResolvedValue(null);
+			mockDatabase.createConversation.mockResolvedValue({
+				id: conversationId,
+				user_id: mockUser.id,
+				parent_conversation_id: "conv-parent",
+				parent_message_id: "message-parent",
+			});
+			mockDatabase.createMessage.mockResolvedValue(undefined);
+			mockDatabase.updateConversationAfterMessage.mockResolvedValue(undefined);
+
+			const manager = ConversationManager.getInstance({
+				database: mockDatabase as any,
+				user: mockUser,
+			});
+
+			await manager.replaceMessages(conversationId, [message], {
+				metadata: {
+					branch_of: JSON.stringify({
+						conversation_id: "conv-parent",
+						message_id: "message-parent",
+					}),
+				},
+			});
+
+			expect(mockDatabase.createConversation).toHaveBeenCalledWith(
+				conversationId,
+				mockUser.id,
+				"New Conversation",
+				{
+					parent_conversation_id: "conv-parent",
+					parent_message_id: "message-parent",
+				},
+			);
+		});
+
 		it("should throw error when no user ID for storage", async () => {
 			const manager = ConversationManager.getInstance({
 				database: mockDatabase as any,

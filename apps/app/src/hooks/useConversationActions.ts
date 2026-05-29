@@ -4,21 +4,26 @@ import { toast } from "sonner";
 
 import { CHATS_QUERY_KEY } from "~/constants";
 import { apiService } from "~/lib/api/api-service";
-import { resolveRequestModel } from "~/lib/chat/model-selection";
+import { createBranchConversation, getBranchPoint } from "~/lib/chat/branching";
 import { createConversationId } from "~/lib/conversations";
-import { getModelProvider } from "~/lib/models";
-import { normalizeMessage } from "~/lib/messages";
-import type { Conversation, Message } from "~/types";
+import type { ChatRequestOptions, Conversation, Message } from "~/types";
 import { useChatStore } from "~/state/stores/chatStore";
 import { useConversationStorage } from "./useConversationStorage";
-import { useMessageOperations } from "./useMessageOperations";
-import { useModels } from "./useModels";
 
 /**
  * Hook for advanced conversation actions like editing, retrying, and branching.
  */
 export function useConversationActions(
-	generateResponse: (messages: Message[], conversationId: string) => Promise<any>,
+	generateResponse: (
+		messages: Message[],
+		conversationId: string,
+		overrideRequestOptions?: ChatRequestOptions,
+		options?: { generateTitle?: boolean; model?: string },
+	) => Promise<{
+		status: "success" | "error";
+		response: string;
+		message?: Message;
+	}>,
 	generateTitle: (
 		conversationId: string,
 		messages: Message[],
@@ -29,19 +34,14 @@ export function useConversationActions(
 	const {
 		currentConversationId,
 		model,
-		chatMode,
 		chatSettings,
 		isAuthenticated,
 		isPro,
 		localOnlyMode,
-		useMultiModel,
-		selectedAgentId,
 		setCurrentConversationId,
 	} = useChatStore();
 
 	const { updateConversation } = useConversationStorage();
-	const { addAssistantMessage, updateAssistantMessage } = useMessageOperations();
-	const { data: apiModels = {} } = useModels();
 
 	const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
 	const [isBranching, setIsBranching] = useState(false);
@@ -159,9 +159,8 @@ export function useConversationActions(
 				return;
 			}
 
-			const messageIndex = conversation.messages.findIndex((msg) => msg.id === messageId);
-
-			if (messageIndex === -1) {
+			const branchPoint = getBranchPoint(conversation.messages, messageId);
+			if (!branchPoint) {
 				toast.error("Unable to branch: message not found");
 				return;
 			}
@@ -169,91 +168,45 @@ export function useConversationActions(
 			try {
 				setIsBranching(true);
 
-				const messagesUpToPoint = conversation.messages.slice(0, messageIndex + 1);
-
 				const newConversationId = createConversationId();
-
-				const branchMetadata = {
-					branch_of: JSON.stringify({
-						conversation_id: currentConversationId,
-						message_id: messageId,
-					}),
-				};
-
 				const shouldStore = isAuthenticated && isPro && !localOnlyMode && !chatSettings.localOnly;
-
-				await updateConversation(newConversationId, () => ({
-					id: newConversationId,
-					title: conversation.title || "Branched Conversation",
-					messages: messagesUpToPoint,
+				const branchConversation = createBranchConversation({
+					conversation,
+					conversationId: newConversationId,
 					isLocalOnly: !shouldStore,
-					created_at: new Date().toISOString(),
-					updated_at: new Date().toISOString(),
-					last_message_at: new Date().toISOString(),
-				}));
+					messages: branchPoint.messages,
+					parentConversationId: currentConversationId,
+					parentMessageId: messageId,
+				});
 
 				if (shouldStore) {
-					const normalizedMessages = messagesUpToPoint.map(normalizeMessage);
-					const modelToSend = resolveRequestModel(model, selectedModelId);
-					const providerToSend = getModelProvider(apiModels, modelToSend);
+					await apiService.updateConversation(newConversationId, {
+						title: branchConversation.title,
+						messages: branchPoint.messages,
+						parent_conversation_id: currentConversationId,
+						parent_message_id: messageId,
+					});
+				}
 
-					const chatSettingsWithMetadata = {
-						...chatSettings,
-						metadata: branchMetadata,
-					};
+				await updateConversation(newConversationId, () => branchConversation);
+				setCurrentConversationId(newConversationId);
 
-					let lastContent = "";
-					let lastReasoning = "";
-
-					setCurrentConversationId(newConversationId);
-
-					const placeholderMessage = await addAssistantMessage(newConversationId, "");
-
-					await apiService.streamChatCompletions({
-						chatSettings: chatSettingsWithMetadata,
-						completionId: newConversationId,
-						endpoint: chatMode === "agent" ? `/agents/${selectedAgentId}/completions` : undefined,
-						messages: normalizedMessages,
-						mode: chatMode,
-						model: modelToSend,
-						onProgress: (content, reasoning, _toolResponses, done) => {
-							lastContent = content;
-							if (reasoning) lastReasoning = reasoning;
-
-							if (done) {
-								updateAssistantMessage(newConversationId, content, reasoning, undefined, {
-									messageId: placeholderMessage.id,
-								});
-							} else {
-								updateAssistantMessage(newConversationId, content, undefined, undefined, {
-									messageId: placeholderMessage.id,
-								});
-							}
+				if (branchPoint.shouldGenerateResponse) {
+					const result = await generateResponse(
+						branchPoint.messages,
+						newConversationId,
+						undefined,
+						{
+							generateTitle: false,
+							model: selectedModelId || model || undefined,
 						},
-						onStateChange: () => {},
-						provider: providerToSend,
-						signal: new AbortController().signal,
-						store: shouldStore,
-						streamingEnabled: true,
-						useMultiModel,
-					});
+					);
 
-					await updateAssistantMessage(newConversationId, lastContent, lastReasoning, undefined, {
-						messageId: placeholderMessage.id,
-					});
-
-					setTimeout(() => {
-						const lastMessage = messagesUpToPoint[messagesUpToPoint.length - 1];
-						if (lastMessage) {
-							generateTitle(newConversationId, messagesUpToPoint.slice(0, -1), lastMessage).catch(
-								(err) =>
-									console.error(
-										"Background title generation failed for branched conversation:",
-										err,
-									),
-							);
-						}
-					}, 0);
+					if (result.status === "success" && result.message) {
+						generateTitle(newConversationId, branchPoint.messages, result.message).catch((err) =>
+							console.error("Background title generation failed for branched conversation:", err),
+						);
+					}
 				}
 
 				toast.success("Conversation branched successfully!");
@@ -272,14 +225,9 @@ export function useConversationActions(
 			localOnlyMode,
 			chatSettings,
 			model,
-			chatMode,
-			useMultiModel,
-			selectedAgentId,
-			apiModels,
 			updateConversation,
-			addAssistantMessage,
-			updateAssistantMessage,
 			setCurrentConversationId,
+			generateResponse,
 			generateTitle,
 		],
 	);

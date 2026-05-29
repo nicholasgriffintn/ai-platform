@@ -1,6 +1,7 @@
 import type { ContentType, Message, MessageContent } from "~/types";
 import { safeParseJson } from "~/utils/json";
 import { isRecord } from "~/utils/objects";
+import { hasToolCalls } from "~/utils/toolCalls";
 
 type OpenAIResponsesInputItem = Record<string, unknown>;
 
@@ -196,14 +197,20 @@ export class MessageFormatter {
 			}
 
 			switch (provider) {
-				case "google-ai-studio":
-					formattedMessages.push({
+				case "google-ai-studio": {
+					const googleMessage = {
 						role: message.role,
 						parts: Array.isArray(content) ? content : [{ text: content }],
 						content: "",
-						tool_calls: message.tool_calls,
-					} as Message);
+					} as Message;
+
+					if (message.role === "assistant" && hasToolCalls(message.tool_calls)) {
+						googleMessage.tool_calls = message.tool_calls;
+					}
+
+					formattedMessages.push(googleMessage);
 					break;
+				}
 				case "anthropic": {
 					let formattedContent: any;
 
@@ -239,7 +246,7 @@ export class MessageFormatter {
 							content: content[0],
 						};
 
-						if (message.role === "assistant" && message.tool_calls) {
+						if (message.role === "assistant" && hasToolCalls(message.tool_calls)) {
 							newMessage.tool_calls = message.tool_calls;
 						}
 
@@ -250,7 +257,7 @@ export class MessageFormatter {
 							content,
 						};
 
-						if (message.role === "assistant" && message.tool_calls) {
+						if (message.role === "assistant" && hasToolCalls(message.tool_calls)) {
 							newMessage.tool_calls = message.tool_calls;
 						}
 

@@ -1,10 +1,19 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { ModelIcon } from "~/components/ModelIcon";
+import { SearchInput } from "~/components/ui/SearchInput";
 import { useModels } from "~/hooks/useModels";
 import { useWebLLMModels } from "~/hooks/useWebLLMModels";
-import { getAvailableModels, getFeaturedModelIds } from "~/lib/models";
+import {
+	getAvailableModels,
+	getFeaturedModels,
+	getModelDisplayName,
+	getModelsByMode,
+	searchModelList,
+} from "~/lib/models";
+import { cn } from "~/lib/utils";
 import { useChatStore } from "~/state/stores/chatStore";
+import type { ModelConfigItem } from "~/types";
 
 interface InlineModelSelectorProps {
 	onModelSelect: (modelId: string) => void;
@@ -12,25 +21,80 @@ interface InlineModelSelectorProps {
 	className?: string;
 }
 
+interface BranchModelOptionProps {
+	model: ModelConfigItem;
+	onSelect: (modelId: string) => void;
+}
+
+const BranchModelOption = ({ model, onSelect }: BranchModelOptionProps) => (
+	<button
+		type="button"
+		onClick={() => onSelect(model.id)}
+		className="flex w-full items-start gap-2.5 rounded-md px-2 py-2 text-left transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-800/80"
+	>
+		<span className="mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center">
+			<ModelIcon
+				modelName={getModelDisplayName(model)}
+				provider={model.provider}
+				url={model.avatarUrl}
+				size={18}
+			/>
+		</span>
+		<span className="min-w-0 flex-1">
+			<span className="block text-sm font-medium leading-5 text-zinc-900 whitespace-normal break-words dark:text-zinc-100">
+				{getModelDisplayName(model)}
+			</span>
+			<span className="block text-xs leading-4 text-zinc-500 whitespace-normal break-words dark:text-zinc-400">
+				{model.provider}
+			</span>
+		</span>
+	</button>
+);
+
 export const InlineModelSelector = ({
 	onModelSelect,
 	onCancel,
 	className = "",
 }: InlineModelSelectorProps) => {
-	const { model } = useChatStore();
-	const { data: apiModels = {} } = useModels();
+	const { chatMode, model } = useChatStore();
+	const { data: apiModels = {}, isLoading } = useModels();
 	const webLLMModels = useWebLLMModels();
 	const [isOpen, setIsOpen] = useState(true);
-	const [selectedModel, setSelectedModel] = useState<string | null>(null);
+	const [searchQuery, setSearchQuery] = useState("");
 	const dropdownRef = useRef<HTMLDivElement>(null);
 
 	const availableModels = useMemo(
-		() => getAvailableModels(apiModels, true, webLLMModels),
-		[apiModels, webLLMModels],
+		() => getAvailableModels(apiModels, chatMode === "local", webLLMModels),
+		[apiModels, chatMode, webLLMModels],
 	);
-	const featuredModels = useMemo(() => getFeaturedModelIds(availableModels), [availableModels]);
+	const modeModels = useMemo(
+		() => getModelsByMode(availableModels, chatMode),
+		[availableModels, chatMode],
+	);
+	const currentModelId = typeof model === "string" ? model : null;
+	const currentGlobalModel = currentModelId ? modeModels[currentModelId] : null;
+	const featuredModels = useMemo(
+		() => getFeaturedModels(modeModels).filter((modelItem) => modelItem.id !== currentModelId),
+		[modeModels, currentModelId],
+	);
+	const searchableModels = useMemo(
+		() =>
+			Object.values(modeModels).filter(
+				(modelItem) =>
+					modelItem.id !== currentModelId && !modelItem.isFeatured && !modelItem.deprecated,
+			),
+		[modeModels, currentModelId],
+	);
+	const searchResults = useMemo(
+		() => searchModelList(searchableModels, searchQuery),
+		[searchableModels, searchQuery],
+	);
+	const isSearching = searchQuery.trim().length > 0;
 
-	const currentGlobalModel = typeof model === "string" ? availableModels[model] : null;
+	const handleModelClick = (modelId: string) => {
+		setIsOpen(false);
+		onModelSelect(modelId);
+	};
 
 	useEffect(() => {
 		const handleClickOutside = (event: MouseEvent) => {
@@ -58,76 +122,72 @@ export const InlineModelSelector = ({
 		};
 	}, [isOpen, onCancel]);
 
-	const handleModelClick = (modelId: string) => {
-		setSelectedModel(modelId);
-		setIsOpen(false);
-		onModelSelect(modelId);
-	};
-
 	return (
-		<div ref={dropdownRef} className={`${className}`}>
+		<div ref={dropdownRef} className={cn("w-full", className)}>
 			{isOpen && (
-				<div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-md shadow-lg w-48 max-h-64 overflow-y-auto">
-					<div className="p-1">
+				<div className="w-full overflow-hidden rounded-lg bg-white dark:bg-zinc-900">
+					<div className="border-b border-zinc-200 p-2 dark:border-zinc-700">
+						<SearchInput
+							value={searchQuery}
+							onChange={setSearchQuery}
+							placeholder="Search other models"
+							className="[&_input]:py-1.5 [&_input]:text-sm"
+							autoFocus
+						/>
+					</div>
+					<div className="max-h-[calc(100vh-10rem)] overflow-y-auto p-2 sm:max-h-80">
+						{isLoading && (
+							<p className="px-2 py-3 text-sm text-zinc-500 dark:text-zinc-400">
+								Loading models...
+							</p>
+						)}
 						{currentGlobalModel && (
 							<>
-								<div className="px-2 py-1 text-xs text-zinc-500 dark:text-zinc-400 border-b border-zinc-200 dark:border-zinc-700 mb-1">
+								<div className="px-2 pb-1 text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
 									Current Model
 								</div>
-								<button
-									key={currentGlobalModel.id}
-									type="button"
-									onClick={() => handleModelClick(currentGlobalModel.id)}
-									className={`w-full text-left px-2 py-1.5 rounded text-sm flex items-center gap-2 transition-colors ${
-										selectedModel === currentGlobalModel.id
-											? "bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30"
-											: "hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
-									}`}
-								>
-									<ModelIcon
-										modelName={currentGlobalModel.name || currentGlobalModel.id}
-										provider={currentGlobalModel.provider}
-										size={14}
-									/>
-									<span
-										className={`truncate text-sm ${selectedModel === currentGlobalModel.id ? "font-medium" : ""}`}
-									>
-										{currentGlobalModel.name || currentGlobalModel.id}
-									</span>
-								</button>
-								<div className="px-2 py-1 text-xs text-zinc-500 dark:text-zinc-400 border-b border-zinc-200 dark:border-zinc-700 mb-1 mt-2">
-									Other Models
-								</div>
+								<BranchModelOption model={currentGlobalModel} onSelect={handleModelClick} />
 							</>
 						)}
-						{Object.values(featuredModels)
-							.filter(
-								(featuredModel) => featuredModel.id !== (typeof model === "string" ? model : null),
-							)
-							.slice(0, 7)
-							.map((model) => (
-								<button
-									key={model.id}
-									type="button"
-									onClick={() => handleModelClick(model.id)}
-									className={`w-full text-left px-2 py-1.5 rounded text-sm flex items-center gap-2 transition-colors ${
-										selectedModel === model.id
-											? "bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30"
-											: "hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
-									}`}
-								>
-									<ModelIcon
-										modelName={model.name || model.id}
-										provider={model.provider}
-										size={14}
+						{isSearching && (
+							<div className={currentGlobalModel ? "mt-3" : ""}>
+								<div className="px-2 pb-1 text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+									Search Results
+								</div>
+								{searchResults.length > 0 ? (
+									searchResults.map((modelItem) => (
+										<BranchModelOption
+											key={modelItem.id}
+											model={modelItem}
+											onSelect={handleModelClick}
+										/>
+									))
+								) : (
+									<p className="rounded-md border border-dashed border-zinc-300 px-2 py-3 text-sm text-zinc-500 dark:border-zinc-700 dark:text-zinc-400">
+										No matching models.
+									</p>
+								)}
+							</div>
+						)}
+						{featuredModels.length > 0 && (
+							<div className={currentGlobalModel || isSearching ? "mt-3" : ""}>
+								<div className="px-2 pb-1 text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+									Featured Models
+								</div>
+								{featuredModels.map((modelItem) => (
+									<BranchModelOption
+										key={modelItem.id}
+										model={modelItem}
+										onSelect={handleModelClick}
 									/>
-									<span
-										className={`truncate text-sm ${selectedModel === model.id ? "font-medium" : ""}`}
-									>
-										{model.name || model.id}
-									</span>
-								</button>
-							))}
+								))}
+							</div>
+						)}
+						{!isLoading && !currentGlobalModel && !isSearching && featuredModels.length === 0 && (
+							<p className="rounded-md border border-dashed border-zinc-300 px-2 py-3 text-sm text-zinc-500 dark:border-zinc-700 dark:text-zinc-400">
+								No branch models are available.
+							</p>
+						)}
 					</div>
 				</div>
 			)}

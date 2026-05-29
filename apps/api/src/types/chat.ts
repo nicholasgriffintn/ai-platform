@@ -144,6 +144,7 @@ export interface Message {
 	app?: string;
 	mode?: ChatMode;
 	id?: string;
+	parent_message_id?: string;
 	tool_call_id?: string;
 	tool_call_arguments?: string | Record<string, any>;
 	timestamp?: number;

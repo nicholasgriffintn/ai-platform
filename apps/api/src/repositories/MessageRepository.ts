@@ -1,4 +1,5 @@
 import { BaseRepository } from "./BaseRepository";
+import { nonEmptyToolCallsOrNull } from "~/utils/toolCalls";
 
 const LIVE_TURN_ORDER_EXPRESSION =
 	"CASE WHEN json_valid(data) THEN CAST(json_extract(data, '$.realtime.turnStartedAt') AS INTEGER) END";
@@ -19,7 +20,8 @@ export class MessageRepository extends BaseRepository {
 	): Promise<Record<string, unknown> | null> {
 		const contentStr = typeof content === "object" ? JSON.stringify(content) : content;
 
-		const toolCalls = messageData.tool_calls ? JSON.stringify(messageData.tool_calls) : null;
+		const toolCallsData = nonEmptyToolCallsOrNull(messageData.tool_calls);
+		const toolCalls = toolCallsData ? JSON.stringify(toolCallsData) : null;
 		const citations = messageData.citations ? JSON.stringify(messageData.citations) : null;
 		const data = messageData.data ? JSON.stringify(messageData.data) : null;
 		const usage = messageData.usage ? JSON.stringify(messageData.usage) : null;

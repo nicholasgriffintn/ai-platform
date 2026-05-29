@@ -223,6 +223,27 @@ describe("ChatOrchestrator", () => {
 				});
 			});
 
+			it("should store empty tool calls as null", async () => {
+				const mockResponse = {
+					response: "Test response",
+					tool_calls: [],
+					usage: { total_tokens: 100 },
+				};
+
+				mockGetAIResponse.mockResolvedValue(mockResponse);
+				mockGuardrails.validateOutput.mockResolvedValue({ isValid: true });
+				mockConversationManager.add.mockResolvedValue(undefined);
+
+				await orchestrator.process(mockOptions);
+
+				expect(mockConversationManager.add).toHaveBeenCalledWith(
+					"test-completion-id",
+					expect.objectContaining({
+						tool_calls: null,
+					}),
+				);
+			});
+
 			it("should reject streaming for agent modes", async () => {
 				mockPreparer.prepare.mockResolvedValue({
 					modelConfigs: [{ model: "test-model" }],

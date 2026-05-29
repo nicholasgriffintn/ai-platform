@@ -3,7 +3,11 @@ import type { Conversation, Message, ModelConfig } from "~/types";
 import { formatMessageContent } from "../messages";
 import { AgentService } from "./services/agent-service";
 import { AudioService, type SpeechGenerationResponse } from "./services/audio-service";
-import { ChatService, type StreamChatCompletionsParams } from "./services/chat-service";
+import {
+	ChatService,
+	type ConversationUpdateRequest,
+	type StreamChatCompletionsParams,
+} from "./services/chat-service";
 import { ResearchService } from "./services/research-service";
 import { SubscriptionService } from "./services/subscription-service";
 import { UploadService } from "./services/upload-service";
@@ -70,7 +74,7 @@ class ApiService {
 
 	updateConversation = (
 		completion_id: string,
-		updates: { archived?: boolean; messages?: Message[]; title?: string },
+		updates: ConversationUpdateRequest,
 	): Promise<Conversation> => {
 		return this.chatService.updateConversation(completion_id, updates);
 	};

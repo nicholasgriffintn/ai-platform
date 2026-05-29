@@ -24,6 +24,7 @@ export const messageSchema = z.object({
 	app: z.string().optional(),
 	mode: z.enum(["chat", "tool"]).optional(),
 	id: z.string().optional(),
+	parent_message_id: z.string().optional(),
 	timestamp: z.number().optional(),
 	platform: z.enum(["web", "mobile", "api"]).optional(),
 });

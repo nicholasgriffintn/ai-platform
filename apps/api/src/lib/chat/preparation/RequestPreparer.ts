@@ -11,6 +11,7 @@ import {
 	buildConversationModeMetadataFromRequestOptions,
 	resolveChatPromptMode,
 } from "~/lib/chat/mode-metadata";
+import { messagesMatchStoredPrefix } from "~/lib/chat/messageComparison";
 import { findModelConfig } from "~/lib/providers/models";
 import { getSystemPrompt } from "~/lib/prompts";
 import type { ChatMode, CoreChatOptions, Message, ModelConfigInfo, Platform } from "~/types";
@@ -344,13 +345,23 @@ export class RequestPreparer {
 			// We can ignore this.
 		}
 
-		if (existingMessages && existingMessages?.length > options?.messages.length) {
+		if (existingMessages && existingMessages.length > options.messages.length) {
 			await conversationManager.replaceMessages(options.completion_id, options.messages);
-		} else {
-			await conversationManager.addBatch(options.completion_id, messagesToStore, {
-				metadata: options.metadata || {},
-			});
+			return;
 		}
+
+		if (existingMessages && existingMessages.length === options.messages.length) {
+			if (messagesMatchStoredPrefix(existingMessages, options.messages)) {
+				return;
+			}
+
+			await conversationManager.replaceMessages(options.completion_id, options.messages);
+			return;
+		}
+
+		await conversationManager.addBatch(options.completion_id, messagesToStore, {
+			metadata: options.metadata || {},
+		});
 	}
 
 	private async buildSystemPrompt(
