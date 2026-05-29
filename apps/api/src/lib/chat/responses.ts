@@ -230,7 +230,7 @@ export async function getAIResponse({
 	let response;
 	try {
 		response = await withRetry(() => provider.getResponse(parameters, user?.id), {
-			retryCount: 2,
+			retryCount: 0,
 			baseDelayMs: 1000,
 			isRetryableError: isRetryableProviderError,
 			onRetry: (attempt, error, delayMs) => {

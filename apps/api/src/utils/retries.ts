@@ -17,7 +17,7 @@ export async function withRetry<T>(
 	} = {},
 ): Promise<T> {
 	const {
-		retryCount = 2,
+		retryCount = 0,
 		baseDelayMs = 500,
 		isRetryableError = () => true,
 		onRetry = () => {},

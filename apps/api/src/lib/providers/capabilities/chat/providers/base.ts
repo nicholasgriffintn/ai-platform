@@ -3,7 +3,7 @@ import { getModelConfigByMatchingModel } from "~/lib/providers/models";
 import type { AsyncInvocationMetadata } from "~/lib/async/asyncInvocation";
 import { trackProviderMetrics } from "~/lib/monitoring";
 import { StorageService } from "~/lib/storage";
-import type { ChatCompletionParameters } from "~/types";
+import type { ChatCompletionParameters, ModelConfigItem } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 import { resolveProviderApiKey } from "~/lib/providers/utils/apiKeys";
@@ -13,7 +13,7 @@ import {
 	shouldEnableStreaming,
 } from "~/utils/parameters";
 import { detectStreaming } from "~/utils/streaming";
-import { fetchAIResponse } from "../../../lib/fetch";
+import { fetchAIResponse, type FetchAIResponseOptions } from "../../../lib/fetch";
 import {
 	validateAiGatewayToken,
 	buildAiGatewayHeaders,
@@ -166,6 +166,15 @@ export abstract class BaseProvider implements AIProvider {
 		return buildMetricsSettings(params);
 	}
 
+	protected getFetchOptions(
+		_params: ChatCompletionParameters,
+		modelConfig: ModelConfigItem,
+	): FetchAIResponseOptions {
+		return {
+			requestTimeout: modelConfig.timeout || 100000,
+		};
+	}
+
 	/**
 	 * Gets the endpoint for the API call
 	 * @param params - The parameters of the request
@@ -246,8 +255,6 @@ export abstract class BaseProvider implements AIProvider {
 			throw new AssistantError(`Model ${params.model} not found`, ErrorType.CONFIGURATION_ERROR);
 		}
 
-		const timeout = modelConfig.timeout || 100000;
-
 		const storageService = new StorageService(params.env.ASSETS_BUCKET);
 		const assetsUrl = params.env.PUBLIC_ASSETS_URL || "";
 
@@ -265,9 +272,7 @@ export abstract class BaseProvider implements AIProvider {
 					headers,
 					body,
 					params.env,
-					{
-						requestTimeout: timeout,
-					},
+					this.getFetchOptions(params, modelConfig),
 				);
 
 				const isStreaming = detectStreaming(body, endpoint);

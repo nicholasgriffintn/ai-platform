@@ -141,7 +141,17 @@ export function createCommonParameters(
 		resolveReasoningModel(modelConfig, params.reasoning_effort) ||
 		modelConfig.matchingModel ||
 		params.model;
-	const modelName = isOpenAiCompatible ? `${providerName}/${resolvedModel}` : resolvedModel;
+
+	function getModelName(): string {
+		if (isOpenAiCompatible) {
+			return `${providerName}/${resolvedModel}`;
+		}
+		if (providerName === "huggingface") {
+			return `${resolvedModel}:fastest`;
+		}
+		return resolvedModel;
+	}
+	const modelName = getModelName();
 
 	const commonParams: Record<string, any> = {
 		model: modelName,

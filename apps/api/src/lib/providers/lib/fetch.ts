@@ -15,14 +15,17 @@ import { appendUrlPath } from "~/utils/urls";
 
 const logger = getLogger({ prefix: "lib/providers/fetch" });
 
+export interface FetchAIResponseOptions {
+	requestTimeout?: number;
+	retryDelay?: number;
+	maxAttempts?: number;
+	backoff?: "exponential" | "linear";
+	responseType?: "json" | "raw";
+}
+
 function getAiGatewayRequestHeaders(
 	headers: Record<string, string>,
-	options: {
-		requestTimeout?: number;
-		retryDelay?: number;
-		maxAttempts?: number;
-		backoff?: "exponential" | "linear";
-	},
+	options: FetchAIResponseOptions,
 ): Record<string, string> {
 	return omitUndefinedValues({
 		...headers,
@@ -47,13 +50,7 @@ export async function fetchAIResponse<
 	headers: Record<string, string>,
 	body: Record<string, any> | FormData,
 	env?: IEnv,
-	options: {
-		requestTimeout?: number;
-		retryDelay?: number;
-		maxAttempts?: number;
-		backoff?: "exponential" | "linear";
-		responseType?: "json" | "raw";
-	} = {
+	options: FetchAIResponseOptions = {
 		requestTimeout: 100000,
 		retryDelay: 500,
 		maxAttempts: 2,
@@ -131,6 +128,8 @@ export async function fetchAIResponse<
 				{
 					provider,
 					upstreamStatus: responseJson?.raw_status_code ?? response.status,
+					responseJson,
+					responseText,
 				},
 			);
 		}
@@ -138,6 +137,14 @@ export async function fetchAIResponse<
 		throw new AssistantError(
 			`Failed to get response for ${provider} from ${endpointOrUrl}`,
 			ErrorType.PROVIDER_ERROR,
+			response.status,
+			{
+				provider,
+				endpoint: endpointOrUrl,
+				responseStatus: response.status,
+				responseJson,
+				responseText,
+			},
 		);
 	}
 

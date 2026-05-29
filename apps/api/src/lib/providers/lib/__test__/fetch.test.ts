@@ -215,4 +215,58 @@ describe("fetchAIResponse", () => {
 			globalThis.fetch = originalFetch;
 		}
 	});
+
+	it("includes provider error bodies in AssistantError context", async () => {
+		const getUrl = vi.fn(async () => "https://gateway.ai.cloudflare.com/v1/account/gateway/hf");
+		const fetchMock = vi.fn(
+			async () =>
+				new Response(
+					JSON.stringify({
+						error: "Model test/model is currently loading",
+						estimated_time: 3,
+					}),
+					{
+						status: 503,
+						headers: {
+							"content-type": "application/json",
+						},
+					},
+				),
+		);
+		const originalFetch = globalThis.fetch;
+		globalThis.fetch = fetchMock as typeof fetch;
+
+		const env = {
+			AI: {
+				gateway: vi.fn(() => ({ getUrl })),
+			},
+		};
+
+		try {
+			await expect(
+				fetchAIResponse(
+					false,
+					"huggingface",
+					"test/model/v1/chat/completions",
+					{},
+					{
+						model: "test/model",
+						messages: [{ role: "user", content: "Hello" }],
+					},
+					env as unknown as IEnv,
+				),
+			).rejects.toMatchObject({
+				name: "AssistantError",
+				statusCode: 503,
+				context: {
+					responseJson: {
+						error: "Model test/model is currently loading",
+						estimated_time: 3,
+					},
+				},
+			} satisfies Partial<AssistantError>);
+		} finally {
+			globalThis.fetch = originalFetch;
+		}
+	});
 });
