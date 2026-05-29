@@ -1,5 +1,5 @@
 import { Settings } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 import { Button, Popover, PopoverContent, PopoverTrigger } from "~/components/ui";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
@@ -38,7 +38,10 @@ export const ChatSettings = ({
 	const [showSettings, setShowSettings] = useState(false);
 	const { data: apiModels = {} } = useModels();
 	const webLLMModels = useWebLLMModels();
-	const availableModels = getAvailableModels(apiModels, true, webLLMModels);
+	const availableModels = useMemo(
+		() => getAvailableModels(apiModels, true, webLLMModels),
+		[apiModels, webLLMModels],
+	);
 
 	const activeModelId = model && model.length > 0 ? model : undefined;
 	const selectedModelConfig = activeModelId ? availableModels[activeModelId] : undefined;

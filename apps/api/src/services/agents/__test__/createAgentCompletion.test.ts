@@ -6,8 +6,7 @@ import { handleCreateChatCompletions } from "~/services/completions/createChatCo
 import type { IEnv } from "~/types";
 
 vi.mock("~/lib/providers/models", () => ({
-	getModelConfig: vi.fn(async () => ({ provider: "openai" })),
-	getModelConfigByMatchingModel: vi.fn(async () => null),
+	findModelConfig: vi.fn(async () => ({ provider: "openai" })),
 }));
 
 vi.mock("~/lib/chat/tools", () => ({

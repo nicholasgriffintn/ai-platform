@@ -1,11 +1,6 @@
-import {
-	type VideoGenerationParams,
-	type VideoResponse,
-	generateVideo,
-} from "~/services/generate/video";
+import { generateVideo } from "~/services/generate/video";
 import { replicateModelConfig } from "~/data-model/models/replicate";
 import { workersAiModelConfig } from "~/data-model/models/workersai";
-import type { IRequest } from "~/types";
 import { jsonSchemaToZod } from "./jsonSchema";
 import type { ApiToolDefinition } from "./types";
 import { getModelIdsByOutput } from "~/utils/models";

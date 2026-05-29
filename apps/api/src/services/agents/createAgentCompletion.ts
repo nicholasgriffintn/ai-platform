@@ -1,6 +1,6 @@
 import { formatToolCalls } from "~/lib/chat/tools";
 import { createServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
-import { getModelConfig, getModelConfigByMatchingModel } from "~/lib/providers/models";
+import { findModelConfig } from "~/lib/providers/models";
 import { handleCreateChatCompletions } from "~/services/completions/createChatCompletions";
 import type { ChatCompletionRequestBody } from "@assistant/schemas";
 import type { ChatCompletionParameters, IEnv, IUser, Message } from "~/types";
@@ -36,9 +36,7 @@ export async function createAgentCompletion({
 	const functionSchemas = await buildAgentCompletionTools(agent, serviceContext.env);
 
 	const modelToUse = agent.model || body.model;
-	const modelDetails =
-		(await getModelConfig(modelToUse, env, body.provider)) ||
-		(await getModelConfigByMatchingModel(modelToUse || "", env, body.provider));
+	const modelDetails = await findModelConfig(modelToUse || "", env, body.provider);
 	if (!modelDetails) {
 		throw new AssistantError("Invalid model", ErrorType.PARAMS_ERROR);
 	}

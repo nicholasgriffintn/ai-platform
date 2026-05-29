@@ -1,6 +1,7 @@
 import { sanitiseInput } from "~/lib/chat/utils";
 import { getMusicProvider } from "~/lib/providers/capabilities/music";
-import { getModelConfigByModel } from "~/lib/providers/models";
+import { generateWithProviderFallback } from "~/lib/providers/capabilities/utils";
+import { resolveModelProvider } from "~/lib/providers/models";
 import { resolveServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
 import type { IEnv, IUser } from "~/types";
 
@@ -20,20 +21,6 @@ export interface MusicResponse {
 }
 
 const DEFAULT_PROVIDER = "replicate";
-
-async function resolveProviderName(
-	provider: string | undefined,
-	model: string | undefined,
-): Promise<string> {
-	if (model) {
-		const modelConfig = await getModelConfigByModel(model);
-		if (modelConfig?.provider) {
-			return modelConfig.provider;
-		}
-	}
-
-	return provider || DEFAULT_PROVIDER;
-}
 
 export async function generateMusic({
 	completion_id,
@@ -74,12 +61,12 @@ export async function generateMusic({
 			};
 		}
 
-		const providerName = await resolveProviderName(args.provider, args.model);
-		const provider = getMusicProvider(providerName, {
+		const providerName = await resolveModelProvider({
+			provider: args.provider,
+			model: args.model,
+			defaultProvider: DEFAULT_PROVIDER,
 			env: runtimeEnv,
-			user: runtimeUser,
 		});
-
 		const request = {
 			prompt: sanitisedPrompt,
 			env: runtimeEnv,
@@ -91,20 +78,16 @@ export async function generateMusic({
 			model: args.model,
 		};
 
-		let musicData;
-		try {
-			musicData = await provider.generate(request);
-		} catch (error) {
-			if (providerName !== DEFAULT_PROVIDER && !args.model) {
-				const fallbackProvider = getMusicProvider(DEFAULT_PROVIDER, {
+		const musicData = await generateWithProviderFallback({
+			providerName,
+			defaultProvider: DEFAULT_PROVIDER,
+			request,
+			getProvider: (name) =>
+				getMusicProvider(name, {
 					env: runtimeEnv,
 					user: runtimeUser,
-				});
-				musicData = await fallbackProvider.generate(request);
-			} else {
-				throw error;
-			}
-		}
+				}),
+		});
 
 		return {
 			status: "success",

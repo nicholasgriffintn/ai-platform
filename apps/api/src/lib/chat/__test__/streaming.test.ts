@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import { createStreamWithPostProcessing } from "../streaming";
 
 vi.mock("~/lib/providers/models", () => ({
-	getModelConfigByMatchingModel: vi.fn().mockResolvedValue({
+	findModelConfig: vi.fn().mockResolvedValue({
 		modalities: { input: ["text"], output: ["text"] },
 	}),
 }));

@@ -11,7 +11,7 @@ import {
 	buildConversationModeMetadataFromRequestOptions,
 	resolveChatPromptMode,
 } from "~/lib/chat/mode-metadata";
-import { getModelConfig } from "~/lib/providers/models";
+import { findModelConfig } from "~/lib/providers/models";
 import { getSystemPrompt } from "~/lib/prompts";
 import type { ChatMode, CoreChatOptions, Message, ModelConfigInfo, Platform } from "~/types";
 import { generateId } from "~/utils/id";
@@ -23,7 +23,7 @@ import { memoizeRequest } from "~/utils/requestCache";
 
 const logger = getLogger({ prefix: "lib/chat/preparation/RequestPreparer" });
 
-type ProviderModelConfig = Awaited<ReturnType<typeof getModelConfig>>;
+type ProviderModelConfig = NonNullable<Awaited<ReturnType<typeof findModelConfig>>>;
 
 export interface PreparedRequest {
 	modelConfigs: ModelConfigInfo[];
@@ -51,25 +51,27 @@ export class RequestPreparer {
 		RequestPreparer.modelConfigCache.clear();
 	}
 
-	private static getCachedModelConfig(model: string, env: any) {
-		if (!RequestPreparer.modelConfigCache.has(model)) {
+	private static getCachedModelConfig(model: string, env: any, provider?: string) {
+		const cacheKey = provider ? `${provider}:${model}` : model;
+
+		if (!RequestPreparer.modelConfigCache.has(cacheKey)) {
 			const fetchPromise = (async () => {
 				try {
-					const config = await getModelConfig(model, env);
+					const config = await findModelConfig(model, env, provider);
 					if (!config) {
-						RequestPreparer.modelConfigCache.delete(model);
+						RequestPreparer.modelConfigCache.delete(cacheKey);
 						return null;
 					}
 					return config;
 				} catch (error) {
-					RequestPreparer.modelConfigCache.delete(model);
+					RequestPreparer.modelConfigCache.delete(cacheKey);
 					throw error;
 				}
 			})();
-			RequestPreparer.modelConfigCache.set(model, fetchPromise);
+			RequestPreparer.modelConfigCache.set(cacheKey, fetchPromise);
 		}
 
-		return RequestPreparer.modelConfigCache.get(model)!;
+		return RequestPreparer.modelConfigCache.get(cacheKey)!;
 	}
 
 	async prepare(
@@ -196,7 +198,7 @@ export class RequestPreparer {
 		options: CoreChatOptions,
 		validationContext: ValidationContext,
 	): Promise<ModelConfigInfo[]> {
-		const { env } = options;
+		const { env, provider: requestedProvider } = options;
 		const { selectedModels, modelConfig } = validationContext;
 		const primaryModelConfig = modelConfig as ProviderModelConfig | undefined;
 
@@ -231,7 +233,7 @@ export class RequestPreparer {
 		const modelsToFetch = shouldSkipPrimaryFetch ? selectedModels.slice(1) : selectedModels.slice();
 
 		const configPromises = modelsToFetch.map((model) =>
-			RequestPreparer.getCachedModelConfig(model, env),
+			RequestPreparer.getCachedModelConfig(model, env, requestedProvider),
 		);
 		const configResults = await Promise.allSettled(configPromises);
 		configResults.forEach((result, index) => {

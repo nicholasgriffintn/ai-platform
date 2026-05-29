@@ -63,6 +63,13 @@ export interface ModelsOptions {
 	excludeModalities?: ModelModality[];
 }
 
+export interface ResolveModelProviderOptions {
+	model?: string;
+	provider?: string;
+	defaultProvider: string;
+	env?: IEnv;
+}
+
 const modelConfig: ModelConfig = mergeModelConfigs(
 	openaiModelConfig,
 	anthropicModelConfig,
@@ -220,6 +227,51 @@ export async function getModelConfigByMatchingModel(
 		cacheParts,
 		() => findModelConfigByMatchingModel(matchingModel, provider) ?? null,
 	);
+}
+
+export async function findModelConfig(
+	model: string,
+	env?: IEnv,
+	provider?: string,
+): Promise<ModelConfigItem | null> {
+	return (
+		(await getModelConfig(model, env, provider)) ||
+		(await getModelConfigByMatchingModel(model, env, provider)) ||
+		null
+	);
+}
+
+export async function resolveModelConfig(
+	model: string,
+	env?: IEnv,
+	provider?: string,
+): Promise<ModelConfigItem> {
+	const resolvedConfig = await findModelConfig(model, env, provider);
+
+	if (!resolvedConfig) {
+		throw new AssistantError(`Model ${model} not found`, ErrorType.PARAMS_ERROR);
+	}
+
+	return resolvedConfig;
+}
+
+export async function resolveModelProvider({
+	model,
+	provider,
+	defaultProvider,
+	env,
+}: ResolveModelProviderOptions): Promise<string> {
+	if (model) {
+		const modelConfig =
+			(await getModelConfigByModel(model, env)) ||
+			(await getModelConfigByMatchingModel(model, env, provider));
+
+		if (modelConfig?.provider) {
+			return modelConfig.provider;
+		}
+	}
+
+	return provider || defaultProvider;
 }
 
 export function getModels(

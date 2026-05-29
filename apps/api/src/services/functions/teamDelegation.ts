@@ -1,6 +1,6 @@
 import { TeamDelegation } from "~/lib/agents/team/TeamDelegation";
 import { resolveServiceContext, createServiceContext } from "~/lib/context/serviceContext";
-import type { IFunctionResponse, IRequest, Message } from "~/types";
+import type { Message } from "~/types";
 import { getLogger } from "~/utils/logger";
 import { jsonSchemaToZod } from "./jsonSchema";
 import type { ApiToolDefinition } from "./types";

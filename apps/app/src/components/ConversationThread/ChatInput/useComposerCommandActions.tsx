@@ -86,7 +86,10 @@ export function useComposerCommandActions({
 	const selectedTools = useToolsStore((state) => state.selectedTools);
 	const setSelectedTools = useToolsStore((state) => state.setSelectedTools);
 
-	const availableModels = getAvailableModels(apiModels, true, webLLMModels);
+	const availableModels = useMemo(
+		() => getAvailableModels(apiModels, true, webLLMModels),
+		[apiModels, webLLMModels],
+	);
 	const selectedModelConfig = model ? availableModels[model] : undefined;
 	const modelCapabilities = model ? apiModels[model] : undefined;
 	const canUseAgents =

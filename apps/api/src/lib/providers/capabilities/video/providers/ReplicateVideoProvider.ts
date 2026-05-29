@@ -3,6 +3,7 @@ import { validateReplicatePayload } from "~/lib/providers/models/replicateValida
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import { extractGeneratedAsset } from "~/lib/providers/utils/helpers";
 import { AssistantError, ErrorType } from "~/utils/errors";
+import { omitNullishValues } from "~/utils/objects";
 import type { VideoGenerationRequest, VideoGenerationResult, VideoProvider } from "../index";
 
 const DEFAULT_MODEL = "replicate-google-veo-3-1-fast";
@@ -22,18 +23,16 @@ export class ReplicateVideoProvider implements VideoProvider {
 			);
 		}
 
-		const replicatePayload = Object.fromEntries(
-			Object.entries({
-				prompt: request.prompt,
-				negative_prompt: request.negativePrompt,
-				aspect_ratio: request.aspectRatio,
-				width: request.width,
-				height: request.height,
-				duration: request.duration ?? request.videoLength,
-				guidance_scale: request.guidanceScale,
-				...request.metadata,
-			}).filter(([, value]) => value !== undefined && value !== null),
-		);
+		const replicatePayload = omitNullishValues({
+			prompt: request.prompt,
+			negative_prompt: request.negativePrompt,
+			aspect_ratio: request.aspectRatio,
+			width: request.width,
+			height: request.height,
+			duration: request.duration ?? request.videoLength,
+			guidance_scale: request.guidanceScale,
+			...request.metadata,
+		});
 
 		validateReplicatePayload({
 			payload: replicatePayload,

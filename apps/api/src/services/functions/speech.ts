@@ -1,11 +1,6 @@
-import {
-	type SpeechGenerationParams,
-	type SpeechResponse,
-	generateSpeech,
-} from "~/services/generate/speech";
+import { generateSpeech } from "~/services/generate/speech";
 import { replicateModelConfig } from "~/data-model/models/replicate";
 import { workersAiModelConfig } from "~/data-model/models/workersai";
-import type { IRequest } from "~/types";
 import { jsonSchemaToZod } from "./jsonSchema";
 import type { ApiToolDefinition } from "./types";
 import { getModelIdsByOutput } from "~/utils/models";

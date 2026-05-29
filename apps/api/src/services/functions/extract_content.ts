@@ -1,7 +1,7 @@
 import { getAIResponse } from "~/lib/chat";
 import { extractContentsystem_prompt } from "~/lib/prompts";
 import { extractContent } from "~/services/apps/retrieval/content-extract";
-import type { IRequest, Message } from "~/types";
+import type { Message } from "~/types";
 import { jsonSchemaToZod } from "./jsonSchema";
 import type { ApiToolDefinition } from "./types";
 

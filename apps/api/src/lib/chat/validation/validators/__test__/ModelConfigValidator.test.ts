@@ -13,8 +13,7 @@ vi.mock("~/lib/chat/utils", () => ({
 }));
 
 vi.mock("~/lib/providers/models", () => ({
-	getModelConfig: vi.fn(),
-	getModelConfigByMatchingModel: vi.fn(),
+	findModelConfig: vi.fn(),
 }));
 
 vi.mock("~/utils/logger", () => ({
@@ -32,7 +31,7 @@ describe("ModelConfigValidator", () => {
 	let baseContext: ValidationContext;
 	let mockSelectModels: any;
 	let mockGetAllAttachments: any;
-	let mockGetModelConfig: any;
+	let mockFindModelConfig: any;
 	let _mockLogger: any;
 
 	beforeEach(async () => {
@@ -43,13 +42,13 @@ describe("ModelConfigValidator", () => {
 		);
 		const { getAllAttachments } =
 			await vi.importMock<typeof import("~/lib/chat/utils")>("~/lib/chat/utils");
-		const { getModelConfig } =
+		const { findModelConfig } =
 			await vi.importMock<typeof import("~/lib/providers/models")>("~/lib/providers/models");
 		const { getLogger } = await vi.importMock<typeof import("~/utils/logger")>("~/utils/logger");
 
 		mockSelectModels = vi.mocked(selectModels);
 		mockGetAllAttachments = vi.mocked(getAllAttachments);
-		mockGetModelConfig = vi.mocked(getModelConfig);
+		mockFindModelConfig = vi.mocked(findModelConfig);
 		_mockLogger = vi.mocked(getLogger)().info;
 
 		validator = new ModelConfigValidator();
@@ -92,7 +91,7 @@ describe("ModelConfigValidator", () => {
 
 		mockSelectModels.mockResolvedValue(["claude-3-sonnet"]);
 
-		mockGetModelConfig.mockResolvedValue({
+		mockFindModelConfig.mockResolvedValue({
 			matchingModel: "claude-3-sonnet",
 			provider: "anthropic",
 			contextWindow: 200000,
@@ -123,7 +122,7 @@ describe("ModelConfigValidator", () => {
 				"claude-3-sonnet",
 				false,
 			);
-			expect(mockGetModelConfig).toHaveBeenCalledWith(
+			expect(mockFindModelConfig).toHaveBeenCalledWith(
 				"claude-3-sonnet",
 				baseOptions.env,
 				undefined,
@@ -254,7 +253,7 @@ describe("ModelConfigValidator", () => {
 		});
 
 		it("should fail validation when model configuration is not found", async () => {
-			mockGetModelConfig.mockResolvedValue(null);
+			mockFindModelConfig.mockResolvedValue(null);
 
 			const result = await validator.validate(baseOptions, baseContext);
 
@@ -265,7 +264,7 @@ describe("ModelConfigValidator", () => {
 		});
 
 		it("should fail validation when model configuration is undefined", async () => {
-			mockGetModelConfig.mockResolvedValue(undefined);
+			mockFindModelConfig.mockResolvedValue(undefined);
 
 			const result = await validator.validate(baseOptions, baseContext);
 
@@ -285,8 +284,8 @@ describe("ModelConfigValidator", () => {
 			expect(result.context).toEqual({});
 		});
 
-		it("should handle getModelConfig throwing an error", async () => {
-			mockGetModelConfig.mockRejectedValue(new Error("Model config fetch failed"));
+		it("should handle findModelConfig throwing an error", async () => {
+			mockFindModelConfig.mockRejectedValue(new Error("Model config fetch failed"));
 
 			const result = await validator.validate(baseOptions, baseContext);
 

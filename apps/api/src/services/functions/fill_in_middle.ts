@@ -1,5 +1,4 @@
 import { handleCreateFimCompletions } from "~/services/completions/createFimCompletions";
-import type { IRequest } from "~/types";
 import { jsonSchemaToZod } from "./jsonSchema";
 import type { ApiToolDefinition } from "./types";
 

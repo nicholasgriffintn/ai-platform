@@ -25,6 +25,7 @@ export interface VideoGenerationRequest {
 export interface VideoGenerationResult {
 	key?: string;
 	url?: string;
+	status?: string;
 	response?: string;
 	metadata?: Record<string, unknown>;
 	raw?: unknown;

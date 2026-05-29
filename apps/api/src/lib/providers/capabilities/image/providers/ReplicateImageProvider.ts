@@ -4,6 +4,7 @@ import { validateReplicatePayload } from "~/lib/providers/models/replicateValida
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import { extractGeneratedAsset } from "~/lib/providers/utils/helpers";
 import { AssistantError, ErrorType } from "~/utils/errors";
+import { omitNullishValues } from "~/utils/objects";
 import type { ImageGenerationRequest, ImageGenerationResult, ImageProvider } from "../index";
 
 const DEFAULT_MODEL = "replicate-flux-2-pro";
@@ -34,16 +35,14 @@ export class ReplicateImageProvider implements ImageProvider {
 		const stylePrompt = resolveStylePrompt(request.style);
 		const prompt = stylePrompt ? `${stylePrompt}\n\n${request.prompt}` : request.prompt;
 
-		const replicatePayload = Object.fromEntries(
-			Object.entries({
-				prompt,
-				aspect_ratio: request.aspectRatio,
-				width: request.width,
-				height: request.height,
-				steps: request.steps,
-				...request.metadata,
-			}).filter(([, value]) => value !== undefined && value !== null),
-		);
+		const replicatePayload = omitNullishValues({
+			prompt,
+			aspect_ratio: request.aspectRatio,
+			width: request.width,
+			height: request.height,
+			steps: request.steps,
+			...request.metadata,
+		});
 
 		validateReplicatePayload({
 			payload: replicatePayload,

@@ -1,5 +1,4 @@
 import { handlePromptCoachSuggestion } from "~/services/apps/prompt-coach";
-import type { IRequest } from "~/types";
 import { jsonSchemaToZod } from "./jsonSchema";
 import type { ApiToolDefinition } from "./types";
 

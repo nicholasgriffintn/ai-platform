@@ -1,6 +1,7 @@
 import { listFunctionTools } from "~/services/functions";
 import type { ChatCompletionParameters, ModelConfigItem } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
+import { omitNullishValues } from "~/utils/objects";
 import { resolveReasoningModel } from "../lib/providers/models/reasoning";
 import { formatToolCalls } from "../lib/chat/tools";
 
@@ -48,6 +49,26 @@ export function createSamplingParameters(
 		...(modelConfig.supportsTemperature !== false ? { temperature: params.temperature } : {}),
 		...(modelConfig.supportsTopP !== false && !params.should_think ? { top_p: params.top_p } : {}),
 	};
+}
+
+export function isFimCompletionRequest(
+	params: Pick<ChatCompletionParameters, "fim_mode" | "suffix">,
+): boolean {
+	return Boolean(params.fim_mode || typeof params.suffix !== "undefined");
+}
+
+export function createFimParameters(params: ChatCompletionParameters): Record<string, any> {
+	return omitNullishValues({
+		model: params.model,
+		prompt: params.prompt,
+		suffix: params.suffix,
+		max_tokens: params.max_tokens,
+		min_tokens: params.min_tokens,
+		temperature: params.temperature,
+		top_p: params.top_p,
+		stop: params.stop,
+		stream: params.stream,
+	});
 }
 
 export function calculateReasoningBudget(

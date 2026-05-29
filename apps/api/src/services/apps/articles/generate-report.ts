@@ -1,7 +1,4 @@
-import {
-	getAuxiliaryModelForRetrieval,
-	getModelConfigByMatchingModel,
-} from "~/lib/providers/models";
+import { findModelConfig, getAuxiliaryModelForRetrieval } from "~/lib/providers/models";
 import { generateArticleReportPrompt } from "~/lib/prompts";
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import { createServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
@@ -100,7 +97,7 @@ export async function generateArticlesReport({
 			serviceContext.env,
 			user,
 		);
-		const modelConfig = await getModelConfigByMatchingModel(modelToUse);
+		const modelConfig = await findModelConfig(modelToUse, serviceContext.env, providerToUse);
 		const provider = getChatProvider(providerToUse, {
 			env: serviceContext.env,
 			user,

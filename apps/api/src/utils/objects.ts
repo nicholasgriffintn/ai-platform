@@ -27,6 +27,16 @@ export function coerceStringArray(value: unknown): string[] {
 	return typeof value === "string" ? [value] : [];
 }
 
+export function coerceStringRecord(value: unknown): Record<string, string> {
+	if (!isPlainObject(value)) {
+		return {};
+	}
+
+	return Object.fromEntries(
+		Object.entries(omitNullishValues(value)).map(([key, entryValue]) => [key, String(entryValue)]),
+	);
+}
+
 export function omitUndefinedValues<T>(value: T): T {
 	if (Array.isArray(value)) {
 		return value.map((item) => (item === undefined ? null : omitUndefinedValues(item))) as T;
@@ -41,4 +51,14 @@ export function omitUndefinedValues<T>(value: T): T {
 		.map(([entryKey, entryValue]) => [entryKey, omitUndefinedValues(entryValue)]);
 
 	return Object.fromEntries(entries) as T;
+}
+
+export function omitNullishValues<T extends Record<string, unknown>>(
+	value: T,
+): Record<string, Exclude<T[keyof T], null | undefined>> {
+	return Object.fromEntries(
+		Object.entries(value).filter(
+			([, entryValue]) => entryValue !== undefined && entryValue !== null,
+		),
+	) as Record<string, Exclude<T[keyof T], null | undefined>>;
 }

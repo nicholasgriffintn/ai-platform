@@ -1,6 +1,6 @@
 import { Brain, ChevronDown, ChevronUp, ListFilter } from "lucide-react";
 import type { ReactNode } from "react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 import { Popover, PopoverContent, PopoverTrigger } from "~/components/ui/popover";
 import { useModels } from "~/hooks/useModels";
@@ -121,7 +121,10 @@ export function InlineResponseControls({ isDisabled = false }: InlineResponseCon
 	const { chatSettings, model, setChatSettings } = useChatStore();
 	const { data: apiModels = {} } = useModels();
 	const webLLMModels = useWebLLMModels();
-	const availableModels = getAvailableModels(apiModels, true, webLLMModels);
+	const availableModels = useMemo(
+		() => getAvailableModels(apiModels, true, webLLMModels),
+		[apiModels, webLLMModels],
+	);
 	const selectedModelConfig = model ? availableModels[model] : undefined;
 
 	const reasoningOptions = getReasoningOptions(selectedModelConfig);

@@ -26,6 +26,7 @@ import {
 	getFeaturedModelIds,
 	getModelsByMode,
 	getRealtimeSessionModelsByProvider,
+	getToolCallModels,
 	isTextInputChatModel,
 	modelSupportsVisualModality,
 } from "~/lib/models";
@@ -292,24 +293,31 @@ export const ModelSelector = ({
 	const modelLoadingProgress = useLoadingProgress("model-init");
 	const modelLoadingMessage = useLoadingMessage("model-init");
 
-	const availableModels = getAvailableModels(apiModels, true, webLLMModels);
-	const functionModels: Record<string, ModelConfigItem> = Object.entries(availableModels).reduce(
-		(acc, [key, modelConfig]) => {
-			if (modelConfig.supportsToolCalls) {
-				acc[key] = { ...modelConfig, id: key };
-			}
-			return acc;
-		},
-		{} as Record<string, ModelConfigItem>,
+	const availableModels = useMemo(
+		() => getAvailableModels(apiModels, true, webLLMModels),
+		[apiModels, webLLMModels],
 	);
-	const featuredModelIds = getFeaturedModelIds(availableModels);
+	const functionModels = useMemo(() => getToolCallModels(availableModels), [availableModels]);
+	const featuredModelIds = useMemo(() => getFeaturedModelIds(availableModels), [availableModels]);
 
 	const modelListChatMode = isModelListOnlyScope && chatMode === "agent" ? "remote" : chatMode;
-	const baseFilteredModels = isLiveScope
-		? getRealtimeSessionModelsByProvider(availableModels, modelProviderFilter)
-		: !isTextOnlyScope && chatMode === "agent"
-			? functionModels
-			: getModelsByMode(availableModels, modelListChatMode);
+	const baseFilteredModels = useMemo(
+		() =>
+			isLiveScope
+				? getRealtimeSessionModelsByProvider(availableModels, modelProviderFilter)
+				: !isTextOnlyScope && chatMode === "agent"
+					? functionModels
+					: getModelsByMode(availableModels, modelListChatMode),
+		[
+			availableModels,
+			chatMode,
+			functionModels,
+			isLiveScope,
+			isTextOnlyScope,
+			modelListChatMode,
+			modelProviderFilter,
+		],
+	);
 
 	const filteredModels = useMemo(
 		() =>

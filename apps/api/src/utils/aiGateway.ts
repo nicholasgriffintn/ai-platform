@@ -1,4 +1,5 @@
 import type { ChatCompletionParameters } from "~/types";
+import { omitNullishValues } from "~/utils/objects";
 
 const DEFAULT_AI_GATEWAY_CACHE_TTL_SECONDS = 60 * 60 * 24;
 
@@ -22,15 +23,7 @@ export function getAiGatewayMetadataHeaders(
 		completionId: params.completion_id,
 	};
 
-	const headers: Record<string, AiGatewayMetadataValue> = {};
-
-	for (const [key, value] of Object.entries(metadata)) {
-		if (value !== undefined && value !== null) {
-			headers[key] = value;
-		}
-	}
-
-	return headers;
+	return omitNullishValues(metadata);
 }
 
 export function resolveAiGatewayCacheTtl(params?: AiGatewayCacheTtlSource): number {

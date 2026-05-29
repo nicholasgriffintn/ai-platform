@@ -6,6 +6,7 @@ import type { IEnv, IFunctionResponse, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 import { safeParseJson } from "~/utils/json";
+import { omitNullishValues } from "~/utils/objects";
 import { TaskRepository } from "~/repositories/TaskRepository";
 import { TaskService } from "~/services/tasks/TaskService";
 
@@ -100,18 +101,16 @@ export const handlePodcastTranscribe = async (
 
 		const prompt = `${request.prompt} <title>${title}</title> <description>${description}</description>`;
 
-		const replicatePayload = Object.fromEntries(
-			Object.entries({
-				file: audioUrl,
-				prompt,
-				language: "en",
-				num_speakers: request.numberOfSpeakers,
-				transcript_output_format: "segments_only",
-				group_segments: true,
-				translate: false,
-				offset_seconds: 0,
-			}).filter(([, value]) => value !== undefined && value !== null),
-		);
+		const replicatePayload = omitNullishValues({
+			file: audioUrl,
+			prompt,
+			language: "en",
+			num_speakers: request.numberOfSpeakers,
+			transcript_output_format: "segments_only",
+			group_segments: true,
+			translate: false,
+			offset_seconds: 0,
+		});
 
 		validateReplicatePayload({
 			payload: replicatePayload,

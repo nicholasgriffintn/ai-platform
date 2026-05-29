@@ -159,6 +159,21 @@ export function getRealtimeSessionModelsByProvider(models: ModelConfig, provider
 	);
 }
 
+export function getToolCallModels(models: ModelConfig) {
+	return Object.entries(models).reduce(
+		(acc, [key, model]) => {
+			if (model.supportsToolCalls) {
+				acc[key] = {
+					...model,
+					id: key,
+				};
+			}
+			return acc;
+		},
+		{} as Record<string, ModelConfigItem>,
+	);
+}
+
 export function getModelsByMode(models: ModelConfig, mode: ChatMode) {
 	return Object.entries(models).reduce(
 		(acc, [key, model]) => {

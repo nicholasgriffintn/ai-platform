@@ -1,12 +1,7 @@
 import { imagePrompts } from "~/lib/prompts/image";
 import { replicateModelConfig } from "~/data-model/models/replicate";
 import { workersAiModelConfig } from "~/data-model/models/workersai";
-import {
-	type ImageGenerationParams,
-	type ImageResponse,
-	generateImage,
-} from "~/services/generate/image";
-import type { IRequest } from "~/types";
+import { generateImage } from "~/services/generate/image";
 import { jsonSchemaToZod } from "./jsonSchema";
 import type { ApiToolDefinition } from "./types";
 import { getModelIdsByOutput } from "~/utils/models";

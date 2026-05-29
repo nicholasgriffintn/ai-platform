@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { getAllAttachments, pruneMessagesToFitContext, sanitiseInput } from "~/lib/chat/utils";
-import { getModelConfig } from "~/lib/providers/models";
+import { findModelConfig } from "~/lib/providers/models";
 import { getSystemPrompt } from "~/lib/prompts";
 import type { CoreChatOptions } from "~/types";
 import { generateId } from "~/utils/id";
@@ -58,7 +58,7 @@ vi.mock("~/lib/memory", () => ({
 }));
 
 vi.mock("~/lib/providers/models", () => ({
-	getModelConfig: vi.fn(),
+	findModelConfig: vi.fn(),
 }));
 
 vi.mock("~/lib/prompts", () => ({
@@ -143,7 +143,7 @@ describe("RequestPreparer", () => {
 			memories_save_enabled: true,
 		});
 
-		vi.mocked(getModelConfig).mockResolvedValue(mockModelConfig);
+		vi.mocked(findModelConfig).mockResolvedValue(mockModelConfig);
 		vi.mocked(getSystemPrompt).mockResolvedValue("Generated system prompt");
 		vi.mocked(generateId).mockReturnValue("test-id-123");
 		vi.mocked(getAllAttachments).mockReturnValue({
@@ -241,7 +241,7 @@ describe("RequestPreparer", () => {
 		});
 
 		it("should throw error when model config is invalid", async () => {
-			vi.mocked(getModelConfig).mockResolvedValue(null);
+			vi.mocked(findModelConfig).mockResolvedValue(null);
 
 			const contextWithoutPrimary = {
 				...baseValidationContext,
@@ -265,12 +265,12 @@ describe("RequestPreparer", () => {
 				selectedModels: ["claude-3-sonnet", "gpt-4o"],
 			};
 
-			vi.mocked(getModelConfig).mockResolvedValueOnce(secondaryModel as any);
+			vi.mocked(findModelConfig).mockResolvedValueOnce(secondaryModel as any);
 
 			const result = await (preparer as any).buildModelConfigs(baseOptions, multiModelContext);
 
-			expect(getModelConfig).toHaveBeenCalledTimes(1);
-			expect(getModelConfig).toHaveBeenCalledWith("gpt-4o", mockEnv);
+			expect(findModelConfig).toHaveBeenCalledTimes(1);
+			expect(findModelConfig).toHaveBeenCalledWith("gpt-4o", mockEnv, undefined);
 			expect(result).toEqual([
 				{
 					model: "claude-3-sonnet",
@@ -304,7 +304,7 @@ describe("RequestPreparer", () => {
 				selectedModels: ["grok-3-gh", "xai/grok-3"],
 			};
 
-			vi.mocked(getModelConfig).mockResolvedValueOnce(vercelModel as any);
+			vi.mocked(findModelConfig).mockResolvedValueOnce(vercelModel as any);
 
 			const result = await (preparer as any).buildModelConfigs(baseOptions, multiProviderContext);
 

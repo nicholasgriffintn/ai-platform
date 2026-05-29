@@ -59,6 +59,17 @@ describe("call_api function", () => {
 		expect(fetch).not.toHaveBeenCalled();
 	});
 
+	it("blocks private and local network URLs", async () => {
+		const result = await call_api.execute(
+			{ url: "http://[::1]/metadata" },
+			createToolContext(baseRequest),
+		);
+
+		expect(result.status).toBe("error");
+		expect(result.content).toBe("Private or local network URLs are not allowed");
+		expect(fetch).not.toHaveBeenCalled();
+	});
+
 	it("executes a REST GET request with query params", async () => {
 		vi.mocked(fetch).mockResolvedValue(
 			createMockResponse({

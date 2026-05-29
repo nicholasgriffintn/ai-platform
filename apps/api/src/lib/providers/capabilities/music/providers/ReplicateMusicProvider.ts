@@ -3,6 +3,7 @@ import { validateReplicatePayload } from "~/lib/providers/models/replicateValida
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import { extractGeneratedAsset } from "~/lib/providers/utils/helpers";
 import { AssistantError, ErrorType } from "~/utils/errors";
+import { omitNullishValues } from "~/utils/objects";
 import type { MusicGenerationRequest, MusicGenerationResult, MusicProvider } from "../index";
 
 const DEFAULT_MODEL = "replicate-stable-audio";
@@ -26,14 +27,12 @@ export class ReplicateMusicProvider implements MusicProvider {
 			);
 		}
 
-		const replicatePayload = Object.fromEntries(
-			Object.entries({
-				prompt: request.prompt,
-				input_audio: request.inputAudio,
-				duration: request.duration,
-				...request.metadata,
-			}).filter(([, value]) => value !== undefined && value !== null),
-		);
+		const replicatePayload = omitNullishValues({
+			prompt: request.prompt,
+			input_audio: request.inputAudio,
+			duration: request.duration,
+			...request.metadata,
+		});
 
 		validateReplicatePayload({
 			payload: replicatePayload,

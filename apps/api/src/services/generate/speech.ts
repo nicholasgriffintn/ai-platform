@@ -1,7 +1,8 @@
 import { sanitiseInput } from "~/lib/chat/utils";
 import { getSpeechProvider } from "~/lib/providers/capabilities/speech";
+import { generateWithProviderFallback } from "~/lib/providers/capabilities/utils";
 import { resolveServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
-import { getModelConfigByModel } from "~/lib/providers/models";
+import { resolveModelProvider } from "~/lib/providers/models";
 import type { IEnv, IUser } from "~/types";
 
 export interface SpeechGenerationParams {
@@ -20,20 +21,6 @@ export interface SpeechResponse {
 }
 
 const DEFAULT_PROVIDER = "workers-ai";
-
-async function resolveProviderName(
-	provider: string | undefined,
-	model: string | undefined,
-): Promise<string> {
-	if (model) {
-		const modelConfig = await getModelConfigByModel(model);
-		if (modelConfig?.provider) {
-			return modelConfig.provider;
-		}
-	}
-
-	return provider || DEFAULT_PROVIDER;
-}
 
 export async function generateSpeech({
 	completion_id,
@@ -66,12 +53,12 @@ export async function generateSpeech({
 
 		const sanitisedPrompt = sanitiseInput(args.prompt);
 
-		const providerName = await resolveProviderName(args.provider, args.model);
-		const provider = getSpeechProvider(providerName, {
+		const providerName = await resolveModelProvider({
+			provider: args.provider,
+			model: args.model,
+			defaultProvider: DEFAULT_PROVIDER,
 			env: runtimeEnv,
-			user: runtimeUser,
 		});
-
 		const request = {
 			prompt: sanitisedPrompt,
 			env: runtimeEnv,
@@ -83,20 +70,16 @@ export async function generateSpeech({
 			model: args.model,
 		};
 
-		let speechData;
-		try {
-			speechData = await provider.generate(request);
-		} catch (error) {
-			if (providerName !== DEFAULT_PROVIDER && !args.model) {
-				const fallbackProvider = getSpeechProvider(DEFAULT_PROVIDER, {
+		const speechData = await generateWithProviderFallback({
+			providerName,
+			defaultProvider: DEFAULT_PROVIDER,
+			request,
+			getProvider: (name) =>
+				getSpeechProvider(name, {
 					env: runtimeEnv,
 					user: runtimeUser,
-				});
-				speechData = await fallbackProvider.generate(request);
-			} else {
-				throw error;
-			}
-		}
+				}),
+		});
 
 		return {
 			status: "success",

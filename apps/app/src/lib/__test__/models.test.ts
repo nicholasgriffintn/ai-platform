@@ -6,6 +6,7 @@ import {
 	getModelProvider,
 	getModelsByMode,
 	getRealtimeSessionModelsByProvider,
+	getToolCallModels,
 	isImageGenerationOutputModel,
 	isTextInputChatModel,
 	isTextOnlyModel,
@@ -212,6 +213,37 @@ describe("getRealtimeSessionModelsByProvider", () => {
 		expect(Object.keys(getRealtimeSessionModelsByProvider(models, "openai"))).toEqual([
 			"gpt-realtime-2",
 		]);
+	});
+});
+
+describe("getToolCallModels", () => {
+	it("returns models that advertise tool call support", () => {
+		const models: ModelConfig = {
+			"agent-model": {
+				id: "agent-model",
+				name: "Agent Model",
+				matchingModel: "agent-model",
+				provider: "openai",
+				supportsToolCalls: true,
+			},
+			"chat-model": {
+				id: "chat-model",
+				name: "Chat Model",
+				matchingModel: "chat-model",
+				provider: "openai",
+				supportsToolCalls: false,
+			},
+		};
+
+		expect(getToolCallModels(models)).toEqual({
+			"agent-model": {
+				id: "agent-model",
+				name: "Agent Model",
+				matchingModel: "agent-model",
+				provider: "openai",
+				supportsToolCalls: true,
+			},
+		});
 	});
 });
 

@@ -39,7 +39,7 @@ vi.mock("~/lib/chat/utils", () => ({
 
 vi.mock("~/lib/providers/models", () => ({
 	getAuxiliaryModelForRetrieval: vi.fn(),
-	getModelConfigByMatchingModel: vi.fn(),
+	findModelConfig: vi.fn(),
 }));
 
 vi.mock("~/lib/providers/capabilities/chat", () => ({
@@ -81,13 +81,13 @@ describe("analyseArticle", () => {
 	beforeEach(async () => {
 		vi.clearAllMocks();
 		appDataRepoFactory = () => mockAppDataRepo;
-		const { getAuxiliaryModelForRetrieval, getModelConfigByMatchingModel } =
+		const { getAuxiliaryModelForRetrieval, findModelConfig } =
 			await import("~/lib/providers/models");
 		vi.mocked(getAuxiliaryModelForRetrieval).mockResolvedValue({
 			model: "test-model",
 			provider: "test-provider",
 		});
-		vi.mocked(getModelConfigByMatchingModel).mockResolvedValue(undefined);
+		vi.mocked(findModelConfig).mockResolvedValue(undefined);
 	});
 
 	afterEach(() => {

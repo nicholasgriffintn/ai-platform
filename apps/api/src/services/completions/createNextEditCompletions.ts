@@ -1,17 +1,8 @@
-import { getModelConfig, getModelConfigByMatchingModel } from "~/lib/providers/models";
-import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import { ModelRouter } from "~/lib/modelRouter";
-import type { ChatCompletionParameters, ChatRole, IEnv, IUser, Message } from "~/types";
-import { AssistantError, ErrorType } from "~/utils/errors";
-
-interface HandleCreateNextEditCompletionsRequest {
-	env: IEnv;
-	model?: string;
-	provider?: string;
-	messages: Array<{ role: string; content?: any; [key: string]: any }>;
-	stream?: boolean;
-	user?: IUser;
-}
+import {
+	handleCreateEditCompletions,
+	type HandleCreateEditCompletionsRequest,
+} from "~/lib/chat/edit-completions";
 
 export const handleCreateNextEditCompletions = async ({
 	env,
@@ -20,59 +11,15 @@ export const handleCreateNextEditCompletions = async ({
 	messages,
 	stream,
 	user,
-}: HandleCreateNextEditCompletionsRequest) => {
-	if (!messages?.length) {
-		throw new AssistantError(
-			"Messages are required for next edit completions",
-			ErrorType.PARAMS_ERROR,
-		);
-	}
-
-	const selectedModel = model ?? ModelRouter.selectNextEditModel();
-
-	const modelConfig =
-		(await getModelConfig(selectedModel, env, requestedProvider)) ||
-		(await getModelConfigByMatchingModel(selectedModel, env, requestedProvider));
-
-	if (!modelConfig) {
-		throw new AssistantError(`Model ${selectedModel} not found`, ErrorType.PARAMS_ERROR);
-	}
-
-	if (!modelConfig.supportsNextEdit) {
-		throw new AssistantError(
-			`Model ${selectedModel} does not support next edit completions`,
-			ErrorType.PARAMS_ERROR,
-		);
-	}
-
-	const provider = getChatProvider(modelConfig.provider, { env, user });
-
-	const normalizedMessages: Message[] = messages.map((message) => ({
-		role: message.role as ChatRole,
-		content: message.content ?? "",
-		name: message.name,
-		tool_calls: message.tool_calls,
-		parts: message.parts,
-		status: message.status,
-		data: message.data,
-		model: message.model,
-		log_id: message.log_id,
-		citations: message.citations,
-		app: message.app,
-		id: message.id,
-		timestamp: message.timestamp,
-		platform: message.platform,
-	}));
-
-	const editRequest: ChatCompletionParameters = {
-		env,
-		user,
-		model: modelConfig.matchingModel,
-		provider: modelConfig.provider,
-		messages: normalizedMessages,
-		stream,
-		edit_operation: "next",
-	};
-
-	return await provider.getResponse(editRequest, user?.id);
-};
+}: HandleCreateEditCompletionsRequest) =>
+	handleCreateEditCompletions(
+		{ env, model, provider: requestedProvider, messages, stream, user },
+		{
+			capability: "supportsNextEdit",
+			defaultModel: ModelRouter.selectNextEditModel,
+			missingMessagesMessage: "Messages are required for next edit completions",
+			operation: "next",
+			unsupportedMessage: (selectedModel) =>
+				`Model ${selectedModel} does not support next edit completions`,
+		},
+	);

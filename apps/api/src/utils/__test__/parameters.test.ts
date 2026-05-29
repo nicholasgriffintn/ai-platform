@@ -4,9 +4,11 @@ import type { ChatCompletionParameters } from "~/types";
 import {
 	calculateReasoningBudget,
 	createCommonParameters,
+	createFimParameters,
 	createSamplingParameters,
 	getEffectiveMaxTokens,
 	getToolsForProvider,
+	isFimCompletionRequest,
 	mergeParametersWithDefaults,
 	shouldEnableStreaming,
 } from "../parameters";
@@ -304,6 +306,34 @@ describe("parameters", () => {
 				),
 			).toEqual({
 				temperature: 0.7,
+			});
+		});
+	});
+
+	describe("createFimParameters", () => {
+		it("builds a compact FIM provider payload", () => {
+			const params = {
+				model: "codestral-latest",
+				prompt: "function add(",
+				suffix: ") {",
+				max_tokens: 128,
+				min_tokens: null,
+				temperature: undefined,
+				top_p: 0.8,
+				stop: ["\n\n"],
+				stream: false,
+				fim_mode: true,
+			} as unknown as ChatCompletionParameters;
+
+			expect(isFimCompletionRequest(params)).toBe(true);
+			expect(createFimParameters(params)).toEqual({
+				model: "codestral-latest",
+				prompt: "function add(",
+				suffix: ") {",
+				max_tokens: 128,
+				top_p: 0.8,
+				stop: ["\n\n"],
+				stream: false,
 			});
 		});
 	});

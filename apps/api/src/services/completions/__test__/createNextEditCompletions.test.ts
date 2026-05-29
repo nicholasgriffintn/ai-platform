@@ -1,27 +1,20 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const {
-	mockGetModelConfig,
-	mockGetModelConfigByMatchingModel,
-	mockSelectNextEditModel,
-	mockGetProvider,
-	mockGetResponse,
-} = vi.hoisted(() => {
-	const mockGetResponse = vi.fn();
-	return {
-		mockGetModelConfig: vi.fn(),
-		mockGetModelConfigByMatchingModel: vi.fn(),
-		mockSelectNextEditModel: vi.fn(),
-		mockGetProvider: vi.fn(() => ({
-			getResponse: mockGetResponse,
-		})),
-		mockGetResponse,
-	};
-});
+const { mockResolveModelConfig, mockSelectNextEditModel, mockGetProvider, mockGetResponse } =
+	vi.hoisted(() => {
+		const mockGetResponse = vi.fn();
+		return {
+			mockResolveModelConfig: vi.fn(),
+			mockSelectNextEditModel: vi.fn(),
+			mockGetProvider: vi.fn(() => ({
+				getResponse: mockGetResponse,
+			})),
+			mockGetResponse,
+		};
+	});
 
 vi.mock("~/lib/providers/models", () => ({
-	getModelConfig: mockGetModelConfig,
-	getModelConfigByMatchingModel: mockGetModelConfigByMatchingModel,
+	resolveModelConfig: mockResolveModelConfig,
 }));
 
 vi.mock("~/lib/modelRouter", () => ({
@@ -53,7 +46,7 @@ describe("handleCreateNextEditCompletions", () => {
 
 	it("selects model when not provided", async () => {
 		mockSelectNextEditModel.mockReturnValue("mercury-coder");
-		mockGetModelConfig.mockResolvedValue({
+		mockResolveModelConfig.mockResolvedValue({
 			matchingModel: "mercury-coder",
 			provider: "inception",
 			supportsNextEdit: true,
@@ -102,7 +95,7 @@ describe("handleCreateNextEditCompletions", () => {
 	});
 
 	it("throws when model lacks edit support", async () => {
-		mockGetModelConfig.mockResolvedValue({
+		mockResolveModelConfig.mockResolvedValue({
 			matchingModel: "mercury-coder",
 			provider: "inception",
 			supportsNextEdit: false,
@@ -118,7 +111,7 @@ describe("handleCreateNextEditCompletions", () => {
 	});
 
 	it("passes through stream flag", async () => {
-		mockGetModelConfig.mockResolvedValue({
+		mockResolveModelConfig.mockResolvedValue({
 			matchingModel: "mercury-coder",
 			provider: "inception",
 			supportsNextEdit: true,

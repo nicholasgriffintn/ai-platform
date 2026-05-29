@@ -1,6 +1,5 @@
-import type { ConversationManager } from "~/lib/conversationManager";
 import { completeTutorRequest } from "~/services/apps/tutor";
-import type { IRequest, SearchOptions } from "~/types";
+import type { SearchOptions } from "~/types";
 import { jsonSchemaToZod } from "./jsonSchema";
 import type { ApiToolDefinition } from "./types";
 

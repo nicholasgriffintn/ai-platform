@@ -153,7 +153,7 @@ export const executeModelGeneration = async (
 	const generationError = resolveGenerationError(providerResponse);
 
 	const appDataPayload: Record<string, unknown> = {
-		...(storage.extraData ?? {}),
+		...storage.extraData,
 		modelId: params.modelId,
 		modelName: modelConfig.name,
 		provider: modelConfig.provider,

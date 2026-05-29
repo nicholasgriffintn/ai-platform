@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { ModelIcon } from "~/components/ModelIcon";
 import { useModels } from "~/hooks/useModels";
@@ -24,8 +24,11 @@ export const InlineModelSelector = ({
 	const [selectedModel, setSelectedModel] = useState<string | null>(null);
 	const dropdownRef = useRef<HTMLDivElement>(null);
 
-	const availableModels = getAvailableModels(apiModels, true, webLLMModels);
-	const featuredModels = getFeaturedModelIds(availableModels);
+	const availableModels = useMemo(
+		() => getAvailableModels(apiModels, true, webLLMModels),
+		[apiModels, webLLMModels],
+	);
+	const featuredModels = useMemo(() => getFeaturedModelIds(availableModels), [availableModels]);
 
 	const currentGlobalModel = typeof model === "string" ? availableModels[model] : null;
 

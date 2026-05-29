@@ -1,4 +1,6 @@
 import type { ChatCompletionParameters } from "~/types";
+import { createFimParameters, isFimCompletionRequest } from "~/utils/parameters";
+import { omitNullishValues } from "~/utils/objects";
 import { BaseProvider } from "./base";
 
 export class InceptionProvider extends BaseProvider {
@@ -23,7 +25,7 @@ export class InceptionProvider extends BaseProvider {
 			return "https://api.inceptionlabs.ai/v1/apply/completions";
 		}
 
-		if (params.fim_mode || typeof params.suffix !== "undefined") {
+		if (isFimCompletionRequest(params)) {
 			return "https://api.inceptionlabs.ai/v1/fim/completions";
 		}
 
@@ -80,27 +82,11 @@ export class InceptionProvider extends BaseProvider {
 				stream: params.stream,
 			};
 
-			return Object.fromEntries(
-				Object.entries(editParams).filter(([, value]) => value !== undefined && value !== null),
-			);
+			return omitNullishValues(editParams);
 		}
 
-		if (params.fim_mode || typeof params.suffix !== "undefined") {
-			const fimParams = {
-				model: params.model,
-				prompt: params.prompt,
-				suffix: params.suffix,
-				max_tokens: params.max_tokens,
-				min_tokens: params.min_tokens,
-				temperature: params.temperature,
-				top_p: params.top_p,
-				stop: params.stop,
-				stream: params.stream,
-			};
-
-			return Object.fromEntries(
-				Object.entries(fimParams).filter(([, value]) => value !== undefined && value !== null),
-			);
+		if (isFimCompletionRequest(params)) {
+			return createFimParameters(params);
 		}
 
 		return await this.defaultMapParameters(params);

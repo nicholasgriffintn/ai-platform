@@ -13,7 +13,7 @@ import { ResponseFormatter, StreamingFormatter } from "~/lib/formatter";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { Guardrails } from "~/lib/providers/capabilities/guardrails";
 import { MemoryManager } from "~/lib/memory";
-import { getModelConfigByMatchingModel } from "~/lib/providers/models";
+import { findModelConfig } from "~/lib/providers/models";
 import {
 	type ChatMode,
 	type IEnv,
@@ -248,7 +248,7 @@ export async function createStreamWithPostProcessing(
 	};
 
 	const guardrails = new Guardrails(env, user, userSettings);
-	const modelConfig = await getModelConfigByMatchingModel(model, env, options.provider);
+	const modelConfig = await findModelConfig(model, env, options.provider);
 
 	return providerStream.pipeThrough(
 		new TransformStream({

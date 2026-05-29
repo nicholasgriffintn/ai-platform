@@ -1,5 +1,4 @@
 import { captureScreenshot } from "~/services/apps/retrieval/screenshot";
-import type { IRequest } from "~/types";
 import { jsonSchemaToZod } from "./jsonSchema";
 import type { ApiToolDefinition } from "./types";
 

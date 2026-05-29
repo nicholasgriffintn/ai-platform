@@ -1,5 +1,3 @@
-import type { ConversationManager } from "~/lib/conversationManager";
-import type { IRequest } from "~/types";
 import { jsonSchemaToZod } from "./jsonSchema";
 import type { ApiToolDefinition } from "./types";
 import { AssistantError, ErrorType } from "~/utils/errors";

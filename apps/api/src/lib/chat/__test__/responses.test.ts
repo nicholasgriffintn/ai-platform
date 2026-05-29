@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { getModelConfigByMatchingModel } from "~/lib/providers/models";
+import { findModelConfig } from "~/lib/providers/models";
 import * as chatCapability from "~/lib/providers/capabilities/chat";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { formatMessages } from "~/utils/messages";
@@ -9,7 +9,7 @@ import { withRetry } from "~/utils/retries";
 import { formatAssistantMessage, getAIResponse } from "../responses";
 
 vi.mock("~/lib/providers/models", () => ({
-	getModelConfigByMatchingModel: vi.fn(),
+	findModelConfig: vi.fn(),
 }));
 
 vi.mock("~/lib/providers/capabilities/chat", () => ({
@@ -216,7 +216,7 @@ describe("responses", () => {
 		};
 
 		beforeEach(() => {
-			vi.mocked(getModelConfigByMatchingModel).mockResolvedValue(
+			vi.mocked(findModelConfig).mockResolvedValue(
 				// @ts-expect-error - mock implementation
 				mockModelConfig,
 			);
@@ -235,11 +235,7 @@ describe("responses", () => {
 			// @ts-expect-error - test data
 			const result = await getAIResponse(baseParams);
 
-			expect(getModelConfigByMatchingModel).toHaveBeenCalledWith(
-				"gpt-4",
-				baseParams.env,
-				undefined,
-			);
+			expect(findModelConfig).toHaveBeenCalledWith("gpt-4", baseParams.env, undefined);
 			expect(chatCapability.getChatProvider).toHaveBeenCalledWith("openai", {
 				env: baseParams.env,
 				user: baseParams.user,
@@ -277,7 +273,7 @@ describe("responses", () => {
 
 		it("should use provider when resolving shared matching models", async () => {
 			const env = {};
-			vi.mocked(getModelConfigByMatchingModel).mockResolvedValueOnce({
+			vi.mocked(findModelConfig).mockResolvedValueOnce({
 				...mockModelConfig,
 				provider: "github-models",
 				matchingModel: "xai/grok-3",
@@ -294,11 +290,7 @@ describe("responses", () => {
 				provider: "github-models",
 			} as any);
 
-			expect(getModelConfigByMatchingModel).toHaveBeenCalledWith(
-				"xai/grok-3",
-				env,
-				"github-models",
-			);
+			expect(findModelConfig).toHaveBeenCalledWith("xai/grok-3", env, "github-models");
 			expect(chatCapability.getChatProvider).toHaveBeenCalledWith("github-models", {
 				env,
 				user: baseParams.user,
@@ -347,7 +339,7 @@ describe("responses", () => {
 		});
 
 		it("should handle model configuration not found", async () => {
-			vi.mocked(getModelConfigByMatchingModel).mockResolvedValue(null);
+			vi.mocked(findModelConfig).mockResolvedValue(null);
 
 			// @ts-expect-error - test data
 			await expect(getAIResponse(baseParams)).rejects.toThrow(
@@ -356,7 +348,7 @@ describe("responses", () => {
 		});
 
 		it("should handle model configuration error", async () => {
-			vi.mocked(getModelConfigByMatchingModel).mockRejectedValue(new Error("Config error"));
+			vi.mocked(findModelConfig).mockRejectedValue(new Error("Config error"));
 
 			// @ts-expect-error - test data
 			await expect(getAIResponse(baseParams)).rejects.toThrow(
@@ -449,7 +441,7 @@ describe("responses", () => {
 
 		it("should disable streaming for non-text model types", async () => {
 			vi.mocked(shouldEnableStreaming).mockReturnValue(false);
-			vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
+			vi.mocked(findModelConfig).mockResolvedValue({
 				...mockModelConfig,
 				modalities: { input: ["text"], output: ["image"] },
 			});

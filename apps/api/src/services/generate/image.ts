@@ -1,8 +1,9 @@
 import { sanitiseInput } from "~/lib/chat/utils";
 import { type imagePrompts } from "~/lib/prompts/image";
 import { getImageProvider } from "~/lib/providers/capabilities/image";
+import { generateWithProviderFallback } from "~/lib/providers/capabilities/utils";
 import { resolveServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
-import { getModelConfigByModel } from "~/lib/providers/models";
+import { resolveModelProvider } from "~/lib/providers/models";
 import type { IEnv, IUser } from "~/types";
 
 export interface ImageGenerationParams {
@@ -24,20 +25,6 @@ export interface ImageResponse {
 }
 
 const DEFAULT_PROVIDER = "workers-ai";
-
-async function resolveProviderName(
-	provider: string | undefined,
-	model: string | undefined,
-): Promise<string> {
-	if (model) {
-		const modelConfig = await getModelConfigByModel(model);
-		if (modelConfig?.provider) {
-			return modelConfig.provider;
-		}
-	}
-
-	return provider || DEFAULT_PROVIDER;
-}
 
 export async function generateImage({
 	completion_id,
@@ -81,12 +68,12 @@ export async function generateImage({
 			};
 		}
 
-		const providerName = await resolveProviderName(args.provider, args.model);
-		const provider = getImageProvider(providerName, {
+		const providerName = await resolveModelProvider({
+			provider: args.provider,
+			model: args.model,
+			defaultProvider: DEFAULT_PROVIDER,
 			env: runtimeEnv,
-			user: runtimeUser,
 		});
-
 		const request = {
 			prompt: sanitisedPrompt,
 			env: runtimeEnv,
@@ -104,20 +91,16 @@ export async function generateImage({
 			},
 		};
 
-		let imageData;
-		try {
-			imageData = await provider.generate(request);
-		} catch (error) {
-			if (providerName !== DEFAULT_PROVIDER && !args.model) {
-				const fallbackProvider = getImageProvider(DEFAULT_PROVIDER, {
+		const imageData = await generateWithProviderFallback({
+			providerName,
+			defaultProvider: DEFAULT_PROVIDER,
+			request,
+			getProvider: (name) =>
+				getImageProvider(name, {
 					env: runtimeEnv,
 					user: runtimeUser,
-				});
-				imageData = await fallbackProvider.generate(request);
-			} else {
-				throw error;
-			}
-		}
+				}),
+		});
 
 		return {
 			status: "success",

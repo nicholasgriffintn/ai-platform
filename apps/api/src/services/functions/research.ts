@@ -1,6 +1,5 @@
-import type { ConversationManager } from "~/lib/conversationManager";
 import { handleResearchTask, startResearchTask } from "~/services/research/task";
-import type { IRequest, ResearchOptions, ParallelTaskSpec, ResearchProviderName } from "~/types";
+import type { ResearchOptions, ParallelTaskSpec, ResearchProviderName } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { safeParseJson } from "../../utils/json";
 import { jsonSchemaToZod } from "./jsonSchema";

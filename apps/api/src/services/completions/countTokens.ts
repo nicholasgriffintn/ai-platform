@@ -1,4 +1,4 @@
-import { getModelConfig, getModelConfigByMatchingModel } from "~/lib/providers/models";
+import { findModelConfig } from "~/lib/providers/models";
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import type { ChatCompletionParameters, Message } from "~/types";
@@ -30,9 +30,7 @@ export async function handleCountTokens(
 
 	logger.info("Processing token count request", { model });
 
-	const modelConfig =
-		(await getModelConfig(model, env, requestedProvider)) ||
-		(await getModelConfigByMatchingModel(model, env, requestedProvider));
+	const modelConfig = await findModelConfig(model, env, requestedProvider);
 	if (!modelConfig) {
 		return {
 			status: "error",

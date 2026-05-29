@@ -1,27 +1,20 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const {
-	mockGetModelConfig,
-	mockGetModelConfigByMatchingModel,
-	mockSelectApplyEditModel,
-	mockGetProvider,
-	mockGetResponse,
-} = vi.hoisted(() => {
-	const mockGetResponse = vi.fn();
-	return {
-		mockGetModelConfig: vi.fn(),
-		mockGetModelConfigByMatchingModel: vi.fn(),
-		mockSelectApplyEditModel: vi.fn(),
-		mockGetProvider: vi.fn(() => ({
-			getResponse: mockGetResponse,
-		})),
-		mockGetResponse,
-	};
-});
+const { mockResolveModelConfig, mockSelectApplyEditModel, mockGetProvider, mockGetResponse } =
+	vi.hoisted(() => {
+		const mockGetResponse = vi.fn();
+		return {
+			mockResolveModelConfig: vi.fn(),
+			mockSelectApplyEditModel: vi.fn(),
+			mockGetProvider: vi.fn(() => ({
+				getResponse: mockGetResponse,
+			})),
+			mockGetResponse,
+		};
+	});
 
 vi.mock("~/lib/providers/models", () => ({
-	getModelConfig: mockGetModelConfig,
-	getModelConfigByMatchingModel: mockGetModelConfigByMatchingModel,
+	resolveModelConfig: mockResolveModelConfig,
 }));
 
 vi.mock("~/lib/modelRouter", () => ({
@@ -53,7 +46,7 @@ describe("handleCreateApplyEditCompletions", () => {
 
 	it("selects model when not provided", async () => {
 		mockSelectApplyEditModel.mockReturnValue("mercury-coder");
-		mockGetModelConfig.mockResolvedValue({
+		mockResolveModelConfig.mockResolvedValue({
 			matchingModel: "mercury-coder",
 			provider: "inception",
 			supportsApplyEdit: true,
@@ -77,7 +70,7 @@ describe("handleCreateApplyEditCompletions", () => {
 	});
 
 	it("throws when model lacks apply support", async () => {
-		mockGetModelConfig.mockResolvedValue({
+		mockResolveModelConfig.mockResolvedValue({
 			matchingModel: "mercury-coder",
 			provider: "inception",
 			supportsApplyEdit: false,
@@ -93,7 +86,7 @@ describe("handleCreateApplyEditCompletions", () => {
 	});
 
 	it("passes through user context", async () => {
-		mockGetModelConfig.mockResolvedValue({
+		mockResolveModelConfig.mockResolvedValue({
 			matchingModel: "mercury-coder",
 			provider: "inception",
 			supportsApplyEdit: true,

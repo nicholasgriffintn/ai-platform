@@ -1,4 +1,4 @@
-import { getModelConfigByMatchingModel } from "~/lib/providers/models";
+import { findModelConfig } from "~/lib/providers/models";
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import type { AssistantMessageData, ChatCompletionParameters, Message } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -132,7 +132,7 @@ export async function getAIResponse({
 
 	let modelConfig;
 	try {
-		modelConfig = await getModelConfigByMatchingModel(model, env, requestedProvider);
+		modelConfig = await findModelConfig(model, env, requestedProvider);
 		if (!modelConfig) {
 			throw new AssistantError(
 				`Model configuration not found for ${model}`,

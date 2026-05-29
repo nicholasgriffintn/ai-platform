@@ -1,5 +1,4 @@
 import { type OcrParams, performOcr } from "~/services/apps/retrieval/ocr";
-import type { IRequest } from "~/types";
 import { jsonSchemaToZod } from "./jsonSchema";
 import type { ApiToolDefinition } from "./types";
 

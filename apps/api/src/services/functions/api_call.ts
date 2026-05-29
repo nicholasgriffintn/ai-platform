@@ -1,112 +1,15 @@
-import type { ConversationManager } from "~/lib/conversationManager";
-import type { IRequest } from "~/types";
 import { jsonSchemaToZod } from "./jsonSchema";
 import type { ApiToolDefinition } from "./types";
-import { getLogger } from "~/utils/logger";
-import { safeParseJson } from "~/utils/json";
 import { isAbortError } from "~/utils/abort";
-import { isPlainObject } from "~/utils/objects";
+import { headersToRecord, readHttpResponseBody, setDefaultHeader } from "~/utils/http";
+import { getLogger } from "~/utils/logger";
+import { coerceStringRecord, isPlainObject } from "~/utils/objects";
+import { appendQueryParams, isPrivateHostname } from "~/utils/urls";
 
 const logger = getLogger({ prefix: "services/functions/api_call" });
 
 const DEFAULT_TIMEOUT_MS = 15000;
 const MAX_TIMEOUT_MS = 60000;
-
-const isPrivateHostname = (hostname: string): boolean => {
-	const normalized = hostname.toLowerCase();
-	if (
-		normalized === "localhost" ||
-		normalized.endsWith(".local") ||
-		normalized.endsWith(".internal")
-	) {
-		return true;
-	}
-
-	if (normalized.includes(":")) {
-		return (
-			normalized === "::1" ||
-			normalized.startsWith("fe80:") ||
-			normalized.startsWith("fc") ||
-			normalized.startsWith("fd")
-		);
-	}
-
-	const ipv4Match = normalized.match(
-		/^(?<a>\d{1,3})\.(?<b>\d{1,3})\.(?<c>\d{1,3})\.(?<d>\d{1,3})$/,
-	);
-	if (!ipv4Match || !ipv4Match.groups) {
-		return false;
-	}
-
-	const parts = [
-		ipv4Match.groups.a,
-		ipv4Match.groups.b,
-		ipv4Match.groups.c,
-		ipv4Match.groups.d,
-	].map((value) => Number.parseInt(value, 10));
-
-	if (parts.some((value) => Number.isNaN(value) || value > 255 || value < 0)) {
-		return true;
-	}
-
-	const [a, b] = parts;
-	if (a === 10 || a === 127 || a === 0) return true;
-	if (a === 169 && b === 254) return true;
-	if (a === 192 && b === 168) return true;
-	if (a === 172 && b >= 16 && b <= 31) return true;
-	if (a === 100 && b >= 64 && b <= 127) return true;
-
-	return false;
-};
-
-const normalizeHeaders = (headers: unknown): Record<string, string> => {
-	if (!isPlainObject(headers)) {
-		return {};
-	}
-
-	return Object.fromEntries(
-		Object.entries(headers)
-			.filter(([, value]) => value !== undefined && value !== null)
-			.map(([key, value]) => [key, String(value)]),
-	);
-};
-
-const appendQueryParams = (baseUrl: URL, params: Record<string, unknown> | undefined): void => {
-	if (!params) return;
-
-	for (const [key, value] of Object.entries(params)) {
-		if (value === undefined || value === null) {
-			continue;
-		}
-
-		if (Array.isArray(value)) {
-			for (const entry of value) {
-				baseUrl.searchParams.append(key, String(entry));
-			}
-		} else {
-			baseUrl.searchParams.set(key, String(value));
-		}
-	}
-};
-
-const readResponseBody = async (
-	response: Response,
-): Promise<{ parsed: unknown | null; raw: string }> => {
-	const raw = await response.text();
-	if (!raw) {
-		return { parsed: null, raw };
-	}
-
-	const contentType = response.headers.get("content-type") || "";
-	const shouldParseJson = contentType.includes("application/json") || contentType.includes("+json");
-
-	if (shouldParseJson) {
-		return { parsed: safeParseJson(raw), raw };
-	}
-
-	const parsed = safeParseJson(raw);
-	return { parsed, raw };
-};
 
 export const call_api: ApiToolDefinition = {
 	name: "call_api",
@@ -169,7 +72,7 @@ export const call_api: ApiToolDefinition = {
 		},
 		required: ["url"],
 	}),
-	execute: async (args, context) => {
+	execute: async (args, _context) => {
 		const urlInput = typeof args?.url === "string" ? args.url.trim() : "";
 		if (!urlInput) {
 			return {
@@ -217,7 +120,7 @@ export const call_api: ApiToolDefinition = {
 				? Math.min(timeoutMsInput, MAX_TIMEOUT_MS)
 				: DEFAULT_TIMEOUT_MS;
 
-		const headers = normalizeHeaders(args?.headers);
+		const headers = coerceStringRecord(args?.headers);
 		const queryParams = isPlainObject(args?.query_params) ? args.query_params : undefined;
 
 		appendQueryParams(url, queryParams);
@@ -246,9 +149,7 @@ export const call_api: ApiToolDefinition = {
 						: undefined,
 			};
 			body = JSON.stringify(payload);
-			if (!headers["Content-Type"] && !headers["content-type"]) {
-				headers["Content-Type"] = "application/json";
-			}
+			setDefaultHeader(headers, "Content-Type", "application/json");
 		} else {
 			const methodInput = typeof args?.method === "string" ? args.method.toUpperCase() : undefined;
 			const allowedMethods = new Set(["GET", "POST", "PUT", "PATCH", "DELETE"]);
@@ -277,9 +178,7 @@ export const call_api: ApiToolDefinition = {
 					body = args.body;
 				} else if (isPlainObject(args.body) || Array.isArray(args.body)) {
 					body = JSON.stringify(args.body);
-					if (!headers["Content-Type"] && !headers["content-type"]) {
-						headers["Content-Type"] = "application/json";
-					}
+					setDefaultHeader(headers, "Content-Type", "application/json");
 				} else {
 					return {
 						status: "error",
@@ -323,14 +222,7 @@ export const call_api: ApiToolDefinition = {
 			clearTimeout(timeoutId);
 		}
 
-		const headersMap: Record<string, string> = {};
-		response.headers.forEach((value, key) => {
-			headersMap[key] = value;
-		});
-
-		const { parsed, raw } = await readResponseBody(response);
-		const hasJsonBody = parsed !== null;
-		const responseBody = hasJsonBody ? parsed : raw;
+		const { body: responseBody, format: bodyFormat, parsed } = await readHttpResponseBody(response);
 
 		const graphqlErrors =
 			requestType === "graphql" && isPlainObject(parsed) ? parsed.errors : undefined;
@@ -352,9 +244,9 @@ export const call_api: ApiToolDefinition = {
 				ok: response.ok,
 				status: response.status,
 				statusText: response.statusText,
-				headers: headersMap,
+				headers: headersToRecord(response.headers),
 				body: responseBody,
-				body_format: hasJsonBody ? "json" : "text",
+				body_format: bodyFormat,
 			},
 		};
 	},

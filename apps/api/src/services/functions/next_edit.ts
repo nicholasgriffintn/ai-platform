@@ -1,5 +1,4 @@
 import { handleCreateNextEditCompletions } from "~/services/completions/createNextEditCompletions";
-import type { IRequest } from "~/types";
 import { jsonSchemaToZod } from "./jsonSchema";
 import type { ApiToolDefinition } from "./types";
 

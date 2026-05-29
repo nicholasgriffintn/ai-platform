@@ -1,28 +1,22 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const {
-	mockGetModelConfig,
-	mockGetModelConfigByMatchingModel,
-	mockSelectFimModel,
-	mockGetProvider,
-	mockGetResponse,
-} = vi.hoisted(() => {
-	const mockGetResponse = vi.fn();
+const { mockResolveModelConfig, mockSelectFimModel, mockGetProvider, mockGetResponse } = vi.hoisted(
+	() => {
+		const mockGetResponse = vi.fn();
 
-	return {
-		mockGetModelConfig: vi.fn(),
-		mockGetModelConfigByMatchingModel: vi.fn(),
-		mockSelectFimModel: vi.fn(),
-		mockGetProvider: vi.fn(() => ({
-			getResponse: mockGetResponse,
-		})),
-		mockGetResponse,
-	};
-});
+		return {
+			mockResolveModelConfig: vi.fn(),
+			mockSelectFimModel: vi.fn(),
+			mockGetProvider: vi.fn(() => ({
+				getResponse: mockGetResponse,
+			})),
+			mockGetResponse,
+		};
+	},
+);
 
 vi.mock("~/lib/providers/models", () => ({
-	getModelConfig: mockGetModelConfig,
-	getModelConfigByMatchingModel: mockGetModelConfigByMatchingModel,
+	resolveModelConfig: mockResolveModelConfig,
 }));
 
 vi.mock("~/lib/modelRouter", () => ({
@@ -48,8 +42,9 @@ describe("handleCreateFimCompletions", () => {
 
 	it("throws when resolved model configuration is missing", async () => {
 		mockSelectFimModel.mockReturnValue("codestral-latest");
-		mockGetModelConfig.mockResolvedValueOnce(undefined);
-		mockGetModelConfigByMatchingModel.mockResolvedValueOnce(undefined);
+		mockResolveModelConfig.mockRejectedValueOnce(
+			new AssistantError("Model codestral-latest not found", ErrorType.PARAMS_ERROR),
+		);
 
 		await expect(
 			handleCreateFimCompletions({
@@ -66,7 +61,7 @@ describe("handleCreateFimCompletions", () => {
 
 	it("throws when model does not support FIM", async () => {
 		mockSelectFimModel.mockReturnValue("codestral-latest");
-		mockGetModelConfig.mockResolvedValueOnce({
+		mockResolveModelConfig.mockResolvedValueOnce({
 			matchingModel: "codestral-latest",
 			provider: "mistral",
 			supportsFim: false,
@@ -83,7 +78,7 @@ describe("handleCreateFimCompletions", () => {
 	});
 
 	it("calls provider with fim parameters when model provided", async () => {
-		mockGetModelConfig.mockResolvedValueOnce({
+		mockResolveModelConfig.mockResolvedValueOnce({
 			matchingModel: "codestral-latest",
 			provider: "mistral",
 			supportsFim: true,
@@ -127,7 +122,7 @@ describe("handleCreateFimCompletions", () => {
 
 	it("selects model automatically when not provided", async () => {
 		mockSelectFimModel.mockReturnValue("codestral-latest");
-		mockGetModelConfig.mockResolvedValueOnce({
+		mockResolveModelConfig.mockResolvedValueOnce({
 			matchingModel: "codestral-latest",
 			provider: "mistral",
 			supportsFim: true,

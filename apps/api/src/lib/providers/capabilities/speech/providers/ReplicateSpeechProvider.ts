@@ -3,6 +3,7 @@ import { validateReplicatePayload } from "~/lib/providers/models/replicateValida
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import { extractGeneratedAsset } from "~/lib/providers/utils/helpers";
 import { AssistantError, ErrorType } from "~/utils/errors";
+import { omitNullishValues } from "~/utils/objects";
 import type { SpeechGenerationRequest, SpeechGenerationResult, SpeechProvider } from "../index";
 
 const DEFAULT_MODEL = "replicate-chatterbox-turbo";
@@ -22,15 +23,13 @@ export class ReplicateSpeechProvider implements SpeechProvider {
 			);
 		}
 
-		const replicatePayload = Object.fromEntries(
-			Object.entries({
-				text: request.prompt,
-				prompt: request.prompt,
-				voice: request.voice,
-				language: request.locale,
-				...request.metadata,
-			}).filter(([, value]) => value !== undefined && value !== null),
-		);
+		const replicatePayload = omitNullishValues({
+			text: request.prompt,
+			prompt: request.prompt,
+			voice: request.voice,
+			language: request.locale,
+			...request.metadata,
+		});
 
 		validateReplicatePayload({
 			payload: replicatePayload,

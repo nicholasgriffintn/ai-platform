@@ -1,6 +1,7 @@
 import { getModelConfigByMatchingModel } from "~/lib/providers/models";
 import type { ChatCompletionParameters, ModelConfigItem } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
+import { createFimParameters, isFimCompletionRequest } from "~/utils/parameters";
 import { BaseProvider } from "./base";
 
 type MistralApiOperation = "embeddings" | "codestralEmbeddings" | "moderations" | "ocr";
@@ -60,7 +61,7 @@ export class MistralProvider extends BaseProvider {
 	}
 
 	protected async getEndpoint(params: ChatCompletionParameters): Promise<string> {
-		if (params.fim_mode || typeof params.suffix !== "undefined") {
+		if (isFimCompletionRequest(params)) {
 			return "v1/fim/completions";
 		}
 
@@ -69,22 +70,8 @@ export class MistralProvider extends BaseProvider {
 	}
 
 	async mapParameters(params: ChatCompletionParameters) {
-		if (params.fim_mode || typeof params.suffix !== "undefined") {
-			const fimParams = {
-				model: params.model,
-				prompt: params.prompt,
-				suffix: params.suffix,
-				max_tokens: params.max_tokens,
-				min_tokens: params.min_tokens,
-				temperature: params.temperature,
-				top_p: params.top_p,
-				stop: params.stop,
-				stream: params.stream,
-			};
-
-			return Object.fromEntries(
-				Object.entries(fimParams).filter(([, value]) => value !== undefined && value !== null),
-			);
+		if (isFimCompletionRequest(params)) {
+			return createFimParameters(params);
 		}
 
 		const modelConfig = await this.getModelConfig(params);

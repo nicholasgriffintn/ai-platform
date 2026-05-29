@@ -18,6 +18,7 @@ import {
 	getModels,
 	getModelsByCapability,
 	getModelsByModality,
+	resolveModelProvider,
 } from "../providers/models";
 
 vi.mock("~/lib/cache", () => {
@@ -259,6 +260,45 @@ describe("Models", () => {
 
 			expect(result).toBe(cachedMatchingModel);
 			expect(mockCache.get).toHaveBeenCalledWith("matching-model:test-model");
+		});
+	});
+
+	describe("resolveModelProvider", () => {
+		it("uses exact model config before a stale requested provider", async () => {
+			const provider = await resolveModelProvider({
+				model: "gpt-image-2",
+				provider: "workers-ai",
+				defaultProvider: "workers-ai",
+			});
+
+			expect(provider).toBe("openai");
+		});
+
+		it("uses provider to resolve a matching-model identifier", async () => {
+			const provider = await resolveModelProvider({
+				model: "ai21-labs/ai21-jamba-1.5-mini",
+				provider: "github-models",
+				defaultProvider: "openai",
+			});
+
+			expect(provider).toBe("github-models");
+		});
+
+		it("falls back to requested provider or default provider when model is unknown", async () => {
+			await expect(
+				resolveModelProvider({
+					model: "unknown-model",
+					provider: "replicate",
+					defaultProvider: "workers-ai",
+				}),
+			).resolves.toBe("replicate");
+
+			await expect(
+				resolveModelProvider({
+					model: "unknown-model",
+					defaultProvider: "workers-ai",
+				}),
+			).resolves.toBe("workers-ai");
 		});
 	});
 

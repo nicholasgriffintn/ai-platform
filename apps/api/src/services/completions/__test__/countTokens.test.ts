@@ -3,8 +3,7 @@ import { handleCountTokens } from "../countTokens";
 import type { IEnv, IUser, Message } from "~/types";
 
 vi.mock("~/lib/providers/models", () => ({
-	getModelConfigByMatchingModel: vi.fn(),
-	getModelConfig: vi.fn(),
+	findModelConfig: vi.fn(),
 }));
 
 vi.mock("~/lib/providers/capabilities/chat", () => ({
@@ -94,13 +93,13 @@ describe("countTokens", () => {
 
 	describe("successful token counting", () => {
 		it("should count tokens for a supported provider", async () => {
-			const { getModelConfig } = await import("~/lib/providers/models");
+			const { findModelConfig } = await import("~/lib/providers/models");
 			const chatCapability = await import("~/lib/providers/capabilities/chat");
 
 			const mockModelConfig = createMockModelConfig("bedrock", "claude-3-sonnet");
 			const mockProvider = createMockProvider();
 
-			vi.mocked(getModelConfig).mockResolvedValue(mockModelConfig);
+			vi.mocked(findModelConfig).mockResolvedValue(mockModelConfig);
 			vi.mocked(chatCapability.getChatProvider).mockReturnValue(mockProvider);
 
 			const result = await handleCountTokens(mockServiceContext, {
@@ -129,13 +128,13 @@ describe("countTokens", () => {
 		});
 
 		it("should work without a user", async () => {
-			const { getModelConfig } = await import("~/lib/providers/models");
+			const { findModelConfig } = await import("~/lib/providers/models");
 			const chatCapability = await import("~/lib/providers/capabilities/chat");
 
 			const mockModelConfig = createMockModelConfig("bedrock", "claude-3-sonnet");
 			const mockProvider = createMockProvider(true, 25);
 
-			vi.mocked(getModelConfig).mockResolvedValue(mockModelConfig);
+			vi.mocked(findModelConfig).mockResolvedValue(mockModelConfig);
 			vi.mocked(chatCapability.getChatProvider).mockReturnValue(mockProvider);
 
 			const ctxWithoutUser = { ...mockServiceContext, user: undefined };
@@ -165,13 +164,13 @@ describe("countTokens", () => {
 		});
 
 		it("should work without system prompt", async () => {
-			const { getModelConfig } = await import("~/lib/providers/models");
+			const { findModelConfig } = await import("~/lib/providers/models");
 			const chatCapability = await import("~/lib/providers/capabilities/chat");
 
 			const mockModelConfig = createMockModelConfig("bedrock", "claude-3-sonnet");
 			const mockProvider = createMockProvider(true, 30);
 
-			vi.mocked(getModelConfig).mockResolvedValue(mockModelConfig);
+			vi.mocked(findModelConfig).mockResolvedValue(mockModelConfig);
 			vi.mocked(chatCapability.getChatProvider).mockReturnValue(mockProvider);
 
 			const result = await handleCountTokens(mockServiceContext, {
@@ -189,9 +188,9 @@ describe("countTokens", () => {
 
 	describe("error handling", () => {
 		it("should return error for unknown model", async () => {
-			const { getModelConfig } = await import("~/lib/providers/models");
+			const { findModelConfig } = await import("~/lib/providers/models");
 
-			vi.mocked(getModelConfig).mockResolvedValue(null);
+			vi.mocked(findModelConfig).mockResolvedValue(null);
 
 			const result = await handleCountTokens(mockServiceContext, {
 				model: "unknown-model",
@@ -207,12 +206,12 @@ describe("countTokens", () => {
 		});
 
 		it("should return error for unknown provider", async () => {
-			const { getModelConfig } = await import("~/lib/providers/models");
+			const { findModelConfig } = await import("~/lib/providers/models");
 			const chatCapability = await import("~/lib/providers/capabilities/chat");
 
 			const mockModelConfig = createMockModelConfig("unknown-provider", "some-model");
 
-			vi.mocked(getModelConfig).mockResolvedValue(mockModelConfig);
+			vi.mocked(findModelConfig).mockResolvedValue(mockModelConfig);
 			vi.mocked(chatCapability.getChatProvider).mockReturnValue(null);
 
 			const result = await handleCountTokens(mockServiceContext, {
@@ -229,11 +228,11 @@ describe("countTokens", () => {
 		});
 
 		it("should return error for model without token counting support", async () => {
-			const { getModelConfig } = await import("~/lib/providers/models");
+			const { findModelConfig } = await import("~/lib/providers/models");
 
 			const mockModelConfig = createMockModelConfig("openai", "gpt-4", false); // supportsTokenCounting = false
 
-			vi.mocked(getModelConfig).mockResolvedValue(mockModelConfig);
+			vi.mocked(findModelConfig).mockResolvedValue(mockModelConfig);
 
 			const result = await handleCountTokens(mockServiceContext, {
 				model: "gpt-4",
@@ -249,13 +248,13 @@ describe("countTokens", () => {
 		});
 
 		it("should return error for provider without token counting support", async () => {
-			const { getModelConfig } = await import("~/lib/providers/models");
+			const { findModelConfig } = await import("~/lib/providers/models");
 			const chatCapability = await import("~/lib/providers/capabilities/chat");
 
 			const mockModelConfig = createMockModelConfig("openai", "gpt-4");
 			const mockProvider = createMockProvider(false); // No countTokens method
 
-			vi.mocked(getModelConfig).mockResolvedValue(mockModelConfig);
+			vi.mocked(findModelConfig).mockResolvedValue(mockModelConfig);
 			vi.mocked(chatCapability.getChatProvider).mockReturnValue(mockProvider);
 
 			const result = await handleCountTokens(mockServiceContext, {
@@ -272,7 +271,7 @@ describe("countTokens", () => {
 		});
 
 		it("should throw AssistantError when provider fails", async () => {
-			const { getModelConfig } = await import("~/lib/providers/models");
+			const { findModelConfig } = await import("~/lib/providers/models");
 			const chatCapability = await import("~/lib/providers/capabilities/chat");
 			const { AssistantError } = await import("~/utils/errors");
 
@@ -282,7 +281,7 @@ describe("countTokens", () => {
 				countTokens: vi.fn().mockRejectedValue(new Error("API Error")),
 			};
 
-			vi.mocked(getModelConfig).mockResolvedValue(mockModelConfig);
+			vi.mocked(findModelConfig).mockResolvedValue(mockModelConfig);
 			vi.mocked(chatCapability.getChatProvider).mockReturnValue(mockProvider);
 
 			await expect(
@@ -303,13 +302,13 @@ describe("countTokens", () => {
 
 	describe("edge cases", () => {
 		it("should handle empty messages array", async () => {
-			const { getModelConfig } = await import("~/lib/providers/models");
+			const { findModelConfig } = await import("~/lib/providers/models");
 			const chatCapability = await import("~/lib/providers/capabilities/chat");
 
 			const mockModelConfig = createMockModelConfig("bedrock", "claude-3-sonnet");
 			const mockProvider = createMockProvider(true, 0);
 
-			vi.mocked(getModelConfig).mockResolvedValue(mockModelConfig);
+			vi.mocked(findModelConfig).mockResolvedValue(mockModelConfig);
 			vi.mocked(chatCapability.getChatProvider).mockReturnValue(mockProvider);
 
 			const result = await handleCountTokens(mockServiceContext, {
@@ -325,7 +324,7 @@ describe("countTokens", () => {
 		});
 
 		it("should handle complex message content", async () => {
-			const { getModelConfig } = await import("~/lib/providers/models");
+			const { findModelConfig } = await import("~/lib/providers/models");
 			const chatCapability = await import("~/lib/providers/capabilities/chat");
 
 			const mockModelConfig = createMockModelConfig("bedrock", "claude-3-sonnet");
@@ -344,7 +343,7 @@ describe("countTokens", () => {
 				},
 			];
 
-			vi.mocked(getModelConfig).mockResolvedValue(mockModelConfig);
+			vi.mocked(findModelConfig).mockResolvedValue(mockModelConfig);
 			vi.mocked(chatCapability.getChatProvider).mockReturnValue(mockProvider);
 
 			const result = await handleCountTokens(mockServiceContext, {
@@ -369,13 +368,13 @@ describe("countTokens", () => {
 
 	describe("Anthropic provider", () => {
 		it("should count tokens for Anthropic models", async () => {
-			const { getModelConfig } = await import("~/lib/providers/models");
+			const { findModelConfig } = await import("~/lib/providers/models");
 			const chatCapability = await import("~/lib/providers/capabilities/chat");
 
 			const mockModelConfig = createMockModelConfig("anthropic", "claude-sonnet-4-0");
 			const mockProvider = createMockProvider(true, 28);
 
-			vi.mocked(getModelConfig).mockResolvedValue(mockModelConfig);
+			vi.mocked(findModelConfig).mockResolvedValue(mockModelConfig);
 			vi.mocked(chatCapability.getChatProvider).mockReturnValue(mockProvider);
 
 			const result = await handleCountTokens(mockServiceContext, {
@@ -401,13 +400,13 @@ describe("countTokens", () => {
 		});
 
 		it("should handle Anthropic models without system prompt", async () => {
-			const { getModelConfig } = await import("~/lib/providers/models");
+			const { findModelConfig } = await import("~/lib/providers/models");
 			const chatCapability = await import("~/lib/providers/capabilities/chat");
 
 			const mockModelConfig = createMockModelConfig("anthropic", "claude-3-5-haiku-latest");
 			const mockProvider = createMockProvider(true, 15);
 
-			vi.mocked(getModelConfig).mockResolvedValue(mockModelConfig);
+			vi.mocked(findModelConfig).mockResolvedValue(mockModelConfig);
 			vi.mocked(chatCapability.getChatProvider).mockReturnValue(mockProvider);
 
 			const result = await handleCountTokens(mockServiceContext, {

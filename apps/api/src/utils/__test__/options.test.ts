@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { hasAnyEnabledTool } from "../enabledTools";
-import { coerceStringArray } from "../objects";
+import { coerceStringArray, coerceStringRecord, omitNullishValues } from "../objects";
 import { readOptionBag, readRecordOption } from "../options";
 
 describe("option utilities", () => {
@@ -24,6 +24,43 @@ describe("option utilities", () => {
 		expect(coerceStringArray(["a", "b"])).toEqual(["a", "b"]);
 		expect(coerceStringArray(["a", 1])).toEqual(["a"]);
 		expect(coerceStringArray(undefined)).toEqual([]);
+	});
+
+	it("coerces record values to strings while omitting nullish values", () => {
+		expect(
+			coerceStringRecord({
+				empty: "",
+				falseValue: false,
+				nullValue: null,
+				number: 0,
+				text: "value",
+				undefinedValue: undefined,
+			}),
+		).toEqual({
+			empty: "",
+			falseValue: "false",
+			number: "0",
+			text: "value",
+		});
+		expect(coerceStringRecord(["not", "record"])).toEqual({});
+	});
+
+	it("omits nullish object values without dropping falsy values", () => {
+		expect(
+			omitNullishValues({
+				empty: "",
+				falseValue: false,
+				nullValue: null,
+				number: 0,
+				text: "value",
+				undefinedValue: undefined,
+			}),
+		).toEqual({
+			empty: "",
+			falseValue: false,
+			number: 0,
+			text: "value",
+		});
 	});
 
 	it("checks enabled tool aliases", () => {

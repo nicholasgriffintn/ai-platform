@@ -1,6 +1,7 @@
 import { sanitiseInput } from "~/lib/chat/utils";
 import { getVideoProvider } from "~/lib/providers/capabilities/video";
-import { getModelConfigByModel } from "~/lib/providers/models";
+import { generateWithProviderFallback } from "~/lib/providers/capabilities/utils";
+import { resolveModelProvider } from "~/lib/providers/models";
 import { resolveServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
 import type { IEnv, IUser } from "~/types";
 
@@ -25,20 +26,6 @@ export interface VideoResponse {
 }
 
 const DEFAULT_PROVIDER = "replicate";
-
-async function resolveProviderName(
-	provider: string | undefined,
-	model: string | undefined,
-): Promise<string> {
-	if (model) {
-		const modelConfig = await getModelConfigByModel(model);
-		if (modelConfig?.provider) {
-			return modelConfig.provider;
-		}
-	}
-
-	return provider || DEFAULT_PROVIDER;
-}
 
 export async function generateVideo({
 	completion_id,
@@ -79,12 +66,12 @@ export async function generateVideo({
 			};
 		}
 
-		const providerName = await resolveProviderName(args.provider, args.model);
-		const provider = getVideoProvider(providerName, {
+		const providerName = await resolveModelProvider({
+			provider: args.provider,
+			model: args.model,
+			defaultProvider: DEFAULT_PROVIDER,
 			env: runtimeEnv,
-			user: runtimeUser,
 		});
-
 		const request = {
 			prompt: sanitisedPrompt,
 			env: runtimeEnv,
@@ -101,20 +88,16 @@ export async function generateVideo({
 			model: args.model,
 		};
 
-		let videoData;
-		try {
-			videoData = await provider.generate(request);
-		} catch (error) {
-			if (providerName !== DEFAULT_PROVIDER && !args.model) {
-				const fallbackProvider = getVideoProvider(DEFAULT_PROVIDER, {
+		const videoData = await generateWithProviderFallback({
+			providerName,
+			defaultProvider: DEFAULT_PROVIDER,
+			request,
+			getProvider: (name) =>
+				getVideoProvider(name, {
 					env: runtimeEnv,
 					user: runtimeUser,
-				});
-				videoData = await fallbackProvider.generate(request);
-			} else {
-				throw error;
-			}
-		}
+				}),
+		});
 
 		const isAsync = videoData?.status === "in_progress";
 
