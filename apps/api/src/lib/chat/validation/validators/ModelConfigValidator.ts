@@ -61,6 +61,7 @@ export class ModelConfigValidator implements Validator {
 				requestedModel,
 				use_multi_model,
 				requestedModels,
+				requestedProvider,
 			);
 
 			logger.info("Selected models", { selectedModels });

@@ -122,6 +122,7 @@ describe("ModelConfigValidator", () => {
 				"claude-3-sonnet",
 				false,
 				undefined,
+				undefined,
 			);
 			expect(mockFindModelConfig).toHaveBeenCalledWith(
 				"claude-3-sonnet",
@@ -196,6 +197,7 @@ describe("ModelConfigValidator", () => {
 				"claude-3-sonnet",
 				false,
 				undefined,
+				undefined,
 			);
 		});
 
@@ -217,6 +219,7 @@ describe("ModelConfigValidator", () => {
 				"completion-123",
 				"claude-3-sonnet",
 				false,
+				undefined,
 				undefined,
 			);
 		});
@@ -252,6 +255,7 @@ describe("ModelConfigValidator", () => {
 				"completion-123",
 				"claude-3-sonnet",
 				false,
+				undefined,
 				undefined,
 			);
 		});
@@ -320,6 +324,7 @@ describe("ModelConfigValidator", () => {
 				"claude-3-sonnet",
 				true,
 				undefined,
+				undefined,
 			);
 		});
 
@@ -345,6 +350,7 @@ describe("ModelConfigValidator", () => {
 				"claude-3-sonnet",
 				false,
 				["claude-3-sonnet", "gpt-4"],
+				undefined,
 			);
 		});
 
@@ -368,6 +374,7 @@ describe("ModelConfigValidator", () => {
 				"completion-123",
 				undefined,
 				false,
+				undefined,
 				undefined,
 			);
 		});
@@ -416,6 +423,7 @@ describe("ModelConfigValidator", () => {
 				"completion-123",
 				"claude-3-sonnet",
 				false,
+				undefined,
 				undefined,
 			);
 		});
