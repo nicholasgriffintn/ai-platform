@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import type { ModelConfig, ModelConfigItem } from "~/types";
 import {
+	doesModelMatchId,
 	getModelInteractionCapabilities,
 	getModelProvider,
 	getModelsByMode,
@@ -10,6 +11,7 @@ import {
 	isImageGenerationOutputModel,
 	isTextInputChatModel,
 	isTextOnlyModel,
+	modelHasOutputModality,
 	modelSupportsVisualModality,
 } from "../models";
 
@@ -107,6 +109,36 @@ describe("getModelProvider", () => {
 
 	it("returns undefined when no model is selected", () => {
 		expect(getModelProvider({}, null)).toBeUndefined();
+	});
+});
+
+describe("doesModelMatchId", () => {
+	it("matches configured ids, provider ids, and display names", () => {
+		const model = {
+			id: "app-model",
+			name: "Display Model",
+			matchingModel: "provider/model",
+			provider: "provider",
+		} as ModelConfigItem;
+
+		expect(doesModelMatchId(model, "app-model")).toBe(true);
+		expect(doesModelMatchId(model, "provider/model")).toBe(true);
+		expect(doesModelMatchId(model, "Display Model")).toBe(true);
+		expect(doesModelMatchId(model, "other-model")).toBe(false);
+		expect(doesModelMatchId(model, null)).toBe(false);
+	});
+});
+
+describe("modelHasOutputModality", () => {
+	it("uses input modalities as the default output modalities", () => {
+		expect(
+			modelHasOutputModality(
+				{
+					modalities: { input: ["text"] },
+				},
+				"text",
+			),
+		).toBe(true);
 	});
 });
 

@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { getModelConfigByMatchingModel } from "~/lib/providers/models";
+import { isRecord } from "~/utils/objects";
 import {
 	calculateReasoningBudget,
 	createCommonParameters,
@@ -47,6 +48,46 @@ vi.mock("~/utils/parameters", () => ({
 beforeEach(() => {
 	vi.clearAllMocks();
 });
+
+function countCacheControlBlocks(value: unknown): number {
+	if (Array.isArray(value)) {
+		return value.reduce((total, item) => total + countCacheControlBlocks(item), 0);
+	}
+
+	if (!value || typeof value !== "object") {
+		return 0;
+	}
+
+	if (!isRecord(value)) {
+		return 0;
+	}
+
+	const ownCount = "cache_control" in value ? 1 : 0;
+	const nestedCount = Object.values(value).reduce<number>(
+		(total, item) => total + countCacheControlBlocks(item),
+		0,
+	);
+	return ownCount + nestedCount;
+}
+
+function getCachedMessageTexts(messages: unknown): string[] {
+	if (!Array.isArray(messages)) {
+		return [];
+	}
+
+	return messages.flatMap((message) => {
+		if (!isRecord(message) || !Array.isArray(message.content)) {
+			return [];
+		}
+
+		return message.content.flatMap((block) => {
+			if (!isRecord(block) || !("cache_control" in block) || typeof block.text !== "string") {
+				return [];
+			}
+			return [block.text];
+		});
+	});
+}
 
 describe("AnthropicProvider", () => {
 	describe("validateParams", () => {
@@ -295,6 +336,57 @@ describe("AnthropicProvider", () => {
 			});
 			expect(result.temperature).toBe(1);
 			expect(result.max_tokens).toBe(1025);
+		});
+
+		it("should cap cache_control blocks across system, tools, and messages", async () => {
+			// @ts-ignore - getModelConfigByMatchingModel is not typed
+			vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
+				name: "claude-opus-4-6",
+				supportsToolCalls: true,
+			});
+
+			const cachedMessages = [1, 2, 3, 4].map((index) => ({
+				role: "user",
+				content: [
+					{
+						type: "text",
+						text: `Message ${index}`,
+						cache_control: { type: "ephemeral" },
+					},
+				],
+			}));
+
+			vi.mocked(createCommonParameters).mockReturnValue({
+				model: "claude-opus-4-6",
+				messages: cachedMessages,
+				temperature: 0.7,
+				max_tokens: 1024,
+			});
+
+			vi.mocked(shouldEnableStreaming).mockReturnValue(false);
+			vi.mocked(getToolsForProvider).mockReturnValue({
+				tools: [
+					{
+						name: "local_tool",
+						description: "A local tool",
+						input_schema: { type: "object", properties: {}, required: [] },
+					},
+				],
+			});
+			vi.mocked(calculateReasoningBudget).mockReturnValue(2000);
+
+			const provider = new AnthropicProvider();
+			const result = await provider.mapParameters({
+				model: "claude-opus-4-6",
+				messages: cachedMessages,
+				system_prompt: "System prompt",
+				env: { AI_GATEWAY_TOKEN: "test-token" },
+			} as any);
+
+			expect(countCacheControlBlocks(result)).toBe(4);
+			expect(result.system[0].cache_control).toEqual({ type: "ephemeral" });
+			expect(result.tools[0].cache_control).toEqual({ type: "ephemeral" });
+			expect(getCachedMessageTexts(result.messages)).toEqual(["Message 3", "Message 4"]);
 		});
 
 		it("should skip thinking params when reasoning effort is none", async () => {

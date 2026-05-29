@@ -110,6 +110,7 @@ export async function getAIResponse({
 	user,
 	mode,
 	model,
+	models,
 	provider: requestedProvider,
 	messages,
 	message,
@@ -117,7 +118,8 @@ export async function getAIResponse({
 	tools,
 	...params
 }: ChatCompletionParameters) {
-	if (!model) {
+	const requestedModel = model || models?.[0];
+	if (!requestedModel) {
 		throw new AssistantError("Model is required", ErrorType.PARAMS_ERROR);
 	}
 
@@ -128,21 +130,26 @@ export async function getAIResponse({
 		);
 	}
 
-	logger.debug("Getting AI response", { model, provider: requestedProvider, mode, user: user?.id });
+	logger.debug("Getting AI response", {
+		model: requestedModel,
+		provider: requestedProvider,
+		mode,
+		user: user?.id,
+	});
 
 	let modelConfig;
 	try {
-		modelConfig = await findModelConfig(model, env, requestedProvider);
+		modelConfig = await findModelConfig(requestedModel, env, requestedProvider);
 		if (!modelConfig) {
 			throw new AssistantError(
-				`Model configuration not found for ${model}`,
+				`Model configuration not found for ${requestedModel}`,
 				ErrorType.PARAMS_ERROR,
 			);
 		}
 	} catch (error: any) {
-		logger.error("Failed to get model configuration", { model, error });
+		logger.error("Failed to get model configuration", { model: requestedModel, error });
 		throw new AssistantError(
-			`Invalid model configuration for ${model}: ${error.message}`,
+			`Invalid model configuration for ${requestedModel}: ${error.message}`,
 			ErrorType.PARAMS_ERROR,
 		);
 	}
@@ -228,7 +235,7 @@ export async function getAIResponse({
 			isRetryableError: isRetryableProviderError,
 			onRetry: (attempt, error, delayMs) => {
 				logger.warn("Retrying model invocation after retryable provider error", {
-					model,
+					model: requestedModel,
 					provider: provider.name,
 					attempt,
 					delayMs,
@@ -247,7 +254,7 @@ export async function getAIResponse({
 		}
 
 		logger.error("Model invocation failed", {
-			model,
+			model: requestedModel,
 			provider: provider.name,
 			error: err,
 			errorType,
@@ -265,7 +272,7 @@ export async function getAIResponse({
 			? response.usage.total_tokens
 			: null;
 	logger.debug("Model invocation metrics", {
-		model,
+		model: requestedModel,
 		provider: provider.name,
 		durationMs,
 		usageTokens,
@@ -275,7 +282,7 @@ export async function getAIResponse({
 		throw new AssistantError("Provider returned empty response", ErrorType.PROVIDER_ERROR);
 	}
 
-	logger.debug("AI response received", { model, mode, user: user?.id });
+	logger.debug("AI response received", { model: requestedModel, mode, user: user?.id });
 
 	return response;
 }

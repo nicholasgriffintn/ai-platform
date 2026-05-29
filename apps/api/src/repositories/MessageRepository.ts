@@ -1,5 +1,31 @@
 import { BaseRepository } from "./BaseRepository";
 import { nonEmptyToolCallsOrNull } from "~/utils/toolCalls";
+import type { Message } from "~/types";
+
+const MESSAGE_INSERT_COLUMNS = [
+	"id",
+	"conversation_id",
+	"parent_message_id",
+	"role",
+	"content",
+	"name",
+	"tool_calls",
+	"citations",
+	"model",
+	"status",
+	"timestamp",
+	"platform",
+	"mode",
+	"log_id",
+	"data",
+	"usage",
+	"tool_call_id",
+	"tool_call_arguments",
+	"app",
+	"parts",
+] as const;
+
+const MESSAGE_UPSERT_UPDATE_COLUMNS = MESSAGE_INSERT_COLUMNS.filter((column) => column !== "id");
 
 const LIVE_TURN_ORDER_EXPRESSION =
 	"CASE WHEN json_valid(data) THEN CAST(json_extract(data, '$.realtime.turnStartedAt') AS INTEGER) END";
@@ -11,13 +37,13 @@ const MESSAGE_TIMESTAMP_TIE_EXPRESSION = "COALESCE(timestamp, 0)";
 const MESSAGE_ORDER_BY = `${MESSAGE_ORDER_EXPRESSION} ASC, ${MESSAGE_SEQUENCE_EXPRESSION} ASC, ${MESSAGE_TIMESTAMP_TIE_EXPRESSION} ASC, created_at ASC, id ASC`;
 
 export class MessageRepository extends BaseRepository {
-	public async createMessage(
+	private buildMessageValues(
 		messageId: string,
 		conversationId: string,
 		role: string,
 		content: string | Record<string, unknown>,
-		messageData: Record<string, unknown> = {},
-	): Promise<Record<string, unknown> | null> {
+		messageData: Partial<Message> = {},
+	): unknown[] {
 		const contentStr = typeof content === "object" ? JSON.stringify(content) : content;
 
 		const toolCallsData = nonEmptyToolCallsOrNull(messageData.tool_calls);
@@ -27,55 +53,80 @@ export class MessageRepository extends BaseRepository {
 		const usage = messageData.usage ? JSON.stringify(messageData.usage) : null;
 		const parts = messageData.parts ? JSON.stringify(messageData.parts) : null;
 
+		return [
+			messageId,
+			conversationId,
+			messageData.parent_message_id || null,
+			role,
+			contentStr,
+			messageData.name || null,
+			toolCalls,
+			citations,
+			messageData.model || null,
+			messageData.status || null,
+			messageData.timestamp || null,
+			messageData.platform || null,
+			messageData.mode || null,
+			messageData.log_id || null,
+			data,
+			usage,
+			messageData.tool_call_id || null,
+			messageData.tool_call_arguments || null,
+			messageData.app || null,
+			parts,
+		];
+	}
+
+	public async createMessage(
+		messageId: string,
+		conversationId: string,
+		role: string,
+		content: string | Record<string, unknown>,
+		messageData: Partial<Message> = {},
+	): Promise<Record<string, unknown> | null> {
+		const columns = MESSAGE_INSERT_COLUMNS.join(", ");
+		const placeholders = MESSAGE_INSERT_COLUMNS.map(() => "?").join(", ");
+
 		const result = this.runQuery<Record<string, unknown>>(
 			`INSERT INTO message (
-         id, 
-         conversation_id, 
-         parent_message_id,
-         role, 
-         content, 
-         name,
-         tool_calls,
-         citations,
-         model,
-         status,
-         timestamp,
-         platform,
-         mode,
-         log_id,
-         data,
-         usage,
-         tool_call_id,
-         tool_call_arguments,
-         app,
-         parts,
-         created_at, 
+         ${columns},
+         created_at,
          updated_at
        )
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
+       VALUES (${placeholders}, datetime('now'), datetime('now'))
        RETURNING *`,
-			[
-				messageId,
-				conversationId,
-				messageData.parent_message_id || null,
-				role,
-				contentStr,
-				messageData.name || null,
-				toolCalls,
-				citations,
-				messageData.model || null,
-				messageData.status || null,
-				messageData.timestamp || null,
-				messageData.platform || null,
-				messageData.mode || null,
-				messageData.log_id || null,
-				data,
-				usage,
-				messageData.tool_call_id || null,
-				messageData.tool_call_arguments || null,
-				messageData.app || null,
-				parts,
-			],
+			this.buildMessageValues(messageId, conversationId, role, content, messageData),
+			true,
+		);
+		return result;
+	}
+
+	public async upsertMessage(
+		messageId: string,
+		conversationId: string,
+		role: string,
+		content: string | Record<string, unknown>,
+		messageData: Partial<Message> = {},
+	): Promise<Record<string, unknown> | null> {
+		const columns = MESSAGE_INSERT_COLUMNS.join(", ");
+		const placeholders = MESSAGE_INSERT_COLUMNS.map(() => "?").join(", ");
+		const updateClause = MESSAGE_UPSERT_UPDATE_COLUMNS.map(
+			(column) => `${column} = excluded.${column}`,
+		).join(", ");
+
+		const result = this.runQuery<Record<string, unknown>>(
+			`INSERT INTO message (
+         ${columns},
+         created_at,
+         updated_at
+       )
+       VALUES (${placeholders}, datetime('now'), datetime('now'))
+       ON CONFLICT(id) DO UPDATE SET
+         ${updateClause},
+         updated_at = datetime('now')
+       WHERE message.conversation_id = excluded.conversation_id
+       RETURNING *`,
+			this.buildMessageValues(messageId, conversationId, role, content, messageData),
 			true,
 		);
 		return result;
@@ -244,6 +295,23 @@ export class MessageRepository extends BaseRepository {
 			return;
 		}
 		await this.executeRun(query, values);
+	}
+
+	public async deleteMessagesExcept(conversationId: string, messageIds: string[]): Promise<void> {
+		const uniqueMessageIds = Array.from(new Set(messageIds.filter(Boolean)));
+
+		if (uniqueMessageIds.length === 0) {
+			await this.deleteAllMessages(conversationId);
+			return;
+		}
+
+		const placeholders = uniqueMessageIds.map(() => "?").join(", ");
+		await this.executeRun(
+			`DELETE FROM message
+			 WHERE conversation_id = ?
+			   AND id NOT IN (${placeholders})`,
+			[conversationId, ...uniqueMessageIds],
+		);
 	}
 
 	public async getChildMessages(

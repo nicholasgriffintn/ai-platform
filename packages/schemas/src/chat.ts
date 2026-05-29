@@ -59,6 +59,10 @@ export const createChatCompletionsJsonSchema = z.object({
 	model: z.string().optional().meta({
 		description: "The model to use for the request.",
 	}),
+	models: z.array(z.string().min(1)).optional().meta({
+		description:
+			"Explicit model IDs to use for a single-model or multi-model response. The first model is treated as the primary model.",
+	}),
 	provider: z.string().optional().meta({
 		description: "The provider to use when the model name is shared by multiple providers.",
 	}),

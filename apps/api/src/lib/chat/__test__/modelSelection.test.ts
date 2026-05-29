@@ -54,6 +54,26 @@ describe("selectModels", () => {
 		});
 	});
 
+	describe("when requestedModels are provided", () => {
+		it("should return the explicit models without invoking router selection", async () => {
+			const result = await selectModels(
+				mockEnv,
+				lastMessageText,
+				mockAttachments,
+				budgetConstraint,
+				mockUser,
+				completionId,
+				"primary-model",
+				true,
+				["primary-model", "second-model", "primary-model", ""],
+			);
+
+			expect(mockModelRouter.selectMultipleModels).not.toHaveBeenCalled();
+			expect(mockModelRouter.selectModel).not.toHaveBeenCalled();
+			expect(result).toEqual(["primary-model", "second-model"]);
+		});
+	});
+
 	describe("when use_multi_model is true but requestedModel is provided", () => {
 		it("should return the requested model in an array", async () => {
 			const requestedModel = "specific-model";

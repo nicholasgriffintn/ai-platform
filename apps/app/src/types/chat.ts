@@ -200,6 +200,11 @@ export interface MessageData {
 		nextMemberIds?: string[];
 		nextReason?: string;
 	};
+	opinion?: {
+		mode: "second-opinion" | "consensus";
+		sourceMessageId: string;
+		modelIds: string[];
+	};
 	error?: string;
 }
 

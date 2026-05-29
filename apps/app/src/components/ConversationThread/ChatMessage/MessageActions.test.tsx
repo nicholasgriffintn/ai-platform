@@ -12,6 +12,21 @@ vi.mock("../InlineModelSelector", () => ({
 	),
 }));
 
+vi.mock("../OpinionModelSelector", () => ({
+	OpinionModelSelector: ({
+		onSubmit,
+	}: {
+		onSubmit: (request: { mode: "second-opinion"; modelIds: string[] }) => void;
+	}) => (
+		<button
+			type="button"
+			onClick={() => onSubmit({ mode: "second-opinion", modelIds: ["opinion-model"] })}
+		>
+			Opinion model
+		</button>
+	),
+}));
+
 const baseProps = {
 	copied: false,
 	copyMessageToClipboard: vi.fn(),
@@ -51,5 +66,25 @@ describe("MessageActions", () => {
 		fireEvent.click(screen.getByRole("button", { name: "Featured model" }));
 
 		expect(onBranch).toHaveBeenCalledWith("user-message", "featured-model");
+	});
+
+	it("opens a model picker when requesting a second opinion", () => {
+		const onRequestOpinion = vi.fn();
+
+		render(
+			<MessageActions
+				{...baseProps}
+				message={message("assistant")}
+				onRequestOpinion={onRequestOpinion}
+			/>,
+		);
+
+		fireEvent.click(screen.getByRole("button", { name: "Get second opinion" }));
+		fireEvent.click(screen.getByRole("button", { name: "Opinion model" }));
+
+		expect(onRequestOpinion).toHaveBeenCalledWith("assistant-message", {
+			mode: "second-opinion",
+			modelIds: ["opinion-model"],
+		});
 	});
 });

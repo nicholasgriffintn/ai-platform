@@ -46,6 +46,7 @@ export interface StreamChatCompletionsParams {
 	messages: Message[];
 	mode: ChatMode;
 	model?: string;
+	models?: string[];
 	onProgress: StreamProgressHandler;
 	onStateChange: (state: string, data?: any) => void;
 	provider?: string;
@@ -400,6 +401,7 @@ export class ChatService {
 		messages,
 		mode,
 		model,
+		models,
 		onProgress,
 		onStateChange,
 		provider,
@@ -446,6 +448,9 @@ export class ChatService {
 
 		if (model !== undefined) {
 			requestBody.model = model;
+		}
+		if (models?.length) {
+			requestBody.models = models;
 		}
 		if (provider !== undefined) {
 			requestBody.provider = provider;
@@ -727,6 +732,18 @@ export class ChatService {
 										resetAssistantState();
 									}
 								} else if (parsedData.type === "message_delta") {
+									if (typeof parsedData.content === "string") {
+										content = parsedData.content;
+										streamedParts = content
+											? [
+													{
+														type: "text",
+														text: content,
+														timestamp: Date.now(),
+													},
+												]
+											: [];
+									}
 									if (parsedData.usage) {
 										usage = parsedData.usage;
 									}

@@ -11,6 +11,7 @@ import type { Attachment } from "~/types";
  * @param completionId - The completion ID
  * @param requestedModel - The requested model
  * @param use_multi_model - Whether to use multiple models
+ * @param requestedModels - Explicit model IDs requested by the caller
  * @returns The selected models
  */
 export async function selectModels(
@@ -22,7 +23,15 @@ export async function selectModels(
 	completionId: string,
 	requestedModel?: string,
 	use_multi_model?: boolean,
+	requestedModels?: string[],
 ): Promise<string[]> {
+	const explicitModels = requestedModels
+		?.map((model) => model.trim())
+		.filter((model) => model.length > 0);
+	if (explicitModels?.length) {
+		return [...new Set(explicitModels)];
+	}
+
 	if (use_multi_model && !requestedModel) {
 		return ModelRouter.selectMultipleModels(
 			env,

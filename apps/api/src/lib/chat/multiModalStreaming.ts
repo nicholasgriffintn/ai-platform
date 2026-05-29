@@ -1,7 +1,15 @@
 import { getAIResponse } from "~/lib/chat/responses";
 import type { ConversationManager } from "~/lib/conversationManager";
 import type { ServiceContext } from "~/lib/context/serviceContext";
-import type { ChatMode, IEnv, IUser, IUserSettings, ModelConfigInfo, Platform } from "~/types";
+import type {
+	ChatMode,
+	IEnv,
+	IUser,
+	IUserSettings,
+	Message,
+	ModelConfigInfo,
+	Platform,
+} from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";
@@ -9,6 +17,44 @@ import { createStreamWithPostProcessing } from "./streaming";
 import { safeParseJson } from "~/utils/json";
 
 const logger = getLogger({ prefix: "lib/chat/multiModalStreaming" });
+
+function getOpinionMode(messages: unknown): string | null {
+	if (!Array.isArray(messages)) {
+		return null;
+	}
+
+	for (let index = messages.length - 1; index >= 0; index--) {
+		const message = messages[index];
+		if (
+			message &&
+			typeof message === "object" &&
+			"role" in message &&
+			message.role === "user" &&
+			"data" in message &&
+			message.data &&
+			typeof message.data === "object" &&
+			"opinion" in message.data &&
+			message.data.opinion &&
+			typeof message.data.opinion === "object" &&
+			"mode" in message.data.opinion &&
+			typeof message.data.opinion.mode === "string"
+		) {
+			return message.data.opinion.mode;
+		}
+	}
+
+	return null;
+}
+
+function buildConsensusSynthesisPrompt(modelResponses: string): string {
+	return [
+		"Write a concise consensus from these model responses.",
+		"State the shared answer, mention meaningful disagreement or uncertainty, and finish with the answer a user should trust.",
+		"Do not mention process unless it affects confidence.",
+		"",
+		modelResponses,
+	].join("\n");
+}
 
 /**
  * Creates a multi-model stream that queries multiple models and combines their responses
@@ -258,8 +304,93 @@ export function createMultiModelStream(
 				secondaryContent += errorMessage;
 			}
 
+			if (getOpinionMode(baseParams.messages) === "consensus" && secondaryContent.trim()) {
+				const consensusDivider = "\n\n***\n### Consensus\n\n";
+				const comparisonContent = `${modelHeader}### ${models[0].displayName} response\n\n${primaryContent}${secondaryContent}`;
+
+				controller.enqueue(
+					encoder.encode(
+						`data: ${JSON.stringify({
+							type: "content_block_delta",
+							content: consensusDivider,
+						})}\n\n`,
+					),
+				);
+				secondaryContent += consensusDivider;
+
+				try {
+					const consensusResponse = await getAIResponse({
+						...baseParams,
+						disable_functions: true,
+						enabled_tools: [],
+						messages: [
+							...baseParams.messages,
+							{
+								role: "user",
+								content: buildConsensusSynthesisPrompt(comparisonContent),
+							},
+						],
+						model: models[0].model,
+						provider: models[0].provider,
+						stream: false,
+						tools: undefined,
+					});
+
+					if (!(consensusResponse instanceof ReadableStream)) {
+						const consensusContent = consensusResponse.response || "";
+						secondaryContent += consensusContent;
+						controller.enqueue(
+							encoder.encode(
+								`data: ${JSON.stringify({
+									type: "content_block_delta",
+									content: consensusContent,
+								})}\n\n`,
+							),
+						);
+					}
+				} catch (error) {
+					logger.error("Error synthesizing multi-model consensus:", {
+						error_message: error instanceof Error ? error.message : "Unknown error",
+					});
+					const consensusError =
+						"Consensus synthesis failed, but the individual model responses above are available.";
+					secondaryContent += consensusError;
+					controller.enqueue(
+						encoder.encode(
+							`data: ${JSON.stringify({
+								type: "content_block_delta",
+								content: consensusError,
+								isError: true,
+							})}\n\n`,
+						),
+					);
+				}
+			}
+
 			try {
 				const conversation = await conversationManager.get(options.completion_id);
+				const secondaryModels = models.slice(1).map((m: ModelConfigInfo) => m.model) || [];
+				const buildFinalMessage = (content: string, baseMessage?: Partial<Message>): Message => ({
+					...baseMessage,
+					role: "assistant",
+					content,
+					citations: baseMessage?.citations || [],
+					log_id: baseMessage?.log_id || null,
+					mode: options.mode,
+					id: baseMessage?.id || generateId(),
+					timestamp: baseMessage?.timestamp || Date.now(),
+					model: baseMessage?.model || models[0].model,
+					platform: baseMessage?.platform || options.platform || "api",
+					usage: baseMessage?.usage || null,
+					data: {
+						...baseMessage?.data,
+						includesSecondaryModels: true,
+						secondaryModels,
+					},
+					tool_calls: baseMessage?.tool_calls || null,
+				});
+				let finalAssistantMessage: Message | null = null;
+
 				if (conversation?.length > 0) {
 					const assistantMessages = conversation.filter((msg) => msg.role === "assistant");
 					if (assistantMessages.length > 0) {
@@ -273,38 +404,39 @@ export function createMultiModelStream(
 						}
 
 						const finalCombinedContent = modelHeader + storedPrimaryContent + secondaryContent;
+						finalAssistantMessage = buildFinalMessage(finalCombinedContent, lastMessage);
 
-						await conversationManager.update(options.completion_id, [
-							{
-								...lastMessage,
-								content: finalCombinedContent,
-								data: {
-									...lastMessage.data,
-									includesSecondaryModels: true,
-									secondaryModels: models.slice(1).map((m: ModelConfigInfo) => m.model) || [],
-								},
-							},
-						]);
+						await conversationManager.update(options.completion_id, [finalAssistantMessage]);
 					} else {
 						const finalCombinedContentForAdd = modelHeader + primaryContent + secondaryContent;
-						await conversationManager.add(options.completion_id, {
-							role: "assistant",
-							content: finalCombinedContentForAdd,
-							citations: [],
-							log_id: null,
-							mode: options.mode,
-							id: generateId(),
-							timestamp: Date.now(),
-							model: models[0].model,
-							platform: options.platform || "api",
-							usage: null,
-							data: {
-								includesSecondaryModels: true,
-								secondaryModels: models.slice(1).map((m: ModelConfigInfo) => m.model) || [],
-							},
-							tool_calls: null,
-						});
+						finalAssistantMessage = buildFinalMessage(finalCombinedContentForAdd);
+						await conversationManager.add(options.completion_id, finalAssistantMessage);
 					}
+				} else {
+					const finalCombinedContentForAdd = modelHeader + primaryContent + secondaryContent;
+					finalAssistantMessage = buildFinalMessage(finalCombinedContentForAdd);
+					await conversationManager.add(options.completion_id, finalAssistantMessage);
+				}
+
+				if (finalAssistantMessage) {
+					controller.enqueue(
+						encoder.encode(
+							`data: ${JSON.stringify({
+								type: "message_delta",
+								id: options.completion_id,
+								message_id: finalAssistantMessage.id,
+								object: "chat.completion",
+								created: finalAssistantMessage.timestamp,
+								model: finalAssistantMessage.model,
+								content: finalAssistantMessage.content,
+								data: finalAssistantMessage.data,
+								log_id: finalAssistantMessage.log_id,
+								usage: finalAssistantMessage.usage,
+								citations: finalAssistantMessage.citations,
+								finish_reason: "stop",
+							})}\n\n`,
+						),
+					);
 				}
 
 				try {
