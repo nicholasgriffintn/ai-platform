@@ -110,6 +110,59 @@ describe("ChatService streaming", () => {
 		expect(result.content).toBe("Second turn");
 	});
 
+	it("uses final message_delta content when a stream revises the combined assistant message", async () => {
+		vi.stubGlobal(
+			"fetch",
+			vi.fn(async () =>
+				createSseResponse([
+					data({ type: "content_block_delta", content: "Primary answer" }),
+					data({
+						type: "message_delta",
+						message_id: "assistant-1",
+						created: 1000,
+						model: "primary-model",
+					}),
+					data({ type: "content_block_delta", content: "Secondary answer" }),
+					data({
+						type: "message_delta",
+						message_id: "assistant-1",
+						created: 1001,
+						model: "primary-model",
+						content: "Primary answer\n\nSecondary answer",
+					}),
+					data("[DONE]"),
+				]),
+			),
+		);
+
+		const assistantMessages: Message[] = [];
+		const service = new ChatService(async () => ({}));
+
+		const result = await service.streamChatCompletions({
+			chatSettings: {},
+			completionId: "conversation-1",
+			messages: [{ role: "user", content: "hello" } as Message],
+			mode: "remote",
+			model: "primary-model",
+			onProgress: (_text, _reasoning, _toolResponses, _done, assistantMessage) => {
+				if (assistantMessage) {
+					assistantMessages.push(assistantMessage);
+				}
+			},
+			onStateChange: () => {},
+			signal: new AbortController().signal,
+		});
+
+		expect(result.content).toBe("Primary answer\n\nSecondary answer");
+		expect(result.parts).toEqual([
+			expect.objectContaining({
+				type: "text",
+				text: "Primary answer\n\nSecondary answer",
+			}),
+		]);
+		expect(assistantMessages.at(-1)?.content).toBe("Primary answer\n\nSecondary answer");
+	});
+
 	it("sends provider options inside request options", async () => {
 		const fetchMock = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) =>
 			createSseResponse([data("[DONE]")]),
@@ -131,6 +184,7 @@ describe("ChatService streaming", () => {
 			messages: [{ role: "user", content: "hello" } as Message],
 			mode: "remote",
 			model: "gpt-5",
+			models: ["gpt-5", "claude-opus"],
 			onProgress: () => {},
 			onStateChange: () => {},
 			provider: "openai",
@@ -156,6 +210,7 @@ describe("ChatService streaming", () => {
 			quality: "high",
 		});
 		expect(body.enabled_tools).toEqual(["image_generation"]);
+		expect(body.models).toEqual(["gpt-5", "claude-opus"]);
 	});
 
 	it("throws streamed provider errors without finalizing an empty assistant message", async () => {

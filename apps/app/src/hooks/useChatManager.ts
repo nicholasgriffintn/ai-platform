@@ -123,7 +123,9 @@ export function useChatManager(
 		startEditingMessage,
 		stopEditingMessage,
 		branchConversation,
-	} = useConversationActions(streamResponse, generateConversationTitle);
+		isRequestingOpinion,
+		requestOpinion,
+	} = useConversationActions(streamResponse, generateConversationTitle, setStreamStarted);
 
 	const sendMessage = useCallback(
 		async (input: string, attachments?: AttachmentData[]) => {
@@ -383,5 +385,7 @@ export function useChatManager(
 		startEditingMessage,
 		stopEditingMessage,
 		branchConversation,
+		isRequestingOpinion,
+		requestOpinion,
 	};
 }

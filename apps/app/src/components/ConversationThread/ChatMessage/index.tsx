@@ -3,6 +3,7 @@ import { useState } from "react";
 import { ModelIcon } from "~/components/ModelIcon";
 import { useCopyToClipboard } from "~/hooks/useCopyToClipboard";
 import { apiService } from "~/lib/api/api-service";
+import type { OpinionRequest } from "~/lib/chat/opinion";
 import type { ChatRole, Message } from "~/types";
 import type { ArtifactProps } from "~/types/artifact";
 import { EditableMessageContent } from "./EditableMessageContent";
@@ -24,6 +25,9 @@ export const ChatMessage = ({
 	onCancelEdit,
 	onBranch,
 	isBranching = false,
+	onRequestOpinion,
+	isRequestingOpinion = false,
+	shouldPromoteOpinion = false,
 }: {
 	conversationId?: string;
 	message: Message;
@@ -42,6 +46,9 @@ export const ChatMessage = ({
 	onCancelEdit?: () => void;
 	onBranch?: (messageId: string, modelId?: string) => void;
 	isBranching?: boolean;
+	onRequestOpinion?: (messageId: string, request: OpinionRequest) => void;
+	isRequestingOpinion?: boolean;
+	shouldPromoteOpinion?: boolean;
 }) => {
 	const { copied, copy } = useCopyToClipboard();
 	const [feedbackState, setFeedbackState] = useState<"none" | "liked" | "disliked">("none");
@@ -193,6 +200,9 @@ export const ChatMessage = ({
 								isEditing={isEditing}
 								onBranch={onBranch}
 								isBranching={isBranching}
+								onRequestOpinion={onRequestOpinion}
+								isRequestingOpinion={isRequestingOpinion}
+								shouldPromoteOpinion={shouldPromoteOpinion}
 							/>
 						)}
 				</div>

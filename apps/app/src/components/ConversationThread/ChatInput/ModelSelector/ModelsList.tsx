@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 import { ModelIcon } from "~/components/ModelIcon";
 import { useTrackEvent } from "~/hooks/use-track-event";
+import { getModelDisplayName } from "~/lib/models";
 import { cn } from "~/lib/utils";
 import type { ModelConfigItem } from "~/types";
 import { ModelOption } from "./ModelOption";
@@ -28,10 +29,6 @@ interface ProviderListEntry {
 }
 
 const FEATURED_PROVIDER_KEY = "featured";
-
-function getModelDisplayName(model: ModelConfigItem) {
-	return model.name || model.matchingModel;
-}
 
 function formatProviderLabel(provider: string) {
 	return provider

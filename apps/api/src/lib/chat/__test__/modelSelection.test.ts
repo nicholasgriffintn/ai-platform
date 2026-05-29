@@ -5,21 +5,49 @@ const mockModelRouter = {
 	selectMultipleModels: vi.fn(),
 };
 
+const mockModels = {
+	filterModelsForUserAccess: vi.fn(),
+	findModelConfig: vi.fn(),
+	getModels: vi.fn(),
+};
+
 vi.mock("~/lib/modelRouter", () => ({
 	ModelRouter: mockModelRouter,
 }));
+
+vi.mock("~/lib/providers/models", () => mockModels);
 
 describe("selectModels", () => {
 	let selectModels: any;
 
 	beforeEach(async () => {
 		vi.clearAllMocks();
+		const availableModels = {
+			"primary-model": {
+				matchingModel: "primary-model",
+				provider: "free-provider",
+				isFree: true,
+			},
+			"second-model": {
+				matchingModel: "second-model",
+				provider: "free-provider",
+				isFree: true,
+			},
+			"pro-model": {
+				matchingModel: "pro-model",
+				provider: "pro-provider",
+			},
+		};
+		mockModels.getModels.mockReturnValue(availableModels);
+		mockModels.filterModelsForUserAccess.mockResolvedValue(availableModels);
+		mockModels.findModelConfig.mockImplementation(async (model: string) => availableModels[model]);
+
 		const module = await import("../modelSelection");
 		selectModels = module.selectModels;
 	});
 
-	const mockEnv = {} as any;
-	const mockUser = { id: "user-123" } as any;
+	const mockEnv = { DB: {} } as any;
+	const mockUser = { id: 123 } as any;
 	const mockAttachments = [];
 	const lastMessageText = "Hello world";
 	const completionId = "completion-123";
@@ -51,6 +79,78 @@ describe("selectModels", () => {
 			);
 			expect(mockModelRouter.selectModel).not.toHaveBeenCalled();
 			expect(result).toEqual(expectedModels);
+		});
+	});
+
+	describe("when requestedModels are provided", () => {
+		it("should return the explicit models without invoking router selection", async () => {
+			const result = await selectModels(
+				mockEnv,
+				lastMessageText,
+				mockAttachments,
+				budgetConstraint,
+				mockUser,
+				completionId,
+				"primary-model",
+				true,
+				["primary-model", "second-model", "primary-model", ""],
+			);
+
+			expect(mockModelRouter.selectMultipleModels).not.toHaveBeenCalled();
+			expect(mockModelRouter.selectModel).not.toHaveBeenCalled();
+			expect(mockModels.filterModelsForUserAccess).toHaveBeenCalled();
+			expect(result).toEqual(["primary-model", "second-model"]);
+		});
+
+		it("should reject explicit models the user cannot access", async () => {
+			mockModels.filterModelsForUserAccess.mockResolvedValue({
+				"primary-model": {
+					matchingModel: "primary-model",
+					provider: "free-provider",
+					isFree: true,
+				},
+			});
+
+			await expect(
+				selectModels(
+					mockEnv,
+					lastMessageText,
+					mockAttachments,
+					budgetConstraint,
+					mockUser,
+					completionId,
+					"primary-model",
+					true,
+					["primary-model", "pro-model"],
+				),
+			).rejects.toMatchObject({
+				message: "Model not found or user does not have access: pro-model",
+				statusCode: 403,
+			});
+
+			expect(mockModelRouter.selectMultipleModels).not.toHaveBeenCalled();
+			expect(mockModelRouter.selectModel).not.toHaveBeenCalled();
+		});
+
+		it("should pass provider constraints when validating explicit models", async () => {
+			await selectModels(
+				mockEnv,
+				lastMessageText,
+				mockAttachments,
+				budgetConstraint,
+				mockUser,
+				completionId,
+				"primary-model",
+				true,
+				["primary-model"],
+				"free-provider",
+			);
+
+			expect(mockModels.findModelConfig).toHaveBeenCalledWith(
+				"primary-model",
+				mockEnv,
+				"free-provider",
+			);
 		});
 	});
 

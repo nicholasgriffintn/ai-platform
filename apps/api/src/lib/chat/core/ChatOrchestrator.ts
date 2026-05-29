@@ -121,7 +121,10 @@ export class ChatOrchestrator {
 			currentMode,
 		} = prepared;
 
-		await conversationManager.checkUsageLimits(primaryModel);
+		const modelsToCheck = new Set(modelConfigs.map((config) => config.model));
+		for (const modelToCheck of modelsToCheck) {
+			await conversationManager.checkUsageLimits(modelToCheck);
+		}
 
 		let messages = preparedMessages;
 		if (chatOptions.completion_id && messages.length > 0) {

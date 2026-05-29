@@ -5,6 +5,11 @@ import { VList, type VListHandle } from "virtua";
 import { useChat } from "~/hooks/useChat";
 import { useChatManager } from "~/hooks/useChatManager";
 import {
+	canRequestOpinionForMessage,
+	shouldPromoteOpinionRequest,
+	type OpinionRequest,
+} from "~/lib/chat/opinion";
+import {
 	useIsLoading,
 	useLoadingMessage,
 	useLoadingProgress,
@@ -28,6 +33,8 @@ interface MessageListProps {
 	isSharedView?: boolean;
 	onBranch?: (messageId: string, modelId?: string) => void;
 	isBranching?: boolean;
+	onRequestOpinion?: (messageId: string, request: OpinionRequest) => void;
+	isRequestingOpinion?: boolean;
 }
 
 export const MessageList = ({
@@ -37,6 +44,8 @@ export const MessageList = ({
 	isSharedView = false,
 	onBranch,
 	isBranching = false,
+	onRequestOpinion,
+	isRequestingOpinion = false,
 }: MessageListProps) => {
 	const { currentConversationId, isAuthenticated, setCurrentConversationId } = useChatStore();
 
@@ -54,6 +63,24 @@ export const MessageList = ({
 	} = useChatManager();
 
 	const messages = propMessages || conversation?.messages || [];
+	const opinionAvailability = useMemo(() => {
+		const availability = new Map<
+			string,
+			{
+				canRequest: boolean;
+				shouldPromote: boolean;
+			}
+		>();
+
+		for (const message of messages) {
+			availability.set(message.id, {
+				canRequest: canRequestOpinionForMessage(messages, message.id),
+				shouldPromote: shouldPromoteOpinionRequest(messages, message.id),
+			});
+		}
+
+		return availability;
+	}, [messages]);
 	const lastMessageScrollKey = useMemo(() => {
 		const lastMessage = messages[messages.length - 1];
 		if (!lastMessage) {
@@ -187,6 +214,11 @@ export const MessageList = ({
 									onCancelEdit={stopEditingMessage}
 									onBranch={onBranch}
 									isBranching={isBranching}
+									onRequestOpinion={
+										opinionAvailability.get(message.id)?.canRequest ? onRequestOpinion : undefined
+									}
+									isRequestingOpinion={isRequestingOpinion}
+									shouldPromoteOpinion={opinionAvailability.get(message.id)?.shouldPromote ?? false}
 								/>
 							</div>
 						))}

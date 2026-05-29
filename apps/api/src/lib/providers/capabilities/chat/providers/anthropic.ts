@@ -2,6 +2,7 @@ import { gatewayId } from "~/constants/app";
 import { trackProviderMetrics } from "~/lib/monitoring";
 import { getModelConfigByMatchingModel } from "~/lib/providers/models";
 import { shouldEnableProviderThinking } from "~/lib/providers/models/reasoning";
+import { limitAnthropicCacheControlBlocks } from "~/lib/providers/utils/anthropicCacheControl";
 import { buildAnthropicHostedTools } from "~/lib/providers/utils/anthropicTools";
 import type { StorageService } from "~/lib/storage";
 import type { ChatCompletionParameters } from "~/types";
@@ -117,7 +118,7 @@ export class AnthropicProvider extends BaseProvider {
 				}
 			: {};
 
-		return {
+		return limitAnthropicCacheControlBlocks({
 			...commonParams,
 			...streamingParams,
 			...toolsParams,
@@ -125,7 +126,7 @@ export class AnthropicProvider extends BaseProvider {
 			...thinkingParams,
 			...systemPromptParams,
 			stop_sequences: params.stop,
-		};
+		});
 	}
 
 	async countTokens(

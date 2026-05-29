@@ -1,19 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
-import { ModelIcon } from "~/components/ModelIcon";
 import { SearchInput } from "~/components/ui/SearchInput";
-import { useModels } from "~/hooks/useModels";
-import { useWebLLMModels } from "~/hooks/useWebLLMModels";
-import {
-	getAvailableModels,
-	getFeaturedModels,
-	getModelDisplayName,
-	getModelsByMode,
-	searchModelList,
-} from "~/lib/models";
+import { useConversationModelOptions } from "~/hooks/useConversationModelOptions";
 import { cn } from "~/lib/utils";
-import { useChatStore } from "~/state/stores/chatStore";
-import type { ModelConfigItem } from "~/types";
+import { ConversationModelOption } from "./ConversationModelOption";
 
 interface InlineModelSelectorProps {
 	onModelSelect: (modelId: string) => void;
@@ -21,74 +11,18 @@ interface InlineModelSelectorProps {
 	className?: string;
 }
 
-interface BranchModelOptionProps {
-	model: ModelConfigItem;
-	onSelect: (modelId: string) => void;
-}
-
-const BranchModelOption = ({ model, onSelect }: BranchModelOptionProps) => (
-	<button
-		type="button"
-		onClick={() => onSelect(model.id)}
-		className="flex w-full items-start gap-2.5 rounded-md px-2 py-2 text-left transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-800/80"
-	>
-		<span className="mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center">
-			<ModelIcon
-				modelName={getModelDisplayName(model)}
-				provider={model.provider}
-				url={model.avatarUrl}
-				size={18}
-			/>
-		</span>
-		<span className="min-w-0 flex-1">
-			<span className="block text-sm font-medium leading-5 text-zinc-900 whitespace-normal break-words dark:text-zinc-100">
-				{getModelDisplayName(model)}
-			</span>
-			<span className="block text-xs leading-4 text-zinc-500 whitespace-normal break-words dark:text-zinc-400">
-				{model.provider}
-			</span>
-		</span>
-	</button>
-);
-
 export const InlineModelSelector = ({
 	onModelSelect,
 	onCancel,
 	className = "",
 }: InlineModelSelectorProps) => {
-	const { chatMode, model } = useChatStore();
-	const { data: apiModels = {}, isLoading } = useModels();
-	const webLLMModels = useWebLLMModels();
 	const [isOpen, setIsOpen] = useState(true);
 	const [searchQuery, setSearchQuery] = useState("");
 	const dropdownRef = useRef<HTMLDivElement>(null);
-
-	const availableModels = useMemo(
-		() => getAvailableModels(apiModels, chatMode === "local", webLLMModels),
-		[apiModels, chatMode, webLLMModels],
-	);
-	const modeModels = useMemo(
-		() => getModelsByMode(availableModels, chatMode),
-		[availableModels, chatMode],
-	);
-	const currentModelId = typeof model === "string" ? model : null;
-	const currentGlobalModel = currentModelId ? modeModels[currentModelId] : null;
-	const featuredModels = useMemo(
-		() => getFeaturedModels(modeModels).filter((modelItem) => modelItem.id !== currentModelId),
-		[modeModels, currentModelId],
-	);
-	const searchableModels = useMemo(
-		() =>
-			Object.values(modeModels).filter(
-				(modelItem) =>
-					modelItem.id !== currentModelId && !modelItem.isFeatured && !modelItem.deprecated,
-			),
-		[modeModels, currentModelId],
-	);
-	const searchResults = useMemo(
-		() => searchModelList(searchableModels, searchQuery),
-		[searchableModels, searchQuery],
-	);
+	const { currentModel, featuredModels, isLoading, searchModels } = useConversationModelOptions({
+		excludeCurrentModel: true,
+	});
+	const searchResults = useMemo(() => searchModels(searchQuery), [searchModels, searchQuery]);
 	const isSearching = searchQuery.trim().length > 0;
 
 	const handleModelClick = (modelId: string) => {
@@ -141,22 +75,22 @@ export const InlineModelSelector = ({
 								Loading models...
 							</p>
 						)}
-						{currentGlobalModel && (
+						{currentModel && (
 							<>
 								<div className="px-2 pb-1 text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
 									Current Model
 								</div>
-								<BranchModelOption model={currentGlobalModel} onSelect={handleModelClick} />
+								<ConversationModelOption model={currentModel} onSelect={handleModelClick} />
 							</>
 						)}
 						{isSearching && (
-							<div className={currentGlobalModel ? "mt-3" : ""}>
+							<div className={currentModel ? "mt-3" : ""}>
 								<div className="px-2 pb-1 text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
 									Search Results
 								</div>
 								{searchResults.length > 0 ? (
 									searchResults.map((modelItem) => (
-										<BranchModelOption
+										<ConversationModelOption
 											key={modelItem.id}
 											model={modelItem}
 											onSelect={handleModelClick}
@@ -170,12 +104,12 @@ export const InlineModelSelector = ({
 							</div>
 						)}
 						{featuredModels.length > 0 && (
-							<div className={currentGlobalModel || isSearching ? "mt-3" : ""}>
+							<div className={currentModel || isSearching ? "mt-3" : ""}>
 								<div className="px-2 pb-1 text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
 									Featured Models
 								</div>
 								{featuredModels.map((modelItem) => (
-									<BranchModelOption
+									<ConversationModelOption
 										key={modelItem.id}
 										model={modelItem}
 										onSelect={handleModelClick}
@@ -183,7 +117,7 @@ export const InlineModelSelector = ({
 								))}
 							</div>
 						)}
-						{!isLoading && !currentGlobalModel && !isSearching && featuredModels.length === 0 && (
+						{!isLoading && !currentModel && !isSearching && featuredModels.length === 0 && (
 							<p className="rounded-md border border-dashed border-zinc-300 px-2 py-3 text-sm text-zinc-500 dark:border-zinc-700 dark:text-zinc-400">
 								No branch models are available.
 							</p>

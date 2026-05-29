@@ -19,6 +19,7 @@ export class ModelConfigValidator implements Validator {
 			env,
 			user,
 			model: requestedModel,
+			models: requestedModels,
 			provider: requestedProvider,
 			completion_id,
 			use_multi_model = false,
@@ -59,6 +60,8 @@ export class ModelConfigValidator implements Validator {
 				completion_id,
 				requestedModel,
 				use_multi_model,
+				requestedModels,
+				requestedProvider,
 			);
 
 			logger.info("Selected models", { selectedModels });

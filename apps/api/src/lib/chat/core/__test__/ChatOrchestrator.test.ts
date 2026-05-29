@@ -293,6 +293,9 @@ describe("ChatOrchestrator", () => {
 					stream: true,
 				});
 
+				expect(mockConversationManager.checkUsageLimits.mock.calls.map(([model]) => model)).toEqual(
+					["model-1", "model-2"],
+				);
 				expect(mockCreateMultiModelStream).toHaveBeenCalled();
 				expect(result).toEqual({
 					stream: mockStream,

@@ -85,6 +85,8 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
 		abortStream,
 		branchConversation,
 		isBranching,
+		requestOpinion,
+		isRequestingOpinion,
 	} = useChatManager(modeConfig?.requestOptions, modeConfig?.conversationMode);
 	const { data: apiModels } = useModels();
 
@@ -354,6 +356,8 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
 							onArtifactOpen={handleArtifactOpen}
 							onBranch={handleBranch}
 							isBranching={isBranching}
+							onRequestOpinion={requestOpinion}
+							isRequestingOpinion={isRequestingOpinion}
 						/>
 					</div>
 				</div>

@@ -298,6 +298,8 @@ interface AIResponseParamsBase extends AIControlParams {
 	suffix?: string;
 	// The model to use for the response.
 	model?: string;
+	// Explicit model list to use when the caller wants one or more specific responses.
+	models?: string[];
 	// The provider to use when the model name is shared by multiple providers.
 	provider?: string;
 	// The mode to use for the response.
@@ -354,14 +356,14 @@ interface AIResponseParamsBase extends AIControlParams {
 
 export type ChatCompletionParametersWithModel = RequireAtLeastOne<
 	AIResponseParamsBase,
-	"model" | "version"
+	"model" | "models" | "version"
 >;
 
 export type ChatCompletionParameters = RequireAtLeastOne<
 	AIResponseParamsBase,
 	"body" | "messages" | "message"
 > &
-	RequireAtLeastOne<AIResponseParamsBase, "model" | "version">;
+	RequireAtLeastOne<AIResponseParamsBase, "model" | "models" | "version">;
 
 export interface CreateChatCompletionsResponse {
 	id: string;

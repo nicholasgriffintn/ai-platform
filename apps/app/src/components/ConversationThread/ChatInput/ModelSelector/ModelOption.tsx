@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 
 import { ModelIcon } from "~/components/ModelIcon";
-import { modelSupportsVisualModality } from "~/lib/models";
+import { getModelDisplayName, modelSupportsVisualModality } from "~/lib/models";
 import { hasProviderReasoningOptions } from "~/lib/reasoning";
 import { cn } from "~/lib/utils";
 import type { ModelConfigItem } from "~/types";
@@ -83,7 +83,7 @@ export const ModelOption = ({
 						<ModelIcon
 							url={model.avatarUrl}
 							mono={mono}
-							modelName={model.name || model.matchingModel}
+							modelName={getModelDisplayName(model)}
 							provider={model.provider}
 							size={20}
 						/>
@@ -91,7 +91,7 @@ export const ModelOption = ({
 					<div className="min-w-0">
 						<div className="flex min-h-[1.4rem] flex-wrap items-center gap-1.5">
 							<span className="block min-w-0 font-medium text-zinc-900 whitespace-normal break-words dark:text-zinc-100">
-								{model.name || model.matchingModel}
+								{getModelDisplayName(model)}
 							</span>
 							{!model.isFree && (
 								<div

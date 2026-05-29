@@ -111,6 +111,172 @@ export class ConversationManager {
 		);
 	}
 
+	private prepareMessagesForStorage(messages: Message[]): Message[] {
+		const orderedMessages = normaliseMessageTimestampsForStorage(messages);
+		const messagesWithDefaults = orderedMessages.map((message) => ({
+			...message,
+			id: message.id || generateId(),
+			model: message.model || this.model,
+			platform: message.platform || this.platform,
+		}));
+
+		return messagesWithDefaults.map((message) => {
+			const normalisedParts = normaliseMessageParts(message.parts, message.timestamp);
+
+			if (normalisedParts && normalisedParts.length > 0) {
+				return { ...message, parts: normalisedParts };
+			}
+
+			const derivedParts = buildMessageParts({
+				...message,
+				parts: undefined,
+			});
+
+			return {
+				...message,
+				parts: derivedParts,
+			};
+		});
+	}
+
+	private dedupeMessagesForReplacement(messages: Message[]): Message[] {
+		const seenIds = new Set<string>();
+		const dedupedMessages: Message[] = [];
+
+		for (let index = messages.length - 1; index >= 0; index--) {
+			const message = messages[index];
+			const messageId = message.id;
+
+			if (!messageId || seenIds.has(messageId)) {
+				continue;
+			}
+
+			seenIds.add(messageId);
+			dedupedMessages.unshift(message);
+		}
+
+		return dedupedMessages;
+	}
+
+	private async incrementUsageForAssistantResponse(messages: Message[]): Promise<void> {
+		for (const message of messages) {
+			if (message.role === "assistant" && this.usageManager) {
+				try {
+					const modelUsed = message.model || this.model;
+					if (modelUsed) {
+						await this.usageManager.incrementUsageByModel(modelUsed, true);
+						break;
+					}
+				} catch (error) {
+					logger.error("Failed to increment usage:", {
+						error_message: error instanceof Error ? error.message : "Unknown error",
+					});
+				}
+			}
+		}
+	}
+
+	private getBranchParentIds(options?: { metadata?: Record<string, string> }): {
+		parentConversationId?: string;
+		parentMessageId?: string;
+	} {
+		if (!options?.metadata?.branch_of) {
+			return {};
+		}
+
+		try {
+			const branchData =
+				safeParseJson<{
+					conversation_id?: unknown;
+					message_id?: unknown;
+				}>(options.metadata.branch_of) ?? {};
+			return {
+				parentConversationId:
+					typeof branchData.conversation_id === "string" ? branchData.conversation_id : undefined,
+				parentMessageId:
+					typeof branchData.message_id === "string" ? branchData.message_id : undefined,
+			};
+		} catch (error) {
+			logger.error("Failed to parse branch_of metadata:", {
+				error_message: error instanceof Error ? error.message : "Unknown error",
+			});
+			return {};
+		}
+	}
+
+	private async ensureWritableConversation(
+		conversation_id: string,
+		authErrorMessage: string,
+		options?: { metadata?: Record<string, string> },
+	): Promise<Record<string, unknown> | null> {
+		if (!this.user?.id) {
+			throw new AssistantError(authErrorMessage, ErrorType.AUTHENTICATION_ERROR);
+		}
+
+		const conversation =
+			await this.database.repositories.conversations.getConversation(conversation_id);
+
+		if (!conversation) {
+			const { parentConversationId, parentMessageId } = this.getBranchParentIds(options);
+
+			return await this.database.repositories.conversations.createConversation(
+				conversation_id,
+				this.user.id,
+				"New Conversation",
+				{
+					parent_conversation_id: parentConversationId,
+					parent_message_id: parentMessageId,
+				},
+			);
+		}
+
+		if (conversation.user_id !== this.user.id) {
+			throw new AssistantError(
+				"You don't have permission to update this conversation",
+				ErrorType.FORBIDDEN,
+			);
+		}
+
+		return conversation;
+	}
+
+	private async enqueueAsyncInvocationTasks(
+		conversation_id: string,
+		messages: Message[],
+	): Promise<void> {
+		if (!this.taskService || !this.user?.id) {
+			return;
+		}
+
+		for (const message of messages) {
+			const asyncInvocation = (message.data as Record<string, any> | undefined)?.asyncInvocation as
+				| AsyncInvocationMetadata
+				| undefined;
+
+			if (asyncInvocation && isAsyncInvocationPending(asyncInvocation)) {
+				try {
+					await this.taskService.enqueueTask({
+						task_type: "async_message_polling",
+						user_id: this.user.id,
+						task_data: {
+							conversationId: conversation_id,
+							messageId: message.id,
+							asyncInvocation,
+							userId: this.user.id,
+							pollAttempt: 0,
+						},
+						priority: 7,
+					});
+				} catch (error) {
+					logger.error(
+						`Failed to queue async message polling task for message ${message.id}:`,
+						error,
+					);
+				}
+			}
+		}
+	}
+
 	/**
 	 * Get the current usage limits for the user
 	 * @returns UsageLimits object or null if no user is set
@@ -183,93 +349,18 @@ export class ConversationManager {
 	): Promise<Message[]> {
 		if (!messages.length) return [];
 
-		const orderedMessages = normaliseMessageTimestampsForStorage(messages);
-		const newMessages = orderedMessages.map((message) => ({
-			...message,
-			id: message.id || generateId(),
-			model: message.model || this.model,
-			platform: message.platform || this.platform,
-		}));
-
-		const normalisedMessages = newMessages.map((message) => {
-			const normalisedParts = normaliseMessageParts(message.parts, message.timestamp);
-
-			if (normalisedParts && normalisedParts.length > 0) {
-				return { ...message, parts: normalisedParts };
-			}
-
-			const derivedParts = buildMessageParts({
-				...message,
-				parts: undefined,
-			});
-
-			return {
-				...message,
-				parts: derivedParts,
-			};
-		});
-
-		for (const message of normalisedMessages) {
-			if (message.role === "assistant" && this.usageManager) {
-				try {
-					const modelUsed = message.model || this.model;
-					if (modelUsed) {
-						await this.usageManager.incrementUsageByModel(modelUsed, true);
-						break;
-					}
-				} catch (error) {
-					logger.error("Failed to increment usage:", {
-						error_message: error instanceof Error ? error.message : "Unknown error",
-					});
-				}
-			}
-		}
+		const normalisedMessages = this.prepareMessagesForStorage(messages);
+		await this.incrementUsageForAssistantResponse(normalisedMessages);
 
 		if (!this.store) {
 			return normalisedMessages;
 		}
 
-		if (!this.user?.id) {
-			throw new AssistantError(
-				"User ID is required to store conversations",
-				ErrorType.AUTHENTICATION_ERROR,
-			);
-		}
-
-		let conversation =
-			await this.database.repositories.conversations.getConversation(conversation_id);
-
-		if (!conversation) {
-			let parentConversationId: string | undefined;
-			let parentMessageId: string | undefined;
-
-			if (options?.metadata?.branch_of) {
-				try {
-					const branchData = safeParseJson(options.metadata.branch_of);
-					parentConversationId = branchData.conversation_id;
-					parentMessageId = branchData.message_id;
-				} catch (error) {
-					logger.error("Failed to parse branch_of metadata:", {
-						error_message: error instanceof Error ? error.message : "Unknown error",
-					});
-				}
-			}
-
-			conversation = await this.database.repositories.conversations.createConversation(
-				conversation_id,
-				this.user?.id,
-				"New Conversation",
-				{
-					parent_conversation_id: parentConversationId,
-					parent_message_id: parentMessageId,
-				},
-			);
-		} else if (conversation.user_id !== this.user?.id) {
-			throw new AssistantError(
-				"You don't have permission to update this conversation",
-				ErrorType.FORBIDDEN,
-			);
-		}
+		await this.ensureWritableConversation(
+			conversation_id,
+			"User ID is required to store conversations",
+			options,
+		);
 
 		const createPromises = normalisedMessages.map((message) => {
 			return this.database.repositories.messages.createMessage(
@@ -291,34 +382,7 @@ export class ConversationManager {
 			);
 		}
 
-		if (this.taskService && this.user?.id) {
-			for (const message of normalisedMessages) {
-				const asyncInvocation = (message.data as Record<string, any> | undefined)
-					?.asyncInvocation as AsyncInvocationMetadata | undefined;
-
-				if (asyncInvocation && isAsyncInvocationPending(asyncInvocation)) {
-					try {
-						await this.taskService.enqueueTask({
-							task_type: "async_message_polling",
-							user_id: this.user.id,
-							task_data: {
-								conversationId: conversation_id,
-								messageId: message.id,
-								asyncInvocation,
-								userId: this.user.id,
-								pollAttempt: 0,
-							},
-							priority: 7,
-						});
-					} catch (error) {
-						logger.error(
-							`Failed to queue async message polling task for message ${message.id}:`,
-							error,
-						);
-					}
-				}
-			}
-		}
+		await this.enqueueAsyncInvocationTasks(conversation_id, normalisedMessages);
 
 		return normalisedMessages;
 	}
@@ -333,38 +397,52 @@ export class ConversationManager {
 		messages: Message[],
 		options?: { metadata?: Record<string, string> },
 	): Promise<Message[]> {
+		const normalisedMessages = this.dedupeMessagesForReplacement(
+			this.prepareMessagesForStorage(messages),
+		);
+
 		if (!this.store) {
-			return messages;
+			return normalisedMessages;
 		}
 
-		if (!this.user?.id) {
+		await this.ensureWritableConversation(
+			conversation_id,
+			"User ID is required to replace messages",
+			options,
+		);
+
+		const messageIds = normalisedMessages.map((message) => message.id as string);
+		await this.database.repositories.messages.deleteMessagesExcept(conversation_id, messageIds);
+
+		const upsertedMessages = await Promise.all(
+			normalisedMessages.map((message) =>
+				this.database.repositories.messages.upsertMessage(
+					message.id as string,
+					conversation_id,
+					message.role,
+					this.serializeMessageContent(message.content),
+					message,
+				),
+			),
+		);
+
+		if (upsertedMessages.some((message) => !message)) {
 			throw new AssistantError(
-				"User ID is required to replace messages",
-				ErrorType.AUTHENTICATION_ERROR,
+				"Unable to replace messages because one or more message IDs already belong to another conversation",
+				ErrorType.PARAMS_ERROR,
 			);
 		}
 
-		const conversation =
-			await this.database.repositories.conversations.getConversation(conversation_id);
-		if (conversation && conversation.user_id !== this.user?.id) {
-			throw new AssistantError(
-				"You don't have permission to update this conversation",
-				ErrorType.FORBIDDEN,
-			);
-		}
+		const lastMessage = normalisedMessages.at(-1);
+		await this.database.repositories.conversations.updateConversation(conversation_id, {
+			last_message_id: lastMessage?.id ?? null,
+			last_message_at: lastMessage ? new Date().toISOString() : null,
+			message_count: normalisedMessages.length,
+		});
 
-		if (conversation) {
-			const existingMessages =
-				await this.database.repositories.messages.getConversationMessages(conversation_id);
+		await this.enqueueAsyncInvocationTasks(conversation_id, normalisedMessages);
 
-			const deletePromises = existingMessages
-				.filter((message) => message.id)
-				.map((message) => this.database.repositories.messages.deleteMessage(message.id as string));
-
-			await Promise.all(deletePromises);
-		}
-
-		return await this.addBatch(conversation_id, messages, options);
+		return normalisedMessages;
 	}
 
 	/**

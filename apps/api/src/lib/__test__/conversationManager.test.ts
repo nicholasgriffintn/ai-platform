@@ -5,6 +5,8 @@ const mockDatabase = {
 	getConversation: vi.fn(),
 	createConversation: vi.fn(),
 	createMessage: vi.fn(),
+	upsertMessage: vi.fn(),
+	deleteMessagesExcept: vi.fn(),
 	updateConversationAfterMessage: vi.fn(),
 	getConversationMessages: vi.fn(),
 	updateMessage: vi.fn(),
@@ -26,6 +28,8 @@ const mockDatabase = {
 		},
 		messages: {
 			createMessage: vi.fn(),
+			upsertMessage: vi.fn(),
+			deleteMessagesExcept: vi.fn(),
 			getConversationMessages: vi.fn(),
 			updateMessage: vi.fn(),
 			getMessageById: vi.fn(),
@@ -82,6 +86,12 @@ describe("ConversationManager", () => {
 		mockDatabase.repositories.messages.createMessage.mockImplementation((...args) =>
 			mockDatabase.createMessage(...args),
 		);
+		mockDatabase.repositories.messages.upsertMessage.mockImplementation((...args) =>
+			mockDatabase.upsertMessage(...args),
+		);
+		mockDatabase.repositories.messages.deleteMessagesExcept.mockImplementation((...args) =>
+			mockDatabase.deleteMessagesExcept(...args),
+		);
 		mockDatabase.repositories.messages.getConversationMessages.mockImplementation((...args) =>
 			mockDatabase.getConversationMessages(...args),
 		);
@@ -94,6 +104,8 @@ describe("ConversationManager", () => {
 		mockDatabase.repositories.messages.getMessages.mockImplementation((...args) =>
 			mockDatabase.getMessages(...args),
 		);
+		mockDatabase.upsertMessage.mockImplementation(async (messageId) => ({ id: messageId }));
+		mockDatabase.deleteMessagesExcept.mockResolvedValue(undefined);
 	});
 
 	describe("getInstance", () => {
@@ -355,6 +367,60 @@ describe("ConversationManager", () => {
 					parent_conversation_id: "conv-parent",
 					parent_message_id: "message-parent",
 				},
+			);
+		});
+
+		it("should replace messages with same-conversation upserts", async () => {
+			const conversationId = "conv-replace";
+			const messages = [
+				{
+					id: "message-1",
+					role: "user",
+					content: "Original",
+					timestamp: 1000,
+				},
+				{
+					id: "message-1",
+					role: "user",
+					content: "Updated",
+					timestamp: 1001,
+				},
+				{
+					id: "message-2",
+					role: "assistant",
+					content: "Answer",
+					timestamp: 1002,
+				},
+			] as any[];
+
+			mockDatabase.getConversation.mockResolvedValue({
+				id: conversationId,
+				user_id: mockUser.id,
+			});
+			mockDatabase.updateConversation.mockResolvedValue(undefined);
+
+			const manager = ConversationManager.getInstance({
+				database: mockDatabase as any,
+				user: mockUser,
+			});
+
+			await manager.replaceMessages(conversationId, messages);
+
+			expect(mockDatabase.deleteMessagesExcept).toHaveBeenCalledWith(conversationId, [
+				"message-1",
+				"message-2",
+			]);
+			expect(mockDatabase.createMessage).not.toHaveBeenCalled();
+			expect(mockDatabase.upsertMessage).toHaveBeenCalledTimes(2);
+			expect(mockDatabase.upsertMessage.mock.calls[0][0]).toBe("message-1");
+			expect(mockDatabase.upsertMessage.mock.calls[0][3]).toBe("Updated");
+			expect(mockDatabase.updateConversation).toHaveBeenCalledWith(
+				conversationId,
+				expect.objectContaining({
+					last_message_id: "message-2",
+					last_message_at: expect.any(String),
+					message_count: 2,
+				}),
 			);
 		});
 

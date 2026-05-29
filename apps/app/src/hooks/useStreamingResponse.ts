@@ -14,6 +14,7 @@ import { useModels } from "./useModels";
 export interface StreamResponseOptions {
 	generateTitle?: boolean;
 	model?: string;
+	models?: string[];
 }
 
 /**
@@ -53,7 +54,7 @@ export function useStreamingResponse(
 			messages: Message[],
 			conversationId: string,
 			overrideRequestOptions?: ChatRequestOptions,
-			options?: Pick<StreamResponseOptions, "model">,
+			options?: Pick<StreamResponseOptions, "model" | "models">,
 		): Promise<{
 			status: "success" | "error";
 			response: string;
@@ -162,7 +163,10 @@ export function useStreamingResponse(
 
 					const normalizedMessages = messages.map(normalizeMessage);
 
-					const modelToSend = normalizeSelectedModel(options?.model ?? model);
+					const modelsToSend = options?.models
+						?.map((modelId) => normalizeSelectedModel(modelId))
+						.filter((modelId): modelId is string => Boolean(modelId));
+					const modelToSend = normalizeSelectedModel(modelsToSend?.[0] ?? options?.model ?? model);
 					const providerToSend = getModelProvider(apiModels, modelToSend);
 
 					const handleStateChange = (state: string, data?: any) => {
@@ -195,6 +199,7 @@ export function useStreamingResponse(
 						messages: normalizedMessages,
 						mode: chatMode,
 						model: modelToSend,
+						models: modelsToSend?.length ? modelsToSend : undefined,
 						onProgress: handleMessageUpdate,
 						onStateChange: handleStateChange,
 						provider: providerToSend,
@@ -202,7 +207,7 @@ export function useStreamingResponse(
 						signal: controller.signal,
 						store: shouldStore,
 						streamingEnabled: true,
-						useMultiModel,
+						useMultiModel: modelsToSend && modelsToSend.length > 1 ? true : useMultiModel,
 					});
 
 					const messageContentToDisplay = assistantMessage.content;
@@ -276,6 +281,7 @@ export function useStreamingResponse(
 			try {
 				const response = await generateResponse(messages, conversationId, overrideRequestOptions, {
 					model: options?.model,
+					models: options?.models,
 				});
 
 				const shouldGenerateTitle = options?.generateTitle ?? true;

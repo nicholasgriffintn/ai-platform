@@ -1,11 +1,22 @@
-import { Check, Copy, Edit, GitBranch, RefreshCw, ThumbsDown, ThumbsUp } from "lucide-react";
+import {
+	Check,
+	Copy,
+	Edit,
+	GitBranch,
+	MessageSquareQuote,
+	RefreshCw,
+	ThumbsDown,
+	ThumbsUp,
+} from "lucide-react";
 import { useCallback, useState } from "react";
 
 import { Button, Popover, PopoverContent, PopoverTrigger } from "~/components/ui";
 import { canBranchFromMessage } from "~/lib/chat/branching";
+import type { OpinionRequest } from "~/lib/chat/opinion";
 import type { Message } from "~/types";
 import { MessageInfo } from "./MessageInfo";
 import { InlineModelSelector } from "../InlineModelSelector";
+import { OpinionModelSelector } from "../OpinionModelSelector";
 
 interface MessageActionsProps {
 	message: Message;
@@ -21,6 +32,9 @@ interface MessageActionsProps {
 	isEditing?: boolean;
 	onBranch?: (messageId: string, modelId?: string) => void;
 	isBranching?: boolean;
+	onRequestOpinion?: (messageId: string, request: OpinionRequest) => void;
+	isRequestingOpinion?: boolean;
+	shouldPromoteOpinion?: boolean;
 }
 
 export const MessageActions = ({
@@ -37,9 +51,16 @@ export const MessageActions = ({
 	isEditing = false,
 	onBranch,
 	isBranching = false,
+	onRequestOpinion,
+	isRequestingOpinion = false,
+	shouldPromoteOpinion = false,
 }: MessageActionsProps) => {
 	const [showBranchModelSelector, setShowBranchModelSelector] = useState(false);
+	const [showOpinionModelSelector, setShowOpinionModelSelector] = useState(false);
 	const canBranch = Boolean(onBranch && !isSharedView && canBranchFromMessage(message));
+	const canRequestOpinion = Boolean(
+		onRequestOpinion && !isSharedView && message.role === "assistant" && message.content,
+	);
 
 	const handleAssistantBranchClick = useCallback(() => {
 		if (!onBranch) {
@@ -60,6 +81,20 @@ export const MessageActions = ({
 
 	const handleCancelModelSelection = useCallback(() => {
 		setShowBranchModelSelector(false);
+	}, []);
+
+	const handleOpinionSubmit = useCallback(
+		(request: OpinionRequest) => {
+			setShowOpinionModelSelector(false);
+			if (onRequestOpinion) {
+				onRequestOpinion(message.id, request);
+			}
+		},
+		[message.id, onRequestOpinion],
+	);
+
+	const handleCancelOpinionSelection = useCallback(() => {
+		setShowOpinionModelSelector(false);
 	}, []);
 
 	return (
@@ -110,6 +145,39 @@ export const MessageActions = ({
 					>
 						<RefreshCw size={14} className={isRetrying ? "animate-spin" : ""} />
 					</Button>
+				)}
+				{canRequestOpinion && (
+					<Popover open={showOpinionModelSelector} onOpenChange={setShowOpinionModelSelector}>
+						<PopoverTrigger asChild>
+							<Button
+								type="button"
+								variant={shouldPromoteOpinion ? "secondary" : "icon"}
+								disabled={isRequestingOpinion}
+								className={`cursor-pointer hover:bg-zinc-200/50 dark:hover:bg-zinc-600/50 rounded-lg transition-colors duration-200 flex items-center text-zinc-500 dark:text-zinc-400 ${
+									shouldPromoteOpinion ? "px-2 py-1 text-xs" : "p-1"
+								} ${isRequestingOpinion ? "opacity-50 cursor-not-allowed" : ""}`}
+								title={isRequestingOpinion ? "Requesting opinion..." : "Get second opinion"}
+								aria-label={isRequestingOpinion ? "Requesting opinion..." : "Get second opinion"}
+							>
+								<MessageSquareQuote size={14} />
+								{shouldPromoteOpinion && <span className="ml-1.5">Second opinion</span>}
+							</Button>
+						</PopoverTrigger>
+						<PopoverContent
+							side="top"
+							align="end"
+							sideOffset={8}
+							collisionPadding={{ top: 64, right: 8, bottom: 112, left: 8 }}
+							className="w-[calc(100vw-1rem)] max-w-[24rem] overflow-hidden border-zinc-200 bg-white p-0 shadow-2xl dark:border-zinc-700 dark:bg-zinc-900"
+						>
+							<OpinionModelSelector
+								onSubmit={handleOpinionSubmit}
+								onCancel={handleCancelOpinionSelection}
+								sourceModelId={message.model}
+								className="w-full"
+							/>
+						</PopoverContent>
+					</Popover>
 				)}
 				{canBranch && (
 					<div className="relative flex items-center">

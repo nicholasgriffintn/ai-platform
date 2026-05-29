@@ -58,6 +58,15 @@ export function getModelDisplayName(model: Pick<ModelConfigItem, "matchingModel"
 	return model.name || model.matchingModel;
 }
 
+export function doesModelMatchId(
+	model: Pick<ModelConfigItem, "id" | "matchingModel" | "name">,
+	modelId?: string | null,
+) {
+	return Boolean(
+		modelId && (model.id === modelId || model.matchingModel === modelId || model.name === modelId),
+	);
+}
+
 export function sortModelsByDisplayName(models: ModelConfigItem[]) {
 	return [...models].sort((a, b) => getModelDisplayName(a).localeCompare(getModelDisplayName(b)));
 }
@@ -113,6 +122,13 @@ export function getModelInputModalities(model?: Pick<ModelConfigItem, "modalitie
 
 export function getModelOutputModalities(model?: Pick<ModelConfigItem, "modalities">) {
 	return model?.modalities?.output ?? getModelInputModalities(model);
+}
+
+export function modelHasOutputModality(
+	model: Pick<ModelConfigItem, "modalities">,
+	modality: ModelModality,
+) {
+	return getModelOutputModalities(model).includes(modality);
 }
 
 export function isImageGenerationOutputModel(model?: Pick<ModelConfigItem, "modalities">) {
