@@ -139,7 +139,7 @@ export class SageMakerFineTuneProvider implements FineTuneProvider {
 					ModelName: names.modelName,
 					InitialInstanceCount: options.instanceCount || 1,
 					InstanceType:
-						options.instanceType || options.model.defaultDeploymentInstanceType || "ml.g4dn.xlarge",
+						options.instanceType || options.model.defaultDeploymentInstanceType || "ml.m4.xlarge",
 					InitialVariantWeight: 1,
 				},
 			],

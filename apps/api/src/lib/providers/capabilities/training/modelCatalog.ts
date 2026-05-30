@@ -34,7 +34,7 @@ export const fineTuningModelCatalog: FineTuningModelDefinition[] = [
 			"A small Hugging Face Transformers model suitable for quick text classification fine-tuning.",
 		baseModel: "distilbert/distilbert-base-uncased",
 		defaultInstanceType: "ml.p3.2xlarge",
-		defaultDeploymentInstanceType: "ml.g4dn.xlarge",
+		defaultDeploymentInstanceType: "ml.m4.xlarge",
 		defaultHyperparameters: {
 			model_name_or_path: "distilbert/distilbert-base-uncased",
 			epochs: 1,
@@ -55,7 +55,7 @@ export const fineTuningModelCatalog: FineTuningModelDefinition[] = [
 		description: "General-purpose BERT base checkpoint for Hugging Face fine-tuning jobs.",
 		baseModel: "google-bert/bert-base-uncased",
 		defaultInstanceType: "ml.p3.2xlarge",
-		defaultDeploymentInstanceType: "ml.g4dn.xlarge",
+		defaultDeploymentInstanceType: "ml.m4.xlarge",
 		defaultHyperparameters: {
 			model_name_or_path: "google-bert/bert-base-uncased",
 			epochs: 1,
@@ -77,7 +77,7 @@ export const fineTuningModelCatalog: FineTuningModelDefinition[] = [
 			"Flower Labs Lizzy 7B configured for Hugging Face causal language modelling on SageMaker.",
 		baseModel: "flwrlabs/Lizzy-7B",
 		defaultInstanceType: "ml.p3.2xlarge",
-		defaultDeploymentInstanceType: "ml.g4dn.xlarge",
+		defaultDeploymentInstanceType: "ml.m4.xlarge",
 		defaultHyperparameters: {
 			model_name_or_path: "flwrlabs/Lizzy-7B",
 			output_dir: "/opt/ml/model",
