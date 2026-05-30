@@ -272,7 +272,39 @@ export class TrainingWorkerService {
 	}
 
 	async listDeployments(userId: number): Promise<FineTunedDeployment[]> {
-		return this.store.listDeployments(userId);
+		const deployments = await this.store.listDeployments(userId);
+		return Promise.all(deployments.map((deployment) => this.refreshDeployment(deployment)));
+	}
+
+	private async refreshDeployment(stored: FineTunedDeployment): Promise<FineTunedDeployment> {
+		const provider = createFineTuneProvider(stored.provider, { env: this.env });
+		if (!provider.getDeployment) return stored;
+
+		try {
+			const live = await provider.getDeployment(stored.endpointName);
+			const deployment = mergeFineTunedDeployment(stored, live);
+			await this.store.saveDeployment({
+				deployment,
+				response: live.providerResponse,
+			});
+
+			if (stored.status !== deployment.status && deployment.status.toLowerCase() === "failed") {
+				await this.store.addEvent({
+					provider: deployment.provider,
+					jobName: deployment.endpointName,
+					level: "error",
+					message: "Fine-tuned model deployment failed",
+					metadata: {
+						endpointName: deployment.endpointName,
+						error: deployment.failureReason,
+					},
+				});
+			}
+
+			return deployment;
+		} catch {
+			return stored;
+		}
 	}
 
 	private createFailedDeployment({
