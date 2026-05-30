@@ -11,6 +11,9 @@ import {
 	getDeploymentInstanceTypeError,
 	getDeployableTrainingModels,
 	getDeploymentTrainingJobs,
+	getTrainingEventDetail,
+	isActiveTrainingDeploymentStatus,
+	isActiveTrainingJobStatus,
 	parseOptionalPositiveInteger,
 	parseTrainingDatasetMode,
 	parseTrainingHyperparameters,
@@ -116,5 +119,44 @@ describe("training utilities", () => {
 			"not a compressed SageMaker model archive",
 		);
 		expect(getBedrockImportModelSourceUriError("s3://bucket/lizzy-hf-model/")).toBeUndefined();
+	});
+
+	it("surfaces useful training event metadata", () => {
+		expect(
+			getTrainingEventDetail({
+				id: "event-1",
+				provider: "aws-sagemaker",
+				jobName: "endpoint",
+				level: "error",
+				message: "Training model deployment failed",
+				metadata: { error: "UpdateEndpoint failed" },
+				createdAt: "2026-05-30T22:00:00.000Z",
+			}),
+		).toBe("UpdateEndpoint failed");
+		expect(
+			getTrainingEventDetail({
+				id: "event-2",
+				provider: "aws-sagemaker",
+				jobName: "endpoint",
+				level: "info",
+				message: "Training model deployment update completed",
+				metadata: { endpointConfigName: "polychat-lizzy-7b-v1-4-config" },
+				createdAt: "2026-05-30T22:00:00.000Z",
+			}),
+		).toBe("Endpoint config: polychat-lizzy-7b-v1-4-config");
+	});
+
+	it("detects deployment statuses that should keep live state refreshing", () => {
+		expect(isActiveTrainingDeploymentStatus("Creating")).toBe(true);
+		expect(isActiveTrainingDeploymentStatus("Updating")).toBe(true);
+		expect(isActiveTrainingDeploymentStatus("InService")).toBe(false);
+		expect(isActiveTrainingDeploymentStatus("Failed")).toBe(false);
+	});
+
+	it("detects job statuses that should keep live state refreshing", () => {
+		expect(isActiveTrainingJobStatus("Starting")).toBe(true);
+		expect(isActiveTrainingJobStatus("InProgress")).toBe(true);
+		expect(isActiveTrainingJobStatus("Completed")).toBe(false);
+		expect(isActiveTrainingJobStatus("Failed")).toBe(false);
 	});
 });

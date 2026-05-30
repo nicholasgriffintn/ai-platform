@@ -22,6 +22,7 @@ import {
 	getTrainingDeployment,
 	getTrainingJob,
 	listTrainingDeployments,
+	listTrainingDeploymentEvents,
 	listTrainingJobEvents,
 	listTrainingJobs,
 	listTrainingModels,
@@ -135,6 +136,23 @@ addRoute(app, "get", "/deployments/:provider/:endpointName", {
 	},
 	handler: async ({ serviceContext, params }) =>
 		getTrainingDeployment(serviceContext, params.provider, params.endpointName),
+});
+
+addRoute(app, "get", "/deployments/:provider/:endpointName/events", {
+	tags: ["training"],
+	summary: "List training deployment events",
+	auth: true,
+	paramSchema: trainingDeploymentParamsSchema,
+	responses: {
+		200: { description: "Training deployment events", schema: trainingJobEventsResponseSchema },
+	},
+	handler: async ({ serviceContext, params }) => ({
+		events: await listTrainingDeploymentEvents(
+			serviceContext,
+			params.provider,
+			params.endpointName,
+		),
+	}),
 });
 
 addRoute(app, "delete", "/deployments/:provider/:endpointName", {

@@ -159,14 +159,23 @@ For SageMaker Hugging Face models, a real-time or serverless deployment request 
 from the model catalog and SageMaker deploys the base Hub model with the configured
 inference image.
 
-Use `deploymentVersion` when creating repeat deployments of the same model. If
-`deploymentName` is omitted, the Worker uses the model id plus version to create stable
-resource names, for example `lizzy-7b-v1-endpoint`.
+Use `deploymentVersion` when updating a named deployment. With a stable
+`deploymentName`, the Worker keeps the SageMaker endpoint name the same, creates a new
+versioned model and endpoint config, then calls `UpdateEndpoint` so AWS moves traffic to
+that config. For example, `deploymentName: lizzy-7b` and `deploymentVersion: 1.1`
+updates `lizzy-7b-endpoint` to use `lizzy-7b-1-1-config`.
+
+If `deploymentName` is omitted, the Worker uses the model id plus version to create a
+separate versioned endpoint, for example `lizzy-7b-v1-endpoint`.
 
 Deleting a deployment first attempts provider cleanup. If AWS denies the delete action or
 the provider cleanup fails, the Worker still removes the Polychat deployment record and
 returns `manualDeletionRequired: true` so the UI can tell the user to clean up the AWS
 resource manually.
+
+Deployment events are stored against the endpoint name. The API exposes those events to
+the frontend so update requests show the submitted config and completion state alongside
+the deployment record.
 
 When a deployment is ready, the API exposes a generated chat model id:
 

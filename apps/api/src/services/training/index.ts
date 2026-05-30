@@ -26,6 +26,7 @@ import {
 	getTrainingWorkerDeployment,
 	getTrainingWorkerJob,
 	listTrainingWorkerDeployments,
+	listTrainingWorkerDeploymentEvents,
 	listTrainingWorkerJobEvents,
 	listTrainingWorkerJobs,
 	startTrainingWorkerJob,
@@ -105,6 +106,15 @@ export async function listTrainingJobEvents(
 ): Promise<TrainingJobEvent[]> {
 	const user = context.requireUser();
 	return listTrainingWorkerJobEvents(context.env, providerId, jobName, user.id);
+}
+
+export async function listTrainingDeploymentEvents(
+	context: ServiceContext,
+	providerId: TrainingProviderId,
+	endpointName: string,
+): Promise<TrainingJobEvent[]> {
+	const user = context.requireUser();
+	return listTrainingWorkerDeploymentEvents(context.env, providerId, endpointName, user.id);
 }
 
 export async function deployTrainingModel(

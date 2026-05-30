@@ -47,6 +47,15 @@ async function route(request: Request, env: Env): Promise<Response> {
 		return jsonResponse({ events: events.slice(0, Math.min(Math.max(limit, 1), 500)) });
 	}
 
+	const deploymentEventsMatch = url.pathname.match(/^\/deployments\/([^/]+)\/([^/]+)\/events$/);
+	if (request.method === "GET" && deploymentEventsMatch) {
+		const provider = decodeTrainingProvider(deploymentEventsMatch[1]);
+		const endpointName = decodeRouteSegment(deploymentEventsMatch[2]);
+		const limit = Number(url.searchParams.get("limit") || 100);
+		const events = await service.listDeploymentEvents(provider, endpointName, userId);
+		return jsonResponse({ events: events.slice(0, Math.min(Math.max(limit, 1), 500)) });
+	}
+
 	const jobMatch = url.pathname.match(/^\/jobs\/([^/]+)\/([^/]+)$/);
 	if (request.method === "GET" && jobMatch) {
 		return jsonResponse(

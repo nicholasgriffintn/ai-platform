@@ -56,6 +56,16 @@ export async function fetchTrainingJobEvents(
 	return data.events;
 }
 
+export async function fetchTrainingDeploymentEvents(
+	provider: TrainingProviderId,
+	endpointName: string,
+): Promise<TrainingJobEvent[]> {
+	const data = await trainingRequest<{ events: TrainingJobEvent[] }>(
+		`/deployments/${encodeURIComponent(provider)}/${encodeURIComponent(endpointName)}/events`,
+	);
+	return data.events;
+}
+
 export async function fetchTrainingDeployments(): Promise<TrainingDeployment[]> {
 	const data = await trainingRequest<{ deployments: TrainingDeployment[] }>("/deployments");
 	return data.deployments;

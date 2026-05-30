@@ -8,7 +8,7 @@ import { signAwsJsonRequest } from "../utils/aws.js";
 import { stringifyEntries } from "../utils/json.js";
 import { isRecord } from "../utils/objects.js";
 import { getSageMakerDeploymentNames } from "../utils/sagemakerDeploymentNames.js";
-import type { Env } from "../types/env.js";
+import type { SageMakerEnv } from "../types/env.js";
 import {
 	getSageMakerErrorMessage,
 	isSageMakerAlreadyExistsError,
@@ -34,7 +34,7 @@ import type {
 export class SageMakerTrainingProvider implements TrainingProvider {
 	readonly id = "aws-sagemaker" as const;
 
-	constructor(private readonly env: Env) {}
+	constructor(private readonly env: SageMakerEnv) {}
 
 	async createTrainingJob(options: CreateTrainingJobOptions): Promise<CreateTrainingJobResult> {
 		const roleArn = options.roleArn || this.env.SAGEMAKER_ROLE_ARN;
@@ -147,7 +147,9 @@ export class SageMakerTrainingProvider implements TrainingProvider {
 			: undefined;
 		if (compatibilityError) throw new Error(compatibilityError);
 
-		const names = getSageMakerDeploymentNames(options.deploymentName);
+		const names = getSageMakerDeploymentNames(options.deploymentName, {
+			resourceVersion: options.deploymentVersion,
+		});
 		const productionVariant = isServerless
 			? {
 					VariantName: "AllTraffic",
@@ -176,10 +178,10 @@ export class SageMakerTrainingProvider implements TrainingProvider {
 			EndpointConfigName: names.endpointConfigName,
 			ProductionVariants: [productionVariant],
 		});
-		await this.createSageMakerResource("SageMaker.CreateEndpoint", {
-			EndpointName: names.endpointName,
-			EndpointConfigName: names.endpointConfigName,
-		});
+		const endpointOperation = await this.createOrUpdateEndpoint(
+			names.endpointName,
+			names.endpointConfigName,
+		);
 
 		return {
 			deployment: {
@@ -189,11 +191,12 @@ export class SageMakerTrainingProvider implements TrainingProvider {
 				modelName: names.modelName,
 				endpointConfigName: names.endpointConfigName,
 				endpointName: names.endpointName,
-				status: "Creating",
+				status: endpointOperation === "update" ? "Updating" : "Creating",
 				modelId: options.model.id,
 				modelArtifactsS3Uri,
 				providerResponse: {
 					deploymentTarget: isServerless ? "sagemaker-serverless-endpoint" : "sagemaker-endpoint",
+					endpointOperation,
 					productionVariant,
 				},
 			},
@@ -286,6 +289,27 @@ export class SageMakerTrainingProvider implements TrainingProvider {
 
 			throw error;
 		}
+	}
+
+	private async createOrUpdateEndpoint(
+		endpointName: string,
+		endpointConfigName: string,
+	): Promise<"create" | "update"> {
+		try {
+			await this.invoke("SageMaker.CreateEndpoint", {
+				EndpointName: endpointName,
+				EndpointConfigName: endpointConfigName,
+			});
+			return "create";
+		} catch (error) {
+			if (!isSageMakerAlreadyExistsError(error)) throw error;
+		}
+
+		await this.invoke("SageMaker.UpdateEndpoint", {
+			EndpointName: endpointName,
+			EndpointConfigName: endpointConfigName,
+		});
+		return "update";
 	}
 
 	private async deleteSageMakerResource(

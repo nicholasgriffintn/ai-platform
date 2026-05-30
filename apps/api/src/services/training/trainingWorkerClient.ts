@@ -69,6 +69,22 @@ export async function listTrainingWorkerJobEvents(
 	return response.events;
 }
 
+export async function listTrainingWorkerDeploymentEvents(
+	env: IEnv,
+	providerId: TrainingProviderId,
+	endpointName: string,
+	userId: number,
+): Promise<TrainingJobEvent[]> {
+	const response = await requestTrainingWorker(
+		env,
+		`/deployments/${encodeURIComponent(providerId)}/${encodeURIComponent(endpointName)}/events`,
+		trainingJobEventsResponseSchema,
+		{ userId },
+	);
+
+	return response.events;
+}
+
 export async function deployTrainingWorkerModel(
 	env: IEnv,
 	request: TrainingWorkerDeployModelRequest,

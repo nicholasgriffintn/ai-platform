@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import type {
 	DeployTrainingModelRequest,
 	TrainingDeployment,
@@ -26,6 +26,7 @@ import { CardSkeleton } from "~/components/ui/skeletons";
 import {
 	useDeleteTrainingDeployment,
 	useDeployTrainingModel,
+	useTrainingDeploymentEvents,
 	useTrainingDeployments,
 	useTrainingJobEvents,
 	useTrainingJobs,
@@ -36,7 +37,11 @@ import { getErrorMessage } from "~/lib/errors";
 import { DeploymentsPanel } from "./DeploymentsPanel";
 import { JobsPanel } from "./JobsPanel";
 import { ModelCatalog } from "./ModelCatalog";
-import { trainingRecordKey } from "./utils";
+import {
+	isActiveTrainingDeploymentStatus,
+	isActiveTrainingJobStatus,
+	trainingRecordKey,
+} from "./utils";
 
 const EMPTY_MODELS: TrainingModelDefinition[] = [];
 const EMPTY_JOBS: TrainingJob[] = [];
@@ -73,59 +78,94 @@ export function TrainingDashboard() {
 	const models = modelData ?? EMPTY_MODELS;
 	const jobs = jobData ?? EMPTY_JOBS;
 	const deployments = deploymentData ?? EMPTY_DEPLOYMENTS;
-	const [selectedJobKey, setSelectedJobKey] = useState<string | null>(null);
+	const [logsJobTarget, setLogsJobTarget] = useState<TrainingJob | null>(null);
+	const [logsDeploymentTarget, setLogsDeploymentTarget] = useState<TrainingDeployment | null>(null);
 
-	useEffect(() => {
-		if (jobs.length === 0) {
-			if (selectedJobKey) setSelectedJobKey(null);
-			return;
-		}
+	const logsJob = useMemo(() => {
+		if (!logsJobTarget) return null;
 
-		if (!selectedJobKey || !jobs.some((job) => trainingRecordKey(job) === selectedJobKey)) {
-			const firstJob = jobs[0];
-			if (firstJob) setSelectedJobKey(trainingRecordKey(firstJob));
-		}
-	}, [jobs, selectedJobKey]);
+		const logsJobKey = trainingRecordKey(logsJobTarget);
+		return jobs.find((job) => trainingRecordKey(job) === logsJobKey) ?? logsJobTarget;
+	}, [jobs, logsJobTarget]);
+	const logsDeployment = useMemo(() => {
+		if (!logsDeploymentTarget) return null;
 
-	const selectedJob = useMemo(
-		() => jobs.find((job) => trainingRecordKey(job) === selectedJobKey) ?? null,
-		[jobs, selectedJobKey],
-	);
-
+		const logsDeploymentKey = trainingRecordKey(logsDeploymentTarget);
+		return (
+			deployments.find((deployment) => trainingRecordKey(deployment) === logsDeploymentKey) ??
+			logsDeploymentTarget
+		);
+	}, [deployments, logsDeploymentTarget]);
 	const {
 		data: eventData,
 		isFetching: isEventsFetching,
 		isLoading: isEventsLoading,
 		isRefetching: isEventsRefetching,
 		refetch: refetchEvents,
-	} = useTrainingJobEvents(selectedJob?.provider, selectedJob?.jobName);
+	} = useTrainingJobEvents(logsJob?.provider, logsJob?.jobName, {
+		enabled: Boolean(logsJob),
+		refetchInterval: isActiveTrainingJobStatus(logsJob?.status) ? 10000 : false,
+	});
+	const {
+		data: deploymentEventData,
+		isFetching: isDeploymentEventsFetching,
+		isLoading: isDeploymentEventsLoading,
+		isRefetching: isDeploymentEventsRefetching,
+		refetch: refetchDeploymentEvents,
+	} = useTrainingDeploymentEvents(logsDeployment?.provider, logsDeployment?.endpointName, {
+		enabled: Boolean(logsDeployment),
+		refetchInterval: isActiveTrainingDeploymentStatus(logsDeployment?.status) ? 10000 : false,
+	});
 	const events = eventData ?? EMPTY_EVENTS;
+	const deploymentEvents = deploymentEventData ?? EMPTY_EVENTS;
 	const dashboardError = modelsError ?? jobsError ?? deploymentsError;
 	const isLoading = isModelsLoading || isJobsLoading || isDeploymentsLoading;
 	const isRefreshing =
-		isModelsRefetching || isJobsRefetching || isDeploymentsRefetching || isEventsRefetching;
-
-	const handleSelectJob = useCallback((job: TrainingJob) => {
-		setSelectedJobKey(trainingRecordKey(job));
-	}, []);
+		isModelsRefetching ||
+		isJobsRefetching ||
+		isDeploymentsRefetching ||
+		isEventsRefetching ||
+		isDeploymentEventsRefetching;
 
 	const handleRefresh = useCallback(() => {
 		void refetchModels();
 		void refetchJobs();
 		void refetchDeployments();
-		if (selectedJob) {
+		if (logsJob) {
 			void refetchEvents();
 		}
-	}, [refetchDeployments, refetchEvents, refetchJobs, refetchModels, selectedJob]);
+		if (logsDeployment) {
+			void refetchDeploymentEvents();
+		}
+	}, [
+		logsJob,
+		logsDeployment,
+		refetchDeploymentEvents,
+		refetchDeployments,
+		refetchEvents,
+		refetchJobs,
+		refetchModels,
+	]);
 
 	const handleStartJob = useCallback(
 		async (request: StartTrainingJobRequest) => {
-			const job = await startJob(request);
-			setSelectedJobKey(trainingRecordKey(job));
+			await startJob(request);
 			void refetchJobs();
 		},
 		[refetchJobs, startJob],
 	);
+
+	const handleOpenJobLogs = useCallback((job: TrainingJob) => {
+		setLogsJobTarget(job);
+	}, []);
+
+	const handleCloseJobLogs = useCallback(() => {
+		setLogsJobTarget(null);
+	}, []);
+
+	const handleRefreshJobLogs = useCallback(() => {
+		void refetchEvents();
+	}, [refetchEvents]);
 
 	const handleDeploy = useCallback(
 		async (request: DeployTrainingModelRequest) => {
@@ -135,16 +175,31 @@ export function TrainingDashboard() {
 		[deployModel, refetchDeployments],
 	);
 
+	const handleOpenDeploymentLogs = useCallback((deployment: TrainingDeployment) => {
+		setLogsDeploymentTarget(deployment);
+	}, []);
+
+	const handleCloseDeploymentLogs = useCallback(() => {
+		setLogsDeploymentTarget(null);
+	}, []);
+
+	const handleRefreshDeploymentLogs = useCallback(() => {
+		void refetchDeploymentEvents();
+	}, [refetchDeploymentEvents]);
+
 	const handleDeleteDeployment = useCallback(
 		async (deployment: TrainingDeployment) => {
 			const result = await deleteDeployment({
 				provider: deployment.provider,
 				endpointName: deployment.endpointName,
 			});
+			if (logsDeployment && trainingRecordKey(logsDeployment) === trainingRecordKey(deployment)) {
+				setLogsDeploymentTarget(null);
+			}
 			void refetchDeployments();
 			return result;
 		},
-		[deleteDeployment, refetchDeployments],
+		[deleteDeployment, logsDeployment, refetchDeployments],
 	);
 
 	if (isLoading) {
@@ -208,11 +263,14 @@ export function TrainingDashboard() {
 					<JobsPanel
 						models={models}
 						jobs={jobs}
-						events={events}
-						selectedJobKey={selectedJobKey}
-						isEventsLoading={isEventsLoading || isEventsFetching}
+						logsJob={logsJob}
+						logEvents={events}
+						isLogEventsLoading={isEventsLoading || isEventsFetching}
+						isLogEventsRefreshing={isEventsRefetching}
 						isSubmitting={isStartingJob}
-						onSelectJob={handleSelectJob}
+						onOpenLogs={handleOpenJobLogs}
+						onCloseLogs={handleCloseJobLogs}
+						onRefreshLogs={handleRefreshJobLogs}
 						onStartJob={handleStartJob}
 						onRefresh={handleRefresh}
 					/>
@@ -223,8 +281,15 @@ export function TrainingDashboard() {
 						models={models}
 						jobs={jobs}
 						deployments={deployments}
+						logsDeployment={logsDeployment}
+						logEvents={deploymentEvents}
+						isLogEventsLoading={isDeploymentEventsLoading || isDeploymentEventsFetching}
+						isLogEventsRefreshing={isDeploymentEventsRefetching}
 						isSubmitting={isDeployingModel}
 						isDeleting={isDeletingDeployment}
+						onOpenLogs={handleOpenDeploymentLogs}
+						onCloseLogs={handleCloseDeploymentLogs}
+						onRefreshLogs={handleRefreshDeploymentLogs}
 						onDeploy={handleDeploy}
 						onDelete={handleDeleteDeployment}
 						onRefresh={handleRefresh}

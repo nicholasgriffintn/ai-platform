@@ -37,6 +37,7 @@ export interface DeployModelOptions {
 	trainingJobName?: string;
 	modelArtifactsS3Uri?: string;
 	deploymentName: string;
+	deploymentVersion?: string;
 	deploymentTarget?: TrainingDeploymentTarget;
 	roleArn?: string;
 	instanceType?: string;

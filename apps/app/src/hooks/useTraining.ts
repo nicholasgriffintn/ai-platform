@@ -8,6 +8,7 @@ import type {
 import {
 	deleteTrainingDeployment,
 	deployTrainingModel,
+	fetchTrainingDeploymentEvents,
 	fetchTrainingDeployments,
 	fetchTrainingJobEvents,
 	fetchTrainingJobs,
@@ -25,9 +26,21 @@ export const TRAINING_QUERY_KEYS = {
 		provider,
 		jobName,
 	],
+	deploymentEvents: (provider?: TrainingProviderId, endpointName?: string) => [
+		"training",
+		"deployment-events",
+		provider,
+		endpointName,
+	],
 };
 
 const ACTIVE_JOB_STATUSES = new Set(["starting", "inprogress", "in progress", "stopping"]);
+const ACTIVE_DEPLOYMENT_STATUSES = new Set(["creating", "updating"]);
+
+interface TrainingEventsOptions {
+	enabled?: boolean;
+	refetchInterval?: number | false;
+}
 
 export function useTrainingModels() {
 	return useQuery({
@@ -52,7 +65,12 @@ export function useTrainingJobs() {
 	});
 }
 
-export function useTrainingJobEvents(provider?: TrainingProviderId, jobName?: string) {
+export function useTrainingJobEvents(
+	provider?: TrainingProviderId,
+	jobName?: string,
+	options: TrainingEventsOptions = {},
+) {
+	const enabled = options.enabled ?? true;
 	return useQuery({
 		queryKey: TRAINING_QUERY_KEYS.events(provider, jobName),
 		queryFn: () => {
@@ -60,8 +78,27 @@ export function useTrainingJobEvents(provider?: TrainingProviderId, jobName?: st
 
 			return fetchTrainingJobEvents(provider, jobName);
 		},
-		enabled: Boolean(provider && jobName),
-		refetchInterval: provider && jobName ? 10000 : false,
+		enabled: Boolean(enabled && provider && jobName),
+		refetchInterval: enabled && provider && jobName ? (options.refetchInterval ?? false) : false,
+	});
+}
+
+export function useTrainingDeploymentEvents(
+	provider?: TrainingProviderId,
+	endpointName?: string,
+	options: TrainingEventsOptions = {},
+) {
+	const enabled = options.enabled ?? true;
+	return useQuery({
+		queryKey: TRAINING_QUERY_KEYS.deploymentEvents(provider, endpointName),
+		queryFn: () => {
+			if (!provider || !endpointName) return [];
+
+			return fetchTrainingDeploymentEvents(provider, endpointName);
+		},
+		enabled: Boolean(enabled && provider && endpointName),
+		refetchInterval:
+			enabled && provider && endpointName ? (options.refetchInterval ?? false) : false,
 	});
 }
 
@@ -69,6 +106,18 @@ export function useTrainingDeployments() {
 	return useQuery({
 		queryKey: TRAINING_QUERY_KEYS.deployments,
 		queryFn: fetchTrainingDeployments,
+		refetchInterval: (query) => {
+			const deployments = query.state.data;
+			if (
+				!deployments?.some((deployment) =>
+					ACTIVE_DEPLOYMENT_STATUSES.has(deployment.status.toLowerCase()),
+				)
+			) {
+				return false;
+			}
+
+			return 10000;
+		},
 	});
 }
 
@@ -88,8 +137,14 @@ export function useDeployTrainingModel() {
 
 	return useMutation({
 		mutationFn: (request: DeployTrainingModelRequest) => deployTrainingModel(request),
-		onSuccess: () => {
+		onSuccess: (deployment) => {
 			queryClient.invalidateQueries({ queryKey: TRAINING_QUERY_KEYS.deployments });
+			queryClient.invalidateQueries({
+				queryKey: TRAINING_QUERY_KEYS.deploymentEvents(
+					deployment.provider,
+					deployment.endpointName,
+				),
+			});
 		},
 	});
 }

@@ -160,6 +160,15 @@ export class TrainingWorkerService {
 		return this.store.listEvents(providerId, jobName);
 	}
 
+	async listDeploymentEvents(providerId: TrainingProviderId, endpointName: string, userId: number) {
+		const stored = await this.store.getDeployment(providerId, endpointName, userId);
+		if (!stored) {
+			throw new HttpError("Training deployment not found", 404);
+		}
+
+		return this.store.listEvents(providerId, endpointName);
+	}
+
 	async deployModel(request: UserScopedDeployModelRequest): Promise<TrainingDeployment> {
 		const deploymentProviderId =
 			request.deploymentTarget === "bedrock-import" ? "aws-bedrock" : request.provider;
@@ -188,6 +197,7 @@ export class TrainingWorkerService {
 				deploymentVersion,
 			}),
 		);
+		const resourceVersion = request.deploymentName ? deploymentVersion : undefined;
 
 		try {
 			const result = await provider.deployModel({
@@ -195,6 +205,7 @@ export class TrainingWorkerService {
 				trainingJobName: request.trainingJobName,
 				modelArtifactsS3Uri: request.modelArtifactsS3Uri,
 				deploymentName,
+				deploymentVersion: resourceVersion,
 				deploymentTarget: request.deploymentTarget,
 				roleArn: request.roleArn,
 				instanceType: request.instanceType,
@@ -222,12 +233,20 @@ export class TrainingWorkerService {
 			});
 			await this.store.addEvent({
 				provider: deploymentProviderId,
-				jobName: request.trainingJobName || deployment.endpointName,
+				jobName: deployment.endpointName,
 				level: "info",
-				message: "Training model deployment submitted",
+				message:
+					deployment.providerResponse &&
+					typeof deployment.providerResponse === "object" &&
+					"endpointOperation" in deployment.providerResponse &&
+					deployment.providerResponse.endpointOperation === "update"
+						? "Training model deployment update submitted"
+						: "Training model deployment submitted",
 				metadata: {
 					endpointName: deployment.endpointName,
+					endpointConfigName: deployment.endpointConfigName,
 					deploymentVersion,
+					providerResponse: deployment.providerResponse,
 					requestId: request.requestId,
 				},
 			});
@@ -250,7 +269,7 @@ export class TrainingWorkerService {
 			});
 			await this.store.addEvent({
 				provider: deploymentProviderId,
-				jobName: request.trainingJobName || failedDeployment.endpointName,
+				jobName: failedDeployment.endpointName,
 				level: "error",
 				message: "Training model deployment failed",
 				metadata: {
@@ -398,6 +417,21 @@ export class TrainingWorkerService {
 					},
 				});
 			}
+			if (
+				stored.status.toLowerCase() === "updating" &&
+				deployment.status.toLowerCase() === "inservice"
+			) {
+				await this.store.addEvent({
+					provider: deployment.provider,
+					jobName: deployment.endpointName,
+					level: "info",
+					message: "Training model deployment update completed",
+					metadata: {
+						endpointName: deployment.endpointName,
+						endpointConfigName: deployment.endpointConfigName,
+					},
+				});
+			}
 
 			return deployment;
 		} catch {
@@ -420,7 +454,9 @@ export class TrainingWorkerService {
 		modelArtifactsS3Uri?: string;
 		failureReason: string;
 	}): TrainingDeployment {
-		const names = getSageMakerDeploymentNames(deploymentName);
+		const names = getSageMakerDeploymentNames(deploymentName, {
+			resourceVersion: request.deploymentName ? deploymentVersion : undefined,
+		});
 		const isBedrockImport = request.deploymentTarget === "bedrock-import";
 
 		return withDeploymentVersion(

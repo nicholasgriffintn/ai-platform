@@ -15,4 +15,13 @@ describe("getSageMakerDeploymentNames", () => {
 	it("sanitises names before adding SageMaker suffixes", () => {
 		expect(getSageMakerDeploymentNames("Lizzy 7B!").deploymentName).toBe("Lizzy-7B");
 	});
+
+	it("keeps endpoints stable while versioning model resources", () => {
+		expect(getSageMakerDeploymentNames("polychat-lizzy-7b", { resourceVersion: "1.1" })).toEqual({
+			deploymentName: "polychat-lizzy-7b",
+			modelName: "polychat-lizzy-7b-1-1-model",
+			endpointConfigName: "polychat-lizzy-7b-1-1-config",
+			endpointName: "polychat-lizzy-7b-endpoint",
+		});
+	});
 });

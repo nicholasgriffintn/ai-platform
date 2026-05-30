@@ -2,6 +2,7 @@ import type {
 	TrainingDeployment,
 	TrainingDeploymentTarget,
 	TrainingJob,
+	TrainingJobEvent,
 	TrainingModelDefinition,
 	TrainingProviderId,
 } from "@assistant/schemas";
@@ -16,6 +17,8 @@ type TrainingHyperparameterValue = string | number | boolean;
 
 const DEPLOYABLE_TRAINING_PROVIDER: TrainingProviderId = "aws-sagemaker";
 const COMPLETED_JOB_STATUSES = new Set(["completed"]);
+const ACTIVE_JOB_STATUSES = new Set(["starting", "inprogress", "in progress", "stopping"]);
+const ACTIVE_DEPLOYMENT_STATUSES = new Set(["creating", "updating"]);
 
 export type TrainingDatasetMode = "s3" | "examples";
 
@@ -166,6 +169,26 @@ export function formatDeploymentTarget(target?: TrainingDeploymentTarget): strin
 	);
 }
 
+export function isActiveTrainingDeploymentStatus(status?: string): boolean {
+	return ACTIVE_DEPLOYMENT_STATUSES.has(status?.toLowerCase() ?? "");
+}
+
+export function isActiveTrainingJobStatus(status?: string): boolean {
+	return ACTIVE_JOB_STATUSES.has(status?.toLowerCase() ?? "");
+}
+
+export function getTrainingEventDetail(event: TrainingJobEvent): string | undefined {
+	if (!isRecord(event.metadata)) return undefined;
+
+	const error = getStringMetadataValue(event.metadata.error);
+	if (error) return error;
+
+	const endpointConfigName = getStringMetadataValue(event.metadata.endpointConfigName);
+	if (endpointConfigName) return `Endpoint config: ${endpointConfigName}`;
+
+	return undefined;
+}
+
 export function getStatusClassName(status: string): string {
 	const normalised = status.toLowerCase();
 
@@ -188,4 +211,11 @@ function isTrainingHyperparameterValue(value: unknown): value is TrainingHyperpa
 	if (typeof value === "number") return Number.isFinite(value);
 
 	return typeof value === "string" || typeof value === "boolean";
+}
+
+function getStringMetadataValue(value: unknown): string | undefined {
+	if (typeof value !== "string") return undefined;
+
+	const trimmed = value.trim();
+	return trimmed || undefined;
 }

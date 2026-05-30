@@ -9,12 +9,18 @@ const TRACES_SAMPLE_RATE = 0.1;
 export function getSentryOptions(
 	env: Pick<IEnv, "ENV" | "SENTRY_DSN">,
 ): CloudflareOptions | undefined {
+	if (!env.ENV || env.ENV === "development") {
+		return undefined;
+	}
+
 	const dsn = env.SENTRY_DSN?.trim();
-	if (!dsn) return undefined;
+	if (!dsn) {
+		return undefined;
+	}
 
 	return {
 		dsn,
-		environment: env.ENV ?? "development",
+		environment: env.ENV,
 		tracesSampleRate: TRACES_SAMPLE_RATE,
 		enableRpcTracePropagation: true,
 	};

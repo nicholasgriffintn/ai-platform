@@ -7,15 +7,28 @@ export interface SageMakerDeploymentNames {
 	endpointName: string;
 }
 
-export function getSageMakerDeploymentNames(deploymentName: string): SageMakerDeploymentNames {
+interface SageMakerDeploymentNameOptions {
+	resourceVersion?: string;
+}
+
+export function getSageMakerDeploymentNames(
+	deploymentName: string,
+	options: SageMakerDeploymentNameOptions = {},
+): SageMakerDeploymentNames {
 	const sanitisedDeploymentName = sanitiseResourceName(deploymentName, {
 		fallback: `training-${Date.now()}`,
 	});
+	const resourceBaseName = options.resourceVersion
+		? appendResourceNameSuffix(
+				sanitisedDeploymentName,
+				sanitiseResourceName(options.resourceVersion, { fallback: "version" }),
+			)
+		: sanitisedDeploymentName;
 
 	return {
 		deploymentName: sanitisedDeploymentName,
-		modelName: appendResourceNameSuffix(sanitisedDeploymentName, "model"),
-		endpointConfigName: appendResourceNameSuffix(sanitisedDeploymentName, "config"),
+		modelName: appendResourceNameSuffix(resourceBaseName, "model"),
+		endpointConfigName: appendResourceNameSuffix(resourceBaseName, "config"),
 		endpointName: appendResourceNameSuffix(sanitisedDeploymentName, "endpoint"),
 	};
 }
