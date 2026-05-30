@@ -1,13 +1,9 @@
 import type { TrainingModelDefinition } from "~/types/training";
 
-const HUGGING_FACE_TRAINING_IMAGE =
-	"763104351884.dkr.ecr.{region}.amazonaws.com/huggingface-pytorch-training:2.1.0-transformers4.36.0-gpu-py310-cu121-ubuntu20.04";
-const HUGGING_FACE_INFERENCE_IMAGE =
-	"763104351884.dkr.ecr.{region}.amazonaws.com/huggingface-pytorch-inference:2.1.0-transformers4.36.0-gpu-py310-cu121-ubuntu20.04";
 const HUGGING_FACE_LLM_TRAINING_IMAGE =
 	"763104351884.dkr.ecr.{region}.amazonaws.com/huggingface-pytorch-training:2.8.0-transformers4.56.2-gpu-py312-cu129-ubuntu22.04";
 const HUGGING_FACE_LLM_INFERENCE_IMAGE =
-	"763104351884.dkr.ecr.{region}.amazonaws.com/huggingface-pytorch-inference:2.6.0-transformers4.51.3-gpu-py312-cu124-ubuntu22.04";
+	"763104351884.dkr.ecr.{region}.amazonaws.com/huggingface-pytorch-inference:2.6.0-transformers5.5.3-gpu-py312-cu124-ubuntu22.04";
 
 export const trainingModelCatalog: TrainingModelDefinition[] = [
 	{
@@ -24,49 +20,6 @@ export const trainingModelCatalog: TrainingModelDefinition[] = [
 			learningRateWarmupSteps: 0,
 		},
 		supportedTasks: ["chat", "strudel"],
-	},
-	{
-		id: "distilbert-imdb",
-		provider: "aws-sagemaker",
-		family: "huggingface",
-		name: "DistilBERT text classifier",
-		description:
-			"A small Hugging Face Transformers model suitable for quick text classification fine-tuning.",
-		baseModel: "distilbert/distilbert-base-uncased",
-		defaultInstanceType: "ml.p3.2xlarge",
-		defaultDeploymentInstanceType: "ml.g4dn.xlarge",
-		defaultHyperparameters: {
-			model_name_or_path: "distilbert/distilbert-base-uncased",
-			epochs: 1,
-			train_batch_size: 32,
-		},
-		trainingImage: HUGGING_FACE_TRAINING_IMAGE,
-		inferenceImage: HUGGING_FACE_INFERENCE_IMAGE,
-		defaultDeploymentEnvironment: {
-			HF_TASK: "text-classification",
-		},
-		supportedTasks: ["text-classification"],
-	},
-	{
-		id: "bert-base-uncased",
-		provider: "aws-sagemaker",
-		family: "huggingface",
-		name: "BERT base uncased",
-		description: "General-purpose BERT base checkpoint for Hugging Face fine-tuning jobs.",
-		baseModel: "google-bert/bert-base-uncased",
-		defaultInstanceType: "ml.p3.2xlarge",
-		defaultDeploymentInstanceType: "ml.g4dn.xlarge",
-		defaultHyperparameters: {
-			model_name_or_path: "google-bert/bert-base-uncased",
-			epochs: 1,
-			train_batch_size: 16,
-		},
-		trainingImage: HUGGING_FACE_TRAINING_IMAGE,
-		inferenceImage: HUGGING_FACE_INFERENCE_IMAGE,
-		defaultDeploymentEnvironment: {
-			HF_TASK: "text-classification",
-		},
-		supportedTasks: ["text-classification", "token-classification"],
 	},
 	{
 		id: "lizzy-7b",
