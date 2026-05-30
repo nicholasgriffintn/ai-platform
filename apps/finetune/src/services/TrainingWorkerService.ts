@@ -14,6 +14,9 @@ import { requireTrainingResourceName } from "../utils/trainingNames.js";
 import { TrainingStore } from "../lib/TrainingStore.js";
 import { mergeFineTunedDeployment, mergeTrainingJob } from "../lib/trainingRecords.js";
 
+type UserScopedStartJobRequest = FinetuneWorkerStartJobRequest & { userId: number };
+type UserScopedDeployModelRequest = FinetuneWorkerDeployModelRequest & { userId: number };
+
 export class TrainingWorkerService {
 	private readonly store: TrainingStore;
 
@@ -21,7 +24,7 @@ export class TrainingWorkerService {
 		this.store = new TrainingStore(env.DB);
 	}
 
-	async startJob(request: FinetuneWorkerStartJobRequest): Promise<FineTuningJob> {
+	async startJob(request: UserScopedStartJobRequest): Promise<FineTuningJob> {
 		const jobName = requireTrainingResourceName(
 			request.jobName || `${request.model.id}-${Date.now()}`,
 		);
@@ -102,8 +105,16 @@ export class TrainingWorkerService {
 		}
 	}
 
-	async getJob(providerId: FineTuningProviderId, jobName: string): Promise<FineTuningJob> {
-		const stored = await this.store.getJob(providerId, jobName);
+	async getJob(
+		providerId: FineTuningProviderId,
+		jobName: string,
+		userId: number,
+	): Promise<FineTuningJob> {
+		const stored = await this.store.getJob(providerId, jobName, userId);
+		if (!stored) {
+			throw new HttpError("Fine-tuning job not found", 404);
+		}
+
 		const provider = createFineTuneProvider(providerId, { env: this.env });
 
 		try {
@@ -129,18 +140,34 @@ export class TrainingWorkerService {
 		}
 	}
 
-	async listJobs(userId?: number): Promise<FineTuningJob[]> {
+	async listJobs(userId: number): Promise<FineTuningJob[]> {
 		return this.store.listJobs(userId);
 	}
 
-	async listEvents(providerId: FineTuningProviderId, jobName: string) {
+	async listEvents(providerId: FineTuningProviderId, jobName: string, userId: number) {
+		const stored = await this.store.getJob(providerId, jobName, userId);
+		if (!stored) {
+			throw new HttpError("Fine-tuning job not found", 404);
+		}
+
 		return this.store.listEvents(providerId, jobName);
 	}
 
-	async deployModel(request: FinetuneWorkerDeployModelRequest): Promise<FineTunedDeployment> {
+	async deployModel(request: UserScopedDeployModelRequest): Promise<FineTunedDeployment> {
 		const provider = createFineTuneProvider(request.provider, { env: this.env });
 		if (!provider.deployModel) {
 			throw new HttpError(`Provider ${request.provider} does not support deployments`, 400);
+		}
+
+		if (request.trainingJobName) {
+			const sourceJob = await this.store.getJob(
+				request.provider,
+				request.trainingJobName,
+				request.userId,
+			);
+			if (!sourceJob) {
+				throw new HttpError("Fine-tuning job not found", 404);
+			}
 		}
 
 		const deploymentName = requireTrainingResourceName(
@@ -178,8 +205,13 @@ export class TrainingWorkerService {
 	async getDeployment(
 		providerId: FineTuningProviderId,
 		endpointName: string,
+		userId: number,
 	): Promise<FineTunedDeployment> {
-		const stored = await this.store.getDeployment(providerId, endpointName);
+		const stored = await this.store.getDeployment(providerId, endpointName, userId);
+		if (!stored) {
+			throw new HttpError("Fine-tuned deployment not found", 404);
+		}
+
 		const provider = createFineTuneProvider(providerId, { env: this.env });
 
 		if (!provider.getDeployment) {
@@ -208,7 +240,7 @@ export class TrainingWorkerService {
 		}
 	}
 
-	async listDeployments(userId?: number): Promise<FineTunedDeployment[]> {
+	async listDeployments(userId: number): Promise<FineTunedDeployment[]> {
 		return this.store.listDeployments(userId);
 	}
 }

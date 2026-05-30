@@ -83,11 +83,22 @@ export class TrainingStore {
 			.run();
 	}
 
-	async getJob(provider: FineTuningProviderId, jobName: string): Promise<FineTuningJob | null> {
-		const row = await this.db
-			.prepare("SELECT * FROM training_jobs WHERE provider = ? AND job_name = ?")
-			.bind(provider, jobName)
-			.first<Record<string, unknown>>();
+	async getJob(
+		provider: FineTuningProviderId,
+		jobName: string,
+		userId?: number,
+	): Promise<FineTuningJob | null> {
+		const statement =
+			userId === undefined
+				? this.db
+						.prepare("SELECT * FROM training_jobs WHERE provider = ? AND job_name = ?")
+						.bind(provider, jobName)
+				: this.db
+						.prepare(
+							"SELECT * FROM training_jobs WHERE provider = ? AND job_name = ? AND user_id = ?",
+						)
+						.bind(provider, jobName, userId);
+		const row = await statement.first<Record<string, unknown>>();
 		return row ? mapTrainingJobRow(row) : null;
 	}
 
@@ -153,11 +164,19 @@ export class TrainingStore {
 	async getDeployment(
 		provider: FineTuningProviderId,
 		endpointName: string,
+		userId?: number,
 	): Promise<FineTunedDeployment | null> {
-		const row = await this.db
-			.prepare("SELECT * FROM training_deployments WHERE provider = ? AND endpoint_name = ?")
-			.bind(provider, endpointName)
-			.first<Record<string, unknown>>();
+		const statement =
+			userId === undefined
+				? this.db
+						.prepare("SELECT * FROM training_deployments WHERE provider = ? AND endpoint_name = ?")
+						.bind(provider, endpointName)
+				: this.db
+						.prepare(
+							"SELECT * FROM training_deployments WHERE provider = ? AND endpoint_name = ? AND user_id = ?",
+						)
+						.bind(provider, endpointName, userId);
+		const row = await statement.first<Record<string, unknown>>();
 		return row ? mapTrainingDeploymentRow(row) : null;
 	}
 

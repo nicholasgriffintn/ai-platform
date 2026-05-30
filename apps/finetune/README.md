@@ -77,6 +77,9 @@ The API Worker must define this service binding:
 }
 ```
 
+The API Worker and finetune Worker must also share `FINETUNE_WORKER_TOKEN`.
+Set it as a secret in both environments. Every non-status worker route rejects requests without that token, and user ownership is passed as internal request context from the API.
+
 ## Development
 
 Run static checks:

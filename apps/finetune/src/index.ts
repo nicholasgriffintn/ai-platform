@@ -3,11 +3,8 @@ import { finetuneWorkerDeployModelSchema, finetuneWorkerStartJobSchema } from "@
 import { TrainingWorkerService } from "./services/TrainingWorkerService.js";
 import type { Env } from "./types/env.js";
 import { errorResponse, HttpError, jsonResponse, parseJsonBody } from "./utils/http.js";
-import {
-	decodeRouteSegment,
-	decodeTrainingProvider,
-	parseOptionalPositiveInteger,
-} from "./utils/trainingRoutes.js";
+import { assertInternalRequest, getInternalUserId } from "./utils/internalAuth.js";
+import { decodeRouteSegment, decodeTrainingProvider } from "./utils/trainingRoutes.js";
 
 export default {
 	async fetch(request: Request, env: Env): Promise<Response> {
@@ -27,14 +24,17 @@ async function route(request: Request, env: Env): Promise<Response> {
 		return jsonResponse({ ok: true });
 	}
 
+	assertInternalRequest(request, env);
+	const userId = getInternalUserId(request);
+
 	if (request.method === "POST" && url.pathname === "/jobs") {
 		const body = await parseJsonBody(request, finetuneWorkerStartJobSchema);
-		return jsonResponse(await service.startJob(body));
+		return jsonResponse(await service.startJob({ ...body, userId }));
 	}
 
 	if (request.method === "GET" && url.pathname === "/jobs") {
 		return jsonResponse({
-			jobs: await service.listJobs(parseOptionalPositiveInteger(url.searchParams.get("userId"))),
+			jobs: await service.listJobs(userId),
 		});
 	}
 
@@ -43,27 +43,29 @@ async function route(request: Request, env: Env): Promise<Response> {
 		const provider = decodeTrainingProvider(jobEventsMatch[1]);
 		const jobName = decodeRouteSegment(jobEventsMatch[2]);
 		const limit = Number(url.searchParams.get("limit") || 100);
-		const events = await service.listEvents(provider, jobName);
+		const events = await service.listEvents(provider, jobName, userId);
 		return jsonResponse({ events: events.slice(0, Math.min(Math.max(limit, 1), 500)) });
 	}
 
 	const jobMatch = url.pathname.match(/^\/jobs\/([^/]+)\/([^/]+)$/);
 	if (request.method === "GET" && jobMatch) {
 		return jsonResponse(
-			await service.getJob(decodeTrainingProvider(jobMatch[1]), decodeRouteSegment(jobMatch[2])),
+			await service.getJob(
+				decodeTrainingProvider(jobMatch[1]),
+				decodeRouteSegment(jobMatch[2]),
+				userId,
+			),
 		);
 	}
 
 	if (request.method === "POST" && url.pathname === "/deployments") {
 		const body = await parseJsonBody(request, finetuneWorkerDeployModelSchema);
-		return jsonResponse(await service.deployModel(body));
+		return jsonResponse(await service.deployModel({ ...body, userId }));
 	}
 
 	if (request.method === "GET" && url.pathname === "/deployments") {
 		return jsonResponse({
-			deployments: await service.listDeployments(
-				parseOptionalPositiveInteger(url.searchParams.get("userId")),
-			),
+			deployments: await service.listDeployments(userId),
 		});
 	}
 
@@ -73,6 +75,7 @@ async function route(request: Request, env: Env): Promise<Response> {
 			await service.getDeployment(
 				decodeTrainingProvider(deploymentMatch[1]),
 				decodeRouteSegment(deploymentMatch[2]),
+				userId,
 			),
 		);
 	}

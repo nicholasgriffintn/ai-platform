@@ -18,5 +18,6 @@ export interface Env {
 	SAGEMAKER_ROLE_ARN?: string;
 	SAGEMAKER_OUTPUT_BUCKET?: string;
 	SAGEMAKER_VOLUME_SIZE_GB?: string;
+	FINETUNE_WORKER_TOKEN?: string;
 	LOG_LEVEL?: string;
 }

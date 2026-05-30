@@ -31,6 +31,7 @@ export type IEnv = {
 	AI_GATEWAY_TOKEN?: string;
 	SANDBOX_WORKER?: Fetcher;
 	FINETUNE_WORKER?: Fetcher;
+	FINETUNE_WORKER_TOKEN?: string;
 	SANDBOX_RUN_COORDINATOR?: DurableObjectNamespace;
 	GROK_API_KEY?: string;
 	HUGGINGFACE_TOKEN?: string;

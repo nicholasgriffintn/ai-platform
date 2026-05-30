@@ -20,7 +20,7 @@
     "deploy:app": "pnpm --filter @assistant/app deploy",
     "deploy:metrics": "pnpm --filter @assistant/metrics deploy",
     "deploy:finetune": "pnpm --filter @assistant/finetune deploy",
-    "deploy": "pnpm --filter @assistant/api --filter @assistant/app --filter @assistant/metrics",
+    "deploy": "pnpm --filter @assistant/api --filter @assistant/app --filter @assistant/metrics deploy",
     "test:e2e": "playwright test --config=playwright.config.ts --tsconfig=tsconfig.playwright.json",
     "dev:mobile": "sh scripts/xcodebuild-mobile.sh build",
     "build:mobile": "sh scripts/xcodebuild-mobile.sh release",

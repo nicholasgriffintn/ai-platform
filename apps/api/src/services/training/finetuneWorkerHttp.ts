@@ -1,3 +1,4 @@
+import { FINETUNE_WORKER_TOKEN_HEADER, FINETUNE_WORKER_USER_ID_HEADER } from "@assistant/schemas";
 import type { ZodType } from "zod";
 
 import type { IEnv } from "~/types";
@@ -10,7 +11,7 @@ export async function requestFinetuneWorker<T>(
 	env: IEnv,
 	path: string,
 	responseSchema: ZodType<T>,
-	init: { method?: string; body?: unknown } = {},
+	init: { method?: string; body?: unknown; userId: number },
 ): Promise<T> {
 	if (!env.FINETUNE_WORKER) {
 		throw new AssistantError(
@@ -20,9 +21,19 @@ export async function requestFinetuneWorker<T>(
 		);
 	}
 
+	const workerToken = env.FINETUNE_WORKER_TOKEN;
+	if (!workerToken) {
+		throw new AssistantError(
+			"Fine-tuning worker token is not configured",
+			ErrorType.CONFIGURATION_ERROR,
+			500,
+		);
+	}
+
+	const headers = getFinetuneWorkerHeaders(workerToken, init);
 	const request = new Request(`${FINETUNE_WORKER_ORIGIN}${path}`, {
 		method: init.method || "GET",
-		headers: init.body === undefined ? undefined : { "Content-Type": "application/json" },
+		headers,
 		body: init.body === undefined ? undefined : JSON.stringify(init.body),
 	});
 	const response = await env.FINETUNE_WORKER.fetch(request);
@@ -37,6 +48,22 @@ export async function requestFinetuneWorker<T>(
 	}
 
 	return responseSchema.parse(payload);
+}
+
+function getFinetuneWorkerHeaders(
+	workerToken: string,
+	init: { body?: unknown; userId: number },
+): Headers {
+	const headers = new Headers();
+
+	if (init.body !== undefined) {
+		headers.set("Content-Type", "application/json");
+	}
+
+	headers.set(FINETUNE_WORKER_USER_ID_HEADER, String(init.userId));
+	headers.set(FINETUNE_WORKER_TOKEN_HEADER, workerToken);
+
+	return headers;
 }
 
 async function readFinetuneWorkerJson(response: Response): Promise<unknown> {

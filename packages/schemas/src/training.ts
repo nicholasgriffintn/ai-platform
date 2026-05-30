@@ -2,6 +2,8 @@ import { z } from "zod";
 
 export const fineTuningProviderSchema = z.enum(["aws-bedrock", "aws-sagemaker"]);
 export const fineTuningModelFamilySchema = z.enum(["bedrock", "huggingface"]);
+export const FINETUNE_WORKER_USER_ID_HEADER = "X-Assistant-User-Id";
+export const FINETUNE_WORKER_TOKEN_HEADER = "X-Assistant-Worker-Token";
 
 export const fineTuningSourceArchiveSchema = z.object({
 	url: z.string().url(),
@@ -154,13 +156,11 @@ export const fineTuningJobEventsResponseSchema = z.object({
 
 export const finetuneWorkerStartJobSchema = startFineTuningJobSchema.extend({
 	model: fineTuningModelSchema,
-	userId: z.coerce.number().int().positive().optional(),
 	requestId: z.string().optional(),
 });
 
 export const finetuneWorkerDeployModelSchema = deployFineTunedModelSchema.extend({
 	model: fineTuningModelSchema,
-	userId: z.coerce.number().int().positive().optional(),
 	requestId: z.string().optional(),
 });
 

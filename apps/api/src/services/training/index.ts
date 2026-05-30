@@ -61,19 +61,22 @@ export async function startFineTuningJob(
 		requestHyperparameters: request.hyperparameters,
 	});
 
-	return startFinetuneWorkerJob(context.env, {
-		...request,
-		model,
-		userId: user.id,
-		requestId: context.requestId,
-		entryPoint: request.entryPoint || trainingSource.entryPoint,
-		sourceS3Uri: trainingSource.sourceS3Uri,
-		hyperparameters,
-		dataset: {
-			...request.dataset,
-			trainS3Uri,
+	return startFinetuneWorkerJob(
+		context.env,
+		{
+			...request,
+			model,
+			requestId: context.requestId,
+			entryPoint: request.entryPoint || trainingSource.entryPoint,
+			sourceS3Uri: trainingSource.sourceS3Uri,
+			hyperparameters,
+			dataset: {
+				...request.dataset,
+				trainS3Uri,
+			},
 		},
-	});
+		user.id,
+	);
 }
 
 export async function getFineTuningJob(
@@ -81,8 +84,8 @@ export async function getFineTuningJob(
 	providerId: FineTuningProviderId,
 	jobName: string,
 ): Promise<FineTuningJob> {
-	context.requireUser();
-	return getFinetuneWorkerJob(context.env, providerId, jobName);
+	const user = context.requireUser();
+	return getFinetuneWorkerJob(context.env, providerId, jobName, user.id);
 }
 
 export async function listFineTuningJobs(context: ServiceContext): Promise<FineTuningJob[]> {
@@ -95,8 +98,8 @@ export async function listFineTuningJobEvents(
 	providerId: FineTuningProviderId,
 	jobName: string,
 ): Promise<FineTuningJobEvent[]> {
-	context.requireUser();
-	return listFinetuneWorkerJobEvents(context.env, providerId, jobName);
+	const user = context.requireUser();
+	return listFinetuneWorkerJobEvents(context.env, providerId, jobName, user.id);
 }
 
 export async function deployFineTunedModel(
@@ -105,16 +108,19 @@ export async function deployFineTunedModel(
 ): Promise<FineTunedDeployment> {
 	const user = context.requireUser();
 	const model = requireFineTuningModel(request.provider, request.modelId);
-	return deployFinetuneWorkerModel(context.env, {
-		...request,
-		model,
-		environment: {
-			...model.defaultDeploymentEnvironment,
-			...request.environment,
+	return deployFinetuneWorkerModel(
+		context.env,
+		{
+			...request,
+			model,
+			environment: {
+				...model.defaultDeploymentEnvironment,
+				...request.environment,
+			},
+			requestId: context.requestId,
 		},
-		userId: user.id,
-		requestId: context.requestId,
-	});
+		user.id,
+	);
 }
 
 export async function getFineTunedDeployment(
@@ -122,8 +128,8 @@ export async function getFineTunedDeployment(
 	providerId: FineTuningProviderId,
 	endpointName: string,
 ): Promise<FineTunedDeployment> {
-	context.requireUser();
-	return getFinetuneWorkerDeployment(context.env, providerId, endpointName);
+	const user = context.requireUser();
+	return getFinetuneWorkerDeployment(context.env, providerId, endpointName, user.id);
 }
 
 export async function listFineTunedDeployments(
