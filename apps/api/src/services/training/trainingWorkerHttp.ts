@@ -13,7 +13,7 @@ export async function requestTrainingWorker<T>(
 	responseSchema: ZodType<T>,
 	init: { method?: string; body?: unknown; userId: number },
 ): Promise<T> {
-	if (!env.FINETUNE_WORKER) {
+	if (!env.TRAINING_WORKER) {
 		throw new AssistantError(
 			"Training worker binding is not configured",
 			ErrorType.CONFIGURATION_ERROR,
@@ -36,7 +36,7 @@ export async function requestTrainingWorker<T>(
 		headers,
 		body: init.body === undefined ? undefined : JSON.stringify(init.body),
 	});
-	const response = await env.FINETUNE_WORKER.fetch(request);
+	const response = await env.TRAINING_WORKER.fetch(request);
 	const payload = await readTrainingWorkerJson(response);
 
 	if (!response.ok) {

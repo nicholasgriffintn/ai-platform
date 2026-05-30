@@ -123,7 +123,7 @@ The API runs on Cloudflare's global network with:
 - **OpenAPI:** Auto-generated docs via hono-openapi
 - **Auth:** Multiple providers (OAuth, JWT, API keys, WebAuthn)
 - **Storage:** R2 for media, Vectorize for embeddings
-- **Training:** API model catalog plus `FINETUNE_WORKER` service binding and shared `FINETUNE_WORKER_TOKEN` for provider job execution
+- **Training:** API model catalog plus `TRAINING_WORKER` service binding and shared `FINETUNE_WORKER_TOKEN` for provider job execution
 
 **[Read more →](./AGENTS.md)**
 

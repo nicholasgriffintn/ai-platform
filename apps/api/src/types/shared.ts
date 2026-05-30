@@ -30,7 +30,7 @@ export type IEnv = {
 	ANTHROPIC_API_KEY?: string;
 	AI_GATEWAY_TOKEN?: string;
 	SANDBOX_WORKER?: Fetcher;
-	FINETUNE_WORKER?: Fetcher;
+	TRAINING_WORKER?: Fetcher;
 	FINETUNE_WORKER_TOKEN?: string;
 	SANDBOX_RUN_COORDINATOR?: DurableObjectNamespace;
 	GROK_API_KEY?: string;

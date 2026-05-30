@@ -46,5 +46,5 @@ interface Env {
 	RATE_LIMITER: RateLimit;
 	VECTOR_DB: VectorizeIndex;
 	AI: Ai;
-	FINETUNE_WORKER: Fetcher;
+	TRAINING_WORKER: Fetcher;
 }

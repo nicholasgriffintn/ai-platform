@@ -1,6 +1,6 @@
 # Polychat Training Worker
 
-The Worker in `apps/finetune` is used by the API to start, inspect, and deploy provider-backed training jobs. It is not a CLI. The API owns model and provider selection, resolves the model definition, exports datasets when needed, then calls this Worker through the `FINETUNE_WORKER` service binding.
+The Worker in `apps/training` is used by the API to start, inspect, and deploy provider-backed training jobs. It is not a CLI. The API owns model and provider selection, resolves the model definition, exports datasets when needed, then calls this Worker through Worker bindings.
 
 Use this Worker for:
 
@@ -41,7 +41,7 @@ pnpm install
 Copy the example variables for local Worker development:
 
 ```sh
-cp apps/finetune/.env.example apps/finetune/.dev.vars
+cp apps/training/.env.example apps/training/.dev.vars
 ```
 
 The Worker requires the `DB` D1 binding from `wrangler.json`. Provider credentials are read from Worker secrets or local `.dev.vars`.
@@ -80,12 +80,12 @@ The API Worker must define this service binding:
 
 ```json
 {
-	"binding": "FINETUNE_WORKER",
-	"service": "assistant-finetune-worker"
+	"binding": "TRAINING_WORKER",
+	"service": "assistant-training-worker"
 }
 ```
 
-The API Worker and training Worker must also share `FINETUNE_WORKER_TOKEN`.
+The API Worker and training Worker must also share `TRAINING_WORKER_TOKEN`.
 Set it as a secret in both environments. Every non-status worker route rejects requests without that token, and user ownership is passed as internal request context from the API.
 
 ## Development
@@ -93,14 +93,14 @@ Set it as a secret in both environments. Every non-status worker route rejects r
 Run static checks:
 
 ```sh
-pnpm --filter @assistant/finetune typecheck
+pnpm --filter @assistant/training typecheck
 pnpm --filter @assistant/api typecheck
 ```
 
 Run the Worker locally only when you need to exercise service-binding behaviour:
 
 ```sh
-pnpm --filter @assistant/finetune dev
+pnpm --filter @assistant/training dev
 ```
 
 Routine validation should use typechecks and tests, not a dev server.

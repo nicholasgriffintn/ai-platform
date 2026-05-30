@@ -2,8 +2,8 @@ import type { TrainingModelDefinition } from "~/types/training";
 
 const HUGGING_FACE_LLM_TRAINING_IMAGE =
 	"763104351884.dkr.ecr.{region}.amazonaws.com/huggingface-pytorch-training:2.8.0-transformers4.56.2-gpu-py312-cu129-ubuntu22.04";
-const HUGGING_FACE_LLM_INFERENCE_IMAGE =
-	"763104351884.dkr.ecr.{region}.amazonaws.com/huggingface-pytorch-inference:2.6.0-transformers5.5.3-gpu-py312-cu124-ubuntu22.04";
+const SAGEMAKER_VLLM_INFERENCE_IMAGE =
+	"763104351884.dkr.ecr.{region}.amazonaws.com/vllm:0.20.2-gpu-py312-cu130-ubuntu22.04-sagemaker";
 
 export const trainingModelCatalog: TrainingModelDefinition[] = [
 	{
@@ -45,10 +45,12 @@ export const trainingModelCatalog: TrainingModelDefinition[] = [
 			contentType: "application/gzip",
 		},
 		trainingImage: HUGGING_FACE_LLM_TRAINING_IMAGE,
-		inferenceImage: HUGGING_FACE_LLM_INFERENCE_IMAGE,
+		inferenceImage: SAGEMAKER_VLLM_INFERENCE_IMAGE,
+		inferenceRuntime: "sagemaker-openai",
 		defaultDeploymentEnvironment: {
-			HF_TASK: "text-generation",
-			HF_TRUST_REMOTE_CODE: "True",
+			SM_VLLM_TENSOR_PARALLEL_SIZE: "1",
+			SM_VLLM_MAX_NUM_SEQS: "4",
+			SAGEMAKER_ENABLE_LOAD_AWARE: "1",
 		},
 		supportedTasks: ["text-generation", "causal-language-modeling"],
 	},

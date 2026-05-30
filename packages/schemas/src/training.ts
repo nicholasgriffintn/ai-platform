@@ -2,6 +2,7 @@ import { z } from "zod";
 
 export const trainingProviderSchema = z.enum(["aws-bedrock", "aws-sagemaker"]);
 export const trainingModelFamilySchema = z.enum(["bedrock", "huggingface"]);
+export const trainingInferenceRuntimeSchema = z.enum(["sagemaker-huggingface", "sagemaker-openai"]);
 export const trainingDeploymentTargetSchema = z.enum([
 	"sagemaker-endpoint",
 	"sagemaker-serverless-endpoint",
@@ -46,6 +47,7 @@ export const trainingModelSchema = z.object({
 	defaultDeploymentEnvironment: z.record(z.string(), z.string()).optional(),
 	trainingImage: z.string().optional(),
 	inferenceImage: z.string().optional(),
+	inferenceRuntime: trainingInferenceRuntimeSchema.optional(),
 	supportedTasks: z.array(z.string()).optional(),
 });
 
@@ -199,6 +201,7 @@ export const trainingWorkerDeployModelSchema = deployTrainingModelSchema.extend(
 
 export type TrainingProviderId = z.infer<typeof trainingProviderSchema>;
 export type TrainingModelFamily = z.infer<typeof trainingModelFamilySchema>;
+export type TrainingInferenceRuntime = z.infer<typeof trainingInferenceRuntimeSchema>;
 export type TrainingDeploymentTarget = z.infer<typeof trainingDeploymentTargetSchema>;
 export type TrainingSourceArchive = z.infer<typeof trainingSourceArchiveSchema>;
 export type TrainingModelDefinition = z.infer<typeof trainingModelSchema>;

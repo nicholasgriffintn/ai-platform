@@ -11,8 +11,9 @@ const MODEL: TrainingModelDefinition = {
 	baseModel: "flwrlabs/Lizzy-7B",
 	defaultHyperparameters: {},
 	defaultDeploymentEnvironment: {
-		HF_TASK: "text-generation",
-		HF_TRUST_REMOTE_CODE: "True",
+		SM_VLLM_TENSOR_PARALLEL_SIZE: "1",
+		SM_VLLM_MAX_NUM_SEQS: "4",
+		SAGEMAKER_ENABLE_LOAD_AWARE: "1",
 	},
 };
 
@@ -20,8 +21,9 @@ describe("resolveTrainingDeploymentEnvironment", () => {
 	it("adds HF_MODEL_ID when deploying a Hugging Face base model from the Hub", () => {
 		expect(resolveTrainingDeploymentEnvironment({ model: MODEL, request: {} })).toEqual({
 			HF_MODEL_ID: "flwrlabs/Lizzy-7B",
-			HF_TASK: "text-generation",
-			HF_TRUST_REMOTE_CODE: "True",
+			SM_VLLM_TENSOR_PARALLEL_SIZE: "1",
+			SM_VLLM_MAX_NUM_SEQS: "4",
+			SAGEMAKER_ENABLE_LOAD_AWARE: "1",
 		});
 	});
 
@@ -32,8 +34,9 @@ describe("resolveTrainingDeploymentEnvironment", () => {
 				request: { modelArtifactsS3Uri: "s3://bucket/model.tar.gz" },
 			}),
 		).toEqual({
-			HF_TASK: "text-generation",
-			HF_TRUST_REMOTE_CODE: "True",
+			SM_VLLM_TENSOR_PARALLEL_SIZE: "1",
+			SM_VLLM_MAX_NUM_SEQS: "4",
+			SAGEMAKER_ENABLE_LOAD_AWARE: "1",
 		});
 	});
 
@@ -46,11 +49,13 @@ describe("resolveTrainingDeploymentEnvironment", () => {
 		).toEqual({
 			HF_MODEL_ID: "custom/model",
 			HF_TASK: "text-generation",
-			HF_TRUST_REMOTE_CODE: "True",
+			SM_VLLM_TENSOR_PARALLEL_SIZE: "1",
+			SM_VLLM_MAX_NUM_SEQS: "4",
+			SAGEMAKER_ENABLE_LOAD_AWARE: "1",
 		});
 	});
 
-	it("normalises boolean-style HF_TRUST_REMOTE_CODE overrides for the inference toolkit", () => {
+	it("normalises explicit boolean-style HF_TRUST_REMOTE_CODE overrides", () => {
 		expect(
 			resolveTrainingDeploymentEnvironment({
 				model: MODEL,
@@ -58,8 +63,10 @@ describe("resolveTrainingDeploymentEnvironment", () => {
 			}),
 		).toEqual({
 			HF_MODEL_ID: "flwrlabs/Lizzy-7B",
-			HF_TASK: "text-generation",
 			HF_TRUST_REMOTE_CODE: "True",
+			SM_VLLM_TENSOR_PARALLEL_SIZE: "1",
+			SM_VLLM_MAX_NUM_SEQS: "4",
+			SAGEMAKER_ENABLE_LOAD_AWARE: "1",
 		});
 	});
 });

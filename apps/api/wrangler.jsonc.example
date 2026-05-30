@@ -65,8 +65,8 @@
 			"service": "assistant-sandbox-worker"
 		},
 		{
-			"binding": "FINETUNE_WORKER",
-			"service": "assistant-finetune-worker"
+			"binding": "TRAINING_WORKER",
+			"service": "assistant-training-worker"
 		}
 	],
 	"durable_objects": {

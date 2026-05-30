@@ -1,5 +1,5 @@
 {
-	"name": "@assistant/finetune",
+	"name": "@assistant/training",
 	"version": "0.0.1",
 	"private": true,
 	"description": "Training Worker service for training and deployment jobs",
