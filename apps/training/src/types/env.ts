@@ -24,6 +24,6 @@ export interface Env extends SageMakerEnv {
 	BEDROCK_KMS_KEY_ARN?: string;
 	BEDROCK_VPC_SECURITY_GROUP_IDS?: string;
 	BEDROCK_VPC_SUBNET_IDS?: string;
-	FINETUNE_WORKER_TOKEN?: string;
+	TRAINING_WORKER_TOKEN?: string;
 	LOG_LEVEL?: string;
 }

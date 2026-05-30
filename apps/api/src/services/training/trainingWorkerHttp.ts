@@ -1,11 +1,11 @@
-import { FINETUNE_WORKER_TOKEN_HEADER, FINETUNE_WORKER_USER_ID_HEADER } from "@assistant/schemas";
+import { TRAINING_WORKER_TOKEN_HEADER, TRAINING_WORKER_USER_ID_HEADER } from "@assistant/schemas";
 import type { ZodType } from "zod";
 
 import type { IEnv } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { isRecord } from "~/utils/objects";
 
-const FINETUNE_WORKER_ORIGIN = "https://finetune.worker.internal";
+const TRAINING_WORKER_ORIGIN = "https://training.worker.internal";
 
 export async function requestTrainingWorker<T>(
 	env: IEnv,
@@ -21,7 +21,7 @@ export async function requestTrainingWorker<T>(
 		);
 	}
 
-	const workerToken = env.FINETUNE_WORKER_TOKEN;
+	const workerToken = env.TRAINING_WORKER_TOKEN;
 	if (!workerToken) {
 		throw new AssistantError(
 			"Training worker token is not configured",
@@ -31,7 +31,7 @@ export async function requestTrainingWorker<T>(
 	}
 
 	const headers = getTrainingWorkerHeaders(workerToken, init);
-	const request = new Request(`${FINETUNE_WORKER_ORIGIN}${path}`, {
+	const request = new Request(`${TRAINING_WORKER_ORIGIN}${path}`, {
 		method: init.method || "GET",
 		headers,
 		body: init.body === undefined ? undefined : JSON.stringify(init.body),
@@ -60,8 +60,8 @@ function getTrainingWorkerHeaders(
 		headers.set("Content-Type", "application/json");
 	}
 
-	headers.set(FINETUNE_WORKER_USER_ID_HEADER, String(init.userId));
-	headers.set(FINETUNE_WORKER_TOKEN_HEADER, workerToken);
+	headers.set(TRAINING_WORKER_USER_ID_HEADER, String(init.userId));
+	headers.set(TRAINING_WORKER_TOKEN_HEADER, workerToken);
 
 	return headers;
 }

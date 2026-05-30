@@ -8,8 +8,8 @@ export const trainingDeploymentTargetSchema = z.enum([
 	"sagemaker-serverless-endpoint",
 	"bedrock-import",
 ]);
-export const FINETUNE_WORKER_USER_ID_HEADER = "X-Assistant-User-Id";
-export const FINETUNE_WORKER_TOKEN_HEADER = "X-Assistant-Worker-Token";
+export const TRAINING_WORKER_USER_ID_HEADER = "X-Assistant-User-Id";
+export const TRAINING_WORKER_TOKEN_HEADER = "X-Assistant-Worker-Token";
 export const TRAINING_CHAT_MODEL_PREFIX = "training";
 export const BEDROCK_IMPORT_ARCHIVE_EXTENSIONS = [".tar.gz", ".tgz", ".zip"] as const;
 export const SAGEMAKER_GPU_ENDPOINT_INSTANCE_PREFIXES = [

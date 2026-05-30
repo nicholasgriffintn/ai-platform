@@ -44,7 +44,7 @@ This monorepo contains:
 - **[Web App](./apps/app)** - React-based PWA frontend for chat, shared conversations, generated artefacts, and focused app workflows
 - **[Sandbox Worker](./apps/sandbox-worker)** - Automated coding worker built on Cloudflare Sandboxes
 - **[Metrics Dashboard](./apps/metrics)** - Usage analytics and monitoring
-- **[Fine-tuning Worker](./apps/finetune)** - Internal Worker for API-managed model training and deployment jobs
+- **[Fine-tuning Worker](./apps/training)** - Internal Worker for API-managed model training and deployment jobs
 - **[Mobile App](./apps/mobile/ios)** - iOS application (In Development) ([TestFlight](https://testflight.apple.com/join/52xrwxRP))
 
 ## Features
