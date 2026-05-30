@@ -1280,7 +1280,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			output: ["text"],
 		},
 		supportsAttachments: false,
-		supportsTemperature: false,
+		supportsTemperature: true,
 		supportsTopP: false,
 		supportsFrequencyPenalty: false,
 		supportsPresencePenalty: false,
