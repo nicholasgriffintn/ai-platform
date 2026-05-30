@@ -18,7 +18,9 @@ import {
 	deployFinetuneWorkerModel,
 	getFinetuneWorkerDeployment,
 	getFinetuneWorkerJob,
+	listFinetuneWorkerDeployments,
 	listFinetuneWorkerJobEvents,
+	listFinetuneWorkerJobs,
 	startFinetuneWorkerJob,
 } from "./finetuneWorkerClient";
 
@@ -66,6 +68,11 @@ export async function getFineTuningJob(
 	return getFinetuneWorkerJob(context.env, providerId, jobName);
 }
 
+export async function listFineTuningJobs(context: ServiceContext): Promise<FineTuningJob[]> {
+	const user = context.requireUser();
+	return listFinetuneWorkerJobs(context.env, user.id);
+}
+
 export async function listFineTuningJobEvents(
 	context: ServiceContext,
 	providerId: FineTuningProviderId,
@@ -96,6 +103,13 @@ export async function getFineTunedDeployment(
 ): Promise<FineTunedDeployment> {
 	context.requireUser();
 	return getFinetuneWorkerDeployment(context.env, providerId, endpointName);
+}
+
+export async function listFineTunedDeployments(
+	context: ServiceContext,
+): Promise<FineTunedDeployment[]> {
+	const user = context.requireUser();
+	return listFinetuneWorkerDeployments(context.env, user.id);
 }
 
 function requireFineTuningModel(

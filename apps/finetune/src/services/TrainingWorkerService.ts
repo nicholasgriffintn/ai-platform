@@ -129,6 +129,10 @@ export class TrainingWorkerService {
 		}
 	}
 
+	async listJobs(userId?: number): Promise<FineTuningJob[]> {
+		return this.store.listJobs(userId);
+	}
+
 	async listEvents(providerId: FineTuningProviderId, jobName: string) {
 		return this.store.listEvents(providerId, jobName);
 	}
@@ -201,5 +205,9 @@ export class TrainingWorkerService {
 
 			throw error;
 		}
+	}
+
+	async listDeployments(userId?: number): Promise<FineTunedDeployment[]> {
+		return this.store.listDeployments(userId);
 	}
 }

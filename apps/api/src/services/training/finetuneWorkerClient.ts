@@ -2,7 +2,9 @@ import {
 	finetuneWorkerDeployModelSchema,
 	finetuneWorkerStartJobSchema,
 	fineTunedDeploymentSchema,
+	fineTunedDeploymentsResponseSchema,
 	fineTuningJobEventsResponseSchema,
+	fineTuningJobsResponseSchema,
 	fineTuningJobSchema,
 	type FineTunedDeployment,
 	type FineTuningJob,
@@ -35,6 +37,15 @@ export async function getFinetuneWorkerJob(
 		`/jobs/${encodeURIComponent(providerId)}/${encodeURIComponent(jobName)}`,
 		fineTuningJobSchema,
 	);
+}
+
+export async function listFinetuneWorkerJobs(env: IEnv, userId: number): Promise<FineTuningJob[]> {
+	const response = await requestFinetuneWorker(
+		env,
+		`/jobs?userId=${encodeURIComponent(String(userId))}`,
+		fineTuningJobsResponseSchema,
+	);
+	return response.jobs;
 }
 
 export async function listFinetuneWorkerJobEvents(
@@ -71,4 +82,16 @@ export async function getFinetuneWorkerDeployment(
 		`/deployments/${encodeURIComponent(providerId)}/${encodeURIComponent(endpointName)}`,
 		fineTunedDeploymentSchema,
 	);
+}
+
+export async function listFinetuneWorkerDeployments(
+	env: IEnv,
+	userId: number,
+): Promise<FineTunedDeployment[]> {
+	const response = await requestFinetuneWorker(
+		env,
+		`/deployments?userId=${encodeURIComponent(String(userId))}`,
+		fineTunedDeploymentsResponseSchema,
+	);
+	return response.deployments;
 }

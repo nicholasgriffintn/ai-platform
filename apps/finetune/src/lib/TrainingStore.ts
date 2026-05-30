@@ -91,6 +91,22 @@ export class TrainingStore {
 		return row ? mapTrainingJobRow(row) : null;
 	}
 
+	async listJobs(userId?: number, limit = 50): Promise<FineTuningJob[]> {
+		const boundedLimit = Math.min(Math.max(limit, 1), 100);
+		const statement =
+			userId === undefined
+				? this.db
+						.prepare("SELECT * FROM training_jobs ORDER BY updated_at DESC LIMIT ?")
+						.bind(boundedLimit)
+				: this.db
+						.prepare(
+							"SELECT * FROM training_jobs WHERE user_id = ? ORDER BY updated_at DESC LIMIT ?",
+						)
+						.bind(userId, boundedLimit);
+		const result = await statement.all<Record<string, unknown>>();
+		return (result.results ?? []).map(mapTrainingJobRow);
+	}
+
 	async saveDeployment({
 		userId,
 		deployment,
@@ -143,6 +159,22 @@ export class TrainingStore {
 			.bind(provider, endpointName)
 			.first<Record<string, unknown>>();
 		return row ? mapTrainingDeploymentRow(row) : null;
+	}
+
+	async listDeployments(userId?: number, limit = 50): Promise<FineTunedDeployment[]> {
+		const boundedLimit = Math.min(Math.max(limit, 1), 100);
+		const statement =
+			userId === undefined
+				? this.db
+						.prepare("SELECT * FROM training_deployments ORDER BY updated_at DESC LIMIT ?")
+						.bind(boundedLimit)
+				: this.db
+						.prepare(
+							"SELECT * FROM training_deployments WHERE user_id = ? ORDER BY updated_at DESC LIMIT ?",
+						)
+						.bind(userId, boundedLimit);
+		const result = await statement.all<Record<string, unknown>>();
+		return (result.results ?? []).map(mapTrainingDeploymentRow);
 	}
 
 	async addEvent(input: AddEventInput): Promise<FineTuningJobEvent> {

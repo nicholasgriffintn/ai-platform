@@ -2,9 +2,11 @@ import { Hono } from "hono";
 import {
 	deployFineTunedModelSchema,
 	fineTunedDeploymentParamsSchema,
+	fineTunedDeploymentsResponseSchema,
 	fineTunedDeploymentSchema,
 	fineTuningJobEventsResponseSchema,
 	fineTuningJobParamsSchema,
+	fineTuningJobsResponseSchema,
 	fineTuningJobSchema,
 	fineTuningModelsResponseSchema,
 	startFineTuningJobSchema,
@@ -17,7 +19,9 @@ import {
 	deployFineTunedModel,
 	getFineTunedDeployment,
 	getFineTuningJob,
+	listFineTunedDeployments,
 	listFineTuningJobEvents,
+	listFineTuningJobs,
 	listFineTuningModels,
 	startFineTuningJob,
 } from "~/services/training";
@@ -57,6 +61,18 @@ addRoute(app, "post", "/jobs", {
 	handler: async ({ serviceContext, body }) => startFineTuningJob(serviceContext, body),
 });
 
+addRoute(app, "get", "/jobs", {
+	tags: ["training"],
+	summary: "List fine-tuning jobs",
+	auth: true,
+	responses: {
+		200: { description: "Fine-tuning jobs", schema: fineTuningJobsResponseSchema },
+	},
+	handler: async ({ serviceContext }) => ({
+		jobs: await listFineTuningJobs(serviceContext),
+	}),
+});
+
 addRoute(app, "get", "/jobs/:provider/:jobName", {
 	tags: ["training"],
 	summary: "Get fine-tuning job status",
@@ -93,6 +109,18 @@ addRoute(app, "post", "/deployments", {
 		200: { description: "Deployment started", schema: fineTunedDeploymentSchema },
 	},
 	handler: async ({ serviceContext, body }) => deployFineTunedModel(serviceContext, body),
+});
+
+addRoute(app, "get", "/deployments", {
+	tags: ["training"],
+	summary: "List fine-tuned deployments",
+	auth: true,
+	responses: {
+		200: { description: "Fine-tuned deployments", schema: fineTunedDeploymentsResponseSchema },
+	},
+	handler: async ({ serviceContext }) => ({
+		deployments: await listFineTunedDeployments(serviceContext),
+	}),
 });
 
 addRoute(app, "get", "/deployments/:provider/:endpointName", {

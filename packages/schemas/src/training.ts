@@ -118,6 +118,14 @@ export const fineTuningModelsResponseSchema = z.object({
 	models: z.array(fineTuningModelSchema),
 });
 
+export const fineTuningJobsResponseSchema = z.object({
+	jobs: z.array(fineTuningJobSchema),
+});
+
+export const fineTunedDeploymentsResponseSchema = z.object({
+	deployments: z.array(fineTunedDeploymentSchema),
+});
+
 export const fineTuningJobEventSchema = z.object({
 	id: z.string(),
 	provider: fineTuningProviderSchema,
