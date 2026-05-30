@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { Button, FormInput, FormSelect, Textarea } from "~/components/ui";
 import { getErrorMessage } from "~/lib/errors";
 import {
+	formatTrainingHyperparameters,
 	getTrainingModelLabel,
 	parseOptionalPositiveInteger,
 	parseOptionalTrainingNumber,
@@ -33,6 +34,8 @@ export function JobCreateForm({ models, isSubmitting, onSubmit }: JobCreateFormP
 	const [minQualityScore, setMinQualityScore] = useState("");
 	const [limit, setLimit] = useState("500");
 	const [instanceType, setInstanceType] = useState("");
+	const [entryPoint, setEntryPoint] = useState("");
+	const [sourceS3Uri, setSourceS3Uri] = useState("");
 	const [hyperparameters, setHyperparameters] = useState("");
 
 	useEffect(() => {
@@ -45,6 +48,9 @@ export function JobCreateForm({ models, isSubmitting, onSubmit }: JobCreateFormP
 		() => models.find((model) => model.id === modelId) ?? models[0],
 		[modelId, models],
 	);
+	const hyperparameterPlaceholder = selectedModel?.defaultHyperparameters
+		? formatTrainingHyperparameters(selectedModel.defaultHyperparameters)
+		: '{"epochs": 1, "train_batch_size": 16}';
 
 	const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
 		event.preventDefault();
@@ -79,6 +85,8 @@ export function JobCreateForm({ models, isSubmitting, onSubmit }: JobCreateFormP
 				dataset,
 				outputS3Uri: outputS3Uri.trim() || undefined,
 				instanceType: instanceType.trim() || undefined,
+				entryPoint: entryPoint.trim() || undefined,
+				sourceS3Uri: sourceS3Uri.trim() || undefined,
 				hyperparameters: parsedHyperparameters,
 			});
 
@@ -86,6 +94,8 @@ export function JobCreateForm({ models, isSubmitting, onSubmit }: JobCreateFormP
 			setTrainS3Uri("");
 			setValidationS3Uri("");
 			setOutputS3Uri("");
+			setEntryPoint("");
+			setSourceS3Uri("");
 			setHyperparameters("");
 			toast.success("Fine-tuning job submitted");
 		} catch (error) {
@@ -193,6 +203,23 @@ export function JobCreateForm({ models, isSubmitting, onSubmit }: JobCreateFormP
 				/>
 			</div>
 
+			<div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+				<FormInput
+					id="training-entry-point"
+					label="Entry point"
+					value={entryPoint}
+					onChange={(event) => setEntryPoint(event.target.value)}
+					placeholder={selectedModel?.defaultEntryPoint ?? "Provider default"}
+				/>
+				<FormInput
+					id="training-source-uri"
+					label="Source S3 URI"
+					value={sourceS3Uri}
+					onChange={(event) => setSourceS3Uri(event.target.value)}
+					placeholder={selectedModel?.defaultSourceS3Uri ?? "API staged source archive"}
+				/>
+			</div>
+
 			<div className="space-y-1">
 				<label htmlFor="training-hyperparameters" className="text-sm font-medium">
 					Hyperparameters
@@ -201,7 +228,7 @@ export function JobCreateForm({ models, isSubmitting, onSubmit }: JobCreateFormP
 					id="training-hyperparameters"
 					value={hyperparameters}
 					onChange={(event) => setHyperparameters(event.target.value)}
-					placeholder='{"epochs": 1, "train_batch_size": 16}'
+					placeholder={hyperparameterPlaceholder}
 					rows={4}
 				/>
 			</div>

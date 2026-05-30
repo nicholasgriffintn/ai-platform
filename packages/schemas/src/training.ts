@@ -3,6 +3,12 @@ import { z } from "zod";
 export const fineTuningProviderSchema = z.enum(["aws-bedrock", "aws-sagemaker"]);
 export const fineTuningModelFamilySchema = z.enum(["bedrock", "huggingface"]);
 
+export const fineTuningSourceArchiveSchema = z.object({
+	url: z.string().url(),
+	s3Key: z.string().min(1).optional(),
+	contentType: z.string().optional(),
+});
+
 export const fineTuningModelSchema = z.object({
 	id: z.string(),
 	provider: fineTuningProviderSchema,
@@ -13,6 +19,12 @@ export const fineTuningModelSchema = z.object({
 	defaultInstanceType: z.string().optional(),
 	defaultDeploymentInstanceType: z.string().optional(),
 	defaultHyperparameters: z.record(z.string(), z.union([z.string(), z.number(), z.boolean()])),
+	defaultEntryPoint: z.string().optional(),
+	defaultSourceS3Uri: z.string().startsWith("s3://").optional(),
+	sourceArchive: fineTuningSourceArchiveSchema.optional(),
+	trainingDataFileHyperparameter: z.string().optional(),
+	validationDataFileHyperparameter: z.string().optional(),
+	defaultDeploymentEnvironment: z.record(z.string(), z.string()).optional(),
 	trainingImage: z.string().optional(),
 	inferenceImage: z.string().optional(),
 	supportedTasks: z.array(z.string()).optional(),
@@ -154,6 +166,7 @@ export const finetuneWorkerDeployModelSchema = deployFineTunedModelSchema.extend
 
 export type FineTuningProviderId = z.infer<typeof fineTuningProviderSchema>;
 export type FineTuningModelFamily = z.infer<typeof fineTuningModelFamilySchema>;
+export type FineTuningSourceArchive = z.infer<typeof fineTuningSourceArchiveSchema>;
 export type FineTuningModelDefinition = z.infer<typeof fineTuningModelSchema>;
 export type FineTuningDatasetInput = z.infer<typeof fineTuningDatasetSchema>;
 export type StartFineTuningJobRequest = z.infer<typeof startFineTuningJobSchema>;

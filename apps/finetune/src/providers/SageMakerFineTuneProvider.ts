@@ -35,7 +35,6 @@ export class SageMakerFineTuneProvider implements FineTuneProvider {
 		const outputDataS3Uri = options.outputDataS3Uri || this.defaultOutputS3Uri(options.jobName);
 		const hyperParameters = stringifyEntries({
 			...options.model.defaultHyperparameters,
-			model_name: options.model.baseModel,
 			...(options.entryPoint ? { sagemaker_program: options.entryPoint } : {}),
 			...(options.sourceS3Uri ? { sagemaker_submit_directory: options.sourceS3Uri } : {}),
 			...options.hyperParameters,
@@ -131,9 +130,7 @@ export class SageMakerFineTuneProvider implements FineTuneProvider {
 			PrimaryContainer: {
 				Image: inferenceImage,
 				ModelDataUrl: modelArtifactsS3Uri,
-				Environment: {
-					HF_MODEL_ID: options.model.baseModel,
-				},
+				Environment: options.environment || {},
 			},
 		});
 		await this.invoke("SageMaker.CreateEndpointConfig", {

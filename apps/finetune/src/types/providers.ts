@@ -40,6 +40,7 @@ export interface DeployModelOptions {
 	instanceType?: string;
 	instanceCount?: number;
 	inferenceImage?: string;
+	environment?: Record<string, string>;
 }
 
 export interface DeployModelResult {

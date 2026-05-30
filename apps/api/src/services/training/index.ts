@@ -4,6 +4,8 @@ import {
 	fineTuningModelCatalog,
 	getFineTuningModel,
 } from "~/lib/providers/capabilities/training/modelCatalog";
+import { resolveTrainingHyperparameters } from "~/lib/providers/capabilities/training/trainingHyperparameters";
+import { resolveTrainingSource } from "~/lib/providers/capabilities/training/trainingSourceArchives";
 import type {
 	DeployFineTunedModelRequest,
 	FineTunedDeployment,
@@ -47,11 +49,26 @@ export async function startFineTuningJob(
 		trainS3Uri = exported.s3Uri;
 	}
 
+	const trainingSource = await resolveTrainingSource({
+		context,
+		model,
+		sourceS3Uri: request.sourceS3Uri,
+	});
+	const hyperparameters = resolveTrainingHyperparameters({
+		model,
+		trainS3Uri,
+		validationS3Uri: request.dataset.validationS3Uri,
+		requestHyperparameters: request.hyperparameters,
+	});
+
 	return startFinetuneWorkerJob(context.env, {
 		...request,
 		model,
 		userId: user.id,
 		requestId: context.requestId,
+		entryPoint: request.entryPoint || trainingSource.entryPoint,
+		sourceS3Uri: trainingSource.sourceS3Uri,
+		hyperparameters,
 		dataset: {
 			...request.dataset,
 			trainS3Uri,
@@ -91,6 +108,10 @@ export async function deployFineTunedModel(
 	return deployFinetuneWorkerModel(context.env, {
 		...request,
 		model,
+		environment: {
+			...model.defaultDeploymentEnvironment,
+			...request.environment,
+		},
 		userId: user.id,
 		requestId: context.requestId,
 	});

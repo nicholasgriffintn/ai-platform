@@ -24,6 +24,14 @@ export function ModelCatalog({ models }: ModelCatalogProps) {
 						{model.description && (
 							<p className="text-sm text-zinc-700 dark:text-zinc-300">{model.description}</p>
 						)}
+						{model.defaultEntryPoint && (
+							<div className="text-xs text-zinc-500 dark:text-zinc-400">
+								Entry point:{" "}
+								<span className="font-mono text-zinc-700 dark:text-zinc-300">
+									{model.defaultEntryPoint}
+								</span>
+							</div>
+						)}
 						<div className="flex flex-wrap gap-2">
 							<Badge variant="secondary">{model.family}</Badge>
 							{model.supportedTasks?.map((task) => (

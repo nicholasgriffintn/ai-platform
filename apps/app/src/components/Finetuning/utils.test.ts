@@ -2,6 +2,7 @@ import type { FineTuningJob, FineTuningModelDefinition } from "@assistant/schema
 import { describe, expect, it } from "vitest";
 
 import {
+	formatTrainingHyperparameters,
 	getDeployableTrainingModels,
 	getDeploymentTrainingJobs,
 	parseOptionalPositiveInteger,
@@ -60,6 +61,7 @@ describe("finetuning utilities", () => {
 			batch: "16",
 			shuffle: true,
 		});
+		expect(formatTrainingHyperparameters({ epochs: 1 })).toBe('{\n  "epochs": 1\n}');
 	});
 
 	it("rejects unsupported hyperparameter JSON", () => {

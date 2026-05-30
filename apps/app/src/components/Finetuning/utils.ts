@@ -55,6 +55,12 @@ export function parseTrainingHyperparameters(
 	return hyperparameters;
 }
 
+export function formatTrainingHyperparameters(
+	value: Record<string, TrainingHyperparameterValue>,
+): string {
+	return JSON.stringify(value, null, 2);
+}
+
 export function parseTrainingDatasetMode(value: string): TrainingDatasetMode {
 	return value === "examples" ? "examples" : "s3";
 }

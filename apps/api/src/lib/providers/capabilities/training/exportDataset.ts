@@ -1,8 +1,7 @@
-import { AwsClient } from "aws4fetch";
-
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import type { TrainingExampleFilters } from "~/repositories/TrainingExampleRepository";
 import { AssistantError, ErrorType } from "~/utils/errors";
+import { putSageMakerS3Object, resolveSageMakerTrainingBucket } from "./trainingS3";
 
 export interface ExportTrainingDatasetOptions {
 	context: ServiceContext;
@@ -40,51 +39,19 @@ export async function exportTrainingExamplesToS3({
 		);
 	}
 
-	const region = context.env.SAGEMAKER_AWS_REGION || context.env.AWS_REGION || "us-east-1";
-	const targetBucket = bucket || context.env.SAGEMAKER_BUCKET;
-	if (!targetBucket) {
-		throw new AssistantError(
-			"Missing SAGEMAKER_BUCKET for dataset export",
-			ErrorType.CONFIGURATION_ERROR,
-		);
-	}
-
+	const targetBucket = resolveSageMakerTrainingBucket(context, bucket);
 	const objectKey =
 		key ||
 		`fine-tuning/datasets/user-${user.id}/${new Date().toISOString().replace(/[:.]/g, "-")}.jsonl`;
 	const jsonl = examples.map(toTrainingJsonLine).join("\n") + "\n";
 
-	const accessKeyId =
-		context.env.SAGEMAKER_AWS_ACCESS_KEY || context.env.ASSETS_BUCKET_ACCESS_KEY_ID;
-	const secretAccessKey =
-		context.env.SAGEMAKER_AWS_SECRET_KEY || context.env.ASSETS_BUCKET_SECRET_ACCESS_KEY;
-	if (!accessKeyId || !secretAccessKey) {
-		throw new AssistantError(
-			"Missing AWS credentials for S3 dataset export",
-			ErrorType.CONFIGURATION_ERROR,
-		);
-	}
-
-	const aws = new AwsClient({ accessKeyId, secretAccessKey, region, service: "s3" });
-	const response = await aws.fetch(
-		`https://${targetBucket}.s3.${region}.amazonaws.com/${encodeS3Key(objectKey)}`,
-		{
-			method: "PUT",
-			headers: {
-				"Content-Type": "application/jsonlines",
-			},
-			body: jsonl,
-		},
-	);
-
-	if (!response.ok) {
-		const text = await response.text();
-		throw new AssistantError(
-			`Failed to upload training dataset to S3 (${response.status}): ${text || response.statusText}`,
-			ErrorType.PROVIDER_ERROR,
-			response.status,
-		);
-	}
+	await putSageMakerS3Object({
+		context,
+		bucket: targetBucket,
+		key: objectKey,
+		contentType: "application/jsonlines",
+		body: jsonl,
+	});
 
 	const exportedIds = examples
 		.map((example) => (typeof example.id === "string" ? example.id : undefined))
@@ -117,8 +84,4 @@ function toTrainingJsonLine(example: Record<string, any>): string {
 			qualityScore: example.quality_score,
 		},
 	});
-}
-
-function encodeS3Key(key: string): string {
-	return key.split("/").map(encodeURIComponent).join("/");
 }

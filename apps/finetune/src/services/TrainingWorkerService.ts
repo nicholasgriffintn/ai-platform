@@ -155,6 +155,7 @@ export class TrainingWorkerService {
 			instanceType: request.instanceType,
 			instanceCount: request.instanceCount,
 			inferenceImage: request.inferenceImage,
+			environment: request.environment,
 		});
 
 		await this.store.saveDeployment({
