@@ -36,7 +36,7 @@ export class HuggingFaceProvider extends BaseProvider {
 		this.validateAiGatewayToken(params);
 	}
 
-	protected async getEndpoint(params: ChatCompletionParameters): Promise<string> {
+	protected async getEndpoint(_params: ChatCompletionParameters): Promise<string> {
 		return "https://router.huggingface.co/v1/chat/completions";
 	}
 

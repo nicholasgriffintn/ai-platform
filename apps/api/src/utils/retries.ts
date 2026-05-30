@@ -8,7 +8,7 @@ export type RetryableErrorPredicate = (error: unknown) => boolean;
  * @returns The result of the function execution
  */
 export async function withRetry<T>(
-	fn: () => Promise<T>,
+	fn: () => T | Promise<T>,
 	options: {
 		retryCount?: number;
 		baseDelayMs?: number;

@@ -71,7 +71,7 @@ describe("HuggingFaceProvider", () => {
 			} as any);
 
 			expect(result).toMatchObject({
-				model: "test/hf-model",
+				model: "test/hf-model:fastest",
 				messages: [{ role: "user", content: "Hello" }],
 				max_tokens: 4096,
 				return_full_text: false,
@@ -126,7 +126,7 @@ describe("HuggingFaceProvider", () => {
 				pollIntervalMs: 7200,
 				context: {
 					model: "test/hf-model",
-					endpoint: "test/hf-model/v1/chat/completions",
+					endpoint: "https://router.huggingface.co/v1/chat/completions",
 					body: {
 						stream: false,
 					},
@@ -135,13 +135,13 @@ describe("HuggingFaceProvider", () => {
 			expect(fetchAIResponse).toHaveBeenCalledWith(
 				false,
 				"huggingface",
-				"test/hf-model/v1/chat/completions",
+				"https://router.huggingface.co/v1/chat/completions",
 				expect.objectContaining({
 					Authorization: "Bearer hf-token",
 					"cf-aig-authorization": "gateway-token",
 				}),
 				expect.objectContaining({
-					model: "test/hf-model",
+					model: "test/hf-model:fastest",
 					messages: [{ role: "user", content: "Hello" }],
 				}),
 				env,
