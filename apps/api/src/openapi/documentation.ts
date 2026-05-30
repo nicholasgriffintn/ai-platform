@@ -17,6 +17,7 @@ import { toolsTagDescription } from "./content/tags/toolsTagDescription.js";
 import { uploadsTagDescription } from "./content/tags/uploadsTagDescription.js";
 import { userTagDescription } from "./content/tags/userTagDescription.js";
 import { systemTagDescription } from "./content/tags/systemTagDescription.js";
+import { trainingTagDescription } from "./content/tags/trainingTagDescription.js";
 
 export const tagDescriptions = {
 	admin: adminTagDescription,
@@ -38,4 +39,5 @@ export const tagDescriptions = {
 	user: userTagDescription,
 	"dynamic-apps": dynamicAppsTagDescription,
 	system: systemTagDescription,
+	training: trainingTagDescription,
 } as const;

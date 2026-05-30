@@ -30,6 +30,7 @@ export type IEnv = {
 	ANTHROPIC_API_KEY?: string;
 	AI_GATEWAY_TOKEN?: string;
 	SANDBOX_WORKER?: Fetcher;
+	FINETUNE_WORKER?: Fetcher;
 	SANDBOX_RUN_COORDINATOR?: DurableObjectNamespace;
 	GROK_API_KEY?: string;
 	HUGGINGFACE_TOKEN?: string;
@@ -45,6 +46,12 @@ export type IEnv = {
 	BEDROCK_AWS_ACCESS_KEY?: string;
 	BEDROCK_AWS_SECRET_KEY?: string;
 	BEDROCK_AWS_REGION?: string;
+	SAGEMAKER_AWS_ACCESS_KEY?: string;
+	SAGEMAKER_AWS_SECRET_KEY?: string;
+	SAGEMAKER_AWS_REGION?: string;
+	SAGEMAKER_ROLE_ARN?: string;
+	SAGEMAKER_BUCKET?: string;
+	SAGEMAKER_VOLUME_SIZE_GB?: string;
 	S3VECTORS_AWS_ACCESS_KEY?: string;
 	S3VECTORS_AWS_SECRET_KEY?: string;
 	AWS_REGION?: string;
