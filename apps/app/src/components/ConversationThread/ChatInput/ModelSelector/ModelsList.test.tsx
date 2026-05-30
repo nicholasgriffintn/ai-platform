@@ -1,4 +1,4 @@
-import { render, screen, within } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import type { ModelConfigItem } from "~/types";
@@ -148,5 +148,38 @@ describe("ModelsList", () => {
 			screen.getByRole("button", { name: /Show deprecated models \(1\)/i }),
 		).toBeInTheDocument();
 		expect(screen.queryByText("No models available in this category.")).not.toBeInTheDocument();
+	});
+
+	it("collapses Bedrock region variants behind a region selector", () => {
+		const onSelect = vi.fn();
+		render(
+			<ModelsList
+				models={[
+					makeModel("anthropic.claude-sonnet-4-6", "Claude Sonnet 4.6", "bedrock"),
+					makeModel("us.anthropic.claude-sonnet-4-6", "Claude Sonnet 4.6 (US)", "bedrock"),
+					makeModel("eu.anthropic.claude-sonnet-4-6", "Claude Sonnet 4.6 (EU)", "bedrock"),
+					makeModel("amazon.nova-lite-v1:0", "Nova Lite", "bedrock"),
+				]}
+				featuredModelIds={{}}
+				isPro={true}
+				onSelect={onSelect}
+				selectedId="us.anthropic.claude-sonnet-4-6"
+			/>,
+		);
+
+		expect(screen.getByText("2 models")).toBeInTheDocument();
+		expect(screen.getAllByRole("option", { name: /Claude Sonnet 4.6/i })).toHaveLength(1);
+		expect(screen.queryByRole("option", { name: /Claude Sonnet 4.6 \(US\)/i })).toBeNull();
+
+		const regionSelect = screen.getByRole("combobox", {
+			name: "Select region for Claude Sonnet 4.6",
+		});
+		expect(regionSelect).toHaveValue("us.anthropic.claude-sonnet-4-6");
+
+		fireEvent.change(regionSelect, {
+			target: { value: "eu.anthropic.claude-sonnet-4-6" },
+		});
+
+		expect(onSelect).toHaveBeenCalledWith("eu.anthropic.claude-sonnet-4-6");
 	});
 });

@@ -3,6 +3,12 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 import { ModelIcon } from "~/components/ModelIcon";
 import { useTrackEvent } from "~/hooks/use-track-event";
+import {
+	collapseRegionalModelVariants,
+	getSelectedRegionalModelId,
+	isRegionalModelEntrySelected,
+	type RegionalModelListEntry,
+} from "~/lib/model-region-variants";
 import { getModelDisplayName } from "~/lib/models";
 import { cn } from "~/lib/utils";
 import type { ModelConfigItem } from "~/types";
@@ -25,7 +31,7 @@ interface ModelsListProps {
 interface ProviderListEntry {
 	key: string;
 	label: string;
-	models: ModelConfigItem[];
+	models: RegionalModelListEntry[];
 }
 
 const FEATURED_PROVIDER_KEY = "featured";
@@ -69,6 +75,15 @@ export function ModelsList({
 	const [showDeprecatedByProvider, setShowDeprecatedByProvider] = useState<Record<string, boolean>>(
 		{},
 	);
+	const modelsById = useMemo(() => {
+		return models.reduce(
+			(acc, model) => {
+				acc[model.id] = model;
+				return acc;
+			},
+			{} as Record<string, ModelConfigItem>,
+		);
+	}, [models]);
 
 	const handleModelSelect = (modelId: string, modelInfo: ModelConfigItem) => {
 		trackFeatureUsage("model_selected", {
@@ -106,20 +121,24 @@ export function ModelsList({
 	const providerEntries = useMemo(() => {
 		const providerLists: ProviderListEntry[] = Object.entries(groupedByProvider)
 			.sort(([providerA], [providerB]) => providerA.localeCompare(providerB))
-			.map(([provider, providerModels]) => ({
-				key: provider,
-				label: formatProviderLabel(provider),
-				models: providerModels.sort((a, b) =>
+			.map(([provider, providerModels]) => {
+				const sortedModels = providerModels.sort((a, b) =>
 					getModelDisplayName(a).localeCompare(getModelDisplayName(b)),
-				),
-			}));
+				);
+
+				return {
+					key: provider,
+					label: formatProviderLabel(provider),
+					models: collapseRegionalModelVariants(sortedModels),
+				};
+			});
 
 		return featuredModels.length > 0
 			? [
 					{
 						key: FEATURED_PROVIDER_KEY,
 						label: "Featured",
-						models: featuredModels,
+						models: collapseRegionalModelVariants(featuredModels),
 					},
 					...providerLists,
 				]
@@ -161,8 +180,8 @@ export function ModelsList({
 	const selectedProviderEntry =
 		providerEntries.find((entry) => entry.key === selectedProvider) || providerEntries[0];
 	const visibleModels = selectedProviderEntry?.models || [];
-	const visibleActiveModels = visibleModels.filter((model) => !model.deprecated);
-	const visibleDeprecatedModels = visibleModels.filter((model) => model.deprecated);
+	const visibleActiveModels = visibleModels.filter((entry) => !entry.model.deprecated);
+	const visibleDeprecatedModels = visibleModels.filter((entry) => entry.model.deprecated);
 	const selectedDeprecatedModel = selectedId
 		? models.find((model) => model.id === selectedId && model.deprecated)
 		: undefined;
@@ -171,6 +190,9 @@ export function ModelsList({
 	const searchResultEntries = providerEntries.filter(
 		(providerEntry) => providerEntry.key !== FEATURED_PROVIDER_KEY,
 	);
+	const visibleModelCount = isSearchActive
+		? searchResultEntries.reduce((total, providerEntry) => total + providerEntry.models.length, 0)
+		: visibleModels.length;
 
 	useEffect(() => {
 		if (!selectedDeprecatedModel?.provider) return;
@@ -187,7 +209,7 @@ export function ModelsList({
 
 	useEffect(() => {
 		if (isSearchActive || !selectedId) return;
-		if (!visibleModels.some((modelItem) => modelItem.id === selectedId)) return;
+		if (!visibleModels.some((entry) => isRegionalModelEntrySelected(entry, selectedId))) return;
 
 		const selectedModelOption = modelListRef.current?.querySelector<HTMLElement>(
 			'[role="option"][aria-selected="true"]',
@@ -204,6 +226,30 @@ export function ModelsList({
 			</div>
 		);
 	}
+
+	const renderModelEntry = (modelEntry: RegionalModelListEntry) => {
+		const modelItem = modelEntry.model;
+		const selectedRegionModelId = getSelectedRegionalModelId(modelEntry, selectedId);
+		const selectedRegionModel = modelsById[selectedRegionModelId] || modelItem;
+		const disabledOption = isDisabled || (!isPro && !modelItem.isFree) || disabled;
+
+		return (
+			<ModelOption
+				key={modelItem.id}
+				model={modelItem}
+				isSelected={isRegionalModelEntrySelected(modelEntry, selectedId)}
+				isActive={false}
+				onClick={() => handleModelSelect(selectedRegionModelId, selectedRegionModel)}
+				disabled={disabledOption}
+				mono={mono}
+				regionOptions={modelEntry.regionOptions}
+				selectedRegionModelId={selectedRegionModelId}
+				onRegionSelect={(modelId) => handleModelSelect(modelId, modelsById[modelId] || modelItem)}
+				onInfoHoverStart={onInfoHoverStart}
+				onInfoHoverEnd={onInfoHoverEnd}
+			/>
+		);
+	};
 
 	return (
 		<div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border border-zinc-200/70 bg-white/60 dark:border-zinc-700/70 dark:bg-zinc-900/50">
@@ -263,8 +309,7 @@ export function ModelsList({
 								{isSearchActive ? "Search results" : selectedProviderEntry?.label || "Models"}
 							</h4>
 							<span className="flex-shrink-0 text-xs text-zinc-500 dark:text-zinc-400">
-								{isSearchActive ? models.length : visibleModels.length} model
-								{(isSearchActive ? models.length : visibleModels.length) === 1 ? "" : "s"}
+								{visibleModelCount} model{visibleModelCount === 1 ? "" : "s"}
 							</span>
 						</div>
 					</div>
@@ -277,9 +322,11 @@ export function ModelsList({
 							{isSearchActive ? (
 								<div className="space-y-4">
 									{searchResultEntries.map((providerEntry) => {
-										const activeModels = providerEntry.models.filter((model) => !model.deprecated);
+										const activeModels = providerEntry.models.filter(
+											(modelEntry) => !modelEntry.model.deprecated,
+										);
 										const deprecatedModels = providerEntry.models.filter(
-											(model) => model.deprecated,
+											(modelEntry) => modelEntry.model.deprecated,
 										);
 										const showDeprecated = showDeprecatedByProvider[providerEntry.key] ?? false;
 										return (
@@ -292,23 +339,7 @@ export function ModelsList({
 														{providerEntry.models.length}
 													</span>
 												</div>
-												{activeModels.map((modelItem) => {
-													const disabledOption =
-														isDisabled || (!isPro && !modelItem.isFree) || disabled;
-													return (
-														<ModelOption
-															key={modelItem.id}
-															model={modelItem}
-															isSelected={modelItem.id === selectedId}
-															isActive={false}
-															onClick={() => handleModelSelect(modelItem.id, modelItem)}
-															disabled={disabledOption}
-															mono={mono}
-															onInfoHoverStart={onInfoHoverStart}
-															onInfoHoverEnd={onInfoHoverEnd}
-														/>
-													);
-												})}
+												{activeModels.map(renderModelEntry)}
 												{deprecatedModels.length > 0 && (
 													<div className="pt-1">
 														<button
@@ -326,23 +357,7 @@ export function ModelsList({
 														</button>
 														{showDeprecated && (
 															<div className="mt-1 space-y-1">
-																{deprecatedModels.map((modelItem) => {
-																	const disabledOption =
-																		isDisabled || (!isPro && !modelItem.isFree) || disabled;
-																	return (
-																		<ModelOption
-																			key={modelItem.id}
-																			model={modelItem}
-																			isSelected={modelItem.id === selectedId}
-																			isActive={false}
-																			onClick={() => handleModelSelect(modelItem.id, modelItem)}
-																			disabled={disabledOption}
-																			mono={mono}
-																			onInfoHoverStart={onInfoHoverStart}
-																			onInfoHoverEnd={onInfoHoverEnd}
-																		/>
-																	);
-																})}
+																{deprecatedModels.map(renderModelEntry)}
 															</div>
 														)}
 													</div>
@@ -353,22 +368,7 @@ export function ModelsList({
 								</div>
 							) : (
 								<div className="space-y-1">
-									{visibleActiveModels.map((modelItem) => {
-										const disabledOption = isDisabled || (!isPro && !modelItem.isFree) || disabled;
-										return (
-											<ModelOption
-												key={modelItem.id}
-												model={modelItem}
-												isSelected={modelItem.id === selectedId}
-												isActive={false}
-												onClick={() => handleModelSelect(modelItem.id, modelItem)}
-												disabled={disabledOption}
-												mono={mono}
-												onInfoHoverStart={onInfoHoverStart}
-												onInfoHoverEnd={onInfoHoverEnd}
-											/>
-										);
-									})}
+									{visibleActiveModels.map(renderModelEntry)}
 									{visibleDeprecatedModels.length > 0 && (
 										<div className="pt-1">
 											<button
@@ -386,23 +386,7 @@ export function ModelsList({
 											</button>
 											{showDeprecatedForSelectedProvider && (
 												<div className="mt-1 space-y-1">
-													{visibleDeprecatedModels.map((modelItem) => {
-														const disabledOption =
-															isDisabled || (!isPro && !modelItem.isFree) || disabled;
-														return (
-															<ModelOption
-																key={modelItem.id}
-																model={modelItem}
-																isSelected={modelItem.id === selectedId}
-																isActive={false}
-																onClick={() => handleModelSelect(modelItem.id, modelItem)}
-																disabled={disabledOption}
-																mono={mono}
-																onInfoHoverStart={onInfoHoverStart}
-																onInfoHoverEnd={onInfoHoverEnd}
-															/>
-														);
-													})}
+													{visibleDeprecatedModels.map(renderModelEntry)}
 												</div>
 											)}
 										</div>

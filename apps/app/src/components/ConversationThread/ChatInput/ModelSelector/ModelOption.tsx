@@ -1,9 +1,11 @@
 import {
 	AudioWaveform,
 	BrainCircuit,
+	ChevronDown,
 	Code2,
 	Crown,
 	Eye,
+	Globe2,
 	Hammer,
 	Info,
 	Search,
@@ -12,6 +14,7 @@ import {
 } from "lucide-react";
 
 import { ModelIcon } from "~/components/ModelIcon";
+import type { ModelRegionOption } from "~/lib/model-region-variants";
 import { getModelDisplayName, modelSupportsVisualModality } from "~/lib/models";
 import { hasProviderReasoningOptions } from "~/lib/reasoning";
 import { cn } from "~/lib/utils";
@@ -25,8 +28,20 @@ interface ModelOptionProps {
 	disabled?: boolean;
 	mono?: boolean;
 	isTeamAgent?: boolean;
+	regionOptions?: ModelRegionOption[];
+	selectedRegionModelId?: string;
+	onRegionSelect?: (modelId: string) => void;
 	onInfoHoverStart?: (model: ModelConfigItem, anchorRect: DOMRect) => void;
 	onInfoHoverEnd?: () => void;
+}
+
+function isInteractiveEventTarget(target: EventTarget | null) {
+	return (
+		target instanceof HTMLButtonElement ||
+		target instanceof HTMLInputElement ||
+		target instanceof HTMLSelectElement ||
+		target instanceof HTMLTextAreaElement
+	);
 }
 
 export const ModelOption = ({
@@ -37,10 +52,16 @@ export const ModelOption = ({
 	disabled,
 	mono = false,
 	isTeamAgent = false,
+	regionOptions = [],
+	selectedRegionModelId,
+	onRegionSelect,
 	onInfoHoverStart,
 	onInfoHoverEnd,
 }: ModelOptionProps) => {
 	const handleKeyDown = (e: React.KeyboardEvent) => {
+		if (isInteractiveEventTarget(e.target)) {
+			return;
+		}
 		if (e.key === "Enter" || e.key === " ") {
 			e.preventDefault();
 			if (!disabled) {
@@ -56,6 +77,7 @@ export const ModelOption = ({
 		model.maxTokens,
 	);
 	const canShowHoverPreview = showDetailsTrigger && Boolean(onInfoHoverStart);
+	const hasRegionOptions = regionOptions.length > 1;
 
 	return (
 		<div
@@ -63,6 +85,7 @@ export const ModelOption = ({
 			onKeyDown={handleKeyDown}
 			role="option"
 			aria-selected={isSelected}
+			aria-disabled={disabled || undefined}
 			id={`model-${model.matchingModel}`}
 			tabIndex={disabled ? -1 : 0}
 			className={cn(
@@ -118,6 +141,36 @@ export const ModelOption = ({
 					</div>
 				</div>
 				<div className="flex w-full flex-wrap items-center gap-1.5 pl-[2.6rem] sm:w-[124px] sm:flex-shrink-0 sm:justify-end sm:pl-0">
+					{hasRegionOptions && (
+						<label className="relative flex max-w-[112px] items-center" title="Region">
+							<Globe2
+								size={12}
+								className="pointer-events-none absolute left-1.5 text-zinc-500 dark:text-zinc-400"
+							/>
+							<select
+								aria-label={`Select region for ${getModelDisplayName(model)}`}
+								value={selectedRegionModelId || model.id}
+								disabled={disabled}
+								onClick={(event) => event.stopPropagation()}
+								onMouseDown={(event) => event.stopPropagation()}
+								onChange={(event) => {
+									event.stopPropagation();
+									onRegionSelect?.(event.target.value);
+								}}
+								className="h-6 w-full cursor-pointer appearance-none rounded-full border border-zinc-200 bg-white py-0 pl-5 pr-5 text-[11px] font-medium text-zinc-700 focus:border-zinc-300 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200"
+							>
+								{regionOptions.map((option) => (
+									<option key={option.id} value={option.id}>
+										{option.label}
+									</option>
+								))}
+							</select>
+							<ChevronDown
+								size={10}
+								className="pointer-events-none absolute right-1.5 text-zinc-500 dark:text-zinc-400"
+							/>
+						</label>
+					)}
 					{hasProviderReasoningOptions(model) && (
 						<div className="rounded-full bg-blue-100 p-1 dark:bg-blue-900/30" title="Reasoning">
 							<BrainCircuit size={12} className="text-blue-600 dark:text-blue-400" />
