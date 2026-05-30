@@ -63,6 +63,10 @@
 		{
 			"binding": "SANDBOX_WORKER",
 			"service": "assistant-sandbox-worker"
+		},
+		{
+			"binding": "FINETUNE_WORKER",
+			"service": "assistant-finetune-worker"
 		}
 	],
 	"durable_objects": {

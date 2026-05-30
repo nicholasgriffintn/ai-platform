@@ -890,3 +890,102 @@ export const trainingExamples = sqliteTable(
 );
 
 export type TrainingExample = typeof trainingExamples.$inferSelect;
+
+export const trainingJobs = sqliteTable(
+	"training_jobs",
+	{
+		provider: text().notNull(),
+		job_name: text().notNull(),
+		provider_job_id: text(),
+		user_id: integer().references(() => user.id, { onDelete: "set null" }),
+		status: text().notNull(),
+		model_id: text().notNull(),
+		base_model: text().notNull(),
+		training_image: text(),
+		training_data_s3_uri: text(),
+		validation_data_s3_uri: text(),
+		output_s3_uri: text(),
+		model_artifacts_s3_uri: text(),
+		failure_reason: text(),
+		request_json: text({
+			mode: "json",
+		}),
+		response_json: text({
+			mode: "json",
+		}),
+		created_at: text()
+			.default(sql`(CURRENT_TIMESTAMP)`)
+			.notNull(),
+		updated_at: text()
+			.default(sql`(CURRENT_TIMESTAMP)`)
+			.$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
+	},
+	(table) => ({
+		pk: primaryKey({ columns: [table.provider, table.job_name] }),
+		userIdIdx: index("training_jobs_user_id_idx").on(table.user_id),
+		statusIdx: index("training_jobs_status_idx").on(table.status),
+		updatedAtIdx: index("training_jobs_updated_at_idx").on(table.updated_at),
+	}),
+);
+
+export type TrainingJob = typeof trainingJobs.$inferSelect;
+
+export const trainingDeployments = sqliteTable(
+	"training_deployments",
+	{
+		provider: text().notNull(),
+		endpoint_name: text().notNull(),
+		deployment_name: text().notNull(),
+		model_name: text().notNull(),
+		endpoint_config_name: text().notNull(),
+		user_id: integer().references(() => user.id, { onDelete: "set null" }),
+		status: text().notNull(),
+		model_id: text().notNull(),
+		model_artifacts_s3_uri: text(),
+		failure_reason: text(),
+		request_json: text({
+			mode: "json",
+		}),
+		response_json: text({
+			mode: "json",
+		}),
+		created_at: text()
+			.default(sql`(CURRENT_TIMESTAMP)`)
+			.notNull(),
+		updated_at: text()
+			.default(sql`(CURRENT_TIMESTAMP)`)
+			.$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
+	},
+	(table) => ({
+		pk: primaryKey({ columns: [table.provider, table.endpoint_name] }),
+		userIdIdx: index("training_deployments_user_id_idx").on(table.user_id),
+		statusIdx: index("training_deployments_status_idx").on(table.status),
+	}),
+);
+
+export type TrainingDeployment = typeof trainingDeployments.$inferSelect;
+
+export const trainingJobEvents = sqliteTable(
+	"training_job_events",
+	{
+		id: text().primaryKey(),
+		provider: text().notNull(),
+		job_name: text().notNull(),
+		level: text({
+			enum: ["info", "warn", "error"],
+		}).notNull(),
+		message: text().notNull(),
+		metadata_json: text({
+			mode: "json",
+		}),
+		created_at: text()
+			.default(sql`(CURRENT_TIMESTAMP)`)
+			.notNull(),
+	},
+	(table) => ({
+		jobIdx: index("training_job_events_job_idx").on(table.provider, table.job_name),
+		createdAtIdx: index("training_job_events_created_at_idx").on(table.created_at),
+	}),
+);
+
+export type TrainingJobEvent = typeof trainingJobEvents.$inferSelect;

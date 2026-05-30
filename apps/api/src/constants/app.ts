@@ -32,6 +32,7 @@ export const ROUTES = {
 	ADMIN: "/admin",
 	MEMORIES: "/memories",
 	WEBHOOKS: "/webhooks",
+	TRAINING: "/training",
 } as const;
 
 const NON_AUTH_DAILY_MESSAGE_LIMIT = 10;

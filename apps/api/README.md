@@ -31,6 +31,7 @@ The API provides a unified interface to multiple AI providers, following OpenAI'
 - **Code Specialized** - FIM completions, edit suggestions, code application
 - **AI Agents** - Custom agents with MCP server integrations
 - **RAG & Memories** - Vector-based context with Cloudflare Vectorize
+- **Fine-tuning Control Plane** - API-owned training model catalog with a finetune Worker execution service
 - **Content Safety** - Llamaguard and AWS Bedrock Guardrails
 - **Flexible Auth** - OAuth, API keys, JWT, magic links, passkeys
 - **Real-time** - Streaming responses and WebSocket support
@@ -112,6 +113,7 @@ The API runs on Cloudflare's global network with:
 - Vectorize for embeddings
 - R2 for media storage
 - Analytics Engine for metrics
+- Service bindings for sandbox and finetune Workers
 
 ## Architecture
 
@@ -121,6 +123,7 @@ The API runs on Cloudflare's global network with:
 - **OpenAPI:** Auto-generated docs via hono-openapi
 - **Auth:** Multiple providers (OAuth, JWT, API keys, WebAuthn)
 - **Storage:** R2 for media, Vectorize for embeddings
+- **Training:** API model catalog plus `FINETUNE_WORKER` service binding for provider job execution
 
 **[Read more →](./AGENTS.md)**
 

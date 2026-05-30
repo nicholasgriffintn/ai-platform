@@ -1,40 +1,137 @@
-# Polychat - Bedrock Fine-Tuning Toolkit
+# Polychat Finetune Worker
 
-Fine-tune models for:
+The finetune app is a Cloudflare Worker service used by the API to start, inspect, and deploy provider-backed training jobs. It is not a CLI. The API owns model and provider selection, resolves the model definition, exports datasets when needed, then calls this Worker through the `FINETUNE_WORKER` service binding.
 
-- Models for use on services that have more domain knowledge and don't rely as much on up front context for better responses, saving space for user prompts.
-- Services that have more consistent outputs and formatting.
-- More cost effective services in production by using smaller models.
+Use this Worker for:
 
-You can [read the blog post about this service here](https://nicholasgriffin.dev/blog/fine-tuning-models-with-aws-bedrock).
+- Starting AWS Bedrock model customisation jobs.
+- Starting AWS SageMaker Hugging Face training jobs.
+- Creating SageMaker deployments for completed model artifacts.
+- Persisting training jobs, deployments, and job events in D1.
+- Returning provider status to the API without duplicating model catalogs.
 
-## Using the CLI
+## Architecture
 
-The CLI is a node service so to get started, you'll just need to have that include and then run `pnpm install` for the dependencies.
+The API is the control plane:
 
-Once installed, you can run commands locally like:
+- `apps/api/src/lib/providers/capabilities/training/modelCatalog.ts` defines trainable models.
+- `apps/api/src/services/training` validates requests, exports D1 training examples to S3, and calls the finetune Worker.
+- `apps/api/src/routes/training.ts` exposes `/training/models`, `/training/jobs`, `/training/jobs/:provider/:jobName`, `/training/jobs/:provider/:jobName/events`, and deployment routes.
 
-`pnpm tsx src/cli.ts --help`
+The finetune Worker is the execution plane:
 
-**Available commands:**
+- `src/index.ts` exposes internal Worker HTTP routes.
+- `src/services/TrainingWorkerService.ts` coordinates provider calls and persistence.
+- `src/services/TrainingStore.ts` stores jobs, deployments, and events in D1.
+- `src/providers` contains provider adapters for `aws-bedrock` and `aws-sagemaker`.
 
-- `db` - Database management and initialization
-- `dataset` - Generate, validate, and upload datasets
-- `job` - Create and manage fine-tuning jobs
-- `model` - Test and export fine-tuned models
+Provider adapters do not own the model catalog. The API passes the resolved model definition in each Worker request.
 
-The CLI also has some support for model distalllation which is where a larger "teacher" model will train a smaller "student" model.
+## Configuration
 
-## Notes
+Install dependencies from the repository root:
 
-- Nova Pro models have a fixed batch size of 1, as set in Bedrock. Instead we use the learningRateWarmupSteps parameter to adjust the rate of learning.
-- epochCount = "The number of iterations through the entire training dataset"
-- learningRate = "The rate at which model parameters are updated after each batch"
-- learningRateWarmupSteps = "The number of iterations over which the learning rate is gradually increased to the specified rate"
-- AWS recommends epochs of 2 for datasets under 5k examples, and 1 for datasets over 5k examples with a learning rate of 0.00005 and warmup steps calculated based on dataset size.
+```sh
+pnpm install
+```
 
-- AWS requires a minimum of 100 examples to start fine-tuning, but this is likely too small for good results, I initially attempted 140 examples and expanded examples later to test improvements.
+Copy the example variables for local Worker development:
 
-- `strudel-nova-lite-v1` - 300 examples, 2 epochs, learning rate 0.00005, batch size 1, warmup steps 6
-- `strudel-nova-lite-v2` - 600 examples, 2 epochs, learning rate 0.00005, batch size 1, warmup steps 6
-- `strudel-nova-lite-v3` - 1000 examples, 2 epochs, learning rate 0.00005, batch size 1, warmup steps 6
+```sh
+cp apps/finetune/.env.example apps/finetune/.dev.vars
+```
+
+The Worker requires the `DB` D1 binding from `wrangler.json`. Provider credentials are read from Worker secrets or local `.dev.vars`.
+
+Shared AWS values:
+
+- `AWS_ACCESS_KEY_ID`
+- `AWS_SECRET_ACCESS_KEY`
+- `AWS_SESSION_TOKEN` optional
+- `AWS_REGION`
+
+Bedrock jobs also use:
+
+- `BEDROCK_OUTPUT_BUCKET`
+- `BEDROCK_ROLE_ARN`
+- `BEDROCK_KMS_KEY_ARN` optional
+- `BEDROCK_VPC_SECURITY_GROUP_IDS` optional comma-separated list
+- `BEDROCK_VPC_SUBNET_IDS` optional comma-separated list
+
+SageMaker jobs also use:
+
+- `SAGEMAKER_REGION`
+- `SAGEMAKER_ROLE_ARN`
+- `SAGEMAKER_OUTPUT_BUCKET`
+- `SAGEMAKER_VOLUME_SIZE_GB` optional
+- `SAGEMAKER_AWS_ACCESS_KEY_ID` optional override
+- `SAGEMAKER_AWS_SECRET_ACCESS_KEY` optional override
+- `SAGEMAKER_AWS_SESSION_TOKEN` optional override
+
+The API Worker must define this service binding:
+
+```json
+{
+	"binding": "FINETUNE_WORKER",
+	"service": "assistant-finetune-worker"
+}
+```
+
+## Development
+
+Run static checks:
+
+```sh
+pnpm --filter @assistant/finetune typecheck
+pnpm --filter @assistant/api typecheck
+```
+
+Run the Worker locally only when you need to exercise service-binding behaviour:
+
+```sh
+pnpm --filter @assistant/finetune dev
+```
+
+Routine validation should use typechecks and tests, not a dev server.
+
+## Database
+
+Training state lives in D1 tables:
+
+- `training_jobs`
+- `training_deployments`
+- `training_job_events`
+
+Do not hand-write migration SQL or edit migration metadata. Update the Drizzle schema, then use the API package migration workflow:
+
+```sh
+pnpm --filter @assistant/api db:generate
+```
+
+If Drizzle cannot generate a clean migration because migration metadata is out of sync, fix that workflow issue first. Do not patch generated migration files manually.
+
+## API Flow
+
+Start a job through the API:
+
+```http
+POST /training/jobs
+```
+
+The API request includes `provider`, `modelId`, and dataset input. When `trainingExampleFilters` are provided, the API exports examples to S3 before calling the Worker. The Worker receives a concrete model definition and a `trainS3Uri`.
+
+Inspect a job:
+
+```http
+GET /training/jobs/aws-sagemaker/my-training-job
+GET /training/jobs/aws-sagemaker/my-training-job/events
+```
+
+Deploy SageMaker artifacts:
+
+```http
+POST /training/deployments
+GET /training/deployments/aws-sagemaker/my-endpoint
+```
+
+Bedrock deployment is not automated by this Worker yet. Bedrock jobs can be started and inspected, but provisioned throughput remains a separate workflow.

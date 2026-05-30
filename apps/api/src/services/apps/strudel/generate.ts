@@ -9,7 +9,7 @@ import { buildStrudelSystemPrompt } from "~/lib/prompts/strudel";
 import { getAuxiliaryModel, getModels, filterModelsForUserAccess } from "~/lib/providers/models";
 import { formatMessages } from "~/utils/messages";
 import { mergeParametersWithDefaults } from "~/utils/parameters";
-import { captureTrainingExample } from "~/services/training/captureTrainingExample";
+import { captureTrainingExample } from "~/lib/providers/capabilities/training/captureTrainingExample";
 import { generateId } from "~/utils/id";
 
 const logger = getLogger({ prefix: "services/strudel/generate" });

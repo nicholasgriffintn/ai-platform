@@ -12,7 +12,7 @@ import { ValidationPipeline } from "~/lib/chat/validation/ValidationPipeline";
 import { resolveModeMaxSteps } from "~/lib/permissions/PermissionChecker";
 import { Guardrails } from "~/lib/providers/capabilities/guardrails";
 import { SessionManager } from "~/lib/session/SessionManager";
-import { captureTrainingExample } from "~/services/training/captureTrainingExample";
+import { captureTrainingExample } from "~/lib/providers/capabilities/training/captureTrainingExample";
 import { resolveServiceContext } from "~/lib/context/serviceContext";
 import type { CoreChatOptions, Message } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
