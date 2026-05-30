@@ -95,7 +95,7 @@ export const trainingModelCatalog: TrainingModelDefinition[] = [
 		inferenceImage: HUGGING_FACE_LLM_INFERENCE_IMAGE,
 		defaultDeploymentEnvironment: {
 			HF_TASK: "text-generation",
-			HF_TRUST_REMOTE_CODE: "true",
+			HF_TRUST_REMOTE_CODE: "True",
 		},
 		supportedTasks: ["text-generation", "causal-language-modeling"],
 	},

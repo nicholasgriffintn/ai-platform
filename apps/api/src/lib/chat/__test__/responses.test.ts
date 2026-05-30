@@ -44,9 +44,11 @@ vi.mock("~/utils/logger", () => ({
 vi.mock("~/utils/errors", () => ({
 	AssistantError: class extends Error {
 		type: string;
-		constructor(message: string, type?: string, _originalError?: any) {
+		statusCode?: number;
+		constructor(message: string, type?: string, statusCode?: number) {
 			super(message);
 			this.type = type || "UNKNOWN";
+			this.statusCode = statusCode;
 			this.name = "AssistantError";
 		}
 	},
@@ -491,7 +493,7 @@ describe("responses", () => {
 
 			// @ts-expect-error - test data
 			await expect(getAIResponse(baseParams)).rejects.toThrow(
-				new AssistantError("openai error: rate limit exceeded", ErrorType.RATE_LIMIT_ERROR),
+				new AssistantError("openai error: rate limit exceeded", ErrorType.RATE_LIMIT_ERROR, 429),
 			);
 		});
 
@@ -507,7 +509,7 @@ describe("responses", () => {
 
 			// @ts-expect-error - test data
 			await expect(getAIResponse(baseParams)).rejects.toThrow(
-				new AssistantError("openai error: Rate limit exceeded", ErrorType.RATE_LIMIT_ERROR),
+				new AssistantError("openai error: Rate limit exceeded", ErrorType.RATE_LIMIT_ERROR, 429),
 			);
 		});
 
@@ -518,8 +520,25 @@ describe("responses", () => {
 
 			// @ts-expect-error - test data
 			await expect(getAIResponse(baseParams)).rejects.toThrow(
-				new AssistantError("openai error: Rate limit exceeded", ErrorType.RATE_LIMIT_ERROR),
+				new AssistantError("openai error: Rate limit exceeded", ErrorType.RATE_LIMIT_ERROR, 429),
 			);
+		});
+
+		it("should preserve provider error status codes", async () => {
+			mockProvider.getResponse.mockRejectedValue(
+				new AssistantError("runtime failed", ErrorType.PROVIDER_ERROR, 424),
+			);
+
+			try {
+				// @ts-expect-error - test data
+				await getAIResponse(baseParams);
+				throw new Error("Expected getAIResponse to throw");
+			} catch (error) {
+				expect(error).toBeInstanceOf(AssistantError);
+				expect((error as AssistantError).message).toBe("openai error: runtime failed");
+				expect((error as AssistantError).statusCode).toBe(424);
+				expect((error as AssistantError).type).toBe(ErrorType.PROVIDER_ERROR);
+			}
 		});
 
 		it("should handle authentication errors", async () => {
@@ -530,7 +549,7 @@ describe("responses", () => {
 
 			// @ts-expect-error - test data
 			await expect(getAIResponse(baseParams)).rejects.toThrow(
-				new AssistantError("openai error: unauthorized", ErrorType.AUTHENTICATION_ERROR),
+				new AssistantError("openai error: unauthorized", ErrorType.AUTHENTICATION_ERROR, 401),
 			);
 		});
 
@@ -542,7 +561,7 @@ describe("responses", () => {
 
 			// @ts-expect-error - test data
 			await expect(getAIResponse(baseParams)).rejects.toThrow(
-				new AssistantError("openai error: internal server error", ErrorType.PROVIDER_ERROR),
+				new AssistantError("openai error: internal server error", ErrorType.PROVIDER_ERROR, 500),
 			);
 		});
 

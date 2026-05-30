@@ -20,8 +20,19 @@ export function resolveTrainingDeploymentEnvironment({
 	if (isHuggingFaceHubDeployment(model, request) && !environment.HF_MODEL_ID) {
 		environment.HF_MODEL_ID = model.baseModel;
 	}
+	normaliseHuggingFaceEnvironment(environment);
 
 	return Object.keys(environment).length > 0 ? environment : undefined;
+}
+
+function normaliseHuggingFaceEnvironment(environment: Record<string, string>): void {
+	const trustRemoteCode = environment.HF_TRUST_REMOTE_CODE?.toLowerCase();
+	if (trustRemoteCode === "true") {
+		environment.HF_TRUST_REMOTE_CODE = "True";
+	}
+	if (trustRemoteCode === "false") {
+		environment.HF_TRUST_REMOTE_CODE = "False";
+	}
 }
 
 function isHuggingFaceHubDeployment(

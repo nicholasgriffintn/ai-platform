@@ -245,11 +245,18 @@ export async function getAIResponse({
 		});
 	} catch (err: any) {
 		let errorType = ErrorType.PROVIDER_ERROR;
+		let statusCode =
+			typeof err.statusCode === "number"
+				? err.statusCode
+				: typeof err.status === "number"
+					? err.status
+					: 500;
 		if (isProviderRateLimitError(err)) {
 			errorType = ErrorType.RATE_LIMIT_ERROR;
-		} else if (err.status >= 500) {
+			statusCode = 429;
+		} else if (statusCode >= 500) {
 			errorType = ErrorType.PROVIDER_ERROR;
-		} else if (err.status === 401 || err.status === 403) {
+		} else if (statusCode === 401 || statusCode === 403) {
 			errorType = ErrorType.AUTHENTICATION_ERROR;
 		}
 
@@ -263,7 +270,7 @@ export async function getAIResponse({
 		throw new AssistantError(
 			`${provider.name} error: ${err.message || "Unknown error"}`,
 			errorType,
-			err,
+			statusCode,
 		);
 	}
 	const durationMs = Date.now() - startTime;

@@ -12,7 +12,7 @@ const MODEL: TrainingModelDefinition = {
 	defaultHyperparameters: {},
 	defaultDeploymentEnvironment: {
 		HF_TASK: "text-generation",
-		HF_TRUST_REMOTE_CODE: "true",
+		HF_TRUST_REMOTE_CODE: "True",
 	},
 };
 
@@ -21,7 +21,7 @@ describe("resolveTrainingDeploymentEnvironment", () => {
 		expect(resolveTrainingDeploymentEnvironment({ model: MODEL, request: {} })).toEqual({
 			HF_MODEL_ID: "flwrlabs/Lizzy-7B",
 			HF_TASK: "text-generation",
-			HF_TRUST_REMOTE_CODE: "true",
+			HF_TRUST_REMOTE_CODE: "True",
 		});
 	});
 
@@ -33,7 +33,7 @@ describe("resolveTrainingDeploymentEnvironment", () => {
 			}),
 		).toEqual({
 			HF_TASK: "text-generation",
-			HF_TRUST_REMOTE_CODE: "true",
+			HF_TRUST_REMOTE_CODE: "True",
 		});
 	});
 
@@ -46,7 +46,20 @@ describe("resolveTrainingDeploymentEnvironment", () => {
 		).toEqual({
 			HF_MODEL_ID: "custom/model",
 			HF_TASK: "text-generation",
-			HF_TRUST_REMOTE_CODE: "true",
+			HF_TRUST_REMOTE_CODE: "True",
+		});
+	});
+
+	it("normalises boolean-style HF_TRUST_REMOTE_CODE overrides for the inference toolkit", () => {
+		expect(
+			resolveTrainingDeploymentEnvironment({
+				model: MODEL,
+				request: { environment: { HF_TRUST_REMOTE_CODE: "true" } },
+			}),
+		).toEqual({
+			HF_MODEL_ID: "flwrlabs/Lizzy-7B",
+			HF_TASK: "text-generation",
+			HF_TRUST_REMOTE_CODE: "True",
 		});
 	});
 });
