@@ -96,6 +96,14 @@ export function getDeployableTrainingModels(
 	);
 }
 
+export function canDeployBaseTrainingModel(model: FineTuningModelDefinition): boolean {
+	return (
+		model.provider === DEPLOYABLE_TRAINING_PROVIDER &&
+		model.family === "huggingface" &&
+		Boolean(model.inferenceImage)
+	);
+}
+
 export function getDeploymentTrainingJobs(jobs: FineTuningJob[], modelId: string): FineTuningJob[] {
 	return jobs.filter(
 		(job) =>

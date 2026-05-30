@@ -106,8 +106,9 @@ export class SageMakerFineTuneProvider implements FineTuneProvider {
 			(options.trainingJobName
 				? (await this.getJobStatus(options.trainingJobName)).modelArtifactsS3Uri
 				: undefined);
-		if (!modelArtifactsS3Uri) {
-			throw new Error("Deploying a model requires model artifacts or a training job");
+		const environment = options.environment || {};
+		if (!modelArtifactsS3Uri && !environment.HF_MODEL_ID) {
+			throw new Error("Deploying a model requires model artifacts, a training job, or HF_MODEL_ID");
 		}
 
 		const inferenceImage = this.resolveImage(
@@ -127,11 +128,11 @@ export class SageMakerFineTuneProvider implements FineTuneProvider {
 		await this.invoke("SageMaker.CreateModel", {
 			ModelName: modelName,
 			ExecutionRoleArn: roleArn,
-			PrimaryContainer: {
-				Image: inferenceImage,
-				ModelDataUrl: modelArtifactsS3Uri,
-				Environment: options.environment || {},
-			},
+			PrimaryContainer: this.createPrimaryContainer(
+				inferenceImage,
+				modelArtifactsS3Uri,
+				environment,
+			),
 		});
 		await this.invoke("SageMaker.CreateEndpointConfig", {
 			EndpointConfigName: endpointConfigName,
@@ -185,6 +186,18 @@ export class SageMakerFineTuneProvider implements FineTuneProvider {
 			},
 			ContentType: "application/jsonlines",
 			CompressionType: "None",
+		};
+	}
+
+	private createPrimaryContainer(
+		image: string,
+		modelArtifactsS3Uri: string | undefined,
+		environment: Record<string, string>,
+	): Record<string, unknown> {
+		return {
+			Image: image,
+			...(modelArtifactsS3Uri ? { ModelDataUrl: modelArtifactsS3Uri } : {}),
+			Environment: environment,
 		};
 	}
 

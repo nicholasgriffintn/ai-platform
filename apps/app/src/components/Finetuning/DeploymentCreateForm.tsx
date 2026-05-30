@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { Button, FormInput, FormSelect } from "~/components/ui";
 import { getErrorMessage } from "~/lib/errors";
 import {
+	canDeployBaseTrainingModel,
 	getDeployableTrainingModels,
 	getDeploymentTrainingJobs,
 	getTrainingModelLabel,
@@ -66,8 +67,9 @@ export function DeploymentCreateForm({
 
 		const trimmedArtifactsUri = modelArtifactsS3Uri.trim();
 		const trimmedTrainingJobName = trainingJobName.trim();
+		const canDeployBaseModel = canDeployBaseTrainingModel(selectedModel);
 
-		if (!trimmedArtifactsUri && !trimmedTrainingJobName) {
+		if (!trimmedArtifactsUri && !trimmedTrainingJobName && !canDeployBaseModel) {
 			toast.error("Select a completed job or provide model artifacts");
 			return;
 		}
@@ -128,7 +130,7 @@ export function DeploymentCreateForm({
 					value={trainingJobName}
 					onChange={(event) => setTrainingJobName(event.target.value)}
 					options={[
-						{ value: "", label: "Use artifacts URI" },
+						{ value: "", label: "Deploy base model from Hub" },
 						...deploymentJobs.map((job) => ({
 							value: job.jobName,
 							label: job.jobName,
@@ -142,7 +144,7 @@ export function DeploymentCreateForm({
 				label="Model artifacts S3 URI"
 				value={modelArtifactsS3Uri}
 				onChange={(event) => setModelArtifactsS3Uri(event.target.value)}
-				placeholder="s3://bucket/output/job/model.tar.gz"
+				placeholder="Optional fine-tuned model.tar.gz S3 URI"
 			/>
 
 			<div className="grid grid-cols-1 md:grid-cols-2 gap-3">

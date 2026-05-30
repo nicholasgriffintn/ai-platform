@@ -2,6 +2,7 @@ import type { FineTuningJob, FineTuningModelDefinition } from "@assistant/schema
 import { describe, expect, it } from "vitest";
 
 import {
+	canDeployBaseTrainingModel,
 	formatTrainingHyperparameters,
 	getDeployableTrainingModels,
 	getDeploymentTrainingJobs,
@@ -84,6 +85,8 @@ describe("finetuning utilities", () => {
 		expect(getDeployableTrainingModels(MODELS).map((model) => model.id)).toEqual([
 			"distilbert-imdb",
 		]);
+		expect(canDeployBaseTrainingModel(MODELS[1])).toBe(true);
+		expect(canDeployBaseTrainingModel(MODELS[0])).toBe(false);
 		expect(getDeploymentTrainingJobs(JOBS, "distilbert-imdb").map((job) => job.jobName)).toEqual([
 			"distilbert-completed",
 		]);

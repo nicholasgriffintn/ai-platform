@@ -4,6 +4,7 @@ import {
 	fineTuningModelCatalog,
 	getFineTuningModel,
 } from "~/lib/providers/capabilities/training/modelCatalog";
+import { resolveTrainingDeploymentEnvironment } from "~/lib/providers/capabilities/training/trainingDeploymentEnvironment";
 import { resolveTrainingHyperparameters } from "~/lib/providers/capabilities/training/trainingHyperparameters";
 import { resolveTrainingSource } from "~/lib/providers/capabilities/training/trainingSourceArchives";
 import type {
@@ -113,10 +114,7 @@ export async function deployFineTunedModel(
 		{
 			...request,
 			model,
-			environment: {
-				...model.defaultDeploymentEnvironment,
-				...request.environment,
-			},
+			environment: resolveTrainingDeploymentEnvironment({ model, request }),
 			requestId: context.requestId,
 		},
 		user.id,

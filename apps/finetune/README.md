@@ -137,4 +137,8 @@ POST /training/deployments
 GET /training/deployments/aws-sagemaker/my-endpoint
 ```
 
+For Hugging Face models, a deployment request can omit `trainingJobName` and
+`modelArtifactsS3Uri`. In that case the API passes `HF_MODEL_ID` from the model catalog
+and SageMaker deploys the base Hub model with the configured inference image.
+
 Bedrock deployment is not automated by this Worker yet. Bedrock jobs can be started and inspected, but provisioned throughput remains a separate workflow.
