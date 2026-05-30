@@ -35,7 +35,7 @@
 		"@hono/zod-validator": "0.8.0",
 		"@octokit/rest": "22.0.1",
 		"@scalar/hono-api-reference": "0.10.19",
-		"@sentry/cloudflare": "10.53.1",
+		"@sentry/cloudflare": "10.55.0",
 		"@simplewebauthn/server": "13.3.1",
 		"@tsndr/cloudflare-worker-jwt": "3.2.1",
 		"agents": "0.13.3",
