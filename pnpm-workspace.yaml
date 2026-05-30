@@ -21,6 +21,12 @@ minimumReleaseAgeExclude:
   - '@tanstack/query-devtools@5.100.13'
   - '@tanstack/react-query-devtools@5.100.13'
   - '@tanstack/react-query@5.100.13'
+  - '@aws-sdk/client-bedrock@3.1057.0'
+  - '@aws-sdk/client-s3@3.1057.0'
+  - '@aws-sdk/credential-provider-ini@3.972.46'
+  - '@aws-sdk/credential-provider-node@3.972.47'
+  - '@aws-sdk/s3-request-presigner@3.1057.0'
+  - '@aws-sdk/token-providers@3.1057.0'
 
 onlyBuiltDependencies:
   - better-sqlite3

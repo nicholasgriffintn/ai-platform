@@ -13,6 +13,8 @@
 			"matchDepTypes": [
 				"devDependencies"
 			],
+			"abandonmentThreshold": "1 year",
+			"minimumReleaseAge": "7 days",
 			"automerge": true
 		},
 		{
@@ -21,6 +23,8 @@
 				"minor",
 				"patch"
 			],
+			"abandonmentThreshold": "1 year",
+			"minimumReleaseAge": "7 days",
 			"automerge": true
 		}
 	]
