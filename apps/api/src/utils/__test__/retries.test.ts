@@ -42,7 +42,7 @@ describe("retries", () => {
 				.mockRejectedValueOnce(new Error("second fail"))
 				.mockResolvedValue("success");
 
-			const promise = withRetry(mockFn);
+			const promise = withRetry(mockFn, { retryCount: 2 });
 
 			await vi.runAllTimersAsync();
 
@@ -56,11 +56,13 @@ describe("retries", () => {
 			const error = new Error("persistent error");
 			const mockFn = vi.fn().mockRejectedValue(error);
 
-			const promise = withRetry(mockFn, { retryCount: 2 });
+			const assertion = expect(withRetry(mockFn, { retryCount: 2 })).rejects.toThrow(
+				"persistent error",
+			);
 
 			await vi.runAllTimersAsync();
 
-			await expect(promise).rejects.toThrow("persistent error");
+			await assertion;
 			expect(mockFn).toHaveBeenCalledTimes(3);
 		});
 
@@ -68,11 +70,11 @@ describe("retries", () => {
 			const error = new Error("error");
 			const mockFn = vi.fn().mockRejectedValue(error);
 
-			const promise = withRetry(mockFn, { retryCount: 1 });
+			const assertion = expect(withRetry(mockFn, { retryCount: 1 })).rejects.toThrow("error");
 
 			await vi.runAllTimersAsync();
 
-			await expect(promise).rejects.toThrow("error");
+			await assertion;
 			expect(mockFn).toHaveBeenCalledTimes(2);
 		});
 
@@ -82,6 +84,7 @@ describe("retries", () => {
 			const onRetry = vi.fn();
 
 			const promise = withRetry(mockFn, {
+				retryCount: 1,
 				baseDelayMs: 1000,
 				onRetry,
 			});
@@ -108,6 +111,7 @@ describe("retries", () => {
 			const onRetry = vi.fn();
 
 			const promise = withRetry(mockFn, {
+				retryCount: 2,
 				baseDelayMs: 100,
 				onRetry,
 			});
@@ -152,7 +156,7 @@ describe("retries", () => {
 				return (error as Error).message === "retryable";
 			});
 
-			const promise = withRetry(mockFn, { isRetryableError });
+			const promise = withRetry(mockFn, { retryCount: 1, isRetryableError });
 
 			await vi.runAllTimersAsync();
 
@@ -175,7 +179,7 @@ describe("retries", () => {
 
 			const onRetry = vi.fn();
 
-			const promise = withRetry(mockFn, { onRetry });
+			const promise = withRetry(mockFn, { retryCount: 2, onRetry });
 
 			await vi.runAllTimersAsync();
 
@@ -207,7 +211,7 @@ describe("retries", () => {
 				return `success after ${callCount} attempts`;
 			});
 
-			const promise = withRetry(mockFn);
+			const promise = withRetry(mockFn, { retryCount: 2 });
 
 			await vi.runAllTimersAsync();
 
@@ -227,8 +231,7 @@ describe("retries", () => {
 				return `sync success after ${callCount} attempts`;
 			});
 
-			// @ts-expect-error - mockFn is not a function
-			const promise = withRetry(mockFn);
+			const promise = withRetry(mockFn, { retryCount: 1 });
 
 			await vi.runAllTimersAsync();
 
@@ -243,7 +246,7 @@ describe("retries", () => {
 
 			const onRetry = vi.fn();
 
-			const promise = withRetry(mockFn, { baseDelayMs: 100, onRetry });
+			const promise = withRetry(mockFn, { retryCount: 1, baseDelayMs: 100, onRetry });
 			await vi.runAllTimersAsync();
 			await promise;
 
@@ -253,17 +256,15 @@ describe("retries", () => {
 			expect(delay).toBeLessThan(160);
 		});
 
-		it("should handle default options", async () => {
+		it("should not retry by default", async () => {
 			const mockFn = vi.fn().mockRejectedValueOnce(new Error("fail")).mockResolvedValue("success");
 
-			const promise = withRetry(mockFn);
+			const assertion = expect(withRetry(mockFn)).rejects.toThrow("fail");
 
 			await vi.runAllTimersAsync();
 
-			const result = await promise;
-
-			expect(result).toBe("success");
-			expect(mockFn).toHaveBeenCalledTimes(2);
+			await assertion;
+			expect(mockFn).toHaveBeenCalledTimes(1);
 		});
 	});
 });

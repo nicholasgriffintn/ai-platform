@@ -224,7 +224,7 @@ describe("responses", () => {
 			vi.mocked(formatMessages).mockReturnValue([{ role: "user", content: "Hello" }]);
 			// @ts-expect-error - mock implementation
 			vi.mocked(mergeParametersWithDefaults).mockReturnValue({ ...baseParams });
-			vi.mocked(withRetry).mockImplementation((fn) => fn());
+			vi.mocked(withRetry).mockImplementation((fn) => Promise.resolve(fn()));
 			mockProvider.getResponse.mockResolvedValue({
 				content: "Hello back",
 				usage: { total_tokens: 10 },
@@ -252,14 +252,14 @@ describe("responses", () => {
 			});
 		});
 
-		it("should retry only retryable provider errors", async () => {
+		it("should configure retryable provider error handling", async () => {
 			// @ts-expect-error - test data
 			await getAIResponse(baseParams);
 
 			expect(withRetry).toHaveBeenCalledWith(
 				expect.any(Function),
 				expect.objectContaining({
-					retryCount: 2,
+					retryCount: 0,
 					baseDelayMs: 1000,
 					isRetryableError: expect.any(Function),
 					onRetry: expect.any(Function),
