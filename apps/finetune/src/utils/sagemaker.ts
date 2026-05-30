@@ -5,6 +5,21 @@ import { isRecord } from "../utils/objects.js";
 import { optionalString } from "../utils/strings.js";
 import { toDate } from "../utils/dates.js";
 
+export class SageMakerApiError extends Error {
+	constructor(
+		message: string,
+		readonly status: number,
+		readonly providerMessage: string,
+	) {
+		super(`SageMaker API error (${status}): ${providerMessage || message}`);
+		this.name = "SageMakerApiError";
+	}
+}
+
+export function isSageMakerAlreadyExistsError(error: unknown): boolean {
+	return error instanceof SageMakerApiError && /already exist/i.test(error.providerMessage);
+}
+
 export function mapSageMakerStatus(status: string | undefined): string {
 	switch (status) {
 		case "Completed":

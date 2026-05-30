@@ -10,6 +10,7 @@ import { createFineTuneProvider } from "../providers/registry.js";
 import type { Env } from "../types/env.js";
 import { getErrorMessage } from "../utils/errors.js";
 import { HttpError } from "../utils/http.js";
+import { getSageMakerDeploymentNames } from "../utils/sagemakerDeploymentNames.js";
 import { requireTrainingResourceName } from "../utils/trainingNames.js";
 import { TrainingStore } from "../lib/TrainingStore.js";
 import { mergeFineTunedDeployment, mergeTrainingJob } from "../lib/trainingRecords.js";
@@ -159,8 +160,9 @@ export class TrainingWorkerService {
 			throw new HttpError(`Provider ${request.provider} does not support deployments`, 400);
 		}
 
+		let sourceJob: FineTuningJob | null = null;
 		if (request.trainingJobName) {
-			const sourceJob = await this.store.getJob(
+			sourceJob = await this.store.getJob(
 				request.provider,
 				request.trainingJobName,
 				request.userId,
@@ -173,33 +175,62 @@ export class TrainingWorkerService {
 		const deploymentName = requireTrainingResourceName(
 			request.deploymentName || `${request.model.id}-${Date.now()}`,
 		);
-		const result = await provider.deployModel({
-			model: request.model,
-			trainingJobName: request.trainingJobName,
-			modelArtifactsS3Uri: request.modelArtifactsS3Uri,
-			deploymentName,
-			roleArn: request.roleArn,
-			instanceType: request.instanceType,
-			instanceCount: request.instanceCount,
-			inferenceImage: request.inferenceImage,
-			environment: request.environment,
-		});
 
-		await this.store.saveDeployment({
-			userId: request.userId,
-			deployment: result.deployment,
-			request,
-			response: result.deployment.providerResponse,
-		});
-		await this.store.addEvent({
-			provider: request.provider,
-			jobName: request.trainingJobName || result.deployment.endpointName,
-			level: "info",
-			message: "Fine-tuned model deployment submitted",
-			metadata: { endpointName: result.deployment.endpointName, requestId: request.requestId },
-		});
+		try {
+			const result = await provider.deployModel({
+				model: request.model,
+				trainingJobName: request.trainingJobName,
+				modelArtifactsS3Uri: request.modelArtifactsS3Uri,
+				deploymentName,
+				roleArn: request.roleArn,
+				instanceType: request.instanceType,
+				instanceCount: request.instanceCount,
+				inferenceImage: request.inferenceImage,
+				environment: request.environment,
+			});
 
-		return result.deployment;
+			await this.store.saveDeployment({
+				userId: request.userId,
+				deployment: result.deployment,
+				request,
+				response: result.deployment.providerResponse,
+			});
+			await this.store.addEvent({
+				provider: request.provider,
+				jobName: request.trainingJobName || result.deployment.endpointName,
+				level: "info",
+				message: "Fine-tuned model deployment submitted",
+				metadata: { endpointName: result.deployment.endpointName, requestId: request.requestId },
+			});
+
+			return result.deployment;
+		} catch (error) {
+			const failedDeployment = this.createFailedDeployment({
+				request,
+				deploymentName,
+				modelArtifactsS3Uri: request.modelArtifactsS3Uri || sourceJob?.modelArtifactsS3Uri,
+				failureReason: getErrorMessage(error),
+			});
+
+			await this.store.saveDeployment({
+				userId: request.userId,
+				deployment: failedDeployment,
+				request,
+			});
+			await this.store.addEvent({
+				provider: request.provider,
+				jobName: request.trainingJobName || failedDeployment.endpointName,
+				level: "error",
+				message: "Fine-tuned model deployment failed",
+				metadata: {
+					endpointName: failedDeployment.endpointName,
+					error: failedDeployment.failureReason,
+					requestId: request.requestId,
+				},
+			});
+
+			return failedDeployment;
+		}
 	}
 
 	async getDeployment(
@@ -242,5 +273,31 @@ export class TrainingWorkerService {
 
 	async listDeployments(userId: number): Promise<FineTunedDeployment[]> {
 		return this.store.listDeployments(userId);
+	}
+
+	private createFailedDeployment({
+		request,
+		deploymentName,
+		modelArtifactsS3Uri,
+		failureReason,
+	}: {
+		request: UserScopedDeployModelRequest;
+		deploymentName: string;
+		modelArtifactsS3Uri?: string;
+		failureReason: string;
+	}): FineTunedDeployment {
+		const names = getSageMakerDeploymentNames(deploymentName);
+
+		return {
+			provider: request.provider,
+			deploymentName: names.deploymentName,
+			modelName: names.modelName,
+			endpointConfigName: names.endpointConfigName,
+			endpointName: names.endpointName,
+			status: "Failed",
+			modelId: request.model.id,
+			modelArtifactsS3Uri,
+			failureReason,
+		};
 	}
 }

@@ -1,14 +1,16 @@
 import type { FineTunedDeployment, FineTuningJob } from "@assistant/schemas";
 
-import { appendResourceNameSuffix, sanitiseResourceName } from "../utils/names.js";
 import { signAwsJsonRequest } from "../utils/aws.js";
 import { stringifyEntries } from "../utils/json.js";
 import { isRecord } from "../utils/objects.js";
+import { getSageMakerDeploymentNames } from "../utils/sagemakerDeploymentNames.js";
 import type { Env } from "../types/env.js";
 import {
 	getSageMakerErrorMessage,
+	isSageMakerAlreadyExistsError,
 	mapSageMakerDeployment,
 	mapSageMakerTrainingJob,
+	SageMakerApiError,
 } from "../utils/sagemaker.js";
 import type {
 	CreateTrainingJobOptions,
@@ -118,15 +120,10 @@ export class SageMakerFineTuneProvider implements FineTuneProvider {
 			throw new Error(`Model ${options.model.id} does not define an inference image`);
 		}
 
-		const deploymentName = sanitiseResourceName(options.deploymentName, {
-			fallback: `training-${Date.now()}`,
-		});
-		const modelName = appendResourceNameSuffix(deploymentName, "model");
-		const endpointConfigName = appendResourceNameSuffix(deploymentName, "config");
-		const endpointName = appendResourceNameSuffix(deploymentName, "endpoint");
+		const names = getSageMakerDeploymentNames(options.deploymentName);
 
-		await this.invoke("SageMaker.CreateModel", {
-			ModelName: modelName,
+		await this.createSageMakerResource("SageMaker.CreateModel", {
+			ModelName: names.modelName,
 			ExecutionRoleArn: roleArn,
 			PrimaryContainer: this.createPrimaryContainer(
 				inferenceImage,
@@ -134,12 +131,12 @@ export class SageMakerFineTuneProvider implements FineTuneProvider {
 				environment,
 			),
 		});
-		await this.invoke("SageMaker.CreateEndpointConfig", {
-			EndpointConfigName: endpointConfigName,
+		await this.createSageMakerResource("SageMaker.CreateEndpointConfig", {
+			EndpointConfigName: names.endpointConfigName,
 			ProductionVariants: [
 				{
 					VariantName: "AllTraffic",
-					ModelName: modelName,
+					ModelName: names.modelName,
 					InitialInstanceCount: options.instanceCount || 1,
 					InstanceType:
 						options.instanceType || options.model.defaultDeploymentInstanceType || "ml.g4dn.xlarge",
@@ -147,18 +144,18 @@ export class SageMakerFineTuneProvider implements FineTuneProvider {
 				},
 			],
 		});
-		await this.invoke("SageMaker.CreateEndpoint", {
-			EndpointName: endpointName,
-			EndpointConfigName: endpointConfigName,
+		await this.createSageMakerResource("SageMaker.CreateEndpoint", {
+			EndpointName: names.endpointName,
+			EndpointConfigName: names.endpointConfigName,
 		});
 
 		return {
 			deployment: {
 				provider: this.id,
-				deploymentName,
-				modelName,
-				endpointConfigName,
-				endpointName,
+				deploymentName: names.deploymentName,
+				modelName: names.modelName,
+				endpointConfigName: names.endpointConfigName,
+				endpointName: names.endpointName,
 				status: "Creating",
 				modelId: options.model.id,
 				modelArtifactsS3Uri,
@@ -227,6 +224,19 @@ export class SageMakerFineTuneProvider implements FineTuneProvider {
 		return { accessKeyId, secretAccessKey, sessionToken };
 	}
 
+	private async createSageMakerResource(
+		target: string,
+		body: Record<string, unknown>,
+	): Promise<void> {
+		try {
+			await this.invoke(target, body);
+		} catch (error) {
+			if (isSageMakerAlreadyExistsError(error)) return;
+
+			throw error;
+		}
+	}
+
 	private async invoke(
 		target: string,
 		body: Record<string, unknown>,
@@ -250,8 +260,10 @@ export class SageMakerFineTuneProvider implements FineTuneProvider {
 		const text = await response.text();
 		const data: unknown = text ? JSON.parse(text) : {};
 		if (!response.ok) {
-			throw new Error(
-				`SageMaker API error (${response.status}): ${getSageMakerErrorMessage(data, text)}`,
+			throw new SageMakerApiError(
+				response.statusText,
+				response.status,
+				getSageMakerErrorMessage(data, text),
 			);
 		}
 

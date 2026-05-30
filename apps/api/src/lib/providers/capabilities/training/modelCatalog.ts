@@ -77,7 +77,7 @@ export const fineTuningModelCatalog: FineTuningModelDefinition[] = [
 			"Flower Labs Lizzy 7B configured for Hugging Face causal language modelling on SageMaker.",
 		baseModel: "flwrlabs/Lizzy-7B",
 		defaultInstanceType: "ml.p3.2xlarge",
-		defaultDeploymentInstanceType: "ml.g5.2xlarge",
+		defaultDeploymentInstanceType: "ml.g4dn.xlarge",
 		defaultHyperparameters: {
 			model_name_or_path: "flwrlabs/Lizzy-7B",
 			output_dir: "/opt/ml/model",
