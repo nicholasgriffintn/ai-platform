@@ -2,7 +2,7 @@
 	"name": "@assistant/finetune",
 	"version": "0.0.1",
 	"private": true,
-	"description": "Fine-tuning Worker service for training and deployment jobs",
+	"description": "Training Worker service for training and deployment jobs",
 	"type": "module",
 	"main": "src/index.ts",
 	"scripts": {

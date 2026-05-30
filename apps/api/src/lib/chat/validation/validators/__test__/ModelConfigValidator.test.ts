@@ -128,6 +128,7 @@ describe("ModelConfigValidator", () => {
 				"claude-3-sonnet",
 				baseOptions.env,
 				undefined,
+				baseOptions.user.id,
 			);
 		});
 

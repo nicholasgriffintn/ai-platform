@@ -25,9 +25,10 @@ export async function listModels(env: IEnv, userId?: number) {
 			"speech",
 		],
 	});
-	return await filterModelsForUserAccess(allModels, env, userId, {
+	const filteredModels = await filterModelsForUserAccess(allModels, env, userId, {
 		shouldUseCache: false,
 	});
+	return filteredModels;
 }
 
 /**
@@ -42,9 +43,11 @@ export function listStrengths() {
  */
 export async function listModelsByStrength(env: IEnv, capability: string, userId?: number) {
 	const models = getModelsByCapability(capability);
-	return await filterModelsForUserAccess(models, env, userId, {
+	const filteredModels = await filterModelsForUserAccess(models, env, userId, {
 		shouldUseCache: false,
+		includeTrainingDeployments: false,
 	});
+	return filteredModels;
 }
 
 /**
@@ -59,9 +62,11 @@ export function listModalities() {
  */
 export async function listModelsByModality(env: IEnv, modality: string, userId?: number) {
 	const models = getModelsByModality(modality as (typeof availableModalities)[number]);
-	return await filterModelsForUserAccess(models, env, userId, {
+	const filteredModels = await filterModelsForUserAccess(models, env, userId, {
 		shouldUseCache: false,
+		includeTrainingDeployments: modality === "text",
 	});
+	return filteredModels;
 }
 
 /**
@@ -69,20 +74,21 @@ export async function listModelsByModality(env: IEnv, modality: string, userId?:
  */
 export async function listModelsByOutputModality(env: IEnv, modality: string, userId?: number) {
 	const models = getModelsByOutputModality(modality as (typeof availableModalities)[number]);
-	return await filterModelsForUserAccess(models, env, userId, {
+	const filteredModels = await filterModelsForUserAccess(models, env, userId, {
 		shouldUseCache: false,
+		includeTrainingDeployments: modality === "text",
 	});
+	return filteredModels;
 }
 
 /**
  * Get model details by ID if user has access.
  */
 export async function getModelDetails(env: IEnv, id: string, userId?: number) {
-	const model = await getModelConfig(id);
+	const model = await getModelConfig(id, env, undefined, userId);
 	if (!model) {
 		throw new AssistantError("Model not found or user does not have access", ErrorType.NOT_FOUND);
 	}
-
 	const accessibleModels = await filterModelsForUserAccess({ [id]: model }, env, userId, {
 		shouldUseCache: false,
 	});

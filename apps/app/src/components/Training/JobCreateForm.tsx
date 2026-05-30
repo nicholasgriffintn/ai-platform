@@ -1,6 +1,6 @@
 import type { FormEvent } from "react";
 import { useEffect, useMemo, useState } from "react";
-import type { FineTuningModelDefinition, StartFineTuningJobRequest } from "@assistant/schemas";
+import type { TrainingModelDefinition, StartTrainingJobRequest } from "@assistant/schemas";
 import { Rocket } from "lucide-react";
 import { toast } from "sonner";
 
@@ -17,9 +17,9 @@ import {
 import type { TrainingDatasetMode } from "./utils";
 
 interface JobCreateFormProps {
-	models: FineTuningModelDefinition[];
+	models: TrainingModelDefinition[];
 	isSubmitting: boolean;
-	onSubmit: (request: StartFineTuningJobRequest) => Promise<void>;
+	onSubmit: (request: StartTrainingJobRequest) => Promise<void>;
 }
 
 export function JobCreateForm({ models, isSubmitting, onSubmit }: JobCreateFormProps) {
@@ -97,7 +97,7 @@ export function JobCreateForm({ models, isSubmitting, onSubmit }: JobCreateFormP
 			setEntryPoint("");
 			setSourceS3Uri("");
 			setHyperparameters("");
-			toast.success("Fine-tuning job submitted");
+			toast.success("Training job submitted");
 		} catch (error) {
 			toast.error(getErrorMessage(error, "Failed to start job"));
 		}

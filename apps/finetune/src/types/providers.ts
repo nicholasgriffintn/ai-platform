@@ -1,16 +1,17 @@
 import type {
-	FineTunedDeployment,
-	FineTuningJob,
-	FineTuningModelDefinition,
-	FineTuningProviderId,
+	TrainingDeployment,
+	TrainingDeploymentTarget,
+	TrainingJob,
+	TrainingModelDefinition,
+	TrainingProviderId,
 } from "@assistant/schemas";
 
 import type { Env } from "./env.js";
 
 export interface CreateTrainingJobOptions {
-	provider: FineTuningProviderId;
+	provider: TrainingProviderId;
 	jobName: string;
-	model: FineTuningModelDefinition;
+	model: TrainingModelDefinition;
 	trainingDataS3Uri: string;
 	validationDataS3Uri?: string;
 	customModelName?: string;
@@ -26,35 +27,44 @@ export interface CreateTrainingJobOptions {
 }
 
 export interface CreateTrainingJobResult {
-	job: FineTuningJob;
+	job: TrainingJob;
 	providerJobId?: string;
 	metadata?: Record<string, unknown>;
 }
 
 export interface DeployModelOptions {
-	model: FineTuningModelDefinition;
+	model: TrainingModelDefinition;
 	trainingJobName?: string;
 	modelArtifactsS3Uri?: string;
 	deploymentName: string;
+	deploymentTarget?: TrainingDeploymentTarget;
 	roleArn?: string;
 	instanceType?: string;
 	instanceCount?: number;
+	serverlessMemorySizeInMB?: number;
+	serverlessMaxConcurrency?: number;
+	serverlessProvisionedConcurrency?: number;
 	inferenceImage?: string;
 	environment?: Record<string, string>;
 }
 
 export interface DeployModelResult {
-	deployment: FineTunedDeployment;
+	deployment: TrainingDeployment;
 }
 
-export interface FineTuneProvider {
-	readonly id: FineTuningProviderId;
+export interface DeleteDeploymentOptions {
+	deployment: TrainingDeployment;
+}
+
+export interface TrainingProvider {
+	readonly id: TrainingProviderId;
 	createTrainingJob(options: CreateTrainingJobOptions): Promise<CreateTrainingJobResult>;
-	getJobStatus(jobIdentifier: string): Promise<FineTuningJob>;
+	getJobStatus(jobIdentifier: string): Promise<TrainingJob>;
 	deployModel?(options: DeployModelOptions): Promise<DeployModelResult>;
-	getDeployment?(endpointName: string): Promise<FineTunedDeployment>;
+	getDeployment?(endpointName: string): Promise<TrainingDeployment>;
+	deleteDeployment?(options: DeleteDeploymentOptions): Promise<void>;
 }
 
-export interface FineTuneProviderContext {
+export interface TrainingProviderContext {
 	env: Env;
 }

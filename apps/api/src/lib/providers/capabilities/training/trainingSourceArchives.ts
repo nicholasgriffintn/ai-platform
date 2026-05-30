@@ -1,4 +1,4 @@
-import type { FineTuningModelDefinition } from "~/types/training";
+import type { TrainingModelDefinition } from "~/types/training";
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import {
@@ -9,7 +9,7 @@ import {
 
 interface ResolveTrainingSourceOptions {
 	context: ServiceContext;
-	model: FineTuningModelDefinition;
+	model: TrainingModelDefinition;
 	sourceS3Uri?: string;
 }
 
@@ -44,7 +44,7 @@ export async function resolveTrainingSource({
 	}
 
 	const bucket = resolveSageMakerTrainingBucket(context);
-	const key = model.sourceArchive.s3Key || `fine-tuning/sources/${model.id}/source.tar.gz`;
+	const key = model.sourceArchive.s3Key || `training/sources/${model.id}/source.tar.gz`;
 	const exists = await hasSageMakerS3Object({ context, bucket, key });
 
 	if (!exists) {

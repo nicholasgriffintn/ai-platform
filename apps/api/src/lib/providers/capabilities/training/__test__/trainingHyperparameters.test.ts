@@ -1,9 +1,9 @@
-import type { FineTuningModelDefinition } from "~/types/training";
+import type { TrainingModelDefinition } from "~/types/training";
 import { describe, expect, it } from "vitest";
 
 import { resolveTrainingHyperparameters } from "../trainingHyperparameters";
 
-const MODEL: FineTuningModelDefinition = {
+const MODEL: TrainingModelDefinition = {
 	id: "lizzy-7b",
 	provider: "aws-sagemaker",
 	family: "huggingface",

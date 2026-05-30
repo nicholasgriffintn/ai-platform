@@ -249,7 +249,7 @@ export async function createStreamWithPostProcessing(
 	};
 
 	const guardrails = new Guardrails(env, user, userSettings);
-	const modelConfig = await findModelConfig(model, env, options.provider);
+	const modelConfig = await findModelConfig(model, env, options.provider, user?.id);
 
 	return providerStream.pipeThrough(
 		new TransformStream({

@@ -48,6 +48,10 @@ import { exaModelConfig } from "~/data-model/models/exa";
 import { cerebrasModelConfig } from "~/data-model/models/cerebras";
 import { falModelConfig } from "~/data-model/models/fal";
 import { ideogramModelConfig } from "~/data-model/models/ideogram";
+import {
+	findTrainingDeploymentModelConfig,
+	getTrainingDeploymentModelConfigs,
+} from "./trainingDeployments";
 import { mergeModelConfigs } from "./utils";
 
 const logger = getLogger({ prefix: "lib/models" });
@@ -61,6 +65,7 @@ let cachedCapabilities: string[] | null = null;
 export interface ModelsOptions {
 	shouldUseCache?: boolean;
 	excludeModalities?: ModelModality[];
+	includeTrainingDeployments?: boolean;
 }
 
 export interface ResolveModelProviderOptions {
@@ -153,6 +158,22 @@ function getModelCache(env: IEnv): KVCache | null {
 	return modelCache;
 }
 
+async function withTrainingDeploymentModels(
+	models: Record<string, ModelConfigItem>,
+	env: IEnv,
+	userId: number | undefined,
+	options: ModelsOptions,
+): Promise<Record<string, ModelConfigItem>> {
+	if (!userId || options.includeTrainingDeployments === false) {
+		return models;
+	}
+
+	return {
+		...models,
+		...(await getTrainingDeploymentModelConfigs(env, userId)),
+	};
+}
+
 /**
  * Generic caching helper that handles cache read/write operations
  */
@@ -187,16 +208,24 @@ async function withCache<T>(
 	return result;
 }
 
-export async function getModelConfig(model?: string, env?: IEnv, provider?: string) {
+export async function getModelConfig(
+	model?: string,
+	env?: IEnv,
+	provider?: string,
+	userId?: number,
+) {
 	const key = model || defaultModel;
 	const cacheParts = provider ? [key, provider] : [key];
 
-	return withCache(env, "model-config", cacheParts, () => {
+	const staticConfig = await withCache(env, "model-config", cacheParts, () => {
 		const config = modelConfig[key];
 		if (!config) return undefined;
 		if (provider && config.provider !== provider) return undefined;
 		return config;
 	});
+	if (staticConfig || !model) return staticConfig;
+
+	return findTrainingDeploymentModelConfig(model, env, userId, provider);
 }
 
 export async function getModelConfigByModel(model: string, env?: IEnv) {
@@ -219,24 +248,29 @@ export async function getModelConfigByMatchingModel(
 	matchingModel: string,
 	env?: IEnv,
 	provider?: string,
+	userId?: number,
 ) {
 	const cacheParts = provider ? [matchingModel, provider] : [matchingModel];
-	return withCache(
+	const staticConfig = await withCache(
 		env,
 		"model-by-matching",
 		cacheParts,
 		() => findModelConfigByMatchingModel(matchingModel, provider) ?? null,
 	);
+	if (staticConfig) return staticConfig;
+
+	return findTrainingDeploymentModelConfig(matchingModel, env, userId, provider);
 }
 
 export async function findModelConfig(
 	model: string,
 	env?: IEnv,
 	provider?: string,
+	userId?: number,
 ): Promise<ModelConfigItem | null> {
 	return (
-		(await getModelConfig(model, env, provider)) ||
-		(await getModelConfigByMatchingModel(model, env, provider)) ||
+		(await getModelConfig(model, env, provider, userId)) ||
+		(await getModelConfigByMatchingModel(model, env, provider, userId)) ||
 		null
 	);
 }
@@ -245,8 +279,9 @@ export async function resolveModelConfig(
 	model: string,
 	env?: IEnv,
 	provider?: string,
+	userId?: number,
 ): Promise<ModelConfigItem> {
-	const resolvedConfig = await findModelConfig(model, env, provider);
+	const resolvedConfig = await findModelConfig(model, env, provider, userId);
 
 	if (!resolvedConfig) {
 		throw new AssistantError(`Model ${model} not found`, ErrorType.PARAMS_ERROR);
@@ -485,7 +520,7 @@ export async function filterModelsForUserAccess(
 			}
 		}
 
-		return filteredModels;
+		return withTrainingDeploymentModels(filteredModels, env, userId, options);
 	}
 
 	try {
@@ -513,7 +548,7 @@ export async function filterModelsForUserAccess(
 			}
 		}
 
-		return filteredModels;
+		return withTrainingDeploymentModels(filteredModels, env, userId, options);
 	} catch (error) {
 		logger.error(`Error during model filtering for user ${userId}`, { error });
 		return freeModels;

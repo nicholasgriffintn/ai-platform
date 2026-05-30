@@ -12,7 +12,7 @@ function createInternalRequest(headers: Record<string, string> = {}): Request {
 describe("internal worker auth", () => {
 	it("rejects worker requests when the shared token is not configured", () => {
 		expect(() => assertInternalRequest(createInternalRequest(), {})).toThrow(
-			"Fine-tuning worker token is not configured",
+			"Training worker token is not configured",
 		);
 	});
 

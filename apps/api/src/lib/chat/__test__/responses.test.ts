@@ -235,7 +235,12 @@ describe("responses", () => {
 			// @ts-expect-error - test data
 			const result = await getAIResponse(baseParams);
 
-			expect(findModelConfig).toHaveBeenCalledWith("gpt-4", baseParams.env, undefined);
+			expect(findModelConfig).toHaveBeenCalledWith(
+				"gpt-4",
+				baseParams.env,
+				undefined,
+				baseParams.user.id,
+			);
 			expect(chatCapability.getChatProvider).toHaveBeenCalledWith("openai", {
 				env: baseParams.env,
 				user: baseParams.user,
@@ -290,7 +295,12 @@ describe("responses", () => {
 				provider: "github-models",
 			} as any);
 
-			expect(findModelConfig).toHaveBeenCalledWith("xai/grok-3", env, "github-models");
+			expect(findModelConfig).toHaveBeenCalledWith(
+				"xai/grok-3",
+				env,
+				"github-models",
+				baseParams.user.id,
+			);
 			expect(chatCapability.getChatProvider).toHaveBeenCalledWith("github-models", {
 				env,
 				user: baseParams.user,

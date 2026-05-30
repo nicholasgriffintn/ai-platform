@@ -8,7 +8,7 @@ interface InternalAuthEnv {
 
 export function assertInternalRequest(request: Request, env: InternalAuthEnv): void {
 	if (!env.FINETUNE_WORKER_TOKEN) {
-		throw new HttpError("Fine-tuning worker token is not configured", 500);
+		throw new HttpError("Training worker token is not configured", 500);
 	}
 
 	const token = request.headers.get(FINETUNE_WORKER_TOKEN_HEADER);

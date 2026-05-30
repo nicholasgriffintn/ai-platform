@@ -1,22 +1,28 @@
 import type {
-	FinetuneWorkerDeployModelRequest,
-	FinetuneWorkerStartJobRequest,
-	FineTunedDeployment,
-	FineTuningJob,
-	FineTuningProviderId,
+	TrainingWorkerDeployModelRequest,
+	TrainingWorkerStartJobRequest,
+	TrainingDeployment,
+	TrainingDeploymentDeleteResponse,
+	TrainingJob,
+	TrainingProviderId,
 } from "@assistant/schemas";
 
-import { createFineTuneProvider } from "../providers/registry.js";
+import { createTrainingProvider } from "../providers/registry.js";
 import type { Env } from "../types/env.js";
 import { getErrorMessage } from "../utils/errors.js";
 import { HttpError } from "../utils/http.js";
 import { getSageMakerDeploymentNames } from "../utils/sagemakerDeploymentNames.js";
 import { requireTrainingResourceName } from "../utils/trainingNames.js";
+import {
+	getDeploymentNameInput,
+	normaliseDeploymentVersion,
+	withDeploymentVersion,
+} from "../utils/trainingDeploymentVersions.js";
 import { TrainingStore } from "../lib/TrainingStore.js";
-import { mergeFineTunedDeployment, mergeTrainingJob } from "../lib/trainingRecords.js";
+import { mergeTrainingDeployment, mergeTrainingJob } from "../lib/trainingRecords.js";
 
-type UserScopedStartJobRequest = FinetuneWorkerStartJobRequest & { userId: number };
-type UserScopedDeployModelRequest = FinetuneWorkerDeployModelRequest & { userId: number };
+type UserScopedStartJobRequest = TrainingWorkerStartJobRequest & { userId: number };
+type UserScopedDeployModelRequest = TrainingWorkerDeployModelRequest & { userId: number };
 
 export class TrainingWorkerService {
 	private readonly store: TrainingStore;
@@ -25,26 +31,26 @@ export class TrainingWorkerService {
 		this.store = new TrainingStore(env.DB);
 	}
 
-	async startJob(request: UserScopedStartJobRequest): Promise<FineTuningJob> {
+	async startJob(request: UserScopedStartJobRequest): Promise<TrainingJob> {
 		const jobName = requireTrainingResourceName(
 			request.jobName || `${request.model.id}-${Date.now()}`,
 		);
 		const trainingDataS3Uri = request.dataset.trainS3Uri;
 
 		if (!trainingDataS3Uri) {
-			throw new HttpError("Fine-tuning requires an exported S3 training dataset", 400);
+			throw new HttpError("Training requires an exported S3 dataset", 400);
 		}
 
 		await this.store.addEvent({
 			provider: request.provider,
 			jobName,
 			level: "info",
-			message: "Fine-tuning job requested",
+			message: "Training job requested",
 			metadata: { modelId: request.model.id, requestId: request.requestId },
 		});
 
 		try {
-			const provider = createFineTuneProvider(request.provider, { env: this.env });
+			const provider = createTrainingProvider(request.provider, { env: this.env });
 			const result = await provider.createTrainingJob({
 				provider: request.provider,
 				jobName,
@@ -74,13 +80,13 @@ export class TrainingWorkerService {
 				provider: request.provider,
 				jobName,
 				level: "info",
-				message: "Fine-tuning job submitted",
+				message: "Training job submitted",
 				metadata: result.metadata,
 			});
 
 			return result.job;
 		} catch (error) {
-			const failedJob: FineTuningJob = {
+			const failedJob: TrainingJob = {
 				provider: request.provider,
 				jobName,
 				status: "Failed",
@@ -98,7 +104,7 @@ export class TrainingWorkerService {
 				provider: request.provider,
 				jobName,
 				level: "error",
-				message: "Fine-tuning job failed before submission",
+				message: "Training job failed before submission",
 				metadata: { error: failedJob.failureReason, requestId: request.requestId },
 			});
 
@@ -107,16 +113,16 @@ export class TrainingWorkerService {
 	}
 
 	async getJob(
-		providerId: FineTuningProviderId,
+		providerId: TrainingProviderId,
 		jobName: string,
 		userId: number,
-	): Promise<FineTuningJob> {
+	): Promise<TrainingJob> {
 		const stored = await this.store.getJob(providerId, jobName, userId);
 		if (!stored) {
-			throw new HttpError("Fine-tuning job not found", 404);
+			throw new HttpError("Training job not found", 404);
 		}
 
-		const provider = createFineTuneProvider(providerId, { env: this.env });
+		const provider = createTrainingProvider(providerId, { env: this.env });
 
 		try {
 			const live = await provider.getJobStatus(jobName);
@@ -130,7 +136,7 @@ export class TrainingWorkerService {
 					provider: providerId,
 					jobName,
 					level: "warn",
-					message: "Returned cached fine-tuning job after provider status lookup failed",
+					message: "Returned cached training job after provider status lookup failed",
 					metadata: { error: getErrorMessage(error) },
 				});
 
@@ -141,26 +147,28 @@ export class TrainingWorkerService {
 		}
 	}
 
-	async listJobs(userId: number): Promise<FineTuningJob[]> {
+	async listJobs(userId: number): Promise<TrainingJob[]> {
 		return this.store.listJobs(userId);
 	}
 
-	async listEvents(providerId: FineTuningProviderId, jobName: string, userId: number) {
+	async listEvents(providerId: TrainingProviderId, jobName: string, userId: number) {
 		const stored = await this.store.getJob(providerId, jobName, userId);
 		if (!stored) {
-			throw new HttpError("Fine-tuning job not found", 404);
+			throw new HttpError("Training job not found", 404);
 		}
 
 		return this.store.listEvents(providerId, jobName);
 	}
 
-	async deployModel(request: UserScopedDeployModelRequest): Promise<FineTunedDeployment> {
-		const provider = createFineTuneProvider(request.provider, { env: this.env });
+	async deployModel(request: UserScopedDeployModelRequest): Promise<TrainingDeployment> {
+		const deploymentProviderId =
+			request.deploymentTarget === "bedrock-import" ? "aws-bedrock" : request.provider;
+		const provider = createTrainingProvider(deploymentProviderId, { env: this.env });
 		if (!provider.deployModel) {
-			throw new HttpError(`Provider ${request.provider} does not support deployments`, 400);
+			throw new HttpError(`Provider ${deploymentProviderId} does not support deployments`, 400);
 		}
 
-		let sourceJob: FineTuningJob | null = null;
+		let sourceJob: TrainingJob | null = null;
 		if (request.trainingJobName) {
 			sourceJob = await this.store.getJob(
 				request.provider,
@@ -168,12 +176,17 @@ export class TrainingWorkerService {
 				request.userId,
 			);
 			if (!sourceJob) {
-				throw new HttpError("Fine-tuning job not found", 404);
+				throw new HttpError("Training job not found", 404);
 			}
 		}
 
+		const deploymentVersion = normaliseDeploymentVersion(request.deploymentVersion);
 		const deploymentName = requireTrainingResourceName(
-			request.deploymentName || `${request.model.id}-${Date.now()}`,
+			getDeploymentNameInput({
+				modelId: request.model.id,
+				deploymentName: request.deploymentName,
+				deploymentVersion,
+			}),
 		);
 
 		try {
@@ -182,32 +195,50 @@ export class TrainingWorkerService {
 				trainingJobName: request.trainingJobName,
 				modelArtifactsS3Uri: request.modelArtifactsS3Uri,
 				deploymentName,
+				deploymentTarget: request.deploymentTarget,
 				roleArn: request.roleArn,
 				instanceType: request.instanceType,
 				instanceCount: request.instanceCount,
+				serverlessMemorySizeInMB: request.serverlessMemorySizeInMB,
+				serverlessMaxConcurrency: request.serverlessMaxConcurrency,
+				serverlessProvisionedConcurrency: request.serverlessProvisionedConcurrency,
 				inferenceImage: request.inferenceImage,
 				environment: request.environment,
 			});
 
+			const deployment = withDeploymentVersion(
+				{
+					...result.deployment,
+					deploymentTarget: result.deployment.deploymentTarget || request.deploymentTarget,
+				},
+				deploymentVersion,
+			);
+
 			await this.store.saveDeployment({
 				userId: request.userId,
-				deployment: result.deployment,
+				deployment,
 				request,
-				response: result.deployment.providerResponse,
+				response: deployment.providerResponse,
 			});
 			await this.store.addEvent({
-				provider: request.provider,
-				jobName: request.trainingJobName || result.deployment.endpointName,
+				provider: deploymentProviderId,
+				jobName: request.trainingJobName || deployment.endpointName,
 				level: "info",
-				message: "Fine-tuned model deployment submitted",
-				metadata: { endpointName: result.deployment.endpointName, requestId: request.requestId },
+				message: "Training model deployment submitted",
+				metadata: {
+					endpointName: deployment.endpointName,
+					deploymentVersion,
+					requestId: request.requestId,
+				},
 			});
 
-			return result.deployment;
+			return deployment;
 		} catch (error) {
 			const failedDeployment = this.createFailedDeployment({
 				request,
+				providerId: deploymentProviderId,
 				deploymentName,
+				deploymentVersion,
 				modelArtifactsS3Uri: request.modelArtifactsS3Uri || sourceJob?.modelArtifactsS3Uri,
 				failureReason: getErrorMessage(error),
 			});
@@ -218,12 +249,13 @@ export class TrainingWorkerService {
 				request,
 			});
 			await this.store.addEvent({
-				provider: request.provider,
+				provider: deploymentProviderId,
 				jobName: request.trainingJobName || failedDeployment.endpointName,
 				level: "error",
-				message: "Fine-tuned model deployment failed",
+				message: "Training model deployment failed",
 				metadata: {
 					endpointName: failedDeployment.endpointName,
+					deploymentVersion,
 					error: failedDeployment.failureReason,
 					requestId: request.requestId,
 				},
@@ -234,16 +266,16 @@ export class TrainingWorkerService {
 	}
 
 	async getDeployment(
-		providerId: FineTuningProviderId,
+		providerId: TrainingProviderId,
 		endpointName: string,
 		userId: number,
-	): Promise<FineTunedDeployment> {
+	): Promise<TrainingDeployment> {
 		const stored = await this.store.getDeployment(providerId, endpointName, userId);
 		if (!stored) {
-			throw new HttpError("Fine-tuned deployment not found", 404);
+			throw new HttpError("Training deployment not found", 404);
 		}
 
-		const provider = createFineTuneProvider(providerId, { env: this.env });
+		const provider = createTrainingProvider(providerId, { env: this.env });
 
 		if (!provider.getDeployment) {
 			if (!stored) {
@@ -255,7 +287,7 @@ export class TrainingWorkerService {
 
 		try {
 			const live = await provider.getDeployment(endpointName);
-			const deployment = mergeFineTunedDeployment(stored, live);
+			const deployment = mergeTrainingDeployment(stored, live);
 			await this.store.saveDeployment({
 				deployment,
 				response: live.providerResponse,
@@ -271,18 +303,84 @@ export class TrainingWorkerService {
 		}
 	}
 
-	async listDeployments(userId: number): Promise<FineTunedDeployment[]> {
+	async listDeployments(userId: number): Promise<TrainingDeployment[]> {
 		const deployments = await this.store.listDeployments(userId);
 		return Promise.all(deployments.map((deployment) => this.refreshDeployment(deployment)));
 	}
 
-	private async refreshDeployment(stored: FineTunedDeployment): Promise<FineTunedDeployment> {
-		const provider = createFineTuneProvider(stored.provider, { env: this.env });
+	async deleteDeployment(
+		providerId: TrainingProviderId,
+		endpointName: string,
+		userId: number,
+	): Promise<TrainingDeploymentDeleteResponse> {
+		const stored = await this.store.getDeployment(providerId, endpointName, userId);
+		if (!stored) {
+			throw new HttpError("Training deployment not found", 404);
+		}
+
+		const provider = createTrainingProvider(providerId, { env: this.env });
+		if (!provider.deleteDeployment) {
+			throw new HttpError(`Provider ${providerId} does not support deployment deletion`, 400);
+		}
+
+		let providerDeleteError: string | undefined;
+		try {
+			await provider.deleteDeployment({ deployment: stored });
+		} catch (error) {
+			providerDeleteError = getErrorMessage(error);
+			await this.store.addEvent({
+				provider: providerId,
+				jobName: endpointName,
+				level: "warn",
+				message: "Provider deployment deletion failed; stored deployment was removed",
+				metadata: {
+					endpointName,
+					error: providerDeleteError,
+				},
+			});
+		}
+
+		await this.store.deleteDeployment(providerId, endpointName, userId);
+		await this.store.addEvent({
+			provider: providerId,
+			jobName: endpointName,
+			level: providerDeleteError ? "warn" : "info",
+			message: providerDeleteError
+				? "Training deployment removed from Polychat"
+				: "Training deployment deleted",
+			metadata: {
+				endpointName,
+				deploymentVersion: stored.deploymentVersion,
+				providerDeleted: !providerDeleteError,
+				error: providerDeleteError,
+			},
+		});
+
+		if (providerDeleteError) {
+			return {
+				success: true,
+				message:
+					"Deployment removed from Polychat. Delete the remaining provider resources manually.",
+				providerDeleted: false,
+				manualDeletionRequired: true,
+				error: providerDeleteError,
+			};
+		}
+
+		return {
+			success: true,
+			message: "Deployment deleted",
+			providerDeleted: true,
+		};
+	}
+
+	private async refreshDeployment(stored: TrainingDeployment): Promise<TrainingDeployment> {
+		const provider = createTrainingProvider(stored.provider, { env: this.env });
 		if (!provider.getDeployment) return stored;
 
 		try {
 			const live = await provider.getDeployment(stored.endpointName);
-			const deployment = mergeFineTunedDeployment(stored, live);
+			const deployment = mergeTrainingDeployment(stored, live);
 			await this.store.saveDeployment({
 				deployment,
 				response: live.providerResponse,
@@ -293,7 +391,7 @@ export class TrainingWorkerService {
 					provider: deployment.provider,
 					jobName: deployment.endpointName,
 					level: "error",
-					message: "Fine-tuned model deployment failed",
+					message: "Training model deployment failed",
 					metadata: {
 						endpointName: deployment.endpointName,
 						error: deployment.failureReason,
@@ -309,27 +407,37 @@ export class TrainingWorkerService {
 
 	private createFailedDeployment({
 		request,
+		providerId,
 		deploymentName,
+		deploymentVersion,
 		modelArtifactsS3Uri,
 		failureReason,
 	}: {
 		request: UserScopedDeployModelRequest;
+		providerId: TrainingProviderId;
 		deploymentName: string;
+		deploymentVersion?: string;
 		modelArtifactsS3Uri?: string;
 		failureReason: string;
-	}): FineTunedDeployment {
+	}): TrainingDeployment {
 		const names = getSageMakerDeploymentNames(deploymentName);
+		const isBedrockImport = request.deploymentTarget === "bedrock-import";
 
-		return {
-			provider: request.provider,
-			deploymentName: names.deploymentName,
-			modelName: names.modelName,
-			endpointConfigName: names.endpointConfigName,
-			endpointName: names.endpointName,
-			status: "Failed",
-			modelId: request.model.id,
-			modelArtifactsS3Uri,
-			failureReason,
-		};
+		return withDeploymentVersion(
+			{
+				provider: providerId,
+				deploymentName: isBedrockImport ? deploymentName : names.deploymentName,
+				deploymentTarget: request.deploymentTarget,
+				deploymentVersion,
+				modelName: isBedrockImport ? deploymentName : names.modelName,
+				endpointConfigName: isBedrockImport ? deploymentName : names.endpointConfigName,
+				endpointName: isBedrockImport ? deploymentName : names.endpointName,
+				status: "Failed",
+				modelId: request.model.id,
+				modelArtifactsS3Uri,
+				failureReason,
+			},
+			deploymentVersion,
+		);
 	}
 }

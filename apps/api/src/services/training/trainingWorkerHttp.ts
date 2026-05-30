@@ -7,7 +7,7 @@ import { isRecord } from "~/utils/objects";
 
 const FINETUNE_WORKER_ORIGIN = "https://finetune.worker.internal";
 
-export async function requestFinetuneWorker<T>(
+export async function requestTrainingWorker<T>(
 	env: IEnv,
 	path: string,
 	responseSchema: ZodType<T>,
@@ -15,7 +15,7 @@ export async function requestFinetuneWorker<T>(
 ): Promise<T> {
 	if (!env.FINETUNE_WORKER) {
 		throw new AssistantError(
-			"Fine-tuning worker binding is not configured",
+			"Training worker binding is not configured",
 			ErrorType.CONFIGURATION_ERROR,
 			500,
 		);
@@ -24,24 +24,24 @@ export async function requestFinetuneWorker<T>(
 	const workerToken = env.FINETUNE_WORKER_TOKEN;
 	if (!workerToken) {
 		throw new AssistantError(
-			"Fine-tuning worker token is not configured",
+			"Training worker token is not configured",
 			ErrorType.CONFIGURATION_ERROR,
 			500,
 		);
 	}
 
-	const headers = getFinetuneWorkerHeaders(workerToken, init);
+	const headers = getTrainingWorkerHeaders(workerToken, init);
 	const request = new Request(`${FINETUNE_WORKER_ORIGIN}${path}`, {
 		method: init.method || "GET",
 		headers,
 		body: init.body === undefined ? undefined : JSON.stringify(init.body),
 	});
 	const response = await env.FINETUNE_WORKER.fetch(request);
-	const payload = await readFinetuneWorkerJson(response);
+	const payload = await readTrainingWorkerJson(response);
 
 	if (!response.ok) {
 		throw new AssistantError(
-			getFinetuneWorkerErrorMessage(payload, response.statusText),
+			getTrainingWorkerErrorMessage(payload, response.statusText),
 			ErrorType.PROVIDER_ERROR,
 			response.status,
 		);
@@ -50,7 +50,7 @@ export async function requestFinetuneWorker<T>(
 	return responseSchema.parse(payload);
 }
 
-function getFinetuneWorkerHeaders(
+function getTrainingWorkerHeaders(
 	workerToken: string,
 	init: { body?: unknown; userId: number },
 ): Headers {
@@ -66,7 +66,7 @@ function getFinetuneWorkerHeaders(
 	return headers;
 }
 
-async function readFinetuneWorkerJson(response: Response): Promise<unknown> {
+async function readTrainingWorkerJson(response: Response): Promise<unknown> {
 	const text = await response.text();
 	if (!text) return undefined;
 
@@ -74,17 +74,17 @@ async function readFinetuneWorkerJson(response: Response): Promise<unknown> {
 		return JSON.parse(text);
 	} catch {
 		throw new AssistantError(
-			"Fine-tuning worker returned invalid JSON",
+			"Training worker returned invalid JSON",
 			ErrorType.PROVIDER_ERROR,
 			response.status,
 		);
 	}
 }
 
-function getFinetuneWorkerErrorMessage(payload: unknown, fallback: string): string {
+function getTrainingWorkerErrorMessage(payload: unknown, fallback: string): string {
 	if (isRecord(payload) && typeof payload.error === "string") {
 		return payload.error;
 	}
 
-	return fallback || "Fine-tuning worker request failed";
+	return fallback || "Training worker request failed";
 }

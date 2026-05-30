@@ -1,19 +1,19 @@
-import type { FineTuningProviderId } from "@assistant/schemas";
+import type { TrainingProviderId } from "@assistant/schemas";
 
-import { BedrockFineTuneProvider } from "./BedrockFineTuneProvider.js";
-import { SageMakerFineTuneProvider } from "./SageMakerFineTuneProvider.js";
-import type { FineTuneProvider, FineTuneProviderContext } from "../types/providers.js";
+import { BedrockTrainingProvider } from "./BedrockTrainingProvider.js";
+import { SageMakerTrainingProvider } from "./SageMakerTrainingProvider.js";
+import type { TrainingProvider, TrainingProviderContext } from "../types/providers.js";
 
-export function createFineTuneProvider(
-	provider: FineTuningProviderId,
-	context: FineTuneProviderContext,
-): FineTuneProvider {
+export function createTrainingProvider(
+	provider: TrainingProviderId,
+	context: TrainingProviderContext,
+): TrainingProvider {
 	switch (provider) {
 		case "aws-bedrock":
-			return new BedrockFineTuneProvider(context.env);
+			return new BedrockTrainingProvider(context.env);
 		case "aws-sagemaker":
-			return new SageMakerFineTuneProvider(context.env);
+			return new SageMakerTrainingProvider(context.env);
 		default:
-			throw new Error(`Unsupported fine-tuning provider: ${provider}`);
+			throw new Error(`Unsupported training provider: ${provider}`);
 	}
 }

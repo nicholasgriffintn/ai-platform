@@ -139,7 +139,7 @@ export async function getAIResponse({
 
 	let modelConfig;
 	try {
-		modelConfig = await findModelConfig(requestedModel, env, requestedProvider);
+		modelConfig = await findModelConfig(requestedModel, env, requestedProvider, user?.id);
 		if (!modelConfig) {
 			throw new AssistantError(
 				`Model configuration not found for ${requestedModel}`,

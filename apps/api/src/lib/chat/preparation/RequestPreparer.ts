@@ -52,13 +52,13 @@ export class RequestPreparer {
 		RequestPreparer.modelConfigCache.clear();
 	}
 
-	private static getCachedModelConfig(model: string, env: any, provider?: string) {
-		const cacheKey = provider ? `${provider}:${model}` : model;
+	private static getCachedModelConfig(model: string, env: any, provider?: string, userId?: number) {
+		const cacheKey = [userId ?? "anonymous", provider ?? "any", model].join(":");
 
 		if (!RequestPreparer.modelConfigCache.has(cacheKey)) {
 			const fetchPromise = (async () => {
 				try {
-					const config = await findModelConfig(model, env, provider);
+					const config = await findModelConfig(model, env, provider, userId);
 					if (!config) {
 						RequestPreparer.modelConfigCache.delete(cacheKey);
 						return null;
@@ -199,7 +199,7 @@ export class RequestPreparer {
 		options: CoreChatOptions,
 		validationContext: ValidationContext,
 	): Promise<ModelConfigInfo[]> {
-		const { env, provider: requestedProvider } = options;
+		const { env, provider: requestedProvider, user } = options;
 		const { selectedModels, modelConfig } = validationContext;
 		const primaryModelConfig = modelConfig as ProviderModelConfig | undefined;
 
@@ -234,7 +234,7 @@ export class RequestPreparer {
 		const modelsToFetch = shouldSkipPrimaryFetch ? selectedModels.slice(1) : selectedModels.slice();
 
 		const configPromises = modelsToFetch.map((model) =>
-			RequestPreparer.getCachedModelConfig(model, env, requestedProvider),
+			RequestPreparer.getCachedModelConfig(model, env, requestedProvider, user?.id),
 		);
 		const configResults = await Promise.allSettled(configPromises);
 		configResults.forEach((result, index) => {

@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type {
-	DeployFineTunedModelRequest,
-	FineTunedDeployment,
-	FineTuningJob,
-	FineTuningJobEvent,
-	FineTuningModelDefinition,
-	StartFineTuningJobRequest,
+	DeployTrainingModelRequest,
+	TrainingDeployment,
+	TrainingJob,
+	TrainingJobEvent,
+	TrainingModelDefinition,
+	StartTrainingJobRequest,
 } from "@assistant/schemas";
 import { Activity, Boxes, ListChecks, RefreshCcw, Server } from "lucide-react";
 
@@ -24,12 +24,13 @@ import {
 } from "~/components/ui";
 import { CardSkeleton } from "~/components/ui/skeletons";
 import {
-	useDeployFineTunedModel,
-	useFineTunedDeployments,
-	useFineTuningJobEvents,
-	useFineTuningJobs,
-	useFineTuningModels,
-	useStartFineTuningJob,
+	useDeleteTrainingDeployment,
+	useDeployTrainingModel,
+	useTrainingDeployments,
+	useTrainingJobEvents,
+	useTrainingJobs,
+	useTrainingModels,
+	useStartTrainingJob,
 } from "~/hooks/useTraining";
 import { getErrorMessage } from "~/lib/errors";
 import { DeploymentsPanel } from "./DeploymentsPanel";
@@ -37,35 +38,37 @@ import { JobsPanel } from "./JobsPanel";
 import { ModelCatalog } from "./ModelCatalog";
 import { trainingRecordKey } from "./utils";
 
-const EMPTY_MODELS: FineTuningModelDefinition[] = [];
-const EMPTY_JOBS: FineTuningJob[] = [];
-const EMPTY_DEPLOYMENTS: FineTunedDeployment[] = [];
-const EMPTY_EVENTS: FineTuningJobEvent[] = [];
+const EMPTY_MODELS: TrainingModelDefinition[] = [];
+const EMPTY_JOBS: TrainingJob[] = [];
+const EMPTY_DEPLOYMENTS: TrainingDeployment[] = [];
+const EMPTY_EVENTS: TrainingJobEvent[] = [];
 
-export function FinetuningDashboard() {
+export function TrainingDashboard() {
 	const {
 		data: modelData,
 		error: modelsError,
 		isLoading: isModelsLoading,
 		isRefetching: isModelsRefetching,
 		refetch: refetchModels,
-	} = useFineTuningModels();
+	} = useTrainingModels();
 	const {
 		data: jobData,
 		error: jobsError,
 		isLoading: isJobsLoading,
 		isRefetching: isJobsRefetching,
 		refetch: refetchJobs,
-	} = useFineTuningJobs();
+	} = useTrainingJobs();
 	const {
 		data: deploymentData,
 		error: deploymentsError,
 		isLoading: isDeploymentsLoading,
 		isRefetching: isDeploymentsRefetching,
 		refetch: refetchDeployments,
-	} = useFineTunedDeployments();
-	const { mutateAsync: startJob, isPending: isStartingJob } = useStartFineTuningJob();
-	const { mutateAsync: deployModel, isPending: isDeployingModel } = useDeployFineTunedModel();
+	} = useTrainingDeployments();
+	const { mutateAsync: startJob, isPending: isStartingJob } = useStartTrainingJob();
+	const { mutateAsync: deployModel, isPending: isDeployingModel } = useDeployTrainingModel();
+	const { mutateAsync: deleteDeployment, isPending: isDeletingDeployment } =
+		useDeleteTrainingDeployment();
 
 	const models = modelData ?? EMPTY_MODELS;
 	const jobs = jobData ?? EMPTY_JOBS;
@@ -95,14 +98,14 @@ export function FinetuningDashboard() {
 		isLoading: isEventsLoading,
 		isRefetching: isEventsRefetching,
 		refetch: refetchEvents,
-	} = useFineTuningJobEvents(selectedJob?.provider, selectedJob?.jobName);
+	} = useTrainingJobEvents(selectedJob?.provider, selectedJob?.jobName);
 	const events = eventData ?? EMPTY_EVENTS;
 	const dashboardError = modelsError ?? jobsError ?? deploymentsError;
 	const isLoading = isModelsLoading || isJobsLoading || isDeploymentsLoading;
 	const isRefreshing =
 		isModelsRefetching || isJobsRefetching || isDeploymentsRefetching || isEventsRefetching;
 
-	const handleSelectJob = useCallback((job: FineTuningJob) => {
+	const handleSelectJob = useCallback((job: TrainingJob) => {
 		setSelectedJobKey(trainingRecordKey(job));
 	}, []);
 
@@ -116,7 +119,7 @@ export function FinetuningDashboard() {
 	}, [refetchDeployments, refetchEvents, refetchJobs, refetchModels, selectedJob]);
 
 	const handleStartJob = useCallback(
-		async (request: StartFineTuningJobRequest) => {
+		async (request: StartTrainingJobRequest) => {
 			const job = await startJob(request);
 			setSelectedJobKey(trainingRecordKey(job));
 			void refetchJobs();
@@ -125,11 +128,23 @@ export function FinetuningDashboard() {
 	);
 
 	const handleDeploy = useCallback(
-		async (request: DeployFineTunedModelRequest) => {
+		async (request: DeployTrainingModelRequest) => {
 			await deployModel(request);
 			void refetchDeployments();
 		},
 		[deployModel, refetchDeployments],
+	);
+
+	const handleDeleteDeployment = useCallback(
+		async (deployment: TrainingDeployment) => {
+			const result = await deleteDeployment({
+				provider: deployment.provider,
+				endpointName: deployment.endpointName,
+			});
+			void refetchDeployments();
+			return result;
+		},
+		[deleteDeployment, refetchDeployments],
 	);
 
 	if (isLoading) {
@@ -143,7 +158,7 @@ export function FinetuningDashboard() {
 	if (dashboardError) {
 		return (
 			<Alert variant="destructive" className="flex flex-col gap-3">
-				<AlertTitle>Unable to load fine-tuning data</AlertTitle>
+				<AlertTitle>Unable to load training data</AlertTitle>
 				<AlertDescription className="space-y-3">
 					<p>{getErrorMessage(dashboardError, "Unknown error occurred")}</p>
 					<Button variant="primary" size="sm" onClick={handleRefresh} isLoading={isRefreshing}>
@@ -209,7 +224,9 @@ export function FinetuningDashboard() {
 						jobs={jobs}
 						deployments={deployments}
 						isSubmitting={isDeployingModel}
+						isDeleting={isDeletingDeployment}
 						onDeploy={handleDeploy}
+						onDelete={handleDeleteDeployment}
 						onRefresh={handleRefresh}
 					/>
 				</TabsContent>
@@ -221,7 +238,7 @@ export function FinetuningDashboard() {
 						<EmptyState
 							icon={<Activity className="h-8 w-8 text-zinc-400" />}
 							title="No models configured"
-							message="Add fine-tuning models at the API level and they will appear here."
+							message="Add training models at the API level and they will appear here."
 						/>
 					)}
 				</TabsContent>

@@ -1,4 +1,4 @@
-import type { FineTunedDeployment, FineTuningJob } from "@assistant/schemas";
+import type { TrainingDeployment, TrainingJob } from "@assistant/schemas";
 import { z } from "zod";
 
 import { isRecord } from "../utils/objects.js";
@@ -18,6 +18,15 @@ export class SageMakerApiError extends Error {
 
 export function isSageMakerAlreadyExistsError(error: unknown): boolean {
 	return error instanceof SageMakerApiError && /already exist/i.test(error.providerMessage);
+}
+
+export function isSageMakerIgnorableDeleteError(error: unknown): boolean {
+	return (
+		error instanceof SageMakerApiError &&
+		/(does not exist|not found|could not find|cannot find|in use|being used)/i.test(
+			error.providerMessage,
+		)
+	);
 }
 
 export function mapSageMakerStatus(status: string | undefined): string {
@@ -91,7 +100,7 @@ const sageMakerEndpointResponseSchema = z.object({
 
 type SageMakerChannel = z.infer<typeof sageMakerChannelSchema>;
 
-export function mapSageMakerTrainingJob(data: unknown, fallbackJobName: string): FineTuningJob {
+export function mapSageMakerTrainingJob(data: unknown, fallbackJobName: string): TrainingJob {
 	const response = sageMakerTrainingJobResponseSchema.parse(data);
 	const hyperParameters = response.HyperParameters ?? {};
 
@@ -117,7 +126,7 @@ export function mapSageMakerTrainingJob(data: unknown, fallbackJobName: string):
 export function mapSageMakerDeployment(
 	data: unknown,
 	fallbackEndpointName: string,
-): FineTunedDeployment {
+): TrainingDeployment {
 	const response = sageMakerEndpointResponseSchema.parse(data);
 	const endpointConfigName = response.EndpointConfigName || fallbackEndpointName;
 	const endpointName = response.EndpointName || fallbackEndpointName;

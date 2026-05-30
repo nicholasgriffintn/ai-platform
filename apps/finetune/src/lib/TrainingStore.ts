@@ -1,8 +1,8 @@
 import type {
-	FineTunedDeployment,
-	FineTuningJob,
-	FineTuningJobEvent,
-	FineTuningProviderId,
+	TrainingDeployment,
+	TrainingJob,
+	TrainingJobEvent,
+	TrainingProviderId,
 } from "@assistant/schemas";
 import type { D1Database } from "@cloudflare/workers-types";
 
@@ -14,7 +14,7 @@ import {
 
 interface SaveJobInput {
 	userId?: number;
-	job: FineTuningJob;
+	job: TrainingJob;
 	providerJobId?: string;
 	request?: unknown;
 	response?: unknown;
@@ -22,15 +22,15 @@ interface SaveJobInput {
 
 interface SaveDeploymentInput {
 	userId?: number;
-	deployment: FineTunedDeployment;
+	deployment: TrainingDeployment;
 	request?: unknown;
 	response?: unknown;
 }
 
 interface AddEventInput {
-	provider: FineTuningProviderId;
+	provider: TrainingProviderId;
 	jobName: string;
-	level: FineTuningJobEvent["level"];
+	level: TrainingJobEvent["level"];
 	message: string;
 	metadata?: unknown;
 }
@@ -84,10 +84,10 @@ export class TrainingStore {
 	}
 
 	async getJob(
-		provider: FineTuningProviderId,
+		provider: TrainingProviderId,
 		jobName: string,
 		userId?: number,
-	): Promise<FineTuningJob | null> {
+	): Promise<TrainingJob | null> {
 		const statement =
 			userId === undefined
 				? this.db
@@ -102,7 +102,7 @@ export class TrainingStore {
 		return row ? mapTrainingJobRow(row) : null;
 	}
 
-	async listJobs(userId?: number, limit = 50): Promise<FineTuningJob[]> {
+	async listJobs(userId?: number, limit = 50): Promise<TrainingJob[]> {
 		const boundedLimit = Math.min(Math.max(limit, 1), 100);
 		const statement =
 			userId === undefined
@@ -162,10 +162,10 @@ export class TrainingStore {
 	}
 
 	async getDeployment(
-		provider: FineTuningProviderId,
+		provider: TrainingProviderId,
 		endpointName: string,
 		userId?: number,
-	): Promise<FineTunedDeployment | null> {
+	): Promise<TrainingDeployment | null> {
 		const statement =
 			userId === undefined
 				? this.db
@@ -180,7 +180,7 @@ export class TrainingStore {
 		return row ? mapTrainingDeploymentRow(row) : null;
 	}
 
-	async listDeployments(userId?: number, limit = 50): Promise<FineTunedDeployment[]> {
+	async listDeployments(userId?: number, limit = 50): Promise<TrainingDeployment[]> {
 		const boundedLimit = Math.min(Math.max(limit, 1), 100);
 		const statement =
 			userId === undefined
@@ -196,7 +196,20 @@ export class TrainingStore {
 		return (result.results ?? []).map(mapTrainingDeploymentRow);
 	}
 
-	async addEvent(input: AddEventInput): Promise<FineTuningJobEvent> {
+	async deleteDeployment(
+		provider: TrainingProviderId,
+		endpointName: string,
+		userId: number,
+	): Promise<void> {
+		await this.db
+			.prepare(
+				"DELETE FROM training_deployments WHERE provider = ? AND endpoint_name = ? AND user_id = ?",
+			)
+			.bind(provider, endpointName, userId)
+			.run();
+	}
+
+	async addEvent(input: AddEventInput): Promise<TrainingJobEvent> {
 		const id = crypto.randomUUID();
 		const createdAt = new Date().toISOString();
 		await this.db
@@ -228,10 +241,10 @@ export class TrainingStore {
 	}
 
 	async listEvents(
-		provider: FineTuningProviderId,
+		provider: TrainingProviderId,
 		jobName: string,
 		limit = 100,
-	): Promise<FineTuningJobEvent[]> {
+	): Promise<TrainingJobEvent[]> {
 		const result = await this.db
 			.prepare(
 				`SELECT * FROM training_job_events

@@ -293,6 +293,36 @@ describe("MessageFormatter", () => {
 		});
 	});
 
+	describe("formatTextGenerationPrompt", () => {
+		it("formats a transcript using existing message formatting rules", () => {
+			const messages: Message[] = [{ role: "user", content: "Hello" }];
+
+			const result = MessageFormatter.formatTextGenerationPrompt(messages, {
+				provider: "sagemaker",
+				system_prompt: "Stay concise.",
+			});
+
+			expect(result).toBe("System: Stay concise.\nUser: Hello\nAssistant:");
+		});
+
+		it("stringifies structured text content in transcript order", () => {
+			const messages: Message[] = [
+				{
+					role: "user",
+					content: [
+						{ type: "text", text: "First" },
+						{ type: "text", text: "Second" },
+					],
+				},
+				{ role: "assistant", content: "Done" },
+			];
+
+			const result = MessageFormatter.formatTextGenerationPrompt(messages);
+
+			expect(result).toBe("User: First\nSecond\nAssistant: Done\nAssistant:");
+		});
+	});
+
 	describe("formatOpenAIResponsesInput", () => {
 		it("should convert multimodal messages and skip instruction messages", () => {
 			const messages: Message[] = [

@@ -1,45 +1,49 @@
+import { getBedrockImportModelSourceUriError } from "@assistant/schemas";
+
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { exportTrainingExamplesToS3 } from "~/lib/providers/capabilities/training/exportDataset";
 import {
-	fineTuningModelCatalog,
-	getFineTuningModel,
+	getTrainingModel,
+	trainingModelCatalog,
 } from "~/lib/providers/capabilities/training/modelCatalog";
 import { resolveTrainingDeploymentEnvironment } from "~/lib/providers/capabilities/training/trainingDeploymentEnvironment";
 import { resolveTrainingHyperparameters } from "~/lib/providers/capabilities/training/trainingHyperparameters";
 import { resolveTrainingSource } from "~/lib/providers/capabilities/training/trainingSourceArchives";
 import type {
-	DeployFineTunedModelRequest,
-	FineTunedDeployment,
-	FineTuningJob,
-	FineTuningJobEvent,
-	FineTuningModelDefinition,
-	FineTuningProviderId,
-	StartFineTuningJobRequest,
+	DeployTrainingModelRequest,
+	TrainingDeployment,
+	TrainingDeploymentDeleteResponse,
+	TrainingJob,
+	TrainingJobEvent,
+	TrainingModelDefinition,
+	TrainingProviderId,
+	StartTrainingJobRequest,
 } from "~/types/training";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import {
-	deployFinetuneWorkerModel,
-	getFinetuneWorkerDeployment,
-	getFinetuneWorkerJob,
-	listFinetuneWorkerDeployments,
-	listFinetuneWorkerJobEvents,
-	listFinetuneWorkerJobs,
-	startFinetuneWorkerJob,
-} from "./finetuneWorkerClient";
+	deployTrainingWorkerModel,
+	deleteTrainingWorkerDeployment,
+	getTrainingWorkerDeployment,
+	getTrainingWorkerJob,
+	listTrainingWorkerDeployments,
+	listTrainingWorkerJobEvents,
+	listTrainingWorkerJobs,
+	startTrainingWorkerJob,
+} from "./trainingWorkerClient";
 
-export async function listFineTuningModels(
+export async function listTrainingModels(
 	context: ServiceContext,
-): Promise<FineTuningModelDefinition[]> {
+): Promise<TrainingModelDefinition[]> {
 	context.requireUser();
-	return fineTuningModelCatalog;
+	return trainingModelCatalog;
 }
 
-export async function startFineTuningJob(
+export async function startTrainingJob(
 	context: ServiceContext,
-	request: StartFineTuningJobRequest,
-): Promise<FineTuningJob> {
+	request: StartTrainingJobRequest,
+): Promise<TrainingJob> {
 	const user = context.requireUser();
-	const model = requireFineTuningModel(request.provider, request.modelId);
+	const model = requireTrainingModel(request.provider, request.modelId);
 	let trainS3Uri = request.dataset.trainS3Uri;
 
 	if (!trainS3Uri && request.dataset.trainingExampleFilters) {
@@ -62,7 +66,7 @@ export async function startFineTuningJob(
 		requestHyperparameters: request.hyperparameters,
 	});
 
-	return startFinetuneWorkerJob(
+	return startTrainingWorkerJob(
 		context.env,
 		{
 			...request,
@@ -80,36 +84,55 @@ export async function startFineTuningJob(
 	);
 }
 
-export async function getFineTuningJob(
+export async function getTrainingJob(
 	context: ServiceContext,
-	providerId: FineTuningProviderId,
+	providerId: TrainingProviderId,
 	jobName: string,
-): Promise<FineTuningJob> {
+): Promise<TrainingJob> {
 	const user = context.requireUser();
-	return getFinetuneWorkerJob(context.env, providerId, jobName, user.id);
+	return getTrainingWorkerJob(context.env, providerId, jobName, user.id);
 }
 
-export async function listFineTuningJobs(context: ServiceContext): Promise<FineTuningJob[]> {
+export async function listTrainingJobs(context: ServiceContext): Promise<TrainingJob[]> {
 	const user = context.requireUser();
-	return listFinetuneWorkerJobs(context.env, user.id);
+	return listTrainingWorkerJobs(context.env, user.id);
 }
 
-export async function listFineTuningJobEvents(
+export async function listTrainingJobEvents(
 	context: ServiceContext,
-	providerId: FineTuningProviderId,
+	providerId: TrainingProviderId,
 	jobName: string,
-): Promise<FineTuningJobEvent[]> {
+): Promise<TrainingJobEvent[]> {
 	const user = context.requireUser();
-	return listFinetuneWorkerJobEvents(context.env, providerId, jobName, user.id);
+	return listTrainingWorkerJobEvents(context.env, providerId, jobName, user.id);
 }
 
-export async function deployFineTunedModel(
+export async function deployTrainingModel(
 	context: ServiceContext,
-	request: DeployFineTunedModelRequest,
-): Promise<FineTunedDeployment> {
+	request: DeployTrainingModelRequest,
+): Promise<TrainingDeployment> {
 	const user = context.requireUser();
-	const model = requireFineTuningModel(request.provider, request.modelId);
-	return deployFinetuneWorkerModel(
+	const model = requireTrainingModel(request.provider, request.modelId);
+	if (
+		request.deploymentTarget === "bedrock-import" &&
+		!request.modelArtifactsS3Uri &&
+		!request.trainingJobName
+	) {
+		throw new AssistantError(
+			"Bedrock import requires a Hugging Face model files S3 prefix or an import-ready training job",
+			ErrorType.PARAMS_ERROR,
+			400,
+		);
+	}
+	const sourceUriError =
+		request.deploymentTarget === "bedrock-import"
+			? getBedrockImportModelSourceUriError(request.modelArtifactsS3Uri)
+			: undefined;
+	if (sourceUriError) {
+		throw new AssistantError(sourceUriError, ErrorType.PARAMS_ERROR, 400);
+	}
+
+	return deployTrainingWorkerModel(
 		context.env,
 		{
 			...request,
@@ -121,29 +144,38 @@ export async function deployFineTunedModel(
 	);
 }
 
-export async function getFineTunedDeployment(
+export async function getTrainingDeployment(
 	context: ServiceContext,
-	providerId: FineTuningProviderId,
+	providerId: TrainingProviderId,
 	endpointName: string,
-): Promise<FineTunedDeployment> {
+): Promise<TrainingDeployment> {
 	const user = context.requireUser();
-	return getFinetuneWorkerDeployment(context.env, providerId, endpointName, user.id);
+	return getTrainingWorkerDeployment(context.env, providerId, endpointName, user.id);
 }
 
-export async function listFineTunedDeployments(
+export async function listTrainingDeployments(
 	context: ServiceContext,
-): Promise<FineTunedDeployment[]> {
+): Promise<TrainingDeployment[]> {
 	const user = context.requireUser();
-	return listFinetuneWorkerDeployments(context.env, user.id);
+	return listTrainingWorkerDeployments(context.env, user.id);
 }
 
-function requireFineTuningModel(
-	providerId: FineTuningProviderId,
+export async function deleteTrainingDeployment(
+	context: ServiceContext,
+	providerId: TrainingProviderId,
+	endpointName: string,
+): Promise<TrainingDeploymentDeleteResponse> {
+	const user = context.requireUser();
+	return deleteTrainingWorkerDeployment(context.env, providerId, endpointName, user.id);
+}
+
+function requireTrainingModel(
+	providerId: TrainingProviderId,
 	modelId: string,
-): FineTuningModelDefinition {
-	const model = getFineTuningModel(modelId);
+): TrainingModelDefinition {
+	const model = getTrainingModel(modelId);
 	if (!model) {
-		throw new AssistantError("Unsupported fine-tuning model", ErrorType.PARAMS_ERROR, 400);
+		throw new AssistantError("Unsupported training model", ErrorType.PARAMS_ERROR, 400);
 	}
 
 	if (model.provider !== providerId) {

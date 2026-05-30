@@ -1,7 +1,12 @@
-import type { GetModelCustomizationJobCommandOutput } from "@aws-sdk/client-bedrock";
-import type { FineTuningJob } from "@assistant/schemas";
+import type {
+	GetImportedModelCommandOutput,
+	GetModelCustomizationJobCommandOutput,
+	GetModelImportJobCommandOutput,
+} from "@aws-sdk/client-bedrock";
+import type { TrainingDeployment, TrainingJob } from "@assistant/schemas";
 
 import type { Env } from "../types/env.js";
+import { isRecord } from "./objects.js";
 import { splitCsv } from "./strings.js";
 
 export function getBedrockVpcConfig(env: Env) {
@@ -18,7 +23,7 @@ export function getBedrockVpcConfig(env: Env) {
 export function mapBedrockTrainingJob(
 	response: GetModelCustomizationJobCommandOutput,
 	fallbackJobName: string,
-): FineTuningJob {
+): TrainingJob {
 	return {
 		provider: "aws-bedrock",
 		jobName: response.jobName || fallbackJobName,
@@ -35,4 +40,70 @@ export function mapBedrockTrainingJob(
 		failureReason: response.failureMessage,
 		providerResponse: response,
 	};
+}
+
+export function mapBedrockImportDeployment(
+	response: GetModelImportJobCommandOutput,
+	fallbackJobName: string,
+): TrainingDeployment {
+	const jobName = response.jobName || fallbackJobName;
+	const importedModelName = response.importedModelName || jobName;
+
+	return {
+		provider: "aws-bedrock",
+		deploymentTarget: "bedrock-import",
+		deploymentName: importedModelName,
+		modelName: response.importedModelArn || importedModelName,
+		endpointConfigName: response.jobArn || jobName,
+		endpointName: jobName,
+		status: response.status || "Unknown",
+		modelId: "unknown",
+		modelArtifactsS3Uri: response.modelDataSource?.s3DataSource?.s3Uri,
+		createdAt: response.creationTime?.toISOString(),
+		failureReason: response.failureMessage,
+		providerResponse: response,
+	};
+}
+
+export function mapBedrockImportedModelDeployment(
+	response: GetImportedModelCommandOutput,
+	fallbackModelName: string,
+): TrainingDeployment {
+	const modelName = response.modelName || fallbackModelName;
+	const jobName = response.jobName || modelName;
+
+	return {
+		provider: "aws-bedrock",
+		deploymentTarget: "bedrock-import",
+		deploymentName: modelName,
+		modelName: response.modelArn || modelName,
+		endpointConfigName: response.jobArn || jobName,
+		endpointName: jobName,
+		status: "Completed",
+		modelId: "unknown",
+		modelArtifactsS3Uri: response.modelDataSource?.s3DataSource?.s3Uri,
+		createdAt: response.creationTime?.toISOString(),
+		providerResponse: response,
+	};
+}
+
+export function getBedrockImportedModelIdentifier(
+	deployment: TrainingDeployment,
+): string | undefined {
+	if (deployment.modelName.startsWith("arn:aws")) return deployment.modelName;
+	if (isRecord(deployment.providerResponse)) {
+		const importedModelArn =
+			deployment.providerResponse.importedModelArn || deployment.providerResponse.modelArn;
+		if (typeof importedModelArn === "string" && importedModelArn) return importedModelArn;
+	}
+
+	return deployment.modelName || deployment.deploymentName;
+}
+
+export function isBedrockResourceNotFoundError(error: unknown): boolean {
+	return (
+		isRecord(error) &&
+		(error.name === "ResourceNotFoundException" ||
+			(isRecord(error.$metadata) && error.$metadata.httpStatusCode === 404))
+	);
 }

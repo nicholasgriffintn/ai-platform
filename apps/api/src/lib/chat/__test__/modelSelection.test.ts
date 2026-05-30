@@ -150,6 +150,7 @@ describe("selectModels", () => {
 				"primary-model",
 				mockEnv,
 				"free-provider",
+				mockUser.id,
 			);
 		});
 	});

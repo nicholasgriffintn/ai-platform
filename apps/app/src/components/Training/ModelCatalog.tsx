@@ -1,9 +1,9 @@
-import type { FineTuningModelDefinition } from "@assistant/schemas";
+import type { TrainingModelDefinition } from "@assistant/schemas";
 
 import { Badge, Card, CardContent, CardHeader, CardTitle } from "~/components/ui";
 
 interface ModelCatalogProps {
-	models: FineTuningModelDefinition[];
+	models: TrainingModelDefinition[];
 }
 
 export function ModelCatalog({ models }: ModelCatalogProps) {

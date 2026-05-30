@@ -1,29 +1,31 @@
 import { Hono } from "hono";
 import {
-	deployFineTunedModelSchema,
-	fineTunedDeploymentParamsSchema,
-	fineTunedDeploymentsResponseSchema,
-	fineTunedDeploymentSchema,
-	fineTuningJobEventsResponseSchema,
-	fineTuningJobParamsSchema,
-	fineTuningJobsResponseSchema,
-	fineTuningJobSchema,
-	fineTuningModelsResponseSchema,
-	startFineTuningJobSchema,
+	deployTrainingModelSchema,
+	trainingDeploymentDeleteResponseSchema,
+	trainingDeploymentParamsSchema,
+	trainingDeploymentsResponseSchema,
+	trainingDeploymentSchema,
+	trainingJobEventsResponseSchema,
+	trainingJobParamsSchema,
+	trainingJobsResponseSchema,
+	trainingJobSchema,
+	trainingModelsResponseSchema,
+	startTrainingJobSchema,
 } from "@assistant/schemas";
 
 import { addRoute } from "~/lib/http/routeBuilder";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import type { IEnv } from "~/types";
 import {
-	deployFineTunedModel,
-	getFineTunedDeployment,
-	getFineTuningJob,
-	listFineTunedDeployments,
-	listFineTuningJobEvents,
-	listFineTuningJobs,
-	listFineTuningModels,
-	startFineTuningJob,
+	deployTrainingModel,
+	deleteTrainingDeployment,
+	getTrainingDeployment,
+	getTrainingJob,
+	listTrainingDeployments,
+	listTrainingJobEvents,
+	listTrainingJobs,
+	listTrainingModels,
+	startTrainingJob,
 } from "~/services/training";
 
 const app = new Hono<{ Bindings: IEnv }>();
@@ -36,103 +38,120 @@ app.use("/*", async (ctx, next) => {
 
 addRoute(app, "get", "/models", {
 	tags: ["training"],
-	summary: "List fine-tunable models",
+	summary: "List training models",
 	description:
-		"Lists configured fine-tuning targets. The catalog is provider-aware so adding future providers or Hugging Face checkpoints does not change the route contract.",
+		"Lists configured training targets. The catalog is provider-aware so adding future providers or Hugging Face checkpoints does not change the route contract.",
 	auth: true,
 	responses: {
-		200: { description: "Configured fine-tuning models", schema: fineTuningModelsResponseSchema },
+		200: { description: "Configured training models", schema: trainingModelsResponseSchema },
 	},
 	handler: async ({ serviceContext }) => ({
-		models: await listFineTuningModels(serviceContext),
+		models: await listTrainingModels(serviceContext),
 	}),
 });
 
 addRoute(app, "post", "/jobs", {
 	tags: ["training"],
-	summary: "Start a fine-tuning job",
+	summary: "Start a training job",
 	description:
-		"Starts a provider-backed fine-tuning job. For aws-sagemaker, Hugging Face models run as SageMaker training jobs with S3 training input.",
+		"Starts a provider-backed training job. For aws-sagemaker, Hugging Face models run as SageMaker training jobs with S3 training input.",
 	auth: true,
-	bodySchema: startFineTuningJobSchema,
+	bodySchema: startTrainingJobSchema,
 	responses: {
-		200: { description: "Fine-tuning job started", schema: fineTuningJobSchema },
+		200: { description: "Training job started", schema: trainingJobSchema },
 	},
-	handler: async ({ serviceContext, body }) => startFineTuningJob(serviceContext, body),
+	handler: async ({ serviceContext, body }) => startTrainingJob(serviceContext, body),
 });
 
 addRoute(app, "get", "/jobs", {
 	tags: ["training"],
-	summary: "List fine-tuning jobs",
+	summary: "List training jobs",
 	auth: true,
 	responses: {
-		200: { description: "Fine-tuning jobs", schema: fineTuningJobsResponseSchema },
+		200: { description: "Training jobs", schema: trainingJobsResponseSchema },
 	},
 	handler: async ({ serviceContext }) => ({
-		jobs: await listFineTuningJobs(serviceContext),
+		jobs: await listTrainingJobs(serviceContext),
 	}),
 });
 
 addRoute(app, "get", "/jobs/:provider/:jobName", {
 	tags: ["training"],
-	summary: "Get fine-tuning job status",
+	summary: "Get training job status",
 	auth: true,
-	paramSchema: fineTuningJobParamsSchema,
+	paramSchema: trainingJobParamsSchema,
 	responses: {
-		200: { description: "Fine-tuning job status", schema: fineTuningJobSchema },
+		200: { description: "Training job status", schema: trainingJobSchema },
 	},
 	handler: async ({ serviceContext, params }) =>
-		getFineTuningJob(serviceContext, params.provider, params.jobName),
+		getTrainingJob(serviceContext, params.provider, params.jobName),
 });
 
 addRoute(app, "get", "/jobs/:provider/:jobName/events", {
 	tags: ["training"],
-	summary: "List fine-tuning job events",
+	summary: "List training job events",
 	auth: true,
-	paramSchema: fineTuningJobParamsSchema,
+	paramSchema: trainingJobParamsSchema,
 	responses: {
-		200: { description: "Fine-tuning job events", schema: fineTuningJobEventsResponseSchema },
+		200: { description: "Training job events", schema: trainingJobEventsResponseSchema },
 	},
 	handler: async ({ serviceContext, params }) => ({
-		events: await listFineTuningJobEvents(serviceContext, params.provider, params.jobName),
+		events: await listTrainingJobEvents(serviceContext, params.provider, params.jobName),
 	}),
 });
 
 addRoute(app, "post", "/deployments", {
 	tags: ["training"],
-	summary: "Deploy a fine-tuned model",
+	summary: "Deploy a training model",
 	description:
-		"Creates a provider-backed deployment for fine-tuned model artifacts. For aws-sagemaker, this creates the SageMaker model, endpoint config, and endpoint.",
+		"Creates a provider-backed deployment. SageMaker targets create an endpoint, while Bedrock import creates a model import job from Hugging Face model files in S3.",
 	auth: true,
-	bodySchema: deployFineTunedModelSchema,
+	bodySchema: deployTrainingModelSchema,
 	responses: {
-		200: { description: "Deployment started", schema: fineTunedDeploymentSchema },
+		200: { description: "Deployment started", schema: trainingDeploymentSchema },
 	},
-	handler: async ({ serviceContext, body }) => deployFineTunedModel(serviceContext, body),
+	handler: async ({ serviceContext, body }) => deployTrainingModel(serviceContext, body),
 });
 
 addRoute(app, "get", "/deployments", {
 	tags: ["training"],
-	summary: "List fine-tuned deployments",
+	summary: "List training deployments",
 	auth: true,
 	responses: {
-		200: { description: "Fine-tuned deployments", schema: fineTunedDeploymentsResponseSchema },
+		200: { description: "Training deployments", schema: trainingDeploymentsResponseSchema },
 	},
 	handler: async ({ serviceContext }) => ({
-		deployments: await listFineTunedDeployments(serviceContext),
+		deployments: await listTrainingDeployments(serviceContext),
 	}),
 });
 
 addRoute(app, "get", "/deployments/:provider/:endpointName", {
 	tags: ["training"],
-	summary: "Get fine-tuned deployment status",
+	summary: "Get training deployment status",
 	auth: true,
-	paramSchema: fineTunedDeploymentParamsSchema,
+	paramSchema: trainingDeploymentParamsSchema,
 	responses: {
-		200: { description: "Deployment status", schema: fineTunedDeploymentSchema },
+		200: { description: "Deployment status", schema: trainingDeploymentSchema },
 	},
 	handler: async ({ serviceContext, params }) =>
-		getFineTunedDeployment(serviceContext, params.provider, params.endpointName),
+		getTrainingDeployment(serviceContext, params.provider, params.endpointName),
+});
+
+addRoute(app, "delete", "/deployments/:provider/:endpointName", {
+	tags: ["training"],
+	summary: "Delete training deployment",
+	description:
+		"Deletes the provider-backed deployment resources and removes the stored deployment record for the authenticated user.",
+	auth: true,
+	paramSchema: trainingDeploymentParamsSchema,
+	responses: {
+		200: {
+			description: "Deployment deleted",
+			schema: trainingDeploymentDeleteResponseSchema,
+		},
+	},
+	handler: async ({ serviceContext, params }) =>
+		deleteTrainingDeployment(serviceContext, params.provider, params.endpointName),
 });
 
 export default app;

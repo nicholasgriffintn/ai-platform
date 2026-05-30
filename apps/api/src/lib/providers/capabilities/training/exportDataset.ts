@@ -42,7 +42,7 @@ export async function exportTrainingExamplesToS3({
 	const targetBucket = resolveSageMakerTrainingBucket(context, bucket);
 	const objectKey =
 		key ||
-		`fine-tuning/datasets/user-${user.id}/${new Date().toISOString().replace(/[:.]/g, "-")}.jsonl`;
+		`training/datasets/user-${user.id}/${new Date().toISOString().replace(/[:.]/g, "-")}.jsonl`;
 	const jsonl = examples.map(toTrainingJsonLine).join("\n") + "\n";
 
 	await putSageMakerS3Object({

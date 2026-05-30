@@ -1,9 +1,9 @@
-import type { DeployFineTunedModelRequest, FineTuningModelDefinition } from "~/types/training";
+import type { DeployTrainingModelRequest, TrainingModelDefinition } from "~/types/training";
 
 interface ResolveDeploymentEnvironmentOptions {
-	model: FineTuningModelDefinition;
+	model: TrainingModelDefinition;
 	request: Pick<
-		DeployFineTunedModelRequest,
+		DeployTrainingModelRequest,
 		"environment" | "modelArtifactsS3Uri" | "trainingJobName"
 	>;
 }
@@ -25,7 +25,7 @@ export function resolveTrainingDeploymentEnvironment({
 }
 
 function isHuggingFaceHubDeployment(
-	model: FineTuningModelDefinition,
+	model: TrainingModelDefinition,
 	request: ResolveDeploymentEnvironmentOptions["request"],
 ): boolean {
 	return model.family === "huggingface" && !request.modelArtifactsS3Uri && !request.trainingJobName;

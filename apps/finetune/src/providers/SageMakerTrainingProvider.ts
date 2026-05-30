@@ -1,4 +1,8 @@
-import type { FineTunedDeployment, FineTuningJob } from "@assistant/schemas";
+import {
+	getSageMakerEndpointInstanceCompatibilityError,
+	type TrainingDeployment,
+	type TrainingJob,
+} from "@assistant/schemas";
 
 import { signAwsJsonRequest } from "../utils/aws.js";
 import { stringifyEntries } from "../utils/json.js";
@@ -8,19 +12,26 @@ import type { Env } from "../types/env.js";
 import {
 	getSageMakerErrorMessage,
 	isSageMakerAlreadyExistsError,
+	isSageMakerIgnorableDeleteError,
 	mapSageMakerDeployment,
 	mapSageMakerTrainingJob,
 	SageMakerApiError,
 } from "../utils/sagemaker.js";
+import {
+	getSageMakerServerlessCompatibilityError,
+	getSageMakerServerlessConfig,
+	isSageMakerServerlessDeploymentTarget,
+} from "../utils/sagemakerServerless.js";
 import type {
 	CreateTrainingJobOptions,
 	CreateTrainingJobResult,
+	DeleteDeploymentOptions,
 	DeployModelOptions,
 	DeployModelResult,
-	FineTuneProvider,
+	TrainingProvider,
 } from "../types/providers.js";
 
-export class SageMakerFineTuneProvider implements FineTuneProvider {
+export class SageMakerTrainingProvider implements TrainingProvider {
 	readonly id = "aws-sagemaker" as const;
 
 	constructor(private readonly env: Env) {}
@@ -91,7 +102,7 @@ export class SageMakerFineTuneProvider implements FineTuneProvider {
 		};
 	}
 
-	async getJobStatus(jobIdentifier: string): Promise<FineTuningJob> {
+	async getJobStatus(jobIdentifier: string): Promise<TrainingJob> {
 		const response = await this.invoke("SageMaker.DescribeTrainingJob", {
 			TrainingJobName: jobIdentifier,
 		});
@@ -119,8 +130,38 @@ export class SageMakerFineTuneProvider implements FineTuneProvider {
 		if (!inferenceImage) {
 			throw new Error(`Model ${options.model.id} does not define an inference image`);
 		}
+		const isServerless = isSageMakerServerlessDeploymentTarget(options.deploymentTarget);
+		const serverlessCompatibilityError = isServerless
+			? getSageMakerServerlessCompatibilityError(inferenceImage)
+			: undefined;
+		if (serverlessCompatibilityError) throw new Error(serverlessCompatibilityError);
+
+		const instanceType = isServerless
+			? undefined
+			: options.instanceType || options.model.defaultDeploymentInstanceType || "ml.g4dn.xlarge";
+		const compatibilityError = instanceType
+			? getSageMakerEndpointInstanceCompatibilityError({
+					instanceType,
+					image: inferenceImage,
+				})
+			: undefined;
+		if (compatibilityError) throw new Error(compatibilityError);
 
 		const names = getSageMakerDeploymentNames(options.deploymentName);
+		const productionVariant = isServerless
+			? {
+					VariantName: "AllTraffic",
+					ModelName: names.modelName,
+					InitialVariantWeight: 1,
+					ServerlessConfig: getSageMakerServerlessConfig(options),
+				}
+			: {
+					VariantName: "AllTraffic",
+					ModelName: names.modelName,
+					InitialInstanceCount: options.instanceCount || 1,
+					InstanceType: instanceType,
+					InitialVariantWeight: 1,
+				};
 
 		await this.createSageMakerResource("SageMaker.CreateModel", {
 			ModelName: names.modelName,
@@ -133,16 +174,7 @@ export class SageMakerFineTuneProvider implements FineTuneProvider {
 		});
 		await this.createSageMakerResource("SageMaker.CreateEndpointConfig", {
 			EndpointConfigName: names.endpointConfigName,
-			ProductionVariants: [
-				{
-					VariantName: "AllTraffic",
-					ModelName: names.modelName,
-					InitialInstanceCount: options.instanceCount || 1,
-					InstanceType:
-						options.instanceType || options.model.defaultDeploymentInstanceType || "ml.m4.xlarge",
-					InitialVariantWeight: 1,
-				},
-			],
+			ProductionVariants: [productionVariant],
 		});
 		await this.createSageMakerResource("SageMaker.CreateEndpoint", {
 			EndpointName: names.endpointName,
@@ -152,6 +184,7 @@ export class SageMakerFineTuneProvider implements FineTuneProvider {
 		return {
 			deployment: {
 				provider: this.id,
+				deploymentTarget: isServerless ? "sagemaker-serverless-endpoint" : "sagemaker-endpoint",
 				deploymentName: names.deploymentName,
 				modelName: names.modelName,
 				endpointConfigName: names.endpointConfigName,
@@ -159,16 +192,34 @@ export class SageMakerFineTuneProvider implements FineTuneProvider {
 				status: "Creating",
 				modelId: options.model.id,
 				modelArtifactsS3Uri,
+				providerResponse: {
+					deploymentTarget: isServerless ? "sagemaker-serverless-endpoint" : "sagemaker-endpoint",
+					productionVariant,
+				},
 			},
 		};
 	}
 
-	async getDeployment(endpointName: string): Promise<FineTunedDeployment> {
+	async getDeployment(endpointName: string): Promise<TrainingDeployment> {
 		const response = await this.invoke("SageMaker.DescribeEndpoint", {
 			EndpointName: endpointName,
 		});
 
 		return mapSageMakerDeployment(response, endpointName);
+	}
+
+	async deleteDeployment(options: DeleteDeploymentOptions): Promise<void> {
+		const { deployment } = options;
+
+		await this.deleteSageMakerResource("SageMaker.DeleteEndpoint", {
+			EndpointName: deployment.endpointName,
+		});
+		await this.deleteSageMakerResource("SageMaker.DeleteEndpointConfig", {
+			EndpointConfigName: deployment.endpointConfigName,
+		});
+		await this.deleteSageMakerResource("SageMaker.DeleteModel", {
+			ModelName: deployment.modelName,
+		});
 	}
 
 	private createChannel(channelName: string, s3Uri: string) {
@@ -232,6 +283,19 @@ export class SageMakerFineTuneProvider implements FineTuneProvider {
 			await this.invoke(target, body);
 		} catch (error) {
 			if (isSageMakerAlreadyExistsError(error)) return;
+
+			throw error;
+		}
+	}
+
+	private async deleteSageMakerResource(
+		target: string,
+		body: Record<string, unknown>,
+	): Promise<void> {
+		try {
+			await this.invoke(target, body);
+		} catch (error) {
+			if (isSageMakerIgnorableDeleteError(error)) return;
 
 			throw error;
 		}

@@ -1,6 +1,6 @@
-import type { FineTunedDeployment, FineTuningJob } from "@assistant/schemas";
+import type { TrainingDeployment, TrainingJob } from "@assistant/schemas";
 
-export function mergeTrainingJob(stored: FineTuningJob | null, live: FineTuningJob): FineTuningJob {
+export function mergeTrainingJob(stored: TrainingJob | null, live: TrainingJob): TrainingJob {
 	if (!stored) return live;
 
 	return {
@@ -16,15 +16,18 @@ export function mergeTrainingJob(stored: FineTuningJob | null, live: FineTuningJ
 	};
 }
 
-export function mergeFineTunedDeployment(
-	stored: FineTunedDeployment | null,
-	live: FineTunedDeployment,
-): FineTunedDeployment {
+export function mergeTrainingDeployment(
+	stored: TrainingDeployment | null,
+	live: TrainingDeployment,
+): TrainingDeployment {
 	if (!stored) return live;
 
 	return {
 		...stored,
 		...live,
+		deploymentName:
+			live.deploymentName === live.endpointName ? stored.deploymentName : live.deploymentName,
+		deploymentVersion: live.deploymentVersion ?? stored.deploymentVersion,
 		modelId: live.modelId === "unknown" ? stored.modelId : live.modelId,
 		modelArtifactsS3Uri: live.modelArtifactsS3Uri ?? stored.modelArtifactsS3Uri,
 	};

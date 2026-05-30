@@ -1,9 +1,14 @@
-import type { FineTuningJob, FineTuningModelDefinition } from "@assistant/schemas";
+import {
+	getBedrockImportModelSourceUriError,
+	type TrainingJob,
+	type TrainingModelDefinition,
+} from "@assistant/schemas";
 import { describe, expect, it } from "vitest";
 
 import {
 	canDeployBaseTrainingModel,
 	formatTrainingHyperparameters,
+	getDeploymentInstanceTypeError,
 	getDeployableTrainingModels,
 	getDeploymentTrainingJobs,
 	parseOptionalPositiveInteger,
@@ -11,7 +16,7 @@ import {
 	parseTrainingHyperparameters,
 } from "./utils";
 
-const MODELS: FineTuningModelDefinition[] = [
+const MODELS: TrainingModelDefinition[] = [
 	{
 		id: "nova-lite",
 		provider: "aws-bedrock",
@@ -31,7 +36,7 @@ const MODELS: FineTuningModelDefinition[] = [
 	},
 ];
 
-const JOBS: FineTuningJob[] = [
+const JOBS: TrainingJob[] = [
 	{
 		provider: "aws-sagemaker",
 		jobName: "distilbert-completed",
@@ -55,7 +60,7 @@ const JOBS: FineTuningJob[] = [
 	},
 ];
 
-describe("finetuning utilities", () => {
+describe("training utilities", () => {
 	it("parses supported hyperparameter JSON", () => {
 		expect(parseTrainingHyperparameters('{"epochs":1,"batch":"16","shuffle":true}')).toEqual({
 			epochs: 1,
@@ -90,5 +95,26 @@ describe("finetuning utilities", () => {
 		expect(getDeploymentTrainingJobs(JOBS, "distilbert-imdb").map((job) => job.jobName)).toEqual([
 			"distilbert-completed",
 		]);
+	});
+
+	it("rejects CPU endpoint instances for GPU inference images", () => {
+		const model: TrainingModelDefinition = {
+			...MODELS[1],
+			defaultDeploymentInstanceType: "ml.g4dn.xlarge",
+			inferenceImage:
+				"763104351884.dkr.ecr.us-east-1.amazonaws.com/huggingface-pytorch-inference:2.6.0-transformers4.51.3-gpu-py312-cu124-ubuntu22.04",
+		};
+
+		expect(getDeploymentInstanceTypeError(model, "ml.m4.xlarge")).toContain(
+			"cannot run the configured SageMaker GPU image",
+		);
+		expect(getDeploymentInstanceTypeError(model, "ml.g4dn.xlarge")).toBeUndefined();
+	});
+
+	it("rejects compressed SageMaker archives for Bedrock import", () => {
+		expect(getBedrockImportModelSourceUriError("s3://bucket/output/model.tar.gz")).toContain(
+			"not a compressed SageMaker model archive",
+		);
+		expect(getBedrockImportModelSourceUriError("s3://bucket/lizzy-hf-model/")).toBeUndefined();
 	});
 });

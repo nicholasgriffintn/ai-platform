@@ -1,11 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { Message } from "~/types";
-import { formatMessages } from "../messages";
+import { formatMessages, formatTextGenerationPrompt } from "../messages";
 
 vi.mock("~/lib/formatter", () => ({
 	MessageFormatter: {
 		formatMessages: vi.fn(),
+		formatTextGenerationPrompt: vi.fn(),
 	},
 }));
 
@@ -82,6 +83,32 @@ describe("messages", () => {
 				truncationStrategy: "tail",
 			});
 			expect(result).toEqual(emptyHistory);
+		});
+	});
+
+	describe("formatTextGenerationPrompt", () => {
+		it("should call MessageFormatter.formatTextGenerationPrompt with common formatting options", async () => {
+			const mockMessageHistory: Message[] = [{ role: "user", content: "Hello" }];
+			const provider = "sagemaker";
+			const systemPrompt = "Stay concise";
+			const model = "endpoint";
+
+			const { MessageFormatter } = vi.mocked(await import("~/lib/formatter"));
+			// @ts-expect-error - mockReturnValue is not a function
+			MessageFormatter.formatTextGenerationPrompt.mockReturnValue(
+				"System: Stay concise\nUser: Hello\nAssistant:",
+			);
+
+			const result = formatTextGenerationPrompt(provider, mockMessageHistory, systemPrompt, model);
+
+			expect(MessageFormatter.formatTextGenerationPrompt).toHaveBeenCalledWith(mockMessageHistory, {
+				provider,
+				model,
+				system_prompt: systemPrompt,
+				maxTokens: 0,
+				truncationStrategy: "tail",
+			});
+			expect(result).toBe("System: Stay concise\nUser: Hello\nAssistant:");
 		});
 	});
 });

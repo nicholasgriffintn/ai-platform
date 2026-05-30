@@ -1,20 +1,34 @@
 import type {
-	FineTunedDeployment,
-	FineTuningJob,
-	FineTuningModelDefinition,
-	FineTuningProviderId,
+	TrainingDeployment,
+	TrainingDeploymentTarget,
+	TrainingJob,
+	TrainingModelDefinition,
+	TrainingProviderId,
+} from "@assistant/schemas";
+import {
+	getSageMakerEndpointInstanceCompatibilityError,
+	isSageMakerGpuImage,
 } from "@assistant/schemas";
 
 import { isRecord } from "~/lib/objects";
 
 type TrainingHyperparameterValue = string | number | boolean;
 
-const DEPLOYABLE_TRAINING_PROVIDER: FineTuningProviderId = "aws-sagemaker";
+const DEPLOYABLE_TRAINING_PROVIDER: TrainingProviderId = "aws-sagemaker";
 const COMPLETED_JOB_STATUSES = new Set(["completed"]);
 
 export type TrainingDatasetMode = "s3" | "examples";
 
-export function trainingRecordKey(record: FineTuningJob | FineTunedDeployment): string {
+export const DEPLOYMENT_TARGET_OPTIONS: Array<{
+	value: TrainingDeploymentTarget;
+	label: string;
+}> = [
+	{ value: "sagemaker-endpoint", label: "SageMaker real-time endpoint" },
+	{ value: "sagemaker-serverless-endpoint", label: "SageMaker serverless endpoint" },
+	{ value: "bedrock-import", label: "Bedrock import" },
+];
+
+export function trainingRecordKey(record: TrainingJob | TrainingDeployment): string {
 	if ("jobName" in record) {
 		return `${record.provider}:${record.jobName}`;
 	}
@@ -22,7 +36,7 @@ export function trainingRecordKey(record: FineTuningJob | FineTunedDeployment): 
 	return `${record.provider}:${record.endpointName}`;
 }
 
-export function getTrainingModelLabel(model: FineTuningModelDefinition): string {
+export function getTrainingModelLabel(model: TrainingModelDefinition): string {
 	return `${model.name} (${model.provider})`;
 }
 
@@ -89,14 +103,14 @@ export function parseOptionalPositiveInteger(value: string, fieldName: string): 
 }
 
 export function getDeployableTrainingModels(
-	models: FineTuningModelDefinition[],
-): FineTuningModelDefinition[] {
+	models: TrainingModelDefinition[],
+): TrainingModelDefinition[] {
 	return models.filter(
 		(model) => model.provider === DEPLOYABLE_TRAINING_PROVIDER && Boolean(model.inferenceImage),
 	);
 }
 
-export function canDeployBaseTrainingModel(model: FineTuningModelDefinition): boolean {
+export function canDeployBaseTrainingModel(model: TrainingModelDefinition): boolean {
 	return (
 		model.provider === DEPLOYABLE_TRAINING_PROVIDER &&
 		model.family === "huggingface" &&
@@ -104,12 +118,51 @@ export function canDeployBaseTrainingModel(model: FineTuningModelDefinition): bo
 	);
 }
 
-export function getDeploymentTrainingJobs(jobs: FineTuningJob[], modelId: string): FineTuningJob[] {
+export function canDeployBaseTrainingModelForTarget(
+	model: TrainingModelDefinition,
+	deploymentTarget: TrainingDeploymentTarget,
+): boolean {
+	if (deploymentTarget === "bedrock-import") return false;
+
+	return canDeployBaseTrainingModel(model);
+}
+
+export function getDeploymentTrainingJobs(jobs: TrainingJob[], modelId: string): TrainingJob[] {
 	return jobs.filter(
 		(job) =>
 			job.provider === DEPLOYABLE_TRAINING_PROVIDER &&
 			job.modelId === modelId &&
 			COMPLETED_JOB_STATUSES.has(job.status.toLowerCase()),
+	);
+}
+
+export function getDeploymentInstanceTypeError(
+	model: TrainingModelDefinition,
+	instanceType: string,
+): string | undefined {
+	const resolvedInstanceType = instanceType.trim() || model.defaultDeploymentInstanceType;
+	if (!resolvedInstanceType) return undefined;
+
+	return getSageMakerEndpointInstanceCompatibilityError({
+		instanceType: resolvedInstanceType,
+		image: model.inferenceImage,
+	});
+}
+
+export function getDeploymentTargetError(
+	model: TrainingModelDefinition,
+	deploymentTarget: TrainingDeploymentTarget,
+): string | undefined {
+	if (deploymentTarget !== "sagemaker-serverless-endpoint") return undefined;
+	if (!isSageMakerGpuImage(model.inferenceImage)) return undefined;
+
+	return "SageMaker Serverless Inference cannot run this GPU image. Use a real-time GPU endpoint for this model.";
+}
+
+export function formatDeploymentTarget(target?: TrainingDeploymentTarget): string {
+	return (
+		DEPLOYMENT_TARGET_OPTIONS.find((option) => option.value === target)?.label ||
+		"SageMaker real-time endpoint"
 	);
 }
 

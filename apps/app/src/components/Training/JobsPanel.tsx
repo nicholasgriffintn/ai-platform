@@ -1,8 +1,8 @@
 import type {
-	FineTuningJob,
-	FineTuningJobEvent,
-	FineTuningModelDefinition,
-	StartFineTuningJobRequest,
+	TrainingJob,
+	TrainingJobEvent,
+	TrainingModelDefinition,
+	StartTrainingJobRequest,
 } from "@assistant/schemas";
 import { Activity, RefreshCcw } from "lucide-react";
 
@@ -14,14 +14,14 @@ import { TrainingStatusBadge } from "./TrainingStatusBadge";
 import { formatTrainingDate, trainingRecordKey } from "./utils";
 
 interface JobsPanelProps {
-	models: FineTuningModelDefinition[];
-	jobs: FineTuningJob[];
-	events: FineTuningJobEvent[];
+	models: TrainingModelDefinition[];
+	jobs: TrainingJob[];
+	events: TrainingJobEvent[];
 	selectedJobKey: string | null;
 	isEventsLoading: boolean;
 	isSubmitting: boolean;
-	onSelectJob: (job: FineTuningJob) => void;
-	onStartJob: (request: StartFineTuningJobRequest) => Promise<void>;
+	onSelectJob: (job: TrainingJob) => void;
+	onStartJob: (request: StartTrainingJobRequest) => Promise<void>;
 	onRefresh: () => void;
 }
 
@@ -98,7 +98,7 @@ export function JobsPanel({
 							<EmptyState
 								icon={<Activity className="h-8 w-8 text-zinc-400" />}
 								title="No jobs yet"
-								message="Start a fine-tuning job and it will appear here."
+								message="Start a training job and it will appear here."
 							/>
 						)}
 					</CardContent>

@@ -6,6 +6,7 @@ import {
 	createCommonParameters,
 	createFimParameters,
 	createSamplingParameters,
+	createTextGenerationParameters,
 	getEffectiveMaxTokens,
 	getToolsForProvider,
 	isFimCompletionRequest,
@@ -334,6 +335,29 @@ describe("parameters", () => {
 				top_p: 0.8,
 				stop: ["\n\n"],
 				stream: false,
+			});
+		});
+	});
+
+	describe("createTextGenerationParameters", () => {
+		it("maps chat controls to Hugging Face text-generation controls", () => {
+			const params = {
+				max_tokens: 128,
+				temperature: 0.4,
+				top_p: 0.9,
+			} as ChatCompletionParameters;
+
+			expect(createTextGenerationParameters(params)).toEqual({
+				max_new_tokens: 128,
+				temperature: 0.4,
+				top_p: 0.9,
+				return_full_text: false,
+			});
+		});
+
+		it("omits unset optional controls while preserving return_full_text", () => {
+			expect(createTextGenerationParameters({} as ChatCompletionParameters)).toEqual({
+				return_full_text: false,
 			});
 		});
 	});

@@ -60,6 +60,7 @@ export abstract class BaseProvider implements AIProvider {
 			params.model || "",
 			params.env,
 			params.provider || this.name,
+			params.user?.id,
 		);
 		if (!modelConfig) {
 			throw new AssistantError(
@@ -202,6 +203,7 @@ export abstract class BaseProvider implements AIProvider {
 			params.model || "",
 			params.env,
 			params.provider || this.name,
+			params.user?.id,
 		);
 
 		const providerName = this.isOpenAiCompatible ? "compat" : this.name;
@@ -249,6 +251,7 @@ export abstract class BaseProvider implements AIProvider {
 			params.model || "",
 			params.env,
 			params.provider || this.name,
+			params.user?.id,
 		);
 
 		if (!modelConfig) {

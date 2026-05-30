@@ -78,7 +78,12 @@ export class ModelConfigValidator implements Validator {
 			}
 
 			const primaryModelName = selectedModels[0];
-			const primaryModelConfig = await findModelConfig(primaryModelName, env, requestedProvider);
+			const primaryModelConfig = await findModelConfig(
+				primaryModelName,
+				env,
+				requestedProvider,
+				user?.id,
+			);
 
 			if (!primaryModelConfig) {
 				return {

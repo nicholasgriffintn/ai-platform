@@ -1,10 +1,10 @@
-import type { FineTuningModelDefinition } from "~/types/training";
+import type { TrainingModelDefinition } from "~/types/training";
 
 type TrainingHyperparameterValue = string | number | boolean;
 type TrainingHyperparameters = Record<string, TrainingHyperparameterValue>;
 
 interface ResolveTrainingHyperparametersOptions {
-	model: FineTuningModelDefinition;
+	model: TrainingModelDefinition;
 	trainS3Uri?: string;
 	validationS3Uri?: string;
 	requestHyperparameters?: TrainingHyperparameters;

@@ -1,14 +1,22 @@
-import type { FineTunedDeployment, FineTuningJob, FineTuningJobEvent } from "@assistant/schemas";
-import { fineTuningJobEventSchema, fineTuningProviderSchema } from "@assistant/schemas";
+import type { TrainingDeployment, TrainingJob, TrainingJobEvent } from "@assistant/schemas";
+import {
+	trainingJobEventSchema,
+	trainingProviderSchema,
+	getTrainingDeploymentChatModelId,
+} from "@assistant/schemas";
 
 import { parseJsonValue } from "../utils/json.js";
 import { optionalString } from "../utils/strings.js";
+import {
+	getDeploymentTargetFromRequest,
+	getDeploymentVersionFromRequest,
+} from "../utils/trainingDeploymentVersions.js";
 
-const fineTuningJobEventLevelSchema = fineTuningJobEventSchema.shape.level;
+const trainingJobEventLevelSchema = trainingJobEventSchema.shape.level;
 
-export function mapTrainingJobRow(row: Record<string, unknown>): FineTuningJob {
+export function mapTrainingJobRow(row: Record<string, unknown>): TrainingJob {
 	return {
-		provider: fineTuningProviderSchema.parse(row.provider),
+		provider: trainingProviderSchema.parse(row.provider),
 		jobName: String(row.job_name ?? ""),
 		status: String(row.status ?? "Unknown"),
 		modelId: String(row.model_id ?? "unknown"),
@@ -24,13 +32,22 @@ export function mapTrainingJobRow(row: Record<string, unknown>): FineTuningJob {
 	};
 }
 
-export function mapTrainingDeploymentRow(row: Record<string, unknown>): FineTunedDeployment {
+export function mapTrainingDeploymentRow(row: Record<string, unknown>): TrainingDeployment {
+	const request = parseJsonValue(row.request_json);
+	const provider = trainingProviderSchema.parse(row.provider);
+	const endpointName = String(row.endpoint_name ?? "");
+
 	return {
-		provider: fineTuningProviderSchema.parse(row.provider),
+		provider,
 		deploymentName: String(row.deployment_name ?? ""),
+		deploymentTarget: getDeploymentTargetFromRequest(request),
+		deploymentVersion: getDeploymentVersionFromRequest(request),
 		modelName: String(row.model_name ?? ""),
 		endpointConfigName: String(row.endpoint_config_name ?? ""),
-		endpointName: String(row.endpoint_name ?? ""),
+		endpointName,
+		chatModelId: endpointName
+			? getTrainingDeploymentChatModelId({ provider, endpointName })
+			: undefined,
 		status: String(row.status ?? "Unknown"),
 		modelId: String(row.model_id ?? "unknown"),
 		modelArtifactsS3Uri: optionalString(row.model_artifacts_s3_uri),
@@ -40,12 +57,12 @@ export function mapTrainingDeploymentRow(row: Record<string, unknown>): FineTune
 	};
 }
 
-export function mapTrainingJobEventRow(row: Record<string, unknown>): FineTuningJobEvent {
+export function mapTrainingJobEventRow(row: Record<string, unknown>): TrainingJobEvent {
 	return {
 		id: String(row.id ?? ""),
-		provider: fineTuningProviderSchema.parse(row.provider),
+		provider: trainingProviderSchema.parse(row.provider),
 		jobName: String(row.job_name ?? ""),
-		level: fineTuningJobEventLevelSchema.parse(row.level || "info"),
+		level: trainingJobEventLevelSchema.parse(row.level || "info"),
 		message: String(row.message ?? ""),
 		metadata: parseJsonValue(row.metadata_json),
 		createdAt: String(row.created_at ?? ""),

@@ -1,4 +1,4 @@
-import { finetuneWorkerDeployModelSchema, finetuneWorkerStartJobSchema } from "@assistant/schemas";
+import { trainingWorkerDeployModelSchema, trainingWorkerStartJobSchema } from "@assistant/schemas";
 
 import { TrainingWorkerService } from "./services/TrainingWorkerService.js";
 import type { Env } from "./types/env.js";
@@ -28,7 +28,7 @@ async function route(request: Request, env: Env): Promise<Response> {
 	const userId = getInternalUserId(request);
 
 	if (request.method === "POST" && url.pathname === "/jobs") {
-		const body = await parseJsonBody(request, finetuneWorkerStartJobSchema);
+		const body = await parseJsonBody(request, trainingWorkerStartJobSchema);
 		return jsonResponse(await service.startJob({ ...body, userId }));
 	}
 
@@ -59,7 +59,7 @@ async function route(request: Request, env: Env): Promise<Response> {
 	}
 
 	if (request.method === "POST" && url.pathname === "/deployments") {
-		const body = await parseJsonBody(request, finetuneWorkerDeployModelSchema);
+		const body = await parseJsonBody(request, trainingWorkerDeployModelSchema);
 		return jsonResponse(await service.deployModel({ ...body, userId }));
 	}
 
@@ -73,6 +73,16 @@ async function route(request: Request, env: Env): Promise<Response> {
 	if (request.method === "GET" && deploymentMatch) {
 		return jsonResponse(
 			await service.getDeployment(
+				decodeTrainingProvider(deploymentMatch[1]),
+				decodeRouteSegment(deploymentMatch[2]),
+				userId,
+			),
+		);
+	}
+
+	if (request.method === "DELETE" && deploymentMatch) {
+		return jsonResponse(
+			await service.deleteDeployment(
 				decodeTrainingProvider(deploymentMatch[1]),
 				decodeRouteSegment(deploymentMatch[2]),
 				userId,
