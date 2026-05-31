@@ -1,6 +1,6 @@
 # Polychat Training Worker
 
-The Worker in `apps/training` is used by the API to start, inspect, and deploy provider-backed training jobs. It is not a CLI. The API owns model and provider selection, resolves the model definition, exports datasets when needed, then calls this Worker through Worker bindings.
+The Worker in `apps/training` is used by the API to start, inspect, and deploy provider-backed training jobs.
 
 Use this Worker for:
 
@@ -10,7 +10,7 @@ Use this Worker for:
 - Staging Hugging Face model files to S3 and creating Bedrock model import jobs.
 - Tracking deployment versions passed from the API.
 - Persisting training jobs, deployments, and job events in D1.
-- Returning provider status to the API without duplicating model catalogs.
+- Returning provider status to the API.
 
 ## Architecture
 

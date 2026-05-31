@@ -31,7 +31,7 @@ The API provides a unified interface to multiple AI providers, following OpenAI'
 - **Code Specialized** - FIM completions, edit suggestions, code application
 - **AI Agents** - Custom agents with MCP server integrations
 - **RAG & Memories** - Vector-based context with Cloudflare Vectorize
-- **Fine-tuning Control Plane** - API-owned training model catalog with a training Worker execution service
+- **Training Control Plane** - A training and fine-tuning execution service
 - **Content Safety** - Llamaguard and AWS Bedrock Guardrails
 - **Flexible Auth** - OAuth, API keys, JWT, magic links, passkeys
 - **Real-time** - Streaming responses and WebSocket support
