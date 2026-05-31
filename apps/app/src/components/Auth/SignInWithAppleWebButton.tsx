@@ -111,19 +111,20 @@ export function SignInWithAppleWebButton({
 
 	return (
 		<div
+			data-testid="apple-sign-in-wrapper"
 			className={[
-				"relative h-11 w-full overflow-hidden rounded-md",
+				"relative h-11 w-full overflow-hidden rounded-md border border-zinc-300 bg-white dark:border-zinc-600",
 				disabled || !isReady || isSigningIn ? "pointer-events-none opacity-60" : "",
 			].join(" ")}
 		>
 			{(!isReady || isSigningIn) && (
-				<div className="absolute inset-0 z-10 flex items-center justify-center rounded-md bg-zinc-900">
-					<Loader2 size={18} className="animate-spin text-white" />
+				<div className="absolute inset-0 z-10 flex items-center justify-center rounded-md border border-zinc-300 bg-white text-zinc-900 dark:border-zinc-600">
+					<Loader2 size={18} className="animate-spin" />
 				</div>
 			)}
 			<div
 				id="appleid-signin"
-				data-color="black"
+				data-color="white"
 				data-border="false"
 				data-border-radius="8"
 				data-type="sign-in"

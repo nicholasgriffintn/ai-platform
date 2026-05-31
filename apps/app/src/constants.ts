@@ -43,6 +43,7 @@ const COMMON_CSP = {
 		"https://strudel.cc",
 	],
 	styleSrc: ["https://hcaptcha.com", "https://*.hcaptcha.com", "'self'", "'unsafe-inline'"],
+	fontSrc: ["'self'", "data:"],
 	imgSrc: [
 		"https://appleid.apple.com",
 		"openweathermap.org",
