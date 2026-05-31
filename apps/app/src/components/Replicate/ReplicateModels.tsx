@@ -75,7 +75,7 @@ export function ReplicateModels() {
 			href: model.href ?? `/apps/replicate/${model.id}`,
 			kind: model.kind ?? "frontend",
 			featured: model.featured,
-			type: "premium",
+			type: "normal",
 		}));
 	}, [filteredModels]);
 

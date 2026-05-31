@@ -1,7 +1,7 @@
 import { USAGE_CONFIG } from "~/constants/app";
 import { RepositoryManager } from "~/repositories";
 import { getModelConfigByMatchingModel } from "~/lib/providers/models";
-import type { AnonymousUser, ModelConfigItem, User } from "~/types";
+import type { AnonymousUser, ModelConfigItem, User, FunctionType } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 import { memoizeRequest, type RequestCache } from "~/utils/requestCache";
@@ -30,7 +30,7 @@ export type UsageUpdateTaskInput =
 	| {
 			action: "increment_function_usage";
 			userId: number;
-			functionType: "premium" | "normal";
+			functionType: FunctionType;
 			isProUser: boolean;
 			costPerCall: number;
 	  };
@@ -605,11 +605,7 @@ export class UsageManager {
 		};
 	}
 
-	async incrementFunctionUsage(
-		functionType: "premium" | "normal",
-		isPro: boolean,
-		costPerCall = 1,
-	) {
+	async incrementFunctionUsage(functionType: FunctionType, isPro: boolean, costPerCall = 1) {
 		if (!costPerCall) {
 			return;
 		}
@@ -803,7 +799,7 @@ export class UsageManager {
 		repositories: RepositoryManager,
 		user: User,
 		options: {
-			functionType: "premium" | "normal";
+			functionType: FunctionType;
 			isPro: boolean;
 			costPerCall: number;
 		},

@@ -13,6 +13,7 @@ interface GenerateWithProviderFallbackOptions<
 	defaultProvider: string;
 	request: Request;
 	getProvider: (providerName: string) => Provider;
+	allowFallback?: boolean;
 }
 
 export async function generateWithProviderFallback<
@@ -23,13 +24,14 @@ export async function generateWithProviderFallback<
 	defaultProvider,
 	request,
 	getProvider,
+	allowFallback = true,
 }: GenerateWithProviderFallbackOptions<Request, Provider>): Promise<
 	GenerationProviderResult<Provider>
 > {
 	try {
 		return await getProvider(providerName).generate(request);
 	} catch (error) {
-		if (providerName !== defaultProvider && !request.model) {
+		if (allowFallback && providerName !== defaultProvider && !request.model) {
 			return getProvider(defaultProvider).generate(request);
 		}
 

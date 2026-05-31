@@ -1,11 +1,7 @@
 import type { ProviderRegistry } from "../ProviderRegistry";
 import type { ProviderRegistration } from "../types";
 import type { MusicProvider } from "../../capabilities/music";
-import {
-	ElevenLabsMusicProvider,
-	ReplicateMusicProvider,
-	WorkersAiMusicProvider,
-} from "../../capabilities/music/providers";
+import { ReplicateMusicProvider, WorkersAiMusicProvider } from "../../capabilities/music/providers";
 
 const musicProviders: ProviderRegistration<MusicProvider>[] = [
 	{
@@ -18,11 +14,6 @@ const musicProviders: ProviderRegistration<MusicProvider>[] = [
 		name: "replicate",
 		create: () => new ReplicateMusicProvider(),
 		metadata: { vendor: "Replicate", categories: ["music"] },
-	},
-	{
-		name: "elevenlabs",
-		create: () => new ElevenLabsMusicProvider(),
-		metadata: { vendor: "ElevenLabs", categories: ["music"] },
 	},
 ];
 

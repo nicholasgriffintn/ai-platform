@@ -4,6 +4,7 @@ import { useParams } from "react-router";
 import { BackLink } from "~/components/Core/BackLink";
 import { PageHeader } from "~/components/Core/PageHeader";
 import { PageShell } from "~/components/Core/PageShell";
+import { RequireAppSignIn } from "~/components/Apps/RequireAppSignIn";
 import { AppsSidebarContent } from "~/components/Sidebar/AppsSidebarContent";
 import { ReplicateModelDetail } from "~/components/Replicate/ReplicateModelDetail";
 
@@ -27,7 +28,9 @@ const ReplicateModelDetailRoute: FC = () => {
 				</PageHeader>
 			}
 		>
-			<ReplicateModelDetail modelId={id || ""} />
+			<RequireAppSignIn>
+				<ReplicateModelDetail modelId={id || ""} />
+			</RequireAppSignIn>
 		</PageShell>
 	);
 };

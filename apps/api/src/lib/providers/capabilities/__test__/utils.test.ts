@@ -86,4 +86,27 @@ describe("generateWithProviderFallback", () => {
 
 		expect(getProvider).toHaveBeenCalledTimes(1);
 	});
+
+	it("does not fall back when fallback is disabled", async () => {
+		const error = new Error("primary failed");
+		const getProvider = vi.fn(
+			(): TestProvider => ({
+				generate: vi.fn(async (_request: TestRequest): Promise<TestResult> => {
+					throw error;
+				}),
+			}),
+		);
+
+		await expect(
+			generateWithProviderFallback<TestRequest, TestProvider>({
+				providerName: "replicate",
+				defaultProvider: "workers-ai",
+				request: { prompt: "test" },
+				getProvider,
+				allowFallback: false,
+			}),
+		).rejects.toThrow(error);
+
+		expect(getProvider).toHaveBeenCalledTimes(1);
+	});
 });

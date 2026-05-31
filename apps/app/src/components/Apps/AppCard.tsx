@@ -1,4 +1,4 @@
-import { Crown } from "lucide-react";
+import { Crown, Lock } from "lucide-react";
 import { Card } from "~/components/ui";
 import { cn } from "~/lib/utils";
 import { useChatStore } from "~/state/stores/chatStore";
@@ -12,16 +12,17 @@ interface AppCardProps {
 }
 
 export const AppCard = ({ app, onSelect, isWrappedInGroup = false }: AppCardProps) => {
-	const { isPro } = useChatStore();
+	const { isAuthenticated, isPro } = useChatStore();
 	const isPremium = app.type === "premium";
-	const isDisabled = isPremium && !isPro;
+	const requiresSignIn = app.type === "byok" && !isAuthenticated;
+	const isDisabled = (isPremium && !isPro) || requiresSignIn;
 
 	return (
 		<Card
 			tabIndex={isDisabled ? -1 : 0}
 			onClick={isDisabled ? undefined : onSelect}
 			onKeyDown={(e) => !isDisabled && e.key === "Enter" && onSelect()}
-			aria-label={`Open ${app.name}${isPremium ? " (Premium)" : ""}`}
+			aria-label={`Open ${app.name}${isPremium ? " (Premium)" : ""}${requiresSignIn ? " (Sign in required)" : ""}`}
 			aria-disabled={isDisabled}
 			className={cn(
 				"p-5 shadow-none relative",
@@ -37,21 +38,25 @@ export const AppCard = ({ app, onSelect, isWrappedInGroup = false }: AppCardProp
 				getCardGradient(app.theme),
 			)}
 		>
-			{!isPro && isPremium && (
+			{isDisabled && (
 				<div className="absolute top-3 right-3 z-10">
 					<div
 						className={cn(
 							"p-1.5 rounded-full",
 							isDisabled ? "bg-zinc-400 dark:bg-zinc-600" : "bg-amber-500 dark:bg-amber-600",
 						)}
-						title="Premium Feature"
+						title={requiresSignIn ? "Sign in required" : "Premium Feature"}
 					>
-						<Crown className="w-4 h-4 text-white" />
+						{requiresSignIn ? (
+							<Lock className="w-4 h-4 text-white" />
+						) : (
+							<Crown className="w-4 h-4 text-white" />
+						)}
 					</div>
 				</div>
 			)}
 
-			<div className={cn("flex flex-col h-full", !isPro && isPremium && "pr-10")}>
+			<div className={cn("flex flex-col h-full", isDisabled && "pr-10")}>
 				<div className="flex flex-col space-y-2 md:flex-row md:items-start md:space-y-0 md:space-x-4 mb-3">
 					<div
 						className={cn(

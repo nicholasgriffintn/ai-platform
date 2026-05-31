@@ -31,7 +31,7 @@ addRoute(app, "get", "/", {
 		(async (context: Context) => {
 			const user = context.get("user");
 			const isPro = user?.plan_id === "pro";
-			const tools = getAvailableTools(isPro);
+			const tools = getAvailableTools(isPro, Boolean(user?.id));
 			return ResponseFactory.success(context, tools);
 		})(raw),
 });

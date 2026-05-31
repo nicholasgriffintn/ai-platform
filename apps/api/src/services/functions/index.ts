@@ -230,14 +230,15 @@ export const handleFunctions = async ({
 	});
 
 	if (!permissionResult.allowed) {
-		const isPremiumAccessError =
-			foundFunction.type === "premium" &&
-			permissionResult.reason === "This tool requires a premium subscription";
+		const isAuthenticationError =
+			(foundFunction.type === "premium" &&
+				permissionResult.reason === "This tool requires a premium subscription") ||
+			permissionResult.reason === "This tool requires a signed-in user";
 
 		throw new AssistantError(
 			permissionResult.reason || `Tool "${functionName}" is not allowed in this mode`,
-			isPremiumAccessError ? ErrorType.AUTHENTICATION_ERROR : ErrorType.AUTHORISATION_ERROR,
-			isPremiumAccessError ? 401 : 403,
+			isAuthenticationError ? ErrorType.AUTHENTICATION_ERROR : ErrorType.AUTHORISATION_ERROR,
+			isAuthenticationError ? 401 : 403,
 			{
 				toolName: functionName,
 				mode: permissionResult.mode,
@@ -258,11 +259,18 @@ export const handleFunctions = async ({
 		);
 	}
 
+	const validatedArgs = validateFunctionArgs(foundFunction, args);
 	const isProUser = request.user?.plan_id === "pro";
+	const isByokTool = foundFunction.type === "byok";
+	const functionType = isByokTool
+		? "byok"
+		: foundFunction.type === "premium"
+			? "premium"
+			: "normal";
 
 	if (conversationManager) {
 		try {
-			await conversationManager.checkUsageLimits(foundFunction.type);
+			await conversationManager.checkUsageLimits(functionType);
 		} catch (error) {
 			logger.error("Failed to check usage limits:", {
 				error_message: error instanceof Error ? error.message : "Unknown error",
@@ -270,8 +278,6 @@ export const handleFunctions = async ({
 			throw error;
 		}
 	}
-
-	const validatedArgs = validateFunctionArgs(foundFunction, args);
 
 	const response = await foundFunction.execute(validatedArgs, {
 		completionId: completion_id,
@@ -286,7 +292,7 @@ export const handleFunctions = async ({
 	if (conversationManager) {
 		try {
 			await conversationManager.incrementFunctionUsage(
-				foundFunction.type === "premium" ? "premium" : "normal",
+				functionType,
 				isProUser,
 				foundFunction.costPerCall,
 			);

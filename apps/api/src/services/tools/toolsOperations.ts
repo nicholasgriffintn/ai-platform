@@ -1,6 +1,9 @@
 import { listFunctionTools } from "~/services/functions";
 
-export function getAvailableTools(isPro = false): Array<{
+export function getAvailableTools(
+	isPro = false,
+	isSignedIn = false,
+): Array<{
 	id: string;
 	name: string;
 	description: string;
@@ -9,6 +12,9 @@ export function getAvailableTools(isPro = false): Array<{
 	return listFunctionTools()
 		.filter((tool) => {
 			if (tool.type === "premium" && !isPro) {
+				return false;
+			}
+			if (tool.type === "byok" && !isSignedIn) {
 				return false;
 			}
 			return true;

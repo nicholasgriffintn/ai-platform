@@ -24,7 +24,7 @@ export const v0_code_generation: ApiToolDefinition = {
 		},
 		required: ["prompt"],
 	}),
-	type: "premium",
+	type: "byok",
 	costPerCall: 0,
 	permissions: ["network"],
 	execute: async (args, context) => {

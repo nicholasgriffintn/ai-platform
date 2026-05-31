@@ -46,7 +46,7 @@ export const create_speech: ApiToolDefinition = {
 		},
 		required: ["prompt"],
 	}),
-	type: "premium",
+	type: "byok",
 	costPerCall: 1,
 	permissions: ["network"],
 	execute: async (args, context) => {

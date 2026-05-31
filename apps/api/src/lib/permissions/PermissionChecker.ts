@@ -15,7 +15,7 @@ export interface PermissionCheckInput {
 	toolName: string;
 	mode?: ChatMode | string;
 	user?: IUser;
-	toolType?: "normal" | "premium";
+	toolType?: "normal" | "premium" | "byok";
 	toolPermissions?: string[];
 }
 
@@ -85,6 +85,16 @@ export class PermissionChecker {
 				allowed: false,
 				requiresApproval: false,
 				reason: "This tool requires a premium subscription",
+				mode: resolvedMode,
+				permissions,
+			};
+		}
+
+		if (input.toolType === "byok" && !input.user?.id) {
+			return {
+				allowed: false,
+				requiresApproval: false,
+				reason: "This tool requires a signed-in user",
 				mode: resolvedMode,
 				permissions,
 			};

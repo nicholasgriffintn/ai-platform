@@ -3,6 +3,7 @@ import { getTranscriptionProvider } from "~/lib/providers/capabilities/transcrip
 import type { IEnv, IFunctionResponse, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { RepositoryManager } from "~/repositories";
+import { hasUserProviderApiKey } from "~/lib/providers/utils/apiKeys";
 
 export type TranscriptionProvider = "workers" | "mistral" | "replicate";
 
@@ -37,6 +38,16 @@ export const handleTranscribe = async (
 		}
 
 		const resolvedProvider = selectedProvider || "workers";
+		if (user?.plan_id !== "pro") {
+			if (!(await hasUserProviderApiKey({ env, user, providerName: resolvedProvider }))) {
+				throw new AssistantError(
+					`Transcription requires a configured ${resolvedProvider} provider key`,
+					ErrorType.AUTHORISATION_ERROR,
+					403,
+				);
+			}
+		}
+
 		const transcriptionProvider = getTranscriptionProvider(resolvedProvider, {
 			env,
 			user,

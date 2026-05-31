@@ -1,3 +1,5 @@
+export type FunctionType = "normal" | "premium" | "byok";
+
 export enum ResponseDisplayType {
 	TABLE = "table",
 	JSON = "json",

@@ -4,6 +4,8 @@ import { generateWithProviderFallback } from "~/lib/providers/capabilities/utils
 import { resolveModelProvider } from "~/lib/providers/models";
 import { resolveServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
 import type { IEnv, IUser } from "~/types";
+import { AssistantError, ErrorType } from "~/utils/errors";
+import { hasUserProviderApiKey } from "~/lib/providers/utils/apiKeys";
 
 export interface VideoGenerationParams {
 	prompt: string;
@@ -72,6 +74,20 @@ export async function generateVideo({
 			defaultProvider: DEFAULT_PROVIDER,
 			env: runtimeEnv,
 		});
+		if (
+			runtimeUser.plan_id !== "pro" &&
+			!(await hasUserProviderApiKey({
+				env: runtimeEnv,
+				user: runtimeUser,
+				providerName,
+			}))
+		) {
+			throw new AssistantError(
+				`Video generation requires a configured ${providerName} provider key`,
+				ErrorType.AUTHORISATION_ERROR,
+				403,
+			);
+		}
 		const request = {
 			prompt: sanitisedPrompt,
 			env: runtimeEnv,
@@ -97,6 +113,7 @@ export async function generateVideo({
 					env: runtimeEnv,
 					user: runtimeUser,
 				}),
+			allowFallback: runtimeUser.plan_id === "pro",
 		});
 
 		const isAsync = videoData?.status === "in_progress";

@@ -12,3 +12,4 @@ export * from "./search";
 export * from "./shared";
 export * from "./streaming";
 export * from "./user";
+export * from "./functions";

@@ -65,7 +65,7 @@ describe("search_functions", () => {
 		expect(premiumResults?.length).toBe(0);
 	});
 
-	it("marks premium functions as unavailable for free users", async () => {
+	it("marks BYOK functions as available for signed-in free users", async () => {
 		const result = await search_functions.execute(
 			{ query: "research", include_premium: true },
 			createToolContext(freeUserRequest),
@@ -74,7 +74,8 @@ describe("search_functions", () => {
 		expect(result.status).toBe("success");
 		const researchFunc = result.data?.results.find((r: any) => r.name === "research");
 		if (researchFunc) {
-			expect(researchFunc.available).toBe(false);
+			expect(researchFunc.type).toBe("byok");
+			expect(researchFunc.available).toBe(true);
 		}
 	});
 
@@ -111,16 +112,16 @@ describe("get_function_schema", () => {
 		expect(result.data?.available_functions).toBeDefined();
 	});
 
-	it("marks premium function as unavailable for free users", async () => {
+	it("marks BYOK function as available for signed-in free users", async () => {
 		const result = await get_function_schema.execute(
 			{ function_name: "research" },
 			createToolContext(freeUserRequest),
 		);
 
 		expect(result.status).toBe("success");
-		expect(result.data?.type).toBe("premium");
-		expect(result.data?.available).toBe(false);
-		expect(result.data?.requires_upgrade).toBe(true);
+		expect(result.data?.type).toBe("byok");
+		expect(result.data?.available).toBe(true);
+		expect(result.data?.requires_upgrade).toBe(false);
 	});
 
 	it("throws error for empty function name", async () => {

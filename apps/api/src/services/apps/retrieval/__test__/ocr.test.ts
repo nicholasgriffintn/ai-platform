@@ -14,6 +14,7 @@ const mockProvider = vi.hoisted(() => ({
 const mockStorageService = vi.hoisted(() => ({
 	uploadObject: vi.fn(),
 }));
+const mockHasProviderApiKey = vi.hoisted(() => vi.fn());
 
 const mockCrypto = vi.hoisted(() => ({
 	randomUUID: vi.fn(() => "test-uuid-123"),
@@ -35,6 +36,12 @@ vi.mock("~/lib/storage", () => ({
 	},
 }));
 
+vi.mock("~/repositories/UserSettingsRepository", () => ({
+	UserSettingsRepository: class {
+		hasProviderApiKey = mockHasProviderApiKey;
+	},
+}));
+
 vi.mock("~/utils/markdown", () => ({
 	convertMarkdownToHtml: vi.fn((md) => `<p>${md}</p>`),
 }));
@@ -53,7 +60,7 @@ describe("performOcr", () => {
 			ASSETS_BUCKET: "test-bucket",
 			PUBLIC_ASSETS_URL: "https://assets.test.com",
 		},
-		user: { id: "user-123" },
+		user: { id: "user-123", plan_id: "pro" },
 	} as any;
 
 	const baseMockParams: OcrParams = {
@@ -87,19 +94,21 @@ describe("performOcr", () => {
 		vi.clearAllMocks();
 		mockProvider.getResponse.mockResolvedValue(mockOcrResponse);
 		mockStorageService.uploadObject.mockResolvedValue("uploaded/path.md");
+		mockHasProviderApiKey.mockResolvedValue(false);
 	});
 
 	describe("parameter validation", () => {
-		it("should throw error when MISTRAL_API_KEY is missing", async () => {
-			const reqWithoutKey = {
+		it("blocks signed-in non-Pro users without a Mistral provider key", async () => {
+			const freeRequest = {
 				...mockRequest,
-				env: { ...mockRequest.env, MISTRAL_API_KEY: "" },
+				env: { ...mockRequest.env, DB: {} },
+				user: { id: "user-123", plan_id: "free" },
 			};
 
-			const result = await performOcr(baseMockParams, reqWithoutKey);
+			const result = await performOcr(baseMockParams, freeRequest as any);
 
 			expect(result.status).toBe("error");
-			expect(result.error).toBe("Mistral API key not configured");
+			expect(result.error).toBe("OCR requires a configured mistral provider key");
 		});
 
 		it("should throw error when document is missing", async () => {

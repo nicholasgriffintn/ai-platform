@@ -4,6 +4,7 @@ import { BackLink } from "~/components/Core/BackLink";
 import { PageHeader } from "~/components/Core/PageHeader";
 import { PageShell } from "~/components/Core/PageShell";
 import { PageTitle } from "~/components/Core/PageTitle";
+import { RequireAppSignIn } from "~/components/Apps/RequireAppSignIn";
 import { AppsSidebarContent } from "~/components/Sidebar/AppsSidebarContent";
 import { ReplicatePredictions } from "~/components/Replicate/ReplicatePredictions";
 
@@ -26,7 +27,9 @@ const ReplicatePredictionsRoute: FC = () => {
 				</PageHeader>
 			}
 		>
-			<ReplicatePredictions />
+			<RequireAppSignIn>
+				<ReplicatePredictions />
+			</RequireAppSignIn>
 		</PageShell>
 	);
 };

@@ -115,6 +115,32 @@ describe("PermissionChecker", () => {
 		expect(result.allowed).toBe(false);
 		expect(result.reason).toBe("This tool requires a premium subscription");
 	});
+
+	it("allows BYOK tools for signed-in non-pro users", () => {
+		const checker = new PermissionChecker();
+		const result = checker.checkToolAccess({
+			toolName: "research",
+			mode: "chat",
+			user: freeUser,
+			toolType: "byok",
+			toolPermissions: ["read"],
+		});
+
+		expect(result.allowed).toBe(true);
+	});
+
+	it("blocks BYOK tools for anonymous users", () => {
+		const checker = new PermissionChecker();
+		const result = checker.checkToolAccess({
+			toolName: "research",
+			mode: "chat",
+			toolType: "byok",
+			toolPermissions: ["read"],
+		});
+
+		expect(result.allowed).toBe(false);
+		expect(result.reason).toBe("This tool requires a signed-in user");
+	});
 });
 
 describe("permission helpers", () => {

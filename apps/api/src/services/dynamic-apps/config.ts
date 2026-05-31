@@ -28,7 +28,7 @@ export interface FeaturedAppDefinition {
 	icon?: string;
 	theme?: AppTheme;
 	tags?: string[];
-	type?: "normal" | "premium";
+	type?: "normal" | "premium" | "byok";
 	href: string;
 	kind?: AppKind;
 }
@@ -269,7 +269,7 @@ export const FEATURED_APPS: FeaturedAppDefinition[] = [
 		theme: "violet",
 		tags: ["media", "multi-modal", "generation"],
 		href: "/apps/replicate",
-		type: "premium",
+		type: "byok",
 		kind: "frontend",
 	},
 	{

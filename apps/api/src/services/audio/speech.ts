@@ -7,6 +7,7 @@ import { RepositoryManager } from "~/repositories";
 import { sanitiseInput } from "../../lib/chat/utils";
 import type { AudioResponseFormat } from "~/lib/providers/capabilities/audio/formats";
 import { prepareSpeechInput } from "./input";
+import { hasUserProviderApiKey } from "~/lib/providers/utils/apiKeys";
 
 export type SpeechProvider = "polly" | "cartesia" | "elevenlabs" | "melotts" | "mistral";
 
@@ -80,6 +81,16 @@ export const handleTextToSpeech = async (
 	}
 
 	const speechSettings = await resolveSpeechSettings({ env, user, provider, model });
+	if (user?.plan_id !== "pro") {
+		if (!(await hasUserProviderApiKey({ env, user, providerName: speechSettings.provider }))) {
+			throw new AssistantError(
+				`Speech generation requires a configured ${speechSettings.provider} provider key`,
+				ErrorType.AUTHORISATION_ERROR,
+				403,
+			);
+		}
+	}
+
 	const preparedInput = prepareSpeechInput(input, speechSettings.provider);
 	const storage = store ? new StorageService(env.ASSETS_BUCKET) : undefined;
 	const slug = `tts/${encodeURIComponent(user?.email || "unknown").replace(/[^a-zA-Z0-9]/g, "-")}-${generateId()}`;

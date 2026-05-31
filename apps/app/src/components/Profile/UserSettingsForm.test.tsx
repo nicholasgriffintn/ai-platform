@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi, beforeEach } from "vitest";
 
 import type { UserSettings } from "~/types";
@@ -69,37 +69,5 @@ describe("UserSettingsForm", () => {
 
 		expect(screen.getByLabelText("Speech Provider")).toHaveDisplayValue("Cartesia");
 		expect(screen.getByLabelText("Speech Model")).toHaveDisplayValue("Sonic 3");
-	});
-
-	it("hides audio settings and does not submit audio preferences for free users", async () => {
-		mockUpdateUserSettings.mockResolvedValue(undefined);
-
-		render(
-			<UserSettingsForm
-				isAuthenticated={true}
-				isPro={false}
-				userSettings={makeUserSettings({
-					transcription_provider: "mistral",
-					transcription_model: "voxtral-mini",
-					speech_provider: "cartesia",
-					speech_model: "sonic-3",
-				})}
-			/>,
-		);
-
-		expect(screen.queryByLabelText("Transcription Provider")).not.toBeInTheDocument();
-		expect(screen.queryByLabelText("Speech Provider")).not.toBeInTheDocument();
-
-		fireEvent.click(screen.getByRole("button", { name: "Save Settings" }));
-
-		await waitFor(() => expect(mockUpdateUserSettings).toHaveBeenCalledTimes(1));
-		expect(mockUpdateUserSettings).toHaveBeenCalledWith(
-			expect.not.objectContaining({
-				transcription_provider: expect.any(String),
-				transcription_model: expect.any(String),
-				speech_provider: expect.any(String),
-				speech_model: expect.any(String),
-			}),
-		);
 	});
 });

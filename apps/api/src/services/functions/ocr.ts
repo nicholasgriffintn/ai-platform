@@ -52,7 +52,7 @@ export const extract_text_from_document: ApiToolDefinition = {
 		},
 		required: ["document_url", "document_name"],
 	}),
-	type: "premium",
+	type: "byok",
 	costPerCall: 2,
 	permissions: ["read"],
 	execute: async (args, context) => {

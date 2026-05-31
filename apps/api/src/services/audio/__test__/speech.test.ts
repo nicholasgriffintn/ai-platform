@@ -39,6 +39,7 @@ const mockGenerateId = vi.hoisted(() => vi.fn(() => "test-id-123"));
 
 const mockSanitiseInput = vi.hoisted(() => vi.fn((input: string) => input));
 const mockGetUserSettings = vi.hoisted(() => vi.fn());
+const mockHasProviderApiKey = vi.hoisted(() => vi.fn());
 
 vi.mock("~/lib/storage", () => ({
 	StorageService: class {
@@ -68,17 +69,25 @@ vi.mock("~/repositories", () => ({
 	},
 }));
 
+vi.mock("~/repositories/UserSettingsRepository", () => ({
+	UserSettingsRepository: class {
+		hasProviderApiKey = mockHasProviderApiKey;
+	},
+}));
+
 import { handleTextToSpeech } from "../speech";
 
 describe("handleTextToSpeech", () => {
 	const mockEnv: IEnv = {
 		ASSETS_BUCKET: {} as any,
+		DB: {} as any,
 		PUBLIC_ASSETS_URL: "https://assets.test.com",
 	} as any;
 
 	const mockUser: IUser = {
 		id: "user-123",
 		email: "test@example.com",
+		plan_id: "pro",
 	} as any;
 
 	beforeEach(() => {
@@ -90,10 +99,47 @@ describe("handleTextToSpeech", () => {
 			return mockAudioProviders[key] ?? mockAudioProviders.default;
 		});
 		mockGetUserSettings.mockResolvedValue(null);
+		mockHasProviderApiKey.mockResolvedValue(false);
 
 		for (const provider of Object.values(mockAudioProviders)) {
 			provider.synthesize.mockReset();
 		}
+	});
+
+	it("allows a signed-in non-Pro user when the selected provider has a key", async () => {
+		const freeUser = { ...mockUser, plan_id: "free" } as IUser;
+		mockHasProviderApiKey.mockResolvedValue(true);
+		mockAudioProviders.mistral.synthesize.mockResolvedValue({
+			key: "mistral-audio",
+		});
+
+		const result = await handleTextToSpeech({
+			env: mockEnv,
+			input: "test input",
+			user: freeUser,
+			provider: "mistral",
+		});
+
+		expect(mockHasProviderApiKey).toHaveBeenCalledWith("user-123", "mistral");
+		expect(mockAudioProviders.mistral.synthesize).toHaveBeenCalled();
+		expect(Array.isArray(result)).toBe(false);
+	});
+
+	it("blocks a signed-in non-Pro user from platform speech providers", async () => {
+		const freeUser = { ...mockUser, plan_id: "free" } as IUser;
+
+		await expect(
+			handleTextToSpeech({
+				env: mockEnv,
+				input: "test input",
+				user: freeUser,
+				provider: "melotts",
+			}),
+		).rejects.toMatchObject({
+			type: ErrorType.AUTHORISATION_ERROR,
+		});
+
+		expect(mockProviderLibrary.audio).not.toHaveBeenCalled();
 	});
 
 	describe("parameter validation", () => {
