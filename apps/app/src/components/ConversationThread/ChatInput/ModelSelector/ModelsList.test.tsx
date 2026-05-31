@@ -146,6 +146,28 @@ describe("ModelsList", () => {
 		expect(screen.queryByText("No models available in this category.")).not.toBeInTheDocument();
 	});
 
+	it("allows BYOK models for non-pro users", () => {
+		const onSelect = vi.fn();
+		render(
+			<ModelsList
+				models={[
+					makeModel("claude-sonnet", "Claude Sonnet", "anthropic", {
+						isFree: false,
+						isByokEnabled: true,
+					}),
+				]}
+				featuredModelIds={{}}
+				isPro={false}
+				onSelect={onSelect}
+			/>,
+		);
+
+		fireEvent.click(screen.getByRole("option", { name: /Claude Sonnet/i }));
+
+		expect(onSelect).toHaveBeenCalledWith("claude-sonnet");
+		expect(screen.getByText("BYOK")).toBeInTheDocument();
+	});
+
 	it("collapses Bedrock region variants behind a region selector", () => {
 		const onSelect = vi.fn();
 		render(

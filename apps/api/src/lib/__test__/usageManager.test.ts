@@ -6,6 +6,9 @@ const mockRepositories = {
 	users: {
 		updateUser: vi.fn(),
 	},
+	userSettings: {
+		hasProviderApiKey: vi.fn(),
+	},
 	anonymousUsers: {
 		checkAndResetDailyLimit: vi.fn(),
 		incrementDailyCount: vi.fn(),
@@ -35,6 +38,9 @@ describe("UsageManager", () => {
 		daily_reset: new Date().toISOString(),
 		daily_pro_message_count: 5,
 		daily_pro_reset: new Date().toISOString(),
+		byok_message_count: 15,
+		daily_byok_message_count: 2,
+		daily_byok_reset: new Date().toISOString(),
 		message_count: 100,
 	} as any;
 
@@ -47,6 +53,7 @@ describe("UsageManager", () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 		usageManager = new UsageManager(mockRepositories as any, mockUser, null);
+		mockRepositories.userSettings.hasProviderApiKey.mockResolvedValue(false);
 	});
 
 	describe("checkUsage", () => {
@@ -290,6 +297,43 @@ describe("UsageManager", () => {
 				},
 			});
 		});
+
+		it("should allow configured BYOK models without pro plan", async () => {
+			(getModelConfigByMatchingModel as any).mockResolvedValue({
+				isFree: false,
+				provider: "anthropic",
+			});
+			mockRepositories.userSettings.hasProviderApiKey.mockResolvedValue(true);
+
+			const result = await usageManager.checkUsageByModel("claude-sonnet", false);
+
+			expect(result).toEqual({
+				dailyByokCount: 2,
+				limit: null,
+			});
+		});
+	});
+
+	describe("incrementUsageByModel", () => {
+		it("should count configured BYOK model usage separately", async () => {
+			(getModelConfigByMatchingModel as any).mockResolvedValue({
+				isFree: false,
+				provider: "anthropic",
+			});
+			mockRepositories.userSettings.hasProviderApiKey.mockResolvedValue(true);
+			mockRepositories.users.updateUser.mockResolvedValue(undefined);
+
+			await usageManager.incrementUsageByModel("claude-sonnet", false);
+
+			expect(mockRepositories.users.updateUser).toHaveBeenCalledWith(
+				mockUser.id,
+				expect.objectContaining({
+					message_count: 101,
+					byok_message_count: 16,
+					daily_byok_message_count: 3,
+				}),
+			);
+		});
 	});
 
 	describe("getUsageLimits", () => {
@@ -300,6 +344,10 @@ describe("UsageManager", () => {
 				daily: {
 					used: 10,
 					limit: 25,
+				},
+				byok: {
+					used: 2,
+					limit: null,
 				},
 			});
 		});
@@ -318,6 +366,10 @@ describe("UsageManager", () => {
 				daily: {
 					used: 10,
 					limit: 25,
+				},
+				byok: {
+					used: 2,
+					limit: null,
 				},
 				pro: {
 					used: 5,

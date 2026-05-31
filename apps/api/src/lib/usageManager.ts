@@ -20,6 +20,10 @@ export type UsageUpdateTaskInput =
 			usageMultiplier: number;
 	  }
 	| {
+			action: "increment_byok_usage";
+			userId: number;
+	  }
+	| {
 			action: "increment_anonymous_usage";
 			anonymousUserId: string;
 	  }
@@ -46,6 +50,10 @@ export interface UsageLimits {
 		used: number;
 		limit: number;
 	};
+	byok?: {
+		used: number;
+		limit: null;
+	};
 }
 
 export class UsageManager {
@@ -57,6 +65,7 @@ export class UsageManager {
 	private asyncUsageUpdates: boolean;
 	private regularUsageSnapshot?: { dailyCount: number; limit: number };
 	private proUsageSnapshot?: { dailyCount: number; limit: number };
+	private byokUsageSnapshot?: { dailyCount: number };
 
 	constructor(
 		repositories: RepositoryManager,
@@ -142,12 +151,40 @@ export class UsageManager {
 		return this.proUsageSnapshot;
 	}
 
+	private getByokUsageSnapshot(): { dailyCount: number } {
+		if (!this.user?.id) {
+			throw new AssistantError("User required to check BYOK usage", ErrorType.PARAMS_ERROR);
+		}
+
+		if (this.byokUsageSnapshot) {
+			return this.byokUsageSnapshot;
+		}
+
+		const now = new Date();
+		const lastReset = this.user.daily_byok_reset ? new Date(this.user.daily_byok_reset) : null;
+		const isNewDay = this.isNewUtcDay(now, lastReset);
+		const dailyCount = isNewDay ? 0 : (this.user.daily_byok_message_count ?? 0);
+
+		if (isNewDay) {
+			this.user.daily_byok_message_count = 0;
+			this.user.daily_byok_reset = now.toISOString();
+		}
+
+		this.byokUsageSnapshot = { dailyCount };
+
+		return this.byokUsageSnapshot;
+	}
+
 	private invalidateRegularUsageSnapshot() {
 		this.regularUsageSnapshot = undefined;
 	}
 
 	private invalidateProUsageSnapshot() {
 		this.proUsageSnapshot = undefined;
+	}
+
+	private invalidateByokUsageSnapshot() {
+		this.byokUsageSnapshot = undefined;
 	}
 
 	private memoize<T>(key: string, factory: () => Promise<T>): Promise<T> {
@@ -163,6 +200,21 @@ export class UsageManager {
 	private async isProModel(modelId: string): Promise<boolean> {
 		const config = await this.getModelConfig(modelId);
 		return !!config && config.isFree !== true;
+	}
+
+	private async isByokRequest(modelId: string): Promise<boolean> {
+		if (!this.user?.id) {
+			return false;
+		}
+
+		return this.memoize(`usage:byok:${this.user.id}:${modelId}`, async () => {
+			const config = await this.getModelConfig(modelId);
+			if (!config?.provider) {
+				return false;
+			}
+
+			return this.repositories.userSettings.hasProviderApiKey(this.user!.id, config.provider);
+		});
 	}
 
 	private async calculateUsageMultiplier(modelId: string): Promise<number> {
@@ -374,8 +426,51 @@ export class UsageManager {
 		logger.debug("Pro usage incremented", { userId: this.user.id });
 	}
 
+	async checkByokUsage() {
+		const snapshot = this.getByokUsageSnapshot();
+
+		logger.debug("Checking BYOK usage", { userId: this.user?.id });
+
+		return {
+			dailyByokCount: snapshot.dailyCount,
+			limit: null,
+		};
+	}
+
+	async incrementByokUsage() {
+		if (!this.user?.id) {
+			throw new AssistantError("User required to increment BYOK usage", ErrorType.PARAMS_ERROR);
+		}
+
+		logger.debug("Incrementing BYOK usage", { userId: this.user.id });
+
+		if (
+			await this.tryEnqueueUsageTask({
+				action: "increment_byok_usage",
+				userId: this.user.id,
+			})
+		) {
+			this.incrementLocalCounts([
+				"message_count",
+				"byok_message_count",
+				"daily_byok_message_count",
+			]);
+			return;
+		}
+
+		const updatedUser = await UsageManager.applyByokUsageUpdate(this.repositories, this.user);
+		this.user = updatedUser;
+		this.invalidateByokUsageSnapshot();
+
+		logger.debug("BYOK usage incremented", { userId: this.user.id });
+	}
+
 	async checkUsageByModel(modelId: string, isPro: boolean) {
 		logger.debug("Checking usage by model", { modelId, isPro });
+		if (await this.isByokRequest(modelId)) {
+			return await this.checkByokUsage();
+		}
+
 		const modelIsPro = await this.isProModel(modelId);
 
 		if (modelIsPro) {
@@ -405,6 +500,11 @@ export class UsageManager {
 
 	async incrementUsageByModel(modelId: string, isPro: boolean) {
 		logger.debug("Incrementing usage by model", { modelId, isPro });
+		if (await this.isByokRequest(modelId)) {
+			await this.incrementByokUsage();
+			return;
+		}
+
 		const modelIsPro = await this.isProModel(modelId);
 
 		if (modelIsPro) {
@@ -457,6 +557,12 @@ export class UsageManager {
 				used: regularSnapshot.dailyCount,
 				limit: regularSnapshot.limit,
 			},
+		};
+
+		const byokSnapshot = this.getByokUsageSnapshot();
+		usageLimits.byok = {
+			used: byokSnapshot.dailyCount,
+			limit: null,
 		};
 
 		if (this.user.plan_id === "pro") {
@@ -546,7 +652,13 @@ export class UsageManager {
 	}
 
 	private incrementLocalCounts(
-		fields: Array<"message_count" | "daily_message_count" | "daily_pro_message_count">,
+		fields: Array<
+			| "message_count"
+			| "daily_message_count"
+			| "daily_pro_message_count"
+			| "byok_message_count"
+			| "daily_byok_message_count"
+		>,
 		increment = 1,
 	): void {
 		if (!this.user) return;
@@ -560,6 +672,10 @@ export class UsageManager {
 
 			if (field === "daily_pro_message_count" && this.proUsageSnapshot) {
 				this.proUsageSnapshot.dailyCount += increment;
+			}
+
+			if (field === "daily_byok_message_count" && this.byokUsageSnapshot) {
+				this.byokUsageSnapshot.dailyCount += increment;
 			}
 		}
 		this.user.last_active_at = new Date().toISOString();
@@ -636,6 +752,36 @@ export class UsageManager {
 			daily_pro_message_count: currentDailyCount + usageMultiplier,
 			last_active_at: now.toISOString(),
 			...(isNewDay && { daily_pro_reset: now.toISOString() }),
+		};
+
+		await repositories.users.updateUser(user.id, updates);
+
+		return {
+			...user,
+			...updates,
+		};
+	}
+
+	public static async applyByokUsageUpdate(
+		repositories: RepositoryManager,
+		user: User,
+	): Promise<User> {
+		const now = new Date();
+		const lastReset = user.daily_byok_reset ? new Date(user.daily_byok_reset) : null;
+		const isNewDay =
+			!lastReset ||
+			now.getUTCFullYear() !== lastReset.getUTCFullYear() ||
+			now.getUTCMonth() !== lastReset.getUTCMonth() ||
+			now.getUTCDate() !== lastReset.getUTCDate();
+
+		const currentDailyCount = isNewDay ? 0 : (user.daily_byok_message_count ?? 0);
+
+		const updates: Partial<User> & Record<string, any> = {
+			message_count: (user.message_count ?? 0) + 1,
+			byok_message_count: (user.byok_message_count ?? 0) + 1,
+			daily_byok_message_count: currentDailyCount + 1,
+			last_active_at: now.toISOString(),
+			...(isNewDay && { daily_byok_reset: now.toISOString() }),
 		};
 
 		await repositories.users.updateUser(user.id, updates);

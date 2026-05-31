@@ -6,12 +6,13 @@ export const USER_QUERY_KEYS = {
 	providerSettings: ["user", "provider-settings"],
 } as const;
 
-export function useUser() {
+export function useUser(options?: { enabled?: boolean }) {
 	const queryClient = useQueryClient();
 
 	const { data: providerSettings, isLoading: isLoadingProviderSettings } = useQuery({
 		queryKey: USER_QUERY_KEYS.providerSettings,
 		queryFn: () => apiService.getProviderSettings(),
+		enabled: options?.enabled ?? true,
 	});
 
 	const storeProviderApiKeyMutation = useMutation({

@@ -116,7 +116,7 @@ export const ModelOption = ({
 							<span className="block min-w-0 font-medium text-zinc-900 whitespace-normal break-words dark:text-zinc-100">
 								{getModelDisplayName(model)}
 							</span>
-							{!model.isFree && (
+							{!model.isFree && !model.isByokEnabled && (
 								<div
 									className="rounded-full bg-fuchsia-100 p-0.5 dark:bg-fuchsia-900/30"
 									title="Pro"
@@ -124,6 +124,11 @@ export const ModelOption = ({
 									<Crown size={12} className="text-fuchsia-800 dark:text-fuchsia-300" />
 								</div>
 							)}
+							{model.isByokEnabled ? (
+								<span className="rounded-full bg-emerald-100 px-1.5 py-0.5 text-[10px] font-medium leading-none text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300">
+									BYOK
+								</span>
+							) : null}
 							{isTeamAgent ? (
 								<div
 									className="rounded-full bg-blue-100 p-0.5 dark:bg-blue-900/30"

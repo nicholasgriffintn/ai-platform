@@ -9,6 +9,10 @@ export interface UsageLimits {
 		used: number;
 		limit: number;
 	};
+	byok?: {
+		used: number;
+		limit: null;
+	};
 }
 
 interface UsageStore {

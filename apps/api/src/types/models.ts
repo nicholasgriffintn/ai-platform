@@ -73,6 +73,7 @@ export type ModelConfigItem = {
 	multimodal?: boolean;
 	includedInRouter?: boolean;
 	isFeatured?: boolean;
+	isByokEnabled?: boolean;
 	hiddenFromDefaultList?: boolean;
 	supportsResponseFormat?: boolean;
 	supportsArtifacts?: boolean;
