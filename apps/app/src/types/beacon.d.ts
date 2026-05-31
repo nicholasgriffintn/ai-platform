@@ -4,18 +4,31 @@ type BeaconEvaluationContext = Record<string, unknown>;
 type BeaconFlagMetadata = Record<string, BeaconPrimitive>;
 type BeaconObjectValue = Record<string, unknown>;
 
+type OpenFeatureBootstrap = {
+	context?: Record<string, unknown>;
+	targetingKey?: string;
+	siteId?: string;
+	evaluations?: Record<string, unknown> | Array<Record<string, unknown>>;
+};
+
 interface BeaconInitConfig {
-	endpoint: string;
+	endpoint?: string;
 	cdnEndpoint?: string;
 	siteId: string;
-	debug: boolean;
-	trackClicks: boolean;
-	trackUserTimings: boolean;
-	respectDoNotTrack: boolean;
-	directEvents?: boolean;
-	directPageViews?: boolean;
+	debug?: boolean;
+	trackPageViews?: boolean;
+	trackClicks?: boolean;
+	trackUserTimings?: boolean;
 	batchSize?: number;
 	batchTimeout?: number;
+	directPageViews?: boolean;
+	directEvents?: boolean;
+	requireConsent?: boolean;
+	respectDoNotTrack?: boolean;
+	consentCookie?: string;
+	userIdStorageKey?: string;
+	userId?: string;
+	appName?: string;
 }
 
 interface BeaconEvent {
@@ -42,6 +55,7 @@ interface BeaconClient {
 	setConsent: (consent: boolean) => void;
 	hasConsent: () => boolean;
 	getUserId: () => string;
+	setUserId: (userId: string) => boolean;
 }
 
 interface BeaconOpenFeatureConfig {
@@ -53,6 +67,7 @@ interface BeaconOpenFeatureConfig {
 	storageKey?: string;
 	storageDuration?: number;
 	configCacheDuration?: number;
+	bootstrap?: OpenFeatureBootstrap;
 }
 
 interface BeaconOpenFeatureDetails<TValue> {
@@ -153,8 +168,10 @@ interface BeaconOpenFeatureClient {
 
 interface Window {
 	Beacon?: BeaconClient;
-	_beaconInitialized?: boolean;
-	_openFeatureInitialized?: boolean;
 	BeaconOpenFeature?: BeaconOpenFeatureClient;
 	OpenFeature?: BeaconOpenFeatureClient;
+	__BEACON_INITALISED__?: boolean;
+	__OPEN_FEATURE_INITALISED__?: boolean;
+	__BEACON_USER_ID__?: string;
+	__BEACON_OPENFEATURE_BOOTSTRAP__?: OpenFeatureBootstrap;
 }
