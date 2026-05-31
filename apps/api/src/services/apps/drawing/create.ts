@@ -73,6 +73,7 @@ export async function generateImageFromDrawing({
 	);
 
 	const painting = await runtimeEnv.AI.run(
+		// @ts-ignore
 		"@cf/runwayml/stable-diffusion-v1-5-img2img",
 		{
 			prompt: descriptionRequest?.description || "Convert this drawing into a painting.",

@@ -48,6 +48,7 @@ import { exaModelConfig } from "~/data-model/models/exa";
 import { cerebrasModelConfig } from "~/data-model/models/cerebras";
 import { falModelConfig } from "~/data-model/models/fal";
 import { ideogramModelConfig } from "~/data-model/models/ideogram";
+import { opencodeModelConfig } from "~/data-model/models/opencode";
 import {
 	findTrainingDeploymentModelConfig,
 	getTrainingDeploymentModelConfigs,
@@ -110,6 +111,7 @@ const modelConfig: ModelConfig = mergeModelConfigs(
 	falModelConfig,
 	ideogramModelConfig,
 	cerebrasModelConfig,
+	opencodeModelConfig,
 );
 
 const MODEL_CACHE_TTL = 14400;
