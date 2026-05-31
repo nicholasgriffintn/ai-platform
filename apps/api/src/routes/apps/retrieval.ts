@@ -32,7 +32,8 @@ import {
 	type CaptureScreenshotParams,
 	captureScreenshot,
 } from "~/services/apps/retrieval/screenshot";
-import { type OcrParams, performOcr } from "~/services/apps/retrieval/ocr";
+import { getOcrProvider, resolveOcrProviderName } from "~/lib/providers/capabilities/ocr/index";
+import type { OcrExtractionRequest } from "~/lib/providers/capabilities/ocr/types";
 import { getWeatherForLocation } from "~/services/apps/retrieval/weather";
 import {
 	type DeepWebSearchParams,
@@ -63,6 +64,7 @@ const hackerNewsQuerySchema = z.object({
 });
 
 type DeepResearchBody = z.infer<typeof deepResearchSchema>;
+type OcrRequestBody = Omit<OcrExtractionRequest, "env" | "user" | "storage">;
 
 app.use("/*", (c, next) => {
 	routeLogger.info(`Processing apps route: ${c.req.path}`);
@@ -157,27 +159,19 @@ addRoute(app, "post", "/capture-screenshot", {
 addRoute(app, "post", "/ocr", {
 	tags: ["apps"],
 	summary: "Perform OCR on an image",
-	description: "Extract text from an image using Mistral's OCR API",
+	description: "Extract text from a document or image using an OCR provider",
 	bodySchema: ocrSchema,
 	responses: {
 		200: {
 			description: "OCR result with extracted text",
 			schema: z.object({
 				status: z.string(),
-				data: z
-					.object({
-						text: z.string().optional(),
-						pages: z
-							.array(
-								z.object({
-									page_num: z.number(),
-									text: z.string(),
-									elements: z.array(z.any()).optional(),
-								}),
-							)
-							.optional(),
-					})
-					.optional(),
+				data: z.object({
+					model: z.string(),
+					key: z.string(),
+					url: z.string(),
+					outputFormat: z.enum(["json", "html", "markdown"]),
+				}),
 				error: z.string().optional(),
 			}),
 		},
@@ -188,14 +182,29 @@ addRoute(app, "post", "/ocr", {
 	},
 	handler: async ({ raw }) =>
 		(async (context: Context) => {
-			const body = context.req.valid("json" as never) as OcrParams;
-			const user = context.get("user");
-			const result = await performOcr(body, {
-				env: context.env as IEnv,
+			const body = context.req.valid("json" as never) as OcrRequestBody;
+			const env = context.env as IEnv;
+			const user = context.get("user") as IUser;
+			const providerName = await resolveOcrProviderName({
+				env,
+				model: body.model,
+				provider: body.provider,
+			});
+			const provider = getOcrProvider(providerName, {
+				env,
+				user,
+			});
+			const result = await provider.extractText({
+				...body,
+				provider: providerName,
+				env,
 				user,
 			});
 
-			return ResponseFactory.success(context, result);
+			return ResponseFactory.success(context, {
+				status: "success",
+				data: result,
+			});
 		})(raw),
 });
 

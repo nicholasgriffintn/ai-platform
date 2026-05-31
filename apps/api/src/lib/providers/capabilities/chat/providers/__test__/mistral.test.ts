@@ -95,36 +95,4 @@ describe("MistralProvider", () => {
 			output_dtype: "binary",
 		});
 	});
-
-	it("maps OCR requests from model operation config", async () => {
-		vi.mocked(getModelConfigByMatchingModel).mockResolvedValue({
-			...baseModelConfig,
-			matchingModel: "mistral-ocr-latest",
-			apiOperation: "ocr",
-		});
-
-		const provider = new MistralProvider();
-		const result = await provider.mapParameters({
-			body: {
-				document: { type: "document_url", document_url: "https://example.test/doc.pdf" },
-				id: "request-1",
-				pages: [0],
-				include_image_base64: true,
-				image_limit: 2,
-				image_min_size: 128,
-			},
-			env: {},
-			model: "mistral-ocr-latest",
-		} as any);
-
-		expect(result).toEqual({
-			model: "mistral-ocr-latest",
-			document: { type: "document_url", document_url: "https://example.test/doc.pdf" },
-			id: "request-1",
-			pages: [0],
-			include_image_base64: true,
-			image_limit: 2,
-			image_min_size: 128,
-		});
-	});
 });

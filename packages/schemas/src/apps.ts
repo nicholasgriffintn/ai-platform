@@ -201,6 +201,7 @@ export const captureScreenshotSchema = z.object({
 });
 
 export const ocrSchema = z.object({
+	provider: z.enum(["mistral"]).optional(),
 	model: z.enum(["mistral-ocr-latest"]).optional(),
 	document: z.object({
 		type: z.enum(["document_url"]).optional(),

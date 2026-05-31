@@ -1,6 +1,13 @@
-import { type OcrParams, performOcr } from "~/services/apps/retrieval/ocr";
+import { getOcrProvider, resolveOcrProviderName } from "~/lib/providers/capabilities/ocr/index";
+import {
+	DEFAULT_OCR_MODEL,
+	DEFAULT_OCR_PROVIDER,
+} from "~/lib/providers/capabilities/ocr/constants";
+import type { OcrExtractionRequest } from "~/lib/providers/capabilities/ocr/types";
 import { jsonSchemaToZod } from "./jsonSchema";
 import type { ApiToolDefinition } from "./types";
+
+type OcrToolRequest = Omit<OcrExtractionRequest, "env" | "user" | "storage">;
 
 export const extract_text_from_document: ApiToolDefinition = {
 	name: "extract_text_from_document",
@@ -19,7 +26,15 @@ export const extract_text_from_document: ApiToolDefinition = {
 			},
 			model: {
 				type: "string",
-				description: "The OCR model to use. Defaults to 'mistral-ocr-latest' if not specified",
+				description: "The OCR model to use",
+				enum: [DEFAULT_OCR_MODEL],
+				default: DEFAULT_OCR_MODEL,
+			},
+			provider: {
+				type: "string",
+				description: "OCR provider",
+				enum: [DEFAULT_OCR_PROVIDER],
+				default: DEFAULT_OCR_PROVIDER,
 			},
 			pages: {
 				type: "array",
@@ -62,7 +77,8 @@ export const extract_text_from_document: ApiToolDefinition = {
 		if (!args.document_url || !args.document_name) {
 			throw new Error("document_url and document_name are required parameters");
 		}
-		const ocrParams: OcrParams = {
+		const ocrParams: OcrToolRequest = {
+			provider: args.provider,
 			document: {
 				type: "document_url",
 				document_url: args.document_url,
@@ -77,15 +93,32 @@ export const extract_text_from_document: ApiToolDefinition = {
 			output_format: args.output_format,
 		};
 
-		const response = await performOcr(ocrParams, req);
+		const providerName = await resolveOcrProviderName({
+			env: req.env,
+			model: ocrParams.model,
+			provider: ocrParams.provider,
+		});
+		const provider = getOcrProvider(providerName, {
+			env: req.env,
+			user: req.user,
+		});
+		const response = await provider.extractText({
+			...ocrParams,
+			provider: providerName,
+			env: req.env,
+			user: req.user,
+		});
 
 		return {
 			status: "success",
 			name: "extract_text_from_document",
-			content: `Extracted text from document ${args.document_name}, you can [download it here](${response?.data?.url}).`,
+			content: `Extracted text from document ${args.document_name}, you can [download it here](${response.url}).`,
 			data: {
-				model: response?.data?.model ?? args.model,
-				raw: response,
+				model: response.model,
+				provider: providerName,
+				url: response.url,
+				key: response.key,
+				outputFormat: response.outputFormat,
 			},
 			role: "tool",
 		};

@@ -4,13 +4,12 @@ import { AssistantError, ErrorType } from "~/utils/errors";
 import { createFimParameters, isFimCompletionRequest } from "~/utils/parameters";
 import { BaseProvider } from "./base";
 
-type MistralApiOperation = "embeddings" | "codestralEmbeddings" | "moderations" | "ocr";
+type MistralApiOperation = "embeddings" | "codestralEmbeddings" | "moderations";
 
 const MISTRAL_OPERATION_ENDPOINTS = {
 	embeddings: "v1/embeddings",
 	codestralEmbeddings: "v1/embeddings",
 	moderations: "v1/moderations",
-	ocr: "v1/ocr",
 } satisfies Record<MistralApiOperation, string>;
 
 function getMistralApiOperation(modelConfig: ModelConfigItem): MistralApiOperation | undefined {
@@ -91,18 +90,6 @@ export class MistralProvider extends BaseProvider {
 				input: params.body.input,
 				output_dimension: 1024,
 				output_dtype: "binary",
-			};
-		}
-
-		if (operation === "ocr") {
-			return {
-				model: modelConfig.matchingModel,
-				document: params.body.document,
-				id: params.body.id,
-				pages: params.body.pages,
-				include_image_base64: params.body.include_image_base64,
-				image_limit: params.body.image_limit,
-				image_min_size: params.body.image_min_size,
 			};
 		}
 

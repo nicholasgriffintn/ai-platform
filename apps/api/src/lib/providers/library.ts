@@ -6,6 +6,7 @@ import { registerEmbeddingProviders } from "./registry/registrations/embedding";
 import { registerGuardrailProviders } from "./registry/registrations/guardrails";
 import { registerImageProviders } from "./registry/registrations/image";
 import { registerMusicProviders } from "./registry/registrations/music";
+import { registerOcrProviders } from "./registry/registrations/ocr";
 import { registerRealtimeProviders } from "./registry/registrations/realtime";
 import { registerResearchProviders } from "./registry/registrations/research";
 import { registerSearchProviders } from "./registry/registrations/search";
@@ -28,6 +29,7 @@ const DEFAULT_BOOTSTRAPPERS: Partial<Record<ProviderCategory, CategoryBootstrapp
 	guardrails: [registerGuardrailProviders],
 	image: [registerImageProviders],
 	music: [registerMusicProviders],
+	ocr: [registerOcrProviders],
 	realtime: [registerRealtimeProviders],
 	research: [registerResearchProviders],
 	search: [registerSearchProviders],
@@ -95,6 +97,10 @@ export class ProviderLibrary {
 
 	music(providerName: string, context?: ProviderFactoryContext) {
 		return this.resolve("music", providerName, context);
+	}
+
+	ocr(providerName: string, context?: ProviderFactoryContext) {
+		return this.resolve("ocr", providerName, context);
 	}
 
 	realtime(providerName: string, context?: ProviderFactoryContext) {

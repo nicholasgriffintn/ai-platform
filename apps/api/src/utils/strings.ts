@@ -11,3 +11,7 @@ export function trimTemplateWhitespace(str: string): string {
 export function compactNonEmptyStrings(values: Array<string | null | undefined>): string[] {
 	return values.map((value) => value?.trim()).filter((value): value is string => Boolean(value));
 }
+
+export function escapeRegExp(value: string): string {
+	return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}

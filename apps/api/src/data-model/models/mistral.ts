@@ -20,13 +20,15 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("mistral-ocr-latest", PROVIDER, {
 		name: "Mistral OCR",
 		matchingModel: "mistral-ocr-latest",
-		apiOperation: "ocr",
 		description:
 			"A document OCR (Optical Character Recognition) processor that works with PDFs and images.",
 		modalities: {
 			input: ["document", "image"],
 			output: ["text"],
 		},
+		strengths: ["ocr", "vision"],
+		supportsDocuments: true,
+		hiddenFromDefaultList: true,
 	}),
 
 	createModelConfig("leanstral", PROVIDER, {

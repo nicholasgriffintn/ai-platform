@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { trimTemplateWhitespace } from "../strings";
+import { escapeRegExp, trimTemplateWhitespace } from "../strings";
 
 describe("strings", () => {
 	describe("trimTemplateWhitespace", () => {
@@ -85,6 +85,15 @@ describe("strings", () => {
 			const input = "clean text";
 			const expected = "clean text";
 			expect(trimTemplateWhitespace(input)).toBe(expected);
+		});
+	});
+
+	describe("escapeRegExp", () => {
+		it("escapes regular expression metacharacters", () => {
+			const escaped = escapeRegExp("image.(1)[draft]+?");
+
+			expect(new RegExp(escaped).test("image.(1)[draft]+?")).toBe(true);
+			expect(new RegExp(escaped).test("imagex1draft")).toBe(false);
 		});
 	});
 });

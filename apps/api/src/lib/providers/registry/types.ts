@@ -2,6 +2,7 @@ import type { AudioProvider } from "../capabilities/audio";
 import type { AIProvider } from "../capabilities/chat/providers/base";
 import type { ImageProvider } from "../capabilities/image";
 import type { MusicProvider } from "../capabilities/music";
+import type { OcrProvider } from "../capabilities/ocr/types";
 import type { RealtimeProvider } from "../capabilities/realtime";
 import type { SpeechProvider } from "../capabilities/speech";
 import type {
@@ -22,6 +23,7 @@ export type ProviderCategory =
 	| "guardrails"
 	| "image"
 	| "music"
+	| "ocr"
 	| "realtime"
 	| "research"
 	| "search"
@@ -63,6 +65,7 @@ export type CategoryProviderMap = {
 	guardrails: GuardrailsProvider;
 	image: ImageProvider;
 	music: MusicProvider;
+	ocr: OcrProvider;
 	realtime: RealtimeProvider;
 	research: ResearchProvider;
 	search: SearchProvider;
