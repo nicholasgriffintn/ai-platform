@@ -100,6 +100,7 @@ describe("Models Service", () => {
 
 			expect(mockGetModelsByCapability).toHaveBeenCalledWith("chat");
 			expect(mockFilterModelsForUserAccess).toHaveBeenCalledWith(mockModels, {}, 123, {
+				includeTrainingDeployments: false,
 				shouldUseCache: false,
 			});
 			expect(result).toEqual(mockFilteredModels);
@@ -128,6 +129,7 @@ describe("Models Service", () => {
 
 			expect(mockGetModelsByModality).toHaveBeenCalledWith("text");
 			expect(mockFilterModelsForUserAccess).toHaveBeenCalledWith(mockModels, {}, 123, {
+				includeTrainingDeployments: true,
 				shouldUseCache: false,
 			});
 			expect(result).toEqual(mockFilteredModels);
@@ -149,7 +151,7 @@ describe("Models Service", () => {
 
 			const result = await getModelDetails({} as any, "gpt-4", 123);
 
-			expect(mockGetModelConfig).toHaveBeenCalledWith("gpt-4");
+			expect(mockGetModelConfig).toHaveBeenCalledWith("gpt-4", {}, undefined, 123);
 			expect(mockFilterModelsForUserAccess).toHaveBeenCalledWith({ "gpt-4": mockModel }, {}, 123, {
 				shouldUseCache: false,
 			});

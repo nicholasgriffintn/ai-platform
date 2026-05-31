@@ -41,7 +41,7 @@ async function assertExplicitModelsAccessible(
 	const inaccessibleModels: string[] = [];
 
 	for (const requestedModel of explicitModels) {
-		const requestedConfig = await findModelConfig(requestedModel, env, requestedProvider);
+		const requestedConfig = await findModelConfig(requestedModel, env, requestedProvider, user?.id);
 		if (
 			!requestedConfig ||
 			!hasAccessibleModelConfig(accessibleModels, requestedModel, requestedConfig)

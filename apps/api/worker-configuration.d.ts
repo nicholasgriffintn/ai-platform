@@ -2,6 +2,7 @@ import type {
 	Ai,
 	AnalyticsEngineDataset,
 	D1Database,
+	Fetcher,
 	R2Bucket,
 	RateLimit,
 	VectorizeIndex,
@@ -45,4 +46,5 @@ interface Env {
 	RATE_LIMITER: RateLimit;
 	VECTOR_DB: VectorizeIndex;
 	AI: Ai;
+	TRAINING_WORKER: Fetcher;
 }

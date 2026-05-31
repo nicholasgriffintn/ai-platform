@@ -43,7 +43,7 @@ Some models support additional features:
 - **JSON Mode** - Structured output
 - **Web Search** - Internet-grounded responses
 - **Multi-turn** - Conversation history
-- **Fine-tuning** - Custom model training
+- **Training** - Custom model training and deployment
 
 ## Model Selection
 

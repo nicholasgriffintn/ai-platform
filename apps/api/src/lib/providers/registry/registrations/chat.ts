@@ -29,6 +29,7 @@ import { PerplexityProvider } from "../../capabilities/chat/providers/perplexity
 import { ReplicateProvider } from "../../capabilities/chat/providers/replicate";
 import { PollyProvider } from "../../capabilities/chat/providers/polly";
 import { RequestyProvider } from "../../capabilities/chat/providers/requesty";
+import { SageMakerProvider } from "../../capabilities/chat/providers/sagemaker";
 import { TogetherAiProvider } from "../../capabilities/chat/providers/together-ai";
 import { UpstageProvider } from "../../capabilities/chat/providers/upstage";
 import { V0Provider } from "../../capabilities/chat/providers/v0";
@@ -191,6 +192,12 @@ const chatProviders: ProviderRegistration<AIProvider>[] = [
 		name: "requesty",
 		create: () => new RequestyProvider(),
 		metadata: { vendor: "Requesty", categories: ["chat"] },
+	},
+	{
+		name: "sagemaker",
+		aliases: ["aws-sagemaker-runtime"],
+		create: () => new SageMakerProvider(),
+		metadata: { vendor: "AWS", categories: ["chat"], tags: ["training"] },
 	},
 	{
 		name: "together-ai",

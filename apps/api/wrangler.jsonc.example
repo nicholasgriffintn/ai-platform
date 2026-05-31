@@ -63,6 +63,10 @@
 		{
 			"binding": "SANDBOX_WORKER",
 			"service": "assistant-sandbox-worker"
+		},
+		{
+			"binding": "TRAINING_WORKER",
+			"service": "assistant-training-worker"
 		}
 	],
 	"durable_objects": {

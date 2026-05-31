@@ -28,3 +28,4 @@ export * from "./uploads";
 export * from "./user";
 export * from "./webAuthN";
 export * from "./webhooks";
+export * from "./training";

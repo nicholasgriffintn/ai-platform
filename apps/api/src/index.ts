@@ -39,6 +39,7 @@ import uploads from "./routes/uploads";
 import user from "./routes/user";
 import memories from "./routes/memories";
 import webhook from "./routes/webhooks";
+import training from "./routes/training";
 import { serviceContextMiddleware } from "./lib/context/serviceContext";
 import { ResponseFactory } from "./lib/http/ResponseFactory";
 import { addRoute } from "./lib/http/routeBuilder";
@@ -322,6 +323,7 @@ app.route(ROUTES.AGENTS, agents);
 app.route(ROUTES.ADMIN, admin);
 app.route(ROUTES.MEMORIES, memories);
 app.route(ROUTES.WEBHOOKS, webhook);
+app.route(ROUTES.TRAINING, training);
 
 app.notFound((c) => c.json({ status: "not found" }, 404));
 

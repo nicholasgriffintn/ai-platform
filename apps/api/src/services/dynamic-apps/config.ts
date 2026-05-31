@@ -273,6 +273,18 @@ export const FEATURED_APPS: FeaturedAppDefinition[] = [
 		kind: "frontend",
 	},
 	{
+		id: "featured-finetuning",
+		name: "Training",
+		description: "Train, inspect, and deploy provider-backed models from the API model catalogue",
+		icon: "hammer",
+		category: "AI Operations",
+		theme: "slate",
+		tags: ["training", "models", "deployments"],
+		href: "/apps/finetuning",
+		type: "premium",
+		kind: "frontend",
+	},
+	{
 		id: "featured-podcast-processor",
 		name: "Podcast Processor",
 		description: "Upload and process your podcast to get transcription, summary, and cover image",

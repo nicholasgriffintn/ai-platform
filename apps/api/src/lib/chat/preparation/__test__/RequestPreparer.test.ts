@@ -270,7 +270,12 @@ describe("RequestPreparer", () => {
 			const result = await (preparer as any).buildModelConfigs(baseOptions, multiModelContext);
 
 			expect(findModelConfig).toHaveBeenCalledTimes(1);
-			expect(findModelConfig).toHaveBeenCalledWith("gpt-4o", mockEnv, undefined);
+			expect(findModelConfig).toHaveBeenCalledWith(
+				"gpt-4o",
+				mockEnv,
+				undefined,
+				baseOptions.user.id,
+			);
 			expect(result).toEqual([
 				{
 					model: "claude-3-sonnet",

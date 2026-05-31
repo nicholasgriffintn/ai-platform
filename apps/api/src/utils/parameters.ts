@@ -71,6 +71,17 @@ export function createFimParameters(params: ChatCompletionParameters): Record<st
 	});
 }
 
+export function createTextGenerationParameters(
+	params: ChatCompletionParameters,
+): Record<string, unknown> {
+	return omitNullishValues({
+		max_new_tokens: typeof params.max_tokens === "number" ? params.max_tokens : undefined,
+		temperature: typeof params.temperature === "number" ? params.temperature : undefined,
+		top_p: typeof params.top_p === "number" ? params.top_p : undefined,
+		return_full_text: false,
+	});
+}
+
 export function calculateReasoningBudget(
 	params: ChatCompletionParameters,
 	modelConfig?: ModelConfigItem,

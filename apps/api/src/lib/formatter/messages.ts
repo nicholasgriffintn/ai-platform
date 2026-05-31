@@ -11,6 +11,7 @@ interface MessageFormatOptions {
 	provider?: string;
 	model?: string;
 	system_prompt?: string;
+	assistantPromptLabel?: string;
 }
 
 /**
@@ -85,6 +86,26 @@ export class MessageFormatter {
 		return messages;
 	}
 
+	static formatTextGenerationPrompt(
+		messages: Message[],
+		options: MessageFormatOptions = {},
+	): string {
+		const formattedMessages = MessageFormatter.formatMessages(messages, options);
+		const lines: string[] = [];
+
+		for (const message of formattedMessages) {
+			const content = MessageFormatter.stringifyMessageContent(message.content).trim();
+			if (!content) {
+				continue;
+			}
+
+			lines.push(`${MessageFormatter.formatTranscriptRole(message.role)}: ${content}`);
+		}
+
+		lines.push(options.assistantPromptLabel || "Assistant:");
+		return lines.join("\n");
+	}
+
 	static formatMessages(messages: Message[], options: MessageFormatOptions = {}): Message[] {
 		const {
 			maxTokens = 0,
@@ -119,6 +140,20 @@ export class MessageFormatter {
 			formattedMessages = MessageFormatter.ensureAssistantAfterTool(formattedMessages);
 		}
 		return formattedMessages;
+	}
+
+	private static formatTranscriptRole(role: string): string {
+		switch (role) {
+			case "assistant":
+				return "Assistant";
+			case "system":
+			case "developer":
+				return "System";
+			case "tool":
+				return "Tool";
+			default:
+				return "User";
+		}
 	}
 
 	private static formatMessageContent(messages: Message[], provider: string): Message[] {

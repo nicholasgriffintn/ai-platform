@@ -16,6 +16,21 @@ export function formatMessages(
 	});
 }
 
+export function formatTextGenerationPrompt(
+	provider: string,
+	messageHistory: Message[],
+	system_prompt?: string,
+	model?: string,
+): string {
+	return MessageFormatter.formatTextGenerationPrompt(messageHistory, {
+		provider,
+		model,
+		system_prompt,
+		maxTokens: 0,
+		truncationStrategy: "tail",
+	});
+}
+
 export function stringifyMessageContent(content: unknown): string {
 	return MessageFormatter.stringifyMessageContent(content);
 }
