@@ -103,16 +103,18 @@ describe("PerplexityProvider", () => {
 		});
 
 		it("should return an error result when the API request fails", async () => {
-			vi.mocked(fetch).mockResolvedValue({
-				ok: false,
-				text: async () => "API Error Message",
-			} as Response);
+			vi.mocked(fetch).mockResolvedValue(
+				new Response("API Error Message", {
+					status: 400,
+					statusText: "Bad Request",
+				}),
+			);
 
 			const result = await provider.performWebSearch("test query");
 
 			expect(result).toEqual({
 				status: "error",
-				error: "Error performing web search: API Error Message",
+				error: "Error performing web search: 400 Bad Request - API Error Message",
 			});
 		});
 

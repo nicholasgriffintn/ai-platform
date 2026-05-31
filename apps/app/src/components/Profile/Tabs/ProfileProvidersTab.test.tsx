@@ -24,6 +24,7 @@ describe("ProfileProvidersTab", () => {
 					provider_id: "cartesia",
 					name: "Cartesia",
 					enabled: true,
+					hasApiKey: true,
 				},
 			],
 			isLoadingProviderSettings: false,
@@ -43,6 +44,7 @@ describe("ProfileProvidersTab", () => {
 					provider_id: "cartesia",
 					name: "Cartesia",
 					enabled: true,
+					hasApiKey: true,
 				},
 			],
 			isLoadingProviderSettings: false,
@@ -88,6 +90,6 @@ describe("ProfileProvidersTab", () => {
 		render(<ProfileProvidersTab />);
 
 		expect(screen.queryByLabelText("Delete provider Cartesia")).not.toBeInTheDocument();
-		expect(screen.getByLabelText("Enable")).toBeInTheDocument();
+		expect(screen.getByLabelText("Add key")).toBeInTheDocument();
 	});
 });

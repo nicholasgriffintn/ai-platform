@@ -295,6 +295,25 @@ export function ProfileAccountTab() {
 										</div>
 									</div>
 								)}
+
+								<div className="bg-white dark:bg-zinc-700 rounded-md p-4 shadow-sm">
+									<div className="flex justify-between items-center mb-3">
+										<div className="font-medium text-zinc-800 dark:text-zinc-100">BYOK Usage</div>
+										<div className="text-zinc-700 dark:text-zinc-300 text-sm">
+											{user?.daily_byok_message_count || 0} today
+										</div>
+									</div>
+
+									<div className="flex items-center justify-between text-sm">
+										<div className="text-zinc-700 dark:text-zinc-300 flex items-center">
+											<div className="h-3 w-3 bg-emerald-500 rounded-full mr-2" />
+											<span>Unlimited provider-key messages</span>
+										</div>
+										<div className="text-zinc-500 dark:text-zinc-400">
+											Resets {formatTimeAgo(user?.daily_byok_reset)}
+										</div>
+									</div>
+								</div>
 							</div>
 
 							<div className="mt-4">

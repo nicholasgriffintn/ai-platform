@@ -446,15 +446,6 @@ export async function getIncludedInRouterModelsForUser(
 		return await filterModelsForUserAccess(freeModels, env, userId, options);
 	}
 
-	const repositories = new RepositoryManager(env);
-	const user = await repositories.users.getUserById(userId);
-	const isPro = user?.plan_id === "pro";
-
-	if (!isPro) {
-		const freeModels = getIncludedInRouterFreeModels(options);
-		return await filterModelsForUserAccess(freeModels, env, userId, options);
-	}
-
 	const allRouterModels = getIncludedInRouterModels(options);
 	return await filterModelsForUserAccess(allRouterModels, env, userId, options);
 }
@@ -538,17 +529,20 @@ export async function filterModelsForUserAccess(
 					);
 
 		const enabledProviders = new Map(
-			userProviderSettings.filter((p) => p.enabled).map((p) => [p.provider_id, true]),
+			userProviderSettings.filter((p) => p.enabled).map((p) => [p.provider_id, p]),
 		);
 
 		for (const modelId in allModels) {
 			const model = allModels[modelId];
 			const isFree = freeModelIds.has(modelId);
-			const isEnabled =
-				alwaysEnabledProviders.has(model.provider) || enabledProviders.has(model.provider);
+			const userProvider = enabledProviders.get(model.provider);
+			const isEnabled = alwaysEnabledProviders.has(model.provider) || Boolean(userProvider);
 
 			if (isFree || isEnabled) {
-				filteredModels[modelId] = model;
+				filteredModels[modelId] = {
+					...model,
+					isByokEnabled: Boolean(userProvider?.hasApiKey),
+				};
 			}
 		}
 
@@ -631,20 +625,33 @@ export const getAuxiliarySearchProvider = async (
 	user?: IUser,
 	requestedProvider?: SearchProviderName,
 ): Promise<SearchProviderName> => {
-	const isProUser = user?.plan_id === "pro";
-
-	if (!isProUser) {
-		if (requestedProvider && requestedProvider !== "duckduckgo") {
-			throw new AssistantError(
-				"Requested provider requires a Pro plan",
-				ErrorType.AUTHORISATION_ERROR,
-			);
-		}
+	if (requestedProvider === "duckduckgo") {
 		return "duckduckgo";
 	}
 
 	if (requestedProvider) {
-		return requestedProvider;
+		if (user?.plan_id === "pro") {
+			return requestedProvider;
+		}
+
+		if (user?.id) {
+			const repositories = new RepositoryManager(env);
+			const providerKeyId =
+				requestedProvider === "perplexity" ? "perplexity-ai" : requestedProvider;
+			const hasProviderKey = await repositories.userSettings.hasProviderApiKey(
+				user.id,
+				providerKeyId,
+			);
+
+			if (hasProviderKey) {
+				return requestedProvider;
+			}
+		}
+
+		throw new AssistantError(
+			`${requestedProvider} search provider is not configured for this account`,
+			ErrorType.AUTHORISATION_ERROR,
+		);
 	}
 
 	if (user?.id) {
@@ -656,11 +663,26 @@ export const getAuxiliarySearchProvider = async (
 		const userPreferredProvider = userSettings?.search_provider as SearchProviderName | undefined;
 
 		if (userPreferredProvider) {
+			if (user.plan_id === "pro") {
+				return userPreferredProvider;
+			}
+
+			const providerKeyId =
+				userPreferredProvider === "perplexity" ? "perplexity-ai" : userPreferredProvider;
+			const hasProviderKey = await repositories.userSettings.hasProviderApiKey(
+				user.id,
+				providerKeyId,
+			);
+
+			if (!hasProviderKey) {
+				return "duckduckgo";
+			}
+
 			return userPreferredProvider;
 		}
 	}
 
-	return "tavily";
+	return user?.plan_id === "pro" ? "tavily" : "duckduckgo";
 };
 
 export const getAuxiliaryResearchProvider = async (
@@ -675,12 +697,6 @@ export const getAuxiliaryResearchProvider = async (
 			`Unsupported research provider: ${providerToUse}`,
 			ErrorType.PARAMS_ERROR,
 		);
-	}
-
-	const isProUser = user?.plan_id === "pro";
-
-	if (!isProUser) {
-		throw new AssistantError("Research tasks require a Pro plan", ErrorType.AUTHORISATION_ERROR);
 	}
 
 	if (!user?.id) {
@@ -702,13 +718,15 @@ export const getAuxiliaryResearchProvider = async (
 	const hasProvider = Array.isArray(providerSettings)
 		? providerSettings.some((setting: any) => {
 				const isEnabled = Boolean(setting?.enabled);
-				return setting?.provider_id === providerToUse && isEnabled;
+				const hasApiKey = Boolean(setting?.hasApiKey);
+				const isProviderMatch = setting?.provider_id === providerToUse;
+				return isProviderMatch && isEnabled && (user.plan_id === "pro" || hasApiKey);
 			})
 		: false;
 
 	if (!hasProvider) {
 		throw new AssistantError(
-			`${providerToUse} research provider is not enabled for this account`,
+			`${providerToUse} research provider is not configured for this account`,
 			ErrorType.AUTHORISATION_ERROR,
 		);
 	}

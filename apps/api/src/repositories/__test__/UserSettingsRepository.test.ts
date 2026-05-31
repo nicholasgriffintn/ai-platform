@@ -51,4 +51,14 @@ describe("UserSettingsRepository", () => {
 		expect(executeRunSpy.mock.calls[0]?.[0]).toContain("provider_id = ?");
 		expect(executeRunSpy.mock.calls[0]?.[1]).toEqual([null, 0, 42, "cartesia"]);
 	});
+
+	it("does not broaden provider API key lookups for blank provider IDs", async () => {
+		const repo = new UserSettingsRepository({ DB: {} as any } as IEnv);
+		const runQuerySpy = vi.spyOn(repo as any, "runQuery");
+
+		const result = await repo.hasProviderApiKey(42, " ");
+
+		expect(result).toBe(false);
+		expect(runQuerySpy).not.toHaveBeenCalled();
+	});
 });

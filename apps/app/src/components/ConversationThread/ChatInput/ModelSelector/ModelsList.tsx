@@ -10,6 +10,7 @@ import {
 	type RegionalModelListEntry,
 } from "~/lib/model-region-variants";
 import { getModelDisplayName } from "~/lib/models";
+import { formatProviderLabel } from "~/lib/provider-display";
 import { cn } from "~/lib/utils";
 import type { ModelConfigItem } from "~/types";
 import { ModelOption } from "./ModelOption";
@@ -35,14 +36,6 @@ interface ProviderListEntry {
 }
 
 const FEATURED_PROVIDER_KEY = "featured";
-
-function formatProviderLabel(provider: string) {
-	return provider
-		.split(/[-_]/g)
-		.filter(Boolean)
-		.map((segment) => segment.charAt(0).toUpperCase() + segment.slice(1))
-		.join(" ");
-}
 
 function getSelectedModelProvider(models: ModelConfigItem[], selectedId?: string | null) {
 	if (!selectedId) return null;
@@ -231,7 +224,8 @@ export function ModelsList({
 		const modelItem = modelEntry.model;
 		const selectedRegionModelId = getSelectedRegionalModelId(modelEntry, selectedId);
 		const selectedRegionModel = modelsById[selectedRegionModelId] || modelItem;
-		const disabledOption = isDisabled || (!isPro && !modelItem.isFree) || disabled;
+		const disabledOption =
+			isDisabled || (!isPro && !modelItem.isFree && !modelItem.isByokEnabled) || disabled;
 
 		return (
 			<ModelOption

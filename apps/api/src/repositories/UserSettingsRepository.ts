@@ -499,19 +499,36 @@ export class UserSettingsRepository extends BaseRepository {
 		const { query, values } = this.buildSelectQuery(
 			"provider_settings",
 			{ user_id: userId },
-			{ columns: ["id", "provider_id", "enabled"] },
+			{ columns: ["id", "provider_id", "enabled", "api_key"] },
 		);
 
 		const result = await this.runQuery<{
 			id: string;
 			provider_id: string;
 			enabled: number;
+			api_key: string | null;
 		}>(query, values);
 
 		return result.map((provider) => ({
 			id: provider.id,
 			provider_id: provider.provider_id,
 			enabled: provider.enabled === 1,
+			hasApiKey: Boolean(provider.api_key),
 		}));
+	}
+
+	public async hasProviderApiKey(userId: number, providerId: string): Promise<boolean> {
+		if (!userId || !providerId.trim()) {
+			return false;
+		}
+
+		const { query, values } = this.buildSelectQuery(
+			"provider_settings",
+			{ user_id: userId, provider_id: providerId },
+			{ columns: ["api_key"] },
+		);
+
+		const result = await this.runQuery<{ api_key: string | null }>(query, values, true);
+		return Boolean(result?.api_key);
 	}
 }

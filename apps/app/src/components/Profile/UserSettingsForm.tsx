@@ -744,8 +744,7 @@ export function UserSettingsForm({
 						Search Provider
 					</label>
 					<p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
-						Choose the default search provider for web search requests. Pro users can select from
-						premium providers like Tavily, Serper, or Perplexity.
+						Choose the default search provider for web search requests.
 					</p>
 					<FormSelect
 						id="search_provider"
@@ -766,7 +765,7 @@ export function UserSettingsForm({
 							});
 						}}
 					>
-						<option value="">Default (Tavily for Pro, DuckDuckGo for Free)</option>
+						<option value="">Default</option>
 						<option value="duckduckgo">DuckDuckGo</option>
 						<option value="tavily">Tavily</option>
 						<option value="serper">Serper</option>
@@ -775,8 +774,7 @@ export function UserSettingsForm({
 						<option value="exa">Exa</option>
 					</FormSelect>
 					<p className="text-sm text-zinc-500 dark:text-zinc-400 mt-2">
-						Note: Premium providers (Tavily, Serper, Perplexity, Parallel, Exa) require a Pro plan.
-						You may also need to configure API keys in the providers section.
+						Configure provider keys in the providers section before selecting BYOK providers.
 					</p>
 				</div>
 			</div>

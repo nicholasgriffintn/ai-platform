@@ -159,8 +159,8 @@ const chatProviders: ProviderRegistration<AIProvider>[] = [
 		metadata: { vendor: "Parallel", categories: ["chat"] },
 	},
 	{
-		name: "perplexity",
-		aliases: ["perplexity-ai"],
+		name: "perplexity-ai",
+		aliases: ["perplexity"],
 		create: () => new PerplexityProvider(),
 		metadata: { vendor: "Perplexity", categories: ["chat", "search"] },
 	},

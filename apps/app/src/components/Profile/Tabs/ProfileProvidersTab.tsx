@@ -1,12 +1,14 @@
-import { Loader2, Plus, Power, RefreshCcw, Trash2 } from "lucide-react";
+import { KeyRound, Loader2, Plus, RefreshCcw, Trash2 } from "lucide-react";
 import { useState } from "react";
 
 import { EmptyState } from "~/components/Core/EmptyState";
+import { ModelIcon } from "~/components/ModelIcon";
 import { PageHeader } from "~/components/Core/PageHeader";
 import { PageTitle } from "~/components/Core/PageTitle";
 import { ConfirmationDialog, HoverActions, ListItem } from "~/components/ui";
 import { useTrackEvent } from "~/hooks/use-track-event";
 import { useUser } from "~/hooks/useUser";
+import { formatProviderLabel } from "~/lib/provider-display";
 import type { ProviderSetting } from "~/lib/api/services/user-service";
 import { ProviderApiKeyModal } from "../Modals/ProviderApiKeyModal";
 
@@ -38,6 +40,10 @@ export function ProfileProvidersTab() {
 		providerName: "",
 	});
 	const [providerToDelete, setProviderToDelete] = useState<ProviderDeleteState | null>(null);
+	const configuredProviderCount = providerSettings.filter((provider) => provider.hasApiKey).length;
+
+	const getProviderName = (provider: ProviderSetting) =>
+		provider.name || formatProviderLabel(provider.provider_id);
 
 	const handleEnableProvider = (providerId: string, providerName: string) => {
 		trackEvent({
@@ -103,6 +109,12 @@ export function ProfileProvidersTab() {
 			</PageHeader>
 
 			<div className="space-y-4">
+				{!isLoadingProviderSettings && providerSettings.length > 0 && (
+					<div className="rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-600 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
+						{configuredProviderCount} of {providerSettings.length} providers configured
+					</div>
+				)}
+
 				{isLoadingProviderSettings ? (
 					<div className="flex justify-center py-10">
 						<div className="h-8 w-8 animate-spin rounded-full border-2 border-current border-t-transparent" />
@@ -114,65 +126,76 @@ export function ProfileProvidersTab() {
 					/>
 				) : (
 					<ul className="space-y-2">
-						{providerSettings.map((provider: ProviderSetting) => (
-							<ListItem
-								key={provider.id}
-								className="bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-750"
-								label={provider.name || provider.provider_id}
-								sublabel={provider.description}
-								badge={
-									provider.enabled ? (
-										<span className="inline-flex items-center rounded-full bg-emerald-100 dark:bg-emerald-900/30 px-2 py-0.5 text-xs text-emerald-800 dark:text-emerald-300">
-											<Power className="h-3 w-3 mr-1" /> Enabled
-										</span>
-									) : undefined
-								}
-								actions={
-									<HoverActions
-										alwaysVisible
-										actions={[
-											{
-												id: "configure",
-												icon: provider.enabled ? <Power size={14} /> : <Plus size={14} />,
-												label: provider.enabled ? "Configure" : "Enable",
-												onClick: (e) => {
-													e.stopPropagation();
-													handleEnableProvider(
-														provider.provider_id,
-														provider.name || provider.provider_id,
-													);
+						{providerSettings.map((provider: ProviderSetting) => {
+							const providerName = getProviderName(provider);
+							const isConfigured = Boolean(provider.hasApiKey);
+
+							return (
+								<ListItem
+									key={provider.id}
+									className="bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-750"
+									icon={
+										<ModelIcon
+											modelName={providerName}
+											provider={provider.provider_id}
+											size={22}
+											showFallback
+											mono
+										/>
+									}
+									label={providerName}
+									sublabel={provider.description}
+									badge={
+										isConfigured ? (
+											<span className="inline-flex items-center rounded-full bg-emerald-100 dark:bg-emerald-900/30 px-2 py-0.5 text-xs text-emerald-800 dark:text-emerald-300">
+												<KeyRound className="h-3 w-3 mr-1" /> Configured
+											</span>
+										) : undefined
+									}
+									actions={
+										<HoverActions
+											alwaysVisible
+											actions={[
+												{
+													id: "configure",
+													icon: isConfigured ? <KeyRound size={14} /> : <Plus size={14} />,
+													label: isConfigured ? "Update key" : "Add key",
+													onClick: (e) => {
+														e.stopPropagation();
+														handleEnableProvider(provider.provider_id, providerName);
+													},
 												},
-											},
-											...(provider.enabled
-												? [
-														{
-															id: "delete",
-															icon:
-																isDeletingProviderApiKey &&
-																providerToDelete?.providerId === provider.provider_id ? (
-																	<Loader2 size={14} className="animate-spin" />
-																) : (
-																	<Trash2 size={14} />
-																),
-															label: `Delete provider ${provider.name || provider.provider_id}`,
-															onClick: (e: React.MouseEvent) => {
-																e.stopPropagation();
-																setProviderToDelete({
-																	providerId: provider.provider_id,
-																	providerName: provider.name || provider.provider_id,
-																});
+												...(isConfigured
+													? [
+															{
+																id: "delete",
+																icon:
+																	isDeletingProviderApiKey &&
+																	providerToDelete?.providerId === provider.provider_id ? (
+																		<Loader2 size={14} className="animate-spin" />
+																	) : (
+																		<Trash2 size={14} />
+																	),
+																label: `Delete provider ${providerName}`,
+																onClick: (e: React.MouseEvent) => {
+																	e.stopPropagation();
+																	setProviderToDelete({
+																		providerId: provider.provider_id,
+																		providerName,
+																	});
+																},
+																disabled:
+																	isDeletingProviderApiKey &&
+																	providerToDelete?.providerId === provider.provider_id,
 															},
-															disabled:
-																isDeletingProviderApiKey &&
-																providerToDelete?.providerId === provider.provider_id,
-														},
-													]
-												: []),
-										]}
-									/>
-								}
-							/>
-						))}
+														]
+													: []),
+											]}
+										/>
+									}
+								/>
+							);
+						})}
 					</ul>
 				)}
 			</div>

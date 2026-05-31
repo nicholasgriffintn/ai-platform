@@ -7,6 +7,7 @@ import {
 	getAuxiliaryGuardrailsModel,
 	getAuxiliaryModel,
 	getAuxiliaryModelForRetrieval,
+	getAuxiliaryResearchProvider,
 	getAuxiliarySearchProvider,
 	getFeaturedModels,
 	getFreeModels,
@@ -48,6 +49,7 @@ const mockRepositories = {
 	userSettings: {
 		getUserProviderSettings: vi.fn(),
 		getUserSettings: vi.fn(),
+		hasProviderApiKey: vi.fn(),
 	},
 	users: {
 		getUserById: vi.fn(),
@@ -126,6 +128,7 @@ describe("Models", () => {
 		mockCache.set.mockResolvedValue(true);
 		mockRepositories.userSettings.getUserProviderSettings.mockResolvedValue([]);
 		mockRepositories.userSettings.getUserSettings.mockResolvedValue(null);
+		mockRepositories.userSettings.hasProviderApiKey.mockResolvedValue(false);
 		mockRepositories.users.getUserById.mockResolvedValue(mockUser);
 	});
 
@@ -484,7 +487,7 @@ describe("Models", () => {
 
 		it("should return models based on user provider settings", async () => {
 			mockRepositories.userSettings.getUserProviderSettings.mockResolvedValue([
-				{ provider_id: "paid-provider", enabled: true },
+				{ provider_id: "paid-provider", enabled: true, hasApiKey: true },
 			]);
 
 			const result = await filterModelsForUserAccess(testModels, mockEnv, mockUser.id);
@@ -492,6 +495,7 @@ describe("Models", () => {
 			expect(result).toHaveProperty("free-model");
 			expect(result).toHaveProperty("paid-model");
 			expect(result).toHaveProperty("always-enabled-model");
+			expect(result["paid-model"].isByokEnabled).toBe(true);
 		});
 
 		it("should exclude disabled provider models", async () => {
@@ -520,7 +524,10 @@ describe("Models", () => {
 			);
 
 			expect(result).toEqual({
-				"paid-model": testModels["paid-model"],
+				"paid-model": {
+					...testModels["paid-model"],
+					isByokEnabled: false,
+				},
 			});
 		});
 
@@ -618,7 +625,27 @@ describe("Models", () => {
 
 		it("should throw for non-pro users requesting other providers", async () => {
 			await expect(getAuxiliarySearchProvider(mockEnv as any, mockUser, "tavily")).rejects.toThrow(
-				"Requested provider requires a Pro plan",
+				"tavily search provider is not configured for this account",
+			);
+		});
+
+		it("should allow non-pro users to request configured BYOK search providers", async () => {
+			mockRepositories.userSettings.hasProviderApiKey.mockResolvedValueOnce(true);
+
+			const provider = await getAuxiliarySearchProvider(mockEnv as any, mockUser, "parallel");
+
+			expect(provider).toBe("parallel");
+		});
+
+		it("should check Perplexity search BYOK access against the configured provider id", async () => {
+			mockRepositories.userSettings.hasProviderApiKey.mockResolvedValueOnce(true);
+
+			const provider = await getAuxiliarySearchProvider(mockEnv as any, mockUser, "perplexity");
+
+			expect(provider).toBe("perplexity");
+			expect(mockRepositories.userSettings.hasProviderApiKey).toHaveBeenCalledWith(
+				mockUser.id,
+				"perplexity-ai",
 			);
 		});
 
@@ -649,6 +676,28 @@ describe("Models", () => {
 
 			expect(provider).toBe("parallel");
 			expect(mockRepositories.userSettings.getUserSettings).not.toHaveBeenCalled();
+		});
+	});
+
+	describe("getAuxiliaryResearchProvider", () => {
+		it("should allow pro users to use enabled research providers without BYOK keys", async () => {
+			mockRepositories.userSettings.getUserProviderSettings.mockResolvedValueOnce([
+				{ provider_id: "parallel", enabled: true, hasApiKey: false },
+			]);
+
+			const provider = await getAuxiliaryResearchProvider(mockEnv as any, mockProUser, "parallel");
+
+			expect(provider).toBe("parallel");
+		});
+
+		it("should require BYOK keys for non-pro users requesting research providers", async () => {
+			mockRepositories.userSettings.getUserProviderSettings.mockResolvedValueOnce([
+				{ provider_id: "parallel", enabled: true, hasApiKey: false },
+			]);
+
+			await expect(
+				getAuxiliaryResearchProvider(mockEnv as any, mockUser, "parallel"),
+			).rejects.toThrow("parallel research provider is not configured for this account");
 		});
 	});
 

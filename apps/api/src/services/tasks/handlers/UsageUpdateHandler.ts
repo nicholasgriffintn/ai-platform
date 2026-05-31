@@ -74,6 +74,21 @@ export class UsageUpdateHandler implements TaskHandler {
 				await UsageManager.applyProUsageUpdate(repositories, user, payload.usageMultiplier);
 				return;
 			}
+			case "increment_byok_usage": {
+				if (!payload.userId) {
+					logger.warn("Usage update missing userId for increment_byok_usage");
+					return;
+				}
+				const user = await repositories.users.getUserById(payload.userId);
+				if (!user) {
+					logger.warn("Usage update BYOK user not found", {
+						userId: payload.userId,
+					});
+					return;
+				}
+				await UsageManager.applyByokUsageUpdate(repositories, user);
+				return;
+			}
 			case "increment_anonymous_usage": {
 				if (!payload.anonymousUserId) {
 					logger.warn("Usage update missing anonymousUserId for increment_anonymous_usage");

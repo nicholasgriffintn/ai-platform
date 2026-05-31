@@ -329,12 +329,12 @@ describe("S3VectorsEmbeddingProvider", () => {
 	});
 
 	it("should handle API errors gracefully", async () => {
-		const mockFetch = vi.fn().mockResolvedValue({
-			ok: false,
-			status: 400,
-			statusText: "Bad Request",
-			text: () => Promise.resolve("Invalid request"),
-		});
+		const mockFetch = vi.fn().mockResolvedValue(
+			new Response("Invalid request", {
+				status: 400,
+				statusText: "Bad Request",
+			}),
+		);
 
 		const mockAwsClient = {
 			fetch: mockFetch,
@@ -362,7 +362,7 @@ describe("S3VectorsEmbeddingProvider", () => {
 		];
 
 		await expect(provider.insert(embeddings)).rejects.toThrow(
-			"S3 Vectors API error: Bad Request - Invalid request",
+			"S3 Vectors API error: 400 Bad Request - Invalid request",
 		);
 	});
 });
