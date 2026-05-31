@@ -27,6 +27,7 @@ minimumReleaseAgeExclude:
   - '@aws-sdk/credential-provider-node@3.972.47'
   - '@aws-sdk/s3-request-presigner@3.1057.0'
   - '@aws-sdk/token-providers@3.1057.0'
+  - '@cloudflare/workers-types@4.20260530.1'
 
 onlyBuiltDependencies:
   - better-sqlite3
