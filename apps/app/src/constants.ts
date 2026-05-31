@@ -60,6 +60,7 @@ const COMMON_CSP = {
 		"eu.i.posthog.com",
 		"eu-assets.i.posthog.com",
 		"beacon.polychat.app",
+		"beacon-cdn.polychat.app",
 		"https://appleid.apple.com",
 		"https://hcaptcha.com",
 		"https://*.hcaptcha.com",

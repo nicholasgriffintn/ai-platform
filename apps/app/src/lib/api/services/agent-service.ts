@@ -1,4 +1,4 @@
-import { fetchApi, returnFetchedData } from "../fetch-wrapper";
+import { createApiErrorFromResponse, fetchApi, returnFetchedData } from "../fetch-wrapper";
 
 export class AgentService {
 	constructor(private getHeaders: () => Promise<Record<string, string>>) {}
@@ -15,7 +15,10 @@ export class AgentService {
 		const response = await fetchApi("/agents", { method: "GET", headers });
 
 		if (!response.ok) {
-			throw new Error(`Failed to list agents: ${response.statusText}`);
+			throw await createApiErrorFromResponse(
+				response,
+				`Failed to list agents: ${response.statusText}`,
+			);
 		}
 
 		const responseData = await returnFetchedData<any>(response);

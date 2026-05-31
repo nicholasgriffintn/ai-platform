@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 
 import { LoginModal } from "~/components/Models/LoginModal";
 import { ChatNavbar } from "~/components/Navbar";
@@ -6,7 +6,6 @@ import { useKeyboardShortcuts } from "~/hooks/useKeyboardShortcuts";
 import { cn } from "~/lib/utils";
 import { useUIStore } from "~/state/stores/uiStore";
 import { KeyboardShortcutsHelp } from "../components/Models/KeyboardShortcutsHelp";
-import { useExperiments } from "~/hooks/use-experiments";
 
 interface SidebarLayoutProps {
 	children: React.ReactNode;
@@ -23,8 +22,6 @@ export function SidebarLayout({
 	displayNavBar = true,
 	bgClassName,
 }: SidebarLayoutProps) {
-	const { defineExperimentBehaviors, activate } = useExperiments();
-
 	const {
 		sidebarVisible,
 		showKeyboardShortcuts,
@@ -38,50 +35,13 @@ export function SidebarLayout({
 		setShowLoginModal(true);
 	};
 
-	const enhancedSidebarContent = React.isValidElement(sidebarContent)
-		? React.cloneElement(sidebarContent as React.ReactElement<any>, {
+	const enhancedSidebarContent = React.isValidElement<{ onEnterApiKey?: () => void }>(
+		sidebarContent,
+	)
+		? React.cloneElement(sidebarContent, {
 				onEnterApiKey: handleEnterApiKey,
 			})
 		: sidebarContent;
-
-	useEffect(() => {
-		const setupExperiment = async () => {
-			await defineExperimentBehaviors([
-				{
-					id: "logo",
-					name: "Polychat Logo",
-					description: "The logo of the app",
-					autoActivate: true,
-					variants: [
-						{
-							id: "logo_control",
-							name: "Default",
-							activate: () => {},
-						},
-						{
-							id: "logo_minimalist",
-							name: "Minimalist",
-							activate: () => {},
-						},
-						{
-							id: "logo_tropical",
-							name: "Tropical",
-							activate: () => {},
-						},
-						{
-							id: "logo_abstract",
-							name: "Abstract",
-							activate: () => {},
-						},
-					],
-				},
-			]);
-
-			await activate("logo");
-		};
-
-		setupExperiment();
-	}, []);
 
 	return (
 		<>

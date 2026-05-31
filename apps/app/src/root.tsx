@@ -10,6 +10,7 @@ import { LoadingSpinner } from "~/components/LoadingSpinner";
 import { ServiceWorkerRegistration } from "~/components/Core/ServiceWorkerRegistration";
 import { Toaster } from "~/components/ui/sonner";
 import { useTrackEvent } from "~/hooks/use-track-event";
+import { shouldRetryApiQuery } from "~/lib/api/retry";
 import ErrorRoute from "~/pages/error";
 import { LoadingProvider } from "~/state/contexts/LoadingContext";
 import type { Route } from "./+types/root";
@@ -28,7 +29,7 @@ const queryClient = new QueryClient({
 	defaultOptions: {
 		queries: {
 			staleTime: 1000 * 60 * 5, // 5 minutes
-			retry: 2,
+			retry: shouldRetryApiQuery,
 		},
 	},
 });

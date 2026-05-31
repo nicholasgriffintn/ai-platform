@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { fetchApi } from "../fetch-wrapper";
+import { createApiErrorFromResponse, fetchApi } from "../fetch-wrapper";
 
 describe("fetchApi", () => {
 	beforeEach(() => {
@@ -62,5 +62,29 @@ describe("fetchApi", () => {
 
 		resolveFetch?.(new Response("{}"));
 		await expect(request).resolves.toBeInstanceOf(Response);
+	});
+
+	it("preserves response status on API errors", async () => {
+		const error = await createApiErrorFromResponse(
+			new Response(JSON.stringify({ error: "Unauthorized" }), {
+				status: 401,
+				statusText: "Unauthorized",
+			}),
+		);
+
+		expect(error.status).toBe(401);
+		expect(error.message).toBe("Unauthorized");
+	});
+
+	it("extracts validation detail messages from API errors", async () => {
+		const error = await createApiErrorFromResponse(
+			new Response(JSON.stringify({ details: [{ message: "Invalid installation" }] }), {
+				status: 400,
+				statusText: "Bad Request",
+			}),
+		);
+
+		expect(error.status).toBe(400);
+		expect(error.message).toBe("Invalid installation");
 	});
 });

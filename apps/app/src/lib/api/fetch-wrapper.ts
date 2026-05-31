@@ -23,7 +23,7 @@ function getCookie(name: string): string | null {
  * Options for the fetchApi wrapper, allowing an object for the body.
  */
 type FetchApiOptions = Omit<RequestInit, "body"> & {
-	body?: BodyInit | Record<string, any> | null;
+	body?: BodyInit | object | null;
 	timeoutMs?: number | null;
 };
 
@@ -62,6 +62,10 @@ function extractApiErrorCode(parsed: unknown): string | undefined {
 }
 
 function extractApiErrorMessage(parsed: unknown, fallback: string): string {
+	if (typeof parsed === "string" && parsed.trim()) {
+		return parsed;
+	}
+
 	if (
 		parsed &&
 		typeof parsed === "object" &&
@@ -92,7 +96,57 @@ function extractApiErrorMessage(parsed: unknown, fallback: string): string {
 		return parsed.message;
 	}
 
+	if (
+		parsed &&
+		typeof parsed === "object" &&
+		"details" in parsed &&
+		Array.isArray(parsed.details)
+	) {
+		const firstDetail = parsed.details[0];
+		if (
+			firstDetail &&
+			typeof firstDetail === "object" &&
+			"message" in firstDetail &&
+			typeof firstDetail.message === "string" &&
+			firstDetail.message.trim()
+		) {
+			return firstDetail.message;
+		}
+	}
+
 	return fallback;
+}
+
+async function readApiErrorData(response: Response): Promise<unknown> {
+	let bodyText: string;
+
+	try {
+		bodyText = await response.clone().text();
+	} catch {
+		return undefined;
+	}
+
+	if (!bodyText.trim()) {
+		return undefined;
+	}
+
+	try {
+		return JSON.parse(bodyText);
+	} catch {
+		return bodyText;
+	}
+}
+
+function isBodyInit(value: BodyInit | object): value is BodyInit {
+	return (
+		typeof value === "string" ||
+		value instanceof Blob ||
+		value instanceof FormData ||
+		value instanceof URLSearchParams ||
+		value instanceof ArrayBuffer ||
+		value instanceof ReadableStream ||
+		ArrayBuffer.isView(value)
+	);
 }
 
 /**
@@ -107,14 +161,12 @@ async function performFetch(path: string, options: FetchApiOptions = {}): Promis
 	const url = `${API_BASE_URL}${path}`;
 	const { timeoutMs, ...restOptions } = options;
 
-	const defaultHeaders: Record<string, string> = {
-		...(restOptions.headers as Record<string, string>),
-	};
+	const defaultHeaders = new Headers(restOptions.headers);
 
 	const isFormData = restOptions.body instanceof FormData;
 
-	if (!isFormData && !defaultHeaders["Content-Type"]) {
-		defaultHeaders["Content-Type"] = "application/json";
+	if (!isFormData && !defaultHeaders.has("Content-Type")) {
+		defaultHeaders.set("Content-Type", "application/json");
 	}
 
 	const method = restOptions.method?.toUpperCase() || "GET";
@@ -122,7 +174,7 @@ async function performFetch(path: string, options: FetchApiOptions = {}): Promis
 	if (method !== "GET" && method !== "HEAD" && method !== "OPTIONS") {
 		const csrfToken = getCookie("_csrf");
 		if (csrfToken) {
-			defaultHeaders["X-CSRF-Token"] = csrfToken;
+			defaultHeaders.set("X-CSRF-Token", csrfToken);
 		}
 	}
 
@@ -144,16 +196,8 @@ async function performFetch(path: string, options: FetchApiOptions = {}): Promis
 	}
 
 	if (restOptions.body !== null && restOptions.body !== undefined) {
-		if (
-			typeof restOptions.body === "string" ||
-			restOptions.body instanceof Blob ||
-			restOptions.body instanceof FormData ||
-			restOptions.body instanceof URLSearchParams ||
-			restOptions.body instanceof ArrayBuffer ||
-			restOptions.body instanceof ReadableStream ||
-			ArrayBuffer.isView(restOptions.body)
-		) {
-			fetchOptions.body = restOptions.body as BodyInit;
+		if (isBodyInit(restOptions.body)) {
+			fetchOptions.body = restOptions.body;
 		} else if (typeof restOptions.body === "object") {
 			fetchOptions.body = JSON.stringify(restOptions.body);
 		}
@@ -169,9 +213,17 @@ async function performFetch(path: string, options: FetchApiOptions = {}): Promis
 }
 
 export async function fetchApi(path: string, options: FetchApiOptions = {}): Promise<Response> {
-	let response = await performFetch(path, options);
+	return performFetch(path, options);
+}
 
-	return response;
+export async function createApiErrorFromResponse(
+	response: Response,
+	fallback = response.statusText || "Request failed",
+): Promise<ApiError> {
+	const parsed = await readApiErrorData(response);
+	const message = extractApiErrorMessage(parsed, fallback);
+
+	return new ApiError(message, response.status, parsed, extractApiErrorCode(parsed));
 }
 
 /**
@@ -187,16 +239,8 @@ export async function fetchApiOrThrow(
 		return response;
 	}
 
-	let parsed: unknown;
-	try {
-		parsed = await response.clone().json();
-	} catch {
-		parsed = undefined;
-	}
-
-	const message = extractApiErrorMessage(parsed, response.statusText || "Request failed");
-
-	throw new ApiError(message, response.status, parsed, extractApiErrorCode(parsed));
+	const error = await createApiErrorFromResponse(response);
+	throw error;
 }
 
 export async function returnFetchedData<T>(response: Response): Promise<T> {

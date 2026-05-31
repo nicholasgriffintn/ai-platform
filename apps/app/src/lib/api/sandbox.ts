@@ -1,5 +1,5 @@
 import { apiService } from "./api-service";
-import { fetchApi, returnFetchedData } from "./fetch-wrapper";
+import { createApiErrorFromResponse, fetchApi, returnFetchedData } from "./fetch-wrapper";
 import type {
 	ConnectSandboxInstallationInput,
 	CreateSandboxConnectionInput,
@@ -10,36 +10,6 @@ import type {
 	SandboxRunInstructionKind,
 } from "~/types/sandbox";
 
-async function extractApiErrorMessage(response: Response, fallback: string): Promise<string> {
-	const bodyText = await response.text();
-	if (!bodyText.trim()) {
-		return fallback;
-	}
-
-	try {
-		const parsed = JSON.parse(bodyText) as {
-			error?: string;
-			message?: string;
-			details?: unknown;
-		};
-		const topLevelMessage = parsed.error || parsed.message;
-		if (topLevelMessage?.trim()) {
-			return topLevelMessage;
-		}
-
-		if (Array.isArray(parsed.details) && parsed.details.length > 0) {
-			const firstDetail = parsed.details[0] as { message?: unknown };
-			if (typeof firstDetail?.message === "string" && firstDetail.message.trim()) {
-				return firstDetail.message;
-			}
-		}
-	} catch {
-		// Fall back to plain text body.
-	}
-
-	return bodyText;
-}
-
 export async function fetchSandboxConnections(): Promise<SandboxConnection[]> {
 	const headers = await apiService.getHeaders();
 	const response = await fetchApi("/apps/sandbox/connections", {
@@ -48,11 +18,9 @@ export async function fetchSandboxConnections(): Promise<SandboxConnection[]> {
 	});
 
 	if (!response.ok) {
-		throw new Error(
-			await extractApiErrorMessage(
-				response,
-				`Failed to fetch sandbox connections: ${response.statusText}`,
-			),
+		throw await createApiErrorFromResponse(
+			response,
+			`Failed to fetch sandbox connections: ${response.statusText}`,
 		);
 	}
 
@@ -68,11 +36,9 @@ export async function fetchSandboxInstallConfig(): Promise<SandboxInstallConfig>
 	});
 
 	if (!response.ok) {
-		throw new Error(
-			await extractApiErrorMessage(
-				response,
-				`Failed to fetch sandbox install configuration: ${response.statusText}`,
-			),
+		throw await createApiErrorFromResponse(
+			response,
+			`Failed to fetch sandbox install configuration: ${response.statusText}`,
 		);
 	}
 
@@ -88,11 +54,9 @@ export async function upsertSandboxConnection(input: CreateSandboxConnectionInpu
 	});
 
 	if (!response.ok) {
-		throw new Error(
-			await extractApiErrorMessage(
-				response,
-				`Failed to save sandbox connection: ${response.statusText}`,
-			),
+		throw await createApiErrorFromResponse(
+			response,
+			`Failed to save sandbox connection: ${response.statusText}`,
 		);
 	}
 }
@@ -108,11 +72,9 @@ export async function connectSandboxInstallation(
 	});
 
 	if (!response.ok) {
-		throw new Error(
-			await extractApiErrorMessage(
-				response,
-				`Failed to connect GitHub installation: ${response.statusText}`,
-			),
+		throw await createApiErrorFromResponse(
+			response,
+			`Failed to connect GitHub installation: ${response.statusText}`,
 		);
 	}
 }
@@ -127,11 +89,9 @@ export async function fetchSandboxConnectionRepositories(
 	});
 
 	if (!response.ok) {
-		throw new Error(
-			await extractApiErrorMessage(
-				response,
-				`Failed to fetch sandbox repositories: ${response.statusText}`,
-			),
+		throw await createApiErrorFromResponse(
+			response,
+			`Failed to fetch sandbox repositories: ${response.statusText}`,
 		);
 	}
 
@@ -151,11 +111,9 @@ export async function updateSandboxConnectionRepositories(
 	});
 
 	if (!response.ok) {
-		throw new Error(
-			await extractApiErrorMessage(
-				response,
-				`Failed to update sandbox repositories: ${response.statusText}`,
-			),
+		throw await createApiErrorFromResponse(
+			response,
+			`Failed to update sandbox repositories: ${response.statusText}`,
 		);
 	}
 }
@@ -168,11 +126,9 @@ export async function deleteSandboxConnection(installationId: number): Promise<v
 	});
 
 	if (!response.ok) {
-		throw new Error(
-			await extractApiErrorMessage(
-				response,
-				`Failed to delete sandbox connection: ${response.statusText}`,
-			),
+		throw await createApiErrorFromResponse(
+			response,
+			`Failed to delete sandbox connection: ${response.statusText}`,
 		);
 	}
 }
@@ -203,11 +159,9 @@ export async function submitSandboxRunInstruction(params: {
 	});
 
 	if (!response.ok) {
-		throw new Error(
-			await extractApiErrorMessage(
-				response,
-				`Failed to submit run instruction: ${response.statusText}`,
-			),
+		throw await createApiErrorFromResponse(
+			response,
+			`Failed to submit run instruction: ${response.statusText}`,
 		);
 	}
 
