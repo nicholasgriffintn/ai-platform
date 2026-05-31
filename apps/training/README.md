@@ -7,7 +7,7 @@ Use this Worker for:
 - Starting AWS Bedrock model customisation jobs.
 - Starting AWS SageMaker Hugging Face training jobs.
 - Creating SageMaker real-time and serverless deployments for model artifacts.
-- Creating Bedrock model import jobs from S3 prefixes containing Hugging Face model files.
+- Staging Hugging Face model files to S3 and creating Bedrock model import jobs.
 - Tracking deployment versions passed from the API.
 - Persisting training jobs, deployments, and job events in D1.
 - Returning provider status to the API without duplicating model catalogs.
@@ -56,10 +56,12 @@ Shared AWS values:
 Bedrock jobs also use:
 
 - `BEDROCK_OUTPUT_BUCKET`
+- `BEDROCK_IMPORT_BUCKET` optional override for staged Bedrock import files
 - `BEDROCK_ROLE_ARN`
 - `BEDROCK_KMS_KEY_ARN` optional
 - `BEDROCK_VPC_SECURITY_GROUP_IDS` optional comma-separated list
 - `BEDROCK_VPC_SUBNET_IDS` optional comma-separated list
+- `HUGGINGFACE_TOKEN` optional for private or gated Hugging Face models
 
 For `bedrock-import`, `BEDROCK_ROLE_ARN` must be assumable by `bedrock.amazonaws.com`
 and must allow `s3:GetObject` and `s3:ListBucket` for the model source bucket.
@@ -150,9 +152,9 @@ Set `deploymentTarget` to choose the provider path:
 
 - `sagemaker-endpoint` creates a SageMaker model, endpoint config, and real-time endpoint.
 - `sagemaker-serverless-endpoint` creates the same SageMaker model with a serverless endpoint config. This only works with CPU-compatible inference images. GPU images such as CUDA/TGI should use a real-time GPU endpoint.
-- `bedrock-import` creates a Bedrock model import job. This does not need a SageMaker endpoint. It requires an S3 prefix containing Hugging Face-format model files, or a completed training job that already exposes import-ready model files.
+- `bedrock-import` creates a Bedrock model import job. This does not need a SageMaker endpoint. If `modelArtifactsS3Uri` is omitted for a Hugging Face catalog model, the Worker copies the model files from Hugging Face to `BEDROCK_IMPORT_BUCKET` or `BEDROCK_OUTPUT_BUCKET` before starting the import job. You can still pass an existing S3 prefix, or use a completed training job that exposes import-ready model files.
 
-Bedrock import should not be pointed at SageMaker's normal `model.tar.gz` output. Bedrock expects the model source in S3 to contain files such as `.safetensors`, `config.json`, and tokenizer files. If a SageMaker job only produced a compressed model archive, extract and upload the Hugging Face model directory to S3 first, then pass that prefix as `modelArtifactsS3Uri`.
+Bedrock import should not be pointed at SageMaker's normal `model.tar.gz` output. Bedrock expects the model source in S3 to contain files such as `.safetensors`, `config.json`, and tokenizer files. The automatic Hub staging path writes those files under `models/<model-id>/` in the import bucket and skips files that are already present.
 
 For SageMaker Hugging Face models, a real-time or serverless deployment request can omit
 `trainingJobName` and `modelArtifactsS3Uri`. In that case the API passes `HF_MODEL_ID`

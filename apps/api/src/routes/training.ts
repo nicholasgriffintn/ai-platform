@@ -105,7 +105,7 @@ addRoute(app, "post", "/deployments", {
 	tags: ["training"],
 	summary: "Deploy a training model",
 	description:
-		"Creates a provider-backed deployment. SageMaker targets create an endpoint, while Bedrock import creates a model import job from Hugging Face model files in S3.",
+		"Creates a provider-backed deployment. SageMaker targets create an endpoint, while Bedrock import stages Hugging Face model files to S3 when needed and creates a model import job.",
 	auth: true,
 	bodySchema: deployTrainingModelSchema,
 	responses: {

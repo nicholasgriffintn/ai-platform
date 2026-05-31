@@ -1,4 +1,4 @@
-import type { TrainingDeployment, TrainingJob } from "@assistant/schemas";
+import type { TrainingDeployment, TrainingInferenceRuntime, TrainingJob } from "@assistant/schemas";
 import { z } from "zod";
 
 import { isRecord } from "../utils/objects.js";
@@ -48,6 +48,39 @@ export function getSageMakerErrorMessage(payload: unknown, fallback: string): st
 	if (!isRecord(payload)) return fallback;
 
 	return optionalString(payload.message) || optionalString(payload.Message) || fallback;
+}
+
+export function getSageMakerProductionVariantRuntimeConfig({
+	image,
+	inferenceRuntime,
+}: {
+	image?: string;
+	inferenceRuntime?: TrainingInferenceRuntime;
+}): Record<string, string | number> {
+	const inferenceAmiVersion = getSageMakerInferenceAmiVersion(image);
+	const isLargeModelRuntime =
+		inferenceRuntime === "sagemaker-openai" || /(?:^|[/:])vllm(?::|$)/i.test(image || "");
+
+	return {
+		...(inferenceAmiVersion ? { InferenceAmiVersion: inferenceAmiVersion } : {}),
+		...(isLargeModelRuntime
+			? {
+					ContainerStartupHealthCheckTimeoutInSeconds: 1800,
+					ModelDataDownloadTimeoutInSeconds: 1800,
+				}
+			: {}),
+	};
+}
+
+function getSageMakerInferenceAmiVersion(image?: string): string | undefined {
+	if (/cu130|cuda[-_]?13(?:\.0)?/i.test(image || "")) {
+		return "al2023-ami-sagemaker-inference-gpu-4-1";
+	}
+	if (/cu124|cuda[-_]?12\.4/i.test(image || "")) {
+		return "al2-ami-sagemaker-inference-gpu-3-1";
+	}
+
+	return undefined;
 }
 
 const sageMakerChannelSchema = z.object({

@@ -7,6 +7,7 @@ import { describe, expect, it } from "vitest";
 
 import {
 	canDeployBaseTrainingModel,
+	canDeployBaseTrainingModelForTarget,
 	formatTrainingHyperparameters,
 	getDeploymentInstanceTypeError,
 	getDeployableTrainingModels,
@@ -95,6 +96,8 @@ describe("training utilities", () => {
 		]);
 		expect(canDeployBaseTrainingModel(MODELS[1])).toBe(true);
 		expect(canDeployBaseTrainingModel(MODELS[0])).toBe(false);
+		expect(canDeployBaseTrainingModelForTarget(MODELS[1], "bedrock-import")).toBe(true);
+		expect(canDeployBaseTrainingModelForTarget(MODELS[0], "bedrock-import")).toBe(false);
 		expect(getDeploymentTrainingJobs(JOBS, "distilbert-imdb").map((job) => job.jobName)).toEqual([
 			"distilbert-completed",
 		]);

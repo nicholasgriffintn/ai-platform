@@ -16,6 +16,18 @@ const MODEL: TrainingModelDefinition = {
 	defaultDeploymentInstanceType: "ml.m5.large",
 };
 
+const VLLM_MODEL: TrainingModelDefinition = {
+	...MODEL,
+	inferenceImage:
+		"763104351884.dkr.ecr.us-east-1.amazonaws.com/vllm:0.20.2-gpu-py312-cu130-ubuntu22.04-sagemaker",
+	inferenceRuntime: "sagemaker-openai",
+	defaultDeploymentInstanceType: "ml.g4dn.xlarge",
+	defaultDeploymentEnvironment: {
+		SM_VLLM_TENSOR_PARALLEL_SIZE: "1",
+		SM_VLLM_MAX_NUM_SEQS: "4",
+	},
+};
+
 describe("SageMakerTrainingProvider", () => {
 	beforeEach(() => {
 		vi.stubGlobal("fetch", fetchMock);
@@ -89,6 +101,29 @@ describe("SageMakerTrainingProvider", () => {
 		});
 		expect(result.deployment.providerResponse).toMatchObject({
 			endpointOperation: "update",
+		});
+	});
+
+	it("sets runtime infrastructure for SageMaker vLLM deployments", async () => {
+		fetchMock.mockImplementation(async () => createAwsResponse({}));
+
+		await createProvider().deployModel({
+			model: VLLM_MODEL,
+			deploymentName: "polychat-lizzy-7b",
+			environment: { HF_MODEL_ID: "flwrlabs/Lizzy-7B" },
+		});
+
+		expect(getAwsBodies()[1]).toMatchObject({
+			EndpointConfigName: "polychat-lizzy-7b-config",
+			ProductionVariants: [
+				{
+					VariantName: "AllTraffic",
+					InstanceType: "ml.g4dn.xlarge",
+					InferenceAmiVersion: "al2023-ami-sagemaker-inference-gpu-4-1",
+					ContainerStartupHealthCheckTimeoutInSeconds: 1800,
+					ModelDataDownloadTimeoutInSeconds: 1800,
+				},
+			],
 		});
 	});
 });

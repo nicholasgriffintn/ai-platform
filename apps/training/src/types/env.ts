@@ -20,10 +20,12 @@ export interface SageMakerEnv extends AwsEnv {
 export interface Env extends SageMakerEnv {
 	DB: D1Database;
 	BEDROCK_ROLE_ARN?: string;
+	BEDROCK_IMPORT_BUCKET?: string;
 	BEDROCK_OUTPUT_BUCKET?: string;
 	BEDROCK_KMS_KEY_ARN?: string;
 	BEDROCK_VPC_SECURITY_GROUP_IDS?: string;
 	BEDROCK_VPC_SUBNET_IDS?: string;
+	HUGGINGFACE_TOKEN?: string;
 	TRAINING_WORKER_TOKEN?: string;
 	LOG_LEVEL?: string;
 }

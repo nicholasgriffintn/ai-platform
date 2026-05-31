@@ -47,10 +47,18 @@ export interface DeployModelOptions {
 	serverlessProvisionedConcurrency?: number;
 	inferenceImage?: string;
 	environment?: Record<string, string>;
+	onEvent?: (event: TrainingProviderEvent) => Promise<void> | void;
 }
 
 export interface DeployModelResult {
 	deployment: TrainingDeployment;
+}
+
+export interface TrainingProviderEvent {
+	jobName?: string;
+	level: "info" | "warn" | "error";
+	message: string;
+	metadata?: Record<string, unknown>;
 }
 
 export interface DeleteDeploymentOptions {

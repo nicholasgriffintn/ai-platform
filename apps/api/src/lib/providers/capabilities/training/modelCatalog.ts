@@ -50,6 +50,8 @@ export const trainingModelCatalog: TrainingModelDefinition[] = [
 		defaultDeploymentEnvironment: {
 			SM_VLLM_TENSOR_PARALLEL_SIZE: "1",
 			SM_VLLM_MAX_NUM_SEQS: "4",
+			SM_VLLM_ENABLE_AUTO_TOOL_CHOICE: "true",
+			SM_VLLM_TOOL_CALL_PARSER: "hermes",
 			SAGEMAKER_ENABLE_LOAD_AWARE: "1",
 		},
 		supportedTasks: ["text-generation", "causal-language-modeling"],

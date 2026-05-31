@@ -126,7 +126,8 @@ export async function deployTrainingModel(
 	if (
 		request.deploymentTarget === "bedrock-import" &&
 		!request.modelArtifactsS3Uri &&
-		!request.trainingJobName
+		!request.trainingJobName &&
+		model.family !== "huggingface"
 	) {
 		throw new AssistantError(
 			"Bedrock import requires a Hugging Face model files S3 prefix or an import-ready training job",

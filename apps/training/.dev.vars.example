@@ -7,10 +7,14 @@ TRAINING_WORKER_TOKEN=use_the_same_value_as_the_api_worker_secret
 
 # Bedrock jobs
 BEDROCK_OUTPUT_BUCKET=your-output-bucket-name
+BEDROCK_IMPORT_BUCKET=your-bedrock-import-bucket-name
 BEDROCK_ROLE_ARN=arn:aws:iam::ACCOUNT_ID:role/BedrockFineTuningRole
 # BEDROCK_KMS_KEY_ARN=arn:aws:kms:us-east-1:ACCOUNT_ID:key/KEY_ID
 # BEDROCK_VPC_SECURITY_GROUP_IDS=sg-xxxxx,sg-yyyyy
 # BEDROCK_VPC_SUBNET_IDS=subnet-xxxxx,subnet-yyyyy
+
+# Optional for private or gated Hugging Face models staged for Bedrock import.
+HUGGINGFACE_TOKEN=hf_xxx
 
 # SageMaker jobs. Falls back to shared AWS credentials when overrides are unset.
 SAGEMAKER_REGION=us-east-1

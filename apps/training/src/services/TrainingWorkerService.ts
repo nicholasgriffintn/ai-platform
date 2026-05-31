@@ -215,6 +215,20 @@ export class TrainingWorkerService {
 				serverlessProvisionedConcurrency: request.serverlessProvisionedConcurrency,
 				inferenceImage: request.inferenceImage,
 				environment: request.environment,
+				onEvent: async (event) => {
+					await this.store.addEvent({
+						provider: deploymentProviderId,
+						jobName: event.jobName || deploymentName,
+						level: event.level,
+						message: event.message,
+						metadata: {
+							...(event.metadata ?? {}),
+							deploymentName,
+							deploymentVersion,
+							requestId: request.requestId,
+						},
+					});
+				},
 			});
 
 			const deployment = withDeploymentVersion(

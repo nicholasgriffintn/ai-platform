@@ -92,7 +92,7 @@ export function DeploymentCreateForm({
 		if (!trimmedArtifactsUri && !trimmedTrainingJobName && !canDeployBaseModel) {
 			toast.error(
 				deploymentTarget === "bedrock-import"
-					? "Bedrock import requires a Hugging Face model files S3 prefix or an import-ready job"
+					? "Bedrock import requires a Hugging Face catalog model, model files S3 prefix, or import-ready job"
 					: "Select a completed job or provide model artifacts",
 			);
 			return;
@@ -218,7 +218,7 @@ export function DeploymentCreateForm({
 				onChange={(event) => setModelArtifactsS3Uri(event.target.value)}
 				placeholder={
 					deploymentTarget === "bedrock-import"
-						? "s3://bucket/path/to/huggingface-model/"
+						? "Optional import-ready S3 prefix"
 						: "Optional model artifact S3 URI"
 				}
 			/>

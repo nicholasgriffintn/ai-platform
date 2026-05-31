@@ -32,6 +32,7 @@ import type {
 	DeployModelResult,
 	TrainingProvider,
 } from "../types/providers.js";
+import { stageBedrockImportSource } from "./bedrockImportSource.js";
 
 export class BedrockTrainingProvider implements TrainingProvider {
 	readonly id = "aws-bedrock" as const;
@@ -108,25 +109,12 @@ export class BedrockTrainingProvider implements TrainingProvider {
 			throw new Error("Bedrock deployments only support the bedrock-import target");
 		}
 
-		const modelArtifactsS3Uri =
-			options.modelArtifactsS3Uri ||
-			(options.trainingJobName
-				? (await this.getJobStatus(options.trainingJobName)).modelArtifactsS3Uri
-				: undefined);
-		const sourceUriError = getBedrockImportModelSourceUriError(modelArtifactsS3Uri);
-		if (!modelArtifactsS3Uri || sourceUriError) {
-			throw new Error(
-				sourceUriError || "Bedrock import requires a Hugging Face model files S3 URI",
-			);
-		}
-
 		const existing = await this.getImportedModel(options.deploymentName);
 		if (existing) {
 			return {
 				deployment: {
 					...existing,
 					modelId: options.model.id,
-					modelArtifactsS3Uri: existing.modelArtifactsS3Uri || modelArtifactsS3Uri,
 				},
 			};
 		}
@@ -140,6 +128,7 @@ export class BedrockTrainingProvider implements TrainingProvider {
 			`import-${options.deploymentName}`,
 			Date.now().toString(36),
 		);
+		const modelArtifactsS3Uri = await this.resolveImportSource(options, jobName);
 		const response = await client.send(
 			new CreateModelImportJobCommand({
 				jobName,
@@ -228,6 +217,25 @@ export class BedrockTrainingProvider implements TrainingProvider {
 			region: this.env.AWS_REGION || "us-east-1",
 			credentials: this.getAwsCredentials(),
 		});
+	}
+
+	private async resolveImportSource(options: DeployModelOptions, jobName: string): Promise<string> {
+		const modelArtifactsS3Uri =
+			options.modelArtifactsS3Uri ||
+			(options.trainingJobName
+				? (await this.getJobStatus(options.trainingJobName)).modelArtifactsS3Uri
+				: undefined) ||
+			(await stageBedrockImportSource({
+				env: this.env,
+				model: options.model,
+				onEvent: options.onEvent ? (event) => options.onEvent?.({ ...event, jobName }) : undefined,
+			}));
+		const sourceUriError = getBedrockImportModelSourceUriError(modelArtifactsS3Uri);
+		if (sourceUriError) {
+			throw new Error(sourceUriError);
+		}
+
+		return modelArtifactsS3Uri;
 	}
 
 	private getAwsCredentials() {

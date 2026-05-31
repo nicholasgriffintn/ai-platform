@@ -11,6 +11,7 @@ import { getSageMakerDeploymentNames } from "../utils/sagemakerDeploymentNames.j
 import type { SageMakerEnv } from "../types/env.js";
 import {
 	getSageMakerErrorMessage,
+	getSageMakerProductionVariantRuntimeConfig,
 	isSageMakerAlreadyExistsError,
 	isSageMakerIgnorableDeleteError,
 	mapSageMakerDeployment,
@@ -163,6 +164,10 @@ export class SageMakerTrainingProvider implements TrainingProvider {
 					InitialInstanceCount: options.instanceCount || 1,
 					InstanceType: instanceType,
 					InitialVariantWeight: 1,
+					...getSageMakerProductionVariantRuntimeConfig({
+						image: inferenceImage,
+						inferenceRuntime: options.model.inferenceRuntime,
+					}),
 				};
 
 		await this.createSageMakerResource("SageMaker.CreateModel", {

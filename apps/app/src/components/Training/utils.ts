@@ -125,7 +125,9 @@ export function canDeployBaseTrainingModelForTarget(
 	model: TrainingModelDefinition,
 	deploymentTarget: TrainingDeploymentTarget,
 ): boolean {
-	if (deploymentTarget === "bedrock-import") return false;
+	if (deploymentTarget === "bedrock-import") {
+		return model.provider === DEPLOYABLE_TRAINING_PROVIDER && model.family === "huggingface";
+	}
 
 	return canDeployBaseTrainingModel(model);
 }
