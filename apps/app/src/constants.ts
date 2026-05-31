@@ -8,7 +8,6 @@ export const CONTACT_LINK = "https://nicholasgriffin.dev/contact";
 export const JURISDICTION = "United Kingdom";
 export const TERMS_EFFECTIVE_DATE = "March 30, 2025";
 export const PRIVACY_EFFECTIVE_DATE = "March 30, 2025";
-export const TRIAL_DURATION = 90;
 export const CHATS_QUERY_KEY = "chats";
 
 export const SHOW_DEV_TOOLS = IS_DEVELOPMENT;

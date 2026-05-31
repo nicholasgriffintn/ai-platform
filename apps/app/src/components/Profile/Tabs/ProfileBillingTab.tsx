@@ -6,7 +6,6 @@ import { PageHeader } from "~/components/Core/PageHeader";
 import { PageTitle } from "~/components/Core/PageTitle";
 import { Button } from "~/components/ui/Button";
 import { Card } from "~/components/ui/Card";
-import { TRIAL_DURATION } from "~/constants";
 import { useTrackEvent } from "~/hooks/use-track-event";
 import {
 	useCancelSubscription,
@@ -23,6 +22,8 @@ type PageAction = {
 	variant?: "primary" | "secondary";
 	disabled?: boolean;
 };
+
+const IS_DISABLED = import.meta.env.VITE_BILLING_DISABLED === "true";
 
 export function ProfileBillingTab() {
 	const { trackEvent } = useTrackEvent();
@@ -101,6 +102,17 @@ export function ProfileBillingTab() {
 		}
 	}
 
+	if (IS_DISABLED) {
+		return (
+			<>
+				<PageHeader>
+					<PageTitle title="Billing" />
+				</PageHeader>
+				<EmptyState message="Billing features are currently disabled." />
+			</>
+		);
+	}
+
 	return (
 		<>
 			<PageHeader actions={actions}>
@@ -155,19 +167,6 @@ export function ProfileBillingTab() {
 				</Card>
 			) : (
 				<>
-					<div className="bg-blue-100 dark:bg-blue-900/60 p-4 rounded-lg mb-6 border border-blue-200 dark:border-blue-800 flex items-start">
-						<Sparkles className="h-5 w-5 text-blue-600 dark:text-blue-400 mr-3 mt-0.5 flex-shrink-0" />
-						<div>
-							<h3 className="font-medium text-blue-800 dark:text-blue-300 mb-1">
-								Polychat is in Development
-							</h3>
-							<p className="text-sm text-blue-700 dark:text-blue-200">
-								We're offering a generous 90-day free trial during our development phase, and all
-								trials will be extended until our v1 release. Join us early and help shape the
-								future of Polychat!
-							</p>
-						</div>
-					</div>
 					<Card className="p-6 sm:p-8">
 						<div className="grid md:grid-cols-2 gap-8">
 							<div className="flex flex-col justify-center items-center md:items-start border-b md:border-b-0 md:border-r border-zinc-200 dark:border-zinc-700 pb-6 md:pb-0 md:pr-8">
@@ -175,10 +174,6 @@ export function ProfileBillingTab() {
 								<div className="text-5xl font-bold mb-4">
 									$8
 									<span className="text-lg font-normal text-zinc-500">/month</span>
-								</div>
-								<div className="bg-green-100 dark:bg-green-900 px-3 py-1 rounded-full text-sm font-medium text-green-800 dark:text-green-200 mb-6">
-									<Sparkles className="inline-block mr-1 h-4 w-4" />
-									{TRIAL_DURATION}-Day Free Trial
 								</div>
 
 								<Button
@@ -208,13 +203,6 @@ export function ProfileBillingTab() {
 										</span>
 									</span>
 								</Button>
-								<p className="text-sm text-zinc-600 dark:text-zinc-400 mt-3 text-center">
-									Your trial will end on{" "}
-									{formatDate(
-										new Date(Date.now() + TRIAL_DURATION * 24 * 60 * 60 * 1000).toISOString(),
-									)}
-									. You can always cancel before then.
-								</p>
 							</div>
 
 							<div className="grid gap-6 pt-6 md:pt-0">
