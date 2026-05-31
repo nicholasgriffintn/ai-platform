@@ -7,6 +7,7 @@ import {
 	getAuxiliaryGuardrailsModel,
 	getAuxiliaryModel,
 	getAuxiliaryModelForRetrieval,
+	getAuxiliaryResearchProvider,
 	getAuxiliarySearchProvider,
 	getFeaturedModels,
 	getFreeModels,
@@ -636,6 +637,18 @@ describe("Models", () => {
 			expect(provider).toBe("parallel");
 		});
 
+		it("should check Perplexity search BYOK access against the configured provider id", async () => {
+			mockRepositories.userSettings.hasProviderApiKey.mockResolvedValueOnce(true);
+
+			const provider = await getAuxiliarySearchProvider(mockEnv as any, mockUser, "perplexity");
+
+			expect(provider).toBe("perplexity");
+			expect(mockRepositories.userSettings.hasProviderApiKey).toHaveBeenCalledWith(
+				mockUser.id,
+				"perplexity-ai",
+			);
+		});
+
 		it("should return user preferred provider when set in user settings", async () => {
 			mockRepositories.userSettings.getUserSettings.mockResolvedValueOnce({
 				search_provider: "parallel",
@@ -663,6 +676,28 @@ describe("Models", () => {
 
 			expect(provider).toBe("parallel");
 			expect(mockRepositories.userSettings.getUserSettings).not.toHaveBeenCalled();
+		});
+	});
+
+	describe("getAuxiliaryResearchProvider", () => {
+		it("should allow pro users to use enabled research providers without BYOK keys", async () => {
+			mockRepositories.userSettings.getUserProviderSettings.mockResolvedValueOnce([
+				{ provider_id: "parallel", enabled: true, hasApiKey: false },
+			]);
+
+			const provider = await getAuxiliaryResearchProvider(mockEnv as any, mockProUser, "parallel");
+
+			expect(provider).toBe("parallel");
+		});
+
+		it("should require BYOK keys for non-pro users requesting research providers", async () => {
+			mockRepositories.userSettings.getUserProviderSettings.mockResolvedValueOnce([
+				{ provider_id: "parallel", enabled: true, hasApiKey: false },
+			]);
+
+			await expect(
+				getAuxiliaryResearchProvider(mockEnv as any, mockUser, "parallel"),
+			).rejects.toThrow("parallel research provider is not configured for this account");
 		});
 	});
 

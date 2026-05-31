@@ -218,11 +218,12 @@ describe("MistralTranscriptionProvider", () => {
 		it("should handle API errors", async () => {
 			const mockAudio = new Blob(["audio data"], { type: "audio/wav" });
 
-			mockFetch.mockResolvedValueOnce({
-				ok: false,
-				status: 400,
-				text: () => Promise.resolve("Bad Request"),
-			});
+			mockFetch.mockResolvedValueOnce(
+				new Response("Bad Request", {
+					status: 400,
+					statusText: "Bad Request",
+				}),
+			);
 
 			await expect(
 				provider.transcribe({
@@ -231,7 +232,7 @@ describe("MistralTranscriptionProvider", () => {
 					user: mockUser,
 				}),
 			).rejects.toMatchObject({
-				message: "Mistral transcription failed: 400 Bad Request",
+				message: "Mistral transcription failed: 400 Bad Request - Bad Request",
 				type: ErrorType.EXTERNAL_API_ERROR,
 				name: "AssistantError",
 			});

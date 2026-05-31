@@ -518,7 +518,7 @@ export class UserSettingsRepository extends BaseRepository {
 	}
 
 	public async hasProviderApiKey(userId: number, providerId: string): Promise<boolean> {
-		if (!userId || !providerId) {
+		if (!userId || !providerId.trim()) {
 			return false;
 		}
 

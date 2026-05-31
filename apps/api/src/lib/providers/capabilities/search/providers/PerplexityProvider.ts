@@ -37,7 +37,7 @@ export class PerplexityProvider implements SearchProvider {
 			try {
 				const userApiKey = await this.userSettingsRepo.getProviderApiKey(
 					this.user.id,
-					"perplexity",
+					"perplexity-ai",
 				);
 				if (userApiKey) {
 					this.apiKey = userApiKey;

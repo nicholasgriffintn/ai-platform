@@ -636,9 +636,11 @@ export const getAuxiliarySearchProvider = async (
 
 		if (user?.id) {
 			const repositories = new RepositoryManager(env);
+			const providerKeyId =
+				requestedProvider === "perplexity" ? "perplexity-ai" : requestedProvider;
 			const hasProviderKey = await repositories.userSettings.hasProviderApiKey(
 				user.id,
-				requestedProvider,
+				providerKeyId,
 			);
 
 			if (hasProviderKey) {
@@ -665,9 +667,11 @@ export const getAuxiliarySearchProvider = async (
 				return userPreferredProvider;
 			}
 
+			const providerKeyId =
+				userPreferredProvider === "perplexity" ? "perplexity-ai" : userPreferredProvider;
 			const hasProviderKey = await repositories.userSettings.hasProviderApiKey(
 				user.id,
-				userPreferredProvider,
+				providerKeyId,
 			);
 
 			if (!hasProviderKey) {
@@ -715,7 +719,8 @@ export const getAuxiliaryResearchProvider = async (
 		? providerSettings.some((setting: any) => {
 				const isEnabled = Boolean(setting?.enabled);
 				const hasApiKey = Boolean(setting?.hasApiKey);
-				return setting?.provider_id === providerToUse && isEnabled && hasApiKey;
+				const isProviderMatch = setting?.provider_id === providerToUse;
+				return isProviderMatch && isEnabled && (user.plan_id === "pro" || hasApiKey);
 			})
 		: false;
 

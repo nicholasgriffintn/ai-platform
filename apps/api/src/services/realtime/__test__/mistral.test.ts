@@ -92,7 +92,8 @@ describe("createMistralRealtimeProxyResponse", () => {
 			model: "voxtral-mini-transcribe-realtime-latest",
 			providerStatus: 401,
 			providerStatusText: "Unauthorized",
-			providerResponse: JSON.stringify({ detail: "Unauthorized" }),
+			providerResponse:
+				'Failed to connect to Mistral realtime: 401 Unauthorized - {"detail":"Unauthorized"}',
 			providerCorrelationId: "corr-123",
 		});
 		expect(fetchMock).toHaveBeenCalledWith(
