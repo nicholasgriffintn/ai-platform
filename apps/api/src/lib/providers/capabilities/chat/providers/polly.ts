@@ -1,6 +1,7 @@
 import { AwsClient } from "aws4fetch";
 
 import { trackProviderMetrics } from "~/lib/monitoring";
+import { formatProviderError } from "~/lib/providers/utils/errors";
 import type { ChatCompletionParameters } from "~/types";
 import { bufferToBase64 } from "~/utils/base64";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -110,9 +111,8 @@ export class PollyProvider extends BaseProvider {
 				});
 
 				if (!response.ok) {
-					const errorBody = await response.text();
 					throw new AssistantError(
-						`Polly API Error (${response.status}): ${errorBody || response.statusText}`,
+						await formatProviderError(response, "Polly API Error"),
 						ErrorType.PROVIDER_ERROR,
 						response.status,
 					);
@@ -151,9 +151,8 @@ export class PollyProvider extends BaseProvider {
 						});
 
 						if (!s3Response.ok) {
-							const errorBody = await s3Response.text();
 							throw new AssistantError(
-								`Error fetching Polly audio from S3 (${s3Response.status}): ${errorBody || s3Response.statusText}`,
+								await formatProviderError(s3Response, "Error fetching Polly audio from S3"),
 								ErrorType.EXTERNAL_API_ERROR,
 								s3Response.status,
 							);

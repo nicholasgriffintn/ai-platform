@@ -1,25 +1,28 @@
-import { AssistantError, ErrorType } from "~/utils/errors";
+import { redactSensitiveTokens } from "~/utils/redaction";
 
-const MAX_PROVIDER_ERROR_PREVIEW_LENGTH = 1000;
+function formatResponseStatus(response: Response): string {
+	return [response.status, response.statusText].filter(Boolean).join(" ");
+}
 
-export async function createProviderResponseError(
-	response: Response,
-	message: string,
-): Promise<AssistantError> {
-	const responseBody = await response.text().catch(() => "[unable to read response body]");
-	const responsePreview =
-		responseBody.length > MAX_PROVIDER_ERROR_PREVIEW_LENGTH
-			? `${responseBody.slice(0, MAX_PROVIDER_ERROR_PREVIEW_LENGTH)}...`
-			: responseBody;
+async function readResponseBody(response: Response): Promise<string> {
+	return response.text().catch(() => "");
+}
 
-	return new AssistantError(
-		`${message}: ${response.status} ${response.statusText}`,
-		ErrorType.EXTERNAL_API_ERROR,
-		500,
-		{
-			providerStatus: response.status,
-			providerStatusText: response.statusText,
-			providerResponse: responsePreview,
-		},
-	);
+export async function formatProviderError(source: unknown, message: string): Promise<string> {
+	if (source instanceof Response) {
+		const status = formatResponseStatus(source);
+		const body = redactSensitiveTokens(await readResponseBody(source));
+		const detail = [status, body].filter(Boolean).join(" - ");
+		return detail ? `${message}: ${detail}` : message;
+	}
+
+	if (source instanceof Error) {
+		return `${message}: ${redactSensitiveTokens(source.message)}`;
+	}
+
+	if (typeof source === "string") {
+		return `${message}: ${redactSensitiveTokens(source)}`;
+	}
+
+	return message;
 }

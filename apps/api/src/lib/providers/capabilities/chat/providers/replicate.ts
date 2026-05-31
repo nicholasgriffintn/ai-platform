@@ -5,6 +5,7 @@ import {
 	createAsyncInvocationMetadata,
 	type AsyncInvocationMetadata,
 } from "~/lib/async/asyncInvocation";
+import { formatProviderError } from "~/lib/providers/utils/errors";
 import type { ChatCompletionParameters } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { BaseProvider } from "./base";
@@ -189,9 +190,8 @@ export class ReplicateProvider extends BaseProvider {
 		});
 
 		if (!response.ok) {
-			const errorText = await response.text();
 			throw new AssistantError(
-				`Failed to poll Replicate prediction: ${response.status} - ${errorText}`,
+				await formatProviderError(response, "Failed to poll Replicate prediction"),
 				ErrorType.PROVIDER_ERROR,
 				response.status,
 			);

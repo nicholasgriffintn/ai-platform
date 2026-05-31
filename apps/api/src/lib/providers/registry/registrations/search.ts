@@ -44,6 +44,7 @@ const searchProviders: ProviderRegistration<SearchProvider>[] = [
 	},
 	{
 		name: "perplexity",
+		lifecycle: "transient",
 		create: (context) => {
 			const env = ensureEnv(context);
 			const user = ensureUser(context, { optional: true });
@@ -53,6 +54,7 @@ const searchProviders: ProviderRegistration<SearchProvider>[] = [
 	},
 	{
 		name: "parallel",
+		lifecycle: "transient",
 		create: (context) => {
 			const env = ensureEnv(context);
 			if (!env.AI_GATEWAY_TOKEN) {
@@ -73,6 +75,7 @@ const searchProviders: ProviderRegistration<SearchProvider>[] = [
 	},
 	{
 		name: "exa",
+		lifecycle: "transient",
 		create: (context) => {
 			const env = ensureEnv(context);
 			const user = ensureUser(context, { optional: true });

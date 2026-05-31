@@ -8,6 +8,7 @@ import type {
 	SearchProvider,
 	SearchResult,
 } from "~/types";
+import { formatProviderError } from "~/lib/providers/utils/errors";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getAiGatewayMetadataHeaders, resolveAiGatewayCacheTtl } from "~/utils/aiGateway";
 
@@ -95,10 +96,9 @@ export class ParallelSearchProvider implements SearchProvider {
 			});
 
 			if (!response.ok) {
-				const errorText = await response.text();
 				return {
 					status: "error",
-					error: `Error performing web search: ${errorText}`,
+					error: await formatProviderError(response, "Error performing web search"),
 				};
 			}
 
@@ -110,10 +110,7 @@ export class ParallelSearchProvider implements SearchProvider {
 		} catch (error) {
 			return {
 				status: "error",
-				error:
-					error instanceof Error
-						? `Error performing web search: ${error.message}`
-						: "Error performing web search",
+				error: await formatProviderError(error, "Error performing web search"),
 			};
 		}
 	}

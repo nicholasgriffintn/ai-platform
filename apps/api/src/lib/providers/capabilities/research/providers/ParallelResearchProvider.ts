@@ -13,6 +13,7 @@ import type {
 	ResearchResultError,
 	ResearchTaskHandle,
 } from "~/types";
+import { formatProviderError } from "~/lib/providers/utils/errors";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getAiGatewayMetadataHeaders, resolveAiGatewayCacheTtl } from "~/utils/aiGateway";
 
@@ -181,10 +182,9 @@ export class ParallelResearchProvider implements ResearchProvider {
 			});
 
 			if (!response.ok) {
-				const errorText = await response.text();
 				return {
 					status: "error",
-					error: `Error creating research task: ${errorText}`,
+					error: await formatProviderError(response, "Error creating research task"),
 				};
 			}
 
@@ -203,10 +203,7 @@ export class ParallelResearchProvider implements ResearchProvider {
 		} catch (error) {
 			return {
 				status: "error",
-				error:
-					error instanceof Error
-						? `Error creating research task: ${error.message}`
-						: "Error creating research task",
+				error: await formatProviderError(error, "Error creating research task"),
 			};
 		}
 	}
@@ -222,11 +219,11 @@ export class ParallelResearchProvider implements ResearchProvider {
 			});
 
 			if (!response.ok) {
-				const errorText = await response.text();
-				console.error("ParallelResearchProvider: Error fetching research run:", errorText);
+				const errorMessage = await formatProviderError(response, "Failed to fetch research run");
+				console.error("ParallelResearchProvider: Error fetching research run:", errorMessage);
 				return {
 					status: "error",
-					error: `Failed to fetch research run: ${errorText}`,
+					error: errorMessage,
 				};
 			}
 
@@ -235,10 +232,7 @@ export class ParallelResearchProvider implements ResearchProvider {
 		} catch (error) {
 			return {
 				status: "error",
-				error:
-					error instanceof Error
-						? `Error fetching research run: ${error.message}`
-						: "Error fetching research run",
+				error: await formatProviderError(error, "Error fetching research run"),
 			};
 		}
 	}
@@ -287,18 +281,14 @@ export class ParallelResearchProvider implements ResearchProvider {
 				};
 			}
 
-			const errorText = await response.text();
 			return {
 				status: "error",
-				error: `Failed to fetch research result: ${errorText}`,
+				error: await formatProviderError(response, "Failed to fetch research result"),
 			};
 		} catch (error) {
 			return {
 				status: "error",
-				error:
-					error instanceof Error
-						? `Error fetching research result: ${error.message}`
-						: "Error fetching research result",
+				error: await formatProviderError(error, "Error fetching research result"),
 			};
 		}
 	}

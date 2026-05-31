@@ -1,6 +1,6 @@
 import { getModelConfigByModel } from "~/lib/providers/models";
 import { resolveProviderApiKey } from "~/lib/providers/utils/apiKeys";
-import { createProviderResponseError } from "~/lib/providers/utils/errors";
+import { formatProviderError } from "~/lib/providers/utils/errors";
 import { sha256Hex } from "~/utils/crypto";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import type {
@@ -349,7 +349,11 @@ export class OpenAIRealtimeProvider implements RealtimeProvider {
 		});
 
 		if (!response.ok) {
-			throw await createProviderResponseError(response, "Failed to create realtime session");
+			throw new AssistantError(
+				await formatProviderError(response, "Failed to create realtime session"),
+				ErrorType.EXTERNAL_API_ERROR,
+				response.status,
+			);
 		}
 
 		const clientSecret = (await response.json()) as OpenAIRealtimeClientSecretResponse;

@@ -10,6 +10,7 @@ import { ensureEnv, ensureUser } from "./utils";
 const researchProviders: ProviderRegistration<ResearchProvider>[] = [
 	{
 		name: "parallel",
+		lifecycle: "transient",
 		create: (context) => {
 			const env = ensureEnv(context);
 			const user = ensureUser(context, { optional: true });
@@ -19,6 +20,7 @@ const researchProviders: ProviderRegistration<ResearchProvider>[] = [
 	},
 	{
 		name: "exa",
+		lifecycle: "transient",
 		create: (context) => {
 			const env = ensureEnv(context);
 			const user = ensureUser(context, { optional: true });

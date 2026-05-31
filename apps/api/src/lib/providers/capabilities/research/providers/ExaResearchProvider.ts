@@ -10,6 +10,7 @@ import type {
 	ResearchResultError,
 	ResearchTaskHandle,
 } from "~/types";
+import { formatProviderError } from "~/lib/providers/utils/errors";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
 type ExaResultPayload = {
@@ -134,10 +135,9 @@ export class ExaResearchProvider implements ResearchProvider {
 			});
 
 			if (!response.ok) {
-				const errorText = await response.text();
 				return {
 					status: "error",
-					error: `Error creating Exa research task: ${errorText}`,
+					error: await formatProviderError(response, "Error creating Exa research task"),
 				};
 			}
 
@@ -163,10 +163,7 @@ export class ExaResearchProvider implements ResearchProvider {
 		} catch (error) {
 			return {
 				status: "error",
-				error:
-					error instanceof Error
-						? `Error creating Exa research task: ${error.message}`
-						: "Error creating Exa research task",
+				error: await formatProviderError(error, "Error creating Exa research task"),
 			};
 		}
 	}
@@ -182,11 +179,14 @@ export class ExaResearchProvider implements ResearchProvider {
 			});
 
 			if (!response.ok) {
-				const errorText = await response.text();
-				console.error("ExaResearchProvider: Error fetching research run:", errorText);
+				const errorMessage = await formatProviderError(
+					response,
+					"Failed to fetch Exa research run",
+				);
+				console.error("ExaResearchProvider: Error fetching research run:", errorMessage);
 				return {
 					status: "error",
-					error: `Failed to fetch Exa research run: ${errorText}`,
+					error: errorMessage,
 				};
 			}
 
@@ -204,10 +204,7 @@ export class ExaResearchProvider implements ResearchProvider {
 		} catch (error) {
 			return {
 				status: "error",
-				error:
-					error instanceof Error
-						? `Error fetching Exa research run: ${error.message}`
-						: "Error fetching Exa research run",
+				error: await formatProviderError(error, "Error fetching Exa research run"),
 			};
 		}
 	}
@@ -271,18 +268,14 @@ export class ExaResearchProvider implements ResearchProvider {
 				};
 			}
 
-			const errorText = await response.text();
 			return {
 				status: "error",
-				error: `Failed to fetch Exa research result: ${errorText}`,
+				error: await formatProviderError(response, "Failed to fetch Exa research result"),
 			};
 		} catch (error) {
 			return {
 				status: "error",
-				error:
-					error instanceof Error
-						? `Error fetching Exa research result: ${error.message}`
-						: "Error fetching Exa research result",
+				error: await formatProviderError(error, "Error fetching Exa research result"),
 			};
 		}
 	}

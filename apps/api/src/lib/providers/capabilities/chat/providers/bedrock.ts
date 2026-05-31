@@ -5,6 +5,7 @@ import {
 	createAsyncInvocationMetadata,
 	type AsyncInvocationMetadata,
 } from "~/lib/async/asyncInvocation";
+import { formatProviderError } from "~/lib/providers/utils/errors";
 import { getModelConfigByMatchingModel } from "~/lib/providers/models";
 import { trackProviderMetrics } from "~/lib/monitoring";
 import type { StorageService } from "~/lib/storage";
@@ -180,14 +181,13 @@ export class BedrockProvider extends BaseProvider {
 		});
 
 		if (!pollResponse.ok) {
-			const errorText = await pollResponse.text();
-			logger.error("Failed to poll async invocation from Bedrock", {
-				error: errorText.substring(0, 200),
-				invocationArn,
-			});
 			throw new AssistantError(
-				"Failed to poll async invocation from Bedrock",
+				await formatProviderError(
+					pollResponse,
+					"Failed to poll async invocation status from Bedrock",
+				),
 				ErrorType.PROVIDER_ERROR,
+				pollResponse.status,
 			);
 		}
 
@@ -195,14 +195,11 @@ export class BedrockProvider extends BaseProvider {
 		try {
 			pollData = (await pollResponse.json()) as Record<string, any>;
 		} catch (jsonError) {
-			const responseText = await pollResponse.text();
-			logger.error("Failed to parse async poll response from Bedrock", {
-				error: jsonError,
-				invocationArn,
-				responseText: responseText.substring(0, 200),
-			});
 			throw new AssistantError(
-				"Bedrock async poll returned invalid JSON response",
+				await formatProviderError(
+					jsonError,
+					"Failed to parse async invocation poll response from Bedrock",
+				),
 				ErrorType.PROVIDER_ERROR,
 			);
 		}
@@ -564,11 +561,11 @@ export class BedrockProvider extends BaseProvider {
 		});
 
 		if (!response.ok) {
-			const errorText = await response.text();
-			logger.error(`Failed to ${operation} from Bedrock`, {
-				error: errorText,
-			});
-			throw new AssistantError(`Failed to ${operation} from Bedrock`);
+			throw new AssistantError(
+				await formatProviderError(response, "Failed to get response from Bedrock"),
+				ErrorType.PROVIDER_ERROR,
+				response.status,
+			);
 		}
 
 		return response;
@@ -678,13 +675,11 @@ export class BedrockProvider extends BaseProvider {
 				});
 
 				if (!response.ok) {
-					const errorText = await response.text();
-					logger.error("Failed to get response from Bedrock", {
-						model: params.model,
-						operation: operationPath,
-						error: errorText.substring(0, 200),
-					});
-					throw new AssistantError("Failed to get response from Bedrock");
+					throw new AssistantError(
+						await formatProviderError(response, "Failed to get response from Bedrock"),
+						ErrorType.PROVIDER_ERROR,
+						response.status,
+					);
 				}
 
 				const isAsyncOperation = this.isAsyncOperation(operationPath);
@@ -700,13 +695,11 @@ export class BedrockProvider extends BaseProvider {
 					try {
 						initialData = (await response.json()) as Record<string, any>;
 					} catch (jsonError) {
-						const responseText = await response.text();
-						logger.error(`Failed to parse async response from ${this.name}`, {
-							error: jsonError,
-							responseText: responseText.substring(0, 200),
-						});
 						throw new AssistantError(
-							`${this.name} returned invalid JSON response: ${jsonError instanceof Error ? jsonError.message : "Unknown JSON parse error"}`,
+							await formatProviderError(
+								jsonError,
+								"Failed to parse initial async response from Bedrock",
+							),
 							ErrorType.PROVIDER_ERROR,
 						);
 					}
@@ -770,13 +763,8 @@ export class BedrockProvider extends BaseProvider {
 				try {
 					data = (await response.json()) as Record<string, any>;
 				} catch (jsonError) {
-					const responseText = await response.text();
-					logger.error(`Failed to parse JSON response from ${this.name}`, {
-						error: jsonError,
-						responseText: responseText.substring(0, 200),
-					});
 					throw new AssistantError(
-						`${this.name} returned invalid JSON response: ${jsonError instanceof Error ? jsonError.message : "Unknown JSON parse error"}`,
+						await formatProviderError(jsonError, "Failed to parse response from Bedrock"),
 						ErrorType.PROVIDER_ERROR,
 					);
 				}

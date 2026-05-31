@@ -1,9 +1,10 @@
-import type { IEnv } from "~/types";
 import type { TaskMessage } from "../TaskService";
 import type { TaskHandler, TaskResult } from "../TaskHandler";
 import { getLogger } from "~/utils/logger";
 import { DynamicAppResponseRepository } from "~/repositories/DynamicAppResponseRepository";
 import type {
+	IEnv,
+	IUser,
 	ResearchProviderName,
 	ResearchOptions,
 	ResearchResult,
@@ -16,6 +17,7 @@ import { TaskService } from "../TaskService";
 import { TaskRepository } from "~/repositories/TaskRepository";
 import { getResearchProvider } from "~/lib/providers/capabilities/research";
 import { getNextPollingSchedule } from "./polling";
+import { RepositoryManager } from "~/repositories";
 
 const logger = getLogger({ prefix: "services/tasks/research-polling" });
 
@@ -40,7 +42,8 @@ export class ResearchPollingHandler implements TaskHandler {
 				};
 			}
 
-			const researchProvider = getResearchProvider(data.provider, { env });
+			const user = await this.resolveTaskUser(env, data.userId);
+			const researchProvider = getResearchProvider(data.provider, { env, user });
 
 			const result = await researchProvider.fetchResearchResult(data.runId, data.options);
 
@@ -107,6 +110,16 @@ export class ResearchPollingHandler implements TaskHandler {
 				message: (error as Error).message,
 			};
 		}
+	}
+
+	private async resolveTaskUser(env: IEnv, userId?: number): Promise<IUser | undefined> {
+		if (!env.DB || !userId) {
+			return undefined;
+		}
+
+		const repositories = new RepositoryManager(env);
+		const user = await repositories.users.getUserById(userId);
+		return user ?? undefined;
 	}
 
 	private async persistCompleted(

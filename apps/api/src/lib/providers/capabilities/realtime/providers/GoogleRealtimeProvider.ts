@@ -1,7 +1,7 @@
 import { getModelConfigByModel } from "~/lib/providers/models";
 import { formatGoogleStudioModelResource } from "~/lib/providers/utils/googleStudio";
 import { resolveProviderApiKey } from "~/lib/providers/utils/apiKeys";
-import { createProviderResponseError } from "~/lib/providers/utils/errors";
+import { formatProviderError } from "~/lib/providers/utils/errors";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import type { RealtimeProvider, RealtimeSessionRequest, RealtimeSessionType } from "../index";
 import {
@@ -243,7 +243,11 @@ export class GoogleRealtimeProvider implements RealtimeProvider {
 		});
 
 		if (!response.ok) {
-			throw await createProviderResponseError(response, "Failed to create Gemini Live session");
+			throw new AssistantError(
+				await formatProviderError(response, "Failed to create Gemini Live session"),
+				ErrorType.EXTERNAL_API_ERROR,
+				response.status,
+			);
 		}
 
 		const token = (await response.json()) as GoogleAuthTokenResponse;

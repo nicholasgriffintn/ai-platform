@@ -11,6 +11,7 @@ import {
 	isProviderRateLimit,
 	type ProviderErrorBody,
 } from "~/utils/providerErrors";
+import { redactSensitiveTokens } from "~/utils/redaction";
 import { appendUrlPath } from "~/utils/urls";
 
 const logger = getLogger({ prefix: "lib/providers/fetch" });
@@ -118,18 +119,23 @@ export async function fetchAIResponse<
 		}
 
 		const responseJson = safeParseJson<ProviderErrorBody>(responseText);
-		logger.error(`Failed to get response for ${provider} from ${endpointOrUrl}`, responseJson);
+		const redactedResponseJson = redactSensitiveTokens(responseJson);
+		const redactedResponseText = redactSensitiveTokens(responseText);
+		logger.error(
+			`Failed to get response for ${provider} from ${endpointOrUrl}`,
+			redactedResponseJson,
+		);
 
 		if (isProviderRateLimit(response.status, responseJson)) {
 			throw new AssistantError(
-				getProviderErrorMessage(responseJson) || "Rate limit exceeded",
+				getProviderErrorMessage(redactedResponseJson) || "Rate limit exceeded",
 				ErrorType.RATE_LIMIT_ERROR,
 				response.status,
 				{
 					provider,
 					upstreamStatus: responseJson?.raw_status_code ?? response.status,
-					responseJson,
-					responseText,
+					responseJson: redactedResponseJson,
+					responseText: redactedResponseText,
 				},
 			);
 		}
@@ -142,8 +148,8 @@ export async function fetchAIResponse<
 				provider,
 				endpoint: endpointOrUrl,
 				responseStatus: response.status,
-				responseJson,
-				responseText,
+				responseJson: redactedResponseJson,
+				responseText: redactedResponseText,
 			},
 		);
 	}
@@ -169,7 +175,7 @@ export async function fetchAIResponse<
 		}
 		logger.error(`Failed to parse JSON response from ${provider}`, {
 			error: jsonError,
-			responseText: responseText.substring(0, 200),
+			responseText: redactSensitiveTokens(responseText.substring(0, 200)),
 		});
 		throw new AssistantError(
 			`${provider} returned invalid JSON response: ${jsonError instanceof Error ? jsonError.message : "Unknown JSON parse error"}`,

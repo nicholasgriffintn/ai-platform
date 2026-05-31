@@ -1,5 +1,6 @@
 import { AwsClient } from "aws4fetch";
 
+import { formatProviderError } from "~/lib/providers/utils/errors";
 import { UserSettingsRepository } from "~/repositories/UserSettingsRepository";
 import type {
 	EmbeddingMutationResult,
@@ -191,9 +192,8 @@ export class BedrockEmbeddingProvider implements EmbeddingProvider {
 		});
 
 		if (!response.ok) {
-			const errorText = await response.text();
 			throw new AssistantError(
-				`Bedrock Knowledge Base API error: ${response.statusText} - ${errorText}`,
+				await formatProviderError(response, "Bedrock Knowledge Base API error"),
 				ErrorType.PROVIDER_ERROR,
 				response.status,
 			);
@@ -289,9 +289,8 @@ export class BedrockEmbeddingProvider implements EmbeddingProvider {
 		});
 
 		if (!response.ok) {
-			const errorText = await response.text();
 			throw new AssistantError(
-				`Bedrock Knowledge Base API error: ${response.statusText} - ${errorText}`,
+				await formatProviderError(response, "Bedrock Knowledge Base API error"),
 				ErrorType.PROVIDER_ERROR,
 				response.status,
 			);

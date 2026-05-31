@@ -2,6 +2,7 @@ import { AwsClient } from "aws4fetch";
 import type { Ai } from "@cloudflare/workers-types";
 
 import { gatewayId } from "~/constants/app";
+import { formatProviderError } from "~/lib/providers/utils/errors";
 import { UserSettingsRepository } from "~/repositories/UserSettingsRepository";
 import type {
 	EmbeddingMutationResult,
@@ -184,9 +185,8 @@ export class S3VectorsEmbeddingProvider implements EmbeddingProvider {
 		});
 
 		if (!response.ok) {
-			const errorText = await response.text();
 			throw new AssistantError(
-				`S3 Vectors API error: ${response.statusText} - ${errorText}`,
+				await formatProviderError(response, "S3 Vectors API error"),
 				ErrorType.PROVIDER_ERROR,
 				response.status,
 			);
@@ -221,9 +221,8 @@ export class S3VectorsEmbeddingProvider implements EmbeddingProvider {
 			});
 
 			if (!response.ok) {
-				const errorText = await response.text();
 				throw new AssistantError(
-					`S3 Vectors API error: ${response.statusText} - ${errorText}`,
+					await formatProviderError(response, "S3 Vectors API error"),
 					ErrorType.PROVIDER_ERROR,
 					response.status,
 				);
@@ -315,9 +314,8 @@ export class S3VectorsEmbeddingProvider implements EmbeddingProvider {
 		});
 
 		if (!response.ok) {
-			const errorText = await response.text();
 			throw new AssistantError(
-				`S3 Vectors API error: ${response.statusText} - ${errorText}`,
+				await formatProviderError(response, "S3 Vectors API error"),
 				ErrorType.PROVIDER_ERROR,
 				response.status,
 			);

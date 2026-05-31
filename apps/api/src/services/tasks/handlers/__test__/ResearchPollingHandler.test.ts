@@ -11,6 +11,7 @@ vi.mock("~/lib/providers/capabilities/research", () => ({
 let dynamicResponseRepoImpl: any;
 let taskRepositoryImpl: any;
 let taskServiceImpl: any;
+let repositoryManagerImpl: any;
 
 vi.mock("~/repositories/DynamicAppResponseRepository", () => ({
 	DynamicAppResponseRepository: class {
@@ -32,6 +33,20 @@ vi.mock("../../TaskService", () => ({
 	TaskService: class {
 		constructor() {
 			return taskServiceImpl ?? {};
+		}
+	},
+}));
+
+vi.mock("~/repositories", () => ({
+	RepositoryManager: class {
+		constructor() {
+			return (
+				repositoryManagerImpl ?? {
+					users: {
+						getUserById: vi.fn().mockResolvedValue(null),
+					},
+				}
+			);
 		}
 	},
 }));
@@ -63,6 +78,11 @@ describe("ResearchPollingHandler", () => {
 		dynamicResponseRepoImpl = undefined;
 		taskRepositoryImpl = undefined;
 		taskServiceImpl = undefined;
+		repositoryManagerImpl = {
+			users: {
+				getUserById: vi.fn().mockResolvedValue({ id: 1 }),
+			},
+		};
 		handler = new ResearchPollingHandler();
 	});
 
@@ -117,6 +137,33 @@ describe("ResearchPollingHandler", () => {
 		expect(result.data).toMatchObject({
 			runId: "test-run-id",
 			error: "Research failed",
+		});
+	});
+
+	it("resolves the research provider with the task owner", async () => {
+		const taskUser = { id: 1 };
+		repositoryManagerImpl = {
+			users: {
+				getUserById: vi.fn().mockResolvedValue(taskUser),
+			},
+		};
+		mockedGetResearchProvider.mockReturnValue({
+			fetchResearchResult: vi.fn().mockResolvedValue({
+				status: "error",
+				error: "Research failed",
+			}),
+		} as any);
+		dynamicResponseRepoImpl = {
+			getResponseByItemId: vi.fn().mockResolvedValue(null),
+			updateResponseData: vi.fn(),
+		};
+
+		await handler.handle(baseMessage, baseEnv);
+
+		expect(repositoryManagerImpl.users.getUserById).toHaveBeenCalledWith(1);
+		expect(mockedGetResearchProvider).toHaveBeenCalledWith("parallel", {
+			env: baseEnv,
+			user: taskUser,
 		});
 	});
 

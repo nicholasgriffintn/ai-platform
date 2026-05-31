@@ -9,6 +9,7 @@ import {
 	type RealtimeTranscriptionDelay,
 } from "~/lib/providers/capabilities/realtime";
 import { getMistralTargetStreamingDelayMs } from "~/lib/providers/capabilities/realtime/providers";
+import { formatProviderError } from "~/lib/providers/utils/errors";
 import { ResponseFactory } from "~/lib/http/ResponseFactory";
 
 const logger = getLogger({ prefix: "services/realtime/mistral" });
@@ -219,7 +220,10 @@ export async function createMistralRealtimeProxyResponse({
 	});
 
 	if (upstreamResponse.status !== 101 || !upstreamResponse.webSocket) {
-		const upstreamBody = await upstreamResponse.text().catch(() => "");
+		const providerError = await formatProviderError(
+			upstreamResponse,
+			"Failed to connect to Mistral realtime",
+		);
 		const status = getMistralProxyFailureStatus(upstreamResponse.status);
 		const correlationId =
 			upstreamResponse.headers.get("mistral-correlation-id") ??
@@ -228,14 +232,10 @@ export async function createMistralRealtimeProxyResponse({
 			model: modelToUse,
 			providerStatus: upstreamResponse.status,
 			providerStatusText: upstreamResponse.statusText,
-			providerResponse: upstreamBody,
+			providerResponse: providerError,
 			providerCorrelationId: correlationId,
 		});
-		const details = [
-			`Failed to connect to Mistral realtime: ${upstreamResponse.status} ${upstreamResponse.statusText}`,
-			upstreamBody.trim(),
-			correlationId ? `correlation_id=${correlationId}` : "",
-		]
+		const details = [providerError, correlationId ? `correlation_id=${correlationId}` : ""]
 			.filter(Boolean)
 			.join(" - ");
 		return ResponseFactory.error(context, details, status);

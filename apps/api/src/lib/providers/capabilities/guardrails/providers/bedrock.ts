@@ -1,5 +1,6 @@
 import { AwsClient } from "aws4fetch";
 
+import { formatProviderError } from "~/lib/providers/utils/errors";
 import { UserSettingsRepository } from "~/repositories/UserSettingsRepository";
 import type { GuardrailResult, GuardrailsProvider, IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -108,15 +109,8 @@ export class BedrockGuardrailsProvider implements GuardrailsProvider {
 			});
 
 			if (!response.ok) {
-				const errorBody = await response.text();
-				logger.error(
-					"Bedrock Guardrails API Error:",
-					response.status,
-					response.statusText,
-					errorBody,
-				);
 				throw new AssistantError(
-					`Bedrock Guardrails API error (${response.status}): ${errorBody || response.statusText}`,
+					await formatProviderError(response, "Bedrock Guardrails API error"),
 					ErrorType.PROVIDER_ERROR,
 					response.status,
 				);

@@ -1,6 +1,7 @@
 import type { ChatCompletionParameters } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getAiGatewayMetadataHeaders, resolveAiGatewayCacheTtl } from "~/utils/aiGateway";
+import { redactSensitiveTokens } from "~/utils/redaction";
 
 /**
  * Validates that AI_GATEWAY_TOKEN is present in the environment
@@ -86,12 +87,13 @@ export async function safeParseJSON<T = any>(response: Response, context: string
 		return (await response.json()) as T;
 	} catch (jsonError) {
 		const responseText = await response.text().catch(() => "[unable to read]");
+		const redactedResponseText = redactSensitiveTokens(responseText);
 		throw new AssistantError(
 			`${context} returned invalid JSON response: ${jsonError instanceof Error ? jsonError.message : "Unknown JSON parse error"}`,
 			ErrorType.PROVIDER_ERROR,
 			500,
 			{
-				responsePreview: responseText.substring(0, 200),
+				responsePreview: redactedResponseText.substring(0, 200),
 				originalError: jsonError,
 			},
 		);

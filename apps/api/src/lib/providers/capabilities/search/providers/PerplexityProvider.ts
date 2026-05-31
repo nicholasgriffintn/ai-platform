@@ -7,6 +7,7 @@ import type {
 	SearchProvider,
 	SearchResult,
 } from "~/types";
+import { formatProviderError } from "~/lib/providers/utils/errors";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { gatewayId } from "~/constants/app";
 
@@ -96,10 +97,9 @@ export class PerplexityProvider implements SearchProvider {
 		});
 
 		if (!response.ok) {
-			const error = await response.text();
 			return {
 				status: "error",
-				error: `Error performing web search: ${error}`,
+				error: await formatProviderError(response, "Error performing web search"),
 			};
 		}
 

@@ -1,4 +1,5 @@
 import { gatewayId } from "~/constants/app";
+import { formatProviderError } from "~/lib/providers/utils/errors";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import type { TranscriptionRequest, TranscriptionResult } from "../index";
 import { BaseTranscriptionProvider } from "../base";
@@ -57,10 +58,10 @@ export class MistralTranscriptionProvider extends BaseTranscriptionProvider {
 			});
 
 			if (!response.ok) {
-				const errorText = await response.text();
 				throw new AssistantError(
-					`Mistral transcription failed: ${response.status} ${errorText}`,
+					await formatProviderError(response, "Mistral transcription failed"),
 					ErrorType.EXTERNAL_API_ERROR,
+					response.status,
 				);
 			}
 
@@ -83,7 +84,7 @@ export class MistralTranscriptionProvider extends BaseTranscriptionProvider {
 			}
 
 			throw new AssistantError(
-				`Mistral transcription error: ${error instanceof Error ? error.message : "Unknown error"}`,
+				await formatProviderError(error, "Mistral transcription error"),
 				ErrorType.EXTERNAL_API_ERROR,
 			);
 		}

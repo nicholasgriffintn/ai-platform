@@ -8,6 +8,7 @@ import type {
 	SearchProvider,
 	SearchResult,
 } from "~/types";
+import { formatProviderError } from "~/lib/providers/utils/errors";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
 export class ExaSearchProvider implements SearchProvider {
@@ -49,7 +50,7 @@ export class ExaSearchProvider implements SearchProvider {
 			}
 		}
 
-		const envKey = this.env.PARALLEL_API_KEY;
+		const envKey = this.env.EXA_API_KEY;
 		if (!envKey) {
 			throw new AssistantError("EXA_API_KEY is not set", ErrorType.CONFIGURATION_ERROR);
 		}
@@ -93,10 +94,9 @@ export class ExaSearchProvider implements SearchProvider {
 			});
 
 			if (!response.ok) {
-				const errorText = await response.text();
 				return {
 					status: "error",
-					error: `Error performing web search: ${errorText}`,
+					error: await formatProviderError(response, "Error performing web search"),
 				};
 			}
 
@@ -117,10 +117,7 @@ export class ExaSearchProvider implements SearchProvider {
 		} catch (error) {
 			return {
 				status: "error",
-				error:
-					error instanceof Error
-						? `Error performing web search: ${error.message}`
-						: "Error performing web search",
+				error: await formatProviderError(error, "Error performing web search"),
 			};
 		}
 	}

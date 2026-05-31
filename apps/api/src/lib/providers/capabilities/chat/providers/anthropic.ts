@@ -4,6 +4,7 @@ import { getModelConfigByMatchingModel } from "~/lib/providers/models";
 import { shouldEnableProviderThinking } from "~/lib/providers/models/reasoning";
 import { limitAnthropicCacheControlBlocks } from "~/lib/providers/utils/anthropicCacheControl";
 import { buildAnthropicHostedTools } from "~/lib/providers/utils/anthropicTools";
+import { formatProviderError } from "~/lib/providers/utils/errors";
 import type { StorageService } from "~/lib/storage";
 import type { ChatCompletionParameters } from "~/types";
 import { getAiGatewayMetadataHeaders, resolveAiGatewayCacheTtl } from "~/utils/aiGateway";
@@ -176,12 +177,11 @@ export class AnthropicProvider extends BaseProvider {
 				});
 
 				if (!response.ok) {
-					const errorText = await response.text();
-					logger.error("Failed to count tokens from Anthropic", {
-						error: errorText,
-						status: response.status,
-					});
-					throw new AssistantError("Failed to count tokens from Anthropic");
+					throw new AssistantError(
+						await formatProviderError(response, "Failed to count tokens with Anthropic"),
+						ErrorType.PROVIDER_ERROR,
+						response.status,
+					);
 				}
 
 				const data = (await response.json()) as { input_tokens: number };
