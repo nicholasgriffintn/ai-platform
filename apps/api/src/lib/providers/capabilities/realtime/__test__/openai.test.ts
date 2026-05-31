@@ -346,11 +346,8 @@ describe("OpenAIRealtimeProvider", () => {
 				type: "transcription",
 			}),
 		).rejects.toMatchObject({
-			message: "Failed to create realtime session: 400 Bad Request",
-			context: {
-				providerStatus: 400,
-				providerResponse: JSON.stringify({ error: { message: "Unknown parameter: audio" } }),
-			},
+			message:
+				'Failed to create realtime session: 400 Bad Request - {"error":{"message":"Unknown parameter: audio"}}',
 		});
 	});
 });
