@@ -14,7 +14,9 @@ import type {
 	CreateSandboxConnectionInput,
 	SandboxConnection,
 	SandboxConnectionRepositoriesPayload,
+	SandboxInstallConfig,
 } from "~/types/sandbox";
+import { useCanAccessProFeatures } from "./useCanAccessProFeatures";
 
 export const SANDBOX_QUERY_KEYS = {
 	root: ["sandbox"] as const,
@@ -24,32 +26,57 @@ export const SANDBOX_QUERY_KEYS = {
 		[...SANDBOX_QUERY_KEYS.root, "connections", installationId, "repositories"] as const,
 };
 
-export const useSandboxConnections = () =>
-	useQuery({
+export const useSandboxConnections = () => {
+	const canAccessProFeatures = useCanAccessProFeatures();
+	const query = useQuery<SandboxConnection[], Error>({
 		queryKey: SANDBOX_QUERY_KEYS.connections(),
 		queryFn: () => fetchSandboxConnections(),
+		enabled: canAccessProFeatures,
 	});
+	return {
+		...query,
+		data: canAccessProFeatures ? query.data : undefined,
+		error: canAccessProFeatures ? query.error : null,
+		isFetching: canAccessProFeatures ? query.isFetching : false,
+		isLoading: canAccessProFeatures ? query.isLoading : false,
+	};
+};
 
-export const useSandboxInstallConfig = () =>
-	useQuery({
+export const useSandboxInstallConfig = () => {
+	const canAccessProFeatures = useCanAccessProFeatures();
+	const query = useQuery<SandboxInstallConfig, Error>({
 		queryKey: SANDBOX_QUERY_KEYS.installConfig(),
 		queryFn: () => fetchSandboxInstallConfig(),
+		enabled: canAccessProFeatures,
 	});
+	return {
+		...query,
+		data: canAccessProFeatures ? query.data : undefined,
+		error: canAccessProFeatures ? query.error : null,
+		isFetching: canAccessProFeatures ? query.isFetching : false,
+		isLoading: canAccessProFeatures ? query.isLoading : false,
+	};
+};
 
-export const useSandboxConnectionRepositories = (installationId?: number) =>
-	useQuery({
+export const useSandboxConnectionRepositories = (installationId?: number) => {
+	const canAccessProFeatures = useCanAccessProFeatures();
+	return useQuery({
 		queryKey: SANDBOX_QUERY_KEYS.connectionRepositories(installationId ?? 0),
 		queryFn: () => fetchSandboxConnectionRepositories(installationId!),
-		enabled: Boolean(installationId),
+		enabled: canAccessProFeatures && Boolean(installationId),
 	});
+};
 
 export function useSandboxRepositoryOptions(connections: SandboxConnection[]) {
+	const canAccessProFeatures = useCanAccessProFeatures();
 	const results = useQueries({
-		queries: connections.map((connection) => ({
-			queryKey: SANDBOX_QUERY_KEYS.connectionRepositories(connection.installationId),
-			queryFn: () => fetchSandboxConnectionRepositories(connection.installationId),
-			staleTime: 60_000,
-		})),
+		queries: canAccessProFeatures
+			? connections.map((connection) => ({
+					queryKey: SANDBOX_QUERY_KEYS.connectionRepositories(connection.installationId),
+					queryFn: () => fetchSandboxConnectionRepositories(connection.installationId),
+					staleTime: 60_000,
+				}))
+			: [],
 	});
 
 	const configuredRepos = new Set<string>();
@@ -97,10 +124,12 @@ export function useSandboxRepositoryOptions(connections: SandboxConnection[]) {
 		});
 	});
 
+	const repositoryError = results.find((result) => result.error)?.error;
+
 	return {
 		repoOptions: Array.from(options.values()).sort((a, b) => a.repo.localeCompare(b.repo)),
 		isLoading: results.some((result) => result.isLoading),
-		error: results.find((result) => result.error)?.error as Error | undefined,
+		error: repositoryError instanceof Error ? repositoryError : undefined,
 	};
 }
 

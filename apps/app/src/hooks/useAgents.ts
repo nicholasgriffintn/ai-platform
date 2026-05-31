@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiService } from "~/lib/api/api-service";
+import { useCanAccessProFeatures } from "./useCanAccessProFeatures";
 
 export const AGENTS_QUERY_KEYS = {
 	all: ["agents"],
@@ -23,16 +24,15 @@ export type AgentData = {
 
 export function useAgents() {
 	const queryClient = useQueryClient();
+	const canAccessProFeatures = useCanAccessProFeatures();
 
-	const {
-		data: agents = [],
-		isLoading: isLoadingAgents,
-		error: errorAgents,
-	} = useQuery<any[]>({
+	const agentsQuery = useQuery<any[]>({
 		queryKey: AGENTS_QUERY_KEYS.all,
 		queryFn: () => apiService.listAgents(),
+		enabled: canAccessProFeatures,
 		staleTime: 1000 * 60,
 	});
+	const agents = canAccessProFeatures ? (agentsQuery.data ?? []) : [];
 
 	const createMutation = useMutation<any, Error, AgentData>({
 		mutationFn: ({
@@ -118,8 +118,8 @@ export function useAgents() {
 		agents,
 		chatAgents,
 		groupedAgents,
-		isLoadingAgents,
-		errorAgents,
+		isLoadingAgents: canAccessProFeatures ? agentsQuery.isLoading : false,
+		errorAgents: canAccessProFeatures ? agentsQuery.error : null,
 		createAgent: createMutation.mutateAsync,
 		isCreatingAgent: createMutation.isPending,
 		updateAgent: updateMutation.mutateAsync,
