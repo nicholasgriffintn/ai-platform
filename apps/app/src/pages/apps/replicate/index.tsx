@@ -4,6 +4,7 @@ import { BackLink } from "~/components/Core/BackLink";
 import { PageHeader } from "~/components/Core/PageHeader";
 import { PageShell } from "~/components/Core/PageShell";
 import { PageTitle } from "~/components/Core/PageTitle";
+import { RequireAppSignIn } from "~/components/Apps/RequireAppSignIn";
 import { AppsSidebarContent } from "~/components/Sidebar/AppsSidebarContent";
 import { ReplicateModels } from "~/components/Replicate/ReplicateModels";
 
@@ -29,7 +30,9 @@ const ReplicateModelsRoute: FC = () => {
 				</PageHeader>
 			}
 		>
-			<ReplicateModels />
+			<RequireAppSignIn>
+				<ReplicateModels />
+			</RequireAppSignIn>
 		</PageShell>
 	);
 };

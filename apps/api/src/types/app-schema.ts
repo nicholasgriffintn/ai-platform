@@ -72,7 +72,7 @@ export interface AppSchema {
 	responseSchema: ResponseSchema;
 	costPerCall: number;
 	isDefault: boolean;
-	type: "normal" | "premium";
+	type: "normal" | "premium" | "byok";
 	kind: "frontend" | "dynamic";
 }
 

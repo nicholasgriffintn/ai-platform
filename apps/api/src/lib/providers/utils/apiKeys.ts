@@ -1,5 +1,5 @@
 import { UserSettingsRepository } from "~/repositories/UserSettingsRepository";
-import type { IEnv } from "~/types";
+import type { IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
 interface ProviderApiKeyLogger {
@@ -12,6 +12,25 @@ interface ResolveProviderApiKeyOptions {
 	envKeyName: string;
 	userId?: number;
 	logger?: ProviderApiKeyLogger;
+}
+
+interface HasUserProviderApiKeyOptions {
+	env: IEnv;
+	user?: Pick<IUser, "id">;
+	providerName: string;
+}
+
+export async function hasUserProviderApiKey({
+	env,
+	user,
+	providerName,
+}: HasUserProviderApiKeyOptions): Promise<boolean> {
+	if (!user?.id || !env.DB || !providerName.trim()) {
+		return false;
+	}
+
+	const userSettingsRepo = new UserSettingsRepository(env);
+	return userSettingsRepo.hasProviderApiKey(user.id, providerName);
 }
 
 export async function resolveProviderApiKey({

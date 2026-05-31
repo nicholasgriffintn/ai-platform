@@ -321,7 +321,7 @@ export const appInfoSchema = z.object({
 	featured: z.boolean().optional(),
 	costPerCall: z.number().optional(),
 	isDefault: z.boolean().optional(),
-	type: z.enum(["normal", "premium"]).optional(),
+	type: z.enum(["normal", "premium", "byok"]).optional(),
 	href: z.string().optional(),
 	kind: z.enum(["dynamic", "frontend"]).optional(),
 });

@@ -31,7 +31,7 @@ export interface ToolDefinition<
 	description: string;
 	inputSchema: z.ZodType<TInput>;
 	execute: (input: TInput, context: TContext) => Promise<TResult>;
-	type: "normal" | "premium";
+	type: "normal" | "premium" | "byok";
 	costPerCall: number;
 	strict?: boolean;
 	isDefault?: boolean;

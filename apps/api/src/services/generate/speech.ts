@@ -4,6 +4,8 @@ import { generateWithProviderFallback } from "~/lib/providers/capabilities/utils
 import { resolveServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
 import { resolveModelProvider } from "~/lib/providers/models";
 import type { IEnv, IUser } from "~/types";
+import { AssistantError, ErrorType } from "~/utils/errors";
+import { hasUserProviderApiKey } from "~/lib/providers/utils/apiKeys";
 
 export interface SpeechGenerationParams {
 	prompt: string;
@@ -59,6 +61,20 @@ export async function generateSpeech({
 			defaultProvider: DEFAULT_PROVIDER,
 			env: runtimeEnv,
 		});
+		if (
+			runtimeUser.plan_id !== "pro" &&
+			!(await hasUserProviderApiKey({
+				env: runtimeEnv,
+				user: runtimeUser,
+				providerName,
+			}))
+		) {
+			throw new AssistantError(
+				`Speech generation requires a configured ${providerName} provider key`,
+				ErrorType.AUTHORISATION_ERROR,
+				403,
+			);
+		}
 		const request = {
 			prompt: sanitisedPrompt,
 			env: runtimeEnv,
@@ -79,6 +95,7 @@ export async function generateSpeech({
 					env: runtimeEnv,
 					user: runtimeUser,
 				}),
+			allowFallback: runtimeUser.plan_id === "pro",
 		});
 
 		return {

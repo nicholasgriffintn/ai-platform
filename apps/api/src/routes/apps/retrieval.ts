@@ -186,7 +186,6 @@ addRoute(app, "post", "/ocr", {
 			schema: errorResponseSchema,
 		},
 	},
-	middleware: [requirePlan("pro")],
 	handler: async ({ raw }) =>
 		(async (context: Context) => {
 			const body = context.req.valid("json" as never) as OcrParams;

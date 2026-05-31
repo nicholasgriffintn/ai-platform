@@ -145,7 +145,7 @@ describe("MistralTranscriptionProvider", () => {
 					user: mockUser,
 				}),
 			).rejects.toMatchObject({
-				message: "Missing MISTRAL_API_KEY, AI_GATEWAY_TOKEN, or ACCOUNT_ID",
+				message: "Missing MISTRAL_API_KEY",
 				type: ErrorType.CONFIGURATION_ERROR,
 				name: "AssistantError",
 			});
@@ -176,7 +176,7 @@ describe("MistralTranscriptionProvider", () => {
 					user: mockUser,
 				}),
 			).rejects.toMatchObject({
-				message: "Missing MISTRAL_API_KEY, AI_GATEWAY_TOKEN, or ACCOUNT_ID",
+				message: "Missing AI_GATEWAY_TOKEN or ACCOUNT_ID",
 				type: ErrorType.CONFIGURATION_ERROR,
 				name: "AssistantError",
 			});
@@ -193,7 +193,7 @@ describe("MistralTranscriptionProvider", () => {
 					user: mockUser,
 				}),
 			).rejects.toMatchObject({
-				message: "Missing MISTRAL_API_KEY, AI_GATEWAY_TOKEN, or ACCOUNT_ID",
+				message: "Missing AI_GATEWAY_TOKEN or ACCOUNT_ID",
 				type: ErrorType.CONFIGURATION_ERROR,
 				name: "AssistantError",
 			});

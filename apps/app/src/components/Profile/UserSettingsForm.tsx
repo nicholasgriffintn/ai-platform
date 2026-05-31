@@ -159,6 +159,10 @@ export function UserSettingsForm({
 						memories_save_enabled: formData.memories_save_enabled,
 						memories_chat_history_enabled: formData.memories_chat_history_enabled,
 						tracking_enabled: formData.tracking_enabled,
+						transcription_provider: formData.transcription_provider,
+						transcription_model: formData.transcription_model,
+						speech_provider: formData.speech_provider,
+						speech_model: formData.speech_model,
 						search_provider: formData.search_provider,
 						sandbox_model: formData.sandbox_model,
 					};
@@ -614,122 +618,117 @@ export function UserSettingsForm({
 				</div>
 			</div>
 
-			{isPro && (
-				<>
-					<div>
-						<h3 className="text-lg font-bold text-zinc-800 dark:text-zinc-100 mb-6">Audio</h3>
-					</div>
+			<div>
+				<h3 className="text-lg font-bold text-zinc-800 dark:text-zinc-100 mb-6">Audio</h3>
+			</div>
 
-					<div className="space-y-4">
-						<div>
-							<label
-								htmlFor="transcription_provider"
-								className="block text-sm font-medium text-zinc-800 dark:text-zinc-200 mb-1"
-							>
-								Transcription Provider
-							</label>
-							<p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
-								Choose the provider for speech-to-text transcription used by Polychat.
-							</p>
-							<FormSelect
-								id="transcription_provider"
-								name="transcription_provider"
-								value={formData.transcription_provider}
-								onChange={handleTranscriptionProviderChange}
-							>
-								{transcriptionProviderOptions.map((provider) => (
-									<option key={provider.id} value={provider.id}>
-										{provider.label}
-									</option>
-								))}
-							</FormSelect>
-						</div>
+			<div className="space-y-4">
+				<div>
+					<label
+						htmlFor="transcription_provider"
+						className="block text-sm font-medium text-zinc-800 dark:text-zinc-200 mb-1"
+					>
+						Transcription Provider
+					</label>
+					<p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
+						Choose the provider for speech-to-text transcription used by Polychat.
+					</p>
+					<FormSelect
+						id="transcription_provider"
+						name="transcription_provider"
+						value={formData.transcription_provider}
+						onChange={handleTranscriptionProviderChange}
+					>
+						{transcriptionProviderOptions.map((provider) => (
+							<option key={provider.id} value={provider.id}>
+								{provider.label}
+							</option>
+						))}
+					</FormSelect>
+				</div>
 
-						<div>
-							<label
-								htmlFor="transcription_model"
-								className="block text-sm font-medium text-zinc-800 dark:text-zinc-200 mb-1"
-							>
-								Transcription Model
-							</label>
-							<p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
-								Select from the available models for the {formData.transcription_provider} provider.
-							</p>
-							<FormSelect
-								id="transcription_model"
-								name="transcription_model"
-								value={formData.transcription_model}
-								onChange={(e) =>
-									setFormData({
-										...formData,
-										transcription_model: e.target.value,
-									})
-								}
-							>
-								{getTranscriptionModelOptions(formData.transcription_provider).map((model) => (
-									<option key={model.id} value={model.id}>
-										{model.label}
-									</option>
-								))}
-							</FormSelect>
-						</div>
+				<div>
+					<label
+						htmlFor="transcription_model"
+						className="block text-sm font-medium text-zinc-800 dark:text-zinc-200 mb-1"
+					>
+						Transcription Model
+					</label>
+					<p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
+						Select from the available models for the {formData.transcription_provider} provider.
+					</p>
+					<FormSelect
+						id="transcription_model"
+						name="transcription_model"
+						value={formData.transcription_model}
+						onChange={(e) =>
+							setFormData({
+								...formData,
+								transcription_model: e.target.value,
+							})
+						}
+					>
+						{getTranscriptionModelOptions(formData.transcription_provider).map((model) => (
+							<option key={model.id} value={model.id}>
+								{model.label}
+							</option>
+						))}
+					</FormSelect>
+				</div>
 
-						<div>
-							<label
-								htmlFor="speech_provider"
-								className="block text-sm font-medium text-zinc-800 dark:text-zinc-200 mb-1"
-							>
-								Speech Provider
-							</label>
-							<p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
-								Choose the provider for text-to-speech response audio.
-							</p>
-							<FormSelect
-								id="speech_provider"
-								name="speech_provider"
-								value={formData.speech_provider}
-								onChange={handleSpeechProviderChange}
-							>
-								{speechProviderOptions.map((provider) => (
-									<option key={provider.id} value={provider.id}>
-										{provider.label}
-									</option>
-								))}
-							</FormSelect>
-						</div>
+				<div>
+					<label
+						htmlFor="speech_provider"
+						className="block text-sm font-medium text-zinc-800 dark:text-zinc-200 mb-1"
+					>
+						Speech Provider
+					</label>
+					<p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
+						Choose the provider for text-to-speech response audio.
+					</p>
+					<FormSelect
+						id="speech_provider"
+						name="speech_provider"
+						value={formData.speech_provider}
+						onChange={handleSpeechProviderChange}
+					>
+						{speechProviderOptions.map((provider) => (
+							<option key={provider.id} value={provider.id}>
+								{provider.label}
+							</option>
+						))}
+					</FormSelect>
+				</div>
 
-						<div>
-							<label
-								htmlFor="speech_model"
-								className="block text-sm font-medium text-zinc-800 dark:text-zinc-200 mb-1"
-							>
-								Speech Model
-							</label>
-							<p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
-								Select from the available voices or models for the {formData.speech_provider}{" "}
-								provider.
-							</p>
-							<FormSelect
-								id="speech_model"
-								name="speech_model"
-								value={formData.speech_model}
-								onChange={(e) =>
-									setFormData({
-										...formData,
-										speech_model: e.target.value,
-									})
-								}
-							>
-								{getSpeechModelOptions(formData.speech_provider).map((model) => (
-									<option key={model.id} value={model.id}>
-										{model.label}
-									</option>
-								))}
-							</FormSelect>
-						</div>
-					</div>
-				</>
-			)}
+				<div>
+					<label
+						htmlFor="speech_model"
+						className="block text-sm font-medium text-zinc-800 dark:text-zinc-200 mb-1"
+					>
+						Speech Model
+					</label>
+					<p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
+						Select from the available voices or models for the {formData.speech_provider} provider.
+					</p>
+					<FormSelect
+						id="speech_model"
+						name="speech_model"
+						value={formData.speech_model}
+						onChange={(e) =>
+							setFormData({
+								...formData,
+								speech_model: e.target.value,
+							})
+						}
+					>
+						{getSpeechModelOptions(formData.speech_provider).map((model) => (
+							<option key={model.id} value={model.id}>
+								{model.label}
+							</option>
+						))}
+					</FormSelect>
+				</div>
+			</div>
 
 			<div>
 				<h3 className="text-lg font-bold text-zinc-800 dark:text-zinc-100 mb-6">Web Search</h3>

@@ -1,5 +1,6 @@
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import { StorageService } from "~/lib/storage";
+import { hasUserProviderApiKey } from "~/lib/providers/utils/apiKeys";
 import type { IRequest } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
@@ -37,12 +38,23 @@ export interface OcrResult {
  */
 export const performOcr = async (params: OcrParams, req: IRequest): Promise<OcrResult> => {
 	try {
-		if (!req.env.MISTRAL_API_KEY) {
-			throw new AssistantError("Mistral API key not configured", ErrorType.PARAMS_ERROR);
-		}
-
 		if (!params.document) {
 			throw new AssistantError("Document is required", ErrorType.PARAMS_ERROR);
+		}
+
+		if (
+			req.user?.plan_id !== "pro" &&
+			!(await hasUserProviderApiKey({
+				env: req.env,
+				user: req.user,
+				providerName: "mistral",
+			}))
+		) {
+			throw new AssistantError(
+				"OCR requires a configured mistral provider key",
+				ErrorType.AUTHORISATION_ERROR,
+				403,
+			);
 		}
 
 		const baseAssetsUrl = req.env.PUBLIC_ASSETS_URL || "";

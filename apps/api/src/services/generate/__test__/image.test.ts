@@ -16,7 +16,7 @@ vi.mock("~/lib/chat/utils", () => ({
 
 describe("generateImage", () => {
 	const mockEnv = { DB: {} } as any;
-	const mockUser = { id: "user-123", email: "test@example.com" } as any;
+	const mockUser = { id: "user-123", email: "test@example.com", plan_id: "pro" } as any;
 
 	beforeEach(async () => {
 		vi.clearAllMocks();

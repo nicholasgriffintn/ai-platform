@@ -61,7 +61,7 @@ export const create_image: ApiToolDefinition = {
 		},
 		required: ["prompt"],
 	}),
-	type: "premium",
+	type: "byok",
 	costPerCall: 1,
 	permissions: ["network"],
 	execute: async (args, context) => {

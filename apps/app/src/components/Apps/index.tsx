@@ -20,7 +20,7 @@ import { groupAppsByCategory } from "./utils";
 import type { AppListItem } from "~/types/apps";
 
 export const DynamicApps = () => {
-	const { isAuthenticationLoading, isPro } = useChatStore();
+	const { isAuthenticated, isAuthenticationLoading, isPro } = useChatStore();
 	const { trackEvent } = useTrackEvent();
 	const navigate = useNavigate();
 
@@ -62,6 +62,9 @@ export const DynamicApps = () => {
 			if (app.type === "premium" && !isPro) {
 				return;
 			}
+			if (app.type === "byok" && !isAuthenticated) {
+				return;
+			}
 
 			trackEvent({
 				name: "app_select",
@@ -82,7 +85,7 @@ export const DynamicApps = () => {
 			setSelectedAppId(app.id);
 			setResult(null);
 		},
-		[trackEvent, isPro, navigate],
+		[trackEvent, isAuthenticated, isPro, navigate],
 	);
 
 	const handleAppSelectById = useCallback(

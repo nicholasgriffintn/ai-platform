@@ -45,6 +45,7 @@ export const search_functions: ApiToolDefinition = {
 		}
 
 		const isProUser = req.user?.plan_id === "pro";
+		const isSignedIn = Boolean(req.user?.id);
 		const searchTerms = query.toLowerCase().split(/\s+/);
 		const availableFunctions = listFunctionTools();
 
@@ -91,7 +92,7 @@ export const search_functions: ApiToolDefinition = {
 			costPerCall: fn.costPerCall,
 			isDefault: fn.isDefault || false,
 			parameters: z.toJSONSchema(fn.inputSchema),
-			available: fn.type === "normal" || isProUser,
+			available: fn.type === "normal" || (fn.type === "byok" && isSignedIn) || isProUser,
 		}));
 
 		return {
@@ -155,7 +156,10 @@ export const get_function_schema: ApiToolDefinition = {
 		}
 
 		const isProUser = req.user?.plan_id === "pro";
-		const isAvailable = foundFunction.type === "normal" || isProUser;
+		const isAvailable =
+			foundFunction.type === "normal" ||
+			(foundFunction.type === "byok" && Boolean(req.user?.id)) ||
+			isProUser;
 
 		return {
 			name: "get_function_schema",
@@ -170,7 +174,7 @@ export const get_function_schema: ApiToolDefinition = {
 				strict: foundFunction.strict,
 				parameters: z.toJSONSchema(foundFunction.inputSchema),
 				available: isAvailable,
-				requires_upgrade: !isAvailable,
+				requires_upgrade: foundFunction.type === "premium" && !isAvailable,
 			},
 		};
 	},

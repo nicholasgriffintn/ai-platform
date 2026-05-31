@@ -25,7 +25,7 @@ export const create_video: ApiToolDefinition = {
 	name: "create_video",
 	description:
 		"Produces video content from descriptive prompts. Use when users request animations, visual sequences, or dynamic visual content.",
-	type: "premium",
+	type: "byok",
 	inputSchema: jsonSchemaToZod({
 		type: "object",
 		properties: {

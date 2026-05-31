@@ -9,7 +9,6 @@ import {
 } from "@assistant/schemas";
 
 import { requireAuth } from "~/middleware/auth";
-import { requirePlan } from "~/middleware/requirePlan";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import { ResponseFactory } from "~/lib/http/ResponseFactory";
 import { handleTextToSpeech } from "~/services/audio/speech";
@@ -21,7 +20,6 @@ const app = new Hono();
 const routeLogger = createRouteLogger("audio");
 
 app.use("/*", requireAuth);
-app.use("/*", requirePlan("pro"));
 
 app.use("/*", (c, next) => {
 	routeLogger.info(`Processing audio route: ${c.req.path}`);

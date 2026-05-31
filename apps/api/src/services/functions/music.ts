@@ -48,7 +48,7 @@ export const create_music: ApiToolDefinition = {
 		},
 		required: ["prompt"],
 	}),
-	type: "premium",
+	type: "byok",
 	costPerCall: 1,
 	permissions: ["network"],
 	execute: async (args, context) => {

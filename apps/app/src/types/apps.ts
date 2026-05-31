@@ -23,7 +23,7 @@ export interface AppSchema {
 	featured?: boolean;
 	costPerCall?: number;
 	isDefault?: boolean;
-	type?: "normal" | "premium";
+	type?: "normal" | "premium" | "byok";
 	formSchema: {
 		steps: Array<{
 			id: string;
@@ -73,7 +73,7 @@ export interface AppListItem {
 	href?: string;
 	costPerCall?: number;
 	isDefault?: boolean;
-	type?: "normal" | "premium";
+	type?: "normal" | "premium" | "byok";
 	kind?: AppKind;
 }
 

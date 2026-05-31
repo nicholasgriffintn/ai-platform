@@ -8,12 +8,19 @@ const mockRepositories = {
 		getUserSettings: vi.fn(),
 	},
 };
+const mockHasProviderApiKey = vi.hoisted(() => vi.fn());
 
 vi.mock("~/repositories", () => ({
 	RepositoryManager: class {
 		constructor() {
 			return mockRepositories;
 		}
+	},
+}));
+
+vi.mock("~/repositories/UserSettingsRepository", () => ({
+	UserSettingsRepository: class {
+		hasProviderApiKey = mockHasProviderApiKey;
 	},
 }));
 
@@ -48,10 +55,12 @@ describe("handleTranscribe", () => {
 	const mockUser: IUser = {
 		id: "user-123",
 		email: "test@example.com",
+		plan_id: "pro",
 	} as unknown as IUser;
 
 	beforeEach(() => {
 		vi.clearAllMocks();
+		mockHasProviderApiKey.mockResolvedValue(false);
 		mockProviderLibrary.transcription.mockImplementation((provider: string) => {
 			if (provider === "mistral") {
 				return mockMistralProvider;
@@ -136,6 +145,44 @@ describe("handleTranscribe", () => {
 				content: "Mistral transcription result",
 				data: { duration: 10.5 },
 			});
+		});
+
+		it("allows a signed-in non-Pro user when the selected provider has a key", async () => {
+			const mockAudio = new Blob(["audio data"], { type: "audio/mp3" });
+			const freeUser = { ...mockUser, plan_id: "free" } as IUser;
+			mockHasProviderApiKey.mockResolvedValue(true);
+			mockMistralProvider.transcribe.mockResolvedValue({
+				text: "Mistral transcription result",
+				data: { duration: 10.5 },
+			});
+
+			await handleTranscribe({
+				env: mockEnv,
+				audio: mockAudio,
+				user: freeUser,
+				provider: "mistral",
+			});
+
+			expect(mockHasProviderApiKey).toHaveBeenCalledWith("user-123", "mistral");
+			expect(mockMistralProvider.transcribe).toHaveBeenCalled();
+		});
+
+		it("blocks a signed-in non-Pro user from platform transcription providers", async () => {
+			const mockAudio = new Blob(["audio data"], { type: "audio/mp3" });
+			const freeUser = { ...mockUser, plan_id: "free" } as IUser;
+
+			await expect(
+				handleTranscribe({
+					env: mockEnv,
+					audio: mockAudio,
+					user: freeUser,
+					provider: "workers",
+				}),
+			).rejects.toMatchObject({
+				type: ErrorType.AUTHORISATION_ERROR,
+			});
+
+			expect(mockWorkersProvider.transcribe).not.toHaveBeenCalled();
 		});
 	});
 

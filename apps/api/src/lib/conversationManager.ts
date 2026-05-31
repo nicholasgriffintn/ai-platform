@@ -1,4 +1,4 @@
-import type { AnonymousUser, Message, Platform, User, IEnv } from "~/types";
+import type { AnonymousUser, Message, Platform, User, IEnv, FunctionType } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";
@@ -311,7 +311,7 @@ export class ConversationManager {
 	}
 
 	async incrementFunctionUsage(
-		functionType: "premium" | "normal",
+		functionType: FunctionType,
 		isPro: boolean,
 		costPerCall: number,
 	): Promise<void> {
@@ -321,6 +321,15 @@ export class ConversationManager {
 		}
 
 		throw new AssistantError("User required to increment function usage", ErrorType.PARAMS_ERROR);
+	}
+
+	async incrementByokUsage(): Promise<void> {
+		if (this.user && this.usageManager) {
+			await this.usageManager.incrementByokUsage();
+			return;
+		}
+
+		throw new AssistantError("User required to increment BYOK usage", ErrorType.PARAMS_ERROR);
 	}
 
 	/**

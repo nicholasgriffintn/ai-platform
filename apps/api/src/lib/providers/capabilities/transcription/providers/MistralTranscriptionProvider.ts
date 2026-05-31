@@ -1,8 +1,12 @@
 import { gatewayId } from "~/constants/app";
 import { formatProviderError } from "~/lib/providers/utils/errors";
+import { resolveProviderApiKey } from "~/lib/providers/utils/apiKeys";
 import { AssistantError, ErrorType } from "~/utils/errors";
+import { getLogger } from "~/utils/logger";
 import type { TranscriptionRequest, TranscriptionResult } from "../index";
 import { BaseTranscriptionProvider } from "../base";
+
+const logger = getLogger({ prefix: "lib/transcription/mistral" });
 
 export class MistralTranscriptionProvider extends BaseTranscriptionProvider {
 	name = "mistral";
@@ -14,16 +18,23 @@ export class MistralTranscriptionProvider extends BaseTranscriptionProvider {
 	async transcribe(request: TranscriptionRequest): Promise<TranscriptionResult> {
 		this.validateRequest(request);
 
-		const { audio, env, timestamps = false } = request;
+		const { audio, env, timestamps = false, user } = request;
 
-		if (!env.MISTRAL_API_KEY || !env.AI_GATEWAY_TOKEN || !env.ACCOUNT_ID) {
+		if (!env.AI_GATEWAY_TOKEN || !env.ACCOUNT_ID) {
 			throw new AssistantError(
-				"Missing MISTRAL_API_KEY, AI_GATEWAY_TOKEN, or ACCOUNT_ID",
+				"Missing AI_GATEWAY_TOKEN or ACCOUNT_ID",
 				ErrorType.CONFIGURATION_ERROR,
 			);
 		}
 
 		try {
+			const apiKey = await resolveProviderApiKey({
+				env,
+				providerName: this.name,
+				envKeyName: this.getProviderKeyName(),
+				userId: user?.id,
+				logger,
+			});
 			const formData = new FormData();
 
 			if (
@@ -52,7 +63,7 @@ export class MistralTranscriptionProvider extends BaseTranscriptionProvider {
 				method: "POST",
 				headers: {
 					"cf-aig-authorization": env.AI_GATEWAY_TOKEN,
-					Authorization: `Bearer ${env.MISTRAL_API_KEY}`,
+					Authorization: `Bearer ${apiKey}`,
 				},
 				body: formData,
 			});
