@@ -73,6 +73,7 @@ export const PROVIDER_ICONS: Record<string, string> = {
 	exa: "exa",
 	sagemaker: "sagemaker",
 	opencode: "opencode",
+	"opencode-go": "opencode",
 	openclaw: "openclaw",
 	zai: "zai",
 };

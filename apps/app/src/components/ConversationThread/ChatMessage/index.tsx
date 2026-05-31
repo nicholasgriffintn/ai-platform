@@ -4,7 +4,8 @@ import { ModelIcon } from "~/components/ModelIcon";
 import { useCopyToClipboard } from "~/hooks/useCopyToClipboard";
 import { apiService } from "~/lib/api/api-service";
 import type { OpinionRequest } from "~/lib/chat/opinion";
-import type { ChatRole, Message } from "~/types";
+import { getModelDisplayName } from "~/lib/models";
+import type { ChatRole, Message, ModelConfigItem } from "~/types";
 import type { ArtifactProps } from "~/types/artifact";
 import { EditableMessageContent } from "./EditableMessageContent";
 import { MessageActions } from "./MessageActions";
@@ -14,6 +15,7 @@ import { ToolMessage } from "./ToolMessage";
 export const ChatMessage = ({
 	conversationId,
 	message,
+	modelConfig,
 	onToolInteraction,
 	onArtifactOpen,
 	isSharedView = false,
@@ -31,6 +33,7 @@ export const ChatMessage = ({
 }: {
 	conversationId?: string;
 	message: Message;
+	modelConfig?: ModelConfigItem;
 	onToolInteraction?: (toolName: string, action: "useAsPrompt", data: Record<string, any>) => void;
 	onArtifactOpen?: (
 		artifact: ArtifactProps,
@@ -53,6 +56,12 @@ export const ChatMessage = ({
 	const { copied, copy } = useCopyToClipboard();
 	const [feedbackState, setFeedbackState] = useState<"none" | "liked" | "disliked">("none");
 	const [isSubmittingFeedback, setIsSubmittingFeedback] = useState(false);
+	const assistantModelName =
+		message.role === "assistant" && message.model
+			? modelConfig
+				? getModelDisplayName(modelConfig)
+				: message.model
+			: undefined;
 
 	const isToolResponse = message.role === ("tool" as ChatRole) && message.name;
 	const isExternalFunctionCall =
@@ -147,9 +156,16 @@ export const ChatMessage = ({
 			>
 				<div className={`flex flex-col gap-2 py-2 ${message.role === "user" ? "px-3" : ""}`}>
 					<div className="flex items-start gap-2">
-						{message.role === "assistant" && message.model && (
+						{assistantModelName && (
 							<div className="flex-shrink-0 mr-2 mt-1">
-								<ModelIcon modelName={message.model} size={24} title={message.model} mono={true} />
+								<ModelIcon
+									modelName={assistantModelName}
+									provider={modelConfig?.provider}
+									url={modelConfig?.avatarUrl}
+									size={24}
+									title={assistantModelName}
+									mono={true}
+								/>
 							</div>
 						)}
 						<div className="flex-1 overflow-x-auto">

@@ -4,11 +4,14 @@ import { VList, type VListHandle } from "virtua";
 
 import { useChat } from "~/hooks/useChat";
 import { useChatManager } from "~/hooks/useChatManager";
+import { useModels } from "~/hooks/useModels";
+import { useWebLLMModels } from "~/hooks/useWebLLMModels";
 import {
 	canRequestOpinionForMessage,
 	shouldPromoteOpinionRequest,
 	type OpinionRequest,
 } from "~/lib/chat/opinion";
+import { createModelReferenceMap, getAvailableModels, getModelByReference } from "~/lib/models";
 import {
 	useIsLoading,
 	useLoadingMessage,
@@ -52,6 +55,8 @@ export const MessageList = ({
 	const { data: conversation, isLoading: isLoadingConversation } = useChat(
 		!isSharedView ? currentConversationId : undefined,
 	);
+	const { data: apiModels = {} } = useModels();
+	const webLLMModels = useWebLLMModels();
 
 	const {
 		streamStarted,
@@ -63,6 +68,14 @@ export const MessageList = ({
 	} = useChatManager();
 
 	const messages = propMessages || conversation?.messages || [];
+	const availableModels = useMemo(
+		() => getAvailableModels(apiModels, true, webLLMModels),
+		[apiModels, webLLMModels],
+	);
+	const modelReferences = useMemo(
+		() => createModelReferenceMap(availableModels),
+		[availableModels],
+	);
 	const opinionAvailability = useMemo(() => {
 		const availability = new Map<
 			string,
@@ -198,6 +211,7 @@ export const MessageList = ({
 								<ChatMessage
 									conversationId={currentConversationId}
 									message={message}
+									modelConfig={getModelByReference(modelReferences, message.model)}
 									onToolInteraction={onToolInteraction}
 									onArtifactOpen={onArtifactOpen}
 									isSharedView={isSharedView}

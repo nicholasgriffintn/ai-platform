@@ -67,6 +67,29 @@ export function doesModelMatchId(
 	);
 }
 
+export function createModelReferenceMap(models: ModelConfig) {
+	const modelReferences = new Map<string, ModelConfigItem>();
+
+	for (const model of Object.values(models)) {
+		for (const modelReference of [model.id, model.matchingModel, model.name]) {
+			if (!modelReference || modelReferences.has(modelReference)) {
+				continue;
+			}
+
+			modelReferences.set(modelReference, model);
+		}
+	}
+
+	return modelReferences;
+}
+
+export function getModelByReference(
+	modelReferences: ReadonlyMap<string, ModelConfigItem>,
+	modelId?: string | null,
+) {
+	return modelId ? modelReferences.get(modelId) : undefined;
+}
+
 export function sortModelsByDisplayName(models: ModelConfigItem[]) {
 	return [...models].sort((a, b) => getModelDisplayName(a).localeCompare(getModelDisplayName(b)));
 }

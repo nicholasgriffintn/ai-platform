@@ -40,6 +40,7 @@ import { FalAIProvider } from "../../capabilities/chat/providers/fal";
 import { CerebrasProvider } from "../../capabilities/chat/providers/cerebras";
 import { IdeogramProvider } from "../../capabilities/chat/providers/ideogram";
 import { OpencodeProvider } from "../../capabilities/chat/providers/opencode";
+import { OpencodeGoProvider } from "../../capabilities/chat/providers/opencode-go";
 
 const chatProviders: ProviderRegistration<AIProvider>[] = [
 	{
@@ -247,6 +248,11 @@ const chatProviders: ProviderRegistration<AIProvider>[] = [
 		name: "opencode",
 		create: () => new OpencodeProvider(),
 		metadata: { vendor: "OpenCode", categories: ["chat"] },
+	},
+	{
+		name: "opencode-go",
+		create: () => new OpencodeGoProvider(),
+		metadata: { vendor: "OpenCode Go", categories: ["chat"] },
 	},
 ];
 

@@ -10,10 +10,6 @@ vi.mock("~/hooks/use-track-event", () => ({
 	}),
 }));
 
-vi.mock("~/components/ModelIcon", () => ({
-	ModelIcon: ({ modelName }: { modelName: string }) => <span>{modelName}</span>,
-}));
-
 afterEach(() => {
 	vi.restoreAllMocks();
 });

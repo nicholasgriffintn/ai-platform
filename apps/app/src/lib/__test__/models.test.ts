@@ -2,7 +2,9 @@ import { describe, expect, it } from "vitest";
 
 import type { ModelConfig, ModelConfigItem } from "~/types";
 import {
+	createModelReferenceMap,
 	doesModelMatchId,
+	getModelByReference,
 	getModelInteractionCapabilities,
 	getModelProvider,
 	getModelsByMode,
@@ -126,6 +128,26 @@ describe("doesModelMatchId", () => {
 		expect(doesModelMatchId(model, "Display Model")).toBe(true);
 		expect(doesModelMatchId(model, "other-model")).toBe(false);
 		expect(doesModelMatchId(model, null)).toBe(false);
+	});
+});
+
+describe("createModelReferenceMap", () => {
+	it("indexes configured ids, provider ids, and display names", () => {
+		const models: ModelConfig = {
+			"app-model": {
+				id: "app-model",
+				name: "Display Model",
+				matchingModel: "provider/model",
+				provider: "provider",
+			},
+		};
+		const modelReferences = createModelReferenceMap(models);
+
+		expect(getModelByReference(modelReferences, "app-model")?.id).toBe("app-model");
+		expect(getModelByReference(modelReferences, "provider/model")?.id).toBe("app-model");
+		expect(getModelByReference(modelReferences, "Display Model")?.id).toBe("app-model");
+		expect(getModelByReference(modelReferences, "other-model")).toBeUndefined();
+		expect(getModelByReference(modelReferences, null)).toBeUndefined();
 	});
 });
 
