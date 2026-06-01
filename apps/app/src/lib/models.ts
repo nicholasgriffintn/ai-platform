@@ -276,17 +276,12 @@ export function getModelsByMode(models: ModelConfig, mode: ChatMode) {
 				outputs.length > 0 && outputs.every((modality) => modality === "embedding");
 			const isAudioOnly = outputs.length > 0 && outputs.every((modality) => modality === "audio");
 			const isVideoOnly = outputs.length > 0 && outputs.every((modality) => modality === "video");
-			const isRealtimeModel = isRealtimeSessionModel(model);
 			const isHidden = model.hiddenFromDefaultList;
 			const isIncompatible =
 				!isTextInputChatModel(model) || isAudioOnly || isVideoOnly || isEmbeddingOnly || isHidden;
 			const isLocalModel = model.provider === LOCAL_MODEL_PROVIDER;
 
-			if (
-				!isHidden &&
-				(!isIncompatible || isRealtimeModel) &&
-				(mode === "local" ? isLocalModel : !isLocalModel)
-			) {
+			if (!isHidden && !isIncompatible && (mode === "local" ? isLocalModel : !isLocalModel)) {
 				acc[key] = {
 					...model,
 					id: key,

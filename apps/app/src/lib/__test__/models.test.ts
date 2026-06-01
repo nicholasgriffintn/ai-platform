@@ -78,7 +78,6 @@ describe("getModelsByMode", () => {
 			"kimi-k2",
 			"vision-chat",
 			"text-to-image",
-			"realtime-transcribe",
 		]);
 	});
 
