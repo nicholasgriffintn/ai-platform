@@ -6,6 +6,7 @@ import { CouncilChatControls } from "~/components/Council/CouncilChatControls";
 import type { ConversationThreadModeConfig } from "~/components/ConversationThread";
 import { useChat } from "~/hooks/useChat";
 import { useLiveConversationMessages } from "~/hooks/useLiveConversationMessages";
+import { useModels } from "~/hooks/useModels";
 import { useRealtimeLiveSession } from "~/hooks/useRealtimeLiveSession";
 import {
 	useSandboxConnections,
@@ -16,8 +17,10 @@ import {
 	buildConversationModeMetadata,
 	getConversationModeMetadata,
 } from "~/lib/home-chat-modes/conversation-mode";
+import { createModelReferenceMap, getModelByReference } from "~/lib/models";
 import {
 	getDefaultLiveModelId,
+	getRealtimeLiveProviderIdForModel,
 	supportsRealtimeLiveVideoInput,
 	type RealtimeLiveProviderId,
 } from "~/lib/realtime/live-providers";
@@ -31,6 +34,7 @@ import {
 	type SandboxPromptStrategy,
 	type SandboxTaskType,
 } from "~/types/sandbox";
+import type { ModelSelectionChangeHandler } from "~/types";
 import { LiveChatModeControls, LiveSessionComposerControls } from "./LiveChatModeControls";
 import { SandboxChatModeControls } from "./SandboxChatModeControls";
 import {
@@ -60,10 +64,17 @@ export function useHomeChatModeConfig(): {
 		setSandboxModeSettings,
 	} = useChatStore();
 	const { data: currentConversation } = useChat(currentConversationId);
+	const { data: apiModels = {} } = useModels();
 	const conversationModeMetadata = useMemo(
 		() => getConversationModeMetadata(currentConversation),
 		[currentConversation],
 	);
+	const modelReferences = useMemo(() => createModelReferenceMap(apiModels), [apiModels]);
+	const selectedModelConfig = useMemo(
+		() => getModelByReference(modelReferences, selectedModel),
+		[modelReferences, selectedModel],
+	);
+	const selectedModelLiveProvider = getRealtimeLiveProviderIdForModel(selectedModelConfig);
 	const [activeModeId, setActiveModeId] = useState<HomeChatModeId>(() =>
 		searchParams.has("mode") ? resolveHomeChatModeId(searchParams.get("mode")) : homeChatMode,
 	);
@@ -111,10 +122,12 @@ export function useHomeChatModeConfig(): {
 	});
 	const {
 		error: liveError,
+		inputAudioLevel: liveInputAudioLevel,
 		isMicrophoneEnabled: liveMicrophoneEnabled,
 		isVideoEnabled: liveVideoEnabled,
 		lastEvent: liveLastEvent,
 		lastTranscript: liveLastTranscript,
+		outputAudioLevel: liveOutputAudioLevel,
 		provider: liveProvider,
 		setMicrophoneEnabled: setLiveMicrophoneEnabled,
 		setProvider: setLiveProvider,
@@ -127,6 +140,19 @@ export function useHomeChatModeConfig(): {
 		flushLiveMessages();
 		stopLiveSession();
 	}, [flushLiveMessages, stopLiveSession]);
+	const effectiveLiveProvider = selectedModelLiveProvider ?? liveProvider;
+
+	useEffect(() => {
+		if (
+			activeModeId !== "live" ||
+			!selectedModelLiveProvider ||
+			selectedModelLiveProvider === liveProvider
+		) {
+			return;
+		}
+
+		setLiveProvider(selectedModelLiveProvider);
+	}, [activeModeId, liveProvider, selectedModelLiveProvider, setLiveProvider]);
 
 	useEffect(() => {
 		if (currentConversationId && conversationModeMetadata) {
@@ -181,8 +207,11 @@ export function useHomeChatModeConfig(): {
 				setChatMode("remote");
 			}
 			if (modeId === "live") {
-				const liveModelId = getDefaultLiveModelId(liveProvider);
-				setModel(liveModelId);
+				const nextLiveProvider = selectedModelLiveProvider ?? liveProvider;
+				setLiveProvider(nextLiveProvider);
+				if (!selectedModelLiveProvider) {
+					setModel(getDefaultLiveModelId(nextLiveProvider));
+				}
 			} else if (activeModeId === "live") {
 				stopLiveSessionAndFlush();
 			}
@@ -192,8 +221,10 @@ export function useHomeChatModeConfig(): {
 			activeModeId,
 			liveProvider,
 			searchParams,
+			selectedModelLiveProvider,
 			setChatMode,
 			setHomeChatMode,
+			setLiveProvider,
 			setModel,
 			setSearchParams,
 			setSelectedAgentId,
@@ -206,6 +237,46 @@ export function useHomeChatModeConfig(): {
 			setModel(getDefaultLiveModelId(provider));
 		},
 		[setLiveProvider, setModel],
+	);
+	const handleModelChange = useCallback<ModelSelectionChangeHandler>(
+		(modelId, modelConfig) => {
+			const selectedConfig = modelConfig ?? getModelByReference(modelReferences, modelId);
+			const nextLiveProvider = getRealtimeLiveProviderIdForModel(selectedConfig);
+			const next = new URLSearchParams(searchParams);
+
+			if (nextLiveProvider) {
+				setActiveModeId("live");
+				setHomeChatMode("live");
+				setSelectedAgentId(null);
+				setChatMode("remote");
+				setLiveProvider(nextLiveProvider);
+				next.set("mode", "live");
+				setSearchParams(next, { replace: true });
+				return;
+			}
+
+			if (activeModeId !== "live") {
+				return;
+			}
+
+			stopLiveSessionAndFlush();
+			setActiveModeId("chat");
+			setHomeChatMode("chat");
+			setChatMode("remote");
+			next.delete("mode");
+			setSearchParams(next, { replace: true });
+		},
+		[
+			activeModeId,
+			modelReferences,
+			searchParams,
+			setChatMode,
+			setHomeChatMode,
+			setLiveProvider,
+			setSearchParams,
+			setSelectedAgentId,
+			stopLiveSessionAndFlush,
+		],
 	);
 
 	const selectedSandboxRepoOption = useMemo(
@@ -373,10 +444,10 @@ export function useHomeChatModeConfig(): {
 				microphoneEnabled={liveMicrophoneEnabled}
 				onProviderChange={handleLiveProviderChange}
 				onMicrophoneEnabledChange={setLiveMicrophoneEnabled}
-				onStart={() => void startLiveSession(undefined, selectedModel)}
+				onStart={() => void startLiveSession(effectiveLiveProvider, selectedModel)}
 				onStop={stopLiveSessionAndFlush}
 				onVideoEnabledChange={setLiveVideoEnabled}
-				provider={liveProvider}
+				provider={effectiveLiveProvider}
 				showHeader={activeModeId !== "live"}
 				showSessionControls={activeModeId !== "live"}
 				status={liveStatus}
@@ -386,16 +457,18 @@ export function useHomeChatModeConfig(): {
 		const liveInputControls = (
 			<LiveSessionComposerControls
 				error={liveError}
+				inputAudioLevel={liveInputAudioLevel}
 				lastEvent={liveLastEvent}
 				lastTranscript={liveLastTranscript}
 				microphoneEnabled={liveMicrophoneEnabled}
 				onMicrophoneEnabledChange={setLiveMicrophoneEnabled}
-				onStart={() => void startLiveSession(undefined, selectedModel)}
+				onStart={() => void startLiveSession(effectiveLiveProvider, selectedModel)}
 				onStop={stopLiveSessionAndFlush}
 				onVideoEnabledChange={setLiveVideoEnabled}
+				outputAudioLevel={liveOutputAudioLevel}
 				status={liveStatus}
 				videoEnabled={liveVideoEnabled}
-				videoSupported={supportsRealtimeLiveVideoInput(liveProvider)}
+				videoSupported={supportsRealtimeLiveVideoInput(effectiveLiveProvider)}
 			/>
 		);
 		const activeModeControls =
@@ -420,6 +493,7 @@ export function useHomeChatModeConfig(): {
 					isActive: activeModeId === option.id,
 					disabled: availability.disabled,
 					disabledReason: availability.reason,
+					keepPopoverOpen: option.id === "live",
 					onSelect: () => handleModeChange(option.id),
 				};
 			}),
@@ -494,9 +568,13 @@ export function useHomeChatModeConfig(): {
 						followUp: "Live mode is running. Add notes or follow-up text...",
 					},
 					inputControls: liveInputControls,
-					modelScope: "live",
-					modelProviderFilter: liveProvider,
+					modelScope: "chat-and-live",
+					onModelChange: handleModelChange,
 					hideTextInput: true,
+					hideComposerActionMenu: true,
+					hideSubmitButton: true,
+					hideInlineResponseControls: true,
+					hideChatSettings: true,
 					conversationMode: liveConversationMode,
 					modeControls,
 				},
@@ -508,6 +586,7 @@ export function useHomeChatModeConfig(): {
 				activeModeId,
 				modeConfig: {
 					modeControls,
+					onModelChange: handleModelChange,
 				},
 			};
 		}
@@ -553,6 +632,7 @@ export function useHomeChatModeConfig(): {
 		activeModeId,
 		handleModeChange,
 		handleLiveProviderChange,
+		handleModelChange,
 		selectedCouncilMemberIds,
 		councilResponseMode,
 		sandboxRepoKey,
@@ -575,11 +655,14 @@ export function useHomeChatModeConfig(): {
 		sandboxModelSettings,
 		sandboxSettings,
 		liveError,
+		liveInputAudioLevel,
 		liveMicrophoneEnabled,
 		liveVideoEnabled,
 		liveLastEvent,
 		liveLastTranscript,
+		liveOutputAudioLevel,
 		liveProvider,
+		effectiveLiveProvider,
 		liveStatus,
 		liveConversationMode,
 		setLiveMicrophoneEnabled,

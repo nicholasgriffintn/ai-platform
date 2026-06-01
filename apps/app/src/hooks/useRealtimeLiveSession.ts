@@ -25,6 +25,11 @@ import {
 	type RealtimeMediaController,
 } from "~/lib/realtime/audio";
 import {
+	calculatePcm16Base64AudioLevel,
+	createMediaStreamAudioLevelMeter,
+	type MediaStreamAudioLevelMeter,
+} from "~/lib/realtime/audio-levels";
+import {
 	extractRealtimeErrorMessage,
 	extractRealtimeEvent,
 	extractRealtimeEventLabel,
@@ -100,14 +105,19 @@ export function useRealtimeLiveSession({
 	const [error, setError] = useState<string | null>(null);
 	const [lastEvent, setLastEvent] = useState("Idle");
 	const [lastTranscript, setLastTranscript] = useState<string | null>(null);
+	const [inputAudioLevel, setInputAudioLevel] = useState(0);
+	const [outputAudioLevel, setOutputAudioLevel] = useState(0);
 
 	const abortControllerRef = useRef<AbortController | null>(null);
 	const audioPlayerRef = useRef<Pcm16AudioPlayer | null>(null);
 	const connectionRef = useRef<RealtimeConnection | null>(null);
 	const inputAudioControllerRef = useRef<RealtimeMediaController | null>(null);
+	const inputAudioMeterRef = useRef<MediaStreamAudioLevelMeter | null>(null);
 	const inputVideoControllerRef = useRef<RealtimeMediaController | null>(null);
 	const finalizingConnectionRef = useRef<RealtimeWebSocketConnection | null>(null);
 	const audioStreamRef = useRef<MediaStream | null>(null);
+	const outputAudioLevelResetRef = useRef<number | null>(null);
+	const outputAudioMeterRef = useRef<MediaStreamAudioLevelMeter | null>(null);
 	const videoStreamRef = useRef<MediaStream | null>(null);
 	const microphoneEnabledRef = useRef(true);
 	const videoEnabledRef = useRef(false);
@@ -121,6 +131,68 @@ export function useRealtimeLiveSession({
 		statusRef.current = nextStatus;
 		setStatus(nextStatus);
 	}, []);
+
+	const stopInputAudioMeter = useCallback(() => {
+		inputAudioMeterRef.current?.stop();
+		inputAudioMeterRef.current = null;
+		setInputAudioLevel(0);
+	}, []);
+
+	const startInputAudioMeter = useCallback((stream: MediaStream) => {
+		if (inputAudioMeterRef.current) {
+			return;
+		}
+
+		inputAudioMeterRef.current = createMediaStreamAudioLevelMeter({
+			stream,
+			onLevel: (level) => {
+				setInputAudioLevel(microphoneEnabledRef.current ? level : 0);
+			},
+		});
+	}, []);
+
+	const clearOutputAudioLevelReset = useCallback(() => {
+		if (outputAudioLevelResetRef.current === null) {
+			return;
+		}
+
+		window.clearTimeout(outputAudioLevelResetRef.current);
+		outputAudioLevelResetRef.current = null;
+	}, []);
+
+	const resetOutputAudioLevelSoon = useCallback(() => {
+		clearOutputAudioLevelReset();
+		outputAudioLevelResetRef.current = window.setTimeout(() => {
+			outputAudioLevelResetRef.current = null;
+			setOutputAudioLevel(0);
+		}, 200);
+	}, [clearOutputAudioLevelReset]);
+
+	const stopOutputAudioMeter = useCallback(() => {
+		outputAudioMeterRef.current?.stop();
+		outputAudioMeterRef.current = null;
+		clearOutputAudioLevelReset();
+		setOutputAudioLevel(0);
+	}, [clearOutputAudioLevelReset]);
+
+	const startOutputAudioMeter = useCallback(
+		(stream: MediaStream) => {
+			stopOutputAudioMeter();
+			outputAudioMeterRef.current = createMediaStreamAudioLevelMeter({
+				stream,
+				onLevel: setOutputAudioLevel,
+			});
+		},
+		[stopOutputAudioMeter],
+	);
+
+	const handleOutputAudioChunk = useCallback(
+		(base64Audio: string) => {
+			setOutputAudioLevel(calculatePcm16Base64AudioLevel(base64Audio));
+			resetOutputAudioLevelSoon();
+		},
+		[resetOutputAudioLevelSoon],
+	);
 
 	const handleTranscript = useCallback(
 		(payload: unknown): boolean => {
@@ -145,8 +217,9 @@ export function useRealtimeLiveSession({
 		const stream = await requestRealtimeAudioStream();
 		setMediaStreamTrackEnabled(stream, "audio", microphoneEnabledRef.current);
 		audioStreamRef.current = stream;
+		startInputAudioMeter(stream);
 		return stream;
-	}, []);
+	}, [startInputAudioMeter]);
 
 	const ensureVideoStream = useCallback(async (): Promise<MediaStream> => {
 		if (videoStreamRef.current) {
@@ -158,23 +231,27 @@ export function useRealtimeLiveSession({
 		return stream;
 	}, []);
 
-	const stopInputAudio = useCallback((notifyProvider = false) => {
-		inputAudioControllerRef.current?.stop();
-		inputAudioControllerRef.current = null;
+	const stopInputAudio = useCallback(
+		(notifyProvider = false) => {
+			inputAudioControllerRef.current?.stop();
+			inputAudioControllerRef.current = null;
+			stopInputAudioMeter();
 
-		const connection = connectionRef.current;
-		if (notifyProvider && isRealtimeWebSocketConnection(connection)) {
-			sendConfiguredAudioEnd(connection, { forMicrophonePause: true });
-		}
+			const connection = connectionRef.current;
+			if (notifyProvider && isRealtimeWebSocketConnection(connection)) {
+				sendConfiguredAudioEnd(connection, { forMicrophonePause: true });
+			}
 
-		if (connection?.session.transport === "webrtc") {
-			setMediaStreamTrackEnabled(audioStreamRef.current, "audio", false);
-			return;
-		}
+			if (connection?.session.transport === "webrtc") {
+				setMediaStreamTrackEnabled(audioStreamRef.current, "audio", false);
+				return;
+			}
 
-		stopMediaStream(audioStreamRef.current);
-		audioStreamRef.current = null;
-	}, []);
+			stopMediaStream(audioStreamRef.current);
+			audioStreamRef.current = null;
+		},
+		[stopInputAudioMeter],
+	);
 
 	const stopInputVideo = useCallback(() => {
 		inputVideoControllerRef.current?.stop();
@@ -269,6 +346,7 @@ export function useRealtimeLiveSession({
 			stopInputVideo();
 			audioPlayerRef.current?.stop();
 			audioPlayerRef.current = null;
+			stopOutputAudioMeter();
 
 			if (isRealtimeWebSocketConnection(connectionRef.current)) {
 				sendConfiguredAudioEnd(connectionRef.current);
@@ -297,7 +375,7 @@ export function useRealtimeLiveSession({
 			}
 			stoppingRef.current = false;
 		},
-		[setLiveStatus, stopInputAudio, stopInputVideo],
+		[setLiveStatus, stopInputAudio, stopInputVideo, stopOutputAudioMeter],
 	);
 
 	const failSession = useCallback(
@@ -385,7 +463,9 @@ export function useRealtimeLiveSession({
 					setLastEvent("Realtime session listening");
 				},
 				onTrack: (event) => {
-					remoteAudio.srcObject = event.streams[0] ?? new MediaStream([event.track]);
+					const outputStream = event.streams[0] ?? new MediaStream([event.track]);
+					remoteAudio.srcObject = outputStream;
+					startOutputAudioMeter(outputStream);
 					void remoteAudio.play().catch(() => {
 						setLastEvent("Tap Live again if the browser blocked playback");
 					});
@@ -396,7 +476,7 @@ export function useRealtimeLiveSession({
 			setLastEvent("Realtime session listening");
 			setLiveStatus("active");
 		},
-		[ensureAudioStream, failSession, handleRealtimePayload, setLiveStatus],
+		[ensureAudioStream, failSession, handleRealtimePayload, setLiveStatus, startOutputAudioMeter],
 	);
 
 	const startWebSocketProvider = useCallback(
@@ -484,6 +564,7 @@ export function useRealtimeLiveSession({
 					handleRealtimePayload(payload);
 					for (const chunk of websocketConfig.audioOutput?.extractChunks(payload) ?? []) {
 						audioPlayerRef.current?.playBase64(chunk);
+						handleOutputAudioChunk(chunk);
 					}
 					if (isConfiguredAudioEndEvent(connection, payload)) {
 						completePendingFinalization(connection);
@@ -510,6 +591,7 @@ export function useRealtimeLiveSession({
 		[
 			completePendingFinalization,
 			failSession,
+			handleOutputAudioChunk,
 			handleRealtimePayload,
 			setLiveStatus,
 			startInputAudio,
@@ -576,6 +658,11 @@ export function useRealtimeLiveSession({
 
 			if (connection.session.transport === "webrtc") {
 				setMediaStreamTrackEnabled(audioStreamRef.current, "audio", enabled);
+				if (!enabled) {
+					setInputAudioLevel(0);
+				} else if (audioStreamRef.current) {
+					startInputAudioMeter(audioStreamRef.current);
+				}
 				return;
 			}
 
@@ -592,7 +679,7 @@ export function useRealtimeLiveSession({
 				failSession(getErrorMessage(toggleError, "Failed to start microphone input"));
 			});
 		},
-		[failSession, startInputAudio, stopInputAudio],
+		[failSession, startInputAudio, startInputAudioMeter, stopInputAudio],
 	);
 
 	const setVideoEnabled = useCallback(
@@ -639,6 +726,7 @@ export function useRealtimeLiveSession({
 
 	return {
 		error,
+		inputAudioLevel,
 		isActive: status === "active",
 		isConnecting: status === "connecting",
 		isMicrophoneEnabled,
@@ -646,6 +734,7 @@ export function useRealtimeLiveSession({
 		lastEvent,
 		lastTranscript,
 		provider,
+		outputAudioLevel,
 		setMicrophoneEnabled,
 		setProvider: changeProvider,
 		setVideoEnabled,

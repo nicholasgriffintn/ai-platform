@@ -108,4 +108,85 @@ describe("ChatInput", () => {
 		expect(screen.queryByLabelText("Message input")).not.toBeInTheDocument();
 		expect(screen.getByText("Live session controls")).toBeInTheDocument();
 	});
+
+	it("lets mode controls own the composer when default controls are hidden", () => {
+		render(
+			<ChatInput
+				controller={new AbortController()}
+				handleSubmit={vi.fn()}
+				isLoading={false}
+				onTranscribe={vi.fn()}
+				streamStarted={false}
+				hideDefaultControls={true}
+				hideTextInput={true}
+				controls={<div>Live audio interface</div>}
+			/>,
+		);
+
+		expect(screen.getByText("Live audio interface")).toBeInTheDocument();
+		expect(screen.queryByRole("button", { name: "Send message" })).not.toBeInTheDocument();
+		expect(screen.queryByRole("button", { name: "Commands" })).not.toBeInTheDocument();
+		expect(screen.queryByRole("button", { name: "Model selector" })).not.toBeInTheDocument();
+	});
+
+	it("can hide send-only live affordances while keeping model and mode selectors", () => {
+		const originalIsPro = store.isPro;
+		store.isPro = true;
+
+		try {
+			render(
+				<ChatInput
+					controller={new AbortController()}
+					handleSubmit={vi.fn()}
+					isLoading={false}
+					onTranscribe={vi.fn()}
+					streamStarted={false}
+					hideComposerActionMenu={true}
+					hideInlineResponseControls={true}
+					hideSubmitButton={true}
+					hideTextInput={true}
+					controls={<div>Live audio interface</div>}
+				/>,
+			);
+		} finally {
+			store.isPro = originalIsPro;
+		}
+
+		expect(screen.getByText("Live audio interface")).toBeInTheDocument();
+		expect(screen.getByRole("button", { name: "Commands" })).toBeInTheDocument();
+		expect(screen.getByRole("button", { name: "Model selector" })).toBeInTheDocument();
+		expect(screen.queryByRole("button", { name: "Send message" })).not.toBeInTheDocument();
+		expect(screen.queryByRole("button", { name: "Actions" })).not.toBeInTheDocument();
+		expect(screen.queryByText("Inline response controls")).not.toBeInTheDocument();
+	});
+
+	it("keeps the command control mounted when live controls replace the text input", () => {
+		const { rerender } = render(
+			<ChatInput
+				controller={new AbortController()}
+				handleSubmit={vi.fn()}
+				isLoading={false}
+				onTranscribe={vi.fn()}
+				streamStarted={false}
+			/>,
+		);
+		const commandButton = screen.getByRole("button", { name: "Commands" });
+
+		rerender(
+			<ChatInput
+				controller={new AbortController()}
+				handleSubmit={vi.fn()}
+				isLoading={false}
+				onTranscribe={vi.fn()}
+				streamStarted={false}
+				hideComposerActionMenu={true}
+				hideInlineResponseControls={true}
+				hideSubmitButton={true}
+				hideTextInput={true}
+				controls={<div>Live audio interface</div>}
+			/>,
+		);
+
+		expect(screen.getByRole("button", { name: "Commands" })).toBe(commandButton);
+	});
 });

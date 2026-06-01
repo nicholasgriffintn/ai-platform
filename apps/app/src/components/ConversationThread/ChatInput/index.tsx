@@ -19,6 +19,7 @@ import type { AttachmentData } from "~/lib/chat/attachments";
 import { getModelInteractionCapabilities } from "~/lib/models";
 import { useChatStore } from "~/state/stores/chatStore";
 import { useUIStore } from "~/state/stores/uiStore";
+import type { ModelSelectionChangeHandler, ModelSelectorScope } from "~/types";
 import { ChatSettings as ChatSettingsComponent } from "./ChatSettings";
 import { ToolToggles } from "./ChatSettings/ToolToggles";
 import { ComposerActionMenu } from "./ComposerActionMenu";
@@ -55,9 +56,12 @@ interface ChatInputProps {
 		onClearActive?: () => void;
 	};
 	modelProviderFilter?: string;
-	modelScope?: "default" | "text-only" | "live";
+	modelScope?: ModelSelectorScope;
+	onModelChange?: ModelSelectionChangeHandler;
 	disableAttachments?: boolean;
 	hideDefaultControls?: boolean;
+	hideComposerActionMenu?: boolean;
+	hideSubmitButton?: boolean;
 	hideTextInput?: boolean;
 	hideInlineResponseControls?: boolean;
 	hideChatSettings?: boolean;
@@ -82,8 +86,11 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 			modeControls,
 			modelProviderFilter,
 			modelScope = "default",
+			onModelChange,
 			disableAttachments = false,
 			hideDefaultControls = false,
+			hideComposerActionMenu = false,
+			hideSubmitButton = false,
 			hideTextInput = false,
 			hideInlineResponseControls = false,
 			hideChatSettings = false,
@@ -480,65 +487,71 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 								</div>
 							)}
 
-							<div className="flex flex-shrink-0 items-center gap-1 pr-3 pt-3">
-								{isLoading && streamStarted ? (
-									<Button
-										type="button"
-										onClick={() => controller.abort()}
-										variant="icon"
-										className="cursor-pointer p-2 hover:bg-off-white-highlight dark:hover:bg-zinc-800 rounded-md text-zinc-600 dark:text-zinc-400"
-										title="Stop generating"
-										aria-label="Stop generating"
-									>
-										<Pause className="h-5 w-5" />
-									</Button>
-								) : (
-									<>
-										{!hideDefaultControls && canShowActionMenu && (
-											<ComposerActionMenu
-												autoPlayResponses={canUseProComposerActions ? autoPlayResponses : undefined}
-												canUseVoice={canUseProComposerActions}
-												canUploadFiles={canUseProComposerActions && canUploadFiles}
-												isDisabled={isLoading}
-												isRecording={isRecording}
-												isTranscribing={isTranscribing}
-												isUploading={isUploading}
-												onStartRecording={startRecording}
-												onStopRecording={stopRecording}
-												onUploadClick={() => fileInputRef.current?.click()}
-												tools={
-													canShowToolMenu ? (
-														<ToolToggles
-															isDisabled={isLoading || isToolSelectionLocked}
-															variant="menu"
-														/>
-													) : undefined
-												}
-												uploadIcon={getUploadButtonIcon()}
-												uploadLabel={`Upload ${isMultimodalModel || supportsAudio ? "files (images, audio, documents, code)" : "a Document or Code file"}`}
-											/>
-										)}
-										{!hideDefaultControls && <ComposerCommandButton {...commandState} />}
+							{!hideDefaultControls && (
+								<div className="flex flex-shrink-0 items-center gap-1 pr-3 pt-3">
+									{isLoading && streamStarted ? (
 										<Button
-											type="submit"
-											onClick={handleFormSubmit}
-											disabled={
-												!!(
-													(!chatInput?.trim() && selectedAttachments.length === 0) ||
-													isLoading ||
-													isUploading
-												)
-											}
-											className="cursor-pointer p-2.5 bg-black hover:bg-zinc-800 dark:bg-off-white dark:hover:bg-zinc-200 rounded-md text-white dark:text-black shadow-sm disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-											title="Send message"
-											aria-label="Send message"
+											type="button"
+											onClick={() => controller.abort()}
+											variant="icon"
+											className="cursor-pointer p-2 hover:bg-off-white-highlight dark:hover:bg-zinc-800 rounded-md text-zinc-600 dark:text-zinc-400"
+											title="Stop generating"
+											aria-label="Stop generating"
 										>
-											<Send className="h-5 w-5" />
-											<span className="sr-only">Send message</span>
+											<Pause className="h-5 w-5" />
 										</Button>
-									</>
-								)}
-							</div>
+									) : (
+										<>
+											{!hideComposerActionMenu && canShowActionMenu && (
+												<ComposerActionMenu
+													autoPlayResponses={
+														canUseProComposerActions ? autoPlayResponses : undefined
+													}
+													canUseVoice={canUseProComposerActions}
+													canUploadFiles={canUseProComposerActions && canUploadFiles}
+													isDisabled={isLoading}
+													isRecording={isRecording}
+													isTranscribing={isTranscribing}
+													isUploading={isUploading}
+													onStartRecording={startRecording}
+													onStopRecording={stopRecording}
+													onUploadClick={() => fileInputRef.current?.click()}
+													tools={
+														canShowToolMenu ? (
+															<ToolToggles
+																isDisabled={isLoading || isToolSelectionLocked}
+																variant="menu"
+															/>
+														) : undefined
+													}
+													uploadIcon={getUploadButtonIcon()}
+													uploadLabel={`Upload ${isMultimodalModel || supportsAudio ? "files (images, audio, documents, code)" : "a Document or Code file"}`}
+												/>
+											)}
+											<ComposerCommandButton {...commandState} />
+											{!hideSubmitButton && (
+												<Button
+													type="submit"
+													onClick={handleFormSubmit}
+													disabled={
+														!!(
+															(!chatInput?.trim() && selectedAttachments.length === 0) ||
+															isLoading ||
+															isUploading
+														)
+													}
+													className="cursor-pointer p-2.5 bg-black hover:bg-zinc-800 dark:bg-off-white dark:hover:bg-zinc-200 rounded-md text-white dark:text-black shadow-sm disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+													title="Send message"
+													aria-label="Send message"
+												>
+													<Send className="h-5 w-5" />
+													<span className="sr-only">Send message</span>
+												</Button>
+											)}
+										</>
+									)}
+								</div>
+							)}
 						</div>
 					</div>
 
@@ -563,6 +576,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 											mono={true}
 											modelProviderFilter={modelProviderFilter}
 											modelScope={modelScope}
+											onModelChange={onModelChange}
 										/>
 									</div>
 									{!hideInlineResponseControls && <InlineResponseControls isDisabled={isLoading} />}

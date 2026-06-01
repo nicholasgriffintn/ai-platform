@@ -1,5 +1,5 @@
 import { AtSign, Bot, Check, Command, Loader2, Search, X } from "lucide-react";
-import { type ReactNode, useEffect, useRef } from "react";
+import { type ReactNode, useEffect, useRef, useState } from "react";
 
 import { Button, Popover, PopoverContent, PopoverTrigger } from "~/components/ui";
 import type { ComposerDirectiveQuery } from "~/lib/composer-commands";
@@ -361,9 +361,34 @@ export function ComposerCommandButton(props: ComposerCommandsState) {
 		selectedAgent,
 		settingCommands,
 	} = useComposerCommandActions(props);
+	const [isOpen, setIsOpen] = useState(false);
+	const keepOpenAfterSelectionRef = useRef(false);
+
+	const handleOpenChange = (nextOpen: boolean) => {
+		if (!nextOpen && keepOpenAfterSelectionRef.current) {
+			keepOpenAfterSelectionRef.current = false;
+			setIsOpen(true);
+			return;
+		}
+		setIsOpen(nextOpen);
+	};
+
+	const handleCommandSelect = (command: ComposerCommandAction) => {
+		const shouldKeepPopoverOpen = Boolean(command.keepPopoverOpen && !command.disabled);
+		if (shouldKeepPopoverOpen) {
+			keepOpenAfterSelectionRef.current = true;
+		}
+		selectSlashCommand(command);
+		if (shouldKeepPopoverOpen) {
+			setIsOpen(true);
+			globalThis.setTimeout(() => {
+				keepOpenAfterSelectionRef.current = false;
+			}, 0);
+		}
+	};
 
 	return (
-		<Popover>
+		<Popover open={isOpen} onOpenChange={handleOpenChange}>
 			<PopoverTrigger asChild>
 				<Button
 					type="button"
@@ -398,7 +423,7 @@ export function ComposerCommandButton(props: ComposerCommandsState) {
 										}
 										isActive={command.isActive}
 										isDisabled={command.disabled}
-										onClick={() => selectSlashCommand(command)}
+										onClick={() => handleCommandSelect(command)}
 										title={
 											command.disabled ? (command.disabledReason ?? command.label) : command.label
 										}
@@ -424,7 +449,7 @@ export function ComposerCommandButton(props: ComposerCommandsState) {
 											description={`/${command.command} - ${command.description}`}
 											isActive={command.isActive}
 											isDisabled={command.disabled}
-											onClick={() => selectSlashCommand(command)}
+											onClick={() => handleCommandSelect(command)}
 											title={
 												command.disabled ? (command.disabledReason ?? command.label) : command.label
 											}

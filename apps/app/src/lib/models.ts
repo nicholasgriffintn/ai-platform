@@ -246,6 +246,13 @@ export function getRealtimeSessionModelsByProvider(models: ModelConfig, provider
 	);
 }
 
+export function getChatAndRealtimeModelsByMode(models: ModelConfig, mode: ChatMode) {
+	return {
+		...getModelsByMode(models, mode),
+		...getRealtimeSessionModelsByProvider(models),
+	};
+}
+
 export function getToolCallModels(models: ModelConfig) {
 	return Object.entries(models).reduce(
 		(acc, [key, model]) => {
@@ -269,15 +276,17 @@ export function getModelsByMode(models: ModelConfig, mode: ChatMode) {
 				outputs.length > 0 && outputs.every((modality) => modality === "embedding");
 			const isAudioOnly = outputs.length > 0 && outputs.every((modality) => modality === "audio");
 			const isVideoOnly = outputs.length > 0 && outputs.every((modality) => modality === "video");
+			const isRealtimeModel = isRealtimeSessionModel(model);
+			const isHidden = model.hiddenFromDefaultList;
 			const isIncompatible =
-				!isTextInputChatModel(model) ||
-				isAudioOnly ||
-				isVideoOnly ||
-				isEmbeddingOnly ||
-				model.hiddenFromDefaultList;
+				!isTextInputChatModel(model) || isAudioOnly || isVideoOnly || isEmbeddingOnly || isHidden;
 			const isLocalModel = model.provider === LOCAL_MODEL_PROVIDER;
 
-			if (!isIncompatible && (mode === "local" ? isLocalModel : !isLocalModel)) {
+			if (
+				!isHidden &&
+				(!isIncompatible || isRealtimeModel) &&
+				(mode === "local" ? isLocalModel : !isLocalModel)
+			) {
 				acc[key] = {
 					...model,
 					id: key,

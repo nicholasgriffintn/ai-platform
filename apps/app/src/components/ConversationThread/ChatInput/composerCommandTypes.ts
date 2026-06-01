@@ -9,5 +9,6 @@ export interface ComposerCommandAction {
 	isActive: boolean;
 	disabled?: boolean;
 	disabledReason?: string;
+	keepPopoverOpen?: boolean;
 	onSelect: () => void;
 }

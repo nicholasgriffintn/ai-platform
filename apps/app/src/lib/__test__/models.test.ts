@@ -4,6 +4,7 @@ import type { ModelConfig, ModelConfigItem } from "~/types";
 import {
 	createModelReferenceMap,
 	doesModelMatchId,
+	getChatAndRealtimeModelsByMode,
 	getModelByReference,
 	getModelInteractionCapabilities,
 	getModelProvider,
@@ -63,12 +64,21 @@ describe("getModelsByMode", () => {
 				provider: "openai",
 				modalities: { input: ["audio"], output: ["text"] },
 			},
+			"realtime-transcribe": {
+				id: "realtime-transcribe",
+				name: "Realtime Transcribe",
+				matchingModel: "realtime-transcribe",
+				provider: "mistral",
+				modalities: { input: ["audio"], output: ["transcription"] },
+				supportsRealtimeSession: true,
+			},
 		};
 
 		expect(Object.keys(getModelsByMode(models, "remote"))).toEqual([
 			"kimi-k2",
 			"vision-chat",
 			"text-to-image",
+			"realtime-transcribe",
 		]);
 	});
 
@@ -92,6 +102,33 @@ describe("getModelsByMode", () => {
 		};
 
 		expect(Object.keys(getModelsByMode(models, "remote"))).toEqual(["configured-provider-model"]);
+	});
+});
+
+describe("getChatAndRealtimeModelsByMode", () => {
+	it("combines normal chat models with realtime-only models", () => {
+		const models: ModelConfig = {
+			"chat-model": {
+				id: "chat-model",
+				name: "Chat Model",
+				matchingModel: "chat-model",
+				provider: "openai",
+				modalities: { input: ["text"], output: ["text"] },
+			},
+			"realtime-only": {
+				id: "realtime-only",
+				name: "Realtime Only",
+				matchingModel: "realtime-only",
+				provider: "mistral",
+				modalities: { input: ["audio"], output: ["transcription"] },
+				supportsRealtimeSession: true,
+			},
+		};
+
+		expect(Object.keys(getChatAndRealtimeModelsByMode(models, "remote"))).toEqual([
+			"chat-model",
+			"realtime-only",
+		]);
 	});
 });
 
@@ -262,10 +299,26 @@ describe("getRealtimeSessionModelsByProvider", () => {
 				modalities: { input: ["audio", "video"], output: ["audio"] },
 				supportsRealtimeSession: true,
 			},
+			"voxtral-mini-transcribe-realtime": {
+				id: "voxtral-mini-transcribe-realtime",
+				name: "Voxtral Mini Transcribe Realtime",
+				matchingModel: "voxtral-mini-transcribe-realtime-latest",
+				provider: "mistral",
+				modalities: { input: ["audio"], output: ["transcription"] },
+				supportsRealtimeSession: true,
+			},
 		};
 
 		expect(Object.keys(getRealtimeSessionModelsByProvider(models, "openai"))).toEqual([
 			"gpt-realtime-2",
+		]);
+		expect(Object.keys(getRealtimeSessionModelsByProvider(models, "mistral"))).toEqual([
+			"voxtral-mini-transcribe-realtime",
+		]);
+		expect(Object.keys(getRealtimeSessionModelsByProvider(models))).toEqual([
+			"gpt-realtime-2",
+			"gemini-live",
+			"voxtral-mini-transcribe-realtime",
 		]);
 	});
 });

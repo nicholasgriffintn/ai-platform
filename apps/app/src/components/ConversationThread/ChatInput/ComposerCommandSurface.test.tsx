@@ -1,4 +1,5 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { useState } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
@@ -85,6 +86,38 @@ describe("ComposerCommandSurface", () => {
 		fireEvent.click(screen.getByRole("button", { name: /Sandbox/i }));
 
 		expect(command.onSelect).toHaveBeenCalledTimes(1);
+	});
+
+	it("keeps the compact command popover open after selecting live mode", () => {
+		function LiveCommandHarness() {
+			const [isLiveMode, setIsLiveMode] = useState(false);
+			const command = createModeCommand({
+				id: "live",
+				label: "Live",
+				description: "Talk with the model in realtime",
+				command: "live",
+				isActive: isLiveMode,
+				keepPopoverOpen: true,
+				onSelect: () => setIsLiveMode(true),
+			});
+
+			return (
+				<ComposerCommandButton
+					activeModeControls={isLiveMode ? <div>Live provider controls</div> : undefined}
+					chatInput=""
+					directive={null}
+					modeCommands={[command]}
+					setChatInput={vi.fn()}
+				/>
+			);
+		}
+
+		render(<LiveCommandHarness />);
+
+		fireEvent.click(screen.getByRole("button", { name: "Open commands" }));
+		fireEvent.click(screen.getByRole("button", { name: /Live/i }));
+
+		expect(screen.getByText("Live provider controls")).toBeInTheDocument();
 	});
 
 	it("keeps command button options in one scrollable list with shared highlights", () => {

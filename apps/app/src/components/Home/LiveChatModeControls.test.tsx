@@ -97,42 +97,74 @@ describe("LiveChatModeControls", () => {
 
 	it("renders composer session controls", () => {
 		const onStart = vi.fn();
+		const onMicrophoneEnabledChange = vi.fn();
 
 		render(
 			<LiveSessionComposerControls
 				lastEvent="Ready"
+				inputAudioLevel={0.45}
 				microphoneEnabled={true}
-				onMicrophoneEnabledChange={vi.fn()}
+				onMicrophoneEnabledChange={onMicrophoneEnabledChange}
 				onStart={onStart}
 				onStop={vi.fn()}
 				onVideoEnabledChange={vi.fn()}
+				outputAudioLevel={0}
 				status="idle"
 				videoEnabled={false}
 				videoSupported={true}
 			/>,
 		);
 
-		expect(screen.getByText("Live session")).toBeInTheDocument();
-		expect(screen.getAllByText("Ready").length).toBeGreaterThan(0);
+		expect(screen.getByRole("meter", { name: "Microphone audio level" })).toHaveAttribute(
+			"aria-valuenow",
+			"0",
+		);
 		fireEvent.click(screen.getByRole("button", { name: "Start live session" }));
 		expect(onStart).toHaveBeenCalledTimes(1);
+
+		fireEvent.click(screen.getByRole("button", { name: "Turn microphone off" }));
+		expect(onMicrophoneEnabledChange).toHaveBeenCalledWith(false);
 	});
 
-	it("toggles microphone and camera controls", () => {
+	it("prioritises assistant output levels in the composer meter", () => {
+		render(
+			<LiveSessionComposerControls
+				inputAudioLevel={0.2}
+				lastEvent="Assistant speaking"
+				microphoneEnabled={true}
+				onMicrophoneEnabledChange={vi.fn()}
+				onStart={vi.fn()}
+				onStop={vi.fn()}
+				onVideoEnabledChange={vi.fn()}
+				outputAudioLevel={0.68}
+				status="active"
+				videoEnabled={false}
+				videoSupported={true}
+			/>,
+		);
+
+		expect(screen.getByRole("meter", { name: "Assistant audio level" })).toHaveAttribute(
+			"aria-valuenow",
+			"68",
+		);
+	});
+
+	it("toggles microphone and camera controls in panel controls", () => {
 		const onMicrophoneEnabledChange = vi.fn();
 		const onVideoEnabledChange = vi.fn();
 
 		render(
-			<LiveSessionComposerControls
+			<LiveChatModeControls
 				lastEvent="Ready"
 				microphoneEnabled={true}
+				onProviderChange={vi.fn()}
 				onMicrophoneEnabledChange={onMicrophoneEnabledChange}
 				onStart={vi.fn()}
 				onStop={vi.fn()}
 				onVideoEnabledChange={onVideoEnabledChange}
+				provider="google-ai-studio"
 				status="idle"
 				videoEnabled={false}
-				videoSupported={true}
 			/>,
 		);
 

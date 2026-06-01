@@ -21,9 +21,12 @@ import { useTrackEvent } from "~/hooks/use-track-event";
 import { useWebLLMModels } from "~/hooks/useWebLLMModels";
 import { applyModelResponseDefaults } from "~/lib/chat-settings";
 import {
+	createModelReferenceMap,
 	defaultModel,
 	getAvailableModels,
+	getChatAndRealtimeModelsByMode,
 	getFeaturedModelIds,
+	getModelByReference,
 	getModelsByMode,
 	getRealtimeSessionModelsByProvider,
 	getToolCallModels,
@@ -39,7 +42,13 @@ import {
 } from "~/state/contexts/LoadingContext";
 import { useChatStore } from "~/state/stores/chatStore";
 import { useUIStore } from "~/state/stores/uiStore";
-import type { ChatMode, ChatSettings, ModelConfigItem } from "~/types";
+import type {
+	ChatMode,
+	ChatSettings,
+	ModelConfigItem,
+	ModelSelectionChangeHandler,
+	ModelSelectorScope,
+} from "~/types";
 import { ModelsList } from "./ModelsList";
 
 interface ModelSelectorProps {
@@ -48,7 +57,8 @@ interface ModelSelectorProps {
 	mono?: boolean;
 	featuredOnly?: boolean;
 	modelProviderFilter?: string;
-	modelScope?: "default" | "text-only" | "live";
+	modelScope?: ModelSelectorScope;
+	onModelChange?: ModelSelectionChangeHandler;
 }
 
 interface HoverPreviewState {
@@ -244,6 +254,7 @@ export const ModelSelector = ({
 	featuredOnly = false,
 	modelProviderFilter,
 	modelScope = "default",
+	onModelChange,
 }: ModelSelectorProps) => {
 	const { trackEvent } = useTrackEvent();
 	const { isMobile } = useUIStore();
@@ -266,13 +277,14 @@ export const ModelSelector = ({
 	const [dialogLayout, setDialogLayout] = useState<DialogLayout | null>(null);
 	const isTextOnlyScope = modelScope === "text-only";
 	const isLiveScope = modelScope === "live";
-	const isModelListOnlyScope = isTextOnlyScope || isLiveScope;
+	const isChatAndLiveScope = modelScope === "chat-and-live";
+	const isModelListOnlyScope = isTextOnlyScope || isLiveScope || isChatAndLiveScope;
 
 	const dropdownRef = useRef<HTMLDivElement>(null);
 	const triggerWrapperRef = useRef<HTMLDivElement>(null);
 	const searchInputRef = useRef<HTMLInputElement>(null);
 	const [selectedTab, setSelectedTab] = useState<"auto" | "models">(() => {
-		if (modelScope === "text-only" || modelScope === "live") return "models";
+		if (isModelListOnlyScope) return "models";
 		if (model === null) return "auto";
 		return "models";
 	});
@@ -305,13 +317,16 @@ export const ModelSelector = ({
 		() =>
 			isLiveScope
 				? getRealtimeSessionModelsByProvider(availableModels, modelProviderFilter)
-				: !isTextOnlyScope && chatMode === "agent"
-					? functionModels
-					: getModelsByMode(availableModels, modelListChatMode),
+				: isChatAndLiveScope
+					? getChatAndRealtimeModelsByMode(availableModels, modelListChatMode)
+					: !isTextOnlyScope && chatMode === "agent"
+						? functionModels
+						: getModelsByMode(availableModels, modelListChatMode),
 		[
 			availableModels,
 			chatMode,
 			functionModels,
+			isChatAndLiveScope,
 			isLiveScope,
 			isTextOnlyScope,
 			modelListChatMode,
@@ -331,7 +346,12 @@ export const ModelSelector = ({
 		[baseFilteredModels, featuredModelIds, featuredOnly, isTextOnlyScope],
 	);
 
-	const selectedModelInfo = model === null ? automaticModelOption : filteredModels[model];
+	const filteredModelReferences = useMemo(
+		() => createModelReferenceMap(filteredModels),
+		[filteredModels],
+	);
+	const selectedModelInfo =
+		model === null ? automaticModelOption : getModelByReference(filteredModelReferences, model);
 
 	const capabilities = useMemo(
 		() =>
@@ -389,7 +409,7 @@ export const ModelSelector = ({
 			setSelectedTab("models");
 		}
 
-		if (model && filteredModels[model]) {
+		if (model && getModelByReference(filteredModelReferences, model)) {
 			return;
 		}
 
@@ -412,6 +432,7 @@ export const ModelSelector = ({
 		chatMode,
 		chatSettings,
 		filteredModels,
+		filteredModelReferences,
 		isLiveScope,
 		isModelListOnlyScope,
 		model,
@@ -579,6 +600,7 @@ export const ModelSelector = ({
 
 	const handleModelChange = (newModel: string) => {
 		selectModelWithDefaults(newModel);
+		onModelChange?.(newModel, availableModels[newModel]);
 
 		trackEvent({
 			name: "set_model",
