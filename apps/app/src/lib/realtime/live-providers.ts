@@ -166,6 +166,22 @@ export function getRealtimeLiveProviderOption(provider: string): RealtimeLivePro
 	);
 }
 
+export function isRealtimeLiveProviderId(
+	provider?: string | null,
+): provider is RealtimeLiveProviderId {
+	return REALTIME_LIVE_PROVIDER_OPTIONS.some((option) => option.id === provider);
+}
+
+export function getRealtimeLiveProviderIdForModel(
+	model?: { provider?: string; supportsRealtimeSession?: boolean } | null,
+): RealtimeLiveProviderId | undefined {
+	if (!model?.supportsRealtimeSession || !isRealtimeLiveProviderId(model.provider)) {
+		return undefined;
+	}
+
+	return model.provider;
+}
+
 export function getDefaultLiveModelId(provider: string): string {
 	return getRealtimeLiveProviderOption(provider).defaultModelId;
 }

@@ -5,8 +5,10 @@ import { useRealtimeLiveSession } from "../useRealtimeLiveSession";
 
 const mocks = vi.hoisted(() => ({
 	arrayBufferToBase64: vi.fn(() => "audio-base64"),
+	calculatePcm16Base64AudioLevel: vi.fn(() => 0.5),
 	connectRealtimeWebRTC: vi.fn(),
 	connectRealtimeWebSocket: vi.fn(),
+	createMediaStreamAudioLevelMeter: vi.fn(() => ({ stop: vi.fn() })),
 	createPcm16AudioPlayer: vi.fn(() => ({ playBase64: vi.fn(), stop: vi.fn() })),
 	createRealtimeSession: vi.fn(),
 	isRealtimeWebSocketConnection: vi.fn((connection) =>
@@ -53,6 +55,11 @@ vi.mock("~/lib/realtime/audio", () => ({
 	startJpegFrameStream: mocks.startJpegFrameStream,
 	startPcm16MicrophoneStream: mocks.startPcm16MicrophoneStream,
 	stopMediaStream: mocks.stopMediaStream,
+}));
+
+vi.mock("~/lib/realtime/audio-levels", () => ({
+	calculatePcm16Base64AudioLevel: mocks.calculatePcm16Base64AudioLevel,
+	createMediaStreamAudioLevelMeter: mocks.createMediaStreamAudioLevelMeter,
 }));
 
 vi.mock("sonner", () => ({
@@ -413,6 +420,55 @@ describe("useRealtimeLiveSession", () => {
 
 		expect(result.current.isVideoEnabled).toBe(true);
 		expect(callOrder).toEqual(["setup", "microphone", "video"]);
+	});
+
+	it("reports Gemini output audio level from streamed audio chunks", async () => {
+		const connection = createGeminiConnection();
+		mocks.createRealtimeSession.mockResolvedValueOnce(connection.session);
+		mocks.connectRealtimeWebSocket.mockReturnValueOnce(connection);
+		const { result } = renderHook(() => useRealtimeLiveSession());
+
+		await act(async () => {
+			await result.current.start("google-ai-studio", "gemini-3.1-flash-live-preview");
+		});
+
+		const connectOptions = mocks.connectRealtimeWebSocket.mock.calls[0][0];
+		act(() => {
+			connectOptions.onOpen?.(new Event("open"));
+			connectOptions.onMessage?.(
+				new MessageEvent("message", {
+					data: JSON.stringify({ setupComplete: {} }),
+				}),
+			);
+		});
+
+		await waitFor(() => expect(result.current.status).toBe("active"));
+
+		act(() => {
+			connectOptions.onMessage?.(
+				new MessageEvent("message", {
+					data: JSON.stringify({
+						serverContent: {
+							modelTurn: {
+								parts: [
+									{
+										inlineData: {
+											data: "output-audio-base64",
+											mimeType: "audio/pcm",
+										},
+									},
+								],
+							},
+						},
+					}),
+				}),
+			);
+		});
+
+		const player = mocks.createPcm16AudioPlayer.mock.results[0].value;
+		expect(player.playBase64).toHaveBeenCalledWith("output-audio-base64");
+		expect(mocks.calculatePcm16Base64AudioLevel).toHaveBeenCalledWith("output-audio-base64");
+		expect(result.current.outputAudioLevel).toBe(0.5);
 	});
 
 	it("can pause and resume WebSocket microphone input without ending the session", async () => {

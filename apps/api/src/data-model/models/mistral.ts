@@ -537,7 +537,7 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		lastUpdated: "February 4, 2026",
 		modalities: {
 			input: ["audio"],
-			output: ["transcription", "speech"],
+			output: ["transcription"],
 		},
 		supportsAudio: true,
 		supportsStreaming: true,

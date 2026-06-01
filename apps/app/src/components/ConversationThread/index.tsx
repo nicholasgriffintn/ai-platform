@@ -22,7 +22,7 @@ import type { AttachmentData } from "~/lib/chat/attachments";
 import { isImageGenerationOutputModel } from "~/lib/models";
 import { useIsLoading } from "~/state/contexts/LoadingContext";
 import { useChatStore } from "~/state/stores/chatStore";
-import type { ChatRequestOptions } from "~/types";
+import type { ChatRequestOptions, ModelSelectionChangeHandler, ModelSelectorScope } from "~/types";
 import type { CouncilMemberId } from "@assistant/schemas";
 import type { ArtifactProps } from "~/types/artifact";
 import { ArtifactPanel } from "./Artifacts/ArtifactPanel";
@@ -56,7 +56,11 @@ export interface ConversationThreadModeConfig {
 		onClearActive?: () => void;
 	};
 	modelProviderFilter?: string;
-	modelScope?: "default" | "text-only" | "live";
+	modelScope?: ModelSelectorScope;
+	onModelChange?: ModelSelectionChangeHandler;
+	hideDefaultControls?: boolean;
+	hideComposerActionMenu?: boolean;
+	hideSubmitButton?: boolean;
 	hideTextInput?: boolean;
 	hideInlineResponseControls?: boolean;
 	hideChatSettings?: boolean;
@@ -378,6 +382,10 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
 						modeControls={modeConfig?.modeControls}
 						modelProviderFilter={modeConfig?.modelProviderFilter}
 						modelScope={modeConfig?.modelScope}
+						onModelChange={modeConfig?.onModelChange}
+						hideDefaultControls={modeConfig?.hideDefaultControls}
+						hideComposerActionMenu={modeConfig?.hideComposerActionMenu}
+						hideSubmitButton={modeConfig?.hideSubmitButton}
 						hideTextInput={modeConfig?.hideTextInput}
 						hideInlineResponseControls={modeConfig?.hideInlineResponseControls}
 						hideChatSettings={modeConfig?.hideChatSettings}

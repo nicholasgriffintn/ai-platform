@@ -1,4 +1,15 @@
-import { Check, Loader2, Mic, MicOff, RadioTower, Square, Video, VideoOff } from "lucide-react";
+import {
+	Check,
+	Loader2,
+	Mic,
+	MicOff,
+	Pause,
+	AudioLines,
+	RadioTower,
+	Square,
+	Video,
+	VideoOff,
+} from "lucide-react";
 
 import type { RealtimeLiveStatus } from "~/hooks/useRealtimeLiveSession";
 import {
@@ -28,6 +39,7 @@ interface LiveChatModeControlsProps {
 
 interface LiveSessionControlsProps {
 	error?: string | null;
+	inputAudioLevel?: number;
 	lastEvent: string;
 	lastTranscript?: string | null;
 	microphoneEnabled: boolean;
@@ -35,11 +47,15 @@ interface LiveSessionControlsProps {
 	onStart: () => void;
 	onStop: () => void;
 	onVideoEnabledChange: (enabled: boolean) => void;
+	outputAudioLevel?: number;
 	status: RealtimeLiveStatus;
 	variant?: "panel" | "composer";
 	videoEnabled: boolean;
 	videoSupported: boolean;
 }
+
+const AUDIO_LEVEL_BAR_WEIGHTS = [0.42, 0.72, 1, 0.62, 0.9, 1.18, 0.76, 1.04, 0.58, 0.82, 0.46];
+const ASSISTANT_AUDIO_LEVEL_THRESHOLD = 0.025;
 
 function ProviderIcon({ option }: { option: RealtimeLiveProviderOption }) {
 	if (option.inputModalities.includes("video")) {
@@ -129,8 +145,172 @@ function LiveMediaControls({
 	);
 }
 
+function LiveAudioLevelMeter({
+	inputAudioLevel = 0,
+	isActive,
+	microphoneEnabled,
+	outputAudioLevel = 0,
+}: {
+	inputAudioLevel?: number;
+	isActive: boolean;
+	microphoneEnabled: boolean;
+	outputAudioLevel?: number;
+}) {
+	const isAssistantAudio = outputAudioLevel > ASSISTANT_AUDIO_LEVEL_THRESHOLD;
+	const level = isActive ? (isAssistantAudio ? outputAudioLevel : inputAudioLevel) : 0;
+	const clampedLevel = Math.min(1, Math.max(0, level));
+	const value = Math.round(clampedLevel * 100);
+	const label = isAssistantAudio ? "Assistant audio level" : "Microphone audio level";
+	const barClassName = isAssistantAudio
+		? "bg-sky-500 shadow-sky-500/30 dark:bg-sky-300 dark:shadow-sky-300/20"
+		: "bg-emerald-500 shadow-emerald-500/30 dark:bg-emerald-300 dark:shadow-emerald-300/20";
+
+	return (
+		<div
+			role="meter"
+			aria-label={label}
+			aria-valuemin={0}
+			aria-valuemax={100}
+			aria-valuenow={value}
+			className={cn(
+				"flex h-10 min-w-0 flex-1 items-center justify-center gap-1 rounded-md border px-3 transition-colors",
+				isAssistantAudio
+					? "border-sky-200 bg-sky-50/70 dark:border-sky-900/70 dark:bg-sky-950/25"
+					: "border-emerald-200 bg-emerald-50/70 dark:border-emerald-900/70 dark:bg-emerald-950/25",
+				!isActive && "border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950/30",
+				isActive && !microphoneEnabled && !isAssistantAudio && "opacity-55",
+			)}
+		>
+			{AUDIO_LEVEL_BAR_WEIGHTS.map((weight, index) => {
+				const restingLevel = isActive ? 0.08 : 0.03;
+				const weightedLevel = Math.max(restingLevel, Math.min(1, clampedLevel * weight));
+				const height = Math.round(6 + weightedLevel * 28);
+
+				return (
+					<span
+						key={`${weight}-${index}`}
+						aria-hidden="true"
+						className={cn(
+							"w-1.5 rounded-full shadow-sm transition-[height,opacity,background-color] duration-100 ease-out",
+							barClassName,
+							!isActive && "bg-zinc-300 shadow-none dark:bg-zinc-700",
+						)}
+						style={{ height }}
+					/>
+				);
+			})}
+		</div>
+	);
+}
+
+function LiveComposerTransport({
+	inputAudioLevel,
+	microphoneEnabled,
+	onMicrophoneEnabledChange,
+	onStart,
+	onStop,
+	onVideoEnabledChange,
+	outputAudioLevel,
+	status,
+	videoEnabled,
+	videoSupported,
+}: Pick<
+	LiveSessionControlsProps,
+	| "inputAudioLevel"
+	| "microphoneEnabled"
+	| "onMicrophoneEnabledChange"
+	| "onStart"
+	| "onStop"
+	| "onVideoEnabledChange"
+	| "outputAudioLevel"
+	| "status"
+	| "videoEnabled"
+	| "videoSupported"
+>) {
+	const isActive = status === "active";
+	const isConnecting = status === "connecting";
+
+	return (
+		<div className="flex w-full min-w-0 items-center gap-3">
+			<button
+				type="button"
+				disabled={isConnecting}
+				onClick={isActive ? onStop : onStart}
+				aria-label={isActive ? "Pause live session" : "Start live session"}
+				title={isActive ? "Pause live session" : "Start live session"}
+				className={cn(
+					"flex h-10 w-10 shrink-0 items-center justify-center rounded-md transition-colors disabled:cursor-not-allowed disabled:opacity-60",
+					isActive
+						? "bg-zinc-950 text-white hover:bg-zinc-800 dark:bg-off-white dark:text-zinc-950 dark:hover:bg-zinc-200"
+						: "bg-white text-zinc-800 hover:bg-zinc-100 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800",
+				)}
+			>
+				{isConnecting ? (
+					<Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" />
+				) : isActive ? (
+					<Pause className="h-5 w-5" aria-hidden="true" />
+				) : (
+					<AudioLines className="h-5 w-5 fill-current" aria-hidden="true" />
+				)}
+			</button>
+			<button
+				type="button"
+				aria-label={microphoneEnabled ? "Turn microphone off" : "Turn microphone on"}
+				aria-pressed={microphoneEnabled}
+				title={microphoneEnabled ? "Turn microphone off" : "Turn microphone on"}
+				onClick={() => onMicrophoneEnabledChange(!microphoneEnabled)}
+				className={cn(
+					"flex h-10 w-10 shrink-0 items-center justify-center rounded-md transition-colors",
+					microphoneEnabled
+						? "bg-emerald-600 text-white hover:bg-emerald-700 dark:bg-emerald-300 dark:text-emerald-950 dark:hover:bg-emerald-200"
+						: "bg-red-600 text-zinc-500 hover:bg-red-700 dark:bg-red-900 dark:text-red-400 dark:hover:bg-red-800",
+				)}
+			>
+				{microphoneEnabled ? (
+					<Mic className="h-5 w-5" aria-hidden="true" />
+				) : (
+					<MicOff className="h-5 w-5" aria-hidden="true" />
+				)}
+			</button>
+			<LiveAudioLevelMeter
+				inputAudioLevel={inputAudioLevel}
+				isActive={isActive}
+				microphoneEnabled={microphoneEnabled}
+				outputAudioLevel={outputAudioLevel}
+			/>
+			<button
+				type="button"
+				aria-label={videoEnabled ? "Turn camera off" : "Turn camera on"}
+				aria-pressed={videoEnabled}
+				disabled={!videoSupported}
+				title={
+					videoSupported
+						? videoEnabled
+							? "Turn camera off"
+							: "Turn camera on"
+						: "Camera is available with Gemini Live"
+				}
+				onClick={() => onVideoEnabledChange(!videoEnabled)}
+				className={cn(
+					"flex h-10 w-10 shrink-0 items-center justify-center rounded-md transition-colors disabled:cursor-not-allowed disabled:opacity-45",
+					videoEnabled
+						? "bg-sky-600 text-white hover:bg-sky-700 dark:bg-sky-300 dark:text-sky-950 dark:hover:bg-sky-200"
+						: "bg-white text-zinc-700 hover:bg-zinc-100 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800",
+				)}
+			>
+				{videoEnabled ? (
+					<Video className="h-5 w-5" aria-hidden="true" />
+				) : (
+					<VideoOff className="h-5 w-5" aria-hidden="true" />
+				)}
+			</button>
+		</div>
+	);
+}
+
 function LiveSessionControls({
 	error,
+	inputAudioLevel,
 	lastEvent,
 	lastTranscript,
 	microphoneEnabled,
@@ -138,6 +318,7 @@ function LiveSessionControls({
 	onStart,
 	onStop,
 	onVideoEnabledChange,
+	outputAudioLevel,
 	status,
 	variant = "panel",
 	videoEnabled,
@@ -145,44 +326,33 @@ function LiveSessionControls({
 }: LiveSessionControlsProps) {
 	const isActive = status === "active";
 	const isConnecting = status === "connecting";
-	const statusCopy = getStatusCopy(status);
 	const detail = error ?? lastTranscript ?? lastEvent;
-	const isComposer = variant === "composer";
+
+	if (variant === "composer") {
+		return (
+			<LiveComposerTransport
+				inputAudioLevel={inputAudioLevel}
+				microphoneEnabled={microphoneEnabled}
+				onMicrophoneEnabledChange={onMicrophoneEnabledChange}
+				onStart={onStart}
+				onStop={onStop}
+				onVideoEnabledChange={onVideoEnabledChange}
+				outputAudioLevel={outputAudioLevel}
+				status={status}
+				videoEnabled={videoEnabled}
+				videoSupported={videoSupported}
+			/>
+		);
+	}
 
 	return (
-		<div
-			className={cn(
-				isComposer
-					? "flex w-full min-w-0 flex-col gap-2 sm:flex-row sm:items-center sm:justify-between"
-					: "space-y-2",
-			)}
-		>
-			<div className={cn("min-w-0", isComposer && "flex-1")}>
-				{isComposer && (
-					<div className="mb-1 flex min-w-0 items-center gap-2 text-sm font-medium text-zinc-800 dark:text-zinc-200">
-						<span
-							className={cn(
-								"h-2 w-2 shrink-0 rounded-full",
-								isActive ? "bg-green-500" : status === "error" ? "bg-red-500" : "bg-zinc-400",
-							)}
-							aria-hidden="true"
-						/>
-						<span>Live session</span>
-						<span className="truncate text-xs font-normal text-zinc-500 dark:text-zinc-400">
-							{statusCopy}
-						</span>
-					</div>
-				)}
-				<div
-					className={cn(
-						"min-h-5 truncate text-xs text-zinc-500 dark:text-zinc-400",
-						!isComposer && "px-1",
-					)}
-				>
+		<div className="space-y-2">
+			<div className="min-w-0">
+				<div className="min-h-5 truncate px-1 text-xs text-zinc-500 dark:text-zinc-400">
 					{detail}
 				</div>
 			</div>
-			<div className={cn("flex shrink-0 items-center gap-2", isComposer && "w-full sm:w-auto")}>
+			<div className="flex shrink-0 items-center gap-2">
 				<LiveMediaControls
 					microphoneEnabled={microphoneEnabled}
 					onMicrophoneEnabledChange={onMicrophoneEnabledChange}
@@ -196,7 +366,7 @@ function LiveSessionControls({
 					onClick={isActive ? onStop : onStart}
 					className={cn(
 						"flex h-8 items-center justify-center gap-2 rounded-md px-3 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-60",
-						isComposer ? "min-w-0 flex-1 sm:flex-none" : "flex-1",
+						"flex-1",
 						isActive
 							? "bg-red-50 text-red-700 hover:bg-red-100 dark:bg-red-950/30 dark:text-red-300 dark:hover:bg-red-950/50"
 							: "bg-zinc-950 text-white hover:bg-zinc-800 dark:bg-off-white dark:text-zinc-950 dark:hover:bg-zinc-200",

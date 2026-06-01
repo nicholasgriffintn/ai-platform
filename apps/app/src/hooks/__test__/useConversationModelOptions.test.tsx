@@ -56,6 +56,15 @@ const apiModels: ModelConfig = {
 		isFeatured: true,
 		modalities: { input: ["text"], output: ["image"] },
 	},
+	"voxtral-mini-transcribe-realtime": {
+		id: "voxtral-mini-transcribe-realtime",
+		matchingModel: "voxtral-mini-transcribe-realtime-latest",
+		name: "Voxtral Mini Transcribe Realtime",
+		provider: "mistral",
+		isFeatured: true,
+		modalities: { input: ["audio"], output: ["transcription"] },
+		supportsRealtimeSession: true,
+	},
 };
 
 const webLLMModels: ModelConfig = {
@@ -99,6 +108,9 @@ describe("useConversationModelOptions", () => {
 			"deepseek-chat",
 			"featured-alpha",
 		]);
+		expect(result.current.selectableModels.map((model) => model.id)).not.toContain(
+			"voxtral-mini-transcribe-realtime",
+		);
 	});
 
 	it("uses local models when the conversation is in local mode", () => {

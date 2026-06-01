@@ -21,4 +21,22 @@ describe("getModels", () => {
 		expect(models["openai/gpt-5.4"]?.provider).toBe("openrouter");
 		expect(models["vercel/openai/gpt-5.4"]?.provider).toBe("vercel");
 	});
+
+	it("keeps realtime transcription models when speech-only models are excluded", () => {
+		const models = getModels({
+			shouldUseCache: false,
+			excludeModalities: [
+				"guardrails",
+				"voice-activity-detection",
+				"reranking",
+				"embedding",
+				"speech",
+			],
+		});
+
+		expect(models["voxtral-mini-transcribe-realtime"]).toMatchObject({
+			provider: "mistral",
+			supportsRealtimeSession: true,
+		});
+	});
 });
