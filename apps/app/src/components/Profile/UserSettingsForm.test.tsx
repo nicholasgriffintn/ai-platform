@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi, beforeEach } from "vitest";
 
 import type { UserSettings } from "~/types";
@@ -115,5 +115,47 @@ describe("UserSettingsForm", () => {
 		);
 
 		expect(screen.getByLabelText("Nickname")).toHaveValue("Local draft");
+	});
+
+	it("keeps saved edits visible until refreshed settings catch up", async () => {
+		mockUpdateUserSettings.mockResolvedValue(true);
+
+		const initialSettings = makeUserSettings({
+			nickname: "Nicholas",
+		});
+		const { rerender } = render(
+			<UserSettingsForm isAuthenticated={true} isPro={true} userSettings={initialSettings} />,
+		);
+
+		fireEvent.change(screen.getByLabelText("Nickname"), {
+			target: { value: "Updated Nicholas" },
+		});
+		fireEvent.click(screen.getByRole("button", { name: "Save Settings" }));
+
+		await waitFor(() => {
+			expect(mockUpdateUserSettings).toHaveBeenCalledWith(
+				expect.objectContaining({
+					nickname: "Updated Nicholas",
+				}),
+			);
+		});
+
+		rerender(
+			<UserSettingsForm isAuthenticated={true} isPro={true} userSettings={initialSettings} />,
+		);
+
+		expect(screen.getByLabelText("Nickname")).toHaveValue("Updated Nicholas");
+
+		rerender(
+			<UserSettingsForm
+				isAuthenticated={true}
+				isPro={true}
+				userSettings={makeUserSettings({
+					nickname: "Updated Nicholas",
+				})}
+			/>,
+		);
+
+		expect(screen.getByLabelText("Nickname")).toHaveValue("Updated Nicholas");
 	});
 });

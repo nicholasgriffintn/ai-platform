@@ -59,6 +59,15 @@ function buildUserSettingsFormData(userSettings: UserSettings | null) {
 	};
 }
 
+function areUserSettingsFormDataEqual(
+	left: ReturnType<typeof buildUserSettingsFormData>,
+	right: ReturnType<typeof buildUserSettingsFormData>,
+) {
+	return Object.keys(left).every(
+		(key) => left[key as keyof typeof left] === right[key as keyof typeof right],
+	);
+}
+
 export function UserSettingsForm({
 	userSettings,
 	isAuthenticated,
@@ -68,21 +77,37 @@ export function UserSettingsForm({
 	const { trackEvent, trackError } = useTrackEvent();
 	const [formData, setFormData] = useState(() => buildUserSettingsFormData(userSettings));
 	const [hasLocalChanges, setHasLocalChanges] = useState(false);
+	const [pendingSavedFormData, setPendingSavedFormData] = useState<ReturnType<
+		typeof buildUserSettingsFormData
+	> | null>(null);
 	const [saveSuccess, setSaveSuccess] = useState(false);
 	const [saveError, setSaveError] = useState("");
 
 	useEffect(() => {
+		const nextFormData = buildUserSettingsFormData(userSettings);
+		if (pendingSavedFormData) {
+			if (!areUserSettingsFormDataEqual(nextFormData, pendingSavedFormData)) {
+				return;
+			}
+
+			setFormData(nextFormData);
+			setHasLocalChanges(false);
+			setPendingSavedFormData(null);
+			return;
+		}
+
 		if (hasLocalChanges) {
 			return;
 		}
 
-		setFormData(buildUserSettingsFormData(userSettings));
-	}, [hasLocalChanges, userSettings]);
+		setFormData(nextFormData);
+	}, [hasLocalChanges, pendingSavedFormData, userSettings]);
 
 	const updateFormData = (
 		updater: typeof formData | ((previous: typeof formData) => typeof formData),
 	) => {
 		setHasLocalChanges(true);
+		setPendingSavedFormData(null);
 		setSaveSuccess(false);
 		setSaveError("");
 		setFormData((previous) => (typeof updater === "function" ? updater(previous) : updater));
@@ -191,7 +216,7 @@ export function UserSettingsForm({
 					};
 
 			await updateUserSettings(settingsPayload);
-			setHasLocalChanges(false);
+			setPendingSavedFormData(formData);
 			setSaveSuccess(true);
 
 			trackEvent({
