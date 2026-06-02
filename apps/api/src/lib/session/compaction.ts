@@ -1,4 +1,9 @@
 import type { Message } from "~/types";
+import {
+	messageContentToText,
+	estimateConversationTokens,
+	estimateMessageTokens,
+} from "~/lib/messageTokens";
 
 export interface CompactionWindowConfig {
 	contextWindow?: number;
@@ -20,52 +25,7 @@ const DEFAULT_TRIGGER_RATIO = 0.7;
 const DEFAULT_MIN_MESSAGES = 24;
 const DEFAULT_KEEP_RECENT_MESSAGES = 8;
 const DEFAULT_MIN_ARCHIVE_COUNT = 6;
-const TOOL_RESULT_SUMMARY_LIMIT = 400;
-
-function contentToText(content: Message["content"], role?: Message["role"]): string {
-	const truncateForTool = (text: string) => {
-		if (role === "tool" && text.length > TOOL_RESULT_SUMMARY_LIMIT) {
-			return text.slice(0, TOOL_RESULT_SUMMARY_LIMIT) + "…";
-		}
-		return text;
-	};
-
-	if (typeof content === "string") {
-		return truncateForTool(content);
-	}
-
-	if (Array.isArray(content)) {
-		const text = content
-			.map((part) =>
-				part.type === "text"
-					? part.text || ""
-					: part.type === "thinking"
-						? part.thinking || ""
-						: "",
-			)
-			.join("\n");
-		return truncateForTool(text);
-	}
-
-	try {
-		return truncateForTool(JSON.stringify(content));
-	} catch {
-		return "";
-	}
-}
-
-export function estimateMessageTokens(message: Message): number {
-	const text = contentToText(message.content, message.role);
-	// Tool results are often repetitive structured output; they compress more in
-	// practice than prose (~5–6 chars/token vs ~4 for natural language).
-	const charsPerToken = message.role === "tool" ? 6 : 4;
-	return Math.ceil(text.length / charsPerToken) + 4;
-}
-
-export function estimateConversationTokens(messages: Message[], latestUserMessage: string): number {
-	const historyTokens = messages.reduce((sum, message) => sum + estimateMessageTokens(message), 0);
-	return historyTokens + Math.ceil(latestUserMessage.length / 4);
-}
+export { estimateConversationTokens, estimateMessageTokens };
 
 function hasSnapshotPart(message: Message): boolean {
 	return Array.isArray(message.parts) && message.parts.some((part) => part.type === "snapshot");
@@ -151,7 +111,7 @@ export function buildFallbackSummary(messages: Message[]): string {
 		.slice(-6)
 		.map((message) => {
 			const label = ROLE_LABELS[message.role] ?? `[${message.role}]`;
-			const text = contentToText(message.content, message.role);
+			const text = messageContentToText(message.content, message.role);
 			return `${label} ${text}`.trim();
 		})
 		.filter((line) => line.length > 0);
@@ -169,7 +129,7 @@ export function formatMessagesForSummary(messages: Message[], maxCharacters = 16
 
 	for (const message of messages) {
 		const label = ROLE_LABELS[message.role] ?? `[${message.role}]`;
-		const body = contentToText(message.content, message.role);
+		const body = messageContentToText(message.content, message.role);
 		if (!body) {
 			continue;
 		}
