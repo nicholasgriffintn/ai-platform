@@ -71,7 +71,7 @@ export const testProviderModelConfig: ModelConfig = createModelConfigObject([
 					},
 					"acme-chat-2025-02-01": {
 						id: "acme-chat-2025-02-01",
-						tags: ["stable"],
+						tags: ["current"],
 					},
 					"acme-chat-2024-12-01": {
 						id: "acme-chat-2024-12-01",
@@ -259,7 +259,7 @@ export const testProviderModelConfig: ModelConfig = createModelConfigObject([
 		expect(syncedFile).not.toContain("acme-chat-20250514");
 	});
 
-	it("removes stale local aliases when the remote family has current members", async () => {
+	it("keeps local current aliases when the remote family has concrete members", async () => {
 		const modelsDir = await createModelsDirectory();
 		const modelFile = path.join(modelsDir, "test-provider.ts");
 		await fs.writeFile(
@@ -309,12 +309,12 @@ export const testProviderModelConfig: ModelConfig = createModelConfigObject([
 		]);
 		const syncedFile = await fs.readFile(modelFile, "utf8");
 
-		expect(stdout).toContain("Removed deprecated models: 1.");
-		expect(syncedFile).not.toContain("acme-chat-latest");
+		expect(stdout).toContain("Added new models: 0.");
+		expect(syncedFile).toContain("acme-chat-latest");
 		expect(syncedFile).toContain('createModelConfig("acme-chat-2507"');
 	});
 
-	it("removes stale Anthropic aliases that use an older model ID word order", async () => {
+	it("keeps local Anthropic current aliases that use a different model ID word order", async () => {
 		const modelsDir = await createModelsDirectory();
 		const modelFile = path.join(modelsDir, "anthropic.ts");
 		await fs.writeFile(
@@ -366,8 +366,101 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 		]);
 		const syncedFile = await fs.readFile(modelFile, "utf8");
 
-		expect(stdout).toContain("Removed deprecated models: 1.");
-		expect(syncedFile).not.toContain("claude-4-5-haiku-latest");
+		expect(stdout).toContain("Added new models: 0.");
+		expect(syncedFile).toContain("claude-4-5-haiku-latest");
 		expect(syncedFile).toContain('createModelConfig("claude-haiku-4-5"');
+	});
+
+	it("keeps a Mistral latest alias ahead of a concrete current Devstral version", async () => {
+		const modelsDir = await createModelsDirectory();
+		const modelFile = path.join(modelsDir, "mistral.ts");
+		await fs.writeFile(
+			modelFile,
+			`import type { ModelConfig } from "~/types";
+import { createModelConfig, createModelConfigObject } from "~/lib/providers/models/utils";
+
+const PROVIDER = "mistral";
+
+export const mistralModelConfig: ModelConfig = createModelConfigObject([
+\tcreateModelConfig("devstral-latest", PROVIDER, {
+\t\tname: "Devstral",
+\t\tmatchingModel: "devstral-latest",
+\t}),
+
+]);
+`,
+			"utf8",
+		);
+
+		const apiUrl = modelsDevUrl({
+			mistral: {
+				models: {
+					"devstral-2": {
+						id: "devstral-2",
+						tags: ["current"],
+					},
+				},
+			},
+		});
+
+		const { stdout } = await execFileAsync("node", [
+			SCRIPT_PATH,
+			"--write",
+			"--api-url",
+			apiUrl,
+			"--models-dir",
+			modelsDir,
+		]);
+		const syncedFile = await fs.readFile(modelFile, "utf8");
+
+		expect(stdout).toContain("Added new models: 0.");
+		expect(syncedFile).toContain('createModelConfig("devstral-latest"');
+		expect(syncedFile).not.toContain('createModelConfig("devstral-2"');
+	});
+
+	it("does not reintroduce Mistral Nemo under the old remote id", async () => {
+		const modelsDir = await createModelsDirectory();
+		const modelFile = path.join(modelsDir, "mistral.ts");
+		await fs.writeFile(
+			modelFile,
+			`import type { ModelConfig } from "~/types";
+import { createModelConfig, createModelConfigObject } from "~/lib/providers/models/utils";
+
+const PROVIDER = "mistral";
+
+export const mistralModelConfig: ModelConfig = createModelConfigObject([
+\tcreateModelConfig("open-mistral-nemo", PROVIDER, {
+\t\tname: "Mistral Nemo",
+\t\tmatchingModel: "open-mistral-nemo",
+\t}),
+]);
+`,
+			"utf8",
+		);
+
+		const apiUrl = modelsDevUrl({
+			mistral: {
+				models: {
+					"mistral-nemo": {
+						id: "mistral-nemo",
+						name: "Mistral Nemo",
+					},
+				},
+			},
+		});
+
+		const { stdout } = await execFileAsync("node", [
+			SCRIPT_PATH,
+			"--write",
+			"--api-url",
+			apiUrl,
+			"--models-dir",
+			modelsDir,
+		]);
+		const syncedFile = await fs.readFile(modelFile, "utf8");
+
+		expect(stdout).toContain("Added new models: 0.");
+		expect(syncedFile).toContain('createModelConfig("open-mistral-nemo"');
+		expect(syncedFile).not.toContain('createModelConfig("mistral-nemo"');
 	});
 });

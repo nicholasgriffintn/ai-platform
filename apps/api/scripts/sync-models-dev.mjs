@@ -20,10 +20,14 @@ const PROVIDER_ALIASES = {
 	"perplexity-ai": "perplexity",
 };
 
-const LATEST_TAGS = new Set(["latest", "current", "recommended", "default", "flagship", "stable"]);
+const LATEST_TAGS = new Set(["latest", "current"]);
 const OUTDATED_TAGS = new Set(["deprecated", "legacy", "retired", "obsolete", "outdated"]);
 const VERSION_SUFFIX_REGEX = /^(.*?)[-_:]((?:19|20)\d{2}(?:[-_]?\d{2}){1,2}|v?\d{4,})$/i;
 const CURRENT_ALIAS_SUFFIX_REGEX = /^(.*?)[-_:](0|latest)$/i;
+
+const IGNORED_REMOTE_MODEL_IDS = {
+	mistral: new Set(["mistral-nemo"]),
+};
 
 const SUPPORTED_MODALITIES = new Set([
 	"text",
@@ -482,6 +486,10 @@ function hasAnyTag(remoteModel, tagSet) {
 	return normalizeTags(remoteModel).some((tag) => tagSet.has(tag));
 }
 
+function isIgnoredRemoteModelId(provider, modelId) {
+	return IGNORED_REMOTE_MODEL_IDS[provider]?.has(modelId) ?? false;
+}
+
 function anthropicModelFamilyKey(modelId) {
 	if (!modelId.startsWith("claude-")) {
 		return modelId;
@@ -589,6 +597,9 @@ function buildProviderModelFamilies(remoteModels, provider) {
 		if (!remoteModel || typeof remoteModel !== "object") {
 			continue;
 		}
+		if (isIgnoredRemoteModelId(provider, modelId)) {
+			continue;
+		}
 		const family = modelFamilyKey(modelId, provider);
 		if (!families.has(family)) {
 			families.set(family, new Set());
@@ -606,6 +617,9 @@ function buildProviderModelStatus(remoteModels, provider) {
 
 	for (const [modelId, remoteModel] of Object.entries(remoteModels)) {
 		if (!remoteModel || typeof remoteModel !== "object") {
+			continue;
+		}
+		if (isIgnoredRemoteModelId(provider, modelId)) {
 			continue;
 		}
 		const family = modelFamilyKey(modelId, provider);
@@ -1168,16 +1182,61 @@ function resolveEntryRemoteModel(entry, remoteModels, sourceFile) {
 	return { matchingModel, remoteModel, remoteModelId };
 }
 
+function isCurrentAliasModelId(modelId) {
+	return CURRENT_ALIAS_SUFFIX_REGEX.test(modelId);
+}
+
+function getEntryModelIds(entry, sourceFile) {
+	const matchingModel = getStringPropertyValue(entry.objectNode, "matchingModel", sourceFile);
+	return matchingModel ? [entry.modelKey, matchingModel] : [entry.modelKey];
+}
+
+function shouldProtectCurrentAlias(provider, modelId) {
+	return isCurrentAliasModelId(modelId);
+}
+
+function getCurrentAliasFamilies(entries, sourceFile, provider) {
+	const families = new Set();
+	for (const entry of entries) {
+		for (const modelId of getEntryModelIds(entry, sourceFile)) {
+			if (shouldProtectCurrentAlias(provider, modelId)) {
+				families.add(modelFamilyKey(modelId, provider));
+			}
+		}
+	}
+	return families;
+}
+
+function isProtectedCurrentAliasEntry(entry, provider) {
+	return shouldProtectCurrentAlias(provider, entry.modelKey);
+}
+
+function remoteModelIsRepresentedByCurrentAlias(remoteModelId, currentAliasFamilies) {
+	for (const currentAliasFamily of currentAliasFamilies) {
+		if (
+			remoteModelId === currentAliasFamily ||
+			remoteModelId.startsWith(`${currentAliasFamily}-`)
+		) {
+			return true;
+		}
+	}
+	return false;
+}
+
 function isStaleUnmatchedFamilyEntry({
 	remoteModel,
 	remoteModelId,
 	remoteModelFamilies,
 	provider,
+	currentAliasFamilies,
 }) {
 	if (remoteModel && typeof remoteModel === "object") {
 		return false;
 	}
 	const family = modelFamilyKey(remoteModelId, provider);
+	if (currentAliasFamilies.has(family)) {
+		return false;
+	}
 	return remoteModelFamilies.has(family);
 }
 
@@ -1363,6 +1422,7 @@ async function processFile({
 	let removedDeprecatedModels = 0;
 	let removedDuplicateModels = 0;
 	const duplicateEntryNodes = findDuplicateRemoteModelEntryNodes(entries, remoteModels, sourceFile);
+	const currentAliasFamilies = getCurrentAliasFamilies(entries, sourceFile, remoteProviderId);
 
 	for (const entry of entries) {
 		const { matchingModel, remoteModel, remoteModelId } = resolveEntryRemoteModel(
@@ -1380,7 +1440,8 @@ async function processFile({
 		const isOutdatedModel = providerModelStatus.outdatedModelIds.has(remoteModelId);
 		const shouldRemoveBecauseNotLatest =
 			providerModelStatus.latestModelIds.size > 0 &&
-			!providerModelStatus.latestModelIds.has(remoteModelId);
+			!providerModelStatus.latestModelIds.has(remoteModelId) &&
+			!isProtectedCurrentAliasEntry(entry, remoteProviderId);
 		if (
 			remoteProviderDeprecated ||
 			hasDeprecatedStatus(remoteModel) ||
@@ -1391,6 +1452,7 @@ async function processFile({
 				remoteModelId,
 				remoteModelFamilies,
 				provider: remoteProviderId,
+				currentAliasFamilies,
 			})
 		) {
 			removedDeprecatedModels += 1;
@@ -1435,6 +1497,13 @@ async function processFile({
 		allowAddingMissingModels && !remoteProviderDeprecated
 			? Object.keys(remoteModels)
 					.filter((remoteModelId) => !representedRemoteModelIds.has(remoteModelId))
+					.filter((remoteModelId) => !isIgnoredRemoteModelId(remoteProviderId, remoteModelId))
+					.filter((remoteModelId) => {
+						return (
+							!remoteModelIsRepresentedByCurrentAlias(remoteModelId, currentAliasFamilies) ||
+							shouldProtectCurrentAlias(remoteProviderId, remoteModelId)
+						);
+					})
 					.filter((remoteModelId) => !hasDeprecatedStatus(remoteModels[remoteModelId]))
 					.filter((remoteModelId) => !providerModelStatus.outdatedModelIds.has(remoteModelId))
 					.filter((remoteModelId) => {
