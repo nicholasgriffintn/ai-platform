@@ -2019,27 +2019,6 @@ export const openrouterModelConfig: ModelConfig = {
 		supportsResponseFormat: true,
 	},
 
-	"mistralai/devstral-2512": {
-		name: "Devstral 2 2512",
-		matchingModel: "mistralai/devstral-2512",
-		provider: "openrouter",
-		knowledgeCutoffDate: "December 2025",
-		releaseDate: "December 9, 2025",
-		lastUpdated: "December 9, 2025",
-		modalities: {
-			input: ["text", "pdf"],
-			output: ["text"],
-		},
-		supportsAttachments: true,
-		supportsTemperature: true,
-		supportsToolCalls: true,
-		contextWindow: 262144,
-		maxTokens: 262144,
-		costPer1kInputTokens: 0.0004,
-		costPer1kOutputTokens: 0.002,
-		supportsResponseFormat: true,
-	},
-
 	"mistralai/devstral-2512:free": {
 		name: "Devstral 2 2512 (free)",
 		matchingModel: "mistralai/devstral-2512:free",

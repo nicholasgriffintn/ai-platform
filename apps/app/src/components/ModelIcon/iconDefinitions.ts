@@ -90,4 +90,5 @@ export const PROVIDER_ICONS: Record<string, string> = {
 	cerebras: "cerebras",
 	morph: "morph",
 	deepinfra: "deepinfra",
+	nova: "nova",
 };

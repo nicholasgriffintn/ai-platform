@@ -1867,28 +1867,6 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
 		costPer1kOutputTokens: 0.000197,
 	}),
 
-	createModelConfig("mistral-large-2402", PROVIDER, {
-		name: "Mistral Large 2402",
-		matchingModel: "mistral-large-2402",
-		releaseDate: "26 May 2025",
-		lastUpdated: "26 May 2025",
-		modalities: {
-			input: ["text"],
-			output: ["text"],
-		},
-		supportsAttachments: false,
-		supportsTemperature: true,
-		supportsToolCalls: true,
-		contextWindow: 32000,
-		maxTokens: 32000,
-		costPer1kInputTokens: 0.003846,
-		costPer1kOutputTokens: 0.011627,
-		reasoningConfig: {
-			supportedEffortLevels: ["none", "thinking"],
-			defaultEffort: "none",
-		},
-	}),
-
 	createModelConfig("pixtral-large-2502", PROVIDER, {
 		name: "Pixtral Large 2502",
 		matchingModel: "pixtral-large-2502",

@@ -42,6 +42,7 @@ import { IdeogramProvider } from "../../capabilities/chat/providers/ideogram";
 import { OpencodeProvider } from "../../capabilities/chat/providers/opencode";
 import { OpencodeGoProvider } from "../../capabilities/chat/providers/opencode-go";
 import { CortecsProvider } from "../../capabilities/chat/providers/cortecs";
+import { AmazonNovaProvider } from "../../capabilities/chat/providers/nova";
 
 const chatProviders: ProviderRegistration<AIProvider>[] = [
 	{
@@ -60,6 +61,11 @@ const chatProviders: ProviderRegistration<AIProvider>[] = [
 		aliases: ["aws-bedrock"],
 		create: () => new BedrockProvider(),
 		metadata: { vendor: "AWS", categories: ["chat"], tags: ["multi-provider"] },
+	},
+	{
+		name: "nova",
+		create: () => new AmazonNovaProvider(),
+		metadata: { vendor: "Amazon", categories: ["chat"] },
 	},
 	{
 		name: "chutes",

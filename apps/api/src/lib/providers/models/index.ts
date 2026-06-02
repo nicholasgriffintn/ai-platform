@@ -51,6 +51,8 @@ import { ideogramModelConfig } from "~/data-model/models/ideogram";
 import { opencodeModelConfig } from "~/data-model/models/opencode";
 import { opencodeGoModelConfig } from "~/data-model/models/opencode-go";
 import { cortecsModelConfig } from "~/data-model/models/cortecs";
+import { novaModelConfig } from "~/data-model/models/nova";
+
 import {
 	findTrainingDeploymentModelConfig,
 	getTrainingDeploymentModelConfigs,
@@ -116,6 +118,7 @@ const modelConfig: ModelConfig = mergeModelConfigs(
 	opencodeModelConfig,
 	opencodeGoModelConfig,
 	cortecsModelConfig,
+	novaModelConfig,
 );
 
 const MODEL_CACHE_TTL = 14400;

@@ -1,0 +1,149 @@
+import type { ModelConfig, ModelReasoningConfig } from "~/types";
+import { createModelConfig, createModelConfigObject } from "~/lib/providers/models/utils";
+
+const PROVIDER = "nova";
+
+const NOVA_2_REASONING_CONFIG: ModelReasoningConfig = {
+	supportedEffortLevels: ["none", "low", "medium", "high"],
+	defaultEffort: "none",
+};
+
+export const novaModelConfig: ModelConfig = createModelConfigObject([
+	createModelConfig("nova-2-lite-v1", PROVIDER, {
+		name: "Nova 2 Lite",
+		matchingModel: "nova-2-lite-v1",
+		releaseDate: "December 1, 2025",
+		lastUpdated: "December 1, 2025",
+		modalities: {
+			input: ["text", "image", "video", "pdf"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 1000000,
+		maxTokens: 64000,
+		costPer1kInputTokens: 0,
+		costPer1kOutputTokens: 0,
+		costPer1kReasoningTokens: 0,
+		reasoningConfig: NOVA_2_REASONING_CONFIG,
+	}),
+
+	createModelConfig("nova-2-pro-v1", PROVIDER, {
+		name: "Nova 2 Pro",
+		matchingModel: "nova-2-pro-v1",
+		releaseDate: "December 3, 2025",
+		lastUpdated: "January 3, 2026",
+		modalities: {
+			input: ["text", "image", "video", "pdf"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 1000000,
+		maxTokens: 64000,
+		costPer1kInputTokens: 0,
+		costPer1kOutputTokens: 0,
+		costPer1kReasoningTokens: 0,
+		reasoningConfig: NOVA_2_REASONING_CONFIG,
+	}),
+
+	createModelConfig("nova-2-sonic-v1", PROVIDER, {
+		name: "Nova 2 Sonic",
+		matchingModel: "nova-2-sonic-v1",
+		modalities: {
+			input: ["speech"],
+			output: ["speech", "text"],
+		},
+		supportsAudio: true,
+		contextWindow: 1000000,
+		maxTokens: 64000,
+		costPer1kInputTokens: 0,
+		costPer1kOutputTokens: 0,
+	}),
+
+	createModelConfig("nova-micro-v1", PROVIDER, {
+		name: "Nova Micro",
+		matchingModel: "nova-micro-v1",
+		releaseDate: "December 3, 2024",
+		lastUpdated: "December 3, 2024",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 128000,
+		maxTokens: 10000,
+		costPer1kInputTokens: 0.00004,
+		costPer1kOutputTokens: 0.00014,
+	}),
+
+	createModelConfig("nova-lite-v1", PROVIDER, {
+		name: "Nova Lite",
+		matchingModel: "nova-lite-v1",
+		releaseDate: "December 3, 2024",
+		lastUpdated: "December 3, 2024",
+		modalities: {
+			input: ["text", "image", "video"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 300000,
+		maxTokens: 10000,
+		costPer1kInputTokens: 0.00006,
+		costPer1kOutputTokens: 0.00024,
+	}),
+
+	createModelConfig("nova-pro-v1", PROVIDER, {
+		name: "Nova Pro",
+		matchingModel: "nova-pro-v1",
+		releaseDate: "December 3, 2024",
+		lastUpdated: "December 3, 2024",
+		modalities: {
+			input: ["text", "image", "video"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 300000,
+		maxTokens: 10000,
+		costPer1kInputTokens: 0.0008,
+		costPer1kOutputTokens: 0.0032,
+	}),
+
+	createModelConfig("nova-sonic-v1", PROVIDER, {
+		name: "Nova Sonic",
+		matchingModel: "nova-sonic-v1",
+		modalities: {
+			input: ["speech"],
+			output: ["speech", "text"],
+		},
+		supportsAudio: true,
+		costPer1kInputTokens: 0.00006,
+		costPer1kOutputTokens: 0.00024,
+	}),
+
+	createModelConfig("nova-premier-v1", PROVIDER, {
+		name: "Nova Premier",
+		matchingModel: "nova-premier-v1",
+		releaseDate: "December 3, 2024",
+		lastUpdated: "December 3, 2024",
+		modalities: {
+			input: ["text", "image", "video"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 1000000,
+		maxTokens: 10000,
+		costPer1kInputTokens: 0.0025,
+		costPer1kOutputTokens: 0.013,
+	}),
+]);
