@@ -4,6 +4,7 @@ import tailwindcss from "@tailwindcss/vite";
 import { defineConfig } from "vite";
 import babel from "vite-plugin-babel";
 import { visualizer } from "rollup-plugin-visualizer";
+import { createCloudflareRouterContext } from "./src/lib/cloudflare/router-context";
 
 const ReactCompilerConfig = {
 	panicThreshold: "none",
@@ -33,7 +34,10 @@ export default defineConfig(({ isSsrBuild, command }) => ({
 	plugins: [
 		cloudflareDevProxy({
 			getLoadContext({ context }) {
-				return { cloudflare: context.cloudflare };
+				return createCloudflareRouterContext({
+					env: context.cloudflare.env,
+					ctx: context.cloudflare.ctx,
+				});
 			},
 		}),
 		tailwindcss(),
