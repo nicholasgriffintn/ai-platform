@@ -1,53 +1,23 @@
 import { Hono } from "hono";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import dynamicApps from "../dynamic-apps";
-import type { AppSchema } from "~/types/app-schema";
-import { registerDynamicApp } from "~/services/dynamic-apps";
+import dynamicAppRoutes from "../dynamic-apps";
+import type { IUser } from "~/types";
 
-const executeDynamicApp = vi.hoisted(() => vi.fn());
-const getServiceContextMock = vi.hoisted(() => vi.fn());
+const executeDynamicAppMock = vi.hoisted(() => vi.fn());
+const getDynamicAppByIdMock = vi.hoisted(() => vi.fn());
 
 vi.mock("~/services/dynamic-apps", async () => {
-	const actual = await vi.importActual("~/services/dynamic-apps");
+	const actual = await vi.importActual<typeof import("~/services/dynamic-apps")>(
+		"~/services/dynamic-apps",
+	);
+
 	return {
 		...actual,
-		executeDynamicApp,
+		executeDynamicApp: executeDynamicAppMock,
+		getDynamicAppById: getDynamicAppByIdMock,
 	};
 });
-
-vi.mock("~/lib/context/serviceContext", () => ({
-	getServiceContext: getServiceContextMock,
-}));
-
-beforeEach(() => {
-	getServiceContextMock.mockReturnValue({} as never);
-});
-
-const baseApp: Omit<AppSchema, "id"> = {
-	name: "Dynamic App",
-	description: "Validation coverage",
-	formSchema: {
-		steps: [
-			{
-				id: "details",
-				title: "Details",
-				fields: [
-					{
-						id: "query",
-						type: "text",
-						label: "Query",
-						required: true,
-					},
-				],
-			},
-		],
-	},
-	responseSchema: {
-		type: "json",
-		display: {},
-	},
-};
 
 const testUser = {
 	id: 42,
@@ -65,115 +35,94 @@ const testUser = {
 	setup_at: null,
 	terms_accepted_at: null,
 	plan_id: "free",
-} satisfies {
-	id: number;
-	name: string | null;
-	avatar_url: string | null;
-	email: string | null;
-	github_username: string | null;
-	company: string | null;
-	site: string | null;
-	location: string | null;
-	bio: string | null;
-	twitter_username: string | null;
-	created_at: string;
-	updated_at: string;
-	setup_at: string | null;
-	terms_accepted_at: string | null;
-	plan_id: string;
-};
+} satisfies IUser;
 
-let appSequence = 0;
-
-function createApp() {
+function createApp(user: IUser = testUser) {
 	const app = new Hono();
-	app.use("/dynamic-apps/*", async (c, next) => {
-		(c as unknown as { set: (key: string, value: unknown) => void }).set("user", testUser);
+
+	app.use("/dynamic-apps/*", async (context, next) => {
+		(context as any).set("user", user);
+		(context as unknown as { env: Record<string, unknown> }).env = { TEST_ENV: true };
 		await next();
 	});
-	app.route("/dynamic-apps", dynamicApps);
+
+	app.route("/dynamic-apps", dynamicAppRoutes);
 	return app;
 }
 
-function registerTestApp() {
-	const appId = `dynamic-app-route-${++appSequence}`;
-	registerDynamicApp({
-		...baseApp,
-		id: appId,
-	});
-
-	return appId;
-}
-
-describe("dynamic-apps execute", () => {
+describe("dynamic-apps routes", () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 	});
 
-	it("returns 400 for non-object execute body", async () => {
-		const appId = registerTestApp();
-
+	it("rejects non-object payloads for execute endpoint", async () => {
 		const response = await createApp().request(
-			new Request(`https://api.polychat.test/dynamic-apps/${appId}/execute`, {
+			new Request("https://api.polychat.test/dynamic-apps/research/execute", {
 				method: "POST",
 				headers: {
-					"content-type": "application/json",
+					"Content-Type": "application/json",
 				},
-				body: JSON.stringify("not-an-object"),
+				body: JSON.stringify(["not", "an", "object"]),
 			}),
 		);
 
 		expect(response.status).toBe(400);
-		expect(executeDynamicApp).not.toHaveBeenCalled();
+		expect(executeDynamicAppMock).not.toHaveBeenCalled();
 	});
 
-	it("passes validated form data through to executeDynamicApp", async () => {
-		const appId = registerTestApp();
-		const formData = { query: "contract drift" };
-
-		executeDynamicApp.mockResolvedValue({
+	it("passes validated request body to dynamic app execution", async () => {
+		getDynamicAppByIdMock.mockResolvedValue({
+			id: "research",
+			name: "Research",
+			formSchema: { title: "Research", fields: [] },
+			responseSchema: { type: "markdown", display: { template: "default" } },
+		} as any);
+		executeDynamicAppMock.mockResolvedValue({
 			success: true,
 			response_id: "response-123",
 			data: {
-				message: "Executed",
-				timestamp: "2026-06-02T12:00:00.000Z",
-				input: formData,
-				result: { success: true },
+				message: "Successfully executed Research app",
+				timestamp: "2026-06-02T10:00:00.000Z",
+				input: { query: "contract drift" },
+				result: { summary: "ok" },
 			},
 		});
 
 		const response = await createApp().request(
-			new Request(`https://api.polychat.test/dynamic-apps/${appId}/execute`, {
+			new Request("https://api.polychat.test/dynamic-apps/research/execute", {
 				method: "POST",
 				headers: {
-					"content-type": "application/json",
+					"Content-Type": "application/json",
 				},
-				body: JSON.stringify(formData),
+				body: JSON.stringify({ query: "contract drift" }),
 			}),
 		);
 
 		expect(response.status).toBe(200);
-		expect(await response.json()).toEqual({
+		await expect(response.json()).resolves.toEqual({
 			success: true,
 			response_id: "response-123",
 			data: {
-				message: "Executed",
-				timestamp: "2026-06-02T12:00:00.000Z",
-				input: formData,
-				result: { success: true },
+				message: "Successfully executed Research app",
+				timestamp: "2026-06-02T10:00:00.000Z",
+				input: { query: "contract drift" },
+				result: { summary: "ok" },
 			},
 		});
 
-		expect(executeDynamicApp).toHaveBeenCalledWith(
-			appId,
-			formData,
+		expect(getDynamicAppByIdMock).toHaveBeenCalledWith("research");
+		expect(executeDynamicAppMock).toHaveBeenCalledWith(
+			"research",
+			{ query: "contract drift" },
 			expect.objectContaining({
 				app_url: "https://api.polychat.test",
-				user: testUser,
-				request: expect.objectContaining({
+				request: {
+					completion_id: expect.any(String),
 					input: "dynamic-app-execution",
+					date: expect.any(String),
 					platform: "dynamic-apps",
-				}),
+				},
+				user: testUser,
 			}),
 		);
 	});

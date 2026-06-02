@@ -4,12 +4,13 @@ import { type Context, Hono } from "hono";
 import {
 	dynamicAppErrorResponseSchema,
 	dynamicAppExecutionResponseSchema,
-	dynamicAppExecuteRequestSchema,
 	dynamicAppExecutionUnauthorizedResponseSchema,
+	dynamicAppExecuteRequestSchema,
 	dynamicAppSchema,
 	dynamicAppStoredResponseResponseSchema,
 	dynamicAppStoredResponsesResponseSchema,
 	dynamicAppsResponseSchema,
+	dynamicAppIdParamSchema,
 	listDynamicAppResponsesQuerySchema,
 	errorResponseSchema,
 } from "@assistant/schemas";
@@ -125,6 +126,7 @@ addRoute(dynamicApps, "post", "/:id/execute", {
 	tags: ["dynamic-apps"],
 	summary: "Execute dynamic app",
 	description: "Executes a dynamic app with the provided form data",
+	paramSchema: dynamicAppIdParamSchema,
 	bodySchema: dynamicAppExecuteRequestSchema,
 	responses: {
 		200: {
@@ -139,7 +141,7 @@ addRoute(dynamicApps, "post", "/:id/execute", {
 		404: { description: "App not found", schema: dynamicAppErrorResponseSchema },
 		500: { description: "Server error", schema: dynamicAppErrorResponseSchema },
 	},
-	handler: async ({ raw, body }) =>
+	handler: async ({ raw }) =>
 		(async (c: Context) => {
 			const id = c.req.param("id");
 			if (!id) {
@@ -184,7 +186,7 @@ addRoute(dynamicApps, "post", "/:id/execute", {
 					context: getServiceContext(c),
 				};
 
-				const result = await executeDynamicApp(id, body || {}, req);
+				const result = await executeDynamicApp(id, c.req.valid("json" as never), req);
 				return ResponseFactory.success(c, result);
 			} catch (error) {
 				logger.error(`Error executing app ${id}:`, { error });
