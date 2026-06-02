@@ -1,3 +1,4 @@
+import { getRealtimeLiveProviderManifestItem } from "@assistant/schemas";
 import { getModelConfigByModel } from "~/lib/providers/models";
 import { resolveProviderApiKey } from "~/lib/providers/utils/apiKeys";
 import { generateId } from "~/utils/id";
@@ -8,7 +9,8 @@ import type {
 	RealtimeTranscriptionDelay,
 } from "../index";
 
-export const DEFAULT_TRANSCRIPTION_MODEL = "voxtral-mini-transcribe-realtime";
+export const DEFAULT_TRANSCRIPTION_MODEL =
+	getRealtimeLiveProviderManifestItem("mistral").defaultModelId;
 const SESSION_MODELS_BY_TYPE: Record<RealtimeSessionRequest["type"], string[]> = {
 	realtime: [],
 	translation: [],

@@ -316,7 +316,7 @@ export const appInfoSchema = z.object({
 	icon: z.string().optional(),
 	category: z.string().optional(),
 	theme: z
-		.enum(["violet", "indigo", "pink", "rose", "cyan", "emerald", "amber", "sky", "slate"])
+		.enum(["violet", "indigo", "pink", "rose", "cyan", "emerald", "amber", "sky", "slate", "blue"])
 		.optional(),
 	tags: z.array(z.string()).optional(),
 	featured: z.boolean().optional(),
@@ -329,6 +329,124 @@ export const appInfoSchema = z.object({
 
 export const appInfoArraySchema = z.array(appInfoSchema);
 
+export const dynamicAppThemes = [
+	"violet",
+	"indigo",
+	"pink",
+	"rose",
+	"cyan",
+	"emerald",
+	"amber",
+	"sky",
+	"slate",
+	"blue",
+] as const;
+
+export const dynamicAppFieldTypes = [
+	"text",
+	"number",
+	"select",
+	"multiselect",
+	"checkbox",
+	"file",
+	"date",
+	"textarea",
+] as const;
+
+export const dynamicAppResponseDisplayTypes = [
+	"table",
+	"json",
+	"text",
+	"template",
+	"custom",
+] as const;
+
+export const FieldType = {
+	TEXT: "text",
+	NUMBER: "number",
+	SELECT: "select",
+	MULTISELECT: "multiselect",
+	CHECKBOX: "checkbox",
+	FILE: "file",
+	DATE: "date",
+	TEXTAREA: "textarea",
+} satisfies Record<string, (typeof dynamicAppFieldTypes)[number]>;
+
+export const dynamicAppThemeSchema = z.enum(dynamicAppThemes);
+export const dynamicAppFieldTypeSchema = z.enum(dynamicAppFieldTypes);
+export const dynamicAppResponseDisplayTypeSchema = z.enum(dynamicAppResponseDisplayTypes);
+
+export const dynamicAppFormFieldSchema = z.object({
+	id: z.string(),
+	type: dynamicAppFieldTypeSchema,
+	label: z.string(),
+	description: z.string().optional(),
+	placeholder: z.string().optional(),
+	required: z.boolean(),
+	defaultValue: z.unknown().optional(),
+	validation: z
+		.object({
+			pattern: z.string().optional(),
+			min: z.number().optional(),
+			max: z.number().optional(),
+			minLength: z.number().optional(),
+			maxLength: z.number().optional(),
+			options: z
+				.array(
+					z.object({
+						label: z.string(),
+						value: z.string(),
+					}),
+				)
+				.optional(),
+		})
+		.optional(),
+});
+
+export const dynamicAppFormStepSchema = z.object({
+	id: z.string(),
+	title: z.string(),
+	description: z.string().optional(),
+	fields: z.array(dynamicAppFormFieldSchema),
+});
+
+export const dynamicAppFormSchema = z.object({
+	steps: z.array(dynamicAppFormStepSchema),
+});
+
+export const dynamicAppResponseFieldSchema = z.object({
+	key: z.string(),
+	label: z.string(),
+	format: z.string().optional(),
+});
+
+export const dynamicAppResponseDisplaySchema = z.object({
+	fields: z.array(dynamicAppResponseFieldSchema).optional(),
+	template: z.string().optional(),
+});
+
+export const dynamicAppResponseSchema = z.object({
+	type: dynamicAppResponseDisplayTypeSchema,
+	display: dynamicAppResponseDisplaySchema,
+});
+
+export const dynamicAppSchema = z.object({
+	id: z.string(),
+	name: z.string(),
+	description: z.string(),
+	icon: z.string().optional(),
+	category: z.string().optional(),
+	theme: dynamicAppThemeSchema.optional(),
+	tags: z.array(z.string()).optional(),
+	featured: z.boolean().optional(),
+	costPerCall: z.number().optional(),
+	isDefault: z.boolean().optional(),
+	type: z.enum(["normal", "premium", "byok"]).optional(),
+	kind: z.enum(["dynamic", "frontend"]).optional(),
+	formSchema: dynamicAppFormSchema,
+	responseSchema: dynamicAppResponseSchema,
+});
+
 export const dynamicAppsResponseSchema = z.object({
 	apps: appInfoArraySchema,
 });
@@ -336,6 +454,163 @@ export const dynamicAppsResponseSchema = z.object({
 export const dynamicAppIdParamSchema = z.object({ id: z.string() });
 
 export const dynamicAppExecuteRequestSchema = z.record(z.string(), z.any());
+
+export type AppTheme = z.infer<typeof dynamicAppThemeSchema>;
+export type AppKind = "dynamic" | "frontend";
+export type FieldType = z.infer<typeof dynamicAppFieldTypeSchema>;
+export type DynamicAppFormField = z.infer<typeof dynamicAppFormFieldSchema>;
+export type DynamicAppFormStep = z.infer<typeof dynamicAppFormStepSchema>;
+export type DynamicAppFormSchema = z.infer<typeof dynamicAppFormSchema>;
+export type DynamicAppResponseField = z.infer<typeof dynamicAppResponseFieldSchema>;
+export type DynamicAppResponseDisplay = z.infer<typeof dynamicAppResponseDisplaySchema>;
+export type DynamicAppResponseSchema = z.infer<typeof dynamicAppResponseSchema>;
+export type AppSchema = z.infer<typeof dynamicAppSchema>;
+export type DynamicAppCatalogItem = z.infer<typeof appInfoSchema>;
+export type DynamicAppsResponse = z.infer<typeof dynamicAppsResponseSchema>;
+export type DynamicAppFormData = Record<string, unknown>;
+export type DynamicAppFormErrors = Record<string, string>;
+
+function isMissingDynamicAppFieldValue(value: unknown): boolean {
+	return (
+		value === undefined ||
+		value === null ||
+		value === "" ||
+		(Array.isArray(value) && value.length === 0)
+	);
+}
+
+function isValidDateFieldValue(value: unknown): boolean {
+	if (value instanceof Date) {
+		return !Number.isNaN(value.getTime());
+	}
+
+	return typeof value === "string" && !Number.isNaN(Date.parse(value));
+}
+
+function getDynamicAppFieldError(field: DynamicAppFormField, value: unknown): string | undefined {
+	if (field.required && isMissingDynamicAppFieldValue(value)) {
+		return `${field.label} is required`;
+	}
+
+	if (isMissingDynamicAppFieldValue(value)) {
+		return undefined;
+	}
+
+	const { validation } = field;
+
+	switch (field.type) {
+		case "text":
+		case "textarea":
+			if (typeof value !== "string") {
+				return `${field.label} must be a string`;
+			}
+
+			if (validation?.pattern && !new RegExp(validation.pattern).test(value)) {
+				return `${field.label} has an invalid format`;
+			}
+
+			if (validation?.minLength !== undefined && value.length < validation.minLength) {
+				return `${field.label} must be at least ${validation.minLength} characters`;
+			}
+
+			if (validation?.maxLength !== undefined && value.length > validation.maxLength) {
+				return `${field.label} must be at most ${validation.maxLength} characters`;
+			}
+
+			return undefined;
+
+		case "number":
+			if (typeof value !== "number" || Number.isNaN(value)) {
+				return `${field.label} must be a number`;
+			}
+
+			if (validation?.min !== undefined && value < validation.min) {
+				return `${field.label} must be at least ${validation.min}`;
+			}
+
+			if (validation?.max !== undefined && value > validation.max) {
+				return `${field.label} must be at most ${validation.max}`;
+			}
+
+			return undefined;
+
+		case "select":
+			if (typeof value !== "string") {
+				return `${field.label} must be a string`;
+			}
+
+			if (validation?.options && !validation.options.some((option) => option.value === value)) {
+				return `${field.label} has an invalid option`;
+			}
+
+			return undefined;
+
+		case "multiselect":
+			if (!Array.isArray(value)) {
+				return `${field.label} must be an array`;
+			}
+
+			if (validation?.options) {
+				const validValues = validation.options.map((option) => option.value);
+				const hasInvalidValue = value.some(
+					(item) => typeof item !== "string" || !validValues.includes(item),
+				);
+
+				if (hasInvalidValue) {
+					return `${field.label} has an invalid option`;
+				}
+			}
+
+			return undefined;
+
+		case "checkbox":
+			return typeof value === "boolean" ? undefined : `${field.label} must be a boolean`;
+
+		case "date":
+			return isValidDateFieldValue(value) ? undefined : `${field.label} must be a valid date`;
+
+		case "file":
+			return value === undefined ? `${field.label} must have a file` : undefined;
+	}
+}
+
+export function getDynamicAppFormStepErrors(
+	step: DynamicAppFormStep,
+	formData: DynamicAppFormData,
+): DynamicAppFormErrors {
+	const errors: DynamicAppFormErrors = {};
+
+	for (const field of step.fields) {
+		const error = getDynamicAppFieldError(field, formData[field.id]);
+		if (error) {
+			errors[field.id] = error;
+		}
+	}
+
+	return errors;
+}
+
+export function getDynamicAppFormErrors(
+	app: Pick<AppSchema, "formSchema">,
+	formData: DynamicAppFormData,
+): DynamicAppFormErrors {
+	const fieldIds = new Set(
+		app.formSchema.steps.flatMap((step) => step.fields.map((field) => field.id)),
+	);
+	const errors: DynamicAppFormErrors = {};
+
+	for (const step of app.formSchema.steps) {
+		Object.assign(errors, getDynamicAppFormStepErrors(step, formData));
+	}
+
+	for (const key of Object.keys(formData)) {
+		if (!fieldIds.has(key)) {
+			errors[key] = `Unknown field ${key} in form data`;
+		}
+	}
+
+	return errors;
+}
 
 export const weatherResponseSchema = z.object({
 	response: z.object({

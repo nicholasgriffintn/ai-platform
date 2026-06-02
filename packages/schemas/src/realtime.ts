@@ -1,5 +1,21 @@
 import z from "zod/v4";
 
+export const realtimeProviderIds = ["openai", "google-ai-studio", "mistral"] as const;
+export const realtimeTransports = ["webrtc", "websocket"] as const;
+export const realtimeSessionTypes = ["realtime", "translation", "transcription"] as const;
+export const realtimeLiveSessionTypes = ["realtime", "transcription"] as const;
+export const realtimeModalities = ["text", "audio", "image", "video"] as const;
+export const realtimeOutputModalities = ["text", "audio"] as const;
+export const realtimeTranscriptionDelays = ["minimal", "low", "medium", "high", "xhigh"] as const;
+
+export const realtimeProviderIdSchema = z.enum(realtimeProviderIds);
+export const realtimeTransportSchema = z.enum(realtimeTransports);
+export const realtimeSessionTypeSchema = z.enum(realtimeSessionTypes);
+export const realtimeLiveSessionTypeSchema = z.enum(realtimeLiveSessionTypes);
+export const realtimeModalitySchema = z.enum(realtimeModalities);
+export const realtimeOutputModalitySchema = z.enum(realtimeOutputModalities);
+export const realtimeTranscriptionDelaySchema = z.enum(realtimeTranscriptionDelays);
+
 export const realtimeSessionResponseSchema = z
 	.object({
 		id: z.string(),
@@ -87,9 +103,90 @@ export const realtimeSessionResponseSchema = z
 
 export const realtimeSessionCreateSchema = z.object({
 	model: z.string().optional(),
-	type: z.enum(["realtime", "translation", "transcription"]),
+	type: realtimeSessionTypeSchema,
 	provider: z.string().optional(),
-	transport: z.enum(["webrtc", "websocket"]).optional(),
-	input_modalities: z.array(z.enum(["text", "audio", "image", "video"])).optional(),
-	output_modalities: z.array(z.enum(["text", "audio"])).optional(),
+	transport: realtimeTransportSchema.optional(),
+	input_modalities: z.array(realtimeModalitySchema).optional(),
+	output_modalities: z.array(realtimeOutputModalitySchema).optional(),
 });
+
+export const realtimeLiveProviderManifestItemSchema = z.object({
+	id: realtimeProviderIdSchema,
+	label: z.string(),
+	shortLabel: z.string(),
+	transport: realtimeTransportSchema,
+	sessionType: realtimeLiveSessionTypeSchema,
+	defaultDelay: realtimeTranscriptionDelaySchema.optional(),
+	inputModalities: z.array(realtimeModalitySchema),
+	outputModalities: z.array(realtimeOutputModalitySchema),
+	description: z.string(),
+	defaultModelId: z.string(),
+	supportsVideoInput: z.boolean().optional(),
+});
+
+export const realtimeLiveProviderManifestResponseSchema = z.object({
+	providers: z.array(realtimeLiveProviderManifestItemSchema),
+});
+
+export type RealtimeProviderId = z.infer<typeof realtimeProviderIdSchema>;
+export type RealtimeTransport = z.infer<typeof realtimeTransportSchema>;
+export type RealtimeSessionType = z.infer<typeof realtimeSessionTypeSchema>;
+export type RealtimeLiveSessionType = z.infer<typeof realtimeLiveSessionTypeSchema>;
+export type RealtimeModality = z.infer<typeof realtimeModalitySchema>;
+export type RealtimeOutputModality = z.infer<typeof realtimeOutputModalitySchema>;
+export type RealtimeTranscriptionDelay = z.infer<typeof realtimeTranscriptionDelaySchema>;
+export type RealtimeLiveProviderManifestItem = z.infer<
+	typeof realtimeLiveProviderManifestItemSchema
+>;
+
+export const REALTIME_LIVE_PROVIDER_MANIFEST: RealtimeLiveProviderManifestItem[] = [
+	{
+		id: "openai",
+		label: "OpenAI Realtime",
+		shortLabel: "OpenAI",
+		transport: "webrtc",
+		sessionType: "realtime",
+		inputModalities: ["audio"],
+		outputModalities: ["audio"],
+		description: "WebRTC voice agent",
+		defaultModelId: "gpt-realtime-2",
+	},
+	{
+		id: "google-ai-studio",
+		label: "Gemini Live",
+		shortLabel: "Gemini",
+		transport: "websocket",
+		sessionType: "realtime",
+		inputModalities: ["audio", "video"],
+		outputModalities: ["audio"],
+		description: "WebSocket voice and vision",
+		defaultModelId: "gemini-3.1-flash-live-preview",
+		supportsVideoInput: true,
+	},
+	{
+		id: "mistral",
+		label: "Mistral Realtime",
+		shortLabel: "Mistral",
+		transport: "websocket",
+		sessionType: "transcription",
+		defaultDelay: "low",
+		inputModalities: ["audio"],
+		outputModalities: ["text"],
+		description: "Streaming speech-to-text",
+		defaultModelId: "voxtral-mini-transcribe-realtime",
+	},
+];
+
+export const DEFAULT_REALTIME_LIVE_PROVIDER_ID = REALTIME_LIVE_PROVIDER_MANIFEST[0].id;
+
+export function getRealtimeLiveProviderManifestItem(
+	providerId: RealtimeProviderId,
+): RealtimeLiveProviderManifestItem {
+	const provider = REALTIME_LIVE_PROVIDER_MANIFEST.find(({ id }) => id === providerId);
+
+	if (!provider) {
+		throw new Error(`Unknown realtime live provider: ${providerId}`);
+	}
+
+	return provider;
+}

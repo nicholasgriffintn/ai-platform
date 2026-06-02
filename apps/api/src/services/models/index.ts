@@ -8,8 +8,21 @@ import {
 	getModelsByModality,
 	getModelsByOutputModality,
 } from "~/lib/providers/models";
-import type { IEnv } from "~/types";
+import type { IEnv, ModelConfig } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
+
+function includeModelIds(models: ModelConfig): ModelConfig {
+	const modelsWithIds: ModelConfig = {};
+
+	for (const [id, model] of Object.entries(models)) {
+		modelsWithIds[id] = {
+			...model,
+			id,
+		};
+	}
+
+	return modelsWithIds;
+}
 
 /**
  * List all models available to the user.
@@ -28,7 +41,7 @@ export async function listModels(env: IEnv, userId?: number) {
 	const filteredModels = await filterModelsForUserAccess(allModels, env, userId, {
 		shouldUseCache: false,
 	});
-	return filteredModels;
+	return includeModelIds(filteredModels);
 }
 
 /**
@@ -47,7 +60,7 @@ export async function listModelsByStrength(env: IEnv, capability: string, userId
 		shouldUseCache: false,
 		includeTrainingDeployments: false,
 	});
-	return filteredModels;
+	return includeModelIds(filteredModels);
 }
 
 /**
@@ -66,7 +79,7 @@ export async function listModelsByModality(env: IEnv, modality: string, userId?:
 		shouldUseCache: false,
 		includeTrainingDeployments: modality === "text",
 	});
-	return filteredModels;
+	return includeModelIds(filteredModels);
 }
 
 /**
@@ -78,7 +91,7 @@ export async function listModelsByOutputModality(env: IEnv, modality: string, us
 		shouldUseCache: false,
 		includeTrainingDeployments: modality === "text",
 	});
-	return filteredModels;
+	return includeModelIds(filteredModels);
 }
 
 /**
@@ -95,5 +108,8 @@ export async function getModelDetails(env: IEnv, id: string, userId?: number) {
 	if (!accessibleModels[id]) {
 		throw new AssistantError("Model not found or user does not have access", ErrorType.NOT_FOUND);
 	}
-	return model;
+	return {
+		...model,
+		id,
+	};
 }

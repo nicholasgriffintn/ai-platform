@@ -1,4 +1,5 @@
 import { ConversationManager } from "~/lib/conversationManager";
+import { getDynamicAppFormErrors } from "@assistant/schemas";
 import { Database } from "~/lib/database";
 import { DynamicAppResponseRepository } from "~/repositories/DynamicAppResponseRepository";
 import { getFeaturedApps, type FeaturedAppDefinition } from "~/services/dynamic-apps/config";
@@ -222,144 +223,11 @@ export const executeDynamicApp = async (
  * @param formData The form data to validate
  */
 const validateFormData = (app: AppSchema, formData: Record<string, any>): void => {
-	const fieldIds = app.formSchema.steps.flatMap((step) => step.fields.map((field) => field.id));
+	const errors = getDynamicAppFormErrors(app, formData);
+	const firstError = Object.values(errors)[0];
 
-	for (const step of app.formSchema.steps) {
-		for (const field of step.fields) {
-			if (
-				field.required &&
-				(formData[field.id] === undefined ||
-					formData[field.id] === null ||
-					formData[field.id] === "")
-			) {
-				throw new AssistantError(`Required field ${field.id} is missing`, ErrorType.PARAMS_ERROR);
-			}
-		}
-	}
-
-	for (const key of Object.keys(formData)) {
-		if (!fieldIds.includes(key)) {
-			throw new AssistantError(`Unknown field ${key} in form data`, ErrorType.PARAMS_ERROR);
-		}
-	}
-
-	for (const step of app.formSchema.steps) {
-		for (const field of step.fields) {
-			if (formData[field.id] !== undefined) {
-				validateField(field, formData[field.id]);
-			}
-		}
-	}
-};
-
-/**
- * Validate a single field value against its schema
- * @param field The field schema
- * @param value The field value
- */
-const validateField = (
-	field: AppSchema["formSchema"]["steps"][0]["fields"][0],
-	value: any,
-): void => {
-	const { type, validation } = field;
-
-	switch (type) {
-		case "text":
-		case "textarea":
-			if (typeof value !== "string") {
-				throw new AssistantError(`Field ${field.id} must be a string`, ErrorType.PARAMS_ERROR);
-			}
-
-			if (validation?.minLength !== undefined && value.length < validation.minLength) {
-				throw new AssistantError(
-					`Field ${field.id} must be at least ${validation.minLength} characters`,
-					ErrorType.PARAMS_ERROR,
-				);
-			}
-
-			if (validation?.maxLength !== undefined && value.length > validation.maxLength) {
-				throw new AssistantError(
-					`Field ${field.id} must be at most ${validation.maxLength} characters`,
-					ErrorType.PARAMS_ERROR,
-				);
-			}
-
-			if (validation?.pattern !== undefined && !new RegExp(validation.pattern).test(value)) {
-				throw new AssistantError(
-					`Field ${field.id} does not match the required pattern`,
-					ErrorType.PARAMS_ERROR,
-				);
-			}
-			break;
-
-		case "number":
-			if (typeof value !== "number") {
-				throw new AssistantError(`Field ${field.id} must be a number`, ErrorType.PARAMS_ERROR);
-			}
-
-			if (validation?.min !== undefined && value < validation.min) {
-				throw new AssistantError(
-					`Field ${field.id} must be at least ${validation.min}`,
-					ErrorType.PARAMS_ERROR,
-				);
-			}
-
-			if (validation?.max !== undefined && value > validation.max) {
-				throw new AssistantError(
-					`Field ${field.id} must be at most ${validation.max}`,
-					ErrorType.PARAMS_ERROR,
-				);
-			}
-			break;
-
-		case "select":
-			if (typeof value !== "string") {
-				throw new AssistantError(`Field ${field.id} must be a string`, ErrorType.PARAMS_ERROR);
-			}
-
-			if (validation?.options && !validation.options.some((option) => option.value === value)) {
-				throw new AssistantError(
-					`Field ${field.id} has an invalid option value`,
-					ErrorType.PARAMS_ERROR,
-				);
-			}
-			break;
-
-		case "multiselect":
-			if (!Array.isArray(value)) {
-				throw new AssistantError(`Field ${field.id} must be an array`, ErrorType.PARAMS_ERROR);
-			}
-
-			if (validation?.options) {
-				const validValues = validation.options.map((option) => option.value);
-				for (const item of value) {
-					if (!validValues.includes(item)) {
-						throw new AssistantError(
-							`Field ${field.id} has an invalid option value: ${item}`,
-							ErrorType.PARAMS_ERROR,
-						);
-					}
-				}
-			}
-			break;
-
-		case "checkbox":
-			if (typeof value !== "boolean") {
-				throw new AssistantError(`Field ${field.id} must be a boolean`, ErrorType.PARAMS_ERROR);
-			}
-			break;
-
-		case "date":
-			if (!(value instanceof Date) && Number.isNaN(Date.parse(value))) {
-				throw new AssistantError(`Field ${field.id} must be a valid date`, ErrorType.PARAMS_ERROR);
-			}
-			break;
-
-		case "file":
-			if (value === undefined) {
-				throw new AssistantError(`Field ${field.id} must have a file`, ErrorType.PARAMS_ERROR);
-			}
-			break;
+	if (firstError) {
+		throw new AssistantError(firstError, ErrorType.PARAMS_ERROR);
 	}
 };
 

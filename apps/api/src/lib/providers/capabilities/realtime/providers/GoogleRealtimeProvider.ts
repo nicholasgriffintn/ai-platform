@@ -1,3 +1,4 @@
+import { getRealtimeLiveProviderManifestItem } from "@assistant/schemas";
 import { getModelConfigByModel } from "~/lib/providers/models";
 import { formatGoogleStudioModelResource } from "~/lib/providers/utils/googleStudio";
 import { resolveProviderApiKey } from "~/lib/providers/utils/apiKeys";
@@ -10,7 +11,8 @@ import {
 	type RealtimeTransport,
 } from "../modalities";
 
-const DEFAULT_REALTIME_MODEL = "gemini-3.1-flash-live-preview";
+const DEFAULT_REALTIME_MODEL =
+	getRealtimeLiveProviderManifestItem("google-ai-studio").defaultModelId;
 const SESSION_MODELS_BY_TYPE: Record<RealtimeSessionRequest["type"], string[]> = {
 	realtime: [
 		DEFAULT_REALTIME_MODEL,

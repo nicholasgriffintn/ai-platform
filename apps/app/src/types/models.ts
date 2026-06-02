@@ -1,82 +1,13 @@
-import type { ReasoningEffort, VerbosityLevel } from "./chat";
+import type { ModelConfigItem } from "@assistant/schemas";
 
-export type ModelRanking = 1 | 2 | 3 | 4 | 5;
-
-export type ModelModality =
-	| "text"
-	| "image"
-	| "audio"
-	| "video"
-	| "pdf"
-	| "document"
-	| "embedding"
-	| "speech"
-	| "transcription";
-
-export interface ModelReasoningConfig {
-	supportedEffortLevels?: ReasoningEffort[];
-	defaultEffort?: ReasoningEffort;
-	modelOverrides?: Partial<Record<ReasoningEffort, string>>;
-}
-
-export interface ModelVerbosityConfig {
-	supportedVerbosityLevels?: VerbosityLevel[];
-	defaultVerbosity?: VerbosityLevel;
-}
-
-export interface ModelConfigItem {
-	id: string;
-	matchingModel: string;
-	name?: string;
-	description?: string;
-	avatarUrl?: string;
-	provider: string;
-	modalities?: {
-		input: ModelModality[];
-		output?: ModelModality[];
-	};
-	isBeta?: boolean;
-	supportsToolCalls?: boolean;
-	isFree?: boolean;
-	card?: string;
-	contextWindow?: number;
-	maxTokens?: number;
-	costPer1kInputTokens?: number;
-	costPer1kOutputTokens?: number;
-	strengths?: string[];
-	contextComplexity?: ModelRanking;
-	reliability?: ModelRanking;
-	speed?: ModelRanking;
-	multimodal?: boolean;
-	includedInRouter?: boolean;
-	isFeatured?: boolean;
-	isByokEnabled?: boolean;
-	deprecated?: boolean;
-	supportsDocuments?: boolean;
-	supportsSearchGrounding?: boolean;
-	supportsCodeExecution?: boolean;
-	supportsFileSearch?: boolean;
-	supportsMcp?: boolean;
-	supportsComputerUse?: boolean;
-	supportsImageGenerationTool?: boolean;
-	supportsToolSearch?: boolean;
-	supportsHostedShell?: boolean;
-	supportsWebFetch?: boolean;
-	supportsAudio?: boolean;
-	supportsRealtimeSession?: boolean;
-	supportsRealtimeTranslationSession?: boolean;
-	supportsFim?: boolean;
-	supportsNextEdit?: boolean;
-	supportsApplyEdit?: boolean;
-	supportsImageEdits?: boolean;
-	hiddenFromDefaultList?: boolean;
-	reasoningConfig?: ModelReasoningConfig;
-	verbosityConfig?: ModelVerbosityConfig;
-}
-
-export interface ModelConfig {
-	[key: string]: ModelConfigItem;
-}
+export type {
+	ModelConfig,
+	ModelConfigItem,
+	ModelModality,
+	ModelRanking,
+	ModelReasoningConfig,
+	ModelVerbosityConfig,
+} from "@assistant/schemas";
 
 export type ModelSelectorScope = "default" | "text-only" | "live" | "chat-and-live";
 

@@ -1,7 +1,12 @@
 import { type Context, Hono } from "hono";
 
 import { addRoute } from "~/lib/http/routeBuilder";
-import { errorResponseSchema, realtimeSessionResponseSchema } from "@assistant/schemas";
+import {
+	errorResponseSchema,
+	REALTIME_LIVE_PROVIDER_MANIFEST,
+	realtimeLiveProviderManifestResponseSchema,
+	realtimeSessionResponseSchema,
+} from "@assistant/schemas";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import { ResponseFactory } from "~/lib/http/ResponseFactory";
 import type { IEnv, IUser } from "~/types";
@@ -20,6 +25,23 @@ const routeLogger = createRouteLogger("realtime");
 app.use("/*", (c, next) => {
 	routeLogger.info(`Processing realtime route: ${c.req.path}`);
 	return next();
+});
+
+addRoute(app, "get", "/providers", {
+	tags: ["realtime"],
+	summary: "List realtime live providers",
+	responses: {
+		200: {
+			description: "Realtime live provider manifest",
+			schema: realtimeLiveProviderManifestResponseSchema,
+		},
+	},
+	handler: async ({ raw }) =>
+		(async (c: Context) => {
+			return ResponseFactory.success(c, {
+				providers: REALTIME_LIVE_PROVIDER_MANIFEST,
+			});
+		})(raw),
 });
 
 addRoute(app, "post", "/session/:type", {

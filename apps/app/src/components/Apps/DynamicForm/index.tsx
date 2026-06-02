@@ -1,5 +1,6 @@
 import { Check } from "lucide-react";
 import { useEffect, useState } from "react";
+import { getDynamicAppFormStepErrors } from "@assistant/schemas";
 
 import { Button } from "~/components/ui";
 import { cn } from "~/lib/utils";
@@ -58,87 +59,10 @@ export const DynamicForm = ({
 
 	const validateStep = (stepIndex: number): boolean => {
 		const step = app.formSchema.steps[stepIndex];
-		const newErrors: Record<string, string> = {};
-
-		let isValid = true;
-
-		for (const field of step.fields) {
-			if (field.required) {
-				const value = formData[field.id];
-				if (value === undefined || value === null || value === "") {
-					newErrors[field.id] = `${field.label} is required`;
-					isValid = false;
-				}
-			}
-
-			if (
-				formData[field.id] !== undefined &&
-				formData[field.id] !== null &&
-				formData[field.id] !== ""
-			) {
-				const value = formData[field.id];
-
-				switch (field.type) {
-					case "text":
-					case "textarea":
-						if (field.validation?.pattern && !new RegExp(field.validation.pattern).test(value)) {
-							newErrors[field.id] = `${field.label} has an invalid format`;
-							isValid = false;
-						}
-
-						if (field.validation?.minLength && value.length < field.validation.minLength) {
-							newErrors[field.id] =
-								`${field.label} must be at least ${field.validation.minLength} characters`;
-							isValid = false;
-						}
-
-						if (field.validation?.maxLength && value.length > field.validation.maxLength) {
-							newErrors[field.id] =
-								`${field.label} must be at most ${field.validation.maxLength} characters`;
-							isValid = false;
-						}
-						break;
-
-					case "number":
-						if (field.validation?.min !== undefined && value < field.validation.min) {
-							newErrors[field.id] = `${field.label} must be at least ${field.validation.min}`;
-							isValid = false;
-						}
-
-						if (field.validation?.max !== undefined && value > field.validation.max) {
-							newErrors[field.id] = `${field.label} must be at most ${field.validation.max}`;
-							isValid = false;
-						}
-						break;
-
-					case "select":
-						if (
-							field.validation?.options &&
-							!field.validation.options.some((option) => option.value === value)
-						) {
-							newErrors[field.id] = `${field.label} has an invalid option`;
-							isValid = false;
-						}
-						break;
-
-					case "multiselect":
-						if (field.validation?.options && Array.isArray(value)) {
-							const validValues = field.validation.options.map((option) => option.value);
-							for (const item of value) {
-								if (!validValues.includes(item)) {
-									newErrors[field.id] = `${field.label} has an invalid option`;
-									isValid = false;
-									break;
-								}
-							}
-						}
-						break;
-				}
-			}
-		}
+		const newErrors = getDynamicAppFormStepErrors(step, formData);
 
 		setErrors(newErrors);
-		return isValid;
+		return Object.keys(newErrors).length === 0;
 	};
 
 	const handleNext = () => {

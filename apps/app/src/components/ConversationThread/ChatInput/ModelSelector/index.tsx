@@ -46,6 +46,7 @@ import type {
 	ChatMode,
 	ChatSettings,
 	ModelConfigItem,
+	ModelModality,
 	ModelSelectionChangeHandler,
 	ModelSelectorScope,
 } from "~/types";
@@ -272,7 +273,7 @@ export const ModelSelector = ({
 	const { chatAgents: agents } = useAgents();
 	const [isOpen, setIsOpen] = useState(false);
 	const [searchQuery, setSearchQuery] = useState("");
-	const [selectedCapability, setSelectedCapability] = useState<string | null>(null);
+	const [selectedCapability, setSelectedCapability] = useState<ModelModality | null>(null);
 	const [hoverPreview, setHoverPreview] = useState<HoverPreviewState | null>(null);
 	const [dialogLayout, setDialogLayout] = useState<DialogLayout | null>(null);
 	const isTextOnlyScope = modelScope === "text-only";
@@ -740,7 +741,11 @@ export const ModelSelector = ({
 								<div className="relative sm:w-48">
 									<select
 										value={selectedCapability || ""}
-										onChange={(e) => setSelectedCapability(e.target.value || null)}
+										onChange={(e) => {
+											const nextCapability =
+												capabilities.find((capability) => capability === e.target.value) ?? null;
+											setSelectedCapability(nextCapability);
+										}}
 										className="w-full appearance-none rounded-md border border-zinc-200 bg-off-white py-2 pl-8 pr-3 text-sm text-zinc-900 focus:border-zinc-300 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
 										aria-label="Filter by model type"
 									>

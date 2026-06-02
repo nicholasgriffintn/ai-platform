@@ -1,3 +1,4 @@
+import { getRealtimeLiveProviderManifestItem } from "@assistant/schemas";
 import { getModelConfigByModel } from "~/lib/providers/models";
 import { resolveProviderApiKey } from "~/lib/providers/utils/apiKeys";
 import { formatProviderError } from "~/lib/providers/utils/errors";
@@ -15,7 +16,7 @@ import {
 	type RealtimeTransport,
 } from "../modalities";
 
-const DEFAULT_REALTIME_MODEL = "gpt-realtime-2";
+const DEFAULT_REALTIME_MODEL = getRealtimeLiveProviderManifestItem("openai").defaultModelId;
 const DEFAULT_TRANSLATION_MODEL = "gpt-realtime-translate";
 const DEFAULT_TRANSCRIPTION_MODEL = "gpt-realtime-whisper";
 const DEFAULT_REALTIME_INPUT_TRANSCRIPTION_MODEL = "gpt-4o-mini-transcribe";

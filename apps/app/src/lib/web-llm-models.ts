@@ -16,7 +16,7 @@ function buildWebLLMModels(models: ModelRecord[]): ModelConfig {
 				matchingModel: model.model_id,
 				name: model.model_id,
 				description: model.model,
-				strengths: ["text-generation"],
+				strengths: ["chat"],
 				provider: "web-llm",
 				modalities: { input: ["text"], output: ["text"] },
 				isFree: true,

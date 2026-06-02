@@ -51,6 +51,7 @@ export interface ModelVerbosityConfig {
 }
 
 export type ModelConfigItem = {
+	id?: string;
 	matchingModel: string;
 	name?: string;
 	description?: string;

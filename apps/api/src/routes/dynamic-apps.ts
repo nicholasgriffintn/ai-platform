@@ -4,6 +4,7 @@ import { type Context, Hono } from "hono";
 import z from "zod/v4";
 import {
 	appDataSchema,
+	dynamicAppSchema,
 	dynamicAppsResponseSchema,
 	listDynamicAppResponsesQuerySchema,
 	errorResponseSchema,
@@ -19,7 +20,6 @@ import {
 	listDynamicAppResponsesForUser,
 	getDynamicAppResponseById,
 } from "~/services/dynamic-apps";
-import { appSchema } from "~/types/app-schema";
 import type { IRequest } from "~/types/chat";
 import type { IEnv } from "~/types/shared";
 import { getLogger } from "~/utils/logger";
@@ -90,7 +90,7 @@ addRoute(dynamicApps, "get", "/:id", {
 	summary: "Get dynamic app schema",
 	description: "Returns the complete schema for a specific dynamic app",
 	responses: {
-		200: { description: "Dynamic app schema", schema: appSchema },
+		200: { description: "Dynamic app schema", schema: dynamicAppSchema },
 		400: { description: "Bad request", schema: errorResponseSchema },
 		401: {
 			description: "Authentication required",

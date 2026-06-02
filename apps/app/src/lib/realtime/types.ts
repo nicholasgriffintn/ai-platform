@@ -1,7 +1,19 @@
-export type RealtimeSessionType = "realtime" | "translation" | "transcription";
-export type RealtimeTransport = "webrtc" | "websocket";
-export type RealtimeModality = "text" | "audio" | "image" | "video";
-export type KnownRealtimeProviderName = "openai" | "google-ai-studio" | "mistral";
+import type {
+	RealtimeModality,
+	RealtimeProviderId,
+	RealtimeSessionType,
+	RealtimeTranscriptionDelay,
+	RealtimeTransport,
+} from "@assistant/schemas";
+
+export type {
+	RealtimeModality,
+	RealtimeSessionType,
+	RealtimeTranscriptionDelay,
+	RealtimeTransport,
+};
+
+export type KnownRealtimeProviderName = RealtimeProviderId;
 export type RealtimeProviderName = KnownRealtimeProviderName | (string & {});
 
 export interface RealtimeClientSecret {
@@ -38,7 +50,7 @@ export interface CreateRealtimeSessionOptions {
 	targetLanguage?: string;
 	voice?: string;
 	instructions?: string;
-	delay?: "minimal" | "low" | "medium" | "high" | "xhigh";
+	delay?: RealtimeTranscriptionDelay;
 	signal?: AbortSignal;
 	timeoutMs?: number | null;
 }
