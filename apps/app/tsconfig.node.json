@@ -1,11 +1,6 @@
 {
 	"extends": "./tsconfig.json",
-	"include": [
-		".react-router/types/**/*",
-		"tailwind.config.ts",
-		"vite.config.ts",
-		"src/lib/cloudflare/router-context.ts"
-	],
+	"include": ["tailwind.config.ts", "vite.config.ts"],
 	"compilerOptions": {
 		"tsBuildInfoFile": "./node_modules/.tmp/tsconfig.node.tsbuildinfo",
 		"composite": true,
