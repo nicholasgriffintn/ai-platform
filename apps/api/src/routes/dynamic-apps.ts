@@ -28,6 +28,26 @@ import { generateId } from "~/utils/id";
 import { getServiceContext } from "~/lib/context/serviceContext";
 
 const logger = getLogger({ prefix: "routes/dynamic-apps" });
+const dynamicAppErrorResponseSchema = z.object({
+	error: z.string(),
+	message: z.string().optional(),
+});
+const dynamicAppExecutionUnauthorizedResponseSchema = z.object({
+	response: z.object({
+		status: z.literal("error"),
+		message: z.string(),
+	}),
+});
+const dynamicAppExecutionResponseSchema = z.object({
+	success: z.boolean(),
+	response_id: z.string().optional(),
+	data: z.object({
+		message: z.string(),
+		timestamp: z.iso.datetime(),
+		input: z.record(z.string(), z.unknown()),
+		result: z.unknown(),
+	}),
+});
 
 const dynamicApps = new Hono();
 
@@ -91,12 +111,12 @@ addRoute(dynamicApps, "get", "/:id", {
 	description: "Returns the complete schema for a specific dynamic app",
 	responses: {
 		200: { description: "Dynamic app schema", schema: dynamicAppSchema },
-		400: { description: "Bad request", schema: errorResponseSchema },
+		400: { description: "Bad request", schema: dynamicAppErrorResponseSchema },
 		401: {
 			description: "Authentication required",
 			schema: errorResponseSchema,
 		},
-		404: { description: "App not found", schema: errorResponseSchema },
+		404: { description: "App not found", schema: dynamicAppErrorResponseSchema },
 	},
 	handler: async ({ raw }) =>
 		(async (c: Context) => {
@@ -122,14 +142,17 @@ addRoute(dynamicApps, "post", "/:id/execute", {
 	summary: "Execute dynamic app",
 	description: "Executes a dynamic app with the provided form data",
 	responses: {
-		200: { description: "App execution result", schema: z.string() },
-		400: { description: "Invalid form data", schema: errorResponseSchema },
+		200: {
+			description: "App execution result",
+			schema: dynamicAppExecutionResponseSchema,
+		},
+		400: { description: "Invalid form data", schema: dynamicAppErrorResponseSchema },
 		401: {
 			description: "Authentication required",
-			schema: errorResponseSchema,
+			schema: dynamicAppExecutionUnauthorizedResponseSchema,
 		},
-		404: { description: "App not found", schema: errorResponseSchema },
-		500: { description: "Server error", schema: errorResponseSchema },
+		404: { description: "App not found", schema: dynamicAppErrorResponseSchema },
+		500: { description: "Server error", schema: dynamicAppErrorResponseSchema },
 	},
 	handler: async ({ raw }) =>
 		(async (c: Context) => {
@@ -203,12 +226,12 @@ addRoute(dynamicApps, "get", "/responses/:responseId", {
 			description: "Stored dynamic-app response",
 			schema: z.object({ response: z.any() }),
 		},
-		400: { description: "Bad request", schema: errorResponseSchema },
+		400: { description: "Bad request", schema: dynamicAppErrorResponseSchema },
 		401: {
 			description: "Authentication required",
 			schema: errorResponseSchema,
 		},
-		404: { description: "Response not found", schema: errorResponseSchema },
+		404: { description: "Response not found", schema: dynamicAppErrorResponseSchema },
 	},
 	handler: async ({ raw }) =>
 		(async (c: Context) => {
