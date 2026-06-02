@@ -5,8 +5,6 @@ import { defineConfig } from "vite";
 import babel from "vite-plugin-babel";
 import { visualizer } from "rollup-plugin-visualizer";
 
-import { createCloudflareRouterContext } from "./src/lib/cloudflare/router-context";
-
 const ReactCompilerConfig = {
 	panicThreshold: "none",
 };
@@ -34,12 +32,8 @@ export default defineConfig(({ isSsrBuild, command }) => ({
 	},
 	plugins: [
 		cloudflareDevProxy({
-			// @ts-expect-error - CBA
 			getLoadContext({ context }) {
-				return createCloudflareRouterContext({
-					env: context.cloudflare.env,
-					ctx: context.cloudflare.ctx,
-				});
+				return { cloudflare: context.cloudflare };
 			},
 		}),
 		tailwindcss(),
