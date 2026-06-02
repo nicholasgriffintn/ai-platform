@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi, beforeEach } from "vitest";
 
 import type { UserSettings } from "~/types";
@@ -69,5 +69,51 @@ describe("UserSettingsForm", () => {
 
 		expect(screen.getByLabelText("Speech Provider")).toHaveDisplayValue("Cartesia");
 		expect(screen.getByLabelText("Speech Model")).toHaveDisplayValue("Sonic 3");
+	});
+
+	it("hydrates the form when user settings arrive after the first render", () => {
+		const { rerender } = render(
+			<UserSettingsForm isAuthenticated={true} isPro={true} userSettings={null} />,
+		);
+
+		expect(screen.getByLabelText("Nickname")).toHaveValue("");
+
+		rerender(
+			<UserSettingsForm
+				isAuthenticated={true}
+				isPro={true}
+				userSettings={makeUserSettings({
+					nickname: "Updated Nicholas",
+					speech_provider: "cartesia",
+					speech_model: "sonic-3",
+				})}
+			/>,
+		);
+
+		expect(screen.getByLabelText("Nickname")).toHaveValue("Updated Nicholas");
+		expect(screen.getByLabelText("Speech Provider")).toHaveDisplayValue("Cartesia");
+		expect(screen.getByLabelText("Speech Model")).toHaveDisplayValue("Sonic 3");
+	});
+
+	it("does not overwrite local edits when settings load after the user starts typing", () => {
+		const { rerender } = render(
+			<UserSettingsForm isAuthenticated={true} isPro={true} userSettings={null} />,
+		);
+
+		fireEvent.change(screen.getByLabelText("Nickname"), {
+			target: { value: "Local draft" },
+		});
+
+		rerender(
+			<UserSettingsForm
+				isAuthenticated={true}
+				isPro={true}
+				userSettings={makeUserSettings({
+					nickname: "Server nickname",
+				})}
+			/>,
+		);
+
+		expect(screen.getByLabelText("Nickname")).toHaveValue("Local draft");
 	});
 });
