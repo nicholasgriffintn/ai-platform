@@ -1,10 +1,13 @@
 import { addRoute } from "~/lib/http/routeBuilder";
 import { type Context, Hono } from "hono";
 
-import z from "zod/v4";
 import {
-	appDataSchema,
+	dynamicAppErrorResponseSchema,
+	dynamicAppExecutionResponseSchema,
+	dynamicAppExecutionUnauthorizedResponseSchema,
 	dynamicAppSchema,
+	dynamicAppStoredResponseResponseSchema,
+	dynamicAppStoredResponsesResponseSchema,
 	dynamicAppsResponseSchema,
 	listDynamicAppResponsesQuerySchema,
 	errorResponseSchema,
@@ -28,26 +31,6 @@ import { generateId } from "~/utils/id";
 import { getServiceContext } from "~/lib/context/serviceContext";
 
 const logger = getLogger({ prefix: "routes/dynamic-apps" });
-const dynamicAppErrorResponseSchema = z.object({
-	error: z.string(),
-	message: z.string().optional(),
-});
-const dynamicAppExecutionUnauthorizedResponseSchema = z.object({
-	response: z.object({
-		status: z.literal("error"),
-		message: z.string(),
-	}),
-});
-const dynamicAppExecutionResponseSchema = z.object({
-	success: z.boolean(),
-	response_id: z.string().optional(),
-	data: z.object({
-		message: z.string(),
-		timestamp: z.iso.datetime(),
-		input: z.record(z.string(), z.unknown()),
-		result: z.unknown(),
-	}),
-});
 
 const dynamicApps = new Hono();
 
@@ -87,7 +70,7 @@ addRoute(dynamicApps, "get", "/responses", {
 	summary: "List stored dynamic-app responses for user",
 	querySchema: listDynamicAppResponsesQuerySchema,
 	responses: {
-		200: { description: "Array of responses", schema: z.array(appDataSchema) },
+		200: { description: "Array of responses", schema: dynamicAppStoredResponsesResponseSchema },
 		401: {
 			description: "Authentication required",
 			schema: errorResponseSchema,
@@ -224,7 +207,7 @@ addRoute(dynamicApps, "get", "/responses/:responseId", {
 	responses: {
 		200: {
 			description: "Stored dynamic-app response",
-			schema: z.object({ response: z.any() }),
+			schema: dynamicAppStoredResponseResponseSchema,
 		},
 		400: { description: "Bad request", schema: dynamicAppErrorResponseSchema },
 		401: {

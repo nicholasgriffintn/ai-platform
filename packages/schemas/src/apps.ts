@@ -1,5 +1,7 @@
 import z from "zod/v4";
 
+import { appDataSchema } from "./app-data";
+
 export const insertEmbeddingSchema = z.object({
 	type: z.string(),
 	content: z.string().optional(),
@@ -454,6 +456,35 @@ export const dynamicAppsResponseSchema = z.object({
 export const dynamicAppIdParamSchema = z.object({ id: z.string() });
 
 export const dynamicAppExecuteRequestSchema = z.record(z.string(), z.any());
+
+export const dynamicAppErrorResponseSchema = z.object({
+	error: z.string(),
+	message: z.string().optional(),
+});
+
+export const dynamicAppExecutionUnauthorizedResponseSchema = z.object({
+	response: z.object({
+		status: z.literal("error"),
+		message: z.string(),
+	}),
+});
+
+export const dynamicAppExecutionResponseSchema = z.object({
+	success: z.boolean(),
+	response_id: z.string().optional(),
+	data: z.object({
+		message: z.string(),
+		timestamp: z.iso.datetime(),
+		input: z.record(z.string(), z.unknown()),
+		result: z.unknown(),
+	}),
+});
+
+export const dynamicAppStoredResponsesResponseSchema = z.array(appDataSchema);
+
+export const dynamicAppStoredResponseResponseSchema = z.object({
+	response: z.any(),
+});
 
 export type AppTheme = z.infer<typeof dynamicAppThemeSchema>;
 export type AppKind = "dynamic" | "frontend";
