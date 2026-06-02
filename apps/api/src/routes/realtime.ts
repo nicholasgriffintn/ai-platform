@@ -12,6 +12,7 @@ import {
 	parseRealtimeTransport,
 	type RealtimeTranscriptionDelay,
 } from "~/lib/providers/capabilities/realtime";
+import { userCanAccessRealtimeModel } from "~/services/realtime/access";
 import { createMistralRealtimeProxyResponse } from "~/services/realtime/mistral";
 
 const app = new Hono();
@@ -67,6 +68,29 @@ addRoute(app, "post", "/session/:type", {
 			const provider = getRealtimeProvider(providerName, { env, user });
 			if (model && provider.models && !provider.models.includes(model)) {
 				return ResponseFactory.error(c, "Invalid model specified", 400);
+			}
+
+			let requestedModel = model;
+			if (!requestedModel) {
+				try {
+					requestedModel = provider.getDefaultModel(type);
+				} catch (error) {
+					return ResponseFactory.error(
+						c,
+						error instanceof Error ? error.message : "Invalid session type",
+						400,
+					);
+				}
+			}
+
+			if (
+				!(await userCanAccessRealtimeModel({
+					env,
+					userId: user.id,
+					model: requestedModel,
+				}))
+			) {
+				return ResponseFactory.error(c, "Model not found or user does not have access", 403);
 			}
 
 			const transport = parseRealtimeTransport(transportQuery);
