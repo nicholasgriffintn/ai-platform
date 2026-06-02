@@ -1139,8 +1139,8 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		name: "Claude Opus 4",
 		matchingModel: "anthropic/claude-opus-4.1",
 		knowledgeCutoffDate: "March 31, 2025",
-		releaseDate: "May 22, 2025",
-		lastUpdated: "May 22, 2025",
+		releaseDate: "August 5, 2025",
+		lastUpdated: "August 5, 2025",
 		modalities: {
 			input: ["text", "image", "pdf"],
 			output: ["text"],

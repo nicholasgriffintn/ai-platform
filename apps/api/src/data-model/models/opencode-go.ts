@@ -280,4 +280,26 @@ export const opencodeGoModelConfig: ModelConfig = createModelConfigObject([
 			defaultEffort: "none",
 		},
 	}),
+	createModelConfig("minimax-m3", PROVIDER, {
+		name: "MiniMax M3",
+		matchingModel: "minimax-m3",
+		knowledgeCutoffDate: "January 2025",
+		releaseDate: "May 31, 2026",
+		lastUpdated: "May 31, 2026",
+		modalities: {
+			input: ["text", "image", "video"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 512000,
+		maxTokens: 131072,
+		costPer1kInputTokens: 0.0006,
+		costPer1kOutputTokens: 0.0024,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
+	}),
 ]);
