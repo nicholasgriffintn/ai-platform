@@ -627,23 +627,4 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 			output: ["moderation"],
 		},
 	}),
-	createModelConfig("open-mistral-nemo", PROVIDER, {
-		name: "Mistral Nemo",
-		description: "Our best multilingual open source model released July 2024.",
-		matchingModel: "open-mistral-nemo",
-		knowledgeCutoffDate: "July 2024",
-		releaseDate: "July 1, 2024",
-		lastUpdated: "July 1, 2024",
-		modalities: {
-			input: ["text"],
-			output: ["text"],
-		},
-		supportsAttachments: false,
-		supportsTemperature: true,
-		supportsToolCalls: true,
-		contextWindow: 128000,
-		maxTokens: 128000,
-		costPer1kInputTokens: 0.00015,
-		costPer1kOutputTokens: 0.00015,
-	}),
 ]);
