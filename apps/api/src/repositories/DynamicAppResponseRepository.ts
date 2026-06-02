@@ -3,6 +3,8 @@ import type { AppData } from "./AppDataRepository";
 import { AppDataRepository } from "./AppDataRepository";
 import { generateId } from "~/utils/id";
 
+const DYNAMIC_APP_RESPONSE_ITEM_TYPE = "dynamic_app_response";
+
 export class DynamicAppResponseRepository {
 	private repo: AppDataRepository;
 
@@ -20,13 +22,17 @@ export class DynamicAppResponseRepository {
 			userId,
 			appId,
 			itemId ?? generateId(),
-			"dynamic_app_response",
+			DYNAMIC_APP_RESPONSE_ITEM_TYPE,
 			payload,
 		);
 	}
 
 	async getResponseById(responseId: string): Promise<AppData | null> {
 		return this.repo.getAppDataById(responseId);
+	}
+
+	async getResponseByIdForUser(responseId: string, userId: number): Promise<AppData | null> {
+		return this.repo.getAppDataByUserAndId(userId, responseId, DYNAMIC_APP_RESPONSE_ITEM_TYPE);
 	}
 
 	async getResponseByItemId(itemId: string): Promise<AppData | null> {

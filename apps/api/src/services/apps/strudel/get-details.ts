@@ -18,14 +18,13 @@ export async function getPatternDetails({
 		context.ensureDatabase();
 		const { repositories } = context;
 
-		const response = await repositories.dynamicAppResponses.getResponseById(patternId);
+		const response = await repositories.dynamicAppResponses.getResponseByIdForUser(
+			patternId,
+			userId,
+		);
 
 		if (!response) {
 			throw new AssistantError("Pattern not found", ErrorType.NOT_FOUND);
-		}
-
-		if (response.user_id !== userId) {
-			throw new AssistantError("Unauthorized access to pattern", ErrorType.AUTHORISATION_ERROR);
 		}
 
 		const pattern = mapResponseToPattern(response);

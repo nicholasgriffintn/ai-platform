@@ -17,14 +17,13 @@ export async function deletePattern({
 		context.ensureDatabase();
 		const { repositories } = context;
 
-		const existing = await repositories.dynamicAppResponses.getResponseById(patternId);
+		const existing = await repositories.dynamicAppResponses.getResponseByIdForUser(
+			patternId,
+			userId,
+		);
 
 		if (!existing) {
 			throw new AssistantError("Pattern not found", ErrorType.NOT_FOUND);
-		}
-
-		if (existing.user_id !== userId) {
-			throw new AssistantError("Unauthorized access to pattern", ErrorType.AUTHORISATION_ERROR);
 		}
 
 		await repositories.dynamicAppResponses.deleteResponse(patternId);

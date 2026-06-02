@@ -385,15 +385,17 @@ export const createDynamicAppResponse = async (
 /**
  * Get a dynamic app response by ID
  * @param env The environment
+ * @param userId The user ID that owns the response
  * @param responseId The response ID
  * @returns The response data or null if not found
  */
 export const getDynamicAppResponseById = async (
 	env: IEnv,
+	userId: number,
 	responseId: string,
 ): Promise<AppData | null> => {
 	const repo = new DynamicAppResponseRepository(env);
-	return repo.getResponseById(responseId);
+	return repo.getResponseByIdForUser(responseId, userId);
 };
 
 /**

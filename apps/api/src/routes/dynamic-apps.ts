@@ -212,11 +212,12 @@ addRoute(dynamicApps, "get", "/responses/:responseId", {
 	},
 	handler: async ({ raw }) =>
 		(async (c: Context) => {
+			const user = c.get("user") as IUser;
 			const responseId = c.req.param("responseId");
 			if (!responseId) {
 				return ResponseFactory.success(c, { error: "responseId is required" }, 400);
 			}
-			const data = await getDynamicAppResponseById(c.env as IEnv, responseId);
+			const data = await getDynamicAppResponseById(c.env as IEnv, user.id, responseId);
 			if (!data) {
 				return ResponseFactory.success(c, { error: "Response not found" }, 404);
 			}

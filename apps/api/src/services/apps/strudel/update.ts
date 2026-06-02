@@ -31,14 +31,13 @@ export async function updatePattern({
 	const { repositories } = serviceContext;
 
 	try {
-		const existing = await repositories.dynamicAppResponses.getResponseById(patternId);
+		const existing = await repositories.dynamicAppResponses.getResponseByIdForUser(
+			patternId,
+			user.id,
+		);
 
 		if (!existing) {
 			throw new AssistantError("Pattern not found", ErrorType.NOT_FOUND);
-		}
-
-		if (existing.user_id !== user.id) {
-			throw new AssistantError("Unauthorized access to pattern", ErrorType.AUTHORISATION_ERROR);
 		}
 
 		const current = extractStoredPattern(existing.data);
@@ -52,7 +51,10 @@ export async function updatePattern({
 
 		await repositories.dynamicAppResponses.updateResponseData(patternId, mergedPayload);
 
-		const updated = await repositories.dynamicAppResponses.getResponseById(patternId);
+		const updated = await repositories.dynamicAppResponses.getResponseByIdForUser(
+			patternId,
+			user.id,
+		);
 
 		if (!updated) {
 			throw new AssistantError("Failed to load pattern after update", ErrorType.UNKNOWN_ERROR);
