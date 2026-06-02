@@ -141,6 +141,54 @@ describe("MessageFormatter", () => {
 			expect(result[1].role).toBe("assistant");
 		});
 
+		it("should truncate by token budget for tail strategy", () => {
+			const messages: Message[] = [
+				{ role: "user", content: "x".repeat(1200) },
+				{ role: "user", content: "y".repeat(1200) },
+				{ role: "user", content: "z".repeat(1200) },
+			];
+
+			const result = MessageFormatter.formatMessages(messages, {
+				maxTokens: 500,
+				truncationStrategy: "tail",
+			});
+
+			expect(result).toHaveLength(1);
+			expect(result[0]).toEqual({ role: "user", content: "z".repeat(1200) });
+		});
+
+		it("should truncate by token budget for head strategy", () => {
+			const messages: Message[] = [
+				{ role: "user", content: "x".repeat(1200) },
+				{ role: "user", content: "y".repeat(1200) },
+				{ role: "user", content: "z".repeat(1200) },
+			];
+
+			const result = MessageFormatter.formatMessages(messages, {
+				maxTokens: 500,
+				truncationStrategy: "head",
+			});
+
+			expect(result).toHaveLength(1);
+			expect(result[0]).toEqual({ role: "user", content: "x".repeat(1200) });
+		});
+
+		it("should truncate by token budget for middle strategy", () => {
+			const messages: Message[] = [
+				{ role: "user", content: "x".repeat(1200) },
+				{ role: "user", content: "y".repeat(1200) },
+				{ role: "user", content: "z".repeat(1200) },
+			];
+
+			const result = MessageFormatter.formatMessages(messages, {
+				maxTokens: 500,
+				truncationStrategy: "middle",
+			});
+
+			expect(result).toHaveLength(1);
+			expect(result[0]).toEqual({ role: "user", content: "y".repeat(1200) });
+		});
+
 		it("should format tool messages for anthropic provider", () => {
 			const messages: Message[] = [
 				{
