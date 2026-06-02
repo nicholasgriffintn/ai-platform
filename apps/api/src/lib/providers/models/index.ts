@@ -50,6 +50,7 @@ import { falModelConfig } from "~/data-model/models/fal";
 import { ideogramModelConfig } from "~/data-model/models/ideogram";
 import { opencodeModelConfig } from "~/data-model/models/opencode";
 import { opencodeGoModelConfig } from "~/data-model/models/opencode-go";
+import { cortecsModelConfig } from "~/data-model/models/cortecs";
 import {
 	findTrainingDeploymentModelConfig,
 	getTrainingDeploymentModelConfigs,
@@ -114,6 +115,7 @@ const modelConfig: ModelConfig = mergeModelConfigs(
 	cerebrasModelConfig,
 	opencodeModelConfig,
 	opencodeGoModelConfig,
+	cortecsModelConfig,
 );
 
 const MODEL_CACHE_TTL = 14400;

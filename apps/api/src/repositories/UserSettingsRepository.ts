@@ -11,6 +11,8 @@ import { safeParseJson } from "../utils/json";
 
 export class UserSettingsRepository extends BaseRepository {
 	private static readonly CREDENTIALS_DELIMITER = "::@@::";
+	private static readonly PROVIDER_API_KEY_LABEL = "provider-api-key";
+	private static readonly PROVIDER_API_KEY_ENVELOPE_LABEL = "provider-api-key-envelope-key";
 
 	private async getServerEncryptionKey() {
 		if (!this.env.PRIVATE_KEY) {
@@ -67,6 +69,93 @@ export class UserSettingsRepository extends BaseRepository {
 		} catch {
 			throw new AssistantError("Failed to decrypt data", ErrorType.UNKNOWN_ERROR);
 		}
+	}
+
+	private async encryptProviderApiKey(keyToEncrypt: string, publicKey: CryptoKey): Promise<string> {
+		try {
+			const encryptedData = await crypto.subtle.encrypt(
+				{
+					name: "RSA-OAEP",
+					label: new TextEncoder().encode(UserSettingsRepository.PROVIDER_API_KEY_LABEL),
+				},
+				publicKey,
+				new TextEncoder().encode(keyToEncrypt),
+			);
+
+			return bufferToBase64(new Uint8Array(encryptedData));
+		} catch {
+			const dataKey = crypto.getRandomValues(new Uint8Array(32));
+			const aesKey = await crypto.subtle.importKey("raw", dataKey, { name: "AES-GCM" }, false, [
+				"encrypt",
+			]);
+			const iv = crypto.getRandomValues(new Uint8Array(12));
+			const encryptedData = await crypto.subtle.encrypt(
+				{ name: "AES-GCM", iv },
+				aesKey,
+				new TextEncoder().encode(keyToEncrypt),
+			);
+			const encryptedKey = await crypto.subtle.encrypt(
+				{
+					name: "RSA-OAEP",
+					label: new TextEncoder().encode(UserSettingsRepository.PROVIDER_API_KEY_ENVELOPE_LABEL),
+				},
+				publicKey,
+				dataKey,
+			);
+
+			return JSON.stringify({
+				version: 1,
+				algorithm: "RSA-OAEP-3072-SHA256+A256GCM",
+				encryptedKey: bufferToBase64(new Uint8Array(encryptedKey)),
+				iv: bufferToBase64(iv),
+				data: bufferToBase64(new Uint8Array(encryptedData)),
+			});
+		}
+	}
+
+	private async decryptProviderApiKey(
+		encryptedApiKey: string,
+		privateKey: CryptoKey,
+	): Promise<string> {
+		const envelope = safeParseJson(encryptedApiKey);
+
+		if (
+			envelope &&
+			envelope.version === 1 &&
+			typeof envelope.encryptedKey === "string" &&
+			typeof envelope.iv === "string" &&
+			typeof envelope.data === "string"
+		) {
+			const dataKey = await crypto.subtle.decrypt(
+				{
+					name: "RSA-OAEP",
+					label: new TextEncoder().encode(UserSettingsRepository.PROVIDER_API_KEY_ENVELOPE_LABEL),
+				},
+				privateKey,
+				decodeBase64(envelope.encryptedKey),
+			);
+			const aesKey = await crypto.subtle.importKey("raw", dataKey, { name: "AES-GCM" }, false, [
+				"decrypt",
+			]);
+			const decryptedData = await crypto.subtle.decrypt(
+				{ name: "AES-GCM", iv: decodeBase64(envelope.iv) },
+				aesKey,
+				decodeBase64(envelope.data),
+			);
+
+			return new TextDecoder().decode(decryptedData);
+		}
+
+		const decryptedApiKey = await crypto.subtle.decrypt(
+			{
+				name: "RSA-OAEP",
+				label: new TextEncoder().encode(UserSettingsRepository.PROVIDER_API_KEY_LABEL),
+			},
+			privateKey,
+			decodeBase64(encryptedApiKey),
+		);
+
+		return new TextDecoder().decode(decryptedApiKey);
 	}
 
 	public async createUserSettings(userId: number): Promise<void> {
@@ -316,16 +405,7 @@ export class UserSettingsRepository extends BaseRepository {
 				? `${apiKey}${UserSettingsRepository.CREDENTIALS_DELIMITER}${secretKey}`
 				: apiKey;
 
-			const encryptedData = await crypto.subtle.encrypt(
-				{
-					name: "RSA-OAEP",
-					label: new TextEncoder().encode("provider-api-key"),
-				},
-				publicKey,
-				new TextEncoder().encode(keyToEncrypt),
-			);
-
-			const encryptedApiKey = bufferToBase64(new Uint8Array(encryptedData));
+			const encryptedApiKey = await this.encryptProviderApiKey(keyToEncrypt, publicKey);
 
 			const update = this.buildUpdateQuery(
 				"provider_settings",
@@ -409,16 +489,7 @@ export class UserSettingsRepository extends BaseRepository {
 				return null;
 			}
 
-			const decryptedApiKey = await crypto.subtle.decrypt(
-				{
-					name: "RSA-OAEP",
-					label: new TextEncoder().encode("provider-api-key"),
-				},
-				privateKey,
-				decodeBase64(result.api_key),
-			);
-
-			return new TextDecoder().decode(decryptedApiKey);
+			return this.decryptProviderApiKey(result.api_key, privateKey);
 		} catch (error) {
 			if (error instanceof AssistantError) {
 				throw error;
