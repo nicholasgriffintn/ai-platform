@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { authService } from "~/lib/api/auth-service";
 import { useChatStore } from "~/state/stores/chatStore";
 import { useUsageStore } from "~/state/stores/usageStore";
+import type { UserSettings } from "~/types";
 
 export const AUTH_QUERY_KEYS = {
 	authStatus: ["auth", "status"],
@@ -76,11 +77,17 @@ export function useAuthStatus() {
 	});
 
 	const updateUserSettingsMutation = useMutation({
-		mutationFn: async (settings: Partial<any>) => {
-			return await authService.updateUserSettings(settings);
+		mutationFn: async (settings: Partial<UserSettings>) => {
+			const didUpdate = await authService.updateUserSettings(settings);
+			if (!didUpdate) {
+				throw new Error("Failed to update user settings");
+			}
+
+			return true;
 		},
-		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: AUTH_QUERY_KEYS.userSettings });
+		onSuccess: async () => {
+			queryClient.setQueryData(AUTH_QUERY_KEYS.userSettings, authService.getUserSettings());
+			await queryClient.invalidateQueries({ queryKey: AUTH_QUERY_KEYS.userSettings });
 		},
 	});
 
@@ -92,7 +99,7 @@ export function useAuthStatus() {
 		loginWithGithub,
 		logout: logoutMutation.mutate,
 		isLoggingOut: logoutMutation.isPending,
-		updateUserSettings: updateUserSettingsMutation.mutate,
+		updateUserSettings: updateUserSettingsMutation.mutateAsync,
 		isUpdatingUserSettings: updateUserSettingsMutation.isPending,
 	};
 }

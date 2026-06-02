@@ -1,4 +1,4 @@
-import { type FormEvent, useState } from "react";
+import { type FormEvent, useEffect, useState } from "react";
 
 import { Button, FormInput, FormSelect, Switch, Textarea } from "~/components/ui";
 import { EventCategory, useTrackEvent } from "~/hooks/use-track-event";
@@ -21,13 +21,7 @@ interface UserSettingsFormProps {
 	isPro?: boolean;
 }
 
-export function UserSettingsForm({
-	userSettings,
-	isAuthenticated,
-	isPro = false,
-}: UserSettingsFormProps) {
-	const { updateUserSettings, isUpdatingUserSettings } = useAuthStatus();
-	const { trackEvent, trackError } = useTrackEvent();
+function buildUserSettingsFormData(userSettings: UserSettings | null) {
 	const transcriptionSettings = resolveTranscriptionSettings(
 		userSettings?.transcription_provider,
 		userSettings?.transcription_model,
@@ -36,7 +30,8 @@ export function UserSettingsForm({
 		userSettings?.speech_provider,
 		userSettings?.speech_model,
 	);
-	const [formData, setFormData] = useState({
+
+	return {
 		nickname: userSettings?.nickname || "",
 		job_role: userSettings?.job_role || "",
 		traits: userSettings?.traits || "",
@@ -61,13 +56,66 @@ export function UserSettingsForm({
 		speech_model: speechSettings.speech_model,
 		search_provider: userSettings?.search_provider || "",
 		sandbox_model: userSettings?.sandbox_model || "",
-	});
+	};
+}
+
+function areUserSettingsFormDataEqual(
+	left: ReturnType<typeof buildUserSettingsFormData>,
+	right: ReturnType<typeof buildUserSettingsFormData>,
+) {
+	return Object.keys(left).every(
+		(key) => left[key as keyof typeof left] === right[key as keyof typeof right],
+	);
+}
+
+export function UserSettingsForm({
+	userSettings,
+	isAuthenticated,
+	isPro = false,
+}: UserSettingsFormProps) {
+	const { updateUserSettings, isUpdatingUserSettings } = useAuthStatus();
+	const { trackEvent, trackError } = useTrackEvent();
+	const [formData, setFormData] = useState(() => buildUserSettingsFormData(userSettings));
+	const [hasLocalChanges, setHasLocalChanges] = useState(false);
+	const [pendingSavedFormData, setPendingSavedFormData] = useState<ReturnType<
+		typeof buildUserSettingsFormData
+	> | null>(null);
 	const [saveSuccess, setSaveSuccess] = useState(false);
 	const [saveError, setSaveError] = useState("");
 
+	useEffect(() => {
+		const nextFormData = buildUserSettingsFormData(userSettings);
+		if (pendingSavedFormData) {
+			if (!areUserSettingsFormDataEqual(nextFormData, pendingSavedFormData)) {
+				return;
+			}
+
+			setFormData(nextFormData);
+			setHasLocalChanges(false);
+			setPendingSavedFormData(null);
+			return;
+		}
+
+		if (hasLocalChanges) {
+			return;
+		}
+
+		setFormData(nextFormData);
+	}, [hasLocalChanges, pendingSavedFormData, userSettings]);
+
+	const updateFormData = (
+		updater: typeof formData | ((previous: typeof formData) => typeof formData),
+	) => {
+		setHasLocalChanges(true);
+		setPendingSavedFormData(null);
+		setSaveSuccess(false);
+		setSaveError("");
+		setFormData((previous) => (typeof updater === "function" ? updater(previous) : updater));
+	};
+
 	const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
 		const { name, value } = e.target;
-		setFormData((prev) => ({
+		updateFormData((prev) => ({
 			...prev,
 			[name]: value,
 		}));
@@ -86,7 +134,7 @@ export function UserSettingsForm({
 		const newProvider = e.target.value as TranscriptionProviderId;
 		const [firstModelForProvider] = getTranscriptionModelOptions(newProvider);
 
-		setFormData((prev) => ({
+		updateFormData((prev) => ({
 			...prev,
 			transcription_provider: newProvider,
 			transcription_model: firstModelForProvider.id,
@@ -106,7 +154,7 @@ export function UserSettingsForm({
 		const newProvider = e.target.value as SpeechProviderId;
 		const [firstModelForProvider] = getSpeechModelOptions(newProvider);
 
-		setFormData((prev) => ({
+		updateFormData((prev) => ({
 			...prev,
 			speech_provider: newProvider,
 			speech_model: firstModelForProvider.id,
@@ -168,6 +216,7 @@ export function UserSettingsForm({
 					};
 
 			await updateUserSettings(settingsPayload);
+			setPendingSavedFormData(formData);
 			setSaveSuccess(true);
 
 			trackEvent({
@@ -294,10 +343,10 @@ export function UserSettingsForm({
 						name="sandbox_model"
 						value={formData.sandbox_model}
 						onChange={(e) => {
-							setFormData({
-								...formData,
+							updateFormData((prev) => ({
+								...prev,
 								sandbox_model: e.target.value,
-							});
+							}));
 
 							trackEvent({
 								name: "sandbox_model_changed",
@@ -327,7 +376,7 @@ export function UserSettingsForm({
 						id="guardrails_enabled"
 						checked={formData.guardrails_enabled}
 						onChange={(e) =>
-							setFormData((prev) => ({
+							updateFormData((prev) => ({
 								...prev,
 								guardrails_enabled: e.target.checked,
 							}))
@@ -346,10 +395,10 @@ export function UserSettingsForm({
 						name="guardrails_provider"
 						value={formData.guardrails_provider}
 						onChange={(e) =>
-							setFormData({
-								...formData,
+							updateFormData((prev) => ({
+								...prev,
 								guardrails_provider: e.target.value,
-							})
+							}))
 						}
 					>
 						<option value="llamaguard">LlamaGuard</option>
@@ -417,10 +466,10 @@ export function UserSettingsForm({
 						name="embedding_provider"
 						value={formData.embedding_provider}
 						onChange={(e) =>
-							setFormData({
-								...formData,
+							updateFormData((prev) => ({
+								...prev,
 								embedding_provider: e.target.value,
-							})
+							}))
 						}
 					>
 						<option value="vectorize">Vectorize</option>
@@ -516,10 +565,10 @@ export function UserSettingsForm({
 								name="s3vectors_region"
 								value={formData.s3vectors_region}
 								onChange={(e) =>
-									setFormData({
-										...formData,
+									updateFormData((prev) => ({
+										...prev,
 										s3vectors_region: e.target.value,
-									})
+									}))
 								}
 							>
 								<option value="us-east-1">US East (N. Virginia)</option>
@@ -553,7 +602,7 @@ export function UserSettingsForm({
 						id="memories_save_enabled"
 						checked={formData.memories_save_enabled}
 						onChange={(e) =>
-							setFormData((prev) => ({
+							updateFormData((prev) => ({
 								...prev,
 								memories_save_enabled: e.target.checked,
 							}))
@@ -575,7 +624,7 @@ export function UserSettingsForm({
 						id="memories_chat_history_enabled"
 						checked={formData.memories_chat_history_enabled}
 						onChange={(e) =>
-							setFormData((prev) => ({
+							updateFormData((prev) => ({
 								...prev,
 								memories_chat_history_enabled: e.target.checked,
 							}))
@@ -605,7 +654,7 @@ export function UserSettingsForm({
 						id="tracking_enabled"
 						checked={formData.tracking_enabled}
 						onChange={(e) =>
-							setFormData((prev) => ({
+							updateFormData((prev) => ({
 								...prev,
 								tracking_enabled: e.target.checked,
 							}))
@@ -662,10 +711,10 @@ export function UserSettingsForm({
 						name="transcription_model"
 						value={formData.transcription_model}
 						onChange={(e) =>
-							setFormData({
-								...formData,
+							updateFormData((prev) => ({
+								...prev,
 								transcription_model: e.target.value,
-							})
+							}))
 						}
 					>
 						{getTranscriptionModelOptions(formData.transcription_provider).map((model) => (
@@ -715,10 +764,10 @@ export function UserSettingsForm({
 						name="speech_model"
 						value={formData.speech_model}
 						onChange={(e) =>
-							setFormData({
-								...formData,
+							updateFormData((prev) => ({
+								...prev,
 								speech_model: e.target.value,
-							})
+							}))
 						}
 					>
 						{getSpeechModelOptions(formData.speech_provider).map((model) => (
@@ -750,10 +799,10 @@ export function UserSettingsForm({
 						name="search_provider"
 						value={formData.search_provider}
 						onChange={(e) => {
-							setFormData({
-								...formData,
+							updateFormData((prev) => ({
+								...prev,
 								search_provider: e.target.value,
-							});
+							}));
 
 							trackEvent({
 								name: "search_provider_changed",
