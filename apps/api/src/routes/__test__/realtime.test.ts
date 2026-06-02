@@ -1,0 +1,124 @@
+import { Hono } from "hono";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+import realtimeRoutes from "../realtime";
+import type { IUser } from "~/types";
+
+const createSessionMock = vi.hoisted(() => vi.fn());
+const createMistralRealtimeProxyResponseMock = vi.hoisted(() => vi.fn());
+const getDefaultModelMock = vi.hoisted(() => vi.fn());
+const listModelsMock = vi.hoisted(() => vi.fn());
+
+vi.mock("~/lib/providers/capabilities/realtime", () => ({
+	getRealtimeProvider: vi.fn(() => ({
+		createSession: createSessionMock,
+		getDefaultModel: getDefaultModelMock,
+	})),
+	listRealtimeProviders: vi.fn(() => ["openai"]),
+	parseRealtimeModalities: vi.fn(() => undefined),
+	parseRealtimeTransport: vi.fn(() => undefined),
+}));
+
+vi.mock("~/services/models", () => ({
+	listModels: listModelsMock,
+}));
+
+vi.mock("~/services/realtime/mistral", () => ({
+	createMistralRealtimeProxyResponse: createMistralRealtimeProxyResponseMock,
+}));
+
+const testUser = {
+	id: 42,
+	name: "Test User",
+	avatar_url: null,
+	email: "test@example.com",
+	github_username: null,
+	company: null,
+	site: null,
+	location: null,
+	bio: null,
+	twitter_username: null,
+	created_at: "2026-06-02T00:00:00.000Z",
+	updated_at: "2026-06-02T00:00:00.000Z",
+	setup_at: null,
+	terms_accepted_at: null,
+	plan_id: "free",
+} satisfies IUser;
+
+function createApp(user: IUser = testUser) {
+	const app = new Hono();
+
+	app.use("/realtime/*", async (c, next) => {
+		(c as any).set("user", user);
+		await next();
+	});
+
+	app.route("/realtime", realtimeRoutes);
+
+	return app;
+}
+
+describe("realtime routes", () => {
+	beforeEach(() => {
+		vi.clearAllMocks();
+		getDefaultModelMock.mockReturnValue("gpt-realtime-2");
+	});
+
+	it("blocks session creation when the user cannot access the realtime model", async () => {
+		listModelsMock.mockResolvedValue({
+			"deepseek-chat": {
+				matchingModel: "deepseek-chat",
+				name: "DeepSeek Chat",
+				provider: "deepseek",
+			},
+		});
+
+		const response = await createApp().request(
+			new Request("https://api.polychat.test/realtime/session/realtime?provider=openai", {
+				method: "POST",
+			}),
+		);
+
+		expect(response.status).toBe(403);
+		await expect(response.json()).resolves.toEqual({
+			status: "error",
+			message: "Model not found or user does not have access",
+		});
+		expect(createSessionMock).not.toHaveBeenCalled();
+	});
+
+	it("allows session creation when the default realtime model is accessible", async () => {
+		listModelsMock.mockResolvedValue({
+			"gpt-realtime-2": {
+				matchingModel: "gpt-realtime-2",
+				name: "GPT Realtime 2",
+				provider: "openai",
+			},
+		});
+		createSessionMock.mockResolvedValue({
+			id: "session_123",
+			provider: "openai",
+			transport: "webrtc",
+		});
+
+		const response = await createApp().request(
+			new Request("https://api.polychat.test/realtime/session/realtime?provider=openai", {
+				method: "POST",
+			}),
+		);
+
+		expect(response.status).toBe(200);
+		await expect(response.json()).resolves.toEqual({
+			id: "session_123",
+			provider: "openai",
+			transport: "webrtc",
+		});
+		expect(createSessionMock).toHaveBeenCalledWith(
+			expect.objectContaining({
+				model: undefined,
+				type: "realtime",
+				user: testUser,
+			}),
+		);
+	});
+});
