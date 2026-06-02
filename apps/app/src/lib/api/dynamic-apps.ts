@@ -25,6 +25,17 @@ import type {
 import { apiService } from "./api-service";
 import { fetchApi, returnFetchedData } from "./fetch-wrapper";
 
+export interface DynamicAppExecutionResult {
+	success: boolean;
+	response_id?: string;
+	data: {
+		message: string;
+		timestamp: string;
+		input: Record<string, unknown>;
+		result: unknown;
+	};
+}
+
 export const fetchDynamicApps = async (): Promise<DynamicAppsResponse> => {
 	try {
 		let headers = {};
@@ -134,7 +145,7 @@ export const fetchDynamicAppResponses = async (appId?: string): Promise<AppDataI
 export const executeDynamicApp = async (
 	id: string,
 	formData: Record<string, any>,
-): Promise<Record<string, any>> => {
+): Promise<DynamicAppExecutionResult> => {
 	try {
 		let headers = {};
 		try {
@@ -153,8 +164,7 @@ export const executeDynamicApp = async (
 			throw new Error(`Failed to execute dynamic app: ${response.statusText}`);
 		}
 
-		const data = await returnFetchedData<Record<string, any>>(response);
-		return data;
+		return (await response.json()) as DynamicAppExecutionResult;
 	} catch (error) {
 		console.error(`Error executing dynamic app ${id}:`, error);
 		throw error;
