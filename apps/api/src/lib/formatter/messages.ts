@@ -299,7 +299,7 @@ export class MessageFormatter {
 
 						formattedMessages.push(newMessage);
 					}
-		}
+			}
 		}
 		return formattedMessages;
 	}
@@ -341,34 +341,34 @@ export class MessageFormatter {
 					.map((item) => MessageFormatter.formatBedrockContent(item))
 					.filter((item) => item !== null);
 			case "workers-ai":
-				case "ollama":
-				case "github-models": {
-					const imageItem = content.find(
-						(item) => typeof item === "object" && "type" in item && item.type === "image_url",
-					);
+			case "ollama":
+			case "github-models": {
+				const imageItem = content.find(
+					(item) => typeof item === "object" && "type" in item && item.type === "image_url",
+				);
 
-					if (
-						imageItem &&
-						typeof imageItem === "object" &&
-						"image_url" in imageItem &&
-						imageItem.image_url &&
-						typeof imageItem.image_url === "object" &&
-						"url" in imageItem.image_url
-					) {
-						return {
-							text: content
-								.filter((item) => typeof item === "object" && "type" in item && item.type === "text")
-								.map((item) => (typeof item === "object" && "text" in item ? item.text : ""))
-								.join("\n"),
-							image: MessageFormatter.getBase64FromUrl(imageItem.image_url.url),
-						};
-					}
-
-					return content
-						.filter((item) => typeof item === "object" && "type" in item && item.type === "text")
-						.map((item) => (typeof item === "object" && "text" in item ? item.text : ""))
-						.join("\n");
+				if (
+					imageItem &&
+					typeof imageItem === "object" &&
+					"image_url" in imageItem &&
+					imageItem.image_url &&
+					typeof imageItem.image_url === "object" &&
+					"url" in imageItem.image_url
+				) {
+					return {
+						text: content
+							.filter((item) => typeof item === "object" && "type" in item && item.type === "text")
+							.map((item) => (typeof item === "object" && "text" in item ? item.text : ""))
+							.join("\n"),
+						image: MessageFormatter.getBase64FromUrl(imageItem.image_url.url),
+					};
 				}
+
+				return content
+					.filter((item) => typeof item === "object" && "type" in item && item.type === "text")
+					.map((item) => (typeof item === "object" && "text" in item ? item.text : ""))
+					.join("\n");
+			}
 			default:
 				return content.filter(
 					(item) => typeof item === "object" && "type" in item && item.type !== "markdown_document",
@@ -441,10 +441,7 @@ export class MessageFormatter {
 		}
 	}
 
-	private static takeMessagesUntilTokenBudget(
-		messages: Message[],
-		maxTokens: number,
-	): Message[] {
+	private static takeMessagesUntilTokenBudget(messages: Message[], maxTokens: number): Message[] {
 		const keptMessages: Message[] = [];
 		let usedTokens = 0;
 
@@ -517,9 +514,7 @@ export class MessageFormatter {
 			}
 		}
 
-		return [...selectedIndices]
-			.sort((left, right) => left - right)
-			.map((index) => messages[index]);
+		return [...selectedIndices].sort((left, right) => left - right).map((index) => messages[index]);
 	}
 
 	private static appendUniqueInstructionPart(
@@ -611,9 +606,9 @@ export class MessageFormatter {
 					? toolCall.id
 					: undefined;
 
-			if (!name || !callId) {
-				return null;
-			}
+		if (!name || !callId) {
+			return null;
+		}
 
 		return {
 			type: "function_call",

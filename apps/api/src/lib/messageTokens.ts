@@ -46,10 +46,7 @@ export function estimateMessagesTokens(messages: Message[]): number {
 	return messages.reduce((sum, message) => sum + estimateMessageTokens(message), 0);
 }
 
-export function estimateConversationTokens(
-	messages: Message[],
-	latestUserMessage: string,
-): number {
+export function estimateConversationTokens(messages: Message[], latestUserMessage: string): number {
 	const historyTokens = estimateMessagesTokens(messages);
 	return historyTokens + Math.ceil(latestUserMessage.length / CHARS_PER_TOKEN);
 }
