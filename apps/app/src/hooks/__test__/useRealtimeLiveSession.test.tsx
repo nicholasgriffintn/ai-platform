@@ -377,6 +377,32 @@ describe("useRealtimeLiveSession", () => {
 		expect(mocks.startJpegFrameStream).not.toHaveBeenCalled();
 	});
 
+	it("starts Gemini media when setup completion arrives as a binary JSON frame", async () => {
+		const connection = createGeminiConnection();
+		mocks.createRealtimeSession.mockResolvedValueOnce(connection.session);
+		mocks.connectRealtimeWebSocket.mockReturnValueOnce(connection);
+		const { result } = renderHook(() => useRealtimeLiveSession());
+
+		await act(async () => {
+			await result.current.start("google-ai-studio", "gemini-3.1-flash-live-preview");
+		});
+
+		const connectOptions = mocks.connectRealtimeWebSocket.mock.calls[0][0];
+		await act(async () => {
+			connectOptions.onOpen?.(new Event("open"));
+			connectOptions.onMessage?.(
+				new MessageEvent("message", {
+					data: new Blob([JSON.stringify({ setupComplete: {} })]),
+				}),
+			);
+		});
+
+		await waitFor(() => expect(result.current.status).toBe("active"));
+
+		expect(mocks.startPcm16MicrophoneStream).toHaveBeenCalledTimes(1);
+		expect(result.current.lastEvent).toBe("Gemini Live connected");
+	});
+
 	it("starts Gemini video only when video input is enabled", async () => {
 		const connection = createGeminiConnection();
 		mocks.createRealtimeSession.mockResolvedValueOnce(connection.session);
@@ -444,7 +470,7 @@ describe("useRealtimeLiveSession", () => {
 
 		await waitFor(() => expect(result.current.status).toBe("active"));
 
-		act(() => {
+		await act(async () => {
 			connectOptions.onMessage?.(
 				new MessageEvent("message", {
 					data: JSON.stringify({
@@ -466,9 +492,50 @@ describe("useRealtimeLiveSession", () => {
 		});
 
 		const player = mocks.createPcm16AudioPlayer.mock.results[0].value;
-		expect(player.playBase64).toHaveBeenCalledWith("output-audio-base64");
+		await waitFor(() => expect(player.playBase64).toHaveBeenCalledWith("output-audio-base64"));
 		expect(mocks.calculatePcm16Base64AudioLevel).toHaveBeenCalledWith("output-audio-base64");
 		expect(result.current.outputAudioLevel).toBe(0.5);
+	});
+
+	it("clears queued Gemini output audio when the server reports interruption", async () => {
+		const firstPlayer = { playBase64: vi.fn(), stop: vi.fn() };
+		const secondPlayer = { playBase64: vi.fn(), stop: vi.fn() };
+		mocks.createPcm16AudioPlayer.mockReturnValueOnce(firstPlayer).mockReturnValueOnce(secondPlayer);
+		const connection = createGeminiConnection();
+		mocks.createRealtimeSession.mockResolvedValueOnce(connection.session);
+		mocks.connectRealtimeWebSocket.mockReturnValueOnce(connection);
+		const { result } = renderHook(() => useRealtimeLiveSession());
+
+		await act(async () => {
+			await result.current.start("google-ai-studio", "gemini-3.1-flash-live-preview");
+		});
+
+		const connectOptions = mocks.connectRealtimeWebSocket.mock.calls[0][0];
+		act(() => {
+			connectOptions.onOpen?.(new Event("open"));
+			connectOptions.onMessage?.(
+				new MessageEvent("message", {
+					data: JSON.stringify({ setupComplete: {} }),
+				}),
+			);
+		});
+
+		await waitFor(() => expect(result.current.status).toBe("active"));
+
+		await act(async () => {
+			connectOptions.onMessage?.(
+				new MessageEvent("message", {
+					data: JSON.stringify({
+						serverContent: {
+							interrupted: true,
+						},
+					}),
+				}),
+			);
+		});
+
+		await waitFor(() => expect(firstPlayer.stop).toHaveBeenCalled());
+		expect(mocks.createPcm16AudioPlayer).toHaveBeenCalledTimes(2);
 	});
 
 	it("can pause and resume WebSocket microphone input without ending the session", async () => {
@@ -554,7 +621,7 @@ describe("useRealtimeLiveSession", () => {
 		expect(connection.close).not.toHaveBeenCalled();
 		expect(result.current.status).toBe("idle");
 
-		act(() => {
+		await act(async () => {
 			connectOptions.onMessage?.(
 				new MessageEvent("message", {
 					data: JSON.stringify({
@@ -569,6 +636,6 @@ describe("useRealtimeLiveSession", () => {
 			);
 		});
 
-		expect(connection.close).toHaveBeenCalled();
+		await waitFor(() => expect(connection.close).toHaveBeenCalled());
 	});
 });

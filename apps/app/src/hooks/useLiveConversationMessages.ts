@@ -224,8 +224,10 @@ export function useLiveConversationMessages({
 			}
 
 			const currentTurn = currentInputTurnRef.current;
+			const shouldStartNewTurn =
+				currentTurn?.inputTextPresent && (currentTurn.outputStarted || currentTurn.outputFinal);
 			const turn =
-				currentTurn && !currentTurn.inputFinal
+				currentTurn && !currentTurn.inputFinal && !shouldStartNewTurn
 					? currentTurn
 					: (turnsRef.current.find((candidate) => !candidate.inputTextPresent) ?? beginInputTurn());
 			bindInputTurn(turn, transcript.itemId);
@@ -614,7 +616,7 @@ export function useLiveConversationMessages({
 				return;
 			}
 
-			if (event.type !== "response.done") {
+			if (event.type !== "response.done" && event.type !== "response.interrupted") {
 				return;
 			}
 
@@ -627,6 +629,9 @@ export function useLiveConversationMessages({
 				const outputMessage = turn ? outputMessageByTurnRef.current.get(turn.id) : undefined;
 				if (!conversationId || !turn || !outputMessage?.text.trim()) {
 					return;
+				}
+				if (turn.inputTextPresent) {
+					turn.inputFinal = true;
 				}
 
 				const message = buildLiveMessage({

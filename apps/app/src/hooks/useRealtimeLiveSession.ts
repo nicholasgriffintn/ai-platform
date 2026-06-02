@@ -36,6 +36,7 @@ import {
 	extractRealtimeEventType,
 	extractRealtimeTranscript,
 	parseRealtimeJsonMessage,
+	parseRealtimeMessageData,
 	type RealtimeEventResult,
 	type RealtimeTranscriptResult,
 } from "~/lib/realtime/messages";
@@ -557,18 +558,31 @@ export function useRealtimeLiveSession({
 					}
 				},
 				onMessage: (event) => {
-					const payload = parseRealtimeJsonMessage(event.data);
-					if (websocketConfig.setup?.isCompleteMessage(payload)) {
-						void startWebSocketMedia();
-					}
-					handleRealtimePayload(payload);
-					for (const chunk of websocketConfig.audioOutput?.extractChunks(payload) ?? []) {
-						audioPlayerRef.current?.playBase64(chunk);
-						handleOutputAudioChunk(chunk);
-					}
-					if (isConfiguredAudioEndEvent(connection, payload)) {
-						completePendingFinalization(connection);
-					}
+					void parseRealtimeMessageData(event.data).then((payload) => {
+						if (connectionRef.current !== connection || stoppingRef.current) {
+							return;
+						}
+
+						const eventType = extractRealtimeEventType(payload);
+						if (websocketConfig.setup?.isCompleteMessage(payload)) {
+							void startWebSocketMedia();
+						}
+						if (eventType === "response.interrupted" && websocketConfig.audioOutput) {
+							audioPlayerRef.current?.stop();
+							audioPlayerRef.current = createPcm16AudioPlayer({
+								sampleRate: websocketConfig.audioOutput.sampleRate,
+							});
+							setOutputAudioLevel(0);
+						}
+						handleRealtimePayload(payload);
+						for (const chunk of websocketConfig.audioOutput?.extractChunks(payload) ?? []) {
+							audioPlayerRef.current?.playBase64(chunk);
+							handleOutputAudioChunk(chunk);
+						}
+						if (isConfiguredAudioEndEvent(connection, payload)) {
+							completePendingFinalization(connection);
+						}
+					});
 				},
 				onOpen: () => {
 					try {

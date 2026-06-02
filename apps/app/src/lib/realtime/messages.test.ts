@@ -8,6 +8,7 @@ import {
 	extractRealtimeTranscript,
 	isRealtimeSetupCompleteMessage,
 	parseRealtimeJsonMessage,
+	parseRealtimeMessageData,
 } from "./messages";
 
 describe("realtime message helpers", () => {
@@ -129,14 +130,68 @@ describe("realtime message helpers", () => {
 			}),
 		).toEqual({
 			text: "Hello there",
-			isDelta: false,
+			isDelta: true,
+			isFinal: false,
+			source: "output",
+		});
+	});
+
+	it("marks Gemini server content complete only when the turn completes", () => {
+		expect(
+			extractRealtimeTranscript({
+				serverContent: {
+					outputTranscription: {
+						text: "Final words",
+					},
+					turnComplete: true,
+				},
+			}),
+		).toEqual({
+			text: "Final words",
+			isDelta: true,
 			isFinal: true,
 			source: "output",
+		});
+		expect(
+			extractRealtimeEvent({
+				serverContent: {
+					turnComplete: true,
+				},
+			}),
+		).toEqual({
+			type: "response.done",
+			label: "Assistant response complete",
+		});
+	});
+
+	it("maps Gemini interrupted server content to a realtime event", () => {
+		expect(
+			extractRealtimeEvent({
+				serverContent: {
+					interrupted: true,
+				},
+			}),
+		).toEqual({
+			type: "response.interrupted",
+			label: "Assistant interrupted",
 		});
 	});
 
 	it("ignores malformed JSON messages", () => {
 		expect(parseRealtimeJsonMessage("{")).toBeUndefined();
+	});
+
+	it("parses binary JSON message data", async () => {
+		const payload = JSON.stringify({ setupComplete: {} });
+
+		await expect(parseRealtimeMessageData(new Blob([payload]))).resolves.toEqual({
+			setupComplete: {},
+		});
+		await expect(
+			parseRealtimeMessageData(new TextEncoder().encode(payload).buffer),
+		).resolves.toEqual({
+			setupComplete: {},
+		});
 	});
 
 	it("extracts Realtime error messages", () => {

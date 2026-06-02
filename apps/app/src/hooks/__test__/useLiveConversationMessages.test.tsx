@@ -382,4 +382,164 @@ describe("useLiveConversationMessages", () => {
 			]);
 		});
 	});
+
+	it("finalises Gemini turns from response completion when input has no final event", async () => {
+		const queryClient = createQueryClient();
+		const { result } = renderHook(
+			() =>
+				useLiveConversationMessages({
+					conversationMode: liveConversationMode,
+					model: "gemini-3.1-flash-live-preview",
+				}),
+			{ wrapper: wrapperFor(queryClient) },
+		);
+
+		act(() => {
+			result.current.handleTranscript({
+				isDelta: true,
+				isFinal: false,
+				source: "input",
+				text: "What should I make for dinner?",
+			});
+			result.current.handleTranscript({
+				isDelta: true,
+				isFinal: false,
+				source: "output",
+				text: "Try pasta",
+			});
+			result.current.handleTranscript({
+				isDelta: true,
+				isFinal: false,
+				source: "output",
+				text: " with lemon.",
+			});
+			result.current.handleRealtimeEvent({ type: "response.done" });
+		});
+
+		await waitFor(() => {
+			const conversationId = useChatStore.getState().currentConversationId;
+			const conversation = queryClient.getQueryData<Conversation>([
+				CHATS_QUERY_KEY,
+				conversationId,
+			]);
+			expect(conversation?.messages.map((message) => [message.role, message.content])).toEqual([
+				["user", "What should I make for dinner?"],
+				["assistant", "Try pasta with lemon."],
+			]);
+			expect(conversation?.messages[1]?.status).toBeUndefined();
+			expect(conversation?.title).toBe("Driving Choices");
+		});
+
+		expect(apiService.generateTitle).toHaveBeenCalled();
+	});
+
+	it("starts a new Gemini input message after the previous response completes", async () => {
+		const queryClient = createQueryClient();
+		const { result } = renderHook(
+			() =>
+				useLiveConversationMessages({
+					conversationMode: liveConversationMode,
+					model: "gemini-3.1-flash-live-preview",
+				}),
+			{ wrapper: wrapperFor(queryClient) },
+		);
+
+		act(() => {
+			result.current.handleTranscript({
+				isDelta: true,
+				isFinal: false,
+				source: "input",
+				text: "First question",
+			});
+			result.current.handleTranscript({
+				isDelta: true,
+				isFinal: false,
+				source: "output",
+				text: "First answer",
+			});
+			result.current.handleRealtimeEvent({ type: "response.done" });
+		});
+
+		await waitFor(() => {
+			const conversationId = useChatStore.getState().currentConversationId;
+			const conversation = queryClient.getQueryData<Conversation>([
+				CHATS_QUERY_KEY,
+				conversationId,
+			]);
+			expect(conversation?.messages.map((message) => [message.role, message.content])).toEqual([
+				["user", "First question"],
+				["assistant", "First answer"],
+			]);
+		});
+
+		act(() => {
+			result.current.handleTranscript({
+				isDelta: true,
+				isFinal: false,
+				source: "input",
+				text: "Second question",
+			});
+		});
+
+		await waitFor(() => {
+			const conversationId = useChatStore.getState().currentConversationId;
+			const conversation = queryClient.getQueryData<Conversation>([
+				CHATS_QUERY_KEY,
+				conversationId,
+			]);
+			expect(conversation?.messages.map((message) => [message.role, message.content])).toEqual([
+				["user", "First question"],
+				["assistant", "First answer"],
+				["user", "Second question"],
+			]);
+		});
+	});
+
+	it("finalises partial Gemini output when the response is interrupted", async () => {
+		const queryClient = createQueryClient();
+		const { result } = renderHook(
+			() =>
+				useLiveConversationMessages({
+					conversationMode: liveConversationMode,
+					model: "gemini-3.1-flash-live-preview",
+				}),
+			{ wrapper: wrapperFor(queryClient) },
+		);
+
+		act(() => {
+			result.current.handleTranscript({
+				isDelta: true,
+				isFinal: false,
+				source: "input",
+				text: "Tell me a long story",
+			});
+			result.current.handleTranscript({
+				isDelta: true,
+				isFinal: false,
+				source: "output",
+				text: "Once upon",
+			});
+			result.current.handleRealtimeEvent({ type: "response.interrupted" });
+			result.current.handleTranscript({
+				isDelta: true,
+				isFinal: false,
+				source: "input",
+				text: "Actually keep it short",
+			});
+		});
+
+		await waitFor(() => {
+			const conversationId = useChatStore.getState().currentConversationId;
+			const conversation = queryClient.getQueryData<Conversation>([
+				CHATS_QUERY_KEY,
+				conversationId,
+			]);
+			expect(conversation?.messages.map((message) => [message.role, message.content])).toEqual([
+				["user", "Tell me a long story"],
+				["assistant", "Once upon"],
+				["user", "Actually keep it short"],
+			]);
+			expect(conversation?.messages[1]?.status).toBeUndefined();
+		});
+	});
 });

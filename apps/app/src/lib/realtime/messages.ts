@@ -25,6 +25,7 @@ const REALTIME_EVENT_LABELS: Record<string, string> = {
 	"response.content_part.added": "Assistant responding",
 	"response.output_audio.delta": "Assistant speaking",
 	"response.output_audio.done": "Assistant audio complete",
+	"response.interrupted": "Assistant interrupted",
 	"response.done": "Assistant response complete",
 };
 
@@ -34,6 +35,10 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 function getString(value: unknown): string | undefined {
 	return typeof value === "string" && value.trim().length > 0 ? value : undefined;
+}
+
+function getBoolean(value: unknown): boolean {
+	return value === true;
 }
 
 function getNestedRecord(value: unknown, key: string): Record<string, unknown> | undefined {
@@ -135,11 +140,39 @@ export function parseRealtimeJsonMessage(data: unknown): unknown | undefined {
 		return undefined;
 	}
 
+	return parseJson(data);
+}
+
+export async function parseRealtimeMessageData(data: unknown): Promise<unknown | undefined> {
+	if (typeof data === "string") {
+		return parseRealtimeJsonMessage(data);
+	}
+
+	if (data instanceof Blob) {
+		return parseJson(await data.text());
+	}
+
+	if (isArrayBuffer(data)) {
+		return parseJson(new TextDecoder().decode(data));
+	}
+
+	if (ArrayBuffer.isView(data)) {
+		return parseJson(new TextDecoder().decode(data));
+	}
+
+	return undefined;
+}
+
+function parseJson(data: string): unknown | undefined {
 	try {
 		return JSON.parse(data);
 	} catch {
 		return undefined;
 	}
+}
+
+function isArrayBuffer(value: unknown): value is ArrayBuffer {
+	return Object.prototype.toString.call(value) === "[object ArrayBuffer]";
 }
 
 export function extractRealtimeErrorMessage(payload: unknown): string | undefined {
@@ -208,6 +241,19 @@ export function extractRealtimeEventType(payload: unknown): string | undefined {
 		return undefined;
 	}
 
+	const serverContent = getNestedRecord(payload, "serverContent");
+	if (getBoolean(serverContent?.interrupted)) {
+		return "response.interrupted";
+	}
+	if (
+		getBoolean(serverContent?.turnComplete) ||
+		getBoolean(serverContent?.turn_complete) ||
+		getBoolean(serverContent?.generationComplete) ||
+		getBoolean(serverContent?.generation_complete)
+	) {
+		return "response.done";
+	}
+
 	return getString(payload.type);
 }
 
@@ -224,10 +270,15 @@ export function extractRealtimeTranscript(payload: unknown): RealtimeTranscriptR
 	if (serverContent && serverTranscript) {
 		const itemId = getRealtimeItemId(payload);
 		const responseId = getRealtimeResponseId(payload);
+		const isFinal =
+			getBoolean(serverContent.turnComplete) ||
+			getBoolean(serverContent.turn_complete) ||
+			getBoolean(serverContent.generationComplete) ||
+			getBoolean(serverContent.generation_complete);
 		return {
 			text: serverTranscript,
-			isDelta: false,
-			isFinal: true,
+			isDelta: true,
+			isFinal,
 			...(itemId ? { itemId } : {}),
 			...(responseId ? { responseId } : {}),
 			source: modelTurn ? "output" : getTranscriptSource(serverContent),
