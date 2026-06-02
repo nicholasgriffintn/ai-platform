@@ -14,7 +14,7 @@ describe("MistralRealtimeProvider", () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 		vi.mocked(getModelConfigByModel).mockResolvedValue({
-			matchingModel: "voxtral-mini-transcribe-realtime-latest",
+			matchingModel: "voxtral-mini-transcribe-realtime-2602",
 			name: "Voxtral Mini Transcribe Realtime",
 			provider: "mistral",
 			modalities: { input: ["audio"], output: ["text"] },
@@ -35,7 +35,7 @@ describe("MistralRealtimeProvider", () => {
 			transport: "websocket",
 			input_audio_format: "pcm_s16le",
 			target_streaming_delay_ms: 240,
-			url: "wss://api.polychat.test/realtime/mistral/transcription?model=voxtral-mini-transcribe-realtime-latest&delay=minimal",
+			url: "wss://api.polychat.test/realtime/mistral/transcription?model=voxtral-mini-transcribe-realtime-2602&delay=minimal",
 		});
 	});
 

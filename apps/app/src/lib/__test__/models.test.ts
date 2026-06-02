@@ -301,7 +301,7 @@ describe("getRealtimeSessionModelsByProvider", () => {
 			"voxtral-mini-transcribe-realtime": {
 				id: "voxtral-mini-transcribe-realtime",
 				name: "Voxtral Mini Transcribe Realtime",
-				matchingModel: "voxtral-mini-transcribe-realtime-latest",
+				matchingModel: "voxtral-mini-transcribe-realtime-2602",
 				provider: "mistral",
 				modalities: { input: ["audio"], output: ["transcription"] },
 				supportsRealtimeSession: true,

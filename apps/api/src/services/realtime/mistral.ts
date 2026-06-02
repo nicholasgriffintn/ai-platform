@@ -9,10 +9,12 @@ import {
 	type RealtimeTranscriptionDelay,
 } from "~/lib/providers/capabilities/realtime";
 import { getMistralTargetStreamingDelayMs } from "~/lib/providers/capabilities/realtime/providers";
+import { resolveProviderApiKey } from "~/lib/providers/utils/apiKeys";
 import { formatProviderError } from "~/lib/providers/utils/errors";
 import { ResponseFactory } from "~/lib/http/ResponseFactory";
 
 const logger = getLogger({ prefix: "services/realtime/mistral" });
+const MISTRAL_REALTIME_USER_AGENT = "polychat-mistral-realtime-proxy/1.0";
 
 function sanitizeMistralClientMessage(data: string): string {
 	let payload: unknown;
@@ -210,12 +212,13 @@ export async function createMistralRealtimeProxyResponse({
 	}
 
 	const url = new URL("/v1/audio/transcriptions/realtime", "https://api.mistral.ai");
-	url.searchParams.set("model", modelToUse);
+	url.searchParams.set("model", encodeURIComponent("voxtral-mini-transcribe-realtime-2602"));
 
 	const upstreamResponse = await fetch(url, {
 		headers: {
 			Authorization: `Bearer ${apiKey}`,
 			Upgrade: "websocket",
+			"user-agent": MISTRAL_REALTIME_USER_AGENT,
 		},
 	});
 

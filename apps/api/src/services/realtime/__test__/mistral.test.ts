@@ -64,7 +64,7 @@ describe("createMistralRealtimeProxyResponse", () => {
 		loggerMock.error.mockClear();
 		vi.stubGlobal("fetch", fetchMock);
 		getApiKeyMock.mockResolvedValue("test-key");
-		getDefaultModelMock.mockReturnValue("voxtral-mini-transcribe-realtime-latest");
+		getDefaultModelMock.mockReturnValue("voxtral-mini-transcribe-realtime-2602");
 	});
 
 	afterEach(() => {
@@ -80,7 +80,7 @@ describe("createMistralRealtimeProxyResponse", () => {
 			}),
 		);
 
-		const response = await requestProxyResponse("voxtral-mini-transcribe-realtime-latest");
+		const response = await requestProxyResponse("voxtral-mini-transcribe-realtime-2602");
 
 		expect(response.status).toBe(401);
 		await expect(response.json()).resolves.toMatchObject({
@@ -89,7 +89,7 @@ describe("createMistralRealtimeProxyResponse", () => {
 				'Failed to connect to Mistral realtime: 401 Unauthorized - {"detail":"Unauthorized"} - correlation_id=corr-123',
 		});
 		expect(loggerMock.error).toHaveBeenCalledWith("Mistral realtime handshake failed", {
-			model: "voxtral-mini-transcribe-realtime-latest",
+			model: "voxtral-mini-transcribe-realtime-2602",
 			providerStatus: 401,
 			providerStatusText: "Unauthorized",
 			providerResponse:
@@ -98,7 +98,7 @@ describe("createMistralRealtimeProxyResponse", () => {
 		});
 		expect(fetchMock).toHaveBeenCalledWith(
 			expect.objectContaining({
-				href: "https://api.mistral.ai/v1/audio/transcriptions/realtime?model=voxtral-mini-transcribe-realtime-latest",
+				href: "https://api.mistral.ai/v1/audio/transcriptions/realtime?model=voxtral-mini-transcribe-realtime-2602",
 			}),
 			expect.objectContaining({
 				headers: {

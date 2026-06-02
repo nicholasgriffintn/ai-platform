@@ -25,7 +25,7 @@ const models: ModelConfig = {
 	},
 	"voxtral-mini-transcribe-realtime": {
 		id: "voxtral-mini-transcribe-realtime",
-		matchingModel: "voxtral-mini-transcribe-realtime-latest",
+		matchingModel: "voxtral-mini-transcribe-realtime-2602",
 		name: "Voxtral Mini Transcribe Realtime",
 		provider: "mistral",
 		modalities: { input: ["audio"], output: ["transcription"] },

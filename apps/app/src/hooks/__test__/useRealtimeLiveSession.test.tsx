@@ -560,7 +560,7 @@ describe("useRealtimeLiveSession", () => {
 					data: JSON.stringify({
 						type: "transcription.done",
 						text: "Final transcript",
-						model: "voxtral-mini-transcribe-realtime-latest",
+						model: "voxtral-mini-transcribe-realtime-2602",
 						segments: [],
 						usage: {},
 						language: "en",

@@ -530,7 +530,7 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 
 	createModelConfig("voxtral-mini-transcribe-realtime", PROVIDER, {
 		name: "Voxtral Mini Transcribe Realtime",
-		matchingModel: "voxtral-mini-transcribe-realtime-latest",
+		matchingModel: "voxtral-mini-transcribe-realtime-2602",
 		description:
 			"Efficient audio input model fine-tuned and optimized for live transcription purposes only.",
 		releaseDate: "February 4, 2026",
