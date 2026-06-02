@@ -2,6 +2,7 @@ import type { ContentType, Message, MessageContent } from "~/types";
 import { safeParseJson } from "~/utils/json";
 import { isRecord } from "~/utils/objects";
 import { hasToolCalls } from "~/utils/toolCalls";
+import { estimateMessageTokens } from "~/lib/messageTokens";
 
 type OpenAIResponsesInputItem = Record<string, unknown>;
 
@@ -418,12 +419,7 @@ export class MessageFormatter {
 	}
 
 	private static countTokens(messages: Message[]): number {
-		return messages.reduce(
-			(total, msg) =>
-				total +
-				(typeof msg.content === "string" ? msg.content.length : JSON.stringify(msg.content).length),
-			0,
-		);
+		return messages.reduce((total, message) => total + estimateMessageTokens(message), 0);
 	}
 
 	private static truncateMessages(
@@ -433,17 +429,92 @@ export class MessageFormatter {
 	): Message[] {
 		switch (strategy) {
 			case "tail":
-				return messages.slice(-Math.floor(messages.length / 2));
+				return MessageFormatter.takeMessagesUntilTokenBudget(
+					[...messages].reverse(),
+					maxTokens,
+				).reverse();
 			case "head":
-				return messages.slice(0, Math.floor(messages.length / 2));
+				return MessageFormatter.takeMessagesUntilTokenBudget(messages, maxTokens);
 			case "middle": {
-				const midPoint = Math.floor(messages.length / 2);
-				return messages.slice(
-					midPoint - Math.floor(maxTokens / 2),
-					midPoint + Math.floor(maxTokens / 2),
-				);
+				return MessageFormatter.takeMessagesAroundMiddle(messages, maxTokens);
 			}
 		}
+	}
+
+	private static takeMessagesUntilTokenBudget(messages: Message[], maxTokens: number): Message[] {
+		const keptMessages: Message[] = [];
+		let usedTokens = 0;
+
+		for (const message of messages) {
+			const messageTokens = estimateMessageTokens(message);
+
+			if (keptMessages.length === 0 && messageTokens > maxTokens) {
+				return [message];
+			}
+
+			if (usedTokens + messageTokens > maxTokens) {
+				break;
+			}
+
+			keptMessages.push(message);
+			usedTokens += messageTokens;
+		}
+
+		return keptMessages;
+	}
+
+	private static takeMessagesAroundMiddle(messages: Message[], maxTokens: number): Message[] {
+		if (messages.length === 0) {
+			return messages;
+		}
+
+		const midPoint = Math.floor(messages.length / 2);
+		const selectedIndices = new Set<number>();
+		let usedTokens = 0;
+
+		const addIfFits = (index: number): boolean => {
+			if (selectedIndices.has(index)) {
+				return false;
+			}
+
+			const messageTokens = estimateMessageTokens(messages[index]);
+
+			if (selectedIndices.size === 0 && messageTokens > maxTokens) {
+				selectedIndices.add(index);
+				usedTokens = messageTokens;
+				return false;
+			}
+
+			if (usedTokens + messageTokens > maxTokens) {
+				return false;
+			}
+
+			selectedIndices.add(index);
+			usedTokens += messageTokens;
+			return true;
+		};
+
+		addIfFits(midPoint);
+
+		for (let offset = 1; offset < messages.length; offset += 1) {
+			let added = false;
+
+			if (midPoint - offset >= 0) {
+				added = addIfFits(midPoint - offset) || added;
+			}
+
+			if (midPoint + offset < messages.length) {
+				added = addIfFits(midPoint + offset) || added;
+			}
+
+			if (!added) {
+				if (midPoint - offset < 0 && midPoint + offset >= messages.length) {
+					break;
+				}
+			}
+		}
+
+		return [...selectedIndices].sort((left, right) => left - right).map((index) => messages[index]);
 	}
 
 	private static appendUniqueInstructionPart(
