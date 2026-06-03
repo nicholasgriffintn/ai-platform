@@ -184,6 +184,7 @@ const renderImageContent = (imageUrl: string, index?: number): ReactNode => {
 				alt="Attached content"
 				thumbnailClassName="rounded-lg"
 				imageClassName="rounded-lg"
+				crossOrigin="use-credentials"
 			/>
 		</div>
 	);

@@ -52,6 +52,7 @@ const COMMON_CSP = {
 		"avatars.githubusercontent.com/u/",
 		"'self'",
 		"data:",
+		API_BASE_URL,
 	],
 	connectSrc: [
 		"'self'",

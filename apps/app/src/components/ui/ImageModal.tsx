@@ -10,6 +10,7 @@ interface ImageModalProps {
 	className?: string;
 	imageClassName?: string;
 	thumbnailClassName?: string;
+	crossOrigin?: "anonymous" | "use-credentials";
 	maxHeight?: string;
 }
 
@@ -19,6 +20,7 @@ export function ImageModal({
 	className,
 	imageClassName,
 	thumbnailClassName,
+	crossOrigin = "anonymous",
 	maxHeight = "85vh",
 }: ImageModalProps) {
 	const [open, setOpen] = useState(false);
@@ -36,7 +38,7 @@ export function ImageModal({
 						src={src}
 						alt={alt}
 						className={cn("max-w-full h-auto object-contain", imageClassName)}
-						crossOrigin="anonymous"
+						crossOrigin={crossOrigin}
 					/>
 				</button>
 				<a
@@ -59,7 +61,7 @@ export function ImageModal({
 							alt={alt}
 							className={cn("w-auto h-auto max-w-full object-contain rounded-lg", imageClassName)}
 							style={{ maxHeight }}
-							crossOrigin="anonymous"
+							crossOrigin={crossOrigin}
 						/>
 					</div>
 					<DialogClose onClick={() => setOpen(false)} />
