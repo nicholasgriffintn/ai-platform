@@ -1303,55 +1303,6 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		},
 	}),
 
-	createModelConfig("o1-mini", PROVIDER, {
-		name: "o1-mini",
-		matchingModel: "o1-mini",
-		knowledgeCutoffDate: "September 2023",
-		releaseDate: "September 12, 2024",
-		lastUpdated: "September 12, 2024",
-		modalities: {
-			input: ["text"],
-			output: ["text"],
-		},
-		deprecated: true,
-		supportsAttachments: false,
-		supportsTemperature: false,
-		supportsToolCalls: false,
-		supportsResponseFormat: true,
-		contextWindow: 128000,
-		maxTokens: 65536,
-		costPer1kInputTokens: 0.0011,
-		costPer1kOutputTokens: 0.0044,
-		reasoningConfig: {
-			supportedEffortLevels: ["none", "thinking"],
-			defaultEffort: "none",
-		},
-	}),
-
-	createModelConfig("o1-preview", PROVIDER, {
-		name: "o1-preview",
-		matchingModel: "o1-preview",
-		knowledgeCutoffDate: "September 2023",
-		releaseDate: "September 12, 2024",
-		lastUpdated: "September 12, 2024",
-		modalities: {
-			input: ["text"],
-			output: ["text"],
-		},
-		deprecated: true,
-		supportsAttachments: false,
-		supportsTemperature: true,
-		supportsToolCalls: false,
-		contextWindow: 128000,
-		maxTokens: 32768,
-		costPer1kInputTokens: 0.015,
-		costPer1kOutputTokens: 0.06,
-		reasoningConfig: {
-			supportedEffortLevels: ["none", "thinking"],
-			defaultEffort: "none",
-		},
-	}),
-
 	createModelConfig("o1-pro", PROVIDER, {
 		name: "o1-pro",
 		matchingModel: "o1-pro",

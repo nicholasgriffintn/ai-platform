@@ -302,4 +302,25 @@ export const opencodeGoModelConfig: ModelConfig = createModelConfigObject([
 			defaultEffort: "none",
 		},
 	}),
+	createModelConfig("qwen3.7-plus", PROVIDER, {
+		name: "Qwen3.7 Plus",
+		matchingModel: "qwen3.7-plus",
+		releaseDate: "June 2, 2026",
+		lastUpdated: "June 2, 2026",
+		modalities: {
+			input: ["text", "image", "video"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 262144,
+		maxTokens: 65536,
+		costPer1kInputTokens: 0.0004,
+		costPer1kOutputTokens: 0.0016,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
+	}),
 ]);
