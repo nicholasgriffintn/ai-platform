@@ -10,8 +10,16 @@ import {
 	Video,
 	VideoOff,
 } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 
-import type { RealtimeLiveStatus } from "~/hooks/useRealtimeLiveSession";
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogHeader,
+	DialogTitle,
+} from "~/components/ui";
+import type { RealtimeCameraDevice, RealtimeLiveStatus } from "~/hooks/useRealtimeLiveSession";
 import {
 	REALTIME_LIVE_PROVIDER_OPTIONS,
 	type RealtimeLiveProviderId,
@@ -25,7 +33,9 @@ interface LiveChatModeControlsProps {
 	lastEvent: string;
 	lastTranscript?: string | null;
 	microphoneEnabled: boolean;
+	cameraDevices: RealtimeCameraDevice[];
 	onProviderChange: (provider: RealtimeLiveProviderId) => void;
+	onCameraDeviceChange: (deviceId: string) => void;
 	onMicrophoneEnabledChange: (enabled: boolean) => void;
 	onStart: () => void;
 	onStop: () => void;
@@ -34,22 +44,49 @@ interface LiveChatModeControlsProps {
 	showHeader?: boolean;
 	showSessionControls?: boolean;
 	status: RealtimeLiveStatus;
+	selectedCameraDeviceId: string;
 	videoEnabled: boolean;
+	videoPreviewStream?: MediaStream | null;
 }
 
 interface LiveSessionControlsProps {
+	cameraDevices: RealtimeCameraDevice[];
 	error?: string | null;
 	inputAudioLevel?: number;
 	lastEvent: string;
 	lastTranscript?: string | null;
 	microphoneEnabled: boolean;
+	onCameraDeviceChange: (deviceId: string) => void;
 	onMicrophoneEnabledChange: (enabled: boolean) => void;
 	onStart: () => void;
 	onStop: () => void;
 	onVideoEnabledChange: (enabled: boolean) => void;
 	outputAudioLevel?: number;
 	status: RealtimeLiveStatus;
+	selectedCameraDeviceId: string;
 	variant?: "panel" | "composer";
+	videoEnabled: boolean;
+	videoPreviewStream?: MediaStream | null;
+	videoSupported: boolean;
+}
+
+interface LiveMediaControlsProps {
+	microphoneEnabled: boolean;
+	onMicrophoneEnabledChange: (enabled: boolean) => void;
+	onVideoButtonClick: () => void;
+	videoEnabled: boolean;
+	videoSupported: boolean;
+}
+
+interface LiveComposerTransportProps {
+	inputAudioLevel?: number;
+	microphoneEnabled: boolean;
+	onMicrophoneEnabledChange: (enabled: boolean) => void;
+	onStart: () => void;
+	onStop: () => void;
+	onVideoButtonClick: () => void;
+	outputAudioLevel?: number;
+	status: RealtimeLiveStatus;
 	videoEnabled: boolean;
 	videoSupported: boolean;
 }
@@ -80,22 +117,129 @@ function getStatusCopy(status: RealtimeLiveStatus): string {
 	}
 }
 
+function LiveCameraPreview({ stream }: { stream?: MediaStream | null }) {
+	const videoRef = useRef<HTMLVideoElement | null>(null);
+
+	useEffect(() => {
+		if (!videoRef.current) {
+			return;
+		}
+
+		videoRef.current.srcObject = stream ?? null;
+	}, [stream]);
+
+	if (!stream) {
+		return null;
+	}
+
+	return (
+		<div className="relative aspect-video min-h-16 overflow-hidden rounded-md border border-zinc-200 bg-zinc-950 dark:border-zinc-800">
+			<video
+				ref={videoRef}
+				autoPlay
+				muted
+				playsInline
+				aria-label="Camera preview"
+				className="h-full w-full object-cover"
+			/>
+		</div>
+	);
+}
+
+function LiveCameraSelector({
+	cameraDevices,
+	onCameraDeviceChange,
+	selectedCameraDeviceId,
+}: {
+	cameraDevices: RealtimeCameraDevice[];
+	onCameraDeviceChange: (deviceId: string) => void;
+	selectedCameraDeviceId: string;
+}) {
+	if (!cameraDevices.length) {
+		return (
+			<div className="rounded-md border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm text-zinc-500 dark:border-zinc-800 dark:bg-zinc-900/60 dark:text-zinc-400">
+				No cameras found
+			</div>
+		);
+	}
+
+	return (
+		<div role="radiogroup" aria-label="Camera" className="grid gap-2">
+			{cameraDevices.map((device) => (
+				<button
+					key={device.deviceId}
+					type="button"
+					role="radio"
+					aria-checked={device.deviceId === selectedCameraDeviceId}
+					onClick={() => onCameraDeviceChange(device.deviceId)}
+					className={cn(
+						"flex min-h-10 w-full items-center justify-between gap-3 rounded-md border px-3 py-2 text-left text-sm transition-colors",
+						device.deviceId === selectedCameraDeviceId
+							? "border-sky-300 bg-sky-50 text-sky-950 dark:border-sky-800 dark:bg-sky-950/30 dark:text-sky-100"
+							: "border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-200 dark:hover:bg-zinc-900",
+					)}
+				>
+					<span className="min-w-0 truncate">{device.label}</span>
+					{device.deviceId === selectedCameraDeviceId && (
+						<Check className="h-4 w-4 shrink-0 text-sky-600 dark:text-sky-300" aria-hidden="true" />
+					)}
+				</button>
+			))}
+		</div>
+	);
+}
+
+function LiveCameraDialog({
+	cameraDevices,
+	onCameraDeviceChange,
+	onOpenChange,
+	open,
+	selectedCameraDeviceId,
+	videoPreviewStream,
+}: {
+	cameraDevices: RealtimeCameraDevice[];
+	onCameraDeviceChange: (deviceId: string) => void;
+	onOpenChange: (open: boolean) => void;
+	open: boolean;
+	selectedCameraDeviceId: string;
+	videoPreviewStream?: MediaStream | null;
+}) {
+	return (
+		<Dialog open={open} onOpenChange={onOpenChange}>
+			<DialogContent className="sm:max-w-xl">
+				<DialogHeader>
+					<DialogTitle>Camera</DialogTitle>
+					<DialogDescription>Choose the camera used for Gemini Live.</DialogDescription>
+				</DialogHeader>
+				<div className="grid gap-4">
+					<div className="overflow-hidden rounded-lg border border-zinc-200 bg-zinc-950 dark:border-zinc-800">
+						<LiveCameraPreview stream={videoPreviewStream} />
+						{!videoPreviewStream && (
+							<div className="flex aspect-video items-center justify-center text-sm text-zinc-400">
+								Preview starting
+							</div>
+						)}
+					</div>
+					<LiveCameraSelector
+						cameraDevices={cameraDevices}
+						onCameraDeviceChange={onCameraDeviceChange}
+						selectedCameraDeviceId={selectedCameraDeviceId}
+					/>
+				</div>
+			</DialogContent>
+		</Dialog>
+	);
+}
+
 function LiveMediaControls({
 	microphoneEnabled,
 	onMicrophoneEnabledChange,
-	onVideoEnabledChange,
+	onVideoButtonClick,
 	videoEnabled,
 	videoSupported,
-}: Pick<
-	LiveSessionControlsProps,
-	| "microphoneEnabled"
-	| "onMicrophoneEnabledChange"
-	| "onVideoEnabledChange"
-	| "videoEnabled"
-	| "videoSupported"
->) {
+}: LiveMediaControlsProps) {
 	return (
-		<div className="flex shrink-0 items-center gap-1">
+		<div className="flex min-w-0 shrink-0 items-center gap-1">
 			<button
 				type="button"
 				aria-label={microphoneEnabled ? "Turn microphone off" : "Turn microphone on"}
@@ -127,7 +271,7 @@ function LiveMediaControls({
 							: "Turn camera on"
 						: "Camera is available with Gemini Live"
 				}
-				onClick={() => onVideoEnabledChange(!videoEnabled)}
+				onClick={onVideoButtonClick}
 				className={cn(
 					"flex h-8 w-8 items-center justify-center rounded-md transition-colors disabled:cursor-not-allowed disabled:opacity-50",
 					videoEnabled
@@ -209,24 +353,12 @@ function LiveComposerTransport({
 	onMicrophoneEnabledChange,
 	onStart,
 	onStop,
-	onVideoEnabledChange,
+	onVideoButtonClick,
 	outputAudioLevel,
 	status,
 	videoEnabled,
 	videoSupported,
-}: Pick<
-	LiveSessionControlsProps,
-	| "inputAudioLevel"
-	| "microphoneEnabled"
-	| "onMicrophoneEnabledChange"
-	| "onStart"
-	| "onStop"
-	| "onVideoEnabledChange"
-	| "outputAudioLevel"
-	| "status"
-	| "videoEnabled"
-	| "videoSupported"
->) {
+}: LiveComposerTransportProps) {
 	const isActive = status === "active";
 	const isConnecting = status === "connecting";
 
@@ -290,7 +422,7 @@ function LiveComposerTransport({
 							: "Turn camera on"
 						: "Camera is available with Gemini Live"
 				}
-				onClick={() => onVideoEnabledChange(!videoEnabled)}
+				onClick={onVideoButtonClick}
 				className={cn(
 					"flex h-10 w-10 shrink-0 items-center justify-center rounded-md transition-colors disabled:cursor-not-allowed disabled:opacity-45",
 					videoEnabled
@@ -309,39 +441,65 @@ function LiveComposerTransport({
 }
 
 function LiveSessionControls({
+	cameraDevices,
 	error,
 	inputAudioLevel,
 	lastEvent,
 	lastTranscript,
 	microphoneEnabled,
+	onCameraDeviceChange,
 	onMicrophoneEnabledChange,
 	onStart,
 	onStop,
 	onVideoEnabledChange,
 	outputAudioLevel,
+	selectedCameraDeviceId,
 	status,
 	variant = "panel",
 	videoEnabled,
+	videoPreviewStream,
 	videoSupported,
 }: LiveSessionControlsProps) {
 	const isActive = status === "active";
 	const isConnecting = status === "connecting";
 	const detail = error ?? lastTranscript ?? lastEvent;
+	const [cameraDialogOpen, setCameraDialogOpen] = useState(false);
+
+	const handleVideoButtonClick = () => {
+		if (videoEnabled) {
+			onVideoEnabledChange(false);
+			setCameraDialogOpen(false);
+			return;
+		}
+
+		onVideoEnabledChange(true);
+		setCameraDialogOpen(true);
+	};
 
 	if (variant === "composer") {
 		return (
-			<LiveComposerTransport
-				inputAudioLevel={inputAudioLevel}
-				microphoneEnabled={microphoneEnabled}
-				onMicrophoneEnabledChange={onMicrophoneEnabledChange}
-				onStart={onStart}
-				onStop={onStop}
-				onVideoEnabledChange={onVideoEnabledChange}
-				outputAudioLevel={outputAudioLevel}
-				status={status}
-				videoEnabled={videoEnabled}
-				videoSupported={videoSupported}
-			/>
+			<>
+				<LiveComposerTransport
+					inputAudioLevel={inputAudioLevel}
+					microphoneEnabled={microphoneEnabled}
+					onMicrophoneEnabledChange={onMicrophoneEnabledChange}
+					onStart={onStart}
+					onStop={onStop}
+					onVideoButtonClick={handleVideoButtonClick}
+					outputAudioLevel={outputAudioLevel}
+					status={status}
+					videoEnabled={videoEnabled}
+					videoSupported={videoSupported}
+				/>
+				<LiveCameraDialog
+					cameraDevices={cameraDevices}
+					onCameraDeviceChange={onCameraDeviceChange}
+					onOpenChange={setCameraDialogOpen}
+					open={cameraDialogOpen}
+					selectedCameraDeviceId={selectedCameraDeviceId}
+					videoPreviewStream={videoPreviewStream}
+				/>
+			</>
 		);
 	}
 
@@ -356,7 +514,7 @@ function LiveSessionControls({
 				<LiveMediaControls
 					microphoneEnabled={microphoneEnabled}
 					onMicrophoneEnabledChange={onMicrophoneEnabledChange}
-					onVideoEnabledChange={onVideoEnabledChange}
+					onVideoButtonClick={handleVideoButtonClick}
 					videoEnabled={videoEnabled}
 					videoSupported={videoSupported}
 				/>
@@ -382,6 +540,14 @@ function LiveSessionControls({
 					<span className="truncate">{isActive ? "Stop live session" : "Start live session"}</span>
 				</button>
 			</div>
+			<LiveCameraDialog
+				cameraDevices={cameraDevices}
+				onCameraDeviceChange={onCameraDeviceChange}
+				onOpenChange={setCameraDialogOpen}
+				open={cameraDialogOpen}
+				selectedCameraDeviceId={selectedCameraDeviceId}
+				videoPreviewStream={videoPreviewStream}
+			/>
 		</div>
 	);
 }
@@ -391,10 +557,12 @@ export function LiveSessionComposerControls(props: Omit<LiveSessionControlsProps
 }
 
 export function LiveChatModeControls({
+	cameraDevices,
 	error,
 	lastEvent,
 	lastTranscript,
 	microphoneEnabled,
+	onCameraDeviceChange,
 	onProviderChange,
 	onMicrophoneEnabledChange,
 	onStart,
@@ -404,7 +572,9 @@ export function LiveChatModeControls({
 	showHeader = true,
 	showSessionControls = true,
 	status,
+	selectedCameraDeviceId,
 	videoEnabled,
+	videoPreviewStream,
 }: LiveChatModeControlsProps) {
 	const isActive = status === "active";
 	const isConnecting = status === "connecting";
@@ -465,16 +635,20 @@ export function LiveChatModeControls({
 			</div>
 			{showSessionControls && (
 				<LiveSessionControls
+					cameraDevices={cameraDevices}
 					error={error}
 					lastEvent={lastEvent}
 					lastTranscript={lastTranscript}
 					microphoneEnabled={microphoneEnabled}
+					onCameraDeviceChange={onCameraDeviceChange}
 					onMicrophoneEnabledChange={onMicrophoneEnabledChange}
 					onStart={onStart}
 					onStop={onStop}
 					onVideoEnabledChange={onVideoEnabledChange}
+					selectedCameraDeviceId={selectedCameraDeviceId}
 					status={status}
 					videoEnabled={videoEnabled}
+					videoPreviewStream={videoPreviewStream}
 					videoSupported={supportsRealtimeLiveVideoInput(provider)}
 				/>
 			)}

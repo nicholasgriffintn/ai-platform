@@ -15,6 +15,7 @@ import {
 import {
 	arrayBufferToBase64,
 	createPcm16AudioPlayer,
+	listRealtimeVideoInputDevices,
 	requestRealtimeAudioStream,
 	requestRealtimeVideoStream,
 	setMediaStreamTrackEnabled,
@@ -58,6 +59,11 @@ import {
 
 export type RealtimeLiveStatus = "idle" | "connecting" | "active" | "error";
 
+export interface RealtimeCameraDevice {
+	deviceId: string;
+	label: string;
+}
+
 interface UseRealtimeLiveSessionOptions {
 	model?: string | null;
 	onEvent?: (event: RealtimeEventResult) => void;
@@ -70,6 +76,13 @@ interface CleanupOptions {
 
 function getConnectionProviderOption(connection: RealtimeConnection): RealtimeLiveProviderOption {
 	return getRealtimeLiveProviderOption(connection.session.provider ?? "");
+}
+
+function createCameraDeviceOption(device: MediaDeviceInfo, index: number): RealtimeCameraDevice {
+	return {
+		deviceId: device.deviceId,
+		label: device.label || `Camera ${index + 1}`,
+	};
 }
 
 function sendConfiguredAudioEnd(
@@ -126,6 +139,9 @@ export function useRealtimeLiveSession({
 	const [lastTranscript, setLastTranscript] = useState<string | null>(null);
 	const [inputAudioLevel, setInputAudioLevel] = useState(0);
 	const [outputAudioLevel, setOutputAudioLevel] = useState(0);
+	const [cameraDevices, setCameraDevices] = useState<RealtimeCameraDevice[]>([]);
+	const [selectedCameraDeviceId, setSelectedCameraDeviceIdState] = useState("");
+	const [videoPreviewStream, setVideoPreviewStream] = useState<MediaStream | null>(null);
 
 	const abortControllerRef = useRef<AbortController | null>(null);
 	const audioPlayerRef = useRef<Pcm16AudioPlayer | null>(null);
@@ -142,6 +158,7 @@ export function useRealtimeLiveSession({
 	const videoStreamRef = useRef<MediaStream | null>(null);
 	const microphoneEnabledRef = useRef(true);
 	const videoEnabledRef = useRef(false);
+	const selectedCameraDeviceIdRef = useRef("");
 	const remoteAudioRef = useRef<HTMLAudioElement | null>(null);
 	const statusRef = useRef(status);
 	const stoppingRef = useRef(false);
@@ -202,6 +219,22 @@ export function useRealtimeLiveSession({
 			setOutputAudioLevel(0);
 		}, 200);
 	}, [clearOutputAudioLevelReset]);
+
+	const refreshCameraDevices = useCallback(async () => {
+		const devices = (await listRealtimeVideoInputDevices()).map(createCameraDeviceOption);
+		setCameraDevices(devices);
+
+		if (
+			selectedCameraDeviceIdRef.current &&
+			devices.some((device) => device.deviceId === selectedCameraDeviceIdRef.current)
+		) {
+			return;
+		}
+
+		const nextDeviceId = devices[0]?.deviceId ?? "";
+		selectedCameraDeviceIdRef.current = nextDeviceId;
+		setSelectedCameraDeviceIdState(nextDeviceId);
+	}, []);
 
 	const stopOutputAudioMeter = useCallback(() => {
 		outputAudioMeterRef.current?.stop();
@@ -297,10 +330,12 @@ export function useRealtimeLiveSession({
 			return videoStreamRef.current;
 		}
 
-		const stream = await requestRealtimeVideoStream();
+		const stream = await requestRealtimeVideoStream(selectedCameraDeviceIdRef.current || undefined);
 		videoStreamRef.current = stream;
+		setVideoPreviewStream(stream);
+		void refreshCameraDevices();
 		return stream;
-	}, []);
+	}, [refreshCameraDevices]);
 
 	const stopInputAudio = useCallback(
 		(notifyProvider = false) => {
@@ -329,6 +364,7 @@ export function useRealtimeLiveSession({
 		inputVideoControllerRef.current = null;
 		stopMediaStream(videoStreamRef.current);
 		videoStreamRef.current = null;
+		setVideoPreviewStream(null);
 	}, []);
 
 	const completePendingFinalization = useCallback((connection: RealtimeWebSocketConnection) => {
@@ -786,6 +822,12 @@ export function useRealtimeLiveSession({
 				!isRealtimeWebSocketConnection(connection) ||
 				!getConnectionProviderOption(connection).websocket?.videoInput
 			) {
+				void ensureVideoStream().catch((toggleError) => {
+					videoEnabledRef.current = false;
+					setIsVideoEnabledState(false);
+					setError(getErrorMessage(toggleError, "Failed to start camera preview"));
+					toast.error(getErrorMessage(toggleError, "Failed to start camera preview"));
+				});
 				return;
 			}
 
@@ -793,7 +835,42 @@ export function useRealtimeLiveSession({
 				failSession(getErrorMessage(toggleError, "Failed to start video input"));
 			});
 		},
-		[failSession, provider, startInputVideo, stopInputVideo],
+		[ensureVideoStream, failSession, provider, startInputVideo, stopInputVideo],
+	);
+
+	const setCameraDeviceId = useCallback(
+		(nextDeviceId: string) => {
+			if (selectedCameraDeviceIdRef.current === nextDeviceId) {
+				return;
+			}
+
+			selectedCameraDeviceIdRef.current = nextDeviceId;
+			setSelectedCameraDeviceIdState(nextDeviceId);
+
+			if (!videoEnabledRef.current) {
+				return;
+			}
+
+			stopInputVideo();
+			const connection = connectionRef.current;
+			if (
+				isRealtimeWebSocketConnection(connection) &&
+				getConnectionProviderOption(connection).websocket?.videoInput
+			) {
+				void startInputVideo(connection).catch((toggleError) => {
+					failSession(getErrorMessage(toggleError, "Failed to switch camera"));
+				});
+				return;
+			}
+
+			void ensureVideoStream().catch((toggleError) => {
+				videoEnabledRef.current = false;
+				setIsVideoEnabledState(false);
+				setError(getErrorMessage(toggleError, "Failed to switch camera"));
+				toast.error(getErrorMessage(toggleError, "Failed to switch camera"));
+			});
+		},
+		[ensureVideoStream, failSession, startInputVideo, stopInputVideo],
 	);
 
 	const changeProvider = useCallback(
@@ -810,9 +887,18 @@ export function useRealtimeLiveSession({
 		[setVideoEnabled],
 	);
 
+	useEffect(() => {
+		void refreshCameraDevices();
+		navigator.mediaDevices?.addEventListener?.("devicechange", refreshCameraDevices);
+		return () => {
+			navigator.mediaDevices?.removeEventListener?.("devicechange", refreshCameraDevices);
+		};
+	}, [refreshCameraDevices]);
+
 	useEffect(() => () => cleanup("idle", false), [cleanup]);
 
 	return {
+		cameraDevices,
 		error,
 		inputAudioLevel,
 		isActive: status === "active",
@@ -823,11 +909,14 @@ export function useRealtimeLiveSession({
 		lastTranscript,
 		provider,
 		outputAudioLevel,
+		selectedCameraDeviceId,
+		setCameraDeviceId,
 		setMicrophoneEnabled,
 		setProvider: changeProvider,
 		setVideoEnabled,
 		start,
 		status,
 		stop,
+		videoPreviewStream,
 	};
 }

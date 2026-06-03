@@ -95,6 +95,7 @@ vi.mock("~/hooks/useModels", () => ({
 
 vi.mock("~/hooks/useRealtimeLiveSession", () => ({
 	useRealtimeLiveSession: () => ({
+		cameraDevices: [],
 		error: null,
 		inputAudioLevel: 0,
 		isMicrophoneEnabled: true,
@@ -103,12 +104,15 @@ vi.mock("~/hooks/useRealtimeLiveSession", () => ({
 		lastTranscript: null,
 		outputAudioLevel: 0,
 		provider: liveSessionState.provider,
+		selectedCameraDeviceId: "",
+		setCameraDeviceId: vi.fn(),
 		setMicrophoneEnabled: vi.fn(),
 		setProvider: setLiveProvider,
 		setVideoEnabled: vi.fn(),
 		start: vi.fn(),
 		status: "idle",
 		stop: stopLiveSession,
+		videoPreviewStream: null,
 	}),
 }));
 

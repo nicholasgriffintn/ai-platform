@@ -20,6 +20,7 @@ const mocks = vi.hoisted(() => ({
 			"sendJson" in connection,
 		),
 	),
+	listRealtimeVideoInputDevices: vi.fn(),
 	preferOpusAudioCodec: vi.fn(),
 	requestRealtimeAudioStream: vi.fn(),
 	requestRealtimeVideoStream: vi.fn(),
@@ -50,6 +51,7 @@ vi.mock("~/lib/realtime", () => ({
 vi.mock("~/lib/realtime/audio", () => ({
 	arrayBufferToBase64: mocks.arrayBufferToBase64,
 	createPcm16AudioPlayer: mocks.createPcm16AudioPlayer,
+	listRealtimeVideoInputDevices: mocks.listRealtimeVideoInputDevices,
 	requestRealtimeAudioStream: mocks.requestRealtimeAudioStream,
 	requestRealtimeVideoStream: mocks.requestRealtimeVideoStream,
 	setMediaStreamTrackEnabled: mocks.setMediaStreamTrackEnabled,
@@ -114,7 +116,9 @@ const geminiSetup = {
 let microphoneChunkHandler: ((chunk: ArrayBuffer) => void) | undefined;
 
 function createMistralConnection(): MockWebSocketConnection {
-	const socket: MockWebSocketConnection["socket"] = { readyState: WebSocket.OPEN };
+	const socket: MockWebSocketConnection["socket"] = {
+		readyState: WebSocket.OPEN,
+	};
 	return {
 		close: vi.fn(() => {
 			socket.readyState = WebSocket.CLOSED;
@@ -130,7 +134,9 @@ function createMistralConnection(): MockWebSocketConnection {
 }
 
 function createElevenLabsConnection(): MockWebSocketConnection {
-	const socket: MockWebSocketConnection["socket"] = { readyState: WebSocket.OPEN };
+	const socket: MockWebSocketConnection["socket"] = {
+		readyState: WebSocket.OPEN,
+	};
 	return {
 		close: vi.fn(() => {
 			socket.readyState = WebSocket.CLOSED;
@@ -146,7 +152,9 @@ function createElevenLabsConnection(): MockWebSocketConnection {
 }
 
 function createGeminiConnection(): MockWebSocketConnection {
-	const socket: MockWebSocketConnection["socket"] = { readyState: WebSocket.OPEN };
+	const socket: MockWebSocketConnection["socket"] = {
+		readyState: WebSocket.OPEN,
+	};
 	return {
 		close: vi.fn(() => {
 			socket.readyState = WebSocket.CLOSED;
@@ -232,9 +240,16 @@ describe("useRealtimeLiveSession", () => {
 		Object.defineProperty(navigator, "mediaDevices", {
 			configurable: true,
 			value: {
+				addEventListener: vi.fn(),
+				enumerateDevices: vi.fn(),
 				getUserMedia: vi.fn().mockResolvedValue(stream),
+				removeEventListener: vi.fn(),
 			},
 		});
+		mocks.listRealtimeVideoInputDevices.mockResolvedValue([
+			{ deviceId: "front-camera", kind: "videoinput", label: "Front Camera" },
+			{ deviceId: "desk-camera", kind: "videoinput", label: "Desk Camera" },
+		]);
 		mocks.requestRealtimeAudioStream.mockResolvedValue(stream);
 		mocks.requestRealtimeVideoStream.mockResolvedValue(stream);
 
@@ -268,7 +283,11 @@ describe("useRealtimeLiveSession", () => {
 
 		act(() => {
 			connectOptions.onClose?.(
-				createCloseEvent({ code: 1006, reason: "provider closed", wasClean: false }),
+				createCloseEvent({
+					code: 1006,
+					reason: "provider closed",
+					wasClean: false,
+				}),
 			);
 		});
 
@@ -486,6 +505,27 @@ describe("useRealtimeLiveSession", () => {
 		expect(callOrder).toEqual(["setup", "microphone", "video"]);
 	});
 
+	it("requests Gemini video from the selected camera", async () => {
+		const { result } = renderHook(() => useRealtimeLiveSession());
+
+		await waitFor(() => expect(result.current.cameraDevices).toHaveLength(2));
+
+		act(() => {
+			result.current.setProvider("google-ai-studio");
+		});
+		await waitFor(() => expect(result.current.provider).toBe("google-ai-studio"));
+
+		act(() => {
+			result.current.setCameraDeviceId("desk-camera");
+			result.current.setVideoEnabled(true);
+		});
+
+		await waitFor(() => expect(result.current.videoPreviewStream).toBeTruthy());
+
+		expect(result.current.selectedCameraDeviceId).toBe("desk-camera");
+		expect(mocks.requestRealtimeVideoStream).toHaveBeenCalledWith("desk-camera");
+	});
+
 	it("reports Gemini output audio level from streamed audio chunks", async () => {
 		const connection = createGeminiConnection();
 		mocks.createRealtimeSession.mockResolvedValueOnce(connection.session);
@@ -632,8 +672,12 @@ describe("useRealtimeLiveSession", () => {
 			result.current.stop();
 		});
 
-		expect(connection.sendJson).toHaveBeenNthCalledWith(1, { type: "input_audio.flush" });
-		expect(connection.sendJson).toHaveBeenNthCalledWith(2, { type: "input_audio.end" });
+		expect(connection.sendJson).toHaveBeenNthCalledWith(1, {
+			type: "input_audio.flush",
+		});
+		expect(connection.sendJson).toHaveBeenNthCalledWith(2, {
+			type: "input_audio.end",
+		});
 	});
 
 	it("waits for Mistral transcription done before closing after stop", async () => {
@@ -706,13 +750,17 @@ describe("useRealtimeLiveSession", () => {
 		act(() => {
 			vi.advanceTimersByTime(419);
 		});
-		expect(connection.sendJson).not.toHaveBeenCalledWith({ type: "input_audio.flush" });
+		expect(connection.sendJson).not.toHaveBeenCalledWith({
+			type: "input_audio.flush",
+		});
 
 		act(() => {
 			vi.advanceTimersByTime(1);
 		});
 
-		expect(connection.sendJson).toHaveBeenCalledWith({ type: "input_audio.flush" });
+		expect(connection.sendJson).toHaveBeenCalledWith({
+			type: "input_audio.flush",
+		});
 		vi.useRealTimers();
 	});
 
@@ -739,7 +787,9 @@ describe("useRealtimeLiveSession", () => {
 			vi.advanceTimersByTime(1000);
 		});
 
-		expect(connection.sendJson).not.toHaveBeenCalledWith({ type: "input_audio.flush" });
+		expect(connection.sendJson).not.toHaveBeenCalledWith({
+			type: "input_audio.flush",
+		});
 		vi.useRealTimers();
 	});
 
@@ -768,8 +818,12 @@ describe("useRealtimeLiveSession", () => {
 			result.current.stop();
 		});
 
-		expect(connection.sendJson).toHaveBeenNthCalledWith(1, { type: "input_audio.flush" });
-		expect(connection.sendJson).toHaveBeenNthCalledWith(2, { type: "input_audio.end" });
+		expect(connection.sendJson).toHaveBeenNthCalledWith(1, {
+			type: "input_audio.flush",
+		});
+		expect(connection.sendJson).toHaveBeenNthCalledWith(2, {
+			type: "input_audio.end",
+		});
 		expect(result.current.status).toBe("idle");
 		expect(connection.close).not.toHaveBeenCalled();
 

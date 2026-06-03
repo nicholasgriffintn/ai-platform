@@ -154,6 +154,7 @@ export function useHomeChatModeConfig(): {
 	});
 	const {
 		error: liveError,
+		cameraDevices: liveCameraDevices,
 		inputAudioLevel: liveInputAudioLevel,
 		isMicrophoneEnabled: liveMicrophoneEnabled,
 		isVideoEnabled: liveVideoEnabled,
@@ -161,12 +162,15 @@ export function useHomeChatModeConfig(): {
 		lastTranscript: liveLastTranscript,
 		outputAudioLevel: liveOutputAudioLevel,
 		provider: liveProvider,
+		selectedCameraDeviceId: liveSelectedCameraDeviceId,
+		setCameraDeviceId: setLiveCameraDeviceId,
 		setMicrophoneEnabled: setLiveMicrophoneEnabled,
 		setProvider: setLiveProvider,
 		setVideoEnabled: setLiveVideoEnabled,
 		start: startLiveSession,
 		status: liveStatus,
 		stop: stopLiveSession,
+		videoPreviewStream: liveVideoPreviewStream,
 	} = liveSession;
 	const stopLiveSessionAndFlush = useCallback(() => {
 		if (
@@ -479,10 +483,12 @@ export function useHomeChatModeConfig(): {
 		);
 		const liveControls = (
 			<LiveChatModeControls
+				cameraDevices={liveCameraDevices}
 				error={liveError}
 				lastEvent={liveLastEvent}
 				lastTranscript={liveLastTranscript}
 				microphoneEnabled={liveMicrophoneEnabled}
+				onCameraDeviceChange={setLiveCameraDeviceId}
 				onProviderChange={handleLiveProviderChange}
 				onMicrophoneEnabledChange={setLiveMicrophoneEnabled}
 				onStart={() => void startLiveSession(effectiveLiveProvider, selectedModel)}
@@ -492,23 +498,29 @@ export function useHomeChatModeConfig(): {
 				showHeader={activeModeId !== "live"}
 				showSessionControls={activeModeId !== "live"}
 				status={liveStatus}
+				selectedCameraDeviceId={liveSelectedCameraDeviceId}
 				videoEnabled={liveVideoEnabled}
+				videoPreviewStream={liveVideoPreviewStream}
 			/>
 		);
 		const liveInputControls = (
 			<LiveSessionComposerControls
+				cameraDevices={liveCameraDevices}
 				error={liveError}
 				inputAudioLevel={liveInputAudioLevel}
 				lastEvent={liveLastEvent}
 				lastTranscript={liveLastTranscript}
 				microphoneEnabled={liveMicrophoneEnabled}
+				onCameraDeviceChange={setLiveCameraDeviceId}
 				onMicrophoneEnabledChange={setLiveMicrophoneEnabled}
 				onStart={() => void startLiveSession(effectiveLiveProvider, selectedModel)}
 				onStop={stopLiveSessionAndFlush}
 				onVideoEnabledChange={setLiveVideoEnabled}
 				outputAudioLevel={liveOutputAudioLevel}
+				selectedCameraDeviceId={liveSelectedCameraDeviceId}
 				status={liveStatus}
 				videoEnabled={liveVideoEnabled}
+				videoPreviewStream={liveVideoPreviewStream}
 				videoSupported={supportsRealtimeLiveVideoInput(effectiveLiveProvider)}
 			/>
 		);
@@ -696,6 +708,7 @@ export function useHomeChatModeConfig(): {
 		parsedSandboxTimeoutSeconds,
 		sandboxModelSettings,
 		sandboxSettings,
+		liveCameraDevices,
 		liveError,
 		liveInputAudioLevel,
 		liveMicrophoneEnabled,
@@ -704,12 +717,15 @@ export function useHomeChatModeConfig(): {
 		liveLastTranscript,
 		liveOutputAudioLevel,
 		liveProvider,
+		liveSelectedCameraDeviceId,
+		liveVideoPreviewStream,
 		effectiveLiveProvider,
 		composedReasoningModel,
 		forceLiveResponseAudio,
 		liveStatus,
 		liveConversationMode,
 		handleFinalLiveInputTranscript,
+		setLiveCameraDeviceId,
 		setLiveMicrophoneEnabled,
 		setLiveVideoEnabled,
 		startLiveSession,

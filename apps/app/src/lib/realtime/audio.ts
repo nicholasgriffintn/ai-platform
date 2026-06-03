@@ -79,11 +79,29 @@ export function setMediaStreamTrackEnabled(
 }
 
 export function requestRealtimeAudioStream(): Promise<MediaStream> {
-	return navigator.mediaDevices.getUserMedia({ audio: REALTIME_AUDIO_CONSTRAINTS });
+	return navigator.mediaDevices.getUserMedia({
+		audio: REALTIME_AUDIO_CONSTRAINTS,
+	});
 }
 
-export function requestRealtimeVideoStream(): Promise<MediaStream> {
-	return navigator.mediaDevices.getUserMedia({ video: REALTIME_VIDEO_CONSTRAINTS });
+export function requestRealtimeVideoStream(deviceId?: string): Promise<MediaStream> {
+	const video: MediaTrackConstraints = deviceId
+		? {
+				...REALTIME_VIDEO_CONSTRAINTS,
+				deviceId: { exact: deviceId },
+			}
+		: REALTIME_VIDEO_CONSTRAINTS;
+
+	return navigator.mediaDevices.getUserMedia({ video });
+}
+
+export async function listRealtimeVideoInputDevices(): Promise<MediaDeviceInfo[]> {
+	if (!navigator.mediaDevices?.enumerateDevices) {
+		return [];
+	}
+
+	const devices = await navigator.mediaDevices.enumerateDevices();
+	return devices.filter((device) => device.kind === "videoinput");
 }
 
 export function downsampleFloat32Buffer(
@@ -154,10 +172,20 @@ export async function startPcm16MicrophoneStream({
 	const source = audioContext.createMediaStreamSource(stream);
 
 	if (supportsAudioWorklet(audioContext)) {
-		return startPcm16MicrophoneWorkletStream({ audioContext, onChunk, sampleRate, source });
+		return startPcm16MicrophoneWorkletStream({
+			audioContext,
+			onChunk,
+			sampleRate,
+			source,
+		});
 	}
 
-	return startPcm16MicrophoneScriptProcessorStream({ audioContext, onChunk, sampleRate, source });
+	return startPcm16MicrophoneScriptProcessorStream({
+		audioContext,
+		onChunk,
+		sampleRate,
+		source,
+	});
 }
 
 function supportsAudioWorklet(audioContext: AudioContext): boolean {
