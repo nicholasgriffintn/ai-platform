@@ -117,6 +117,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
 		isPlaying: isPlayingAutoResponse,
 		stopPlayback,
 	} = useAutoPlayResponses({
+		conversationId: currentConversationId,
 		messages,
 		isEnabled: effectiveAutoPlayResponsesEnabled,
 		isStreaming: isStreamLoading || streamStarted,

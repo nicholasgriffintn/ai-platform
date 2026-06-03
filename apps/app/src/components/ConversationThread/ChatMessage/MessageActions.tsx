@@ -4,21 +4,25 @@ import {
 	Edit,
 	GitBranch,
 	MessageSquareQuote,
+	Volume2,
+	VolumeX,
 	RefreshCw,
 	ThumbsDown,
 	ThumbsUp,
 } from "lucide-react";
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
+import { toast } from "sonner";
 
 import { Button, Popover, PopoverContent, PopoverTrigger } from "~/components/ui";
 import { canBranchFromMessage } from "~/lib/chat/branching";
 import type { OpinionRequest } from "~/lib/chat/opinion";
+import { resolveMessageSpeechAudioSource } from "~/lib/speech/message-speech";
 import type { Message } from "~/types";
 import { MessageInfo } from "./MessageInfo";
 import { InlineModelSelector } from "../InlineModelSelector";
 import { OpinionModelSelector } from "../OpinionModelSelector";
 
-interface MessageActionsProps {
+export interface MessageActionsProps {
 	message: Message;
 	copied: boolean;
 	copyMessageToClipboard: () => void;
@@ -57,10 +61,14 @@ export const MessageActions = ({
 }: MessageActionsProps) => {
 	const [showBranchModelSelector, setShowBranchModelSelector] = useState(false);
 	const [showOpinionModelSelector, setShowOpinionModelSelector] = useState(false);
+	const [isPlayingSpeech, setIsPlayingSpeech] = useState(false);
+	const speechAudioRef = useRef<HTMLAudioElement | null>(null);
 	const canBranch = Boolean(onBranch && !isSharedView && canBranchFromMessage(message));
 	const canRequestOpinion = Boolean(
 		onRequestOpinion && !isSharedView && message.role === "assistant" && message.content,
 	);
+	const speechAudioSource =
+		message.role === "assistant" ? resolveMessageSpeechAudioSource(message) : undefined;
 
 	const handleAssistantBranchClick = useCallback(() => {
 		if (!onBranch) {
@@ -97,6 +105,47 @@ export const MessageActions = ({
 		setShowOpinionModelSelector(false);
 	}, []);
 
+	const stopSpeechPlayback = useCallback(() => {
+		const currentAudio = speechAudioRef.current;
+		if (currentAudio) {
+			currentAudio.pause();
+			currentAudio.removeAttribute("src");
+			currentAudio.load();
+		}
+		speechAudioRef.current = null;
+		setIsPlayingSpeech(false);
+	}, []);
+
+	const handleReplaySpeech = useCallback(() => {
+		if (!speechAudioSource) {
+			return;
+		}
+
+		if (isPlayingSpeech) {
+			stopSpeechPlayback();
+			return;
+		}
+
+		stopSpeechPlayback();
+
+		const audio = new Audio(speechAudioSource);
+		speechAudioRef.current = audio;
+		audio.onended = () => {
+			speechAudioRef.current = null;
+			setIsPlayingSpeech(false);
+		};
+		audio.onerror = () => {
+			speechAudioRef.current = null;
+			setIsPlayingSpeech(false);
+			toast.error("Failed to play generated speech");
+		};
+		setIsPlayingSpeech(true);
+		void audio.play().catch(() => {
+			setIsPlayingSpeech(false);
+			toast.error("Failed to play generated speech");
+		});
+	}, [isPlayingSpeech, speechAudioSource, stopSpeechPlayback]);
+
 	return (
 		<div className="flex flex-wrap justify-end items-center gap-2">
 			<div className="flex items-center space-x-1">
@@ -114,6 +163,22 @@ export const MessageActions = ({
 						aria-label={copied ? "Copied!" : "Copy message"}
 					>
 						{copied ? <Check size={14} /> : <Copy size={14} />}
+					</Button>
+				)}
+				{speechAudioSource && (
+					<Button
+						type="button"
+						variant="icon"
+						onClick={handleReplaySpeech}
+						className={`cursor-pointer p-1 hover:bg-zinc-200/50 dark:hover:bg-zinc-600/50 rounded-lg transition-colors duration-200 flex items-center ${
+							isPlayingSpeech
+								? "text-emerald-500 dark:text-emerald-400 bg-emerald-100/50 dark:bg-emerald-900/20"
+								: "text-zinc-500 dark:text-zinc-400"
+						}`}
+						title={isPlayingSpeech ? "Stop response audio" : "Replay response audio"}
+						aria-label={isPlayingSpeech ? "Stop response audio" : "Replay response audio"}
+					>
+						{isPlayingSpeech ? <VolumeX size={14} /> : <Volume2 size={14} />}
 					</Button>
 				)}
 				{message.role === "user" && onEdit && !isSharedView && (
