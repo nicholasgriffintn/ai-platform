@@ -58,6 +58,20 @@ describe("realtime message helpers", () => {
 		});
 	});
 
+	it("extracts realtime transcription text snapshots as replaceable interim input transcripts", () => {
+		const transcript = extractRealtimeTranscript({
+			type: "transcription.text",
+			text: "Hello there",
+		});
+
+		expect(transcript).toEqual({
+			text: "Hello there",
+			isDelta: false,
+			isFinal: false,
+			source: "input",
+		});
+	});
+
 	it("extracts Mistral realtime transcription segments as final input transcripts", () => {
 		const transcript = extractRealtimeTranscript({
 			type: "transcription.segment",

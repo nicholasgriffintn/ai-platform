@@ -120,7 +120,7 @@ function isRealtimeTranscriptDelta(type: string): boolean {
 }
 
 function isRealtimeTranscriptFinal(type: string): boolean {
-	if (type === "transcription.text.delta") {
+	if (type === "transcription.text" || type === "transcription.text.delta") {
 		return false;
 	}
 	if (type === "transcription.segment" || type === "transcription.done") {

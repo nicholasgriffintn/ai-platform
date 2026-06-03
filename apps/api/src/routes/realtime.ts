@@ -18,6 +18,8 @@ import {
 	type RealtimeTranscriptionDelay,
 } from "~/lib/providers/capabilities/realtime";
 import { userCanAccessRealtimeModel } from "~/services/realtime/access";
+import { createCartesiaRealtimeProxyResponse } from "~/services/realtime/cartesia";
+import { createElevenLabsRealtimeProxyResponse } from "~/services/realtime/elevenlabs";
 import { createMistralRealtimeProxyResponse } from "~/services/realtime/mistral";
 
 const app = new Hono();
@@ -160,6 +162,40 @@ app.get("/mistral/transcription", async (c: Context) => {
 		env,
 		user,
 		model,
+	});
+});
+
+app.get("/elevenlabs/transcription", async (c: Context) => {
+	const env = c.env as IEnv;
+	const user = c.get("user") as IUser | undefined;
+
+	if (!user?.id) {
+		return ResponseFactory.error(c, "Unauthorized", 401);
+	}
+
+	return createElevenLabsRealtimeProxyResponse({
+		context: c,
+		env,
+		user,
+		model: c.req.query("model"),
+		language: c.req.query("language"),
+	});
+});
+
+app.get("/cartesia/transcription", async (c: Context) => {
+	const env = c.env as IEnv;
+	const user = c.get("user") as IUser | undefined;
+
+	if (!user?.id) {
+		return ResponseFactory.error(c, "Unauthorized", 401);
+	}
+
+	return createCartesiaRealtimeProxyResponse({
+		context: c,
+		env,
+		user,
+		model: c.req.query("model"),
+		language: c.req.query("language"),
 	});
 });
 

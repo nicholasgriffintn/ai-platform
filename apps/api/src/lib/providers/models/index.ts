@@ -46,7 +46,9 @@ import { workersAiModelConfig } from "~/data-model/models/workersai";
 import { xaiModelConfig } from "~/data-model/models/xai";
 import { exaModelConfig } from "~/data-model/models/exa";
 import { cerebrasModelConfig } from "~/data-model/models/cerebras";
+import { cartesiaModelConfig } from "~/data-model/models/cartesia";
 import { falModelConfig } from "~/data-model/models/fal";
+import { elevenLabsModelConfig } from "~/data-model/models/elevenlabs";
 import { ideogramModelConfig } from "~/data-model/models/ideogram";
 import { opencodeModelConfig } from "~/data-model/models/opencode";
 import { opencodeGoModelConfig } from "~/data-model/models/opencode-go";
@@ -101,6 +103,8 @@ const modelConfig: ModelConfig = mergeModelConfigs(
 	workersAiModelConfig,
 	togetherAiModelConfig,
 	googleAiStudioModelConfig,
+	elevenLabsModelConfig,
+	cartesiaModelConfig,
 	fireworksModelConfig,
 	hyperbolicModelConfig,
 	inferenceModelConfig,

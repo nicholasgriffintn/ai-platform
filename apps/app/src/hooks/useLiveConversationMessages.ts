@@ -112,7 +112,7 @@ function getLiveMessageOrder(message: Message): LiveMessageOrder | undefined {
 	};
 }
 
-function orderLiveMessages(messages: Message[]): Message[] {
+export function orderLiveMessages(messages: Message[]): Message[] {
 	const originalIndex = new Map(messages.map((message, index) => [message.id, index]));
 
 	return [...messages].sort((left, right) => {
@@ -125,6 +125,21 @@ function orderLiveMessages(messages: Message[]): Message[] {
 			}
 			if (leftOrder.turnId === rightOrder.turnId) {
 				return leftOrder.sequence - rightOrder.sequence;
+			}
+			return (originalIndex.get(left.id) ?? 0) - (originalIndex.get(right.id) ?? 0);
+		}
+
+		if (leftOrder || rightOrder) {
+			const leftStartedAt = leftOrder?.startedAt ?? left.timestamp ?? left.created ?? 0;
+			const rightStartedAt = rightOrder?.startedAt ?? right.timestamp ?? right.created ?? 0;
+			if (leftStartedAt !== rightStartedAt) {
+				return leftStartedAt - rightStartedAt;
+			}
+
+			const leftSequence = leftOrder?.sequence ?? (left.role === "user" ? 0 : 1);
+			const rightSequence = rightOrder?.sequence ?? (right.role === "user" ? 0 : 1);
+			if (leftSequence !== rightSequence) {
+				return leftSequence - rightSequence;
 			}
 		}
 

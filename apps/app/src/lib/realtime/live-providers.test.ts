@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import { REALTIME_LIVE_PROVIDER_MANIFEST } from "@assistant/schemas";
 import {
 	getDefaultLiveModelId,
+	getRealtimeLiveProviderOption,
 	getRealtimeLiveProviderIdForModel,
 	isRealtimeLiveProviderId,
 	supportsRealtimeLiveVideoInput,
@@ -13,6 +14,8 @@ describe("live realtime providers", () => {
 		expect(isRealtimeLiveProviderId("openai")).toBe(true);
 		expect(isRealtimeLiveProviderId("google-ai-studio")).toBe(true);
 		expect(isRealtimeLiveProviderId("mistral")).toBe(true);
+		expect(isRealtimeLiveProviderId("elevenlabs")).toBe(true);
+		expect(isRealtimeLiveProviderId("cartesia")).toBe(true);
 		expect(isRealtimeLiveProviderId("anthropic")).toBe(false);
 	});
 
@@ -39,5 +42,18 @@ describe("live realtime providers", () => {
 
 		expect(supportsRealtimeLiveVideoInput("google-ai-studio")).toBe(true);
 		expect(supportsRealtimeLiveVideoInput("mistral")).toBe(false);
+	});
+
+	it("does not wait for an ElevenLabs-only done event on stop", () => {
+		expect(
+			getRealtimeLiveProviderOption("mistral").websocket?.audioInput?.waitForFinalEventTypeOnStop,
+		).toBe("transcription.done");
+		expect(
+			getRealtimeLiveProviderOption("elevenlabs").websocket?.audioInput
+				?.waitForFinalEventTypeOnStop,
+		).toBeUndefined();
+		expect(
+			getRealtimeLiveProviderOption("cartesia").websocket?.audioInput?.waitForFinalEventTypeOnStop,
+		).toBe("transcription.done");
 	});
 });

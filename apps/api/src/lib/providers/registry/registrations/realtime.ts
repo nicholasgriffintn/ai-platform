@@ -1,5 +1,7 @@
 import type { RealtimeProvider } from "../../capabilities/realtime";
 import {
+	CartesiaRealtimeProvider,
+	ElevenLabsRealtimeProvider,
 	GoogleRealtimeProvider,
 	MistralRealtimeProvider,
 	OpenAIRealtimeProvider,
@@ -25,6 +27,18 @@ const realtimeProviders: ProviderRegistration<RealtimeProvider>[] = [
 		aliases: ["voxtral"],
 		create: () => new MistralRealtimeProvider(),
 		metadata: { vendor: "Mistral", categories: ["realtime"], tags: ["transcription"] },
+	},
+	{
+		name: "elevenlabs",
+		aliases: ["scribe"],
+		create: () => new ElevenLabsRealtimeProvider(),
+		metadata: { vendor: "ElevenLabs", categories: ["realtime"], tags: ["transcription"] },
+	},
+	{
+		name: "cartesia",
+		aliases: ["ink"],
+		create: () => new CartesiaRealtimeProvider(),
+		metadata: { vendor: "Cartesia", categories: ["realtime"], tags: ["transcription"] },
 	},
 ];
 

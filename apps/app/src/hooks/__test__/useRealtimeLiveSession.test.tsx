@@ -72,7 +72,7 @@ interface MockWebSocketConnection {
 	close: ReturnType<typeof vi.fn>;
 	sendJson: ReturnType<typeof vi.fn>;
 	session: {
-		provider: "google-ai-studio" | "mistral";
+		provider: "elevenlabs" | "google-ai-studio" | "mistral";
 		protocol?: string;
 		setup?: Record<string, unknown>;
 		transport: "websocket";
@@ -121,6 +121,22 @@ function createMistralConnection(): MockWebSocketConnection {
 			provider: "mistral",
 			transport: "websocket",
 			url: "wss://example.test/mistral",
+		},
+		socket,
+	};
+}
+
+function createElevenLabsConnection(): MockWebSocketConnection {
+	const socket: MockWebSocketConnection["socket"] = { readyState: WebSocket.OPEN };
+	return {
+		close: vi.fn(() => {
+			socket.readyState = WebSocket.CLOSED;
+		}),
+		sendJson: vi.fn(),
+		session: {
+			provider: "elevenlabs",
+			transport: "websocket",
+			url: "wss://example.test/elevenlabs",
 		},
 		socket,
 	};
@@ -637,5 +653,36 @@ describe("useRealtimeLiveSession", () => {
 		});
 
 		await waitFor(() => expect(connection.close).toHaveBeenCalled());
+	});
+
+	it("does not wait for ElevenLabs transcription done before closing after stop", async () => {
+		const connection = createElevenLabsConnection();
+		mocks.createRealtimeSession.mockResolvedValueOnce({
+			provider: "elevenlabs",
+			transport: "websocket",
+			url: "wss://example.test/elevenlabs",
+		});
+		mocks.connectRealtimeWebSocket.mockReturnValueOnce(connection);
+		const { result } = renderHook(() => useRealtimeLiveSession());
+
+		await act(async () => {
+			await result.current.start("elevenlabs", "scribe_v2_realtime");
+		});
+
+		const connectOptions = mocks.connectRealtimeWebSocket.mock.calls[0][0];
+		act(() => {
+			connectOptions.onOpen?.(new Event("open"));
+		});
+
+		await waitFor(() => expect(result.current.status).toBe("active"));
+
+		act(() => {
+			result.current.stop();
+		});
+
+		expect(connection.sendJson).toHaveBeenNthCalledWith(1, { type: "input_audio.flush" });
+		expect(connection.sendJson).toHaveBeenNthCalledWith(2, { type: "input_audio.end" });
+		expect(connection.close).toHaveBeenCalled();
+		expect(result.current.status).toBe("idle");
 	});
 });

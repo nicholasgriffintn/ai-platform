@@ -1,6 +1,12 @@
 import z from "zod/v4";
 
-export const realtimeProviderIds = ["openai", "google-ai-studio", "mistral"] as const;
+export const realtimeProviderIds = [
+	"openai",
+	"google-ai-studio",
+	"mistral",
+	"elevenlabs",
+	"cartesia",
+] as const;
 export const realtimeTransports = ["webrtc", "websocket"] as const;
 export const realtimeSessionTypes = ["realtime", "translation", "transcription"] as const;
 export const realtimeLiveSessionTypes = ["realtime", "transcription"] as const;
@@ -174,6 +180,30 @@ export const REALTIME_LIVE_PROVIDER_MANIFEST: RealtimeLiveProviderManifestItem[]
 		outputModalities: ["text"],
 		description: "Streaming speech-to-text",
 		defaultModelId: "voxtral-mini-transcribe-realtime",
+	},
+	{
+		id: "elevenlabs",
+		label: "ElevenLabs Scribe Realtime",
+		shortLabel: "ElevenLabs",
+		transport: "websocket",
+		sessionType: "transcription",
+		defaultDelay: "minimal",
+		inputModalities: ["audio"],
+		outputModalities: ["text"],
+		description: "Scribe realtime speech-to-text",
+		defaultModelId: "scribe_v2_realtime",
+	},
+	{
+		id: "cartesia",
+		label: "Cartesia Ink Realtime",
+		shortLabel: "Cartesia",
+		transport: "websocket",
+		sessionType: "transcription",
+		defaultDelay: "low",
+		inputModalities: ["audio"],
+		outputModalities: ["text"],
+		description: "Ink streaming speech-to-text",
+		defaultModelId: "ink-whisper",
 	},
 ];
 

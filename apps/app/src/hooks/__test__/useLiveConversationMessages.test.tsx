@@ -7,8 +7,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { CHATS_QUERY_KEY } from "~/constants";
 import { apiService } from "~/lib/api/api-service";
 import { useChatStore } from "~/state/stores/chatStore";
-import type { Conversation } from "~/types";
-import { useLiveConversationMessages } from "../useLiveConversationMessages";
+import type { Conversation, Message } from "~/types";
+import { orderLiveMessages, useLiveConversationMessages } from "../useLiveConversationMessages";
 
 vi.mock("~/lib/api/api-service", () => ({
 	apiService: {
@@ -20,6 +20,18 @@ vi.mock("~/lib/api/api-service", () => ({
 const liveConversationMode = {
 	mode: "live",
 } as ConversationModeMetadata;
+
+function createMessage(overrides: Partial<Message> & Pick<Message, "content" | "role">): Message {
+	const { content, role, ...rest } = overrides;
+	return {
+		id: crypto.randomUUID(),
+		content,
+		created: overrides.created ?? Date.now(),
+		role,
+		timestamp: overrides.timestamp ?? Date.now(),
+		...rest,
+	};
+}
 
 function createQueryClient() {
 	return new QueryClient({
@@ -110,6 +122,75 @@ describe("useLiveConversationMessages", () => {
 				],
 			}),
 		);
+	});
+
+	it("deduplicates repeated final input transcripts with the same provider item id", async () => {
+		const queryClient = createQueryClient();
+		const { result } = renderHook(
+			() =>
+				useLiveConversationMessages({
+					conversationMode: liveConversationMode,
+					model: "scribe_v2_realtime",
+				}),
+			{ wrapper: wrapperFor(queryClient) },
+		);
+
+		act(() => {
+			result.current.handleTranscript({
+				isDelta: false,
+				isFinal: true,
+				itemId: "elevenlabs-segment-1",
+				source: "input",
+				text: "What is the best place in London?",
+			});
+			result.current.handleTranscript({
+				isDelta: false,
+				isFinal: true,
+				itemId: "elevenlabs-segment-1",
+				source: "input",
+				text: "What is the best place in London?",
+			});
+		});
+
+		await waitFor(() => {
+			const conversationId = useChatStore.getState().currentConversationId;
+			const conversation = queryClient.getQueryData<Conversation>([
+				CHATS_QUERY_KEY,
+				conversationId,
+			]);
+			expect(conversation?.messages).toEqual([
+				expect.objectContaining({
+					content: "What is the best place in London?",
+					role: "user",
+				}),
+			]);
+		});
+	});
+
+	it("keeps live user messages before assistant messages when metadata is incomplete", () => {
+		const assistantMessage = createMessage({
+			content: "That's a fun question.",
+			data: {
+				realtime: {
+					source: "output",
+					sequence: 1,
+					turnId: "turn-1",
+					turnStartedAt: 1000,
+				},
+			},
+			role: "assistant",
+			timestamp: 1000,
+		});
+		const userMessage = createMessage({
+			content: "Who's the best Christmas person?",
+			role: "user",
+			timestamp: 1000,
+		});
+
+		expect(orderLiveMessages([assistantMessage, userMessage])).toEqual([
+			userMessage,
+			assistantMessage,
+		]);
 	});
 
 	it("streams output transcript deltas after a real user message before persisting", async () => {

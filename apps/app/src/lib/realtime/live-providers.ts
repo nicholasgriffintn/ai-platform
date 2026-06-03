@@ -116,6 +116,35 @@ const REALTIME_LIVE_PROVIDER_WEBSOCKET_CONFIG: Partial<
 		mediaStartFailedMessage: "Failed to start Mistral realtime transcription media",
 		startingMediaEventLabel: "Starting Mistral microphone",
 	},
+	elevenlabs: {
+		audioInput: {
+			buildAppendMessage: (base64Audio) => ({
+				type: "input_audio.append",
+				audio: base64Audio,
+			}),
+			endMessages: [{ type: "input_audio.flush" }, { type: "input_audio.end" }],
+		},
+		closeErrorLabel: "ElevenLabs realtime transcription",
+		connectedEventLabel: "ElevenLabs realtime transcription connected",
+		connectionFailedMessage: "ElevenLabs realtime transcription failed",
+		mediaStartFailedMessage: "Failed to start ElevenLabs realtime transcription media",
+		startingMediaEventLabel: "Starting ElevenLabs microphone",
+	},
+	cartesia: {
+		audioInput: {
+			buildAppendMessage: (base64Audio) => ({
+				type: "input_audio.append",
+				audio: base64Audio,
+			}),
+			endMessages: [{ type: "input_audio.flush" }, { type: "input_audio.end" }],
+			waitForFinalEventTypeOnStop: "transcription.done",
+		},
+		closeErrorLabel: "Cartesia realtime transcription",
+		connectedEventLabel: "Cartesia realtime transcription connected",
+		connectionFailedMessage: "Cartesia realtime transcription failed",
+		mediaStartFailedMessage: "Failed to start Cartesia realtime transcription media",
+		startingMediaEventLabel: "Starting Cartesia microphone",
+	},
 };
 
 export const REALTIME_LIVE_PROVIDER_OPTIONS: RealtimeLiveProviderOption[] =
