@@ -116,6 +116,11 @@ export const getFunctionResponseDisplay = (name: string): ResponseDisplay => {
       <div class="image-response">
         <h2>Generated Image</h2>
         <p>{{content}}</p>
+        {{#if data.screenshotUrl}}
+          <div class="image-container">
+            <img src="{{data.screenshotUrl}}" alt="Generated image" class="generated-image">
+          </div>
+        {{/if}}
         {{#if data.url}}
           <div class="image-container">
             <img src="{{data.url}}" alt="Generated image" class="generated-image">

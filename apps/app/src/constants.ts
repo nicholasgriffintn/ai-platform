@@ -52,6 +52,7 @@ const COMMON_CSP = {
 		"avatars.githubusercontent.com/u/",
 		"'self'",
 		"data:",
+		API_BASE_URL,
 	],
 	connectSrc: [
 		"'self'",
@@ -74,7 +75,7 @@ const COMMON_CSP = {
 		"https://assistant-assets.nickgriffin.uk",
 		"https://strudel.cc",
 	],
-	mediaSrc: ["'self'", "data:", "https://assistant-assets.nickgriffin.uk"],
+	mediaSrc: ["'self'", "data:", "https://assistant-assets.nickgriffin.uk", API_BASE_URL],
 } as const;
 
 const SCRIPT_SRC = [

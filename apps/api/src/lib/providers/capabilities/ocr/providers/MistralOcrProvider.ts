@@ -1,4 +1,3 @@
-import { StorageService } from "~/lib/storage";
 import { fetchAIResponse } from "~/lib/providers/lib/fetch";
 import { resolveModelConfig } from "~/lib/providers/models";
 import { formatProviderError } from "~/lib/providers/utils/errors";
@@ -10,6 +9,7 @@ import { getLogger } from "~/utils/logger";
 import { getOcrResponseModel, persistOcrOutput, type OcrApiResponse } from "../format";
 import { DEFAULT_OCR_MODEL } from "../constants";
 import type { OcrExtractionRequest, OcrExtractionResult, OcrProvider } from "../types";
+import { createServiceContext } from "~/lib/context/serviceContext";
 
 const logger = getLogger({ prefix: "lib/providers/ocr/mistral" });
 
@@ -57,14 +57,17 @@ export class MistralOcrProvider implements OcrProvider {
 				requestId,
 				modelConfig.timeout,
 			);
-			const storage = request.storage ?? new StorageService(request.env.ASSETS_BUCKET);
+			if (!request.user?.id) {
+				throw new AssistantError("User data required", ErrorType.AUTHENTICATION_ERROR);
+			}
+
 			const outputFormat = request.output_format ?? "markdown";
 			const asset = await persistOcrOutput({
 				requestId,
 				response,
 				outputFormat,
-				storage,
-				publicAssetsUrl: request.env.PUBLIC_ASSETS_URL,
+				context: createServiceContext({ env: request.env, user: request.user }),
+				ownerUserId: request.user.id,
 			});
 
 			return {

@@ -15,6 +15,7 @@ import { MessageRepository } from "./MessageRepository";
 import { PlanRepository } from "./PlanRepository";
 import { SessionRepository } from "./SessionRepository";
 import { SharedAgentRepository } from "./SharedAgentRepository";
+import { StoredAssetRepository } from "./StoredAssetRepository";
 import { TaskRepository } from "./TaskRepository";
 import { TrainingExampleRepository } from "./TrainingExampleRepository";
 import { UserRepository } from "./UserRepository";
@@ -42,6 +43,7 @@ export {
 	WebAuthnRepository,
 	PlanRepository,
 	SharedAgentRepository,
+	StoredAssetRepository,
 };
 
 export class RepositoryManager {
@@ -60,6 +62,7 @@ export class RepositoryManager {
 	private apiKeyRepo: ApiKeyRepository;
 	private appDataRepo: AppDataRepository;
 	private sharedAgentRepo: SharedAgentRepository;
+	private storedAssetRepo: StoredAssetRepository;
 	private dynamicAppResponseRepo: DynamicAppResponseRepository;
 	private taskRepo: TaskRepository;
 	private memorySynthesisRepo: MemorySynthesisRepository;
@@ -81,6 +84,7 @@ export class RepositoryManager {
 		this.apiKeyRepo = new ApiKeyRepository(env);
 		this.appDataRepo = new AppDataRepository(env);
 		this.sharedAgentRepo = new SharedAgentRepository(env);
+		this.storedAssetRepo = new StoredAssetRepository(env);
 		this.dynamicAppResponseRepo = new DynamicAppResponseRepository(env);
 		this.taskRepo = new TaskRepository(env);
 		this.memorySynthesisRepo = new MemorySynthesisRepository(env);
@@ -149,6 +153,10 @@ export class RepositoryManager {
 
 	public get sharedAgents(): SharedAgentRepository {
 		return this.sharedAgentRepo;
+	}
+
+	public get storedAssets(): StoredAssetRepository {
+		return this.storedAssetRepo;
 	}
 
 	public get dynamicAppResponses(): DynamicAppResponseRepository {

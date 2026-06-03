@@ -5,7 +5,11 @@ import { useSearchParams } from "react-router";
 import { CouncilChatControls } from "~/components/Council/CouncilChatControls";
 import type { ConversationThreadModeConfig } from "~/components/ConversationThread";
 import { useChat } from "~/hooks/useChat";
-import { useLiveConversationMessages } from "~/hooks/useLiveConversationMessages";
+import { useChatManager } from "~/hooks/useChatManager";
+import {
+	useLiveConversationMessages,
+	type FinalLiveInputTranscript,
+} from "~/hooks/useLiveConversationMessages";
 import { useModels } from "~/hooks/useModels";
 import { useRealtimeLiveSession } from "~/hooks/useRealtimeLiveSession";
 import {
@@ -19,9 +23,12 @@ import {
 } from "~/lib/home-chat-modes/conversation-mode";
 import { createModelReferenceMap, getModelByReference } from "~/lib/models";
 import {
+	getComposedRealtimeReasoningModelId,
 	getDefaultLiveModelId,
 	getRealtimeLiveProviderIdForModel,
+	isComposedRealtimeLiveProvider,
 	supportsRealtimeLiveVideoInput,
+	waitsForRealtimeLiveProviderFinalEventOnStop,
 	type RealtimeLiveProviderId,
 } from "~/lib/realtime/live-providers";
 import { normaliseGitHubRepoInput } from "~/lib/sandbox/repositories";
@@ -74,6 +81,10 @@ export function useHomeChatModeConfig(): {
 		() => getModelByReference(modelReferences, selectedModel),
 		[modelReferences, selectedModel],
 	);
+	const composedReasoningModel = useMemo(
+		() => getComposedRealtimeReasoningModelId(apiModels, selectedModel),
+		[apiModels, selectedModel],
+	);
 	const selectedModelLiveProvider = getRealtimeLiveProviderIdForModel(selectedModelConfig);
 	const [activeModeId, setActiveModeId] = useState<HomeChatModeId>(() =>
 		searchParams.has("mode") ? resolveHomeChatModeId(searchParams.get("mode")) : homeChatMode,
@@ -107,6 +118,26 @@ export function useHomeChatModeConfig(): {
 			}),
 		[],
 	);
+	const effectiveLiveProviderRef = useRef<RealtimeLiveProviderId | undefined>(undefined);
+	const { respondToExistingConversation } = useChatManager(undefined, liveConversationMode);
+	const handleFinalLiveInputTranscript = useCallback(
+		({ assistantMessageData, conversationId }: FinalLiveInputTranscript) => {
+			const provider = effectiveLiveProviderRef.current;
+			if (!provider || !isComposedRealtimeLiveProvider(provider)) {
+				return;
+			}
+
+			if (!composedReasoningModel) {
+				return;
+			}
+
+			void respondToExistingConversation(conversationId, {
+				assistantMessageData,
+				model: composedReasoningModel,
+			});
+		},
+		[composedReasoningModel, respondToExistingConversation],
+	);
 	const {
 		flushLiveMessages,
 		handleRealtimeEvent: handleLiveRealtimeEvent,
@@ -114,6 +145,7 @@ export function useHomeChatModeConfig(): {
 	} = useLiveConversationMessages({
 		conversationMode: liveConversationMode,
 		model: selectedModel,
+		onFinalInputTranscript: handleFinalLiveInputTranscript,
 	});
 	const liveSession = useRealtimeLiveSession({
 		model: selectedModel,
@@ -137,10 +169,19 @@ export function useHomeChatModeConfig(): {
 		stop: stopLiveSession,
 	} = liveSession;
 	const stopLiveSessionAndFlush = useCallback(() => {
+		if (
+			waitsForRealtimeLiveProviderFinalEventOnStop(effectiveLiveProviderRef.current ?? liveProvider)
+		) {
+			stopLiveSession();
+			return;
+		}
+
 		flushLiveMessages();
 		stopLiveSession();
-	}, [flushLiveMessages, stopLiveSession]);
+	}, [flushLiveMessages, liveProvider, stopLiveSession]);
 	const effectiveLiveProvider = selectedModelLiveProvider ?? liveProvider;
+	effectiveLiveProviderRef.current = effectiveLiveProvider;
+	const forceLiveResponseAudio = isComposedRealtimeLiveProvider(effectiveLiveProvider);
 
 	useEffect(() => {
 		if (
@@ -575,6 +616,7 @@ export function useHomeChatModeConfig(): {
 					hideSubmitButton: true,
 					hideInlineResponseControls: true,
 					hideChatSettings: true,
+					forceAutoPlayResponses: forceLiveResponseAudio,
 					conversationMode: liveConversationMode,
 					modeControls,
 				},
@@ -663,8 +705,11 @@ export function useHomeChatModeConfig(): {
 		liveOutputAudioLevel,
 		liveProvider,
 		effectiveLiveProvider,
+		composedReasoningModel,
+		forceLiveResponseAudio,
 		liveStatus,
 		liveConversationMode,
+		handleFinalLiveInputTranscript,
 		setLiveMicrophoneEnabled,
 		setLiveVideoEnabled,
 		startLiveSession,

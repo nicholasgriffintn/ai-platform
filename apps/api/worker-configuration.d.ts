@@ -41,6 +41,7 @@ interface Env {
 	LOG_LEVEL?: string;
 	SENTRY_DSN?: string;
 	ASSETS_BUCKET: R2Bucket;
+	PRIVATE_ASSETS_BUCKET: R2Bucket;
 	DB: D1Database;
 	ANALYTICS: AnalyticsEngineDataset;
 	RATE_LIMITER: RateLimit;

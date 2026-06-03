@@ -3,11 +3,21 @@ import { cn } from "~/lib/utils";
 import type { AppSchema } from "~/types/apps";
 import { getCardGradient, getIcon, getIconContainerClass } from "../utils";
 import { CustomView } from "./CustomView";
+import { GeneratedAudioView } from "./GeneratedAudioView";
+import { GeneratedImageView } from "./GeneratedImageView";
 import { JsonView } from "./JsonView";
 import { TableView } from "./TableView";
 import { TemplateView } from "./TemplateView";
 import { TextView } from "./TextView";
-import { resolveResponseData, resolveTextResponseData } from "./response-data";
+import {
+	resolveGeneratedAudioResponseData,
+	resolveGeneratedImageResponseData,
+	resolveJsonResponseData,
+	resolveResponseData,
+	resolveTableResponseData,
+	resolveTemplateResponseData,
+	resolveTextResponseData,
+} from "./response-data";
 
 interface ResponseRendererProps {
 	app?: AppSchema;
@@ -44,6 +54,16 @@ export const ResponseRenderer = ({
 		});
 
 		const display = responseDisplay || app?.responseSchema.display;
+		const generatedImageData =
+			resolveGeneratedImageResponseData(result) ?? resolveGeneratedImageResponseData(responseData);
+		if (generatedImageData) {
+			return <GeneratedImageView data={generatedImageData} />;
+		}
+		const generatedAudioData =
+			resolveGeneratedAudioResponseData(result) ?? resolveGeneratedAudioResponseData(responseData);
+		if (generatedAudioData) {
+			return <GeneratedAudioView data={generatedAudioData} />;
+		}
 
 		if (!type) {
 			return (
@@ -58,23 +78,22 @@ export const ResponseRenderer = ({
 
 		switch (type) {
 			case "table":
-				if (responseDisplay?.fields && Array.isArray(responseData)) {
-					const tableData = {
-						headers: responseDisplay.fields,
-						rows: responseData,
-					};
-					return <TableView data={tableData} />;
-				}
-				return <TableView data={responseData} />;
+				return <TableView data={resolveTableResponseData(responseData, responseDisplay?.fields)} />;
 
 			case "json":
-				return <JsonView data={responseData} />;
+				return <JsonView data={resolveJsonResponseData(responseData)} />;
 
 			case "text":
 				return <TextView data={resolveTextResponseData(result, responseData)} />;
 
-			case "template":
-				return <TemplateView template={display?.template} data={responseData} />;
+			case "template": {
+				return (
+					<TemplateView
+						template={display?.template}
+						data={resolveTemplateResponseData(responseData)}
+					/>
+				);
+			}
 
 			default:
 				return (

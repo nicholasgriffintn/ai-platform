@@ -1,11 +1,12 @@
 import { act, renderHook, waitFor } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { useRealtimeLiveSession } from "../useRealtimeLiveSession";
 
 const mocks = vi.hoisted(() => ({
 	arrayBufferToBase64: vi.fn(() => "audio-base64"),
 	calculatePcm16Base64AudioLevel: vi.fn(() => 0.5),
+	calculatePcm16AudioLevel: vi.fn(() => 0.5),
 	connectRealtimeWebRTC: vi.fn(),
 	connectRealtimeWebSocket: vi.fn(),
 	createMediaStreamAudioLevelMeter: vi.fn(() => ({ stop: vi.fn() })),
@@ -59,6 +60,7 @@ vi.mock("~/lib/realtime/audio", () => ({
 
 vi.mock("~/lib/realtime/audio-levels", () => ({
 	calculatePcm16Base64AudioLevel: mocks.calculatePcm16Base64AudioLevel,
+	calculatePcm16AudioLevel: mocks.calculatePcm16AudioLevel,
 	createMediaStreamAudioLevelMeter: mocks.createMediaStreamAudioLevelMeter,
 }));
 
@@ -109,6 +111,7 @@ const geminiSetup = {
 		responseModalities: ["AUDIO"],
 	},
 };
+let microphoneChunkHandler: ((chunk: ArrayBuffer) => void) | undefined;
 
 function createMistralConnection(): MockWebSocketConnection {
 	const socket: MockWebSocketConnection["socket"] = { readyState: WebSocket.OPEN };
@@ -186,9 +189,24 @@ function createCloseEvent(init: Pick<CloseEvent, "code" | "reason" | "wasClean">
 	return init as CloseEvent;
 }
 
+function createPcm16TestAudioBuffer(sample: number, length = 6400): ArrayBuffer {
+	const buffer = new ArrayBuffer(length * 2);
+	const view = new DataView(buffer);
+	const int16Sample = Math.round(Math.max(-1, Math.min(1, sample)) * 0x7fff);
+	for (let index = 0; index < length; index += 1) {
+		view.setInt16(index * 2, int16Sample, true);
+	}
+	return buffer;
+}
+
 describe("useRealtimeLiveSession", () => {
+	afterEach(() => {
+		vi.useRealTimers();
+	});
+
 	beforeEach(() => {
 		vi.clearAllMocks();
+		mocks.calculatePcm16AudioLevel.mockReturnValue(0.5);
 		vi.stubGlobal(
 			"WebSocket",
 			class FakeWebSocket {
@@ -225,7 +243,11 @@ describe("useRealtimeLiveSession", () => {
 			transport: "websocket",
 			url: "wss://example.test/mistral",
 		});
-		mocks.startPcm16MicrophoneStream.mockResolvedValue({ stop: vi.fn() });
+		microphoneChunkHandler = undefined;
+		mocks.startPcm16MicrophoneStream.mockImplementation(({ onChunk }) => {
+			microphoneChunkHandler = onChunk;
+			return Promise.resolve({ stop: vi.fn() });
+		});
 		mocks.startJpegFrameStream.mockResolvedValue({ stop: vi.fn() });
 		mocks.connectRealtimeWebSocket.mockImplementation(() => createMistralConnection());
 	});
@@ -655,7 +677,73 @@ describe("useRealtimeLiveSession", () => {
 		await waitFor(() => expect(connection.close).toHaveBeenCalled());
 	});
 
-	it("does not wait for ElevenLabs transcription done before closing after stop", async () => {
+	it("commits Mistral audio after a speech segment becomes silent", async () => {
+		const connection = createMistralConnection();
+		mocks.connectRealtimeWebSocket.mockReturnValueOnce(connection);
+		const { result } = renderHook(() => useRealtimeLiveSession());
+
+		await act(async () => {
+			await result.current.start("mistral", "voxtral-mini-transcribe-realtime");
+		});
+
+		const connectOptions = mocks.connectRealtimeWebSocket.mock.calls[0][0];
+		await act(async () => {
+			connectOptions.onOpen?.(new Event("open"));
+		});
+
+		await waitFor(() => expect(result.current.status).toBe("active"));
+		expect(microphoneChunkHandler).toEqual(expect.any(Function));
+		vi.useFakeTimers();
+
+		mocks.calculatePcm16AudioLevel.mockReturnValue(0.08);
+		act(() => {
+			microphoneChunkHandler?.(createPcm16TestAudioBuffer(0.08));
+		});
+		act(() => {
+			vi.advanceTimersByTime(220);
+			microphoneChunkHandler?.(createPcm16TestAudioBuffer(0.08));
+		});
+		act(() => {
+			vi.advanceTimersByTime(419);
+		});
+		expect(connection.sendJson).not.toHaveBeenCalledWith({ type: "input_audio.flush" });
+
+		act(() => {
+			vi.advanceTimersByTime(1);
+		});
+
+		expect(connection.sendJson).toHaveBeenCalledWith({ type: "input_audio.flush" });
+		vi.useRealTimers();
+	});
+
+	it("does not commit Mistral audio for low-level input", async () => {
+		const connection = createMistralConnection();
+		mocks.connectRealtimeWebSocket.mockReturnValueOnce(connection);
+		const { result } = renderHook(() => useRealtimeLiveSession());
+
+		await act(async () => {
+			await result.current.start("mistral", "voxtral-mini-transcribe-realtime");
+		});
+
+		const connectOptions = mocks.connectRealtimeWebSocket.mock.calls[0][0];
+		await act(async () => {
+			connectOptions.onOpen?.(new Event("open"));
+		});
+
+		await waitFor(() => expect(result.current.status).toBe("active"));
+		vi.useFakeTimers();
+		mocks.calculatePcm16AudioLevel.mockReturnValue(0.03);
+
+		act(() => {
+			microphoneChunkHandler?.(createPcm16TestAudioBuffer(0.03));
+			vi.advanceTimersByTime(1000);
+		});
+
+		expect(connection.sendJson).not.toHaveBeenCalledWith({ type: "input_audio.flush" });
+		vi.useRealTimers();
+	});
+
+	it("waits for ElevenLabs transcription done before closing after stop", async () => {
 		const connection = createElevenLabsConnection();
 		mocks.createRealtimeSession.mockResolvedValueOnce({
 			provider: "elevenlabs",
@@ -682,7 +770,20 @@ describe("useRealtimeLiveSession", () => {
 
 		expect(connection.sendJson).toHaveBeenNthCalledWith(1, { type: "input_audio.flush" });
 		expect(connection.sendJson).toHaveBeenNthCalledWith(2, { type: "input_audio.end" });
-		expect(connection.close).toHaveBeenCalled();
 		expect(result.current.status).toBe("idle");
+		expect(connection.close).not.toHaveBeenCalled();
+
+		await act(async () => {
+			connectOptions.onMessage?.(
+				new MessageEvent("message", {
+					data: JSON.stringify({
+						type: "transcription.done",
+						item_id: "elevenlabs-segment-1",
+					}),
+				}),
+			);
+		});
+
+		await waitFor(() => expect(connection.close).toHaveBeenCalled());
 	});
 });

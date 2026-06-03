@@ -48,7 +48,6 @@ export class PollyAudioProvider extends BaseAudioProvider implements AudioProvid
 
 		return {
 			key,
-			url: this.buildPublicUrl(key, request.env.PUBLIC_ASSETS_URL),
 			metadata: {
 				voice: request.voice ?? "Ruth",
 				engine: "amazon-polly",

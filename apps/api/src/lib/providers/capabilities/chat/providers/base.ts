@@ -19,6 +19,7 @@ import {
 	buildAiGatewayHeaders,
 	buildMetricsSettings,
 } from "../../../utils/helpers";
+import { resolvePrivateAssetImageUrls } from "~/lib/providers/utils/privateAssetImages";
 
 const logger = getLogger({ prefix: "lib/providers/base" });
 
@@ -53,8 +54,8 @@ export abstract class BaseProvider implements AIProvider {
 	 */
 	async defaultMapParameters(
 		params: ChatCompletionParameters,
-		_storageService?: StorageService,
-		_assetsUrl?: string,
+		storageService?: StorageService,
+		assetsUrl?: string,
 	): Promise<Record<string, any>> {
 		const modelConfig = await getModelConfigByMatchingModel(
 			params.model || "",
@@ -69,8 +70,16 @@ export abstract class BaseProvider implements AIProvider {
 			);
 		}
 
+		const providerParams = storageService
+			? await resolvePrivateAssetImageUrls({
+					params,
+					storageService,
+					assetsUrl,
+				})
+			: params;
+
 		const commonParams = createCommonParameters(
-			params,
+			providerParams,
 			modelConfig,
 			this.name,
 			this.isOpenAiCompatible,
@@ -79,12 +88,12 @@ export abstract class BaseProvider implements AIProvider {
 		const streamingParams = shouldEnableStreaming(
 			modelConfig,
 			this.supportsStreaming,
-			params.stream,
+			providerParams.stream,
 		)
 			? { stream: true }
 			: {};
 
-		const toolsParams = getToolsForProvider(params, modelConfig, this.name);
+		const toolsParams = getToolsForProvider(providerParams, modelConfig, this.name);
 
 		return {
 			...commonParams,
@@ -212,6 +221,7 @@ export abstract class BaseProvider implements AIProvider {
 			model: params.model,
 			modalities: modelConfig?.modalities,
 			env: params.env,
+			userId: typeof params.user?.id === "number" ? params.user.id : undefined,
 		});
 	}
 
@@ -245,10 +255,15 @@ export abstract class BaseProvider implements AIProvider {
 	async getResponse(params: ChatCompletionParameters, userId?: number): Promise<any> {
 		this.validateParams(params);
 
+		const model = params.model;
+		if (!model) {
+			throw new AssistantError("Missing model", ErrorType.PARAMS_ERROR);
+		}
+
 		const headers = await this.getHeaders(params);
 
 		const modelConfig = await getModelConfigByMatchingModel(
-			params.model || "",
+			model,
 			params.env,
 			params.provider || this.name,
 			params.user?.id,
@@ -258,12 +273,12 @@ export abstract class BaseProvider implements AIProvider {
 			throw new AssistantError(`Model ${params.model} not found`, ErrorType.CONFIGURATION_ERROR);
 		}
 
-		const storageService = new StorageService(params.env.ASSETS_BUCKET);
-		const assetsUrl = params.env.PUBLIC_ASSETS_URL || "";
+		const storageService = StorageService.forPrivateAssetsEnv(params.env);
+		const assetsUrl = params.env.API_BASE_URL || "";
 
 		return trackProviderMetrics({
 			provider: this.name,
-			model: params.model as string,
+			model,
 			operation: async () => {
 				const body = await this.getParameterMapping(params, storageService, assetsUrl);
 				const endpoint = await this.getEndpoint(params);

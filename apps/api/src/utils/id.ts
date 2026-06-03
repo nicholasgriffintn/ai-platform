@@ -1,19 +1,15 @@
 export function randomHex(len: number): string {
-	if (typeof crypto !== "undefined" && typeof crypto.getRandomValues === "function") {
-		const bytes = new Uint8Array(Math.ceil(len / 2));
-		crypto.getRandomValues(bytes);
-		return Array.from(bytes)
-			.map((b) => b.toString(16).padStart(2, "0"))
-			.join("")
-			.slice(0, len)
-			.toUpperCase();
+	if (typeof crypto === "undefined" || typeof crypto.getRandomValues !== "function") {
+		throw new Error("Secure random generator unavailable");
 	}
 
-	return Array.from({ length: len }, () =>
-		Math.floor(Math.random() * 16)
-			.toString(16)
-			.toUpperCase(),
-	).join("");
+	const bytes = new Uint8Array(Math.ceil(len / 2));
+	crypto.getRandomValues(bytes);
+	return Array.from(bytes)
+		.map((b) => b.toString(16).padStart(2, "0"))
+		.join("")
+		.slice(0, len)
+		.toUpperCase();
 }
 
 export function randomUUIDLike(): string {

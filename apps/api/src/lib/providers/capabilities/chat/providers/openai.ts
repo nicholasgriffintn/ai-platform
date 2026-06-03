@@ -11,7 +11,7 @@ import {
 } from "~/lib/async/asyncInvocation";
 import { gatewayId } from "~/constants/app";
 import type { StorageService } from "~/lib/storage";
-import type { ChatCompletionParameters } from "~/types";
+import type { ChatCompletionParameters, MessageContent } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { isRecord } from "~/utils/objects";
 import { readOptionBag } from "~/utils/options";
@@ -28,6 +28,7 @@ import {
 	OPENAI_IMAGE_PARAMETER_NAMES,
 	type OpenAIImageParams,
 } from "./openaiImage";
+import { resolvePrivateAssetImageUrls } from "~/lib/providers/utils/privateAssetImages";
 
 const DEFAULT_IMAGE_SIZE = "1024x1024";
 const DEFAULT_IMAGE_COUNT = 1;
@@ -138,7 +139,11 @@ export class OpenAIProvider extends BaseProvider {
 			throw new AssistantError("No image URL found for editing", ErrorType.PARAMS_ERROR);
 		}
 
-		const imageBlob = await storageService.downloadFile(imageItem.image_url.url);
+		const imageBlob = await storageService.downloadFile(
+			imageItem.image_url.url,
+			params.user?.id,
+			params.env.API_BASE_URL,
+		);
 
 		const formDataParams: OpenAIImageParams = {
 			model: params.model,
@@ -203,9 +208,9 @@ export class OpenAIProvider extends BaseProvider {
 			return await super.formatResponse(data, params);
 		}
 
-		const placeholderContent = [
+		const placeholderContent: MessageContent[] = [
 			{
-				type: "text" as const,
+				type: "text",
 				text: "Response is running in the background. We'll update this message once it completes.",
 			},
 		];
@@ -330,47 +335,6 @@ export class OpenAIProvider extends BaseProvider {
 			);
 		}
 
-		const commonParams = createCommonParameters(
-			params,
-			modelConfig,
-			this.name,
-			this.isOpenAiCompatible,
-		);
-
-		const streamingParams = shouldEnableStreaming(
-			modelConfig,
-			this.supportsStreaming,
-			params.stream,
-		)
-			? { stream: true }
-			: {};
-
-		const toolsParams = getToolsForProvider(params, modelConfig, this.name);
-		const enabledTools = params.enabled_tools || [];
-
-		const tools = [];
-		if (modelConfig?.supportsToolCalls) {
-			if (modelConfig?.supportsSearchGrounding && enabledTools.includes("search_grounding")) {
-				tools.push({ type: "web_search_preview" });
-			}
-		}
-		const allTools = [...tools, ...(toolsParams.tools || [])];
-
-		const openaiSpecificTools =
-			modelConfig?.supportsToolCalls && allTools.length > 0 ? { tools: allTools } : {};
-
-		const reasoningEffort = params.reasoning_effort;
-		const thinkingParams = shouldSendProviderReasoningEffort(modelConfig, reasoningEffort)
-			? {
-					reasoning_effort: reasoningEffort,
-				}
-			: {};
-
-		const verbositySetting = params.verbosity;
-		const verbosityParams = shouldSendProviderVerbosity(modelConfig, verbositySetting)
-			? { verbosity: verbositySetting }
-			: {};
-
 		const inputs = modelConfig?.modalities?.input ?? ["text"];
 		const outputs = modelConfig?.modalities?.output ?? inputs;
 		const isImageEditing = outputs.includes("image") && inputs.includes("image");
@@ -428,9 +392,58 @@ export class OpenAIProvider extends BaseProvider {
 			};
 		}
 
-		if (shouldUseOpenAIResponsesApi(params, modelConfig)) {
+		const providerParams = _storageService
+			? await resolvePrivateAssetImageUrls({
+					params,
+					storageService: _storageService,
+					assetsUrl: _assetsUrl,
+				})
+			: params;
+
+		const commonParams = createCommonParameters(
+			providerParams,
+			modelConfig,
+			this.name,
+			this.isOpenAiCompatible,
+		);
+
+		const streamingParams = shouldEnableStreaming(
+			modelConfig,
+			this.supportsStreaming,
+			providerParams.stream,
+		)
+			? { stream: true }
+			: {};
+
+		const toolsParams = getToolsForProvider(providerParams, modelConfig, this.name);
+		const enabledTools = providerParams.enabled_tools || [];
+
+		const tools = [];
+		if (modelConfig?.supportsToolCalls) {
+			if (modelConfig?.supportsSearchGrounding && enabledTools.includes("search_grounding")) {
+				tools.push({ type: "web_search_preview" });
+			}
+		}
+		const allTools = [...tools, ...(toolsParams.tools || [])];
+
+		const openaiSpecificTools =
+			modelConfig?.supportsToolCalls && allTools.length > 0 ? { tools: allTools } : {};
+
+		const reasoningEffort = providerParams.reasoning_effort;
+		const thinkingParams = shouldSendProviderReasoningEffort(modelConfig, reasoningEffort)
+			? {
+					reasoning_effort: reasoningEffort,
+				}
+			: {};
+
+		const verbositySetting = providerParams.verbosity;
+		const verbosityParams = shouldSendProviderVerbosity(modelConfig, verbositySetting)
+			? { verbosity: verbositySetting }
+			: {};
+
+		if (shouldUseOpenAIResponsesApi(providerParams, modelConfig)) {
 			return buildOpenAIResponsesBody(
-				params,
+				providerParams,
 				modelConfig,
 				toolsParams.tools || [],
 				streamingParams,
@@ -444,12 +457,13 @@ export class OpenAIProvider extends BaseProvider {
 			...openaiSpecificTools,
 			...thinkingParams,
 			...verbosityParams,
-			...(producesAudio ? this.buildAudioOutputParams(params) : {}),
-			store: params.store,
-			logit_bias: params.logit_bias,
-			n: params.n,
-			stop: params.stop,
-			user: typeof params.user === "string" ? params.user : params.user?.email,
+			...(producesAudio ? this.buildAudioOutputParams(providerParams) : {}),
+			store: providerParams.store,
+			logit_bias: providerParams.logit_bias,
+			n: providerParams.n,
+			stop: providerParams.stop,
+			user:
+				typeof providerParams.user === "string" ? providerParams.user : providerParams.user?.email,
 		};
 	}
 }

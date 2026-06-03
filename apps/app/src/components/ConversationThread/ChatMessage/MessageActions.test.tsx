@@ -1,8 +1,12 @@
 import { fireEvent, render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { Message } from "~/types";
-import { MessageActions } from "./MessageActions";
+import { MessageActions, type MessageActionsProps } from "./MessageActions";
+
+const audioPlay = vi.fn().mockResolvedValue(undefined);
+const audioPause = vi.fn();
+const audioLoad = vi.fn();
 
 vi.mock("../InlineModelSelector", () => ({
 	InlineModelSelector: ({ onModelSelect }: { onModelSelect: (modelId: string) => void }) => (
@@ -27,15 +31,6 @@ vi.mock("../OpinionModelSelector", () => ({
 	),
 }));
 
-const baseProps = {
-	copied: false,
-	copyMessageToClipboard: vi.fn(),
-	feedbackState: "none" as const,
-	isSubmittingFeedback: false,
-	submitFeedback: vi.fn(),
-	isSharedView: false,
-};
-
 function message(role: Message["role"]): Message {
 	return {
 		id: `${role}-message`,
@@ -46,11 +41,30 @@ function message(role: Message["role"]): Message {
 	};
 }
 
+function messageActionsProps(message: Message): MessageActionsProps {
+	return {
+		message,
+		copied: false,
+		copyMessageToClipboard: vi.fn(),
+		feedbackState: "none",
+		isSubmittingFeedback: false,
+		submitFeedback: vi.fn(),
+		isSharedView: false,
+	};
+}
+
 describe("MessageActions", () => {
+	beforeEach(() => {
+		vi.clearAllMocks();
+		window.HTMLMediaElement.prototype.play = audioPlay;
+		window.HTMLMediaElement.prototype.pause = audioPause;
+		window.HTMLMediaElement.prototype.load = audioLoad;
+	});
+
 	it("branches directly from assistant messages", () => {
 		const onBranch = vi.fn();
 
-		render(<MessageActions {...baseProps} message={message("assistant")} onBranch={onBranch} />);
+		render(<MessageActions {...messageActionsProps(message("assistant"))} onBranch={onBranch} />);
 
 		fireEvent.click(screen.getByRole("button", { name: "Branch conversation" }));
 
@@ -60,7 +74,7 @@ describe("MessageActions", () => {
 	it("opens a model picker when branching from user messages", () => {
 		const onBranch = vi.fn();
 
-		render(<MessageActions {...baseProps} message={message("user")} onBranch={onBranch} />);
+		render(<MessageActions {...messageActionsProps(message("user"))} onBranch={onBranch} />);
 
 		fireEvent.click(screen.getByRole("button", { name: "Branch conversation" }));
 		fireEvent.click(screen.getByRole("button", { name: "Featured model" }));
@@ -73,8 +87,7 @@ describe("MessageActions", () => {
 
 		render(
 			<MessageActions
-				{...baseProps}
-				message={message("assistant")}
+				{...messageActionsProps(message("assistant"))}
 				onRequestOpinion={onRequestOpinion}
 			/>,
 		);
@@ -86,5 +99,44 @@ describe("MessageActions", () => {
 			mode: "second-opinion",
 			modelIds: ["opinion-model"],
 		});
+	});
+
+	it("replays stored assistant speech audio", () => {
+		const assistantMessage = {
+			...message("assistant"),
+			data: {
+				speech: {
+					audioUrl: "https://assets.example/tts/message.mp3",
+					generatedAt: 123,
+				},
+			},
+		};
+
+		render(<MessageActions {...messageActionsProps(assistantMessage)} />);
+
+		fireEvent.click(screen.getByRole("button", { name: "Replay response audio" }));
+
+		expect(audioPlay).toHaveBeenCalledTimes(1);
+	});
+
+	it("stops stored assistant speech audio while it is playing", () => {
+		const assistantMessage = {
+			...message("assistant"),
+			data: {
+				speech: {
+					audioUrl: "https://assets.example/tts/message.mp3",
+					generatedAt: 123,
+				},
+			},
+		};
+
+		render(<MessageActions {...messageActionsProps(assistantMessage)} />);
+
+		fireEvent.click(screen.getByRole("button", { name: "Replay response audio" }));
+		fireEvent.click(screen.getByRole("button", { name: "Stop response audio" }));
+
+		expect(audioPlay).toHaveBeenCalledTimes(1);
+		expect(audioPause).toHaveBeenCalledTimes(1);
+		expect(audioLoad).toHaveBeenCalledTimes(1);
 	});
 });

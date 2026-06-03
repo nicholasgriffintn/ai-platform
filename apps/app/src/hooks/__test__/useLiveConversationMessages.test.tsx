@@ -167,6 +167,291 @@ describe("useLiveConversationMessages", () => {
 		});
 	});
 
+	it("notifies once when a final input transcript is ready for a composed response", async () => {
+		const queryClient = createQueryClient();
+		const onFinalInputTranscript = vi.fn();
+		const { result } = renderHook(
+			() =>
+				useLiveConversationMessages({
+					conversationMode: liveConversationMode,
+					model: "scribe_v2_realtime",
+					onFinalInputTranscript,
+				}),
+			{ wrapper: wrapperFor(queryClient) },
+		);
+
+		act(() => {
+			result.current.handleTranscript({
+				isDelta: false,
+				isFinal: true,
+				itemId: "elevenlabs-segment-1",
+				source: "input",
+				text: "What is the best place in London?",
+			});
+			result.current.handleTranscript({
+				isDelta: false,
+				isFinal: true,
+				itemId: "elevenlabs-segment-1",
+				source: "input",
+				text: "What is the best place in London?",
+			});
+		});
+
+		await waitFor(() => {
+			expect(onFinalInputTranscript).toHaveBeenCalledTimes(1);
+		});
+		expect(onFinalInputTranscript).toHaveBeenCalledWith({
+			assistantMessageData: expect.objectContaining({
+				data: expect.objectContaining({
+					realtime: expect.objectContaining({
+						sequence: 1,
+						source: "output",
+					}),
+				}),
+				role: "assistant",
+			}),
+			conversationId: expect.any(String),
+			text: "What is the best place in London?",
+		});
+	});
+
+	it("orders a composed assistant response before the next ElevenLabs user message", () => {
+		const firstUserMessage = createMessage({
+			content: "First question",
+			data: {
+				realtime: {
+					source: "input",
+					sequence: 0,
+					turnId: "turn-1",
+					turnStartedAt: 1000,
+				},
+			},
+			role: "user",
+			timestamp: 1000,
+		});
+		const composedAssistantMessage = createMessage({
+			content: "First answer",
+			data: {
+				realtime: {
+					source: "output",
+					sequence: 1,
+					turnId: "turn-1",
+					turnStartedAt: 1000,
+				},
+			},
+			role: "assistant",
+			timestamp: 3000,
+		});
+		const secondUserMessage = createMessage({
+			content: "Second question",
+			data: {
+				realtime: {
+					source: "input",
+					sequence: 0,
+					turnId: "turn-2",
+					turnStartedAt: 2000,
+				},
+			},
+			role: "user",
+			timestamp: 2000,
+		});
+
+		expect(
+			orderLiveMessages([firstUserMessage, secondUserMessage, composedAssistantMessage]).map(
+				(message) => [message.role, message.content],
+			),
+		).toEqual([
+			["user", "First question"],
+			["assistant", "First answer"],
+			["user", "Second question"],
+		]);
+	});
+
+	it("finalises buffered input text from transcription done events", async () => {
+		const queryClient = createQueryClient();
+		const onFinalInputTranscript = vi.fn();
+		const { result } = renderHook(
+			() =>
+				useLiveConversationMessages({
+					conversationMode: liveConversationMode,
+					model: "voxtral-mini-transcribe-realtime",
+					onFinalInputTranscript,
+				}),
+			{ wrapper: wrapperFor(queryClient) },
+		);
+
+		act(() => {
+			result.current.handleTranscript({
+				isDelta: true,
+				isFinal: false,
+				itemId: "mistral-segment-1",
+				source: "input",
+				text: "Can you hear me?",
+			});
+			result.current.handleRealtimeEvent({
+				itemId: "mistral-segment-1",
+				type: "transcription.done",
+			});
+		});
+
+		await waitFor(() => {
+			const conversationId = useChatStore.getState().currentConversationId;
+			const conversation = queryClient.getQueryData<Conversation>([
+				CHATS_QUERY_KEY,
+				conversationId,
+			]);
+			expect(conversation?.messages).toEqual([
+				expect.objectContaining({
+					content: "Can you hear me?",
+					role: "user",
+					status: undefined,
+				}),
+			]);
+			expect(onFinalInputTranscript).toHaveBeenCalledWith({
+				assistantMessageData: expect.objectContaining({ role: "assistant" }),
+				conversationId,
+				text: "Can you hear me?",
+			});
+		});
+	});
+
+	it("does not re-notify composed response after a final segment and transcription done event", async () => {
+		const queryClient = createQueryClient();
+		const onFinalInputTranscript = vi.fn();
+		const { result } = renderHook(
+			() =>
+				useLiveConversationMessages({
+					conversationMode: liveConversationMode,
+					model: "ink-whisper",
+					onFinalInputTranscript,
+				}),
+			{ wrapper: wrapperFor(queryClient) },
+		);
+
+		act(() => {
+			result.current.handleTranscript({
+				isDelta: false,
+				isFinal: true,
+				source: "input",
+				text: "Tell me the answer.",
+			});
+			result.current.handleRealtimeEvent({ type: "transcription.done" });
+		});
+
+		await waitFor(() => {
+			expect(onFinalInputTranscript).toHaveBeenCalledTimes(1);
+		});
+	});
+
+	it("does not duplicate a Mistral transcript when a stop flush is followed by a final transcript", async () => {
+		const queryClient = createQueryClient();
+		const onFinalInputTranscript = vi.fn();
+		const { result } = renderHook(
+			() =>
+				useLiveConversationMessages({
+					conversationMode: liveConversationMode,
+					model: "voxtral-mini-transcribe-realtime",
+					onFinalInputTranscript,
+				}),
+			{ wrapper: wrapperFor(queryClient) },
+		);
+
+		act(() => {
+			result.current.handleTranscript({
+				isDelta: true,
+				isFinal: false,
+				source: "input",
+				text: "Who are you?",
+			});
+		});
+
+		await waitFor(() => {
+			const conversationId = useChatStore.getState().currentConversationId;
+			const conversation = queryClient.getQueryData<Conversation>([
+				CHATS_QUERY_KEY,
+				conversationId,
+			]);
+			expect(conversation?.messages).toEqual([
+				expect.objectContaining({
+					content: "Who are you?",
+					role: "user",
+					status: "in_progress",
+				}),
+			]);
+		});
+
+		act(() => {
+			result.current.flushLiveMessages();
+			result.current.handleTranscript({
+				isDelta: false,
+				isFinal: true,
+				source: "input",
+				text: "Who are you?",
+			});
+		});
+
+		await waitFor(() => {
+			const conversationId = useChatStore.getState().currentConversationId;
+			const conversation = queryClient.getQueryData<Conversation>([
+				CHATS_QUERY_KEY,
+				conversationId,
+			]);
+			expect(conversation?.messages.map((message) => [message.role, message.content])).toEqual([
+				["user", "Who are you?"],
+			]);
+			expect(onFinalInputTranscript).toHaveBeenCalledTimes(1);
+			expect(onFinalInputTranscript).toHaveBeenCalledWith({
+				assistantMessageData: expect.objectContaining({ role: "assistant" }),
+				conversationId,
+				text: "Who are you?",
+			});
+		});
+	});
+
+	it("stores Cartesia-style interim transcript text when done has no item id", async () => {
+		const queryClient = createQueryClient();
+		const onFinalInputTranscript = vi.fn();
+		const { result } = renderHook(
+			() =>
+				useLiveConversationMessages({
+					conversationMode: liveConversationMode,
+					model: "ink-whisper",
+					onFinalInputTranscript,
+				}),
+			{ wrapper: wrapperFor(queryClient) },
+		);
+
+		act(() => {
+			result.current.handleTranscript({
+				isDelta: true,
+				isFinal: false,
+				source: "input",
+				text: "Tell me about this.",
+			});
+			result.current.handleRealtimeEvent({ type: "transcription.done" });
+		});
+
+		await waitFor(() => {
+			const conversationId = useChatStore.getState().currentConversationId;
+			const conversation = queryClient.getQueryData<Conversation>([
+				CHATS_QUERY_KEY,
+				conversationId,
+			]);
+			expect(conversation?.messages).toEqual([
+				expect.objectContaining({
+					content: "Tell me about this.",
+					role: "user",
+					status: undefined,
+				}),
+			]);
+			expect(onFinalInputTranscript).toHaveBeenCalledWith({
+				assistantMessageData: expect.objectContaining({ role: "assistant" }),
+				conversationId,
+				text: "Tell me about this.",
+			});
+		});
+	});
+
 	it("keeps live user messages before assistant messages when metadata is incomplete", () => {
 		const assistantMessage = createMessage({
 			content: "That's a fun question.",

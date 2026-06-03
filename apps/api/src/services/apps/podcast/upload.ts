@@ -1,6 +1,6 @@
 import { sanitiseInput } from "~/lib/chat/utils";
-import { StorageService } from "~/lib/storage";
 import { resolveServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
+import { StorageService, type StoredAssetResult } from "~/lib/storage";
 import type { IEnv, IFunctionResponse, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
@@ -30,10 +30,8 @@ export const handlePodcastUpload = async (req: UploadRequest): Promise<IPodcastU
 
 	const serviceContext = resolveServiceContext({ context, env, user });
 	serviceContext.ensureDatabase();
-	const runtimeEnv = serviceContext.env as IEnv;
 	const repositories = serviceContext.repositories;
 	const podcastId = generateId();
-	const storageService = new StorageService(runtimeEnv.ASSETS_BUCKET);
 
 	const sanitisedTitle = sanitiseInput(request.title);
 	const sanitisedDescription = sanitiseInput(request.description);
@@ -41,20 +39,23 @@ export const handlePodcastUpload = async (req: UploadRequest): Promise<IPodcastU
 	if (!request.audioUrl) {
 		const podcastAudioKey = `podcasts/${podcastId}/recording.mp3`;
 
-		const baseAssetsUrl = runtimeEnv.PUBLIC_ASSETS_URL || "";
-		const audioUrl = `${baseAssetsUrl}/${podcastAudioKey}`;
-
 		if (!request.audio) {
 			throw new AssistantError("Missing audio", ErrorType.PARAMS_ERROR);
 		}
 
+		let storedAudio: StoredAssetResult;
 		try {
 			const arrayBuffer = await request.audio.arrayBuffer();
 			const length = arrayBuffer.byteLength;
 
-			await storageService.uploadObject(podcastAudioKey, arrayBuffer, {
-				contentType: "audio/mpeg",
-				contentLength: length,
+			storedAudio = await StorageService.forPrivateAssets(serviceContext).storePrivateAsset({
+				key: podcastAudioKey,
+				data: arrayBuffer,
+				ownerUserId: user.id,
+				purpose: "app_artifact",
+				mimeType: "audio/mpeg",
+				filename: "recording.mp3",
+				byteSize: length,
 			});
 		} catch {
 			throw new AssistantError("Failed to upload podcast", ErrorType.UNKNOWN_ERROR);
@@ -63,7 +64,8 @@ export const handlePodcastUpload = async (req: UploadRequest): Promise<IPodcastU
 		const appData = {
 			title: sanitisedTitle || "Untitled Podcast",
 			description: sanitisedDescription,
-			audioUrl,
+			audioAssetId: storedAudio.assetId,
+			audioUrl: storedAudio.url,
 			audioKey: podcastAudioKey,
 			status: "ready",
 			createdAt: new Date().toISOString(),
@@ -79,7 +81,7 @@ export const handlePodcastUpload = async (req: UploadRequest): Promise<IPodcastU
 
 		return {
 			status: "success",
-			content: `Podcast Upload: [Listen Here](${audioUrl})`,
+			content: `Podcast Upload: [Listen Here](${storedAudio.url})`,
 			completion_id: podcastId,
 			data: appData,
 		};

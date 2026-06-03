@@ -1,12 +1,4 @@
-import {
-	type FormEvent,
-	type ReactNode,
-	useCallback,
-	useEffect,
-	useMemo,
-	useRef,
-	useState,
-} from "react";
+import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import type { ConversationModeMetadata } from "@assistant/schemas";
 
@@ -64,6 +56,7 @@ export interface ConversationThreadModeConfig {
 	hideTextInput?: boolean;
 	hideInlineResponseControls?: boolean;
 	hideChatSettings?: boolean;
+	forceAutoPlayResponses?: boolean;
 	analyticsSource?: string;
 	councilDebate?: {
 		enabled: boolean;
@@ -99,6 +92,8 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
 	const [currentArtifacts, setCurrentArtifacts] = useState<ArtifactProps[]>([]);
 	const [isCombinedPanel, setIsCombinedPanel] = useState(false);
 	const [autoPlayResponsesEnabled, setAutoPlayResponsesEnabled] = useState(false);
+	const effectiveAutoPlayResponsesEnabled =
+		autoPlayResponsesEnabled || Boolean(modeConfig?.forceAutoPlayResponses);
 
 	const isStreamLoading = useIsLoading("stream-response");
 	const isModelInitializing = useIsLoading("model-init");
@@ -114,8 +109,9 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
 		isPlaying: isPlayingAutoResponse,
 		stopPlayback,
 	} = useAutoPlayResponses({
+		conversationId: currentConversationId,
 		messages,
-		isEnabled: autoPlayResponsesEnabled,
+		isEnabled: effectiveAutoPlayResponsesEnabled,
 		isStreaming: isStreamLoading || streamStarted,
 	});
 
@@ -175,8 +171,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
 	);
 
 	const handleSubmit = useCallback(
-		async (e: FormEvent, attachments?: AttachmentData[]) => {
-			e.preventDefault();
+		async (attachments?: AttachmentData[]) => {
 			if (!chatInput.trim() && !attachments?.length) {
 				return;
 			}
@@ -257,7 +252,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
 			if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
 				e.preventDefault();
 				if (canSubmit) {
-					handleSubmit(e as unknown as FormEvent);
+					handleSubmit();
 				}
 			}
 			if (e.key === "Escape") {
@@ -390,7 +385,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
 						hideInlineResponseControls={modeConfig?.hideInlineResponseControls}
 						hideChatSettings={modeConfig?.hideChatSettings}
 						autoPlayResponses={{
-							enabled: autoPlayResponsesEnabled,
+							enabled: effectiveAutoPlayResponsesEnabled,
 							isGenerating: isGeneratingAutoResponseSpeech,
 							isPlaying: isPlayingAutoResponse,
 							onToggle: handleAutoPlayToggle,

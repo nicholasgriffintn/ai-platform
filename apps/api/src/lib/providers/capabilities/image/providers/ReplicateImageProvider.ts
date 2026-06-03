@@ -1,5 +1,5 @@
 import { getTextToImageSystemPrompt, imagePrompts } from "~/lib/prompts/image";
-import { getModelConfigByModel } from "~/lib/providers/models";
+import { findModelConfig } from "~/lib/providers/models";
 import { validateReplicatePayload } from "~/lib/providers/models/replicateValidation";
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import { extractGeneratedAsset } from "~/lib/providers/utils/helpers";
@@ -23,7 +23,7 @@ export class ReplicateImageProvider implements ImageProvider {
 
 	async generate(request: ImageGenerationRequest): Promise<ImageGenerationResult> {
 		const modelId = request.model || DEFAULT_MODEL;
-		const modelConfig = await getModelConfigByModel(modelId);
+		const modelConfig = await findModelConfig(modelId, request.env, "replicate");
 
 		if (!modelConfig) {
 			throw new AssistantError(

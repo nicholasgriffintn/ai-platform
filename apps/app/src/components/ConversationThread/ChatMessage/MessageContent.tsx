@@ -1,5 +1,5 @@
 import { File, Loader2, Volume2 } from "lucide-react";
-import type { ReactNode } from "react";
+import { Fragment, type ReactNode } from "react";
 import { memo, useMemo } from "react";
 
 import { ImageModal } from "~/components/ui/ImageModal";
@@ -92,38 +92,37 @@ const renderTextContent = (
 			}
 		}
 
-		if (messageData) {
-			if (messageData.attachments?.length > 0) {
-				for (const attachment of messageData.attachments) {
-					if (attachment.type === "image") {
-						renderedParts.push(renderImageContent(attachment.url));
-					}
-					if (attachment.type === "document") {
-						renderedParts.push(
-							renderDocumentContent(
-								attachment.url,
-								attachment.name,
-								undefined,
-								attachment.isMarkdown,
-							),
-						);
-					}
-					if (attachment.type === "audio") {
-						renderedParts.push(renderAudioContent(attachment.url, attachment.name));
-					}
-					if (attachment.type) {
-						renderedParts.push(`[[CONTENT:${attachment.url}]]`);
-					}
+		if (messageData?.attachments?.length) {
+			for (const [attachmentIndex, attachment] of messageData.attachments.entries()) {
+				if (attachment.type === "image") {
+					renderedParts.push(renderImageContent(attachment.url, attachmentIndex));
+				} else if (attachment.type === "document") {
+					renderedParts.push(
+						renderDocumentContent(
+							attachment.url,
+							attachment.name,
+							attachmentIndex,
+							attachment.isMarkdown,
+						),
+					);
+				} else if (attachment.type === "audio") {
+					renderedParts.push(renderAudioContent(attachment.url, attachment.name, attachmentIndex));
+				} else {
+					renderedParts.push(
+						<Fragment key={`content-fallback-${attachmentIndex}`}>
+							{`[[CONTENT:${attachment.url}]]`}
+						</Fragment>,
+					);
 				}
 			}
 		}
 
 		return (
-			<>
+			<Fragment key={key}>
 				{(reasoning?.length > 0 || messageReasoning) && (
 					<ReasoningSection reasoning={reasoningProps} />
 				)}
-				<div key={key} className="space-y-2">
+				<div className="space-y-2">
 					{messageCitations && messageCitations.length > 0 && (
 						<CitationList citations={messageCitations} />
 					)}
@@ -132,12 +131,12 @@ const renderTextContent = (
 					)}
 					{renderedParts}
 				</div>
-			</>
+			</Fragment>
 		);
 	}
 
 	return (
-		<>
+		<Fragment key={key}>
 			{(reasoning?.length > 0 || messageReasoning) && (
 				<ReasoningSection reasoning={reasoningProps} />
 			)}
@@ -150,7 +149,7 @@ const renderTextContent = (
 			<MemoizedMarkdown key={key}>{content}</MemoizedMarkdown>
 			{messageData && messageData.attachments?.length > 0 && (
 				<div className="space-y-4">
-					{messageData.attachments.map((attachment: any, i: number) => {
+					{messageData.attachments.map((attachment, i) => {
 						if (!attachment.url) {
 							return null;
 						}
@@ -168,11 +167,13 @@ const renderTextContent = (
 						if (attachment.type === "audio") {
 							return renderAudioContent(attachment.url, attachment.name, i);
 						}
-						return `[[CONTENT:${attachment.url}]]`;
+						return (
+							<Fragment key={`content-fallback-${i}`}>{`[[CONTENT:${attachment.url}]]`}</Fragment>
+						);
 					})}
 				</div>
 			)}
-		</>
+		</Fragment>
 	);
 };
 
@@ -184,6 +185,7 @@ const renderImageContent = (imageUrl: string, index?: number): ReactNode => {
 				alt="Attached content"
 				thumbnailClassName="rounded-lg"
 				imageClassName="rounded-lg"
+				crossOrigin="use-credentials"
 			/>
 		</div>
 	);
@@ -232,7 +234,7 @@ const renderAudioContent = (audioUrl: string, audioName?: string, index?: number
 				<span className="text-zinc-700 dark:text-zinc-300">{audioName || "Audio"}</span>
 			</div>
 			{audioUrl && (
-				<audio controls className="w-full rounded-lg">
+				<audio controls crossOrigin="use-credentials" className="w-full rounded-lg">
 					<source src={audioUrl} type="audio/mpeg" />
 					<track kind="captions" />
 					Your browser does not support the audio element.
@@ -499,7 +501,7 @@ export const MessageContent = memo(({ message, onArtifactOpen }: MessageContentP
 					</div>
 				) : message.data && "attachments" in message.data && message.data.attachments ? (
 					<div className="space-y-4">
-						{message.data.attachments.map((attachment: any, i: number) => {
+						{message.data.attachments.map((attachment, i) => {
 							if (attachment.type === "image") {
 								return renderImageContent(attachment.url, i);
 							}

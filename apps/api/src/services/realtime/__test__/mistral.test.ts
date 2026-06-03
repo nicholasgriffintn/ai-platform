@@ -104,6 +104,7 @@ describe("createMistralRealtimeProxyResponse", () => {
 				headers: {
 					Authorization: "Bearer test-key",
 					Upgrade: "websocket",
+					"user-agent": "polychat-mistral-realtime-proxy/1.0",
 				},
 			}),
 		);

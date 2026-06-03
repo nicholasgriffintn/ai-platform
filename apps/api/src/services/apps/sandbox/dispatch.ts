@@ -97,6 +97,7 @@ async function loadRunData(params: {
 async function persistRunData(params: {
 	env: IEnv;
 	recordId: string;
+	userId: number;
 	runData: PersistedSandboxRunData;
 }): Promise<PersistedSandboxRunData> {
 	const context = createServiceContext({
@@ -105,6 +106,7 @@ async function persistRunData(params: {
 	let runData = params.runData;
 	runData = await persistSandboxRunArtifact({
 		serviceContext: context,
+		ownerUserId: params.userId,
 		run: runData,
 	});
 	await context.repositories.appData.updateAppData(params.recordId, runData);
@@ -222,6 +224,7 @@ export async function processSandboxRunDispatch(params: {
 		await persistRunData({
 			env,
 			recordId: message.recordId,
+			userId: message.userId,
 			runData: nextRun,
 		});
 		return;
@@ -413,6 +416,7 @@ export async function processSandboxRunDispatch(params: {
 	const persisted = await persistRunData({
 		env,
 		recordId: message.recordId,
+		userId: message.userId,
 		runData: nextRunData,
 	});
 	await indexSandboxRunResult({

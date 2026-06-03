@@ -1,8 +1,8 @@
 import { gatewayId } from "~/constants/app";
 import type { ConversationManager } from "~/lib/conversationManager";
 import { drawingDescriptionPrompt } from "~/lib/prompts";
-import { StorageService } from "~/lib/storage";
 import { resolveServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
+import { StorageService, type StoredAssetResult } from "~/lib/storage";
 import type { ChatRole, IEnv, IFunctionResponse, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
@@ -36,6 +36,7 @@ export async function generateImageFromDrawing({
 	const serviceContext = resolveServiceContext({ context, env, user });
 	serviceContext.ensureDatabase();
 	const runtimeEnv = serviceContext.env as IEnv;
+	const storage = StorageService.forPrivateAssets(serviceContext);
 
 	const arrayBuffer = await request.drawing.arrayBuffer();
 	const length = arrayBuffer.byteLength;
@@ -43,12 +44,16 @@ export async function generateImageFromDrawing({
 	const drawingId = request.drawingId || existingDrawingId || generateId();
 	const drawingImageKey = `drawings/${drawingId}/image.png`;
 
-	let _drawingUrl = "";
+	let storedDrawing: StoredAssetResult;
 	try {
-		const storageService = new StorageService(runtimeEnv.ASSETS_BUCKET);
-		_drawingUrl = await storageService.uploadObject(drawingImageKey, arrayBuffer, {
-			contentType: "image/png",
-			contentLength: length,
+		storedDrawing = await storage.storePrivateAsset({
+			key: drawingImageKey,
+			data: arrayBuffer,
+			ownerUserId: user.id,
+			purpose: "app_artifact",
+			mimeType: "image/png",
+			filename: "image.png",
+			byteSize: length,
 		});
 	} catch {
 		throw new AssistantError("Error uploading drawing");
@@ -100,18 +105,22 @@ export async function generateImageFromDrawing({
 	const paintingLength = paintingArrayBuffer.byteLength;
 
 	const paintingImageKey = `drawings/${drawingId}/painting.png`;
+	let storedPainting: StoredAssetResult;
 	try {
-		const storageService = new StorageService(runtimeEnv.ASSETS_BUCKET);
-		await storageService.uploadObject(paintingImageKey, paintingArrayBuffer, {
-			contentType: "image/png",
-			contentLength: paintingLength,
+		storedPainting = await storage.storePrivateAsset({
+			key: paintingImageKey,
+			data: paintingArrayBuffer,
+			ownerUserId: user.id,
+			purpose: "app_artifact",
+			mimeType: "image/png",
+			filename: "painting.png",
+			byteSize: paintingLength,
 		});
 	} catch {
 		throw new AssistantError("Error uploading painting");
 	}
 
 	let conversationResponse: any = { status: "success" };
-	const baseAssetsUrl = runtimeEnv.PUBLIC_ASSETS_URL || "";
 
 	if (conversationManager) {
 		await conversationManager.add(drawingId, {
@@ -125,9 +134,11 @@ export async function generateImageFromDrawing({
 			name: "drawing_generate",
 			content: descriptionRequest?.description,
 			data: {
-				drawingUrl: `${baseAssetsUrl}/${drawingImageKey}`,
+				drawingAssetId: storedDrawing.assetId,
+				drawingUrl: storedDrawing.url,
 				drawingKey: drawingImageKey,
-				paintingUrl: `${baseAssetsUrl}/${paintingImageKey}`,
+				paintingAssetId: storedPainting.assetId,
+				paintingUrl: storedPainting.url,
 				paintingKey: paintingImageKey,
 			},
 		};
@@ -143,8 +154,10 @@ export async function generateImageFromDrawing({
 		"drawing",
 		{
 			description: descriptionRequest?.description || "Untitled drawing",
-			drawingUrl: `${baseAssetsUrl}/${drawingImageKey}`,
-			paintingUrl: `${baseAssetsUrl}/${paintingImageKey}`,
+			drawingAssetId: storedDrawing.assetId,
+			drawingUrl: storedDrawing.url,
+			paintingAssetId: storedPainting.assetId,
+			paintingUrl: storedPainting.url,
 			drawingKey: drawingImageKey,
 			paintingKey: paintingImageKey,
 		},
@@ -158,9 +171,11 @@ export async function generateImageFromDrawing({
 		completion_id: drawingId,
 		status: "success",
 		data: {
-			drawingUrl: `${baseAssetsUrl}/${drawingImageKey}`,
+			drawingAssetId: storedDrawing.assetId,
+			drawingUrl: storedDrawing.url,
 			drawingKey: drawingImageKey,
-			paintingUrl: `${baseAssetsUrl}/${paintingImageKey}`,
+			paintingAssetId: storedPainting.assetId,
+			paintingUrl: storedPainting.url,
 			paintingKey: paintingImageKey,
 			description: descriptionRequest?.description || "Untitled drawing",
 		},

@@ -1,7 +1,15 @@
-import { File, Image, Loader2, Paperclip, Pause, Send, Volume2, FileCode } from "lucide-react";
+import {
+	File,
+	Image as ImageIcon,
+	Loader2,
+	Paperclip,
+	Pause,
+	Send,
+	Volume2,
+	FileCode,
+} from "lucide-react";
 import {
 	type ChangeEvent,
-	type FormEvent,
 	type KeyboardEvent,
 	type ReactNode,
 	forwardRef,
@@ -12,7 +20,7 @@ import {
 	useRef,
 	useState,
 } from "react";
-import { Button } from "~/components/ui";
+import { Button, Image } from "~/components/ui";
 import { useModels } from "~/hooks/useModels";
 import { useVoiceRecorder } from "~/hooks/useVoiceRecorder";
 import type { AttachmentData } from "~/lib/chat/attachments";
@@ -39,7 +47,7 @@ export interface ChatInputHandle {
 }
 
 interface ChatInputProps {
-	handleSubmit: (e: FormEvent, attachments?: AttachmentData[]) => void;
+	handleSubmit: (attachments?: AttachmentData[]) => void;
 	isLoading: boolean;
 	streamStarted: boolean;
 	controller: AbortController;
@@ -196,9 +204,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 
 			if (e.key === "Enter" && !e.shiftKey) {
 				e.preventDefault();
-				const attachments = selectedAttachments.length > 0 ? selectedAttachments : undefined;
-				clearSelectedAttachments();
-				handleSubmit(e as unknown as FormEvent, attachments);
+				submitSelectedAttachments();
 			}
 			if (e.key === "Enter" && e.shiftKey) {
 				e.preventDefault();
@@ -287,10 +293,10 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 			);
 		};
 
-		const handleFormSubmit = (e: FormEvent) => {
+		const submitSelectedAttachments = () => {
 			const attachments = selectedAttachments.length > 0 ? selectedAttachments : undefined;
 			clearSelectedAttachments();
-			handleSubmit(e, attachments);
+			handleSubmit(attachments);
 		};
 
 		const getFileTypeAccept = () => {
@@ -357,12 +363,12 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 
 		const getUploadButtonIcon = () => {
 			if (isImageModel) {
-				return <Image className="h-4 w-4" />;
+				return <ImageIcon className="h-4 w-4" />;
 			}
 			if (isMultimodalModel || supportsAudio) {
 				return (
 					<span className="flex space-x-1">
-						{isMultimodalModel && <Image className="h-4 w-4" />}
+						{isMultimodalModel && <ImageIcon className="h-4 w-4" />}
 						{supportsDocuments && <File className="h-4 w-4" />}
 						{supportsCode && <FileCode className="h-4 w-4" />}
 						{supportsAudio && <Volume2 className="h-4 w-4" />}
@@ -381,7 +387,12 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 			if (attachment.type === "image") {
 				return {
 					preview: (
-						<img src={attachment.data} alt="Selected" className="h-4 w-4 rounded object-cover" />
+						<Image
+							src={attachment.data}
+							alt="Selected"
+							className="h-4 w-4 rounded object-cover"
+							crossOrigin="use-credentials"
+						/>
 					),
 					label: "Image attached",
 				};
@@ -532,7 +543,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 											{!hideSubmitButton && (
 												<Button
 													type="submit"
-													onClick={handleFormSubmit}
+													onClick={submitSelectedAttachments}
 													disabled={
 														!!(
 															(!chatInput?.trim() && selectedAttachments.length === 0) ||

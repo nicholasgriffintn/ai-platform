@@ -1,7 +1,7 @@
 import { Download } from "lucide-react";
 import { useCallback, useState } from "react";
 
-import { Button } from "~/components/ui";
+import { Button, ImageModal } from "~/components/ui";
 import type { Drawing } from "~/types/drawing";
 
 interface DrawingViewProps {
@@ -66,10 +66,12 @@ export function DrawingView({ drawing }: DrawingViewProps) {
 			</div>
 
 			<div className="relative aspect-video w-full bg-zinc-100 dark:bg-zinc-800 rounded-lg overflow-hidden shadow-md">
-				<img
+				<ImageModal
 					src={activeTab === "transformed" ? drawing.paintingUrl : drawing.drawingUrl}
 					alt={drawing.description || "Drawing"}
-					className="w-full h-full object-contain"
+					thumbnailClassName="h-full w-full"
+					imageClassName="h-full w-full object-contain"
+					crossOrigin="use-credentials"
 				/>
 			</div>
 

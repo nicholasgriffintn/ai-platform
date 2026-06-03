@@ -115,6 +115,11 @@ export class AzureOpenAIProvider extends BaseProvider {
 	async getResponse(params: ChatCompletionParameters, userId?: number): Promise<any> {
 		this.validateParams(params);
 
+		const model = params.model;
+		if (!model) {
+			throw new AssistantError("Missing model", ErrorType.PARAMS_ERROR);
+		}
+
 		const isOpenAiCompatible = this.isOpenAiCompatible;
 
 		const { resourceName, apiVersion } = await this.resolveAzureCredentials(
@@ -128,7 +133,7 @@ export class AzureOpenAIProvider extends BaseProvider {
 		const headers = await this.getHeaders(params);
 
 		const modelConfig = await getModelConfigByMatchingModel(
-			params.model || "",
+			model,
 			params.env,
 			params.provider || this.name,
 		);
@@ -139,12 +144,12 @@ export class AzureOpenAIProvider extends BaseProvider {
 
 		const timeout = modelConfig.timeout || 100000;
 
-		const storageService = new StorageService(params.env.ASSETS_BUCKET);
-		const assetsUrl = params.env.PUBLIC_ASSETS_URL || "";
+		const storageService = StorageService.forPrivateAssetsEnv(params.env);
+		const assetsUrl = params.env.API_BASE_URL || "";
 
 		return trackProviderMetrics({
 			provider: this.name,
-			model: params.model as string,
+			model,
 			operation: async () => {
 				const body = await this.getAzureParameterMapping(params, storageService, assetsUrl);
 				const data = await fetchAIResponse(

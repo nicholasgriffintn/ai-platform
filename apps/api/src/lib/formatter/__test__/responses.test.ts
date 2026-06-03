@@ -2,38 +2,39 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { IEnv } from "~/types";
 
-const { mockUploadImageFromChat, mockUploadAudioFromChat, mockStorageService, mockBucket } =
-	vi.hoisted(() => {
-		const mockUploadImageFromChat = vi.fn();
-		const mockUploadAudioFromChat = vi.fn();
-		const mockStorageService = {
-			uploadObject: vi.fn().mockResolvedValue("test-key"),
-			getObject: vi.fn(),
-		};
-		const mockBucket = {
-			put: vi.fn().mockResolvedValue(undefined),
-			get: vi.fn(),
-		};
-
-		return {
-			mockUploadImageFromChat,
-			mockUploadAudioFromChat,
-			mockStorageService,
-			mockBucket,
-		};
+const { mockStorageService, mockBucket, mockStorePrivateAsset } = vi.hoisted(() => {
+	const mockStorePrivateAsset = vi.fn().mockResolvedValue({
+		assetId: "asset-123",
+		key: "generations/completion/model/test.png",
+		url: "https://api.example.com/assets/asset-123",
 	});
+	const mockStorageService = {
+		uploadObject: vi.fn().mockResolvedValue("test-key"),
+		storePrivateAsset: mockStorePrivateAsset,
+		getObject: vi.fn(),
+	};
+	const mockBucket = {
+		put: vi.fn().mockResolvedValue(undefined),
+		get: vi.fn(),
+	};
 
-vi.mock("../storage", () => ({
+	return {
+		mockStorePrivateAsset,
+		mockStorageService,
+		mockBucket,
+	};
+});
+
+vi.mock("~/lib/storage", () => ({
 	StorageService: class {
+		static forPrivateAssets() {
+			return mockStorageService;
+		}
+
 		constructor() {
 			return mockStorageService;
 		}
 	},
-}));
-
-vi.mock("../upload", () => ({
-	uploadImageFromChat: mockUploadImageFromChat,
-	uploadAudioFromChat: mockUploadAudioFromChat,
 }));
 
 global.fetch = vi.fn();
@@ -43,11 +44,19 @@ import { ResponseFormatter } from "../responses";
 describe("ResponseFormatter", () => {
 	const mockEnv: IEnv = {
 		ASSETS_BUCKET: mockBucket as unknown as IEnv["ASSETS_BUCKET"],
+		PRIVATE_ASSETS_BUCKET: mockBucket as unknown as IEnv["PRIVATE_ASSETS_BUCKET"],
 		PUBLIC_ASSETS_URL: "https://assets.example.com",
+		API_BASE_URL: "https://api.example.com",
+		DB: {},
 	} as IEnv;
 
 	beforeEach(() => {
 		vi.clearAllMocks();
+		mockStorePrivateAsset.mockResolvedValue({
+			assetId: "asset-123",
+			key: "generations/completion/model/test.png",
+			url: "https://api.example.com/assets/asset-123",
+		});
 	});
 
 	describe("formatResponse", () => {
@@ -82,16 +91,15 @@ describe("ResponseFormatter", () => {
 				env: mockEnv,
 				model: "gpt-audio-1.5",
 				completion_id: "completion-123",
+				userId: 1,
 			});
 
-			const storageCalls =
-				mockStorageService.uploadObject.mock.calls.length + mockBucket.put.mock.calls.length;
-			expect(storageCalls).toBeGreaterThan(0);
+			expect(mockStorePrivateAsset).toHaveBeenCalled();
 			expect(result.response).toEqual([
 				{ type: "text", text: "Spoken response" },
 				{
 					type: "audio_url",
-					audio_url: { url: expect.stringContaining("https://assets.example.com/") },
+					audio_url: { url: "https://api.example.com/assets/asset-123" },
 				},
 			]);
 			expect(result.data.audio).toMatchObject({
@@ -224,20 +232,20 @@ describe("ResponseFormatter", () => {
 				env: mockEnv,
 				model: "gpt-image-1.5",
 				completion_id: "chat_123",
+				userId: 1,
 			});
 
-			const storageCalls =
-				mockStorageService.uploadObject.mock.calls.length + mockBucket.put.mock.calls.length;
-			expect(storageCalls).toBe(1);
-
-			const [key, bytes, options] =
-				mockStorageService.uploadObject.mock.calls[0] || mockBucket.put.mock.calls[0];
-			expect(key).toContain("generations/chat_123/gpt-image-1.5/");
-			expect((options as any).contentType).toBe("image/png");
-			expect((bytes as Uint8Array).byteLength).toBeGreaterThan(0);
+			expect(mockStorePrivateAsset).toHaveBeenCalledWith(
+				expect.objectContaining({
+					mimeType: "image/png",
+					filename: "image.png",
+					ownerUserId: 1,
+					purpose: "generated_media",
+				}),
+			);
 
 			expect(result.response).toHaveLength(1);
-			expect(result.response[0].image_url.url).toContain(mockEnv.PUBLIC_ASSETS_URL);
+			expect(result.response[0].image_url.url).toBe("https://api.example.com/assets/asset-123");
 			expect(result.data.assets).toHaveLength(1);
 			expect(result.data.revised_prompt).toBe("Refined hamster prompt");
 			expect(JSON.stringify(result).includes(base64Image)).toBe(false);
@@ -517,14 +525,13 @@ describe("ResponseFormatter", () => {
 				modalities: { input: ["text"], output: ["image"] },
 				env: mockEnv,
 				model: "replicate-image",
+				userId: 1,
 			});
 
 			expect(mockFetch).toHaveBeenCalledWith("https://replicate.delivery/example/output-0.png");
-			const storageCalls =
-				mockStorageService.uploadObject.mock.calls.length + mockBucket.put.mock.calls.length;
-			expect(storageCalls).toBeGreaterThan(0);
+			expect(mockStorePrivateAsset).toHaveBeenCalled();
 			const responseUrl = (result.response as any)[0].image_url.url as string;
-			expect(responseUrl.startsWith(mockEnv.PUBLIC_ASSETS_URL || "")).toBe(true);
+			expect(responseUrl).toBe("https://api.example.com/assets/asset-123");
 			expect(result.data.assets[0].originalUrl).toBe(
 				"https://replicate.delivery/example/output-0.png",
 			);
@@ -1030,19 +1037,20 @@ describe("ResponseFormatter", () => {
 	});
 
 	describe("error handling", () => {
-		it("should handle missing ASSETS_BUCKET for image upload", async () => {
+		it("should handle missing private assets bucket for image upload", async () => {
 			const data = {
 				data: [{ url: "https://example.com/image.png" }],
 			};
 
-			const envWithoutBucket = { ...mockEnv, ASSETS_BUCKET: undefined };
+			const envWithoutBucket = { ...mockEnv, PRIVATE_ASSETS_BUCKET: undefined };
 
 			await expect(
 				ResponseFormatter.formatResponse(data, "openai", {
 					modalities: { input: ["text"], output: ["image"] },
 					env: envWithoutBucket,
+					userId: 1,
 				}),
-			).rejects.toThrow("ASSETS_BUCKET is not set");
+			).rejects.toThrow("Private assets bucket is not configured");
 		});
 
 		it("should handle fetch failure during image upload", async () => {
@@ -1057,23 +1065,25 @@ describe("ResponseFormatter", () => {
 				ResponseFormatter.formatResponse(data, "openai", {
 					modalities: { input: ["text"], output: ["image"] },
 					env: mockEnv,
+					userId: 1,
 				}),
 			).rejects.toThrow("Fetch failed");
 		});
 
-		it("should handle missing ASSETS_BUCKET for image upload", async () => {
+		it("should handle missing private assets bucket for image upload", async () => {
 			const data = {
 				data: [{ url: "https://example.com/image.png" }],
 			};
 
-			const envWithoutBucket = { ...mockEnv, ASSETS_BUCKET: undefined };
+			const envWithoutBucket = { ...mockEnv, PRIVATE_ASSETS_BUCKET: undefined };
 
 			await expect(
 				ResponseFormatter.formatResponse(data, "openai", {
 					modalities: { input: ["text"], output: ["image"] },
 					env: envWithoutBucket,
+					userId: 1,
 				}),
-			).rejects.toThrow("ASSETS_BUCKET is not set");
+			).rejects.toThrow("Private assets bucket is not configured");
 		});
 	});
 });

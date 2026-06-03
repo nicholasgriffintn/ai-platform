@@ -19,6 +19,7 @@ export const ROUTES = {
 	AUTH: "/auth",
 	MODELS: "/models",
 	AUDIO: "/audio",
+	ASSETS: "/assets",
 	DYNAMIC_APPS: "/dynamic-apps",
 	SEARCH: "/search",
 	TASKS: "/tasks",

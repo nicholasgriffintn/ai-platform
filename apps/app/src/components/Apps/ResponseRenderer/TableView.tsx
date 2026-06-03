@@ -4,7 +4,7 @@ interface TableViewProps {
 			key: string;
 			label: string;
 		}>;
-		rows: Array<Record<string, any>>;
+		rows: Array<Record<string, unknown>>;
 	};
 }
 

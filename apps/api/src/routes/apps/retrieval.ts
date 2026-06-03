@@ -17,6 +17,7 @@ import z from "zod/v4";
 
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import { requirePlan } from "~/middleware/requirePlan";
+import { getServiceContext } from "~/lib/context/serviceContext";
 import { ResponseFactory } from "~/lib/http/ResponseFactory";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import type { IEnv, IUser, ResearchProviderName } from "~/types";
@@ -148,8 +149,11 @@ addRoute(app, "post", "/capture-screenshot", {
 	handler: async ({ raw }) =>
 		(async (context: Context) => {
 			const body = context.req.valid("json" as never) as CaptureScreenshotParams;
+			const serviceContext = getServiceContext(context);
 			const response = await captureScreenshot(body, {
 				env: context.env as IEnv,
+				context: serviceContext,
+				user: serviceContext.requireUser(),
 			});
 
 			return ResponseFactory.success(context, { response });

@@ -5,15 +5,32 @@ import { useCallback, useEffect, useRef } from "react";
 import { CHATS_QUERY_KEY } from "~/constants";
 import { apiService } from "~/lib/api/api-service";
 import { createConversationId } from "~/lib/conversations";
-import { normalizeMessage } from "~/lib/messages";
+import {
+	buildLiveMessage,
+	createLiveTurn,
+	createTemporaryLiveTitle,
+	DEFAULT_LIVE_CONVERSATION_TITLES,
+	getMessageText,
+	orderLiveMessages,
+	type LiveTurn,
+} from "~/lib/realtime/live-turn-messages";
 import type { RealtimeTranscriptResult } from "~/lib/realtime/messages";
 import { useChatStore } from "~/state/stores/chatStore";
 import type { Conversation, Message } from "~/types";
 import { useConversationStorage } from "./useConversationStorage";
 
+export { orderLiveMessages } from "~/lib/realtime/live-turn-messages";
+
+export interface FinalLiveInputTranscript {
+	assistantMessageData: Partial<Message>;
+	conversationId: string;
+	text: string;
+}
+
 interface UseLiveConversationMessagesOptions {
 	conversationMode?: ConversationModeMetadata;
 	model?: string | null;
+	onFinalInputTranscript?: (input: FinalLiveInputTranscript) => void | Promise<void>;
 }
 
 interface ActiveLiveMessage {
@@ -26,24 +43,6 @@ interface LiveRealtimeEvent {
 	responseId?: string;
 	type: string;
 }
-
-interface LiveTurn {
-	id: string;
-	inputFinal: boolean;
-	inputStarted: boolean;
-	inputTextPresent: boolean;
-	outputFinal: boolean;
-	outputStarted: boolean;
-	startedAt: number;
-}
-
-interface LiveMessageOrder {
-	sequence: number;
-	startedAt: number;
-	turnId: string;
-}
-
-const DEFAULT_TITLES = new Set(["New Conversation", "New conversation"]);
 
 function resolveRole(source: RealtimeTranscriptResult["source"]): "user" | "assistant" | undefined {
 	if (source === "input") {
@@ -66,94 +65,14 @@ function appendOrReplaceTranscriptText(
 	return transcript.text;
 }
 
-function getMessageText(message: Message): string {
-	if (typeof message.content === "string") {
-		return message.content.trim();
-	}
-
-	return message.content
-		.map((part) => (part.type === "text" ? part.text || "" : ""))
-		.join(" ")
-		.trim();
-}
-
-function createTemporaryTitle(message: Message): string {
-	const text = getMessageText(message);
-	if (!text) {
-		return "New Conversation";
-	}
-
-	return `${text.slice(0, 30)}${text.length > 30 ? "..." : ""}`;
-}
-
-function getRecordData(message: Message): Record<string, unknown> {
-	if (!message.data || typeof message.data !== "object") {
-		return {};
-	}
-
-	return Object.fromEntries(Object.entries(message.data));
-}
-
-function getLiveMessageOrder(message: Message): LiveMessageOrder | undefined {
-	const realtime = getRecordData(message).realtime;
-	if (!realtime || typeof realtime !== "object") {
-		return undefined;
-	}
-
-	const metadata = realtime as Record<string, unknown>;
-	if (typeof metadata.turnId !== "string" || typeof metadata.sequence !== "number") {
-		return undefined;
-	}
-
-	return {
-		sequence: metadata.sequence,
-		startedAt: typeof metadata.turnStartedAt === "number" ? metadata.turnStartedAt : 0,
-		turnId: metadata.turnId,
-	};
-}
-
-export function orderLiveMessages(messages: Message[]): Message[] {
-	const originalIndex = new Map(messages.map((message, index) => [message.id, index]));
-
-	return [...messages].sort((left, right) => {
-		const leftOrder = getLiveMessageOrder(left);
-		const rightOrder = getLiveMessageOrder(right);
-
-		if (leftOrder && rightOrder) {
-			if (leftOrder.startedAt !== rightOrder.startedAt) {
-				return leftOrder.startedAt - rightOrder.startedAt;
-			}
-			if (leftOrder.turnId === rightOrder.turnId) {
-				return leftOrder.sequence - rightOrder.sequence;
-			}
-			return (originalIndex.get(left.id) ?? 0) - (originalIndex.get(right.id) ?? 0);
-		}
-
-		if (leftOrder || rightOrder) {
-			const leftStartedAt = leftOrder?.startedAt ?? left.timestamp ?? left.created ?? 0;
-			const rightStartedAt = rightOrder?.startedAt ?? right.timestamp ?? right.created ?? 0;
-			if (leftStartedAt !== rightStartedAt) {
-				return leftStartedAt - rightStartedAt;
-			}
-
-			const leftSequence = leftOrder?.sequence ?? (left.role === "user" ? 0 : 1);
-			const rightSequence = rightOrder?.sequence ?? (right.role === "user" ? 0 : 1);
-			if (leftSequence !== rightSequence) {
-				return leftSequence - rightSequence;
-			}
-		}
-
-		return (originalIndex.get(left.id) ?? 0) - (originalIndex.get(right.id) ?? 0);
-	});
-}
-
 function isDefaultTitle(title?: string): boolean {
-	return !title || DEFAULT_TITLES.has(title);
+	return !title || DEFAULT_LIVE_CONVERSATION_TITLES.has(title);
 }
 
 export function useLiveConversationMessages({
 	conversationMode,
 	model,
+	onFinalInputTranscript,
 }: UseLiveConversationMessagesOptions = {}) {
 	const queryClient = useQueryClient();
 	const currentConversationId = useChatStore((state) => state.currentConversationId);
@@ -166,6 +85,7 @@ export function useLiveConversationMessages({
 	const inputMessageByTurnRef = useRef(new Map<string, ActiveLiveMessage>());
 	const inputTurnByItemIdRef = useRef(new Map<string, LiveTurn>());
 	const liveCreatedConversationIdRef = useRef<string | null>(null);
+	const notifiedInputTurnIdsRef = useRef(new Set<string>());
 	const outputMessageByTurnRef = useRef(new Map<string, ActiveLiveMessage>());
 	const outputTurnByItemIdRef = useRef(new Map<string, LiveTurn>());
 	const outputTurnByResponseIdRef = useRef(new Map<string, LiveTurn>());
@@ -191,15 +111,7 @@ export function useLiveConversationMessages({
 	}, [startNewConversation]);
 
 	const createTurn = useCallback(() => {
-		const turn: LiveTurn = {
-			id: crypto.randomUUID(),
-			inputFinal: false,
-			inputStarted: false,
-			inputTextPresent: false,
-			outputFinal: false,
-			outputStarted: false,
-			startedAt: Date.now(),
-		};
+		const turn = createLiveTurn();
 		turnsRef.current = [...turnsRef.current, turn];
 		return turn;
 	}, []);
@@ -279,6 +191,7 @@ export function useLiveConversationMessages({
 	const removeTurn = useCallback((turn: LiveTurn) => {
 		turnsRef.current = turnsRef.current.filter((candidate) => candidate.id !== turn.id);
 		inputMessageByTurnRef.current.delete(turn.id);
+		notifiedInputTurnIdsRef.current.delete(turn.id);
 		outputMessageByTurnRef.current.delete(turn.id);
 		if (currentInputTurnRef.current?.id === turn.id) {
 			currentInputTurnRef.current = null;
@@ -303,7 +216,7 @@ export function useLiveConversationMessages({
 		}
 	}, []);
 
-	const buildLiveMessage = useCallback(
+	const buildMessageForTurn = useCallback(
 		({
 			activeMessage,
 			content,
@@ -319,28 +232,15 @@ export function useLiveConversationMessages({
 			source: RealtimeTranscriptResult["source"];
 			turn: LiveTurn;
 		}) => {
-			const now = Date.now();
-			const existingData = activeMessage ? getRecordData(activeMessage.message) : {};
-
-			return normalizeMessage({
-				...activeMessage?.message,
+			return buildLiveMessage({
+				activeMessage,
 				content,
-				created: activeMessage?.message.created ?? now,
-				data: {
-					...existingData,
-					...(conversationMode ? { conversationMode } : {}),
-					realtime: {
-						source,
-						turnId: turn.id,
-						turnStartedAt: turn.startedAt,
-						sequence: role === "user" ? 0 : 1,
-					},
-				},
-				id: activeMessage?.message.id ?? crypto.randomUUID(),
-				model: activeMessage?.message.model || model || undefined,
+				conversationMode,
+				isFinal,
+				model,
 				role,
-				status: isFinal ? undefined : "in_progress",
-				timestamp: activeMessage?.message.timestamp ?? now,
+				source,
+				turn,
 			});
 		},
 		[conversationMode, model],
@@ -436,8 +336,8 @@ export function useLiveConversationMessages({
 			}
 
 			await updateConversation(conversationId, (previous) => ({
-				...previous!,
-				title: createTemporaryTitle(firstUserMessage),
+				...(previous ?? conversation),
+				title: createTemporaryLiveTitle(firstUserMessage),
 			}));
 		},
 		[queryClient, updateConversation],
@@ -475,7 +375,7 @@ export function useLiveConversationMessages({
 			}
 
 			titleGenerationRef.current = (async () => {
-				let title = createTemporaryTitle(firstUserMessage);
+				let title = createTemporaryLiveTitle(firstUserMessage);
 
 				try {
 					title = await apiService.generateTitle(conversationId, [
@@ -487,7 +387,7 @@ export function useLiveConversationMessages({
 				}
 
 				await updateConversation(conversationId, (previous) => ({
-					...previous!,
+					...(previous ?? conversation),
 					title,
 				}));
 				titledConversationIdRef.current = conversationId;
@@ -519,6 +419,29 @@ export function useLiveConversationMessages({
 		[flushBufferedOutput, generateLiveTitle, persistConversation, removeTurn, updateTemporaryTitle],
 	);
 
+	const notifyFinalInputTranscript = useCallback(
+		async (conversationId: string, turn: LiveTurn, text: string) => {
+			if (notifiedInputTurnIdsRef.current.has(turn.id)) {
+				return;
+			}
+
+			notifiedInputTurnIdsRef.current.add(turn.id);
+			const assistantMessage = buildMessageForTurn({
+				content: "",
+				isFinal: false,
+				role: "assistant",
+				source: "output",
+				turn,
+			});
+			await onFinalInputTranscript?.({
+				assistantMessageData: assistantMessage,
+				conversationId,
+				text,
+			});
+		},
+		[buildMessageForTurn, onFinalInputTranscript],
+	);
+
 	const enqueue = useCallback((operation: () => Promise<void>) => {
 		queueRef.current = queueRef.current.then(operation, operation).catch((error) => {
 			console.error("Failed to update live conversation messages:", error);
@@ -536,6 +459,17 @@ export function useLiveConversationMessages({
 
 			void enqueue(async () => {
 				const conversationId = ensureConversationId();
+				if (role === "user" && transcript.isFinal && !transcript.itemId) {
+					const currentTurn = currentInputTurnRef.current;
+					const currentMessage = currentTurn
+						? inputMessageByTurnRef.current.get(currentTurn.id)
+						: undefined;
+					if (currentTurn?.inputFinal && currentMessage?.text.trim() === transcriptText) {
+						await notifyFinalInputTranscript(conversationId, currentTurn, currentMessage.text);
+						return;
+					}
+				}
+
 				const turn =
 					role === "user"
 						? resolveInputTurn(transcript)
@@ -546,8 +480,9 @@ export function useLiveConversationMessages({
 				const activeMessages =
 					role === "user" ? inputMessageByTurnRef.current : outputMessageByTurnRef.current;
 				const activeMessage = activeMessages.get(turn.id);
+				const wasInputFinal = turn.inputFinal;
 				const nextText = appendOrReplaceTranscriptText(activeMessage?.text ?? "", transcript);
-				const message = buildLiveMessage({
+				const message = buildMessageForTurn({
 					activeMessage,
 					content: nextText,
 					isFinal: transcript.isFinal,
@@ -576,23 +511,85 @@ export function useLiveConversationMessages({
 				}
 				if (transcript.isFinal) {
 					await maybePersistTurn(conversationId, turn);
+					if (role === "user" && !wasInputFinal) {
+						await notifyFinalInputTranscript(conversationId, turn, nextText);
+					}
 				}
 			});
 		},
 		[
-			buildLiveMessage,
+			buildMessageForTurn,
 			enqueue,
 			ensureConversationId,
 			flushBufferedOutput,
 			maybePersistTurn,
+			notifyFinalInputTranscript,
 			resolveInputTurn,
 			resolveOutputTurn,
 			upsertLiveMessage,
 		],
 	);
 
+	const finalizeInputTurnFromEvent = useCallback(
+		async (event: LiveRealtimeEvent) => {
+			const turn =
+				(event.itemId ? inputTurnByItemIdRef.current.get(event.itemId) : undefined) ??
+				currentInputTurnRef.current;
+			if (!turn || turn.inputFinal) {
+				return;
+			}
+
+			if (event.itemId) {
+				bindInputTurn(turn, event.itemId);
+			}
+
+			const activeMessage = inputMessageByTurnRef.current.get(turn.id);
+			if (!activeMessage) {
+				return;
+			}
+
+			const text = activeMessage.text.trim();
+			if (!text) {
+				return;
+			}
+
+			const conversationId = ensureConversationId();
+			const message = buildMessageForTurn({
+				activeMessage,
+				content: activeMessage.text,
+				isFinal: true,
+				role: "user",
+				source: "input",
+				turn,
+			});
+
+			turn.inputFinal = true;
+			turn.inputTextPresent = true;
+			inputMessageByTurnRef.current.set(turn.id, { message, text: activeMessage.text });
+
+			await upsertLiveMessage(conversationId, message);
+			await maybePersistTurn(conversationId, turn);
+			await notifyFinalInputTranscript(conversationId, turn, activeMessage.text);
+		},
+		[
+			bindInputTurn,
+			buildMessageForTurn,
+			ensureConversationId,
+			maybePersistTurn,
+			notifyFinalInputTranscript,
+			upsertLiveMessage,
+		],
+	);
+
 	const handleRealtimeEvent = useCallback(
 		(event: LiveRealtimeEvent) => {
+			if (event.type === "transcription.done") {
+				void enqueue(async () => {
+					await finalizeInputTurnFromEvent(event);
+				});
+				return;
+			}
+
 			if (event.type === "input_audio_buffer.speech_started") {
 				void enqueue(async () => {
 					beginInputTurn();
@@ -649,7 +646,7 @@ export function useLiveConversationMessages({
 					turn.inputFinal = true;
 				}
 
-				const message = buildLiveMessage({
+				const message = buildMessageForTurn({
 					activeMessage: outputMessage,
 					content: outputMessage.text,
 					isFinal: true,
@@ -670,8 +667,9 @@ export function useLiveConversationMessages({
 			beginInputTurn,
 			bindInputTurn,
 			bindOutputTurn,
-			buildLiveMessage,
+			buildMessageForTurn,
 			enqueue,
+			finalizeInputTurnFromEvent,
 			maybePersistTurn,
 			resolveOutputTurn,
 			upsertLiveMessage,
@@ -687,16 +685,20 @@ export function useLiveConversationMessages({
 
 			const turnsToFlush = turnsRef.current.slice();
 			for (const turn of turnsToFlush) {
-				for (const [role, activeMessages] of [
-					["user", inputMessageByTurnRef.current] as const,
-					["assistant", outputMessageByTurnRef.current] as const,
-				]) {
+				const activeMessageSources: Array<{
+					activeMessages: Map<string, ActiveLiveMessage>;
+					role: "user" | "assistant";
+				}> = [
+					{ activeMessages: inputMessageByTurnRef.current, role: "user" },
+					{ activeMessages: outputMessageByTurnRef.current, role: "assistant" },
+				];
+				for (const { activeMessages, role } of activeMessageSources) {
 					const activeMessage = activeMessages.get(turn.id);
 					if (!activeMessage?.text.trim()) {
 						continue;
 					}
 
-					const message = buildLiveMessage({
+					const message = buildMessageForTurn({
 						activeMessage,
 						content: activeMessage.text,
 						isFinal: true,
@@ -720,7 +722,7 @@ export function useLiveConversationMessages({
 				await maybePersistTurn(conversationId, turn);
 			}
 		});
-	}, [buildLiveMessage, enqueue, maybePersistTurn, upsertLiveMessage]);
+	}, [buildMessageForTurn, enqueue, maybePersistTurn, upsertLiveMessage]);
 
 	return {
 		flushLiveMessages,

@@ -1,17 +1,25 @@
 import { preprocessQwQResponse } from "~/lib/chat/utils/qwq";
+import type { ServiceContext } from "~/lib/context/serviceContext";
+import {
+	hasPrivateAssetStorage,
+	persistBase64GeneratedImages,
+	persistGeneratedAsset,
+	persistInlineGeneratedAsset,
+	persistRemoteGeneratedAssets,
+	type GeneratedMediaContext,
+} from "~/lib/storage/generated-media";
 import type { IEnv, ModelModalities } from "~/types";
 import { base64ToBuffer } from "~/utils/base64";
 import { AssistantError, ErrorType } from "~/utils/errors";
-import { getExtensionFromMimeType } from "~/utils/mime";
-import { StorageService } from "../storage";
-import { uploadAudioFromChat, uploadImageFromChat } from "../upload";
 
 interface ResponseFormatOptions {
 	model?: string;
 	modalities?: ModelModalities;
 	env?: IEnv;
+	context?: ServiceContext;
 	completion_id?: string;
 	is_streaming?: boolean;
+	userId?: number;
 }
 
 export class ResponseFormatter {
@@ -104,50 +112,15 @@ export class ResponseFormatter {
 		});
 	}
 
-	private static getExtensionFromUrl(url: string, fallback: string): string {
-		try {
-			const parsed = new URL(url);
-			const pathname = parsed.pathname.toLowerCase();
-			const match = pathname.match(/\.([a-z0-9]+)$/i);
-			if (match?.[1]) {
-				return match[1];
-			}
-		} catch {
-			const sanitized = url.split("?")[0];
-			const match = sanitized.match(/\.([a-z0-9]+)$/i);
-			if (match?.[1]) {
-				return match[1];
-			}
-		}
-
-		return fallback;
-	}
-
-	private static getContentTypeFromExtension(extension: string, fallback: string): string {
-		const mapping: Record<string, string> = {
-			png: "image/png",
-			jpg: "image/jpeg",
-			jpeg: "image/jpeg",
-			webp: "image/webp",
-			gif: "image/gif",
-			mp4: "video/mp4",
-			webm: "video/webm",
-			mov: "video/quicktime",
-			wav: "audio/wav",
-			mp3: "audio/mpeg",
-			m4a: "audio/mp4",
-			ogg: "audio/ogg",
-			flac: "audio/flac",
+	private static getGeneratedMediaContext(options: ResponseFormatOptions): GeneratedMediaContext {
+		return {
+			context: options.context,
+			env: options.env,
+			model: options.model,
+			modalities: options.modalities,
+			completionId: options.completion_id,
+			userId: options.userId,
 		};
-
-		return mapping[extension] || fallback;
-	}
-
-	private static buildAssetKey(options: ResponseFormatOptions, extension: string): string {
-		const completion = options.completion_id || "completion";
-		const model = options.model || "model";
-		const unique = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-		return `generations/${completion}/${model}/${unique}.${extension}`;
 	}
 
 	private static getGoogleInlineData(
@@ -202,28 +175,11 @@ export class ResponseFormatter {
 		kind: "image" | "audio",
 		options: ResponseFormatOptions,
 	): Promise<{ key?: string; url: string; mimeType: string }> {
-		const mimeType = asset.mimeType || (kind === "image" ? "image/png" : "audio/pcm;rate=24000");
-		const extension = getExtensionFromMimeType(mimeType, kind === "image" ? "png" : "pcm");
-		const dataUrl = `data:${mimeType};base64,${asset.data}`;
-
-		if (!options.env?.ASSETS_BUCKET) {
-			return { url: dataUrl, mimeType };
-		}
-
-		const bytes = base64ToBuffer(asset.data);
-		const key = ResponseFormatter.buildAssetKey(options, extension);
-		const storageService = new StorageService(options.env.ASSETS_BUCKET);
-		await storageService.uploadObject(key, bytes, {
-			contentType: mimeType,
-			contentLength: bytes.byteLength,
-		});
-
-		const baseAssetsUrl = options.env.PUBLIC_ASSETS_URL || "";
-		return {
-			key,
-			mimeType,
-			url: baseAssetsUrl ? `${baseAssetsUrl}/${key}` : key,
-		};
+		return await persistInlineGeneratedAsset(
+			ResponseFormatter.getGeneratedMediaContext(options),
+			asset,
+			kind,
+		);
 	}
 
 	private static stripGoogleInlineDataPayload(part: Record<string, any>): Record<string, any> {
@@ -262,7 +218,15 @@ export class ResponseFormatter {
 	}
 
 	private static getAudioContentType(format: string): string {
-		return ResponseFormatter.getContentTypeFromExtension(format, "audio/mpeg");
+		const contentTypes: Record<string, string> = {
+			wav: "audio/wav",
+			mp3: "audio/mpeg",
+			m4a: "audio/mp4",
+			ogg: "audio/ogg",
+			flac: "audio/flac",
+		};
+
+		return contentTypes[format] || "audio/mpeg";
 	}
 
 	private static async persistOpenAIMessageAudio(
@@ -280,21 +244,25 @@ export class ResponseFormatter {
 		const format = typeof audio.format === "string" ? audio.format : "mp3";
 		const contentType = ResponseFormatter.getAudioContentType(format);
 
-		if (!options.env) {
+		if (!hasPrivateAssetStorage(ResponseFormatter.getGeneratedMediaContext(options))) {
 			return {
 				format,
 				url: audioData.startsWith("data:") ? audioData : `data:${contentType};base64,${audioData}`,
 			};
 		}
 
-		const audioKey = ResponseFormatter.buildAssetKey(options, format);
-		await uploadAudioFromChat(audioData, options.env, audioKey);
-		const baseAssetsUrl = options.env.PUBLIC_ASSETS_URL || "";
+		const storedAudio = await persistGeneratedAsset({
+			mediaContext: ResponseFormatter.getGeneratedMediaContext(options),
+			extension: format,
+			data: base64ToBuffer(audioData),
+			mimeType: contentType,
+			filename: `audio.${format}`,
+		});
 
 		return {
-			key: audioKey,
+			key: storedAudio.key,
 			format,
-			url: baseAssetsUrl ? `${baseAssetsUrl}/${audioKey}` : audioKey,
+			url: storedAudio.url,
 		};
 	}
 
@@ -337,108 +305,6 @@ export class ResponseFormatter {
 					transcript,
 				},
 			},
-		};
-	}
-
-	private static async persistRemoteAssets(
-		assetUrls: string[],
-		options: ResponseFormatOptions,
-		fallback: { extension: string; contentType: string },
-	): Promise<{
-		urls: string[];
-		metadata: Array<{ key: string; url: string; originalUrl: string }>;
-	}> {
-		if (!assetUrls.length) {
-			return { urls: [], metadata: [] };
-		}
-
-		const env = options.env;
-		if (!env?.ASSETS_BUCKET) {
-			throw new AssistantError("ASSETS_BUCKET is not set", ErrorType.CONFIGURATION_ERROR);
-		}
-
-		const storageService = new StorageService(env.ASSETS_BUCKET);
-		const baseAssetsUrl = env.PUBLIC_ASSETS_URL || "";
-
-		const uploads = await Promise.all(
-			assetUrls.map(async (assetUrl) => {
-				const response = await fetch(assetUrl);
-				if (!response.ok) {
-					throw new AssistantError(
-						`Failed to fetch asset from ${assetUrl}`,
-						ErrorType.PROVIDER_ERROR,
-						response.status,
-					);
-				}
-
-				const buffer = await response.arrayBuffer();
-				const extension = ResponseFormatter.getExtensionFromUrl(assetUrl, fallback.extension);
-				const contentType = ResponseFormatter.getContentTypeFromExtension(
-					extension,
-					fallback.contentType,
-				);
-				const key = ResponseFormatter.buildAssetKey(options, extension);
-
-				await storageService.uploadObject(key, buffer, {
-					contentType,
-					contentLength: buffer.byteLength,
-				});
-
-				const persistedUrl = baseAssetsUrl ? `${baseAssetsUrl}/${key}` : key;
-
-				return {
-					key,
-					url: persistedUrl,
-					originalUrl: assetUrl,
-				};
-			}),
-		);
-
-		return {
-			urls: uploads.map((upload) => upload.url),
-			metadata: uploads,
-		};
-	}
-
-	private static async persistBase64Images(
-		base64Images: string[],
-		options: ResponseFormatOptions,
-	): Promise<{
-		urls: string[];
-		metadata: Array<{ key: string; url: string; source: "base64" }>;
-	}> {
-		if (!base64Images.length) {
-			return { urls: [], metadata: [] };
-		}
-
-		const env = options.env;
-
-		if (!env?.ASSETS_BUCKET) {
-			throw new AssistantError("ASSETS_BUCKET is not set", ErrorType.CONFIGURATION_ERROR);
-		}
-
-		const storageService = new StorageService(env.ASSETS_BUCKET);
-		const baseAssetsUrl = env.PUBLIC_ASSETS_URL || "";
-
-		const uploads = await Promise.all(
-			base64Images.map(async (image) => {
-				const bytes = base64ToBuffer(image);
-				const key = ResponseFormatter.buildAssetKey(options, "png");
-
-				await storageService.uploadObject(key, bytes, {
-					contentType: "image/png",
-					contentLength: bytes.byteLength,
-				});
-
-				const url = baseAssetsUrl ? `${baseAssetsUrl}/${key}` : key;
-
-				return { key, url, source: "base64" as const };
-			}),
-		);
-
-		return {
-			urls: uploads.map((upload) => upload.url),
-			metadata: uploads,
 		};
 	}
 
@@ -528,7 +394,10 @@ export class ResponseFormatter {
 				: outputText;
 
 			if (base64Images.length) {
-				const uploads = await ResponseFormatter.persistBase64Images(base64Images, options);
+				const uploads = await persistBase64GeneratedImages(
+					ResponseFormatter.getGeneratedMediaContext(options),
+					base64Images,
+				);
 				const imagesContent = uploads.urls.map((url) => ({
 					type: "image_url",
 					image_url: { url },
@@ -579,19 +448,24 @@ export class ResponseFormatter {
 			}> = [];
 
 			let imageUrls: string[] = [];
-			if (dataImageUrls.length && options.env) {
-				const uploads = await ResponseFormatter.persistRemoteAssets(dataImageUrls, options, {
-					extension: "png",
-					contentType: "image/png",
+			if (dataImageUrls.length) {
+				const uploads = await persistRemoteGeneratedAssets({
+					mediaContext: ResponseFormatter.getGeneratedMediaContext(options),
+					urls: dataImageUrls,
+					fallback: {
+						extension: "png",
+						contentType: "image/png",
+					},
 				});
 				imageUrls = uploads.urls;
 				assets.push(...uploads.metadata);
-			} else if (dataImageUrls.length) {
-				imageUrls = dataImageUrls;
 			}
 
 			if (base64Images.length) {
-				const uploads = await ResponseFormatter.persistBase64Images(base64Images, options);
+				const uploads = await persistBase64GeneratedImages(
+					ResponseFormatter.getGeneratedMediaContext(options),
+					base64Images,
+				);
 				imageUrls = [...imageUrls, ...uploads.urls];
 				assets.push(...uploads.metadata);
 			}
@@ -884,20 +758,28 @@ export class ResponseFormatter {
 
 		if (isImageType && (data.image || typeof data === "string")) {
 			const imageContent = data.image || data;
-			if (options.env) {
-				const imageId = Math.random().toString(36).substring(2);
-				const imageKey = `generations/${options.completion_id || "completion"}/${options.model || "model"}/${imageId}.png`;
-				await uploadImageFromChat(imageContent, options.env, imageKey);
-				const baseAssetsUrl = options.env.PUBLIC_ASSETS_URL || "";
+			if (hasPrivateAssetStorage(ResponseFormatter.getGeneratedMediaContext(options))) {
+				const imageBytes = base64ToBuffer(
+					typeof imageContent === "string"
+						? imageContent.replace(/^data:image\/\w+;base64,/, "")
+						: imageContent,
+				);
+				const storedImage = await persistGeneratedAsset({
+					mediaContext: ResponseFormatter.getGeneratedMediaContext(options),
+					extension: "png",
+					data: imageBytes,
+					mimeType: "image/png",
+					filename: "image.png",
+				});
 				return {
 					...data,
 					response: [
 						{
 							type: "image_url",
-							image_url: { url: `${baseAssetsUrl}/${imageKey}` },
+							image_url: { url: storedImage.url },
 						},
 					],
-					data: { url: `${baseAssetsUrl}/${imageKey}`, key: imageKey },
+					data: { url: storedImage.url, key: storedImage.key, assetId: storedImage.assetId },
 				};
 			}
 			return { ...data, response: imageContent };
@@ -905,20 +787,28 @@ export class ResponseFormatter {
 
 		if (isAudioType && (data.audio || typeof data === "string")) {
 			const audioContent = data.audio || data;
-			if (options.env) {
-				const audioId = Math.random().toString(36).substring(2);
-				const audioKey = `generations/${options.completion_id || "completion"}/${options.model || "model"}/${audioId}.mp3`;
-				await uploadAudioFromChat(audioContent, options.env, audioKey);
-				const baseAssetsUrl = options.env.PUBLIC_ASSETS_URL || "";
+			if (hasPrivateAssetStorage(ResponseFormatter.getGeneratedMediaContext(options))) {
+				const audioBytes = base64ToBuffer(
+					typeof audioContent === "string"
+						? audioContent.replace(/^data:audio\/\w+;base64,/, "")
+						: audioContent,
+				);
+				const storedAudio = await persistGeneratedAsset({
+					mediaContext: ResponseFormatter.getGeneratedMediaContext(options),
+					extension: "mp3",
+					data: audioBytes,
+					mimeType: "audio/mpeg",
+					filename: "audio.mp3",
+				});
 				return {
 					...data,
 					response: [
 						{
 							type: "audio_url",
-							audio_url: { url: `${baseAssetsUrl}/${audioKey}` },
+							audio_url: { url: storedAudio.url },
 						},
 					],
-					data: { url: `${baseAssetsUrl}/${audioKey}`, key: audioKey },
+					data: { url: storedAudio.url, key: storedAudio.key, assetId: storedAudio.assetId },
 				};
 			}
 			return { ...data, response: audioContent };
@@ -957,23 +847,30 @@ export class ResponseFormatter {
 			}
 
 			const image = images[0];
-			if (options.env) {
-				const imageId = Math.random().toString(36).substring(2);
-				const imageKey = `generations/${options.completion_id || "completion"}/${options.model || "model"}/${imageId}.png`;
-				await uploadImageFromChat(image, options.env, imageKey);
-				const baseAssetsUrl = options.env.PUBLIC_ASSETS_URL || "";
+			if (hasPrivateAssetStorage(ResponseFormatter.getGeneratedMediaContext(options))) {
+				const imageBytes = base64ToBuffer(
+					typeof image === "string" ? image.replace(/^data:image\/\w+;base64,/, "") : image,
+				);
+				const storedImage = await persistGeneratedAsset({
+					mediaContext: ResponseFormatter.getGeneratedMediaContext(options),
+					extension: "png",
+					data: imageBytes,
+					mimeType: "image/png",
+					filename: "image.png",
+				});
 
 				return {
 					...data,
 					response: [
 						{
 							type: "image_url",
-							image_url: { url: `${baseAssetsUrl}/${imageKey}` },
+							image_url: { url: storedImage.url },
 						},
 					],
 					data: {
-						url: `${baseAssetsUrl}/${imageKey}`,
-						key: imageKey,
+						assetId: storedImage.assetId,
+						url: storedImage.url,
+						key: storedImage.key,
 					},
 				};
 			}
@@ -1035,10 +932,14 @@ export class ResponseFormatter {
 			let persistedUrls = candidateUrls;
 			let metadata: Array<{ key: string; url: string; originalUrl: string }> = [];
 
-			if (options.env?.ASSETS_BUCKET) {
-				const uploads = await ResponseFormatter.persistRemoteAssets(candidateUrls, options, {
-					extension: "png",
-					contentType: "image/png",
+			if (hasPrivateAssetStorage(ResponseFormatter.getGeneratedMediaContext(options))) {
+				const uploads = await persistRemoteGeneratedAssets({
+					mediaContext: ResponseFormatter.getGeneratedMediaContext(options),
+					urls: candidateUrls,
+					fallback: {
+						extension: "png",
+						contentType: "image/png",
+					},
 				});
 				persistedUrls = uploads.urls;
 				metadata = uploads.metadata;
@@ -1071,10 +972,14 @@ export class ResponseFormatter {
 			let persistedUrls = candidateUrls;
 			let metadata: Array<{ key: string; url: string; originalUrl: string }> = [];
 
-			if (options.env?.ASSETS_BUCKET) {
-				const uploads = await ResponseFormatter.persistRemoteAssets(candidateUrls, options, {
-					extension: "mp4",
-					contentType: "video/mp4",
+			if (hasPrivateAssetStorage(ResponseFormatter.getGeneratedMediaContext(options))) {
+				const uploads = await persistRemoteGeneratedAssets({
+					mediaContext: ResponseFormatter.getGeneratedMediaContext(options),
+					urls: candidateUrls,
+					fallback: {
+						extension: "mp4",
+						contentType: "video/mp4",
+					},
 				});
 				persistedUrls = uploads.urls;
 				metadata = uploads.metadata;
@@ -1109,10 +1014,14 @@ export class ResponseFormatter {
 			let persistedUrls = candidateUrls;
 			let metadata: Array<{ key: string; url: string; originalUrl: string }> = [];
 
-			if (options.env?.ASSETS_BUCKET) {
-				const uploads = await ResponseFormatter.persistRemoteAssets(candidateUrls, options, {
-					extension: "mp3",
-					contentType: "audio/mpeg",
+			if (hasPrivateAssetStorage(ResponseFormatter.getGeneratedMediaContext(options))) {
+				const uploads = await persistRemoteGeneratedAssets({
+					mediaContext: ResponseFormatter.getGeneratedMediaContext(options),
+					urls: candidateUrls,
+					fallback: {
+						extension: "mp3",
+						contentType: "audio/mpeg",
+					},
 				});
 				persistedUrls = uploads.urls;
 				metadata = uploads.metadata;

@@ -33,6 +33,7 @@ const mockProviderLibrary = vi.hoisted(() => ({
 
 const mockStorageService = vi.hoisted(() => ({
 	uploadObject: vi.fn(),
+	recordPrivateAsset: vi.fn(),
 }));
 
 const mockGenerateId = vi.hoisted(() => vi.fn(() => "test-id-123"));
@@ -40,9 +41,14 @@ const mockGenerateId = vi.hoisted(() => vi.fn(() => "test-id-123"));
 const mockSanitiseInput = vi.hoisted(() => vi.fn((input: string) => input));
 const mockGetUserSettings = vi.hoisted(() => vi.fn());
 const mockHasProviderApiKey = vi.hoisted(() => vi.fn());
+const mockCreateAsset = vi.hoisted(() => vi.fn());
 
 vi.mock("~/lib/storage", () => ({
 	StorageService: class {
+		static forPrivateAssets() {
+			return mockStorageService;
+		}
+
 		constructor() {
 			return mockStorageService;
 		}
@@ -66,6 +72,9 @@ vi.mock("~/repositories", () => ({
 		userSettings = {
 			getUserSettings: mockGetUserSettings,
 		};
+		storedAssets = {
+			createAsset: mockCreateAsset,
+		};
 	},
 }));
 
@@ -80,6 +89,8 @@ import { handleTextToSpeech } from "../speech";
 describe("handleTextToSpeech", () => {
 	const mockEnv: IEnv = {
 		ASSETS_BUCKET: {} as any,
+		PRIVATE_ASSETS_BUCKET: {} as any,
+		API_BASE_URL: "https://api.test.com",
 		DB: {} as any,
 		PUBLIC_ASSETS_URL: "https://assets.test.com",
 	} as any;
@@ -100,6 +111,12 @@ describe("handleTextToSpeech", () => {
 		});
 		mockGetUserSettings.mockResolvedValue(null);
 		mockHasProviderApiKey.mockResolvedValue(false);
+		mockCreateAsset.mockResolvedValue({ id: "test-id-123" });
+		mockStorageService.recordPrivateAsset.mockResolvedValue({
+			assetId: "test-id-123",
+			key: "tts/test-id-123/audio.mp3",
+			url: "https://api.test.com/assets/test-id-123",
+		});
 
 		for (const provider of Object.values(mockAudioProviders)) {
 			provider.synthesize.mockReset();
@@ -230,7 +247,7 @@ describe("handleTextToSpeech", () => {
 			expect(mockAudioProviders.melotts.synthesize).toHaveBeenCalledWith(
 				expect.objectContaining({
 					input: "test input",
-					slug: "tts/test-40example-com-test-id-123",
+					slug: "tts/test-id-123",
 					voice: "@cf/myshell-ai/melotts",
 				}),
 			);
@@ -318,7 +335,7 @@ describe("handleTextToSpeech", () => {
 			expect(mockAudioProviders.cartesia.synthesize).toHaveBeenCalledWith(
 				expect.objectContaining({
 					storage: mockStorageService,
-					slug: "tts/test-40example-com-test-id-123",
+					slug: "tts/test-id-123",
 				}),
 			);
 			// @ts-expect-error - mock implementation
@@ -485,8 +502,9 @@ describe("handleTextToSpeech", () => {
 				data: {
 					provider: "polly",
 					model: "Ruth",
+					audioAssetId: "test-id-123",
 					audioKey: "audio-key-123",
-					audioUrl: "https://assets.test.com/audio-key-123",
+					audioUrl: "https://api.test.com/assets/test-id-123",
 				},
 			});
 		});
@@ -517,10 +535,15 @@ describe("handleTextToSpeech", () => {
 			});
 		});
 
-		it("should handle missing PUBLIC_ASSETS_URL", async () => {
-			const envWithoutUrl = { ...mockEnv, PUBLIC_ASSETS_URL: "" };
+		it("should handle missing API_BASE_URL", async () => {
+			const envWithoutUrl = { ...mockEnv, API_BASE_URL: undefined };
 			mockAudioProviders.polly.synthesize.mockResolvedValue({
 				key: "audio-key-123",
+			});
+			mockStorageService.recordPrivateAsset.mockResolvedValueOnce({
+				assetId: "test-id-123",
+				key: "tts/test-id-123/audio.mp3",
+				url: "/assets/test-id-123",
 			});
 
 			const result = await handleTextToSpeech({
@@ -530,8 +553,11 @@ describe("handleTextToSpeech", () => {
 				provider: "polly",
 			});
 
-			// @ts-expect-error - mock implementation
-			expect(result.data.audioUrl).toBe("/audio-key-123");
+			expect(result).toMatchObject({
+				data: {
+					audioUrl: "/assets/test-id-123",
+				},
+			});
 		});
 
 		it("should throw error when provider returns no response", async () => {
@@ -562,7 +588,7 @@ describe("handleTextToSpeech", () => {
 
 			expect(mockAudioProviders.polly.synthesize).toHaveBeenCalledWith(
 				expect.objectContaining({
-					slug: "tts/test-40example-com-test-id-123",
+					slug: "tts/test-id-123",
 				}),
 			);
 		});
@@ -582,7 +608,7 @@ describe("handleTextToSpeech", () => {
 
 			expect(mockAudioProviders.polly.synthesize).toHaveBeenCalledWith(
 				expect.objectContaining({
-					slug: "tts/unknown-test-id-123",
+					slug: "tts/test-id-123",
 				}),
 			);
 		});
@@ -605,7 +631,7 @@ describe("handleTextToSpeech", () => {
 
 			expect(mockAudioProviders.polly.synthesize).toHaveBeenCalledWith(
 				expect.objectContaining({
-					slug: "tts/test-2Buser-40example-site-com-test-id-123",
+					slug: "tts/test-id-123",
 				}),
 			);
 		});

@@ -24,6 +24,7 @@ import { securityHeaders } from "./middleware/securityHeaders";
 import admin from "./routes/admin";
 import agents from "./routes/agents";
 import apps from "./routes/apps";
+import assets from "./routes/assets";
 import audio from "./routes/audio";
 import auth from "./routes/auth";
 import chat from "./routes/chat";
@@ -309,6 +310,7 @@ addRoute(app, "get", "/metrics", {
 app.route(ROUTES.AUTH, auth);
 app.route(ROUTES.CHAT, chat);
 app.route(ROUTES.APPS, apps);
+app.route(ROUTES.ASSETS, assets);
 app.route(ROUTES.MODELS, models);
 app.route(ROUTES.TASKS, tasks);
 app.route(ROUTES.TOOLS, tools);

@@ -11,6 +11,7 @@ export * from "./Form/Input";
 export * from "./Form/RangeInput";
 export * from "./Form/Select";
 export * from "./Form/Switch";
+export * from "./Image";
 export * from "./ImageModal";
 export * from "./input";
 export * from "./label";

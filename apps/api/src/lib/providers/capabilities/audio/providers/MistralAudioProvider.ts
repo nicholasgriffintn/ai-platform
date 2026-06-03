@@ -68,7 +68,6 @@ export class MistralAudioProvider extends BaseAudioProvider implements AudioProv
 
 		return {
 			key: objectKey,
-			url: this.buildPublicUrl(objectKey, request.env.PUBLIC_ASSETS_URL),
 			audioMimeType: mimeType,
 			metadata: this.buildMetadata(request, responseFormat, response),
 		};

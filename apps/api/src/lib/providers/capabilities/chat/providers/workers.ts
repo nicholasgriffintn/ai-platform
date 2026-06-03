@@ -2,10 +2,11 @@ import { gatewayId } from "~/constants/app";
 import { getModelConfigByMatchingModel } from "~/lib/providers/models";
 import { trackProviderMetrics } from "~/lib/monitoring";
 import { StorageService } from "~/lib/storage";
-import { uploadAudioFromChat, uploadImageFromChat } from "~/lib/upload";
+import { persistGeneratedOutput } from "~/lib/storage/generated-media";
 import type { ChatCompletionParameters, ModelConfigItem } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
+import { isRecord } from "~/utils/objects";
 import {
 	createCommonParameters,
 	getToolsForProvider,
@@ -16,6 +17,12 @@ import { BaseProvider } from "./base";
 import { getAiGatewayMetadataHeaders } from "~/utils/aiGateway";
 
 const logger = getLogger({ prefix: "lib/providers/workers" });
+
+type WorkersMediaPayload = {
+	prompt: string;
+	image?: number[] | string;
+	lang?: string;
+};
 
 function getModalityFlags(modelConfig?: ModelConfigItem) {
 	const inputs = modelConfig?.modalities?.input ?? ["text"];
@@ -55,6 +62,90 @@ function messageContentHasImage(content: unknown): boolean {
 
 function requestHasImageInput(params: ChatCompletionParameters): boolean {
 	return params.messages?.some((message) => messageContentHasImage(message.content)) ?? false;
+}
+
+function getContentImage(content: ChatCompletionParameters["messages"][number]["content"]) {
+	if (Array.isArray(content)) {
+		const imageItem = content.find((item) => item.type === "image_url" && item.image_url?.url);
+		if (imageItem?.image_url?.url) {
+			return imageItem.image_url.url;
+		}
+
+		const inlineImageItem = content.find((item) => typeof item.image === "string");
+		if (typeof inlineImageItem?.image === "string") {
+			return inlineImageItem.image;
+		}
+
+		return null;
+	}
+
+	if (isRecord(content) && typeof content.image === "string") {
+		return content.image;
+	}
+
+	return null;
+}
+
+function getContentText(content: ChatCompletionParameters["messages"][number]["content"]) {
+	if (typeof content === "string") {
+		return content;
+	}
+
+	if (Array.isArray(content)) {
+		const textItem = content.find((item) => typeof item.text === "string");
+		return typeof textItem?.text === "string" ? textItem.text : "";
+	}
+
+	return isRecord(content) && typeof content.text === "string" ? content.text : "";
+}
+
+function decodeBase64ImageData(base64Data: string) {
+	const payload = base64Data.startsWith("data:") ? base64Data.split(",", 2)[1] || "" : base64Data;
+	const binary = atob(payload);
+	const array = new Uint8Array(binary.length);
+
+	for (let i = 0; i < binary.length; i++) {
+		array[i] = binary.charCodeAt(i);
+	}
+
+	if (array.length === 0) {
+		throw new AssistantError("No image data found after processing", ErrorType.PARAMS_ERROR);
+	}
+
+	return Array.from(array);
+}
+
+function getErrorMessage(error: unknown) {
+	return error instanceof Error ? error.message : "Unknown error";
+}
+
+type GeneratedOutput = ReadableStream | string | ArrayBuffer | Uint8Array;
+
+function isGeneratedOutput(value: unknown): value is GeneratedOutput {
+	return (
+		typeof value === "string" ||
+		value instanceof ArrayBuffer ||
+		value instanceof Uint8Array ||
+		value instanceof ReadableStream
+	);
+}
+
+function getGeneratedOutput(
+	modelResponse: unknown,
+	field: "image" | "audio",
+	useWholeResponse: boolean,
+): GeneratedOutput | undefined {
+	if (isRecord(modelResponse) && isGeneratedOutput(modelResponse[field])) {
+		return modelResponse[field];
+	}
+
+	return useWholeResponse && isGeneratedOutput(modelResponse) ? modelResponse : undefined;
+}
+
+function getResponseDescription(modelResponse: unknown) {
+	return isRecord(modelResponse) && typeof modelResponse.description === "string"
+		? modelResponse.description
+		: undefined;
 }
 
 export class WorkersProvider extends BaseProvider {
@@ -107,7 +198,7 @@ export class WorkersProvider extends BaseProvider {
 			flags.isImageToImage ||
 			(flags.isImageToText && (!flags.supportsTextInput || requestHasImageInput(params)));
 
-		let imageData: any;
+		let imageData: WorkersMediaPayload["image"];
 		if (shouldUseMediaPayload) {
 			if (
 				params.messages.length > 2 ||
@@ -120,23 +211,10 @@ export class WorkersProvider extends BaseProvider {
 			}
 
 			try {
-				let imageContent = null;
+				let imageContent: string | null = null;
 				for (const message of params.messages) {
-					if (Array.isArray(message.content)) {
-						const imageContentItem = message.content.find((item) => "image_url" in item);
-						if (imageContentItem) {
-							// @ts-ignore - types are wrong
-							imageContent = imageContentItem.image_url.url;
-							break;
-						}
-					} else if (
-						typeof message.content === "object" &&
-						message.content &&
-						// @ts-ignore - types are wrong
-						message.content.image
-					) {
-						// @ts-ignore - types are wrong
-						imageContent = message.content.image;
+					imageContent = getContentImage(message.content);
+					if (imageContent) {
 						break;
 					}
 				}
@@ -171,9 +249,11 @@ export class WorkersProvider extends BaseProvider {
 								);
 							}
 
-							const imageKeyFromUrl = imageContent.replace(assetsUrl, "");
-							const retrievedImageData = await storageService?.getObject(imageKeyFromUrl);
-							base64Data = retrievedImageData;
+							base64Data = await storageService.getPrivateAssetImageDataUrl(
+								imageContent,
+								params.user?.id,
+								assetsUrl,
+							);
 						} else {
 							base64Data = imageContent;
 						}
@@ -183,22 +263,10 @@ export class WorkersProvider extends BaseProvider {
 						}
 
 						try {
-							const binary = atob(base64Data);
-							const array = new Uint8Array(binary.length);
-							for (let i = 0; i < binary.length; i++) {
-								array[i] = binary.charCodeAt(i);
-							}
-
-							if (array.length === 0) {
-								throw new AssistantError(
-									"No image data found after processing",
-									ErrorType.PARAMS_ERROR,
-								);
-							}
-							imageData = Array.from(array);
-						} catch (binaryError: any) {
+							imageData = decodeBase64ImageData(base64Data);
+						} catch (binaryError) {
 							throw new AssistantError(
-								`Failed to process image data: ${binaryError.message}`,
+								`Failed to process image data: ${getErrorMessage(binaryError)}`,
 								ErrorType.PARAMS_ERROR,
 							);
 						}
@@ -206,68 +274,21 @@ export class WorkersProvider extends BaseProvider {
 				} else {
 					imageData = imageContent;
 				}
-			} catch (error: any) {
+			} catch (error) {
 				throw new AssistantError(
-					`Error processing image data: ${error.message}`,
+					`Error processing image data: ${getErrorMessage(error)}`,
 					ErrorType.PARAMS_ERROR,
 				);
 			}
 
-			let prompt = null;
+			let prompt = "";
 
 			if (params.messages.length >= 2 && params.messages[0].role === "system") {
-				let systemContent = "";
-				if (Array.isArray(params.messages[0].content)) {
-					const contentItem = params.messages[0].content[0];
-
-					if (contentItem && typeof contentItem === "object") {
-						if (contentItem.type === "text" && contentItem.text) {
-							systemContent = contentItem.text;
-						} else if ("text" in contentItem) {
-							systemContent = contentItem.text;
-						}
-					}
-				} else if (typeof params.messages[0].content === "string") {
-					systemContent = params.messages[0].content;
-				} else {
-					// @ts-ignore - types might be wrong
-					systemContent = params.messages[0].content?.text || "";
-				}
-
-				let userContent = "";
-				if (Array.isArray(params.messages[1].content)) {
-					const contentItem = params.messages[1].content[0];
-					if (contentItem && typeof contentItem === "object") {
-						if (contentItem.type === "text" && contentItem.text) {
-							userContent = contentItem.text;
-						} else if ("text" in contentItem) {
-							userContent = contentItem.text;
-						}
-					}
-				} else if (typeof params.messages[1].content === "string") {
-					userContent = params.messages[1].content;
-				} else {
-					// @ts-ignore - types might be wrong
-					userContent = params.messages[1].content?.text || "";
-				}
-
+				const systemContent = getContentText(params.messages[0].content);
+				const userContent = getContentText(params.messages[1].content);
 				prompt = `${systemContent}\n\n${userContent}`;
 			} else {
-				if (Array.isArray(params.messages[0].content)) {
-					const contentItem = params.messages[0].content[0];
-					if (contentItem && typeof contentItem === "object") {
-						if (contentItem.type === "text" && contentItem.text) {
-							prompt = contentItem.text;
-						} else if ("text" in contentItem) {
-							prompt = contentItem.text;
-						}
-					}
-				} else if (typeof params.messages[0].content === "string") {
-					prompt = params.messages[0].content;
-				} else {
-					// @ts-ignore - types might be wrong
-					prompt = params.messages[0].content?.text;
-				}
+				prompt = getContentText(params.messages[0].content);
 			}
 
 			if (flags.isTextToSpeech) {
@@ -282,14 +303,14 @@ export class WorkersProvider extends BaseProvider {
 			}
 
 			if (!prompt) {
-				const result: any = { prompt: "" };
+				const result: WorkersMediaPayload = { prompt: "" };
 				if (imageData) {
 					result.image = imageData;
 				}
 				return result;
 			}
 
-			const result: any = { prompt };
+			const result: WorkersMediaPayload = { prompt };
 			if (imageData) {
 				result.image = imageData;
 			}
@@ -334,14 +355,13 @@ export class WorkersProvider extends BaseProvider {
 			throw new AssistantError("Missing model", ErrorType.PARAMS_ERROR);
 		}
 
-		const storageService = new StorageService(env.ASSETS_BUCKET);
-		const body = await this.mapParameters(params, storageService, env.PUBLIC_ASSETS_URL);
+		const storageService = StorageService.forPrivateAssetsEnv(env);
+		const body = await this.mapParameters(params, storageService, env.API_BASE_URL);
 
 		return trackProviderMetrics({
 			provider: "workers-ai",
 			model,
 			operation: async () => {
-				// @ts-ignore
 				const modelResponse = await env.AI.run(model, body, {
 					gateway: {
 						id: gatewayId,
@@ -356,26 +376,33 @@ export class WorkersProvider extends BaseProvider {
 
 				const responseWasStreamed = body.stream;
 
-				if (
-					// @ts-ignore
-					modelResponse?.image ||
-					(modelResponse && responseFlags.isTextToImage) ||
-					responseFlags.isImageToImage
-				) {
+				const imageOutput = getGeneratedOutput(
+					modelResponse,
+					"image",
+					responseFlags.isTextToImage || responseFlags.isImageToImage,
+				);
+				if (imageOutput) {
 					try {
-						const imageKey = `generations/${params.completion_id}/${model}/${Date.now()}.png`;
-						const upload = await uploadImageFromChat(
-							// @ts-ignore
-							modelResponse.image || modelResponse,
-							env,
-							imageKey,
-						);
-
-						if (!upload) {
-							throw new AssistantError("Failed to upload image", ErrorType.PROVIDER_ERROR);
+						if (!params.user?.id) {
+							throw new AssistantError(
+								"User ID is required to store generated image",
+								ErrorType.FORBIDDEN,
+								403,
+							);
 						}
-
-						const baseAssetsUrl = env.PUBLIC_ASSETS_URL || "";
+						const storedImage = await persistGeneratedOutput({
+							mediaContext: {
+								env,
+								model,
+								completionId: params.completion_id,
+								userId: params.user.id,
+							},
+							output: imageOutput,
+							extension: "png",
+							mimeType: "image/png",
+							filename: "image.png",
+							dataUrlMimePattern: "image\\/\\w+",
+						});
 
 						const imageResponse = {
 							response: "Image Generated.",
@@ -383,8 +410,9 @@ export class WorkersProvider extends BaseProvider {
 								attachments: [
 									{
 										type: "image",
-										url: `${baseAssetsUrl}/${imageKey}`,
-										key: upload,
+										assetId: storedImage.assetId,
+										url: storedImage.url,
+										key: storedImage.key,
 									},
 								],
 							},
@@ -399,25 +427,35 @@ export class WorkersProvider extends BaseProvider {
 						logger.error("Error generating image", { error });
 						return "";
 					}
-				} else if (
-					// @ts-ignore
-					modelResponse?.audio ||
-					(modelResponse && responseFlags.isTextToSpeech)
-				) {
+				}
+
+				const audioOutput = getGeneratedOutput(
+					modelResponse,
+					"audio",
+					responseFlags.isTextToSpeech,
+				);
+				if (audioOutput) {
 					try {
-						const audioKey = `generations/${params.completion_id}/${model}/${Date.now()}.mp3`;
-						const upload = await uploadAudioFromChat(
-							// @ts-ignore
-							modelResponse.audio || modelResponse,
-							env,
-							audioKey,
-						);
-
-						if (!upload) {
-							throw new AssistantError("Failed to upload audio", ErrorType.PROVIDER_ERROR);
+						if (!params.user?.id) {
+							throw new AssistantError(
+								"User ID is required to store generated audio",
+								ErrorType.FORBIDDEN,
+								403,
+							);
 						}
-
-						const baseAssetsUrl = env.PUBLIC_ASSETS_URL || "";
+						const storedAudio = await persistGeneratedOutput({
+							mediaContext: {
+								env,
+								model,
+								completionId: params.completion_id,
+								userId: params.user.id,
+							},
+							output: audioOutput,
+							extension: "mp3",
+							mimeType: "audio/mpeg",
+							filename: "audio.mp3",
+							dataUrlMimePattern: "audio\\/\\w+",
+						});
 
 						const audioResponse = {
 							response: "Audio Generated.",
@@ -425,8 +463,9 @@ export class WorkersProvider extends BaseProvider {
 								attachments: [
 									{
 										type: "audio",
-										url: `${baseAssetsUrl}/${audioKey}`,
-										key: upload,
+										assetId: storedAudio.assetId,
+										url: storedAudio.url,
+										key: storedAudio.key,
 									},
 								],
 							},
@@ -441,13 +480,12 @@ export class WorkersProvider extends BaseProvider {
 						logger.error("Error generating audio", { error });
 						return "";
 					}
-				} else if (
-					// @ts-ignore
-					modelResponse?.description
-				) {
+				}
+
+				const description = getResponseDescription(modelResponse);
+				if (description) {
 					const descriptionResponse = {
-						// @ts-ignore - types are wrong
-						response: modelResponse.description,
+						response: description,
 						data: modelResponse,
 					};
 

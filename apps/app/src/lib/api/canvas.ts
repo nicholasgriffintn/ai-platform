@@ -41,6 +41,7 @@ export async function generateCanvasOutputs(
 			"Content-Type": "application/json",
 		},
 		body: request,
+		timeoutMs: null,
 	});
 
 	if (!response.ok) {
