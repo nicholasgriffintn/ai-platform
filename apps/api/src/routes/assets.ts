@@ -11,6 +11,7 @@ async function buildAssetResponse(asset: Awaited<ReturnType<typeof readAsset>>):
 	const headers = new Headers();
 	headers.set("content-type", asset.asset.mime_type);
 	headers.set("cache-control", "private, no-store");
+	headers.set("cross-origin-resource-policy", "cross-origin");
 	if (asset.asset.filename) {
 		headers.set("content-disposition", `inline; filename="${asset.asset.filename}"`);
 	}

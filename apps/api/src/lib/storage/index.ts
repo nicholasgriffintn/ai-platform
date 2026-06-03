@@ -1,8 +1,10 @@
 import type { R2Bucket, R2ObjectBody } from "@cloudflare/workers-types";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
-import type { CreateStoredAsset, StoredAssetPurpose } from "./asset-types";
-import { buildAssetUrl } from "./asset-urls";
+import { RepositoryManager } from "~/repositories";
+import type { IEnv } from "~/types";
+import type { CreateStoredAsset, StoredAsset, StoredAssetPurpose } from "./asset-types";
+import { buildAssetUrl, getAssetIdFromUrl } from "./asset-urls";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";
@@ -42,8 +44,9 @@ export interface StoredAssetResult {
 
 export class StorageService {
 	constructor(
-		private readonly bucket: R2Bucket,
+		private readonly bucket: R2Bucket | undefined,
 		private readonly context?: ServiceContext,
+		private readonly env?: IEnv,
 	) {}
 
 	static forPrivateAssets(context: ServiceContext): StorageService {
@@ -54,13 +57,17 @@ export class StorageService {
 			);
 		}
 
-		return new StorageService(context.env.PRIVATE_ASSETS_BUCKET, context);
+		return new StorageService(context.env.PRIVATE_ASSETS_BUCKET, context, context.env);
+	}
+
+	static forPrivateAssetsEnv(env: IEnv): StorageService {
+		return new StorageService(env.PRIVATE_ASSETS_BUCKET, undefined, env);
 	}
 
 	async getObject(key: string): Promise<string | null> {
 		logger.debug("Getting object from storage", { key });
 		const normalizedKey = key.startsWith("/") ? key.slice(1) : key;
-		const object = await this.bucket.get(normalizedKey);
+		const object = await this.requireBucket().get(normalizedKey);
 		if (!object) {
 			return null;
 		}
@@ -71,7 +78,7 @@ export class StorageService {
 	async getObjectBody(key: string): Promise<R2ObjectBody | null> {
 		logger.debug("Getting object body from storage", { key });
 		const normalizedKey = key.startsWith("/") ? key.slice(1) : key;
-		return this.bucket.get(normalizedKey);
+		return this.requireBucket().get(normalizedKey);
 	}
 
 	async uploadObject(
@@ -81,7 +88,7 @@ export class StorageService {
 	): Promise<string> {
 		logger.debug("Uploading object to storage", { key });
 
-		await this.bucket.put(key, data, options);
+		await this.requireBucket().put(key, data, options);
 
 		logger.debug("Object uploaded successfully", { key });
 
@@ -155,7 +162,12 @@ export class StorageService {
 		};
 	}
 
-	async downloadFile(url: string): Promise<Blob> {
+	async downloadFile(url: string, ownerUserId?: number, assetsUrl?: string): Promise<Blob> {
+		const privateAssetBlob = await this.getPrivateAssetImageBlob(url, ownerUserId, assetsUrl);
+		if (privateAssetBlob) {
+			return privateAssetBlob;
+		}
+
 		if (!this.isValidImageUrl(url)) {
 			throw new AssistantError(`Invalid image URL: ${url}`, ErrorType.PARAMS_ERROR);
 		}
@@ -191,6 +203,42 @@ export class StorageService {
 		}
 	}
 
+	async getPrivateAssetImageDataUrl(
+		url: string,
+		ownerUserId?: number,
+		assetsUrl?: string,
+	): Promise<string | null> {
+		const asset = await this.getPrivateAssetImage(url, ownerUserId, assetsUrl);
+		if (!asset) {
+			return null;
+		}
+
+		const base64Data = await this.getObject(asset.key);
+		if (!base64Data) {
+			throw new AssistantError("Image asset object not found", ErrorType.NOT_FOUND, 404);
+		}
+
+		return `data:${asset.mime_type};base64,${base64Data}`;
+	}
+
+	async getPrivateAssetImageBlob(
+		url: string,
+		ownerUserId?: number,
+		assetsUrl?: string,
+	): Promise<Blob | null> {
+		const asset = await this.getPrivateAssetImage(url, ownerUserId, assetsUrl);
+		if (!asset) {
+			return null;
+		}
+
+		const object = await this.getObjectBody(asset.key);
+		if (!object) {
+			throw new AssistantError("Image asset object not found", ErrorType.NOT_FOUND, 404);
+		}
+
+		return new Blob([await object.arrayBuffer()], { type: asset.mime_type });
+	}
+
 	private isValidImageUrl(url: string): boolean {
 		try {
 			const parsedUrl = new URL(url);
@@ -205,6 +253,48 @@ export class StorageService {
 		return supportedTypes.includes(contentType.toLowerCase());
 	}
 
+	private async getPrivateAssetImage(
+		url: string,
+		ownerUserId?: number,
+		assetsUrl?: string,
+	): Promise<StoredAsset | null> {
+		const assetEnv = this.context?.env ?? this.env;
+		const assetId = getAssetIdFromUrl(url, assetsUrl || assetEnv?.API_BASE_URL);
+		if (!assetId) {
+			return null;
+		}
+
+		if (!assetEnv) {
+			throw new AssistantError(
+				"Storage service asset environment is not configured",
+				ErrorType.CONFIGURATION_ERROR,
+			);
+		}
+
+		if (ownerUserId === undefined) {
+			throw new AssistantError("User data required for private image assets", ErrorType.FORBIDDEN);
+		}
+
+		const repositories = this.context?.repositories ?? new RepositoryManager(assetEnv);
+		const asset = await repositories.storedAssets.getAsset(assetId);
+		if (!asset) {
+			throw new AssistantError("Image asset not found", ErrorType.NOT_FOUND, 404);
+		}
+
+		if (asset.owner_user_id !== ownerUserId) {
+			throw new AssistantError("Access denied for image asset", ErrorType.FORBIDDEN, 403);
+		}
+
+		if (!this.isSupportedImageType(asset.mime_type)) {
+			throw new AssistantError(
+				`Unsupported image type: ${asset.mime_type}. Supported types: image/png, image/jpeg, image/webp`,
+				ErrorType.PARAMS_ERROR,
+			);
+		}
+
+		return asset;
+	}
+
 	private requireAssetContext(): ServiceContext {
 		if (!this.context) {
 			throw new AssistantError(
@@ -214,5 +304,16 @@ export class StorageService {
 		}
 
 		return this.context;
+	}
+
+	private requireBucket(): R2Bucket {
+		if (!this.bucket) {
+			throw new AssistantError(
+				"Private assets bucket is not configured",
+				ErrorType.CONFIGURATION_ERROR,
+			);
+		}
+
+		return this.bucket;
 	}
 }

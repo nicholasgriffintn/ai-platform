@@ -1,6 +1,6 @@
 import { Brush, ChevronLeft } from "lucide-react";
 
-import { Button } from "~/components/ui";
+import { Button, Image } from "~/components/ui";
 import { cn } from "~/lib/utils";
 import { DrawingCanvas } from "./DrawingCanvas";
 import { DrawingEditorControls } from "./DrawingEditorControls";
@@ -127,10 +127,11 @@ export function DrawingWorkspace({ drawing }: { drawing: DrawingStudioState }) {
 				>
 					<div className="relative mb-3 aspect-video w-full overflow-hidden rounded-lg bg-zinc-200 dark:bg-zinc-700">
 						{item.paintingUrl ? (
-							<img
+							<Image
 								src={item.paintingUrl}
 								alt={item.description || "Drawing"}
 								className="h-full w-full object-cover"
+								crossOrigin="use-credentials"
 							/>
 						) : (
 							<div className="flex h-full items-center justify-center">

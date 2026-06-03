@@ -33,7 +33,6 @@ export interface CaptureScreenshotResult {
 	status: "success" | "error";
 	error?: string;
 	data?: {
-		url?: string;
 		assetId: string;
 		screenshotUrl: string;
 		key: string;
@@ -137,7 +136,6 @@ export const captureScreenshot = async (
 		return {
 			status: "success",
 			data: {
-				url: params.url,
 				assetId: storedScreenshot.assetId,
 				screenshotUrl: storedScreenshot.url,
 				key: imageKey,

@@ -9,6 +9,7 @@ import { TaskService } from "~/services/tasks/TaskService";
 import type { IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
+import { isRecord } from "~/utils/objects";
 
 export interface ExecuteModelGenerationParams {
 	modelId: string;
@@ -44,16 +45,16 @@ function extractAsyncInvocation(
 	providerResponse: Record<string, unknown> | undefined,
 ): Record<string, unknown> | undefined {
 	const data = providerResponse?.data;
-	if (!data || typeof data !== "object") {
+	if (!isRecord(data)) {
 		return undefined;
 	}
 
-	const asyncInvocation = (data as Record<string, unknown>).asyncInvocation;
-	if (!asyncInvocation || typeof asyncInvocation !== "object") {
+	const asyncInvocation = data.asyncInvocation;
+	if (!isRecord(asyncInvocation)) {
 		return undefined;
 	}
 
-	return asyncInvocation as Record<string, unknown>;
+	return asyncInvocation;
 }
 
 function resolveStoredStatus(
@@ -119,7 +120,7 @@ export const executeModelGeneration = async (
 	});
 
 	const invocationId = generateId();
-	const providerResponse = (await provider.getResponse({
+	const providerResponseResult = await provider.getResponse({
 		completion_id: invocationId,
 		app_url,
 		model: modelConfig.matchingModel,
@@ -138,7 +139,8 @@ export const executeModelGeneration = async (
 		env: serviceContext.env,
 		user,
 		store: false,
-	})) as Record<string, unknown>;
+	});
+	const providerResponse = isRecord(providerResponseResult) ? providerResponseResult : {};
 
 	const status = resolveStoredStatus(providerResponse);
 	const asyncInvocation = extractAsyncInvocation(providerResponse);
@@ -177,12 +179,12 @@ export const executeModelGeneration = async (
 		throw new AssistantError("Failed to store generation data", ErrorType.STORAGE_ERROR);
 	}
 
-	if (status === "processing" && serviceContext.env.DB) {
+	if (status === "processing" && storage.pollingTaskType && serviceContext.env.DB) {
 		const taskRepository = new TaskRepository(serviceContext.env);
 		const taskService = new TaskService(serviceContext.env, taskRepository);
 
 		await taskService.enqueueTask({
-			task_type: storage.pollingTaskType ?? "replicate_polling",
+			task_type: storage.pollingTaskType,
 			user_id: user.id,
 			task_data: {
 				predictionId: stored.id,

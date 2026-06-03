@@ -1,5 +1,5 @@
 import { Loader2, Mic, Plus, Square, Volume1, Volume2, VolumeX } from "lucide-react";
-import type { ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 
 import { Button, Popover, PopoverContent, PopoverTrigger } from "~/components/ui";
 import { cn } from "~/lib/utils";
@@ -86,14 +86,28 @@ export function ComposerActionMenu({
 	uploadIcon,
 	uploadLabel,
 }: ComposerActionMenuProps) {
+	const [isOpen, setIsOpen] = useState(false);
+	const wasTranscribing = useRef(isTranscribing);
 	const hasActions = canUploadFiles || canUseVoice || Boolean(autoPlayResponses) || tools;
+
+	useEffect(() => {
+		if (wasTranscribing.current && !isTranscribing) {
+			setIsOpen(false);
+		}
+		wasTranscribing.current = isTranscribing;
+	}, [isTranscribing]);
 
 	if (!hasActions) {
 		return null;
 	}
 
+	const handleUploadClick = () => {
+		setIsOpen(false);
+		onUploadClick();
+	};
+
 	return (
-		<Popover>
+		<Popover open={isOpen} onOpenChange={setIsOpen}>
 			<PopoverTrigger asChild>
 				<Button
 					type="button"
@@ -114,7 +128,7 @@ export function ComposerActionMenu({
 					{canUploadFiles && (
 						<ComposerActionButton
 							icon={isUploading ? <Loader2 className="h-5 w-5 animate-spin" /> : uploadIcon}
-							onClick={onUploadClick}
+							onClick={handleUploadClick}
 							disabled={isDisabled || isUploading}
 							title={uploadLabel}
 							description="Images, documents, audio, and code when supported"

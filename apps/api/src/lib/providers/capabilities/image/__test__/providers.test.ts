@@ -19,10 +19,14 @@ vi.mock("~/lib/prompts/image", () => ({
 }));
 
 vi.mock("~/lib/providers/models", () => ({
-	getModelConfigByModel: vi.fn(async () => ({
+	findModelConfig: vi.fn(async () => ({
 		matchingModel: "replicate-model",
 		provider: "replicate",
 		name: "Replicate Image",
+		modalities: {
+			input: ["text"],
+			output: ["image"],
+		},
 		inputSchema: {
 			fields: [{ name: "prompt", type: "string", required: true }],
 		},
@@ -34,8 +38,21 @@ vi.mock("~/lib/providers/models/replicateValidation", () => ({
 }));
 
 describe("image providers", () => {
-	beforeEach(() => {
+	beforeEach(async () => {
 		vi.clearAllMocks();
+		const { findModelConfig } = await import("~/lib/providers/models");
+		vi.mocked(findModelConfig).mockResolvedValue({
+			matchingModel: "replicate-model",
+			provider: "replicate",
+			name: "Replicate Image",
+			modalities: {
+				input: ["text"],
+				output: ["image"],
+			},
+			inputSchema: {
+				fields: [{ name: "prompt", type: "string", required: true }],
+			},
+		});
 	});
 
 	it("WorkersAiImageProvider uses a styled prompt", async () => {
@@ -67,6 +84,44 @@ describe("image providers", () => {
 			}),
 		);
 		expect(result.url).toBe("https://example.com/image.png");
+	});
+
+	it("WorkersAiImageProvider resolves full Workers AI model ids", async () => {
+		const provider = new WorkersAiImageProvider();
+		const env = Object.create(null);
+		const user = Object.create(null);
+		const { findModelConfig } = await import("~/lib/providers/models");
+		vi.mocked(findModelConfig).mockResolvedValue({
+			matchingModel: "@cf/black-forest-labs/flux-2-dev",
+			provider: "workers-ai",
+			name: "Black Forest Labs Flux 2 Dev",
+			modalities: {
+				input: ["text"],
+				output: ["image"],
+			},
+		});
+		mockChatProvider.getResponse.mockResolvedValue({
+			data: { attachments: [{ url: "https://example.com/image.png" }] },
+		});
+
+		await provider.generate({
+			prompt: "A neon portrait",
+			env,
+			user,
+			style: "default",
+			model: "@cf/black-forest-labs/flux-2-dev",
+		});
+
+		expect(findModelConfig).toHaveBeenCalledWith(
+			"@cf/black-forest-labs/flux-2-dev",
+			env,
+			"workers-ai",
+		);
+		expect(mockChatProvider.getResponse).toHaveBeenCalledWith(
+			expect.objectContaining({
+				model: "@cf/black-forest-labs/flux-2-dev",
+			}),
+		);
 	});
 
 	it("ReplicateImageProvider maps request into replicate input", async () => {

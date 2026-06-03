@@ -95,6 +95,7 @@ export function GenerationCard({
 						alt={run.modelName}
 						thumbnailClassName="block w-full"
 						imageClassName="h-auto w-full rounded-xl object-contain"
+						crossOrigin="use-credentials"
 					/>
 				</div>
 			)}

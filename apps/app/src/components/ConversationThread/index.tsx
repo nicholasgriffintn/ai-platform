@@ -1,12 +1,4 @@
-import {
-	type FormEvent,
-	type ReactNode,
-	useCallback,
-	useEffect,
-	useMemo,
-	useRef,
-	useState,
-} from "react";
+import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import type { ConversationModeMetadata } from "@assistant/schemas";
 
@@ -179,8 +171,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
 	);
 
 	const handleSubmit = useCallback(
-		async (e: FormEvent, attachments?: AttachmentData[]) => {
-			e.preventDefault();
+		async (attachments?: AttachmentData[]) => {
 			if (!chatInput.trim() && !attachments?.length) {
 				return;
 			}
@@ -261,7 +252,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
 			if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
 				e.preventDefault();
 				if (canSubmit) {
-					handleSubmit(e as unknown as FormEvent);
+					handleSubmit();
 				}
 			}
 			if (e.key === "Escape") {

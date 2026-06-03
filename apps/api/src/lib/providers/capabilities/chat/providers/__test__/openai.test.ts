@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
+import type { StorageService } from "~/lib/storage";
 import { getModelConfigByMatchingModel } from "~/lib/providers/models";
-import type { ModelConfigItem } from "~/types";
+import type { ChatCompletionParameters, IEnv, IUser, ModelConfigItem } from "~/types";
 import {
 	createCommonParameters,
 	getToolsForProvider,
@@ -68,7 +69,7 @@ describe("OpenAIProvider", () => {
 		});
 
 		it("should pass GPT Image schema parameters through to image generations", async () => {
-			const modelConfig = {
+			const modelConfig: ModelConfigItem = {
 				name: "gpt-image-2",
 				matchingModel: "gpt-image-2",
 				provider: "openai",
@@ -85,7 +86,7 @@ describe("OpenAIProvider", () => {
 						{ name: "n", type: "integer" },
 					],
 				},
-			} satisfies ModelConfigItem;
+			};
 
 			vi.mocked(getModelConfigByMatchingModel).mockResolvedValue(modelConfig);
 			vi.mocked(createCommonParameters).mockReturnValue({});
@@ -123,6 +124,59 @@ describe("OpenAIProvider", () => {
 				moderation: "low",
 				n: 2,
 			});
+		});
+
+		it("should read private asset URLs through storage for GPT Image edits", async () => {
+			const modelConfig: ModelConfigItem = {
+				name: "gpt-image-2",
+				matchingModel: "gpt-image-2",
+				provider: "openai",
+				modalities: { input: ["text", "image"], output: ["image"] },
+			};
+			vi.mocked(getModelConfigByMatchingModel).mockResolvedValue(modelConfig);
+
+			const env: IEnv = Object.assign(Object.create(null), {
+				AI_GATEWAY_TOKEN: "test-token",
+				API_BASE_URL: "http://localhost:8787",
+			});
+			const user: IUser = Object.assign(Object.create(null), {
+				id: 42,
+				email: "owner@example.com",
+			});
+			const params: ChatCompletionParameters = {
+				model: "gpt-image-2",
+				messages: [
+					{ role: "system", content: "Edit images" },
+					{
+						role: "user",
+						content: [
+							{ type: "text", text: "Make it brighter" },
+							{
+								type: "image_url",
+								image_url: {
+									url: "http://localhost:8787/assets/asset-123",
+								},
+							},
+						],
+					},
+				],
+				env,
+				user,
+			};
+			const storageService: StorageService = Object.create(null);
+			storageService.downloadFile = vi
+				.fn()
+				.mockResolvedValue(new Blob(["image"], { type: "image/png" }));
+
+			const provider = new OpenAIProvider();
+			const result = await provider.mapParameters(params, storageService, env.API_BASE_URL);
+
+			expect(result).toBeInstanceOf(FormData);
+			expect(storageService.downloadFile).toHaveBeenCalledWith(
+				"http://localhost:8787/assets/asset-123",
+				42,
+				"http://localhost:8787",
+			);
 		});
 
 		it("should handle image-to-image generation in mapParameters", async () => {

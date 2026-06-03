@@ -1,4 +1,4 @@
-import { getModelConfigByModel } from "~/lib/providers/models";
+import { findModelConfig } from "~/lib/providers/models";
 import { getTextToImageSystemPrompt, imagePrompts } from "~/lib/prompts/image";
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import { extractGeneratedAsset } from "~/lib/providers/utils/helpers";
@@ -22,7 +22,7 @@ export class WorkersAiImageProvider implements ImageProvider {
 
 	async generate(request: ImageGenerationRequest): Promise<ImageGenerationResult> {
 		const modelId = request.model || DEFAULT_MODEL;
-		const modelConfig = await getModelConfigByModel(modelId);
+		const modelConfig = await findModelConfig(modelId, request.env, "workers-ai");
 		if (!modelConfig) {
 			throw new AssistantError(
 				`Model configuration not found for ${modelId}`,

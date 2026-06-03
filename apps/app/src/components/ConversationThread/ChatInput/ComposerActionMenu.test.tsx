@@ -34,6 +34,10 @@ describe("ComposerActionMenu", () => {
 		fireEvent.click(screen.getByRole("button", { name: "Open composer actions" }));
 
 		fireEvent.click(screen.getByRole("button", { name: /Attach file/i }));
+
+		expect(screen.queryByRole("button", { name: /Voice input/i })).not.toBeInTheDocument();
+
+		fireEvent.click(screen.getByRole("button", { name: "Open composer actions" }));
 		fireEvent.click(screen.getByRole("button", { name: /Voice input/i }));
 		fireEvent.click(screen.getByRole("button", { name: /Response audio/i }));
 
@@ -65,5 +69,62 @@ describe("ComposerActionMenu", () => {
 		expect(screen.queryByRole("button", { name: /Attach file/i })).not.toBeInTheDocument();
 		expect(screen.queryByRole("button", { name: /Voice input/i })).not.toBeInTheDocument();
 		expect(screen.getByText("Tool toggles")).toBeInTheDocument();
+	});
+
+	it("keeps voice input open until transcription finishes", () => {
+		const onStopRecording = vi.fn();
+		const { rerender } = render(
+			<ComposerActionMenu
+				canUploadFiles={false}
+				canUseVoice={true}
+				isRecording={true}
+				isTranscribing={false}
+				isUploading={false}
+				onStartRecording={vi.fn()}
+				onStopRecording={onStopRecording}
+				onUploadClick={vi.fn()}
+				uploadIcon={<span aria-hidden="true">file</span>}
+				uploadLabel="Upload files"
+			/>,
+		);
+
+		fireEvent.click(screen.getByRole("button", { name: "Open composer actions" }));
+		fireEvent.click(screen.getByRole("button", { name: /Stop voice input/i }));
+
+		expect(onStopRecording).toHaveBeenCalledTimes(1);
+
+		rerender(
+			<ComposerActionMenu
+				canUploadFiles={false}
+				canUseVoice={true}
+				isRecording={false}
+				isTranscribing={true}
+				isUploading={false}
+				onStartRecording={vi.fn()}
+				onStopRecording={onStopRecording}
+				onUploadClick={vi.fn()}
+				uploadIcon={<span aria-hidden="true">file</span>}
+				uploadLabel="Upload files"
+			/>,
+		);
+
+		expect(screen.getByText("Transcribing voice input")).toBeInTheDocument();
+
+		rerender(
+			<ComposerActionMenu
+				canUploadFiles={false}
+				canUseVoice={true}
+				isRecording={false}
+				isTranscribing={false}
+				isUploading={false}
+				onStartRecording={vi.fn()}
+				onStopRecording={onStopRecording}
+				onUploadClick={vi.fn()}
+				uploadIcon={<span aria-hidden="true">file</span>}
+				uploadLabel="Upload files"
+			/>,
+		);
+
+		expect(screen.queryByRole("button", { name: /Voice input/i })).not.toBeInTheDocument();
 	});
 });

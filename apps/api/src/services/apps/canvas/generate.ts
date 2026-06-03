@@ -3,6 +3,8 @@ import { getModelConfigByModel } from "~/lib/providers/models";
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { AssistantError, ErrorType, getErrorMessage } from "~/utils/errors";
 import { executeReplicateModel } from "~/services/apps/replicate/execute";
+import { executeModelGeneration } from "~/services/apps/generation/execute";
+import { readStringField } from "~/utils/recordFields";
 import type { CanvasGenerateParams } from "./types";
 import { prepareCanvasInputForModel } from "./prepare-input";
 import { validateCanvasModelInputRequirements } from "./input-requirements";
@@ -21,6 +23,90 @@ export interface GenerateCanvasRequest {
 	env?: IEnv;
 	user: IUser;
 	params: CanvasGenerateParams;
+}
+
+function getCanvasResultStatus(data: unknown): "processing" | "completed" | "failed" {
+	const error = readStringField(data, "error");
+	if (error) {
+		return "failed";
+	}
+
+	return readStringField(data, "status") === "completed" ? "completed" : "processing";
+}
+
+function createFailedCanvasResult({
+	error,
+	modelId,
+	modelName,
+	provider,
+}: {
+	error: string;
+	modelId: string;
+	modelName: string;
+	provider?: string;
+}): CanvasGenerationResultItem {
+	return {
+		modelId,
+		modelName,
+		provider,
+		status: "failed",
+		error,
+	};
+}
+
+async function executeCanvasGeneration({
+	context,
+	env,
+	input,
+	mode,
+	modelId,
+	provider,
+	user,
+}: {
+	context?: ServiceContext;
+	env?: IEnv;
+	input: Record<string, unknown>;
+	mode: CanvasGenerateParams["mode"];
+	modelId: string;
+	provider?: string;
+	user: IUser;
+}) {
+	if (provider === "replicate") {
+		return executeReplicateModel({
+			context,
+			env,
+			user,
+			params: {
+				modelId,
+				input,
+				replicateWaitSeconds: 0,
+			},
+			storage: {
+				appId: "canvas",
+				itemType: "generation",
+				extraData: {
+					mode,
+				},
+			},
+		});
+	}
+
+	return executeModelGeneration({
+		context,
+		env,
+		user,
+		params: {
+			modelId,
+			input,
+		},
+		storage: {
+			appId: "canvas",
+			itemType: "generation",
+			extraData: {
+				mode,
+			},
+		},
+	});
 }
 
 export async function generateCanvasBatch(
@@ -42,12 +128,11 @@ export async function generateCanvasBatch(
 		uniqueModelIds.map(async (modelId) => {
 			const modelConfig = await getModelConfigByModel(modelId, env);
 			if (!modelConfig) {
-				return {
+				return createFailedCanvasResult({
 					modelId,
 					modelName: modelId,
-					status: "failed" as const,
 					error: `Model ${modelId} is not available for ${params.mode} generation.`,
-				};
+				});
 			}
 
 			try {
@@ -72,48 +157,25 @@ export async function generateCanvasBatch(
 					request: params,
 				});
 
-				const prediction = await executeReplicateModel({
+				const prediction = await executeCanvasGeneration({
 					context,
 					env,
 					user,
-					params: {
-						modelId,
-						input,
-						replicateWaitSeconds: 0,
-					},
-					storage: {
-						appId: "canvas",
-						itemType: "generation",
-						extraData: {
-							mode: params.mode,
-						},
-					},
+					modelId,
+					mode: params.mode,
+					provider: modelConfig.provider,
+					input,
 				});
 
 				const responseData = prediction?.data;
-				const generationId =
-					responseData && typeof responseData === "object"
-						? (responseData.id as string | undefined)
-						: undefined;
+				const generationId = readStringField(responseData, "id");
 
 				if (typeof generationId !== "string" || !generationId) {
 					throw new AssistantError("Queued generation missing id", ErrorType.PROVIDER_ERROR);
 				}
 
-				const statusCandidate =
-					responseData && typeof responseData === "object"
-						? (responseData.status as string | undefined)
-						: undefined;
-				const normalizedStatus: "processing" | "completed" =
-					statusCandidate === "completed" ? "completed" : "processing";
-
-				const generationError =
-					responseData && typeof responseData === "object"
-						? (responseData.error as string | undefined)
-						: undefined;
-				const status: CanvasGenerationResultItem["status"] = generationError
-					? "failed"
-					: normalizedStatus;
+				const generationError = readStringField(responseData, "error");
+				const status = getCanvasResultStatus(responseData);
 
 				return {
 					modelId,
@@ -124,13 +186,12 @@ export async function generateCanvasBatch(
 					error: generationError,
 				};
 			} catch (error) {
-				return {
+				return createFailedCanvasResult({
 					modelId,
 					modelName: modelConfig.name ?? modelId,
 					provider: modelConfig.provider,
-					status: "failed" as const,
 					error: getErrorMessage(error, "Failed to queue generation"),
-				};
+				});
 			}
 		}),
 	);

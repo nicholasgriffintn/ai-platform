@@ -1,7 +1,12 @@
-import { render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import type { ReactNode } from "react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { ChatInput } from ".";
+
+const mocks = vi.hoisted(() => ({
+	uploadComposerAttachment: vi.fn(),
+}));
 
 const store = {
 	chatInput: "",
@@ -14,7 +19,21 @@ const store = {
 };
 
 vi.mock("~/hooks/useModels", () => ({
-	useModels: () => ({ data: {} }),
+	useModels: () => ({
+		data: {
+			"gpt-realtime-2": {
+				id: "gpt-realtime-2",
+				matchingModel: "gpt-realtime-2",
+				name: "GPT Realtime 2",
+				provider: "openai",
+				multimodal: true,
+				modalities: {
+					input: ["text", "image"],
+					output: ["text"],
+				},
+			},
+		},
+	}),
 }));
 
 vi.mock("~/hooks/useVoiceRecorder", () => ({
@@ -42,9 +61,27 @@ vi.mock("./ComposerActionMenu", () => ({
 	ComposerActionMenu: () => <button type="button">Actions</button>,
 }));
 
+interface MockAttachmentChip {
+	label: string;
+	onClear: () => void;
+	preview: ReactNode;
+}
+
 vi.mock("./ComposerCommandSurface", () => ({
 	ComposerCommandButton: () => <button type="button">Commands</button>,
-	ComposerCommandChips: () => null,
+	ComposerCommandChips: ({ attachments = [] }: { attachments?: MockAttachmentChip[] }) => (
+		<div>
+			{attachments.map((attachment) => (
+				<div key={attachment.label}>
+					{attachment.preview}
+					<span>{attachment.label}</span>
+					<button type="button" onClick={attachment.onClear}>
+						Clear {attachment.label}
+					</button>
+				</div>
+			))}
+		</div>
+	),
 	ComposerCommandSuggestions: () => null,
 }));
 
@@ -71,7 +108,20 @@ vi.mock("./useComposerCommandController", () => ({
 	}),
 }));
 
+vi.mock("./uploadAttachment", () => ({
+	uploadComposerAttachment: mocks.uploadComposerAttachment,
+}));
+
 describe("ChatInput", () => {
+	beforeEach(() => {
+		mocks.uploadComposerAttachment.mockReset();
+		store.chatInput = "";
+		store.currentConversationId = undefined;
+		store.isPro = false;
+		store.model = "gpt-realtime-2";
+		store.selectedAgentId = null;
+	});
+
 	it("hides only the message textarea when requested", () => {
 		render(
 			<ChatInput
@@ -188,5 +238,37 @@ describe("ChatInput", () => {
 		);
 
 		expect(screen.getByRole("button", { name: "Commands" })).toBe(commandButton);
+	});
+
+	it("loads selected private image attachment previews with credentials", async () => {
+		const privateAssetUrl = "http://localhost:8787/assets/private-image-id";
+		mocks.uploadComposerAttachment.mockResolvedValue({
+			attachment: {
+				type: "image",
+				data: privateAssetUrl,
+				mimeType: "image/png",
+			},
+		});
+
+		render(
+			<ChatInput
+				controller={new AbortController()}
+				handleSubmit={vi.fn()}
+				isLoading={false}
+				onTranscribe={vi.fn()}
+				streamStarted={false}
+			/>,
+		);
+
+		fireEvent.change(screen.getByLabelText("Upload a file (images, documents, audio, and code)"), {
+			target: {
+				files: [new File(["image"], "selected.png", { type: "image/png" })],
+			},
+		});
+
+		await waitFor(() => expect(screen.getByText("Image attached")).toBeInTheDocument());
+
+		expect(screen.getByAltText("Selected")).toHaveAttribute("src", privateAssetUrl);
+		expect(screen.getByAltText("Selected")).toHaveAttribute("crossorigin", "use-credentials");
 	});
 });
