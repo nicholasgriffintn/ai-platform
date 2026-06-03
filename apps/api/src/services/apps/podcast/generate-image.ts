@@ -1,6 +1,6 @@
 import { gatewayId } from "~/constants/app";
-import { StorageService } from "~/lib/storage";
 import { resolveServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
+import { StorageService } from "~/lib/storage";
 import type { IEnv, IFunctionResponse, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
@@ -113,19 +113,21 @@ export const handlePodcastGenerateImage = async (
 		).buffer;
 		const length = arrayBuffer.byteLength;
 
-		const storageService = new StorageService(runtimeEnv.ASSETS_BUCKET);
-		await storageService.uploadObject(imageKey, arrayBuffer, {
-			contentType: "image/png",
-			contentLength: length,
+		const storedImage = await StorageService.forPrivateAssets(serviceContext).storePrivateAsset({
+			key: imageKey,
+			data: arrayBuffer,
+			ownerUserId: user.id,
+			purpose: "app_artifact",
+			mimeType: "image/png",
+			filename: "featured.png",
+			byteSize: length,
 		});
-
-		const baseAssetsUrl = runtimeEnv.PUBLIC_ASSETS_URL || "";
-		const imageUrl = `${baseAssetsUrl}/${imageKey}`;
 
 		const appData = {
 			imageId,
+			imageAssetId: storedImage.assetId,
 			imageKey,
-			imageUrl,
+			imageUrl: storedImage.url,
 			summary: summaryContent,
 			status: "complete",
 			createdAt: new Date().toISOString(),
@@ -141,7 +143,7 @@ export const handlePodcastGenerateImage = async (
 
 		return {
 			status: "success",
-			content: `Podcast Featured Image Uploaded: [${imageId}](${imageUrl})`,
+			content: `Podcast Featured Image Uploaded: [${imageId}](${storedImage.url})`,
 			data: appData,
 		};
 	} catch (error) {

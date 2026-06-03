@@ -350,6 +350,7 @@ export async function createStreamWithPostProcessing(
 								modalities: modelConfig?.modalities,
 								env,
 								is_streaming: true,
+								userId: options.user?.id,
 							});
 
 							let contentDelta = "";

@@ -1,14 +1,20 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { createServiceContext } from "~/lib/context/serviceContext";
 import type { IEnv } from "~/types";
 import { handleFileUpload } from "../index";
 
 const mockStorageService = {
 	uploadObject: vi.fn(),
+	storePrivateAsset: vi.fn(),
 };
 
 vi.mock("~/lib/storage", () => ({
 	StorageService: class {
+		static forPrivateAssets() {
+			return mockStorageService;
+		}
+
 		constructor() {
 			return mockStorageService;
 		}
@@ -16,7 +22,7 @@ vi.mock("~/lib/storage", () => ({
 }));
 
 vi.mock("~/lib/documentConverter", () => ({
-	convertToMarkdownViaCloudflare: vi.fn(),
+	convertBlobToMarkdownViaCloudflare: vi.fn(),
 }));
 
 const mockUUID = "test-uuid-123";
@@ -24,16 +30,48 @@ vi.stubGlobal("crypto", { randomUUID: vi.fn().mockReturnValue(mockUUID) });
 
 const mockEnv: IEnv = {
 	ASSETS_BUCKET: "test-bucket",
+	PRIVATE_ASSETS_BUCKET: "private-test-bucket",
+	API_BASE_URL: "https://api.example.com",
 	PUBLIC_ASSETS_URL: "https://assets.example.com",
+	DB: {},
 } as IEnv;
 
 describe("handleFileUpload", () => {
-	let mockConvertToMarkdownViaCloudflare: any;
+	let mockConvertBlobToMarkdownViaCloudflare: any;
+	const mockStoredAssets = {
+		createAsset: vi.fn(),
+	};
+	const mockContext = createServiceContext({ env: mockEnv });
 
 	beforeEach(async () => {
 		vi.clearAllMocks();
+		mockStoredAssets.createAsset.mockResolvedValue({ id: mockUUID });
+		mockContext.repositories.storedAssets.createAsset = mockStoredAssets.createAsset;
+		mockStorageService.storePrivateAsset.mockImplementation(async (request) => {
+			await mockStorageService.uploadObject(request.key, request.data, {
+				contentType: request.mimeType,
+			});
+			await mockStoredAssets.createAsset({
+				id: mockUUID,
+				key: request.key,
+				ownerUserId: request.ownerUserId,
+				purpose: request.purpose,
+				mimeType: request.mimeType,
+				filename: request.filename,
+				byteSize: request.byteSize,
+			});
+			return {
+				assetId: mockUUID,
+				key: request.key,
+				url: mockContext.env.API_BASE_URL
+					? `${mockContext.env.API_BASE_URL}/assets/${mockUUID}`
+					: `/assets/${mockUUID}`,
+			};
+		});
 		const converterModule = await import("~/lib/documentConverter");
-		mockConvertToMarkdownViaCloudflare = vi.mocked(converterModule.convertToMarkdownViaCloudflare);
+		mockConvertBlobToMarkdownViaCloudflare = vi.mocked(
+			converterModule.convertBlobToMarkdownViaCloudflare,
+		);
 	});
 
 	describe("parameter validation", () => {
@@ -41,7 +79,7 @@ describe("handleFileUpload", () => {
 			const formData = new FormData();
 			formData.append("file_type", "image");
 
-			await expect(handleFileUpload(mockEnv, 1, formData)).rejects.toThrow("No file uploaded");
+			await expect(handleFileUpload(mockContext, 1, formData)).rejects.toThrow("No file uploaded");
 		});
 
 		it("should throw error if no file_type provided", async () => {
@@ -49,7 +87,7 @@ describe("handleFileUpload", () => {
 			const formData = new FormData();
 			formData.append("file", file);
 
-			await expect(handleFileUpload(mockEnv, 1, formData)).rejects.toThrow(
+			await expect(handleFileUpload(mockContext, 1, formData)).rejects.toThrow(
 				"Invalid file type. Must be 'image', 'document', 'audio', or 'code'",
 			);
 		});
@@ -60,7 +98,7 @@ describe("handleFileUpload", () => {
 			formData.append("file", file);
 			formData.append("file_type", "invalid");
 
-			await expect(handleFileUpload(mockEnv, 1, formData)).rejects.toThrow(
+			await expect(handleFileUpload(mockContext, 1, formData)).rejects.toThrow(
 				"Invalid file type. Must be 'image', 'document', 'audio', or 'code'",
 			);
 		});
@@ -78,7 +116,7 @@ describe("handleFileUpload", () => {
 
 				mockStorageService.uploadObject.mockResolvedValue("test-key");
 
-				const result = await handleFileUpload(mockEnv, 1, formData);
+				const result = await handleFileUpload(mockContext, 1, formData);
 
 				expect(result.type).toBe("image");
 				vi.clearAllMocks();
@@ -95,12 +133,12 @@ describe("handleFileUpload", () => {
 				formData.append("file_type", "document");
 
 				mockStorageService.uploadObject.mockResolvedValue("test-key");
-				mockConvertToMarkdownViaCloudflare.mockResolvedValue({
+				mockConvertBlobToMarkdownViaCloudflare.mockResolvedValue({
 					result: null,
 					error: null,
 				});
 
-				const result = await handleFileUpload(mockEnv, 1, formData);
+				const result = await handleFileUpload(mockContext, 1, formData);
 
 				expect(result.type).toBe("document");
 				vi.clearAllMocks();
@@ -118,7 +156,7 @@ describe("handleFileUpload", () => {
 
 				mockStorageService.uploadObject.mockResolvedValue("test-key");
 
-				const result = await handleFileUpload(mockEnv, 1, formData);
+				const result = await handleFileUpload(mockContext, 1, formData);
 
 				expect(result.type).toBe("audio");
 				vi.clearAllMocks();
@@ -143,7 +181,7 @@ describe("handleFileUpload", () => {
 
 				mockStorageService.uploadObject.mockResolvedValue("test-key");
 
-				const result = await handleFileUpload(mockEnv, 1, formData);
+				const result = await handleFileUpload(mockContext, 1, formData);
 
 				expect(["code", "markdown_document"]).toContain(result.type);
 				vi.clearAllMocks();
@@ -156,7 +194,7 @@ describe("handleFileUpload", () => {
 			formData.append("file", file);
 			formData.append("file_type", "image");
 
-			await expect(handleFileUpload(mockEnv, 1, formData)).rejects.toThrow(
+			await expect(handleFileUpload(mockContext, 1, formData)).rejects.toThrow(
 				"Invalid file type text/plain. Allowed types for image:",
 			);
 		});
@@ -167,7 +205,7 @@ describe("handleFileUpload", () => {
 			formData.append("file", file);
 			formData.append("file_type", "document");
 
-			await expect(handleFileUpload(mockEnv, 1, formData)).rejects.toThrow(
+			await expect(handleFileUpload(mockContext, 1, formData)).rejects.toThrow(
 				"Invalid file type image/jpeg. Allowed types for document:",
 			);
 		});
@@ -178,7 +216,7 @@ describe("handleFileUpload", () => {
 			formData.append("file", file);
 			formData.append("file_type", "audio");
 
-			await expect(handleFileUpload(mockEnv, 1, formData)).rejects.toThrow(
+			await expect(handleFileUpload(mockContext, 1, formData)).rejects.toThrow(
 				"Invalid file type text/plain. Allowed types for audio:",
 			);
 		});
@@ -192,7 +230,7 @@ describe("handleFileUpload", () => {
 			formData.append("file", file);
 			formData.append("file_type", "code");
 
-			await expect(handleFileUpload(mockEnv, 1, formData)).rejects.toThrow(
+			await expect(handleFileUpload(mockContext, 1, formData)).rejects.toThrow(
 				"Code files must be 200KB or smaller",
 			);
 		});
@@ -209,7 +247,7 @@ describe("handleFileUpload", () => {
 
 			mockStorageService.uploadObject.mockResolvedValue("test-key");
 
-			const result = await handleFileUpload(mockEnv, 1, formData);
+			const result = await handleFileUpload(mockContext, 1, formData);
 
 			expect(mockStorageService.uploadObject).toHaveBeenCalledWith(
 				`uploads/1/images/${mockUUID}.jpeg`,
@@ -218,7 +256,9 @@ describe("handleFileUpload", () => {
 			);
 
 			expect(result).toEqual({
-				url: `https://assets.example.com/uploads/1/images/${mockUUID}.jpeg`,
+				assetId: mockUUID,
+				key: `uploads/1/images/${mockUUID}.jpeg`,
+				url: `https://api.example.com/assets/${mockUUID}`,
 				type: "image",
 				name: "test.jpg",
 			});
@@ -234,7 +274,7 @@ describe("handleFileUpload", () => {
 
 			mockStorageService.uploadObject.mockResolvedValue("test-key");
 
-			const result = await handleFileUpload(mockEnv, 1, formData);
+			const result = await handleFileUpload(mockContext, 1, formData);
 
 			expect(mockStorageService.uploadObject).toHaveBeenCalledWith(
 				`uploads/1/documents/${mockUUID}.pdf`,
@@ -243,12 +283,14 @@ describe("handleFileUpload", () => {
 			);
 
 			expect(result).toEqual({
-				url: `https://assets.example.com/uploads/1/documents/${mockUUID}.pdf`,
+				assetId: mockUUID,
+				key: `uploads/1/documents/${mockUUID}.pdf`,
+				url: `https://api.example.com/assets/${mockUUID}`,
 				type: "document",
 				name: "test.pdf",
 			});
 
-			expect(mockConvertToMarkdownViaCloudflare).not.toHaveBeenCalled();
+			expect(mockConvertBlobToMarkdownViaCloudflare).not.toHaveBeenCalled();
 		});
 
 		it("should convert non-PDF documents to markdown", async () => {
@@ -260,26 +302,28 @@ describe("handleFileUpload", () => {
 			formData.append("file_type", "document");
 
 			mockStorageService.uploadObject.mockResolvedValue("test-key");
-			mockConvertToMarkdownViaCloudflare.mockResolvedValue({
+			mockConvertBlobToMarkdownViaCloudflare.mockResolvedValue({
 				result: "# Converted Markdown",
 				error: null,
 			});
 
-			const result = await handleFileUpload(mockEnv, 1, formData);
+			const result = await handleFileUpload(mockContext, 1, formData);
 
-			expect(mockConvertToMarkdownViaCloudflare).toHaveBeenCalledWith(
+			expect(mockConvertBlobToMarkdownViaCloudflare).toHaveBeenCalledWith(
 				mockEnv,
-				`https://assets.example.com/uploads/1/documents/${mockUUID}.html`,
+				file,
 				"test.html",
 				{
 					html: {
-						hostname: "assets.example.com",
+						hostname: "api.example.com",
 					},
 				},
 			);
 
 			expect(result).toEqual({
-				url: `https://assets.example.com/uploads/1/documents/${mockUUID}.html`,
+				assetId: mockUUID,
+				key: `uploads/1/documents/${mockUUID}.html`,
+				url: `https://api.example.com/assets/${mockUUID}`,
 				type: "markdown_document",
 				name: "test.html",
 				markdown: "# Converted Markdown",
@@ -296,16 +340,16 @@ describe("handleFileUpload", () => {
 			formData.append("convert_to_markdown", "true");
 
 			mockStorageService.uploadObject.mockResolvedValue("test-key");
-			mockConvertToMarkdownViaCloudflare.mockResolvedValue({
+			mockConvertBlobToMarkdownViaCloudflare.mockResolvedValue({
 				result: "# PDF Converted",
 				error: null,
 			});
 
-			const result = await handleFileUpload(mockEnv, 1, formData);
+			const result = await handleFileUpload(mockContext, 1, formData);
 
-			expect(mockConvertToMarkdownViaCloudflare).toHaveBeenCalledWith(
+			expect(mockConvertBlobToMarkdownViaCloudflare).toHaveBeenCalledWith(
 				mockEnv,
-				`https://assets.example.com/uploads/1/documents/${mockUUID}.pdf`,
+				file,
 				"test.pdf",
 				{
 					pdf: {
@@ -335,16 +379,16 @@ describe("handleFileUpload", () => {
 			);
 
 			mockStorageService.uploadObject.mockResolvedValue("test-key");
-			mockConvertToMarkdownViaCloudflare.mockResolvedValue({
+			mockConvertBlobToMarkdownViaCloudflare.mockResolvedValue({
 				result: "![description](diagram)",
 				error: null,
 			});
 
-			const result = await handleFileUpload(mockEnv, 1, formData);
+			const result = await handleFileUpload(mockContext, 1, formData);
 
-			expect(mockConvertToMarkdownViaCloudflare).toHaveBeenCalledWith(
+			expect(mockConvertBlobToMarkdownViaCloudflare).toHaveBeenCalledWith(
 				mockEnv,
-				`https://assets.example.com/uploads/1/images/${mockUUID}.png`,
+				file,
 				"diagram.png",
 				{
 					image: {
@@ -353,7 +397,9 @@ describe("handleFileUpload", () => {
 				},
 			);
 			expect(result).toEqual({
-				url: `https://assets.example.com/uploads/1/images/${mockUUID}.png`,
+				assetId: mockUUID,
+				key: `uploads/1/images/${mockUUID}.png`,
+				url: `https://api.example.com/assets/${mockUUID}`,
 				type: "markdown_document",
 				name: "diagram.png",
 				markdown: "![description](diagram)",
@@ -377,21 +423,21 @@ describe("handleFileUpload", () => {
 			);
 
 			mockStorageService.uploadObject.mockResolvedValue("test-key");
-			mockConvertToMarkdownViaCloudflare.mockResolvedValue({
+			mockConvertBlobToMarkdownViaCloudflare.mockResolvedValue({
 				result: "# Article",
 				error: null,
 			});
 
-			await handleFileUpload(mockEnv, 1, formData);
+			await handleFileUpload(mockContext, 1, formData);
 
-			expect(mockConvertToMarkdownViaCloudflare).toHaveBeenCalledWith(
+			expect(mockConvertBlobToMarkdownViaCloudflare).toHaveBeenCalledWith(
 				mockEnv,
-				`https://assets.example.com/uploads/1/documents/${mockUUID}.html`,
+				file,
 				"article.html",
 				{
 					html: {
 						cssSelector: "article.content",
-						hostname: "assets.example.com",
+						hostname: "api.example.com",
 					},
 				},
 			);
@@ -407,7 +453,7 @@ describe("handleFileUpload", () => {
 
 			mockStorageService.uploadObject.mockResolvedValue("test-key");
 
-			const result = await handleFileUpload(mockEnv, 1, formData);
+			const result = await handleFileUpload(mockContext, 1, formData);
 
 			expect(mockStorageService.uploadObject).toHaveBeenCalledWith(
 				`uploads/1/audios/${mockUUID}.mpeg`,
@@ -416,12 +462,14 @@ describe("handleFileUpload", () => {
 			);
 
 			expect(result).toEqual({
-				url: `https://assets.example.com/uploads/1/audios/${mockUUID}.mpeg`,
+				assetId: mockUUID,
+				key: `uploads/1/audios/${mockUUID}.mpeg`,
+				url: `https://api.example.com/assets/${mockUUID}`,
 				type: "audio",
 				name: "test.mp3",
 			});
 
-			expect(mockConvertToMarkdownViaCloudflare).not.toHaveBeenCalled();
+			expect(mockConvertBlobToMarkdownViaCloudflare).not.toHaveBeenCalled();
 		});
 
 		it("should upload WAV audio file successfully", async () => {
@@ -434,7 +482,7 @@ describe("handleFileUpload", () => {
 
 			mockStorageService.uploadObject.mockResolvedValue("test-key");
 
-			const result = await handleFileUpload(mockEnv, 1, formData);
+			const result = await handleFileUpload(mockContext, 1, formData);
 
 			expect(mockStorageService.uploadObject).toHaveBeenCalledWith(
 				`uploads/1/audios/${mockUUID}.wav`,
@@ -443,7 +491,9 @@ describe("handleFileUpload", () => {
 			);
 
 			expect(result).toEqual({
-				url: `https://assets.example.com/uploads/1/audios/${mockUUID}.wav`,
+				assetId: mockUUID,
+				key: `uploads/1/audios/${mockUUID}.wav`,
+				url: `https://api.example.com/assets/${mockUUID}`,
 				type: "audio",
 				name: "test.wav",
 			});
@@ -459,7 +509,7 @@ describe("handleFileUpload", () => {
 
 			mockStorageService.uploadObject.mockResolvedValue("test-key");
 
-			const result = await handleFileUpload(mockEnv, 1, formData);
+			const result = await handleFileUpload(mockContext, 1, formData);
 
 			expect(result.type).toBe("markdown_document");
 			expect(result.markdown).toContain("```typescript");
@@ -476,7 +526,7 @@ describe("handleFileUpload", () => {
 
 			mockStorageService.uploadObject.mockResolvedValue("test-key");
 
-			const result = await handleFileUpload(mockEnv, 1, formData);
+			const result = await handleFileUpload(mockContext, 1, formData);
 
 			expect(result.type).toBe("markdown_document");
 			expect(result.markdown).toContain("```python");
@@ -493,7 +543,7 @@ describe("handleFileUpload", () => {
 
 			mockStorageService.uploadObject.mockResolvedValue("test-key");
 
-			const result = await handleFileUpload(mockEnv, 1, formData);
+			const result = await handleFileUpload(mockContext, 1, formData);
 
 			expect(result.type).toBe("markdown_document");
 			expect(result.markdown).toContain("```javascript");
@@ -508,7 +558,7 @@ describe("handleFileUpload", () => {
 			formData.append("file", file);
 			formData.append("file_type", "code");
 
-			await expect(handleFileUpload(mockEnv, 1, formData)).rejects.toThrow(
+			await expect(handleFileUpload(mockContext, 1, formData)).rejects.toThrow(
 				"Invalid file type application/octet-stream",
 			);
 		});
@@ -532,7 +582,7 @@ describe("handleFileUpload", () => {
 				return null;
 			});
 
-			await expect(handleFileUpload(mockEnv, 1, formData)).rejects.toThrow(
+			await expect(handleFileUpload(mockContext, 1, formData)).rejects.toThrow(
 				"Failed to process file data",
 			);
 		});
@@ -545,7 +595,9 @@ describe("handleFileUpload", () => {
 
 			mockStorageService.uploadObject.mockRejectedValue(new Error("Storage error"));
 
-			await expect(handleFileUpload(mockEnv, 1, formData)).rejects.toThrow("Failed to store file");
+			await expect(handleFileUpload(mockContext, 1, formData)).rejects.toThrow(
+				"Failed to store file",
+			);
 		});
 
 		it("should reject invalid conversion options JSON", async () => {
@@ -555,7 +607,7 @@ describe("handleFileUpload", () => {
 			formData.append("file_type", "document");
 			formData.append("conversion_options", "{not-json");
 
-			await expect(handleFileUpload(mockEnv, 1, formData)).rejects.toThrow(
+			await expect(handleFileUpload(mockContext, 1, formData)).rejects.toThrow(
 				"conversion_options must be valid JSON",
 			);
 		});
@@ -567,9 +619,9 @@ describe("handleFileUpload", () => {
 			formData.append("file_type", "document");
 
 			mockStorageService.uploadObject.mockResolvedValue("test-key");
-			mockConvertToMarkdownViaCloudflare.mockRejectedValue(new Error("Conversion error"));
+			mockConvertBlobToMarkdownViaCloudflare.mockRejectedValue(new Error("Conversion error"));
 
-			const result = await handleFileUpload(mockEnv, 1, formData);
+			const result = await handleFileUpload(mockContext, 1, formData);
 
 			expect(result.type).toBe("document");
 			expect(result.markdown).toBeUndefined();
@@ -582,12 +634,12 @@ describe("handleFileUpload", () => {
 			formData.append("file_type", "document");
 
 			mockStorageService.uploadObject.mockResolvedValue("test-key");
-			mockConvertToMarkdownViaCloudflare.mockResolvedValue({
+			mockConvertBlobToMarkdownViaCloudflare.mockResolvedValue({
 				result: null,
 				error: "Conversion failed",
 			});
 
-			const result = await handleFileUpload(mockEnv, 1, formData);
+			const result = await handleFileUpload(mockContext, 1, formData);
 
 			expect(result.type).toBe("document");
 			expect(result.markdown).toBeUndefined();
@@ -595,7 +647,7 @@ describe("handleFileUpload", () => {
 	});
 
 	describe("URL generation", () => {
-		it("should use PUBLIC_ASSETS_URL for file URLs", async () => {
+		it("should use API asset URLs for file URLs", async () => {
 			const file = new File(["test"], "test.jpg", { type: "image/jpeg" });
 			const formData = new FormData();
 			formData.append("file", file);
@@ -603,13 +655,34 @@ describe("handleFileUpload", () => {
 
 			mockStorageService.uploadObject.mockResolvedValue("test-key");
 
-			const result = await handleFileUpload(mockEnv, 1, formData);
+			const result = await handleFileUpload(mockContext, 1, formData);
 
-			expect(result.url).toContain("https://assets.example.com/uploads/1/images/");
+			expect(result.url).toBe(`https://api.example.com/assets/${mockUUID}`);
 		});
 
-		it("should handle missing PUBLIC_ASSETS_URL", async () => {
-			const envWithoutUrl = { ...mockEnv, PUBLIC_ASSETS_URL: undefined };
+		it("should handle missing API_BASE_URL", async () => {
+			const envWithoutApiBaseUrl = { ...mockEnv, API_BASE_URL: undefined };
+			const contextWithoutApiBaseUrl = createServiceContext({ env: envWithoutApiBaseUrl });
+			contextWithoutApiBaseUrl.repositories.storedAssets.createAsset = mockStoredAssets.createAsset;
+			mockStorageService.storePrivateAsset.mockImplementationOnce(async (request) => {
+				await mockStorageService.uploadObject(request.key, request.data, {
+					contentType: request.mimeType,
+				});
+				await mockStoredAssets.createAsset({
+					id: mockUUID,
+					key: request.key,
+					ownerUserId: request.ownerUserId,
+					purpose: request.purpose,
+					mimeType: request.mimeType,
+					filename: request.filename,
+					byteSize: request.byteSize,
+				});
+				return {
+					assetId: mockUUID,
+					key: request.key,
+					url: "/assets/test-uuid-123",
+				};
+			});
 			const file = new File(["test"], "test.jpg", { type: "image/jpeg" });
 			const formData = new FormData();
 			formData.append("file", file);
@@ -617,9 +690,9 @@ describe("handleFileUpload", () => {
 
 			mockStorageService.uploadObject.mockResolvedValue("test-key");
 
-			const result = await handleFileUpload(envWithoutUrl, 1, formData);
+			const result = await handleFileUpload(contextWithoutApiBaseUrl, 1, formData);
 
-			expect(result.url).toMatch(/^\/uploads\/1\/images\//);
+			expect(result.url).toBe(`/assets/${mockUUID}`);
 		});
 	});
 });

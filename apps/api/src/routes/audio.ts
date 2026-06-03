@@ -11,6 +11,7 @@ import {
 import { requireAuth } from "~/middleware/auth";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import { ResponseFactory } from "~/lib/http/ResponseFactory";
+import { getServiceContext } from "~/lib/context/serviceContext";
 import { handleTextToSpeech } from "~/services/audio/speech";
 import { handleTranscribe } from "~/services/audio/transcribe";
 import type { IEnv } from "~/types";
@@ -108,6 +109,7 @@ addRoute(app, "post", "/speech", {
 				ref_audio,
 				response_format,
 				user,
+				context: getServiceContext(context),
 			});
 
 			return ResponseFactory.success(context, {

@@ -212,6 +212,7 @@ export abstract class BaseProvider implements AIProvider {
 			model: params.model,
 			modalities: modelConfig?.modalities,
 			env: params.env,
+			userId: typeof params.user?.id === "number" ? params.user.id : undefined,
 		});
 	}
 
@@ -258,8 +259,8 @@ export abstract class BaseProvider implements AIProvider {
 			throw new AssistantError(`Model ${params.model} not found`, ErrorType.CONFIGURATION_ERROR);
 		}
 
-		const storageService = new StorageService(params.env.ASSETS_BUCKET);
-		const assetsUrl = params.env.PUBLIC_ASSETS_URL || "";
+		const storageService = new StorageService(params.env.PRIVATE_ASSETS_BUCKET);
+		const assetsUrl = params.env.API_BASE_URL || "";
 
 		return trackProviderMetrics({
 			provider: this.name,

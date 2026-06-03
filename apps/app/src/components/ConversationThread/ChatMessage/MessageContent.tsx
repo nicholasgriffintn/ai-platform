@@ -232,7 +232,7 @@ const renderAudioContent = (audioUrl: string, audioName?: string, index?: number
 				<span className="text-zinc-700 dark:text-zinc-300">{audioName || "Audio"}</span>
 			</div>
 			{audioUrl && (
-				<audio controls className="w-full rounded-lg">
+				<audio controls crossOrigin="use-credentials" className="w-full rounded-lg">
 					<source src={audioUrl} type="audio/mpeg" />
 					<track kind="captions" />
 					Your browser does not support the audio element.

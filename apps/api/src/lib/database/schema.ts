@@ -494,6 +494,48 @@ export const appData = sqliteTable(
 
 export type AppData = typeof appData.$inferSelect;
 
+export const storedAsset = sqliteTable(
+	"stored_asset",
+	{
+		id: text().primaryKey(),
+		key: text().notNull().unique(),
+		owner_user_id: integer()
+			.notNull()
+			.references(() => user.id),
+		conversation_id: text().references(() => conversation.id),
+		message_id: text().references(() => message.id),
+		app_data_id: text().references(() => appData.id),
+		purpose: text({
+			enum: [
+				"chat_upload",
+				"speech",
+				"generated_media",
+				"ocr_output",
+				"app_artifact",
+				"sandbox_artifact",
+			],
+		}).notNull(),
+		mime_type: text().notNull(),
+		filename: text(),
+		byte_size: integer(),
+		created_at: text()
+			.default(sql`(CURRENT_TIMESTAMP)`)
+			.notNull(),
+		updated_at: text()
+			.default(sql`(CURRENT_TIMESTAMP)`)
+			.$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
+	},
+	(table) => ({
+		ownerUserIdx: index("stored_asset_owner_user_id_idx").on(table.owner_user_id),
+		conversationIdx: index("stored_asset_conversation_id_idx").on(table.conversation_id),
+		messageIdx: index("stored_asset_message_id_idx").on(table.message_id),
+		appDataIdx: index("stored_asset_app_data_id_idx").on(table.app_data_id),
+		purposeIdx: index("stored_asset_purpose_idx").on(table.purpose),
+	}),
+);
+
+export type StoredAsset = typeof storedAsset.$inferSelect;
+
 export const agents = sqliteTable(
 	"agents",
 	{

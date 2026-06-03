@@ -12,6 +12,7 @@ export async function handleGetSharedConversation(
 
 	const conversationManager = ConversationManager.getInstance({
 		database: context.database,
+		env: context.env,
 	});
 
 	const messages = await conversationManager.getPublicConversation(share_id, limit, after);

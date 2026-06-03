@@ -129,6 +129,7 @@ export const MessageActions = ({
 		stopSpeechPlayback();
 
 		const audio = new Audio(speechAudioSource);
+		audio.crossOrigin = "use-credentials";
 		speechAudioRef.current = audio;
 		audio.onended = () => {
 			speechAudioRef.current = null;

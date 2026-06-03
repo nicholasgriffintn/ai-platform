@@ -1,5 +1,6 @@
 import type { SandboxRunData } from "@assistant/schemas";
 import type { ServiceContext } from "~/lib/context/serviceContext";
+import { StorageService } from "~/lib/storage";
 
 const ARTIFACT_PREFIX = "sandbox/runs";
 
@@ -30,14 +31,6 @@ function buildArtifactKey(runId: string, fileName: string): string {
 	return `${ARTIFACT_PREFIX}/${toSafeRunId(runId)}/${fileName}`;
 }
 
-function buildArtifactUrl(baseUrl: string | undefined, key: string): string | undefined {
-	const trimmed = baseUrl?.trim();
-	if (!trimmed) {
-		return undefined;
-	}
-	return `${trimmed.replace(/\/$/, "")}/${key}`;
-}
-
 function shouldPersistArtifact(run: SandboxRunData): boolean {
 	const logs = run.result?.logs;
 	const diff = run.result?.diff;
@@ -47,33 +40,41 @@ function shouldPersistArtifact(run: SandboxRunData): boolean {
 
 async function putArtifact(params: {
 	serviceContext: ServiceContext;
+	ownerUserId: number;
 	runId: string;
 	fileName: string;
 	contentType: string;
 	content: string;
 }): Promise<RunArtifactDescriptor> {
 	const key = buildArtifactKey(params.runId, params.fileName);
-	await params.serviceContext.env.ASSETS_BUCKET.put(key, params.content, {
-		httpMetadata: {
-			contentType: params.contentType,
-		},
+	const contentSize = new TextEncoder().encode(params.content).byteLength;
+	const storedArtifact = await StorageService.forPrivateAssets(
+		params.serviceContext,
+	).storePrivateAsset({
+		key,
+		data: params.content,
+		ownerUserId: params.ownerUserId,
+		purpose: "sandbox_artifact",
+		mimeType: params.contentType,
+		filename: params.fileName,
+		byteSize: contentSize,
 	});
 	return {
 		name: params.fileName,
 		key,
-		url: buildArtifactUrl(params.serviceContext.env.PUBLIC_ASSETS_URL, key),
+		url: storedArtifact.url,
 		contentType: params.contentType,
-		sizeBytes: new TextEncoder().encode(params.content).byteLength,
+		sizeBytes: contentSize,
 	};
 }
 
 export async function persistSandboxRunArtifact(params: {
 	serviceContext: ServiceContext;
+	ownerUserId: number;
 	run: SandboxRunData;
 }): Promise<SandboxRunData> {
 	const { serviceContext, run } = params;
-	const bucket = serviceContext.env.ASSETS_BUCKET;
-	if (!bucket || !shouldPersistArtifact(run)) {
+	if (!serviceContext.env.PRIVATE_ASSETS_BUCKET || !shouldPersistArtifact(run)) {
 		return run;
 	}
 
@@ -86,6 +87,7 @@ export async function persistSandboxRunArtifact(params: {
 		items.push(
 			await putArtifact({
 				serviceContext,
+				ownerUserId: params.ownerUserId,
 				runId: run.runId,
 				fileName: "logs.txt",
 				contentType: "text/plain; charset=utf-8",
@@ -98,6 +100,7 @@ export async function persistSandboxRunArtifact(params: {
 		items.push(
 			await putArtifact({
 				serviceContext,
+				ownerUserId: params.ownerUserId,
 				runId: run.runId,
 				fileName: "diff.patch",
 				contentType: "text/x-diff; charset=utf-8",
@@ -111,6 +114,7 @@ export async function persistSandboxRunArtifact(params: {
 		items.push(
 			await putArtifact({
 				serviceContext,
+				ownerUserId: params.ownerUserId,
 				runId: run.runId,
 				fileName: "events.ndjson",
 				contentType: "application/x-ndjson",
@@ -123,6 +127,7 @@ export async function persistSandboxRunArtifact(params: {
 		items.push(
 			await putArtifact({
 				serviceContext,
+				ownerUserId: params.ownerUserId,
 				runId: run.runId,
 				fileName: "result.json",
 				contentType: "application/json",
@@ -143,6 +148,7 @@ export async function persistSandboxRunArtifact(params: {
 	};
 	const manifestArtifact = await putArtifact({
 		serviceContext,
+		ownerUserId: params.ownerUserId,
 		runId: run.runId,
 		fileName: "manifest.json",
 		contentType: "application/json",

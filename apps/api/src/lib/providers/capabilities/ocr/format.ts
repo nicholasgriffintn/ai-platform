@@ -1,4 +1,5 @@
-import type { StorageService } from "~/lib/storage";
+import type { ServiceContext } from "~/lib/context/serviceContext";
+import { StorageService } from "~/lib/storage";
 import { convertMarkdownToHtml } from "~/utils/markdown";
 import { escapeRegExp } from "~/utils/strings";
 import type { OcrOutputFormat } from "./types";
@@ -35,17 +36,8 @@ interface PersistOcrOutputOptions {
 	requestId: string;
 	response: OcrApiResponse;
 	outputFormat: OcrOutputFormat;
-	storage: StorageService;
-	publicAssetsUrl?: string;
-}
-
-function buildPublicUrl(key: string, publicAssetsUrl?: string): string {
-	const normalisedKey = key.replace(/^\/+/, "");
-	if (!publicAssetsUrl) {
-		return `/${normalisedKey}`;
-	}
-
-	return `${publicAssetsUrl.replace(/\/$/, "")}/${normalisedKey}`;
+	context: ServiceContext;
+	ownerUserId: number;
 }
 
 function buildHtmlDocument(markdown: string): string {
@@ -122,19 +114,26 @@ export async function persistOcrOutput({
 	requestId,
 	response,
 	outputFormat,
-	storage,
-	publicAssetsUrl,
+	context,
+	ownerUserId,
 }: PersistOcrOutputOptions): Promise<PersistedOcrOutput> {
+	const storage = StorageService.forPrivateAssets(context);
+
 	if (outputFormat === "json") {
 		const content = JSON.stringify(response);
-		const key = await storage.uploadObject(`ocr/${requestId}/output.json`, content, {
-			contentType: "application/json",
-			contentLength: content.length,
+		const storedOutput = await storage.storePrivateAsset({
+			key: `ocr/${requestId}/output.json`,
+			data: content,
+			ownerUserId,
+			purpose: "ocr_output",
+			mimeType: "application/json",
+			filename: "output.json",
+			byteSize: content.length,
 		});
 
 		return {
-			key,
-			url: buildPublicUrl(key, publicAssetsUrl),
+			key: storedOutput.key,
+			url: storedOutput.url,
 			outputFormat,
 		};
 	}
@@ -143,26 +142,36 @@ export async function persistOcrOutput({
 
 	if (outputFormat === "html") {
 		const html = buildHtmlDocument(markdown);
-		const key = await storage.uploadObject(`ocr/${requestId}/output.html`, html, {
-			contentType: "text/html",
-			contentLength: html.length,
+		const storedOutput = await storage.storePrivateAsset({
+			key: `ocr/${requestId}/output.html`,
+			data: html,
+			ownerUserId,
+			purpose: "ocr_output",
+			mimeType: "text/html",
+			filename: "output.html",
+			byteSize: html.length,
 		});
 
 		return {
-			key,
-			url: buildPublicUrl(key, publicAssetsUrl),
+			key: storedOutput.key,
+			url: storedOutput.url,
 			outputFormat,
 		};
 	}
 
-	const key = await storage.uploadObject(`ocr/${requestId}/output.md`, markdown, {
-		contentType: "text/markdown",
-		contentLength: markdown.length,
+	const storedOutput = await storage.storePrivateAsset({
+		key: `ocr/${requestId}/output.md`,
+		data: markdown,
+		ownerUserId,
+		purpose: "ocr_output",
+		mimeType: "text/markdown",
+		filename: "output.md",
+		byteSize: markdown.length,
 	});
 
 	return {
-		key,
-		url: buildPublicUrl(key, publicAssetsUrl),
+		key: storedOutput.key,
+		url: storedOutput.url,
 		outputFormat,
 	};
 }

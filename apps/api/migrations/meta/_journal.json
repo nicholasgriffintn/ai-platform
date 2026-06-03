@@ -309,6 +309,13 @@
       "when": 1780256129342,
       "tag": "0043_chilly_red_wolf",
       "breakpoints": true
+    },
+    {
+      "idx": 44,
+      "version": "6",
+      "when": 1780515363989,
+      "tag": "0044_narrow_grandmaster",
+      "breakpoints": true
     }
   ]
 }

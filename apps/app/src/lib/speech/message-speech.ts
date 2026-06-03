@@ -30,6 +30,7 @@ export function buildMessageSpeech(response: SpeechGenerationResponse): MessageS
 	}
 
 	return {
+		audioAssetId: response.data.audioAssetId,
 		audioBase64: response.data.audioBase64,
 		audioDataUrl: response.data.audioDataUrl,
 		audioKey: response.data.audioKey,

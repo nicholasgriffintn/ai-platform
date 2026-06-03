@@ -50,7 +50,6 @@ export class ElevenLabsAudioProvider extends BaseAudioProvider implements AudioP
 
 		return {
 			key: objectKey,
-			url: this.buildPublicUrl(objectKey, request.env.PUBLIC_ASSETS_URL),
 			metadata: {
 				voice: request.voice,
 			},

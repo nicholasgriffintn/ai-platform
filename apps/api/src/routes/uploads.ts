@@ -5,10 +5,10 @@ import { errorResponseSchema, uploadResponseSchema } from "@assistant/schemas";
 
 import { requireAuth } from "~/middleware/auth";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
+import { getServiceContext } from "~/lib/context/serviceContext";
 import { ResponseFactory } from "~/lib/http/ResponseFactory";
 import { handleFileUpload } from "~/services/uploads";
 import { AssistantError, ErrorType } from "~/utils/errors";
-import type { IEnv } from "../types";
 
 const app = new Hono();
 const routeLogger = createRouteLogger("uploads");
@@ -44,8 +44,6 @@ addRoute(app, "post", "/", {
 	},
 	handler: async ({ raw }) =>
 		(async (context: Context) => {
-			const env = context.env as IEnv;
-
 			let formData: FormData;
 			try {
 				formData = await context.req.formData();
@@ -53,10 +51,9 @@ addRoute(app, "post", "/", {
 				throw new AssistantError("Failed to parse upload data", ErrorType.PARAMS_ERROR, 400);
 			}
 
-			const user = context.get("user");
-			const userId = user?.id;
-
-			const response = await handleFileUpload(env, userId, formData);
+			const serviceContext = getServiceContext(context);
+			const user = serviceContext.requireUser();
+			const response = await handleFileUpload(serviceContext, user.id, formData);
 			return ResponseFactory.success(context, response);
 		})(raw),
 });

@@ -12,6 +12,7 @@ const mockHasUserProviderApiKey = vi.hoisted(() => vi.fn());
 const mockGenerateId = vi.hoisted(() => vi.fn(() => "test-uuid-123"));
 const mockStorageService = vi.hoisted(() => ({
 	uploadObject: vi.fn(),
+	storePrivateAsset: vi.fn(),
 }));
 
 vi.mock("~/utils/logger", () => ({
@@ -37,6 +38,10 @@ vi.mock("~/utils/id", () => ({
 
 vi.mock("~/lib/storage", () => ({
 	StorageService: class {
+		static forPrivateAssets() {
+			return mockStorageService;
+		}
+
 		constructor() {
 			return mockStorageService;
 		}

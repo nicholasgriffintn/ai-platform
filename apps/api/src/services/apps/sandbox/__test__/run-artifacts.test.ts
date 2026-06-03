@@ -34,6 +34,7 @@ describe("run artifacts", () => {
 
 		const persisted = await persistSandboxRunArtifact({
 			serviceContext: context,
+			ownerUserId: 42,
 			run,
 		});
 
@@ -70,6 +71,7 @@ describe("run artifacts", () => {
 
 		const persisted = await persistSandboxRunArtifact({
 			serviceContext: context,
+			ownerUserId: 42,
 			run,
 		});
 

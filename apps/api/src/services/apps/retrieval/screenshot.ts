@@ -1,7 +1,8 @@
-import { StorageService } from "~/lib/storage";
 import type { IRequest } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
+import { resolveServiceContext } from "~/lib/context/serviceContext";
+import { StorageService } from "~/lib/storage";
 
 export interface CaptureScreenshotParams {
 	url?: string;
@@ -33,6 +34,7 @@ export interface CaptureScreenshotResult {
 	error?: string;
 	data?: {
 		url?: string;
+		assetId: string;
 		screenshotUrl: string;
 		key: string;
 	};
@@ -111,18 +113,33 @@ export const captureScreenshot = async (
 
 		const imageBuffer = await response.arrayBuffer();
 
-		const storageService = new StorageService(req.env.ASSETS_BUCKET);
-		await storageService.uploadObject(imageKey, imageBuffer, {
-			contentType: "image/png",
-			contentLength: imageBuffer.byteLength,
+		if (!req.user?.id) {
+			throw new AssistantError("User data required", ErrorType.AUTHENTICATION_ERROR);
+		}
+
+		const serviceContext = resolveServiceContext({
+			context: req.context,
+			env: req.env,
+			user: req.user,
+		});
+		const storedScreenshot = await StorageService.forPrivateAssets(
+			serviceContext,
+		).storePrivateAsset({
+			key: imageKey,
+			data: imageBuffer,
+			ownerUserId: req.user.id,
+			purpose: "app_artifact",
+			mimeType: "image/png",
+			filename: "screenshot.png",
+			byteSize: imageBuffer.byteLength,
 		});
 
-		const baseAssetsUrl = req.env.PUBLIC_ASSETS_URL || "";
 		return {
 			status: "success",
 			data: {
 				url: params.url,
-				screenshotUrl: `${baseAssetsUrl}/${imageKey}`,
+				assetId: storedScreenshot.assetId,
+				screenshotUrl: storedScreenshot.url,
 				key: imageKey,
 			},
 		};

@@ -24,6 +24,7 @@ export type IEnv = {
 	MEMORY_SYNTHESIS_ENABLED?: string;
 	TRAINING_QUALITY_SCORING_ENABLED?: string;
 	ASSETS_BUCKET: any;
+	PRIVATE_ASSETS_BUCKET: any;
 	ACCOUNT_ID: string;
 	APP_BASE_URL?: string;
 	API_BASE_URL?: string;

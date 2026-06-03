@@ -35,14 +35,6 @@ export abstract class BaseAudioProvider implements AudioProvider {
 		return key.replace(/\/{2,}/g, "/");
 	}
 
-	protected buildPublicUrl(key: string, envBase?: string): string | undefined {
-		if (!envBase) {
-			return undefined;
-		}
-
-		return `${envBase.replace(/\/$/, "")}/${key}`;
-	}
-
 	protected buildAudioDataUrl(buffer: ArrayBuffer, mimeType = "audio/mpeg"): string {
 		return `data:${mimeType};base64,${bufferToBase64(buffer)}`;
 	}

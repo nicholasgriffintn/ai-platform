@@ -2,7 +2,8 @@ import { gatewayId } from "~/constants/app";
 import { getModelConfigByMatchingModel } from "~/lib/providers/models";
 import { trackProviderMetrics } from "~/lib/monitoring";
 import { StorageService } from "~/lib/storage";
-import { uploadAudioFromChat, uploadImageFromChat } from "~/lib/upload";
+import { persistGeneratedOutput } from "~/lib/storage/generated-media";
+import { RepositoryManager } from "~/repositories";
 import type { ChatCompletionParameters, ModelConfigItem } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
@@ -16,6 +17,21 @@ import { BaseProvider } from "./base";
 import { getAiGatewayMetadataHeaders } from "~/utils/aiGateway";
 
 const logger = getLogger({ prefix: "lib/providers/workers" });
+
+function getAssetIdFromUrl(url: string, apiBaseUrl?: string): string | undefined {
+	const trimmedApiBaseUrl = apiBaseUrl?.replace(/\/$/, "");
+	const relativePrefix = "/assets/";
+
+	if (trimmedApiBaseUrl && url.startsWith(`${trimmedApiBaseUrl}${relativePrefix}`)) {
+		return url.slice(`${trimmedApiBaseUrl}${relativePrefix}`.length).split(/[?#/]/)[0];
+	}
+
+	if (url.startsWith(relativePrefix)) {
+		return url.slice(relativePrefix.length).split(/[?#/]/)[0];
+	}
+
+	return undefined;
+}
 
 function getModalityFlags(modelConfig?: ModelConfigItem) {
 	const inputs = modelConfig?.modalities?.input ?? ["text"];
@@ -171,8 +187,21 @@ export class WorkersProvider extends BaseProvider {
 								);
 							}
 
-							const imageKeyFromUrl = imageContent.replace(assetsUrl, "");
-							const retrievedImageData = await storageService?.getObject(imageKeyFromUrl);
+							const assetId = getAssetIdFromUrl(imageContent, assetsUrl);
+							if (!assetId) {
+								throw new AssistantError(
+									"Image URL must be a stored asset URL",
+									ErrorType.PARAMS_ERROR,
+								);
+							}
+
+							const repositories = new RepositoryManager(params.env);
+							const asset = await repositories.storedAssets.getAsset(assetId);
+							if (!asset) {
+								throw new AssistantError("Image asset not found", ErrorType.NOT_FOUND, 404);
+							}
+
+							const retrievedImageData = await storageService?.getObject(asset.key);
 							base64Data = retrievedImageData;
 						} else {
 							base64Data = imageContent;
@@ -334,8 +363,8 @@ export class WorkersProvider extends BaseProvider {
 			throw new AssistantError("Missing model", ErrorType.PARAMS_ERROR);
 		}
 
-		const storageService = new StorageService(env.ASSETS_BUCKET);
-		const body = await this.mapParameters(params, storageService, env.PUBLIC_ASSETS_URL);
+		const storageService = new StorageService(env.PRIVATE_ASSETS_BUCKET);
+		const body = await this.mapParameters(params, storageService, env.API_BASE_URL);
 
 		return trackProviderMetrics({
 			provider: "workers-ai",
@@ -363,19 +392,27 @@ export class WorkersProvider extends BaseProvider {
 					responseFlags.isImageToImage
 				) {
 					try {
-						const imageKey = `generations/${params.completion_id}/${model}/${Date.now()}.png`;
-						const upload = await uploadImageFromChat(
-							// @ts-ignore
-							modelResponse.image || modelResponse,
-							env,
-							imageKey,
-						);
-
-						if (!upload) {
-							throw new AssistantError("Failed to upload image", ErrorType.PROVIDER_ERROR);
+						if (!params.user?.id) {
+							throw new AssistantError(
+								"User ID is required to store generated image",
+								ErrorType.FORBIDDEN,
+								403,
+							);
 						}
-
-						const baseAssetsUrl = env.PUBLIC_ASSETS_URL || "";
+						const storedImage = await persistGeneratedOutput({
+							mediaContext: {
+								env,
+								model,
+								completionId: params.completion_id,
+								userId: params.user.id,
+							},
+							// @ts-ignore
+							output: modelResponse.image || modelResponse,
+							extension: "png",
+							mimeType: "image/png",
+							filename: "image.png",
+							dataUrlMimePattern: "image\\/\\w+",
+						});
 
 						const imageResponse = {
 							response: "Image Generated.",
@@ -383,8 +420,9 @@ export class WorkersProvider extends BaseProvider {
 								attachments: [
 									{
 										type: "image",
-										url: `${baseAssetsUrl}/${imageKey}`,
-										key: upload,
+										assetId: storedImage.assetId,
+										url: storedImage.url,
+										key: storedImage.key,
 									},
 								],
 							},
@@ -405,19 +443,27 @@ export class WorkersProvider extends BaseProvider {
 					(modelResponse && responseFlags.isTextToSpeech)
 				) {
 					try {
-						const audioKey = `generations/${params.completion_id}/${model}/${Date.now()}.mp3`;
-						const upload = await uploadAudioFromChat(
-							// @ts-ignore
-							modelResponse.audio || modelResponse,
-							env,
-							audioKey,
-						);
-
-						if (!upload) {
-							throw new AssistantError("Failed to upload audio", ErrorType.PROVIDER_ERROR);
+						if (!params.user?.id) {
+							throw new AssistantError(
+								"User ID is required to store generated audio",
+								ErrorType.FORBIDDEN,
+								403,
+							);
 						}
-
-						const baseAssetsUrl = env.PUBLIC_ASSETS_URL || "";
+						const storedAudio = await persistGeneratedOutput({
+							mediaContext: {
+								env,
+								model,
+								completionId: params.completion_id,
+								userId: params.user.id,
+							},
+							// @ts-ignore
+							output: modelResponse.audio || modelResponse,
+							extension: "mp3",
+							mimeType: "audio/mpeg",
+							filename: "audio.mp3",
+							dataUrlMimePattern: "audio\\/\\w+",
+						});
 
 						const audioResponse = {
 							response: "Audio Generated.",
@@ -425,8 +471,9 @@ export class WorkersProvider extends BaseProvider {
 								attachments: [
 									{
 										type: "audio",
-										url: `${baseAssetsUrl}/${audioKey}`,
-										key: upload,
+										assetId: storedAudio.assetId,
+										url: storedAudio.url,
+										key: storedAudio.key,
 									},
 								],
 							},

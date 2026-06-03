@@ -34,6 +34,7 @@ export function useAutoPlayResponses({
 
 	const playAudioSource = useCallback((audioSource: string) => {
 		const audio = new Audio(audioSource);
+		audio.crossOrigin = "use-credentials";
 		audioRef.current = audio;
 		audio.onended = () => setIsPlaying(false);
 		audio.onerror = () => {

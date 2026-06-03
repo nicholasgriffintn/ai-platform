@@ -3,12 +3,12 @@ import {
 	markdownConversionOptionsSchema,
 } from "@assistant/schemas";
 
-import { convertToMarkdownViaCloudflare } from "~/lib/documentConverter";
-import { StorageService } from "~/lib/storage";
-import type { IEnv } from "~/types";
+import { convertBlobToMarkdownViaCloudflare } from "~/lib/documentConverter";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 import { generateId } from "~/utils/id";
+import type { ServiceContext } from "~/lib/context/serviceContext";
+import { StorageService, type StoredAssetResult } from "~/lib/storage";
 
 const logger = getLogger({ prefix: "services/uploads" });
 
@@ -113,11 +113,13 @@ function buildMarkdownConversionOptions(
 }
 
 export async function handleFileUpload(
-	env: IEnv,
+	context: ServiceContext,
 	userId: number,
 	formData: FormData,
 ): Promise<{
+	assetId: string;
 	url: string;
+	key: string;
 	type: string;
 	name: string;
 	markdown?: string;
@@ -232,14 +234,17 @@ export async function handleFileUpload(
 		throw new AssistantError("Failed to process file data", ErrorType.UNKNOWN_ERROR, 500);
 	}
 
+	let storedAsset: StoredAssetResult;
 	try {
-		const storageService = new StorageService(env.ASSETS_BUCKET);
-		const uploaded = await storageService.uploadObject(key, arrayBuffer, {
-			contentType: file.type,
+		storedAsset = await StorageService.forPrivateAssets(context).storePrivateAsset({
+			key,
+			data: arrayBuffer,
+			ownerUserId: userId,
+			purpose: "chat_upload",
+			mimeType: file.type,
+			filename: file.name,
+			byteSize: file.size,
 		});
-		if (!uploaded) {
-			throw new AssistantError("Failed to upload file to storage", ErrorType.STORAGE_ERROR);
-		}
 	} catch (storageError) {
 		logger.error("Failed to upload file to storage", {
 			error: storageError instanceof Error ? storageError.message : String(storageError),
@@ -249,8 +254,7 @@ export async function handleFileUpload(
 		throw new AssistantError("Failed to store file", ErrorType.EXTERNAL_API_ERROR, 500);
 	}
 
-	const baseUrl = env.PUBLIC_ASSETS_URL ?? "";
-	const fileUrl = `${baseUrl}/${key}`;
+	const fileUrl = storedAsset.url;
 	const effectiveConversionOptions = shouldConvert
 		? buildMarkdownConversionOptions(file.type, fileUrl, conversionOptions)
 		: undefined;
@@ -258,9 +262,9 @@ export async function handleFileUpload(
 	let markdownContent = "";
 	if (shouldConvert) {
 		try {
-			const { result, error } = await convertToMarkdownViaCloudflare(
-				env,
-				fileUrl,
+			const { result, error } = await convertBlobToMarkdownViaCloudflare(
+				context.env,
+				file,
 				file.name,
 				effectiveConversionOptions,
 			);
@@ -291,12 +295,16 @@ export async function handleFileUpload(
 	}
 
 	const response: {
+		assetId: string;
 		url: string;
+		key: string;
 		type: string;
 		name: string;
 		markdown?: string;
 	} = {
+		assetId: storedAsset.assetId,
 		url: fileUrl,
+		key: storedAsset.key,
 		type: markdownContent ? "markdown_document" : fileType,
 		name: file.name,
 	};

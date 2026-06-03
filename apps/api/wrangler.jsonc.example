@@ -89,6 +89,12 @@
 			"bucket_name": "assistant-assets",
 			"preview_bucket_name": "assistant-assets",
 			"remote": true
+		},
+		{
+			"binding": "PRIVATE_ASSETS_BUCKET",
+			"bucket_name": "assistant-private-assets",
+			"preview_bucket_name": "assistant-private-assets",
+			"remote": true
 		}
 	],
 	"d1_databases": [

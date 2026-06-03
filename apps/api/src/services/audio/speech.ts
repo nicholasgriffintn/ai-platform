@@ -1,4 +1,6 @@
 import { StorageService } from "~/lib/storage";
+import type { ServiceContext } from "~/lib/context/serviceContext";
+import { resolveServiceContext } from "~/lib/context/serviceContext";
 import { getAudioProvider } from "~/lib/providers/capabilities/audio";
 import type { IEnv, IFunctionResponse, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -30,6 +32,7 @@ type TextToSpeechRequest = {
 	voice_id?: string;
 	ref_audio?: string;
 	response_format?: AudioResponseFormat;
+	context?: ServiceContext;
 };
 
 function isSpeechProvider(provider: unknown): provider is SpeechProvider {
@@ -92,8 +95,8 @@ export const handleTextToSpeech = async (
 	}
 
 	const preparedInput = prepareSpeechInput(input, speechSettings.provider);
-	const storage = store ? new StorageService(env.ASSETS_BUCKET) : undefined;
-	const slug = `tts/${encodeURIComponent(user?.email || "unknown").replace(/[^a-zA-Z0-9]/g, "-")}-${generateId()}`;
+	const storage = store ? new StorageService(env.PRIVATE_ASSETS_BUCKET) : undefined;
+	const slug = `tts/${generateId()}`;
 
 	const audioProvider = getAudioProvider(speechSettings.provider, { env, user });
 	const synthesisResult = await audioProvider.synthesize({
@@ -115,16 +118,23 @@ export const handleTextToSpeech = async (
 	}
 
 	const audioKey = synthesisResult.key;
-
-	const baseAssetsUrl = env.PUBLIC_ASSETS_URL || "";
 	const normalizedKey = audioKey?.replace(/^\//, "");
-	const audioUrl =
-		synthesisResult.url ||
-		(normalizedKey
-			? baseAssetsUrl
-				? `${baseAssetsUrl.replace(/\/$/, "")}/${normalizedKey}`
-				: `/${normalizedKey}`
-			: undefined);
+	let audioAssetId: string | undefined;
+	let audioUrl = synthesisResult.url;
+
+	if (store !== false && normalizedKey && !audioUrl) {
+		const storedAsset = await StorageService.forPrivateAssets(
+			resolveServiceContext({ context: req.context, env, user }),
+		).recordPrivateAsset({
+			key: normalizedKey,
+			ownerUserId: user.id,
+			purpose: "speech",
+			mimeType: synthesisResult.audioMimeType || "audio/mpeg",
+			filename: normalizedKey.split("/").at(-1) ?? null,
+		});
+		audioAssetId = storedAsset.assetId;
+		audioUrl = storedAsset.url;
+	}
 	const responseText = synthesisResult.response;
 	const metadata =
 		preparedInput.metadata || synthesisResult.metadata
@@ -154,6 +164,7 @@ export const handleTextToSpeech = async (
 		data: {
 			provider: speechSettings.provider,
 			model: speechSettings.model,
+			audioAssetId,
 			audioKey,
 			audioUrl,
 			audioBase64: synthesisResult.audioBase64,
