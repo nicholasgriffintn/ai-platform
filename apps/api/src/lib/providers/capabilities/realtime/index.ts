@@ -6,6 +6,21 @@ import type { RealtimeModality, RealtimeTransport } from "./modalities";
 export type RealtimeSessionType = "realtime" | "translation" | "transcription";
 export type RealtimeTranscriptionDelay = "minimal" | "low" | "medium" | "high" | "xhigh";
 
+export function parseRealtimeTranscriptionDelay(
+	delay?: string,
+): RealtimeTranscriptionDelay | undefined {
+	switch (delay) {
+		case "minimal":
+		case "low":
+		case "medium":
+		case "high":
+		case "xhigh":
+			return delay;
+		default:
+			return undefined;
+	}
+}
+
 export interface RealtimeSessionRequest {
 	env: IEnv;
 	user: IUser;

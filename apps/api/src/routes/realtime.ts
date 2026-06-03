@@ -16,8 +16,8 @@ import {
 	getRealtimeProvider,
 	listRealtimeProviders,
 	parseRealtimeModalities,
+	parseRealtimeTranscriptionDelay,
 	parseRealtimeTransport,
-	type RealtimeTranscriptionDelay,
 } from "~/lib/providers/capabilities/realtime";
 import { userCanAccessRealtimeModel } from "~/services/realtime/access";
 import { createCartesiaRealtimeProxyResponse } from "~/services/realtime/cartesia";
@@ -25,7 +25,19 @@ import { createElevenLabsRealtimeProxyResponse } from "~/services/realtime/eleve
 import { createMistralRealtimeProxyResponse } from "~/services/realtime/mistral";
 import { createRealtimePipelineSession } from "~/services/realtime/pipeline";
 
-const app = new Hono();
+type RealtimeRouteContext = Context<{
+	Bindings: IEnv;
+	Variables: {
+		user?: IUser;
+	};
+}>;
+
+const app = new Hono<{
+	Bindings: IEnv;
+	Variables: {
+		user?: IUser;
+	};
+}>();
 const routeLogger = createRouteLogger("realtime");
 
 app.use("/*", (c, next) => {
@@ -61,8 +73,8 @@ addRoute(app, "post", "/session/:type", {
 		400: { description: "Bad request", schema: errorResponseSchema },
 	},
 	handler: async ({ raw }) =>
-		(async (c: Context) => {
-			const env = c.env as IEnv;
+		(async (c: RealtimeRouteContext) => {
+			const env = c.env;
 			const user = c.get("user");
 			const type = c.req.param("type");
 			const model = c.req.query("model");
@@ -71,7 +83,7 @@ addRoute(app, "post", "/session/:type", {
 			const targetLanguage = c.req.query("target_language");
 			const voice = c.req.query("voice");
 			const instructions = c.req.query("instructions");
-			const delay = c.req.query("delay") as RealtimeTranscriptionDelay | undefined;
+			const delay = parseRealtimeTranscriptionDelay(c.req.query("delay"));
 			const transportQuery = c.req.query("transport");
 			const inputModalitiesQuery = c.req.query("input_modalities");
 			const outputModalitiesQuery =
@@ -163,12 +175,6 @@ addRoute(app, "post", "/pipeline/session", {
 	},
 	handler: async ({ body, raw, serviceContext, user }) =>
 		(async (c: Context) => {
-			const providers = listRealtimeProviders();
-
-			if (!providers.includes(body.input.provider)) {
-				return ResponseFactory.error(c, "Invalid input provider specified", 400);
-			}
-
 			const result = await createRealtimePipelineSession({
 				env: serviceContext.env,
 				request: body,
@@ -183,16 +189,16 @@ addRoute(app, "post", "/pipeline/session", {
 		})(raw),
 });
 
-app.get("/mistral/transcription", async (c: Context) => {
-	const env = c.env as IEnv;
-	const user = c.get("user") as IUser | undefined;
+app.get("/mistral/transcription", async (c) => {
+	const env = c.env;
+	const user = c.get("user");
 
 	if (!user?.id) {
 		return ResponseFactory.error(c, "Unauthorized", 401);
 	}
 
 	const model = c.req.query("model");
-	const delay = c.req.query("delay") as RealtimeTranscriptionDelay | undefined;
+	const delay = parseRealtimeTranscriptionDelay(c.req.query("delay"));
 
 	return createMistralRealtimeProxyResponse({
 		context: c,
@@ -203,9 +209,9 @@ app.get("/mistral/transcription", async (c: Context) => {
 	});
 });
 
-app.get("/elevenlabs/transcription", async (c: Context) => {
-	const env = c.env as IEnv;
-	const user = c.get("user") as IUser | undefined;
+app.get("/elevenlabs/transcription", async (c) => {
+	const env = c.env;
+	const user = c.get("user");
 
 	if (!user?.id) {
 		return ResponseFactory.error(c, "Unauthorized", 401);
@@ -220,9 +226,9 @@ app.get("/elevenlabs/transcription", async (c: Context) => {
 	});
 });
 
-app.get("/cartesia/transcription", async (c: Context) => {
-	const env = c.env as IEnv;
-	const user = c.get("user") as IUser | undefined;
+app.get("/cartesia/transcription", async (c) => {
+	const env = c.env;
+	const user = c.get("user");
 
 	if (!user?.id) {
 		return ResponseFactory.error(c, "Unauthorized", 401);

@@ -127,6 +127,10 @@ export function useHomeChatModeConfig(): {
 				return;
 			}
 
+			if (!composedReasoningModel) {
+				return;
+			}
+
 			void respondToExistingConversation(conversationId, {
 				assistantMessageData,
 				model: composedReasoningModel,

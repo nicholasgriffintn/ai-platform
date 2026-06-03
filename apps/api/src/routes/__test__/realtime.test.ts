@@ -18,6 +18,7 @@ vi.mock("~/lib/providers/capabilities/realtime", () => ({
 	})),
 	listRealtimeProviders: vi.fn(() => ["openai", "mistral"]),
 	parseRealtimeModalities: vi.fn(() => undefined),
+	parseRealtimeTranscriptionDelay: vi.fn(() => undefined),
 	parseRealtimeTransport: vi.fn(() => undefined),
 }));
 
@@ -37,7 +38,7 @@ vi.mock("~/services/realtime/cartesia", () => ({
 	createCartesiaRealtimeProxyResponse: createCartesiaRealtimeProxyResponseMock,
 }));
 
-const testUser = {
+const testUser: IUser = {
 	id: 42,
 	name: "Test User",
 	avatar_url: null,
@@ -53,13 +54,17 @@ const testUser = {
 	setup_at: null,
 	terms_accepted_at: null,
 	plan_id: "free",
-} satisfies IUser;
+};
 
 function createApp(user: IUser = testUser) {
-	const app = new Hono();
+	const app = new Hono<{
+		Variables: {
+			user: IUser;
+		};
+	}>();
 
 	app.use("/realtime/*", async (c, next) => {
-		(c as any).set("user", user);
+		c.set("user", user);
 		await next();
 	});
 
@@ -179,6 +184,106 @@ describe("realtime routes", () => {
 		await expect(response.json()).resolves.toEqual({
 			status: "error",
 			message: "Output model not found or user does not have access",
+		});
+		expect(createSessionMock).not.toHaveBeenCalled();
+	});
+
+	it("blocks composed pipeline creation when any stage provider does not match its model", async () => {
+		listModelsMock.mockResolvedValue({
+			"voxtral-mini-transcribe-realtime": {
+				matchingModel: "voxtral-mini-transcribe-realtime-2602",
+				name: "Voxtral Mini Transcribe Realtime",
+				provider: "mistral",
+			},
+			"deepseek-chat": {
+				matchingModel: "deepseek-chat",
+				name: "DeepSeek Chat",
+				provider: "deepseek",
+			},
+			"sonic-3": {
+				matchingModel: "sonic-3",
+				name: "Sonic 3",
+				provider: "cartesia",
+			},
+		});
+
+		const response = await createApp().request(
+			new Request("https://api.polychat.test/realtime/pipeline/session", {
+				method: "POST",
+				body: JSON.stringify({
+					input: {
+						provider: "mistral",
+						model: "voxtral-mini-transcribe-realtime",
+					},
+					reasoning: {
+						provider: "bogus",
+						model: "deepseek-chat",
+					},
+					output: {
+						provider: "cartesia",
+						model: "sonic-3",
+					},
+				}),
+				headers: {
+					"content-type": "application/json",
+				},
+			}),
+		);
+
+		expect(response.status).toBe(400);
+		await expect(response.json()).resolves.toEqual({
+			status: "error",
+			message: "Reasoning model does not belong to bogus",
+		});
+		expect(createSessionMock).not.toHaveBeenCalled();
+	});
+
+	it("blocks composed pipeline creation when a stage model belongs to another provider", async () => {
+		listModelsMock.mockResolvedValue({
+			"voxtral-mini-transcribe-realtime": {
+				matchingModel: "voxtral-mini-transcribe-realtime-2602",
+				name: "Voxtral Mini Transcribe Realtime",
+				provider: "mistral",
+			},
+			"deepseek-chat": {
+				matchingModel: "deepseek-chat",
+				name: "DeepSeek Chat",
+				provider: "deepseek",
+			},
+			"sonic-3": {
+				matchingModel: "sonic-3",
+				name: "Sonic 3",
+				provider: "cartesia",
+			},
+		});
+
+		const response = await createApp().request(
+			new Request("https://api.polychat.test/realtime/pipeline/session", {
+				method: "POST",
+				body: JSON.stringify({
+					input: {
+						provider: "mistral",
+						model: "voxtral-mini-transcribe-realtime",
+					},
+					reasoning: {
+						provider: "deepseek",
+						model: "deepseek-chat",
+					},
+					output: {
+						provider: "mistral",
+						model: "sonic-3",
+					},
+				}),
+				headers: {
+					"content-type": "application/json",
+				},
+			}),
+		);
+
+		expect(response.status).toBe(400);
+		await expect(response.json()).resolves.toEqual({
+			status: "error",
+			message: "Output model does not belong to mistral",
 		});
 		expect(createSessionMock).not.toHaveBeenCalled();
 	});

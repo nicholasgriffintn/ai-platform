@@ -3,6 +3,7 @@ import { isValidElement } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { ModelConfig, ModelConfigItem } from "~/types";
+import type { FinalLiveInputTranscript } from "~/hooks/useLiveConversationMessages";
 import { useHomeChatModeConfig } from "./useHomeChatModeConfig";
 
 const setSearchParams = vi.fn();
@@ -14,8 +15,10 @@ const setSelectedAgentId = vi.fn();
 const setLiveProvider = vi.fn();
 const stopLiveSession = vi.fn();
 const flushLiveMessages = vi.fn();
+const respondToExistingConversation = vi.fn();
 const typedSetSearchParams: ReturnType<typeof vi.fn<(params: URLSearchParams) => void>> =
 	setSearchParams;
+let finalLiveInputTranscriptHandler: ((transcript: FinalLiveInputTranscript) => void) | undefined;
 
 let searchParams = new URLSearchParams("mode=live");
 const deepseekModel: ModelConfigItem = {
@@ -64,16 +67,24 @@ vi.mock("~/hooks/useChat", () => ({
 
 vi.mock("~/hooks/useChatManager", () => ({
 	useChatManager: () => ({
-		respondToExistingConversation: vi.fn(),
+		respondToExistingConversation,
 	}),
 }));
 
 vi.mock("~/hooks/useLiveConversationMessages", () => ({
-	useLiveConversationMessages: () => ({
-		flushLiveMessages,
-		handleRealtimeEvent: vi.fn(),
-		handleTranscript: vi.fn(),
-	}),
+	useLiveConversationMessages: ({
+		onFinalInputTranscript,
+	}: {
+		onFinalInputTranscript: (transcript: FinalLiveInputTranscript) => void;
+	}) => {
+		finalLiveInputTranscriptHandler = onFinalInputTranscript;
+
+		return {
+			flushLiveMessages,
+			handleRealtimeEvent: vi.fn(),
+			handleTranscript: vi.fn(),
+		};
+	},
 }));
 
 vi.mock("~/hooks/useModels", () => ({
@@ -131,6 +142,9 @@ describe("useHomeChatModeConfig", () => {
 		chatStoreState.homeChatMode = "live";
 		chatStoreState.model = "voxtral-mini-transcribe-realtime";
 		liveSessionState.provider = "mistral";
+		finalLiveInputTranscriptHandler = undefined;
+		models["deepseek-chat"] = deepseekModel;
+		models["voxtral-mini-transcribe-realtime"] = voxtralModel;
 	});
 
 	it("offers chat and live models from live mode", () => {
@@ -179,6 +193,57 @@ describe("useHomeChatModeConfig", () => {
 		const { result } = renderHook(() => useHomeChatModeConfig());
 
 		expect(result.current.modeConfig.forceAutoPlayResponses).toBe(false);
+	});
+
+	it("does not compose live transcript responses until a reasoning chat model is available", () => {
+		delete models["deepseek-chat"];
+
+		renderHook(() => useHomeChatModeConfig());
+
+		act(() => {
+			finalLiveInputTranscriptHandler?.({
+				assistantMessageData: {
+					data: {
+						speech: {
+							generatedAt: 1780520000000,
+						},
+					},
+				},
+				conversationId: "conversation-1",
+				text: "What is this?",
+			});
+		});
+
+		expect(respondToExistingConversation).not.toHaveBeenCalled();
+	});
+
+	it("composes live transcript responses with the resolved reasoning chat model", () => {
+		renderHook(() => useHomeChatModeConfig());
+
+		act(() => {
+			finalLiveInputTranscriptHandler?.({
+				assistantMessageData: {
+					data: {
+						speech: {
+							generatedAt: 1780520000000,
+						},
+					},
+				},
+				conversationId: "conversation-1",
+				text: "What is this?",
+			});
+		});
+
+		expect(respondToExistingConversation).toHaveBeenCalledWith("conversation-1", {
+			assistantMessageData: {
+				data: {
+					speech: {
+						generatedAt: 1780520000000,
+					},
+				},
+			},
+			model: "deepseek-chat",
+		});
 	});
 
 	it("switches to live mode when a realtime model is selected", () => {
