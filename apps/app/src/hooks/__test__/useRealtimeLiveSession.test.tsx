@@ -704,7 +704,7 @@ describe("useRealtimeLiveSession", () => {
 			microphoneChunkHandler?.(createPcm16TestAudioBuffer(0.08));
 		});
 		act(() => {
-			vi.advanceTimersByTime(499);
+			vi.advanceTimersByTime(419);
 		});
 		expect(connection.sendJson).not.toHaveBeenCalledWith({ type: "input_audio.flush" });
 

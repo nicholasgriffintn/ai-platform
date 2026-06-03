@@ -79,6 +79,30 @@ describe("live realtime providers", () => {
 		).toBe("deepseek-chat");
 	});
 
+	it("prefers the default chat model over object order for composed realtime reasoning", () => {
+		expect(
+			getComposedRealtimeReasoningModelId(
+				{
+					o1: {
+						id: "o1",
+						matchingModel: "o1",
+						name: "o1",
+						provider: "openai",
+						modalities: { input: ["text"], output: ["text"] },
+					},
+					"deepseek-chat": {
+						id: "deepseek-chat",
+						matchingModel: "deepseek-chat",
+						name: "DeepSeek Chat",
+						provider: "deepseek",
+						modalities: { input: ["text"], output: ["text"] },
+					},
+				},
+				"voxtral-mini-transcribe-realtime",
+			),
+		).toBe("deepseek-chat");
+	});
+
 	it("waits for transcription done events before closing providers that finalise on stop", () => {
 		expect(
 			getRealtimeLiveProviderOption("mistral").websocket?.audioInput?.waitForFinalEventTypeOnStop,
@@ -99,9 +123,10 @@ describe("live realtime providers", () => {
 
 		expect(audioInput?.commitMessages).toEqual([{ type: "input_audio.flush" }]);
 		expect(audioInput?.commitOnSilence).toEqual({
-			levelThreshold: 0.06,
+			continueLevelThreshold: 0.045,
 			minSpeechMs: 220,
-			silenceMs: 500,
+			silenceMs: 420,
+			startLevelThreshold: 0.075,
 		});
 		expect(audioInput?.endMessages).toEqual([
 			{ type: "input_audio.flush" },

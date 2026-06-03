@@ -31,6 +31,12 @@ import {
 	type MediaStreamAudioLevelMeter,
 } from "~/lib/realtime/audio-levels";
 import {
+	createAudioCommitGateState,
+	observeAudioCommitGateSpeech,
+	resetAudioCommitGate,
+	shouldCommitAudioGate,
+} from "~/lib/realtime/audio-commit-gate";
+import {
 	extractRealtimeErrorMessage,
 	extractRealtimeEvent,
 	extractRealtimeEventLabel,
@@ -128,10 +134,8 @@ export function useRealtimeLiveSession({
 	const inputAudioMeterRef = useRef<MediaStreamAudioLevelMeter | null>(null);
 	const inputVideoControllerRef = useRef<RealtimeMediaController | null>(null);
 	const finalizingConnectionRef = useRef<RealtimeWebSocketConnection | null>(null);
-	const lastSpeechAtRef = useRef(0);
+	const audioCommitGateRef = useRef(createAudioCommitGateState());
 	const silenceCommitTimeoutRef = useRef<number | null>(null);
-	const speechStartedAtRef = useRef(0);
-	const turnHasAudioSinceCommitRef = useRef(false);
 	const audioStreamRef = useRef<MediaStream | null>(null);
 	const outputAudioLevelResetRef = useRef<number | null>(null);
 	const outputAudioMeterRef = useRef<MediaStreamAudioLevelMeter | null>(null);
@@ -188,9 +192,7 @@ export function useRealtimeLiveSession({
 
 	const resetAudioTurnDetection = useCallback(() => {
 		clearSilenceCommitTimer();
-		lastSpeechAtRef.current = 0;
-		speechStartedAtRef.current = 0;
-		turnHasAudioSinceCommitRef.current = false;
+		resetAudioCommitGate(audioCommitGateRef.current);
 	}, [clearSilenceCommitTimer]);
 
 	const resetOutputAudioLevelSoon = useCallback(() => {
@@ -236,15 +238,15 @@ export function useRealtimeLiveSession({
 
 			const now = Date.now();
 			const level = calculatePcm16AudioLevel(chunk);
-			if (level < config.levelThreshold) {
+			if (
+				!observeAudioCommitGateSpeech(audioCommitGateRef.current, config, {
+					level,
+					now,
+				})
+			) {
 				return;
 			}
 
-			if (!turnHasAudioSinceCommitRef.current) {
-				speechStartedAtRef.current = now;
-			}
-			lastSpeechAtRef.current = now;
-			turnHasAudioSinceCommitRef.current = true;
 			clearSilenceCommitTimer();
 
 			silenceCommitTimeoutRef.current = window.setTimeout(() => {
@@ -252,16 +254,11 @@ export function useRealtimeLiveSession({
 				if (
 					connectionRef.current !== connection ||
 					stoppingRef.current ||
-					!turnHasAudioSinceCommitRef.current ||
-					Date.now() - lastSpeechAtRef.current < config.silenceMs ||
-					lastSpeechAtRef.current - speechStartedAtRef.current < config.minSpeechMs
+					!shouldCommitAudioGate(audioCommitGateRef.current, config, Date.now())
 				) {
 					return;
 				}
 
-				turnHasAudioSinceCommitRef.current = false;
-				speechStartedAtRef.current = 0;
-				lastSpeechAtRef.current = 0;
 				sendConfiguredAudioCommit(connection);
 			}, config.silenceMs);
 		},
