@@ -4,6 +4,7 @@ import { StorageService } from "~/lib/storage";
 import { base64ToBuffer } from "~/utils/base64";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getExtensionFromMimeType } from "~/utils/mime";
+import { generateId } from "~/utils/id";
 
 export interface GeneratedMediaContext {
 	context?: ServiceContext;
@@ -80,7 +81,7 @@ function requireUserId(mediaContext: GeneratedMediaContext): number {
 function buildGeneratedAssetKey(mediaContext: GeneratedMediaContext, extension: string): string {
 	const completion = mediaContext.completionId || "completion";
 	const model = mediaContext.model || "model";
-	const unique = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+	const unique = `${Date.now()}-${generateId()}`;
 	return `generations/${completion}/${model}/${unique}.${extension}`;
 }
 
