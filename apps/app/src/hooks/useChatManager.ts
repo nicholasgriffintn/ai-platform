@@ -15,6 +15,7 @@ import type { AttachmentData } from "~/lib/chat/attachments";
 import { normalizeSelectedModel } from "~/lib/chat/model-selection";
 import { prepareUserMessage } from "~/lib/chat/prepare-user-message";
 import { createConversationId } from "~/lib/conversations";
+import { getErrorMessage } from "~/lib/errors";
 import { normalizeMessage } from "~/lib/messages";
 import { useLoadingActions } from "~/state/contexts/LoadingContext";
 import { useChatStore } from "~/state/stores/chatStore";
@@ -198,6 +199,42 @@ export function useChatManager(
 		],
 	);
 
+	const respondToExistingConversation = useCallback(
+		async (
+			conversationId: string,
+			options?: { assistantMessageData?: Partial<Message>; model?: string },
+		) => {
+			const conversation = queryClient.getQueryData<Conversation>([
+				CHATS_QUERY_KEY,
+				conversationId,
+			]);
+
+			if (!conversation?.messages.length) {
+				return {
+					status: "error",
+					response: "No messages provided",
+				};
+			}
+
+			setStreamStarted(true);
+			startLoading("stream-response", "Generating response...");
+
+			try {
+				return await streamResponse(conversation.messages, conversationId, undefined, {
+					assistantMessageData: options?.assistantMessageData,
+					model: options?.model,
+				});
+			} catch (error) {
+				console.error("Failed to respond to live transcript:", error);
+				return {
+					status: "error",
+					response: getErrorMessage(error, "Failed"),
+				};
+			}
+		},
+		[queryClient, setStreamStarted, startLoading, streamResponse],
+	);
+
 	const sendCouncilDebate = useCallback(
 		async (
 			input: string,
@@ -375,6 +412,7 @@ export function useChatManager(
 		editingMessageId,
 		isBranching,
 		sendMessage,
+		respondToExistingConversation,
 		sendCouncilDebate,
 		streamResponse,
 		abortStream,

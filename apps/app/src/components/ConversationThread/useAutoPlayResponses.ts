@@ -33,6 +33,7 @@ export function useAutoPlayResponses({
 	const audioRef = useRef<HTMLAudioElement | null>(null);
 	const lastHandledMessageIdRef = useRef<string | undefined>(undefined);
 	const generationRequestIdRef = useRef(0);
+	const hasSeenStreamingRef = useRef(false);
 
 	const stopPlayback = useCallback(() => {
 		generationRequestIdRef.current += 1;
@@ -66,6 +67,9 @@ export function useAutoPlayResponses({
 
 	useEffect(() => {
 		if (!isEnabled || isStreaming) {
+			if (isStreaming) {
+				hasSeenStreamingRef.current = true;
+			}
 			return;
 		}
 
@@ -73,6 +77,12 @@ export function useAutoPlayResponses({
 			.slice()
 			.reverse()
 			.find((message) => message.role === "assistant");
+
+		if (!hasSeenStreamingRef.current) {
+			lastHandledMessageIdRef.current = latestAssistantMessage?.id;
+			return;
+		}
+		hasSeenStreamingRef.current = false;
 
 		if (
 			!latestAssistantMessage?.id ||

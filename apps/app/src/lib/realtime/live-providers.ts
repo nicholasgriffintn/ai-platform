@@ -3,6 +3,8 @@ import {
 	REALTIME_LIVE_PROVIDER_MANIFEST,
 	type RealtimeLiveProviderManifestItem,
 } from "@assistant/schemas";
+import { isRealtimeSessionModel, isTextInputChatModel } from "~/lib/models";
+import type { ModelConfig } from "~/types";
 import type { CreateRealtimeSessionOptions, RealtimeSession, RealtimeTransport } from "./types";
 import { extractInlineAudioChunks, isRealtimeSetupCompleteMessage } from "./messages";
 
@@ -12,6 +14,12 @@ export { DEFAULT_REALTIME_LIVE_PROVIDER_ID };
 
 export interface RealtimeLiveWebSocketAudioInputConfig {
 	buildAppendMessage: (base64Audio: string) => unknown;
+	commitMessages?: unknown[];
+	commitOnSilence?: {
+		levelThreshold: number;
+		minSpeechMs: number;
+		silenceMs: number;
+	};
 	endMessages?: unknown[];
 	endOnMicrophonePause?: boolean;
 	waitForFinalEventTypeOnStop?: string;
@@ -107,7 +115,14 @@ const REALTIME_LIVE_PROVIDER_WEBSOCKET_CONFIG: Partial<
 				type: "input_audio.append",
 				audio: base64Audio,
 			}),
+			commitMessages: [{ type: "input_audio.flush" }],
+			commitOnSilence: {
+				levelThreshold: 0.06,
+				minSpeechMs: 220,
+				silenceMs: 500,
+			},
 			endMessages: [{ type: "input_audio.flush" }, { type: "input_audio.end" }],
+			endOnMicrophonePause: true,
 			waitForFinalEventTypeOnStop: "transcription.done",
 		},
 		closeErrorLabel: "Mistral realtime transcription",
@@ -123,6 +138,8 @@ const REALTIME_LIVE_PROVIDER_WEBSOCKET_CONFIG: Partial<
 				audio: base64Audio,
 			}),
 			endMessages: [{ type: "input_audio.flush" }, { type: "input_audio.end" }],
+			endOnMicrophonePause: true,
+			waitForFinalEventTypeOnStop: "transcription.done",
 		},
 		closeErrorLabel: "ElevenLabs realtime transcription",
 		connectedEventLabel: "ElevenLabs realtime transcription connected",
@@ -178,6 +195,35 @@ export function getRealtimeLiveProviderIdForModel(
 
 export function getDefaultLiveModelId(provider: string): string {
 	return getRealtimeLiveProviderOption(provider).defaultModelId;
+}
+
+export function isComposedRealtimeLiveProvider(provider: string): boolean {
+	return getRealtimeLiveProviderOption(provider).liveMode === "composed";
+}
+
+export function waitsForRealtimeLiveProviderFinalEventOnStop(provider: string): boolean {
+	return Boolean(
+		getRealtimeLiveProviderOption(provider).websocket?.audioInput?.waitForFinalEventTypeOnStop,
+	);
+}
+
+export function getComposedRealtimeReasoningModelId(
+	models: ModelConfig,
+	selectedModelId?: string | null,
+): string | undefined {
+	const selectedModel = selectedModelId ? models[selectedModelId] : undefined;
+	if (
+		selectedModel &&
+		!isRealtimeSessionModel(selectedModel) &&
+		isTextInputChatModel(selectedModel)
+	) {
+		return selectedModelId ?? undefined;
+	}
+
+	return Object.entries(models).find(
+		([, model]) =>
+			!model.hiddenFromDefaultList && !isRealtimeSessionModel(model) && isTextInputChatModel(model),
+	)?.[0];
 }
 
 export function supportsRealtimeLiveVideoInput(provider: string): boolean {

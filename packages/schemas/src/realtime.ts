@@ -18,6 +18,8 @@ export const realtimeProviderIdSchema = z.enum(realtimeProviderIds);
 export const realtimeTransportSchema = z.enum(realtimeTransports);
 export const realtimeSessionTypeSchema = z.enum(realtimeSessionTypes);
 export const realtimeLiveSessionTypeSchema = z.enum(realtimeLiveSessionTypes);
+export const realtimeLiveModeSchema = z.enum(["native", "composed"]);
+export const realtimeLiveModes = realtimeLiveModeSchema.options;
 export const realtimeModalitySchema = z.enum(realtimeModalities);
 export const realtimeOutputModalitySchema = z.enum(realtimeOutputModalities);
 export const realtimeTranscriptionDelaySchema = z.enum(realtimeTranscriptionDelays);
@@ -116,10 +118,44 @@ export const realtimeSessionCreateSchema = z.object({
 	output_modalities: z.array(realtimeOutputModalitySchema).optional(),
 });
 
+export const realtimePipelineStageSchema = z.object({
+	provider: z.string(),
+	model: z.string(),
+});
+
+export const realtimePipelineSpeechStageSchema = realtimePipelineStageSchema.extend({
+	voice: z.string().optional(),
+});
+
+export const realtimePipelineLatencyProfileSchema = z.enum(["low", "balanced", "quality"]);
+
+export const realtimePipelineSessionCreateSchema = z.object({
+	input: realtimePipelineStageSchema,
+	reasoning: realtimePipelineStageSchema,
+	output: realtimePipelineSpeechStageSchema,
+	latency_profile: realtimePipelineLatencyProfileSchema.optional(),
+	language: z.string().optional(),
+	delay: realtimeTranscriptionDelaySchema.optional(),
+});
+
+export const realtimePipelineSessionResponseSchema = z.object({
+	id: z.string(),
+	object: z.literal("realtime.pipeline.session"),
+	type: z.literal("pipeline"),
+	live_mode: z.literal("composed"),
+	input: realtimePipelineStageSchema.extend({
+		session: realtimeSessionResponseSchema,
+	}),
+	reasoning: realtimePipelineStageSchema,
+	output: realtimePipelineSpeechStageSchema,
+	latency_profile: realtimePipelineLatencyProfileSchema,
+});
+
 export const realtimeLiveProviderManifestItemSchema = z.object({
 	id: realtimeProviderIdSchema,
 	label: z.string(),
 	shortLabel: z.string(),
+	liveMode: realtimeLiveModeSchema,
 	transport: realtimeTransportSchema,
 	sessionType: realtimeLiveSessionTypeSchema,
 	defaultDelay: realtimeTranscriptionDelaySchema.optional(),
@@ -127,6 +163,12 @@ export const realtimeLiveProviderManifestItemSchema = z.object({
 	outputModalities: z.array(realtimeOutputModalitySchema),
 	description: z.string(),
 	defaultModelId: z.string(),
+	composeWith: z
+		.object({
+			reasoning: z.boolean(),
+			speech: z.boolean(),
+		})
+		.optional(),
 	supportsVideoInput: z.boolean().optional(),
 });
 
@@ -138,9 +180,13 @@ export type RealtimeProviderId = z.infer<typeof realtimeProviderIdSchema>;
 export type RealtimeTransport = z.infer<typeof realtimeTransportSchema>;
 export type RealtimeSessionType = z.infer<typeof realtimeSessionTypeSchema>;
 export type RealtimeLiveSessionType = z.infer<typeof realtimeLiveSessionTypeSchema>;
+export type RealtimeLiveMode = z.infer<typeof realtimeLiveModeSchema>;
 export type RealtimeModality = z.infer<typeof realtimeModalitySchema>;
 export type RealtimeOutputModality = z.infer<typeof realtimeOutputModalitySchema>;
 export type RealtimeTranscriptionDelay = z.infer<typeof realtimeTranscriptionDelaySchema>;
+export type RealtimeSessionResponse = z.infer<typeof realtimeSessionResponseSchema>;
+export type RealtimePipelineSessionCreate = z.infer<typeof realtimePipelineSessionCreateSchema>;
+export type RealtimePipelineSessionResponse = z.infer<typeof realtimePipelineSessionResponseSchema>;
 export type RealtimeLiveProviderManifestItem = z.infer<
 	typeof realtimeLiveProviderManifestItemSchema
 >;
@@ -150,6 +196,7 @@ export const REALTIME_LIVE_PROVIDER_MANIFEST: RealtimeLiveProviderManifestItem[]
 		id: "openai",
 		label: "OpenAI Realtime",
 		shortLabel: "OpenAI",
+		liveMode: "native",
 		transport: "webrtc",
 		sessionType: "realtime",
 		inputModalities: ["audio"],
@@ -161,6 +208,7 @@ export const REALTIME_LIVE_PROVIDER_MANIFEST: RealtimeLiveProviderManifestItem[]
 		id: "google-ai-studio",
 		label: "Gemini Live",
 		shortLabel: "Gemini",
+		liveMode: "native",
 		transport: "websocket",
 		sessionType: "realtime",
 		inputModalities: ["audio", "video"],
@@ -173,6 +221,7 @@ export const REALTIME_LIVE_PROVIDER_MANIFEST: RealtimeLiveProviderManifestItem[]
 		id: "mistral",
 		label: "Mistral Realtime",
 		shortLabel: "Mistral",
+		liveMode: "composed",
 		transport: "websocket",
 		sessionType: "transcription",
 		defaultDelay: "low",
@@ -180,11 +229,13 @@ export const REALTIME_LIVE_PROVIDER_MANIFEST: RealtimeLiveProviderManifestItem[]
 		outputModalities: ["text"],
 		description: "Streaming speech-to-text",
 		defaultModelId: "voxtral-mini-transcribe-realtime",
+		composeWith: { reasoning: true, speech: true },
 	},
 	{
 		id: "elevenlabs",
 		label: "ElevenLabs Scribe Realtime",
 		shortLabel: "ElevenLabs",
+		liveMode: "composed",
 		transport: "websocket",
 		sessionType: "transcription",
 		defaultDelay: "minimal",
@@ -192,11 +243,13 @@ export const REALTIME_LIVE_PROVIDER_MANIFEST: RealtimeLiveProviderManifestItem[]
 		outputModalities: ["text"],
 		description: "Scribe realtime speech-to-text",
 		defaultModelId: "scribe_v2_realtime",
+		composeWith: { reasoning: true, speech: true },
 	},
 	{
 		id: "cartesia",
 		label: "Cartesia Ink Realtime",
 		shortLabel: "Cartesia",
+		liveMode: "composed",
 		transport: "websocket",
 		sessionType: "transcription",
 		defaultDelay: "low",
@@ -204,6 +257,7 @@ export const REALTIME_LIVE_PROVIDER_MANIFEST: RealtimeLiveProviderManifestItem[]
 		outputModalities: ["text"],
 		description: "Ink streaming speech-to-text",
 		defaultModelId: "ink-whisper",
+		composeWith: { reasoning: true, speech: true },
 	},
 ];
 

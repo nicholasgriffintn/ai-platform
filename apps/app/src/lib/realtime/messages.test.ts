@@ -88,6 +88,21 @@ describe("realtime message helpers", () => {
 		});
 	});
 
+	it("extracts Mistral realtime transcription done messages when they include final text", () => {
+		const transcript = extractRealtimeTranscript({
+			type: "transcription.done",
+			text: "Final transcript",
+			model: "voxtral-mini-transcribe-realtime-2602",
+		});
+
+		expect(transcript).toEqual({
+			text: "Final transcript",
+			isDelta: false,
+			isFinal: true,
+			source: "input",
+		});
+	});
+
 	it("extracts realtime event ids for live turn correlation", () => {
 		expect(
 			extractRealtimeEvent({

@@ -122,7 +122,7 @@ describe("ElevenLabs realtime proxy", () => {
 			expect.objectContaining({
 				providerLabel: "ElevenLabs",
 				upstreamUrl: expect.objectContaining({
-					href: "https://api.elevenlabs.io/v1/speech-to-text/realtime?model_id=scribe_v2_realtime&language_code=en",
+					href: "https://api.elevenlabs.io/v1/speech-to-text/realtime?model_id=scribe_v2_realtime&commit_strategy=vad&language_code=en",
 				}),
 				headers: { "xi-api-key": "test-key" },
 			}),

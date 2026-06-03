@@ -25,6 +25,7 @@ import {
 	type RealtimeMediaController,
 } from "~/lib/realtime/audio";
 import {
+	calculatePcm16AudioLevel,
 	calculatePcm16Base64AudioLevel,
 	createMediaStreamAudioLevelMeter,
 	type MediaStreamAudioLevelMeter,
@@ -79,6 +80,17 @@ function sendConfiguredAudioEnd(
 	}
 }
 
+function sendConfiguredAudioCommit(connection: RealtimeWebSocketConnection): void {
+	const audioInput = getConnectionProviderOption(connection).websocket?.audioInput;
+	if (!audioInput) {
+		return;
+	}
+
+	for (const message of audioInput.commitMessages ?? []) {
+		sendJsonWhenOpen(connection, message);
+	}
+}
+
 function shouldWaitForConfiguredAudioEndEvent(connection: RealtimeWebSocketConnection): boolean {
 	return Boolean(
 		getConnectionProviderOption(connection).websocket?.audioInput?.waitForFinalEventTypeOnStop,
@@ -116,6 +128,10 @@ export function useRealtimeLiveSession({
 	const inputAudioMeterRef = useRef<MediaStreamAudioLevelMeter | null>(null);
 	const inputVideoControllerRef = useRef<RealtimeMediaController | null>(null);
 	const finalizingConnectionRef = useRef<RealtimeWebSocketConnection | null>(null);
+	const lastSpeechAtRef = useRef(0);
+	const silenceCommitTimeoutRef = useRef<number | null>(null);
+	const speechStartedAtRef = useRef(0);
+	const turnHasAudioSinceCommitRef = useRef(false);
 	const audioStreamRef = useRef<MediaStream | null>(null);
 	const outputAudioLevelResetRef = useRef<number | null>(null);
 	const outputAudioMeterRef = useRef<MediaStreamAudioLevelMeter | null>(null);
@@ -161,6 +177,22 @@ export function useRealtimeLiveSession({
 		outputAudioLevelResetRef.current = null;
 	}, []);
 
+	const clearSilenceCommitTimer = useCallback(() => {
+		if (silenceCommitTimeoutRef.current === null) {
+			return;
+		}
+
+		window.clearTimeout(silenceCommitTimeoutRef.current);
+		silenceCommitTimeoutRef.current = null;
+	}, []);
+
+	const resetAudioTurnDetection = useCallback(() => {
+		clearSilenceCommitTimer();
+		lastSpeechAtRef.current = 0;
+		speechStartedAtRef.current = 0;
+		turnHasAudioSinceCommitRef.current = false;
+	}, [clearSilenceCommitTimer]);
+
 	const resetOutputAudioLevelSoon = useCallback(() => {
 		clearOutputAudioLevelReset();
 		outputAudioLevelResetRef.current = window.setTimeout(() => {
@@ -193,6 +225,47 @@ export function useRealtimeLiveSession({
 			resetOutputAudioLevelSoon();
 		},
 		[resetOutputAudioLevelSoon],
+	);
+
+	const maybeCommitAudioAfterSilence = useCallback(
+		(connection: RealtimeWebSocketConnection, chunk: ArrayBuffer) => {
+			const config = getConnectionProviderOption(connection).websocket?.audioInput?.commitOnSilence;
+			if (!config || stoppingRef.current || !microphoneEnabledRef.current) {
+				return;
+			}
+
+			const now = Date.now();
+			const level = calculatePcm16AudioLevel(chunk);
+			if (level < config.levelThreshold) {
+				return;
+			}
+
+			if (!turnHasAudioSinceCommitRef.current) {
+				speechStartedAtRef.current = now;
+			}
+			lastSpeechAtRef.current = now;
+			turnHasAudioSinceCommitRef.current = true;
+			clearSilenceCommitTimer();
+
+			silenceCommitTimeoutRef.current = window.setTimeout(() => {
+				silenceCommitTimeoutRef.current = null;
+				if (
+					connectionRef.current !== connection ||
+					stoppingRef.current ||
+					!turnHasAudioSinceCommitRef.current ||
+					Date.now() - lastSpeechAtRef.current < config.silenceMs ||
+					lastSpeechAtRef.current - speechStartedAtRef.current < config.minSpeechMs
+				) {
+					return;
+				}
+
+				turnHasAudioSinceCommitRef.current = false;
+				speechStartedAtRef.current = 0;
+				lastSpeechAtRef.current = 0;
+				sendConfiguredAudioCommit(connection);
+			}, config.silenceMs);
+		},
+		[clearSilenceCommitTimer],
 	);
 
 	const handleTranscript = useCallback(
@@ -287,8 +360,10 @@ export function useRealtimeLiveSession({
 			const stream = await ensureAudioStream();
 			const controller = await startPcm16MicrophoneStream({
 				stream,
-				onChunk: (chunk) =>
-					sendJsonWhenOpen(connection, audioInput.buildAppendMessage(arrayBufferToBase64(chunk))),
+				onChunk: (chunk) => {
+					sendJsonWhenOpen(connection, audioInput.buildAppendMessage(arrayBufferToBase64(chunk)));
+					maybeCommitAudioAfterSilence(connection, chunk);
+				},
 			});
 			if (
 				connectionRef.current !== connection ||
@@ -300,7 +375,7 @@ export function useRealtimeLiveSession({
 			}
 			inputAudioControllerRef.current = controller;
 		},
-		[ensureAudioStream],
+		[ensureAudioStream, maybeCommitAudioAfterSilence],
 	);
 
 	const startInputVideo = useCallback(
@@ -345,6 +420,7 @@ export function useRealtimeLiveSession({
 
 			stopInputAudio();
 			stopInputVideo();
+			resetAudioTurnDetection();
 			audioPlayerRef.current?.stop();
 			audioPlayerRef.current = null;
 			stopOutputAudioMeter();
@@ -376,7 +452,7 @@ export function useRealtimeLiveSession({
 			}
 			stoppingRef.current = false;
 		},
-		[setLiveStatus, stopInputAudio, stopInputVideo, stopOutputAudioMeter],
+		[resetAudioTurnDetection, setLiveStatus, stopInputAudio, stopInputVideo, stopOutputAudioMeter],
 	);
 
 	const failSession = useCallback(
@@ -681,6 +757,7 @@ export function useRealtimeLiveSession({
 			}
 
 			if (!enabled) {
+				resetAudioTurnDetection();
 				stopInputAudio(true);
 				return;
 			}
@@ -693,7 +770,7 @@ export function useRealtimeLiveSession({
 				failSession(getErrorMessage(toggleError, "Failed to start microphone input"));
 			});
 		},
-		[failSession, startInputAudio, startInputAudioMeter, stopInputAudio],
+		[failSession, resetAudioTurnDetection, startInputAudio, startInputAudioMeter, stopInputAudio],
 	);
 
 	const setVideoEnabled = useCallback(

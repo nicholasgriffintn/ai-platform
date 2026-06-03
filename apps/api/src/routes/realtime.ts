@@ -5,6 +5,8 @@ import {
 	errorResponseSchema,
 	REALTIME_LIVE_PROVIDER_MANIFEST,
 	realtimeLiveProviderManifestResponseSchema,
+	realtimePipelineSessionCreateSchema,
+	realtimePipelineSessionResponseSchema,
 	realtimeSessionResponseSchema,
 } from "@assistant/schemas";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
@@ -21,6 +23,7 @@ import { userCanAccessRealtimeModel } from "~/services/realtime/access";
 import { createCartesiaRealtimeProxyResponse } from "~/services/realtime/cartesia";
 import { createElevenLabsRealtimeProxyResponse } from "~/services/realtime/elevenlabs";
 import { createMistralRealtimeProxyResponse } from "~/services/realtime/mistral";
+import { createRealtimePipelineSession } from "~/services/realtime/pipeline";
 
 const app = new Hono();
 const routeLogger = createRouteLogger("realtime");
@@ -142,6 +145,41 @@ addRoute(app, "post", "/session/:type", {
 			}
 
 			return ResponseFactory.success(c, session);
+		})(raw),
+});
+
+addRoute(app, "post", "/pipeline/session", {
+	tags: ["realtime"],
+	summary: "Create a composed realtime pipeline session",
+	auth: true,
+	bodySchema: realtimePipelineSessionCreateSchema,
+	responses: {
+		200: {
+			description: "Composed realtime pipeline session created",
+			schema: realtimePipelineSessionResponseSchema,
+		},
+		400: { description: "Bad request", schema: errorResponseSchema },
+		403: { description: "Model access denied", schema: errorResponseSchema },
+	},
+	handler: async ({ body, raw, serviceContext, user }) =>
+		(async (c: Context) => {
+			const providers = listRealtimeProviders();
+
+			if (!providers.includes(body.input.provider)) {
+				return ResponseFactory.error(c, "Invalid input provider specified", 400);
+			}
+
+			const result = await createRealtimePipelineSession({
+				env: serviceContext.env,
+				request: body,
+				user,
+			});
+
+			if (result.ok === false) {
+				return ResponseFactory.error(c, result.message, result.status);
+			}
+
+			return ResponseFactory.success(c, result.session);
 		})(raw),
 });
 

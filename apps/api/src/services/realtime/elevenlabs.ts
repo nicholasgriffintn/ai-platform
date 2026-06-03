@@ -170,6 +170,7 @@ export async function createElevenLabsRealtimeProxyResponse({
 	const modelToUse = model || provider.getDefaultModel("transcription");
 	const upstreamUrl = new URL("/v1/speech-to-text/realtime", "https://api.elevenlabs.io");
 	upstreamUrl.searchParams.set("model_id", modelToUse);
+	upstreamUrl.searchParams.set("commit_strategy", "vad");
 	if (language) {
 		upstreamUrl.searchParams.set("language_code", language);
 	}

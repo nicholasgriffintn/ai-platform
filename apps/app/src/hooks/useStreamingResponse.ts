@@ -12,6 +12,7 @@ import { useMessageOperations } from "./useMessageOperations";
 import { useModels } from "./useModels";
 
 export interface StreamResponseOptions {
+	assistantMessageData?: Partial<Message>;
 	generateTitle?: boolean;
 	model?: string;
 	models?: string[];
@@ -54,7 +55,7 @@ export function useStreamingResponse(
 			messages: Message[],
 			conversationId: string,
 			overrideRequestOptions?: ChatRequestOptions,
-			options?: Pick<StreamResponseOptions, "model" | "models">,
+			options?: Pick<StreamResponseOptions, "assistantMessageData" | "model" | "models">,
 		): Promise<{
 			status: "success" | "error";
 			response: string;
@@ -63,8 +64,14 @@ export function useStreamingResponse(
 			const isLocal = chatMode === "local";
 			let response = "";
 			let generatedMessage: Message | undefined;
+			const assistantMessageData = options?.assistantMessageData;
 
-			const placeholderMessage = await addAssistantMessage(conversationId, "");
+			const placeholderMessage = await addAssistantMessage(
+				conversationId,
+				"",
+				undefined,
+				assistantMessageData,
+			);
 			let activeAssistantMessage: Message | undefined = placeholderMessage;
 			let activeAssistantMessagePromise: Promise<Message> | null =
 				Promise.resolve(placeholderMessage);
@@ -78,12 +85,27 @@ export function useStreamingResponse(
 					return activeAssistantMessagePromise;
 				}
 
-				activeAssistantMessagePromise = addAssistantMessage(conversationId, "").then((message) => {
+				activeAssistantMessagePromise = addAssistantMessage(
+					conversationId,
+					"",
+					undefined,
+					assistantMessageData,
+				).then((message) => {
 					activeAssistantMessage = message;
 					return message;
 				});
 				return activeAssistantMessagePromise;
 			};
+
+			const withAssistantMessageData = (assistantMessage: Message): Message => ({
+				...assistantMessage,
+				...assistantMessageData,
+				content: assistantMessage.content,
+				model: assistantMessage.model ?? assistantMessageData?.model,
+				reasoning: assistantMessage.reasoning ?? assistantMessageData?.reasoning,
+				role: "assistant",
+				status: assistantMessage.status,
+			});
 
 			const handleMessageUpdate = (
 				content: Message["content"],
@@ -94,11 +116,12 @@ export function useStreamingResponse(
 			) => {
 				if (done && assistantMessage) {
 					ensureActiveAssistantMessage().then((message) => {
+						const updatedAssistantMessage = withAssistantMessageData(assistantMessage);
 						updateAssistantMessage(
 							conversationId,
-							assistantMessage.content,
-							assistantMessage.reasoning?.content || reasoning,
-							assistantMessage,
+							updatedAssistantMessage.content,
+							updatedAssistantMessage.reasoning?.content || reasoning,
+							updatedAssistantMessage,
 							{
 								messageId: message.id,
 							},
@@ -106,7 +129,7 @@ export function useStreamingResponse(
 						activeAssistantMessage = undefined;
 						activeAssistantMessagePromise = null;
 					});
-					generatedMessage = assistantMessage;
+					generatedMessage = withAssistantMessageData(assistantMessage);
 					response = "";
 					return;
 				}
@@ -210,7 +233,6 @@ export function useStreamingResponse(
 						useMultiModel: modelsToSend && modelsToSend.length > 1 ? true : useMultiModel,
 					});
 
-					const messageContentToDisplay = assistantMessage.content;
 					const textPreview =
 						typeof assistantMessage.content === "string"
 							? assistantMessage.content
@@ -220,17 +242,18 @@ export function useStreamingResponse(
 
 					if (generatedMessage?.id !== assistantMessage.id) {
 						const targetMessage = activeAssistantMessage || placeholderMessage;
+						const updatedAssistantMessage = withAssistantMessageData(assistantMessage);
 						await updateAssistantMessage(
 							conversationId,
-							messageContentToDisplay,
-							assistantMessage.reasoning?.content,
-							assistantMessage,
+							updatedAssistantMessage.content,
+							updatedAssistantMessage.reasoning?.content,
+							updatedAssistantMessage,
 							{ messageId: targetMessage.id },
 						);
 					}
 
 					response = textPreview;
-					generatedMessage = assistantMessage;
+					generatedMessage = withAssistantMessageData(assistantMessage);
 				}
 
 				return {
@@ -280,6 +303,7 @@ export function useStreamingResponse(
 
 			try {
 				const response = await generateResponse(messages, conversationId, overrideRequestOptions, {
+					assistantMessageData: options?.assistantMessageData,
 					model: options?.model,
 					models: options?.models,
 				});

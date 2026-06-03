@@ -1,4 +1,5 @@
 import { act, renderHook } from "@testing-library/react";
+import { isValidElement } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { ModelConfig, ModelConfigItem } from "~/types";
@@ -13,30 +14,40 @@ const setSelectedAgentId = vi.fn();
 const setLiveProvider = vi.fn();
 const stopLiveSession = vi.fn();
 const flushLiveMessages = vi.fn();
+const typedSetSearchParams: ReturnType<typeof vi.fn<(params: URLSearchParams) => void>> =
+	setSearchParams;
 
 let searchParams = new URLSearchParams("mode=live");
-const models: ModelConfig = {
-	"deepseek-chat": {
-		id: "deepseek-chat",
-		matchingModel: "deepseek-chat",
-		name: "DeepSeek Chat",
-		provider: "deepseek",
-		modalities: { input: ["text"], output: ["text"] },
-	},
-	"voxtral-mini-transcribe-realtime": {
-		id: "voxtral-mini-transcribe-realtime",
-		matchingModel: "voxtral-mini-transcribe-realtime-2602",
-		name: "Voxtral Mini Transcribe Realtime",
-		provider: "mistral",
-		modalities: { input: ["audio"], output: ["transcription"] },
-		supportsRealtimeSession: true,
-	},
+const deepseekModel: ModelConfigItem = {
+	id: "deepseek-chat",
+	matchingModel: "deepseek-chat",
+	name: "DeepSeek Chat",
+	provider: "deepseek",
+	modalities: { input: ["text"], output: ["text"] },
 };
-const chatStoreState = {
+const voxtralModel: ModelConfigItem = {
+	id: "voxtral-mini-transcribe-realtime",
+	matchingModel: "voxtral-mini-transcribe-realtime-2602",
+	name: "Voxtral Mini Transcribe Realtime",
+	provider: "mistral",
+	modalities: { input: ["audio"], output: ["transcription"] },
+	supportsRealtimeSession: true,
+};
+const models: ModelConfig = {
+	"deepseek-chat": deepseekModel,
+	"voxtral-mini-transcribe-realtime": voxtralModel,
+};
+const chatStoreState: {
+	chatSettings: Record<string, unknown>;
+	currentConversationId?: string;
+	homeChatMode: "chat" | "live";
+	model: string | null;
+	sandboxModeSettings: Record<string, unknown>;
+} = {
 	chatSettings: {},
-	currentConversationId: undefined as string | undefined,
+	currentConversationId: undefined,
 	homeChatMode: "live",
-	model: "voxtral-mini-transcribe-realtime" as string | null,
+	model: "voxtral-mini-transcribe-realtime",
 	sandboxModeSettings: {},
 };
 const liveSessionState = {
@@ -49,6 +60,12 @@ vi.mock("react-router", () => ({
 
 vi.mock("~/hooks/useChat", () => ({
 	useChat: () => ({ data: undefined }),
+}));
+
+vi.mock("~/hooks/useChatManager", () => ({
+	useChatManager: () => ({
+		respondToExistingConversation: vi.fn(),
+	}),
 }));
 
 vi.mock("~/hooks/useLiveConversationMessages", () => ({
@@ -124,6 +141,46 @@ describe("useHomeChatModeConfig", () => {
 		expect(result.current.modeConfig.onModelChange).toEqual(expect.any(Function));
 	});
 
+	it("forces response audio for composed live providers", () => {
+		const { result } = renderHook(() => useHomeChatModeConfig());
+
+		expect(result.current.modeConfig.forceAutoPlayResponses).toBe(true);
+	});
+
+	it("stops composed live providers without flushing local transcript messages first", () => {
+		const { result } = renderHook(() => useHomeChatModeConfig());
+		const inputControls = result.current.modeConfig.inputControls;
+
+		expect(isValidElement<{ onStop: () => void }>(inputControls)).toBe(true);
+		if (!isValidElement<{ onStop: () => void }>(inputControls)) {
+			throw new Error("Expected live input controls");
+		}
+
+		act(() => {
+			inputControls.props.onStop();
+		});
+
+		expect(flushLiveMessages).not.toHaveBeenCalled();
+		expect(stopLiveSession).toHaveBeenCalledTimes(1);
+	});
+
+	it("does not force response audio for native live providers", () => {
+		chatStoreState.model = "gpt-realtime-2";
+		liveSessionState.provider = "openai";
+		models["gpt-realtime-2"] = {
+			id: "gpt-realtime-2",
+			matchingModel: "gpt-realtime-2",
+			name: "GPT Realtime 2",
+			provider: "openai",
+			modalities: { input: ["audio"], output: ["audio"] },
+			supportsRealtimeSession: true,
+		};
+
+		const { result } = renderHook(() => useHomeChatModeConfig());
+
+		expect(result.current.modeConfig.forceAutoPlayResponses).toBe(false);
+	});
+
 	it("switches to live mode when a realtime model is selected", () => {
 		searchParams = new URLSearchParams();
 		chatStoreState.homeChatMode = "chat";
@@ -133,36 +190,30 @@ describe("useHomeChatModeConfig", () => {
 		const { result } = renderHook(() => useHomeChatModeConfig());
 
 		act(() => {
-			result.current.modeConfig.onModelChange?.(
-				"voxtral-mini-transcribe-realtime",
-				models["voxtral-mini-transcribe-realtime"] as ModelConfigItem,
-			);
+			result.current.modeConfig.onModelChange?.("voxtral-mini-transcribe-realtime", voxtralModel);
 		});
 
-		const nextParams = setSearchParams.mock.calls.at(-1)?.[0] as URLSearchParams;
+		const nextParams = typedSetSearchParams.mock.calls.at(-1)?.[0];
 
 		expect(result.current.activeModeId).toBe("live");
 		expect(setHomeChatMode).toHaveBeenCalledWith("live");
 		expect(setLiveProvider).toHaveBeenCalledWith("mistral");
-		expect(nextParams.get("mode")).toBe("live");
+		expect(nextParams?.get("mode")).toBe("live");
 	});
 
 	it("switches back to chat when a chat model is selected from live mode", () => {
 		const { result } = renderHook(() => useHomeChatModeConfig());
 
 		act(() => {
-			result.current.modeConfig.onModelChange?.(
-				"deepseek-chat",
-				models["deepseek-chat"] as ModelConfigItem,
-			);
+			result.current.modeConfig.onModelChange?.("deepseek-chat", deepseekModel);
 		});
 
-		const nextParams = setSearchParams.mock.calls.at(-1)?.[0] as URLSearchParams;
+		const nextParams = typedSetSearchParams.mock.calls.at(-1)?.[0];
 
 		expect(result.current.activeModeId).toBe("chat");
-		expect(flushLiveMessages).toHaveBeenCalledTimes(1);
+		expect(flushLiveMessages).not.toHaveBeenCalled();
 		expect(stopLiveSession).toHaveBeenCalledTimes(1);
 		expect(setHomeChatMode).toHaveBeenCalledWith("chat");
-		expect(nextParams.get("mode")).toBeNull();
+		expect(nextParams?.get("mode")).toBeNull();
 	});
 });

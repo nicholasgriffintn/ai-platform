@@ -291,7 +291,7 @@ export function extractRealtimeTranscript(payload: unknown): RealtimeTranscriptR
 	}
 
 	const type = getString(payload.type)?.toLowerCase() ?? "";
-	if (type === "transcription.done") {
+	if (type === "transcription.done" && !directTranscript) {
 		return undefined;
 	}
 

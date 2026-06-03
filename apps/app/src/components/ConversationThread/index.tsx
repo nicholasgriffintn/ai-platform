@@ -64,6 +64,7 @@ export interface ConversationThreadModeConfig {
 	hideTextInput?: boolean;
 	hideInlineResponseControls?: boolean;
 	hideChatSettings?: boolean;
+	forceAutoPlayResponses?: boolean;
 	analyticsSource?: string;
 	councilDebate?: {
 		enabled: boolean;
@@ -99,6 +100,8 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
 	const [currentArtifacts, setCurrentArtifacts] = useState<ArtifactProps[]>([]);
 	const [isCombinedPanel, setIsCombinedPanel] = useState(false);
 	const [autoPlayResponsesEnabled, setAutoPlayResponsesEnabled] = useState(false);
+	const effectiveAutoPlayResponsesEnabled =
+		autoPlayResponsesEnabled || Boolean(modeConfig?.forceAutoPlayResponses);
 
 	const isStreamLoading = useIsLoading("stream-response");
 	const isModelInitializing = useIsLoading("model-init");
@@ -115,7 +118,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
 		stopPlayback,
 	} = useAutoPlayResponses({
 		messages,
-		isEnabled: autoPlayResponsesEnabled,
+		isEnabled: effectiveAutoPlayResponsesEnabled,
 		isStreaming: isStreamLoading || streamStarted,
 	});
 
@@ -390,7 +393,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
 						hideInlineResponseControls={modeConfig?.hideInlineResponseControls}
 						hideChatSettings={modeConfig?.hideChatSettings}
 						autoPlayResponses={{
-							enabled: autoPlayResponsesEnabled,
+							enabled: effectiveAutoPlayResponsesEnabled,
 							isGenerating: isGeneratingAutoResponseSpeech,
 							isPlaying: isPlayingAutoResponse,
 							onToggle: handleAutoPlayToggle,

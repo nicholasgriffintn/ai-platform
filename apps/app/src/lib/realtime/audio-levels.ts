@@ -39,6 +39,10 @@ export function calculatePcm16Base64AudioLevel(base64Audio: string): number {
 	return calculateNormalisedAudioLevel(decodePcm16Audio(base64ToArrayBuffer(base64Audio)));
 }
 
+export function calculatePcm16AudioLevel(audio: ArrayBuffer): number {
+	return calculateNormalisedAudioLevel(decodePcm16Audio(audio));
+}
+
 export function createMediaStreamAudioLevelMeter({
 	onLevel,
 	stream,
