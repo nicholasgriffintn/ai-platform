@@ -11,6 +11,7 @@ const mockRepositories = {
 
 const mockStorageService = {
 	uploadObject: vi.fn(),
+	storePrivateAsset: vi.fn(),
 };
 
 vi.mock("~/repositories", () => ({
@@ -21,6 +22,10 @@ vi.mock("~/repositories", () => ({
 
 vi.mock("~/lib/storage", () => ({
 	StorageService: class {
+		static forPrivateAssets() {
+			return mockStorageService;
+		}
+
 		constructor() {
 			return mockStorageService;
 		}
@@ -39,6 +44,8 @@ describe("handlePodcastUpload", () => {
 	const mockEnv = {
 		DB: {},
 		ASSETS_BUCKET: "test-bucket",
+		PRIVATE_ASSETS_BUCKET: "private-test-bucket",
+		API_BASE_URL: "https://api.test.com",
 		PUBLIC_ASSETS_URL: "https://assets.example.com",
 	} as any;
 	const mockUser = { id: "user-123", email: "test@example.com" } as any;
@@ -65,6 +72,11 @@ describe("handlePodcastUpload", () => {
 		const { generateId } = await import("~/utils/id");
 		vi.mocked(sanitiseInput).mockImplementation((input) => input);
 		vi.mocked(generateId).mockReturnValue("podcast-123");
+		mockStorageService.storePrivateAsset.mockResolvedValue({
+			assetId: "podcast-audio-asset",
+			key: "podcasts/podcast-123/recording.mp3",
+			url: "https://api.test.com/assets/podcast-audio-asset",
+		});
 	});
 
 	it("should upload audio file successfully", async () => {
@@ -85,16 +97,17 @@ describe("handlePodcastUpload", () => {
 		expect(result.status).toBe("success");
 		expect(result.completion_id).toBe("podcast-123");
 		expect(result.content).toBe(
-			"Podcast Upload: [Listen Here](https://assets.example.com/podcasts/podcast-123/recording.mp3)",
+			"Podcast Upload: [Listen Here](https://api.test.com/assets/podcast-audio-asset)",
 		);
-		expect(mockStorageService.uploadObject).toHaveBeenCalledWith(
-			"podcasts/podcast-123/recording.mp3",
-			expect.any(ArrayBuffer),
-			{
-				contentType: "audio/mpeg",
-				contentLength: 1024,
-			},
-		);
+		expect(mockStorageService.storePrivateAsset).toHaveBeenCalledWith({
+			key: "podcasts/podcast-123/recording.mp3",
+			data: expect.any(ArrayBuffer),
+			ownerUserId: "user-123",
+			purpose: "app_artifact",
+			mimeType: "audio/mpeg",
+			filename: "recording.mp3",
+			byteSize: 1024,
+		});
 		expect(mockRepositories.appData.createAppDataWithItem).toHaveBeenCalledWith(
 			"user-123",
 			"podcasts",
@@ -103,7 +116,7 @@ describe("handlePodcastUpload", () => {
 			expect.objectContaining({
 				title: "Test Podcast",
 				description: "Test Description",
-				audioUrl: "https://assets.example.com/podcasts/podcast-123/recording.mp3",
+				audioUrl: "https://api.test.com/assets/podcast-audio-asset",
 				status: "ready",
 			}),
 		);
@@ -215,7 +228,7 @@ describe("handlePodcastUpload", () => {
 			arrayBuffer: vi.fn().mockResolvedValue(new ArrayBuffer(1024)),
 		} as any;
 
-		mockStorageService.uploadObject.mockRejectedValue(new Error("Storage failed"));
+		mockStorageService.storePrivateAsset.mockRejectedValue(new Error("Storage failed"));
 
 		await expect(
 			handlePodcastUpload({

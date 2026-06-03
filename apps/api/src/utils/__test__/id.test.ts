@@ -26,31 +26,37 @@ describe("id", () => {
 			expect(result).toBe(mockUUID);
 		});
 
-		it("should fallback to Math.random when crypto is not available", () => {
+		it("should reject ID generation when crypto is not available", () => {
 			vi.stubGlobal("crypto", undefined);
-			vi.spyOn(Math, "random").mockReturnValue(0.123456789);
+
+			expect(() => generateId()).toThrow("Secure random generator unavailable");
+		});
+
+		it("should fallback to crypto.getRandomValues when crypto.randomUUID is not a function", () => {
+			const getRandomValues = vi.fn((array: Uint8Array) => {
+				array.fill(0xab);
+				return array;
+			});
+			vi.stubGlobal("crypto", {
+				randomUUID: "not a function",
+				getRandomValues,
+			});
 
 			const result = generateId();
 
-			expect(Math.random).toHaveBeenCalled();
+			expect(getRandomValues).toHaveBeenCalled();
 			expect(result).toHaveLength(36);
 			expect(result).toMatch(/^[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}$/);
 		});
 
-		it("should fallback to Math.random when crypto.randomUUID is not a function", () => {
-			vi.stubGlobal("crypto", { randomUUID: "not a function" });
-			vi.spyOn(Math, "random").mockReturnValue(0.987654321);
-
-			const result = generateId();
-
-			expect(Math.random).toHaveBeenCalled();
-			expect(result).toHaveLength(36);
-			expect(result).toMatch(/^[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}$/);
-		});
-
-		it("should generate different IDs on subsequent calls with Math.random fallback", () => {
-			vi.stubGlobal("crypto", undefined);
-			vi.spyOn(Math, "random").mockReturnValueOnce(0.123456789).mockReturnValueOnce(0.987654321);
+		it("should generate different IDs on subsequent calls with crypto.getRandomValues fallback", () => {
+			let fillValue = 0x11;
+			const getRandomValues = vi.fn((array: Uint8Array) => {
+				array.fill(fillValue);
+				fillValue = 0x22;
+				return array;
+			});
+			vi.stubGlobal("crypto", { getRandomValues });
 
 			const result1 = generateId();
 			const result2 = generateId();
@@ -62,9 +68,12 @@ describe("id", () => {
 			expect(result2).toMatch(/^[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}$/);
 		});
 
-		it("should generate IDs with correct length when using Math.random fallback", () => {
-			vi.stubGlobal("crypto", undefined);
-			vi.spyOn(Math, "random").mockReturnValue(0.5);
+		it("should generate IDs with correct length when using crypto.getRandomValues fallback", () => {
+			const getRandomValues = vi.fn((array: Uint8Array) => {
+				array.fill(0x55);
+				return array;
+			});
+			vi.stubGlobal("crypto", { getRandomValues });
 
 			const result = generateId();
 

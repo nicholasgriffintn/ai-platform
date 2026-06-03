@@ -60,6 +60,8 @@ describe("MistralOcrProvider", () => {
 		AI_GATEWAY_TOKEN: "gateway-token",
 		MISTRAL_API_KEY: "mistral-key",
 		ASSETS_BUCKET: "test-bucket",
+		PRIVATE_ASSETS_BUCKET: "private-test-bucket",
+		API_BASE_URL: "https://api.test.com",
 		PUBLIC_ASSETS_URL: "https://assets.test.com",
 	} as any;
 
@@ -105,7 +107,11 @@ describe("MistralOcrProvider", () => {
 		mockResolveProviderApiKey.mockResolvedValue("resolved-key");
 		mockHasUserProviderApiKey.mockResolvedValue(false);
 		mockFetchAIResponse.mockResolvedValue(ocrResponse);
-		mockStorageService.uploadObject.mockResolvedValue("ocr/test-uuid-123/output.md");
+		mockStorageService.storePrivateAsset.mockImplementation(async (request) => ({
+			assetId: "ocr-asset-123",
+			key: request.key,
+			url: `${env.API_BASE_URL}/assets/ocr-asset-123`,
+		}));
 	});
 
 	it("extracts text with default OCR parameters", async () => {
@@ -134,18 +140,19 @@ describe("MistralOcrProvider", () => {
 				maxAttempts: 2,
 			}),
 		);
-		expect(mockStorageService.uploadObject).toHaveBeenCalledWith(
-			"ocr/test-uuid-123/output.md",
-			expect.stringContaining("# Page 1"),
-			{
-				contentType: "text/markdown",
-				contentLength: expect.any(Number),
-			},
-		);
+		expect(mockStorageService.storePrivateAsset).toHaveBeenCalledWith({
+			key: "ocr/test-uuid-123/output.md",
+			data: expect.stringContaining("# Page 1"),
+			ownerUserId: 123,
+			purpose: "ocr_output",
+			mimeType: "text/markdown",
+			filename: "output.md",
+			byteSize: expect.any(Number),
+		});
 		expect(result).toEqual({
 			model: "mistral-ocr-latest",
 			key: "ocr/test-uuid-123/output.md",
-			url: "https://assets.test.com/ocr/test-uuid-123/output.md",
+			url: "https://api.test.com/assets/ocr-asset-123",
 			outputFormat: "markdown",
 		});
 	});
@@ -181,42 +188,42 @@ describe("MistralOcrProvider", () => {
 
 	it("stores JSON output when requested", async () => {
 		const provider = new MistralOcrProvider();
-		mockStorageService.uploadObject.mockResolvedValue("ocr/test-uuid-123/output.json");
 
 		const result = await provider.extractText({
 			...baseRequest,
 			output_format: "json",
 		});
 
-		expect(mockStorageService.uploadObject).toHaveBeenCalledWith(
-			"ocr/test-uuid-123/output.json",
-			JSON.stringify(ocrResponse),
-			{
-				contentType: "application/json",
-				contentLength: JSON.stringify(ocrResponse).length,
-			},
-		);
-		expect(result.url).toBe("https://assets.test.com/ocr/test-uuid-123/output.json");
+		expect(mockStorageService.storePrivateAsset).toHaveBeenCalledWith({
+			key: "ocr/test-uuid-123/output.json",
+			data: JSON.stringify(ocrResponse),
+			ownerUserId: 123,
+			purpose: "ocr_output",
+			mimeType: "application/json",
+			filename: "output.json",
+			byteSize: JSON.stringify(ocrResponse).length,
+		});
+		expect(result.url).toBe("https://api.test.com/assets/ocr-asset-123");
 		expect(result.outputFormat).toBe("json");
 	});
 
 	it("stores HTML output when requested", async () => {
 		const provider = new MistralOcrProvider();
-		mockStorageService.uploadObject.mockResolvedValue("ocr/test-uuid-123/output.html");
 
 		const result = await provider.extractText({
 			...baseRequest,
 			output_format: "html",
 		});
 
-		expect(mockStorageService.uploadObject).toHaveBeenCalledWith(
-			"ocr/test-uuid-123/output.html",
-			expect.stringContaining("<!DOCTYPE html>"),
-			{
-				contentType: "text/html",
-				contentLength: expect.any(Number),
-			},
-		);
+		expect(mockStorageService.storePrivateAsset).toHaveBeenCalledWith({
+			key: "ocr/test-uuid-123/output.html",
+			data: expect.stringContaining("<!DOCTYPE html>"),
+			ownerUserId: 123,
+			purpose: "ocr_output",
+			mimeType: "text/html",
+			filename: "output.html",
+			byteSize: expect.any(Number),
+		});
 		expect(result.outputFormat).toBe("html");
 	});
 
@@ -238,10 +245,10 @@ describe("MistralOcrProvider", () => {
 
 		await provider.extractText(baseRequest);
 
-		expect(mockStorageService.uploadObject).toHaveBeenCalledWith(
-			expect.any(String),
-			expect.stringContaining("![img.1](data:image/png;base64,testdata123)"),
-			expect.any(Object),
+		expect(mockStorageService.storePrivateAsset).toHaveBeenCalledWith(
+			expect.objectContaining({
+				data: expect.stringContaining("![img.1](data:image/png;base64,testdata123)"),
+			}),
 		);
 	});
 
@@ -322,9 +329,8 @@ describe("MistralOcrProvider", () => {
 		);
 	});
 
-	it("builds relative asset URLs when PUBLIC_ASSETS_URL is missing", async () => {
+	it("returns stored private asset URL", async () => {
 		const provider = new MistralOcrProvider();
-		mockStorageService.uploadObject.mockResolvedValue("ocr/test-uuid-123/output.md");
 
 		const result = await provider.extractText({
 			...baseRequest,
@@ -334,6 +340,6 @@ describe("MistralOcrProvider", () => {
 			},
 		});
 
-		expect(result.url).toBe("/ocr/test-uuid-123/output.md");
+		expect(result.url).toBe("https://api.test.com/assets/ocr-asset-123");
 	});
 });

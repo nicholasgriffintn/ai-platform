@@ -14,6 +14,7 @@ const mockRepositories = {
 
 const mockStorageService = {
 	uploadObject: vi.fn(),
+	storePrivateAsset: vi.fn(),
 };
 
 const mockAI = {
@@ -22,6 +23,10 @@ const mockAI = {
 
 vi.mock("~/lib/storage", () => ({
 	StorageService: class {
+		static forPrivateAssets() {
+			return mockStorageService;
+		}
+
 		constructor() {
 			return mockStorageService;
 		}
@@ -36,6 +41,8 @@ describe("handlePodcastGenerateImage", () => {
 	const mockEnv = {
 		AI: mockAI,
 		ASSETS_BUCKET: "test-bucket",
+		PRIVATE_ASSETS_BUCKET: "private-test-bucket",
+		API_BASE_URL: "https://api.test.com",
 		PUBLIC_ASSETS_URL: "https://assets.example.com",
 	} as any;
 	const mockUser = { id: "user-123", email: "test@example.com" } as any;
@@ -62,6 +69,11 @@ describe("handlePodcastGenerateImage", () => {
 		vi.clearAllMocks();
 		const { generateId } = await import("~/utils/id");
 		vi.mocked(generateId).mockReturnValue("image-123");
+		mockStorageService.storePrivateAsset.mockResolvedValue({
+			assetId: "podcast-image-asset",
+			key: "podcasts/image-123/featured.png",
+			url: "https://api.test.com/assets/podcast-image-asset",
+		});
 	});
 
 	it("should return existing image when already generated", async () => {
@@ -125,7 +137,7 @@ describe("handlePodcastGenerateImage", () => {
 
 		expect(result.status).toBe("success");
 		expect(result.content).toBe(
-			"Podcast Featured Image Uploaded: [image-123](https://assets.example.com/podcasts/image-123/featured.png)",
+			"Podcast Featured Image Uploaded: [image-123](https://api.test.com/assets/podcast-image-asset)",
 		);
 		expect(mockAI.run).toHaveBeenCalledWith(
 			"@cf/bytedance/stable-diffusion-xl-lightning",
@@ -139,14 +151,15 @@ describe("handlePodcastGenerateImage", () => {
 				}),
 			}),
 		);
-		expect(mockStorageService.uploadObject).toHaveBeenCalledWith(
-			"podcasts/image-123/featured.png",
-			expect.any(ArrayBuffer),
-			{
-				contentType: "image/png",
-				contentLength: expect.any(Number),
-			},
-		);
+		expect(mockStorageService.storePrivateAsset).toHaveBeenCalledWith({
+			key: "podcasts/image-123/featured.png",
+			data: expect.any(ArrayBuffer),
+			ownerUserId: "user-123",
+			purpose: "app_artifact",
+			mimeType: "image/png",
+			filename: "featured.png",
+			byteSize: expect.any(Number),
+		});
 	});
 
 	it("should throw error for missing podcast ID", async () => {

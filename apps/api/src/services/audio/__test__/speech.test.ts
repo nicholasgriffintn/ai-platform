@@ -540,6 +540,11 @@ describe("handleTextToSpeech", () => {
 			mockAudioProviders.polly.synthesize.mockResolvedValue({
 				key: "audio-key-123",
 			});
+			mockStorageService.recordPrivateAsset.mockResolvedValueOnce({
+				assetId: "test-id-123",
+				key: "tts/test-id-123/audio.mp3",
+				url: "/assets/test-id-123",
+			});
 
 			const result = await handleTextToSpeech({
 				env: envWithoutUrl,
