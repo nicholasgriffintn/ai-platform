@@ -2,17 +2,10 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { AppSchema } from "~/types/app-schema";
 import type { IRequest } from "~/types";
-import { DynamicAppResponseRepository } from "~/repositories/DynamicAppResponseRepository";
 import { executeDynamicApp, registerDynamicApp } from "../index";
 
 vi.mock("~/lib/conversationManager", () => ({
 	ConversationManager: {
-		getInstance: vi.fn(),
-	},
-}));
-
-vi.mock("~/lib/database", () => ({
-	Database: {
 		getInstance: vi.fn(),
 	},
 }));
@@ -46,14 +39,28 @@ const baseApp: Omit<AppSchema, "id"> = {
 	},
 };
 
+const dynamicAppResponseRepository = {
+	createResponse: vi.fn(),
+	updateResponseData: vi.fn(),
+};
+
 function createRequest(overrides: Partial<IRequest> = {}): IRequest {
+	const env = {
+		DB: {},
+		CACHE: null,
+	} as any;
+
 	return {
 		app_url: "https://app.example.com",
-		context: {} as any,
-		env: {
-			DB: {},
-			CACHE: null,
+		context: {
+			database: {},
+			env,
+			repositories: {
+				dynamicAppResponses: dynamicAppResponseRepository,
+			},
+			requestCache: new Map(),
 		} as any,
+		env,
 		request: {
 			completion_id: "completion-123",
 		} as any,
@@ -82,10 +89,10 @@ describe("executeDynamicApp", () => {
 	beforeEach(async () => {
 		vi.clearAllMocks();
 
-		const { ConversationManager } = await import("~/lib/conversationManager");
-		const { Database } = await import("~/lib/database");
+		dynamicAppResponseRepository.createResponse.mockReset();
+		dynamicAppResponseRepository.updateResponseData.mockReset();
 
-		vi.mocked(Database.getInstance).mockReturnValue({} as any);
+		const { ConversationManager } = await import("~/lib/conversationManager");
 		vi.mocked(ConversationManager.getInstance).mockReturnValue({} as any);
 	});
 
@@ -107,14 +114,11 @@ describe("executeDynamicApp", () => {
 
 		vi.mocked(handleFunctions).mockResolvedValue(functionResult as any);
 
-		const createResponseSpy = vi
-			.spyOn(DynamicAppResponseRepository.prototype, "createResponse")
-			.mockResolvedValue({
-				id: "response-123",
-			} as any);
-		const updateResponseDataSpy = vi
-			.spyOn(DynamicAppResponseRepository.prototype, "updateResponseData")
-			.mockResolvedValue();
+		const createResponseSpy = dynamicAppResponseRepository.createResponse.mockResolvedValue({
+			id: "response-123",
+		} as any);
+		const updateResponseDataSpy =
+			dynamicAppResponseRepository.updateResponseData.mockResolvedValue(undefined);
 
 		const result = await executeDynamicApp(appId, formData, createRequest());
 
@@ -181,11 +185,8 @@ describe("executeDynamicApp", () => {
 
 		vi.mocked(handleFunctions).mockResolvedValue(functionResult as any);
 
-		const createResponseSpy = vi.spyOn(DynamicAppResponseRepository.prototype, "createResponse");
-		const updateResponseDataSpy = vi.spyOn(
-			DynamicAppResponseRepository.prototype,
-			"updateResponseData",
-		);
+		const createResponseSpy = dynamicAppResponseRepository.createResponse;
+		const updateResponseDataSpy = dynamicAppResponseRepository.updateResponseData;
 
 		const result = await executeDynamicApp(
 			appId,

@@ -1,5 +1,5 @@
-import { addRoute } from "~/lib/http/routeBuilder";
-import { type Context, Hono } from "hono";
+import { Hono } from "hono";
+import z from "zod/v4";
 
 import {
 	dynamicAppErrorResponseSchema,
@@ -13,30 +13,25 @@ import {
 	errorResponseSchema,
 } from "@assistant/schemas";
 
-import { requireAuth } from "~/middleware/auth";
+import { addRoute } from "~/lib/http/routeBuilder";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
-import { ResponseFactory } from "~/lib/http/ResponseFactory";
 import {
 	executeDynamicApp,
 	getDynamicAppById,
 	getDynamicAppCatalog,
-	listDynamicAppResponsesForUser,
 	getDynamicAppResponseById,
+	listDynamicAppResponsesForUser,
 } from "~/services/dynamic-apps";
 import type { IRequest } from "~/types/chat";
-import type { IEnv } from "~/types/shared";
-import { getLogger } from "~/utils/logger";
-import type { IUser } from "../types";
+import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
-import { getServiceContext } from "~/lib/context/serviceContext";
-
-const logger = getLogger({ prefix: "routes/dynamic-apps" });
 
 const dynamicApps = new Hono();
-
 const routeLogger = createRouteLogger("dynamic-apps");
 
-dynamicApps.use("*", requireAuth);
+const dynamicAppParamsSchema = z.object({ id: z.string().min(1) });
+const dynamicAppResponseParamsSchema = z.object({ responseId: z.string().min(1) });
+const dynamicAppExecutionBodySchema = z.record(z.string(), z.any());
 
 dynamicApps.use("*", (c, next) => {
 	routeLogger.info(`Processing dynamic-apps route: ${c.req.path}`);
@@ -47,6 +42,7 @@ addRoute(dynamicApps, "get", "/", {
 	tags: ["dynamic-apps"],
 	summary: "List all available dynamic apps",
 	description: "Returns a list of all registered dynamic apps with their basic information",
+	auth: true,
 	responses: {
 		200: {
 			description: "Dynamic apps and featured listings",
@@ -57,17 +53,15 @@ addRoute(dynamicApps, "get", "/", {
 			schema: errorResponseSchema,
 		},
 	},
-	handler: async ({ raw }) =>
-		(async (c) => {
-			return ResponseFactory.success(c, {
-				apps: await getDynamicAppCatalog(),
-			});
-		})(raw),
+	handler: async () => ({
+		apps: await getDynamicAppCatalog(),
+	}),
 });
 
 addRoute(dynamicApps, "get", "/responses", {
 	tags: ["dynamic-apps"],
 	summary: "List stored dynamic-app responses for user",
+	auth: true,
 	querySchema: listDynamicAppResponsesQuerySchema,
 	responses: {
 		200: { description: "Array of responses", schema: dynamicAppStoredResponsesResponseSchema },
@@ -76,22 +70,16 @@ addRoute(dynamicApps, "get", "/responses", {
 			schema: errorResponseSchema,
 		},
 	},
-	handler: async ({ raw }) =>
-		(async (c: Context) => {
-			const user = c.get("user") as IUser;
-			const { appId } = c.req.valid("query" as never) as {
-				appId?: string;
-			};
-
-			const list = await listDynamicAppResponsesForUser(c.env as IEnv, user.id, appId);
-			return ResponseFactory.success(c, list);
-		})(raw),
+	handler: async ({ query, serviceContext, user }) =>
+		listDynamicAppResponsesForUser(serviceContext, user.id, query.appId),
 });
 
 addRoute(dynamicApps, "get", "/:id", {
 	tags: ["dynamic-apps"],
 	summary: "Get dynamic app schema",
 	description: "Returns the complete schema for a specific dynamic app",
+	auth: true,
+	paramSchema: dynamicAppParamsSchema,
 	responses: {
 		200: { description: "Dynamic app schema", schema: dynamicAppSchema },
 		400: { description: "Bad request", schema: dynamicAppErrorResponseSchema },
@@ -101,29 +89,23 @@ addRoute(dynamicApps, "get", "/:id", {
 		},
 		404: { description: "App not found", schema: dynamicAppErrorResponseSchema },
 	},
-	handler: async ({ raw }) =>
-		(async (c: Context) => {
-			const _user = c.get("user") as IUser | undefined;
+	handler: async ({ params }) => {
+		const app = await getDynamicAppById(params.id);
+		if (!app) {
+			throw new AssistantError("App not found", ErrorType.NOT_FOUND, 404);
+		}
 
-			const id = c.req.param("id");
-			if (!id) {
-				return ResponseFactory.success(c, { error: "App ID is required" }, 400);
-			}
-
-			const app = await getDynamicAppById(id);
-
-			if (!app) {
-				return ResponseFactory.success(c, { error: "App not found" }, 404);
-			}
-
-			return ResponseFactory.success(c, app);
-		})(raw),
+		return app;
+	},
 });
 
 addRoute(dynamicApps, "post", "/:id/execute", {
 	tags: ["dynamic-apps"],
 	summary: "Execute dynamic app",
 	description: "Executes a dynamic app with the provided form data",
+	auth: true,
+	paramSchema: dynamicAppParamsSchema,
+	bodySchema: dynamicAppExecutionBodySchema,
 	responses: {
 		200: {
 			description: "App execution result",
@@ -137,73 +119,31 @@ addRoute(dynamicApps, "post", "/:id/execute", {
 		404: { description: "App not found", schema: dynamicAppErrorResponseSchema },
 		500: { description: "Server error", schema: dynamicAppErrorResponseSchema },
 	},
-	handler: async ({ raw }) =>
-		(async (c: Context) => {
-			const id = c.req.param("id");
-			if (!id) {
-				return ResponseFactory.success(c, { error: "App ID is required" }, 400);
-			}
+	handler: async ({ body, params, raw, serviceContext, user }) => {
+		const requestUrl = new URL(raw.req.url);
+		const req: IRequest = {
+			app_url: `${requestUrl.protocol}//${requestUrl.host}`,
+			env: serviceContext.env,
+			request: {
+				completion_id: generateId(),
+				input: "dynamic-app-execution",
+				date: new Date().toISOString(),
+				platform: "dynamic-apps",
+			},
+			user,
+			context: serviceContext,
+		};
 
-			const user = c.get("user");
-
-			if (!user?.id) {
-				return ResponseFactory.success(
-					c,
-					{
-						response: {
-							status: "error",
-							message: "User not authenticated",
-						},
-					},
-					401,
-				);
-			}
-
-			const formData = await c.req.json();
-
-			try {
-				const app = await getDynamicAppById(id);
-
-				if (!app) {
-					return ResponseFactory.success(c, { error: "App not found" }, 404);
-				}
-
-				const url = new URL(c.req.url);
-				const host = url.host;
-
-				const req: IRequest = {
-					app_url: `https://${host}`,
-					env: c.env,
-					request: {
-						completion_id: generateId(),
-						input: "dynamic-app-execution",
-						date: new Date().toISOString(),
-						platform: "dynamic-apps",
-					},
-					user,
-					context: getServiceContext(c),
-				};
-
-				const result = await executeDynamicApp(id, formData, req);
-				return ResponseFactory.success(c, result);
-			} catch (error) {
-				logger.error(`Error executing app ${id}:`, { error });
-				return ResponseFactory.success(
-					c,
-					{
-						error: "Failed to execute app",
-						message: error instanceof Error ? error.message : "Unknown error",
-					},
-					500,
-				);
-			}
-		})(raw),
+		return executeDynamicApp(params.id, body, req);
+	},
 });
 
 addRoute(dynamicApps, "get", "/responses/:responseId", {
 	tags: ["dynamic-apps"],
 	summary: "Get stored dynamic-app response",
 	description: "Retrieve a stored dynamic-app response by its `id` (response_id)",
+	auth: true,
+	paramSchema: dynamicAppResponseParamsSchema,
 	responses: {
 		200: {
 			description: "Stored dynamic-app response",
@@ -216,19 +156,14 @@ addRoute(dynamicApps, "get", "/responses/:responseId", {
 		},
 		404: { description: "Response not found", schema: dynamicAppErrorResponseSchema },
 	},
-	handler: async ({ raw }) =>
-		(async (c: Context) => {
-			const user = c.get("user") as IUser;
-			const responseId = c.req.param("responseId");
-			if (!responseId) {
-				return ResponseFactory.success(c, { error: "responseId is required" }, 400);
-			}
-			const data = await getDynamicAppResponseById(c.env as IEnv, user.id, responseId);
-			if (!data) {
-				return ResponseFactory.success(c, { error: "Response not found" }, 404);
-			}
-			return ResponseFactory.success(c, { response: data });
-		})(raw),
+	handler: async ({ params, serviceContext, user }) => {
+		const data = await getDynamicAppResponseById(serviceContext, user.id, params.responseId);
+		if (!data) {
+			throw new AssistantError("Response not found", ErrorType.NOT_FOUND, 404);
+		}
+
+		return { response: data };
+	},
 });
 
 export default dynamicApps;
