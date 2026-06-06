@@ -1,40 +1,37 @@
 import { Hono } from "hono";
+import z from "zod/v4";
 
-import { getServiceContext } from "~/lib/context/serviceContext";
+import { addRoute } from "~/lib/http/routeBuilder";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
-import { readAsset } from "~/lib/storage/read-asset";
+import { getAssetResponsePayload } from "~/services/assets";
 
 const app = new Hono();
 const routeLogger = createRouteLogger("assets");
-
-async function buildAssetResponse(asset: Awaited<ReturnType<typeof readAsset>>): Promise<Response> {
-	const headers = new Headers();
-	headers.set("content-type", asset.asset.mime_type);
-	headers.set("cache-control", "private, no-store");
-	headers.set("cross-origin-resource-policy", "cross-origin");
-	if (asset.asset.filename) {
-		headers.set("content-disposition", `inline; filename="${asset.asset.filename}"`);
-	}
-
-	return new Response(await asset.object.arrayBuffer(), {
-		headers,
-	});
-}
 
 app.use("/*", (c, next) => {
 	routeLogger.info(`Processing assets route: ${c.req.path}`);
 	return next();
 });
 
-app.get("/:assetId", async (context) => {
-	const serviceContext = getServiceContext(context);
-	const asset = await readAsset({
-		context: serviceContext,
-		assetId: context.req.param("assetId"),
-		userId: serviceContext.user?.id,
-	});
+addRoute(app, "get", "/:assetId", {
+	tags: ["assets"],
+	summary: "Read a stored asset",
+	paramSchema: z.object({ assetId: z.string().min(1) }),
+	responses: {
+		200: { description: "Asset bytes" },
+		403: { description: "Asset access denied" },
+		404: { description: "Asset not found" },
+	},
+	handler: async ({ params, serviceContext }) => {
+		const asset = await getAssetResponsePayload({
+			context: serviceContext,
+			assetId: params.assetId,
+		});
 
-	return await buildAssetResponse(asset);
+		return new Response(asset.body, {
+			headers: asset.headers,
+		});
+	},
 });
 
 export default app;

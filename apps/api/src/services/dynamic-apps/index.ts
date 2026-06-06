@@ -1,11 +1,10 @@
 import { ConversationManager } from "~/lib/conversationManager";
 import { getDynamicAppFormErrors } from "@assistant/schemas";
-import { Database } from "~/lib/database";
-import { DynamicAppResponseRepository } from "~/repositories/DynamicAppResponseRepository";
 import { getFeaturedApps, type FeaturedAppDefinition } from "~/services/dynamic-apps/config";
 import { handleFunctions } from "~/services/functions";
 import type { AppSchema } from "~/types/app-schema";
-import type { IRequest, IEnv } from "~/types";
+import type { IRequest } from "~/types";
+import type { ServiceContext } from "~/lib/context/serviceContext";
 import type { AppData } from "~/repositories/AppDataRepository";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
@@ -107,6 +106,17 @@ export const getDynamicAppById = async (id: string): Promise<AppSchema | null> =
 	return dynamicApps.get(id) || null;
 };
 
+const getDynamicAppServiceContext = (req: IRequest): ServiceContext => {
+	if (!req.context) {
+		throw new AssistantError(
+			"Dynamic app execution requires a service context",
+			ErrorType.CONFIGURATION_ERROR,
+		);
+	}
+
+	return req.context;
+};
+
 /**
  * Execute a dynamic app with the provided form data
  * @param id The app ID
@@ -128,15 +138,16 @@ export const executeDynamicApp = async (
 	validateFormData(app, formData);
 
 	const { env, user } = req;
-
-	const database = Database.getInstance(env);
+	const serviceContext = getDynamicAppServiceContext(req);
 
 	const conversationManager = ConversationManager.getInstance({
-		database,
+		database: serviceContext.database,
 		user,
 		store: !!user?.id,
 		platform: "dynamic-apps",
 		env,
+		requestCache: serviceContext.requestCache,
+		repositories: serviceContext.repositories,
 	});
 
 	try {
@@ -159,7 +170,7 @@ export const executeDynamicApp = async (
 					(resultData?.asyncInvocation?.id as string | undefined);
 
 				const saved = await createDynamicAppResponse(
-					env,
+					serviceContext,
 					user.id,
 					id,
 					{
@@ -188,8 +199,7 @@ export const executeDynamicApp = async (
 
 					functionResult = augmentedResult;
 
-					const repo = new DynamicAppResponseRepository(env);
-					await repo.updateResponseData(saved.id, {
+					await serviceContext.repositories.dynamicAppResponses.updateResponseData(saved.id, {
 						formData,
 						result: augmentedResult,
 					});
@@ -240,14 +250,13 @@ const validateFormData = (app: AppSchema, formData: Record<string, any>): void =
  * @returns The created response
  */
 export const createDynamicAppResponse = async (
-	env: IEnv,
+	context: ServiceContext,
 	userId: number,
 	appId: string,
 	payload: Record<string, any>,
 	itemId?: string,
 ): Promise<AppData> => {
-	const repo = new DynamicAppResponseRepository(env);
-	return repo.createResponse(userId, appId, payload, itemId);
+	return context.repositories.dynamicAppResponses.createResponse(userId, appId, payload, itemId);
 };
 
 /**
@@ -258,12 +267,11 @@ export const createDynamicAppResponse = async (
  * @returns The response data or null if not found
  */
 export const getDynamicAppResponseById = async (
-	env: IEnv,
+	context: ServiceContext,
 	userId: number,
 	responseId: string,
 ): Promise<AppData | null> => {
-	const repo = new DynamicAppResponseRepository(env);
-	return repo.getResponseByIdForUser(responseId, userId);
+	return context.repositories.dynamicAppResponses.getResponseByIdForUser(responseId, userId);
 };
 
 /**
@@ -274,10 +282,9 @@ export const getDynamicAppResponseById = async (
  * @returns Array of response data
  */
 export const listDynamicAppResponsesForUser = async (
-	env: IEnv,
+	context: ServiceContext,
 	userId: number,
 	appId?: string,
 ): Promise<AppData[]> => {
-	const repo = new DynamicAppResponseRepository(env);
-	return repo.listResponsesForUser(userId, appId);
+	return context.repositories.dynamicAppResponses.listResponsesForUser(userId, appId);
 };
