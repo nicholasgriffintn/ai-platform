@@ -8,6 +8,11 @@ protocol ToolsAPIClient {
     func fetchTools() async throws -> [ToolDefinition]
 }
 
+protocol RecipesAPIClient {
+    func fetchAssistantRecipes() async throws -> AssistantRecipesResponse
+    func installAssistantRecipe(id: String) async throws -> AssistantRecipeInstallResponse
+}
+
 protocol ConversationAPIClient {
     func fetchConversations(limit: Int, page: Int, includeArchived: Bool) async throws -> ConversationListResponse
     func fetchConversation(id: String, refreshPending: Bool) async throws -> ConversationDetailResponse
@@ -33,4 +38,4 @@ extension ConversationAPIClient {
     }
 }
 
-extension APIClient: ModelsAPIClient, ToolsAPIClient, ConversationAPIClient {}
+extension APIClient: ModelsAPIClient, ToolsAPIClient, RecipesAPIClient, ConversationAPIClient {}

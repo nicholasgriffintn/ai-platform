@@ -279,6 +279,53 @@ public struct ToolDefinition: Codable, Identifiable, Equatable {
     public let isDefault: Bool?
 }
 
+
+
+public struct AssistantRecipesResponse: Codable {
+    public let recipes: [AssistantRecipe]
+    public let categories: [String]
+    public let filters: [String]
+}
+
+public struct AssistantRecipe: Codable, Identifiable, Equatable {
+    public let id: String
+    public let title: String
+    public let summary: String
+    public let description: String
+    public let kind: String
+    public let category: String
+    public let featured: Bool
+    public let estimatedSetupMinutes: Int
+    public let integrations: [AssistantRecipeIntegration]
+    public let triggers: [AssistantRecipeTrigger]
+    public let actions: [String]
+    public let setupPrompt: String
+}
+
+public struct AssistantRecipeIntegration: Codable, Identifiable, Equatable {
+    public let id: String
+    public let name: String
+    public let description: String
+    public let requiresConnection: Bool
+}
+
+public struct AssistantRecipeTrigger: Codable, Equatable {
+    public let type: String
+    public let label: String
+    public let description: String
+}
+
+public struct AssistantRecipeInstallRequest: Codable {
+    let channel: String
+}
+
+public struct AssistantRecipeInstallResponse: Codable {
+    public let recipe: AssistantRecipe
+    public let conversationStarter: String
+    public let messageUrl: String
+    public let checklist: [String]
+}
+
 public struct TitleGenerationRequest: Codable {
     let messages: [ChatMessage]
 }

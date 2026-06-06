@@ -946,3 +946,73 @@ export const strudelListPatternsResponseSchema = z.object({
 export const strudelPatternDetailResponseSchema = z.object({
 	pattern: strudelPatternSchema,
 });
+
+export const recipeCategorySchema = z.enum([
+	"Calendar",
+	"Community",
+	"Developer",
+	"Email",
+	"Finance",
+	"Health",
+	"Home",
+	"Productivity",
+	"Scheduling",
+	"Shopping",
+	"Students",
+	"To-dos",
+	"Travel",
+]);
+
+export const recipeKindSchema = z.enum(["automate", "integrate"]);
+
+export const recipeTriggerSchema = z.object({
+	type: z.enum(["message", "schedule", "event"]),
+	label: z.string(),
+	description: z.string(),
+});
+
+export const recipeIntegrationSchema = z.object({
+	id: z.string(),
+	name: z.string(),
+	description: z.string(),
+	requiresConnection: z.boolean().default(true),
+});
+
+export const assistantRecipeSchema = z.object({
+	id: z.string(),
+	title: z.string(),
+	summary: z.string(),
+	description: z.string(),
+	kind: recipeKindSchema,
+	category: recipeCategorySchema,
+	featured: z.boolean(),
+	estimatedSetupMinutes: z.number().int().positive(),
+	integrations: z.array(recipeIntegrationSchema),
+	triggers: z.array(recipeTriggerSchema),
+	actions: z.array(z.string()),
+	setupPrompt: z.string(),
+});
+
+export const assistantRecipesResponseSchema = z.object({
+	recipes: z.array(assistantRecipeSchema),
+	categories: z.array(recipeCategorySchema),
+	filters: z.array(recipeKindSchema),
+});
+
+export const assistantRecipeInstallRequestSchema = z.object({
+	channel: z.enum(["web", "ios", "sms"]).default("web"),
+});
+
+export const assistantRecipeInstallResponseSchema = z.object({
+	recipe: assistantRecipeSchema,
+	conversationStarter: z.string(),
+	messageUrl: z.string(),
+	checklist: z.array(z.string()),
+});
+
+export type RecipeCategory = z.infer<typeof recipeCategorySchema>;
+export type RecipeKind = z.infer<typeof recipeKindSchema>;
+export type AssistantRecipe = z.infer<typeof assistantRecipeSchema>;
+export type AssistantRecipesResponse = z.infer<typeof assistantRecipesResponseSchema>;
+export type AssistantRecipeInstallRequest = z.infer<typeof assistantRecipeInstallRequestSchema>;
+export type AssistantRecipeInstallResponse = z.infer<typeof assistantRecipeInstallResponseSchema>;

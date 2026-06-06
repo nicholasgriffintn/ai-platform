@@ -20,6 +20,7 @@ import podcasts from "./podcasts";
 import retrieval from "./retrieval";
 import shared from "./shared";
 import replicate from "./replicate";
+import recipes from "./recipes";
 import canvas from "./canvas";
 import strudel from "./strudel";
 import sandbox from "./sandbox";
@@ -32,6 +33,8 @@ app.use("/*", (c, next) => {
 	routeLogger.info(`Processing apps route: ${c.req.path}`);
 	return next();
 });
+
+app.route("/recipes", recipes);
 
 app.use("/*", requireAuth);
 
