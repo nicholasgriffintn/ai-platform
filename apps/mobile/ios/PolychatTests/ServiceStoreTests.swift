@@ -147,6 +147,76 @@ struct ServiceStoreTests {
     }
 
     @MainActor
+    @Test func conversationManagerEditsUserMessageAndRegeneratesFromThatPoint() async throws {
+        let apiClient = ConversationAPIClientStub()
+        apiClient.streamEvents = [
+            .content("Edited answer"),
+            .done
+        ]
+
+        let manager = ConversationManager()
+        manager.configure(apiClient: apiClient)
+        let conversation = manager.startNewConversation()
+        manager.currentConversation?.messages = [
+            ChatMessage(id: "user-1", role: "user", content: "Original question"),
+            ChatMessage(id: "assistant-1", role: "assistant", content: "Old answer"),
+            ChatMessage(id: "user-2", role: "user", content: "Follow up")
+        ]
+        if let currentConversation = manager.currentConversation {
+            manager.conversations = [currentConversation]
+        }
+
+        await manager.editUserMessage("user-1", text: "  Edited question  ")
+
+        #expect(apiClient.streamCallCount == 1)
+        #expect(apiClient.streamedCompletionId == conversation.id)
+        #expect(apiClient.streamedMessages.map(\.id) == ["user-1"])
+        #expect(apiClient.streamedMessages.first?.textContent == "Edited question")
+        #expect(manager.currentConversation?.messages.map(\.role) == ["user", "assistant"])
+        #expect(manager.currentConversation?.messages.first?.textContent == "Edited question")
+        #expect(manager.currentConversation?.messages.last?.textContent == "Edited answer")
+    }
+
+    @MainActor
+    @Test func conversationManagerEditingMultimodalUserMessagePreservesAttachments() async throws {
+        let apiClient = ConversationAPIClientStub()
+        apiClient.streamEvents = [
+            .content("Looked at the image"),
+            .done
+        ]
+
+        let manager = ConversationManager()
+        manager.configure(apiClient: apiClient)
+        let conversation = manager.startNewConversation()
+        let imageBlock = MessageContentBlock.imageUrl(.init(url: "https://example.com/image.png"))
+        manager.currentConversation?.messages = [
+            ChatMessage(
+                id: "user-1",
+                role: "user",
+                contentBlocks: [
+                    .text(.init(text: "Original caption")),
+                    imageBlock
+                ]
+            ),
+            ChatMessage(id: "assistant-1", role: "assistant", content: "Old image answer")
+        ]
+        if let currentConversation = manager.currentConversation {
+            manager.conversations = [currentConversation]
+        }
+
+        await manager.editUserMessage("user-1", text: "Updated caption")
+
+        #expect(apiClient.streamedCompletionId == conversation.id)
+        #expect(apiClient.streamedMessages.first?.textContent == "Updated caption")
+        guard case .multimodal(let streamedBlocks)? = apiClient.streamedMessages.first?.content else {
+            Issue.record("Expected multimodal content to be preserved")
+            return
+        }
+        #expect(streamedBlocks.contains(imageBlock))
+        #expect(manager.currentConversation?.messages.first?.textContent == "Updated caption")
+    }
+
+    @MainActor
     @Test func conversationManagerPersistsRenamedLoadedConversation() async throws {
         let apiClient = ConversationAPIClientStub()
         let manager = ConversationManager()

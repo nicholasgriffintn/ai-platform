@@ -175,7 +175,7 @@ class ConversationManager: ObservableObject {
     }
 
     func regenerateAssistantMessage(_ messageId: String, settings: ChatSettings? = nil) async {
-        guard var conversation = currentConversation,
+        guard let conversation = currentConversation,
               let messageIndex = conversation.messages.firstIndex(where: { $0.id == messageId }) else {
             error = "Unable to retry: message not found"
             return
@@ -193,9 +193,52 @@ class ConversationManager: ObservableObject {
             return
         }
 
+        await regenerateConversation(
+            conversation,
+            through: retryEndIndex,
+            settings: settings,
+            missingUserError: "Unable to retry without a user message"
+        )
+    }
+
+    func editUserMessage(_ messageId: String, text: String, settings: ChatSettings? = nil) async {
+        let trimmedText = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedText.isEmpty else {
+            error = "Message cannot be empty"
+            return
+        }
+
+        guard let conversation = currentConversation,
+              let messageIndex = conversation.messages.firstIndex(where: { $0.id == messageId }) else {
+            error = "Unable to edit: message not found"
+            return
+        }
+
+        guard conversation.messages[messageIndex].role == "user" else {
+            error = "Only user messages can be edited"
+            return
+        }
+
+        conversation.messages[messageIndex] = conversation.messages[messageIndex].replacingTextContent(with: trimmedText)
+
+        await regenerateConversation(
+            conversation,
+            through: messageIndex + 1,
+            settings: settings,
+            missingUserError: "Unable to regenerate without a user message"
+        )
+    }
+
+    private func regenerateConversation(
+        _ conversation: Conversation,
+        through retryEndIndex: Int,
+        settings: ChatSettings?,
+        missingUserError: String
+    ) async {
+        var conversation = conversation
         let requestMessages = Array(conversation.messages.prefix(retryEndIndex))
         guard requestMessages.contains(where: { $0.role == "user" }) else {
-            error = "Unable to retry without a user message"
+            error = missingUserError
             return
         }
 

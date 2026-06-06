@@ -4,6 +4,8 @@ struct MessageBubble: View {
     let conversationModelId: String?
     @EnvironmentObject var conversationManager: ConversationManager
     @EnvironmentObject var modelsStore: ModelsStore
+    @State private var isEditingUserMessage = false
+    @State private var editedMessageText = ""
 
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
@@ -64,6 +66,15 @@ struct MessageBubble: View {
                             .accessibilityLabel("Retry message")
                         }
 
+                        if message.role == "user" {
+                            Button(action: beginEditingUserMessage) {
+                                Image(systemName: "pencil")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                            .accessibilityLabel("Edit message")
+                        }
+
                         Button(action: copyMessage) {
                             Image(systemName: "doc.on.doc")
                                 .font(.caption)
@@ -79,6 +90,16 @@ struct MessageBubble: View {
             }
         }
         .frame(maxWidth: .infinity)
+        .alert("Edit Message", isPresented: $isEditingUserMessage) {
+            TextField("Message", text: $editedMessageText)
+            Button("Cancel", role: .cancel) {}
+            Button("Save") {
+                saveEditedUserMessage()
+            }
+            .disabled(editedMessageText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+        } message: {
+            Text("Saving will rerun the conversation from this message and remove later replies.")
+        }
     }
 
     private var messageBackground: Color {
@@ -143,6 +164,18 @@ struct MessageBubble: View {
     private func regenerateMessage() {
         Task {
             await conversationManager.regenerateAssistantMessage(message.id)
+        }
+    }
+
+    private func beginEditingUserMessage() {
+        editedMessageText = message.textContent
+        isEditingUserMessage = true
+    }
+
+    private func saveEditedUserMessage() {
+        let newText = editedMessageText
+        Task {
+            await conversationManager.editUserMessage(message.id, text: newText)
         }
     }
 

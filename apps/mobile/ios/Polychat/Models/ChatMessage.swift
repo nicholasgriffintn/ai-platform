@@ -288,20 +288,91 @@ public struct ChatMessage: Codable, Identifiable, Equatable {
         artifacts: [Artifact]? = nil,
         model: String? = nil
     ) {
+        self.init(
+            id: id,
+            role: role,
+            content: .multimodal(contentBlocks),
+            artifacts: artifacts,
+            model: model
+        )
+    }
+
+    public init(
+        id: String = UUID().uuidString,
+        role: String,
+        content: MessageContent,
+        artifacts: [Artifact]? = nil,
+        model: String? = nil,
+        parts: [ChatMessagePart]? = nil,
+        reasoning: ChatReasoning? = nil,
+        citations: [ChatCitation]? = nil,
+        data: ChatMessageData? = nil,
+        name: String? = nil,
+        status: String? = nil,
+        logId: String? = nil,
+        created: Double? = nil,
+        timestamp: Double? = nil
+    ) {
         self.id = id
         self.role = role
-        self.content = .multimodal(contentBlocks)
+        self.content = content
         self.artifacts = artifacts
         self.model = model
-        self.parts = nil
-        self.reasoning = nil
-        self.citations = nil
-        self.data = nil
-        self.name = nil
-        self.status = nil
-        self.logId = nil
-        self.created = nil
-        self.timestamp = nil
+        self.parts = parts
+        self.reasoning = reasoning
+        self.citations = citations
+        self.data = data
+        self.name = name
+        self.status = status
+        self.logId = logId
+        self.created = created
+        self.timestamp = timestamp
+    }
+
+    public func replacingTextContent(with text: String) -> ChatMessage {
+        let updatedContent: MessageContent
+
+        switch content {
+        case .text:
+            updatedContent = .text(text)
+        case .multimodal(let blocks):
+            var didReplaceText = false
+            var updatedBlocks = blocks.compactMap { block -> MessageContentBlock? in
+                switch block {
+                case .text:
+                    if didReplaceText {
+                        return nil
+                    }
+                    didReplaceText = true
+                    return .text(MessageContentBlock.TextBlock(text: text))
+                default:
+                    return block
+                }
+            }
+
+            if !didReplaceText {
+                updatedBlocks.insert(.text(MessageContentBlock.TextBlock(text: text)), at: 0)
+            }
+
+            updatedContent = .multimodal(updatedBlocks)
+        }
+
+        return ChatMessage(
+            id: id,
+            role: role,
+            content: updatedContent,
+            artifacts: artifacts,
+            model: model,
+            parts: parts,
+            reasoning: reasoning,
+            citations: citations,
+            data: data,
+            name: name,
+            status: status,
+            logId: logId,
+            created: created,
+            timestamp: timestamp
+        )
     }
 
     enum CodingKeys: String, CodingKey {
