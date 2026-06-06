@@ -115,4 +115,51 @@ struct ServiceStoreTests {
         #expect(manager.currentConversation?.messages.last?.textContent.hasPrefix("Error:") == true)
         #expect(manager.currentConversation?.isLoadedFromAPI == false)
     }
+
+    @MainActor
+    @Test func conversationManagerRegeneratesAssistantMessageFromPriorContext() async throws {
+        let apiClient = ConversationAPIClientStub()
+        apiClient.streamEvents = [
+            .content("Updated answer"),
+            .done
+        ]
+
+        let manager = ConversationManager()
+        manager.configure(apiClient: apiClient)
+        let conversation = manager.startNewConversation()
+        manager.currentConversation?.messages = [
+            ChatMessage(id: "user-1", role: "user", content: "Question"),
+            ChatMessage(id: "assistant-1", role: "assistant", content: "Old answer"),
+            ChatMessage(id: "user-2", role: "user", content: "Follow up")
+        ]
+        if let currentConversation = manager.currentConversation {
+            manager.conversations = [currentConversation]
+        }
+
+        await manager.regenerateAssistantMessage("assistant-1")
+
+        #expect(apiClient.streamCallCount == 1)
+        #expect(apiClient.streamedCompletionId == conversation.id)
+        #expect(apiClient.streamedMessages.map(\.id) == ["user-1"])
+        #expect(manager.currentConversation?.messages.map(\.role) == ["user", "assistant"])
+        #expect(manager.currentConversation?.messages.last?.textContent == "Updated answer")
+        #expect(manager.currentConversation?.title == "New Conversation")
+    }
+
+    @MainActor
+    @Test func conversationManagerPersistsRenamedLoadedConversation() async throws {
+        let apiClient = ConversationAPIClientStub()
+        let manager = ConversationManager()
+        manager.configure(apiClient: apiClient)
+        let conversation = makeConversation(id: "conversation-1", title: "Old", isLoadedFromAPI: true)
+        manager.conversations = [conversation]
+        manager.currentConversation = conversation
+
+        await manager.updateConversationTitle("conversation-1", title: "Renamed")
+
+        #expect(manager.currentConversation?.title == "Renamed")
+        #expect(manager.conversations.first?.title == "Renamed")
+        #expect(apiClient.updatedConversationTitles.first?.id == "conversation-1")
+        #expect(apiClient.updatedConversationTitles.first?.title == "Renamed")
+    }
 }

@@ -61,6 +61,7 @@ struct MessageBubble: View {
                                     .font(.caption)
                                     .foregroundColor(.secondary)
                             }
+                            .accessibilityLabel("Retry message")
                         }
 
                         Button(action: copyMessage) {
@@ -68,6 +69,7 @@ struct MessageBubble: View {
                                 .font(.caption)
                                 .foregroundColor(.secondary)
                         }
+                        .accessibilityLabel("Copy message")
                     }
                 }
             }
@@ -139,8 +141,9 @@ struct MessageBubble: View {
     }
 
     private func regenerateMessage() {
-        // TODO: Implement regenerate functionality
-        // This would require modifying ConversationManager to support regeneration
+        Task {
+            await conversationManager.regenerateAssistantMessage(message.id)
+        }
     }
 
     private func copyMessage() {

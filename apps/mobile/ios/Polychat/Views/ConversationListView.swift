@@ -5,6 +5,9 @@ struct ConversationListView: View {
     @EnvironmentObject var conversationManager: ConversationManager
     @Binding var selectedConversationID: String?
     @State private var searchText = ""
+    @State private var conversationPendingDeletion: Conversation?
+    @State private var conversationPendingRename: Conversation?
+    @State private var renameTitle = ""
     let onShowSettings: () -> Void
 
     init(
@@ -51,9 +54,34 @@ struct ConversationListView: View {
                             .listRowInsets(EdgeInsets(top: 3, leading: 8, bottom: 3, trailing: 8))
                             .listRowBackground(Color.clear)
                             .listRowSeparator(.hidden)
-                        }
-                        .onDelete { offsets in
-                            deleteConversations(from: section.conversations, at: offsets)
+                            .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                                Button(role: .destructive) {
+                                    conversationPendingDeletion = conversation
+                                } label: {
+                                    Label("Delete", systemImage: "trash")
+                                }
+                            }
+                            .swipeActions(edge: .leading, allowsFullSwipe: false) {
+                                Button {
+                                    beginRenaming(conversation)
+                                } label: {
+                                    Label("Rename", systemImage: "pencil")
+                                }
+                                .tint(.blue)
+                            }
+                            .contextMenu {
+                                Button {
+                                    beginRenaming(conversation)
+                                } label: {
+                                    Label("Rename", systemImage: "pencil")
+                                }
+
+                                Button(role: .destructive) {
+                                    conversationPendingDeletion = conversation
+                                } label: {
+                                    Label("Delete", systemImage: "trash")
+                                }
+                            }
                         }
                     }
                 }
@@ -105,6 +133,34 @@ struct ConversationListView: View {
                 }
             }
         }
+        .alert("Rename Conversation", isPresented: renameAlertBinding) {
+            TextField("Title", text: $renameTitle)
+            Button("Cancel", role: .cancel) {
+                conversationPendingRename = nil
+                renameTitle = ""
+            }
+            Button("Save") {
+                saveRename()
+            }
+            .disabled(renameTitle.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+        } message: {
+            Text("Update the title shown in your conversation list.")
+        }
+        .confirmationDialog(
+            "Delete Conversation",
+            isPresented: deleteDialogBinding,
+            titleVisibility: .visible,
+            presenting: conversationPendingDeletion
+        ) { conversation in
+            Button("Delete \"\(conversation.title)\"", role: .destructive) {
+                deleteConversation(conversation)
+            }
+            Button("Cancel", role: .cancel) {
+                conversationPendingDeletion = nil
+            }
+        } message: { _ in
+            Text("This action cannot be undone.")
+        }
         .alert("Error", isPresented: .constant(conversationManager.error != nil)) {
             Button("OK") {
                 conversationManager.error = nil
@@ -121,11 +177,58 @@ struct ConversationListView: View {
         selectedConversationID = conversation.id
     }
 
-    private func deleteConversations(from conversations: [Conversation], at offsets: IndexSet) {
+    private var renameAlertBinding: Binding<Bool> {
+        Binding(
+            get: { conversationPendingRename != nil },
+            set: { isPresented in
+                if !isPresented {
+                    conversationPendingRename = nil
+                    renameTitle = ""
+                }
+            }
+        )
+    }
+
+    private var deleteDialogBinding: Binding<Bool> {
+        Binding(
+            get: { conversationPendingDeletion != nil },
+            set: { isPresented in
+                if !isPresented {
+                    conversationPendingDeletion = nil
+                }
+            }
+        )
+    }
+
+    private func beginRenaming(_ conversation: Conversation) {
+        conversationPendingRename = conversation
+        renameTitle = conversation.title
+    }
+
+    private func saveRename() {
+        guard let conversation = conversationPendingRename else {
+            return
+        }
+
+        let trimmedTitle = renameTitle.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedTitle.isEmpty else {
+            return
+        }
+
+        conversationPendingRename = nil
+        renameTitle = ""
+
         Task {
-            for index in offsets {
-                let conversation = conversations[index]
-                await conversationManager.deleteConversation(conversation)
+            await conversationManager.updateConversationTitle(conversation.id, title: trimmedTitle)
+        }
+    }
+
+    private func deleteConversation(_ conversation: Conversation) {
+        conversationPendingDeletion = nil
+        Task {
+            await conversationManager.deleteConversation(conversation)
+            if selectedConversationID == conversation.id {
+                selectedConversationID = conversationManager.conversations.first?.id
             }
         }
     }

@@ -93,6 +93,9 @@ final class ConversationAPIClientStub: ConversationAPIClient {
     var streamedMessages: [ChatMessage] = []
     var streamedModelId: String?
     var streamedCompletionId: String?
+    var streamCallCount = 0
+    var updatedConversationTitles: [(id: String, title: String)] = []
+    var deletedConversationIds: [String] = []
     var generatedTitle = "Generated title"
 
     func fetchConversations(limit: Int, page: Int, includeArchived: Bool) async throws -> ConversationListResponse {
@@ -110,6 +113,7 @@ final class ConversationAPIClientStub: ConversationAPIClient {
         completionId: String?,
         settings: ChatSettings?
     ) -> AsyncThrowingStream<ChatStreamEvent, Error> {
+        streamCallCount += 1
         streamedMessages = messages
         streamedModelId = modelId
         streamedCompletionId = completionId
@@ -126,7 +130,11 @@ final class ConversationAPIClientStub: ConversationAPIClient {
         TitleGenerationResponse(title: generatedTitle)
     }
 
-    func updateConversation(id: String, title: String) async throws {}
+    func updateConversation(id: String, title: String) async throws {
+        updatedConversationTitles.append((id: id, title: title))
+    }
 
-    func deleteConversation(id: String) async throws {}
+    func deleteConversation(id: String) async throws {
+        deletedConversationIds.append(id)
+    }
 }
