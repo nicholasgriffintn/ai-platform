@@ -57,6 +57,10 @@ export interface IUserSettings {
 	search_provider: string | null;
 	tracking_enabled: boolean;
 	sandbox_model: string | null;
+	sms_enabled: boolean;
+	sms_provider: "twilio-sms" | "aws-sms" | null;
+	sms_model: string | null;
+	sms_model_provider: string | null;
 }
 
 export interface UserSettings {

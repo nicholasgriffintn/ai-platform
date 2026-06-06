@@ -56,6 +56,10 @@ function buildUserSettingsFormData(userSettings: UserSettings | null) {
 		speech_model: speechSettings.speech_model,
 		search_provider: userSettings?.search_provider || "",
 		sandbox_model: userSettings?.sandbox_model || "",
+		sms_enabled: userSettings?.sms_enabled || false,
+		sms_provider: userSettings?.sms_provider || "twilio-sms",
+		sms_model: userSettings?.sms_model || "deepseek-chat",
+		sms_model_provider: userSettings?.sms_model_provider || "",
 	};
 }
 
@@ -213,6 +217,10 @@ export function UserSettingsForm({
 						speech_model: formData.speech_model,
 						search_provider: formData.search_provider,
 						sandbox_model: formData.sandbox_model,
+						sms_enabled: formData.sms_enabled,
+						sms_provider: formData.sms_provider,
+						sms_model: formData.sms_model,
+						sms_model_provider: formData.sms_model_provider,
 					};
 
 			await updateUserSettings(settingsPayload);
@@ -360,6 +368,91 @@ export function UserSettingsForm({
 						className="w-full"
 					/>
 				</div>
+			</div>
+
+			<div>
+				<h3 className="text-lg font-bold text-zinc-800 dark:text-zinc-100 mb-6">SMS Assistant</h3>
+			</div>
+
+			<div className="space-y-4">
+				<div>
+					<label
+						htmlFor="sms_enabled"
+						className="block text-sm font-medium text-zinc-800 dark:text-zinc-200 mb-1"
+					>
+						Enable SMS Assistant
+					</label>
+					<Switch
+						id="sms_enabled"
+						checked={formData.sms_enabled}
+						onChange={(e) =>
+							updateFormData((prev) => ({
+								...prev,
+								sms_enabled: e.target.checked,
+							}))
+						}
+					/>
+					<p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
+						Let configured Twilio or AWS SMS webhooks send messages to your AI assistant.
+					</p>
+				</div>
+				<div>
+					<label
+						htmlFor="sms_provider"
+						className="block text-sm font-medium text-zinc-800 dark:text-zinc-200 mb-1"
+					>
+						SMS Provider
+					</label>
+					<FormSelect
+						id="sms_provider"
+						name="sms_provider"
+						value={formData.sms_provider}
+						onChange={(e) =>
+							updateFormData((prev) => ({
+								...prev,
+								sms_provider: e.target.value as "twilio-sms" | "aws-sms",
+							}))
+						}
+					>
+						<option value="twilio-sms">Twilio SMS</option>
+						<option value="aws-sms">AWS SMS</option>
+					</FormSelect>
+				</div>
+				<div>
+					<label
+						htmlFor="sms_model"
+						className="block text-sm font-medium text-zinc-800 dark:text-zinc-200 mb-1"
+					>
+						SMS Assistant Model
+					</label>
+					<FormInput
+						id="sms_model"
+						name="sms_model"
+						value={formData.sms_model}
+						onChange={handleChange}
+						placeholder="deepseek-chat"
+						className="w-full"
+					/>
+				</div>
+				<div>
+					<label
+						htmlFor="sms_model_provider"
+						className="block text-sm font-medium text-zinc-800 dark:text-zinc-200 mb-1"
+					>
+						SMS Model Provider (optional)
+					</label>
+					<FormInput
+						id="sms_model_provider"
+						name="sms_model_provider"
+						value={formData.sms_model_provider}
+						onChange={handleChange}
+						placeholder="e.g. openai"
+						className="w-full"
+					/>
+				</div>
+				<p className="text-sm text-zinc-500 dark:text-zinc-400">
+					Configure the matching Twilio SMS or AWS SMS credentials in the Providers tab.
+				</p>
 			</div>
 			<div>
 				<h3 className="text-lg font-bold text-zinc-800 dark:text-zinc-100 mb-6">Guardrails</h3>

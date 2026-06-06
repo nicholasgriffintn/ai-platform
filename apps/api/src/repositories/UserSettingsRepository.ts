@@ -2,6 +2,11 @@ import { decodeBase64 } from "hono/utils/encode";
 
 import { getModels } from "~/lib/providers/models";
 import { listConfigurableChatProviders } from "~/lib/providers/capabilities/chat";
+import {
+	MESSAGING_PROVIDER_IDS,
+	MESSAGING_PROVIDER_LABELS,
+	isMessagingProviderId,
+} from "~/lib/messaging/providers";
 import type { IUserSettings } from "~/types";
 import { bufferToBase64 } from "~/utils/base64";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -238,6 +243,10 @@ export class UserSettingsRepository extends BaseRepository {
 			speech_model: settings.speech_model ?? null,
 			search_provider: settings.search_provider ?? null,
 			sandbox_model: settings.sandbox_model ?? null,
+			sms_enabled: settings.sms_enabled !== undefined ? (settings.sms_enabled ? 1 : 0) : null,
+			sms_provider: settings.sms_provider ?? null,
+			sms_model: settings.sms_model ?? null,
+			sms_model_provider: settings.sms_model_provider ?? null,
 		};
 
 		const allowedFields = Object.keys(updates);
@@ -284,6 +293,10 @@ export class UserSettingsRepository extends BaseRepository {
 			"speech_model",
 			"search_provider",
 			"sandbox_model",
+			"sms_enabled",
+			"sms_provider",
+			"sms_model",
+			"sms_model_provider",
 		];
 		const { query, values } = this.buildSelectQuery(
 			"user_settings",
@@ -302,6 +315,7 @@ export class UserSettingsRepository extends BaseRepository {
 			guardrails_enabled: Boolean(result.guardrails_enabled),
 			memories_save_enabled: Boolean(result.memories_save_enabled),
 			memories_chat_history_enabled: Boolean(result.memories_chat_history_enabled),
+			sms_enabled: Boolean(result.sms_enabled),
 		} as IUserSettings;
 	}
 
@@ -531,7 +545,7 @@ export class UserSettingsRepository extends BaseRepository {
 	}
 
 	public async createUserProviderSettings(userId: number): Promise<void> {
-		const providers = listConfigurableChatProviders();
+		const providers = [...listConfigurableChatProviders(), ...MESSAGING_PROVIDER_IDS];
 		const alwaysEnabledProviders = this.env.ALWAYS_ENABLED_PROVIDERS || "";
 		const defaultProviders = alwaysEnabledProviders?.split(",") || [];
 
@@ -583,6 +597,12 @@ export class UserSettingsRepository extends BaseRepository {
 		return result.map((provider) => ({
 			id: provider.id,
 			provider_id: provider.provider_id,
+			name: isMessagingProviderId(provider.provider_id)
+				? MESSAGING_PROVIDER_LABELS[provider.provider_id]
+				: undefined,
+			description: isMessagingProviderId(provider.provider_id)
+				? "SMS provider for texting your AI assistant"
+				: undefined,
 			enabled: provider.enabled === 1,
 			hasApiKey: Boolean(provider.api_key),
 		}));

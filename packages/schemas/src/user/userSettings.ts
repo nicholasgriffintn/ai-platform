@@ -29,6 +29,10 @@ export const updateUserSettingsSchema = z.object({
 	speech_model: z.string().optional(),
 	search_provider: z.string().optional(),
 	sandbox_model: z.string().optional(),
+	sms_enabled: z.boolean().optional(),
+	sms_provider: z.enum(["twilio-sms", "aws-sms"]).optional(),
+	sms_model: z.string().optional(),
+	sms_model_provider: z.string().optional(),
 });
 
 export const userModelsResponseSchema = z.object({
@@ -36,18 +40,16 @@ export const userModelsResponseSchema = z.object({
 	models: z.array(z.string()),
 });
 
-export const providersResponseSchema = z.object({
-	success: z.boolean(),
-	providers: z.array(
-		z.object({
-			id: z.string(),
-			name: z.string(),
-			type: z.string(),
-			enabled: z.boolean(),
-			hasApiKey: z.boolean().optional(),
-		}),
-	),
-});
+export const providersResponseSchema = z.array(
+	z.object({
+		id: z.string(),
+		provider_id: z.string(),
+		enabled: z.boolean(),
+		hasApiKey: z.boolean().optional(),
+		name: z.string().optional(),
+		description: z.string().optional(),
+	}),
+);
 
 export const providerSettingsSchema = z.object({
 	id: z.string(),

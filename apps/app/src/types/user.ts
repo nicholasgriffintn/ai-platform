@@ -49,4 +49,8 @@ export interface UserSettings {
 	speech_model?: string;
 	search_provider?: string;
 	sandbox_model?: string;
+	sms_enabled?: boolean;
+	sms_provider?: "twilio-sms" | "aws-sms";
+	sms_model?: string;
+	sms_model_provider?: string;
 }
