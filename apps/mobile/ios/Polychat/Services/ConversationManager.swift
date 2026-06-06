@@ -166,9 +166,68 @@ class ConversationManager: ObservableObject {
         currentConversation = conversation
         updateConversationInArray(conversation)
 
+        await generateAssistantResponse(
+            conversationId: conversation.id,
+            requestMessages: conversation.messages,
+            settings: settings,
+            generateTitle: true
+        )
+    }
+
+    func regenerateAssistantMessage(_ messageId: String, settings: ChatSettings? = nil) async {
+        guard var conversation = currentConversation,
+              let messageIndex = conversation.messages.firstIndex(where: { $0.id == messageId }) else {
+            error = "Unable to retry: message not found"
+            return
+        }
+
+        let message = conversation.messages[messageIndex]
+        let retryEndIndex: Int
+
+        if message.role == "assistant" {
+            retryEndIndex = messageIndex
+        } else if message.role == "user" {
+            retryEndIndex = messageIndex + 1
+        } else {
+            error = "Only user and assistant messages can be retried"
+            return
+        }
+
+        let requestMessages = Array(conversation.messages.prefix(retryEndIndex))
+        guard requestMessages.contains(where: { $0.role == "user" }) else {
+            error = "Unable to retry without a user message"
+            return
+        }
+
+        conversation.messages = requestMessages
+        conversation.lastMessageAt = Date()
+        conversation.messageCount = requestMessages.count
+        currentConversation = conversation
+        updateConversationInArray(conversation)
+
+        await generateAssistantResponse(
+            conversationId: conversation.id,
+            requestMessages: requestMessages,
+            settings: settings,
+            generateTitle: false
+        )
+    }
+
+    private func generateAssistantResponse(
+        conversationId: String,
+        requestMessages: [ChatMessage],
+        settings: ChatSettings?,
+        generateTitle: Bool
+    ) async {
+        guard var conversation = conversations.first(where: { $0.id == conversationId }) else {
+            return
+        }
+
         let assistantMessageId = UUID().uuidString
         let loadingMessage = ChatMessage(id: assistantMessageId, role: "assistant", content: "")
         conversation.messages.append(loadingMessage)
+        conversation.lastMessageAt = Date()
+        conversation.messageCount = conversation.messages.count
         currentConversation = conversation
         updateConversationInArray(conversation)
 
@@ -189,10 +248,10 @@ class ConversationManager: ObservableObject {
             }
 
             let stream = apiClient.streamChatCompletion(
-                messages: Array(conversation.messages.dropLast()),
+                messages: requestMessages,
                 modelId: modelToUse,
                 provider: providerToUse,
-                completionId: conversation.id,
+                completionId: conversationId,
                 settings: settings
             )
 
@@ -206,7 +265,7 @@ class ConversationManager: ObservableObject {
                 case .content(let delta):
                     streamedContent += delta
                     updateAssistantMessage(
-                        conversationId: conversation.id,
+                        conversationId: conversationId,
                         messageId: finalMessageId,
                         content: streamedContent,
                         modelId: responseModelId,
@@ -216,7 +275,7 @@ class ConversationManager: ObservableObject {
                     streamedReasoning += delta
                     if streamedContent.isEmpty {
                         updateAssistantMessage(
-                            conversationId: conversation.id,
+                            conversationId: conversationId,
                             messageId: finalMessageId,
                             content: "<think>\n\(streamedReasoning)",
                             modelId: responseModelId,
@@ -236,7 +295,7 @@ class ConversationManager: ObservableObject {
                         streamedContent = content
                     }
                     updateAssistantMessage(
-                        conversationId: conversation.id,
+                        conversationId: conversationId,
                         messageId: finalMessageId,
                         content: streamedContent,
                         modelId: responseModelId,
@@ -251,7 +310,7 @@ class ConversationManager: ObservableObject {
             if streamedContent.isEmpty {
                 streamedContent = streamedReasoning.isEmpty ? "No response" : "<think>\n\(streamedReasoning)"
                 updateAssistantMessage(
-                    conversationId: conversation.id,
+                    conversationId: conversationId,
                     messageId: finalMessageId,
                     content: streamedContent,
                     modelId: responseModelId,
@@ -259,12 +318,14 @@ class ConversationManager: ObservableObject {
                 )
             }
 
-            if let updatedConversation = currentConversation, updatedConversation.id == conversation.id {
+            if generateTitle,
+               let updatedConversation = currentConversation,
+               updatedConversation.id == conversationId {
                 await generateTitleIfNeeded(for: updatedConversation)
             }
         } catch {
             updateAssistantMessage(
-                conversationId: conversation.id,
+                conversationId: conversationId,
                 messageId: finalMessageId,
                 content: "Error: \(error.localizedDescription)",
                 modelId: conversation.modelId,
