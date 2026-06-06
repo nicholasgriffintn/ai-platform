@@ -65,14 +65,15 @@ struct ServiceStoreTests {
                 content: "Hello there",
                 model: "gpt-4o",
                 parts: nil,
-                reasoning: nil,
-                citations: nil,
+                reasoning: ChatReasoning(collapsed: true, content: "Reasoned"),
+                citations: [ChatCitation(url: "https://example.com", title: "Example")],
                 data: nil,
                 name: nil,
-                status: nil,
-                logId: nil,
+                status: "complete",
+                logId: "log-1",
                 created: 1_774_000_000
             )),
+            .content("!"),
             .done
         ]
 
@@ -92,8 +93,26 @@ struct ServiceStoreTests {
         #expect(apiClient.streamedMessages.map(\.role) == ["user"])
         #expect(manager.currentConversation?.messages.map(\.role) == ["user", "assistant"])
         #expect(manager.currentConversation?.messages.last?.id == "server-message")
-        #expect(manager.currentConversation?.messages.last?.textContent == "Hello there")
+        #expect(manager.currentConversation?.messages.last?.textContent == "Hello there!")
         #expect(manager.currentConversation?.messages.last?.model == "gpt-4o")
+        #expect(manager.currentConversation?.messages.last?.reasoning?.content == "Reasoned")
+        #expect(manager.currentConversation?.messages.last?.citations?.first?.url == "https://example.com")
+        #expect(manager.currentConversation?.messages.last?.status == "complete")
+        #expect(manager.currentConversation?.messages.last?.logId == "log-1")
+        #expect(manager.currentConversation?.messages.last?.created == 1_774_000_000)
         #expect(manager.currentConversation?.title == "Generated title")
+    }
+
+    @MainActor
+    @Test func conversationManagerReplacesLoadingMessageWhenAPIClientIsMissing() async throws {
+        let manager = ConversationManager()
+        _ = manager.startNewConversation()
+
+        try await manager.addMessage(ChatMessage(role: "user", content: "Hi"))
+
+        #expect(manager.currentConversation?.messages.map(\.role) == ["user", "assistant"])
+        #expect(manager.currentConversation?.messages.last?.textContent.contains("API client not configured") == true)
+        #expect(manager.currentConversation?.messages.last?.textContent.hasPrefix("Error:") == true)
+        #expect(manager.currentConversation?.isLoadedFromAPI == false)
     }
 }

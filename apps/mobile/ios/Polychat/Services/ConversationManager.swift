@@ -172,6 +172,9 @@ class ConversationManager: ObservableObject {
         currentConversation = conversation
         updateConversationInArray(conversation)
 
+        var finalMessageId = assistantMessageId
+        var didReceiveStreamEvent = false
+
         do {
             let currentSelectedModelId = await MainActor.run { modelsStore?.selectedModelId }
             let modelToUse = conversation.modelId ??
@@ -180,22 +183,25 @@ class ConversationManager: ObservableObject {
                            "mistral-small"
             let providerToUse = modelsStore?.model(withId: modelToUse)?.provider
 
-            guard let stream = apiClient?.streamChatCompletion(
+            guard let apiClient else {
+                throw NSError(domain: "com.polychat.app", code: 1,
+                             userInfo: [NSLocalizedDescriptionKey: "API client not configured"])
+            }
+
+            let stream = apiClient.streamChatCompletion(
                 messages: Array(conversation.messages.dropLast()),
                 modelId: modelToUse,
                 provider: providerToUse,
                 completionId: conversation.id,
                 settings: settings
-            ) else {
-                return
-            }
+            )
 
             var streamedContent = ""
             var streamedReasoning = ""
-            var finalMessageId = assistantMessageId
             var responseModelId = modelToUse
 
             for try await event in stream {
+                didReceiveStreamEvent = true
                 switch event {
                 case .content(let delta):
                     streamedContent += delta
@@ -203,7 +209,8 @@ class ConversationManager: ObservableObject {
                         conversationId: conversation.id,
                         messageId: finalMessageId,
                         content: streamedContent,
-                        modelId: responseModelId
+                        modelId: responseModelId,
+                        fallbackMessageId: assistantMessageId
                     )
                 case .reasoning(let delta):
                     streamedReasoning += delta
@@ -212,7 +219,8 @@ class ConversationManager: ObservableObject {
                             conversationId: conversation.id,
                             messageId: finalMessageId,
                             content: "<think>\n\(streamedReasoning)",
-                            modelId: responseModelId
+                            modelId: responseModelId,
+                            fallbackMessageId: assistantMessageId
                         )
                     }
                 case .state:
@@ -232,7 +240,8 @@ class ConversationManager: ObservableObject {
                         messageId: finalMessageId,
                         content: streamedContent,
                         modelId: responseModelId,
-                        metadata: metadata
+                        metadata: metadata,
+                        fallbackMessageId: assistantMessageId
                     )
                 case .done:
                     break
@@ -245,7 +254,8 @@ class ConversationManager: ObservableObject {
                     conversationId: conversation.id,
                     messageId: finalMessageId,
                     content: streamedContent,
-                    modelId: responseModelId
+                    modelId: responseModelId,
+                    fallbackMessageId: assistantMessageId
                 )
             }
 
@@ -255,9 +265,11 @@ class ConversationManager: ObservableObject {
         } catch {
             updateAssistantMessage(
                 conversationId: conversation.id,
-                messageId: assistantMessageId,
+                messageId: finalMessageId,
                 content: "Error: \(error.localizedDescription)",
-                modelId: conversation.modelId
+                modelId: conversation.modelId,
+                fallbackMessageId: assistantMessageId,
+                markLoadedFromAPI: didReceiveStreamEvent
             )
         }
     }
@@ -267,40 +279,44 @@ class ConversationManager: ObservableObject {
         messageId: String,
         content: String,
         modelId: String?,
-        metadata: ChatStreamMetadata? = nil
+        metadata: ChatStreamMetadata? = nil,
+        fallbackMessageId: String? = nil,
+        markLoadedFromAPI: Bool = true
     ) {
         guard let index = conversations.firstIndex(where: { $0.id == conversationId }) else {
             return
         }
 
         var conversation = conversations[index]
-        let messageIndex = conversation.messages.lastIndex { message in
-            message.id == messageId
-        } ?? conversation.messages.lastIndex { message in
-            message.role == "assistant"
-        }
+        let messageIndex = assistantMessageIndex(
+            in: conversation,
+            messageId: messageId,
+            fallbackMessageId: fallbackMessageId
+        )
 
         guard let messageIndex else {
             return
         }
 
+        let existingMessage = conversation.messages[messageIndex]
+        let created = metadata?.created ?? existingMessage.created
         conversation.messages[messageIndex] = ChatMessage(
             id: messageId,
             role: "assistant",
             content: content,
-            model: modelId,
-            parts: metadata?.parts,
-            reasoning: metadata?.reasoning,
-            citations: metadata?.citations,
-            data: metadata?.data,
-            name: metadata?.name,
-            status: metadata?.status,
-            logId: metadata?.logId,
-            created: metadata?.created,
-            timestamp: metadata?.created
+            model: modelId ?? existingMessage.model,
+            parts: metadata?.parts ?? existingMessage.parts,
+            reasoning: metadata?.reasoning ?? existingMessage.reasoning,
+            citations: metadata?.citations ?? existingMessage.citations,
+            data: metadata?.data ?? existingMessage.data,
+            name: metadata?.name ?? existingMessage.name,
+            status: metadata?.status ?? existingMessage.status,
+            logId: metadata?.logId ?? existingMessage.logId,
+            created: created,
+            timestamp: created ?? existingMessage.timestamp
         )
-        conversation.isLoadedFromAPI = true
-        conversation.modelId = modelId
+        conversation.isLoadedFromAPI = conversation.isLoadedFromAPI || markLoadedFromAPI
+        conversation.modelId = modelId ?? conversation.modelId
         conversation.lastMessageAt = Date()
         conversation.messageCount = conversation.messages.count
         conversations[index] = conversation
@@ -310,6 +326,25 @@ class ConversationManager: ObservableObject {
         }
     }
     
+    private func assistantMessageIndex(
+        in conversation: Conversation,
+        messageId: String,
+        fallbackMessageId: String?
+    ) -> Int? {
+        if let index = conversation.messages.lastIndex(where: { $0.id == messageId }) {
+            return index
+        }
+
+        if let fallbackMessageId,
+           let index = conversation.messages.lastIndex(where: { $0.id == fallbackMessageId }) {
+            return index
+        }
+
+        return fallbackMessageId == nil
+            ? conversation.messages.lastIndex(where: { $0.role == "assistant" })
+            : nil
+    }
+
     private func updateConversationInArray(_ conversation: Conversation) {
         if let index = conversations.firstIndex(where: { $0.id == conversation.id }) {
             conversations[index] = conversation
