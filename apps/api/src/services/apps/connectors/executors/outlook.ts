@@ -16,7 +16,8 @@ export async function executeOutlookOperation(
 		);
 		url.searchParams.set("$select", "id,subject,from,receivedDateTime,webLink,bodyPreview");
 		if (query) {
-			url.searchParams.set("$search", `"${query.replace(/"/g, '\\"')}"`);
+			const escapedQuery = query.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+			url.searchParams.set("$search", `"${escapedQuery}"`);
 		}
 		return fetchConnectorJson({
 			url: url.toString(),
