@@ -226,8 +226,8 @@ importers:
         specifier: 0.4.6
         version: 0.4.6(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
       posthog-js:
-        specifier: 1.376.5
-        version: 1.376.5
+        specifier: 1.376.6
+        version: 1.376.6
       react:
         specifier: 19.2.6
         version: 19.2.6
@@ -2446,11 +2446,11 @@ packages:
   '@poppinss/exception@1.2.3':
     resolution: {integrity: sha512-dCED+QRChTVatE9ibtoaxc+WkdzOSjYTKi/+uacHWIsfodVfpsueo3+DKpgU5Px8qXjgmXkSvhXvSCz3fnP9lw==}
 
-  '@posthog/core@1.29.14':
-    resolution: {integrity: sha512-IqfiD5rxdgPHsZMz45uQu824a5CEnpXRIU6QSoQT4NWjLbzKPMxg5zpHSCz+DMbDJ+Ii53T/tO76jGztpTd7uQ==}
+  '@posthog/core@1.29.15':
+    resolution: {integrity: sha512-jHdTo/hcZsZu1QJMi3GSysPzhkCwVncKB6IKocheFLypmMbGZp39ZGep9ECKNb1v6zBNdtHhcPqhfV+r+iLZNw==}
 
-  '@posthog/types@1.376.5':
-    resolution: {integrity: sha512-NhpEto2LtaGtdN+xqvh48wiFtAkdA+4onNaUrETnilrvJOqk95jAiPd2n/AXE/TT9zRyivQHhXwFowBInGldiQ==}
+  '@posthog/types@1.376.6':
+    resolution: {integrity: sha512-iBiS+C/3rGr/AMtfmeofRhBeCaB0I14mzlrzBmyWQe2h1kbTBAkChzy4wkF9rWmDSJqxQ+UNh0Xs/ZOP0S09tg==}
 
   '@protobufjs/aspromise@1.1.2':
     resolution: {integrity: sha512-j+gKExEuLmKwvz3OgROXtrJ2UG2x8Ch2YZUxahh+s1F2HZ+wAceUNLkvy6zKCPVRkU++ZWQrdxsUeQXmcg4uoQ==}
@@ -5648,8 +5648,8 @@ packages:
     resolution: {integrity: sha512-FfR8sjd4em2T6fb3I2MwAJU7HWVMr9zba+enmQeeWFfCbm+UOC/0X4DS8XtpUTMwWMGbjKYP7xjfNekzyGmB3A==}
     engines: {node: ^10 || ^12 || >=14}
 
-  posthog-js@1.376.5:
-    resolution: {integrity: sha512-Fa3QluqdwhprwQ+A38Hhirbw4s6f06KYeN/k4Cnp/xmSASbKDRHdphdh2/AYwXgnK1oS+LK5yAt43whc0z9I5w==}
+  posthog-js@1.376.6:
+    resolution: {integrity: sha512-T40qyq6YZbLEqTOYA8YyDSCx+bxj16p8ZT48rnFTsiNilZJU4GopnXzW6Cr7YM1XIBZtd2wis8U4AW8BO15Z4A==}
 
   powershell-utils@0.1.0:
     resolution: {integrity: sha512-dM0jVuXJPsDN6DvRpea484tCUaMiXWjuCn++HGTqUWzGDjv5tZkEZldAJ/UMlqRYGFrD/etByo4/xOuC/snX2A==}
@@ -8324,11 +8324,11 @@ snapshots:
 
   '@poppinss/exception@1.2.3': {}
 
-  '@posthog/core@1.29.14':
+  '@posthog/core@1.29.15':
     dependencies:
-      '@posthog/types': 1.376.5
+      '@posthog/types': 1.376.6
 
-  '@posthog/types@1.376.5': {}
+  '@posthog/types@1.376.6': {}
 
   '@protobufjs/aspromise@1.1.2': {}
 
@@ -11719,15 +11719,15 @@ snapshots:
       picocolors: 1.1.1
       source-map-js: 1.2.1
 
-  posthog-js@1.376.5:
+  posthog-js@1.376.6:
     dependencies:
       '@opentelemetry/api': 1.9.1
       '@opentelemetry/api-logs': 0.208.0
       '@opentelemetry/exporter-logs-otlp-http': 0.208.0(@opentelemetry/api@1.9.1)
       '@opentelemetry/resources': 2.7.1(@opentelemetry/api@1.9.1)
       '@opentelemetry/sdk-logs': 0.208.0(@opentelemetry/api@1.9.1)
-      '@posthog/core': 1.29.14
-      '@posthog/types': 1.376.5
+      '@posthog/core': 1.29.15
+      '@posthog/types': 1.376.6
       core-js: 3.49.0
       dompurify: 3.4.7
       fflate: 0.4.8
