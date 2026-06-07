@@ -10,6 +10,7 @@
 		"test": "vitest run",
 		"test:watch": "vitest",
 		"coverage": "vitest run --coverage",
+		"ci:test": "pnpm run coverage",
 		"cf-typegen": "wrangler types",
 		"format": "oxfmt",
 		"format:check": "oxfmt --check",

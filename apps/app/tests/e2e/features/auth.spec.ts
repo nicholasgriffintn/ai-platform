@@ -28,25 +28,19 @@ test.describe("Authentication Feature", () => {
 		await expect(modalTitle).toBeVisible();
 	});
 
-	test("should display GitHub authentication option in modal", async ({ page }) => {
+	test("should display GitHub and email authentication options in modal", async ({ page }) => {
 		const loginButton = page.getByRole("button", { name: /login/i });
 		await loginButton.click();
 
 		const githubButton = page.getByRole("button", {
 			name: /sign in with github/i,
 		});
-		await expect(githubButton).toBeVisible();
-	});
-
-	test("should display email magic link option in modal", async ({ page }) => {
-		const loginButton = page.getByRole("button", { name: /login/i });
-		await loginButton.click();
-
 		const emailInput = page.getByRole("textbox", { name: /email/i });
 		const emailButton = page.getByRole("button", {
 			name: /sign in with email/i,
 		});
 
+		await expect(githubButton).toBeVisible();
 		await expect(emailInput).toBeVisible();
 		await expect(emailButton).toBeVisible();
 	});

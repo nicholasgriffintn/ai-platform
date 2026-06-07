@@ -5,6 +5,7 @@ import { defineConfig, devices } from "@playwright/test";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
+  fullyParallel: true,
   timeout: 120 * 1000,
   retries: process.env.CI ? 1 : 0,
   testDir: "./apps/app/tests/e2e",

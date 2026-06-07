@@ -18,12 +18,6 @@ export default defineConfig({
 			},
 		},
 		pool: "threads",
-		poolOptions: {
-			threads: {
-				singleThread: false,
-				useAtomics: true,
-			},
-		},
 	},
 	resolve: {
 		alias: {
