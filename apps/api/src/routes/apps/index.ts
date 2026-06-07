@@ -1,5 +1,5 @@
 import { addRoute } from "~/lib/http/routeBuilder";
-import { type Context, Hono } from "hono";
+import { Hono } from "hono";
 
 import {
 	promptCoachJsonSchema,
@@ -9,9 +9,7 @@ import {
 
 import { requireAuth } from "~/middleware/auth";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
-import { ResponseFactory } from "~/lib/http/ResponseFactory";
 import { handlePromptCoachSuggestion } from "~/services/apps/prompt-coach";
-import type { IEnv, IUser } from "~/types";
 import articles from "./articles";
 import drawing from "./drawing";
 import embeddings from "./embeddings";
@@ -75,22 +73,12 @@ addRoute(app, "post", "/prompt-coach", {
 			schema: errorResponseSchema,
 		},
 	},
-	handler: async ({ raw }) =>
-		(async (context: Context) => {
-			const { prompt: userPrompt } = context.req.valid("json" as never) as {
-				prompt: string;
-			};
-			const userContext = context.get("user") as IUser | undefined;
-			const env = context.env as IEnv;
-
-			const result = await handlePromptCoachSuggestion({
-				env,
-				user: userContext,
-				prompt: userPrompt,
-			});
-
-			return ResponseFactory.success(context, result);
-		})(raw),
+	handler: async ({ body, serviceContext, user }) =>
+		handlePromptCoachSuggestion({
+			env: serviceContext.env,
+			user,
+			prompt: body.prompt,
+		}),
 });
 
 app.route("/shared", shared);

@@ -1,5 +1,5 @@
 import { addRoute } from "~/lib/http/routeBuilder";
-import { type Context, Hono } from "hono";
+import { Hono } from "hono";
 
 import {
 	planParamsSchema,
@@ -9,9 +9,7 @@ import {
 } from "@assistant/schemas";
 
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
-import { ResponseFactory } from "~/lib/http/ResponseFactory";
 import { getPlanDetails, listPlans } from "~/services/plans";
-import type { IEnv } from "~/types";
 
 const app = new Hono();
 const routeLogger = createRouteLogger("plans");
@@ -27,11 +25,7 @@ addRoute(app, "get", "/", {
 	responses: {
 		200: { description: "Subscription plans", schema: plansResponseSchema },
 	},
-	handler: async ({ raw }) =>
-		(async (c: Context) => {
-			const plans = await listPlans(c.env as IEnv);
-			return ResponseFactory.success(c, plans);
-		})(raw),
+	handler: async ({ serviceContext }) => listPlans(serviceContext.env),
 });
 
 addRoute(app, "get", "/:id", {
@@ -42,12 +36,7 @@ addRoute(app, "get", "/:id", {
 		200: { description: "Plan found", schema: planResponseSchema },
 		404: { description: "Not found", schema: errorResponseSchema },
 	},
-	handler: async ({ raw }) =>
-		(async (c: Context) => {
-			const { id } = c.req.valid("param" as never) as { id: string };
-			const plan = await getPlanDetails(c.env as IEnv, id);
-			return ResponseFactory.success(c, plan);
-		})(raw),
+	handler: async ({ params, serviceContext }) => getPlanDetails(serviceContext.env, params.id),
 });
 
 export default app;

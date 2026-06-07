@@ -1,5 +1,5 @@
 import { addRoute } from "~/lib/http/routeBuilder";
-import { type Context, Hono } from "hono";
+import { Hono } from "hono";
 
 import {
 	deleteEmbeddingSchema,
@@ -11,11 +11,9 @@ import {
 
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import { requirePlan } from "~/middleware/requirePlan";
-import { ResponseFactory } from "~/lib/http/ResponseFactory";
-import { type IDeleteEmbeddingRequest, deleteEmbedding } from "~/services/apps/embeddings/delete";
-import { type IInsertEmbeddingRequest, insertEmbedding } from "~/services/apps/embeddings/insert";
+import { deleteEmbedding } from "~/services/apps/embeddings/delete";
+import { insertEmbedding } from "~/services/apps/embeddings/insert";
 import { queryEmbeddings } from "~/services/apps/embeddings/query";
-import type { IEnv } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
 const app = new Hono();
@@ -30,6 +28,7 @@ app.use("/*", (c, next) => {
 addRoute(app, "post", "/insert", {
 	tags: ["apps"],
 	description: "Insert an embedding into the database",
+	auth: true,
 	bodySchema: insertEmbeddingSchema,
 	responses: {
 		200: {
@@ -42,31 +41,28 @@ addRoute(app, "post", "/insert", {
 		},
 	},
 	middleware: [requirePlan("pro")],
-	handler: async ({ raw }) =>
-		(async (context: Context) => {
-			const body = context.req.valid("json" as never) as IInsertEmbeddingRequest["request"];
-			const user = context.get("user");
+	handler: async ({ body, serviceContext, user }) => {
+		const response = await insertEmbedding({
+			request: body,
+			env: serviceContext.env,
+			user,
+		});
 
-			const response = await insertEmbedding({
-				request: body,
-				env: context.env as IEnv,
-				user,
-			});
+		if (response.status === "error") {
+			throw new AssistantError(
+				"Something went wrong, we are working on it",
+				ErrorType.UNKNOWN_ERROR,
+			);
+		}
 
-			if (response.status === "error") {
-				throw new AssistantError(
-					"Something went wrong, we are working on it",
-					ErrorType.UNKNOWN_ERROR,
-				);
-			}
-
-			return ResponseFactory.success(context, { response });
-		})(raw),
+		return { response };
+	},
 });
 
 addRoute(app, "get", "/query", {
 	tags: ["apps"],
 	description: "Query embeddings from the database",
+	auth: true,
 	querySchema: queryEmbeddingsSchema,
 	responses: {
 		200: {
@@ -79,30 +75,28 @@ addRoute(app, "get", "/query", {
 		},
 	},
 	middleware: [requirePlan("pro")],
-	handler: async ({ raw }) =>
-		(async (context: Context) => {
-			const query = context.req.valid("query" as never);
-			const user = context.get("user");
-			const response = await queryEmbeddings({
-				env: context.env as IEnv,
-				request: { query },
-				user,
-			});
+	handler: async ({ query, serviceContext, user }) => {
+		const response = await queryEmbeddings({
+			env: serviceContext.env,
+			request: { query },
+			user,
+		});
 
-			if (response.status === "error") {
-				throw new AssistantError(
-					"Something went wrong, we are working on it",
-					ErrorType.UNKNOWN_ERROR,
-				);
-			}
+		if (response.status === "error") {
+			throw new AssistantError(
+				"Something went wrong, we are working on it",
+				ErrorType.UNKNOWN_ERROR,
+			);
+		}
 
-			return ResponseFactory.success(context, { response });
-		})(raw),
+		return { response };
+	},
 });
 
 addRoute(app, "post", "/delete", {
 	tags: ["apps"],
 	description: "Delete embeddings from the database",
+	auth: true,
 	bodySchema: deleteEmbeddingSchema,
 	responses: {
 		200: {
@@ -115,25 +109,22 @@ addRoute(app, "post", "/delete", {
 		},
 	},
 	middleware: [requirePlan("pro")],
-	handler: async ({ raw }) =>
-		(async (context: Context) => {
-			const body = context.req.valid("json" as never) as IDeleteEmbeddingRequest["request"];
-			const user = context.get("user");
-			const response = await deleteEmbedding({
-				env: context.env as IEnv,
-				request: body,
-				user,
-			});
+	handler: async ({ body, serviceContext, user }) => {
+		const response = await deleteEmbedding({
+			env: serviceContext.env,
+			request: body,
+			user,
+		});
 
-			if (response.status === "error") {
-				throw new AssistantError(
-					"Something went wrong, we are working on it",
-					ErrorType.UNKNOWN_ERROR,
-				);
-			}
+		if (response.status === "error") {
+			throw new AssistantError(
+				"Something went wrong, we are working on it",
+				ErrorType.UNKNOWN_ERROR,
+			);
+		}
 
-			return ResponseFactory.success(context, { response });
-		})(raw),
+		return { response };
+	},
 });
 
 export default app;

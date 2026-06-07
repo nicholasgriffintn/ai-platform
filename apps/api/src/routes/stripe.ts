@@ -3,8 +3,6 @@ import { type Context, Hono } from "hono";
 
 import { errorResponseSchema, checkoutSchema } from "@assistant/schemas";
 
-import { requireAuth } from "~/middleware/auth";
-import { ResponseFactory } from "~/lib/http/ResponseFactory";
 import {
 	cancelSubscription,
 	createCheckoutSession,
@@ -13,7 +11,6 @@ import {
 	reactivateSubscription,
 } from "~/services/subscription";
 import { createRouteLogger } from "../middleware/loggerMiddleware";
-import { AssistantError, ErrorType } from "../utils/errors";
 
 const app = new Hono();
 
@@ -33,25 +30,15 @@ addRoute(app, "post", "/checkout", {
 		400: { description: "Invalid request data", schema: errorResponseSchema },
 		500: { description: "Server error", schema: errorResponseSchema },
 	},
-	middleware: [requireAuth],
-	handler: async ({ raw }) =>
-		(async (c: Context) => {
-			const { plan_id, success_url, cancel_url } = c.req.valid("json" as never) as {
-				plan_id: string;
-				success_url: string;
-				cancel_url: string;
-			};
-
-			const user = c.get("user");
-			if (!user?.id) {
-				throw new AssistantError("Authentication required", ErrorType.AUTHENTICATION_ERROR);
-			}
-
-			const env = c.env;
-
-			const session = await createCheckoutSession(env, user, plan_id, success_url, cancel_url);
-			return ResponseFactory.success(c, session);
-		})(raw),
+	auth: true,
+	handler: async ({ body, serviceContext, user }) =>
+		createCheckoutSession(
+			serviceContext.env,
+			user,
+			body.plan_id,
+			body.success_url,
+			body.cancel_url,
+		),
 });
 
 addRoute(app, "get", "/subscription", {
@@ -62,17 +49,8 @@ addRoute(app, "get", "/subscription", {
 		404: { description: "No subscription found", schema: errorResponseSchema },
 		500: { description: "Server error", schema: errorResponseSchema },
 	},
-	middleware: [requireAuth],
-	handler: async ({ raw }) =>
-		(async (c: Context) => {
-			const user = c.get("user");
-			if (!user?.id) {
-				throw new AssistantError("Authentication required", ErrorType.AUTHENTICATION_ERROR);
-			}
-
-			const status = await getSubscriptionStatus(c.env, user);
-			return ResponseFactory.success(c, status);
-		})(raw),
+	auth: true,
+	handler: async ({ serviceContext, user }) => getSubscriptionStatus(serviceContext.env, user),
 });
 
 addRoute(app, "post", "/subscription/cancel", {
@@ -83,17 +61,8 @@ addRoute(app, "post", "/subscription/cancel", {
 		404: { description: "No subscription found", schema: errorResponseSchema },
 		500: { description: "Server error", schema: errorResponseSchema },
 	},
-	middleware: [requireAuth],
-	handler: async ({ raw }) =>
-		(async (c: Context) => {
-			const user = c.get("user");
-			if (!user?.id) {
-				throw new AssistantError("Authentication required", ErrorType.AUTHENTICATION_ERROR);
-			}
-
-			const result = await cancelSubscription(c.env, user);
-			return ResponseFactory.success(c, result);
-		})(raw),
+	auth: true,
+	handler: async ({ serviceContext, user }) => cancelSubscription(serviceContext.env, user),
 });
 
 addRoute(app, "post", "/subscription/reactivate", {
@@ -107,16 +76,8 @@ addRoute(app, "post", "/subscription/reactivate", {
 		404: { description: "No subscription found", schema: errorResponseSchema },
 		500: { description: "Server error", schema: errorResponseSchema },
 	},
-	middleware: [requireAuth],
-	handler: async ({ raw }) =>
-		(async (c: Context) => {
-			const user = c.get("user");
-			if (!user?.id) {
-				throw new AssistantError("Authentication required", ErrorType.AUTHENTICATION_ERROR);
-			}
-			const result = await reactivateSubscription(c.env, user);
-			return ResponseFactory.success(c, result);
-		})(raw),
+	auth: true,
+	handler: async ({ serviceContext, user }) => reactivateSubscription(serviceContext.env, user),
 });
 
 addRoute(app, "post", "/webhook", {

@@ -1,10 +1,9 @@
 import { addRoute } from "~/lib/http/routeBuilder";
-import { type Context, Hono } from "hono";
+import { Hono } from "hono";
 
 import { errorResponseSchema, toolsResponseSchema } from "@assistant/schemas";
 
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
-import { ResponseFactory } from "~/lib/http/ResponseFactory";
 import { getAvailableTools } from "~/services/tools/toolsOperations";
 
 const app = new Hono();
@@ -27,13 +26,10 @@ addRoute(app, "get", "/", {
 		},
 		500: { description: "Server error", schema: errorResponseSchema },
 	},
-	handler: async ({ raw }) =>
-		(async (context: Context) => {
-			const user = context.get("user");
-			const isPro = user?.plan_id === "pro";
-			const tools = getAvailableTools(isPro, Boolean(user?.id));
-			return ResponseFactory.success(context, tools);
-		})(raw),
+	handler: async ({ user }) => {
+		const isPro = user?.plan_id === "pro";
+		return getAvailableTools(isPro, Boolean(user?.id));
+	},
 });
 
 export default app;

@@ -137,12 +137,13 @@ export const executeDynamicApp = async (
 
 	validateFormData(app, formData);
 
-	const { env, user } = req;
+	const { anonymousUser, env, user } = req;
 	const serviceContext = getDynamicAppServiceContext(req);
 
 	const conversationManager = ConversationManager.getInstance({
 		database: serviceContext.database,
 		user,
+		anonymousUser,
 		store: !!user?.id,
 		platform: "dynamic-apps",
 		env,
@@ -243,7 +244,7 @@ const validateFormData = (app: AppSchema, formData: Record<string, any>): void =
 
 /**
  * Create a response for a dynamic app execution
- * @param env The environment
+ * @param context The request service context
  * @param userId The user ID
  * @param appId The app ID
  * @param payload The response payload
@@ -261,7 +262,7 @@ export const createDynamicAppResponse = async (
 
 /**
  * Get a dynamic app response by ID
- * @param env The environment
+ * @param context The request service context
  * @param userId The user ID that owns the response
  * @param responseId The response ID
  * @returns The response data or null if not found
@@ -276,7 +277,7 @@ export const getDynamicAppResponseById = async (
 
 /**
  * List dynamic app responses for a user
- * @param env The environment
+ * @param context The request service context
  * @param userId The user ID
  * @param appId Optional app ID to filter by
  * @returns Array of response data

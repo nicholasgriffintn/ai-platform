@@ -1,5 +1,5 @@
 import { addRoute } from "~/lib/http/routeBuilder";
-import { type Context, Hono } from "hono";
+import { Hono } from "hono";
 
 import {
 	capabilitiesResponseSchema,
@@ -22,14 +22,13 @@ import {
 	listModelsByModality,
 	listModelsByOutputModality,
 } from "~/services/models";
-import type { IEnv } from "~/types";
 import { availableModalities } from "~/constants/models";
 
 const app = new Hono();
 
 const routeLogger = createRouteLogger("models");
 
-app.use("/*", (c: Context, next) => {
+app.use("/*", (c, next) => {
 	routeLogger.info(`Processing models route: ${c.req.path}`);
 	return next();
 });
@@ -46,12 +45,7 @@ addRoute(app, "get", "/", {
 		},
 		500: { description: "Server error", schema: errorResponseSchema },
 	},
-	handler: async ({ raw }) =>
-		(async (context: Context) => {
-			const userId = context.get("user")?.id;
-			const models = await listModels(context.env, userId);
-			return ResponseFactory.success(context, models);
-		})(raw),
+	handler: async ({ serviceContext, user }) => listModels(serviceContext.env, user?.id),
 });
 
 addRoute(app, "get", "/capabilities", {
@@ -65,11 +59,7 @@ addRoute(app, "get", "/capabilities", {
 		},
 		500: { description: "Server error", schema: errorResponseSchema },
 	},
-	handler: async ({ raw }) =>
-		(async (context: Context) => {
-			const caps = listStrengths();
-			return ResponseFactory.success(context, caps);
-		})(raw),
+	handler: async () => listStrengths(),
 });
 
 addRoute(app, "get", "/capabilities/:capability", {
@@ -88,19 +78,13 @@ addRoute(app, "get", "/capabilities/:capability", {
 		},
 		500: { description: "Server error", schema: errorResponseSchema },
 	},
-	handler: async ({ raw }) =>
-		(async (context: Context) => {
-			const { capability } = context.req.valid("param" as never) as {
-				capability: string;
-			};
-			const validCapabilities = listStrengths();
-			if (!validCapabilities.includes(capability)) {
-				return ResponseFactory.error(context, "Invalid capability parameter", 400);
-			}
-			const userId = context.get("user")?.id;
-			const models = await listModelsByStrength(context.env as IEnv, capability, userId);
-			return ResponseFactory.success(context, models);
-		})(raw),
+	handler: async ({ params, raw, serviceContext, user }) => {
+		const validCapabilities = listStrengths();
+		if (!validCapabilities.includes(params.capability)) {
+			return ResponseFactory.error(raw, "Invalid capability parameter", 400);
+		}
+		return listModelsByStrength(serviceContext.env, params.capability, user?.id);
+	},
 });
 
 addRoute(app, "get", "/modalities", {
@@ -114,11 +98,7 @@ addRoute(app, "get", "/modalities", {
 		},
 		500: { description: "Server error", schema: errorResponseSchema },
 	},
-	handler: async ({ raw }) =>
-		(async (context: Context) => {
-			const modalities = listModalities();
-			return ResponseFactory.success(context, modalities);
-		})(raw),
+	handler: async () => listModalities(),
 });
 
 addRoute(app, "get", "/modalities/:modality", {
@@ -137,18 +117,12 @@ addRoute(app, "get", "/modalities/:modality", {
 		},
 		500: { description: "Server error", schema: errorResponseSchema },
 	},
-	handler: async ({ raw }) =>
-		(async (context: Context) => {
-			const { modality } = context.req.valid("param" as never) as {
-				modality: string;
-			};
-			if (!availableModalities.includes(modality as (typeof availableModalities)[number])) {
-				return ResponseFactory.error(context, "Invalid modality parameter", 400);
-			}
-			const userId = context.get("user")?.id;
-			const models = await listModelsByModality(context.env as IEnv, modality, userId);
-			return ResponseFactory.success(context, models);
-		})(raw),
+	handler: async ({ params, raw, serviceContext, user }) => {
+		if (!availableModalities.includes(params.modality as (typeof availableModalities)[number])) {
+			return ResponseFactory.error(raw, "Invalid modality parameter", 400);
+		}
+		return listModelsByModality(serviceContext.env, params.modality, user?.id);
+	},
 });
 
 addRoute(app, "get", "/output/:modality", {
@@ -167,18 +141,12 @@ addRoute(app, "get", "/output/:modality", {
 		},
 		500: { description: "Server error", schema: errorResponseSchema },
 	},
-	handler: async ({ raw }) =>
-		(async (context: Context) => {
-			const { modality } = context.req.valid("param" as never) as {
-				modality: string;
-			};
-			if (!availableModalities.includes(modality as never)) {
-				return ResponseFactory.error(context, "Invalid modality parameter", 400);
-			}
-			const userId = context.get("user")?.id;
-			const models = await listModelsByOutputModality(context.env as IEnv, modality, userId);
-			return ResponseFactory.success(context, models);
-		})(raw),
+	handler: async ({ params, raw, serviceContext, user }) => {
+		if (!availableModalities.includes(params.modality as never)) {
+			return ResponseFactory.error(raw, "Invalid modality parameter", 400);
+		}
+		return listModelsByOutputModality(serviceContext.env, params.modality, user?.id);
+	},
 });
 
 addRoute(app, "get", "/:id", {
@@ -192,17 +160,13 @@ addRoute(app, "get", "/:id", {
 		404: { description: "Model not found", schema: errorResponseSchema },
 		500: { description: "Server error", schema: errorResponseSchema },
 	},
-	handler: async ({ raw }) =>
-		(async (context: Context) => {
-			const { id } = context.req.valid("param" as never) as { id: string };
-			const userId = context.get("user")?.id;
-			try {
-				const model = await getModelDetails(context.env as IEnv, id, userId);
-				return ResponseFactory.success(context, model);
-			} catch {
-				return ResponseFactory.error(context, "Model not found or user does not have access", 404);
-			}
-		})(raw),
+	handler: async ({ params, raw, serviceContext, user }) => {
+		try {
+			return await getModelDetails(serviceContext.env, params.id, user?.id);
+		} catch {
+			return ResponseFactory.error(raw, "Model not found or user does not have access", 404);
+		}
+	},
 });
 
 export default app;

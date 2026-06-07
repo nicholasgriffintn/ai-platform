@@ -1,5 +1,6 @@
 import { addRoute } from "~/lib/http/routeBuilder";
-import { type Context, Hono } from "hono";
+import { Hono } from "hono";
+import { z } from "zod/v4";
 
 import {
 	shareItemSchema,
@@ -8,11 +9,10 @@ import {
 	errorResponseSchema,
 } from "@assistant/schemas";
 
-import { getServiceContext } from "~/lib/context/serviceContext";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import { ResponseFactory } from "~/lib/http/ResponseFactory";
 import { getSharedItem, shareItem, unshareItem } from "~/services/apps/shared";
-import type { IEnv, IUser } from "~/types";
+import type { IEnv } from "~/types";
 import { AssistantError } from "~/utils/errors";
 
 const app = new Hono<{
@@ -26,10 +26,19 @@ app.use("/*", (c, next) => {
 	return next();
 });
 
+const shareIdParamsSchema = z.object({
+	share_id: z.string().min(1),
+});
+
+const appIdParamsSchema = z.object({
+	app_id: z.string().min(1),
+});
+
 addRoute(app, "post", "/", {
 	tags: ["apps"],
 	description: "Generate a share ID for an app item",
 	bodySchema: shareItemSchema,
+	auth: true,
 	responses: {
 		200: {
 			description: "Share ID generated successfully",
@@ -40,43 +49,33 @@ addRoute(app, "post", "/", {
 		404: { description: "Item not found", schema: errorResponseSchema },
 		500: { description: "Server error", schema: errorResponseSchema },
 	},
-	handler: async ({ raw }) =>
-		(async (c: Context) => {
-			const user = c.get("user") as IUser;
+	handler: async ({ body, raw, serviceContext, user }) => {
+		try {
+			const { shareId } = await shareItem({
+				userId: user.id,
+				id: body.app_id,
+				context: serviceContext,
+			});
 
-			if (!user?.id) {
-				return ResponseFactory.error(c, "Unauthorized", 401);
+			return { share_id: shareId };
+		} catch (error) {
+			routeLogger.error("Error sharing item:", {
+				error_message: error instanceof Error ? error.message : "Unknown error",
+			});
+
+			if (error instanceof AssistantError) {
+				return ResponseFactory.error(raw, error.message);
 			}
 
-			try {
-				const body = await c.req.json();
-				const { app_id } = body;
-
-				const serviceContext = getServiceContext(c);
-				const { shareId } = await shareItem({
-					userId: user.id,
-					id: app_id,
-					context: serviceContext,
-				});
-
-				return ResponseFactory.success(c, { share_id: shareId });
-			} catch (error) {
-				routeLogger.error("Error sharing item:", {
-					error_message: error instanceof Error ? error.message : "Unknown error",
-				});
-
-				if (error instanceof AssistantError) {
-					return ResponseFactory.error(c, error.message);
-				}
-
-				return ResponseFactory.error(c, "Failed to share item", 500);
-			}
-		})(raw),
+			return ResponseFactory.error(raw, "Failed to share item", 500);
+		}
+	},
 });
 
 addRoute(app, "get", "/:share_id", {
 	tags: ["apps"],
 	description: "Get a shared app item by its share ID",
+	paramSchema: shareIdParamsSchema,
 	responses: {
 		200: {
 			description: "Shared item retrieved successfully",
@@ -86,51 +85,46 @@ addRoute(app, "get", "/:share_id", {
 		404: { description: "Item not found", schema: errorResponseSchema },
 		500: { description: "Server error", schema: errorResponseSchema },
 	},
-	handler: async ({ raw }) =>
-		(async (c: Context) => {
-			const share_id = c.req.param("share_id");
-			routeLogger.info(`Fetching shared item with ID: ${share_id}`);
+	handler: async ({ params, raw, serviceContext }) => {
+		routeLogger.info(`Fetching shared item with ID: ${params.share_id}`);
 
-			if (!share_id) {
-				return ResponseFactory.error(c, "Share ID is required", 400);
+		try {
+			const sharedItem = await getSharedItem({
+				context: serviceContext,
+				shareId: params.share_id,
+			});
+
+			return {
+				item: {
+					id: sharedItem.id,
+					app_id: sharedItem.appId,
+					item_id: sharedItem.itemId,
+					item_type: sharedItem.itemType,
+					data: sharedItem.data,
+					share_id: sharedItem.shareId,
+					created_at: sharedItem.createdAt,
+					updated_at: sharedItem.updatedAt,
+				},
+			};
+		} catch (error) {
+			routeLogger.error("Error retrieving shared item:", {
+				error_message: error instanceof Error ? error.message : "Unknown error",
+			});
+
+			if (error instanceof AssistantError) {
+				return ResponseFactory.error(raw, error.message);
 			}
 
-			try {
-				const serviceContext = getServiceContext(c);
-				const sharedItem = await getSharedItem({
-					context: serviceContext,
-					shareId: share_id,
-				});
-
-				return ResponseFactory.success(c, {
-					item: {
-						id: sharedItem.id,
-						app_id: sharedItem.appId,
-						item_id: sharedItem.itemId,
-						item_type: sharedItem.itemType,
-						data: sharedItem.data,
-						share_id: sharedItem.shareId,
-						created_at: sharedItem.createdAt,
-						updated_at: sharedItem.updatedAt,
-					},
-				});
-			} catch (error) {
-				routeLogger.error("Error retrieving shared item:", {
-					error_message: error instanceof Error ? error.message : "Unknown error",
-				});
-
-				if (error instanceof AssistantError) {
-					return ResponseFactory.error(c, error.message);
-				}
-
-				return ResponseFactory.error(c, "Failed to retrieve shared item", 500);
-			}
-		})(raw),
+			return ResponseFactory.error(raw, "Failed to retrieve shared item", 500);
+		}
+	},
 });
 
 addRoute(app, "delete", "/:app_id", {
 	tags: ["apps"],
 	description: "Remove a share ID from an app item",
+	paramSchema: appIdParamsSchema,
+	auth: true,
 	responses: {
 		200: {
 			description: "Share ID removed successfully",
@@ -141,40 +135,27 @@ addRoute(app, "delete", "/:app_id", {
 		404: { description: "Item not found", schema: errorResponseSchema },
 		500: { description: "Server error", schema: errorResponseSchema },
 	},
-	handler: async ({ raw }) =>
-		(async (c: Context) => {
-			const user = c.get("user") as IUser;
+	handler: async ({ params, raw, serviceContext, user }) => {
+		try {
+			await unshareItem({
+				userId: user.id,
+				id: params.app_id,
+				context: serviceContext,
+			});
 
-			if (!user?.id) {
-				return ResponseFactory.error(c, "Unauthorized", 401);
+			return { message: "Share removed" };
+		} catch (error) {
+			routeLogger.error("Error unsharing item:", {
+				error_message: error instanceof Error ? error.message : "Unknown error",
+			});
+
+			if (error instanceof AssistantError) {
+				return ResponseFactory.error(raw, error.message);
 			}
 
-			const app_id = c.req.param("app_id");
-			if (!app_id) {
-				return ResponseFactory.error(c, "App item ID is required", 400);
-			}
-
-			try {
-				const serviceContext = getServiceContext(c);
-				await unshareItem({
-					userId: user.id,
-					id: app_id,
-					context: serviceContext,
-				});
-
-				return ResponseFactory.success(c, { message: "Share removed" });
-			} catch (error) {
-				routeLogger.error("Error unsharing item:", {
-					error_message: error instanceof Error ? error.message : "Unknown error",
-				});
-
-				if (error instanceof AssistantError) {
-					return ResponseFactory.error(c, error.message);
-				}
-
-				return ResponseFactory.error(c, "Failed to unshare item", 500);
-			}
-		})(raw),
+			return ResponseFactory.error(raw, "Failed to unshare item", 500);
+		}
+	},
 });
 
 export default app;

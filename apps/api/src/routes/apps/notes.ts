@@ -1,7 +1,7 @@
 import { addRoute } from "~/lib/http/routeBuilder";
-import { type Context, Hono } from "hono";
+import { Hono } from "hono";
 
-import type { z } from "zod";
+import z from "zod/v4";
 import {
 	listNotesResponseSchema,
 	noteCreateSchema,
@@ -15,8 +15,6 @@ import {
 	successResponseSchema,
 } from "@assistant/schemas";
 
-import { getServiceContext } from "~/lib/context/serviceContext";
-import { ResponseFactory } from "~/lib/http/ResponseFactory";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import { requirePlan } from "~/middleware/requirePlan";
 import {
@@ -27,11 +25,8 @@ import {
 	listNotes,
 	updateNote,
 } from "~/services/apps/notes/list";
-import type { IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateNotesFromMedia } from "~/services/apps/notes/generate-from-media";
-
-type NoteUpdatePayload = z.infer<typeof noteUpdateSchema>;
 
 const app = new Hono();
 const routeLogger = createRouteLogger("apps/notes");
@@ -39,6 +34,10 @@ const routeLogger = createRouteLogger("apps/notes");
 app.use("/*", (c, next) => {
 	routeLogger.info(`Processing apps route: ${c.req.path}`);
 	return next();
+});
+
+const noteParamsSchema = z.object({
+	id: z.string().min(1),
 });
 
 addRoute(app, "get", "/", {
@@ -50,61 +49,55 @@ addRoute(app, "get", "/", {
 			schema: listNotesResponseSchema,
 		},
 	},
+	auth: true,
 	middleware: [requirePlan("pro")],
-	handler: async ({ raw }) =>
-		(async (c: Context) => {
-			const user = c.get("user") as IUser;
-
-			try {
-				const serviceContext = getServiceContext(c);
-				const notes = await listNotes({
-					context: serviceContext,
-					userId: user.id,
-				});
-				return ResponseFactory.success(c, { notes });
-			} catch (error) {
-				if (error instanceof AssistantError) {
-					throw error;
-				}
-				routeLogger.error("Error listing notes:", {
-					error_message: error instanceof Error ? error.message : "Unknown error",
-				});
-				throw new AssistantError("Failed to list notes", ErrorType.UNKNOWN_ERROR);
+	handler: async ({ serviceContext, user }) => {
+		try {
+			const notes = await listNotes({
+				context: serviceContext,
+				userId: user.id,
+			});
+			return { notes };
+		} catch (error) {
+			if (error instanceof AssistantError) {
+				throw error;
 			}
-		})(raw),
+			routeLogger.error("Error listing notes:", {
+				error_message: error instanceof Error ? error.message : "Unknown error",
+			});
+			throw new AssistantError("Failed to list notes", ErrorType.UNKNOWN_ERROR);
+		}
+	},
 });
 
 addRoute(app, "get", "/:id", {
 	tags: ["apps"],
 	description: "Get note details",
+	paramSchema: noteParamsSchema,
 	responses: {
 		200: { description: "Note details", schema: noteDetailResponseSchema },
 		404: { description: "Note not found", schema: errorResponseSchema },
 	},
+	auth: true,
 	middleware: [requirePlan("pro")],
-	handler: async ({ raw }) =>
-		(async (c: Context) => {
-			const id = c.req.param("id");
-			const user = c.get("user") as IUser;
-
-			try {
-				const serviceContext = getServiceContext(c);
-				const note = await getNote({
-					context: serviceContext,
-					userId: user.id,
-					noteId: id,
-				});
-				return ResponseFactory.success(c, { note });
-			} catch (error) {
-				if (error instanceof AssistantError) {
-					throw error;
-				}
-				routeLogger.error("Error fetching note:", {
-					error_message: error instanceof Error ? error.message : "Unknown error",
-				});
-				throw new AssistantError("Failed to fetch note", ErrorType.UNKNOWN_ERROR);
+	handler: async ({ params, serviceContext, user }) => {
+		try {
+			const note = await getNote({
+				context: serviceContext,
+				userId: user.id,
+				noteId: params.id,
+			});
+			return { note };
+		} catch (error) {
+			if (error instanceof AssistantError) {
+				throw error;
 			}
-		})(raw),
+			routeLogger.error("Error fetching note:", {
+				error_message: error instanceof Error ? error.message : "Unknown error",
+			});
+			throw new AssistantError("Failed to fetch note", ErrorType.UNKNOWN_ERROR);
+		}
+	},
 });
 
 addRoute(app, "post", "/", {
@@ -121,40 +114,34 @@ addRoute(app, "post", "/", {
 			schema: errorResponseSchema,
 		},
 	},
+	auth: true,
 	middleware: [requirePlan("pro")],
-	handler: async ({ raw }) =>
-		(async (c: Context) => {
-			const user = c.get("user") as IUser;
-			const body = c.req.valid("json" as never) as {
-				title: string;
-				content: string;
-			};
-
-			try {
-				const serviceContext = getServiceContext(c);
-				const note = await createNote({
-					context: serviceContext,
-					env: c.env as IEnv,
-					user,
-					data: body,
-				});
-				return ResponseFactory.success(c, { note });
-			} catch (error) {
-				if (error instanceof AssistantError) {
-					throw error;
-				}
-				routeLogger.error("Error creating note:", {
-					error_message: error instanceof Error ? error.message : "Unknown error",
-				});
-				throw new AssistantError("Failed to create note", ErrorType.UNKNOWN_ERROR);
+	handler: async ({ body, serviceContext, user }) => {
+		try {
+			const note = await createNote({
+				context: serviceContext,
+				env: serviceContext.env,
+				user,
+				data: body,
+			});
+			return { note };
+		} catch (error) {
+			if (error instanceof AssistantError) {
+				throw error;
 			}
-		})(raw),
+			routeLogger.error("Error creating note:", {
+				error_message: error instanceof Error ? error.message : "Unknown error",
+			});
+			throw new AssistantError("Failed to create note", ErrorType.UNKNOWN_ERROR);
+		}
+	},
 });
 
 addRoute(app, "put", "/:id", {
 	tags: ["apps"],
 	description: "Update an existing note",
 	bodySchema: noteUpdateSchema,
+	paramSchema: noteParamsSchema,
 	responses: {
 		200: { description: "Updated note", schema: noteDetailResponseSchema },
 		400: {
@@ -163,73 +150,66 @@ addRoute(app, "put", "/:id", {
 		},
 		404: { description: "Note not found", schema: errorResponseSchema },
 	},
+	auth: true,
 	middleware: [requirePlan("pro")],
-	handler: async ({ raw }) =>
-		(async (c: Context) => {
-			const id = c.req.param("id");
-			const body = c.req.valid("json" as never) as NoteUpdatePayload;
-			const user = c.get("user") as IUser;
-
-			try {
-				const serviceContext = getServiceContext(c);
-				const note = await updateNote({
-					context: serviceContext,
-					env: c.env as IEnv,
-					user,
-					noteId: id,
-					data: body,
-				});
-				return ResponseFactory.success(c, { note });
-			} catch (error) {
-				if (error instanceof AssistantError) {
-					throw error;
-				}
-				routeLogger.error("Error updating note:", {
-					error_message: error instanceof Error ? error.message : "Unknown error",
-				});
-				throw new AssistantError("Failed to update note", ErrorType.UNKNOWN_ERROR);
+	handler: async ({ body, params, serviceContext, user }) => {
+		try {
+			const note = await updateNote({
+				context: serviceContext,
+				env: serviceContext.env,
+				user,
+				noteId: params.id,
+				data: body,
+			});
+			return { note };
+		} catch (error) {
+			if (error instanceof AssistantError) {
+				throw error;
 			}
-		})(raw),
+			routeLogger.error("Error updating note:", {
+				error_message: error instanceof Error ? error.message : "Unknown error",
+			});
+			throw new AssistantError("Failed to update note", ErrorType.UNKNOWN_ERROR);
+		}
+	},
 });
 
 addRoute(app, "delete", "/:id", {
 	tags: ["apps"],
 	description: "Delete a note",
+	paramSchema: noteParamsSchema,
 	responses: {
 		200: { description: "Note deleted", schema: successResponseSchema },
 		404: { description: "Note not found", schema: errorResponseSchema },
 	},
+	auth: true,
 	middleware: [requirePlan("pro")],
-	handler: async ({ raw }) =>
-		(async (c: Context) => {
-			const id = c.req.param("id");
-			const user = c.get("user") as IUser;
-
-			try {
-				const serviceContext = getServiceContext(c);
-				await deleteNote({
-					context: serviceContext,
-					env: c.env as IEnv,
-					user,
-					noteId: id,
-				});
-				return ResponseFactory.message(c, "Note deleted");
-			} catch (error) {
-				if (error instanceof AssistantError) {
-					throw error;
-				}
-				routeLogger.error("Error deleting note:", {
-					error_message: error instanceof Error ? error.message : "Unknown error",
-				});
-				throw new AssistantError("Failed to delete note", ErrorType.UNKNOWN_ERROR);
+	handler: async ({ params, serviceContext, user }) => {
+		try {
+			await deleteNote({
+				context: serviceContext,
+				env: serviceContext.env,
+				user,
+				noteId: params.id,
+			});
+			return { status: "success", message: "Note deleted" };
+		} catch (error) {
+			if (error instanceof AssistantError) {
+				throw error;
 			}
-		})(raw),
+			routeLogger.error("Error deleting note:", {
+				error_message: error instanceof Error ? error.message : "Unknown error",
+			});
+			throw new AssistantError("Failed to delete note", ErrorType.UNKNOWN_ERROR);
+		}
+	},
 });
 
 addRoute(app, "post", "/:id/format", {
 	tags: ["apps"],
 	description: "Format an existing note via AI",
 	bodySchema: noteFormatSchema,
+	paramSchema: noteParamsSchema,
 	responses: {
 		200: {
 			description: "Formatted note content",
@@ -241,31 +221,26 @@ addRoute(app, "post", "/:id/format", {
 		},
 		404: { description: "Note not found", schema: errorResponseSchema },
 	},
+	auth: true,
 	middleware: [requirePlan("pro")],
-	handler: async ({ raw }) =>
-		(async (c: Context) => {
-			const id = c.req.param("id");
-			const { prompt } = c.req.valid("json" as never) as { prompt?: string };
-			const user = c.get("user") as IUser;
-
-			try {
-				const serviceContext = getServiceContext(c);
-				const result = await formatNote({
-					context: serviceContext,
-					env: c.env as IEnv,
-					user,
-					noteId: id,
-					prompt,
-				});
-				return c.json(result);
-			} catch (error) {
-				if (error instanceof AssistantError) throw error;
-				routeLogger.error("Error formatting note:", {
-					error_message: error instanceof Error ? error.message : "Unknown error",
-				});
-				throw new AssistantError("Failed to format note", ErrorType.UNKNOWN_ERROR);
-			}
-		})(raw),
+	handler: async ({ body, params, serviceContext, user }) => {
+		try {
+			const result = await formatNote({
+				context: serviceContext,
+				env: serviceContext.env,
+				user,
+				noteId: params.id,
+				prompt: body.prompt,
+			});
+			return result;
+		} catch (error) {
+			if (error instanceof AssistantError) throw error;
+			routeLogger.error("Error formatting note:", {
+				error_message: error instanceof Error ? error.message : "Unknown error",
+			});
+			throw new AssistantError("Failed to format note", ErrorType.UNKNOWN_ERROR);
+		}
+	},
 });
 
 addRoute(app, "post", "/generate-from-media", {
@@ -283,35 +258,32 @@ addRoute(app, "post", "/generate-from-media", {
 			schema: errorResponseSchema,
 		},
 	},
+	auth: true,
 	middleware: [requirePlan("pro")],
-	handler: async ({ raw }) =>
-		(async (c: Context) => {
-			const body = c.req.valid("json" as never) as z.infer<typeof generateNotesFromMediaSchema>;
-			const user = c.get("user") as IUser;
-
-			try {
-				const result = await generateNotesFromMedia({
-					env: c.env as IEnv,
-					user,
-					url: body.url,
-					outputs: body.outputs,
-					noteType: body.noteType,
-					extraPrompt: body.extraPrompt,
-					timestamps: body.timestamps,
-					useVideoAnalysis: body.useVideoAnalysis,
-					enableVideoSearch: body.enableVideoSearch,
-				});
-				return ResponseFactory.success(c, { content: result.content });
-			} catch (error) {
-				if (error instanceof AssistantError) {
-					throw error;
-				}
-				routeLogger.error("Error generating notes from media:", {
-					error_message: error instanceof Error ? error.message : "Unknown error",
-				});
-				throw new AssistantError("Failed to generate notes from media", ErrorType.UNKNOWN_ERROR);
+	handler: async ({ body, serviceContext, user }) => {
+		try {
+			const result = await generateNotesFromMedia({
+				env: serviceContext.env,
+				user,
+				url: body.url,
+				outputs: body.outputs,
+				noteType: body.noteType,
+				extraPrompt: body.extraPrompt,
+				timestamps: body.timestamps,
+				useVideoAnalysis: body.useVideoAnalysis,
+				enableVideoSearch: body.enableVideoSearch,
+			});
+			return { content: result.content };
+		} catch (error) {
+			if (error instanceof AssistantError) {
+				throw error;
 			}
-		})(raw),
+			routeLogger.error("Error generating notes from media:", {
+				error_message: error instanceof Error ? error.message : "Unknown error",
+			});
+			throw new AssistantError("Failed to generate notes from media", ErrorType.UNKNOWN_ERROR);
+		}
+	},
 });
 
 export default app;

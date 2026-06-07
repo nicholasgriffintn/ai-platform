@@ -5,6 +5,7 @@ import type {
 	SandboxModelSettings,
 } from "@assistant/schemas";
 import type { ServiceContext } from "../lib/context/serviceContext";
+import type { AnonymousUser } from "./anonymous-user";
 import type { IEnv, ReasoningEffortLevel, RequireAtLeastOne, VerbosityLevel } from "./shared";
 import type { IUser } from "./user";
 
@@ -202,6 +203,7 @@ export interface IRequest {
 	env: IEnv;
 	request?: IBody;
 	user?: IUser;
+	anonymousUser?: AnonymousUser;
 	mode?: ChatMode;
 	use_rag?: boolean;
 	rag_options?: RagOptions;
