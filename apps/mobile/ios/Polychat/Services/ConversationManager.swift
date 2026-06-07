@@ -276,18 +276,18 @@ class ConversationManager: ObservableObject {
             return
         }
 
-        guard let conversation = currentConversation,
-              let messageIndex = conversation.messages.firstIndex(where: { $0.id == messageId }) else {
+        guard let currentConversation = currentConversation,
+              let messageIndex = currentConversation.messages.firstIndex(where: { $0.id == messageId }) else {
             error = "Unable to edit: message not found"
             return
         }
 
-        guard conversation.messages[messageIndex].role == "user" else {
+        guard currentConversation.messages[messageIndex].role == "user" else {
             error = "Only user messages can be edited"
             return
         }
 
-        var conversation = conversation
+        var conversation = currentConversation
         conversation.messages[messageIndex] = conversation.messages[messageIndex].replacingTextContent(with: trimmedText)
 
         await regenerateConversation(
