@@ -1,9 +1,19 @@
+import { recipeConnectorProviderSchema } from "@assistant/schemas";
 import { executeRecipeConnectorOperation } from "~/services/apps/connectors/operations";
 import { invokeAssistantRecipe, resolveInstalledAssistantRecipe } from "~/services/apps/recipes";
 import { executeRecipeInvocationChat } from "~/services/apps/recipes/execution";
+import { coerceStringArray, isRecord } from "~/utils/objects";
 import { extractChatCompletionText } from "~/utils/messages";
 import { jsonSchemaToZod } from "./jsonSchema";
 import type { ApiToolDefinition } from "./types";
+
+function getRecipeAllowedConnectorProviders(options: unknown): string[] | null {
+	if (!isRecord(options) || !isRecord(options.recipe)) {
+		return null;
+	}
+
+	return coerceStringArray(options.recipe.allowedConnectorProviders);
+}
 
 export const use_recipe_connector: ApiToolDefinition = {
 	name: "use_recipe_connector",
@@ -38,11 +48,35 @@ export const use_recipe_connector: ApiToolDefinition = {
 			throw new Error("Signed-in user context is required for recipe connector tools");
 		}
 
+		const parsedProvider = recipeConnectorProviderSchema.safeParse(args.provider);
+		if (!parsedProvider.success) {
+			return {
+				status: "error",
+				name: "use_recipe_connector",
+				content: "Choose a supported recipe connector provider.",
+				data: { provider: args.provider },
+			};
+		}
+
+		const provider = parsedProvider.data;
+		const allowedConnectorProviders = getRecipeAllowedConnectorProviders(request.request?.options);
+		if (allowedConnectorProviders && !allowedConnectorProviders.includes(provider)) {
+			return {
+				status: "error",
+				name: "use_recipe_connector",
+				content: `The ${provider || "requested"} connector is not enabled for this recipe.`,
+				data: {
+					provider,
+					allowedConnectorProviders,
+				},
+			};
+		}
+
 		const data = await executeRecipeConnectorOperation({
 			context: request.context,
 			userId: request.user.id,
 			request: {
-				provider: args.provider,
+				provider,
 				operation: args.operation,
 				params: args.params,
 			},

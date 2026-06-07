@@ -4,11 +4,12 @@ import type {
 	RecipeConfigurationField,
 	RecipeConfiguration,
 	RecipeConnectionStatus,
+	RecipeConnectorProvider,
 	RecipeInstallation,
 	RecipeInstallationTrigger,
 	RecipeInstallationUpdateRequest,
 } from "@assistant/schemas";
-import { recipeConfigurationSchema } from "@assistant/schemas";
+import { recipeConfigurationSchema, recipeConnectorProviderSchema } from "@assistant/schemas";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { TaskService } from "~/services/tasks/TaskService";
@@ -135,6 +136,18 @@ function buildRecipeConnections(recipe: AssistantRecipe): AssistantRecipeConnect
 		requiresConnection: integration.requiresConnection,
 		setupUrl: integration.setupUrl,
 	}));
+}
+
+function buildAllowedConnectorProviders(recipe: AssistantRecipe): RecipeConnectorProvider[] {
+	const providers = new Set<RecipeConnectorProvider>();
+	for (const integration of recipe.integrations) {
+		const parsed = recipeConnectorProviderSchema.safeParse(integration.providerId);
+		if (parsed.success) {
+			providers.add(parsed.data);
+		}
+	}
+
+	return Array.from(providers);
 }
 
 function getBlockingConnections(connections: AssistantRecipeConnection[]) {
@@ -596,6 +609,7 @@ export async function invokeAssistantRecipe(
 
 	const connections = buildRecipeConnections(recipe);
 	const blockingConnections = getBlockingConnections(connections);
+	const allowedConnectorProviders = buildAllowedConnectorProviders(recipe);
 	const existingInstallation = await getRecipeInstallation({
 		context: options.context,
 		userId: options.userId,
@@ -626,6 +640,7 @@ export async function invokeAssistantRecipe(
 			messageUrl: createRecipeMessageUrl(conversationStarter, recipe.enabledTools),
 			missingConnections: [],
 			enabledTools: recipe.enabledTools,
+			allowedConnectorProviders,
 			configuration: {},
 		};
 	}
@@ -639,6 +654,7 @@ export async function invokeAssistantRecipe(
 			messageUrl: createRecipeMessageUrl(conversationStarter, recipe.enabledTools),
 			missingConnections: blockingConnections,
 			enabledTools: recipe.enabledTools,
+			allowedConnectorProviders,
 			configuration: installation.configuration,
 		};
 	}
@@ -668,6 +684,7 @@ export async function invokeAssistantRecipe(
 		messageUrl: createRecipeMessageUrl(conversationStarter, recipe.enabledTools),
 		missingConnections: [],
 		enabledTools: recipe.enabledTools,
+		allowedConnectorProviders,
 		configuration: installation.configuration,
 		taskId,
 	};

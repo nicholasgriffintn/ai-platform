@@ -4,6 +4,7 @@ import {
 	createMessagingCredentialEnvelope,
 	parseMessagingCredentialEnvelope,
 } from "../credentials";
+import { selectConfiguredMessagingProviderId } from "../delivery";
 
 describe("messaging credentials", () => {
 	it("normalises Twilio credentials into a typed envelope", () => {
@@ -93,5 +94,41 @@ describe("messaging credentials", () => {
 				value: "AC123::@@::token",
 			}),
 		).toThrow("must be reconfigured");
+	});
+
+	it("selects an enabled configured messaging provider from settings metadata", () => {
+		expect(
+			selectConfiguredMessagingProviderId([
+				{
+					provider_id: "openai",
+					type: "chat",
+					enabled: true,
+					hasApiKey: true,
+				},
+				{
+					provider_id: "twilio-sms",
+					type: "messaging",
+					enabled: false,
+					hasApiKey: true,
+				},
+				{
+					provider_id: "aws-sms",
+					type: "messaging",
+					enabled: true,
+					hasApiKey: true,
+				},
+			]),
+		).toBe("aws-sms");
+
+		expect(
+			selectConfiguredMessagingProviderId([
+				{
+					provider_id: "twilio-sms",
+					type: "messaging",
+					enabled: true,
+					hasApiKey: false,
+				},
+			]),
+		).toBeNull();
 	});
 });

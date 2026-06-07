@@ -1,22 +1,25 @@
 import type { Context } from "hono";
+import type { Message } from "~/types";
 import type { CreateChatCompletionsResponse } from "~/types";
+import { ConversationManager } from "~/lib/conversationManager";
 import { createServiceContext } from "~/lib/context/serviceContext";
 import {
-	getMessagingProvider,
 	isMessagingProviderId,
-	parseMessagingCredentialEnvelope,
 	type IncomingMessage,
 } from "~/lib/providers/capabilities/messaging";
+import { getMessagingProviderFromStoredCredential } from "~/lib/providers/capabilities/messaging/delivery";
 import { executeRecipeInvocationChat } from "~/services/apps/recipes/execution";
 import { invokeAssistantRecipe, resolveInstalledAssistantRecipe } from "~/services/apps/recipes";
 import { handleCreateChatCompletions } from "~/services/completions/createChatCompletions";
 import { defaultModel } from "~/constants/models";
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import type { IEnv, IUser } from "~/types";
+import { sha256Hex } from "~/utils/crypto";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { extractChatCompletionText } from "~/utils/messages";
 
 const SMS_CHAT_TOOLS = ["trigger_recipe", "get_weather"];
+const SMS_ACTIVE_HISTORY_LIMIT = 8;
 
 function wantsTaskStatus(message: string): boolean {
 	return /\b(status|task|job|queue|queued|running|progress)\b/i.test(message);
@@ -38,6 +41,65 @@ function formatTaskStatus(task: {
 	const status = task.status ?? "unknown";
 	const error = task.error_message ? ` Error: ${task.error_message}` : "";
 	return `${task.task_type} ${task.id}: ${status}.${error}`;
+}
+
+function normaliseSmsAddress(value: string): string {
+	return value.trim().toLowerCase();
+}
+
+async function getSmsConversationId(params: {
+	userId: number;
+	providerSettingsId: string;
+	from: string;
+}) {
+	const digest = await sha256Hex(
+		[
+			"sms",
+			params.userId.toString(),
+			params.providerSettingsId,
+			normaliseSmsAddress(params.from),
+		].join(":"),
+	);
+
+	return `sms_${digest.slice(0, 40)}`;
+}
+
+async function getActiveSmsMessages(params: {
+	context: ServiceContext;
+	user: IUser;
+	conversationId: string;
+}) {
+	const conversationManager = ConversationManager.getInstance({
+		database: params.context.database,
+		repositories: params.context.repositories,
+		user: params.user,
+		env: params.context.env,
+		store: true,
+		requestCache: params.context.requestCache,
+	});
+
+	let messages: Message[];
+	try {
+		messages = await conversationManager.get(params.conversationId);
+	} catch (error) {
+		if (error instanceof AssistantError && error.type === ErrorType.NOT_FOUND) {
+			return [];
+		}
+
+		throw error;
+	}
+
+	const priorMessageLimit = SMS_ACTIVE_HISTORY_LIMIT - 1;
+	const archiveCount = Math.max(messages.length - priorMessageLimit, 0);
+	if (archiveCount > 0) {
+		const archiveIds = messages
+			.slice(0, archiveCount)
+			.flatMap((message) => (message.id ? [message.id] : []));
+
+		await conversationManager.archiveMessages(params.conversationId, archiveIds);
+	}
+
+	return messages.slice(-priorMessageLimit);
 }
 
 async function handleTaskStatus(context: ServiceContext, userId: number, message: string) {
@@ -107,6 +169,10 @@ async function handleRecipeMessage(params: {
 		context: params.context,
 		user: params.user,
 		invocation,
+		sms: {
+			from: params.incoming.from,
+			to: params.incoming.to,
+		},
 	});
 
 	return extractChatCompletionText(execution.response, {
@@ -119,12 +185,15 @@ async function handleBoundedChat(params: {
 	context: ServiceContext;
 	user: IUser;
 	incoming: IncomingMessage;
+	conversationId: string;
+	activeMessages: Message[];
 }) {
 	const completion = await handleCreateChatCompletions({
 		env: params.env,
 		context: params.context,
 		user: params.user,
 		request: {
+			completion_id: params.conversationId,
 			model: defaultModel,
 			stream: false,
 			store: true,
@@ -133,7 +202,7 @@ async function handleBoundedChat(params: {
 			enabled_tools: SMS_CHAT_TOOLS,
 			approved_tools: SMS_CHAT_TOOLS,
 			tool_choice: "auto",
-			messages: [{ role: "user", content: params.incoming.body }],
+			messages: [...params.activeMessages, { role: "user", content: params.incoming.body }],
 			options: {
 				source: "sms",
 				sms: {
@@ -149,6 +218,34 @@ async function handleBoundedChat(params: {
 
 	return extractChatCompletionText(completion, {
 		streamingMessage: "SMS assistant responses cannot be streamed",
+	});
+}
+
+async function handleFallbackSmsChat(params: {
+	env: IEnv;
+	context: ServiceContext;
+	user: IUser;
+	incoming: IncomingMessage;
+	providerSettingsId: string;
+}) {
+	const conversationId = await getSmsConversationId({
+		userId: params.user.id,
+		providerSettingsId: params.providerSettingsId,
+		from: params.incoming.from,
+	});
+	const activeMessages = await getActiveSmsMessages({
+		context: params.context,
+		user: params.user,
+		conversationId,
+	});
+
+	return handleBoundedChat({
+		env: params.env,
+		context: params.context,
+		user: params.user,
+		incoming: params.incoming,
+		conversationId,
+		activeMessages,
 	});
 }
 
@@ -186,11 +283,11 @@ export async function handleSmsAssistantWebhook(c: Context): Promise<Response> {
 		throw new AssistantError("SMS provider credentials are not configured", ErrorType.NOT_FOUND);
 	}
 
-	const envelope = parseMessagingCredentialEnvelope({ providerId, value: encryptedValue });
-	const provider = getMessagingProvider(providerId, {
+	const provider = getMessagingProviderFromStoredCredential({
+		providerId,
+		value: encryptedValue,
 		env: c.env,
 		user,
-		config: envelope.credentials,
 	});
 	const incoming = await provider.parseIncoming(c);
 	if (incoming.kind === "control") {
@@ -200,7 +297,13 @@ export async function handleSmsAssistantWebhook(c: Context): Promise<Response> {
 	const body = wantsTaskStatus(incoming.body)
 		? await handleTaskStatus(context, user.id, incoming.body)
 		: ((await handleRecipeMessage({ env: c.env, context, user, incoming })) ??
-			(await handleBoundedChat({ env: c.env, context, user, incoming })));
+			(await handleFallbackSmsChat({
+				env: c.env,
+				context,
+				user,
+				incoming,
+				providerSettingsId,
+			})));
 
 	await provider.send({ to: incoming.from, body });
 

@@ -2,14 +2,22 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
 	createServiceContext: vi.fn(),
-	getMessagingProvider: vi.fn(),
-	parseMessagingCredentialEnvelope: vi.fn(),
+	getMessagingProviderFromStoredCredential: vi.fn(),
 	resolveInstalledAssistantRecipe: vi.fn(),
 	invokeAssistantRecipe: vi.fn(),
 	executeRecipeInvocationChat: vi.fn(),
 	handleCreateChatCompletions: vi.fn(),
+	conversationGetInstance: vi.fn(),
+	conversationGet: vi.fn(),
+	conversationArchiveMessages: vi.fn(),
 	providerSend: vi.fn(),
 	providerParseIncoming: vi.fn(),
+}));
+
+vi.mock("~/lib/conversationManager", () => ({
+	ConversationManager: {
+		getInstance: mocks.conversationGetInstance,
+	},
 }));
 
 vi.mock("~/lib/context/serviceContext", () => ({
@@ -20,10 +28,12 @@ vi.mock("~/lib/providers/capabilities/messaging", async (importOriginal) => {
 	const original = await importOriginal<typeof import("~/lib/providers/capabilities/messaging")>();
 	return {
 		...original,
-		getMessagingProvider: mocks.getMessagingProvider,
-		parseMessagingCredentialEnvelope: mocks.parseMessagingCredentialEnvelope,
 	};
 });
+
+vi.mock("~/lib/providers/capabilities/messaging/delivery", () => ({
+	getMessagingProviderFromStoredCredential: mocks.getMessagingProviderFromStoredCredential,
+}));
 
 vi.mock("~/services/apps/recipes", () => ({
 	resolveInstalledAssistantRecipe: mocks.resolveInstalledAssistantRecipe,
@@ -96,7 +106,9 @@ function createRepositories(overrides: Record<string, unknown> = {}) {
 function prepareServiceContext(repositories = createRepositories()) {
 	const context = {
 		env: { DB: {}, API_BASE_URL: "https://api.polychat.test" },
+		database: {},
 		repositories,
+		requestCache: new Map(),
 	};
 	mocks.createServiceContext.mockReturnValue(context);
 	return context;
@@ -111,18 +123,9 @@ describe("SMS webhook service", () => {
 			to: "+15557654321",
 			body: "hello",
 		});
-		mocks.getMessagingProvider.mockReturnValue({
+		mocks.getMessagingProviderFromStoredCredential.mockReturnValue({
 			parseIncoming: mocks.providerParseIncoming,
 			send: mocks.providerSend,
-		});
-		mocks.parseMessagingCredentialEnvelope.mockReturnValue({
-			version: 1,
-			providerId: "twilio-sms",
-			credentials: {
-				accountSid: "AC123",
-				authToken: "secret",
-				fromNumber: "+15557654321",
-			},
 		});
 		mocks.resolveInstalledAssistantRecipe.mockResolvedValue({
 			status: "not_found",
@@ -130,6 +133,12 @@ describe("SMS webhook service", () => {
 		});
 		mocks.handleCreateChatCompletions.mockResolvedValue({
 			choices: [{ message: { content: "chat reply" } }],
+		});
+		mocks.conversationGet.mockResolvedValue([]);
+		mocks.conversationArchiveMessages.mockResolvedValue(undefined);
+		mocks.conversationGetInstance.mockReturnValue({
+			get: mocks.conversationGet,
+			archiveMessages: mocks.conversationArchiveMessages,
 		});
 	});
 
@@ -199,6 +208,18 @@ describe("SMS webhook service", () => {
 			input: "run daily weather",
 			requireInstalled: true,
 		});
+		expect(mocks.executeRecipeInvocationChat).toHaveBeenCalledWith({
+			env: expect.any(Object),
+			context: expect.any(Object),
+			user: testUser,
+			invocation: expect.objectContaining({
+				recipeId: "daily-weather",
+			}),
+			sms: {
+				from: "+15551234567",
+				to: "+15557654321",
+			},
+		});
 		expect(mocks.providerSend).toHaveBeenCalledWith({
 			to: "+15551234567",
 			body: "Weather summary",
@@ -219,6 +240,7 @@ describe("SMS webhook service", () => {
 		expect(mocks.handleCreateChatCompletions).toHaveBeenCalledWith(
 			expect.objectContaining({
 				request: expect.objectContaining({
+					completion_id: expect.stringMatching(/^sms_[a-f0-9]{40}$/),
 					messages: [{ role: "user", content: "what is the weather?" }],
 					options: expect.objectContaining({
 						sms: {
@@ -234,6 +256,35 @@ describe("SMS webhook service", () => {
 			to: "+15551234567",
 			body: "chat reply",
 		});
+	});
+
+	it("bounds stored SMS chat history before sending fallback chat context", async () => {
+		prepareServiceContext();
+		const storedMessages = Array.from({ length: 10 }, (_, index) => ({
+			id: `message-${index}`,
+			role: index % 2 === 0 ? "user" : "assistant",
+			content: `stored ${index}`,
+		}));
+		mocks.conversationGet.mockResolvedValue(storedMessages);
+		mocks.providerParseIncoming.mockResolvedValue({
+			kind: "message",
+			from: "+15551234567",
+			to: "+15557654321",
+			body: "continue",
+		});
+
+		await handleSmsAssistantWebhook(createMockContext());
+
+		const chatRequest = mocks.handleCreateChatCompletions.mock.calls[0]?.[0].request;
+		expect(mocks.conversationArchiveMessages).toHaveBeenCalledWith(chatRequest.completion_id, [
+			"message-0",
+			"message-1",
+			"message-2",
+		]);
+		expect(chatRequest.messages).toEqual([
+			...storedMessages.slice(3),
+			{ role: "user", content: "continue" },
+		]);
 	});
 
 	it("returns provider control responses without invoking assistant work", async () => {

@@ -7,11 +7,42 @@ import type { CreateChatCompletionsResponse, IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
 
+function buildRecipeExecutionOptions(params: {
+	invocation: RecipeInvocationResponse;
+	sms?: {
+		from?: string;
+		to?: string;
+	};
+}) {
+	return {
+		...(params.sms
+			? {
+					source: "sms",
+					sms: {
+						enabled: true,
+						from: params.sms.from,
+						to: params.sms.to,
+					},
+				}
+			: {}),
+		recipe: {
+			id: params.invocation.recipeId,
+			installationId: params.invocation.installationId,
+			allowedConnectorProviders: params.invocation.allowedConnectorProviders,
+			configuration: params.invocation.configuration,
+		},
+	};
+}
+
 export async function executeRecipeInvocationChat(params: {
 	env: IEnv;
 	context: ServiceContext;
 	user: IUser;
 	invocation: RecipeInvocationResponse;
+	sms?: {
+		from?: string;
+		to?: string;
+	};
 }): Promise<{
 	conversationId: string;
 	response: CreateChatCompletionsResponse;
@@ -38,6 +69,7 @@ export async function executeRecipeInvocationChat(params: {
 			tool_choice: "auto",
 			max_steps: 8,
 			temperature: 0.4,
+			options: buildRecipeExecutionOptions(params),
 		},
 	});
 

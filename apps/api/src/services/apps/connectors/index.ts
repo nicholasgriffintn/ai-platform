@@ -8,9 +8,9 @@ import type {
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import {
 	connectorProviders,
+	canStartOAuthConnectorAuthorization,
 	getGitHubAppInstallUrl,
 	getConnectorProviderConfig,
-	isOAuthConnectorConfigured,
 	RECIPE_CONNECTOR_APP_ID,
 	RECIPE_CONNECTOR_ITEM_TYPE,
 	type ConnectorProviderConfig,
@@ -417,7 +417,7 @@ async function getConnectorStatus(
 		};
 	}
 
-	if (!isOAuthConnectorConfigured(context.env, provider.auth)) {
+	if (!canStartOAuthConnectorAuthorization(context.env, provider.auth)) {
 		return { status: "unconfigured" };
 	}
 
@@ -485,7 +485,7 @@ export async function startRecipeConnectorAuthorization(params: {
 			authorizationUrl: getGitHubAppInstallUrl(params.context.env) ?? provider.setupUrl,
 		};
 	}
-	if (!isOAuthConnectorConfigured(params.context.env, provider.auth)) {
+	if (!canStartOAuthConnectorAuthorization(params.context.env, provider.auth)) {
 		throw new AssistantError(
 			"Connector OAuth client is not configured",
 			ErrorType.CONFIGURATION_ERROR,
@@ -615,7 +615,7 @@ export async function getRecipeConnectorAccessToken(params: {
 	if (!provider || provider.auth.authType !== "oauth2") {
 		throw new AssistantError("Connector is not an OAuth provider", ErrorType.PARAMS_ERROR, 400);
 	}
-	if (!isOAuthConnectorConfigured(params.context.env, provider.auth)) {
+	if (!canStartOAuthConnectorAuthorization(params.context.env, provider.auth)) {
 		throw new AssistantError(
 			"Connector OAuth client is not configured",
 			ErrorType.CONFIGURATION_ERROR,

@@ -979,6 +979,16 @@ export const recipeConnectionStatusSchema = z.enum([
 	"unknown",
 ]);
 
+export const recipeConnectorProviderSchema = z.enum([
+	"gmail",
+	"outlook",
+	"calendar",
+	"github",
+	"linear",
+	"notion",
+	"oura",
+]);
+
 export const recipeIntegrationSchema = z.object({
 	id: z.string(),
 	providerId: z.string(),
@@ -1070,16 +1080,6 @@ export type AssistantRecipeConnection = z.infer<typeof assistantRecipeConnection
 export type AssistantRecipeInstallResponse = z.infer<typeof assistantRecipeInstallResponseSchema>;
 
 export type RecipeConfiguration = z.infer<typeof recipeConfigurationSchema>;
-
-export const recipeConnectorProviderSchema = z.enum([
-	"gmail",
-	"outlook",
-	"calendar",
-	"github",
-	"linear",
-	"notion",
-	"oura",
-]);
 
 export const recipeConnectorStatusSchema = z.enum(["connected", "disconnected", "unconfigured"]);
 
@@ -1178,6 +1178,7 @@ export const recipeInvocationResponseSchema = z.object({
 	messageUrl: z.string(),
 	missingConnections: z.array(assistantRecipeConnectionSchema),
 	enabledTools: z.array(z.string()).default([]),
+	allowedConnectorProviders: z.array(recipeConnectorProviderSchema).default([]),
 	configuration: recipeConfigurationSchema,
 	taskId: z.string().optional(),
 });

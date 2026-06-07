@@ -45,8 +45,8 @@ export const connectorProviders = [
 			authorizationEndpoint: "https://accounts.google.com/o/oauth2/v2/auth",
 			tokenEndpoint: "https://oauth2.googleapis.com/token",
 			scopes: [
-				"https://www.googleapis.com/auth/gmail.modify",
-				"https://www.googleapis.com/auth/gmail.send",
+				"https://www.googleapis.com/auth/gmail.readonly",
+				"https://www.googleapis.com/auth/gmail.compose",
 			],
 			scopeSeparator: " ",
 			extraAuthorizationParams: {
@@ -85,7 +85,7 @@ export const connectorProviders = [
 			clientSecretEnv: "MICROSOFT_OAUTH_CLIENT_SECRET",
 			authorizationEndpoint: "https://login.microsoftonline.com/common/oauth2/v2.0/authorize",
 			tokenEndpoint: "https://login.microsoftonline.com/common/oauth2/v2.0/token",
-			scopes: ["offline_access", "User.Read", "Mail.ReadWrite", "Mail.Send", "Calendars.ReadWrite"],
+			scopes: ["offline_access", "User.Read", "Mail.ReadWrite", "Calendars.ReadWrite"],
 			scopeSeparator: " ",
 		},
 	},
@@ -159,6 +159,13 @@ export function getConnectorProviderConfig(
 
 export function isOAuthConnectorConfigured(env: IEnv, config: OAuthConnectorConfig): boolean {
 	return Boolean(env[config.clientIdEnv] && env[config.clientSecretEnv]);
+}
+
+export function canStartOAuthConnectorAuthorization(
+	env: IEnv,
+	config: OAuthConnectorConfig,
+): boolean {
+	return isOAuthConnectorConfigured(env, config) && Boolean(env.JWT_SECRET?.trim());
 }
 
 export function getGitHubAppInstallUrl(env: IEnv): string | undefined {

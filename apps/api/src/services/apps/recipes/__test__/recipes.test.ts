@@ -227,6 +227,73 @@ describe("assistant recipes", () => {
 		]);
 	});
 
+	it("exposes Poke-style first-party integration recipes backed by current connector operations", async () => {
+		const context = createTestServiceContext();
+
+		const response = await listAssistantRecipes({ context, userId: 42 });
+		const recipesById = new Map(response.recipes.map((recipe) => [recipe.id, recipe]));
+
+		expect(recipesById.get("gmail")).toMatchObject({
+			title: "Gmail",
+			kind: "integrate",
+			category: "Email",
+			enabledTools: ["use_recipe_connector"],
+			integrations: [
+				expect.objectContaining({
+					providerId: "gmail",
+					connectionStatus: "connected",
+				}),
+			],
+		});
+		expect(recipesById.get("outlook-mail")).toMatchObject({
+			title: "Outlook Mail",
+			kind: "integrate",
+			category: "Email",
+			enabledTools: ["use_recipe_connector"],
+		});
+		expect(recipesById.get("google-calendar")).toMatchObject({
+			title: "Google Calendar",
+			kind: "integrate",
+			category: "Calendar",
+			enabledTools: ["use_recipe_connector"],
+			integrations: [
+				expect.objectContaining({
+					providerId: "calendar",
+					connectionStatus: "unconfigured",
+				}),
+			],
+		});
+		expect(recipesById.get("outlook-calendar")).toMatchObject({
+			title: "Outlook Calendar",
+			kind: "integrate",
+			category: "Calendar",
+			enabledTools: ["use_recipe_connector"],
+		});
+	});
+
+	it("derives allowed connector providers for direct integration recipes", async () => {
+		const context = createTestServiceContext();
+		await installAssistantRecipe("gmail", {
+			context,
+			userId: 42,
+			channel: "web",
+		});
+
+		const invocation = await invokeAssistantRecipe("gmail", {
+			context,
+			userId: 42,
+			channel: "tool",
+			requireInstalled: true,
+		});
+
+		expect(invocation).toMatchObject({
+			recipeId: "gmail",
+			status: "ready",
+			allowedConnectorProviders: ["gmail"],
+			enabledTools: ["use_recipe_connector"],
+		});
+	});
+
 	it("builds install setup with connector status and stores installation", async () => {
 		const context = createTestServiceContext();
 

@@ -34,6 +34,7 @@ describe("executeRecipeInvocationChat", () => {
 		messageUrl: "/?query=Run",
 		missingConnections: [],
 		enabledTools: ["use_recipe_connector"],
+		allowedConnectorProviders: ["notion"],
 		configuration: { target: "Action log" },
 	};
 
@@ -67,12 +68,49 @@ describe("executeRecipeInvocationChat", () => {
 				approved_tools: ["use_recipe_connector"],
 				tool_choice: "auto",
 				max_steps: 8,
+				options: expect.objectContaining({
+					recipe: {
+						id: "notion-action-log",
+						installationId: "installation-1",
+						allowedConnectorProviders: ["notion"],
+						configuration: { target: "Action log" },
+					},
+				}),
 				messages: [
 					{
 						role: "user",
 						content: "Run this installed Notion recipe.",
 					},
 				],
+			}),
+		});
+	});
+
+	it("passes SMS context into chat completion options for text-message recipe runs", async () => {
+		await executeRecipeInvocationChat({
+			env,
+			context,
+			user,
+			invocation,
+			sms: {
+				from: "+15551234567",
+				to: "+15557654321",
+			},
+		});
+
+		expect(mocks.handleCreateChatCompletions).toHaveBeenCalledWith({
+			env,
+			context,
+			user,
+			request: expect.objectContaining({
+				options: expect.objectContaining({
+					source: "sms",
+					sms: {
+						enabled: true,
+						from: "+15551234567",
+						to: "+15557654321",
+					},
+				}),
 			}),
 		});
 	});

@@ -9,6 +9,7 @@ import { getLogger } from "~/utils/logger";
 import { RECIPE_INSTALLATION_APP_ID, RECIPE_INSTALLATION_ITEM_TYPE } from "./index";
 
 const logger = getLogger({ prefix: "services/apps/recipes/scheduler" });
+const RECIPE_SCHEDULER_POLL_INTERVAL_MINUTES = 15;
 
 interface StoredRecipeInstallationData {
 	recipeId: string;
@@ -86,10 +87,37 @@ function getScheduleRunKey(triggerIndex: number, cronExpression: string, date: D
 	return `${triggerIndex}:${cronExpression}:${minuteKey}`;
 }
 
+function getScheduleMinuteKey(date: Date): string {
+	return date.toISOString().slice(0, 16);
+}
+
+function getLastScheduledMinuteKey(
+	runKey: string | undefined,
+	triggerIndex: number,
+	cronExpression: string,
+): string | undefined {
+	const prefix = `${triggerIndex}:${cronExpression}:`;
+	return runKey?.startsWith(prefix) ? runKey.slice(prefix.length) : undefined;
+}
+
+function getScheduleEvaluationDates(now: Date): Date[] {
+	const end = new Date(now);
+	end.setUTCSeconds(0, 0);
+
+	const startTime = end.getTime() - RECIPE_SCHEDULER_POLL_INTERVAL_MINUTES * 60 * 1000;
+	const dates: Date[] = [];
+	for (let time = startTime; time <= end.getTime(); time += 60 * 1000) {
+		dates.push(new Date(time));
+	}
+
+	return dates;
+}
+
 export async function scheduleDueRecipeExecutions(env: IEnv, now = new Date()): Promise<number> {
 	const repositories = RepositoryManager.getInstance(env);
 	const taskService = new TaskService(env, repositories.tasks);
 	const records = await repositories.appData.getAppDataByApp(RECIPE_INSTALLATION_APP_ID);
+	const evaluationDates = getScheduleEvaluationDates(now);
 	let scheduledCount = 0;
 
 	for (const record of records) {
@@ -110,45 +138,54 @@ export async function scheduleDueRecipeExecutions(env: IEnv, now = new Date()): 
 		let changed = false;
 
 		for (const [index, trigger] of installation.triggers.entries()) {
-			if (
-				trigger.type !== "schedule" ||
-				trigger.enabled === false ||
-				!trigger.cronExpression ||
-				!doesCronMatchDate(trigger.cronExpression, now)
-			) {
+			if (trigger.type !== "schedule" || trigger.enabled === false || !trigger.cronExpression) {
 				continue;
 			}
 
 			const triggerKey = String(index);
-			const runKey = getScheduleRunKey(index, trigger.cronExpression, now);
-			if (lastScheduledRunKeys[triggerKey] === runKey) {
-				continue;
+			const lastScheduledMinuteKey = getLastScheduledMinuteKey(
+				lastScheduledRunKeys[triggerKey],
+				index,
+				trigger.cronExpression,
+			);
+
+			for (const evaluationDate of evaluationDates) {
+				if (!doesCronMatchDate(trigger.cronExpression, evaluationDate)) {
+					continue;
+				}
+
+				const scheduledMinuteKey = getScheduleMinuteKey(evaluationDate);
+				if (lastScheduledMinuteKey && scheduledMinuteKey <= lastScheduledMinuteKey) {
+					continue;
+				}
+
+				const runKey = getScheduleRunKey(index, trigger.cronExpression, evaluationDate);
+
+				await taskService.enqueueTask({
+					task_type: "recipe_execution",
+					user_id: record.user_id,
+					task_data: {
+						recipeId: installation.recipeId,
+						installationId: record.id,
+						input: trigger.prompt,
+						channel: "scheduled",
+						configuration: installation.configuration,
+						notificationChannel: trigger.notificationChannel,
+						notificationTarget: trigger.notificationTarget,
+					},
+					priority: 5,
+					metadata: {
+						recipeId: installation.recipeId,
+						installationId: record.id,
+						triggerIndex: index,
+						runKey,
+					},
+				});
+
+				lastScheduledRunKeys[triggerKey] = runKey;
+				changed = true;
+				scheduledCount++;
 			}
-
-			await taskService.enqueueTask({
-				task_type: "recipe_execution",
-				user_id: record.user_id,
-				task_data: {
-					recipeId: installation.recipeId,
-					installationId: record.id,
-					input: trigger.prompt,
-					channel: "scheduled",
-					configuration: installation.configuration,
-					notificationChannel: trigger.notificationChannel,
-					notificationTarget: trigger.notificationTarget,
-				},
-				priority: 5,
-				metadata: {
-					recipeId: installation.recipeId,
-					installationId: record.id,
-					triggerIndex: index,
-					runKey,
-				},
-			});
-
-			lastScheduledRunKeys[triggerKey] = runKey;
-			changed = true;
-			scheduledCount++;
 		}
 
 		if (changed) {

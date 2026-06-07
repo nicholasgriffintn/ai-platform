@@ -10,7 +10,7 @@ const mocks = vi.hoisted(() => ({
 	getUserProviderSettings: vi.fn(),
 	invokeAssistantRecipe: vi.fn(),
 	executeRecipeInvocationChat: vi.fn(),
-	parseMessagingCredentialEnvelope: vi.fn(),
+	getMessagingProviderFromStoredCredential: vi.fn(),
 	providerSend: vi.fn(),
 }));
 
@@ -30,15 +30,15 @@ vi.mock("~/lib/context/serviceContext", () => ({
 	})),
 }));
 
-vi.mock("~/lib/providers/capabilities/messaging", () => ({
-	getMessagingProvider: vi.fn(() => ({
-		send: mocks.providerSend,
-	})),
-	isMessagingProviderId: vi.fn((providerId: string) =>
-		["twilio-sms", "aws-sms"].includes(providerId),
-	),
-	parseMessagingCredentialEnvelope: mocks.parseMessagingCredentialEnvelope,
-}));
+vi.mock("~/lib/providers/capabilities/messaging/delivery", async (importOriginal) => {
+	const original =
+		await importOriginal<typeof import("~/lib/providers/capabilities/messaging/delivery")>();
+
+	return {
+		...original,
+		getMessagingProviderFromStoredCredential: mocks.getMessagingProviderFromStoredCredential,
+	};
+});
 
 vi.mock("~/services/apps/recipes", () => ({
 	invokeAssistantRecipe: mocks.invokeAssistantRecipe,
@@ -87,14 +87,8 @@ describe("RecipeExecutionHandler", () => {
 		mocks.getUserById.mockResolvedValue(user);
 		mocks.getUserProviderSettings.mockResolvedValue([]);
 		mocks.getProviderApiKey.mockResolvedValue(null);
-		mocks.parseMessagingCredentialEnvelope.mockReturnValue({
-			version: 1,
-			providerId: "twilio-sms",
-			credentials: {
-				accountSid: "AC123",
-				authToken: "secret",
-				fromNumber: "+15557654321",
-			},
+		mocks.getMessagingProviderFromStoredCredential.mockReturnValue({
+			send: mocks.providerSend,
 		});
 	});
 

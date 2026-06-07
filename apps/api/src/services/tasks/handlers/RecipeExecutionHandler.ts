@@ -1,15 +1,12 @@
 import { createServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
 import {
-	getMessagingProvider,
-	isMessagingProviderId,
-	parseMessagingCredentialEnvelope,
-	type MessagingProviderId,
-} from "~/lib/providers/capabilities/messaging";
+	getMessagingProviderFromStoredCredential,
+	selectConfiguredMessagingProviderId,
+} from "~/lib/providers/capabilities/messaging/delivery";
 import { executeRecipeInvocationChat } from "~/services/apps/recipes/execution";
 import { invokeAssistantRecipe } from "~/services/apps/recipes";
 import type { IEnv, IUser } from "~/types";
 import { extractChatCompletionText } from "~/utils/messages";
-import { getBooleanRecordValue, getStringRecordValue } from "~/utils/objects";
 import type { TaskHandler, TaskResult } from "../TaskHandler";
 import type { TaskMessage } from "../TaskService";
 
@@ -22,25 +19,6 @@ interface RecipeExecutionTaskData {
 	notificationTarget?: string;
 }
 
-function selectMessagingProviderId(
-	settings: Record<string, unknown>[],
-): MessagingProviderId | null {
-	for (const setting of settings) {
-		const providerId = getStringRecordValue(setting, "provider_id");
-		if (
-			providerId &&
-			isMessagingProviderId(providerId) &&
-			getStringRecordValue(setting, "type") === "messaging" &&
-			getBooleanRecordValue(setting, "enabled") === true &&
-			getBooleanRecordValue(setting, "hasApiKey") === true
-		) {
-			return providerId;
-		}
-	}
-
-	return null;
-}
-
 async function sendRecipeSmsNotification(params: {
 	env: IEnv;
 	context: ServiceContext;
@@ -49,7 +27,7 @@ async function sendRecipeSmsNotification(params: {
 	to: string;
 	body: string;
 }): Promise<void> {
-	const providerId = selectMessagingProviderId(
+	const providerId = selectConfiguredMessagingProviderId(
 		await params.context.repositories.userSettings.getUserProviderSettings(params.userId),
 	);
 	if (!providerId) {
@@ -64,11 +42,11 @@ async function sendRecipeSmsNotification(params: {
 		throw new Error("SMS provider credentials are not configured");
 	}
 
-	const envelope = parseMessagingCredentialEnvelope({ providerId, value: encryptedValue });
-	const provider = getMessagingProvider(providerId, {
+	const provider = getMessagingProviderFromStoredCredential({
+		providerId,
+		value: encryptedValue,
 		env: params.env,
 		user: params.user,
-		config: envelope.credentials,
 	});
 	await provider.send({ to: params.to, body: params.body });
 }

@@ -80,6 +80,59 @@ describe("recipe connectors", () => {
 		expect(gmail?.authorizationUrl).toContain("client_id=google-client");
 	});
 
+	it("marks OAuth connectors as unconfigured when state signing is unavailable", async () => {
+		const response = await listRecipeConnectors({
+			context: createTestServiceContext({
+				API_BASE_URL: "https://api.polychat.test",
+				GOOGLE_OAUTH_CLIENT_ID: "google-client",
+				GOOGLE_OAUTH_CLIENT_SECRET: "google-secret",
+			}),
+			userId: 42,
+			requestUrl: "https://api.polychat.test/apps/connectors",
+		});
+
+		const gmail = response.connectors.find((connector) => connector.id === "gmail");
+		const calendar = response.connectors.find((connector) => connector.id === "calendar");
+
+		expect(gmail).toMatchObject({
+			status: "unconfigured",
+			authorizationUrl: undefined,
+		});
+		expect(calendar).toMatchObject({
+			status: "unconfigured",
+			authorizationUrl: undefined,
+		});
+	});
+
+	it("requests least-privilege scopes for implemented mail connector operations", async () => {
+		const response = await listRecipeConnectors({
+			context: createTestServiceContext({
+				JWT_SECRET: "secret",
+				API_BASE_URL: "https://api.polychat.test",
+				GOOGLE_OAUTH_CLIENT_ID: "google-client",
+				GOOGLE_OAUTH_CLIENT_SECRET: "google-secret",
+				MICROSOFT_OAUTH_CLIENT_ID: "microsoft-client",
+				MICROSOFT_OAUTH_CLIENT_SECRET: "microsoft-secret",
+			}),
+			userId: 42,
+			requestUrl: "https://api.polychat.test/apps/connectors",
+		});
+
+		const gmail = response.connectors.find((connector) => connector.id === "gmail");
+		const outlook = response.connectors.find((connector) => connector.id === "outlook");
+
+		expect(gmail?.scopes).toEqual([
+			"https://www.googleapis.com/auth/gmail.readonly",
+			"https://www.googleapis.com/auth/gmail.compose",
+		]);
+		expect(outlook?.scopes).toEqual([
+			"offline_access",
+			"User.Read",
+			"Mail.ReadWrite",
+			"Calendars.ReadWrite",
+		]);
+	});
+
 	it("builds Notion OAuth URLs without an empty scope parameter", async () => {
 		const response = await listRecipeConnectors({
 			context: createTestServiceContext({
