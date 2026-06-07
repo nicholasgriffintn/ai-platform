@@ -50,7 +50,7 @@ case "$action" in
 		xcodebuild -scheme "$scheme" -destination "$(simulator_destination)" build
 		;;
 	test)
-		xcodebuild test -scheme "$scheme" -destination "$(simulator_destination)"
+		xcodebuild test -scheme "$scheme" -destination "$(simulator_destination)" -parallel-testing-enabled NO
 		;;
 	release)
 		xcodebuild -scheme "$scheme" -configuration Release build
