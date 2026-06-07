@@ -1,0 +1,52 @@
+import type { RecipeInvocationResponse } from "@assistant/schemas";
+
+import { defaultModel } from "~/constants/models";
+import type { ServiceContext } from "~/lib/context/serviceContext";
+import { handleCreateChatCompletions } from "~/services/completions/createChatCompletions";
+import type { CreateChatCompletionsResponse, IEnv, IUser } from "~/types";
+import { AssistantError, ErrorType } from "~/utils/errors";
+import { generateId } from "~/utils/id";
+
+export async function executeRecipeInvocationChat(params: {
+	env: IEnv;
+	context: ServiceContext;
+	user: IUser;
+	invocation: RecipeInvocationResponse;
+}): Promise<{
+	conversationId: string;
+	response: CreateChatCompletionsResponse;
+}> {
+	const conversationId = `recipe_${generateId()}`;
+	const response = await handleCreateChatCompletions({
+		env: params.env,
+		context: params.context,
+		user: params.user,
+		request: {
+			completion_id: conversationId,
+			messages: [
+				{
+					role: "user",
+					content: params.invocation.conversationStarter,
+				},
+			],
+			model: defaultModel,
+			mode: "agent",
+			stream: false,
+			store: true,
+			enabled_tools: params.invocation.enabledTools,
+			approved_tools: params.invocation.enabledTools,
+			tool_choice: "auto",
+			max_steps: 8,
+			temperature: 0.4,
+		},
+	});
+
+	if (response instanceof Response) {
+		throw new AssistantError(
+			"Recipe execution unexpectedly returned a streaming response",
+			ErrorType.INTERNAL_ERROR,
+		);
+	}
+
+	return { conversationId, response };
+}

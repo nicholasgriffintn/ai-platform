@@ -1,4 +1,5 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { ProfileProvidersTab } from "./ProfileProvidersTab";
@@ -13,6 +14,37 @@ vi.mock("~/hooks/useUser", () => ({
 vi.mock("~/hooks/use-track-event", () => ({
 	useTrackEvent: () => ({ trackEvent: trackEventMock }),
 }));
+
+vi.mock("~/hooks/useConnectors", () => ({
+	RECIPE_CONNECTORS_QUERY_KEY: ["recipe-connectors"],
+	useRecipeConnectors: () => ({
+		data: { connectors: [] },
+		isLoading: false,
+	}),
+	useStartRecipeConnector: () => ({
+		mutateAsync: vi.fn(),
+		isPending: false,
+	}),
+	useDisconnectRecipeConnector: () => ({
+		mutateAsync: vi.fn(),
+		isPending: false,
+	}),
+}));
+
+function renderProfileProvidersTab() {
+	const queryClient = new QueryClient({
+		defaultOptions: {
+			queries: { retry: false },
+			mutations: { retry: false },
+		},
+	});
+
+	return render(
+		<QueryClientProvider client={queryClient}>
+			<ProfileProvidersTab />
+		</QueryClientProvider>,
+	);
+}
 
 describe("ProfileProvidersTab", () => {
 	beforeEach(() => {
@@ -54,7 +86,7 @@ describe("ProfileProvidersTab", () => {
 			isDeletingProviderApiKey: false,
 		});
 
-		render(<ProfileProvidersTab />);
+		renderProfileProvidersTab();
 
 		fireEvent.click(screen.getByLabelText("Delete provider Cartesia"));
 		fireEvent.click(screen.getByRole("button", { name: "Delete Provider" }));
@@ -87,7 +119,7 @@ describe("ProfileProvidersTab", () => {
 			isDeletingProviderApiKey: false,
 		});
 
-		render(<ProfileProvidersTab />);
+		renderProfileProvidersTab();
 
 		expect(screen.queryByLabelText("Delete provider Cartesia")).not.toBeInTheDocument();
 		expect(screen.getByLabelText("Add key")).toBeInTheDocument();

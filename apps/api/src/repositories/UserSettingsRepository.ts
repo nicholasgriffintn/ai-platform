@@ -1,7 +1,10 @@
 import { decodeBase64 } from "hono/utils/encode";
 
 import { getModels } from "~/lib/providers/models";
-import { listConfigurableChatProviders } from "~/lib/providers/capabilities/chat";
+import {
+	getUserConfigurableProviderMetadata,
+	listConfigurableUserProviderIds,
+} from "~/lib/providers/userConfigurableProviders";
 import type { IUserSettings } from "~/types";
 import { bufferToBase64 } from "~/utils/base64";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -531,7 +534,7 @@ export class UserSettingsRepository extends BaseRepository {
 	}
 
 	public async createUserProviderSettings(userId: number): Promise<void> {
-		const providers = listConfigurableChatProviders();
+		const providers = listConfigurableUserProviderIds();
 		const alwaysEnabledProviders = this.env.ALWAYS_ENABLED_PROVIDERS || "";
 		const defaultProviders = alwaysEnabledProviders?.split(",") || [];
 
@@ -580,12 +583,19 @@ export class UserSettingsRepository extends BaseRepository {
 			api_key: string | null;
 		}>(query, values);
 
-		return result.map((provider) => ({
-			id: provider.id,
-			provider_id: provider.provider_id,
-			enabled: provider.enabled === 1,
-			hasApiKey: Boolean(provider.api_key),
-		}));
+		return result.map((provider) => {
+			const metadata = getUserConfigurableProviderMetadata(provider.provider_id);
+
+			return {
+				id: provider.id,
+				provider_id: provider.provider_id,
+				name: metadata.name,
+				type: metadata.type,
+				description: metadata.description,
+				enabled: provider.enabled === 1,
+				hasApiKey: Boolean(provider.api_key),
+			};
+		});
 	}
 
 	public async hasProviderApiKey(userId: number, providerId: string): Promise<boolean> {

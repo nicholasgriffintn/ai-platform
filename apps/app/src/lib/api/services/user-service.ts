@@ -6,6 +6,7 @@ export interface ProviderSetting {
 	provider_id: string;
 	name?: string;
 	description?: string;
+	type?: string;
 	enabled: boolean;
 	hasApiKey?: boolean;
 }

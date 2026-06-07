@@ -2,7 +2,7 @@ import type { ServiceContext } from "~/lib/context/serviceContext";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { GITHUB_CONNECTION_APP_ID } from "./connections";
 import { encryptGitHubConnectionPayload } from "./connection-crypto";
-import { validateGitHubPrivateKey } from "./app-jwt";
+import { validateGitHubPrivateKey } from "~/lib/github/app-jwt";
 
 export interface UpsertGitHubConnectionInput {
 	installationId: number;

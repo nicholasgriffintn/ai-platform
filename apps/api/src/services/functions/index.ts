@@ -30,6 +30,7 @@ import { get_weather } from "./weather";
 import { web_search } from "./web_search";
 import { research } from "./research";
 import { extract_text_from_document } from "./ocr";
+import { trigger_recipe, use_recipe_connector } from "./recipe_connectors";
 import { compose_functions, if_then_else, parallel_execute } from "./workflow";
 import {
 	run_bug_fix,
@@ -61,6 +62,8 @@ const functionDefinitions: ApiToolDefinition[] = [
 	create_note,
 	get_note,
 	extract_text_from_document,
+	use_recipe_connector,
+	trigger_recipe,
 	capture_screenshot,
 	create_speech,
 	tutor,

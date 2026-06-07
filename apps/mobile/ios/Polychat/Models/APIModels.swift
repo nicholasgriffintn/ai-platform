@@ -279,6 +279,68 @@ public struct ToolDefinition: Codable, Identifiable, Equatable {
     public let isDefault: Bool?
 }
 
+
+public struct AssistantRecipesResponse: Codable {
+    public let recipes: [AssistantRecipe]
+    public let categories: [String]
+    public let filters: [String]
+}
+
+public struct AssistantRecipe: Codable, Identifiable, Equatable {
+    public let id: String
+    public let title: String
+    public let summary: String
+    public let description: String
+    public let kind: String
+    public let category: String
+    public let featured: Bool
+    public let estimatedSetupMinutes: Int
+    public let integrations: [AssistantRecipeIntegration]
+    public let triggers: [AssistantRecipeTrigger]
+    public let actions: [String]
+    public let setupPrompt: String
+    public let enabledTools: [String]
+}
+
+public struct AssistantRecipeIntegration: Codable, Identifiable, Equatable {
+    public let id: String
+    public let providerId: String
+    public let name: String
+    public let description: String
+    public let requiresConnection: Bool
+    public let connectionStatus: String?
+    public let setupUrl: String?
+}
+
+public struct AssistantRecipeTrigger: Codable, Equatable {
+    public let type: String
+    public let label: String
+    public let description: String
+}
+
+public struct AssistantRecipeInstallRequest: Codable {
+    let channel: String
+}
+
+public struct AssistantRecipeInstallResponse: Codable {
+    public let recipe: AssistantRecipe
+    public let conversationStarter: String
+    public let messageUrl: String
+    public let checklist: [String]
+    public let connections: [AssistantRecipeConnection]
+    public let readyToRun: Bool
+    public let enabledTools: [String]
+}
+
+public struct AssistantRecipeConnection: Codable, Equatable {
+    public let integrationId: String
+    public let providerId: String
+    public let name: String
+    public let status: String
+    public let requiresConnection: Bool
+    public let setupUrl: String?
+}
+
 public struct TitleGenerationRequest: Codable {
     let messages: [ChatMessage]
 }

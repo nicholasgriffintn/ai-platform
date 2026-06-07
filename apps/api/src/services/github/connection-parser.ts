@@ -1,4 +1,4 @@
-import { normalizeGitHubPrivateKey } from "./app-jwt";
+import { normalizeGitHubPrivateKey } from "~/lib/github/app-jwt";
 
 export interface GitHubAppConnection {
 	appId: string;
