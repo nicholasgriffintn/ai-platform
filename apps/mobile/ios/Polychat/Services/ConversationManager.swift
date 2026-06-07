@@ -287,6 +287,7 @@ class ConversationManager: ObservableObject {
             return
         }
 
+        var conversation = conversation
         conversation.messages[messageIndex] = conversation.messages[messageIndex].replacingTextContent(with: trimmedText)
 
         await regenerateConversation(
@@ -474,20 +475,29 @@ class ConversationManager: ObservableObject {
 
         let existingMessage = conversation.messages[messageIndex]
         let created = metadata?.created ?? existingMessage.created
+        let contentParts = metadata?.parts ?? existingMessage.parts
+        let reasoning = metadata?.reasoning ?? existingMessage.reasoning
+        let citations = metadata?.citations ?? existingMessage.citations
+        let data = metadata?.data ?? existingMessage.data
+        let name = metadata?.name ?? existingMessage.name
+        let status = metadata?.status ?? existingMessage.status
+        let logId = metadata?.logId ?? existingMessage.logId
+        let timestamp = created ?? existingMessage.timestamp
+
         conversation.messages[messageIndex] = ChatMessage(
             id: messageId,
             role: "assistant",
             content: content,
             model: modelId ?? existingMessage.model,
-            parts: metadata?.parts ?? existingMessage.parts,
-            reasoning: metadata?.reasoning ?? existingMessage.reasoning,
-            citations: metadata?.citations ?? existingMessage.citations,
-            data: metadata?.data ?? existingMessage.data,
-            name: metadata?.name ?? existingMessage.name,
-            status: metadata?.status ?? existingMessage.status,
-            logId: metadata?.logId ?? existingMessage.logId,
+            parts: contentParts,
+            reasoning: reasoning,
+            citations: citations,
+            data: data,
+            name: name,
+            status: status,
+            logId: logId,
             created: created,
-            timestamp: created ?? existingMessage.timestamp
+            timestamp: timestamp
         )
         conversation.isLoadedFromAPI = conversation.isLoadedFromAPI || markLoadedFromAPI
         conversation.modelId = modelId ?? conversation.modelId
