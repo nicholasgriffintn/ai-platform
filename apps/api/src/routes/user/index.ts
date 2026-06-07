@@ -124,10 +124,11 @@ addRoute(app, "post", "/store-provider-api-key", {
 	handler: async ({ raw }) =>
 		(async (c: Context) => {
 			const user = c.get("user");
-			const { providerId, apiKey, secretKey } = c.req.valid("json" as never) as {
+			const { providerId, apiKey, secretKey, configuration } = c.req.valid("json" as never) as {
 				providerId: string;
 				apiKey: string;
 				secretKey?: string;
+				configuration?: Record<string, unknown>;
 			};
 
 			if (!user) {
@@ -140,6 +141,7 @@ addRoute(app, "post", "/store-provider-api-key", {
 				providerId,
 				apiKey,
 				secretKey,
+				configuration,
 				user.id,
 			);
 

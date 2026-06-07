@@ -5,6 +5,7 @@ import { registerChatProviders } from "./registry/registrations/chat";
 import { registerEmbeddingProviders } from "./registry/registrations/embedding";
 import { registerGuardrailProviders } from "./registry/registrations/guardrails";
 import { registerImageProviders } from "./registry/registrations/image";
+import { registerMessagingProviders } from "./registry/registrations/messaging";
 import { registerMusicProviders } from "./registry/registrations/music";
 import { registerOcrProviders } from "./registry/registrations/ocr";
 import { registerRealtimeProviders } from "./registry/registrations/realtime";
@@ -28,6 +29,7 @@ const DEFAULT_BOOTSTRAPPERS: Partial<Record<ProviderCategory, CategoryBootstrapp
 	embedding: [registerEmbeddingProviders],
 	guardrails: [registerGuardrailProviders],
 	image: [registerImageProviders],
+	messaging: [registerMessagingProviders],
 	music: [registerMusicProviders],
 	ocr: [registerOcrProviders],
 	realtime: [registerRealtimeProviders],
@@ -93,6 +95,10 @@ export class ProviderLibrary {
 
 	image(providerName: string, context?: ProviderFactoryContext) {
 		return this.resolve("image", providerName, context);
+	}
+
+	messaging(providerName: string, context?: ProviderFactoryContext) {
+		return this.resolve("messaging", providerName, context);
 	}
 
 	music(providerName: string, context?: ProviderFactoryContext) {

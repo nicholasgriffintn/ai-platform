@@ -8,6 +8,7 @@ import type {
 export const RECIPE_CONNECTOR_TOOL = "use_recipe_connector";
 export const RECIPE_TRIGGER_TOOL = "trigger_recipe";
 export const WEATHER_TOOL = "get_weather";
+export const WEB_SEARCH_TOOL = "web_search";
 
 type CatalogRecipeConfigurationField = Omit<RecipeConfigurationField, "required"> & {
 	required?: boolean;
@@ -743,6 +744,506 @@ const catalogRecipes: CatalogRecipe[] = [
 				label: "Dietary notes",
 				type: "textarea",
 				placeholder: "Preferences, allergies, foods to avoid, or uncertainty rules",
+			},
+		],
+	},
+	{
+		id: "birthday-gift-ideas",
+		title: "Birthday Gift Ideas",
+		summary: "Scan mail and calendars for upcoming birthdays and suggest gifts.",
+		description:
+			"Uses connected email and calendar accounts to spot upcoming birthdays, then prepares gift ideas for review.",
+		kind: "automate",
+		category: "Community",
+		featured: false,
+		estimatedSetupMinutes: 4,
+		enabledTools: [RECIPE_CONNECTOR_TOOL, WEB_SEARCH_TOOL],
+		integrations: [
+			{
+				id: "gmail",
+				providerId: "gmail",
+				name: "Gmail",
+				description: "Searches Gmail for birthday context when connected.",
+				requiresConnection: true,
+			},
+			{
+				id: "outlook",
+				providerId: "outlook",
+				name: "Outlook",
+				description: "Searches Outlook mail and calendar for birthday context when connected.",
+				requiresConnection: true,
+			},
+			{
+				id: "calendar",
+				providerId: "calendar",
+				name: "Google Calendar",
+				description: "Reads upcoming birthday events when connected.",
+				requiresConnection: true,
+			},
+		],
+		triggers: [
+			{
+				type: "schedule",
+				label: "Weekly birthday scan",
+				description: "Run a weekly scan for upcoming birthdays.",
+			},
+			{
+				type: "message",
+				label: "Ask for gift ideas",
+				description: "Ask Polychat to prepare ideas for a specific person.",
+			},
+		],
+		actions: [
+			"Search upcoming calendar events and relevant mail",
+			"Summarise the relationship and useful context",
+			"Suggest practical gift ideas without purchasing anything",
+		],
+		setupPrompt:
+			"Set up the Birthday Gift Ideas recipe. Ask which mail and calendar sources to use, how far ahead to scan, and any gift budget or categories to avoid. Use web search only for gift research, do not purchase anything, and ask before sending messages or changing calendars.",
+		configurationFields: [
+			{
+				key: "scanWindow",
+				label: "Scan window",
+				type: "text",
+				placeholder: "Next 14 days, next month",
+			},
+			{
+				key: "giftBudget",
+				label: "Gift budget",
+				type: "text",
+				placeholder: "Under GBP 50, handmade ideas, no budget",
+			},
+			reviewInstructionsField,
+		],
+	},
+	{
+		id: "monthly-subscription-audit",
+		title: "Monthly Subscription Audit",
+		summary: "Report active subscriptions, costs, renewals, and trial expirations.",
+		description:
+			"Uses connected mail to find subscription and billing messages, then creates a reviewable monthly spending report.",
+		kind: "automate",
+		category: "Finance",
+		featured: false,
+		estimatedSetupMinutes: 4,
+		enabledTools: [RECIPE_CONNECTOR_TOOL],
+		integrations: [
+			{
+				id: "gmail",
+				providerId: "gmail",
+				name: "Gmail",
+				description: "Searches Gmail for subscription and billing messages.",
+				requiresConnection: true,
+			},
+			{
+				id: "outlook",
+				providerId: "outlook",
+				name: "Outlook",
+				description: "Searches Outlook for subscription and billing messages.",
+				requiresConnection: true,
+			},
+		],
+		triggers: [
+			{
+				type: "schedule",
+				label: "Monthly audit",
+				description: "Run a recurring subscription spending audit.",
+			},
+			{
+				type: "message",
+				label: "Ask for an audit",
+				description: "Ask Polychat to review subscription messages now.",
+			},
+		],
+		actions: [
+			"Search for renewal, receipt, trial, and billing language",
+			"Group likely subscriptions and billing dates",
+			"Flag duplicates, price increases, and possible cancellations",
+		],
+		setupPrompt:
+			"Set up the Monthly Subscription Audit recipe. Ask which inbox to scan, the review window, and whether to include trial, receipt, and renewal messages. Summarise likely subscriptions, costs, dates, and uncertainties. Do not cancel, send mail, or change accounts without explicit approval.",
+		configurationFields: [
+			{
+				key: "mailProvider",
+				label: "Mail provider",
+				type: "text",
+				required: true,
+				placeholder: "Gmail or Outlook",
+			},
+			{
+				key: "reviewWindow",
+				label: "Review window",
+				type: "text",
+				placeholder: "This month, last 90 days, next 30 days",
+			},
+			{
+				key: "currency",
+				label: "Currency",
+				type: "text",
+				placeholder: "GBP, USD, EUR",
+			},
+		],
+	},
+	{
+		id: "weekly-reading-suggestion",
+		title: "Weekly Reading Suggestion",
+		summary: "Suggest articles or books from recent interests and newsletters.",
+		description:
+			"Uses connected mail and web search to suggest reading material based on newsletters, projects, and recurring interests.",
+		kind: "automate",
+		category: "Productivity",
+		featured: false,
+		estimatedSetupMinutes: 3,
+		enabledTools: [RECIPE_CONNECTOR_TOOL, WEB_SEARCH_TOOL],
+		integrations: [
+			{
+				id: "gmail",
+				providerId: "gmail",
+				name: "Gmail",
+				description: "Searches newsletters and reading-related Gmail messages.",
+				requiresConnection: true,
+			},
+			{
+				id: "outlook",
+				providerId: "outlook",
+				name: "Outlook",
+				description: "Searches newsletters and reading-related Outlook messages.",
+				requiresConnection: true,
+			},
+		],
+		triggers: [
+			{
+				type: "schedule",
+				label: "Weekly suggestion",
+				description: "Run a weekly reading recommendation.",
+			},
+		],
+		actions: [
+			"Identify recent topics from mail context",
+			"Search for relevant articles or books",
+			"Return a concise shortlist with reasons",
+		],
+		setupPrompt:
+			"Set up the Weekly Reading Suggestion recipe. Ask which inbox or topics to use, preferred length and format, and any sources to avoid. Use mail context and web search to suggest reading, with links and short reasons. Do not subscribe, buy, or send anything.",
+		configurationFields: [
+			{
+				key: "topics",
+				label: "Topics",
+				type: "string_list",
+				placeholder: "AI, product, health, history",
+			},
+			{
+				key: "preferredSources",
+				label: "Preferred sources",
+				type: "string_list",
+				placeholder: "Blogs, papers, books, newsletters",
+			},
+		],
+	},
+	{
+		id: "daily-ai-news-briefing",
+		title: "Daily AI News Briefing",
+		summary: "Get a concise daily briefing on major AI news.",
+		description: "Uses web search to gather recent AI news and summarise the highest-signal items.",
+		kind: "automate",
+		category: "Developer",
+		featured: false,
+		estimatedSetupMinutes: 2,
+		enabledTools: [WEB_SEARCH_TOOL],
+		integrations: [
+			{
+				id: "web-search",
+				providerId: "chat",
+				name: "Web search",
+				description: "Uses the built-in web search tool.",
+				requiresConnection: false,
+			},
+		],
+		triggers: [
+			{
+				type: "schedule",
+				label: "Daily briefing",
+				description: "Run a daily AI news scan.",
+			},
+			{
+				type: "message",
+				label: "Ask for news",
+				description: "Ask Polychat for the latest AI news.",
+			},
+		],
+		actions: [
+			"Search recent AI news",
+			"Deduplicate repeated stories",
+			"Summarise important changes with links",
+		],
+		setupPrompt:
+			"Set up the Daily AI News Briefing recipe. Ask for preferred topics, sources, and length. Use web search for recent AI news, cite sources in the answer, and separate confirmed facts from interpretation.",
+		configurationFields: [
+			{
+				key: "topics",
+				label: "Topics",
+				type: "string_list",
+				placeholder: "OpenAI, agents, regulation, chips, research",
+			},
+			{
+				key: "briefingLength",
+				label: "Briefing length",
+				type: "text",
+				placeholder: "3 bullets, concise, detailed",
+			},
+		],
+	},
+	{
+		id: "journal",
+		title: "Journal",
+		summary: "Send journaling prompts and reflect on past entries in chat.",
+		description:
+			"Uses scheduled or manual chat prompts to support journaling without connecting a third-party service.",
+		kind: "automate",
+		category: "Health",
+		featured: false,
+		estimatedSetupMinutes: 1,
+		enabledTools: [],
+		integrations: [
+			{
+				id: "chat",
+				providerId: "chat",
+				name: "Chat",
+				description: "Uses Polychat conversation context and saved recipe configuration.",
+				requiresConnection: false,
+			},
+		],
+		triggers: [
+			{
+				type: "schedule",
+				label: "Daily prompt",
+				description: "Send a recurring journaling prompt.",
+			},
+			{
+				type: "message",
+				label: "Journal in chat",
+				description: "Ask Polychat for a prompt or reflection.",
+			},
+		],
+		actions: [
+			"Ask a concise reflection question",
+			"Adapt prompts to saved preferences",
+			"Keep tone supportive without clinical claims",
+		],
+		setupPrompt:
+			"Set up the Journal recipe. Ask what kind of prompts I want, preferred cadence, and any topics to avoid. Keep responses private, reflective, and non-clinical. Do not infer diagnoses or expose past entries unless I ask.",
+		configurationFields: [
+			{
+				key: "journalStyle",
+				label: "Journal style",
+				type: "text",
+				placeholder: "Gratitude, work reflection, mood, free-form",
+			},
+			{
+				key: "topicsToAvoid",
+				label: "Topics to avoid",
+				type: "string_list",
+				placeholder: "Work, relationships, health",
+			},
+		],
+	},
+	{
+		id: "hydration-reminders",
+		title: "Hydration Reminders",
+		summary: "Send friendly water reminders throughout the day.",
+		description:
+			"Uses scheduled recipe prompts and optional SMS delivery for lightweight hydration reminders.",
+		kind: "automate",
+		category: "Health",
+		featured: false,
+		estimatedSetupMinutes: 1,
+		enabledTools: [],
+		integrations: [
+			{
+				id: "chat",
+				providerId: "chat",
+				name: "Chat",
+				description: "Uses saved reminder preferences and scheduled prompts.",
+				requiresConnection: false,
+			},
+		],
+		triggers: [
+			{
+				type: "schedule",
+				label: "Reminder schedule",
+				description: "Run recurring reminders during preferred hours.",
+			},
+		],
+		actions: [
+			"Send a short reminder",
+			"Vary wording to avoid repetition",
+			"Respect saved quiet hours and tone",
+		],
+		setupPrompt:
+			"Set up the Hydration Reminders recipe. Ask for reminder times, quiet hours, tone, and whether scheduled results should be sent by SMS. Keep messages short and avoid medical claims.",
+		configurationFields: [
+			{
+				key: "quietHours",
+				label: "Quiet hours",
+				type: "text",
+				placeholder: "After 21:00, before 08:00",
+			},
+			{
+				key: "tone",
+				label: "Tone",
+				type: "text",
+				placeholder: "Direct, gentle, funny, minimal",
+			},
+		],
+	},
+	{
+		id: "nightly-gratitude",
+		title: "Nightly Gratitude",
+		summary: "Receive an evening reflection prompt to wind down.",
+		description: "Uses scheduled recipe prompts to generate varied gratitude reflections.",
+		kind: "automate",
+		category: "Health",
+		featured: false,
+		estimatedSetupMinutes: 1,
+		enabledTools: [],
+		integrations: [
+			{
+				id: "chat",
+				providerId: "chat",
+				name: "Chat",
+				description: "Uses saved prompt preferences without a third-party connection.",
+				requiresConnection: false,
+			},
+		],
+		triggers: [
+			{
+				type: "schedule",
+				label: "Nightly prompt",
+				description: "Run a recurring evening gratitude prompt.",
+			},
+		],
+		actions: [
+			"Generate a short gratitude prompt",
+			"Vary phrasing over time",
+			"Keep the tone calm and non-clinical",
+		],
+		setupPrompt:
+			"Set up the Nightly Gratitude recipe. Ask what time I want prompts, tone preferences, and any topics to avoid. Keep messages concise and reflective, not therapeutic or diagnostic.",
+		configurationFields: [
+			{
+				key: "promptStyle",
+				label: "Prompt style",
+				type: "text",
+				placeholder: "Simple, specific, reflective, playful",
+			},
+		],
+	},
+	{
+		id: "rent-reminders",
+		title: "Rent Reminders",
+		summary: "Send a reminder before rent or household bills are due.",
+		description:
+			"Uses scheduled recipe prompts and optional SMS delivery for recurring bill reminders.",
+		kind: "automate",
+		category: "Finance",
+		featured: false,
+		estimatedSetupMinutes: 1,
+		enabledTools: [],
+		integrations: [
+			{
+				id: "chat",
+				providerId: "chat",
+				name: "Chat",
+				description: "Uses saved reminder details without external account access.",
+				requiresConnection: false,
+			},
+		],
+		triggers: [
+			{
+				type: "schedule",
+				label: "Monthly reminder",
+				description: "Run before the configured due date.",
+			},
+		],
+		actions: [
+			"Send a concise reminder",
+			"Include amount or account notes if saved",
+			"Avoid implying payment was made",
+		],
+		setupPrompt:
+			"Set up the Rent Reminders recipe. Ask for due date, reminder timing, amount or notes to include, and whether scheduled results should be sent by SMS. Do not claim a payment was made or access financial accounts.",
+		configurationFields: [
+			{
+				key: "dueDate",
+				label: "Due date",
+				type: "text",
+				required: true,
+				placeholder: "1st of each month, last weekday",
+			},
+			{
+				key: "reminderLeadTime",
+				label: "Reminder lead time",
+				type: "text",
+				placeholder: "3 days before, morning of",
+			},
+			{
+				key: "paymentNotes",
+				label: "Payment notes",
+				type: "textarea",
+				placeholder: "Amount, reference, or account nickname",
+			},
+		],
+	},
+	{
+		id: "weekly-productivity-check-in",
+		title: "Weekly Productivity Check-in",
+		summary: "Review wins, blockers, and priorities at the end of the week.",
+		description: "Uses scheduled recipe prompts to help reflect on the week and plan the next one.",
+		kind: "automate",
+		category: "Productivity",
+		featured: false,
+		estimatedSetupMinutes: 1,
+		enabledTools: [],
+		integrations: [
+			{
+				id: "chat",
+				providerId: "chat",
+				name: "Chat",
+				description: "Uses saved reflection preferences without third-party access.",
+				requiresConnection: false,
+			},
+		],
+		triggers: [
+			{
+				type: "schedule",
+				label: "Weekly check-in",
+				description: "Run at the end of each week.",
+			},
+			{
+				type: "message",
+				label: "Ask for a check-in",
+				description: "Ask Polychat to run a productivity reflection now.",
+			},
+		],
+		actions: [
+			"Ask about wins, blockers, and next priorities",
+			"Keep the prompt concise",
+			"Use saved work style preferences",
+		],
+		setupPrompt:
+			"Set up the Weekly Productivity Check-in recipe. Ask which day and time to run, what areas to reflect on, and preferred tone. Keep the output concise and ask follow-up questions rather than inventing accomplishments.",
+		configurationFields: [
+			{
+				key: "focusAreas",
+				label: "Focus areas",
+				type: "string_list",
+				placeholder: "Work, health, learning, relationships",
+			},
+			{
+				key: "checkInTone",
+				label: "Check-in tone",
+				type: "text",
+				placeholder: "Direct, encouraging, analytical",
 			},
 		],
 	},

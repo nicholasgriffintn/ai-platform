@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { Button } from "~/components/ui/Button";
 import {
@@ -17,6 +17,15 @@ interface ProviderApiKeyModalProps {
 	onOpenChange: (open: boolean) => void;
 	providerId: string;
 	providerName: string;
+	configurationFields?: Array<{
+		key: string;
+		label: string;
+		type: "text" | "password";
+		required?: boolean;
+		placeholder?: string;
+		description?: string;
+	}>;
+	webhookUrl?: string;
 }
 
 export function ProviderApiKeyModal({
@@ -24,17 +33,55 @@ export function ProviderApiKeyModal({
 	onOpenChange,
 	providerId,
 	providerName,
+	configurationFields = [],
+	webhookUrl,
 }: ProviderApiKeyModalProps) {
 	const { trackEvent } = useTrackEvent();
 	const [apiKey, setApiKey] = useState("");
 	const [secretKey, setSecretKey] = useState("");
+	const [configurationValues, setConfigurationValues] = useState<Record<string, string>>({});
 	const { storeProviderApiKey, isStoringProviderApiKey } = useUser();
 
 	const isBedrockProvider =
 		providerName.toLowerCase() === "polly" || providerName.toLowerCase() === "bedrock";
+	const usesConfigurationFields = configurationFields.length > 0;
+	const requiresSecretKey = isBedrockProvider;
+
+	useEffect(() => {
+		if (!open) {
+			setApiKey("");
+			setSecretKey("");
+			setConfigurationValues({});
+		}
+	}, [open]);
+
+	const updateConfigurationValue = (key: string, value: string) => {
+		setConfigurationValues((previous) => ({
+			...previous,
+			[key]: value,
+		}));
+	};
+
+	const hasMissingRequiredConfiguration = configurationFields.some(
+		(field) => field.required && !configurationValues[field.key]?.trim(),
+	);
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
+
+		const providerApiKey = usesConfigurationFields
+			? configurationValues.accountSid ||
+				configurationValues.accessKeyId ||
+				configurationValues.apiKey ||
+				""
+			: apiKey;
+		const providerSecretKey = usesConfigurationFields
+			? configurationValues.authToken || configurationValues.secretAccessKey || undefined
+			: isBedrockProvider
+				? secretKey
+				: undefined;
+		const configuration = usesConfigurationFields ? configurationValues : undefined;
+
 		try {
 			trackEvent({
 				name: "store_provider_api_key",
@@ -44,11 +91,13 @@ export function ProviderApiKeyModal({
 			});
 			await storeProviderApiKey({
 				providerId,
-				apiKey,
-				secretKey: isBedrockProvider ? secretKey : undefined,
+				apiKey: providerApiKey,
+				secretKey: providerSecretKey,
+				configuration,
 			});
 			setApiKey("");
 			setSecretKey("");
+			setConfigurationValues({});
 			onOpenChange(false);
 		} catch (error) {
 			console.error("Failed to store API key:", error);
@@ -65,25 +114,48 @@ export function ProviderApiKeyModal({
 
 				<form onSubmit={handleSubmit} className="space-y-4">
 					<p className="text-sm text-zinc-500 dark:text-zinc-400">
-						{isBedrockProvider
-							? `Enter your AWS Access Key ID and Secret Access Key for ${providerName}.`
-							: `Enter your API key for ${providerName}.`}
+						{usesConfigurationFields
+							? `Enter the required connection details for ${providerName}.`
+							: isBedrockProvider
+								? `Enter your AWS Access Key ID and Secret Access Key for ${providerName}.`
+								: `Enter your API key for ${providerName}.`}
 						This will be securely stored and used for making requests.
 					</p>
 
-					<FormInput
-						type="password"
-						autoComplete="off"
-						value={apiKey}
-						onChange={(e: React.ChangeEvent<HTMLInputElement>) => setApiKey(e.target.value)}
-						placeholder={isBedrockProvider ? "Enter your AWS Access Key ID" : "Enter your API key"}
-						label={isBedrockProvider ? "AWS Access Key ID" : "API Key"}
-						description="Your credentials will be encrypted before being stored"
-						required
-						disabled={isStoringProviderApiKey}
-					/>
+					{usesConfigurationFields ? (
+						configurationFields.map((field) => (
+							<FormInput
+								key={field.key}
+								type={field.type}
+								autoComplete="off"
+								value={configurationValues[field.key] ?? ""}
+								onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+									updateConfigurationValue(field.key, e.target.value)
+								}
+								placeholder={field.placeholder}
+								label={field.label}
+								description={field.description}
+								required={field.required}
+								disabled={isStoringProviderApiKey}
+							/>
+						))
+					) : (
+						<FormInput
+							type="password"
+							autoComplete="off"
+							value={apiKey}
+							onChange={(e: React.ChangeEvent<HTMLInputElement>) => setApiKey(e.target.value)}
+							placeholder={
+								isBedrockProvider ? "Enter your AWS Access Key ID" : "Enter your API key"
+							}
+							label={isBedrockProvider ? "AWS Access Key ID" : "API Key"}
+							description="Your credentials will be encrypted before being stored"
+							required
+							disabled={isStoringProviderApiKey}
+						/>
+					)}
 
-					{isBedrockProvider && (
+					{!usesConfigurationFields && requiresSecretKey && (
 						<FormInput
 							type="password"
 							autoComplete="off"
@@ -93,6 +165,16 @@ export function ProviderApiKeyModal({
 							label="AWS Secret Access Key"
 							required
 							disabled={isStoringProviderApiKey}
+						/>
+					)}
+
+					{webhookUrl && (
+						<FormInput
+							type="text"
+							value={webhookUrl}
+							label="Webhook URL"
+							description="Use this as the inbound message webhook URL in your provider dashboard."
+							readOnly
 						/>
 					)}
 
@@ -107,7 +189,11 @@ export function ProviderApiKeyModal({
 						</Button>
 						<Button
 							type="submit"
-							disabled={!apiKey || (isBedrockProvider && !secretKey) || isStoringProviderApiKey}
+							disabled={
+								usesConfigurationFields
+									? hasMissingRequiredConfiguration || isStoringProviderApiKey
+									: !apiKey || (isBedrockProvider && !secretKey) || isStoringProviderApiKey
+							}
 							isLoading={isStoringProviderApiKey}
 						>
 							Save

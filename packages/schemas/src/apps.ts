@@ -1118,6 +1118,8 @@ export const recipeInstallationTriggerSchema = z
 			.regex(/^[\d*/, -]+ [\d*/, -]+ [\d*/, -]+ [\d*/, -]+ [\d*/, -]+$/)
 			.optional(),
 		prompt: z.string().optional(),
+		notificationChannel: z.enum(["sms"]).optional(),
+		notificationTarget: z.string().optional(),
 	})
 	.superRefine((trigger, ctx) => {
 		if (trigger.type === "schedule" && !trigger.cronExpression?.trim()) {
@@ -1125,6 +1127,13 @@ export const recipeInstallationTriggerSchema = z
 				code: "custom",
 				path: ["cronExpression"],
 				message: "Schedule triggers require a cron expression",
+			});
+		}
+		if (trigger.notificationChannel === "sms" && !trigger.notificationTarget?.trim()) {
+			ctx.addIssue({
+				code: "custom",
+				path: ["notificationTarget"],
+				message: "SMS recipe notifications require a target phone number",
 			});
 		}
 	});

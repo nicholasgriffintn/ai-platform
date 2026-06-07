@@ -272,8 +272,13 @@ class ApiService {
 		return this.userService.fetchTools();
 	};
 
-	storeProviderApiKey = (providerId: string, apiKey: string, secretKey?: string): Promise<void> => {
-		return this.userService.storeProviderApiKey(providerId, apiKey, secretKey);
+	storeProviderApiKey = (
+		providerId: string,
+		apiKey: string,
+		secretKey?: string,
+		configuration?: Record<string, unknown>,
+	): Promise<void> => {
+		return this.userService.storeProviderApiKey(providerId, apiKey, secretKey, configuration);
 	};
 
 	getProviderSettings = (): Promise<ProviderSetting[]> => {

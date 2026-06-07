@@ -133,11 +133,19 @@ final class APIClient: ObservableObject {
         try await send(path: "/apps/recipes", method: "GET")
     }
 
-    func installAssistantRecipe(id: String) async throws -> AssistantRecipeInstallResponse {
+    func installAssistantRecipe(
+        id: String,
+        triggers: [RecipeInstallationTrigger]? = nil,
+        configuration: RecipeConfiguration? = nil
+    ) async throws -> AssistantRecipeInstallResponse {
         try await send(
             path: "/apps/recipes/\(id)/install",
             method: "POST",
-            body: AssistantRecipeInstallRequest(channel: "ios")
+            body: AssistantRecipeInstallRequest(
+                channel: "ios",
+                triggers: triggers,
+                configuration: configuration
+            )
         )
     }
 

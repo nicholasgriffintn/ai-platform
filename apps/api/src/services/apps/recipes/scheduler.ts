@@ -134,6 +134,8 @@ export async function scheduleDueRecipeExecutions(env: IEnv, now = new Date()): 
 					input: trigger.prompt,
 					channel: "scheduled",
 					configuration: installation.configuration,
+					notificationChannel: trigger.notificationChannel,
+					notificationTarget: trigger.notificationTarget,
 				},
 				priority: 5,
 				metadata: {

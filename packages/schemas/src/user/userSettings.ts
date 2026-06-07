@@ -36,20 +36,29 @@ export const userModelsResponseSchema = z.object({
 	models: z.array(z.string()),
 });
 
-export const providersResponseSchema = z.object({
-	success: z.boolean(),
-	providers: z.array(
-		z.object({
-			id: z.string(),
-			name: z.string(),
-			type: z.string(),
-			description: z.string().optional(),
-			provider_id: z.string().optional(),
-			enabled: z.boolean(),
-			hasApiKey: z.boolean().optional(),
-		}),
-	),
-});
+export const providersResponseSchema = z.array(
+	z.object({
+		id: z.string(),
+		provider_id: z.string(),
+		enabled: z.boolean(),
+		hasApiKey: z.boolean().optional(),
+		name: z.string().optional(),
+		description: z.string().optional(),
+		configurationFields: z
+			.array(
+				z.object({
+					key: z.string(),
+					label: z.string(),
+					type: z.enum(["text", "password"]),
+					required: z.boolean().optional(),
+					placeholder: z.string().optional(),
+					description: z.string().optional(),
+				}),
+			)
+			.optional(),
+		webhookUrl: z.string().optional(),
+	}),
+);
 
 export const providerSettingsSchema = z.object({
 	id: z.string(),

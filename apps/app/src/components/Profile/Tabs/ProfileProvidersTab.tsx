@@ -33,7 +33,7 @@ interface ProviderDeleteState {
 	providerName: string;
 }
 
-type ProviderTypeFilter = "all" | "chat" | "connector";
+type ProviderTypeFilter = "all" | "chat" | "messaging" | "connector";
 
 export function ProfileProvidersTab() {
 	const { trackEvent } = useTrackEvent();
@@ -66,7 +66,8 @@ export function ProfileProvidersTab() {
 	const providerCounts = useMemo(
 		() => ({
 			all: providerSettings.length + connectors.length,
-			chat: providerSettings.filter((provider) => provider.type !== "connector").length,
+			chat: providerSettings.filter((provider) => provider.type === "chat").length,
+			messaging: providerSettings.filter((provider) => provider.type === "messaging").length,
 			connector: connectors.length,
 		}),
 		[connectors.length, providerSettings],
@@ -75,13 +76,14 @@ export function ProfileProvidersTab() {
 		() =>
 			providerSettings.filter((provider) => {
 				if (providerType === "all") return true;
-				if (providerType === "chat") return provider.type !== "connector";
-				return provider.type === "connector";
+				if (providerType === "chat") return provider.type === "chat";
+				if (providerType === "messaging") return provider.type === "messaging";
+				return false;
 			}),
 		[providerSettings, providerType],
 	);
 	const filteredConnectors = useMemo(
-		() => (providerType === "chat" ? [] : connectors),
+		() => (providerType === "chat" || providerType === "messaging" ? [] : connectors),
 		[connectors, providerType],
 	);
 
@@ -196,6 +198,7 @@ export function ProfileProvidersTab() {
 						<TabsList>
 							<TabsTrigger value="all">All ({providerCounts.all})</TabsTrigger>
 							<TabsTrigger value="chat">Chat ({providerCounts.chat})</TabsTrigger>
+							<TabsTrigger value="messaging">Messaging ({providerCounts.messaging})</TabsTrigger>
 							<TabsTrigger value="connector">Connectors ({providerCounts.connector})</TabsTrigger>
 						</TabsList>
 					</Tabs>
@@ -236,7 +239,7 @@ export function ProfileProvidersTab() {
 											/>
 										}
 										label={providerName}
-										sublabel={provider.description}
+										sublabel={provider.webhookUrl ?? provider.description}
 										badge={
 											isConfigured ? (
 												<span className="inline-flex items-center rounded-full bg-emerald-100 dark:bg-emerald-900/30 px-2 py-0.5 text-xs text-emerald-800 dark:text-emerald-300">
@@ -369,6 +372,14 @@ export function ProfileProvidersTab() {
 				onOpenChange={handleCloseModal}
 				providerId={modalState.providerId}
 				providerName={modalState.providerName}
+				configurationFields={
+					providerSettings.find((provider) => provider.provider_id === modalState.providerId)
+						?.configurationFields
+				}
+				webhookUrl={
+					providerSettings.find((provider) => provider.provider_id === modalState.providerId)
+						?.webhookUrl
+				}
 			/>
 			<ConfirmationDialog
 				open={providerToDelete !== null}

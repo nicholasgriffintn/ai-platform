@@ -69,6 +69,26 @@ describe("buildConversationModeMetadataFromRequestOptions", () => {
 		expect(buildConversationModeMetadataFromRequestOptions(options as any)?.mode).toBe("sandbox");
 	});
 
+	it("builds sms metadata from request options", () => {
+		const options = {
+			sms: {
+				enabled: true,
+				from: "+15551234567",
+				to: "+15557654321",
+			},
+		};
+
+		expect(resolveChatPromptMode(options as any)).toBe("sms");
+		expect(buildConversationModeMetadataFromRequestOptions(options as any)).toEqual({
+			mode: "sms",
+			requestOptions: options,
+			smsSettings: {
+				from: "+15551234567",
+				to: "+15557654321",
+			},
+		});
+	});
+
 	it("merges provider response data with council turn metadata", () => {
 		expect(
 			buildAssistantMessageData({

@@ -6,8 +6,12 @@ import type { TaskMessage } from "../../TaskService";
 
 const mocks = vi.hoisted(() => ({
 	getUserById: vi.fn(),
+	getProviderApiKey: vi.fn(),
+	getUserProviderSettings: vi.fn(),
 	invokeAssistantRecipe: vi.fn(),
 	executeRecipeInvocationChat: vi.fn(),
+	parseMessagingCredentialEnvelope: vi.fn(),
+	providerSend: vi.fn(),
 }));
 
 vi.mock("~/lib/context/serviceContext", () => ({
@@ -18,8 +22,22 @@ vi.mock("~/lib/context/serviceContext", () => ({
 			users: {
 				getUserById: mocks.getUserById,
 			},
+			userSettings: {
+				getProviderApiKey: mocks.getProviderApiKey,
+				getUserProviderSettings: mocks.getUserProviderSettings,
+			},
 		},
 	})),
+}));
+
+vi.mock("~/lib/providers/capabilities/messaging", () => ({
+	getMessagingProvider: vi.fn(() => ({
+		send: mocks.providerSend,
+	})),
+	isMessagingProviderId: vi.fn((providerId: string) =>
+		["twilio-sms", "aws-sms"].includes(providerId),
+	),
+	parseMessagingCredentialEnvelope: mocks.parseMessagingCredentialEnvelope,
 }));
 
 vi.mock("~/services/apps/recipes", () => ({
@@ -67,6 +85,17 @@ describe("RecipeExecutionHandler", () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 		mocks.getUserById.mockResolvedValue(user);
+		mocks.getUserProviderSettings.mockResolvedValue([]);
+		mocks.getProviderApiKey.mockResolvedValue(null);
+		mocks.parseMessagingCredentialEnvelope.mockReturnValue({
+			version: 1,
+			providerId: "twilio-sms",
+			credentials: {
+				accountSid: "AC123",
+				authToken: "secret",
+				fromNumber: "+15557654321",
+			},
+		});
 	});
 
 	it("returns an error when required task data is missing", async () => {
@@ -183,6 +212,59 @@ describe("RecipeExecutionHandler", () => {
 				recipeId: "morning-briefing",
 				conversationId: "recipe-conversation-1",
 			},
+		});
+	});
+
+	it("sends scheduled recipe results to the configured SMS provider when requested", async () => {
+		const invocation = {
+			recipeId: "daily-weather",
+			installationId: "installation-1",
+			status: "ready",
+			conversationStarter: "Run weather",
+			messageUrl: "/?query=Run",
+			missingConnections: [],
+			enabledTools: ["get_weather"],
+			configuration: { location: "London" },
+		};
+		mocks.invokeAssistantRecipe.mockResolvedValue(invocation);
+		mocks.executeRecipeInvocationChat.mockResolvedValue({
+			conversationId: "recipe-conversation-1",
+			response: {
+				choices: [{ message: { content: "Bring an umbrella." } }],
+			},
+		});
+		mocks.getUserProviderSettings.mockResolvedValue([
+			{
+				provider_id: "twilio-sms",
+				type: "messaging",
+				enabled: true,
+				hasApiKey: true,
+			},
+		]);
+		mocks.getProviderApiKey.mockResolvedValue("encrypted-config");
+
+		const result = await new RecipeExecutionHandler().handle(
+			{
+				...baseMessage,
+				task_data: {
+					recipeId: "daily-weather",
+					input: "Run weather",
+					channel: "scheduled",
+					notificationChannel: "sms",
+					notificationTarget: "+15551234567",
+				},
+			},
+			env,
+		);
+
+		expect(mocks.getProviderApiKey).toHaveBeenCalledWith(42, "twilio-sms");
+		expect(mocks.providerSend).toHaveBeenCalledWith({
+			to: "+15551234567",
+			body: "Bring an umbrella.",
+		});
+		expect(result).toMatchObject({
+			status: "success",
+			message: "Recipe execution completed",
 		});
 	});
 });

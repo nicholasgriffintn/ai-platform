@@ -300,6 +300,7 @@ public struct AssistantRecipe: Codable, Identifiable, Equatable {
     public let actions: [String]
     public let setupPrompt: String
     public let enabledTools: [String]
+    public let configurationFields: [RecipeConfigurationField]
 }
 
 public struct AssistantRecipeIntegration: Codable, Identifiable, Equatable {
@@ -318,8 +319,95 @@ public struct AssistantRecipeTrigger: Codable, Equatable {
     public let description: String
 }
 
+public struct RecipeConfigurationField: Codable, Identifiable, Equatable {
+    public var id: String { key }
+
+    public let key: String
+    public let label: String
+    public let type: String
+    public let required: Bool
+    public let placeholder: String?
+    public let defaultValue: RecipeConfigurationValue?
+}
+
+public enum RecipeConfigurationValue: Codable, Equatable {
+    case string(String)
+    case number(Double)
+    case bool(Bool)
+    case stringList([String])
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        if let value = try? container.decode(String.self) {
+            self = .string(value)
+        } else if let value = try? container.decode(Double.self) {
+            self = .number(value)
+        } else if let value = try? container.decode(Bool.self) {
+            self = .bool(value)
+        } else if let value = try? container.decode([String].self) {
+            self = .stringList(value)
+        } else {
+            throw DecodingError.typeMismatch(
+                RecipeConfigurationValue.self,
+                DecodingError.Context(
+                    codingPath: decoder.codingPath,
+                    debugDescription: "Unsupported recipe configuration value"
+                )
+            )
+        }
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.singleValueContainer()
+        switch self {
+        case .string(let value):
+            try container.encode(value)
+        case .number(let value):
+            try container.encode(value)
+        case .bool(let value):
+            try container.encode(value)
+        case .stringList(let value):
+            try container.encode(value)
+        }
+    }
+}
+
+public typealias RecipeConfiguration = [String: RecipeConfigurationValue]
+
+public struct RecipeInstallationTrigger: Codable, Equatable {
+    public let type: String
+    public let enabled: Bool
+    public let cronExpression: String?
+    public let prompt: String?
+    public let notificationChannel: String?
+    public let notificationTarget: String?
+}
+
+public struct RecipeInstallation: Codable, Identifiable, Equatable {
+    public let id: String
+    public let recipeId: String
+    public let userId: Int
+    public let status: String
+    public let triggers: [RecipeInstallationTrigger]
+    public let configuration: RecipeConfiguration
+    public let createdAt: String
+    public let updatedAt: String
+}
+
 public struct AssistantRecipeInstallRequest: Codable {
     let channel: String
+    let triggers: [RecipeInstallationTrigger]?
+    let configuration: RecipeConfiguration?
+
+    init(
+        channel: String,
+        triggers: [RecipeInstallationTrigger]? = nil,
+        configuration: RecipeConfiguration? = nil
+    ) {
+        self.channel = channel
+        self.triggers = triggers
+        self.configuration = configuration
+    }
 }
 
 public struct AssistantRecipeInstallResponse: Codable {
@@ -330,6 +418,7 @@ public struct AssistantRecipeInstallResponse: Codable {
     public let connections: [AssistantRecipeConnection]
     public let readyToRun: Bool
     public let enabledTools: [String]
+    public let installation: RecipeInstallation
 }
 
 public struct AssistantRecipeConnection: Codable, Equatable {

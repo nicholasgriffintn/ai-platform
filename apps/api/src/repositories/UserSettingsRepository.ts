@@ -5,6 +5,10 @@ import {
 	getUserConfigurableProviderMetadata,
 	listConfigurableUserProviderIds,
 } from "~/lib/providers/userConfigurableProviders";
+import {
+	createMessagingCredentialEnvelope,
+	isMessagingProviderId,
+} from "~/lib/providers/capabilities/messaging";
 import type { IUserSettings } from "~/types";
 import { bufferToBase64 } from "~/utils/base64";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -347,6 +351,7 @@ export class UserSettingsRepository extends BaseRepository {
 		providerId: string,
 		apiKey: string,
 		secretKey?: string,
+		configuration?: Record<string, unknown>,
 	): Promise<void> {
 		if (!this.env.DB) {
 			throw new AssistantError("Database is not configured", ErrorType.CONFIGURATION_ERROR);
@@ -404,9 +409,18 @@ export class UserSettingsRepository extends BaseRepository {
 				["encrypt"],
 			);
 
-			const keyToEncrypt = secretKey
-				? `${apiKey}${UserSettingsRepository.CREDENTIALS_DELIMITER}${secretKey}`
-				: apiKey;
+			const keyToEncrypt = isMessagingProviderId(providerId)
+				? JSON.stringify(
+						createMessagingCredentialEnvelope({
+							providerId,
+							apiKey,
+							secretKey,
+							configuration,
+						}),
+					)
+				: secretKey
+					? `${apiKey}${UserSettingsRepository.CREDENTIALS_DELIMITER}${secretKey}`
+					: apiKey;
 
 			const encryptedApiKey = await this.encryptProviderApiKey(keyToEncrypt, publicKey);
 
@@ -589,13 +603,38 @@ export class UserSettingsRepository extends BaseRepository {
 			return {
 				id: provider.id,
 				provider_id: provider.provider_id,
-				name: metadata.name,
 				type: metadata.type,
+				name: metadata.name,
 				description: metadata.description,
+				configurationFields: metadata.configurationFields,
+				webhookUrl:
+					isMessagingProviderId(provider.provider_id) && this.env.API_BASE_URL
+						? `${this.env.API_BASE_URL.replace(/\/$/, "")}/webhooks/sms/${
+								provider.provider_id
+							}/${provider.id}`
+						: undefined,
 				enabled: provider.enabled === 1,
 				hasApiKey: Boolean(provider.api_key),
 			};
 		});
+	}
+
+	public async getProviderSettingsById(params: {
+		providerSettingsId: string;
+		providerId: string;
+	}): Promise<{ id: string; user_id: number; provider_id: string; enabled: number } | null> {
+		const { query, values } = this.buildSelectQuery(
+			"provider_settings",
+			{ id: params.providerSettingsId, provider_id: params.providerId },
+			{ columns: ["id", "user_id", "provider_id", "enabled"] },
+		);
+
+		return this.runQuery<{
+			id: string;
+			user_id: number;
+			provider_id: string;
+			enabled: number;
+		}>(query, values, true);
 	}
 
 	public async hasProviderApiKey(userId: number, providerId: string): Promise<boolean> {

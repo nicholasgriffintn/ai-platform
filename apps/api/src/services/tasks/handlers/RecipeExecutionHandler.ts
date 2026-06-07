@@ -1,7 +1,15 @@
-import { createServiceContext } from "~/lib/context/serviceContext";
+import { createServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
+import {
+	getMessagingProvider,
+	isMessagingProviderId,
+	parseMessagingCredentialEnvelope,
+	type MessagingProviderId,
+} from "~/lib/providers/capabilities/messaging";
 import { executeRecipeInvocationChat } from "~/services/apps/recipes/execution";
 import { invokeAssistantRecipe } from "~/services/apps/recipes";
 import type { IEnv, IUser } from "~/types";
+import { extractChatCompletionText } from "~/utils/messages";
+import { getBooleanRecordValue, getStringRecordValue } from "~/utils/objects";
 import type { TaskHandler, TaskResult } from "../TaskHandler";
 import type { TaskMessage } from "../TaskService";
 
@@ -10,6 +18,59 @@ interface RecipeExecutionTaskData {
 	input?: string;
 	channel?: "web" | "ios" | "sms" | "scheduled" | "tool";
 	configuration?: Record<string, unknown>;
+	notificationChannel?: "sms";
+	notificationTarget?: string;
+}
+
+function selectMessagingProviderId(
+	settings: Record<string, unknown>[],
+): MessagingProviderId | null {
+	for (const setting of settings) {
+		const providerId = getStringRecordValue(setting, "provider_id");
+		if (
+			providerId &&
+			isMessagingProviderId(providerId) &&
+			getStringRecordValue(setting, "type") === "messaging" &&
+			getBooleanRecordValue(setting, "enabled") === true &&
+			getBooleanRecordValue(setting, "hasApiKey") === true
+		) {
+			return providerId;
+		}
+	}
+
+	return null;
+}
+
+async function sendRecipeSmsNotification(params: {
+	env: IEnv;
+	context: ServiceContext;
+	user: IUser;
+	userId: number;
+	to: string;
+	body: string;
+}): Promise<void> {
+	const providerId = selectMessagingProviderId(
+		await params.context.repositories.userSettings.getUserProviderSettings(params.userId),
+	);
+	if (!providerId) {
+		throw new Error("No configured SMS provider found for scheduled recipe notification");
+	}
+
+	const encryptedValue = await params.context.repositories.userSettings.getProviderApiKey(
+		params.userId,
+		providerId,
+	);
+	if (!encryptedValue) {
+		throw new Error("SMS provider credentials are not configured");
+	}
+
+	const envelope = parseMessagingCredentialEnvelope({ providerId, value: encryptedValue });
+	const provider = getMessagingProvider(providerId, {
+		env: params.env,
+		user: params.user,
+		config: envelope.credentials,
+	});
+	await provider.send({ to: params.to, body: params.body });
 }
 
 export class RecipeExecutionHandler implements TaskHandler {
@@ -69,6 +130,18 @@ export class RecipeExecutionHandler implements TaskHandler {
 			user: user as IUser,
 			invocation,
 		});
+		if (data.notificationChannel === "sms" && data.notificationTarget?.trim()) {
+			await sendRecipeSmsNotification({
+				env,
+				context,
+				user: user as IUser,
+				userId: message.user_id,
+				to: data.notificationTarget.trim(),
+				body: extractChatCompletionText(execution.response, {
+					fallback: "Recipe execution completed.",
+				}),
+			});
+		}
 
 		return {
 			status: "success",

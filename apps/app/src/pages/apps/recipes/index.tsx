@@ -445,6 +445,8 @@ export default function RecipesPage() {
 	const [scheduleInstallation, setScheduleInstallation] = useState<RecipeInstallation | null>(null);
 	const [scheduleCronExpression, setScheduleCronExpression] = useState("0 9 * * *");
 	const [schedulePrompt, setSchedulePrompt] = useState("");
+	const [scheduleNotifySms, setScheduleNotifySms] = useState(false);
+	const [scheduleSmsTarget, setScheduleSmsTarget] = useState("");
 	const [installationToDelete, setInstallationToDelete] = useState<RecipeInstallation | null>(null);
 	const [configurationRecipe, setConfigurationRecipe] = useState<AssistantRecipe | null>(null);
 	const [configurationInstallation, setConfigurationInstallation] =
@@ -519,6 +521,8 @@ export default function RecipesPage() {
 				enabled: true,
 				cronExpression: scheduleCronExpression,
 				prompt: schedulePrompt.trim() || undefined,
+				notificationChannel: scheduleNotifySms ? "sms" : undefined,
+				notificationTarget: scheduleNotifySms ? scheduleSmsTarget.trim() : undefined,
 			},
 		];
 
@@ -538,6 +542,8 @@ export default function RecipesPage() {
 			await queryClient.invalidateQueries({ queryKey: ASSISTANT_RECIPES_QUERY_KEY });
 			setScheduleRecipe(null);
 			setScheduleInstallation(null);
+			setScheduleNotifySms(false);
+			setScheduleSmsTarget("");
 			toast.success("Recipe scheduled.");
 		} catch (scheduleError) {
 			console.error(scheduleError);
@@ -600,6 +606,8 @@ export default function RecipesPage() {
 		setScheduleInstallation(installation ?? null);
 		setScheduleCronExpression(scheduleTrigger?.cronExpression ?? "0 9 * * *");
 		setSchedulePrompt(scheduleTrigger?.prompt ?? nextRecipe.setupPrompt);
+		setScheduleNotifySms(scheduleTrigger?.notificationChannel === "sms");
+		setScheduleSmsTarget(scheduleTrigger?.notificationTarget ?? "");
 	};
 
 	const handleToggleInstallationStatus = async (installation: RecipeInstallation) => {
@@ -868,13 +876,17 @@ export default function RecipesPage() {
 					if (!open) {
 						setScheduleRecipe(null);
 						setScheduleInstallation(null);
+						setScheduleNotifySms(false);
+						setScheduleSmsTarget("");
 					}
 				}}
 				title={scheduleRecipe ? `Schedule ${scheduleRecipe.title}` : "Schedule recipe"}
 				onSubmit={handleScheduleRecipe}
 				submitText={scheduleInstallation ? "Save schedule" : "Schedule"}
 				isLoading={installRecipe.isPending || updateInstallation.isPending}
-				submitDisabled={!scheduleCronExpression.trim()}
+				submitDisabled={
+					!scheduleCronExpression.trim() || (scheduleNotifySms && !scheduleSmsTarget.trim())
+				}
 			>
 				<div className="space-y-2">
 					<Label htmlFor="recipe-cron-expression">Cron expression</Label>
@@ -893,6 +905,33 @@ export default function RecipesPage() {
 						onChange={(event) => setSchedulePrompt(event.target.value)}
 						rows={5}
 					/>
+				</div>
+				<div className="space-y-3 rounded-md border border-zinc-200 p-3 dark:border-zinc-800">
+					<label className="flex items-start gap-3">
+						<Checkbox
+							checked={scheduleNotifySms}
+							onCheckedChange={(checked) => setScheduleNotifySms(checked === true)}
+						/>
+						<span>
+							<span className="block text-sm font-medium text-zinc-900 dark:text-zinc-100">
+								Send result by SMS
+							</span>
+							<span className="block text-sm text-zinc-500 dark:text-zinc-400">
+								Uses your configured Twilio or AWS SMS provider.
+							</span>
+						</span>
+					</label>
+					{scheduleNotifySms && (
+						<div className="space-y-2">
+							<Label htmlFor="recipe-sms-target">SMS target</Label>
+							<Input
+								id="recipe-sms-target"
+								value={scheduleSmsTarget}
+								onChange={(event) => setScheduleSmsTarget(event.target.value)}
+								placeholder="+44......."
+							/>
+						</div>
+					)}
 				</div>
 			</FormDialog>
 			<ConfirmationDialog

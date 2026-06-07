@@ -6,7 +6,7 @@ import {
 	sandboxTaskTypeSchema,
 } from "./sandbox";
 
-export const homeChatModeIdSchema = z.enum(["chat", "council", "sandbox", "live"]);
+export const homeChatModeIdSchema = z.enum(["chat", "council", "sandbox", "live", "sms"]);
 
 export const sandboxChatModeSettingsSchema = z.object({
 	repoKey: z.string().trim().optional(),
@@ -35,6 +35,13 @@ export const conversationModeRequestOptionsSchema = z
 	.object({
 		council: councilChatOptionsSchema.optional(),
 		sandbox: conversationSandboxRequestOptionsSchema.optional(),
+		sms: z
+			.object({
+				enabled: z.boolean(),
+				from: z.string().trim().optional(),
+				to: z.string().trim().optional(),
+			})
+			.optional(),
 	})
 	.passthrough();
 
@@ -43,6 +50,12 @@ export const conversationModeMetadataSchema = z
 		mode: homeChatModeIdSchema,
 		requestOptions: conversationModeRequestOptionsSchema.optional(),
 		sandboxSettings: sandboxChatModeSettingsSchema.optional(),
+		smsSettings: z
+			.object({
+				from: z.string().trim().optional(),
+				to: z.string().trim().optional(),
+			})
+			.optional(),
 	})
 	.passthrough();
 

@@ -1,5 +1,7 @@
 import { executeRecipeConnectorOperation } from "~/services/apps/connectors/operations";
 import { invokeAssistantRecipe, resolveInstalledAssistantRecipe } from "~/services/apps/recipes";
+import { executeRecipeInvocationChat } from "~/services/apps/recipes/execution";
+import { extractChatCompletionText } from "~/utils/messages";
 import { jsonSchemaToZod } from "./jsonSchema";
 import type { ApiToolDefinition } from "./types";
 
@@ -140,6 +142,28 @@ export const trigger_recipe: ApiToolDefinition = {
 				name: "trigger_recipe",
 				content: "Recipe not found",
 				data: { recipeId: resolvedRecipeId },
+			};
+		}
+
+		if (invocation.status === "ready") {
+			const execution = await executeRecipeInvocationChat({
+				env: request.env,
+				context: request.context,
+				user: request.user,
+				invocation,
+			});
+			const content = extractChatCompletionText(execution.response, {
+				streamingMessage: "Recipe execution cannot return a streaming response",
+			});
+
+			return {
+				status: "success",
+				name: "trigger_recipe",
+				content,
+				data: {
+					...invocation,
+					executionConversationId: execution.conversationId,
+				},
 			};
 		}
 

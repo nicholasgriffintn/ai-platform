@@ -37,6 +37,22 @@ export function coerceStringRecord(value: unknown): Record<string, string> {
 	);
 }
 
+export function getStringRecordValue(
+	value: Record<string, unknown>,
+	key: string,
+): string | undefined {
+	const field = value[key];
+	return typeof field === "string" && field.trim() ? field.trim() : undefined;
+}
+
+export function getBooleanRecordValue(
+	value: Record<string, unknown>,
+	key: string,
+): boolean | undefined {
+	const field = value[key];
+	return typeof field === "boolean" ? field : undefined;
+}
+
 export function omitUndefinedValues<T>(value: T): T {
 	if (Array.isArray(value)) {
 		return value.map((item) => (item === undefined ? null : omitUndefinedValues(item))) as T;

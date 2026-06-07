@@ -13,7 +13,7 @@ import { validateSignature, extractSandboxCommand } from "~/lib/github";
 import {
 	executeWebhookSandboxCommand,
 	postWebhookSandboxResultComment,
-} from "./github-task-execution";
+} from "../../services/webhooks/github-task-execution";
 
 const github = new Hono<{ Bindings: IEnv }>();
 const logger = getLogger({ prefix: "routes/webhooks/github" });

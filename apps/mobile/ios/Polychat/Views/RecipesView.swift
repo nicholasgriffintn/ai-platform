@@ -165,6 +165,14 @@ private struct RecipeRow: View {
         }
     }
 
+    private var supportsSchedule: Bool {
+        recipe.triggers.contains { $0.type == "schedule" }
+    }
+
+    private var needsConfiguration: Bool {
+        recipe.configurationFields.contains { $0.required }
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(alignment: .top) {
@@ -211,6 +219,19 @@ private struct RecipeRow: View {
                 Label("\(missingIntegrations.count) connection needed before external actions", systemImage: "key")
                     .font(.caption)
                     .foregroundStyle(.orange)
+            }
+
+            if supportsSchedule || needsConfiguration {
+                HStack(spacing: 12) {
+                    if supportsSchedule {
+                        Label("Can be scheduled", systemImage: "calendar.badge.clock")
+                    }
+                    if needsConfiguration {
+                        Label("Needs recipe details", systemImage: "slider.horizontal.3")
+                    }
+                }
+                .font(.caption)
+                .foregroundStyle(.secondary)
             }
 
             Button(action: onInstall) {

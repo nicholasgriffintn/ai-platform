@@ -10,7 +10,17 @@ protocol ToolsAPIClient {
 
 protocol RecipesAPIClient {
     func fetchAssistantRecipes() async throws -> AssistantRecipesResponse
-    func installAssistantRecipe(id: String) async throws -> AssistantRecipeInstallResponse
+    func installAssistantRecipe(
+        id: String,
+        triggers: [RecipeInstallationTrigger]?,
+        configuration: RecipeConfiguration?
+    ) async throws -> AssistantRecipeInstallResponse
+}
+
+extension RecipesAPIClient {
+    func installAssistantRecipe(id: String) async throws -> AssistantRecipeInstallResponse {
+        try await installAssistantRecipe(id: id, triggers: nil, configuration: nil)
+    }
 }
 
 protocol ConversationAPIClient {

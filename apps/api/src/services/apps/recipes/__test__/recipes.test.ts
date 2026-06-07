@@ -6,12 +6,17 @@ import { AppDataRepository, RepositoryManager } from "~/repositories";
 import { TaskRepository } from "~/repositories/TaskRepository";
 import type { IEnv, IUser } from "~/types";
 
-const { listRecipeConnectorsMock } = vi.hoisted(() => ({
+const { executeRecipeInvocationChatMock, listRecipeConnectorsMock } = vi.hoisted(() => ({
+	executeRecipeInvocationChatMock: vi.fn(),
 	listRecipeConnectorsMock: vi.fn(),
 }));
 
 vi.mock("../../connectors", () => ({
 	listRecipeConnectors: listRecipeConnectorsMock,
+}));
+
+vi.mock("~/services/apps/recipes/execution", () => ({
+	executeRecipeInvocationChat: executeRecipeInvocationChatMock,
 }));
 
 import {
@@ -188,6 +193,12 @@ function createTestServiceContext(): ServiceContext {
 describe("assistant recipes", () => {
 	beforeEach(() => {
 		listRecipeConnectorsMock.mockResolvedValue(connectedConnectors);
+		executeRecipeInvocationChatMock.mockResolvedValue({
+			conversationId: "recipe-conversation",
+			response: {
+				choices: [{ message: { content: "Recipe executed" } }],
+			},
+		});
 	});
 
 	it("enriches recipe integrations with connector connection status", async () => {
@@ -511,9 +522,11 @@ describe("assistant recipes", () => {
 		expect(result).toMatchObject({
 			status: "success",
 			name: "trigger_recipe",
+			content: "Recipe executed",
 			data: {
 				recipeId: "bad-weather-alerts",
 				status: "ready",
+				executionConversationId: "recipe-conversation",
 				configuration: {
 					location: "London",
 				},

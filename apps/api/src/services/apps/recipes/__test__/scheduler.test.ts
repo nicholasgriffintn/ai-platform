@@ -67,6 +67,8 @@ describe("recipe scheduler", () => {
 							enabled: true,
 							cronExpression: "15 9 * * *",
 							prompt: "Run briefing",
+							notificationChannel: "sms",
+							notificationTarget: "+15551234567",
 						},
 					],
 					configuration: {
@@ -96,6 +98,8 @@ describe("recipe scheduler", () => {
 					configuration: {
 						target: "Work inbox",
 					},
+					notificationChannel: "sms",
+					notificationTarget: "+15551234567",
 				}),
 			}),
 		);
