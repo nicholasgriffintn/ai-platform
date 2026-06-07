@@ -7,6 +7,11 @@ struct ChatRequestMessage: Encodable {
     let data: ChatMessageData?
     let name: String?
     let parts: [ChatMessagePart]?
+    let model: String?
+    let citations: [ChatCitation]?
+    let status: String?
+    let logId: String?
+    let timestamp: Double?
 
     init(message: ChatMessage) {
         self.id = message.id
@@ -15,10 +20,16 @@ struct ChatRequestMessage: Encodable {
         self.data = message.data
         self.name = message.name
         self.parts = message.parts
+        self.model = message.model
+        self.citations = message.citations
+        self.status = message.status
+        self.logId = message.logId
+        self.timestamp = message.timestamp
     }
 
     enum CodingKeys: String, CodingKey {
-        case id, role, content, data, name, parts
+        case id, role, content, data, name, parts, model, citations, status, timestamp
+        case logId = "log_id"
     }
 }
 

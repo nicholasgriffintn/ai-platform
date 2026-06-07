@@ -161,11 +161,22 @@ final class APIClient: ObservableObject {
         )
     }
 
-    func updateConversation(id: String, title: String) async throws {
+    func updateConversation(
+        id: String,
+        title: String? = nil,
+        messages: [ChatMessage]? = nil,
+        parentConversationId: String? = nil,
+        parentMessageId: String? = nil
+    ) async throws {
         let _: EmptyResponse = try await send(
             path: "/chat/completions/\(id)",
             method: "PUT",
-            body: UpdateConversationRequest(title: title)
+            body: UpdateConversationRequest(
+                title: title,
+                messages: messages,
+                parentConversationId: parentConversationId,
+                parentMessageId: parentMessageId
+            )
         )
     }
 

@@ -19,11 +19,21 @@ protocol ConversationAPIClient {
         settings: ChatSettings?
     ) -> AsyncThrowingStream<ChatStreamEvent, Error>
     func generateTitle(conversationId: String, messages: [ChatMessage]) async throws -> TitleGenerationResponse
-    func updateConversation(id: String, title: String) async throws
+    func updateConversation(id: String, title: String?, messages: [ChatMessage]?, parentConversationId: String?, parentMessageId: String?) async throws
     func deleteConversation(id: String) async throws
 }
 
 extension ConversationAPIClient {
+    func updateConversation(id: String, title: String) async throws {
+        try await updateConversation(
+            id: id,
+            title: title,
+            messages: nil,
+            parentConversationId: nil,
+            parentMessageId: nil
+        )
+    }
+
     func fetchConversations() async throws -> ConversationListResponse {
         try await fetchConversations(limit: 50, page: 1, includeArchived: false)
     }

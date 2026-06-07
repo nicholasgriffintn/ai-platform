@@ -174,6 +174,74 @@ class ConversationManager: ObservableObject {
         )
     }
 
+
+    func branchConversation(from messageId: String, settings: ChatSettings? = nil) async {
+        guard let parentConversation = currentConversation else {
+            error = "Unable to branch: conversation not found"
+            return
+        }
+
+        guard let messageIndex = parentConversation.messages.firstIndex(where: { $0.id == messageId }) else {
+            error = "Unable to branch: message not found"
+            return
+        }
+
+        let branchMessage = parentConversation.messages[messageIndex]
+        guard branchMessage.role == "user" || branchMessage.role == "assistant" else {
+            error = "Only user and assistant messages can start a branch"
+            return
+        }
+
+        let branchMessages = Array(parentConversation.messages.prefix(messageIndex + 1))
+        let branchId = UUID().uuidString
+        var branch = Conversation(
+            id: branchId,
+            title: parentConversation.title.isEmpty ? "Branched Conversation" : parentConversation.title,
+            messages: branchMessages,
+            createdAt: Date(),
+            modelId: parentConversation.modelId,
+            isLoadedFromAPI: false,
+            lastMessageAt: Date(),
+            messageCount: branchMessages.count
+        )
+
+        conversations.insert(branch, at: 0)
+        currentConversation = branch
+
+        if parentConversation.isLoadedFromAPI {
+            do {
+                guard let apiClient else {
+                    throw NSError(domain: "com.polychat.app", code: 1,
+                                  userInfo: [NSLocalizedDescriptionKey: "API client not configured"])
+                }
+
+                try await apiClient.updateConversation(
+                    id: branchId,
+                    title: branch.title,
+                    messages: branchMessages,
+                    parentConversationId: parentConversation.id,
+                    parentMessageId: messageId
+                )
+                branch.isLoadedFromAPI = true
+                updateConversationInArray(branch)
+                if currentConversation?.id == branchId {
+                    currentConversation = branch
+                }
+            } catch {
+                self.error = "Branch was created locally, but could not be synced: \(error.localizedDescription)"
+            }
+        }
+
+        if branchMessage.role == "user" {
+            await generateAssistantResponse(
+                conversationId: branchId,
+                requestMessages: branchMessages,
+                settings: settings,
+                generateTitle: true
+            )
+        }
+    }
+
     func regenerateAssistantMessage(_ messageId: String, settings: ChatSettings? = nil) async {
         guard let conversation = currentConversation,
               let messageIndex = conversation.messages.firstIndex(where: { $0.id == messageId }) else {
@@ -271,7 +339,9 @@ class ConversationManager: ObservableObject {
         conversation.messages.append(loadingMessage)
         conversation.lastMessageAt = Date()
         conversation.messageCount = conversation.messages.count
-        currentConversation = conversation
+        if currentConversation?.id == conversationId {
+            currentConversation = conversation
+        }
         updateConversationInArray(conversation)
 
         var finalMessageId = assistantMessageId

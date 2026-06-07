@@ -216,6 +216,71 @@ struct ServiceStoreTests {
         #expect(manager.currentConversation?.messages.first?.textContent == "Updated caption")
     }
 
+
+    @MainActor
+    @Test func conversationManagerBranchesAssistantMessageWithoutRegenerating() async throws {
+        let apiClient = ConversationAPIClientStub()
+        let manager = ConversationManager()
+        manager.configure(apiClient: apiClient)
+        let parent = makeConversation(
+            id: "parent-1",
+            title: "Original",
+            messages: [
+                ChatMessage(id: "user-1", role: "user", content: "Question"),
+                ChatMessage(id: "assistant-1", role: "assistant", content: "Answer"),
+                ChatMessage(id: "user-2", role: "user", content: "Follow up")
+            ],
+            isLoadedFromAPI: true
+        )
+        manager.conversations = [parent]
+        manager.currentConversation = parent
+
+        await manager.branchConversation(from: "assistant-1")
+
+        let branch = try #require(manager.currentConversation)
+        #expect(branch.id != "parent-1")
+        #expect(branch.title == "Original")
+        #expect(branch.messages.map(\.id) == ["user-1", "assistant-1"])
+        #expect(branch.isLoadedFromAPI)
+        #expect(apiClient.streamCallCount == 0)
+        #expect(apiClient.updatedConversationPayloads.first?.id == branch.id)
+        #expect(apiClient.updatedConversationPayloads.first?.messages?.map(\.id) == ["user-1", "assistant-1"])
+        #expect(apiClient.updatedConversationPayloads.first?.parentConversationId == "parent-1")
+        #expect(apiClient.updatedConversationPayloads.first?.parentMessageId == "assistant-1")
+    }
+
+    @MainActor
+    @Test func conversationManagerBranchesUserMessageAndGeneratesResponse() async throws {
+        let apiClient = ConversationAPIClientStub()
+        apiClient.streamEvents = [
+            .content("Branched answer"),
+            .done
+        ]
+        let manager = ConversationManager()
+        manager.configure(apiClient: apiClient)
+        let parent = makeConversation(
+            id: "parent-1",
+            title: "Original",
+            messages: [
+                ChatMessage(id: "user-1", role: "user", content: "Question"),
+                ChatMessage(id: "assistant-1", role: "assistant", content: "Answer")
+            ],
+            isLoadedFromAPI: false
+        )
+        manager.conversations = [parent]
+        manager.currentConversation = parent
+
+        await manager.branchConversation(from: "user-1")
+
+        let branch = try #require(manager.currentConversation)
+        #expect(branch.id != "parent-1")
+        #expect(apiClient.streamCallCount == 1)
+        #expect(apiClient.streamedCompletionId == branch.id)
+        #expect(apiClient.streamedMessages.map(\.id) == ["user-1"])
+        #expect(branch.messages.map(\.role) == ["user", "assistant"])
+        #expect(branch.messages.last?.textContent == "Branched answer")
+    }
+
     @MainActor
     @Test func conversationManagerPersistsRenamedLoadedConversation() async throws {
         let apiClient = ConversationAPIClientStub()

@@ -55,7 +55,7 @@ struct MessageBubble: View {
                         .background(messageBackground)
                 }
 
-                if !message.renderedTextContent.isEmpty && !message.renderedTextContent.hasPrefix("Error:") {
+                if shouldShowActions {
                     HStack(spacing: 12) {
                         if message.role == "assistant" {
                             Button(action: regenerateMessage) {
@@ -73,6 +73,15 @@ struct MessageBubble: View {
                                     .foregroundColor(.secondary)
                             }
                             .accessibilityLabel("Edit message")
+                        }
+
+                        if canBranch {
+                            Button(action: branchConversation) {
+                                Image(systemName: "arrow.triangle.branch")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                            .accessibilityLabel("Branch conversation")
                         }
 
                         Button(action: copyMessage) {
@@ -123,6 +132,14 @@ struct MessageBubble: View {
         }
 
         return modelsStore.model(withId: assistantModelId)
+    }
+
+    private var shouldShowActions: Bool {
+        !message.renderedTextContent.isEmpty
+    }
+
+    private var canBranch: Bool {
+        message.role == "user" || message.role == "assistant"
     }
 
     private var displayContent: String {
@@ -176,6 +193,12 @@ struct MessageBubble: View {
         let newText = editedMessageText
         Task {
             await conversationManager.editUserMessage(message.id, text: newText)
+        }
+    }
+
+    private func branchConversation() {
+        Task {
+            await conversationManager.branchConversation(from: message.id)
         }
     }
 
