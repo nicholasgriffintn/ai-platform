@@ -95,6 +95,7 @@ final class ConversationAPIClientStub: ConversationAPIClient {
     var streamedCompletionId: String?
     var streamCallCount = 0
     var updatedConversationTitles: [(id: String, title: String)] = []
+    var updatedConversationPayloads: [(id: String, title: String?, messages: [ChatMessage]?, parentConversationId: String?, parentMessageId: String?)] = []
     var deletedConversationIds: [String] = []
     var generatedTitle = "Generated title"
 
@@ -130,8 +131,23 @@ final class ConversationAPIClientStub: ConversationAPIClient {
         TitleGenerationResponse(title: generatedTitle)
     }
 
-    func updateConversation(id: String, title: String) async throws {
-        updatedConversationTitles.append((id: id, title: title))
+    func updateConversation(
+        id: String,
+        title: String?,
+        messages: [ChatMessage]?,
+        parentConversationId: String?,
+        parentMessageId: String?
+    ) async throws {
+        updatedConversationPayloads.append((
+            id: id,
+            title: title,
+            messages: messages,
+            parentConversationId: parentConversationId,
+            parentMessageId: parentMessageId
+        ))
+        if let title {
+            updatedConversationTitles.append((id: id, title: title))
+        }
     }
 
     func deleteConversation(id: String) async throws {

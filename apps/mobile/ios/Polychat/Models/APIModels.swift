@@ -288,7 +288,28 @@ public struct TitleGenerationResponse: Codable {
 }
 
 public struct UpdateConversationRequest: Codable {
-    let title: String
+    let title: String?
+    let messages: [ChatRequestMessage]?
+    let parentConversationId: String?
+    let parentMessageId: String?
+
+    enum CodingKeys: String, CodingKey {
+        case title, messages
+        case parentConversationId = "parent_conversation_id"
+        case parentMessageId = "parent_message_id"
+    }
+
+    init(
+        title: String? = nil,
+        messages: [ChatMessage]? = nil,
+        parentConversationId: String? = nil,
+        parentMessageId: String? = nil
+    ) {
+        self.title = title
+        self.messages = messages?.map(ChatRequestMessage.init)
+        self.parentConversationId = parentConversationId
+        self.parentMessageId = parentMessageId
+    }
 }
 
 public struct UpdateConversationResponse: Codable {

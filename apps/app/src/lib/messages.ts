@@ -1,4 +1,5 @@
 import type { Message, MessageContent } from "~/types";
+import { isRecord } from "./objects";
 
 type ChatRequestMessage = {
 	id?: string;
@@ -48,6 +49,31 @@ const chatRequestContentTypes = new Set([
 	"document_url",
 	"markdown_document",
 ]);
+
+function serialiseCitationForConversationUpdate(citation: unknown): string | null {
+	if (typeof citation === "string") {
+		return citation;
+	}
+
+	if (!isRecord(citation)) {
+		return null;
+	}
+
+	return typeof citation.url === "string" ? citation.url : null;
+}
+
+function serialiseCitationsForConversationUpdate(citations: unknown): string[] | undefined {
+	if (!Array.isArray(citations)) {
+		return undefined;
+	}
+
+	const serialised = citations.flatMap((citation) => {
+		const value = serialiseCitationForConversationUpdate(citation);
+		return value ? [value] : [];
+	});
+
+	return serialised.length > 0 ? serialised : undefined;
+}
 
 function normaliseMessageParts(parts: unknown): Message["parts"] | undefined {
 	if (!Array.isArray(parts)) {
@@ -276,8 +302,9 @@ export function serialiseMessageForConversationUpdate(message: Message): Convers
 		requestMessage.tool_calls = toolCalls;
 	}
 
-	if (Array.isArray(normalizedMessage.citations)) {
-		requestMessage.citations = normalizedMessage.citations;
+	const citations = serialiseCitationsForConversationUpdate(normalizedMessage.citations);
+	if (citations) {
+		requestMessage.citations = citations;
 	}
 
 	return requestMessage;

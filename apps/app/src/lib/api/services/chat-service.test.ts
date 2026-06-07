@@ -280,16 +280,29 @@ describe("ChatService conversation updates", () => {
 		vi.stubGlobal("fetch", fetchMock);
 
 		const service = new ChatService(async () => ({}));
+		const messages = JSON.parse(`[
+			{
+				"id": "message-1",
+				"role": "user",
+				"content": "Hello",
+				"citations": null,
+				"timestamp": 1000
+			},
+			{
+				"id": "message-2",
+				"role": "assistant",
+				"content": "Answer",
+				"citations": [
+					{
+						"url": "https://example.com/source",
+						"title": "Example source"
+					}
+				],
+				"timestamp": 1001
+			}
+		]`);
 		const result = await service.updateConversation("conversation-1", {
-			messages: [
-				{
-					id: "message-1",
-					role: "user",
-					content: "Hello",
-					citations: null,
-					timestamp: 1000,
-				} as Message,
-			],
+			messages,
 		});
 
 		const [url, request] = fetchMock.mock.calls[0];
@@ -297,14 +310,15 @@ describe("ChatService conversation updates", () => {
 
 		expect(String(url)).toContain("/chat/completions/conversation-1");
 		expect(request?.method).toBe("PUT");
-		expect(body.messages).toEqual([
+		expect(body.messages[0]).toEqual(
 			expect.objectContaining({
 				content: "Hello",
 				id: "message-1",
 				role: "user",
 			}),
-		]);
+		);
 		expect(body.messages[0]).not.toHaveProperty("citations");
+		expect(body.messages[1].citations).toEqual(["https://example.com/source"]);
 		expect(result.messages).toEqual([
 			expect.objectContaining({
 				content: "Hello",

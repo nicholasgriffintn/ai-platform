@@ -1,8 +1,11 @@
-import { createChatCompletionsJsonSchema } from "@assistant/schemas";
+import { createChatCompletionsJsonSchema, messageSchema } from "@assistant/schemas";
 import { describe, expect, it } from "vitest";
 
 import type { Message } from "~/types";
-import { serialiseMessagesForChatRequest } from "../messages";
+import {
+	serialiseMessagesForChatRequest,
+	serialiseMessagesForConversationUpdate,
+} from "../messages";
 
 describe("serialiseMessagesForChatRequest", () => {
 	it("removes reasoning-only content blocks from replayed assistant messages", () => {
@@ -81,5 +84,35 @@ describe("serialiseMessagesForChatRequest", () => {
 				messages: requestMessages,
 			}).success,
 		).toBe(true);
+	});
+});
+
+describe("serialiseMessagesForConversationUpdate", () => {
+	it("encodes citation objects as URL strings for persisted branch updates", () => {
+		const messages = JSON.parse(`[
+			{
+				"id": "assistant-1",
+				"role": "assistant",
+				"content": "Answer with citations",
+				"citations": [
+					{
+						"url": "https://example.com/source",
+						"title": "Example source"
+					},
+					"https://example.com/already-string",
+					{
+						"title": "Missing URL"
+					}
+				]
+			}
+		]`);
+
+		const requestMessages = serialiseMessagesForConversationUpdate(messages);
+
+		expect(requestMessages[0]?.citations).toEqual([
+			"https://example.com/source",
+			"https://example.com/already-string",
+		]);
+		expect(messageSchema.safeParse(requestMessages[0]).success).toBe(true);
 	});
 });
