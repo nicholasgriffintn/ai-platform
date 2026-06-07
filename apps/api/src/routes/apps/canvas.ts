@@ -1,11 +1,8 @@
 import { addRoute } from "~/lib/http/routeBuilder";
-import { type Context, Hono } from "hono";
+import { Hono } from "hono";
 import z from "zod/v4";
 
-import { getServiceContext } from "~/lib/context/serviceContext";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
-import { ResponseFactory } from "~/lib/http/ResponseFactory";
-import type { IUser } from "~/types";
 import { AssistantError } from "~/utils/errors";
 import { generateCanvasBatch } from "~/services/apps/canvas/generate";
 import { listCanvasModels } from "~/services/apps/canvas/list-models";
@@ -30,6 +27,10 @@ const listCanvasGenerationsQuerySchema = z.object({
 	mode: z.enum(["image", "video"]).optional(),
 });
 
+const canvasGenerationParamsSchema = z.object({
+	id: z.string().min(1),
+});
+
 const generateCanvasSchema = z.object({
 	mode: z.enum(["image", "video"]),
 	prompt: z.string().min(1),
@@ -52,137 +53,106 @@ addRoute(app, "get", "/models", {
 	responses: {
 		200: { description: "List of Canvas-compatible models", schema: z.any() },
 	},
-	handler: async ({ raw }) =>
-		(async (context: Context) => {
-			const query = context.req.valid("query" as never) as z.infer<
-				typeof listCanvasModelsQuerySchema
-			>;
-			const mode: CanvasMode = query.mode;
-			const user = context.get("user") as IUser | undefined;
+	handler: async ({ query, serviceContext, user }) => {
+		const mode: CanvasMode = query.mode;
+		const models = await listCanvasModels({
+			env: serviceContext.env,
+			mode,
+			userId: user?.id,
+		});
 
-			const models = await listCanvasModels({
-				env: context.env,
-				mode,
-				userId: user?.id,
-			});
-
-			return ResponseFactory.success(context, { models });
-		})(raw),
+		return { models };
+	},
 });
 
 addRoute(app, "post", "/generate", {
 	tags: ["apps"],
 	description: "Queue multi-model image/video generations using a standard Canvas payload",
+	auth: true,
 	bodySchema: generateCanvasSchema,
 	responses: {
 		200: { description: "Generation queue results", schema: z.any() },
 	},
-	handler: async ({ raw }) =>
-		(async (context: Context) => {
-			const user = context.get("user") as IUser;
-			const body = context.req.valid("json" as never) as z.infer<typeof generateCanvasSchema>;
+	handler: async ({ body, serviceContext, user }) => {
+		try {
+			const generations = await generateCanvasBatch({
+				context: serviceContext,
+				params: body,
+				user,
+			});
 
-			if (!user?.id) {
-				return ResponseFactory.error(context, "User not authenticated", 401);
+			return { generations };
+		} catch (error) {
+			if (error instanceof AssistantError) {
+				throw error;
 			}
 
-			try {
-				const serviceContext = getServiceContext(context);
-				const generations = await generateCanvasBatch({
-					context: serviceContext,
-					params: body,
-					user,
-				});
-
-				return ResponseFactory.success(context, { generations });
-			} catch (error) {
-				if (error instanceof AssistantError) {
-					throw error;
-				}
-
-				routeLogger.error("Error generating canvas outputs:", {
-					error_message: error instanceof Error ? error.message : "Unknown error",
-				});
-				throw new AssistantError("Failed to generate canvas outputs");
-			}
-		})(raw),
+			routeLogger.error("Error generating canvas outputs:", {
+				error_message: error instanceof Error ? error.message : "Unknown error",
+			});
+			throw new AssistantError("Failed to generate canvas outputs");
+		}
+	},
 });
 
 addRoute(app, "get", "/generations", {
 	tags: ["apps"],
 	description: "List a user's Canvas generations with provider-agnostic status and outputs",
+	auth: true,
 	querySchema: listCanvasGenerationsQuerySchema,
 	responses: {
 		200: { description: "List of Canvas generations", schema: z.any() },
 	},
-	handler: async ({ raw }) =>
-		(async (context: Context) => {
-			const user = context.get("user") as IUser;
-			const query = context.req.valid("query" as never) as z.infer<
-				typeof listCanvasGenerationsQuerySchema
-			>;
+	handler: async ({ query, serviceContext, user }) => {
+		try {
+			const generations = await listCanvasGenerations({
+				context: serviceContext,
+				userId: user.id,
+				mode: query.mode,
+			});
 
-			if (!user?.id) {
-				return ResponseFactory.error(context, "User not authenticated", 401);
+			return { generations };
+		} catch (error) {
+			if (error instanceof AssistantError) {
+				throw error;
 			}
 
-			try {
-				const serviceContext = getServiceContext(context);
-				const generations = await listCanvasGenerations({
-					context: serviceContext,
-					userId: user.id,
-					mode: query.mode,
-				});
-
-				return ResponseFactory.success(context, { generations });
-			} catch (error) {
-				if (error instanceof AssistantError) {
-					throw error;
-				}
-
-				routeLogger.error("Error listing Canvas generations:", {
-					error_message: error instanceof Error ? error.message : "Unknown error",
-				});
-				throw new AssistantError("Failed to list Canvas generations");
-			}
-		})(raw),
+			routeLogger.error("Error listing Canvas generations:", {
+				error_message: error instanceof Error ? error.message : "Unknown error",
+			});
+			throw new AssistantError("Failed to list Canvas generations");
+		}
+	},
 });
 
 addRoute(app, "get", "/generations/:id", {
 	tags: ["apps"],
 	description: "Get a specific Canvas generation",
+	auth: true,
+	paramSchema: canvasGenerationParamsSchema,
 	responses: {
 		200: { description: "Canvas generation details", schema: z.any() },
 	},
-	handler: async ({ raw }) =>
-		(async (context: Context) => {
-			const user = context.get("user") as IUser;
-			const generationId = context.req.param("id");
+	handler: async ({ params, serviceContext, user }) => {
+		try {
+			const generation = await getCanvasGenerationDetails({
+				context: serviceContext,
+				userId: user.id,
+				generationId: params.id,
+			});
 
-			if (!user?.id) {
-				return ResponseFactory.error(context, "User not authenticated", 401);
+			return { generation };
+		} catch (error) {
+			if (error instanceof AssistantError) {
+				throw error;
 			}
 
-			try {
-				const serviceContext = getServiceContext(context);
-				const generation = await getCanvasGenerationDetails({
-					context: serviceContext,
-					userId: user.id,
-					generationId,
-				});
-
-				return ResponseFactory.success(context, { generation });
-			} catch (error) {
-				if (error instanceof AssistantError) {
-					throw error;
-				}
-
-				routeLogger.error("Error fetching Canvas generation:", {
-					error_message: error instanceof Error ? error.message : "Unknown error",
-				});
-				throw new AssistantError("Failed to fetch Canvas generation");
-			}
-		})(raw),
+			routeLogger.error("Error fetching Canvas generation:", {
+				error_message: error instanceof Error ? error.message : "Unknown error",
+			});
+			throw new AssistantError("Failed to fetch Canvas generation");
+		}
+	},
 });
 
 export default app;

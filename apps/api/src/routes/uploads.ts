@@ -1,19 +1,14 @@
 import { addRoute } from "~/lib/http/routeBuilder";
-import { type Context, Hono } from "hono";
+import { Hono } from "hono";
 
 import { errorResponseSchema, uploadResponseSchema } from "@assistant/schemas";
 
-import { requireAuth } from "~/middleware/auth";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
-import { getServiceContext } from "~/lib/context/serviceContext";
-import { ResponseFactory } from "~/lib/http/ResponseFactory";
 import { handleFileUpload } from "~/services/uploads";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
 const app = new Hono();
 const routeLogger = createRouteLogger("uploads");
-
-app.use("/*", requireAuth);
 
 app.use("/*", (c, next) => {
 	routeLogger.info(`Processing uploads route: ${c.req.path}`);
@@ -24,6 +19,7 @@ addRoute(app, "post", "/", {
 	tags: ["uploads"],
 	summary: "Upload file",
 	description: "Upload an image, audio, code, or document to the server",
+	auth: true,
 	responses: {
 		200: {
 			description: "File upload successful, returns the URL",
@@ -42,20 +38,16 @@ addRoute(app, "post", "/", {
 			schema: errorResponseSchema,
 		},
 	},
-	handler: async ({ raw }) =>
-		(async (context: Context) => {
-			let formData: FormData;
-			try {
-				formData = await context.req.formData();
-			} catch {
-				throw new AssistantError("Failed to parse upload data", ErrorType.PARAMS_ERROR, 400);
-			}
+	handler: async ({ raw, serviceContext, user }) => {
+		let formData: FormData;
+		try {
+			formData = await raw.req.formData();
+		} catch {
+			throw new AssistantError("Failed to parse upload data", ErrorType.PARAMS_ERROR, 400);
+		}
 
-			const serviceContext = getServiceContext(context);
-			const user = serviceContext.requireUser();
-			const response = await handleFileUpload(serviceContext, user.id, formData);
-			return ResponseFactory.success(context, response);
-		})(raw),
+		return handleFileUpload(serviceContext, user.id, formData);
+	},
 });
 
 export default app;

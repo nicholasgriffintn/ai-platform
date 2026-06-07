@@ -1,5 +1,5 @@
 import { addRoute } from "~/lib/http/routeBuilder";
-import { type Context, Hono } from "hono";
+import { Hono } from "hono";
 
 import z from "zod/v4";
 import {
@@ -8,8 +8,6 @@ import {
 	errorResponseSchema,
 } from "@assistant/schemas";
 
-import { getServiceContext } from "~/lib/context/serviceContext";
-import { ResponseFactory } from "~/lib/http/ResponseFactory";
 import { buildMobileRedirectUri, requireMobileRedirectUri } from "~/services/auth/mobile";
 import { requestMagicLink, verifyMagicLink } from "~/services/auth/magicLink";
 import { createSession } from "~/services/auth/user";
@@ -35,27 +33,22 @@ addRoute(app, "post", "/request", {
 			schema: errorResponseSchema,
 		},
 	},
-	handler: async ({ raw }) =>
-		(async (c: Context) => {
-			const { email, redirect_uri } = c.req.valid("json" as never) as {
-				email: string;
-				redirect_uri?: string;
-			};
-			const { token, nonce } = await requestMagicLink(c.env, email);
+	handler: async ({ body, serviceContext }) => {
+		const { token, nonce } = await requestMagicLink(serviceContext.env, body.email);
+		const baseUrl = serviceContext.env.APP_BASE_URL;
 
-			const baseUrl = c.env.APP_BASE_URL;
+		if (token && nonce && baseUrl) {
+			const mobileRedirectUri = body.redirect_uri
+				? requireMobileRedirectUri(body.redirect_uri, "/magic-link")
+				: undefined;
+			const link = mobileRedirectUri
+				? buildMobileRedirectUri(mobileRedirectUri, { token, nonce })
+				: `${baseUrl}/auth/verify-magic-link?token=${token}&nonce=${nonce}`;
+			await sendMagicLinkEmail(serviceContext.env, body.email, link);
+		}
 
-			if (token && nonce && baseUrl) {
-				const mobileRedirectUri = redirect_uri
-					? requireMobileRedirectUri(redirect_uri, "/magic-link")
-					: undefined;
-				const link = mobileRedirectUri
-					? buildMobileRedirectUri(mobileRedirectUri, { token, nonce })
-					: `${baseUrl}/auth/verify-magic-link?token=${token}&nonce=${nonce}`;
-				await sendMagicLinkEmail(c.env, email, link);
-			}
-			return ResponseFactory.success(c, { success: true });
-		})(raw),
+		return { success: true };
+	},
 });
 
 addRoute(app, "post", "/verify", {
@@ -76,24 +69,17 @@ addRoute(app, "post", "/verify", {
 			schema: errorResponseSchema,
 		},
 	},
-	handler: async ({ raw }) =>
-		(async (c: Context) => {
-			const { token, nonce } = c.req.valid("json" as never) as {
-				token: string;
-				nonce: string;
-			};
+	handler: async ({ body, raw, serviceContext }) => {
+		const userId = await verifyMagicLink(serviceContext.env, body.token, body.nonce);
+		const sessionId = await createSession(serviceContext.repositories, userId);
 
-			const userId = await verifyMagicLink(c.env, token, nonce);
-			const { repositories } = getServiceContext(c);
-			const sessionId = await createSession(repositories, userId);
+		raw.header(
+			"Set-Cookie",
+			`session=${sessionId}; HttpOnly; Path=/; SameSite=Lax; Max-Age=604800`,
+		);
 
-			c.header(
-				"Set-Cookie",
-				`session=${sessionId}; HttpOnly; Path=/; SameSite=Lax; Max-Age=604800`,
-			); // 7 days
-
-			return ResponseFactory.success(c, { success: true });
-		})(raw),
+		return { success: true };
+	},
 });
 
 export default app;

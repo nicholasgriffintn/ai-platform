@@ -1,5 +1,5 @@
 import { addRoute } from "~/lib/http/routeBuilder";
-import { type Context, Hono } from "hono";
+import { Hono } from "hono";
 
 import {
 	errorResponseSchema,
@@ -8,8 +8,6 @@ import {
 	deleteApiKeyParamsSchema,
 } from "@assistant/schemas";
 
-import { getServiceContext } from "~/lib/context/serviceContext";
-import { requireAuth } from "~/middleware/auth";
 import { ResponseFactory } from "~/lib/http/ResponseFactory";
 import { createUserApiKey, deleteUserApiKey, getUserApiKeys } from "~/services/user/apiKeys";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -19,12 +17,11 @@ const logger = getLogger({ prefix: "routes/user/apiKeys" });
 
 const app = new Hono();
 
-app.use("*", requireAuth);
-
 addRoute(app, "get", "/", {
 	tags: ["user"],
 	summary: "Get API Keys",
 	description: "Get all API keys for the user",
+	auth: true,
 	responses: {
 		200: {
 			description: "API keys fetched successfully",
@@ -35,28 +32,24 @@ addRoute(app, "get", "/", {
 			schema: errorResponseSchema,
 		},
 	},
-	handler: async ({ raw }) =>
-		(async (c: Context) => {
-			const user = c.get("user");
-			const serviceContext = getServiceContext(c);
-
-			try {
-				const keys = await getUserApiKeys(serviceContext, user.id);
-				return ResponseFactory.success(c, keys);
-			} catch (error) {
-				logger.error("Error fetching API keys:", { error });
-				if (error instanceof AssistantError) {
-					throw error;
-				}
-				throw new AssistantError("Failed to fetch API keys", ErrorType.UNKNOWN_ERROR);
+	handler: async ({ serviceContext, user }) => {
+		try {
+			return await getUserApiKeys(serviceContext, user.id);
+		} catch (error) {
+			logger.error("Error fetching API keys:", { error });
+			if (error instanceof AssistantError) {
+				throw error;
 			}
-		})(raw),
+			throw new AssistantError("Failed to fetch API keys", ErrorType.UNKNOWN_ERROR);
+		}
+	},
 });
 
 addRoute(app, "post", "/", {
 	tags: ["user"],
 	summary: "Create API Key",
 	description: "Create a new API key for the user",
+	auth: true,
 	bodySchema: createApiKeySchema,
 	responses: {
 		201: {
@@ -68,29 +61,26 @@ addRoute(app, "post", "/", {
 			schema: errorResponseSchema,
 		},
 	},
-	handler: async ({ raw }) =>
-		(async (c: Context) => {
-			const { name } = c.req.valid("json" as never) as { name: string };
-			const serviceContext = getServiceContext(c);
+	handler: async ({ body, raw, serviceContext }) => {
+		try {
+			const { plaintextKey, metadata } = await createUserApiKey(serviceContext, body.name);
 
-			try {
-				const { plaintextKey, metadata } = await createUserApiKey(serviceContext, name);
-
-				return ResponseFactory.success(c, { apiKey: plaintextKey, ...metadata }, 201);
-			} catch (error) {
-				logger.error("Error creating API key:", { error });
-				if (error instanceof AssistantError) {
-					throw error;
-				}
-				throw new AssistantError("Failed to create API key", ErrorType.UNKNOWN_ERROR);
+			return ResponseFactory.success(raw, { apiKey: plaintextKey, ...metadata }, 201);
+		} catch (error) {
+			logger.error("Error creating API key:", { error });
+			if (error instanceof AssistantError) {
+				throw error;
 			}
-		})(raw),
+			throw new AssistantError("Failed to create API key", ErrorType.UNKNOWN_ERROR);
+		}
+	},
 });
 
 addRoute(app, "delete", "/:keyId", {
 	tags: ["user"],
 	summary: "Delete API Key",
 	description: "Delete an API key for the user",
+	auth: true,
 	paramSchema: deleteApiKeyParamsSchema,
 	responses: {
 		200: {
@@ -102,23 +92,18 @@ addRoute(app, "delete", "/:keyId", {
 			schema: errorResponseSchema,
 		},
 	},
-	handler: async ({ raw }) =>
-		(async (c: Context) => {
-			const user = c.get("user");
-			const { keyId } = c.req.valid("param" as never) as { keyId: string };
-			const serviceContext = getServiceContext(c);
-
-			try {
-				await deleteUserApiKey(serviceContext, keyId, user.id);
-				return ResponseFactory.success(c, { message: "API key deleted successfully" }, 200);
-			} catch (error) {
-				logger.error("Error deleting API key:", { error });
-				if (error instanceof AssistantError) {
-					throw error;
-				}
-				throw new AssistantError("Failed to delete API key", ErrorType.UNKNOWN_ERROR);
+	handler: async ({ params, serviceContext, user }) => {
+		try {
+			await deleteUserApiKey(serviceContext, params.keyId, user.id);
+			return { message: "API key deleted successfully" };
+		} catch (error) {
+			logger.error("Error deleting API key:", { error });
+			if (error instanceof AssistantError) {
+				throw error;
 			}
-		})(raw),
+			throw new AssistantError("Failed to delete API key", ErrorType.UNKNOWN_ERROR);
+		}
+	},
 });
 
 export default app;

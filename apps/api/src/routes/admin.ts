@@ -1,10 +1,10 @@
 import { addRoute } from "~/lib/http/routeBuilder";
-import { type Context, Hono } from "hono";
+import { Hono } from "hono";
+import { z } from "zod/v4";
 
 import { setAgentFeaturedSchema, moderateAgentSchema, apiResponseSchema } from "@assistant/schemas";
 
 import { requireAdmin, requireStrictAdmin } from "~/middleware/adminMiddleware";
-import { requireAuth } from "~/middleware/auth";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import {
 	setAgentFeaturedStatus,
@@ -12,7 +12,6 @@ import {
 	getAllSharedAgentsForAdmin,
 } from "~/services/admin/sharedAgents";
 import type { IEnv } from "~/types";
-import { getServiceContext } from "~/lib/context/serviceContext";
 import { ResponseFactory } from "~/lib/http/ResponseFactory";
 
 const app = new Hono<{ Bindings: IEnv }>();
@@ -23,40 +22,36 @@ app.use("/*", async (ctx, next) => {
 	return next();
 });
 
+const sharedAgentParamsSchema = z.object({
+	id: z.string().min(1),
+});
+
 addRoute(app, "put", "/shared-agents/:id/featured", {
 	tags: ["admin"],
 	summary: "Set agent featured status",
 	description: "Mark an agent as featured or unfeatured (admin only)",
 	bodySchema: setAgentFeaturedSchema,
+	paramSchema: sharedAgentParamsSchema,
+	auth: true,
 	responses: {
 		"200": { description: "Success", schema: apiResponseSchema },
 	},
-	middleware: [requireAuth, requireStrictAdmin],
-	handler: async ({ raw }) =>
-		(async (ctx: Context) => {
-			const { id } = ctx.req.param();
-			const { featured } = ctx.req.valid("json" as never) as {
-				featured: boolean;
-			};
+	middleware: [requireStrictAdmin],
+	handler: async ({ body, params, raw, serviceContext, user }) => {
+		const result = await setAgentFeaturedStatus({
+			context: serviceContext,
+			env: serviceContext.env,
+			agentId: params.id,
+			featured: body.featured,
+			moderator: user,
+		});
 
-			const currentUser = ctx.get("user");
+		if (!result.success) {
+			return ResponseFactory.error(raw, result.error || "Failed to set featured status", 400);
+		}
 
-			const serviceContext = getServiceContext(ctx);
-
-			const result = await setAgentFeaturedStatus({
-				context: serviceContext,
-				env: ctx.env,
-				agentId: id,
-				featured,
-				moderator: currentUser,
-			});
-
-			if (!result.success) {
-				return ResponseFactory.error(ctx, result.error || "Failed to set featured status", 400);
-			}
-
-			return ResponseFactory.success(ctx, result.data);
-		})(raw),
+		return result.data;
+	},
 });
 
 addRoute(app, "get", "/shared-agents", {
@@ -66,13 +61,9 @@ addRoute(app, "get", "/shared-agents", {
 	responses: {
 		"200": { description: "Success", schema: apiResponseSchema },
 	},
-	middleware: [requireAuth, requireAdmin],
-	handler: async ({ raw }) =>
-		(async (ctx: Context) => {
-			const agents = await getAllSharedAgentsForAdmin(ctx.env);
-
-			return ResponseFactory.success(ctx, agents);
-		})(raw),
+	auth: true,
+	middleware: [requireAdmin],
+	handler: async ({ serviceContext }) => getAllSharedAgentsForAdmin({ context: serviceContext }),
 });
 
 addRoute(app, "put", "/shared-agents/:id/moderate", {
@@ -80,37 +71,28 @@ addRoute(app, "put", "/shared-agents/:id/moderate", {
 	summary: "Moderate shared agent",
 	description: "Approve or reject a shared agent (admin only)",
 	bodySchema: moderateAgentSchema,
+	paramSchema: sharedAgentParamsSchema,
+	auth: true,
 	responses: {
 		"200": { description: "Success", schema: apiResponseSchema },
 	},
-	middleware: [requireAuth, requireAdmin],
-	handler: async ({ raw }) =>
-		(async (ctx: Context) => {
-			const { id } = ctx.req.param();
-			const { is_public, reason } = ctx.req.valid("json" as never) as {
-				is_public: boolean;
-				reason: string;
-			};
+	middleware: [requireAdmin],
+	handler: async ({ body, params, raw, serviceContext, user }) => {
+		const result = await moderateAgent({
+			context: serviceContext,
+			env: serviceContext.env,
+			agentId: params.id,
+			isPublic: body.is_public,
+			reason: body.reason,
+			moderator: user,
+		});
 
-			const currentUser = ctx.get("user");
+		if (!result.success) {
+			return ResponseFactory.error(raw, result.error || "Failed to moderate agent", 400);
+		}
 
-			const serviceContext = getServiceContext(ctx);
-
-			const result = await moderateAgent({
-				context: serviceContext,
-				env: ctx.env,
-				agentId: id,
-				isPublic: is_public,
-				reason,
-				moderator: currentUser,
-			});
-
-			if (!result.success) {
-				return ResponseFactory.error(ctx, result.error || "Failed to moderate agent", 400);
-			}
-
-			return ResponseFactory.success(ctx, result.data);
-		})(raw),
+		return result.data;
+	},
 });
 
 export default app;

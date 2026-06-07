@@ -29,10 +29,10 @@ export interface IInsertEmbeddingRequest extends IRequest {
 			data: any;
 			mimeType: string;
 		};
-		id: string;
-		metadata: Record<string, any>;
-		title: string;
-		rag_options: RagOptions;
+		id?: string;
+		metadata?: Record<string, any>;
+		title?: string;
+		rag_options?: RagOptions;
 	};
 }
 

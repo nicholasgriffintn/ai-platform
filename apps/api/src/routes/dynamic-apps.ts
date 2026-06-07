@@ -42,7 +42,7 @@ addRoute(dynamicApps, "get", "/", {
 	tags: ["dynamic-apps"],
 	summary: "List all available dynamic apps",
 	description: "Returns a list of all registered dynamic apps with their basic information",
-	auth: true,
+	auth: "user-or-anonymous",
 	responses: {
 		200: {
 			description: "Dynamic apps and featured listings",
@@ -78,7 +78,7 @@ addRoute(dynamicApps, "get", "/:id", {
 	tags: ["dynamic-apps"],
 	summary: "Get dynamic app schema",
 	description: "Returns the complete schema for a specific dynamic app",
-	auth: true,
+	auth: "user-or-anonymous",
 	paramSchema: dynamicAppParamsSchema,
 	responses: {
 		200: { description: "Dynamic app schema", schema: dynamicAppSchema },
@@ -103,7 +103,7 @@ addRoute(dynamicApps, "post", "/:id/execute", {
 	tags: ["dynamic-apps"],
 	summary: "Execute dynamic app",
 	description: "Executes a dynamic app with the provided form data",
-	auth: true,
+	auth: "user-or-anonymous",
 	paramSchema: dynamicAppParamsSchema,
 	bodySchema: dynamicAppExecutionBodySchema,
 	responses: {
@@ -119,7 +119,7 @@ addRoute(dynamicApps, "post", "/:id/execute", {
 		404: { description: "App not found", schema: dynamicAppErrorResponseSchema },
 		500: { description: "Server error", schema: dynamicAppErrorResponseSchema },
 	},
-	handler: async ({ body, params, raw, serviceContext, user }) => {
+	handler: async ({ anonymousUser, body, params, raw, serviceContext, user }) => {
 		const requestUrl = new URL(raw.req.url);
 		const req: IRequest = {
 			app_url: `${requestUrl.protocol}//${requestUrl.host}`,
@@ -131,6 +131,7 @@ addRoute(dynamicApps, "post", "/:id/execute", {
 				platform: "dynamic-apps",
 			},
 			user,
+			anonymousUser,
 			context: serviceContext,
 		};
 

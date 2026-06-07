@@ -1,5 +1,5 @@
 import { addRoute } from "~/lib/http/routeBuilder";
-import { type Context, Hono } from "hono";
+import { Hono } from "hono";
 
 import z from "zod/v4";
 import {
@@ -13,7 +13,6 @@ import {
 	errorResponseSchema,
 } from "@assistant/schemas";
 
-import { getServiceContext } from "~/lib/context/serviceContext";
 import { ResponseFactory } from "~/lib/http/ResponseFactory";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import { requirePlan } from "~/middleware/requirePlan";
@@ -24,7 +23,6 @@ import { getSourceArticles } from "~/services/apps/articles/get-source-articles"
 import { listArticles } from "~/services/apps/articles/list";
 import { summariseArticle, cleanupArticleSession } from "~/services/apps/articles/summarise";
 import { extractContent } from "~/services/apps/retrieval/content-extract";
-import type { IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
 
@@ -37,6 +35,14 @@ app.use("/*", (c, next) => {
 	return next();
 });
 
+const articleParamsSchema = z.object({
+	id: z.string().min(1),
+});
+
+const articleRerunParamsSchema = z.object({
+	itemId: z.string().min(1),
+});
+
 addRoute(app, "get", "/", {
 	tags: ["apps"],
 	description: "List user's article reports",
@@ -44,36 +50,33 @@ addRoute(app, "get", "/", {
 		200: { description: "List of reports", schema: listArticlesResponseSchema },
 		401: { description: "Unauthorized", schema: errorResponseSchema },
 	},
+	auth: true,
 	middleware: [requirePlan("pro")],
-	handler: async ({ raw }) =>
-		(async (context: Context) => {
-			const user = context.get("user") as IUser;
+	handler: async ({ serviceContext, user }) => {
+		try {
+			const response = await listArticles({
+				context: serviceContext,
+				userId: user.id,
+			});
 
-			try {
-				const serviceContext = getServiceContext(context);
-				const response = await listArticles({
-					context: serviceContext,
-					userId: user.id,
-				});
+			return {
+				articles: response.sessions,
+			};
+		} catch (error) {
+			routeLogger.error("Error listing articles:", { error });
 
-				return ResponseFactory.success(context, {
-					articles: response.sessions,
-				});
-			} catch (error) {
-				routeLogger.error("Error listing articles:", { error });
-
-				if (error instanceof AssistantError) {
-					throw error;
-				}
-
-				throw new AssistantError(
-					"Failed to list articles",
-					ErrorType.UNKNOWN_ERROR,
-					undefined,
-					error,
-				);
+			if (error instanceof AssistantError) {
+				throw error;
 			}
-		})(raw),
+
+			throw new AssistantError(
+				"Failed to list articles",
+				ErrorType.UNKNOWN_ERROR,
+				undefined,
+				error,
+			);
+		}
+	},
 });
 
 addRoute(app, "get", "/sources", {
@@ -91,50 +94,49 @@ addRoute(app, "get", "/sources", {
 		401: { description: "Unauthorized", schema: errorResponseSchema },
 		403: { description: "Forbidden", schema: errorResponseSchema },
 	},
+	auth: true,
 	middleware: [requirePlan("pro")],
-	handler: async ({ raw }) =>
-		(async (context: Context) => {
-			const user = context.get("user") as IUser;
-			const url = new URL(context.req.url);
-			const ids = url.searchParams.getAll("ids[]");
+	handler: async ({ raw, serviceContext, user }) => {
+		const url = new URL(raw.req.url);
+		const ids = url.searchParams.getAll("ids[]");
 
-			if (!ids.length) {
-				return ResponseFactory.error(context, "No article IDs provided", 400);
+		if (!ids.length) {
+			return ResponseFactory.error(raw, "No article IDs provided", 400);
+		}
+
+		const validIds = ids.filter((id) => typeof id === "string" && id.trim().length > 0);
+
+		try {
+			const response = await getSourceArticles({
+				context: serviceContext,
+				ids: validIds,
+				userId: user.id,
+			});
+
+			return {
+				articles: response.articles,
+			};
+		} catch (error) {
+			routeLogger.error("Error fetching source articles:", { error, ids });
+
+			if (error instanceof AssistantError) {
+				throw error;
 			}
 
-			const validIds = ids.filter((id) => typeof id === "string" && id.trim().length > 0);
-
-			try {
-				const serviceContext = getServiceContext(context);
-				const response = await getSourceArticles({
-					context: serviceContext,
-					ids: validIds,
-					userId: user.id,
-				});
-
-				return ResponseFactory.success(context, {
-					articles: response.articles,
-				});
-			} catch (error) {
-				routeLogger.error("Error fetching source articles:", { error, ids });
-
-				if (error instanceof AssistantError) {
-					throw error;
-				}
-
-				throw new AssistantError(
-					"Failed to fetch source articles",
-					ErrorType.UNKNOWN_ERROR,
-					undefined,
-					error,
-				);
-			}
-		})(raw),
+			throw new AssistantError(
+				"Failed to fetch source articles",
+				ErrorType.UNKNOWN_ERROR,
+				undefined,
+				error,
+			);
+		}
+	},
 });
 
 addRoute(app, "get", "/:id", {
 	tags: ["apps"],
 	description: "Get details of a specific article report",
+	paramSchema: articleParamsSchema,
 	responses: {
 		200: {
 			description: "Article report details",
@@ -144,36 +146,32 @@ addRoute(app, "get", "/:id", {
 		403: { description: "Forbidden", schema: errorResponseSchema },
 		404: { description: "Article data not found", schema: errorResponseSchema },
 	},
+	auth: true,
 	middleware: [requirePlan("pro")],
-	handler: async ({ raw }) =>
-		(async (context: Context) => {
-			const id = context.req.param("id");
-			const user = context.get("user") as IUser;
+	handler: async ({ params, serviceContext, user }) => {
+		try {
+			const response = await getArticleDetails({
+				context: serviceContext,
+				id: params.id,
+				userId: user.id,
+			});
 
-			try {
-				const serviceContext = getServiceContext(context);
-				const response = await getArticleDetails({
-					context: serviceContext,
-					id: id ?? "",
-					userId: user.id,
-				});
+			return { article: response.article };
+		} catch (error) {
+			routeLogger.error("Error getting article details:", { error, id: params.id });
 
-				return ResponseFactory.success(context, { article: response.article });
-			} catch (error) {
-				routeLogger.error("Error getting article details:", { error, id });
-
-				if (error instanceof AssistantError) {
-					throw error;
-				}
-
-				throw new AssistantError(
-					"Failed to get article details",
-					ErrorType.UNKNOWN_ERROR,
-					undefined,
-					error,
-				);
+			if (error instanceof AssistantError) {
+				throw error;
 			}
-		})(raw),
+
+			throw new AssistantError(
+				"Failed to get article details",
+				ErrorType.UNKNOWN_ERROR,
+				undefined,
+				error,
+			);
+		}
+	},
 });
 
 addRoute(app, "post", "/analyse", {
@@ -193,45 +191,41 @@ addRoute(app, "post", "/analyse", {
 		400: { description: "Bad Request", schema: errorResponseSchema },
 		401: { description: "Unauthorized", schema: errorResponseSchema },
 	},
+	auth: true,
 	middleware: [requirePlan("pro")],
-	handler: async ({ raw }) =>
-		(async (context: Context) => {
-			const body = context.req.valid("json" as never) as z.infer<typeof articleAnalyzeSchema>;
-			const user = context.get("user") as IUser;
+	handler: async ({ body, raw, serviceContext, user }) => {
+		try {
+			const completion_id = generateId();
+			const newUrl = new URL(raw.req.url);
+			const app_url = `${newUrl.protocol}//${newUrl.hostname}`;
 
-			try {
-				const completion_id = generateId();
-				const newUrl = new URL(context.req.url);
-				const app_url = `${newUrl.protocol}//${newUrl.hostname}`;
+			const response = await analyseArticle({
+				completion_id,
+				context: serviceContext,
+				args: { article: body.article, itemId: body.itemId },
+				app_url,
+				user,
+			});
 
-				const serviceContext = getServiceContext(context);
-				const response = await analyseArticle({
-					completion_id,
-					context: serviceContext,
-					args: { article: body.article, itemId: body.itemId },
-					app_url,
-					user,
-				});
+			return response;
+		} catch (error) {
+			routeLogger.error("Error analysing article:", {
+				error,
+				itemId: body.itemId,
+			});
 
-				return ResponseFactory.success(context, response);
-			} catch (error) {
-				routeLogger.error("Error analysing article:", {
-					error,
-					itemId: body.itemId,
-				});
-
-				if (error instanceof AssistantError) {
-					throw error;
-				}
-
-				throw new AssistantError(
-					"Failed to analyse article",
-					ErrorType.UNKNOWN_ERROR,
-					undefined,
-					error,
-				);
+			if (error instanceof AssistantError) {
+				throw error;
 			}
-		})(raw),
+
+			throw new AssistantError(
+				"Failed to analyse article",
+				ErrorType.UNKNOWN_ERROR,
+				undefined,
+				error,
+			);
+		}
+	},
 });
 
 addRoute(app, "post", "/summarise", {
@@ -251,45 +245,41 @@ addRoute(app, "post", "/summarise", {
 		400: { description: "Bad Request", schema: errorResponseSchema },
 		401: { description: "Unauthorized", schema: errorResponseSchema },
 	},
+	auth: true,
 	middleware: [requirePlan("pro")],
-	handler: async ({ raw }) =>
-		(async (context: Context) => {
-			const body = context.req.valid("json" as never) as z.infer<typeof articleSummariseSchema>;
-			const user = context.get("user") as IUser;
+	handler: async ({ body, raw, serviceContext, user }) => {
+		try {
+			const completion_id = generateId();
+			const newUrl = new URL(raw.req.url);
+			const app_url = `${newUrl.protocol}//${newUrl.hostname}`;
 
-			try {
-				const completion_id = generateId();
-				const newUrl = new URL(context.req.url);
-				const app_url = `${newUrl.protocol}//${newUrl.hostname}`;
+			const response = await summariseArticle({
+				completion_id,
+				context: serviceContext,
+				args: { article: body.article, itemId: body.itemId },
+				app_url,
+				user,
+			});
 
-				const serviceContext = getServiceContext(context);
-				const response = await summariseArticle({
-					completion_id,
-					context: serviceContext,
-					args: { article: body.article, itemId: body.itemId },
-					app_url,
-					user,
-				});
+			return response;
+		} catch (error) {
+			routeLogger.error("Error summarising article:", {
+				error,
+				itemId: body.itemId,
+			});
 
-				return ResponseFactory.success(context, response);
-			} catch (error) {
-				routeLogger.error("Error summarising article:", {
-					error,
-					itemId: body.itemId,
-				});
-
-				if (error instanceof AssistantError) {
-					throw error;
-				}
-
-				throw new AssistantError(
-					"Failed to summarise article",
-					ErrorType.UNKNOWN_ERROR,
-					undefined,
-					error,
-				);
+			if (error instanceof AssistantError) {
+				throw error;
 			}
-		})(raw),
+
+			throw new AssistantError(
+				"Failed to summarise article",
+				ErrorType.UNKNOWN_ERROR,
+				undefined,
+				error,
+			);
+		}
+	},
 });
 
 addRoute(app, "post", "/generate-report", {
@@ -315,52 +305,47 @@ addRoute(app, "post", "/generate-report", {
 			schema: errorResponseSchema,
 		},
 	},
+	auth: true,
 	middleware: [requirePlan("pro")],
-	handler: async ({ raw }) =>
-		(async (context: Context) => {
-			const body = context.req.valid("json" as never) as z.infer<
-				typeof generateArticlesReportSchema
-			>;
-			const user = context.get("user") as IUser;
+	handler: async ({ body, raw, serviceContext, user }) => {
+		try {
+			const completion_id = generateId();
+			const newUrl = new URL(raw.req.url);
+			const app_url = `${newUrl.protocol}//${newUrl.hostname}`;
 
-			try {
-				const completion_id = generateId();
-				const newUrl = new URL(context.req.url);
-				const app_url = `${newUrl.protocol}//${newUrl.hostname}`;
+			const response = await generateArticlesReport({
+				completion_id,
+				context: serviceContext,
+				args: { itemId: body.itemId },
+				app_url,
+				user,
+			});
 
-				const serviceContext = getServiceContext(context);
-				const response = await generateArticlesReport({
-					completion_id,
-					context: serviceContext,
-					args: { itemId: body.itemId },
-					app_url,
-					user,
-				});
+			return response;
+		} catch (error) {
+			routeLogger.error("Error generating report:", {
+				error,
+				itemId: body.itemId,
+			});
 
-				return ResponseFactory.success(context, response);
-			} catch (error) {
-				routeLogger.error("Error generating report:", {
-					error,
-					itemId: body.itemId,
-				});
-
-				if (error instanceof AssistantError) {
-					throw error;
-				}
-
-				throw new AssistantError(
-					"Failed to generate report",
-					ErrorType.UNKNOWN_ERROR,
-					undefined,
-					error,
-				);
+			if (error instanceof AssistantError) {
+				throw error;
 			}
-		})(raw),
+
+			throw new AssistantError(
+				"Failed to generate report",
+				ErrorType.UNKNOWN_ERROR,
+				undefined,
+				error,
+			);
+		}
+	},
 });
 
 addRoute(app, "post", "/prepare-rerun/:itemId", {
 	tags: ["apps"],
 	description: "Prepare a session for rerun by cleaning up existing analyses and summaries",
+	paramSchema: articleRerunParamsSchema,
 	responses: {
 		200: {
 			description: "Session prepared for rerun",
@@ -372,40 +357,31 @@ addRoute(app, "post", "/prepare-rerun/:itemId", {
 		400: { description: "Bad Request", schema: errorResponseSchema },
 		401: { description: "Unauthorized", schema: errorResponseSchema },
 	},
+	auth: true,
 	middleware: [requirePlan("pro")],
-	handler: async ({ raw }) =>
-		(async (context: Context) => {
-			const itemId = context.req.param("itemId");
-			const user = context.get("user") as IUser;
+	handler: async ({ params, serviceContext, user }) => {
+		try {
+			await cleanupArticleSession(serviceContext, user.id, params.itemId);
 
-			if (!itemId) {
-				return ResponseFactory.error(context, "Item ID is required", 400);
+			return { status: "success", message: "Session prepared for rerun" };
+		} catch (error) {
+			routeLogger.error("Error preparing session for rerun:", {
+				error,
+				itemId: params.itemId,
+			});
+
+			if (error instanceof AssistantError) {
+				throw error;
 			}
 
-			try {
-				// Delete existing analyses and summaries for this session
-				const serviceContext = getServiceContext(context);
-				await cleanupArticleSession(serviceContext, user.id, itemId);
-
-				return ResponseFactory.message(context, "Session prepared for rerun");
-			} catch (error) {
-				routeLogger.error("Error preparing session for rerun:", {
-					error,
-					itemId,
-				});
-
-				if (error instanceof AssistantError) {
-					throw error;
-				}
-
-				throw new AssistantError(
-					"Failed to prepare session for rerun",
-					ErrorType.UNKNOWN_ERROR,
-					undefined,
-					error,
-				);
-			}
-		})(raw),
+			throw new AssistantError(
+				"Failed to prepare session for rerun",
+				ErrorType.UNKNOWN_ERROR,
+				undefined,
+				error,
+			);
+		}
+	},
 });
 
 addRoute(app, "post", "/extract-content", {
@@ -431,56 +407,53 @@ addRoute(app, "post", "/extract-content", {
 		400: { description: "Bad Request", schema: errorResponseSchema },
 		401: { description: "Unauthorized", schema: errorResponseSchema },
 	},
+	auth: true,
 	middleware: [requirePlan("pro")],
-	handler: async ({ raw }) =>
-		(async (context: Context) => {
-			const body = context.req.valid("json" as never) as z.infer<typeof contentExtractSchema>;
-			const user = context.get("user") as IUser;
-
-			try {
-				const extractResult = await extractContent(
-					{
-						urls: body.urls,
-						extract_depth: body.extract_depth || "basic",
-						include_images: body.include_images || false,
-					},
-					{
-						env: context.env,
-						user,
-					},
-				);
-
-				if (extractResult.status === "error") {
-					return ResponseFactory.error(context, "Failed to extract content", 400);
-				}
-
-				const content =
-					extractResult.data?.extracted.results.map((result) => result.raw_content) || [];
-
-				const failedUrls = extractResult.data?.extracted.failed_results || [];
-
-				return ResponseFactory.success(context, {
-					content,
-					failedUrls,
-				});
-			} catch (error) {
-				routeLogger.error("Error extracting content from URL:", {
-					error,
+	handler: async ({ body, raw, serviceContext, user }) => {
+		try {
+			const extractResult = await extractContent(
+				{
 					urls: body.urls,
-				});
+					extract_depth: body.extract_depth || "basic",
+					include_images: body.include_images || false,
+				},
+				{
+					env: serviceContext.env,
+					user,
+				},
+			);
 
-				if (error instanceof AssistantError) {
-					throw error;
-				}
-
-				throw new AssistantError(
-					"Failed to extract content from URL",
-					ErrorType.UNKNOWN_ERROR,
-					undefined,
-					error,
-				);
+			if (extractResult.status === "error") {
+				return ResponseFactory.error(raw, "Failed to extract content", 400);
 			}
-		})(raw),
+
+			const content =
+				extractResult.data?.extracted.results.map((result) => result.raw_content) || [];
+
+			const failedUrls = extractResult.data?.extracted.failed_results || [];
+
+			return {
+				content,
+				failedUrls,
+			};
+		} catch (error) {
+			routeLogger.error("Error extracting content from URL:", {
+				error,
+				urls: body.urls,
+			});
+
+			if (error instanceof AssistantError) {
+				throw error;
+			}
+
+			throw new AssistantError(
+				"Failed to extract content from URL",
+				ErrorType.UNKNOWN_ERROR,
+				undefined,
+				error,
+			);
+		}
+	},
 });
 
 export default app;

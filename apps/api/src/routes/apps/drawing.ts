@@ -1,5 +1,6 @@
 import { addRoute } from "~/lib/http/routeBuilder";
-import { type Context, Hono } from "hono";
+import { Hono } from "hono";
+import { z } from "zod/v4";
 import {
 	drawingSchema,
 	guessDrawingSchema,
@@ -7,15 +8,12 @@ import {
 	errorResponseSchema,
 } from "@assistant/schemas";
 
-import { getServiceContext } from "~/lib/context/serviceContext";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import { requirePlan } from "~/middleware/requirePlan";
-import { ResponseFactory } from "~/lib/http/ResponseFactory";
 import { generateImageFromDrawing } from "~/services/apps/drawing/create";
 import { getDrawingDetails } from "~/services/apps/drawing/get-details";
 import { guessDrawingFromImage } from "~/services/apps/drawing/guess";
 import { listDrawings } from "~/services/apps/drawing/list";
-import type { IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
 const app = new Hono();
@@ -27,6 +25,10 @@ app.use("/*", (c, next) => {
 	return next();
 });
 
+const drawingParamsSchema = z.object({
+	id: z.string().min(1),
+});
+
 addRoute(app, "get", "/", {
 	tags: ["apps"],
 	description: "List user's drawings",
@@ -34,63 +36,57 @@ addRoute(app, "get", "/", {
 		200: { description: "List of user's drawings", schema: apiResponseSchema },
 		401: { description: "Unauthorized", schema: errorResponseSchema },
 	},
+	auth: true,
 	middleware: [requirePlan("pro")],
-	handler: async ({ raw }) =>
-		(async (c: Context) => {
-			const user = c.get("user") as IUser;
+	handler: async ({ serviceContext, user }) => {
+		try {
+			const drawings = await listDrawings({
+				context: serviceContext,
+				userId: user.id,
+			});
 
-			try {
-				const serviceContext = getServiceContext(c);
-				const drawings = await listDrawings({
-					context: serviceContext,
-					userId: user.id,
-				});
-
-				return ResponseFactory.success(c, { drawings });
-			} catch (error) {
-				if (error instanceof AssistantError) {
-					throw error;
-				}
-				routeLogger.error("Error listing drawings:", {
-					error_message: error instanceof Error ? error.message : "Unknown error",
-				});
-				throw new AssistantError("Failed to list drawings", ErrorType.UNKNOWN_ERROR);
+			return { drawings };
+		} catch (error) {
+			if (error instanceof AssistantError) {
+				throw error;
 			}
-		})(raw),
+			routeLogger.error("Error listing drawings:", {
+				error_message: error instanceof Error ? error.message : "Unknown error",
+			});
+			throw new AssistantError("Failed to list drawings", ErrorType.UNKNOWN_ERROR);
+		}
+	},
 });
 
 addRoute(app, "get", "/:id", {
 	tags: ["apps"],
 	description: "Get drawing details",
+	paramSchema: drawingParamsSchema,
 	responses: {
 		200: { description: "Drawing details", schema: apiResponseSchema },
 		404: { description: "Drawing not found", schema: errorResponseSchema },
 	},
+	auth: true,
 	middleware: [requirePlan("pro")],
-	handler: async ({ raw }) =>
-		(async (c: Context) => {
-			const id = c.req.param("id");
-			const user = c.get("user") as IUser;
+	handler: async ({ params, serviceContext, user }) => {
+		try {
+			const drawing = await getDrawingDetails({
+				context: serviceContext,
+				userId: user.id,
+				drawingId: params.id,
+			});
 
-			try {
-				const serviceContext = getServiceContext(c);
-				const drawing = await getDrawingDetails({
-					context: serviceContext,
-					userId: user.id,
-					drawingId: id,
-				});
-
-				return ResponseFactory.success(c, { drawing });
-			} catch (error) {
-				if (error instanceof AssistantError) {
-					throw error;
-				}
-				routeLogger.error("Error fetching drawing:", {
-					error_message: error instanceof Error ? error.message : "Unknown error",
-				});
-				throw new AssistantError("Failed to fetch drawing", ErrorType.UNKNOWN_ERROR);
+			return { drawing };
+		} catch (error) {
+			if (error instanceof AssistantError) {
+				throw error;
 			}
-		})(raw),
+			routeLogger.error("Error fetching drawing:", {
+				error_message: error instanceof Error ? error.message : "Unknown error",
+			});
+			throw new AssistantError("Failed to fetch drawing", ErrorType.UNKNOWN_ERROR);
+		}
+	},
 });
 
 addRoute(app, "post", "/", {
@@ -100,43 +96,41 @@ addRoute(app, "post", "/", {
 	responses: {
 		200: { description: "Response", schema: apiResponseSchema },
 	},
+	auth: true,
 	middleware: [requirePlan("pro")],
-	handler: async ({ raw }) =>
-		(async (c: Context) => {
-			const body = c.req.valid("form" as never) as {
-				drawing: File;
-				drawingId?: string;
-			};
-			const user = c.get("user") as IUser;
+	handler: async ({ raw, serviceContext, user }) => {
+		const body = raw.req.valid("form" as never) as {
+			drawing: File;
+			drawingId?: string;
+		};
 
-			try {
-				const serviceContext = getServiceContext(c);
-				const response = await generateImageFromDrawing({
-					context: serviceContext,
-					env: c.env as IEnv,
-					request: body,
-					user,
-					existingDrawingId: body.drawingId,
-				});
+		try {
+			const response = await generateImageFromDrawing({
+				context: serviceContext,
+				env: serviceContext.env,
+				request: body,
+				user,
+				existingDrawingId: body.drawingId,
+			});
 
-				if (response.status === "error") {
-					throw new AssistantError(
-						"Something went wrong, we are working on it",
-						ErrorType.UNKNOWN_ERROR,
-					);
-				}
-
-				return ResponseFactory.success(c, response);
-			} catch (error) {
-				if (error instanceof AssistantError) {
-					throw error;
-				}
-				routeLogger.error("Error generating image from drawing:", {
-					error_message: error instanceof Error ? error.message : "Unknown error",
-				});
-				throw new AssistantError("Failed to generate image", ErrorType.UNKNOWN_ERROR);
+			if (response.status === "error") {
+				throw new AssistantError(
+					"Something went wrong, we are working on it",
+					ErrorType.UNKNOWN_ERROR,
+				);
 			}
-		})(raw),
+
+			return response;
+		} catch (error) {
+			if (error instanceof AssistantError) {
+				throw error;
+			}
+			routeLogger.error("Error generating image from drawing:", {
+				error_message: error instanceof Error ? error.message : "Unknown error",
+			});
+			throw new AssistantError("Failed to generate image", ErrorType.UNKNOWN_ERROR);
+		}
+	},
 });
 
 addRoute(app, "post", "/guess", {
@@ -146,39 +140,37 @@ addRoute(app, "post", "/guess", {
 	responses: {
 		200: { description: "Response", schema: apiResponseSchema },
 	},
+	auth: true,
 	middleware: [requirePlan("pro")],
-	handler: async ({ raw }) =>
-		(async (c: Context) => {
-			const body = c.req.valid("form" as never);
-			const user = c.get("user") as IUser;
+	handler: async ({ raw, serviceContext, user }) => {
+		const body = raw.req.valid("form" as never);
 
-			try {
-				const serviceContext = getServiceContext(c);
-				const response = await guessDrawingFromImage({
-					context: serviceContext,
-					env: c.env as IEnv,
-					request: body,
-					user,
-				});
+		try {
+			const response = await guessDrawingFromImage({
+				context: serviceContext,
+				env: serviceContext.env,
+				request: body,
+				user,
+			});
 
-				if (response.status === "error") {
-					throw new AssistantError(
-						"Something went wrong, we are working on it",
-						ErrorType.UNKNOWN_ERROR,
-					);
-				}
-
-				return ResponseFactory.success(c, response);
-			} catch (error) {
-				if (error instanceof AssistantError) {
-					throw error;
-				}
-				routeLogger.error("Error guessing drawing from image:", {
-					error_message: error instanceof Error ? error.message : "Unknown error",
-				});
-				throw new AssistantError("Failed to guess drawing", ErrorType.UNKNOWN_ERROR);
+			if (response.status === "error") {
+				throw new AssistantError(
+					"Something went wrong, we are working on it",
+					ErrorType.UNKNOWN_ERROR,
+				);
 			}
-		})(raw),
+
+			return response;
+		} catch (error) {
+			if (error instanceof AssistantError) {
+				throw error;
+			}
+			routeLogger.error("Error guessing drawing from image:", {
+				error_message: error instanceof Error ? error.message : "Unknown error",
+			});
+			throw new AssistantError("Failed to guess drawing", ErrorType.UNKNOWN_ERROR);
+		}
+	},
 });
 
 export default app;

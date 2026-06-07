@@ -44,6 +44,14 @@ const dynamicAppResponseRepository = {
 	updateResponseData: vi.fn(),
 };
 
+const anonymousUser = {
+	id: "anon-123",
+	ip_address: "127.0.0.1",
+	daily_message_count: 0,
+	created_at: "2026-06-04T00:00:00.000Z",
+	updated_at: "2026-06-04T00:00:00.000Z",
+};
+
 function createRequest(overrides: Partial<IRequest> = {}): IRequest {
 	const env = {
 		DB: {},
@@ -191,7 +199,7 @@ describe("executeDynamicApp", () => {
 		const result = await executeDynamicApp(
 			appId,
 			{ topic: "Anonymous" },
-			createRequest({ user: undefined as any }),
+			createRequest({ anonymousUser, user: undefined }),
 		);
 
 		expect(createResponseSpy).not.toHaveBeenCalled();
@@ -203,5 +211,14 @@ describe("executeDynamicApp", () => {
 			},
 		});
 		expect(result.response_id).toBeUndefined();
+
+		const { ConversationManager } = await import("~/lib/conversationManager");
+		expect(ConversationManager.getInstance).toHaveBeenCalledWith(
+			expect.objectContaining({
+				anonymousUser,
+				store: false,
+				user: undefined,
+			}),
+		);
 	});
 });

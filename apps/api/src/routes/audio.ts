@@ -1,5 +1,5 @@
 import { addRoute } from "~/lib/http/routeBuilder";
-import { type Context, Hono } from "hono";
+import { Hono } from "hono";
 import {
 	textToSpeechSchema,
 	transcribeFormSchema,
@@ -8,19 +8,13 @@ import {
 	errorResponseSchema,
 } from "@assistant/schemas";
 
-import { requireAuth } from "~/middleware/auth";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
-import { ResponseFactory } from "~/lib/http/ResponseFactory";
-import { getServiceContext } from "~/lib/context/serviceContext";
 import { handleTextToSpeech } from "~/services/audio/speech";
 import { handleTranscribe } from "~/services/audio/transcribe";
-import type { IEnv } from "~/types";
 
 const app = new Hono();
 
 const routeLogger = createRouteLogger("audio");
-
-app.use("/*", requireAuth);
 
 app.use("/*", (c, next) => {
 	routeLogger.info(`Processing audio route: ${c.req.path}`);
@@ -31,6 +25,7 @@ addRoute(app, "post", "/transcribe", {
 	tags: ["audio"],
 	summary: "Create transcription",
 	description: "Transcribes audio into the input language.",
+	auth: "user-or-anonymous",
 	formSchema: transcribeFormSchema,
 	querySchema: transcribeQuerySchema,
 	responses: {
@@ -43,35 +38,28 @@ addRoute(app, "post", "/transcribe", {
 			schema: errorResponseSchema,
 		},
 	},
-	handler: async ({ raw }) =>
-		(async (context: Context) => {
-			const { provider, timestamps } = context.req.valid("query" as never) as {
-				provider?: "workers" | "mistral" | "replicate";
-				timestamps?: boolean;
-			};
-			const { audio } = context.req.valid("form" as never) as {
-				audio: File | Blob | string;
-			};
-			const user = context.get("user");
+	handler: async ({ query, raw, serviceContext, user }) => {
+		const { audio } = raw.req.valid("form" as never) as {
+			audio: File | Blob | string;
+		};
 
-			const response = await handleTranscribe({
-				env: context.env as IEnv,
-				audio,
-				provider,
-				timestamps: timestamps === true,
-				user,
-			});
+		const response = await handleTranscribe({
+			env: serviceContext.env,
+			audio,
+			provider: query.provider,
+			timestamps: query.timestamps === true,
+			user,
+		});
 
-			return ResponseFactory.success(context, {
-				response,
-			});
-		})(raw),
+		return { response };
+	},
 });
 
 addRoute(app, "post", "/speech", {
 	tags: ["audio"],
 	summary: "Create speech",
 	description: "Generates audio from the input text.",
+	auth: "user-or-anonymous",
 	bodySchema: textToSpeechSchema,
 	responses: {
 		200: {
@@ -83,39 +71,23 @@ addRoute(app, "post", "/speech", {
 			schema: errorResponseSchema,
 		},
 	},
-	handler: async ({ raw }) =>
-		(async (context: Context) => {
-			const { input, provider, model, lang, store, voice_id, ref_audio, response_format } =
-				context.req.valid("json" as never) as {
-					input: string;
-					provider?: "polly" | "cartesia" | "elevenlabs" | "melotts" | "mistral";
-					model?: string;
-					lang?: string;
-					store?: boolean;
-					voice_id?: string;
-					ref_audio?: string;
-					response_format?: "mp3" | "wav" | "pcm" | "flac" | "opus";
-				};
-			const user = context.get("user");
+	handler: async ({ body, serviceContext, user }) => {
+		const response = await handleTextToSpeech({
+			env: serviceContext.env,
+			input: body.input,
+			provider: body.provider,
+			model: body.model,
+			lang: body.lang,
+			store: body.store,
+			voice_id: body.voice_id,
+			ref_audio: body.ref_audio,
+			response_format: body.response_format,
+			user,
+			context: serviceContext,
+		});
 
-			const response = await handleTextToSpeech({
-				env: context.env as IEnv,
-				input,
-				provider,
-				model,
-				lang,
-				store,
-				voice_id,
-				ref_audio,
-				response_format,
-				user,
-				context: getServiceContext(context),
-			});
-
-			return ResponseFactory.success(context, {
-				response,
-			});
-		})(raw),
+		return { response };
+	},
 });
 
 export default app;
