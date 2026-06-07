@@ -18,7 +18,7 @@ export function markdownToHtml(markdown: string): string {
 		}
 
 		if (inCodeBlock) {
-			html += `${line}\n`;
+			html += `${escapeHtml(line)}\n`;
 			continue;
 		}
 
@@ -30,17 +30,17 @@ export function markdownToHtml(markdown: string): string {
 		}
 
 		if (line.startsWith("# ")) {
-			html += `<h1>${line.substring(2)}</h1>\n`;
+			html += `<h1>${processInlineMarkdown(line.substring(2))}</h1>\n`;
 		} else if (line.startsWith("## ")) {
-			html += `<h2>${line.substring(3)}</h2>\n`;
+			html += `<h2>${processInlineMarkdown(line.substring(3))}</h2>\n`;
 		} else if (line.startsWith("### ")) {
-			html += `<h3>${line.substring(4)}</h3>\n`;
+			html += `<h3>${processInlineMarkdown(line.substring(4))}</h3>\n`;
 		} else if (line.startsWith("#### ")) {
-			html += `<h4>${line.substring(5)}</h4>\n`;
+			html += `<h4>${processInlineMarkdown(line.substring(5))}</h4>\n`;
 		} else if (line.startsWith("##### ")) {
-			html += `<h5>${line.substring(6)}</h5>\n`;
+			html += `<h5>${processInlineMarkdown(line.substring(6))}</h5>\n`;
 		} else if (line.startsWith("###### ")) {
-			html += `<h6>${line.substring(7)}</h6>\n`;
+			html += `<h6>${processInlineMarkdown(line.substring(7))}</h6>\n`;
 		} else if (line.startsWith("- ") || line.startsWith("* ")) {
 			const prevLine = i > 0 ? lines[i - 1] : "";
 			if (!prevLine.startsWith("- ") && !prevLine.startsWith("* ")) {
@@ -78,7 +78,24 @@ export function markdownToHtml(markdown: string): string {
 }
 
 function processInlineMarkdown(text: string): string {
-	let newText = text;
+	let newText = escapeHtml(text);
+	newText = newText.replace(
+		/!\[([^\]]*)\]\(((?:[^)(]|\([^)]*\))*)\)/g,
+		(_match, alt: string, url: string) => {
+			if (!isSafeMarkdownUrl(url)) return alt;
+
+			return `<img src="${escapeAttribute(url)}" alt="${escapeAttribute(alt)}">`;
+		},
+	);
+	newText = newText.replace(
+		/\[([^\]]+)\]\(((?:[^)(]|\([^)]*\))*)\)/g,
+		(_match, label: string, url: string) => {
+			if (!isSafeMarkdownUrl(url)) return label;
+
+			return `<a href="${escapeAttribute(url)}">${label}</a>`;
+		},
+	);
+
 	newText = newText.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
 	newText = newText.replace(/__(.*?)__/g, "<strong>$1</strong>");
 
@@ -87,9 +104,34 @@ function processInlineMarkdown(text: string): string {
 
 	newText = newText.replace(/`(.*?)`/g, "<code>$1</code>");
 
-	newText = newText.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>');
-
-	newText = newText.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1">');
-
 	return newText;
+}
+
+function escapeHtml(value: string): string {
+	return value
+		.replace(/&/g, "&amp;")
+		.replace(/</g, "&lt;")
+		.replace(/>/g, "&gt;")
+		.replace(/"/g, "&quot;")
+		.replace(/'/g, "&#39;");
+}
+
+function escapeAttribute(value: string): string {
+	return escapeHtml(value);
+}
+
+function isSafeMarkdownUrl(value: string): boolean {
+	const trimmed = value.trim();
+	if (!trimmed) return false;
+
+	if (trimmed.startsWith("/") || trimmed.startsWith("#")) {
+		return true;
+	}
+
+	try {
+		const url = new URL(trimmed);
+		return url.protocol === "http:" || url.protocol === "https:" || url.protocol === "mailto:";
+	} catch {
+		return false;
+	}
 }

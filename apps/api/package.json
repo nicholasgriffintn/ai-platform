@@ -11,6 +11,7 @@
 		"start": "wrangler dev src/index.ts",
 		"test": "vitest",
 		"coverage": "vitest run --coverage",
+		"ci:test": "pnpm run coverage",
 		"cf-typegen": "wrangler types",
 		"format": "oxfmt",
 		"format:check": "oxfmt --check",

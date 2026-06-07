@@ -1,4 +1,5 @@
 import { defineConfig } from "vitest/config";
+import { playwright } from '@vitest/browser-playwright'
 
 export default defineConfig({
   test: {
@@ -7,7 +8,6 @@ export default defineConfig({
       provider: "v8",
       reporter: ["text", "json", "json-summary", "lcov"],
       reportsDirectory: "./coverage",
-      all: true,
       include: ["apps/*/src/**/*.{js,ts,tsx}"],
       exclude: [
         "apps/*/src/**/*.d.ts",
@@ -16,6 +16,10 @@ export default defineConfig({
         "apps/*/src/**/test/**",
         "apps/*/node_modules/**",
       ],
+    },
+    browser: {
+      provider: playwright(),
+      instances: [{ browser: 'chromium' }]
     },
   },
 });

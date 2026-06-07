@@ -25,9 +25,9 @@ describe("Database", () => {
 
 	describe("constructor", () => {
 		it("should throw error when DB is not configured", () => {
-			// @ts-ignore - this is a test
+			// @ts-expect-error - verifies the runtime boundary for malformed Worker environments.
 			expect(() => new Database({})).toThrow(AssistantError);
-			// @ts-ignore - this is a test
+			// @ts-expect-error - verifies the runtime boundary for malformed Worker environments.
 			expect(() => new Database({})).toThrow("Database not configured");
 		});
 
@@ -67,9 +67,9 @@ describe("Database", () => {
 		});
 
 		it("should throw error if first env is invalid", () => {
-			// @ts-ignore - this is a test
+			// @ts-expect-error - verifies the runtime boundary for malformed Worker environments.
 			expect(() => Database.getInstance({})).toThrow(AssistantError);
-			// @ts-ignore - this is a test
+			// @ts-expect-error - verifies the runtime boundary for malformed Worker environments.
 			expect(() => Database.getInstance({})).toThrow("Database not configured");
 		});
 	});
@@ -81,47 +81,31 @@ describe("Database", () => {
 			database = Database.getInstance(mockEnv);
 		});
 
-		it("should have repositories getter", () => {
-			expect(database.repositories).toBeDefined();
-			expect(database.repositories).toBeInstanceOf(Object);
-		});
-
-		it("should have connection getter", () => {
+		it("should expose the configured connection and repository groups", () => {
 			expect(database.connection).toBeDefined();
 			expect(database.connection).toBe(mockEnv.DB);
-		});
-
-		it("should have complex business logic methods", () => {
-			expect(database.createUser).toBeDefined();
-			expect(database.consumeMagicLinkNonce).toBeDefined();
-			expect(database.deleteAllChatCompletions).toBeDefined();
-		});
-
-		it("should have user repository methods accessible", () => {
-			expect(database.repositories.users).toBeDefined();
-			expect(database.repositories.users.getUserById).toBeDefined();
-			expect(database.repositories.users.getUserByGithubId).toBeDefined();
-			expect(database.repositories.users.getUserBySessionId).toBeDefined();
-			expect(database.repositories.users.createUser).toBeDefined();
-			expect(database.repositories.users.updateUser).toBeDefined();
-		});
-
-		it("should have conversation repository methods accessible", () => {
-			expect(database.repositories.conversations).toBeDefined();
-			expect(database.repositories.conversations.createConversation).toBeDefined();
-			expect(database.repositories.conversations.getConversation).toBeDefined();
-			expect(database.repositories.conversations.getUserConversations).toBeDefined();
-			expect(database.repositories.conversations.updateConversation).toBeDefined();
-			expect(database.repositories.conversations.deleteConversation).toBeDefined();
-		});
-
-		it("should have message repository methods accessible", () => {
-			expect(database.repositories.messages).toBeDefined();
-			expect(database.repositories.messages.createMessage).toBeDefined();
-			expect(database.repositories.messages.getMessage).toBeDefined();
-			expect(database.repositories.messages.getConversationMessages).toBeDefined();
-			expect(database.repositories.messages.updateMessage).toBeDefined();
-			expect(database.repositories.messages.deleteMessage).toBeDefined();
+			expect(Object.keys(database.repositories).sort()).toEqual([
+				"agentRepo",
+				"anonymousUserRepo",
+				"apiKeyRepo",
+				"appDataRepo",
+				"conversationRepo",
+				"dynamicAppResponseRepo",
+				"embeddingRepo",
+				"magicLinkNonceRepo",
+				"memoryRepo",
+				"memorySynthesisRepo",
+				"messageRepo",
+				"planRepo",
+				"sessionRepo",
+				"sharedAgentRepo",
+				"storedAssetRepo",
+				"taskRepo",
+				"trainingExampleRepo",
+				"userRepo",
+				"userSettingsRepo",
+				"webAuthnRepo",
+			]);
 		});
 	});
 });

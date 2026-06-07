@@ -287,7 +287,7 @@ public struct TitleGenerationResponse: Codable {
     public let title: String
 }
 
-public struct UpdateConversationRequest: Codable {
+public struct UpdateConversationRequest: Encodable {
     let title: String?
     let messages: [ChatRequestMessage]?
     let parentConversationId: String?

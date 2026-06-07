@@ -38,10 +38,8 @@ jobs:
         run: pnpm --filter @assistant/schemas build
       - name: Run typechecks
         run: pnpm typecheck
-      - name: Run test
-        run: pnpm test
-      - name: Run coverage
-        run: pnpm coverage
+      - name: Run tests
+        run: pnpm ci:test
       - name: Coverage comment
         if: github.event_name == 'pull_request'
         uses: davelosert/vitest-coverage-report-action@v2

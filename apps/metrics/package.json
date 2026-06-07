@@ -14,7 +14,9 @@
 		"check": "pnpm lint && pnpm format:check",
 		"wrangler:dev": "pnpm run build && wrangler dev --remote",
 		"deploy": "pnpm run build && wrangler deploy --minify",
-		"test": "vitest run"
+		"test": "vitest run",
+		"coverage": "vitest run --coverage",
+		"ci:test": "pnpm run coverage"
 	},
 	"dependencies": {
 		"@radix-ui/react-label": "2.1.8",

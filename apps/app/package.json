@@ -18,7 +18,8 @@
 		"deploy": "pnpm run build && wrangler deploy --minify",
 		"sync": "npx cap sync",
 		"test": "vitest run",
-		"coverage": "vitest run --coverage"
+		"coverage": "vitest run --coverage",
+		"ci:test": "pnpm run coverage"
 	},
 	"dependencies": {
 		"@assistant/schemas": "workspace:*",
