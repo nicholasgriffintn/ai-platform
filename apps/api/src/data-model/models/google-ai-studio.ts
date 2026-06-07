@@ -853,4 +853,27 @@ export const googleAiStudioModelConfig: ModelConfig = {
 			defaultEffort: "medium",
 		},
 	},
+	"gemini-3-pro-image-preview": {
+		name: "Nano Banana Pro",
+		matchingModel: "gemini-3-pro-image-preview",
+		provider: "google-ai-studio",
+		knowledgeCutoffDate: "January 2025",
+		releaseDate: "November 20, 2025",
+		lastUpdated: "November 20, 2025",
+		modalities: {
+			input: ["text", "image"],
+			output: ["text", "image"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: false,
+		contextWindow: 131072,
+		maxTokens: 32768,
+		costPer1kInputTokens: 0.002,
+		costPer1kOutputTokens: 0.12,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
+	},
 };

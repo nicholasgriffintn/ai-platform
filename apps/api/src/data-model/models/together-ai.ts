@@ -202,7 +202,7 @@ export const togetherAiModelConfig: ModelConfig = {
 		matchingModel: "deepseek-ai/DeepSeek-R1",
 		provider: "together-ai",
 		knowledgeCutoffDate: "July 2024",
-		releaseDate: "December 26, 2024",
+		releaseDate: "January 20, 2025",
 		lastUpdated: "March 24, 2025",
 		modalities: {
 			input: ["text"],
@@ -226,7 +226,7 @@ export const togetherAiModelConfig: ModelConfig = {
 		matchingModel: "deepseek-ai/DeepSeek-V3",
 		provider: "together-ai",
 		knowledgeCutoffDate: "July 2024",
-		releaseDate: "January 20, 2025",
+		releaseDate: "December 26, 2024",
 		lastUpdated: "May 29, 2025",
 		modalities: {
 			input: ["text"],
@@ -731,6 +731,29 @@ export const togetherAiModelConfig: ModelConfig = {
 		maxTokens: 500000,
 		costPer1kInputTokens: 0.0025,
 		costPer1kOutputTokens: 0.0075,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
+	},
+	"nvidia/nemotron-3-ultra-550b-a55b": {
+		name: "Nemotron 3 Ultra 550B A55B",
+		matchingModel: "nvidia/nemotron-3-ultra-550b-a55b",
+		provider: "together-ai",
+		releaseDate: "June 4, 2026",
+		lastUpdated: "June 4, 2026",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		supportsResponseFormat: true,
+		contextWindow: 512300,
+		maxTokens: 512300,
+		costPer1kInputTokens: 0.0006,
+		costPer1kOutputTokens: 0.0036,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",

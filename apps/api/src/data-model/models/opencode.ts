@@ -922,29 +922,6 @@ export const opencodeModelConfig: ModelConfig = createModelConfigObject([
 		},
 	}),
 
-	createModelConfig("nemotron-3-super-free", PROVIDER, {
-		name: "Nemotron 3 Super Free",
-		matchingModel: "nemotron-3-super-free",
-		knowledgeCutoffDate: "February 2026",
-		releaseDate: "March 11, 2026",
-		lastUpdated: "March 11, 2026",
-		modalities: {
-			input: ["text"],
-			output: ["text"],
-		},
-		supportsAttachments: false,
-		supportsTemperature: true,
-		supportsToolCalls: true,
-		contextWindow: 204800,
-		maxTokens: 128000,
-		costPer1kInputTokens: 0,
-		costPer1kOutputTokens: 0,
-		reasoningConfig: {
-			supportedEffortLevels: ["none", "thinking"],
-			defaultEffort: "none",
-		},
-	}),
-
 	createModelConfig("qwen3.5-plus", PROVIDER, {
 		name: "Qwen3.5 Plus",
 		matchingModel: "qwen3.5-plus",
@@ -1014,21 +991,21 @@ export const opencodeModelConfig: ModelConfig = createModelConfigObject([
 		},
 	}),
 
-	createModelConfig("minimax-m3-free", PROVIDER, {
-		name: "MiniMax M3 Free",
-		matchingModel: "minimax-m3-free",
-		knowledgeCutoffDate: "January 2025",
-		releaseDate: "May 31, 2026",
-		lastUpdated: "May 31, 2026",
+	createModelConfig("nemotron-3-ultra-free", PROVIDER, {
+		name: "Nemotron 3 Ultra Free",
+		matchingModel: "nemotron-3-ultra-free",
+		knowledgeCutoffDate: "February 2026",
+		releaseDate: "June 4, 2026",
+		lastUpdated: "June 4, 2026",
 		modalities: {
-			input: ["text", "image", "video"],
+			input: ["text"],
 			output: ["text"],
 		},
 		supportsAttachments: false,
 		supportsTemperature: true,
 		supportsToolCalls: true,
-		contextWindow: 200000,
-		maxTokens: 32000,
+		contextWindow: 1000000,
+		maxTokens: 128000,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
 		reasoningConfig: {

@@ -211,8 +211,8 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		description:
 			"Capable in code generation, mathematics, and reasoning with support for dozens of languages.",
 		knowledgeCutoffDate: "May 2025",
-		releaseDate: "April 29, 2026",
-		lastUpdated: "April 29, 2026",
+		releaseDate: "August 12, 2025",
+		lastUpdated: "August 12, 2025",
 		modalities: {
 			input: ["text", "image"],
 			output: ["text"],
@@ -223,8 +223,8 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		card: "https://www.prompthub.us/models/mistral-medium",
 		contextWindow: 262144,
 		maxTokens: 262144,
-		costPer1kInputTokens: 0.0015,
-		costPer1kOutputTokens: 0.0075,
+		costPer1kInputTokens: 0.0004,
+		costPer1kOutputTokens: 0.002,
 		strengths: ["chat", "general_knowledge", "analysis", "creative", "vision"],
 		contextComplexity: 4,
 		reliability: 4,

@@ -1352,23 +1352,25 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("gpt-5.4", PROVIDER, {
 		name: "GPT 5.4",
 		matchingModel: "gpt-5.4",
-		releaseDate: "24 April 2026",
-		lastUpdated: "24 April 2026",
+		releaseDate: "March 5, 2026",
+		lastUpdated: "March 5, 2026",
 		modalities: {
 			input: ["text", "image"],
 			output: ["text"],
 		},
 		supportsAttachments: true,
-		supportsTemperature: true,
+		supportsTemperature: false,
 		supportsToolCalls: true,
 		contextWindow: 1050000,
-		maxTokens: 1050000,
-		costPer1kInputTokens: 0.002601,
-		costPer1kOutputTokens: 0.013872,
+		maxTokens: 128000,
+		costPer1kInputTokens: 0.003,
+		costPer1kOutputTokens: 0.01613,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		knowledgeCutoffDate: "August 31, 2025",
+		supportsResponseFormat: true,
 	}),
 
 	createModelConfig("qwen3.5-9b", PROVIDER, {

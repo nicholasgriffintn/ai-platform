@@ -297,8 +297,8 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("deepseek-ai/DeepSeek-R1-0528-TEE", PROVIDER, {
 		name: "DeepSeek R1 0528 TEE",
 		matchingModel: "deepseek-ai/DeepSeek-R1-0528-TEE",
-		releaseDate: "December 29, 2025",
-		lastUpdated: "April 25, 2026",
+		releaseDate: "January 20, 2025",
+		lastUpdated: "May 29, 2025",
 		modalities: {
 			input: ["text"],
 			output: ["text"],
@@ -315,6 +315,7 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		knowledgeCutoffDate: "July 2024",
 	}),
 
 	createModelConfig("deepseek-ai/DeepSeek-R1-TEE", PROVIDER, {
@@ -557,8 +558,8 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		name: "Kimi K2.5 TEE",
 		matchingModel: "moonshotai/Kimi-K2.5-TEE",
 		knowledgeCutoffDate: "October 2024",
-		releaseDate: "January 27, 2026",
-		lastUpdated: "April 25, 2026",
+		releaseDate: "January 2026",
+		lastUpdated: "January 2026",
 		modalities: {
 			input: ["text", "image", "video"],
 			output: ["text"],
@@ -873,8 +874,8 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("Qwen/Qwen3-235B-A22B-Instruct-2507-TEE", PROVIDER, {
 		name: "Qwen3 235B A22B Instruct 2507 TEE",
 		matchingModel: "Qwen/Qwen3-235B-A22B-Instruct-2507-TEE",
-		releaseDate: "December 29, 2025",
-		lastUpdated: "April 25, 2026",
+		releaseDate: "April 2025",
+		lastUpdated: "April 2025",
 		modalities: {
 			input: ["text"],
 			output: ["text"],
@@ -887,6 +888,7 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.0001,
 		costPer1kOutputTokens: 0.0006,
+		knowledgeCutoffDate: "April 2025",
 	}),
 
 	createModelConfig("Qwen/Qwen3-30B-A3B-Instruct-2507", PROVIDER, {
@@ -1337,8 +1339,8 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("zai-org/GLM-4.7-TEE", PROVIDER, {
 		name: "GLM 4.7 TEE",
 		matchingModel: "zai-org/GLM-4.7-TEE",
-		releaseDate: "December 29, 2025",
-		lastUpdated: "April 25, 2026",
+		releaseDate: "December 22, 2025",
+		lastUpdated: "December 22, 2025",
 		modalities: {
 			input: ["text"],
 			output: ["text"],
@@ -1355,12 +1357,13 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		knowledgeCutoffDate: "April 2025",
 	}),
 	createModelConfig("google/gemma-4-31B-turbo-TEE", PROVIDER, {
 		name: "gemma 4 31B turbo TEE",
 		matchingModel: "google/gemma-4-31B-turbo-TEE",
-		releaseDate: "April 25, 2026",
-		lastUpdated: "April 25, 2026",
+		releaseDate: "April 2, 2026",
+		lastUpdated: "April 2, 2026",
 		modalities: {
 			input: ["text", "image"],
 			output: ["text"],
@@ -1382,8 +1385,8 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("MiniMaxAI/MiniMax-M2.5-TEE", PROVIDER, {
 		name: "MiniMax M2.5 TEE",
 		matchingModel: "MiniMaxAI/MiniMax-M2.5-TEE",
-		releaseDate: "February 15, 2026",
-		lastUpdated: "April 25, 2026",
+		releaseDate: "February 12, 2026",
+		lastUpdated: "February 12, 2026",
 		modalities: {
 			input: ["text"],
 			output: ["text"],
@@ -1406,8 +1409,8 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		name: "Kimi K2.6 TEE",
 		matchingModel: "moonshotai/Kimi-K2.6-TEE",
 		knowledgeCutoffDate: "December 2025",
-		releaseDate: "April 20, 2026",
-		lastUpdated: "April 25, 2026",
+		releaseDate: "April 21, 2026",
+		lastUpdated: "April 21, 2026",
 		modalities: {
 			input: ["text", "image", "video"],
 			output: ["text"],
@@ -1429,8 +1432,8 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("Qwen/Qwen3-32B-TEE", PROVIDER, {
 		name: "Qwen3 32B TEE",
 		matchingModel: "Qwen/Qwen3-32B-TEE",
-		releaseDate: "April 25, 2026",
-		lastUpdated: "April 25, 2026",
+		releaseDate: "April 2025",
+		lastUpdated: "April 2025",
 		modalities: {
 			input: ["text"],
 			output: ["text"],
@@ -1447,6 +1450,7 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		knowledgeCutoffDate: "April 2025",
 	}),
 
 	createModelConfig("Qwen/Qwen3-Coder-Next-TEE", PROVIDER, {
@@ -1471,8 +1475,8 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("Qwen/Qwen3.5-397B-A17B-TEE", PROVIDER, {
 		name: "Qwen3.5 397B A17B TEE",
 		matchingModel: "Qwen/Qwen3.5-397B-A17B-TEE",
-		releaseDate: "February 18, 2026",
-		lastUpdated: "April 25, 2026",
+		releaseDate: "February 15, 2026",
+		lastUpdated: "February 15, 2026",
 		modalities: {
 			input: ["text", "image"],
 			output: ["text"],
@@ -1494,8 +1498,8 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("Qwen/Qwen3.6-27B-TEE", PROVIDER, {
 		name: "Qwen3.6 27B TEE",
 		matchingModel: "Qwen/Qwen3.6-27B-TEE",
-		releaseDate: "April 25, 2026",
-		lastUpdated: "April 25, 2026",
+		releaseDate: "April 22, 2026",
+		lastUpdated: "April 22, 2026",
 		modalities: {
 			input: ["text", "image"],
 			output: ["text"],
@@ -1558,8 +1562,8 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("XiaomiMiMo/MiMo-V2-Flash-TEE", PROVIDER, {
 		name: "MiMo V2 Flash TEE",
 		matchingModel: "XiaomiMiMo/MiMo-V2-Flash-TEE",
-		releaseDate: "April 25, 2026",
-		lastUpdated: "April 25, 2026",
+		releaseDate: "December 16, 2025",
+		lastUpdated: "February 4, 2026",
 		modalities: {
 			input: ["text"],
 			output: ["text"],
@@ -1572,13 +1576,14 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.00009,
 		costPer1kOutputTokens: 0.00029,
+		knowledgeCutoffDate: "December 1, 2024",
 	}),
 
 	createModelConfig("zai-org/GLM-5-TEE", PROVIDER, {
 		name: "GLM 5 TEE",
 		matchingModel: "zai-org/GLM-5-TEE",
-		releaseDate: "February 14, 2026",
-		lastUpdated: "April 25, 2026",
+		releaseDate: "February 11, 2026",
+		lastUpdated: "February 11, 2026",
 		modalities: {
 			input: ["text"],
 			output: ["text"],
@@ -1623,8 +1628,8 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("zai-org/GLM-5.1-TEE", PROVIDER, {
 		name: "GLM 5.1 TEE",
 		matchingModel: "zai-org/GLM-5.1-TEE",
-		releaseDate: "April 8, 2026",
-		lastUpdated: "April 25, 2026",
+		releaseDate: "March 27, 2026",
+		lastUpdated: "March 27, 2026",
 		modalities: {
 			input: ["text"],
 			output: ["text"],

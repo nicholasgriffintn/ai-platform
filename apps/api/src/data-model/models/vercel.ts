@@ -614,7 +614,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		name: "Qwen3-14B",
 		matchingModel: "alibaba/qwen-3-14b",
 		knowledgeCutoffDate: "April 2025",
-		releaseDate: "April 2025",
+		releaseDate: "April 1, 2025",
 		lastUpdated: "April 2025",
 		modalities: {
 			input: ["text"],
@@ -625,7 +625,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		supportsToolCalls: true,
 		contextWindow: 40960,
 		maxTokens: 16384,
-		costPer1kInputTokens: 0.00006,
+		costPer1kInputTokens: 0.00012,
 		costPer1kOutputTokens: 0.00024,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
@@ -637,7 +637,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		name: "Qwen3 235B A22B Instruct 2507",
 		matchingModel: "alibaba/qwen-3-235b",
 		knowledgeCutoffDate: "April 2025",
-		releaseDate: "April 2025",
+		releaseDate: "April 1, 2025",
 		lastUpdated: "April 2025",
 		modalities: {
 			input: ["text"],
@@ -646,10 +646,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		supportsAttachments: false,
 		supportsTemperature: true,
 		supportsToolCalls: true,
-		contextWindow: 40960,
+		contextWindow: 262144,
 		maxTokens: 16384,
-		costPer1kInputTokens: 0.00013,
-		costPer1kOutputTokens: 0.0006,
+		costPer1kInputTokens: 0.00022,
+		costPer1kOutputTokens: 0.00088,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
@@ -663,7 +663,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		name: "Qwen3-30B-A3B",
 		matchingModel: "alibaba/qwen-3-30b",
 		knowledgeCutoffDate: "April 2025",
-		releaseDate: "April 2025",
+		releaseDate: "April 1, 2025",
 		lastUpdated: "April 2025",
 		modalities: {
 			input: ["text"],
@@ -686,7 +686,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		name: "Qwen 3.32B",
 		matchingModel: "alibaba/qwen-3-32b",
 		knowledgeCutoffDate: "April 2025",
-		releaseDate: "April 2025",
+		releaseDate: "April 1, 2025",
 		lastUpdated: "April 2025",
 		modalities: {
 			input: ["text"],
@@ -695,10 +695,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		supportsAttachments: false,
 		supportsTemperature: true,
 		supportsToolCalls: true,
-		contextWindow: 40960,
-		maxTokens: 16384,
-		costPer1kInputTokens: 0.0001,
-		costPer1kOutputTokens: 0.0003,
+		contextWindow: 128000,
+		maxTokens: 8192,
+		costPer1kInputTokens: 0.00016,
+		costPer1kOutputTokens: 0.00064,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
@@ -709,7 +709,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		name: "Qwen3 Coder 480B A35B Instruct",
 		matchingModel: "alibaba/qwen3-coder",
 		knowledgeCutoffDate: "April 2025",
-		releaseDate: "April 2025",
+		releaseDate: "April 1, 2025",
 		lastUpdated: "April 2025",
 		modalities: {
 			input: ["text"],
@@ -719,16 +719,16 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		supportsTemperature: true,
 		supportsToolCalls: true,
 		contextWindow: 262144,
-		maxTokens: 66536,
-		costPer1kInputTokens: 0.00038,
-		costPer1kOutputTokens: 0.00153,
+		maxTokens: 65536,
+		costPer1kInputTokens: 0.0015,
+		costPer1kOutputTokens: 0.0075,
 	}),
 
 	createModelConfig("alibaba/qwen3-coder-30b-a3b", PROVIDER, {
 		name: "Qwen 3 Coder 30B A3B Instruct",
 		matchingModel: "alibaba/qwen3-coder-30b-a3b",
 		knowledgeCutoffDate: "April 2025",
-		releaseDate: "April 2025",
+		releaseDate: "April 1, 2025",
 		lastUpdated: "April 2025",
 		modalities: {
 			input: ["text"],
@@ -737,10 +737,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		supportsAttachments: false,
 		supportsTemperature: true,
 		supportsToolCalls: true,
-		contextWindow: 160000,
-		maxTokens: 32768,
-		costPer1kInputTokens: 0.00007,
-		costPer1kOutputTokens: 0.00027,
+		contextWindow: 262144,
+		maxTokens: 8192,
+		costPer1kInputTokens: 0.00015,
+		costPer1kOutputTokens: 0.0006,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
@@ -761,7 +761,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		supportsTemperature: true,
 		supportsToolCalls: true,
 		contextWindow: 1000000,
-		maxTokens: 1000000,
+		maxTokens: 65536,
 		costPer1kInputTokens: 0.001,
 		costPer1kOutputTokens: 0.005,
 	}),
@@ -776,7 +776,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			output: ["embedding"],
 		},
 		supportsAttachments: false,
-		supportsTemperature: false,
+		supportsTemperature: true,
 		supportsToolCalls: false,
 		contextWindow: 32768,
 		maxTokens: 32768,
@@ -794,7 +794,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			output: ["embedding"],
 		},
 		supportsAttachments: false,
-		supportsTemperature: false,
+		supportsTemperature: true,
 		supportsToolCalls: false,
 		contextWindow: 32768,
 		maxTokens: 32768,
@@ -812,7 +812,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			output: ["embedding"],
 		},
 		supportsAttachments: false,
-		supportsTemperature: false,
+		supportsTemperature: true,
 		supportsToolCalls: false,
 		contextWindow: 32768,
 		maxTokens: 32768,
@@ -870,26 +870,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "alibaba/qwen3-next-80b-a3b-instruct",
 		knowledgeCutoffDate: "April 2025",
 		releaseDate: "September 12, 2025",
-		lastUpdated: "September 12, 2025",
-		modalities: {
-			input: ["text"],
-			output: ["text"],
-		},
-		supportsAttachments: false,
-		supportsTemperature: true,
-		supportsToolCalls: true,
-		contextWindow: 262144,
-		maxTokens: 32768,
-		costPer1kInputTokens: 0.00009,
-		costPer1kOutputTokens: 0.0011,
-	}),
-
-	createModelConfig("alibaba/qwen3-next-80b-a3b-thinking", PROVIDER, {
-		name: "Qwen3 Next 80B A3B Thinking",
-		matchingModel: "alibaba/qwen3-next-80b-a3b-thinking",
-		knowledgeCutoffDate: "September 2025",
-		releaseDate: "September 12, 2025",
-		lastUpdated: "September 12, 2025",
+		lastUpdated: "September 2025",
 		modalities: {
 			input: ["text"],
 			output: ["text"],
@@ -898,9 +879,28 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		supportsTemperature: true,
 		supportsToolCalls: true,
 		contextWindow: 131072,
-		maxTokens: 65536,
+		maxTokens: 32768,
 		costPer1kInputTokens: 0.00015,
-		costPer1kOutputTokens: 0.0015,
+		costPer1kOutputTokens: 0.0012,
+	}),
+
+	createModelConfig("alibaba/qwen3-next-80b-a3b-thinking", PROVIDER, {
+		name: "Qwen3 Next 80B A3B Thinking",
+		matchingModel: "alibaba/qwen3-next-80b-a3b-thinking",
+		knowledgeCutoffDate: "September 2025",
+		releaseDate: "September 12, 2025",
+		lastUpdated: "September 2025",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 131072,
+		maxTokens: 32768,
+		costPer1kInputTokens: 0.00015,
+		costPer1kOutputTokens: 0.0012,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
@@ -922,8 +922,8 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		supportsToolCalls: true,
 		contextWindow: 131072,
 		maxTokens: 129024,
-		costPer1kInputTokens: 0.0007,
-		costPer1kOutputTokens: 0.0028,
+		costPer1kInputTokens: 0.0004,
+		costPer1kOutputTokens: 0.0016,
 	}),
 
 	createModelConfig("alibaba/qwen3-vl-thinking", PROVIDER, {
@@ -940,9 +940,9 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		supportsTemperature: true,
 		supportsToolCalls: true,
 		contextWindow: 131072,
-		maxTokens: 129024,
-		costPer1kInputTokens: 0.0007,
-		costPer1kOutputTokens: 0.0084,
+		maxTokens: 32768,
+		costPer1kInputTokens: 0.0004,
+		costPer1kOutputTokens: 0.004,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
@@ -975,14 +975,14 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("amazon/titan-embed-text-v2", PROVIDER, {
 		name: "Titan Text Embeddings V2",
 		matchingModel: "amazon/titan-embed-text-v2",
-		releaseDate: "April 2024",
+		releaseDate: "April 1, 2024",
 		lastUpdated: "April 2024",
 		modalities: {
 			input: ["text"],
 			output: ["embedding"],
 		},
 		supportsAttachments: false,
-		supportsTemperature: false,
+		supportsTemperature: true,
 		supportsToolCalls: false,
 		contextWindow: 8192,
 		maxTokens: 1536,
@@ -1063,7 +1063,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		name: "Claude Opus 4.5",
 		matchingModel: "anthropic/claude-opus-4.5",
 		knowledgeCutoffDate: "March 31, 2025",
-		releaseDate: "November 24, 2025",
+		releaseDate: "November 24, 2024",
 		lastUpdated: "November 24, 2025",
 		modalities: {
 			input: ["text", "image", "pdf"],
@@ -1086,8 +1086,8 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		name: "Claude Opus 4.6",
 		matchingModel: "anthropic/claude-opus-4.6",
 		knowledgeCutoffDate: "May 31, 2025",
-		releaseDate: "February 2026",
-		lastUpdated: "February 2026",
+		releaseDate: "February 5, 2026",
+		lastUpdated: "March 13, 2026",
 		modalities: {
 			input: ["text", "image", "pdf"],
 			output: ["text"],
@@ -1155,7 +1155,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		name: "Trinity Large Preview",
 		matchingModel: "arcee-ai/trinity-large-preview",
 		knowledgeCutoffDate: "October 2024",
-		releaseDate: "January 2025",
+		releaseDate: "January 1, 2025",
 		lastUpdated: "January 2025",
 		modalities: {
 			input: ["text"],
@@ -1174,7 +1174,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		name: "Trinity Mini",
 		matchingModel: "arcee-ai/trinity-mini",
 		knowledgeCutoffDate: "October 2024",
-		releaseDate: "December 2025",
+		releaseDate: "December 1, 2025",
 		lastUpdated: "December 2025",
 		modalities: {
 			input: ["text"],
@@ -1188,7 +1188,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		supportsToolCalls: false,
 		contextWindow: 131072,
 		maxTokens: 131072,
-		costPer1kInputTokens: 0.00005,
+		costPer1kInputTokens: 0.000045,
 		costPer1kOutputTokens: 0.00015,
 	}),
 
@@ -1276,7 +1276,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		name: "Seed 1.6",
 		matchingModel: "bytedance/seed-1.6",
 		knowledgeCutoffDate: "October 2024",
-		releaseDate: "September 2025",
+		releaseDate: "September 1, 2025",
 		lastUpdated: "September 2025",
 		modalities: {
 			input: ["text"],
@@ -1299,7 +1299,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		name: "Seed 1.8",
 		matchingModel: "bytedance/seed-1.8",
 		knowledgeCutoffDate: "October 2024",
-		releaseDate: "October 2025",
+		releaseDate: "September 1, 2025",
 		lastUpdated: "October 2025",
 		modalities: {
 			input: ["text", "image"],
@@ -1347,7 +1347,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			output: ["embedding"],
 		},
 		supportsAttachments: false,
-		supportsTemperature: false,
+		supportsTemperature: true,
 		supportsToolCalls: false,
 		contextWindow: 8192,
 		maxTokens: 1536,
@@ -1369,9 +1369,9 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		supportsTemperature: true,
 		supportsToolCalls: true,
 		contextWindow: 163840,
-		maxTokens: 16384,
-		costPer1kInputTokens: 0.00077,
-		costPer1kOutputTokens: 0.00077,
+		maxTokens: 163840,
+		costPer1kInputTokens: 0.00027,
+		costPer1kOutputTokens: 0.00112,
 	}),
 
 	createModelConfig("deepseek/deepseek-v3.1", PROVIDER, {
@@ -1388,9 +1388,9 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		supportsTemperature: true,
 		supportsToolCalls: true,
 		contextWindow: 163840,
-		maxTokens: 128000,
-		costPer1kInputTokens: 0.0003,
-		costPer1kOutputTokens: 0.001,
+		maxTokens: 8192,
+		costPer1kInputTokens: 0.00056,
+		costPer1kOutputTokens: 0.00168,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
@@ -1433,10 +1433,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		supportsAttachments: false,
 		supportsTemperature: true,
 		supportsToolCalls: false,
-		contextWindow: 163842,
+		contextWindow: 128000,
 		maxTokens: 8000,
-		costPer1kInputTokens: 0.00027,
-		costPer1kOutputTokens: 0.0004,
+		costPer1kInputTokens: 0.00028,
+		costPer1kOutputTokens: 0.00042,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
@@ -1498,7 +1498,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "google/gemini-2.5-flash-image",
 		knowledgeCutoffDate: "January 2025",
 		releaseDate: "March 20, 2025",
-		lastUpdated: "March 20, 2025",
+		lastUpdated: "August 26, 2025",
 		modalities: {
 			input: ["text"],
 			output: ["text", "image"],
@@ -1507,7 +1507,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		supportsTemperature: true,
 		supportsToolCalls: false,
 		contextWindow: 32768,
-		maxTokens: 32768,
+		maxTokens: 65536,
 		costPer1kInputTokens: 0.0003,
 		costPer1kOutputTokens: 0.0025,
 	}),
@@ -1552,6 +1552,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		supportsResponseFormat: true,
 	}),
 
 	createModelConfig("google/gemini-2.5-flash-lite-preview-09-2025", PROVIDER, {
@@ -1638,7 +1639,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		supportsTemperature: true,
 		supportsToolCalls: true,
 		contextWindow: 1000000,
-		maxTokens: 64000,
+		maxTokens: 65000,
 		costPer1kInputTokens: 0.0005,
 		costPer1kOutputTokens: 0.003,
 		reasoningConfig: {
@@ -1651,7 +1652,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		name: "Nano Banana Pro (Gemini 3 Pro Image)",
 		matchingModel: "google/gemini-3-pro-image",
 		knowledgeCutoffDate: "March 2025",
-		releaseDate: "September 2025",
+		releaseDate: "September 1, 2025",
 		lastUpdated: "September 2025",
 		modalities: {
 			input: ["text"],
@@ -1663,7 +1664,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		contextWindow: 65536,
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.002,
-		costPer1kOutputTokens: 0.12,
+		costPer1kOutputTokens: 0.012,
 	}),
 
 	createModelConfig("google/gemini-3-pro-preview", PROVIDER, {
@@ -1687,6 +1688,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		supportsResponseFormat: true,
 	}),
 
 	createModelConfig("google/gemini-embedding-001", PROVIDER, {
@@ -1699,12 +1701,13 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			output: ["embedding"],
 		},
 		supportsAttachments: false,
-		supportsTemperature: false,
+		supportsTemperature: true,
 		supportsToolCalls: false,
 		contextWindow: 8192,
 		maxTokens: 1536,
 		costPer1kInputTokens: 0.00015,
 		costPer1kOutputTokens: 0,
+		knowledgeCutoffDate: "May 2025",
 	}),
 
 	createModelConfig("google/imagen-4.0-fast-generate-001", PROVIDER, {
@@ -1758,14 +1761,14 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("google/text-embedding-005", PROVIDER, {
 		name: "Text Embedding 005",
 		matchingModel: "google/text-embedding-005",
-		releaseDate: "August 2024",
+		releaseDate: "August 1, 2024",
 		lastUpdated: "August 2024",
 		modalities: {
 			input: ["text"],
 			output: ["embedding"],
 		},
 		supportsAttachments: false,
-		supportsTemperature: false,
+		supportsTemperature: true,
 		supportsToolCalls: false,
 		contextWindow: 8192,
 		maxTokens: 1536,
@@ -1776,14 +1779,14 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("google/text-multilingual-embedding-002", PROVIDER, {
 		name: "Text Multilingual Embedding 002",
 		matchingModel: "google/text-multilingual-embedding-002",
-		releaseDate: "March 2024",
+		releaseDate: "March 1, 2024",
 		lastUpdated: "March 2024",
 		modalities: {
 			input: ["text"],
 			output: ["embedding"],
 		},
 		supportsAttachments: false,
-		supportsTemperature: false,
+		supportsTemperature: true,
 		supportsToolCalls: false,
 		contextWindow: 8192,
 		maxTokens: 1536,
@@ -1796,7 +1799,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "inception/mercury-coder-small",
 		knowledgeCutoffDate: "October 2024",
 		releaseDate: "February 26, 2025",
-		lastUpdated: "May 1, 2026",
+		lastUpdated: "February 26, 2025",
 		modalities: {
 			input: ["text"],
 			output: ["text"],
@@ -1829,6 +1832,8 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		costPer1kInputTokens: 0.00003,
+		costPer1kOutputTokens: 0.0012,
 	}),
 
 	createModelConfig("meituan/longcat-flash-chat", PROVIDER, {
@@ -1845,7 +1850,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		supportsTemperature: true,
 		supportsToolCalls: true,
 		contextWindow: 128000,
-		maxTokens: 8192,
+		maxTokens: 100000,
 	}),
 
 	createModelConfig("meituan/longcat-flash-thinking", PROVIDER, {
@@ -1884,10 +1889,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		supportsAttachments: false,
 		supportsTemperature: true,
 		supportsToolCalls: true,
-		contextWindow: 131072,
-		maxTokens: 16384,
-		costPer1kInputTokens: 0.0004,
-		costPer1kOutputTokens: 0.0004,
+		contextWindow: 128000,
+		maxTokens: 8192,
+		costPer1kInputTokens: 0.00072,
+		costPer1kOutputTokens: 0.00072,
 	}),
 
 	createModelConfig("meta/llama-3.1-8b", PROVIDER, {
@@ -1903,10 +1908,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		supportsAttachments: false,
 		supportsTemperature: true,
 		supportsToolCalls: true,
-		contextWindow: 131072,
-		maxTokens: 16384,
-		costPer1kInputTokens: 0.00003,
-		costPer1kOutputTokens: 0.00005,
+		contextWindow: 128000,
+		maxTokens: 8192,
+		costPer1kInputTokens: 0.00022,
+		costPer1kOutputTokens: 0.00022,
 	}),
 
 	createModelConfig("meta/llama-3.2-11b", PROVIDER, {
@@ -2055,10 +2060,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		supportsAttachments: false,
 		supportsTemperature: true,
 		supportsToolCalls: true,
-		contextWindow: 262114,
-		maxTokens: 262114,
-		costPer1kInputTokens: 0.00027,
-		costPer1kOutputTokens: 0.00115,
+		contextWindow: 205000,
+		maxTokens: 205000,
+		costPer1kInputTokens: 0.0003,
+		costPer1kOutputTokens: 0.0012,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
@@ -2070,7 +2075,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "minimax/minimax-m2.1",
 		knowledgeCutoffDate: "October 2024",
 		releaseDate: "October 27, 2025",
-		lastUpdated: "October 27, 2025",
+		lastUpdated: "December 23, 2025",
 		modalities: {
 			input: ["text"],
 			output: ["text"],
@@ -2121,7 +2126,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			output: ["embedding"],
 		},
 		supportsAttachments: false,
-		supportsTemperature: false,
+		supportsTemperature: true,
 		supportsToolCalls: false,
 		contextWindow: 8192,
 		maxTokens: 1536,
@@ -2144,6 +2149,8 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		supportsToolCalls: true,
 		contextWindow: 256000,
 		maxTokens: 256000,
+		costPer1kInputTokens: 0.0004,
+		costPer1kOutputTokens: 0.002,
 	}),
 
 	createModelConfig("mistral/devstral-small", PROVIDER, {
@@ -2180,6 +2187,8 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		supportsToolCalls: true,
 		contextWindow: 256000,
 		maxTokens: 256000,
+		costPer1kInputTokens: 0.0001,
+		costPer1kOutputTokens: 0.0003,
 	}),
 
 	createModelConfig("mistral/ministral-14b", PROVIDER, {
@@ -2211,7 +2220,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			output: ["embedding"],
 		},
 		supportsAttachments: false,
-		supportsTemperature: false,
+		supportsTemperature: true,
 		supportsToolCalls: false,
 		contextWindow: 8192,
 		maxTokens: 1536,
@@ -2270,10 +2279,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		supportsAttachments: false,
 		supportsTemperature: true,
 		supportsToolCalls: true,
-		contextWindow: 60288,
-		maxTokens: 16000,
-		costPer1kInputTokens: 0.00004,
-		costPer1kOutputTokens: 0.00017,
+		contextWindow: 131072,
+		maxTokens: 131072,
+		costPer1kInputTokens: 0.00002,
+		costPer1kOutputTokens: 0.00004,
 	}),
 
 	createModelConfig("moonshotai/kimi-k2-thinking", PROVIDER, {
@@ -2289,10 +2298,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		supportsAttachments: false,
 		supportsTemperature: true,
 		supportsToolCalls: true,
-		contextWindow: 216144,
-		maxTokens: 216144,
-		costPer1kInputTokens: 0.00047,
-		costPer1kOutputTokens: 0.002,
+		contextWindow: 262114,
+		maxTokens: 262114,
+		costPer1kInputTokens: 0.0006,
+		costPer1kOutputTokens: 0.0025,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
@@ -2314,8 +2323,8 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		supportsToolCalls: true,
 		contextWindow: 256000,
 		maxTokens: 16384,
-		costPer1kInputTokens: 0.0024,
-		costPer1kOutputTokens: 0.01,
+		costPer1kInputTokens: 0.00115,
+		costPer1kOutputTokens: 0.008,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
@@ -2330,7 +2339,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "moonshotai/kimi-k2.5",
 		knowledgeCutoffDate: "January 2025",
 		releaseDate: "January 26, 2026",
-		lastUpdated: "January 26, 2026",
+		lastUpdated: "January 2026",
 		modalities: {
 			input: ["text", "image", "video"],
 			output: ["text"],
@@ -2338,14 +2347,15 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		supportsAttachments: true,
 		supportsTemperature: true,
 		supportsToolCalls: true,
-		contextWindow: 262144,
-		maxTokens: 262144,
+		contextWindow: 262114,
+		maxTokens: 262114,
 		costPer1kInputTokens: 0.0006,
-		costPer1kOutputTokens: 0.0012,
+		costPer1kOutputTokens: 0.003,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		supportsResponseFormat: true,
 	}),
 
 	createModelConfig("morph/morph-v3-fast", PROVIDER, {
@@ -2388,8 +2398,8 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		name: "Nemotron 3 Nano 30B A3B",
 		matchingModel: "nvidia/nemotron-3-nano-30b-a3b",
 		knowledgeCutoffDate: "October 2024",
-		releaseDate: "December 2024",
-		lastUpdated: "December 2024",
+		releaseDate: "December 1, 2024",
+		lastUpdated: "December 15, 2025",
 		modalities: {
 			input: ["text"],
 			output: ["text"],
@@ -2399,7 +2409,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		supportsToolCalls: false,
 		contextWindow: 262144,
 		maxTokens: 262144,
-		costPer1kInputTokens: 0.00006,
+		costPer1kInputTokens: 0.00005,
 		costPer1kOutputTokens: 0.00024,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
@@ -2411,8 +2421,8 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		name: "Nvidia Nemotron Nano 12B V2 VL",
 		matchingModel: "nvidia/nemotron-nano-12b-v2-vl",
 		knowledgeCutoffDate: "October 2024",
-		releaseDate: "December 2024",
-		lastUpdated: "December 2024",
+		releaseDate: "December 1, 2024",
+		lastUpdated: "October 28, 2025",
 		modalities: {
 			input: ["text", "image"],
 			output: ["text"],
@@ -2445,8 +2455,8 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		supportsToolCalls: true,
 		contextWindow: 131072,
 		maxTokens: 131072,
-		costPer1kInputTokens: 0.00004,
-		costPer1kOutputTokens: 0.00016,
+		costPer1kInputTokens: 0.00006,
+		costPer1kOutputTokens: 0.00023,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
@@ -2480,8 +2490,8 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		name: "GPT-3.5 Turbo",
 		matchingModel: "openai/gpt-3.5-turbo",
 		knowledgeCutoffDate: "September 2021",
-		releaseDate: "March 1, 2023",
-		lastUpdated: "March 1, 2023",
+		releaseDate: "May 28, 2023",
+		lastUpdated: "November 6, 2023",
 		modalities: {
 			input: ["text"],
 			output: ["text"],
@@ -2493,13 +2503,14 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 4096,
 		costPer1kInputTokens: 0.0005,
 		costPer1kOutputTokens: 0.0015,
+		supportsResponseFormat: false,
 	}),
 
 	createModelConfig("openai/gpt-3.5-turbo-instruct", PROVIDER, {
 		name: "GPT-3.5 Turbo Instruct",
 		matchingModel: "openai/gpt-3.5-turbo-instruct",
 		knowledgeCutoffDate: "September 2021",
-		releaseDate: "March 1, 2023",
+		releaseDate: "September 28, 2023",
 		lastUpdated: "March 1, 2023",
 		modalities: {
 			input: ["text"],
@@ -2518,7 +2529,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		name: "GPT 4o Mini Search Preview",
 		matchingModel: "openai/gpt-4o-mini-search-preview",
 		knowledgeCutoffDate: "September 2023",
-		releaseDate: "January 2025",
+		releaseDate: "March 12, 2025",
 		lastUpdated: "January 2025",
 		modalities: {
 			input: ["text"],
@@ -2586,7 +2597,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "openai/gpt-5-pro",
 		knowledgeCutoffDate: "October 2024",
 		releaseDate: "August 7, 2025",
-		lastUpdated: "August 7, 2025",
+		lastUpdated: "October 6, 2025",
 		modalities: {
 			input: ["text", "image", "pdf"],
 			output: ["text", "image"],
@@ -2602,14 +2613,15 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		supportsResponseFormat: true,
 	}),
 
 	createModelConfig("openai/gpt-5.1-codex", PROVIDER, {
 		name: "GPT-5.1-Codex",
 		matchingModel: "openai/gpt-5.1-codex",
 		knowledgeCutoffDate: "October 2024",
-		releaseDate: "August 7, 2025",
-		lastUpdated: "August 7, 2025",
+		releaseDate: "November 12, 2025",
+		lastUpdated: "November 13, 2025",
 		modalities: {
 			input: ["text", "image", "pdf"],
 			output: ["text"],
@@ -2625,14 +2637,15 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		supportsResponseFormat: true,
 	}),
 
 	createModelConfig("openai/gpt-5.1-codex-max", PROVIDER, {
 		name: "GPT 5.1 Codex Max",
 		matchingModel: "openai/gpt-5.1-codex-max",
 		knowledgeCutoffDate: "October 2024",
-		releaseDate: "August 7, 2025",
-		lastUpdated: "August 7, 2025",
+		releaseDate: "November 19, 2025",
+		lastUpdated: "November 13, 2025",
 		modalities: {
 			input: ["text", "image", "pdf"],
 			output: ["text"],
@@ -2648,14 +2661,15 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		supportsResponseFormat: true,
 	}),
 
 	createModelConfig("openai/gpt-5.1-codex-mini", PROVIDER, {
 		name: "GPT-5.1 Codex mini",
 		matchingModel: "openai/gpt-5.1-codex-mini",
 		knowledgeCutoffDate: "October 2024",
-		releaseDate: "May 16, 2025",
-		lastUpdated: "May 16, 2025",
+		releaseDate: "November 12, 2025",
+		lastUpdated: "November 13, 2025",
 		modalities: {
 			input: ["text", "image", "pdf"],
 			output: ["text"],
@@ -2671,13 +2685,14 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		supportsResponseFormat: true,
 	}),
 
 	createModelConfig("openai/gpt-5.1-instant", PROVIDER, {
 		name: "GPT-5.1 Instant",
 		matchingModel: "openai/gpt-5.1-instant",
 		knowledgeCutoffDate: "October 2024",
-		releaseDate: "August 7, 2025",
+		releaseDate: "November 12, 2025",
 		lastUpdated: "August 7, 2025",
 		modalities: {
 			input: ["text", "image", "pdf"],
@@ -2700,14 +2715,14 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		name: "GPT 5.1 Thinking",
 		matchingModel: "openai/gpt-5.1-thinking",
 		knowledgeCutoffDate: "October 2024",
-		releaseDate: "August 7, 2025",
+		releaseDate: "November 12, 2025",
 		lastUpdated: "August 7, 2025",
 		modalities: {
 			input: ["text", "image", "pdf"],
 			output: ["text", "image"],
 		},
 		supportsAttachments: true,
-		supportsTemperature: false,
+		supportsTemperature: true,
 		supportsToolCalls: true,
 		contextWindow: 400000,
 		maxTokens: 128000,
@@ -2723,8 +2738,8 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		name: "GPT-5.2",
 		matchingModel: "openai/gpt-5.2",
 		knowledgeCutoffDate: "October 2024",
-		releaseDate: "August 7, 2025",
-		lastUpdated: "August 7, 2025",
+		releaseDate: "December 11, 2025",
+		lastUpdated: "December 11, 2025",
 		modalities: {
 			input: ["text", "image", "pdf"],
 			output: ["text"],
@@ -2740,13 +2755,14 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		supportsResponseFormat: true,
 	}),
 
 	createModelConfig("openai/gpt-5.2-chat", PROVIDER, {
 		name: "GPT-5.2 Chat",
 		matchingModel: "openai/gpt-5.2-chat",
 		knowledgeCutoffDate: "October 2024",
-		releaseDate: "August 7, 2025",
+		releaseDate: "December 11, 2025",
 		lastUpdated: "August 7, 2025",
 		modalities: {
 			input: ["text", "image", "pdf"],
@@ -2769,8 +2785,8 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		name: "GPT-5.2-Codex",
 		matchingModel: "openai/gpt-5.2-codex",
 		knowledgeCutoffDate: "October 2024",
-		releaseDate: "December 2025",
-		lastUpdated: "December 2025",
+		releaseDate: "December 18, 2025",
+		lastUpdated: "December 11, 2025",
 		modalities: {
 			input: ["text", "image", "pdf"],
 			output: ["text"],
@@ -2786,14 +2802,15 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		supportsResponseFormat: true,
 	}),
 
 	createModelConfig("openai/gpt-5.2-pro", PROVIDER, {
 		name: "GPT 5.2 ",
 		matchingModel: "openai/gpt-5.2-pro",
 		knowledgeCutoffDate: "October 2024",
-		releaseDate: "August 7, 2025",
-		lastUpdated: "August 7, 2025",
+		releaseDate: "December 11, 2025",
+		lastUpdated: "December 11, 2025",
 		modalities: {
 			input: ["text", "image", "pdf"],
 			output: ["text"],
@@ -2809,6 +2826,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		supportsResponseFormat: false,
 	}),
 
 	createModelConfig("openai/gpt-oss-120b", PROVIDER, {
@@ -2825,9 +2843,9 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		supportsTemperature: true,
 		supportsToolCalls: true,
 		contextWindow: 131072,
-		maxTokens: 131072,
-		costPer1kInputTokens: 0.0001,
-		costPer1kOutputTokens: 0.0005,
+		maxTokens: 131000,
+		costPer1kInputTokens: 0.00035,
+		costPer1kOutputTokens: 0.00075,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
@@ -2848,9 +2866,9 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		supportsTemperature: true,
 		supportsToolCalls: true,
 		contextWindow: 131072,
-		maxTokens: 32768,
-		costPer1kInputTokens: 0.00007,
-		costPer1kOutputTokens: 0.0003,
+		maxTokens: 8192,
+		costPer1kInputTokens: 0.00005,
+		costPer1kOutputTokens: 0.0002,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
@@ -2872,7 +2890,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		supportsToolCalls: true,
 		contextWindow: 131072,
 		maxTokens: 65536,
-		costPer1kInputTokens: 0.00008,
+		costPer1kInputTokens: 0.000075,
 		costPer1kOutputTokens: 0.0003,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
@@ -2891,7 +2909,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			output: ["text"],
 		},
 		supportsAttachments: true,
-		supportsTemperature: false,
+		supportsTemperature: true,
 		supportsToolCalls: true,
 		contextWindow: 200000,
 		maxTokens: 100000,
@@ -2908,13 +2926,13 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "openai/o3-pro",
 		knowledgeCutoffDate: "October 2024",
 		releaseDate: "April 16, 2025",
-		lastUpdated: "April 16, 2025",
+		lastUpdated: "June 10, 2025",
 		modalities: {
 			input: ["text", "image", "pdf"],
 			output: ["text"],
 		},
 		supportsAttachments: true,
-		supportsTemperature: false,
+		supportsTemperature: true,
 		supportsToolCalls: true,
 		contextWindow: 200000,
 		maxTokens: 100000,
@@ -2924,6 +2942,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		supportsResponseFormat: true,
 	}),
 
 	createModelConfig("openai/text-embedding-3-large", PROVIDER, {
@@ -2936,7 +2955,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			output: ["embedding"],
 		},
 		supportsAttachments: false,
-		supportsTemperature: false,
+		supportsTemperature: true,
 		supportsToolCalls: false,
 		contextWindow: 8192,
 		maxTokens: 1536,
@@ -2954,7 +2973,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			output: ["embedding"],
 		},
 		supportsAttachments: false,
-		supportsTemperature: false,
+		supportsTemperature: true,
 		supportsToolCalls: false,
 		contextWindow: 8192,
 		maxTokens: 1536,
@@ -2972,7 +2991,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			output: ["embedding"],
 		},
 		supportsAttachments: false,
-		supportsTemperature: false,
+		supportsTemperature: true,
 		supportsToolCalls: false,
 		contextWindow: 8192,
 		maxTokens: 1536,
@@ -3166,14 +3185,14 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("voyage/voyage-3-large", PROVIDER, {
 		name: "voyage-3-large",
 		matchingModel: "voyage/voyage-3-large",
-		releaseDate: "September 2024",
+		releaseDate: "September 1, 2024",
 		lastUpdated: "September 2024",
 		modalities: {
 			input: ["text"],
 			output: ["text"],
 		},
 		supportsAttachments: false,
-		supportsTemperature: false,
+		supportsTemperature: true,
 		supportsToolCalls: false,
 		contextWindow: 8192,
 		maxTokens: 1536,
@@ -3191,7 +3210,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			output: ["text"],
 		},
 		supportsAttachments: false,
-		supportsTemperature: false,
+		supportsTemperature: true,
 		supportsToolCalls: false,
 		contextWindow: 8192,
 		maxTokens: 1536,
@@ -3209,7 +3228,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			output: ["text"],
 		},
 		supportsAttachments: false,
-		supportsTemperature: false,
+		supportsTemperature: true,
 		supportsToolCalls: false,
 		contextWindow: 8192,
 		maxTokens: 1536,
@@ -3220,14 +3239,14 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("voyage/voyage-code-2", PROVIDER, {
 		name: "voyage-code-2",
 		matchingModel: "voyage/voyage-code-2",
-		releaseDate: "January 2024",
+		releaseDate: "January 1, 2024",
 		lastUpdated: "January 2024",
 		modalities: {
 			input: ["text"],
 			output: ["text"],
 		},
 		supportsAttachments: false,
-		supportsTemperature: false,
+		supportsTemperature: true,
 		supportsToolCalls: false,
 		contextWindow: 8192,
 		maxTokens: 1536,
@@ -3238,14 +3257,14 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("voyage/voyage-code-3", PROVIDER, {
 		name: "voyage-code-3",
 		matchingModel: "voyage/voyage-code-3",
-		releaseDate: "September 2024",
+		releaseDate: "September 1, 2024",
 		lastUpdated: "September 2024",
 		modalities: {
 			input: ["text"],
 			output: ["text"],
 		},
 		supportsAttachments: false,
-		supportsTemperature: false,
+		supportsTemperature: true,
 		supportsToolCalls: false,
 		contextWindow: 8192,
 		maxTokens: 1536,
@@ -3256,14 +3275,14 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("voyage/voyage-finance-2", PROVIDER, {
 		name: "voyage-finance-2",
 		matchingModel: "voyage/voyage-finance-2",
-		releaseDate: "March 2024",
+		releaseDate: "March 1, 2024",
 		lastUpdated: "March 2024",
 		modalities: {
 			input: ["text"],
 			output: ["text"],
 		},
 		supportsAttachments: false,
-		supportsTemperature: false,
+		supportsTemperature: true,
 		supportsToolCalls: false,
 		contextWindow: 8192,
 		maxTokens: 1536,
@@ -3274,14 +3293,14 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("voyage/voyage-law-2", PROVIDER, {
 		name: "voyage-law-2",
 		matchingModel: "voyage/voyage-law-2",
-		releaseDate: "March 2024",
+		releaseDate: "March 1, 2024",
 		lastUpdated: "March 2024",
 		modalities: {
 			input: ["text"],
 			output: ["text"],
 		},
 		supportsAttachments: false,
-		supportsTemperature: false,
+		supportsTemperature: true,
 		supportsToolCalls: false,
 		contextWindow: 8192,
 		maxTokens: 1536,
@@ -3461,8 +3480,8 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		supportsAttachments: false,
 		supportsTemperature: true,
 		supportsToolCalls: true,
-		contextWindow: 2000000,
-		maxTokens: 30000,
+		contextWindow: 1000000,
+		maxTokens: 1000000,
 		costPer1kInputTokens: 0.0002,
 		costPer1kOutputTokens: 0.0005,
 	}),
@@ -3480,8 +3499,8 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		supportsAttachments: false,
 		supportsTemperature: true,
 		supportsToolCalls: true,
-		contextWindow: 2000000,
-		maxTokens: 30000,
+		contextWindow: 1000000,
+		maxTokens: 1000000,
 		costPer1kInputTokens: 0.0002,
 		costPer1kOutputTokens: 0.0005,
 		reasoningConfig: {
@@ -3514,7 +3533,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "xiaomi/mimo-v2-flash",
 		knowledgeCutoffDate: "October 2024",
 		releaseDate: "December 17, 2025",
-		lastUpdated: "December 17, 2025",
+		lastUpdated: "February 4, 2026",
 		modalities: {
 			input: ["text"],
 			output: ["text"],
@@ -3525,7 +3544,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		contextWindow: 262144,
 		maxTokens: 32000,
 		costPer1kInputTokens: 0.0001,
-		costPer1kOutputTokens: 0.00029,
+		costPer1kOutputTokens: 0.0003,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
@@ -3545,8 +3564,8 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		supportsAttachments: false,
 		supportsTemperature: true,
 		supportsToolCalls: true,
-		contextWindow: 131072,
-		maxTokens: 131072,
+		contextWindow: 128000,
+		maxTokens: 96000,
 		costPer1kInputTokens: 0.0006,
 		costPer1kOutputTokens: 0.0022,
 		reasoningConfig: {
@@ -3592,7 +3611,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		supportsTemperature: true,
 		supportsToolCalls: true,
 		contextWindow: 66000,
-		maxTokens: 66000,
+		maxTokens: 16000,
 		costPer1kInputTokens: 0.0006,
 		costPer1kOutputTokens: 0.0018,
 		reasoningConfig: {
@@ -3616,8 +3635,8 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		supportsToolCalls: true,
 		contextWindow: 200000,
 		maxTokens: 96000,
-		costPer1kInputTokens: 0.00045,
-		costPer1kOutputTokens: 0.0018,
+		costPer1kInputTokens: 0.0006,
+		costPer1kOutputTokens: 0.0022,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
@@ -3629,7 +3648,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "zai/glm-4.6v",
 		knowledgeCutoffDate: "October 2024",
 		releaseDate: "September 30, 2025",
-		lastUpdated: "September 30, 2025",
+		lastUpdated: "December 8, 2025",
 		modalities: {
 			input: ["text", "image", "pdf"],
 			output: ["text"],
@@ -3681,10 +3700,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		supportsAttachments: false,
 		supportsTemperature: true,
 		supportsToolCalls: true,
-		contextWindow: 202752,
-		maxTokens: 120000,
-		costPer1kInputTokens: 0.00043,
-		costPer1kOutputTokens: 0.00175,
+		contextWindow: 131000,
+		maxTokens: 40000,
+		costPer1kInputTokens: 0.00225,
+		costPer1kOutputTokens: 0.00275,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
@@ -3695,8 +3714,8 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		name: "GLM 4.7 FlashX",
 		matchingModel: "zai/glm-4.7-flashx",
 		knowledgeCutoffDate: "January 2025",
-		releaseDate: "January 2025",
-		lastUpdated: "January 2025",
+		releaseDate: "January 1, 2025",
+		lastUpdated: "January 19, 2026",
 		modalities: {
 			input: ["text"],
 			output: ["text"],
@@ -3801,7 +3820,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		name: "Qwen 3.5 Plus",
 		matchingModel: "alibaba/qwen3.5-plus",
 		releaseDate: "February 16, 2026",
-		lastUpdated: "February 19, 2026",
+		lastUpdated: "February 16, 2026",
 		modalities: {
 			input: ["text", "image", "pdf"],
 			output: ["text"],
@@ -3817,13 +3836,14 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		knowledgeCutoffDate: "April 2025",
 	}),
 
 	createModelConfig("alibaba/qwen3.6-27b", PROVIDER, {
 		name: "Qwen 3.6 27B",
 		matchingModel: "alibaba/qwen3.6-27b",
 		releaseDate: "April 22, 2026",
-		lastUpdated: "May 1, 2026",
+		lastUpdated: "April 22, 2026",
 		modalities: {
 			input: ["text", "image", "pdf"],
 			output: ["text"],
@@ -3839,13 +3859,14 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		supportsResponseFormat: true,
 	}),
 
 	createModelConfig("alibaba/qwen3.6-plus", PROVIDER, {
 		name: "Qwen 3.6 Plus",
 		matchingModel: "alibaba/qwen3.6-plus",
 		releaseDate: "April 2, 2026",
-		lastUpdated: "April 3, 2026",
+		lastUpdated: "April 2, 2026",
 		modalities: {
 			input: ["text", "image", "pdf"],
 			output: ["text"],
@@ -3861,6 +3882,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		knowledgeCutoffDate: "April 2025",
 	}),
 
 	createModelConfig("anthropic/claude-opus-4.7", PROVIDER, {
@@ -3873,7 +3895,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			output: ["text"],
 		},
 		supportsAttachments: true,
-		supportsTemperature: false,
+		supportsTemperature: true,
 		supportsToolCalls: true,
 		contextWindow: 1000000,
 		maxTokens: 128000,
@@ -3883,6 +3905,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		knowledgeCutoffDate: "January 31, 2026",
 	}),
 
 	createModelConfig("anthropic/claude-sonnet-4.6", PROVIDER, {
@@ -3890,7 +3913,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "anthropic/claude-sonnet-4.6",
 		knowledgeCutoffDate: "August 31, 2025",
 		releaseDate: "February 17, 2026",
-		lastUpdated: "February 17, 2026",
+		lastUpdated: "March 13, 2026",
 		modalities: {
 			input: ["text", "image", "pdf"],
 			output: ["text"],
@@ -3950,6 +3973,8 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		knowledgeCutoffDate: "May 2025",
+		supportsResponseFormat: true,
 	}),
 
 	createModelConfig("deepseek/deepseek-v4-pro", PROVIDER, {
@@ -3966,19 +3991,21 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		supportsToolCalls: true,
 		contextWindow: 1000000,
 		maxTokens: 384000,
-		costPer1kInputTokens: 0.00174,
-		costPer1kOutputTokens: 0.00348,
+		costPer1kInputTokens: 0.000435,
+		costPer1kOutputTokens: 0.00087,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		knowledgeCutoffDate: "May 2025",
+		supportsResponseFormat: true,
 	}),
 
 	createModelConfig("google/gemini-3.1-flash-image-preview", PROVIDER, {
 		name: "Gemini 3.1 Flash Image Preview (Nano Banana 2)",
 		matchingModel: "google/gemini-3.1-flash-image-preview",
 		releaseDate: "February 26, 2026",
-		lastUpdated: "March 6, 2026",
+		lastUpdated: "February 26, 2026",
 		modalities: {
 			input: ["text", "image"],
 			output: ["text", "image"],
@@ -3994,13 +4021,14 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		knowledgeCutoffDate: "January 2025",
 	}),
 
 	createModelConfig("google/gemini-3.1-flash-lite", PROVIDER, {
 		name: "Gemini 3.1 Flash Lite",
 		matchingModel: "google/gemini-3.1-flash-lite",
 		releaseDate: "May 7, 2026",
-		lastUpdated: "May 8, 2026",
+		lastUpdated: "May 7, 2026",
 		modalities: {
 			input: ["text", "image", "pdf"],
 			output: ["text"],
@@ -4016,13 +4044,15 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		knowledgeCutoffDate: "January 2025",
+		supportsResponseFormat: true,
 	}),
 
 	createModelConfig("google/gemini-3.1-flash-lite-preview", PROVIDER, {
 		name: "Gemini 3.1 Flash Lite Preview",
 		matchingModel: "google/gemini-3.1-flash-lite-preview",
 		releaseDate: "March 3, 2026",
-		lastUpdated: "March 6, 2026",
+		lastUpdated: "March 3, 2026",
 		modalities: {
 			input: ["text", "image", "pdf"],
 			output: ["text"],
@@ -4038,13 +4068,15 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		knowledgeCutoffDate: "January 2025",
+		supportsResponseFormat: true,
 	}),
 
 	createModelConfig("google/gemini-3.1-pro-preview", PROVIDER, {
 		name: "Gemini 3.1 Pro Preview",
 		matchingModel: "google/gemini-3.1-pro-preview",
-		releaseDate: "February 19, 2026",
-		lastUpdated: "February 24, 2026",
+		releaseDate: "November 18, 2025",
+		lastUpdated: "February 19, 2026",
 		modalities: {
 			input: ["text", "image", "pdf"],
 			output: ["text"],
@@ -4060,6 +4092,8 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		knowledgeCutoffDate: "January 2025",
+		supportsResponseFormat: true,
 	}),
 
 	createModelConfig("google/gemini-embedding-2", PROVIDER, {
@@ -4082,7 +4116,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		name: "Gemma 4 26B A4B IT",
 		matchingModel: "google/gemma-4-26b-a4b-it",
 		releaseDate: "April 2, 2026",
-		lastUpdated: "April 3, 2026",
+		lastUpdated: "April 2, 2026",
 		modalities: {
 			input: ["text", "image", "pdf"],
 			output: ["text"],
@@ -4092,19 +4126,20 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		supportsToolCalls: true,
 		contextWindow: 262144,
 		maxTokens: 131072,
-		costPer1kInputTokens: 0.00013,
-		costPer1kOutputTokens: 0.0004,
+		costPer1kInputTokens: 0.00015,
+		costPer1kOutputTokens: 0.0006,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		supportsResponseFormat: true,
 	}),
 
 	createModelConfig("google/gemma-4-31b-it", PROVIDER, {
 		name: "Gemma 4 31B IT",
 		matchingModel: "google/gemma-4-31b-it",
 		releaseDate: "April 2, 2026",
-		lastUpdated: "April 3, 2026",
+		lastUpdated: "April 2, 2026",
 		modalities: {
 			input: ["text", "image", "pdf"],
 			output: ["text"],
@@ -4120,6 +4155,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		supportsResponseFormat: true,
 	}),
 
 	createModelConfig("inception/mercury-2", PROVIDER, {
@@ -4214,7 +4250,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		name: "MiniMax M2.5",
 		matchingModel: "minimax/minimax-m2.5",
 		releaseDate: "February 12, 2026",
-		lastUpdated: "February 19, 2026",
+		lastUpdated: "February 12, 2026",
 		modalities: {
 			input: ["text"],
 			output: ["text"],
@@ -4236,7 +4272,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		name: "MiniMax M2.5 High Speed",
 		matchingModel: "minimax/minimax-m2.5-highspeed",
 		releaseDate: "February 12, 2026",
-		lastUpdated: "March 13, 2026",
+		lastUpdated: "February 13, 2026",
 		modalities: {
 			input: ["text"],
 			output: ["text"],
@@ -4244,8 +4280,8 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		supportsAttachments: false,
 		supportsTemperature: true,
 		supportsToolCalls: true,
-		contextWindow: 0,
-		maxTokens: 0,
+		contextWindow: 204800,
+		maxTokens: 131000,
 		costPer1kInputTokens: 0.0006,
 		costPer1kOutputTokens: 0.0024,
 		reasoningConfig: {
@@ -4302,7 +4338,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		name: "Kimi K2.6",
 		matchingModel: "moonshotai/kimi-k2.6",
 		releaseDate: "April 20, 2026",
-		lastUpdated: "April 24, 2026",
+		lastUpdated: "April 21, 2026",
 		modalities: {
 			input: ["text", "image", "pdf"],
 			output: ["text"],
@@ -4318,13 +4354,15 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		knowledgeCutoffDate: "January 2025",
+		supportsResponseFormat: true,
 	}),
 
 	createModelConfig("nvidia/nemotron-3-super-120b-a12b", PROVIDER, {
 		name: "NVIDIA Nemotron 3 Super 120B A12B",
 		matchingModel: "nvidia/nemotron-3-super-120b-a12b",
 		releaseDate: "March 18, 2026",
-		lastUpdated: "March 30, 2026",
+		lastUpdated: "March 11, 2026",
 		modalities: {
 			input: ["text"],
 			output: ["text"],
@@ -4364,7 +4402,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		name: "GPT 5.3 Codex",
 		matchingModel: "openai/gpt-5.3-codex",
 		releaseDate: "February 24, 2026",
-		lastUpdated: "February 24, 2026",
+		lastUpdated: "February 5, 2026",
 		modalities: {
 			input: ["text", "image", "pdf"],
 			output: ["text"],
@@ -4380,13 +4418,15 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		knowledgeCutoffDate: "August 31, 2025",
+		supportsResponseFormat: true,
 	}),
 
 	createModelConfig("openai/gpt-5.4", PROVIDER, {
 		name: "GPT 5.4",
 		matchingModel: "openai/gpt-5.4",
 		releaseDate: "March 5, 2026",
-		lastUpdated: "March 6, 2026",
+		lastUpdated: "March 5, 2026",
 		modalities: {
 			input: ["text", "image", "pdf"],
 			output: ["text"],
@@ -4402,6 +4442,8 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		knowledgeCutoffDate: "August 31, 2025",
+		supportsResponseFormat: true,
 	}),
 
 	createModelConfig("openai/gpt-5.4-mini", PROVIDER, {
@@ -4424,6 +4466,8 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		knowledgeCutoffDate: "August 31, 2025",
+		supportsResponseFormat: true,
 	}),
 
 	createModelConfig("openai/gpt-5.4-nano", PROVIDER, {
@@ -4446,13 +4490,15 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		knowledgeCutoffDate: "August 31, 2025",
+		supportsResponseFormat: true,
 	}),
 
 	createModelConfig("openai/gpt-5.4-pro", PROVIDER, {
 		name: "GPT 5.4 Pro",
 		matchingModel: "openai/gpt-5.4-pro",
 		releaseDate: "March 5, 2026",
-		lastUpdated: "March 6, 2026",
+		lastUpdated: "March 5, 2026",
 		modalities: {
 			input: ["text", "image", "pdf"],
 			output: ["text"],
@@ -4468,13 +4514,15 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		knowledgeCutoffDate: "August 31, 2025",
+		supportsResponseFormat: false,
 	}),
 
 	createModelConfig("openai/gpt-5.5", PROVIDER, {
 		name: "GPT 5.5",
 		matchingModel: "openai/gpt-5.5",
 		releaseDate: "April 24, 2026",
-		lastUpdated: "April 24, 2026",
+		lastUpdated: "April 23, 2026",
 		modalities: {
 			input: ["text", "image", "pdf"],
 			output: ["text"],
@@ -4490,13 +4538,15 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		knowledgeCutoffDate: "December 1, 2025",
+		supportsResponseFormat: true,
 	}),
 
 	createModelConfig("openai/gpt-5.5-pro", PROVIDER, {
 		name: "GPT 5.5 Pro",
 		matchingModel: "openai/gpt-5.5-pro",
 		releaseDate: "April 24, 2026",
-		lastUpdated: "April 24, 2026",
+		lastUpdated: "April 23, 2026",
 		modalities: {
 			input: ["text", "image", "pdf"],
 			output: ["text"],
@@ -4512,6 +4562,8 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		knowledgeCutoffDate: "December 1, 2025",
+		supportsResponseFormat: true,
 	}),
 
 	createModelConfig("voyage/voyage-4", PROVIDER, {
@@ -4576,8 +4628,8 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		supportsToolCalls: true,
 		contextWindow: 2000000,
 		maxTokens: 2000000,
-		costPer1kInputTokens: 0.002,
-		costPer1kOutputTokens: 0.006,
+		costPer1kInputTokens: 0.00125,
+		costPer1kOutputTokens: 0.0025,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
@@ -4598,8 +4650,8 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		supportsToolCalls: true,
 		contextWindow: 2000000,
 		maxTokens: 2000000,
-		costPer1kInputTokens: 0.002,
-		costPer1kOutputTokens: 0.006,
+		costPer1kInputTokens: 0.00125,
+		costPer1kOutputTokens: 0.0025,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
@@ -4620,8 +4672,8 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		supportsToolCalls: true,
 		contextWindow: 2000000,
 		maxTokens: 2000000,
-		costPer1kInputTokens: 0.002,
-		costPer1kOutputTokens: 0.006,
+		costPer1kInputTokens: 0.00125,
+		costPer1kOutputTokens: 0.0025,
 	}),
 
 	createModelConfig("xai/grok-4.20-non-reasoning-beta", PROVIDER, {
@@ -4638,8 +4690,8 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		supportsToolCalls: true,
 		contextWindow: 2000000,
 		maxTokens: 2000000,
-		costPer1kInputTokens: 0.002,
-		costPer1kOutputTokens: 0.006,
+		costPer1kInputTokens: 0.00125,
+		costPer1kOutputTokens: 0.0025,
 	}),
 
 	createModelConfig("xai/grok-4.20-reasoning", PROVIDER, {
@@ -4656,8 +4708,8 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		supportsToolCalls: true,
 		contextWindow: 2000000,
 		maxTokens: 2000000,
-		costPer1kInputTokens: 0.002,
-		costPer1kOutputTokens: 0.006,
+		costPer1kInputTokens: 0.00125,
+		costPer1kOutputTokens: 0.0025,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
@@ -4678,8 +4730,8 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		supportsToolCalls: true,
 		contextWindow: 2000000,
 		maxTokens: 2000000,
-		costPer1kInputTokens: 0.002,
-		costPer1kOutputTokens: 0.006,
+		costPer1kInputTokens: 0.00125,
+		costPer1kOutputTokens: 0.0025,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
@@ -4690,7 +4742,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		name: "Grok 4.3",
 		matchingModel: "xai/grok-4.3",
 		releaseDate: "April 30, 2026",
-		lastUpdated: "May 1, 2026",
+		lastUpdated: "April 17, 2026",
 		modalities: {
 			input: ["text", "image", "pdf"],
 			output: ["text"],
@@ -4744,7 +4796,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		name: "MiMo V2 Pro",
 		matchingModel: "xiaomi/mimo-v2-pro",
 		releaseDate: "March 18, 2026",
-		lastUpdated: "March 20, 2026",
+		lastUpdated: "March 18, 2026",
 		modalities: {
 			input: ["text"],
 			output: ["text"],
@@ -4760,13 +4812,14 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		knowledgeCutoffDate: "December 2024",
 	}),
 
 	createModelConfig("xiaomi/mimo-v2.5", PROVIDER, {
 		name: "MiMo M2.5",
 		matchingModel: "xiaomi/mimo-v2.5",
 		releaseDate: "April 22, 2026",
-		lastUpdated: "May 1, 2026",
+		lastUpdated: "April 22, 2026",
 		modalities: {
 			input: ["text", "image", "audio", "video"],
 			output: ["text"],
@@ -4776,19 +4829,20 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		supportsToolCalls: true,
 		contextWindow: 1050000,
 		maxTokens: 131100,
-		costPer1kInputTokens: 0.0004,
-		costPer1kOutputTokens: 0.002,
+		costPer1kInputTokens: 0.00014,
+		costPer1kOutputTokens: 0.00028,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		knowledgeCutoffDate: "December 2024",
 	}),
 
 	createModelConfig("xiaomi/mimo-v2.5-pro", PROVIDER, {
 		name: "MiMo V2.5 Pro",
 		matchingModel: "xiaomi/mimo-v2.5-pro",
 		releaseDate: "April 22, 2026",
-		lastUpdated: "May 1, 2026",
+		lastUpdated: "April 22, 2026",
 		modalities: {
 			input: ["text"],
 			output: ["text"],
@@ -4798,19 +4852,20 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		supportsToolCalls: true,
 		contextWindow: 1050000,
 		maxTokens: 131000,
-		costPer1kInputTokens: 0.001,
-		costPer1kOutputTokens: 0.003,
+		costPer1kInputTokens: 0.000435,
+		costPer1kOutputTokens: 0.00087,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		knowledgeCutoffDate: "December 2024",
 	}),
 
 	createModelConfig("zai/glm-4.7-flash", PROVIDER, {
 		name: "GLM 4.7 Flash",
 		matchingModel: "zai/glm-4.7-flash",
 		releaseDate: "March 13, 2026",
-		lastUpdated: "March 13, 2026",
+		lastUpdated: "January 19, 2026",
 		modalities: {
 			input: ["text"],
 			output: ["text"],
@@ -4826,13 +4881,14 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		knowledgeCutoffDate: "April 2025",
 	}),
 
 	createModelConfig("zai/glm-5", PROVIDER, {
 		name: "GLM-5",
 		matchingModel: "zai/glm-5",
 		releaseDate: "February 12, 2026",
-		lastUpdated: "February 19, 2026",
+		lastUpdated: "February 11, 2026",
 		modalities: {
 			input: ["text"],
 			output: ["text"],
@@ -4841,7 +4897,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		supportsTemperature: true,
 		supportsToolCalls: true,
 		contextWindow: 202800,
-		maxTokens: 131072,
+		maxTokens: 131100,
 		costPer1kInputTokens: 0.001,
 		costPer1kOutputTokens: 0.0032,
 		reasoningConfig: {
@@ -4854,7 +4910,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		name: "GLM 5 Turbo",
 		matchingModel: "zai/glm-5-turbo",
 		releaseDate: "March 15, 2026",
-		lastUpdated: "March 17, 2026",
+		lastUpdated: "March 16, 2026",
 		modalities: {
 			input: ["text"],
 			output: ["text"],
@@ -4870,13 +4926,14 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		supportsResponseFormat: true,
 	}),
 
 	createModelConfig("zai/glm-5.1", PROVIDER, {
 		name: "GLM 5.1",
 		matchingModel: "zai/glm-5.1",
 		releaseDate: "April 7, 2026",
-		lastUpdated: "April 16, 2026",
+		lastUpdated: "March 27, 2026",
 		modalities: {
 			input: ["text", "image", "pdf"],
 			output: ["text"],
@@ -4884,21 +4941,22 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		supportsAttachments: true,
 		supportsTemperature: true,
 		supportsToolCalls: true,
-		contextWindow: 202752,
-		maxTokens: 202752,
+		contextWindow: 202800,
+		maxTokens: 64000,
 		costPer1kInputTokens: 0.0014,
 		costPer1kOutputTokens: 0.0044,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		supportsResponseFormat: true,
 	}),
 
 	createModelConfig("zai/glm-5v-turbo", PROVIDER, {
 		name: "GLM 5V Turbo",
 		matchingModel: "zai/glm-5v-turbo",
 		releaseDate: "April 1, 2026",
-		lastUpdated: "April 3, 2026",
+		lastUpdated: "April 1, 2026",
 		modalities: {
 			input: ["text", "image", "pdf"],
 			output: ["text"],
@@ -4929,8 +4987,8 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		supportsToolCalls: true,
 		contextWindow: 991000,
 		maxTokens: 64000,
-		costPer1kInputTokens: 0.0025,
-		costPer1kOutputTokens: 0.0075,
+		costPer1kInputTokens: 0.00125,
+		costPer1kOutputTokens: 0.00375,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
@@ -4941,7 +4999,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		name: "Gemini 3.5 Flash",
 		matchingModel: "google/gemini-3.5-flash",
 		releaseDate: "May 19, 2026",
-		lastUpdated: "May 21, 2026",
+		lastUpdated: "May 19, 2026",
 		modalities: {
 			input: ["text", "image", "pdf"],
 			output: ["text"],
@@ -4957,6 +5015,8 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		knowledgeCutoffDate: "January 2025",
+		supportsResponseFormat: true,
 	}),
 
 	createModelConfig("mistral/mistral-medium-3.5", PROVIDER, {
@@ -4985,7 +5045,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		name: "Grok Build 0.1",
 		matchingModel: "xai/grok-build-0.1",
 		releaseDate: "May 20, 2026",
-		lastUpdated: "May 21, 2026",
+		lastUpdated: "April 16, 2026",
 		modalities: {
 			input: ["text", "image"],
 			output: ["text"],
@@ -5001,6 +5061,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		supportsResponseFormat: true,
 	}),
 	createModelConfig("anthropic/claude-opus-4.8", PROVIDER, {
 		name: "Claude Opus 4.8",
@@ -5018,6 +5079,139 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.005,
 		costPer1kOutputTokens: 0.025,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
+	}),
+	createModelConfig("alibaba/qwen3.7-plus", PROVIDER, {
+		name: "Qwen 3.7 Plus",
+		matchingModel: "alibaba/qwen3.7-plus",
+		knowledgeCutoffDate: "April 2025",
+		releaseDate: "June 1, 2026",
+		lastUpdated: "June 2, 2026",
+		modalities: {
+			input: ["text", "image", "pdf"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 1000000,
+		maxTokens: 64000,
+		costPer1kInputTokens: 0.0004,
+		costPer1kOutputTokens: 0.0016,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
+	}),
+
+	createModelConfig("google/gemini-3.1-flash-image", PROVIDER, {
+		name: "Gemini 3.1 Flash Image (Nano Banana 2)",
+		matchingModel: "google/gemini-3.1-flash-image",
+		releaseDate: "May 28, 2026",
+		lastUpdated: "May 28, 2026",
+		modalities: {
+			input: ["text", "image"],
+			output: ["text", "image"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: false,
+		contextWindow: 131072,
+		maxTokens: 32768,
+		costPer1kInputTokens: 0.0005,
+		costPer1kOutputTokens: 0.003,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
+	}),
+
+	createModelConfig("minimax/minimax-m3", PROVIDER, {
+		name: "MiniMax M3",
+		matchingModel: "minimax/minimax-m3",
+		releaseDate: "May 31, 2026",
+		lastUpdated: "June 1, 2026",
+		modalities: {
+			input: ["text", "image", "pdf"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 1000000,
+		maxTokens: 1000000,
+		costPer1kInputTokens: 0.0003,
+		costPer1kOutputTokens: 0.0012,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
+	}),
+
+	createModelConfig("nvidia/nemotron-3-ultra-550b-a55b", PROVIDER, {
+		name: "Nemotron 3 Ultra",
+		matchingModel: "nvidia/nemotron-3-ultra-550b-a55b",
+		releaseDate: "June 4, 2026",
+		lastUpdated: "June 4, 2026",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 1000000,
+		maxTokens: 65000,
+		costPer1kInputTokens: 0.0006,
+		costPer1kOutputTokens: 0.0024,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
+	}),
+
+	createModelConfig("stepfun/step-3.5-flash", PROVIDER, {
+		name: "StepFun 3.5 Flash",
+		matchingModel: "stepfun/step-3.5-flash",
+		knowledgeCutoffDate: "January 2025",
+		releaseDate: "January 29, 2026",
+		lastUpdated: "February 13, 2026",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 262114,
+		maxTokens: 262114,
+		costPer1kInputTokens: 0.00009,
+		costPer1kOutputTokens: 0.0003,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
+	}),
+
+	createModelConfig("stepfun/step-3.7-flash", PROVIDER, {
+		name: "Step 3.7 Flash",
+		matchingModel: "stepfun/step-3.7-flash",
+		releaseDate: "May 28, 2026",
+		lastUpdated: "May 28, 2026",
+		modalities: {
+			input: ["text", "image"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 256000,
+		maxTokens: 256000,
+		costPer1kInputTokens: 0.0002,
+		costPer1kOutputTokens: 0.00115,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",

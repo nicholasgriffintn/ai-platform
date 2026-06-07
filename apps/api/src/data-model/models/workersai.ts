@@ -110,8 +110,8 @@ export const workersAiModelConfig: ModelConfig = {
 		maxTokens: 256000,
 		isFeatured: true,
 		knowledgeCutoffDate: "January 2025",
-		releaseDate: "April 20, 2026",
-		lastUpdated: "April 20, 2026",
+		releaseDate: "April 21, 2026",
+		lastUpdated: "April 21, 2026",
 		costPer1kInputTokens: 0.00095,
 		costPer1kOutputTokens: 0.004,
 		reasoningConfig: {
@@ -143,6 +143,7 @@ export const workersAiModelConfig: ModelConfig = {
 		maxTokens: 24000,
 		costPer1kInputTokens: 0.000293,
 		costPer1kOutputTokens: 0.002253,
+		knowledgeCutoffDate: "December 2023",
 	},
 	"llama-3.2-1b-instruct": {
 		name: "Llama 3.2 1B Instruct",
@@ -226,8 +227,8 @@ export const workersAiModelConfig: ModelConfig = {
 			input: ["text", "image"],
 			output: ["text"],
 		},
-		releaseDate: "April 16, 2025",
-		lastUpdated: "April 16, 2025",
+		releaseDate: "April 5, 2025",
+		lastUpdated: "April 5, 2025",
 		supportsAttachments: true,
 		supportsTemperature: true,
 		contextWindow: 131000,
@@ -235,6 +236,7 @@ export const workersAiModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0.00027,
 		costPer1kOutputTokens: 0.00085,
 		supportsResponseFormat: false,
+		knowledgeCutoffDate: "August 2024",
 	},
 	"hermes-2-pro-mistral-7b": {
 		name: "Hermes 2 Pro Mistral 7B",
@@ -565,8 +567,8 @@ export const workersAiModelConfig: ModelConfig = {
 			input: ["text", "image"],
 			output: ["text"],
 		},
-		releaseDate: "December 15, 2025",
-		lastUpdated: "December 15, 2025",
+		releaseDate: "April 2, 2026",
+		lastUpdated: "April 2, 2026",
 		supportsAttachments: true,
 		supportsTemperature: true,
 		supportsToolCalls: true,
@@ -861,8 +863,8 @@ export const workersAiModelConfig: ModelConfig = {
 		name: "DeepSeek R1 Distill Qwen 32B",
 		matchingModel: "@cf/deepseek-ai/deepseek-r1-distill-qwen-32b",
 		provider: "workers-ai",
-		releaseDate: "January 22, 2025",
-		lastUpdated: "January 22, 2025",
+		releaseDate: "January 20, 2025",
+		lastUpdated: "May 29, 2025",
 		modalities: {
 			input: ["text"],
 			output: ["text"],
@@ -879,6 +881,7 @@ export const workersAiModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		knowledgeCutoffDate: "July 2024",
 	},
 
 	"@cf/facebook/bart-large-cnn": {
