@@ -448,6 +448,33 @@ describe("messaging credentials", () => {
 		});
 	});
 
+	it("selects AWS End User Messaging for configured first-party QR media", () => {
+		expect(
+			selectConfiguredMessagingDelivery(
+				[
+					{
+						id: "aws-row",
+						provider_id: "aws-sms",
+						type: "messaging",
+						enabled: true,
+						hasApiKey: true,
+						configurationValues: {
+							mediaBucket: "polychat-mms-media",
+						},
+					},
+				],
+				{
+					mediaUrls: ["https://api.polychat.test/qr?size=300x300&format=png&data=polychat"],
+					apiBaseUrl: "https://api.polychat.test",
+				},
+			),
+		).toEqual({
+			id: "aws-row",
+			providerId: "aws-sms",
+			mediaUrls: ["https://api.polychat.test/qr?size=300x300&format=png&data=polychat"],
+		});
+	});
+
 	it("does not select AWS End User Messaging for unsupported HTTPS media", () => {
 		expect(
 			selectConfiguredMessagingProviderSettings(

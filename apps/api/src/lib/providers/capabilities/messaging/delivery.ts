@@ -1,6 +1,7 @@
 import type { IEnv, IUser } from "~/types";
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { getAssetIdFromUrl } from "~/lib/storage/asset-urls";
+import { parseFirstPartyQrPngUrl } from "~/utils/qr";
 import { getBooleanRecordValue, getStringRecordValue, isRecord } from "~/utils/objects";
 import { providerLibrary } from "../../library";
 import { isMessagingProviderId } from "./metadata";
@@ -73,7 +74,14 @@ function normaliseMessagingMediaUrlsForProvider(
 		(url) =>
 			url.startsWith("https://") && typeof getAssetIdFromUrl(url, options.apiBaseUrl) === "string",
 	);
-	return firstPartyMediaUrl ? [firstPartyMediaUrl] : null;
+	if (firstPartyMediaUrl) {
+		return [firstPartyMediaUrl];
+	}
+
+	const firstPartyQrMediaUrl = urls.find((url) =>
+		Boolean(parseFirstPartyQrPngUrl(url, options.apiBaseUrl)),
+	);
+	return firstPartyQrMediaUrl ? [firstPartyQrMediaUrl] : null;
 }
 
 export function selectConfiguredMessagingDelivery(

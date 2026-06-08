@@ -383,6 +383,206 @@ describe("recipe connector tools", () => {
 		});
 	});
 
+	it("allows Netlify read operations inside a Netlify recipe scope", async () => {
+		const result = await use_recipe_connector.execute(
+			{
+				provider: "netlify",
+				operation: "list_deploys",
+				params: {
+					siteId: "polychat.netlify.app",
+				},
+			},
+			createToolContext({
+				allowedConnectorProviders: ["netlify"],
+				allowedConnectorOperations: {
+					netlify: ["list_sites", "list_deploys", "get_deploy"],
+				},
+			}),
+		);
+
+		expect(mocks.executeRecipeConnectorOperation).toHaveBeenCalledWith({
+			context: {},
+			userId: 42,
+			request: {
+				provider: "netlify",
+				operation: "list_deploys",
+				params: {
+					siteId: "polychat.netlify.app",
+				},
+			},
+		});
+		expect(result).toEqual({
+			status: "success",
+			name: "use_recipe_connector",
+			content: "Connector operation completed",
+			data: { ok: true },
+		});
+	});
+
+	it("allows Cloudflare read operations inside a Cloudflare recipe scope", async () => {
+		const result = await use_recipe_connector.execute(
+			{
+				provider: "cloudflare",
+				operation: "list_worker_deployments",
+				params: {
+					accountId: "account_123",
+					scriptName: "assistant-api",
+				},
+			},
+			createToolContext({
+				allowedConnectorProviders: ["cloudflare"],
+				allowedConnectorOperations: {
+					cloudflare: [
+						"list_accounts",
+						"list_zones",
+						"list_workers",
+						"list_worker_deployments",
+						"get_worker_deployment",
+					],
+				},
+			}),
+		);
+
+		expect(mocks.executeRecipeConnectorOperation).toHaveBeenCalledWith({
+			context: {},
+			userId: 42,
+			request: {
+				provider: "cloudflare",
+				operation: "list_worker_deployments",
+				params: {
+					accountId: "account_123",
+					scriptName: "assistant-api",
+				},
+			},
+		});
+		expect(result).toEqual({
+			status: "success",
+			name: "use_recipe_connector",
+			content: "Connector operation completed",
+			data: { ok: true },
+		});
+	});
+
+	it("allows Supabase read operations inside a Supabase recipe scope", async () => {
+		const result = await use_recipe_connector.execute(
+			{
+				provider: "supabase",
+				operation: "list_functions",
+				params: {
+					projectRef: "abcdefghijklmnopqrst",
+				},
+			},
+			createToolContext({
+				allowedConnectorProviders: ["supabase"],
+				allowedConnectorOperations: {
+					supabase: ["list_organizations", "list_projects", "list_functions", "list_branches"],
+				},
+			}),
+		);
+
+		expect(mocks.executeRecipeConnectorOperation).toHaveBeenCalledWith({
+			context: {},
+			userId: 42,
+			request: {
+				provider: "supabase",
+				operation: "list_functions",
+				params: {
+					projectRef: "abcdefghijklmnopqrst",
+				},
+			},
+		});
+		expect(result).toEqual({
+			status: "success",
+			name: "use_recipe_connector",
+			content: "Connector operation completed",
+			data: { ok: true },
+		});
+	});
+
+	it("allows Webflow read operations inside a Webflow recipe scope", async () => {
+		const result = await use_recipe_connector.execute(
+			{
+				provider: "webflow",
+				operation: "list_items",
+				params: {
+					collectionId: "collection_123",
+					limit: 25,
+				},
+			},
+			createToolContext({
+				allowedConnectorProviders: ["webflow"],
+				allowedConnectorOperations: {
+					webflow: ["list_sites", "list_collections", "list_items"],
+				},
+			}),
+		);
+
+		expect(mocks.executeRecipeConnectorOperation).toHaveBeenCalledWith({
+			context: {},
+			userId: 42,
+			request: {
+				provider: "webflow",
+				operation: "list_items",
+				params: {
+					collectionId: "collection_123",
+					limit: 25,
+				},
+			},
+		});
+		expect(result).toEqual({
+			status: "success",
+			name: "use_recipe_connector",
+			content: "Connector operation completed",
+			data: { ok: true },
+		});
+	});
+
+	it("allows Devin session creation inside a Devin recipe scope", async () => {
+		const result = await use_recipe_connector.execute(
+			{
+				provider: "devin",
+				operation: "create_session",
+				params: {
+					organizationId: "org-abc123def456",
+					prompt: "Review the repository and report implementation risks.",
+					repos: ["nicholasgriffin/assistant"],
+				},
+			},
+			createToolContext({
+				allowedConnectorProviders: ["devin"],
+				allowedConnectorOperations: {
+					devin: [
+						"list_sessions",
+						"get_session",
+						"create_session",
+						"list_messages",
+						"send_message",
+					],
+				},
+			}),
+		);
+
+		expect(mocks.executeRecipeConnectorOperation).toHaveBeenCalledWith({
+			context: {},
+			userId: 42,
+			request: {
+				provider: "devin",
+				operation: "create_session",
+				params: {
+					organizationId: "org-abc123def456",
+					prompt: "Review the repository and report implementation risks.",
+					repos: ["nicholasgriffin/assistant"],
+				},
+			},
+		});
+		expect(result).toEqual({
+			status: "success",
+			name: "use_recipe_connector",
+			content: "Connector operation completed",
+			data: { ok: true },
+		});
+	});
+
 	it("allows Fitbit read operations inside a Fitbit recipe scope", async () => {
 		const result = await use_recipe_connector.execute(
 			{
@@ -591,6 +791,7 @@ describe("recipe connector tools", () => {
 	});
 
 	it("returns recipe media in natural language recipe tool results", async () => {
+		const qrImageUrl = "https://api.polychat.test/qr?size=300x300&format=png&data=polychat";
 		const invocation = {
 			recipeId: "quick-qr-generator",
 			status: "ready",
@@ -618,10 +819,9 @@ describe("recipe connector tools", () => {
 						message: {
 							role: "tool",
 							name: "create_qr_code",
-							content: "QR code image URL created.",
+							content: "QR code image created.",
 							data: {
-								imageUrl:
-									"https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=https%3A%2F%2Fpolychat.app",
+								imageUrl: qrImageUrl,
 							},
 						},
 						finish_reason: "tool_result",
@@ -643,13 +843,9 @@ describe("recipe connector tools", () => {
 				executionConversationId: "recipe-conversation",
 				notification: {
 					body: "QR code ready.",
-					mediaUrls: [
-						"https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=https%3A%2F%2Fpolychat.app",
-					],
+					mediaUrls: [qrImageUrl],
 				},
-				mediaUrls: [
-					"https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=https%3A%2F%2Fpolychat.app",
-				],
+				mediaUrls: [qrImageUrl],
 			},
 		});
 	});

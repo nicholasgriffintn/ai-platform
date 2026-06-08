@@ -35,6 +35,23 @@ import { trigger_recipe } from "~/services/functions/recipe_connectors";
 const connectedConnectors: RecipeConnectorsResponse = {
 	connectors: [
 		{
+			id: "cloudflare",
+			name: "Cloudflare",
+			description: "Cloudflare",
+			authType: "api_key",
+			status: "connected",
+			setupUrl: "/profile?tab=providers&type=connector&connector=cloudflare",
+			credentialLabel: "API token",
+			scopes: ["Account:read", "Zone:read", "Workers Scripts:read"],
+			operations: [
+				"list_accounts",
+				"list_zones",
+				"list_workers",
+				"list_worker_deployments",
+				"get_worker_deployment",
+			],
+		},
+		{
 			id: "github",
 			name: "GitHub",
 			description: "GitHub App",
@@ -43,6 +60,23 @@ const connectedConnectors: RecipeConnectorsResponse = {
 			setupUrl: "/profile?tab=sandbox",
 			scopes: ["GitHub App installation"],
 			operations: [],
+		},
+		{
+			id: "devin",
+			name: "Devin",
+			description: "Devin",
+			authType: "api_key",
+			status: "connected",
+			setupUrl: "/profile?tab=providers&type=connector&connector=devin",
+			credentialLabel: "Service user API key",
+			scopes: ["sessions:read", "sessions:write"],
+			operations: [
+				"list_sessions",
+				"get_session",
+				"create_session",
+				"list_messages",
+				"send_message",
+			],
 		},
 		{
 			id: "linear",
@@ -145,6 +179,39 @@ const connectedConnectors: RecipeConnectorsResponse = {
 			setupUrl: "/profile?tab=providers&type=connector&connector=withings",
 			scopes: ["user.info", "user.metrics", "user.activity"],
 			operations: ["profile", "devices", "measurements", "activity", "sleep_summary"],
+		},
+		{
+			id: "netlify",
+			name: "Netlify",
+			description: "Netlify",
+			authType: "api_key",
+			status: "connected",
+			setupUrl: "/profile?tab=providers&type=connector&connector=netlify",
+			credentialLabel: "Personal access token",
+			scopes: ["sites:read", "deploys:read"],
+			operations: ["list_sites", "list_deploys", "get_deploy"],
+		},
+		{
+			id: "supabase",
+			name: "Supabase",
+			description: "Supabase",
+			authType: "api_key",
+			status: "connected",
+			setupUrl: "/profile?tab=providers&type=connector&connector=supabase",
+			credentialLabel: "Management API access token",
+			scopes: ["organizations:read", "projects:read", "edge_functions:read", "environment:read"],
+			operations: ["list_organizations", "list_projects", "list_functions", "list_branches"],
+		},
+		{
+			id: "webflow",
+			name: "Webflow",
+			description: "Webflow",
+			authType: "api_key",
+			status: "connected",
+			setupUrl: "/profile?tab=providers&type=connector&connector=webflow",
+			credentialLabel: "Data API token",
+			scopes: ["sites:read", "cms:read"],
+			operations: ["list_sites", "list_collections", "list_items"],
 		},
 		{
 			id: "vercel",
@@ -396,6 +463,66 @@ describe("assistant recipes", () => {
 				}),
 			],
 		});
+		expect(recipesById.get("cloudflare")).toMatchObject({
+			title: "Cloudflare",
+			kind: "integrate",
+			category: "Developer",
+			enabledTools: ["use_recipe_connector"],
+			integrations: [
+				expect.objectContaining({
+					providerId: "cloudflare",
+					connectionStatus: "connected",
+				}),
+			],
+		});
+		expect(recipesById.get("devin")).toMatchObject({
+			title: "Devin",
+			kind: "integrate",
+			category: "Developer",
+			enabledTools: ["use_recipe_connector"],
+			integrations: [
+				expect.objectContaining({
+					providerId: "devin",
+					connectionStatus: "connected",
+				}),
+			],
+		});
+		expect(recipesById.get("netlify")).toMatchObject({
+			title: "Netlify",
+			kind: "integrate",
+			category: "Developer",
+			enabledTools: ["use_recipe_connector"],
+			integrations: [
+				expect.objectContaining({
+					providerId: "netlify",
+					connectionStatus: "connected",
+				}),
+			],
+		});
+		expect(recipesById.get("supabase")).toMatchObject({
+			title: "Supabase",
+			kind: "integrate",
+			category: "Developer",
+			enabledTools: ["use_recipe_connector"],
+			integrations: [
+				expect.objectContaining({
+					providerId: "supabase",
+					connectionStatus: "connected",
+				}),
+			],
+		});
+		expect(recipesById.get("webflow")).toMatchObject({
+			title: "Webflow",
+			kind: "integrate",
+			category: "Developer",
+			enabledTools: ["use_recipe_connector"],
+			integrations: [
+				expect.objectContaining({
+					providerId: "webflow",
+					connectionStatus: "connected",
+				}),
+			],
+		});
 		expect(recipesById.get("fitbit")).toMatchObject({
 			title: "Fitbit",
 			kind: "integrate",
@@ -438,10 +565,10 @@ describe("assistant recipes", () => {
 		const context = createTestServiceContext();
 
 		const response = await listAssistantRecipes({ context, userId: 42 });
-		const recipe = response.recipes.find((item) => item.id === "palo-alto-weather-comparison");
+		const recipe = response.recipes.find((item) => item.id === "london-weather-comparison");
 
 		expect(recipe).toMatchObject({
-			title: "Palo Alto Weather Comparison",
+			title: "London Weather Comparison",
 			kind: "automate",
 			category: "Community",
 			enabledTools: ["get_weather"],
@@ -793,6 +920,227 @@ describe("assistant recipes", () => {
 		expect(invocation?.conversationStarter).toContain("- projectId: prj_123");
 		expect(invocation?.conversationStarter).toContain("- defaultTarget: production");
 		expect(invocation?.conversationStarter).toContain("- defaultBranch: main");
+	});
+
+	it("derives Netlify read-only connector operations for the Netlify integration recipe", async () => {
+		const context = createTestServiceContext();
+		await installAssistantRecipe("netlify", {
+			context,
+			userId: 42,
+			channel: "web",
+			configuration: {
+				siteId: "polychat.netlify.app",
+				defaultBranch: "main",
+				defaultDeployFocus: "Failed production deploys",
+			},
+		});
+
+		const invocation = await invokeAssistantRecipe("netlify", {
+			context,
+			userId: 42,
+			channel: "tool",
+			requireInstalled: true,
+		});
+
+		expect(invocation).toMatchObject({
+			recipeId: "netlify",
+			status: "ready",
+			allowedConnectorProviders: ["netlify"],
+			allowedConnectorOperations: {
+				netlify: ["list_sites", "list_deploys", "get_deploy"],
+			},
+			enabledTools: ["use_recipe_connector"],
+			configuration: {
+				siteId: "polychat.netlify.app",
+				defaultBranch: "main",
+				defaultDeployFocus: "Failed production deploys",
+			},
+		});
+		expect(invocation?.conversationStarter).toContain("- siteId: polychat.netlify.app");
+		expect(invocation?.conversationStarter).toContain("- defaultBranch: main");
+		expect(invocation?.conversationStarter).toContain(
+			"- defaultDeployFocus: Failed production deploys",
+		);
+	});
+
+	it("derives Devin connector operations for the Devin integration recipe", async () => {
+		const context = createTestServiceContext();
+		await installAssistantRecipe("devin", {
+			context,
+			userId: 42,
+			channel: "web",
+			configuration: {
+				organizationId: "org-abc123def456",
+				defaultRepos: ["nicholasgriffin/assistant"],
+				defaultTags: ["polychat", "recipe"],
+				playbookId: "playbook-123",
+				maxAcuLimit: 3,
+			},
+		});
+
+		const invocation = await invokeAssistantRecipe("devin", {
+			context,
+			userId: 42,
+			channel: "tool",
+			requireInstalled: true,
+		});
+
+		expect(invocation).toMatchObject({
+			recipeId: "devin",
+			status: "ready",
+			allowedConnectorProviders: ["devin"],
+			allowedConnectorOperations: {
+				devin: ["list_sessions", "get_session", "create_session", "list_messages", "send_message"],
+			},
+			enabledTools: ["use_recipe_connector"],
+			configuration: {
+				organizationId: "org-abc123def456",
+				defaultRepos: ["nicholasgriffin/assistant"],
+				defaultTags: ["polychat", "recipe"],
+				playbookId: "playbook-123",
+				maxAcuLimit: 3,
+			},
+		});
+		expect(invocation?.conversationStarter).toContain("- organizationId: org-abc123def456");
+		expect(invocation?.conversationStarter).toContain("- defaultRepos:");
+		expect(invocation?.conversationStarter).toContain("nicholasgriffin/assistant");
+		expect(invocation?.conversationStarter).toContain("- defaultTags:");
+		expect(invocation?.conversationStarter).toContain("polychat");
+		expect(invocation?.conversationStarter).toContain("- playbookId: playbook-123");
+		expect(invocation?.conversationStarter).toContain("- maxAcuLimit: 3");
+	});
+
+	it("derives Cloudflare read-only connector operations for the Cloudflare integration recipe", async () => {
+		const context = createTestServiceContext();
+		await installAssistantRecipe("cloudflare", {
+			context,
+			userId: 42,
+			channel: "web",
+			configuration: {
+				accountId: "account_123",
+				zoneName: "polychat.app",
+				scriptName: "assistant-api",
+			},
+		});
+
+		const invocation = await invokeAssistantRecipe("cloudflare", {
+			context,
+			userId: 42,
+			channel: "tool",
+			requireInstalled: true,
+		});
+
+		expect(invocation).toMatchObject({
+			recipeId: "cloudflare",
+			status: "ready",
+			allowedConnectorProviders: ["cloudflare"],
+			allowedConnectorOperations: {
+				cloudflare: [
+					"list_accounts",
+					"list_zones",
+					"list_workers",
+					"list_worker_deployments",
+					"get_worker_deployment",
+				],
+			},
+			enabledTools: ["use_recipe_connector"],
+			configuration: {
+				accountId: "account_123",
+				zoneName: "polychat.app",
+				scriptName: "assistant-api",
+			},
+		});
+		expect(invocation?.conversationStarter).toContain("- accountId: account_123");
+		expect(invocation?.conversationStarter).toContain("- zoneName: polychat.app");
+		expect(invocation?.conversationStarter).toContain("- scriptName: assistant-api");
+	});
+
+	it("derives Supabase read-only connector operations for the Supabase integration recipe", async () => {
+		const context = createTestServiceContext();
+		await installAssistantRecipe("supabase", {
+			context,
+			userId: 42,
+			channel: "web",
+			configuration: {
+				organizationSlug: "acme",
+				projectRef: "abcdefghijklmnopqrst",
+				defaultBranch: "main",
+				defaultFunctionFocus: "Recently updated Edge Functions",
+			},
+		});
+
+		const invocation = await invokeAssistantRecipe("supabase", {
+			context,
+			userId: 42,
+			channel: "tool",
+			requireInstalled: true,
+		});
+
+		expect(invocation).toMatchObject({
+			recipeId: "supabase",
+			status: "ready",
+			allowedConnectorProviders: ["supabase"],
+			allowedConnectorOperations: {
+				supabase: ["list_organizations", "list_projects", "list_functions", "list_branches"],
+			},
+			enabledTools: ["use_recipe_connector"],
+			configuration: {
+				organizationSlug: "acme",
+				projectRef: "abcdefghijklmnopqrst",
+				defaultBranch: "main",
+				defaultFunctionFocus: "Recently updated Edge Functions",
+			},
+		});
+		expect(invocation?.conversationStarter).toContain("- organizationSlug: acme");
+		expect(invocation?.conversationStarter).toContain("- projectRef: abcdefghijklmnopqrst");
+		expect(invocation?.conversationStarter).toContain("- defaultBranch: main");
+		expect(invocation?.conversationStarter).toContain(
+			"- defaultFunctionFocus: Recently updated Edge Functions",
+		);
+	});
+
+	it("derives Webflow read-only connector operations for the Webflow integration recipe", async () => {
+		const context = createTestServiceContext();
+		await installAssistantRecipe("webflow", {
+			context,
+			userId: 42,
+			channel: "web",
+			configuration: {
+				siteId: "site_123",
+				collectionId: "collection_123",
+				cmsLocaleId: "locale_123",
+				defaultContentFocus: "Recently updated CMS items",
+			},
+		});
+
+		const invocation = await invokeAssistantRecipe("webflow", {
+			context,
+			userId: 42,
+			channel: "tool",
+			requireInstalled: true,
+		});
+
+		expect(invocation).toMatchObject({
+			recipeId: "webflow",
+			status: "ready",
+			allowedConnectorProviders: ["webflow"],
+			allowedConnectorOperations: {
+				webflow: ["list_sites", "list_collections", "list_items"],
+			},
+			enabledTools: ["use_recipe_connector"],
+			configuration: {
+				siteId: "site_123",
+				collectionId: "collection_123",
+				cmsLocaleId: "locale_123",
+				defaultContentFocus: "Recently updated CMS items",
+			},
+		});
+		expect(invocation?.conversationStarter).toContain("- siteId: site_123");
+		expect(invocation?.conversationStarter).toContain("- collectionId: collection_123");
+		expect(invocation?.conversationStarter).toContain("- cmsLocaleId: locale_123");
+		expect(invocation?.conversationStarter).toContain(
+			"- defaultContentFocus: Recently updated CMS items",
+		);
 	});
 
 	it("derives Fitbit read-only connector operations for the Fitbit integration recipe", async () => {

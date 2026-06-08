@@ -981,6 +981,8 @@ export const recipeConnectionStatusSchema = z.enum([
 
 export const recipeConnectorProviderSchema = z.enum([
 	"asana",
+	"cloudflare",
+	"devin",
 	"fitbit",
 	"gmail",
 	"outlook",
@@ -991,9 +993,12 @@ export const recipeConnectorProviderSchema = z.enum([
 	"notion",
 	"oura",
 	"posthog",
+	"ramp",
 	"sentry",
+	"supabase",
 	"todoist",
 	"vercel",
+	"webflow",
 	"withings",
 ]);
 

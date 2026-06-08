@@ -148,6 +148,11 @@ describe("recipe connectors", () => {
 
 		const posthog = response.connectors.find((connector) => connector.id === "posthog");
 		const vercel = response.connectors.find((connector) => connector.id === "vercel");
+		const netlify = response.connectors.find((connector) => connector.id === "netlify");
+		const cloudflare = response.connectors.find((connector) => connector.id === "cloudflare");
+		const devin = response.connectors.find((connector) => connector.id === "devin");
+		const supabase = response.connectors.find((connector) => connector.id === "supabase");
+		const webflow = response.connectors.find((connector) => connector.id === "webflow");
 
 		expect(posthog).toMatchObject({
 			status: "disconnected",
@@ -164,6 +169,58 @@ describe("recipe connectors", () => {
 			credentialLabel: "Access token",
 			scopes: ["projects:read", "deployments:read"],
 			operations: ["list_projects", "list_deployments", "get_deployment_events"],
+		});
+		expect(netlify).toMatchObject({
+			status: "disconnected",
+			authType: "api_key",
+			authorizationUrl: undefined,
+			credentialLabel: "Personal access token",
+			scopes: ["sites:read", "deploys:read"],
+			operations: ["list_sites", "list_deploys", "get_deploy"],
+		});
+		expect(cloudflare).toMatchObject({
+			status: "disconnected",
+			authType: "api_key",
+			authorizationUrl: undefined,
+			credentialLabel: "API token",
+			scopes: ["Account:read", "Zone:read", "Workers Scripts:read"],
+			operations: [
+				"list_accounts",
+				"list_zones",
+				"list_workers",
+				"list_worker_deployments",
+				"get_worker_deployment",
+			],
+		});
+		expect(devin).toMatchObject({
+			status: "disconnected",
+			authType: "api_key",
+			authorizationUrl: undefined,
+			credentialLabel: "Service user API key",
+			scopes: ["sessions:read", "sessions:write"],
+			operations: [
+				"list_sessions",
+				"get_session",
+				"create_session",
+				"list_messages",
+				"send_message",
+			],
+		});
+		expect(supabase).toMatchObject({
+			status: "disconnected",
+			authType: "api_key",
+			authorizationUrl: undefined,
+			credentialLabel: "Management API access token",
+			scopes: ["organizations:read", "projects:read", "edge_functions:read", "environment:read"],
+			operations: ["list_organizations", "list_projects", "list_functions", "list_branches"],
+		});
+		expect(webflow).toMatchObject({
+			status: "disconnected",
+			authType: "api_key",
+			authorizationUrl: undefined,
+			credentialLabel: "Data API token",
+			scopes: ["sites:read", "cms:read"],
+			operations: ["list_sites", "list_collections", "list_items"],
 		});
 	});
 

@@ -50,6 +50,42 @@ export const RECIPE_CONNECTOR_ITEM_TYPE = "oauth_connection";
 
 export const connectorProviders = [
 	{
+		id: "cloudflare",
+		name: "Cloudflare",
+		description: "Inspect Cloudflare accounts, zones, Workers, and deployments.",
+		setupUrl: "/profile?tab=providers&type=connector&connector=cloudflare",
+		operations: [
+			{ id: "list_accounts", access: "read" },
+			{ id: "list_zones", access: "read" },
+			{ id: "list_workers", access: "read" },
+			{ id: "list_worker_deployments", access: "read" },
+			{ id: "get_worker_deployment", access: "read" },
+		],
+		auth: {
+			authType: "api_key",
+			credentialLabel: "API token",
+			scopes: ["Account:read", "Zone:read", "Workers Scripts:read"],
+		},
+	},
+	{
+		id: "devin",
+		name: "Devin",
+		description: "Start Devin sessions, check progress, and send follow-up messages.",
+		setupUrl: "/profile?tab=providers&type=connector&connector=devin",
+		operations: [
+			{ id: "list_sessions", access: "read" },
+			{ id: "get_session", access: "read" },
+			{ id: "create_session", access: "write" },
+			{ id: "list_messages", access: "read" },
+			{ id: "send_message", access: "write" },
+		],
+		auth: {
+			authType: "api_key",
+			credentialLabel: "Service user API key",
+			scopes: ["sessions:read", "sessions:write"],
+		},
+	},
+	{
 		id: "gmail",
 		name: "Gmail",
 		description: "Search messages and create reviewed drafts in Gmail.",
@@ -181,6 +217,22 @@ export const connectorProviders = [
 		},
 	},
 	{
+		id: "webflow",
+		name: "Webflow",
+		description: "Inspect Webflow sites, CMS collections, and CMS items.",
+		setupUrl: "/profile?tab=providers&type=connector&connector=webflow",
+		operations: [
+			{ id: "list_sites", access: "read" },
+			{ id: "list_collections", access: "read" },
+			{ id: "list_items", access: "read" },
+		],
+		auth: {
+			authType: "api_key",
+			credentialLabel: "Data API token",
+			scopes: ["sites:read", "cms:read"],
+		},
+	},
+	{
 		id: "withings",
 		name: "Withings",
 		description: "Read Withings profile, device, body metric, activity, and sleep data.",
@@ -281,6 +333,46 @@ export const connectorProviders = [
 			authType: "api_key",
 			credentialLabel: "Personal API key",
 			scopes: ["project:read", "query:read"],
+		},
+	},
+	{
+		id: "ramp",
+		name: "Ramp",
+		description: "Review Ramp transactions, reimbursements, and bills.",
+		setupUrl: "/profile?tab=providers&type=connector&connector=ramp",
+		operations: [
+			{ id: "list_transactions", access: "read" },
+			{ id: "get_transaction", access: "read" },
+			{ id: "list_reimbursements", access: "read" },
+			{ id: "get_reimbursement", access: "read" },
+			{ id: "list_bills", access: "read" },
+			{ id: "get_bill", access: "read" },
+		],
+		auth: {
+			authType: "oauth2",
+			clientIdEnv: "RAMP_OAUTH_CLIENT_ID",
+			clientSecretEnv: "RAMP_OAUTH_CLIENT_SECRET",
+			authorizationEndpoint: "https://api.ramp.com/v1/authorize",
+			tokenEndpoint: "https://api.ramp.com/developer/v1/token",
+			scopes: ["transactions:read", "reimbursements:read", "bills:read"],
+			scopeSeparator: " ",
+		},
+	},
+	{
+		id: "supabase",
+		name: "Supabase",
+		description: "Inspect Supabase organizations, projects, Edge Functions, and branches.",
+		setupUrl: "/profile?tab=providers&type=connector&connector=supabase",
+		operations: [
+			{ id: "list_organizations", access: "read" },
+			{ id: "list_projects", access: "read" },
+			{ id: "list_functions", access: "read" },
+			{ id: "list_branches", access: "read" },
+		],
+		auth: {
+			authType: "api_key",
+			credentialLabel: "Management API access token",
+			scopes: ["organizations:read", "projects:read", "edge_functions:read", "environment:read"],
 		},
 	},
 	{

@@ -209,6 +209,56 @@ describe("AwsSmsProvider", () => {
 		});
 	});
 
+	it("regenerates first-party QR media into S3 before sending AWS MMS", async () => {
+		const serviceContext = {
+			env: {
+				API_BASE_URL: "https://api.polychat.test",
+			},
+			user: { id: 42 },
+			requireUser: () => ({ id: 42 }),
+		} as unknown as ServiceContext;
+		const provider = new AwsSmsProvider(
+			{
+				accessKeyId: "AKIA123",
+				secretAccessKey: "secret",
+				region: "eu-west-2",
+				originationIdentity: "pool-1",
+				mediaBucket: "polychat-mms-media",
+				mediaKeyPrefix: "generated",
+			},
+			serviceContext,
+		);
+
+		await provider.send({
+			to: "+15551234567",
+			body: "QR attached",
+			mediaUrls: ["https://api.polychat.test/qr?size=120x120&format=png&data=polychat"],
+		});
+
+		expect(mocks.awsClient).toHaveBeenNthCalledWith(1, {
+			accessKeyId: "AKIA123",
+			secretAccessKey: "secret",
+			region: "eu-west-2",
+			service: "s3",
+		});
+		expect(mocks.awsFetch.mock.calls[0][0]).toMatch(
+			/^https:\/\/polychat-mms-media\.s3\.eu-west-2\.amazonaws\.com\/generated\/42\/.+\.png$/,
+		);
+		expect(mocks.awsFetch.mock.calls[0][1]).toMatchObject({
+			method: "PUT",
+			headers: { "Content-Type": "image/png" },
+			body: expect.any(ArrayBuffer),
+		});
+
+		const sendMediaBody = JSON.parse(mocks.awsFetch.mock.calls[1][1].body);
+		expect(sendMediaBody).toMatchObject({
+			DestinationPhoneNumber: "+15551234567",
+			MediaUrls: [expect.stringMatching(/^s3:\/\/polychat-mms-media\/generated\/42\/.+\.png$/)],
+			MessageBody: "QR attached",
+			OriginationIdentity: "pool-1",
+		});
+	});
+
 	it("requires AWS MMS media to be a single S3 URL", async () => {
 		const provider = new AwsSmsProvider({
 			accessKeyId: "AKIA123",

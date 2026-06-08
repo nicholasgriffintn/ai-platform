@@ -194,6 +194,7 @@ describe("messages", () => {
 		});
 
 		it("extracts notification media from tool result choices", () => {
+			const qrImageUrl = "https://api.polychat.test/qr?size=300x300&format=png&data=polychat";
 			const response = createCompletion({
 				role: "assistant",
 				content: "QR code ready.",
@@ -202,10 +203,9 @@ describe("messages", () => {
 				index: 1,
 				message: {
 					role: "tool",
-					content: "QR code image URL created.",
+					content: "QR code image created.",
 					data: {
-						imageUrl:
-							"https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=https%3A%2F%2Fpolychat.app",
+						imageUrl: qrImageUrl,
 					},
 				},
 				finish_reason: "tool_result",
@@ -213,9 +213,7 @@ describe("messages", () => {
 
 			expect(extractChatCompletionNotification(response)).toEqual({
 				body: "QR code ready.",
-				mediaUrls: [
-					"https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=https%3A%2F%2Fpolychat.app",
-				],
+				mediaUrls: [qrImageUrl],
 			});
 		});
 

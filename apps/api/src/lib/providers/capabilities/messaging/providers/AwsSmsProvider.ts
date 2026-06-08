@@ -11,6 +11,7 @@ import { generateId } from "~/utils/id";
 import { safeParseJson } from "~/utils/json";
 import { getExtensionFromMimeType } from "~/utils/mime";
 import { getStringRecordValue } from "~/utils/objects";
+import { createQrPng, parseFirstPartyQrPngUrl } from "~/utils/qr";
 import type {
 	AwsSmsCredentials,
 	IncomingMessage,
@@ -377,6 +378,29 @@ export class AwsSmsProvider implements MessagingProvider {
 		return `${prefix}/${userId}/${Date.now()}-${generateId()}.${extension}`;
 	}
 
+	private async uploadMmsMedia(params: { body: ArrayBuffer; mimeType: string }): Promise<string> {
+		if (!this.credentials.mediaBucket) {
+			throw new AssistantError(
+				"AWS End User Messaging MMS media bucket must be configured to send first-party media",
+				ErrorType.CONFIGURATION_ERROR,
+			);
+		}
+
+		const key = this.buildMmsMediaKey(params.mimeType);
+		await putAwsS3Object({
+			accessKeyId: this.credentials.accessKeyId,
+			secretAccessKey: this.credentials.secretAccessKey,
+			region: this.credentials.region,
+			bucket: this.credentials.mediaBucket,
+			key,
+			body: params.body,
+			contentType: params.mimeType,
+			errorMessage: "Failed to upload AWS MMS media to S3",
+		});
+
+		return `s3://${this.credentials.mediaBucket}/${key}`;
+	}
+
 	private async prepareMmsMediaUrl(mediaUrl: string): Promise<string> {
 		if (AWS_S3_MEDIA_URL_PATTERN.test(mediaUrl)) {
 			return mediaUrl;
@@ -395,6 +419,17 @@ export class AwsSmsProvider implements MessagingProvider {
 			);
 		}
 
+		const qrRequest = parseFirstPartyQrPngUrl(mediaUrl, this.serviceContext.env.API_BASE_URL);
+		if (qrRequest) {
+			this.serviceContext.requireUser();
+			return this.uploadMmsMedia({
+				body: copyToArrayBuffer(
+					createQrPng(qrRequest.payload, qrRequest.size.width, qrRequest.size.height),
+				),
+				mimeType: "image/png",
+			});
+		}
+
 		const user = this.serviceContext.requireUser();
 		const blob = await StorageService.forPrivateAssets(this.serviceContext).getPrivateAssetBlob(
 			mediaUrl,
@@ -409,19 +444,10 @@ export class AwsSmsProvider implements MessagingProvider {
 			);
 		}
 
-		const key = this.buildMmsMediaKey(blob.type || "application/octet-stream");
-		await putAwsS3Object({
-			accessKeyId: this.credentials.accessKeyId,
-			secretAccessKey: this.credentials.secretAccessKey,
-			region: this.credentials.region,
-			bucket: this.credentials.mediaBucket,
-			key,
+		return this.uploadMmsMedia({
 			body: await blob.arrayBuffer(),
-			contentType: blob.type || "application/octet-stream",
-			errorMessage: "Failed to upload AWS MMS media to S3",
+			mimeType: blob.type || "application/octet-stream",
 		});
-
-		return `s3://${this.credentials.mediaBucket}/${key}`;
 	}
 
 	private async sendAwsJsonOperation(params: {

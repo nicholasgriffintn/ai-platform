@@ -450,6 +450,7 @@ describe("SMS webhook service", () => {
 	});
 
 	it("sends media outputs from SMS-triggered recipe tool result choices", async () => {
+		const qrImageUrl = "https://api.polychat.test/qr?size=300x300&format=png&data=polychat";
 		prepareServiceContext();
 		mocks.providerParseIncoming.mockResolvedValue({
 			kind: "message",
@@ -483,10 +484,9 @@ describe("SMS webhook service", () => {
 						message: {
 							role: "tool",
 							name: "create_qr_code",
-							content: "QR code image URL created.",
+							content: "QR code image created.",
 							data: {
-								imageUrl:
-									"https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=https%3A%2F%2Fpolychat.app",
+								imageUrl: qrImageUrl,
 							},
 						},
 						finish_reason: "tool_result",
@@ -500,9 +500,7 @@ describe("SMS webhook service", () => {
 		expect(mocks.providerSend).toHaveBeenCalledWith({
 			to: "+15551234567",
 			body: "QR code ready.",
-			mediaUrls: [
-				"https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=https%3A%2F%2Fpolychat.app",
-			],
+			mediaUrls: [qrImageUrl],
 		});
 	});
 
