@@ -6,6 +6,7 @@ import type { MusicProvider } from "../capabilities/music";
 import type { OcrProvider } from "../capabilities/ocr/types";
 import type { RealtimeProvider } from "../capabilities/realtime";
 import type { SpeechProvider } from "../capabilities/speech";
+import type { ServiceContext } from "~/lib/context/serviceContext";
 import type {
 	EmbeddingProvider,
 	GuardrailsProvider,
@@ -36,6 +37,7 @@ export type ProviderCategory =
 export interface ProviderFactoryContext {
 	env?: IEnv;
 	user?: IUser;
+	serviceContext?: ServiceContext;
 	config?: unknown;
 	options?: Record<string, unknown>;
 }

@@ -7,6 +7,7 @@ import type { TaskMessage } from "../../TaskService";
 const mocks = vi.hoisted(() => ({
 	getUserById: vi.fn(),
 	getProviderApiKey: vi.fn(),
+	getProviderApiKeyForSettings: vi.fn(),
 	getUserProviderSettings: vi.fn(),
 	invokeAssistantRecipe: vi.fn(),
 	executeRecipeInvocationChat: vi.fn(),
@@ -24,6 +25,7 @@ vi.mock("~/lib/context/serviceContext", () => ({
 			},
 			userSettings: {
 				getProviderApiKey: mocks.getProviderApiKey,
+				getProviderApiKeyForSettings: mocks.getProviderApiKeyForSettings,
 				getUserProviderSettings: mocks.getUserProviderSettings,
 			},
 		},
@@ -87,6 +89,7 @@ describe("RecipeExecutionHandler", () => {
 		mocks.getUserById.mockResolvedValue(user);
 		mocks.getUserProviderSettings.mockResolvedValue([]);
 		mocks.getProviderApiKey.mockResolvedValue(null);
+		mocks.getProviderApiKeyForSettings.mockResolvedValue(null);
 		mocks.getMessagingProviderFromStoredCredential.mockReturnValue({
 			send: mocks.providerSend,
 		});
@@ -159,6 +162,7 @@ describe("RecipeExecutionHandler", () => {
 			userId: 42,
 			channel: "scheduled",
 			input: "Run briefing",
+			configuration: undefined,
 			requireInstalled: true,
 		});
 		expect(result).toMatchObject({
@@ -193,6 +197,14 @@ describe("RecipeExecutionHandler", () => {
 
 		const result = await new RecipeExecutionHandler().handle(baseMessage, env);
 
+		expect(mocks.invokeAssistantRecipe).toHaveBeenCalledWith("morning-briefing", {
+			context: expect.objectContaining({ user }),
+			userId: 42,
+			channel: "scheduled",
+			input: "Run briefing",
+			configuration: undefined,
+			requireInstalled: true,
+		});
 		expect(mocks.executeRecipeInvocationChat).toHaveBeenCalledWith({
 			env,
 			context: expect.objectContaining({ user }),
@@ -206,6 +218,60 @@ describe("RecipeExecutionHandler", () => {
 				recipeId: "morning-briefing",
 				conversationId: "recipe-conversation-1",
 			},
+		});
+	});
+
+	it("passes queued task configuration into recipe invocation", async () => {
+		const invocation = {
+			recipeId: "daily-weather",
+			installationId: "installation-1",
+			status: "ready",
+			conversationStarter: "Run weather",
+			messageUrl: "/?query=Run",
+			missingConnections: [],
+			enabledTools: ["get_weather"],
+			configuration: { location: "Cambridge" },
+		};
+		mocks.invokeAssistantRecipe.mockResolvedValue(invocation);
+		mocks.executeRecipeInvocationChat.mockResolvedValue({
+			conversationId: "recipe-conversation-1",
+			response: {
+				choices: [],
+			},
+		});
+
+		await new RecipeExecutionHandler().handle(
+			{
+				...baseMessage,
+				task_data: {
+					recipeId: "daily-weather",
+					input: "Run weather",
+					channel: "scheduled",
+					configuration: {
+						location: "Cambridge",
+						forecastTime: "09:05",
+					},
+				},
+			},
+			env,
+		);
+
+		expect(mocks.invokeAssistantRecipe).toHaveBeenCalledWith("daily-weather", {
+			context: expect.objectContaining({ user }),
+			userId: 42,
+			channel: "scheduled",
+			input: "Run weather",
+			configuration: {
+				location: "Cambridge",
+				forecastTime: "09:05",
+			},
+			requireInstalled: true,
+		});
+		expect(mocks.executeRecipeInvocationChat).toHaveBeenCalledWith({
+			env,
+			context: expect.objectContaining({ user }),
+			user,
+			invocation,
 		});
 	});
 
@@ -229,13 +295,14 @@ describe("RecipeExecutionHandler", () => {
 		});
 		mocks.getUserProviderSettings.mockResolvedValue([
 			{
+				id: "provider-row-1",
 				provider_id: "twilio-sms",
 				type: "messaging",
 				enabled: true,
 				hasApiKey: true,
 			},
 		]);
-		mocks.getProviderApiKey.mockResolvedValue("encrypted-config");
+		mocks.getProviderApiKeyForSettings.mockResolvedValue("encrypted-config");
 
 		const result = await new RecipeExecutionHandler().handle(
 			{
@@ -251,7 +318,11 @@ describe("RecipeExecutionHandler", () => {
 			env,
 		);
 
-		expect(mocks.getProviderApiKey).toHaveBeenCalledWith(42, "twilio-sms");
+		expect(mocks.getProviderApiKeyForSettings).toHaveBeenCalledWith({
+			userId: 42,
+			providerId: "twilio-sms",
+			providerSettingsId: "provider-row-1",
+		});
 		expect(mocks.providerSend).toHaveBeenCalledWith({
 			to: "+15551234567",
 			body: "Bring an umbrella.",
@@ -259,6 +330,152 @@ describe("RecipeExecutionHandler", () => {
 		expect(result).toMatchObject({
 			status: "success",
 			message: "Recipe execution completed",
+			data: {
+				notificationDelivery: {
+					channel: "sms",
+					status: "sent",
+				},
+			},
+		});
+	});
+
+	it("does not retry completed recipe executions when SMS notification delivery fails", async () => {
+		const invocation = {
+			recipeId: "daily-weather",
+			installationId: "installation-1",
+			status: "ready",
+			conversationStarter: "Run weather",
+			messageUrl: "/?query=Run",
+			missingConnections: [],
+			enabledTools: ["get_weather"],
+			configuration: { location: "London" },
+		};
+		mocks.invokeAssistantRecipe.mockResolvedValue(invocation);
+		mocks.executeRecipeInvocationChat.mockResolvedValue({
+			conversationId: "recipe-conversation-1",
+			response: {
+				choices: [{ message: { content: "Bring an umbrella." } }],
+			},
+		});
+		mocks.getUserProviderSettings.mockResolvedValue([]);
+
+		const result = await new RecipeExecutionHandler().handle(
+			{
+				...baseMessage,
+				task_data: {
+					recipeId: "daily-weather",
+					input: "Run weather",
+					channel: "scheduled",
+					notificationChannel: "sms",
+					notificationTarget: "+15551234567",
+				},
+			},
+			env,
+		);
+
+		expect(mocks.executeRecipeInvocationChat).toHaveBeenCalledWith({
+			env,
+			context: expect.objectContaining({ user }),
+			user,
+			invocation,
+		});
+		expect(mocks.providerSend).not.toHaveBeenCalled();
+		expect(result).toMatchObject({
+			status: "success",
+			message: "Recipe execution completed",
+			data: {
+				notificationDelivery: {
+					channel: "sms",
+					status: "failed",
+					error: "No configured SMS provider can send this scheduled recipe notification",
+				},
+			},
+		});
+	});
+
+	it("sends scheduled recipe S3 media outputs through AWS End User Messaging when available", async () => {
+		const invocation = {
+			recipeId: "photo-nutrition-check",
+			installationId: "installation-1",
+			status: "ready",
+			conversationStarter: "Check the saved nutrition recipe",
+			messageUrl: "/?query=Run",
+			missingConnections: [],
+			enabledTools: [],
+			configuration: {},
+		};
+		mocks.invokeAssistantRecipe.mockResolvedValue(invocation);
+		mocks.executeRecipeInvocationChat.mockResolvedValue({
+			conversationId: "recipe-conversation-1",
+			response: {
+				choices: [
+					{
+						message: {
+							content: [
+								{ type: "text", text: "Nutrition summary attached." },
+								{
+									type: "image_url",
+									image_url: {
+										url: "https://api.polychat.test/assets/nutrition-image",
+									},
+								},
+							],
+							data: {
+								assets: [
+									{
+										url: "https://api.polychat.test/assets/nutrition-image",
+									},
+									{
+										url: "s3://polychat-mms/generated/nutrition-image.png",
+									},
+								],
+							},
+						},
+					},
+				],
+			},
+		});
+		mocks.getUserProviderSettings.mockResolvedValue([
+			{
+				id: "provider-row-1",
+				provider_id: "twilio-sms",
+				type: "messaging",
+				enabled: true,
+				hasApiKey: true,
+			},
+			{
+				id: "provider-row-2",
+				provider_id: "aws-sms",
+				type: "messaging",
+				enabled: true,
+				hasApiKey: true,
+			},
+		]);
+		mocks.getProviderApiKeyForSettings.mockResolvedValue("encrypted-config");
+
+		await new RecipeExecutionHandler().handle(
+			{
+				...baseMessage,
+				task_data: {
+					recipeId: "photo-nutrition-check",
+					input: "Run nutrition check",
+					channel: "scheduled",
+					notificationChannel: "sms",
+					notificationTarget: "+15551234567",
+				},
+			},
+			env,
+		);
+
+		expect(mocks.getProviderApiKeyForSettings).toHaveBeenCalledWith({
+			userId: 42,
+			providerId: "aws-sms",
+			providerSettingsId: "provider-row-2",
+		});
+		expect(mocks.providerSend).toHaveBeenCalledWith({
+			to: "+15551234567",
+			body: "Nutrition summary attached.",
+			mediaUrls: ["s3://polychat-mms/generated/nutrition-image.png"],
 		});
 	});
 });

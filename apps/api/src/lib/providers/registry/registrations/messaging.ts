@@ -33,9 +33,13 @@ const messagingProviders: ProviderRegistration<MessagingProvider>[] = [
 			if (!isAwsSmsCredentials(credentials)) {
 				throw new AssistantError("AWS SMS credentials are invalid", ErrorType.CONFIGURATION_ERROR);
 			}
-			return new AwsSmsProvider(credentials);
+			return new AwsSmsProvider(credentials, context.serviceContext);
 		},
-		metadata: { vendor: "AWS", categories: ["messaging"], tags: ["sms", "sns"] },
+		metadata: {
+			vendor: "AWS",
+			categories: ["messaging"],
+			tags: ["sms", "rcs", "end-user-messaging"],
+		},
 	},
 ];
 

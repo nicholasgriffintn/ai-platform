@@ -7,7 +7,9 @@ import {
 } from "~/lib/providers/userConfigurableProviders";
 import {
 	createMessagingCredentialEnvelope,
+	getMessagingCredentialConfigurationValues,
 	isMessagingProviderId,
+	parseMessagingCredentialEnvelope,
 } from "~/lib/providers/capabilities/messaging";
 import type { IUserSettings } from "~/types";
 import { bufferToBase64 } from "~/utils/base64";
@@ -357,7 +359,7 @@ export class UserSettingsRepository extends BaseRepository {
 			throw new AssistantError("Database is not configured", ErrorType.CONFIGURATION_ERROR);
 		}
 
-		if (!userId || !providerId || !apiKey) {
+		if (!userId || !providerId || (!apiKey && !isMessagingProviderId(providerId))) {
 			throw new AssistantError("Missing required parameters", ErrorType.PARAMS_ERROR);
 		}
 
@@ -365,10 +367,10 @@ export class UserSettingsRepository extends BaseRepository {
 			const { query: providerQuery, values: providerValues } = this.buildSelectQuery(
 				"provider_settings",
 				{ user_id: userId, provider_id: providerId },
-				{ columns: ["id"] },
+				{ columns: ["id", "api_key"] },
 			);
 
-			const existingProviderSettings = await this.runQuery<{ id: string }>(
+			const existingProviderSettings = await this.runQuery<{ id: string; api_key: string | null }>(
 				providerQuery,
 				providerValues,
 				true,
@@ -409,18 +411,32 @@ export class UserSettingsRepository extends BaseRepository {
 				["encrypt"],
 			);
 
-			const keyToEncrypt = isMessagingProviderId(providerId)
-				? JSON.stringify(
-						createMessagingCredentialEnvelope({
+			let keyToEncrypt = secretKey
+				? `${apiKey}${UserSettingsRepository.CREDENTIALS_DELIMITER}${secretKey}`
+				: apiKey;
+
+			if (isMessagingProviderId(providerId)) {
+				const existingCredentials = existingProviderSettings.api_key
+					? parseMessagingCredentialEnvelope({
 							providerId,
-							apiKey,
-							secretKey,
-							configuration,
-						}),
-					)
-				: secretKey
-					? `${apiKey}${UserSettingsRepository.CREDENTIALS_DELIMITER}${secretKey}`
-					: apiKey;
+							value:
+								(await this.decryptStoredProviderApiKey(userId, {
+									id: existingProviderSettings.id,
+									provider_id: providerId,
+								})) ?? "",
+						}).credentials
+					: null;
+
+				keyToEncrypt = JSON.stringify(
+					createMessagingCredentialEnvelope({
+						providerId,
+						apiKey,
+						secretKey,
+						configuration,
+						existingCredentials,
+					}),
+				);
+			}
 
 			const encryptedApiKey = await this.encryptProviderApiKey(keyToEncrypt, publicKey);
 
@@ -453,6 +469,68 @@ export class UserSettingsRepository extends BaseRepository {
 		}
 	}
 
+	private async getProviderDecryptionKey(userId: number): Promise<CryptoKey> {
+		if (!this.env.DB) {
+			throw new AssistantError("Database is not configured", ErrorType.CONFIGURATION_ERROR);
+		}
+
+		if (!userId) {
+			throw new AssistantError("Missing required parameters", ErrorType.PARAMS_ERROR);
+		}
+
+		const { query: settingsQuery, values: settingsValues } = this.buildSelectQuery(
+			"user_settings",
+			{ user_id: userId },
+			{ columns: ["private_key"] },
+		);
+		const userSettings = await this.runQuery<{ private_key: string }>(
+			settingsQuery,
+			settingsValues,
+			true,
+		);
+
+		if (!userSettings?.private_key) {
+			throw new AssistantError("User settings not found", ErrorType.NOT_FOUND);
+		}
+
+		const decryptedPrivateKeyString = await this.decryptWithServerKey(userSettings.private_key);
+		const privateKeyJwk = safeParseJson(decryptedPrivateKeyString);
+		if (!privateKeyJwk) {
+			throw new AssistantError("Failed to parse private key", ErrorType.INTERNAL_ERROR);
+		}
+
+		return crypto.subtle.importKey(
+			"jwk",
+			privateKeyJwk,
+			{
+				name: "RSA-OAEP",
+				hash: "SHA-256",
+			},
+			true,
+			["decrypt"],
+		);
+	}
+
+	private async decryptStoredProviderApiKey(
+		userId: number,
+		where: Record<string, unknown>,
+	): Promise<string | null> {
+		const privateKey = await this.getProviderDecryptionKey(userId);
+
+		const { query: providerQuery, values: providerValues } = this.buildSelectQuery(
+			"provider_settings",
+			{ user_id: userId, ...where },
+			{ columns: ["api_key"] },
+		);
+		const result = await this.runQuery<{ api_key: string }>(providerQuery, providerValues, true);
+
+		if (!result?.api_key) {
+			return null;
+		}
+
+		return this.decryptProviderApiKey(result.api_key, privateKey);
+	}
+
 	public async getProviderApiKey(userId: number, providerId: string): Promise<string | null> {
 		if (!this.env.DB) {
 			throw new AssistantError("Database is not configured", ErrorType.CONFIGURATION_ERROR);
@@ -463,50 +541,33 @@ export class UserSettingsRepository extends BaseRepository {
 		}
 
 		try {
-			const { query: settingsQuery, values: settingsValues } = this.buildSelectQuery(
-				"user_settings",
-				{ user_id: userId },
-				{ columns: ["private_key"] },
-			);
-			const userSettings = await this.runQuery<{ private_key: string }>(
-				settingsQuery,
-				settingsValues,
-				true,
-			);
-
-			if (!userSettings?.private_key) {
-				throw new AssistantError("User settings not found", ErrorType.NOT_FOUND);
+			return await this.decryptStoredProviderApiKey(userId, { provider_id: providerId });
+		} catch (error) {
+			if (error instanceof AssistantError) {
+				throw error;
 			}
+			throw new AssistantError("Failed to retrieve provider API key", ErrorType.UNKNOWN_ERROR);
+		}
+	}
 
-			const decryptedPrivateKeyString = await this.decryptWithServerKey(userSettings.private_key);
-			let privateKeyJwk = safeParseJson(decryptedPrivateKeyString);
-			if (!privateKeyJwk) {
-				throw new AssistantError("Failed to parse private key", ErrorType.INTERNAL_ERROR);
-			}
+	public async getProviderApiKeyForSettings(params: {
+		userId: number;
+		providerId: string;
+		providerSettingsId: string;
+	}): Promise<string | null> {
+		if (!this.env.DB) {
+			throw new AssistantError("Database is not configured", ErrorType.CONFIGURATION_ERROR);
+		}
 
-			const privateKey = await crypto.subtle.importKey(
-				"jwk",
-				privateKeyJwk,
-				{
-					name: "RSA-OAEP",
-					hash: "SHA-256",
-				},
-				true,
-				["decrypt"],
-			);
+		if (!params.userId || !params.providerId || !params.providerSettingsId) {
+			throw new AssistantError("Missing required parameters", ErrorType.PARAMS_ERROR);
+		}
 
-			const { query: providerQuery, values: providerValues } = this.buildSelectQuery(
-				"provider_settings",
-				{ user_id: userId, provider_id: providerId },
-				{ columns: ["api_key"] },
-			);
-			const result = await this.runQuery<{ api_key: string }>(providerQuery, providerValues, true);
-
-			if (!result?.api_key) {
-				return null;
-			}
-
-			return this.decryptProviderApiKey(result.api_key, privateKey);
+		try {
+			return await this.decryptStoredProviderApiKey(params.userId, {
+				id: params.providerSettingsId,
+				provider_id: params.providerId,
+			});
 		} catch (error) {
 			if (error instanceof AssistantError) {
 				throw error;
@@ -597,26 +658,45 @@ export class UserSettingsRepository extends BaseRepository {
 			api_key: string | null;
 		}>(query, values);
 
-		return result.map((provider) => {
-			const metadata = getUserConfigurableProviderMetadata(provider.provider_id);
+		return Promise.all(
+			result.map(async (provider) => {
+				const metadata = getUserConfigurableProviderMetadata(provider.provider_id);
+				let configurationValues: Record<string, string> | undefined;
 
-			return {
-				id: provider.id,
-				provider_id: provider.provider_id,
-				type: metadata.type,
-				name: metadata.name,
-				description: metadata.description,
-				configurationFields: metadata.configurationFields,
-				webhookUrl:
-					isMessagingProviderId(provider.provider_id) && this.env.API_BASE_URL
-						? `${this.env.API_BASE_URL.replace(/\/$/, "")}/webhooks/sms/${
-								provider.provider_id
-							}/${provider.id}`
-						: undefined,
-				enabled: provider.enabled === 1,
-				hasApiKey: Boolean(provider.api_key),
-			};
-		});
+				if (provider.api_key && isMessagingProviderId(provider.provider_id)) {
+					const decryptedValue = await this.decryptStoredProviderApiKey(userId, {
+						id: provider.id,
+						provider_id: provider.provider_id,
+					});
+					if (decryptedValue) {
+						configurationValues = getMessagingCredentialConfigurationValues(
+							parseMessagingCredentialEnvelope({
+								providerId: provider.provider_id,
+								value: decryptedValue,
+							}).credentials,
+						);
+					}
+				}
+
+				return {
+					id: provider.id,
+					provider_id: provider.provider_id,
+					type: metadata.type,
+					name: metadata.name,
+					description: metadata.description,
+					configurationFields: metadata.configurationFields,
+					configurationValues,
+					webhookUrl:
+						isMessagingProviderId(provider.provider_id) && this.env.API_BASE_URL
+							? `${this.env.API_BASE_URL.replace(/\/$/, "")}/webhooks/sms/${
+									provider.provider_id
+								}/${provider.id}`
+							: undefined,
+					enabled: provider.enabled === 1,
+					hasApiKey: Boolean(provider.api_key),
+				};
+			}),
+		);
 	}
 
 	public async getProviderSettingsById(params: {

@@ -1,4 +1,5 @@
 import type {
+	RecipeConnectorApiKeyRequest,
 	RecipeConnectorProvider,
 	RecipeConnectorsResponse,
 	RecipeConnectorStartResponse,
@@ -33,6 +34,18 @@ export async function startRecipeConnector(
 		body: { returnTo },
 	});
 	return returnFetchedData<RecipeConnectorStartResponse>(response);
+}
+
+export async function storeRecipeConnectorApiKey(
+	provider: RecipeConnectorProvider,
+	request: RecipeConnectorApiKeyRequest,
+): Promise<{ success: boolean }> {
+	const response = await fetchApiOrThrow(`/apps/connectors/${provider}/api-key`, {
+		method: "POST",
+		headers: await getAuthHeaders(),
+		body: request,
+	});
+	return returnFetchedData<{ success: boolean }>(response);
 }
 
 export async function disconnectRecipeConnector(

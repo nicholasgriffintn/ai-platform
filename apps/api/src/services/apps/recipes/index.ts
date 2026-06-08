@@ -12,12 +12,15 @@ import type {
 import { recipeConfigurationSchema, recipeConnectorProviderSchema } from "@assistant/schemas";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
+import { isConnectorOperationSupported } from "~/lib/providers/capabilities/connectors";
 import { TaskService } from "~/services/tasks/TaskService";
+import { isSupportedCronExpression } from "~/utils/cron";
 import { safeParseJson } from "~/utils/json";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { listRecipeConnectors } from "../connectors";
 import { assistantRecipes, recipeCategories, recipeFilters } from "./catalog";
 import { matchInstalledRecipe } from "./matching";
+import { buildRecipeScheduleState, type RecipeScheduleState } from "./scheduleState";
 
 export const RECIPE_INSTALLATION_APP_ID = "assistant_recipe_installation";
 export const RECIPE_INSTALLATION_ITEM_TYPE = "recipe_installation";
@@ -44,7 +47,7 @@ interface StoredRecipeInstallationData {
 	status: "active" | "paused";
 	triggers: RecipeInstallationTrigger[];
 	configuration?: RecipeConfiguration;
-	lastScheduledRunKeys?: Record<string, string>;
+	scheduleState?: RecipeScheduleState;
 }
 
 interface RecipeInstallationRecord {
@@ -142,12 +145,40 @@ function buildAllowedConnectorProviders(recipe: AssistantRecipe): RecipeConnecto
 	const providers = new Set<RecipeConnectorProvider>();
 	for (const integration of recipe.integrations) {
 		const parsed = recipeConnectorProviderSchema.safeParse(integration.providerId);
-		if (parsed.success) {
+		if (parsed.success && parsed.data !== "github") {
 			providers.add(parsed.data);
 		}
 	}
 
 	return Array.from(providers);
+}
+
+function buildAllowedConnectorOperations(recipe: AssistantRecipe): Record<string, string[]> {
+	const operationsByProvider = new Map<RecipeConnectorProvider, Set<string>>();
+
+	for (const integration of recipe.integrations) {
+		const parsed = recipeConnectorProviderSchema.safeParse(integration.providerId);
+		if (!parsed.success || parsed.data === "github") {
+			continue;
+		}
+
+		for (const operationId of integration.operationIds ?? []) {
+			if (!isConnectorOperationSupported(parsed.data, operationId)) {
+				continue;
+			}
+
+			const operations = operationsByProvider.get(parsed.data) ?? new Set<string>();
+			operations.add(operationId);
+			operationsByProvider.set(parsed.data, operations);
+		}
+	}
+
+	return Object.fromEntries(
+		Array.from(operationsByProvider.entries()).map(([provider, operations]) => [
+			provider,
+			Array.from(operations),
+		]),
+	);
 }
 
 function getBlockingConnections(connections: AssistantRecipeConnection[]) {
@@ -157,6 +188,95 @@ function getBlockingConnections(connections: AssistantRecipeConnection[]) {
 			(connection.status === "missing" ||
 				connection.status === "unknown" ||
 				connection.status === "unconfigured"),
+	);
+}
+
+function validateRecipeInstallationTriggers(
+	recipe: AssistantRecipe,
+	triggers: readonly RecipeInstallationTrigger[],
+) {
+	const supportedRecipeTriggers = new Set(recipe.triggers.map((trigger) => trigger.type));
+
+	for (const trigger of triggers) {
+		if (trigger.type === "schedule" && !supportedRecipeTriggers.has("schedule")) {
+			throw new AssistantError(
+				`${recipe.title} does not support scheduled triggers`,
+				ErrorType.PARAMS_ERROR,
+				400,
+			);
+		}
+
+		if (
+			trigger.type === "schedule" &&
+			trigger.cronExpression &&
+			!isSupportedCronExpression(trigger.cronExpression)
+		) {
+			throw new AssistantError(
+				`${recipe.title} schedule uses an unsupported cron expression`,
+				ErrorType.PARAMS_ERROR,
+				400,
+			);
+		}
+
+		if (trigger.type === "natural_language" && !supportedRecipeTriggers.has("message")) {
+			throw new AssistantError(
+				`${recipe.title} does not support natural language triggers`,
+				ErrorType.PARAMS_ERROR,
+				400,
+			);
+		}
+	}
+}
+
+function hasEnabledScheduleTrigger(triggers: readonly RecipeInstallationTrigger[]) {
+	return triggers.some((trigger) => trigger.type === "schedule" && trigger.enabled !== false);
+}
+
+function isRequiredRecipeConfigurationValueMissing(
+	field: RecipeConfigurationField,
+	value: RecipeConfiguration[string] | undefined,
+) {
+	const resolvedValue = value ?? field.defaultValue;
+	if (field.type === "boolean") {
+		return resolvedValue !== true;
+	}
+	if (field.type === "number") {
+		return typeof resolvedValue !== "number" || !Number.isFinite(resolvedValue);
+	}
+	if (field.type === "string_list") {
+		return (
+			!Array.isArray(resolvedValue) ||
+			resolvedValue.map((item) => item.trim()).filter(Boolean).length === 0
+		);
+	}
+
+	return typeof resolvedValue !== "string" || !resolvedValue.trim();
+}
+
+function validateScheduledRecipeConfiguration(params: {
+	recipe: AssistantRecipe;
+	triggers: readonly RecipeInstallationTrigger[];
+	configuration: RecipeConfiguration;
+}) {
+	if (!hasEnabledScheduleTrigger(params.triggers)) {
+		return;
+	}
+
+	const missingFields = params.recipe.configurationFields.filter(
+		(field) =>
+			field.required &&
+			isRequiredRecipeConfigurationValueMissing(field, params.configuration[field.key]),
+	);
+	if (missingFields.length === 0) {
+		return;
+	}
+
+	throw new AssistantError(
+		`${params.recipe.title} scheduled triggers require recipe configuration: ${missingFields
+			.map((field) => field.label)
+			.join(", ")}`,
+		ErrorType.PARAMS_ERROR,
+		400,
 	);
 }
 
@@ -357,15 +477,6 @@ async function upsertRecipeInstallation(params: {
 	configuration?: RecipeConfiguration;
 }): Promise<RecipeInstallation> {
 	params.context.ensureDatabase();
-	const triggers =
-		params.triggers && params.triggers.length > 0
-			? params.triggers
-			: [
-					{
-						type: "manual" as const,
-						enabled: true,
-					},
-				];
 	const existing = await params.context.repositories.appData.getAppDataByUserAppAndItem(
 		params.userId,
 		RECIPE_INSTALLATION_APP_ID,
@@ -373,17 +484,38 @@ async function upsertRecipeInstallation(params: {
 		RECIPE_INSTALLATION_ITEM_TYPE,
 	);
 	const existingData = existing[0] ? parseStoredRecipeInstallationData(existing[0]) : null;
+	const now = new Date().toISOString();
+	const triggers =
+		params.triggers && params.triggers.length > 0
+			? params.triggers
+			: Array.isArray(existingData?.triggers) && existingData.triggers.length > 0
+				? existingData.triggers
+				: [
+						{
+							type: "manual" as const,
+							enabled: true,
+						},
+					];
+	validateRecipeInstallationTriggers(params.recipe, triggers);
+	const configuration = normaliseRecipeConfigurationForRecipe(
+		params.recipe,
+		params.configuration ?? existingData?.configuration,
+	);
+	validateScheduledRecipeConfiguration({
+		recipe: params.recipe,
+		triggers,
+		configuration,
+	});
 	const data: StoredRecipeInstallationData = {
 		recipeId: params.recipe.id,
 		status: "active",
 		triggers,
-		configuration: normaliseRecipeConfigurationForRecipe(
-			params.recipe,
-			params.configuration ?? existingData?.configuration,
-		),
-		...(existingData?.lastScheduledRunKeys
-			? { lastScheduledRunKeys: existingData.lastScheduledRunKeys }
-			: {}),
+		configuration,
+		scheduleState: buildRecipeScheduleState({
+			triggers,
+			existingState: existingData?.scheduleState,
+			activatedAt: now,
+		}),
 	};
 
 	if (existing[0]) {
@@ -486,18 +618,31 @@ export async function updateRecipeInstallation(params: {
 		return null;
 	}
 
+	const recipe = getRecipeById(existing.data.recipeId);
+	const triggers = params.update.triggers ?? existing.data.triggers;
+	const configuration = normaliseRecipeConfigurationForRecipe(
+		recipe,
+		params.update.configuration ?? existing.data.configuration,
+	);
 	const data: StoredRecipeInstallationData = {
 		recipeId: existing.data.recipeId,
 		status: params.update.status ?? existing.data.status,
-		triggers: params.update.triggers ?? existing.data.triggers,
-		configuration: normaliseRecipeConfigurationForRecipe(
-			getRecipeById(existing.data.recipeId),
-			params.update.configuration ?? existing.data.configuration,
-		),
-		...(params.update.triggers || !existing.data.lastScheduledRunKeys
-			? {}
-			: { lastScheduledRunKeys: existing.data.lastScheduledRunKeys }),
+		triggers,
+		configuration,
+		scheduleState: buildRecipeScheduleState({
+			triggers,
+			existingState: existing.data.scheduleState,
+			activatedAt: new Date().toISOString(),
+		}),
 	};
+	if (recipe) {
+		validateRecipeInstallationTriggers(recipe, data.triggers);
+		validateScheduledRecipeConfiguration({
+			recipe,
+			triggers: data.triggers,
+			configuration: data.configuration,
+		});
+	}
 
 	await params.context.repositories.appData.updateAppData(existing.record.id, data);
 	const updated = await params.context.repositories.appData.getAppDataById(existing.record.id);
@@ -591,6 +736,7 @@ export async function invokeAssistantRecipe(
 	options: RecipeListOptions & {
 		channel: "web" | "ios" | "sms" | "scheduled" | "tool";
 		input?: string;
+		configuration?: RecipeConfiguration;
 		queue?: boolean;
 		requireInstalled?: boolean;
 	},
@@ -610,6 +756,7 @@ export async function invokeAssistantRecipe(
 	const connections = buildRecipeConnections(recipe);
 	const blockingConnections = getBlockingConnections(connections);
 	const allowedConnectorProviders = buildAllowedConnectorProviders(recipe);
+	const allowedConnectorOperations = buildAllowedConnectorOperations(recipe);
 	const existingInstallation = await getRecipeInstallation({
 		context: options.context,
 		userId: options.userId,
@@ -624,11 +771,16 @@ export async function invokeAssistantRecipe(
 					userId: options.userId,
 					recipe,
 				}));
+	const invocationConfiguration = installation
+		? options.configuration
+			? normaliseRecipeConfigurationForRecipe(recipe, options.configuration)
+			: installation.configuration
+		: {};
 	const conversationStarter = createConversationStarter(
 		recipe,
 		connections,
 		options.channel,
-		installation?.configuration,
+		invocationConfiguration,
 		options.input,
 	);
 
@@ -636,12 +788,14 @@ export async function invokeAssistantRecipe(
 		return {
 			recipeId: recipe.id,
 			status: "not_installed" as const,
+			channel: options.channel,
 			conversationStarter,
 			messageUrl: createRecipeMessageUrl(conversationStarter, recipe.enabledTools),
 			missingConnections: [],
 			enabledTools: recipe.enabledTools,
 			allowedConnectorProviders,
-			configuration: {},
+			allowedConnectorOperations,
+			configuration: invocationConfiguration,
 		};
 	}
 
@@ -650,12 +804,14 @@ export async function invokeAssistantRecipe(
 			recipeId: recipe.id,
 			installationId: installation.id,
 			status: "blocked" as const,
+			channel: options.channel,
 			conversationStarter,
 			messageUrl: createRecipeMessageUrl(conversationStarter, recipe.enabledTools),
 			missingConnections: blockingConnections,
 			enabledTools: recipe.enabledTools,
 			allowedConnectorProviders,
-			configuration: installation.configuration,
+			allowedConnectorOperations,
+			configuration: invocationConfiguration,
 		};
 	}
 
@@ -670,7 +826,7 @@ export async function invokeAssistantRecipe(
 				installationId: installation.id,
 				input: options.input,
 				channel: options.channel,
-				configuration: installation.configuration,
+				configuration: invocationConfiguration,
 			},
 			priority: 5,
 		});
@@ -680,12 +836,14 @@ export async function invokeAssistantRecipe(
 		recipeId: recipe.id,
 		installationId: installation.id,
 		status: options.queue ? ("queued" as const) : ("ready" as const),
+		channel: options.channel,
 		conversationStarter,
 		messageUrl: createRecipeMessageUrl(conversationStarter, recipe.enabledTools),
 		missingConnections: [],
 		enabledTools: recipe.enabledTools,
 		allowedConnectorProviders,
-		configuration: installation.configuration,
+		allowedConnectorOperations,
+		configuration: invocationConfiguration,
 		taskId,
 	};
 }

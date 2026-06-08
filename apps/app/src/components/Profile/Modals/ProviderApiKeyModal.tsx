@@ -25,8 +25,12 @@ interface ProviderApiKeyModalProps {
 		placeholder?: string;
 		description?: string;
 	}>;
+	configurationValues?: Record<string, string>;
+	hasStoredCredentials?: boolean;
 	webhookUrl?: string;
 }
+
+const EMPTY_CONFIGURATION_VALUES: Record<string, string> = {};
 
 export function ProviderApiKeyModal({
 	open,
@@ -34,6 +38,8 @@ export function ProviderApiKeyModal({
 	providerId,
 	providerName,
 	configurationFields = [],
+	configurationValues: initialConfigurationValues = EMPTY_CONFIGURATION_VALUES,
+	hasStoredCredentials = false,
 	webhookUrl,
 }: ProviderApiKeyModalProps) {
 	const { trackEvent } = useTrackEvent();
@@ -48,12 +54,19 @@ export function ProviderApiKeyModal({
 	const requiresSecretKey = isBedrockProvider;
 
 	useEffect(() => {
+		if (open) {
+			setApiKey("");
+			setSecretKey("");
+			setConfigurationValues(initialConfigurationValues);
+			return;
+		}
+
 		if (!open) {
 			setApiKey("");
 			setSecretKey("");
 			setConfigurationValues({});
 		}
-	}, [open]);
+	}, [initialConfigurationValues, open]);
 
 	const updateConfigurationValue = (key: string, value: string) => {
 		setConfigurationValues((previous) => ({
@@ -63,7 +76,10 @@ export function ProviderApiKeyModal({
 	};
 
 	const hasMissingRequiredConfiguration = configurationFields.some(
-		(field) => field.required && !configurationValues[field.key]?.trim(),
+		(field) =>
+			field.required &&
+			!(hasStoredCredentials && field.type === "password") &&
+			!configurationValues[field.key]?.trim(),
 	);
 
 	const handleSubmit = async (e: React.FormEvent) => {
@@ -126,6 +142,7 @@ export function ProviderApiKeyModal({
 						configurationFields.map((field) => (
 							<FormInput
 								key={field.key}
+								id={`provider-${providerId}-${field.key}`}
 								type={field.type}
 								autoComplete="off"
 								value={configurationValues[field.key] ?? ""}
@@ -134,13 +151,18 @@ export function ProviderApiKeyModal({
 								}
 								placeholder={field.placeholder}
 								label={field.label}
-								description={field.description}
-								required={field.required}
+								description={
+									hasStoredCredentials && field.type === "password"
+										? `${field.description ?? "This secret is already stored."} Leave blank to keep the saved value.`
+										: field.description
+								}
+								required={field.required && !(hasStoredCredentials && field.type === "password")}
 								disabled={isStoringProviderApiKey}
 							/>
 						))
 					) : (
 						<FormInput
+							id={`provider-${providerId}-api-key`}
 							type="password"
 							autoComplete="off"
 							value={apiKey}
@@ -157,6 +179,7 @@ export function ProviderApiKeyModal({
 
 					{!usesConfigurationFields && requiresSecretKey && (
 						<FormInput
+							id={`provider-${providerId}-secret-key`}
 							type="password"
 							autoComplete="off"
 							value={secretKey}
@@ -170,6 +193,7 @@ export function ProviderApiKeyModal({
 
 					{webhookUrl && (
 						<FormInput
+							id={`provider-${providerId}-webhook-url`}
 							type="text"
 							value={webhookUrl}
 							label="Webhook URL"

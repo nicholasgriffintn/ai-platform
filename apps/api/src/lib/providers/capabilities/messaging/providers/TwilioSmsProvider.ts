@@ -2,9 +2,15 @@ import type { Context } from "hono";
 
 import { bufferToBase64 } from "~/utils/base64";
 import { AssistantError, ErrorType } from "~/utils/errors";
-import type { IncomingMessage, MessagingProvider, TwilioSmsCredentials } from "../types";
+import type {
+	IncomingMessage,
+	IncomingMessageMedia,
+	MessagingProvider,
+	TwilioSmsCredentials,
+} from "../types";
 
 const SMS_MAX_LENGTH = 1500;
+const TWILIO_MEDIA_HOSTNAME = "api.twilio.com";
 
 function trimSmsBody(body: string): string {
 	return body.length > SMS_MAX_LENGTH ? `${body.slice(0, SMS_MAX_LENGTH - 1)}...` : body;
@@ -44,6 +50,43 @@ async function buildTwilioSignature(
 	return bufferToBase64(new Uint8Array(signature));
 }
 
+function normaliseTwilioMediaUrl(rawUrl: string, accountSid: string): string | null {
+	let url: URL;
+	try {
+		url = new URL(rawUrl.trim());
+	} catch {
+		return null;
+	}
+
+	if (
+		url.protocol !== "https:" ||
+		url.username ||
+		url.password ||
+		url.hostname !== TWILIO_MEDIA_HOSTNAME ||
+		!url.pathname.startsWith(`/2010-04-01/Accounts/${accountSid}/Messages/`) ||
+		!url.pathname.includes("/Media/")
+	) {
+		return null;
+	}
+
+	return url.toString();
+}
+
+function assertTwilioOutboundMediaUrl(rawUrl: string): string {
+	let url: URL;
+	try {
+		url = new URL(rawUrl.trim());
+	} catch {
+		throw new AssistantError("Twilio MMS media URL is invalid", ErrorType.PARAMS_ERROR);
+	}
+
+	if (url.protocol !== "https:" || url.username || url.password) {
+		throw new AssistantError("Twilio MMS media must use HTTPS URLs", ErrorType.PARAMS_ERROR);
+	}
+
+	return url.toString();
+}
+
 export class TwilioSmsProvider implements MessagingProvider {
 	public readonly id = "twilio-sms" as const;
 
@@ -64,18 +107,41 @@ export class TwilioSmsProvider implements MessagingProvider {
 		const from = String(form.get("From") || "").trim();
 		const to = String(form.get("To") || "").trim();
 		const body = String(form.get("Body") || "").trim();
-		if (!from || !body) {
-			throw new AssistantError("Missing Twilio SMS From or Body", ErrorType.PARAMS_ERROR);
+		const mediaCount = Number.parseInt(String(form.get("NumMedia") || "0"), 10);
+		const media: IncomingMessageMedia[] = Array.from({
+			length: Number.isFinite(mediaCount) ? mediaCount : 0,
+		})
+			.map((_, index) => {
+				const url = normaliseTwilioMediaUrl(
+					String(form.get(`MediaUrl${index}`) || ""),
+					this.credentials.accountSid,
+				);
+				const mimeType = String(form.get(`MediaContentType${index}`) || "").trim();
+				return url
+					? {
+							url,
+							...(mimeType ? { mimeType } : {}),
+						}
+					: null;
+			})
+			.filter((item): item is IncomingMessageMedia => item !== null);
+		const mediaUrls = media.map((item) => item.url);
+
+		if (!from || (!body && mediaUrls.length === 0)) {
+			throw new AssistantError("Missing Twilio SMS sender or content", ErrorType.PARAMS_ERROR);
 		}
 
-		return { kind: "message", from, to, body };
+		return { kind: "message", from, to, body, media, mediaUrls };
 	}
 
-	async send(params: { to: string; body: string }): Promise<void> {
+	async send(params: { to: string; body: string; mediaUrls?: string[] }): Promise<void> {
 		const requestBody = new URLSearchParams({
 			To: params.to,
 			Body: trimSmsBody(params.body),
 		});
+		for (const mediaUrl of params.mediaUrls ?? []) {
+			requestBody.append("MediaUrl", assertTwilioOutboundMediaUrl(mediaUrl));
+		}
 		if (this.credentials.messagingServiceSid) {
 			requestBody.set("MessagingServiceSid", this.credentials.messagingServiceSid);
 		} else if (this.credentials.fromNumber) {

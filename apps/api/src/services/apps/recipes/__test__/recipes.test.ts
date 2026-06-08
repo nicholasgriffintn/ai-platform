@@ -20,6 +20,7 @@ vi.mock("~/services/apps/recipes/execution", () => ({
 }));
 
 import {
+	getRecipeById,
 	deleteRecipeInstallation,
 	installAssistantRecipe,
 	invokeAssistantRecipe,
@@ -28,6 +29,7 @@ import {
 	resolveInstalledAssistantRecipe,
 	updateRecipeInstallation,
 } from "../index";
+import { getRecipeCatalogValidationIssues } from "../catalog";
 import { trigger_recipe } from "~/services/functions/recipe_connectors";
 
 const connectedConnectors: RecipeConnectorsResponse = {
@@ -40,6 +42,7 @@ const connectedConnectors: RecipeConnectorsResponse = {
 			status: "connected",
 			setupUrl: "/profile?tab=sandbox",
 			scopes: ["GitHub App installation"],
+			operations: [],
 		},
 		{
 			id: "linear",
@@ -50,6 +53,7 @@ const connectedConnectors: RecipeConnectorsResponse = {
 			setupUrl: "/profile?tab=providers&type=connector&connector=linear",
 			authorizationUrl: "https://linear.app/oauth/authorize",
 			scopes: ["read", "write"],
+			operations: ["search_issues", "create_issue"],
 		},
 		{
 			id: "gmail",
@@ -59,6 +63,7 @@ const connectedConnectors: RecipeConnectorsResponse = {
 			status: "connected",
 			setupUrl: "/profile?tab=providers&type=connector&connector=gmail",
 			scopes: ["gmail"],
+			operations: ["search_messages", "create_draft"],
 		},
 		{
 			id: "calendar",
@@ -68,6 +73,7 @@ const connectedConnectors: RecipeConnectorsResponse = {
 			status: "unconfigured",
 			setupUrl: "/profile?tab=providers&type=connector&connector=calendar",
 			scopes: ["calendar"],
+			operations: ["list_events", "create_event"],
 		},
 		{
 			id: "notion",
@@ -77,6 +83,79 @@ const connectedConnectors: RecipeConnectorsResponse = {
 			status: "connected",
 			setupUrl: "/profile?tab=providers&type=connector&connector=notion",
 			scopes: [],
+			operations: ["search", "retrieve_page", "create_page", "append_block_children"],
+		},
+		{
+			id: "todoist",
+			name: "Todoist",
+			description: "Todoist",
+			authType: "oauth2",
+			status: "connected",
+			setupUrl: "/profile?tab=providers&type=connector&connector=todoist",
+			scopes: ["data:read_write"],
+			operations: ["list_tasks", "create_task", "complete_task"],
+		},
+		{
+			id: "asana",
+			name: "Asana",
+			description: "Asana",
+			authType: "oauth2",
+			status: "connected",
+			setupUrl: "/profile?tab=providers&type=connector&connector=asana",
+			scopes: ["tasks:read", "tasks:write", "projects:read"],
+			operations: ["list_projects", "list_tasks", "create_task"],
+		},
+		{
+			id: "sentry",
+			name: "Sentry",
+			description: "Sentry",
+			authType: "oauth2",
+			status: "connected",
+			setupUrl: "/profile?tab=providers&type=connector&connector=sentry",
+			scopes: ["org:read", "project:read", "event:read"],
+			operations: ["list_organizations", "list_projects", "list_issues", "retrieve_issue"],
+		},
+		{
+			id: "posthog",
+			name: "PostHog",
+			description: "PostHog",
+			authType: "api_key",
+			status: "connected",
+			setupUrl: "/profile?tab=providers&type=connector&connector=posthog",
+			credentialLabel: "Personal API key",
+			scopes: ["project:read", "query:read"],
+			operations: ["list_projects", "query"],
+		},
+		{
+			id: "fitbit",
+			name: "Fitbit",
+			description: "Fitbit",
+			authType: "oauth2",
+			status: "connected",
+			setupUrl: "/profile?tab=providers&type=connector&connector=fitbit",
+			scopes: ["profile", "activity", "sleep", "heartrate"],
+			operations: ["profile", "daily_activity", "sleep_logs", "heart_rate"],
+		},
+		{
+			id: "withings",
+			name: "Withings",
+			description: "Withings",
+			authType: "oauth2",
+			status: "connected",
+			setupUrl: "/profile?tab=providers&type=connector&connector=withings",
+			scopes: ["user.info", "user.metrics", "user.activity"],
+			operations: ["profile", "devices", "measurements", "activity", "sleep_summary"],
+		},
+		{
+			id: "vercel",
+			name: "Vercel",
+			description: "Vercel",
+			authType: "api_key",
+			status: "connected",
+			setupUrl: "/profile?tab=providers&type=connector&connector=vercel",
+			credentialLabel: "Access token",
+			scopes: ["projects:read", "deployments:read"],
+			operations: ["list_projects", "list_deployments", "get_deployment_events"],
 		},
 	],
 };
@@ -269,6 +348,203 @@ describe("assistant recipes", () => {
 			category: "Calendar",
 			enabledTools: ["use_recipe_connector"],
 		});
+		expect(recipesById.get("todoist")).toMatchObject({
+			title: "Todoist",
+			kind: "integrate",
+			category: "To-dos",
+			enabledTools: ["use_recipe_connector"],
+			integrations: [
+				expect.objectContaining({
+					providerId: "todoist",
+					connectionStatus: "connected",
+				}),
+			],
+		});
+		expect(recipesById.get("asana")).toMatchObject({
+			title: "Asana",
+			kind: "integrate",
+			category: "Productivity",
+			enabledTools: ["use_recipe_connector"],
+			integrations: [
+				expect.objectContaining({
+					providerId: "asana",
+					connectionStatus: "connected",
+				}),
+			],
+		});
+		expect(recipesById.get("sentry")).toMatchObject({
+			title: "Sentry",
+			kind: "integrate",
+			category: "Developer",
+			enabledTools: ["use_recipe_connector"],
+			integrations: [
+				expect.objectContaining({
+					providerId: "sentry",
+					connectionStatus: "connected",
+				}),
+			],
+		});
+		expect(recipesById.get("posthog")).toMatchObject({
+			title: "PostHog",
+			kind: "integrate",
+			category: "Developer",
+			enabledTools: ["use_recipe_connector"],
+			integrations: [
+				expect.objectContaining({
+					providerId: "posthog",
+					connectionStatus: "connected",
+				}),
+			],
+		});
+		expect(recipesById.get("fitbit")).toMatchObject({
+			title: "Fitbit",
+			kind: "integrate",
+			category: "Health",
+			enabledTools: ["use_recipe_connector"],
+			integrations: [
+				expect.objectContaining({
+					providerId: "fitbit",
+					connectionStatus: "connected",
+				}),
+			],
+		});
+		expect(recipesById.get("withings")).toMatchObject({
+			title: "Withings",
+			kind: "integrate",
+			category: "Health",
+			enabledTools: ["use_recipe_connector"],
+			integrations: [
+				expect.objectContaining({
+					providerId: "withings",
+					connectionStatus: "connected",
+				}),
+			],
+		});
+		expect(recipesById.get("vercel")).toMatchObject({
+			title: "Vercel",
+			kind: "integrate",
+			category: "Developer",
+			enabledTools: ["use_recipe_connector"],
+			integrations: [
+				expect.objectContaining({
+					providerId: "vercel",
+					connectionStatus: "connected",
+				}),
+			],
+		});
+	});
+
+	it("exposes Poke-style weather automation recipes backed by the built-in weather tool", async () => {
+		const context = createTestServiceContext();
+
+		const response = await listAssistantRecipes({ context, userId: 42 });
+		const recipe = response.recipes.find((item) => item.id === "palo-alto-weather-comparison");
+
+		expect(recipe).toMatchObject({
+			title: "Palo Alto Weather Comparison",
+			kind: "automate",
+			category: "Community",
+			enabledTools: ["get_weather"],
+			integrations: [
+				expect.objectContaining({
+					providerId: "chat",
+					requiresConnection: false,
+					connectionStatus: "not_required",
+				}),
+			],
+		});
+		expect(recipe?.configurationFields).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({ key: "location", required: true }),
+				expect.objectContaining({ key: "comparisonTone" }),
+			]),
+		);
+	});
+
+	it("exposes Poke-style travel calendar automation backed by mail and calendar connectors", async () => {
+		const context = createTestServiceContext();
+
+		const response = await listAssistantRecipes({ context, userId: 42 });
+		const recipe = response.recipes.find((item) => item.id === "add-flights-to-calendar");
+
+		expect(recipe).toMatchObject({
+			title: "Add Flights to Calendar",
+			kind: "automate",
+			category: "Travel",
+			enabledTools: ["use_recipe_connector"],
+			integrations: [
+				expect.objectContaining({
+					providerId: "gmail",
+					operationIds: ["search_messages"],
+					connectionStatus: "connected",
+				}),
+				expect.objectContaining({
+					providerId: "outlook",
+					operationIds: ["search_messages", "create_calendar_event"],
+					connectionStatus: "unknown",
+				}),
+				expect.objectContaining({
+					providerId: "calendar",
+					operationIds: ["create_event"],
+					connectionStatus: "unconfigured",
+				}),
+			],
+		});
+		expect(recipe?.triggers).toEqual([
+			expect.objectContaining({
+				type: "message",
+			}),
+		]);
+		expect(recipe?.configurationFields).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({ key: "calendarTarget", required: true }),
+				expect.objectContaining({ key: "travelWindow" }),
+			]),
+		);
+	});
+
+	it("exposes additional Poke-style recipes backed by current Polychat tools", async () => {
+		const context = createTestServiceContext();
+
+		const response = await listAssistantRecipes({ context, userId: 42 });
+		const recipesById = new Map(response.recipes.map((recipe) => [recipe.id, recipe]));
+
+		expect(recipesById.get("did-you-know")).toMatchObject({
+			title: "Did You Know?",
+			kind: "automate",
+			enabledTools: ["web_search"],
+			integrations: [
+				expect.objectContaining({
+					providerId: "chat",
+					requiresConnection: false,
+					connectionStatus: "not_required",
+				}),
+			],
+		});
+		expect(recipesById.get("quick-qr-generator")).toMatchObject({
+			title: "Quick QR Generator",
+			kind: "integrate",
+			enabledTools: ["create_qr_code"],
+			integrations: [
+				expect.objectContaining({
+					providerId: "chat",
+					requiresConnection: false,
+					connectionStatus: "not_required",
+				}),
+			],
+		});
+		expect(recipesById.get("chonky-cat")).toMatchObject({
+			title: "Chonky Cat",
+			kind: "integrate",
+			enabledTools: ["create_image"],
+			integrations: [
+				expect.objectContaining({
+					providerId: "chat",
+					requiresConnection: false,
+					connectionStatus: "not_required",
+				}),
+			],
+		});
 	});
 
 	it("derives allowed connector providers for direct integration recipes", async () => {
@@ -290,8 +566,343 @@ describe("assistant recipes", () => {
 			recipeId: "gmail",
 			status: "ready",
 			allowedConnectorProviders: ["gmail"],
+			allowedConnectorOperations: {
+				gmail: ["search_messages", "create_draft"],
+			},
 			enabledTools: ["use_recipe_connector"],
 		});
+	});
+
+	it("includes Outlook calendar reads in morning briefing connector scope", async () => {
+		const context = createTestServiceContext();
+		await installAssistantRecipe("morning-briefing", {
+			context,
+			userId: 42,
+			channel: "web",
+		});
+
+		const invocation = await invokeAssistantRecipe("morning-briefing", {
+			context,
+			userId: 42,
+			channel: "tool",
+			requireInstalled: true,
+		});
+
+		expect(invocation).toMatchObject({
+			recipeId: "morning-briefing",
+			allowedConnectorOperations: {
+				gmail: ["search_messages"],
+				outlook: ["search_messages", "list_events"],
+				calendar: ["list_events"],
+			},
+		});
+	});
+
+	it("scopes flight calendar recipe connector operations to mail reads and calendar creates", async () => {
+		const context = createTestServiceContext();
+		await installAssistantRecipe("add-flights-to-calendar", {
+			context,
+			userId: 42,
+			channel: "web",
+			configuration: {
+				calendarTarget: "Travel calendar",
+				travelWindow: "Next 90 days",
+			},
+		});
+
+		const invocation = await invokeAssistantRecipe("add-flights-to-calendar", {
+			context,
+			userId: 42,
+			channel: "tool",
+			input: "Scan for upcoming flights",
+			requireInstalled: true,
+		});
+
+		expect(invocation).toMatchObject({
+			recipeId: "add-flights-to-calendar",
+			allowedConnectorProviders: ["gmail", "outlook", "calendar"],
+			allowedConnectorOperations: {
+				gmail: ["search_messages"],
+				outlook: ["search_messages", "create_calendar_event"],
+				calendar: ["create_event"],
+			},
+			enabledTools: ["use_recipe_connector"],
+			configuration: {
+				calendarTarget: "Travel calendar",
+				travelWindow: "Next 90 days",
+			},
+		});
+		expect(invocation?.conversationStarter).toContain("- calendarTarget: Travel calendar");
+		expect(invocation?.conversationStarter).toContain("- travelWindow: Next 90 days");
+	});
+
+	it("derives Asana connector operations for the Asana integration recipe", async () => {
+		const context = createTestServiceContext();
+		await installAssistantRecipe("asana", {
+			context,
+			userId: 42,
+			channel: "web",
+			configuration: {
+				workspaceId: "workspace-1",
+				projectIds: ["project-1"],
+			},
+		});
+
+		const invocation = await invokeAssistantRecipe("asana", {
+			context,
+			userId: 42,
+			channel: "tool",
+			requireInstalled: true,
+		});
+
+		expect(invocation).toMatchObject({
+			recipeId: "asana",
+			status: "ready",
+			allowedConnectorProviders: ["asana"],
+			allowedConnectorOperations: {
+				asana: ["list_projects", "list_tasks", "create_task"],
+			},
+			enabledTools: ["use_recipe_connector"],
+			configuration: {
+				workspaceId: "workspace-1",
+				projectIds: ["project-1"],
+			},
+		});
+		expect(invocation?.conversationStarter).toContain("- workspaceId: workspace-1");
+		expect(invocation?.conversationStarter).toContain("- projectIds: project-1");
+	});
+
+	it("derives Sentry read-only connector operations for the Sentry integration recipe", async () => {
+		const context = createTestServiceContext();
+		await installAssistantRecipe("sentry", {
+			context,
+			userId: 42,
+			channel: "web",
+			configuration: {
+				organizationSlug: "acme",
+				projectIds: ["123"],
+				issueQuery: "is:unresolved level:error",
+			},
+		});
+
+		const invocation = await invokeAssistantRecipe("sentry", {
+			context,
+			userId: 42,
+			channel: "tool",
+			requireInstalled: true,
+		});
+
+		expect(invocation).toMatchObject({
+			recipeId: "sentry",
+			status: "ready",
+			allowedConnectorProviders: ["sentry"],
+			allowedConnectorOperations: {
+				sentry: ["list_organizations", "list_projects", "list_issues", "retrieve_issue"],
+			},
+			enabledTools: ["use_recipe_connector"],
+			configuration: {
+				organizationSlug: "acme",
+				projectIds: ["123"],
+				issueQuery: "is:unresolved level:error",
+			},
+		});
+		expect(invocation?.conversationStarter).toContain("- organizationSlug: acme");
+		expect(invocation?.conversationStarter).toContain("- projectIds: 123");
+		expect(invocation?.conversationStarter).toContain("- issueQuery: is:unresolved level:error");
+	});
+
+	it("derives PostHog read-only connector operations for the PostHog integration recipe", async () => {
+		const context = createTestServiceContext();
+		await installAssistantRecipe("posthog", {
+			context,
+			userId: 42,
+			channel: "web",
+			configuration: {
+				region: "eu",
+				organizationId: "org-1",
+				projectId: "123",
+			},
+		});
+
+		const invocation = await invokeAssistantRecipe("posthog", {
+			context,
+			userId: 42,
+			channel: "tool",
+			requireInstalled: true,
+		});
+
+		expect(invocation).toMatchObject({
+			recipeId: "posthog",
+			status: "ready",
+			allowedConnectorProviders: ["posthog"],
+			allowedConnectorOperations: {
+				posthog: ["list_projects", "query"],
+			},
+			enabledTools: ["use_recipe_connector"],
+			configuration: {
+				region: "eu",
+				organizationId: "org-1",
+				projectId: "123",
+			},
+		});
+		expect(invocation?.conversationStarter).toContain("- region: eu");
+		expect(invocation?.conversationStarter).toContain("- organizationId: org-1");
+		expect(invocation?.conversationStarter).toContain("- projectId: 123");
+	});
+
+	it("derives Vercel read-only connector operations for the Vercel integration recipe", async () => {
+		const context = createTestServiceContext();
+		await installAssistantRecipe("vercel", {
+			context,
+			userId: 42,
+			channel: "web",
+			configuration: {
+				teamId: "team_123",
+				teamSlug: "acme",
+				projectId: "prj_123",
+				defaultTarget: "production",
+				defaultBranch: "main",
+			},
+		});
+
+		const invocation = await invokeAssistantRecipe("vercel", {
+			context,
+			userId: 42,
+			channel: "tool",
+			requireInstalled: true,
+		});
+
+		expect(invocation).toMatchObject({
+			recipeId: "vercel",
+			status: "ready",
+			allowedConnectorProviders: ["vercel"],
+			allowedConnectorOperations: {
+				vercel: ["list_projects", "list_deployments", "get_deployment_events"],
+			},
+			enabledTools: ["use_recipe_connector"],
+			configuration: {
+				teamId: "team_123",
+				teamSlug: "acme",
+				projectId: "prj_123",
+				defaultTarget: "production",
+				defaultBranch: "main",
+			},
+		});
+		expect(invocation?.conversationStarter).toContain("- teamId: team_123");
+		expect(invocation?.conversationStarter).toContain("- teamSlug: acme");
+		expect(invocation?.conversationStarter).toContain("- projectId: prj_123");
+		expect(invocation?.conversationStarter).toContain("- defaultTarget: production");
+		expect(invocation?.conversationStarter).toContain("- defaultBranch: main");
+	});
+
+	it("derives Fitbit read-only connector operations for the Fitbit integration recipe", async () => {
+		const context = createTestServiceContext();
+		await installAssistantRecipe("fitbit", {
+			context,
+			userId: 42,
+			channel: "web",
+			configuration: {
+				defaultDate: "today",
+				metricFocus: ["activity", "sleep"],
+				summaryStyle: "Concise morning check-in",
+			},
+		});
+
+		const invocation = await invokeAssistantRecipe("fitbit", {
+			context,
+			userId: 42,
+			channel: "tool",
+			requireInstalled: true,
+		});
+
+		expect(invocation).toMatchObject({
+			recipeId: "fitbit",
+			status: "ready",
+			allowedConnectorProviders: ["fitbit"],
+			allowedConnectorOperations: {
+				fitbit: ["profile", "daily_activity", "sleep_logs", "heart_rate"],
+			},
+			enabledTools: ["use_recipe_connector"],
+			configuration: {
+				defaultDate: "today",
+				metricFocus: ["activity", "sleep"],
+				summaryStyle: "Concise morning check-in",
+			},
+		});
+		expect(invocation?.conversationStarter).toContain("- defaultDate: today");
+		expect(invocation?.conversationStarter).toContain("- metricFocus: activity, sleep");
+		expect(invocation?.conversationStarter).toContain("- summaryStyle: Concise morning check-in");
+	});
+
+	it("derives Withings read-only connector operations for the Withings integration recipe", async () => {
+		const context = createTestServiceContext();
+		await installAssistantRecipe("withings", {
+			context,
+			userId: 42,
+			channel: "web",
+			configuration: {
+				startDate: "2026-06-01",
+				endDate: "2026-06-08",
+				metricFocus: ["weight", "sleep"],
+				summaryStyle: "Weekly trend summary",
+			},
+		});
+
+		const invocation = await invokeAssistantRecipe("withings", {
+			context,
+			userId: 42,
+			channel: "tool",
+			requireInstalled: true,
+		});
+
+		expect(invocation).toMatchObject({
+			recipeId: "withings",
+			status: "ready",
+			allowedConnectorProviders: ["withings"],
+			allowedConnectorOperations: {
+				withings: ["profile", "devices", "measurements", "activity", "sleep_summary"],
+			},
+			enabledTools: ["use_recipe_connector"],
+			configuration: {
+				startDate: "2026-06-01",
+				endDate: "2026-06-08",
+				metricFocus: ["weight", "sleep"],
+				summaryStyle: "Weekly trend summary",
+			},
+		});
+		expect(invocation?.conversationStarter).toContain("- startDate: 2026-06-01");
+		expect(invocation?.conversationStarter).toContain("- endDate: 2026-06-08");
+		expect(invocation?.conversationStarter).toContain("- metricFocus: weight, sleep");
+		expect(invocation?.conversationStarter).toContain("- summaryStyle: Weekly trend summary");
+	});
+
+	it("keeps GitHub App integrations out of the OAuth connector tool scope", async () => {
+		const context = createTestServiceContext();
+		await installAssistantRecipe("developer-standup", {
+			context,
+			userId: 42,
+			channel: "web",
+		});
+
+		const invocation = await invokeAssistantRecipe("developer-standup", {
+			context,
+			userId: 42,
+			channel: "tool",
+			requireInstalled: true,
+		});
+
+		expect(invocation).toMatchObject({
+			recipeId: "developer-standup",
+			enabledTools: ["use_recipe_connector", "run_code_review"],
+			allowedConnectorProviders: ["linear"],
+			allowedConnectorOperations: {
+				linear: ["search_issues"],
+			},
+		});
+	});
+
+	it("keeps catalogue connector operations supported and scheduled recipes read-only", () => {
+		expect(getRecipeCatalogValidationIssues()).toEqual([]);
 	});
 
 	it("builds install setup with connector status and stores installation", async () => {
@@ -369,6 +980,48 @@ describe("assistant recipes", () => {
 		expect(invocation?.conversationStarter).toContain(
 			"- instructions: Capture owner, due date, and source conversation.",
 		);
+	});
+
+	it("uses queued task configuration overrides without mutating the saved recipe configuration", async () => {
+		const context = createTestServiceContext();
+
+		await installAssistantRecipe("daily-weather", {
+			context,
+			userId: 42,
+			channel: "web",
+			configuration: {
+				location: "London",
+				forecastTime: "07:30",
+			},
+		});
+		const invocation = await invokeAssistantRecipe("daily-weather", {
+			context,
+			userId: 42,
+			channel: "scheduled",
+			input: "Run the queued forecast",
+			requireInstalled: true,
+			configuration: {
+				location: "Cambridge",
+				forecastTime: "09:05",
+				unexpected: "ignore me",
+			},
+		});
+		const installations = await listRecipeInstallations({ context, userId: 42 });
+
+		expect(invocation).toMatchObject({
+			status: "ready",
+			configuration: {
+				location: "Cambridge",
+				forecastTime: "09:05",
+			},
+		});
+		expect(invocation?.configuration).not.toHaveProperty("unexpected");
+		expect(invocation?.conversationStarter).toContain("- location: Cambridge");
+		expect(invocation?.conversationStarter).toContain("- forecastTime: 09:05");
+		expect(installations.installations[0]?.configuration).toEqual({
+			location: "London",
+			forecastTime: "07:30",
+		});
 	});
 
 	it("keeps saved configuration in the chat starter when starting an installed recipe again", async () => {
@@ -477,6 +1130,37 @@ describe("assistant recipes", () => {
 		});
 		expect(invocation).not.toHaveProperty("installationId");
 		expect(installations.installations).toEqual([]);
+	});
+
+	it("does not queue uninstalled recipe executions when installation is required", async () => {
+		const context = createTestServiceContext();
+
+		const invocation = await invokeAssistantRecipe("daily-weather", {
+			context,
+			userId: 42,
+			channel: "web",
+			input: "Run daily weather",
+			queue: true,
+			requireInstalled: true,
+		});
+		const installations = await listRecipeInstallations({ context, userId: 42 });
+
+		expect(invocation).toMatchObject({
+			status: "not_installed",
+			recipeId: "daily-weather",
+			configuration: {},
+		});
+		expect(invocation).not.toHaveProperty("installationId");
+		expect(invocation).not.toHaveProperty("taskId");
+		expect(installations.installations).toEqual([]);
+	});
+
+	it("does not advertise unsupported Linear issue updates in the catalogue", () => {
+		const recipe = getRecipeById("linear-triage");
+
+		expect(recipe?.actions.join(" ")).not.toMatch(/\bupdate\b/i);
+		expect(recipe?.setupPrompt).toContain("only supports search and issue creation");
+		expect(recipe?.setupPrompt).not.toMatch(/create or update/i);
 	});
 
 	it("resolves an installed active recipe from natural language", async () => {
@@ -646,7 +1330,7 @@ describe("assistant recipes", () => {
 
 	it("updates installed recipe configuration without dropping existing triggers", async () => {
 		const context = createTestServiceContext();
-		const setup = await installAssistantRecipe("notion-workspace-assistant", {
+		const setup = await installAssistantRecipe("daily-weather", {
 			context,
 			userId: 42,
 			channel: "web",
@@ -656,9 +1340,12 @@ describe("assistant recipes", () => {
 					type: "schedule",
 					enabled: true,
 					cronExpression: "0 17 * * 5",
-					prompt: "Prepare a Notion workspace recap",
+					prompt: "Prepare a weather forecast",
 				},
 			],
+			configuration: {
+				location: "London",
+			},
 		});
 
 		const updated = await updateRecipeInstallation({
@@ -667,8 +1354,8 @@ describe("assistant recipes", () => {
 			installationId: setup?.installation?.id ?? "",
 			update: {
 				configuration: {
-					notionTarget: "Weekly review page",
-					contentRules: "Append notes",
+					location: "London",
+					forecastTime: "17:00",
 					mode: "ignored",
 				},
 			},
@@ -677,8 +1364,8 @@ describe("assistant recipes", () => {
 		expect(updated).toMatchObject({
 			id: setup?.installation?.id,
 			configuration: {
-				notionTarget: "Weekly review page",
-				contentRules: "Append notes",
+				location: "London",
+				forecastTime: "17:00",
 			},
 			triggers: [
 				expect.objectContaining({ type: "manual" }),
@@ -688,6 +1375,226 @@ describe("assistant recipes", () => {
 				}),
 			],
 		});
+	});
+
+	it("preserves schedule state for configuration updates and resets it when cron changes", async () => {
+		vi.useFakeTimers();
+		try {
+			vi.setSystemTime(new Date("2026-06-07T10:01:00.000Z"));
+			const context = createTestServiceContext();
+			const setup = await installAssistantRecipe("daily-weather", {
+				context,
+				userId: 42,
+				channel: "web",
+				triggers: [
+					{ type: "manual", enabled: true },
+					{
+						type: "schedule",
+						enabled: true,
+						cronExpression: "0 17 * * 5",
+						prompt: "Prepare a weather forecast",
+					},
+				],
+				configuration: {
+					location: "London",
+				},
+			});
+
+			vi.setSystemTime(new Date("2026-06-07T10:10:00.000Z"));
+			await updateRecipeInstallation({
+				context,
+				userId: 42,
+				installationId: setup?.installation?.id ?? "",
+				update: {
+					configuration: {
+						location: "London",
+					},
+				},
+			});
+
+			const updateAppData = vi.mocked(context.repositories.appData.updateAppData);
+			expect(updateAppData).toHaveBeenLastCalledWith(
+				setup?.installation?.id,
+				expect.objectContaining({
+					scheduleState: {
+						"1": {
+							cronExpression: "0 17 * * 5",
+							enabled: true,
+							activatedAt: "2026-06-07T10:01:00.000Z",
+						},
+					},
+				}),
+			);
+
+			vi.setSystemTime(new Date("2026-06-07T10:20:00.000Z"));
+			await updateRecipeInstallation({
+				context,
+				userId: 42,
+				installationId: setup?.installation?.id ?? "",
+				update: {
+					triggers: [
+						{ type: "manual", enabled: true },
+						{
+							type: "schedule",
+							enabled: true,
+							cronExpression: "30 17 * * 5",
+							prompt: "Prepare a weather forecast",
+						},
+					],
+				},
+			});
+
+			expect(updateAppData).toHaveBeenLastCalledWith(
+				setup?.installation?.id,
+				expect.objectContaining({
+					scheduleState: {
+						"1": {
+							cronExpression: "30 17 * * 5",
+							enabled: true,
+							activatedAt: "2026-06-07T10:20:00.000Z",
+						},
+					},
+				}),
+			);
+		} finally {
+			vi.useRealTimers();
+		}
+	});
+
+	it("rejects scheduled triggers for recipes that do not support schedules", async () => {
+		const context = createTestServiceContext();
+
+		await expect(
+			installAssistantRecipe("add-deadlines-to-calendar", {
+				context,
+				userId: 42,
+				channel: "web",
+				triggers: [
+					{ type: "manual", enabled: true },
+					{
+						type: "schedule",
+						enabled: true,
+						cronExpression: "5 9 * * *",
+					},
+				],
+			}),
+		).rejects.toThrow("Add Deadlines to Calendar does not support scheduled triggers");
+	});
+
+	it("rejects unsupported cron expressions when installing a scheduled recipe", async () => {
+		const context = createTestServiceContext();
+
+		await expect(
+			installAssistantRecipe("daily-weather", {
+				context,
+				userId: 42,
+				channel: "web",
+				triggers: [
+					{ type: "manual", enabled: true },
+					{
+						type: "schedule",
+						enabled: true,
+						cronExpression: "60 9 * * *",
+					},
+				],
+			}),
+		).rejects.toThrow("Daily Weather schedule uses an unsupported cron expression");
+	});
+
+	it("rejects scheduled recipe installs when required configuration is missing", async () => {
+		const context = createTestServiceContext();
+
+		await expect(
+			installAssistantRecipe("daily-weather", {
+				context,
+				userId: 42,
+				channel: "web",
+				triggers: [
+					{ type: "manual", enabled: true },
+					{
+						type: "schedule",
+						enabled: true,
+						cronExpression: "5 9 * * *",
+					},
+				],
+			}),
+		).rejects.toThrow("Daily Weather scheduled triggers require recipe configuration: Location");
+	});
+
+	it("rejects schedule updates for installed recipes that do not support schedules", async () => {
+		const context = createTestServiceContext();
+		const setup = await installAssistantRecipe("follow-up-reminders", {
+			context,
+			userId: 42,
+			channel: "web",
+		});
+
+		await expect(
+			updateRecipeInstallation({
+				context,
+				userId: 42,
+				installationId: setup?.installation?.id ?? "",
+				update: {
+					triggers: [
+						{ type: "manual", enabled: true },
+						{
+							type: "schedule",
+							enabled: true,
+							cronExpression: "5 9 * * *",
+						},
+					],
+				},
+			}),
+		).rejects.toThrow("Follow-up Reminders does not support scheduled triggers");
+	});
+
+	it("preserves saved triggers and configuration when reopening an installed recipe setup", async () => {
+		const context = createTestServiceContext();
+		const setup = await installAssistantRecipe("daily-weather", {
+			context,
+			userId: 42,
+			channel: "web",
+			triggers: [
+				{ type: "manual", enabled: true },
+				{
+					type: "schedule",
+					enabled: true,
+					cronExpression: "5 9 * * *",
+					prompt: "Send the morning weather",
+					notificationChannel: "sms",
+					notificationTarget: "+15551234567",
+				},
+			],
+			configuration: {
+				location: "London",
+				forecastTime: "09:05",
+			},
+		});
+
+		const reopened = await installAssistantRecipe("daily-weather", {
+			context,
+			userId: 42,
+			channel: "web",
+		});
+
+		expect(reopened?.installation).toMatchObject({
+			id: setup?.installation?.id,
+			configuration: {
+				location: "London",
+				forecastTime: "09:05",
+			},
+			triggers: [
+				expect.objectContaining({ type: "manual" }),
+				expect.objectContaining({
+					type: "schedule",
+					cronExpression: "5 9 * * *",
+					notificationChannel: "sms",
+					notificationTarget: "+15551234567",
+				}),
+			],
+		});
+		expect(reopened?.conversationStarter).toContain("- location: London");
+		expect(reopened?.conversationStarter).toContain("- forecastTime: 09:05");
 	});
 
 	it("deletes installed recipes by user-owned installation id", async () => {

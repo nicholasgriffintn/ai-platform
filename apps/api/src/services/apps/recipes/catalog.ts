@@ -4,11 +4,18 @@ import type {
 	RecipeConfigurationField,
 	RecipeKind,
 } from "@assistant/schemas";
+import { recipeConnectorProviderSchema } from "@assistant/schemas";
+import {
+	isConnectorOperationSupported,
+	isConnectorOperationWrite,
+} from "~/lib/providers/capabilities/connectors";
 
 export const RECIPE_CONNECTOR_TOOL = "use_recipe_connector";
 export const RECIPE_TRIGGER_TOOL = "trigger_recipe";
 export const WEATHER_TOOL = "get_weather";
 export const WEB_SEARCH_TOOL = "web_search";
+export const IMAGE_TOOL = "create_image";
+export const QR_TOOL = "create_qr_code";
 
 type CatalogRecipeConfigurationField = Omit<RecipeConfigurationField, "required"> & {
 	required?: boolean;
@@ -60,13 +67,16 @@ const catalogRecipes: CatalogRecipe[] = [
 				name: "Gmail",
 				description: "Reads relevant recent messages when Gmail is connected.",
 				requiresConnection: true,
+				operationIds: ["search_messages"],
 			},
 			{
 				id: "outlook",
 				providerId: "outlook",
 				name: "Outlook",
-				description: "Reads relevant recent mail and calendar data when Outlook is connected.",
+				description:
+					"Reads relevant recent mail and upcoming calendar events when Outlook is connected.",
 				requiresConnection: true,
+				operationIds: ["search_messages", "list_events"],
 			},
 			{
 				id: "calendar",
@@ -74,6 +84,7 @@ const catalogRecipes: CatalogRecipe[] = [
 				name: "Google Calendar",
 				description: "Reads upcoming calendar events when Google Calendar is connected.",
 				requiresConnection: true,
+				operationIds: ["list_events"],
 			},
 		],
 		triggers: [
@@ -121,7 +132,7 @@ const catalogRecipes: CatalogRecipe[] = [
 		title: "Add Deadlines to Calendar",
 		summary: "Turn deadline emails into reviewed calendar events.",
 		description:
-			"Searches connected mail for deadline-style messages and creates calendar events only after the user confirms the proposed event details.",
+			"Searches connected mail for deadline-style messages and creates calendar events from chat only after the user confirms the proposed event details.",
 		kind: "automate",
 		category: "Students",
 		featured: true,
@@ -134,13 +145,16 @@ const catalogRecipes: CatalogRecipe[] = [
 				name: "Gmail",
 				description: "Searches Gmail for deadline messages.",
 				requiresConnection: true,
+				operationIds: ["search_messages"],
 			},
 			{
 				id: "outlook",
 				providerId: "outlook",
 				name: "Outlook",
-				description: "Searches Outlook mail for deadline messages.",
+				description:
+					"Searches Outlook mail for deadline messages and creates reviewed Outlook events.",
 				requiresConnection: true,
+				operationIds: ["search_messages", "create_calendar_event"],
 			},
 			{
 				id: "calendar",
@@ -148,6 +162,7 @@ const catalogRecipes: CatalogRecipe[] = [
 				name: "Google Calendar",
 				description: "Creates reviewed deadline events.",
 				requiresConnection: true,
+				operationIds: ["create_event"],
 			},
 		],
 		triggers: [
@@ -155,11 +170,6 @@ const catalogRecipes: CatalogRecipe[] = [
 				type: "message",
 				label: "Ask for deadline extraction",
 				description: "Ask Polychat to scan for deadlines and propose events.",
-			},
-			{
-				type: "schedule",
-				label: "Recurring scan",
-				description: "Run a recurring deadline scan.",
 			},
 		],
 		actions: [
@@ -193,6 +203,81 @@ const catalogRecipes: CatalogRecipe[] = [
 		],
 	},
 	{
+		id: "add-flights-to-calendar",
+		title: "Add Flights to Calendar",
+		summary: "Turn flight itinerary emails into reviewed calendar events.",
+		description:
+			"Searches connected mail for flight confirmations, extracts itinerary details, and creates reviewed calendar events after confirmation.",
+		kind: "automate",
+		category: "Travel",
+		featured: true,
+		estimatedSetupMinutes: 5,
+		enabledTools: [RECIPE_CONNECTOR_TOOL],
+		integrations: [
+			{
+				id: "gmail",
+				providerId: "gmail",
+				name: "Gmail",
+				description: "Searches Gmail for flight confirmation and itinerary messages.",
+				requiresConnection: true,
+				operationIds: ["search_messages"],
+			},
+			{
+				id: "outlook",
+				providerId: "outlook",
+				name: "Outlook",
+				description:
+					"Searches Outlook mail for flight itineraries and creates reviewed Outlook calendar events.",
+				requiresConnection: true,
+				operationIds: ["search_messages", "create_calendar_event"],
+			},
+			{
+				id: "calendar",
+				providerId: "calendar",
+				name: "Google Calendar",
+				description: "Creates reviewed flight calendar events.",
+				requiresConnection: true,
+				operationIds: ["create_event"],
+			},
+		],
+		triggers: [
+			{
+				type: "message",
+				label: "Ask to add flights",
+				description: "Ask Polychat to scan itinerary emails and propose calendar events.",
+			},
+		],
+		actions: [
+			"Search connected inboxes for airline confirmations and itinerary messages",
+			"Extract flight numbers, airports, departure and arrival times, and confirmation codes",
+			"Create calendar events only after confirming each proposed event",
+		],
+		setupPrompt:
+			"Set up the Add Flights to Calendar recipe. Ask which inboxes and calendar to use, search for flight confirmations and itineraries, extract flight numbers, airports, local departure and arrival times, confirmation codes, and source links, then create calendar events only after I approve each event. Do not check in, contact airlines, or change bookings.",
+		configurationFields: [
+			{
+				key: "inboxes",
+				label: "Inboxes to scan",
+				type: "string_list",
+				placeholder: "Travel Gmail, Outlook",
+			},
+			{
+				key: "calendarTarget",
+				label: "Calendar target",
+				type: "text",
+				required: true,
+				placeholder: "Travel calendar, primary calendar",
+			},
+			{
+				key: "travelWindow",
+				label: "Travel window",
+				type: "text",
+				placeholder: "Next 90 days, upcoming trip, this month",
+			},
+			reviewInstructionsField,
+		],
+	},
+	{
 		id: "follow-up-reminders",
 		title: "Follow-up Reminders",
 		summary: "Find sent emails that likely need a follow-up and draft replies.",
@@ -210,6 +295,7 @@ const catalogRecipes: CatalogRecipe[] = [
 				name: "Gmail",
 				description: "Searches sent Gmail conversations.",
 				requiresConnection: true,
+				operationIds: ["search_messages", "create_draft"],
 			},
 			{
 				id: "outlook",
@@ -217,6 +303,7 @@ const catalogRecipes: CatalogRecipe[] = [
 				name: "Outlook",
 				description: "Searches sent Outlook conversations.",
 				requiresConnection: true,
+				operationIds: ["search_messages", "create_draft"],
 			},
 		],
 		triggers: [
@@ -224,11 +311,6 @@ const catalogRecipes: CatalogRecipe[] = [
 				type: "message",
 				label: "Ask for follow-ups",
 				description: "Ask Polychat to find follow-up candidates.",
-			},
-			{
-				type: "schedule",
-				label: "Daily scan",
-				description: "Run a scheduled follow-up scan.",
 			},
 		],
 		actions: [
@@ -279,6 +361,7 @@ const catalogRecipes: CatalogRecipe[] = [
 				name: "Gmail",
 				description: "Searches Gmail for renewal and trial messages.",
 				requiresConnection: true,
+				operationIds: ["search_messages"],
 			},
 			{
 				id: "outlook",
@@ -286,6 +369,7 @@ const catalogRecipes: CatalogRecipe[] = [
 				name: "Outlook",
 				description: "Searches Outlook for renewal and trial messages.",
 				requiresConnection: true,
+				operationIds: ["search_messages"],
 			},
 		],
 		triggers: [
@@ -403,6 +487,7 @@ const catalogRecipes: CatalogRecipe[] = [
 				name: "Gmail",
 				description: "Searches Gmail messages and creates draft replies.",
 				requiresConnection: true,
+				operationIds: ["search_messages", "create_draft"],
 			},
 		],
 		triggers: [
@@ -453,6 +538,7 @@ const catalogRecipes: CatalogRecipe[] = [
 				name: "Outlook Mail",
 				description: "Searches Outlook messages and creates draft replies.",
 				requiresConnection: true,
+				operationIds: ["search_messages", "create_draft"],
 			},
 		],
 		triggers: [
@@ -503,6 +589,7 @@ const catalogRecipes: CatalogRecipe[] = [
 				name: "Google Calendar",
 				description: "Lists upcoming events and creates confirmed events.",
 				requiresConnection: true,
+				operationIds: ["list_events", "create_event"],
 			},
 		],
 		triggers: [
@@ -553,6 +640,7 @@ const catalogRecipes: CatalogRecipe[] = [
 				name: "Outlook Calendar",
 				description: "Creates confirmed Outlook calendar events.",
 				requiresConnection: true,
+				operationIds: ["create_calendar_event"],
 			},
 		],
 		triggers: [
@@ -604,6 +692,7 @@ const catalogRecipes: CatalogRecipe[] = [
 				name: "Linear",
 				description: "Searches Linear issues and projects.",
 				requiresConnection: true,
+				operationIds: ["search_issues"],
 			},
 		],
 		triggers: [
@@ -664,6 +753,7 @@ const catalogRecipes: CatalogRecipe[] = [
 				name: "Linear",
 				description: "Reads and creates Linear issues after confirmation.",
 				requiresConnection: true,
+				operationIds: ["search_issues", "create_issue"],
 			},
 		],
 		triggers: [
@@ -675,7 +765,7 @@ const catalogRecipes: CatalogRecipe[] = [
 		],
 		actions: ["Search Linear issues", "Create reviewed issues", "Summarise project status"],
 		setupPrompt:
-			"Set up the Linear Triage recipe. Ask which team or project to use, search issues as needed, and create or update issues only after I confirm the exact changes.",
+			"Set up the Linear Triage recipe. Ask which team or project to use, search issues as needed, and create new issues only after I confirm the exact title, team, and description. Do not update existing issues because this connector only supports search and issue creation.",
 		configurationFields: [
 			{
 				key: "linearTeam",
@@ -689,6 +779,484 @@ const catalogRecipes: CatalogRecipe[] = [
 				label: "Issue defaults",
 				type: "textarea",
 				placeholder: "Default labels, assignee rules, priority rules, or required fields",
+			},
+			reviewInstructionsField,
+		],
+	},
+	{
+		id: "todoist",
+		title: "Todoist",
+		summary: "Manage Todoist tasks and projects from chat.",
+		description:
+			"Uses a connected Todoist account to list tasks, create reviewed tasks, and complete tasks after confirmation.",
+		kind: "integrate",
+		category: "To-dos",
+		featured: true,
+		estimatedSetupMinutes: 3,
+		enabledTools: [RECIPE_CONNECTOR_TOOL],
+		integrations: [
+			{
+				id: "todoist",
+				providerId: "todoist",
+				name: "Todoist",
+				description: "Lists, creates, and completes Todoist tasks.",
+				requiresConnection: true,
+				operationIds: ["list_tasks", "create_task", "complete_task"],
+			},
+		],
+		triggers: [
+			{
+				type: "message",
+				label: "Ask about tasks",
+				description: "Ask Polychat to review, create, or complete Todoist tasks.",
+			},
+		],
+		actions: [
+			"List active tasks by project, label, parent, or section",
+			"Create reviewed Todoist tasks with due dates and labels",
+			"Complete tasks only after confirming the task ID or exact task",
+		],
+		setupPrompt:
+			"Set up the Todoist recipe. Ask which projects, labels, or task views I want to use. List tasks when needed, create tasks only after I confirm the content, due date, project, and labels, and complete tasks only after I confirm the exact task. Do not delete, move, or reopen tasks because this connector does not support those operations.",
+		configurationFields: [
+			{
+				key: "defaultProject",
+				label: "Default project",
+				type: "text",
+				placeholder: "Inbox, Work, Personal, or a project ID",
+			},
+			{
+				key: "defaultLabels",
+				label: "Default labels",
+				type: "string_list",
+				placeholder: "work, errands, follow-up",
+			},
+			{
+				key: "taskRules",
+				label: "Task rules",
+				type: "textarea",
+				placeholder: "Due-date wording, confirmation rules, priority defaults, or labels to avoid",
+			},
+			reviewInstructionsField,
+		],
+	},
+	{
+		id: "sentry",
+		title: "Sentry",
+		summary: "Review Sentry projects and unresolved issues from chat.",
+		description:
+			"Uses a connected Sentry organization to list projects, review unresolved issues, and inspect issue details without mutating incidents.",
+		kind: "integrate",
+		category: "Developer",
+		featured: false,
+		estimatedSetupMinutes: 4,
+		enabledTools: [RECIPE_CONNECTOR_TOOL],
+		integrations: [
+			{
+				id: "sentry",
+				providerId: "sentry",
+				name: "Sentry",
+				description: "Lists organizations, projects, and issue details.",
+				requiresConnection: true,
+				operationIds: ["list_organizations", "list_projects", "list_issues", "retrieve_issue"],
+			},
+		],
+		triggers: [
+			{
+				type: "message",
+				label: "Ask about Sentry incidents",
+				description: "Ask Polychat to review Sentry projects and unresolved issues.",
+			},
+		],
+		actions: [
+			"List connected Sentry organizations",
+			"List projects for a configured organization",
+			"Review unresolved issues and retrieve issue details",
+		],
+		setupPrompt:
+			"Set up the Sentry recipe. Ask which Sentry organization slug and projects to use, list organizations or projects when needed, and review unresolved issues using only read-only Sentry operations. Do not resolve, assign, comment on, delete, or otherwise mutate issues because this connector is read-only.",
+		configurationFields: [
+			{
+				key: "organizationSlug",
+				label: "Organization slug",
+				type: "text",
+				required: true,
+				placeholder: "acme",
+			},
+			{
+				key: "projectIds",
+				label: "Project IDs",
+				type: "string_list",
+				placeholder: "12345, 67890",
+			},
+			{
+				key: "issueQuery",
+				label: "Issue query",
+				type: "text",
+				placeholder: "is:unresolved level:error",
+			},
+			reviewInstructionsField,
+		],
+	},
+	{
+		id: "posthog",
+		title: "PostHog",
+		summary: "Query product analytics and project data from chat.",
+		description:
+			"Uses a connected PostHog personal API key to list projects and run read-only HogQL analytics queries.",
+		kind: "integrate",
+		category: "Developer",
+		featured: false,
+		estimatedSetupMinutes: 4,
+		enabledTools: [RECIPE_CONNECTOR_TOOL],
+		integrations: [
+			{
+				id: "posthog",
+				providerId: "posthog",
+				name: "PostHog",
+				description: "Lists projects and runs read-only HogQL queries.",
+				requiresConnection: true,
+				operationIds: ["list_projects", "query"],
+			},
+		],
+		triggers: [
+			{
+				type: "message",
+				label: "Ask about product analytics",
+				description: "Ask Polychat to query PostHog product analytics.",
+			},
+		],
+		actions: [
+			"List PostHog projects for a configured organization",
+			"Run bounded read-only HogQL queries",
+			"Summarise product analytics results without changing PostHog data",
+		],
+		setupPrompt:
+			"Set up the PostHog recipe. Ask which PostHog region, organization ID, and project ID to use. Run only read-only HogQL queries and keep result limits bounded. Do not create, update, delete, or mutate PostHog data because this connector is read-only.",
+		configurationFields: [
+			{
+				key: "region",
+				label: "Region",
+				type: "text",
+				placeholder: "us, eu, or app",
+				defaultValue: "us",
+			},
+			{
+				key: "organizationId",
+				label: "Organization ID",
+				type: "text",
+				placeholder: "PostHog organization ID",
+			},
+			{
+				key: "projectId",
+				label: "Project ID",
+				type: "text",
+				required: true,
+				placeholder: "PostHog project ID",
+			},
+			{
+				key: "defaultQuestion",
+				label: "Default question",
+				type: "textarea",
+				placeholder: "Conversion, activation, retention, feature usage, or error analysis focus",
+			},
+			reviewInstructionsField,
+		],
+	},
+	{
+		id: "vercel",
+		title: "Vercel",
+		summary: "Inspect Vercel projects, deployments, and build events from chat.",
+		description:
+			"Uses a connected Vercel access token to list projects, review deployments, and inspect deployment events without changing Vercel resources.",
+		kind: "integrate",
+		category: "Developer",
+		featured: false,
+		estimatedSetupMinutes: 3,
+		enabledTools: [RECIPE_CONNECTOR_TOOL],
+		integrations: [
+			{
+				id: "vercel",
+				providerId: "vercel",
+				name: "Vercel",
+				description: "Lists projects, deployments, and deployment events.",
+				requiresConnection: true,
+				operationIds: ["list_projects", "list_deployments", "get_deployment_events"],
+			},
+		],
+		triggers: [
+			{
+				type: "message",
+				label: "Ask about deployments",
+				description: "Ask Polychat to inspect Vercel projects, deployments, or build events.",
+			},
+		],
+		actions: [
+			"List accessible Vercel projects",
+			"Review recent deployments by project, branch, target, state, or team",
+			"Inspect deployment events and build output for a selected deployment",
+		],
+		setupPrompt:
+			"Set up the Vercel recipe. Ask which team, project, branch, and environment to monitor. Use only read-only Vercel operations to list projects, review deployments, and inspect deployment events. Do not create deployments, edit projects, update domains, change environment variables, or mutate Vercel resources because this connector is read-only.",
+		configurationFields: [
+			{
+				key: "teamId",
+				label: "Team ID",
+				type: "text",
+				placeholder: "team_...",
+			},
+			{
+				key: "teamSlug",
+				label: "Team slug",
+				type: "text",
+				placeholder: "my-team",
+			},
+			{
+				key: "projectId",
+				label: "Project ID or name",
+				type: "text",
+				placeholder: "prj_... or project-name",
+			},
+			{
+				key: "defaultTarget",
+				label: "Default target",
+				type: "text",
+				placeholder: "production or preview",
+			},
+			{
+				key: "defaultBranch",
+				label: "Default branch",
+				type: "text",
+				placeholder: "main",
+			},
+			reviewInstructionsField,
+		],
+	},
+	{
+		id: "netlify",
+		title: "Netlify",
+		summary: "Inspect Netlify sites, deploys, and deployment status from chat.",
+		description:
+			"Uses a connected Netlify personal access token to list sites, review deploy history, and check deployment status without changing Netlify resources.",
+		kind: "integrate",
+		category: "Developer",
+		featured: false,
+		estimatedSetupMinutes: 3,
+		enabledTools: [RECIPE_CONNECTOR_TOOL],
+		integrations: [
+			{
+				id: "netlify",
+				providerId: "netlify",
+				name: "Netlify",
+				description: "Lists sites, deploy history, and deployment status.",
+				requiresConnection: true,
+				operationIds: ["list_sites", "list_deploys", "get_deploy"],
+			},
+		],
+		triggers: [
+			{
+				type: "message",
+				label: "Ask about Netlify deploys",
+				description: "Ask Polychat to inspect Netlify sites, deploy history, or deployment status.",
+			},
+		],
+		actions: [
+			"List accessible Netlify sites",
+			"Review recent deploys for a selected site",
+			"Check deployment state for a selected deploy",
+		],
+		setupPrompt:
+			"Set up the Netlify recipe. Ask which site ID or domain, branch, and deployment focus to use. Use only read-only Netlify operations to list sites, review deploy history, and check deployment status. Do not create deploys, restore deploys, edit sites, change environment variables, change hooks, or mutate Netlify resources because this connector is read-only.",
+		configurationFields: [
+			{
+				key: "siteId",
+				label: "Site ID or domain",
+				type: "text",
+				placeholder: "site-id or example.netlify.app",
+			},
+			{
+				key: "defaultBranch",
+				label: "Default branch",
+				type: "text",
+				placeholder: "main",
+			},
+			{
+				key: "defaultDeployFocus",
+				label: "Default deploy focus",
+				type: "textarea",
+				placeholder: "Failed deploys, production deploys, deploy status, or recent changes",
+			},
+			reviewInstructionsField,
+		],
+	},
+	{
+		id: "fitbit",
+		title: "Fitbit",
+		summary: "Review Fitbit activity, sleep, and heart-rate data from chat.",
+		description:
+			"Uses a connected Fitbit account to read profile, daily activity, sleep logs, and heart-rate summaries without writing health data.",
+		kind: "integrate",
+		category: "Health",
+		featured: false,
+		estimatedSetupMinutes: 4,
+		enabledTools: [RECIPE_CONNECTOR_TOOL],
+		integrations: [
+			{
+				id: "fitbit",
+				providerId: "fitbit",
+				name: "Fitbit",
+				description: "Reads profile, daily activity, sleep logs, and heart-rate summaries.",
+				requiresConnection: true,
+				operationIds: ["profile", "daily_activity", "sleep_logs", "heart_rate"],
+			},
+		],
+		triggers: [
+			{
+				type: "message",
+				label: "Ask about Fitbit data",
+				description: "Ask Polychat to review Fitbit activity, sleep, or heart-rate data.",
+			},
+		],
+		actions: [
+			"Read the connected Fitbit profile",
+			"Review daily activity, sleep logs, and heart-rate summaries",
+			"Summarise wellness trends without giving medical diagnosis or safety-critical advice",
+		],
+		setupPrompt:
+			"Set up the Fitbit recipe. Ask which dates, health metrics, and summary style to use. Use only read-only Fitbit operations for profile, activity, sleep, and heart-rate data. Do not log activities, edit goals, delete entries, or present medical diagnosis or safety-critical advice.",
+		configurationFields: [
+			{
+				key: "defaultDate",
+				label: "Default date",
+				type: "text",
+				placeholder: "today or yyyy-MM-dd",
+				defaultValue: "today",
+			},
+			{
+				key: "metricFocus",
+				label: "Metric focus",
+				type: "string_list",
+				placeholder: "activity, sleep, heart rate",
+			},
+			{
+				key: "summaryStyle",
+				label: "Summary style",
+				type: "textarea",
+				placeholder: "Concise check-in, coaching tone, trend analysis, or alert thresholds",
+			},
+			reviewInstructionsField,
+		],
+	},
+	{
+		id: "withings",
+		title: "Withings",
+		summary: "Review Withings body metrics, activity, devices, and sleep summaries from chat.",
+		description:
+			"Uses a connected Withings account to read profile, device, body measurement, activity, and sleep summary data without changing health records.",
+		kind: "integrate",
+		category: "Health",
+		featured: false,
+		estimatedSetupMinutes: 4,
+		enabledTools: [RECIPE_CONNECTOR_TOOL],
+		integrations: [
+			{
+				id: "withings",
+				providerId: "withings",
+				name: "Withings",
+				description: "Reads profile, devices, body measurements, activity, and sleep summaries.",
+				requiresConnection: true,
+				operationIds: ["profile", "devices", "measurements", "activity", "sleep_summary"],
+			},
+		],
+		triggers: [
+			{
+				type: "message",
+				label: "Ask about Withings data",
+				description: "Ask Polychat to review Withings metrics, activity, devices, or sleep.",
+			},
+		],
+		actions: [
+			"Read connected Withings profile and device metadata",
+			"Review body measurements, activity summaries, and sleep summaries",
+			"Summarise wellness trends without medical diagnosis or safety-critical advice",
+		],
+		setupPrompt:
+			"Set up the Withings recipe. Ask which metric types, date range, and summary style to use. Use only read-only Withings operations for profile, devices, measurements, activity, and sleep summaries. Do not edit goals, link or unlink devices, subscribe to notifications, change records, or present medical diagnosis or safety-critical advice.",
+		configurationFields: [
+			{
+				key: "startDate",
+				label: "Start date",
+				type: "text",
+				placeholder: "yyyy-MM-dd",
+			},
+			{
+				key: "endDate",
+				label: "End date",
+				type: "text",
+				placeholder: "yyyy-MM-dd",
+			},
+			{
+				key: "metricFocus",
+				label: "Metric focus",
+				type: "string_list",
+				placeholder: "weight, blood pressure, activity, sleep",
+			},
+			{
+				key: "summaryStyle",
+				label: "Summary style",
+				type: "textarea",
+				placeholder: "Concise trend summary, coaching tone, or threshold notes",
+			},
+			reviewInstructionsField,
+		],
+	},
+	{
+		id: "asana",
+		title: "Asana",
+		summary: "Organise work across projects with reviewed Asana task actions.",
+		description:
+			"Uses a connected Asana workspace to list projects, review tasks, and create confirmed tasks from chat.",
+		kind: "integrate",
+		category: "Productivity",
+		featured: false,
+		estimatedSetupMinutes: 3,
+		enabledTools: [RECIPE_CONNECTOR_TOOL],
+		integrations: [
+			{
+				id: "asana",
+				providerId: "asana",
+				name: "Asana",
+				description: "Lists projects and creates reviewed Asana tasks.",
+				requiresConnection: true,
+				operationIds: ["list_projects", "list_tasks", "create_task"],
+			},
+		],
+		triggers: [
+			{
+				type: "message",
+				label: "Ask about Asana work",
+				description: "Ask Polychat to review or create Asana tasks.",
+			},
+		],
+		actions: [
+			"List accessible Asana projects",
+			"Review tasks in a project or workspace",
+			"Create tasks only after confirming project, title, notes, assignee, and due date",
+		],
+		setupPrompt:
+			"Set up the Asana recipe. Ask which workspace and projects to use, list projects or tasks when needed, and create tasks only after I confirm the project, task name, notes, assignee, and due date. Do not update, complete, delete, or reassign existing tasks unless a future connector operation explicitly supports it.",
+		configurationFields: [
+			{
+				key: "workspaceId",
+				label: "Workspace ID",
+				type: "text",
+				placeholder: "Asana workspace gid",
+			},
+			{
+				key: "projectIds",
+				label: "Project IDs",
+				type: "string_list",
+				placeholder: "Asana project gids",
 			},
 			reviewInstructionsField,
 		],
@@ -711,6 +1279,7 @@ const catalogRecipes: CatalogRecipe[] = [
 				name: "Notion",
 				description: "Searches pages and creates or appends reviewed Notion content.",
 				requiresConnection: true,
+				operationIds: ["search", "retrieve_page", "create_page", "append_block_children"],
 			},
 		],
 		triggers: [
@@ -755,6 +1324,7 @@ const catalogRecipes: CatalogRecipe[] = [
 				name: "Notion",
 				description: "Creates or appends action-log notes in a selected Notion page or database.",
 				requiresConnection: true,
+				operationIds: ["search", "create_page", "append_block_children"],
 			},
 		],
 		triggers: [
@@ -763,11 +1333,6 @@ const catalogRecipes: CatalogRecipe[] = [
 				label: "Log a note",
 				description: "Ask Polychat to capture a decision, action item, or recap.",
 			},
-			{
-				type: "schedule",
-				label: "Weekly recap",
-				description: "Run a recurring recap into Notion.",
-			},
 		],
 		actions: [
 			"Find the configured Notion log page or database",
@@ -775,7 +1340,7 @@ const catalogRecipes: CatalogRecipe[] = [
 			"Append or create entries after confirmation",
 		],
 		setupPrompt:
-			"Set up the Notion Action Log recipe. Ask which Notion page or database should store action logs, confirm the format for decisions and follow-ups, and write to Notion only after I approve the entry or recurring recap target.",
+			"Set up the Notion Action Log recipe. Ask which Notion page or database should store action logs, confirm the format for decisions and follow-ups, and write to Notion only after I approve the exact entry and target.",
 		configurationFields: [
 			notionTargetField,
 			{
@@ -806,6 +1371,7 @@ const catalogRecipes: CatalogRecipe[] = [
 				description:
 					"Creates or appends private cycle log entries in a selected Notion page or database.",
 				requiresConnection: true,
+				operationIds: ["search", "create_page", "append_block_children"],
 			},
 		],
 		triggers: [
@@ -856,6 +1422,7 @@ const catalogRecipes: CatalogRecipe[] = [
 				name: "Oura",
 				description: "Reads daily readiness, sleep, and activity data.",
 				requiresConnection: true,
+				operationIds: ["daily_readiness", "daily_sleep", "daily_activity"],
 			},
 		],
 		triggers: [
@@ -959,13 +1526,16 @@ const catalogRecipes: CatalogRecipe[] = [
 				name: "Gmail",
 				description: "Searches Gmail for birthday context when connected.",
 				requiresConnection: true,
+				operationIds: ["search_messages"],
 			},
 			{
 				id: "outlook",
 				providerId: "outlook",
 				name: "Outlook",
-				description: "Searches Outlook mail and calendar for birthday context when connected.",
+				description:
+					"Searches Outlook mail and calendar events for birthday context when connected.",
 				requiresConnection: true,
+				operationIds: ["search_messages", "list_events"],
 			},
 			{
 				id: "calendar",
@@ -973,6 +1543,7 @@ const catalogRecipes: CatalogRecipe[] = [
 				name: "Google Calendar",
 				description: "Reads upcoming birthday events when connected.",
 				requiresConnection: true,
+				operationIds: ["list_events"],
 			},
 		],
 		triggers: [
@@ -1028,6 +1599,7 @@ const catalogRecipes: CatalogRecipe[] = [
 				name: "Gmail",
 				description: "Searches Gmail for subscription and billing messages.",
 				requiresConnection: true,
+				operationIds: ["search_messages"],
 			},
 			{
 				id: "outlook",
@@ -1035,6 +1607,7 @@ const catalogRecipes: CatalogRecipe[] = [
 				name: "Outlook",
 				description: "Searches Outlook for subscription and billing messages.",
 				requiresConnection: true,
+				operationIds: ["search_messages"],
 			},
 		],
 		triggers: [
@@ -1096,6 +1669,7 @@ const catalogRecipes: CatalogRecipe[] = [
 				name: "Gmail",
 				description: "Searches newsletters and reading-related Gmail messages.",
 				requiresConnection: true,
+				operationIds: ["search_messages"],
 			},
 			{
 				id: "outlook",
@@ -1103,6 +1677,7 @@ const catalogRecipes: CatalogRecipe[] = [
 				name: "Outlook",
 				description: "Searches newsletters and reading-related Outlook messages.",
 				requiresConnection: true,
+				operationIds: ["search_messages"],
 			},
 		],
 		triggers: [
@@ -1184,6 +1759,159 @@ const catalogRecipes: CatalogRecipe[] = [
 				label: "Briefing length",
 				type: "text",
 				placeholder: "3 bullets, concise, detailed",
+			},
+		],
+	},
+	{
+		id: "did-you-know",
+		title: "Did You Know?",
+		summary: "Learn one interesting fact or topic with links to go deeper.",
+		description:
+			"Uses web search to prepare concise, sourced facts or mini-briefings for chat or scheduled delivery.",
+		kind: "automate",
+		category: "Productivity",
+		featured: false,
+		estimatedSetupMinutes: 1,
+		enabledTools: [WEB_SEARCH_TOOL],
+		integrations: [
+			{
+				id: "web-search",
+				providerId: "chat",
+				name: "Web search",
+				description: "Uses the built-in web search tool.",
+				requiresConnection: false,
+			},
+		],
+		triggers: [
+			{
+				type: "schedule",
+				label: "Daily fact",
+				description: "Run a recurring fact or topic briefing.",
+			},
+			{
+				type: "message",
+				label: "Ask for a fact",
+				description: "Ask Polychat for an interesting fact or short explainer.",
+			},
+		],
+		actions: [
+			"Pick a topic from saved interests or the user's request",
+			"Search for current supporting sources",
+			"Return a short explanation with links for deeper reading",
+		],
+		setupPrompt:
+			"Set up the Did You Know recipe. Ask for preferred topics, depth, and sources to avoid. Use web search to verify facts, cite links, and keep each briefing concise. Do not present uncertain claims as confirmed.",
+		configurationFields: [
+			{
+				key: "topics",
+				label: "Topics",
+				type: "string_list",
+				placeholder: "History, science, technology, language, everyday life",
+			},
+			{
+				key: "readingLength",
+				label: "Reading length",
+				type: "text",
+				placeholder: "One paragraph, 5-minute read, three bullets",
+			},
+		],
+	},
+	{
+		id: "quick-qr-generator",
+		title: "Quick QR Generator",
+		summary: "Turn text, URLs, phone numbers, or Wi-Fi details into a scannable QR link.",
+		description:
+			"Builds a QR image URL from the user's supplied content and returns it for sharing in chat or SMS.",
+		kind: "integrate",
+		category: "Productivity",
+		featured: false,
+		estimatedSetupMinutes: 1,
+		enabledTools: [QR_TOOL],
+		integrations: [
+			{
+				id: "chat",
+				providerId: "chat",
+				name: "Chat",
+				description: "Uses the supplied message content and returns a generated QR image URL.",
+				requiresConnection: false,
+			},
+		],
+		triggers: [
+			{
+				type: "message",
+				label: "Send QR content",
+				description:
+					"Ask Polychat to make a QR code for a URL, text, phone number, or Wi-Fi details.",
+			},
+		],
+		actions: [
+			"Confirm the exact payload to encode",
+			"Build a properly encoded QR image URL",
+			"Return the QR link and the decoded payload for review",
+		],
+		setupPrompt:
+			"Set up the Quick QR Generator recipe. Ask for the exact URL, text, phone number, email, or Wi-Fi payload to encode. Use the create_qr_code tool with the exact payload, return the generated image URL, and show the encoded payload for review. Do not invent or alter credentials, Wi-Fi passwords, phone numbers, or payment details.",
+		configurationFields: [
+			{
+				key: "defaultSize",
+				label: "Default size",
+				type: "text",
+				placeholder: "300x300",
+			},
+			{
+				key: "qrNotes",
+				label: "QR notes",
+				type: "textarea",
+				placeholder: "Preferred format, labels, or content to avoid encoding",
+			},
+		],
+	},
+	{
+		id: "chonky-cat",
+		title: "Chonky Cat",
+		summary: "Generate a playful candid cat image from a short text request.",
+		description:
+			"Uses Polychat image generation to create a photorealistic candid cat image for chat or SMS delivery.",
+		kind: "integrate",
+		category: "Home",
+		featured: false,
+		estimatedSetupMinutes: 1,
+		enabledTools: [IMAGE_TOOL],
+		integrations: [
+			{
+				id: "image-generation",
+				providerId: "chat",
+				name: "Image generation",
+				description: "Uses the existing Polychat image generation tool.",
+				requiresConnection: false,
+			},
+		],
+		triggers: [
+			{
+				type: "message",
+				label: "Ask for a cat image",
+				description: "Ask Polychat to generate a candid cat image.",
+			},
+		],
+		actions: [
+			"Confirm any style or scene details",
+			"Generate a playful cat image",
+			"Return the image without claiming it is a real pet photo",
+		],
+		setupPrompt:
+			"Set up the Chonky Cat recipe. Ask for any scene, pose, or style preference, then use image generation to create a playful candid cat image. Keep it clearly synthetic and do not imply the generated image is a real pet photo.",
+		configurationFields: [
+			{
+				key: "catStyle",
+				label: "Cat style",
+				type: "text",
+				placeholder: "Photorealistic phone photo, cosy, funny, dramatic",
+			},
+			{
+				key: "imageNotes",
+				label: "Image notes",
+				type: "textarea",
+				placeholder: "Scene ideas, colours, or details to avoid",
 			},
 		],
 	},
@@ -1551,6 +2279,61 @@ const catalogRecipes: CatalogRecipe[] = [
 			},
 		],
 	},
+	{
+		id: "palo-alto-weather-comparison",
+		title: "Palo Alto Weather Comparison",
+		summary: "Compare your local weather with Palo Alto each morning.",
+		description:
+			"Uses Polychat's weather tool to compare a saved local forecast against Palo Alto, California with practical context.",
+		kind: "automate",
+		category: "Community",
+		featured: false,
+		estimatedSetupMinutes: 2,
+		enabledTools: [WEATHER_TOOL],
+		integrations: [
+			{
+				id: "weather",
+				providerId: "chat",
+				name: "Weather",
+				description: "Uses the built-in weather lookup tool.",
+				requiresConnection: false,
+			},
+		],
+		triggers: [
+			{
+				type: "message",
+				label: "Ask for comparison",
+				description: "Ask Polychat to compare your weather with Palo Alto.",
+			},
+			{
+				type: "schedule",
+				label: "Daily comparison",
+				description: "Run a recurring morning weather comparison.",
+			},
+		],
+		actions: [
+			"Look up weather for the configured location",
+			"Look up weather for Palo Alto, California",
+			"Compare temperature, conditions, and practical planning notes",
+		],
+		setupPrompt:
+			"Set up the Palo Alto Weather Comparison recipe. Ask for my local location or coordinates, preferred forecast time, and tone. Use the weather tool for both my location and Palo Alto, California. Keep the comparison practical and light, avoid safety-critical guarantees, and ask for clarification if my location is ambiguous.",
+		configurationFields: [
+			locationField,
+			{
+				key: "forecastTime",
+				label: "Forecast time",
+				type: "text",
+				placeholder: "07:30 local time, before commute, morning",
+			},
+			{
+				key: "comparisonTone",
+				label: "Comparison tone",
+				type: "text",
+				placeholder: "Dry, playful, concise, practical",
+			},
+		],
+	},
 ];
 
 export const assistantRecipes: AssistantRecipe[] = catalogRecipes.map((recipe) => ({
@@ -1560,6 +2343,40 @@ export const assistantRecipes: AssistantRecipe[] = catalogRecipes.map((recipe) =
 		...field,
 	})),
 }));
+
+export function getRecipeCatalogValidationIssues(
+	recipes: readonly AssistantRecipe[] = assistantRecipes,
+): string[] {
+	const issues: string[] = [];
+
+	for (const recipe of recipes) {
+		const hasScheduleTrigger = recipe.triggers.some((trigger) => trigger.type === "schedule");
+
+		for (const integration of recipe.integrations) {
+			const provider = recipeConnectorProviderSchema.safeParse(integration.providerId);
+			if (!provider.success || provider.data === "github") {
+				continue;
+			}
+
+			for (const operationId of integration.operationIds ?? []) {
+				if (!isConnectorOperationSupported(provider.data, operationId)) {
+					issues.push(
+						`${recipe.id}:${integration.id} declares unsupported ${provider.data}.${operationId}`,
+					);
+					continue;
+				}
+
+				if (hasScheduleTrigger && isConnectorOperationWrite(provider.data, operationId)) {
+					issues.push(
+						`${recipe.id}:${integration.id} declares scheduled write operation ${provider.data}.${operationId}`,
+					);
+				}
+			}
+		}
+	}
+
+	return issues;
+}
 
 export const recipeFilters: RecipeKind[] = ["automate", "integrate"];
 

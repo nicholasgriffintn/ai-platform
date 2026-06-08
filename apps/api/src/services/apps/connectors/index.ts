@@ -19,9 +19,17 @@ import {
 import type { AppData } from "~/repositories/AppDataRepository";
 import { listGitHubAppConnectionsForUser } from "~/services/github/connections";
 import { bufferToBase64 } from "~/utils/base64";
-import { decryptJsonPayload, encryptJsonPayload, type EncryptedJsonPayload } from "~/utils/crypto";
+import {
+	decryptJsonPayload,
+	encryptJsonPayload,
+	isEncryptedJsonPayload,
+	type EncryptedJsonPayload,
+} from "~/utils/crypto";
 import { safeParseJson } from "~/utils/json";
+import { generateOAuthPkceChallenge, type OAuthPkceChallenge } from "~/utils/oauth";
+import { isRecord } from "~/utils/objects";
 import { AssistantError, ErrorType } from "~/utils/errors";
+import { redactSensitiveTokens } from "~/utils/redaction";
 
 const CONNECTOR_STATE_AUDIENCE = "assistant-recipe-connectors";
 const CONNECTOR_STATE_EXPIRY_SECONDS = 10 * 60;
@@ -41,6 +49,7 @@ interface ConnectorStatePayload {
 	sub: string;
 	provider: RecipeConnectorProvider;
 	returnTo: string;
+	pkce?: EncryptedJsonPayload;
 	iss: "assistant";
 	aud: typeof CONNECTOR_STATE_AUDIENCE;
 	iat: number;
@@ -61,6 +70,14 @@ function getConnectorKeyMaterial(params: {
 	providerId: RecipeConnectorProvider;
 }): string {
 	return `${params.jwtSecret}:${params.userId}:recipe-connector:${params.providerId}`;
+}
+
+function getConnectorStateKeyMaterial(params: {
+	jwtSecret: string;
+	userId: number;
+	providerId: RecipeConnectorProvider;
+}): string {
+	return `${params.jwtSecret}:${params.userId}:recipe-connector-state:${params.providerId}`;
 }
 
 function normaliseReturnTo(returnTo?: string): string {
@@ -123,19 +140,36 @@ async function signConnectorState(params: {
 	userId: number;
 	provider: RecipeConnectorProvider;
 	returnTo?: string;
-}) {
+	pkce?: boolean;
+}): Promise<{ state: string; pkce?: OAuthPkceChallenge }> {
 	const now = Math.floor(Date.now() / 1000);
+	const pkce = params.pkce ? await generateOAuthPkceChallenge() : undefined;
 	const payload: ConnectorStatePayload = {
 		sub: String(params.userId),
 		provider: params.provider,
 		returnTo: normaliseReturnTo(params.returnTo),
+		...(pkce
+			? {
+					pkce: await encryptJsonPayload({
+						keyMaterial: getConnectorStateKeyMaterial({
+							jwtSecret: requireJwtSecret(params.context),
+							userId: params.userId,
+							providerId: params.provider,
+						}),
+						payload: { codeVerifier: pkce.codeVerifier },
+					}),
+				}
+			: {}),
 		iss: "assistant",
 		aud: CONNECTOR_STATE_AUDIENCE,
 		iat: now,
 		exp: now + CONNECTOR_STATE_EXPIRY_SECONDS,
 	};
 
-	return jwt.sign(payload, requireJwtSecret(params.context), { algorithm: "HS256" });
+	return {
+		state: await jwt.sign(payload, requireJwtSecret(params.context), { algorithm: "HS256" }),
+		pkce,
+	};
 }
 
 async function verifyConnectorState(
@@ -162,6 +196,38 @@ async function verifyConnectorState(
 	}
 
 	return payload as unknown as ConnectorStatePayload;
+}
+
+async function getConnectorStateCodeVerifier(params: {
+	context: ServiceContext;
+	state: ConnectorStatePayload;
+	userId: number;
+	provider: RecipeConnectorProvider;
+}): Promise<string | undefined> {
+	if (!params.state.pkce) {
+		return undefined;
+	}
+
+	if (!isEncryptedJsonPayload(params.state.pkce)) {
+		throw new AssistantError("Connector state is invalid", ErrorType.AUTHENTICATION_ERROR, 401);
+	}
+
+	const decrypted = await decryptJsonPayload({
+		keyMaterial: getConnectorStateKeyMaterial({
+			jwtSecret: requireJwtSecret(params.context),
+			userId: params.userId,
+			providerId: params.provider,
+		}),
+		encrypted: params.state.pkce,
+		invalidMessage: "Connector state is invalid",
+		reconnectMessage: "Connector state is invalid. Restart connector setup.",
+	});
+
+	if (typeof decrypted.codeVerifier !== "string" || !decrypted.codeVerifier) {
+		throw new AssistantError("Connector state is invalid", ErrorType.AUTHENTICATION_ERROR, 401);
+	}
+
+	return decrypted.codeVerifier;
 }
 
 function parseStoredConnector(record: AppData | undefined): {
@@ -282,11 +348,12 @@ function buildOAuthTokenRequest(params: {
 	const fields =
 		tokenAuth === "body"
 			? {
+					...params.config.tokenExtraFields,
 					...params.fields,
 					client_id: params.clientId,
 					client_secret: params.clientSecret,
 				}
-			: params.fields;
+			: { ...params.config.tokenExtraFields, ...params.fields };
 
 	const headers: Record<string, string> = {
 		Accept: "application/json",
@@ -304,11 +371,31 @@ function buildOAuthTokenRequest(params: {
 	};
 }
 
+function readOAuthTokenResponseData(
+	config: OAuthConnectorConfig,
+	data: Record<string, unknown>,
+): Record<string, unknown> {
+	if (config.tokenResponsePath === "body") {
+		if (!isRecord(data.body)) {
+			throw new AssistantError(
+				"Connector token response is invalid",
+				ErrorType.EXTERNAL_API_ERROR,
+				502,
+			);
+		}
+
+		return data.body;
+	}
+
+	return data;
+}
+
 async function exchangeAuthorizationCode(params: {
 	context: ServiceContext;
 	provider: ConnectorProviderConfig;
 	code: string;
 	redirectUri: string;
+	codeVerifier?: string;
 }) {
 	if (params.provider.auth.authType !== "oauth2") {
 		throw new AssistantError("Connector does not use OAuth", ErrorType.PARAMS_ERROR);
@@ -323,6 +410,7 @@ async function exchangeAuthorizationCode(params: {
 			grant_type: "authorization_code",
 			code: params.code,
 			redirect_uri: params.redirectUri,
+			...(params.codeVerifier ? { code_verifier: params.codeVerifier } : {}),
 		},
 	});
 
@@ -333,14 +421,16 @@ async function exchangeAuthorizationCode(params: {
 	});
 	if (!response.ok) {
 		const text = await response.text();
+		const redactedText = redactSensitiveTokens(text);
 		throw new AssistantError(
-			`Connector token exchange failed: ${text.slice(0, 300)}`,
+			`Connector token exchange failed: ${redactedText.slice(0, 300)}`,
 			ErrorType.EXTERNAL_API_ERROR,
 			502,
 		);
 	}
 
-	return (await response.json()) as Record<string, unknown>;
+	const data = (await response.json()) as Record<string, unknown>;
+	return readOAuthTokenResponseData(params.provider.auth, data);
 }
 
 async function refreshOAuthToken(params: {
@@ -370,10 +460,17 @@ async function refreshOAuthToken(params: {
 		body: request.body,
 	});
 	if (!response.ok) {
-		return params.token;
+		const text = await response.text();
+		const redactedText = redactSensitiveTokens(text);
+		throw new AssistantError(
+			`Connector token refresh failed. Reconnect this provider. ${redactedText.slice(0, 300)}`,
+			ErrorType.AUTHORISATION_ERROR,
+			401,
+		);
 	}
 
-	const data = (await response.json()) as Record<string, unknown>;
+	const responseData = (await response.json()) as Record<string, unknown>;
+	const data = readOAuthTokenResponseData(params.provider.auth, responseData);
 	const now = new Date().toISOString();
 	const refreshed: ConnectorTokenPayload = {
 		...params.token,
@@ -417,6 +514,17 @@ async function getConnectorStatus(
 		};
 	}
 
+	if (provider.auth.authType === "api_key") {
+		const stored = await readStoredToken(context, userId, provider.id);
+		return stored
+			? {
+					status: "connected",
+					connectedAt: stored.token.connectedAt,
+					updatedAt: stored.token.updatedAt,
+				}
+			: { status: "disconnected" };
+	}
+
 	if (!canStartOAuthConnectorAuthorization(context.env, provider.auth)) {
 		return { status: "unconfigured" };
 	}
@@ -449,7 +557,7 @@ export async function listRecipeConnectors(params: {
 			status: state.status,
 			setupUrl: provider.setupUrl,
 			authorizationUrl:
-				state.status === "disconnected"
+				state.status === "disconnected" && provider.auth.authType !== "api_key"
 					? (
 							await startRecipeConnectorAuthorization({
 								context: params.context,
@@ -461,7 +569,10 @@ export async function listRecipeConnectors(params: {
 					: undefined,
 			connectedAt: state.connectedAt,
 			updatedAt: state.updatedAt,
+			credentialLabel:
+				provider.auth.authType === "api_key" ? provider.auth.credentialLabel : undefined,
 			scopes: provider.auth.scopes,
+			operations: provider.operations.map((operation) => operation.id),
 		});
 	}
 
@@ -485,6 +596,9 @@ export async function startRecipeConnectorAuthorization(params: {
 			authorizationUrl: getGitHubAppInstallUrl(params.context.env) ?? provider.setupUrl,
 		};
 	}
+	if (provider.auth.authType === "api_key") {
+		throw new AssistantError("Connector uses API-key setup", ErrorType.PARAMS_ERROR, 400);
+	}
 	if (!canStartOAuthConnectorAuthorization(params.context.env, provider.auth)) {
 		throw new AssistantError(
 			"Connector OAuth client is not configured",
@@ -493,11 +607,12 @@ export async function startRecipeConnectorAuthorization(params: {
 	}
 
 	const { clientId } = getOAuthCredentials(params.context, provider.auth);
-	const state = await signConnectorState({
+	const signedState = await signConnectorState({
 		context: params.context,
 		userId: params.userId,
 		provider: params.provider,
 		returnTo: params.returnTo,
+		pkce: provider.auth.pkce,
 	});
 	const redirectUri = buildCallbackUrl(params.context, params.provider, params.requestUrl);
 	const authorizationUrl = new URL(provider.auth.authorizationEndpoint);
@@ -510,7 +625,14 @@ export async function startRecipeConnectorAuthorization(params: {
 			provider.auth.scopes.join(provider.auth.scopeSeparator),
 		);
 	}
-	authorizationUrl.searchParams.set("state", state);
+	authorizationUrl.searchParams.set("state", signedState.state);
+	if (signedState.pkce) {
+		authorizationUrl.searchParams.set("code_challenge", signedState.pkce.codeChallenge);
+		authorizationUrl.searchParams.set(
+			"code_challenge_method",
+			signedState.pkce.codeChallengeMethod,
+		);
+	}
 
 	for (const [key, value] of Object.entries(provider.auth.extraAuthorizationParams ?? {})) {
 		authorizationUrl.searchParams.set(key, value);
@@ -539,12 +661,19 @@ export async function completeRecipeConnectorAuthorization(params: {
 	if (!Number.isFinite(userId)) {
 		throw new AssistantError("Connector state is invalid", ErrorType.AUTHENTICATION_ERROR, 401);
 	}
+	const codeVerifier = await getConnectorStateCodeVerifier({
+		context: params.context,
+		state,
+		userId,
+		provider: params.provider,
+	});
 
 	const tokenResponse = await exchangeAuthorizationCode({
 		context: params.context,
 		provider,
 		code: params.code,
 		redirectUri: buildCallbackUrl(params.context, params.provider, params.requestUrl),
+		codeVerifier,
 	});
 	if (typeof tokenResponse.access_token !== "string") {
 		throw new AssistantError(
@@ -606,16 +735,55 @@ export async function deleteRecipeConnectorConnection(params: {
 	return { success: true };
 }
 
+export async function storeRecipeConnectorApiKey(params: {
+	context: ServiceContext;
+	userId: number;
+	provider: RecipeConnectorProvider;
+	apiKey: string;
+}) {
+	const provider = getConnectorProviderConfig(params.provider);
+	if (!provider || provider.auth.authType !== "api_key") {
+		throw new AssistantError("Connector does not use API-key setup", ErrorType.PARAMS_ERROR, 400);
+	}
+
+	const apiKey = params.apiKey.trim();
+	if (!apiKey) {
+		throw new AssistantError("Connector API key is required", ErrorType.PARAMS_ERROR, 400);
+	}
+
+	const now = new Date().toISOString();
+	await writeStoredToken({
+		context: params.context,
+		userId: params.userId,
+		providerId: params.provider,
+		payload: {
+			accessToken: apiKey,
+			scope: provider.auth.scopes.join(" "),
+			connectedAt: now,
+			updatedAt: now,
+		},
+	});
+
+	return { success: true };
+}
+
 export async function getRecipeConnectorAccessToken(params: {
 	context: ServiceContext;
 	userId: number;
 	provider: RecipeConnectorProvider;
 }) {
 	const provider = getConnectorProviderConfig(params.provider);
-	if (!provider || provider.auth.authType !== "oauth2") {
-		throw new AssistantError("Connector is not an OAuth provider", ErrorType.PARAMS_ERROR, 400);
+	if (!provider || (provider.auth.authType !== "oauth2" && provider.auth.authType !== "api_key")) {
+		throw new AssistantError(
+			"Connector does not expose stored credentials",
+			ErrorType.PARAMS_ERROR,
+			400,
+		);
 	}
-	if (!canStartOAuthConnectorAuthorization(params.context.env, provider.auth)) {
+	if (
+		provider.auth.authType === "oauth2" &&
+		!canStartOAuthConnectorAuthorization(params.context.env, provider.auth)
+	) {
 		throw new AssistantError(
 			"Connector OAuth client is not configured",
 			ErrorType.CONFIGURATION_ERROR,
@@ -628,7 +796,11 @@ export async function getRecipeConnectorAccessToken(params: {
 	}
 
 	const expiresAt = stored.token.expiresAt;
-	if (expiresAt && expiresAt <= Math.floor(Date.now() / 1000) + TOKEN_EXPIRY_SKEW_SECONDS) {
+	if (
+		provider.auth.authType === "oauth2" &&
+		expiresAt &&
+		expiresAt <= Math.floor(Date.now() / 1000) + TOKEN_EXPIRY_SKEW_SECONDS
+	) {
 		return refreshOAuthToken({
 			context: params.context,
 			provider,

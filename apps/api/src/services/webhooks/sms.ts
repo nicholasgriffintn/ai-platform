@@ -7,7 +7,10 @@ import {
 	isMessagingProviderId,
 	type IncomingMessage,
 } from "~/lib/providers/capabilities/messaging";
-import { getMessagingProviderFromStoredCredential } from "~/lib/providers/capabilities/messaging/delivery";
+import {
+	getMessagingProviderFromStoredCredential,
+	selectConfiguredMessagingDelivery,
+} from "~/lib/providers/capabilities/messaging/delivery";
 import { executeRecipeInvocationChat } from "~/services/apps/recipes/execution";
 import { invokeAssistantRecipe, resolveInstalledAssistantRecipe } from "~/services/apps/recipes";
 import { handleCreateChatCompletions } from "~/services/completions/createChatCompletions";
@@ -16,18 +19,51 @@ import type { ServiceContext } from "~/lib/context/serviceContext";
 import type { IEnv, IUser } from "~/types";
 import { sha256Hex } from "~/utils/crypto";
 import { AssistantError, ErrorType } from "~/utils/errors";
-import { extractChatCompletionText } from "~/utils/messages";
+import {
+	buildInboundMessageContent,
+	type ChatCompletionNotification,
+	extractChatCompletionNotification,
+} from "~/utils/messages";
 
 const SMS_CHAT_TOOLS = ["trigger_recipe", "get_weather"];
 const SMS_ACTIVE_HISTORY_LIMIT = 8;
 
+function createTextSmsResponse(body: string): ChatCompletionNotification {
+	return { body, mediaUrls: [] };
+}
+
 function wantsTaskStatus(message: string): boolean {
-	return /\b(status|task|job|queue|queued|running|progress)\b/i.test(message);
+	const trimmed = message.trim();
+	if (!trimmed) {
+		return false;
+	}
+	if (extractTaskId(trimmed)) {
+		return true;
+	}
+
+	return [
+		/^(status|task status|job status|queue status|progress)$/i,
+		/\b(task|job|queue)\s+(status|progress)\b/i,
+		/\b(status|progress)\s+(of|for|on)\s+(my\s+)?(task|job|queue)s?\b/i,
+		/\b(check|show|get)\s+(the\s+)?(status|progress)\b/i,
+		/\b(recent|latest|last)\s+(tasks|jobs|queued|running)\b/i,
+		/\bwhat('?s| is)\s+(running|queued)\b/i,
+	].some((pattern) => pattern.test(trimmed));
 }
 
 function extractTaskId(message: string): string | null {
-	const explicit = message.match(/\btask[:\s#-]+([a-zA-Z0-9_-]{8,})\b/i);
-	return explicit?.[1] ?? null;
+	const uuidPattern = "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}";
+	const opaqueIdPattern = "[a-zA-Z0-9][a-zA-Z0-9_-]{11,}";
+	const taskIdPattern = `(?:${uuidPattern}|${opaqueIdPattern})`;
+	const labelled = message.match(
+		new RegExp(`\\b(?:task|job|queue)[:\\s#-]+(${taskIdPattern})\\b`, "i"),
+	);
+	if (labelled?.[1]) {
+		return labelled[1];
+	}
+
+	const direct = message.trim().match(new RegExp(`^${taskIdPattern}$`, "i"));
+	return direct?.[0] ?? null;
 }
 
 function formatTaskStatus(task: {
@@ -43,6 +79,16 @@ function formatTaskStatus(task: {
 	return `${task.task_type} ${task.id}: ${status}.${error}`;
 }
 
+function buildIncomingSmsUserMessage(incoming: IncomingMessage): Message {
+	return {
+		role: "user",
+		content: buildInboundMessageContent({
+			body: incoming.body,
+			media: incoming.media ?? incoming.mediaUrls?.map((url) => ({ url })),
+		}),
+	};
+}
+
 function normaliseSmsAddress(value: string): string {
 	return value.trim().toLowerCase();
 }
@@ -51,6 +97,7 @@ async function getSmsConversationId(params: {
 	userId: number;
 	providerSettingsId: string;
 	from: string;
+	to?: string;
 }) {
 	const digest = await sha256Hex(
 		[
@@ -58,6 +105,7 @@ async function getSmsConversationId(params: {
 			params.userId.toString(),
 			params.providerSettingsId,
 			normaliseSmsAddress(params.from),
+			normaliseSmsAddress(params.to ?? ""),
 		].join(":"),
 	);
 
@@ -125,7 +173,9 @@ async function handleRecipeMessage(params: {
 	context: ServiceContext;
 	user: IUser;
 	incoming: IncomingMessage;
-}): Promise<string | null> {
+	conversationId: string;
+	activeMessages: Message[];
+}): Promise<ChatCompletionNotification | null> {
 	const match = await resolveInstalledAssistantRecipe({
 		context: params.context,
 		userId: params.user.id,
@@ -142,7 +192,9 @@ async function handleRecipeMessage(params: {
 			.slice(0, 3)
 			.map((candidate) => candidate.title)
 			.join(", ");
-		return `That matches more than one recipe. Reply with the recipe name. Candidates: ${names}.`;
+		return createTextSmsResponse(
+			`That matches more than one recipe. Reply with the recipe name. Candidates: ${names}.`,
+		);
 	}
 
 	const invocation = await invokeAssistantRecipe(match.recipe.id, {
@@ -154,14 +206,16 @@ async function handleRecipeMessage(params: {
 	});
 
 	if (!invocation) {
-		return "I could not find that recipe.";
+		return createTextSmsResponse("I could not find that recipe.");
 	}
 	if (invocation.status === "not_installed") {
-		return "That recipe is not installed yet.";
+		return createTextSmsResponse("That recipe is not installed yet.");
 	}
 	if (invocation.status === "blocked") {
 		const missing = invocation.missingConnections.map((connection) => connection.name).join(", ");
-		return `That recipe needs setup before I can run it. Missing: ${missing}.`;
+		return createTextSmsResponse(
+			`That recipe needs setup before I can run it. Missing: ${missing}.`,
+		);
 	}
 
 	const execution = await executeRecipeInvocationChat({
@@ -169,13 +223,15 @@ async function handleRecipeMessage(params: {
 		context: params.context,
 		user: params.user,
 		invocation,
+		conversationId: params.conversationId,
+		priorMessages: [...params.activeMessages, buildIncomingSmsUserMessage(params.incoming)],
 		sms: {
 			from: params.incoming.from,
 			to: params.incoming.to,
 		},
 	});
 
-	return extractChatCompletionText(execution.response, {
+	return extractChatCompletionNotification(execution.response, {
 		streamingMessage: "SMS assistant responses cannot be streamed",
 	});
 }
@@ -202,7 +258,7 @@ async function handleBoundedChat(params: {
 			enabled_tools: SMS_CHAT_TOOLS,
 			approved_tools: SMS_CHAT_TOOLS,
 			tool_choice: "auto",
-			messages: [...params.activeMessages, { role: "user", content: params.incoming.body }],
+			messages: [...params.activeMessages, buildIncomingSmsUserMessage(params.incoming)],
 			options: {
 				source: "sms",
 				sms: {
@@ -216,12 +272,12 @@ async function handleBoundedChat(params: {
 		},
 	});
 
-	return extractChatCompletionText(completion, {
+	return extractChatCompletionNotification(completion, {
 		streamingMessage: "SMS assistant responses cannot be streamed",
 	});
 }
 
-async function handleFallbackSmsChat(params: {
+async function handleAssistantSmsMessage(params: {
 	env: IEnv;
 	context: ServiceContext;
 	user: IUser;
@@ -232,6 +288,7 @@ async function handleFallbackSmsChat(params: {
 		userId: params.user.id,
 		providerSettingsId: params.providerSettingsId,
 		from: params.incoming.from,
+		to: params.incoming.to,
 	});
 	const activeMessages = await getActiveSmsMessages({
 		context: params.context,
@@ -239,14 +296,54 @@ async function handleFallbackSmsChat(params: {
 		conversationId,
 	});
 
-	return handleBoundedChat({
-		env: params.env,
-		context: params.context,
-		user: params.user,
-		incoming: params.incoming,
-		conversationId,
-		activeMessages,
+	return (
+		(await handleRecipeMessage({
+			env: params.env,
+			context: params.context,
+			user: params.user,
+			incoming: params.incoming,
+			conversationId,
+			activeMessages,
+		})) ??
+		(await handleBoundedChat({
+			env: params.env,
+			context: params.context,
+			user: params.user,
+			incoming: params.incoming,
+			conversationId,
+			activeMessages,
+		}))
+	);
+}
+
+async function getProviderBoundSmsReplyMediaUrls(params: {
+	context: ServiceContext;
+	userId: number;
+	providerId: string;
+	providerSettingsId: string;
+	mediaUrls: string[];
+}): Promise<string[] | undefined> {
+	if (params.mediaUrls.length === 0) {
+		return undefined;
+	}
+
+	const settings = await params.context.repositories.userSettings.getUserProviderSettings(
+		params.userId,
+	);
+	const currentProviderSettings = settings.find(
+		(setting) =>
+			setting.id === params.providerSettingsId && setting.provider_id === params.providerId,
+	);
+	if (!currentProviderSettings) {
+		return undefined;
+	}
+
+	const delivery = selectConfiguredMessagingDelivery([currentProviderSettings], {
+		mediaUrls: params.mediaUrls,
+		apiBaseUrl: params.context.env.API_BASE_URL,
 	});
+
+	return delivery?.mediaUrls;
 }
 
 export async function handleSmsAssistantWebhook(c: Context): Promise<Response> {
@@ -275,10 +372,11 @@ export async function handleSmsAssistantWebhook(c: Context): Promise<Response> {
 		user,
 		requestId: c.get("requestId"),
 	});
-	const encryptedValue = await context.repositories.userSettings.getProviderApiKey(
-		user.id,
+	const encryptedValue = await context.repositories.userSettings.getProviderApiKeyForSettings({
+		userId: user.id,
 		providerId,
-	);
+		providerSettingsId,
+	});
 	if (!encryptedValue) {
 		throw new AssistantError("SMS provider credentials are not configured", ErrorType.NOT_FOUND);
 	}
@@ -288,24 +386,35 @@ export async function handleSmsAssistantWebhook(c: Context): Promise<Response> {
 		value: encryptedValue,
 		env: c.env,
 		user,
+		context,
 	});
 	const incoming = await provider.parseIncoming(c);
 	if (incoming.kind === "control") {
 		return c.json(incoming.response);
 	}
 
-	const body = wantsTaskStatus(incoming.body)
-		? await handleTaskStatus(context, user.id, incoming.body)
-		: ((await handleRecipeMessage({ env: c.env, context, user, incoming })) ??
-			(await handleFallbackSmsChat({
+	const notification = wantsTaskStatus(incoming.body)
+		? createTextSmsResponse(await handleTaskStatus(context, user.id, incoming.body))
+		: await handleAssistantSmsMessage({
 				env: c.env,
 				context,
 				user,
 				incoming,
 				providerSettingsId,
-			})));
+			});
+	const replyMediaUrls = await getProviderBoundSmsReplyMediaUrls({
+		context,
+		userId: user.id,
+		providerId,
+		providerSettingsId,
+		mediaUrls: notification.mediaUrls,
+	});
 
-	await provider.send({ to: incoming.from, body });
+	await provider.send({
+		to: incoming.from,
+		body: notification.body,
+		...(replyMediaUrls?.length ? { mediaUrls: replyMediaUrls } : {}),
+	});
 
 	return c.json({ success: true });
 }

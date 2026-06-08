@@ -8,6 +8,7 @@ import type {
 import {
 	deleteRecipeInstallation,
 	installAssistantRecipe,
+	invokeAssistantRecipe,
 	listAssistantRecipes,
 	listRecipeInstallations,
 	updateRecipeInstallation,
@@ -40,6 +41,13 @@ export function useInstallAssistantRecipe() {
 			queryClient.invalidateQueries({ queryKey: RECIPE_INSTALLATIONS_QUERY_KEY });
 			queryClient.invalidateQueries({ queryKey: ASSISTANT_RECIPES_QUERY_KEY });
 		},
+	});
+}
+
+export function useInvokeAssistantRecipe() {
+	return useMutation({
+		mutationFn: ({ recipeId, input }: { recipeId: string; input?: string }) =>
+			invokeAssistantRecipe(recipeId, input),
 	});
 }
 

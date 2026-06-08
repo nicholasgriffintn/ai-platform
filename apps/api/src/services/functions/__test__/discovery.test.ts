@@ -101,6 +101,22 @@ describe("get_function_schema", () => {
 		expect(result.data?.available).toBe(true);
 	});
 
+	it("retrieves schema for the QR code function", async () => {
+		const result = await get_function_schema.execute(
+			{ function_name: "create_qr_code" },
+			createToolContext(baseRequest),
+		);
+
+		expect(result).toMatchObject({
+			status: "success",
+			data: {
+				name: "create_qr_code",
+				type: "normal",
+				available: true,
+			},
+		});
+	});
+
 	it("returns error for non-existent function", async () => {
 		const result = await get_function_schema.execute(
 			{ function_name: "nonexistent_function" },

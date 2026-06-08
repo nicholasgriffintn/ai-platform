@@ -56,6 +56,7 @@ export const providersResponseSchema = z.array(
 				}),
 			)
 			.optional(),
+		configurationValues: z.record(z.string(), z.string()).optional(),
 		webhookUrl: z.string().optional(),
 	}),
 );

@@ -1,10 +1,20 @@
 import { base64ToBuffer, bufferToBase64 } from "./base64";
 import { AssistantError, ErrorType } from "./errors";
+import { isPlainObject } from "./objects";
 
 export interface EncryptedJsonPayload {
 	v: 1;
 	iv: string;
 	data: string;
+}
+
+export function isEncryptedJsonPayload(value: unknown): value is EncryptedJsonPayload {
+	return (
+		isPlainObject(value) &&
+		value.v === 1 &&
+		typeof value.iv === "string" &&
+		typeof value.data === "string"
+	);
 }
 
 export async function sha256Hex(input: string): Promise<string> {

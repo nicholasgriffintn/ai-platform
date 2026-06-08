@@ -15,6 +15,7 @@ export interface ProviderSetting {
 		placeholder?: string;
 		description?: string;
 	}>;
+	configurationValues?: Record<string, string>;
 	webhookUrl?: string;
 	enabled: boolean;
 	hasApiKey?: boolean;

@@ -1,10 +1,15 @@
 import { AwsClient } from "aws4fetch";
 import type { Context } from "hono";
 
+import type { ServiceContext } from "~/lib/context/serviceContext";
+import { StorageService } from "~/lib/storage";
+import { putAwsS3Object } from "~/lib/providers/utils/awsS3";
 import { formatProviderError } from "~/lib/providers/utils/errors";
 import { base64ToBuffer } from "~/utils/base64";
 import { AssistantError, ErrorType } from "~/utils/errors";
+import { generateId } from "~/utils/id";
 import { safeParseJson } from "~/utils/json";
+import { getExtensionFromMimeType } from "~/utils/mime";
 import { getStringRecordValue } from "~/utils/objects";
 import type {
 	AwsSmsCredentials,
@@ -15,8 +20,11 @@ import type {
 } from "../types";
 
 const SMS_MAX_LENGTH = 1500;
-const SNS_MESSAGE_TYPE_ATTRIBUTE = "AWS.SNS.SMS.SMSType";
-const SNS_SENDER_ID_ATTRIBUTE = "AWS.SNS.SMS.SenderID";
+const AWS_END_USER_MESSAGING_SERVICE = "sms-voice";
+const AWS_END_USER_MESSAGING_SMS_V2_ENDPOINT_PREFIX = "sms-voice.pinpoint";
+const AWS_END_USER_MESSAGING_TARGET_PREFIX = "PinpointSMSVoiceV2";
+const AWS_S3_MEDIA_URL_PATTERN = /^s3:\/\/([a-z0-9.-]{3,63})\/.+$/;
+const AWS_MMS_MEDIA_MIME_PREFIXES = ["image/", "audio/", "video/"];
 
 interface SnsEnvelope {
 	Type: "Notification" | "SubscriptionConfirmation" | "UnsubscribeConfirmation";
@@ -34,6 +42,20 @@ interface SnsEnvelope {
 
 function trimSmsBody(body: string): string {
 	return body.length > SMS_MAX_LENGTH ? `${body.slice(0, SMS_MAX_LENGTH - 1)}...` : body;
+}
+
+function normaliseAwsMediaInput(mediaUrls: string[] | undefined): string | null {
+	const urls = (mediaUrls ?? []).map((url) => url.trim()).filter(Boolean);
+	if (urls.length === 0) {
+		return null;
+	}
+	if (urls.length !== 1) {
+		throw new AssistantError(
+			"AWS End User Messaging MMS supports exactly one media URL",
+			ErrorType.PARAMS_ERROR,
+		);
+	}
+	return urls[0];
 }
 
 function copyToArrayBuffer(bytes: Uint8Array): ArrayBuffer {
@@ -286,10 +308,13 @@ async function verifySnsSignature(envelope: SnsEnvelope, region: string): Promis
 	}
 }
 
-function parseIncomingSmsMessage(envelope: SnsEnvelope): IncomingMessage {
+export function parseIncomingAwsSmsMessage(envelope: SnsEnvelope): IncomingMessage {
 	const parsedMessage = safeParseJson<Record<string, unknown>>(envelope.Message);
 	const messageRecord = parsedMessage && typeof parsedMessage === "object" ? parsedMessage : {};
-	const body = getStringRecordValue(messageRecord, "messageBody") ?? envelope.Message.trim();
+	const body =
+		parsedMessage && typeof parsedMessage === "object"
+			? (getStringRecordValue(messageRecord, "messageBody") ?? "")
+			: envelope.Message.trim();
 	const from =
 		getStringRecordValue(messageRecord, "originationNumber") ??
 		getStringRecordValue(messageRecord, "from");
@@ -299,7 +324,7 @@ function parseIncomingSmsMessage(envelope: SnsEnvelope): IncomingMessage {
 
 	if (!from || !body) {
 		throw new AssistantError(
-			"AWS SNS SMS notification is missing sender or body",
+			"AWS End User Messaging inbound payload is missing sender or content",
 			ErrorType.PARAMS_ERROR,
 		);
 	}
@@ -340,7 +365,111 @@ async function confirmSnsSubscription(
 export class AwsSmsProvider implements MessagingProvider {
 	public readonly id = "aws-sms" as const;
 
-	constructor(private readonly credentials: AwsSmsCredentials) {}
+	constructor(
+		private readonly credentials: AwsSmsCredentials,
+		private readonly serviceContext?: ServiceContext,
+	) {}
+
+	private buildMmsMediaKey(mimeType: string): string {
+		const extension = getExtensionFromMimeType(mimeType, "bin");
+		const prefix = this.credentials.mediaKeyPrefix?.replace(/^\/+|\/+$/g, "") || "mms";
+		const userId = this.serviceContext?.user?.id ?? "unknown-user";
+		return `${prefix}/${userId}/${Date.now()}-${generateId()}.${extension}`;
+	}
+
+	private async prepareMmsMediaUrl(mediaUrl: string): Promise<string> {
+		if (AWS_S3_MEDIA_URL_PATTERN.test(mediaUrl)) {
+			return mediaUrl;
+		}
+
+		if (!this.credentials.mediaBucket) {
+			throw new AssistantError(
+				"AWS End User Messaging MMS media bucket must be configured to send first-party media",
+				ErrorType.CONFIGURATION_ERROR,
+			);
+		}
+		if (!this.serviceContext) {
+			throw new AssistantError(
+				"AWS End User Messaging MMS requires service context to resolve first-party media",
+				ErrorType.CONFIGURATION_ERROR,
+			);
+		}
+
+		const user = this.serviceContext.requireUser();
+		const blob = await StorageService.forPrivateAssets(this.serviceContext).getPrivateAssetBlob(
+			mediaUrl,
+			user.id,
+			this.serviceContext.env.API_BASE_URL,
+			{ allowedMimePrefixes: AWS_MMS_MEDIA_MIME_PREFIXES },
+		);
+		if (!blob) {
+			throw new AssistantError(
+				"AWS End User Messaging MMS media must be an s3:// URL or a first-party private asset URL",
+				ErrorType.PARAMS_ERROR,
+			);
+		}
+
+		const key = this.buildMmsMediaKey(blob.type || "application/octet-stream");
+		await putAwsS3Object({
+			accessKeyId: this.credentials.accessKeyId,
+			secretAccessKey: this.credentials.secretAccessKey,
+			region: this.credentials.region,
+			bucket: this.credentials.mediaBucket,
+			key,
+			body: await blob.arrayBuffer(),
+			contentType: blob.type || "application/octet-stream",
+			errorMessage: "Failed to upload AWS MMS media to S3",
+		});
+
+		return `s3://${this.credentials.mediaBucket}/${key}`;
+	}
+
+	private async sendAwsJsonOperation(params: {
+		operation: "SendMediaMessage" | "SendTextMessage";
+		body: Record<string, unknown>;
+		errorMessage: string;
+	}): Promise<void> {
+		const aws = new AwsClient({
+			accessKeyId: this.credentials.accessKeyId,
+			secretAccessKey: this.credentials.secretAccessKey,
+			region: this.credentials.region,
+			service: AWS_END_USER_MESSAGING_SERVICE,
+		});
+		const response = await aws.fetch(
+			`https://${AWS_END_USER_MESSAGING_SMS_V2_ENDPOINT_PREFIX}.${this.credentials.region}.amazonaws.com/`,
+			{
+				method: "POST",
+				headers: {
+					"Content-Type": "application/x-amz-json-1.0",
+					"X-Amz-Target": `${AWS_END_USER_MESSAGING_TARGET_PREFIX}.${params.operation}`,
+				},
+				body: JSON.stringify(params.body),
+			},
+		);
+
+		if (!response.ok) {
+			throw new AssistantError(
+				await formatProviderError(response, params.errorMessage),
+				ErrorType.EXTERNAL_API_ERROR,
+				response.status,
+			);
+		}
+	}
+
+	private buildCommonSendBody(params: { to: string; body: string }): Record<string, unknown> {
+		return {
+			ConfigurationSetName: this.credentials.configurationSetName,
+			Context: this.credentials.context,
+			DestinationPhoneNumber: params.to,
+			DryRun: this.credentials.dryRun,
+			MaxPrice: this.credentials.maxPrice,
+			MessageBody: trimSmsBody(params.body),
+			MessageFeedbackEnabled: this.credentials.messageFeedbackEnabled,
+			OriginationIdentity: this.credentials.originationIdentity,
+			ProtectConfigurationId: this.credentials.protectConfigurationId,
+			TimeToLive: this.credentials.timeToLive,
+		};
+	}
 
 	async parseIncoming(c: Context): Promise<MessagingWebhookMessage> {
 		const envelope = parseSnsEnvelope(await c.req.json());
@@ -360,44 +489,33 @@ export class AwsSmsProvider implements MessagingProvider {
 			};
 		}
 
-		return parseIncomingSmsMessage(envelope);
+		return parseIncomingAwsSmsMessage(envelope);
 	}
 
-	async send(params: { to: string; body: string }): Promise<void> {
-		const requestBody = new URLSearchParams({
-			Action: "Publish",
-			Version: "2010-03-31",
-			PhoneNumber: params.to,
-			Message: trimSmsBody(params.body),
-			"MessageAttributes.entry.1.Name": SNS_MESSAGE_TYPE_ATTRIBUTE,
-			"MessageAttributes.entry.1.Value.DataType": "String",
-			"MessageAttributes.entry.1.Value.StringValue": "Transactional",
-		});
-
-		if (this.credentials.senderId) {
-			requestBody.set("MessageAttributes.entry.2.Name", SNS_SENDER_ID_ATTRIBUTE);
-			requestBody.set("MessageAttributes.entry.2.Value.DataType", "String");
-			requestBody.set("MessageAttributes.entry.2.Value.StringValue", this.credentials.senderId);
+	async send(params: { to: string; body: string; mediaUrls?: string[] }): Promise<void> {
+		const mediaUrl = normaliseAwsMediaInput(params.mediaUrls);
+		if (mediaUrl) {
+			const preparedMediaUrl = await this.prepareMmsMediaUrl(mediaUrl);
+			await this.sendAwsJsonOperation({
+				operation: "SendMediaMessage",
+				errorMessage: "AWS End User Messaging media send failed",
+				body: {
+					...this.buildCommonSendBody(params),
+					MediaUrls: [preparedMediaUrl],
+				},
+			});
+			return;
 		}
 
-		const aws = new AwsClient({
-			accessKeyId: this.credentials.accessKeyId,
-			secretAccessKey: this.credentials.secretAccessKey,
-			region: this.credentials.region,
-			service: "sns",
+		await this.sendAwsJsonOperation({
+			operation: "SendTextMessage",
+			errorMessage: "AWS End User Messaging send failed",
+			body: {
+				...this.buildCommonSendBody(params),
+				DestinationCountryParameters: this.credentials.destinationCountryParameters,
+				Keyword: this.credentials.keyword,
+				MessageType: this.credentials.messageType ?? "TRANSACTIONAL",
+			},
 		});
-		const response = await aws.fetch(`https://sns.${this.credentials.region}.amazonaws.com/`, {
-			method: "POST",
-			headers: { "Content-Type": "application/x-www-form-urlencoded" },
-			body: requestBody.toString(),
-		});
-
-		if (!response.ok) {
-			throw new AssistantError(
-				await formatProviderError(response, "AWS SNS SMS send failed"),
-				ErrorType.EXTERNAL_API_ERROR,
-				response.status,
-			);
-		}
 	}
 }

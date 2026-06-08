@@ -309,6 +309,7 @@ public struct AssistantRecipeIntegration: Codable, Identifiable, Equatable {
     public let name: String
     public let description: String
     public let requiresConnection: Bool
+    public let operationIds: [String]?
     public let connectionStatus: String?
     public let setupUrl: String?
 }
@@ -335,10 +336,13 @@ public enum RecipeConfigurationValue: Codable, Equatable {
     case number(Double)
     case bool(Bool)
     case stringList([String])
+    case null
 
     public init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
-        if let value = try? container.decode(String.self) {
+        if container.decodeNil() {
+            self = .null
+        } else if let value = try? container.decode(String.self) {
             self = .string(value)
         } else if let value = try? container.decode(Double.self) {
             self = .number(value)
@@ -368,6 +372,8 @@ public enum RecipeConfigurationValue: Codable, Equatable {
             try container.encode(value)
         case .stringList(let value):
             try container.encode(value)
+        case .null:
+            try container.encodeNil()
         }
     }
 }
@@ -418,7 +424,7 @@ public struct AssistantRecipeInstallResponse: Codable {
     public let connections: [AssistantRecipeConnection]
     public let readyToRun: Bool
     public let enabledTools: [String]
-    public let installation: RecipeInstallation
+    public let installation: RecipeInstallation?
 }
 
 public struct AssistantRecipeConnection: Codable, Equatable {

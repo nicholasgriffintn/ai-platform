@@ -980,13 +980,21 @@ export const recipeConnectionStatusSchema = z.enum([
 ]);
 
 export const recipeConnectorProviderSchema = z.enum([
+	"asana",
+	"fitbit",
 	"gmail",
 	"outlook",
 	"calendar",
 	"github",
 	"linear",
+	"netlify",
 	"notion",
 	"oura",
+	"posthog",
+	"sentry",
+	"todoist",
+	"vercel",
+	"withings",
 ]);
 
 export const recipeIntegrationSchema = z.object({
@@ -995,6 +1003,7 @@ export const recipeIntegrationSchema = z.object({
 	name: z.string(),
 	description: z.string(),
 	requiresConnection: z.boolean().default(true),
+	operationIds: z.array(z.string()).optional(),
 	connectionStatus: recipeConnectionStatusSchema.optional(),
 	setupUrl: z.string().optional(),
 });
@@ -1046,6 +1055,7 @@ export const assistantRecipesResponseSchema = z.object({
 
 export const assistantRecipeInstallRequestSchema = z.object({
 	channel: z.enum(["web", "ios", "sms"]).default("web"),
+	triggers: z.lazy(() => z.array(recipeInstallationTriggerSchema)).optional(),
 	configuration: z.lazy(() => recipeConfigurationSchema).optional(),
 });
 
@@ -1087,13 +1097,15 @@ export const recipeConnectorManifestSchema = z.object({
 	id: recipeConnectorProviderSchema,
 	name: z.string(),
 	description: z.string(),
-	authType: z.enum(["oauth2", "github_app"]),
+	authType: z.enum(["oauth2", "github_app", "api_key"]),
 	status: recipeConnectorStatusSchema,
 	setupUrl: z.string().optional(),
 	authorizationUrl: z.string().optional(),
+	credentialLabel: z.string().optional(),
 	connectedAt: z.string().optional(),
 	updatedAt: z.string().optional(),
 	scopes: z.array(z.string()),
+	operations: z.array(z.string()).default([]),
 });
 
 export const recipeConnectorsResponseSchema = z.object({
@@ -1107,6 +1119,10 @@ export const recipeConnectorStartResponseSchema = z.object({
 
 export const recipeConnectorStartRequestSchema = z.object({
 	returnTo: z.string().optional(),
+});
+
+export const recipeConnectorApiKeyRequestSchema = z.object({
+	apiKey: z.string().min(1).max(4000),
 });
 
 export const recipeInstallationTriggerSchema = z
@@ -1153,11 +1169,7 @@ export const recipeInstallationsResponseSchema = z.object({
 	installations: z.array(recipeInstallationSchema),
 });
 
-export const recipeInstallRequestSchema = z.object({
-	channel: z.enum(["web", "ios", "sms"]).default("web"),
-	triggers: z.array(recipeInstallationTriggerSchema).optional(),
-	configuration: recipeConfigurationSchema.optional(),
-});
+export const recipeInstallRequestSchema = assistantRecipeInstallRequestSchema;
 
 export const recipeInstallationUpdateRequestSchema = z.object({
 	status: z.enum(["active", "paused"]).optional(),
@@ -1173,12 +1185,14 @@ export const recipeInvocationRequestSchema = z.object({
 export const recipeInvocationResponseSchema = z.object({
 	recipeId: z.string(),
 	installationId: z.string().optional(),
+	channel: z.enum(["web", "ios", "sms", "scheduled", "tool"]).default("web"),
 	status: z.enum(["ready", "queued", "blocked", "not_installed"]),
 	conversationStarter: z.string(),
 	messageUrl: z.string(),
 	missingConnections: z.array(assistantRecipeConnectionSchema),
 	enabledTools: z.array(z.string()).default([]),
 	allowedConnectorProviders: z.array(recipeConnectorProviderSchema).default([]),
+	allowedConnectorOperations: z.record(z.string(), z.array(z.string())).optional(),
 	configuration: recipeConfigurationSchema,
 	taskId: z.string().optional(),
 });
@@ -1189,6 +1203,7 @@ export type RecipeConnectorManifest = z.infer<typeof recipeConnectorManifestSche
 export type RecipeConnectorsResponse = z.infer<typeof recipeConnectorsResponseSchema>;
 export type RecipeConnectorStartResponse = z.infer<typeof recipeConnectorStartResponseSchema>;
 export type RecipeConnectorStartRequest = z.infer<typeof recipeConnectorStartRequestSchema>;
+export type RecipeConnectorApiKeyRequest = z.infer<typeof recipeConnectorApiKeyRequestSchema>;
 export type RecipeInstallationTrigger = z.infer<typeof recipeInstallationTriggerSchema>;
 export type RecipeInstallation = z.infer<typeof recipeInstallationSchema>;
 export type RecipeInstallationsResponse = z.infer<typeof recipeInstallationsResponseSchema>;

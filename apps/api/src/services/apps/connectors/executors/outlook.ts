@@ -45,6 +45,29 @@ export async function executeOutlookOperation(
 		});
 	}
 
+	if (operation === "list_events") {
+		const url = new URL("https://graph.microsoft.com/v1.0/me/calendarView");
+		url.searchParams.set(
+			"$top",
+			String(limitPositiveInteger(getNumberParam(params, "maxResults"), 10, 25)),
+		);
+		url.searchParams.set("$select", "id,subject,start,end,location,organizer,webLink,isAllDay");
+		url.searchParams.set("$orderby", "start/dateTime");
+		url.searchParams.set(
+			"startDateTime",
+			getStringParam(params, "timeMin") ?? new Date().toISOString(),
+		);
+		const timeMax = getStringParam(params, "timeMax");
+		if (timeMax) {
+			url.searchParams.set("endDateTime", timeMax);
+		} else {
+			const defaultEnd = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+			url.searchParams.set("endDateTime", defaultEnd);
+		}
+
+		return fetchConnectorJson({ url: url.toString(), token });
+	}
+
 	if (operation === "create_calendar_event") {
 		const subject = getStringParam(params, "summary") ?? getStringParam(params, "subject");
 		const start = getStringParam(params, "start");

@@ -3,20 +3,29 @@ import type { RecipeInstallationTrigger } from "@assistant/schemas";
 import { RepositoryManager } from "~/repositories";
 import type { AppData } from "~/repositories/AppDataRepository";
 import { TaskService } from "~/services/tasks/TaskService";
+import { doesCronMatchDate, getCronMatchingDatesInRange } from "~/utils/cron";
 import type { IEnv } from "~/types";
 import { safeParseJson } from "~/utils/json";
 import { getLogger } from "~/utils/logger";
 import { RECIPE_INSTALLATION_APP_ID, RECIPE_INSTALLATION_ITEM_TYPE } from "./index";
+import {
+	buildRecipeScheduleState,
+	getRecipeScheduleTriggerState,
+	setRecipeScheduleLastRun,
+	type RecipeScheduleState,
+} from "./scheduleState";
 
 const logger = getLogger({ prefix: "services/apps/recipes/scheduler" });
 const RECIPE_SCHEDULER_POLL_INTERVAL_MINUTES = 15;
+
+export { doesCronMatchDate };
 
 interface StoredRecipeInstallationData {
 	recipeId: string;
 	status?: "active" | "paused";
 	triggers?: RecipeInstallationTrigger[];
 	configuration?: Record<string, unknown>;
-	lastScheduledRunKeys?: Record<string, string>;
+	scheduleState?: RecipeScheduleState;
 }
 
 function parseStoredInstallation(record: AppData): StoredRecipeInstallationData | null {
@@ -29,57 +38,6 @@ function parseStoredInstallation(record: AppData): StoredRecipeInstallationData 
 
 	const installation = parsed as StoredRecipeInstallationData;
 	return installation.recipeId === record.item_id ? installation : null;
-}
-
-function parseCronPart(part: string, value: number, options?: { sundayAlias?: boolean }): boolean {
-	if (part === "*") {
-		return true;
-	}
-
-	return part.split(",").some((token) => {
-		const trimmed = token.trim();
-		if (!trimmed) {
-			return false;
-		}
-
-		if (trimmed.startsWith("*/")) {
-			const step = Number.parseInt(trimmed.slice(2), 10);
-			return Number.isFinite(step) && step > 0 && value % step === 0;
-		}
-
-		if (trimmed.includes("-")) {
-			const [startValue, endValue] = trimmed.split("-").map((item) => Number.parseInt(item, 10));
-			return (
-				Number.isFinite(startValue) &&
-				Number.isFinite(endValue) &&
-				value >= startValue &&
-				value <= endValue
-			);
-		}
-
-		const parsed = Number.parseInt(trimmed, 10);
-		if (!Number.isFinite(parsed)) {
-			return false;
-		}
-
-		return value === parsed || (options?.sundayAlias === true && value === 0 && parsed === 7);
-	});
-}
-
-export function doesCronMatchDate(cronExpression: string, date: Date): boolean {
-	const parts = cronExpression.trim().split(/\s+/);
-	if (parts.length !== 5) {
-		return false;
-	}
-
-	const [minute, hour, dayOfMonth, month, dayOfWeek] = parts;
-	return (
-		parseCronPart(minute, date.getUTCMinutes()) &&
-		parseCronPart(hour, date.getUTCHours()) &&
-		parseCronPart(dayOfMonth, date.getUTCDate()) &&
-		parseCronPart(month, date.getUTCMonth() + 1) &&
-		parseCronPart(dayOfWeek, date.getUTCDay(), { sundayAlias: true })
-	);
 }
 
 function getScheduleRunKey(triggerIndex: number, cronExpression: string, date: Date): string {
@@ -100,24 +58,49 @@ function getLastScheduledMinuteKey(
 	return runKey?.startsWith(prefix) ? runKey.slice(prefix.length) : undefined;
 }
 
-function getScheduleEvaluationDates(now: Date): Date[] {
+function getScheduleEvaluationWindow(now: Date): { start: Date; end: Date } {
 	const end = new Date(now);
 	end.setUTCSeconds(0, 0);
 
 	const startTime = end.getTime() - RECIPE_SCHEDULER_POLL_INTERVAL_MINUTES * 60 * 1000;
-	const dates: Date[] = [];
-	for (let time = startTime; time <= end.getTime(); time += 60 * 1000) {
-		dates.push(new Date(time));
+	return {
+		start: new Date(startTime),
+		end,
+	};
+}
+
+function getCreatedAtDate(record: AppData): Date | null {
+	const createdAt = new Date(record.created_at);
+	return Number.isNaN(createdAt.getTime()) ? null : createdAt;
+}
+
+function getScheduleEvaluationDates(params: {
+	cronExpression: string;
+	windowStart: Date;
+	windowEnd: Date;
+	notBefore?: Date | null;
+}): Date[] {
+	const start =
+		params.notBefore && params.notBefore.getTime() > params.windowStart.getTime()
+			? params.notBefore
+			: params.windowStart;
+	if (start.getTime() > params.windowEnd.getTime()) {
+		return [];
 	}
 
-	return dates;
+	return getCronMatchingDatesInRange({
+		cronExpression: params.cronExpression,
+		start,
+		end: params.windowEnd,
+		includeStart: true,
+	});
 }
 
 export async function scheduleDueRecipeExecutions(env: IEnv, now = new Date()): Promise<number> {
 	const repositories = RepositoryManager.getInstance(env);
 	const taskService = new TaskService(env, repositories.tasks);
 	const records = await repositories.appData.getAppDataByApp(RECIPE_INSTALLATION_APP_ID);
-	const evaluationDates = getScheduleEvaluationDates(now);
+	const evaluationWindow = getScheduleEvaluationWindow(now);
 	let scheduledCount = 0;
 
 	for (const record of records) {
@@ -126,6 +109,7 @@ export async function scheduleDueRecipeExecutions(env: IEnv, now = new Date()): 
 		}
 
 		const installation = parseStoredInstallation(record);
+		const createdAt = getCreatedAtDate(record);
 		if (
 			!installation ||
 			installation.status === "paused" ||
@@ -134,7 +118,11 @@ export async function scheduleDueRecipeExecutions(env: IEnv, now = new Date()): 
 			continue;
 		}
 
-		const lastScheduledRunKeys = { ...(installation.lastScheduledRunKeys ?? {}) };
+		const scheduleState = buildRecipeScheduleState({
+			triggers: installation.triggers,
+			existingState: installation.scheduleState,
+			activatedAt: record.created_at,
+		});
 		let changed = false;
 
 		for (const [index, trigger] of installation.triggers.entries()) {
@@ -142,18 +130,31 @@ export async function scheduleDueRecipeExecutions(env: IEnv, now = new Date()): 
 				continue;
 			}
 
-			const triggerKey = String(index);
+			const triggerState = getRecipeScheduleTriggerState({
+				state: scheduleState,
+				triggerIndex: index,
+				trigger,
+			});
+			if (!triggerState) {
+				changed = true;
+				continue;
+			}
+
+			const activatedAt = new Date(triggerState.activatedAt);
+			const activationBoundary = Number.isNaN(activatedAt.getTime()) ? createdAt : activatedAt;
 			const lastScheduledMinuteKey = getLastScheduledMinuteKey(
-				lastScheduledRunKeys[triggerKey],
+				triggerState.lastRunKey,
 				index,
 				trigger.cronExpression,
 			);
+			const evaluationDates = getScheduleEvaluationDates({
+				cronExpression: trigger.cronExpression,
+				windowStart: evaluationWindow.start,
+				windowEnd: evaluationWindow.end,
+				notBefore: activationBoundary,
+			});
 
 			for (const evaluationDate of evaluationDates) {
-				if (!doesCronMatchDate(trigger.cronExpression, evaluationDate)) {
-					continue;
-				}
-
 				const scheduledMinuteKey = getScheduleMinuteKey(evaluationDate);
 				if (lastScheduledMinuteKey && scheduledMinuteKey <= lastScheduledMinuteKey) {
 					continue;
@@ -182,7 +183,13 @@ export async function scheduleDueRecipeExecutions(env: IEnv, now = new Date()): 
 					},
 				});
 
-				lastScheduledRunKeys[triggerKey] = runKey;
+				setRecipeScheduleLastRun({
+					state: scheduleState,
+					triggerIndex: index,
+					cronExpression: trigger.cronExpression,
+					activatedAt: triggerState.activatedAt,
+					runKey,
+				});
 				changed = true;
 				scheduledCount++;
 			}
@@ -191,7 +198,7 @@ export async function scheduleDueRecipeExecutions(env: IEnv, now = new Date()): 
 		if (changed) {
 			await repositories.appData.updateAppData(record.id, {
 				...installation,
-				lastScheduledRunKeys,
+				scheduleState,
 			});
 		}
 	}

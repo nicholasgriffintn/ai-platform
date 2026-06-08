@@ -3,6 +3,7 @@ import z from "zod/v4";
 
 import {
 	errorResponseSchema,
+	recipeConnectorApiKeyRequestSchema,
 	recipeConnectorProviderSchema,
 	recipeConnectorsResponseSchema,
 	recipeConnectorStartRequestSchema,
@@ -15,6 +16,7 @@ import {
 	deleteRecipeConnectorConnection,
 	listRecipeConnectors,
 	startRecipeConnectorAuthorization,
+	storeRecipeConnectorApiKey,
 } from "~/services/apps/connectors";
 
 const app = new Hono();
@@ -90,6 +92,25 @@ addRoute(app, "get", "/:provider/callback", {
 
 		return raw.redirect(redirectUrl);
 	},
+});
+
+addRoute(app, "post", "/:provider/api-key", {
+	auth: true,
+	tags: ["apps"],
+	summary: "Store connector API key",
+	paramSchema: providerParamSchema,
+	bodySchema: recipeConnectorApiKeyRequestSchema,
+	responses: {
+		200: { description: "Connector API key stored" },
+		400: { description: "Invalid connector", schema: errorResponseSchema },
+	},
+	handler: async ({ params, body, serviceContext, user }) =>
+		storeRecipeConnectorApiKey({
+			context: serviceContext,
+			userId: user.id,
+			provider: params.provider,
+			apiKey: body.apiKey,
+		}),
 });
 
 addRoute(app, "delete", "/:provider", {

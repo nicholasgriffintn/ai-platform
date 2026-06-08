@@ -181,6 +181,7 @@ addRoute(app, "post", "/:id/invoke", {
 			channel: body.channel,
 			input: body.input,
 			requestUrl: raw.req.url,
+			requireInstalled: true,
 		});
 
 		if (!invocation) {
@@ -209,6 +210,7 @@ addRoute(app, "post", "/:id/queue", {
 			input: body.input,
 			requestUrl: raw.req.url,
 			queue: true,
+			requireInstalled: true,
 		});
 
 		if (!invocation) {

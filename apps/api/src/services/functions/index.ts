@@ -16,6 +16,7 @@ import { create_image } from "./image";
 import { handleMCPTool } from "./mcp";
 import { create_music } from "./music";
 import { prompt_coach } from "./prompt_coach";
+import { create_qr_code } from "./qr";
 import { add_reasoning_step } from "./reasoning";
 import { capture_screenshot } from "./screenshot";
 import { create_speech } from "./speech";
@@ -56,6 +57,7 @@ const functionDefinitions: ApiToolDefinition[] = [
 	next_edit_completion,
 	apply_edit_completion,
 	web_search,
+	create_qr_code,
 	call_api,
 	research,
 	extract_content,

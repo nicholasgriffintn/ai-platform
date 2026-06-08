@@ -1,9 +1,15 @@
 import { recipeConnectorProviderSchema } from "@assistant/schemas";
+import {
+	isConnectorOperationWrite,
+	recipeConnectorOperationIds,
+} from "~/lib/providers/capabilities/connectors";
 import { executeRecipeConnectorOperation } from "~/services/apps/connectors/operations";
 import { invokeAssistantRecipe, resolveInstalledAssistantRecipe } from "~/services/apps/recipes";
+import { getRecipeConversationContext } from "~/services/apps/recipes/conversationContext";
 import { executeRecipeInvocationChat } from "~/services/apps/recipes/execution";
 import { coerceStringArray, isRecord } from "~/utils/objects";
-import { extractChatCompletionText } from "~/utils/messages";
+import { AssistantError } from "~/utils/errors";
+import { extractChatCompletionNotification } from "~/utils/messages";
 import { jsonSchemaToZod } from "./jsonSchema";
 import type { ApiToolDefinition } from "./types";
 
@@ -15,10 +21,78 @@ function getRecipeAllowedConnectorProviders(options: unknown): string[] | null {
 	return coerceStringArray(options.recipe.allowedConnectorProviders);
 }
 
+function getRecipeAllowedConnectorOperations(options: unknown, provider: string): string[] | null {
+	if (
+		!isRecord(options) ||
+		!isRecord(options.recipe) ||
+		!isRecord(options.recipe.allowedConnectorOperations) ||
+		!(provider in options.recipe.allowedConnectorOperations)
+	) {
+		return null;
+	}
+
+	return coerceStringArray(options.recipe.allowedConnectorOperations[provider]);
+}
+
+function getRecipeExecutionChannel(options: unknown): string | undefined {
+	if (!isRecord(options) || !isRecord(options.recipe)) {
+		return undefined;
+	}
+
+	return typeof options.recipe.channel === "string" ? options.recipe.channel : undefined;
+}
+
+function getTriggerRecipeChannel(options: unknown): "sms" | "tool" {
+	if (!isRecord(options)) {
+		return "tool";
+	}
+
+	if (options.source === "sms") {
+		return "sms";
+	}
+
+	if (isRecord(options.sms) && options.sms.enabled === true) {
+		return "sms";
+	}
+
+	return "tool";
+}
+
+function getSmsRecipeExecutionContext(
+	options: unknown,
+): { from?: string; to?: string } | undefined {
+	if (!isRecord(options) || !isRecord(options.sms) || options.sms.enabled !== true) {
+		return undefined;
+	}
+
+	return {
+		...(typeof options.sms.from === "string" ? { from: options.sms.from } : {}),
+		...(typeof options.sms.to === "string" ? { to: options.sms.to } : {}),
+	};
+}
+
+function buildConnectorToolError(params: {
+	provider: string;
+	operation: unknown;
+	error: AssistantError;
+}) {
+	return {
+		status: "error",
+		name: "use_recipe_connector",
+		content: params.error.message,
+		data: {
+			provider: params.provider,
+			operation: params.operation,
+			errorType: params.error.type,
+			statusCode: params.error.statusCode,
+		},
+	};
+}
+
 export const use_recipe_connector: ApiToolDefinition = {
 	name: "use_recipe_connector",
 	description:
-		"Use a connected recipe provider such as Gmail, Outlook, Google Calendar, Linear, Notion, or Oura. Only use this when the user has asked for a recipe or connector-backed workflow.",
+		"Use a connected recipe provider such as Fitbit, Gmail, Outlook, Google Calendar, Linear, Notion, Oura, PostHog, Sentry, Todoist, Vercel, or Withings. Only use this when the user has asked for a recipe or connector-backed workflow.",
 	type: "premium",
 	costPerCall: 0,
 	permissions: ["network", "read", "write"],
@@ -27,13 +101,27 @@ export const use_recipe_connector: ApiToolDefinition = {
 		properties: {
 			provider: {
 				type: "string",
-				enum: ["gmail", "outlook", "calendar", "linear", "notion", "oura"],
+				enum: [
+					"asana",
+					"fitbit",
+					"gmail",
+					"outlook",
+					"calendar",
+					"linear",
+					"notion",
+					"oura",
+					"posthog",
+					"sentry",
+					"todoist",
+					"vercel",
+					"withings",
+				],
 				description: "The connected provider to use.",
 			},
 			operation: {
 				type: "string",
-				description:
-					"Provider operation. Supported examples: search_messages, create_draft, list_events, create_event, create_calendar_event, search_issues, create_issue, search, retrieve_page, create_page, append_block_children, daily_readiness, daily_sleep, daily_activity.",
+				enum: recipeConnectorOperationIds,
+				description: "Provider operation supported by the selected connector.",
 			},
 			params: {
 				type: "object",
@@ -72,15 +160,66 @@ export const use_recipe_connector: ApiToolDefinition = {
 			};
 		}
 
-		const data = await executeRecipeConnectorOperation({
-			context: request.context,
-			userId: request.user.id,
-			request: {
-				provider,
-				operation: args.operation,
-				params: args.params,
-			},
-		});
+		const allowedConnectorOperations = getRecipeAllowedConnectorOperations(
+			request.request?.options,
+			provider,
+		);
+		if (
+			allowedConnectorOperations &&
+			(typeof args.operation !== "string" || !allowedConnectorOperations.includes(args.operation))
+		) {
+			return {
+				status: "error",
+				name: "use_recipe_connector",
+				content: `The ${provider || "requested"} connector operation is not enabled for this recipe.`,
+				data: {
+					provider,
+					operation: args.operation,
+					allowedConnectorOperations,
+				},
+			};
+		}
+
+		if (
+			getRecipeExecutionChannel(request.request?.options) === "scheduled" &&
+			typeof args.operation === "string" &&
+			isConnectorOperationWrite(provider, args.operation)
+		) {
+			return {
+				status: "error",
+				name: "use_recipe_connector",
+				content:
+					"Scheduled recipe runs cannot perform connector write operations. Ask the user to run this recipe in chat if an external change is required.",
+				data: {
+					provider,
+					operation: args.operation,
+					channel: "scheduled",
+				},
+			};
+		}
+
+		let data: unknown;
+		try {
+			data = await executeRecipeConnectorOperation({
+				context: request.context,
+				userId: request.user.id,
+				request: {
+					provider,
+					operation: args.operation,
+					params: args.params,
+				},
+			});
+		} catch (error) {
+			if (error instanceof AssistantError) {
+				return buildConnectorToolError({
+					provider,
+					operation: args.operation,
+					error,
+				});
+			}
+
+			throw error;
+		}
 
 		return {
 			status: "success",
@@ -130,6 +269,8 @@ export const trigger_recipe: ApiToolDefinition = {
 				: typeof args.input === "string"
 					? args.input.trim()
 					: "";
+		const triggerInput =
+			typeof args.input === "string" && args.input.trim() ? args.input.trim() : query;
 		if (!explicitRecipeId && !query) {
 			return {
 				status: "error",
@@ -162,11 +303,13 @@ export const trigger_recipe: ApiToolDefinition = {
 			}
 		}
 
+		const recipeChannel = getTriggerRecipeChannel(request.request?.options);
+		const sms = getSmsRecipeExecutionContext(request.request?.options);
 		const invocation = await invokeAssistantRecipe(resolvedRecipeId, {
 			context: request.context,
 			userId: request.user.id,
-			channel: "tool",
-			input: args.input,
+			channel: recipeChannel,
+			input: triggerInput || undefined,
 			requireInstalled: true,
 		});
 
@@ -180,23 +323,31 @@ export const trigger_recipe: ApiToolDefinition = {
 		}
 
 		if (invocation.status === "ready") {
+			const priorMessages = await getRecipeConversationContext({
+				conversationManager: context.conversationManager,
+				conversationId: context.completionId,
+			});
 			const execution = await executeRecipeInvocationChat({
 				env: request.env,
 				context: request.context,
 				user: request.user,
 				invocation,
+				priorMessages,
+				...(sms ? { sms } : {}),
 			});
-			const content = extractChatCompletionText(execution.response, {
+			const notification = extractChatCompletionNotification(execution.response, {
 				streamingMessage: "Recipe execution cannot return a streaming response",
 			});
 
 			return {
 				status: "success",
 				name: "trigger_recipe",
-				content,
+				content: notification.body,
 				data: {
 					...invocation,
 					executionConversationId: execution.conversationId,
+					notification,
+					mediaUrls: notification.mediaUrls,
 				},
 			};
 		}

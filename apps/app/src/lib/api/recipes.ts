@@ -3,6 +3,7 @@ import type {
 	AssistantRecipeInstallResponse,
 	AssistantRecipesResponse,
 	RecipeConfiguration,
+	RecipeInvocationResponse,
 	RecipeInstallation,
 	RecipeInstallationTrigger,
 	RecipeInstallationUpdateRequest,
@@ -65,6 +66,29 @@ export async function installAssistantRecipe(
 	}
 
 	return returnFetchedData<AssistantRecipeInstallResponse>(response);
+}
+
+export async function invokeAssistantRecipe(
+	recipeId: string,
+	input?: string,
+): Promise<RecipeInvocationResponse> {
+	let headers = {};
+	try {
+		headers = await apiService.getHeaders();
+	} catch (error) {
+		console.error("Error preparing recipe invocation headers:", error);
+	}
+
+	const response = await fetchApi(`/apps/recipes/${recipeId}/invoke`, {
+		method: "POST",
+		headers,
+		body: { channel: "web", input },
+	});
+	if (!response.ok) {
+		throw new Error("Failed to invoke assistant recipe");
+	}
+
+	return returnFetchedData<RecipeInvocationResponse>(response);
 }
 
 export async function listRecipeInstallations(): Promise<RecipeInstallationsResponse> {

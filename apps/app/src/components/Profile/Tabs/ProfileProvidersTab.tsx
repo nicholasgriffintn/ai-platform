@@ -3,6 +3,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { recipeConnectorProviderSchema } from "@assistant/schemas";
+import type { RecipeConnectorProvider } from "@assistant/schemas";
 
 import { EmptyState } from "~/components/Core/EmptyState";
 import { ModelIcon } from "~/components/ModelIcon";
@@ -20,6 +21,7 @@ import {
 import { useUser } from "~/hooks/useUser";
 import { formatProviderLabel } from "~/lib/provider-display";
 import type { ProviderSetting } from "~/lib/api/services/user-service";
+import { ConnectorApiKeyModal } from "../Modals/ConnectorApiKeyModal";
 import { ProviderApiKeyModal } from "../Modals/ProviderApiKeyModal";
 
 interface ProviderModalState {
@@ -31,6 +33,13 @@ interface ProviderModalState {
 interface ProviderDeleteState {
 	providerId: string;
 	providerName: string;
+}
+
+interface ConnectorApiKeyModalState {
+	open: boolean;
+	providerId: RecipeConnectorProvider | null;
+	providerName: string;
+	credentialLabel?: string;
 }
 
 type ProviderTypeFilter = "all" | "chat" | "messaging" | "connector";
@@ -54,6 +63,11 @@ export function ProfileProvidersTab() {
 	});
 	const [providerToDelete, setProviderToDelete] = useState<ProviderDeleteState | null>(null);
 	const [connectorToDelete, setConnectorToDelete] = useState<ProviderDeleteState | null>(null);
+	const [connectorApiKeyModal, setConnectorApiKeyModal] = useState<ConnectorApiKeyModalState>({
+		open: false,
+		providerId: null,
+		providerName: "",
+	});
 	const [providerType, setProviderType] = useState<ProviderTypeFilter>("all");
 	const { data: connectorsData, isLoading: isLoadingConnectors } = useRecipeConnectors();
 	const startConnector = useStartRecipeConnector();
@@ -86,9 +100,20 @@ export function ProfileProvidersTab() {
 		() => (providerType === "chat" || providerType === "messaging" ? [] : connectors),
 		[connectors, providerType],
 	);
+	const modalProvider = useMemo(
+		() => providerSettings.find((provider) => provider.provider_id === modalState.providerId),
+		[modalState.providerId, providerSettings],
+	);
 
 	const getProviderName = (provider: ProviderSetting) =>
 		provider.name || formatProviderLabel(provider.provider_id);
+	const getProviderActionLabel = (provider: ProviderSetting, isConfigured: boolean) => {
+		if (provider.configurationFields?.length) {
+			return isConfigured ? "Update configuration" : "Configure";
+		}
+
+		return isConfigured ? "Update key" : "Add key";
+	};
 
 	const handleEnableProvider = (providerId: string, providerName: string) => {
 		trackEvent({
@@ -133,10 +158,20 @@ export function ProfileProvidersTab() {
 		setProviderToDelete(null);
 	};
 
-	const handleConnectConnector = async (providerId: (typeof connectors)[number]["id"]) => {
+	const handleConnectConnector = async (connector: (typeof connectors)[number]) => {
+		if (connector.authType === "api_key") {
+			setConnectorApiKeyModal({
+				open: true,
+				providerId: connector.id,
+				providerName: connector.name,
+				credentialLabel: connector.credentialLabel,
+			});
+			return;
+		}
+
 		try {
 			const response = await startConnector.mutateAsync({
-				provider: providerId,
+				provider: connector.id,
 				returnTo: "/profile?tab=providers&type=connector",
 			});
 			window.location.href = response.authorizationUrl;
@@ -161,6 +196,15 @@ export function ProfileProvidersTab() {
 		await disconnectConnector.mutateAsync(parsedProvider.data);
 		await queryClient.invalidateQueries({ queryKey: RECIPE_CONNECTORS_QUERY_KEY });
 		setConnectorToDelete(null);
+	};
+
+	const handleCloseConnectorApiKeyModal = (open: boolean) => {
+		setConnectorApiKeyModal({
+			open,
+			providerId: open ? connectorApiKeyModal.providerId : null,
+			providerName: open ? connectorApiKeyModal.providerName : "",
+			credentialLabel: open ? connectorApiKeyModal.credentialLabel : undefined,
+		});
 	};
 
 	return (
@@ -254,7 +298,7 @@ export function ProfileProvidersTab() {
 													{
 														id: "configure",
 														icon: isConfigured ? <KeyRound size={14} /> : <Plus size={14} />,
-														label: isConfigured ? "Update key" : "Add key",
+														label: getProviderActionLabel(provider, isConfigured),
 														onClick: (e) => {
 															e.stopPropagation();
 															handleEnableProvider(provider.provider_id, providerName);
@@ -330,7 +374,7 @@ export function ProfileProvidersTab() {
 													label: isConnected ? "Reconnect" : "Connect",
 													onClick: (e) => {
 														e.stopPropagation();
-														handleConnectConnector(connector.id);
+														handleConnectConnector(connector);
 													},
 													disabled: isUnavailable || startConnector.isPending,
 												},
@@ -372,14 +416,18 @@ export function ProfileProvidersTab() {
 				onOpenChange={handleCloseModal}
 				providerId={modalState.providerId}
 				providerName={modalState.providerName}
-				configurationFields={
-					providerSettings.find((provider) => provider.provider_id === modalState.providerId)
-						?.configurationFields
-				}
-				webhookUrl={
-					providerSettings.find((provider) => provider.provider_id === modalState.providerId)
-						?.webhookUrl
-				}
+				configurationFields={modalProvider?.configurationFields}
+				configurationValues={modalProvider?.configurationValues}
+				hasStoredCredentials={modalProvider?.hasApiKey}
+				webhookUrl={modalProvider?.webhookUrl}
+			/>
+			<ConnectorApiKeyModal
+				open={connectorApiKeyModal.open}
+				onOpenChange={handleCloseConnectorApiKeyModal}
+				providerId={connectorApiKeyModal.providerId}
+				providerName={connectorApiKeyModal.providerName}
+				credentialLabel={connectorApiKeyModal.credentialLabel}
+				onStored={() => queryClient.invalidateQueries({ queryKey: RECIPE_CONNECTORS_QUERY_KEY })}
 			/>
 			<ConfirmationDialog
 				open={providerToDelete !== null}

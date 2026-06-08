@@ -1,4 +1,5 @@
 import { stringToBase64Url } from "~/utils/base64";
+import { assertSafeEmailHeaderValue } from "~/utils/email";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { fetchConnectorJson } from "./http";
 import { getNumberParam, getStringParam, limitPositiveInteger } from "./params";
@@ -12,8 +13,8 @@ function buildEmailMessage(params: Record<string, unknown>) {
 	}
 
 	return [
-		`To: ${to}`,
-		`Subject: ${subject}`,
+		`To: ${assertSafeEmailHeaderValue("to", to)}`,
+		`Subject: ${assertSafeEmailHeaderValue("subject", subject)}`,
 		"Content-Type: text/plain; charset=UTF-8",
 		"",
 		body,

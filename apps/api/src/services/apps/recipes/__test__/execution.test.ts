@@ -29,12 +29,16 @@ describe("executeRecipeInvocationChat", () => {
 	const invocation: RecipeInvocationResponse = {
 		recipeId: "notion-action-log",
 		installationId: "installation-1",
+		channel: "scheduled",
 		status: "ready",
 		conversationStarter: "Run this installed Notion recipe.",
 		messageUrl: "/?query=Run",
 		missingConnections: [],
 		enabledTools: ["use_recipe_connector"],
 		allowedConnectorProviders: ["notion"],
+		allowedConnectorOperations: {
+			notion: ["search", "append_block_children"],
+		},
 		configuration: { target: "Action log" },
 	};
 
@@ -72,7 +76,11 @@ describe("executeRecipeInvocationChat", () => {
 					recipe: {
 						id: "notion-action-log",
 						installationId: "installation-1",
+						channel: "scheduled",
 						allowedConnectorProviders: ["notion"],
+						allowedConnectorOperations: {
+							notion: ["search", "append_block_children"],
+						},
 						configuration: { target: "Action log" },
 					},
 				}),
@@ -103,6 +111,57 @@ describe("executeRecipeInvocationChat", () => {
 			context,
 			user,
 			request: expect.objectContaining({
+				options: expect.objectContaining({
+					source: "sms",
+					sms: {
+						enabled: true,
+						from: "+15551234567",
+						to: "+15557654321",
+					},
+				}),
+			}),
+		});
+	});
+
+	it("can run a recipe inside an existing SMS conversation window", async () => {
+		const result = await executeRecipeInvocationChat({
+			env,
+			context,
+			user,
+			invocation,
+			conversationId: "sms_conversation",
+			priorMessages: [
+				{
+					id: "message-1",
+					role: "user",
+					content: "run my action log recipe",
+				},
+			],
+			sms: {
+				from: "+15551234567",
+				to: "+15557654321",
+			},
+		});
+
+		expect(result.conversationId).toBe("sms_conversation");
+		expect(mocks.generateId).not.toHaveBeenCalled();
+		expect(mocks.handleCreateChatCompletions).toHaveBeenCalledWith({
+			env,
+			context,
+			user,
+			request: expect.objectContaining({
+				completion_id: "sms_conversation",
+				messages: [
+					{
+						id: "message-1",
+						role: "user",
+						content: "run my action log recipe",
+					},
+					{
+						role: "user",
+						content: "Run this installed Notion recipe.",
+					},
+				],
 				options: expect.objectContaining({
 					source: "sms",
 					sms: {
