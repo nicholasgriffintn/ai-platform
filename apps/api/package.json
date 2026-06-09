@@ -56,7 +56,7 @@
 		"better-sqlite3": "12.10.0",
 		"drizzle-kit": "0.31.10",
 		"oxfmt": "0.53.0",
-		"oxlint": "1.67.0",
+		"oxlint": "1.68.0",
 		"typescript": "6.0.3",
 		"vitest": "4.1.8",
 		"wrangler": "4.95.0"
