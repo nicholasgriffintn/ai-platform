@@ -35,7 +35,7 @@
 		"tailwindcss": "4.3.0"
 	},
 	"devDependencies": {
-		"@cloudflare/workers-types": "4.20260531.1",
+		"@cloudflare/workers-types": "4.20260602.1",
 		"@tailwindcss/typography": "0.5.19",
 		"@tailwindcss/vite": "4.3.0",
 		"@testing-library/jest-dom": "6.9.1",
