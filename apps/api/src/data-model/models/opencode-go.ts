@@ -295,8 +295,8 @@ export const opencodeGoModelConfig: ModelConfig = createModelConfigObject([
 		supportsToolCalls: true,
 		contextWindow: 512000,
 		maxTokens: 131072,
-		costPer1kInputTokens: 0.0006,
-		costPer1kOutputTokens: 0.0024,
+		costPer1kInputTokens: 0.0003,
+		costPer1kOutputTokens: 0.0012,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",

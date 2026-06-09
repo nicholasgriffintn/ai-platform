@@ -824,6 +824,10 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 4096,
 		costPer1kInputTokens: 0.00033,
 		costPer1kOutputTokens: 0.00275,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("amazon.titan-text-express-v1", PROVIDER, {
@@ -1939,6 +1943,10 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		costPer1kInputTokens: 0.00015,
 		costPer1kOutputTokens: 0.0006,
 		supportsResponseFormat: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("openai.gpt-oss-20b-1:0", PROVIDER, {
@@ -1958,6 +1966,10 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		costPer1kInputTokens: 0.00007,
 		costPer1kOutputTokens: 0.0003,
 		supportsResponseFormat: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("qwen.qwen3-235b-a22b-2507-v1:0", PROVIDER, {
@@ -3095,6 +3107,10 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00015,
 		costPer1kOutputTokens: 0.0006,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("openai.gpt-oss-20b", PROVIDER, {
@@ -3114,5 +3130,9 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00007,
 		costPer1kOutputTokens: 0.0003,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 ]);

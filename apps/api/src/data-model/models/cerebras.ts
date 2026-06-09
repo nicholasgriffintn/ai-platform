@@ -4,22 +4,6 @@ import { createModelConfig, createModelConfigObject } from "~/lib/providers/mode
 const PROVIDER = "cerebras";
 
 export const cerebrasModelConfig: ModelConfig = createModelConfigObject([
-	createModelConfig("cerebras/llama3.1-8b", PROVIDER, {
-		name: "Llama 3.1 8B",
-		matchingModel: "llama3.1-8b",
-		description: "A high speed deployment of Llama 3.1 8B optimized for chat and reasoning tasks.",
-		modalities: { input: ["text"], output: ["text"] },
-		knowledgeCutoffDate: "December 2023",
-		releaseDate: "January 1, 2025",
-		lastUpdated: "January 1, 2025",
-		supportsAttachments: false,
-		supportsTemperature: true,
-		supportsToolCalls: true,
-		contextWindow: 32000,
-		maxTokens: 8000,
-		costPer1kInputTokens: 0.0001,
-		costPer1kOutputTokens: 0.0001,
-	}),
 	createModelConfig("cerebras/llama-3.3-70b", PROVIDER, {
 		name: "Cerebras Llama 3.3 70B",
 		matchingModel: "llama-3.3-70b",
