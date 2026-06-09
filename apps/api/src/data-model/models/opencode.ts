@@ -1013,4 +1013,27 @@ export const opencodeModelConfig: ModelConfig = createModelConfigObject([
 			defaultEffort: "none",
 		},
 	}),
+	createModelConfig("north-mini-code-free", PROVIDER, {
+		name: "North Mini Code Free",
+		matchingModel: "north-mini-code-free",
+		knowledgeCutoffDate: "September 23, 2025",
+		releaseDate: "June 9, 2026",
+		lastUpdated: "June 9, 2026",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		supportsResponseFormat: true,
+		contextWindow: 256000,
+		maxTokens: 64000,
+		costPer1kInputTokens: 0,
+		costPer1kOutputTokens: 0,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
+	}),
 ]);

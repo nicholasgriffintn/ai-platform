@@ -339,4 +339,25 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 			defaultEffort: "none",
 		},
 	}),
+	createModelConfig("claude-fable-5", PROVIDER, {
+		name: "Claude Fable 5",
+		matchingModel: "claude-fable-5",
+		releaseDate: "June 9, 2026",
+		lastUpdated: "June 9, 2026",
+		modalities: {
+			input: ["text", "image", "pdf"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: false,
+		supportsToolCalls: true,
+		contextWindow: 1000000,
+		maxTokens: 128000,
+		costPer1kInputTokens: 0.01,
+		costPer1kOutputTokens: 0.05,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
+	}),
 ]);
