@@ -48,8 +48,8 @@ importers:
         specifier: 0.10.19
         version: 0.10.19(hono@4.12.23)
       '@sentry/cloudflare':
-        specifier: 10.55.0
-        version: 10.55.0(@cloudflare/workers-types@4.20260602.1)
+        specifier: 10.56.0
+        version: 10.56.0(@cloudflare/workers-types@4.20260602.1)
       '@simplewebauthn/server':
         specifier: 13.3.1
         version: 13.3.1
@@ -3330,8 +3330,8 @@ packages:
     resolution: {integrity: sha512-tpmmG+/xRE2Kn9RpflU3AIyZv08v10+E1ZrJCx7z6+/91zHVxy0M73kC1LT4/8PbYNt85ywyC8+n+D99JdMcGA==}
     engines: {node: '>=20'}
 
-  '@sentry/cloudflare@10.55.0':
-    resolution: {integrity: sha512-1FcCtbQb60bKJGQuxtTzqicolRea9SK8DdwZKMKjBNjuqsSDf48jh//nE05/qX0NIj7NxsmsLeTtxchMIrz6AQ==}
+  '@sentry/cloudflare@10.56.0':
+    resolution: {integrity: sha512-4PH6joEJbS2+f0yWSatE/vPfE4sbtDQxdPDcsiQ8642nEH8WxKIWWPgRknfLRClmShxzQpwDXJZRJc3rcm4QtQ==}
     engines: {node: '>=18'}
     peerDependencies:
       '@cloudflare/workers-types': ^4.x
@@ -3339,8 +3339,8 @@ packages:
       '@cloudflare/workers-types':
         optional: true
 
-  '@sentry/core@10.55.0':
-    resolution: {integrity: sha512-XUyoNtDSYCvgJnoNzlh+YeAXfIPhCRIXbhWqqM3GQ3AFtZICi85lkyfsrwXEl9wzlPGYnU+Eg8F4tOfScx+FcQ==}
+  '@sentry/core@10.56.0':
+    resolution: {integrity: sha512-L+u1dIz5SANrmST5jhIwETtt4apILgKrylv12X4hKJU0PvZl+NorjeV/ty3MwzpKQPg6b6q6qMOSLc1rLpy3iQ==}
     engines: {node: '>=18'}
 
   '@simplewebauthn/browser@13.3.0':
@@ -9084,14 +9084,14 @@ snapshots:
 
   '@scalar/validation@0.6.0': {}
 
-  '@sentry/cloudflare@10.55.0(@cloudflare/workers-types@4.20260602.1)':
+  '@sentry/cloudflare@10.56.0(@cloudflare/workers-types@4.20260602.1)':
     dependencies:
       '@opentelemetry/api': 1.9.1
-      '@sentry/core': 10.55.0
+      '@sentry/core': 10.56.0
     optionalDependencies:
       '@cloudflare/workers-types': 4.20260602.1
 
-  '@sentry/core@10.55.0': {}
+  '@sentry/core@10.56.0': {}
 
   '@simplewebauthn/browser@13.3.0': {}
 
