@@ -6059,5 +6059,6 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		knowledgeCutoffDate: "January 31, 2026",
 	}),
 ]);
