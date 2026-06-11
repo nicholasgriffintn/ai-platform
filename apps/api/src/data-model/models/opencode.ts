@@ -1058,4 +1058,27 @@ export const opencodeModelConfig: ModelConfig = createModelConfigObject([
 			defaultEffort: "none",
 		},
 	}),
+	createModelConfig("deepseek-v4-pro", PROVIDER, {
+		name: "DeepSeek V4 Pro",
+		matchingModel: "deepseek-v4-pro",
+		knowledgeCutoffDate: "May 2025",
+		releaseDate: "April 24, 2026",
+		lastUpdated: "April 24, 2026",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		supportsResponseFormat: true,
+		contextWindow: 1000000,
+		maxTokens: 384000,
+		costPer1kInputTokens: 0.00174,
+		costPer1kOutputTokens: 0.00384,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
+	}),
 ]);

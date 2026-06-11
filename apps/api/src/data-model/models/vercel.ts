@@ -6061,4 +6061,21 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		},
 		knowledgeCutoffDate: "January 31, 2026",
 	}),
+	createModelConfig("moonshotai/kimi-k2", PROVIDER, {
+		name: "Kimi K2 Instruct",
+		matchingModel: "moonshotai/kimi-k2",
+		releaseDate: "September 5, 2025",
+		lastUpdated: "September 5, 2025",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 131072,
+		maxTokens: 131072,
+		costPer1kInputTokens: 0.00057,
+		costPer1kOutputTokens: 0.0023,
+	}),
 ]);
