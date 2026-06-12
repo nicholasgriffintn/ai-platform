@@ -1349,7 +1349,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		supportsAttachments: false,
 		supportsTemperature: true,
 		supportsToolCalls: false,
-		contextWindow: 8192,
+		contextWindow: 128000,
 		maxTokens: 1536,
 		costPer1kInputTokens: 0.00012,
 		costPer1kOutputTokens: 0,
