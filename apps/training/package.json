@@ -21,7 +21,7 @@
 	},
 	"dependencies": {
 		"@assistant/schemas": "workspace:*",
-		"@aws-sdk/client-bedrock": "3.1059.0",
+		"@aws-sdk/client-bedrock": "3.1063.0",
 		"zod": "4.4.3"
 	},
 	"devDependencies": {
