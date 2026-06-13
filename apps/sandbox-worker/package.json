@@ -26,7 +26,7 @@
 		"zod": "4.4.3"
 	},
 	"devDependencies": {
-		"@cloudflare/workers-types": "4.20260602.1",
+		"@cloudflare/workers-types": "4.20260606.1",
 		"@types/node": "25.9.2",
 		"oxfmt": "0.53.0",
 		"oxlint": "1.68.0",
