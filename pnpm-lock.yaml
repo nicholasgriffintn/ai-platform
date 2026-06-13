@@ -480,8 +480,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/schemas
       '@aws-sdk/client-bedrock':
-        specifier: 3.1059.0
-        version: 3.1059.0
+        specifier: 3.1063.0
+        version: 3.1063.0
       zod:
         specifier: 4.4.3
         version: 4.4.3
@@ -598,8 +598,8 @@ packages:
   '@aws-crypto/util@5.2.0':
     resolution: {integrity: sha512-4RkU9EsI6ZpBve5fseQlGNUWKMa1RLPQ1dnjnQoe07ldfIzcsGb5hC5W0Dm7u423KWzawlrpbjXBrXCEv9zazQ==}
 
-  '@aws-sdk/client-bedrock@3.1059.0':
-    resolution: {integrity: sha512-F8Lo+5acH1JoFPfGMv1UOd+0eweBHqsqnPqQh6cwhDTobSNQg5HnVzb1aWCX1VYSA1MQQeu5zmYTPYLq/2Y/1Q==}
+  '@aws-sdk/client-bedrock@3.1063.0':
+    resolution: {integrity: sha512-YC7oJ0Ea/gJMwwQKeBwpsAWTg4+s/2LfmmRyHCQXKAFrDtyhMECFnGP7mFqF4q1PHsL5MeXbJPYYyTH+mpqy/w==}
     engines: {node: '>=20.0.0'}
 
   '@aws-sdk/core@3.974.18':
@@ -644,10 +644,6 @@ packages:
 
   '@aws-sdk/signature-v4-multi-region@3.996.32':
     resolution: {integrity: sha512-llvApLcsWtmRFhG2wT3WIp1CmDeRaIYutqty1ZZXoMzK7TiJ6MOLOimk9eXUS8PwgG4ew4pa4QAbt0lfhn++1w==}
-    engines: {node: '>=20.0.0'}
-
-  '@aws-sdk/token-providers@3.1059.0':
-    resolution: {integrity: sha512-xql+7YBAE7WYb9xJfY0vcAXM8rJXfClmB2wkt+g/EoLUMog0pOb7o741fE96wFqha0uQTEgTo/5lGGguzavxmw==}
     engines: {node: '>=20.0.0'}
 
   '@aws-sdk/token-providers@3.1063.0':
@@ -6780,13 +6776,13 @@ snapshots:
       '@smithy/util-utf8': 2.3.0
       tslib: 2.8.1
 
-  '@aws-sdk/client-bedrock@3.1059.0':
+  '@aws-sdk/client-bedrock@3.1063.0':
     dependencies:
       '@aws-crypto/sha256-browser': 5.2.0
       '@aws-crypto/sha256-js': 5.2.0
       '@aws-sdk/core': 3.974.18
       '@aws-sdk/credential-provider-node': 3.972.52
-      '@aws-sdk/token-providers': 3.1059.0
+      '@aws-sdk/token-providers': 3.1063.0
       '@aws-sdk/types': 3.973.11
       '@smithy/core': 3.24.6
       '@smithy/fetch-http-handler': 5.4.6
@@ -6906,15 +6902,6 @@ snapshots:
     dependencies:
       '@aws-sdk/types': 3.973.11
       '@smithy/signature-v4': 5.4.6
-      '@smithy/types': 4.14.3
-      tslib: 2.8.1
-
-  '@aws-sdk/token-providers@3.1059.0':
-    dependencies:
-      '@aws-sdk/core': 3.974.18
-      '@aws-sdk/nested-clients': 3.997.17
-      '@aws-sdk/types': 3.973.11
-      '@smithy/core': 3.24.6
       '@smithy/types': 4.14.3
       tslib: 2.8.1
 
