@@ -792,4 +792,27 @@ export const togetherAiModelConfig: ModelConfig = {
 			defaultEffort: "none",
 		},
 	},
+	"MiniMaxAI/MiniMax-M3": {
+		name: "MiniMax-M3",
+		matchingModel: "MiniMaxAI/MiniMax-M3",
+		provider: "together-ai",
+		releaseDate: "June 12, 2026",
+		lastUpdated: "June 12, 2026",
+		modalities: {
+			input: ["text", "image"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		supportsResponseFormat: true,
+		contextWindow: 524288,
+		maxTokens: 250000,
+		costPer1kInputTokens: 0.0003,
+		costPer1kOutputTokens: 0.0012,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
+	},
 };

@@ -6078,4 +6078,27 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		costPer1kInputTokens: 0.00057,
 		costPer1kOutputTokens: 0.0023,
 	}),
+	createModelConfig("moonshotai/kimi-k2.7-code", PROVIDER, {
+		name: "Kimi K2.7 Code",
+		matchingModel: "moonshotai/kimi-k2.7-code",
+		knowledgeCutoffDate: "January 2025",
+		releaseDate: "June 12, 2026",
+		lastUpdated: "June 12, 2026",
+		modalities: {
+			input: ["text", "image", "pdf"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		supportsResponseFormat: true,
+		contextWindow: 256000,
+		maxTokens: 32768,
+		costPer1kInputTokens: 0.00095,
+		costPer1kOutputTokens: 0.004,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
+	}),
 ]);

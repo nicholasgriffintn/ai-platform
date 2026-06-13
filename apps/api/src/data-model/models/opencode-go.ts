@@ -98,29 +98,6 @@ export const opencodeGoModelConfig: ModelConfig = createModelConfigObject([
 		},
 	}),
 
-	createModelConfig("kimi-k2.5", PROVIDER, {
-		name: "Kimi K2.5",
-		matchingModel: "kimi-k2.5",
-		knowledgeCutoffDate: "October 2024",
-		releaseDate: "January 27, 2026",
-		lastUpdated: "January 27, 2026",
-		modalities: {
-			input: ["text", "image", "video"],
-			output: ["text"],
-		},
-		supportsAttachments: true,
-		supportsTemperature: true,
-		supportsToolCalls: true,
-		contextWindow: 262144,
-		maxTokens: 65536,
-		costPer1kInputTokens: 0.0006,
-		costPer1kOutputTokens: 0.003,
-		reasoningConfig: {
-			supportedEffortLevels: ["none", "thinking"],
-			defaultEffort: "none",
-		},
-	}),
-
 	createModelConfig("kimi-k2.6", PROVIDER, {
 		name: "Kimi K2.6",
 		matchingModel: "kimi-k2.6",
@@ -184,29 +161,6 @@ export const opencodeGoModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.00174,
 		costPer1kOutputTokens: 0.00348,
-		reasoningConfig: {
-			supportedEffortLevels: ["none", "thinking"],
-			defaultEffort: "none",
-		},
-	}),
-
-	createModelConfig("minimax-m2.5", PROVIDER, {
-		name: "MiniMax M2.5",
-		matchingModel: "minimax-m2.5",
-		knowledgeCutoffDate: "January 2025",
-		releaseDate: "February 12, 2026",
-		lastUpdated: "February 12, 2026",
-		modalities: {
-			input: ["text"],
-			output: ["text"],
-		},
-		supportsAttachments: false,
-		supportsTemperature: true,
-		supportsToolCalls: true,
-		contextWindow: 204800,
-		maxTokens: 65536,
-		costPer1kInputTokens: 0.0003,
-		costPer1kOutputTokens: 0.0012,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
@@ -295,8 +249,8 @@ export const opencodeGoModelConfig: ModelConfig = createModelConfigObject([
 		supportsToolCalls: true,
 		contextWindow: 512000,
 		maxTokens: 131072,
-		costPer1kInputTokens: 0.0003,
-		costPer1kOutputTokens: 0.0012,
+		costPer1kInputTokens: 0.0001,
+		costPer1kOutputTokens: 0.0004,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
@@ -318,6 +272,29 @@ export const opencodeGoModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.0004,
 		costPer1kOutputTokens: 0.0016,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
+	}),
+	createModelConfig("kimi-k2.7-code", PROVIDER, {
+		name: "Kimi K2.7 Code",
+		matchingModel: "kimi-k2.7-code",
+		knowledgeCutoffDate: "January 2025",
+		releaseDate: "June 12, 2026",
+		lastUpdated: "June 12, 2026",
+		modalities: {
+			input: ["text", "image", "video"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: false,
+		supportsToolCalls: true,
+		supportsResponseFormat: true,
+		contextWindow: 262144,
+		maxTokens: 262144,
+		costPer1kInputTokens: 0.00095,
+		costPer1kOutputTokens: 0.004,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
