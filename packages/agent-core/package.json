@@ -18,7 +18,7 @@
 		"check": "pnpm lint && pnpm format:check"
 	},
 	"devDependencies": {
-		"@types/node": "25.9.1",
+		"@types/node": "25.9.2",
 		"oxfmt": "0.53.0",
 		"oxlint": "1.68.0",
 		"typescript": "6.0.3"
