@@ -52,7 +52,7 @@
 	"devDependencies": {
 		"@cloudflare/workers-types": "4.20260602.1",
 		"@simplewebauthn/types": "12.0.0",
-		"@types/node": "25.9.1",
+		"@types/node": "25.9.2",
 		"better-sqlite3": "12.10.0",
 		"drizzle-kit": "0.31.10",
 		"oxfmt": "0.53.0",
