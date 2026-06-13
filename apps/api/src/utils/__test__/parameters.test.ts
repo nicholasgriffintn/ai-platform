@@ -19,6 +19,7 @@ vi.mock("~/services/functions", () => ({
 		{ name: "web_search", description: "Search the web" },
 		{ name: "get_weather", description: "Get weather info" },
 		{ name: "create_image", description: "Generate an image" },
+		{ name: "trigger_recipe", description: "Trigger an installed recipe", type: "premium" },
 	]),
 }));
 
@@ -684,6 +685,39 @@ describe("parameters", () => {
 			const result = getToolsForProvider(paramsWithChoice, modelConfig, "openai");
 
 			expect(result.tool_choice).toBe("auto");
+		});
+
+		it("auto-enables trigger_recipe for signed-in Pro users", () => {
+			const params = {
+				...baseParams,
+				enabled_tools: [],
+				user: { id: 1, plan_id: "pro" },
+			} as ChatCompletionParameters;
+
+			const result = getToolsForProvider(params, modelConfig, "openai");
+
+			expect(result.tools).toEqual([
+				{
+					type: "function",
+					function: {
+						name: "trigger_recipe",
+						description: "Trigger an installed recipe",
+						type: "premium",
+					},
+				},
+			]);
+		});
+
+		it("does not auto-enable trigger_recipe for users without Pro access", () => {
+			const params = {
+				...baseParams,
+				enabled_tools: [],
+				user: { id: 1, plan_id: "free" },
+			} as ChatCompletionParameters;
+
+			const result = getToolsForProvider(params, modelConfig, "openai");
+
+			expect(result.tools).toBeUndefined();
 		});
 
 		it("should throw error when formatToolCalls fails", async () => {

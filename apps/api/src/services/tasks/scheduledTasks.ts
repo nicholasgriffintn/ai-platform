@@ -1,5 +1,6 @@
 import type { IEnv } from "~/types";
 import { RepositoryManager } from "~/repositories";
+import { scheduleDueRecipeExecutions } from "~/services/apps/recipes/scheduler";
 import { TaskService } from "./TaskService";
 import { getLogger } from "~/utils/logger";
 
@@ -93,6 +94,15 @@ export async function scheduleTrainingQualityScoring(env: IEnv): Promise<void> {
 		logger.info("Training quality scoring task scheduled");
 	} catch (error) {
 		logger.error("Failed to schedule training quality scoring:", error);
+		throw error;
+	}
+}
+
+export async function scheduleRecipeExecutions(env: IEnv): Promise<void> {
+	try {
+		await scheduleDueRecipeExecutions(env);
+	} catch (error) {
+		logger.error("Failed to schedule recipe executions:", error);
 		throw error;
 	}
 }

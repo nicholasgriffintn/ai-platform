@@ -20,12 +20,14 @@ export function useUser(options?: { enabled?: boolean }) {
 			providerId,
 			apiKey,
 			secretKey,
+			configuration,
 		}: {
 			providerId: string;
 			apiKey: string;
 			secretKey?: string;
+			configuration?: Record<string, unknown>;
 		}) => {
-			await apiService.storeProviderApiKey(providerId, apiKey, secretKey);
+			await apiService.storeProviderApiKey(providerId, apiKey, secretKey, configuration);
 		},
 		onSuccess: () => {
 			queryClient.invalidateQueries({

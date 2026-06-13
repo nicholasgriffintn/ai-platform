@@ -11,6 +11,7 @@ import { TrainingQualityHandler } from "./handlers/TrainingQualityHandler";
 import { UsageUpdateHandler } from "./handlers/UsageUpdateHandler";
 import { SandboxRunDispatchHandler } from "./handlers/SandboxRunDispatchHandler";
 import { PodcastTranscriptionPollingHandler } from "./handlers/PodcastTranscriptionPollingHandler";
+import { RecipeExecutionHandler } from "./handlers/RecipeExecutionHandler";
 import { TaskExecutor } from "./TaskExecutor";
 import { TaskRepository } from "~/repositories/TaskRepository";
 
@@ -31,6 +32,7 @@ export class QueueExecutor {
 			["podcast_transcription_polling", new PodcastTranscriptionPollingHandler()],
 			["training_quality_scoring", new TrainingQualityHandler()],
 			["usage_update", new UsageUpdateHandler()],
+			["recipe_execution", new RecipeExecutionHandler()],
 			[SANDBOX_RUN_DISPATCH_TASK_TYPE, new SandboxRunDispatchHandler()],
 		]);
 

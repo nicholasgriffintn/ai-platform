@@ -9,7 +9,11 @@ import {
 	sandboxConnectionRepositoriesSchema,
 } from "@assistant/schemas";
 
-import type { IEnv } from "~/types";
+import {
+	canAutoConnectGitHubApp,
+	getGitHubAppCallbackUrl,
+	getGitHubAppInstallUrl,
+} from "~/lib/providers/capabilities/connectors";
 import {
 	getGitHubAppConnectionForUserInstallation,
 	listGitHubAppConnectionsForUser,
@@ -32,20 +36,6 @@ function parseInstallationId(value: string): number {
 		throw new AssistantError("installationId must be a positive integer", ErrorType.PARAMS_ERROR);
 	}
 	return installationId;
-}
-
-function getGitHubInstallUrl(env: IEnv): string | undefined {
-	const explicitUrl = env.GITHUB_APP_INSTALL_URL?.trim();
-	if (explicitUrl) {
-		return explicitUrl;
-	}
-
-	const appSlug = env.GITHUB_APP_SLUG?.trim();
-	if (!appSlug) {
-		return undefined;
-	}
-
-	return `https://github.com/apps/${appSlug}/installations/new`;
 }
 
 export function registerSandboxConnectionRoutes(app: Hono): void {
@@ -74,18 +64,10 @@ export function registerSandboxConnectionRoutes(app: Hono): void {
 			401: { description: "Unauthorized", schema: errorResponseSchema },
 		},
 		handler: async ({ serviceContext }) => {
-			const canAutoConnect = Boolean(
-				serviceContext.env.GITHUB_APP_ID?.trim() &&
-				serviceContext.env.GITHUB_APP_PRIVATE_KEY?.trim(),
-			);
-			const callbackUrl = serviceContext.env.APP_BASE_URL
-				? `${serviceContext.env.APP_BASE_URL.replace(/\/$/, "")}/profile?tab=sandbox`
-				: undefined;
-
 			return {
-				installUrl: getGitHubInstallUrl(serviceContext.env),
-				canAutoConnect,
-				callbackUrl,
+				installUrl: getGitHubAppInstallUrl(serviceContext.env),
+				canAutoConnect: canAutoConnectGitHubApp(serviceContext.env),
+				callbackUrl: getGitHubAppCallbackUrl(serviceContext.env),
 			};
 		},
 	});

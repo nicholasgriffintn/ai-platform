@@ -946,3 +946,273 @@ export const strudelListPatternsResponseSchema = z.object({
 export const strudelPatternDetailResponseSchema = z.object({
 	pattern: strudelPatternSchema,
 });
+
+export const recipeCategorySchema = z.enum([
+	"Calendar",
+	"Community",
+	"Developer",
+	"Email",
+	"Finance",
+	"Health",
+	"Home",
+	"Productivity",
+	"Scheduling",
+	"Shopping",
+	"Students",
+	"To-dos",
+	"Travel",
+]);
+
+export const recipeKindSchema = z.enum(["automate", "integrate"]);
+
+export const recipeTriggerSchema = z.object({
+	type: z.enum(["message", "schedule", "event"]),
+	label: z.string(),
+	description: z.string(),
+});
+
+export const recipeConnectionStatusSchema = z.enum([
+	"connected",
+	"missing",
+	"not_required",
+	"unconfigured",
+	"unknown",
+]);
+
+export const recipeConnectorProviderSchema = z.enum([
+	"asana",
+	"cloudflare",
+	"devin",
+	"fitbit",
+	"gmail",
+	"outlook",
+	"calendar",
+	"github",
+	"linear",
+	"netlify",
+	"notion",
+	"oura",
+	"posthog",
+	"ramp",
+	"sentry",
+	"supabase",
+	"todoist",
+	"vercel",
+	"webflow",
+	"withings",
+]);
+
+export const recipeIntegrationSchema = z.object({
+	id: z.string(),
+	providerId: z.string(),
+	name: z.string(),
+	description: z.string(),
+	requiresConnection: z.boolean().default(true),
+	operationIds: z.array(z.string()).optional(),
+	connectionStatus: recipeConnectionStatusSchema.optional(),
+	setupUrl: z.string().optional(),
+});
+
+export const recipeConfigurationValueSchema = z.union([
+	z.string().max(4000),
+	z.number(),
+	z.boolean(),
+	z.array(z.string().max(1000)).max(50),
+	z.null(),
+]);
+
+export const recipeConfigurationSchema = z
+	.record(z.string().min(1).max(80), recipeConfigurationValueSchema)
+	.default({});
+
+export const recipeConfigurationFieldSchema = z.object({
+	key: z.string().min(1).max(80),
+	label: z.string(),
+	description: z.string().optional(),
+	type: z.enum(["text", "textarea", "number", "boolean", "string_list"]),
+	required: z.boolean().optional(),
+	placeholder: z.string().optional(),
+	defaultValue: recipeConfigurationValueSchema.optional(),
+});
+
+export const assistantRecipeSchema = z.object({
+	id: z.string(),
+	title: z.string(),
+	summary: z.string(),
+	description: z.string(),
+	kind: recipeKindSchema,
+	category: recipeCategorySchema,
+	featured: z.boolean(),
+	estimatedSetupMinutes: z.number().int().positive(),
+	integrations: z.array(recipeIntegrationSchema),
+	triggers: z.array(recipeTriggerSchema),
+	actions: z.array(z.string()),
+	setupPrompt: z.string(),
+	enabledTools: z.array(z.string()).default([]),
+	configurationFields: z.array(recipeConfigurationFieldSchema).default([]),
+});
+
+export const assistantRecipesResponseSchema = z.object({
+	recipes: z.array(assistantRecipeSchema),
+	categories: z.array(recipeCategorySchema),
+	filters: z.array(recipeKindSchema),
+});
+
+export const assistantRecipeInstallRequestSchema = z.object({
+	channel: z.enum(["web", "ios", "sms"]).default("web"),
+	triggers: z.lazy(() => z.array(recipeInstallationTriggerSchema)).optional(),
+	configuration: z.lazy(() => recipeConfigurationSchema).optional(),
+});
+
+export const assistantRecipeConnectionSchema = z.object({
+	integrationId: z.string(),
+	providerId: z.string(),
+	name: z.string(),
+	status: recipeConnectionStatusSchema,
+	requiresConnection: z.boolean(),
+	setupUrl: z.string().optional(),
+});
+
+export const assistantRecipeInstallResponseSchema = z.object({
+	recipe: assistantRecipeSchema,
+	conversationStarter: z.string(),
+	messageUrl: z.string(),
+	checklist: z.array(z.string()),
+	connections: z.array(assistantRecipeConnectionSchema),
+	readyToRun: z.boolean(),
+	enabledTools: z.array(z.string()).default([]),
+	installation: z.lazy(() => recipeInstallationSchema).optional(),
+});
+
+export type RecipeCategory = z.infer<typeof recipeCategorySchema>;
+export type RecipeKind = z.infer<typeof recipeKindSchema>;
+export type RecipeConnectionStatus = z.infer<typeof recipeConnectionStatusSchema>;
+export type RecipeConfigurationField = z.infer<typeof recipeConfigurationFieldSchema>;
+export type AssistantRecipe = z.infer<typeof assistantRecipeSchema>;
+export type AssistantRecipesResponse = z.infer<typeof assistantRecipesResponseSchema>;
+export type AssistantRecipeInstallRequest = z.infer<typeof assistantRecipeInstallRequestSchema>;
+export type AssistantRecipeConnection = z.infer<typeof assistantRecipeConnectionSchema>;
+export type AssistantRecipeInstallResponse = z.infer<typeof assistantRecipeInstallResponseSchema>;
+
+export type RecipeConfiguration = z.infer<typeof recipeConfigurationSchema>;
+
+export const recipeConnectorStatusSchema = z.enum(["connected", "disconnected", "unconfigured"]);
+
+export const recipeConnectorManifestSchema = z.object({
+	id: recipeConnectorProviderSchema,
+	name: z.string(),
+	description: z.string(),
+	authType: z.enum(["oauth2", "github_app", "api_key"]),
+	status: recipeConnectorStatusSchema,
+	setupUrl: z.string().optional(),
+	authorizationUrl: z.string().optional(),
+	credentialLabel: z.string().optional(),
+	connectedAt: z.string().optional(),
+	updatedAt: z.string().optional(),
+	scopes: z.array(z.string()),
+	operations: z.array(z.string()).default([]),
+});
+
+export const recipeConnectorsResponseSchema = z.object({
+	connectors: z.array(recipeConnectorManifestSchema),
+});
+
+export const recipeConnectorStartResponseSchema = z.object({
+	provider: recipeConnectorProviderSchema,
+	authorizationUrl: z.string(),
+});
+
+export const recipeConnectorStartRequestSchema = z.object({
+	returnTo: z.string().optional(),
+});
+
+export const recipeConnectorApiKeyRequestSchema = z.object({
+	apiKey: z.string().min(1).max(4000),
+});
+
+export const recipeInstallationTriggerSchema = z
+	.object({
+		type: z.enum(["manual", "schedule", "natural_language"]),
+		enabled: z.boolean().default(true),
+		cronExpression: z
+			.string()
+			.regex(/^[\d*/, -]+ [\d*/, -]+ [\d*/, -]+ [\d*/, -]+ [\d*/, -]+$/)
+			.optional(),
+		prompt: z.string().optional(),
+		notificationChannel: z.enum(["sms"]).optional(),
+		notificationTarget: z.string().optional(),
+	})
+	.superRefine((trigger, ctx) => {
+		if (trigger.type === "schedule" && !trigger.cronExpression?.trim()) {
+			ctx.addIssue({
+				code: "custom",
+				path: ["cronExpression"],
+				message: "Schedule triggers require a cron expression",
+			});
+		}
+		if (trigger.notificationChannel === "sms" && !trigger.notificationTarget?.trim()) {
+			ctx.addIssue({
+				code: "custom",
+				path: ["notificationTarget"],
+				message: "SMS recipe notifications require a target phone number",
+			});
+		}
+	});
+
+export const recipeInstallationSchema = z.object({
+	id: z.string(),
+	recipeId: z.string(),
+	userId: z.number(),
+	status: z.enum(["active", "paused"]),
+	triggers: z.array(recipeInstallationTriggerSchema),
+	configuration: recipeConfigurationSchema,
+	createdAt: z.string(),
+	updatedAt: z.string(),
+});
+
+export const recipeInstallationsResponseSchema = z.object({
+	installations: z.array(recipeInstallationSchema),
+});
+
+export const recipeInstallRequestSchema = assistantRecipeInstallRequestSchema;
+
+export const recipeInstallationUpdateRequestSchema = z.object({
+	status: z.enum(["active", "paused"]).optional(),
+	triggers: z.array(recipeInstallationTriggerSchema).optional(),
+	configuration: recipeConfigurationSchema.optional(),
+});
+
+export const recipeInvocationRequestSchema = z.object({
+	input: z.string().optional(),
+	channel: z.enum(["web", "ios", "sms", "scheduled", "tool"]).default("web"),
+});
+
+export const recipeInvocationResponseSchema = z.object({
+	recipeId: z.string(),
+	installationId: z.string().optional(),
+	channel: z.enum(["web", "ios", "sms", "scheduled", "tool"]).default("web"),
+	status: z.enum(["ready", "queued", "blocked", "not_installed"]),
+	conversationStarter: z.string(),
+	messageUrl: z.string(),
+	missingConnections: z.array(assistantRecipeConnectionSchema),
+	enabledTools: z.array(z.string()).default([]),
+	allowedConnectorProviders: z.array(recipeConnectorProviderSchema).default([]),
+	allowedConnectorOperations: z.record(z.string(), z.array(z.string())).optional(),
+	configuration: recipeConfigurationSchema,
+	taskId: z.string().optional(),
+});
+
+export type RecipeConnectorProvider = z.infer<typeof recipeConnectorProviderSchema>;
+export type RecipeConnectorStatus = z.infer<typeof recipeConnectorStatusSchema>;
+export type RecipeConnectorManifest = z.infer<typeof recipeConnectorManifestSchema>;
+export type RecipeConnectorsResponse = z.infer<typeof recipeConnectorsResponseSchema>;
+export type RecipeConnectorStartResponse = z.infer<typeof recipeConnectorStartResponseSchema>;
+export type RecipeConnectorStartRequest = z.infer<typeof recipeConnectorStartRequestSchema>;
+export type RecipeConnectorApiKeyRequest = z.infer<typeof recipeConnectorApiKeyRequestSchema>;
+export type RecipeInstallationTrigger = z.infer<typeof recipeInstallationTriggerSchema>;
+export type RecipeInstallation = z.infer<typeof recipeInstallationSchema>;
+export type RecipeInstallationsResponse = z.infer<typeof recipeInstallationsResponseSchema>;
+export type RecipeInstallRequest = z.infer<typeof recipeInstallRequestSchema>;
+export type RecipeInstallationUpdateRequest = z.infer<typeof recipeInstallationUpdateRequestSchema>;
+export type RecipeInvocationRequest = z.infer<typeof recipeInvocationRequestSchema>;
+export type RecipeInvocationResponse = z.infer<typeof recipeInvocationResponseSchema>;

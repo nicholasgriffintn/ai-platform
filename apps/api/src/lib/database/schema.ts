@@ -769,6 +769,7 @@ export const tasks = sqliteTable(
 				"podcast_transcription_polling",
 				"training_quality_scoring",
 				"usage_update",
+				"recipe_execution",
 				"sandbox_run_dispatch",
 			],
 		}).notNull(),

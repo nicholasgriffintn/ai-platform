@@ -6,6 +6,17 @@ export interface ProviderSetting {
 	provider_id: string;
 	name?: string;
 	description?: string;
+	type?: string;
+	configurationFields?: Array<{
+		key: string;
+		label: string;
+		type: "text" | "password";
+		required?: boolean;
+		placeholder?: string;
+		description?: string;
+	}>;
+	configurationValues?: Record<string, string>;
+	webhookUrl?: string;
 	enabled: boolean;
 	hasApiKey?: boolean;
 }
@@ -84,7 +95,12 @@ export class UserService {
 		return responseData;
 	}
 
-	async storeProviderApiKey(providerId: string, apiKey: string, secretKey?: string): Promise<void> {
+	async storeProviderApiKey(
+		providerId: string,
+		apiKey: string,
+		secretKey?: string,
+		configuration?: Record<string, unknown>,
+	): Promise<void> {
 		let headers = {};
 		try {
 			headers = await this.getHeaders();
@@ -99,6 +115,7 @@ export class UserService {
 				providerId,
 				apiKey,
 				secretKey,
+				configuration,
 			},
 			timeoutMs: 10000,
 		});

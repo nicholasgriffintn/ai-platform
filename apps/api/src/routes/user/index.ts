@@ -2,7 +2,6 @@ import { addRoute } from "~/lib/http/routeBuilder";
 import { type Context, Hono } from "hono";
 
 import {
-	githubConnectionSchema,
 	errorResponseSchema,
 	successResponseSchema,
 	deleteProviderApiKeyParamsSchema,
@@ -11,7 +10,6 @@ import {
 	updateUserSettingsSchema,
 	userModelsResponseSchema,
 	providersResponseSchema,
-	type GitHubConnectionPayload,
 } from "@assistant/schemas";
 
 import { getServiceContext } from "~/lib/context/serviceContext";
@@ -26,7 +24,6 @@ import {
 	getUserProviderSettings,
 	syncUserProviders,
 } from "~/services/user/userOperations";
-import { upsertGitHubConnectionForUser } from "~/services/github/manage-connections";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import apiKeys from "./apiKeys";
 import exportHistoryRoute from "./export-history";
@@ -105,44 +102,6 @@ addRoute(app, "get", "/models", {
 		})(raw),
 });
 
-addRoute(app, "post", "/github-app-connection", {
-	tags: ["user"],
-	summary: "Create or update GitHub App connection",
-	description:
-		"Stores encrypted GitHub App credentials for the authenticated user and installation",
-	bodySchema: githubConnectionSchema,
-	responses: {
-		200: {
-			description: "Connection saved successfully",
-			schema: successResponseSchema,
-		},
-		400: {
-			description: "Bad request or validation error",
-			schema: errorResponseSchema,
-		},
-		401: {
-			description: "Authentication required",
-			schema: errorResponseSchema,
-		},
-	},
-	handler: async ({ raw }) =>
-		(async (c: Context) => {
-			const user = c.get("user");
-			if (!user?.id) {
-				throw new AssistantError("Authentication required", ErrorType.AUTHENTICATION_ERROR);
-			}
-
-			const payload = c.req.valid("json" as never) as GitHubConnectionPayload;
-			const serviceContext = getServiceContext(c);
-			await upsertGitHubConnectionForUser(serviceContext, user.id, payload);
-
-			return ResponseFactory.success(c, {
-				success: true,
-				message: "GitHub App connection saved successfully",
-			});
-		})(raw),
-});
-
 addRoute(app, "post", "/store-provider-api-key", {
 	tags: ["user"],
 	summary: "Store provider API key",
@@ -165,10 +124,11 @@ addRoute(app, "post", "/store-provider-api-key", {
 	handler: async ({ raw }) =>
 		(async (c: Context) => {
 			const user = c.get("user");
-			const { providerId, apiKey, secretKey } = c.req.valid("json" as never) as {
+			const { providerId, apiKey, secretKey, configuration } = c.req.valid("json" as never) as {
 				providerId: string;
 				apiKey: string;
 				secretKey?: string;
+				configuration?: Record<string, unknown>;
 			};
 
 			if (!user) {
@@ -181,6 +141,7 @@ addRoute(app, "post", "/store-provider-api-key", {
 				providerId,
 				apiKey,
 				secretKey,
+				configuration,
 				user.id,
 			);
 

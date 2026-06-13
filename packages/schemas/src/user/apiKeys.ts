@@ -12,6 +12,7 @@ export const storeProviderApiKeySchema = z.object({
 	providerId: z.string(),
 	apiKey: z.string(),
 	secretKey: z.string().nullable().optional(),
+	configuration: z.record(z.string(), z.unknown()).optional(),
 });
 
 export const deleteProviderApiKeyParamsSchema = z.object({

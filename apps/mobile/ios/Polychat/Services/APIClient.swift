@@ -129,6 +129,26 @@ final class APIClient: ObservableObject {
         try await send(path: "/tools", method: "GET")
     }
 
+    func fetchAssistantRecipes() async throws -> AssistantRecipesResponse {
+        try await send(path: "/apps/recipes", method: "GET")
+    }
+
+    func installAssistantRecipe(
+        id: String,
+        triggers: [RecipeInstallationTrigger]? = nil,
+        configuration: RecipeConfiguration? = nil
+    ) async throws -> AssistantRecipeInstallResponse {
+        try await send(
+            path: "/apps/recipes/\(id)/install",
+            method: "POST",
+            body: AssistantRecipeInstallRequest(
+                channel: "ios",
+                triggers: triggers,
+                configuration: configuration
+            )
+        )
+    }
+
     func generateTitle(conversationId: String, messages: [ChatMessage]) async throws -> TitleGenerationResponse {
         try await send(
             path: "/chat/completions/\(conversationId)/generate-title",
