@@ -31,6 +31,6 @@
 		"oxlint": "1.68.0",
 		"typescript": "6.0.3",
 		"vitest": "4.1.8",
-		"wrangler": "4.97.0"
+		"wrangler": "4.98.0"
 	}
 }
