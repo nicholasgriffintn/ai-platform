@@ -2150,8 +2150,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		supportsResponseFormat: true,
 		contextWindow: 1000000,
 		maxTokens: 384000,
-		costPer1kInputTokens: 0.00174,
-		costPer1kOutputTokens: 0.00348,
+		costPer1kInputTokens: 0.00019,
+		costPer1kOutputTokens: 0.00051,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
@@ -2174,8 +2174,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		supportsResponseFormat: true,
 		contextWindow: 1000000,
 		maxTokens: 384000,
-		costPer1kInputTokens: 0.00019,
-		costPer1kOutputTokens: 0.00051,
+		costPer1kInputTokens: 0.00174,
+		costPer1kOutputTokens: 0.00348,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",

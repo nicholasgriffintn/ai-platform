@@ -722,6 +722,8 @@ export const fireworksModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		knowledgeCutoffDate: "January 2025",
+		supportsResponseFormat: true,
 	},
 
 	"accounts/fireworks/models/minimax-m3": {
@@ -791,5 +793,7 @@ export const fireworksModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		knowledgeCutoffDate: "January 2025",
+		supportsResponseFormat: true,
 	},
 };
