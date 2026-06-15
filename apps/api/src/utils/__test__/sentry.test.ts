@@ -30,7 +30,15 @@ describe("getSentryOptions", () => {
 		).toEqual({
 			dsn: "https://example@sentry.invalid/1",
 			environment: "production",
-			tracesSampleRate: 0.1,
+			sampleRate: 1,
+			enableLogs: false,
+			tracesSampleRate: 0,
+			beforeSend(event) {
+				return event.exception?.values?.length ? event : null;
+			},
+			beforeSendTransaction() {
+				return null;
+			},
 			enableRpcTracePropagation: true,
 		});
 	});

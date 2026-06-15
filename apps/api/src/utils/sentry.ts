@@ -21,7 +21,15 @@ export function getSentryOptions(
 	return {
 		dsn,
 		environment: env.ENV,
-		tracesSampleRate: TRACES_SAMPLE_RATE,
+		sampleRate: 1,
+		enableLogs: false,
+		tracesSampleRate: 0,
+		beforeSend(event) {
+			return event.exception?.values?.length ? event : null;
+		},
+		beforeSendTransaction() {
+			return null;
+		},
 		enableRpcTracePropagation: true,
 	};
 }
