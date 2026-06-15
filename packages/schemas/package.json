@@ -30,9 +30,9 @@
 		"zod": "4.4.3"
 	},
 	"devDependencies": {
-		"@types/node": "25.9.1",
-		"oxfmt": "0.52.0",
-		"oxlint": "1.67.0",
+		"@types/node": "25.9.2",
+		"oxfmt": "0.53.0",
+		"oxlint": "1.68.0",
 		"tsup": "8.5.1",
 		"typescript": "6.0.3"
 	},

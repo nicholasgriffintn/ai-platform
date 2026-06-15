@@ -549,10 +549,11 @@ export const xaiModelConfig: ModelConfig = {
 		supportsAttachments: true,
 		supportsTemperature: true,
 		supportsToolCalls: true,
-		contextWindow: 2000000,
+		contextWindow: 1000000,
 		maxTokens: 30000,
 		costPer1kInputTokens: 0.00125,
 		costPer1kOutputTokens: 0.0025,
+		supportsResponseFormat: true,
 	},
 
 	"grok-4.20-0309-reasoning": {
@@ -568,7 +569,7 @@ export const xaiModelConfig: ModelConfig = {
 		supportsAttachments: true,
 		supportsTemperature: true,
 		supportsToolCalls: true,
-		contextWindow: 2000000,
+		contextWindow: 1000000,
 		maxTokens: 30000,
 		costPer1kInputTokens: 0.00125,
 		costPer1kOutputTokens: 0.0025,
@@ -576,6 +577,7 @@ export const xaiModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		supportsResponseFormat: true,
 	},
 
 	"grok-4.20-multi-agent-0309": {
@@ -591,7 +593,7 @@ export const xaiModelConfig: ModelConfig = {
 		supportsAttachments: true,
 		supportsTemperature: true,
 		supportsToolCalls: false,
-		contextWindow: 2000000,
+		contextWindow: 1000000,
 		maxTokens: 30000,
 		costPer1kInputTokens: 0.00125,
 		costPer1kOutputTokens: 0.0025,
@@ -599,6 +601,7 @@ export const xaiModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		supportsResponseFormat: true,
 	},
 
 	"grok-4.3": {
@@ -622,6 +625,7 @@ export const xaiModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		supportsResponseFormat: true,
 	},
 
 	"grok-imagine-image": {

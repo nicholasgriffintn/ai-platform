@@ -22,15 +22,15 @@
 	"dependencies": {
 		"@assistant/agent-core": "workspace:*",
 		"@assistant/schemas": "workspace:*",
-		"@cloudflare/sandbox": "0.10.3",
+		"@cloudflare/sandbox": "0.11.0",
 		"zod": "4.4.3"
 	},
 	"devDependencies": {
-		"@cloudflare/workers-types": "4.20260531.1",
-		"@types/node": "25.9.1",
-		"oxfmt": "0.52.0",
-		"oxlint": "1.67.0",
+		"@cloudflare/workers-types": "4.20260607.1",
+		"@types/node": "25.9.2",
+		"oxfmt": "0.53.0",
+		"oxlint": "1.68.0",
 		"typescript": "6.0.3",
-		"wrangler": "4.95.0"
+		"wrangler": "4.98.0"
 	}
 }

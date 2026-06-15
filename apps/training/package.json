@@ -21,16 +21,16 @@
 	},
 	"dependencies": {
 		"@assistant/schemas": "workspace:*",
-		"@aws-sdk/client-bedrock": "3.1057.0",
+		"@aws-sdk/client-bedrock": "3.1063.0",
 		"zod": "4.4.3"
 	},
 	"devDependencies": {
-		"@cloudflare/workers-types": "4.20260531.1",
-		"@types/node": "25.9.1",
-		"oxfmt": "0.52.0",
-		"oxlint": "1.67.0",
+		"@cloudflare/workers-types": "4.20260607.1",
+		"@types/node": "25.9.2",
+		"oxfmt": "0.53.0",
+		"oxlint": "1.68.0",
 		"typescript": "6.0.3",
-		"vitest": "4.1.7",
-		"wrangler": "4.95.0"
+		"vitest": "4.1.8",
+		"wrangler": "4.98.0"
 	}
 }

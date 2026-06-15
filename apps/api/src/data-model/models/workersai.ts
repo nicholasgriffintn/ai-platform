@@ -1304,4 +1304,28 @@ export const workersAiModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0.000012,
 		costPer1kOutputTokens: 0,
 	},
+	"@cf/moonshotai/kimi-k2.7-code": {
+		name: "Kimi K2.7 Code",
+		matchingModel: "@cf/moonshotai/kimi-k2.7-code",
+		provider: "workers-ai",
+		knowledgeCutoffDate: "January 2025",
+		releaseDate: "June 12, 2026",
+		lastUpdated: "June 12, 2026",
+		modalities: {
+			input: ["text", "image"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		supportsResponseFormat: true,
+		contextWindow: 262144,
+		maxTokens: 262144,
+		costPer1kInputTokens: 0.00095,
+		costPer1kOutputTokens: 0.004,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
+	},
 };

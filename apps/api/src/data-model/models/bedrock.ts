@@ -824,6 +824,10 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 4096,
 		costPer1kInputTokens: 0.00033,
 		costPer1kOutputTokens: 0.00275,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("amazon.titan-text-express-v1", PROVIDER, {
@@ -1939,6 +1943,10 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		costPer1kInputTokens: 0.00015,
 		costPer1kOutputTokens: 0.0006,
 		supportsResponseFormat: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("openai.gpt-oss-20b-1:0", PROVIDER, {
@@ -1958,6 +1966,10 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		costPer1kInputTokens: 0.00007,
 		costPer1kOutputTokens: 0.0003,
 		supportsResponseFormat: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("qwen.qwen3-235b-a22b-2507-v1:0", PROVIDER, {
@@ -3095,6 +3107,10 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00015,
 		costPer1kOutputTokens: 0.0006,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("openai.gpt-oss-20b", PROVIDER, {
@@ -3114,5 +3130,77 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00007,
 		costPer1kOutputTokens: 0.0003,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
+	}),
+	createModelConfig("eu.anthropic.claude-fable-5", PROVIDER, {
+		name: "Claude Fable 5 (EU)",
+		matchingModel: "eu.anthropic.claude-fable-5",
+		knowledgeCutoffDate: "January 31, 2026",
+		releaseDate: "June 9, 2026",
+		lastUpdated: "June 9, 2026",
+		modalities: {
+			input: ["text", "image"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: false,
+		supportsToolCalls: true,
+		contextWindow: 1000000,
+		maxTokens: 128000,
+		costPer1kInputTokens: 0.011,
+		costPer1kOutputTokens: 0.055,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
+	}),
+
+	createModelConfig("global.anthropic.claude-fable-5", PROVIDER, {
+		name: "Claude Fable 5 (Global)",
+		matchingModel: "global.anthropic.claude-fable-5",
+		knowledgeCutoffDate: "January 31, 2026",
+		releaseDate: "June 9, 2026",
+		lastUpdated: "June 9, 2026",
+		modalities: {
+			input: ["text", "image"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: false,
+		supportsToolCalls: true,
+		contextWindow: 1000000,
+		maxTokens: 128000,
+		costPer1kInputTokens: 0.01,
+		costPer1kOutputTokens: 0.05,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
+	}),
+
+	createModelConfig("us.anthropic.claude-fable-5", PROVIDER, {
+		name: "Claude Fable 5 (US)",
+		matchingModel: "us.anthropic.claude-fable-5",
+		knowledgeCutoffDate: "January 31, 2026",
+		releaseDate: "June 9, 2026",
+		lastUpdated: "June 9, 2026",
+		modalities: {
+			input: ["text", "image"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: false,
+		supportsToolCalls: true,
+		contextWindow: 1000000,
+		maxTokens: 128000,
+		costPer1kInputTokens: 0.01,
+		costPer1kOutputTokens: 0.05,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 ]);

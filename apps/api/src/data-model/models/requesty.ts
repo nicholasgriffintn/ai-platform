@@ -259,8 +259,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 		description:
 			"Google's advanced multimodal model with extensive capabilities across text, images, audio, video, and PDFs.",
 		knowledgeCutoffDate: "January 2025",
-		releaseDate: "March 20, 2025",
-		lastUpdated: "June 5, 2025",
+		releaseDate: "June 17, 2025",
+		lastUpdated: "June 17, 2025",
 		modalities: {
 			input: ["text", "image", "audio", "video", "pdf"],
 			output: ["text"],
