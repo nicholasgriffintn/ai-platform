@@ -1,7 +1,7 @@
 import type { IEnv, IUser } from "~/types";
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { getAssetIdFromUrl } from "~/lib/storage/asset-urls";
-import { parseFirstPartyQrPngUrl } from "~/utils/qr";
+import { isPashiQrPngUrl } from "~/utils/qr";
 import { getBooleanRecordValue, getStringRecordValue, isRecord } from "~/utils/objects";
 import { providerLibrary } from "../../library";
 import { isMessagingProviderId } from "./metadata";
@@ -53,7 +53,7 @@ function normaliseMessagingMediaUrlsForProvider(
 	}
 
 	if (providerId === "twilio-sms") {
-		return urls.every((url) => url.startsWith("https://")) ? urls : null;
+		return urls.every((url) => url.startsWith("https://") || isPashiQrPngUrl(url)) ? urls : null;
 	}
 
 	if (providerId !== "aws-sms") {
@@ -78,10 +78,8 @@ function normaliseMessagingMediaUrlsForProvider(
 		return [firstPartyMediaUrl];
 	}
 
-	const firstPartyQrMediaUrl = urls.find((url) =>
-		Boolean(parseFirstPartyQrPngUrl(url, options.apiBaseUrl)),
-	);
-	return firstPartyQrMediaUrl ? [firstPartyQrMediaUrl] : null;
+	const pashiQrMediaUrl = urls.find((url) => isPashiQrPngUrl(url));
+	return pashiQrMediaUrl ? [pashiQrMediaUrl] : null;
 }
 
 export function selectConfiguredMessagingDelivery(

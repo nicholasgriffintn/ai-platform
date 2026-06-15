@@ -791,7 +791,7 @@ describe("recipe connector tools", () => {
 	});
 
 	it("returns recipe media in natural language recipe tool results", async () => {
-		const qrImageUrl = "https://api.polychat.test/qr?size=300x300&format=png&data=polychat";
+		const qrImageUrl = "http://pashi.app/api/qr?data=polychat&format=png&size=520x520";
 		const invocation = {
 			recipeId: "quick-qr-generator",
 			status: "ready",

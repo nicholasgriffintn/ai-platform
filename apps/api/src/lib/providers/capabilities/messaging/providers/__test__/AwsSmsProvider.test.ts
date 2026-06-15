@@ -1,5 +1,5 @@
 import type { Context } from "hono";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { ServiceContext } from "~/lib/context/serviceContext";
 
 const mocks = vi.hoisted(() => ({
@@ -24,6 +24,10 @@ describe("AwsSmsProvider", () => {
 				fetch: mocks.awsFetch,
 			};
 		});
+	});
+
+	afterEach(() => {
+		vi.unstubAllGlobals();
 	});
 
 	it("sends SMS and RCS-capable replies through AWS End User Messaging SendTextMessage", async () => {
@@ -209,7 +213,18 @@ describe("AwsSmsProvider", () => {
 		});
 	});
 
-	it("regenerates first-party QR media into S3 before sending AWS MMS", async () => {
+	it("uploads Pashi QR media into S3 before sending AWS MMS", async () => {
+		const pashiFetch = vi.fn(
+			async () =>
+				new Response(new Uint8Array([0x89, 0x50, 0x4e, 0x47]), {
+					headers: {
+						"Content-Length": "4",
+						"Content-Type": "image/png",
+					},
+					status: 200,
+				}),
+		);
+		vi.stubGlobal("fetch", pashiFetch);
 		const serviceContext = {
 			env: {
 				API_BASE_URL: "https://api.polychat.test",
@@ -232,9 +247,12 @@ describe("AwsSmsProvider", () => {
 		await provider.send({
 			to: "+15551234567",
 			body: "QR attached",
-			mediaUrls: ["https://api.polychat.test/qr?size=120x120&format=png&data=polychat"],
+			mediaUrls: ["http://pashi.app/api/qr?data=polychat&format=png&size=520x520"],
 		});
 
+		expect(pashiFetch).toHaveBeenCalledWith(
+			"http://pashi.app/api/qr?data=polychat&format=png&size=520x520",
+		);
 		expect(mocks.awsClient).toHaveBeenNthCalledWith(1, {
 			accessKeyId: "AKIA123",
 			secretAccessKey: "secret",

@@ -448,7 +448,7 @@ describe("messaging credentials", () => {
 		});
 	});
 
-	it("selects AWS End User Messaging for configured first-party QR media", () => {
+	it("selects AWS End User Messaging for configured Pashi QR media", () => {
 		expect(
 			selectConfiguredMessagingDelivery(
 				[
@@ -464,14 +464,14 @@ describe("messaging credentials", () => {
 					},
 				],
 				{
-					mediaUrls: ["https://api.polychat.test/qr?size=300x300&format=png&data=polychat"],
+					mediaUrls: ["http://pashi.app/api/qr?data=polychat&format=png&size=520x520"],
 					apiBaseUrl: "https://api.polychat.test",
 				},
 			),
 		).toEqual({
 			id: "aws-row",
 			providerId: "aws-sms",
-			mediaUrls: ["https://api.polychat.test/qr?size=300x300&format=png&data=polychat"],
+			mediaUrls: ["http://pashi.app/api/qr?data=polychat&format=png&size=520x520"],
 		});
 	});
 

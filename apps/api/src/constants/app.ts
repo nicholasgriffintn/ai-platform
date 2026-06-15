@@ -27,7 +27,6 @@ export const ROUTES = {
 	UPLOADS: "/uploads",
 	USER: "/user",
 	PLANS: "/plans",
-	QR: "/qr",
 	STRIPE: "/stripe",
 	REALTIME: "/realtime",
 	AGENTS: "/agents",

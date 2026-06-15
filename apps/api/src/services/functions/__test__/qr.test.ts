@@ -18,7 +18,7 @@ const toolContext: ToolExecutionContext = {
 };
 
 describe("create_qr_code", () => {
-	it("creates a first-party QR code image URL for the exact payload", async () => {
+	it("creates a Pashi QR code image URL for the exact payload", async () => {
 		const result = await create_qr_code.execute(
 			{
 				payload: "https://polychat.app/invite?team=alpha beta",
@@ -34,13 +34,12 @@ describe("create_qr_code", () => {
 				"QR code image created. Return this imageUrl to the user and include the encoded payload for review.",
 			data: {
 				imageUrl:
-					"https://api.polychat.app/qr?size=420x420&format=png&data=https%3A%2F%2Fpolychat.app%2Finvite%3Fteam%3Dalpha+beta",
+					"http://pashi.app/api/qr?data=https%3A%2F%2Fpolychat.app%2Finvite%3Fteam%3Dalpha+beta&format=png&size=420x420",
 				mimeType: "image/png",
 				payload: "https://polychat.app/invite?team=alpha beta",
 				size: "420x420",
 			},
 		});
-		expect(String(result.data?.imageUrl)).not.toContain("api.qrserver.com");
 	});
 
 	it("uses the default size when the requested size is invalid", async () => {
@@ -54,8 +53,8 @@ describe("create_qr_code", () => {
 
 		expect(result.data).toMatchObject({
 			imageUrl:
-				"https://api.polychat.app/qr?size=300x300&format=png&data=WIFI%3AT%3AWPA%3BS%3AOffice%3BP%3Asecret%3B%3B",
-			size: "300x300",
+				"http://pashi.app/api/qr?data=WIFI%3AT%3AWPA%3BS%3AOffice%3BP%3Asecret%3B%3B&format=png&size=520x520",
+			size: "520x520",
 		});
 	});
 

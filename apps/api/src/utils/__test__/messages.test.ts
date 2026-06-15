@@ -194,7 +194,7 @@ describe("messages", () => {
 		});
 
 		it("extracts notification media from tool result choices", () => {
-			const qrImageUrl = "https://api.polychat.test/qr?size=300x300&format=png&data=polychat";
+			const qrImageUrl = "http://pashi.app/api/qr?data=polychat&format=png&size=520x520";
 			const response = createCompletion({
 				role: "assistant",
 				content: "QR code ready.",

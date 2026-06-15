@@ -1,6 +1,8 @@
+import { readFileSync } from "node:fs";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { createServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
+import { connectorProviders } from "~/lib/providers/capabilities/connectors";
 import { AppDataRepository, RepositoryManager } from "~/repositories";
 import type { IEnv } from "~/types";
 
@@ -112,6 +114,29 @@ describe("recipe connectors", () => {
 				}),
 			]),
 		);
+	});
+
+	it("documents deployment connector credentials in the example env file", () => {
+		const exampleEnv = readFileSync(".dev.vars.example", "utf8");
+		const requiredEnvNames = new Set([
+			"GITHUB_APP_ID",
+			"GITHUB_APP_PRIVATE_KEY",
+			"GITHUB_APP_WEBHOOK_SECRET",
+			"GITHUB_APP_INSTALL_URL",
+			"GITHUB_APP_SLUG",
+		]);
+
+		for (const provider of connectorProviders) {
+			if (provider.auth.authType !== "oauth2") {
+				continue;
+			}
+			requiredEnvNames.add(provider.auth.clientIdEnv);
+			requiredEnvNames.add(provider.auth.clientSecretEnv);
+		}
+
+		for (const envName of requiredEnvNames) {
+			expect(exampleEnv).toContain(`${envName}=<${envName}>`);
+		}
 	});
 
 	it("returns authorization URLs for configured OAuth connectors", async () => {

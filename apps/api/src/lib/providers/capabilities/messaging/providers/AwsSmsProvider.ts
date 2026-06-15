@@ -11,7 +11,7 @@ import { generateId } from "~/utils/id";
 import { safeParseJson } from "~/utils/json";
 import { getExtensionFromMimeType } from "~/utils/mime";
 import { getStringRecordValue } from "~/utils/objects";
-import { createQrPng, parseFirstPartyQrPngUrl } from "~/utils/qr";
+import { isPashiQrPngUrl } from "~/utils/qr";
 import type {
 	AwsSmsCredentials,
 	IncomingMessage,
@@ -26,6 +26,7 @@ const AWS_END_USER_MESSAGING_SMS_V2_ENDPOINT_PREFIX = "sms-voice.pinpoint";
 const AWS_END_USER_MESSAGING_TARGET_PREFIX = "PinpointSMSVoiceV2";
 const AWS_S3_MEDIA_URL_PATTERN = /^s3:\/\/([a-z0-9.-]{3,63})\/.+$/;
 const AWS_MMS_MEDIA_MIME_PREFIXES = ["image/", "audio/", "video/"];
+const AWS_MMS_MAX_REMOTE_MEDIA_BYTES = 5 * 1024 * 1024;
 
 interface SnsEnvelope {
 	Type: "Notification" | "SubscriptionConfirmation" | "UnsubscribeConfirmation";
@@ -419,14 +420,43 @@ export class AwsSmsProvider implements MessagingProvider {
 			);
 		}
 
-		const qrRequest = parseFirstPartyQrPngUrl(mediaUrl, this.serviceContext.env.API_BASE_URL);
-		if (qrRequest) {
+		if (isPashiQrPngUrl(mediaUrl)) {
 			this.serviceContext.requireUser();
+			const response = await fetch(mediaUrl);
+			if (!response.ok) {
+				throw new AssistantError(
+					"Failed to fetch QR image for AWS End User Messaging MMS",
+					ErrorType.EXTERNAL_API_ERROR,
+				);
+			}
+
+			const mimeType = response.headers.get("content-type")?.split(";")[0]?.trim().toLowerCase();
+			if (!mimeType?.startsWith("image/")) {
+				throw new AssistantError(
+					"QR image renderer returned unsupported media",
+					ErrorType.EXTERNAL_API_ERROR,
+				);
+			}
+
+			const contentLength = Number.parseInt(response.headers.get("content-length") ?? "", 10);
+			if (Number.isFinite(contentLength) && contentLength > AWS_MMS_MAX_REMOTE_MEDIA_BYTES) {
+				throw new AssistantError(
+					"QR image is too large for AWS End User Messaging MMS",
+					ErrorType.PARAMS_ERROR,
+				);
+			}
+
+			const body = await response.arrayBuffer();
+			if (body.byteLength > AWS_MMS_MAX_REMOTE_MEDIA_BYTES) {
+				throw new AssistantError(
+					"QR image is too large for AWS End User Messaging MMS",
+					ErrorType.PARAMS_ERROR,
+				);
+			}
+
 			return this.uploadMmsMedia({
-				body: copyToArrayBuffer(
-					createQrPng(qrRequest.payload, qrRequest.size.width, qrRequest.size.height),
-				),
-				mimeType: "image/png",
+				body,
+				mimeType,
 			});
 		}
 

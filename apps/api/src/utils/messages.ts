@@ -1,5 +1,6 @@
 import { MessageFormatter } from "~/lib/formatter";
 import type { CreateChatCompletionsResponse, Message, MessageContent } from "~/types";
+import { isPashiQrPngUrl } from "./qr";
 import { AssistantError, ErrorType } from "./errors";
 
 export function formatMessages(
@@ -51,7 +52,7 @@ const IMAGE_URL_EXTENSION_PATTERN = /\.(avif|gif|jpe?g|png|webp)(?:[?#].*)?$/i;
 
 function isMessagingMediaUrl(value: string): boolean {
 	const trimmed = value.trim();
-	return trimmed.startsWith("https://") || trimmed.startsWith("s3://");
+	return trimmed.startsWith("https://") || trimmed.startsWith("s3://") || isPashiQrPngUrl(trimmed);
 }
 
 function isInboundMediaUrl(value: string): boolean {

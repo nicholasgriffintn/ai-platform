@@ -2093,7 +2093,7 @@ const catalogRecipes: CatalogRecipe[] = [
 		title: "Quick QR Generator",
 		summary: "Turn text, URLs, phone numbers, or Wi-Fi details into a scannable QR image.",
 		description:
-			"Builds a first-party QR image URL from the user's supplied content and returns it for sharing in chat or SMS.",
+			"Builds a QR image URL from the user's supplied content and returns it for sharing in chat or SMS.",
 		kind: "integrate",
 		category: "Productivity",
 		featured: false,
@@ -2118,11 +2118,11 @@ const catalogRecipes: CatalogRecipe[] = [
 		],
 		actions: [
 			"Confirm the exact payload to encode",
-			"Build a first-party QR image URL",
+			"Build a QR image URL",
 			"Return the QR image URL and the decoded payload for review",
 		],
 		setupPrompt:
-			"Set up the Quick QR Generator recipe. Ask for the exact URL, text, phone number, email, or Wi-Fi payload to encode. Use the create_qr_code tool with the exact payload, return the generated first-party QR image, and show the encoded payload for review. Do not invent or alter credentials, Wi-Fi passwords, phone numbers, or payment details.",
+			"Set up the Quick QR Generator recipe. Ask for the exact URL, text, phone number, email, or Wi-Fi payload to encode. Use the create_qr_code tool with the exact payload, return the generated QR image, and show the encoded payload for review. Do not invent or alter credentials, Wi-Fi passwords, phone numbers, or payment details.",
 		configurationFields: [
 			{
 				key: "defaultSize",

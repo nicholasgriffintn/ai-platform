@@ -450,7 +450,7 @@ describe("SMS webhook service", () => {
 	});
 
 	it("sends media outputs from SMS-triggered recipe tool result choices", async () => {
-		const qrImageUrl = "https://api.polychat.test/qr?size=300x300&format=png&data=polychat";
+		const qrImageUrl = "http://pashi.app/api/qr?data=polychat&format=png&size=520x520";
 		prepareServiceContext();
 		mocks.providerParseIncoming.mockResolvedValue({
 			kind: "message",
