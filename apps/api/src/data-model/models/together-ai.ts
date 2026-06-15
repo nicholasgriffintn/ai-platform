@@ -815,4 +815,27 @@ export const togetherAiModelConfig: ModelConfig = {
 			defaultEffort: "none",
 		},
 	},
+	"moonshotai/Kimi-K2.7-Code": {
+		name: "Kimi K2.7 Code",
+		matchingModel: "moonshotai/Kimi-K2.7-Code",
+		provider: "together-ai",
+		releaseDate: "June 14, 2026",
+		lastUpdated: "June 14, 2026",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		supportsResponseFormat: true,
+		contextWindow: 262144,
+		maxTokens: 131072,
+		costPer1kInputTokens: 0.00095,
+		costPer1kOutputTokens: 0.004,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
+	},
 };

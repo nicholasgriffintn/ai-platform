@@ -876,4 +876,47 @@ export const googleAiStudioModelConfig: ModelConfig = {
 			defaultEffort: "none",
 		},
 	},
+	"gemma-4-E2B-it": {
+		name: "Gemma 4 E2B IT",
+		matchingModel: "gemma-4-E2B-it",
+		provider: "google-ai-studio",
+		releaseDate: "April 2, 2026",
+		lastUpdated: "April 2, 2026",
+		modalities: {
+			input: ["text", "image", "audio"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		supportsResponseFormat: true,
+		contextWindow: 131072,
+		maxTokens: 8192,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
+	},
+
+	"gemma-4-E4B-it": {
+		name: "Gemma 4 E4B IT",
+		matchingModel: "gemma-4-E4B-it",
+		provider: "google-ai-studio",
+		releaseDate: "April 2, 2026",
+		lastUpdated: "April 2, 2026",
+		modalities: {
+			input: ["text", "image", "audio"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		supportsResponseFormat: true,
+		contextWindow: 131072,
+		maxTokens: 8192,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
+	},
 };
