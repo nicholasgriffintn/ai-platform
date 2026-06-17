@@ -291,7 +291,7 @@ export const fireworksModelConfig: ModelConfig = {
 		matchingModel: "accounts/fireworks/models/gpt-oss-120b",
 		provider: "fireworks",
 		releaseDate: "August 5, 2025",
-		lastUpdated: "August 5, 2025",
+		lastUpdated: "June 16, 2026",
 		modalities: {
 			input: ["text"],
 			output: ["text"],
@@ -616,7 +616,7 @@ export const fireworksModelConfig: ModelConfig = {
 		provider: "fireworks",
 		knowledgeCutoffDate: "May 2025",
 		releaseDate: "April 24, 2026",
-		lastUpdated: "April 24, 2026",
+		lastUpdated: "June 16, 2026",
 		modalities: {
 			input: ["text"],
 			output: ["text"],
@@ -706,7 +706,7 @@ export const fireworksModelConfig: ModelConfig = {
 		matchingModel: "accounts/fireworks/models/kimi-k2p7-code",
 		provider: "fireworks",
 		releaseDate: "June 12, 2026",
-		lastUpdated: "June 12, 2026",
+		lastUpdated: "June 16, 2026",
 		modalities: {
 			input: ["text", "image"],
 			output: ["text"],
@@ -777,7 +777,7 @@ export const fireworksModelConfig: ModelConfig = {
 		matchingModel: "accounts/fireworks/routers/kimi-k2p7-code-fast",
 		provider: "fireworks",
 		releaseDate: "June 12, 2026",
-		lastUpdated: "June 12, 2026",
+		lastUpdated: "June 16, 2026",
 		modalities: {
 			input: ["text", "image"],
 			output: ["text"],
@@ -787,7 +787,7 @@ export const fireworksModelConfig: ModelConfig = {
 		supportsToolCalls: true,
 		contextWindow: 262000,
 		maxTokens: 262000,
-		costPer1kInputTokens: 0.002,
+		costPer1kInputTokens: 0.0019,
 		costPer1kOutputTokens: 0.008,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
@@ -795,5 +795,27 @@ export const fireworksModelConfig: ModelConfig = {
 		},
 		knowledgeCutoffDate: "January 2025",
 		supportsResponseFormat: true,
+	},
+	"accounts/fireworks/models/glm-5p2": {
+		name: "GLM 5.2",
+		matchingModel: "accounts/fireworks/models/glm-5p2",
+		provider: "fireworks",
+		releaseDate: "June 16, 2026",
+		lastUpdated: "June 16, 2026",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 1048576,
+		maxTokens: 131072,
+		costPer1kInputTokens: 0.0014,
+		costPer1kOutputTokens: 0.0044,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	},
 };

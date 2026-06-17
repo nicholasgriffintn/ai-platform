@@ -1328,4 +1328,27 @@ export const workersAiModelConfig: ModelConfig = {
 			defaultEffort: "none",
 		},
 	},
+	"@cf/zai-org/glm-5.2": {
+		name: "Glm 5.2",
+		matchingModel: "@cf/zai-org/glm-5.2",
+		provider: "workers-ai",
+		releaseDate: "June 13, 2026",
+		lastUpdated: "June 13, 2026",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		supportsResponseFormat: true,
+		contextWindow: 262144,
+		maxTokens: 262144,
+		costPer1kInputTokens: 0.0014,
+		costPer1kOutputTokens: 0.0044,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
+	},
 };

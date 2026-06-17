@@ -722,6 +722,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.0015,
 		costPer1kOutputTokens: 0.0075,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("alibaba/qwen3-coder-30b-a3b", PROVIDER, {
@@ -1473,8 +1477,8 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		name: "Gemini 2.5 Flash",
 		matchingModel: "google/gemini-2.5-flash",
 		knowledgeCutoffDate: "January 2025",
-		releaseDate: "March 20, 2025",
-		lastUpdated: "June 5, 2025",
+		releaseDate: "June 17, 2025",
+		lastUpdated: "June 17, 2025",
 		modalities: {
 			input: ["text", "image", "audio", "video", "pdf"],
 			output: ["text"],
@@ -1605,8 +1609,8 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		name: "Gemini 2.5 Pro",
 		matchingModel: "google/gemini-2.5-pro",
 		knowledgeCutoffDate: "January 2025",
-		releaseDate: "March 20, 2025",
-		lastUpdated: "June 5, 2025",
+		releaseDate: "June 17, 2025",
+		lastUpdated: "June 17, 2025",
 		modalities: {
 			input: ["text", "image", "audio", "video", "pdf"],
 			output: ["text"],
@@ -4351,6 +4355,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 32000,
 		costPer1kInputTokens: 0.00015,
 		costPer1kOutputTokens: 0.00065,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("openai/gpt-5.3-chat", PROVIDER, {
@@ -6096,6 +6104,50 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.00095,
 		costPer1kOutputTokens: 0.004,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
+	}),
+	createModelConfig("moonshotai/kimi-k2.7-code-highspeed", PROVIDER, {
+		name: "Kimi K2.7 Code High Speed",
+		matchingModel: "moonshotai/kimi-k2.7-code-highspeed",
+		releaseDate: "June 15, 2026",
+		lastUpdated: "June 15, 2026",
+		modalities: {
+			input: ["text", "image", "pdf"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 262144,
+		maxTokens: 0,
+		costPer1kInputTokens: 0.0019,
+		costPer1kOutputTokens: 0.008,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
+	}),
+
+	createModelConfig("zai/glm-5.2", PROVIDER, {
+		name: "GLM 5.2",
+		matchingModel: "zai/glm-5.2",
+		releaseDate: "June 16, 2026",
+		lastUpdated: "June 13, 2026",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		supportsResponseFormat: true,
+		contextWindow: 1000000,
+		maxTokens: 128000,
+		costPer1kInputTokens: 0.0014,
+		costPer1kOutputTokens: 0.0044,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",

@@ -137,8 +137,8 @@ export const googleAiStudioModelConfig: ModelConfig = {
 		matchingModel: "gemini-2.5-flash",
 		provider: "google-ai-studio",
 		knowledgeCutoffDate: "January 2025",
-		releaseDate: "March 20, 2025",
-		lastUpdated: "June 5, 2025",
+		releaseDate: "June 17, 2025",
+		lastUpdated: "June 17, 2025",
 		modalities: {
 			input: ["text", "image", "audio", "video", "pdf"],
 			output: ["text"],
@@ -378,8 +378,8 @@ export const googleAiStudioModelConfig: ModelConfig = {
 		matchingModel: "gemini-2.5-pro",
 		provider: "google-ai-studio",
 		knowledgeCutoffDate: "January 2025",
-		releaseDate: "March 20, 2025",
-		lastUpdated: "June 5, 2025",
+		releaseDate: "June 17, 2025",
+		lastUpdated: "June 17, 2025",
 		modalities: {
 			input: ["text", "image", "audio", "video", "pdf"],
 			output: ["text"],
