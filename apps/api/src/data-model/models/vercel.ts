@@ -4874,7 +4874,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		name: "GLM-5",
 		matchingModel: "zai/glm-5",
 		releaseDate: "February 12, 2026",
-		lastUpdated: "February 11, 2026",
+		lastUpdated: "February 12, 2026",
 		modalities: {
 			input: ["text"],
 			output: ["text"],
@@ -4919,7 +4919,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		name: "GLM 5.1",
 		matchingModel: "zai/glm-5.1",
 		releaseDate: "April 7, 2026",
-		lastUpdated: "March 27, 2026",
+		lastUpdated: "April 7, 2026",
 		modalities: {
 			input: ["text", "image", "pdf"],
 			output: ["text"],
