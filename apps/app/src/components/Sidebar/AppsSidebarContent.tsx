@@ -101,10 +101,9 @@ export function AppsSidebarContent({ isHome = false }) {
 						<Link
 							to="/apps/recipes"
 							className={cn(
-								"block w-full text-left px-3 py-2 rounded-md text-sm font-medium transition-colors duration-150 ease-in-out",
-								"text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900",
-								"dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100",
-								"no-underline",
+								"block w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors",
+								"text-zinc-600 hover:bg-zinc-200 hover:text-zinc-900",
+								"dark:text-zinc-300 dark:hover:bg-zinc-800 dark:hover:text-zinc-100",
 								"flex items-center",
 							)}
 						>
