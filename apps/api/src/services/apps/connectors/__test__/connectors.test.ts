@@ -117,7 +117,10 @@ describe("recipe connectors", () => {
 	});
 
 	it("documents deployment connector credentials in the example env file", () => {
-		const exampleEnv = readFileSync(".dev.vars.example", "utf8");
+		const exampleEnv = readFileSync(
+			new URL("../../../../../.dev.vars.example", import.meta.url),
+			"utf8",
+		);
 		const requiredEnvNames = new Set([
 			"GITHUB_APP_ID",
 			"GITHUB_APP_PRIVATE_KEY",

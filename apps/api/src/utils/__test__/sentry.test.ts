@@ -22,25 +22,32 @@ describe("getSentryOptions", () => {
 	});
 
 	it("builds Cloudflare Sentry options from the Worker environment", () => {
-		expect(
-			getSentryOptions({
-				ENV: "production",
-				SENTRY_DSN: " https://example@sentry.invalid/1 ",
-			}),
-		).toEqual({
+		const options = getSentryOptions({
+			ENV: "production",
+			SENTRY_DSN: " https://example@sentry.invalid/1 ",
+		});
+
+		expect(options).toMatchObject({
 			dsn: "https://example@sentry.invalid/1",
 			environment: "production",
 			sampleRate: 1,
 			enableLogs: false,
 			tracesSampleRate: 0,
-			beforeSend(event) {
-				return event.exception?.values?.length ? event : null;
-			},
-			beforeSendTransaction() {
-				return null;
-			},
 			enableRpcTracePropagation: true,
 		});
+		expect(options?.beforeSend).toEqual(expect.any(Function));
+		expect(options?.beforeSendTransaction).toEqual(expect.any(Function));
+
+		type BeforeSend = NonNullable<NonNullable<ReturnType<typeof getSentryOptions>>["beforeSend"]>;
+		const eventWithException: Parameters<BeforeSend>[0] = {
+			type: undefined,
+			exception: { values: [{}] },
+		};
+		const eventWithoutException: Parameters<BeforeSend>[0] = { type: undefined };
+
+		expect(options?.beforeSend?.(eventWithException, {})).toBe(eventWithException);
+		expect(options?.beforeSend?.(eventWithoutException, {})).toBeNull();
+		expect(options?.beforeSendTransaction?.({ type: "transaction" }, {})).toBeNull();
 	});
 });
 
