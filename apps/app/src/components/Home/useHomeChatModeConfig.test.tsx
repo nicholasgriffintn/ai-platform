@@ -2,6 +2,7 @@ import { act, renderHook } from "@testing-library/react";
 import { isValidElement } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import type { HomeChatModeId } from "@assistant/schemas";
 import type { ModelConfig, ModelConfigItem } from "~/types";
 import type { FinalLiveInputTranscript } from "~/hooks/useLiveConversationMessages";
 import { useHomeChatModeConfig } from "./useHomeChatModeConfig";
@@ -43,7 +44,7 @@ const models: ModelConfig = {
 const chatStoreState: {
 	chatSettings: Record<string, unknown>;
 	currentConversationId?: string;
-	homeChatMode: "chat" | "live";
+	homeChatMode: HomeChatModeId;
 	model: string | null;
 	sandboxModeSettings: Record<string, unknown>;
 } = {
@@ -284,5 +285,17 @@ describe("useHomeChatModeConfig", () => {
 		expect(stopLiveSession).toHaveBeenCalledTimes(1);
 		expect(setHomeChatMode).toHaveBeenCalledWith("chat");
 		expect(nextParams?.get("mode")).toBeNull();
+	});
+
+	it("normalises sms URL mode back to chat", () => {
+		searchParams = new URLSearchParams("mode=sms");
+		chatStoreState.homeChatMode = "chat";
+		chatStoreState.model = "deepseek-chat";
+
+		const { result } = renderHook(() => useHomeChatModeConfig());
+
+		expect(result.current.activeModeId).toBe("chat");
+		expect(result.current.modeConfig.requestOptions).toBeUndefined();
+		expect(result.current.modeConfig.conversationMode).toBeUndefined();
 	});
 });

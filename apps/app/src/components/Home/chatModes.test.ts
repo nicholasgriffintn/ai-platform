@@ -11,6 +11,7 @@ describe("home chat modes", () => {
 		expect(resolveHomeChatModeId("council")).toBe("council");
 		expect(resolveHomeChatModeId("sandbox")).toBe("sandbox");
 		expect(resolveHomeChatModeId("live")).toBe("live");
+		expect(resolveHomeChatModeId("sms")).toBe("chat");
 		expect(resolveHomeChatModeId(null)).toBe("chat");
 		expect(resolveHomeChatModeId("unknown")).toBe("chat");
 	});
