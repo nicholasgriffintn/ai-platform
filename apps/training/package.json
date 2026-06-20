@@ -28,7 +28,7 @@
 		"@cloudflare/workers-types": "4.20260607.1",
 		"@types/node": "25.9.2",
 		"oxfmt": "0.53.0",
-		"oxlint": "1.68.0",
+		"oxlint": "1.69.0",
 		"typescript": "6.0.3",
 		"vitest": "4.1.8",
 		"wrangler": "4.98.0"
