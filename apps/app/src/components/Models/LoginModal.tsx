@@ -19,9 +19,19 @@ interface LoginModalProps {
 }
 
 const AUTH_CONTROL_CLASS_NAME = "mx-auto w-full max-w-[375px]";
-const MATCHED_PROVIDER_BUTTON_CLASS_NAME =
-	"h-11 w-full border border-zinc-300 bg-white text-lg font-medium leading-none text-zinc-900 shadow-none hover:bg-zinc-50 dark:border-zinc-600 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-100";
-const MATCHED_PROVIDER_ICON_SIZE = 22;
+const AUTH_PROVIDER_BUTTON_CLASS_NAME =
+	"h-11 w-full rounded-lg px-4 text-sm font-semibold leading-none shadow-sm [&>div]:gap-2.5 [&>div>span]:m-0";
+const AUTH_PROVIDER_ICON_CLASS_NAME = "flex h-4 w-4 shrink-0 items-center justify-center";
+const GITHUB_BUTTON_CLASS_NAME = `${AUTH_PROVIDER_BUTTON_CLASS_NAME} border border-zinc-950 bg-zinc-950 text-white hover:bg-zinc-800 dark:border-zinc-700 dark:bg-zinc-950 dark:text-white dark:hover:bg-zinc-800`;
+const GITHUB_ICON_CLASS_NAME = `${AUTH_PROVIDER_ICON_CLASS_NAME} text-white`;
+const PASSKEY_BUTTON_CLASS_NAME = `${AUTH_PROVIDER_BUTTON_CLASS_NAME} border border-teal-600/30 bg-teal-50 text-teal-950 hover:bg-teal-100 dark:border-teal-400/35 dark:bg-teal-400/10 dark:text-teal-50 dark:hover:bg-teal-400/15`;
+const PASSKEY_ICON_CLASS_NAME = `${AUTH_PROVIDER_ICON_CLASS_NAME} text-teal-700 dark:text-teal-200`;
+const EMAIL_BUTTON_CLASS_NAME =
+	"h-11 w-full rounded-lg bg-blue-600 text-sm font-semibold leading-none text-white shadow-sm hover:bg-blue-500 dark:bg-blue-500 dark:hover:bg-blue-400 [&>div]:gap-2.5 [&>div>span]:m-0";
+const EMAIL_ICON_CLASS_NAME = `${AUTH_PROVIDER_ICON_CLASS_NAME} text-white`;
+const AUTH_PROVIDER_ICON_SIZE = 16;
+const DISPLAY_SIGN_IN_WITH_APPLE_BUTTON =
+	import.meta.env.NEXT_PUBLIC_DISPLAY_SIGN_IN_WITH_APPLE_BUTTON === "true";
 
 export const LoginModal = ({ open, onOpenChange, onKeySubmit }: LoginModalProps) => {
 	const [email, setEmail] = useState("");
@@ -197,9 +207,13 @@ export const LoginModal = ({ open, onOpenChange, onKeySubmit }: LoginModalProps)
 									type="button"
 									variant="primary"
 									onClick={handleGithubLogin}
-									className={MATCHED_PROVIDER_BUTTON_CLASS_NAME}
+									className={GITHUB_BUTTON_CLASS_NAME}
 									disabled={isAuthenticatingWithPasskey || isRequestingLink}
-									icon={<GithubIcon size={MATCHED_PROVIDER_ICON_SIZE} />}
+									icon={
+										<span className={GITHUB_ICON_CLASS_NAME}>
+											<GithubIcon size={AUTH_PROVIDER_ICON_SIZE} />
+										</span>
+									}
 									isLoading={awaitingGithubLogin}
 								>
 									Sign in with GitHub
@@ -210,31 +224,39 @@ export const LoginModal = ({ open, onOpenChange, onKeySubmit }: LoginModalProps)
 										type="button"
 										variant="primary"
 										onClick={handlePasskeyLogin}
-										className={MATCHED_PROVIDER_BUTTON_CLASS_NAME}
+										className={PASSKEY_BUTTON_CLASS_NAME}
 										disabled={awaitingGithubLogin || isRequestingLink}
-										icon={<KeySquare size={MATCHED_PROVIDER_ICON_SIZE} />}
+										icon={
+											<span className={PASSKEY_ICON_CLASS_NAME}>
+												<KeySquare size={AUTH_PROVIDER_ICON_SIZE} strokeWidth={2.25} />
+											</span>
+										}
 										isLoading={isAuthenticatingWithPasskey}
 									>
 										Sign in with Passkey
 									</Button>
 								)}
 
-								<SignInWithAppleWebButton
-									disabled={awaitingGithubLogin || isAuthenticatingWithPasskey || isRequestingLink}
-									onAttempt={() => {
-										setAuthError("");
-										setEmailError("");
-										trackAuth("auth_attempt", { method: "apple" });
-									}}
-									onSuccess={() => {
-										trackAuth("auth_success", { method: "apple" });
-										onKeySubmit();
-									}}
-									onError={(message) => {
-										setAuthError(getLoginErrorMessage(message, "apple"));
-										trackAuth("auth_failure", { method: "apple", reason: message });
-									}}
-								/>
+								{DISPLAY_SIGN_IN_WITH_APPLE_BUTTON ? (
+									<SignInWithAppleWebButton
+										disabled={
+											awaitingGithubLogin || isAuthenticatingWithPasskey || isRequestingLink
+										}
+										onAttempt={() => {
+											setAuthError("");
+											setEmailError("");
+											trackAuth("auth_attempt", { method: "apple" });
+										}}
+										onSuccess={() => {
+											trackAuth("auth_success", { method: "apple" });
+											onKeySubmit();
+										}}
+										onError={(message) => {
+											setAuthError(getLoginErrorMessage(message, "apple"));
+											trackAuth("auth_failure", { method: "apple", reason: message });
+										}}
+									/>
+								) : null}
 							</div>
 
 							<div className="relative">
@@ -274,9 +296,13 @@ export const LoginModal = ({ open, onOpenChange, onKeySubmit }: LoginModalProps)
 										type="button"
 										variant="primary"
 										onClick={handleMagicLinkRequest}
-										className="h-11 w-full"
+										className={EMAIL_BUTTON_CLASS_NAME}
 										isLoading={isRequestingLink}
-										icon={<Mail size={18} />}
+										icon={
+											<span className={EMAIL_ICON_CLASS_NAME}>
+												<Mail size={AUTH_PROVIDER_ICON_SIZE} strokeWidth={2.2} />
+											</span>
+										}
 										disabled={!email}
 									>
 										Sign in with Email
@@ -284,7 +310,7 @@ export const LoginModal = ({ open, onOpenChange, onKeySubmit }: LoginModalProps)
 								)}
 							</div>
 
-							<div className="mt-6 text-center text-xs text-zinc-500 dark:text-zinc-400">
+							<div className="mt-6 text-center text-sm text-zinc-500 dark:text-zinc-400">
 								By continuing, you agree to our{" "}
 								<a href="/terms" className="text-blue-600">
 									Terms of Service
