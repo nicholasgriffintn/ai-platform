@@ -1582,8 +1582,8 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("zai-org/GLM-5-TEE", PROVIDER, {
 		name: "GLM 5 TEE",
 		matchingModel: "zai-org/GLM-5-TEE",
-		releaseDate: "February 11, 2026",
-		lastUpdated: "February 11, 2026",
+		releaseDate: "February 12, 2026",
+		lastUpdated: "February 12, 2026",
 		modalities: {
 			input: ["text"],
 			output: ["text"],
@@ -1628,8 +1628,8 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("zai-org/GLM-5.1-TEE", PROVIDER, {
 		name: "GLM 5.1 TEE",
 		matchingModel: "zai-org/GLM-5.1-TEE",
-		releaseDate: "March 27, 2026",
-		lastUpdated: "March 27, 2026",
+		releaseDate: "April 7, 2026",
+		lastUpdated: "April 7, 2026",
 		modalities: {
 			input: ["text"],
 			output: ["text"],

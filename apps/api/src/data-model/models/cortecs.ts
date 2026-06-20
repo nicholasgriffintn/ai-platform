@@ -1242,8 +1242,8 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("glm-5v-turbo", PROVIDER, {
 		name: "GLM 5V Turbo",
 		matchingModel: "glm-5v-turbo",
-		releaseDate: "12 May 2026",
-		lastUpdated: "12 May 2026",
+		releaseDate: "April 1, 2026",
+		lastUpdated: "April 1, 2026",
 		modalities: {
 			input: ["text", "image"],
 			output: ["text"],
@@ -1251,10 +1251,10 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
 		supportsAttachments: true,
 		supportsTemperature: true,
 		supportsToolCalls: true,
-		contextWindow: 202752,
-		maxTokens: 202752,
-		costPer1kInputTokens: 0.001065,
-		costPer1kOutputTokens: 0.00355,
+		contextWindow: 200000,
+		maxTokens: 131072,
+		costPer1kInputTokens: 0.001235,
+		costPer1kOutputTokens: 0.004118,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
@@ -1264,8 +1264,8 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("glm-5-turbo", PROVIDER, {
 		name: "GLM 5 Turbo",
 		matchingModel: "glm-5-turbo",
-		releaseDate: "12 May 2026",
-		lastUpdated: "12 May 2026",
+		releaseDate: "March 16, 2026",
+		lastUpdated: "March 16, 2026",
 		modalities: {
 			input: ["text"],
 			output: ["text"],
@@ -1273,14 +1273,15 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
 		supportsAttachments: false,
 		supportsTemperature: true,
 		supportsToolCalls: true,
-		contextWindow: 202752,
-		maxTokens: 202752,
-		costPer1kInputTokens: 0.001065,
-		costPer1kOutputTokens: 0.00355,
+		contextWindow: 200000,
+		maxTokens: 131072,
+		costPer1kInputTokens: 0.001235,
+		costPer1kOutputTokens: 0.004118,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		supportsResponseFormat: true,
 	}),
 
 	createModelConfig("gemma-4-26b-a4b-it", PROVIDER, {
@@ -2022,19 +2023,20 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("llama-4-maverick", PROVIDER, {
 		name: "Llama 4 Maverick",
 		matchingModel: "llama-4-maverick",
-		releaseDate: "26 March 2025",
-		lastUpdated: "26 March 2025",
+		releaseDate: "April 5, 2025",
+		lastUpdated: "April 5, 2025",
 		modalities: {
 			input: ["text"],
 			output: ["text"],
 		},
-		supportsAttachments: false,
+		supportsAttachments: true,
 		supportsTemperature: true,
 		supportsToolCalls: true,
-		contextWindow: 1050000,
-		maxTokens: 1050000,
+		contextWindow: 1000000,
+		maxTokens: 16384,
 		costPer1kInputTokens: 0.000124,
 		costPer1kOutputTokens: 0.000603,
+		knowledgeCutoffDate: "August 2024",
 	}),
 
 	createModelConfig("mistral-small-2503", PROVIDER, {
@@ -2359,6 +2361,27 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 131000,
 		costPer1kInputTokens: 0.0001,
 		costPer1kOutputTokens: 0.0001,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
+	}),
+	createModelConfig("minimax-m3", PROVIDER, {
+		name: "MiniMax-M3",
+		matchingModel: "minimax-m3",
+		releaseDate: "June 1, 2026",
+		lastUpdated: "June 1, 2026",
+		modalities: {
+			input: ["text", "image", "video"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 512000,
+		maxTokens: 128000,
+		costPer1kInputTokens: 0.000355,
+		costPer1kOutputTokens: 0.001775,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",

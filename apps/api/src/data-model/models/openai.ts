@@ -821,6 +821,10 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		contextWindow: 0,
 		maxTokens: 0,
 		inputSchema: gptImage2InputSchema,
+		releaseDate: "April 21, 2026",
+		lastUpdated: "April 21, 2026",
+		costPer1kInputTokens: 0.005,
+		costPer1kOutputTokens: 0.03,
 	}),
 
 	createModelConfig("gpt-image-1", PROVIDER, {

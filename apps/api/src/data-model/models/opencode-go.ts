@@ -52,29 +52,6 @@ export const opencodeGoModelConfig: ModelConfig = createModelConfigObject([
 		},
 	}),
 
-	createModelConfig("glm-5", PROVIDER, {
-		name: "GLM-5",
-		matchingModel: "glm-5",
-		knowledgeCutoffDate: "April 2025",
-		releaseDate: "February 11, 2026",
-		lastUpdated: "February 11, 2026",
-		modalities: {
-			input: ["text"],
-			output: ["text"],
-		},
-		supportsAttachments: false,
-		supportsTemperature: true,
-		supportsToolCalls: true,
-		contextWindow: 202752,
-		maxTokens: 32768,
-		costPer1kInputTokens: 0.001,
-		costPer1kOutputTokens: 0.0032,
-		reasoningConfig: {
-			supportedEffortLevels: ["none", "thinking"],
-			defaultEffort: "none",
-		},
-	}),
-
 	createModelConfig("glm-5.1", PROVIDER, {
 		name: "GLM-5.1",
 		matchingModel: "glm-5.1",
@@ -295,6 +272,28 @@ export const opencodeGoModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 262144,
 		costPer1kInputTokens: 0.00095,
 		costPer1kOutputTokens: 0.004,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
+	}),
+	createModelConfig("glm-5.2", PROVIDER, {
+		name: "GLM-5.2",
+		matchingModel: "glm-5.2",
+		releaseDate: "June 13, 2026",
+		lastUpdated: "June 13, 2026",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		supportsResponseFormat: true,
+		contextWindow: 1000000,
+		maxTokens: 131072,
+		costPer1kInputTokens: 0.0014,
+		costPer1kOutputTokens: 0.0044,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",

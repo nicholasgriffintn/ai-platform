@@ -487,7 +487,7 @@ export const togetherAiModelConfig: ModelConfig = {
 		matchingModel: "Qwen/Qwen3.5-397B-A17B",
 		provider: "together-ai",
 		releaseDate: "February 16, 2026",
-		lastUpdated: "February 16, 2026",
+		lastUpdated: "June 15, 2026",
 		modalities: {
 			input: ["text", "image"],
 			output: ["text"],
@@ -557,7 +557,7 @@ export const togetherAiModelConfig: ModelConfig = {
 		matchingModel: "Qwen/Qwen3.7-Max",
 		provider: "together-ai",
 		releaseDate: "May 21, 2026",
-		lastUpdated: "May 21, 2026",
+		lastUpdated: "June 15, 2026",
 		modalities: {
 			input: ["text"],
 			output: ["text"],
@@ -567,8 +567,8 @@ export const togetherAiModelConfig: ModelConfig = {
 		supportsToolCalls: true,
 		contextWindow: 1000000,
 		maxTokens: 500000,
-		costPer1kInputTokens: 0.0025,
-		costPer1kOutputTokens: 0.0075,
+		costPer1kInputTokens: 0.00125,
+		costPer1kOutputTokens: 0.00375,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
