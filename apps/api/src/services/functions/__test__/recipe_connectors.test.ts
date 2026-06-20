@@ -8,6 +8,8 @@ const mocks = vi.hoisted(() => ({
 	executeRecipeConnectorOperation: vi.fn(),
 	resolveInstalledAssistantRecipe: vi.fn(),
 	invokeAssistantRecipe: vi.fn(),
+	updateRecipeInstallation: vi.fn(),
+	getAssistantRecipe: vi.fn(),
 	executeRecipeInvocationChat: vi.fn(),
 	getRecipeConversationContext: vi.fn(),
 }));
@@ -19,6 +21,8 @@ vi.mock("~/services/apps/connectors/operations", () => ({
 vi.mock("~/services/apps/recipes", () => ({
 	resolveInstalledAssistantRecipe: mocks.resolveInstalledAssistantRecipe,
 	invokeAssistantRecipe: mocks.invokeAssistantRecipe,
+	updateRecipeInstallation: mocks.updateRecipeInstallation,
+	getAssistantRecipe: mocks.getAssistantRecipe,
 }));
 
 vi.mock("~/services/apps/recipes/execution", () => ({
@@ -29,13 +33,22 @@ vi.mock("~/services/apps/recipes/conversationContext", () => ({
 	getRecipeConversationContext: mocks.getRecipeConversationContext,
 }));
 
-import { trigger_recipe, use_recipe_connector } from "../recipe_connectors";
+import {
+	configure_recipe,
+	get_recipe,
+	trigger_recipe,
+	use_recipe_connector,
+} from "../recipe_connectors";
 
 function createToolContext(
 	params: {
 		allowedConnectorProviders?: string[];
 		allowedConnectorOperations?: Record<string, string[]>;
 		recipeChannel?: "web" | "ios" | "sms" | "scheduled" | "tool";
+		recipe?: {
+			id: string;
+			installationId?: string;
+		};
 		sms?: {
 			from?: string;
 			to?: string;
@@ -46,13 +59,14 @@ function createToolContext(
 	const user = { id: 42 } as IUser;
 	const request: IRequest = {
 		env,
+		app_url: "https://app.example.com",
 		context: {} as IRequest["context"],
 		user,
 		request: {
 			completion_id: "completion-id",
 			input: "use a connector",
 			date: "2026-06-07T10:00:00.000Z",
-			...(params.allowedConnectorProviders === undefined && !params.sms
+			...(params.allowedConnectorProviders === undefined && !params.sms && !params.recipe
 				? {}
 				: {
 						options: {
@@ -67,15 +81,25 @@ function createToolContext(
 									}
 								: {}),
 							...(params.allowedConnectorProviders === undefined
-								? {}
+								? params.recipe
+									? {
+											recipe: {
+												id: params.recipe.id,
+												installationId: params.recipe.installationId,
+												channel: params.recipeChannel,
+											},
+										}
+									: {}
 								: {
 										recipe: {
-											id: "notion-action-log",
+											id: params.recipe?.id ?? "notion-action-log",
+											installationId: params.recipe?.installationId,
 											allowedConnectorProviders: params.allowedConnectorProviders,
 											allowedConnectorOperations: params.allowedConnectorOperations,
 											channel: params.recipeChannel,
 										},
 									}),
+							...(params.allowedConnectorProviders === undefined ? {} : {}),
 						},
 					}),
 		},
@@ -94,6 +118,30 @@ describe("recipe connector tools", () => {
 		vi.clearAllMocks();
 		mocks.executeRecipeConnectorOperation.mockResolvedValue({ ok: true });
 		mocks.getRecipeConversationContext.mockResolvedValue([]);
+		mocks.getAssistantRecipe.mockResolvedValue({
+			id: "bad-weather-alerts",
+			title: "Bad Weather Alerts",
+			enabledTools: ["get_weather"],
+			triggers: [{ type: "schedule", label: "Morning alert" }],
+			configurationFields: [
+				{
+					key: "location",
+					label: "Location",
+					type: "text",
+					required: true,
+				},
+				{
+					key: "alertThresholds",
+					label: "Alert thresholds",
+					type: "string_list",
+				},
+				{
+					key: "forecastTime",
+					label: "Forecast time",
+					type: "text",
+				},
+			],
+		});
 	});
 
 	it("rejects connector operations outside the active recipe scope", async () => {
@@ -720,6 +768,214 @@ describe("recipe connector tools", () => {
 				}),
 			}),
 		);
+	});
+
+	it("saves active recipe setup configuration and schedule triggers", async () => {
+		const triggers = [
+			{ type: "manual" as const, enabled: true },
+			{
+				type: "schedule" as const,
+				enabled: true,
+				cronExpression: "0 7 * * *",
+				prompt: "Check for disruptive weather before the commute.",
+			},
+		];
+		const installation = {
+			id: "installation-1",
+			recipeId: "bad-weather-alerts",
+			userId: 42,
+			status: "active",
+			triggers,
+			configuration: {
+				location: "London",
+				alertThreshold: "Heavy rain",
+			},
+			createdAt: "2026-06-20T10:00:00.000Z",
+			updatedAt: "2026-06-20T10:00:00.000Z",
+		};
+		mocks.updateRecipeInstallation.mockResolvedValue(installation);
+
+		const result = await configure_recipe.execute(
+			{
+				recipeId: "bad-weather-alerts",
+				configuration: {
+					location: "London",
+					alertThreshold: "Heavy rain",
+				},
+				triggers,
+			},
+			createToolContext({
+				recipe: {
+					id: "bad-weather-alerts",
+					installationId: "installation-1",
+				},
+			}),
+		);
+
+		expect(mocks.updateRecipeInstallation).toHaveBeenCalledWith({
+			context: {},
+			userId: 42,
+			installationId: "installation-1",
+			update: {
+				configuration: {
+					location: "London",
+					alertThreshold: "Heavy rain",
+				},
+				triggers,
+			},
+		});
+		expect(result).toEqual({
+			status: "success",
+			name: "configure_recipe",
+			content: "Recipe setup saved.",
+			data: { installation },
+		});
+	});
+
+	it("rejects recipe setup saves outside an active installed recipe setup chat", async () => {
+		const result = await configure_recipe.execute(
+			{
+				recipeId: "bad-weather-alerts",
+				configuration: {
+					location: "London",
+				},
+			},
+			createToolContext(),
+		);
+
+		expect(result).toEqual({
+			status: "error",
+			name: "configure_recipe",
+			content: "No active installed recipe is available to configure in this chat.",
+			data: { recipeId: undefined },
+		});
+		expect(mocks.updateRecipeInstallation).not.toHaveBeenCalled();
+	});
+
+	it("rejects recipe setup saves for a different recipe", async () => {
+		const result = await configure_recipe.execute(
+			{
+				recipeId: "daily-weather",
+				configuration: {
+					location: "London",
+				},
+			},
+			createToolContext({
+				recipe: {
+					id: "bad-weather-alerts",
+					installationId: "installation-1",
+				},
+			}),
+		);
+
+		expect(result).toEqual({
+			status: "error",
+			name: "configure_recipe",
+			content: "The requested recipe does not match the active recipe setup chat.",
+			data: {
+				recipeId: "daily-weather",
+				activeRecipeId: "bad-weather-alerts",
+			},
+		});
+		expect(mocks.updateRecipeInstallation).not.toHaveBeenCalled();
+	});
+
+	it("returns recoverable correction details for invalid recipe setup fields", async () => {
+		mocks.updateRecipeInstallation.mockRejectedValue(
+			new AssistantError(
+				"Bad Weather Alerts scheduled triggers require recipe configuration: Location",
+				ErrorType.PARAMS_ERROR,
+				400,
+			),
+		);
+
+		const result = await configure_recipe.execute(
+			{
+				recipeId: "bad-weather-alerts",
+				configuration: {
+					location_name: "Park Royal, London",
+					latitude: 51.6185,
+					longitude: -0.5594,
+				},
+				triggers: [
+					{ type: "manual", enabled: true },
+					{
+						type: "schedule",
+						enabled: true,
+						cronExpression: "0 7 * * *",
+					},
+				],
+			},
+			createToolContext({
+				recipe: {
+					id: "bad-weather-alerts",
+					installationId: "installation-1",
+				},
+			}),
+		);
+
+		expect(result).toMatchObject({
+			status: "needs_correction",
+			name: "configure_recipe",
+			data: {
+				recipeId: "bad-weather-alerts",
+				installationId: "installation-1",
+				recoverable: true,
+			},
+		});
+		expect(result.content).toContain(
+			"Bad Weather Alerts scheduled triggers require recipe configuration: Location",
+		);
+		expect(result.content).toContain("Call get_recipe for the exact configuration field keys");
+		expect(mocks.getAssistantRecipe).not.toHaveBeenCalled();
+	});
+
+	it("gets active recipe setup configuration fields", async () => {
+		const result = await get_recipe.execute(
+			{},
+			createToolContext({
+				recipe: {
+					id: "bad-weather-alerts",
+					installationId: "installation-1",
+				},
+			}),
+		);
+
+		expect(mocks.getAssistantRecipe).toHaveBeenCalledWith("bad-weather-alerts", {
+			context: {},
+			userId: 42,
+			requestUrl: "https://app.example.com",
+		});
+		expect(result).toEqual({
+			status: "success",
+			name: "get_recipe",
+			content: "Recipe configuration fields loaded.",
+			data: {
+				recipeId: "bad-weather-alerts",
+				title: "Bad Weather Alerts",
+				enabledTools: ["get_weather"],
+				triggers: [{ type: "schedule", label: "Morning alert" }],
+				configurationFields: [
+					{
+						key: "location",
+						label: "Location",
+						type: "text",
+						required: true,
+					},
+					{
+						key: "alertThresholds",
+						label: "Alert thresholds",
+						type: "string_list",
+					},
+					{
+						key: "forecastTime",
+						label: "Forecast time",
+						type: "text",
+					},
+				],
+				savedConfiguration: undefined,
+			},
+		});
 	});
 
 	it("passes recent non-tool chat context into natural language recipe executions", async () => {

@@ -8,8 +8,10 @@ export const messageSchema = z.object({
 		.array(
 			z.object({
 				id: z.string(),
+				type: z.literal("function").optional(),
 				function: z.object({
 					name: z.string(),
+					arguments: z.string().optional(),
 				}),
 			}),
 		)
@@ -25,6 +27,8 @@ export const messageSchema = z.object({
 	mode: z.enum(["chat", "tool"]).optional(),
 	id: z.string().optional(),
 	parent_message_id: z.string().optional(),
+	tool_call_id: z.string().optional(),
+	tool_call_arguments: z.any().optional(),
 	timestamp: z.number().optional(),
 	platform: z.enum(["web", "mobile", "api"]).optional(),
 });

@@ -28,6 +28,7 @@ import {
 	isRecipeScheduleCronSupported,
 	type RecipeKindFilter,
 } from "~/lib/recipes";
+import { createRecipeChatUrl } from "~/lib/recipe-chat-context";
 
 export function useRecipesPageController() {
 	const navigate = useNavigate();
@@ -103,7 +104,7 @@ export function useRecipesPageController() {
 			const setup = installation
 				? await invokeRecipe.mutateAsync({ recipeId: recipe.id })
 				: await installRecipe.mutateAsync({ recipeId: recipe.id });
-			navigate(setup.messageUrl);
+			navigate(createRecipeChatUrl(setup.messageUrl, setup));
 		} catch (startError) {
 			console.error(startError);
 			toast.error("Could not start recipe chat. Please try again.");

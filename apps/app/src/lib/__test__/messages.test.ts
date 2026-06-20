@@ -85,6 +85,53 @@ describe("serialiseMessagesForChatRequest", () => {
 			}).success,
 		).toBe(true);
 	});
+
+	it("preserves tool call responses so replayed provider requests stay valid", () => {
+		const messages: Message[] = [
+			{
+				id: "assistant-tool-call",
+				role: "assistant",
+				content: "",
+				tool_calls: [
+					{
+						id: "call_recipe",
+						type: "function",
+						function: {
+							name: "get_recipe",
+							arguments: "{}",
+						},
+					},
+				],
+			},
+			{
+				id: "tool-result",
+				role: "tool",
+				name: "get_recipe",
+				content: "Recipe contract",
+				tool_call_id: "call_recipe",
+				tool_call_arguments: "{}",
+			},
+		];
+
+		const requestMessages = serialiseMessagesForChatRequest(messages);
+
+		expect(requestMessages[0]?.tool_calls?.[0]?.id).toBe("call_recipe");
+		expect(requestMessages[1]).toMatchObject({
+			role: "tool",
+			name: "get_recipe",
+			tool_call_id: "call_recipe",
+			tool_call_arguments: "{}",
+		});
+		expect(
+			createChatCompletionsJsonSchema.safeParse({
+				completion_id: "conversation-1",
+				mode: "remote",
+				model: "deepseek-chat",
+				provider: "deepseek",
+				messages: requestMessages,
+			}).success,
+		).toBe(true);
+	});
 });
 
 describe("serialiseMessagesForConversationUpdate", () => {
@@ -113,6 +160,29 @@ describe("serialiseMessagesForConversationUpdate", () => {
 			"https://example.com/source",
 			"https://example.com/already-string",
 		]);
+		expect(messageSchema.safeParse(requestMessages[0]).success).toBe(true);
+	});
+
+	it("keeps tool call ids when persisting tool responses", () => {
+		const messages: Message[] = [
+			{
+				id: "tool-result",
+				role: "tool",
+				name: "get_recipe",
+				content: "Recipe contract",
+				tool_call_id: "call_recipe",
+				tool_call_arguments: "{}",
+			},
+		];
+
+		const requestMessages = serialiseMessagesForConversationUpdate(messages);
+
+		expect(requestMessages[0]).toMatchObject({
+			role: "tool",
+			name: "get_recipe",
+			tool_call_id: "call_recipe",
+			tool_call_arguments: "{}",
+		});
 		expect(messageSchema.safeParse(requestMessages[0]).success).toBe(true);
 	});
 });

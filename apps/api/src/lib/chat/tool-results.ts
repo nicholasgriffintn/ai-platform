@@ -10,6 +10,18 @@ export function isSuccessfulToolStatus(status: string | null | undefined): boole
 	return SUCCESSFUL_TOOL_STATUSES.has(status || "");
 }
 
+function isContinuableToolResult(message: Message): boolean {
+	if (isSuccessfulToolStatus(message.status)) {
+		return true;
+	}
+
+	return (
+		message.name === "configure_recipe" &&
+		(message.status === "needs_correction" ||
+			(message.status === "error" && message.data?.recoverable === true))
+	);
+}
+
 export function getFinalToolResultsForCalls(
 	toolCalls: ToolCall[],
 	toolResults: Message[],
@@ -36,6 +48,6 @@ export function shouldContinueAfterToolResults(
 	const finalResults = getFinalToolResultsForCalls(toolCalls, toolResults);
 	return (
 		finalResults.length === toolCalls.length &&
-		finalResults.every((message) => isSuccessfulToolStatus(message.status))
+		finalResults.every((message) => isContinuableToolResult(message))
 	);
 }

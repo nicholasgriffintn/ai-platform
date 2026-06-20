@@ -213,6 +213,60 @@ describe("ChatService streaming", () => {
 		expect(body.models).toEqual(["gpt-5", "claude-opus"]);
 	});
 
+	it("sends recipe scope with the exact recipe tools", async () => {
+		const fetchMock = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) =>
+			createSseResponse([data("[DONE]")]),
+		);
+		vi.stubGlobal("fetch", fetchMock);
+
+		const service = new ChatService(async () => ({}));
+
+		await service.streamChatCompletions({
+			chatSettings: {},
+			completionId: "conversation-1",
+			endpoint: "/chat/completions",
+			messages: [{ role: "user", content: "Set up Gmail" } as Message],
+			mode: "remote",
+			model: "gpt-5",
+			onProgress: () => {},
+			onStateChange: () => {},
+			requestOptions: {
+				recipe: {
+					id: "gmail",
+					installationId: "installation-1",
+					channel: "web",
+					allowedConnectorProviders: ["gmail"],
+					allowedConnectorOperations: {
+						gmail: ["search_messages", "create_draft"],
+					},
+					configuration: {
+						defaultSearch: "newer_than:7d",
+					},
+				},
+			},
+			selectedTools: ["use_recipe_connector", "get_recipe", "configure_recipe"],
+			signal: new AbortController().signal,
+			streamingEnabled: true,
+		});
+
+		const [, request] = fetchMock.mock.calls[0];
+		const body = JSON.parse(String(request?.body));
+
+		expect(body.enabled_tools).toEqual(["use_recipe_connector", "get_recipe", "configure_recipe"]);
+		expect(body.options.recipe).toEqual({
+			id: "gmail",
+			installationId: "installation-1",
+			channel: "web",
+			allowedConnectorProviders: ["gmail"],
+			allowedConnectorOperations: {
+				gmail: ["search_messages", "create_draft"],
+			},
+			configuration: {
+				defaultSearch: "newer_than:7d",
+			},
+		});
+	});
+
 	it("throws streamed provider errors without finalizing an empty assistant message", async () => {
 		vi.stubGlobal(
 			"fetch",

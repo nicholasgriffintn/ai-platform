@@ -27,6 +27,10 @@ import { WelcomeScreen } from "./WelcomeScreen";
 
 export interface ConversationThreadModeConfig {
 	requestOptions?: ChatRequestOptions;
+	initialAutoSubmit?: {
+		key: string;
+		input: string;
+	};
 	conversationMode?: ConversationModeMetadata;
 	welcomeTitle?: string;
 	welcomeDescription?: string;
@@ -104,6 +108,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
 	);
 
 	const chatInputRef = useRef<ChatInputHandle>(null);
+	const autoSubmittedKeyRef = useRef<string | null>(null);
 	const {
 		isGeneratingSpeech: isGeneratingAutoResponseSpeech,
 		isPlaying: isPlayingAutoResponse,
@@ -244,6 +249,17 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
 			modeConfig?.councilDebate,
 		],
 	);
+
+	useEffect(() => {
+		const initialAutoSubmit = modeConfig?.initialAutoSubmit;
+		if (!initialAutoSubmit || autoSubmittedKeyRef.current === initialAutoSubmit.key) {
+			return;
+		}
+
+		autoSubmittedKeyRef.current = initialAutoSubmit.key;
+		setChatInput("");
+		sendMessage(initialAutoSubmit.input);
+	}, [modeConfig?.initialAutoSubmit, sendMessage, setChatInput]);
 
 	const handleKeyPress = useCallback(
 		(e: KeyboardEvent) => {

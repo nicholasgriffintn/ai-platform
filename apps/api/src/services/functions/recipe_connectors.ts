@@ -1,10 +1,19 @@
-import { recipeConnectorProviderSchema } from "@assistant/schemas";
+import {
+	recipeConfigurationSchema,
+	recipeConnectorProviderSchema,
+	recipeInstallationTriggerSchema,
+} from "@assistant/schemas";
 import {
 	isConnectorOperationWrite,
 	recipeConnectorOperationIds,
 } from "~/lib/providers/capabilities/connectors";
 import { executeRecipeConnectorOperation } from "~/services/apps/connectors/operations";
-import { invokeAssistantRecipe, resolveInstalledAssistantRecipe } from "~/services/apps/recipes";
+import {
+	getAssistantRecipe,
+	invokeAssistantRecipe,
+	resolveInstalledAssistantRecipe,
+	updateRecipeInstallation,
+} from "~/services/apps/recipes";
 import { getRecipeConversationContext } from "~/services/apps/recipes/conversationContext";
 import { executeRecipeInvocationChat } from "~/services/apps/recipes/execution";
 import { coerceStringArray, isRecord } from "~/utils/objects";
@@ -40,6 +49,23 @@ function getRecipeExecutionChannel(options: unknown): string | undefined {
 	}
 
 	return typeof options.recipe.channel === "string" ? options.recipe.channel : undefined;
+}
+
+function getActiveRecipeSetup(options: unknown):
+	| {
+			id: string;
+			installationId?: string;
+	  }
+	| undefined {
+	if (!isRecord(options) || !isRecord(options.recipe) || typeof options.recipe.id !== "string") {
+		return undefined;
+	}
+
+	return {
+		id: options.recipe.id,
+		installationId:
+			typeof options.recipe.installationId === "string" ? options.recipe.installationId : undefined,
+	};
 }
 
 function getTriggerRecipeChannel(options: unknown): "sms" | "tool" {
@@ -88,6 +114,85 @@ function buildConnectorToolError(params: {
 		},
 	};
 }
+
+export const get_recipe: ApiToolDefinition = {
+	name: "get_recipe",
+	description:
+		"Get the active recipe setup contract, including exact configuration field keys, saved configuration, trigger types, and enabled tools. Use this before configure_recipe when setting up or correcting a recipe.",
+	type: "premium",
+	costPerCall: 0,
+	permissions: ["read"],
+	inputSchema: jsonSchemaToZod({
+		type: "object",
+		properties: {
+			recipeId: {
+				type: "string",
+				description:
+					"Optional recipe id. Defaults to the active recipe setup chat and must match it when provided.",
+			},
+		},
+	}),
+	execute: async (args, context) => {
+		const request = context.request;
+		if (!request.context || !request.user?.id) {
+			throw new Error("Signed-in user context is required for recipe setup tools");
+		}
+
+		const activeRecipe = getActiveRecipeSetup(request.request?.options);
+		const requestedRecipeId = typeof args.recipeId === "string" ? args.recipeId : undefined;
+		const recipeId = requestedRecipeId ?? activeRecipe?.id;
+		if (!recipeId) {
+			return {
+				status: "error",
+				name: "get_recipe",
+				content: "No active recipe is available in this chat.",
+				data: {},
+			};
+		}
+
+		if (activeRecipe?.id && requestedRecipeId && requestedRecipeId !== activeRecipe.id) {
+			return {
+				status: "error",
+				name: "get_recipe",
+				content: "The requested recipe does not match the active recipe setup chat.",
+				data: {
+					recipeId: requestedRecipeId,
+					activeRecipeId: activeRecipe.id,
+				},
+			};
+		}
+
+		const recipe = await getAssistantRecipe(recipeId, {
+			context: request.context,
+			userId: request.user.id,
+			requestUrl: request.app_url,
+		});
+		if (!recipe) {
+			return {
+				status: "error",
+				name: "get_recipe",
+				content: "Recipe not found.",
+				data: { recipeId },
+			};
+		}
+
+		return {
+			status: "success",
+			name: "get_recipe",
+			content: "Recipe configuration fields loaded.",
+			data: {
+				recipeId: recipe.id,
+				title: recipe.title,
+				configurationFields: recipe.configurationFields,
+				triggers: recipe.triggers,
+				enabledTools: recipe.enabledTools,
+				savedConfiguration: isRecord(request.request?.options?.recipe)
+					? request.request.options.recipe.configuration
+					: undefined,
+			},
+		};
+	},
+};
 
 export const use_recipe_connector: ApiToolDefinition = {
 	name: "use_recipe_connector",
@@ -365,6 +470,171 @@ export const trigger_recipe: ApiToolDefinition = {
 			name: "trigger_recipe",
 			content: invocation.conversationStarter,
 			data: invocation,
+		};
+	},
+};
+
+export const configure_recipe: ApiToolDefinition = {
+	name: "configure_recipe",
+	description:
+		"Save configuration and triggers for the active recipe setup chat after the user confirms the details or asks you to choose sensible defaults. Call get_recipe first if you need the exact configuration field keys.",
+	type: "premium",
+	costPerCall: 0,
+	permissions: ["write"],
+	inputSchema: jsonSchemaToZod({
+		type: "object",
+		properties: {
+			recipeId: {
+				type: "string",
+				description: "Optional active recipe id. Must match the recipe being set up.",
+			},
+			configuration: {
+				type: "object",
+				description: "Recipe configuration values to save.",
+			},
+			triggers: {
+				type: "array",
+				description:
+					"Recipe triggers to save. Include a manual trigger unless the user explicitly disables manual runs.",
+				items: {
+					type: "object",
+					properties: {
+						type: {
+							type: "string",
+							enum: ["manual", "schedule", "natural_language"],
+						},
+						enabled: {
+							type: "boolean",
+						},
+						cronExpression: {
+							type: "string",
+							description: "Five-field cron expression for schedule triggers.",
+						},
+						prompt: {
+							type: "string",
+							description: "Optional instruction to use when the schedule runs.",
+						},
+						notificationChannel: {
+							type: "string",
+							enum: ["sms"],
+						},
+						notificationTarget: {
+							type: "string",
+						},
+					},
+					required: ["type"],
+				},
+			},
+		},
+	}),
+	execute: async (args, context) => {
+		const request = context.request;
+		if (!request.context || !request.user?.id) {
+			throw new Error("Signed-in user context is required for recipe setup tools");
+		}
+
+		const activeRecipe = getActiveRecipeSetup(request.request?.options);
+		if (!activeRecipe?.installationId) {
+			return {
+				status: "error",
+				name: "configure_recipe",
+				content: "No active installed recipe is available to configure in this chat.",
+				data: { recipeId: activeRecipe?.id },
+			};
+		}
+
+		if (typeof args.recipeId === "string" && args.recipeId !== activeRecipe.id) {
+			return {
+				status: "error",
+				name: "configure_recipe",
+				content: "The requested recipe does not match the active recipe setup chat.",
+				data: {
+					recipeId: args.recipeId,
+					activeRecipeId: activeRecipe.id,
+				},
+			};
+		}
+
+		const configuration =
+			args.configuration === undefined
+				? undefined
+				: recipeConfigurationSchema.safeParse(args.configuration);
+		if (configuration && !configuration.success) {
+			return {
+				status: "error",
+				name: "configure_recipe",
+				content: "Recipe configuration is not valid.",
+				data: { issues: configuration.error.issues },
+			};
+		}
+
+		const triggers =
+			args.triggers === undefined
+				? undefined
+				: recipeInstallationTriggerSchema.array().safeParse(args.triggers);
+		if (triggers && !triggers.success) {
+			return {
+				status: "error",
+				name: "configure_recipe",
+				content: "Recipe triggers are not valid.",
+				data: { issues: triggers.error.issues },
+			};
+		}
+
+		if (!configuration && !triggers) {
+			return {
+				status: "error",
+				name: "configure_recipe",
+				content: "Provide recipe configuration, triggers, or both to save.",
+				data: { recipeId: activeRecipe.id },
+			};
+		}
+
+		let installation;
+		try {
+			installation = await updateRecipeInstallation({
+				context: request.context,
+				userId: request.user.id,
+				installationId: activeRecipe.installationId,
+				update: {
+					...(configuration ? { configuration: configuration.data } : {}),
+					...(triggers ? { triggers: triggers.data } : {}),
+				},
+			});
+		} catch (error) {
+			if (error instanceof AssistantError) {
+				return {
+					status: "needs_correction",
+					name: "configure_recipe",
+					content: `${error.message}. Call get_recipe for the exact configuration field keys, then retry configure_recipe.`,
+					data: {
+						recipeId: activeRecipe.id,
+						installationId: activeRecipe.installationId,
+						recoverable: true,
+					},
+				};
+			}
+
+			throw error;
+		}
+
+		if (!installation) {
+			return {
+				status: "error",
+				name: "configure_recipe",
+				content: "Recipe installation not found.",
+				data: {
+					recipeId: activeRecipe.id,
+					installationId: activeRecipe.installationId,
+				},
+			};
+		}
+
+		return {
+			status: "success",
+			name: "configure_recipe",
+			content: "Recipe setup saved.",
+			data: { installation },
 		};
 	},
 };

@@ -1,8 +1,29 @@
+import { useMemo } from "react";
 import { ConversationThread } from "~/components/ConversationThread";
+import type { ConversationThreadModeConfig } from "~/components/ConversationThread";
 import { useHomeChatModeConfig } from "./useHomeChatModeConfig";
 
-export function HomeConversationThread() {
-	const { modeConfig } = useHomeChatModeConfig();
+interface HomeConversationThreadProps {
+	urlModeConfig?: ConversationThreadModeConfig;
+}
 
-	return <ConversationThread modeConfig={modeConfig} />;
+export function HomeConversationThread({ urlModeConfig }: HomeConversationThreadProps) {
+	const { modeConfig } = useHomeChatModeConfig();
+	const effectiveModeConfig = useMemo<ConversationThreadModeConfig>(() => {
+		if (!urlModeConfig) {
+			return modeConfig;
+		}
+
+		return {
+			...modeConfig,
+			requestOptions: {
+				...modeConfig.requestOptions,
+				...urlModeConfig.requestOptions,
+				recipe: urlModeConfig.requestOptions?.recipe ?? modeConfig.requestOptions?.recipe,
+			},
+			initialAutoSubmit: urlModeConfig.initialAutoSubmit ?? modeConfig.initialAutoSubmit,
+		};
+	}, [modeConfig, urlModeConfig]);
+
+	return <ConversationThread modeConfig={effectiveModeConfig} />;
 }

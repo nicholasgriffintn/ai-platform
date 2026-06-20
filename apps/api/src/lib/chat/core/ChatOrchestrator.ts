@@ -22,6 +22,15 @@ import { isAbortError } from "~/utils/abort";
 import { nonEmptyToolCallsOrNull } from "~/utils/toolCalls";
 
 const logger = getLogger({ prefix: "lib/chat/core/ChatOrchestrator" });
+const RECIPE_CHAT_DEFAULT_MAX_STEPS = 4;
+
+function resolveChatMaxSteps(chatOptions: CoreChatOptions): number | undefined {
+	if (typeof chatOptions.max_steps === "number") {
+		return chatOptions.max_steps;
+	}
+
+	return chatOptions.options?.recipe ? RECIPE_CHAT_DEFAULT_MAX_STEPS : undefined;
+}
 
 export class ChatOrchestrator {
 	private validator: ValidationPipeline;
@@ -105,6 +114,7 @@ export class ChatOrchestrator {
 			max_steps,
 		} = chatOptions;
 		const reasoning_effort = chatOptions.reasoning?.effort ?? chatOptions.reasoning_effort;
+		const resolvedMaxSteps = resolveChatMaxSteps(chatOptions);
 
 		const startTime = Date.now();
 
@@ -190,7 +200,7 @@ export class ChatOrchestrator {
 					parallel_tool_calls,
 					tool_choice,
 					current_step,
-					max_steps,
+					max_steps: resolvedMaxSteps,
 					current_agent_id: chatOptions.current_agent_id,
 					delegation_stack: chatOptions.delegation_stack,
 					max_delegation_depth: chatOptions.max_delegation_depth,
@@ -257,7 +267,7 @@ export class ChatOrchestrator {
 			parallel_tool_calls,
 			tool_choice,
 			current_step,
-			max_steps,
+			max_steps: resolvedMaxSteps,
 			options: chatOptions.options || {},
 		};
 
@@ -302,7 +312,7 @@ export class ChatOrchestrator {
 					userSettings,
 					app_url: chatOptions.app_url,
 					mode: currentMode,
-					max_steps: chatOptions.max_steps,
+					max_steps: resolvedMaxSteps,
 					current_step: chatOptions.current_step,
 					tools,
 					enabled_tools,

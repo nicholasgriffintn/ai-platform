@@ -8,6 +8,8 @@ type ChatRequestMessage = {
 	data?: Message["data"];
 	name?: Message["name"];
 	parts?: Message["parts"];
+	tool_call_id?: Message["tool_call_id"];
+	tool_call_arguments?: Message["tool_call_arguments"];
 	tool_calls?: Message["tool_calls"];
 };
 
@@ -267,6 +269,8 @@ export function serialiseMessageForChatRequest(message: Message): ChatRequestMes
 		data: message.data || undefined,
 		name: message.name || undefined,
 		parts: message.parts,
+		tool_call_id: message.tool_call_id || undefined,
+		tool_call_arguments: message.tool_call_arguments || undefined,
 	};
 
 	const toolCalls = serialiseToolCallsForChatRequest(message.tool_calls);
@@ -295,6 +299,8 @@ export function serialiseMessageForConversationUpdate(message: Message): Convers
 		platform: normalizedMessage.platform || undefined,
 		status: normalizedMessage.status || undefined,
 		timestamp: normalizedMessage.timestamp,
+		tool_call_id: normalizedMessage.tool_call_id || undefined,
+		tool_call_arguments: normalizedMessage.tool_call_arguments || undefined,
 	};
 
 	const toolCalls = serialiseToolCallsForChatRequest(normalizedMessage.tool_calls);

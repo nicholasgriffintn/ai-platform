@@ -1,5 +1,10 @@
 import type { MessagePart as SchemaMessagePart } from "@assistant/schemas";
-import type { ConversationModeMetadata, CouncilChatOptions } from "@assistant/schemas";
+import type {
+	ConversationModeMetadata,
+	CouncilChatOptions,
+	RecipeConfiguration,
+	RecipeConnectorProvider,
+} from "@assistant/schemas";
 import type { SandboxModelSettings, SandboxPromptStrategy, SandboxTaskType } from "./sandbox";
 
 export type ChatRole = "user" | "assistant" | "system" | "tool";
@@ -62,6 +67,14 @@ export interface ChatSettings {
 
 export interface ChatRequestOptions extends HostedToolSettings {
 	council?: CouncilChatOptions;
+	recipe?: {
+		id: string;
+		installationId?: string;
+		channel?: "web" | "ios" | "sms" | "scheduled" | "tool";
+		allowedConnectorProviders?: RecipeConnectorProvider[];
+		allowedConnectorOperations?: Record<string, string[]>;
+		configuration?: RecipeConfiguration;
+	};
 	sandbox?: {
 		enabled: boolean;
 		repo?: string;
@@ -257,8 +270,11 @@ export interface Message {
 	};
 	log_id?: string;
 	name?: string;
+	tool_call_id?: string;
+	tool_call_arguments?: string | Record<string, any>;
 	tool_calls?: {
 		id?: string;
+		type?: "function";
 		function: {
 			name: string;
 			arguments:

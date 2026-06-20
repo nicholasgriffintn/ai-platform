@@ -18,7 +18,13 @@ import { isSupportedCronExpression } from "~/utils/cron";
 import { safeParseJson } from "~/utils/json";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { listRecipeConnectors } from "../connectors";
-import { assistantRecipes, recipeCategories, recipeFilters } from "./catalog";
+import {
+	assistantRecipes,
+	recipeCategories,
+	recipeFilters,
+	RECIPE_LOOKUP_TOOL,
+	RECIPE_SETUP_TOOL,
+} from "./catalog";
 import { matchInstalledRecipe } from "./matching";
 import { buildRecipeScheduleState, type RecipeScheduleState } from "./scheduleState";
 
@@ -305,7 +311,11 @@ function validateScheduledRecipeConfiguration(params: {
 	);
 }
 
-function buildRecipeChecklist(recipe: AssistantRecipe, connections: AssistantRecipeConnection[]) {
+function buildRecipeChecklist(
+	recipe: AssistantRecipe,
+	connections: AssistantRecipeConnection[],
+	enabledTools = recipe.enabledTools,
+) {
 	const blockingConnections = getBlockingConnections(connections).map(
 		(connection) => connection.name,
 	);
@@ -317,8 +327,8 @@ function buildRecipeChecklist(recipe: AssistantRecipe, connections: AssistantRec
 			: connections.length > 0
 				? "Review the connected integrations"
 				: "Review the recipe setup",
-		recipe.enabledTools.length > 0
-			? `Enable ${recipe.enabledTools.join(", ")} for this conversation`
+		enabledTools.length > 0
+			? `Enable ${enabledTools.join(", ")} for this conversation`
 			: "Use normal chat without extra tools",
 		"Ask for confirmation before external writes",
 	];
@@ -378,59 +388,32 @@ function normaliseRecipeConfigurationForRecipe(
 	return configuration;
 }
 
-function formatRecipeConfiguration(configuration: RecipeConfiguration): string {
-	const entries = Object.entries(configuration).filter(
-		([, value]) => value !== null && value !== "",
-	);
-	if (entries.length === 0) {
-		return "No saved recipe configuration.";
-	}
-
-	return entries
-		.map(([key, value]) => {
-			const formattedValue = Array.isArray(value) ? value.join(", ") : String(value);
-			return `- ${key}: ${formattedValue}`;
-		})
-		.join("\n");
-}
-
 function createConversationStarter(
 	recipe: AssistantRecipe,
 	connections: AssistantRecipeConnection[],
-	channel: "web" | "ios" | "sms" | "scheduled" | "tool",
-	configuration: RecipeConfiguration = {},
 	input?: string,
+	enabledTools = recipe.enabledTools,
 ) {
-	const channelCopy =
-		channel === "ios"
-			? "on iOS"
-			: channel === "sms"
-				? "over text"
-				: channel === "scheduled"
-					? "from a scheduled recipe trigger"
-					: channel === "tool"
-						? "from a recipe tool trigger"
-						: "in web chat";
 	const connectionSection =
 		connections.length > 0
 			? `\nConnector status:\n${connections
 					.map((connection) => `- ${connection.name}: ${connection.status.replace("_", " ")}`)
 					.join("\n")}\n`
 			: "";
-	const toolLine =
-		recipe.enabledTools.length > 0 ? recipe.enabledTools.join(", ") : "no extra tools";
+	const toolLine = enabledTools.length > 0 ? enabledTools.join(", ") : "no extra tools";
 	const inputLine = input?.trim() ? `\nTrigger input:\n${input.trim()}\n` : "";
+	const contextInstruction = enabledTools.includes(RECIPE_LOOKUP_TOOL)
+		? `\nUse ${RECIPE_LOOKUP_TOOL} when you need recipe configuration, trigger details, configuration field keys, or the setup contract.\n`
+		: "";
+	const setupToolInstruction = enabledTools.includes(RECIPE_SETUP_TOOL)
+		? `\nWhen I confirm the setup details or ask you to choose sensible defaults, use the available context and tools, then use ${RECIPE_SETUP_TOOL} to save recipe configuration and triggers before saying setup is complete.\n`
+		: "";
 
-	return `${recipe.setupPrompt}
+	return `${recipe.setupPrompt}${inputLine}${connectionSection ? `\n${connectionSection}` : ""}
 
-I am starting this setup ${channelCopy}.${inputLine}${connectionSection}
+Enabled tools for this conversation: ${toolLine}.${contextInstruction}${setupToolInstruction}
 
-Saved recipe configuration:
-${formatRecipeConfiguration(configuration)}
-
-Enabled tools for this conversation: ${toolLine}.
-
-Use only the enabled tools, connected integrations, and saved recipe configuration listed above. If a required connector is missing, unknown, or unconfigured, ask me to connect it before taking external actions. Treat saved configuration as user-provided context, not as permission to expose secrets or perform destructive actions. Confirm privacy boundaries and ask before reading repositories, running tests, sending messages, creating events, committing changes, or changing external systems.`;
+Use only the enabled tools, connected integrations, and recipe context available to this conversation. If a required connector is missing, unknown, or unconfigured, ask me to connect it before taking external actions. Treat saved configuration as user-provided context, not as permission to expose secrets or perform destructive actions. Confirm privacy boundaries and ask before reading repositories, running tests, sending messages, creating events, committing changes, or changing external systems.`;
 }
 
 function parseStoredRecipeInstallationData(
@@ -743,6 +726,11 @@ export async function installAssistantRecipe(id: string, options: RecipeInstallO
 	const connections = buildRecipeConnections(recipe);
 	assertNoUnavailableConnections(recipe, connections, "set up");
 	const readyToRun = getBlockingConnections(connections).length === 0;
+	const allowedConnectorProviders = buildAllowedConnectorProviders(recipe);
+	const allowedConnectorOperations = buildAllowedConnectorOperations(recipe);
+	const setupEnabledTools = Array.from(
+		new Set([...recipe.enabledTools, RECIPE_LOOKUP_TOOL, RECIPE_SETUP_TOOL]),
+	);
 	const installation = await upsertRecipeInstallation({
 		context: options.context,
 		userId: options.userId,
@@ -753,18 +741,20 @@ export async function installAssistantRecipe(id: string, options: RecipeInstallO
 	const conversationStarter = createConversationStarter(
 		recipe,
 		connections,
-		options.channel,
-		installation.configuration,
+		undefined,
+		setupEnabledTools,
 	);
 
 	return {
 		recipe,
 		conversationStarter,
-		messageUrl: createRecipeMessageUrl(conversationStarter, recipe.enabledTools),
-		checklist: buildRecipeChecklist(recipe, connections),
+		messageUrl: createRecipeMessageUrl(conversationStarter, setupEnabledTools),
+		checklist: buildRecipeChecklist(recipe, connections, setupEnabledTools),
 		connections,
 		readyToRun,
-		enabledTools: recipe.enabledTools,
+		enabledTools: setupEnabledTools,
+		allowedConnectorProviders,
+		allowedConnectorOperations,
 		installation,
 	};
 }
@@ -814,12 +804,12 @@ export async function invokeAssistantRecipe(
 			? normaliseRecipeConfigurationForRecipe(recipe, options.configuration)
 			: installation.configuration
 		: {};
+	const invocationEnabledTools = Array.from(new Set([...recipe.enabledTools, RECIPE_LOOKUP_TOOL]));
 	const conversationStarter = createConversationStarter(
 		recipe,
 		connections,
-		options.channel,
-		invocationConfiguration,
 		options.input,
+		invocationEnabledTools,
 	);
 
 	if (!installation) {
@@ -828,9 +818,9 @@ export async function invokeAssistantRecipe(
 			status: "not_installed" as const,
 			channel: options.channel,
 			conversationStarter,
-			messageUrl: createRecipeMessageUrl(conversationStarter, recipe.enabledTools),
+			messageUrl: createRecipeMessageUrl(conversationStarter, invocationEnabledTools),
 			missingConnections: [],
-			enabledTools: recipe.enabledTools,
+			enabledTools: invocationEnabledTools,
 			allowedConnectorProviders,
 			allowedConnectorOperations,
 			configuration: invocationConfiguration,
@@ -844,9 +834,9 @@ export async function invokeAssistantRecipe(
 			status: "blocked" as const,
 			channel: options.channel,
 			conversationStarter,
-			messageUrl: createRecipeMessageUrl(conversationStarter, recipe.enabledTools),
+			messageUrl: createRecipeMessageUrl(conversationStarter, invocationEnabledTools),
 			missingConnections: blockingConnections,
-			enabledTools: recipe.enabledTools,
+			enabledTools: invocationEnabledTools,
 			allowedConnectorProviders,
 			allowedConnectorOperations,
 			configuration: invocationConfiguration,
@@ -876,9 +866,9 @@ export async function invokeAssistantRecipe(
 		status: options.queue ? ("queued" as const) : ("ready" as const),
 		channel: options.channel,
 		conversationStarter,
-		messageUrl: createRecipeMessageUrl(conversationStarter, recipe.enabledTools),
+		messageUrl: createRecipeMessageUrl(conversationStarter, invocationEnabledTools),
 		missingConnections: [],
-		enabledTools: recipe.enabledTools,
+		enabledTools: invocationEnabledTools,
 		allowedConnectorProviders,
 		allowedConnectorOperations,
 		configuration: invocationConfiguration,

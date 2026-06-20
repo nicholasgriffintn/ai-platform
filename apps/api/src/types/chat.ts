@@ -2,6 +2,8 @@ import type { ExecutionContext } from "@cloudflare/workers-types";
 import type {
 	CouncilChatOptions,
 	MessagePart as SchemaMessagePart,
+	RecipeConfiguration,
+	RecipeConnectorProvider,
 	SandboxModelSettings,
 } from "@assistant/schemas";
 import type { ServiceContext } from "../lib/context/serviceContext";
@@ -258,6 +260,14 @@ interface AIControlParams {
 export interface ChatRequestOptions extends Record<string, any> {
 	cache_ttl_seconds?: number;
 	council?: CouncilChatOptions;
+	recipe?: {
+		id: string;
+		installationId?: string;
+		channel?: "web" | "ios" | "sms" | "scheduled" | "tool";
+		allowedConnectorProviders?: RecipeConnectorProvider[];
+		allowedConnectorOperations?: Record<string, string[]>;
+		configuration?: RecipeConfiguration;
+	};
 	sandbox?: {
 		enabled: boolean;
 		repo?: string;

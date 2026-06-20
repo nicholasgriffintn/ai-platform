@@ -1081,6 +1081,8 @@ export const assistantRecipeInstallResponseSchema = z.object({
 	connections: z.array(assistantRecipeConnectionSchema),
 	readyToRun: z.boolean(),
 	enabledTools: z.array(z.string()).default([]),
+	allowedConnectorProviders: z.array(recipeConnectorProviderSchema).default([]),
+	allowedConnectorOperations: z.record(z.string(), z.array(z.string())).optional(),
 	installation: z.lazy(() => recipeInstallationSchema).optional(),
 });
 

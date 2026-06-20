@@ -331,6 +331,71 @@ describe("ChatOrchestrator", () => {
 				});
 			});
 
+			it("should give recipe streaming chats enough steps to use context tools and save setup", async () => {
+				const mockStream = new ReadableStream();
+				const transformedStream = new ReadableStream();
+
+				mockGetAIResponse.mockResolvedValue(mockStream);
+				mockCreateStreamWithPostProcessing.mockResolvedValue(transformedStream);
+
+				await orchestrator.process({
+					...mockOptions,
+					stream: true,
+					enabled_tools: ["get_weather", "get_recipe", "configure_recipe"],
+					options: {
+						recipe: {
+							id: "bad-weather-alerts",
+							installationId: "installation-1",
+							channel: "web",
+						},
+					},
+				});
+
+				expect(mockCreateStreamWithPostProcessing).toHaveBeenCalledWith(
+					mockStream,
+					expect.objectContaining({
+						max_steps: 4,
+						requestOptions: {
+							recipe: {
+								id: "bad-weather-alerts",
+								installationId: "installation-1",
+								channel: "web",
+							},
+						},
+					}),
+					mockConversationManager,
+				);
+			});
+
+			it("should preserve explicit max steps for recipe streaming chats", async () => {
+				const mockStream = new ReadableStream();
+				const transformedStream = new ReadableStream();
+
+				mockGetAIResponse.mockResolvedValue(mockStream);
+				mockCreateStreamWithPostProcessing.mockResolvedValue(transformedStream);
+
+				await orchestrator.process({
+					...mockOptions,
+					stream: true,
+					max_steps: 2,
+					options: {
+						recipe: {
+							id: "bad-weather-alerts",
+							installationId: "installation-1",
+							channel: "web",
+						},
+					},
+				});
+
+				expect(mockCreateStreamWithPostProcessing).toHaveBeenCalledWith(
+					mockStream,
+					expect.objectContaining({
+						max_steps: 2,
+					}),
+					mockConversationManager,
+				);
+			});
+
 			it("should handle response with tool calls", async () => {
 				const mockResponse = {
 					response: "Test response",

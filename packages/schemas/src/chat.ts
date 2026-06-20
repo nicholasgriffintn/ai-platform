@@ -5,6 +5,7 @@ import { messagePartsSchema } from "./message-parts";
 import { chatRequestModeSchema } from "./agent-modes";
 import { councilChatOptionsSchema } from "./council";
 import { reasoningEffortSchema, reasoningSettingsSchema } from "./reasoning";
+import { recipeConfigurationSchema, recipeConnectorProviderSchema } from "./apps";
 
 export const chatCompletionResponseSchema = z.object({
 	id: z.string(),
@@ -374,6 +375,19 @@ export const createChatCompletionsJsonSchema = z.object({
 				.optional()
 				.meta({
 					description: "SMS channel options for compact text-message conversations.",
+				}),
+			recipe: z
+				.object({
+					id: z.string(),
+					installationId: z.string().optional(),
+					channel: z.enum(["web", "ios", "sms", "scheduled", "tool"]).optional(),
+					allowedConnectorProviders: z.array(recipeConnectorProviderSchema).optional(),
+					allowedConnectorOperations: z.record(z.string(), z.array(z.string())).optional(),
+					configuration: recipeConfigurationSchema.optional(),
+				})
+				.optional()
+				.meta({
+					description: "Recipe execution or setup scope for connector and setup tools.",
 				}),
 		})
 		.passthrough()

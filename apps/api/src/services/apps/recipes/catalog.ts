@@ -11,7 +11,9 @@ import {
 } from "~/lib/providers/capabilities/connectors";
 
 export const RECIPE_CONNECTOR_TOOL = "use_recipe_connector";
+export const RECIPE_LOOKUP_TOOL = "get_recipe";
 export const RECIPE_TRIGGER_TOOL = "trigger_recipe";
+export const RECIPE_SETUP_TOOL = "configure_recipe";
 export const WEATHER_TOOL = "get_weather";
 export const WEB_SEARCH_TOOL = "web_search";
 export const IMAGE_TOOL = "create_image";

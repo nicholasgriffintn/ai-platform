@@ -386,10 +386,17 @@ describe("assistant recipes", () => {
 
 	it("derives allowed connector providers for direct integration recipes", async () => {
 		const context = createTestServiceContext();
-		await installAssistantRecipe("gmail", {
+		const setup = await installAssistantRecipe("gmail", {
 			context,
 			userId: 42,
 			channel: "web",
+		});
+		expect(setup).toMatchObject({
+			allowedConnectorProviders: ["gmail"],
+			allowedConnectorOperations: {
+				gmail: ["search_messages", "create_draft"],
+			},
+			enabledTools: ["use_recipe_connector", "get_recipe", "configure_recipe"],
 		});
 
 		const invocation = await invokeAssistantRecipe("gmail", {
@@ -406,8 +413,35 @@ describe("assistant recipes", () => {
 			allowedConnectorOperations: {
 				gmail: ["search_messages", "create_draft"],
 			},
-			enabledTools: ["use_recipe_connector"],
+			enabledTools: ["use_recipe_connector", "get_recipe"],
 		});
+	});
+
+	it("starts bad weather setup with weather access and a persistence tool", async () => {
+		const context = createTestServiceContext();
+
+		const setup = await installAssistantRecipe("bad-weather-alerts", {
+			context,
+			userId: 42,
+			channel: "web",
+		});
+
+		expect(setup).toMatchObject({
+			recipe: expect.objectContaining({
+				id: "bad-weather-alerts",
+			}),
+			enabledTools: ["get_weather", "get_recipe", "configure_recipe"],
+			installation: expect.objectContaining({
+				recipeId: "bad-weather-alerts",
+				status: "active",
+			}),
+		});
+		expect(setup?.conversationStarter).toContain(
+			"When I confirm the setup details or ask you to choose sensible defaults, use the available context and tools, then use configure_recipe to save recipe configuration and triggers before saying setup is complete.",
+		);
+		expect(setup?.conversationStarter).toContain(
+			"Enabled tools for this conversation: get_weather, get_recipe, configure_recipe.",
+		);
 	});
 
 	it("includes Outlook calendar reads in morning briefing connector scope", async () => {
@@ -467,14 +501,12 @@ describe("assistant recipes", () => {
 				outlook: ["search_messages", "create_calendar_event"],
 				calendar: ["create_event"],
 			},
-			enabledTools: ["use_recipe_connector"],
+			enabledTools: ["use_recipe_connector", "get_recipe"],
 			configuration: {
 				calendarTarget: "Travel calendar",
 				travelWindow: "Next 90 days",
 			},
 		});
-		expect(invocation?.conversationStarter).toContain("- calendarTarget: Travel calendar");
-		expect(invocation?.conversationStarter).toContain("- travelWindow: Next 90 days");
 	});
 
 	it("derives Asana connector operations for the Asana integration recipe", async () => {
@@ -503,14 +535,12 @@ describe("assistant recipes", () => {
 			allowedConnectorOperations: {
 				asana: ["list_projects", "list_tasks", "create_task"],
 			},
-			enabledTools: ["use_recipe_connector"],
+			enabledTools: ["use_recipe_connector", "get_recipe"],
 			configuration: {
 				workspaceId: "workspace-1",
 				projectIds: ["project-1"],
 			},
 		});
-		expect(invocation?.conversationStarter).toContain("- workspaceId: workspace-1");
-		expect(invocation?.conversationStarter).toContain("- projectIds: project-1");
 	});
 
 	it("derives Sentry read-only connector operations for the Sentry integration recipe", async () => {
@@ -540,16 +570,13 @@ describe("assistant recipes", () => {
 			allowedConnectorOperations: {
 				sentry: ["list_organizations", "list_projects", "list_issues", "retrieve_issue"],
 			},
-			enabledTools: ["use_recipe_connector"],
+			enabledTools: ["use_recipe_connector", "get_recipe"],
 			configuration: {
 				organizationSlug: "acme",
 				projectIds: ["123"],
 				issueQuery: "is:unresolved level:error",
 			},
 		});
-		expect(invocation?.conversationStarter).toContain("- organizationSlug: acme");
-		expect(invocation?.conversationStarter).toContain("- projectIds: 123");
-		expect(invocation?.conversationStarter).toContain("- issueQuery: is:unresolved level:error");
 	});
 
 	it("derives PostHog read-only connector operations for the PostHog integration recipe", async () => {
@@ -579,16 +606,13 @@ describe("assistant recipes", () => {
 			allowedConnectorOperations: {
 				posthog: ["list_projects", "query"],
 			},
-			enabledTools: ["use_recipe_connector"],
+			enabledTools: ["use_recipe_connector", "get_recipe"],
 			configuration: {
 				region: "eu",
 				organizationId: "org-1",
 				projectId: "123",
 			},
 		});
-		expect(invocation?.conversationStarter).toContain("- region: eu");
-		expect(invocation?.conversationStarter).toContain("- organizationId: org-1");
-		expect(invocation?.conversationStarter).toContain("- projectId: 123");
 	});
 
 	it("derives Vercel read-only connector operations for the Vercel integration recipe", async () => {
@@ -620,7 +644,7 @@ describe("assistant recipes", () => {
 			allowedConnectorOperations: {
 				vercel: ["list_projects", "list_deployments", "get_deployment_events"],
 			},
-			enabledTools: ["use_recipe_connector"],
+			enabledTools: ["use_recipe_connector", "get_recipe"],
 			configuration: {
 				teamId: "team_123",
 				teamSlug: "acme",
@@ -629,11 +653,6 @@ describe("assistant recipes", () => {
 				defaultBranch: "main",
 			},
 		});
-		expect(invocation?.conversationStarter).toContain("- teamId: team_123");
-		expect(invocation?.conversationStarter).toContain("- teamSlug: acme");
-		expect(invocation?.conversationStarter).toContain("- projectId: prj_123");
-		expect(invocation?.conversationStarter).toContain("- defaultTarget: production");
-		expect(invocation?.conversationStarter).toContain("- defaultBranch: main");
 	});
 
 	it("derives Netlify read-only connector operations for the Netlify integration recipe", async () => {
@@ -663,18 +682,13 @@ describe("assistant recipes", () => {
 			allowedConnectorOperations: {
 				netlify: ["list_sites", "list_deploys", "get_deploy"],
 			},
-			enabledTools: ["use_recipe_connector"],
+			enabledTools: ["use_recipe_connector", "get_recipe"],
 			configuration: {
 				siteId: "polychat.netlify.app",
 				defaultBranch: "main",
 				defaultDeployFocus: "Failed production deploys",
 			},
 		});
-		expect(invocation?.conversationStarter).toContain("- siteId: polychat.netlify.app");
-		expect(invocation?.conversationStarter).toContain("- defaultBranch: main");
-		expect(invocation?.conversationStarter).toContain(
-			"- defaultDeployFocus: Failed production deploys",
-		);
 	});
 
 	it("derives Devin connector operations for the Devin integration recipe", async () => {
@@ -706,7 +720,7 @@ describe("assistant recipes", () => {
 			allowedConnectorOperations: {
 				devin: ["list_sessions", "get_session", "create_session", "list_messages", "send_message"],
 			},
-			enabledTools: ["use_recipe_connector"],
+			enabledTools: ["use_recipe_connector", "get_recipe"],
 			configuration: {
 				organizationId: "org-abc123def456",
 				defaultRepos: ["nicholasgriffin/assistant"],
@@ -715,13 +729,6 @@ describe("assistant recipes", () => {
 				maxAcuLimit: 3,
 			},
 		});
-		expect(invocation?.conversationStarter).toContain("- organizationId: org-abc123def456");
-		expect(invocation?.conversationStarter).toContain("- defaultRepos:");
-		expect(invocation?.conversationStarter).toContain("nicholasgriffin/assistant");
-		expect(invocation?.conversationStarter).toContain("- defaultTags:");
-		expect(invocation?.conversationStarter).toContain("polychat");
-		expect(invocation?.conversationStarter).toContain("- playbookId: playbook-123");
-		expect(invocation?.conversationStarter).toContain("- maxAcuLimit: 3");
 	});
 
 	it("derives Cloudflare read-only connector operations for the Cloudflare integration recipe", async () => {
@@ -757,16 +764,13 @@ describe("assistant recipes", () => {
 					"get_worker_deployment",
 				],
 			},
-			enabledTools: ["use_recipe_connector"],
+			enabledTools: ["use_recipe_connector", "get_recipe"],
 			configuration: {
 				accountId: "account_123",
 				zoneName: "polychat.app",
 				scriptName: "assistant-api",
 			},
 		});
-		expect(invocation?.conversationStarter).toContain("- accountId: account_123");
-		expect(invocation?.conversationStarter).toContain("- zoneName: polychat.app");
-		expect(invocation?.conversationStarter).toContain("- scriptName: assistant-api");
 	});
 
 	it("derives Supabase read-only connector operations for the Supabase integration recipe", async () => {
@@ -797,7 +801,7 @@ describe("assistant recipes", () => {
 			allowedConnectorOperations: {
 				supabase: ["list_organizations", "list_projects", "list_functions", "list_branches"],
 			},
-			enabledTools: ["use_recipe_connector"],
+			enabledTools: ["use_recipe_connector", "get_recipe"],
 			configuration: {
 				organizationSlug: "acme",
 				projectRef: "abcdefghijklmnopqrst",
@@ -805,12 +809,6 @@ describe("assistant recipes", () => {
 				defaultFunctionFocus: "Recently updated Edge Functions",
 			},
 		});
-		expect(invocation?.conversationStarter).toContain("- organizationSlug: acme");
-		expect(invocation?.conversationStarter).toContain("- projectRef: abcdefghijklmnopqrst");
-		expect(invocation?.conversationStarter).toContain("- defaultBranch: main");
-		expect(invocation?.conversationStarter).toContain(
-			"- defaultFunctionFocus: Recently updated Edge Functions",
-		);
 	});
 
 	it("derives Webflow read-only connector operations for the Webflow integration recipe", async () => {
@@ -841,7 +839,7 @@ describe("assistant recipes", () => {
 			allowedConnectorOperations: {
 				webflow: ["list_sites", "list_collections", "list_items"],
 			},
-			enabledTools: ["use_recipe_connector"],
+			enabledTools: ["use_recipe_connector", "get_recipe"],
 			configuration: {
 				siteId: "site_123",
 				collectionId: "collection_123",
@@ -849,12 +847,6 @@ describe("assistant recipes", () => {
 				defaultContentFocus: "Recently updated CMS items",
 			},
 		});
-		expect(invocation?.conversationStarter).toContain("- siteId: site_123");
-		expect(invocation?.conversationStarter).toContain("- collectionId: collection_123");
-		expect(invocation?.conversationStarter).toContain("- cmsLocaleId: locale_123");
-		expect(invocation?.conversationStarter).toContain(
-			"- defaultContentFocus: Recently updated CMS items",
-		);
 	});
 
 	it("derives Fitbit read-only connector operations for the Fitbit integration recipe", async () => {
@@ -884,16 +876,13 @@ describe("assistant recipes", () => {
 			allowedConnectorOperations: {
 				fitbit: ["profile", "daily_activity", "sleep_logs", "heart_rate"],
 			},
-			enabledTools: ["use_recipe_connector"],
+			enabledTools: ["use_recipe_connector", "get_recipe"],
 			configuration: {
 				defaultDate: "today",
 				metricFocus: ["activity", "sleep"],
 				summaryStyle: "Concise morning check-in",
 			},
 		});
-		expect(invocation?.conversationStarter).toContain("- defaultDate: today");
-		expect(invocation?.conversationStarter).toContain("- metricFocus: activity, sleep");
-		expect(invocation?.conversationStarter).toContain("- summaryStyle: Concise morning check-in");
 	});
 
 	it("derives Withings read-only connector operations for the Withings integration recipe", async () => {
@@ -924,7 +913,7 @@ describe("assistant recipes", () => {
 			allowedConnectorOperations: {
 				withings: ["profile", "devices", "measurements", "activity", "sleep_summary"],
 			},
-			enabledTools: ["use_recipe_connector"],
+			enabledTools: ["use_recipe_connector", "get_recipe"],
 			configuration: {
 				startDate: "2026-06-01",
 				endDate: "2026-06-08",
@@ -932,10 +921,6 @@ describe("assistant recipes", () => {
 				summaryStyle: "Weekly trend summary",
 			},
 		});
-		expect(invocation?.conversationStarter).toContain("- startDate: 2026-06-01");
-		expect(invocation?.conversationStarter).toContain("- endDate: 2026-06-08");
-		expect(invocation?.conversationStarter).toContain("- metricFocus: weight, sleep");
-		expect(invocation?.conversationStarter).toContain("- summaryStyle: Weekly trend summary");
 	});
 
 	it("keeps GitHub App integrations out of the OAuth connector tool scope", async () => {
@@ -955,7 +940,7 @@ describe("assistant recipes", () => {
 
 		expect(invocation).toMatchObject({
 			recipeId: "developer-standup",
-			enabledTools: ["use_recipe_connector", "run_code_review"],
+			enabledTools: ["use_recipe_connector", "run_code_review", "get_recipe"],
 			allowedConnectorProviders: ["linear"],
 			allowedConnectorOperations: {
 				linear: ["search_issues"],
@@ -998,7 +983,8 @@ describe("assistant recipes", () => {
 		expect(setup?.conversationStarter).toContain("Connector status:");
 		expect(setup?.conversationStarter).toContain("- GitHub: connected");
 		expect(setup?.conversationStarter).toContain("- Linear: missing");
-		expect(setup?.conversationStarter).toContain("Saved recipe configuration:");
+		expect(setup?.conversationStarter).not.toContain("I am starting this setup");
+		expect(setup?.conversationStarter).not.toContain("Saved recipe configuration:");
 		expect(setup?.conversationStarter).toContain("ask before");
 	});
 
@@ -1038,10 +1024,6 @@ describe("assistant recipes", () => {
 			},
 		});
 		expect(setup?.installation.configuration).not.toHaveProperty("unexpected");
-		expect(invocation?.conversationStarter).toContain("- notionTarget: Product decisions database");
-		expect(invocation?.conversationStarter).toContain(
-			"- instructions: Capture owner, due date, and source conversation.",
-		);
 	});
 
 	it("uses queued task configuration overrides without mutating the saved recipe configuration", async () => {
@@ -1078,15 +1060,13 @@ describe("assistant recipes", () => {
 			},
 		});
 		expect(invocation?.configuration).not.toHaveProperty("unexpected");
-		expect(invocation?.conversationStarter).toContain("- location: Cambridge");
-		expect(invocation?.conversationStarter).toContain("- forecastTime: 09:05");
 		expect(installations.installations[0]?.configuration).toEqual({
 			location: "London",
 			forecastTime: "07:30",
 		});
 	});
 
-	it("keeps saved configuration in the chat starter when starting an installed recipe again", async () => {
+	it("keeps saved configuration on the installation without duplicating it in setup prompts", async () => {
 		const context = createTestServiceContext();
 
 		await installAssistantRecipe("daily-weather", {
@@ -1108,9 +1088,8 @@ describe("assistant recipes", () => {
 			location: "London",
 			forecastTime: "07:30",
 		});
-		expect(setup?.conversationStarter).toContain("- location: London");
-		expect(setup?.conversationStarter).toContain("- forecastTime: 07:30");
-		expect(setup?.messageUrl).toContain("location");
+		expect(setup?.conversationStarter).not.toContain("- location: London");
+		expect(setup?.conversationStarter).not.toContain("- forecastTime: 07:30");
 	});
 
 	it("keeps public recipe lists usable when connection state is unavailable", async () => {
@@ -1169,7 +1148,7 @@ describe("assistant recipes", () => {
 					providerId: "linear",
 				}),
 			],
-			enabledTools: ["use_recipe_connector", "run_code_review"],
+			enabledTools: ["use_recipe_connector", "run_code_review", "get_recipe"],
 		});
 	});
 
@@ -1660,8 +1639,8 @@ describe("assistant recipes", () => {
 				}),
 			],
 		});
-		expect(reopened?.conversationStarter).toContain("- location: London");
-		expect(reopened?.conversationStarter).toContain("- forecastTime: 09:05");
+		expect(reopened?.conversationStarter).not.toContain("- location: London");
+		expect(reopened?.conversationStarter).not.toContain("- forecastTime: 09:05");
 	});
 
 	it("deletes installed recipes by user-owned installation id", async () => {
