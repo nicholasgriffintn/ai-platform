@@ -191,6 +191,31 @@ function getBlockingConnections(connections: AssistantRecipeConnection[]) {
 	);
 }
 
+function getUnavailableConnections(connections: AssistantRecipeConnection[]) {
+	return connections.filter(
+		(connection) => connection.requiresConnection && connection.status === "unconfigured",
+	);
+}
+
+function assertNoUnavailableConnections(
+	recipe: AssistantRecipe,
+	connections: AssistantRecipeConnection[],
+	action: string,
+) {
+	const unavailableConnections = getUnavailableConnections(connections);
+	if (unavailableConnections.length === 0) {
+		return;
+	}
+
+	throw new AssistantError(
+		`${recipe.title} cannot be ${action} because these connectors are unavailable: ${unavailableConnections
+			.map((connection) => connection.name)
+			.join(", ")}`,
+		ErrorType.PARAMS_ERROR,
+		400,
+	);
+}
+
 function validateRecipeInstallationTriggers(
 	recipe: AssistantRecipe,
 	triggers: readonly RecipeInstallationTrigger[],
@@ -289,7 +314,9 @@ function buildRecipeChecklist(recipe: AssistantRecipe, connections: AssistantRec
 		"Confirm the goal and target",
 		blockingConnections.length > 0
 			? `Connect or verify ${blockingConnections.join(", ")}`
-			: "Review the connected integrations",
+			: connections.length > 0
+				? "Review the connected integrations"
+				: "Review the recipe setup",
 		recipe.enabledTools.length > 0
 			? `Enable ${recipe.enabledTools.join(", ")} for this conversation`
 			: "Use normal chat without extra tools",
@@ -384,21 +411,19 @@ function createConversationStarter(
 					: channel === "tool"
 						? "from a recipe tool trigger"
 						: "in web chat";
-	const connectionLines = connections.map(
-		(connection) =>
-			`- ${connection.name}: ${connection.status.replace("_", " ")}${
-				connection.requiresConnection ? "" : " (built in)"
-			}`,
-	);
+	const connectionSection =
+		connections.length > 0
+			? `\nConnector status:\n${connections
+					.map((connection) => `- ${connection.name}: ${connection.status.replace("_", " ")}`)
+					.join("\n")}\n`
+			: "";
 	const toolLine =
 		recipe.enabledTools.length > 0 ? recipe.enabledTools.join(", ") : "no extra tools";
 	const inputLine = input?.trim() ? `\nTrigger input:\n${input.trim()}\n` : "";
 
 	return `${recipe.setupPrompt}
 
-I am starting this setup ${channelCopy}.${inputLine}
-Connector status:
-${connectionLines.join("\n")}
+I am starting this setup ${channelCopy}.${inputLine}${connectionSection}
 
 Saved recipe configuration:
 ${formatRecipeConfiguration(configuration)}
@@ -606,6 +631,7 @@ export async function updateRecipeInstallation(params: {
 	userId: number;
 	installationId: string;
 	update: RecipeInstallationUpdateRequest;
+	requestUrl?: string;
 }): Promise<RecipeInstallation | null> {
 	params.context.ensureDatabase();
 
@@ -618,7 +644,11 @@ export async function updateRecipeInstallation(params: {
 		return null;
 	}
 
-	const recipe = getRecipeById(existing.data.recipeId);
+	const recipe = await getAssistantRecipe(existing.data.recipeId, {
+		context: params.context,
+		userId: params.userId,
+		requestUrl: params.requestUrl,
+	});
 	const triggers = params.update.triggers ?? existing.data.triggers;
 	const configuration = normaliseRecipeConfigurationForRecipe(
 		recipe,
@@ -636,6 +666,13 @@ export async function updateRecipeInstallation(params: {
 		}),
 	};
 	if (recipe) {
+		if (params.update.configuration !== undefined || params.update.triggers !== undefined) {
+			assertNoUnavailableConnections(
+				recipe,
+				buildRecipeConnections(recipe),
+				params.update.triggers !== undefined ? "scheduled" : "configured",
+			);
+		}
 		validateRecipeInstallationTriggers(recipe, data.triggers);
 		validateScheduledRecipeConfiguration({
 			recipe,
@@ -704,6 +741,7 @@ export async function installAssistantRecipe(id: string, options: RecipeInstallO
 	}
 
 	const connections = buildRecipeConnections(recipe);
+	assertNoUnavailableConnections(recipe, connections, "set up");
 	const readyToRun = getBlockingConnections(connections).length === 0;
 	const installation = await upsertRecipeInstallation({
 		context: options.context,

@@ -75,6 +75,7 @@ addRoute(app, "put", "/installations/:installationId", {
 			userId: user.id,
 			installationId: params.installationId,
 			update: body,
+			requestUrl: raw.req.url,
 		});
 
 		if (!installation) {

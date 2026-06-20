@@ -25,24 +25,6 @@ export function getRecipeIntegrationStatusLabel(status: string | undefined) {
 	return "Unknown";
 }
 
-export function getMissingRecipeIntegrations(recipe: AssistantRecipe) {
-	return recipe.integrations.filter(
-		(integration) =>
-			integration.requiresConnection &&
-			(integration.connectionStatus === "missing" ||
-				integration.connectionStatus === "unknown" ||
-				integration.connectionStatus === "unconfigured"),
-	);
-}
-
-export function isRecipeReady(recipe: AssistantRecipe) {
-	return recipe.integrations.every(
-		(integration) =>
-			integration.connectionStatus === "connected" ||
-			integration.connectionStatus === "not_required",
-	);
-}
-
 export function formatRecipeConfigurationValue(
 	field: RecipeConfigurationField,
 	configuration: RecipeConfiguration,

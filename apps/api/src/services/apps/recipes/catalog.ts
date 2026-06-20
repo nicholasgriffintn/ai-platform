@@ -1742,15 +1742,7 @@ const catalogRecipes: CatalogRecipe[] = [
 		featured: false,
 		estimatedSetupMinutes: 1,
 		enabledTools: [],
-		integrations: [
-			{
-				id: "chat-vision",
-				providerId: "chat",
-				name: "Chat image input",
-				description: "Uses images you send directly in Polychat.",
-				requiresConnection: false,
-			},
-		],
+		integrations: [],
 		triggers: [
 			{
 				type: "message",
@@ -1991,15 +1983,7 @@ const catalogRecipes: CatalogRecipe[] = [
 		featured: false,
 		estimatedSetupMinutes: 2,
 		enabledTools: [WEB_SEARCH_TOOL],
-		integrations: [
-			{
-				id: "web-search",
-				providerId: "chat",
-				name: "Web search",
-				description: "Uses the built-in web search tool.",
-				requiresConnection: false,
-			},
-		],
+		integrations: [],
 		triggers: [
 			{
 				type: "schedule",
@@ -2045,15 +2029,7 @@ const catalogRecipes: CatalogRecipe[] = [
 		featured: false,
 		estimatedSetupMinutes: 1,
 		enabledTools: [WEB_SEARCH_TOOL],
-		integrations: [
-			{
-				id: "web-search",
-				providerId: "chat",
-				name: "Web search",
-				description: "Uses the built-in web search tool.",
-				requiresConnection: false,
-			},
-		],
+		integrations: [],
 		triggers: [
 			{
 				type: "schedule",
@@ -2099,15 +2075,7 @@ const catalogRecipes: CatalogRecipe[] = [
 		featured: false,
 		estimatedSetupMinutes: 1,
 		enabledTools: [QR_TOOL],
-		integrations: [
-			{
-				id: "chat",
-				providerId: "chat",
-				name: "Chat",
-				description: "Uses the supplied message content and returns a generated QR image.",
-				requiresConnection: false,
-			},
-		],
+		integrations: [],
 		triggers: [
 			{
 				type: "message",
@@ -2149,15 +2117,7 @@ const catalogRecipes: CatalogRecipe[] = [
 		featured: false,
 		estimatedSetupMinutes: 1,
 		enabledTools: [IMAGE_TOOL],
-		integrations: [
-			{
-				id: "image-generation",
-				providerId: "chat",
-				name: "Image generation",
-				description: "Uses the existing Polychat image generation tool.",
-				requiresConnection: false,
-			},
-		],
+		integrations: [],
 		triggers: [
 			{
 				type: "message",
@@ -2198,15 +2158,7 @@ const catalogRecipes: CatalogRecipe[] = [
 		featured: false,
 		estimatedSetupMinutes: 1,
 		enabledTools: [],
-		integrations: [
-			{
-				id: "chat",
-				providerId: "chat",
-				name: "Chat",
-				description: "Uses Polychat conversation context and saved recipe configuration.",
-				requiresConnection: false,
-			},
-		],
+		integrations: [],
 		triggers: [
 			{
 				type: "schedule",
@@ -2252,15 +2204,7 @@ const catalogRecipes: CatalogRecipe[] = [
 		featured: false,
 		estimatedSetupMinutes: 1,
 		enabledTools: [],
-		integrations: [
-			{
-				id: "chat",
-				providerId: "chat",
-				name: "Chat",
-				description: "Uses saved reminder preferences and scheduled prompts.",
-				requiresConnection: false,
-			},
-		],
+		integrations: [],
 		triggers: [
 			{
 				type: "schedule",
@@ -2300,15 +2244,7 @@ const catalogRecipes: CatalogRecipe[] = [
 		featured: false,
 		estimatedSetupMinutes: 1,
 		enabledTools: [],
-		integrations: [
-			{
-				id: "chat",
-				providerId: "chat",
-				name: "Chat",
-				description: "Uses saved prompt preferences without a third-party connection.",
-				requiresConnection: false,
-			},
-		],
+		integrations: [],
 		triggers: [
 			{
 				type: "schedule",
@@ -2343,15 +2279,7 @@ const catalogRecipes: CatalogRecipe[] = [
 		featured: false,
 		estimatedSetupMinutes: 1,
 		enabledTools: [],
-		integrations: [
-			{
-				id: "chat",
-				providerId: "chat",
-				name: "Chat",
-				description: "Uses saved reminder details without external account access.",
-				requiresConnection: false,
-			},
-		],
+		integrations: [],
 		triggers: [
 			{
 				type: "schedule",
@@ -2398,15 +2326,7 @@ const catalogRecipes: CatalogRecipe[] = [
 		featured: false,
 		estimatedSetupMinutes: 1,
 		enabledTools: [],
-		integrations: [
-			{
-				id: "chat",
-				providerId: "chat",
-				name: "Chat",
-				description: "Uses saved reflection preferences without third-party access.",
-				requiresConnection: false,
-			},
-		],
+		integrations: [],
 		triggers: [
 			{
 				type: "schedule",
@@ -2452,15 +2372,7 @@ const catalogRecipes: CatalogRecipe[] = [
 		featured: false,
 		estimatedSetupMinutes: 2,
 		enabledTools: [WEATHER_TOOL],
-		integrations: [
-			{
-				id: "weather",
-				providerId: "chat",
-				name: "Weather",
-				description: "Uses the built-in weather lookup tool.",
-				requiresConnection: false,
-			},
-		],
+		integrations: [],
 		triggers: [
 			{
 				type: "message",
@@ -2507,15 +2419,7 @@ const catalogRecipes: CatalogRecipe[] = [
 		featured: false,
 		estimatedSetupMinutes: 2,
 		enabledTools: [WEATHER_TOOL],
-		integrations: [
-			{
-				id: "weather",
-				providerId: "chat",
-				name: "Weather",
-				description: "Uses the built-in weather lookup tool.",
-				requiresConnection: false,
-			},
-		],
+		integrations: [],
 		triggers: [
 			{
 				type: "message",
@@ -2562,15 +2466,7 @@ const catalogRecipes: CatalogRecipe[] = [
 		featured: false,
 		estimatedSetupMinutes: 2,
 		enabledTools: [WEATHER_TOOL],
-		integrations: [
-			{
-				id: "weather",
-				providerId: "chat",
-				name: "Weather",
-				description: "Uses the built-in weather lookup tool.",
-				requiresConnection: false,
-			},
-		],
+		integrations: [],
 		triggers: [
 			{
 				type: "message",

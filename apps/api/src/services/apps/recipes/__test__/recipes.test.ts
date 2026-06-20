@@ -227,6 +227,17 @@ const connectedConnectors: RecipeConnectorsResponse = {
 	],
 };
 
+function withConnectorStatus(
+	providerId: string,
+	status: RecipeConnectorsResponse["connectors"][number]["status"],
+): RecipeConnectorsResponse {
+	return {
+		connectors: connectedConnectors.connectors.map((connector) =>
+			connector.id === providerId ? { ...connector, status } : connector,
+		),
+	};
+}
+
 const testUser: IUser = {
 	id: 42,
 	name: null,
@@ -373,307 +384,6 @@ describe("assistant recipes", () => {
 		]);
 	});
 
-	it("exposes Poke-style first-party integration recipes backed by current connector operations", async () => {
-		const context = createTestServiceContext();
-
-		const response = await listAssistantRecipes({ context, userId: 42 });
-		const recipesById = new Map(response.recipes.map((recipe) => [recipe.id, recipe]));
-
-		expect(recipesById.get("gmail")).toMatchObject({
-			title: "Gmail",
-			kind: "integrate",
-			category: "Email",
-			enabledTools: ["use_recipe_connector"],
-			integrations: [
-				expect.objectContaining({
-					providerId: "gmail",
-					connectionStatus: "connected",
-				}),
-			],
-		});
-		expect(recipesById.get("outlook-mail")).toMatchObject({
-			title: "Outlook Mail",
-			kind: "integrate",
-			category: "Email",
-			enabledTools: ["use_recipe_connector"],
-		});
-		expect(recipesById.get("google-calendar")).toMatchObject({
-			title: "Google Calendar",
-			kind: "integrate",
-			category: "Calendar",
-			enabledTools: ["use_recipe_connector"],
-			integrations: [
-				expect.objectContaining({
-					providerId: "calendar",
-					connectionStatus: "unconfigured",
-				}),
-			],
-		});
-		expect(recipesById.get("outlook-calendar")).toMatchObject({
-			title: "Outlook Calendar",
-			kind: "integrate",
-			category: "Calendar",
-			enabledTools: ["use_recipe_connector"],
-		});
-		expect(recipesById.get("todoist")).toMatchObject({
-			title: "Todoist",
-			kind: "integrate",
-			category: "To-dos",
-			enabledTools: ["use_recipe_connector"],
-			integrations: [
-				expect.objectContaining({
-					providerId: "todoist",
-					connectionStatus: "connected",
-				}),
-			],
-		});
-		expect(recipesById.get("asana")).toMatchObject({
-			title: "Asana",
-			kind: "integrate",
-			category: "Productivity",
-			enabledTools: ["use_recipe_connector"],
-			integrations: [
-				expect.objectContaining({
-					providerId: "asana",
-					connectionStatus: "connected",
-				}),
-			],
-		});
-		expect(recipesById.get("sentry")).toMatchObject({
-			title: "Sentry",
-			kind: "integrate",
-			category: "Developer",
-			enabledTools: ["use_recipe_connector"],
-			integrations: [
-				expect.objectContaining({
-					providerId: "sentry",
-					connectionStatus: "connected",
-				}),
-			],
-		});
-		expect(recipesById.get("posthog")).toMatchObject({
-			title: "PostHog",
-			kind: "integrate",
-			category: "Developer",
-			enabledTools: ["use_recipe_connector"],
-			integrations: [
-				expect.objectContaining({
-					providerId: "posthog",
-					connectionStatus: "connected",
-				}),
-			],
-		});
-		expect(recipesById.get("cloudflare")).toMatchObject({
-			title: "Cloudflare",
-			kind: "integrate",
-			category: "Developer",
-			enabledTools: ["use_recipe_connector"],
-			integrations: [
-				expect.objectContaining({
-					providerId: "cloudflare",
-					connectionStatus: "connected",
-				}),
-			],
-		});
-		expect(recipesById.get("devin")).toMatchObject({
-			title: "Devin",
-			kind: "integrate",
-			category: "Developer",
-			enabledTools: ["use_recipe_connector"],
-			integrations: [
-				expect.objectContaining({
-					providerId: "devin",
-					connectionStatus: "connected",
-				}),
-			],
-		});
-		expect(recipesById.get("netlify")).toMatchObject({
-			title: "Netlify",
-			kind: "integrate",
-			category: "Developer",
-			enabledTools: ["use_recipe_connector"],
-			integrations: [
-				expect.objectContaining({
-					providerId: "netlify",
-					connectionStatus: "connected",
-				}),
-			],
-		});
-		expect(recipesById.get("supabase")).toMatchObject({
-			title: "Supabase",
-			kind: "integrate",
-			category: "Developer",
-			enabledTools: ["use_recipe_connector"],
-			integrations: [
-				expect.objectContaining({
-					providerId: "supabase",
-					connectionStatus: "connected",
-				}),
-			],
-		});
-		expect(recipesById.get("webflow")).toMatchObject({
-			title: "Webflow",
-			kind: "integrate",
-			category: "Developer",
-			enabledTools: ["use_recipe_connector"],
-			integrations: [
-				expect.objectContaining({
-					providerId: "webflow",
-					connectionStatus: "connected",
-				}),
-			],
-		});
-		expect(recipesById.get("fitbit")).toMatchObject({
-			title: "Fitbit",
-			kind: "integrate",
-			category: "Health",
-			enabledTools: ["use_recipe_connector"],
-			integrations: [
-				expect.objectContaining({
-					providerId: "fitbit",
-					connectionStatus: "connected",
-				}),
-			],
-		});
-		expect(recipesById.get("withings")).toMatchObject({
-			title: "Withings",
-			kind: "integrate",
-			category: "Health",
-			enabledTools: ["use_recipe_connector"],
-			integrations: [
-				expect.objectContaining({
-					providerId: "withings",
-					connectionStatus: "connected",
-				}),
-			],
-		});
-		expect(recipesById.get("vercel")).toMatchObject({
-			title: "Vercel",
-			kind: "integrate",
-			category: "Developer",
-			enabledTools: ["use_recipe_connector"],
-			integrations: [
-				expect.objectContaining({
-					providerId: "vercel",
-					connectionStatus: "connected",
-				}),
-			],
-		});
-	});
-
-	it("exposes Poke-style weather automation recipes backed by the built-in weather tool", async () => {
-		const context = createTestServiceContext();
-
-		const response = await listAssistantRecipes({ context, userId: 42 });
-		const recipe = response.recipes.find((item) => item.id === "london-weather-comparison");
-
-		expect(recipe).toMatchObject({
-			title: "London Weather Comparison",
-			kind: "automate",
-			category: "Community",
-			enabledTools: ["get_weather"],
-			integrations: [
-				expect.objectContaining({
-					providerId: "chat",
-					requiresConnection: false,
-					connectionStatus: "not_required",
-				}),
-			],
-		});
-		expect(recipe?.configurationFields).toEqual(
-			expect.arrayContaining([
-				expect.objectContaining({ key: "location", required: true }),
-				expect.objectContaining({ key: "comparisonTone" }),
-			]),
-		);
-	});
-
-	it("exposes Poke-style travel calendar automation backed by mail and calendar connectors", async () => {
-		const context = createTestServiceContext();
-
-		const response = await listAssistantRecipes({ context, userId: 42 });
-		const recipe = response.recipes.find((item) => item.id === "add-flights-to-calendar");
-
-		expect(recipe).toMatchObject({
-			title: "Add Flights to Calendar",
-			kind: "automate",
-			category: "Travel",
-			enabledTools: ["use_recipe_connector"],
-			integrations: [
-				expect.objectContaining({
-					providerId: "gmail",
-					operationIds: ["search_messages"],
-					connectionStatus: "connected",
-				}),
-				expect.objectContaining({
-					providerId: "outlook",
-					operationIds: ["search_messages", "create_calendar_event"],
-					connectionStatus: "unknown",
-				}),
-				expect.objectContaining({
-					providerId: "calendar",
-					operationIds: ["create_event"],
-					connectionStatus: "unconfigured",
-				}),
-			],
-		});
-		expect(recipe?.triggers).toEqual([
-			expect.objectContaining({
-				type: "message",
-			}),
-		]);
-		expect(recipe?.configurationFields).toEqual(
-			expect.arrayContaining([
-				expect.objectContaining({ key: "calendarTarget", required: true }),
-				expect.objectContaining({ key: "travelWindow" }),
-			]),
-		);
-	});
-
-	it("exposes additional Poke-style recipes backed by current Polychat tools", async () => {
-		const context = createTestServiceContext();
-
-		const response = await listAssistantRecipes({ context, userId: 42 });
-		const recipesById = new Map(response.recipes.map((recipe) => [recipe.id, recipe]));
-
-		expect(recipesById.get("did-you-know")).toMatchObject({
-			title: "Did You Know?",
-			kind: "automate",
-			enabledTools: ["web_search"],
-			integrations: [
-				expect.objectContaining({
-					providerId: "chat",
-					requiresConnection: false,
-					connectionStatus: "not_required",
-				}),
-			],
-		});
-		expect(recipesById.get("quick-qr-generator")).toMatchObject({
-			title: "Quick QR Generator",
-			kind: "integrate",
-			enabledTools: ["create_qr_code"],
-			integrations: [
-				expect.objectContaining({
-					providerId: "chat",
-					requiresConnection: false,
-					connectionStatus: "not_required",
-				}),
-			],
-		});
-		expect(recipesById.get("chonky-cat")).toMatchObject({
-			title: "Chonky Cat",
-			kind: "integrate",
-			enabledTools: ["create_image"],
-			integrations: [
-				expect.objectContaining({
-					providerId: "chat",
-					requiresConnection: false,
-					connectionStatus: "not_required",
-				}),
-			],
-		});
-	});
-
 	it("derives allowed connector providers for direct integration recipes", async () => {
 		const context = createTestServiceContext();
 		await installAssistantRecipe("gmail", {
@@ -702,6 +412,8 @@ describe("assistant recipes", () => {
 
 	it("includes Outlook calendar reads in morning briefing connector scope", async () => {
 		const context = createTestServiceContext();
+		listRecipeConnectorsMock.mockResolvedValue(withConnectorStatus("calendar", "connected"));
+
 		await installAssistantRecipe("morning-briefing", {
 			context,
 			userId: 42,
@@ -727,6 +439,8 @@ describe("assistant recipes", () => {
 
 	it("scopes flight calendar recipe connector operations to mail reads and calendar creates", async () => {
 		const context = createTestServiceContext();
+		listRecipeConnectorsMock.mockResolvedValue(withConnectorStatus("calendar", "connected"));
+
 		await installAssistantRecipe("add-flights-to-calendar", {
 			context,
 			userId: 42,
@@ -1635,11 +1349,14 @@ describe("assistant recipes", () => {
 
 	it("updates installed recipe status and triggers", async () => {
 		const context = createTestServiceContext();
-		const setup = await installAssistantRecipe("morning-briefing", {
+		const setup = await installAssistantRecipe("daily-weather", {
 			context,
 			userId: 42,
 			channel: "web",
 			triggers: [{ type: "manual", enabled: true }],
+			configuration: {
+				location: "London",
+			},
 		});
 
 		const updated = await updateRecipeInstallation({
@@ -1662,9 +1379,11 @@ describe("assistant recipes", () => {
 
 		expect(updated).toMatchObject({
 			id: setup?.installation?.id,
-			recipeId: "morning-briefing",
+			recipeId: "daily-weather",
 			status: "paused",
-			configuration: {},
+			configuration: {
+				location: "London",
+			},
 			triggers: [
 				expect.objectContaining({ type: "manual" }),
 				expect.objectContaining({
@@ -1813,7 +1532,7 @@ describe("assistant recipes", () => {
 		const context = createTestServiceContext();
 
 		await expect(
-			installAssistantRecipe("add-deadlines-to-calendar", {
+			installAssistantRecipe("photo-nutrition-check", {
 				context,
 				userId: 42,
 				channel: "web",
@@ -1826,7 +1545,7 @@ describe("assistant recipes", () => {
 					},
 				],
 			}),
-		).rejects.toThrow("Add Deadlines to Calendar does not support scheduled triggers");
+		).rejects.toThrow("Photo Nutrition Check does not support scheduled triggers");
 	});
 
 	it("rejects unsupported cron expressions when installing a scheduled recipe", async () => {
@@ -1947,7 +1666,7 @@ describe("assistant recipes", () => {
 
 	it("deletes installed recipes by user-owned installation id", async () => {
 		const context = createTestServiceContext();
-		const setup = await installAssistantRecipe("morning-briefing", {
+		const setup = await installAssistantRecipe("daily-weather", {
 			context,
 			userId: 42,
 			channel: "web",

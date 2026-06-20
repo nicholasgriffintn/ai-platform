@@ -1,11 +1,11 @@
 import {
 	CalendarClock,
 	Clock,
-	MessageCircle,
 	PauseCircle,
 	PlayCircle,
 	Plug,
 	Settings2,
+	Sparkles,
 	Trash2,
 	WandSparkles,
 } from "lucide-react";
@@ -21,11 +21,9 @@ import {
 	CardTitle,
 } from "~/components/ui";
 import {
-	getMissingRecipeIntegrations,
 	getRecipeIntegrationStatusLabel,
 	getRecipeScheduleTrigger,
 	hasSavedRecipeConfiguration,
-	isRecipeReady,
 	recipeKindLabels,
 	recipeSupportsSchedule,
 } from "~/lib/recipes";
@@ -62,8 +60,17 @@ export function RecipeCard({
 	isScheduling,
 	isUpdatingInstallation,
 }: RecipeCardProps) {
-	const missingIntegrations = getMissingRecipeIntegrations(recipe);
-	const isReady = isRecipeReady(recipe);
+	const connectableIntegrations = recipe.integrations.filter(
+		(integration) =>
+			integration.connectionStatus === "missing" || integration.connectionStatus === "unknown",
+	);
+	const hasUnavailableIntegration = recipe.integrations.some(
+		(integration) => integration.connectionStatus === "unconfigured",
+	);
+	const statusIntegrations = recipe.integrations.filter(
+		(integration) =>
+			integration.connectionStatus !== "missing" && integration.connectionStatus !== "unknown",
+	);
 	const canSchedule = recipeSupportsSchedule(recipe);
 	const scheduleTrigger = getRecipeScheduleTrigger(installation);
 	const isPaused = installation?.status === "paused";
@@ -84,9 +91,14 @@ export function RecipeCard({
 						<Badge variant="outline">{recipeKindLabels[recipe.kind]}</Badge>
 					</div>
 					{recipe.featured && (
-						<Badge className="border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-300">
-							Featured
-						</Badge>
+						<span
+							role="img"
+							aria-label="Featured recipe"
+							title="Featured recipe"
+							className="rounded-full bg-rose-100 p-1.5 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400"
+						>
+							<Sparkles className="h-4 w-4" />
+						</span>
 					)}
 				</div>
 				<div>
@@ -115,7 +127,7 @@ export function RecipeCard({
 							Configured
 						</span>
 					)}
-					{recipe.integrations.map((integration) => (
+					{statusIntegrations.map((integration) => (
 						<span
 							key={integration.id}
 							className={cn(
@@ -135,21 +147,17 @@ export function RecipeCard({
 					))}
 				</div>
 
-				<div className="grid gap-2 text-sm text-zinc-600 dark:text-zinc-300 sm:grid-cols-2">
+				<div className="flex text-sm text-zinc-600 dark:text-zinc-300">
 					<div className="flex items-center gap-2">
 						<Clock className="h-4 w-4 text-zinc-400" />
 						<span>{recipe.estimatedSetupMinutes} min setup</span>
 					</div>
-					<div className="flex items-center gap-2">
-						<MessageCircle className="h-4 w-4 text-zinc-400" />
-						<span>{isReady ? "Ready for guided chat" : "Setup checks included"}</span>
-					</div>
 				</div>
 
 				<div className="mt-auto space-y-3 border-t border-zinc-200 pt-4 dark:border-zinc-800">
-					{missingIntegrations.length > 0 && (
+					{connectableIntegrations.length > 0 && (
 						<div className="flex flex-wrap gap-2">
-							{missingIntegrations.map((integration) => (
+							{connectableIntegrations.map((integration) => (
 								<Button
 									key={integration.id}
 									variant="outline"
@@ -157,7 +165,6 @@ export function RecipeCard({
 									icon={<Plug className="h-3.5 w-3.5" />}
 									onClick={() => onConfigure(integration.providerId, integration.setupUrl)}
 									isLoading={isConfiguring}
-									disabled={integration.connectionStatus === "unconfigured"}
 								>
 									Connect {integration.name}
 								</Button>
@@ -169,6 +176,7 @@ export function RecipeCard({
 						fullWidth
 						onClick={() => onStart(recipe, installation)}
 						isLoading={isStarting}
+						disabled={hasUnavailableIntegration}
 					>
 						{installation ? "Run in chat" : "Set up in chat"}
 					</Button>
@@ -178,6 +186,7 @@ export function RecipeCard({
 						icon={<Settings2 className="h-4 w-4" />}
 						onClick={() => onEditConfiguration(recipe, installation)}
 						isLoading={isEditingConfiguration}
+						disabled={hasUnavailableIntegration}
 					>
 						{installation ? "Edit configuration" : "Configure"}
 					</Button>
@@ -188,6 +197,7 @@ export function RecipeCard({
 							icon={<CalendarClock className="h-4 w-4" />}
 							onClick={() => onSchedule(recipe, installation)}
 							isLoading={isScheduling}
+							disabled={hasUnavailableIntegration}
 						>
 							{scheduleTrigger ? "Edit schedule" : "Schedule"}
 						</Button>
