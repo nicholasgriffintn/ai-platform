@@ -5,6 +5,8 @@ import { omitNullishValues } from "~/utils/objects";
 import { resolveReasoningModel } from "../lib/providers/models/reasoning";
 import { formatToolCalls } from "../lib/chat/tools";
 
+const AUTO_ENABLED_SIGNED_IN_PRO_TOOLS = new Set(["trigger_recipe"]);
+
 /**
  * Restricts max_tokens to the model's configured maximum
  * @param requestedMaxTokens - The user-requested max tokens
@@ -257,19 +259,24 @@ export function getToolsForProvider(
 	}
 
 	try {
-		const enabledTools = params.enabled_tools || [];
+		const enabledTools = new Set(params.enabled_tools || []);
+		if (params.user?.id && params.user.plan_id === "pro") {
+			for (const toolName of AUTO_ENABLED_SIGNED_IN_PRO_TOOLS) {
+				enabledTools.add(toolName);
+			}
+		}
 		let tools: any[] = [];
 		const availableTools = listFunctionTools();
 
 		if (params.tools) {
 			const providedTools = params.tools;
 			const filteredFunctions = availableTools
-				.filter((func) => enabledTools.includes(func.name))
+				.filter((func) => enabledTools.has(func.name))
 				.filter((func) => modelConfig?.supportsSearchGrounding && func.name === "web_search");
 			const availableToolDeclarations = formatToolCalls(providerName, filteredFunctions);
 			tools = [...availableToolDeclarations, ...providedTools];
 		} else {
-			const filteredFunctions = availableTools.filter((func) => enabledTools.includes(func.name));
+			const filteredFunctions = availableTools.filter((func) => enabledTools.has(func.name));
 			tools = formatToolCalls(providerName, filteredFunctions);
 		}
 

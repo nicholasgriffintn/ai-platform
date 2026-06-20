@@ -62,11 +62,12 @@ export async function storeProviderApiKey(
 	providerId: string,
 	apiKey: string,
 	secretKey?: string,
+	configuration?: Record<string, unknown>,
 	userId?: number,
 ): Promise<{ success: boolean; message: string }> {
 	const repo = ensureRepo(context);
 	const id = userId ?? context.requireUser().id;
-	await repo.storeProviderApiKey(id, providerId, apiKey, secretKey);
+	await repo.storeProviderApiKey(id, providerId, apiKey, secretKey, configuration);
 
 	const cache = getUserCache(context.env);
 	if (cache) {

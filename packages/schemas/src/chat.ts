@@ -365,6 +365,16 @@ export const createChatCompletionsJsonSchema = z.object({
 			council: councilChatOptionsSchema.optional().meta({
 				description: "Council debate options for app-driven multi-perspective chat.",
 			}),
+			sms: z
+				.object({
+					enabled: z.boolean(),
+					from: z.string().optional(),
+					to: z.string().optional(),
+				})
+				.optional()
+				.meta({
+					description: "SMS channel options for compact text-message conversations.",
+				}),
 		})
 		.passthrough()
 		.optional()

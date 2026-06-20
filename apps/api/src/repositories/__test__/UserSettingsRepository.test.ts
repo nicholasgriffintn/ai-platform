@@ -114,6 +114,27 @@ describe("UserSettingsRepository", () => {
 		await expect(repo.getProviderApiKey(42, "cortecs")).resolves.toBe(
 			OVER_RSA_OAEP_LIMIT_PROVIDER_KEY,
 		);
+
+		vi.mocked((repo as any).runQuery).mockReset();
+		const rowScopedRunQuerySpy = vi
+			.spyOn(repo as any, "runQuery")
+			.mockResolvedValueOnce({ private_key: encryptedPrivateKey })
+			.mockResolvedValueOnce({ api_key: storedApiKey });
+
+		await expect(
+			repo.getProviderApiKeyForSettings({
+				userId: 42,
+				providerId: "cortecs",
+				providerSettingsId: "provider-settings-row-id",
+			}),
+		).resolves.toBe(OVER_RSA_OAEP_LIMIT_PROVIDER_KEY);
+		expect(rowScopedRunQuerySpy.mock.calls[1]?.[0]).toContain("id = ?");
+		expect(rowScopedRunQuerySpy.mock.calls[1]?.[0]).toContain("provider_id = ?");
+		expect(rowScopedRunQuerySpy.mock.calls[1]?.[1]).toEqual([
+			42,
+			"provider-settings-row-id",
+			"cortecs",
+		]);
 	});
 
 	it("clears provider credentials and disables the provider by provider_id", async () => {

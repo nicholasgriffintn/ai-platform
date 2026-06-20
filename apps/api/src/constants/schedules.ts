@@ -4,6 +4,7 @@ import { IEnv } from "../types";
 export const SCHEDULES = {
 	MEMORIES_SYNTHESIS: "0 2 * * *", // Daily at 2 AM
 	TRAINING_QUALITY_SCORING: "0 3 * * *", // Daily at 3 AM
+	RECIPE_EXECUTION: "*/15 * * * *", // Poll recipe schedules every 15 minutes
 } as const;
 
 type FeatureFlaggedTaskType = "memory_synthesis" | "training_quality_scoring";
@@ -19,5 +20,6 @@ export const ALWAYS_ENABLED_SCHEDULES = [
 	"async_message_polling",
 	"podcast_transcription_polling",
 	"usage_update",
+	"recipe_execution",
 	SANDBOX_RUN_DISPATCH_TASK_TYPE,
 ] as const satisfies readonly TaskType[];

@@ -361,6 +361,7 @@ export function UserSettingsForm({
 					/>
 				</div>
 			</div>
+
 			<div>
 				<h3 className="text-lg font-bold text-zinc-800 dark:text-zinc-100 mb-6">Guardrails</h3>
 			</div>

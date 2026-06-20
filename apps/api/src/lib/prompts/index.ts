@@ -4,12 +4,13 @@ import { trimTemplateWhitespace } from "~/utils/strings";
 import { returnCodingPrompt } from "./coding";
 import { returnCouncilPrompt } from "./council";
 import { getTextToImageSystemPrompt } from "./image";
+import { returnSmsPrompt } from "./sms";
 import { returnSandboxPrompt } from "./sandbox";
 import { returnStandardPrompt } from "./standard";
 import { emptyPrompt } from "./utils";
 import { buildAssistantMetadataSection, type PromptModelMetadata } from "./sections/metadata";
 
-export type PromptMode = "council" | "sandbox";
+export type PromptMode = "council" | "sandbox" | "sms";
 export type PromptRequest = IBody & { promptMode?: PromptMode };
 
 export async function getSystemPrompt(
@@ -32,6 +33,10 @@ export async function getSystemPrompt(
 
 	if (promptMode === "council" || request.options?.council?.enabled) {
 		return trimTemplateWhitespace(returnCouncilPrompt(request.options?.council));
+	}
+
+	if (promptMode === "sms" || request.options?.sms?.enabled) {
+		return trimTemplateWhitespace(returnSmsPrompt(request, userSettings, modelMetadata));
 	}
 
 	if (!modelConfig) {

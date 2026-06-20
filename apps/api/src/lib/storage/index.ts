@@ -10,6 +10,7 @@ import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";
 
 const logger = getLogger({ prefix: "lib/storage" });
+const SUPPORTED_IMAGE_MIME_TYPES = ["image/png", "image/jpeg", "image/jpg", "image/webp"];
 
 export interface StorePrivateAssetRequest {
 	key: string;
@@ -40,6 +41,11 @@ export interface StoredAssetResult {
 	assetId: string;
 	key: string;
 	url: string;
+}
+
+export interface GetPrivateAssetBlobOptions {
+	allowedMimePrefixes?: string[];
+	allowedMimeTypes?: string[];
 }
 
 export class StorageService {
@@ -185,7 +191,7 @@ export class StorageService {
 
 			const blob = await response.blob();
 
-			if (!this.isSupportedImageType(blob.type)) {
+			if (!SUPPORTED_IMAGE_MIME_TYPES.includes(blob.type.toLowerCase())) {
 				throw new AssistantError(
 					`Unsupported image type: ${blob.type}. Supported types: image/png, image/jpeg, image/webp`,
 					ErrorType.PARAMS_ERROR,
@@ -208,7 +214,10 @@ export class StorageService {
 		ownerUserId?: number,
 		assetsUrl?: string,
 	): Promise<string | null> {
-		const asset = await this.getPrivateAssetImage(url, ownerUserId, assetsUrl);
+		const asset = await this.getPrivateAsset(url, ownerUserId, assetsUrl, {
+			allowedMimeTypes: SUPPORTED_IMAGE_MIME_TYPES,
+			errorLabel: "image",
+		});
 		if (!asset) {
 			return null;
 		}
@@ -226,14 +235,28 @@ export class StorageService {
 		ownerUserId?: number,
 		assetsUrl?: string,
 	): Promise<Blob | null> {
-		const asset = await this.getPrivateAssetImage(url, ownerUserId, assetsUrl);
+		return this.getPrivateAssetBlob(url, ownerUserId, assetsUrl, {
+			allowedMimeTypes: SUPPORTED_IMAGE_MIME_TYPES,
+		});
+	}
+
+	async getPrivateAssetBlob(
+		url: string,
+		ownerUserId?: number,
+		assetsUrl?: string,
+		options?: GetPrivateAssetBlobOptions,
+	): Promise<Blob | null> {
+		const asset = await this.getPrivateAsset(url, ownerUserId, assetsUrl, {
+			...options,
+			errorLabel: "asset",
+		});
 		if (!asset) {
 			return null;
 		}
 
 		const object = await this.getObjectBody(asset.key);
 		if (!object) {
-			throw new AssistantError("Image asset object not found", ErrorType.NOT_FOUND, 404);
+			throw new AssistantError("Private asset object not found", ErrorType.NOT_FOUND, 404);
 		}
 
 		return new Blob([await object.arrayBuffer()], { type: asset.mime_type });
@@ -248,15 +271,11 @@ export class StorageService {
 		}
 	}
 
-	private isSupportedImageType(contentType: string): boolean {
-		const supportedTypes = ["image/png", "image/jpeg", "image/jpg", "image/webp"];
-		return supportedTypes.includes(contentType.toLowerCase());
-	}
-
-	private async getPrivateAssetImage(
+	private async getPrivateAsset(
 		url: string,
 		ownerUserId?: number,
 		assetsUrl?: string,
+		options?: GetPrivateAssetBlobOptions & { errorLabel?: string },
 	): Promise<StoredAsset | null> {
 		const assetEnv = this.context?.env ?? this.env;
 		const assetId = getAssetIdFromUrl(url, assetsUrl || assetEnv?.API_BASE_URL);
@@ -278,16 +297,25 @@ export class StorageService {
 		const repositories = this.context?.repositories ?? new RepositoryManager(assetEnv);
 		const asset = await repositories.storedAssets.getAsset(assetId);
 		if (!asset) {
-			throw new AssistantError("Image asset not found", ErrorType.NOT_FOUND, 404);
+			throw new AssistantError("Private asset not found", ErrorType.NOT_FOUND, 404);
 		}
 
 		if (asset.owner_user_id !== ownerUserId) {
-			throw new AssistantError("Access denied for image asset", ErrorType.FORBIDDEN, 403);
+			throw new AssistantError("Access denied for private asset", ErrorType.FORBIDDEN, 403);
 		}
 
-		if (!this.isSupportedImageType(asset.mime_type)) {
+		const allowedMimeTypes = options?.allowedMimeTypes?.map((type) => type.toLowerCase());
+		const allowedMimePrefixes = options?.allowedMimePrefixes?.map((prefix) => prefix.toLowerCase());
+		const mimeType = asset.mime_type.toLowerCase();
+		const isAllowedMimeType =
+			(!allowedMimeTypes?.length || allowedMimeTypes.includes(mimeType)) &&
+			(!allowedMimePrefixes?.length ||
+				allowedMimePrefixes.some((prefix) => mimeType.startsWith(prefix)));
+
+		if (!isAllowedMimeType) {
+			const label = options?.errorLabel ?? "asset";
 			throw new AssistantError(
-				`Unsupported image type: ${asset.mime_type}. Supported types: image/png, image/jpeg, image/webp`,
+				`Unsupported ${label} type: ${asset.mime_type}`,
 				ErrorType.PARAMS_ERROR,
 			);
 		}

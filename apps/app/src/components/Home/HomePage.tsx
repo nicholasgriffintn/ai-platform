@@ -7,10 +7,12 @@ import { PageShell } from "~/components/Core/PageShell";
 import { PageTitle } from "~/components/Core/PageTitle";
 import { SearchDialog } from "~/components/Search/SearchDialog";
 import { useChatStore } from "~/state/stores/chatStore";
+import { useToolsStore } from "~/state/stores/toolsStore";
 import { HomeConversationThread } from "./HomeConversationThread";
 
 export function HomePage() {
 	const { initializeStore, showSearch, setShowSearch, setChatInput } = useChatStore();
+	const setSelectedTools = useToolsStore((state) => state.setSelectedTools);
 	const [isCanvasMode, setIsCanvasMode] = useState(false);
 	const canvas = useCanvasStudio({ enabled: isCanvasMode });
 
@@ -19,16 +21,24 @@ export function HomePage() {
 			const searchParams = new URLSearchParams(window.location.search);
 			const completionId = searchParams.get("completion_id");
 			const query = searchParams.get("query");
+			const enabledTools = searchParams
+				.get("enabled_tools")
+				?.split(",")
+				.map((tool) => tool.trim())
+				.filter(Boolean);
 
 			if (query) {
 				setChatInput(query);
+			}
+			if (enabledTools && enabledTools.length > 0) {
+				setSelectedTools(enabledTools);
 			}
 
 			await initializeStore(completionId || undefined);
 		};
 
 		init();
-	}, [initializeStore, setChatInput]);
+	}, [initializeStore, setChatInput, setSelectedTools]);
 
 	return (
 		<PageShell

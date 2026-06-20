@@ -8,6 +8,7 @@ struct ContentView: View {
     @State private var columnVisibility = NavigationSplitViewVisibility.doubleColumn
     @State private var selectedConversationID: String?
     @State private var showingSettings = false
+    @State private var showingRecipes = false
     @State private var conversationLoadTask: Task<Void, Never>?
 
     private var isLoadingSelectedConversation: Bool {
@@ -25,9 +26,15 @@ struct ContentView: View {
                 LaunchLoadingView()
             } else if authManager.isAuthenticated {
                 NavigationSplitView(columnVisibility: $columnVisibility) {
-                    ConversationListView(selectedConversationID: $selectedConversationID) {
-                        showingSettings = true
-                    }
+                    ConversationListView(
+                        selectedConversationID: $selectedConversationID,
+                        onShowSettings: {
+                            showingSettings = true
+                        },
+                        onShowRecipes: {
+                            showingRecipes = true
+                        }
+                    )
                 } detail: {
                     if conversationManager.currentConversation != nil {
                         ChatView()
@@ -39,6 +46,12 @@ struct ContentView: View {
                 }
                 .sheet(isPresented: $showingSettings) {
                     SettingsView()
+                }
+                .sheet(isPresented: $showingRecipes) {
+                    RecipesView { setup in
+                        showingRecipes = false
+                        startRecipeConversation(setup)
+                    }
                 }
                 .task(id: authManager.isAuthenticated) {
                     if authManager.isAuthenticated {
@@ -71,6 +84,25 @@ struct ContentView: View {
         }
         .onOpenURL { url in
             authManager.handleOpenURL(url)
+        }
+    }
+
+    private func startRecipeConversation(_ setup: AssistantRecipeInstallResponse) {
+        let conversation = conversationManager.startNewConversation()
+        selectedConversationID = conversation.id
+
+        Task {
+            do {
+                let settings = setup.enabledTools.isEmpty
+                ? nil
+                : ChatSettings(enabledTools: setup.enabledTools)
+                try await conversationManager.addMessage(
+                    ChatMessage(role: "user", content: setup.conversationStarter),
+                    settings: settings
+                )
+            } catch {
+                conversationManager.error = "Failed to start recipe: \(error.localizedDescription)"
+            }
         }
     }
 }

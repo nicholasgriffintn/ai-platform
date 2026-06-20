@@ -4,6 +4,7 @@ import type { IBody, IUser, IUserSettings } from "~/types";
 const mockGetModelConfigByMatchingModel = vi.fn();
 const mockReturnStandardPrompt = vi.fn();
 const mockReturnCodingPrompt = vi.fn();
+const mockReturnSmsPrompt = vi.fn();
 const mockGetTextToImageSystemPrompt = vi.fn();
 const mockEmptyPrompt = vi.fn();
 const mockTrimTemplateWhitespace = vi.fn();
@@ -18,6 +19,10 @@ vi.mock("~/lib/prompts/standard", () => ({
 
 vi.mock("~/lib/prompts/coding", () => ({
 	returnCodingPrompt: mockReturnCodingPrompt,
+}));
+
+vi.mock("~/lib/prompts/sms", () => ({
+	returnSmsPrompt: mockReturnSmsPrompt,
 }));
 
 vi.mock("~/lib/prompts/image", () => ({
@@ -183,6 +188,33 @@ describe("prompts index", () => {
 			expect(mockReturnStandardPrompt).toHaveBeenCalled();
 			expect(mockReturnCodingPrompt).not.toHaveBeenCalled();
 			expect(result).toBe("mixed prompt");
+		});
+
+		it("should use sms prompt for sms mode", async () => {
+			const smsRequest = {
+				...mockRequest,
+				promptMode: "sms",
+				options: { sms: { enabled: true, from: "+15551234567" } },
+			};
+			mockGetModelConfigByMatchingModel.mockResolvedValue({
+				modalities: { input: ["text"], output: ["text"] },
+			});
+			mockReturnSmsPrompt.mockReturnValue("sms prompt");
+
+			const { getSystemPrompt } = await import("../index");
+			const result = await getSystemPrompt(
+				smsRequest as any,
+				"sms-model",
+				mockUser,
+				mockUserSettings,
+			);
+
+			expect(mockReturnSmsPrompt).toHaveBeenCalledWith(
+				smsRequest,
+				mockUserSettings,
+				expect.objectContaining({ modelId: "sms-model" }),
+			);
+			expect(result).toBe("sms prompt");
 		});
 
 		it("should trim whitespace from result", async () => {

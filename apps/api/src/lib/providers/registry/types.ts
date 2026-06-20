@@ -1,10 +1,12 @@
 import type { AudioProvider } from "../capabilities/audio";
 import type { AIProvider } from "../capabilities/chat/providers/base";
 import type { ImageProvider } from "../capabilities/image";
+import type { MessagingProvider } from "../capabilities/messaging";
 import type { MusicProvider } from "../capabilities/music";
 import type { OcrProvider } from "../capabilities/ocr/types";
 import type { RealtimeProvider } from "../capabilities/realtime";
 import type { SpeechProvider } from "../capabilities/speech";
+import type { ServiceContext } from "~/lib/context/serviceContext";
 import type {
 	EmbeddingProvider,
 	GuardrailsProvider,
@@ -22,6 +24,7 @@ export type ProviderCategory =
 	| "embedding"
 	| "guardrails"
 	| "image"
+	| "messaging"
 	| "music"
 	| "ocr"
 	| "realtime"
@@ -34,6 +37,7 @@ export type ProviderCategory =
 export interface ProviderFactoryContext {
 	env?: IEnv;
 	user?: IUser;
+	serviceContext?: ServiceContext;
 	config?: unknown;
 	options?: Record<string, unknown>;
 }
@@ -64,6 +68,7 @@ export type CategoryProviderMap = {
 	embedding: EmbeddingProvider;
 	guardrails: GuardrailsProvider;
 	image: ImageProvider;
+	messaging: MessagingProvider;
 	music: MusicProvider;
 	ocr: OcrProvider;
 	realtime: RealtimeProvider;

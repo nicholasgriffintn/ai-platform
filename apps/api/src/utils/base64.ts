@@ -15,3 +15,10 @@ export function base64ToBuffer(base64: string): Uint8Array {
 	const binString = atob(base64.replace(/\s/g, ""));
 	return Uint8Array.from(binString, (char) => char.charCodeAt(0));
 }
+
+export function stringToBase64Url(value: string): string {
+	return bufferToBase64(new TextEncoder().encode(value))
+		.replace(/\+/g, "-")
+		.replace(/\//g, "_")
+		.replace(/=+$/, "");
+}

@@ -74,6 +74,11 @@ export interface ChatRequestOptions extends HostedToolSettings {
 		maxSteps?: number;
 		modelSettings?: SandboxModelSettings;
 	};
+	sms?: {
+		enabled: boolean;
+		from?: string;
+		to?: string;
+	};
 }
 
 export interface MessageContent {

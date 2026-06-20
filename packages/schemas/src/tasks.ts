@@ -10,6 +10,7 @@ export const TASK_TYPES = [
 	"podcast_transcription_polling",
 	"training_quality_scoring",
 	"usage_update",
+	"recipe_execution",
 	SANDBOX_RUN_DISPATCH_TASK_TYPE,
 ] as const;
 

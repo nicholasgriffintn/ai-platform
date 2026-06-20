@@ -4,7 +4,7 @@ import type { ChatMode, ChatRequestOptions } from "~/types";
 
 const AGENT_EXECUTION_MODES = new Set<ChatMode>(["agent", "plan", "build", "explore"]);
 
-export type ChatPromptMode = "council" | "sandbox";
+export type ChatPromptMode = "council" | "sandbox" | "sms";
 
 export function isAgentExecutionMode(mode: ChatMode): boolean {
 	return AGENT_EXECUTION_MODES.has(mode);
@@ -18,6 +18,9 @@ export function resolveChatPromptMode(
 	}
 	if (options?.council?.enabled) {
 		return "council";
+	}
+	if (options?.sms?.enabled) {
+		return "sms";
 	}
 	return undefined;
 }
@@ -53,6 +56,12 @@ export function buildConversationModeMetadataFromRequestOptions(
 	const parsed = conversationModeMetadataSchema.safeParse({
 		mode,
 		requestOptions: options,
+		smsSettings: options?.sms?.enabled
+			? {
+					from: options.sms.from,
+					to: options.sms.to,
+				}
+			: undefined,
 		sandboxSettings: options?.sandbox?.enabled
 			? {
 					repoKey:

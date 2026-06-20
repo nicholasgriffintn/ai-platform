@@ -7,6 +7,7 @@ export * from "./auth";
 export * from "./chat";
 export * from "./chat-mode";
 export * from "./council";
+export * from "./cron";
 export * from "./edit";
 export * from "./fim";
 export * from "./magicLink";

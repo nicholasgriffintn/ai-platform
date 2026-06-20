@@ -2,9 +2,10 @@ import { GitBranch, MessageCircle, RadioTower, UsersRound, type LucideIcon } fro
 import type { HomeChatModeId } from "@assistant/schemas";
 
 export type { HomeChatModeId };
+export type SelectableHomeChatModeId = Exclude<HomeChatModeId, "sms">;
 
 export interface HomeChatModeOption {
-	id: HomeChatModeId;
+	id: SelectableHomeChatModeId;
 	label: string;
 	description: string;
 	icon: LucideIcon;
@@ -47,7 +48,7 @@ export function resolveHomeChatModeId(value: string | null): HomeChatModeId {
 	return value === "council" || value === "sandbox" || value === "live" ? value : "chat";
 }
 
-export function isSelectableHomeChatModeId(value: string): value is HomeChatModeId {
+export function isSelectableHomeChatModeId(value: string): value is SelectableHomeChatModeId {
 	return value === "chat" || value === "council" || value === "sandbox" || value === "live";
 }
 

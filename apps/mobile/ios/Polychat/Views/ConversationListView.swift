@@ -9,13 +9,16 @@ struct ConversationListView: View {
     @State private var conversationPendingRename: Conversation?
     @State private var renameTitle = ""
     let onShowSettings: () -> Void
+    let onShowRecipes: () -> Void
 
     init(
         selectedConversationID: Binding<String?>,
-        onShowSettings: @escaping () -> Void = {}
+        onShowSettings: @escaping () -> Void = {},
+        onShowRecipes: @escaping () -> Void = {}
     ) {
         self._selectedConversationID = selectedConversationID
         self.onShowSettings = onShowSettings
+        self.onShowRecipes = onShowRecipes
     }
 
     private var filteredConversations: [Conversation] {
@@ -123,6 +126,14 @@ struct ConversationListView: View {
                     Image(systemName: "square.and.pencil")
                 }
                 .accessibilityLabel("New Message")
+            }
+
+            ToolbarItem(placement: .secondaryAction) {
+                Button {
+                    onShowRecipes()
+                } label: {
+                    Label("Recipes", systemImage: "sparkles")
+                }
             }
 
             ToolbarItem(placement: .secondaryAction) {

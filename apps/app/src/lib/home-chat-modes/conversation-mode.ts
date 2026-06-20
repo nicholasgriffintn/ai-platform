@@ -21,6 +21,13 @@ export function buildConversationModeMetadata(params: {
 		mode,
 		requestOptions,
 		sandboxSettings: mode === "sandbox" ? sandboxSettings : undefined,
+		smsSettings:
+			mode === "sms" && requestOptions?.sms?.enabled
+				? {
+						from: requestOptions.sms.from,
+						to: requestOptions.sms.to,
+					}
+				: undefined,
 	});
 
 	return parsed.success ? parsed.data : undefined;

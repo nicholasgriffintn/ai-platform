@@ -270,6 +270,11 @@ export interface ChatRequestOptions extends Record<string, any> {
 		maxSteps?: number;
 		modelSettings?: SandboxModelSettings;
 	};
+	sms?: {
+		enabled: boolean;
+		from?: string;
+		to?: string;
+	};
 	replicateWaitSeconds?: number;
 }
 

@@ -1,7 +1,11 @@
 import { IEnv } from "~/types";
 import { SCHEDULES } from "~/constants/schedules";
 import { getLogger } from "~/utils/logger";
-import { scheduleDailySynthesis, scheduleTrainingQualityScoring } from "./scheduledTasks";
+import {
+	scheduleDailySynthesis,
+	scheduleRecipeExecutions,
+	scheduleTrainingQualityScoring,
+} from "./scheduledTasks";
 
 const logger = getLogger({ prefix: "services/tasks/schedule-executor" });
 
@@ -33,6 +37,11 @@ export class ScheduleExecutor {
 				logger.info(`Starting training quality scoring task`);
 				await scheduleTrainingQualityScoring(env);
 				logger.info(`Training quality scoring task completed`);
+				break;
+			case SCHEDULES.RECIPE_EXECUTION:
+				logger.info(`Starting due recipe execution scheduling`);
+				await scheduleRecipeExecutions(env);
+				logger.info(`Due recipe execution scheduling completed`);
 				break;
 			default:
 				logger.warn(`No handler for scheduled task: ${event.cron}`);

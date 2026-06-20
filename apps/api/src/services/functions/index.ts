@@ -16,6 +16,7 @@ import { create_image } from "./image";
 import { handleMCPTool } from "./mcp";
 import { create_music } from "./music";
 import { prompt_coach } from "./prompt_coach";
+import { create_qr_code } from "./qr";
 import { add_reasoning_step } from "./reasoning";
 import { capture_screenshot } from "./screenshot";
 import { create_speech } from "./speech";
@@ -30,6 +31,7 @@ import { get_weather } from "./weather";
 import { web_search } from "./web_search";
 import { research } from "./research";
 import { extract_text_from_document } from "./ocr";
+import { trigger_recipe, use_recipe_connector } from "./recipe_connectors";
 import { compose_functions, if_then_else, parallel_execute } from "./workflow";
 import {
 	run_bug_fix,
@@ -55,12 +57,15 @@ const functionDefinitions: ApiToolDefinition[] = [
 	next_edit_completion,
 	apply_edit_completion,
 	web_search,
+	create_qr_code,
 	call_api,
 	research,
 	extract_content,
 	create_note,
 	get_note,
 	extract_text_from_document,
+	use_recipe_connector,
+	trigger_recipe,
 	capture_screenshot,
 	create_speech,
 	tutor,

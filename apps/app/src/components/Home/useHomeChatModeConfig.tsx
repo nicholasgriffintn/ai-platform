@@ -87,7 +87,7 @@ export function useHomeChatModeConfig(): {
 	);
 	const selectedModelLiveProvider = getRealtimeLiveProviderIdForModel(selectedModelConfig);
 	const [activeModeId, setActiveModeId] = useState<HomeChatModeId>(() =>
-		searchParams.has("mode") ? resolveHomeChatModeId(searchParams.get("mode")) : homeChatMode,
+		resolveHomeChatModeId(searchParams.has("mode") ? searchParams.get("mode") : homeChatMode),
 	);
 	const [selectedCouncilMemberIds, setSelectedCouncilMemberIds] = useState<CouncilMemberId[]>([
 		...defaultCouncilMemberIds,
@@ -204,7 +204,7 @@ export function useHomeChatModeConfig(): {
 			return;
 		}
 		setActiveModeId(
-			searchParams.has("mode") ? resolveHomeChatModeId(searchParams.get("mode")) : homeChatMode,
+			resolveHomeChatModeId(searchParams.has("mode") ? searchParams.get("mode") : homeChatMode),
 		);
 	}, [conversationModeMetadata, currentConversationId, homeChatMode, searchParams]);
 
@@ -218,7 +218,7 @@ export function useHomeChatModeConfig(): {
 		}
 
 		hydratedConversationIdRef.current = currentConversationId;
-		setActiveModeId(conversationModeMetadata.mode);
+		setActiveModeId(resolveHomeChatModeId(conversationModeMetadata.mode));
 		if (conversationModeMetadata.sandboxSettings) {
 			const settings = conversationModeMetadata.sandboxSettings;
 			setSandboxRepoKey(settings.repoKey ?? "");

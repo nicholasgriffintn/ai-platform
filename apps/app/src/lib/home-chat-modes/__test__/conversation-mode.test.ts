@@ -39,6 +39,34 @@ describe("conversation mode metadata", () => {
 		});
 	});
 
+	it("builds sms metadata with request options", () => {
+		const metadata = buildConversationModeMetadata({
+			mode: "sms",
+			requestOptions: {
+				sms: {
+					enabled: true,
+					from: "+15551234567",
+					to: "+15557654321",
+				},
+			},
+		});
+
+		expect(metadata).toMatchObject({
+			mode: "sms",
+			requestOptions: {
+				sms: {
+					enabled: true,
+					from: "+15551234567",
+					to: "+15557654321",
+				},
+			},
+			smsSettings: {
+				from: "+15551234567",
+				to: "+15557654321",
+			},
+		});
+	});
+
 	it("reads the first valid mode metadata from conversation messages", () => {
 		const conversation: Conversation = {
 			id: "conversation-1",

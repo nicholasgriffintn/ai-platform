@@ -21,6 +21,8 @@ import replicate from "./replicate";
 import canvas from "./canvas";
 import strudel from "./strudel";
 import sandbox from "./sandbox";
+import recipes from "./recipes";
+import connectors from "./connectors";
 
 const app = new Hono();
 
@@ -82,5 +84,9 @@ addRoute(app, "post", "/prompt-coach", {
 });
 
 app.route("/shared", shared);
+
+app.route("/recipes", recipes);
+
+app.route("/connectors", connectors);
 
 export default app;

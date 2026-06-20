@@ -1,6 +1,10 @@
-import { AwsClient } from "aws4fetch";
-
 import type { ServiceContext } from "~/lib/context/serviceContext";
+import {
+	encodeAwsS3Key,
+	getAwsS3ObjectUrl,
+	hasAwsS3Object,
+	putAwsS3Object,
+} from "~/lib/providers/utils/awsS3";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
 interface SageMakerS3Options {
@@ -19,7 +23,8 @@ interface HeadSageMakerS3ObjectOptions extends SageMakerS3Options {
 }
 
 interface SageMakerS3Config {
-	aws: AwsClient;
+	accessKeyId: string;
+	secretAccessKey: string;
 	bucket: string;
 	region: string;
 }
@@ -48,22 +53,13 @@ export async function putSageMakerS3Object({
 	contentType,
 }: PutSageMakerS3ObjectOptions): Promise<void> {
 	const config = getSageMakerS3Config({ context, bucket });
-	const response = await config.aws.fetch(getSageMakerS3ObjectUrl(config, key), {
-		method: "PUT",
-		headers: {
-			"Content-Type": contentType,
-		},
+	await putAwsS3Object({
+		...config,
+		key,
 		body,
+		contentType,
+		errorMessage: "Failed to upload training object to S3",
 	});
-
-	if (!response.ok) {
-		const text = await response.text();
-		throw new AssistantError(
-			`Failed to upload training object to S3 (${response.status}): ${text || response.statusText}`,
-			ErrorType.PROVIDER_ERROR,
-			response.status,
-		);
-	}
 }
 
 export async function hasSageMakerS3Object({
@@ -72,23 +68,15 @@ export async function hasSageMakerS3Object({
 	key,
 }: HeadSageMakerS3ObjectOptions): Promise<boolean> {
 	const config = getSageMakerS3Config({ context, bucket });
-	const response = await config.aws.fetch(getSageMakerS3ObjectUrl(config, key), {
-		method: "HEAD",
+	return await hasAwsS3Object({
+		...config,
+		key,
+		errorMessage: "Failed to check training object in S3",
 	});
-
-	if (response.ok) return true;
-	if (response.status === 404) return false;
-
-	const text = await response.text();
-	throw new AssistantError(
-		`Failed to check training object in S3 (${response.status}): ${text || response.statusText}`,
-		ErrorType.PROVIDER_ERROR,
-		response.status,
-	);
 }
 
 export function encodeS3Key(key: string): string {
-	return key.split("/").map(encodeURIComponent).join("/");
+	return encodeAwsS3Key(key);
 }
 
 function getSageMakerS3Config({ context, bucket }: SageMakerS3Options): SageMakerS3Config {
@@ -107,12 +95,13 @@ function getSageMakerS3Config({ context, bucket }: SageMakerS3Options): SageMake
 	}
 
 	return {
-		aws: new AwsClient({ accessKeyId, secretAccessKey, region, service: "s3" }),
+		accessKeyId,
+		secretAccessKey,
 		bucket: targetBucket,
 		region,
 	};
 }
 
 function getSageMakerS3ObjectUrl(config: SageMakerS3Config, key: string): string {
-	return `https://${config.bucket}.s3.${config.region}.amazonaws.com/${encodeS3Key(key)}`;
+	return getAwsS3ObjectUrl({ ...config, key });
 }
