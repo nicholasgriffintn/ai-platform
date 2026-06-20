@@ -33,12 +33,10 @@ vi.mock("~/services/apps/recipes/conversationContext", () => ({
 	getRecipeConversationContext: mocks.getRecipeConversationContext,
 }));
 
-import {
-	configure_recipe,
-	get_recipe,
-	trigger_recipe,
-	use_recipe_connector,
-} from "../recipe_connectors";
+import { configure_recipe } from "../recipes/configure_recipe";
+import { get_recipe } from "../recipes/get_recipe";
+import { trigger_recipe } from "../recipes/trigger_recipe";
+import { use_recipe_connector } from "../recipes/use_recipe_connector";
 
 function createToolContext(
 	params: {
@@ -49,6 +47,7 @@ function createToolContext(
 			id: string;
 			installationId?: string;
 		};
+		userProviderSettings?: Record<string, unknown>[];
 		sms?: {
 			from?: string;
 			to?: string;
@@ -57,10 +56,20 @@ function createToolContext(
 ) {
 	const env = {} as IEnv;
 	const user = { id: 42 } as IUser;
+	const serviceContext =
+		params.userProviderSettings === undefined
+			? {}
+			: {
+					repositories: {
+						userSettings: {
+							getUserProviderSettings: vi.fn().mockResolvedValue(params.userProviderSettings),
+						},
+					},
+				};
 	const request: IRequest = {
 		env,
 		app_url: "https://app.example.com",
-		context: {} as IRequest["context"],
+		context: serviceContext as IRequest["context"],
 		user,
 		request: {
 			completion_id: "completion-id",
@@ -832,6 +841,115 @@ describe("recipe connector tools", () => {
 		});
 	});
 
+	it("rejects SMS recipe notifications when SMS is not configured", async () => {
+		const result = await configure_recipe.execute(
+			{
+				recipeId: "bad-weather-alerts",
+				configuration: {
+					location: "London",
+				},
+				triggers: [
+					{ type: "manual", enabled: true },
+					{
+						type: "schedule",
+						enabled: true,
+						cronExpression: "0 7 * * *",
+						notificationChannel: "sms",
+						notificationTarget: "+15551234567",
+					},
+				],
+			},
+			createToolContext({
+				recipe: {
+					id: "bad-weather-alerts",
+					installationId: "installation-1",
+				},
+				userProviderSettings: [],
+			}),
+		);
+
+		expect(result).toMatchObject({
+			status: "needs_correction",
+			name: "configure_recipe",
+			data: {
+				recipeId: "bad-weather-alerts",
+				installationId: "installation-1",
+				recoverable: true,
+				notificationCapabilities: {
+					sms: {
+						available: false,
+						configuredProviders: [],
+					},
+				},
+			},
+		});
+		expect(result.content).toContain("SMS notifications are not configured");
+		expect(mocks.updateRecipeInstallation).not.toHaveBeenCalled();
+	});
+
+	it("allows SMS recipe notifications when a messaging provider is configured", async () => {
+		const triggers = [
+			{ type: "manual" as const, enabled: true },
+			{
+				type: "schedule" as const,
+				enabled: true,
+				cronExpression: "0 7 * * *",
+				notificationChannel: "sms" as const,
+				notificationTarget: "+15551234567",
+			},
+		];
+		const installation = {
+			id: "installation-1",
+			recipeId: "bad-weather-alerts",
+			userId: 42,
+			status: "active",
+			triggers,
+			configuration: {
+				location: "London",
+			},
+			createdAt: "2026-06-20T10:00:00.000Z",
+			updatedAt: "2026-06-20T10:00:00.000Z",
+		};
+		mocks.updateRecipeInstallation.mockResolvedValue(installation);
+
+		const result = await configure_recipe.execute(
+			{
+				recipeId: "bad-weather-alerts",
+				configuration: {
+					location: "London",
+				},
+				triggers,
+			},
+			createToolContext({
+				recipe: {
+					id: "bad-weather-alerts",
+					installationId: "installation-1",
+				},
+				userProviderSettings: [
+					{
+						id: "twilio-settings",
+						provider_id: "twilio-sms",
+						type: "messaging",
+						enabled: true,
+						hasApiKey: true,
+					},
+				],
+			}),
+		);
+
+		expect(mocks.updateRecipeInstallation).toHaveBeenCalledWith(
+			expect.objectContaining({
+				installationId: "installation-1",
+				update: expect.objectContaining({ triggers }),
+			}),
+		);
+		expect(result).toMatchObject({
+			status: "success",
+			name: "configure_recipe",
+			data: { installation },
+		});
+	});
+
 	it("rejects recipe setup saves outside an active installed recipe setup chat", async () => {
 		const result = await configure_recipe.execute(
 			{
@@ -949,10 +1067,12 @@ describe("recipe connector tools", () => {
 		expect(result).toEqual({
 			status: "success",
 			name: "get_recipe",
-			content: "Recipe configuration fields loaded.",
+			content:
+				"Recipe configuration fields loaded. SMS notification availability is unknown. Do not save SMS notification triggers unless the user connects SMS first.",
 			data: {
 				recipeId: "bad-weather-alerts",
 				title: "Bad Weather Alerts",
+				channel: undefined,
 				enabledTools: ["get_weather"],
 				triggers: [{ type: "schedule", label: "Morning alert" }],
 				configurationFields: [
@@ -973,9 +1093,52 @@ describe("recipe connector tools", () => {
 						type: "text",
 					},
 				],
+				notificationCapabilities: {
+					sms: {
+						available: false,
+						configuredProviders: [],
+						guidance:
+							"SMS notification availability is unknown. Do not save SMS notification triggers unless the user connects SMS first.",
+					},
+				},
 				savedConfiguration: undefined,
 			},
 		});
+	});
+
+	it("reports configured SMS notification capability in active recipe context", async () => {
+		const result = await get_recipe.execute(
+			{},
+			createToolContext({
+				recipe: {
+					id: "bad-weather-alerts",
+					installationId: "installation-1",
+				},
+				userProviderSettings: [
+					{
+						id: "twilio-settings",
+						provider_id: "twilio-sms",
+						type: "messaging",
+						enabled: true,
+						hasApiKey: true,
+					},
+				],
+			}),
+		);
+
+		expect(result).toMatchObject({
+			status: "success",
+			name: "get_recipe",
+			data: {
+				notificationCapabilities: {
+					sms: {
+						available: true,
+						configuredProviders: ["twilio-sms"],
+					},
+				},
+			},
+		});
+		expect(result.content).toContain("SMS notifications are available");
 	});
 
 	it("passes recent non-tool chat context into natural language recipe executions", async () => {

@@ -31,12 +31,10 @@ import { get_weather } from "./weather";
 import { web_search } from "./web_search";
 import { research } from "./research";
 import { extract_text_from_document } from "./ocr";
-import {
-	configure_recipe,
-	get_recipe,
-	trigger_recipe,
-	use_recipe_connector,
-} from "./recipe_connectors";
+import { configure_recipe } from "./recipes/configure_recipe";
+import { get_recipe } from "./recipes/get_recipe";
+import { trigger_recipe } from "./recipes/trigger_recipe";
+import { use_recipe_connector } from "./recipes/use_recipe_connector";
 import { compose_functions, if_then_else, parallel_execute } from "./workflow";
 import {
 	run_bug_fix,

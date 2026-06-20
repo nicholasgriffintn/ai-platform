@@ -403,7 +403,7 @@ function createConversationStarter(
 	const toolLine = enabledTools.length > 0 ? enabledTools.join(", ") : "no extra tools";
 	const inputLine = input?.trim() ? `\nTrigger input:\n${input.trim()}\n` : "";
 	const contextInstruction = enabledTools.includes(RECIPE_LOOKUP_TOOL)
-		? `\nUse ${RECIPE_LOOKUP_TOOL} when you need recipe configuration, trigger details, configuration field keys, or the setup contract.\n`
+		? `\nUse ${RECIPE_LOOKUP_TOOL} when you need recipe configuration, trigger details, notification availability, configuration field keys, or the setup contract. Do not save SMS notification triggers unless ${RECIPE_LOOKUP_TOOL} says SMS notifications are available.\n`
 		: "";
 	const setupToolInstruction = enabledTools.includes(RECIPE_SETUP_TOOL)
 		? `\nWhen I confirm the setup details or ask you to choose sensible defaults, use the available context and tools, then use ${RECIPE_SETUP_TOOL} to save recipe configuration and triggers before saying setup is complete.\n`

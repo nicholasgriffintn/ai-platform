@@ -30,7 +30,7 @@ import {
 	updateRecipeInstallation,
 } from "../index";
 import { getRecipeCatalogValidationIssues } from "../catalog";
-import { trigger_recipe } from "~/services/functions/recipe_connectors";
+import { trigger_recipe } from "~/services/functions/recipes/trigger_recipe";
 
 const connectedConnectors: RecipeConnectorsResponse = {
 	connectors: [
