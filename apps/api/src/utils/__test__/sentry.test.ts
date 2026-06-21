@@ -65,6 +65,29 @@ describe("captureApiError", () => {
 		expect(sentryMock.captureException).not.toHaveBeenCalled();
 	});
 
+	it("does not capture auth errors even when they use the default status code", () => {
+		const error = new AssistantError("Authentication required", ErrorType.AUTHENTICATION_ERROR);
+
+		expect(shouldCaptureApiError(error)).toBe(false);
+		captureApiError(error);
+
+		expect(sentryMock.captureException).not.toHaveBeenCalled();
+	});
+
+	it.each([
+		ErrorType.AUTHENTICATION_ERROR,
+		ErrorType.UNAUTHORIZED,
+		ErrorType.FORBIDDEN,
+		ErrorType.AUTHORISATION_ERROR,
+	])("does not capture %s errors", (errorType) => {
+		const error = new AssistantError("Access denied", errorType, 500);
+
+		expect(shouldCaptureApiError(error)).toBe(false);
+		captureApiError(error);
+
+		expect(sentryMock.captureException).not.toHaveBeenCalled();
+	});
+
 	it("captures server errors with low-cardinality tags", () => {
 		const originalError = new Error("Database unavailable");
 		const error = new AssistantError("Database unavailable", ErrorType.DATABASE_ERROR, 500, {

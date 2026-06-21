@@ -6,6 +6,7 @@ import type { ChatCompletionParameters } from "~/types";
 import { bufferToBase64 } from "~/utils/base64";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
+import { isRecord } from "~/utils/objects";
 import { BaseProvider } from "./base";
 
 const logger = getLogger({ prefix: "lib/providers/polly" });
@@ -16,6 +17,34 @@ interface PollyResponse {
 		TaskStatus: string;
 		TaskStatusReason?: string;
 		OutputUri?: string;
+	};
+}
+
+interface PollyStorageService {
+	uploadObject: (key: string, data: Uint8Array) => Promise<unknown>;
+}
+
+interface PollyProviderOptions {
+	returnAudio?: boolean;
+	slug?: string;
+	storageService?: PollyStorageService;
+}
+
+function isPollyStorageService(value: unknown): value is PollyStorageService {
+	return isRecord(value) && typeof value.uploadObject === "function";
+}
+
+function readPollyProviderOptions(options: unknown): PollyProviderOptions {
+	if (!isRecord(options)) {
+		return {};
+	}
+
+	return {
+		returnAudio: options.returnAudio === true,
+		slug: typeof options.slug === "string" ? options.slug : undefined,
+		storageService: isPollyStorageService(options.storageService)
+			? options.storageService
+			: undefined,
 	};
 }
 
@@ -59,6 +88,7 @@ export class PollyProvider extends BaseProvider {
 		this.validateParams(params);
 
 		const pollyUrl = await this.getEndpoint(params);
+		const options = readPollyProviderOptions(params.options);
 
 		return trackProviderMetrics({
 			provider: this.name,
@@ -106,7 +136,7 @@ export class PollyProvider extends BaseProvider {
 						Engine: "long-form",
 						TextType: "ssml",
 						OutputS3BucketName: "polly-text-to-speech-input",
-						OutputS3KeyPrefix: `polly/${params.options?.slug}`,
+						OutputS3KeyPrefix: `polly/${options.slug}`,
 					}),
 				});
 
@@ -159,9 +189,9 @@ export class PollyProvider extends BaseProvider {
 						}
 
 						const audioBuffer = await s3Response.arrayBuffer();
-						const audioKey = `audio/${params.options?.slug}.mp3`;
+						const audioKey = `audio/${options.slug}.mp3`;
 
-						if (params.options?.returnAudio === true) {
+						if (options.returnAudio === true) {
 							const audioBase64 = bufferToBase64(audioBuffer);
 
 							return {
@@ -171,10 +201,7 @@ export class PollyProvider extends BaseProvider {
 							};
 						}
 
-						await params.options?.storageService?.uploadObject(
-							audioKey,
-							new Uint8Array(audioBuffer),
-						);
+						await options.storageService?.uploadObject(audioKey, new Uint8Array(audioBuffer));
 
 						return audioKey;
 					}

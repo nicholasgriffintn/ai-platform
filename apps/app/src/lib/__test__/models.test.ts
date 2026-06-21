@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import type { ModelConfig, ModelConfigItem } from "~/types";
+import type { ModelConfig, ModelConfigItem } from "@assistant/schemas";
 import {
 	createModelReferenceMap,
 	doesModelMatchId,

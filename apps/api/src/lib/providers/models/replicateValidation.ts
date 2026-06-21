@@ -1,4 +1,4 @@
-import type { InputSchemaInputSchemaDescriptor } from "~/types";
+import type { InputSchemaInputSchemaDescriptor } from "@assistant/schemas";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
 type ReplicateFieldType = "string" | "number" | "integer" | "boolean" | "file" | "array" | "object";

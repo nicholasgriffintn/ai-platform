@@ -6,7 +6,8 @@ import {
 	getModels,
 } from "~/lib/providers/models";
 import { trackModelRoutingMetrics } from "~/lib/monitoring";
-import type { Attachment, IEnv, IUser, ModelConfigItem, PromptRequirements } from "~/types";
+import type { ModelConfigItem, PromptRequirements } from "@assistant/schemas";
+import type { Attachment, IEnv, IUser } from "~/types";
 import { getLogger } from "~/utils/logger";
 import { AssistantError, ErrorType } from "~/utils/errors";
 

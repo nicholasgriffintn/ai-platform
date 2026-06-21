@@ -1,4 +1,4 @@
-import type { ModelConfig } from "~/types";
+import type { ModelConfig } from "@assistant/schemas";
 
 export const huggingfaceModelConfig: ModelConfig = {
 	"deepseek-ai/DeepSeek-R1-0528": {

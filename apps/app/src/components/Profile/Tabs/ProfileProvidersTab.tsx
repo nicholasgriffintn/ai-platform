@@ -1,6 +1,7 @@
 import { KeyRound, Loader2, Plus, RefreshCcw, Trash2 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router";
 import { toast } from "sonner";
 import { recipeConnectorProviderSchema } from "@assistant/schemas";
 import type { RecipeConnectorProvider } from "@assistant/schemas";
@@ -44,9 +45,21 @@ interface ConnectorApiKeyModalState {
 
 type ProviderTypeFilter = "all" | "chat" | "messaging" | "connector";
 
+function readProviderTypeFilter(value: string | null): ProviderTypeFilter {
+	switch (value) {
+		case "chat":
+		case "messaging":
+		case "connector":
+			return value;
+		default:
+			return "all";
+	}
+}
+
 export function ProfileProvidersTab() {
 	const { trackEvent } = useTrackEvent();
 	const queryClient = useQueryClient();
+	const [searchParams, setSearchParams] = useSearchParams();
 
 	const {
 		providerSettings,
@@ -68,7 +81,9 @@ export function ProfileProvidersTab() {
 		providerId: null,
 		providerName: "",
 	});
-	const [providerType, setProviderType] = useState<ProviderTypeFilter>("all");
+	const [providerType, setProviderType] = useState<ProviderTypeFilter>(() =>
+		readProviderTypeFilter(searchParams.get("type")),
+	);
 	const { data: connectorsData, isLoading: isLoadingConnectors } = useRecipeConnectors();
 	const startConnector = useStartRecipeConnector();
 	const disconnectConnector = useDisconnectRecipeConnector();
@@ -104,6 +119,34 @@ export function ProfileProvidersTab() {
 		() => providerSettings.find((provider) => provider.provider_id === modalState.providerId),
 		[modalState.providerId, providerSettings],
 	);
+
+	useEffect(() => {
+		setProviderType(readProviderTypeFilter(searchParams.get("type")));
+	}, [searchParams]);
+
+	useEffect(() => {
+		const requestedConnectorId = searchParams.get("connector");
+		if (!requestedConnectorId || isLoadingConnectors) {
+			return;
+		}
+
+		const connector = connectors.find((item) => item.id === requestedConnectorId);
+		if (!connector || connector.authType !== "api_key") {
+			return;
+		}
+
+		setProviderType("connector");
+		setConnectorApiKeyModal({
+			open: true,
+			providerId: connector.id,
+			providerName: connector.name,
+			credentialLabel: connector.credentialLabel,
+		});
+
+		const nextSearchParams = new URLSearchParams(searchParams);
+		nextSearchParams.delete("connector");
+		setSearchParams(nextSearchParams, { replace: true });
+	}, [connectors, isLoadingConnectors, searchParams, setSearchParams]);
 
 	const getProviderName = (provider: ProviderSetting) =>
 		provider.name || formatProviderLabel(provider.provider_id);

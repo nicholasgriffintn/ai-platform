@@ -6,6 +6,7 @@ import type {
 	Message,
 	MessageData,
 } from "~/types";
+import { normaliseToolIds } from "@assistant/schemas";
 import { getSandboxModeToolNames } from "~/lib/sandbox/chat-mode";
 import {
 	normalizeMessage,
@@ -421,11 +422,13 @@ export class ChatService {
 
 		const formattedMessages = serialiseMessagesForChatRequest(messages);
 		const sandboxOptions = requestOptions?.sandbox?.enabled ? requestOptions.sandbox : undefined;
+		const selectedToolIds = selectedTools ? normaliseToolIds(selectedTools) : undefined;
 		const requestEnabledTools = sandboxOptions
-			? Array.from(
-					new Set([...(selectedTools || []), ...getSandboxModeToolNames(sandboxOptions.taskType)]),
-				)
-			: selectedTools;
+			? normaliseToolIds([
+					...(selectedToolIds ?? []),
+					...getSandboxModeToolNames(sandboxOptions.taskType),
+				])
+			: selectedToolIds;
 		const requestApprovedTools = sandboxOptions
 			? getSandboxModeToolNames(sandboxOptions.taskType)
 			: undefined;

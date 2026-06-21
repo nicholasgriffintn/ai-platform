@@ -1,6 +1,7 @@
 import { ModelRouter } from "~/lib/modelRouter";
 import { filterModelsForUserAccess, findModelConfig, getModels } from "~/lib/providers/models";
-import type { Attachment, IEnv, IUser, ModelConfigItem } from "~/types";
+import type { ModelConfigItem } from "@assistant/schemas";
+import type { Attachment, IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
 function normaliseExplicitModels(requestedModels?: string[]): string[] {

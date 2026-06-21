@@ -1,5 +1,6 @@
 import { safeParseJson } from "~/utils/json";
-import type { ModelConfigItem, InputSchemaInputFieldDescriptor, Message } from "~/types";
+import type { ModelConfigItem, InputSchemaInputFieldDescriptor } from "@assistant/schemas";
+import type { Message } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
 type InputSchemaFieldType =

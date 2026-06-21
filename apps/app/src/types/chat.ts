@@ -1,11 +1,9 @@
 import type { MessagePart as SchemaMessagePart } from "@assistant/schemas";
 import type {
+	ChatHostedToolSettings as SchemaHostedToolSettings,
+	ChatRequestOptions as SchemaChatRequestOptions,
 	ConversationModeMetadata,
-	CouncilChatOptions,
-	RecipeConfiguration,
-	RecipeConnectorProvider,
 } from "@assistant/schemas";
-import type { SandboxModelSettings, SandboxPromptStrategy, SandboxTaskType } from "./sandbox";
 
 export type ChatRole = "user" | "assistant" | "system" | "tool";
 
@@ -25,24 +23,7 @@ export interface ChatReasoningSettings {
 	effort?: ReasoningEffort;
 }
 
-export interface HostedToolSettings {
-	code_interpreter?: Record<string, unknown>;
-	web_search?: Record<string, unknown>;
-	file_search?: Record<string, unknown>;
-	mcp_servers?: Record<string, unknown>[];
-	computer_use?: Record<string, unknown>;
-	image_generation?: {
-		size?: string;
-		quality?: string;
-	};
-	shell?: {
-		environment?: {
-			type?: string;
-		};
-	};
-	tool_search?: Record<string, unknown>;
-	responses_tools?: Record<string, unknown>[];
-}
+export type HostedToolSettings = SchemaHostedToolSettings;
 
 export interface ChatSettings {
 	temperature?: number;
@@ -65,34 +46,7 @@ export interface ChatSettings {
 	tool_options?: HostedToolSettings;
 }
 
-export interface ChatRequestOptions extends HostedToolSettings {
-	council?: CouncilChatOptions;
-	recipe?: {
-		id: string;
-		installationId?: string;
-		channel?: "web" | "ios" | "sms" | "scheduled" | "tool";
-		allowedConnectorProviders?: RecipeConnectorProvider[];
-		allowedConnectorOperations?: Record<string, string[]>;
-		configuration?: RecipeConfiguration;
-	};
-	sandbox?: {
-		enabled: boolean;
-		repo?: string;
-		installationId?: number;
-		model?: string;
-		taskType?: SandboxTaskType;
-		promptStrategy?: SandboxPromptStrategy;
-		shouldCommit?: boolean;
-		timeoutSeconds?: number;
-		maxSteps?: number;
-		modelSettings?: SandboxModelSettings;
-	};
-	sms?: {
-		enabled: boolean;
-		from?: string;
-		to?: string;
-	};
-}
+export type ChatRequestOptions = SchemaChatRequestOptions;
 
 export interface MessageContent {
 	type:

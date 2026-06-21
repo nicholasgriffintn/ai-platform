@@ -1,5 +1,6 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { MemoryRouter } from "react-router";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { ProfileProvidersTab } from "./ProfileProvidersTab";
@@ -37,7 +38,7 @@ vi.mock("~/hooks/useConnectors", () => ({
 	}),
 }));
 
-function renderProfileProvidersTab() {
+function renderProfileProvidersTab(route = "/profile") {
 	const queryClient = new QueryClient({
 		defaultOptions: {
 			queries: { retry: false },
@@ -47,7 +48,9 @@ function renderProfileProvidersTab() {
 
 	return render(
 		<QueryClientProvider client={queryClient}>
-			<ProfileProvidersTab />
+			<MemoryRouter initialEntries={[route]}>
+				<ProfileProvidersTab />
+			</MemoryRouter>
 		</QueryClientProvider>,
 	);
 }
@@ -106,6 +109,27 @@ describe("ProfileProvidersTab", () => {
 				apiKey: "phx_test_key",
 			});
 		});
+	});
+
+	it("opens the requested API-key connector from the profile query", async () => {
+		recipeConnectorsMock.mockReturnValue([
+			{
+				id: "posthog",
+				name: "PostHog",
+				description: "Query PostHog projects and product analytics.",
+				authType: "api_key",
+				status: "disconnected",
+				setupUrl: "/profile?tab=providers&type=connector&connector=posthog",
+				credentialLabel: "Personal API key",
+				scopes: ["project:read", "query:read"],
+				operations: ["list_projects", "query"],
+			},
+		]);
+
+		renderProfileProvidersTab("/profile?tab=providers&type=connector&connector=posthog");
+
+		expect(screen.getByRole("heading", { name: "Connect PostHog" })).toBeInTheDocument();
+		expect(screen.getByLabelText("Personal API key")).toBeInTheDocument();
 	});
 
 	it("lets users delete a configured provider", async () => {

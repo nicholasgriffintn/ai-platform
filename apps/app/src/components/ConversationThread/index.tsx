@@ -1,4 +1,5 @@
 import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import type { ConversationModeMetadata } from "@assistant/schemas";
 
@@ -22,6 +23,7 @@ import { ChatInput, type ChatInputHandle } from "./ChatInput";
 import type { ComposerCommandAction } from "./ChatInput/composerCommandTypes";
 import { FooterInfo } from "./FooterInfo";
 import { MessageList } from "./MessageList";
+import { useAssistantActionSubmit } from "./useAssistantActionSubmit";
 import { useAutoPlayResponses } from "./useAutoPlayResponses";
 import { WelcomeScreen } from "./WelcomeScreen";
 
@@ -74,9 +76,17 @@ interface ConversationThreadProps {
 }
 
 export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
+	const navigate = useNavigate();
 	const { trackEvent, trackFeatureUsage, trackError } = useTrackEvent();
 
-	const { currentConversationId, model, chatInput, setChatInput } = useChatStore();
+	const {
+		currentConversationId,
+		model,
+		chatInput,
+		setChatInput,
+		selectedAssistantAction,
+		setSelectedAssistantAction,
+	} = useChatStore();
 	const { data: currentConversation } = useChat(currentConversationId);
 	const {
 		streamStarted,
@@ -109,6 +119,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
 
 	const chatInputRef = useRef<ChatInputHandle>(null);
 	const autoSubmittedKeyRef = useRef<string | null>(null);
+	const { resolveAssistantActionSubmit } = useAssistantActionSubmit();
 	const {
 		isGeneratingSpeech: isGeneratingAutoResponseSpeech,
 		isPlaying: isPlayingAutoResponse,
@@ -171,13 +182,16 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
 	}, [currentConversationId]);
 
 	const canSubmit = useMemo(
-		() => chatInput.trim() && !isStreamLoading && !isModelInitializing,
-		[chatInput, isStreamLoading, isModelInitializing],
+		() =>
+			(chatInput.trim() || selectedAssistantAction?.item) &&
+			!isStreamLoading &&
+			!isModelInitializing,
+		[chatInput, isStreamLoading, isModelInitializing, selectedAssistantAction?.item],
 	);
 
 	const handleSubmit = useCallback(
 		async (attachments?: AttachmentData[]) => {
-			if (!chatInput.trim() && !attachments?.length) {
+			if (!chatInput.trim() && !attachments?.length && !selectedAssistantAction?.item) {
 				return;
 			}
 
@@ -196,9 +210,13 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
 				}
 			}
 
+			const originalInput = chatInput;
+			const originalAssistantAction = selectedAssistantAction;
+
 			try {
-				const originalInput = chatInput;
+				const actionSubmit = await resolveAssistantActionSubmit(chatInput);
 				setChatInput("");
+				setSelectedAssistantAction(null);
 
 				trackEvent({
 					name: "send_message",
@@ -216,17 +234,34 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
 					},
 				});
 
+				if (actionSubmit.kind === "external") {
+					window.location.href = actionSubmit.url;
+					return;
+				}
+
+				if (actionSubmit.kind === "navigation") {
+					navigate(actionSubmit.path);
+					return;
+				}
+
 				const result = modeConfig?.councilDebate?.enabled
-					? await sendCouncilDebate(chatInput, attachments, modeConfig.councilDebate)
-					: await sendMessage(chatInput, attachments);
+					? await sendCouncilDebate(actionSubmit.input, attachments, modeConfig.councilDebate)
+					: await sendMessage(actionSubmit.input, attachments, actionSubmit.requestOptions);
 				if (result?.status === "error") {
 					setChatInput(originalInput);
+					setSelectedAssistantAction(originalAssistantAction);
+					if (result.response) {
+						toast.error(result.response);
+					}
 				} else {
 					setTimeout(() => {
 						chatInputRef.current?.focus();
 					}, 0);
 				}
 			} catch (error) {
+				setChatInput(originalInput);
+				setSelectedAssistantAction(originalAssistantAction);
+				toast.error(error instanceof Error ? error.message : "Failed to send message");
 				console.error("Failed to send message:", error);
 				trackError("message_send_error", error, {
 					conversation_id: currentConversationId || "new",
@@ -241,12 +276,17 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
 			messages,
 			sendMessage,
 			sendCouncilDebate,
+			resolveAssistantActionSubmit,
 			trackEvent,
 			trackError,
 			currentConversationId,
 			setChatInput,
+			setSelectedAssistantAction,
+			selectedAssistantAction,
+			selectedAssistantAction?.item,
 			modeConfig?.analyticsSource,
 			modeConfig?.councilDebate,
+			navigate,
 		],
 	);
 

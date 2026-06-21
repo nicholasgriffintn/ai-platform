@@ -8,7 +8,7 @@ import type {
 	SandboxInstallConfig,
 	SandboxRunInstruction,
 	SandboxRunInstructionKind,
-} from "~/types/sandbox";
+} from "@assistant/schemas";
 
 export async function fetchSandboxConnections(): Promise<SandboxConnection[]> {
 	const headers = await apiService.getHeaders();

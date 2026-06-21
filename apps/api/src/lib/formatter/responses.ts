@@ -1,4 +1,5 @@
 import { preprocessQwQResponse } from "~/lib/chat/utils/qwq";
+import type { ModelModalities } from "@assistant/schemas";
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import {
 	hasPrivateAssetStorage,
@@ -8,7 +9,7 @@ import {
 	persistRemoteGeneratedAssets,
 	type GeneratedMediaContext,
 } from "~/lib/storage/generated-media";
-import type { IEnv, ModelModalities } from "~/types";
+import type { IEnv } from "~/types";
 import { base64ToBuffer } from "~/utils/base64";
 import { AssistantError, ErrorType } from "~/utils/errors";
 

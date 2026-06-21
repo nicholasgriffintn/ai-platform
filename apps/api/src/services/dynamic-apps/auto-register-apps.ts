@@ -1,6 +1,5 @@
 import { listFunctionTools } from "~/services/functions";
-import type { AppSchema } from "~/types/app-schema";
-import { FieldType } from "~/types/app-schema";
+import { FieldType, type AppSchema } from "@assistant/schemas";
 import {
 	formatFunctionName,
 	getFunctionIcon,

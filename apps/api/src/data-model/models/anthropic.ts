@@ -1,5 +1,5 @@
 import { createModelConfig, createModelConfigObject } from "~/lib/providers/models/utils";
-import type { ModelConfig } from "~/types";
+import type { ModelConfig } from "@assistant/schemas";
 
 const PROVIDER = "anthropic";
 const anthropicLatestSearchTool = {

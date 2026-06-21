@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import type { ModelModalities } from "~/types";
+import type { ModelModalities } from "@assistant/schemas";
 import {
 	getModelInputModalities,
 	getModelOutputModalities,

@@ -8,7 +8,8 @@ import {
 } from "@assistant/schemas";
 
 import { hasD1DatabaseBinding, type EnvWithD1Database } from "~/lib/database/bindings";
-import type { IEnv, ModelConfig, ModelConfigItem } from "~/types";
+import type { ModelConfig, ModelConfigItem } from "@assistant/schemas";
+import type { IEnv } from "~/types";
 import { safeParseJson } from "~/utils/json";
 import { isRecord } from "~/utils/objects";
 

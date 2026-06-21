@@ -15,7 +15,7 @@ import type {
 	SandboxConnection,
 	SandboxConnectionRepositoriesPayload,
 	SandboxInstallConfig,
-} from "~/types/sandbox";
+} from "@assistant/schemas";
 import { useCanAccessProFeatures } from "./useCanAccessProFeatures";
 
 export const SANDBOX_QUERY_KEYS = {

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import type { ChatSettings, ModelConfigItem } from "~/types";
+import type { ModelConfigItem } from "@assistant/schemas";
+import type { ChatSettings } from "~/types";
 import { applyModelResponseDefaults } from "../chat-settings";
 
 describe("chat settings model defaults", () => {

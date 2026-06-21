@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import type { ModelConfigItem } from "~/types";
+import type { ModelConfigItem } from "@assistant/schemas";
 import { formatReasoningLabel, getDefaultReasoningEffort, getReasoningOptions } from "../reasoning";
 
 describe("reasoning options", () => {

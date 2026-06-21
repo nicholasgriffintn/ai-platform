@@ -9,7 +9,7 @@ describe("useAgentForm", () => {
 		const agent = {
 			id: "agent-1",
 			name: "Agent",
-			enabled_tools: '["web_search","get_weather"]',
+			enabled_tools: '["web_search","bad tool","get_weather","web_search"]',
 		};
 
 		act(() => {
@@ -26,7 +26,7 @@ describe("useAgentForm", () => {
 
 		act(() => {
 			result.current.setName("Agent");
-			result.current.setEnabledTools(["web_search"]);
+			result.current.setEnabledTools(["web_search", "bad tool", "web_search"]);
 		});
 
 		expect(result.current.getFormData()).toEqual(
@@ -35,5 +35,16 @@ describe("useAgentForm", () => {
 				enabled_tools: ["web_search"],
 			}),
 		);
+	});
+
+	it("omits enabled_tools when selected values are invalid", () => {
+		const { result } = renderHook(() => useAgentForm());
+
+		act(() => {
+			result.current.setName("Agent");
+			result.current.setEnabledTools(["bad tool"]);
+		});
+
+		expect(result.current.getFormData()).not.toHaveProperty("enabled_tools");
 	});
 });

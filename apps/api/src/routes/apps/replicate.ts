@@ -1,16 +1,23 @@
 import { addRoute } from "~/lib/http/routeBuilder";
 import { Hono } from "hono";
 
-import z from "zod/v4";
-import { apiResponseSchema } from "@assistant/schemas";
+import {
+	executeReplicateRequestSchema,
+	type AppTheme,
+	type ModelModalities,
+	type ModelModality,
+	replicateExecuteResponseSchema,
+	replicateModelsResponseSchema,
+	replicatePredictionParamsSchema,
+	replicatePredictionResponseSchema,
+	replicatePredictionsResponseSchema,
+} from "@assistant/schemas";
 
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import { executeReplicateModel } from "~/services/apps/replicate/execute";
 import { listReplicatePredictions } from "~/services/apps/replicate/list";
 import { getReplicatePredictionDetails } from "~/services/apps/replicate/get-details";
 import { replicateModelConfig } from "~/data-model/models/replicate";
-import type { AppTheme } from "~/types/app-schema";
-import type { ModelModalities, ModelModality } from "~/types";
 import { AssistantError } from "~/utils/errors";
 
 const signatureMetadata: Record<
@@ -107,20 +114,11 @@ app.use("/*", (c, next) => {
 	return next();
 });
 
-const executeReplicateSchema = z.object({
-	modelId: z.string().min(1),
-	input: z.record(z.string(), z.any()),
-});
-
-const predictionParamsSchema = z.object({
-	id: z.string().min(1),
-});
-
 addRoute(app, "get", "/models", {
 	tags: ["apps"],
 	description: "List all available Replicate models",
 	responses: {
-		200: { description: "List of Replicate models", schema: z.array(z.any()) },
+		200: { description: "List of Replicate models", schema: replicateModelsResponseSchema },
 	},
 	handler: async () => {
 		const models = Object.entries(replicateModelConfig).map(([id, model]) => {
@@ -164,7 +162,7 @@ addRoute(app, "get", "/predictions", {
 	tags: ["apps"],
 	description: "List user's Replicate predictions",
 	responses: {
-		200: { description: "List of predictions", schema: z.any() },
+		200: { description: "List of predictions", schema: replicatePredictionsResponseSchema },
 	},
 	auth: true,
 	handler: async ({ serviceContext, user }) => {
@@ -191,9 +189,9 @@ addRoute(app, "get", "/predictions", {
 addRoute(app, "get", "/predictions/:id", {
 	tags: ["apps"],
 	description: "Get Replicate prediction details",
-	paramSchema: predictionParamsSchema,
+	paramSchema: replicatePredictionParamsSchema,
 	responses: {
-		200: { description: "Prediction details", schema: z.any() },
+		200: { description: "Prediction details", schema: replicatePredictionResponseSchema },
 	},
 	auth: true,
 	handler: async ({ params, serviceContext, user }) => {
@@ -221,9 +219,9 @@ addRoute(app, "get", "/predictions/:id", {
 addRoute(app, "post", "/execute", {
 	tags: ["apps"],
 	description: "Execute a Replicate model",
-	bodySchema: executeReplicateSchema,
+	bodySchema: executeReplicateRequestSchema,
 	responses: {
-		200: { description: "Execution result", schema: apiResponseSchema },
+		200: { description: "Execution result", schema: replicateExecuteResponseSchema },
 	},
 	auth: true,
 	handler: async ({ body, serviceContext, user }) => {

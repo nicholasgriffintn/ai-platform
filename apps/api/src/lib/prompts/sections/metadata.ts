@@ -1,6 +1,7 @@
 import { APP_DESCRIPTION, APP_NAME } from "~/constants/app";
 import { hasProviderReasoningOptions } from "~/lib/providers/models/reasoning";
-import type { IBody, ModelConfigItem } from "~/types";
+import type { ModelConfigItem } from "@assistant/schemas";
+import type { IBody } from "~/types";
 import { PromptBuilder } from "../builder";
 
 export interface PromptModelMetadata {

@@ -1,5 +1,6 @@
 import { useCallback, useState } from "react";
 import { useNavigate, useParams } from "react-router";
+import type { NoteMetadata } from "@assistant/schemas";
 import { NoteEditor } from "~/components/Apps/Notes/NoteEditor";
 import { PageShell } from "~/components/Core/PageShell";
 import { AppsSidebarContent } from "~/components/Sidebar/AppsSidebarContent";
@@ -28,7 +29,7 @@ export default function NoteDetailPage() {
 		async (
 			title: string,
 			content: string,
-			additionalMetadata?: Record<string, any>,
+			additionalMetadata?: NoteMetadata,
 			options?: { refreshMetadata?: boolean },
 		) => {
 			const metadata = {

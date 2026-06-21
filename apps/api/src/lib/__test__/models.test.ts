@@ -1,7 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { KVCache } from "~/lib/cache";
-import type { ModelConfigItem, IUser } from "~/types";
+import type { ModelConfigItem } from "@assistant/schemas";
+import type { IUser } from "~/types";
 import {
 	filterModelsForUserAccess,
 	getAuxiliaryGuardrailsModel,

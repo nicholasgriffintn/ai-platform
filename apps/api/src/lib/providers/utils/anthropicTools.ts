@@ -1,4 +1,5 @@
-import type { ChatCompletionParameters, ModelConfigItem } from "~/types";
+import type { ModelConfigItem } from "@assistant/schemas";
+import type { ChatCompletionParameters } from "~/types";
 import { readOptionBag, readRecordOption } from "~/utils/options";
 
 export const ANTHROPIC_TOOL_TYPES = {

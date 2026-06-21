@@ -35,7 +35,7 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import React from "react";
-import type { AppListItem, AppTheme } from "~/types/apps";
+import type { AppTheme, DynamicAppCatalogItem as AppListItem } from "@assistant/schemas";
 
 type ThemeStyle = {
 	iconColor: string;

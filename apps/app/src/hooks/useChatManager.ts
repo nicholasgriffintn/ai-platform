@@ -129,7 +129,11 @@ export function useChatManager(
 	} = useConversationActions(streamResponse, generateConversationTitle, setStreamStarted);
 
 	const sendMessage = useCallback(
-		async (input: string, attachments?: AttachmentData[]) => {
+		async (
+			input: string,
+			attachments?: AttachmentData[],
+			overrideRequestOptions?: ChatRequestOptions,
+		) => {
 			if (!input.trim() && !attachments?.length) {
 				return {
 					status: "error",
@@ -176,7 +180,11 @@ export function useChatManager(
 					? [...previousConversation.messages, userMessage]
 					: [userMessage];
 
-				const response = await streamResponse(updatedMessages, conversationId);
+				const response = await streamResponse(
+					updatedMessages,
+					conversationId,
+					overrideRequestOptions,
+				);
 				return response;
 			} catch (error) {
 				console.error("Failed to send message:", error);

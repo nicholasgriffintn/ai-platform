@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import type { ModelConfigItem } from "~/types";
+import type { ModelCatalogItem } from "@assistant/schemas";
 import {
 	collapseRegionalModelVariants,
 	getRegionalModelDisplayName,
@@ -11,8 +11,8 @@ const makeModel = (
 	id: string,
 	name: string,
 	provider = "bedrock",
-	overrides: Partial<ModelConfigItem> = {},
-): ModelConfigItem => ({
+	overrides: Partial<ModelCatalogItem> = {},
+): ModelCatalogItem => ({
 	id,
 	name,
 	matchingModel: id,

@@ -77,7 +77,7 @@ const inputSchemaDescriptorSchema = z.object({
 const modelReasoningConfigSchema = z.object({
 	supportedEffortLevels: z.array(reasoningEffortSchema).optional(),
 	defaultEffort: reasoningEffortSchema.optional(),
-	modelOverrides: z.record(reasoningEffortSchema, z.string()).optional(),
+	modelOverrides: z.partialRecord(reasoningEffortSchema, z.string()).optional(),
 });
 
 const modelVerbosityConfigSchema = z.object({
@@ -86,7 +86,7 @@ const modelVerbosityConfigSchema = z.object({
 });
 
 export const modelConfigItemSchema = z.object({
-	id: z.string(),
+	id: z.string().optional(),
 	matchingModel: z.string(),
 	name: z.string().optional(),
 	provider: z.string(),
@@ -201,3 +201,28 @@ export type ModelReasoningConfig = z.infer<typeof modelReasoningConfigSchema>;
 export type ModelVerbosityConfig = z.infer<typeof modelVerbosityConfigSchema>;
 export type ModelConfigItem = z.infer<typeof modelConfigItemSchema>;
 export type ModelConfig = Record<string, ModelConfigItem>;
+export type InputSchemaInputFieldType = z.infer<typeof inputSchemaFieldTypeSchema>;
+export type InputSchemaInputFieldDescriptor = z.infer<typeof inputSchemaFieldDescriptorSchema>;
+export type InputSchemaInputSchemaDescriptor = z.infer<typeof inputSchemaDescriptorSchema>;
+export type ModelConfigInfo = {
+	model: string;
+	provider: string;
+	displayName: string;
+};
+export type ModelCatalogItem = ModelConfigItem & {
+	id: string;
+};
+export type ModelCatalogConfig = Record<string, ModelCatalogItem>;
+export type PromptRequirements = {
+	expectedComplexity: ModelRanking;
+	requiredStrengths: ModelModality[];
+	criticalStrengths?: ModelModality[];
+	estimatedInputTokens: number;
+	estimatedOutputTokens: number;
+	hasImages: boolean;
+	hasDocuments?: boolean;
+	needsFunctions: boolean;
+	budget_constraint?: number;
+	benefitsFromMultipleModels?: boolean;
+	modelComparisonReason?: string;
+};

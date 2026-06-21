@@ -1,5 +1,5 @@
 import { ModelIcon } from "~/components/ModelIcon";
-import type { ModelConfigItem } from "~/types/models";
+import type { ModelConfigItem } from "@assistant/schemas";
 
 interface ModelCardProps {
 	model: ModelConfigItem;

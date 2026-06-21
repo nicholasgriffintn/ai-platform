@@ -1,6 +1,6 @@
 import type { SandboxRunEvent, SandboxRunResult, SandboxTaskType } from "@assistant/schemas";
 
-import { ResponseDisplayType } from "~/types/functions";
+import { ResponseDisplayType } from "@assistant/schemas";
 import type { IFunctionResponse } from "~/types";
 
 interface SandboxRunSummary {

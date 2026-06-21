@@ -1,6 +1,7 @@
 import { Sparkles } from "lucide-react";
-import { useCallback, useMemo, useState } from "react";
-import { useNavigate } from "react-router";
+import type { DynamicAppCatalogItem as AppListItem } from "@assistant/schemas";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router";
 
 import { EmptyState } from "~/components/Core/EmptyState";
 import { Logo } from "~/components/Core/Logo";
@@ -17,12 +18,12 @@ import { AppCard } from "./AppCard";
 import { DynamicForm } from "./DynamicForm";
 import { ResponseRenderer } from "./ResponseRenderer";
 import { groupAppsByCategory } from "./utils";
-import type { AppListItem } from "~/types/apps";
 
 export const DynamicApps = () => {
 	const { isAuthenticated, isAuthenticationLoading, isPro } = useChatStore();
 	const { trackEvent } = useTrackEvent();
 	const navigate = useNavigate();
+	const [searchParams, setSearchParams] = useSearchParams();
 
 	const [selectedAppId, setSelectedAppId] = useState<string | null>(null);
 	const [result, setResult] = useState<Record<string, any> | null>(null);
@@ -31,6 +32,7 @@ export const DynamicApps = () => {
 	const { data: appsData, isLoading: appsLoading, error: appsError } = useDynamicApps();
 
 	const apps = appsData?.apps ?? [];
+	const requestedAppId = searchParams.get("app");
 
 	const {
 		data: selectedApp,
@@ -97,6 +99,32 @@ export const DynamicApps = () => {
 		},
 		[apps, handleAppSelect],
 	);
+
+	useEffect(() => {
+		if (!requestedAppId || appsLoading || isAuthenticationLoading) {
+			return;
+		}
+
+		const app = apps.find((item) => item.id === requestedAppId);
+		if (!app) {
+			return;
+		}
+
+		handleAppSelect(app);
+		if (app.kind !== "frontend") {
+			const nextSearchParams = new URLSearchParams(searchParams);
+			nextSearchParams.delete("app");
+			setSearchParams(nextSearchParams, { replace: true });
+		}
+	}, [
+		apps,
+		appsLoading,
+		handleAppSelect,
+		isAuthenticationLoading,
+		requestedAppId,
+		searchParams,
+		setSearchParams,
+	]);
 
 	const handleFormSubmit = useCallback(
 		async (formData: Record<string, any>) => {

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { ResponseDisplayType } from "~/types/functions";
+import { ResponseDisplayType } from "@assistant/schemas";
 import {
 	formatFunctionName,
 	getFunctionIcon,

@@ -1,3 +1,4 @@
+import type { CreateAgentInput, UpdateAgentInput } from "@assistant/schemas";
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import type { IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -36,34 +37,14 @@ export async function getAgentById(context: ServiceContext, agentId: string, use
 	return agent;
 }
 
-interface CreateAgentParams {
-	name: string;
-	description: string;
-	avatar_url?: string | null;
-	servers?: any[];
-	model: string;
-	temperature: number;
-	max_steps: number;
-	system_prompt: string;
-	few_shot_examples?: any[];
-	enabled_tools?: string[];
-	team_id?: string;
-	team_role?: string;
-	is_team_agent?: boolean;
-}
-
-export async function createAgent(
-	context: ServiceContext,
-	params: CreateAgentParams,
-	user?: IUser,
-) {
+export async function createAgent(context: ServiceContext, params: CreateAgentInput, user?: IUser) {
 	context.ensureDatabase();
 	const currentUser = user ?? context.requireUser();
 
 	return context.repositories.agents.createAgent(
 		currentUser.id,
 		params.name,
-		params.description,
+		params.description ?? "",
 		params.avatar_url || null,
 		params.servers || [],
 		params.model,
@@ -78,26 +59,10 @@ export async function createAgent(
 	);
 }
 
-interface UpdateAgentParams {
-	name?: string;
-	description?: string;
-	avatar_url?: string | null;
-	servers?: any[];
-	model?: string;
-	temperature?: number;
-	max_steps?: number;
-	system_prompt?: string;
-	few_shot_examples?: any[];
-	enabled_tools?: string[];
-	team_id?: string;
-	team_role?: string;
-	is_team_agent?: boolean;
-}
-
 export async function updateAgent(
 	context: ServiceContext,
 	agentId: string,
-	updates: UpdateAgentParams,
+	updates: UpdateAgentInput,
 	userId?: number,
 ) {
 	context.ensureDatabase();

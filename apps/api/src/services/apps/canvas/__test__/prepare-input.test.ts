@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { ModelConfigItem } from "~/types";
+import type { ModelConfigItem } from "@assistant/schemas";
 
 import { prepareCanvasInputForModel } from "../prepare-input";
 

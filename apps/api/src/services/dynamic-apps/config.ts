@@ -1,4 +1,4 @@
-import type { AppTheme } from "~/types/app-schema";
+import type { AppTheme } from "@assistant/schemas";
 
 type DynamicAppCategory =
 	| "Agents & Delegation"

@@ -1,4 +1,4 @@
-import type { TrainingModelDefinition } from "~/types/training";
+import type { TrainingModelDefinition } from "@assistant/schemas";
 
 const HUGGING_FACE_LLM_TRAINING_IMAGE =
 	"763104351884.dkr.ecr.{region}.amazonaws.com/huggingface-pytorch-training:2.8.0-transformers4.56.2-gpu-py312-cu129-ubuntu22.04";

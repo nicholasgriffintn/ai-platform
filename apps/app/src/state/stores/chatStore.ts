@@ -1,4 +1,8 @@
-import type { HomeChatModeId, SandboxChatModeSettings } from "@assistant/schemas";
+import type {
+	AssistantActionSelection,
+	HomeChatModeId,
+	SandboxChatModeSettings,
+} from "@assistant/schemas";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
@@ -58,6 +62,10 @@ export interface ChatStore {
 	setUseMultiModel: (useMultiModel: boolean) => void;
 	selectedAgentId: string | null;
 	setSelectedAgentId: (agentId: string | null) => void;
+	selectedAgentTokenPosition: number | null;
+	setSelectedAgentTokenPosition: (position: number | null) => void;
+	selectedAssistantAction: AssistantActionSelection | null;
+	setSelectedAssistantAction: (action: ChatStore["selectedAssistantAction"]) => void;
 	chatSettings: ChatSettings;
 	setChatSettings: (settings: ChatSettings) => void;
 	showSearch: boolean;
@@ -100,6 +108,10 @@ export const useChatStore = create<ChatStore>()(
 			setUseMultiModel: (useMultiModel) => set({ useMultiModel }),
 			selectedAgentId: null,
 			setSelectedAgentId: (agentId) => set({ selectedAgentId: agentId }),
+			selectedAgentTokenPosition: null,
+			setSelectedAgentTokenPosition: (position) => set({ selectedAgentTokenPosition: position }),
+			selectedAssistantAction: null,
+			setSelectedAssistantAction: (action) => set({ selectedAssistantAction: action }),
 			chatSettings: defaultSettings,
 			setChatSettings: (settings) => set({ chatSettings: settings }),
 			chatInput: "",

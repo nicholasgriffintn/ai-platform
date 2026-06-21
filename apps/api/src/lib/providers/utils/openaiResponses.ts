@@ -1,4 +1,5 @@
-import type { ChatCompletionParameters, Message, ModelConfigItem } from "~/types";
+import type { ModelConfigItem } from "@assistant/schemas";
+import type { ChatCompletionParameters, Message } from "~/types";
 import { formatToolCalls } from "~/lib/chat/tools";
 import { MessageFormatter } from "~/lib/formatter";
 import {

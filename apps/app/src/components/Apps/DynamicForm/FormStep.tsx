@@ -1,4 +1,4 @@
-import type { AppSchema } from "~/types/apps";
+import type { AppSchema } from "@assistant/schemas";
 import { FormField } from "./FormField";
 
 interface FormStepProps {

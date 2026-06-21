@@ -1,4 +1,5 @@
-import type { ModelConfig, Message } from "~/types";
+import type { ModelConfig } from "@assistant/schemas";
+import type { Message } from "~/types";
 
 export function getModelIdsByOutput(
 	config: ModelConfig,

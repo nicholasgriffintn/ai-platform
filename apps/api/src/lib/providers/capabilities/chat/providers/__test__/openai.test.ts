@@ -1,7 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
+import type { ModelConfigItem } from "@assistant/schemas";
 import type { StorageService } from "~/lib/storage";
 import { getModelConfigByMatchingModel } from "~/lib/providers/models";
-import type { ChatCompletionParameters, IEnv, IUser, ModelConfigItem } from "~/types";
+import type { ChatCompletionParameters, IEnv, IUser } from "~/types";
 import {
 	createCommonParameters,
 	getToolsForProvider,

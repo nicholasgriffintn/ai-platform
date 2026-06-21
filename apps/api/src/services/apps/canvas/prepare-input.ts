@@ -2,7 +2,7 @@ import type {
 	InputSchemaInputFieldDescriptor,
 	InputSchemaInputFieldType,
 	ModelConfigItem,
-} from "~/types";
+} from "@assistant/schemas";
 import { buildInputSchemaInput, type InputSchemaBuildParameters } from "~/utils/inputSchema";
 import type { CanvasGenerationInput } from "./types";
 import { isCanvasReferenceFieldName } from "./input-requirements";

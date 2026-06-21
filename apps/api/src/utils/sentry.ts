@@ -2,9 +2,14 @@ import type { CloudflareOptions } from "@sentry/cloudflare";
 import * as Sentry from "@sentry/cloudflare";
 
 import type { IEnv } from "~/types";
-import { type AssistantError } from "./errors";
+import { type AssistantError, ErrorType } from "./errors";
 
-const TRACES_SAMPLE_RATE = 0.1;
+const NON_REPORTABLE_AUTH_ERROR_TYPES = new Set<ErrorType>([
+	ErrorType.AUTHENTICATION_ERROR,
+	ErrorType.AUTHORISATION_ERROR,
+	ErrorType.FORBIDDEN,
+	ErrorType.UNAUTHORIZED,
+]);
 
 export function getSentryOptions(
 	env: Pick<IEnv, "ENV" | "SENTRY_DSN">,
@@ -35,6 +40,10 @@ export function getSentryOptions(
 }
 
 export function shouldCaptureApiError(error: AssistantError): boolean {
+	if (NON_REPORTABLE_AUTH_ERROR_TYPES.has(error.type)) {
+		return false;
+	}
+
 	return (error.statusCode ?? 500) >= 500;
 }
 

@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { readToolIds } from "@assistant/schemas";
 
 import { useToolsStore } from "~/state/stores/toolsStore";
 import type { ChatMode } from "~/types";
@@ -6,23 +7,6 @@ import type { ChatMode } from "~/types";
 type AgentWithTools = {
 	id: string;
 	enabled_tools?: string[] | string | null;
-};
-
-const normalizeAgentTools = (tools: unknown): string[] | null => {
-	if (Array.isArray(tools)) {
-		return tools.filter((tool) => typeof tool === "string");
-	}
-	if (typeof tools === "string" && tools.trim().length > 0) {
-		try {
-			const parsed = JSON.parse(tools);
-			if (Array.isArray(parsed)) {
-				return parsed.filter((tool) => typeof tool === "string");
-			}
-		} catch {
-			return null;
-		}
-	}
-	return null;
 };
 
 export const useAgentToolDefaults = ({
@@ -53,7 +37,7 @@ export const useAgentToolDefaults = ({
 		if (isAgentMode) {
 			pendingResetRef.current = false;
 			const agent = agents.find((a) => a.id === selectedAgentId);
-			const agentTools = normalizeAgentTools(agent?.enabled_tools);
+			const agentTools = readToolIds(agent?.enabled_tools);
 			if (agentTools && agentTools.length > 0) {
 				if (!arraysEqual(selectedTools, agentTools)) {
 					setSelectedTools(agentTools);

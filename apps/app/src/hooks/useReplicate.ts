@@ -5,7 +5,7 @@ import {
 	fetchReplicatePredictions,
 	fetchReplicatePrediction,
 } from "~/lib/api/replicate";
-import type { ExecuteReplicateRequest, ReplicatePrediction } from "~/types/replicate";
+import type { ExecuteReplicateRequest, ReplicatePrediction } from "@assistant/schemas";
 
 const REPLICATE_QUERY_KEY = "replicate";
 

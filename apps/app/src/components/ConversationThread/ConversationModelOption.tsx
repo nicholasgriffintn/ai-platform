@@ -2,10 +2,10 @@ import { ModelIcon } from "~/components/ModelIcon";
 import { Checkbox } from "~/components/ui";
 import { getModelDisplayName } from "~/lib/models";
 import { cn } from "~/lib/utils";
-import type { ModelConfigItem } from "~/types";
+import type { ModelCatalogItem } from "@assistant/schemas";
 
 interface ConversationModelOptionProps {
-	model: ModelConfigItem;
+	model: ModelCatalogItem;
 	onSelect: (modelId: string) => void;
 	isDisabled?: boolean;
 	isSelected?: boolean;

@@ -1,8 +1,7 @@
 import { ConversationManager } from "~/lib/conversationManager";
-import { getDynamicAppFormErrors } from "@assistant/schemas";
+import { getDynamicAppFormErrors, type AppSchema } from "@assistant/schemas";
 import { getFeaturedApps, type FeaturedAppDefinition } from "~/services/dynamic-apps/config";
 import { handleFunctions } from "~/services/functions";
-import type { AppSchema } from "~/types/app-schema";
 import type { IRequest } from "~/types";
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import type { AppData } from "~/repositories/AppDataRepository";

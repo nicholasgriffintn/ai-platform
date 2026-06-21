@@ -1,4 +1,4 @@
-import type { Podcast } from "~/types/podcast";
+import type { Podcast } from "@assistant/schemas";
 import { PodcastView } from "../Podcasts/View";
 
 interface PodcastRendererProps {

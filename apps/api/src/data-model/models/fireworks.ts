@@ -1,4 +1,4 @@
-import type { ModelConfig } from "~/types";
+import type { ModelConfig } from "@assistant/schemas";
 
 export const fireworksModelConfig: ModelConfig = {
 	"openai/gpt-oss-120b": {

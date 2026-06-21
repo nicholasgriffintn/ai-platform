@@ -1,4 +1,4 @@
-import type { ModelConfigItem } from "~/types";
+import type { ModelConfigItem } from "@assistant/schemas";
 
 export type ModelToolId =
 	| "code_execution"
@@ -69,9 +69,7 @@ export const MODEL_TOOL_DEFINITIONS: ModelToolDefinition[] = [
 	},
 ];
 
-export function getAvailableModelTools(
-	model?: Pick<ModelConfigItem, ToolCapabilityKey>,
-): ModelToolDefinition[] {
+export function getAvailableModelTools(model?: Partial<Pick<ModelConfigItem, ToolCapabilityKey>>) {
 	if (!model) {
 		return [];
 	}

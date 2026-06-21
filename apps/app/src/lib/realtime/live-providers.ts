@@ -4,7 +4,7 @@ import {
 	type RealtimeLiveProviderManifestItem,
 } from "@assistant/schemas";
 import { defaultModel, isRealtimeSessionModel, isTextInputChatModel } from "~/lib/models";
-import type { ModelConfig } from "~/types";
+import type { ModelConfig } from "@assistant/schemas";
 import type { CreateRealtimeSessionOptions, RealtimeTransport } from "./types";
 import {
 	REALTIME_LIVE_PROVIDER_WEBSOCKET_CONFIG,

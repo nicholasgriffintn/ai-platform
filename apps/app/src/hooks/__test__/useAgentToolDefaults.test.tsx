@@ -41,6 +41,26 @@ describe("useAgentToolDefaults", () => {
 		expect(mockStoreState.resetToDefaults).not.toHaveBeenCalled();
 	});
 
+	it("normalises persisted agent enabled_tools before applying them", () => {
+		const agents = [
+			{
+				id: "agent-1",
+				enabled_tools: JSON.stringify(["web_search", "bad tool", "web_search"]),
+			},
+		];
+
+		renderHook(() =>
+			useAgentToolDefaults({
+				agents,
+				selectedAgentId: "agent-1",
+				chatMode: "agent",
+			}),
+		);
+
+		expect(mockStoreState.setSelectedTools).toHaveBeenCalledWith(["web_search"]);
+		expect(mockStoreState.resetToDefaults).not.toHaveBeenCalled();
+	});
+
 	it("resets to defaults when leaving agent mode", () => {
 		mockStoreState.defaultTools = ["search_grounding"];
 		const agents = [{ id: "agent-1", enabled_tools: ["web_search"] }];

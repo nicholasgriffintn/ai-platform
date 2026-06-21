@@ -31,17 +31,17 @@ export const conversationSandboxRequestOptionsSchema = z
 	})
 	.passthrough();
 
+export const conversationSmsRequestOptionsSchema = z.object({
+	enabled: z.boolean(),
+	from: z.string().trim().optional(),
+	to: z.string().trim().optional(),
+});
+
 export const conversationModeRequestOptionsSchema = z
 	.object({
 		council: councilChatOptionsSchema.optional(),
 		sandbox: conversationSandboxRequestOptionsSchema.optional(),
-		sms: z
-			.object({
-				enabled: z.boolean(),
-				from: z.string().trim().optional(),
-				to: z.string().trim().optional(),
-			})
-			.optional(),
+		sms: conversationSmsRequestOptionsSchema.optional(),
 	})
 	.passthrough();
 
@@ -61,5 +61,6 @@ export const conversationModeMetadataSchema = z
 
 export type HomeChatModeId = z.infer<typeof homeChatModeIdSchema>;
 export type SandboxChatModeSettings = z.infer<typeof sandboxChatModeSettingsSchema>;
+export type ConversationSmsRequestOptions = z.infer<typeof conversationSmsRequestOptionsSchema>;
 export type ConversationModeRequestOptions = z.infer<typeof conversationModeRequestOptionsSchema>;
 export type ConversationModeMetadata = z.infer<typeof conversationModeMetadataSchema>;

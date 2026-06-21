@@ -142,8 +142,8 @@ describe("notes service", () => {
 
 			const result = await listNotes({ env: mockEnv, userId: 123 });
 
-			expect(result[0].title).toBeUndefined();
-			expect(result[0].content).toBeUndefined();
+			expect(result[0].title).toBe("");
+			expect(result[0].content).toBe("");
 		});
 	});
 

@@ -1,21 +1,24 @@
-import { AtSign, Bot, Check, Command, Loader2, Search, X } from "lucide-react";
+import {
+	AppWindow,
+	AtSign,
+	Bot,
+	Check,
+	Command,
+	Loader2,
+	Plug,
+	ScrollText,
+	Search,
+	Wrench,
+	X,
+} from "lucide-react";
 import { type ReactNode, useEffect, useRef, useState } from "react";
+import type { AssistantActionItem, AssistantActionItemKind } from "@assistant/schemas";
 
 import { Button, Popover, PopoverContent, PopoverTrigger } from "~/components/ui";
 import type { ComposerDirectiveQuery } from "~/lib/composer-commands";
 import { cn } from "~/lib/utils";
 import type { ComposerCommandAction } from "./composerCommandTypes";
 import { useComposerCommandActions } from "./useComposerCommandActions";
-
-interface AgentCommand {
-	id: string;
-	name: string;
-	description?: string;
-	avatar_url?: string;
-	model?: string;
-	enabled_tools?: string[];
-	is_team_agent?: boolean;
-}
 
 interface ComposerCommandsState {
 	modeCommands: ComposerCommandAction[];
@@ -27,15 +30,8 @@ interface ComposerCommandsState {
 	activeSuggestionIndex?: number;
 	includeSettingCommands?: boolean;
 	onActiveSuggestionIndexChange?: (index: number) => void;
-}
-
-function getAgentInitials(name: string) {
-	return name
-		.split(/\s+/)
-		.filter(Boolean)
-		.slice(0, 2)
-		.map((part) => part[0]?.toUpperCase())
-		.join("");
+	onActionItemSelect?: (item: AssistantActionItem) => void;
+	onSlashCommandSelect?: (command: ComposerCommandAction) => void;
 }
 
 function CommandRow({
@@ -93,23 +89,52 @@ function CommandRow({
 	);
 }
 
-function AgentAvatar({ agent }: { agent: AgentCommand }) {
-	if (agent.avatar_url) {
-		return (
-			<img
-				src={agent.avatar_url}
-				alt=""
-				className="h-6 w-6 rounded-md object-cover"
-				aria-hidden="true"
-			/>
-		);
+function ActionItemAvatar({ item }: { item: AssistantActionItem }) {
+	if (item.kind === "agent") {
+		return <Bot className="h-4 w-4" aria-hidden="true" />;
 	}
+	if (item.kind === "app") {
+		return <AppWindow className="h-4 w-4" aria-hidden="true" />;
+	}
+	if (item.kind === "connector") {
+		return <Plug className="h-4 w-4" aria-hidden="true" />;
+	}
+	if (item.kind === "tool") {
+		return <Wrench className="h-4 w-4" aria-hidden="true" />;
+	}
+	return <ScrollText className="h-4 w-4" aria-hidden="true" />;
+}
 
-	return (
-		<span className="flex h-6 w-6 items-center justify-center rounded-md bg-zinc-200 text-[10px] font-semibold text-zinc-700 dark:bg-zinc-700 dark:text-zinc-100">
-			{getAgentInitials(agent.name) || <Bot className="h-4 w-4" aria-hidden="true" />}
-		</span>
-	);
+const ACTION_ITEM_GROUPS: Array<{
+	kinds: AssistantActionItemKind[];
+	label: string;
+	emptyLabel: string;
+}> = [
+	{ kinds: ["installed_recipe", "recipe"], label: "Recipes", emptyLabel: "recipes" },
+	{ kinds: ["app"], label: "Apps", emptyLabel: "apps" },
+	{ kinds: ["agent"], label: "Agents", emptyLabel: "agents" },
+	{ kinds: ["connector"], label: "Connectors", emptyLabel: "connectors" },
+	{ kinds: ["tool"], label: "Tools", emptyLabel: "tools" },
+];
+
+function groupActionItems(items: AssistantActionItem[]) {
+	return ACTION_ITEM_GROUPS.map((group) => ({
+		...group,
+		items: items.filter((item) => group.kinds.includes(item.kind)),
+	})).filter((group) => group.items.length > 0);
+}
+
+function describeActionItem(item: AssistantActionItem): string {
+	if (item.description) {
+		return item.description;
+	}
+	if (item.status) {
+		return item.status;
+	}
+	if (item.kind === "installed_recipe" || item.kind === "recipe") {
+		return "Use this recipe";
+	}
+	return `Use this ${item.kind}`;
 }
 
 function SectionLabel({ children }: { children: ReactNode }) {
@@ -127,11 +152,12 @@ function ContextChip({
 }: {
 	children: ReactNode;
 	className: string;
-	kind: "agent" | "attachment" | "mode";
+	kind: "action" | "agent" | "attachment" | "mode" | "skill";
 }) {
 	return (
 		<span
 			data-composer-context-chip={kind}
+			contentEditable={false}
 			className={cn(
 				"inline-flex h-7 max-w-full items-center gap-1.5 rounded-md border px-2 text-xs font-medium",
 				className,
@@ -167,6 +193,7 @@ interface ComposerAttachmentChipState {
 export function ComposerCommandChips(
 	props: ComposerCommandsState & {
 		attachments?: ComposerAttachmentChipState[];
+		hideAgentChip?: boolean;
 		onClearMode?: () => void;
 	},
 ) {
@@ -175,7 +202,9 @@ export function ComposerCommandChips(
 		(command) => command.isActive && command.command !== "chat",
 	);
 
-	if (!props.attachments?.length && !activeMode && !selectedAgent) {
+	const shouldShowAgent = selectedAgent && !props.hideAgentChip;
+
+	if (!props.attachments?.length && !activeMode && !shouldShowAgent) {
 		return null;
 	}
 
@@ -219,7 +248,7 @@ export function ComposerCommandChips(
 					)}
 				</ContextChip>
 			)}
-			{selectedAgent && (
+			{shouldShowAgent && (
 				<ContextChip
 					kind="agent"
 					className="border-blue-200 bg-blue-50 text-blue-800 dark:border-blue-900/60 dark:bg-blue-950/40 dark:text-blue-100"
@@ -243,12 +272,11 @@ export function ComposerCommandChips(
 export function ComposerCommandSuggestions(props: ComposerCommandsState) {
 	const {
 		canUseAgents,
-		filteredAgents,
+		filteredActionItems,
 		filteredSlashCommands,
 		isLoadingAgents,
-		selectAgent,
+		selectActionItem,
 		selectSlashCommand,
-		selectedAgentId,
 	} = useComposerCommandActions(props);
 	const listRef = useRef<HTMLDivElement>(null);
 
@@ -256,7 +284,7 @@ export function ComposerCommandSuggestions(props: ComposerCommandsState) {
 	const resultsCount = props.directive
 		? isModeQuery
 			? filteredSlashCommands.length
-			: filteredAgents.length
+			: filteredActionItems.length
 		: 0;
 	const activeIndex = Math.min(props.activeSuggestionIndex ?? 0, Math.max(resultsCount - 1, 0));
 	const hasResults = resultsCount > 0;
@@ -292,7 +320,7 @@ export function ComposerCommandSuggestions(props: ComposerCommandsState) {
 				) : (
 					<AtSign className="h-3.5 w-3.5" aria-hidden="true" />
 				)}
-				<span>{isModeQuery ? "Commands" : "Agents"}</span>
+				<span>{isModeQuery ? "Commands" : "Recipes, apps, and agents"}</span>
 			</div>
 			<div ref={listRef} className="max-h-72 overflow-y-auto p-2">
 				{isModeQuery ? (
@@ -309,7 +337,7 @@ export function ComposerCommandSuggestions(props: ComposerCommandsState) {
 							isDisabled={command.disabled}
 							isHighlighted={index === activeIndex}
 							onHighlight={() => props.onActiveSuggestionIndexChange?.(index)}
-							onClick={() => selectSlashCommand(command)}
+							onClick={() => props.onSlashCommandSelect?.(command) ?? selectSlashCommand(command)}
 							title={command.disabled ? (command.disabledReason ?? command.label) : command.label}
 						>
 							/{command.command}
@@ -317,32 +345,42 @@ export function ComposerCommandSuggestions(props: ComposerCommandsState) {
 					))
 				) : !canUseAgents ? (
 					<div className="px-3 py-2 text-sm text-zinc-500 dark:text-zinc-400">
-						Agents are available in Chat mode.
+						Recipes, apps, and agents are available in Chat mode.
 					</div>
 				) : isLoadingAgents ? (
 					<div className="flex items-center gap-2 px-3 py-2 text-sm text-zinc-500 dark:text-zinc-400">
 						<Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
-						<span>Loading agents...</span>
+						<span>Loading recipes, apps, and agents...</span>
 					</div>
 				) : (
-					filteredAgents.map((agent, index) => (
-						<CommandRow
-							key={agent.id}
-							icon={<AgentAvatar agent={agent} />}
-							description={agent.description || agent.model || "Use this agent for the next reply"}
-							isActive={agent.id === selectedAgentId}
-							isHighlighted={index === activeIndex}
-							onHighlight={() => props.onActiveSuggestionIndexChange?.(index)}
-							onClick={() => selectAgent(agent)}
-							title={agent.name}
-						>
-							@{agent.name}
-						</CommandRow>
+					groupActionItems(filteredActionItems).map((group) => (
+						<div key={group.label} className="space-y-1">
+							<SectionLabel>{group.label}</SectionLabel>
+							{group.items.map((item) => {
+								const itemIndex = filteredActionItems.findIndex(
+									(candidate) => candidate.id === item.id,
+								);
+								return (
+									<CommandRow
+										key={item.id}
+										icon={<ActionItemAvatar item={item} />}
+										description={describeActionItem(item)}
+										isActive={false}
+										isHighlighted={itemIndex === activeIndex}
+										onHighlight={() => props.onActiveSuggestionIndexChange?.(itemIndex)}
+										onClick={() => props.onActionItemSelect?.(item) ?? selectActionItem(item)}
+										title={item.label}
+									>
+										@{item.label}
+									</CommandRow>
+								);
+							})}
+						</div>
 					))
 				)}
 				{!hasResults && !isLoadingAgents && (
 					<div className="px-3 py-2 text-sm text-zinc-500 dark:text-zinc-400">
-						No {isModeQuery ? "commands" : "agents"} match this command.
+						No {isModeQuery ? "commands" : "recipes, apps, or agents"} match this command.
 					</div>
 				)}
 			</div>
@@ -352,11 +390,11 @@ export function ComposerCommandSuggestions(props: ComposerCommandsState) {
 
 export function ComposerCommandButton(props: ComposerCommandsState) {
 	const {
-		agents,
+		actionItems,
 		canUseAgents,
 		isLoadingAgents,
 		modeCommands,
-		selectAgent,
+		selectActionItem,
 		selectSlashCommand,
 		selectedAgent,
 		settingCommands,
@@ -378,13 +416,25 @@ export function ComposerCommandButton(props: ComposerCommandsState) {
 		if (shouldKeepPopoverOpen) {
 			keepOpenAfterSelectionRef.current = true;
 		}
-		selectSlashCommand(command);
+		if (props.onSlashCommandSelect) {
+			props.onSlashCommandSelect(command);
+		} else {
+			selectSlashCommand(command);
+		}
 		if (shouldKeepPopoverOpen) {
 			setIsOpen(true);
 			globalThis.setTimeout(() => {
 				keepOpenAfterSelectionRef.current = false;
 			}, 0);
 		}
+	};
+
+	const handleActionItemSelect = (item: AssistantActionItem) => {
+		if (props.onActionItemSelect) {
+			props.onActionItemSelect(item);
+			return;
+		}
+		selectActionItem(item);
 	};
 
 	return (
@@ -462,29 +512,34 @@ export function ComposerCommandButton(props: ComposerCommandsState) {
 						)}
 						{canUseAgents && (
 							<div>
-								<SectionLabel>Agents</SectionLabel>
+								<SectionLabel>Recipes, apps, and agents</SectionLabel>
 								<div className="space-y-1">
 									{isLoadingAgents ? (
 										<div className="flex items-center gap-2 px-3 py-2 text-sm text-zinc-500 dark:text-zinc-400">
 											<Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
-											<span>Loading agents...</span>
+											<span>Loading recipes, apps, and agents...</span>
 										</div>
-									) : agents.length === 0 ? (
+									) : actionItems.length === 0 ? (
 										<div className="px-3 py-2 text-sm text-zinc-500 dark:text-zinc-400">
-											No agents available.
+											No recipes, apps, or agents available.
 										</div>
 									) : (
-										agents.map((agent) => (
-											<CommandRow
-												key={agent.id}
-												icon={<AgentAvatar agent={agent} />}
-												description={agent.description || agent.model || "Use this agent"}
-												isActive={selectedAgent?.id === agent.id}
-												onClick={() => selectAgent(agent)}
-												title={agent.name}
-											>
-												{agent.name}
-											</CommandRow>
+										groupActionItems(actionItems).map((group) => (
+											<div key={group.label} className="space-y-1">
+												<SectionLabel>{group.label}</SectionLabel>
+												{group.items.map((item) => (
+													<CommandRow
+														key={item.id}
+														icon={<ActionItemAvatar item={item} />}
+														description={describeActionItem(item)}
+														isActive={item.id === `agent:${selectedAgent?.id}`}
+														onClick={() => handleActionItemSelect(item)}
+														title={item.label}
+													>
+														{item.label}
+													</CommandRow>
+												))}
+											</div>
 										))
 									)}
 								</div>
@@ -494,7 +549,7 @@ export function ComposerCommandButton(props: ComposerCommandsState) {
 				</div>
 				<div className="mt-3 flex items-center gap-2 border-t border-zinc-200 px-3 pt-2 text-xs text-zinc-500 dark:border-zinc-700 dark:text-zinc-400">
 					<Search className="h-3.5 w-3.5" aria-hidden="true" />
-					<span>Type / for modes or @ for agents.</span>
+					<span>Type / for actions or @ for recipes, apps, agents, connectors, and tools.</span>
 				</div>
 			</PopoverContent>
 		</Popover>

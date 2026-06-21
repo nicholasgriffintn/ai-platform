@@ -1,5 +1,7 @@
 import z from "zod/v4";
 
+import { toolIdsSchema } from "./tools";
+
 export const mcpServerSchema = z.object({
 	url: z.url().meta({
 		description: "The endpoint URL of the MCP server",
@@ -53,10 +55,9 @@ export const createAgentSchema = z.object({
 		.array(fewShotExampleSchema)
 		.optional()
 		.meta({ description: "Few-shot examples for the agent" }),
-	enabled_tools: z
-		.array(z.string())
-		.optional()
-		.meta({ description: "Tools enabled by default for this agent" }),
+	enabled_tools: toolIdsSchema.optional().meta({
+		description: "Tools enabled by default for this agent",
+	}),
 	team_id: z.string().optional().meta({ description: "Team ID this agent belongs to" }),
 	team_role: z.string().optional().meta({ description: "Role of this agent within the team" }),
 	is_team_agent: z
@@ -89,10 +90,9 @@ export const updateAgentSchema = z
 			.array(fewShotExampleSchema)
 			.optional()
 			.meta({ description: "Few-shot examples for the agent" }),
-		enabled_tools: z
-			.array(z.string())
-			.optional()
-			.meta({ description: "Tools enabled by default for this agent" }),
+		enabled_tools: toolIdsSchema.optional().meta({
+			description: "Tools enabled by default for this agent",
+		}),
 		team_id: z.string().optional().meta({ description: "Team ID this agent belongs to" }),
 		team_role: z.string().optional().meta({ description: "Role of this agent within the team" }),
 		is_team_agent: z.boolean().optional().meta({ description: "Whether this is a team agent" }),
@@ -100,3 +100,6 @@ export const updateAgentSchema = z
 	.refine((data) => Object.keys(data).length > 0, {
 		error: "At least one field must be provided",
 	});
+
+export type CreateAgentInput = z.input<typeof createAgentSchema>;
+export type UpdateAgentInput = z.input<typeof updateAgentSchema>;

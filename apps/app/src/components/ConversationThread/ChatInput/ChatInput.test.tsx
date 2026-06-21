@@ -1,10 +1,18 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import type { AssistantActionSelection } from "@assistant/schemas";
 import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { ChatInput } from ".";
 
 const mocks = vi.hoisted(() => ({
+	commandState: {
+		chatInput: "",
+		directive: null,
+		modeCommands: [],
+		selectedAgent: undefined as { id: string; name: string } | undefined,
+		setChatInput: vi.fn(),
+	},
 	uploadComposerAttachment: vi.fn(),
 }));
 
@@ -14,8 +22,12 @@ const store = {
 	currentConversationId: undefined,
 	isPro: false,
 	model: "gpt-realtime-2",
-	selectedAgentId: null,
+	selectedAgentId: null as string | null,
+	selectedAgentTokenPosition: null as number | null,
+	selectedAssistantAction: null as AssistantActionSelection | null,
 	setChatInput: vi.fn(),
+	setSelectedAgentTokenPosition: vi.fn(),
+	setSelectedAssistantAction: vi.fn(),
 };
 
 vi.mock("~/hooks/useModels", () => ({
@@ -69,8 +81,17 @@ interface MockAttachmentChip {
 
 vi.mock("./ComposerCommandSurface", () => ({
 	ComposerCommandButton: () => <button type="button">Commands</button>,
-	ComposerCommandChips: ({ attachments = [] }: { attachments?: MockAttachmentChip[] }) => (
+	ComposerCommandChips: ({
+		attachments = [],
+		hideAgentChip,
+		selectedAgent,
+	}: {
+		attachments?: MockAttachmentChip[];
+		hideAgentChip?: boolean;
+		selectedAgent?: { name: string };
+	}) => (
 		<div>
+			{selectedAgent && !hideAgentChip && <span>{selectedAgent.name}</span>}
 			{attachments.map((attachment) => (
 				<div key={attachment.label}>
 					{attachment.preview}
@@ -96,12 +117,7 @@ vi.mock("./ModelSelector", () => ({
 vi.mock("./useComposerCommandController", () => ({
 	useComposerCommandController: () => ({
 		applyDirectiveSelection: vi.fn(),
-		commandState: {
-			chatInput: "",
-			directive: null,
-			modeCommands: [],
-			setChatInput: vi.fn(),
-		},
+		commandState: mocks.commandState,
 		directiveQuery: null,
 		moveActiveSuggestion: vi.fn(),
 		setTextareaCursorPosition: vi.fn(),
@@ -120,6 +136,9 @@ describe("ChatInput", () => {
 		store.isPro = false;
 		store.model = "gpt-realtime-2";
 		store.selectedAgentId = null;
+		store.selectedAgentTokenPosition = null;
+		store.selectedAssistantAction = null;
+		mocks.commandState.selectedAgent = undefined;
 	});
 
 	it("hides only the message textarea when requested", () => {
@@ -238,6 +257,42 @@ describe("ChatInput", () => {
 		);
 
 		expect(screen.getByRole("button", { name: "Commands" })).toBe(commandButton);
+	});
+
+	it("keeps a hydrated selected agent visible when no inline token exists", () => {
+		store.selectedAgentId = "agent-1";
+		store.selectedAgentTokenPosition = null;
+		mocks.commandState.selectedAgent = { id: "agent-1", name: "Reviewer" };
+
+		render(
+			<ChatInput
+				controller={new AbortController()}
+				handleSubmit={vi.fn()}
+				isLoading={false}
+				onTranscribe={vi.fn()}
+				streamStarted={false}
+			/>,
+		);
+
+		expect(screen.getByText("Reviewer")).toBeInTheDocument();
+	});
+
+	it("hides the selected agent chip when an inline token renders it", () => {
+		store.selectedAgentId = "agent-1";
+		store.selectedAgentTokenPosition = 0;
+		mocks.commandState.selectedAgent = { id: "agent-1", name: "Reviewer" };
+
+		render(
+			<ChatInput
+				controller={new AbortController()}
+				handleSubmit={vi.fn()}
+				isLoading={false}
+				onTranscribe={vi.fn()}
+				streamStarted={false}
+			/>,
+		);
+
+		expect(screen.queryByText("Reviewer")).not.toBeInTheDocument();
 	});
 
 	it("loads selected private image attachment previews with credentials", async () => {

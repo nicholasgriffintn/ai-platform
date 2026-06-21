@@ -1,4 +1,4 @@
-import type { TrainingModelDefinition } from "~/types/training";
+import type { TrainingModelDefinition } from "@assistant/schemas";
 import { describe, expect, it } from "vitest";
 
 import { resolveTrainingDeploymentEnvironment } from "../trainingDeploymentEnvironment";

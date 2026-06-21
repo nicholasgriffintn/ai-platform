@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { AppSchema } from "~/types/app-schema";
+import type { AppSchema } from "@assistant/schemas";
 import type { IRequest } from "~/types";
 import { executeDynamicApp, registerDynamicApp } from "../index";
 

@@ -1,4 +1,4 @@
-import type { ModelConfigItem } from "~/types";
+import type { ModelConfigItem } from "@assistant/schemas";
 import type { ReasoningEffort } from "~/types/chat";
 
 export const DEFAULT_REASONING_EFFORTS: ReasoningEffort[] = ["none", "simulated-thinking"];

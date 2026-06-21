@@ -1,4 +1,5 @@
-import type { ModelConfigItem, ReasoningEffortLevel } from "~/types";
+import type { ModelConfigItem } from "@assistant/schemas";
+import type { ReasoningEffortLevel } from "~/types";
 
 const PROVIDER_REASONING_EFFORTS = new Set<ReasoningEffortLevel>([
 	"low",

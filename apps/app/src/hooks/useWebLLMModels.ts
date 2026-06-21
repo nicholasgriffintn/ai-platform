@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 
 import { getCachedWebLLMModels, loadWebLLMModels } from "~/lib/web-llm-models";
-import type { ModelConfig } from "~/types";
+import type { ModelConfig } from "@assistant/schemas";
 
 export function useWebLLMModels() {
 	const [models, setModels] = useState<ModelConfig>(() => getCachedWebLLMModels());

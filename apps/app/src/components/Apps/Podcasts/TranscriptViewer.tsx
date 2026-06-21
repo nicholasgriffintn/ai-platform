@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 
-import type { TranscriptData } from "~/types/podcast";
+import type { PodcastTranscriptData } from "@assistant/schemas";
 
 interface TranscriptViewerProps {
-	transcript: TranscriptData;
+	transcript: PodcastTranscriptData;
 	speakerNames?: Record<string, string>;
 }
 
@@ -26,7 +26,11 @@ export function TranscriptViewer({ transcript, speakerNames = {} }: TranscriptVi
 	const [speakerColors, setSpeakerColors] = useState<Record<string, string>>({});
 
 	useEffect(() => {
-		const uniqueSpeakers = [...new Set(transcript.segments.map((segment) => segment.speaker))];
+		const uniqueSpeakers = [
+			...new Set(
+				transcript.segments.map((segment, index) => segment.speaker ?? `Segment ${index + 1}`),
+			),
+		];
 		const colors = {
 			SPEAKER_00: "bg-blue-100 dark:bg-blue-900 border-blue-300 dark:border-blue-700",
 			SPEAKER_01: "bg-green-100 dark:bg-green-900 border-green-300 dark:border-green-700",
@@ -55,7 +59,8 @@ export function TranscriptViewer({ transcript, speakerNames = {} }: TranscriptVi
 			<div className="flex items-center justify-between mb-4">
 				<h3 className="text-lg font-semibold">Transcript</h3>
 				<div className="text-sm text-zinc-500">
-					{transcript.num_speakers} speakers • {transcript.language}
+					{transcript.num_speakers ?? uniqueSpeakerCount(transcript.segments)} speakers
+					{transcript.language ? ` • ${transcript.language}` : ""}
 				</div>
 			</div>
 
@@ -63,12 +68,14 @@ export function TranscriptViewer({ transcript, speakerNames = {} }: TranscriptVi
 				{transcript.segments.map((segment, index) => (
 					<div
 						key={index}
-						className={`p-3 rounded-lg border ${speakerColors[segment.speaker] || "bg-gray-100 dark:bg-gray-900 border-gray-300 dark:border-gray-700"}`}
+						className={`p-3 rounded-lg border ${speakerColors[getSegmentSpeaker(segment.speaker, index)] || "bg-gray-100 dark:bg-gray-900 border-gray-300 dark:border-gray-700"}`}
 					>
 						<div className="flex items-center justify-between mb-1">
-							<div className="font-medium text-sm">{getSpeakerName(segment.speaker)}</div>
+							<div className="font-medium text-sm">
+								{getSpeakerName(getSegmentSpeaker(segment.speaker, index))}
+							</div>
 							<div className="text-xs text-zinc-500">
-								{formatTime(segment.start)} - {formatTime(segment.end)}
+								{formatTime(segment.start ?? 0)} - {formatTime(segment.end ?? 0)}
 							</div>
 						</div>
 						<p className="text-sm text-zinc-800 dark:text-zinc-200">{segment.text}</p>
@@ -77,4 +84,12 @@ export function TranscriptViewer({ transcript, speakerNames = {} }: TranscriptVi
 			</div>
 		</div>
 	);
+}
+
+function getSegmentSpeaker(speaker: string | undefined, index: number): string {
+	return speaker ?? `Segment ${index + 1}`;
+}
+
+function uniqueSpeakerCount(segments: PodcastTranscriptData["segments"]): number {
+	return new Set(segments.map((segment, index) => getSegmentSpeaker(segment.speaker, index))).size;
 }

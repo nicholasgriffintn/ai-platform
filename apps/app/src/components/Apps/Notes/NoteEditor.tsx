@@ -1,5 +1,6 @@
 import { Hash } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import type { NoteMetadata as NoteMetadataType } from "@assistant/schemas";
 
 import { AIFormattingModal } from "~/components/Apps/Notes/AIFormattingModal";
 import { MediaGenerationModal } from "~/components/Apps/Notes/MediaGenerationModal";
@@ -17,11 +18,11 @@ import { cn } from "~/lib/utils";
 interface NoteEditorProps {
 	noteId?: string;
 	initialText?: string;
-	initialMetadata?: Record<string, any>;
+	initialMetadata?: NoteMetadataType;
 	onSave: (
 		title: string,
 		content: string,
-		metadata?: Record<string, any>,
+		metadata?: NoteMetadataType,
 		options?: { refreshMetadata?: boolean },
 	) => Promise<string>;
 	onDelete?: () => Promise<void>;
@@ -57,9 +58,7 @@ export function NoteEditor({
 	const [partialTranscript, setPartialTranscript] = useState<string>("");
 	const [isSpeechDetected, setIsSpeechDetected] = useState<boolean>(false);
 	const [lastSilenceTime, setLastSilenceTime] = useState<number>(0);
-	const [currentMetadata, setCurrentMetadata] = useState<Record<string, any>>(
-		initialMetadata || {},
-	);
+	const [currentMetadata, setCurrentMetadata] = useState<NoteMetadataType>(initialMetadata || {});
 	const [showMetadata, setShowMetadata] = useState<boolean>(false);
 	const [isMediaModalOpen, setIsMediaModalOpen] = useState(false);
 	const [isMetadataRefreshing, setIsMetadataRefreshing] = useState(false);
@@ -70,7 +69,7 @@ export function NoteEditor({
 	const { isSaving, forceSave } = useAutoSave({
 		text,
 		onSave,
-		tabInfo: tabCapture.tabInfo,
+		tabInfo: tabCapture.tabInfo ?? undefined,
 		metadata: currentMetadata,
 		saveOptionsRef,
 	});
@@ -87,7 +86,7 @@ export function NoteEditor({
 	} = useNoteFormatter(noteId ?? "");
 
 	const handleMetadataUpdate = useCallback(
-		async (newMetadata: Record<string, any>) => {
+		async (newMetadata: NoteMetadataType) => {
 			setCurrentMetadata(newMetadata);
 			if (noteId) {
 				forceSave({ bypassDirtyCheck: true });

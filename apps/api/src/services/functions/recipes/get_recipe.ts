@@ -2,9 +2,9 @@ import { getAssistantRecipe } from "~/services/apps/recipes";
 import { getRecipeNotificationCapabilities } from "~/services/apps/recipes/notificationCapabilities";
 import {
 	getActiveRecipeSetup,
+	getRecipeConfiguration,
 	getRecipeExecutionChannel,
 } from "~/services/apps/recipes/toolContext";
-import { isRecord } from "~/utils/objects";
 import { jsonSchemaToZod } from "../jsonSchema";
 import type { ApiToolDefinition } from "../types";
 
@@ -87,9 +87,7 @@ export const get_recipe: ApiToolDefinition = {
 				triggers: recipe.triggers,
 				enabledTools: recipe.enabledTools,
 				notificationCapabilities,
-				savedConfiguration: isRecord(request.request?.options?.recipe)
-					? request.request.options.recipe.configuration
-					: undefined,
+				savedConfiguration: getRecipeConfiguration(request.request?.options),
 			},
 		};
 	},

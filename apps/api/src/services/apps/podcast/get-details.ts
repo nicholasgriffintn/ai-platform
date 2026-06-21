@@ -1,7 +1,8 @@
+import type { Podcast } from "@assistant/schemas";
+
 import { resolveServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
 import type { IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
-import type { IPodcast } from "./list";
 import { safeParseJson } from "../../../utils/json";
 
 export interface IPodcastDetailRequest {
@@ -21,7 +22,7 @@ interface PodcastItem {
 	};
 }
 
-export const handlePodcastDetail = async (req: IPodcastDetailRequest): Promise<IPodcast> => {
+export const handlePodcastDetail = async (req: IPodcastDetailRequest): Promise<Podcast> => {
 	const { env, context, podcastId, user } = req;
 
 	if (!user?.id) {
@@ -61,7 +62,7 @@ export const handlePodcastDetail = async (req: IPodcastDetailRequest): Promise<I
 	const summaries = podcastData.items?.summary || [];
 	const images = podcastData.items?.image || [];
 
-	let status = "processing" as IPodcast["status"];
+	let status = "processing" as Podcast["status"];
 	if (images.length > 0) {
 		status = "complete";
 	} else if (summaries.length > 0) {
@@ -72,7 +73,7 @@ export const handlePodcastDetail = async (req: IPodcastDetailRequest): Promise<I
 
 	const uploadData = uploads[0]?.data || {};
 
-	const podcast: IPodcast = {
+	const podcast: Podcast = {
 		id: podcastData.id,
 		title: uploadData.title || "Untitled Podcast",
 		description: uploadData.description,

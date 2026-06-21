@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import type { Note, NoteCreateRequest, NoteUpdateRequest } from "@assistant/schemas";
 
 import {
 	createNote,
@@ -9,7 +10,6 @@ import {
 	updateNote,
 	generateNotesFromMedia,
 } from "~/lib/api/dynamic-apps";
-import type { Note } from "~/types/note";
 
 export const useFetchNotes = () => {
 	return useQuery<Note[], Error>({
@@ -29,7 +29,7 @@ export const useFetchNote = (id: string | undefined) => {
 export const useCreateNote = () => {
 	const queryClient = useQueryClient();
 	return useMutation({
-		mutationFn: (data: { title: string; content: string; metadata?: any }) => createNote(data),
+		mutationFn: (data: NoteCreateRequest) => createNote(data),
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["notes"] });
 		},
@@ -39,12 +39,7 @@ export const useCreateNote = () => {
 export const useUpdateNote = (id: string) => {
 	const queryClient = useQueryClient();
 	return useMutation({
-		mutationFn: (data: {
-			title: string;
-			content: string;
-			metadata?: any;
-			options?: Record<string, any>;
-		}) => updateNote({ id, ...data }),
+		mutationFn: (data: NoteUpdateRequest) => updateNote({ id, ...data }),
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["notes"] });
 			queryClient.invalidateQueries({ queryKey: ["note", id] });
