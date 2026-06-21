@@ -1,13 +1,21 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import * as embeddingHelpers from "~/lib/providers/capabilities/embedding/helpers";
 import { providerLibrary } from "~/lib/providers/library";
-import { HindsightMemoryProvider, HonchoMemoryProvider } from "../providers";
+import { BuiltInMemoryProvider, HindsightMemoryProvider, HonchoMemoryProvider } from "../providers";
 
 const getRecipeConnectorAccessTokenMock = vi.hoisted(() => vi.fn());
 const createMemoryMock = vi.hoisted(() => vi.fn());
 const deleteMemoryMock = vi.hoisted(() => vi.fn());
 const getMemoryByIdMock = vi.hoisted(() => vi.fn());
 const removeMemoryFromGroupsMock = vi.hoisted(() => vi.fn());
+const embeddingDeleteMock = vi.hoisted(() => vi.fn());
+
+vi.mock("~/lib/providers/capabilities/embedding/helpers", () => ({
+	getEmbeddingProvider: vi.fn(() => ({
+		delete: embeddingDeleteMock,
+	})),
+}));
 
 vi.mock("~/services/apps/connectors", () => ({
 	getRecipeConnectorAccessToken: getRecipeConnectorAccessTokenMock,
@@ -40,6 +48,10 @@ describe("external memory providers", () => {
 		});
 		deleteMemoryMock.mockResolvedValue(undefined);
 		removeMemoryFromGroupsMock.mockResolvedValue(undefined);
+		embeddingDeleteMock.mockResolvedValue(undefined);
+		vi.mocked(embeddingHelpers.getEmbeddingProvider).mockReturnValue({
+			delete: embeddingDeleteMock,
+		} as any);
 	});
 
 	it("uses the Hindsight API host from the memory provider registry", async () => {
@@ -73,7 +85,7 @@ describe("external memory providers", () => {
 		vi.stubGlobal("fetch", fetchMock);
 
 		const provider = new HindsightMemoryProvider({
-			baseUrl: "https://hindsight.vectorize.io",
+			baseUrl: "https://api.hindsight.vectorize.io",
 			env,
 			user,
 			serviceContext,
@@ -96,7 +108,7 @@ describe("external memory providers", () => {
 			provider: "hindsight",
 		});
 		expect(fetchMock).toHaveBeenCalledWith(
-			"https://hindsight.vectorize.io/v1/default/banks/assistant_user_42/memories",
+			"https://api.hindsight.vectorize.io/v1/default/banks/assistant_user_42/memories",
 			expect.objectContaining({
 				method: "POST",
 				headers: expect.objectContaining({
@@ -193,7 +205,18 @@ describe("external memory providers", () => {
 		);
 	});
 
-	it("does not report Honcho memory deletion success when the remote message cannot be deleted", async () => {
+	it("stores Honcho memories in per-memory sessions so individual deletes are possible", async () => {
+		const sessionUrls: string[] = [];
+		const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+			const url = String(input);
+			if (url.includes("/sessions/") && url.endsWith("/messages")) {
+				sessionUrls.push(url);
+				return Response.json([{ id: "remote-message-id", content: "ok" }]);
+			}
+			return Response.json({ id: "ok" });
+		});
+		vi.stubGlobal("fetch", fetchMock);
+
 		const provider = new HonchoMemoryProvider({
 			baseUrl: "https://api.honcho.dev",
 			env,
@@ -201,9 +224,74 @@ describe("external memory providers", () => {
 			serviceContext,
 		});
 
+		await provider.storeMemory({
+			text: "User prefers concise answers.",
+			metadata: { category: "preference" },
+			conversationId: "conversation-1",
+		});
+
+		expect(sessionUrls).toHaveLength(1);
+		expect(sessionUrls[0]).toMatch(
+			/^https:\/\/api\.honcho\.dev\/v3\/workspaces\/assistant_user_42\/sessions\/honcho_memory_[^/]+\/messages$/,
+		);
+		expect(createMemoryMock.mock.calls[0]?.[3]).toMatch(/^honcho_memory_/);
+		expect(createMemoryMock.mock.calls[0]?.[4]).toBe("conversation-1");
+	});
+
+	it("deletes Honcho memory sessions before removing local rows", async () => {
+		const fetchMock = vi.fn(async () => Response.json({}, { status: 202 }));
+		vi.stubGlobal("fetch", fetchMock);
+
+		const provider = new HonchoMemoryProvider({
+			baseUrl: "https://api.honcho.dev",
+			env,
+			user,
+			serviceContext,
+		});
+
+		await expect(provider.deleteMemory("local-memory-id")).resolves.toBe(true);
+
+		expect(fetchMock).toHaveBeenCalledWith(
+			"https://api.honcho.dev/v3/workspaces/assistant_user_42/sessions/remote-message-id",
+			expect.objectContaining({
+				method: "DELETE",
+				headers: expect.objectContaining({
+					Authorization: "Bearer provider-key",
+				}),
+			}),
+		);
+		expect(deleteMemoryMock).toHaveBeenCalledWith("local-memory-id");
+		expect(removeMemoryFromGroupsMock).toHaveBeenCalledWith("local-memory-id");
+	});
+
+	it("does not remove local Hindsight memory when remote deletion fails", async () => {
+		const fetchMock = vi.fn(async () =>
+			Response.json({ detail: "delete failed" }, { status: 500 }),
+		);
+		vi.stubGlobal("fetch", fetchMock);
+
+		const provider = new HindsightMemoryProvider({
+			baseUrl: "https://api.hindsight.vectorize.io",
+			env,
+			user,
+			serviceContext,
+		});
+
 		await expect(provider.deleteMemory("local-memory-id")).resolves.toBe(false);
 
-		expect(getMemoryByIdMock).not.toHaveBeenCalled();
+		expect(getMemoryByIdMock).toHaveBeenCalledWith("local-memory-id");
+		expect(deleteMemoryMock).not.toHaveBeenCalled();
+		expect(removeMemoryFromGroupsMock).not.toHaveBeenCalled();
+	});
+
+	it("does not remove local built-in memory when vector deletion fails", async () => {
+		embeddingDeleteMock.mockRejectedValue(new Error("vector delete failed"));
+
+		const provider = new BuiltInMemoryProvider(env, user, null);
+
+		await expect(provider.deleteMemory("local-memory-id")).resolves.toBe(false);
+
+		expect(embeddingDeleteMock).toHaveBeenCalledWith(["remote-message-id"]);
 		expect(deleteMemoryMock).not.toHaveBeenCalled();
 		expect(removeMemoryFromGroupsMock).not.toHaveBeenCalled();
 	});

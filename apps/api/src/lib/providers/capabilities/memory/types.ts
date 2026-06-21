@@ -41,6 +41,7 @@ export interface MemoryProviderCapabilities {
 	reasoning: boolean;
 	conversationIngestion: boolean;
 	externalStorage: boolean;
+	deletion: boolean;
 }
 
 export interface MemoryProvider {

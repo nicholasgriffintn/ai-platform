@@ -1,6 +1,7 @@
 import { fetchProviderJson } from "~/lib/providers/lib/fetch";
 import { getRecipeConnectorAccessToken } from "~/services/apps/connectors";
 import { MemoryRepository } from "~/repositories/MemoryRepository";
+import type { Memory } from "~/lib/database/schema";
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import type { IEnv, IUser, IUserSettings } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -122,10 +123,10 @@ export abstract class BaseMemoryProvider implements MemoryProvider {
 		return memory?.id ?? null;
 	}
 
-	protected async deleteLocalMemory(memoryId: string): Promise<{
-		deleted: boolean;
+	protected async getLocalMemoryForDelete(memoryId: string): Promise<{
+		memory: Memory;
 		vectorId?: string;
-	}> {
+	} | null> {
 		if (!this.config.user?.id) {
 			throw new AssistantError(
 				"User ID is required to delete memories",
@@ -136,7 +137,7 @@ export abstract class BaseMemoryProvider implements MemoryProvider {
 		const repository = new MemoryRepository(this.config.env);
 		const memory = await repository.getMemoryById(memoryId);
 		if (!memory || memory.user_id !== this.config.user.id) {
-			return { deleted: false };
+			return null;
 		}
 
 		const metadata =
@@ -148,9 +149,13 @@ export abstract class BaseMemoryProvider implements MemoryProvider {
 					? metadata.external_id
 					: undefined;
 
+		return { memory, vectorId };
+	}
+
+	protected async removeLocalMemory(memoryId: string): Promise<void> {
+		const repository = new MemoryRepository(this.config.env);
 		await repository.deleteMemory(memoryId);
 		await repository.removeMemoryFromGroups(memoryId);
-		return { deleted: true, vectorId };
 	}
 
 	protected getUserTag(): string | undefined {

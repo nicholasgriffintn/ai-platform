@@ -9,6 +9,7 @@ import { getAuxiliaryModel } from "./providers/models";
 import { getMemoryClassifierPrompt } from "~/lib/prompts/memoryClassifier";
 import { getMemoryNormaliserPrompt } from "./prompts/memoryNormaliser";
 import { getMemorySummariserPrompt } from "./prompts/memorySummariser";
+import { AssistantError, ErrorType } from "~/utils/errors";
 
 const logger = getLogger({ prefix: "lib/memory" });
 
@@ -77,6 +78,13 @@ export class MemoryManager {
 			userSettings,
 			serviceContext: this.serviceContext,
 		});
+		if (!provider.capabilities.deletion) {
+			throw new AssistantError(
+				"Selected memory provider does not support deleting individual memories",
+				ErrorType.PARAMS_ERROR,
+				400,
+			);
+		}
 		return provider.deleteMemory(memoryId);
 	}
 

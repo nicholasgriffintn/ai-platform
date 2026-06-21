@@ -34,6 +34,7 @@ export class HindsightMemoryProvider extends BaseMemoryProvider {
 		reasoning: true,
 		conversationIngestion: true,
 		externalStorage: true,
+		deletion: true,
 	};
 
 	constructor(config: Omit<BaseMemoryProviderConfig, "connectorProvider">) {
@@ -135,19 +136,24 @@ export class HindsightMemoryProvider extends BaseMemoryProvider {
 	}
 
 	async deleteMemory(memoryId: string): Promise<boolean> {
-		const { deleted, vectorId } = await this.deleteLocalMemory(memoryId);
-		if (!deleted) {
+		const localMemory = await this.getLocalMemoryForDelete(memoryId);
+		if (!localMemory) {
 			return false;
 		}
 
-		if (vectorId) {
+		if (localMemory.vectorId) {
 			const apiKey = await this.getConnectorApiKey();
-			await this.fetchJson(
-				`/v1/default/banks/${this.getBankId()}/documents/${encodeURIComponent(vectorId)}`,
-				{ apiKey, method: "DELETE", allowNullResponse: true },
-			).catch(() => undefined);
+			try {
+				await this.fetchJson(
+					`/v1/default/banks/${this.getBankId()}/documents/${encodeURIComponent(localMemory.vectorId)}`,
+					{ apiKey, method: "DELETE", allowNullResponse: true },
+				);
+			} catch {
+				return false;
+			}
 		}
 
+		await this.removeLocalMemory(memoryId);
 		return true;
 	}
 

@@ -279,7 +279,7 @@ describe("fetchProviderJson", () => {
 
 		try {
 			await expect(
-				fetchProviderJson("hindsight", "https://hindsight.vectorize.io/v1/test", {
+				fetchProviderJson("hindsight", "https://api.hindsight.vectorize.io/v1/test", {
 					apiKey: "provider-key",
 					body: { query: "memory" },
 				}),
@@ -289,7 +289,7 @@ describe("fetchProviderJson", () => {
 		}
 
 		expect(fetchMock).toHaveBeenCalledWith(
-			"https://hindsight.vectorize.io/v1/test",
+			"https://api.hindsight.vectorize.io/v1/test",
 			expect.objectContaining({
 				method: "POST",
 				headers: expect.objectContaining({

@@ -21,6 +21,7 @@ export class BuiltInMemoryProvider extends BaseMemoryProvider {
 		reasoning: false,
 		conversationIngestion: false,
 		externalStorage: false,
+		deletion: true,
 	};
 
 	constructor(env: IEnv, user?: IUser, userSettings?: IUserSettings | null) {
@@ -107,8 +108,8 @@ export class BuiltInMemoryProvider extends BaseMemoryProvider {
 		}
 
 		try {
-			const { deleted, vectorId } = await this.deleteLocalMemory(memoryId);
-			if (!deleted) {
+			const localMemory = await this.getLocalMemoryForDelete(memoryId);
+			if (!localMemory) {
 				logger.warn("Memory not found or access denied", {
 					memoryId,
 					userId: this.user.id,
@@ -116,11 +117,12 @@ export class BuiltInMemoryProvider extends BaseMemoryProvider {
 				return false;
 			}
 
-			if (vectorId) {
+			if (localMemory.vectorId) {
 				const embedding = getEmbeddingProvider(this.env, this.user, this.userSettings ?? undefined);
-				await embedding.delete([vectorId]);
+				await embedding.delete([localMemory.vectorId]);
 			}
 
+			await this.removeLocalMemory(memoryId);
 			return true;
 		} catch (error) {
 			logger.error("Failed to delete memory", { error, memoryId });

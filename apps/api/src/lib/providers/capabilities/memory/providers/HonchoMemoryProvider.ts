@@ -24,6 +24,7 @@ export class HonchoMemoryProvider extends BaseMemoryProvider {
 		reasoning: true,
 		conversationIngestion: true,
 		externalStorage: true,
+		deletion: true,
 	};
 
 	constructor(config: Omit<BaseMemoryProviderConfig, "connectorProvider">) {
@@ -34,13 +35,13 @@ export class HonchoMemoryProvider extends BaseMemoryProvider {
 		const apiKey = await this.getConnectorApiKey();
 		const workspaceId = this.getWorkspaceId();
 		const peerId = this.getPeerId();
-		const sessionId = this.getSessionId(input.conversationId);
+		const sessionId = this.getSessionId(this.createProviderRecordId("honcho_memory"));
 
 		await this.ensureWorkspace(apiKey, workspaceId);
 		await this.ensurePeer(apiKey, workspaceId, peerId);
 		await this.ensureSession(apiKey, workspaceId, sessionId, peerId);
 
-		const messages = await this.fetchJson<HonchoMessage[]>(
+		await this.fetchJson<HonchoMessage[]>(
 			`/v3/workspaces/${workspaceId}/sessions/${sessionId}/messages`,
 			{
 				apiKey,
@@ -53,6 +54,7 @@ export class HonchoMemoryProvider extends BaseMemoryProvider {
 								...input.metadata,
 								source: "assistant_memory",
 								category: input.metadata.category || "general",
+								conversationId: input.conversationId,
 							},
 							created_at: new Date().toISOString(),
 						},
@@ -61,9 +63,8 @@ export class HonchoMemoryProvider extends BaseMemoryProvider {
 			},
 		);
 
-		const externalId = messages[0]?.id ?? this.createProviderRecordId("honcho_message");
-		const id = await this.createLocalMemory(input, externalId);
-		return { id, provider: this.name, externalId };
+		const id = await this.createLocalMemory(input, sessionId);
+		return { id, provider: this.name, externalId: sessionId };
 	}
 
 	async retrieveMemories(
@@ -122,8 +123,23 @@ export class HonchoMemoryProvider extends BaseMemoryProvider {
 		}));
 	}
 
-	async deleteMemory(_memoryId: string): Promise<boolean> {
-		return false;
+	async deleteMemory(memoryId: string): Promise<boolean> {
+		const localMemory = await this.getLocalMemoryForDelete(memoryId);
+		if (!localMemory?.vectorId) {
+			return false;
+		}
+
+		const apiKey = await this.getConnectorApiKey();
+		await this.fetchJson(
+			`/v3/workspaces/${this.getWorkspaceId()}/sessions/${localMemory.vectorId}`,
+			{
+				apiKey,
+				method: "DELETE",
+				allowNullResponse: true,
+			},
+		);
+		await this.removeLocalMemory(memoryId);
+		return true;
 	}
 
 	private async ensureWorkspace(apiKey: string, workspaceId: string): Promise<void> {
