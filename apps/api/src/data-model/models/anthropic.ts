@@ -204,6 +204,7 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 		},
 		supportsAttachments: true,
 		supportsTemperature: true,
+		restrictsCombinedTopPAndTemperature: true,
 		supportsToolCalls: true,
 		contextWindow: 200000,
 		maxTokens: 64000,
