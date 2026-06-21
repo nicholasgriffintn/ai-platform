@@ -413,7 +413,7 @@ describe("assistant recipes", () => {
 			allowedConnectorOperations: {
 				gmail: ["search_messages", "create_draft"],
 			},
-			enabledTools: ["use_recipe_connector", "get_recipe"],
+			enabledTools: ["use_recipe_connector"],
 		});
 	});
 
@@ -437,7 +437,7 @@ describe("assistant recipes", () => {
 			}),
 		});
 		expect(setup?.conversationStarter).toContain(
-			"When I confirm the setup details or ask you to choose sensible defaults, use the available context and tools, then use configure_recipe to save recipe configuration and triggers before saying setup is complete.",
+			"When I confirm setup changes or ask you to choose sensible defaults, use the available context and tools, then use configure_recipe to save recipe configuration and triggers before saying setup is complete.",
 		);
 		expect(setup?.conversationStarter).toContain(
 			"Enabled tools for this conversation: get_weather, get_recipe, configure_recipe.",
@@ -501,7 +501,7 @@ describe("assistant recipes", () => {
 				outlook: ["search_messages", "create_calendar_event"],
 				calendar: ["create_event"],
 			},
-			enabledTools: ["use_recipe_connector", "get_recipe"],
+			enabledTools: ["use_recipe_connector"],
 			configuration: {
 				calendarTarget: "Travel calendar",
 				travelWindow: "Next 90 days",
@@ -535,7 +535,7 @@ describe("assistant recipes", () => {
 			allowedConnectorOperations: {
 				asana: ["list_projects", "list_tasks", "create_task"],
 			},
-			enabledTools: ["use_recipe_connector", "get_recipe"],
+			enabledTools: ["use_recipe_connector"],
 			configuration: {
 				workspaceId: "workspace-1",
 				projectIds: ["project-1"],
@@ -570,7 +570,7 @@ describe("assistant recipes", () => {
 			allowedConnectorOperations: {
 				sentry: ["list_organizations", "list_projects", "list_issues", "retrieve_issue"],
 			},
-			enabledTools: ["use_recipe_connector", "get_recipe"],
+			enabledTools: ["use_recipe_connector"],
 			configuration: {
 				organizationSlug: "acme",
 				projectIds: ["123"],
@@ -606,7 +606,7 @@ describe("assistant recipes", () => {
 			allowedConnectorOperations: {
 				posthog: ["list_projects", "query"],
 			},
-			enabledTools: ["use_recipe_connector", "get_recipe"],
+			enabledTools: ["use_recipe_connector"],
 			configuration: {
 				region: "eu",
 				organizationId: "org-1",
@@ -644,7 +644,7 @@ describe("assistant recipes", () => {
 			allowedConnectorOperations: {
 				vercel: ["list_projects", "list_deployments", "get_deployment_events"],
 			},
-			enabledTools: ["use_recipe_connector", "get_recipe"],
+			enabledTools: ["use_recipe_connector"],
 			configuration: {
 				teamId: "team_123",
 				teamSlug: "acme",
@@ -682,7 +682,7 @@ describe("assistant recipes", () => {
 			allowedConnectorOperations: {
 				netlify: ["list_sites", "list_deploys", "get_deploy"],
 			},
-			enabledTools: ["use_recipe_connector", "get_recipe"],
+			enabledTools: ["use_recipe_connector"],
 			configuration: {
 				siteId: "polychat.netlify.app",
 				defaultBranch: "main",
@@ -720,7 +720,7 @@ describe("assistant recipes", () => {
 			allowedConnectorOperations: {
 				devin: ["list_sessions", "get_session", "create_session", "list_messages", "send_message"],
 			},
-			enabledTools: ["use_recipe_connector", "get_recipe"],
+			enabledTools: ["use_recipe_connector"],
 			configuration: {
 				organizationId: "org-abc123def456",
 				defaultRepos: ["nicholasgriffin/assistant"],
@@ -764,7 +764,7 @@ describe("assistant recipes", () => {
 					"get_worker_deployment",
 				],
 			},
-			enabledTools: ["use_recipe_connector", "get_recipe"],
+			enabledTools: ["use_recipe_connector"],
 			configuration: {
 				accountId: "account_123",
 				zoneName: "polychat.app",
@@ -801,7 +801,7 @@ describe("assistant recipes", () => {
 			allowedConnectorOperations: {
 				supabase: ["list_organizations", "list_projects", "list_functions", "list_branches"],
 			},
-			enabledTools: ["use_recipe_connector", "get_recipe"],
+			enabledTools: ["use_recipe_connector"],
 			configuration: {
 				organizationSlug: "acme",
 				projectRef: "abcdefghijklmnopqrst",
@@ -839,7 +839,7 @@ describe("assistant recipes", () => {
 			allowedConnectorOperations: {
 				webflow: ["list_sites", "list_collections", "list_items"],
 			},
-			enabledTools: ["use_recipe_connector", "get_recipe"],
+			enabledTools: ["use_recipe_connector"],
 			configuration: {
 				siteId: "site_123",
 				collectionId: "collection_123",
@@ -876,7 +876,7 @@ describe("assistant recipes", () => {
 			allowedConnectorOperations: {
 				fitbit: ["profile", "daily_activity", "sleep_logs", "heart_rate"],
 			},
-			enabledTools: ["use_recipe_connector", "get_recipe"],
+			enabledTools: ["use_recipe_connector"],
 			configuration: {
 				defaultDate: "today",
 				metricFocus: ["activity", "sleep"],
@@ -913,7 +913,7 @@ describe("assistant recipes", () => {
 			allowedConnectorOperations: {
 				withings: ["profile", "devices", "measurements", "activity", "sleep_summary"],
 			},
-			enabledTools: ["use_recipe_connector", "get_recipe"],
+			enabledTools: ["use_recipe_connector"],
 			configuration: {
 				startDate: "2026-06-01",
 				endDate: "2026-06-08",
@@ -940,7 +940,7 @@ describe("assistant recipes", () => {
 
 		expect(invocation).toMatchObject({
 			recipeId: "developer-standup",
-			enabledTools: ["use_recipe_connector", "run_code_review", "get_recipe"],
+			enabledTools: ["use_recipe_connector", "run_code_review"],
 			allowedConnectorProviders: ["linear"],
 			allowedConnectorOperations: {
 				linear: ["search_issues"],
@@ -1148,7 +1148,7 @@ describe("assistant recipes", () => {
 					providerId: "linear",
 				}),
 			],
-			enabledTools: ["use_recipe_connector", "run_code_review", "get_recipe"],
+			enabledTools: ["use_recipe_connector", "run_code_review"],
 		});
 	});
 
