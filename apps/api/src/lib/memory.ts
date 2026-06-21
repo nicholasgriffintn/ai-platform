@@ -1,16 +1,15 @@
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
-import { getEmbeddingProvider } from "~/lib/providers/capabilities/embedding/helpers";
+import type { ServiceContext } from "~/lib/context/serviceContext";
+import { getMemoryProvider } from "~/lib/providers/capabilities/memory";
 import type { IEnv, IUser, IUserSettings, Message } from "~/types";
-import { generateId } from "~/utils/id";
 import { parseAIResponseJson } from "~/utils/json";
-import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 import type { ConversationManager } from "./conversationManager";
 import { getAuxiliaryModel } from "./providers/models";
-import { MemoryRepository } from "~/repositories/MemoryRepository";
 import { getMemoryClassifierPrompt } from "~/lib/prompts/memoryClassifier";
 import { getMemoryNormaliserPrompt } from "./prompts/memoryNormaliser";
 import { getMemorySummariserPrompt } from "./prompts/memorySummariser";
+import { AssistantError, ErrorType } from "~/utils/errors";
 
 const logger = getLogger({ prefix: "lib/memory" });
 
@@ -23,14 +22,20 @@ export interface MemoryEvent {
 export class MemoryManager {
 	private env: IEnv;
 	private user?: IUser;
+	private serviceContext?: ServiceContext;
 
-	constructor(env: IEnv, user?: IUser) {
+	constructor(env: IEnv, user?: IUser, serviceContext?: ServiceContext) {
 		this.env = env;
 		this.user = user;
+		this.serviceContext = serviceContext;
 	}
 
-	public static getInstance(env: IEnv, user?: IUser): MemoryManager {
-		return new MemoryManager(env, user);
+	public static getInstance(
+		env: IEnv,
+		user?: IUser,
+		serviceContext?: ServiceContext,
+	): MemoryManager {
+		return new MemoryManager(env, user, serviceContext);
 	}
 
 	/**
@@ -44,63 +49,19 @@ export class MemoryManager {
 		conversationId?: string,
 		userSettings?: IUserSettings,
 	): Promise<string | null> {
-		const embedding = getEmbeddingProvider(this.env, this.user, userSettings);
-		const vectorId = generateId();
-
-		const vectors = await embedding.generate("memory", text, vectorId, {
-			...metadata,
+		const provider = getMemoryProvider({
+			env: this.env,
+			user: this.user,
+			userSettings,
+			serviceContext: this.serviceContext,
+		});
+		const result = await provider.storeMemory({
 			text,
-			stored_at: Date.now().toString(),
+			metadata,
+			conversationId,
+			userSettings,
 		});
-
-		const namespace = `memory_user_${this.user?.id ?? "global"}`;
-
-		const rawVec = vectors[0].values as number[];
-		const candidateVector = new Float64Array(rawVec);
-		const existing = await embedding.getMatches(candidateVector, {
-			topK: 5,
-			scoreThreshold: 0,
-			namespace,
-			returnMetadata: "all",
-		});
-
-		const similarMemories = (existing.matches || [])
-			.filter((m) => m.score >= 0.85 && m.metadata?.text)
-			.map((m) => ({
-				text: m.metadata.text as string,
-				score: m.score,
-				id: m.id,
-			}));
-
-		if (similarMemories.length > 0) {
-			return null;
-		}
-
-		await embedding.insert(vectors, { namespace });
-
-		if (this.user?.id) {
-			try {
-				const repository = new MemoryRepository(this.env);
-				const memoryRecord = await repository.createMemory(
-					this.user.id,
-					text,
-					metadata.category || "general",
-					vectorId,
-					conversationId,
-					{
-						...metadata,
-						stored_at: Date.now().toString(),
-					},
-				);
-				return memoryRecord?.id || null;
-			} catch (error) {
-				logger.warn("Failed to store memory in transactional database", {
-					error,
-				});
-			}
-		}
-
-		return null;
+		return result.id;
 	}
 
 	/**
@@ -108,39 +69,23 @@ export class MemoryManager {
 	 * @param memoryId - The memory ID from the transactional database
 	 */
 	public async deleteMemory(memoryId: string): Promise<boolean> {
-		if (!this.user?.id) {
+		const userSettings = this.serviceContext
+			? await this.serviceContext.getUserSettings()
+			: undefined;
+		const provider = getMemoryProvider({
+			env: this.env,
+			user: this.user,
+			userSettings,
+			serviceContext: this.serviceContext,
+		});
+		if (!provider.capabilities.deletion) {
 			throw new AssistantError(
-				"User ID is required to delete memories",
-				ErrorType.AUTHENTICATION_ERROR,
+				"Selected memory provider does not support deleting individual memories",
+				ErrorType.PARAMS_ERROR,
+				400,
 			);
 		}
-
-		const repository = new MemoryRepository(this.env);
-		const memory = await repository.getMemoryById(memoryId);
-
-		if (!memory || memory.user_id !== this.user.id) {
-			logger.warn("Memory not found or access denied", {
-				memoryId,
-				userId: this.user.id,
-			});
-			return false;
-		}
-
-		try {
-			if (memory.vector_id) {
-				const embedding = getEmbeddingProvider(this.env, this.user);
-				await embedding.delete([memory.vector_id]);
-			}
-
-			await repository.deleteMemory(memoryId);
-
-			await repository.removeMemoryFromGroups(memoryId);
-
-			return true;
-		} catch (error) {
-			logger.error("Failed to delete memory", { error, memoryId });
-			return false;
-		}
+		return provider.deleteMemory(memoryId);
 	}
 
 	/**
@@ -151,7 +96,7 @@ export class MemoryManager {
 	 */
 	public async retrieveMemories(
 		query: string,
-		opts?: { topK?: number; scoreThreshold?: number },
+		opts?: { topK?: number; scoreThreshold?: number; userSettings?: IUserSettings | null },
 	): Promise<Array<{ text: string; score: number }>> {
 		const normalizedQuery = query.trim();
 
@@ -166,32 +111,21 @@ export class MemoryManager {
 			return [];
 		}
 
-		const embedding = getEmbeddingProvider(this.env, this.user);
-		const topK = opts?.topK ?? 3;
-		const scoreThreshold = opts?.scoreThreshold ?? 0.3;
-		const namespace = `memory_user_${this.user?.id ?? "global"}`;
-
-		const queryEmb = await embedding.getQuery(query);
-		const rawNumbers = queryEmb.data[0] as number[];
-		const vector = new Float64Array(rawNumbers);
-
-		const result = await embedding.getMatches(vector, {
-			topK: Math.max(topK * 2, 10),
-			scoreThreshold,
-			namespace,
-			returnMetadata: "all",
+		const userSettings =
+			opts?.userSettings ??
+			(this.serviceContext ? await this.serviceContext.getUserSettings() : undefined);
+		const provider = getMemoryProvider({
+			env: this.env,
+			user: this.user,
+			userSettings,
+			serviceContext: this.serviceContext,
 		});
 
-		if (!result.matches) {
-			return [];
-		}
-
-		const memories = (result.matches || [])
-			.filter((m) => m.score >= scoreThreshold && typeof m.metadata?.text === "string")
-			.slice(0, topK)
-			.map((m) => ({ text: m.metadata.text as string, score: m.score }));
-
-		return memories;
+		return provider.retrieveMemories(query, {
+			topK: opts?.topK,
+			scoreThreshold: opts?.scoreThreshold,
+			userSettings,
+		});
 	}
 
 	/**
@@ -258,7 +192,7 @@ export class MemoryManager {
 								category,
 								isNormalized: "false",
 							},
-							undefined,
+							completionId,
 							userSettings,
 						);
 
@@ -317,7 +251,7 @@ export class MemoryManager {
 												isNormalized: "true",
 												originalText: summaryText,
 											},
-											undefined,
+											completionId,
 											userSettings,
 										);
 									}
@@ -388,7 +322,7 @@ export class MemoryManager {
 									timestamp: Date.now().toString(),
 									category,
 								},
-								undefined,
+								completionId,
 								userSettings,
 							);
 							events.push({ type: "snapshot", text, category });

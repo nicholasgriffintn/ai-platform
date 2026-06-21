@@ -12,9 +12,11 @@ import type {
 	GuardrailsProvider,
 	IEnv,
 	IUser,
+	IUserSettings,
 	ResearchProvider,
 	SearchProvider,
 } from "~/types";
+import type { MemoryProvider } from "../capabilities/memory";
 import type { TranscriptionProvider } from "../capabilities/transcription";
 import type { VideoProvider } from "../capabilities/video";
 
@@ -24,6 +26,7 @@ export type ProviderCategory =
 	| "embedding"
 	| "guardrails"
 	| "image"
+	| "memory"
 	| "messaging"
 	| "music"
 	| "ocr"
@@ -40,6 +43,7 @@ export interface ProviderFactoryContext {
 	serviceContext?: ServiceContext;
 	config?: unknown;
 	options?: Record<string, unknown>;
+	userSettings?: IUserSettings | null;
 }
 
 export interface ProviderMetadata {
@@ -68,6 +72,7 @@ export type CategoryProviderMap = {
 	embedding: EmbeddingProvider;
 	guardrails: GuardrailsProvider;
 	image: ImageProvider;
+	memory: MemoryProvider;
 	messaging: MessagingProvider;
 	music: MusicProvider;
 	ocr: OcrProvider;

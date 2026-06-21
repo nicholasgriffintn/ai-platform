@@ -161,4 +161,17 @@ describe("UserSettingsRepository", () => {
 		expect(result).toBe(false);
 		expect(runQuerySpy).not.toHaveBeenCalled();
 	});
+
+	it("preserves memory provider when partial settings updates omit it", async () => {
+		const repo = new UserSettingsRepository({ DB: {} as any } as IEnv);
+		const executeRunSpy = vi
+			.spyOn(repo as any, "executeRun")
+			.mockResolvedValue({ success: true } as any);
+
+		await repo.updateUserSettings(42, { nickname: "Nick" });
+
+		expect(executeRunSpy).toHaveBeenCalledTimes(1);
+		expect(executeRunSpy.mock.calls[0]?.[0]).not.toContain("memory_provider");
+		expect(executeRunSpy.mock.calls[0]?.[1]).not.toContain("built-in");
+	});
 });

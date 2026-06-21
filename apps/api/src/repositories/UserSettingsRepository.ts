@@ -241,6 +241,7 @@ export class UserSettingsRepository extends BaseRepository {
 						? 1
 						: 0
 					: null,
+			memory_provider: settings.memory_provider ?? null,
 			transcription_provider: settings.transcription_provider ?? null,
 			transcription_model: settings.transcription_model ?? null,
 			speech_provider: settings.speech_provider ?? null,
@@ -248,6 +249,10 @@ export class UserSettingsRepository extends BaseRepository {
 			search_provider: settings.search_provider ?? null,
 			sandbox_model: settings.sandbox_model ?? null,
 		};
+
+		if (!Object.hasOwn(settings, "memory_provider")) {
+			delete updates.memory_provider;
+		}
 
 		const allowedFields = Object.keys(updates);
 
@@ -287,6 +292,7 @@ export class UserSettingsRepository extends BaseRepository {
 			"s3vectors_region",
 			"memories_save_enabled",
 			"memories_chat_history_enabled",
+			"memory_provider",
 			"transcription_provider",
 			"transcription_model",
 			"speech_provider",

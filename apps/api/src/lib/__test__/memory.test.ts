@@ -1,6 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import * as chatCapability from "~/lib/providers/capabilities/chat";
 import * as embeddingHelpers from "~/lib/providers/capabilities/embedding/helpers";
+import * as memoryCapability from "~/lib/providers/capabilities/memory";
+import { ErrorType } from "~/utils/errors";
 import { parseAIResponseJson } from "~/utils/json";
 import { MemoryManager } from "../memory";
 
@@ -11,9 +13,21 @@ const mockEmbeddingProvider = {
 	insert: vi.fn(),
 	delete: vi.fn(),
 };
+const mockMemoryProvider = {
+	capabilities: {
+		deletion: true,
+	},
+	storeMemory: vi.fn(),
+	retrieveMemories: vi.fn(),
+	deleteMemory: vi.fn(),
+};
 
 vi.mock("~/lib/providers/capabilities/embedding/helpers", () => ({
 	getEmbeddingProvider: vi.fn(() => mockEmbeddingProvider),
+}));
+
+vi.mock("~/lib/providers/capabilities/memory", () => ({
+	getMemoryProvider: vi.fn(() => mockMemoryProvider),
 }));
 
 vi.mock("~/lib/providers/capabilities/chat", () => ({
@@ -63,6 +77,10 @@ describe("MemoryManager", () => {
 		mockEmbeddingProvider.getQuery.mockReset();
 		mockEmbeddingProvider.insert.mockReset();
 		mockEmbeddingProvider.delete.mockReset();
+		mockMemoryProvider.storeMemory.mockReset();
+		mockMemoryProvider.retrieveMemories.mockReset();
+		mockMemoryProvider.deleteMemory.mockReset();
+		mockMemoryProvider.capabilities.deletion = true;
 
 		mockEmbeddingProvider.generate.mockResolvedValue([
 			{ values: [0.1, 0.2, 0.3], id: "test-id" },
@@ -76,8 +94,15 @@ describe("MemoryManager", () => {
 			status: "success",
 			error: null,
 		});
+		mockMemoryProvider.storeMemory.mockResolvedValue({
+			id: "mock-id",
+			provider: "built-in",
+		});
+		mockMemoryProvider.retrieveMemories.mockResolvedValue([]);
+		mockMemoryProvider.deleteMemory.mockResolvedValue(true);
 
 		mockedGetEmbeddingProvider.mockReturnValue(mockEmbeddingProvider as any);
+		vi.mocked(memoryCapability.getMemoryProvider).mockReturnValue(mockMemoryProvider as any);
 		MemoryManager["instance"] = undefined as any;
 	});
 
@@ -86,6 +111,20 @@ describe("MemoryManager", () => {
 			const instance1 = MemoryManager.getInstance(mockEnv, mockUser);
 			const instance2 = MemoryManager.getInstance(mockEnv, mockUser);
 			expect(instance1).not.toBe(instance2);
+		});
+	});
+
+	describe("deleteMemory", () => {
+		it("rejects deletes when the selected provider cannot delete individual memories", async () => {
+			mockMemoryProvider.capabilities.deletion = false;
+
+			const manager = MemoryManager.getInstance(mockEnv, mockUser);
+
+			await expect(manager.deleteMemory("memory-id")).rejects.toMatchObject({
+				type: ErrorType.PARAMS_ERROR,
+				message: "Selected memory provider does not support deleting individual memories",
+			});
+			expect(mockMemoryProvider.deleteMemory).not.toHaveBeenCalled();
 		});
 	});
 

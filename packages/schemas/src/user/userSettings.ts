@@ -23,6 +23,7 @@ export const updateUserSettingsSchema = z.object({
 	s3vectors_region: z.string().optional(),
 	memories_save_enabled: z.boolean().optional(),
 	memories_chat_history_enabled: z.boolean().optional(),
+	memory_provider: z.enum(["built-in", "hindsight", "honcho"]).optional(),
 	transcription_provider: z.string().optional(),
 	transcription_model: z.string().optional(),
 	speech_provider: z.string().optional(),

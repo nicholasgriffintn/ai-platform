@@ -1,4 +1,5 @@
 import { ConversationManager } from "~/lib/conversationManager";
+import type { ServiceContext } from "~/lib/context/serviceContext";
 import { Database } from "~/lib/database";
 import { RepositoryManager } from "~/repositories";
 import {
@@ -393,7 +394,14 @@ export class RequestPreparer {
 		}
 
 		if (system_prompt) {
-			return this.enhanceSystemPromptWithMemory(system_prompt, finalMessage, user, memoriesEnabled);
+			return this.enhanceSystemPromptWithMemory(
+				system_prompt,
+				finalMessage,
+				user,
+				memoriesEnabled,
+				userSettings,
+				options.context,
+			);
 		}
 
 		const systemPromptFromMessages = sanitizedMessages.find((message) => message.role === "system");
@@ -404,6 +412,8 @@ export class RequestPreparer {
 				finalMessage,
 				user,
 				memoriesEnabled,
+				userSettings,
+				options.context,
 			);
 		}
 
@@ -427,7 +437,14 @@ export class RequestPreparer {
 			userSettings,
 		);
 
-		return this.enhanceSystemPromptWithMemory(generatedPrompt, finalMessage, user, memoriesEnabled);
+		return this.enhanceSystemPromptWithMemory(
+			generatedPrompt,
+			finalMessage,
+			user,
+			memoriesEnabled,
+			userSettings,
+			options.context,
+		);
 	}
 
 	private async enhanceSystemPromptWithMemory(
@@ -435,6 +452,8 @@ export class RequestPreparer {
 		finalMessage: string,
 		user: any,
 		memoriesEnabled: boolean,
+		userSettings: any,
+		serviceContext?: ServiceContext,
 	): Promise<string> {
 		const isProUser = user?.plan_id === "pro";
 
@@ -442,12 +461,13 @@ export class RequestPreparer {
 			try {
 				let memoryContext = "";
 
-				const memoryManager = MemoryManager.getInstance(this.env, user);
+				const memoryManager = MemoryManager.getInstance(this.env, user, serviceContext);
 				const [synthesis, recentMemories] = await Promise.all([
 					this.repositories.memorySyntheses.getActiveSynthesis(user.id, "global"),
 					memoryManager.retrieveMemories(finalMessage, {
 						topK: 3,
 						scoreThreshold: 0.5,
+						userSettings,
 					}),
 				]);
 

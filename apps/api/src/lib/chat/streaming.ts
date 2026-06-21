@@ -603,7 +603,7 @@ export async function createStreamWithPostProcessing(
 											: "";
 
 								if (lastUserText.trim()) {
-									const memMgr = MemoryManager.getInstance(env, user);
+									const memMgr = MemoryManager.getInstance(env, user, context);
 									const memEvents = await memMgr.handleMemory(
 										lastUserText,
 										history,

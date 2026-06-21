@@ -9,7 +9,7 @@ export const handleDeleteMemory = async (
 	context.ensureDatabase();
 	const user = context.requireUser();
 
-	const memoryManager = MemoryManager.getInstance(context.env, user);
+	const memoryManager = MemoryManager.getInstance(context.env, user, context);
 
 	const deleted = await memoryManager.deleteMemory(memoryId);
 
