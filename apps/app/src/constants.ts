@@ -18,7 +18,7 @@ export const APPLE_SIGN_IN_CLIENT_ID = import.meta.env.VITE_APPLE_CLIENT_ID || "
 
 export const POSTHOG_CONFIG = {
 	apiKey: import.meta.env.VITE_PUBLIC_POSTHOG_KEY || "disabled",
-	apiHost: import.meta.env.VITE_PUBLIC_POSTHOG_HOST || "eu.i.posthog.com",
+	apiHost: import.meta.env.VITE_PUBLIC_POSTHOG_HOST || "https://eu.i.posthog.com",
 	debug: BUILD_MODE === "development",
 	disabled: !import.meta.env.VITE_PUBLIC_POSTHOG_KEY,
 };
@@ -59,8 +59,10 @@ const COMMON_CSP = {
 		API_BASE_URL,
 		WS_API_URL,
 		"cas-bridge.xethub.hf.co",
-		"eu.i.posthog.com",
-		"eu-assets.i.posthog.com",
+		"https://eu.i.posthog.com",
+		"https://eu-assets.i.posthog.com",
+		"https://us.i.posthog.com",
+		"https://us-assets.i.posthog.com",
 		"beacon.polychat.app",
 		"beacon-cdn.polychat.app",
 		"https://appleid.apple.com",
@@ -79,8 +81,10 @@ const COMMON_CSP = {
 } as const;
 
 const SCRIPT_SRC = [
-	"eu.i.posthog.com",
-	"eu-assets.i.posthog.com",
+	"https://eu.i.posthog.com",
+	"https://eu-assets.i.posthog.com",
+	"https://us.i.posthog.com",
+	"https://us-assets.i.posthog.com",
 	"beacon.polychat.app",
 	"https://appleid.cdn-apple.com",
 	"https://unpkg.com/react@18/umd/react.development.js",

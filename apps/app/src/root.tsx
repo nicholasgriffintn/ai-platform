@@ -1,8 +1,9 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import { Suspense, lazy } from "react";
+import { useEffect } from "react";
 import { Outlet, isRouteErrorResponse } from "react-router";
 
+import { AnalyticsBootstrap } from "~/components/Core/AnalyticsBootstrap";
 import { AppInitializer } from "~/components/Core/AppInitializer";
 import { AppShell } from "~/components/Core/AppShell";
 import { CaptchaProvider } from "~/components/HCaptcha/CaptchaProvider";
@@ -15,15 +16,7 @@ import ErrorRoute from "~/pages/error";
 import { LoadingProvider } from "~/state/contexts/LoadingContext";
 import type { Route } from "./+types/root";
 
-const AnalyticsLazy = lazy(() =>
-	import("~/components/Core/Analytics").then((d) => ({
-		default: d.Analytics,
-	})),
-);
-
-import { getBeaconConfig, shouldShowDevTools } from "~/constants";
-
-const beaconConfig = getBeaconConfig();
+import { shouldShowDevTools } from "~/constants";
 
 const queryClient = new QueryClient({
 	defaultOptions: {
@@ -48,15 +41,7 @@ export default function Root() {
 			<LoadingProvider>
 				<AppInitializer>
 					<CaptchaProvider>
-						<Suspense fallback={null}>
-							<AnalyticsLazy
-								isEnabled={beaconConfig.enabled}
-								isExperimentsEnabled={beaconConfig.experimentsEnabled}
-								beaconEndpoint={beaconConfig.endpoint}
-								beaconSiteId={beaconConfig.siteId}
-								beaconDebug={beaconConfig.debug}
-							/>
-						</Suspense>
+						<AnalyticsBootstrap />
 						<Outlet />
 						<ServiceWorkerRegistration />
 						<Toaster />
@@ -82,19 +67,6 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
 	let stack: string | undefined;
 
 	const { trackException } = useTrackEvent();
-	if (error && error instanceof Error) {
-		trackException(error, {
-			message: "Error",
-			details: error.message,
-			stack: error.stack,
-		});
-	} else {
-		trackException(new Error(details), {
-			message: "Error",
-			details: details,
-			stack: stack,
-		});
-	}
 
 	if (isRouteErrorResponse(error)) {
 		message = error.status === 404 ? "404" : "Error";
@@ -104,6 +76,23 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
 		details = error.message;
 		stack = error.stack;
 	}
+
+	useEffect(() => {
+		if (error && error instanceof Error) {
+			trackException(error, {
+				message: "Error",
+				details: error.message,
+				stack: error.stack,
+			});
+			return;
+		}
+
+		trackException(new Error(details), {
+			message: "Error",
+			details,
+			stack,
+		});
+	}, [details, error, stack, trackException]);
 
 	return <ErrorRoute message={message} details={details} stack={stack || ""} />;
 }

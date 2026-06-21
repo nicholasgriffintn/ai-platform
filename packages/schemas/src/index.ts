@@ -1,5 +1,6 @@
 export * from "./agents";
 export * from "./agent-modes";
+export * from "./analytics";
 export * from "./app-data";
 export * from "./apps";
 export * from "./audio";

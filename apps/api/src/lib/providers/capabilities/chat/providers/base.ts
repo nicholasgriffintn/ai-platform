@@ -304,6 +304,7 @@ export abstract class BaseProvider implements AIProvider {
 			settings: this.buildMetricsSettings(params),
 			userId,
 			completion_id: params.completion_id,
+			request: params,
 		});
 	}
 }

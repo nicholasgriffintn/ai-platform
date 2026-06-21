@@ -17,13 +17,13 @@ describe("Monitoring", () => {
 
 	beforeEach(() => {
 		vi.clearAllMocks();
-		monitoring = Monitoring.getInstance(mockAnalyticsEngine as any);
+		monitoring = Monitoring.getInstance({ ANALYTICS: mockAnalyticsEngine as any });
 	});
 
 	describe("getInstance", () => {
 		it("should create new instance each time", () => {
-			const instance1 = Monitoring.getInstance(mockAnalyticsEngine as any);
-			const instance2 = Monitoring.getInstance(mockAnalyticsEngine as any);
+			const instance1 = Monitoring.getInstance({ ANALYTICS: mockAnalyticsEngine as any });
+			const instance2 = Monitoring.getInstance({ ANALYTICS: mockAnalyticsEngine as any });
 
 			expect(instance1).not.toBe(instance2);
 		});
@@ -107,7 +107,7 @@ describe("Monitoring", () => {
 
 		it("should handle analytics engine without writeDataPoint method", () => {
 			const invalidEngine = {} as any;
-			const monitoring = Monitoring.getInstance(invalidEngine);
+			const monitoring = Monitoring.getInstance({ ANALYTICS: invalidEngine });
 
 			const metric = {
 				traceId: "test-trace-123",
@@ -228,6 +228,107 @@ describe("trackProviderMetrics", () => {
 		);
 	});
 
+	it("should capture non-streaming chat generations from provider metrics", async () => {
+		const result = await trackProviderMetrics({
+			provider: "openai",
+			model: "gpt-4",
+			operation: vi.fn().mockResolvedValue({
+				response: "Hello!",
+				usage: {
+					prompt_tokens: 5,
+					completion_tokens: 7,
+					total_tokens: 12,
+				},
+			}),
+			analyticsEngine: mockAnalyticsEngine as any,
+			userId: 123,
+			completion_id: "completion-123",
+			request: {
+				env: {
+					ANALYTICS: mockAnalyticsEngine as any,
+					POSTHOG_CAPTURE_AI_CONTENT: "true",
+				},
+				model: "gpt-4",
+				provider: "openai",
+				messages: [{ role: "user", content: "Hello" }],
+			} as any,
+		});
+
+		expect(result).toEqual({
+			response: "Hello!",
+			usage: {
+				prompt_tokens: 5,
+				completion_tokens: 7,
+				total_tokens: 12,
+			},
+		});
+		expect(mockAnalyticsEngine.writeDataPoint).toHaveBeenCalledWith(
+			expect.objectContaining({
+				blobs: expect.arrayContaining(["ai_observability", "$ai_generation"]),
+			}),
+		);
+	});
+
+	it("should capture streaming chat generations after the provider stream is consumed", async () => {
+		const encoder = new TextEncoder();
+		const decoder = new TextDecoder();
+		const providerStream = new ReadableStream({
+			start(controller) {
+				controller.enqueue(
+					encoder.encode(
+						`data: ${JSON.stringify({ choices: [{ delta: { content: "Hello" } }] })}\n\n`,
+					),
+				);
+				controller.enqueue(
+					encoder.encode(`data: ${JSON.stringify({ choices: [{ delta: { content: "!" } }] })}\n\n`),
+				);
+				controller.enqueue(encoder.encode("data: [DONE]\n\n"));
+				controller.close();
+			},
+		});
+
+		const result = await trackProviderMetrics({
+			provider: "openai",
+			model: "gpt-4",
+			operation: vi.fn().mockResolvedValue(providerStream),
+			analyticsEngine: mockAnalyticsEngine as any,
+			userId: 123,
+			completion_id: "completion-123",
+			request: {
+				env: {
+					ANALYTICS: mockAnalyticsEngine as any,
+					POSTHOG_CAPTURE_AI_CONTENT: "true",
+				},
+				model: "gpt-4",
+				provider: "openai",
+				stream: true,
+				messages: [{ role: "user", content: "Hello" }],
+			} as any,
+		});
+
+		const reader = (result as ReadableStream).getReader();
+		let streamed = "";
+		while (true) {
+			const { done, value } = await reader.read();
+			if (done) {
+				break;
+			}
+			streamed += decoder.decode(value);
+		}
+
+		expect(streamed).toContain("Hello");
+		expect(mockAnalyticsEngine.writeDataPoint).toHaveBeenCalledWith(
+			expect.objectContaining({
+				blobs: expect.arrayContaining(["ai_observability", "$ai_generation"]),
+			}),
+		);
+		expect(mockAnalyticsEngine.writeDataPoint).toHaveBeenCalledWith(
+			expect.objectContaining({
+				blobs: expect.arrayContaining([expect.stringContaining("Hello!")]),
+			}),
+		);
+	});
+
 	it("should track failed provider operation", async () => {
 		const mockError = new Error("Provider error");
 		const mockOperation = vi.fn().mockRejectedValue(mockError);
@@ -252,8 +353,6 @@ describe("trackProviderMetrics", () => {
 describe("trackGuardrailViolation", () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
-		// @ts-ignore - instance is private
-		Monitoring["instance"] = new Monitoring(mockAnalyticsEngine as any);
 	});
 
 	it("should track guardrail violation", () => {

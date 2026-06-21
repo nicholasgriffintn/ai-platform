@@ -1,5 +1,13 @@
-import type { AnalyticsEngineDataset } from "@cloudflare/workers-types";
+import type { AnalyticsEngineDataset, ExecutionContext } from "@cloudflare/workers-types";
 
+import { createBackendAnalytics } from "~/lib/analytics/core";
+import { captureProviderGenerationResult } from "~/lib/analytics/provider-generation";
+import type {
+	BackendAiGenerationCaptureInput,
+	BackendAnalytics,
+	BackendAnalyticsEnv,
+} from "~/lib/analytics/types";
+import type { ChatCompletionParameters } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";
@@ -12,23 +20,26 @@ export interface Metric {
 	type: "performance" | "error" | "usage" | "guardrail";
 	name: string;
 	value: number;
-	metadata: Record<string, any>;
+	metadata: Record<string, unknown>;
 	status: "success" | "error" | "info";
 	error?: string;
 }
 
 export class Monitoring {
-	private analyticsEngine: AnalyticsEngineDataset;
+	private analytics: BackendAnalytics;
 
-	constructor(analyticsEngine?: AnalyticsEngineDataset) {
-		if (!analyticsEngine) {
+	constructor(env?: BackendAnalyticsEnv, executionCtx?: ExecutionContext) {
+		if (!env) {
 			throw new AssistantError("Analytics Engine not configured", ErrorType.CONFIGURATION_ERROR);
 		}
-		this.analyticsEngine = analyticsEngine;
+		this.analytics = createBackendAnalytics({ env, executionCtx });
 	}
 
-	public static getInstance(analyticsEngine?: AnalyticsEngineDataset): Monitoring {
-		return new Monitoring(analyticsEngine);
+	public static getInstance(
+		env?: BackendAnalyticsEnv,
+		executionCtx?: ExecutionContext,
+	): Monitoring {
+		return new Monitoring(env, executionCtx);
 	}
 
 	public recordMetric(metric: Metric): void {
@@ -43,7 +54,7 @@ export class Monitoring {
 			return;
 		}
 
-		if (!this.analyticsEngine || typeof this.analyticsEngine.writeDataPoint !== "function") {
+		if (this.analytics.providers.length === 0) {
 			logger.debug(
 				`[Metric] ${metricWithTraceId.type}:${metricWithTraceId.name}`,
 				JSON.stringify(
@@ -60,18 +71,7 @@ export class Monitoring {
 			return;
 		}
 
-		this.analyticsEngine.writeDataPoint({
-			blobs: [
-				metricWithTraceId.type,
-				metricWithTraceId.name,
-				metricWithTraceId.status,
-				metricWithTraceId.error || "None",
-				metricWithTraceId.traceId,
-				JSON.stringify(metricWithTraceId.metadata),
-			],
-			doubles: [metricWithTraceId.value, metricWithTraceId.timestamp],
-			indexes: [metricWithTraceId.traceId],
-		});
+		this.analytics.recordMetric(metricWithTraceId);
 
 		logger.debug("Metric recorded successfully", { metric: metricWithTraceId });
 	}
@@ -87,12 +87,35 @@ export class Monitoring {
 	}
 }
 
+function trackAiGeneration(
+	input: BackendAiGenerationCaptureInput & {
+		env: BackendAnalyticsEnv;
+		executionCtx?: ExecutionContext;
+	},
+): void {
+	try {
+		const analytics = createBackendAnalytics({
+			env: input.env,
+			executionCtx: input.executionCtx,
+		});
+		if (analytics.providers.length === 0) {
+			return;
+		}
+
+		analytics.captureAiGeneration(input);
+	} catch (error) {
+		logger.warn("Failed to capture AI generation analytics", {
+			error: error instanceof Error ? error.message : String(error),
+		});
+	}
+}
+
 export function trackUsageMetric(
 	userId: number | string,
 	name?: string,
 	analyticsEngine?: AnalyticsEngineDataset,
 ): void {
-	const monitor = Monitoring.getInstance(analyticsEngine);
+	const monitor = Monitoring.getInstance({ ANALYTICS: analyticsEngine });
 	const traceId = userId?.toString() || generateId();
 
 	try {
@@ -124,6 +147,7 @@ export function trackProviderMetrics<T>({
 	settings,
 	userId,
 	completion_id,
+	request,
 }: {
 	provider: string;
 	model: string;
@@ -145,18 +169,23 @@ export function trackProviderMetrics<T>({
 	};
 	userId?: number;
 	completion_id?: string;
+	request?: ChatCompletionParameters;
 }): Promise<T> {
 	const startTime = performance.now();
-	const monitor = Monitoring.getInstance(analyticsEngine);
+	const monitor = Monitoring.getInstance(
+		request?.env ?? { ANALYTICS: analyticsEngine },
+		request?.executionCtx,
+	);
 	const traceId = completion_id || generateId();
 
 	return operation()
 		.then((result: any) => {
+			const latency = performance.now() - startTime;
 			const metrics = {
 				userId: userId?.toString(),
 				provider,
 				model,
-				latency: performance.now() - startTime,
+				latency,
 				tokenUsage: result?.usage,
 				systemFingerprint: result?.system_fingerprint,
 				log_id: result?.log_id,
@@ -182,7 +211,12 @@ export function trackProviderMetrics<T>({
 				status: "success",
 			});
 
-			return result;
+			return captureProviderGenerationResult(
+				result,
+				{ provider, model, traceId, request, startTime },
+				trackAiGeneration,
+				(error) => logger.debug("Failed to parse provider stream analytics event", { error }),
+			);
 		})
 		.catch((error) => {
 			monitor.recordMetric({
@@ -211,7 +245,7 @@ export function trackGuardrailViolation(
 	userId?: number,
 	completion_id?: string,
 ): void {
-	const monitor = Monitoring.getInstance(analyticsEngine);
+	const monitor = Monitoring.getInstance({ ANALYTICS: analyticsEngine });
 	const traceId = completion_id || generateId();
 
 	monitor.recordMetric({
@@ -233,7 +267,7 @@ export function trackRagMetrics(
 	completion_id?: string,
 ): Promise<any> {
 	const startTime = performance.now();
-	const monitor = Monitoring.getInstance(analyticsEngine);
+	const monitor = Monitoring.getInstance({ ANALYTICS: analyticsEngine });
 	const traceId = completion_id || generateId();
 
 	return operation()
@@ -276,7 +310,7 @@ export function trackModelRoutingMetrics<T>(
 	completion_id?: string,
 ): Promise<T> {
 	const startTime = performance.now();
-	const monitor = Monitoring.getInstance(analyticsEngine);
+	const monitor = Monitoring.getInstance({ ANALYTICS: analyticsEngine });
 	const traceId = completion_id || generateId();
 
 	return operation()

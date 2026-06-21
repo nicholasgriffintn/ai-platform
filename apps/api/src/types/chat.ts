@@ -299,6 +299,10 @@ interface AIResponseParamsBase extends AIControlParams {
 	env: IEnv;
 	// The user to use for the response.
 	user?: IUser;
+	// The Worker execution context for background analytics delivery.
+	executionCtx?: ExecutionContext;
+	// Whether analytics tracking is permitted for this request.
+	analyticsTrackingEnabled?: boolean | null;
 	// The version of the API to use for the response.
 	version?: string;
 	// Whether to disable functions for the response.
@@ -456,5 +460,4 @@ export type CoreChatOptions = AIResponseParamsBase & {
 	current_step?: number;
 	max_steps?: number;
 	context?: ServiceContext;
-	executionCtx?: ExecutionContext;
 };

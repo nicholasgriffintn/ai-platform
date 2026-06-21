@@ -1,10 +1,12 @@
 import { useEffect } from "react";
 
+import { useAnalyticsIdentity } from "~/hooks/use-analytics-identity";
 import { authService } from "~/lib/api/auth-service";
 import { useChatStore } from "~/state/stores/chatStore";
 
 export const AppInitializer = ({ children }: { children: React.ReactNode }) => {
 	const { setIsPro } = useChatStore();
+	useAnalyticsIdentity();
 
 	useEffect(() => {
 		const user = authService.getUser();

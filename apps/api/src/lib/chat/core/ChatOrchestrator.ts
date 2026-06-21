@@ -236,6 +236,8 @@ export class ChatOrchestrator {
 			system_prompt: systemPrompt,
 			env: chatOptions.env,
 			user: chatOptions.user?.id ? chatOptions.user : undefined,
+			executionCtx: chatOptions.executionCtx,
+			analyticsTrackingEnabled: userSettings?.tracking_enabled ?? null,
 			disable_functions,
 			completion_id: chatOptions.completion_id,
 			messages,

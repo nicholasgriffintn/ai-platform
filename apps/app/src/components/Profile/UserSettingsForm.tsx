@@ -649,7 +649,7 @@ export function UserSettingsForm({
 						htmlFor="tracking_enabled"
 						className="block text-sm font-medium text-zinc-800 dark:text-zinc-200 mb-1"
 					>
-						Allow Tracking and Training Data Collection
+						Allow Prompt and Response Training Data
 					</label>
 					<Switch
 						id="tracking_enabled"
@@ -662,8 +662,8 @@ export function UserSettingsForm({
 						}
 					/>
 					<p className="text-sm text-zinc-500 dark:text-zinc-400">
-						Allow Polychat to save your conversations and app interactions for improving AI models.
-						Your data helps us create better responses and features. You can opt out at any time.
+						Allow Polychat to save conversation prompts and responses for improving AI models. We
+						still collect operational usage and performance metrics without prompt content.
 					</p>
 				</div>
 			</div>

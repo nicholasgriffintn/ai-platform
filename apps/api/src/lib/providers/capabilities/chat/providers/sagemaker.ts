@@ -83,6 +83,7 @@ export class SageMakerProvider implements AIProvider {
 			settings: {},
 			userId: resolvedUserId,
 			completion_id: params.completion_id,
+			request: params,
 		});
 	}
 

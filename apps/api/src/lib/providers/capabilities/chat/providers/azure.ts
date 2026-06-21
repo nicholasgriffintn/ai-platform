@@ -184,6 +184,7 @@ export class AzureOpenAIProvider extends BaseProvider {
 			},
 			userId,
 			completion_id: params.completion_id,
+			request: params,
 		});
 	}
 }

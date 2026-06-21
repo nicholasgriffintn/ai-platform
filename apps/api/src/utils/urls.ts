@@ -2,6 +2,23 @@ export function appendUrlPath(baseUrl: string, path: string): string {
 	return new URL(path.replace(/^\/+/, ""), `${baseUrl.replace(/\/+$/, "")}/`).toString();
 }
 
+export function normaliseHttpOrigin(value: string | undefined): string | null {
+	const candidate = value?.trim();
+	if (!candidate) {
+		return null;
+	}
+
+	try {
+		const url = new URL(candidate.startsWith("http") ? candidate : `https://${candidate}`);
+		if (url.protocol !== "https:" && url.protocol !== "http:") {
+			return null;
+		}
+		return url.origin;
+	} catch {
+		return null;
+	}
+}
+
 const normalizeHostname = (hostname: string): string =>
 	hostname
 		.trim()

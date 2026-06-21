@@ -24,6 +24,7 @@ interface AnalyticsProps {
 
 export function Analytics({
 	isEnabled = true,
+	isExperimentsEnabled = false,
 	beaconEndpoint = BEACON_ENDPOINT,
 	beaconCdnEndpoint = BEACON_CDN_ENDPOINT,
 	beaconSiteId = "test-beacon",
@@ -80,7 +81,7 @@ export function Analytics({
 
 	// biome-ignore lint/correctness/useExhaustiveDependencies: Only react to enabled state
 	useEffect(() => {
-		if (!isEnabled) {
+		if (!isEnabled || !isExperimentsEnabled) {
 			return;
 		}
 
@@ -112,7 +113,7 @@ export function Analytics({
 		document.head.appendChild(script);
 
 		return () => {};
-	}, [isEnabled]);
+	}, [isEnabled, isExperimentsEnabled]);
 
 	return null;
 }
