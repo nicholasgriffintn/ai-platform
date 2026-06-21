@@ -928,6 +928,7 @@ export async function invokeAssistantRecipe(
 	if (!installation) {
 		return {
 			recipeId: recipe.id,
+			recipeTitle: recipe.title,
 			status: "not_installed" as const,
 			channel: options.channel,
 			conversationStarter,
@@ -943,6 +944,7 @@ export async function invokeAssistantRecipe(
 	if (blockingConnections.length > 0) {
 		return {
 			recipeId: recipe.id,
+			recipeTitle: recipe.title,
 			installationId: installation.id,
 			status: "blocked" as const,
 			channel: options.channel,
@@ -975,6 +977,7 @@ export async function invokeAssistantRecipe(
 
 	return {
 		recipeId: recipe.id,
+		recipeTitle: recipe.title,
 		installationId: installation.id,
 		status: options.queue ? ("queued" as const) : ("ready" as const),
 		channel: options.channel,

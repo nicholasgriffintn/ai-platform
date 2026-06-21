@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
 	getToolDefinitionName,
+	hasEnabledToolNames,
 	mergeToolDefinitionsByName,
 	type ToolDefinitionLike,
 } from "../toolNames";
@@ -25,5 +26,12 @@ describe("toolNames", () => {
 		const unnamed = { type: "custom" };
 
 		expect(mergeToolDefinitionsByName([unnamed], [unnamed])).toEqual([unnamed, unnamed]);
+	});
+
+	it("detects configured enabled tool names", () => {
+		expect(hasEnabledToolNames(["get_weather"])).toBe(true);
+		expect(hasEnabledToolNames([""])).toBe(false);
+		expect(hasEnabledToolNames([])).toBe(false);
+		expect(hasEnabledToolNames(undefined)).toBe(false);
 	});
 });

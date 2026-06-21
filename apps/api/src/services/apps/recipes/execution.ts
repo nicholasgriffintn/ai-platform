@@ -8,6 +8,9 @@ import type { CreateChatCompletionsResponse, IEnv, IUser, Message } from "~/type
 import type { ChatRequestOptions } from "~/types/chat";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
+import { getLogger } from "~/utils/logger";
+
+const logger = getLogger({ prefix: "services/apps/recipes/execution" });
 
 function buildRecipeExecutionOptions(params: {
 	invocation: RecipeInvocationResponse;
@@ -27,8 +30,19 @@ function buildRecipeExecutionOptions(params: {
 					},
 				}
 			: {}),
+		...(params.invocation.enabledTools.length > 0
+			? {
+					agent: {
+						minToolCalls: 1,
+					},
+				}
+			: {}),
 		recipe: createRecipeChatRequestOptions(params.invocation),
 	};
+}
+
+function buildRecipeConversationTitle(invocation: RecipeInvocationResponse): string {
+	return `Recipe: ${invocation.recipeTitle || invocation.recipeId}`.trim();
 }
 
 export async function executeRecipeInvocationChat(params: {
@@ -47,6 +61,7 @@ export async function executeRecipeInvocationChat(params: {
 	response: CreateChatCompletionsResponse;
 }> {
 	const conversationId = params.conversationId ?? `recipe_${generateId()}`;
+	const shouldTitleGeneratedConversation = !params.conversationId;
 	const response = await handleCreateChatCompletions({
 		env: params.env,
 		context: params.context,
@@ -78,6 +93,20 @@ export async function executeRecipeInvocationChat(params: {
 			"Recipe execution unexpectedly returned a streaming response",
 			ErrorType.INTERNAL_ERROR,
 		);
+	}
+
+	if (shouldTitleGeneratedConversation) {
+		try {
+			await params.context.repositories.conversations.updateConversation(conversationId, {
+				title: buildRecipeConversationTitle(params.invocation),
+			});
+		} catch (error) {
+			logger.warn("Failed to title generated recipe conversation", {
+				conversationId,
+				recipeId: params.invocation.recipeId,
+				error: error instanceof Error ? error.message : String(error),
+			});
+		}
 	}
 
 	return { conversationId, response };

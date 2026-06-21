@@ -43,3 +43,10 @@ export function mergeToolDefinitionsByName<Tool extends ToolDefinitionLike>(
 
 	return mergedTools;
 }
+
+export function hasEnabledToolNames(enabledTools: unknown): boolean {
+	return (
+		Array.isArray(enabledTools) &&
+		enabledTools.some((toolName) => typeof toolName === "string" && toolName.trim().length > 0)
+	);
+}

@@ -1282,6 +1282,7 @@ export const recipeInvocationRequestSchema = z.object({
 
 export const recipeInvocationResponseSchema = z.object({
 	recipeId: z.string(),
+	recipeTitle: z.string().optional(),
 	installationId: z.string().optional(),
 	channel: z.enum(["web", "ios", "sms", "scheduled", "tool"]).default("web"),
 	status: z.enum(["ready", "queued", "blocked", "not_installed"]),

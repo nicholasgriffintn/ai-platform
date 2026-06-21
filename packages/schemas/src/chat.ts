@@ -85,6 +85,13 @@ export const chatHostedToolSettingsSchema = z
 	})
 	.passthrough();
 
+const agentCompletionOptionsSchema = z.object({
+	minToolCalls: z.number().int().min(0).optional().meta({
+		description:
+			"Minimum number of tool calls that must complete before an agent-mode response can be final.",
+	}),
+});
+
 export const chatRequestOptionsSchema = chatHostedToolSettingsSchema
 	.extend({
 		cache_ttl_seconds: z.number().min(0).optional().meta({
@@ -102,6 +109,9 @@ export const chatRequestOptionsSchema = chatHostedToolSettingsSchema
 		}),
 		recipe: recipeChatRequestOptionsSchema.optional().meta({
 			description: "Recipe execution or setup scope for connector and setup tools.",
+		}),
+		agent: agentCompletionOptionsSchema.optional().meta({
+			description: "Agent-mode completion requirements for this request.",
 		}),
 		sandbox: conversationSandboxRequestOptionsSchema.optional().meta({
 			description: "Sandbox coding-run scope and defaults for sandbox tool calls.",

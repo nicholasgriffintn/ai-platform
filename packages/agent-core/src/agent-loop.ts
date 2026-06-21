@@ -277,6 +277,20 @@ export async function executeAgentLoop<
 			continue;
 		}
 
+		if (decision.action === "continue") {
+			await emit({
+				type: "agent_continued",
+				agentStep: step,
+				reasoning: decision.reasoning,
+			});
+			messages.push({
+				role: "user",
+				content: truncateForModel(decision.instruction, config.maxObservationChars),
+			});
+			step += 1;
+			continue;
+		}
+
 		if (decision.action === "finish") {
 			const summary =
 				(await params.buildSummary?.({

@@ -25,9 +25,19 @@ describe("executeRecipeInvocationChat", () => {
 		email: "test@example.com",
 		plan_id: "pro",
 	} as IUser;
-	const context = { env, user } as any;
+	const updateConversation = vi.fn();
+	const context = {
+		env,
+		user,
+		repositories: {
+			conversations: {
+				updateConversation,
+			},
+		},
+	} as any;
 	const invocation: RecipeInvocationResponse = {
 		recipeId: "notion-action-log",
+		recipeTitle: "Notion Action Log",
 		installationId: "installation-1",
 		channel: "scheduled",
 		status: "ready",
@@ -44,6 +54,7 @@ describe("executeRecipeInvocationChat", () => {
 
 	beforeEach(() => {
 		vi.clearAllMocks();
+		updateConversation.mockResolvedValue({});
 		mocks.generateId.mockReturnValue("generated-id");
 		mocks.handleCreateChatCompletions.mockResolvedValue({
 			id: "recipe_generated-id",
@@ -73,6 +84,9 @@ describe("executeRecipeInvocationChat", () => {
 				tool_choice: "auto",
 				max_steps: 8,
 				options: expect.objectContaining({
+					agent: {
+						minToolCalls: 1,
+					},
 					recipe: {
 						id: "notion-action-log",
 						installationId: "installation-1",
@@ -91,6 +105,20 @@ describe("executeRecipeInvocationChat", () => {
 					},
 				],
 			}),
+		});
+	});
+
+	it("titles generated recipe conversations so scheduled runs are visible in history", async () => {
+		const result = await executeRecipeInvocationChat({
+			env,
+			context,
+			user,
+			invocation,
+		});
+
+		expect(result.conversationId).toBe("recipe_generated-id");
+		expect(updateConversation).toHaveBeenCalledWith("recipe_generated-id", {
+			title: "Recipe: Notion Action Log",
 		});
 	});
 

@@ -6,12 +6,20 @@ import {
 	type ToolCallInvocation,
 } from "@assistant/agent-core";
 import type { ConversationManager } from "~/lib/conversationManager";
+import {
+	buildContinuationInstruction,
+	buildInitialPlan,
+	getAgentCompletionRequirements,
+	shouldRequireToolChoice,
+	withRequiredToolChoice,
+} from "~/lib/chat/agent/completionRequirements";
 import { getAIResponse } from "~/lib/chat/responses";
 import { handleToolCalls } from "~/lib/chat/tools";
 import type { IRequest, Message, MessageContent } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
 import { isPlainObject } from "~/utils/objects";
+import { hasEnabledToolNames } from "~/utils/toolNames";
 
 const DEFAULT_AGENT_MAX_STEPS = 8;
 const AGENT_MAX_RECOVERY_REPLANS = 2;
@@ -232,6 +240,16 @@ export async function runAgentLoop(
 	params: AgentLoopExecutionParams,
 ): Promise<AgentLoopExecutionResult> {
 	const runtimeMessages = normaliseInitialMessages(params.requestParams.messages);
+	const completionRequirements = getAgentCompletionRequirements(params.requestParams);
+	if (
+		completionRequirements.minToolCalls > 0 &&
+		!hasEnabledToolNames(params.requestParams.enabled_tools)
+	) {
+		throw new AssistantError(
+			"Agent completion requires tool calls but no tools are enabled",
+			ErrorType.PARAMS_ERROR,
+		);
+	}
 	const state: ApiAgentLoopState = {
 		commandCount: 0,
 	};
@@ -240,7 +258,7 @@ export async function runAgentLoop(
 
 	await executeAgentLoop<ApiAgentSharedContext, ApiAgentLoopState>({
 		initialMessages: runtimeMessages,
-		initialPlan: "Use available tools as needed, then return a final answer.",
+		initialPlan: buildInitialPlan(completionRequirements),
 		shared: {
 			completionId: params.completionId,
 			conversationManager: params.conversationManager,
@@ -254,8 +272,16 @@ export async function runAgentLoop(
 		},
 		getCommandCount: (runtimeState) => runtimeState.commandCount,
 		resolveDecision: async ({ messages }) => {
+			const requestParams = withRequiredToolChoice(
+				params.requestParams,
+				shouldRequireToolChoice({
+					requirements: completionRequirements,
+					commandCount: state.commandCount,
+					requestParams: params.requestParams,
+				}),
+			);
 			const providerResponse = await getAIResponse({
-				...params.requestParams,
+				...requestParams,
 				messages: toProviderMessages(messages),
 				stream: false,
 			});
@@ -284,6 +310,23 @@ export async function runAgentLoop(
 						role: "assistant",
 						content: modelResponse.response || "",
 						tool_calls: modelResponse.tool_calls,
+					},
+				};
+			}
+
+			if (completionRequirements.minToolCalls > state.commandCount) {
+				return {
+					decision: {
+						action: "continue",
+						instruction: buildContinuationInstruction({
+							requirements: completionRequirements,
+							commandCount: state.commandCount,
+						}),
+						reasoning: "Agent completion requirements were not met before the model returned text.",
+					},
+					assistantMessage: {
+						role: "assistant",
+						content: modelResponse.response || "",
 					},
 				};
 			}

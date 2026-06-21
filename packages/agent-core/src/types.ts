@@ -38,6 +38,12 @@ export interface FinishDecision {
 	reasoning?: string;
 }
 
+export interface ContinueDecision {
+	action: "continue";
+	instruction: string;
+	reasoning?: string;
+}
+
 export type ScriptLanguage = "python" | "javascript" | "typescript";
 
 export interface RunScriptDecision {
@@ -74,6 +80,7 @@ export type AgentDecision =
 	| ReadFilesDecision
 	| UpdatePlanDecision
 	| FinishDecision
+	| ContinueDecision
 	| RunScriptDecision
 	| ToolCallsDecision;
 
