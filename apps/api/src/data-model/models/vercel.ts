@@ -6113,7 +6113,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		name: "Kimi K2.7 Code High Speed",
 		matchingModel: "moonshotai/kimi-k2.7-code-highspeed",
 		releaseDate: "June 15, 2026",
-		lastUpdated: "June 15, 2026",
+		lastUpdated: "June 12, 2026",
 		modalities: {
 			input: ["text", "image", "pdf"],
 			output: ["text"],
@@ -6122,13 +6122,15 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		supportsTemperature: true,
 		supportsToolCalls: true,
 		contextWindow: 262144,
-		maxTokens: 0,
+		maxTokens: 32768,
 		costPer1kInputTokens: 0.0019,
 		costPer1kOutputTokens: 0.008,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		knowledgeCutoffDate: "January 2025",
+		supportsResponseFormat: true,
 	}),
 
 	createModelConfig("zai/glm-5.2", PROVIDER, {
