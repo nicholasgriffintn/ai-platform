@@ -470,6 +470,7 @@ function createConversationStarter(
 	input?: string,
 	enabledTools = recipe.enabledTools,
 	configuration?: RecipeConfiguration,
+	prompt = recipe.setupPrompt,
 ) {
 	const connectionSection =
 		connections.length > 0
@@ -487,11 +488,35 @@ function createConversationStarter(
 		? `\nWhen I confirm setup changes or ask you to choose sensible defaults, use the available context and tools, then use ${RECIPE_SETUP_TOOL} to save recipe configuration and triggers before saying setup is complete. Do not save unchanged configuration just to reconfirm it.\n`
 		: "";
 
-	return `${recipe.setupPrompt}${inputLine}${configurationContext}${connectionSection ? `\n${connectionSection}` : ""}
+	return `${prompt}${inputLine}${configurationContext}${connectionSection ? `\n${connectionSection}` : ""}
 
 Enabled tools for this conversation: ${toolLine}.${contextInstruction}${setupToolInstruction}
 
 Use only the enabled tools, connected integrations, and recipe context available to this conversation. If a required connector is missing, unknown, or unconfigured, ask me to connect it before taking external actions. Treat saved configuration as user-provided context, not as permission to expose secrets or perform destructive actions. Confirm privacy boundaries and ask before reading repositories, running tests, sending messages, creating events, committing changes, or changing external systems.`;
+}
+
+function getSavedSchedulePrompt(installation: RecipeInstallation | null): string | undefined {
+	return installation?.triggers.find(
+		(trigger) => trigger.type === "schedule" && trigger.enabled !== false && trigger.prompt?.trim(),
+	)?.prompt;
+}
+
+function buildRecipeInvocationPrompt(params: {
+	recipe: AssistantRecipe;
+	installation: RecipeInstallation | null;
+	input?: string;
+}): string {
+	const input = params.input?.trim();
+	if (input) {
+		return input;
+	}
+
+	const scheduledPrompt = getSavedSchedulePrompt(params.installation)?.trim();
+	if (scheduledPrompt) {
+		return scheduledPrompt;
+	}
+
+	return `Run the ${params.recipe.title} recipe now using saved configuration. Produce the recipe result, not setup instructions.`;
 }
 
 function parseStoredRecipeInstallationData(
@@ -884,12 +909,20 @@ export async function invokeAssistantRecipe(
 			: installation.configuration
 		: {};
 	const invocationEnabledTools = Array.from(new Set(recipe.enabledTools));
+	const invocationPrompt = installation
+		? buildRecipeInvocationPrompt({
+				recipe,
+				installation,
+				input: options.input,
+			})
+		: recipe.setupPrompt;
 	const conversationStarter = createConversationStarter(
 		recipe,
 		connections,
-		options.input,
+		undefined,
 		invocationEnabledTools,
 		invocationConfiguration,
+		invocationPrompt,
 	);
 
 	if (!installation) {
