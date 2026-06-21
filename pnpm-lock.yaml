@@ -64,7 +64,7 @@ importers:
         version: 1.0.20
       drizzle-orm:
         specifier: 0.45.2
-        version: 0.45.2(@cloudflare/workers-types@4.20260613.1)(@opentelemetry/api@1.9.1)(better-sqlite3@12.10.0)
+        version: 0.45.2(@cloudflare/workers-types@4.20260613.1)(@opentelemetry/api@1.9.1)(better-sqlite3@12.10.1)
       hono:
         specifier: 4.12.25
         version: 4.12.25
@@ -97,8 +97,8 @@ importers:
         specifier: 25.9.3
         version: 25.9.3
       better-sqlite3:
-        specifier: 12.10.0
-        version: 12.10.0
+        specifier: 12.10.1
+        version: 12.10.1
       drizzle-kit:
         specifier: 0.31.10
         version: 0.31.10
@@ -3948,8 +3948,8 @@ packages:
   before-after-hook@4.0.0:
     resolution: {integrity: sha512-q6tR3RPqIB1pMiTRMFcZwuG5T8vwp+vUvEG0vuI6B+Rikh5BfPp2fQ82c925FOs+b0lcFQ8CFrL+KbilfZFhOQ==}
 
-  better-sqlite3@12.10.0:
-    resolution: {integrity: sha512-CyzaZRQKyHkB2ZInfTTl2nvT33EbDpjkLEbE8/Zck3Ll6O0qqvuGdrJ45HgtH+HykRg88ITY3AdreBGN70aBSQ==}
+  better-sqlite3@12.10.1:
+    resolution: {integrity: sha512-HfFtzCqnSfwB3+HroF6PSKzyh+7RfNMGPCzHFUZXRlvrPCb4P3cvxKZNN43Sr7IrkofqQZM+gIvffGpA8VvqgA==}
     engines: {node: 20.x || 22.x || 23.x || 24.x || 25.x || 26.x}
 
   bidi-js@1.0.3:
@@ -9718,7 +9718,7 @@ snapshots:
 
   before-after-hook@4.0.0: {}
 
-  better-sqlite3@12.10.0:
+  better-sqlite3@12.10.1:
     dependencies:
       bindings: 1.5.0
       prebuild-install: 7.1.3
@@ -10052,11 +10052,11 @@ snapshots:
       esbuild: 0.25.12
       tsx: 4.22.4
 
-  drizzle-orm@0.45.2(@cloudflare/workers-types@4.20260613.1)(@opentelemetry/api@1.9.1)(better-sqlite3@12.10.0):
+  drizzle-orm@0.45.2(@cloudflare/workers-types@4.20260613.1)(@opentelemetry/api@1.9.1)(better-sqlite3@12.10.1):
     optionalDependencies:
       '@cloudflare/workers-types': 4.20260613.1
       '@opentelemetry/api': 1.9.1
-      better-sqlite3: 12.10.0
+      better-sqlite3: 12.10.1
 
   dunder-proto@1.0.1:
     dependencies:
