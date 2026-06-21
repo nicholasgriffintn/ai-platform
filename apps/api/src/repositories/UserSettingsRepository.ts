@@ -241,6 +241,7 @@ export class UserSettingsRepository extends BaseRepository {
 						? 1
 						: 0
 					: null,
+			memory_provider: settings.memory_provider ?? null,
 			transcription_provider: settings.transcription_provider ?? null,
 			transcription_model: settings.transcription_model ?? null,
 			speech_provider: settings.speech_provider ?? null,
@@ -287,6 +288,7 @@ export class UserSettingsRepository extends BaseRepository {
 			"s3vectors_region",
 			"memories_save_enabled",
 			"memories_chat_history_enabled",
+			"memory_provider",
 			"transcription_provider",
 			"transcription_model",
 			"speech_provider",

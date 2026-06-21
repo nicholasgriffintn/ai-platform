@@ -49,6 +49,7 @@ function buildUserSettingsFormData(userSettings: UserSettings | null) {
 		s3vectors_region: userSettings?.s3vectors_region || "us-east-1",
 		memories_save_enabled: userSettings?.memories_save_enabled || false,
 		memories_chat_history_enabled: userSettings?.memories_chat_history_enabled || false,
+		memory_provider: userSettings?.memory_provider || "built-in",
 		tracking_enabled: userSettings?.tracking_enabled ?? true,
 		transcription_provider: transcriptionSettings.transcription_provider,
 		transcription_model: transcriptionSettings.transcription_model,
@@ -206,6 +207,7 @@ export function UserSettingsForm({
 						s3vectors_region: formData.s3vectors_region,
 						memories_save_enabled: formData.memories_save_enabled,
 						memories_chat_history_enabled: formData.memories_chat_history_enabled,
+						memory_provider: formData.memory_provider,
 						tracking_enabled: formData.tracking_enabled,
 						transcription_provider: formData.transcription_provider,
 						transcription_model: formData.transcription_model,
@@ -592,6 +594,33 @@ export function UserSettingsForm({
 			</div>
 
 			<div className="space-y-4">
+				<div>
+					<label
+						htmlFor="memory_provider"
+						className="block text-sm font-medium text-zinc-800 dark:text-zinc-200 mb-1"
+					>
+						Memory Provider
+					</label>
+					<FormSelect
+						id="memory_provider"
+						name="memory_provider"
+						value={formData.memory_provider}
+						onChange={(e) =>
+							updateFormData((prev) => ({
+								...prev,
+								memory_provider: e.target.value,
+							}))
+						}
+					>
+						<option value="built-in">Built-in</option>
+						<option value="hindsight">Hindsight</option>
+						<option value="honcho">Honcho</option>
+					</FormSelect>
+					<p className="text-sm text-zinc-500 dark:text-zinc-400">
+						Hindsight and Honcho require a connected API key in Providers.
+					</p>
+				</div>
+
 				<div>
 					<label
 						htmlFor="memories_save_enabled"

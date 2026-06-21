@@ -181,6 +181,8 @@ describe("recipe connectors", () => {
 		const devin = response.connectors.find((connector) => connector.id === "devin");
 		const supabase = response.connectors.find((connector) => connector.id === "supabase");
 		const webflow = response.connectors.find((connector) => connector.id === "webflow");
+		const hindsight = response.connectors.find((connector) => connector.id === "hindsight");
+		const honcho = response.connectors.find((connector) => connector.id === "honcho");
 
 		expect(posthog).toMatchObject({
 			status: "disconnected",
@@ -249,6 +251,22 @@ describe("recipe connectors", () => {
 			credentialLabel: "Data API token",
 			scopes: ["sites:read", "cms:read"],
 			operations: ["list_sites", "list_collections", "list_items"],
+		});
+		expect(hindsight).toMatchObject({
+			status: "disconnected",
+			authType: "api_key",
+			authorizationUrl: undefined,
+			credentialLabel: "API key",
+			scopes: ["memory:retain", "memory:recall", "memory:reflect"],
+			operations: [],
+		});
+		expect(honcho).toMatchObject({
+			status: "disconnected",
+			authType: "api_key",
+			authorizationUrl: undefined,
+			credentialLabel: "API key",
+			scopes: ["workspaces:write", "sessions:write", "messages:write", "peers:read"],
+			operations: [],
 		});
 	});
 

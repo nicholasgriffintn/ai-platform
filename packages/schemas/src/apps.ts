@@ -1061,6 +1061,8 @@ export const recipeConnectorProviderSchema = z.enum([
 	"devin",
 	"fitbit",
 	"gmail",
+	"hindsight",
+	"honcho",
 	"outlook",
 	"calendar",
 	"github",

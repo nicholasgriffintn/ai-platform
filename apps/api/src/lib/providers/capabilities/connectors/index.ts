@@ -112,6 +112,30 @@ export const connectorProviders = [
 		},
 	},
 	{
+		id: "hindsight",
+		name: "Hindsight",
+		description: "Use Hindsight as an external long-term memory provider.",
+		setupUrl: "/profile?tab=providers&type=connector&connector=hindsight",
+		operations: [],
+		auth: {
+			authType: "api_key",
+			credentialLabel: "API key",
+			scopes: ["memory:retain", "memory:recall", "memory:reflect"],
+		},
+	},
+	{
+		id: "honcho",
+		name: "Honcho",
+		description: "Use Honcho as an external memory and peer reasoning provider.",
+		setupUrl: "/profile?tab=providers&type=connector&connector=honcho",
+		operations: [],
+		auth: {
+			authType: "api_key",
+			credentialLabel: "API key",
+			scopes: ["workspaces:write", "sessions:write", "messages:write", "peers:read"],
+		},
+	},
+	{
 		id: "calendar",
 		name: "Google Calendar",
 		description: "Read calendars and create reviewed events in Google Calendar.",

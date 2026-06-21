@@ -2,6 +2,7 @@ import { gatewayId } from "~/constants/app";
 import { listFunctionTools } from "~/services/functions";
 import type { IEnv } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
+import { readHttpResponseBody, setDefaultHeader } from "~/utils/http";
 import { getLogger } from "~/utils/logger";
 import { detectStreaming } from "~/utils/streaming";
 import { safeParseJson } from "~/utils/json";
@@ -22,6 +23,14 @@ export interface FetchAIResponseOptions {
 	maxAttempts?: number;
 	backoff?: "exponential" | "linear";
 	responseType?: "json" | "raw";
+}
+
+export interface FetchProviderJsonOptions {
+	method?: string;
+	headers?: Record<string, string>;
+	body?: unknown;
+	apiKey?: string;
+	allowNullResponse?: boolean;
 }
 
 function getAiGatewayRequestHeaders(
@@ -188,4 +197,67 @@ export async function fetchAIResponse<
 	const cacheStatus = response.headers.get("cf-aig-cache-status");
 
 	return { ...data, eventId, log_id, cacheStatus } as T;
+}
+
+export async function fetchProviderJson<T>(
+	provider: string,
+	url: string,
+	options: FetchProviderJsonOptions = {},
+): Promise<T> {
+	const headers = { ...options.headers };
+	setDefaultHeader(headers, "Accept", "application/json");
+
+	if (options.apiKey) {
+		setDefaultHeader(headers, "Authorization", `Bearer ${options.apiKey}`);
+	}
+
+	if (options.body !== undefined) {
+		setDefaultHeader(headers, "Content-Type", "application/json");
+	}
+
+	const response = await fetch(url, {
+		method: options.method ?? "POST",
+		headers,
+		body: options.body === undefined ? undefined : JSON.stringify(options.body),
+	});
+
+	const responseBody = await readHttpResponseBody(response);
+	if (!response.ok) {
+		const redactedResponseJson = redactSensitiveTokens(responseBody.parsed);
+		const redactedResponseText = redactSensitiveTokens(responseBody.raw);
+
+		logger.error(`Failed to get response for ${provider} from ${url}`, redactedResponseJson);
+
+		throw new AssistantError(
+			`Failed to get response for ${provider} from ${url}`,
+			ErrorType.PROVIDER_ERROR,
+			response.status,
+			{
+				provider,
+				endpoint: url,
+				responseStatus: response.status,
+				responseJson: redactedResponseJson,
+				responseText: redactedResponseText,
+			},
+		);
+	}
+
+	if (responseBody.parsed === null && options.allowNullResponse) {
+		return null as T;
+	}
+
+	if (responseBody.parsed === null) {
+		throw new AssistantError(
+			`${provider} returned invalid JSON response`,
+			ErrorType.PROVIDER_ERROR,
+			502,
+			{
+				provider,
+				endpoint: url,
+				responseText: redactSensitiveTokens(responseBody.raw.substring(0, 200)),
+			},
+		);
+	}
+
+	return responseBody.parsed as T;
 }

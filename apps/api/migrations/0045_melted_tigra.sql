@@ -1,0 +1,1 @@
+ALTER TABLE `user_settings` ADD `memory_provider` text DEFAULT 'built-in';

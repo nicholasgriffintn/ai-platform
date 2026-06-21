@@ -283,6 +283,9 @@ export const userSettings = sqliteTable(
 		s3vectors_region: text(),
 		memories_save_enabled: integer({ mode: "boolean" }).default(false),
 		memories_chat_history_enabled: integer({ mode: "boolean" }).default(false),
+		memory_provider: text({
+			enum: ["built-in", "hindsight", "honcho"],
+		}).default("built-in"),
 		transcription_provider: text({
 			enum: ["workers", "mistral", "replicate"],
 		}).default("workers"),

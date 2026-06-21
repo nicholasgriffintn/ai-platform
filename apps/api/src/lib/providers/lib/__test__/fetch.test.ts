@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import type { IEnv } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
-import { fetchAIResponse } from "../fetch";
+import { fetchAIResponse, fetchProviderJson } from "../fetch";
 
 describe("fetchAIResponse", () => {
 	it("sends JSON-compatible bodies through the provider Gateway endpoint", async () => {
@@ -263,6 +263,67 @@ describe("fetchAIResponse", () => {
 						error: "Model test/model is currently loading",
 						estimated_time: 3,
 					},
+				},
+			} satisfies Partial<AssistantError>);
+		} finally {
+			globalThis.fetch = originalFetch;
+		}
+	});
+});
+
+describe("fetchProviderJson", () => {
+	it("sends direct provider JSON requests with bearer credentials", async () => {
+		const fetchMock = vi.fn(async () => Response.json({ ok: true }));
+		const originalFetch = globalThis.fetch;
+		globalThis.fetch = fetchMock as typeof fetch;
+
+		try {
+			await expect(
+				fetchProviderJson("hindsight", "https://hindsight.vectorize.io/v1/test", {
+					apiKey: "provider-key",
+					body: { query: "memory" },
+				}),
+			).resolves.toEqual({ ok: true });
+		} finally {
+			globalThis.fetch = originalFetch;
+		}
+
+		expect(fetchMock).toHaveBeenCalledWith(
+			"https://hindsight.vectorize.io/v1/test",
+			expect.objectContaining({
+				method: "POST",
+				headers: expect.objectContaining({
+					Accept: "application/json",
+					Authorization: "Bearer provider-key",
+					"Content-Type": "application/json",
+				}),
+				body: JSON.stringify({ query: "memory" }),
+			}),
+		);
+	});
+
+	it("redacts direct provider error response text", async () => {
+		const fetchMock = vi.fn(
+			async () =>
+				new Response(JSON.stringify({ error: "bad token provider-key" }), {
+					status: 401,
+					headers: { "content-type": "application/json" },
+				}),
+		);
+		const originalFetch = globalThis.fetch;
+		globalThis.fetch = fetchMock as typeof fetch;
+
+		try {
+			await expect(
+				fetchProviderJson("honcho", "https://api.honcho.dev/v3/test", {
+					apiKey: "provider-key",
+					body: { query: "memory" },
+				}),
+			).rejects.toMatchObject({
+				name: "AssistantError",
+				statusCode: 401,
+				context: {
+					responseJson: { error: expect.not.stringContaining("provider-key") },
 				},
 			} satisfies Partial<AssistantError>);
 		} finally {
