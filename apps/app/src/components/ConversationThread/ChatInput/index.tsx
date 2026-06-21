@@ -13,7 +13,6 @@ import {
 	type KeyboardEvent,
 	type ReactNode,
 	forwardRef,
-	useEffect,
 	useId,
 	useImperativeHandle,
 	useMemo,
@@ -39,6 +38,12 @@ import {
 import type { ComposerCommandAction } from "./composerCommandTypes";
 import { InlineResponseControls } from "./InlineResponseControls";
 import { ModelSelector } from "./ModelSelector";
+import {
+	TokenizedComposerInput,
+	type ComposerInputToken,
+	type ComposerInputTokenPosition,
+	type TokenizedComposerInputHandle,
+} from "./TokenizedComposerInput";
 import { useComposerCommandController } from "./useComposerCommandController";
 import { uploadComposerAttachment } from "./uploadAttachment";
 
@@ -107,7 +112,17 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 		ref,
 	) => {
 		const { isMobile } = useUIStore();
-		const { model, chatInput, setChatInput, chatMode, selectedAgentId } = useChatStore();
+		const {
+			model,
+			chatInput,
+			setChatInput,
+			chatMode,
+			selectedAgentId,
+			selectedAgentTokenPosition,
+			selectedAssistantAction,
+			setSelectedAgentTokenPosition,
+			setSelectedAssistantAction,
+		} = useChatStore();
 		const { isPro, currentConversationId } = useChatStore();
 		const { isRecording, isTranscribing, startRecording, stopRecording } = useVoiceRecorder({
 			onTranscribe,
@@ -131,7 +146,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 			supportsToolCalls,
 		} = modelCapabilities;
 
-		const textareaRef = useRef<HTMLTextAreaElement>(null);
+		const composerInputRef = useRef<TokenizedComposerInputHandle>(null);
 		const fileInputRef = useRef<HTMLInputElement>(null);
 		const fileInputId = useId();
 		const {
@@ -153,24 +168,69 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 			() => ({
 				focus: () => {
 					if (!hideTextInput) {
-						textareaRef.current?.focus();
+						composerInputRef.current?.focus();
 					}
 				},
 			}),
 			[hideTextInput],
 		);
 
-		useEffect(() => {
-			if (hideTextInput) {
-				return;
+		const composerTokens = useMemo<ComposerInputToken[]>(() => {
+			const tokens: ComposerInputToken[] = [];
+			if (
+				selectedAssistantAction?.item &&
+				typeof selectedAssistantAction.tokenPosition === "number"
+			) {
+				tokens.push({
+					id: `action:${selectedAssistantAction.item.id}`,
+					kind: "action",
+					label: selectedAssistantAction.item.label,
+					position: selectedAssistantAction.tokenPosition,
+				});
 			}
-			if (textareaRef.current) {
-				textareaRef.current.style.height = "auto";
-				textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
-			}
-		}, [chatInput, hideTextInput]);
 
-		const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
+			if (commandState.selectedAgent && typeof selectedAgentTokenPosition === "number") {
+				tokens.push({
+					id: `agent:${commandState.selectedAgent.id}`,
+					kind: "agent",
+					label: commandState.selectedAgent.name,
+					position: selectedAgentTokenPosition,
+				});
+			}
+
+			return tokens;
+		}, [commandState.selectedAgent, selectedAgentTokenPosition, selectedAssistantAction]);
+
+		const handleComposerTokenPositionsChange = (positions: ComposerInputTokenPosition[]) => {
+			const nextPositions = new Map(positions.map((position) => [position.id, position.position]));
+			if (selectedAssistantAction?.item) {
+				const tokenId = `action:${selectedAssistantAction.item.id}`;
+				const nextPosition = nextPositions.get(tokenId);
+				if (typeof nextPosition === "number") {
+					if (selectedAssistantAction.tokenPosition !== nextPosition) {
+						setSelectedAssistantAction({
+							...selectedAssistantAction,
+							tokenPosition: nextPosition,
+						});
+					}
+				} else if (typeof selectedAssistantAction.tokenPosition === "number") {
+					setSelectedAssistantAction(null);
+				}
+			}
+
+			if (selectedAgentId) {
+				const nextPosition = nextPositions.get(`agent:${selectedAgentId}`);
+				if (typeof nextPosition === "number") {
+					if (selectedAgentTokenPosition !== nextPosition) {
+						setSelectedAgentTokenPosition(nextPosition);
+					}
+				} else if (typeof selectedAgentTokenPosition === "number") {
+					commandState.clearAgent();
+				}
+			}
+		};
+
+		const handleKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
 			if ((e.key === "ArrowDown" || e.key === "ArrowUp") && directiveQuery) {
 				const didMove = moveActiveSuggestion(e.key === "ArrowDown" ? 1 : -1);
 				if (didMove) {
@@ -189,8 +249,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 
 			if (
 				e.key === "Backspace" &&
-				e.currentTarget.selectionStart === 0 &&
-				e.currentTarget.selectionEnd === 0 &&
+				composerInputRef.current?.getCursorPosition() === 0 &&
 				modeControls?.onClearActive
 			) {
 				e.preventDefault();
@@ -208,24 +267,18 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 			}
 			if (e.key === "Enter" && e.shiftKey) {
 				e.preventDefault();
-				const textarea = textareaRef.current;
-				if (textarea) {
-					const cursorPosition = textarea.selectionStart;
-					const textBeforeCursor = chatInput.substring(0, cursorPosition);
-					const textAfterCursor = chatInput.substring(cursorPosition);
-					setChatInput(`${textBeforeCursor}\n${textAfterCursor}`);
+				const cursorPosition = composerInputRef.current?.getCursorPosition() ?? chatInput.length;
+				const textBeforeCursor = chatInput.substring(0, cursorPosition);
+				const textAfterCursor = chatInput.substring(cursorPosition);
+				setChatInput(`${textBeforeCursor}\n${textAfterCursor}`);
 
-					setTimeout(() => {
-						textarea.selectionStart = textarea.selectionEnd = cursorPosition + 1;
-					}, 0);
-				}
+				setTimeout(() => {
+					composerInputRef.current?.setCursorPosition(cursorPosition + 1);
+				}, 0);
 			}
 		};
 
-		const handleTextAreaInput = (e: ChangeEvent<HTMLTextAreaElement>) => {
-			setTextareaCursorPosition(e.target.selectionStart);
-			setChatInput(e.target.value);
-		};
+		const handleComposerInput = (value: string) => setChatInput(value);
 
 		const handleFileUpload = async (e: ChangeEvent<HTMLInputElement>) => {
 			const files = Array.from(e.target.files ?? []);
@@ -447,6 +500,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 					<ComposerCommandChips
 						{...commandState}
 						attachments={attachmentChips}
+						hideAgentChip={true}
 						onClearMode={modeControls?.onClearActive}
 					/>
 					{canUploadFiles && (
@@ -470,14 +524,15 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 								</div>
 							)}
 							{!hideTextInput && (
-								<div className="flex min-w-0 flex-grow items-start gap-2 px-4 py-3">
-									<textarea
+								<div data-composer-input-row className="flex min-w-0 flex-grow px-4 py-3">
+									<TokenizedComposerInput
 										id="message-input"
-										ref={textareaRef}
+										ref={composerInputRef}
 										value={chatInput}
-										onChange={handleTextAreaInput}
-										onClick={(e) => setTextareaCursorPosition(e.currentTarget.selectionStart)}
-										onKeyUp={(e) => setTextareaCursorPosition(e.currentTarget.selectionStart)}
+										tokens={composerTokens}
+										onChange={handleComposerInput}
+										onCursorPositionChange={setTextareaCursorPosition}
+										onTokenPositionsChange={handleComposerTokenPositionsChange}
 										onKeyDown={handleKeyDown}
 										placeholder={
 											!currentConversationId
@@ -485,10 +540,8 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 												: (placeholder?.followUp ?? "Ask follow-up questions...")
 										}
 										disabled={isRecording || isTranscribing || isLoading}
-										className="min-h-[36px] max-h-[200px] min-w-0 flex-grow resize-none bg-transparent p-0 text-base focus:outline-none dark:text-white"
-										rows={1}
-										aria-label="Message input"
-										aria-describedby="message-input-help"
+										ariaLabel="Message input"
+										ariaDescribedBy="message-input-help"
 									/>
 								</div>
 							)}

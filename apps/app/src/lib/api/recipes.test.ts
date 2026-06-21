@@ -97,4 +97,25 @@ describe("recipes api", () => {
 			configuration: { location: "London" },
 		});
 	});
+
+	it("throws the API recipe install error message", async () => {
+		vi.stubGlobal(
+			"fetch",
+			vi.fn(async () =>
+				Response.json(
+					{
+						error: {
+							message: "Morning Briefing needs a location before it can run.",
+							code: "recipe_configuration_required",
+						},
+					},
+					{ status: 400 },
+				),
+			),
+		);
+
+		await expect(installAssistantRecipe("morning-briefing")).rejects.toThrow(
+			"Morning Briefing needs a location before it can run.",
+		);
+	});
 });

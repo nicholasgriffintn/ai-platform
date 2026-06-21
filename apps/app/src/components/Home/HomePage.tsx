@@ -8,10 +8,10 @@ import { PageShell } from "~/components/Core/PageShell";
 import { PageTitle } from "~/components/Core/PageTitle";
 import { SearchDialog } from "~/components/Search/SearchDialog";
 import {
-	type ChatUrlState,
-	loadRecipeChatRequestOptions,
-	parseChatUrlState,
-} from "~/lib/recipe-chat-context";
+	type AssistantActionLaunchState,
+	loadAssistantActionRequestOptions,
+	parseAssistantActionLaunchState,
+} from "~/lib/assistant-action-launch";
 import { useChatStore } from "~/state/stores/chatStore";
 import { useToolsStore } from "~/state/stores/toolsStore";
 import type { ChatRequestOptions } from "~/types";
@@ -23,14 +23,14 @@ export function HomePage() {
 	const setSelectedTools = useToolsStore((state) => state.setSelectedTools);
 	const [isCanvasMode, setIsCanvasMode] = useState(false);
 	const [urlRequestOptions, setUrlRequestOptions] = useState<ChatRequestOptions | undefined>();
-	const [urlState, setUrlState] = useState<ChatUrlState | null>(null);
+	const [urlState, setUrlState] = useState<AssistantActionLaunchState | null>(null);
 	const canvas = useCanvasStudio({ enabled: isCanvasMode });
 
 	useEffect(() => {
 		const init = async () => {
 			const searchParams = new URLSearchParams(window.location.search);
 			const completionId = searchParams.get("completion_id");
-			const nextUrlState = parseChatUrlState(window.location.search);
+			const nextUrlState = parseAssistantActionLaunchState(window.location.search);
 
 			await initializeStore(completionId || undefined);
 
@@ -43,7 +43,7 @@ export function HomePage() {
 			if (nextUrlState.hasEnabledTools) {
 				setSelectedTools(nextUrlState.enabledTools);
 			}
-			setUrlRequestOptions(loadRecipeChatRequestOptions(nextUrlState.recipeContext));
+			setUrlRequestOptions(loadAssistantActionRequestOptions(nextUrlState));
 			setUrlState(nextUrlState);
 
 			if (nextUrlState.autoSubmit) {

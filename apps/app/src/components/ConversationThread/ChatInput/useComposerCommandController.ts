@@ -4,6 +4,7 @@ import { useAgentToolDefaults } from "~/hooks/useAgentToolDefaults";
 import { useAgents } from "~/hooks/useAgents";
 import { getComposerDirectiveQuery } from "~/lib/composer-commands";
 import { useChatStore } from "~/state/stores/chatStore";
+import type { AssistantActionItem } from "~/lib/assistant-actions";
 import type { ComposerCommandAction } from "./composerCommandTypes";
 import { useComposerCommandActions } from "./useComposerCommandActions";
 
@@ -43,11 +44,25 @@ export function useComposerCommandController({
 	const suggestionCount =
 		directiveQuery?.trigger === "/"
 			? commandActions.filteredSlashCommands.length
-			: commandActions.filteredAgents.length;
+			: commandActions.filteredActionItems.length;
 
 	useEffect(() => {
 		setActiveSuggestionIndex(0);
 	}, [directiveQuery?.trigger, directiveQuery?.query, suggestionCount]);
+
+	const applySlashCommand = (command: ComposerCommandAction) => {
+		const selection = commandActions.selectSlashCommand(command);
+		if (selection) {
+			setTextareaCursorPosition(selection.cursorPosition);
+		}
+	};
+
+	const applyActionItem = (item: AssistantActionItem) => {
+		const selection = commandActions.selectActionItem(item);
+		if (selection) {
+			setTextareaCursorPosition(selection.cursorPosition);
+		}
+	};
 
 	const applyDirectiveSelection = () => {
 		if (!directiveQuery) {
@@ -62,15 +77,15 @@ export function useComposerCommandController({
 			if (command.disabled) {
 				return false;
 			}
-			commandActions.selectSlashCommand(command);
+			applySlashCommand(command);
 			return true;
 		}
 
-		const agent = commandActions.filteredAgents[activeSuggestionIndex];
-		if (!agent) {
+		const item = commandActions.filteredActionItems[activeSuggestionIndex];
+		if (!item) {
 			return false;
 		}
-		commandActions.selectAgent(agent);
+		applyActionItem(item);
 		return true;
 	};
 
@@ -94,6 +109,10 @@ export function useComposerCommandController({
 			setChatInput,
 			activeSuggestionIndex,
 			onActiveSuggestionIndexChange: setActiveSuggestionIndex,
+			onActionItemSelect: applyActionItem,
+			onSlashCommandSelect: applySlashCommand,
+			clearAgent: commandActions.clearAgent,
+			selectedAgent: commandActions.selectedAgent,
 		},
 		directiveQuery,
 		moveActiveSuggestion,

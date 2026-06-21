@@ -10,7 +10,7 @@ import type {
 	RecipeInstallationsResponse,
 } from "@assistant/schemas";
 import { apiService } from "./api-service";
-import { fetchApi, returnFetchedData } from "./fetch-wrapper";
+import { fetchApi, fetchApiOrThrow, returnFetchedData } from "./fetch-wrapper";
 
 export async function listAssistantRecipes(): Promise<AssistantRecipesResponse> {
 	let headers = {};
@@ -56,14 +56,11 @@ export async function installAssistantRecipe(
 		console.error("Error preparing recipe install headers:", error);
 	}
 
-	const response = await fetchApi(`/apps/recipes/${recipeId}/install`, {
+	const response = await fetchApiOrThrow(`/apps/recipes/${recipeId}/install`, {
 		method: "POST",
 		headers,
 		body: { channel: "web", triggers, configuration },
 	});
-	if (!response.ok) {
-		throw new Error("Failed to start assistant recipe");
-	}
 
 	return returnFetchedData<AssistantRecipeInstallResponse>(response);
 }
@@ -79,14 +76,11 @@ export async function invokeAssistantRecipe(
 		console.error("Error preparing recipe invocation headers:", error);
 	}
 
-	const response = await fetchApi(`/apps/recipes/${recipeId}/invoke`, {
+	const response = await fetchApiOrThrow(`/apps/recipes/${recipeId}/invoke`, {
 		method: "POST",
 		headers,
 		body: { channel: "web", input },
 	});
-	if (!response.ok) {
-		throw new Error("Failed to invoke assistant recipe");
-	}
 
 	return returnFetchedData<RecipeInvocationResponse>(response);
 }

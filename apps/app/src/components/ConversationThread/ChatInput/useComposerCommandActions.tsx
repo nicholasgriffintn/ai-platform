@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { useCallback, useMemo } from "react";
 
+import { useAssistantActionCatalog } from "~/hooks/useAssistantActionCatalog";
 import { useAgents } from "~/hooks/useAgents";
 import { useModels } from "~/hooks/useModels";
 import { useWebLLMModels } from "~/hooks/useWebLLMModels";
@@ -20,7 +21,9 @@ import {
 	type ComposerDirectiveQuery,
 	matchesComposerCommand,
 	removeComposerDirective,
+	replaceComposerDirectiveWithCursor,
 } from "~/lib/composer-commands";
+import { type AssistantActionItem, type AssistantActionVerbId } from "~/lib/assistant-actions";
 import { getAvailableModelTools, type ModelToolId } from "~/lib/model-tools";
 import { getAvailableModels, defaultModel } from "~/lib/models";
 import {
@@ -32,7 +35,7 @@ import { formatVerbosityLabel, getDefaultVerbosity, getVerbosityOptions } from "
 import { useChatStore } from "~/state/stores/chatStore";
 import { useToolsStore } from "~/state/stores/toolsStore";
 import type { ChatSettings, ReasoningEffort, VerbosityLevel } from "~/types";
-import type { ComposerCommandAction } from "./composerCommandTypes";
+import type { ComposerCommandAction, ComposerInlineToken } from "./composerCommandTypes";
 
 const MODEL_TOOL_ICONS: Record<ModelToolId, LucideIcon> = {
 	code_execution: Code,
@@ -43,7 +46,7 @@ const MODEL_TOOL_ICONS: Record<ModelToolId, LucideIcon> = {
 	web_fetch: Link,
 };
 
-interface AgentCommand {
+export interface AgentCommand {
 	id: string;
 	name: string;
 	description?: string;
@@ -71,11 +74,15 @@ export function useComposerCommandActions({
 		chatSettings,
 		isPro,
 		model,
+		selectedAssistantAction,
 		selectedAgentId,
+		selectedAgentTokenPosition,
 		setChatMode,
 		setChatSettings,
 		setModel,
+		setSelectedAssistantAction,
 		setSelectedAgentId,
+		setSelectedAgentTokenPosition,
 		setUseMultiModel,
 		useMultiModel,
 	} = useChatStore();
@@ -92,6 +99,23 @@ export function useComposerCommandActions({
 	);
 	const selectedModelConfig = model ? availableModels[model] : undefined;
 	const modelCapabilities = model ? apiModels[model] : undefined;
+	const reasoningOptions = useMemo(
+		() => getReasoningOptions(selectedModelConfig),
+		[selectedModelConfig],
+	);
+	const defaultReasoningEffort = getDefaultReasoningEffort(selectedModelConfig);
+	const selectedReasoning = chatSettings.reasoning?.effort ?? defaultReasoningEffort;
+	const verbosityOptions = useMemo(
+		() => getVerbosityOptions(selectedModelConfig),
+		[selectedModelConfig],
+	);
+	const defaultVerbosity = getDefaultVerbosity(selectedModelConfig);
+	const selectedVerbosity = chatSettings.verbosity ?? defaultVerbosity;
+	const availableModelTools = useMemo(
+		() => (modelCapabilities?.supportsToolCalls ? getAvailableModelTools(modelCapabilities) : []),
+		[modelCapabilities],
+	);
+	const actionCatalog = useAssistantActionCatalog({ modelTools: availableModelTools });
 	const canUseAgents =
 		modeCommands.length === 0 ||
 		!modeCommands.some((command) => command.isActive && command.command !== "chat");
@@ -116,6 +140,7 @@ export function useComposerCommandActions({
 
 	const clearAgent = useCallback(() => {
 		setSelectedAgentId(null);
+		setSelectedAgentTokenPosition(null);
 		if (chatMode === "agent") {
 			setChatMode("remote");
 			selectModelWithDefaults(defaultModel, {
@@ -123,7 +148,14 @@ export function useComposerCommandActions({
 				localOnly: false,
 			});
 		}
-	}, [chatMode, chatSettings, selectModelWithDefaults, setChatMode, setSelectedAgentId]);
+	}, [
+		chatMode,
+		chatSettings,
+		selectModelWithDefaults,
+		setChatMode,
+		setSelectedAgentId,
+		setSelectedAgentTokenPosition,
+	]);
 
 	const toggleTool = useCallback(
 		(toolId: string) => {
@@ -136,17 +168,32 @@ export function useComposerCommandActions({
 		[selectedTools, setSelectedTools],
 	);
 
+	const clearAssistantAction = useCallback(
+		() => setSelectedAssistantAction(null),
+		[setSelectedAssistantAction],
+	);
+
+	const actionVerbCommands = useMemo<ComposerCommandAction[]>(
+		() =>
+			actionCatalog.verbs.map((verb) => ({
+				id: `action-${verb.id}`,
+				label: verb.label,
+				description: verb.description,
+				command: verb.command,
+				icon: <ListFilter className="h-4 w-4" aria-hidden="true" />,
+				isActive: false,
+				selectionText: "@",
+				selectionCursorOffset: 1,
+				onSelect: () => undefined,
+			})),
+		[actionCatalog.verbs],
+	);
+
 	const settingCommands = useMemo<ComposerCommandAction[]>(() => {
 		if (!includeSettingCommands) {
 			return [];
 		}
 
-		const reasoningOptions = getReasoningOptions(selectedModelConfig);
-		const defaultReasoningEffort = getDefaultReasoningEffort(selectedModelConfig);
-		const selectedReasoning = chatSettings.reasoning?.effort ?? defaultReasoningEffort;
-		const verbosityOptions = getVerbosityOptions(selectedModelConfig);
-		const defaultVerbosity = getDefaultVerbosity(selectedModelConfig);
-		const selectedVerbosity = chatSettings.verbosity ?? defaultVerbosity;
 		const commands: ComposerCommandAction[] = [
 			...verbosityOptions.map((option) => ({
 				id: `verbosity-${option}`,
@@ -207,8 +254,8 @@ export function useComposerCommandActions({
 			});
 		}
 
-		if (modelCapabilities?.supportsToolCalls) {
-			for (const tool of getAvailableModelTools(modelCapabilities)) {
+		if (availableModelTools.length > 0) {
+			for (const tool of availableModelTools) {
 				const Icon = MODEL_TOOL_ICONS[tool.id];
 				commands.push({
 					id: `${tool.id}-toggle`,
@@ -230,22 +277,51 @@ export function useComposerCommandActions({
 	}, [
 		chatMode,
 		chatSettings,
+		availableModelTools,
+		defaultReasoningEffort,
+		defaultVerbosity,
 		includeSettingCommands,
 		isPro,
 		model,
-		modelCapabilities,
-		selectedModelConfig,
+		reasoningOptions,
+		selectedReasoning,
 		selectedTools,
+		selectedVerbosity,
 		setChatSettings,
 		setUseMultiModel,
 		toggleTool,
 		toolSelectionLocked,
 		useMultiModel,
+		verbosityOptions,
 	]);
 
+	const inlineSkillTokens = useMemo<ComposerInlineToken[]>(() => {
+		const tokens: ComposerInlineToken[] = [];
+
+		for (const tool of availableModelTools) {
+			if (!selectedTools.includes(tool.id)) {
+				continue;
+			}
+			const Icon = MODEL_TOOL_ICONS[tool.id];
+			tokens.push({
+				id: `tool-${tool.id}`,
+				label: tool.command,
+				icon: <Icon className="h-3.5 w-3.5" aria-hidden="true" />,
+				...(toolSelectionLocked
+					? {}
+					: {
+							onClear: () =>
+								setSelectedTools(selectedTools.filter((selectedTool) => selectedTool !== tool.id)),
+						}),
+			});
+		}
+
+		return tokens;
+	}, [availableModelTools, selectedTools, setSelectedTools, toolSelectionLocked]);
+
 	const slashCommands = useMemo(
-		() => [...modeCommands, ...settingCommands],
-		[modeCommands, settingCommands],
+		() => [...actionVerbCommands, ...modeCommands, ...settingCommands],
+		[actionVerbCommands, modeCommands, settingCommands],
 	);
 	const filteredSlashCommands = useMemo(() => {
 		const query = directive?.trigger === "/" ? directive.query : "";
@@ -253,65 +329,161 @@ export function useComposerCommandActions({
 			matchesComposerCommand(query, [command.label, command.command, command.description]),
 		);
 	}, [directive, slashCommands]);
-	const filteredAgents = useMemo(() => {
+	const filteredActionItems = useMemo(() => {
 		const query = directive?.trigger === "@" ? directive.query : "";
 		if (!canUseAgents) {
 			return [];
 		}
-		return agents.filter((agent) =>
-			matchesComposerCommand(query, [agent.name, agent.description, agent.model]),
+		return actionCatalog.items.filter((item) =>
+			matchesComposerCommand(query, [
+				item.label,
+				item.description,
+				item.status,
+				...item.searchText,
+			]),
 		);
-	}, [agents, canUseAgents, directive]);
+	}, [actionCatalog.items, canUseAgents, directive]);
 
 	const selectedAgent = agents.find((agent) => agent.id === selectedAgentId);
 
 	const selectSlashCommand = useCallback(
 		(command: ComposerCommandAction) => {
 			if (command.disabled) {
-				return;
+				return undefined;
+			}
+			if (command.selectionText && directive) {
+				if (command.id.startsWith("action-")) {
+					setSelectedAssistantAction({
+						...selectedAssistantAction,
+						verb: command.command as AssistantActionVerbId,
+					});
+				}
+				const selection = replaceComposerDirectiveWithCursor(
+					chatInput,
+					directive,
+					command.selectionText,
+					command.selectionCursorOffset,
+				);
+				setChatInput(selection.input);
+				return selection;
 			}
 			command.onSelect();
 			if (command.command !== "chat" && modeCommands.some((mode) => mode.id === command.id)) {
 				clearAgent();
 			}
 			consumeDirective();
+			return undefined;
 		},
-		[clearAgent, consumeDirective, modeCommands],
+		[
+			chatInput,
+			clearAgent,
+			consumeDirective,
+			directive,
+			modeCommands,
+			selectedAssistantAction,
+			setChatInput,
+			setSelectedAssistantAction,
+		],
 	);
 
 	const selectAgent = useCallback(
 		(agent: AgentCommand) => {
 			if (!canUseAgents) {
-				return;
+				return undefined;
 			}
 			setSelectedAgentId(agent.id);
+			const mention = `@${agent.name}`;
+			const selection = directive
+				? replaceComposerDirectiveWithCursor(chatInput, directive, mention)
+				: undefined;
+			setSelectedAgentTokenPosition(
+				selection ? selection.cursorPosition - mention.length : (selectedAgentTokenPosition ?? 0),
+			);
 			setChatMode("agent");
 			selectModelWithDefaults(agent.model ?? defaultModel, {
 				...chatSettings,
 				localOnly: false,
 			});
-			consumeDirective();
+			if (selection) {
+				setChatInput(selection.input);
+			} else {
+				consumeDirective();
+			}
+			return selection;
 		},
 		[
 			canUseAgents,
+			chatInput,
 			chatSettings,
 			consumeDirective,
+			directive,
 			selectModelWithDefaults,
+			selectedAgentTokenPosition,
 			setChatMode,
+			setChatInput,
 			setSelectedAgentId,
+			setSelectedAgentTokenPosition,
+		],
+	);
+
+	const selectActionItem = useCallback(
+		(item: AssistantActionItem) => {
+			if (!canUseAgents) {
+				return undefined;
+			}
+			if (item.kind === "agent") {
+				const agentId = item.id.replace(/^agent:/, "");
+				const agent = agents.find((item) => item.id === agentId);
+				if (agent) {
+					return selectAgent(agent);
+				}
+				return undefined;
+			}
+			if (directive) {
+				const mention = `@${item.label}`;
+				const selection = replaceComposerDirectiveWithCursor(chatInput, directive, mention);
+				setSelectedAssistantAction({
+					...selectedAssistantAction,
+					item: {
+						id: item.id,
+						kind: item.kind,
+						label: item.label,
+						metadata: item.metadata,
+					},
+					tokenPosition: selection.cursorPosition - mention.length,
+				});
+				setChatInput(selection.input);
+				return selection;
+			}
+			return undefined;
+		},
+		[
+			agents,
+			canUseAgents,
+			chatInput,
+			directive,
+			selectAgent,
+			selectedAssistantAction,
+			setChatInput,
+			setSelectedAssistantAction,
 		],
 	);
 
 	return {
 		agents,
+		actionItems: actionCatalog.items,
 		canUseAgents,
 		clearAgent,
-		filteredAgents,
+		clearAssistantAction,
+		filteredActionItems,
 		filteredSlashCommands,
+		inlineSkillTokens,
 		isLoadingAgents,
 		modeCommands,
+		selectActionItem,
 		selectAgent,
 		selectSlashCommand,
+		selectedAssistantAction,
 		selectedAgent,
 		selectedAgentId,
 		settingCommands,

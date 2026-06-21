@@ -15,13 +15,28 @@ const mocks = vi.hoisted(() => ({
 		chatSettings: {},
 		isPro: true,
 		model: null as string | null,
+		selectedAssistantAction: null as {
+			verb?: "run";
+			item?: {
+				id: string;
+				kind: "connector";
+				label: string;
+			};
+		} | null,
 		selectedAgentId: null as string | null,
+		selectedAgentTokenPosition: null as number | null,
 		setChatMode: vi.fn(),
 		setChatSettings: vi.fn(),
 		setModel: vi.fn(),
+		setSelectedAssistantAction: vi.fn(),
 		setSelectedAgentId: vi.fn(),
+		setSelectedAgentTokenPosition: vi.fn(),
 		setUseMultiModel: vi.fn(),
 		useMultiModel: false,
+	},
+	toolsStore: {
+		selectedTools: [] as string[],
+		setSelectedTools: vi.fn(),
 	},
 }));
 
@@ -39,8 +54,94 @@ vi.mock("~/hooks/useAgents", () => ({
 	}),
 }));
 
+vi.mock("~/hooks/useConnectors", () => ({
+	useRecipeConnectors: () => ({
+		data: {
+			connectors: [
+				{
+					id: "posthog",
+					name: "PostHog",
+					description: "Query product analytics",
+					authType: "api_key",
+					status: "connected",
+					scopes: ["project:read"],
+					operations: ["query"],
+				},
+			],
+		},
+	}),
+}));
+
+vi.mock("~/hooks/useDynamicApps", () => ({
+	useDynamicApps: () => ({
+		data: {
+			apps: [
+				{
+					id: "articles",
+					name: "Article Research",
+					description: "Analyse articles",
+					category: "Research",
+					kind: "dynamic",
+					type: "normal",
+				},
+			],
+		},
+	}),
+}));
+
+vi.mock("~/hooks/useRecipes", () => ({
+	useAssistantRecipes: () => ({
+		data: {
+			recipes: [
+				{
+					id: "morning-briefing",
+					title: "Morning Briefing",
+					summary: "Summarise your day",
+					description: "Uses mail and calendar",
+					kind: "automate",
+					category: "Productivity",
+					featured: true,
+					estimatedSetupMinutes: 5,
+					integrations: [],
+					triggers: [{ type: "message", label: "Ask", description: "Ask for it" }],
+					actions: ["Summarise priorities"],
+					setupPrompt: "Set up the Morning Briefing recipe.",
+					enabledTools: ["use_recipe_connector"],
+					configurationFields: [],
+				},
+			],
+		},
+	}),
+	useRecipeInstallations: () => ({
+		data: {
+			installations: [
+				{
+					id: "installation-1",
+					recipeId: "morning-briefing",
+					userId: 42,
+					status: "active",
+					triggers: [{ type: "manual", enabled: true }],
+					configuration: {},
+					createdAt: "2026-01-01T00:00:00.000Z",
+					updatedAt: "2026-01-01T00:00:00.000Z",
+				},
+			],
+		},
+	}),
+}));
+
 vi.mock("~/hooks/useModels", () => ({
-	useModels: () => ({ data: {} }),
+	useModels: () => ({
+		data: {
+			"tool-model": {
+				id: "tool-model",
+				matchingModel: "tool-model",
+				provider: "test",
+				supportsToolCalls: true,
+				supportsWebFetch: true,
+			},
+		},
+	}),
 }));
 
 vi.mock("~/hooks/useWebLLMModels", () => ({
@@ -49,6 +150,11 @@ vi.mock("~/hooks/useWebLLMModels", () => ({
 
 vi.mock("~/state/stores/chatStore", () => ({
 	useChatStore: () => mocks.store,
+}));
+
+vi.mock("~/state/stores/toolsStore", () => ({
+	useToolsStore: (selector: (state: typeof mocks.toolsStore) => unknown) =>
+		selector(mocks.toolsStore),
 }));
 
 function createModeCommand(overrides: Partial<ComposerCommandAction> = {}): ComposerCommandAction {
@@ -67,7 +173,12 @@ function createModeCommand(overrides: Partial<ComposerCommandAction> = {}): Comp
 describe("ComposerCommandSurface", () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
+		mocks.store.chatSettings = {};
+		mocks.store.model = null;
+		mocks.store.selectedAssistantAction = null;
 		mocks.store.selectedAgentId = null;
+		mocks.store.selectedAgentTokenPosition = null;
+		mocks.toolsStore.selectedTools = [];
 	});
 
 	it("selects modes from the compact command button", () => {
@@ -183,7 +294,23 @@ describe("ComposerCommandSurface", () => {
 		);
 	});
 
-	it("selects an agent and strips the typed mention directive", () => {
+	it("can hide the selected agent from the stacked chip row when inline tokens render it", () => {
+		mocks.store.selectedAgentId = "agent-1";
+
+		render(
+			<ComposerCommandChips
+				chatInput=""
+				directive={null}
+				hideAgentChip={true}
+				modeCommands={[]}
+				setChatInput={vi.fn()}
+			/>,
+		);
+
+		expect(screen.queryByText("Reviewer")).not.toBeInTheDocument();
+	});
+
+	it("selects an agent and keeps the mention in the prompt text", () => {
 		const setChatInput = vi.fn();
 
 		render(
@@ -199,7 +326,44 @@ describe("ComposerCommandSurface", () => {
 
 		expect(mocks.store.setSelectedAgentId).toHaveBeenCalledWith("agent-1");
 		expect(mocks.store.setChatMode).toHaveBeenCalledWith("agent");
-		expect(setChatInput).toHaveBeenCalledWith("review this");
+		expect(setChatInput).toHaveBeenCalledWith("@Reviewer review this");
+	});
+
+	it("shows action verbs from the assistant action catalogue as slash commands", () => {
+		render(
+			<ComposerCommandSuggestions
+				chatInput="/ru"
+				directive={{ trigger: "/", query: "ru", start: 0, end: 3 }}
+				modeCommands={[createModeCommand()]}
+				setChatInput={vi.fn()}
+			/>,
+		);
+
+		expect(screen.getByRole("button", { name: /\/run/i })).toBeInTheDocument();
+	});
+
+	it("groups recipes, apps, agents, connectors, and tools by their own names", () => {
+		mocks.store.model = "tool-model";
+
+		render(
+			<ComposerCommandSuggestions
+				chatInput="@"
+				directive={{ trigger: "@", query: "", start: 0, end: 1 }}
+				modeCommands={[createModeCommand()]}
+				setChatInput={vi.fn()}
+			/>,
+		);
+
+		expect(screen.getByText("Recipes")).toBeInTheDocument();
+		expect(screen.getByText("Apps")).toBeInTheDocument();
+		expect(screen.getByText("Agents")).toBeInTheDocument();
+		expect(screen.getByText("Connectors")).toBeInTheDocument();
+		expect(screen.getByText("Tools")).toBeInTheDocument();
+		expect(screen.getByRole("button", { name: /@Morning Briefing/i })).toBeInTheDocument();
+		expect(screen.getByRole("button", { name: /@Article Research/i })).toBeInTheDocument();
+		expect(screen.getByRole("button", { name: /@PostHog/i })).toBeInTheDocument();
+		expect(screen.getByRole("button", { name: /@Reviewer/i })).toBeInTheDocument();
+		expect(screen.getByRole("button", { name: /@Web fetch/i })).toBeInTheDocument();
 	});
 
 	it("hides agents when a non-chat mode is active", () => {
@@ -222,7 +386,6 @@ describe("ComposerCommandSurface", () => {
 
 		fireEvent.click(screen.getByRole("button", { name: "Open commands" }));
 
-		expect(screen.queryByText("Agents")).not.toBeInTheDocument();
 		expect(screen.queryByText("Reviewer")).not.toBeInTheDocument();
 	});
 

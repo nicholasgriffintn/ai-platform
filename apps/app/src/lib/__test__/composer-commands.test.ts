@@ -4,6 +4,7 @@ import {
 	getComposerDirectiveQuery,
 	matchesComposerCommand,
 	removeComposerDirective,
+	replaceComposerDirectiveWithCursor,
 } from "../composer-commands";
 
 describe("composer command parsing", () => {
@@ -27,6 +28,12 @@ describe("composer command parsing", () => {
 
 	it("ignores completed tokens away from the cursor", () => {
 		expect(getComposerDirectiveQuery("/sandbox do work", 16)).toBeNull();
+	});
+
+	it("ignores completed inline mentions when later words are being typed", () => {
+		const input = "hey @Daily Weather and";
+
+		expect(getComposerDirectiveQuery(input, input.length)).toBeNull();
 	});
 
 	it("removes the active directive without leaking UI syntax into the prompt", () => {
@@ -63,6 +70,15 @@ describe("composer command parsing", () => {
 		expect(directive && removeComposerDirective("ask @reviewer to check this", directive)).toBe(
 			"ask to check this",
 		);
+	});
+
+	it("replaces directives and reports the next cursor position", () => {
+		const directive = getComposerDirectiveQuery("/r", 2);
+
+		expect(directive && replaceComposerDirectiveWithCursor("/r", directive, "/run @")).toEqual({
+			input: "/run @",
+			cursorPosition: 6,
+		});
 	});
 
 	it("matches commands by label, command, or description", () => {

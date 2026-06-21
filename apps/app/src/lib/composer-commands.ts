@@ -31,16 +31,39 @@ export function getComposerDirectiveQuery(
 }
 
 export function removeComposerDirective(input: string, directive: ComposerDirectiveQuery): string {
+	return replaceComposerDirective(input, directive, "");
+}
+
+export function replaceComposerDirective(
+	input: string,
+	directive: ComposerDirectiveQuery,
+	replacement: string,
+): string {
+	return replaceComposerDirectiveWithCursor(input, directive, replacement).input;
+}
+
+export function replaceComposerDirectiveWithCursor(
+	input: string,
+	directive: ComposerDirectiveQuery,
+	replacement: string,
+	cursorOffset?: number,
+): { input: string; cursorPosition: number } {
 	const before = input.slice(0, directive.start).replace(/\s+$/, "");
 	const after = input.slice(directive.end).replace(/^\s+/, "");
+	const value = replacement.trim();
+	const replacementCursorPosition =
+		before.length + (before && value ? 1 : 0) + (cursorOffset ?? value.length);
 
-	if (!before) {
-		return after;
+	if (!before && !value) {
+		return { input: after, cursorPosition: 0 };
 	}
-	if (!after) {
-		return before;
+	if (!after && !value) {
+		return { input: before, cursorPosition: before.length };
 	}
-	return `${before} ${after}`;
+	return {
+		input: [before, value, after].filter(Boolean).join(" "),
+		cursorPosition: replacementCursorPosition,
+	};
 }
 
 export function matchesComposerCommand(query: string, values: Array<string | undefined>): boolean {
