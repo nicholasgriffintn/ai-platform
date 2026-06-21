@@ -46,6 +46,22 @@ function assertConnectorApiUrl(rawUrl: string): string {
 	return url.toString();
 }
 
+function getConnectorErrorType(status: number): ErrorType {
+	if (status === 400 || status === 422) {
+		return ErrorType.PARAMS_ERROR;
+	}
+
+	return ErrorType.EXTERNAL_API_ERROR;
+}
+
+function getConnectorErrorStatus(status: number): number {
+	if (status === 400 || status === 422) {
+		return 400;
+	}
+
+	return 502;
+}
+
 export async function fetchConnectorJson(params: {
 	url: string;
 	token: string;
@@ -72,8 +88,8 @@ export async function fetchConnectorJson(params: {
 		const redactedText = redactSensitiveTokens(text);
 		throw new AssistantError(
 			`Connector API request failed (${response.status}): ${redactedText.slice(0, 300)}`,
-			ErrorType.EXTERNAL_API_ERROR,
-			502,
+			getConnectorErrorType(response.status),
+			getConnectorErrorStatus(response.status),
 		);
 	}
 

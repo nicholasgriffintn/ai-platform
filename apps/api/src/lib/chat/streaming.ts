@@ -737,6 +737,7 @@ export async function createStreamWithPostProcessing(
 							log_id: assistantMessage.log_id,
 							usage: assistantMessage.usage,
 							citations: assistantMessage.citations,
+							tool_calls: assistantMessage.tool_calls,
 							finish_reason: assistantMessage.finish_reason,
 							data: assistantMessage.data,
 							parts: messageParts,

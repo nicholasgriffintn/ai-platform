@@ -276,6 +276,20 @@ export class MessageFormatter {
 					break;
 				}
 				default:
+					if (Array.isArray(content) && content.length === 0) {
+						const newMessage: Message = {
+							role: message.role,
+							content: "",
+						};
+
+						if (message.role === "assistant" && hasToolCalls(message.tool_calls)) {
+							newMessage.tool_calls = message.tool_calls;
+						}
+
+						formattedMessages.push(newMessage);
+						break;
+					}
+
 					if (Array.isArray(content) && content.length === 1 && typeof content[0] === "string") {
 						const newMessage: Message = {
 							role: message.role,
@@ -371,7 +385,11 @@ export class MessageFormatter {
 			}
 			default:
 				return content.filter(
-					(item) => typeof item === "object" && "type" in item && item.type !== "markdown_document",
+					(item) =>
+						typeof item === "object" &&
+						"type" in item &&
+						item.type !== "markdown_document" &&
+						item.type !== "thinking",
 				);
 		}
 	}
@@ -737,6 +755,9 @@ export class MessageFormatter {
 		if (item.type === "markdown_document") {
 			return null;
 		}
+		if (item.type === "thinking") {
+			return null;
+		}
 		return item;
 	}
 
@@ -771,6 +792,9 @@ export class MessageFormatter {
 		if (item.type === "markdown_document") {
 			return null;
 		}
+		if (item.type === "thinking") {
+			return null;
+		}
 
 		return item;
 	}
@@ -783,6 +807,9 @@ export class MessageFormatter {
 			return { text: item };
 		}
 		if (item.type === "markdown_document") {
+			return null;
+		}
+		if (item.type === "thinking") {
 			return null;
 		}
 		return item;

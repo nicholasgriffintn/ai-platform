@@ -115,6 +115,89 @@ describe("MessageFormatter", () => {
 			});
 		});
 
+		it("should strip internal thinking blocks before provider replay", () => {
+			const toolCalls = [
+				{
+					id: "call_1",
+					type: "function",
+					function: {
+						name: "get_recipe",
+						arguments: "{}",
+					},
+				},
+			];
+			const messages: Message[] = [
+				{ role: "user", content: "Set up the PostHog recipe." },
+				{
+					role: "assistant",
+					content: [
+						{
+							type: "thinking",
+							thinking: "I need the recipe contract.",
+							signature: "sig",
+						},
+						{
+							type: "text",
+							text: "Let me check the recipe setup contract.",
+						},
+					],
+					tool_calls: toolCalls,
+				},
+			];
+
+			const result = MessageFormatter.formatMessages(messages, {
+				provider: "deepseek",
+			});
+
+			expect(result[1]).toEqual({
+				role: "assistant",
+				content: [
+					{
+						type: "text",
+						text: "Let me check the recipe setup contract.",
+					},
+				],
+				tool_calls: toolCalls,
+			});
+		});
+
+		it("should convert thinking-only assistant tool call content to an empty string", () => {
+			const toolCalls = [
+				{
+					id: "call_1",
+					type: "function",
+					function: {
+						name: "get_recipe",
+						arguments: "{}",
+					},
+				},
+			];
+			const messages: Message[] = [
+				{ role: "user", content: "continue" },
+				{
+					role: "assistant",
+					content: [
+						{
+							type: "thinking",
+							thinking: "I should call get_recipe.",
+							signature: "sig",
+						},
+					],
+					tool_calls: toolCalls,
+				},
+			];
+
+			const result = MessageFormatter.formatMessages(messages, {
+				provider: "deepseek",
+			});
+
+			expect(result[1]).toEqual({
+				role: "assistant",
+				content: "",
+				tool_calls: toolCalls,
+			});
+		});
+
 		it("should add system prompt when provided", () => {
 			const messages: Message[] = [{ role: "user", content: "Hello" }];
 

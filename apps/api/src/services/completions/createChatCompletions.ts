@@ -162,6 +162,8 @@ export const handleCreateChatCompletions = async (req: {
 							data: toolResponse.data || null,
 							status: toolResponse.status || "unknown",
 							timestamp: toolResponse.timestamp,
+							tool_call_id: toolResponse.tool_call_id,
+							tool_call_arguments: toolResponse.tool_call_arguments,
 						},
 						finish_reason: "tool_result",
 					}))

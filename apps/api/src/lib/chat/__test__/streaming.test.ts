@@ -14,6 +14,18 @@ vi.mock("~/lib/providers/capabilities/guardrails", () => ({
 	},
 }));
 
+vi.mock("~/lib/chat/tools", () => ({
+	handleToolCalls: vi.fn().mockResolvedValue([
+		{
+			role: "tool",
+			name: "get_recipe",
+			content: "Recipe configuration fields loaded.",
+			status: "success",
+			tool_call_id: "call_recipe",
+		},
+	]),
+}));
+
 function createProviderStream(events: string[]): ReadableStream<Uint8Array> {
 	const encoder = new TextEncoder();
 	return new ReadableStream({
@@ -115,5 +127,52 @@ describe("createStreamWithPostProcessing", () => {
 				tool_calls: null,
 			}),
 		);
+	});
+
+	it("emits assistant tool calls in message deltas for client replay", async () => {
+		const conversationManager = {
+			getUsageLimits: vi.fn().mockResolvedValue({
+				daily: { used: 13, limit: 50 },
+				pro: { used: 11.3, limit: 200 },
+			}),
+			add: vi.fn(),
+		};
+
+		const stream = await createStreamWithPostProcessing(
+			createProviderStream([
+				`data: ${JSON.stringify({
+					choices: [
+						{
+							delta: {
+								tool_calls: [
+									{
+										index: 0,
+										id: "call_recipe",
+										type: "function",
+										function: {
+											name: "get_recipe",
+											arguments: "{}",
+										},
+									},
+								],
+							},
+						},
+					],
+				})}\n\n`,
+				"data: [DONE]\n\n",
+			]),
+			{
+				env: { AI: {} } as any,
+				completion_id: "completion-1",
+				model: "gpt-5.4-mini",
+				provider: "openai",
+			},
+			conversationManager as any,
+		);
+
+		const output = await readStream(stream);
+
+		expect(output).toContain('"type":"message_delta"');
+		expect(output).toContain('"tool_calls":[{"id":"call_recipe"');
 	});
 });

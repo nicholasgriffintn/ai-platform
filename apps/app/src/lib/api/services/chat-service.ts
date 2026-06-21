@@ -722,6 +722,8 @@ export class ChatService {
 										log_id: toolResult.log_id,
 										model: toolResult.model,
 										platform: toolResult.platform,
+										tool_call_id: toolResult.tool_call_id,
+										tool_call_arguments: toolResult.tool_call_arguments,
 										tool_calls: toolResult.tool_calls,
 									});
 
@@ -758,6 +760,9 @@ export class ChatService {
 									}
 									if (parsedData.model) {
 										responseModel = parsedData.model;
+									}
+									if (Array.isArray(parsedData.tool_calls)) {
+										toolCalls = parsedData.tool_calls;
 									}
 									if (Array.isArray(parsedData.parts)) {
 										finalParts = parsedData.parts as Message["parts"];

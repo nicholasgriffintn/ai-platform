@@ -1,4 +1,5 @@
 import { AssistantError, ErrorType } from "~/utils/errors";
+import { isRecord } from "~/utils/objects";
 import { fetchConnectorJson } from "./http";
 import { getNumberParam, getStringParam, limitPositiveInteger } from "./params";
 
@@ -10,6 +11,9 @@ const POSTHOG_HOSTS = {
 
 const HOGQL_WRITE_PATTERN =
 	/\b(alter|attach|create|delete|detach|drop|grant|insert|kill|optimize|rename|replace|revoke|truncate|update)\b/i;
+const HOGQL_LIMIT_PATTERN = /\blimit\s+(\d+)\b/i;
+const DEFAULT_HOGQL_LIMIT = 100;
+const MAX_HOGQL_LIMIT = 500;
 
 function getPostHogBaseUrl(params: Record<string, unknown>): string {
 	const region = getStringParam(params, "region");
@@ -42,8 +46,47 @@ function requirePostHogOrganizationId(params: Record<string, unknown>): string {
 	return organizationId;
 }
 
-function buildHogQlQuery(params: Record<string, unknown>) {
+function getHogQlQueryText(params: Record<string, unknown>): string | undefined {
 	const query = getStringParam(params, "query");
+	if (query) {
+		return query;
+	}
+
+	const queryObject = params.query;
+	if (!isRecord(queryObject)) {
+		return undefined;
+	}
+
+	const kind = getStringParam(queryObject, "kind");
+	if (kind && kind !== "HogQLQuery") {
+		throw new AssistantError("query.kind must be HogQLQuery", ErrorType.PARAMS_ERROR, 400);
+	}
+
+	return getStringParam(queryObject, "query");
+}
+
+function boundHogQlQuery(query: string, params: Record<string, unknown>): string {
+	const fallbackLimit = limitPositiveInteger(
+		getNumberParam(params, "limit"),
+		DEFAULT_HOGQL_LIMIT,
+		MAX_HOGQL_LIMIT,
+	);
+	const trimmedQuery = query.trim().replace(/;+\s*$/, "");
+	const inlineLimit = HOGQL_LIMIT_PATTERN.exec(trimmedQuery);
+	if (!inlineLimit) {
+		return `${trimmedQuery} LIMIT ${fallbackLimit}`;
+	}
+
+	const requestedLimit = Number(inlineLimit[1]);
+	if (Number.isFinite(requestedLimit) && requestedLimit > MAX_HOGQL_LIMIT) {
+		return trimmedQuery.replace(HOGQL_LIMIT_PATTERN, `LIMIT ${MAX_HOGQL_LIMIT}`);
+	}
+
+	return trimmedQuery;
+}
+
+function buildHogQlQuery(params: Record<string, unknown>) {
+	const query = getHogQlQueryText(params);
 	if (!query) {
 		throw new AssistantError("query is required", ErrorType.PARAMS_ERROR, 400);
 	}
@@ -54,9 +97,8 @@ function buildHogQlQuery(params: Record<string, unknown>) {
 	return {
 		query: {
 			kind: "HogQLQuery",
-			query,
+			query: boundHogQlQuery(query, params),
 		},
-		limit: limitPositiveInteger(getNumberParam(params, "limit"), 100, 500),
 	};
 }
 

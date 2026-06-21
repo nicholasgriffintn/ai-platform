@@ -439,6 +439,8 @@ describe("handleCreateChatCompletions", () => {
 						name: "test_tool",
 						content: "Tool result",
 						status: "success",
+						tool_call_id: "call-test-tool",
+						tool_call_arguments: '{"input":"value"}',
 						timestamp: "2023-01-01T00:00:00Z",
 					},
 				],
@@ -479,6 +481,8 @@ describe("handleCreateChatCompletions", () => {
 					data: null,
 					status: "success",
 					timestamp: "2023-01-01T00:00:00Z",
+					tool_call_id: "call-test-tool",
+					tool_call_arguments: '{"input":"value"}',
 				},
 				finish_reason: "tool_result",
 			});

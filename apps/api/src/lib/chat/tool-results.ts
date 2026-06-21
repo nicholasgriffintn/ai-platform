@@ -15,11 +15,14 @@ function isContinuableToolResult(message: Message): boolean {
 		return true;
 	}
 
-	return (
-		message.name === "configure_recipe" &&
-		(message.status === "needs_correction" ||
-			(message.status === "error" && message.data?.recoverable === true))
-	);
+	if (
+		(message.status === "needs_correction" || message.status === "error") &&
+		message.data?.recoverable === true
+	) {
+		return true;
+	}
+
+	return false;
 }
 
 export function getFinalToolResultsForCalls(

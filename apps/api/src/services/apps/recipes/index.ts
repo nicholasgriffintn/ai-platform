@@ -388,11 +388,82 @@ function normaliseRecipeConfigurationForRecipe(
 	return configuration;
 }
 
+function isRecipeConfigurationValuePresent(
+	field: RecipeConfigurationField,
+	value: RecipeConfiguration[string] | undefined,
+): boolean {
+	return !isRequiredRecipeConfigurationValueMissing(field, value);
+}
+
+function formatRecipeConfigurationValue(value: RecipeConfiguration[string]): string {
+	if (Array.isArray(value)) {
+		return value.join(", ");
+	}
+
+	return String(value);
+}
+
+function buildRecipeConfigurationContext(
+	recipe: AssistantRecipe,
+	configuration: RecipeConfiguration | undefined,
+): string {
+	if (!configuration) {
+		return "";
+	}
+
+	const savedFields = recipe.configurationFields.filter((field) =>
+		isRecipeConfigurationValuePresent(field, configuration[field.key]),
+	);
+	const missingRequiredFields = recipe.configurationFields.filter(
+		(field) =>
+			field.required && !isRecipeConfigurationValuePresent(field, configuration[field.key]),
+	);
+	const missingOptionalFields = recipe.configurationFields.filter(
+		(field) =>
+			!field.required && !isRecipeConfigurationValuePresent(field, configuration[field.key]),
+	);
+	const lines: string[] = [];
+
+	if (savedFields.length > 0) {
+		lines.push(
+			"Saved recipe configuration:",
+			...savedFields.map(
+				(field) =>
+					`- ${field.label} (${field.key}): ${formatRecipeConfigurationValue(
+						configuration[field.key],
+					)}`,
+			),
+			"Use saved recipe configuration as defaults. Do not ask me to reconfirm saved configuration values.",
+		);
+	}
+
+	if (missingRequiredFields.length === 0 && savedFields.length > 0) {
+		lines.push("This recipe is already configured.");
+	} else if (missingRequiredFields.length > 0) {
+		lines.push(
+			`Missing required recipe configuration: ${missingRequiredFields
+				.map((field) => field.label)
+				.join(", ")}.`,
+		);
+	}
+
+	if (missingOptionalFields.length > 0) {
+		lines.push(
+			`Missing optional recipe configuration: ${missingOptionalFields
+				.map((field) => field.label)
+				.join(", ")}. Ask for optional values only when the current request needs them.`,
+		);
+	}
+
+	return lines.length > 0 ? `\n${lines.join("\n")}\n` : "";
+}
+
 function createConversationStarter(
 	recipe: AssistantRecipe,
 	connections: AssistantRecipeConnection[],
 	input?: string,
 	enabledTools = recipe.enabledTools,
+	configuration?: RecipeConfiguration,
 ) {
 	const connectionSection =
 		connections.length > 0
@@ -402,14 +473,15 @@ function createConversationStarter(
 			: "";
 	const toolLine = enabledTools.length > 0 ? enabledTools.join(", ") : "no extra tools";
 	const inputLine = input?.trim() ? `\nTrigger input:\n${input.trim()}\n` : "";
+	const configurationContext = buildRecipeConfigurationContext(recipe, configuration);
 	const contextInstruction = enabledTools.includes(RECIPE_LOOKUP_TOOL)
-		? `\nUse ${RECIPE_LOOKUP_TOOL} when you need recipe configuration, trigger details, notification availability, configuration field keys, or the setup contract. Do not save SMS notification triggers unless ${RECIPE_LOOKUP_TOOL} says SMS notifications are available.\n`
+		? `\nUse ${RECIPE_LOOKUP_TOOL} only when recipe configuration is missing from this message, trigger details are unavailable, notification availability is unknown, field keys are unclear, or the setup contract is genuinely needed. Do not call ${RECIPE_LOOKUP_TOOL} just to restate saved configuration already shown in the conversation. Do not save SMS notification triggers unless ${RECIPE_LOOKUP_TOOL} says SMS notifications are available.\n`
 		: "";
 	const setupToolInstruction = enabledTools.includes(RECIPE_SETUP_TOOL)
-		? `\nWhen I confirm the setup details or ask you to choose sensible defaults, use the available context and tools, then use ${RECIPE_SETUP_TOOL} to save recipe configuration and triggers before saying setup is complete.\n`
+		? `\nWhen I confirm setup changes or ask you to choose sensible defaults, use the available context and tools, then use ${RECIPE_SETUP_TOOL} to save recipe configuration and triggers before saying setup is complete. Do not save unchanged configuration just to reconfirm it.\n`
 		: "";
 
-	return `${recipe.setupPrompt}${inputLine}${connectionSection ? `\n${connectionSection}` : ""}
+	return `${recipe.setupPrompt}${inputLine}${configurationContext}${connectionSection ? `\n${connectionSection}` : ""}
 
 Enabled tools for this conversation: ${toolLine}.${contextInstruction}${setupToolInstruction}
 
@@ -743,6 +815,7 @@ export async function installAssistantRecipe(id: string, options: RecipeInstallO
 		connections,
 		undefined,
 		setupEnabledTools,
+		installation.configuration,
 	);
 
 	return {
@@ -810,6 +883,7 @@ export async function invokeAssistantRecipe(
 		connections,
 		options.input,
 		invocationEnabledTools,
+		invocationConfiguration,
 	);
 
 	if (!installation) {

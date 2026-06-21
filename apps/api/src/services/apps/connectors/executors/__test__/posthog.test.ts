@@ -57,9 +57,66 @@ describe("executePostHogOperation", () => {
 				body: JSON.stringify({
 					query: {
 						kind: "HogQLQuery",
-						query: "select event, count() from events group by event order by count() desc",
+						query:
+							"select event, count() from events group by event order by count() desc LIMIT 500",
 					},
-					limit: 500,
+				}),
+			}),
+		);
+	});
+
+	it("accepts PostHog API-shaped HogQL query objects", async () => {
+		const fetchMock = vi.fn<typeof fetch>(
+			async () => new Response(JSON.stringify({ results: [["signup", 10]] })),
+		);
+		vi.stubGlobal("fetch", fetchMock);
+
+		await expect(
+			executePostHogOperation("token", "query", {
+				projectId: "123",
+				query: {
+					kind: "HogQLQuery",
+					query: "SELECT event, count() FROM events GROUP BY event LIMIT 10",
+				},
+			}),
+		).resolves.toEqual({ results: [["signup", 10]] });
+
+		expect(fetchMock).toHaveBeenCalledWith(
+			"https://us.posthog.com/api/projects/123/query/",
+			expect.objectContaining({
+				method: "POST",
+				body: JSON.stringify({
+					query: {
+						kind: "HogQLQuery",
+						query: "SELECT event, count() FROM events GROUP BY event LIMIT 10",
+					},
+				}),
+			}),
+		);
+	});
+
+	it("clamps excessive inline HogQL limits", async () => {
+		const fetchMock = vi.fn<typeof fetch>(
+			async () => new Response(JSON.stringify({ results: [["signup", 10]] })),
+		);
+		vi.stubGlobal("fetch", fetchMock);
+
+		await expect(
+			executePostHogOperation("token", "query", {
+				projectId: "123",
+				query: "SELECT event, count() FROM events GROUP BY event LIMIT 1000",
+			}),
+		).resolves.toEqual({ results: [["signup", 10]] });
+
+		expect(fetchMock).toHaveBeenCalledWith(
+			"https://us.posthog.com/api/projects/123/query/",
+			expect.objectContaining({
+				method: "POST",
+				body: JSON.stringify({
+					query: {
+						kind: "HogQLQuery",
+						query: "SELECT event, count() FROM events GROUP BY event LIMIT 500",
+					},
 				}),
 			}),
 		);

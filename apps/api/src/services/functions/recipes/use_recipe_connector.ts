@@ -5,11 +5,13 @@ import {
 } from "~/lib/providers/capabilities/connectors";
 import { executeRecipeConnectorOperation } from "~/services/apps/connectors/operations";
 import {
+	getRecipeConfiguration,
 	getRecipeAllowedConnectorOperations,
 	getRecipeAllowedConnectorProviders,
 	getRecipeExecutionChannel,
 } from "~/services/apps/recipes/toolContext";
-import { AssistantError } from "~/utils/errors";
+import { AssistantError, ErrorType } from "~/utils/errors";
+import { isRecord } from "~/utils/objects";
 import { jsonSchemaToZod } from "../jsonSchema";
 import type { ApiToolDefinition } from "../types";
 
@@ -17,24 +19,52 @@ function buildConnectorToolError(params: {
 	provider: string;
 	operation: unknown;
 	error: AssistantError;
+	savedConfiguration?: Record<string, unknown>;
 }) {
+	const recoverable = params.error.type === ErrorType.PARAMS_ERROR;
 	return {
 		status: "error",
 		name: "use_recipe_connector",
-		content: params.error.message,
+		content: recoverable
+			? `${params.error.message}. Retry use_recipe_connector with corrected params. If this is a recipe chat, use the savedConfiguration values from this tool result as defaults.`
+			: params.error.message,
 		data: {
 			provider: params.provider,
 			operation: params.operation,
 			errorType: params.error.type,
 			statusCode: params.error.statusCode,
+			...(recoverable
+				? {
+						recoverable: true,
+						...(params.savedConfiguration ? { savedConfiguration: params.savedConfiguration } : {}),
+					}
+				: {}),
 		},
+	};
+}
+
+function mergeRecipeConfigurationIntoParams(
+	params: unknown,
+	configuration: Record<string, unknown> | undefined,
+): Record<string, unknown> | undefined {
+	if (!configuration) {
+		return isRecord(params) ? params : undefined;
+	}
+
+	if (!isRecord(params)) {
+		return { ...configuration };
+	}
+
+	return {
+		...configuration,
+		...params,
 	};
 }
 
 export const use_recipe_connector: ApiToolDefinition = {
 	name: "use_recipe_connector",
 	description:
-		"Use a connected recipe provider such as Cloudflare, Fitbit, Gmail, Outlook, Google Calendar, Linear, Netlify, Notion, Oura, PostHog, Sentry, Supabase, Todoist, Vercel, Webflow, or Withings. Only use this when the user has asked for a recipe or connector-backed workflow.",
+		"Use a connected recipe provider such as Cloudflare, Fitbit, Gmail, Outlook, Google Calendar, Linear, Netlify, Notion, Oura, PostHog, Sentry, Supabase, Todoist, Vercel, Webflow, or Withings. Only use this when the user has asked for a recipe or connector-backed workflow. In recipe chats, saved recipe configuration is automatically merged into params as defaults; explicit params override saved values.",
 	type: "premium",
 	costPerCall: 0,
 	permissions: ["network", "read", "write"],
@@ -72,7 +102,8 @@ export const use_recipe_connector: ApiToolDefinition = {
 			},
 			params: {
 				type: "object",
-				description: "Provider operation parameters.",
+				description:
+					"Provider operation parameters. For PostHog query, pass query as a HogQL string or { kind: 'HogQLQuery', query: string }; projectId, organizationId, and region come from saved recipe configuration when omitted.",
 			},
 		},
 		required: ["provider", "operation"],
@@ -94,6 +125,7 @@ export const use_recipe_connector: ApiToolDefinition = {
 		}
 
 		const provider = parsedProvider.data;
+		const savedConfiguration = getRecipeConfiguration(request.request?.options);
 		const allowedConnectorProviders = getRecipeAllowedConnectorProviders(request.request?.options);
 		if (allowedConnectorProviders && !allowedConnectorProviders.includes(provider)) {
 			return {
@@ -147,13 +179,14 @@ export const use_recipe_connector: ApiToolDefinition = {
 
 		let data: unknown;
 		try {
+			const params = mergeRecipeConfigurationIntoParams(args.params, savedConfiguration);
 			data = await executeRecipeConnectorOperation({
 				context: request.context,
 				userId: request.user.id,
 				request: {
 					provider,
 					operation: args.operation,
-					params: args.params,
+					params,
 				},
 			});
 		} catch (error) {
@@ -162,6 +195,7 @@ export const use_recipe_connector: ApiToolDefinition = {
 					provider,
 					operation: args.operation,
 					error,
+					savedConfiguration,
 				});
 			}
 

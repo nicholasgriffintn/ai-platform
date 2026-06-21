@@ -46,6 +46,7 @@ function createToolContext(
 		recipe?: {
 			id: string;
 			installationId?: string;
+			configuration?: Record<string, unknown>;
 		};
 		userProviderSettings?: Record<string, unknown>[];
 		sms?: {
@@ -96,6 +97,7 @@ function createToolContext(
 												id: params.recipe.id,
 												installationId: params.recipe.installationId,
 												channel: params.recipeChannel,
+												configuration: params.recipe.configuration,
 											},
 										}
 									: {}
@@ -106,6 +108,7 @@ function createToolContext(
 											allowedConnectorProviders: params.allowedConnectorProviders,
 											allowedConnectorOperations: params.allowedConnectorOperations,
 											channel: params.recipeChannel,
+											configuration: params.recipe?.configuration,
 										},
 									}),
 							...(params.allowedConnectorProviders === undefined ? {} : {}),
@@ -397,6 +400,100 @@ describe("recipe connector tools", () => {
 			name: "use_recipe_connector",
 			content: "Connector operation completed",
 			data: { ok: true },
+		});
+	});
+
+	it("fills missing PostHog connector params from saved recipe configuration", async () => {
+		const result = await use_recipe_connector.execute(
+			{
+				provider: "posthog",
+				operation: "query",
+				params: {
+					query: "select event, count() from events group by event limit 10",
+				},
+			},
+			createToolContext({
+				allowedConnectorProviders: ["posthog"],
+				allowedConnectorOperations: {
+					posthog: ["list_projects", "query"],
+				},
+				recipe: {
+					id: "posthog",
+					configuration: {
+						region: "us",
+						projectId: "479272",
+					},
+				},
+			}),
+		);
+
+		expect(mocks.executeRecipeConnectorOperation).toHaveBeenCalledWith({
+			context: {},
+			userId: 42,
+			request: {
+				provider: "posthog",
+				operation: "query",
+				params: {
+					region: "us",
+					projectId: "479272",
+					query: "select event, count() from events group by event limit 10",
+				},
+			},
+		});
+		expect(result).toEqual({
+			status: "success",
+			name: "use_recipe_connector",
+			content: "Connector operation completed",
+			data: { ok: true },
+		});
+	});
+
+	it("returns recoverable correction context for connector parameter errors", async () => {
+		mocks.executeRecipeConnectorOperation.mockRejectedValue(
+			new AssistantError("projectId is required", ErrorType.PARAMS_ERROR, 400),
+		);
+
+		const result = await use_recipe_connector.execute(
+			{
+				provider: "posthog",
+				operation: "query",
+				params: {
+					query: {
+						kind: "HogQLQuery",
+						query: "SELECT event, count() FROM events GROUP BY event LIMIT 10",
+					},
+				},
+			},
+			createToolContext({
+				allowedConnectorProviders: ["posthog"],
+				allowedConnectorOperations: {
+					posthog: ["list_projects", "query"],
+				},
+				recipe: {
+					id: "posthog",
+					configuration: {
+						region: "us",
+						projectId: "479272",
+					},
+				},
+			}),
+		);
+
+		expect(result).toMatchObject({
+			status: "error",
+			name: "use_recipe_connector",
+			content: expect.stringContaining("projectId is required"),
+			data: {
+				provider: "posthog",
+				operation: "query",
+				errorType: ErrorType.PARAMS_ERROR,
+				statusCode: 400,
+				recoverable: true,
+				savedConfiguration: {
+					region: "us",
+					projectId: "479272",
+				},
+			},
 		});
 	});
 

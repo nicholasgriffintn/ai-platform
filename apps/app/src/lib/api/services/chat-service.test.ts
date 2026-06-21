@@ -32,6 +32,16 @@ describe("ChatService streaming", () => {
 	});
 
 	it("emits separate assistant messages for recursive streamed turns", async () => {
+		const toolCalls = [
+			{
+				id: "call-web-search",
+				type: "function",
+				function: {
+					name: "web_search",
+					arguments: '{"query":"recipe setup"}',
+				},
+			},
+		];
 		const duplicateToolResponse = {
 			type: "tool_response",
 			tool_id: "tool-result-1",
@@ -41,6 +51,8 @@ describe("ChatService streaming", () => {
 				name: "web_search",
 				content: "Web search completed",
 				status: "success",
+				tool_call_id: "call-web-search",
+				tool_call_arguments: '{"query":"recipe setup"}',
 				data: {
 					responseType: "text",
 				},
@@ -57,7 +69,17 @@ describe("ChatService streaming", () => {
 						message_id: "assistant-1",
 						created: 1000,
 						model: "test-model",
-						parts: [{ type: "text", text: "First turn", timestamp: 1000 }],
+						tool_calls: toolCalls,
+						parts: [
+							{ type: "text", text: "First turn", timestamp: 1000 },
+							{
+								type: "tool_use",
+								name: "web_search",
+								toolCallId: "call-web-search",
+								input: { query: "recipe setup" },
+								timestamp: 1000,
+							},
+						],
 					}),
 					data({ type: "message_stop" }),
 					data(duplicateToolResponse),
@@ -105,7 +127,12 @@ describe("ChatService streaming", () => {
 			"First turn",
 			"Second turn",
 		]);
+		expect(assistantMessages[0]?.tool_calls).toEqual(toolCalls);
 		expect(toolMessages).toHaveLength(1);
+		expect(toolMessages[0]).toMatchObject({
+			tool_call_id: "call-web-search",
+			tool_call_arguments: '{"query":"recipe setup"}',
+		});
 		expect(result.id).toBe("assistant-2");
 		expect(result.content).toBe("Second turn");
 	});

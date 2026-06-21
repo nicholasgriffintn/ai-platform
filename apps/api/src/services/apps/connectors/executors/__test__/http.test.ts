@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
+import { ErrorType } from "~/utils/errors";
 import { fetchConnectorJson } from "../http";
 
 describe("fetchConnectorJson", () => {
@@ -34,6 +35,32 @@ describe("fetchConnectorJson", () => {
 				token: "provider-token",
 			}),
 		).rejects.not.toThrow("Abcdef1234567890Ghijklm_Nopqrs");
+	});
+
+	it("surfaces connector validation failures as correctable parameter errors", async () => {
+		vi.stubGlobal(
+			"fetch",
+			vi.fn(
+				async () => new Response(JSON.stringify({ error: "invalid query shape" }), { status: 400 }),
+			),
+		);
+
+		await expect(
+			fetchConnectorJson({
+				url: "https://us.posthog.com/api/projects/123/query/",
+				token: "provider-token",
+				method: "POST",
+				body: {
+					query: {
+						kind: "HogQLQuery",
+						query: "SELECT event FROM events LIMIT 10",
+					},
+				},
+			}),
+		).rejects.toMatchObject({
+			type: ErrorType.PARAMS_ERROR,
+			statusCode: 400,
+		});
 	});
 
 	it("rejects connector HTTP calls outside supported provider hosts", async () => {

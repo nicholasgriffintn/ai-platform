@@ -934,7 +934,7 @@ const catalogRecipes: CatalogRecipe[] = [
 			"Summarise product analytics results without changing PostHog data",
 		],
 		setupPrompt:
-			"Set up the PostHog recipe. Ask which PostHog region, organization ID, and project ID to use. Run only read-only HogQL queries and keep result limits bounded. Do not create, update, delete, or mutate PostHog data because this connector is read-only.",
+			"Set up the PostHog recipe. Use saved PostHog region and project ID when available; ask only for missing region or project ID. Organization ID is optional and only needed when listing projects for an organization. Run only read-only HogQL queries and keep result limits bounded. Do not create, update, delete, or mutate PostHog data because this connector is read-only.",
 		configurationFields: [
 			{
 				key: "region",

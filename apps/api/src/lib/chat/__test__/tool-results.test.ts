@@ -76,6 +76,39 @@ describe("tool result continuation", () => {
 		expect(shouldContinueAfterToolResults([configureRecipeCall], toolResults)).toBe(true);
 	});
 
+	it("continues after recoverable connector parameter errors", () => {
+		const connectorCall: ToolCall = {
+			id: "call-3",
+			type: ToolCallType.FUNCTION,
+			function: {
+				name: "use_recipe_connector",
+				arguments: JSON.stringify({
+					provider: "posthog",
+					operation: "query",
+					params: { query: "select event from events limit 10" },
+				}),
+			},
+		};
+		const toolResults = [
+			{
+				role: "tool",
+				name: "use_recipe_connector",
+				tool_call_id: "call-3",
+				status: "error",
+				content: "projectId is required. Retry with saved configuration.",
+				data: {
+					recoverable: true,
+					errorType: "PARAMS_ERROR",
+					savedConfiguration: {
+						projectId: "479272",
+					},
+				},
+			},
+		] as Message[];
+
+		expect(shouldContinueAfterToolResults([connectorCall], toolResults)).toBe(true);
+	});
+
 	it("does not continue after non-recipe correction statuses", () => {
 		const toolResults = [
 			{

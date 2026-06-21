@@ -37,6 +37,14 @@ export function getRecipeExecutionChannel(options: unknown): string | undefined 
 	return typeof options.recipe.channel === "string" ? options.recipe.channel : undefined;
 }
 
+export function getRecipeConfiguration(options: unknown): Record<string, unknown> | undefined {
+	if (!isRecord(options) || !isRecord(options.recipe) || !isRecord(options.recipe.configuration)) {
+		return undefined;
+	}
+
+	return options.recipe.configuration;
+}
+
 export function getActiveRecipeSetup(options: unknown): ActiveRecipeSetup | undefined {
 	if (!isRecord(options) || !isRecord(options.recipe) || typeof options.recipe.id !== "string") {
 		return undefined;
