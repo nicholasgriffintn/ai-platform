@@ -44,7 +44,7 @@
 		"@types/react-dom": "19.2.3",
 		"globals": "17.6.0",
 		"jsdom": "29.1.1",
-		"oxfmt": "0.53.0",
+		"oxfmt": "0.54.0",
 		"oxlint": "1.69.0",
 		"rollup-plugin-visualizer": "7.0.1",
 		"terser": "5.48.0",
