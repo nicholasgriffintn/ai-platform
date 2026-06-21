@@ -354,8 +354,14 @@ function normaliseConfigurationValue(
 		return typeof value === "boolean" ? value : field.defaultValue;
 	}
 	if (field.type === "string_list") {
-		return Array.isArray(value)
+		const items = Array.isArray(value)
 			? value
+			: typeof value === "string"
+				? value.split(/[\n,;]+/)
+				: [];
+
+		return items.length > 0
+			? items
 					.map((item) => item.trim())
 					.filter(Boolean)
 					.slice(0, 50)
@@ -877,7 +883,7 @@ export async function invokeAssistantRecipe(
 			? normaliseRecipeConfigurationForRecipe(recipe, options.configuration)
 			: installation.configuration
 		: {};
-	const invocationEnabledTools = Array.from(new Set([...recipe.enabledTools, RECIPE_LOOKUP_TOOL]));
+	const invocationEnabledTools = Array.from(new Set(recipe.enabledTools));
 	const conversationStarter = createConversationStarter(
 		recipe,
 		connections,
