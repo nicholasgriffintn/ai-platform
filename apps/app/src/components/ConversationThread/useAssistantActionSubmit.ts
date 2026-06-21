@@ -1,18 +1,11 @@
 import { toast } from "sonner";
+import type { AssistantActionResult } from "@assistant/schemas";
 
 import { useStartRecipeConnector } from "~/hooks/useConnectors";
 import { useInstallAssistantRecipe, useInvokeAssistantRecipe } from "~/hooks/useRecipes";
 import { launchAssistantAction } from "~/lib/assistant-action-flow";
 import { useChatStore } from "~/state/stores/chatStore";
 import { useToolsStore } from "~/state/stores/toolsStore";
-import type { ChatRequestOptions } from "~/types";
-
-interface AssistantActionSubmitResult {
-	externalUrl?: string;
-	input: string;
-	navigationPath?: string;
-	requestOptions?: ChatRequestOptions;
-}
 
 export function useAssistantActionSubmit() {
 	const selectedAssistantAction = useChatStore((state) => state.selectedAssistantAction);
@@ -23,12 +16,10 @@ export function useAssistantActionSubmit() {
 	const installRecipe = useInstallAssistantRecipe();
 	const invokeRecipe = useInvokeAssistantRecipe();
 
-	const resolveAssistantActionSubmit = async (
-		input: string,
-	): Promise<AssistantActionSubmitResult> => {
+	const resolveAssistantActionSubmit = async (input: string): Promise<AssistantActionResult> => {
 		const item = selectedAssistantAction?.item;
 		if (!item) {
-			return { input };
+			return { kind: "submit", input };
 		}
 
 		const verb = selectedAssistantAction?.verb;
@@ -56,27 +47,7 @@ export function useAssistantActionSubmit() {
 		}
 		setSelectedAssistantAction(null);
 
-		if (result.kind === "external") {
-			return {
-				externalUrl: result.url,
-				input: result.input,
-			};
-		}
-		if (result.kind === "navigation") {
-			return {
-				input: result.input,
-				navigationPath: result.path,
-			};
-		}
-
-		return {
-			input: result.input,
-			...(result.kind === "conversation" || result.kind === "submit"
-				? result.requestOptions
-					? { requestOptions: result.requestOptions }
-					: {}
-				: {}),
-		};
+		return result;
 	};
 
 	return {

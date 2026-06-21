@@ -1,6 +1,48 @@
 export * from "./agents";
 export * from "./agent-modes";
 export * from "./analytics";
+export * from "./assistant-actions";
+export {
+	assistantActionCatalogSchema,
+	assistantActionContextPayloadSchema,
+	assistantActionConversationResultSchema,
+	assistantActionDeliverySchema,
+	assistantActionExternalResultSchema,
+	assistantActionItemKindSchema,
+	assistantActionItemMetadataSchema,
+	assistantActionItemSchema,
+	assistantActionNavigationResultSchema,
+	assistantActionNotificationSchema,
+	assistantActionResultSchema,
+	assistantActionSelectionItemSchema,
+	assistantActionSelectionSchema,
+	assistantActionSubmitResultSchema,
+	assistantActionVerbIdSchema,
+	assistantActionVerbSchema,
+	assistantActionVerbs,
+	assistantLegacyRecipeContextPayloadSchema,
+	assistantRecipeActionContextSchema,
+} from "./assistant-actions";
+export type {
+	AssistantActionCatalog,
+	AssistantActionContextPayload,
+	AssistantActionConversationResult,
+	AssistantActionDelivery,
+	AssistantActionExternalResult,
+	AssistantActionItem,
+	AssistantActionItemKind,
+	AssistantActionItemMetadata,
+	AssistantActionNavigationResult,
+	AssistantActionNotification,
+	AssistantActionResult,
+	AssistantActionSelection,
+	AssistantActionSelectionItem,
+	AssistantActionSubmitResult,
+	AssistantActionVerb,
+	AssistantActionVerbId,
+	AssistantLegacyRecipeContextPayload,
+	AssistantRecipeActionContext,
+} from "./assistant-actions";
 export * from "./app-data";
 export * from "./apps";
 export * from "./audio";

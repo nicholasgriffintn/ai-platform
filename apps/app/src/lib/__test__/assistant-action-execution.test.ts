@@ -73,6 +73,7 @@ describe("assistant action execution", () => {
 				},
 			),
 		).resolves.toEqual({
+			kind: "submit",
 			input: "@Morning Briefing today",
 			requestOptions: {
 				recipe: {
@@ -124,8 +125,9 @@ describe("assistant action execution", () => {
 				},
 			),
 		).resolves.toEqual({
+			kind: "navigation",
 			input: "@PostHog",
-			navigationPath: "/profile?tab=providers&type=connector&connector=posthog",
+			path: "/profile?tab=providers&type=connector&connector=posthog",
 		});
 		expect(startConnector).not.toHaveBeenCalled();
 	});

@@ -200,6 +200,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 
 			return tokens;
 		}, [commandState.selectedAgent, selectedAgentTokenPosition, selectedAssistantAction]);
+		const hasInlineAgentToken = composerTokens.some((token) => token.kind === "agent");
 
 		const handleComposerTokenPositionsChange = (positions: ComposerInputTokenPosition[]) => {
 			const nextPositions = new Map(positions.map((position) => [position.id, position.position]));
@@ -500,7 +501,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 					<ComposerCommandChips
 						{...commandState}
 						attachments={attachmentChips}
-						hideAgentChip={true}
+						hideAgentChip={hasInlineAgentToken}
 						onClearMode={modeControls?.onClearActive}
 					/>
 					{canUploadFiles && (

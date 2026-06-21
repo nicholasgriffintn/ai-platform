@@ -11,6 +11,7 @@ import {
 	type LucideIcon,
 } from "lucide-react";
 import { useCallback, useMemo } from "react";
+import type { AssistantActionItem, AssistantActionVerbId } from "@assistant/schemas";
 
 import { useAssistantActionCatalog } from "~/hooks/useAssistantActionCatalog";
 import { useAgents } from "~/hooks/useAgents";
@@ -18,12 +19,12 @@ import { useModels } from "~/hooks/useModels";
 import { useWebLLMModels } from "~/hooks/useWebLLMModels";
 import { applyModelResponseDefaults } from "~/lib/chat-settings";
 import {
+	appendComposerInlineTokenWithCursor,
 	type ComposerDirectiveQuery,
 	matchesComposerCommand,
 	removeComposerDirective,
 	replaceComposerDirectiveWithCursor,
 } from "~/lib/composer-commands";
-import { type AssistantActionItem, type AssistantActionVerbId } from "~/lib/assistant-actions";
 import { getAvailableModelTools, type ModelToolId } from "~/lib/model-tools";
 import { getAvailableModels, defaultModel } from "~/lib/models";
 import {
@@ -76,7 +77,6 @@ export function useComposerCommandActions({
 		model,
 		selectedAssistantAction,
 		selectedAgentId,
-		selectedAgentTokenPosition,
 		setChatMode,
 		setChatSettings,
 		setModel,
@@ -392,33 +392,26 @@ export function useComposerCommandActions({
 				return undefined;
 			}
 			setSelectedAgentId(agent.id);
-			const mention = `@${agent.name}`;
 			const selection = directive
-				? replaceComposerDirectiveWithCursor(chatInput, directive, mention)
-				: undefined;
-			setSelectedAgentTokenPosition(
-				selection ? selection.cursorPosition - mention.length : (selectedAgentTokenPosition ?? 0),
-			);
+				? replaceComposerDirectiveWithCursor(chatInput, directive, `@${agent.name}`, {
+						appendTrailingSpace: true,
+					})
+				: appendComposerInlineTokenWithCursor(chatInput, agent.name);
+			setSelectedAgentTokenPosition(selection.replacementStart);
 			setChatMode("agent");
 			selectModelWithDefaults(agent.model ?? defaultModel, {
 				...chatSettings,
 				localOnly: false,
 			});
-			if (selection) {
-				setChatInput(selection.input);
-			} else {
-				consumeDirective();
-			}
+			setChatInput(selection.input);
 			return selection;
 		},
 		[
 			canUseAgents,
 			chatInput,
 			chatSettings,
-			consumeDirective,
 			directive,
 			selectModelWithDefaults,
-			selectedAgentTokenPosition,
 			setChatMode,
 			setChatInput,
 			setSelectedAgentId,
@@ -439,23 +432,23 @@ export function useComposerCommandActions({
 				}
 				return undefined;
 			}
-			if (directive) {
-				const mention = `@${item.label}`;
-				const selection = replaceComposerDirectiveWithCursor(chatInput, directive, mention);
-				setSelectedAssistantAction({
-					...selectedAssistantAction,
-					item: {
-						id: item.id,
-						kind: item.kind,
-						label: item.label,
-						metadata: item.metadata,
-					},
-					tokenPosition: selection.cursorPosition - mention.length,
-				});
-				setChatInput(selection.input);
-				return selection;
-			}
-			return undefined;
+			const selection = directive
+				? replaceComposerDirectiveWithCursor(chatInput, directive, `@${item.label}`, {
+						appendTrailingSpace: true,
+					})
+				: appendComposerInlineTokenWithCursor(chatInput, item.label);
+			setSelectedAssistantAction({
+				...selectedAssistantAction,
+				item: {
+					id: item.id,
+					kind: item.kind,
+					label: item.label,
+					metadata: item.metadata,
+				},
+				tokenPosition: selection.replacementStart,
+			});
+			setChatInput(selection.input);
+			return selection;
 		},
 		[
 			agents,

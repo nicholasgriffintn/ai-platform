@@ -12,9 +12,9 @@ import {
 	X,
 } from "lucide-react";
 import { type ReactNode, useEffect, useRef, useState } from "react";
+import type { AssistantActionItem, AssistantActionItemKind } from "@assistant/schemas";
 
 import { Button, Popover, PopoverContent, PopoverTrigger } from "~/components/ui";
-import type { AssistantActionItem, AssistantActionItemKind } from "~/lib/assistant-actions";
 import type { ComposerDirectiveQuery } from "~/lib/composer-commands";
 import { cn } from "~/lib/utils";
 import type { ComposerCommandAction } from "./composerCommandTypes";
@@ -416,13 +416,25 @@ export function ComposerCommandButton(props: ComposerCommandsState) {
 		if (shouldKeepPopoverOpen) {
 			keepOpenAfterSelectionRef.current = true;
 		}
-		selectSlashCommand(command);
+		if (props.onSlashCommandSelect) {
+			props.onSlashCommandSelect(command);
+		} else {
+			selectSlashCommand(command);
+		}
 		if (shouldKeepPopoverOpen) {
 			setIsOpen(true);
 			globalThis.setTimeout(() => {
 				keepOpenAfterSelectionRef.current = false;
 			}, 0);
 		}
+	};
+
+	const handleActionItemSelect = (item: AssistantActionItem) => {
+		if (props.onActionItemSelect) {
+			props.onActionItemSelect(item);
+			return;
+		}
+		selectActionItem(item);
 	};
 
 	return (
@@ -521,7 +533,7 @@ export function ComposerCommandButton(props: ComposerCommandsState) {
 														icon={<ActionItemAvatar item={item} />}
 														description={describeActionItem(item)}
 														isActive={item.id === `agent:${selectedAgent?.id}`}
-														onClick={() => selectActionItem(item)}
+														onClick={() => handleActionItemSelect(item)}
 														title={item.label}
 													>
 														{item.label}

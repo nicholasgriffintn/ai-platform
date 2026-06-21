@@ -1,4 +1,7 @@
 import type {
+	AssistantActionNotification,
+	AssistantActionResult,
+	AssistantActionSelectionItem,
 	AssistantRecipeInstallResponse,
 	RecipeConnectorProvider,
 	RecipeConnectorStartResponse,
@@ -12,18 +15,12 @@ import {
 	createRecipeAssistantActionLaunch,
 } from "./assistant-action-launch";
 import { mergeToolSelection } from "./assistant-action-submit";
-import type { AssistantActionItem } from "./assistant-actions";
 import type { ChatRequestOptions } from "~/types";
-
-type ExecutableAssistantActionItem = Pick<
-	AssistantActionItem,
-	"id" | "kind" | "label" | "metadata"
->;
 
 export interface AssistantActionExecutionInput {
 	connectorReturnTo?: string;
 	input: string;
-	item?: ExecutableAssistantActionItem;
+	item?: AssistantActionSelectionItem;
 	selectedTools?: string[];
 }
 
@@ -36,54 +33,59 @@ export interface AssistantActionExecutionDependencies {
 	) => Promise<RecipeConnectorStartResponse>;
 }
 
-interface AssistantActionExecutionNotification {
-	message: string;
-	type: "error";
-}
-
-export interface AssistantActionExecutionResult {
-	externalUrl?: string;
-	input: string;
-	navigationPath?: string;
-	notification?: AssistantActionExecutionNotification;
-	requestOptions?: ChatRequestOptions;
-	selectedTools?: string[];
-}
-
-function readRecipeId(item: ExecutableAssistantActionItem): string | undefined {
+function readRecipeId(item: AssistantActionSelectionItem): string | undefined {
 	return item.metadata?.recipeId;
 }
 
-function createMissingRecipeIdResult(input: string): AssistantActionExecutionResult {
+function createErrorSubmitResult(
+	input: string,
+	notification: AssistantActionNotification,
+): AssistantActionResult {
 	return {
+		kind: "submit",
 		input,
-		notification: {
-			type: "error",
-			message: "This recipe cannot run because its identifier is missing.",
-		},
+		notification,
 	};
 }
 
-function createUnsupportedActionResult(
+function createMissingRecipeIdResult(input: string): AssistantActionResult {
+	return createErrorSubmitResult(input, {
+		type: "error",
+		message: "This recipe cannot run because its identifier is missing.",
+	});
+}
+
+function createUnsupportedActionResult(input: string, item: AssistantActionSelectionItem) {
+	return createErrorSubmitResult(input, {
+		type: "error",
+		message: `${item.label} is not executable from the composer yet.`,
+	});
+}
+
+function createSubmitResult(
 	input: string,
-	item: ExecutableAssistantActionItem,
-): AssistantActionExecutionResult {
+	result: {
+		notification?: AssistantActionNotification;
+		requestOptions?: ChatRequestOptions;
+		selectedTools?: string[];
+	},
+): AssistantActionResult {
 	return {
+		kind: "submit",
 		input,
-		notification: {
-			type: "error",
-			message: `${item.label} is not executable from the composer yet.`,
-		},
+		...(result.notification ? { notification: result.notification } : {}),
+		...(result.requestOptions ? { requestOptions: result.requestOptions } : {}),
+		...(result.selectedTools ? { selectedTools: result.selectedTools } : {}),
 	};
 }
 
 export async function executeAssistantAction(
 	action: AssistantActionExecutionInput,
 	dependencies: AssistantActionExecutionDependencies,
-): Promise<AssistantActionExecutionResult> {
+): Promise<AssistantActionResult> {
 	const item = action.item;
 	if (!item) {
-		return { input: action.input };
+		return createSubmitResult(action.input, {});
 	}
 
 	if (item.kind === "installed_recipe" || item.kind === "recipe") {
@@ -99,6 +101,7 @@ export async function executeAssistantAction(
 		const launch = createRecipeAssistantActionLaunch(response);
 
 		return {
+			kind: "submit",
 			input: action.input.trim() ? action.input : launch.input,
 			requestOptions: launch.requestOptions,
 			selectedTools: launch.enabledTools,
@@ -107,6 +110,7 @@ export async function executeAssistantAction(
 
 	if (item.kind === "tool" && item.metadata?.toolId) {
 		return {
+			kind: "submit",
 			input: action.input,
 			selectedTools: mergeToolSelection(action.selectedTools ?? [], item.metadata.toolId),
 		};
@@ -120,8 +124,9 @@ export async function executeAssistantAction(
 		});
 
 		return {
+			kind: "navigation",
 			input: action.input,
-			navigationPath: launch.navigationPath,
+			path: launch.navigationPath,
 		};
 	}
 
@@ -144,10 +149,21 @@ export async function executeAssistantAction(
 			provider: parsedProvider.data,
 		});
 
+		if (launch.externalUrl) {
+			return {
+				kind: "external",
+				input: action.input,
+				url: launch.externalUrl,
+			};
+		}
+		if (!launch.navigationPath) {
+			throw new Error("This connector cannot open because its navigation path is missing.");
+		}
+
 		return {
-			externalUrl: launch.externalUrl,
+			kind: "navigation",
 			input: action.input,
-			navigationPath: launch.navigationPath,
+			path: launch.navigationPath,
 		};
 	}
 

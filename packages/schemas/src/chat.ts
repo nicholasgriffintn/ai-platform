@@ -5,7 +5,11 @@ import { messagePartsSchema } from "./message-parts";
 import { chatRequestModeSchema } from "./agent-modes";
 import { councilChatOptionsSchema } from "./council";
 import { reasoningEffortSchema, reasoningSettingsSchema } from "./reasoning";
-import { recipeConfigurationSchema, recipeConnectorProviderSchema } from "./apps";
+import { recipeChatRequestOptionsSchema, type RecipeChatRequestOptions } from "./apps";
+import {
+	conversationSandboxRequestOptionsSchema,
+	conversationSmsRequestOptionsSchema,
+} from "./chat-mode";
 
 export const chatCompletionResponseSchema = z.object({
 	id: z.string(),
@@ -52,6 +56,60 @@ export const countTokensResponseSchema = z.object({
 		description: "The model used for token counting.",
 	}),
 });
+
+export const chatHostedToolSettingsSchema = z
+	.object({
+		code_interpreter: z.record(z.string(), z.unknown()).optional(),
+		web_search: z.record(z.string(), z.unknown()).optional(),
+		file_search: z.record(z.string(), z.unknown()).optional(),
+		mcp_servers: z.array(z.record(z.string(), z.unknown())).optional(),
+		computer_use: z.record(z.string(), z.unknown()).optional(),
+		image_generation: z
+			.object({
+				size: z.string().optional(),
+				quality: z.string().optional(),
+			})
+			.optional(),
+		shell: z
+			.object({
+				environment: z
+					.object({
+						type: z.string().optional(),
+					})
+					.optional(),
+			})
+			.optional(),
+		tool_search: z.record(z.string(), z.unknown()).optional(),
+		responses_tools: z.array(z.record(z.string(), z.unknown())).optional(),
+	})
+	.passthrough();
+
+export const chatRequestOptionsSchema = chatHostedToolSettingsSchema
+	.extend({
+		cache_ttl_seconds: z.number().min(0).optional().meta({
+			description:
+				"Overrides the Cloudflare AI Gateway cache TTL (in seconds). Set to 0 to disable caching.",
+		}),
+		council: councilChatOptionsSchema.optional().meta({
+			description: "Council debate options for app-driven multi-perspective chat.",
+		}),
+		sms: conversationSmsRequestOptionsSchema.optional().meta({
+			description: "SMS channel options for compact text-message conversations.",
+		}),
+		source: z.enum(["sms"]).optional().meta({
+			description: "Request source marker for inbound channel-triggered chat flows.",
+		}),
+		recipe: recipeChatRequestOptionsSchema.optional().meta({
+			description: "Recipe execution or setup scope for connector and setup tools.",
+		}),
+		sandbox: conversationSandboxRequestOptionsSchema.optional().meta({
+			description: "Sandbox coding-run scope and defaults for sandbox tool calls.",
+		}),
+		replicateWaitSeconds: z.number().optional().meta({
+			description: "Optional wait time for Replicate-backed responses.",
+		}),
+	})
+	.passthrough();
 
 export const createChatCompletionsJsonSchema = z.object({
 	completion_id: z.string().optional().meta({
@@ -357,47 +415,25 @@ export const createChatCompletionsJsonSchema = z.object({
 	max_steps: z.int().min(1).optional().meta({
 		description: "Maximum number of sequential LLM calls (steps), e.g. when you use tool calls.",
 	}),
-	options: z
-		.object({
-			cache_ttl_seconds: z.number().min(0).optional().meta({
-				description:
-					"Overrides the Cloudflare AI Gateway cache TTL (in seconds). Set to 0 to disable caching.",
-			}),
-			council: councilChatOptionsSchema.optional().meta({
-				description: "Council debate options for app-driven multi-perspective chat.",
-			}),
-			sms: z
-				.object({
-					enabled: z.boolean(),
-					from: z.string().optional(),
-					to: z.string().optional(),
-				})
-				.optional()
-				.meta({
-					description: "SMS channel options for compact text-message conversations.",
-				}),
-			recipe: z
-				.object({
-					id: z.string(),
-					installationId: z.string().optional(),
-					channel: z.enum(["web", "ios", "sms", "scheduled", "tool"]).optional(),
-					allowedConnectorProviders: z.array(recipeConnectorProviderSchema).optional(),
-					allowedConnectorOperations: z.record(z.string(), z.array(z.string())).optional(),
-					configuration: recipeConfigurationSchema.optional(),
-				})
-				.optional()
-				.meta({
-					description: "Recipe execution or setup scope for connector and setup tools.",
-				}),
-		})
-		.passthrough()
-		.optional()
-		.meta({
-			description: "Additional request options for advanced behaviors such as gateway caching.",
-		}),
+	options: chatRequestOptionsSchema.optional().meta({
+		description: "Additional request options for advanced behaviors such as gateway caching.",
+	}),
 });
 
 export type ChatCompletionRequestBody = z.infer<typeof createChatCompletionsJsonSchema>;
+export type ChatHostedToolSettings = z.input<typeof chatHostedToolSettingsSchema>;
+export type ChatRequestOptions = z.input<typeof chatRequestOptionsSchema>;
+
+export function parseChatRequestOptions(options: unknown): ChatRequestOptions | undefined {
+	const parsed = chatRequestOptionsSchema.safeParse(options);
+	return parsed.success ? parsed.data : undefined;
+}
+
+export function readRecipeChatRequestOptions(
+	options: unknown,
+): RecipeChatRequestOptions | undefined {
+	return parseChatRequestOptions(options)?.recipe;
+}
 
 export const getChatCompletionParamsSchema = z.object({
 	completion_id: z.string().meta({

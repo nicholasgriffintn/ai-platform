@@ -1,30 +1,16 @@
-import type { AssistantRecipeInstallResponse, RecipeInvocationResponse } from "@assistant/schemas";
-import { recipeConfigurationSchema, recipeConnectorProviderSchema } from "@assistant/schemas";
+import type { AssistantActionContextPayload, RecipeChatSetupResponse } from "@assistant/schemas";
+import {
+	assistantActionContextPayloadSchema,
+	assistantLegacyRecipeContextPayloadSchema,
+	createRecipeChatRequestOptions,
+} from "@assistant/schemas";
 
-import { isRecord } from "./objects";
 import type { ChatRequestOptions } from "~/types";
 
 const ACTION_CONTEXT_PARAM = "assistant_action_context";
 const LEGACY_RECIPE_CONTEXT_PARAM = "recipe_context";
 const AUTO_SUBMIT_PARAM = "auto_submit";
 const TOOL_ID_PATTERN = /^[a-zA-Z0-9_:-]+$/;
-
-type RecipeChatSetupResponse = AssistantRecipeInstallResponse | RecipeInvocationResponse;
-type RecipeRequestOptions = NonNullable<ChatRequestOptions["recipe"]>;
-type RecipeChannel = NonNullable<RecipeRequestOptions["channel"]>;
-
-interface LegacyRecipeContextPayload {
-	recipe: RecipeRequestOptions;
-}
-
-interface AssistantRecipeActionContext {
-	kind: "recipe";
-	recipe: RecipeRequestOptions;
-}
-
-interface AssistantActionContextPayload {
-	action: AssistantRecipeActionContext;
-}
 
 export interface AssistantActionLaunchState {
 	query: string | null;
@@ -81,116 +67,22 @@ function normaliseToolIds(value: string | string[] | undefined): string[] {
 	);
 }
 
-function createRecipeRequestOptions(response: RecipeChatSetupResponse): RecipeRequestOptions {
-	if ("recipe" in response) {
-		return {
-			id: response.recipe.id,
-			installationId: response.installation?.id,
-			channel: "web",
-			allowedConnectorProviders: response.allowedConnectorProviders ?? [],
-			allowedConnectorOperations: response.allowedConnectorOperations ?? {},
-			configuration: response.installation?.configuration ?? {},
-		};
-	}
-
-	return {
-		id: response.recipeId,
-		installationId: response.installationId,
-		channel: response.channel,
-		allowedConnectorProviders: response.allowedConnectorProviders ?? [],
-		allowedConnectorOperations: response.allowedConnectorOperations ?? {},
-		configuration: response.configuration,
-	};
-}
-
 function createRecipeActionContext(
 	response: RecipeChatSetupResponse,
 ): AssistantActionContextPayload {
 	return {
 		action: {
 			kind: "recipe",
-			recipe: createRecipeRequestOptions(response),
+			recipe: createRecipeChatRequestOptions(response),
 		},
 	};
-}
-
-function readRecipeChannel(value: unknown): RecipeChannel {
-	switch (value) {
-		case "ios":
-		case "sms":
-		case "scheduled":
-		case "tool":
-		case "web":
-			return value;
-		default:
-			return "web";
-	}
-}
-
-function readConnectorProviders(value: unknown): RecipeRequestOptions["allowedConnectorProviders"] {
-	return (Array.isArray(value) ? value : []).flatMap((provider) => {
-		const parsed = recipeConnectorProviderSchema.safeParse(provider);
-		return parsed.success ? [parsed.data] : [];
-	});
-}
-
-function readConnectorOperations(
-	value: unknown,
-): RecipeRequestOptions["allowedConnectorOperations"] {
-	return Object.fromEntries(
-		Object.entries(isRecord(value) ? value : {})
-			.map(([provider, operations]) => [
-				provider,
-				Array.isArray(operations)
-					? operations.filter((operation): operation is string => typeof operation === "string")
-					: [],
-			])
-			.filter(([, operations]) => operations.length > 0),
-	);
-}
-
-function readRecipeRequestOptions(value: unknown): RecipeRequestOptions | undefined {
-	if (!isRecord(value) || typeof value.id !== "string") {
-		return undefined;
-	}
-
-	const configuration = recipeConfigurationSchema.safeParse(value.configuration);
-
-	return {
-		id: value.id,
-		installationId: typeof value.installationId === "string" ? value.installationId : undefined,
-		channel: readRecipeChannel(value.channel),
-		allowedConnectorProviders: readConnectorProviders(value.allowedConnectorProviders),
-		allowedConnectorOperations: readConnectorOperations(value.allowedConnectorOperations),
-		configuration: configuration.success ? configuration.data : {},
-	};
-}
-
-function readLegacyRecipeContextPayload(value: unknown): LegacyRecipeContextPayload | undefined {
-	if (!isRecord(value) || !isRecord(value.recipe)) {
-		return undefined;
-	}
-
-	const recipe = readRecipeRequestOptions(value.recipe);
-	return recipe ? { recipe } : undefined;
 }
 
 function readAssistantActionContextPayload(
 	value: unknown,
 ): AssistantActionContextPayload | undefined {
-	if (!isRecord(value) || !isRecord(value.action) || value.action.kind !== "recipe") {
-		return undefined;
-	}
-
-	const recipe = readRecipeRequestOptions(value.action.recipe);
-	return recipe
-		? {
-				action: {
-					kind: "recipe",
-					recipe,
-				},
-			}
-		: undefined;
+	const parsed = assistantActionContextPayloadSchema.safeParse(value);
+	return parsed.success ? parsed.data : undefined;
 }
 
 function parseJson(value: string | null): unknown {
@@ -226,8 +118,10 @@ export function loadAssistantActionRequestOptions(
 		return { recipe: actionPayload.action.recipe };
 	}
 
-	const legacyRecipePayload = readLegacyRecipeContextPayload(parseJson(state.recipeContext));
-	return legacyRecipePayload ? { recipe: legacyRecipePayload.recipe } : undefined;
+	const legacyRecipePayload = assistantLegacyRecipeContextPayloadSchema.safeParse(
+		parseJson(state.recipeContext),
+	);
+	return legacyRecipePayload.success ? { recipe: legacyRecipePayload.data.recipe } : undefined;
 }
 
 export function createAssistantActionChatUrl(launch: AssistantActionChatLaunch): string {

@@ -1021,9 +1021,12 @@ export const recipeConfigurationValueSchema = z.union([
 	z.null(),
 ]);
 
-export const recipeConfigurationSchema = z
-	.record(z.string().min(1).max(80), recipeConfigurationValueSchema)
-	.default({});
+const recipeConfigurationRecordSchema = z.record(
+	z.string().min(1).max(80),
+	recipeConfigurationValueSchema,
+);
+
+export const recipeConfigurationSchema = recipeConfigurationRecordSchema.default({});
 
 export const recipeConfigurationFieldSchema = z.object({
 	key: z.string().min(1).max(80),
@@ -1033,6 +1036,15 @@ export const recipeConfigurationFieldSchema = z.object({
 	required: z.boolean().optional(),
 	placeholder: z.string().optional(),
 	defaultValue: recipeConfigurationValueSchema.optional(),
+});
+
+export const recipeChatRequestOptionsSchema = z.object({
+	id: z.string(),
+	installationId: z.string().optional(),
+	channel: z.enum(["web", "ios", "sms", "scheduled", "tool"]).optional(),
+	allowedConnectorProviders: z.array(recipeConnectorProviderSchema).optional(),
+	allowedConnectorOperations: z.record(z.string(), z.array(z.string())).optional(),
+	configuration: recipeConfigurationRecordSchema.optional(),
 });
 
 export const assistantRecipeSchema = z.object({
@@ -1090,6 +1102,7 @@ export type RecipeCategory = z.infer<typeof recipeCategorySchema>;
 export type RecipeKind = z.infer<typeof recipeKindSchema>;
 export type RecipeConnectionStatus = z.infer<typeof recipeConnectionStatusSchema>;
 export type RecipeConfigurationField = z.infer<typeof recipeConfigurationFieldSchema>;
+export type RecipeChatRequestOptions = z.infer<typeof recipeChatRequestOptionsSchema>;
 export type AssistantRecipe = z.infer<typeof assistantRecipeSchema>;
 export type AssistantRecipesResponse = z.infer<typeof assistantRecipesResponseSchema>;
 export type AssistantRecipeInstallRequest = z.infer<typeof assistantRecipeInstallRequestSchema>;
@@ -1218,3 +1231,29 @@ export type RecipeInstallRequest = z.infer<typeof recipeInstallRequestSchema>;
 export type RecipeInstallationUpdateRequest = z.infer<typeof recipeInstallationUpdateRequestSchema>;
 export type RecipeInvocationRequest = z.infer<typeof recipeInvocationRequestSchema>;
 export type RecipeInvocationResponse = z.infer<typeof recipeInvocationResponseSchema>;
+
+export type RecipeChatSetupResponse = AssistantRecipeInstallResponse | RecipeInvocationResponse;
+
+export function createRecipeChatRequestOptions(
+	response: RecipeChatSetupResponse,
+): RecipeChatRequestOptions {
+	if ("recipe" in response) {
+		return {
+			id: response.recipe.id,
+			installationId: response.installation?.id,
+			channel: "web",
+			allowedConnectorProviders: response.allowedConnectorProviders ?? [],
+			allowedConnectorOperations: response.allowedConnectorOperations ?? {},
+			configuration: response.installation?.configuration ?? {},
+		};
+	}
+
+	return {
+		id: response.recipeId,
+		installationId: response.installationId,
+		channel: response.channel,
+		allowedConnectorProviders: response.allowedConnectorProviders ?? [],
+		allowedConnectorOperations: response.allowedConnectorOperations ?? {},
+		configuration: response.configuration,
+	};
+}

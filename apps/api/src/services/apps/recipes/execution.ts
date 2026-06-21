@@ -1,9 +1,11 @@
 import type { RecipeInvocationResponse } from "@assistant/schemas";
+import { createRecipeChatRequestOptions } from "@assistant/schemas";
 
 import { defaultModel } from "~/constants/models";
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { handleCreateChatCompletions } from "~/services/completions/createChatCompletions";
 import type { CreateChatCompletionsResponse, IEnv, IUser, Message } from "~/types";
+import type { ChatRequestOptions } from "~/types/chat";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
 
@@ -13,7 +15,7 @@ function buildRecipeExecutionOptions(params: {
 		from?: string;
 		to?: string;
 	};
-}) {
+}): ChatRequestOptions {
 	return {
 		...(params.sms
 			? {
@@ -25,14 +27,7 @@ function buildRecipeExecutionOptions(params: {
 					},
 				}
 			: {}),
-		recipe: {
-			id: params.invocation.recipeId,
-			installationId: params.invocation.installationId,
-			channel: params.invocation.channel,
-			allowedConnectorProviders: params.invocation.allowedConnectorProviders,
-			allowedConnectorOperations: params.invocation.allowedConnectorOperations ?? {},
-			configuration: params.invocation.configuration,
-		},
+		recipe: createRecipeChatRequestOptions(params.invocation),
 	};
 }
 

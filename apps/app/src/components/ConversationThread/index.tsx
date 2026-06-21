@@ -214,9 +214,9 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
 			const originalAssistantAction = selectedAssistantAction;
 
 			try {
+				const actionSubmit = await resolveAssistantActionSubmit(chatInput);
 				setChatInput("");
 				setSelectedAssistantAction(null);
-				const actionSubmit = await resolveAssistantActionSubmit(chatInput);
 
 				trackEvent({
 					name: "send_message",
@@ -234,13 +234,13 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
 					},
 				});
 
-				if (actionSubmit.externalUrl) {
-					window.location.href = actionSubmit.externalUrl;
+				if (actionSubmit.kind === "external") {
+					window.location.href = actionSubmit.url;
 					return;
 				}
 
-				if (actionSubmit.navigationPath) {
-					navigate(actionSubmit.navigationPath);
+				if (actionSubmit.kind === "navigation") {
+					navigate(actionSubmit.path);
 					return;
 				}
 
@@ -250,6 +250,9 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
 				if (result?.status === "error") {
 					setChatInput(originalInput);
 					setSelectedAssistantAction(originalAssistantAction);
+					if (result.response) {
+						toast.error(result.response);
+					}
 				} else {
 					setTimeout(() => {
 						chatInputRef.current?.focus();

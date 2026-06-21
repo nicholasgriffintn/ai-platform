@@ -1,4 +1,4 @@
-import { coerceStringArray, isRecord } from "~/utils/objects";
+import { parseChatRequestOptions, readRecipeChatRequestOptions } from "@assistant/schemas";
 
 export interface ActiveRecipeSetup {
 	id: string;
@@ -6,67 +6,53 @@ export interface ActiveRecipeSetup {
 }
 
 export function getRecipeAllowedConnectorProviders(options: unknown): string[] | null {
-	if (!isRecord(options) || !isRecord(options.recipe)) {
+	const recipe = readRecipeChatRequestOptions(options);
+	if (!recipe) {
 		return null;
 	}
 
-	return coerceStringArray(options.recipe.allowedConnectorProviders);
+	return recipe.allowedConnectorProviders ?? [];
 }
 
 export function getRecipeAllowedConnectorOperations(
 	options: unknown,
 	provider: string,
 ): string[] | null {
-	if (
-		!isRecord(options) ||
-		!isRecord(options.recipe) ||
-		!isRecord(options.recipe.allowedConnectorOperations) ||
-		!(provider in options.recipe.allowedConnectorOperations)
-	) {
+	const operations = readRecipeChatRequestOptions(options)?.allowedConnectorOperations;
+	if (!operations || !(provider in operations)) {
 		return null;
 	}
 
-	return coerceStringArray(options.recipe.allowedConnectorOperations[provider]);
+	return operations[provider] ?? [];
 }
 
 export function getRecipeExecutionChannel(options: unknown): string | undefined {
-	if (!isRecord(options) || !isRecord(options.recipe)) {
-		return undefined;
-	}
-
-	return typeof options.recipe.channel === "string" ? options.recipe.channel : undefined;
+	return readRecipeChatRequestOptions(options)?.channel;
 }
 
 export function getRecipeConfiguration(options: unknown): Record<string, unknown> | undefined {
-	if (!isRecord(options) || !isRecord(options.recipe) || !isRecord(options.recipe.configuration)) {
-		return undefined;
-	}
-
-	return options.recipe.configuration;
+	return readRecipeChatRequestOptions(options)?.configuration;
 }
 
 export function getActiveRecipeSetup(options: unknown): ActiveRecipeSetup | undefined {
-	if (!isRecord(options) || !isRecord(options.recipe) || typeof options.recipe.id !== "string") {
+	const recipe = readRecipeChatRequestOptions(options);
+	if (!recipe) {
 		return undefined;
 	}
 
 	return {
-		id: options.recipe.id,
-		installationId:
-			typeof options.recipe.installationId === "string" ? options.recipe.installationId : undefined,
+		id: recipe.id,
+		installationId: recipe.installationId,
 	};
 }
 
 export function getTriggerRecipeChannel(options: unknown): "sms" | "tool" {
-	if (!isRecord(options)) {
-		return "tool";
-	}
-
-	if (options.source === "sms") {
+	const requestOptions = parseChatRequestOptions(options);
+	if (requestOptions?.source === "sms") {
 		return "sms";
 	}
 
-	if (isRecord(options.sms) && options.sms.enabled === true) {
+	if (requestOptions?.sms?.enabled === true) {
 		return "sms";
 	}
 
@@ -76,12 +62,13 @@ export function getTriggerRecipeChannel(options: unknown): "sms" | "tool" {
 export function getSmsRecipeExecutionContext(
 	options: unknown,
 ): { from?: string; to?: string } | undefined {
-	if (!isRecord(options) || !isRecord(options.sms) || options.sms.enabled !== true) {
+	const sms = parseChatRequestOptions(options)?.sms;
+	if (sms?.enabled !== true) {
 		return undefined;
 	}
 
 	return {
-		...(typeof options.sms.from === "string" ? { from: options.sms.from } : {}),
-		...(typeof options.sms.to === "string" ? { to: options.sms.to } : {}),
+		...(sms.from ? { from: sms.from } : {}),
+		...(sms.to ? { to: sms.to } : {}),
 	};
 }

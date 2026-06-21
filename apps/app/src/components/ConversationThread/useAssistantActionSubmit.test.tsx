@@ -1,4 +1,5 @@
 import { renderHook } from "@testing-library/react";
+import type { AssistantActionSelection } from "@assistant/schemas";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { useAssistantActionSubmit } from "./useAssistantActionSubmit";
@@ -14,23 +15,7 @@ const mocks = vi.hoisted(() => ({
 		mutateAsync: vi.fn(),
 	},
 	chatStore: {
-		selectedAssistantAction: null as {
-			verb?: "ask" | "connect" | "open" | "run" | "schedule" | "setup" | "use";
-			item?: {
-				id: string;
-				kind: "app" | "connector" | "installed_recipe" | "recipe" | "tool";
-				label: string;
-				metadata?: {
-					appId?: string;
-					appKind?: "dynamic" | "frontend";
-					authType?: "api_key" | "github_app" | "oauth2";
-					href?: string;
-					provider?: string;
-					recipeId?: string;
-					toolId?: string;
-				};
-			};
-		} | null,
+		selectedAssistantAction: null as AssistantActionSelection | null,
 		setSelectedAssistantAction: vi.fn(),
 	},
 	toolsStore: {
@@ -103,6 +88,7 @@ describe("useAssistantActionSubmit", () => {
 		await expect(
 			result.current.resolveAssistantActionSubmit("@Daily Weather today"),
 		).resolves.toEqual({
+			kind: "submit",
 			input: "@Daily Weather today",
 			requestOptions: {
 				recipe: {
@@ -114,6 +100,7 @@ describe("useAssistantActionSubmit", () => {
 					configuration: { location: "London" },
 				},
 			},
+			selectedTools: ["get_weather"],
 		});
 		expect(mocks.invokeRecipe.mutateAsync).toHaveBeenCalledWith({
 			recipeId: "daily-weather",
@@ -140,8 +127,9 @@ describe("useAssistantActionSubmit", () => {
 		const { result } = renderHook(() => useAssistantActionSubmit());
 
 		await expect(result.current.resolveAssistantActionSubmit("@Daily Weather")).resolves.toEqual({
+			kind: "navigation",
 			input: "@Daily Weather",
-			navigationPath: "/apps/recipes?action=schedule&recipe=daily-weather",
+			path: "/apps/recipes?action=schedule&recipe=daily-weather",
 		});
 		expect(mocks.invokeRecipe.mutateAsync).not.toHaveBeenCalled();
 		expect(mocks.installRecipe.mutateAsync).not.toHaveBeenCalled();
@@ -166,7 +154,9 @@ describe("useAssistantActionSubmit", () => {
 		await expect(
 			result.current.resolveAssistantActionSubmit("run @Code execution this"),
 		).resolves.toEqual({
+			kind: "submit",
 			input: "run @Code execution this",
+			selectedTools: ["web_fetch", "code_execution"],
 		});
 		expect(mocks.toolsStore.setSelectedTools).toHaveBeenCalledWith(["web_fetch", "code_execution"]);
 		expect(mocks.chatStore.setSelectedAssistantAction).toHaveBeenCalledWith(null);
@@ -190,8 +180,9 @@ describe("useAssistantActionSubmit", () => {
 
 		await expect(result.current.resolveAssistantActionSubmit("@Article Research")).resolves.toEqual(
 			{
+				kind: "navigation",
 				input: "@Article Research",
-				navigationPath: "/apps/articles",
+				path: "/apps/articles",
 			},
 		);
 		expect(mocks.chatStore.setSelectedAssistantAction).toHaveBeenCalledWith(null);
@@ -215,8 +206,9 @@ describe("useAssistantActionSubmit", () => {
 		const { result } = renderHook(() => useAssistantActionSubmit());
 
 		await expect(result.current.resolveAssistantActionSubmit("@PostHog")).resolves.toEqual({
+			kind: "navigation",
 			input: "@PostHog",
-			navigationPath: "/profile?tab=providers&type=connector&connector=posthog",
+			path: "/profile?tab=providers&type=connector&connector=posthog",
 		});
 		expect(mocks.startConnector.mutateAsync).not.toHaveBeenCalled();
 		expect(mocks.chatStore.setSelectedAssistantAction).toHaveBeenCalledWith(null);
@@ -242,8 +234,9 @@ describe("useAssistantActionSubmit", () => {
 		const { result } = renderHook(() => useAssistantActionSubmit());
 
 		await expect(result.current.resolveAssistantActionSubmit("@Gmail")).resolves.toEqual({
+			kind: "external",
 			input: "@Gmail",
-			externalUrl: "https://accounts.google.com/oauth",
+			url: "https://accounts.google.com/oauth",
 		});
 		expect(mocks.startConnector.mutateAsync).toHaveBeenCalledWith({
 			provider: "gmail",

@@ -1,4 +1,9 @@
 import { describe, expect, it } from "vitest";
+import {
+	assistantActionCatalogSchema,
+	assistantActionResultSchema,
+	assistantActionSelectionSchema,
+} from "@assistant/schemas";
 
 import { buildAssistantActionCatalog, formatAssistantActionMention } from "../assistant-actions";
 
@@ -122,6 +127,19 @@ describe("assistant action catalogue", () => {
 				toolId: "web_fetch",
 			},
 		});
+		expect(assistantActionCatalogSchema.safeParse(catalog).success).toBe(true);
+		expect(
+			assistantActionSelectionSchema.safeParse({
+				verb: "run",
+				item: {
+					id: catalog.items[0]?.id,
+					kind: catalog.items[0]?.kind,
+					label: catalog.items[0]?.label,
+					metadata: catalog.items[0]?.metadata,
+				},
+				tokenPosition: 4,
+			}).success,
+		).toBe(true);
 	});
 
 	it("keeps uninstalled recipes discoverable after installed recipes", () => {
@@ -159,5 +177,24 @@ describe("assistant action catalogue", () => {
 
 	it("formats non-agent action items as visible mentions for unchanged chat execution", () => {
 		expect(formatAssistantActionMention({ label: "PostHog" })).toBe("@PostHog");
+	});
+
+	it("validates assistant action results through the shared schema", () => {
+		expect(
+			assistantActionResultSchema.safeParse({
+				kind: "conversation",
+				input: "Run the Morning Briefing recipe.",
+				selectedTools: ["use_recipe_connector"],
+				requestOptions: {
+					recipe: {
+						id: "morning-briefing",
+						channel: "web",
+						allowedConnectorProviders: [],
+						allowedConnectorOperations: {},
+					},
+				},
+				url: "/?query=Run+the+Morning+Briefing+recipe.",
+			}).success,
+		).toBe(true);
 	});
 });

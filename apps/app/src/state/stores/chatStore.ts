@@ -1,9 +1,12 @@
-import type { HomeChatModeId, SandboxChatModeSettings } from "@assistant/schemas";
+import type {
+	AssistantActionSelection,
+	HomeChatModeId,
+	SandboxChatModeSettings,
+} from "@assistant/schemas";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
 import { apiKeyService } from "~/lib/api/api-key";
-import type { AssistantActionItem, AssistantActionVerbId } from "~/lib/assistant-actions";
 import { createConversationId } from "~/lib/conversations";
 import type { ChatMode, ChatSettings } from "~/types";
 
@@ -61,11 +64,7 @@ export interface ChatStore {
 	setSelectedAgentId: (agentId: string | null) => void;
 	selectedAgentTokenPosition: number | null;
 	setSelectedAgentTokenPosition: (position: number | null) => void;
-	selectedAssistantAction: {
-		verb?: AssistantActionVerbId;
-		item?: Pick<AssistantActionItem, "id" | "kind" | "label" | "metadata">;
-		tokenPosition?: number;
-	} | null;
+	selectedAssistantAction: AssistantActionSelection | null;
 	setSelectedAssistantAction: (action: ChatStore["selectedAssistantAction"]) => void;
 	chatSettings: ChatSettings;
 	setChatSettings: (settings: ChatSettings) => void;

@@ -1,10 +1,7 @@
 import type { ExecutionContext } from "@cloudflare/workers-types";
 import type {
-	CouncilChatOptions,
+	ChatRequestOptions as SchemaChatRequestOptions,
 	MessagePart as SchemaMessagePart,
-	RecipeConfiguration,
-	RecipeConnectorProvider,
-	SandboxModelSettings,
 } from "@assistant/schemas";
 import type { ServiceContext } from "../lib/context/serviceContext";
 import type { AnonymousUser } from "./anonymous-user";
@@ -257,36 +254,7 @@ interface AIControlParams {
 	use_multi_model?: boolean;
 }
 
-export interface ChatRequestOptions extends Record<string, any> {
-	cache_ttl_seconds?: number;
-	council?: CouncilChatOptions;
-	recipe?: {
-		id: string;
-		installationId?: string;
-		channel?: "web" | "ios" | "sms" | "scheduled" | "tool";
-		allowedConnectorProviders?: RecipeConnectorProvider[];
-		allowedConnectorOperations?: Record<string, string[]>;
-		configuration?: RecipeConfiguration;
-	};
-	sandbox?: {
-		enabled: boolean;
-		repo?: string;
-		installationId?: number;
-		model?: string;
-		taskType?: string;
-		promptStrategy?: string;
-		shouldCommit?: boolean;
-		timeoutSeconds?: number;
-		maxSteps?: number;
-		modelSettings?: SandboxModelSettings;
-	};
-	sms?: {
-		enabled: boolean;
-		from?: string;
-		to?: string;
-	};
-	replicateWaitSeconds?: number;
-}
+export type ChatRequestOptions = SchemaChatRequestOptions;
 
 interface AIResponseParamsBase extends AIControlParams {
 	// The platform the user requested with.

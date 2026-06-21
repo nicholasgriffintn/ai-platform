@@ -1,60 +1,16 @@
 import type {
+	AssistantActionCatalog,
+	AssistantActionItem,
 	AssistantRecipe,
 	RecipeConnectorManifest,
 	RecipeInstallation,
 } from "@assistant/schemas";
+import { assistantActionVerbs } from "@assistant/schemas";
 
 import type { ModelToolDefinition } from "./model-tools";
 import type { AppListItem } from "~/types/apps";
 
-export type AssistantActionVerbId =
-	| "run"
-	| "setup"
-	| "connect"
-	| "open"
-	| "schedule"
-	| "ask"
-	| "use";
-
-export type AssistantActionItemKind =
-	| "agent"
-	| "app"
-	| "connector"
-	| "installed_recipe"
-	| "recipe"
-	| "tool";
-
-export interface AssistantActionVerb {
-	id: AssistantActionVerbId;
-	command: AssistantActionVerbId;
-	label: string;
-	description: string;
-}
-
-export interface AssistantActionItem {
-	id: string;
-	kind: AssistantActionItemKind;
-	label: string;
-	description?: string;
-	status?: string;
-	searchText: string[];
-	metadata?: {
-		agentId?: string;
-		appId?: string;
-		appKind?: AppListItem["kind"];
-		authType?: RecipeConnectorManifest["authType"];
-		href?: string;
-		installationId?: string;
-		provider?: string;
-		recipeId?: string;
-		toolId?: string;
-	};
-}
-
-export interface AssistantActionCatalog {
-	verbs: AssistantActionVerb[];
-	items: AssistantActionItem[];
-}
+export type { AssistantActionCatalog, AssistantActionItem };
 
 interface AgentActionSource {
 	id: string;
@@ -71,51 +27,6 @@ interface AssistantActionCatalogSources {
 	modelTools?: readonly ModelToolDefinition[];
 	recipes?: readonly AssistantRecipe[];
 }
-
-const ASSISTANT_ACTION_VERBS: AssistantActionVerb[] = [
-	{
-		id: "run",
-		command: "run",
-		label: "Run",
-		description: "Run an installed recipe, app, agent, or tool-backed action.",
-	},
-	{
-		id: "setup",
-		command: "setup",
-		label: "Set up",
-		description: "Configure a recipe, app, connector, or assistant workflow.",
-	},
-	{
-		id: "connect",
-		command: "connect",
-		label: "Connect",
-		description: "Connect an external provider or installation.",
-	},
-	{
-		id: "open",
-		command: "open",
-		label: "Open",
-		description: "Open an app, recipe, connector, or saved assistant surface.",
-	},
-	{
-		id: "schedule",
-		command: "schedule",
-		label: "Schedule",
-		description: "Schedule a recipe or automation.",
-	},
-	{
-		id: "ask",
-		command: "ask",
-		label: "Ask",
-		description: "Ask an agent or selected assistant context.",
-	},
-	{
-		id: "use",
-		command: "use",
-		label: "Use",
-		description: "Use a tool, connector, or capability in this conversation.",
-	},
-];
 
 function nonEmptyText(value: string | undefined): string[] {
 	const trimmed = value?.trim();
@@ -180,7 +91,7 @@ export function buildAssistantActionCatalog(
 	const installations = sources.installations ?? [];
 
 	return {
-		verbs: ASSISTANT_ACTION_VERBS,
+		verbs: assistantActionVerbs,
 		items: [
 			...buildInstalledRecipeItems(recipes, installations),
 			...buildRecipeItems(recipes, installations),

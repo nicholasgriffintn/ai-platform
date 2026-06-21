@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { chatRequestOptionsSchema } from "@assistant/schemas";
 
 import type { Message } from "~/types";
 import { ChatService } from "./chat-service";
@@ -236,6 +237,7 @@ describe("ChatService streaming", () => {
 			size: "1536x1024",
 			quality: "high",
 		});
+		expect(chatRequestOptionsSchema.safeParse(body.options).success).toBe(true);
 		expect(body.enabled_tools).toEqual(["image_generation"]);
 		expect(body.models).toEqual(["gpt-5", "claude-opus"]);
 	});
@@ -292,6 +294,7 @@ describe("ChatService streaming", () => {
 				defaultSearch: "newer_than:7d",
 			},
 		});
+		expect(chatRequestOptionsSchema.safeParse(body.options).success).toBe(true);
 	});
 
 	it("throws streamed provider errors without finalizing an empty assistant message", async () => {

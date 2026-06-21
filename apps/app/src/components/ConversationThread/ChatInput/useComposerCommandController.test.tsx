@@ -1,4 +1,5 @@
 import { act, renderHook } from "@testing-library/react";
+import type { AssistantActionSelection } from "@assistant/schemas";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { useComposerCommandController } from "./useComposerCommandController";
@@ -11,18 +12,8 @@ const mocks = vi.hoisted(() => ({
 		isPro: true,
 		model: null as string | null,
 		selectedAgentId: null as string | null,
-		selectedAssistantAction: null as {
-			verb?: "run" | "schedule";
-			item?: {
-				id: string;
-				kind: "connector" | "recipe";
-				label: string;
-				metadata?: {
-					recipeId?: string;
-				};
-			};
-			tokenPosition?: number;
-		} | null,
+		selectedAgentTokenPosition: null as number | null,
+		selectedAssistantAction: null as AssistantActionSelection | null,
 		setChatInput: vi.fn(),
 		setChatMode: vi.fn(),
 		setChatSettings: vi.fn(),
@@ -82,6 +73,7 @@ describe("useComposerCommandController", () => {
 		mocks.store.chatInput = "/c";
 		mocks.store.chatMode = "remote";
 		mocks.store.selectedAgentId = null;
+		mocks.store.selectedAgentTokenPosition = null;
 		mocks.store.selectedAssistantAction = null;
 		mocks.actionCatalog.verbs = [];
 		mocks.actionCatalog.items = [];
@@ -218,5 +210,67 @@ describe("useComposerCommandController", () => {
 
 		expect(mocks.store.setSelectedAssistantAction).toHaveBeenCalledWith({ verb: "run" });
 		expect(mocks.store.setChatInput).toHaveBeenCalledWith("@");
+	});
+
+	it("does not open action suggestions from inside an already selected inline token", () => {
+		mocks.store.chatInput = "hey @Daily Weather and";
+		mocks.store.selectedAssistantAction = {
+			item: {
+				id: "recipe:daily-weather",
+				kind: "recipe",
+				label: "Daily Weather",
+			},
+			tokenPosition: 4,
+		};
+		mocks.actionCatalog.items = [
+			{
+				id: "recipe:daily-weather",
+				kind: "recipe",
+				label: "Daily Weather",
+				description: "Get a local forecast.",
+				searchText: ["Daily Weather"],
+			},
+		];
+		const { result } = renderHook(() =>
+			useComposerCommandController({
+				isLoading: false,
+			}),
+		);
+
+		act(() => result.current.setTextareaCursorPosition(5));
+
+		expect(result.current.directiveQuery).toBeNull();
+		expect(result.current.commandState.directive).toBeNull();
+	});
+
+	it("does not reopen action suggestions when cursor state drifts into selected inline text", () => {
+		mocks.store.chatInput = "hey @Daily Weather and";
+		mocks.store.selectedAssistantAction = {
+			item: {
+				id: "recipe:daily-weather",
+				kind: "recipe",
+				label: "Daily Weather",
+			},
+			tokenPosition: 99,
+		};
+		mocks.actionCatalog.items = [
+			{
+				id: "recipe:daily-weather",
+				kind: "recipe",
+				label: "Daily Weather",
+				description: "Get a local forecast.",
+				searchText: ["Daily Weather"],
+			},
+		];
+		const { result } = renderHook(() =>
+			useComposerCommandController({
+				isLoading: false,
+			}),
+		);
+
+		act(() => result.current.setTextareaCursorPosition(5));
+
+		expect(result.current.directiveQuery).toBeNull();
+		expect(result.current.commandState.directive).toBeNull();
 	});
 });

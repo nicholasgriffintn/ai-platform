@@ -1,4 +1,5 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import type { AssistantActionSelection } from "@assistant/schemas";
 import { useState } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -15,14 +16,7 @@ const mocks = vi.hoisted(() => ({
 		chatSettings: {},
 		isPro: true,
 		model: null as string | null,
-		selectedAssistantAction: null as {
-			verb?: "run";
-			item?: {
-				id: string;
-				kind: "connector";
-				label: string;
-			};
-		} | null,
+		selectedAssistantAction: null as AssistantActionSelection | null,
 		selectedAgentId: null as string | null,
 		selectedAgentTokenPosition: null as number | null,
 		setChatMode: vi.fn(),
@@ -197,6 +191,80 @@ describe("ComposerCommandSurface", () => {
 		fireEvent.click(screen.getByRole("button", { name: /Sandbox/i }));
 
 		expect(command.onSelect).toHaveBeenCalledTimes(1);
+	});
+
+	it("selects action items from the compact command button without an active directive", () => {
+		const setChatInput = vi.fn();
+
+		render(
+			<ComposerCommandButton
+				chatInput="ask"
+				directive={null}
+				modeCommands={[createModeCommand()]}
+				setChatInput={setChatInput}
+			/>,
+		);
+
+		fireEvent.click(screen.getByRole("button", { name: "Open commands" }));
+		fireEvent.click(screen.getByRole("button", { name: /PostHog/i }));
+
+		expect(mocks.store.setSelectedAssistantAction).toHaveBeenCalledWith({
+			item: {
+				id: "connector:posthog",
+				kind: "connector",
+				label: "PostHog",
+				metadata: expect.objectContaining({
+					provider: "posthog",
+				}),
+			},
+			tokenPosition: 4,
+		});
+		expect(setChatInput).toHaveBeenCalledWith("ask @PostHog ");
+	});
+
+	it("routes compact action item selection through the controller callback when provided", () => {
+		const onActionItemSelect = vi.fn();
+
+		render(
+			<ComposerCommandButton
+				chatInput="ask"
+				directive={null}
+				modeCommands={[createModeCommand()]}
+				onActionItemSelect={onActionItemSelect}
+				setChatInput={vi.fn()}
+			/>,
+		);
+
+		fireEvent.click(screen.getByRole("button", { name: "Open commands" }));
+		fireEvent.click(screen.getByRole("button", { name: /PostHog/i }));
+
+		expect(onActionItemSelect).toHaveBeenCalledWith(
+			expect.objectContaining({
+				id: "connector:posthog",
+				label: "PostHog",
+			}),
+		);
+		expect(mocks.store.setSelectedAssistantAction).not.toHaveBeenCalled();
+	});
+
+	it("selects agents from the compact command button into inline prompt text", () => {
+		const setChatInput = vi.fn();
+
+		render(
+			<ComposerCommandButton
+				chatInput="ask"
+				directive={null}
+				modeCommands={[createModeCommand()]}
+				setChatInput={setChatInput}
+			/>,
+		);
+
+		fireEvent.click(screen.getByRole("button", { name: "Open commands" }));
+		fireEvent.click(screen.getByRole("button", { name: /Reviewer/i }));
+
+		expect(mocks.store.setSelectedAgentId).toHaveBeenCalledWith("agent-1");
+		expect(mocks.store.setSelectedAgentTokenPosition).toHaveBeenCalledWith(4);
+		expect(setChatInput).toHaveBeenCalledWith("ask @Reviewer ");
 	});
 
 	it("keeps the compact command popover open after selecting live mode", () => {

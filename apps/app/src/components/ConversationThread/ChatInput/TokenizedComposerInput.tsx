@@ -8,6 +8,7 @@ import {
 	useRef,
 } from "react";
 
+import { getComposerInlineTokenText } from "~/lib/composer-commands";
 import { cn } from "~/lib/utils";
 
 interface TokenizedComposerInputProps {
@@ -263,10 +264,6 @@ function normaliseTokens(value: string, tokens: ComposerInputToken[]) {
 		.sort((first, second) => first.position - second.position);
 }
 
-function getTokenText(token: Pick<ComposerInputToken, "label">) {
-	return `@${token.label}`;
-}
-
 function getTokenClassName(kind: ComposerInputToken["kind"]) {
 	switch (kind) {
 		case "agent":
@@ -283,7 +280,9 @@ function getTokenClassName(kind: ComposerInputToken["kind"]) {
 
 function createTokenSignature(tokens: ComposerInputToken[]) {
 	return tokens
-		.map((token) => [token.id, token.kind, getTokenText(token), token.position].join(":"))
+		.map((token) =>
+			[token.id, token.kind, getComposerInlineTokenText(token.label), token.position].join(":"),
+		)
 		.join("|");
 }
 
@@ -292,7 +291,7 @@ function renderComposerDom(element: HTMLElement, value: string, tokens: Composer
 	let cursor = 0;
 
 	for (const token of tokens) {
-		const tokenText = getTokenText(token);
+		const tokenText = getComposerInlineTokenText(token.label);
 		const text = value.slice(cursor, token.position);
 		if (text) {
 			element.appendChild(document.createTextNode(text));
@@ -397,15 +396,16 @@ export const TokenizedComposerInput = forwardRef<
 				(token) =>
 					!existingTokenIds.has(token.id) &&
 					cursorPosition >= token.position &&
-					cursorPosition <= token.position + getTokenText(token).length,
+					cursorPosition <= token.position + getComposerInlineTokenText(token.label).length,
 			);
 			renderComposerDom(editable, value, orderedTokens);
 			if (wasFocused) {
 				if (!tokenToEnterAfter || !setCursorAfterToken(editable, tokenToEnterAfter.id)) {
 					setCursorPosition(editable, Math.min(cursorPosition, value.length));
 				}
+				onCursorPositionChange(getCursorPosition(editable));
 			}
-		}, [expectedTokenSignature, orderedTokens, value]);
+		}, [expectedTokenSignature, onCursorPositionChange, orderedTokens, value]);
 
 		const emitCurrentState = () => {
 			const editable = editableRef.current;

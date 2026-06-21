@@ -86,13 +86,14 @@ describe("TokenizedComposerInput", () => {
 
 	it("moves the cursor after a token inserted at the current text position", () => {
 		const inputRef = createRef<TokenizedComposerInputHandle>();
+		const onCursorPositionChange = vi.fn();
 		const props = {
 			id: "message-input",
 			value: "ask @PostHog about signups",
 			placeholder: "Ask me anything...",
 			ariaLabel: "Message input",
 			onChange: vi.fn(),
-			onCursorPositionChange: vi.fn(),
+			onCursorPositionChange,
 			onTokenPositionsChange: vi.fn(),
 			onKeyDown: vi.fn(),
 		};
@@ -120,6 +121,7 @@ describe("TokenizedComposerInput", () => {
 
 		expect(selection?.anchorNode).toBe(textbox);
 		expect(selection?.anchorOffset).toBe(2);
+		expect(onCursorPositionChange).toHaveBeenLastCalledWith(12);
 	});
 
 	it("counts token text before the cursor when reporting logical cursor position", () => {
