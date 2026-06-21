@@ -178,7 +178,33 @@ describe("RequestPreparer", () => {
 				userSettings: expect.any(Object),
 				currentMode: "normal",
 				isProUser: true,
+				enabledTools: ["search_memories", "store_memory"],
 			});
+		});
+
+		it("should preserve requested tools while enabling memory tools from user settings", async () => {
+			const result = await preparer.prepare(
+				{ ...baseOptions, enabled_tools: ["get_weather"] },
+				baseValidationContext,
+			);
+
+			expect((result as any).enabledTools).toEqual([
+				"get_weather",
+				"search_memories",
+				"store_memory",
+			]);
+		});
+
+		it("should only enable memory search when chat history memories are enabled", async () => {
+			mockRepositories.userSettings.getUserSettings.mockResolvedValue({
+				embedding_provider: "vectorize",
+				memories_save_enabled: false,
+				memories_chat_history_enabled: true,
+			});
+
+			const result = await preparer.prepare(baseOptions, baseValidationContext);
+
+			expect((result as any).enabledTools).toEqual(["search_memories"]);
 		});
 
 		it("should throw error when validation context is missing required fields", async () => {

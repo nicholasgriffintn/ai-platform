@@ -108,7 +108,7 @@ export class ChatOrchestrator {
 			tools,
 			parallel_tool_calls,
 			tool_choice,
-			enabled_tools = [],
+			enabled_tools: requestedEnabledTools = [],
 			approved_tools = [],
 			current_step,
 			max_steps,
@@ -129,7 +129,9 @@ export class ChatOrchestrator {
 			messageWithContext,
 			userSettings,
 			currentMode,
+			enabledTools = requestedEnabledTools,
 		} = prepared;
+		const enabled_tools = enabledTools;
 
 		const modelsToCheck = new Set(modelConfigs.map((config) => config.model));
 		for (const modelToCheck of modelsToCheck) {

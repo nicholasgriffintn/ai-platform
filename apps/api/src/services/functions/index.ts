@@ -14,6 +14,7 @@ import { get_note } from "./get_note";
 import { request_approval, ask_user } from "./human_in_the_loop";
 import { create_image } from "./image";
 import { handleMCPTool } from "./mcp";
+import { search_memories, store_memory } from "./memory";
 import { create_music } from "./music";
 import { prompt_coach } from "./prompt_coach";
 import { create_qr_code } from "./qr";
@@ -64,6 +65,8 @@ const functionDefinitions: ApiToolDefinition[] = [
 	call_api,
 	research,
 	extract_content,
+	search_memories,
+	store_memory,
 	create_note,
 	get_note,
 	extract_text_from_document,

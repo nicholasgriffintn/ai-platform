@@ -12,6 +12,7 @@ import {
 	buildConversationModeMetadataFromRequestOptions,
 	resolveChatPromptMode,
 } from "~/lib/chat/mode-metadata";
+import { mergeEnabledMemoryToolNames } from "~/lib/chat/memoryTools";
 import { messagesMatchStoredPrefix } from "~/lib/chat/messageComparison";
 import { findModelConfig } from "~/lib/providers/models";
 import { getSystemPrompt } from "~/lib/prompts";
@@ -40,6 +41,7 @@ export interface PreparedRequest {
 	userSettings: any;
 	currentMode: ChatMode;
 	isProUser: boolean;
+	enabledTools: string[];
 }
 
 export class RequestPreparer {
@@ -194,6 +196,12 @@ export class RequestPreparer {
 			userSettings,
 			currentMode: mode,
 			isProUser,
+			enabledTools: mergeEnabledMemoryToolNames({
+				enabledTools: options.enabled_tools,
+				user,
+				userSettings,
+				store: options.store,
+			}),
 		};
 	}
 
