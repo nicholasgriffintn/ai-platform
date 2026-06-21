@@ -1,4 +1,4 @@
-import type { ModelConfig, ModelReasoningConfig } from "~/types";
+import type { ModelConfig, ModelReasoningConfig } from "@assistant/schemas";
 import { createModelConfig, createModelConfigObject } from "~/lib/providers/models/utils";
 
 const PROVIDER = "nova";

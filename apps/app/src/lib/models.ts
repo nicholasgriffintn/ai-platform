@@ -1,4 +1,10 @@
-import type { ChatMode, ModelConfig, ModelConfigItem, ModelModality } from "~/types";
+import type {
+	ModelCatalogItem,
+	ModelConfig,
+	ModelConfigItem,
+	ModelModality,
+} from "@assistant/schemas";
+import type { ChatMode } from "~/types";
 
 export const defaultModel = "deepseek-chat";
 const LOCAL_MODEL_PROVIDER = "web-llm";
@@ -50,7 +56,7 @@ export function getFeaturedModelIds(models: ModelConfig) {
 			}
 			return acc;
 		},
-		{} as Record<string, ModelConfigItem>,
+		{} as Record<string, ModelCatalogItem>,
 	);
 }
 
@@ -90,26 +96,27 @@ export function getModelByReference(
 	return modelId ? modelReferences.get(modelId) : undefined;
 }
 
-export function sortModelsByDisplayName(models: ModelConfigItem[]) {
+export function sortModelsByDisplayName<T extends Pick<ModelConfigItem, "matchingModel" | "name">>(
+	models: T[],
+) {
 	return [...models].sort((a, b) => getModelDisplayName(a).localeCompare(getModelDisplayName(b)));
 }
 
 export function getFeaturedModels(models: ModelConfig) {
 	return sortModelsByDisplayName(
-		Object.entries(models).flatMap(([key, model]) =>
-			model.isFeatured
-				? [
-						{
-							...model,
-							id: key,
-						},
-					]
-				: [],
-		),
+		Object.entries(models).reduce<ModelCatalogItem[]>((acc, [key, model]) => {
+			if (model.isFeatured) {
+				acc.push({
+					...model,
+					id: key,
+				});
+			}
+			return acc;
+		}, []),
 	);
 }
 
-export function searchModelList(models: ModelConfigItem[], query: string) {
+export function searchModelList<T extends ModelConfigItem>(models: T[], query: string) {
 	const normalizedQuery = query.trim().toLowerCase();
 	if (!normalizedQuery) {
 		return [];
@@ -242,7 +249,7 @@ export function getRealtimeSessionModelsByProvider(models: ModelConfig, provider
 			}
 			return acc;
 		},
-		{} as Record<string, ModelConfigItem>,
+		{} as Record<string, ModelCatalogItem>,
 	);
 }
 
@@ -264,7 +271,7 @@ export function getToolCallModels(models: ModelConfig) {
 			}
 			return acc;
 		},
-		{} as Record<string, ModelConfigItem>,
+		{} as Record<string, ModelCatalogItem>,
 	);
 }
 
@@ -289,6 +296,6 @@ export function getModelsByMode(models: ModelConfig, mode: ChatMode) {
 			}
 			return acc;
 		},
-		{} as Record<string, ModelConfigItem>,
+		{} as Record<string, ModelCatalogItem>,
 	);
 }

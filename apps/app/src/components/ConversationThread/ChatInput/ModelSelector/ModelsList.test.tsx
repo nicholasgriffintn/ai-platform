@@ -1,7 +1,7 @@
 import { fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import type { ModelConfigItem } from "~/types";
+import type { ModelCatalogItem } from "@assistant/schemas";
 import { ModelsList } from "./ModelsList";
 
 vi.mock("~/hooks/use-track-event", () => ({
@@ -18,8 +18,8 @@ const makeModel = (
 	id: string,
 	name: string,
 	provider: string,
-	overrides: Partial<ModelConfigItem> = {},
-): ModelConfigItem => ({
+	overrides: Partial<ModelCatalogItem> = {},
+): ModelCatalogItem => ({
 	id,
 	name,
 	matchingModel: id,

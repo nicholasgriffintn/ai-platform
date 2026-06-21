@@ -1,4 +1,5 @@
 import { Sparkles } from "lucide-react";
+import type { DynamicAppCatalogItem as AppListItem } from "@assistant/schemas";
 import { useCallback, useMemo, useState } from "react";
 import { useNavigate } from "react-router";
 
@@ -9,7 +10,6 @@ import { Button, SearchInput } from "~/components/ui";
 import { CardSkeleton } from "~/components/ui/skeletons";
 import { useReplicateModels } from "~/hooks/useReplicate";
 import { cn } from "~/lib/utils";
-import type { AppListItem } from "~/types/apps";
 
 const DEFAULT_CATEGORY = "Creative Tools";
 

@@ -18,7 +18,7 @@ import type { ModelRegionOption } from "~/lib/model-region-variants";
 import { getModelDisplayName, modelSupportsVisualModality } from "~/lib/models";
 import { hasProviderReasoningOptions } from "~/lib/reasoning";
 import { cn } from "~/lib/utils";
-import type { ModelConfigItem } from "~/types";
+import type { ModelConfigItem } from "@assistant/schemas";
 
 interface ModelOptionProps {
 	model: ModelConfigItem;

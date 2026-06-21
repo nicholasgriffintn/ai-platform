@@ -40,7 +40,7 @@ import {
 	type SandboxModelSettings,
 	type SandboxPromptStrategy,
 	type SandboxTaskType,
-} from "~/types/sandbox";
+} from "@assistant/schemas";
 import type { ModelSelectionChangeHandler } from "~/types";
 import { LiveChatModeControls, LiveSessionComposerControls } from "./LiveChatModeControls";
 import { SandboxChatModeControls } from "./SandboxChatModeControls";

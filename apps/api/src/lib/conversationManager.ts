@@ -1,4 +1,5 @@
-import type { AnonymousUser, Message, Platform, User, IEnv, FunctionType } from "~/types";
+import type { FunctionType } from "@assistant/schemas";
+import type { AnonymousUser, Message, Platform, User, IEnv } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";

@@ -1,6 +1,6 @@
 import type { ModelRecord } from "@mlc-ai/web-llm";
 
-import type { ModelConfig } from "~/types";
+import type { ModelConfig } from "@assistant/schemas";
 
 let cachedWebLLMModels: ModelConfig | null = null;
 let pendingWebLLMModels: Promise<ModelConfig> | null = null;

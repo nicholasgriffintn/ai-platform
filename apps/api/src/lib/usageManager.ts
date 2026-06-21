@@ -1,7 +1,8 @@
 import { USAGE_CONFIG } from "~/constants/app";
 import { RepositoryManager } from "~/repositories";
 import { getModelConfigByMatchingModel } from "~/lib/providers/models";
-import type { AnonymousUser, ModelConfigItem, User, FunctionType } from "~/types";
+import type { FunctionType, ModelConfigItem } from "@assistant/schemas";
+import type { AnonymousUser, User } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 import { memoizeRequest, type RequestCache } from "~/utils/requestCache";

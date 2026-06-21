@@ -1,15 +1,8 @@
 import { getAIResponse } from "~/lib/chat/responses";
+import type { ModelConfigInfo } from "@assistant/schemas";
 import type { ConversationManager } from "~/lib/conversationManager";
 import type { ServiceContext } from "~/lib/context/serviceContext";
-import type {
-	ChatMode,
-	IEnv,
-	IUser,
-	IUserSettings,
-	Message,
-	ModelConfigInfo,
-	Platform,
-} from "~/types";
+import type { ChatMode, IEnv, IUser, IUserSettings, Message, Platform } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";

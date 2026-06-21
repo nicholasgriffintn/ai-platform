@@ -1,3 +1,5 @@
+import type { PodcastListItem } from "@assistant/schemas";
+
 import { resolveServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
 import type { IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -7,19 +9,6 @@ export interface IPodcastListRequest {
 	context?: ServiceContext;
 	env?: IEnv;
 	user: IUser;
-}
-
-export interface IPodcast {
-	id: string;
-	title: string;
-	description?: string;
-	createdAt: string;
-	imageUrl?: string;
-	audioUrl?: string;
-	duration?: number;
-	transcript?: string;
-	summary?: string;
-	status: "processing" | "transcribing" | "summarizing" | "complete";
 }
 
 interface PodcastItem {
@@ -32,7 +21,7 @@ interface PodcastItem {
 	};
 }
 
-export const handlePodcastList = async (req: IPodcastListRequest): Promise<IPodcast[]> => {
+export const handlePodcastList = async (req: IPodcastListRequest): Promise<PodcastListItem[]> => {
 	const { env, context, user } = req;
 
 	if (!user?.id) {
@@ -74,7 +63,7 @@ export const handlePodcastList = async (req: IPodcastListRequest): Promise<IPodc
 		const summaries = podcast.items?.summary || [];
 		const images = podcast.items?.image || [];
 
-		let status = "processing" as IPodcast["status"];
+		let status = "processing" as PodcastListItem["status"];
 		if (images.length > 0) {
 			status = "complete";
 		} else if (summaries.length > 0) {

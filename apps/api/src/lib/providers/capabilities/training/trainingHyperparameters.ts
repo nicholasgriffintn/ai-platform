@@ -1,4 +1,4 @@
-import type { TrainingModelDefinition } from "~/types/training";
+import type { TrainingModelDefinition } from "@assistant/schemas";
 
 type TrainingHyperparameterValue = string | number | boolean;
 type TrainingHyperparameters = Record<string, TrainingHyperparameterValue>;

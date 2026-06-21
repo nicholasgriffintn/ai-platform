@@ -1,4 +1,4 @@
-import type { ModelConfigItem } from "~/types";
+import type { ModelConfigItem } from "@assistant/schemas";
 import type { CanvasGenerationInput } from "./types";
 
 const canvasReferenceFieldNames = new Set([

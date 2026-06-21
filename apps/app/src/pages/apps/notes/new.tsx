@@ -1,4 +1,5 @@
 import { useCallback, useState } from "react";
+import type { NoteMetadata } from "@assistant/schemas";
 
 import { NoteEditor } from "~/components/Apps/Notes/NoteEditor";
 import { PageShell } from "~/components/Core/PageShell";
@@ -23,7 +24,7 @@ export default function NewNotePage() {
 		async (
 			title: string,
 			content: string,
-			additionalMetadata?: Record<string, any>,
+			additionalMetadata?: NoteMetadata,
 			options?: { refreshMetadata?: boolean },
 		) => {
 			const metadata = {

@@ -1,10 +1,10 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
+import type { Podcast, PodcastListItem } from "@assistant/schemas";
 
 import { fetchPodcast, fetchPodcasts, processPodcast, uploadPodcast } from "~/lib/api/dynamic-apps";
-import type { Podcast } from "~/types/podcast";
 
 export const useFetchPodcasts = () => {
-	return useQuery<Podcast[], Error>({
+	return useQuery<PodcastListItem[], Error>({
 		queryKey: ["podcasts"],
 		queryFn: fetchPodcasts,
 	});

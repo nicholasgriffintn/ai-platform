@@ -1,4 +1,4 @@
-import type { ModelConfig } from "~/types";
+import type { ModelConfig } from "@assistant/schemas";
 
 export const groqModelConfig: ModelConfig = {
 	"deepseek-r1-distill-qwen-32b": {

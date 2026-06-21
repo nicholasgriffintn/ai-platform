@@ -24,7 +24,7 @@ import {
 	SANDBOX_TIMEOUT_MIN_SECONDS,
 	type SandboxPromptStrategy,
 	type SandboxTaskType,
-} from "~/types/sandbox";
+} from "@assistant/schemas";
 
 const SANDBOX_TASK_TYPE_LABELS: Record<SandboxTaskType, string> = {
 	"feature-implementation": "Feature implementation",

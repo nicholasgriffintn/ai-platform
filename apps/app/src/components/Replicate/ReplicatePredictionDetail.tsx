@@ -1,5 +1,6 @@
 import { useReplicatePrediction } from "~/hooks/useReplicate";
 import { Card } from "~/components/ui";
+import { formatUnknownValue, getStringProperty, isRecord } from "~/lib/unknown-values";
 
 interface ReplicatePredictionDetailProps {
 	predictionId: string;
@@ -26,28 +27,43 @@ export function ReplicatePredictionDetail({ predictionId }: ReplicatePredictionD
 	}
 
 	const statusColors = {
+		queued: "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200",
+		starting: "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200",
 		processing: "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200",
+		in_progress: "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200",
 		succeeded: "bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200",
 		completed: "bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200",
 		failed: "bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-200",
+		canceled: "bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-200",
 	};
+	const createdAt = prediction.created_at ?? prediction.createdAt;
+	const prompt = getStringProperty(prediction.input, "prompt");
+	const predictionOutput =
+		prediction.output ?? prediction.predictionData?.response ?? prediction.predictionData?.output;
+	const hasPredictionOutput =
+		predictionOutput !== undefined && predictionOutput !== null && predictionOutput !== "";
 
 	return (
 		<div className="space-y-6">
 			<div className="flex items-start justify-between gap-4">
 				<div className="flex-1 min-w-0">
 					<h1 className="text-3xl font-bold text-zinc-900 dark:text-zinc-100 mb-2 break-words">
-						{prediction.input?.prompt || prediction.modelName || prediction.modelId}
+						{prompt || prediction.modelName || prediction.modelId}
 					</h1>
 					<div className="flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-400">
 						<span className="font-medium">{prediction.modelName || prediction.modelId}</span>
-						<span>•</span>
-						<span>{new Date(prediction.created_at).toLocaleString()}</span>
+						{createdAt && (
+							<>
+								<span>•</span>
+								<span>{new Date(createdAt).toLocaleString()}</span>
+							</>
+						)}
 					</div>
 				</div>
 				<span
 					className={`px-4 py-2 text-sm font-medium rounded-full whitespace-nowrap shrink-0 ${
-						statusColors[prediction.status as keyof typeof statusColors]
+						statusColors[prediction.status] ??
+						"bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-200"
 					}`}
 				>
 					{prediction.status}
@@ -78,25 +94,17 @@ export function ReplicatePredictionDetail({ predictionId }: ReplicatePredictionD
 
 			<div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 				{(prediction.status === "succeeded" || prediction.status === "completed") &&
-					(prediction.output ||
-						prediction.predictionData?.output ||
-						prediction.predictionData?.response) && (
+					hasPredictionOutput && (
 						<Card className="p-6 lg:col-span-2 order-2 lg:order-1">
 							<h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100 mb-4">
 								Output
 							</h2>
-							<OutputRenderer
-								output={
-									prediction.output ||
-									prediction.predictionData?.response ||
-									prediction.predictionData?.output
-								}
-							/>
+							<OutputRenderer output={predictionOutput} />
 						</Card>
 					)}
 
 				<Card
-					className={`p-6 order-1 lg:order-2 ${(prediction.status === "succeeded" || prediction.status === "completed") && (prediction.output || prediction.predictionData?.output || prediction.predictionData?.response) ? "" : "lg:col-span-3"}`}
+					className={`p-6 order-1 lg:order-2 ${(prediction.status === "succeeded" || prediction.status === "completed") && hasPredictionOutput ? "" : "lg:col-span-3"}`}
 				>
 					<h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100 mb-4">
 						Input Parameters
@@ -108,7 +116,7 @@ export function ReplicatePredictionDetail({ predictionId }: ReplicatePredictionD
 									{key}:
 								</span>
 								<span className="text-sm text-zinc-600 dark:text-zinc-400 break-all font-mono bg-zinc-100 dark:bg-zinc-900 p-2 rounded">
-									{typeof value === "object" ? JSON.stringify(value, null, 2) : String(value)}
+									{formatUnknownValue(value)}
 								</span>
 							</div>
 						))}
@@ -120,7 +128,7 @@ export function ReplicatePredictionDetail({ predictionId }: ReplicatePredictionD
 }
 
 interface OutputRendererProps {
-	output: any;
+	output: unknown;
 }
 
 function OutputRenderer({ output }: OutputRendererProps) {
@@ -128,22 +136,25 @@ function OutputRenderer({ output }: OutputRendererProps) {
 		return (
 			<div className="space-y-4">
 				{output.map((item, index) => {
-					if (item && typeof item === "object" && "type" in item) {
+					if (isRecord(item)) {
 						if (item.type === "text") {
 							return (
 								<div key={index} className="prose dark:prose-invert max-w-none">
-									{item.text}
+									{getStringProperty(item, "text")}
 								</div>
 							);
 						}
-						if (item.type === "image_url" && item.image_url?.url) {
-							return <OutputItem key={index} item={item.image_url.url} />;
+						if (item.type === "image_url") {
+							const url = getStringProperty(item.image_url, "url");
+							if (url) return <OutputItem key={index} item={url} />;
 						}
-						if (item.type === "audio_url" && item.audio_url?.url) {
-							return <OutputItem key={index} item={item.audio_url.url} />;
+						if (item.type === "audio_url") {
+							const url = getStringProperty(item.audio_url, "url");
+							if (url) return <OutputItem key={index} item={url} />;
 						}
-						if (item.type === "video_url" && item.video_url?.url) {
-							return <OutputItem key={index} item={item.video_url.url} />;
+						if (item.type === "video_url") {
+							const url = getStringProperty(item.video_url, "url");
+							if (url) return <OutputItem key={index} item={url} />;
 						}
 					}
 					return <OutputItem key={index} item={item} />;
@@ -158,22 +169,25 @@ function OutputRenderer({ output }: OutputRendererProps) {
 
 	return (
 		<pre className="bg-zinc-100 dark:bg-zinc-900 p-4 rounded-lg overflow-auto text-sm font-mono">
-			{JSON.stringify(output, null, 2)}
+			{formatUnknownValue(output)}
 		</pre>
 	);
 }
 
 interface OutputItemProps {
-	item: any;
+	item: unknown;
 }
 
 function OutputItem({ item }: OutputItemProps) {
-	const url = typeof item === "string" ? item : item?.url || item?.uri;
+	const url =
+		typeof item === "string"
+			? item
+			: getStringProperty(item, "url") || getStringProperty(item, "uri");
 
 	if (!url) {
 		return (
 			<pre className="bg-zinc-100 dark:bg-zinc-900 p-4 rounded-lg overflow-auto text-sm font-mono">
-				{JSON.stringify(item, null, 2)}
+				{formatUnknownValue(item)}
 			</pre>
 		);
 	}

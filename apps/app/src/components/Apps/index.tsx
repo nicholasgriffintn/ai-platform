@@ -1,4 +1,5 @@
 import { Sparkles } from "lucide-react";
+import type { DynamicAppCatalogItem as AppListItem } from "@assistant/schemas";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router";
 
@@ -17,7 +18,6 @@ import { AppCard } from "./AppCard";
 import { DynamicForm } from "./DynamicForm";
 import { ResponseRenderer } from "./ResponseRenderer";
 import { groupAppsByCategory } from "./utils";
-import type { AppListItem } from "~/types/apps";
 
 export const DynamicApps = () => {
 	const { isAuthenticated, isAuthenticationLoading, isPro } = useChatStore();

@@ -1,4 +1,4 @@
-import type { ModelConfig, ModelConfigItem, ModelModalities } from "~/types";
+import type { ModelConfig, ModelConfigItem, ModelModalities } from "@assistant/schemas";
 import { availableModalities } from "~/constants/models";
 
 const DEFAULT_MODALITIES: ModelModalities = {

@@ -1,16 +1,12 @@
 import { KVCache } from "~/lib/cache";
 import { RepositoryManager } from "~/repositories";
 import type {
-	IEnv,
-	IUser,
-	IUserSettings,
 	ModelConfig,
 	ModelConfigItem,
 	ModelModalities,
 	ModelModality,
-	ResearchProviderName,
-	SearchProviderName,
-} from "~/types";
+} from "@assistant/schemas";
+import type { IEnv, IUser, IUserSettings, ResearchProviderName, SearchProviderName } from "~/types";
 import { getLogger } from "~/utils/logger";
 import { anthropicModelConfig } from "~/data-model/models/anthropic";
 import { azureModelConfig } from "~/data-model/models/azure";

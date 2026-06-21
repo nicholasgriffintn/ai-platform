@@ -12,12 +12,12 @@ import {
 import { getModelDisplayName } from "~/lib/models";
 import { formatProviderLabel } from "~/lib/provider-display";
 import { cn } from "~/lib/utils";
-import type { ModelConfigItem } from "~/types";
+import type { ModelCatalogItem, ModelConfigItem } from "@assistant/schemas";
 import { ModelOption } from "./ModelOption";
 
 interface ModelsListProps {
-	models: ModelConfigItem[];
-	featuredModelIds: Record<string, ModelConfigItem>;
+	models: ModelCatalogItem[];
+	featuredModelIds: Record<string, ModelCatalogItem>;
 	isDisabled?: boolean;
 	isPro: boolean;
 	selectedId?: string | null;
@@ -37,7 +37,7 @@ interface ProviderListEntry {
 
 const FEATURED_PROVIDER_KEY = "featured";
 
-function getSelectedModelProvider(models: ModelConfigItem[], selectedId?: string | null) {
+function getSelectedModelProvider(models: ModelCatalogItem[], selectedId?: string | null) {
 	if (!selectedId) return null;
 	return models.find((model) => model.id === selectedId)?.provider || null;
 }
@@ -74,11 +74,11 @@ export function ModelsList({
 				acc[model.id] = model;
 				return acc;
 			},
-			{} as Record<string, ModelConfigItem>,
+			{} as Record<string, ModelCatalogItem>,
 		);
 	}, [models]);
 
-	const handleModelSelect = (modelId: string, modelInfo: ModelConfigItem) => {
+	const handleModelSelect = (modelId: string, modelInfo: ModelCatalogItem) => {
 		trackFeatureUsage("model_selected", {
 			model_id: modelId,
 			previous_model_id: selectedId || "none",
@@ -107,7 +107,7 @@ export function ModelsList({
 				acc[provider].push(model);
 				return acc;
 			},
-			{} as Record<string, ModelConfigItem[]>,
+			{} as Record<string, ModelCatalogItem[]>,
 		);
 	}, [models]);
 

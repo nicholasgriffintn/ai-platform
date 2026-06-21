@@ -8,4 +8,4 @@ export type {
 	TrainingModelFamily,
 	TrainingProviderId,
 	StartTrainingJobRequest,
-} from "~/types/training";
+} from "@assistant/schemas";

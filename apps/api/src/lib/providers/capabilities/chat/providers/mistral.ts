@@ -1,5 +1,6 @@
 import { getModelConfigByMatchingModel } from "~/lib/providers/models";
-import type { ChatCompletionParameters, ModelConfigItem } from "~/types";
+import type { ModelConfigItem } from "@assistant/schemas";
+import type { ChatCompletionParameters } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { createFimParameters, isFimCompletionRequest } from "~/utils/parameters";
 import { BaseProvider } from "./base";

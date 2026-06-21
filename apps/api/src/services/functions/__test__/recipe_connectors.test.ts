@@ -53,6 +53,7 @@ function createToolContext(
 			from?: string;
 			to?: string;
 		};
+		optionOverrides?: Record<string, unknown>;
 	} = {},
 ) {
 	const env = {} as IEnv;
@@ -112,6 +113,7 @@ function createToolContext(
 										},
 									}),
 							...(params.allowedConnectorProviders === undefined ? {} : {}),
+							...params.optionOverrides,
 						},
 					}),
 		},
@@ -177,6 +179,34 @@ describe("recipe connector tools", () => {
 		});
 		expect(mocks.executeRecipeConnectorOperation).not.toHaveBeenCalled();
 	});
+
+	it.each([{ source: "web" }, { sms: { enabled: "yes" } }])(
+		"keeps recipe connector scope when unrelated request options are malformed: %j",
+		async (optionOverrides) => {
+			const result = await use_recipe_connector.execute(
+				{
+					provider: "gmail",
+					operation: "search_messages",
+					params: { query: "from:example" },
+				},
+				createToolContext({
+					allowedConnectorProviders: ["notion"],
+					optionOverrides,
+				}),
+			);
+
+			expect(result).toEqual({
+				status: "error",
+				name: "use_recipe_connector",
+				content: "The gmail connector is not enabled for this recipe.",
+				data: {
+					provider: "gmail",
+					allowedConnectorProviders: ["notion"],
+				},
+			});
+			expect(mocks.executeRecipeConnectorOperation).not.toHaveBeenCalled();
+		},
+	);
 
 	it("allows connector operations included in the active recipe scope", async () => {
 		const result = await use_recipe_connector.execute(

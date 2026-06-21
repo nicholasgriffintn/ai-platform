@@ -1,4 +1,5 @@
-import type { ModelConfigItem, VerbosityLevel } from "~/types";
+import type { ModelConfigItem } from "@assistant/schemas";
+import type { VerbosityLevel } from "~/types";
 
 const PROVIDER_VERBOSITY_LEVELS = new Set<VerbosityLevel>(["low", "medium", "high"]);
 

@@ -1,8 +1,6 @@
-import type {
-	ChatSettings,
-	HostedToolSettings as HostedToolSettingsValue,
-	ModelConfigItem,
-} from "~/types";
+import type { ModelConfigItem } from "@assistant/schemas";
+
+import type { ChatSettings, HostedToolSettings as HostedToolSettingsValue } from "~/types";
 import { CompactSettingSelect } from "./CompactSettingControls";
 
 interface HostedToolSettingsProps {

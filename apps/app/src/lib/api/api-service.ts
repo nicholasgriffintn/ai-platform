@@ -1,10 +1,11 @@
 import { useToolsStore } from "~/state/stores/toolsStore";
-import type { Conversation, Message, ModelConfig } from "~/types";
 import type {
 	CreateAgentInput,
 	MarkdownConversionOptions,
+	ModelConfig,
 	UpdateAgentInput,
 } from "@assistant/schemas";
+import type { Conversation, Message } from "~/types";
 import { formatMessageContent } from "../messages";
 import { AgentService } from "./services/agent-service";
 import { AudioService, type SpeechGenerationResponse } from "./services/audio-service";

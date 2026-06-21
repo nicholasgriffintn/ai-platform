@@ -1,10 +1,10 @@
 import { FileText } from "lucide-react";
 import { useCallback } from "react";
+import type { Podcast } from "@assistant/schemas";
 
 import { TranscriptViewer } from "~/components/Apps/Podcasts";
 import { Button } from "~/components/ui";
 import { Markdown } from "~/components/ui/Markdown";
-import type { Podcast } from "~/types/podcast";
 
 export function PodcastView({ podcast }: { podcast: Podcast }) {
 	const handleDownloadTranscript = useCallback(() => {
@@ -114,11 +114,13 @@ export function PodcastView({ podcast }: { podcast: Podcast }) {
 									<TranscriptViewer
 										transcript={podcast.transcript}
 										speakerNames={podcast.transcript.segments.reduce(
-											(acc, segment) => {
-												const speakerId = segment.speaker;
+											(acc, segment, index) => {
+												const speakerId = segment.speaker ?? `Segment ${index + 1}`;
 												if (!acc[speakerId]) {
-													const speakerNum = speakerId.replace("SPEAKER_", "");
-													acc[speakerId] = `Speaker ${Number.parseInt(speakerNum) + 1}`;
+													const speakerNum = speakerId.startsWith("SPEAKER_")
+														? Number.parseInt(speakerId.replace("SPEAKER_", ""))
+														: index;
+													acc[speakerId] = `Speaker ${speakerNum + 1}`;
 												}
 												return acc;
 											},

@@ -1,4 +1,4 @@
-import type { ModelConfig } from "~/types";
+import type { ModelConfig } from "@assistant/schemas";
 
 export const githubModelsConfig: ModelConfig = {
 	"jamba-1-5-mini-gh": {

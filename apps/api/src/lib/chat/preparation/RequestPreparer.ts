@@ -14,7 +14,8 @@ import {
 import { messagesMatchStoredPrefix } from "~/lib/chat/messageComparison";
 import { findModelConfig } from "~/lib/providers/models";
 import { getSystemPrompt } from "~/lib/prompts";
-import type { ChatMode, CoreChatOptions, Message, ModelConfigInfo, Platform } from "~/types";
+import type { ModelConfigInfo } from "@assistant/schemas";
+import type { ChatMode, CoreChatOptions, Message, Platform } from "~/types";
 import { generateId } from "~/utils/id";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import type { ReplicateModel, ReplicateInputField } from "~/types/replicate";
+import type { ReplicateModel, ReplicateInputField } from "@assistant/schemas";
 
 interface ReplicateModelFormProps {
 	model: ReplicateModel;
@@ -109,8 +109,8 @@ function FormField({ field, value, onChange, error }: FormFieldProps) {
 				>
 					<option value="">Select...</option>
 					{field.enum!.map((option) => (
-						<option key={option} value={option}>
-							{option}
+						<option key={String(option)} value={String(option)}>
+							{String(option)}
 						</option>
 					))}
 				</select>

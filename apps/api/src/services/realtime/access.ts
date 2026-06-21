@@ -1,5 +1,6 @@
 import { listModels } from "~/services/models";
-import type { IEnv, ModelConfigItem } from "~/types";
+import type { ModelConfigItem } from "@assistant/schemas";
+import type { IEnv } from "~/types";
 
 function matchesRequestedModel(
 	requestedModel: string,

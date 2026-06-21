@@ -1,5 +1,18 @@
+import type {
+	AppSchema,
+	DynamicAppsResponse,
+	ListNotesResponse,
+	ListPodcastsResponse,
+	Note,
+	NoteCreateRequest,
+	NoteDetailResponse,
+	NoteFormatResponse,
+	NoteUpdateRequest,
+	Podcast,
+	PodcastDetailResponse,
+	PodcastListItem,
+} from "@assistant/schemas";
 import type { AppDataItem } from "~/components/Apps/ContentRenderers";
-import type { AppSchema, DynamicAppsResponse } from "~/types/apps";
 import type {
 	AnalyseArticleParams,
 	AnalyseArticleResponse,
@@ -13,15 +26,7 @@ import type {
 	SummariseArticleParams,
 	SummariseArticleResponse,
 } from "~/types/article";
-import type { Note } from "~/types/note";
-import type {
-	Podcast,
-	PodcastResponse,
-	PodcastsResponse,
-	ProcessPodcastParams,
-	UploadPodcastParams,
-	UploadResponse,
-} from "~/types/podcast";
+import type { ProcessPodcastParams, UploadPodcastParams, UploadResponse } from "~/types/podcast";
 import { apiService } from "./api-service";
 import { fetchApi, returnFetchedData } from "./fetch-wrapper";
 
@@ -171,7 +176,7 @@ export const executeDynamicApp = async (
 	}
 };
 
-export const fetchPodcasts = async (): Promise<Podcast[]> => {
+export const fetchPodcasts = async (): Promise<PodcastListItem[]> => {
 	let headers = {};
 	try {
 		headers = await apiService.getHeaders();
@@ -188,7 +193,7 @@ export const fetchPodcasts = async (): Promise<Podcast[]> => {
 		throw new Error(`Failed to fetch podcasts: ${response.statusText}`);
 	}
 
-	const data = await returnFetchedData<PodcastsResponse>(response);
+	const data = await returnFetchedData<ListPodcastsResponse>(response);
 	return data.podcasts || [];
 };
 
@@ -209,7 +214,7 @@ export const fetchPodcast = async (id: string): Promise<Podcast> => {
 		throw new Error(`Failed to fetch podcast: ${response.statusText}`);
 	}
 
-	const data = await returnFetchedData<PodcastResponse>(response);
+	const data = await returnFetchedData<PodcastDetailResponse>(response);
 	return data.podcast;
 };
 
@@ -434,7 +439,7 @@ export const fetchNotes = async (): Promise<Note[]> => {
 		throw new Error(`Failed to fetch notes: ${response.statusText}`);
 	}
 
-	const data = await returnFetchedData<{ notes: Note[] }>(response);
+	const data = await returnFetchedData<ListNotesResponse>(response);
 	return data.notes;
 };
 
@@ -456,15 +461,11 @@ export const fetchNote = async (id: string): Promise<Note> => {
 		throw new Error(errorData?.message || `Failed to fetch note: ${response.statusText}`);
 	}
 
-	const data = await returnFetchedData<{ note: Note }>(response);
+	const data = await returnFetchedData<NoteDetailResponse>(response);
 	return data.note;
 };
 
-export const createNote = async (params: {
-	title: string;
-	content: string;
-	metadata?: any;
-}): Promise<Note> => {
+export const createNote = async (params: NoteCreateRequest): Promise<Note> => {
 	let headers = {};
 	try {
 		headers = await apiService.getHeaders();
@@ -483,17 +484,11 @@ export const createNote = async (params: {
 		throw new Error(errorData?.message || `Failed to create note: ${response.statusText}`);
 	}
 
-	const data = await returnFetchedData<{ note: Note }>(response);
+	const data = await returnFetchedData<NoteDetailResponse>(response);
 	return data.note;
 };
 
-export const updateNote = async (params: {
-	id: string;
-	title: string;
-	content: string;
-	metadata?: any;
-	options?: Record<string, any>;
-}): Promise<Note> => {
+export const updateNote = async (params: NoteUpdateRequest & { id: string }): Promise<Note> => {
 	let headers = {};
 	try {
 		headers = await apiService.getHeaders();
@@ -514,7 +509,7 @@ export const updateNote = async (params: {
 		throw new Error(errorData?.message || `Failed to update note: ${response.statusText}`);
 	}
 
-	const data = await returnFetchedData<{ note: Note }>(response);
+	const data = await returnFetchedData<NoteDetailResponse>(response);
 	return data.note;
 };
 
@@ -556,7 +551,7 @@ export const formatNoteAPI = async (id: string, prompt?: string): Promise<string
 		throw new Error(errorData?.message || `Failed to format note: ${response.statusText}`);
 	}
 
-	const data = await returnFetchedData<{ content: string }>(response);
+	const data = await returnFetchedData<NoteFormatResponse>(response);
 	return data.content;
 };
 

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState, type MutableRefObject } from "react";
+import type { NoteMetadata } from "@assistant/schemas";
 import { toast } from "sonner";
 
 import { splitTitleAndContent } from "~/lib/text-utils";
@@ -12,11 +13,11 @@ interface UseAutoSaveOptions {
 	onSave: (
 		title: string,
 		content: string,
-		metadata?: Record<string, any>,
+		metadata?: NoteMetadata,
 		options?: SaveOptions,
 	) => Promise<string>;
-	tabInfo?: any;
-	metadata: Record<string, any>;
+	tabInfo?: NoteMetadata["tabSource"];
+	metadata: NoteMetadata;
 	delay?: number;
 	saveOptionsRef?: MutableRefObject<SaveOptions | null>;
 }

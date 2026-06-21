@@ -1,4 +1,4 @@
-import type { ModelConfigItem } from "~/types";
+import type { ModelConfigItem } from "@assistant/schemas";
 import type { VerbosityLevel } from "~/types/chat";
 
 export const DEFAULT_VERBOSITY_LEVELS: VerbosityLevel[] = ["low", "medium", "high"];

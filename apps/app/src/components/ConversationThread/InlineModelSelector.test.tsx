@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { useModels } from "~/hooks/useModels";
 import { useWebLLMModels } from "~/hooks/useWebLLMModels";
 import { useChatStore } from "~/state/stores/chatStore";
-import type { ModelConfig } from "~/types";
+import type { ModelConfig } from "@assistant/schemas";
 import { InlineModelSelector } from "./InlineModelSelector";
 
 vi.mock("~/hooks/useModels", () => ({

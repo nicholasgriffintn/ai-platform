@@ -1,4 +1,4 @@
-import type { ModelConfigItem } from "~/types";
+import type { ModelCatalogItem } from "@assistant/schemas";
 import { getModelDisplayName } from "./models";
 
 const BEDROCK_PROVIDER = "bedrock";
@@ -20,12 +20,12 @@ type BedrockRegionCode = keyof typeof BEDROCK_REGION_LABELS;
 export interface ModelRegionOption {
 	id: string;
 	label: string;
-	model: ModelConfigItem;
+	model: ModelCatalogItem;
 	region: BedrockRegionCode;
 }
 
 export interface RegionalModelListEntry {
-	model: ModelConfigItem;
+	model: ModelCatalogItem;
 	regionOptions: ModelRegionOption[];
 }
 
@@ -34,7 +34,7 @@ interface BedrockRegionInfo {
 	region: BedrockRegionCode;
 }
 
-function getBedrockRegionInfo(model: ModelConfigItem): BedrockRegionInfo | null {
+function getBedrockRegionInfo(model: ModelCatalogItem): BedrockRegionInfo | null {
 	if (model.provider !== BEDROCK_PROVIDER) {
 		return null;
 	}
@@ -71,14 +71,14 @@ function getPreferredRegionOption(options: ModelRegionOption[]) {
 	return [...options].sort(compareRegionOptions)[0];
 }
 
-export function getRegionalModelDisplayName(model: ModelConfigItem) {
+export function getRegionalModelDisplayName(model: ModelCatalogItem) {
 	return getModelDisplayName(model)
 		.replace(REGION_SUFFIX_REGEX, "")
 		.replace(REGION_VENDOR_PREFIX_REGEX, "")
 		.trim();
 }
 
-function toRegionOption(model: ModelConfigItem, region: BedrockRegionCode): ModelRegionOption {
+function toRegionOption(model: ModelCatalogItem, region: BedrockRegionCode): ModelRegionOption {
 	return {
 		id: model.id,
 		label: BEDROCK_REGION_LABELS[region],
@@ -101,7 +101,9 @@ function createGroupedRegionalEntry(options: ModelRegionOption[]): RegionalModel
 	};
 }
 
-export function collapseRegionalModelVariants(models: ModelConfigItem[]): RegionalModelListEntry[] {
+export function collapseRegionalModelVariants(
+	models: ModelCatalogItem[],
+): RegionalModelListEntry[] {
 	const passthroughEntries: RegionalModelListEntry[] = [];
 	const bedrockGroups = new Map<string, ModelRegionOption[]>();
 

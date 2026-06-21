@@ -1,22 +1,34 @@
+import type {
+	Note,
+	NoteCreateRequest,
+	NoteFormatResponse,
+	NoteUpdateRequest,
+} from "@assistant/schemas";
+
 import { sanitiseInput } from "~/lib/chat/utils";
 import { getAuxiliaryModel } from "~/lib/providers/models";
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import { resolveServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
+import type { AppData } from "~/repositories/AppDataRepository";
 import type { ChatRole, IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";
+import { isRecord } from "~/utils/objects";
 import { safeParseJson } from "../../../utils/json";
 
 const logger = getLogger();
 
-export interface Note {
-	id: string;
-	title: string;
-	content: string;
-	createdAt: string;
-	updatedAt: string;
-	metadata?: Record<string, any>;
+function mapAppDataToNote(entry: AppData): Note {
+	const data = safeParseJson<Record<string, unknown>>(entry.data) ?? {};
+	return {
+		id: entry.id,
+		title: typeof data.title === "string" ? data.title : "",
+		content: typeof data.content === "string" ? data.content : "",
+		createdAt: entry.created_at,
+		updatedAt: entry.updated_at,
+		metadata: isRecord(data.metadata) ? data.metadata : undefined,
+	};
 }
 
 export async function listNotes({
@@ -37,17 +49,7 @@ export async function listNotes({
 	const repo = serviceContext.repositories.appData;
 	const list = await repo.getAppDataByUserAndApp(userId, "notes");
 
-	return list.map((entry) => {
-		let data = safeParseJson(entry.data) ?? {};
-		return {
-			id: entry.id,
-			title: data.title,
-			content: data.content,
-			createdAt: entry.created_at,
-			updatedAt: entry.updated_at,
-			metadata: data.metadata,
-		};
-	});
+	return list.map(mapAppDataToNote);
 }
 
 export async function getNote({
@@ -74,15 +76,7 @@ export async function getNote({
 		throw new AssistantError("Note not found", ErrorType.NOT_FOUND);
 	}
 
-	let data = safeParseJson(entry.data) ?? {};
-	return {
-		id: entry.id,
-		title: data.title,
-		content: data.content,
-		createdAt: entry.created_at,
-		updatedAt: entry.updated_at,
-		metadata: data.metadata,
-	};
+	return mapAppDataToNote(entry);
 }
 
 export async function createNote({
@@ -94,7 +88,7 @@ export async function createNote({
 	context?: ServiceContext;
 	env?: IEnv;
 	user: IUser;
-	data: { title: string; content: string; metadata?: Record<string, any> };
+	data: NoteCreateRequest;
 }): Promise<Note> {
 	if (!user?.id) {
 		throw new AssistantError("User data required", ErrorType.PARAMS_ERROR);
@@ -125,16 +119,11 @@ export async function createNote({
 	const entry = await repo.createAppDataWithItem(user.id, "notes", noteId, "note", appData);
 
 	const full = await repo.getAppDataById(entry.id);
-	let parsed = safeParseJson(full!.data) ?? {};
+	if (!full) {
+		throw new AssistantError("Created note could not be loaded", ErrorType.UNKNOWN_ERROR);
+	}
 
-	return {
-		id: full!.id,
-		title: parsed.title,
-		content: parsed.content,
-		createdAt: full!.created_at,
-		updatedAt: full!.updated_at,
-		metadata: parsed.metadata,
-	};
+	return mapAppDataToNote(full);
 }
 
 export async function updateNote({
@@ -148,12 +137,7 @@ export async function updateNote({
 	env?: IEnv;
 	user: IUser;
 	noteId: string;
-	data: {
-		title: string;
-		content: string;
-		metadata?: Record<string, any>;
-		options?: Record<string, any>;
-	};
+	data: NoteUpdateRequest;
 }): Promise<Note> {
 	if (!user?.id || !noteId) {
 		throw new AssistantError("Note ID and user ID are required", ErrorType.PARAMS_ERROR);
@@ -169,26 +153,20 @@ export async function updateNote({
 		throw new AssistantError("Note not found", ErrorType.NOT_FOUND);
 	}
 
-	const parsedExistingData = safeParseJson(existing.data) ?? {};
-	const existingMetadata =
-		typeof parsedExistingData.metadata === "object" && !Array.isArray(parsedExistingData.metadata)
-			? parsedExistingData.metadata
-			: {};
+	const parsedExistingData = safeParseJson<Record<string, unknown>>(existing.data) ?? {};
+	const existingMetadata = isRecord(parsedExistingData.metadata) ? parsedExistingData.metadata : {};
 
 	const sanitisedTitle = sanitiseInput(data.title);
 	const sanitisedContent = sanitiseInput(data.content);
 
-	const incomingMetadata =
-		data.metadata && typeof data.metadata === "object" && !Array.isArray(data.metadata)
-			? data.metadata
-			: {};
+	const incomingMetadata = isRecord(data.metadata) ? data.metadata : {};
 	const hasExistingMetadata = existingMetadata && Object.keys(existingMetadata).length > 0;
 	const shouldRegenerateMetadata = Boolean(data.options?.refreshMetadata) || !hasExistingMetadata;
 
 	const wordCount = sanitisedContent.split(/\s+/).length;
-	const readingTime = wordCount
-		? Math.max(1, Math.ceil(wordCount / 200))
-		: existingMetadata.readingTime || 1;
+	const existingReadingTime =
+		typeof existingMetadata.readingTime === "number" ? existingMetadata.readingTime : 1;
+	const readingTime = wordCount ? Math.max(1, Math.ceil(wordCount / 200)) : existingReadingTime;
 
 	let mergedMetadata = {
 		...existingMetadata,
@@ -233,16 +211,11 @@ export async function updateNote({
 
 	await repo.updateAppData(noteId, finalData);
 	const updated = await repo.getAppDataById(noteId);
-	let parsedData = safeParseJson(updated!.data) ?? {};
+	if (!updated) {
+		throw new AssistantError("Updated note could not be loaded", ErrorType.UNKNOWN_ERROR);
+	}
 
-	return {
-		id: updated!.id,
-		title: parsedData.title,
-		content: parsedData.content,
-		createdAt: updated!.created_at,
-		updatedAt: updated!.updated_at,
-		metadata: parsedData.metadata,
-	};
+	return mapAppDataToNote(updated);
 }
 
 export async function deleteNote({
@@ -284,7 +257,7 @@ export async function formatNote({
 	user: IUser;
 	noteId: string;
 	prompt?: string;
-}): Promise<{ content: string }> {
+}): Promise<NoteFormatResponse> {
 	const serviceContext = resolveServiceContext({ context, env, user });
 	serviceContext.ensureDatabase();
 	const runtimeEnv = serviceContext.env as IEnv;
@@ -388,14 +361,14 @@ async function generateNoteMetadata(
 	user: IUser,
 	title: string,
 	content: string,
-	existingMetadata?: Record<string, any>,
-): Promise<Record<string, any>> {
-	const tabSource = existingMetadata?.tabSource;
+	existingMetadata?: Record<string, unknown>,
+): Promise<Record<string, unknown>> {
+	const tabSource = isRecord(existingMetadata?.tabSource) ? existingMetadata.tabSource : undefined;
 	const tabSourceText = tabSource
 		? `\n\nNote: This content was captured from tab audio recording:
-- URL: ${tabSource.url || "Unknown"}  
-- Page Title: ${tabSource.title || "Unknown"}
-- Captured: ${tabSource.timestamp}`
+- URL: ${typeof tabSource.url === "string" ? tabSource.url : "Unknown"}  
+- Page Title: ${typeof tabSource.title === "string" ? tabSource.title : "Unknown"}
+- Captured: ${typeof tabSource.timestamp === "string" ? tabSource.timestamp : "Unknown"}`
 		: "";
 
 	const prompt = `Analyze this note and generate metadata in JSON format. Include:
@@ -434,8 +407,10 @@ Return only valid JSON without any markdown formatting.`;
 			(Array.isArray(aiResult.choices) && aiResult.choices[0]?.message?.content) ||
 			(typeof aiResult === "string" ? aiResult : "{}");
 
-		return safeParseJson(response);
+		return safeParseJson<Record<string, unknown>>(response) ?? {};
 	} catch (error) {
 		logger.error("Error generating note metadata", { error });
 	}
+
+	return {};
 }

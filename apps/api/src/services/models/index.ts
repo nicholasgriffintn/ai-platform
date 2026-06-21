@@ -8,7 +8,8 @@ import {
 	getModelsByModality,
 	getModelsByOutputModality,
 } from "~/lib/providers/models";
-import type { IEnv, ModelConfig } from "~/types";
+import type { ModelConfig } from "@assistant/schemas";
+import type { IEnv } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
 function includeModelIds(models: ModelConfig): ModelConfig {

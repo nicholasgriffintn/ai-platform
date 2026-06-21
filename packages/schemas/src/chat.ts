@@ -430,10 +430,17 @@ export function parseChatRequestOptions(options: unknown): ChatRequestOptions | 
 	return parsed.success ? parsed.data : undefined;
 }
 
+const recipeChatRequestOptionsEnvelopeSchema = z
+	.object({
+		recipe: recipeChatRequestOptionsSchema.optional(),
+	})
+	.passthrough();
+
 export function readRecipeChatRequestOptions(
 	options: unknown,
 ): RecipeChatRequestOptions | undefined {
-	return parseChatRequestOptions(options)?.recipe;
+	const parsed = recipeChatRequestOptionsEnvelopeSchema.safeParse(options);
+	return parsed.success ? parsed.data.recipe : undefined;
 }
 
 export const getChatCompletionParamsSchema = z.object({

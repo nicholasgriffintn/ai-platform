@@ -1,4 +1,4 @@
-import type { ModelConfig } from "~/types";
+import type { ModelConfig } from "@assistant/schemas";
 
 const rawOllamaModelConfig: ModelConfig = {
 	"ollama-gemma3-1b": {

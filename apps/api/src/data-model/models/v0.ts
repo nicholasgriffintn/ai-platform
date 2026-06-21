@@ -1,4 +1,4 @@
-import type { ModelConfig } from "~/types";
+import type { ModelConfig } from "@assistant/schemas";
 
 export const v0ModelConfig: ModelConfig = {
 	"v0-1.0-md": {

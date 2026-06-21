@@ -1,4 +1,4 @@
-import type { ModelConfig } from "~/types";
+import type { ModelConfig } from "@assistant/schemas";
 
 export const googleAiStudioModelConfig: ModelConfig = {
 	"gemini-3-flash-preview": {

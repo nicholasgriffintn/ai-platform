@@ -1,4 +1,4 @@
-import type { InputSchemaInputSchemaDescriptor, ModelConfig } from "~/types";
+import type { InputSchemaInputSchemaDescriptor, ModelConfig } from "@assistant/schemas";
 import { createModelConfig, createModelConfigObject } from "~/lib/providers/models/utils";
 
 const PROVIDER = "openai";

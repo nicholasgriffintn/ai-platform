@@ -1,5 +1,6 @@
 import { listFunctionTools } from "~/services/functions";
-import type { ChatCompletionParameters, ModelConfigItem } from "~/types";
+import type { ModelConfigItem } from "@assistant/schemas";
+import type { ChatCompletionParameters } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { omitNullishValues } from "~/utils/objects";
 import { resolveReasoningModel } from "../lib/providers/models/reasoning";

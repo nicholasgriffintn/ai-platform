@@ -55,21 +55,7 @@ addRoute(app, "post", "/", {
 	bodySchema: createAgentSchema,
 	responses: { 200: { description: "Success", schema: apiResponseSchema } },
 	handler: async ({ serviceContext, body }) => {
-		return createAgent(serviceContext, {
-			name: body.name,
-			description: body.description ?? "",
-			avatar_url: body.avatar_url ?? null,
-			servers: body.servers ?? [],
-			model: body.model,
-			temperature: body.temperature,
-			max_steps: body.max_steps,
-			system_prompt: body.system_prompt,
-			few_shot_examples: body.few_shot_examples,
-			enabled_tools: body.enabled_tools,
-			team_id: body.team_id,
-			team_role: body.team_role,
-			is_team_agent: body.is_team_agent,
-		});
+		return createAgent(serviceContext, body);
 	},
 });
 

@@ -42,11 +42,10 @@ import {
 } from "~/state/contexts/LoadingContext";
 import { useChatStore } from "~/state/stores/chatStore";
 import { useUIStore } from "~/state/stores/uiStore";
+import type { ModelConfigItem, ModelModality } from "@assistant/schemas";
 import type {
 	ChatMode,
 	ChatSettings,
-	ModelConfigItem,
-	ModelModality,
 	ModelSelectionChangeHandler,
 	ModelSelectorScope,
 } from "~/types";

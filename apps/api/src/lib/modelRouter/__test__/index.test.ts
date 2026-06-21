@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { IEnv, IUser, ModelConfigItem, PromptRequirements } from "~/types";
+import type { ModelConfigItem, PromptRequirements } from "@assistant/schemas";
+import type { IEnv, IUser } from "~/types";
 import { ModelRouter } from "../index";
 
 const mockPromptAnalyzer = vi.hoisted(() => ({

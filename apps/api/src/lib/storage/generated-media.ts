@@ -1,4 +1,5 @@
-import type { IEnv, ModelModalities } from "~/types";
+import type { ModelModalities } from "@assistant/schemas";
+import type { IEnv } from "~/types";
 import { resolveServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
 import { StorageService } from "~/lib/storage";
 import { base64ToBuffer } from "~/utils/base64";

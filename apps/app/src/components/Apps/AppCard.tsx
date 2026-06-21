@@ -1,8 +1,8 @@
 import { Crown, Lock } from "lucide-react";
+import type { DynamicAppCatalogItem as AppListItem } from "@assistant/schemas";
 import { Card } from "~/components/ui";
 import { cn } from "~/lib/utils";
 import { useChatStore } from "~/state/stores/chatStore";
-import type { AppListItem } from "~/types/apps";
 import { getBadgeClass, getCardGradient, getIcon, getIconContainerClass } from "./utils";
 
 interface AppCardProps {

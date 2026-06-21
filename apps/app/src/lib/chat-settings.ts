@@ -1,4 +1,5 @@
-import type { ChatSettings, ModelConfigItem } from "~/types";
+import type { ModelConfigItem } from "@assistant/schemas";
+import type { ChatSettings } from "~/types";
 import { getDefaultReasoningEffort } from "./reasoning";
 import { getDefaultVerbosity } from "./verbosity";
 

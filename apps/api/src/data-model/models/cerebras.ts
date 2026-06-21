@@ -1,4 +1,4 @@
-import type { ModelConfig } from "~/types";
+import type { ModelConfig } from "@assistant/schemas";
 import { createModelConfig, createModelConfigObject } from "~/lib/providers/models/utils";
 
 const PROVIDER = "cerebras";

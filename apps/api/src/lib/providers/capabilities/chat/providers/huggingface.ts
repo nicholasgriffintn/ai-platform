@@ -1,4 +1,5 @@
-import type { ChatCompletionParameters, ModelConfigItem } from "~/types";
+import type { ModelConfigItem } from "@assistant/schemas";
+import type { ChatCompletionParameters } from "~/types";
 import type { AsyncInvocationMetadata } from "~/lib/async/asyncInvocation";
 import type { FetchAIResponseOptions } from "../../../lib/fetch";
 import { createAsyncInvocationMetadata } from "~/lib/async/asyncInvocation";

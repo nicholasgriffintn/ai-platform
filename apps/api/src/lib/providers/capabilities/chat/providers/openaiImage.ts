@@ -1,4 +1,5 @@
-import type { ChatCompletionParameters, ModelConfigItem } from "~/types";
+import type { ModelConfigItem } from "@assistant/schemas";
+import type { ChatCompletionParameters } from "~/types";
 import { buildInputSchemaInput } from "~/utils/inputSchema";
 
 export interface OpenAIImageParams {

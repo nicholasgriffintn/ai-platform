@@ -73,6 +73,7 @@ export * from "./models";
 export * from "./memories";
 export * from "./plans";
 export * from "./realtime";
+export * from "./replicate";
 export * from "./reasoning";
 export * from "./sandbox";
 export * from "./search";

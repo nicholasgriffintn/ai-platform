@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
-import { SANDBOX_TIMEOUT_DEFAULT_SECONDS } from "~/types/sandbox";
+import { SANDBOX_TIMEOUT_DEFAULT_SECONDS } from "@assistant/schemas";
 import { SandboxChatModeControls } from "./SandboxChatModeControls";
 
 const defaultProps = {

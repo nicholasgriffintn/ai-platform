@@ -12,7 +12,7 @@ import {
 	sortModelsByDisplayName,
 } from "~/lib/models";
 import { useChatStore } from "~/state/stores/chatStore";
-import type { ModelConfigItem, ModelModality } from "~/types";
+import type { ModelConfigItem, ModelModality } from "@assistant/schemas";
 
 interface UseConversationModelOptionsOptions {
 	excludeCurrentModel?: boolean;

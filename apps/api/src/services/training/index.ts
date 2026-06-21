@@ -1,4 +1,14 @@
-import { getBedrockImportModelSourceUriError } from "@assistant/schemas";
+import {
+	getBedrockImportModelSourceUriError,
+	type DeployTrainingModelRequest,
+	type TrainingDeployment,
+	type TrainingDeploymentDeleteResponse,
+	type TrainingJob,
+	type TrainingJobEvent,
+	type TrainingModelDefinition,
+	type TrainingProviderId,
+	type StartTrainingJobRequest,
+} from "@assistant/schemas";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { exportTrainingExamplesToS3 } from "~/lib/providers/capabilities/training/exportDataset";
@@ -9,16 +19,6 @@ import {
 import { resolveTrainingDeploymentEnvironment } from "~/lib/providers/capabilities/training/trainingDeploymentEnvironment";
 import { resolveTrainingHyperparameters } from "~/lib/providers/capabilities/training/trainingHyperparameters";
 import { resolveTrainingSource } from "~/lib/providers/capabilities/training/trainingSourceArchives";
-import type {
-	DeployTrainingModelRequest,
-	TrainingDeployment,
-	TrainingDeploymentDeleteResponse,
-	TrainingJob,
-	TrainingJobEvent,
-	TrainingModelDefinition,
-	TrainingProviderId,
-	StartTrainingJobRequest,
-} from "~/types/training";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import {
 	deployTrainingWorkerModel,

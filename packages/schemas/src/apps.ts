@@ -311,6 +311,9 @@ export const promptCoachResponseSchema = z.object({
 		.describe("The suggested improvement for the user's prompt."),
 });
 
+export const dynamicAppFunctionTypes = ["normal", "premium", "byok"] as const;
+export const dynamicAppFunctionTypeSchema = z.enum(dynamicAppFunctionTypes);
+
 export const appInfoSchema = z.object({
 	id: z.string(),
 	name: z.string(),
@@ -324,7 +327,7 @@ export const appInfoSchema = z.object({
 	featured: z.boolean().optional(),
 	costPerCall: z.number().optional(),
 	isDefault: z.boolean().optional(),
-	type: z.enum(["normal", "premium", "byok"]).optional(),
+	type: dynamicAppFunctionTypeSchema.optional(),
 	href: z.string().optional(),
 	kind: z.enum(["dynamic", "frontend"]).optional(),
 });
@@ -362,6 +365,14 @@ export const dynamicAppResponseDisplayTypes = [
 	"template",
 	"custom",
 ] as const;
+
+export const ResponseDisplayType = {
+	TABLE: "table",
+	JSON: "json",
+	TEXT: "text",
+	TEMPLATE: "template",
+	CUSTOM: "custom",
+} satisfies Record<string, (typeof dynamicAppResponseDisplayTypes)[number]>;
 
 export const FieldType = {
 	TEXT: "text",
@@ -443,7 +454,7 @@ export const dynamicAppSchema = z.object({
 	featured: z.boolean().optional(),
 	costPerCall: z.number().optional(),
 	isDefault: z.boolean().optional(),
-	type: z.enum(["normal", "premium", "byok"]).optional(),
+	type: dynamicAppFunctionTypeSchema.optional(),
 	kind: z.enum(["dynamic", "frontend"]).optional(),
 	formSchema: dynamicAppFormSchema,
 	responseSchema: dynamicAppResponseSchema,
@@ -494,12 +505,16 @@ export type DynamicAppFormStep = z.infer<typeof dynamicAppFormStepSchema>;
 export type DynamicAppFormSchema = z.infer<typeof dynamicAppFormSchema>;
 export type DynamicAppResponseField = z.infer<typeof dynamicAppResponseFieldSchema>;
 export type DynamicAppResponseDisplay = z.infer<typeof dynamicAppResponseDisplaySchema>;
+export type ResponseDisplayType = z.infer<typeof dynamicAppResponseDisplayTypeSchema>;
+export type ResponseField = DynamicAppResponseField;
+export type ResponseDisplay = DynamicAppResponseDisplay;
 export type DynamicAppResponseSchema = z.infer<typeof dynamicAppResponseSchema>;
 export type AppSchema = z.infer<typeof dynamicAppSchema>;
 export type DynamicAppCatalogItem = z.infer<typeof appInfoSchema>;
 export type DynamicAppsResponse = z.infer<typeof dynamicAppsResponseSchema>;
 export type DynamicAppFormData = Record<string, unknown>;
 export type DynamicAppFormErrors = Record<string, string>;
+export type FunctionType = z.infer<typeof dynamicAppFunctionTypeSchema>;
 
 function isMissingDynamicAppFieldValue(value: unknown): boolean {
 	return (
@@ -721,33 +736,84 @@ export const articleDetailResponseSchema = z.object({
 	}),
 });
 
+export const podcastStatusSchema = z.enum([
+	"processing",
+	"transcribing",
+	"summarizing",
+	"complete",
+]);
+
+export const podcastListItemSchema = z.object({
+	id: z.string(),
+	title: z.string(),
+	createdAt: z.string(),
+	imageUrl: z.string().optional(),
+	duration: z.number().optional(),
+	status: podcastStatusSchema,
+});
+
+export const podcastTranscriptSegmentSchema = z.object({
+	start: z.number().optional(),
+	end: z.number().optional(),
+	text: z.string(),
+	speaker: z.string().optional(),
+	avg_logprob: z.number().optional(),
+});
+
+export const podcastTranscriptDataSchema = z.object({
+	language: z.string().optional(),
+	segments: z.array(podcastTranscriptSegmentSchema),
+	num_speakers: z.number().optional(),
+});
+
+export const podcastTranscriptSchema = z.union([z.string(), podcastTranscriptDataSchema]);
+
+export const podcastSchema = podcastListItemSchema.extend({
+	description: z.string().optional(),
+	audioUrl: z.string().optional(),
+	transcript: podcastTranscriptSchema.optional(),
+	summary: z.string().optional(),
+});
+
 export const listPodcastsResponseSchema = z.object({
-	podcasts: z.array(
-		z.object({
-			id: z.string(),
-			title: z.string(),
-			createdAt: z.string(),
-			imageUrl: z.string().optional(),
-			duration: z.number().optional(),
-			status: z.enum(["processing", "transcribing", "summarizing", "complete"]),
-		}),
-	),
+	podcasts: z.array(podcastListItemSchema),
 });
 
 export const podcastDetailResponseSchema = z.object({
-	podcast: z.object({
-		id: z.string(),
-		title: z.string(),
-		description: z.string().optional(),
-		createdAt: z.string(),
-		imageUrl: z.string().optional(),
-		audioUrl: z.string(),
-		duration: z.number().optional(),
-		transcript: z.string().optional(),
-		summary: z.string().optional(),
-		status: z.enum(["processing", "transcribing", "summarizing", "complete"]),
-	}),
+	podcast: podcastSchema,
 });
+
+export type PodcastStatus = z.infer<typeof podcastStatusSchema>;
+export type PodcastListItem = z.infer<typeof podcastListItemSchema>;
+export type PodcastTranscriptSegment = z.infer<typeof podcastTranscriptSegmentSchema>;
+export type PodcastTranscriptData = z.infer<typeof podcastTranscriptDataSchema>;
+export type PodcastTranscript = z.infer<typeof podcastTranscriptSchema>;
+export type Podcast = z.infer<typeof podcastSchema>;
+export type ListPodcastsResponse = z.infer<typeof listPodcastsResponseSchema>;
+export type PodcastDetailResponse = z.infer<typeof podcastDetailResponseSchema>;
+
+export const noteMetadataSchema = z
+	.object({
+		summary: z.string().optional(),
+		tags: z.array(z.string()).optional(),
+		keyTopics: z.array(z.string()).optional(),
+		wordCount: z.number().optional(),
+		readingTime: z.number().optional(),
+		contentType: z.string().optional(),
+		sentiment: z.string().optional(),
+		sourceType: z.string().optional(),
+		themeMode: z.string().optional(),
+		fontFamily: z.string().optional(),
+		fontSize: z.number().optional(),
+		tabSource: z
+			.object({
+				title: z.string().optional(),
+				url: z.string().optional(),
+				timestamp: z.string().optional(),
+			})
+			.optional(),
+	})
+	.catchall(z.unknown());
 
 export const noteSchema = z.object({
 	id: z.string(),
@@ -755,12 +821,13 @@ export const noteSchema = z.object({
 	content: z.string(),
 	createdAt: z.string(),
 	updatedAt: z.string(),
+	metadata: noteMetadataSchema.optional(),
 });
 
 export const noteCreateSchema = z.object({
 	title: z.string(),
 	content: z.string(),
-	metadata: z.record(z.string(), z.any()).optional(),
+	metadata: noteMetadataSchema.optional(),
 });
 
 export const noteUpdateSchema = noteCreateSchema.extend({
@@ -793,6 +860,15 @@ export const noteFormatResponseSchema = z.object({
 		description: "The reformatted note contents",
 	}),
 });
+
+export type NoteMetadata = z.infer<typeof noteMetadataSchema>;
+export type Note = z.infer<typeof noteSchema>;
+export type NoteCreateRequest = z.infer<typeof noteCreateSchema>;
+export type NoteUpdateRequest = z.infer<typeof noteUpdateSchema>;
+export type ListNotesResponse = z.infer<typeof listNotesResponseSchema>;
+export type NoteDetailResponse = z.infer<typeof noteDetailResponseSchema>;
+export type NoteFormatRequest = z.infer<typeof noteFormatSchema>;
+export type NoteFormatResponse = z.infer<typeof noteFormatResponseSchema>;
 
 export const shareItemSchema = z
 	.object({

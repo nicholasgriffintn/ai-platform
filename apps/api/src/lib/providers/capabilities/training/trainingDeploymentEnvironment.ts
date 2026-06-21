@@ -1,4 +1,4 @@
-import type { DeployTrainingModelRequest, TrainingModelDefinition } from "~/types/training";
+import type { DeployTrainingModelRequest, TrainingModelDefinition } from "@assistant/schemas";
 
 interface ResolveDeploymentEnvironmentOptions {
 	model: TrainingModelDefinition;

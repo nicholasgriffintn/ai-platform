@@ -1,9 +1,10 @@
 import { ResponseFormatter } from "~/lib/formatter";
 import { getModelConfigByMatchingModel } from "~/lib/providers/models";
+import type { ModelConfigItem } from "@assistant/schemas";
 import type { AsyncInvocationMetadata } from "~/lib/async/asyncInvocation";
 import { trackProviderMetrics } from "~/lib/monitoring";
 import { StorageService } from "~/lib/storage";
-import type { ChatCompletionParameters, ModelConfigItem } from "~/types";
+import type { ChatCompletionParameters } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 import { resolveProviderApiKey } from "~/lib/providers/utils/apiKeys";

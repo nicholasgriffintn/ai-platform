@@ -1,6 +1,6 @@
 import { type MockedFunction, beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { ModelConfig, ModelConfigItem } from "~/types";
+import type { ModelConfig, ModelConfigItem } from "@assistant/schemas";
 
 import {
 	getModelDetails,

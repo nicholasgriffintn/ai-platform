@@ -1,30 +1,3 @@
-export interface TranscriptSegment {
-	start: number;
-	end: number;
-	text: string;
-	speaker: string;
-	avg_logprob: number;
-}
-
-export interface TranscriptData {
-	language: string;
-	segments: TranscriptSegment[];
-	num_speakers: number;
-}
-
-export interface Podcast {
-	id: string;
-	title: string;
-	description: string;
-	createdAt: string;
-	imageUrl?: string;
-	audioUrl: string;
-	transcript?: TranscriptData;
-	summary?: string;
-	duration?: number;
-	status: "pending" | "processing" | "complete" | "failed";
-}
-
 export interface PodcastFormData {
 	title: string;
 	description: string;
@@ -70,12 +43,4 @@ export interface ProcessPodcastParams {
 	prompt?: string;
 	numberOfSpeakers?: number;
 	speakers?: Record<string, string>;
-}
-
-export interface PodcastsResponse {
-	podcasts: Podcast[];
-}
-
-export interface PodcastResponse {
-	podcast: Podcast;
 }

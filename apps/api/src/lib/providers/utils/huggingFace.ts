@@ -1,4 +1,5 @@
-import type { ChatCompletionParameters, ModelConfigItem } from "~/types";
+import type { ModelConfigItem } from "@assistant/schemas";
+import type { ChatCompletionParameters } from "~/types";
 import type { FetchAIResponseOptions } from "~/lib/providers/lib/fetch";
 import { buildInputSchemaInput } from "~/utils/inputSchema";
 import { AssistantError, ErrorType } from "~/utils/errors";
