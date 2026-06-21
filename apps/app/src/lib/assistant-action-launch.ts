@@ -1,4 +1,8 @@
-import type { AssistantActionContextPayload, RecipeChatSetupResponse } from "@assistant/schemas";
+import type {
+	AssistantActionContextPayload,
+	AssistantActionItemMetadata,
+	RecipeChatSetupResponse,
+} from "@assistant/schemas";
 import {
 	assistantActionContextPayloadSchema,
 	assistantLegacyRecipeContextPayloadSchema,
@@ -27,17 +31,17 @@ export interface AssistantActionChatLaunchPayload {
 	requestOptions?: ChatRequestOptions;
 }
 
-interface AppAssistantActionLaunchSource {
-	appId?: string;
-	appKind?: "dynamic" | "frontend";
-	href?: string;
-}
+type AppAssistantActionLaunchSource = Pick<
+	AssistantActionItemMetadata,
+	"appId" | "appKind" | "href"
+>;
 
-interface ConnectorAssistantActionLaunchSource {
-	authType?: "api_key" | "github_app" | "oauth2";
+type ConnectorAssistantActionLaunchSource = Pick<
+	AssistantActionItemMetadata,
+	"authType" | "provider"
+> & {
 	authorizationUrl?: string;
-	provider?: string;
-}
+};
 
 export interface AssistantActionNavigationLaunchPayload {
 	externalUrl?: string;
