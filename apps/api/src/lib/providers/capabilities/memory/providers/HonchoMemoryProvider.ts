@@ -122,9 +122,8 @@ export class HonchoMemoryProvider extends BaseMemoryProvider {
 		}));
 	}
 
-	async deleteMemory(memoryId: string): Promise<boolean> {
-		const { deleted } = await this.deleteLocalMemory(memoryId);
-		return deleted;
+	async deleteMemory(_memoryId: string): Promise<boolean> {
+		return false;
 	}
 
 	private async ensureWorkspace(apiKey: string, workspaceId: string): Promise<void> {

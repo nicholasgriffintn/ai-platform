@@ -106,7 +106,7 @@ export class HindsightMemoryProvider extends BaseMemoryProvider {
 		}
 
 		const recalled = await this.fetchJson<HindsightRecallResponse>(
-			`/v1/default/banks/${this.getBankId()}/recall`,
+			`/v1/default/banks/${this.getBankId()}/memories/recall`,
 			{
 				apiKey,
 				body: {

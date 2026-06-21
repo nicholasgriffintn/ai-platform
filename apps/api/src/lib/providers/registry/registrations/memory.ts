@@ -8,7 +8,7 @@ import type { ProviderRegistry } from "../ProviderRegistry";
 import type { ProviderRegistration } from "../types";
 import { ensureEnv, ensureUser } from "./utils";
 
-const HINDSIGHT_API_BASE_URL = "https://hindsight.vectorize.io";
+const HINDSIGHT_API_BASE_URL = "https://api.hindsight.vectorize.io";
 const HONCHO_API_BASE_URL = "https://api.honcho.dev";
 
 const memoryProviders: ProviderRegistration<MemoryProvider>[] = [

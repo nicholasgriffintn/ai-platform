@@ -1,9 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { providerLibrary } from "~/lib/providers/library";
 import { HindsightMemoryProvider, HonchoMemoryProvider } from "../providers";
 
 const getRecipeConnectorAccessTokenMock = vi.hoisted(() => vi.fn());
 const createMemoryMock = vi.hoisted(() => vi.fn());
+const deleteMemoryMock = vi.hoisted(() => vi.fn());
+const getMemoryByIdMock = vi.hoisted(() => vi.fn());
+const removeMemoryFromGroupsMock = vi.hoisted(() => vi.fn());
 
 vi.mock("~/services/apps/connectors", () => ({
 	getRecipeConnectorAccessToken: getRecipeConnectorAccessTokenMock,
@@ -12,6 +16,9 @@ vi.mock("~/services/apps/connectors", () => ({
 vi.mock("~/repositories/MemoryRepository", () => ({
 	MemoryRepository: class {
 		createMemory = createMemoryMock;
+		deleteMemory = deleteMemoryMock;
+		getMemoryById = getMemoryByIdMock;
+		removeMemoryFromGroups = removeMemoryFromGroupsMock;
 	},
 }));
 
@@ -25,6 +32,38 @@ describe("external memory providers", () => {
 		vi.clearAllMocks();
 		getRecipeConnectorAccessTokenMock.mockResolvedValue({ accessToken: "provider-key" });
 		createMemoryMock.mockResolvedValue({ id: "local-memory-id" });
+		getMemoryByIdMock.mockResolvedValue({
+			id: "local-memory-id",
+			user_id: 42,
+			vector_id: "remote-message-id",
+			metadata: JSON.stringify({ conversationId: "conversation-1" }),
+		});
+		deleteMemoryMock.mockResolvedValue(undefined);
+		removeMemoryFromGroupsMock.mockResolvedValue(undefined);
+	});
+
+	it("uses the Hindsight API host from the memory provider registry", async () => {
+		const fetchMock = vi.fn(async () =>
+			Response.json({ success: true, bank_id: "assistant_user_42", items_count: 1 }),
+		);
+		vi.stubGlobal("fetch", fetchMock);
+
+		const provider = providerLibrary.memory("hindsight", {
+			env,
+			user,
+			serviceContext,
+		});
+
+		await provider.storeMemory({
+			text: "User prefers concise answers.",
+			metadata: { category: "preference" },
+			conversationId: "conversation-1",
+		});
+
+		expect(fetchMock).toHaveBeenCalledWith(
+			"https://api.hindsight.vectorize.io/v1/default/banks/assistant_user_42/memories",
+			expect.any(Object),
+		);
 	});
 
 	it("stores Hindsight memories through retain without using an SDK", async () => {
@@ -68,6 +107,55 @@ describe("external memory providers", () => {
 		);
 	});
 
+	it("falls back to the documented Hindsight memories recall endpoint", async () => {
+		const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+			const url = String(input);
+			if (url.endsWith("/reflect")) {
+				return Response.json({ detail: "reflect unavailable" }, { status: 500 });
+			}
+
+			if (url.endsWith("/memories/recall")) {
+				return Response.json({
+					results: [
+						{
+							id: "memory-1",
+							text: "User prefers concise answers.",
+							score: 0.9,
+							type: "world",
+						},
+					],
+				});
+			}
+
+			return Response.json({ detail: "unexpected endpoint" }, { status: 404 });
+		});
+		vi.stubGlobal("fetch", fetchMock);
+
+		const provider = new HindsightMemoryProvider({
+			baseUrl: "https://api.hindsight.vectorize.io",
+			env,
+			user,
+			serviceContext,
+		});
+
+		await expect(provider.retrieveMemories("How should I answer?", { topK: 3 })).resolves.toEqual([
+			{
+				id: "memory-1",
+				text: "User prefers concise answers.",
+				score: 0.9,
+				metadata: {
+					provider: "hindsight",
+					type: "world",
+				},
+			},
+		]);
+
+		expect(fetchMock).toHaveBeenCalledWith(
+			"https://api.hindsight.vectorize.io/v1/default/banks/assistant_user_42/memories/recall",
+			expect.any(Object),
+		);
+	});
+
 	it("retrieves Honcho memories through peer chat without using an SDK", async () => {
 		const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
 			const url = String(input);
@@ -103,5 +191,20 @@ describe("external memory providers", () => {
 				body: expect.stringContaining('"reasoning_level":"low"'),
 			}),
 		);
+	});
+
+	it("does not report Honcho memory deletion success when the remote message cannot be deleted", async () => {
+		const provider = new HonchoMemoryProvider({
+			baseUrl: "https://api.honcho.dev",
+			env,
+			user,
+			serviceContext,
+		});
+
+		await expect(provider.deleteMemory("local-memory-id")).resolves.toBe(false);
+
+		expect(getMemoryByIdMock).not.toHaveBeenCalled();
+		expect(deleteMemoryMock).not.toHaveBeenCalled();
+		expect(removeMemoryFromGroupsMock).not.toHaveBeenCalled();
 	});
 });

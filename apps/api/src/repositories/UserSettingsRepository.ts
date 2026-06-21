@@ -250,6 +250,10 @@ export class UserSettingsRepository extends BaseRepository {
 			sandbox_model: settings.sandbox_model ?? null,
 		};
 
+		if (!Object.hasOwn(settings, "memory_provider")) {
+			delete updates.memory_provider;
+		}
+
 		const allowedFields = Object.keys(updates);
 
 		const result = this.buildUpdateQuery("user_settings", updates, allowedFields, "user_id = ?", [
