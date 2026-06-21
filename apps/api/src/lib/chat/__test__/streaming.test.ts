@@ -1,6 +1,11 @@
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { createStreamWithPostProcessing } from "../streaming";
+
+const memoryMocks = vi.hoisted(() => ({
+	handleMemory: vi.fn(),
+	getInstance: vi.fn(),
+}));
 
 vi.mock("~/lib/providers/models", () => ({
 	findModelConfig: vi.fn().mockResolvedValue({
@@ -24,6 +29,12 @@ vi.mock("~/lib/chat/tools", () => ({
 			tool_call_id: "call_recipe",
 		},
 	]),
+}));
+
+vi.mock("~/lib/memory", () => ({
+	MemoryManager: {
+		getInstance: memoryMocks.getInstance,
+	},
 }));
 
 function createProviderStream(events: string[]): ReadableStream<Uint8Array> {
@@ -55,6 +66,13 @@ async function readStream(stream: ReadableStream): Promise<string> {
 }
 
 describe("createStreamWithPostProcessing", () => {
+	beforeEach(() => {
+		vi.clearAllMocks();
+		memoryMocks.getInstance.mockReturnValue({
+			handleMemory: memoryMocks.handleMemory,
+		});
+	});
+
 	it("stops after provider stream errors without saving an assistant message", async () => {
 		const conversationManager = {
 			getUsageLimits: vi.fn().mockResolvedValue({
@@ -174,5 +192,66 @@ describe("createStreamWithPostProcessing", () => {
 
 		expect(output).toContain('"type":"message_delta"');
 		expect(output).toContain('"tool_calls":[{"id":"call_recipe"');
+	});
+
+	it("skips automatic memory storage when the model already calls store_memory", async () => {
+		const conversationManager = {
+			getUsageLimits: vi.fn().mockResolvedValue({
+				daily: { used: 13, limit: 50 },
+				pro: { used: 11.3, limit: 200 },
+			}),
+			add: vi.fn(),
+			get: vi.fn().mockResolvedValue([
+				{
+					role: "user",
+					content: "Remember that I prefer concise replies",
+				},
+			]),
+		};
+
+		const stream = await createStreamWithPostProcessing(
+			createProviderStream([
+				`data: ${JSON.stringify({
+					choices: [
+						{
+							delta: {
+								tool_calls: [
+									{
+										index: 0,
+										id: "call_memory",
+										type: "function",
+										function: {
+											name: "store_memory",
+											arguments: JSON.stringify({
+												text: "User prefers concise replies",
+												category: "preference",
+											}),
+										},
+									},
+								],
+							},
+						},
+					],
+				})}\n\n`,
+				"data: [DONE]\n\n",
+			]),
+			{
+				env: { AI: {} } as any,
+				completion_id: "completion-1",
+				model: "gpt-5.4-mini",
+				provider: "openai",
+				user: { id: 42, plan_id: "pro" } as any,
+				userSettings: {
+					memories_save_enabled: true,
+					memories_chat_history_enabled: true,
+				} as any,
+			},
+			conversationManager as any,
+		);
+
+		await readStream(stream);
+
+		expect(memoryMocks.getInstance).not.toHaveBeenCalled();
+		expect(memoryMocks.handleMemory).not.toHaveBeenCalled();
 	});
 });

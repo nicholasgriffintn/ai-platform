@@ -1,4 +1,5 @@
 import { MAX_BUFFER_LENGTH, MAX_CONTENT_LENGTH, MAX_THINKING_LENGTH } from "~/constants/app";
+import { MEMORY_STORE_TOOL_NAME } from "~/lib/chat/memoryTools";
 import { buildAssistantMessageData } from "~/lib/chat/mode-metadata";
 import { formatAssistantMessage, getAIResponse } from "~/lib/chat/responses";
 import { extractCouncilTurnRouting } from "~/lib/chat/council";
@@ -28,7 +29,7 @@ import {
 } from "~/types";
 import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";
-import { nonEmptyToolCallsOrNull } from "~/utils/toolCalls";
+import { hasToolCallNamed, nonEmptyToolCallsOrNull } from "~/utils/toolCalls";
 import { emitDoneEvent, emitEvent } from "./emitter";
 import { safeParseJson } from "~/utils/json";
 
@@ -588,7 +589,11 @@ export async function createStreamWithPostProcessing(
 
 						const memoriesEnabled =
 							userSettings?.memories_save_enabled || userSettings?.memories_chat_history_enabled;
-						if (isProUser && memoriesEnabled) {
+						const memoryAlreadyStoredByTool = hasToolCallNamed(
+							toolCallsData,
+							MEMORY_STORE_TOOL_NAME,
+						);
+						if (isProUser && memoriesEnabled && !memoryAlreadyStoredByTool) {
 							try {
 								const history = await conversationManager.get(completion_id);
 								const userHistory = history.filter((m) => m.role === "user");
