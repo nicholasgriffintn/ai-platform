@@ -7,14 +7,13 @@ import type {
 	RecipeConnectorStartResponse,
 	RecipeInvocationResponse,
 } from "@assistant/schemas";
-import { recipeConnectorProviderSchema } from "@assistant/schemas";
+import { mergeAssistantActionToolIds, recipeConnectorProviderSchema } from "@assistant/schemas";
 
 import {
 	createAppAssistantActionLaunch,
 	createConnectorAssistantActionLaunch,
 	createRecipeAssistantActionLaunch,
 } from "./assistant-action-launch";
-import { mergeToolSelection } from "./assistant-action-submit";
 import type { ChatRequestOptions } from "~/types";
 
 export interface AssistantActionExecutionInput {
@@ -112,7 +111,7 @@ export async function executeAssistantAction(
 		return {
 			kind: "submit",
 			input: action.input,
-			selectedTools: mergeToolSelection(action.selectedTools ?? [], item.metadata.toolId),
+			selectedTools: mergeAssistantActionToolIds(action.selectedTools ?? [], item.metadata.toolId),
 		};
 	}
 

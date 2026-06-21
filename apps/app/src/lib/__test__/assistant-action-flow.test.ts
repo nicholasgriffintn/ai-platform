@@ -1,12 +1,15 @@
 import { describe, expect, it, vi } from "vitest";
-import type { AssistantRecipe, RecipeInstallation } from "@assistant/schemas";
+import {
+	buildAssistantActionCatalog,
+	type AssistantRecipe,
+	type RecipeInstallation,
+} from "@assistant/schemas";
 
 import { launchAssistantAction } from "../assistant-action-flow";
 import {
 	loadAssistantActionRequestOptions,
 	parseAssistantActionLaunchState,
 } from "../assistant-action-launch";
-import { buildAssistantActionCatalog } from "../assistant-actions";
 
 const morningBriefingRecipe = {
 	id: "morning-briefing",

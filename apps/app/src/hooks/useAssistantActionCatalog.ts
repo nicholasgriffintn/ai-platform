@@ -1,7 +1,5 @@
 import { useMemo } from "react";
-import type { AssistantActionCatalog } from "@assistant/schemas";
-
-import { buildAssistantActionCatalog } from "~/lib/assistant-actions";
+import { buildAssistantActionCatalog, type AssistantActionCatalog } from "@assistant/schemas";
 import type { ModelToolDefinition } from "~/lib/model-tools";
 import { useAgents } from "./useAgents";
 import { useRecipeConnectors } from "./useConnectors";

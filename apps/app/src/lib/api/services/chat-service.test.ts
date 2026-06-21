@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { chatRequestOptionsSchema } from "@assistant/schemas";
+import { chatRequestOptionsSchema, createChatCompletionsJsonSchema } from "@assistant/schemas";
 
 import type { Message } from "~/types";
 import { ChatService } from "./chat-service";
@@ -240,6 +240,41 @@ describe("ChatService streaming", () => {
 		expect(chatRequestOptionsSchema.safeParse(body.options).success).toBe(true);
 		expect(body.enabled_tools).toEqual(["image_generation"]);
 		expect(body.models).toEqual(["gpt-5", "claude-opus"]);
+	});
+
+	it("normalises selected tool ids before sending chat requests", async () => {
+		const fetchMock = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) =>
+			createSseResponse([data("[DONE]")]),
+		);
+		vi.stubGlobal("fetch", fetchMock);
+
+		const service = new ChatService(async () => ({}));
+
+		await service.streamChatCompletions({
+			chatSettings: {},
+			completionId: "conversation-1",
+			endpoint: "/chat/completions",
+			messages: [{ role: "user", content: "hello" } as Message],
+			mode: "remote",
+			model: "gpt-5",
+			onProgress: () => {},
+			onStateChange: () => {},
+			selectedTools: ["web_fetch", "bad tool", "web_fetch"],
+			signal: new AbortController().signal,
+			streamingEnabled: true,
+		});
+
+		const [, request] = fetchMock.mock.calls[0];
+		const body = JSON.parse(String(request?.body));
+
+		expect(body.enabled_tools).toEqual(["web_fetch"]);
+		expect(createChatCompletionsJsonSchema.safeParse(body).success).toBe(true);
+		expect(
+			createChatCompletionsJsonSchema.safeParse({
+				messages: [{ role: "user", content: "hello" }],
+				enabled_tools: ["bad tool"],
+			}).success,
+		).toBe(false);
 	});
 
 	it("sends recipe scope with the exact recipe tools", async () => {

@@ -4,9 +4,9 @@ import type {
 	RecipeChatSetupResponse,
 } from "@assistant/schemas";
 import {
-	assistantActionContextPayloadSchema,
-	assistantLegacyRecipeContextPayloadSchema,
-	createRecipeChatRequestOptions,
+	createAssistantRecipeActionContext,
+	normaliseAssistantActionToolIds,
+	readAssistantActionRequestOptions,
 } from "@assistant/schemas";
 
 import type { ChatRequestOptions } from "~/types";
@@ -14,7 +14,6 @@ import type { ChatRequestOptions } from "~/types";
 const ACTION_CONTEXT_PARAM = "assistant_action_context";
 const LEGACY_RECIPE_CONTEXT_PARAM = "recipe_context";
 const AUTO_SUBMIT_PARAM = "auto_submit";
-const TOOL_ID_PATTERN = /^[a-zA-Z0-9_:-]+$/;
 
 export interface AssistantActionLaunchState {
 	query: string | null;
@@ -59,36 +58,6 @@ interface AssistantActionChatLaunch {
 	actionContext?: AssistantActionContextPayload;
 }
 
-function normaliseToolIds(value: string | string[] | undefined): string[] {
-	const rawTools = Array.isArray(value) ? value : (value ?? "").split(",");
-
-	return Array.from(
-		new Set(
-			rawTools
-				.map((toolId) => toolId.trim())
-				.filter((toolId) => toolId && TOOL_ID_PATTERN.test(toolId)),
-		),
-	);
-}
-
-function createRecipeActionContext(
-	response: RecipeChatSetupResponse,
-): AssistantActionContextPayload {
-	return {
-		action: {
-			kind: "recipe",
-			recipe: createRecipeChatRequestOptions(response),
-		},
-	};
-}
-
-function readAssistantActionContextPayload(
-	value: unknown,
-): AssistantActionContextPayload | undefined {
-	const parsed = assistantActionContextPayloadSchema.safeParse(value);
-	return parsed.success ? parsed.data : undefined;
-}
-
 function parseJson(value: string | null): unknown {
 	if (!value) {
 		return undefined;
@@ -106,7 +75,7 @@ export function parseAssistantActionLaunchState(search: string): AssistantAction
 
 	return {
 		query: params.get("query"),
-		enabledTools: normaliseToolIds(params.get("enabled_tools") ?? undefined),
+		enabledTools: normaliseAssistantActionToolIds(params.get("enabled_tools") ?? undefined),
 		hasEnabledTools: params.has("enabled_tools"),
 		actionContext: params.get(ACTION_CONTEXT_PARAM),
 		recipeContext: params.get(LEGACY_RECIPE_CONTEXT_PARAM),
@@ -117,21 +86,16 @@ export function parseAssistantActionLaunchState(search: string): AssistantAction
 export function loadAssistantActionRequestOptions(
 	state: Pick<AssistantActionLaunchState, "actionContext" | "recipeContext">,
 ): ChatRequestOptions | undefined {
-	const actionPayload = readAssistantActionContextPayload(parseJson(state.actionContext));
-	if (actionPayload) {
-		return { recipe: actionPayload.action.recipe };
-	}
-
-	const legacyRecipePayload = assistantLegacyRecipeContextPayloadSchema.safeParse(
+	return readAssistantActionRequestOptions(
+		parseJson(state.actionContext),
 		parseJson(state.recipeContext),
 	);
-	return legacyRecipePayload.success ? { recipe: legacyRecipePayload.data.recipe } : undefined;
 }
 
 export function createAssistantActionChatUrl(launch: AssistantActionChatLaunch): string {
 	const [path, search = ""] = launch.messageUrl.split("?");
 	const params = new URLSearchParams(search);
-	const enabledTools = normaliseToolIds(launch.enabledTools);
+	const enabledTools = normaliseAssistantActionToolIds(launch.enabledTools);
 
 	params.set("enabled_tools", enabledTools.join(","));
 	params.set(AUTO_SUBMIT_PARAM, "1");
@@ -147,7 +111,7 @@ export function createRecipeAssistantActionChatUrl(response: RecipeChatSetupResp
 	return createAssistantActionChatUrl({
 		messageUrl: response.messageUrl,
 		enabledTools: response.enabledTools,
-		actionContext: createRecipeActionContext(response),
+		actionContext: createAssistantRecipeActionContext(response),
 	});
 }
 
@@ -155,13 +119,13 @@ export function createRecipeAssistantActionLaunch(
 	response: RecipeChatSetupResponse,
 ): AssistantActionChatLaunchPayload {
 	const requestOptions = loadAssistantActionRequestOptions({
-		actionContext: JSON.stringify(createRecipeActionContext(response)),
+		actionContext: JSON.stringify(createAssistantRecipeActionContext(response)),
 		recipeContext: null,
 	});
 
 	return {
 		input: response.conversationStarter,
-		enabledTools: normaliseToolIds(response.enabledTools),
+		enabledTools: normaliseAssistantActionToolIds(response.enabledTools),
 		requestOptions,
 	};
 }

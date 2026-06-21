@@ -1,3 +1,4 @@
+import type { CreateAgentInput, UpdateAgentInput } from "@assistant/schemas";
 import { createApiErrorFromResponse, fetchApi, returnFetchedData } from "../fetch-wrapper";
 
 export class AgentService {
@@ -204,21 +205,7 @@ export class AgentService {
 		return responseData || [];
 	}
 
-	async createAgent(
-		name: string,
-		servers?: any[],
-		description?: string | null,
-		avatarUrl?: string | null,
-		model?: string | null,
-		temperature?: number | null,
-		maxSteps?: number | null,
-		systemPrompt?: string | null,
-		fewShotExamples?: any[] | null,
-		enabledTools?: string[] | null,
-		teamId?: string | null,
-		teamRole?: string | null,
-		isTeamAgent?: boolean | null,
-	): Promise<any> {
+	async createAgent(data: CreateAgentInput): Promise<any> {
 		let headers: Record<string, string> = {};
 
 		try {
@@ -228,19 +215,19 @@ export class AgentService {
 		}
 
 		const body = {
-			name,
-			description: description || undefined,
-			avatar_url: avatarUrl || undefined,
-			servers: servers || undefined,
-			model: model || undefined,
-			temperature: temperature !== undefined ? temperature : undefined,
-			max_steps: maxSteps !== undefined ? maxSteps : undefined,
-			system_prompt: systemPrompt || undefined,
-			few_shot_examples: fewShotExamples || undefined,
-			enabled_tools: enabledTools || undefined,
-			team_id: teamId || undefined,
-			team_role: teamRole || undefined,
-			is_team_agent: isTeamAgent ? isTeamAgent : undefined,
+			name: data.name,
+			description: data.description || undefined,
+			avatar_url: data.avatar_url || undefined,
+			servers: data.servers || undefined,
+			model: data.model || undefined,
+			temperature: data.temperature !== undefined ? data.temperature : undefined,
+			max_steps: data.max_steps !== undefined ? data.max_steps : undefined,
+			system_prompt: data.system_prompt || undefined,
+			few_shot_examples: data.few_shot_examples || undefined,
+			enabled_tools: data.enabled_tools || undefined,
+			team_id: data.team_id || undefined,
+			team_role: data.team_role || undefined,
+			is_team_agent: data.is_team_agent ? data.is_team_agent : undefined,
 		};
 
 		const response = await fetchApi("/agents", {
@@ -258,21 +245,7 @@ export class AgentService {
 		return responseData || [];
 	}
 
-	async updateAgent(
-		agentId: string,
-		data: Partial<{
-			name: string;
-			description: string;
-			avatar_url: string;
-			servers: any[];
-			model: string;
-			temperature: number;
-			max_steps: number;
-			system_prompt: string;
-			few_shot_examples: Array<{ input: string; output: string }>;
-			enabled_tools: string[];
-		}>,
-	): Promise<void> {
+	async updateAgent(agentId: string, data: UpdateAgentInput): Promise<void> {
 		let headers: Record<string, string> = {};
 
 		try {

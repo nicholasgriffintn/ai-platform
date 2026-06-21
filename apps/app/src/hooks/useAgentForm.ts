@@ -1,4 +1,5 @@
 import { useState, useCallback } from "react";
+import { normaliseToolIds, readToolIds } from "@assistant/schemas";
 import { generateId } from "~/lib/utils";
 
 interface FewShotExample {
@@ -127,18 +128,7 @@ export function useAgentForm() {
 		}
 
 		if (agent.enabled_tools) {
-			try {
-				const parsedTools = Array.isArray(agent.enabled_tools)
-					? agent.enabled_tools
-					: JSON.parse(agent.enabled_tools);
-				setEnabledTools(
-					Array.isArray(parsedTools)
-						? parsedTools.filter((tool: unknown) => typeof tool === "string")
-						: [],
-				);
-			} catch {
-				setEnabledTools([]);
-			}
+			setEnabledTools(readToolIds(agent.enabled_tools) ?? []);
 		} else {
 			setEnabledTools([]);
 		}
@@ -149,6 +139,8 @@ export function useAgentForm() {
 	}, []);
 
 	const getFormData = useCallback(() => {
+		const normalisedEnabledTools = normaliseToolIds(enabledTools);
+
 		return {
 			name,
 			description,
@@ -166,7 +158,7 @@ export function useAgentForm() {
 					output,
 				})),
 			}),
-			...(enabledTools.length > 0 && { enabled_tools: enabledTools }),
+			...(normalisedEnabledTools.length > 0 && { enabled_tools: normalisedEnabledTools }),
 			...(isTeamAgent && { is_team_agent: isTeamAgent }),
 			...(teamId && { team_id: teamId }),
 			...(teamRole && { team_role: teamRole }),

@@ -4,6 +4,8 @@ import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import {
 	type AssistantRecipe,
+	createConnectorAssistantActionItem,
+	createRecipeAssistantActionItem,
 	type RecipeConnectorManifest,
 	type RecipeInstallation,
 	type RecipeInstallationTrigger,
@@ -22,10 +24,6 @@ import {
 	useUpdateRecipeInstallation,
 } from "~/hooks/useRecipes";
 import { launchAssistantAction } from "~/lib/assistant-action-flow";
-import {
-	createConnectorAssistantActionItem,
-	createRecipeAssistantActionItem,
-} from "~/lib/assistant-actions";
 import {
 	buildRecipeConfigurationFromFields,
 	type ConfigurationFormValues,

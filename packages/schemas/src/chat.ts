@@ -6,6 +6,7 @@ import { chatRequestModeSchema } from "./agent-modes";
 import { councilChatOptionsSchema } from "./council";
 import { reasoningEffortSchema, reasoningSettingsSchema } from "./reasoning";
 import { recipeChatRequestOptionsSchema, type RecipeChatRequestOptions } from "./apps";
+import { toolIdsSchema } from "./tools";
 import {
 	conversationSandboxRequestOptionsSchema,
 	conversationSmsRequestOptionsSchema,
@@ -306,10 +307,10 @@ export const createChatCompletionsJsonSchema = z.object({
 		description:
 			"Set of key-value pairs that can be attached to a chat completion for tracking or display purposes. Both keys and values must be strings.",
 	}),
-	enabled_tools: z.array(z.string()).optional().meta({
+	enabled_tools: toolIdsSchema.optional().meta({
 		description: "The tools that should be enabled for this message.",
 	}),
-	approved_tools: z.array(z.string()).optional().meta({
+	approved_tools: toolIdsSchema.optional().meta({
 		description:
 			"Tool names pre-approved by the caller for this request (used for approval-gated modes).",
 	}),

@@ -3,9 +3,11 @@ import {
 	assistantActionCatalogSchema,
 	assistantActionResultSchema,
 	assistantActionSelectionSchema,
+	buildAssistantActionCatalog,
+	formatAssistantActionMention,
+	mergeAssistantActionToolIds,
+	normaliseAssistantActionToolIds,
 } from "@assistant/schemas";
-
-import { buildAssistantActionCatalog, formatAssistantActionMention } from "../assistant-actions";
 
 describe("assistant action catalogue", () => {
 	it("merges verbs and action items from recipes, apps, connectors, agents, and tools", () => {
@@ -46,7 +48,6 @@ describe("assistant action catalogue", () => {
 					label: "Web fetch",
 					command: "web fetch",
 					description: "Fetch URLs",
-					capability: "supportsWebFetch",
 				},
 			],
 			recipes: [
@@ -196,5 +197,23 @@ describe("assistant action catalogue", () => {
 				url: "/?query=Run+the+Morning+Briefing+recipe.",
 			}).success,
 		).toBe(true);
+		expect(
+			assistantActionResultSchema.safeParse({
+				kind: "submit",
+				input: "use a bad tool",
+				selectedTools: ["bad tool id"],
+			}).success,
+		).toBe(false);
+	});
+
+	it("normalises and merges assistant action tool ids through the shared schema helpers", () => {
+		expect(
+			normaliseAssistantActionToolIds(" use_recipe_connector, web_fetch, bad tool, web_fetch "),
+		).toEqual(["use_recipe_connector", "web_fetch"]);
+		expect(mergeAssistantActionToolIds(["web_fetch"], "code_execution")).toEqual([
+			"web_fetch",
+			"code_execution",
+		]);
+		expect(mergeAssistantActionToolIds(["web_fetch"], "web_fetch")).toEqual(["web_fetch"]);
 	});
 });

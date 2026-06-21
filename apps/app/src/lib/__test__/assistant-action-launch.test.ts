@@ -99,6 +99,15 @@ describe("assistant action launch URL contract", () => {
 		expect(state.autoSubmit).toBe(true);
 	});
 
+	it("normalises enabled tool ids from action launch URLs", () => {
+		const state = parseAssistantActionLaunchState(
+			"enabled_tools=web_fetch,bad%20tool,web_fetch,tool:search",
+		);
+
+		expect(state.enabledTools).toEqual(["web_fetch", "tool:search"]);
+		expect(state.hasEnabledTools).toBe(true);
+	});
+
 	it("creates a direct chat launch payload for recipe invocation from the composer", () => {
 		expect(createRecipeAssistantActionLaunch(plannerInvocation)).toEqual({
 			input: "Run the planner recipe.",

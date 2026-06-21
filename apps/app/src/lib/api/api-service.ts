@@ -1,5 +1,10 @@
 import { useToolsStore } from "~/state/stores/toolsStore";
 import type { Conversation, Message, ModelConfig } from "~/types";
+import type {
+	CreateAgentInput,
+	MarkdownConversionOptions,
+	UpdateAgentInput,
+} from "@assistant/schemas";
 import { formatMessageContent } from "../messages";
 import { AgentService } from "./services/agent-service";
 import { AudioService, type SpeechGenerationResponse } from "./services/audio-service";
@@ -14,7 +19,6 @@ import { UploadService } from "./services/upload-service";
 import type { ProviderSetting } from "./services/user-service";
 import { UserService } from "./services/user-service";
 import { getHeaders } from "./utils/headers";
-import type { MarkdownConversionOptions } from "@assistant/schemas";
 
 /**
  * Main API service class that acts as a facade for all domain-specific services.
@@ -204,53 +208,11 @@ class ApiService {
 		return this.agentService.getSharedTags();
 	};
 
-	createAgent = (
-		name: string,
-		servers?: any[],
-		description?: string | null,
-		avatarUrl?: string | null,
-		model?: string | null,
-		temperature?: number | null,
-		maxSteps?: number | null,
-		systemPrompt?: string | null,
-		fewShotExamples?: any[] | null,
-		enabledTools?: string[] | null,
-		teamId?: string | null,
-		teamRole?: string | null,
-		isTeamAgent?: boolean | null,
-	): Promise<any> => {
-		return this.agentService.createAgent(
-			name,
-			servers,
-			description,
-			avatarUrl,
-			model,
-			temperature,
-			maxSteps,
-			systemPrompt,
-			fewShotExamples,
-			enabledTools,
-			teamId,
-			teamRole,
-			isTeamAgent,
-		);
+	createAgent = (data: CreateAgentInput): Promise<any> => {
+		return this.agentService.createAgent(data);
 	};
 
-	updateAgent = (
-		agentId: string,
-		data: Partial<{
-			name: string;
-			description: string;
-			avatar_url: string;
-			servers: any[];
-			model: string;
-			temperature: number;
-			max_steps: number;
-			system_prompt: string;
-			few_shot_examples: Array<{ input: string; output: string }>;
-			enabled_tools: string[];
-		}>,
-	): Promise<void> => {
+	updateAgent = (agentId: string, data: UpdateAgentInput): Promise<void> => {
 		return this.agentService.updateAgent(agentId, data);
 	};
 
