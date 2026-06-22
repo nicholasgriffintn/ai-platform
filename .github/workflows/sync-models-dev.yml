@@ -71,16 +71,9 @@ jobs:
         run: |
           pnpm --filter @assistant/api models:review-sync apply \
             --response model-sync-review.json
-      - name: Run model router tests
+      - name: Run tests
         if: steps.sync-commit.outputs.committed == 'true' && steps.assess.outputs.should_call_polychat == 'true'
-        run: |
-          pnpm --dir apps/api exec vitest run \
-            src/lib/modelRouter/__test__/promptAnalyser.test.ts \
-            src/lib/modelRouter/__test__/index.test.ts \
-            src/lib/__test__/models.test.ts \
-            src/data-model/models/__test__/openai.test.ts \
-            src/data-model/models/__test__/google-ai-studio.test.ts \
-            src/data-model/models/__test__/router-provider-refresh.test.ts
+        run: pnpm --filter @assistant/api test -- run
       - name: Run typecheck
         if: steps.sync-commit.outputs.committed == 'true' && steps.assess.outputs.should_call_polychat == 'true'
         run: pnpm --filter @assistant/api typecheck
