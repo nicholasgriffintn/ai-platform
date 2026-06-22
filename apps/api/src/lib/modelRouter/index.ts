@@ -298,6 +298,10 @@ export class ModelRouter {
 	}
 
 	private static shouldCompareModels(requirements: PromptRequirements): boolean {
+		if (requirements.benefitsFromMultipleModels) {
+			return true;
+		}
+
 		return (
 			requirements.expectedComplexity >= 3 &&
 			(requirements.requiredStrengths.includes("general_knowledge") ||

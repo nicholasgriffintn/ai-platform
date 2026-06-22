@@ -229,6 +229,45 @@ describe("ModelRouter", () => {
 			expect(result.length).toBeLessThanOrEqual(2);
 		});
 
+		it("should return multiple models when analysis explicitly recommends comparison", async () => {
+			const explicitComparisonRequirements: PromptRequirements = {
+				...mockRequirements,
+				expectedComplexity: 1,
+				requiredStrengths: ["chat", "general_knowledge"],
+				criticalStrengths: ["chat"],
+				benefitsFromMultipleModels: true,
+				modelComparisonReason: "User explicitly requests multiple models.",
+			};
+
+			const availableModels = {
+				"model-1": {
+					...mockModelConfig,
+					id: "model-1",
+					provider: "provider-1",
+					strengths: ["chat", "general_knowledge"],
+				},
+				"model-2": {
+					...mockModelConfig,
+					id: "model-2",
+					provider: "provider-2",
+					strengths: ["chat", "general_knowledge"],
+				},
+			};
+
+			mockModels.getIncludedInRouterModelsForUser.mockResolvedValue(availableModels);
+			mockPromptAnalyzer.analyzePrompt.mockResolvedValue(explicitComparisonRequirements);
+
+			const result = await ModelRouter.selectMultipleModels(
+				mockEnv,
+				"Use multiple models, hi",
+				[],
+				undefined,
+				mockUser,
+			);
+
+			expect(result).toEqual(["model-1", "model-2"]);
+		});
+
 		it("should handle errors and return default model array", async () => {
 			mockModels.getIncludedInRouterModelsForUser.mockImplementation(() => {
 				throw new Error("Test error");
