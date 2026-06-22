@@ -198,6 +198,7 @@ Ensure the output is nothing but the JSON object itself.`;
 				| 4
 				| 5,
 			requiredStrengths: analysis.requiredStrengths || [],
+			criticalStrengths: analysis.criticalStrengths || [],
 			estimatedInputTokens: Math.max(0, analysis.estimatedInputTokens || 0),
 			estimatedOutputTokens: Math.max(0, analysis.estimatedOutputTokens || 0),
 			needsFunctions: !!analysis.needsFunctions,

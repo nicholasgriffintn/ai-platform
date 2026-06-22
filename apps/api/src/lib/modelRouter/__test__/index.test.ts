@@ -394,6 +394,51 @@ describe("ModelRouter", () => {
 			expect(result).toBe("cheap-model");
 		});
 
+		it("should prefer current efficient reasoning models over deprecated expensive models", async () => {
+			const reasoningRequirements: PromptRequirements = {
+				...mockRequirements,
+				expectedComplexity: 4,
+				requiredStrengths: ["reasoning"],
+				estimatedInputTokens: 2000,
+				estimatedOutputTokens: 1000,
+			};
+
+			const availableModels = {
+				o1: {
+					...mockModelConfig,
+					deprecated: true,
+					costPer1kInputTokens: 0.015,
+					costPer1kOutputTokens: 0.06,
+					contextComplexity: 4,
+					reliability: 4,
+					speed: 1,
+					strengths: ["reasoning", "analysis", "math"],
+				},
+				"gpt-5.4-mini": {
+					...mockModelConfig,
+					costPer1kInputTokens: 0.00075,
+					costPer1kOutputTokens: 0.0045,
+					contextComplexity: 4,
+					reliability: 4,
+					speed: 5,
+					strengths: ["reasoning", "analysis", "coding"],
+				},
+			};
+
+			mockModels.getIncludedInRouterModelsForUser.mockResolvedValue(availableModels);
+			mockPromptAnalyzer.analyzePrompt.mockResolvedValue(reasoningRequirements);
+
+			const result = await ModelRouter.selectModel(
+				mockEnv,
+				"Solve this reasoning problem",
+				[],
+				undefined,
+				mockUser,
+			);
+
+			expect(result).toBe("gpt-5.4-mini");
+		});
+
 		it("should boost multimodal models for image tasks", async () => {
 			const imageRequirements: PromptRequirements = {
 				...mockRequirements,

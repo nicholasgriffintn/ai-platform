@@ -16,6 +16,10 @@ interface ModelScore {
 	provider: string;
 }
 
+function modelSupportsInput(model: ModelConfigItem, input: "image" | "pdf" | "document"): boolean {
+	return model.modalities?.input?.includes(input) ?? false;
+}
+
 export class ModelRouter {
 	private static readonly WEIGHTS = {
 		COMPLEXITY_MATCH: 2,
@@ -148,6 +152,51 @@ export class ModelRouter {
 			};
 		}
 
+		if (capabilities.deprecated) {
+			return {
+				model,
+				score: Number.NEGATIVE_INFINITY,
+				reason: "Deprecated model",
+				provider: capabilities.provider,
+			};
+		}
+
+		if (
+			requirements.hasImages &&
+			!capabilities.multimodal &&
+			!modelSupportsInput(capabilities, "image")
+		) {
+			return {
+				model,
+				score: Number.NEGATIVE_INFINITY,
+				reason: "Missing image support",
+				provider: capabilities.provider,
+			};
+		}
+
+		if (
+			requirements.hasDocuments &&
+			!capabilities.supportsDocuments &&
+			!modelSupportsInput(capabilities, "pdf") &&
+			!modelSupportsInput(capabilities, "document")
+		) {
+			return {
+				model,
+				score: Number.NEGATIVE_INFINITY,
+				reason: "Missing document support",
+				provider: capabilities.provider,
+			};
+		}
+
+		if (requirements.needsFunctions && !capabilities.supportsToolCalls) {
+			return {
+				model,
+				score: Number.NEGATIVE_INFINITY,
+				reason: "Missing tool-call support",
+				provider: capabilities.provider,
+			};
+		}
+
 		if (
 			requirements.criticalStrengths?.some(
 				(strength) => !capabilities.strengths?.includes(strength),
@@ -217,7 +266,7 @@ export class ModelRouter {
 		}
 
 		if (model.speed) {
-			score += (6 - model.speed) * ModelRouter.WEIGHTS.SPEED;
+			score += model.speed * ModelRouter.WEIGHTS.SPEED;
 		}
 
 		if (requirements.hasImages && model.multimodal) {

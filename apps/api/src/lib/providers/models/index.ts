@@ -412,7 +412,7 @@ export function getIncludedInRouterModels(
 
 	cachedRouterModels = Object.entries(modelConfig).reduce(
 		(acc, [key, model]) => {
-			if (model.includedInRouter) {
+			if (model.includedInRouter && !model.deprecated) {
 				acc[key] = model;
 			}
 			return acc;

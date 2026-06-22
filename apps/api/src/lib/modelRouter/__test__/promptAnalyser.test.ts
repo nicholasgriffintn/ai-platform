@@ -89,6 +89,7 @@ describe("PromptAnalyzer", () => {
 	const validAIResponse = {
 		expectedComplexity: 3,
 		requiredStrengths: ["coding", "reasoning"],
+		criticalStrengths: ["coding"],
 		estimatedInputTokens: 1000,
 		estimatedOutputTokens: 500,
 		needsFunctions: false,
@@ -129,6 +130,7 @@ describe("PromptAnalyzer", () => {
 			expect(result).toEqual({
 				expectedComplexity: 3,
 				requiredStrengths: ["coding", "reasoning"],
+				criticalStrengths: ["coding"],
 				estimatedInputTokens: 1000,
 				estimatedOutputTokens: 500,
 				needsFunctions: false,

@@ -88,7 +88,7 @@ export const githubModelsConfig: ModelConfig = {
 		reliability: 4,
 		speed: 4,
 		multimodal: true,
-		includedInRouter: true,
+		includedInRouter: false,
 		supportsArtifacts: true,
 	},
 
@@ -180,7 +180,7 @@ export const githubModelsConfig: ModelConfig = {
 		reliability: 4,
 		speed: 5,
 		multimodal: true,
-		includedInRouter: true,
+		includedInRouter: false,
 		supportsArtifacts: true,
 	},
 
@@ -208,7 +208,7 @@ export const githubModelsConfig: ModelConfig = {
 		reliability: 4,
 		speed: 4,
 		multimodal: true,
-		includedInRouter: true,
+		includedInRouter: false,
 		supportsArtifacts: true,
 	},
 

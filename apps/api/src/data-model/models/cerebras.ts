@@ -25,6 +25,12 @@ export const cerebrasModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 40960,
 		costPer1kInputTokens: 0.00035,
 		costPer1kOutputTokens: 0.00075,
+		strengths: ["reasoning", "coding", "analysis", "math"],
+		contextComplexity: 5,
+		reliability: 4,
+		speed: 5,
+		includedInRouter: true,
+		supportsArtifacts: true,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",

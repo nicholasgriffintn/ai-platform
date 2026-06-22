@@ -414,6 +414,7 @@ describe("Models", () => {
 
 			for (const [_key, model] of Object.entries(result)) {
 				expect(model.includedInRouter).toBe(true);
+				expect(model.deprecated).not.toBe(true);
 			}
 		});
 
