@@ -2,7 +2,7 @@ import {
 	MEMORY_SEARCH_TOOL_NAME,
 	MEMORY_STORE_TOOL_NAME,
 	getEnabledMemoryToolNames,
-} from "~/lib/chat/memoryTools";
+} from "~/lib/chat/memoryPolicy";
 import { sanitiseInput } from "~/lib/chat/utils";
 import { MemoryManager } from "~/lib/memory";
 import type { IUserSettings } from "~/types";

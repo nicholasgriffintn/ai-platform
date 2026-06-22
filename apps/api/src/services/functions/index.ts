@@ -158,19 +158,6 @@ export const validateFunctionArgs = (toolDefinition: RegisteredFunctionTool, arg
 	return validation.data;
 };
 
-function hasToolApproval(request: IRequest, functionName: string): boolean {
-	const approvedTools = request.request?.approved_tools;
-	if (!Array.isArray(approvedTools) || approvedTools.length === 0) {
-		return false;
-	}
-
-	const normalisedTarget = functionName.trim().toLowerCase();
-	return approvedTools.some(
-		(tool): tool is string =>
-			typeof tool === "string" && tool.trim().toLowerCase() === normalisedTarget,
-	);
-}
-
 export const handleFunctions = async ({
 	completion_id,
 	app_url,
@@ -189,15 +176,15 @@ export const handleFunctions = async ({
 	emitToolResult?: (response: IFunctionResponse) => Promise<void> | void;
 }): Promise<IFunctionResponse> => {
 	const requestMode = request.request?.mode || request.mode;
-	const toolPreApproved = hasToolApproval(request, functionName);
 
 	if (functionName.startsWith("mcp_")) {
-		const mcpPermissionResult = permissionChecker.checkToolAccess({
+		const mcpPermissionResult = permissionChecker.checkRequestToolAccess({
 			toolName: functionName,
 			mode: requestMode,
 			user: request.user,
 			toolType: "normal",
 			toolPermissions: ["network"],
+			approvedTools: request.request?.approved_tools,
 		});
 
 		if (!mcpPermissionResult.allowed) {
@@ -212,7 +199,7 @@ export const handleFunctions = async ({
 			);
 		}
 
-		if (mcpPermissionResult.requiresApproval && !toolPreApproved) {
+		if (mcpPermissionResult.requiresApproval && !mcpPermissionResult.approved) {
 			throw new AssistantError(
 				mcpPermissionResult.reason || `Tool "${functionName}" requires approval before execution`,
 				ErrorType.AUTHORISATION_ERROR,
@@ -234,12 +221,13 @@ export const handleFunctions = async ({
 	}
 
 	const foundFunction = resolveFunctionTool(functionName);
-	const permissionResult = permissionChecker.checkToolAccess({
+	const permissionResult = permissionChecker.checkRequestToolAccess({
 		toolName: functionName,
 		mode: requestMode,
 		user: request.user,
 		toolType: foundFunction.type,
 		toolPermissions: foundFunction.permissions,
+		approvedTools: request.request?.approved_tools,
 	});
 
 	if (!permissionResult.allowed) {
@@ -259,7 +247,7 @@ export const handleFunctions = async ({
 		);
 	}
 
-	if (permissionResult.requiresApproval && !toolPreApproved) {
+	if (permissionResult.requiresApproval && !permissionResult.approved) {
 		throw new AssistantError(
 			permissionResult.reason || `Tool "${functionName}" requires approval before execution`,
 			ErrorType.AUTHORISATION_ERROR,

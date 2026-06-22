@@ -148,12 +148,19 @@ export function CompactSettingRange({
 
 interface CompactSettingSwitchProps {
 	checked: boolean;
+	disabled?: boolean;
 	id: string;
 	label: string;
 	onChange: (checked: boolean) => void;
 }
 
-export function CompactSettingSwitch({ checked, id, label, onChange }: CompactSettingSwitchProps) {
+export function CompactSettingSwitch({
+	checked,
+	disabled,
+	id,
+	label,
+	onChange,
+}: CompactSettingSwitchProps) {
 	return (
 		<label
 			htmlFor={id}
@@ -169,6 +176,7 @@ export function CompactSettingSwitch({ checked, id, label, onChange }: CompactSe
 				id={id}
 				type="checkbox"
 				checked={checked}
+				disabled={disabled}
 				onChange={(event) => onChange(event.target.checked)}
 				className="h-4 w-4 rounded border-zinc-300 text-zinc-700 focus:ring-zinc-500 dark:border-zinc-700 dark:text-zinc-200"
 			/>

@@ -2,8 +2,6 @@ import {
 	createToolCallActionHandler,
 	executeAgentLoop,
 	type AgentLoopState,
-	type AgentMessage,
-	type ToolCallInvocation,
 } from "@assistant/agent-core";
 import type { ConversationManager } from "~/lib/conversationManager";
 import {
@@ -13,19 +11,20 @@ import {
 	shouldRequireToolChoice,
 	withRequiredToolChoice,
 } from "~/lib/chat/agent/completionRequirements";
+import {
+	createAgentProviderIO,
+	type AgentModelResponse,
+	type AgentModelToolCall,
+} from "~/lib/chat/agent/provider-io";
 import { getAIResponse } from "~/lib/chat/responses";
 import { handleToolCalls } from "~/lib/chat/tools";
-import type { IRequest, Message, MessageContent } from "~/types";
+import type { IRequest, Message } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
-import { generateId } from "~/utils/id";
-import { isPlainObject } from "~/utils/objects";
 import { hasEnabledToolNames } from "~/utils/toolNames";
 
 const DEFAULT_AGENT_MAX_STEPS = 8;
 const AGENT_MAX_RECOVERY_REPLANS = 2;
 const AGENT_MAX_DECISION_FAILURES = 2;
-
-const CHAT_ROLES = new Set(["user", "assistant", "tool", "developer", "system"]);
 
 interface ApiAgentLoopState extends AgentLoopState {
 	commandCount: number;
@@ -37,28 +36,8 @@ interface ApiAgentSharedContext {
 	toolRequestContext: IRequest;
 }
 
-export interface ModelToolCall {
-	id?: string;
-	name?: string;
-	arguments?: string;
-	function?: {
-		name?: string;
-		arguments?: string;
-	};
-}
-
-export interface ModelResponse {
-	response?: string;
-	tool_calls?: ModelToolCall[];
-	citations?: string[] | null;
-	data?: unknown;
-	log_id?: string;
-	usage?: Record<string, unknown>;
-	usageMetadata?: Record<string, unknown>;
-	status?: string;
-	refusal?: string | null;
-	annotations?: unknown;
-}
+export type ModelToolCall = AgentModelToolCall;
+export type ModelResponse = AgentModelResponse;
 
 export interface AgentLoopExecutionParams {
 	requestParams: Parameters<typeof getAIResponse>[0];
@@ -73,173 +52,11 @@ export interface AgentLoopExecutionResult {
 	toolResponses: Message[];
 }
 
-function isMessageContentArray(value: unknown[]): value is MessageContent[] {
-	return value.every(
-		(entry) =>
-			typeof entry === "object" &&
-			entry !== null &&
-			"type" in entry &&
-			typeof (entry as { type?: unknown }).type === "string",
-	);
-}
-
-function normaliseAgentContentForProvider(content: AgentMessage["content"]): Message["content"] {
-	if (typeof content === "string") {
-		return content;
-	}
-
-	if (content === null) {
-		return "";
-	}
-
-	if (Array.isArray(content)) {
-		if (isMessageContentArray(content)) {
-			return content;
-		}
-
-		return JSON.stringify(content);
-	}
-
-	return content;
-}
-
-function isMessage(value: unknown): value is Message {
-	if (!isPlainObject(value)) {
-		return false;
-	}
-
-	if (!CHAT_ROLES.has(String(value.role))) {
-		return false;
-	}
-
-	return "content" in value;
-}
-
-function normaliseInitialMessages(messages: unknown): Message[] {
-	if (!Array.isArray(messages) || messages.length === 0) {
-		throw new AssistantError("Agent mode requires at least one message", ErrorType.PARAMS_ERROR);
-	}
-
-	const normalised: Message[] = [];
-	for (const message of messages) {
-		if (!isMessage(message)) {
-			throw new AssistantError(
-				"Agent mode received invalid message format",
-				ErrorType.PARAMS_ERROR,
-			);
-		}
-		normalised.push(message);
-	}
-
-	return normalised;
-}
-
-function toProviderMessages(messages: AgentMessage[]): Message[] {
-	return messages.map((message) => {
-		const providerMessage: Message = {
-			role: message.role,
-			content: normaliseAgentContentForProvider(message.content),
-		};
-
-		if ("name" in message && typeof message.name === "string") {
-			providerMessage.name = message.name;
-		}
-
-		if ("tool_call_id" in message && typeof message.tool_call_id === "string") {
-			providerMessage.tool_call_id = message.tool_call_id;
-		}
-
-		if ("tool_call_arguments" in message) {
-			const toolCallArguments = message.tool_call_arguments;
-			if (typeof toolCallArguments === "string" || isPlainObject(toolCallArguments)) {
-				providerMessage.tool_call_arguments = toolCallArguments;
-			}
-		}
-
-		if ("status" in message && typeof message.status === "string") {
-			providerMessage.status = message.status;
-		}
-
-		return providerMessage;
-	});
-}
-
-function isModelToolCall(value: unknown): value is ModelToolCall {
-	if (!isPlainObject(value)) {
-		return false;
-	}
-
-	if ("function" in value && value.function !== undefined && value.function !== null) {
-		return isPlainObject(value.function);
-	}
-
-	return true;
-}
-
-function normaliseModelResponse(value: unknown): ModelResponse {
-	if (!isPlainObject(value)) {
-		throw new AssistantError(
-			"Provider returned an invalid response shape",
-			ErrorType.PROVIDER_ERROR,
-		);
-	}
-
-	const toolCalls = Array.isArray(value.tool_calls)
-		? value.tool_calls.filter(isModelToolCall)
-		: undefined;
-
-	const citations = Array.isArray(value.citations)
-		? value.citations.filter((citation): citation is string => typeof citation === "string")
-		: undefined;
-
-	return {
-		response: typeof value.response === "string" ? value.response : undefined,
-		tool_calls: toolCalls,
-		citations,
-		data: value.data,
-		log_id: typeof value.log_id === "string" ? value.log_id : undefined,
-		usage: isPlainObject(value.usage) ? value.usage : undefined,
-		usageMetadata: isPlainObject(value.usageMetadata) ? value.usageMetadata : undefined,
-		status: typeof value.status === "string" ? value.status : undefined,
-		refusal:
-			typeof value.refusal === "string" ? value.refusal : value.refusal === null ? null : undefined,
-		annotations: value.annotations,
-	};
-}
-
-function toToolCallInvocations(toolCalls: ModelToolCall[]): ToolCallInvocation[] {
-	return toolCalls.map((toolCall) => ({
-		id: toolCall.id,
-		name: toolCall.function?.name || toolCall.name || "unknown",
-		arguments: toolCall.function?.arguments || toolCall.arguments,
-		raw: toolCall,
-	}));
-}
-
-function normaliseProviderToolCalls(toolCalls: ToolCallInvocation[]): Record<string, unknown>[] {
-	return toolCalls.map((toolCall) => {
-		if (isPlainObject(toolCall.raw)) {
-			return toolCall.raw;
-		}
-
-		return {
-			id: toolCall.id || generateId(),
-			type: "function",
-			function: {
-				name: toolCall.name,
-				arguments:
-					typeof toolCall.arguments === "string"
-						? toolCall.arguments
-						: JSON.stringify(toolCall.arguments || {}),
-			},
-		};
-	});
-}
-
 export async function runAgentLoop(
 	params: AgentLoopExecutionParams,
 ): Promise<AgentLoopExecutionResult> {
-	const runtimeMessages = normaliseInitialMessages(params.requestParams.messages);
+	const providerIO = createAgentProviderIO();
+	const runtimeMessages = providerIO.initialMessages(params.requestParams.messages);
 	const completionRequirements = getAgentCompletionRequirements(params.requestParams);
 	if (
 		completionRequirements.minToolCalls > 0 &&
@@ -282,7 +99,7 @@ export async function runAgentLoop(
 			);
 			const providerResponse = await getAIResponse({
 				...requestParams,
-				messages: toProviderMessages(messages),
+				messages: providerIO.providerMessages(messages),
 				stream: false,
 			});
 
@@ -293,13 +110,13 @@ export async function runAgentLoop(
 				);
 			}
 
-			const modelResponse = normaliseModelResponse(providerResponse);
+			const modelResponse = providerIO.modelResponse(providerResponse);
 			if (!modelResponse.response && !modelResponse.tool_calls?.length) {
 				throw new AssistantError("No response generated by the model", ErrorType.PARAMS_ERROR);
 			}
 
 			if (modelResponse.tool_calls?.length) {
-				const toolCalls = toToolCallInvocations(modelResponse.tool_calls);
+				const toolCalls = providerIO.toolCallInvocations(modelResponse.tool_calls);
 				return {
 					decision: {
 						action: "tool_calls",
@@ -349,7 +166,7 @@ export async function runAgentLoop(
 		handlers: [
 			createToolCallActionHandler<ApiAgentSharedContext, ApiAgentLoopState>({
 				onToolCalls: async (decision, context) => {
-					const providerToolCalls = normaliseProviderToolCalls(decision.toolCalls);
+					const providerToolCalls = providerIO.providerToolCalls(decision.toolCalls);
 					const toolResults = await handleToolCalls(
 						context.shared.completionId,
 						{

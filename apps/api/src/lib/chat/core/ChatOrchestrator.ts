@@ -2,6 +2,7 @@ import { createMultiModelStream } from "~/lib/chat/multiModalStreaming";
 import { extractCouncilTurnRouting } from "~/lib/chat/council";
 import { buildAssistantMessageData, isAgentExecutionMode } from "~/lib/chat/mode-metadata";
 import { RequestPreparer, type PreparedRequest } from "~/lib/chat/preparation/RequestPreparer";
+import { createChatExecutionRequest } from "~/lib/chat/core/execution-request";
 import { buildToolRequestContext } from "~/lib/chat/core/request-context";
 import { getAIResponse } from "~/lib/chat/responses";
 import { runAgentLoop, type ModelResponse } from "~/lib/chat/agent/runAgentLoop";
@@ -87,33 +88,11 @@ export class ChatOrchestrator {
 		const {
 			platform = "api",
 			stream = false,
-			disable_functions,
-			should_think,
-			response_format,
-			lang,
-			temperature,
-			max_tokens,
-			top_p,
-			top_k,
-			seed,
-			repetition_penalty,
-			frequency_penalty,
-			presence_penalty,
-			n,
-			stop,
-			logit_bias,
-			metadata,
-			verbosity,
 			store = true,
-			tools,
-			parallel_tool_calls,
-			tool_choice,
 			enabled_tools: requestedEnabledTools = [],
 			approved_tools = [],
-			current_step,
 			max_steps,
 		} = chatOptions;
-		const reasoning_effort = chatOptions.reasoning?.effort ?? chatOptions.reasoning_effort;
 		const resolvedMaxSteps = resolveChatMaxSteps(chatOptions);
 
 		const startTime = Date.now();
@@ -157,6 +136,16 @@ export class ChatOrchestrator {
 			messages = compactedSession.messages;
 		}
 		messages = pruneMessagesToFitContext(messages, messageWithContext, primaryModelConfig);
+		const executionRequest = createChatExecutionRequest({
+			chatOptions,
+			prepared: {
+				...prepared,
+				enabledTools: enabled_tools,
+			},
+			messages,
+			resolvedMaxSteps,
+		});
+
 		if (isAgentExecutionMode(currentMode) && stream) {
 			throw new AssistantError(
 				"Agent modes (agent, plan, build, explore) do not support streaming. Set stream: false.",
@@ -167,61 +156,8 @@ export class ChatOrchestrator {
 
 		if (modelConfigs.length > 1 && stream) {
 			const transformedStream = createMultiModelStream(
-				{
-					app_url: chatOptions.app_url,
-					system_prompt: systemPrompt,
-					env: chatOptions.env,
-					user: chatOptions.user?.id ? chatOptions.user : undefined,
-					context: chatOptions.context,
-					disable_functions,
-					completion_id: chatOptions.completion_id,
-					messages,
-					message: messageWithContext,
-					models: modelConfigs,
-					provider: primaryProvider,
-					mode: currentMode,
-					should_think,
-					response_format,
-					lang,
-					temperature,
-					max_tokens,
-					top_p,
-					top_k,
-					seed,
-					repetition_penalty,
-					frequency_penalty,
-					presence_penalty,
-					stop,
-					logit_bias,
-					metadata,
-					reasoning_effort,
-					verbosity,
-					store,
-					enabled_tools,
-					tools,
-					parallel_tool_calls,
-					tool_choice,
-					current_step,
-					max_steps: resolvedMaxSteps,
-					current_agent_id: chatOptions.current_agent_id,
-					delegation_stack: chatOptions.delegation_stack,
-					max_delegation_depth: chatOptions.max_delegation_depth,
-					options: chatOptions.options || {},
-				},
-				{
-					env: chatOptions.env,
-					completion_id: chatOptions.completion_id!,
-					model: primaryModel,
-					provider: primaryProvider,
-					platform: platform || "api",
-					user: chatOptions.user,
-					context: chatOptions.context,
-					userSettings,
-					app_url: chatOptions.app_url,
-					mode: currentMode,
-					tools,
-					enabled_tools,
-				},
+				executionRequest.multiModelStreamRequest(),
+				executionRequest.multiModelStreamOptions(),
 				conversationManager,
 			);
 
@@ -233,47 +169,7 @@ export class ChatOrchestrator {
 			};
 		}
 
-		const requestParams: Parameters<typeof getAIResponse>[0] = {
-			app_url: chatOptions.app_url,
-			system_prompt: systemPrompt,
-			env: chatOptions.env,
-			user: chatOptions.user?.id ? chatOptions.user : undefined,
-			executionCtx: chatOptions.executionCtx,
-			analyticsTrackingEnabled: userSettings?.tracking_enabled ?? null,
-			disable_functions,
-			completion_id: chatOptions.completion_id,
-			messages,
-			message: messageWithContext,
-			model: primaryModel,
-			provider: primaryProvider,
-			mode: currentMode,
-			should_think,
-			response_format,
-			lang,
-			temperature,
-			max_tokens,
-			top_p,
-			top_k,
-			seed,
-			repetition_penalty,
-			frequency_penalty,
-			presence_penalty,
-			n,
-			stream,
-			stop,
-			logit_bias,
-			metadata,
-			reasoning_effort,
-			verbosity,
-			store,
-			enabled_tools,
-			tools,
-			parallel_tool_calls,
-			tool_choice,
-			current_step,
-			max_steps: resolvedMaxSteps,
-			options: chatOptions.options || {},
-		};
+		const requestParams = executionRequest.providerRequest();
 
 		const toolRequestContext = buildToolRequestContext({
 			chatOptions: {
@@ -305,27 +201,7 @@ export class ChatOrchestrator {
 		if (response instanceof ReadableStream) {
 			const transformedStream = await createStreamWithPostProcessing(
 				response,
-				{
-					env: chatOptions.env,
-					completion_id: chatOptions.completion_id!,
-					model: primaryModel,
-					provider: primaryProvider,
-					platform: platform || "api",
-					user: chatOptions.user,
-					context: chatOptions.context,
-					userSettings,
-					app_url: chatOptions.app_url,
-					mode: currentMode,
-					max_steps: resolvedMaxSteps,
-					current_step: chatOptions.current_step,
-					tools,
-					enabled_tools,
-					approved_tools,
-					current_agent_id: chatOptions.current_agent_id,
-					delegation_stack: chatOptions.delegation_stack,
-					max_delegation_depth: chatOptions.max_delegation_depth,
-					requestOptions: chatOptions.options || {},
-				},
+				executionRequest.streamOptions(primaryModel, primaryProvider),
 				conversationManager,
 			);
 

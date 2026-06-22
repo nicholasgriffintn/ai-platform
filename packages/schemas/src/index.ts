@@ -63,6 +63,7 @@ export * from "./audio";
 export * from "./auth";
 export * from "./chat";
 export * from "./chat-mode";
+export * from "./chat-stream";
 export * from "./council";
 export * from "./cron";
 export * from "./edit";

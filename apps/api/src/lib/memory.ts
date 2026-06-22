@@ -169,7 +169,7 @@ export class MemoryManager {
 								},
 								{ role: "user", content: lastUser },
 							],
-							response_format: { format: "json" },
+							response_format: { type: "json_object" },
 						},
 						this.user?.id,
 					);
@@ -210,7 +210,7 @@ export class MemoryManager {
 											},
 											{ role: "user", content: summaryText },
 										],
-										response_format: { format: "json" },
+										response_format: { type: "json_object" },
 									},
 									this.user?.id,
 								);

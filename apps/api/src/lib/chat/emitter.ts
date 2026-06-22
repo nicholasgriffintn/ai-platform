@@ -1,3 +1,4 @@
+import { formatChatStreamSseDone, formatChatStreamSseEvent } from "@assistant/schemas";
 import type { SSEEventPayload } from "~/types";
 import { getLogger } from "~/utils/logger";
 
@@ -14,14 +15,12 @@ const logger = getLogger({
  * @returns The formatted SSE event data string
  */
 export function createEventData(type: string, payload: SSEEventPayload = {}): string {
-	let data;
 	try {
-		data = JSON.stringify({ ...payload, type });
+		return formatChatStreamSseEvent(type, payload);
 	} catch (error) {
 		logger.error("Error creating event data", { error, type, payload });
 		throw error;
 	}
-	return `data: ${data}\n\n`;
 }
 
 /**
@@ -38,7 +37,7 @@ export function encodeEventData(data: string): Uint8Array {
  * @param controller - The stream controller
  */
 export function emitDoneEvent(controller: TransformStreamDefaultController) {
-	const doneEvent = encodeEventData("data: [DONE]\n\n");
+	const doneEvent = encodeEventData(formatChatStreamSseDone());
 	controller.enqueue(doneEvent);
 }
 

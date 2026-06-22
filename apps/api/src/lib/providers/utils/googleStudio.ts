@@ -58,45 +58,62 @@ export function buildGoogleStudioTools(
 	params: ChatCompletionParameters,
 	modelConfig: ModelConfigItem,
 ): Record<string, unknown>[] | undefined {
-	const enabledTools = (params.enabled_tools || []).filter(
-		(tool) => !(tool === "web_search" && modelConfig.supportsSearchGrounding),
-	);
-	const tools: Record<string, unknown>[] = [];
+	return new GoogleStudioToolBuilder(params, modelConfig).build();
+}
 
-	if (modelConfig.supportsCodeExecution && enabledTools.includes("code_execution")) {
-		tools.push({
-			code_execution: {},
-		});
+class GoogleStudioToolBuilder {
+	private readonly enabledTools: readonly string[];
+	private readonly tools: Record<string, unknown>[] = [];
+
+	constructor(
+		private readonly params: ChatCompletionParameters,
+		private readonly modelConfig: ModelConfigItem,
+	) {
+		this.enabledTools = (params.enabled_tools || []).filter(
+			(tool) => !(tool === "web_search" && modelConfig.supportsSearchGrounding),
+		);
 	}
 
-	if (modelConfig.supportsSearchGrounding && enabledTools.includes("search_grounding")) {
-		tools.push({
-			google_search: {},
-		});
+	build(): Record<string, unknown>[] | undefined {
+		this.addHostedTools();
+		this.addFunctionDeclarations();
+		return this.tools.length > 0 ? this.tools : undefined;
 	}
 
-	if (modelConfig.supportsUrlContext && enabledTools.includes("url_context")) {
-		tools.push({
-			url_context: {},
-		});
+	private addHostedTools() {
+		if (this.modelConfig.supportsCodeExecution && this.enabledTools.includes("code_execution")) {
+			this.tools.push({ code_execution: {} });
+		}
+
+		if (
+			this.modelConfig.supportsSearchGrounding &&
+			this.enabledTools.includes("search_grounding")
+		) {
+			this.tools.push({ google_search: {} });
+		}
+
+		if (this.modelConfig.supportsUrlContext && this.enabledTools.includes("url_context")) {
+			this.tools.push({ url_context: {} });
+		}
 	}
 
-	if (modelConfig.supportsToolCalls && params.tools?.length > 0) {
-		const formattedTools = params.tools.map((tool) => ({
-			name: tool.function.name,
-			description: tool.function.description,
-			parameters: {
-				type: tool.function.parameters.type,
-				properties: tool.function.parameters.properties,
-			},
-			required: tool.function.required,
-		}));
-		tools.push({
-			functionDeclarations: formattedTools,
+	private addFunctionDeclarations() {
+		if (!this.modelConfig.supportsToolCalls || !this.params.tools?.length) {
+			return;
+		}
+
+		this.tools.push({
+			functionDeclarations: this.params.tools.map((tool) => ({
+				name: tool.function.name,
+				description: tool.function.description,
+				parameters: {
+					type: tool.function.parameters.type,
+					properties: tool.function.parameters.properties,
+				},
+				required: tool.function.required,
+			})),
 		});
 	}
-
-	return tools.length > 0 ? tools : undefined;
 }
 
 export function buildGoogleStudioGenerationConfig(

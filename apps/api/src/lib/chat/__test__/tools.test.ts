@@ -442,6 +442,108 @@ describe("tools", () => {
 			);
 		});
 
+		it("should store streamed tool call results immediately when requested", async () => {
+			const streamingConversationManager = {
+				add: vi.fn(),
+				addBatch: vi.fn(),
+			};
+			const onToolResult = vi.fn();
+			vi.mocked(handleFunctions).mockResolvedValue({
+				content: "Success",
+				status: "success",
+			});
+
+			const modelResponse = {
+				tool_calls: [
+					{
+						id: "call-1",
+						function: {
+							name: "search",
+							arguments: JSON.stringify({ query: "test" }),
+						},
+					},
+				],
+			};
+
+			await handleToolCalls(
+				"completion-123",
+				modelResponse,
+				streamingConversationManager as any,
+				mockRequest as any,
+				{
+					persistResults: "immediate",
+					onToolResult,
+				},
+			);
+
+			expect(streamingConversationManager.add).toHaveBeenCalledWith(
+				"completion-123",
+				expect.objectContaining({
+					role: "tool",
+					name: "search",
+				}),
+			);
+			expect(streamingConversationManager.addBatch).not.toHaveBeenCalled();
+			expect(onToolResult).toHaveBeenCalledWith(
+				expect.objectContaining({
+					role: "tool",
+					name: "search",
+				}),
+			);
+		});
+
+		it("should keep callback delivery separate from batch persistence", async () => {
+			const conversationManager = {
+				add: vi.fn(),
+				addBatch: vi.fn(),
+			};
+			const onToolResult = vi.fn();
+			vi.mocked(handleFunctions).mockResolvedValue({
+				content: "Success",
+				status: "success",
+			});
+
+			const modelResponse = {
+				tool_calls: [
+					{
+						id: "call-1",
+						function: {
+							name: "search",
+							arguments: JSON.stringify({ query: "test" }),
+						},
+					},
+				],
+			};
+
+			await handleToolCalls(
+				"completion-123",
+				modelResponse,
+				conversationManager as any,
+				mockRequest as any,
+				{
+					persistResults: "batch",
+					onToolResult,
+				},
+			);
+
+			expect(conversationManager.add).not.toHaveBeenCalled();
+			expect(conversationManager.addBatch).toHaveBeenCalledWith(
+				"completion-123",
+				expect.arrayContaining([
+					expect.objectContaining({
+						role: "tool",
+						name: "search",
+					}),
+				]),
+			);
+			expect(onToolResult).toHaveBeenCalledWith(
+				expect.objectContaining({
+					role: "tool",
+					name: "search",
+				}),
+			);
+		});
+
 		it("should handle conversation manager errors gracefully", async () => {
 			vi.mocked(handleFunctions).mockResolvedValue({
 				content: "Success",

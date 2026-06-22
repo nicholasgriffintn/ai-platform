@@ -141,6 +141,36 @@ describe("PermissionChecker", () => {
 		expect(result.allowed).toBe(false);
 		expect(result.reason).toBe("This tool requires a signed-in user");
 	});
+
+	it("matches request approvals case-insensitively and preserves access decisions", () => {
+		const checker = new PermissionChecker();
+		const result = checker.checkRequestToolAccess({
+			toolName: "run_code",
+			mode: "build",
+			user: proUser,
+			toolPermissions: ["sandbox"],
+			approvedTools: [" RUN_CODE "],
+		});
+
+		expect(result.allowed).toBe(true);
+		expect(result.requiresApproval).toBe(true);
+		expect(result.approved).toBe(true);
+	});
+
+	it("keeps approval state false when request approvals are missing", () => {
+		const checker = new PermissionChecker();
+		const result = checker.checkRequestToolAccess({
+			toolName: "run_code",
+			mode: "build",
+			user: proUser,
+			toolPermissions: ["sandbox"],
+			approvedTools: [],
+		});
+
+		expect(result.allowed).toBe(true);
+		expect(result.requiresApproval).toBe(true);
+		expect(result.approved).toBe(false);
+	});
 });
 
 describe("permission helpers", () => {

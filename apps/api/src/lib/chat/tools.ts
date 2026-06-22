@@ -19,44 +19,43 @@ interface ToolCallError extends Error {
 	status?: number;
 }
 
+type ToolResultPersistenceMode = "batch" | "immediate" | "none";
+
 export const handleToolCalls = async (
 	completion_id: string,
 	modelResponse: any,
 	conversationManager: ConversationManager,
 	req: IRequest,
 	options?: {
+		persistResults?: ToolResultPersistenceMode;
 		onToolResult?: (message: Message) => Promise<void> | void;
 	},
 ): Promise<Message[]> => {
-	const withDerivedParts = (message: Message): Message => ({
-		...message,
-		parts: message.parts || buildMessageParts(message),
-	});
-
 	const functionResults: Message[] = [];
-	const shouldPersistAsRecorded = Boolean(options?.onToolResult);
+	const persistResults = options?.persistResults ?? "batch";
 	const modelResponseLogId = req.env.AI.aiGatewayLogId;
 	const timestamp = Date.now();
 
 	const recordToolResult = async (message: Message) => {
-		const messageWithParts = withDerivedParts(message);
+		const messageWithParts = {
+			...message,
+			parts: message.parts || buildMessageParts(message),
+		};
 		functionResults.push(messageWithParts);
 
-		if (!options?.onToolResult) {
-			return;
+		if (persistResults === "immediate") {
+			try {
+				await conversationManager.add(completion_id, messageWithParts);
+			} catch (error) {
+				logger.error("Failed to store streamed tool call result:", {
+					error,
+					completion_id,
+					tool_name: messageWithParts.name,
+				});
+			}
 		}
 
-		try {
-			await conversationManager.add(completion_id, messageWithParts);
-		} catch (error) {
-			logger.error("Failed to store streamed tool call result:", {
-				error,
-				completion_id,
-				tool_name: messageWithParts.name,
-			});
-		}
-
-		await options.onToolResult(messageWithParts);
+		await options?.onToolResult?.(messageWithParts);
 	};
 
 	const toolCalls = modelResponse.tool_calls || [];
@@ -65,7 +64,6 @@ export const handleToolCalls = async (
 	}
 
 	const mode = req.mode || req.request?.mode;
-	const approvedTools = new Set(req.request?.approved_tools ?? []);
 	const toolPermissionsMap = req.request?.tool_permissions_map ?? {};
 
 	for (const toolCall of toolCalls) {
@@ -77,11 +75,12 @@ export const handleToolCalls = async (
 				throw new AssistantError("Missing tool call ID", ErrorType.TOOL_CALL_ERROR);
 			}
 
-			const permissionResult = permissionChecker.checkToolAccess({
+			const permissionResult = permissionChecker.checkRequestToolAccess({
 				toolName: functionName,
 				mode,
 				user: req.user,
 				toolPermissions: toolPermissionsMap[functionName],
+				approvedTools: req.request?.approved_tools,
 			});
 
 			if (!permissionResult.allowed) {
@@ -112,7 +111,7 @@ export const handleToolCalls = async (
 				continue;
 			}
 
-			if (permissionResult.requiresApproval && !approvedTools.has(functionName)) {
+			if (permissionResult.requiresApproval && !permissionResult.approved) {
 				logger.warn(`Tool "${functionName}" requires approval but was not pre-approved`, {
 					mode,
 				});
@@ -330,7 +329,7 @@ export const handleToolCalls = async (
 		}
 	}
 
-	if (!shouldPersistAsRecorded && functionResults.length > 0) {
+	if (persistResults === "batch" && functionResults.length > 0) {
 		try {
 			await conversationManager.addBatch(completion_id, functionResults);
 		} catch (error) {

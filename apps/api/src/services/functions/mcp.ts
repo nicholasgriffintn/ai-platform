@@ -1,21 +1,41 @@
-import type { MCPClientManager } from "agents/mcp/client";
 import type { ConversationManager } from "~/lib/conversationManager";
-import type { IFunctionResponse, IRequest } from "~/types";
+import { parseMCPToolName } from "~/services/agents/mcp-client";
+import type { IFunctionResponse } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 
 const logger = getLogger({ prefix: "services/functions/mcp" });
 
-const mcpClients = new Map<string, MCPClientManager>();
+interface RegisteredMCPClient {
+	mcpConnections: Record<string, unknown>;
+	getAITools(): Record<string, unknown> | Promise<Record<string, unknown>>;
+	callTool(
+		toolCall: {
+			name: string;
+			serverId: string;
+			arguments: Record<string, unknown>;
+		},
+		requestId: undefined,
+		options: { signal: AbortSignal },
+	): Record<string, unknown> | Promise<Record<string, unknown>>;
+}
 
-export const registerMCPClient = (agentId: string, client: MCPClientManager): void => {
+interface MCPToolExecutionRequest {
+	request?: Record<string, unknown> & {
+		functionName?: string;
+	};
+}
+
+const mcpClients = new Map<string, RegisteredMCPClient>();
+
+export const registerMCPClient = (agentId: string, client: RegisteredMCPClient): void => {
 	mcpClients.set(agentId, client);
 };
 
 export const handleMCPTool = async (
 	completion_id: string,
 	args: unknown,
-	request: IRequest,
+	request: MCPToolExecutionRequest,
 	_app_url?: string,
 	conversationManager?: ConversationManager,
 ): Promise<IFunctionResponse> => {
@@ -25,17 +45,17 @@ export const handleMCPTool = async (
 			throw new AssistantError("Missing function name", ErrorType.PARAMS_ERROR);
 		}
 
-		const parts = functionName.split("_");
-		if (parts.length < 3 || parts[0] !== "mcp") {
+		const mcpToolName = parseMCPToolName(functionName);
+		if (!mcpToolName) {
 			throw new AssistantError(`Invalid MCP tool format: ${functionName}`, ErrorType.PARAMS_ERROR);
 		}
 
-		const shortAgentId = parts[1];
-
-		const fullAgentId = Array.from(mcpClients.keys()).find((id) => id.startsWith(shortAgentId));
+		const fullAgentId = Array.from(mcpClients.keys()).find((id) =>
+			id.startsWith(mcpToolName.shortAgentId),
+		);
 		if (!fullAgentId) {
 			throw new AssistantError(
-				`No agent found with ID starting with ${shortAgentId}`,
+				`No agent found with ID starting with ${mcpToolName.shortAgentId}`,
 				ErrorType.PARAMS_ERROR,
 			);
 		}
@@ -56,7 +76,7 @@ export const handleMCPTool = async (
 			);
 		}
 
-		const toolName = parts.slice(2).join("_");
+		const { toolName } = mcpToolName;
 
 		if (!toolsResponse[toolName]) {
 			const matchingTools = Object.keys(toolsResponse).filter(
@@ -94,7 +114,7 @@ export const handleMCPTool = async (
 };
 
 async function executeTool(
-	client: MCPClientManager,
+	client: RegisteredMCPClient,
 	toolName: string,
 	args: unknown,
 	originalToolName: string,
@@ -124,20 +144,17 @@ async function executeTool(
 	const argsObj =
 		typeof args === "object" && args !== null ? (args as Record<string, unknown>) : {};
 
-	const baseFunctionName = toolName.includes("_")
-		? toolName.substring(toolName.indexOf("_") + 1)
-		: toolName;
-
 	try {
 		const fallbackResult = await client.callTool(
 			{
-				name: baseFunctionName,
+				name: toolName,
 				serverId: connectionId,
 				arguments: argsObj,
 			},
 			undefined,
 			{ signal: new AbortController().signal },
 		);
+		const answer = "content" in fallbackResult ? fallbackResult.content : fallbackResult;
 
 		if (conversationManager) {
 			await conversationManager.add(completion_id, {
@@ -146,7 +163,7 @@ async function executeTool(
 				name: originalToolName,
 				status: "success",
 				data: {
-					answer: fallbackResult.content,
+					answer,
 					name: originalToolName,
 					formattedName: "MCP",
 					responseType: "custom",
@@ -161,14 +178,14 @@ async function executeTool(
 			name: originalToolName,
 			content: "Request completed",
 			data: {
-				answer: fallbackResult.content,
+				answer,
 				name: originalToolName,
 				formattedName: "MCP",
 				responseType: "custom",
 			},
 		};
 	} catch (error) {
-		logger.error(`Error calling tool ${baseFunctionName}:`, {
+		logger.error(`Error calling tool ${toolName}:`, {
 			error_message: error instanceof Error ? error.message : "Unknown error",
 		});
 		throw error;

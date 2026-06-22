@@ -1,12 +1,12 @@
 import { getAIResponse } from "~/lib/chat/responses";
 import type { ModelConfigInfo } from "@assistant/schemas";
 import type { ConversationManager } from "~/lib/conversationManager";
-import type { ServiceContext } from "~/lib/context/serviceContext";
-import type { ChatMode, IEnv, IUser, IUserSettings, Message, Platform } from "~/types";
+import type { MultiModelStreamRequest } from "~/lib/chat/core/execution-request";
+import type { Message } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";
-import { createStreamWithPostProcessing } from "./streaming";
+import { createStreamWithPostProcessing, type StreamPostProcessingOptions } from "./streaming";
 import { safeParseJson } from "~/utils/json";
 
 const logger = getLogger({ prefix: "lib/chat/multiModalStreaming" });
@@ -57,26 +57,18 @@ function buildConsensusSynthesisPrompt(modelResponses: string): string {
  * @returns The multi-model stream
  */
 export function createMultiModelStream(
-	parameters: any,
-	options: {
-		env: IEnv;
-		completion_id: string;
-		model: string;
-		provider: string;
-		platform?: Platform;
-		user?: IUser;
-		context?: ServiceContext;
-		userSettings?: IUserSettings;
-		app_url?: string;
-		mode?: ChatMode;
-		tools?: any[];
-		enabled_tools?: string[];
-	},
+	parameters: MultiModelStreamRequest,
+	options: StreamPostProcessingOptions,
 	conversationManager: ConversationManager,
 ): ReadableStream {
-	const { models, ...baseParams } = parameters;
+	const { models, ...requestDefaults } = parameters;
+	const baseParams = {
+		...requestDefaults,
+		env: requestDefaults.env ?? options.env,
+	};
 	const primaryParams = {
 		...baseParams,
+		body: baseParams.body,
 		model: models[0].model,
 		provider: models[0].provider,
 		stream: true,
@@ -91,6 +83,7 @@ export function createMultiModelStream(
 
 					const secondaryParams = {
 						...baseParams,
+						body: baseParams.body,
 						model: modelConfig.model,
 						provider: modelConfig.provider,
 						stream: false,
@@ -314,6 +307,7 @@ export function createMultiModelStream(
 				try {
 					const consensusResponse = await getAIResponse({
 						...baseParams,
+						body: baseParams.body,
 						disable_functions: true,
 						enabled_tools: [],
 						messages: [

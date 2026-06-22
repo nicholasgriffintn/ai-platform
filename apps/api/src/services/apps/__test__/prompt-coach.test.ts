@@ -11,6 +11,10 @@ vi.mock("~/lib/chat/responses", () => ({
 	getAIResponse: vi.fn(),
 }));
 
+vi.mock("~/lib/providers/models", () => ({
+	getAuxiliaryModel: vi.fn(),
+}));
+
 vi.mock("~/lib/prompts/coaching", () => ({
 	returnCoachingPrompt: vi.fn(() => "Coaching system prompt"),
 }));
@@ -40,6 +44,14 @@ describe("prompt-coach service", () => {
 	});
 
 	describe("handlePromptCoachSuggestion", () => {
+		beforeEach(async () => {
+			const { getAuxiliaryModel } = await import("~/lib/providers/models");
+			vi.mocked(getAuxiliaryModel).mockResolvedValue({
+				model: "auxiliary-prompt-model",
+				provider: "workers-ai",
+			});
+		});
+
 		it("should return prompt coaching response", async () => {
 			const mockAIResponse = {
 				response: `
@@ -74,6 +86,28 @@ describe("prompt-coach service", () => {
 				confidence_score: expect.any(Number),
 				prompt_type: "technical",
 			});
+		});
+
+		it("uses the auxiliary model for prompt coaching", async () => {
+			const { getAIResponse } = await import("~/lib/chat/responses");
+			const { getAuxiliaryModel } = await import("~/lib/providers/models");
+			vi.mocked(getAIResponse).mockResolvedValue({
+				response: "<revised_prompt>Improved prompt</revised_prompt>",
+			});
+
+			await handlePromptCoachSuggestion({
+				env: mockEnv,
+				user: mockUser,
+				prompt: "Improve this prompt",
+			});
+
+			expect(getAuxiliaryModel).toHaveBeenCalledWith(mockEnv, mockUser);
+			expect(getAIResponse).toHaveBeenCalledWith(
+				expect.objectContaining({
+					model: "auxiliary-prompt-model",
+					provider: "workers-ai",
+				}),
+			);
 		});
 
 		it("should handle AI response without suggested prompt", async () => {

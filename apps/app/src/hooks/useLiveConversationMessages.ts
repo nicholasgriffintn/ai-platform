@@ -10,10 +10,10 @@ import {
 	createLiveTurn,
 	createTemporaryLiveTitle,
 	DEFAULT_LIVE_CONVERSATION_TITLES,
-	getMessageText,
 	orderLiveMessages,
 	type LiveTurn,
 } from "~/lib/realtime/live-turn-messages";
+import { getMessageTextContent } from "~/lib/messages";
 import type { RealtimeTranscriptResult } from "~/lib/realtime/messages";
 import { useChatStore } from "~/state/stores/chatStore";
 import type { Conversation, Message } from "~/types";
@@ -329,7 +329,7 @@ export function useLiveConversationMessages({
 			}
 
 			const firstUserMessage = conversation.messages.find(
-				(message) => message.role === "user" && getMessageText(message),
+				(message) => message.role === "user" && getMessageTextContent(message),
 			);
 			if (!firstUserMessage) {
 				return;
@@ -362,13 +362,13 @@ export function useLiveConversationMessages({
 			}
 
 			const firstUserMessage = conversation.messages.find(
-				(message) => message.role === "user" && getMessageText(message),
+				(message) => message.role === "user" && getMessageTextContent(message),
 			);
 			const firstAssistantMessage = conversation.messages.find(
 				(message) =>
 					message.role === "assistant" &&
 					message.status !== "in_progress" &&
-					getMessageText(message),
+					getMessageTextContent(message),
 			);
 			if (!firstUserMessage || !firstAssistantMessage) {
 				return;

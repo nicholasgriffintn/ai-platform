@@ -12,7 +12,13 @@ import {
 	delegateToTeamMemberByRole,
 	getTeamMembers,
 } from "~/services/functions/teamDelegation";
-import { connectMCPServerReady, type MCPServerConfig } from "~/services/agents/mcp-client";
+import {
+	connectMCPServerReady,
+	parseMCPServerConfigs,
+	resolveMCPAIToolDefinition,
+	type AgentMCPToolDefinition,
+	type MCPServerConfig,
+} from "~/services/agents/mcp-client";
 import type { ApiToolDefinition } from "~/services/functions/types";
 import type { IEnv } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -106,11 +112,7 @@ function formatFewShotExamples(rawExamples: unknown): string {
 }
 
 async function setupMCPFunctions(agent: CompletionAgent, env: IEnv) {
-	const mcpFunctions: Array<{
-		name: string;
-		description?: string;
-		parameters: Record<string, unknown>;
-	}> = [];
+	const mcpFunctions: AgentMCPToolDefinition[] = [];
 
 	if (!agent.servers) {
 		return mcpFunctions;
@@ -147,29 +149,11 @@ async function setupMCPFunctions(agent: CompletionAgent, env: IEnv) {
 	return mcpFunctions;
 }
 
-function parseMCPServerConfigs(servers: unknown): MCPServerConfig[] {
-	const parsed = typeof servers === "string" ? safeParseJson(servers) : servers;
-	if (!Array.isArray(parsed)) {
-		throw new AssistantError("Invalid servers configuration", ErrorType.PARAMS_ERROR);
-	}
-
-	return parsed.filter(
-		(config): config is MCPServerConfig =>
-			typeof config === "object" &&
-			config !== null &&
-			typeof (config as { url?: unknown }).url === "string",
-	);
-}
-
 async function collectServerTools(
 	agent: CompletionAgent,
 	mcp: MCPClientManager,
 	cfg: MCPServerConfig,
-	mcpFunctions: Array<{
-		name: string;
-		description?: string;
-		parameters: Record<string, unknown>;
-	}>,
+	mcpFunctions: AgentMCPToolDefinition[],
 ) {
 	try {
 		const readyConnection = await connectMCPServerReady(mcp, cfg);
@@ -182,22 +166,13 @@ async function collectServerTools(
 		}
 
 		const rawTools = await mcp.getAITools();
-		const defs = Object.entries(rawTools) as [string, Record<string, unknown>][];
+		const defs = Object.entries(rawTools);
 
 		for (const [name, def] of defs) {
-			const shortAgentId = agent.id.substring(0, 8);
-			const toolName = `mcp_${shortAgentId}_${name}`;
-			const parameters = def.parameters;
-
-			if (!hasMCPToolParameters(parameters)) {
-				continue;
+			const toolDefinition = resolveMCPAIToolDefinition(agent.id, name, def);
+			if (toolDefinition) {
+				mcpFunctions.push(toolDefinition);
 			}
-
-			mcpFunctions.push({
-				name: toolName,
-				description: typeof def.description === "string" ? def.description : undefined,
-				parameters,
-			});
 		}
 	} catch (error) {
 		logger.error("Error connecting to MCP server", {
@@ -205,25 +180,6 @@ async function collectServerTools(
 			error_message: error instanceof Error ? error.message : "Unknown error",
 		});
 	}
-}
-
-function hasMCPToolParameters(value: unknown): value is Record<string, unknown> {
-	if (!value || typeof value !== "object" || Array.isArray(value)) {
-		return false;
-	}
-
-	const parameters = value as Record<string, unknown>;
-	if (parameters.properties) {
-		return true;
-	}
-
-	const jsonSchema = parameters.jsonSchema;
-	return Boolean(
-		jsonSchema &&
-		typeof jsonSchema === "object" &&
-		!Array.isArray(jsonSchema) &&
-		(jsonSchema as Record<string, unknown>).properties,
-	);
 }
 
 function setupTeamDelegationTools(agent: CompletionAgent): ApiToolDefinition[] {

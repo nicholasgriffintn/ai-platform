@@ -100,7 +100,6 @@ describe("createMultiModelStream", () => {
 
 		const stream = createMultiModelStream(
 			{
-				env: {},
 				messages: [
 					{ role: "user", content: "Question" },
 					{ role: "assistant", content: "Original answer" },

@@ -36,6 +36,19 @@ class Logger {
 		return Logger.instances[prefix];
 	}
 
+	private normaliseLogValue(value: any): any {
+		if (value instanceof Error) {
+			return {
+				name: value.name,
+				message: value.message,
+				stack: value.stack,
+				cause: value.cause ? this.normaliseLogValue(value.cause) : undefined,
+			};
+		}
+
+		return value;
+	}
+
 	private formatMessage(levelName: string, message: string, ...args: any[]): string {
 		const timestamp = new Date().toISOString();
 		const logObject: Record<string, any> = {
@@ -49,8 +62,12 @@ class Logger {
 		const remainingArgs: any[] = [];
 
 		for (const arg of args) {
-			if (arg !== null && typeof arg === "object" && !Array.isArray(arg)) {
-				Object.assign(meta, arg);
+			if (arg instanceof Error) {
+				remainingArgs.push(this.normaliseLogValue(arg));
+			} else if (arg !== null && typeof arg === "object" && !Array.isArray(arg)) {
+				for (const [key, value] of Object.entries(arg)) {
+					meta[key] = this.normaliseLogValue(value);
+				}
 			} else {
 				remainingArgs.push(arg);
 			}

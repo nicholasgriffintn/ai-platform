@@ -510,6 +510,43 @@ describe("ChatOrchestrator", () => {
 				);
 			});
 
+			it("should preserve approved tools in multi-model streaming", async () => {
+				const multiModelConfig = [{ model: "model-1" }, { model: "model-2" }];
+
+				mockPreparer.prepare.mockResolvedValue({
+					modelConfigs: multiModelConfig,
+					primaryModel: "model-1",
+					primaryProvider: "provider-1",
+					conversationManager: mockConversationManager,
+					messages: [{ role: "user", content: "Hello" }],
+					systemPrompt: "Test system prompt",
+					messageWithContext: "Hello with context",
+					userSettings: {},
+					currentMode: "chat",
+					enabledTools: ["run_code"],
+				});
+
+				const mockStream = new ReadableStream();
+				mockCreateMultiModelStream.mockReturnValue(mockStream);
+
+				await orchestrator.process({
+					...mockOptions,
+					stream: true,
+					approved_tools: ["run_code"],
+				});
+
+				expect(mockCreateMultiModelStream).toHaveBeenCalledWith(
+					expect.objectContaining({
+						approved_tools: ["run_code"],
+					}),
+					expect.objectContaining({
+						approved_tools: ["run_code"],
+						enabled_tools: ["run_code"],
+					}),
+					mockConversationManager,
+				);
+			});
+
 			it("should return output validation error", async () => {
 				const mockResponse = {
 					response: "Inappropriate response",

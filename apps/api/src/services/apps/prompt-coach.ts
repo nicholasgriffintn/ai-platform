@@ -1,5 +1,6 @@
 import { getAIResponse } from "~/lib/chat/responses";
 import { sanitiseInput } from "~/lib/chat/utils";
+import { getAuxiliaryModel } from "~/lib/providers/models";
 import { returnCoachingPrompt } from "~/lib/prompts/coaching";
 import type { ChatCompletionParameters, IEnv, IUser, Message } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -42,16 +43,18 @@ export const handlePromptCoachSuggestion = async (req: {
 				content: coachingSystemPrompt,
 			},
 		];
+		const { model: modelToUse, provider: providerToUse } = await getAuxiliaryModel(env, user);
 
 		const payload: ChatCompletionParameters = {
-			model: "llama-3.3-70b-versatile",
-			messages: messages,
+			model: modelToUse,
+			provider: providerToUse,
+			messages,
 			temperature: 0.5,
 			max_tokens: 1500,
 			stream: false,
 			store: false,
-			env: env,
-			user: user,
+			env,
+			user,
 		};
 
 		const aiResult = await getAIResponse(payload);

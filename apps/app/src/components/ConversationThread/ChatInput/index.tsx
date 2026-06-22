@@ -486,8 +486,9 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 
 		const isToolSelectionLocked = chatMode === "agent" && selectedAgentId !== null;
 		const canUseProComposerActions = isPro;
+		const showInlineMultiModelToggle = isPro && !model && chatMode === "remote";
 		const canShowToolMenu =
-			(isPro && !model && chatMode === "remote") ||
+			showInlineMultiModelToggle ||
 			(supportsToolCalls && (supportsCodeExecution || supportsSearchGrounding));
 		const canShowActionMenu = canUseProComposerActions || canShowToolMenu;
 		const shouldRenderInputControls = hideTextInput && controls;
@@ -644,6 +645,9 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 											onModelChange={onModelChange}
 										/>
 									</div>
+									{showInlineMultiModelToggle && (
+										<ToolToggles isDisabled={isLoading || isToolSelectionLocked} />
+									)}
 									{!hideInlineResponseControls && <InlineResponseControls isDisabled={isLoading} />}
 								</div>
 								<div className="flex-shrink-0 flex items-center gap-2">

@@ -1,4 +1,5 @@
-import { getAIResponse } from "~/lib/chat";
+import { getChatProvider } from "~/lib/providers/capabilities/chat";
+import { getAuxiliaryModelForRetrieval } from "~/lib/providers/models";
 import { extractContentsystem_prompt } from "~/lib/prompts";
 import { extractContent } from "~/services/apps/retrieval/content-extract";
 import type { Message } from "~/types";
@@ -73,7 +74,9 @@ export const extract_content: ApiToolDefinition = {
 	execute: async (args, context) => {
 		const req = context.request;
 		const completion_id = context.completionId;
-		const app_url = context.appUrl;
+		const app_url = context.appUrl ?? req.app_url;
+		const env = context.env ?? req.env;
+		const user = context.user ?? req.user;
 
 		const urls = args.urls.includes(",")
 			? args.urls.split(",").map((u: string) => u.trim())
@@ -106,7 +109,7 @@ export const extract_content: ApiToolDefinition = {
 
 		const messages: Message[] = [
 			{
-				role: "assistant",
+				role: "system",
 				content: extractContentsystem_prompt(),
 			},
 			{
@@ -117,14 +120,24 @@ export const extract_content: ApiToolDefinition = {
 			},
 		];
 
-		const aiResponse = await getAIResponse({
+		const { model: modelToUse, provider: providerToUse } = await getAuxiliaryModelForRetrieval(
+			env,
+			user,
+		);
+		const provider = getChatProvider(providerToUse, {
+			env,
+			user,
+		});
+
+		const aiResponse = await provider.getResponse({
 			completion_id,
 			app_url,
-			user: req.user,
-			env: req.env,
+			user,
+			env,
 			messages,
 			message: `Summarize content from ${typeof urls === "string" ? urls : urls.join(", ")}`,
-			model: "llama-3.3-70b-versatile",
+			provider: providerToUse,
+			model: modelToUse,
 		});
 
 		return {

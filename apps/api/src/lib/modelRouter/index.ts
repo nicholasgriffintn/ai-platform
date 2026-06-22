@@ -1,10 +1,5 @@
 import { PromptAnalyzer } from "~/lib/modelRouter/promptAnalyser";
-import {
-	defaultModel,
-	getIncludedInRouterModelsForUser,
-	getModelConfig,
-	getModels,
-} from "~/lib/providers/models";
+import { defaultModel, getIncludedInRouterModelsForUser, getModels } from "~/lib/providers/models";
 import { trackModelRoutingMetrics } from "~/lib/monitoring";
 import type { ModelConfigItem, PromptRequirements } from "@assistant/schemas";
 import type { Attachment, IEnv, IUser } from "~/types";
@@ -18,6 +13,7 @@ interface ModelScore {
 	score: number;
 	reason: string;
 	normalizedScore: number;
+	provider: string;
 }
 
 export class ModelRouter {
@@ -141,8 +137,16 @@ export class ModelRouter {
 	private static async scoreModel(
 		requirements: PromptRequirements,
 		model: string,
+		capabilities: ModelConfigItem,
 	): Promise<Omit<ModelScore, "normalizedScore">> {
-		const capabilities = await getModelConfig(model);
+		if (!capabilities) {
+			return {
+				model,
+				score: Number.NEGATIVE_INFINITY,
+				reason: "Missing model configuration",
+				provider: "unknown",
+			};
+		}
 
 		if (
 			requirements.criticalStrengths?.some(
@@ -153,11 +157,17 @@ export class ModelRouter {
 				model,
 				score: Number.NEGATIVE_INFINITY,
 				reason: "Missing critical capabilities",
+				provider: capabilities.provider,
 			};
 		}
 
 		if (requirements.requiredStrengths.length === 0) {
-			return { model, score: 0, reason: "No required strengths" };
+			return {
+				model,
+				score: 0,
+				reason: "No required strengths",
+				provider: capabilities.provider,
+			};
 		}
 
 		const score = ModelRouter.calculateScore(requirements, capabilities);
@@ -166,6 +176,7 @@ export class ModelRouter {
 			model,
 			score,
 			reason: "Matched requirements",
+			provider: capabilities.provider,
 		};
 	}
 
@@ -255,7 +266,9 @@ export class ModelRouter {
 		requirements: PromptRequirements,
 	): Promise<ModelScore[]> {
 		const modelScoresRaw = await Promise.all(
-			Object.keys(models).map((model) => ModelRouter.scoreModel(requirements, model)),
+			Object.entries(models).map(([model, config]) =>
+				ModelRouter.scoreModel(requirements, model, config),
+			),
 		);
 
 		if (modelScoresRaw.length === 0) {
@@ -303,11 +316,9 @@ export class ModelRouter {
 
 		for (let i = 1; i < modelScores.length; i++) {
 			const model = modelScores[i];
-			const modelConfig = await getModelConfig(model.model);
-			const topModelConfig = await getModelConfig(modelScores[0].model);
 
 			if (
-				modelConfig.provider !== topModelConfig.provider &&
+				model.provider !== modelScores[0].provider &&
 				topRawScore - model.score <= ModelRouter.COMPARISON_SCORE_THRESHOLD &&
 				comparisonModels.length < ModelRouter.MAX_COMPARISON_MODELS
 			) {
