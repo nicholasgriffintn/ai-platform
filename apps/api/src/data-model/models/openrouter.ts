@@ -4160,9 +4160,9 @@ export const openrouterModelConfig: ModelConfig = {
 		supportsToolCalls: true,
 		supportsResponseFormat: true,
 		contextWindow: 262144,
-		maxTokens: 65535,
+		maxTokens: 262144,
 		costPer1kInputTokens: 0.00066,
-		costPer1kOutputTokens: 0.0035,
+		costPer1kOutputTokens: 0.00341,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
@@ -6741,9 +6741,9 @@ export const openrouterModelConfig: ModelConfig = {
 		supportsToolCalls: true,
 		supportsResponseFormat: true,
 		contextWindow: 262144,
-		maxTokens: 65535,
+		maxTokens: 262144,
 		costPer1kInputTokens: 0.00066,
-		costPer1kOutputTokens: 0.0035,
+		costPer1kOutputTokens: 0.00341,
 		isFeatured: true,
 		knowledgeCutoffDate: "January 2025",
 		reasoningConfig: {

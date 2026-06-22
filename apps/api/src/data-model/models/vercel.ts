@@ -6155,4 +6155,25 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			defaultEffort: "none",
 		},
 	}),
+	createModelConfig("sakana/fugu-ultra", PROVIDER, {
+		name: "Fugu Ultra",
+		matchingModel: "sakana/fugu-ultra",
+		releaseDate: "June 21, 2026",
+		lastUpdated: "June 21, 2026",
+		modalities: {
+			input: ["text", "image"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 1000000,
+		maxTokens: 1000000,
+		costPer1kInputTokens: 0.005,
+		costPer1kOutputTokens: 0.03,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
+	}),
 ]);
