@@ -69,6 +69,83 @@ describe("createMultiModelStream", () => {
 		vi.clearAllMocks();
 	});
 
+	it("emits one final message event after secondary responses", async () => {
+		const primaryProviderStream = createStream([]);
+		mockGetAIResponse
+			.mockResolvedValueOnce(primaryProviderStream)
+			.mockResolvedValueOnce({ response: "Secondary answer" });
+		mockCreateStreamWithPostProcessing.mockResolvedValue(
+			createStream([
+				`data: ${JSON.stringify({
+					type: "content_block_delta",
+					content: "Primary answer",
+				})}\n\n`,
+				`data: ${JSON.stringify({
+					type: "message_delta",
+					message_id: "assistant-1",
+					content: "Primary answer",
+				})}\n\n`,
+				"data: [DONE]\n\n",
+			]),
+		);
+
+		const conversationManager = {
+			getUsageLimits: vi.fn().mockResolvedValue(null),
+			get: vi.fn().mockResolvedValue([
+				{
+					role: "assistant",
+					content: "Primary answer",
+					data: {},
+				},
+			]),
+			update: vi.fn(),
+			add: vi.fn(),
+		};
+
+		const stream = createMultiModelStream(
+			{
+				messages: [{ role: "user", content: "Question" }],
+				models: [
+					{ model: "primary", provider: "openai", displayName: "Primary" },
+					{ model: "secondary", provider: "anthropic", displayName: "Secondary" },
+				],
+			},
+			{
+				env: {} as any,
+				completion_id: "conversation-1",
+				model: "primary",
+				provider: "openai",
+			},
+			conversationManager as any,
+		);
+
+		const output = await readStream(stream);
+		const events = parseDataEvents(output);
+		const messageDeltas = events.filter((event) => event.type === "message_delta");
+
+		expect(output.match(/data: \[DONE\]/g)).toHaveLength(1);
+		expect(messageDeltas).toHaveLength(1);
+		expect(messageDeltas[0]).toEqual(
+			expect.objectContaining({
+				content: expect.stringContaining("Secondary answer"),
+			}),
+		);
+		expect(conversationManager.update).toHaveBeenCalledWith(
+			"conversation-1",
+			expect.arrayContaining([
+				expect.objectContaining({
+					content: expect.stringContaining("Secondary answer"),
+					parts: [
+						expect.objectContaining({
+							type: "text",
+							text: expect.stringContaining("Secondary answer"),
+						}),
+					],
+				}),
+			]),
+		);
+	});
+
 	it("adds a synthesis pass for consensus opinion requests", async () => {
 		const primaryProviderStream = createStream([]);
 		mockGetAIResponse

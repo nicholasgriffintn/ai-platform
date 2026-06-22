@@ -185,6 +185,7 @@ export function createMultiModelStream(
 					if (done) break;
 
 					const text = new TextDecoder().decode(value);
+					let forwardedPrimaryEvents = false;
 					try {
 						const matches = text.match(/data: (.*?)\n\n/g);
 						if (matches) {
@@ -200,13 +201,24 @@ export function createMultiModelStream(
 								} else if (data.type === "text" && data.text) {
 									primaryContent += data.text;
 								}
+								if (
+									data.type === "message_delta" ||
+									data.type === "message_stop" ||
+									(data.type === "state" && data.state === "done")
+								) {
+									continue;
+								}
+								controller.enqueue(encoder.encode(match));
+								forwardedPrimaryEvents = true;
 							}
 						}
 					} catch {
 						/* ignore parse errors during capture */
 					}
 
-					controller.enqueue(value);
+					if (!forwardedPrimaryEvents && !text.includes("data: ")) {
+						controller.enqueue(value);
+					}
 				}
 			} catch (error) {
 				logger.error("Error processing primary stream in multi-model setup:", error);
@@ -357,25 +369,36 @@ export function createMultiModelStream(
 			try {
 				const conversation = await conversationManager.get(options.completion_id);
 				const secondaryModels = models.slice(1).map((m: ModelConfigInfo) => m.model) || [];
-				const buildFinalMessage = (content: string, baseMessage?: Partial<Message>): Message => ({
-					...baseMessage,
-					role: "assistant",
-					content,
-					citations: baseMessage?.citations || [],
-					log_id: baseMessage?.log_id || null,
-					mode: options.mode,
-					id: baseMessage?.id || generateId(),
-					timestamp: baseMessage?.timestamp || Date.now(),
-					model: baseMessage?.model || models[0].model,
-					platform: baseMessage?.platform || options.platform || "api",
-					usage: baseMessage?.usage || null,
-					data: {
-						...baseMessage?.data,
-						includesSecondaryModels: true,
-						secondaryModels,
-					},
-					tool_calls: baseMessage?.tool_calls || null,
-				});
+				const buildFinalMessage = (content: string, baseMessage?: Partial<Message>): Message => {
+					const timestamp = baseMessage?.timestamp || Date.now();
+
+					return {
+						...baseMessage,
+						role: "assistant",
+						content,
+						parts: [
+							{
+								type: "text",
+								text: content,
+								timestamp,
+							},
+						],
+						citations: baseMessage?.citations || [],
+						log_id: baseMessage?.log_id || null,
+						mode: options.mode,
+						id: baseMessage?.id || generateId(),
+						timestamp,
+						model: baseMessage?.model || models[0].model,
+						platform: baseMessage?.platform || options.platform || "api",
+						usage: baseMessage?.usage || null,
+						data: {
+							...baseMessage?.data,
+							includesSecondaryModels: true,
+							secondaryModels,
+						},
+						tool_calls: baseMessage?.tool_calls || null,
+					};
+				};
 				let finalAssistantMessage: Message | null = null;
 
 				if (conversation?.length > 0) {
