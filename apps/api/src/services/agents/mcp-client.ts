@@ -9,7 +9,7 @@ const logger = getLogger({ prefix: "services/agents/mcp-client" });
 
 export interface MCPServerConfig {
 	url: string;
-	type?: "sse" | "streamable-http" | "auto";
+	type?: "sse" | "stdio" | "streamable-http" | "auto";
 	name?: string;
 }
 
@@ -28,7 +28,7 @@ type MCPConnection = MCPClientManager["mcpConnections"][string];
 
 const mcpServerConfigSchema = z.object({
 	url: z.string(),
-	type: z.enum(["sse", "streamable-http", "auto"]).optional(),
+	type: z.enum(["sse", "stdio", "streamable-http", "auto"]).optional(),
 	name: z.string().optional(),
 });
 const mcpToolParametersSchema = z
@@ -118,6 +118,10 @@ export async function connectMCPServerReady(
 	config: MCPServerConfig,
 ): Promise<{ id: string; connection: MCPConnection } | { id: string; error: string }> {
 	const id = createServerId(config.url);
+	if (config.type === "stdio") {
+		return { id, error: "Stdio MCP servers are not supported in this runtime" };
+	}
+
 	await mcp.registerServer(id, {
 		url: config.url,
 		name: createServerName(config),

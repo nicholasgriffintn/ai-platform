@@ -135,11 +135,30 @@ describe("agent provider IO", () => {
 	it("rejects invalid initial messages and provider responses", () => {
 		const providerIO = createAgentProviderIO();
 
+		expect(() => providerIO.initialMessages([])).toThrow(AssistantError);
 		expect(() => providerIO.initialMessages([])).toThrow(
-			new AssistantError("Agent mode requires at least one message", ErrorType.PARAMS_ERROR),
+			"Agent mode requires at least one message",
 		);
+
+		try {
+			providerIO.initialMessages([]);
+		} catch (error) {
+			expect(error).toMatchObject({
+				type: ErrorType.PARAMS_ERROR,
+			});
+		}
+
+		expect(() => providerIO.modelResponse(null)).toThrow(AssistantError);
 		expect(() => providerIO.modelResponse(null)).toThrow(
-			new AssistantError("Provider returned an invalid response shape", ErrorType.PROVIDER_ERROR),
+			"Provider returned an invalid response shape",
 		);
+
+		try {
+			providerIO.modelResponse(null);
+		} catch (error) {
+			expect(error).toMatchObject({
+				type: ErrorType.PROVIDER_ERROR,
+			});
+		}
 	});
 });

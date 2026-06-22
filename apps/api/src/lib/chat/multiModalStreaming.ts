@@ -168,6 +168,8 @@ export function createMultiModelStream(
 				);
 
 				const primaryReader = primaryProcessedStream.getReader();
+				const primaryDecoder = new TextDecoder();
+				let primaryEventBuffer = "";
 
 				const modelNames = models.map((m: ModelConfigInfo) => m.displayName).join(", ");
 				modelHeader = `Using the following models: ${modelNames}\n\n`;
@@ -184,40 +186,53 @@ export function createMultiModelStream(
 					const { done, value } = await primaryReader.read();
 					if (done) break;
 
-					const text = new TextDecoder().decode(value);
-					let forwardedPrimaryEvents = false;
-					try {
-						const matches = text.match(/data: (.*?)\n\n/g);
-						if (matches) {
-							for (const match of matches) {
-								const dataStr = match.substring(6, match.length - 2);
-								if (dataStr === "[DONE]") continue;
-								const data = safeParseJson(dataStr);
-								if (!data) {
-									throw new AssistantError("Failed to parse data", ErrorType.PARAMS_ERROR);
-								}
-								if (data.type === "content_block_delta" && data.content) {
-									primaryContent += data.content;
-								} else if (data.type === "text" && data.text) {
-									primaryContent += data.text;
-								}
-								if (
-									data.type === "message_delta" ||
-									data.type === "message_stop" ||
-									(data.type === "state" && data.state === "done")
-								) {
-									continue;
-								}
-								controller.enqueue(encoder.encode(match));
-								forwardedPrimaryEvents = true;
-							}
-						}
-					} catch {
-						/* ignore parse errors during capture */
-					}
+					primaryEventBuffer += primaryDecoder.decode(value, { stream: true });
+					const blocks = primaryEventBuffer.split("\n\n");
+					primaryEventBuffer = blocks.pop() || "";
 
-					if (!forwardedPrimaryEvents && !text.includes("data: ")) {
-						controller.enqueue(value);
+					for (const block of blocks) {
+						if (!block.trim()) {
+							continue;
+						}
+
+						const eventText = `${block}\n\n`;
+						try {
+							const dataLines = block
+								.split("\n")
+								.map((line) => line.trimEnd())
+								.filter((line) => line.startsWith("data:"))
+								.map((line) => line.slice(5).trimStart());
+
+							if (dataLines.length === 0) {
+								controller.enqueue(encoder.encode(eventText));
+								continue;
+							}
+
+							const dataStr = dataLines.join("\n").trim();
+							if (dataStr === "[DONE]") {
+								continue;
+							}
+
+							const data = safeParseJson(dataStr);
+							if (!data) {
+								throw new AssistantError("Failed to parse data", ErrorType.PARAMS_ERROR);
+							}
+							if (data.type === "content_block_delta" && data.content) {
+								primaryContent += data.content;
+							} else if (data.type === "text" && data.text) {
+								primaryContent += data.text;
+							}
+							if (
+								data.type === "message_delta" ||
+								data.type === "message_stop" ||
+								(data.type === "state" && data.state === "done")
+							) {
+								continue;
+							}
+							controller.enqueue(encoder.encode(eventText));
+						} catch {
+							controller.enqueue(encoder.encode(eventText));
+						}
 					}
 				}
 			} catch (error) {

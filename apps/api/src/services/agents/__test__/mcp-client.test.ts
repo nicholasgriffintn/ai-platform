@@ -1,6 +1,7 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import {
+	connectMCPServerReady,
 	createMCPToolName,
 	parseMCPServerConfigs,
 	parseMCPToolName,
@@ -12,11 +13,15 @@ describe("agent MCP client contract", () => {
 		const configs = parseMCPServerConfigs(
 			JSON.stringify([
 				{ url: "https://example.com/mcp", name: "Example" },
+				{ url: "file:///usr/local/bin/mcp-server", type: "stdio", name: "Local" },
 				{ name: "missing-url" },
 			]),
 		);
 
-		expect(configs).toEqual([{ url: "https://example.com/mcp", name: "Example" }]);
+		expect(configs).toEqual([
+			{ url: "https://example.com/mcp", name: "Example" },
+			{ url: "file:///usr/local/bin/mcp-server", type: "stdio", name: "Local" },
+		]);
 	});
 
 	it("uses a stable wrapper name that can be parsed back to the agent prefix and MCP tool", () => {
@@ -59,5 +64,22 @@ describe("agent MCP client contract", () => {
 			},
 		});
 		expect(resolveMCPAIToolDefinition("agent-abcdef", "broken", { parameters: {} })).toBeNull();
+	});
+
+	it("reports persisted stdio servers as unsupported instead of dropping them", async () => {
+		const mcp = {
+			registerServer: vi.fn(),
+		};
+
+		const result = await connectMCPServerReady(mcp as any, {
+			url: "file:///usr/local/bin/mcp-server",
+			type: "stdio",
+		});
+
+		expect(result).toEqual({
+			id: expect.stringMatching(/^server-/),
+			error: "Stdio MCP servers are not supported in this runtime",
+		});
+		expect(mcp.registerServer).not.toHaveBeenCalled();
 	});
 });

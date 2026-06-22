@@ -78,7 +78,15 @@ describe("createMultiModelStream", () => {
 			createStream([
 				`data: ${JSON.stringify({
 					type: "content_block_delta",
-					content: "Primary answer",
+					content: "Primary ",
+				}).slice(0, 32)}`,
+				`${JSON.stringify({
+					type: "content_block_delta",
+					content: "Primary ",
+				}).slice(32)}\n\n`,
+				`data: ${JSON.stringify({
+					type: "content_block_delta",
+					content: "answer",
 				})}\n\n`,
 				`data: ${JSON.stringify({
 					type: "message_delta",
@@ -122,8 +130,13 @@ describe("createMultiModelStream", () => {
 		const output = await readStream(stream);
 		const events = parseDataEvents(output);
 		const messageDeltas = events.filter((event) => event.type === "message_delta");
+		const streamedContent = events
+			.filter((event) => event.type === "content_block_delta")
+			.map((event) => event.content)
+			.join("");
 
 		expect(output.match(/data: \[DONE\]/g)).toHaveLength(1);
+		expect(streamedContent).toContain("Primary answer");
 		expect(messageDeltas).toHaveLength(1);
 		expect(messageDeltas[0]).toEqual(
 			expect.objectContaining({
