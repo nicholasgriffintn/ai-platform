@@ -72,8 +72,8 @@ importers:
         specifier: 1.3.0
         version: 1.3.0(@hono/standard-validator@0.2.2(@standard-schema/spec@1.1.0)(hono@4.12.25))(@standard-community/standard-json@0.3.5(@standard-schema/spec@1.1.0)(@types/json-schema@7.0.15)(quansync@0.2.11)(valibot@1.4.1(typescript@6.0.3))(zod-to-json-schema@3.25.2(zod@4.4.3))(zod@4.4.3))(@standard-community/standard-openapi@0.2.9(@standard-community/standard-json@0.3.5(@standard-schema/spec@1.1.0)(@types/json-schema@7.0.15)(quansync@0.2.11)(valibot@1.4.1(typescript@6.0.3))(zod-to-json-schema@3.25.2(zod@4.4.3))(zod@4.4.3))(@standard-schema/spec@1.1.0)(openapi-types@12.1.3)(valibot@1.4.1(typescript@6.0.3))(zod-openapi@6.0.0(zod@4.4.3))(zod@4.4.3))(@types/json-schema@7.0.15)(hono@4.12.25)(openapi-types@12.1.3)
       isbot:
-        specifier: 5.1.42
-        version: 5.1.42
+        specifier: 5.1.43
+        version: 5.1.43
       posthog-node:
         specifier: ^5.38.2
         version: 5.38.2
@@ -220,8 +220,8 @@ importers:
         specifier: 8.0.3
         version: 8.0.3
       isbot:
-        specifier: 5.1.42
-        version: 5.1.42
+        specifier: 5.1.43
+        version: 5.1.43
       lucide-react:
         specifier: 1.18.0
         version: 1.18.0(react@19.2.7)
@@ -4860,6 +4860,10 @@ packages:
 
   isbot@5.1.42:
     resolution: {integrity: sha512-/SXsVh7KpPRISrD4ffrGSxnTLlUBzEQUfWIusaJPrpJ93FW1P0YEZri5vAUkFsA0m2HRUhQRQadk2wJ+EeKowQ==}
+    engines: {node: '>=18'}
+
+  isbot@5.1.43:
+    resolution: {integrity: sha512-drJhFmibra4LO6Wd7D3Oi6UICRK9244vSZkmxzhlZP0TTdwCA2ueK4PEkUkzPYeuqug9+cqqdWPgihjk5+83Cg==}
     engines: {node: '>=18'}
 
   isexe@2.0.0:
@@ -10639,6 +10643,8 @@ snapshots:
   isarray@0.0.1: {}
 
   isbot@5.1.42: {}
+
+  isbot@5.1.43: {}
 
   isexe@2.0.0: {}
 

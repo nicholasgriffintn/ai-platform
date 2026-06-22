@@ -44,7 +44,7 @@
 		"drizzle-orm": "0.45.2",
 		"hono": "4.12.25",
 		"hono-openapi": "1.3.0",
-		"isbot": "5.1.42",
+		"isbot": "5.1.43",
 		"posthog-node": "^5.38.2",
 		"stripe": "22.2.1",
 		"zod": "4.4.3",
