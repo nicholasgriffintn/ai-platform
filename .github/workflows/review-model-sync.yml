@@ -1,0 +1,130 @@
+name: Review model sync
+
+on:
+  workflow_run:
+    workflows: ["Sync models.dev"]
+    types: [completed]
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  review-model-sync:
+    if: github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download sync result
+        uses: actions/download-artifact@v7
+        with:
+          name: model-sync-result
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Read sync result
+        id: sync-result
+        run: |
+          node <<'NODE'
+          const fs = require("node:fs");
+          const result = JSON.parse(fs.readFileSync("model-sync-result.json", "utf8"));
+          fs.appendFileSync(process.env.GITHUB_OUTPUT, `committed=${String(result.committed)}\n`);
+          fs.appendFileSync(process.env.GITHUB_OUTPUT, `commit_sha=${result.commitSha || ""}\n`);
+          fs.appendFileSync(process.env.GITHUB_OUTPUT, `branch=${result.branch || "main"}\n`);
+          NODE
+
+      - name: Stop when sync had no changes
+        if: steps.sync-result.outputs.committed != 'true'
+        run: echo "models.dev sync did not create a commit; skipping Polychat review."
+
+      - uses: actions/checkout@v7
+        if: steps.sync-result.outputs.committed == 'true'
+        with:
+          ref: ${{ steps.sync-result.outputs.commit_sha }}
+          fetch-depth: 2
+
+      - name: Install pnpm
+        if: steps.sync-result.outputs.committed == 'true'
+        uses: pnpm/action-setup@v6
+
+      - name: Use Node.js 24.x
+        if: steps.sync-result.outputs.committed == 'true'
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24.x
+          cache: "pnpm"
+
+      - name: Install dependencies
+        if: steps.sync-result.outputs.committed == 'true'
+        run: pnpm install --frozen-lockfile
+
+      - name: Assess sync diff
+        id: assess
+        if: steps.sync-result.outputs.committed == 'true'
+        run: |
+          pnpm --filter @assistant/api models:review-sync assess \
+            --base "${{ steps.sync-result.outputs.commit_sha }}^" \
+            --head "${{ steps.sync-result.outputs.commit_sha }}" \
+            --assessment-output model-sync-assessment.json \
+            --diff-output model-sync.diff \
+            --github-output
+
+      - name: Stop when sync does not need semantic review
+        if: steps.sync-result.outputs.committed == 'true' && steps.assess.outputs.should_call_polychat != 'true'
+        run: echo "Sync diff only changed low-value catalogue metadata; skipping Polychat review."
+
+      - name: Call Polychat
+        if: steps.sync-result.outputs.committed == 'true' && steps.assess.outputs.should_call_polychat == 'true'
+        env:
+          POLYCHAT_API_KEY: ${{ secrets.POLYCHAT_MODEL_ROUTER_REVIEW_API_KEY }}
+        run: |
+          pnpm --filter @assistant/api models:review-sync call \
+            --assessment model-sync-assessment.json \
+            --diff model-sync.diff \
+            --response-output model-sync-review.json
+
+      - name: Apply Polychat patch
+        if: steps.sync-result.outputs.committed == 'true' && steps.assess.outputs.should_call_polychat == 'true'
+        run: |
+          pnpm --filter @assistant/api models:review-sync apply \
+            --response model-sync-review.json
+
+      - name: Run model router tests
+        if: steps.sync-result.outputs.committed == 'true' && steps.assess.outputs.should_call_polychat == 'true'
+        run: |
+          pnpm --dir apps/api exec vitest run \
+            src/lib/modelRouter/__test__/promptAnalyser.test.ts \
+            src/lib/modelRouter/__test__/index.test.ts \
+            src/lib/__test__/models.test.ts \
+            src/data-model/models/__test__/openai.test.ts \
+            src/data-model/models/__test__/google-ai-studio.test.ts \
+            src/data-model/models/__test__/router-provider-refresh.test.ts
+
+      - name: Run typecheck
+        if: steps.sync-result.outputs.committed == 'true' && steps.assess.outputs.should_call_polychat == 'true'
+        run: pnpm --filter @assistant/api typecheck
+
+      - name: Run check
+        if: steps.sync-result.outputs.committed == 'true' && steps.assess.outputs.should_call_polychat == 'true'
+        run: pnpm --filter @assistant/api check
+
+      - name: Commit router review updates
+        if: steps.sync-result.outputs.committed == 'true' && steps.assess.outputs.should_call_polychat == 'true'
+        run: |
+          if git diff --quiet -- \
+            apps/api/src/data-model/models \
+            apps/api/src/lib/modelRouter \
+            apps/api/src/lib/providers/models/index.ts \
+            apps/api/src/lib/__test__/models.test.ts; then
+            echo "Polychat review produced no changes."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add \
+            apps/api/src/data-model/models \
+            apps/api/src/lib/modelRouter \
+            apps/api/src/lib/providers/models/index.ts \
+            apps/api/src/lib/__test__/models.test.ts
+          git commit -m "chore(models): review router metadata"
+          git push origin "HEAD:${{ steps.sync-result.outputs.branch }}"
