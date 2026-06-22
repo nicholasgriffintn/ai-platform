@@ -13,6 +13,7 @@ import {
 	listRecipeInstallations,
 	updateRecipeInstallation,
 } from "~/lib/api/recipes";
+import { useCanAccessProFeatures } from "./useCanAccessProFeatures";
 
 export const ASSISTANT_RECIPES_QUERY_KEY = ["assistant-recipes"] as const;
 export const RECIPE_INSTALLATIONS_QUERY_KEY = ["recipe-installations"] as const;
@@ -52,11 +53,20 @@ export function useInvokeAssistantRecipe() {
 }
 
 export function useRecipeInstallations() {
-	return useQuery({
+	const canAccessProFeatures = useCanAccessProFeatures();
+	const query = useQuery({
 		queryKey: RECIPE_INSTALLATIONS_QUERY_KEY,
 		queryFn: listRecipeInstallations,
+		enabled: canAccessProFeatures,
 		staleTime: 60 * 1000,
 	});
+	return {
+		...query,
+		data: canAccessProFeatures ? query.data : undefined,
+		error: canAccessProFeatures ? query.error : null,
+		isFetching: canAccessProFeatures ? query.isFetching : false,
+		isLoading: canAccessProFeatures ? query.isLoading : false,
+	};
 }
 
 export function useUpdateRecipeInstallation() {

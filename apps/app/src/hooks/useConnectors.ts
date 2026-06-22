@@ -6,15 +6,25 @@ import {
 	startRecipeConnector,
 	storeRecipeConnectorApiKey,
 } from "~/lib/api/connectors";
+import { useCanAccessProFeatures } from "./useCanAccessProFeatures";
 
 export const RECIPE_CONNECTORS_QUERY_KEY = ["recipe-connectors"] as const;
 
 export function useRecipeConnectors() {
-	return useQuery({
+	const canAccessProFeatures = useCanAccessProFeatures();
+	const query = useQuery({
 		queryKey: RECIPE_CONNECTORS_QUERY_KEY,
 		queryFn: listRecipeConnectors,
+		enabled: canAccessProFeatures,
 		staleTime: 60 * 1000,
 	});
+	return {
+		...query,
+		data: canAccessProFeatures ? query.data : undefined,
+		error: canAccessProFeatures ? query.error : null,
+		isFetching: canAccessProFeatures ? query.isFetching : false,
+		isLoading: canAccessProFeatures ? query.isLoading : false,
+	};
 }
 
 export function useStartRecipeConnector() {

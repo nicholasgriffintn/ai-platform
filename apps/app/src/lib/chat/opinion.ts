@@ -81,6 +81,14 @@ export function canRequestOpinionForMessage(messages: Message[], messageId: stri
 	);
 }
 
+export function canOfferOpinionRequestForMessage(
+	messages: Message[],
+	messageId: string,
+	canAccessProFeatures: boolean,
+): boolean {
+	return canAccessProFeatures && canRequestOpinionForMessage(messages, messageId);
+}
+
 export function shouldPromoteOpinionRequest(messages: Message[], messageId: string): boolean {
 	const messageIndex = getMessageIndex(messages, messageId);
 	if (messageIndex === -1 || !canRequestOpinionForMessage(messages, messageId)) {

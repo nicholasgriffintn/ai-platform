@@ -286,6 +286,11 @@ export function useConversationActions(
 				return;
 			}
 
+			if (!isAuthenticated || !isPro) {
+				toast.error("Second opinions are only available to Pro users");
+				return;
+			}
+
 			const conversation = queryClient.getQueryData<Conversation>([
 				CHATS_QUERY_KEY,
 				currentConversationId || "",

@@ -4,10 +4,11 @@ import { VList, type VListHandle } from "virtua";
 
 import { useChat } from "~/hooks/useChat";
 import { useChatManager } from "~/hooks/useChatManager";
+import { useCanAccessProFeatures } from "~/hooks/useCanAccessProFeatures";
 import { useModels } from "~/hooks/useModels";
 import { useWebLLMModels } from "~/hooks/useWebLLMModels";
 import {
-	canRequestOpinionForMessage,
+	canOfferOpinionRequestForMessage,
 	shouldPromoteOpinionRequest,
 	type OpinionRequest,
 } from "~/lib/chat/opinion";
@@ -57,6 +58,7 @@ export const MessageList = ({
 	);
 	const { data: apiModels = {} } = useModels();
 	const webLLMModels = useWebLLMModels();
+	const canAccessProFeatures = useCanAccessProFeatures();
 
 	const {
 		streamStarted,
@@ -86,14 +88,19 @@ export const MessageList = ({
 		>();
 
 		for (const message of messages) {
+			const canRequest = canOfferOpinionRequestForMessage(
+				messages,
+				message.id,
+				canAccessProFeatures,
+			);
 			availability.set(message.id, {
-				canRequest: canRequestOpinionForMessage(messages, message.id),
-				shouldPromote: shouldPromoteOpinionRequest(messages, message.id),
+				canRequest,
+				shouldPromote: canRequest && shouldPromoteOpinionRequest(messages, message.id),
 			});
 		}
 
 		return availability;
-	}, [messages]);
+	}, [canAccessProFeatures, messages]);
 	const lastMessageScrollKey = useMemo(() => {
 		const lastMessage = messages[messages.length - 1];
 		if (!lastMessage) {

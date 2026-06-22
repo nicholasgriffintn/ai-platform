@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import type { Message } from "~/types";
 import {
 	buildOpinionRequestPrompt,
+	canOfferOpinionRequestForMessage,
 	canRequestOpinionForMessage,
 	getOpinionSourceContext,
 	shouldPromoteOpinionRequest,
@@ -60,6 +61,16 @@ describe("opinion helpers", () => {
 		];
 
 		expect(shouldPromoteOpinionRequest(messages, "assistant-1")).toBe(true);
+	});
+
+	it("offers opinion requests only to signed-in Pro users", () => {
+		const messages = [
+			message("user-1", "user", "Question"),
+			message("assistant-1", "assistant", "Answer"),
+		];
+
+		expect(canOfferOpinionRequestForMessage(messages, "assistant-1", false)).toBe(false);
+		expect(canOfferOpinionRequestForMessage(messages, "assistant-1", true)).toBe(true);
 	});
 
 	it("builds prompts for single-model and consensus requests", () => {
