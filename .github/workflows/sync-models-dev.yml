@@ -28,11 +28,11 @@ jobs:
       - name: Run models.dev sync
         run: pnpm --filter @assistant/api models:sync --write --verbose
       - name: Commit model updates
-        id: commit
+        id: sync-commit
         run: |
           if git diff --quiet -- apps/api/src/data-model/models; then
             echo "No model updates to commit."
-            printf '{"committed":false,"commitSha":"","branch":"%s"}\n' "${GITHUB_REF_NAME}" > model-sync-result.json
+            echo "committed=false" >> "${GITHUB_OUTPUT}"
             exit 0
           fi
 
@@ -41,12 +41,68 @@ jobs:
           git add apps/api/src/data-model/models
           git commit -m "chore(models): sync models.dev"
           commit_sha="$(git rev-parse HEAD)"
-          printf '{"committed":true,"commitSha":"%s","branch":"%s"}\n' "${commit_sha}" "${GITHUB_REF_NAME}" > model-sync-result.json
+          echo "committed=true" >> "${GITHUB_OUTPUT}"
+          echo "commit_sha=${commit_sha}" >> "${GITHUB_OUTPUT}"
           git push
-      - name: Upload sync result
-        if: always()
-        uses: actions/upload-artifact@v6
-        with:
-          name: model-sync-result
-          path: model-sync-result.json
-          retention-days: 1
+      - name: Assess sync diff
+        id: assess
+        if: steps.sync-commit.outputs.committed == 'true'
+        run: |
+          pnpm --filter @assistant/api models:review-sync assess \
+            --base "${{ steps.sync-commit.outputs.commit_sha }}^" \
+            --head "${{ steps.sync-commit.outputs.commit_sha }}" \
+            --assessment-output model-sync-assessment.json \
+            --diff-output model-sync.diff \
+            --github-output
+      - name: Skip semantic review
+        if: steps.sync-commit.outputs.committed == 'true' && steps.assess.outputs.should_call_polychat != 'true'
+        run: echo "Sync diff only changed low-value catalogue metadata; skipping Polychat review."
+      - name: Call Polychat
+        if: steps.sync-commit.outputs.committed == 'true' && steps.assess.outputs.should_call_polychat == 'true'
+        env:
+          POLYCHAT_API_KEY: ${{ secrets.POLYCHAT_MODEL_ROUTER_REVIEW_API_KEY }}
+        run: |
+          pnpm --filter @assistant/api models:review-sync call \
+            --assessment model-sync-assessment.json \
+            --diff model-sync.diff \
+            --response-output model-sync-review.json
+      - name: Apply Polychat patch
+        if: steps.sync-commit.outputs.committed == 'true' && steps.assess.outputs.should_call_polychat == 'true'
+        run: |
+          pnpm --filter @assistant/api models:review-sync apply \
+            --response model-sync-review.json
+      - name: Run model router tests
+        if: steps.sync-commit.outputs.committed == 'true' && steps.assess.outputs.should_call_polychat == 'true'
+        run: |
+          pnpm --dir apps/api exec vitest run \
+            src/lib/modelRouter/__test__/promptAnalyser.test.ts \
+            src/lib/modelRouter/__test__/index.test.ts \
+            src/lib/__test__/models.test.ts \
+            src/data-model/models/__test__/openai.test.ts \
+            src/data-model/models/__test__/google-ai-studio.test.ts \
+            src/data-model/models/__test__/router-provider-refresh.test.ts
+      - name: Run typecheck
+        if: steps.sync-commit.outputs.committed == 'true' && steps.assess.outputs.should_call_polychat == 'true'
+        run: pnpm --filter @assistant/api typecheck
+      - name: Run check
+        if: steps.sync-commit.outputs.committed == 'true' && steps.assess.outputs.should_call_polychat == 'true'
+        run: pnpm --filter @assistant/api check
+      - name: Commit router review updates
+        if: steps.sync-commit.outputs.committed == 'true' && steps.assess.outputs.should_call_polychat == 'true'
+        run: |
+          if git diff --quiet -- \
+            apps/api/src/data-model/models \
+            apps/api/src/lib/modelRouter \
+            apps/api/src/lib/providers/models/index.ts \
+            apps/api/src/lib/__test__/models.test.ts; then
+            echo "Polychat review produced no changes."
+            exit 0
+          fi
+
+          git add \
+            apps/api/src/data-model/models \
+            apps/api/src/lib/modelRouter \
+            apps/api/src/lib/providers/models/index.ts \
+            apps/api/src/lib/__test__/models.test.ts
+          git commit -m "chore(models): review router metadata"
+          git push
