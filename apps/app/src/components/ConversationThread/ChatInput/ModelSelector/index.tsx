@@ -49,6 +49,7 @@ import type {
 	ModelSelectionChangeHandler,
 	ModelSelectorScope,
 } from "~/types";
+import { AutomaticRouterPreview } from "./AutomaticRouterPreview";
 import { ModelsList } from "./ModelsList";
 
 interface ModelSelectorProps {
@@ -379,6 +380,7 @@ export const ModelSelector = ({
 			return matchesSearch && matchesCapability;
 		});
 	}, [filteredModels, searchQuery, selectedCapability]);
+	const automaticRouterModels = useMemo(() => Object.values(filteredModels), [filteredModels]);
 	const isModelSearchActive = searchQuery.trim().length > 0;
 
 	const getSettingsForModel = useCallback(
@@ -632,6 +634,17 @@ export const ModelSelector = ({
 		setHoverPreview(null);
 	};
 
+	const handleSelectAutomaticRouting = () => {
+		setChatMode("remote");
+		setSelectedAgentId(null);
+		selectModelWithDefaults(null, {
+			...chatSettings,
+			localOnly: false,
+		});
+		onModelChange?.(null);
+		setIsOpen(false);
+	};
+
 	return (
 		<div ref={triggerWrapperRef} className="relative">
 			<button
@@ -807,9 +820,11 @@ export const ModelSelector = ({
 								<div className="w-full border-b border-zinc-200 dark:border-zinc-700" />
 
 								<TabsContent value="auto" className="min-h-0 overflow-y-auto">
-									<div className="p-4 text-sm text-zinc-700 dark:text-zinc-300">
-										Automatic automatically selects the best agent or model based on your query.
-									</div>
+									<AutomaticRouterPreview
+										models={automaticRouterModels}
+										isSelected={model === null}
+										onSelect={handleSelectAutomaticRouting}
+									/>
 								</TabsContent>
 							</>
 						)}
