@@ -122,6 +122,22 @@ describe("executeRecipeInvocationChat", () => {
 		});
 	});
 
+	it("titles caller-provided recipe conversations when requested", async () => {
+		const result = await executeRecipeInvocationChat({
+			env,
+			context,
+			user,
+			invocation,
+			conversationId: "recipe_task-1",
+			titleConversation: true,
+		});
+
+		expect(result.conversationId).toBe("recipe_task-1");
+		expect(updateConversation).toHaveBeenCalledWith("recipe_task-1", {
+			title: "Recipe: Notion Action Log",
+		});
+	});
+
 	it("passes SMS context into chat completion options for text-message recipe runs", async () => {
 		await executeRecipeInvocationChat({
 			env,

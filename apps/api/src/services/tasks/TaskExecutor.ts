@@ -64,10 +64,11 @@ export class TaskExecutor {
 				throw new Error(`Unknown task type: ${message.task_type}`);
 			}
 
-			await this.taskRepository.updateTask(message.taskId, {
-				status: "running",
-				last_attempted_at: new Date().toISOString(),
-			});
+			const claimedTask = await this.taskRepository.claimTaskForExecution(message.taskId);
+			if (!claimedTask) {
+				logger.info(`Task ${message.taskId} is not claimable, skipping duplicate delivery`);
+				return;
+			}
 
 			const executionId = await this.recordExecutionStart(message.taskId);
 

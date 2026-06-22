@@ -8,6 +8,7 @@ import { getLogger } from "~/utils/logger";
 const logger = getLogger({ prefix: "services/tasks" });
 
 export interface TaskDefinition {
+	id?: string;
 	task_type: TaskType;
 	user_id?: number;
 	task_data: Record<string, any>;
@@ -42,7 +43,9 @@ export class TaskService {
 
 	public async enqueueTask(taskDef: TaskDefinition): Promise<string> {
 		try {
-			const task = await this.taskRepository.createTask({
+			const createdBy: "system" | "user" = taskDef.user_id ? "user" : "system";
+			const taskParams = {
+				id: taskDef.id,
 				task_type: taskDef.task_type,
 				user_id: taskDef.user_id,
 				task_data: taskDef.task_data,
@@ -51,11 +54,27 @@ export class TaskService {
 				cron_expression: taskDef.cron_expression,
 				priority: taskDef.priority ?? 5,
 				metadata: taskDef.metadata,
-				created_by: taskDef.user_id ? "user" : "system",
-			});
+				created_by: createdBy,
+			};
+
+			const taskResult = taskDef.id
+				? await this.taskRepository.createTaskIfAbsent({
+						...taskParams,
+						id: taskDef.id,
+					})
+				: { task: await this.taskRepository.createTask(taskParams), created: true };
+			const task = taskResult.task;
 
 			if (!task) {
 				throw new Error("Failed to create task record");
+			}
+
+			if (!taskResult.created) {
+				logger.info("Task already exists, skipping duplicate enqueue", {
+					taskId: task.id,
+					taskType: taskDef.task_type,
+				});
+				return task.id;
 			}
 
 			await this.taskRepository.updateTask(task.id, { status: "queued" });

@@ -105,6 +105,7 @@ describe("recipe scheduler", () => {
 		expect(scheduled).toBe(1);
 		expect(mocks.enqueueTask).toHaveBeenCalledWith(
 			expect.objectContaining({
+				id: expect.stringMatching(/^recipe_schedule_[a-f0-9]{40}$/),
 				task_type: "recipe_execution",
 				user_id: 42,
 				task_data: expect.objectContaining({

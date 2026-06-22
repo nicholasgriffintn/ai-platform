@@ -11,6 +11,7 @@ const mocks = vi.hoisted(() => ({
 	getUserProviderSettings: vi.fn(),
 	invokeAssistantRecipe: vi.fn(),
 	executeRecipeInvocationChat: vi.fn(),
+	recordRecipeInvocationFailure: vi.fn(),
 	getMessagingProviderFromStoredCredential: vi.fn(),
 	providerSend: vi.fn(),
 }));
@@ -48,6 +49,7 @@ vi.mock("~/services/apps/recipes", () => ({
 
 vi.mock("~/services/apps/recipes/execution", () => ({
 	executeRecipeInvocationChat: mocks.executeRecipeInvocationChat,
+	recordRecipeInvocationFailure: mocks.recordRecipeInvocationFailure,
 }));
 
 const env = { DB: {} } as unknown as IEnv;
@@ -93,6 +95,9 @@ describe("RecipeExecutionHandler", () => {
 		mocks.getMessagingProviderFromStoredCredential.mockReturnValue({
 			send: mocks.providerSend,
 		});
+		mocks.recordRecipeInvocationFailure.mockResolvedValue(
+			"Recipe execution failed before I could complete the run: Provider unavailable",
+		);
 	});
 
 	it("returns an error when required task data is missing", async () => {
@@ -210,6 +215,8 @@ describe("RecipeExecutionHandler", () => {
 			context: expect.objectContaining({ user }),
 			user,
 			invocation,
+			conversationId: "recipe_task-1",
+			titleConversation: true,
 		});
 		expect(result).toMatchObject({
 			status: "success",
@@ -272,6 +279,53 @@ describe("RecipeExecutionHandler", () => {
 			context: expect.objectContaining({ user }),
 			user,
 			invocation,
+			conversationId: "recipe_task-1",
+			titleConversation: true,
+		});
+	});
+
+	it("records recipe chat failures without retrying the task", async () => {
+		const invocation = {
+			recipeId: "daily-weather",
+			installationId: "installation-1",
+			status: "ready",
+			conversationStarter: "Run weather",
+			messageUrl: "/?query=Run",
+			missingConnections: [],
+			enabledTools: ["get_weather"],
+			configuration: { location: "London" },
+		};
+		const error = new Error("Provider unavailable");
+		mocks.invokeAssistantRecipe.mockResolvedValue(invocation);
+		mocks.executeRecipeInvocationChat.mockRejectedValue(error);
+
+		const result = await new RecipeExecutionHandler().handle(
+			{
+				...baseMessage,
+				task_data: {
+					recipeId: "daily-weather",
+					input: "Run weather",
+					channel: "scheduled",
+				},
+			},
+			env,
+		);
+
+		expect(mocks.recordRecipeInvocationFailure).toHaveBeenCalledWith({
+			env,
+			context: expect.objectContaining({ user }),
+			user,
+			invocation,
+			conversationId: "recipe_task-1",
+			error,
+		});
+		expect(result).toMatchObject({
+			status: "success",
+			message: "Recipe execution failed and was recorded",
+			data: {
+				conversationId: "recipe_task-1",
+				error: "Provider unavailable",
+			},
 		});
 	});
 
@@ -378,6 +432,8 @@ describe("RecipeExecutionHandler", () => {
 			context: expect.objectContaining({ user }),
 			user,
 			invocation,
+			conversationId: "recipe_task-1",
+			titleConversation: true,
 		});
 		expect(mocks.providerSend).not.toHaveBeenCalled();
 		expect(result).toMatchObject({

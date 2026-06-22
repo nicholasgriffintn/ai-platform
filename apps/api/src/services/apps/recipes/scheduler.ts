@@ -4,6 +4,7 @@ import { RepositoryManager } from "~/repositories";
 import type { AppData } from "~/repositories/AppDataRepository";
 import { TaskService } from "~/services/tasks/TaskService";
 import { doesCronMatchDate, getCronMatchingDatesInRange } from "~/utils/cron";
+import { sha256Hex } from "~/utils/crypto";
 import type { IEnv } from "~/types";
 import { safeParseJson } from "~/utils/json";
 import { getLogger } from "~/utils/logger";
@@ -43,6 +44,20 @@ function parseStoredInstallation(record: AppData): StoredRecipeInstallationData 
 function getScheduleRunKey(triggerIndex: number, cronExpression: string, date: Date): string {
 	const minuteKey = date.toISOString().slice(0, 16);
 	return `${triggerIndex}:${cronExpression}:${minuteKey}`;
+}
+
+async function getScheduleTaskId(params: {
+	installationId: string;
+	recipeId: string;
+	userId: number;
+	runKey: string;
+}): Promise<string> {
+	const digest = await sha256Hex(
+		["recipe_schedule", params.userId, params.installationId, params.recipeId, params.runKey].join(
+			":",
+		),
+	);
+	return `recipe_schedule_${digest.slice(0, 40)}`;
 }
 
 function getScheduleMinuteKey(date: Date): string {
@@ -163,6 +178,12 @@ export async function scheduleDueRecipeExecutions(env: IEnv, now = new Date()): 
 				const runKey = getScheduleRunKey(index, trigger.cronExpression, evaluationDate);
 
 				await taskService.enqueueTask({
+					id: await getScheduleTaskId({
+						installationId: record.id,
+						recipeId: installation.recipeId,
+						userId: record.user_id,
+						runKey,
+					}),
 					task_type: "recipe_execution",
 					user_id: record.user_id,
 					task_data: {

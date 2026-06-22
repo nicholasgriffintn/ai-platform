@@ -7,6 +7,7 @@ import type { TaskMessage } from "../TaskService";
 
 const mockTaskRepository = {
 	updateTask: vi.fn(),
+	claimTaskForExecution: vi.fn(),
 	createTaskExecution: vi.fn(),
 	updateTaskExecution: vi.fn(),
 	getTaskById: vi.fn(),
@@ -15,6 +16,7 @@ const mockTaskRepository = {
 vi.mock("~/repositories/TaskRepository", () => ({
 	TaskRepository: class {
 		public updateTask = mockTaskRepository.updateTask;
+		public claimTaskForExecution = mockTaskRepository.claimTaskForExecution;
 		public createTaskExecution = mockTaskRepository.createTaskExecution;
 		public updateTaskExecution = mockTaskRepository.updateTaskExecution;
 		public getTaskById = mockTaskRepository.getTaskById;
@@ -34,6 +36,10 @@ describe("TaskExecutor", () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 		mockTaskRepository.updateTask.mockResolvedValue(undefined);
+		mockTaskRepository.claimTaskForExecution.mockResolvedValue({
+			id: "task-1",
+			status: "running",
+		});
 		mockTaskRepository.createTaskExecution.mockResolvedValue({ id: "exec-1" });
 		mockTaskRepository.updateTaskExecution.mockResolvedValue(undefined);
 		mockTaskRepository.getTaskById.mockResolvedValue({
@@ -76,16 +82,29 @@ describe("TaskExecutor", () => {
 		await executor.execute(createTaskMessage(SANDBOX_RUN_DISPATCH_TASK_TYPE));
 
 		expect(handler.handle).toHaveBeenCalledTimes(1);
+		expect(mockTaskRepository.claimTaskForExecution).toHaveBeenCalledWith("task-1");
 		expect(mockTaskRepository.updateTask).toHaveBeenNthCalledWith(
 			1,
 			"task-1",
-			expect.objectContaining({ status: "running" }),
-		);
-		expect(mockTaskRepository.updateTask).toHaveBeenNthCalledWith(
-			2,
-			"task-1",
 			expect.objectContaining({ status: "completed" }),
 		);
+	});
+
+	it("skips duplicate deliveries that cannot claim the task", async () => {
+		const handler: TaskHandler = {
+			handle: vi.fn().mockResolvedValue({ status: "success", data: {} }),
+		};
+		mockTaskRepository.claimTaskForExecution.mockResolvedValue(null);
+		const executor = new TaskExecutor(
+			{} as any,
+			new Map([[SANDBOX_RUN_DISPATCH_TASK_TYPE, handler]]),
+		);
+
+		await executor.execute(createTaskMessage(SANDBOX_RUN_DISPATCH_TASK_TYPE));
+
+		expect(handler.handle).not.toHaveBeenCalled();
+		expect(mockTaskRepository.createTaskExecution).not.toHaveBeenCalled();
+		expect(mockTaskRepository.updateTask).not.toHaveBeenCalled();
 	});
 
 	it("returns early for unknown task types with no feature-flag mapping", async () => {

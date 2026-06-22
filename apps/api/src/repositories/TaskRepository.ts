@@ -7,6 +7,7 @@ import { safeParseJson } from "~/utils/json";
 import { generateId } from "~/utils/id";
 
 export interface CreateTaskParams {
+	id?: string;
 	task_type: TaskType;
 	user_id?: number;
 	task_data?: Record<string, any>;
@@ -27,8 +28,16 @@ export interface UpdateTaskParams {
 }
 
 export class TaskRepository extends BaseRepository {
+	private parseTask(task: Task): Task {
+		return {
+			...task,
+			task_data: task.task_data ? safeParseJson(task.task_data) : null,
+			metadata: task.metadata ? safeParseJson(task.metadata) : null,
+		};
+	}
+
 	public async createTask(params: CreateTaskParams): Promise<Task | null> {
-		const id = generateId();
+		const id = params.id ?? generateId();
 		const insert = this.buildInsertQuery(
 			"tasks",
 			{
@@ -56,15 +65,36 @@ export class TaskRepository extends BaseRepository {
 		return this.runQuery<Task>(insert.query, insert.values, true);
 	}
 
+	public async createTaskIfAbsent(
+		params: CreateTaskParams & { id: string },
+	): Promise<{ task: Task | null; created: boolean }> {
+		const result = await this.executeRun(
+			`INSERT OR IGNORE INTO tasks (
+				id, task_type, user_id, task_data, schedule_type, scheduled_at,
+				cron_expression, priority, metadata, created_by, status, attempts, max_attempts
+			) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', 0, 3)`,
+			[
+				params.id,
+				params.task_type,
+				params.user_id ?? null,
+				params.task_data ? JSON.stringify(params.task_data) : null,
+				params.schedule_type ?? "immediate",
+				params.scheduled_at ?? null,
+				params.cron_expression ?? null,
+				params.priority ?? 5,
+				params.metadata ? JSON.stringify(params.metadata) : null,
+				params.created_by,
+			],
+		);
+		const task = await this.getTaskById(params.id);
+		return { task, created: Boolean(result.meta?.changes) };
+	}
+
 	public async getTaskById(taskId: string): Promise<Task | null> {
 		const { query, values } = this.buildSelectQuery("tasks", { id: taskId });
 		const result = await this.runQuery<Task>(query, values, true);
 		if (!result) return null;
-		return {
-			...result,
-			task_data: result.task_data ? safeParseJson(result.task_data) : null,
-			metadata: result.metadata ? safeParseJson(result.metadata) : null,
-		};
+		return this.parseTask(result);
 	}
 
 	public async getTasksByUserId(userId: number, limit = 50): Promise<Task[]> {
@@ -79,13 +109,7 @@ export class TaskRepository extends BaseRepository {
 			return [];
 		}
 
-		return Array.isArray(result)
-			? result.map((task) => ({
-					...task,
-					task_data: task.task_data ? safeParseJson(task.task_data) : null,
-					metadata: task.metadata ? safeParseJson(task.metadata) : null,
-				}))
-			: [];
+		return Array.isArray(result) ? result.map((task) => this.parseTask(task)) : [];
 	}
 
 	public async getPendingTasks(limit = 10): Promise<Task[]> {
@@ -117,6 +141,19 @@ export class TaskRepository extends BaseRepository {
 		}
 
 		return this.runQuery<Task>(update.query, update.values, true);
+	}
+
+	public async claimTaskForExecution(taskId: string): Promise<Task | null> {
+		const task = await this.runQuery<Task>(
+			`UPDATE tasks
+			 SET status = 'running', last_attempted_at = ?
+			 WHERE id = ? AND status IN ('pending', 'queued')
+			 RETURNING *`,
+			[new Date().toISOString(), taskId],
+			true,
+		);
+
+		return task ? this.parseTask(task) : null;
 	}
 
 	public async deleteTask(taskId: string): Promise<boolean> {

@@ -2,6 +2,7 @@ import type { RecipeInvocationResponse } from "@assistant/schemas";
 import { createRecipeChatRequestOptions } from "@assistant/schemas";
 
 import { defaultModel } from "~/constants/models";
+import { ConversationManager } from "~/lib/conversationManager";
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { handleCreateChatCompletions } from "~/services/completions/createChatCompletions";
 import type { CreateChatCompletionsResponse, IEnv, IUser, Message } from "~/types";
@@ -45,12 +46,70 @@ function buildRecipeConversationTitle(invocation: RecipeInvocationResponse): str
 	return `Recipe: ${invocation.recipeTitle || invocation.recipeId}`.trim();
 }
 
+function getRecipeExecutionFailureContent(error: unknown): string {
+	const message = error instanceof Error ? error.message : "Unknown error";
+	return `Recipe execution failed before I could complete the run: ${message}`;
+}
+
+export async function recordRecipeInvocationFailure(params: {
+	env: IEnv;
+	context: ServiceContext;
+	user: IUser;
+	invocation: RecipeInvocationResponse;
+	conversationId: string;
+	error: unknown;
+}): Promise<string> {
+	const conversationManager = ConversationManager.getInstance({
+		database: params.context.database,
+		repositories: params.context.repositories,
+		user: params.user,
+		model: defaultModel,
+		platform: "api",
+		store: true,
+		env: params.env,
+		requestCache: params.context.requestCache,
+	});
+	const existingMessages = await conversationManager
+		.get(params.conversationId)
+		.catch((): Message[] => []);
+	const messagesToAdd: Message[] = [];
+
+	if (existingMessages.length === 0) {
+		messagesToAdd.push({
+			role: "user",
+			content: params.invocation.conversationStarter,
+		});
+	}
+
+	const content = getRecipeExecutionFailureContent(params.error);
+	const hasFailureMessage = existingMessages.some(
+		(message) => message.role === "assistant" && message.content === content,
+	);
+	if (!hasFailureMessage) {
+		messagesToAdd.push({
+			role: "assistant",
+			content,
+		});
+	}
+
+	if (messagesToAdd.length > 0) {
+		await conversationManager.addBatch(params.conversationId, messagesToAdd);
+	}
+
+	await params.context.repositories.conversations.updateConversation(params.conversationId, {
+		title: buildRecipeConversationTitle(params.invocation),
+	});
+
+	return content;
+}
+
 export async function executeRecipeInvocationChat(params: {
 	env: IEnv;
 	context: ServiceContext;
 	user: IUser;
 	invocation: RecipeInvocationResponse;
 	conversationId?: string;
+	titleConversation?: boolean;
 	priorMessages?: Message[];
 	sms?: {
 		from?: string;
@@ -61,7 +120,7 @@ export async function executeRecipeInvocationChat(params: {
 	response: CreateChatCompletionsResponse;
 }> {
 	const conversationId = params.conversationId ?? `recipe_${generateId()}`;
-	const shouldTitleGeneratedConversation = !params.conversationId;
+	const shouldTitleGeneratedConversation = params.titleConversation ?? !params.conversationId;
 	const response = await handleCreateChatCompletions({
 		env: params.env,
 		context: params.context,

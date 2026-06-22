@@ -4,7 +4,10 @@ import {
 	getMessagingProviderFromStoredCredential,
 	selectConfiguredMessagingDelivery,
 } from "~/lib/providers/capabilities/messaging/delivery";
-import { executeRecipeInvocationChat } from "~/services/apps/recipes/execution";
+import {
+	executeRecipeInvocationChat,
+	recordRecipeInvocationFailure,
+} from "~/services/apps/recipes/execution";
 import { invokeAssistantRecipe } from "~/services/apps/recipes";
 import type { IEnv, IUser } from "~/types";
 import { extractChatCompletionNotification } from "~/utils/messages";
@@ -21,6 +24,10 @@ interface RecipeExecutionTaskData {
 	configuration?: RecipeConfiguration;
 	notificationChannel?: "sms";
 	notificationTarget?: string;
+}
+
+function getRecipeExecutionConversationId(taskId: string): string {
+	return `recipe_${taskId}`;
 }
 
 async function sendRecipeSmsNotification(params: {
@@ -116,12 +123,37 @@ export class RecipeExecutionHandler implements TaskHandler {
 			};
 		}
 
-		const execution = await executeRecipeInvocationChat({
-			env,
-			context,
-			user: user as IUser,
-			invocation,
-		});
+		const conversationId = getRecipeExecutionConversationId(message.taskId);
+		let execution: Awaited<ReturnType<typeof executeRecipeInvocationChat>>;
+		try {
+			execution = await executeRecipeInvocationChat({
+				env,
+				context,
+				user: user as IUser,
+				invocation,
+				conversationId,
+				titleConversation: true,
+			});
+		} catch (error) {
+			const response = await recordRecipeInvocationFailure({
+				env,
+				context,
+				user: user as IUser,
+				invocation,
+				conversationId,
+				error,
+			});
+			return {
+				status: "success",
+				message: "Recipe execution failed and was recorded",
+				data: {
+					...invocation,
+					conversationId,
+					response,
+					error: error instanceof Error ? error.message : String(error),
+				},
+			};
+		}
 		let notificationDelivery:
 			| { channel: "sms"; status: "sent" }
 			| { channel: "sms"; status: "failed"; error: string }
