@@ -191,6 +191,23 @@ export interface MessageData {
 	error?: string;
 }
 
+export interface MessageUsage extends Record<string, unknown> {
+	prompt_tokens?: number;
+	completion_tokens?: number;
+	total_tokens?: number;
+	promptTokenCount?: number;
+	candidatesTokensDetails?: {
+		modality: string;
+		tokenCount: number;
+	}[];
+	candidatesTokenCount?: number;
+	totalTokenCount?: number;
+	promptTokensDetails?: {
+		modality: string;
+		tokenCount: number;
+	}[];
+}
+
 export interface Message {
 	completion_id?: string;
 	role: ChatRole;
@@ -206,22 +223,7 @@ export interface Message {
 	model?: string;
 	platform?: string;
 	citations?: string[] | null;
-	usage?: {
-		prompt_tokens: number;
-		completion_tokens: number;
-		total_tokens: number;
-		promptTokenCount: number;
-		candidatesTokensDetails: {
-			modality: string;
-			tokenCount: number;
-		}[];
-		candidatesTokenCount: number;
-		totalTokenCount: number;
-		promptTokensDetails: {
-			modality: string;
-			tokenCount: number;
-		}[];
-	};
+	usage?: MessageUsage;
 	log_id?: string;
 	name?: string;
 	tool_call_id?: string;
@@ -231,11 +233,7 @@ export interface Message {
 		type?: "function";
 		function: {
 			name: string;
-			arguments:
-				| string
-				| {
-						[key: string]: string;
-				  };
+			arguments: string | Record<string, unknown>;
 		};
 		index?: number;
 	}[];

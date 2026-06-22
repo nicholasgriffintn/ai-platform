@@ -1,6 +1,6 @@
 import type { ConversationModeMetadata } from "@assistant/schemas";
 
-import { normalizeMessage } from "~/lib/messages";
+import { getMessageTextContent, normalizeMessage } from "~/lib/messages";
 import type { Message } from "~/types";
 import type { RealtimeTranscriptResult } from "./messages";
 
@@ -46,19 +46,8 @@ export function createLiveTurn(now = Date.now()): LiveTurn {
 	};
 }
 
-export function getMessageText(message: Message): string {
-	if (typeof message.content === "string") {
-		return message.content.trim();
-	}
-
-	return message.content
-		.map((part) => (part.type === "text" ? part.text || "" : ""))
-		.join(" ")
-		.trim();
-}
-
 export function createTemporaryLiveTitle(message: Message): string {
-	const text = getMessageText(message);
+	const text = getMessageTextContent(message).replace(/\s+/g, " ").trim();
 	if (!text) {
 		return "New Conversation";
 	}

@@ -324,7 +324,10 @@ export function serialiseMessagesForConversationUpdate(
 
 export function getMessageTextContent(message: Pick<Message, "content" | "parts">): string {
 	if (typeof message.content === "string") {
-		return message.content.trim();
+		const text = message.content.trim();
+		if (text) {
+			return text;
+		}
 	}
 
 	if (Array.isArray(message.content)) {

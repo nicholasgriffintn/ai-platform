@@ -1,5 +1,5 @@
 import { MAX_BUFFER_LENGTH, MAX_CONTENT_LENGTH, MAX_THINKING_LENGTH } from "~/constants/app";
-import { MEMORY_STORE_TOOL_NAME } from "~/lib/chat/memoryTools";
+import { MEMORY_STORE_TOOL_NAME } from "~/lib/chat/memoryPolicy";
 import { buildAssistantMessageData } from "~/lib/chat/mode-metadata";
 import { formatAssistantMessage, getAIResponse } from "~/lib/chat/responses";
 import { extractCouncilTurnRouting } from "~/lib/chat/council";
@@ -119,29 +119,31 @@ function mergeMessageParts(
  * @param conversationManager - The conversation manager
  * @returns The transformed stream
  */
+export interface StreamPostProcessingOptions {
+	env: IEnv;
+	completion_id: string;
+	model: string;
+	provider: string;
+	platform?: Platform;
+	user?: IUser;
+	context?: ServiceContext;
+	userSettings?: IUserSettings;
+	app_url?: string;
+	mode?: ChatMode;
+	max_steps?: number;
+	current_step?: number;
+	tools?: any[];
+	enabled_tools?: string[];
+	approved_tools?: string[];
+	current_agent_id?: string;
+	delegation_stack?: string[];
+	max_delegation_depth?: number;
+	requestOptions?: Record<string, any>;
+}
+
 export async function createStreamWithPostProcessing(
 	providerStream: ReadableStream,
-	options: {
-		env: IEnv;
-		completion_id: string;
-		model: string;
-		provider: string;
-		platform?: Platform;
-		user?: IUser;
-		context?: ServiceContext;
-		userSettings?: IUserSettings;
-		app_url?: string;
-		mode?: ChatMode;
-		max_steps?: number;
-		current_step?: number;
-		tools?: any[];
-		enabled_tools?: string[];
-		approved_tools?: string[];
-		current_agent_id?: string;
-		delegation_stack?: string[];
-		max_delegation_depth?: number;
-		requestOptions?: Record<string, any>;
-	},
+	options: StreamPostProcessingOptions,
 	conversationManager: ConversationManager,
 ): Promise<ReadableStream> {
 	const {
@@ -812,6 +814,7 @@ export async function createStreamWithPostProcessing(
 									context,
 								},
 								{
+									persistResults: "immediate",
 									onToolResult: (toolResult) => {
 										emitEvent(controller, "tool_response", {
 											tool_id: toolResult.id,

@@ -150,7 +150,8 @@ export const perplexityModelConfig: ModelConfig = {
 		reliability: 4,
 		speed: 3,
 		isFeatured: true,
-		includedInRouter: true,
+		includedInRouter: false,
+		deprecated: true,
 		costPer1kInputTokens: 0.002,
 		costPer1kOutputTokens: 0.008,
 		modalities: {

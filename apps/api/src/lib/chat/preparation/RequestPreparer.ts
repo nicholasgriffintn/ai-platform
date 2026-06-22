@@ -12,7 +12,11 @@ import {
 	buildConversationModeMetadataFromRequestOptions,
 	resolveChatPromptMode,
 } from "~/lib/chat/mode-metadata";
-import { mergeEnabledMemoryToolNames } from "~/lib/chat/memoryTools";
+import {
+	buildMemoryPromptContext,
+	mergeEnabledMemoryToolNames,
+	resolveMemoryPolicy,
+} from "~/lib/chat/memoryPolicy";
 import { messagesMatchStoredPrefix } from "~/lib/chat/messageComparison";
 import { findModelConfig } from "~/lib/providers/models";
 import { getSystemPrompt } from "~/lib/prompts";
@@ -467,8 +471,6 @@ export class RequestPreparer {
 
 		if (memoriesEnabled && isProUser && finalMessage && user?.id) {
 			try {
-				let memoryContext = "";
-
 				const memoryManager = MemoryManager.getInstance(this.env, user, serviceContext);
 				const [synthesis, recentMemories] = await Promise.all([
 					this.repositories.memorySyntheses.getActiveSynthesis(user.id, "global"),
@@ -479,15 +481,10 @@ export class RequestPreparer {
 					}),
 				]);
 
-				if (synthesis) {
-					memoryContext += `\n\n# Memory Summary\nThe following is a consolidated summary of your long-term memories about this user:\n<memory_synthesis>\n${synthesis.synthesis_text}\n</memory_synthesis>`;
-				}
-
-				if (recentMemories.length > 0) {
-					memoryContext += `\n\n# Recently Relevant Memories\nThe following specific memories are most relevant to this conversation:\n<recent_memories>\n${recentMemories
-						.map((m) => `- ${m.text}`)
-						.join("\n")}\n</recent_memories>`;
-				}
+				const memoryContext = buildMemoryPromptContext({
+					synthesisText: synthesis?.synthesis_text,
+					recentMemories,
+				});
 
 				if (memoryContext) {
 					return systemPrompt ? `${systemPrompt}\n${memoryContext}` : memoryContext;
@@ -501,17 +498,7 @@ export class RequestPreparer {
 	}
 
 	private shouldUseMemories(user: any, userSettings: any, store?: boolean): boolean {
-		if (store === false) {
-			return false;
-		}
-
-		if (!user?.id || user?.plan_id !== "pro") {
-			return false;
-		}
-
-		return Boolean(
-			userSettings?.memories_save_enabled || userSettings?.memories_chat_history_enabled,
-		);
+		return resolveMemoryPolicy({ user, userSettings, store }).enabled;
 	}
 
 	private buildFinalMessages(

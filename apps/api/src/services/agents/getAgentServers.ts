@@ -1,10 +1,9 @@
 import type { MCPClientManager } from "agents/mcp/client";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
-import { connectMCPServerReady, type MCPServerConfig } from "~/services/agents/mcp-client";
+import { connectMCPServerReady, parseMCPServerConfigs } from "~/services/agents/mcp-client";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
-import { safeParseJson } from "../../utils/json";
 
 const logger = getLogger({ prefix: "services/agents/servers" });
 
@@ -16,12 +15,7 @@ export async function getAgentServers(context: ServiceContext, agentId: string, 
 		return [];
 	}
 
-	let serverConfigs: MCPServerConfig[] = [];
-	const serversJson = agent.servers as string;
-	serverConfigs = safeParseJson(serversJson) as MCPServerConfig[];
-	if (!serverConfigs) {
-		throw new AssistantError("Invalid servers configuration", ErrorType.PARAMS_ERROR);
-	}
+	const serverConfigs = parseMCPServerConfigs(agent.servers);
 
 	if (!serverConfigs || serverConfigs.length === 0) {
 		return [];

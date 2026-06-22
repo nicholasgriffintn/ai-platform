@@ -412,7 +412,7 @@ export function getIncludedInRouterModels(
 
 	cachedRouterModels = Object.entries(modelConfig).reduce(
 		(acc, [key, model]) => {
-			if (model.includedInRouter) {
+			if (model.includedInRouter && !model.deprecated) {
 				acc[key] = model;
 			}
 			return acc;
@@ -569,7 +569,7 @@ export async function getAuxiliaryModel(
 	env: IEnv,
 	user?: IUser,
 ): Promise<{ model: string; provider: string }> {
-	let modelToUse = "gemma-3-12b-it";
+	let modelToUse = "gemma-4-26b-a4b-it";
 
 	const availableModels = await getIncludedInRouterModelsForUser(env, user?.id);
 
@@ -578,8 +578,7 @@ export async function getAuxiliaryModel(
 	);
 
 	if (hasGroqModel) {
-		modelToUse = "llama-3.3-70b-versatile";
-		return { model: modelToUse, provider: "groq" };
+		modelToUse = "groq-openai-gpt-oss-20b";
 	}
 
 	const modelConfig = await getModelConfig(modelToUse, env);
@@ -588,7 +587,7 @@ export async function getAuxiliaryModel(
 }
 
 export const getAuxiliaryModelForRetrieval = async (env: IEnv, user?: IUser) => {
-	let modelToUse = "gemma-3-12b-it";
+	let modelToUse = "gemma-4-26b-a4b-it";
 
 	const availableModels = await getIncludedInRouterModelsForUser(env, user?.id);
 

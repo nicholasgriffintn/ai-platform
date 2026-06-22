@@ -32,7 +32,7 @@ describe("fetchAIResponse", () => {
 				"chat/completions",
 				{},
 				{
-					model: "llama-3.3-70b-versatile",
+					model: "groq-openai-gpt-oss-20b",
 					messages: [{ role: "user", content: "Hello", name: undefined }],
 					store: undefined,
 					metadata: {
@@ -52,7 +52,7 @@ describe("fetchAIResponse", () => {
 			"https://gateway.ai.cloudflare.com/v1/account/gateway/groq/chat/completions",
 			expect.objectContaining({
 				body: JSON.stringify({
-					model: "llama-3.3-70b-versatile",
+					model: "groq-openai-gpt-oss-20b",
 					messages: [{ role: "user", content: "Hello" }],
 					metadata: {
 						keep: null,
@@ -139,7 +139,7 @@ describe("fetchAIResponse", () => {
 				"chat/completions",
 				{ Authorization: "Bearer test-key" },
 				{
-					model: "groq/llama-3.3-70b-versatile",
+					model: "groq-openai-gpt-oss-20b",
 					messages: [{ role: "user", content: "Hello" }],
 				},
 				env as unknown as IEnv,
@@ -201,7 +201,7 @@ describe("fetchAIResponse", () => {
 					"chat/completions",
 					{ Authorization: "Bearer test-key" },
 					{
-						model: "groq/llama-3.3-70b-versatile",
+						model: "groq-openai-gpt-oss-20b",
 						messages: [{ role: "user", content: "Hello" }],
 					},
 					env as unknown as IEnv,

@@ -19,6 +19,10 @@ export interface PermissionCheckInput {
 	toolPermissions?: string[];
 }
 
+export interface RequestPermissionCheckInput extends PermissionCheckInput {
+	approvedTools?: readonly unknown[];
+}
+
 export interface PermissionCheckResult {
 	allowed: boolean;
 	requiresApproval: boolean;
@@ -27,11 +31,18 @@ export interface PermissionCheckResult {
 	permissions: ToolPermission[];
 }
 
-function normalisePermissions(values: string[]): ToolPermission[] {
-	const seen = new Set<ToolPermission>();
-	const normalised: ToolPermission[] = [];
+export interface RequestPermissionCheckResult extends PermissionCheckResult {
+	approved: boolean;
+}
 
-	for (const value of values) {
+export function resolveToolPermissions(
+	_toolName: string,
+	explicitPermissions?: string[],
+): ToolPermission[] {
+	const seen = new Set<ToolPermission>();
+	const permissions: ToolPermission[] = [];
+
+	for (const value of explicitPermissions || []) {
 		if (!value) {
 			continue;
 		}
@@ -43,22 +54,10 @@ function normalisePermissions(values: string[]): ToolPermission[] {
 		}
 
 		seen.add(permission);
-		normalised.push(permission);
+		permissions.push(permission);
 	}
 
-	return normalised;
-}
-
-function intersectPermissions(permissions: ToolPermission[], candidates: ToolPermission[]) {
-	const candidateSet = new Set(candidates);
-	return permissions.filter((permission) => candidateSet.has(permission));
-}
-
-export function resolveToolPermissions(
-	_toolName: string,
-	explicitPermissions?: string[],
-): ToolPermission[] {
-	return normalisePermissions(explicitPermissions || []);
+	return permissions;
 }
 
 export function resolveModeMaxSteps(mode?: ChatMode | string, requestedMaxSteps?: number): number {
@@ -72,6 +71,21 @@ export function resolveModeMaxSteps(mode?: ChatMode | string, requestedMaxSteps?
 }
 
 export class PermissionChecker {
+	checkRequestToolAccess(input: RequestPermissionCheckInput): RequestPermissionCheckResult {
+		const access = this.checkToolAccess(input);
+		const targetName = input.toolName.trim().toLowerCase();
+		const approved = Boolean(
+			input.approvedTools?.some(
+				(tool) => typeof tool === "string" && tool.trim().toLowerCase() === targetName,
+			),
+		);
+
+		return {
+			...access,
+			approved,
+		};
+	}
+
 	checkToolAccess(input: PermissionCheckInput): PermissionCheckResult {
 		const resolvedMode = resolveAgentModeFromChatMode(input.mode);
 		const config = AGENT_MODE_CONFIGS[resolvedMode];
@@ -120,7 +134,7 @@ export class PermissionChecker {
 			};
 		}
 
-		const deniedByPermissions = intersectPermissions(permissions, config.deniedPermissions);
+		const deniedByPermissions = this.intersectPermissions(permissions, config.deniedPermissions);
 		if (deniedByPermissions.length > 0) {
 			return {
 				allowed: false,
@@ -146,7 +160,7 @@ export class PermissionChecker {
 			}
 		}
 
-		const requiredApprovalFor = intersectPermissions(permissions, config.requiresApprovalFor);
+		const requiredApprovalFor = this.intersectPermissions(permissions, config.requiresApprovalFor);
 		const requiresApproval = requiredApprovalFor.length > 0 && toolName !== "request_approval";
 
 		return {
@@ -158,5 +172,10 @@ export class PermissionChecker {
 			mode: resolvedMode,
 			permissions,
 		};
+	}
+
+	private intersectPermissions(permissions: ToolPermission[], candidates: ToolPermission[]) {
+		const candidateSet = new Set(candidates);
+		return permissions.filter((permission) => candidateSet.has(permission));
 	}
 }

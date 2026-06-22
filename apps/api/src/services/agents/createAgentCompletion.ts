@@ -3,9 +3,10 @@ import { createServiceContext, type ServiceContext } from "~/lib/context/service
 import { findModelConfig } from "~/lib/providers/models";
 import { handleCreateChatCompletions } from "~/services/completions/createChatCompletions";
 import type { ChatCompletionRequestBody } from "@assistant/schemas";
-import type { ChatCompletionParameters, IEnv, IUser, Message } from "~/types";
+import type { IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { buildAgentCompletionTools, buildAgentSystemPrompt } from "./completion-tools";
+import { prepareAgentCompletionRequest } from "./completion-request";
 
 export async function createAgentCompletion({
 	env,
@@ -45,35 +46,13 @@ export async function createAgentCompletion({
 
 	const systemPrompt = buildAgentSystemPrompt(agent);
 
-	const {
-		user: _requestUser,
-		platform: requestPlatform,
-		stop: requestStop,
-		tool_choice: requestToolChoice,
-		messages: requestMessages,
-		...requestBody
-	} = body;
-	const normalizedMessages: Message[] = requestMessages.map((message) => ({
-		...message,
-		content: message.content ?? "",
-	}));
-
-	const requestParams: Omit<ChatCompletionParameters, "env"> = {
-		...requestBody,
-		messages: normalizedMessages,
-		system_prompt: systemPrompt,
-		model: modelToUse,
-		provider: agent.model ? modelDetails.provider : body.provider,
-		tools: formattedTools,
-		stream: false,
-		mode: "agent",
-		max_steps: agent.max_steps || body.max_steps || 20,
-		temperature: Number.parseFloat(agent.temperature) || body.temperature || 0.8,
-		current_agent_id: agentId,
-		platform: requestPlatform === "obsidian" ? "api" : requestPlatform,
-		stop: requestStop ? (Array.isArray(requestStop) ? requestStop : [requestStop]) : undefined,
-		tool_choice: normaliseToolChoice(requestToolChoice),
-	};
+	const requestParams = prepareAgentCompletionRequest({
+		agent,
+		body,
+		modelProvider: modelDetails.provider,
+		formattedTools,
+		systemPrompt,
+	});
 
 	const response = await handleCreateChatCompletions({
 		env: serviceContext.env,
@@ -84,23 +63,6 @@ export async function createAgentCompletion({
 	});
 
 	return response;
-}
-
-function normaliseToolChoice(
-	toolChoice: ChatCompletionRequestBody["tool_choice"],
-): Omit<ChatCompletionParameters, "env">["tool_choice"] {
-	if (!toolChoice) {
-		return undefined;
-	}
-
-	if (toolChoice === "auto" || toolChoice === "none" || toolChoice === "required") {
-		return toolChoice;
-	}
-
-	return {
-		type: "function",
-		name: toolChoice.function.name,
-	};
 }
 
 async function getValidatedAgent(context: ServiceContext, agentId: string, userId?: number) {

@@ -26,6 +26,13 @@ export const novaModelConfig: ModelConfig = createModelConfigObject([
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
 		costPer1kReasoningTokens: 0,
+		strengths: ["analysis", "reasoning", "coding", "vision", "multilingual"],
+		contextComplexity: 4,
+		reliability: 4,
+		speed: 4,
+		includedInRouter: true,
+		supportsDocuments: true,
+		supportsArtifacts: true,
 		reasoningConfig: NOVA_2_REASONING_CONFIG,
 	}),
 
@@ -46,6 +53,13 @@ export const novaModelConfig: ModelConfig = createModelConfigObject([
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
 		costPer1kReasoningTokens: 0,
+		strengths: ["analysis", "reasoning", "coding", "vision", "math"],
+		contextComplexity: 5,
+		reliability: 4,
+		speed: 3,
+		includedInRouter: true,
+		supportsDocuments: true,
+		supportsArtifacts: true,
 		reasoningConfig: NOVA_2_REASONING_CONFIG,
 	}),
 
@@ -79,6 +93,11 @@ export const novaModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 10000,
 		costPer1kInputTokens: 0.00004,
 		costPer1kOutputTokens: 0.00014,
+		strengths: ["chat", "summarization", "general_knowledge"],
+		contextComplexity: 2,
+		reliability: 3,
+		speed: 5,
+		includedInRouter: false,
 	}),
 
 	createModelConfig("nova-lite-v1", PROVIDER, {
@@ -97,6 +116,11 @@ export const novaModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 10000,
 		costPer1kInputTokens: 0.00006,
 		costPer1kOutputTokens: 0.00024,
+		strengths: ["chat", "analysis", "vision", "summarization"],
+		contextComplexity: 3,
+		reliability: 3,
+		speed: 4,
+		includedInRouter: false,
 	}),
 
 	createModelConfig("nova-pro-v1", PROVIDER, {
@@ -115,6 +139,11 @@ export const novaModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 10000,
 		costPer1kInputTokens: 0.0008,
 		costPer1kOutputTokens: 0.0032,
+		strengths: ["analysis", "reasoning", "coding", "vision"],
+		contextComplexity: 4,
+		reliability: 4,
+		speed: 3,
+		includedInRouter: false,
 	}),
 
 	createModelConfig("nova-sonic-v1", PROVIDER, {
@@ -145,5 +174,10 @@ export const novaModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 10000,
 		costPer1kInputTokens: 0.0025,
 		costPer1kOutputTokens: 0.013,
+		strengths: ["analysis", "reasoning", "coding", "vision", "creative"],
+		contextComplexity: 5,
+		reliability: 4,
+		speed: 2,
+		includedInRouter: false,
 	}),
 ]);

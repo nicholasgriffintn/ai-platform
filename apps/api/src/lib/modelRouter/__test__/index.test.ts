@@ -229,6 +229,45 @@ describe("ModelRouter", () => {
 			expect(result.length).toBeLessThanOrEqual(2);
 		});
 
+		it("should return multiple models when analysis explicitly recommends comparison", async () => {
+			const explicitComparisonRequirements: PromptRequirements = {
+				...mockRequirements,
+				expectedComplexity: 1,
+				requiredStrengths: ["chat", "general_knowledge"],
+				criticalStrengths: ["chat"],
+				benefitsFromMultipleModels: true,
+				modelComparisonReason: "User explicitly requests multiple models.",
+			};
+
+			const availableModels = {
+				"model-1": {
+					...mockModelConfig,
+					id: "model-1",
+					provider: "provider-1",
+					strengths: ["chat", "general_knowledge"],
+				},
+				"model-2": {
+					...mockModelConfig,
+					id: "model-2",
+					provider: "provider-2",
+					strengths: ["chat", "general_knowledge"],
+				},
+			};
+
+			mockModels.getIncludedInRouterModelsForUser.mockResolvedValue(availableModels);
+			mockPromptAnalyzer.analyzePrompt.mockResolvedValue(explicitComparisonRequirements);
+
+			const result = await ModelRouter.selectMultipleModels(
+				mockEnv,
+				"Use multiple models, hi",
+				[],
+				undefined,
+				mockUser,
+			);
+
+			expect(result).toEqual(["model-1", "model-2"]);
+		});
+
 		it("should handle errors and return default model array", async () => {
 			mockModels.getIncludedInRouterModelsForUser.mockImplementation(() => {
 				throw new Error("Test error");
@@ -353,6 +392,51 @@ describe("ModelRouter", () => {
 			const result = await ModelRouter.selectModel(mockEnv, "Test prompt", [], 50, mockUser);
 
 			expect(result).toBe("cheap-model");
+		});
+
+		it("should prefer current efficient reasoning models over deprecated expensive models", async () => {
+			const reasoningRequirements: PromptRequirements = {
+				...mockRequirements,
+				expectedComplexity: 4,
+				requiredStrengths: ["reasoning"],
+				estimatedInputTokens: 2000,
+				estimatedOutputTokens: 1000,
+			};
+
+			const availableModels = {
+				o1: {
+					...mockModelConfig,
+					deprecated: true,
+					costPer1kInputTokens: 0.015,
+					costPer1kOutputTokens: 0.06,
+					contextComplexity: 4,
+					reliability: 4,
+					speed: 1,
+					strengths: ["reasoning", "analysis", "math"],
+				},
+				"gpt-5.4-mini": {
+					...mockModelConfig,
+					costPer1kInputTokens: 0.00075,
+					costPer1kOutputTokens: 0.0045,
+					contextComplexity: 4,
+					reliability: 4,
+					speed: 5,
+					strengths: ["reasoning", "analysis", "coding"],
+				},
+			};
+
+			mockModels.getIncludedInRouterModelsForUser.mockResolvedValue(availableModels);
+			mockPromptAnalyzer.analyzePrompt.mockResolvedValue(reasoningRequirements);
+
+			const result = await ModelRouter.selectModel(
+				mockEnv,
+				"Solve this reasoning problem",
+				[],
+				undefined,
+				mockUser,
+			);
+
+			expect(result).toBe("gpt-5.4-mini");
 		});
 
 		it("should boost multimodal models for image tasks", async () => {

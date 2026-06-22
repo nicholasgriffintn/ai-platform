@@ -1,12 +1,12 @@
 import { getAIResponse } from "~/lib/chat/responses";
 import type { ModelConfigInfo } from "@assistant/schemas";
 import type { ConversationManager } from "~/lib/conversationManager";
-import type { ServiceContext } from "~/lib/context/serviceContext";
-import type { ChatMode, IEnv, IUser, IUserSettings, Message, Platform } from "~/types";
+import type { MultiModelStreamRequest } from "~/lib/chat/core/execution-request";
+import type { Message } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";
-import { createStreamWithPostProcessing } from "./streaming";
+import { createStreamWithPostProcessing, type StreamPostProcessingOptions } from "./streaming";
 import { safeParseJson } from "~/utils/json";
 
 const logger = getLogger({ prefix: "lib/chat/multiModalStreaming" });
@@ -57,26 +57,18 @@ function buildConsensusSynthesisPrompt(modelResponses: string): string {
  * @returns The multi-model stream
  */
 export function createMultiModelStream(
-	parameters: any,
-	options: {
-		env: IEnv;
-		completion_id: string;
-		model: string;
-		provider: string;
-		platform?: Platform;
-		user?: IUser;
-		context?: ServiceContext;
-		userSettings?: IUserSettings;
-		app_url?: string;
-		mode?: ChatMode;
-		tools?: any[];
-		enabled_tools?: string[];
-	},
+	parameters: MultiModelStreamRequest,
+	options: StreamPostProcessingOptions,
 	conversationManager: ConversationManager,
 ): ReadableStream {
-	const { models, ...baseParams } = parameters;
+	const { models, ...requestDefaults } = parameters;
+	const baseParams = {
+		...requestDefaults,
+		env: requestDefaults.env ?? options.env,
+	};
 	const primaryParams = {
 		...baseParams,
+		body: baseParams.body,
 		model: models[0].model,
 		provider: models[0].provider,
 		stream: true,
@@ -91,6 +83,7 @@ export function createMultiModelStream(
 
 					const secondaryParams = {
 						...baseParams,
+						body: baseParams.body,
 						model: modelConfig.model,
 						provider: modelConfig.provider,
 						stream: false,
@@ -175,6 +168,8 @@ export function createMultiModelStream(
 				);
 
 				const primaryReader = primaryProcessedStream.getReader();
+				const primaryDecoder = new TextDecoder();
+				let primaryEventBuffer = "";
 
 				const modelNames = models.map((m: ModelConfigInfo) => m.displayName).join(", ");
 				modelHeader = `Using the following models: ${modelNames}\n\n`;
@@ -191,29 +186,54 @@ export function createMultiModelStream(
 					const { done, value } = await primaryReader.read();
 					if (done) break;
 
-					const text = new TextDecoder().decode(value);
-					try {
-						const matches = text.match(/data: (.*?)\n\n/g);
-						if (matches) {
-							for (const match of matches) {
-								const dataStr = match.substring(6, match.length - 2);
-								if (dataStr === "[DONE]") continue;
-								const data = safeParseJson(dataStr);
-								if (!data) {
-									throw new AssistantError("Failed to parse data", ErrorType.PARAMS_ERROR);
-								}
-								if (data.type === "content_block_delta" && data.content) {
-									primaryContent += data.content;
-								} else if (data.type === "text" && data.text) {
-									primaryContent += data.text;
-								}
-							}
-						}
-					} catch {
-						/* ignore parse errors during capture */
-					}
+					primaryEventBuffer += primaryDecoder.decode(value, { stream: true });
+					const blocks = primaryEventBuffer.split("\n\n");
+					primaryEventBuffer = blocks.pop() || "";
 
-					controller.enqueue(value);
+					for (const block of blocks) {
+						if (!block.trim()) {
+							continue;
+						}
+
+						const eventText = `${block}\n\n`;
+						try {
+							const dataLines = block
+								.split("\n")
+								.map((line) => line.trimEnd())
+								.filter((line) => line.startsWith("data:"))
+								.map((line) => line.slice(5).trimStart());
+
+							if (dataLines.length === 0) {
+								controller.enqueue(encoder.encode(eventText));
+								continue;
+							}
+
+							const dataStr = dataLines.join("\n").trim();
+							if (dataStr === "[DONE]") {
+								continue;
+							}
+
+							const data = safeParseJson(dataStr);
+							if (!data) {
+								throw new AssistantError("Failed to parse data", ErrorType.PARAMS_ERROR);
+							}
+							if (data.type === "content_block_delta" && data.content) {
+								primaryContent += data.content;
+							} else if (data.type === "text" && data.text) {
+								primaryContent += data.text;
+							}
+							if (
+								data.type === "message_delta" ||
+								data.type === "message_stop" ||
+								(data.type === "state" && data.state === "done")
+							) {
+								continue;
+							}
+							controller.enqueue(encoder.encode(eventText));
+						} catch {
+							controller.enqueue(encoder.encode(eventText));
+						}
+					}
 				}
 			} catch (error) {
 				logger.error("Error processing primary stream in multi-model setup:", error);
@@ -314,6 +334,7 @@ export function createMultiModelStream(
 				try {
 					const consensusResponse = await getAIResponse({
 						...baseParams,
+						body: baseParams.body,
 						disable_functions: true,
 						enabled_tools: [],
 						messages: [
@@ -363,25 +384,36 @@ export function createMultiModelStream(
 			try {
 				const conversation = await conversationManager.get(options.completion_id);
 				const secondaryModels = models.slice(1).map((m: ModelConfigInfo) => m.model) || [];
-				const buildFinalMessage = (content: string, baseMessage?: Partial<Message>): Message => ({
-					...baseMessage,
-					role: "assistant",
-					content,
-					citations: baseMessage?.citations || [],
-					log_id: baseMessage?.log_id || null,
-					mode: options.mode,
-					id: baseMessage?.id || generateId(),
-					timestamp: baseMessage?.timestamp || Date.now(),
-					model: baseMessage?.model || models[0].model,
-					platform: baseMessage?.platform || options.platform || "api",
-					usage: baseMessage?.usage || null,
-					data: {
-						...baseMessage?.data,
-						includesSecondaryModels: true,
-						secondaryModels,
-					},
-					tool_calls: baseMessage?.tool_calls || null,
-				});
+				const buildFinalMessage = (content: string, baseMessage?: Partial<Message>): Message => {
+					const timestamp = baseMessage?.timestamp || Date.now();
+
+					return {
+						...baseMessage,
+						role: "assistant",
+						content,
+						parts: [
+							{
+								type: "text",
+								text: content,
+								timestamp,
+							},
+						],
+						citations: baseMessage?.citations || [],
+						log_id: baseMessage?.log_id || null,
+						mode: options.mode,
+						id: baseMessage?.id || generateId(),
+						timestamp,
+						model: baseMessage?.model || models[0].model,
+						platform: baseMessage?.platform || options.platform || "api",
+						usage: baseMessage?.usage || null,
+						data: {
+							...baseMessage?.data,
+							includesSecondaryModels: true,
+							secondaryModels,
+						},
+						tool_calls: baseMessage?.tool_calls || null,
+					};
+				};
 				let finalAssistantMessage: Message | null = null;
 
 				if (conversation?.length > 0) {

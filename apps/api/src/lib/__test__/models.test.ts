@@ -414,6 +414,7 @@ describe("Models", () => {
 
 			for (const [_key, model] of Object.entries(result)) {
 				expect(model.includedInRouter).toBe(true);
+				expect(model.deprecated).not.toBe(true);
 			}
 		});
 
@@ -559,7 +560,7 @@ describe("Models", () => {
 		it("should return default model when no groq models available", async () => {
 			const result = await getAuxiliaryModel(mockEnv, mockUser);
 
-			expect(result.model).toBe("@cf/google/gemma-3-12b-it");
+			expect(result.model).toBe("@cf/google/gemma-4-26b-a4b-it");
 			expect(result.provider).toBe("workers-ai");
 		});
 
@@ -571,7 +572,7 @@ describe("Models", () => {
 
 			const result = await getAuxiliaryModel(mockEnv, mockProUser);
 
-			expect(result.model).toBe("llama-3.3-70b-versatile");
+			expect(result.model).toBe("openai/gpt-oss-20b");
 			expect(result.provider).toBe("groq");
 		});
 	});
@@ -580,7 +581,7 @@ describe("Models", () => {
 		it("should return default model when no perplexity models available", async () => {
 			const result = await getAuxiliaryModelForRetrieval(mockEnv, mockUser);
 
-			expect(result.model).toBe("@cf/google/gemma-3-12b-it");
+			expect(result.model).toBe("@cf/google/gemma-4-26b-a4b-it");
 			expect(result.provider).toBe("workers-ai");
 		});
 

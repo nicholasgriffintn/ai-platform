@@ -3,20 +3,12 @@ import { useCallback } from "react";
 import type { ConversationModeMetadata } from "@assistant/schemas";
 
 import { CHATS_QUERY_KEY } from "~/constants";
-import {
-	buildCouncilConclusionPrompt,
-	buildCouncilTurnPrompt,
-	getCouncilConclusionMemberId,
-	getCouncilRoutingState,
-	getOpeningCouncilMemberId,
-	resolveCouncilMemberIds,
-} from "~/lib/council";
 import type { AttachmentData } from "~/lib/chat/attachments";
 import { normalizeSelectedModel } from "~/lib/chat/model-selection";
 import { prepareUserMessage } from "~/lib/chat/prepare-user-message";
+import { createCouncilDebateTurnPlanner } from "~/lib/council-turns";
 import { createConversationId } from "~/lib/conversations";
 import { getErrorMessage } from "~/lib/errors";
-import { normalizeMessage } from "~/lib/messages";
 import { useLoadingActions } from "~/state/contexts/LoadingContext";
 import { useChatStore } from "~/state/stores/chatStore";
 import type { ChatRequestOptions, Conversation, Message } from "~/types";
@@ -256,8 +248,12 @@ export function useChatManager(
 				};
 			}
 
-			const memberIds = resolveCouncilMemberIds(debate.memberIds);
 			const currentModel = normalizeSelectedModel(model);
+			const councilTurns = createCouncilDebateTurnPlanner({
+				memberIds: debate.memberIds,
+				model: currentModel ?? "",
+				requireConsensus: debate.requireConsensus,
+			});
 
 			try {
 				let conversationId = currentConversationId;
@@ -289,44 +285,23 @@ export function useChatManager(
 				let finalResponse = "";
 				let finalAssistantMessage: Message | undefined;
 				let turn = 1;
-				const speakerQueue: CouncilMemberId[] = [getOpeningCouncilMemberId(memberIds)];
+				const speakerQueue: CouncilMemberId[] = councilTurns.openingSpeakerIds();
 
 				while (speakerQueue.length > 0) {
 					const memberId = speakerQueue.shift()!;
 					setStreamStarted(true);
 					startLoading("stream-response", "Council debating...");
 
-					const turnPrompt = buildCouncilTurnPrompt({
+					const debateTurn = councilTurns.createDebateTurn({
 						memberId,
-						round: 1,
 						turn,
+						accumulatedMessages,
 					});
-					const turnMessage = normalizeMessage({
-						role: "user",
-						content: turnPrompt,
-						id: crypto.randomUUID(),
-						created: Date.now(),
-						model: currentModel,
-					});
-					const requestMessages =
-						turn === 1 ? accumulatedMessages : [...accumulatedMessages, turnMessage];
 
 					const result = await streamResponse(
-						requestMessages,
+						debateTurn.requestMessages,
 						conversationId,
-						{
-							council: {
-								enabled: true,
-								responseMode: "debate",
-								phase: "debate",
-								memberIds,
-								activeMemberId: memberId,
-								round: 1,
-								turn,
-								requireConsensus: debate.requireConsensus ?? true,
-								skipInputStorage: turn > 1,
-							},
-						},
+						debateTurn.requestOptions,
 						{ generateTitle: false },
 					);
 
@@ -338,36 +313,23 @@ export function useChatManager(
 					if (result.message) {
 						finalAssistantMessage = result.message;
 						accumulatedMessages = [...accumulatedMessages, result.message];
-						const routing = getCouncilRoutingState(result.message, memberIds);
-						speakerQueue.splice(0, speakerQueue.length, ...routing.nextMemberIds);
+						speakerQueue.splice(
+							0,
+							speakerQueue.length,
+							...councilTurns.nextSpeakerIds(result.message),
+						);
 					}
 					turn += 1;
 				}
 
-				const conclusionMemberId = getCouncilConclusionMemberId(memberIds);
-				const conclusionMessage = normalizeMessage({
-					role: "user",
-					content: buildCouncilConclusionPrompt(conclusionMemberId),
-					id: crypto.randomUUID(),
-					created: Date.now(),
-					model: currentModel,
+				const conclusionTurn = councilTurns.createConclusionTurn({
+					turn,
+					accumulatedMessages,
 				});
 				const conclusionResult = await streamResponse(
-					[...accumulatedMessages, conclusionMessage],
+					conclusionTurn.requestMessages,
 					conversationId,
-					{
-						council: {
-							enabled: true,
-							responseMode: "debate",
-							phase: "conclusion",
-							memberIds,
-							activeMemberId: conclusionMemberId,
-							round: 1,
-							turn,
-							requireConsensus: debate.requireConsensus ?? true,
-							skipInputStorage: true,
-						},
-					},
+					conclusionTurn.requestOptions,
 					{ generateTitle: false },
 				);
 

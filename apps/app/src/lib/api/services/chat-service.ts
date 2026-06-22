@@ -1,28 +1,19 @@
-import type {
-	ChatMode,
-	ChatRequestOptions,
-	ChatSettings,
-	Conversation,
-	Message,
-	MessageData,
-} from "~/types";
-import { normaliseToolIds } from "@assistant/schemas";
+import type { ChatMode, ChatRequestOptions, ChatSettings, Conversation, Message } from "~/types";
+import {
+	createChatStreamAssembler,
+	normaliseToolIds,
+	parseChatStreamSseEvent,
+	type ChatStreamUpdate,
+} from "@assistant/schemas";
 import { getSandboxModeToolNames } from "~/lib/sandbox/chat-mode";
 import {
+	getMessageTextContent,
 	normalizeMessage,
 	serialiseMessagesForChatRequest,
 	serialiseMessagesForConversationUpdate,
 } from "../../messages";
+import { createStreamingApiError, toAppMessage } from "../chat-stream-response";
 import { ApiError, fetchApi, fetchApiOrThrow, returnFetchedData } from "../fetch-wrapper";
-
-const STREAM_ERROR_STATUS_BY_CODE: Record<string, number> = {
-	authentication_error: 401,
-	invalid_api_key: 401,
-	insufficient_quota: 429,
-	model_not_found: 404,
-	quota_exceeded: 429,
-	rate_limit_exceeded: 429,
-};
 
 export interface ConversationUpdateRequest {
 	archived?: boolean;
@@ -57,42 +48,6 @@ export interface StreamChatCompletionsParams {
 	store?: boolean;
 	streamingEnabled?: boolean;
 	useMultiModel?: boolean;
-}
-
-function createStreamingApiError(errorPayload: unknown): ApiError {
-	if (!errorPayload || typeof errorPayload !== "object") {
-		return new ApiError("Streaming response failed", 500, errorPayload);
-	}
-
-	const payload = errorPayload as Record<string, unknown>;
-	const code =
-		typeof payload.code === "string"
-			? payload.code
-			: typeof payload.type === "string"
-				? payload.type
-				: undefined;
-	const message =
-		typeof payload.message === "string" && payload.message.trim().length > 0
-			? payload.message
-			: "Streaming response failed";
-	const status =
-		typeof payload.status === "number"
-			? payload.status
-			: code
-				? (STREAM_ERROR_STATUS_BY_CODE[code] ?? 500)
-				: 500;
-
-	return new ApiError(message, status, errorPayload, code);
-}
-
-function mergeRequestOptions(
-	chatSettings: ChatSettings,
-	requestOptions?: ChatRequestOptions,
-): ChatRequestOptions {
-	return {
-		...chatSettings.tool_options,
-		...requestOptions,
-	};
 }
 
 export class ChatService {
@@ -446,7 +401,10 @@ export class ChatService {
 			approved_tools: requestApprovedTools,
 			max_steps: sandboxOptions?.maxSteps ?? (sandboxOptions ? 2 : undefined),
 			use_multi_model: useMultiModel,
-			options: mergeRequestOptions(chatSettings, requestOptions),
+			options: {
+				...chatSettings.tool_options,
+				...requestOptions,
+			},
 		};
 
 		if (model !== undefined) {
@@ -485,108 +443,6 @@ export class ChatService {
 		) => void,
 		onStateChange: (state: string, data?: any) => void,
 	): Promise<Message> {
-		const decoder = new TextDecoder();
-		let buffer = "";
-
-		let content = "";
-		let messageData: MessageData | Record<string, any> | undefined = undefined;
-		let reasoning = "";
-		let thinking = "";
-		let streamedParts: NonNullable<Message["parts"]> = [];
-		let finalParts: Message["parts"] | undefined = undefined;
-		let citations: string[] | null = null;
-		let usage: Message["usage"] = undefined;
-		let id: string = crypto.randomUUID();
-		let created: number | undefined = undefined;
-		let logId: string | undefined = undefined;
-		let toolCalls: any[] = [];
-		const pendingToolCalls: Record<string, any> = {};
-		const toolResponses: Message[] = [];
-		let responseModel = model;
-		let currentAssistantFinalized = false;
-		let lastAssistantMessage: Message | undefined;
-
-		const resetAssistantState = () => {
-			content = "";
-			messageData = undefined;
-			reasoning = "";
-			thinking = "";
-			streamedParts = [];
-			finalParts = undefined;
-			citations = null;
-			usage = undefined;
-			id = crypto.randomUUID();
-			created = undefined;
-			logId = undefined;
-			toolCalls = [];
-			responseModel = model;
-			currentAssistantFinalized = false;
-		};
-
-		const buildAssistantMessage = (messageId?: string) =>
-			normalizeMessage({
-				role: "assistant",
-				content,
-				parts:
-					finalParts && finalParts.length > 0
-						? finalParts
-						: streamedParts.length > 0
-							? streamedParts
-							: undefined,
-				data: messageData,
-				reasoning: reasoning
-					? {
-							collapsed: false,
-							content: reasoning,
-						}
-					: undefined,
-				id: messageId || id,
-				created,
-				model: responseModel,
-				citations: citations || null,
-				usage,
-				tool_calls: toolCalls.length > 0 ? toolCalls : undefined,
-				log_id: logId,
-			});
-
-		const hasAssistantPayload = () =>
-			Boolean(
-				content ||
-				reasoning ||
-				(finalParts && finalParts.length > 0) ||
-				streamedParts.length > 0 ||
-				toolCalls.length > 0,
-			);
-
-		const appendTextPart = (text: string) => {
-			if (!text) return;
-			const lastPart = streamedParts[streamedParts.length - 1];
-			if (lastPart?.type === "text") {
-				lastPart.text += text;
-				return;
-			}
-			streamedParts.push({
-				type: "text",
-				text,
-				timestamp: Date.now(),
-			});
-		};
-
-		const appendReasoningPart = (text: string) => {
-			if (!text) return;
-			const lastPart = streamedParts[streamedParts.length - 1];
-			if (lastPart?.type === "reasoning") {
-				lastPart.text += text;
-				return;
-			}
-			streamedParts.push({
-				type: "reasoning",
-				text,
-				collapsed: true,
-				timestamp: Date.now(),
-			});
-		};
-
 		const isStreamingResponse = response.headers.get("content-type")?.includes("text/event-stream");
 
 		if (!isStreamingResponse) {
@@ -596,209 +452,127 @@ export class ChatService {
 				throw new Error(data.error.message || "Unknown error");
 			}
 
-			usage = data.usage || undefined;
-			id = data.id || crypto.randomUUID();
-			created = data.created || Date.now();
-			logId = data.log_id || undefined;
-			content = data.choices?.[0]?.message?.content || "";
-			messageData = data.choices?.[0]?.message?.data || undefined;
-			reasoning = data.choices?.[0]?.message?.reasoning || "";
-			toolCalls.push(...(data.choices?.[0]?.message?.tool_calls || []));
-			citations = data.choices?.[0]?.message?.citations || null;
-		} else {
-			const reader = response.body?.getReader();
-			if (!reader) {
-				throw new Error("Response body is not readable as a stream");
+			return normalizeMessage({
+				role: "assistant",
+				content: data.choices?.[0]?.message?.content || "",
+				data: data.choices?.[0]?.message?.data || undefined,
+				reasoning: data.choices?.[0]?.message?.reasoning || undefined,
+				id: data.id || crypto.randomUUID(),
+				created: data.created || Date.now(),
+				model,
+				citations: data.choices?.[0]?.message?.citations || null,
+				usage: data.usage || undefined,
+				tool_calls: data.choices?.[0]?.message?.tool_calls || undefined,
+				log_id: data.log_id || undefined,
+			});
+		}
+
+		const decoder = new TextDecoder();
+		const reader = response.body?.getReader();
+		if (!reader) {
+			throw new Error("Response body is not readable as a stream");
+		}
+
+		let buffer = "";
+		let lastAssistantMessage: Message | undefined;
+		const assembler = createChatStreamAssembler({ model });
+
+		const handleUpdate = (update: ChatStreamUpdate) => {
+			if (update.type === "assistant_delta") {
+				onProgress(update.content, update.reasoning, undefined, false);
+				return;
 			}
 
-			try {
-				while (true) {
-					const { done, value } = await reader.read();
-					if (done) {
-						break;
+			if (update.type === "assistant_final") {
+				lastAssistantMessage = toAppMessage(update.message);
+				onProgress(
+					getMessageTextContent(lastAssistantMessage),
+					lastAssistantMessage.reasoning?.content,
+					undefined,
+					true,
+					lastAssistantMessage,
+				);
+				return;
+			}
+
+			if (update.type === "tool_result") {
+				onProgress("", "", [toAppMessage(update.message)]);
+				return;
+			}
+
+			if (update.type === "state") {
+				onStateChange(update.state, update.event);
+				return;
+			}
+
+			if (update.type === "done" && update.message) {
+				lastAssistantMessage = toAppMessage(update.message);
+			}
+		};
+
+		try {
+			while (true) {
+				const { done, value } = await reader.read();
+				if (done) {
+					break;
+				}
+
+				buffer += decoder.decode(value, { stream: true });
+				const blocks = buffer.split("\n\n");
+				buffer = blocks.pop() || "";
+
+				for (const block of blocks) {
+					if (!block.trim()) {
+						continue;
 					}
 
-					const chunk = decoder.decode(value, { stream: true });
-					buffer += chunk;
-
-					const lines = buffer.split("\n\n");
-					buffer = lines.pop() || "";
-
-					for (const line of lines) {
-						if (!line) continue;
-						if (typeof line !== "string" || !line.trim()) continue;
-
-						if (line.startsWith("data: ")) {
-							const data = line.substring(6);
-
-							if (data === "[DONE]") {
-								if (!currentAssistantFinalized && hasAssistantPayload()) {
-									lastAssistantMessage = buildAssistantMessage();
-									onProgress(content, reasoning, undefined, true, lastAssistantMessage);
-									currentAssistantFinalized = true;
-								}
-								continue;
-							}
-
-							try {
-								const parsedData = JSON.parse(data);
-
-								if (parsedData.type === "error") {
-									throw createStreamingApiError(parsedData.error);
-								} else if (parsedData.type === "content_block_delta") {
-									if (currentAssistantFinalized) {
-										resetAssistantState();
-									}
-									content += parsedData.content;
-									appendTextPart(parsedData.content);
-									onProgress(content, reasoning, undefined, false);
-								} else if (parsedData.choices?.[0]?.delta?.content) {
-									content += parsedData.choices[0].delta.content;
-									appendTextPart(parsedData.choices[0].delta.content);
-									onProgress(content, reasoning, undefined, false);
-								} else if (parsedData.type === "message_stop") {
-									if (currentAssistantFinalized) {
-										continue;
-									}
-									onProgress(content, reasoning, undefined, true);
-								} else if (parsedData.type === "state") {
-									onStateChange(parsedData.state, parsedData);
-								} else if (parsedData.type === "thinking_delta") {
-									thinking += parsedData.thinking || "";
-									appendReasoningPart(parsedData.thinking || "");
-									onProgress(content, thinking, undefined, false);
-								} else if (parsedData.type === "tool_use_start") {
-									pendingToolCalls[parsedData.tool_id] = {
-										id: parsedData.tool_id,
-										name: parsedData.tool_name,
-										parameters: {},
-									};
-									onStateChange("tool_use_start", parsedData);
-								} else if (parsedData.type === "tool_use_delta") {
-									if (pendingToolCalls[parsedData.tool_id]) {
-										let parameters = parsedData.parameters;
-										if (typeof parameters === "string") {
-											try {
-												parameters = JSON.parse(parameters);
-											} catch {
-												// Keep original string when JSON parsing fails
-											}
-										}
-
-										pendingToolCalls[parsedData.tool_id].parameters = {
-											...pendingToolCalls[parsedData.tool_id].parameters,
-											...(typeof parameters === "object" ? parameters : {}),
-										};
-									}
-								} else if (parsedData.type === "tool_use_stop") {
-									if (pendingToolCalls[parsedData.tool_id]) {
-										toolCalls.push(pendingToolCalls[parsedData.tool_id]);
-										if (!currentAssistantFinalized) {
-											streamedParts.push({
-												type: "tool_use",
-												name: pendingToolCalls[parsedData.tool_id].name || "tool",
-												toolCallId: parsedData.tool_id,
-												input: pendingToolCalls[parsedData.tool_id].parameters,
-												timestamp: Date.now(),
-											});
-										}
-										delete pendingToolCalls[parsedData.tool_id];
-									}
-									onStateChange("tool_use_stop", parsedData);
-								} else if (parsedData.type === "tool_response") {
-									const toolResult = parsedData.result;
-									const toolResponseId = toolResult.id || parsedData.tool_id;
-									if (toolResponses.find((tool) => tool.id === toolResponseId)) {
-										continue;
-									}
-									const toolResponseData = toolResult.data || null;
-
-									const toolResponse = normalizeMessage({
-										role: toolResult.role || "tool",
-										id: toolResponseId || crypto.randomUUID(),
-										content: toolResult.content || "",
-										name: toolResult.name,
-										status: toolResult.status || null,
-										data: toolResponseData,
-										created: Date.now(),
-										timestamp: toolResult.timestamp,
-										log_id: toolResult.log_id,
-										model: toolResult.model,
-										platform: toolResult.platform,
-										tool_call_id: toolResult.tool_call_id,
-										tool_call_arguments: toolResult.tool_call_arguments,
-										tool_calls: toolResult.tool_calls,
-									});
-
-									toolResponses.push(toolResponse);
-									onProgress("", "", [toolResponse]);
-								} else if (parsedData.type === "tool_response_end") {
-									if (currentAssistantFinalized) {
-										resetAssistantState();
-									}
-								} else if (parsedData.type === "message_delta") {
-									if (typeof parsedData.content === "string") {
-										content = parsedData.content;
-										streamedParts = content
-											? [
-													{
-														type: "text",
-														text: content,
-														timestamp: Date.now(),
-													},
-												]
-											: [];
-									}
-									if (parsedData.usage) {
-										usage = parsedData.usage;
-									}
-									if (parsedData.log_id) {
-										logId = parsedData.log_id;
-									}
-									if (parsedData.citations) {
-										citations = parsedData.citations;
-									}
-									if (parsedData.data) {
-										messageData = parsedData.data;
-									}
-									if (parsedData.model) {
-										responseModel = parsedData.model;
-									}
-									if (Array.isArray(parsedData.tool_calls)) {
-										toolCalls = parsedData.tool_calls;
-									}
-									if (Array.isArray(parsedData.parts)) {
-										finalParts = parsedData.parts as Message["parts"];
-									}
-									id = parsedData.message_id || id;
-									created = parsedData.created || created;
-									lastAssistantMessage = buildAssistantMessage(id);
-									onProgress(content, reasoning, undefined, true, lastAssistantMessage);
-									currentAssistantFinalized = true;
-								}
-							} catch (e) {
-								if (e instanceof ApiError) {
-									throw e;
-								}
-								console.error("Error parsing SSE data:", e, data);
-							}
+					try {
+						const parsedData = parseChatStreamSseEvent(`${block}\n\n`);
+						if (!parsedData) {
+							continue;
 						}
+
+						if (parsedData.type === "error" && "error" in parsedData) {
+							throw createStreamingApiError(parsedData.error);
+						}
+						if (parsedData.type === "tool_use_start") {
+							onStateChange("tool_use_start", parsedData);
+						}
+						if (parsedData.type === "tool_use_stop") {
+							onStateChange("tool_use_stop", parsedData);
+						}
+
+						for (const update of assembler.ingest(parsedData)) {
+							handleUpdate(update);
+						}
+					} catch (error) {
+						if (error instanceof ApiError) {
+							throw error;
+						}
+						console.error("Error parsing SSE data:", error, block);
 					}
 				}
-			} catch (error) {
-				console.error("Error reading stream:", error);
-				if (error instanceof Error && error.name !== "AbortError") {
-					throw error;
-				}
-			} finally {
-				reader.releaseLock();
 			}
+		} catch (error) {
+			console.error("Error reading stream:", error);
+			if (error instanceof Error && error.name !== "AbortError") {
+				throw error;
+			}
+		} finally {
+			reader.releaseLock();
 		}
 
-		if (thinking) {
-			reasoning = thinking;
-		}
-
-		return lastAssistantMessage || buildAssistantMessage();
+		const finalStreamMessage = assembler.getFinalMessage();
+		return (
+			lastAssistantMessage ||
+			(finalStreamMessage
+				? toAppMessage(finalStreamMessage)
+				: toAppMessage({
+						role: "assistant",
+						content: "",
+						id: crypto.randomUUID(),
+						model,
+					}))
+		);
 	}
 }

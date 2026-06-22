@@ -21,13 +21,15 @@ const store = {
 	chatMode: "remote",
 	currentConversationId: undefined,
 	isPro: false,
-	model: "gpt-realtime-2",
+	model: "gpt-realtime-2" as string | null,
 	selectedAgentId: null as string | null,
 	selectedAgentTokenPosition: null as number | null,
 	selectedAssistantAction: null as AssistantActionSelection | null,
 	setChatInput: vi.fn(),
 	setSelectedAgentTokenPosition: vi.fn(),
 	setSelectedAssistantAction: vi.fn(),
+	setUseMultiModel: vi.fn(),
+	useMultiModel: false,
 };
 
 vi.mock("~/hooks/useModels", () => ({
@@ -59,6 +61,13 @@ vi.mock("~/hooks/useVoiceRecorder", () => ({
 
 vi.mock("~/state/stores/chatStore", () => ({
 	useChatStore: () => store,
+}));
+
+vi.mock("~/state/stores/toolsStore", () => ({
+	useToolsStore: () => ({
+		selectedTools: [],
+		setSelectedTools: vi.fn(),
+	}),
 }));
 
 vi.mock("~/state/stores/uiStore", () => ({
@@ -138,6 +147,8 @@ describe("ChatInput", () => {
 		store.selectedAgentId = null;
 		store.selectedAgentTokenPosition = null;
 		store.selectedAssistantAction = null;
+		store.setUseMultiModel.mockReset();
+		store.useMultiModel = false;
 		mocks.commandState.selectedAgent = undefined;
 	});
 
@@ -159,6 +170,27 @@ describe("ChatInput", () => {
 		expect(screen.getByRole("button", { name: "Model selector" })).toBeInTheDocument();
 		expect(screen.getByText("Inline response controls")).toBeInTheDocument();
 		expect(screen.getByRole("button", { name: "Chat settings" })).toBeInTheDocument();
+	});
+
+	it("shows the multi-model toggle next to the model selector when auto model routing is active", () => {
+		store.isPro = true;
+		store.model = null;
+
+		render(
+			<ChatInput
+				controller={new AbortController()}
+				handleSubmit={vi.fn()}
+				isLoading={false}
+				onTranscribe={vi.fn()}
+				streamStarted={false}
+			/>,
+		);
+
+		const toggle = screen.getByRole("button", { name: "Toggle multi-model mode" });
+
+		fireEvent.click(toggle);
+
+		expect(store.setUseMultiModel).toHaveBeenCalledWith(true);
 	});
 
 	it("uses the hidden textarea space for mode controls", () => {

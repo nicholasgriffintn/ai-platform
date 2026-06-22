@@ -34,7 +34,8 @@ export const ChatSettings = ({
 	supportsToolCalls = false,
 	toolSelectionLocked = false,
 }: ChatSettingsProps) => {
-	const { chatSettings, setChatSettings, model } = useChatStore();
+	const { chatMode, chatSettings, isPro, model, setChatSettings, setUseMultiModel, useMultiModel } =
+		useChatStore();
 	const [showSettings, setShowSettings] = useState(false);
 	const { data: apiModels = {} } = useModels();
 	const webLLMModels = useWebLLMModels();
@@ -50,6 +51,7 @@ export const ChatSettings = ({
 	const defaultReasoningEffort = getDefaultReasoningEffort(selectedModelConfig);
 	const verbosityOptions = getVerbosityOptions(selectedModelConfig);
 	const defaultVerbosity = getDefaultVerbosity(selectedModelConfig);
+	const showMultiModelToggle = isPro && !model && chatMode === "remote";
 
 	const handleSettingChange = (key: keyof ChatSettingsType, value: string | boolean) => {
 		if (typeof value === "string") {
@@ -206,8 +208,18 @@ export const ChatSettings = ({
 									id="use_rag"
 									label="Enable RAG"
 									checked={chatSettings.use_rag ?? false}
+									disabled={isDisabled}
 									onChange={(checked) => handleSettingChange("use_rag", checked)}
 								/>
+								{showMultiModelToggle && (
+									<CompactSettingSwitch
+										id="use_multi_model"
+										label="Multi-model"
+										checked={useMultiModel}
+										disabled={isDisabled}
+										onChange={setUseMultiModel}
+									/>
+								)}
 								<p id="rag-description" className="sr-only">
 									RAG stands for Retrieval-Augmented Generation, which enhances the model with
 									external data.
@@ -312,6 +324,7 @@ export const ChatSettings = ({
 											id="rag_include_metadata"
 											label="Include Metadata"
 											checked={chatSettings.rag_options?.includeMetadata ?? false}
+											disabled={isDisabled}
 											onChange={(checked) => handleRagOptionChange("includeMetadata", checked)}
 										/>
 										<p id="metadata-description" className="sr-only">
