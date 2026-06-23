@@ -90,12 +90,18 @@ describe("handleListChatCompletions", () => {
 
 			const result = await handleListChatCompletions(mockServiceContext);
 
-			expect(mockConversationManager.list).toHaveBeenCalledWith(25, 1, false);
+			expect(mockConversationManager.list).toHaveBeenCalledWith({});
 			expect(result).toEqual(mockResult);
 		});
 
 		it("should list conversations with custom parameters", async () => {
-			const options = { limit: 10, page: 2, includeArchived: true };
+			const options = {
+				archiveFilter: "archived" as const,
+				limit: 10,
+				page: 2,
+				query: "design review",
+				sortBy: "created" as const,
+			};
 			const mockResult = {
 				conversations: [{ id: "conv-1", title: "Test" }],
 				totalPages: 3,
@@ -107,7 +113,13 @@ describe("handleListChatCompletions", () => {
 
 			const result = await handleListChatCompletions(mockServiceContext, options);
 
-			expect(mockConversationManager.list).toHaveBeenCalledWith(10, 2, true);
+			expect(mockConversationManager.list).toHaveBeenCalledWith({
+				archiveFilter: "archived",
+				limit: 10,
+				page: 2,
+				query: "design review",
+				sortBy: "created",
+			});
 			expect(result).toEqual(mockResult);
 		});
 

@@ -5,7 +5,7 @@ import type {
 	ModelConfig,
 	UpdateAgentInput,
 } from "@assistant/schemas";
-import type { Conversation, Message } from "~/types";
+import type { Conversation, ConversationListOptions, ConversationListPage, Message } from "~/types";
 import { formatMessageContent } from "../messages";
 import { AgentService } from "./services/agent-service";
 import { AudioService, type SpeechGenerationResponse } from "./services/audio-service";
@@ -58,8 +58,8 @@ class ApiService {
 
 	// ===== Chat/Conversation Methods =====
 
-	listChats = (): Promise<Conversation[]> => {
-		return this.chatService.listChats();
+	listChats = (options?: ConversationListOptions): Promise<ConversationListPage> => {
+		return this.chatService.listChats(options);
 	};
 
 	getChat = (

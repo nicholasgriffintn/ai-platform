@@ -245,6 +245,7 @@ export interface Conversation {
 	id?: string;
 	title: string;
 	messages: Message[];
+	message_ids?: string[];
 	created_at?: string;
 	updated_at?: string;
 	last_message_at?: string;
@@ -253,6 +254,25 @@ export interface Conversation {
 	isLocalOnly?: boolean;
 	is_public?: boolean;
 	share_id?: string;
+	is_archived?: boolean;
+}
+
+export type ConversationArchiveFilter = "active" | "archived" | "all";
+export type ConversationSortBy = "updated" | "created";
+
+export interface ConversationListOptions {
+	archived?: ConversationArchiveFilter;
+	limit?: number;
+	page?: number;
+	query?: string;
+	sortBy?: ConversationSortBy;
+}
+
+export interface ConversationListPage {
+	conversations: Conversation[];
+	pageNumber: number;
+	pageSize: number;
+	totalPages: number;
 }
 
 export interface Memory {

@@ -1,19 +1,37 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo } from "react";
 
 import { CHATS_QUERY_KEY } from "~/constants";
 import { apiService } from "~/lib/api/api-service";
+import { filterConversationsByListOptions } from "~/lib/conversation-list";
 import { preserveOptimisticMessages } from "~/lib/conversations";
 import { localChatService } from "~/lib/local/local-chat-service";
 import { useChatStore } from "~/state/stores/chatStore";
-import type { Conversation, Message } from "~/types";
+import type { Conversation, ConversationListOptions, Message } from "~/types";
 
-export function useChats() {
+const DEFAULT_CHAT_LIST_LIMIT = 30;
+
+export function useChats(options: ConversationListOptions = {}) {
 	const { isAuthenticated, isPro, localOnlyMode } = useChatStore();
+	const queryOptions = useMemo<Omit<ConversationListOptions, "page">>(
+		() => ({
+			archived: options.archived ?? "active",
+			limit: options.limit ?? DEFAULT_CHAT_LIST_LIMIT,
+			query: options.query?.trim() || undefined,
+			sortBy: options.sortBy ?? "updated",
+		}),
+		[options.archived, options.limit, options.query, options.sortBy],
+	);
 
-	const remoteChatsQuery = useQuery({
-		queryKey: [CHATS_QUERY_KEY, "remote"],
-		queryFn: () => apiService.listChats(),
+	const remoteChatsQuery = useInfiniteQuery({
+		queryKey: [CHATS_QUERY_KEY, "remote", queryOptions],
+		queryFn: ({ pageParam }) =>
+			apiService.listChats({ ...queryOptions, page: Number(pageParam) || 1 }),
+		initialPageParam: 1,
+		getNextPageParam: (lastPage) => {
+			if (lastPage.pageNumber >= lastPage.totalPages) return undefined;
+			return lastPage.pageNumber + 1;
+		},
 		enabled: isAuthenticated && isPro && !localOnlyMode,
 	});
 
@@ -23,8 +41,8 @@ export function useChats() {
 	});
 
 	const allChats = useMemo(() => {
-		const remoteChats = remoteChatsQuery.data || [];
-		const localChats = localChatsQuery.data || [];
+		const remoteChats = remoteChatsQuery.data?.pages.flatMap((page) => page.conversations) || [];
+		const localChats = filterConversationsByListOptions(localChatsQuery.data || [], queryOptions);
 
 		if (localOnlyMode || !isAuthenticated) {
 			return localChats;
@@ -34,10 +52,13 @@ export function useChats() {
 		const uniqueLocalChats = localChats.filter((chat) => !remoteIds.has(chat.id));
 
 		return [...remoteChats, ...uniqueLocalChats];
-	}, [remoteChatsQuery.data, localChatsQuery.data, localOnlyMode, isAuthenticated]);
+	}, [remoteChatsQuery.data, localChatsQuery.data, localOnlyMode, isAuthenticated, queryOptions]);
 
 	return {
 		data: allChats,
+		fetchNextPage: remoteChatsQuery.fetchNextPage,
+		hasNextPage: remoteChatsQuery.hasNextPage && !localOnlyMode && isAuthenticated && isPro,
+		isFetchingNextPage: remoteChatsQuery.isFetchingNextPage,
 		isLoading: remoteChatsQuery.isLoading || localChatsQuery.isLoading,
 	};
 }

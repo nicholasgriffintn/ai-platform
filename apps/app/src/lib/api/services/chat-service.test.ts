@@ -374,6 +374,62 @@ describe("ChatService streaming", () => {
 	});
 });
 
+describe("ChatService conversation list", () => {
+	afterEach(() => {
+		vi.unstubAllGlobals();
+	});
+
+	it("encodes title search, sorting, archive filter, and pagination in the list request", async () => {
+		const fetchMock = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) =>
+			Response.json({
+				data: {
+					conversations: [
+						{
+							id: "conversation-1",
+							title: "Design review",
+							messages: ["message-1"],
+							created_at: "2026-06-20T10:00:00.000Z",
+							updated_at: "2026-06-22T10:00:00.000Z",
+							last_message_at: "2026-06-22T10:00:00.000Z",
+							is_archived: true,
+						},
+					],
+					pageNumber: 2,
+					pageSize: 30,
+					totalPages: 4,
+				},
+			}),
+		);
+		vi.stubGlobal("fetch", fetchMock);
+
+		const service = new ChatService(async () => ({}));
+		const result = await service.listChats({
+			archived: "archived",
+			limit: 30,
+			page: 2,
+			query: "design review",
+			sortBy: "created",
+		});
+
+		const [url, request] = fetchMock.mock.calls[0];
+
+		expect(String(url)).toContain(
+			"/chat/completions?limit=30&page=2&archived=archived&sort_by=created&q=design+review",
+		);
+		expect(request?.method).toBe("GET");
+		expect(result.conversations).toEqual([
+			expect.objectContaining({
+				id: "conversation-1",
+				is_archived: true,
+				message_ids: ["message-1"],
+				messages: [],
+				title: "Design review",
+			}),
+		]);
+		expect(result.totalPages).toBe(4);
+	});
+});
+
 describe("ChatService conversation updates", () => {
 	afterEach(() => {
 		vi.unstubAllGlobals();

@@ -1,4 +1,12 @@
-import type { ChatMode, ChatRequestOptions, ChatSettings, Conversation, Message } from "~/types";
+import type {
+	ChatMode,
+	ChatRequestOptions,
+	ChatSettings,
+	Conversation,
+	ConversationListOptions,
+	ConversationListPage,
+	Message,
+} from "~/types";
 import {
 	createChatStreamAssembler,
 	normaliseToolIds,
@@ -53,7 +61,7 @@ export interface StreamChatCompletionsParams {
 export class ChatService {
 	constructor(private getHeaders: () => Promise<Record<string, string>>) {}
 
-	async listChats(): Promise<Conversation[]> {
+	async listChats(options: ConversationListOptions = {}): Promise<ConversationListPage> {
 		let headers = {};
 		try {
 			headers = await this.getHeaders();
@@ -62,7 +70,17 @@ export class ChatService {
 		}
 
 		try {
-			const response = await fetchApi("/chat/completions", {
+			const params = new URLSearchParams();
+			if (options.limit) params.set("limit", String(options.limit));
+			if (options.page) params.set("page", String(options.page));
+			if (options.archived) params.set("archived", options.archived);
+			if (options.sortBy) params.set("sort_by", options.sortBy);
+			if (options.query?.trim()) params.set("q", options.query.trim());
+
+			const queryString = params.toString();
+			const endpoint = queryString ? `/chat/completions?${queryString}` : "/chat/completions";
+
+			const response = await fetchApi(endpoint, {
 				method: "GET",
 				headers,
 			});
@@ -76,15 +94,26 @@ export class ChatService {
 					id: string;
 					title: string;
 					messages: string[];
+					created_at?: string;
+					updated_at?: string;
 					last_message_at: string;
 					parent_conversation_id?: string;
 					parent_message_id?: string;
+					is_archived?: boolean;
 				}[];
+				pageNumber?: number;
+				pageSize?: number;
+				totalPages?: number;
 			}>(response);
 
 			if (!data.conversations || !Array.isArray(data.conversations)) {
 				console.error("Unexpected response format from /chat/completions endpoint:", data);
-				return [];
+				return {
+					conversations: [],
+					pageNumber: options.page ?? 1,
+					pageSize: options.limit ?? 25,
+					totalPages: 0,
+				};
 			}
 
 			const results = data.conversations.map((conversation) => ({
@@ -95,14 +124,27 @@ export class ChatService {
 				parent_message_id: conversation.parent_message_id,
 			}));
 
-			return results.sort((a, b) => {
-				const aTimestamp = new Date(a.last_message_at).getTime();
-				const bTimestamp = new Date(b.last_message_at).getTime();
+			const conversations = results.sort((a, b) => {
+				const dateField = options.sortBy === "created" ? "created_at" : "updated_at";
+				const aTimestamp = new Date(a[dateField] || a.last_message_at).getTime();
+				const bTimestamp = new Date(b[dateField] || b.last_message_at).getTime();
 				return bTimestamp - aTimestamp;
 			});
+
+			return {
+				conversations,
+				pageNumber: data.pageNumber ?? options.page ?? 1,
+				pageSize: data.pageSize ?? options.limit ?? 25,
+				totalPages: data.totalPages ?? 0,
+			};
 		} catch (error) {
 			console.error("Error listing chats:", error);
-			return [];
+			return {
+				conversations: [],
+				pageNumber: options.page ?? 1,
+				pageSize: options.limit ?? 25,
+				totalPages: 0,
+			};
 		}
 	}
 

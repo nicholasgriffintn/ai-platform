@@ -1,23 +1,15 @@
-import { ConversationManager } from "~/lib/conversationManager";
+import { ConversationManager, type ConversationListOptions } from "~/lib/conversationManager";
 import type { ServiceContext } from "~/lib/context/serviceContext";
-
-interface ListChatCompletionsOptions {
-	limit?: number;
-	page?: number;
-	includeArchived?: boolean;
-}
 
 export const handleListChatCompletions = async (
 	context: ServiceContext,
-	options: ListChatCompletionsOptions = {},
+	options: ConversationListOptions = {},
 ): Promise<{
 	conversations: Record<string, unknown>[];
 	totalPages: number;
 	pageNumber: number;
 	pageSize: number;
 }> => {
-	const { limit = 25, page = 1, includeArchived = false } = options;
-
 	const user = context.requireUser();
 
 	context.ensureDatabase();
@@ -27,5 +19,5 @@ export const handleListChatCompletions = async (
 		user,
 	});
 
-	return await conversationManager.list(limit, page, includeArchived);
+	return await conversationManager.list(options);
 };

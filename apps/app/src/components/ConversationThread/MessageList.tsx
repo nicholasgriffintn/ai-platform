@@ -22,6 +22,7 @@ import { useChatStore } from "~/state/stores/chatStore";
 import type { Message } from "~/types";
 import type { ArtifactProps } from "~/types/artifact";
 import { ChatMessage } from "./ChatMessage";
+import { getMessageListScrollKey } from "./messageListScroll";
 import { MessageSkeleton } from "./MessageSkeleton";
 import { ScrollButton } from "./ScrollButton";
 import { ShareButton } from "./ShareButton";
@@ -101,28 +102,10 @@ export const MessageList = ({
 
 		return availability;
 	}, [canAccessProFeatures, messages]);
-	const lastMessageScrollKey = useMemo(() => {
-		const lastMessage = messages[messages.length - 1];
-		if (!lastMessage) {
-			return "empty";
-		}
-
-		const contentLength =
-			typeof lastMessage.content === "string"
-				? lastMessage.content.length
-				: Array.isArray(lastMessage.content)
-					? lastMessage.content
-							.map((item) => (item.type === "text" ? item.text?.length || 0 : 0))
-							.reduce((total, length) => total + length, 0)
-					: 0;
-		const partLength = Array.isArray(lastMessage.parts)
-			? lastMessage.parts
-					.map((part) => (part.type === "text" || part.type === "reasoning" ? part.text.length : 0))
-					.reduce((total, length) => total + length, 0)
-			: 0;
-
-		return `${messages.length}:${lastMessage.id}:${contentLength}:${partLength}`;
-	}, [messages]);
+	const lastMessageScrollKey = useMemo(
+		() => getMessageListScrollKey({ conversationId: currentConversationId, messages }),
+		[currentConversationId, messages],
+	);
 
 	const isStreamLoading = useIsLoading("stream-response");
 	const isModelInitializing = useIsLoading("model-init");

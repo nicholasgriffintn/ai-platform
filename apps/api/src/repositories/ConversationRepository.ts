@@ -1,5 +1,17 @@
 import { PaginationHelper } from "~/lib/database/PaginationHelper";
+import { escapeSqlLikePattern } from "~/utils/sql";
 import { BaseRepository } from "./BaseRepository";
+
+export type ConversationArchiveFilter = "active" | "archived" | "all";
+export type ConversationSortBy = "created" | "updated";
+
+export interface GetUserConversationsOptions {
+	archiveFilter?: ConversationArchiveFilter;
+	limit?: number;
+	page?: number;
+	query?: string;
+	sortBy?: ConversationSortBy;
+}
 
 export class ConversationRepository extends BaseRepository {
 	public async createConversation(
@@ -51,48 +63,63 @@ export class ConversationRepository extends BaseRepository {
 
 	public async getUserConversations(
 		userId: number,
-		limit = 25,
-		page = 1,
-		includeArchived = false,
+		optionsOrLimit: GetUserConversationsOptions | number = {},
+		pageArg = 1,
+		includeArchivedArg = false,
 	): Promise<{
 		conversations: Record<string, unknown>[];
 		totalPages: number;
 		pageNumber: number;
 		pageSize: number;
 	}> {
+		const options: GetUserConversationsOptions =
+			typeof optionsOrLimit === "number"
+				? {
+						archiveFilter: includeArchivedArg ? "all" : "active",
+						limit: optionsOrLimit,
+						page: pageArg,
+					}
+				: optionsOrLimit;
+		const { archiveFilter = "active", limit = 25, page = 1, query, sortBy = "updated" } = options;
 		const { limit: safeLimit, offset } = PaginationHelper.calculate(page, limit);
+		const whereClauses = ["c.user_id = ?"];
+		const values: unknown[] = [userId];
 
-		const countQuery = includeArchived
-			? "SELECT COUNT(*) as total FROM conversation WHERE user_id = ?"
-			: "SELECT COUNT(*) as total FROM conversation WHERE user_id = ? AND is_archived = 0";
+		if (archiveFilter === "active") {
+			whereClauses.push("c.is_archived = 0");
+		} else if (archiveFilter === "archived") {
+			whereClauses.push("c.is_archived = 1");
+		}
 
-		const countResult = (await this.runQuery<{ total: number }>(countQuery, [userId], true)) as {
+		const trimmedQuery = query?.trim();
+		if (trimmedQuery) {
+			whereClauses.push("c.title LIKE ? ESCAPE '\\'");
+			values.push(`%${escapeSqlLikePattern(trimmedQuery)}%`);
+		}
+
+		const whereClause = whereClauses.join(" AND ");
+		const orderByColumn = sortBy === "created" ? "c.created_at" : "c.updated_at";
+
+		const countQuery = `SELECT COUNT(*) as total FROM conversation c WHERE ${whereClause}`;
+
+		const countResult = (await this.runQuery<{ total: number }>(countQuery, values, true)) as {
 			total: number;
 		} | null;
 
 		const total = countResult?.total || 0;
 		const totalPages = Math.ceil(total / safeLimit);
 
-		const listQuery = includeArchived
-			? `
+		const listQuery = `
         SELECT c.*,
         (SELECT GROUP_CONCAT(m.id) FROM message m WHERE m.conversation_id = c.id) as messages
         FROM conversation c
-        WHERE c.user_id = ?
-        ORDER BY c.updated_at DESC
-        LIMIT ? OFFSET ?
-      `
-			: `
-        SELECT c.*,
-        (SELECT GROUP_CONCAT(m.id) FROM message m WHERE m.conversation_id = c.id) as messages
-        FROM conversation c
-        WHERE c.user_id = ? AND c.is_archived = 0
-        ORDER BY c.updated_at DESC
+        WHERE ${whereClause}
+        ORDER BY ${orderByColumn} DESC, c.id DESC
         LIMIT ? OFFSET ?
       `;
 
 		const conversations = (await this.runQuery<Record<string, unknown>>(listQuery, [
-			userId,
+			...values,
 			safeLimit,
 			offset,
 		])) as Record<string, unknown>[];

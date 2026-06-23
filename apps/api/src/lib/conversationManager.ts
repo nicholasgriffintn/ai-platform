@@ -5,6 +5,10 @@ import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";
 import type { Database } from "./database";
 import { RepositoryManager } from "~/repositories";
+import type {
+	ConversationArchiveFilter,
+	ConversationSortBy,
+} from "~/repositories/ConversationRepository";
 import { type UsageLimits, UsageManager, type UsageUpdateTaskPayload } from "./usageManager";
 import { safeParseJson } from "~/utils/json";
 import type { AsyncInvocationMetadata } from "./async/asyncInvocation";
@@ -15,6 +19,14 @@ import { buildMessageParts, normaliseMessageParts } from "./chat/messageParts";
 import { normaliseMessageTimestampsForStorage } from "./chat/messageOrdering";
 
 const logger = getLogger({ prefix: "lib/conversationManager" });
+
+export interface ConversationListOptions {
+	archiveFilter?: ConversationArchiveFilter;
+	limit?: number;
+	page?: number;
+	query?: string;
+	sortBy?: ConversationSortBy;
+}
 
 export class ConversationManager {
 	private database: Database;
@@ -599,11 +611,7 @@ export class ConversationManager {
 	 * @param includeArchived - Whether to include archived conversations
 	 * @returns The conversations that were retrieved from the database
 	 */
-	async list(
-		limit = 25,
-		page = 1,
-		includeArchived = false,
-	): Promise<{
+	async list(options: ConversationListOptions = {}): Promise<{
 		conversations: Record<string, unknown>[];
 		totalPages: number;
 		pageNumber: number;
@@ -616,11 +624,17 @@ export class ConversationManager {
 			);
 		}
 
+		const { archiveFilter = "active", limit = 25, page = 1, query, sortBy = "updated" } = options;
+
 		const result = await this.database.repositories.conversations.getUserConversations(
 			this.user?.id,
-			limit,
-			page,
-			includeArchived,
+			{
+				archiveFilter,
+				limit,
+				page,
+				query,
+				sortBy,
+			},
 		);
 
 		const conversations = result.conversations.map((conversation) => {
