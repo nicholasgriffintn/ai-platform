@@ -10,6 +10,7 @@ Use this file as the domain context for architecture reviews. Keep new terms her
 - **Message**: a normalised chat item with role, content or parts, optional reasoning, citations, tool calls, usage, model metadata, and generated artefact data.
 - **Conversation mode**: metadata that changes how a conversation behaves, such as ordinary chat, council debate, sandbox task, recipe, or focused app workflow.
 - **Model**: an available generation target from the model catalogue. The web app chooses models, and the backend resolves model/provider execution details.
+- **Model benchmark cache**: persisted third-party benchmark, pricing, and performance data used to inform model routing and catalogue decisions without exposing upstream API keys to clients.
 - **Provider capability**: a backend capability category such as chat, audio, speech, transcription, image, video, music, embedding, search, research, guardrails, realtime, messaging, or training.
 - **Provider adapter**: a concrete backend implementation for a provider capability. Provider selection is a real seam because capabilities have multiple adapters.
 - **Agent**: a configured assistant persona with optional tools, MCP servers, team role, model settings, and sharing metadata.
@@ -39,6 +40,7 @@ Use this file as the domain context for architecture reviews. Keep new terms her
 - **Persistence seam**: `apps/api/src/repositories` owns D1 access. Repositories should hide SQL, row mapping, and storage errors behind domain-specific methods.
 - **Provider capability seam**: `apps/api/src/lib/providers/library.ts` and `registry/ProviderRegistry.ts` resolve capability adapters lazily by category and provider name. New provider behaviour belongs behind the relevant capability registration.
 - **Provider hosted-tool seam**: provider utility modules such as `apps/api/src/lib/providers/utils/openaiResponsesTools.ts` own provider-native hosted tool shaping, including MCP, file search, code interpreter, tool search, and other Responses tools. Provider request body modules should compose these builders instead of embedding hosted-tool construction inline.
+- **Model analysis seam**: `apps/api/src/services/model-analysis`, `ArtificialAnalysisRepository`, and the `artificial_analysis_*` task handlers own benchmark ingestion, cached D1 storage, derived scoring, and source attribution for model analysis data.
 - **Chat stream contract seam**: `packages/schemas/src/chat-stream.ts` owns the shared SSE formatting, parsing, and frontend assembly contract for streamed assistant messages, reasoning, tool calls, and tool results. API emitters and frontend stream consumers should use this contract instead of maintaining parallel stream state machines.
 - **Chat execution request seam**: `apps/api/src/lib/chat/core/execution-request.ts` owns the provider request and stream post-processing option shapes after validation, preparation, compaction, and context pruning. `ChatOrchestrator` should use this seam for single-model, streaming, and multi-model execution so tools, enabled tools, approved tools, delegation, recipe options, and memory-aware prepared state stay consistent.
 - **Memory policy seam**: `apps/api/src/lib/chat/memoryPolicy.ts` owns memory tool exposure, pro-plan/settings gating, and memory prompt context formatting. Request preparation and memory tool implementations should use this module instead of duplicating memory feature checks.
@@ -63,6 +65,7 @@ Use this file as the domain context for architecture reviews. Keep new terms her
 - Sandbox requests originate in the web app or GitHub webhook flow, are coordinated by API sandbox modules, then execute in `apps/sandbox-worker` with SSE progress.
 - Training requests originate in the web app, are validated and authorised by the API Worker, then delegated to `apps/training` through an internal Worker interface.
 - Metrics are written by backend analytics modules and read by `apps/metrics` through the API Worker `/metrics` route.
+- The scheduled models.dev sync updates checked-in model configs, then calls the API admin task trigger. The API queues Artificial Analysis ingestion, stores the Free-tier language model data server-side, and schedules derived scoring one hour later.
 
 ## Architecture Review Defaults
 

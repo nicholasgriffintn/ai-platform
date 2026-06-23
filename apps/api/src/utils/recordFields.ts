@@ -8,6 +8,11 @@ export function readRecordField(value: unknown, fieldName: string): unknown {
 	return value[fieldName];
 }
 
+export function readRecordObjectField(value: unknown, fieldName: string): Record<string, unknown> {
+	const field = readRecordField(value, fieldName);
+	return isRecord(field) ? field : {};
+}
+
 export function readStringField(value: unknown, fieldName: string): string | undefined {
 	const field = readRecordField(value, fieldName);
 	return typeof field === "string" ? field : undefined;

@@ -21,5 +21,7 @@ export const ALWAYS_ENABLED_SCHEDULES = [
 	"podcast_transcription_polling",
 	"usage_update",
 	"recipe_execution",
+	"artificial_analysis_ingest",
+	"artificial_analysis_scoring",
 	SANDBOX_RUN_DISPATCH_TASK_TYPE,
 ] as const satisfies readonly TaskType[];

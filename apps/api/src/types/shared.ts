@@ -62,6 +62,7 @@ export type IEnv = {
 	GOOGLE_STUDIO_API_KEY?: string;
 	GROQ_API_KEY?: string;
 	ANALYTICS_API_KEY?: string;
+	ARTIFICIAL_ANALYSIS_API_KEY?: string;
 	POSTHOG_PROJECT_API_KEY?: string;
 	POSTHOG_HOST?: string;
 	POSTHOG_BACKEND_ENABLED?: string;

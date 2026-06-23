@@ -11,6 +11,7 @@ import {
 import type { ModelConfig } from "@assistant/schemas";
 import type { IEnv } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
+import { RepositoryManager } from "~/repositories";
 
 function includeModelIds(models: ModelConfig): ModelConfig {
 	const modelsWithIds: ModelConfig = {};
@@ -112,5 +113,17 @@ export async function getModelDetails(env: IEnv, id: string, userId?: number) {
 	return {
 		...model,
 		id,
+	};
+}
+
+export async function listArtificialAnalysisModels(env: IEnv) {
+	const models = await RepositoryManager.getInstance(env).artificialAnalysis.listAll();
+
+	return {
+		attribution: {
+			label: "Artificial Analysis",
+			url: "https://artificialanalysis.ai/",
+		},
+		models,
 	};
 }

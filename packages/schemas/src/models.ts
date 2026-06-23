@@ -184,6 +184,52 @@ export const modelResponseSchema = z.object({
 	data: modelConfigItemSchema,
 });
 
+const artificialAnalysisScoresSchema = z.object({
+	intelligence: z.number().optional(),
+	coding: z.number().optional(),
+	agentic: z.number().optional(),
+	price: z.number().optional(),
+	outputSpeed: z.number().optional(),
+	firstTokenLatency: z.number().optional(),
+});
+
+export const artificialAnalysisModelSchema = z.object({
+	id: z.string(),
+	name: z.string(),
+	slug: z.string().optional().nullable(),
+	creator_id: z.string().optional().nullable(),
+	creator_name: z.string().optional().nullable(),
+	creator_slug: z.string().optional().nullable(),
+	evaluations: z.record(z.string(), z.unknown()),
+	pricing: z.record(z.string(), z.unknown()),
+	intelligence_index: z.number().optional().nullable(),
+	coding_index: z.number().optional().nullable(),
+	agentic_index: z.number().optional().nullable(),
+	intelligence_index_version: z.number().optional().nullable(),
+	price_1m_blended_3_to_1: z.number().optional().nullable(),
+	price_1m_input_tokens: z.number().optional().nullable(),
+	price_1m_output_tokens: z.number().optional().nullable(),
+	median_output_tokens_per_second: z.number().optional().nullable(),
+	median_time_to_first_token_seconds: z.number().optional().nullable(),
+	median_time_to_first_answer_token_seconds: z.number().optional().nullable(),
+	median_end_to_end_response_time_seconds: z.number().optional().nullable(),
+	derived_strengths: z.array(z.string()).optional().nullable(),
+	derived_scores: artificialAnalysisScoresSchema.optional().nullable(),
+	source: z.literal("artificial_analysis"),
+	source_url: z.literal("https://artificialanalysis.ai/"),
+	ingested_at: z.string(),
+	created_at: z.string().optional(),
+	updated_at: z.string().optional().nullable(),
+});
+
+export const artificialAnalysisModelsResponseSchema = z.object({
+	attribution: z.object({
+		label: z.literal("Artificial Analysis"),
+		url: z.literal("https://artificialanalysis.ai/"),
+	}),
+	models: z.array(artificialAnalysisModelSchema),
+});
+
 export const capabilitiesResponseSchema = z.object({
 	success: z.boolean(),
 	message: z.string(),
@@ -201,6 +247,8 @@ export type ModelReasoningConfig = z.infer<typeof modelReasoningConfigSchema>;
 export type ModelVerbosityConfig = z.infer<typeof modelVerbosityConfigSchema>;
 export type ModelConfigItem = z.infer<typeof modelConfigItemSchema>;
 export type ModelConfig = Record<string, ModelConfigItem>;
+export type ArtificialAnalysisScores = z.infer<typeof artificialAnalysisScoresSchema>;
+export type ArtificialAnalysisModel = z.infer<typeof artificialAnalysisModelSchema>;
 export type InputSchemaInputFieldType = z.infer<typeof inputSchemaFieldTypeSchema>;
 export type InputSchemaInputFieldDescriptor = z.infer<typeof inputSchemaFieldDescriptorSchema>;
 export type InputSchemaInputSchemaDescriptor = z.infer<typeof inputSchemaDescriptorSchema>;

@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { index, integer, primaryKey, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { index, integer, primaryKey, real, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
 export const plans = sqliteTable("plans", {
 	id: text().primaryKey(),
@@ -760,6 +760,49 @@ export const memoryGroupMembers = sqliteTable(
 
 export type MemoryGroupMember = typeof memoryGroupMembers.$inferSelect;
 
+export const artificialAnalysisModels = sqliteTable(
+	"artificial_analysis_models",
+	{
+		id: text().primaryKey(),
+		name: text().notNull(),
+		slug: text(),
+		creator_id: text(),
+		creator_name: text(),
+		creator_slug: text(),
+		evaluations: text().notNull(),
+		pricing: text().notNull(),
+		intelligence_index: real(),
+		coding_index: real(),
+		agentic_index: real(),
+		intelligence_index_version: real(),
+		price_1m_blended_3_to_1: real(),
+		price_1m_input_tokens: real(),
+		price_1m_output_tokens: real(),
+		median_output_tokens_per_second: real(),
+		median_time_to_first_token_seconds: real(),
+		median_time_to_first_answer_token_seconds: real(),
+		median_end_to_end_response_time_seconds: real(),
+		derived_strengths: text(),
+		derived_scores: text(),
+		source: text().notNull().default("artificial_analysis"),
+		source_url: text().notNull().default("https://artificialanalysis.ai/"),
+		ingested_at: text().notNull(),
+		created_at: text()
+			.default(sql`(CURRENT_TIMESTAMP)`)
+			.notNull(),
+		updated_at: text()
+			.default(sql`(CURRENT_TIMESTAMP)`)
+			.$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
+	},
+	(table) => ({
+		slugIdx: index("artificial_analysis_models_slug_idx").on(table.slug),
+		creatorSlugIdx: index("artificial_analysis_models_creator_slug_idx").on(table.creator_slug),
+		ingestedAtIdx: index("artificial_analysis_models_ingested_at_idx").on(table.ingested_at),
+	}),
+);
+
+export type ArtificialAnalysisModel = typeof artificialAnalysisModels.$inferSelect;
+
 export const tasks = sqliteTable(
 	"tasks",
 	{
@@ -775,6 +818,8 @@ export const tasks = sqliteTable(
 				"usage_update",
 				"recipe_execution",
 				"sandbox_run_dispatch",
+				"artificial_analysis_ingest",
+				"artificial_analysis_scoring",
 			],
 		}).notNull(),
 		status: text({

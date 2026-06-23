@@ -89,6 +89,7 @@ describe("Database", () => {
 				"anonymousUserRepo",
 				"apiKeyRepo",
 				"appDataRepo",
+				"artificialAnalysisRepo",
 				"conversationRepo",
 				"dynamicAppResponseRepo",
 				"embeddingRepo",

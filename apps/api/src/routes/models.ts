@@ -4,6 +4,7 @@ import { Hono } from "hono";
 import {
 	capabilitiesResponseSchema,
 	capabilityParamsSchema,
+	artificialAnalysisModelsResponseSchema,
 	modelParamsSchema,
 	modelResponseSchema,
 	modelsResponseSchema,
@@ -15,6 +16,7 @@ import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import { ResponseFactory } from "~/lib/http/ResponseFactory";
 import {
 	getModelDetails,
+	listArtificialAnalysisModels,
 	listStrengths,
 	listModalities,
 	listModels,
@@ -147,6 +149,21 @@ addRoute(app, "get", "/output/:modality", {
 		}
 		return listModelsByOutputModality(serviceContext.env, params.modality, user?.id);
 	},
+});
+
+addRoute(app, "get", "/artificial-analysis", {
+	tags: ["models"],
+	summary: "List cached Artificial Analysis model data",
+	description:
+		"Returns cached Artificial Analysis language model benchmark, pricing, and performance data with source attribution.",
+	responses: {
+		200: {
+			description: "Cached Artificial Analysis model data",
+			schema: artificialAnalysisModelsResponseSchema,
+		},
+		500: { description: "Server error", schema: errorResponseSchema },
+	},
+	handler: async ({ serviceContext }) => listArtificialAnalysisModels(serviceContext.env),
 });
 
 addRoute(app, "get", "/:id", {

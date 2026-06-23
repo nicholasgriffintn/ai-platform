@@ -6,6 +6,20 @@ export function safeParseJson<T = any>(jsonString: string): T | null {
 	}
 }
 
+export function isJsonRecord(value: unknown): value is Record<string, unknown> {
+	return value !== null && typeof value === "object" && !Array.isArray(value);
+}
+
+export function parseJsonRecord(value: string | null | undefined): Record<string, unknown> {
+	const parsed = value ? safeParseJson<unknown>(value) : {};
+	return isJsonRecord(parsed) ? parsed : {};
+}
+
+export function parseJsonStringArray(value: string | null | undefined): string[] | undefined {
+	const parsed = value ? safeParseJson<unknown>(value) : undefined;
+	return Array.isArray(parsed) ? parsed.filter((entry) => typeof entry === "string") : undefined;
+}
+
 export interface ParseResult<T> {
 	data: T | null;
 	error: string | null;

@@ -97,6 +97,9 @@ function parseArgs(argv) {
 		verbose: false,
 		help: false,
 		providers: new Set(),
+		triggerAnalysisTask: process.env.POLYCHAT_MODEL_ANALYSIS_TRIGGER === "true",
+		analysisApiUrl: process.env.POLYCHAT_API_BASE_URL || "https://api.polychat.app",
+		analysisAuthToken: process.env.POLYCHAT_API_KEY,
 	};
 
 	for (let i = 0; i < argv.length; i += 1) {
@@ -109,6 +112,41 @@ function parseArgs(argv) {
 
 		if (arg === "--verbose") {
 			options.verbose = true;
+			continue;
+		}
+
+		if (arg === "--trigger-analysis-task") {
+			options.triggerAnalysisTask = true;
+			continue;
+		}
+
+		if (arg === "--analysis-api-url") {
+			const value = argv[i + 1];
+			if (!value) {
+				throw new Error("Missing value for --analysis-api-url");
+			}
+			options.analysisApiUrl = value;
+			i += 1;
+			continue;
+		}
+
+		if (arg.startsWith("--analysis-api-url=")) {
+			options.analysisApiUrl = arg.slice("--analysis-api-url=".length);
+			continue;
+		}
+
+		if (arg === "--analysis-auth-token") {
+			const value = argv[i + 1];
+			if (!value) {
+				throw new Error("Missing value for --analysis-auth-token");
+			}
+			options.analysisAuthToken = value;
+			i += 1;
+			continue;
+		}
+
+		if (arg.startsWith("--analysis-auth-token=")) {
+			options.analysisAuthToken = arg.slice("--analysis-auth-token=".length);
 			continue;
 		}
 
@@ -180,6 +218,10 @@ Options:
   --api-url <url>         Override models.dev API URL
   --models-dir <path>     Override model config directory
   --verbose               Print per-file details
+  --trigger-analysis-task Trigger the Polychat Artificial Analysis ingestion task after sync
+  --analysis-api-url <url> Polychat API base URL for the analysis trigger
+  --analysis-auth-token <token>
+                          Bearer token for the analysis trigger
   --help, -h              Show this help
 `);
 }
@@ -201,6 +243,37 @@ async function fetchApiData(apiUrl) {
 	}
 
 	return json;
+}
+
+function buildAnalysisTriggerUrl(apiUrl) {
+	return new URL("/admin/model-analysis/sync-completed", apiUrl).toString();
+}
+
+async function triggerAnalysisTask(options, stats) {
+	if (!options.analysisAuthToken) {
+		throw new Error("Missing Polychat API token for Artificial Analysis task trigger");
+	}
+
+	const response = await fetch(buildAnalysisTriggerUrl(options.analysisApiUrl), {
+		method: "POST",
+		headers: {
+			authorization: `Bearer ${options.analysisAuthToken}`,
+			"content-type": "application/json",
+		},
+		body: JSON.stringify({
+			source: "models.dev",
+			completedAt: new Date().toISOString(),
+			write: options.write,
+			stats,
+		}),
+	});
+
+	if (!response.ok) {
+		throw new Error(`Failed to trigger Artificial Analysis ingestion task: ${response.status}`);
+	}
+
+	const json = await response.json();
+	console.log(`Triggered Artificial Analysis ingestion task ${json.task_id || "unknown"}.`);
 }
 
 async function listTsFiles(dir) {
@@ -1680,6 +1753,17 @@ async function main() {
 		`Updated existing models: ${totalUpdatedExisting}. Added new models: ${totalAddedModels}. Removed deprecated models: ${totalRemovedDeprecatedModels}. Removed duplicate models: ${totalRemovedDuplicateModels}.`,
 	);
 
+	const stats = {
+		processedFiles: reports.length,
+		changedFiles: changed.length,
+		unchangedFiles: unchanged.length,
+		skippedFiles: skipped.length,
+		updatedExistingModels: totalUpdatedExisting,
+		addedModels: totalAddedModels,
+		removedDeprecatedModels: totalRemovedDeprecatedModels,
+		removedDuplicateModels: totalRemovedDuplicateModels,
+	};
+
 	if (!options.write) {
 		console.log("Dry run only. Re-run with --write to apply changes.");
 	}
@@ -1702,6 +1786,10 @@ async function main() {
 			a.localeCompare(b),
 		);
 		console.log(`Providers without models.dev mapping: ${uniqueSkippedProviders.join(", ")}`);
+	}
+
+	if (options.triggerAnalysisTask) {
+		await triggerAnalysisTask(options, stats);
 	}
 }
 

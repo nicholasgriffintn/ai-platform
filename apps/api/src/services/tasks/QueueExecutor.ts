@@ -12,6 +12,8 @@ import { UsageUpdateHandler } from "./handlers/UsageUpdateHandler";
 import { SandboxRunDispatchHandler } from "./handlers/SandboxRunDispatchHandler";
 import { PodcastTranscriptionPollingHandler } from "./handlers/PodcastTranscriptionPollingHandler";
 import { RecipeExecutionHandler } from "./handlers/RecipeExecutionHandler";
+import { ArtificialAnalysisIngestHandler } from "./handlers/ArtificialAnalysisIngestHandler";
+import { ArtificialAnalysisScoringHandler } from "./handlers/ArtificialAnalysisScoringHandler";
 import { TaskExecutor } from "./TaskExecutor";
 import { TaskRepository } from "~/repositories/TaskRepository";
 
@@ -33,6 +35,8 @@ export class QueueExecutor {
 			["training_quality_scoring", new TrainingQualityHandler()],
 			["usage_update", new UsageUpdateHandler()],
 			["recipe_execution", new RecipeExecutionHandler()],
+			["artificial_analysis_ingest", new ArtificialAnalysisIngestHandler()],
+			["artificial_analysis_scoring", new ArtificialAnalysisScoringHandler()],
 			[SANDBOX_RUN_DISPATCH_TASK_TYPE, new SandboxRunDispatchHandler()],
 		]);
 

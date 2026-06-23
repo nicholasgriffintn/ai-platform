@@ -4,6 +4,7 @@ import { AgentRepository } from "./AgentRepository";
 import { AnonymousUserRepository } from "./AnonymousUserRepository";
 import { ApiKeyRepository } from "./ApiKeyRepository";
 import { AppDataRepository } from "./AppDataRepository";
+import { ArtificialAnalysisRepository } from "./ArtificialAnalysisRepository";
 import { BaseRepository } from "./BaseRepository";
 import { ConversationRepository } from "./ConversationRepository";
 import { DynamicAppResponseRepository } from "./DynamicAppResponseRepository";
@@ -27,6 +28,7 @@ export {
 	AnonymousUserRepository,
 	ApiKeyRepository,
 	AppDataRepository,
+	ArtificialAnalysisRepository,
 	BaseRepository,
 	ConversationRepository,
 	DynamicAppResponseRepository,
@@ -61,6 +63,7 @@ export class RepositoryManager {
 	private memoryRepo: MemoryRepository;
 	private apiKeyRepo: ApiKeyRepository;
 	private appDataRepo: AppDataRepository;
+	private artificialAnalysisRepo: ArtificialAnalysisRepository;
 	private sharedAgentRepo: SharedAgentRepository;
 	private storedAssetRepo: StoredAssetRepository;
 	private dynamicAppResponseRepo: DynamicAppResponseRepository;
@@ -83,6 +86,7 @@ export class RepositoryManager {
 		this.memoryRepo = new MemoryRepository(env);
 		this.apiKeyRepo = new ApiKeyRepository(env);
 		this.appDataRepo = new AppDataRepository(env);
+		this.artificialAnalysisRepo = new ArtificialAnalysisRepository(env);
 		this.sharedAgentRepo = new SharedAgentRepository(env);
 		this.storedAssetRepo = new StoredAssetRepository(env);
 		this.dynamicAppResponseRepo = new DynamicAppResponseRepository(env);
@@ -141,6 +145,10 @@ export class RepositoryManager {
 
 	public get appData(): AppDataRepository {
 		return this.appDataRepo;
+	}
+
+	public get artificialAnalysis(): ArtificialAnalysisRepository {
+		return this.artificialAnalysisRepo;
 	}
 
 	public get memories(): MemoryRepository {
