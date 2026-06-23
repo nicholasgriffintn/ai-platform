@@ -16,6 +16,17 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
 		modalities: { input: ["text"], output: ["text"] },
 		contextWindow: 128000,
 		maxTokens: 65536,
+		costPer1kInputTokens: 0.0011,
+		costPer1kOutputTokens: 0.0044,
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 25.6,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("ghcopilot/anthropic/claude-3.5-sonnet", PROVIDER, {
@@ -30,6 +41,17 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
 		modalities: { input: ["text", "image"], output: ["text"] },
 		contextWindow: 200000,
 		maxTokens: 8192,
+		costPer1kInputTokens: 0.003,
+		costPer1kOutputTokens: 0.015,
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 8.3,
+			codingIndex: 26,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("ghcopilot/google/gemini-2.0-flash-001", PROVIDER, {
@@ -47,6 +69,17 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
 		},
 		contextWindow: 1000000,
 		maxTokens: 8192,
+		costPer1kInputTokens: 0.00015,
+		costPer1kOutputTokens: 0.0006,
+		strengths: ["vision", "audio", "video", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 12.3,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("ghcopilot/anthropic/claude-opus-4.1", PROVIDER, {
@@ -89,6 +122,17 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
 		modalities: { input: ["text", "image"], output: ["text"] },
 		contextWindow: 200000,
 		maxTokens: 8192,
+		costPer1kInputTokens: 0.003,
+		costPer1kOutputTokens: 0.015,
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 23.5,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("ghcopilot/google/gemini-2.5-pro", PROVIDER, {
@@ -122,6 +166,7 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		speed: 3,
 	}),
 
 	createModelConfig("ghcopilot/anthropic/claude-opus-4", PROVIDER, {
@@ -150,6 +195,17 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
 		modalities: { input: ["text"], output: ["text"] },
 		contextWindow: 128000,
 		maxTokens: 65536,
+		costPer1kInputTokens: 0.0011,
+		costPer1kOutputTokens: 0.0044,
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 19,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("ghcopilot/openai/gpt-4.1", PROVIDER, {
@@ -193,6 +249,16 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 4096,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 3,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 9.6,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("ghcopilot/openai/o3", PROVIDER, {
@@ -208,6 +274,18 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
 		modalities: { input: ["text", "image"], output: ["text"] },
 		contextWindow: 128000,
 		maxTokens: 16384,
+		costPer1kInputTokens: 0.002,
+		costPer1kOutputTokens: 0.008,
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 3,
+		reliability: 1,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 30.4,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 	createModelConfig("ghcopilot/anthropic/claude-haiku-4.5", PROVIDER, {
 		name: "Claude Haiku 4.5",
@@ -352,6 +430,7 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		speed: 5,
 	}),
 
 	createModelConfig("ghcopilot/openai/gpt-5-mini", PROVIDER, {
@@ -476,6 +555,15 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 21.6,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	}),
 	createModelConfig("claude-opus-4.7", PROVIDER, {

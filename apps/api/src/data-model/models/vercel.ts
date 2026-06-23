@@ -366,7 +366,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		strengths: ["vision", "document", "tool_use"],
 		contextComplexity: 4,
 		reliability: 1,
-		speed: 4,
+		speed: 3,
 		artificialAnalysis: {
 			intelligenceIndex: 25.6,
 			codingIndex: null,
@@ -419,6 +419,16 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 8192,
 		costPer1kInputTokens: 0.00075,
 		costPer1kOutputTokens: 0.00099,
+		strengths: ["tool_use"],
+		contextComplexity: 3,
+		reliability: 1,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 9.9,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("deepseek/deepseek-r1", PROVIDER, {
@@ -464,6 +474,16 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 32000,
 		costPer1kInputTokens: 0.015,
 		costPer1kOutputTokens: 0.075,
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 2,
+		artificialAnalysis: {
+			intelligenceIndex: 28.2,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("anthropic/claude-3-5-haiku", PROVIDER, {
@@ -480,6 +500,15 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 8192,
 		costPer1kInputTokens: 0.0008,
 		costPer1kOutputTokens: 0.004,
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 12.4,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("anthropic/claude-4-sonnet", PROVIDER, {
@@ -496,6 +525,15 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 64000,
 		costPer1kInputTokens: 0.003,
 		costPer1kOutputTokens: 0.015,
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 25.5,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("anthropic/claude-4-opus", PROVIDER, {
@@ -512,6 +550,15 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 32000,
 		costPer1kInputTokens: 0.015,
 		costPer1kOutputTokens: 0.075,
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 25.5,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("amazon/nova-micro", PROVIDER, {
@@ -754,6 +801,15 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 64000,
 		costPer1kInputTokens: 0.002,
 		costPer1kOutputTokens: 0.006,
+		strengths: ["tool_use"],
+		contextComplexity: 3,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 4.4,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("mistral/magistral-small", PROVIDER, {
@@ -799,6 +855,15 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.002,
 		costPer1kOutputTokens: 0.006,
+		strengths: ["tool_use"],
+		contextComplexity: 3,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 4.4,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("cerebras/qwen3-coder", PROVIDER, {
@@ -1506,6 +1571,25 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		supportsToolCalls: false,
 		contextWindow: 512,
 		maxTokens: 0,
+		strengths: ["image"],
+		contextComplexity: 1,
+		reliability: 3,
+		artificialAnalysis: {
+			intelligenceIndex: null,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: null,
+			mediaScores: [
+				{
+					key: "text_to_imageElo",
+					label: "Text-to-image arena",
+					value: 1124,
+					min: 800,
+					max: 1400,
+					confidenceInterval95: 8,
+				},
+			],
+		},
 	}),
 
 	createModelConfig("bfl/flux-kontext-pro", PROVIDER, {
@@ -1522,6 +1606,25 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		supportsToolCalls: false,
 		contextWindow: 512,
 		maxTokens: 0,
+		strengths: ["image"],
+		contextComplexity: 1,
+		reliability: 3,
+		artificialAnalysis: {
+			intelligenceIndex: null,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: null,
+			mediaScores: [
+				{
+					key: "text_to_imageElo",
+					label: "Text-to-image arena",
+					value: 1089,
+					min: 800,
+					max: 1400,
+					confidenceInterval95: 8,
+				},
+			],
+		},
 	}),
 
 	createModelConfig("bfl/flux-pro-1.0-fill", PROVIDER, {
@@ -1554,6 +1657,25 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		supportsToolCalls: false,
 		contextWindow: 512,
 		maxTokens: 0,
+		strengths: ["image"],
+		contextComplexity: 1,
+		reliability: 3,
+		artificialAnalysis: {
+			intelligenceIndex: null,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: null,
+			mediaScores: [
+				{
+					key: "text_to_imageElo",
+					label: "Text-to-image arena",
+					value: 1083,
+					min: 800,
+					max: 1400,
+					confidenceInterval95: 8,
+				},
+			],
+		},
 	}),
 
 	createModelConfig("bfl/flux-pro-1.1-ultra", PROVIDER, {
@@ -1570,6 +1692,25 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		supportsToolCalls: false,
 		contextWindow: 512,
 		maxTokens: 0,
+		strengths: ["image"],
+		contextComplexity: 1,
+		reliability: 3,
+		artificialAnalysis: {
+			intelligenceIndex: null,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: null,
+			mediaScores: [
+				{
+					key: "text_to_imageElo",
+					label: "Text-to-image arena",
+					value: 1094,
+					min: 800,
+					max: 1400,
+					confidenceInterval95: 8,
+				},
+			],
+		},
 	}),
 
 	createModelConfig("bytedance/seed-1.6", PROVIDER, {
@@ -1812,6 +1953,15 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 21.3,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("google/gemini-2.5-flash", PROVIDER, {
@@ -1836,14 +1986,24 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
-		strengths: ["vision", "document", "audio", "video", "tool_use"],
+		strengths: ["vision", "document", "audio", "video", "tool_use", "image", "creative"],
 		contextComplexity: 4,
-		reliability: 1,
+		reliability: 4,
 		artificialAnalysis: {
-			intelligenceIndex: 14.1,
+			intelligenceIndex: null,
 			codingIndex: null,
 			agenticIndex: null,
-			intelligenceIndexVersion: 4.1,
+			intelligenceIndexVersion: null,
+			mediaScores: [
+				{
+					key: "text_to_imageElo",
+					label: "Text-to-image arena",
+					value: 1159,
+					min: 800,
+					max: 1400,
+					confidenceInterval95: 8,
+				},
+			],
 		},
 	}),
 
@@ -1864,6 +2024,25 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.0003,
 		costPer1kOutputTokens: 0.0025,
+		strengths: ["image", "creative"],
+		contextComplexity: 3,
+		reliability: 4,
+		artificialAnalysis: {
+			intelligenceIndex: null,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: null,
+			mediaScores: [
+				{
+					key: "text_to_imageElo",
+					label: "Text-to-image arena",
+					value: 1159,
+					min: 800,
+					max: 1400,
+					confidenceInterval95: 8,
+				},
+			],
+		},
 	}),
 
 	createModelConfig("google/gemini-2.5-flash-image-preview", PROVIDER, {
@@ -1909,12 +2088,22 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		supportsResponseFormat: true,
 		strengths: ["vision", "document", "audio", "video", "tool_use"],
 		contextComplexity: 4,
-		reliability: 1,
+		reliability: 3,
 		artificialAnalysis: {
-			intelligenceIndex: 6.9,
+			intelligenceIndex: null,
 			codingIndex: null,
 			agenticIndex: null,
-			intelligenceIndexVersion: 4.1,
+			intelligenceIndexVersion: null,
+			mediaScores: [
+				{
+					key: "text_to_speechElo",
+					label: "Text-to-speech arena",
+					value: 1088,
+					min: 800,
+					max: 1400,
+					confidenceInterval95: 12,
+				},
+			],
 		},
 	}),
 
@@ -1939,6 +2128,15 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["vision", "document", "audio", "video", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 13.1,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("google/gemini-2.5-flash-preview-09-2025", PROVIDER, {
@@ -1961,6 +2159,15 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["vision", "document", "audio", "video", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 18.8,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	}),
 
@@ -1995,6 +2202,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		speed: 3,
 	}),
 
 	createModelConfig("google/gemini-3-flash", PROVIDER, {
@@ -2027,6 +2235,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		speed: 5,
 	}),
 
 	createModelConfig("google/gemini-3-pro-image", PROVIDER, {
@@ -2046,6 +2255,25 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.002,
 		costPer1kOutputTokens: 0.012,
+		strengths: ["image", "creative"],
+		contextComplexity: 3,
+		reliability: 4,
+		artificialAnalysis: {
+			intelligenceIndex: null,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: null,
+			mediaScores: [
+				{
+					key: "text_to_imageElo",
+					label: "Text-to-image arena",
+					value: 1219,
+					min: 800,
+					max: 1400,
+					confidenceInterval95: 9,
+				},
+			],
+		},
 	}),
 
 	createModelConfig("google/gemini-3-pro-preview", PROVIDER, {
@@ -2114,6 +2342,25 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		supportsToolCalls: false,
 		contextWindow: 480,
 		maxTokens: 0,
+		strengths: ["image"],
+		contextComplexity: 1,
+		reliability: 3,
+		artificialAnalysis: {
+			intelligenceIndex: null,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: null,
+			mediaScores: [
+				{
+					key: "text_to_imageElo",
+					label: "Text-to-image arena",
+					value: 1078,
+					min: 800,
+					max: 1400,
+					confidenceInterval95: 9,
+				},
+			],
+		},
 	}),
 
 	createModelConfig("google/imagen-4.0-generate-001", PROVIDER, {
@@ -2146,6 +2393,25 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		supportsToolCalls: false,
 		contextWindow: 480,
 		maxTokens: 0,
+		strengths: ["image", "creative"],
+		contextComplexity: 1,
+		reliability: 4,
+		artificialAnalysis: {
+			intelligenceIndex: null,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: null,
+			mediaScores: [
+				{
+					key: "text_to_imageElo",
+					label: "Text-to-image arena",
+					value: 1172,
+					min: 800,
+					max: 1400,
+					confidenceInterval95: 9,
+				},
+			],
+		},
 	}),
 
 	createModelConfig("google/text-embedding-005", PROVIDER, {
@@ -2561,7 +2827,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		strengths: ["tool_use"],
 		contextComplexity: 4,
 		reliability: 1,
-		speed: 3,
+		speed: 2,
 		artificialAnalysis: {
 			intelligenceIndex: 15.5,
 			codingIndex: null,
@@ -2687,9 +2953,9 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		reliability: 1,
 		speed: 3,
 		artificialAnalysis: {
-			intelligenceIndex: 16.2,
-			codingIndex: null,
-			agenticIndex: null,
+			intelligenceIndex: 15.9,
+			codingIndex: 20.1,
+			agenticIndex: 5.5,
 			intelligenceIndexVersion: 4.1,
 		},
 	}),
@@ -2927,7 +3193,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		strengths: ["vision", "document", "tool_use"],
 		contextComplexity: 4,
 		reliability: 1,
-		speed: 5,
+		speed: 4,
 		artificialAnalysis: {
 			intelligenceIndex: 4.6,
 			codingIndex: null,
@@ -3680,6 +3946,14 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		contextComplexity: 2,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 11.7,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("perplexity/sonar-reasoning-pro", PROVIDER, {
@@ -3734,6 +4008,15 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 15.6,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("recraft/recraft-v2", PROVIDER, {
@@ -3766,6 +4049,25 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		supportsToolCalls: false,
 		contextWindow: 512,
 		maxTokens: 0,
+		strengths: ["image"],
+		contextComplexity: 1,
+		reliability: 3,
+		artificialAnalysis: {
+			intelligenceIndex: null,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: null,
+			mediaScores: [
+				{
+					key: "text_to_imageElo",
+					label: "Text-to-image arena",
+					value: 1067,
+					min: 800,
+					max: 1400,
+					confidenceInterval95: 8,
+				},
+			],
+		},
 	}),
 
 	createModelConfig("vercel/v0-1.0-md", PROVIDER, {
@@ -3974,6 +4276,15 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 8192,
 		costPer1kInputTokens: 0.003,
 		costPer1kOutputTokens: 0.015,
+		strengths: ["tool_use"],
+		contextComplexity: 3,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 18.4,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("xai/grok-3-fast", PROVIDER, {
@@ -4053,6 +4364,15 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		costPer1kInputTokens: 0.003,
 		costPer1kOutputTokens: 0.015,
 		costPer1kReasoningTokens: 0.015,
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 33.3,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("xai/grok-4-fast-non-reasoning", PROVIDER, {
@@ -4072,6 +4392,15 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 30000,
 		costPer1kInputTokens: 0.0002,
 		costPer1kOutputTokens: 0.0005,
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 16.5,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("xai/grok-4-fast-reasoning", PROVIDER, {
@@ -4094,6 +4423,15 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["tool_use"],
+		contextComplexity: 5,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 27.4,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	}),
 
@@ -4165,6 +4503,15 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 10000,
 		costPer1kInputTokens: 0.0002,
 		costPer1kOutputTokens: 0.0015,
+		strengths: ["tool_use"],
+		contextComplexity: 3,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 21.6,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("xiaomi/mimo-v2-flash", PROVIDER, {
@@ -5743,6 +6090,24 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		supportsToolCalls: false,
 		contextWindow: 0,
 		maxTokens: 0,
+		strengths: ["image", "creative"],
+		reliability: 4,
+		artificialAnalysis: {
+			intelligenceIndex: null,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: null,
+			mediaScores: [
+				{
+					key: "text_to_imageElo",
+					label: "Text-to-image arena",
+					value: 1178,
+					min: 800,
+					max: 1400,
+					confidenceInterval95: 8,
+				},
+			],
+		},
 	}),
 
 	createModelConfig("xai/grok-imagine-image-pro", PROVIDER, {
@@ -5759,6 +6124,24 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		supportsToolCalls: false,
 		contextWindow: 0,
 		maxTokens: 0,
+		strengths: ["image"],
+		reliability: 3,
+		artificialAnalysis: {
+			intelligenceIndex: null,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: null,
+			mediaScores: [
+				{
+					key: "text_to_imageElo",
+					label: "Text-to-image arena",
+					value: 1144,
+					min: 800,
+					max: 1400,
+					confidenceInterval95: 8,
+				},
+			],
+		},
 	}),
 
 	createModelConfig("xiaomi/mimo-v2-pro", PROVIDER, {
@@ -6347,7 +6730,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		strengths: ["vision", "document", "tool_use"],
 		contextComplexity: 4,
 		reliability: 1,
-		speed: 4,
+		speed: 5,
 		artificialAnalysis: {
 			intelligenceIndex: 29.7,
 			codingIndex: 37.3,
@@ -6465,6 +6848,24 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		supportsToolCalls: false,
 		contextWindow: 0,
 		maxTokens: 0,
+		strengths: ["image", "creative"],
+		reliability: 4,
+		artificialAnalysis: {
+			intelligenceIndex: null,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: null,
+			mediaScores: [
+				{
+					key: "text_to_imageElo",
+					label: "Text-to-image arena",
+					value: 1182,
+					min: 800,
+					max: 1400,
+					confidenceInterval95: 9,
+				},
+			],
+		},
 	}),
 
 	createModelConfig("bfl/flux-2-klein-4b", PROVIDER, {
@@ -6481,6 +6882,24 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		supportsToolCalls: false,
 		contextWindow: 0,
 		maxTokens: 0,
+		strengths: ["image"],
+		reliability: 3,
+		artificialAnalysis: {
+			intelligenceIndex: null,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: null,
+			mediaScores: [
+				{
+					key: "text_to_imageElo",
+					label: "Text-to-image arena",
+					value: 1067,
+					min: 800,
+					max: 1400,
+					confidenceInterval95: 9,
+				},
+			],
+		},
 	}),
 
 	createModelConfig("bfl/flux-2-klein-9b", PROVIDER, {
@@ -6497,6 +6916,24 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		supportsToolCalls: false,
 		contextWindow: 0,
 		maxTokens: 0,
+		strengths: ["image"],
+		reliability: 3,
+		artificialAnalysis: {
+			intelligenceIndex: null,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: null,
+			mediaScores: [
+				{
+					key: "text_to_imageElo",
+					label: "Text-to-image arena",
+					value: 1122,
+					min: 800,
+					max: 1400,
+					confidenceInterval95: 8,
+				},
+			],
+		},
 	}),
 
 	createModelConfig("bfl/flux-2-max", PROVIDER, {
@@ -6513,6 +6950,25 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		supportsToolCalls: false,
 		contextWindow: 67300,
 		maxTokens: 67300,
+		strengths: ["image", "creative"],
+		contextComplexity: 3,
+		reliability: 4,
+		artificialAnalysis: {
+			intelligenceIndex: null,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: null,
+			mediaScores: [
+				{
+					key: "text_to_imageElo",
+					label: "Text-to-image arena",
+					value: 1192,
+					min: 800,
+					max: 1400,
+					confidenceInterval95: 9,
+				},
+			],
+		},
 	}),
 
 	createModelConfig("bfl/flux-2-pro", PROVIDER, {
@@ -6529,6 +6985,25 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		supportsToolCalls: false,
 		contextWindow: 67300,
 		maxTokens: 67300,
+		strengths: ["image", "creative"],
+		contextComplexity: 3,
+		reliability: 4,
+		artificialAnalysis: {
+			intelligenceIndex: null,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: null,
+			mediaScores: [
+				{
+					key: "text_to_imageElo",
+					label: "Text-to-image arena",
+					value: 1186,
+					min: 800,
+					max: 1400,
+					confidenceInterval95: 9,
+				},
+			],
+		},
 	}),
 
 	createModelConfig("bytedance/seedance-2.0", PROVIDER, {
@@ -6545,6 +7020,25 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		supportsToolCalls: false,
 		contextWindow: 0,
 		maxTokens: 0,
+		strengths: ["vision", "document", "video", "creative"],
+		contextComplexity: 4,
+		reliability: 5,
+		artificialAnalysis: {
+			intelligenceIndex: null,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: null,
+			mediaScores: [
+				{
+					key: "text_to_videoElo",
+					label: "Text-to-video arena",
+					value: 1273,
+					min: 800,
+					max: 1400,
+					confidenceInterval95: 8,
+				},
+			],
+		},
 	}),
 
 	createModelConfig("bytedance/seedance-2.0-fast", PROVIDER, {
@@ -6657,6 +7151,24 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		supportsToolCalls: false,
 		contextWindow: 0,
 		maxTokens: 0,
+		strengths: ["image", "creative"],
+		reliability: 4,
+		artificialAnalysis: {
+			intelligenceIndex: null,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: null,
+			mediaScores: [
+				{
+					key: "text_to_imageElo",
+					label: "Text-to-image arena",
+					value: 1193,
+					min: 800,
+					max: 1400,
+					confidenceInterval95: 8,
+				},
+			],
+		},
 	}),
 
 	createModelConfig("bytedance/seedream-4.5", PROVIDER, {
@@ -6673,6 +7185,24 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		supportsToolCalls: false,
 		contextWindow: 0,
 		maxTokens: 0,
+		strengths: ["image", "creative"],
+		reliability: 4,
+		artificialAnalysis: {
+			intelligenceIndex: null,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: null,
+			mediaScores: [
+				{
+					key: "text_to_imageElo",
+					label: "Text-to-image arena",
+					value: 1166,
+					min: 800,
+					max: 1400,
+					confidenceInterval95: 8,
+				},
+			],
+		},
 	}),
 
 	createModelConfig("bytedance/seedream-5.0-lite", PROVIDER, {
@@ -6689,6 +7219,24 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		supportsToolCalls: false,
 		contextWindow: 0,
 		maxTokens: 0,
+		strengths: ["image"],
+		reliability: 3,
+		artificialAnalysis: {
+			intelligenceIndex: null,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: null,
+			mediaScores: [
+				{
+					key: "text_to_imageElo",
+					label: "Text-to-image arena",
+					value: 1117,
+					min: 800,
+					max: 1400,
+					confidenceInterval95: 8,
+				},
+			],
+		},
 	}),
 
 	createModelConfig("cohere/rerank-v3.5", PROVIDER, {
@@ -6801,6 +7349,24 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		supportsToolCalls: false,
 		contextWindow: 0,
 		maxTokens: 0,
+		strengths: ["video", "creative"],
+		reliability: 4,
+		artificialAnalysis: {
+			intelligenceIndex: null,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: null,
+			mediaScores: [
+				{
+					key: "text_to_videoElo",
+					label: "Text-to-video arena",
+					value: 1208,
+					min: 800,
+					max: 1400,
+					confidenceInterval95: 9,
+				},
+			],
+		},
 	}),
 
 	createModelConfig("klingai/kling-v2.5-turbo-i2v", PROVIDER, {
@@ -6967,6 +7533,24 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 0,
 		costPer1kInputTokens: 0.005,
 		costPer1kOutputTokens: 0.04,
+		strengths: ["image"],
+		reliability: 3,
+		artificialAnalysis: {
+			intelligenceIndex: null,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: null,
+			mediaScores: [
+				{
+					key: "text_to_imageElo",
+					label: "Text-to-image arena",
+					value: 1133,
+					min: 800,
+					max: 1400,
+					confidenceInterval95: 8,
+				},
+			],
+		},
 	}),
 
 	createModelConfig("openai/gpt-image-1-mini", PROVIDER, {
@@ -6985,6 +7569,24 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 0,
 		costPer1kInputTokens: 0.002,
 		costPer1kOutputTokens: 0.008,
+		strengths: ["image"],
+		reliability: 3,
+		artificialAnalysis: {
+			intelligenceIndex: null,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: null,
+			mediaScores: [
+				{
+					key: "text_to_imageElo",
+					label: "Text-to-image arena",
+					value: 1089,
+					min: 800,
+					max: 1400,
+					confidenceInterval95: 8,
+				},
+			],
+		},
 	}),
 
 	createModelConfig("openai/gpt-image-1.5", PROVIDER, {
@@ -7003,6 +7605,24 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 0,
 		costPer1kInputTokens: 0.005,
 		costPer1kOutputTokens: 0.032,
+		strengths: ["image", "creative"],
+		reliability: 5,
+		artificialAnalysis: {
+			intelligenceIndex: null,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: null,
+			mediaScores: [
+				{
+					key: "text_to_imageElo",
+					label: "Text-to-image arena",
+					value: 1264,
+					min: 800,
+					max: 1400,
+					confidenceInterval95: 9,
+				},
+			],
+		},
 	}),
 
 	createModelConfig("openai/gpt-image-2", PROVIDER, {
@@ -7021,6 +7641,24 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 0,
 		costPer1kInputTokens: 0.005,
 		costPer1kOutputTokens: 0.03,
+		strengths: ["image", "creative"],
+		reliability: 5,
+		artificialAnalysis: {
+			intelligenceIndex: null,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: null,
+			mediaScores: [
+				{
+					key: "text_to_imageElo",
+					label: "Text-to-image arena",
+					value: 1338,
+					min: 800,
+					max: 1400,
+					confidenceInterval95: 9,
+				},
+			],
+		},
 	}),
 
 	createModelConfig("prodia/flux-fast-schnell", PROVIDER, {
@@ -7053,6 +7691,24 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		supportsToolCalls: false,
 		contextWindow: 0,
 		maxTokens: 0,
+		strengths: ["image"],
+		reliability: 3,
+		artificialAnalysis: {
+			intelligenceIndex: null,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: null,
+			mediaScores: [
+				{
+					key: "text_to_imageElo",
+					label: "Text-to-image arena",
+					value: 1136,
+					min: 800,
+					max: 1400,
+					confidenceInterval95: 9,
+				},
+			],
+		},
 	}),
 
 	createModelConfig("recraft/recraft-v4-pro", PROVIDER, {
@@ -7069,6 +7725,24 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		supportsToolCalls: false,
 		contextWindow: 0,
 		maxTokens: 0,
+		strengths: ["image"],
+		reliability: 3,
+		artificialAnalysis: {
+			intelligenceIndex: null,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: null,
+			mediaScores: [
+				{
+					key: "text_to_imageElo",
+					label: "Text-to-image arena",
+					value: 1143,
+					min: 800,
+					max: 1400,
+					confidenceInterval95: 9,
+				},
+			],
+		},
 	}),
 
 	createModelConfig("recraft/recraft-v4.1", PROVIDER, {
@@ -7085,6 +7759,24 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		supportsToolCalls: false,
 		contextWindow: 0,
 		maxTokens: 0,
+		strengths: ["image"],
+		reliability: 3,
+		artificialAnalysis: {
+			intelligenceIndex: null,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: null,
+			mediaScores: [
+				{
+					key: "text_to_imageElo",
+					label: "Text-to-image arena",
+					value: 1146,
+					min: 800,
+					max: 1400,
+					confidenceInterval95: 10,
+				},
+			],
+		},
 	}),
 
 	createModelConfig("recraft/recraft-v4.1-pro", PROVIDER, {
@@ -7101,6 +7793,24 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		supportsToolCalls: false,
 		contextWindow: 0,
 		maxTokens: 0,
+		strengths: ["image", "creative"],
+		reliability: 4,
+		artificialAnalysis: {
+			intelligenceIndex: null,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: null,
+			mediaScores: [
+				{
+					key: "text_to_imageElo",
+					label: "Text-to-image arena",
+					value: 1153,
+					min: 800,
+					max: 1400,
+					confidenceInterval95: 10,
+				},
+			],
+		},
 	}),
 
 	createModelConfig("recraft/recraft-v4.1-utility", PROVIDER, {
@@ -7117,6 +7827,24 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		supportsToolCalls: false,
 		contextWindow: 0,
 		maxTokens: 0,
+		strengths: ["image", "creative"],
+		reliability: 4,
+		artificialAnalysis: {
+			intelligenceIndex: null,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: null,
+			mediaScores: [
+				{
+					key: "text_to_imageElo",
+					label: "Text-to-image arena",
+					value: 1197,
+					min: 800,
+					max: 1400,
+					confidenceInterval95: 10,
+				},
+			],
+		},
 	}),
 
 	createModelConfig("recraft/recraft-v4.1-utility-pro", PROVIDER, {
@@ -7133,6 +7861,24 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		supportsToolCalls: false,
 		contextWindow: 0,
 		maxTokens: 0,
+		strengths: ["image", "creative"],
+		reliability: 4,
+		artificialAnalysis: {
+			intelligenceIndex: null,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: null,
+			mediaScores: [
+				{
+					key: "text_to_imageElo",
+					label: "Text-to-image arena",
+					value: 1205,
+					min: 800,
+					max: 1400,
+					confidenceInterval95: 10,
+				},
+			],
+		},
 	}),
 
 	createModelConfig("voyage/rerank-2.5", PROVIDER, {
@@ -7181,6 +7927,24 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		supportsToolCalls: false,
 		contextWindow: 0,
 		maxTokens: 0,
+		strengths: ["video", "creative"],
+		reliability: 4,
+		artificialAnalysis: {
+			intelligenceIndex: null,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: null,
+			mediaScores: [
+				{
+					key: "text_to_videoElo",
+					label: "Text-to-video arena",
+					value: 1232,
+					min: 800,
+					max: 1400,
+					confidenceInterval95: 8,
+				},
+			],
+		},
 	}),
 
 	createModelConfig("xai/grok-imagine-video-1.5-preview", PROVIDER, {
@@ -7197,6 +7961,24 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		supportsToolCalls: false,
 		contextWindow: 0,
 		maxTokens: 0,
+		strengths: ["video", "creative"],
+		reliability: 5,
+		artificialAnalysis: {
+			intelligenceIndex: null,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: null,
+			mediaScores: [
+				{
+					key: "image_to_videoElo",
+					label: "Image-to-video arena",
+					value: 1325,
+					min: 800,
+					max: 1400,
+					confidenceInterval95: 12,
+				},
+			],
+		},
 	}),
 	createModelConfig("anthropic/claude-fable-5", PROVIDER, {
 		name: "Claude Fable 5",
@@ -7219,6 +8001,15 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			defaultEffort: "none",
 		},
 		knowledgeCutoffDate: "January 31, 2026",
+		strengths: ["vision", "document", "tool_use", "coding"],
+		contextComplexity: 5,
+		reliability: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 59.9,
+			codingIndex: 76.5,
+			agenticIndex: 52.8,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 	createModelConfig("moonshotai/kimi-k2", PROVIDER, {
 		name: "Kimi K2 Instruct",
@@ -7409,6 +8200,38 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 0,
 		costPer1kInputTokens: 0.004,
 		costPer1kOutputTokens: 0.016,
+		strengths: ["audio"],
+		contextComplexity: 4,
+		reliability: 5,
+		artificialAnalysis: {
+			intelligenceIndex: null,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: null,
+			mediaScores: [
+				{
+					key: "bbaScore",
+					label: "Big Bench Audio",
+					value: 0.81,
+					min: 0,
+					max: 1,
+				},
+				{
+					key: "fdbScore",
+					label: "Full Duplex Bench",
+					value: 0.96,
+					min: 0,
+					max: 1,
+				},
+				{
+					key: "tauVoiceScore",
+					label: "Tau Voice",
+					value: 0.39,
+					min: 0,
+					max: 1,
+				},
+			],
+		},
 	}),
 
 	createModelConfig("openai/gpt-realtime-2", PROVIDER, {
@@ -7445,6 +8268,38 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 0,
 		costPer1kInputTokens: 0.0006,
 		costPer1kOutputTokens: 0.0024,
+		strengths: ["audio"],
+		contextComplexity: 4,
+		reliability: 5,
+		artificialAnalysis: {
+			intelligenceIndex: null,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: null,
+			mediaScores: [
+				{
+					key: "bbaScore",
+					label: "Big Bench Audio",
+					value: 0.64,
+					min: 0,
+					max: 1,
+				},
+				{
+					key: "fdbScore",
+					label: "Full Duplex Bench",
+					value: 0.96,
+					min: 0,
+					max: 1,
+				},
+				{
+					key: "tauVoiceScore",
+					label: "Tau Voice",
+					value: 0.15,
+					min: 0,
+					max: 1,
+				},
+			],
+		},
 	}),
 
 	createModelConfig("openai/tts-1", PROVIDER, {
@@ -7461,6 +8316,24 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		supportsToolCalls: false,
 		contextWindow: 0,
 		maxTokens: 0,
+		strengths: ["audio"],
+		reliability: 3,
+		artificialAnalysis: {
+			intelligenceIndex: null,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: null,
+			mediaScores: [
+				{
+					key: "text_to_speechElo",
+					label: "Text-to-speech arena",
+					value: 1091,
+					min: 800,
+					max: 1400,
+					confidenceInterval95: 10,
+				},
+			],
+		},
 	}),
 
 	createModelConfig("openai/tts-1-hd", PROVIDER, {
@@ -7477,6 +8350,24 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		supportsToolCalls: false,
 		contextWindow: 0,
 		maxTokens: 0,
+		strengths: ["audio"],
+		reliability: 3,
+		artificialAnalysis: {
+			intelligenceIndex: null,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: null,
+			mediaScores: [
+				{
+					key: "text_to_speechElo",
+					label: "Text-to-speech arena",
+					value: 1099,
+					min: 800,
+					max: 1400,
+					confidenceInterval95: 12,
+				},
+			],
+		},
 	}),
 
 	createModelConfig("openai/whisper-1", PROVIDER, {
@@ -7509,5 +8400,37 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		supportsToolCalls: false,
 		contextWindow: 0,
 		maxTokens: 0,
+		strengths: ["audio"],
+		contextComplexity: 4,
+		reliability: 5,
+		artificialAnalysis: {
+			intelligenceIndex: null,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: null,
+			mediaScores: [
+				{
+					key: "bbaScore",
+					label: "Big Bench Audio",
+					value: 0.97,
+					min: 0,
+					max: 1,
+				},
+				{
+					key: "fdbScore",
+					label: "Full Duplex Bench",
+					value: 0.78,
+					min: 0,
+					max: 1,
+				},
+				{
+					key: "tauVoiceScore",
+					label: "Tau Voice",
+					value: 0.52,
+					min: 0,
+					max: 1,
+				},
+			],
+		},
 	}),
 ]);

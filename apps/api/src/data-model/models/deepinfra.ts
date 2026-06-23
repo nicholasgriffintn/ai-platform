@@ -24,11 +24,17 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 		costPer1kInputTokens: 0.0005,
 		costPer1kOutputTokens: 0.002,
 		strengths: ["chat", "general_knowledge", "analysis", "tool_use"],
-		contextComplexity: 4,
-		reliability: 4,
-		speed: 4,
+		contextComplexity: 3,
+		reliability: 1,
+		speed: 2,
 		includedInRouter: true,
 		supportsArtifacts: true,
+		artificialAnalysis: {
+			intelligenceIndex: 19.4,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("Qwen/Qwen3-Coder-480B-A35B-Instruct-Turbo", PROVIDER, {
@@ -78,12 +84,18 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 		costPer1kInputTokens: 0.0004,
 		costPer1kOutputTokens: 0.0016,
 		strengths: ["coding", "analysis", "instruction", "tool_use"],
-		contextComplexity: 5,
-		reliability: 4,
-		speed: 4,
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 3,
 		isFeatured: false,
 		includedInRouter: true,
 		supportsArtifacts: true,
+		artificialAnalysis: {
+			intelligenceIndex: 18,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("anthropic/claude-3-7-sonnet-latest", PROVIDER, {
@@ -129,6 +141,15 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 25.5,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	}),
 
@@ -217,6 +238,16 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 28.3,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("MiniMaxAI/MiniMax-M2.1", PROVIDER, {
@@ -240,6 +271,16 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 31.4,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("moonshotai/Kimi-K2-Thinking", PROVIDER, {
@@ -262,6 +303,16 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["tool_use"],
+		contextComplexity: 3,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 32.7,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	}),
 
@@ -795,7 +846,7 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 		strengths: ["vision", "video", "document", "tool_use"],
 		contextComplexity: 4,
 		reliability: 1,
-		speed: 3,
+		speed: 2,
 		artificialAnalysis: {
 			intelligenceIndex: 32,
 			codingIndex: null,
@@ -857,6 +908,16 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["vision", "audio", "video", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 2,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 40.1,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("xiaomi/mimo-v2.5-pro", PROVIDER, {
@@ -879,6 +940,16 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["tool_use", "coding"],
+		contextComplexity: 4,
+		reliability: 2,
+		speed: 2,
+		artificialAnalysis: {
+			intelligenceIndex: 42.2,
+			codingIndex: 60.2,
+			agenticIndex: 29.1,
+			intelligenceIndexVersion: 4.1,
 		},
 	}),
 
@@ -935,6 +1006,16 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 11,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	}),
 

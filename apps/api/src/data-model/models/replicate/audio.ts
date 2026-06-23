@@ -175,7 +175,7 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "826801120720e563620006b99e412f7ed7b991dd4477e9160473d44a405ef9d9",
 		description:
 			"Fast speech transcription with word-level timestamps and speaker diarization using Whisper large-v3.",
-		strengths: ["ocr", "audio", "analysis"],
+		strengths: ["ocr", "audio", "analysis", "document", "transcription"],
 		supportsStreaming: false,
 		supportsAttachments: true,
 		costPerRun: 0.026,
@@ -263,6 +263,13 @@ export const replicateModelConfig: ModelConfig = createModelConfigObject([
 					description: "Maximum number of speakers.",
 				},
 			],
+		},
+		contextComplexity: 4,
+		artificialAnalysis: {
+			intelligenceIndex: null,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: null,
 		},
 	}),
 	createModelConfig("replicate-stable-audio", PROVIDER, {

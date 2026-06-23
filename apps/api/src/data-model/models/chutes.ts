@@ -18,6 +18,15 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.00002,
 		costPer1kOutputTokens: 0.00008,
+		strengths: ["tool_use"],
+		contextComplexity: 3,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 11.8,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("chutesai/Mistral-Small-3.2-24B-Instruct-2506", PROVIDER, {
@@ -54,6 +63,15 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 163840,
 		costPer1kInputTokens: 0.00018,
 		costPer1kOutputTokens: 0.00072,
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 15.7,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("deepseek-ai/DeepSeek-R1-0528", PROVIDER, {
@@ -70,6 +88,15 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 163840,
 		costPer1kInputTokens: 0.00018,
 		costPer1kOutputTokens: 0.00072,
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 20.1,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("deepseek-ai/DeepSeek-R1-Distill-Llama-70B", PROVIDER, {
@@ -119,6 +146,15 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.00002,
 		costPer1kOutputTokens: 0.00007,
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 10.4,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("moonshotai/Kimi-K2-Instruct-75k", PROVIDER, {
@@ -184,6 +220,16 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.000078,
 		costPer1kOutputTokens: 0.000312,
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 18.2,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("Qwen/Qwen3-Coder-480B-A35B-Instruct-FP8", PROVIDER, {
@@ -200,6 +246,16 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 262144,
 		costPer1kInputTokens: 0.0002,
 		costPer1kOutputTokens: 0.0008,
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 18,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("Qwen/Qwen3-235B-A22B-Thinking-2507", PROVIDER, {
@@ -276,6 +332,16 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		costPer1kInputTokens: 0.00005,
 		costPer1kOutputTokens: 0.00022,
 		supportsResponseFormat: true,
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 16.5,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("zai-org/GLM-4.5-FP8", PROVIDER, {
@@ -374,6 +440,14 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 163840,
 		costPer1kInputTokens: 0.0003,
 		costPer1kOutputTokens: 0.0012,
+		contextComplexity: 4,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 10.4,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("deepseek-ai/DeepSeek-V3-0324-TEE", PROVIDER, {
@@ -756,6 +830,16 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.00002,
 		costPer1kOutputTokens: 0.0001,
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 5,
+		artificialAnalysis: {
+			intelligenceIndex: 14.9,
+			codingIndex: 20.7,
+			agenticIndex: 3.1,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("OpenGVLab/InternVL3-78B-TEE", PROVIDER, {
@@ -887,6 +971,16 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 40960,
 		costPer1kInputTokens: 0.00005,
 		costPer1kOutputTokens: 0.00022,
+		strengths: ["tool_use"],
+		contextComplexity: 3,
+		reliability: 1,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 7,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("Qwen/Qwen3-235B-A22B", PROVIDER, {
@@ -906,6 +1000,16 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 40960,
 		costPer1kInputTokens: 0.0003,
 		costPer1kOutputTokens: 0.0012,
+		strengths: ["tool_use"],
+		contextComplexity: 3,
+		reliability: 1,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 10.9,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("Qwen/Qwen3-235B-A22B-Instruct-2507-TEE", PROVIDER, {
@@ -964,6 +1068,16 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 40960,
 		costPer1kInputTokens: 0.00008,
 		costPer1kOutputTokens: 0.00024,
+		strengths: ["tool_use"],
+		contextComplexity: 3,
+		reliability: 1,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 8.6,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("Qwen/Qwen3-Coder-480B-A35B-Instruct-FP8-TEE", PROVIDER, {
@@ -1002,6 +1116,16 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.00007,
 		costPer1kOutputTokens: 0.0003,
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 21.2,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("Qwen/Qwen3-Next-80B-A3B-Instruct", PROVIDER, {
@@ -1050,6 +1174,16 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 262144,
 		costPer1kInputTokens: 0.0003,
 		costPer1kOutputTokens: 0.0012,
+		strengths: ["vision", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 14.3,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("Qwen/Qwen3Guard-Gen-0.6B", PROVIDER, {
@@ -1259,6 +1393,15 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 8192,
 		costPer1kInputTokens: 0.00009,
 		costPer1kOutputTokens: 0.00029,
+		contextComplexity: 2,
+		reliability: 1,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 33.2,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("zai-org/GLM-4.5-TEE", PROVIDER, {
@@ -1368,6 +1511,16 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 65535,
 		costPer1kInputTokens: 0.00006,
 		costPer1kOutputTokens: 0.00035,
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 15.5,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("zai-org/GLM-4.7-FP8", PROVIDER, {

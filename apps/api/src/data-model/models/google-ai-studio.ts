@@ -41,7 +41,7 @@ export const googleAiStudioModelConfig: ModelConfig = {
 		isFree: true,
 		contextComplexity: 4,
 		reliability: 1,
-		speed: 3,
+		speed: 5,
 		releaseDate: "December 17, 2025",
 		lastUpdated: "December 17, 2025",
 		supportsResponseFormat: true,
@@ -107,6 +107,15 @@ export const googleAiStudioModelConfig: ModelConfig = {
 		maxTokens: 8192,
 		costPer1kInputTokens: 0.000075,
 		costPer1kOutputTokens: 0.0003,
+		strengths: ["vision", "audio", "video", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 4.9,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"gemini-1.5-flash-8b": {
@@ -127,6 +136,15 @@ export const googleAiStudioModelConfig: ModelConfig = {
 		maxTokens: 8192,
 		costPer1kInputTokens: 0.0000375,
 		costPer1kOutputTokens: 0.00015,
+		strengths: ["vision", "audio", "video", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 5.5,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"gemini-1.5-pro": {
@@ -147,6 +165,15 @@ export const googleAiStudioModelConfig: ModelConfig = {
 		maxTokens: 8192,
 		costPer1kInputTokens: 0.00125,
 		costPer1kOutputTokens: 0.005,
+		strengths: ["vision", "audio", "video", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 6.3,
+			codingIndex: 19.8,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"gemini-2.5-flash": {
@@ -182,6 +209,7 @@ export const googleAiStudioModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		speed: 5,
 	},
 
 	"gemini-2.5-flash-image": {
@@ -205,6 +233,25 @@ export const googleAiStudioModelConfig: ModelConfig = {
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["vision", "document", "image", "creative"],
+		contextComplexity: 3,
+		reliability: 4,
+		artificialAnalysis: {
+			intelligenceIndex: null,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: null,
+			mediaScores: [
+				{
+					key: "text_to_imageElo",
+					label: "Text-to-image arena",
+					value: 1159,
+					min: 800,
+					max: 1400,
+					confidenceInterval95: 8,
+				},
+			],
 		},
 	},
 
@@ -254,12 +301,22 @@ export const googleAiStudioModelConfig: ModelConfig = {
 		},
 		strengths: ["vision", "document", "audio", "video", "tool_use"],
 		contextComplexity: 4,
-		reliability: 1,
+		reliability: 3,
 		artificialAnalysis: {
-			intelligenceIndex: 6.9,
+			intelligenceIndex: null,
 			codingIndex: null,
 			agenticIndex: null,
-			intelligenceIndexVersion: 4.1,
+			intelligenceIndexVersion: null,
+			mediaScores: [
+				{
+					key: "text_to_speechElo",
+					label: "Text-to-speech arena",
+					value: 1088,
+					min: 800,
+					max: 1400,
+					confidenceInterval95: 12,
+				},
+			],
 		},
 	},
 
@@ -302,6 +359,15 @@ export const googleAiStudioModelConfig: ModelConfig = {
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.0001,
 		costPer1kOutputTokens: 0.0004,
+		strengths: ["vision", "document", "audio", "video", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 13.1,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"gemini-2.5-flash-preview-04-17": {
@@ -364,6 +430,15 @@ export const googleAiStudioModelConfig: ModelConfig = {
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.0003,
 		costPer1kOutputTokens: 0.0025,
+		strengths: ["vision", "document", "audio", "video", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 18.8,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"gemini-2.5-flash-preview-tts": {
@@ -441,6 +516,7 @@ export const googleAiStudioModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		speed: 3,
 	},
 
 	"gemini-2.5-pro-preview-05-06": {
@@ -645,6 +721,25 @@ export const googleAiStudioModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking", "low", "medium", "high"],
 			defaultEffort: "none",
 		},
+		strengths: ["vision", "document", "search", "image", "creative"],
+		contextComplexity: 4,
+		reliability: 5,
+		artificialAnalysis: {
+			intelligenceIndex: null,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: null,
+			mediaScores: [
+				{
+					key: "text_to_imageElo",
+					label: "Text-to-image arena",
+					value: 1254,
+					min: 800,
+					max: 1400,
+					confidenceInterval95: 9,
+				},
+			],
+		},
 	},
 
 	"gemini-3.1-flash-lite": {
@@ -795,6 +890,15 @@ export const googleAiStudioModelConfig: ModelConfig = {
 		maxTokens: 8192,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
+		strengths: ["vision", "document"],
+		contextComplexity: 3,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 3.4,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"gemma-3-27b-it": {
@@ -816,6 +920,15 @@ export const googleAiStudioModelConfig: ModelConfig = {
 		maxTokens: 8192,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 3,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 4.8,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"gemma-3-4b-it": {
@@ -836,6 +949,15 @@ export const googleAiStudioModelConfig: ModelConfig = {
 		maxTokens: 8192,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
+		strengths: ["vision", "document"],
+		contextComplexity: 3,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 1.1,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"gemma-3n-e2b-it": {
@@ -1006,6 +1128,25 @@ export const googleAiStudioModelConfig: ModelConfig = {
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["vision", "document", "image", "creative"],
+		contextComplexity: 3,
+		reliability: 4,
+		artificialAnalysis: {
+			intelligenceIndex: null,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: null,
+			mediaScores: [
+				{
+					key: "text_to_imageElo",
+					label: "Text-to-image arena",
+					value: 1219,
+					min: 800,
+					max: 1400,
+					confidenceInterval95: 9,
+				},
+			],
 		},
 	},
 	"gemma-4-E2B-it": {

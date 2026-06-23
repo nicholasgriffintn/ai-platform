@@ -109,7 +109,7 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		strengths: ["vision", "document", "tool_use"],
 		contextComplexity: 4,
 		reliability: 1,
-		speed: 4,
+		speed: 3,
 		artificialAnalysis: {
 			intelligenceIndex: 25.6,
 			codingIndex: null,
@@ -210,6 +210,15 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["tool_use"],
+		contextComplexity: 3,
+		reliability: 2,
+		artificialAnalysis: {
+			intelligenceIndex: 17,
+			codingIndex: 34,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	}),
 
@@ -1333,6 +1342,15 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 8192,
 		costPer1kInputTokens: 0.003,
 		costPer1kOutputTokens: 0.015,
+		strengths: ["tool_use"],
+		contextComplexity: 3,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 18.4,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("xai/grok-3-mini", PROVIDER, {
@@ -1373,6 +1391,15 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		costPer1kInputTokens: 0.003,
 		costPer1kOutputTokens: 0.015,
 		costPer1kReasoningTokens: 0.015,
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 33.3,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("xai/grok-4-fast-non-reasoning", PROVIDER, {
@@ -1392,6 +1419,15 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 30000,
 		costPer1kInputTokens: 0.0002,
 		costPer1kOutputTokens: 0.0005,
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 16.5,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("xai/grok-4-fast-reasoning", PROVIDER, {
@@ -1443,6 +1479,15 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 10000,
 		costPer1kInputTokens: 0.0002,
 		costPer1kOutputTokens: 0.0015,
+		strengths: ["tool_use"],
+		contextComplexity: 3,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 21.6,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("monshot/kimi-k2-thinking", PROVIDER, {
@@ -2739,6 +2784,25 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 0,
 		costPer1kInputTokens: 0.005,
 		costPer1kOutputTokens: 0.04,
+		strengths: ["vision", "document", "image"],
+		contextComplexity: 4,
+		reliability: 3,
+		artificialAnalysis: {
+			intelligenceIndex: null,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: null,
+			mediaScores: [
+				{
+					key: "text_to_imageElo",
+					label: "Text-to-image arena",
+					value: 1133,
+					min: 800,
+					max: 1400,
+					confidenceInterval95: 8,
+				},
+			],
+		},
 	}),
 
 	createModelConfig("gpt-image-1.5", PROVIDER, {
@@ -2757,6 +2821,25 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 0,
 		costPer1kInputTokens: 0.005,
 		costPer1kOutputTokens: 0.032,
+		strengths: ["vision", "document", "image", "creative"],
+		contextComplexity: 4,
+		reliability: 5,
+		artificialAnalysis: {
+			intelligenceIndex: null,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: null,
+			mediaScores: [
+				{
+					key: "text_to_imageElo",
+					label: "Text-to-image arena",
+					value: 1264,
+					min: 800,
+					max: 1400,
+					confidenceInterval95: 9,
+				},
+			],
+		},
 	}),
 
 	createModelConfig("gpt-image-2", PROVIDER, {
@@ -2775,6 +2858,25 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 0,
 		costPer1kInputTokens: 0.005,
 		costPer1kOutputTokens: 0.03,
+		strengths: ["vision", "document", "image", "creative"],
+		contextComplexity: 4,
+		reliability: 5,
+		artificialAnalysis: {
+			intelligenceIndex: null,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: null,
+			mediaScores: [
+				{
+					key: "text_to_imageElo",
+					label: "Text-to-image arena",
+					value: 1338,
+					min: 800,
+					max: 1400,
+					confidenceInterval95: 9,
+				},
+			],
+		},
 	}),
 	createModelConfig("claude-opus-4-8", PROVIDER, {
 		name: "Claude Opus 4.8",
@@ -2796,6 +2898,16 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["vision", "document", "tool_use", "coding"],
+		contextComplexity: 4,
+		reliability: 3,
+		speed: 2,
+		artificialAnalysis: {
+			intelligenceIndex: 55.7,
+			codingIndex: 74.3,
+			agenticIndex: 47.2,
+			intelligenceIndexVersion: 4.1,
 		},
 	}),
 ]);

@@ -452,6 +452,7 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		speed: 3,
 	}),
 
 	createModelConfig("glm-4.5", PROVIDER, {
@@ -1402,7 +1403,7 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
 		strengths: ["tool_use"],
 		contextComplexity: 4,
 		reliability: 1,
-		speed: 3,
+		speed: 2,
 		artificialAnalysis: {
 			intelligenceIndex: 32,
 			codingIndex: null,
@@ -1430,6 +1431,16 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 29.3,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	}),
 
@@ -1525,6 +1536,16 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["vision", "audio", "document", "tool_use", "coding"],
+		contextComplexity: 5,
+		reliability: 3,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 50.2,
+			codingIndex: 70.1,
+			agenticIndex: 37.4,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("gemini-3.1-flash-lite", PROVIDER, {
@@ -1546,6 +1567,16 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["vision", "audio", "document", "tool_use"],
+		contextComplexity: 5,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 25,
+			codingIndex: 34.7,
+			agenticIndex: 6.2,
+			intelligenceIndexVersion: 4.1,
 		},
 	}),
 
@@ -1590,6 +1621,16 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 24.2,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	}),
 
@@ -1698,6 +1739,16 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 2,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 29.9,
+			codingIndex: 46.9,
+			agenticIndex: 19,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("nvidia-nemotron-3-nano-omni", PROVIDER, {
@@ -1776,6 +1827,15 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 20.3,
+			codingIndex: 23.5,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("glm-4.6", PROVIDER, {
@@ -1797,6 +1857,16 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 23,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	}),
 
@@ -1918,6 +1988,16 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 20.6,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("nvidia-nemotron-3-nano-30b-a3b", PROVIDER, {
@@ -1939,6 +2019,16 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 7.4,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	}),
 
@@ -2082,6 +2172,16 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 20.4,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("nemotron-nano-v2-12b", PROVIDER, {
@@ -2126,6 +2226,16 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 2,
+		artificialAnalysis: {
+			intelligenceIndex: 20.1,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("magistral-small-2509", PROVIDER, {
@@ -2148,6 +2258,16 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 11.9,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("gpt-5", PROVIDER, {
@@ -2169,6 +2289,16 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 15.3,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	}),
 
@@ -2213,6 +2343,16 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 5,
+		artificialAnalysis: {
+			intelligenceIndex: 14.9,
+			codingIndex: 20.7,
+			agenticIndex: 3.1,
+			intelligenceIndexVersion: 4.1,
 		},
 	}),
 
@@ -2312,6 +2452,16 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 5,
+		reliability: 1,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 16.3,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("gpt-4.1-nano", PROVIDER, {
@@ -2333,6 +2483,16 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 5,
+		reliability: 1,
+		speed: 5,
+		artificialAnalysis: {
+			intelligenceIndex: 7.3,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	}),
 
@@ -2399,6 +2559,16 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 9.1,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	}),
 
@@ -2501,6 +2671,15 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 1048576,
 		costPer1kInputTokens: 0.000067,
 		costPer1kOutputTokens: 0.000268,
+		strengths: ["vision", "audio", "document", "tool_use"],
+		contextComplexity: 5,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 8.8,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("gemini-2.5-flash", PROVIDER, {
@@ -2522,6 +2701,16 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["vision", "audio", "document", "tool_use"],
+		contextComplexity: 5,
+		reliability: 1,
+		speed: 5,
+		artificialAnalysis: {
+			intelligenceIndex: 14.1,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	}),
 
@@ -2589,6 +2778,16 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 9.6,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("gpt-5-mini", PROVIDER, {
@@ -2611,6 +2810,16 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 2,
+		artificialAnalysis: {
+			intelligenceIndex: 33,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("gpt-5-nano", PROVIDER, {
@@ -2632,6 +2841,16 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 19.9,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	}),
 
@@ -2734,6 +2953,16 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 6.9,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	}),
 

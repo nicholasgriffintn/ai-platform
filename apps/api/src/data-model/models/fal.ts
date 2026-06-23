@@ -9,7 +9,7 @@ export const falModelConfig: ModelConfig = createModelConfigObject([
 		matchingModel: "fal-ai/qwen-image",
 		description:
 			"Qwen Image is a large-scale image generation model capable of generating high-quality images from text descriptions.",
-		strengths: ["creative"],
+		strengths: ["creative", "image"],
 		supportsStreaming: false,
 		supportsAttachments: false,
 		modalities: {
@@ -24,6 +24,23 @@ export const falModelConfig: ModelConfig = createModelConfigObject([
 					type: "string",
 					description: "Text prompt describing the desired image.",
 					required: true,
+				},
+			],
+		},
+		reliability: 3,
+		artificialAnalysis: {
+			intelligenceIndex: null,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: null,
+			mediaScores: [
+				{
+					key: "text_to_imageElo",
+					label: "Text-to-image arena",
+					value: 1060,
+					min: 800,
+					max: 1400,
+					confidenceInterval95: 8,
 				},
 			],
 		},

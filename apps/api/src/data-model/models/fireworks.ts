@@ -20,12 +20,18 @@ export const fireworksModelConfig: ModelConfig = {
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.00015,
 		costPer1kOutputTokens: 0.0006,
-		strengths: ["reasoning", "analysis", "coding", "multilingual"],
-		contextComplexity: 5,
-		reliability: 4,
-		speed: 2,
+		strengths: ["reasoning", "analysis", "coding", "multilingual", "tool_use"],
+		contextComplexity: 3,
+		reliability: 1,
+		speed: 5,
 		includedInRouter: true,
 		supportsArtifacts: true,
+		artificialAnalysis: {
+			intelligenceIndex: 23.8,
+			codingIndex: 30.4,
+			agenticIndex: 13.2,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"openai/gpt-oss-20b": {
@@ -47,12 +53,18 @@ export const fireworksModelConfig: ModelConfig = {
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.00005,
 		costPer1kOutputTokens: 0.0002,
-		strengths: ["reasoning", "analysis", "coding"],
-		contextComplexity: 4,
-		reliability: 4,
-		speed: 4,
+		strengths: ["reasoning", "analysis", "coding", "tool_use"],
+		contextComplexity: 3,
+		reliability: 1,
+		speed: 5,
 		includedInRouter: true,
 		supportsArtifacts: true,
+		artificialAnalysis: {
+			intelligenceIndex: 14.9,
+			codingIndex: 20.7,
+			agenticIndex: 3.1,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"deepseek/deepseek-r1": {
@@ -75,12 +87,18 @@ export const fireworksModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.003,
 		costPer1kOutputTokens: 0.008,
-		strengths: ["reasoning", "math", "analysis", "coding"],
-		contextComplexity: 5,
-		reliability: 5,
+		strengths: ["reasoning", "math", "analysis", "coding", "tool_use"],
+		contextComplexity: 3,
+		reliability: 1,
 		speed: 3,
 		includedInRouter: false,
 		supportsArtifacts: true,
+		artificialAnalysis: {
+			intelligenceIndex: 12.6,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"qwen/qwen3-235b-a22b": {
@@ -103,12 +121,18 @@ export const fireworksModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00022,
 		costPer1kOutputTokens: 0.00088,
-		strengths: ["reasoning", "analysis", "multilingual", "coding"],
-		contextComplexity: 5,
-		reliability: 4,
+		strengths: ["reasoning", "analysis", "multilingual", "coding", "tool_use"],
+		contextComplexity: 3,
+		reliability: 1,
 		speed: 3,
 		includedInRouter: false,
 		supportsArtifacts: true,
+		artificialAnalysis: {
+			intelligenceIndex: 10.9,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"deepseek/deepseek-v3-0324": {
@@ -131,12 +155,18 @@ export const fireworksModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.0009,
 		costPer1kOutputTokens: 0.0009,
-		strengths: ["coding", "analysis", "multilingual"],
-		contextComplexity: 4,
-		reliability: 4,
+		strengths: ["coding", "analysis", "multilingual", "tool_use"],
+		contextComplexity: 3,
+		reliability: 1,
 		speed: 3,
 		includedInRouter: false,
 		supportsArtifacts: true,
+		artificialAnalysis: {
+			intelligenceIndex: 15.7,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"moonshotai/kimi-k2-instruct": {
@@ -184,6 +214,15 @@ export const fireworksModelConfig: ModelConfig = {
 		maxTokens: 163840,
 		costPer1kInputTokens: 0.00056,
 		costPer1kOutputTokens: 0.00168,
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 21,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"accounts/fireworks/models/deepseek-v3p2": {
@@ -204,6 +243,15 @@ export const fireworksModelConfig: ModelConfig = {
 		maxTokens: 160000,
 		costPer1kInputTokens: 0.00056,
 		costPer1kOutputTokens: 0.00168,
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 24.7,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"accounts/fireworks/models/glm-4p5": {
@@ -224,6 +272,16 @@ export const fireworksModelConfig: ModelConfig = {
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.00055,
 		costPer1kOutputTokens: 0.00219,
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 19.5,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"accounts/fireworks/models/glm-4p5-air": {
@@ -244,6 +302,16 @@ export const fireworksModelConfig: ModelConfig = {
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.00022,
 		costPer1kOutputTokens: 0.00088,
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 16.5,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"accounts/fireworks/models/glm-4p6": {
@@ -264,6 +332,16 @@ export const fireworksModelConfig: ModelConfig = {
 		maxTokens: 198000,
 		costPer1kInputTokens: 0.00055,
 		costPer1kOutputTokens: 0.00219,
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 23,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"accounts/fireworks/models/glm-4p7": {
@@ -284,6 +362,16 @@ export const fireworksModelConfig: ModelConfig = {
 		maxTokens: 198000,
 		costPer1kInputTokens: 0.0006,
 		costPer1kOutputTokens: 0.0022,
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 26.6,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"accounts/fireworks/models/gpt-oss-120b": {
@@ -369,6 +457,16 @@ export const fireworksModelConfig: ModelConfig = {
 		maxTokens: 256000,
 		costPer1kInputTokens: 0.0006,
 		costPer1kOutputTokens: 0.0025,
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 32.7,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"accounts/fireworks/models/kimi-k2p5": {
@@ -393,6 +491,16 @@ export const fireworksModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["vision", "video", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 29.4,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"accounts/fireworks/models/minimax-m2": {
@@ -413,6 +521,16 @@ export const fireworksModelConfig: ModelConfig = {
 		maxTokens: 192000,
 		costPer1kInputTokens: 0.0003,
 		costPer1kOutputTokens: 0.0012,
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 28.3,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"accounts/fireworks/models/minimax-m2p1": {
@@ -432,6 +550,16 @@ export const fireworksModelConfig: ModelConfig = {
 		maxTokens: 200000,
 		costPer1kInputTokens: 0.0003,
 		costPer1kOutputTokens: 0.0012,
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 31.4,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"accounts/fireworks/models/qwen3-coder-480b-a35b-instruct": {
@@ -451,6 +579,16 @@ export const fireworksModelConfig: ModelConfig = {
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.00045,
 		costPer1kOutputTokens: 0.0018,
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 18,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 	"accounts/fireworks/models/deepseek-v4-pro": {
 		name: "DeepSeek V4 Pro",
@@ -504,6 +642,16 @@ export const fireworksModelConfig: ModelConfig = {
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.001,
 		costPer1kOutputTokens: 0.0032,
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 32.4,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"accounts/fireworks/models/glm-5p1": {
@@ -592,6 +740,16 @@ export const fireworksModelConfig: ModelConfig = {
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 33.7,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	},
 

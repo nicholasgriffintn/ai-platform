@@ -176,15 +176,7 @@ export async function inspectModelFile({ filePath, remoteProviders, selectedProv
 	const remoteModels = remoteModelsFromProvider(remoteProviderConfig);
 	const providerModelStatus = buildProviderModelStatus(remoteModels ?? {}, remoteProviderId);
 	const remoteModelFamilies = buildProviderModelFamilies(remoteModels ?? {}, remoteProviderId);
-	if (!remoteModels && !remoteProviderDeprecated) {
-		return {
-			filePath,
-			status: "skipped",
-			reason: "remote-provider-missing",
-			localProvider,
-			remoteProviderId,
-		};
-	}
+	const remoteProviderMissing = !remoteModels && !remoteProviderDeprecated;
 
 	const representedRemoteModelIds = new Set();
 	for (const entry of entries) {
@@ -210,6 +202,7 @@ export async function inspectModelFile({ filePath, remoteProviders, selectedProv
 		declaration,
 		localProvider,
 		remoteProviderId,
+		remoteProviderMissing,
 		remoteProviderDeprecated,
 		remoteModels: remoteModels ?? {},
 		providerModelStatus,
@@ -242,6 +235,7 @@ export async function processFile({
 		declaration,
 		localProvider,
 		remoteProviderId,
+		remoteProviderMissing,
 		remoteProviderDeprecated,
 		remoteModels,
 		providerModelStatus,
@@ -295,22 +289,6 @@ export async function processFile({
 			continue;
 		}
 
-		if (!remoteModel || typeof remoteModel !== "object") {
-			continue;
-		}
-
-		const values = buildUpdateValues(remoteModel, {
-			modelKey: remoteModelId,
-			existingMatchingModel: matchingModel,
-			allowMatchingModelUpdate: shouldUpdateMatchingModel({
-				modelKey: entry.modelKey,
-				existingMatchingModel: matchingModel,
-				remoteModelId,
-			}),
-			isNewEntry: false,
-			includeProvider: false,
-			provider: localProvider,
-		});
 		const artificialAnalysisModel = findArtificialAnalysisModel({
 			lookup: artificialAnalysisLookup,
 			entry,
@@ -318,6 +296,27 @@ export async function processFile({
 			remoteModelId,
 			sourceFile,
 		});
+		if (!remoteModel || typeof remoteModel !== "object") {
+			if (!artificialAnalysisModel) {
+				continue;
+			}
+		}
+
+		const values =
+			remoteModel && typeof remoteModel === "object"
+				? buildUpdateValues(remoteModel, {
+						modelKey: remoteModelId,
+						existingMatchingModel: matchingModel,
+						allowMatchingModelUpdate: shouldUpdateMatchingModel({
+							modelKey: entry.modelKey,
+							existingMatchingModel: matchingModel,
+							remoteModelId,
+						}),
+						isNewEntry: false,
+						includeProvider: false,
+						provider: localProvider,
+					})
+				: {};
 		if (artificialAnalysisModel) {
 			Object.assign(
 				values,
@@ -444,8 +443,11 @@ export async function processFile({
 
 	if (verbose) {
 		const modeLabel = write ? "wrote" : "dry-run";
+		const providerMode = remoteProviderMissing
+			? "aa-only"
+			: `${localProvider} -> ${remoteProviderId}`;
 		console.log(
-			`[${modeLabel}] ${path.relative(API_ROOT, filePath)} (${localProvider} -> ${remoteProviderId}) updated=${updatedExisting} added=${newEntries.length} removedDeprecated=${removedDeprecatedModels} removedDuplicates=${removedDuplicateModels}`,
+			`[${modeLabel}] ${path.relative(API_ROOT, filePath)} (${providerMode}) updated=${updatedExisting} added=${newEntries.length} removedDeprecated=${removedDeprecatedModels} removedDuplicates=${removedDuplicateModels}`,
 		);
 	}
 
@@ -454,6 +456,7 @@ export async function processFile({
 		status: "changed",
 		localProvider,
 		remoteProviderId,
+		remoteProviderMissing,
 		updatedExisting,
 		updatedArtificialAnalysis,
 		addedModels: newEntries.length,

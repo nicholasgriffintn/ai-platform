@@ -121,7 +121,7 @@ export const githubModelsConfig: ModelConfig = {
 		strengths: ["reasoning", "math", "analysis", "coding", "vision"],
 		contextComplexity: 4,
 		reliability: 1,
-		speed: 4,
+		speed: 3,
 		multimodal: true,
 		includedInRouter: false,
 		supportsArtifacts: true,

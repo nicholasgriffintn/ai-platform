@@ -85,8 +85,8 @@ export const perplexityModelConfig: ModelConfig = {
 		description: "Standard reasoning offering with Chain of Thought (CoT) capabilities.",
 		provider: "perplexity-ai",
 		strengths: ["reasoning", "multilingual", "coding", "analysis", "general_knowledge", "search"],
-		contextComplexity: 5,
-		reliability: 4,
+		contextComplexity: 1,
+		reliability: 1,
 		speed: 3,
 		isFeatured: false,
 		includedInRouter: true,
@@ -96,6 +96,12 @@ export const perplexityModelConfig: ModelConfig = {
 		modalities: {
 			input: ["text"],
 			output: ["text"],
+		},
+		artificialAnalysis: {
+			intelligenceIndex: 11.7,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	},
 	"sonar-pro": {
@@ -172,8 +178,8 @@ export const perplexityModelConfig: ModelConfig = {
 			"R1-1776 is a version of the DeepSeek R1 model that has been post-trained to provide uncensored, unbiased, and factual information.",
 		provider: "perplexity-ai",
 		strengths: ["reasoning", "multilingual", "coding", "analysis", "general_knowledge"],
-		contextComplexity: 4,
-		reliability: 4,
+		contextComplexity: 1,
+		reliability: 1,
 		speed: 3,
 		isFeatured: true,
 		includedInRouter: false,
@@ -183,6 +189,12 @@ export const perplexityModelConfig: ModelConfig = {
 		modalities: {
 			input: ["text"],
 			output: ["text"],
+		},
+		artificialAnalysis: {
+			intelligenceIndex: 6.3,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	},
 };

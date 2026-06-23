@@ -227,13 +227,29 @@ export const workersAiModelConfig: ModelConfig = {
 		description:
 			"FLUX.1 [schnell] is a 12 billion parameter rectified flow transformer capable of generating images from text descriptions.",
 		provider: "workers-ai",
-		strengths: ["creative"],
+		strengths: ["creative", "image"],
 		speed: 4,
-		reliability: 4,
+		reliability: 2,
 		contextComplexity: 3,
 		modalities: {
 			input: ["text"],
 			output: ["image"],
+		},
+		artificialAnalysis: {
+			intelligenceIndex: null,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: null,
+			mediaScores: [
+				{
+					key: "text_to_imageElo",
+					label: "Text-to-image arena",
+					value: 1000,
+					min: 800,
+					max: 1400,
+					confidenceInterval95: 0,
+				},
+			],
 		},
 	},
 	"flux-2-dev": {
@@ -242,7 +258,7 @@ export const workersAiModelConfig: ModelConfig = {
 		description:
 			"Flux 2 is an image generation and editing model by Black Forest Labs. It creates high-quality images from text prompts and can edit existing images using natural language instructions.",
 		provider: "workers-ai",
-		strengths: ["creative"],
+		strengths: ["creative", "image"],
 		speed: 4,
 		reliability: 4,
 		contextComplexity: 3,
@@ -251,19 +267,51 @@ export const workersAiModelConfig: ModelConfig = {
 			input: ["text"],
 			output: ["image"],
 		},
+		artificialAnalysis: {
+			intelligenceIndex: null,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: null,
+			mediaScores: [
+				{
+					key: "text_to_imageElo",
+					label: "Text-to-image arena",
+					value: 1159,
+					min: 800,
+					max: 1400,
+					confidenceInterval95: 9,
+				},
+			],
+		},
 	},
 	"@cf/black-forest-labs/flux-2-klein-4b": {
 		name: "Black Forest Labs Flux 2 Klein 4B",
 		matchingModel: "@cf/black-forest-labs/flux-2-klein-4b",
 		description: "",
 		provider: "workers-ai",
-		strengths: ["creative"],
+		strengths: ["creative", "image"],
 		speed: 4,
-		reliability: 4,
+		reliability: 3,
 		contextComplexity: 3,
 		modalities: {
 			input: ["text"],
 			output: ["image"],
+		},
+		artificialAnalysis: {
+			intelligenceIndex: null,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: null,
+			mediaScores: [
+				{
+					key: "text_to_imageElo",
+					label: "Text-to-image arena",
+					value: 1067,
+					min: 800,
+					max: 1400,
+					confidenceInterval95: 9,
+				},
+			],
 		},
 	},
 	"@cf/black-forest-labs/flux-2-klein-9b": {
@@ -271,13 +319,29 @@ export const workersAiModelConfig: ModelConfig = {
 		matchingModel: "@cf/black-forest-labs/flux-2-klein-9b",
 		description: "",
 		provider: "workers-ai",
-		strengths: ["creative"],
+		strengths: ["creative", "image"],
 		speed: 4,
-		reliability: 4,
+		reliability: 3,
 		contextComplexity: 3,
 		modalities: {
 			input: ["text"],
 			output: ["image"],
+		},
+		artificialAnalysis: {
+			intelligenceIndex: null,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: null,
+			mediaScores: [
+				{
+					key: "text_to_imageElo",
+					label: "Text-to-image arena",
+					value: 1122,
+					min: 800,
+					max: 1400,
+					confidenceInterval95: 8,
+				},
+			],
 		},
 	},
 	"stable-diffusion-1.5-img2img": {

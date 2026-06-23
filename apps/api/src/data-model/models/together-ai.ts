@@ -275,6 +275,16 @@ export const togetherAiModelConfig: ModelConfig = {
 		maxTokens: 262144,
 		costPer1kInputTokens: 0.0012,
 		costPer1kOutputTokens: 0.004,
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 32.7,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"openai/gpt-oss-120b": {
@@ -353,6 +363,16 @@ export const togetherAiModelConfig: ModelConfig = {
 		maxTokens: 262144,
 		costPer1kInputTokens: 0.00015,
 		costPer1kOutputTokens: 0.0015,
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 13.7,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"zai-org/GLM-4.6": {
@@ -373,6 +393,16 @@ export const togetherAiModelConfig: ModelConfig = {
 		maxTokens: 200000,
 		costPer1kInputTokens: 0.0006,
 		costPer1kOutputTokens: 0.0022,
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 23,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"zai-org/GLM-4.7": {
@@ -393,6 +423,16 @@ export const togetherAiModelConfig: ModelConfig = {
 		maxTokens: 200000,
 		costPer1kInputTokens: 0.00045,
 		costPer1kOutputTokens: 0.002,
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 26.6,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 	"deepseek-ai/DeepSeek-V4-Pro": {
 		name: "DeepSeek V4 Pro",
@@ -546,7 +586,7 @@ export const togetherAiModelConfig: ModelConfig = {
 		strengths: ["vision", "tool_use"],
 		contextComplexity: 4,
 		reliability: 1,
-		speed: 3,
+		speed: 2,
 		artificialAnalysis: {
 			intelligenceIndex: 32,
 			codingIndex: null,

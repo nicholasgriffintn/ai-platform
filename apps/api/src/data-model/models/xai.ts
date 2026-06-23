@@ -157,13 +157,19 @@ export const xaiModelConfig: ModelConfig = {
 		maxTokens: 8192,
 		costPer1kInputTokens: 0.003,
 		costPer1kOutputTokens: 0.015,
-		strengths: ["reasoning", "analysis", "chat", "general_knowledge"],
-		contextComplexity: 4,
-		reliability: 4,
+		strengths: ["reasoning", "analysis", "chat", "general_knowledge", "tool_use"],
+		contextComplexity: 3,
+		reliability: 1,
 		speed: 3,
 		isFeatured: false,
 		includedInRouter: true,
 		supportsArtifacts: true,
+		artificialAnalysis: {
+			intelligenceIndex: 18.4,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"grok-3-mini-latest": {
@@ -266,9 +272,9 @@ export const xaiModelConfig: ModelConfig = {
 		maxTokens: 64000,
 		costPer1kInputTokens: 0.003,
 		costPer1kOutputTokens: 0.015,
-		strengths: ["reasoning", "analysis", "math", "coding"],
-		contextComplexity: 5,
-		reliability: 5,
+		strengths: ["reasoning", "analysis", "math", "coding", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
 		speed: 2,
 		isFeatured: false,
 		includedInRouter: false,
@@ -277,6 +283,12 @@ export const xaiModelConfig: ModelConfig = {
 		supportsFrequencyPenalty: false,
 		supportsPresencePenalty: false,
 		costPer1kReasoningTokens: 0.015,
+		artificialAnalysis: {
+			intelligenceIndex: 33.3,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"grok-vision-beta": {
@@ -324,12 +336,28 @@ export const xaiModelConfig: ModelConfig = {
 		maxTokens: 8192,
 		costPer1kInputTokens: 0.002,
 		costPer1kOutputTokens: 0.01,
-		strengths: ["reasoning", "analysis", "chat", "general_knowledge"],
-		contextComplexity: 4,
-		reliability: 4,
+		strengths: ["reasoning", "analysis", "chat", "general_knowledge", "tool_use", "image"],
+		contextComplexity: 3,
+		reliability: 1,
 		speed: 3,
 		includedInRouter: true,
 		supportsArtifacts: true,
+		artificialAnalysis: {
+			intelligenceIndex: null,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: null,
+			mediaScores: [
+				{
+					key: "text_to_imageElo",
+					label: "Text-to-image arena",
+					value: 926,
+					min: 800,
+					max: 1400,
+					confidenceInterval95: 14,
+				},
+			],
+		},
 	},
 
 	"grok-3-fast": {
@@ -375,6 +403,15 @@ export const xaiModelConfig: ModelConfig = {
 		maxTokens: 8192,
 		costPer1kInputTokens: 0.002,
 		costPer1kOutputTokens: 0.01,
+		strengths: ["tool_use"],
+		contextComplexity: 3,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 8,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"grok-2-vision": {
@@ -435,6 +472,15 @@ export const xaiModelConfig: ModelConfig = {
 		maxTokens: 30000,
 		costPer1kInputTokens: 0.0002,
 		costPer1kOutputTokens: 0.0005,
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 16.9,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"grok-4-1-fast-non-reasoning": {
@@ -455,6 +501,15 @@ export const xaiModelConfig: ModelConfig = {
 		maxTokens: 30000,
 		costPer1kInputTokens: 0.0002,
 		costPer1kOutputTokens: 0.0005,
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 16.9,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"grok-4-fast": {
@@ -475,6 +530,15 @@ export const xaiModelConfig: ModelConfig = {
 		maxTokens: 30000,
 		costPer1kInputTokens: 0.0002,
 		costPer1kOutputTokens: 0.0005,
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 16.5,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"grok-4-fast-non-reasoning": {
@@ -495,6 +559,15 @@ export const xaiModelConfig: ModelConfig = {
 		maxTokens: 30000,
 		costPer1kInputTokens: 0.0002,
 		costPer1kOutputTokens: 0.0005,
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 16.5,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"grok-beta": {
@@ -515,6 +588,15 @@ export const xaiModelConfig: ModelConfig = {
 		maxTokens: 4096,
 		costPer1kInputTokens: 0.005,
 		costPer1kOutputTokens: 0.015,
+		strengths: ["tool_use"],
+		contextComplexity: 3,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 7.5,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"grok-code-fast-1": {
@@ -535,6 +617,15 @@ export const xaiModelConfig: ModelConfig = {
 		maxTokens: 10000,
 		costPer1kInputTokens: 0.0002,
 		costPer1kOutputTokens: 0.0015,
+		strengths: ["tool_use"],
+		contextComplexity: 3,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 21.6,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 	"grok-4.20-0309-non-reasoning": {
 		name: "Grok 4.20 (Non-Reasoning)",
@@ -673,6 +764,25 @@ export const xaiModelConfig: ModelConfig = {
 		supportsToolCalls: false,
 		contextWindow: 8000,
 		maxTokens: 0,
+		strengths: ["vision", "document", "image", "creative"],
+		contextComplexity: 3,
+		reliability: 4,
+		artificialAnalysis: {
+			intelligenceIndex: null,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: null,
+			mediaScores: [
+				{
+					key: "text_to_imageElo",
+					label: "Text-to-image arena",
+					value: 1178,
+					min: 800,
+					max: 1400,
+					confidenceInterval95: 8,
+				},
+			],
+		},
 	},
 
 	"grok-imagine-image-quality": {
@@ -690,6 +800,25 @@ export const xaiModelConfig: ModelConfig = {
 		supportsToolCalls: false,
 		contextWindow: 8000,
 		maxTokens: 0,
+		strengths: ["vision", "document", "image", "creative"],
+		contextComplexity: 3,
+		reliability: 4,
+		artificialAnalysis: {
+			intelligenceIndex: null,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: null,
+			mediaScores: [
+				{
+					key: "text_to_imageElo",
+					label: "Text-to-image arena",
+					value: 1202,
+					min: 800,
+					max: 1400,
+					confidenceInterval95: 10,
+				},
+			],
+		},
 	},
 
 	"grok-imagine-video": {
@@ -707,6 +836,25 @@ export const xaiModelConfig: ModelConfig = {
 		supportsToolCalls: false,
 		contextWindow: 1024,
 		maxTokens: 0,
+		strengths: ["vision", "video", "document", "creative"],
+		contextComplexity: 3,
+		reliability: 4,
+		artificialAnalysis: {
+			intelligenceIndex: null,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: null,
+			mediaScores: [
+				{
+					key: "text_to_videoElo",
+					label: "Text-to-video arena",
+					value: 1232,
+					min: 800,
+					max: 1400,
+					confidenceInterval95: 8,
+				},
+			],
+		},
 	},
 	"grok-build-0.1": {
 		name: "Grok Build 0.1",

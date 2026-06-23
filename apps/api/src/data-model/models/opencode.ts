@@ -339,6 +339,7 @@ export const opencodeModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		speed: 5,
 	}),
 
 	createModelConfig("gemini-3.1-pro", PROVIDER, {
@@ -1391,7 +1392,7 @@ export const opencodeModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.0014,
 		costPer1kOutputTokens: 0.0044,
-		strengths: ["coding", "tool_use"],
+		strengths: ["tool_use", "coding"],
 		contextComplexity: 5,
 		reliability: 3,
 		speed: 4,

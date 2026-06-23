@@ -94,7 +94,7 @@ export const openrouterModelConfig: ModelConfig = {
 		strengths: ["reasoning", "math", "analysis", "coding", "vision", "document", "tool_use"],
 		contextComplexity: 4,
 		reliability: 1,
-		speed: 4,
+		speed: 3,
 		multimodal: true,
 		includedInRouter: false,
 		supportsArtifacts: true,
@@ -469,14 +469,20 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 8192,
 		costPer1kInputTokens: 0.0008,
 		costPer1kOutputTokens: 0.004,
-		strengths: ["chat", "analysis", "vision"],
-		contextComplexity: 3,
-		reliability: 4,
+		strengths: ["chat", "analysis", "vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
 		speed: 5,
 		multimodal: true,
 		includedInRouter: true,
 		supportsArtifacts: true,
 		supportsResponseFormat: false,
+		artificialAnalysis: {
+			intelligenceIndex: 12.4,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"x-ai/grok-3": {
@@ -497,12 +503,18 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 8192,
 		costPer1kInputTokens: 0.003,
 		costPer1kOutputTokens: 0.015,
-		strengths: ["reasoning", "analysis", "chat", "general_knowledge"],
-		contextComplexity: 4,
-		reliability: 4,
+		strengths: ["reasoning", "analysis", "chat", "general_knowledge", "tool_use"],
+		contextComplexity: 3,
+		reliability: 1,
 		speed: 3,
 		includedInRouter: false,
 		supportsArtifacts: true,
+		artificialAnalysis: {
+			intelligenceIndex: 18.4,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"x-ai/grok-3-mini": {
@@ -680,9 +692,11 @@ export const openrouterModelConfig: ModelConfig = {
 			"document",
 			"video",
 			"tool_use",
+			"image",
+			"creative",
 		],
 		contextComplexity: 4,
-		reliability: 1,
+		reliability: 4,
 		speed: 4,
 		multimodal: true,
 		includedInRouter: true,
@@ -694,10 +708,20 @@ export const openrouterModelConfig: ModelConfig = {
 			defaultEffort: "none",
 		},
 		artificialAnalysis: {
-			intelligenceIndex: 14.1,
+			intelligenceIndex: null,
 			codingIndex: null,
 			agenticIndex: null,
-			intelligenceIndexVersion: 4.1,
+			intelligenceIndexVersion: null,
+			mediaScores: [
+				{
+					key: "text_to_imageElo",
+					label: "Text-to-image arena",
+					value: 1159,
+					min: 800,
+					max: 1400,
+					confidenceInterval95: 8,
+				},
+			],
 		},
 	},
 
@@ -775,13 +799,19 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.0001,
 		costPer1kOutputTokens: 0.0003,
-		strengths: ["coding", "analysis", "agents"],
-		contextComplexity: 3,
-		reliability: 4,
-		speed: 4,
+		strengths: ["coding", "analysis", "agents", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 2,
 		includedInRouter: true,
 		supportsArtifacts: true,
 		supportsResponseFormat: true,
+		artificialAnalysis: {
+			intelligenceIndex: 9.3,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	auto: {
@@ -849,6 +879,15 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.015,
 		costPer1kOutputTokens: 0.075,
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 23.5,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"anthropic/claude-haiku-4.5": {
@@ -1054,6 +1093,25 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 67344,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
+		strengths: ["vision", "image", "creative"],
+		contextComplexity: 3,
+		reliability: 4,
+		artificialAnalysis: {
+			intelligenceIndex: null,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: null,
+			mediaScores: [
+				{
+					key: "text_to_imageElo",
+					label: "Text-to-image arena",
+					value: 1182,
+					min: 800,
+					max: 1400,
+					confidenceInterval95: 9,
+				},
+			],
+		},
 	},
 
 	"black-forest-labs/flux.2-klein-4b": {
@@ -1074,6 +1132,25 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 40960,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
+		strengths: ["vision", "image"],
+		contextComplexity: 3,
+		reliability: 3,
+		artificialAnalysis: {
+			intelligenceIndex: null,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: null,
+			mediaScores: [
+				{
+					key: "text_to_imageElo",
+					label: "Text-to-image arena",
+					value: 1067,
+					min: 800,
+					max: 1400,
+					confidenceInterval95: 9,
+				},
+			],
+		},
 	},
 
 	"black-forest-labs/flux.2-max": {
@@ -1094,6 +1171,25 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 46864,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
+		strengths: ["vision", "image", "creative"],
+		contextComplexity: 3,
+		reliability: 4,
+		artificialAnalysis: {
+			intelligenceIndex: null,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: null,
+			mediaScores: [
+				{
+					key: "text_to_imageElo",
+					label: "Text-to-image arena",
+					value: 1192,
+					min: 800,
+					max: 1400,
+					confidenceInterval95: 9,
+				},
+			],
+		},
 	},
 
 	"black-forest-labs/flux.2-pro": {
@@ -1114,6 +1210,25 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 46864,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
+		strengths: ["vision", "image", "creative"],
+		contextComplexity: 3,
+		reliability: 4,
+		artificialAnalysis: {
+			intelligenceIndex: null,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: null,
+			mediaScores: [
+				{
+					key: "text_to_imageElo",
+					label: "Text-to-image arena",
+					value: 1186,
+					min: 800,
+					max: 1400,
+					confidenceInterval95: 9,
+				},
+			],
+		},
 	},
 
 	"bytedance-seed/seedream-4.5": {
@@ -1134,6 +1249,25 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 4096,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
+		strengths: ["vision", "image", "creative"],
+		contextComplexity: 2,
+		reliability: 4,
+		artificialAnalysis: {
+			intelligenceIndex: null,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: null,
+			mediaScores: [
+				{
+					key: "text_to_imageElo",
+					label: "Text-to-image arena",
+					value: 1166,
+					min: 800,
+					max: 1400,
+					confidenceInterval95: 8,
+				},
+			],
+		},
 	},
 
 	"cognitivecomputations/dolphin-mistral-24b-venice-edition:free": {
@@ -1279,6 +1413,15 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 131072,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 10.4,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"deepseek/deepseek-r1-distill-llama-70b": {
@@ -1333,6 +1476,14 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 8192,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
+		contextComplexity: 2,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 9.8,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"deepseek/deepseek-v3-base:free": {
@@ -1407,6 +1558,15 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.00027,
 		costPer1kOutputTokens: 0.001,
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 21.4,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"deepseek/deepseek-v3.2": {
@@ -1466,6 +1626,14 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		contextComplexity: 4,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 22.2,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"featherless/qwerky-72b": {
@@ -1507,6 +1675,15 @@ export const openrouterModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0.0001,
 		costPer1kOutputTokens: 0.0004,
 		supportsResponseFormat: true,
+		strengths: ["vision", "document", "audio", "video", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 12.3,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"google/gemini-2.0-flash-exp:free": {
@@ -1527,6 +1704,15 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 1048576,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 5,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 10.7,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"google/gemini-2.5-flash-lite": {
@@ -1555,12 +1741,22 @@ export const openrouterModelConfig: ModelConfig = {
 		},
 		strengths: ["vision", "document", "audio", "video", "tool_use"],
 		contextComplexity: 4,
-		reliability: 1,
+		reliability: 3,
 		artificialAnalysis: {
-			intelligenceIndex: 6.9,
+			intelligenceIndex: null,
 			codingIndex: null,
 			agenticIndex: null,
-			intelligenceIndexVersion: 4.1,
+			intelligenceIndexVersion: null,
+			mediaScores: [
+				{
+					key: "text_to_speechElo",
+					label: "Text-to-speech arena",
+					value: 1088,
+					min: 800,
+					max: 1400,
+					confidenceInterval95: 12,
+				},
+			],
 		},
 	},
 
@@ -1617,6 +1813,15 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.0003,
 		costPer1kOutputTokens: 0.0025,
+		strengths: ["vision", "document", "audio", "video", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 18.8,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"google/gemini-2.5-pro-preview-05-06": {
@@ -1698,6 +1903,7 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		speed: 5,
 	},
 
 	"google/gemini-3-pro-preview": {
@@ -1718,6 +1924,15 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 66000,
 		costPer1kInputTokens: 0.002,
 		costPer1kOutputTokens: 0.012,
+		strengths: ["vision", "document", "audio", "video", "tool_use"],
+		contextComplexity: 4,
+		reliability: 2,
+		artificialAnalysis: {
+			intelligenceIndex: 39.6,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"google/gemma-2-9b-it": {
@@ -1788,6 +2003,15 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 8192,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
+		strengths: ["vision", "document"],
+		contextComplexity: 3,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 3.4,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"google/gemma-3-27b-it": {
@@ -1838,6 +2062,15 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 8192,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 3,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 4.8,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"google/gemma-3-4b-it": {
@@ -1888,6 +2121,15 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 8192,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
+		strengths: ["vision", "document"],
+		contextComplexity: 3,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 1.1,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"google/gemma-3n-e2b-it:free": {
@@ -2115,6 +2357,16 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 64000,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 10,
+			codingIndex: 8.2,
+			agenticIndex: 1.1,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"microsoft/mai-ds-r1:free": {
@@ -2310,6 +2562,15 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 32768,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
+		strengths: ["tool_use"],
+		contextComplexity: 3,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 11.8,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"mistralai/mistral-7b-instruct:free": {
@@ -2330,6 +2591,16 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 32768,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
+		strengths: ["tool_use"],
+		contextComplexity: 3,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 2.1,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"mistralai/mistral-medium-3": {
@@ -2534,6 +2805,16 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 32800,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
+		strengths: ["tool_use"],
+		contextComplexity: 3,
+		reliability: 1,
+		speed: 2,
+		artificialAnalysis: {
+			intelligenceIndex: 19.4,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"moonshotai/kimi-k2.5": {
@@ -2734,6 +3015,16 @@ export const openrouterModelConfig: ModelConfig = {
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["tool_use"],
+		contextComplexity: 3,
+		reliability: 1,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 7.4,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	},
 
@@ -3152,6 +3443,16 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.00005,
 		costPer1kOutputTokens: 0.00024,
+		strengths: ["tool_use"],
+		contextComplexity: 3,
+		reliability: 1,
+		speed: 5,
+		artificialAnalysis: {
+			intelligenceIndex: 23.8,
+			codingIndex: 30.4,
+			agenticIndex: 13.2,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"openai/gpt-oss-120b:free": {
@@ -3416,6 +3717,16 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 40960,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
+		strengths: ["tool_use"],
+		contextComplexity: 3,
+		reliability: 1,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 7,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"qwen/qwen3-235b-a22b-07-25": {
@@ -3436,6 +3747,16 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.00015,
 		costPer1kOutputTokens: 0.00085,
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 18.2,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"qwen/qwen3-235b-a22b-07-25:free": {
@@ -3456,6 +3777,16 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 131072,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 18.2,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"qwen/qwen3-235b-a22b-thinking-2507": {
@@ -3501,6 +3832,16 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 131072,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 10.9,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"qwen/qwen3-30b-a3b-instruct-2507": {
@@ -3567,6 +3908,16 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 40960,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
+		strengths: ["tool_use"],
+		contextComplexity: 3,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 6.8,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"qwen/qwen3-32b:free": {
@@ -3587,6 +3938,16 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 40960,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
+		strengths: ["tool_use"],
+		contextComplexity: 3,
+		reliability: 1,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 8.6,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"qwen/qwen3-4b:free": {
@@ -3607,6 +3968,15 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 40960,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
+		strengths: ["tool_use"],
+		contextComplexity: 3,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 6.8,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"qwen/qwen3-8b:free": {
@@ -3627,6 +3997,16 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 40960,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
+		strengths: ["tool_use"],
+		contextComplexity: 3,
+		reliability: 1,
+		speed: 2,
+		artificialAnalysis: {
+			intelligenceIndex: 5.1,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"qwen/qwen3-coder": {
@@ -3868,6 +4248,16 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 32768,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
+		strengths: ["tool_use"],
+		contextComplexity: 3,
+		reliability: 1,
+		speed: 2,
+		artificialAnalysis: {
+			intelligenceIndex: 13.4,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"rekaai/reka-flash-3": {
@@ -3921,6 +4311,15 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 32768,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
+		strengths: ["tool_use"],
+		contextComplexity: 3,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 3,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"sourceful/riverflow-v2-fast-preview": {
@@ -4036,6 +4435,16 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 256000,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 25.5,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"thudm/glm-z1-32b:free": {
@@ -4156,6 +4565,15 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 64000,
 		costPer1kInputTokens: 0.003,
 		costPer1kOutputTokens: 0.015,
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 33.3,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"x-ai/grok-4-fast": {
@@ -4176,6 +4594,15 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 30000,
 		costPer1kInputTokens: 0.0002,
 		costPer1kOutputTokens: 0.0005,
+		strengths: ["vision", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 16.5,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"x-ai/grok-4.1-fast": {
@@ -4196,6 +4623,15 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 30000,
 		costPer1kInputTokens: 0.0002,
 		costPer1kOutputTokens: 0.0005,
+		strengths: ["vision", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 16.9,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"x-ai/grok-code-fast-1": {
@@ -4216,6 +4652,15 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 10000,
 		costPer1kInputTokens: 0.0002,
 		costPer1kOutputTokens: 0.0015,
+		strengths: ["tool_use"],
+		contextComplexity: 3,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 21.6,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"xiaomi/mimo-v2-flash": {
@@ -4240,6 +4685,16 @@ export const openrouterModelConfig: ModelConfig = {
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 33.2,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	},
 
@@ -4336,6 +4791,16 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 16.5,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"z-ai/glm-4.5v": {
@@ -4426,6 +4891,16 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.0006,
 		costPer1kOutputTokens: 0.0019,
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 23,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"z-ai/glm-4.7": {
@@ -5348,6 +5823,16 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 24.5,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"arcee-ai/trinity-mini": {
@@ -5484,6 +5969,14 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 12000,
 		costPer1kInputTokens: 0.00028,
 		costPer1kOutputTokens: 0.0011,
+		contextComplexity: 2,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 9,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"baidu/ernie-4.5-vl-28b-a3b": {
@@ -5899,6 +6392,14 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		contextComplexity: 3,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 11,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"deepseek/deepseek-v3.2-exp": {
@@ -5993,6 +6494,16 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["tool_use"],
+		contextComplexity: 5,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 28.7,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"deepseek/deepseek-v4-pro": {
@@ -6069,6 +6580,15 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 8192,
 		costPer1kInputTokens: 0.000075,
 		costPer1kOutputTokens: 0.0003,
+		strengths: ["vision", "document", "audio", "video", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 8.8,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"google/gemini-2.5-flash-image": {
@@ -6090,6 +6610,25 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 8192,
 		costPer1kInputTokens: 0.0003,
 		costPer1kOutputTokens: 0.0025,
+		strengths: ["vision", "document", "image", "creative"],
+		contextComplexity: 3,
+		reliability: 4,
+		artificialAnalysis: {
+			intelligenceIndex: null,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: null,
+			mediaScores: [
+				{
+					key: "text_to_imageElo",
+					label: "Text-to-image arena",
+					value: 1159,
+					min: 800,
+					max: 1400,
+					confidenceInterval95: 8,
+				},
+			],
+		},
 	},
 
 	"google/gemini-2.5-pro-preview": {
@@ -6151,6 +6690,25 @@ export const openrouterModelConfig: ModelConfig = {
 			defaultEffort: "none",
 		},
 		knowledgeCutoffDate: "January 2025",
+		strengths: ["vision", "document", "image", "creative"],
+		contextComplexity: 3,
+		reliability: 4,
+		artificialAnalysis: {
+			intelligenceIndex: null,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: null,
+			mediaScores: [
+				{
+					key: "text_to_imageElo",
+					label: "Text-to-image arena",
+					value: 1219,
+					min: 800,
+					max: 1400,
+					confidenceInterval95: 9,
+				},
+			],
+		},
 	},
 
 	"google/gemini-3.1-flash-image-preview": {
@@ -6175,6 +6733,25 @@ export const openrouterModelConfig: ModelConfig = {
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["vision", "document", "image", "creative"],
+		contextComplexity: 3,
+		reliability: 5,
+		artificialAnalysis: {
+			intelligenceIndex: null,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: null,
+			mediaScores: [
+				{
+					key: "text_to_imageElo",
+					label: "Text-to-image arena",
+					value: 1254,
+					min: 800,
+					max: 1400,
+					confidenceInterval95: 9,
+				},
+			],
 		},
 	},
 
@@ -7237,6 +7814,16 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["tool_use"],
+		contextComplexity: 3,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 33.7,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"minimax/minimax-m2.7": {
@@ -7292,6 +7879,16 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.0004,
 		costPer1kOutputTokens: 0.002,
+		strengths: ["document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 2,
+		artificialAnalysis: {
+			intelligenceIndex: 12.4,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"mistralai/ministral-14b-2512": {
@@ -7604,6 +8201,16 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.002,
 		costPer1kOutputTokens: 0.006,
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 8.1,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"mistralai/voxtral-small-24b-2507": {
@@ -8049,6 +8656,16 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 4096,
 		costPer1kInputTokens: 0.01,
 		costPer1kOutputTokens: 0.03,
+		strengths: ["tool_use"],
+		contextComplexity: 3,
+		reliability: 1,
+		speed: 2,
+		artificialAnalysis: {
+			intelligenceIndex: 7.9,
+			codingIndex: 21.5,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"openai/gpt-4-turbo": {
@@ -9978,7 +10595,7 @@ export const openrouterModelConfig: ModelConfig = {
 		strengths: ["vision", "video", "document", "tool_use"],
 		contextComplexity: 4,
 		reliability: 1,
-		speed: 3,
+		speed: 2,
 		artificialAnalysis: {
 			intelligenceIndex: 32,
 			codingIndex: null,
@@ -10779,6 +11396,16 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["vision", "audio", "video", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 2,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 35,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"xiaomi/mimo-v2-pro": {
@@ -10803,6 +11430,16 @@ export const openrouterModelConfig: ModelConfig = {
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["tool_use"],
+		contextComplexity: 5,
+		reliability: 2,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 40.3,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	},
 
@@ -11244,6 +11881,16 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 2,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 42.8,
+			codingIndex: 56,
+			agenticIndex: 30.3,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 	"stepfun/step-3.7-flash": {
 		name: "Step 3.7 Flash",
@@ -11271,7 +11918,7 @@ export const openrouterModelConfig: ModelConfig = {
 		strengths: ["vision", "video", "document", "tool_use"],
 		contextComplexity: 4,
 		reliability: 1,
-		speed: 4,
+		speed: 5,
 		artificialAnalysis: {
 			intelligenceIndex: 29.7,
 			codingIndex: 37.3,
@@ -11515,6 +12162,15 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["vision", "document", "tool_use", "coding"],
+		contextComplexity: 5,
+		reliability: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 59.9,
+			codingIndex: 76.5,
+			agenticIndex: 52.8,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 	"moonshotai/kimi-k2.7-code": {
 		name: "Kimi K2.7 Code",
@@ -11640,6 +12296,25 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["vision", "document", "tool_use", "image", "creative"],
+		contextComplexity: 4,
+		reliability: 4,
+		artificialAnalysis: {
+			intelligenceIndex: null,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: null,
+			mediaScores: [
+				{
+					key: "text_to_imageElo",
+					label: "Text-to-image arena",
+					value: 1219,
+					min: 800,
+					max: 1400,
+					confidenceInterval95: 9,
+				},
+			],
+		},
 	},
 
 	"google/gemini-3.1-flash-image": {
@@ -11663,6 +12338,25 @@ export const openrouterModelConfig: ModelConfig = {
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["vision", "document", "image", "creative"],
+		contextComplexity: 3,
+		reliability: 5,
+		artificialAnalysis: {
+			intelligenceIndex: null,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: null,
+			mediaScores: [
+				{
+					key: "text_to_imageElo",
+					label: "Text-to-image arena",
+					value: 1254,
+					min: 800,
+					max: 1400,
+					confidenceInterval95: 9,
+				},
+			],
 		},
 	},
 	"poolside/laguna-m.1": {
