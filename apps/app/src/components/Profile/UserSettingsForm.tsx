@@ -49,6 +49,7 @@ function buildUserSettingsFormData(userSettings: UserSettings | null) {
 		s3vectors_region: userSettings?.s3vectors_region || "us-east-1",
 		memories_save_enabled: userSettings?.memories_save_enabled || false,
 		memories_chat_history_enabled: userSettings?.memories_chat_history_enabled || false,
+		temporary_chats_default: userSettings?.temporary_chats_default || false,
 		memory_provider: userSettings?.memory_provider || "built-in",
 		tracking_enabled: userSettings?.tracking_enabled ?? true,
 		transcription_provider: transcriptionSettings.transcription_provider,
@@ -207,6 +208,7 @@ export function UserSettingsForm({
 						s3vectors_region: formData.s3vectors_region,
 						memories_save_enabled: formData.memories_save_enabled,
 						memories_chat_history_enabled: formData.memories_chat_history_enabled,
+						temporary_chats_default: formData.temporary_chats_default,
 						memory_provider: formData.memory_provider,
 						tracking_enabled: formData.tracking_enabled,
 						transcription_provider: formData.transcription_provider,
@@ -673,6 +675,29 @@ export function UserSettingsForm({
 			</div>
 
 			<div className="space-y-4">
+				<div>
+					<label
+						htmlFor="temporary_chats_default"
+						className="block text-sm font-medium text-zinc-800 dark:text-zinc-200 mb-1"
+					>
+						Start chats as temporary by default
+					</label>
+					<Switch
+						id="temporary_chats_default"
+						checked={formData.temporary_chats_default}
+						onChange={(e) =>
+							updateFormData((prev) => ({
+								...prev,
+								temporary_chats_default: e.target.checked,
+							}))
+						}
+					/>
+					<p className="text-sm text-zinc-500 dark:text-zinc-400">
+						New chats start in local-only mode. Use the cloud toggle in chat to keep a specific
+						conversation.
+					</p>
+				</div>
+
 				<div>
 					<label
 						htmlFor="tracking_enabled"

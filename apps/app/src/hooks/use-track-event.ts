@@ -1,12 +1,12 @@
 import { ANALYTICS_EVENT_CATEGORIES } from "@assistant/schemas";
 import { usePostHog } from "posthog-js/react";
 import { useCallback } from "react";
-import { useAuthStatus } from "~/hooks/useAuth";
 import {
 	captureClientException,
 	trackClientEvent,
 	type AnalyticsEventProperties,
 } from "~/lib/analytics/client";
+import { useChatStore } from "~/state/stores/chatStore";
 
 export const EventCategory = ANALYTICS_EVENT_CATEGORIES;
 
@@ -20,7 +20,7 @@ export type TrackEventProps = {
 };
 
 export function useTrackEvent() {
-	const { isAuthenticated, user } = useAuthStatus();
+	const { isAuthenticated, user } = useChatStore();
 	const posthog = usePostHog();
 
 	const trackEvent = useCallback(

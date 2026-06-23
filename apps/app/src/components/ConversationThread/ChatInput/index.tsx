@@ -117,6 +117,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 			chatInput,
 			setChatInput,
 			chatMode,
+			isAuthenticationLoading,
 			selectedAgentId,
 			selectedAgentTokenPosition,
 			selectedAssistantAction,
@@ -264,6 +265,9 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 
 			if (e.key === "Enter" && !e.shiftKey) {
 				e.preventDefault();
+				if (isComposerSubmitDisabled) {
+					return;
+				}
 				submitSelectedAttachments();
 			}
 			if (e.key === "Enter" && e.shiftKey) {
@@ -492,6 +496,11 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 			(supportsToolCalls && (supportsCodeExecution || supportsSearchGrounding));
 		const canShowActionMenu = canUseProComposerActions || canShowToolMenu;
 		const shouldRenderInputControls = hideTextInput && controls;
+		const isComposerSubmitDisabled =
+			(!chatInput?.trim() && selectedAttachments.length === 0) ||
+			isLoading ||
+			isUploading ||
+			isAuthenticationLoading;
 
 		return (
 			<div
@@ -541,7 +550,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 												? (placeholder?.newConversation ?? "Ask me anything...")
 												: (placeholder?.followUp ?? "Ask follow-up questions...")
 										}
-										disabled={isRecording || isTranscribing || isLoading}
+										disabled={isRecording || isTranscribing || isLoading || isAuthenticationLoading}
 										ariaLabel="Message input"
 										ariaDescribedBy="message-input-help"
 									/>
@@ -599,13 +608,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 												<Button
 													type="submit"
 													onClick={submitSelectedAttachments}
-													disabled={
-														!!(
-															(!chatInput?.trim() && selectedAttachments.length === 0) ||
-															isLoading ||
-															isUploading
-														)
-													}
+													disabled={isComposerSubmitDisabled}
 													className="cursor-pointer p-2.5 bg-black hover:bg-zinc-800 dark:bg-off-white dark:hover:bg-zinc-200 rounded-md text-white dark:text-black shadow-sm disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
 													title="Send message"
 													aria-label="Send message"

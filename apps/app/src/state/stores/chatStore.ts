@@ -8,7 +8,7 @@ import { persist } from "zustand/middleware";
 
 import { apiKeyService } from "~/lib/api/api-key";
 import { createConversationId } from "~/lib/conversations";
-import type { ChatMode, ChatSettings } from "~/types";
+import type { ChatMode, ChatSettings, User, UserSettings } from "~/types";
 
 const defaultSettings: ChatSettings = {
 	temperature: 0.7,
@@ -41,6 +41,9 @@ export interface ChatStore {
 
 	hasApiKey: boolean;
 	setHasApiKey: (hasApiKey: boolean) => void;
+	user: User | null;
+	userSettings: UserSettings | null;
+	hasHydratedUserConfiguration: boolean;
 	isAuthenticated: boolean;
 	setIsAuthenticated: (isAuthenticated: boolean) => void;
 	isAuthenticationLoading: boolean;
@@ -50,6 +53,8 @@ export interface ChatStore {
 
 	localOnlyMode: boolean;
 	setLocalOnlyMode: (localOnly: boolean) => void;
+	temporaryChatsDefault: boolean;
+	setTemporaryChatsDefault: (temporaryChatsDefault: boolean) => void;
 	chatMode: ChatMode;
 	setChatMode: (mode: ChatMode) => void;
 	homeChatMode: HomeChatModeId;
@@ -73,6 +78,13 @@ export interface ChatStore {
 	chatInput: string;
 	setChatInput: (query: string) => void;
 
+	setAuthenticatedUserConfiguration: (configuration: {
+		hasApiKey: boolean;
+		user: User | null;
+		userSettings: UserSettings | null;
+	}) => void;
+	setUserSettings: (settings: UserSettings | null) => void;
+	clearAuthenticatedUserConfiguration: () => void;
 	initializeStore: (completionId?: string) => Promise<void>;
 }
 
@@ -82,11 +94,21 @@ export const useChatStore = create<ChatStore>()(
 			currentConversationId: undefined,
 			setCurrentConversationId: (id) => set({ currentConversationId: id }),
 			startNewConversation: (id?: string) =>
-				set({ currentConversationId: id || createConversationId() }),
-			clearCurrentConversation: () => set({ currentConversationId: undefined }),
+				set((state) => ({
+					currentConversationId: id || createConversationId(),
+					localOnlyMode: state.temporaryChatsDefault,
+				})),
+			clearCurrentConversation: () =>
+				set((state) => ({
+					currentConversationId: undefined,
+					localOnlyMode: state.temporaryChatsDefault,
+				})),
 
 			hasApiKey: false,
 			setHasApiKey: (hasApiKey) => set({ hasApiKey }),
+			user: null,
+			userSettings: null,
+			hasHydratedUserConfiguration: false,
 			isAuthenticated: false,
 			setIsAuthenticated: (isAuthenticated) => set({ isAuthenticated }),
 			isAuthenticationLoading: true,
@@ -96,6 +118,8 @@ export const useChatStore = create<ChatStore>()(
 
 			localOnlyMode: false,
 			setLocalOnlyMode: (localOnly) => set({ localOnlyMode: localOnly }),
+			temporaryChatsDefault: false,
+			setTemporaryChatsDefault: (temporaryChatsDefault) => set({ temporaryChatsDefault }),
 			chatMode: "remote" as ChatMode,
 			setChatMode: (mode) => set({ chatMode: mode }),
 			homeChatMode: "chat",
@@ -118,6 +142,40 @@ export const useChatStore = create<ChatStore>()(
 			setChatInput: (query) => set({ chatInput: query }),
 			showSearch: false,
 			setShowSearch: (showSearch) => set({ showSearch }),
+
+			setAuthenticatedUserConfiguration: ({ hasApiKey, user, userSettings }) =>
+				set((state) => {
+					const temporaryChatsDefault = Boolean(userSettings?.temporary_chats_default);
+
+					return {
+						hasApiKey,
+						user,
+						userSettings,
+						hasHydratedUserConfiguration: true,
+						isAuthenticated: true,
+						isPro: user?.plan_id === "pro",
+						localOnlyMode:
+							!state.hasHydratedUserConfiguration && !state.currentConversationId
+								? temporaryChatsDefault
+								: state.localOnlyMode,
+						temporaryChatsDefault,
+					};
+				}),
+			setUserSettings: (userSettings) =>
+				set({
+					userSettings,
+					temporaryChatsDefault: Boolean(userSettings?.temporary_chats_default),
+				}),
+			clearAuthenticatedUserConfiguration: () =>
+				set({
+					hasApiKey: false,
+					user: null,
+					userSettings: null,
+					hasHydratedUserConfiguration: false,
+					isAuthenticated: false,
+					isPro: false,
+					temporaryChatsDefault: false,
+				}),
 
 			initializeStore: async (completionId?: string) => {
 				const apiKey = await apiKeyService.getApiKey();

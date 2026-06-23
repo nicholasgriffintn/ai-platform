@@ -1,0 +1,1 @@
+ALTER TABLE `user_settings` ADD `temporary_chats_default` integer DEFAULT false;

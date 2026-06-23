@@ -1,11 +1,11 @@
 import { usePostHog } from "posthog-js/react";
 import { useEffect } from "react";
 
-import { useAuthStatus } from "~/hooks/useAuth";
 import { syncAnalyticsIdentity } from "~/lib/analytics/client";
+import { useChatStore } from "~/state/stores/chatStore";
 
 export function useAnalyticsIdentity() {
-	const { isAuthenticated, user } = useAuthStatus();
+	const { isAuthenticated, user } = useChatStore();
 	const posthog = usePostHog();
 
 	useEffect(() => {
