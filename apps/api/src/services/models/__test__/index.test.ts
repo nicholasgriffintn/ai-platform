@@ -4,6 +4,7 @@ import type { ModelConfig, ModelConfigItem } from "@assistant/schemas";
 
 import {
 	getModelDetails,
+	listArtificialAnalysisModels,
 	listStrengths,
 	listModalities,
 	listModels,
@@ -13,6 +14,10 @@ import {
 
 type ModelsLib = typeof import("~/lib/providers/models");
 
+const repositoryMocks = vi.hoisted(() => ({
+	listPage: vi.fn(),
+}));
+
 vi.mock("~/lib/providers/models", () => ({
 	getModels: vi.fn(),
 	filterModelsForUserAccess: vi.fn(),
@@ -21,6 +26,16 @@ vi.mock("~/lib/providers/models", () => ({
 	getModelConfig: vi.fn(),
 	getAvailableStrengths: vi.fn().mockReturnValue(["chat", "completion", "embedding"]),
 	availableModalities: ["text", "image", "audio"],
+}));
+
+vi.mock("~/repositories", () => ({
+	RepositoryManager: {
+		getInstance: vi.fn(() => ({
+			artificialAnalysis: {
+				listPage: repositoryMocks.listPage,
+			},
+		})),
+	},
 }));
 
 describe("Models Service", () => {
@@ -39,6 +54,55 @@ describe("Models Service", () => {
 		mockGetModelsByCapability = vi.mocked(modelsLib.getModelsByCapability);
 		mockGetModelsByModality = vi.mocked(modelsLib.getModelsByModality);
 		mockGetModelConfig = vi.mocked(modelsLib.getModelConfig);
+	});
+
+	describe("listArtificialAnalysisModels", () => {
+		it("returns a paginated Artificial Analysis response with attribution", async () => {
+			repositoryMocks.listPage.mockResolvedValue({
+				models: [
+					{
+						id: "model-1",
+						name: "Model 1",
+						evaluations: {},
+						pricing: {},
+						source: "artificial_analysis",
+						source_url: "https://artificialanalysis.ai/",
+						ingested_at: "2026-06-23T10:00:00.000Z",
+					},
+				],
+				total: 42,
+				page: 2,
+				limit: 10,
+				totalPages: 5,
+			});
+
+			const result = await listArtificialAnalysisModels({} as any, { page: 2, limit: 10 });
+
+			expect(repositoryMocks.listPage).toHaveBeenCalledWith({ page: 2, limit: 10 });
+			expect(result).toEqual({
+				attribution: {
+					label: "Artificial Analysis",
+					url: "https://artificialanalysis.ai/",
+				},
+				models: [
+					{
+						id: "model-1",
+						name: "Model 1",
+						evaluations: {},
+						pricing: {},
+						source: "artificial_analysis",
+						source_url: "https://artificialanalysis.ai/",
+						ingested_at: "2026-06-23T10:00:00.000Z",
+					},
+				],
+				pagination: {
+					total: 42,
+					page: 2,
+					limit: 10,
+					totalPages: 5,
+				},
+			});
+		});
 	});
 
 	describe("listModels", () => {

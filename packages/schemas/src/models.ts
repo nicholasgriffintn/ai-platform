@@ -228,6 +228,17 @@ export const artificialAnalysisModelsResponseSchema = z.object({
 		url: z.literal("https://artificialanalysis.ai/"),
 	}),
 	models: z.array(artificialAnalysisModelSchema),
+	pagination: z.object({
+		total: z.number(),
+		page: z.number(),
+		limit: z.number(),
+		totalPages: z.number(),
+	}),
+});
+
+export const artificialAnalysisModelsQuerySchema = z.object({
+	page: z.coerce.number().int().min(1).optional().default(1),
+	limit: z.coerce.number().int().min(1).max(100).optional().default(25),
 });
 
 export const capabilitiesResponseSchema = z.object({
@@ -249,6 +260,7 @@ export type ModelConfigItem = z.infer<typeof modelConfigItemSchema>;
 export type ModelConfig = Record<string, ModelConfigItem>;
 export type ArtificialAnalysisScores = z.infer<typeof artificialAnalysisScoresSchema>;
 export type ArtificialAnalysisModel = z.infer<typeof artificialAnalysisModelSchema>;
+export type ArtificialAnalysisModelsQuery = z.infer<typeof artificialAnalysisModelsQuerySchema>;
 export type InputSchemaInputFieldType = z.infer<typeof inputSchemaFieldTypeSchema>;
 export type InputSchemaInputFieldDescriptor = z.infer<typeof inputSchemaFieldDescriptorSchema>;
 export type InputSchemaInputSchemaDescriptor = z.infer<typeof inputSchemaDescriptorSchema>;

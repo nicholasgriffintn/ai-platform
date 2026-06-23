@@ -4,6 +4,7 @@ import { Hono } from "hono";
 import {
 	capabilitiesResponseSchema,
 	capabilityParamsSchema,
+	artificialAnalysisModelsQuerySchema,
 	artificialAnalysisModelsResponseSchema,
 	modelParamsSchema,
 	modelResponseSchema,
@@ -156,6 +157,7 @@ addRoute(app, "get", "/artificial-analysis", {
 	summary: "List cached Artificial Analysis model data",
 	description:
 		"Returns cached Artificial Analysis language model benchmark, pricing, and performance data with source attribution.",
+	querySchema: artificialAnalysisModelsQuerySchema,
 	responses: {
 		200: {
 			description: "Cached Artificial Analysis model data",
@@ -163,7 +165,8 @@ addRoute(app, "get", "/artificial-analysis", {
 		},
 		500: { description: "Server error", schema: errorResponseSchema },
 	},
-	handler: async ({ serviceContext }) => listArtificialAnalysisModels(serviceContext.env),
+	handler: async ({ query, serviceContext }) =>
+		listArtificialAnalysisModels(serviceContext.env, query),
 });
 
 addRoute(app, "get", "/:id", {

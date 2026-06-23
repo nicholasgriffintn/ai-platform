@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 
-import { artificialAnalysisModelsResponseSchema } from "./models";
+import {
+	artificialAnalysisModelsQuerySchema,
+	artificialAnalysisModelsResponseSchema,
+} from "./models";
 
 describe("model schemas", () => {
 	it("accepts the public Artificial Analysis route response shape", () => {
@@ -26,7 +29,25 @@ describe("model schemas", () => {
 						ingested_at: "2026-06-23T10:00:00.000Z",
 					},
 				],
+				pagination: {
+					total: 1,
+					page: 1,
+					limit: 25,
+					totalPages: 1,
+				},
 			}),
 		).not.toThrow();
+	});
+
+	it("normalises Artificial Analysis route pagination query parameters", () => {
+		expect(
+			artificialAnalysisModelsQuerySchema.parse({
+				page: "2",
+				limit: "50",
+			}),
+		).toEqual({
+			page: 2,
+			limit: 50,
+		});
 	});
 });

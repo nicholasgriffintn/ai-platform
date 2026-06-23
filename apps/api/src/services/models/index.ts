@@ -116,14 +116,23 @@ export async function getModelDetails(env: IEnv, id: string, userId?: number) {
 	};
 }
 
-export async function listArtificialAnalysisModels(env: IEnv) {
-	const models = await RepositoryManager.getInstance(env).artificialAnalysis.listAll();
+export async function listArtificialAnalysisModels(
+	env: IEnv,
+	options: { page: number; limit: number },
+) {
+	const result = await RepositoryManager.getInstance(env).artificialAnalysis.listPage(options);
 
 	return {
 		attribution: {
 			label: "Artificial Analysis",
 			url: "https://artificialanalysis.ai/",
 		},
-		models,
+		models: result.models,
+		pagination: {
+			total: result.total,
+			page: result.page,
+			limit: result.limit,
+			totalPages: result.totalPages,
+		},
 	};
 }

@@ -2,6 +2,7 @@ import type {
 	ArtificialAnalysisModelRecord,
 	ArtificialAnalysisScoreResult,
 } from "~/services/model-analysis/artificialAnalysis";
+import { PaginationHelper } from "~/lib/database/PaginationHelper";
 import { parseJsonRecord, parseJsonStringArray } from "~/utils/json";
 
 import { BaseRepository } from "./BaseRepository";
@@ -105,6 +106,34 @@ export class ArtificialAnalysisRepository extends BaseRepository {
 			`SELECT * FROM artificial_analysis_models ORDER BY name ASC`,
 		);
 		return rows.map(parseModelRow);
+	}
+
+	public async listPage({ page, limit }: { page: number; limit: number }): Promise<{
+		models: ArtificialAnalysisModelRecord[];
+		total: number;
+		page: number;
+		limit: number;
+		totalPages: number;
+	}> {
+		const { limit: safeLimit, offset } = PaginationHelper.calculate(page, limit);
+		const count = await this.runQuery<{ total: number }>(
+			`SELECT COUNT(*) as total FROM artificial_analysis_models`,
+			[],
+			true,
+		);
+		const total = Number(count?.total ?? 0);
+		const rows = await this.runQuery<ArtificialAnalysisModelRow>(
+			`SELECT * FROM artificial_analysis_models ORDER BY name ASC LIMIT ? OFFSET ?`,
+			[safeLimit, offset],
+		);
+
+		return {
+			models: rows.map(parseModelRow),
+			total,
+			page: Math.max(1, page),
+			limit: safeLimit,
+			totalPages: Math.ceil(total / safeLimit),
+		};
 	}
 
 	public async updateDerivedScores(
