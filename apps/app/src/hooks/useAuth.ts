@@ -7,47 +7,42 @@ import type { UserSettings } from "~/types";
 
 export const AUTH_QUERY_KEYS = {
 	authStatus: ["auth", "status"],
-	user: ["auth", "user"],
-	userSettings: ["auth", "userSettings"],
 };
 
 export function useAuthStatus() {
-	const { setHasApiKey, setIsAuthenticated, setIsAuthenticationLoading, setIsPro } = useChatStore();
+	const {
+		isAuthenticated,
+		isAuthenticationLoading,
+		user,
+		userSettings,
+		setIsAuthenticationLoading,
+		setAuthenticatedUserConfiguration,
+		setUserSettings,
+		clearAuthenticatedUserConfiguration,
+	} = useChatStore();
 	const queryClient = useQueryClient();
 
-	const { data: isAuthenticated, isLoading: isAuthLoading } = useQuery({
+	const { isLoading: isAuthLoading } = useQuery({
 		queryKey: AUTH_QUERY_KEYS.authStatus,
 		queryFn: async () => {
 			const isAuth = await authService.checkAuthStatus();
-			setIsAuthenticated(isAuth);
 
 			if (isAuth) {
 				const token = await authService.getToken();
-				setHasApiKey(!!token);
-
 				const user = authService.getUser();
-				setIsPro(user?.plan_id === "pro");
+				const userSettings = authService.getUserSettings();
+				setAuthenticatedUserConfiguration({
+					hasApiKey: !!token,
+					user,
+					userSettings,
+				});
 			} else {
-				setIsPro(false);
+				clearAuthenticatedUserConfiguration();
 			}
 			setIsAuthenticationLoading(false);
 
 			return isAuth;
 		},
-		staleTime: 1000 * 60 * 5, // 5 minutes
-	});
-
-	const { data: user, isLoading: isUserLoading } = useQuery({
-		queryKey: AUTH_QUERY_KEYS.user,
-		queryFn: () => authService.getUser(),
-		enabled: !!isAuthenticated,
-		staleTime: 1000 * 60 * 5, // 5 minutes
-	});
-
-	const { data: userSettings, isLoading: isUserSettingsLoading } = useQuery({
-		queryKey: AUTH_QUERY_KEYS.userSettings,
-		queryFn: () => authService.getUserSettings(),
-		enabled: !!isAuthenticated,
 		staleTime: 1000 * 60 * 5, // 5 minutes
 	});
 
@@ -61,8 +56,7 @@ export function useAuthStatus() {
 			setIsAuthenticationLoading(true);
 			const success = await authService.logout();
 			if (success) {
-				setIsAuthenticated(false);
-				setHasApiKey(false);
+				clearAuthenticatedUserConfiguration();
 				setIsAuthenticationLoading(false);
 				// Clear usage limits when user logs out
 				useUsageStore.getState().setUsageLimits(null);
@@ -72,7 +66,6 @@ export function useAuthStatus() {
 		},
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: AUTH_QUERY_KEYS.authStatus });
-			queryClient.invalidateQueries({ queryKey: AUTH_QUERY_KEYS.user });
 		},
 	});
 
@@ -86,14 +79,14 @@ export function useAuthStatus() {
 			return true;
 		},
 		onSuccess: async () => {
-			queryClient.setQueryData(AUTH_QUERY_KEYS.userSettings, authService.getUserSettings());
-			await queryClient.invalidateQueries({ queryKey: AUTH_QUERY_KEYS.userSettings });
+			setUserSettings(authService.getUserSettings());
+			await queryClient.invalidateQueries({ queryKey: AUTH_QUERY_KEYS.authStatus });
 		},
 	});
 
 	return {
-		isAuthenticated: !!isAuthenticated,
-		isLoading: isAuthLoading || isUserLoading || isUserSettingsLoading,
+		isAuthenticated,
+		isLoading: isAuthenticationLoading || isAuthLoading,
 		user,
 		userSettings,
 		loginWithGithub,

@@ -158,4 +158,29 @@ describe("UserSettingsForm", () => {
 
 		expect(screen.getByLabelText("Nickname")).toHaveValue("Updated Nicholas");
 	});
+
+	it("saves temporary chats as the default for signed-in users", async () => {
+		mockUpdateUserSettings.mockResolvedValue(true);
+
+		render(
+			<UserSettingsForm
+				isAuthenticated={true}
+				isPro={true}
+				userSettings={makeUserSettings({
+					temporary_chats_default: false,
+				})}
+			/>,
+		);
+
+		fireEvent.click(screen.getByLabelText("Start chats as temporary by default"));
+		fireEvent.click(screen.getByRole("button", { name: "Save Settings" }));
+
+		await waitFor(() => {
+			expect(mockUpdateUserSettings).toHaveBeenCalledWith(
+				expect.objectContaining({
+					temporary_chats_default: true,
+				}),
+			);
+		});
+	});
 });

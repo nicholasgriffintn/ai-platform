@@ -241,6 +241,12 @@ export class UserSettingsRepository extends BaseRepository {
 						? 1
 						: 0
 					: null,
+			temporary_chats_default:
+				settings.temporary_chats_default !== undefined
+					? settings.temporary_chats_default
+						? 1
+						: 0
+					: null,
 			memory_provider: settings.memory_provider ?? null,
 			transcription_provider: settings.transcription_provider ?? null,
 			transcription_model: settings.transcription_model ?? null,
@@ -292,6 +298,7 @@ export class UserSettingsRepository extends BaseRepository {
 			"s3vectors_region",
 			"memories_save_enabled",
 			"memories_chat_history_enabled",
+			"temporary_chats_default",
 			"memory_provider",
 			"transcription_provider",
 			"transcription_model",
@@ -317,6 +324,7 @@ export class UserSettingsRepository extends BaseRepository {
 			guardrails_enabled: Boolean(result.guardrails_enabled),
 			memories_save_enabled: Boolean(result.memories_save_enabled),
 			memories_chat_history_enabled: Boolean(result.memories_chat_history_enabled),
+			temporary_chats_default: Boolean(result.temporary_chats_default),
 		} as IUserSettings;
 	}
 

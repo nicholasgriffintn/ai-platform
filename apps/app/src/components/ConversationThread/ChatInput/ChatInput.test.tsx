@@ -20,6 +20,7 @@ const store = {
 	chatInput: "",
 	chatMode: "remote",
 	currentConversationId: undefined,
+	isAuthenticationLoading: false,
 	isPro: false,
 	model: "gpt-realtime-2" as string | null,
 	selectedAgentId: null as string | null,
@@ -142,6 +143,7 @@ describe("ChatInput", () => {
 		mocks.uploadComposerAttachment.mockReset();
 		store.chatInput = "";
 		store.currentConversationId = undefined;
+		store.isAuthenticationLoading = false;
 		store.isPro = false;
 		store.model = "gpt-realtime-2";
 		store.selectedAgentId = null;
@@ -357,5 +359,30 @@ describe("ChatInput", () => {
 
 		expect(screen.getByAltText("Selected")).toHaveAttribute("src", privateAssetUrl);
 		expect(screen.getByAltText("Selected")).toHaveAttribute("crossorigin", "use-credentials");
+	});
+
+	it("does not submit while user configuration is still loading", () => {
+		const handleSubmit = vi.fn();
+		store.chatInput = "Do this later";
+		store.isAuthenticationLoading = true;
+
+		render(
+			<ChatInput
+				controller={new AbortController()}
+				handleSubmit={handleSubmit}
+				isLoading={false}
+				onTranscribe={vi.fn()}
+				streamStarted={false}
+			/>,
+		);
+
+		expect(screen.getByRole("button", { name: "Send message" })).toBeDisabled();
+
+		fireEvent.keyDown(screen.getByLabelText("Message input"), {
+			key: "Enter",
+			shiftKey: false,
+		});
+
+		expect(handleSubmit).not.toHaveBeenCalled();
 	});
 });

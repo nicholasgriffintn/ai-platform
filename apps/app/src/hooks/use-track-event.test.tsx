@@ -10,17 +10,15 @@ vi.mock("posthog-js/react", () => ({
 	usePostHog: () => ({ capture: posthogCapture }),
 }));
 
-const authStatus = vi.hoisted(() => ({
+const chatStore = vi.hoisted(() => ({
 	value: {
 		isAuthenticated: true,
-		isLoading: false,
 		user: { id: "123" },
-		userSettings: { tracking_enabled: true },
 	},
 }));
 
-vi.mock("~/hooks/useAuth", () => ({
-	useAuthStatus: () => authStatus.value,
+vi.mock("~/state/stores/chatStore", () => ({
+	useChatStore: () => chatStore.value,
 }));
 
 describe("useTrackEvent", () => {
@@ -28,20 +26,16 @@ describe("useTrackEvent", () => {
 		posthogCapture.mockClear();
 		beaconTrackEvent.mockClear();
 		window.Beacon = { trackEvent: beaconTrackEvent } as any;
-		authStatus.value = {
+		chatStore.value = {
 			isAuthenticated: true,
-			isLoading: false,
 			user: { id: "123" },
-			userSettings: { tracking_enabled: true },
 		};
 	});
 
 	it("still emits product events when prompt tracking is disabled", () => {
-		authStatus.value = {
+		chatStore.value = {
 			isAuthenticated: true,
-			isLoading: false,
 			user: { id: "123" },
-			userSettings: { tracking_enabled: false },
 		};
 
 		const { result } = renderHook(() => useTrackEvent());

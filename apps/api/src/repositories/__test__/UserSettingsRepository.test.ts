@@ -174,4 +174,17 @@ describe("UserSettingsRepository", () => {
 		expect(executeRunSpy.mock.calls[0]?.[0]).not.toContain("memory_provider");
 		expect(executeRunSpy.mock.calls[0]?.[1]).not.toContain("built-in");
 	});
+
+	it("persists temporary chat defaults as a boolean setting", async () => {
+		const repo = new UserSettingsRepository({ DB: {} as any } as IEnv);
+		const executeRunSpy = vi
+			.spyOn(repo as any, "executeRun")
+			.mockResolvedValue({ success: true } as any);
+
+		await repo.updateUserSettings(42, { temporary_chats_default: true });
+
+		expect(executeRunSpy).toHaveBeenCalledTimes(1);
+		expect(executeRunSpy.mock.calls[0]?.[0]).toContain("temporary_chats_default = ?");
+		expect(executeRunSpy.mock.calls[0]?.[1]).toContain(1);
+	});
 });
