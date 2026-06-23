@@ -69,12 +69,18 @@ export const huggingfaceModelConfig: ModelConfig = {
 		maxTokens: 66536,
 		costPer1kInputTokens: 0.002,
 		costPer1kOutputTokens: 0.002,
-		strengths: ["coding", "analysis", "reasoning"],
-		contextComplexity: 5,
-		reliability: 4,
-		speed: 2,
+		strengths: ["coding", "analysis", "reasoning", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 3,
 		includedInRouter: false,
 		supportsArtifacts: true,
+		artificialAnalysis: {
+			intelligenceIndex: 18,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 	"Qwen/Qwen3-235B-A22B-Thinking-2507": {
 		name: "Qwen3-235B-A22B-Thinking-2507",
@@ -123,15 +129,21 @@ export const huggingfaceModelConfig: ModelConfig = {
 		maxTokens: 98304,
 		costPer1kInputTokens: 0.0006,
 		costPer1kOutputTokens: 0.0022,
-		strengths: ["reasoning", "analysis", "multilingual"],
-		contextComplexity: 5,
-		reliability: 4,
+		strengths: ["reasoning", "analysis", "multilingual", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
 		speed: 3,
 		includedInRouter: false,
 		supportsArtifacts: true,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		artificialAnalysis: {
+			intelligenceIndex: 19.5,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	},
 	"zai-org/GLM-4.5-Air": {
@@ -152,15 +164,21 @@ export const huggingfaceModelConfig: ModelConfig = {
 		maxTokens: 98304,
 		costPer1kInputTokens: 0.00013,
 		costPer1kOutputTokens: 0.00085,
-		strengths: ["reasoning", "analysis", "multilingual"],
+		strengths: ["reasoning", "analysis", "multilingual", "tool_use"],
 		contextComplexity: 4,
-		reliability: 4,
-		speed: 4,
+		reliability: 1,
+		speed: 3,
 		includedInRouter: false,
 		supportsArtifacts: true,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		artificialAnalysis: {
+			intelligenceIndex: 16.5,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	},
 	"deepseek-ai/DeepSeek-V3.2": {
@@ -184,6 +202,15 @@ export const huggingfaceModelConfig: ModelConfig = {
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 24.7,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	},
 
@@ -209,6 +236,16 @@ export const huggingfaceModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 31.4,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"moonshotai/Kimi-K2-Thinking": {
@@ -233,6 +270,16 @@ export const huggingfaceModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 32.7,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"moonshotai/Kimi-K2.5": {
@@ -256,6 +303,16 @@ export const huggingfaceModelConfig: ModelConfig = {
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["vision", "video", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 29.4,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	},
 
@@ -317,6 +374,16 @@ export const huggingfaceModelConfig: ModelConfig = {
 		maxTokens: 66536,
 		costPer1kInputTokens: 0.00025,
 		costPer1kOutputTokens: 0.001,
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 13.7,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"Qwen/Qwen3-Next-80B-A3B-Thinking": {
@@ -361,6 +428,16 @@ export const huggingfaceModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["tool_use"],
+		contextComplexity: 3,
+		reliability: 1,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 33.2,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"zai-org/GLM-4.7": {
@@ -384,6 +461,16 @@ export const huggingfaceModelConfig: ModelConfig = {
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 26.6,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	},
 
@@ -409,6 +496,16 @@ export const huggingfaceModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 15.5,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"zai-org/GLM-5": {
@@ -431,6 +528,16 @@ export const huggingfaceModelConfig: ModelConfig = {
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 32.4,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	},
 	"deepseek-ai/DeepSeek-V4-Pro": {
@@ -456,6 +563,16 @@ export const huggingfaceModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["tool_use"],
+		contextComplexity: 5,
+		reliability: 1,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 31.2,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"MiniMaxAI/MiniMax-M2.5": {
@@ -478,6 +595,16 @@ export const huggingfaceModelConfig: ModelConfig = {
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 33.7,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	},
 
@@ -503,6 +630,16 @@ export const huggingfaceModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 2,
+		speed: 2,
+		artificialAnalysis: {
+			intelligenceIndex: 38.1,
+			codingIndex: 52.6,
+			agenticIndex: 25.6,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"moonshotai/Kimi-K2.6": {
@@ -527,6 +664,16 @@ export const huggingfaceModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["vision", "video", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 2,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 42.8,
+			codingIndex: 56,
+			agenticIndex: 30.3,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"Qwen/Qwen3-Coder-Next": {
@@ -547,6 +694,16 @@ export const huggingfaceModelConfig: ModelConfig = {
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.0002,
 		costPer1kOutputTokens: 0.0015,
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 21.2,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"Qwen/Qwen3.5-397B-A17B": {
@@ -571,6 +728,16 @@ export const huggingfaceModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 32,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"zai-org/GLM-5.1": {
@@ -593,6 +760,16 @@ export const huggingfaceModelConfig: ModelConfig = {
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 2,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 35.4,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	},
 	"deepseek-ai/DeepSeek-R1": {
@@ -618,6 +795,15 @@ export const huggingfaceModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["tool_use"],
+		contextComplexity: 3,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 12.6,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"deepseek-ai/DeepSeek-V4-Flash": {
@@ -642,6 +828,16 @@ export const huggingfaceModelConfig: ModelConfig = {
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["tool_use"],
+		contextComplexity: 5,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 28.7,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	},
 
@@ -735,6 +931,16 @@ export const huggingfaceModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 28.3,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"MiniMaxAI/MiniMax-M3": {
@@ -758,6 +964,16 @@ export const huggingfaceModelConfig: ModelConfig = {
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 2,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 44.4,
+			codingIndex: 58.6,
+			agenticIndex: 35.4,
+			intelligenceIndexVersion: 4.1,
 		},
 	},
 
@@ -784,6 +1000,16 @@ export const huggingfaceModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["coding", "vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 2,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 41.9,
+			codingIndex: 60.8,
+			agenticIndex: 29.6,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"Qwen/Qwen3-235B-A22B": {
@@ -808,6 +1034,16 @@ export const huggingfaceModelConfig: ModelConfig = {
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["tool_use"],
+		contextComplexity: 3,
+		reliability: 1,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 10.9,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	},
 
@@ -834,6 +1070,16 @@ export const huggingfaceModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["tool_use"],
+		contextComplexity: 3,
+		reliability: 1,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 8.6,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"Qwen/Qwen3-Coder-30B-A3B-Instruct": {
@@ -855,6 +1101,16 @@ export const huggingfaceModelConfig: ModelConfig = {
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.00007,
 		costPer1kOutputTokens: 0.00026,
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 13.6,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"Qwen/Qwen3.5-122B-A10B": {
@@ -878,6 +1134,16 @@ export const huggingfaceModelConfig: ModelConfig = {
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 28.1,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	},
 
@@ -903,6 +1169,16 @@ export const huggingfaceModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 29.3,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"Qwen/Qwen3.5-35B-A3B": {
@@ -926,6 +1202,16 @@ export const huggingfaceModelConfig: ModelConfig = {
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 23.4,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	},
 
@@ -951,6 +1237,15 @@ export const huggingfaceModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 20.3,
+			codingIndex: 23.5,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"Qwen/Qwen3.6-35B-A3B": {
@@ -974,6 +1269,16 @@ export const huggingfaceModelConfig: ModelConfig = {
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 24.2,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	},
 
@@ -999,6 +1304,16 @@ export const huggingfaceModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 25.5,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"zai-org/GLM-4.5V": {
@@ -1022,6 +1337,16 @@ export const huggingfaceModelConfig: ModelConfig = {
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 3,
+		reliability: 1,
+		speed: 2,
+		artificialAnalysis: {
+			intelligenceIndex: 7,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	},
 
@@ -1047,6 +1372,16 @@ export const huggingfaceModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 23,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"zai-org/GLM-5.2": {
@@ -1070,6 +1405,16 @@ export const huggingfaceModelConfig: ModelConfig = {
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["coding", "tool_use"],
+		contextComplexity: 4,
+		reliability: 3,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 51.1,
+			codingIndex: 68.8,
+			agenticIndex: 43.1,
+			intelligenceIndexVersion: 4.1,
 		},
 	},
 };

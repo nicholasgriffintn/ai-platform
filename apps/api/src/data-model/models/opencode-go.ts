@@ -26,6 +26,16 @@ export const opencodeGoModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["tool_use"],
+		contextComplexity: 5,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 28.7,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("deepseek-v4-pro", PROVIDER, {
@@ -50,6 +60,16 @@ export const opencodeGoModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["tool_use"],
+		contextComplexity: 5,
+		reliability: 1,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 31.2,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("glm-5.1", PROVIDER, {
@@ -72,6 +92,16 @@ export const opencodeGoModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 2,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 35.4,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	}),
 
@@ -96,6 +126,16 @@ export const opencodeGoModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["vision", "video", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 2,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 42.8,
+			codingIndex: 56,
+			agenticIndex: 30.3,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("mimo-v2.5", PROVIDER, {
@@ -118,6 +158,16 @@ export const opencodeGoModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["vision", "audio", "video", "document", "tool_use"],
+		contextComplexity: 5,
+		reliability: 2,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 40.1,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	}),
 
@@ -142,6 +192,16 @@ export const opencodeGoModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["coding", "document", "tool_use"],
+		contextComplexity: 5,
+		reliability: 2,
+		speed: 2,
+		artificialAnalysis: {
+			intelligenceIndex: 42.2,
+			codingIndex: 60.2,
+			agenticIndex: 29.1,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("minimax-m2.7", PROVIDER, {
@@ -164,6 +224,16 @@ export const opencodeGoModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 2,
+		speed: 2,
+		artificialAnalysis: {
+			intelligenceIndex: 38.1,
+			codingIndex: 52.6,
+			agenticIndex: 25.6,
+			intelligenceIndexVersion: 4.1,
 		},
 	}),
 
@@ -188,6 +258,16 @@ export const opencodeGoModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["vision", "video", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 2,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 39.6,
+			codingIndex: 54.5,
+			agenticIndex: 27.6,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("qwen3.7-max", PROVIDER, {
@@ -209,6 +289,16 @@ export const opencodeGoModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["coding", "tool_use"],
+		contextComplexity: 4,
+		reliability: 2,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 46,
+			codingIndex: 66,
+			agenticIndex: 30.6,
+			intelligenceIndexVersion: 4.1,
 		},
 	}),
 	createModelConfig("minimax-m3", PROVIDER, {
@@ -232,6 +322,16 @@ export const opencodeGoModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["vision", "video", "tool_use"],
+		contextComplexity: 4,
+		reliability: 2,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 44.4,
+			codingIndex: 58.6,
+			agenticIndex: 35.4,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 	createModelConfig("qwen3.7-plus", PROVIDER, {
 		name: "Qwen3.7 Plus",
@@ -252,6 +352,16 @@ export const opencodeGoModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["vision", "video", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 2,
+		speed: 2,
+		artificialAnalysis: {
+			intelligenceIndex: 39,
+			codingIndex: 55.9,
+			agenticIndex: 20.8,
+			intelligenceIndexVersion: 4.1,
 		},
 	}),
 	createModelConfig("kimi-k2.7-code", PROVIDER, {
@@ -276,6 +386,16 @@ export const opencodeGoModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["coding", "vision", "video", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 2,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 41.9,
+			codingIndex: 60.8,
+			agenticIndex: 29.6,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 	createModelConfig("glm-5.2", PROVIDER, {
 		name: "GLM-5.2",
@@ -297,6 +417,16 @@ export const opencodeGoModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["coding", "tool_use"],
+		contextComplexity: 5,
+		reliability: 3,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 51.1,
+			codingIndex: 68.8,
+			agenticIndex: 43.1,
+			intelligenceIndexVersion: 4.1,
 		},
 	}),
 ]);

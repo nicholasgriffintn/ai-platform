@@ -299,6 +299,16 @@ export const togetherAiModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 5,
+		artificialAnalysis: {
+			intelligenceIndex: 23.8,
+			codingIndex: 30.4,
+			agenticIndex: 13.2,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"Qwen/Qwen3-235B-A22B-Instruct-2507-tput": {
@@ -406,6 +416,16 @@ export const togetherAiModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 31.2,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"google/gemma-4-31B-it": {
@@ -455,6 +475,16 @@ export const togetherAiModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 2,
+		speed: 2,
+		artificialAnalysis: {
+			intelligenceIndex: 38.1,
+			codingIndex: 52.6,
+			agenticIndex: 25.6,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"moonshotai/Kimi-K2.6": {
@@ -480,6 +510,16 @@ export const togetherAiModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["vision", "video", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 2,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 42.8,
+			codingIndex: 56,
+			agenticIndex: 30.3,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"Qwen/Qwen3.5-397B-A17B": {
@@ -503,6 +543,16 @@ export const togetherAiModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["vision", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 32,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"Qwen/Qwen3.6-Plus": {
@@ -525,6 +575,16 @@ export const togetherAiModelConfig: ModelConfig = {
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["tool_use"],
+		contextComplexity: 5,
+		reliability: 2,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 39.6,
+			codingIndex: 54.5,
+			agenticIndex: 27.6,
+			intelligenceIndexVersion: 4.1,
 		},
 	},
 
@@ -551,6 +611,16 @@ export const togetherAiModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 2,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 35.4,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 	"Qwen/Qwen3.7-Max": {
 		name: "Qwen3.7 Max",
@@ -572,6 +642,16 @@ export const togetherAiModelConfig: ModelConfig = {
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["coding", "tool_use"],
+		contextComplexity: 5,
+		reliability: 2,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 46,
+			codingIndex: 66,
+			agenticIndex: 30.6,
+			intelligenceIndexVersion: 4.1,
 		},
 	},
 	"nvidia/nemotron-3-ultra-550b-a55b": {
@@ -595,6 +675,16 @@ export const togetherAiModelConfig: ModelConfig = {
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 2,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 37.8,
+			codingIndex: 49.3,
+			agenticIndex: 27.4,
+			intelligenceIndexVersion: 4.1,
 		},
 	},
 	"deepcogito/cogito-v2-1-671b": {
@@ -638,6 +728,15 @@ export const togetherAiModelConfig: ModelConfig = {
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.00006,
 		costPer1kOutputTokens: 0.00012,
+		contextComplexity: 3,
+		reliability: 1,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 1.2,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"LiquidAI/LFM2-24B-A2B": {
@@ -657,6 +756,15 @@ export const togetherAiModelConfig: ModelConfig = {
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.00003,
 		costPer1kOutputTokens: 0.00012,
+		contextComplexity: 3,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 4.9,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"meta-llama/Meta-Llama-3-8B-Instruct-Lite": {
@@ -699,6 +807,16 @@ export const togetherAiModelConfig: ModelConfig = {
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 5,
+		artificialAnalysis: {
+			intelligenceIndex: 14.9,
+			codingIndex: 20.7,
+			agenticIndex: 3.1,
+			intelligenceIndexVersion: 4.1,
 		},
 	},
 
@@ -767,6 +885,15 @@ export const togetherAiModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 20.3,
+			codingIndex: 23.5,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"zai-org/GLM-5": {
@@ -791,6 +918,16 @@ export const togetherAiModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 32.4,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 	"MiniMaxAI/MiniMax-M3": {
 		name: "MiniMax-M3",
@@ -814,6 +951,16 @@ export const togetherAiModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 2,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 44.4,
+			codingIndex: 58.6,
+			agenticIndex: 35.4,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 	"moonshotai/Kimi-K2.7-Code": {
 		name: "Kimi K2.7 Code",
@@ -836,6 +983,16 @@ export const togetherAiModelConfig: ModelConfig = {
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["coding", "tool_use"],
+		contextComplexity: 4,
+		reliability: 2,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 41.9,
+			codingIndex: 60.8,
+			agenticIndex: 29.6,
+			intelligenceIndexVersion: 4.1,
 		},
 	},
 };

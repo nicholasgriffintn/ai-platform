@@ -23,14 +23,20 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.0004,
 		costPer1kOutputTokens: 0.0016,
-		strengths: ["coding", "analysis", "instruction", "vision", "tool_use"],
-		contextComplexity: 5,
-		reliability: 4,
-		speed: 4,
+		strengths: ["coding", "analysis", "instruction", "vision", "tool_use", "document"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 3,
 		multimodal: true,
 		isFeatured: false,
 		includedInRouter: true,
 		supportsArtifacts: true,
+		artificialAnalysis: {
+			intelligenceIndex: 16.3,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("openai/o4-mini", PROVIDER, {
@@ -53,9 +59,9 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 100000,
 		costPer1kInputTokens: 0.0011,
 		costPer1kOutputTokens: 0.0044,
-		strengths: ["reasoning", "math", "coding", "analysis", "vision"],
+		strengths: ["reasoning", "math", "coding", "analysis", "vision", "document", "tool_use"],
 		contextComplexity: 4,
-		reliability: 4,
+		reliability: 1,
 		speed: 4,
 		multimodal: true,
 		isFeatured: false,
@@ -64,6 +70,12 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		artificialAnalysis: {
+			intelligenceIndex: 25.6,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	}),
 
@@ -86,14 +98,20 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00015,
 		costPer1kOutputTokens: 0.0006,
-		strengths: ["analysis", "chat", "coding", "multilingual", "vision"],
+		strengths: ["analysis", "chat", "coding", "multilingual", "vision", "document", "tool_use"],
 		contextComplexity: 3,
-		reliability: 3,
-		speed: 5,
+		reliability: 1,
+		speed: 3,
 		multimodal: true,
 		isFeatured: false,
 		includedInRouter: true,
 		supportsArtifacts: true,
+		artificialAnalysis: {
+			intelligenceIndex: 6.9,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("openai/gpt-4.1", PROVIDER, {
@@ -115,14 +133,20 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.002,
 		costPer1kOutputTokens: 0.008,
-		strengths: ["coding", "academic", "reasoning", "instruction", "vision"],
-		contextComplexity: 5,
-		reliability: 5,
-		speed: 3,
+		strengths: ["coding", "academic", "reasoning", "instruction", "vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 4,
 		multimodal: true,
 		isFeatured: false,
 		includedInRouter: true,
 		supportsArtifacts: true,
+		artificialAnalysis: {
+			intelligenceIndex: 19.4,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("anthropic/claude-4-sonnet-20250522", PROVIDER, {
@@ -173,9 +197,9 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 64000,
 		costPer1kInputTokens: 0.003,
 		costPer1kOutputTokens: 0.015,
-		strengths: ["reasoning", "analysis", "coding", "creative", "vision"],
-		contextComplexity: 5,
-		reliability: 5,
+		strengths: ["reasoning", "analysis", "coding", "creative", "vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
 		speed: 3,
 		multimodal: true,
 		isFeatured: false,
@@ -184,6 +208,12 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		artificialAnalysis: {
+			intelligenceIndex: 23.5,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	}),
 
@@ -238,9 +268,9 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.0003,
 		costPer1kOutputTokens: 0.0025,
-		strengths: ["vision", "audio", "analysis", "reasoning", "tool_use"],
-		contextComplexity: 5,
-		reliability: 4,
+		strengths: ["vision", "audio", "analysis", "reasoning", "tool_use", "document", "video"],
+		contextComplexity: 4,
+		reliability: 1,
 		speed: 5,
 		multimodal: true,
 		isFeatured: false,
@@ -250,6 +280,12 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		artificialAnalysis: {
+			intelligenceIndex: 14.1,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	}),
 
@@ -272,9 +308,18 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.00125,
 		costPer1kOutputTokens: 0.01,
-		strengths: ["vision", "audio", "analysis", "reasoning", "tool_use", "coding"],
-		contextComplexity: 5,
-		reliability: 5,
+		strengths: [
+			"vision",
+			"audio",
+			"analysis",
+			"reasoning",
+			"tool_use",
+			"coding",
+			"document",
+			"video",
+		],
+		contextComplexity: 4,
+		reliability: 1,
 		speed: 3,
 		multimodal: true,
 		isFeatured: false,
@@ -284,6 +329,12 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		artificialAnalysis: {
+			intelligenceIndex: 27,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	}),
 	createModelConfig("anthropic/claude-haiku-4-5", PROVIDER, {
@@ -352,6 +403,16 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 34.7,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	}),
 
@@ -422,6 +483,15 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["vision", "document", "audio", "video", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 27.4,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("google/gemini-3-pro-preview", PROVIDER, {
@@ -444,6 +514,15 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["vision", "document", "audio", "video", "tool_use"],
+		contextComplexity: 4,
+		reliability: 2,
+		artificialAnalysis: {
+			intelligenceIndex: 39.6,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	}),
 
@@ -468,6 +547,16 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["vision", "audio", "video", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 15.3,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("openai/gpt-5-mini", PROVIDER, {
@@ -490,6 +579,16 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 2,
+		artificialAnalysis: {
+			intelligenceIndex: 33,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	}),
 
@@ -514,6 +613,16 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["document", "tool_use"],
+		contextComplexity: 3,
+		reliability: 1,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 19.9,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("xai/grok-4", PROVIDER, {
@@ -536,6 +645,15 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 33.3,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	}),
 
@@ -560,6 +678,15 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 16.5,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 	createModelConfig("anthropic/claude-opus-4-6", PROVIDER, {
 		name: "Claude Opus 4.6",
@@ -582,6 +709,16 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 5,
+		reliability: 2,
+		speed: 2,
+		artificialAnalysis: {
+			intelligenceIndex: 43.7,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	}),
 
@@ -606,6 +743,16 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["coding", "vision", "document", "tool_use"],
+		contextComplexity: 5,
+		reliability: 3,
+		speed: 2,
+		artificialAnalysis: {
+			intelligenceIndex: 47.2,
+			codingIndex: 63,
+			agenticIndex: 40.8,
+			intelligenceIndexVersion: 4.1,
 		},
 	}),
 
@@ -654,6 +801,16 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 2,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 36.1,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	}),
 
@@ -727,6 +884,16 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 20.4,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("openai/gpt-5.1-chat", PROVIDER, {
@@ -774,6 +941,16 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 34.7,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	}),
 
@@ -823,6 +1000,16 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 30.6,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("openai/gpt-5.2", PROVIDER, {
@@ -846,6 +1033,16 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 26,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	}),
 
@@ -895,6 +1092,16 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 2,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 40.1,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("openai/gpt-5.2-pro", PROVIDER, {
@@ -943,6 +1150,16 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 2,
+		speed: 2,
+		artificialAnalysis: {
+			intelligenceIndex: 44.3,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("openai/gpt-5.4", PROVIDER, {
@@ -967,6 +1184,16 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 5,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 27.7,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("openai/gpt-5.4-pro", PROVIDER, {
@@ -990,6 +1217,14 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 5,
+		artificialAnalysis: {
+			intelligenceIndex: null,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	}),
 ]);

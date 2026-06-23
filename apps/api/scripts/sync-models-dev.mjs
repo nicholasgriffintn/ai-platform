@@ -7,6 +7,7 @@ import { fileURLToPath } from "node:url";
 import ts from "typescript";
 
 const API_URL_DEFAULT = "https://models.dev/api.json";
+const POLYCHAT_API_BASE_URL_DEFAULT = "https://api.polychat.app";
 
 const PROVIDER_ALIASES = {
 	"azure-openai": "azure",
@@ -79,7 +80,12 @@ const UPDATE_FIELD_ORDER = [
 	"costPer1kInputTokens",
 	"costPer1kOutputTokens",
 	"costPer1kReasoningTokens",
+	"strengths",
+	"contextComplexity",
+	"reliability",
+	"speed",
 	"reasoningConfig",
+	"artificialAnalysis",
 ];
 
 const UNPARSEABLE = Symbol("unparseable");
@@ -98,8 +104,8 @@ function parseArgs(argv) {
 		help: false,
 		providers: new Set(),
 		triggerAnalysisTask: process.env.POLYCHAT_MODEL_ANALYSIS_TRIGGER === "true",
-		analysisApiUrl: process.env.POLYCHAT_API_BASE_URL || "https://api.polychat.app",
-		analysisAuthToken: process.env.POLYCHAT_API_KEY,
+		polychatApiBaseUrl: process.env.POLYCHAT_API_BASE_URL || POLYCHAT_API_BASE_URL_DEFAULT,
+		polychatApiKey: process.env.POLYCHAT_API_KEY,
 	};
 
 	for (let i = 0; i < argv.length; i += 1) {
@@ -117,36 +123,6 @@ function parseArgs(argv) {
 
 		if (arg === "--trigger-analysis-task") {
 			options.triggerAnalysisTask = true;
-			continue;
-		}
-
-		if (arg === "--analysis-api-url") {
-			const value = argv[i + 1];
-			if (!value) {
-				throw new Error("Missing value for --analysis-api-url");
-			}
-			options.analysisApiUrl = value;
-			i += 1;
-			continue;
-		}
-
-		if (arg.startsWith("--analysis-api-url=")) {
-			options.analysisApiUrl = arg.slice("--analysis-api-url=".length);
-			continue;
-		}
-
-		if (arg === "--analysis-auth-token") {
-			const value = argv[i + 1];
-			if (!value) {
-				throw new Error("Missing value for --analysis-auth-token");
-			}
-			options.analysisAuthToken = value;
-			i += 1;
-			continue;
-		}
-
-		if (arg.startsWith("--analysis-auth-token=")) {
-			options.analysisAuthToken = arg.slice("--analysis-auth-token=".length);
 			continue;
 		}
 
@@ -219,10 +195,11 @@ Options:
   --models-dir <path>     Override model config directory
   --verbose               Print per-file details
   --trigger-analysis-task Trigger the Polychat Artificial Analysis ingestion task after sync
-  --analysis-api-url <url> Polychat API base URL for the analysis trigger
-  --analysis-auth-token <token>
-                          Bearer token for the analysis trigger
   --help, -h              Show this help
+
+Environment:
+  POLYCHAT_API_BASE_URL   Polychat API base URL (defaults to ${POLYCHAT_API_BASE_URL_DEFAULT})
+  POLYCHAT_API_KEY        API key used for cached Artificial Analysis data and the trigger
 `);
 }
 
@@ -245,19 +222,79 @@ async function fetchApiData(apiUrl) {
 	return json;
 }
 
+function buildArtificialAnalysisModelsUrl(apiUrl) {
+	if (!apiUrl) {
+		return null;
+	}
+
+	const url = new URL(apiUrl);
+	if (!url.pathname.endsWith("/models/artificial-analysis")) {
+		return new URL("/models/artificial-analysis", url).toString();
+	}
+	return url.toString();
+}
+
+async function fetchArtificialAnalysisData({ apiUrl, apiKey }) {
+	if (!apiKey) {
+		return [];
+	}
+
+	const modelsUrl = buildArtificialAnalysisModelsUrl(apiUrl);
+	if (!modelsUrl) {
+		return [];
+	}
+
+	const models = [];
+	let page = 1;
+
+	while (true) {
+		const url = new URL(modelsUrl);
+		url.searchParams.set("page", String(page));
+		if (!url.searchParams.has("limit")) {
+			url.searchParams.set("limit", "100");
+		}
+
+		const response = await fetch(url, {
+			headers: {
+				accept: "application/json",
+				authorization: `Bearer ${apiKey}`,
+			},
+		});
+
+		if (!response.ok) {
+			throw new Error(`Failed to fetch ${url.toString()}: ${response.status}`);
+		}
+
+		const payload = await response.json();
+		if (!payload || typeof payload !== "object" || !Array.isArray(payload.models)) {
+			throw new Error("Polychat Artificial Analysis payload is not a model list");
+		}
+
+		models.push(...payload.models);
+		const totalPages =
+			typeof payload.pagination?.totalPages === "number" ? payload.pagination.totalPages : page;
+		if (page >= totalPages) {
+			break;
+		}
+		page += 1;
+	}
+
+	return models;
+}
+
 function buildAnalysisTriggerUrl(apiUrl) {
 	return new URL("/admin/model-analysis/sync-completed", apiUrl).toString();
 }
 
 async function triggerAnalysisTask(options, stats) {
-	if (!options.analysisAuthToken) {
-		throw new Error("Missing Polychat API token for Artificial Analysis task trigger");
+	if (!options.polychatApiKey) {
+		throw new Error("Missing POLYCHAT_API_KEY for Artificial Analysis task trigger");
 	}
 
-	const response = await fetch(buildAnalysisTriggerUrl(options.analysisApiUrl), {
+	const response = await fetch(buildAnalysisTriggerUrl(options.polychatApiBaseUrl), {
 		method: "POST",
 		headers: {
-			authorization: `Bearer ${options.analysisAuthToken}`,
+			authorization: `Bearer ${options.polychatApiKey}`,
 			"content-type": "application/json",
 		},
 		body: JSON.stringify({
@@ -534,6 +571,367 @@ function inferProviderFromObjectEntries(entries, sourceFile) {
 
 function hasOwn(objectValue, key) {
 	return Object.prototype.hasOwnProperty.call(objectValue, key);
+}
+
+function readNumber(value) {
+	return typeof value === "number" && Number.isFinite(value) ? value : undefined;
+}
+
+function readRecord(value) {
+	return value && typeof value === "object" && !Array.isArray(value) ? value : {};
+}
+
+function scoreHigherIsBetter(value, thresholds) {
+	if (value === undefined) {
+		return undefined;
+	}
+	for (let index = 0; index < thresholds.length; index += 1) {
+		if (value >= thresholds[index]) {
+			return thresholds.length - index + 1;
+		}
+	}
+	return value > 0 ? 1 : undefined;
+}
+
+function scoreLowerIsBetter(value, thresholds) {
+	if (value === undefined) {
+		return undefined;
+	}
+	for (let index = 0; index < thresholds.length; index += 1) {
+		if (value <= thresholds[index]) {
+			return thresholds.length - index + 1;
+		}
+	}
+	return value > 0 ? 1 : undefined;
+}
+
+function averageDefined(values) {
+	const defined = values.filter((value) => value !== undefined);
+	if (defined.length === 0) {
+		return undefined;
+	}
+	return defined.reduce((total, value) => total + value, 0) / defined.length;
+}
+
+function clampRouterScore(value) {
+	if (value === undefined) {
+		return undefined;
+	}
+	return Math.min(5, Math.max(1, Math.round(value)));
+}
+
+function normaliseLookupKey(value) {
+	if (!value) {
+		return null;
+	}
+
+	const normalised = String(value)
+		.toLowerCase()
+		.replace(/\([^)]*\)/g, "")
+		.replace(/[^a-z0-9]+/g, "-")
+		.replace(/^-+|-+$/g, "");
+
+	return normalised || null;
+}
+
+function addLookupKey(keys, value) {
+	const key = normaliseLookupKey(value);
+	if (key) {
+		keys.add(key);
+	}
+}
+
+function addModelLookupKeys(keys, value) {
+	if (!value) {
+		return;
+	}
+	addLookupKey(keys, value);
+	if (String(value).includes("/")) {
+		addLookupKey(keys, String(value).split("/").at(-1));
+	}
+}
+
+function buildArtificialAnalysisLookup(models) {
+	const lookup = new Map();
+
+	for (const model of models) {
+		const keys = new Set();
+		addLookupKey(keys, model.id);
+		addLookupKey(keys, model.name);
+		addLookupKey(keys, model.slug);
+
+		for (const key of keys) {
+			if (!lookup.has(key)) {
+				lookup.set(key, model);
+			}
+		}
+	}
+
+	return lookup;
+}
+
+function findArtificialAnalysisModel({ lookup, entry, remoteModel, remoteModelId, sourceFile }) {
+	if (!lookup || lookup.size === 0) {
+		return null;
+	}
+
+	const keys = new Set();
+	addModelLookupKeys(keys, entry.modelKey);
+	addModelLookupKeys(keys, remoteModelId);
+	addModelLookupKeys(keys, getStringPropertyValue(entry.objectNode, "matchingModel", sourceFile));
+	addModelLookupKeys(keys, getStringPropertyValue(entry.objectNode, "name", sourceFile));
+	if (remoteModel && typeof remoteModel === "object") {
+		addModelLookupKeys(keys, remoteModel.id);
+		addModelLookupKeys(keys, remoteModel.name);
+	}
+
+	for (const key of keys) {
+		const analysisModel = lookup.get(key);
+		if (analysisModel) {
+			return analysisModel;
+		}
+	}
+	return null;
+}
+
+function deriveArtificialAnalysisScores(model) {
+	const evaluations = readRecord(model.evaluations);
+	const derivedScores = readRecord(model.derived_scores);
+	const intelligence =
+		readNumber(derivedScores.intelligence) ??
+		scoreHigherIsBetter(
+			readNumber(model.intelligence_index) ??
+				readNumber(evaluations.artificial_analysis_intelligence_index),
+			[80, 65, 50, 35],
+		);
+	const coding =
+		readNumber(derivedScores.coding) ??
+		scoreHigherIsBetter(
+			readNumber(model.coding_index) ?? readNumber(evaluations.artificial_analysis_coding_index),
+			[80, 60, 45, 30],
+		);
+	const agentic =
+		readNumber(derivedScores.agentic) ??
+		scoreHigherIsBetter(
+			readNumber(model.agentic_index) ?? readNumber(evaluations.artificial_analysis_agentic_index),
+			[80, 65, 50, 35],
+		);
+	const outputSpeed =
+		readNumber(derivedScores.outputSpeed) ??
+		scoreHigherIsBetter(readNumber(model.median_output_tokens_per_second), [180, 100, 50, 20]);
+	const firstTokenLatency =
+		readNumber(derivedScores.firstTokenLatency) ??
+		scoreLowerIsBetter(readNumber(model.median_time_to_first_token_seconds), [0.5, 1, 3, 8]);
+
+	return {
+		intelligence,
+		coding,
+		agentic,
+		outputSpeed,
+		firstTokenLatency,
+	};
+}
+
+function pushStrength(strengths, value, enabled) {
+	if (enabled && SUPPORTED_MODALITIES.has(value) && !strengths.includes(value)) {
+		strengths.push(value);
+	}
+}
+
+function getExistingFieldValue(objectNode, propertyName, sourceFile) {
+	if (!objectNode || !sourceFile) {
+		return undefined;
+	}
+
+	const property = getPropertyAssignment(objectNode, propertyName, sourceFile);
+	if (!property) {
+		return undefined;
+	}
+
+	const parsed = parseLiteralValue(property.initializer, sourceFile);
+	return parsed === UNPARSEABLE ? undefined : parsed;
+}
+
+function buildEffectiveModelProfile(objectNode, sourceFile, baseValues = {}) {
+	const profile = {};
+	for (const fieldName of [
+		"modalities",
+		"supportsAttachments",
+		"supportsToolCalls",
+		"supportsResponseFormat",
+		"supportsSearchGrounding",
+		"supportsCodeExecution",
+		"supportsWebFetch",
+		"supportsDocuments",
+		"supportsAudio",
+		"supportsArtifacts",
+		"contextWindow",
+		"maxTokens",
+		"costPer1kInputTokens",
+		"costPer1kOutputTokens",
+		"reasoningConfig",
+		"strengths",
+	]) {
+		const existingValue = getExistingFieldValue(objectNode, fieldName, sourceFile);
+		if (existingValue !== undefined) {
+			profile[fieldName] = existingValue;
+		}
+		if (baseValues[fieldName] !== undefined) {
+			profile[fieldName] = baseValues[fieldName];
+		}
+	}
+	return profile;
+}
+
+function modalityListIncludes(modalities, sectionName, value) {
+	const values = modalities?.[sectionName];
+	return Array.isArray(values) && values.includes(value);
+}
+
+function deriveCapabilityScores(profile) {
+	const contextWindow = readNumber(profile.contextWindow);
+	const maxTokens = readNumber(profile.maxTokens);
+	const modalities =
+		profile.modalities && typeof profile.modalities === "object" ? profile.modalities : undefined;
+	const supportsRichInput =
+		modalityListIncludes(modalities, "input", "image") ||
+		modalityListIncludes(modalities, "input", "pdf") ||
+		modalityListIncludes(modalities, "input", "document") ||
+		modalityListIncludes(modalities, "input", "audio") ||
+		modalityListIncludes(modalities, "input", "video") ||
+		profile.supportsAttachments === true ||
+		profile.supportsDocuments === true ||
+		profile.supportsAudio === true;
+	const supportsTools =
+		profile.supportsToolCalls === true ||
+		profile.supportsSearchGrounding === true ||
+		profile.supportsCodeExecution === true ||
+		profile.supportsWebFetch === true;
+
+	return {
+		contextWindow: scoreHigherIsBetter(contextWindow, [1_000_000, 200_000, 128_000, 32_000]),
+		maxTokens: scoreHigherIsBetter(maxTokens, [128_000, 64_000, 32_000, 8_000]),
+		richInput: supportsRichInput ? 4 : undefined,
+		tools: supportsTools ? 4 : undefined,
+	};
+}
+
+function deriveArtificialAnalysisStrengths(model, scores, profile) {
+	const existingStrengths = Array.isArray(profile.strengths) ? profile.strengths : [];
+	const strengths = existingStrengths.filter(
+		(value) => typeof value === "string" && SUPPORTED_MODALITIES.has(value),
+	);
+	const derivedStrengths = Array.isArray(model.derived_strengths) ? model.derived_strengths : [];
+	const modalities =
+		profile.modalities && typeof profile.modalities === "object" ? profile.modalities : undefined;
+
+	for (const strength of derivedStrengths) {
+		pushStrength(strengths, strength, true);
+	}
+
+	pushStrength(strengths, "vision", modalityListIncludes(modalities, "input", "image"));
+	pushStrength(strengths, "document", modalityListIncludes(modalities, "input", "pdf"));
+	pushStrength(strengths, "document", modalityListIncludes(modalities, "input", "document"));
+	pushStrength(strengths, "audio", modalityListIncludes(modalities, "input", "audio"));
+	pushStrength(strengths, "video", modalityListIncludes(modalities, "input", "video"));
+	pushStrength(strengths, "document", profile.supportsAttachments === true);
+	pushStrength(strengths, "document", profile.supportsDocuments === true);
+	pushStrength(strengths, "tool_use", profile.supportsToolCalls === true);
+	pushStrength(strengths, "search", profile.supportsSearchGrounding === true);
+	pushStrength(strengths, "research", profile.supportsWebFetch === true);
+	pushStrength(strengths, "coding", profile.supportsCodeExecution === true);
+	pushStrength(strengths, "audio", profile.supportsAudio === true);
+	pushStrength(strengths, "general_knowledge", (scores.intelligence ?? 0) >= 4);
+	pushStrength(strengths, "analysis", (scores.intelligence ?? 0) >= 4);
+	pushStrength(strengths, "reasoning", (scores.intelligence ?? 0) >= 4);
+	pushStrength(strengths, "coding", (scores.coding ?? 0) >= 4);
+	pushStrength(strengths, "agents", (scores.agentic ?? 0) >= 4);
+	pushStrength(strengths, "instruction", (scores.agentic ?? 0) >= 4);
+
+	return strengths;
+}
+
+function per1kFromPer1m(value) {
+	const numberValue = readNumber(value);
+	return numberValue === undefined
+		? undefined
+		: Number.parseFloat((numberValue / 1000).toFixed(10));
+}
+
+function buildArtificialAnalysisUpdateValues(model, objectNode, sourceFile, baseValues = {}) {
+	if (!model) {
+		return {};
+	}
+
+	const evaluations = readRecord(model.evaluations);
+	const scores = deriveArtificialAnalysisScores(model);
+	const profile = buildEffectiveModelProfile(objectNode, sourceFile, baseValues);
+	const capabilityScores = deriveCapabilityScores(profile);
+	const values = {
+		artificialAnalysis: {
+			intelligenceIndex:
+				readNumber(model.intelligence_index) ??
+				readNumber(evaluations.artificial_analysis_intelligence_index) ??
+				null,
+			codingIndex:
+				readNumber(model.coding_index) ??
+				readNumber(evaluations.artificial_analysis_coding_index) ??
+				null,
+			agenticIndex:
+				readNumber(model.agentic_index) ??
+				readNumber(evaluations.artificial_analysis_agentic_index) ??
+				null,
+			intelligenceIndexVersion: readNumber(model.intelligence_index_version) ?? null,
+		},
+	};
+
+	const strengths = deriveArtificialAnalysisStrengths(model, scores, profile);
+	if (strengths.length > 0) {
+		values.strengths = strengths;
+	}
+
+	const contextComplexity = clampRouterScore(
+		Math.max(
+			scores.intelligence ?? 0,
+			scores.coding ?? 0,
+			scores.agentic ?? 0,
+			averageDefined([
+				capabilityScores.contextWindow,
+				capabilityScores.maxTokens,
+				capabilityScores.richInput,
+				capabilityScores.tools,
+			]) ?? 0,
+		) || undefined,
+	);
+	if (contextComplexity !== undefined) {
+		values.contextComplexity = contextComplexity;
+	}
+
+	const reliability = clampRouterScore(
+		averageDefined([scores.intelligence, scores.coding, scores.agentic]),
+	);
+	if (reliability !== undefined) {
+		values.reliability = reliability;
+	}
+
+	const speed = clampRouterScore(
+		averageDefined([scores.outputSpeed, scores.outputSpeed, scores.firstTokenLatency]),
+	);
+	if (speed !== undefined) {
+		values.speed = speed;
+	}
+
+	const inputCost = per1kFromPer1m(model.price_1m_input_tokens);
+	if (inputCost !== undefined && readNumber(profile.costPer1kInputTokens) === undefined) {
+		values.costPer1kInputTokens = inputCost;
+	}
+
+	const outputCost = per1kFromPer1m(model.price_1m_output_tokens);
+	if (outputCost !== undefined && readNumber(profile.costPer1kOutputTokens) === undefined) {
+		values.costPer1kOutputTokens = outputCost;
+	}
+
+	return values;
 }
 
 function hasDeprecatedStatus(remoteConfig) {
@@ -1464,6 +1862,7 @@ async function inspectModelFile({ filePath, remoteProviders, selectedProviders }
 async function processFile({
 	filePath,
 	remoteProviders,
+	artificialAnalysisLookup,
 	write,
 	selectedProviders,
 	verbose,
@@ -1492,6 +1891,7 @@ async function processFile({
 
 	const patches = [];
 	let updatedExisting = 0;
+	let updatedArtificialAnalysis = 0;
 	let removedDeprecatedModels = 0;
 	let removedDuplicateModels = 0;
 	const duplicateEntryNodes = findDuplicateRemoteModelEntryNodes(entries, remoteModels, sourceFile);
@@ -1549,6 +1949,25 @@ async function processFile({
 			includeProvider: false,
 			provider: localProvider,
 		});
+		const artificialAnalysisModel = findArtificialAnalysisModel({
+			lookup: artificialAnalysisLookup,
+			entry,
+			remoteModel,
+			remoteModelId,
+			sourceFile,
+		});
+		if (artificialAnalysisModel) {
+			Object.assign(
+				values,
+				buildArtificialAnalysisUpdateValues(
+					artificialAnalysisModel,
+					entry.objectNode,
+					sourceFile,
+					values,
+				),
+			);
+			updatedArtificialAnalysis += 1;
+		}
 
 		const entryPatches = buildObjectPatches({
 			fileText: originalText,
@@ -1604,6 +2023,28 @@ async function processFile({
 			includeProvider: declaration.style === "object",
 			provider: localProvider,
 		});
+		const analysisKeys = new Set();
+		addModelLookupKeys(analysisKeys, remoteModelId);
+		if (remoteModel && typeof remoteModel === "object") {
+			addModelLookupKeys(analysisKeys, remoteModel.id);
+			addModelLookupKeys(analysisKeys, remoteModel.name);
+		}
+		for (const key of analysisKeys) {
+			const artificialAnalysisModel = artificialAnalysisLookup.get(key);
+			if (artificialAnalysisModel) {
+				Object.assign(
+					values,
+					buildArtificialAnalysisUpdateValues(
+						artificialAnalysisModel,
+						undefined,
+						undefined,
+						values,
+					),
+				);
+				updatedArtificialAnalysis += 1;
+				break;
+			}
+		}
 
 		return declaration.style === "array"
 			? formatNewArrayEntry(remoteModelId, values, entryIndent)
@@ -1627,6 +2068,7 @@ async function processFile({
 			localProvider,
 			remoteProviderId,
 			updatedExisting: 0,
+			updatedArtificialAnalysis: 0,
 			addedModels: 0,
 			removedDeprecatedModels: 0,
 			removedDuplicateModels: 0,
@@ -1651,6 +2093,7 @@ async function processFile({
 		localProvider,
 		remoteProviderId,
 		updatedExisting,
+		updatedArtificialAnalysis,
 		addedModels: newEntries.length,
 		removedDeprecatedModels,
 		removedDuplicateModels,
@@ -1665,6 +2108,11 @@ async function main() {
 	}
 
 	const remoteProviders = await fetchApiData(options.apiUrl);
+	const artificialAnalysisModels = await fetchArtificialAnalysisData({
+		apiUrl: options.polychatApiBaseUrl,
+		apiKey: options.polychatApiKey,
+	});
+	const artificialAnalysisLookup = buildArtificialAnalysisLookup(artificialAnalysisModels);
 	const files = (await listTsFiles(options.modelsDir))
 		.filter((filePath) => path.basename(filePath) !== "index.ts")
 		.sort((left, right) => left.localeCompare(right));
@@ -1714,6 +2162,7 @@ async function main() {
 		const report = await processFile({
 			filePath,
 			remoteProviders,
+			artificialAnalysisLookup,
 			write: options.write,
 			selectedProviders: options.providers,
 			verbose: options.verbose,
@@ -1738,6 +2187,10 @@ async function main() {
 		return total + (report.addedModels ?? 0);
 	}, 0);
 
+	const totalUpdatedArtificialAnalysis = changed.reduce((total, report) => {
+		return total + (report.updatedArtificialAnalysis ?? 0);
+	}, 0);
+
 	const totalRemovedDeprecatedModels = changed.reduce((total, report) => {
 		return total + (report.removedDeprecatedModels ?? 0);
 	}, 0);
@@ -1752,6 +2205,11 @@ async function main() {
 	console.log(
 		`Updated existing models: ${totalUpdatedExisting}. Added new models: ${totalAddedModels}. Removed deprecated models: ${totalRemovedDeprecatedModels}. Removed duplicate models: ${totalRemovedDuplicateModels}.`,
 	);
+	if (options.polychatApiKey) {
+		console.log(
+			`Synced Artificial Analysis data for ${totalUpdatedArtificialAnalysis} models from ${artificialAnalysisModels.length} cached records.`,
+		);
+	}
 
 	const stats = {
 		processedFiles: reports.length,
@@ -1759,6 +2217,7 @@ async function main() {
 		unchangedFiles: unchanged.length,
 		skippedFiles: skipped.length,
 		updatedExistingModels: totalUpdatedExisting,
+		updatedArtificialAnalysisModels: totalUpdatedArtificialAnalysis,
 		addedModels: totalAddedModels,
 		removedDeprecatedModels: totalRemovedDeprecatedModels,
 		removedDuplicateModels: totalRemovedDuplicateModels,

@@ -11,7 +11,15 @@ import {
 	WalletCards,
 	Wand2,
 } from "lucide-react";
-import { type KeyboardEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+	type KeyboardEvent,
+	type RefObject,
+	useCallback,
+	useEffect,
+	useMemo,
+	useRef,
+	useState,
+} from "react";
 
 import { ModelIcon } from "~/components/ModelIcon";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
@@ -20,6 +28,7 @@ import { useModels } from "~/hooks/useModels";
 import { useTrackEvent } from "~/hooks/use-track-event";
 import { useWebLLMModels } from "~/hooks/useWebLLMModels";
 import { applyModelResponseDefaults } from "~/lib/chat-settings";
+import { containsEventTarget } from "~/lib/dom/containsEventTarget";
 import {
 	createModelReferenceMap,
 	defaultModel,
@@ -49,9 +58,11 @@ import type {
 	ModelSelectionChangeHandler,
 	ModelSelectorScope,
 } from "~/types";
+import { ArtificialAnalysisScorePanel } from "./ArtificialAnalysisScorePanel";
 import { AutomaticRouterPreview } from "./AutomaticRouterPreview";
 import { getHoverPreviewPosition } from "./hoverPreviewPosition";
 import { ModelsList } from "./ModelsList";
+import { useHoverPreviewDismiss } from "./useHoverPreviewDismiss";
 
 interface ModelSelectorProps {
 	isDisabled?: boolean;
@@ -66,8 +77,10 @@ interface ModelSelectorProps {
 interface HoverPreviewState {
 	model: ModelConfigItem;
 	left: number;
-	top: number;
+	top?: number;
+	bottom?: number;
 	width: number;
+	maxHeight: number;
 }
 
 interface DialogLayout {
@@ -89,7 +102,17 @@ function formatCost(value?: number) {
 	return `$${value.toFixed(2)} / 1K tokens`;
 }
 
-function HoverPreview({ preview }: { preview: HoverPreviewState | null }) {
+function HoverPreview({
+	preview,
+	containerRef,
+	onMouseEnter,
+	onDismiss,
+}: {
+	preview: HoverPreviewState | null;
+	containerRef: RefObject<HTMLDivElement | null>;
+	onMouseEnter: () => void;
+	onDismiss: () => void;
+}) {
 	if (!preview) return null;
 
 	const model = preview.model;
@@ -110,9 +133,18 @@ function HoverPreview({ preview }: { preview: HoverPreviewState | null }) {
 
 	return (
 		<div
-			style={{ top: preview.top, left: preview.left, width: preview.width }}
+			ref={containerRef}
+			style={{
+				top: preview.top,
+				bottom: preview.bottom,
+				left: preview.left,
+				width: preview.width,
+				maxHeight: preview.maxHeight,
+			}}
 			role="tooltip"
-			className="pointer-events-none fixed z-[70] max-h-[70vh] overflow-y-auto rounded-xl border border-zinc-200 bg-white/95 p-3 shadow-2xl backdrop-blur-sm dark:border-zinc-700 dark:bg-zinc-900/95"
+			onMouseEnter={onMouseEnter}
+			onMouseLeave={onDismiss}
+			className="fixed z-[70] overflow-y-auto rounded-xl border border-zinc-200 bg-white/95 p-3 shadow-2xl backdrop-blur-sm dark:border-zinc-700 dark:bg-zinc-900/95"
 		>
 			<div className="mb-3 rounded-lg border border-zinc-200/70 p-3 dark:border-zinc-700/70">
 				<div className="flex items-center gap-2">
@@ -136,25 +168,25 @@ function HoverPreview({ preview }: { preview: HoverPreviewState | null }) {
 						{model.description}
 					</p>
 				)}
-			</div>
 
-			{featureTags.length > 0 && (
-				<div className="mb-3">
-					<p className="mb-1 text-[11px] font-semibold tracking-wide text-zinc-500 uppercase dark:text-zinc-400">
-						Features
-					</p>
-					<div className="flex flex-wrap gap-1">
-						{featureTags.map((feature) => (
-							<span
-								key={`${model.id}-${feature}`}
-								className="rounded-full border border-zinc-200 bg-zinc-100 px-2 py-0.5 text-[11px] text-zinc-700 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200"
-							>
-								{feature}
-							</span>
-						))}
+				{featureTags.length > 0 && (
+					<div className="mt-3">
+						<p className="mb-1 text-[11px] font-semibold tracking-wide text-zinc-500 uppercase dark:text-zinc-400">
+							Features
+						</p>
+						<div className="flex flex-wrap gap-1">
+							{featureTags.map((feature) => (
+								<span
+									key={`${model.id}-${feature}`}
+									className="rounded-full border border-zinc-200 bg-zinc-100 px-2 py-0.5 text-[11px] text-zinc-700 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200"
+								>
+									{feature}
+								</span>
+							))}
+						</div>
 					</div>
-				</div>
-			)}
+				)}
+			</div>
 
 			<div className="space-y-2 text-xs">
 				<div className="rounded-lg border border-zinc-200/70 p-2.5 dark:border-zinc-700/70">
@@ -209,6 +241,10 @@ function HoverPreview({ preview }: { preview: HoverPreviewState | null }) {
 						</div>
 					</div>
 				)}
+
+				{model.artificialAnalysis ? (
+					<ArtificialAnalysisScorePanel analysis={model.artificialAnalysis} />
+				) : null}
 			</div>
 		</div>
 	);
@@ -250,6 +286,7 @@ export const ModelSelector = ({
 	const dropdownRef = useRef<HTMLDivElement>(null);
 	const triggerWrapperRef = useRef<HTMLDivElement>(null);
 	const searchInputRef = useRef<HTMLInputElement>(null);
+	const hoverPreviewRef = useRef<HTMLDivElement | null>(null);
 	const [selectedTab, setSelectedTab] = useState<"auto" | "models">(() => {
 		if (isModelListOnlyScope) return "models";
 		if (model === null) return "auto";
@@ -412,9 +449,19 @@ export const ModelSelector = ({
 		setSelectedAgentId,
 	]);
 
+	const clearHoverPreview = useCallback(() => setHoverPreview(null), []);
+	const {
+		cancelDismiss: cancelHoverPreviewDismiss,
+		dismiss: dismissHoverPreview,
+		scheduleDismiss: scheduleHoverPreviewDismiss,
+	} = useHoverPreviewDismiss(clearHoverPreview, hoverPreviewRef);
+
 	useEffect(() => {
 		const handleClickOutside = (event: MouseEvent) => {
-			if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+			const isInsideSelector =
+				containsEventTarget(dropdownRef.current, event.target) ||
+				containsEventTarget(hoverPreviewRef.current, event.target);
+			if (!isInsideSelector) {
 				setIsOpen(false);
 			}
 		};
@@ -425,18 +472,8 @@ export const ModelSelector = ({
 
 	useEffect(() => {
 		if (isOpen) return;
-		setHoverPreview(null);
-	}, [isOpen]);
-
-	useEffect(() => {
-		const clearPreview = () => setHoverPreview(null);
-		window.addEventListener("resize", clearPreview);
-		window.addEventListener("scroll", clearPreview, true);
-		return () => {
-			window.removeEventListener("resize", clearPreview);
-			window.removeEventListener("scroll", clearPreview, true);
-		};
-	}, []);
+		dismissHoverPreview();
+	}, [dismissHoverPreview, isOpen]);
 
 	const handleKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
 		if (e.key === "Escape") {
@@ -579,14 +616,19 @@ export const ModelSelector = ({
 	};
 
 	const handleInfoHoverStart = (modelInfo: ModelConfigItem, anchorRect: DOMRect) => {
+		cancelHoverPreviewDismiss();
+
 		if (!isOpen) {
-			setHoverPreview(null);
+			dismissHoverPreview();
 			return;
 		}
 
-		const position = getHoverPreviewPosition(anchorRect);
+		const position = getHoverPreviewPosition(
+			anchorRect,
+			dropdownRef.current?.getBoundingClientRect(),
+		);
 		if (!position) {
-			setHoverPreview(null);
+			dismissHoverPreview();
 			return;
 		}
 
@@ -597,7 +639,7 @@ export const ModelSelector = ({
 	};
 
 	const handleInfoHoverEnd = () => {
-		setHoverPreview(null);
+		scheduleHoverPreviewDismiss();
 	};
 
 	const handleSelectAutomaticRouting = () => {
@@ -854,7 +896,12 @@ export const ModelSelector = ({
 					</Tabs>
 				</div>
 			)}
-			<HoverPreview preview={hoverPreview} />
+			<HoverPreview
+				preview={hoverPreview}
+				containerRef={hoverPreviewRef}
+				onMouseEnter={cancelHoverPreviewDismiss}
+				onDismiss={handleInfoHoverEnd}
+			/>
 		</div>
 	);
 };

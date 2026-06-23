@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
 	artificialAnalysisModelsQuerySchema,
 	artificialAnalysisModelsResponseSchema,
+	modelConfigItemSchema,
 } from "./models";
 
 describe("model schemas", () => {
@@ -49,5 +50,22 @@ describe("model schemas", () => {
 			page: 2,
 			limit: 50,
 		});
+	});
+
+	it("accepts Artificial Analysis summaries on model catalogue items", () => {
+		expect(() =>
+			modelConfigItemSchema.parse({
+				id: "claude-sonnet-4-5",
+				matchingModel: "anthropic/claude-sonnet-4.5",
+				name: "Claude Sonnet 4.5",
+				provider: "vercel",
+				artificialAnalysis: {
+					intelligenceIndex: 72,
+					codingIndex: 64,
+					agenticIndex: 69,
+					intelligenceIndexVersion: 4.1,
+				},
+			}),
+		).not.toThrow();
 	});
 });

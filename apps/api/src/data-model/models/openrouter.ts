@@ -18,10 +18,10 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.000039,
 		costPer1kOutputTokens: 0.00018,
-		strengths: ["reasoning", "analysis", "coding", "multilingual"],
-		contextComplexity: 5,
-		reliability: 4,
-		speed: 2,
+		strengths: ["reasoning", "analysis", "coding", "multilingual", "tool_use"],
+		contextComplexity: 3,
+		reliability: 1,
+		speed: 5,
 		includedInRouter: true,
 		supportsArtifacts: true,
 		knowledgeCutoffDate: "June 30, 2024",
@@ -29,6 +29,12 @@ export const openrouterModelConfig: ModelConfig = {
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		artificialAnalysis: {
+			intelligenceIndex: 23.8,
+			codingIndex: 30.4,
+			agenticIndex: 13.2,
+			intelligenceIndexVersion: 4.1,
 		},
 	},
 
@@ -50,14 +56,20 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.0004,
 		costPer1kOutputTokens: 0.0016,
-		strengths: ["coding", "analysis", "chat", "vision", "multilingual"],
+		strengths: ["coding", "analysis", "chat", "vision", "multilingual", "document", "tool_use"],
 		contextComplexity: 4,
-		reliability: 4,
-		speed: 4,
+		reliability: 1,
+		speed: 3,
 		multimodal: true,
 		includedInRouter: false,
 		supportsArtifacts: true,
 		supportsResponseFormat: true,
+		artificialAnalysis: {
+			intelligenceIndex: 16.3,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"openai/o4-mini": {
@@ -79,10 +91,10 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 100000,
 		costPer1kInputTokens: 0.0011,
 		costPer1kOutputTokens: 0.0044,
-		strengths: ["reasoning", "math", "analysis", "coding"],
-		contextComplexity: 5,
-		reliability: 5,
-		speed: 3,
+		strengths: ["reasoning", "math", "analysis", "coding", "vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 4,
 		multimodal: true,
 		includedInRouter: false,
 		supportsArtifacts: true,
@@ -90,6 +102,12 @@ export const openrouterModelConfig: ModelConfig = {
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		artificialAnalysis: {
+			intelligenceIndex: 25.6,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	},
 
@@ -111,10 +129,10 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.00005,
 		costPer1kOutputTokens: 0.0004,
-		strengths: ["reasoning", "coding", "analysis", "vision"],
+		strengths: ["reasoning", "coding", "analysis", "vision", "document", "tool_use"],
 		contextComplexity: 4,
-		reliability: 4,
-		speed: 5,
+		reliability: 1,
+		speed: 3,
 		multimodal: true,
 		includedInRouter: false,
 		supportsArtifacts: true,
@@ -122,6 +140,12 @@ export const openrouterModelConfig: ModelConfig = {
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		artificialAnalysis: {
+			intelligenceIndex: 19.9,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	},
 
@@ -143,14 +167,20 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00015,
 		costPer1kOutputTokens: 0.0006,
-		strengths: ["chat", "analysis", "vision", "coding"],
+		strengths: ["chat", "analysis", "vision", "coding", "document", "tool_use"],
 		contextComplexity: 3,
-		reliability: 4,
-		speed: 5,
+		reliability: 1,
+		speed: 3,
 		multimodal: true,
 		includedInRouter: false,
 		supportsArtifacts: true,
 		supportsResponseFormat: true,
+		artificialAnalysis: {
+			intelligenceIndex: 6.9,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"openai/gpt-5": {
@@ -171,10 +201,10 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.00125,
 		costPer1kOutputTokens: 0.01,
-		strengths: ["reasoning", "coding", "analysis", "creative", "vision"],
-		contextComplexity: 5,
-		reliability: 5,
-		speed: 2,
+		strengths: ["reasoning", "coding", "analysis", "creative", "vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 4,
 		multimodal: true,
 		isFeatured: false,
 		includedInRouter: false,
@@ -183,6 +213,12 @@ export const openrouterModelConfig: ModelConfig = {
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		artificialAnalysis: {
+			intelligenceIndex: 15.3,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	},
 
@@ -203,10 +239,10 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.000029,
 		costPer1kOutputTokens: 0.00014,
-		strengths: ["reasoning", "analysis", "coding"],
+		strengths: ["reasoning", "analysis", "coding", "tool_use"],
 		contextComplexity: 4,
-		reliability: 4,
-		speed: 4,
+		reliability: 1,
+		speed: 5,
 		includedInRouter: true,
 		supportsArtifacts: true,
 		knowledgeCutoffDate: "June 30, 2024",
@@ -214,6 +250,12 @@ export const openrouterModelConfig: ModelConfig = {
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		artificialAnalysis: {
+			intelligenceIndex: 14.9,
+			codingIndex: 20.7,
+			agenticIndex: 3.1,
+			intelligenceIndexVersion: 4.1,
 		},
 	},
 
@@ -235,14 +277,20 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.002,
 		costPer1kOutputTokens: 0.008,
-		strengths: ["coding", "analysis", "creative", "vision", "multilingual"],
+		strengths: ["coding", "analysis", "creative", "vision", "multilingual", "document", "tool_use"],
 		contextComplexity: 4,
-		reliability: 4,
-		speed: 3,
+		reliability: 1,
+		speed: 4,
 		multimodal: true,
 		includedInRouter: false,
 		supportsArtifacts: true,
 		supportsResponseFormat: true,
+		artificialAnalysis: {
+			intelligenceIndex: 19.4,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"openai/gpt-5-mini": {
@@ -263,10 +311,10 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.00025,
 		costPer1kOutputTokens: 0.002,
-		strengths: ["reasoning", "coding", "analysis", "vision"],
+		strengths: ["reasoning", "coding", "analysis", "vision", "document", "tool_use"],
 		contextComplexity: 4,
-		reliability: 4,
-		speed: 4,
+		reliability: 1,
+		speed: 2,
 		multimodal: true,
 		includedInRouter: false,
 		supportsArtifacts: true,
@@ -274,6 +322,12 @@ export const openrouterModelConfig: ModelConfig = {
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		artificialAnalysis: {
+			intelligenceIndex: 33,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	},
 
@@ -496,14 +550,20 @@ export const openrouterModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0.00057,
 		costPer1kOutputTokens: 0.0023,
 		strengths: ["coding", "analysis", "multilingual", "tool_use"],
-		contextComplexity: 5,
-		reliability: 4,
-		speed: 3,
+		contextComplexity: 3,
+		reliability: 1,
+		speed: 2,
 		includedInRouter: true,
 		supportsArtifacts: true,
 		description:
 			"Kimi K2 is Moonshot AI's state-of-the-art Mixture-of-Experts (MoE) language model with 1 trillion total parameters and 32 billion activated parameters.",
 		supportsResponseFormat: false,
+		artificialAnalysis: {
+			intelligenceIndex: 19.4,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"moonshotai/kimi-k2-thinking-openrouter": {
@@ -525,9 +585,9 @@ export const openrouterModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0.0006,
 		costPer1kOutputTokens: 0.0025,
 		strengths: ["coding", "analysis", "multilingual", "tool_use"],
-		contextComplexity: 5,
-		reliability: 4,
-		speed: 3,
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 4,
 		includedInRouter: true,
 		supportsArtifacts: true,
 		description:
@@ -536,6 +596,12 @@ export const openrouterModelConfig: ModelConfig = {
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		artificialAnalysis: {
+			intelligenceIndex: 32.7,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	},
 
@@ -557,9 +623,18 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.00125,
 		costPer1kOutputTokens: 0.01,
-		strengths: ["reasoning", "analysis", "vision", "audio", "multilingual"],
-		contextComplexity: 5,
-		reliability: 5,
+		strengths: [
+			"reasoning",
+			"analysis",
+			"vision",
+			"audio",
+			"multilingual",
+			"document",
+			"video",
+			"tool_use",
+		],
+		contextComplexity: 4,
+		reliability: 1,
 		speed: 3,
 		multimodal: true,
 		includedInRouter: false,
@@ -569,6 +644,12 @@ export const openrouterModelConfig: ModelConfig = {
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		artificialAnalysis: {
+			intelligenceIndex: 27,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	},
 
@@ -590,9 +671,18 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 65535,
 		costPer1kInputTokens: 0.0003,
 		costPer1kOutputTokens: 0.0025,
-		strengths: ["reasoning", "analysis", "vision", "audio", "multilingual"],
+		strengths: [
+			"reasoning",
+			"analysis",
+			"vision",
+			"audio",
+			"multilingual",
+			"document",
+			"video",
+			"tool_use",
+		],
 		contextComplexity: 4,
-		reliability: 4,
+		reliability: 1,
 		speed: 4,
 		multimodal: true,
 		includedInRouter: true,
@@ -602,6 +692,12 @@ export const openrouterModelConfig: ModelConfig = {
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		artificialAnalysis: {
+			intelligenceIndex: 14.1,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	},
 
@@ -828,6 +924,16 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 34.7,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"anthropic/claude-opus-4.6": {
@@ -852,6 +958,16 @@ export const openrouterModelConfig: ModelConfig = {
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 5,
+		reliability: 2,
+		speed: 2,
+		artificialAnalysis: {
+			intelligenceIndex: 43.7,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	},
 
@@ -1100,6 +1216,15 @@ export const openrouterModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0.0002,
 		costPer1kOutputTokens: 0.00077,
 		supportsResponseFormat: true,
+		strengths: ["tool_use"],
+		contextComplexity: 3,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 15.7,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"deepseek/deepseek-chat-v3.1": {
@@ -1124,6 +1249,15 @@ export const openrouterModelConfig: ModelConfig = {
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["tool_use"],
+		contextComplexity: 3,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 21,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	},
 
@@ -1169,6 +1303,15 @@ export const openrouterModelConfig: ModelConfig = {
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		contextComplexity: 2,
+		reliability: 1,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 9.9,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	},
 
@@ -1235,6 +1378,15 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["tool_use"],
+		contextComplexity: 3,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 21.4,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"deepseek/deepseek-v3.1-terminus:exacto": {
@@ -1279,6 +1431,15 @@ export const openrouterModelConfig: ModelConfig = {
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 24.7,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	},
 
@@ -1392,6 +1553,15 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["vision", "document", "audio", "video", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 6.9,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"google/gemini-2.5-flash-lite-preview-09-2025": {
@@ -1417,6 +1587,15 @@ export const openrouterModelConfig: ModelConfig = {
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["vision", "document", "audio", "video", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 13.1,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	},
 
@@ -1510,6 +1689,15 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["vision", "document", "audio", "video", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 27.4,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"google/gemini-3-pro-preview": {
@@ -1571,6 +1759,15 @@ export const openrouterModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0.00005,
 		costPer1kOutputTokens: 0.00015,
 		supportsResponseFormat: true,
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 3,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 3.4,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"google/gemma-3-12b-it:free": {
@@ -1612,6 +1809,15 @@ export const openrouterModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0.00008,
 		costPer1kOutputTokens: 0.00016,
 		supportsResponseFormat: true,
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 3,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 4.8,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"google/gemma-3-27b-it:free": {
@@ -1653,6 +1859,15 @@ export const openrouterModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0.00005,
 		costPer1kOutputTokens: 0.0001,
 		supportsResponseFormat: true,
+		strengths: ["vision", "document"],
+		contextComplexity: 3,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 1.1,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"google/gemma-3-4b-it:free": {
@@ -1775,6 +1990,15 @@ export const openrouterModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
 		supportsResponseFormat: true,
+		contextComplexity: 3,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 2.7,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"liquid/lfm-2.5-1.2b-thinking:free": {
@@ -1799,6 +2023,15 @@ export const openrouterModelConfig: ModelConfig = {
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["tool_use"],
+		contextComplexity: 3,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 2.7,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	},
 
@@ -1972,6 +2205,16 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 28.3,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"minimax/minimax-m2.1": {
@@ -1995,6 +2238,16 @@ export const openrouterModelConfig: ModelConfig = {
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 31.4,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	},
 
@@ -2098,6 +2351,16 @@ export const openrouterModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0.0004,
 		costPer1kOutputTokens: 0.002,
 		supportsResponseFormat: true,
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 2,
+		artificialAnalysis: {
+			intelligenceIndex: 12.5,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"mistralai/mistral-medium-3.1": {
@@ -2119,6 +2382,16 @@ export const openrouterModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0.0004,
 		costPer1kOutputTokens: 0.002,
 		supportsResponseFormat: true,
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 14.8,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"mistralai/mistral-nemo:free": {
@@ -2285,6 +2558,16 @@ export const openrouterModelConfig: ModelConfig = {
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 29.4,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	},
 
@@ -2523,6 +2806,16 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 2,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 36.1,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"openai/gpt-5-image": {
@@ -2598,6 +2891,16 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 20.4,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"openai/gpt-5.1-chat": {
@@ -2643,6 +2946,16 @@ export const openrouterModelConfig: ModelConfig = {
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 34.7,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	},
 
@@ -2694,6 +3007,16 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 30.6,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"openai/gpt-5.2": {
@@ -2718,6 +3041,16 @@ export const openrouterModelConfig: ModelConfig = {
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 26,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	},
 
@@ -2764,6 +3097,16 @@ export const openrouterModelConfig: ModelConfig = {
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 2,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 40.1,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	},
 
@@ -2834,6 +3177,16 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 5,
+		artificialAnalysis: {
+			intelligenceIndex: 23.8,
+			codingIndex: 30.4,
+			agenticIndex: 13.2,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"openai/gpt-oss-20b:free": {
@@ -2858,6 +3211,16 @@ export const openrouterModelConfig: ModelConfig = {
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["tool_use"],
+		contextComplexity: 3,
+		reliability: 1,
+		speed: 5,
+		artificialAnalysis: {
+			intelligenceIndex: 14.9,
+			codingIndex: 20.7,
+			agenticIndex: 3.1,
+			intelligenceIndexVersion: 4.1,
 		},
 	},
 
@@ -2944,6 +3307,14 @@ export const openrouterModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0.00066,
 		costPer1kOutputTokens: 0.001,
 		supportsResponseFormat: false,
+		contextComplexity: 3,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 7.1,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"qwen/qwen-2.5-vl-7b-instruct:free": {
@@ -3298,6 +3669,16 @@ export const openrouterModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0.00007,
 		costPer1kOutputTokens: 0.00027,
 		supportsResponseFormat: true,
+		strengths: ["tool_use"],
+		contextComplexity: 3,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 13.6,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"qwen/qwen3-coder-flash": {
@@ -3360,6 +3741,16 @@ export const openrouterModelConfig: ModelConfig = {
 		costPer1kOutputTokens: 0.0039,
 		knowledgeCutoffDate: "April 2025",
 		supportsResponseFormat: true,
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 24,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"qwen/qwen3-next-80b-a3b-instruct": {
@@ -3381,6 +3772,16 @@ export const openrouterModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0.00009,
 		costPer1kOutputTokens: 0.0011,
 		supportsResponseFormat: true,
+		strengths: ["tool_use"],
+		contextComplexity: 3,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 13.7,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"qwen/qwen3-next-80b-a3b-instruct:free": {
@@ -3402,6 +3803,16 @@ export const openrouterModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
 		supportsResponseFormat: true,
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 13.7,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"qwen/qwen3-next-80b-a3b-thinking": {
@@ -3426,6 +3837,16 @@ export const openrouterModelConfig: ModelConfig = {
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["tool_use"],
+		contextComplexity: 3,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 19.8,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	},
 
@@ -3471,6 +3892,14 @@ export const openrouterModelConfig: ModelConfig = {
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		contextComplexity: 3,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 4.1,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	},
 
@@ -3576,6 +4005,16 @@ export const openrouterModelConfig: ModelConfig = {
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["tool_use"],
+		contextComplexity: 3,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 25.5,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	},
 
@@ -3827,6 +4266,16 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 19.5,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"z-ai/glm-4.5-air": {
@@ -3851,6 +4300,16 @@ export const openrouterModelConfig: ModelConfig = {
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 16.5,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	},
 
@@ -3902,6 +4361,16 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 3,
+		reliability: 1,
+		speed: 2,
+		artificialAnalysis: {
+			intelligenceIndex: 7,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"z-ai/glm-4.6": {
@@ -3926,6 +4395,16 @@ export const openrouterModelConfig: ModelConfig = {
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 23,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	},
 
@@ -3972,6 +4451,16 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 26.6,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"z-ai/glm-4.7-flash": {
@@ -3997,6 +4486,16 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["tool_use"],
+		contextComplexity: 3,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 15.5,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"z-ai/glm-5": {
@@ -4020,6 +4519,16 @@ export const openrouterModelConfig: ModelConfig = {
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["tool_use"],
+		contextComplexity: 3,
+		reliability: 1,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 32.4,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	},
 	"~anthropic/claude-haiku-latest": {
@@ -4550,6 +5059,15 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 4096,
 		costPer1kInputTokens: 0.00025,
 		costPer1kOutputTokens: 0.00125,
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 3,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 3.9,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"anthropic/claude-opus-4.6-fast": {
@@ -4573,6 +5091,16 @@ export const openrouterModelConfig: ModelConfig = {
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 5,
+		reliability: 2,
+		speed: 2,
+		artificialAnalysis: {
+			intelligenceIndex: 43.7,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	},
 
@@ -4599,6 +5127,16 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["coding", "vision", "document", "tool_use"],
+		contextComplexity: 5,
+		reliability: 3,
+		speed: 2,
+		artificialAnalysis: {
+			intelligenceIndex: 53.5,
+			codingIndex: 73.6,
+			agenticIndex: 44.4,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"anthropic/claude-opus-4.7-fast": {
@@ -4622,6 +5160,16 @@ export const openrouterModelConfig: ModelConfig = {
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["coding", "vision", "document", "tool_use"],
+		contextComplexity: 5,
+		reliability: 3,
+		speed: 2,
+		artificialAnalysis: {
+			intelligenceIndex: 53.5,
+			codingIndex: 73.6,
+			agenticIndex: 44.4,
+			intelligenceIndexVersion: 4.1,
 		},
 	},
 
@@ -4648,6 +5196,16 @@ export const openrouterModelConfig: ModelConfig = {
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["coding", "vision", "document", "tool_use"],
+		contextComplexity: 5,
+		reliability: 3,
+		speed: 2,
+		artificialAnalysis: {
+			intelligenceIndex: 47.2,
+			codingIndex: 63,
+			agenticIndex: 40.8,
+			intelligenceIndexVersion: 4.1,
 		},
 	},
 
@@ -4755,6 +5313,16 @@ export const openrouterModelConfig: ModelConfig = {
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 24.5,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	},
 
@@ -5128,6 +5696,15 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 8192,
 		costPer1kInputTokens: 0.0025,
 		costPer1kOutputTokens: 0.01,
+		contextComplexity: 3,
+		reliability: 1,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 7.7,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"cohere/command-r-08-2024": {
@@ -5149,6 +5726,15 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 4000,
 		costPer1kInputTokens: 0.00015,
 		costPer1kOutputTokens: 0.0006,
+		strengths: ["tool_use"],
+		contextComplexity: 3,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 2.1,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"cohere/command-r-plus-08-2024": {
@@ -5170,6 +5756,15 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 4000,
 		costPer1kInputTokens: 0.0025,
 		costPer1kOutputTokens: 0.01,
+		strengths: ["tool_use"],
+		contextComplexity: 3,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 2.1,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"cohere/command-r7b-12-2024": {
@@ -5236,6 +5831,15 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 16000,
 		costPer1kInputTokens: 0.0002002,
 		costPer1kOutputTokens: 0.0008001,
+		strengths: ["tool_use"],
+		contextComplexity: 3,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 10.4,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"deepseek/deepseek-r1": {
@@ -5260,6 +5864,15 @@ export const openrouterModelConfig: ModelConfig = {
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["tool_use"],
+		contextComplexity: 3,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 12.6,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	},
 
@@ -5311,6 +5924,15 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 21.3,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"deepseek/deepseek-v4-flash": {
@@ -5335,6 +5957,16 @@ export const openrouterModelConfig: ModelConfig = {
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 28.7,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	},
 
@@ -5385,6 +6017,16 @@ export const openrouterModelConfig: ModelConfig = {
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["tool_use"],
+		contextComplexity: 5,
+		reliability: 1,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 31.2,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	},
 
@@ -5474,6 +6116,15 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["vision", "document", "audio", "tool_use"],
+		contextComplexity: 4,
+		reliability: 2,
+		artificialAnalysis: {
+			intelligenceIndex: 23,
+			codingIndex: 46.7,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"google/gemini-3-pro-image-preview": {
@@ -5551,6 +6202,16 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["vision", "document", "audio", "video", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 25,
+			codingIndex: 34.7,
+			agenticIndex: 6.2,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"google/gemini-3.1-flash-lite-preview": {
@@ -5577,6 +6238,16 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["vision", "document", "audio", "video", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 25,
+			codingIndex: 34.7,
+			agenticIndex: 6.2,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"google/gemini-3.1-pro-preview": {
@@ -5602,6 +6273,16 @@ export const openrouterModelConfig: ModelConfig = {
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["coding", "vision", "document", "audio", "video", "tool_use"],
+		contextComplexity: 4,
+		reliability: 2,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 46.5,
+			codingIndex: 68.8,
+			agenticIndex: 21.4,
+			intelligenceIndexVersion: 4.1,
 		},
 	},
 
@@ -5675,6 +6356,16 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["vision", "video", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 2,
+		artificialAnalysis: {
+			intelligenceIndex: 20.1,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"google/gemma-4-26b-a4b-it:free": {
@@ -5699,6 +6390,16 @@ export const openrouterModelConfig: ModelConfig = {
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["vision", "video", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 2,
+		artificialAnalysis: {
+			intelligenceIndex: 20.1,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	},
 
@@ -5725,6 +6426,16 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["vision", "video", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 2,
+		artificialAnalysis: {
+			intelligenceIndex: 24.8,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"google/gemma-4-31b-it:free": {
@@ -5749,6 +6460,16 @@ export const openrouterModelConfig: ModelConfig = {
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["vision", "video", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 2,
+		artificialAnalysis: {
+			intelligenceIndex: 24.8,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	},
 
@@ -5831,6 +6552,14 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 131000,
 		costPer1kInputTokens: 0.000017,
 		costPer1kOutputTokens: 0.000112,
+		contextComplexity: 4,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 2.4,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"ibm-granite/granite-4.1-8b": {
@@ -5851,6 +6580,16 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.00005,
 		costPer1kOutputTokens: 0.0001,
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 6.7,
+			codingIndex: 9.5,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"inception/mercury-2": {
@@ -5875,6 +6614,16 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["tool_use"],
+		contextComplexity: 3,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 25.3,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"inclusionai/ling-2.6-1t": {
@@ -5895,6 +6644,15 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.000075,
 		costPer1kOutputTokens: 0.000625,
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 26.1,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"inclusionai/ling-2.6-flash": {
@@ -5915,6 +6673,15 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.00001,
 		costPer1kOutputTokens: 0.00003,
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 19.3,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"inclusionai/ring-2.6-1t": {
@@ -5938,6 +6705,16 @@ export const openrouterModelConfig: ModelConfig = {
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 30.6,
+			codingIndex: 42.8,
+			agenticIndex: 18.9,
+			intelligenceIndexVersion: 4.1,
 		},
 	},
 
@@ -6021,6 +6798,15 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.00003,
 		costPer1kOutputTokens: 0.00012,
+		contextComplexity: 3,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 4.9,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"mancer/weaver": {
@@ -6210,6 +6996,16 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00015,
 		costPer1kOutputTokens: 0.0006,
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 14.3,
+			codingIndex: 16.3,
+			agenticIndex: 1.3,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"meta-llama/llama-4-scout": {
@@ -6231,6 +7027,16 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.0001,
 		costPer1kOutputTokens: 0.0003,
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 10,
+			codingIndex: 8.2,
+			agenticIndex: 1.1,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"meta-llama/llama-guard-3-8b": {
@@ -6294,6 +7100,15 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.000065,
 		costPer1kOutputTokens: 0.00014,
+		contextComplexity: 2,
+		reliability: 1,
+		speed: 2,
+		artificialAnalysis: {
+			intelligenceIndex: 4.9,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"microsoft/phi-4-mini-instruct": {
@@ -6314,6 +7129,15 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.00008,
 		costPer1kOutputTokens: 0.00035,
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 2,
+		artificialAnalysis: {
+			intelligenceIndex: 3,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"microsoft/wizardlm-2-8x22b": {
@@ -6379,6 +7203,16 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 33.7,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"minimax/minimax-m2.5:free": {
@@ -6426,6 +7260,16 @@ export const openrouterModelConfig: ModelConfig = {
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 2,
+		speed: 2,
+		artificialAnalysis: {
+			intelligenceIndex: 38.1,
+			codingIndex: 52.6,
+			agenticIndex: 25.6,
+			intelligenceIndexVersion: 4.1,
 		},
 	},
 
@@ -6550,6 +7394,15 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.002,
 		costPer1kOutputTokens: 0.006,
+		strengths: ["document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 4.4,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"mistralai/mistral-medium-3-5": {
@@ -6573,6 +7426,16 @@ export const openrouterModelConfig: ModelConfig = {
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 2,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 29.9,
+			codingIndex: 46.9,
+			agenticIndex: 19,
+			intelligenceIndexVersion: 4.1,
 		},
 	},
 
@@ -6616,6 +7479,15 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.0002,
 		costPer1kOutputTokens: 0.0006,
+		strengths: ["document", "tool_use"],
+		contextComplexity: 3,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 6.4,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"mistralai/mistral-small-24b-instruct-2501": {
@@ -6637,6 +7509,15 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00005,
 		costPer1kOutputTokens: 0.00008,
+		contextComplexity: 2,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 6.9,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"mistralai/mistral-small-2603": {
@@ -6662,6 +7543,16 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 12.4,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"mistralai/mixtral-8x22b-instruct": {
@@ -6683,6 +7574,15 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.002,
 		costPer1kOutputTokens: 0.006,
+		strengths: ["document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 4.4,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"mistralai/pixtral-large-2411": {
@@ -6749,6 +7649,16 @@ export const openrouterModelConfig: ModelConfig = {
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 2,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 42.8,
+			codingIndex: 56,
+			agenticIndex: 30.3,
+			intelligenceIndexVersion: 4.1,
 		},
 	},
 
@@ -6922,6 +7832,16 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 7.4,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free": {
@@ -6971,6 +7891,16 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 25.4,
+			codingIndex: 37.7,
+			agenticIndex: 8.7,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"nvidia/nemotron-3-super-120b-a12b:free": {
@@ -7017,6 +7947,15 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 4096,
 		costPer1kInputTokens: 0.0005,
 		costPer1kOutputTokens: 0.0015,
+		strengths: ["tool_use"],
+		contextComplexity: 2,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 3.6,
+			codingIndex: 10.7,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"openai/gpt-3.5-turbo-16k": {
@@ -7080,6 +8019,15 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 4096,
 		costPer1kInputTokens: 0.03,
 		costPer1kOutputTokens: 0.06,
+		strengths: ["tool_use"],
+		contextComplexity: 2,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 7,
+			codingIndex: 13.1,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"openai/gpt-4-1106-preview": {
@@ -7122,6 +8070,16 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 4096,
 		costPer1kInputTokens: 0.01,
 		costPer1kOutputTokens: 0.03,
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 3,
+		reliability: 1,
+		speed: 2,
+		artificialAnalysis: {
+			intelligenceIndex: 7.9,
+			codingIndex: 21.5,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"openai/gpt-4-turbo-preview": {
@@ -7164,6 +8122,16 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.0001,
 		costPer1kOutputTokens: 0.0004,
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 5,
+		artificialAnalysis: {
+			intelligenceIndex: 7.3,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"openai/gpt-4o": {
@@ -7185,6 +8153,16 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.0025,
 		costPer1kOutputTokens: 0.01,
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 3,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 9.6,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"openai/gpt-4o-audio-preview": {
@@ -7323,6 +8301,16 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 2,
+		speed: 2,
+		artificialAnalysis: {
+			intelligenceIndex: 44.3,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"openai/gpt-5.4": {
@@ -7352,16 +8340,24 @@ export const openrouterModelConfig: ModelConfig = {
 			"tool_use",
 			"creative",
 			"multilingual",
+			"vision",
+			"document",
 		],
 		contextComplexity: 5,
-		reliability: 5,
-		speed: 3,
+		reliability: 1,
+		speed: 4,
 		multimodal: true,
 		includedInRouter: true,
 		supportsArtifacts: true,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		artificialAnalysis: {
+			intelligenceIndex: 27.7,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	},
 
@@ -7408,9 +8404,19 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.00075,
 		costPer1kOutputTokens: 0.0045,
-		strengths: ["coding", "reasoning", "analysis", "agents", "tool_use", "chat", "multilingual"],
+		strengths: [
+			"coding",
+			"reasoning",
+			"analysis",
+			"agents",
+			"tool_use",
+			"chat",
+			"multilingual",
+			"vision",
+			"document",
+		],
 		contextComplexity: 4,
-		reliability: 5,
+		reliability: 1,
 		speed: 4,
 		multimodal: true,
 		includedInRouter: true,
@@ -7418,6 +8424,12 @@ export const openrouterModelConfig: ModelConfig = {
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		artificialAnalysis: {
+			intelligenceIndex: 16.6,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	},
 
@@ -7440,16 +8452,30 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.0002,
 		costPer1kOutputTokens: 0.00125,
-		strengths: ["chat", "general_knowledge", "summarization", "multilingual"],
-		contextComplexity: 3,
-		reliability: 4,
-		speed: 5,
+		strengths: [
+			"chat",
+			"general_knowledge",
+			"summarization",
+			"multilingual",
+			"vision",
+			"document",
+			"tool_use",
+		],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 4,
 		multimodal: true,
 		includedInRouter: true,
 		supportsArtifacts: true,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		artificialAnalysis: {
+			intelligenceIndex: 17.6,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	},
 
@@ -7472,7 +8498,17 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.03,
 		costPer1kOutputTokens: 0.18,
-		strengths: ["reasoning", "analysis", "coding", "agents", "tool_use", "academic", "research"],
+		strengths: [
+			"reasoning",
+			"analysis",
+			"coding",
+			"agents",
+			"tool_use",
+			"academic",
+			"research",
+			"vision",
+			"document",
+		],
 		contextComplexity: 5,
 		reliability: 5,
 		speed: 2,
@@ -7482,6 +8518,12 @@ export const openrouterModelConfig: ModelConfig = {
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		artificialAnalysis: {
+			intelligenceIndex: null,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	},
 
@@ -7514,9 +8556,11 @@ export const openrouterModelConfig: ModelConfig = {
 			"academic",
 			"research",
 			"multilingual",
+			"vision",
+			"document",
 		],
 		contextComplexity: 5,
-		reliability: 5,
+		reliability: 2,
 		speed: 3,
 		multimodal: true,
 		includedInRouter: true,
@@ -7524,6 +8568,12 @@ export const openrouterModelConfig: ModelConfig = {
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		artificialAnalysis: {
+			intelligenceIndex: 35.4,
+			codingIndex: 56.5,
+			agenticIndex: 25.8,
+			intelligenceIndexVersion: 4.1,
 		},
 	},
 
@@ -7546,7 +8596,17 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.03,
 		costPer1kOutputTokens: 0.18,
-		strengths: ["reasoning", "analysis", "coding", "agents", "tool_use", "academic", "research"],
+		strengths: [
+			"reasoning",
+			"analysis",
+			"coding",
+			"agents",
+			"tool_use",
+			"academic",
+			"research",
+			"vision",
+			"document",
+		],
 		contextComplexity: 5,
 		reliability: 5,
 		speed: 2,
@@ -7556,6 +8616,12 @@ export const openrouterModelConfig: ModelConfig = {
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		artificialAnalysis: {
+			intelligenceIndex: null,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	},
 
@@ -7643,6 +8709,16 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 2,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 23.4,
+			codingIndex: 39.7,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"openai/o1-pro": {
@@ -7667,6 +8743,15 @@ export const openrouterModelConfig: ModelConfig = {
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["vision", "document"],
+		contextComplexity: 4,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 18.9,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	},
 
@@ -7693,6 +8778,16 @@ export const openrouterModelConfig: ModelConfig = {
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 30.4,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	},
 
@@ -7745,6 +8840,16 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 19,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"openai/o3-mini-high": {
@@ -7770,6 +8875,16 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 2,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 18.4,
+			codingIndex: 42.1,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"openai/o3-pro": {
@@ -7794,6 +8909,16 @@ export const openrouterModelConfig: ModelConfig = {
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 2,
+		artificialAnalysis: {
+			intelligenceIndex: 32.5,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	},
 
@@ -7969,6 +9094,15 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 127072,
 		costPer1kInputTokens: 0.001,
 		costPer1kOutputTokens: 0.001,
+		strengths: ["vision", "document"],
+		contextComplexity: 3,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 9.5,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"perplexity/sonar-deep-research": {
@@ -8014,6 +9148,15 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 8000,
 		costPer1kInputTokens: 0.003,
 		costPer1kOutputTokens: 0.015,
+		strengths: ["vision", "document"],
+		contextComplexity: 3,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 9.3,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"perplexity/sonar-pro-search": {
@@ -8061,6 +9204,15 @@ export const openrouterModelConfig: ModelConfig = {
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["vision", "document"],
+		contextComplexity: 4,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 17.8,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	},
 
@@ -8135,6 +9287,15 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 15.6,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"qwen/qwen-2.5-72b-instruct": {
@@ -8156,6 +9317,15 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00036,
 		costPer1kOutputTokens: 0.0004,
+		strengths: ["tool_use"],
+		contextComplexity: 3,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 9.6,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"qwen/qwen-2.5-7b-instruct": {
@@ -8248,6 +9418,16 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["tool_use"],
+		contextComplexity: 3,
+		reliability: 1,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 7,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"qwen/qwen3-235b-a22b": {
@@ -8272,6 +9452,16 @@ export const openrouterModelConfig: ModelConfig = {
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["tool_use"],
+		contextComplexity: 3,
+		reliability: 1,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 10.9,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	},
 
@@ -8298,6 +9488,16 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["tool_use"],
+		contextComplexity: 3,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 6.8,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"qwen/qwen3-32b": {
@@ -8322,6 +9522,16 @@ export const openrouterModelConfig: ModelConfig = {
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["tool_use"],
+		contextComplexity: 3,
+		reliability: 1,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 8.6,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	},
 
@@ -8348,6 +9558,16 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["tool_use"],
+		contextComplexity: 3,
+		reliability: 1,
+		speed: 2,
+		artificialAnalysis: {
+			intelligenceIndex: 5.1,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"qwen/qwen3-coder-next": {
@@ -8368,6 +9588,16 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 262144,
 		costPer1kInputTokens: 0.00011,
 		costPer1kOutputTokens: 0.0008,
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 21.2,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"qwen/qwen3-coder-plus": {
@@ -8413,6 +9643,15 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 31.7,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"qwen/qwen3-vl-235b-a22b-instruct": {
@@ -8434,6 +9673,16 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.0002,
 		costPer1kOutputTokens: 0.00088,
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 14.3,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"qwen/qwen3-vl-235b-a22b-thinking": {
@@ -8480,6 +9729,16 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.00013,
 		costPer1kOutputTokens: 0.00052,
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 10,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"qwen/qwen3-vl-30b-a3b-thinking": {
@@ -8525,6 +9784,16 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.000104,
 		costPer1kOutputTokens: 0.000416,
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 11.1,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"qwen/qwen3-vl-8b-instruct": {
@@ -8545,6 +9814,16 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.00008,
 		costPer1kOutputTokens: 0.0005,
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 8.4,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"qwen/qwen3-vl-8b-thinking": {
@@ -8593,6 +9872,16 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["vision", "video", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 28.1,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"qwen/qwen3.5-27b": {
@@ -8617,6 +9906,16 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["vision", "video", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 29.3,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"qwen/qwen3.5-35b-a3b": {
@@ -8640,6 +9939,16 @@ export const openrouterModelConfig: ModelConfig = {
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["vision", "video", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 23.4,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	},
 
@@ -8666,6 +9975,16 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["vision", "video", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 32,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"qwen/qwen3.5-9b": {
@@ -8689,6 +10008,15 @@ export const openrouterModelConfig: ModelConfig = {
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["vision", "video", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 20.3,
+			codingIndex: 23.5,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	},
 
@@ -8787,6 +10115,16 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["vision", "video", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 29.3,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"qwen/qwen3.6-35b-a3b": {
@@ -8810,6 +10148,16 @@ export const openrouterModelConfig: ModelConfig = {
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["vision", "video", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 24.2,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	},
 
@@ -8860,6 +10208,16 @@ export const openrouterModelConfig: ModelConfig = {
 			defaultEffort: "none",
 		},
 		knowledgeCutoffDate: "April 2025",
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 2,
+		speed: 2,
+		artificialAnalysis: {
+			intelligenceIndex: 40,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"qwen/qwen3.6-plus": {
@@ -8884,6 +10242,16 @@ export const openrouterModelConfig: ModelConfig = {
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["vision", "video", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 2,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 39.6,
+			codingIndex: 54.5,
+			agenticIndex: 27.6,
+			intelligenceIndexVersion: 4.1,
 		},
 	},
 
@@ -9123,6 +10491,16 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 26.1,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"thedrummer/cydonia-24b-v4.1": {
@@ -9252,6 +10630,15 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 14.1,
+			codingIndex: 16.2,
+			agenticIndex: 2.7,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"writer/palmyra-x5": {
@@ -9296,6 +10683,16 @@ export const openrouterModelConfig: ModelConfig = {
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 5,
+		reliability: 2,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 37,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	},
 
@@ -9346,6 +10743,16 @@ export const openrouterModelConfig: ModelConfig = {
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 5,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 24.8,
+			codingIndex: 35.2,
+			agenticIndex: 22.8,
+			intelligenceIndexVersion: 4.1,
 		},
 	},
 
@@ -9422,6 +10829,16 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["vision", "audio", "video", "document", "tool_use"],
+		contextComplexity: 5,
+		reliability: 2,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 40.1,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"xiaomi/mimo-v2.5-pro": {
@@ -9446,6 +10863,16 @@ export const openrouterModelConfig: ModelConfig = {
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["coding", "tool_use"],
+		contextComplexity: 5,
+		reliability: 2,
+		speed: 2,
+		artificialAnalysis: {
+			intelligenceIndex: 42.2,
+			codingIndex: 60.2,
+			agenticIndex: 29.1,
+			intelligenceIndexVersion: 4.1,
 		},
 	},
 
@@ -9493,6 +10920,16 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["vision", "video", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 11,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"z-ai/glm-5-turbo": {
@@ -9517,6 +10954,15 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 2,
+		artificialAnalysis: {
+			intelligenceIndex: 38.1,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"z-ai/glm-5.1": {
@@ -9540,6 +10986,16 @@ export const openrouterModelConfig: ModelConfig = {
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 2,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 35.4,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	},
 
@@ -9586,10 +11042,23 @@ export const openrouterModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0.0015,
 		costPer1kOutputTokens: 0.009,
 		costPer1kReasoningTokens: 0.009,
-		strengths: ["coding", "reasoning", "analysis", "math", "agents", "chat", "multilingual"],
-		contextComplexity: 5,
-		reliability: 5,
-		speed: 4,
+		strengths: [
+			"coding",
+			"reasoning",
+			"analysis",
+			"math",
+			"agents",
+			"chat",
+			"multilingual",
+			"vision",
+			"document",
+			"audio",
+			"video",
+			"tool_use",
+		],
+		contextComplexity: 4,
+		reliability: 3,
+		speed: 3,
 		multimodal: true,
 		includedInRouter: true,
 		supportsArtifacts: true,
@@ -9597,6 +11066,12 @@ export const openrouterModelConfig: ModelConfig = {
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		artificialAnalysis: {
+			intelligenceIndex: 50.2,
+			codingIndex: 70.1,
+			agenticIndex: 37.4,
+			intelligenceIndexVersion: 4.1,
 		},
 	},
 	"qwen/qwen3.7-max": {
@@ -9620,6 +11095,16 @@ export const openrouterModelConfig: ModelConfig = {
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["coding", "tool_use"],
+		contextComplexity: 4,
+		reliability: 2,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 46,
+			codingIndex: 66,
+			agenticIndex: 30.6,
+			intelligenceIndexVersion: 4.1,
 		},
 	},
 
@@ -9668,6 +11153,16 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["coding", "vision", "document", "tool_use"],
+		contextComplexity: 5,
+		reliability: 3,
+		speed: 2,
+		artificialAnalysis: {
+			intelligenceIndex: 55.7,
+			codingIndex: 74.3,
+			agenticIndex: 47.2,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"anthropic/claude-opus-4.8-fast": {
@@ -9688,9 +11183,19 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.01,
 		costPer1kOutputTokens: 0.05,
-		strengths: ["reasoning", "analysis", "coding", "agents", "academic", "research"],
+		strengths: [
+			"reasoning",
+			"analysis",
+			"coding",
+			"agents",
+			"academic",
+			"research",
+			"vision",
+			"document",
+			"tool_use",
+		],
 		contextComplexity: 5,
-		reliability: 5,
+		reliability: 3,
 		speed: 2,
 		multimodal: true,
 		includedInRouter: true,
@@ -9698,6 +11203,12 @@ export const openrouterModelConfig: ModelConfig = {
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		artificialAnalysis: {
+			intelligenceIndex: 55.7,
+			codingIndex: 74.3,
+			agenticIndex: 47.2,
+			intelligenceIndexVersion: 4.1,
 		},
 	},
 
@@ -9748,6 +11259,16 @@ export const openrouterModelConfig: ModelConfig = {
 			defaultEffort: "none",
 		},
 		knowledgeCutoffDate: "January 1, 2026",
+		strengths: ["vision", "video", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 29.7,
+			codingIndex: 37.3,
+			agenticIndex: 21.5,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 	"minimax/minimax-m3": {
 		name: "MiniMax M3",
@@ -9770,6 +11291,16 @@ export const openrouterModelConfig: ModelConfig = {
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["vision", "video", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 2,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 44.4,
+			codingIndex: 58.6,
+			agenticIndex: 35.4,
+			intelligenceIndexVersion: 4.1,
 		},
 	},
 	"openrouter/fusion": {
@@ -9813,6 +11344,16 @@ export const openrouterModelConfig: ModelConfig = {
 			defaultEffort: "none",
 		},
 		knowledgeCutoffDate: "April 2025",
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 2,
+		speed: 2,
+		artificialAnalysis: {
+			intelligenceIndex: 39,
+			codingIndex: 55.9,
+			agenticIndex: 20.8,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 	"nvidia/nemotron-3-ultra-550b-a55b": {
 		name: "Nemotron 3 Ultra 550B A55B",
@@ -9835,6 +11376,16 @@ export const openrouterModelConfig: ModelConfig = {
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["tool_use"],
+		contextComplexity: 3,
+		reliability: 2,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 37.8,
+			codingIndex: 49.3,
+			agenticIndex: 27.4,
+			intelligenceIndexVersion: 4.1,
 		},
 	},
 
@@ -9979,6 +11530,16 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["coding", "vision", "video", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 2,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 41.9,
+			codingIndex: 60.8,
+			agenticIndex: 29.6,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 	"z-ai/glm-5.2": {
 		name: "GLM-5.2",
@@ -10002,6 +11563,16 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["coding", "tool_use"],
+		contextComplexity: 4,
+		reliability: 3,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 51.1,
+			codingIndex: 68.8,
+			agenticIndex: 43.1,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 	"cohere/north-mini-code:free": {
 		name: "North Mini Code (free)",
@@ -10024,6 +11595,16 @@ export const openrouterModelConfig: ModelConfig = {
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 20.6,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	},
 

@@ -71,6 +71,26 @@ function modelsDevUrl() {
 async function createTriggerServer() {
 	const requests = [];
 	const server = http.createServer(async (request, response) => {
+		if (request.method === "GET" && request.url?.startsWith("/models/artificial-analysis")) {
+			response.writeHead(200, { "content-type": "application/json" });
+			response.end(
+				JSON.stringify({
+					attribution: {
+						label: "Artificial Analysis",
+						url: "https://artificialanalysis.ai/",
+					},
+					models: [],
+					pagination: {
+						total: 0,
+						page: 1,
+						limit: 100,
+						totalPages: 1,
+					},
+				}),
+			);
+			return;
+		}
+
 		let body = "";
 		for await (const chunk of request) {
 			body += chunk;
@@ -98,19 +118,25 @@ describe("sync-models-dev analysis trigger", () => {
 		const modelsDir = await createModelsDirectory();
 		const { baseUrl, requests } = await createTriggerServer();
 
-		const { stdout } = await execFileAsync("node", [
-			SCRIPT_PATH,
-			"--write",
-			"--trigger-analysis-task",
-			"--analysis-api-url",
-			baseUrl,
-			"--analysis-auth-token",
-			"ak_test",
-			"--api-url",
-			modelsDevUrl(),
-			"--models-dir",
-			modelsDir,
-		]);
+		const { stdout } = await execFileAsync(
+			"node",
+			[
+				SCRIPT_PATH,
+				"--write",
+				"--trigger-analysis-task",
+				"--api-url",
+				modelsDevUrl(),
+				"--models-dir",
+				modelsDir,
+			],
+			{
+				env: {
+					...process.env,
+					POLYCHAT_API_BASE_URL: baseUrl,
+					POLYCHAT_API_KEY: "ak_test",
+				},
+			},
+		);
 
 		expect(stdout).toContain("Triggered Artificial Analysis ingestion task task-1.");
 		expect(requests).toEqual([

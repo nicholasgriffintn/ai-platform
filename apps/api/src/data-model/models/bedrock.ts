@@ -47,15 +47,21 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 8192,
 		costPer1kInputTokens: 0.00006,
 		costPer1kOutputTokens: 0.00024,
-		strengths: ["analysis", "multilingual", "vision"],
-		contextComplexity: 3,
-		reliability: 3,
+		strengths: ["analysis", "multilingual", "vision", "video", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
 		speed: 4,
 		multimodal: true,
 		includedInRouter: false,
 		supportsDocuments: true,
 		supportsToolCalls: true,
 		supportsPromptCaching: true,
+		artificialAnalysis: {
+			intelligenceIndex: 6.9,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("nova-micro", PROVIDER, {
@@ -76,14 +82,20 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 8192,
 		costPer1kInputTokens: 0.000035,
 		costPer1kOutputTokens: 0.00014,
-		strengths: ["coding", "analysis", "multilingual"],
-		contextComplexity: 2,
-		reliability: 3,
-		speed: 5,
+		strengths: ["coding", "analysis", "multilingual", "tool_use"],
+		contextComplexity: 3,
+		reliability: 1,
+		speed: 4,
 		multimodal: false,
 		includedInRouter: true,
 		supportsToolCalls: true,
 		supportsPromptCaching: true,
+		artificialAnalysis: {
+			intelligenceIndex: 4.7,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("nova-pro", PROVIDER, {
@@ -104,14 +116,29 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 8192,
 		costPer1kInputTokens: 0.0008,
 		costPer1kOutputTokens: 0.0032,
-		strengths: ["coding", "analysis", "math", "reasoning", "vision"],
+		strengths: [
+			"coding",
+			"analysis",
+			"math",
+			"reasoning",
+			"vision",
+			"video",
+			"document",
+			"tool_use",
+		],
 		contextComplexity: 4,
-		reliability: 4,
+		reliability: 1,
 		speed: 3,
 		multimodal: true,
 		supportsDocuments: true,
 		supportsToolCalls: true,
 		supportsPromptCaching: true,
+		artificialAnalysis: {
+			intelligenceIndex: 7.7,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("nova-canvas", PROVIDER, {
@@ -224,6 +251,16 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 28.3,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("moonshot.kimi-k2-thinking", PROVIDER, {
@@ -248,6 +285,16 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["tool_use"],
+		contextComplexity: 3,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 32.7,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	}),
 
@@ -291,6 +338,16 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		costPer1kInputTokens: 0.00006,
 		costPer1kOutputTokens: 0.00023,
 		supportsResponseFormat: true,
+		strengths: ["tool_use"],
+		contextComplexity: 3,
+		reliability: 1,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 7.4,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("anthropic.claude-sonnet-4.5", PROVIDER, {
@@ -742,14 +799,20 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.00135,
 		costPer1kOutputTokens: 0.0054,
-		strengths: ["math", "reasoning", "analysis"],
-		contextComplexity: 5,
-		reliability: 4,
+		strengths: ["math", "reasoning", "analysis", "tool_use"],
+		contextComplexity: 3,
+		reliability: 1,
 		speed: 3,
 		supportsToolCalls: true,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		artificialAnalysis: {
+			intelligenceIndex: 12.6,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	}),
 
@@ -1109,6 +1172,16 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 34.7,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("anthropic.claude-opus-4-6-v1", PROVIDER, {
@@ -1132,6 +1205,16 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 5,
+		reliability: 2,
+		speed: 2,
+		artificialAnalysis: {
+			intelligenceIndex: 43.7,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	}),
 
@@ -1277,6 +1360,15 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 21,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("eu.anthropic.claude-haiku-4-5-20251001-v1:0", PROVIDER, {
@@ -1325,6 +1417,16 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 34.7,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("eu.anthropic.claude-opus-4-6-v1", PROVIDER, {
@@ -1348,6 +1450,16 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 5,
+		reliability: 2,
+		speed: 2,
+		artificialAnalysis: {
+			intelligenceIndex: 43.7,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	}),
 
@@ -1441,6 +1553,16 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 34.7,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("global.anthropic.claude-opus-4-6-v1", PROVIDER, {
@@ -1464,6 +1586,16 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 5,
+		reliability: 2,
+		speed: 2,
+		artificialAnalysis: {
+			intelligenceIndex: 43.7,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	}),
 
@@ -1770,6 +1902,16 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 31.4,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("mistral.ministral-3-14b-instruct", PROVIDER, {
@@ -1808,6 +1950,16 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		costPer1kInputTokens: 0.00015,
 		costPer1kOutputTokens: 0.00015,
 		supportsResponseFormat: true,
+		strengths: ["tool_use"],
+		contextComplexity: 3,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 8.9,
+			codingIndex: 11.4,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("mistral.mistral-7b-instruct-v0:2", PROVIDER, {
@@ -1925,6 +2077,16 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["vision", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 29.4,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("openai.gpt-oss-120b-1:0", PROVIDER, {
@@ -1947,6 +2109,16 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["tool_use"],
+		contextComplexity: 3,
+		reliability: 1,
+		speed: 5,
+		artificialAnalysis: {
+			intelligenceIndex: 23.8,
+			codingIndex: 30.4,
+			agenticIndex: 13.2,
+			intelligenceIndexVersion: 4.1,
 		},
 	}),
 
@@ -1971,6 +2143,16 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["tool_use"],
+		contextComplexity: 3,
+		reliability: 1,
+		speed: 5,
+		artificialAnalysis: {
+			intelligenceIndex: 14.9,
+			codingIndex: 20.7,
+			agenticIndex: 3.1,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("qwen.qwen3-235b-a22b-2507-v1:0", PROVIDER, {
@@ -1991,6 +2173,16 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		costPer1kInputTokens: 0.00022,
 		costPer1kOutputTokens: 0.00088,
 		supportsResponseFormat: true,
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 22.3,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("qwen.qwen3-32b-v1:0", PROVIDER, {
@@ -2015,6 +2207,16 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["tool_use"],
+		contextComplexity: 2,
+		reliability: 1,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 8.6,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("qwen.qwen3-coder-30b-a3b-v1:0", PROVIDER, {
@@ -2035,6 +2237,16 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		costPer1kInputTokens: 0.00015,
 		costPer1kOutputTokens: 0.0006,
 		supportsResponseFormat: true,
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 13.6,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("qwen.qwen3-coder-480b-a35b-v1:0", PROVIDER, {
@@ -2055,6 +2267,16 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		costPer1kInputTokens: 0.00022,
 		costPer1kOutputTokens: 0.0018,
 		supportsResponseFormat: true,
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 18,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("qwen.qwen3-next-80b-a3b", PROVIDER, {
@@ -2074,6 +2296,16 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 262000,
 		costPer1kInputTokens: 0.00014,
 		costPer1kOutputTokens: 0.0014,
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 13.7,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("qwen.qwen3-vl-235b-a22b", PROVIDER, {
@@ -2093,6 +2325,16 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 262000,
 		costPer1kInputTokens: 0.0003,
 		costPer1kOutputTokens: 0.0015,
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 14.3,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("us.anthropic.claude-haiku-4-5-20251001-v1:0", PROVIDER, {
@@ -2141,6 +2383,16 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 34.7,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("us.anthropic.claude-opus-4-6-v1", PROVIDER, {
@@ -2164,6 +2416,16 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 5,
+		reliability: 2,
+		speed: 2,
+		artificialAnalysis: {
+			intelligenceIndex: 43.7,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	}),
 
@@ -2189,6 +2451,16 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 26.6,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("zai.glm-4.7-flash", PROVIDER, {
@@ -2213,6 +2485,16 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 15.5,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 	createModelConfig("anthropic.claude-opus-4-7", PROVIDER, {
 		name: "Claude Opus 4.7",
@@ -2234,6 +2516,16 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["coding", "vision", "document", "tool_use"],
+		contextComplexity: 5,
+		reliability: 3,
+		speed: 2,
+		artificialAnalysis: {
+			intelligenceIndex: 53.5,
+			codingIndex: 73.6,
+			agenticIndex: 44.4,
+			intelligenceIndexVersion: 4.1,
 		},
 	}),
 
@@ -2258,6 +2550,16 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["coding", "vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 3,
+		speed: 2,
+		artificialAnalysis: {
+			intelligenceIndex: 47.2,
+			codingIndex: 63,
+			agenticIndex: 40.8,
+			intelligenceIndexVersion: 4.1,
 		},
 	}),
 
@@ -2379,6 +2681,15 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 24.7,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("eu.anthropic.claude-opus-4-7", PROVIDER, {
@@ -2401,6 +2712,16 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["coding", "vision", "document", "tool_use"],
+		contextComplexity: 5,
+		reliability: 3,
+		speed: 2,
+		artificialAnalysis: {
+			intelligenceIndex: 53.5,
+			codingIndex: 73.6,
+			agenticIndex: 44.4,
+			intelligenceIndexVersion: 4.1,
 		},
 	}),
 
@@ -2426,6 +2747,16 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["coding", "vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 3,
+		speed: 2,
+		artificialAnalysis: {
+			intelligenceIndex: 47.2,
+			codingIndex: 63,
+			agenticIndex: 40.8,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("global.anthropic.claude-opus-4-7", PROVIDER, {
@@ -2448,6 +2779,16 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["coding", "vision", "document", "tool_use"],
+		contextComplexity: 5,
+		reliability: 3,
+		speed: 2,
+		artificialAnalysis: {
+			intelligenceIndex: 53.5,
+			codingIndex: 73.6,
+			agenticIndex: 44.4,
+			intelligenceIndexVersion: 4.1,
 		},
 	}),
 
@@ -2473,6 +2814,16 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["coding", "vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 3,
+		speed: 2,
+		artificialAnalysis: {
+			intelligenceIndex: 47.2,
+			codingIndex: 63,
+			agenticIndex: 40.8,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("jp.anthropic.claude-opus-4-7", PROVIDER, {
@@ -2495,6 +2846,16 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["coding", "vision", "document", "tool_use"],
+		contextComplexity: 5,
+		reliability: 3,
+		speed: 2,
+		artificialAnalysis: {
+			intelligenceIndex: 53.5,
+			codingIndex: 73.6,
+			agenticIndex: 44.4,
+			intelligenceIndexVersion: 4.1,
 		},
 	}),
 
@@ -2544,6 +2905,16 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["coding", "vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 3,
+		speed: 2,
+		artificialAnalysis: {
+			intelligenceIndex: 47.2,
+			codingIndex: 63,
+			agenticIndex: 40.8,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("minimax.minimax-m2.5", PROVIDER, {
@@ -2566,6 +2937,16 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 33.7,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	}),
 
@@ -2609,6 +2990,16 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["vision", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 11.9,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("mistral.ministral-3-3b-instruct", PROVIDER, {
@@ -2628,6 +3019,16 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 8192,
 		costPer1kInputTokens: 0.0001,
 		costPer1kOutputTokens: 0.0001,
+		strengths: ["vision", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 5.6,
+			codingIndex: 4.8,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("mistral.mistral-large-3-675b-instruct", PROVIDER, {
@@ -2647,6 +3048,16 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 8192,
 		costPer1kInputTokens: 0.0005,
 		costPer1kOutputTokens: 0.0015,
+		strengths: ["vision", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 16.2,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("mistral.pixtral-large-2502-v1:0", PROVIDER, {
@@ -2665,6 +3076,16 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 8192,
 		costPer1kInputTokens: 0.002,
 		costPer1kOutputTokens: 0.006,
+		strengths: ["vision", "tool_use"],
+		contextComplexity: 3,
+		reliability: 1,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 8.1,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("nvidia.nemotron-nano-3-30b", PROVIDER, {
@@ -2711,6 +3132,16 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 25.4,
+			codingIndex: 37.7,
+			agenticIndex: 8.7,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("qwen.qwen3-coder-next", PROVIDER, {
@@ -2734,6 +3165,16 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 21.2,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("us.anthropic.claude-opus-4-7", PROVIDER, {
@@ -2756,6 +3197,16 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["coding", "vision", "document", "tool_use"],
+		contextComplexity: 5,
+		reliability: 3,
+		speed: 2,
+		artificialAnalysis: {
+			intelligenceIndex: 53.5,
+			codingIndex: 73.6,
+			agenticIndex: 44.4,
+			intelligenceIndexVersion: 4.1,
 		},
 	}),
 
@@ -2781,6 +3232,16 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["coding", "vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 3,
+		speed: 2,
+		artificialAnalysis: {
+			intelligenceIndex: 47.2,
+			codingIndex: 63,
+			agenticIndex: 40.8,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("us.deepseek.r1-v1:0", PROVIDER, {
@@ -2803,6 +3264,15 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["tool_use"],
+		contextComplexity: 3,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 12.6,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	}),
 
@@ -2911,6 +3381,16 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 32.4,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 	createModelConfig("anthropic.claude-opus-4-8", PROVIDER, {
 		name: "Claude Opus 4.8",
@@ -2931,6 +3411,16 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["coding", "vision", "document", "tool_use"],
+		contextComplexity: 5,
+		reliability: 3,
+		speed: 2,
+		artificialAnalysis: {
+			intelligenceIndex: 55.7,
+			codingIndex: 74.3,
+			agenticIndex: 47.2,
+			intelligenceIndexVersion: 4.1,
 		},
 	}),
 
@@ -2954,6 +3444,16 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["coding", "vision", "document", "tool_use"],
+		contextComplexity: 5,
+		reliability: 3,
+		speed: 2,
+		artificialAnalysis: {
+			intelligenceIndex: 55.7,
+			codingIndex: 74.3,
+			agenticIndex: 47.2,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("eu.anthropic.claude-opus-4-8", PROVIDER, {
@@ -2975,6 +3475,16 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["coding", "vision", "document", "tool_use"],
+		contextComplexity: 5,
+		reliability: 3,
+		speed: 2,
+		artificialAnalysis: {
+			intelligenceIndex: 55.7,
+			codingIndex: 74.3,
+			agenticIndex: 47.2,
+			intelligenceIndexVersion: 4.1,
 		},
 	}),
 
@@ -2998,6 +3508,16 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["coding", "vision", "document", "tool_use"],
+		contextComplexity: 5,
+		reliability: 3,
+		speed: 2,
+		artificialAnalysis: {
+			intelligenceIndex: 55.7,
+			codingIndex: 74.3,
+			agenticIndex: 47.2,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("jp.anthropic.claude-opus-4-8", PROVIDER, {
@@ -3019,6 +3539,16 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["coding", "vision", "document", "tool_use"],
+		contextComplexity: 5,
+		reliability: 3,
+		speed: 2,
+		artificialAnalysis: {
+			intelligenceIndex: 55.7,
+			codingIndex: 74.3,
+			agenticIndex: 47.2,
+			intelligenceIndexVersion: 4.1,
 		},
 	}),
 
@@ -3042,6 +3572,16 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["coding", "vision", "document", "tool_use"],
+		contextComplexity: 5,
+		reliability: 3,
+		speed: 2,
+		artificialAnalysis: {
+			intelligenceIndex: 55.7,
+			codingIndex: 74.3,
+			agenticIndex: 47.2,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 	createModelConfig("openai.gpt-5.4", PROVIDER, {
 		name: "GPT-5.4",
@@ -3064,6 +3604,16 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 27.7,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	}),
 
@@ -3089,6 +3639,16 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 2,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 35.4,
+			codingIndex: 56.5,
+			agenticIndex: 25.8,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("openai.gpt-oss-120b", PROVIDER, {
@@ -3108,15 +3668,21 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00015,
 		costPer1kOutputTokens: 0.0006,
-		strengths: ["reasoning", "analysis", "coding", "math"],
-		contextComplexity: 5,
-		reliability: 4,
-		speed: 3,
+		strengths: ["reasoning", "analysis", "coding", "math", "tool_use"],
+		contextComplexity: 3,
+		reliability: 1,
+		speed: 5,
 		includedInRouter: true,
 		supportsArtifacts: true,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		artificialAnalysis: {
+			intelligenceIndex: 23.8,
+			codingIndex: 30.4,
+			agenticIndex: 13.2,
+			intelligenceIndexVersion: 4.1,
 		},
 	}),
 
@@ -3137,15 +3703,21 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00007,
 		costPer1kOutputTokens: 0.0003,
-		strengths: ["reasoning", "analysis", "coding"],
-		contextComplexity: 4,
-		reliability: 4,
-		speed: 4,
+		strengths: ["reasoning", "analysis", "coding", "tool_use"],
+		contextComplexity: 3,
+		reliability: 1,
+		speed: 5,
 		includedInRouter: true,
 		supportsArtifacts: true,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		artificialAnalysis: {
+			intelligenceIndex: 14.9,
+			codingIndex: 20.7,
+			agenticIndex: 3.1,
+			intelligenceIndexVersion: 4.1,
 		},
 	}),
 	createModelConfig("eu.anthropic.claude-fable-5", PROVIDER, {
@@ -3168,6 +3740,15 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["coding", "vision", "document", "tool_use"],
+		contextComplexity: 5,
+		reliability: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 59.9,
+			codingIndex: 76.5,
+			agenticIndex: 52.8,
+			intelligenceIndexVersion: 4.1,
 		},
 	}),
 
@@ -3192,6 +3773,15 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["coding", "vision", "document", "tool_use"],
+		contextComplexity: 5,
+		reliability: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 59.9,
+			codingIndex: 76.5,
+			agenticIndex: 52.8,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("us.anthropic.claude-fable-5", PROVIDER, {
@@ -3214,6 +3804,15 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["coding", "vision", "document", "tool_use"],
+		contextComplexity: 5,
+		reliability: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 59.9,
+			codingIndex: 76.5,
+			agenticIndex: 52.8,
+			intelligenceIndexVersion: 4.1,
 		},
 	}),
 ]);

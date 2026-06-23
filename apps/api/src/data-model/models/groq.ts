@@ -292,10 +292,10 @@ export const groqModelConfig: ModelConfig = {
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.000075,
 		costPer1kOutputTokens: 0.0003,
-		strengths: ["reasoning", "analysis", "coding"],
+		strengths: ["reasoning", "analysis", "coding", "tool_use"],
 		contextComplexity: 4,
-		reliability: 4,
-		speed: 4,
+		reliability: 1,
+		speed: 5,
 		isFeatured: true,
 		includedInRouter: true,
 		supportsArtifacts: true,
@@ -303,6 +303,12 @@ export const groqModelConfig: ModelConfig = {
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		artificialAnalysis: {
+			intelligenceIndex: 14.9,
+			codingIndex: 20.7,
+			agenticIndex: 3.1,
+			intelligenceIndexVersion: 4.1,
 		},
 	},
 	"groq-openai-gpt-oss-120b": {
@@ -324,10 +330,10 @@ export const groqModelConfig: ModelConfig = {
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.00015,
 		costPer1kOutputTokens: 0.0006,
-		strengths: ["reasoning", "analysis", "coding", "multilingual"],
-		contextComplexity: 5,
-		reliability: 4,
-		speed: 2,
+		strengths: ["reasoning", "analysis", "coding", "multilingual", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 5,
 		isFeatured: true,
 		includedInRouter: true,
 		supportsArtifacts: true,
@@ -335,6 +341,12 @@ export const groqModelConfig: ModelConfig = {
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		artificialAnalysis: {
+			intelligenceIndex: 23.8,
+			codingIndex: 30.4,
+			agenticIndex: 13.2,
+			intelligenceIndexVersion: 4.1,
 		},
 	},
 	"qwen/qwen3-32b": {
@@ -358,6 +370,16 @@ export const groqModelConfig: ModelConfig = {
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["tool_use"],
+		contextComplexity: 3,
+		reliability: 1,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 8.6,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	},
 	"allam-2-7b": {

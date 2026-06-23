@@ -113,6 +113,15 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["vision", "audio", "video", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 27,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("ghcopilot/anthropic/claude-opus-4", PROVIDER, {
@@ -158,6 +167,16 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
 		costPer1kInputTokens: 0.002,
 		costPer1kOutputTokens: 0.008,
 		supportsResponseFormat: true,
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 3,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 19.4,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("ghcopilot/openai/gpt-4o", PROVIDER, {
@@ -234,6 +253,16 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 34.7,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("ghcopilot/anthropic/claude-opus-4.6", PROVIDER, {
@@ -256,6 +285,16 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 2,
+		speed: 2,
+		artificialAnalysis: {
+			intelligenceIndex: 43.7,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	}),
 
@@ -304,6 +343,15 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["vision", "audio", "video", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 27.4,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("ghcopilot/openai/gpt-5-mini", PROVIDER, {
@@ -328,6 +376,16 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
 			defaultEffort: "none",
 		},
 		supportsResponseFormat: true,
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 2,
+		artificialAnalysis: {
+			intelligenceIndex: 33,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("ghcopilot/openai/gpt-5.2", PROVIDER, {
@@ -352,6 +410,16 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
 			defaultEffort: "none",
 		},
 		supportsResponseFormat: true,
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 26,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("ghcopilot/openai/gpt-5.2-codex", PROVIDER, {
@@ -376,6 +444,16 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
 			defaultEffort: "none",
 		},
 		supportsResponseFormat: true,
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 2,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 40.1,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("ghcopilot/xai/grok-code-fast-1", PROVIDER, {
@@ -421,6 +499,16 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["coding", "vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 3,
+		speed: 2,
+		artificialAnalysis: {
+			intelligenceIndex: 53.5,
+			codingIndex: 73.6,
+			agenticIndex: 44.4,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("claude-sonnet-4.6", PROVIDER, {
@@ -443,6 +531,16 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["coding", "vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 3,
+		speed: 2,
+		artificialAnalysis: {
+			intelligenceIndex: 47.2,
+			codingIndex: 63,
+			agenticIndex: 40.8,
+			intelligenceIndexVersion: 4.1,
 		},
 	}),
 
@@ -468,6 +566,16 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["coding", "vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 2,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 46.5,
+			codingIndex: 68.8,
+			agenticIndex: 21.4,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("gpt-5.3-codex", PROVIDER, {
@@ -492,6 +600,16 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
 			defaultEffort: "none",
 		},
 		supportsResponseFormat: true,
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 2,
+		speed: 2,
+		artificialAnalysis: {
+			intelligenceIndex: 44.3,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("gpt-5.4", PROVIDER, {
@@ -516,6 +634,16 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
 			defaultEffort: "none",
 		},
 		supportsResponseFormat: true,
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 27.7,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("gpt-5.4-mini", PROVIDER, {
@@ -539,6 +667,16 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 16.6,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	}),
 
@@ -564,6 +702,16 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
 			defaultEffort: "none",
 		},
 		supportsResponseFormat: true,
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 2,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 35.4,
+			codingIndex: 56.5,
+			agenticIndex: 25.8,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 	createModelConfig("gemini-3.5-flash", PROVIDER, {
 		name: "Gemini 3.5 Flash",
@@ -587,6 +735,16 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["coding", "vision", "audio", "video", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 3,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 50.2,
+			codingIndex: 70.1,
+			agenticIndex: 37.4,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 	createModelConfig("claude-opus-4.8", PROVIDER, {
 		name: "Claude Opus 4.8",
@@ -608,6 +766,16 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["coding", "vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 3,
+		speed: 2,
+		artificialAnalysis: {
+			intelligenceIndex: 55.7,
+			codingIndex: 74.3,
+			agenticIndex: 47.2,
+			intelligenceIndexVersion: 4.1,
 		},
 	}),
 	createModelConfig("claude-sonnet-4", PROVIDER, {
@@ -655,6 +823,16 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 17.6,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	}),
 
 	createModelConfig("raptor-mini", PROVIDER, {
@@ -700,6 +878,15 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+		strengths: ["coding", "vision", "document", "tool_use"],
+		contextComplexity: 5,
+		reliability: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 59.9,
+			codingIndex: 76.5,
+			agenticIndex: 52.8,
+			intelligenceIndexVersion: 4.1,
 		},
 	}),
 ]);

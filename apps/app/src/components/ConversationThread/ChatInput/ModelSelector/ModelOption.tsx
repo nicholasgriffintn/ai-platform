@@ -74,7 +74,8 @@ export const ModelOption = ({
 		model.description ||
 		(model.strengths && model.strengths.length > 0) ||
 		model.contextWindow ||
-		model.maxTokens,
+		model.maxTokens ||
+		model.artificialAnalysis,
 	);
 	const canShowHoverPreview = showDetailsTrigger && Boolean(onInfoHoverStart);
 	const hasRegionOptions = regionOptions.length > 1;
@@ -225,7 +226,6 @@ export const ModelOption = ({
 							onClick={showModelDetails}
 							onFocus={showModelDetails}
 							onMouseEnter={showModelDetails}
-							onMouseLeave={() => onInfoHoverEnd?.()}
 							onBlur={() => onInfoHoverEnd?.()}
 							aria-label="View model details"
 						>

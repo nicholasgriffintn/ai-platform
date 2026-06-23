@@ -85,6 +85,13 @@ const modelVerbosityConfigSchema = z.object({
 	defaultVerbosity: z.enum(["low", "medium", "high", "caveman"]).optional(),
 });
 
+const modelArtificialAnalysisSchema = z.object({
+	intelligenceIndex: z.number().optional().nullable(),
+	codingIndex: z.number().optional().nullable(),
+	agenticIndex: z.number().optional().nullable(),
+	intelligenceIndexVersion: z.number().optional().nullable(),
+});
+
 export const modelConfigItemSchema = z.object({
 	id: z.string().optional(),
 	matchingModel: z.string(),
@@ -168,6 +175,7 @@ export const modelConfigItemSchema = z.object({
 	promptTemplate: z.string().optional(),
 	reasoningConfig: modelReasoningConfigSchema.optional(),
 	verbosityConfig: modelVerbosityConfigSchema.optional(),
+	artificialAnalysis: modelArtificialAnalysisSchema.optional(),
 });
 
 export const modelSchema = modelConfigItemSchema;

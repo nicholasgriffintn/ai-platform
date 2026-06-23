@@ -554,6 +554,16 @@ export const xaiModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0.00125,
 		costPer1kOutputTokens: 0.0025,
 		supportsResponseFormat: true,
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 5,
+		artificialAnalysis: {
+			intelligenceIndex: 22.5,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"grok-4.20-0309-reasoning": {
@@ -578,6 +588,16 @@ export const xaiModelConfig: ModelConfig = {
 			defaultEffort: "none",
 		},
 		supportsResponseFormat: true,
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 2,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 37,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"grok-4.20-multi-agent-0309": {
@@ -626,6 +646,16 @@ export const xaiModelConfig: ModelConfig = {
 			defaultEffort: "none",
 		},
 		supportsResponseFormat: true,
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 4,
+		artificialAnalysis: {
+			intelligenceIndex: 24.8,
+			codingIndex: 35.2,
+			agenticIndex: 22.8,
+			intelligenceIndexVersion: 4.1,
+		},
 	},
 
 	"grok-imagine-image": {
