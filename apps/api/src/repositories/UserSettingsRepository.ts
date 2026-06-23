@@ -259,6 +259,9 @@ export class UserSettingsRepository extends BaseRepository {
 		if (!Object.hasOwn(settings, "memory_provider")) {
 			delete updates.memory_provider;
 		}
+		if (!Object.hasOwn(settings, "temporary_chats_default")) {
+			delete updates.temporary_chats_default;
+		}
 
 		const allowedFields = Object.keys(updates);
 
