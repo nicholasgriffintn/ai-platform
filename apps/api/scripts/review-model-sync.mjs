@@ -62,8 +62,27 @@ const REVIEW_RESPONSE_SCHEMA = {
 	additionalProperties: false,
 };
 
+let cachedGitRoot;
+
+function resolveGitRoot() {
+	if (cachedGitRoot) {
+		return cachedGitRoot;
+	}
+
+	const result = spawnSync("git", ["rev-parse", "--show-toplevel"], {
+		encoding: "utf8",
+	});
+	if (result.status !== 0) {
+		throw new Error(result.stderr || "git rev-parse --show-toplevel failed");
+	}
+
+	cachedGitRoot = result.stdout.trim();
+	return cachedGitRoot;
+}
+
 function runGit(args, options = {}) {
 	const result = spawnSync("git", args, {
+		cwd: resolveGitRoot(),
 		encoding: "utf8",
 		input: options.input,
 	});

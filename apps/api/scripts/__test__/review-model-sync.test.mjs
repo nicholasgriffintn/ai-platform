@@ -1,4 +1,11 @@
-import { describe, expect, it } from "vitest";
+import { execFile } from "node:child_process";
+import fs from "node:fs/promises";
+import os from "node:os";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import { promisify } from "node:util";
+
+import { afterEach, describe, expect, it } from "vitest";
 
 import {
 	assessModelSyncDiff,
@@ -6,7 +13,69 @@ import {
 	validatePolychatReviewResponse,
 } from "../review-model-sync.mjs";
 
+const execFileAsync = promisify(execFile);
+const TEST_DIR = path.dirname(fileURLToPath(import.meta.url));
+const SCRIPT_PATH = path.resolve(TEST_DIR, "../review-model-sync.mjs");
+const temporaryDirectories = [];
+
+afterEach(async () => {
+	await Promise.all(
+		temporaryDirectories
+			.splice(0)
+			.map((directory) => fs.rm(directory, { recursive: true, force: true })),
+	);
+});
+
 describe("review-model-sync", () => {
+	it("assesses model diffs when invoked from the api package directory", async () => {
+		const repository = await fs.mkdtemp(path.join(os.tmpdir(), "review-model-sync-"));
+		temporaryDirectories.push(repository);
+		const apiDirectory = path.join(repository, "apps/api");
+		const modelFile = path.join(apiDirectory, "src/data-model/models/openai.ts");
+		await fs.mkdir(path.dirname(modelFile), { recursive: true });
+		await fs.writeFile(
+			modelFile,
+			`export const openaiModelConfig = {
+};
+`,
+			"utf8",
+		);
+		await execFileAsync("git", ["init"], { cwd: repository });
+		await execFileAsync("git", ["config", "user.email", "test@example.com"], { cwd: repository });
+		await execFileAsync("git", ["config", "user.name", "Test User"], { cwd: repository });
+		await execFileAsync("git", ["add", "apps/api/src/data-model/models/openai.ts"], {
+			cwd: repository,
+		});
+		await execFileAsync("git", ["commit", "-m", "initial"], { cwd: repository });
+		await fs.writeFile(
+			modelFile,
+			`export const openaiModelConfig = {
+\t"gpt-6-mini": {
+\t\tname: "GPT-6 Mini",
+\t},
+};
+`,
+			"utf8",
+		);
+		await execFileAsync("git", ["add", "apps/api/src/data-model/models/openai.ts"], {
+			cwd: repository,
+		});
+		await execFileAsync("git", ["commit", "-m", "sync models"], { cwd: repository });
+
+		const { stdout } = await execFileAsync(
+			"node",
+			[SCRIPT_PATH, "assess", "--base", "HEAD^", "--head", "HEAD"],
+			{ cwd: apiDirectory },
+		);
+		const assessment = JSON.parse(stdout);
+
+		expect(assessment).toMatchObject({
+			shouldCallPolychat: true,
+			changedFiles: ["apps/api/src/data-model/models/openai.ts"],
+		});
+		expect(assessment.reasons).toContain("object_model_entries_changed");
+	});
+
 	it("skips Polychat when the sync only changes low-value catalogue metadata", () => {
 		const assessment = assessModelSyncDiff({
 			changedFiles: ["apps/api/src/data-model/models/openai.ts"],
