@@ -81,7 +81,9 @@ export const ModelOption = ({
 	const hasRegionOptions = regionOptions.length > 1;
 	const showModelDetails = (event: React.SyntheticEvent<HTMLButtonElement>) => {
 		event.stopPropagation();
-		onInfoHoverStart?.(model, event.currentTarget.getBoundingClientRect());
+		const rowElement = event.currentTarget.closest('[role="option"]');
+		const anchorElement = rowElement instanceof HTMLElement ? rowElement : event.currentTarget;
+		onInfoHoverStart?.(model, anchorElement.getBoundingClientRect());
 	};
 
 	return (

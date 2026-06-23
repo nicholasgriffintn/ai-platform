@@ -16,6 +16,7 @@ import {
 	type RefObject,
 	useCallback,
 	useEffect,
+	useLayoutEffect,
 	useMemo,
 	useRef,
 	useState,
@@ -60,7 +61,7 @@ import type {
 } from "~/types";
 import { ArtificialAnalysisScorePanel } from "./ArtificialAnalysisScorePanel";
 import { AutomaticRouterPreview } from "./AutomaticRouterPreview";
-import { getHoverPreviewPosition } from "./hoverPreviewPosition";
+import { clampHoverPreviewTop, getHoverPreviewPosition } from "./hoverPreviewPosition";
 import { ModelsList } from "./ModelsList";
 import { useHoverPreviewDismiss } from "./useHoverPreviewDismiss";
 
@@ -77,10 +78,12 @@ interface ModelSelectorProps {
 interface HoverPreviewState {
 	model: ModelConfigItem;
 	left: number;
-	top?: number;
-	bottom?: number;
+	top: number;
 	width: number;
 	maxHeight: number;
+	anchorTop?: number;
+	frameTop?: number;
+	frameBottom?: number;
 }
 
 interface DialogLayout {
@@ -113,9 +116,40 @@ function HoverPreview({
 	onMouseEnter: () => void;
 	onDismiss: () => void;
 }) {
+	const [measuredTop, setMeasuredTop] = useState<number | null>(null);
+
+	useLayoutEffect(() => {
+		setMeasuredTop(null);
+	}, [preview]);
+
+	useLayoutEffect(() => {
+		if (
+			preview?.frameTop === undefined ||
+			preview.frameBottom === undefined ||
+			preview.anchorTop === undefined
+		) {
+			return;
+		}
+		const element = containerRef.current;
+		if (!element) {
+			return;
+		}
+
+		const nextTop = clampHoverPreviewTop({
+			anchorTop: preview.anchorTop,
+			previewHeight: element.getBoundingClientRect().height,
+			frameTop: preview.frameTop,
+			frameBottom: preview.frameBottom,
+		});
+		setMeasuredTop((currentTop) => (currentTop === nextTop ? currentTop : nextTop));
+	}, [containerRef, measuredTop, preview]);
+
 	if (!preview) return null;
 
 	const model = preview.model;
+	const top = measuredTop ?? preview.top;
+	const maxHeight =
+		preview.frameBottom !== undefined ? preview.frameBottom - top : preview.maxHeight;
 
 	const featureTags = Array.from(
 		new Set(
@@ -135,11 +169,10 @@ function HoverPreview({
 		<div
 			ref={containerRef}
 			style={{
-				top: preview.top,
-				bottom: preview.bottom,
+				top,
 				left: preview.left,
 				width: preview.width,
-				maxHeight: preview.maxHeight,
+				maxHeight,
 			}}
 			role="tooltip"
 			onMouseEnter={onMouseEnter}

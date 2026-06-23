@@ -1,15 +1,31 @@
 interface HoverPreviewPosition {
 	left: number;
-	top?: number;
-	bottom?: number;
+	top: number;
 	width: number;
 	maxHeight: number;
+	anchorTop?: number;
+	frameTop?: number;
+	frameBottom?: number;
 }
 
 const HOVER_PREVIEW_WIDTH = 320;
 const HOVER_PREVIEW_HEIGHT = 460;
 const HOVER_PREVIEW_GUTTER = 12;
 const HOVER_PREVIEW_EDGE = 8;
+
+export function clampHoverPreviewTop({
+	anchorTop,
+	previewHeight,
+	frameTop,
+	frameBottom,
+}: {
+	anchorTop: number;
+	previewHeight: number;
+	frameTop: number;
+	frameBottom: number;
+}) {
+	return Math.max(frameTop, Math.min(anchorTop, frameBottom - previewHeight));
+}
 
 export function getHoverPreviewPosition(
 	anchorRect: DOMRect,
@@ -53,12 +69,22 @@ export function getHoverPreviewPosition(
 	const frameHeight =
 		frameTop !== null && frameBottom !== null ? Math.max(0, frameBottom - frameTop) : null;
 
-	if (frameHeight !== null && frameBottom !== null) {
+	if (frameHeight !== null && frameTop !== null && frameBottom !== null) {
+		const minimumUsefulHeight = Math.min(HOVER_PREVIEW_HEIGHT, frameHeight);
+		const top = clampHoverPreviewTop({
+			anchorTop: anchorRect.top,
+			previewHeight: minimumUsefulHeight,
+			frameTop,
+			frameBottom,
+		});
 		return {
 			left,
-			bottom: viewportHeight - frameBottom,
+			top,
 			width,
-			maxHeight: frameHeight,
+			maxHeight: frameBottom - top,
+			anchorTop: anchorRect.top,
+			frameTop,
+			frameBottom,
 		};
 	}
 
