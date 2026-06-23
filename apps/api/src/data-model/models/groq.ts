@@ -480,7 +480,7 @@ export const groqModelConfig: ModelConfig = {
 		lastUpdated: "May 29, 2025",
 		modalities: {
 			input: ["text"],
-			output: ["text"],
+			output: ["guardrails"],
 		},
 		supportsAttachments: false,
 		supportsTemperature: false,
@@ -500,7 +500,7 @@ export const groqModelConfig: ModelConfig = {
 		lastUpdated: "May 29, 2025",
 		modalities: {
 			input: ["text"],
-			output: ["text"],
+			output: ["guardrails"],
 		},
 		supportsAttachments: false,
 		supportsTemperature: false,
@@ -519,7 +519,7 @@ export const groqModelConfig: ModelConfig = {
 		lastUpdated: "October 29, 2025",
 		modalities: {
 			input: ["text"],
-			output: ["text"],
+			output: ["guardrails"],
 		},
 		supportsAttachments: false,
 		supportsTemperature: true,

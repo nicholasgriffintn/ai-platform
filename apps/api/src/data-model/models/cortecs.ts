@@ -1469,7 +1469,7 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
 		lastUpdated: "4 February 2026",
 		modalities: {
 			input: ["text"],
-			output: ["text"],
+			output: ["guardrails"],
 		},
 		supportsAttachments: false,
 		supportsTemperature: true,
@@ -1487,7 +1487,7 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
 		lastUpdated: "4 February 2026",
 		modalities: {
 			input: ["text"],
-			output: ["text"],
+			output: ["guardrails"],
 		},
 		supportsAttachments: false,
 		supportsTemperature: true,
@@ -1611,7 +1611,7 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
 		lastUpdated: "4 December 2025",
 		modalities: {
 			input: ["text"],
-			output: ["text"],
+			output: ["guardrails"],
 		},
 		supportsAttachments: false,
 		supportsTemperature: true,

@@ -2864,7 +2864,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		lastUpdated: "December 1, 2024",
 		modalities: {
 			input: ["text"],
-			output: ["text"],
+			output: ["guardrails"],
 		},
 		supportsAttachments: false,
 		supportsTemperature: true,

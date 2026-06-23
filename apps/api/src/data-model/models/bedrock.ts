@@ -166,7 +166,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			"OpenAI's gpt-oss-safeguard-120B scales policy-driven safety approach to a 120B-parameter model for maximum accuracy and nuance. It can reason through ambiguous cases, multi-step conversations, and domain-specific rules that smaller filters routinely miss. This model is ideal for enterprises and scaled platforms that require maximal safety accuracy and nuanced policy enforcement. The primary use-cases include high-stakes content moderation, compliance screening, safety analysis of conversations/logs, and centralized policy orchestration across many downstream models.",
 		modalities: {
 			input: ["text"],
-			output: ["text"],
+			output: ["guardrails"],
 		},
 		releaseDate: "October 29, 2025",
 		lastUpdated: "October 29, 2025",
@@ -187,7 +187,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			"OpenAI's gpt-oss-safeguard-20B is a compact, open-weight safety model that lets you enforce your own moderation and compliance rules on any GPT-OSS deployment. It interprets natural-language safety policies and applies them to user prompts and model outputs, returning structured guidance or filtered text. This model is ideal for developers and platform teams who need cost effective policy-driven safety and moderation. The primary use-cases include Applying configurable safety policies to prompts/outputs, running local or edge moderation, and serving as a lightweight “safety layer” in front of open or proprietary LLMs.",
 		modalities: {
 			input: ["text"],
-			output: ["text"],
+			output: ["guardrails"],
 		},
 		releaseDate: "October 29, 2025",
 		lastUpdated: "October 29, 2025",

@@ -50,6 +50,7 @@ import type {
 	ModelSelectorScope,
 } from "~/types";
 import { AutomaticRouterPreview } from "./AutomaticRouterPreview";
+import { getHoverPreviewPosition } from "./hoverPreviewPosition";
 import { ModelsList } from "./ModelsList";
 
 interface ModelSelectorProps {
@@ -66,17 +67,13 @@ interface HoverPreviewState {
 	model: ModelConfigItem;
 	left: number;
 	top: number;
+	width: number;
 }
 
 interface DialogLayout {
 	left: number;
 	width: number;
 }
-
-const HOVER_PREVIEW_WIDTH = 320;
-const HOVER_PREVIEW_HEIGHT = 460;
-const HOVER_PREVIEW_GUTTER = 12;
-const HOVER_PREVIEW_EDGE = 8;
 
 function formatTokenCount(value?: number) {
 	if (!value) return null;
@@ -90,38 +87,6 @@ function formatCost(value?: number) {
 	if (value === 0) return "$0 / 1K tokens";
 	if (value < 0.01) return `$${value.toFixed(4)} / 1K tokens`;
 	return `$${value.toFixed(2)} / 1K tokens`;
-}
-
-function getHoverPreviewPosition(anchorRect: DOMRect) {
-	if (typeof window === "undefined" || window.innerWidth < 1024) {
-		return null;
-	}
-
-	const viewportWidth = window.innerWidth;
-	const viewportHeight = window.innerHeight;
-
-	const spaceOnRight = viewportWidth - anchorRect.right;
-	const spaceOnLeft = anchorRect.left;
-	const requiredSpace = HOVER_PREVIEW_WIDTH + HOVER_PREVIEW_GUTTER + HOVER_PREVIEW_EDGE;
-
-	let left: number;
-	if (spaceOnRight >= requiredSpace) {
-		left = anchorRect.right + HOVER_PREVIEW_GUTTER;
-	} else if (spaceOnLeft >= requiredSpace) {
-		left = anchorRect.left - HOVER_PREVIEW_WIDTH - HOVER_PREVIEW_GUTTER;
-	} else {
-		left = Math.max(
-			HOVER_PREVIEW_EDGE,
-			Math.min(viewportWidth - HOVER_PREVIEW_WIDTH - HOVER_PREVIEW_EDGE, anchorRect.left),
-		);
-	}
-
-	const top = Math.min(
-		Math.max(anchorRect.top - 40, HOVER_PREVIEW_EDGE),
-		Math.max(HOVER_PREVIEW_EDGE, viewportHeight - HOVER_PREVIEW_HEIGHT - HOVER_PREVIEW_EDGE),
-	);
-
-	return { left, top };
 }
 
 function HoverPreview({ preview }: { preview: HoverPreviewState | null }) {
@@ -145,8 +110,9 @@ function HoverPreview({ preview }: { preview: HoverPreviewState | null }) {
 
 	return (
 		<div
-			style={{ top: preview.top, left: preview.left }}
-			className="pointer-events-none fixed z-[70] hidden w-[320px] max-h-[70vh] overflow-y-auto rounded-xl border border-zinc-200 bg-white/95 p-3 shadow-2xl backdrop-blur-sm dark:border-zinc-700 dark:bg-zinc-900/95 lg:block"
+			style={{ top: preview.top, left: preview.left, width: preview.width }}
+			role="tooltip"
+			className="pointer-events-none fixed z-[70] max-h-[70vh] overflow-y-auto rounded-xl border border-zinc-200 bg-white/95 p-3 shadow-2xl backdrop-blur-sm dark:border-zinc-700 dark:bg-zinc-900/95"
 		>
 			<div className="mb-3 rounded-lg border border-zinc-200/70 p-3 dark:border-zinc-700/70">
 				<div className="flex items-center gap-2">
@@ -613,7 +579,7 @@ export const ModelSelector = ({
 	};
 
 	const handleInfoHoverStart = (modelInfo: ModelConfigItem, anchorRect: DOMRect) => {
-		if (isMobile || !isOpen) {
+		if (!isOpen) {
 			setHoverPreview(null);
 			return;
 		}

@@ -78,6 +78,10 @@ export const ModelOption = ({
 	);
 	const canShowHoverPreview = showDetailsTrigger && Boolean(onInfoHoverStart);
 	const hasRegionOptions = regionOptions.length > 1;
+	const showModelDetails = (event: React.SyntheticEvent<HTMLButtonElement>) => {
+		event.stopPropagation();
+		onInfoHoverStart?.(model, event.currentTarget.getBoundingClientRect());
+	};
 
 	return (
 		<div
@@ -218,12 +222,11 @@ export const ModelOption = ({
 						<button
 							type="button"
 							className="cursor-help rounded-full p-1 hover:bg-zinc-100 dark:hover:bg-zinc-700"
-							onClick={(event) => event.stopPropagation()}
-							onMouseEnter={(event) => {
-								event.stopPropagation();
-								onInfoHoverStart?.(model, event.currentTarget.getBoundingClientRect());
-							}}
+							onClick={showModelDetails}
+							onFocus={showModelDetails}
+							onMouseEnter={showModelDetails}
 							onMouseLeave={() => onInfoHoverEnd?.()}
+							onBlur={() => onInfoHoverEnd?.()}
 							aria-label="View model details"
 						>
 							<Info size={13} className="text-zinc-500" />

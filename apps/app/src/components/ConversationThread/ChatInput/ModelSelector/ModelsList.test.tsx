@@ -200,4 +200,32 @@ describe("ModelsList", () => {
 
 		expect(onSelect).toHaveBeenCalledWith("eu.anthropic.claude-sonnet-4-6");
 	});
+
+	it("opens model details from click and keyboard focus", () => {
+		const onInfoHoverStart = vi.fn();
+		render(
+			<ModelsList
+				models={[
+					makeModel("llama-chat", "Llama Chat", "workers-ai", {
+						description: "A chat model.",
+					}),
+				]}
+				featuredModelIds={{}}
+				isPro={true}
+				onSelect={vi.fn()}
+				onInfoHoverStart={onInfoHoverStart}
+			/>,
+		);
+
+		const detailsButton = screen.getByRole("button", { name: "View model details" });
+
+		fireEvent.click(detailsButton);
+		fireEvent.focus(detailsButton);
+
+		expect(onInfoHoverStart).toHaveBeenCalledTimes(2);
+		expect(onInfoHoverStart).toHaveBeenCalledWith(
+			expect.objectContaining({ id: "llama-chat" }),
+			expect.objectContaining({ left: expect.any(Number), top: expect.any(Number) }),
+		);
+	});
 });

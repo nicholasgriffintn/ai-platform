@@ -2869,7 +2869,7 @@ export const openrouterModelConfig: ModelConfig = {
 		lastUpdated: "October 29, 2025",
 		modalities: {
 			input: ["text"],
-			output: ["text"],
+			output: ["guardrails"],
 		},
 		supportsAttachments: false,
 		supportsTemperature: true,
@@ -6242,7 +6242,7 @@ export const openrouterModelConfig: ModelConfig = {
 		lastUpdated: "February 12, 2025",
 		modalities: {
 			input: ["text"],
-			output: ["text"],
+			output: ["guardrails"],
 		},
 		supportsAttachments: false,
 		supportsTemperature: true,
@@ -6263,7 +6263,7 @@ export const openrouterModelConfig: ModelConfig = {
 		lastUpdated: "April 30, 2025",
 		modalities: {
 			input: ["image", "text"],
-			output: ["text"],
+			output: ["guardrails"],
 		},
 		supportsAttachments: true,
 		supportsTemperature: true,

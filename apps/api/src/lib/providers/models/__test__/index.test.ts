@@ -39,4 +39,32 @@ describe("getModels", () => {
 			supportsRealtimeSession: true,
 		});
 	});
+
+	it("excludes guardrail and safety models from the default catalogue", () => {
+		const models = getModels({
+			shouldUseCache: false,
+			excludeModalities: [
+				"guardrails",
+				"voice-activity-detection",
+				"reranking",
+				"embedding",
+				"speech",
+			],
+		});
+
+		expect(Object.keys(models)).not.toEqual(
+			expect.arrayContaining([
+				"@cf/meta/llama-guard-3-8b",
+				"meta-llama/llama-guard-3-8b",
+				"meta-llama/llama-guard-4-12b",
+				"meta-llama/llama-prompt-guard-2-22m",
+				"meta-llama/llama-prompt-guard-2-86m",
+				"openai.gpt-oss-safeguard-120b",
+				"openai.gpt-oss-safeguard-20b",
+				"gpt-oss-safeguard-120b",
+				"qwen3guard-gen-8b",
+				"qwen3guard-gen-0.6b",
+			]),
+		);
+	});
 });

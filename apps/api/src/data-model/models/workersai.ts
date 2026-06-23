@@ -528,7 +528,7 @@ export const workersAiModelConfig: ModelConfig = {
 		isFree: true,
 		modalities: {
 			input: ["text"],
-			output: ["text"],
+			output: ["guardrails"],
 		},
 		releaseDate: "January 22, 2025",
 		lastUpdated: "January 22, 2025",
