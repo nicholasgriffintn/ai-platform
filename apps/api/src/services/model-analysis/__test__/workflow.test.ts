@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { ARTIFICIAL_ANALYSIS_FREE_MODEL_ENDPOINTS } from "~/lib/artificial-analysis/endpoints";
+
 import { ingestArtificialAnalysisModels, scoreArtificialAnalysisModels } from "../workflow";
 
 const mocks = vi.hoisted(() => ({
@@ -34,7 +36,7 @@ describe("artificial analysis workflow", () => {
 	});
 
 	it("fetches, stores, and schedules scoring one hour after ingest", async () => {
-		mocks.upsertMany.mockResolvedValue(1);
+		mocks.upsertMany.mockImplementation(async (records: unknown[]) => records.length);
 		mocks.enqueueTask.mockResolvedValue("score-task");
 		const fetchImpl = vi.fn().mockResolvedValue({
 			ok: true,
@@ -86,7 +88,7 @@ describe("artificial analysis workflow", () => {
 		});
 
 		expect(result).toEqual({
-			storedModels: 1,
+			storedModels: ARTIFICIAL_ANALYSIS_FREE_MODEL_ENDPOINTS.length,
 			scoringTaskId: "score-task",
 		});
 		expect(fetchImpl).toHaveBeenCalledWith(
@@ -97,12 +99,31 @@ describe("artificial analysis workflow", () => {
 				}),
 			}),
 		);
-		expect(mocks.upsertMany).toHaveBeenCalledWith([
+		expect(fetchImpl).toHaveBeenCalledWith(
+			"https://artificialanalysis.ai/api/v2/media/text-to-image/models/free",
 			expect.objectContaining({
-				id: "aa-model-1",
-				ingested_at: "2026-06-23T10:00:00.000Z",
+				headers: expect.objectContaining({
+					"x-api-key": "aa-key",
+				}),
 			}),
-		]);
+		);
+		const [storedRecords] = mocks.upsertMany.mock.calls[0];
+		expect(storedRecords).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					id: "aa-model-1",
+					ingested_at: "2026-06-23T10:00:00.000Z",
+				}),
+			]),
+		);
+		expect(storedRecords).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					id: "text_to_image:aa-model-1",
+					ingested_at: "2026-06-23T10:00:00.000Z",
+				}),
+			]),
+		);
 		expect(mocks.enqueueTask).toHaveBeenCalledWith({
 			id: "artificial-analysis-scoring:ingest-task",
 			task_type: "artificial_analysis_scoring",

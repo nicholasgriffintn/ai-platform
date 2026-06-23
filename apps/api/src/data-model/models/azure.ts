@@ -2793,19 +2793,9 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.005,
 		costPer1kOutputTokens: 0.025,
-		strengths: ["coding", "vision", "document", "tool_use"],
-		contextComplexity: 4,
-		reliability: 3,
-		speed: 2,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
-		},
-		artificialAnalysis: {
-			intelligenceIndex: 55.7,
-			codingIndex: 74.3,
-			agenticIndex: 47.2,
-			intelligenceIndexVersion: 4.1,
 		},
 	}),
 ]);

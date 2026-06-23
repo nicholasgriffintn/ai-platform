@@ -30,4 +30,42 @@ describe("ArtificialAnalysisScorePanel", () => {
 			"https://artificialanalysis.ai/",
 		);
 	});
+
+	it("renders media arena scores with Artificial Analysis links", () => {
+		render(
+			<ArtificialAnalysisScorePanel
+				analysis={{
+					mediaScores: [
+						{
+							key: "textToImageElo",
+							label: "Text-to-image arena",
+							value: 1266,
+							min: 800,
+							max: 1400,
+							confidenceInterval95: 11,
+						},
+						{
+							key: "aaWerIndex",
+							label: "Word Error Rate",
+							value: 0.04,
+							min: 0,
+							max: 1,
+							lowerIsBetter: true,
+						},
+					],
+				}}
+			/>,
+		);
+
+		expect(screen.getByText("Artificial Analysis scores")).toBeInTheDocument();
+		expect(screen.getByRole("link", { name: "Text-to-image arena score 1266" })).toHaveAttribute(
+			"href",
+			"https://artificialanalysis.ai/evaluations",
+		);
+		expect(screen.getByText("±11")).toBeInTheDocument();
+		expect(screen.getByRole("link", { name: "Word Error Rate score 0.04" })).toHaveAttribute(
+			"href",
+			"https://artificialanalysis.ai/evaluations",
+		);
+	});
 });

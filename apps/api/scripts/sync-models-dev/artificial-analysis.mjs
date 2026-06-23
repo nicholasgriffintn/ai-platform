@@ -49,9 +49,14 @@ export function buildArtificialAnalysisLookup(models) {
 
 	for (const model of models) {
 		const keys = new Set();
+		const evaluations = readRecord(model.evaluations);
 		addLookupKey(keys, model.id);
+		if (typeof model.id === "string" && model.id.includes(":")) {
+			addLookupKey(keys, model.id.split(":").at(-1));
+		}
 		addLookupKey(keys, model.name);
 		addLookupKey(keys, model.slug);
+		addLookupKey(keys, evaluations.artificial_analysis_source_id);
 
 		for (const key of keys) {
 			if (!lookup.has(key)) {
@@ -96,6 +101,7 @@ export function findArtificialAnalysisModel({
 export function deriveArtificialAnalysisScores(model) {
 	const evaluations = readRecord(model.evaluations);
 	const derivedScores = readRecord(model.derived_scores);
+	const modelType = String(evaluations.artificial_analysis_model_type ?? "");
 	const intelligence =
 		readNumber(derivedScores.intelligence) ??
 		scoreHigherIsBetter(
@@ -121,6 +127,25 @@ export function deriveArtificialAnalysisScores(model) {
 	const firstTokenLatency =
 		readNumber(derivedScores.firstTokenLatency) ??
 		scoreLowerIsBetter(readNumber(model.median_time_to_first_token_seconds), [0.5, 1, 3, 8]);
+	const arenaQuality =
+		readNumber(derivedScores.arenaQuality) ??
+		scoreHigherIsBetter(readNumber(evaluations.arena_elo), [1250, 1150, 1050, 950]);
+	const audioQuality =
+		readNumber(derivedScores.audioQuality) ??
+		scoreHigherIsBetter(
+			Math.max(
+				readNumber(evaluations.bba_score) ?? 0,
+				readNumber(evaluations.fdb_score) ?? 0,
+				readNumber(evaluations.tau_voice_score) ?? 0,
+			) || undefined,
+			[0.8, 0.6, 0.4, 0.2],
+		);
+	const transcriptionQuality =
+		readNumber(derivedScores.transcriptionQuality) ??
+		scoreLowerIsBetter(
+			modelType === "speech_to_text" ? readNumber(evaluations.aa_wer_index) : undefined,
+			[0.02, 0.05, 0.1, 0.2],
+		);
 
 	return {
 		intelligence,
@@ -128,7 +153,84 @@ export function deriveArtificialAnalysisScores(model) {
 		agentic,
 		outputSpeed,
 		firstTokenLatency,
+		arenaQuality,
+		audioQuality,
+		transcriptionQuality,
 	};
+}
+
+function buildMediaScore({
+	key,
+	label,
+	value,
+	min = 0,
+	max = 1,
+	lowerIsBetter,
+	confidenceInterval95,
+}) {
+	const numberValue = readNumber(value);
+	if (numberValue === undefined) {
+		return null;
+	}
+
+	return {
+		key,
+		label,
+		value: numberValue,
+		min,
+		max,
+		...(lowerIsBetter ? { lowerIsBetter: true } : {}),
+		...(confidenceInterval95 !== undefined && confidenceInterval95 !== null
+			? { confidenceInterval95 }
+			: {}),
+	};
+}
+
+export function buildArtificialAnalysisMediaScores(model) {
+	const evaluations = readRecord(model.evaluations);
+	const modelType = String(evaluations.artificial_analysis_model_type ?? "");
+	const scores = [];
+	const arenaScore = buildMediaScore({
+		key: `${modelType || "arena"}Elo`,
+		label: String(evaluations.artificial_analysis_model_type_label ?? "Arena Elo"),
+		value: evaluations.arena_elo,
+		min: 800,
+		max: 1400,
+		confidenceInterval95: readNumber(evaluations.arena_ci_95),
+	});
+	if (arenaScore) {
+		scores.push(arenaScore);
+	}
+
+	for (const score of [
+		buildMediaScore({
+			key: "bbaScore",
+			label: "Big Bench Audio",
+			value: evaluations.bba_score,
+		}),
+		buildMediaScore({
+			key: "fdbScore",
+			label: "Full Duplex Bench",
+			value: evaluations.fdb_score,
+		}),
+		buildMediaScore({
+			key: "tauVoiceScore",
+			label: "Tau Voice",
+			value: evaluations.tau_voice_score,
+		}),
+		buildMediaScore({
+			key: "aaWerIndex",
+			label: "Word Error Rate",
+			value: evaluations.aa_wer_index,
+			lowerIsBetter: true,
+		}),
+	]) {
+		if (score) {
+			scores.push(score);
+		}
+	}
+
+	return scores;
 }
 
 export function pushStrength(strengths, value, enabled) {
@@ -246,6 +348,27 @@ export function deriveArtificialAnalysisStrengths(model, scores, profile) {
 	pushStrength(strengths, "coding", (scores.coding ?? 0) >= 4);
 	pushStrength(strengths, "agents", (scores.agentic ?? 0) >= 4);
 	pushStrength(strengths, "instruction", (scores.agentic ?? 0) >= 4);
+	const evaluations = readRecord(model.evaluations);
+	const modelType = String(evaluations.artificial_analysis_model_type ?? "");
+	pushStrength(strengths, "image", modelType === "text_to_image" || modelType === "image_editing");
+	pushStrength(strengths, "vision", modelType === "image_editing");
+	pushStrength(
+		strengths,
+		"video",
+		modelType === "text_to_video" ||
+			modelType === "image_to_video" ||
+			modelType === "text_to_video_audio" ||
+			modelType === "image_to_video_audio",
+	);
+	pushStrength(
+		strengths,
+		"audio",
+		modelType === "music_with_vocals" ||
+			modelType === "text_to_speech" ||
+			modelType === "speech_to_speech",
+	);
+	pushStrength(strengths, "transcription", modelType === "speech_to_text");
+	pushStrength(strengths, "creative", (scores.arenaQuality ?? 0) >= 4);
 
 	return strengths;
 }
@@ -288,6 +411,10 @@ export function buildArtificialAnalysisUpdateValues(
 			intelligenceIndexVersion: readNumber(model.intelligence_index_version) ?? null,
 		},
 	};
+	const mediaScores = buildArtificialAnalysisMediaScores(model);
+	if (mediaScores.length > 0) {
+		values.artificialAnalysis.mediaScores = mediaScores;
+	}
 
 	const strengths = deriveArtificialAnalysisStrengths(model, scores, profile);
 	if (strengths.length > 0) {
@@ -312,7 +439,14 @@ export function buildArtificialAnalysisUpdateValues(
 	}
 
 	const reliability = clampRouterScore(
-		averageDefined([scores.intelligence, scores.coding, scores.agentic]),
+		averageDefined([
+			scores.intelligence,
+			scores.coding,
+			scores.agentic,
+			scores.arenaQuality,
+			scores.audioQuality,
+			scores.transcriptionQuality,
+		]),
 	);
 	if (reliability !== undefined) {
 		values.reliability = reliability;

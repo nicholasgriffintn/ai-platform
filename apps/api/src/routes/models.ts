@@ -156,7 +156,7 @@ addRoute(app, "get", "/artificial-analysis", {
 	tags: ["models"],
 	summary: "List cached Artificial Analysis model data",
 	description:
-		"Returns cached Artificial Analysis language model benchmark, pricing, and performance data with source attribution.",
+		"Returns cached Artificial Analysis benchmark, arena, pricing, and performance data with source attribution.",
 	querySchema: artificialAnalysisModelsQuerySchema,
 	responses: {
 		200: {

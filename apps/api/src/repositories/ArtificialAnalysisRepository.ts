@@ -1,7 +1,7 @@
 import type {
 	ArtificialAnalysisModelRecord,
 	ArtificialAnalysisScoreResult,
-} from "~/services/model-analysis/artificialAnalysis";
+} from "~/lib/artificial-analysis/types";
 import { PaginationHelper } from "~/lib/database/PaginationHelper";
 import { parseJsonRecord, parseJsonStringArray } from "~/utils/json";
 

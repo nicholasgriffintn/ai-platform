@@ -1,10 +1,9 @@
 import { RepositoryManager } from "~/repositories";
 import { TaskService } from "~/services/tasks/TaskService";
 import type { IEnv } from "~/types";
-import {
-	deriveArtificialAnalysisScores,
-	fetchArtificialAnalysisModels,
-} from "./artificialAnalysis";
+import { deriveArtificialAnalysisScores } from "~/lib/artificial-analysis/scoring";
+
+import { fetchArtificialAnalysisModels } from "./artificialAnalysis";
 
 export async function ingestArtificialAnalysisModels({
 	env,

@@ -90,6 +90,19 @@ const modelArtificialAnalysisSchema = z.object({
 	codingIndex: z.number().optional().nullable(),
 	agenticIndex: z.number().optional().nullable(),
 	intelligenceIndexVersion: z.number().optional().nullable(),
+	mediaScores: z
+		.array(
+			z.object({
+				key: z.string(),
+				label: z.string(),
+				value: z.number(),
+				min: z.number().optional(),
+				max: z.number().optional(),
+				lowerIsBetter: z.boolean().optional(),
+				confidenceInterval95: z.number().optional().nullable(),
+			}),
+		)
+		.optional(),
 });
 
 export const modelConfigItemSchema = z.object({
@@ -199,6 +212,9 @@ const artificialAnalysisScoresSchema = z.object({
 	price: z.number().optional(),
 	outputSpeed: z.number().optional(),
 	firstTokenLatency: z.number().optional(),
+	arenaQuality: z.number().optional(),
+	audioQuality: z.number().optional(),
+	transcriptionQuality: z.number().optional(),
 });
 
 export const artificialAnalysisModelSchema = z.object({
