@@ -16,13 +16,16 @@ import {
 	type AgentModelResponse,
 	type AgentModelToolCall,
 } from "~/lib/chat/agent/provider-io";
+import {
+	DEFAULT_AGENT_MAX_STEPS,
+	resolveAgentStepBudgetExtension,
+} from "~/lib/chat/agent/stepBudget";
 import { getAIResponse } from "~/lib/chat/responses";
 import { handleToolCalls } from "~/lib/chat/tools";
 import type { IRequest, Message } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { hasEnabledToolNames } from "~/utils/toolNames";
 
-const DEFAULT_AGENT_MAX_STEPS = 8;
 const AGENT_MAX_RECOVERY_REPLANS = 2;
 const AGENT_MAX_DECISION_FAILURES = 2;
 
@@ -88,6 +91,13 @@ export async function runAgentLoop(
 			maxRecoveryReplans: AGENT_MAX_RECOVERY_REPLANS,
 		},
 		getCommandCount: (runtimeState) => runtimeState.commandCount,
+		onStepBudgetExceeded: ({ messages, state: runtimeState }) =>
+			resolveAgentStepBudgetExtension({
+				enabledTools: params.requestParams.enabled_tools,
+				requirements: completionRequirements,
+				commandCount: runtimeState.commandCount,
+				messages,
+			}),
 		resolveDecision: async ({ messages }) => {
 			const requestParams = withRequiredToolChoice(
 				params.requestParams,

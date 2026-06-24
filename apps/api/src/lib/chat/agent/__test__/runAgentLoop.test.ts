@@ -138,4 +138,73 @@ describe("runAgentLoop", () => {
 			expect.anything(),
 		);
 	});
+
+	it("extends the step budget after tool progress so the model can finish", async () => {
+		mocks.getAIResponse
+			.mockResolvedValueOnce({
+				response: "",
+				tool_calls: [
+					{
+						id: "call-weather",
+						type: "function",
+						function: {
+							name: "get_weather",
+							arguments: JSON.stringify({
+								latitude: 51.513,
+								longitude: -0.305,
+							}),
+						},
+					},
+				],
+			})
+			.mockResolvedValueOnce({
+				response: "",
+				tool_calls: [
+					{
+						id: "call-weather-follow-up",
+						type: "function",
+						function: {
+							name: "get_weather",
+							arguments: JSON.stringify({
+								latitude: 51.513,
+								longitude: -0.305,
+								hour: "09:00",
+							}),
+						},
+					},
+				],
+			})
+			.mockResolvedValueOnce({
+				response: "No bad weather thresholds are triggered for London W5 1EW this morning.",
+			});
+		mocks.handleToolCalls
+			.mockResolvedValueOnce([
+				{
+					role: "tool",
+					name: "get_weather",
+					content: "Forecast: rain probability available.",
+					tool_call_id: "call-weather",
+				},
+			])
+			.mockResolvedValueOnce([
+				{
+					role: "tool",
+					name: "get_weather",
+					content: "09:00 forecast: light cloud, 18C, light winds.",
+					tool_call_id: "call-weather-follow-up",
+				},
+			]);
+
+		const result = await runAgentLoop(
+			createParams({
+				maxSteps: 2,
+			}),
+		);
+
+		expect(result.response.response).toBe(
+			"No bad weather thresholds are triggered for London W5 1EW this morning.",
+		);
+		expect(mocks.getAIResponse).toHaveBeenCalledTimes(3);
+		expect(mocks.handleToolCalls).toHaveBeenCalledTimes(2);
+	});
 });

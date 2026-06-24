@@ -82,7 +82,6 @@ describe("executeRecipeInvocationChat", () => {
 				enabled_tools: ["use_recipe_connector"],
 				approved_tools: ["use_recipe_connector"],
 				tool_choice: "auto",
-				max_steps: 8,
 				options: expect.objectContaining({
 					agent: {
 						minToolCalls: 1,
@@ -106,6 +105,9 @@ describe("executeRecipeInvocationChat", () => {
 				],
 			}),
 		});
+
+		const request = mocks.handleCreateChatCompletions.mock.calls[0]?.[0].request;
+		expect(request).not.toHaveProperty("max_steps");
 	});
 
 	it("titles generated recipe conversations so scheduled runs are visible in history", async () => {
