@@ -420,6 +420,58 @@ describe("handleCreateChatCompletions", () => {
 	});
 
 	describe("tool responses handling", () => {
+		it("should include non-streaming tool step metadata in post processing", async () => {
+			const request = {
+				messages: [{ role: "user", content: "Hello" }],
+			} as any;
+			const steps = [
+				{
+					stepNumber: 1,
+					stepType: "tool-call",
+					toolCallCount: 1,
+					toolResultCount: 1,
+					usage: { total_tokens: 50 },
+				},
+				{
+					stepNumber: 2,
+					stepType: "final",
+					toolCallCount: 0,
+					toolResultCount: 0,
+					usage: { total_tokens: 100 },
+				},
+			];
+
+			mockProcessChatRequest.mockResolvedValue({
+				response: {
+					response: "Using tool",
+					usage: { total_tokens: 150 },
+					totalUsage: { total_tokens: 150 },
+					steps,
+				},
+				selectedModel: "gpt-4",
+				toolResponses: [],
+			});
+			mockFormatAssistantMessage.mockReturnValue({
+				content: "Using tool",
+				model: "gpt-4",
+				usage: { total_tokens: 150 },
+				finish_reason: "stop",
+			});
+
+			const result = await handleCreateChatCompletions({
+				env: mockEnv,
+				request,
+				user: mockUser,
+			});
+
+			// @ts-expect-error - mock result
+			expect(result.usage).toEqual({ total_tokens: 150 });
+			// @ts-expect-error - mock result
+			expect(result.post_processing.steps).toEqual(steps);
+			// @ts-expect-error - mock result
+			expect(result.post_processing.total_usage).toEqual({ total_tokens: 150 });
+		});
+
 		it("should include tool responses in choices", async () => {
 			const request = {
 				messages: [{ role: "user", content: "Hello" }],

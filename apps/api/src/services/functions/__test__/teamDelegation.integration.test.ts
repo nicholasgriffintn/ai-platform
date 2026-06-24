@@ -428,7 +428,18 @@ describe("Team Delegation Integration", () => {
 
 			expect(result).toEqual(
 				expect.objectContaining({
-					response: mockResponse,
+					response: expect.objectContaining({
+						...mockResponse,
+						steps: [
+							expect.objectContaining({
+								stepNumber: 1,
+								stepType: "tool-call",
+								toolCallCount: 1,
+								toolResultCount: 1,
+							}),
+						],
+						totalUsage: { total_tokens: 150 },
+					}),
 					toolResponses: [
 						{
 							role: "tool",
@@ -506,7 +517,18 @@ describe("Team Delegation Integration", () => {
 
 			expect(result).toEqual(
 				expect.objectContaining({
-					response: mockResponse,
+					response: expect.objectContaining({
+						...mockResponse,
+						steps: [
+							expect.objectContaining({
+								stepNumber: 1,
+								stepType: "tool-call",
+								toolCallCount: 1,
+								toolResultCount: 1,
+							}),
+						],
+						totalUsage: { total_tokens: 100 },
+					}),
 					toolResponses: [
 						{
 							role: "tool",

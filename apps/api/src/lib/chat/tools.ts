@@ -21,6 +21,19 @@ interface ToolCallError extends Error {
 
 type ToolResultPersistenceMode = "batch" | "immediate" | "none";
 
+function isRecoverableToolCallError(params: {
+	errorType: string;
+	toolCallId: unknown;
+	functionName: string;
+}): boolean {
+	return (
+		params.errorType === ErrorType.TOOL_CALL_ERROR &&
+		typeof params.toolCallId === "string" &&
+		params.toolCallId.length > 0 &&
+		params.functionName !== "unknown"
+	);
+}
+
 export const handleToolCalls = async (
 	completion_id: string,
 	modelResponse: any,
@@ -115,10 +128,12 @@ export const handleToolCalls = async (
 				logger.warn(`Tool "${functionName}" requires approval but was not pre-approved`, {
 					mode,
 				});
+				const approvalReason =
+					permissionResult.reason ??
+					`Tool "${functionName}" requires explicit approval before it can run. Ask the user to confirm.`;
 				const approvalError = formatToolErrorResponse(
 					functionName,
-					permissionResult.reason ??
-						`Tool "${functionName}" requires explicit approval before it can run. Ask the user to confirm.`,
+					approvalReason,
 					"APPROVAL_REQUIRED",
 				);
 				await recordToolResult({
@@ -126,7 +141,15 @@ export const handleToolCalls = async (
 					name: functionName,
 					content: approvalError.content,
 					status: "error",
-					data: approvalError.data,
+					data: {
+						...approvalError.data,
+						approvalRequired: true,
+						approval: {
+							toolName: functionName,
+							toolCallId: toolCall.id,
+							reason: approvalReason,
+						},
+					},
 					log_id: modelResponseLogId || "",
 					id: generateId(),
 					tool_call_id: toolCall.id,
@@ -309,13 +332,18 @@ export const handleToolCalls = async (
 				functionError.message || "Unknown error occurred",
 				errorType,
 			);
+			const recoverable = isRecoverableToolCallError({
+				errorType,
+				toolCallId: toolCall.id,
+				functionName,
+			});
 
 			const errorMessage: Message = {
 				role: "tool",
 				name: toolCall.name || functionName,
 				content: formattedError.content,
 				status: "error",
-				data: formattedError.data,
+				data: recoverable ? { ...formattedError.data, recoverable: true } : formattedError.data,
 				log_id: modelResponseLogId || "",
 				id: generateId(),
 				tool_call_id: toolCall.id,

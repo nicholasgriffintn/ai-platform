@@ -226,6 +226,7 @@ describe("tools", () => {
 				"Missing tool call ID",
 				"TOOL_CALL_ERROR",
 			);
+			expect(result[0].data).not.toHaveProperty("recoverable");
 		});
 
 		it("should handle invalid JSON in tool arguments", async () => {
@@ -255,6 +256,9 @@ describe("tools", () => {
 				expect.stringContaining("Invalid arguments for search"),
 				"TOOL_CALL_ERROR",
 			);
+			expect(result[0].data).toMatchObject({
+				recoverable: true,
+			});
 		});
 
 		it("should handle memory tool with invalid JSON", async () => {
@@ -655,6 +659,14 @@ describe("tools", () => {
 					expect.stringContaining("approval"),
 					"APPROVAL_REQUIRED",
 				);
+				expect(result[0].data).toMatchObject({
+					approvalRequired: true,
+					approval: {
+						toolName: "run_code",
+						toolCallId: "call-1",
+						reason: expect.stringContaining("approval"),
+					},
+				});
 				expect(handleFunctions).not.toHaveBeenCalled();
 			});
 

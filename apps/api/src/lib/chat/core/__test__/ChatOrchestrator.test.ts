@@ -244,7 +244,7 @@ describe("ChatOrchestrator", () => {
 				);
 			});
 
-			it("should reject streaming for agent modes", async () => {
+			it("should stream progress and final text for agent modes", async () => {
 				mockPreparer.prepare.mockResolvedValue({
 					modelConfigs: [{ model: "test-model" }],
 					primaryModel: "test-model",
@@ -256,18 +256,45 @@ describe("ChatOrchestrator", () => {
 					userSettings: {},
 					currentMode: "agent",
 				});
-
-				await expect(
-					orchestrator.process({
-						...mockOptions,
-						stream: true,
-					}),
-				).rejects.toMatchObject({
-					type: ErrorType.PARAMS_ERROR,
-					statusCode: 400,
-					message:
-						"Agent modes (agent, plan, build, explore) do not support streaming. Set stream: false.",
+				mockGetAIResponse.mockResolvedValue({
+					response: "Agent final answer",
+					usage: { total_tokens: 25 },
 				});
+				mockConversationManager.add.mockResolvedValue(undefined);
+
+				const result = await orchestrator.process({
+					...mockOptions,
+					stream: true,
+				});
+
+				expect(result).toEqual(
+					expect.objectContaining({
+						selectedModel: "test-model",
+						completion_id: "test-completion-id",
+						stream: expect.any(ReadableStream),
+					}),
+				);
+				if (!("stream" in result)) {
+					throw new Error("Expected streamed agent result");
+				}
+
+				const reader = result.stream.getReader();
+				const decoder = new TextDecoder();
+				let body = "";
+				while (true) {
+					const { value, done } = await reader.read();
+					if (done) {
+						break;
+					}
+					body += decoder.decode(value, { stream: true });
+				}
+				body += decoder.decode();
+
+				expect(body).toContain('"type":"state"');
+				expect(body).toContain('"state":"agent_event"');
+				expect(body).toContain('"type":"message_delta"');
+				expect(body).toContain("Agent final answer");
+				expect(body).toContain("[DONE]");
 			});
 
 			it("should handle multi-model streaming request", async () => {
@@ -423,6 +450,109 @@ describe("ChatOrchestrator", () => {
 				if ("toolResponses" in result) {
 					expect(result.toolResponses).toEqual(mockToolResults);
 				}
+			});
+
+			it("should continue non-streaming tool calls to a final answer when max steps allow it", async () => {
+				const toolCallResponse = {
+					response: "",
+					tool_calls: [
+						{
+							id: "tool-1",
+							type: "function",
+							function: { name: "test_tool", arguments: "{}" },
+						},
+					],
+					usage: { total_tokens: 50 },
+				};
+				const finalResponse = {
+					response: "Final answer using the tool result",
+					usage: { prompt_tokens: 60, completion_tokens: 40, total_tokens: 100 },
+				};
+				const mockToolResults = [
+					{
+						role: "tool",
+						name: "test_tool",
+						content: "tool result",
+						status: "success",
+						tool_call_id: "tool-1",
+					},
+				];
+
+				mockGetAIResponse
+					.mockResolvedValueOnce(toolCallResponse)
+					.mockResolvedValueOnce(finalResponse);
+				mockGuardrails.validateOutput.mockResolvedValue({ isValid: true });
+				mockHandleToolCalls.mockResolvedValue(mockToolResults);
+				mockConversationManager.add.mockResolvedValue(undefined);
+
+				const result = await orchestrator.process({
+					...mockOptions,
+					max_steps: 2,
+				});
+
+				expect(mockGetAIResponse).toHaveBeenCalledTimes(2);
+				expect(mockGetAIResponse).toHaveBeenNthCalledWith(
+					2,
+					expect.objectContaining({
+						messages: expect.arrayContaining([
+							expect.objectContaining({
+								role: "assistant",
+								tool_calls: toolCallResponse.tool_calls,
+							}),
+							expect.objectContaining({
+								role: "tool",
+								name: "test_tool",
+								tool_call_id: "tool-1",
+							}),
+						]),
+						stream: false,
+					}),
+				);
+				expect(mockConversationManager.add).toHaveBeenNthCalledWith(
+					1,
+					"test-completion-id",
+					expect.objectContaining({
+						role: "assistant",
+						tool_calls: toolCallResponse.tool_calls,
+					}),
+				);
+				expect(mockConversationManager.add.mock.invocationCallOrder[0]).toBeLessThan(
+					mockHandleToolCalls.mock.invocationCallOrder[0],
+				);
+				expect(result).toEqual({
+					response: {
+						...finalResponse,
+						usage: {
+							prompt_tokens: 60,
+							completion_tokens: 40,
+							total_tokens: 150,
+						},
+						steps: [
+							expect.objectContaining({
+								stepNumber: 1,
+								stepType: "tool-call",
+								toolCallCount: 1,
+								toolResultCount: 1,
+								usage: { total_tokens: 50 },
+							}),
+							expect.objectContaining({
+								stepNumber: 2,
+								stepType: "final",
+								toolCallCount: 0,
+								toolResultCount: 0,
+								usage: { prompt_tokens: 60, completion_tokens: 40, total_tokens: 100 },
+							}),
+						],
+						totalUsage: {
+							prompt_tokens: 60,
+							completion_tokens: 40,
+							total_tokens: 150,
+						},
+					},
+					toolResponses: mockToolResults,
+					selectedModel: "test-model",
+					completion_id: "test-completion-id",
+				});
 			});
 
 			it("should preserve delegation context when handling tool calls", async () => {

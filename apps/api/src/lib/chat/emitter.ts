@@ -32,6 +32,28 @@ export function encodeEventData(data: string): Uint8Array {
 	return encoder.encode(data);
 }
 
+export interface ChatSseStreamWriter {
+	readable: ReadableStream<Uint8Array>;
+	writeEvent: (type: string, payload?: SSEEventPayload) => Promise<void>;
+	writeDone: () => Promise<void>;
+	close: () => Promise<void>;
+	abort: (error: unknown) => Promise<void>;
+}
+
+export function createChatSseStreamWriter(): ChatSseStreamWriter {
+	const { readable, writable } = new TransformStream<Uint8Array, Uint8Array>();
+	const writer = writable.getWriter();
+
+	return {
+		readable,
+		writeEvent: (type: string, payload: SSEEventPayload = {}) =>
+			writer.write(encodeEventData(createEventData(type, payload))),
+		writeDone: () => writer.write(encodeEventData(formatChatStreamSseDone())),
+		close: () => writer.close(),
+		abort: (error: unknown) => writer.abort(error),
+	};
+}
+
 /**
  * Helper to emit the [DONE] event to signal stream completion
  * @param controller - The stream controller

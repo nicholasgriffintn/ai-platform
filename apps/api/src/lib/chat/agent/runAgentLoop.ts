@@ -1,6 +1,7 @@
 import {
 	createToolCallActionHandler,
 	executeAgentLoop,
+	type AgentEvent,
 	type AgentLoopState,
 } from "@assistant/agent-core";
 import type { ConversationManager } from "~/lib/conversationManager";
@@ -21,6 +22,7 @@ import {
 	resolveAgentStepBudgetExtension,
 } from "~/lib/chat/agent/stepBudget";
 import { getAIResponse } from "~/lib/chat/responses";
+import { isSuccessfulToolStatus } from "~/lib/chat/tool-results";
 import { handleToolCalls } from "~/lib/chat/tools";
 import type { IRequest, Message } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -48,6 +50,7 @@ export interface AgentLoopExecutionParams {
 	conversationManager: ConversationManager;
 	toolRequestContext: IRequest;
 	maxSteps?: number;
+	emit?: (event: AgentEvent) => Promise<void>;
 }
 
 export interface AgentLoopExecutionResult {
@@ -90,6 +93,7 @@ export async function runAgentLoop(
 			maxConsecutiveDecisionFailures: AGENT_MAX_DECISION_FAILURES,
 			maxRecoveryReplans: AGENT_MAX_RECOVERY_REPLANS,
 		},
+		emit: params.emit,
 		getCommandCount: (runtimeState) => runtimeState.commandCount,
 		onStepBudgetExceeded: ({ messages, state: runtimeState }) =>
 			resolveAgentStepBudgetExtension({
@@ -187,7 +191,9 @@ export async function runAgentLoop(
 						context.shared.toolRequestContext,
 					);
 
-					context.state.commandCount += providerToolCalls.length;
+					context.state.commandCount += toolResults.filter((message) =>
+						isSuccessfulToolStatus(message.status),
+					).length;
 					toolResponses.push(...toolResults);
 					context.messages.push(...toolResults);
 				},

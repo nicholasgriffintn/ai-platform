@@ -143,7 +143,14 @@ class AgentProviderIO {
 	providerToolCalls(toolCalls: ToolCallInvocation[]): Record<string, unknown>[] {
 		return toolCalls.map((toolCall) => {
 			if (isPlainObject(toolCall.raw)) {
-				return toolCall.raw;
+				if (typeof toolCall.raw.id === "string" && toolCall.raw.id.length > 0) {
+					return toolCall.raw;
+				}
+
+				return {
+					...toolCall.raw,
+					id: toolCall.id || this.createId(),
+				};
 			}
 
 			return {

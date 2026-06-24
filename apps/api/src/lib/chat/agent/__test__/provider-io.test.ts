@@ -111,6 +111,16 @@ describe("agent provider IO", () => {
 					name: "synthetic_tool",
 					arguments: { value: 1 },
 				},
+				{
+					name: "missing_id_tool",
+					raw: {
+						type: "function",
+						function: {
+							name: "missing_id_tool",
+							arguments: "{}",
+						},
+					},
+				},
 			]),
 		).toEqual([
 			{
@@ -127,6 +137,14 @@ describe("agent provider IO", () => {
 				function: {
 					name: "synthetic_tool",
 					arguments: JSON.stringify({ value: 1 }),
+				},
+			},
+			{
+				id: "generated-id",
+				type: "function",
+				function: {
+					name: "missing_id_tool",
+					arguments: "{}",
 				},
 			},
 		]);

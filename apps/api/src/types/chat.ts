@@ -384,6 +384,8 @@ export interface CreateChatCompletionsResponse {
 			error?: string;
 			violations?: any[];
 		};
+		steps?: Array<Record<string, any>>;
+		total_usage?: Record<string, any>;
 	};
 	usage_limits?: {
 		daily?: {

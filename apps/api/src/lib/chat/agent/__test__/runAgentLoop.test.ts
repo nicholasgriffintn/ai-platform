@@ -96,6 +96,7 @@ describe("runAgentLoop", () => {
 				role: "tool",
 				name: "get_weather",
 				content: "Forecast: light cloud, 18C, light winds.",
+				status: "success",
 				tool_call_id: "call-weather",
 			},
 		]);
@@ -183,6 +184,7 @@ describe("runAgentLoop", () => {
 					role: "tool",
 					name: "get_weather",
 					content: "Forecast: rain probability available.",
+					status: "success",
 					tool_call_id: "call-weather",
 				},
 			])
@@ -191,6 +193,7 @@ describe("runAgentLoop", () => {
 					role: "tool",
 					name: "get_weather",
 					content: "09:00 forecast: light cloud, 18C, light winds.",
+					status: "success",
 					tool_call_id: "call-weather-follow-up",
 				},
 			]);
@@ -206,5 +209,86 @@ describe("runAgentLoop", () => {
 		);
 		expect(mocks.getAIResponse).toHaveBeenCalledTimes(3);
 		expect(mocks.handleToolCalls).toHaveBeenCalledTimes(2);
+	});
+
+	it("does not count failed tool results toward minimum tool requirements", async () => {
+		mocks.getAIResponse
+			.mockResolvedValueOnce({
+				response: "",
+				tool_calls: [
+					{
+						id: "call-weather-failed",
+						type: "function",
+						function: {
+							name: "get_weather",
+							arguments: JSON.stringify({
+								latitude: 51.513,
+								longitude: -0.305,
+							}),
+						},
+					},
+				],
+			})
+			.mockResolvedValueOnce({
+				response: "I could not check the weather because the tool failed.",
+			})
+			.mockResolvedValueOnce({
+				response: "",
+				tool_calls: [
+					{
+						id: "call-weather-retry",
+						type: "function",
+						function: {
+							name: "get_weather",
+							arguments: JSON.stringify({
+								latitude: 51.513,
+								longitude: -0.305,
+							}),
+						},
+					},
+				],
+			})
+			.mockResolvedValueOnce({
+				response: "No bad weather thresholds are triggered for London W5 1EW this morning.",
+			});
+		mocks.handleToolCalls
+			.mockResolvedValueOnce([
+				{
+					role: "tool",
+					name: "get_weather",
+					content: "Tool failed: upstream service rejected the input.",
+					status: "error",
+					tool_call_id: "call-weather-failed",
+				},
+			])
+			.mockResolvedValueOnce([
+				{
+					role: "tool",
+					name: "get_weather",
+					content: "Forecast: light cloud, 18C, light winds.",
+					status: "success",
+					tool_call_id: "call-weather-retry",
+				},
+			]);
+
+		const result = await runAgentLoop(createParams());
+
+		expect(result.response.response).toBe(
+			"No bad weather thresholds are triggered for London W5 1EW this morning.",
+		);
+		expect(mocks.getAIResponse).toHaveBeenCalledTimes(4);
+		expect(mocks.handleToolCalls).toHaveBeenCalledTimes(2);
+		expect(mocks.getAIResponse).toHaveBeenNthCalledWith(
+			2,
+			expect.objectContaining({
+				tool_choice: "required",
+			}),
+		);
+		expect(mocks.getAIResponse).toHaveBeenNthCalledWith(
+			4,
+			expect.objectContaining({
+				tool_choice: "auto",
+			}),
+		);
 	});
 });

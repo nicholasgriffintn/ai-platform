@@ -1,6 +1,7 @@
 import type { ExecutionContext } from "@cloudflare/workers-types";
 import { processChatRequest } from "~/lib/chat/core";
 import { buildMessageParts } from "~/lib/chat/messageParts";
+import { buildChatPostProcessing } from "~/lib/chat/post-processing";
 import { formatAssistantMessage } from "~/lib/chat/responses";
 import { sseResponse } from "~/lib/http/streaming";
 import type {
@@ -170,8 +171,9 @@ export const handleCreateChatCompletions = async (req: {
 				: []),
 		],
 		usage: assistantMessage.usage,
-		post_processing: {
+		post_processing: buildChatPostProcessing({
 			guardrails: assistantMessage.guardrails,
-		},
+			response: result.response,
+		}),
 	};
 };

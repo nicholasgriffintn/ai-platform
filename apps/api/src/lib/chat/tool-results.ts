@@ -1,9 +1,17 @@
-import type { Message, ToolCall } from "~/types";
+import type { Message } from "~/types";
 
 const SUCCESSFUL_TOOL_STATUSES = new Set(["success", "completed"]);
 
-function getToolCallName(toolCall: ToolCall): string | undefined {
-	return toolCall.function?.name;
+export interface ToolCallResultReference {
+	id?: string;
+	name?: string;
+	function?: {
+		name?: string;
+	};
+}
+
+function getToolCallName(toolCall: ToolCallResultReference): string | undefined {
+	return toolCall.function?.name || toolCall.name;
 }
 
 export function isSuccessfulToolStatus(status: string | null | undefined): boolean {
@@ -26,7 +34,7 @@ function isContinuableToolResult(message: Message): boolean {
 }
 
 export function getFinalToolResultsForCalls(
-	toolCalls: ToolCall[],
+	toolCalls: ToolCallResultReference[],
 	toolResults: Message[],
 ): Message[] {
 	return toolCalls.flatMap((toolCall) => {
@@ -41,7 +49,7 @@ export function getFinalToolResultsForCalls(
 }
 
 export function shouldContinueAfterToolResults(
-	toolCalls: ToolCall[],
+	toolCalls: ToolCallResultReference[],
 	toolResults: Message[],
 ): boolean {
 	if (toolCalls.length === 0) {
