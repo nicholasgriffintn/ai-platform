@@ -171,6 +171,43 @@ describe("ResponseFormatter", () => {
 			}
 		});
 
+		it("should preserve tool calls for OpenAI-compatible gateway responses", async () => {
+			const data = {
+				choices: [
+					{
+						message: {
+							content: "",
+							tool_calls: [
+								{
+									id: "call_weather",
+									type: "function",
+									function: {
+										name: "get_weather",
+										arguments: '{"latitude":51.5074,"longitude":-0.1278}',
+									},
+								},
+							],
+						},
+						finish_reason: "tool_calls",
+					},
+				],
+			};
+
+			const result = await ResponseFormatter.formatResponse(data, "compat");
+
+			expect(result.response).toBe("");
+			expect(result.tool_calls).toEqual([
+				{
+					id: "call_weather",
+					type: "function",
+					function: {
+						name: "get_weather",
+						arguments: '{"latitude":51.5074,"longitude":-0.1278}',
+					},
+				},
+			]);
+		});
+
 		it("should handle unknown provider with generic formatter", async () => {
 			const data = {
 				choices: [{ message: { content: "Unknown provider response" } }],

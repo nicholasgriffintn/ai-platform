@@ -66,6 +66,7 @@ export class ResponseFormatter {
 	): (data: any, options: ResponseFormatOptions) => any {
 		const formatters: Record<string, (data: any, options: ResponseFormatOptions) => any> = {
 			openai: ResponseFormatter.formatOpenAIResponse,
+			compat: ResponseFormatter.formatOpenAIResponse,
 			anthropic: ResponseFormatter.formatAnthropicResponse,
 			"google-ai-studio": ResponseFormatter.formatGoogleStudioResponse,
 			ollama: ResponseFormatter.formatOllamaResponse,
