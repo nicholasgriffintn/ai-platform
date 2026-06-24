@@ -39,7 +39,7 @@
 		"PUBLIC_ASSETS_URL": "REPLACE_ME",
 		"PUBLIC_ASSETS_BUCKET": "assistant-assets",
 		"REQUIRE_CAPTCHA_SECRET_KEY": "false",
-		"ALWAYS_ENABLED_PROVIDERS": "workers-ai,mistral,deepseek,google-ai-studio",
+		"ALWAYS_ENABLED_PROVIDERS": "workers-ai,mistral,deepseek,google-ai-studio,cohere",
 		"LOG_LEVEL": "warn",
 		"ENV": "production"
 	},
