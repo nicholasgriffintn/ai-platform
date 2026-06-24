@@ -35,6 +35,7 @@ export interface AgentProviderIOOptions {
 
 type AgentRuntimeMessage = AgentMessage & {
 	name?: unknown;
+	tool_calls?: unknown;
 	tool_call_id?: unknown;
 	tool_call_arguments?: unknown;
 	status?: unknown;
@@ -73,6 +74,12 @@ class AgentProviderIO {
 
 			if (typeof message.name === "string") {
 				providerMessage.name = message.name;
+			}
+
+			if (message.role === "assistant" && Array.isArray(message.tool_calls)) {
+				providerMessage.tool_calls = message.tool_calls.filter((toolCall) =>
+					isPlainObject(toolCall),
+				);
 			}
 
 			if (typeof message.tool_call_id === "string") {

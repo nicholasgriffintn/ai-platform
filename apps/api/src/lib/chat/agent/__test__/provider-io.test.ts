@@ -36,6 +36,48 @@ describe("agent provider IO", () => {
 		]);
 	});
 
+	it("preserves assistant tool calls before tool results", () => {
+		const providerIO = createAgentProviderIO();
+		const toolCalls = [
+			{
+				id: "call-weather",
+				type: "function",
+				function: {
+					name: "get_weather",
+					arguments: '{"latitude":51.513,"longitude":-0.305}',
+				},
+			},
+		];
+
+		expect(
+			providerIO.providerMessages([
+				{
+					role: "assistant",
+					content: "",
+					tool_calls: toolCalls,
+				},
+				{
+					role: "tool",
+					name: "get_weather",
+					content: "Forecast: clear, 27.65C.",
+					tool_call_id: "call-weather",
+				},
+			]),
+		).toEqual([
+			{
+				role: "assistant",
+				content: "",
+				tool_calls: toolCalls,
+			},
+			{
+				role: "tool",
+				name: "get_weather",
+				content: "Forecast: clear, 27.65C.",
+				tool_call_id: "call-weather",
+			},
+		]);
+	});
+
 	it("interprets provider model responses and tool calls", () => {
 		const providerIO = createAgentProviderIO();
 
