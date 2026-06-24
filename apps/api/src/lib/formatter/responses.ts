@@ -68,6 +68,7 @@ export class ResponseFormatter {
 			openai: ResponseFormatter.formatOpenAIResponse,
 			compat: ResponseFormatter.formatOpenAIResponse,
 			anthropic: ResponseFormatter.formatAnthropicResponse,
+			cohere: ResponseFormatter.formatCohereResponse,
 			"google-ai-studio": ResponseFormatter.formatGoogleStudioResponse,
 			ollama: ResponseFormatter.formatOllamaResponse,
 			bedrock: ResponseFormatter.formatBedrockResponse,
@@ -628,6 +629,40 @@ export class ResponseFormatter {
 			response: textContent,
 			thinking: thinkingContent?.thinking || "",
 			signature: thinkingContent?.signature || "",
+		};
+	}
+
+	private static formatCohereResponse(data: any, options: ResponseFormatOptions = {}): any {
+		const message = data.message;
+		const content = Array.isArray(message?.content) ? message.content : [];
+		const textContent = content
+			.filter((item: any) => item?.type === "text" && typeof item.text === "string")
+			.map((item: any) => item.text)
+			.join("");
+		const thinkingContent = content
+			.filter((item: any) => item?.type === "thinking" && typeof item.thinking === "string")
+			.map((item: any) => item.thinking)
+			.join("");
+		const toolCalls = Array.isArray(message?.toolCalls)
+			? message.toolCalls.map((toolCall: any) => ({
+					id: toolCall.id,
+					type: toolCall.type || "function",
+					function: {
+						name: toolCall.function?.name || "",
+						arguments: toolCall.function?.arguments || "{}",
+					},
+				}))
+			: [];
+		const processedTextContent = !options.is_streaming
+			? preprocessQwQResponse(textContent, options.model || data.model || "")
+			: textContent;
+
+		return {
+			...data,
+			response: processedTextContent,
+			thinking: thinkingContent || message?.toolPlan || "",
+			citations: message?.citations || data.citations || [],
+			...(toolCalls.length ? { tool_calls: toolCalls } : {}),
 		};
 	}
 

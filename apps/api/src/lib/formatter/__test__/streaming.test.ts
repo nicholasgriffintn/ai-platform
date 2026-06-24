@@ -118,6 +118,21 @@ describe("StreamingFormatter", () => {
 			expect(result).toBe("Anthropic text");
 		});
 
+		it("should extract content from Cohere v2 content-delta events", () => {
+			const data = {
+				type: "content-delta",
+				delta: {
+					message: {
+						content: { text: "Cohere text" },
+					},
+				},
+			};
+
+			const result = StreamingFormatter.extractContentFromChunk(data);
+
+			expect(result).toBe("Cohere text");
+		});
+
 		it("should extract content from Anthropic content_block_delta format", () => {
 			const data = {
 				delta: { type: "text_delta", text: "Delta text" },
@@ -231,6 +246,36 @@ describe("StreamingFormatter", () => {
 			expect(result).toBe("First, the user...");
 		});
 
+		it("should extract thinking from Cohere v2 content-delta events", () => {
+			const data = {
+				type: "content-delta",
+				delta: {
+					message: {
+						content: { thinking: "Cohere thinking" },
+					},
+				},
+			};
+
+			const result = StreamingFormatter.extractThinkingFromChunk(data);
+
+			expect(result).toBe("Cohere thinking");
+		});
+
+		it("should extract tool plan from Cohere v2 tool-plan-delta events", () => {
+			const data = {
+				type: "tool-plan-delta",
+				delta: {
+					message: {
+						toolPlan: "I will use a tool.",
+					},
+				},
+			};
+
+			const result = StreamingFormatter.extractThinkingFromChunk(data);
+
+			expect(result).toBe("I will use a tool.");
+		});
+
 		it("should handle null reasoning_content in DeepSeek format", () => {
 			const data = {
 				choices: [{ delta: { reasoning_content: null } }],
@@ -306,6 +351,71 @@ describe("StreamingFormatter", () => {
 						type: "function",
 						function: {
 							name: "get_weather",
+							arguments: '{"location":"London"}',
+						},
+					},
+				],
+			});
+		});
+
+		it("should extract Cohere v2 tool call start events as accumulated tool calls", () => {
+			const data = {
+				type: "tool-call-start",
+				index: 0,
+				delta: {
+					message: {
+						toolCalls: {
+							id: "call-weather",
+							type: "function",
+							function: {
+								name: "get_weather",
+							},
+						},
+					},
+				},
+			};
+
+			const result = StreamingFormatter.extractToolCall(data);
+
+			expect(result).toEqual({
+				format: "openai",
+				toolCalls: [
+					{
+						index: 0,
+						id: "call-weather",
+						type: "function",
+						function: {
+							name: "get_weather",
+							arguments: "",
+						},
+					},
+				],
+			});
+		});
+
+		it("should extract Cohere v2 tool call argument deltas", () => {
+			const data = {
+				type: "tool-call-delta",
+				index: 0,
+				delta: {
+					message: {
+						toolCalls: {
+							function: {
+								arguments: '{"location":"London"}',
+							},
+						},
+					},
+				},
+			};
+
+			const result = StreamingFormatter.extractToolCall(data);
+
+			expect(result).toEqual({
+				format: "openai",
+				toolCalls: [
+					{
+						index: 0,
+						function: {
 							arguments: '{"location":"London"}',
 						},
 					},
@@ -499,6 +609,17 @@ describe("StreamingFormatter", () => {
 
 			expect(result).toBe(false);
 		});
+
+		it("should return true for Cohere v2 message-end events", () => {
+			const data = {
+				type: "message-end",
+				delta: { finishReason: "COMPLETE" },
+			};
+
+			const result = StreamingFormatter.isCompletionIndicated(data);
+
+			expect(result).toBe(true);
+		});
 	});
 
 	describe("extractUsageData", () => {
@@ -529,6 +650,23 @@ describe("StreamingFormatter", () => {
 			});
 		});
 
+		it("should extract Cohere v2 usage from message-end events", () => {
+			const data = {
+				type: "message-end",
+				delta: {
+					usage: {
+						tokens: { inputTokens: 20, outputTokens: 8 },
+					},
+				},
+			};
+
+			const result = StreamingFormatter.extractUsageData(data);
+
+			expect(result).toEqual({
+				tokens: { inputTokens: 20, outputTokens: 8 },
+			});
+		});
+
 		it("should return null when no usage data present", () => {
 			const data = { other: "field" };
 
@@ -549,6 +687,21 @@ describe("StreamingFormatter", () => {
 			const result = StreamingFormatter.extractCitations(data);
 
 			expect(result).toEqual(citations);
+		});
+
+		it("should extract Cohere v2 citation-start events", () => {
+			const data = {
+				type: "citation-start",
+				delta: {
+					message: {
+						citations: { start: 0, end: 4, text: "test" },
+					},
+				},
+			};
+
+			const result = StreamingFormatter.extractCitations(data);
+
+			expect(result).toEqual([{ start: 0, end: 4, text: "test" }]);
 		});
 
 		it("should extract Google search grounding citations", () => {

@@ -50,6 +50,7 @@ import { opencodeModelConfig } from "~/data-model/models/opencode";
 import { opencodeGoModelConfig } from "~/data-model/models/opencode-go";
 import { cortecsModelConfig } from "~/data-model/models/cortecs";
 import { novaModelConfig } from "~/data-model/models/nova";
+import { cohereModelConfig } from "~/data-model/models/cohere";
 
 import {
 	findTrainingDeploymentModelConfig,
@@ -115,6 +116,7 @@ const modelConfig: ModelConfig = mergeModelConfigs(
 	falModelConfig,
 	ideogramModelConfig,
 	cerebrasModelConfig,
+	cohereModelConfig,
 	opencodeModelConfig,
 	opencodeGoModelConfig,
 	cortecsModelConfig,

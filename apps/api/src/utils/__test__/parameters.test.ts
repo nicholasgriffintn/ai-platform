@@ -549,6 +549,32 @@ describe("parameters", () => {
 			expect(result.top_p).toBe(0.9);
 		});
 
+		it("should map Cohere v2 request controls", () => {
+			const result = createCommonParameters(
+				{
+					...baseParams,
+					top_p: 0.8,
+					top_k: 40,
+					stop: ["END"],
+					repetition_penalty: 1.1,
+					frequency_penalty: 0.2,
+					presence_penalty: 0.3,
+				},
+				modelConfig,
+				"cohere",
+			);
+
+			expect(result.p).toBe(0.8);
+			expect(result.k).toBe(40);
+			expect(result.stop_sequences).toEqual(["END"]);
+			expect(result.frequency_penalty).toBe(0.2);
+			expect(result.presence_penalty).toBe(0.3);
+			expect(result.top_p).toBeUndefined();
+			expect(result.top_k).toBeUndefined();
+			expect(result.stop).toBeUndefined();
+			expect(result.repetition_penalty).toBeUndefined();
+		});
+
 		it("should exclude top_p when in thinking mode", () => {
 			const paramsWithTopP = {
 				...baseParams,
@@ -685,6 +711,20 @@ describe("parameters", () => {
 			const result = getToolsForProvider(paramsWithChoice, modelConfig, "openai");
 
 			expect(result.tool_choice).toBe("auto");
+		});
+
+		it("should map Cohere tool controls to v2 fields", () => {
+			const paramsWithTools = {
+				...baseParams,
+				parallel_tool_calls: true,
+				tool_choice: "required",
+			} as ChatCompletionParameters;
+
+			const result = getToolsForProvider(paramsWithTools, modelConfig, "cohere");
+
+			expect(result.tools).toBeDefined();
+			expect(result.tool_choice).toBe("REQUIRED");
+			expect(result.parallel_tool_calls).toBeUndefined();
 		});
 
 		it("auto-enables trigger_recipe for signed-in Pro users", () => {

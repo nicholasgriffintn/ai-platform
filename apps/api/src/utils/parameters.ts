@@ -182,7 +182,7 @@ export function createCommonParameters(
 
 	if (providerName !== "anthropic") {
 		commonParams.seed = params.seed;
-		if (modelConfig.supportsRepetitionPenalty !== false) {
+		if (providerName !== "cohere" && modelConfig.supportsRepetitionPenalty !== false) {
 			commonParams.repetition_penalty = returnValidatedPenalty(
 				"repetition_penalty",
 				params.repetition_penalty,
@@ -214,6 +214,11 @@ export function createCommonParameters(
 		commonParams.max_tokens = effectiveMaxTokens;
 	}
 
+	if (providerName === "cohere") {
+		commonParams.k = params.top_k;
+		commonParams.stop_sequences = params.stop;
+	}
+
 	if (params.model && params.response_format) {
 		const supportsResponseFormat = modelConfig?.supportsResponseFormat || false;
 		if (supportsResponseFormat) {
@@ -222,7 +227,9 @@ export function createCommonParameters(
 	}
 
 	if (modelConfig.supportsTopP !== false && params.model && !params.should_think) {
-		if (modelConfig.restrictsCombinedTopPAndTemperature) {
+		if (providerName === "cohere") {
+			commonParams.p = params.top_p;
+		} else if (modelConfig.restrictsCombinedTopPAndTemperature) {
 			if (params.temperature !== undefined && params.top_p !== undefined) {
 				commonParams.temperature = params.temperature;
 				delete commonParams.top_p;
@@ -291,11 +298,17 @@ export function getToolsForProvider(
 			result.tools = tools;
 		}
 
-		if (modelConfig?.supportsParallelToolCalls !== false) {
+		if (providerName !== "cohere" && modelConfig?.supportsParallelToolCalls !== false) {
 			result.parallel_tool_calls = params.parallel_tool_calls;
 		}
 
-		result.tool_choice = params.tool_choice;
+		if (providerName === "cohere") {
+			if (params.tool_choice === "required") {
+				result.tool_choice = "REQUIRED";
+			}
+		} else {
+			result.tool_choice = params.tool_choice;
+		}
 
 		return result;
 	} catch (error: any) {

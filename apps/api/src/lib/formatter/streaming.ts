@@ -22,6 +22,10 @@ export class StreamingFormatter {
 			return data.delta || "";
 		}
 
+		if (data.type === "content-delta") {
+			return data.delta?.message?.content?.text || "";
+		}
+
 		// Regular OpenAI-like message format
 		if (data.choices?.[0]?.message?.content) {
 			return data.choices[0].message.content;
@@ -120,6 +124,14 @@ export class StreamingFormatter {
 			return data.choices[0].delta.reasoning_content || "";
 		}
 
+		if (data.type === "content-delta" && data.delta?.message?.content?.thinking) {
+			return data.delta.message.content.thinking || "";
+		}
+
+		if (data.type === "tool-plan-delta" && data.delta?.message?.toolPlan) {
+			return data.delta.message.toolPlan || "";
+		}
+
 		return null;
 	}
 
@@ -152,6 +164,39 @@ export class StreamingFormatter {
 			return {
 				format: "direct",
 				toolCalls: responseFunctionCalls,
+			};
+		}
+
+		if (data.type === "tool-call-start" && data.delta?.message?.toolCalls) {
+			const toolCall = data.delta.message.toolCalls;
+			return {
+				format: "openai",
+				toolCalls: [
+					{
+						index: data.index ?? 0,
+						id: toolCall.id,
+						type: toolCall.type || "function",
+						function: {
+							name: toolCall.function?.name || "",
+							arguments: toolCall.function?.arguments || "",
+						},
+					},
+				],
+			};
+		}
+
+		if (data.type === "tool-call-delta" && data.delta?.message?.toolCalls) {
+			const toolCall = data.delta.message.toolCalls;
+			return {
+				format: "openai",
+				toolCalls: [
+					{
+						index: data.index ?? 0,
+						function: {
+							arguments: toolCall.function?.arguments || "",
+						},
+					},
+				],
 			};
 		}
 
@@ -259,6 +304,10 @@ export class StreamingFormatter {
 			return true;
 		}
 
+		if (data.type === "message-end") {
+			return true;
+		}
+
 		// Google format
 		const googleFinishReason = data.candidates?.[0]?.finishReason?.toLowerCase();
 		if (googleFinishReason === "stop" || googleFinishReason === "length") {
@@ -288,6 +337,10 @@ export class StreamingFormatter {
 			return data.response.usage;
 		}
 
+		if (data.type === "message-end" && data.delta?.usage) {
+			return data.delta.usage;
+		}
+
 		if (data.usageMetadata) {
 			return data.usageMetadata;
 		}
@@ -303,6 +356,14 @@ export class StreamingFormatter {
 	static extractCitations(data: any): any[] {
 		if (Array.isArray(data.citations)) {
 			return data.citations;
+		}
+
+		if (Array.isArray(data.message?.citations)) {
+			return data.message.citations;
+		}
+
+		if (data.type === "citation-start" && data.delta?.message?.citations) {
+			return [data.delta.message.citations];
 		}
 
 		// Google's search grounding format

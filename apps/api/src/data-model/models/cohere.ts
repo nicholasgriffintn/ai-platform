@@ -1,0 +1,350 @@
+import type { ModelConfig } from "@assistant/schemas";
+import { createModelConfig, createModelConfigObject } from "~/lib/providers/models/utils";
+
+const PROVIDER = "cohere";
+
+export const cohereModelConfig: ModelConfig = createModelConfigObject([
+	createModelConfig("c4ai-aya-expanse-32b", PROVIDER, {
+		name: "Aya Expanse 32B",
+		description:
+			"Aya Expanse 32B is an open-weight research release of a model with highly advanced multilingual capabilities.",
+		matchingModel: "c4ai-aya-expanse-32b",
+		releaseDate: "October 24, 2024",
+		lastUpdated: "October 24, 2024",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: false,
+		contextWindow: 128000,
+		maxTokens: 4000,
+	}),
+
+	createModelConfig("c4ai-aya-expanse-8b", PROVIDER, {
+		name: "Aya Expanse 8B",
+		description:
+			"Aya Expanse 8B is an open-weight research release of a model with highly advanced multilingual capabilities.",
+		matchingModel: "c4ai-aya-expanse-8b",
+		releaseDate: "October 24, 2024",
+		lastUpdated: "October 24, 2024",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: false,
+		contextWindow: 8000,
+		maxTokens: 4000,
+	}),
+
+	createModelConfig("c4ai-aya-vision-32b", PROVIDER, {
+		name: "Aya Vision 32B",
+		description:
+			"Cohere Labs Aya Vision 32B is an open weights research release of a 32-billion parameter model with advanced capabilities optimized for a variety of vision-language use cases.",
+		matchingModel: "c4ai-aya-vision-32b",
+		releaseDate: "March 4, 2025",
+		lastUpdated: "May 14, 2025",
+		modalities: {
+			input: ["text", "image"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: false,
+		contextWindow: 16000,
+		maxTokens: 4000,
+	}),
+
+	createModelConfig("c4ai-aya-vision-8b", PROVIDER, {
+		name: "Aya Vision 8B",
+		description:
+			"Cohere Labs Aya Vision 8B is an open weights research release of an 8-billion parameter model with advanced capabilities optimized for a variety of vision-language use cases.",
+		matchingModel: "c4ai-aya-vision-8b",
+		releaseDate: "March 4, 2025",
+		lastUpdated: "May 14, 2025",
+		modalities: {
+			input: ["text", "image"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: false,
+		contextWindow: 16000,
+		maxTokens: 4000,
+	}),
+
+	createModelConfig("command-a-03-2025", PROVIDER, {
+		name: "Command A",
+		description:
+			"Command A excels at tool use, exhibiting particular strength in using tools in real-world, diverse, and dynamic environments.",
+		matchingModel: "command-a-03-2025",
+		knowledgeCutoffDate: "June 1, 2024",
+		releaseDate: "March 13, 2025",
+		lastUpdated: "March 13, 2025",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 256000,
+		maxTokens: 8000,
+		costPer1kInputTokens: 0.0025,
+		costPer1kOutputTokens: 0.01,
+		strengths: ["tool_use"],
+		contextComplexity: 3,
+		reliability: 1,
+		speed: 3,
+		artificialAnalysis: {
+			intelligenceIndex: 7.7,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
+	}),
+
+	createModelConfig("command-a-plus-05-2026", PROVIDER, {
+		name: "Command A Plus",
+		description:
+			"Command A+ is an open-source enterprise workhorse built for complex reasoning, multimodal and multilingual agentic tasks",
+		matchingModel: "command-a-plus-05-2026",
+		knowledgeCutoffDate: "April 1, 2025",
+		releaseDate: "May 20, 2026",
+		lastUpdated: "June 9, 2026",
+		modalities: {
+			input: ["text", "image"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		supportsResponseFormat: true,
+		contextWindow: 128000,
+		maxTokens: 64000,
+		costPer1kInputTokens: 0.0025,
+		costPer1kOutputTokens: 0.01,
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 5,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
+		artificialAnalysis: {
+			intelligenceIndex: 29.3,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
+	}),
+
+	createModelConfig("command-a-reasoning-08-2025", PROVIDER, {
+		name: "Command A Reasoning",
+		description:
+			"Command A Reasoning has been specifically trained with conversational tool use capabilities. This allows the model to interact with external tools",
+		matchingModel: "command-a-reasoning-08-2025",
+		knowledgeCutoffDate: "June 1, 2024",
+		releaseDate: "August 21, 2025",
+		lastUpdated: "August 21, 2025",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 256000,
+		maxTokens: 32000,
+		costPer1kInputTokens: 0.0025,
+		costPer1kOutputTokens: 0.01,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
+	}),
+
+	createModelConfig("command-a-translate-08-2025", PROVIDER, {
+		name: "Command A Translate",
+		description:
+			"Command A Translate consistently demonstrated world-class quality in every comparison, seamlessly handling complex challenges like numbers, names, and polysemous words with precision.",
+		matchingModel: "command-a-translate-08-2025",
+		knowledgeCutoffDate: "June 1, 2024",
+		releaseDate: "August 28, 2025",
+		lastUpdated: "August 28, 2025",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 8000,
+		maxTokens: 8000,
+		costPer1kInputTokens: 0.0025,
+		costPer1kOutputTokens: 0.01,
+	}),
+
+	createModelConfig("command-a-vision-07-2025", PROVIDER, {
+		name: "Command A Vision",
+		description:
+			"Command A Vision excels across enterprise image understanding tasks while keeping a low compute footprint.",
+		matchingModel: "command-a-vision-07-2025",
+		knowledgeCutoffDate: "June 1, 2024",
+		releaseDate: "July 31, 2025",
+		lastUpdated: "July 31, 2025",
+		modalities: {
+			input: ["text", "image"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: false,
+		contextWindow: 128000,
+		maxTokens: 8000,
+		costPer1kInputTokens: 0.0025,
+		costPer1kOutputTokens: 0.01,
+	}),
+
+	createModelConfig("command-r-08-2024", PROVIDER, {
+		name: "Command R",
+		description:
+			"Command R is a large language model optimized for conversational interaction and long context tasks, with strong capabilities in retrieval-augmented generation (RAG) and tool use.",
+		matchingModel: "command-r-08-2024",
+		knowledgeCutoffDate: "June 1, 2024",
+		releaseDate: "August 30, 2024",
+		lastUpdated: "August 30, 2024",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 128000,
+		maxTokens: 4000,
+		costPer1kInputTokens: 0.00015,
+		costPer1kOutputTokens: 0.0006,
+		strengths: ["tool_use"],
+		contextComplexity: 3,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 2.1,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
+	}),
+
+	createModelConfig("command-r-plus-08-2024", PROVIDER, {
+		name: "Command R+",
+		description:
+			"Command R+ is Cohere's optimized for conversational interaction and long-context tasks, best suited for complex RAG workflows and multi-step tool use.",
+		matchingModel: "command-r-plus-08-2024",
+		knowledgeCutoffDate: "June 1, 2024",
+		releaseDate: "August 30, 2024",
+		lastUpdated: "August 30, 2024",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 128000,
+		maxTokens: 4000,
+		costPer1kInputTokens: 0.0025,
+		costPer1kOutputTokens: 0.01,
+		strengths: ["tool_use"],
+		contextComplexity: 3,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 2.1,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
+	}),
+
+	createModelConfig("command-r7b-12-2024", PROVIDER, {
+		name: "Command R7B",
+		description:
+			"Command R7B is the smallest, fastest, and final model in our R family of enterprise-focused large language models. It excels at RAG, tool use, and agents.",
+		matchingModel: "command-r7b-12-2024",
+		knowledgeCutoffDate: "June 1, 2024",
+		releaseDate: "December 2, 2024",
+		lastUpdated: "December 2, 2024",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 128000,
+		maxTokens: 4000,
+		costPer1kInputTokens: 0.0000375,
+		costPer1kOutputTokens: 0.00015,
+	}),
+
+	createModelConfig("command-r7b-arabic-02-2025", PROVIDER, {
+		name: "Command R7B Arabic",
+		description:
+			"Command R7B Arabic is a lightweight, multilingual AI model optimized for advanced Arabic language capabilities, particularly for enterprises in the Middle East and North Africa.",
+		matchingModel: "command-r7b-arabic-02-2025",
+		knowledgeCutoffDate: "June 1, 2024",
+		releaseDate: "February 27, 2025",
+		lastUpdated: "February 27, 2025",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 128000,
+		maxTokens: 4000,
+		costPer1kInputTokens: 0.0000375,
+		costPer1kOutputTokens: 0.00015,
+	}),
+
+	createModelConfig("north-mini-code-1-0", PROVIDER, {
+		name: "North Mini Code",
+		description:
+			"North Mini Code: Cohere's first model for developers Small, efficient, and open-source — our first agentic coding model, built for the sovereign developer ecosystem.",
+		matchingModel: "north-mini-code-1-0",
+		knowledgeCutoffDate: "September 23, 2025",
+		releaseDate: "June 9, 2026",
+		lastUpdated: "June 9, 2026",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		supportsResponseFormat: true,
+		contextWindow: 256000,
+		maxTokens: 64000,
+		costPer1kInputTokens: 0,
+		costPer1kOutputTokens: 0,
+		strengths: ["tool_use"],
+		contextComplexity: 4,
+		reliability: 1,
+		speed: 4,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
+		artificialAnalysis: {
+			intelligenceIndex: 20.6,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
+		},
+	}),
+]);

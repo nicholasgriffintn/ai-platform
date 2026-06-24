@@ -124,6 +124,51 @@ describe("ResponseFormatter", () => {
 			expect(result.thinking).toBe("Internal thought");
 		});
 
+		it("should format Cohere v2 response", async () => {
+			const data = {
+				id: "chat-123",
+				finishReason: "TOOL_CALL",
+				message: {
+					role: "assistant",
+					toolPlan: "I will call a tool.",
+					content: [
+						{ type: "thinking", thinking: "Checking context." },
+						{ type: "text", text: "Let me check that." },
+					],
+					toolCalls: [
+						{
+							id: "call-weather",
+							type: "function",
+							function: {
+								name: "get_weather",
+								arguments: '{"location":"London"}',
+							},
+						},
+					],
+					citations: [{ start: 0, end: 4, text: "test" }],
+				},
+				usage: {
+					tokens: { inputTokens: 10, outputTokens: 5 },
+				},
+			};
+
+			const result = await ResponseFormatter.formatResponse(data, "cohere");
+
+			expect(result.response).toBe("Let me check that.");
+			expect(result.thinking).toBe("Checking context.");
+			expect(result.citations).toEqual([{ start: 0, end: 4, text: "test" }]);
+			expect(result.tool_calls).toEqual([
+				{
+					id: "call-weather",
+					type: "function",
+					function: {
+						name: "get_weather",
+						arguments: '{"location":"London"}',
+					},
+				},
+			]);
+		});
+
 		it("should format Google AI Studio response", async () => {
 			const data = {
 				candidates: [

@@ -43,6 +43,7 @@ import { OpencodeProvider } from "../../capabilities/chat/providers/opencode";
 import { OpencodeGoProvider } from "../../capabilities/chat/providers/opencode-go";
 import { CortecsProvider } from "../../capabilities/chat/providers/cortecs";
 import { AmazonNovaProvider } from "../../capabilities/chat/providers/nova";
+import { CohereProvider } from "../../capabilities/chat/providers/cohere";
 
 const chatProviders: ProviderRegistration<AIProvider>[] = [
 	{
@@ -71,6 +72,11 @@ const chatProviders: ProviderRegistration<AIProvider>[] = [
 		name: "chutes",
 		create: () => new ChutesProvider(),
 		metadata: { vendor: "Chutes", categories: ["chat"] },
+	},
+	{
+		name: "cohere",
+		create: () => new CohereProvider(),
+		metadata: { vendor: "Cohere", categories: ["chat"] },
 	},
 	{
 		name: "deepinfra",

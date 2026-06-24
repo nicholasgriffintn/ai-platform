@@ -565,6 +565,9 @@ export async function createStreamWithPostProcessing(
 							}
 
 							if (StreamingFormatter.isCompletionIndicated(data) && !postProcessingDone) {
+								if (Object.keys(currentToolCalls).length > 0 && toolCallsData.length === 0) {
+									toolCallsData = Object.values(currentToolCalls);
+								}
 								await handlePostProcessing();
 							}
 						} catch (parseError) {
