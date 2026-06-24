@@ -1,5 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
+import type { ModelConfigItem } from "@assistant/schemas";
 import { getModelConfigByMatchingModel } from "~/lib/providers/models";
+import type { ChatCompletionParameters, IEnv } from "~/types";
 import { getEffectiveMaxTokens } from "~/utils/parameters";
 import { GoogleStudioProvider } from "../googlestudio";
 
@@ -21,9 +23,14 @@ vi.mock("~/lib/providers/models", () => ({
 	getModelConfigByMatchingModel: vi.fn(),
 }));
 
-vi.mock("~/utils/parameters", () => ({
-	getEffectiveMaxTokens: vi.fn(),
-}));
+vi.mock("~/utils/parameters", async (importOriginal) => {
+	const actual = await importOriginal<typeof import("~/utils/parameters")>();
+
+	return {
+		...actual,
+		getEffectiveMaxTokens: vi.fn(),
+	};
+});
 
 describe("GoogleStudioProvider", () => {
 	describe("validateParams", () => {
@@ -157,6 +164,46 @@ describe("GoogleStudioProvider", () => {
 			} as any);
 
 			expect(result.tools).toEqual([{ code_execution: {} }, { google_search: {} }]);
+		});
+
+		it("should declare enabled built-in function tools for Gemini tool calling", async () => {
+			const modelConfig: ModelConfigItem = {
+				matchingModel: "gemini-pro",
+				name: "gemini-pro",
+				provider: "google-ai-studio",
+				supportsToolCalls: true,
+			};
+			vi.mocked(getModelConfigByMatchingModel).mockResolvedValue(modelConfig);
+
+			vi.mocked(getEffectiveMaxTokens).mockReturnValue(1024);
+
+			const provider = new GoogleStudioProvider();
+			const env = { AI_GATEWAY_TOKEN: "test-token" } as IEnv;
+			const params: ChatCompletionParameters = {
+				model: "gemini-pro",
+				messages: [{ role: "user", content: "Check the weather" }],
+				enabled_tools: ["get_weather"],
+				env,
+			};
+
+			const result = await provider.mapParameters(params);
+
+			expect(result.tools).toContainEqual({
+				functionDeclarations: [
+					expect.objectContaining({
+						name: "get_weather",
+						description: expect.any(String),
+						parameters: expect.objectContaining({
+							type: "object",
+							properties: expect.objectContaining({
+								longitude: expect.objectContaining({ type: "number" }),
+								latitude: expect.objectContaining({ type: "number" }),
+							}),
+							required: ["longitude", "latitude"],
+						}),
+					}),
+				],
+			});
 		});
 
 		it("should add URL context without requiring function declarations", async () => {

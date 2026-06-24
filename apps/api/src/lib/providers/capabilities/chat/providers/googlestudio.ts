@@ -12,6 +12,7 @@ import { AssistantError, ErrorType } from "~/utils/errors";
 import { BaseProvider } from "./base";
 import { getAiGatewayMetadataHeaders, resolveAiGatewayCacheTtl } from "~/utils/aiGateway";
 import { omitUndefinedValues } from "~/utils/objects";
+import { getToolsForProvider } from "~/utils/parameters";
 
 export class GoogleStudioProvider extends BaseProvider {
 	name = "google-ai-studio";
@@ -63,13 +64,25 @@ export class GoogleStudioProvider extends BaseProvider {
 			);
 		}
 
+		const functionToolParams = {
+			...params,
+			enabled_tools: (params.enabled_tools || []).filter(
+				(tool) => !(tool === "web_search" && modelConfig.supportsSearchGrounding),
+			),
+		};
+		const toolsParams = getToolsForProvider(functionToolParams, modelConfig, this.name);
+		const providerParams = {
+			...params,
+			tools: toolsParams.tools ?? params.tools,
+		};
+
 		return omitUndefinedValues({
 			model: params.model,
-			contents: formatGoogleStudioContents(params),
-			tools: buildGoogleStudioTools(params, modelConfig),
-			systemInstruction: buildGoogleStudioSystemInstruction(params.system_prompt),
+			contents: formatGoogleStudioContents(providerParams),
+			tools: buildGoogleStudioTools(providerParams, modelConfig),
+			systemInstruction: buildGoogleStudioSystemInstruction(providerParams.system_prompt),
 			safetySettings: GOOGLE_STUDIO_SAFETY_SETTINGS,
-			generationConfig: buildGoogleStudioGenerationConfig(params, modelConfig),
+			generationConfig: buildGoogleStudioGenerationConfig(providerParams, modelConfig),
 		});
 	}
 }

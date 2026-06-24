@@ -106,11 +106,11 @@ class GoogleStudioToolBuilder {
 			functionDeclarations: this.params.tools.map((tool) => ({
 				name: tool.function.name,
 				description: tool.function.description,
-				parameters: {
+				parameters: omitUndefinedValues({
 					type: tool.function.parameters.type,
 					properties: tool.function.parameters.properties,
-				},
-				required: tool.function.required,
+					required: tool.function.parameters.required ?? tool.function.required,
+				}),
 			})),
 		});
 	}
