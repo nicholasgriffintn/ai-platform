@@ -5,9 +5,11 @@ import { apiService } from "~/lib/api/api-service";
 import { normalizeSelectedModel } from "~/lib/chat/model-selection";
 import { getModelProvider } from "~/lib/models";
 import { normalizeMessage } from "~/lib/messages";
+import { normaliseUsageLimits } from "~/lib/usage-limits";
 import type { ChatRequestOptions, Message, MessageContent } from "~/types";
 import { useLoadingActions } from "~/state/contexts/LoadingContext";
 import { useChatStore } from "~/state/stores/chatStore";
+import { useUsageStore } from "~/state/stores/usageStore";
 import { useMessageOperations } from "./useMessageOperations";
 import { useModels } from "./useModels";
 
@@ -40,6 +42,7 @@ export function useStreamingResponse(
 		selectedAgentId,
 		setModel,
 	} = useChatStore();
+	const setUsageLimits = useUsageStore((state) => state.setUsageLimits);
 
 	const [streamStarted, setStreamStarted] = useState(false);
 	const [controller, setController] = useState(() => new AbortController());
@@ -193,6 +196,14 @@ export function useStreamingResponse(
 					const providerToSend = getModelProvider(apiModels, modelToSend);
 
 					const handleStateChange = (state: string, data?: any) => {
+						if (state === "usage_limits") {
+							const usageLimits = normaliseUsageLimits(data);
+							if (usageLimits) {
+								setUsageLimits(usageLimits);
+							}
+							return;
+						}
+
 						let msg: string | undefined;
 						switch (state) {
 							case "init":
@@ -286,6 +297,7 @@ export function useStreamingResponse(
 			updateLoading,
 			webLLMService,
 			requestOptions,
+			setUsageLimits,
 		],
 	);
 

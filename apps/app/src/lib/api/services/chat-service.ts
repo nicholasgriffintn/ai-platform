@@ -556,6 +556,9 @@ export class ChatService {
 			if (parsedData.type === "error" && "error" in parsedData) {
 				throw createStreamingApiError(parsedData.error);
 			}
+			if (parsedData.type === "usage_limits" && "usage_limits" in parsedData) {
+				onStateChange("usage_limits", parsedData.usage_limits);
+			}
 			if (parsedData.type === "tool_use_start") {
 				onStateChange("tool_use_start", parsedData);
 			}

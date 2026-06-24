@@ -1,6 +1,6 @@
 import { API_BASE_URL } from "~/constants";
 import { apiKeyService } from "~/lib/api/api-key";
-import type { User, UserSettings } from "~/types";
+import type { AnonymousUser, User, UserSettings } from "~/types";
 import { fetchApi, returnFetchedData } from "./fetch-wrapper";
 
 interface MagicLinkSuccessResponse {
@@ -20,6 +20,7 @@ interface AppleSignInRequest {
 class AuthService {
 	private static instance: AuthService;
 	private user: User | null = null;
+	private anonymousUser: AnonymousUser | null = null;
 	private userSettings: UserSettings | null = null;
 	private tokenExpiry: Date | null = null;
 	private refreshTimer: ReturnType<typeof setTimeout> | null = null;
@@ -64,14 +65,17 @@ class AuthService {
 
 			if (!response.ok) {
 				this.user = null;
+				this.anonymousUser = null;
 				this.userSettings = null;
 				return false;
 			}
 
 			const data = await returnFetchedData<{
-				user: User;
-				userSettings: UserSettings;
+				user: User | null;
+				userSettings: UserSettings | null;
+				anon?: AnonymousUser | null;
 			}>(response);
+			this.anonymousUser = data?.anon ?? null;
 			if (data?.user) {
 				this.user = data.user;
 				this.userSettings = data.userSettings;
@@ -84,6 +88,7 @@ class AuthService {
 		} catch (error) {
 			console.error("Error checking auth status:", error);
 			this.user = null;
+			this.anonymousUser = null;
 			this.userSettings = null;
 			return false;
 		}
@@ -167,6 +172,7 @@ class AuthService {
 				this.clearTokenRefresh();
 				apiKeyService.removeApiKey();
 				this.user = null;
+				this.anonymousUser = null;
 				this.userSettings = null;
 				return true;
 			}
@@ -180,6 +186,10 @@ class AuthService {
 
 	public getUser(): User | null {
 		return this.user;
+	}
+
+	public getAnonymousUser(): AnonymousUser | null {
+		return this.anonymousUser;
 	}
 
 	public getUserSettings(): UserSettings | null {

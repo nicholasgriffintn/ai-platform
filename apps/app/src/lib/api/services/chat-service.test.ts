@@ -224,12 +224,59 @@ describe("ChatService streaming", () => {
 			signal: new AbortController().signal,
 		});
 
-		expect(states).toEqual(["init", "thinking"]);
+		expect(states).toEqual(["init", "usage_limits", "thinking"]);
 		expect(progressUpdates).toContain("<answer");
 		expect(progressUpdates.at(-1)).toBe(
 			"I will check the weather for London W5 1EW at 09:00 today.",
 		);
 		expect(result.content).toBe("I will check the weather for London W5 1EW at 09:00 today.");
+	});
+
+	it("surfaces streamed usage limits through state updates", async () => {
+		vi.stubGlobal(
+			"fetch",
+			vi.fn(async () =>
+				createSseResponse([
+					data({
+						type: "usage_limits",
+						usage_limits: {
+							daily: {
+								used: 10,
+								limit: 10,
+							},
+						},
+					}),
+					data({ type: "state", state: "done" }),
+					data("[DONE]"),
+				]),
+			),
+		);
+
+		const stateUpdates: Array<{ state: string; data?: unknown }> = [];
+		const service = new ChatService(async () => ({}));
+
+		await service.streamChatCompletions({
+			chatSettings: {},
+			completionId: "conversation-1",
+			messages: [{ role: "user", content: "hello" } as Message],
+			mode: "remote",
+			model: "test-model",
+			onProgress: () => {},
+			onStateChange: (state, data) => {
+				stateUpdates.push({ state, data });
+			},
+			signal: new AbortController().signal,
+		});
+
+		expect(stateUpdates).toContainEqual({
+			state: "usage_limits",
+			data: {
+				daily: {
+					used: 10,
+					limit: 10,
+				},
+			},
+		});
 	});
 
 	it("sends provider options inside request options", async () => {

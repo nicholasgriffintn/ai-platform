@@ -145,6 +145,7 @@ describe("useAuthStatus", () => {
 			id: 1,
 			plan_id: "free",
 		} as any);
+		vi.spyOn(authService as any, "getAnonymousUser").mockReturnValue(null);
 		vi.spyOn(authService, "getUserSettings").mockImplementation(() => currentUserSettings as any);
 	});
 
@@ -268,5 +269,28 @@ describe("useAuthStatus", () => {
 		expect(setAuthenticatedUserConfiguration.mock.invocationCallOrder[0]).toBeLessThan(
 			setIsAuthenticationLoading.mock.invocationCallOrder.at(-1) ?? Number.MAX_SAFE_INTEGER,
 		);
+	});
+
+	it("hydrates usage limits from anonymous auth status data", async () => {
+		vi.spyOn(authService, "checkAuthStatus").mockResolvedValue(false);
+		vi.spyOn(authService, "getUser").mockReturnValue(null);
+		vi.spyOn(authService as any, "getAnonymousUser").mockReturnValue({
+			id: "anon-123",
+			daily_message_count: 10,
+			daily_reset: "2026-06-24T22:45:48.676Z",
+		});
+
+		renderHook(() => useAuthStatus(), {
+			wrapper: createWrapper(),
+		});
+
+		await waitFor(() => {
+			expect(setUsageLimits).toHaveBeenCalledWith({
+				daily: {
+					used: 10,
+					limit: 10,
+				},
+			});
+		});
 	});
 });
