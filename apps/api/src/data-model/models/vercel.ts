@@ -8433,4 +8433,35 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			],
 		},
 	}),
+	createModelConfig("xai/grok-stt", PROVIDER, {
+		name: "Grok STT",
+		matchingModel: "xai/grok-stt",
+		releaseDate: "March 16, 2026",
+		lastUpdated: "March 16, 2026",
+		modalities: {
+			input: ["audio"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: false,
+		contextWindow: 0,
+		maxTokens: 0,
+	}),
+
+	createModelConfig("xai/grok-tts", PROVIDER, {
+		name: "Grok TTS",
+		matchingModel: "xai/grok-tts",
+		releaseDate: "March 16, 2026",
+		lastUpdated: "March 16, 2026",
+		modalities: {
+			input: ["text"],
+			output: ["audio"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: false,
+		contextWindow: 0,
+		maxTokens: 0,
+	}),
 ]);
