@@ -56,6 +56,11 @@ export interface ChatStreamAssembler {
 
 export type ParsedChatStreamSseEvent = Record<string, unknown> | { type: "done" };
 
+export interface ParsedChatStreamSseBuffer {
+	events: ParsedChatStreamSseEvent[];
+	remainingBuffer: string;
+}
+
 interface PendingToolCall {
 	id: string;
 	name: string;
@@ -110,8 +115,38 @@ export function parseChatStreamSseEvent(block: string): ParsedChatStreamSseEvent
 		return { type: "done" };
 	}
 
-	const parsed = streamEventSchema.safeParse(JSON.parse(payload));
+	let rawParsed: unknown;
+	try {
+		rawParsed = JSON.parse(payload);
+	} catch {
+		return null;
+	}
+
+	const parsed = streamEventSchema.safeParse(rawParsed);
 	return parsed.success ? parsed.data : null;
+}
+
+export function parseChatStreamSseBuffer(
+	buffer: string,
+	options: { flush?: boolean } = {},
+): ParsedChatStreamSseBuffer {
+	const blocks = buffer.split(/\r?\n\r?\n/);
+	const trailingBuffer = blocks.pop() || "";
+	const completeBlocks =
+		options.flush && trailingBuffer.trim() ? [...blocks, trailingBuffer] : blocks;
+	const events = completeBlocks.flatMap((block): ParsedChatStreamSseEvent[] => {
+		if (!block.trim()) {
+			return [];
+		}
+
+		const event = parseChatStreamSseEvent(`${block}\n\n`);
+		return event ? [event] : [];
+	});
+
+	return {
+		events,
+		remainingBuffer: options.flush ? "" : trailingBuffer,
+	};
 }
 
 export function formatChatStreamSseEvent(

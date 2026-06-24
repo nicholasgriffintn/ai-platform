@@ -191,6 +191,47 @@ describe("ChatService streaming", () => {
 		expect(assistantMessages.at(-1)?.content).toBe("Primary answer\n\nSecondary answer");
 	});
 
+	it("loads CRLF-delimited content deltas and finalises when the stream closes without done", async () => {
+		vi.stubGlobal(
+			"fetch",
+			vi.fn(async () =>
+				createSseResponse([
+					`data: {"state":"init","type":"state"}\r\n\r\n`,
+					`data: {"usage_limits":{"daily":{"used":0,"limit":50}},"type":"usage_limits"}\r\n\r\n`,
+					`data: {"state":"thinking","type":"state"}\r\n\r\n`,
+					`data: {"content":"<answer","type":"content_block_delta"}\r\n\r\n`,
+					`data: {"content":">\\nI will check the weather for London W5 1EW at 09:00 today.","type":"content_block_delta"}`,
+				]),
+			),
+		);
+
+		const progressUpdates: string[] = [];
+		const states: string[] = [];
+		const service = new ChatService(async () => ({}));
+
+		const result = await service.streamChatCompletions({
+			chatSettings: {},
+			completionId: "conversation-1",
+			messages: [{ role: "user", content: "hello" } as Message],
+			mode: "remote",
+			model: "test-model",
+			onProgress: (text) => {
+				progressUpdates.push(text);
+			},
+			onStateChange: (state) => {
+				states.push(state);
+			},
+			signal: new AbortController().signal,
+		});
+
+		expect(states).toEqual(["init", "thinking"]);
+		expect(progressUpdates).toContain("<answer");
+		expect(progressUpdates.at(-1)).toBe(
+			"I will check the weather for London W5 1EW at 09:00 today.",
+		);
+		expect(result.content).toBe("I will check the weather for London W5 1EW at 09:00 today.");
+	});
+
 	it("sends provider options inside request options", async () => {
 		const fetchMock = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) =>
 			createSseResponse([data("[DONE]")]),

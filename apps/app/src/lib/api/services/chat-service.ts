@@ -10,8 +10,9 @@ import type {
 import {
 	createChatStreamAssembler,
 	normaliseToolIds,
-	parseChatStreamSseEvent,
+	parseChatStreamSseBuffer,
 	type ChatStreamUpdate,
+	type ParsedChatStreamSseEvent,
 } from "@assistant/schemas";
 import { getSandboxModeToolNames } from "~/lib/sandbox/chat-mode";
 import {
@@ -551,6 +552,36 @@ export class ChatService {
 				lastAssistantMessage = toAppMessage(update.message);
 			}
 		};
+		const handleParsedEvent = (parsedData: ParsedChatStreamSseEvent) => {
+			if (parsedData.type === "error" && "error" in parsedData) {
+				throw createStreamingApiError(parsedData.error);
+			}
+			if (parsedData.type === "tool_use_start") {
+				onStateChange("tool_use_start", parsedData);
+			}
+			if (parsedData.type === "tool_use_stop") {
+				onStateChange("tool_use_stop", parsedData);
+			}
+
+			for (const update of assembler.ingest(parsedData)) {
+				handleUpdate(update);
+			}
+		};
+		const processBufferedEvents = (flush = false) => {
+			const parsed = parseChatStreamSseBuffer(buffer, { flush });
+			buffer = parsed.remainingBuffer;
+
+			for (const parsedData of parsed.events) {
+				try {
+					handleParsedEvent(parsedData);
+				} catch (error) {
+					if (error instanceof ApiError) {
+						throw error;
+					}
+					console.error("Error handling SSE data:", error, parsedData);
+				}
+			}
+		};
 
 		try {
 			while (true) {
@@ -560,39 +591,16 @@ export class ChatService {
 				}
 
 				buffer += decoder.decode(value, { stream: true });
-				const blocks = buffer.split("\n\n");
-				buffer = blocks.pop() || "";
+				processBufferedEvents();
+			}
 
-				for (const block of blocks) {
-					if (!block.trim()) {
-						continue;
-					}
+			if (buffer.trim()) {
+				processBufferedEvents(true);
+			}
 
-					try {
-						const parsedData = parseChatStreamSseEvent(`${block}\n\n`);
-						if (!parsedData) {
-							continue;
-						}
-
-						if (parsedData.type === "error" && "error" in parsedData) {
-							throw createStreamingApiError(parsedData.error);
-						}
-						if (parsedData.type === "tool_use_start") {
-							onStateChange("tool_use_start", parsedData);
-						}
-						if (parsedData.type === "tool_use_stop") {
-							onStateChange("tool_use_stop", parsedData);
-						}
-
-						for (const update of assembler.ingest(parsedData)) {
-							handleUpdate(update);
-						}
-					} catch (error) {
-						if (error instanceof ApiError) {
-							throw error;
-						}
-						console.error("Error parsing SSE data:", error, block);
-					}
+			if (!assembler.getFinalMessage()) {
+				for (const update of assembler.ingest({ type: "done" })) {
+					handleUpdate(update);
 				}
 			}
 		} catch (error) {

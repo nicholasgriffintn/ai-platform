@@ -4,6 +4,7 @@ import {
 	createChatStreamAssembler,
 	formatChatStreamSseDone,
 	formatChatStreamSseEvent,
+	parseChatStreamSseBuffer,
 	parseChatStreamSseEvent,
 	type ChatStreamUpdate,
 } from "./chat-stream";
@@ -156,5 +157,27 @@ describe("parseChatStreamSseEvent", () => {
 			'data: {"state":"thinking","type":"state"}\n\n',
 		);
 		expect(formatChatStreamSseDone()).toBe("data: [DONE]\n\n");
+	});
+
+	it("parses CRLF-delimited buffers and can flush a trailing final block", () => {
+		const firstParse = parseChatStreamSseBuffer(
+			'data: {"state":"thinking","type":"state"}\r\n\r\n' +
+				'data: {"content":"<answer","type":"content_block_delta"}\r\n\r\n' +
+				'data: {"content":">\\nLoaded","type":"content_block_delta"}',
+		);
+
+		expect(firstParse.events).toEqual([
+			{ state: "thinking", type: "state" },
+			{ content: "<answer", type: "content_block_delta" },
+		]);
+		expect(firstParse.remainingBuffer).toBe(
+			'data: {"content":">\\nLoaded","type":"content_block_delta"}',
+		);
+
+		const flushed = parseChatStreamSseBuffer(firstParse.remainingBuffer, { flush: true });
+		expect(flushed).toEqual({
+			events: [{ content: ">\nLoaded", type: "content_block_delta" }],
+			remainingBuffer: "",
+		});
 	});
 });
