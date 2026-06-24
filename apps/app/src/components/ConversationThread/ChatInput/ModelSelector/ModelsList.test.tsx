@@ -168,6 +168,19 @@ describe("ModelsList", () => {
 		expect(screen.getByText("BYOK")).toBeInTheDocument();
 	});
 
+	it("labels alpha status models as stealth", () => {
+		render(
+			<ModelsList
+				models={[makeModel("openrouter/owl-alpha", "Owl Alpha", "openrouter", { status: "alpha" })]}
+				featuredModelIds={{}}
+				isPro={true}
+				onSelect={vi.fn()}
+			/>,
+		);
+
+		expect(screen.getByText("Stealth")).toBeInTheDocument();
+	});
+
 	it("collapses Bedrock region variants behind a region selector", () => {
 		const onSelect = vi.fn();
 		render(

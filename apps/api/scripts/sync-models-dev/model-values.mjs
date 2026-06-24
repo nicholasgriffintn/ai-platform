@@ -127,6 +127,18 @@ export function buildUpdateValues(
 		values.provider = provider;
 	}
 
+	if (typeof remoteModel.family === "string" && remoteModel.family.length > 0) {
+		values.family = remoteModel.family;
+	}
+
+	if (typeof remoteModel.status === "string" && remoteModel.status.length > 0) {
+		values.status = remoteModel.status;
+	}
+
+	if (hasOwn(remoteModel, "open_weights")) {
+		values.openWeights = Boolean(remoteModel.open_weights);
+	}
+
 	const knowledgeDate = formatHumanDate(remoteModel.knowledge);
 	if (knowledgeDate) {
 		values.knowledgeCutoffDate = knowledgeDate;

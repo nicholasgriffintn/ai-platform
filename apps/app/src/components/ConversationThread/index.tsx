@@ -12,7 +12,11 @@ import { useChat } from "~/hooks/useChat";
 import { useChatManager } from "~/hooks/useChatManager";
 import { useModels } from "~/hooks/useModels";
 import type { AttachmentData } from "~/lib/chat/attachments";
-import { isImageGenerationOutputModel } from "~/lib/models";
+import {
+	createModelReferenceMap,
+	getModelByReference,
+	isImageGenerationOutputModel,
+} from "~/lib/models";
 import { useIsLoading } from "~/state/contexts/LoadingContext";
 import { useChatStore } from "~/state/stores/chatStore";
 import type { ChatRequestOptions, ModelSelectionChangeHandler, ModelSelectorScope } from "~/types";
@@ -23,6 +27,7 @@ import { ChatInput, type ChatInputHandle } from "./ChatInput";
 import type { ComposerCommandAction } from "./ChatInput/composerCommandTypes";
 import { FooterInfo } from "./FooterInfo";
 import { MessageList } from "./MessageList";
+import { StealthModelWarning } from "./StealthModelWarning";
 import { useAssistantActionSubmit } from "./useAssistantActionSubmit";
 import { useAutoPlayResponses } from "./useAutoPlayResponses";
 import { WelcomeScreen } from "./WelcomeScreen";
@@ -100,6 +105,11 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
 		isRequestingOpinion,
 	} = useChatManager(modeConfig?.requestOptions, modeConfig?.conversationMode);
 	const { data: apiModels } = useModels();
+	const modelReferences = useMemo(() => createModelReferenceMap(apiModels ?? {}), [apiModels]);
+	const selectedModelConfig = useMemo(
+		() => getModelByReference(modelReferences, model),
+		[modelReferences, model],
+	);
 
 	const [currentArtifact, setCurrentArtifact] = useState<ArtifactProps | null>(null);
 	const [isPanelVisible, setIsPanelVisible] = useState(false);
@@ -196,11 +206,10 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
 			}
 
 			// For text-to-image models, only allow the first message unless they support image edits
-			if (model && apiModels?.[model]) {
-				const modelConfig = apiModels[model];
+			if (selectedModelConfig) {
 				if (
-					isImageGenerationOutputModel(modelConfig) &&
-					!modelConfig.supportsImageEdits &&
+					isImageGenerationOutputModel(selectedModelConfig) &&
+					!selectedModelConfig.supportsImageEdits &&
 					messages.length > 0
 				) {
 					toast.error(
@@ -272,7 +281,6 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
 		[
 			chatInput,
 			model,
-			apiModels,
 			messages,
 			sendMessage,
 			sendCouncilDebate,
@@ -284,6 +292,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
 			setSelectedAssistantAction,
 			selectedAssistantAction,
 			selectedAssistantAction?.item,
+			selectedModelConfig,
 			modeConfig?.analyticsSource,
 			modeConfig?.councilDebate,
 			navigate,
@@ -420,6 +429,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
 
 			<div className="relative z-10 shrink-0 px-4 pt-2">
 				<div className="max-w-3xl mx-auto">
+					<StealthModelWarning model={selectedModelConfig} />
 					<UsageLimitWarning />
 					<ChatInput
 						ref={chatInputRef}

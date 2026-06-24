@@ -36,6 +36,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: 13.2,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt-oss",
+		openWeights: true,
 	},
 
 	"openai/gpt-4.1-mini": {
@@ -70,6 +72,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt-mini",
+		openWeights: false,
 	},
 
 	"openai/o4-mini": {
@@ -109,6 +113,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "o-mini",
+		openWeights: false,
 	},
 
 	"openai/gpt-5-nano": {
@@ -147,6 +153,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt-nano",
+		openWeights: false,
 	},
 
 	"openai/gpt-4o-mini-openrouter": {
@@ -181,6 +189,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt-mini",
+		openWeights: false,
 	},
 
 	"openai/gpt-5": {
@@ -220,6 +230,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt",
+		openWeights: false,
 	},
 
 	"openai/gpt-oss-20b": {
@@ -257,6 +269,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: 3.1,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt-oss",
+		openWeights: true,
 	},
 
 	"openai/gpt-4.1": {
@@ -291,6 +305,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt",
+		openWeights: false,
 	},
 
 	"openai/gpt-5-mini": {
@@ -329,6 +345,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt-mini",
+		openWeights: false,
 	},
 
 	"deepseek/deepseek-r1-free": {
@@ -416,6 +434,8 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "claude-sonnet",
+		openWeights: false,
 	},
 
 	"anthropic/claude-opus-4": {
@@ -449,6 +469,8 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "claude-opus",
+		openWeights: false,
 	},
 
 	"anthropic/claude-haiku-3.5": {
@@ -576,6 +598,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "kimi-k2",
+		openWeights: true,
 	},
 
 	"moonshotai/kimi-k2-thinking-openrouter": {
@@ -615,6 +639,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "kimi-thinking",
+		openWeights: true,
 	},
 
 	"google/gemini-2.5-pro": {
@@ -663,6 +689,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gemini-pro",
+		openWeights: false,
 	},
 
 	"google/gemini-2.5-flash": {
@@ -723,6 +751,8 @@ export const openrouterModelConfig: ModelConfig = {
 				},
 			],
 		},
+		family: "gemini-flash",
+		openWeights: false,
 	},
 
 	"meta-llama/llama-3.3-70b-free": {
@@ -751,6 +781,8 @@ export const openrouterModelConfig: ModelConfig = {
 		includedInRouter: false,
 		supportsArtifacts: true,
 		supportsResponseFormat: false,
+		family: "llama",
+		openWeights: true,
 	},
 
 	"qwen/qwen3-coder-free": {
@@ -779,6 +811,8 @@ export const openrouterModelConfig: ModelConfig = {
 		includedInRouter: false,
 		supportsArtifacts: true,
 		supportsResponseFormat: false,
+		family: "qwen",
+		openWeights: true,
 	},
 
 	"mistralai/devstral-small": {
@@ -840,6 +874,8 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "auto",
+		openWeights: false,
 	},
 	"allenai/molmo-2-8b:free": {
 		name: "Molmo2 8B (free)",
@@ -913,6 +949,8 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "claude-haiku",
+		openWeights: false,
 	},
 
 	"anthropic/claude-opus-4.1": {
@@ -938,6 +976,8 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "claude-opus",
+		openWeights: false,
 	},
 
 	"anthropic/claude-opus-4.5": {
@@ -973,6 +1013,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "claude-opus",
+		openWeights: false,
 	},
 
 	"anthropic/claude-opus-4.6": {
@@ -1008,6 +1050,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "claude-opus",
+		openWeights: false,
 	},
 
 	"anthropic/claude-sonnet-4.5": {
@@ -1033,6 +1077,8 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "claude-sonnet",
+		openWeights: false,
 	},
 
 	"arcee-ai/trinity-large-preview:free": {
@@ -1289,6 +1335,8 @@ export const openrouterModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
 		supportsResponseFormat: true,
+		family: "mistral",
+		openWeights: true,
 	},
 
 	"cognitivecomputations/dolphin3.0-mistral-24b": {
@@ -1359,6 +1407,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "deepseek",
+		openWeights: true,
 	},
 
 	"deepseek/deepseek-chat-v3.1": {
@@ -1393,6 +1443,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "deepseek",
+		openWeights: true,
 	},
 
 	"deepseek/deepseek-r1-0528-qwen3-8b:free": {
@@ -1456,6 +1508,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "deepseek-thinking",
+		openWeights: true,
 	},
 
 	"deepseek/deepseek-r1-distill-qwen-14b": {
@@ -1538,6 +1592,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "deepseek",
+		openWeights: true,
 	},
 
 	"deepseek/deepseek-v3.1-terminus:exacto": {
@@ -1601,6 +1657,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "deepseek",
+		openWeights: true,
 	},
 
 	"deepseek/deepseek-v3.2-speciale": {
@@ -1758,6 +1816,8 @@ export const openrouterModelConfig: ModelConfig = {
 				},
 			],
 		},
+		family: "gemini-flash-lite",
+		openWeights: false,
 	},
 
 	"google/gemini-2.5-flash-lite-preview-09-2025": {
@@ -1793,6 +1853,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gemini-flash-lite",
+		openWeights: false,
 	},
 
 	"google/gemini-2.5-flash-preview-09-2025": {
@@ -1848,6 +1910,8 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "gemini-pro",
+		openWeights: false,
 	},
 
 	"google/gemini-2.5-pro-preview-06-05": {
@@ -1904,6 +1968,8 @@ export const openrouterModelConfig: ModelConfig = {
 			intelligenceIndexVersion: 4.1,
 		},
 		speed: 5,
+		family: "gemini-flash",
+		openWeights: false,
 	},
 
 	"google/gemini-3-pro-preview": {
@@ -1983,6 +2049,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gemma",
+		openWeights: true,
 	},
 
 	"google/gemma-3-12b-it:free": {
@@ -2042,6 +2110,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gemma",
+		openWeights: true,
 	},
 
 	"google/gemma-3-27b-it:free": {
@@ -2101,6 +2171,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gemma",
+		openWeights: true,
 	},
 
 	"google/gemma-3-4b-it:free": {
@@ -2171,6 +2243,8 @@ export const openrouterModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0.00006,
 		costPer1kOutputTokens: 0.00012,
 		supportsResponseFormat: true,
+		family: "gemma",
+		openWeights: true,
 	},
 
 	"google/gemma-3n-e4b-it:free": {
@@ -2241,6 +2315,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "liquid",
+		openWeights: true,
 	},
 
 	"liquid/lfm-2.5-1.2b-thinking:free": {
@@ -2275,6 +2351,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "liquid",
+		openWeights: true,
 	},
 
 	"meta-llama/llama-3.1-405b-instruct:free": {
@@ -2316,6 +2394,8 @@ export const openrouterModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0.000345,
 		costPer1kOutputTokens: 0.000345,
 		supportsResponseFormat: false,
+		family: "llama",
+		openWeights: true,
 	},
 
 	"meta-llama/llama-3.2-3b-instruct:free": {
@@ -2337,6 +2417,8 @@ export const openrouterModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
 		supportsResponseFormat: false,
+		family: "llama",
+		openWeights: true,
 	},
 
 	"meta-llama/llama-4-scout:free": {
@@ -2408,6 +2490,8 @@ export const openrouterModelConfig: ModelConfig = {
 		costPer1kOutputTokens: 0.0011,
 		knowledgeCutoffDate: "March 31, 2024",
 		supportsResponseFormat: false,
+		family: "minimax",
+		openWeights: true,
 	},
 
 	"minimax/minimax-m1": {
@@ -2433,6 +2517,8 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "minimax",
+		openWeights: false,
 	},
 
 	"minimax/minimax-m2": {
@@ -2467,6 +2553,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "minimax",
+		openWeights: true,
 	},
 
 	"minimax/minimax-m2.1": {
@@ -2501,6 +2589,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "minimax",
+		openWeights: true,
 	},
 
 	"mistralai/codestral-2508": {
@@ -2522,6 +2612,8 @@ export const openrouterModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0.0003,
 		costPer1kOutputTokens: 0.0009,
 		supportsResponseFormat: true,
+		family: "codestral",
+		openWeights: false,
 	},
 
 	"mistralai/devstral-2512:free": {
@@ -2632,6 +2724,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "mistral-medium",
+		openWeights: false,
 	},
 
 	"mistralai/mistral-medium-3.1": {
@@ -2663,6 +2757,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "mistral-medium",
+		openWeights: false,
 	},
 
 	"mistralai/mistral-nemo:free": {
@@ -2704,6 +2800,8 @@ export const openrouterModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0.000351,
 		costPer1kOutputTokens: 0.000555,
 		supportsResponseFormat: false,
+		family: "mistral-small",
+		openWeights: true,
 	},
 
 	"mistralai/mistral-small-3.2-24b-instruct": {
@@ -2725,6 +2823,8 @@ export const openrouterModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0.000075,
 		costPer1kOutputTokens: 0.0002,
 		supportsResponseFormat: true,
+		family: "mistral-small",
+		openWeights: true,
 	},
 
 	"mistralai/mistral-small-3.2-24b-instruct:free": {
@@ -2850,6 +2950,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "kimi-k2",
+		openWeights: true,
 	},
 
 	"nousresearch/deephermes-3-llama-3-8b-preview": {
@@ -2891,6 +2993,8 @@ export const openrouterModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
 		supportsResponseFormat: false,
+		family: "hermes",
+		openWeights: true,
 	},
 
 	"nousresearch/hermes-4-405b": {
@@ -2916,6 +3020,8 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "hermes",
+		openWeights: true,
 	},
 
 	"nousresearch/hermes-4-70b": {
@@ -2941,6 +3047,8 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "hermes",
+		openWeights: true,
 	},
 
 	"nvidia/nemotron-3-nano-30b-a3b:free": {
@@ -2966,6 +3074,8 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "nemotron",
+		openWeights: true,
 	},
 
 	"nvidia/nemotron-nano-12b-v2-vl:free": {
@@ -2991,6 +3101,8 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "nemotron",
+		openWeights: true,
 	},
 
 	"nvidia/nemotron-nano-9b-v2": {
@@ -3051,6 +3163,8 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "nemotron",
+		openWeights: true,
 	},
 
 	"openai/gpt-5-chat": {
@@ -3072,6 +3186,8 @@ export const openrouterModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0.00125,
 		costPer1kOutputTokens: 0.01,
 		supportsResponseFormat: true,
+		family: "gpt-codex",
+		openWeights: false,
 	},
 
 	"openai/gpt-5-codex": {
@@ -3107,6 +3223,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt-codex",
+		openWeights: false,
 	},
 
 	"openai/gpt-5-image": {
@@ -3132,6 +3250,8 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "gpt",
+		openWeights: false,
 	},
 
 	"openai/gpt-5-pro": {
@@ -3157,6 +3277,8 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "gpt-pro",
+		openWeights: false,
 	},
 
 	"openai/gpt-5.1": {
@@ -3192,6 +3314,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt",
+		openWeights: false,
 	},
 
 	"openai/gpt-5.1-chat": {
@@ -3213,6 +3337,8 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 32000,
 		costPer1kInputTokens: 0.00125,
 		costPer1kOutputTokens: 0.01,
+		family: "gpt-codex",
+		openWeights: false,
 	},
 
 	"openai/gpt-5.1-codex": {
@@ -3248,6 +3374,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt-codex",
+		openWeights: false,
 	},
 
 	"openai/gpt-5.1-codex-max": {
@@ -3273,6 +3401,8 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "gpt-codex",
+		openWeights: false,
 	},
 
 	"openai/gpt-5.1-codex-mini": {
@@ -3308,6 +3438,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt-codex",
+		openWeights: false,
 	},
 
 	"openai/gpt-5.2": {
@@ -3343,6 +3475,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt",
+		openWeights: false,
 	},
 
 	"openai/gpt-5.2-chat": {
@@ -3364,6 +3498,8 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00175,
 		costPer1kOutputTokens: 0.014,
+		family: "gpt-codex",
+		openWeights: false,
 	},
 
 	"openai/gpt-5.2-codex": {
@@ -3399,6 +3535,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt-codex",
+		openWeights: false,
 	},
 
 	"openai/gpt-5.2-pro": {
@@ -3424,6 +3562,8 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "gpt-pro",
+		openWeights: false,
 	},
 
 	"openai/gpt-oss-120b:exacto": {
@@ -3488,6 +3628,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: 13.2,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt-oss",
+		openWeights: true,
 	},
 
 	"openai/gpt-oss-20b:free": {
@@ -3523,6 +3665,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: 3.1,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt-oss",
+		openWeights: true,
 	},
 
 	"openai/gpt-oss-safeguard-20b": {
@@ -3547,6 +3691,8 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "gpt-oss",
+		openWeights: true,
 	},
 
 	"openrouter/sherlock-dash-alpha": {
@@ -3616,6 +3762,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "qwen",
+		openWeights: true,
 	},
 
 	"qwen/qwen-2.5-vl-7b-instruct:free": {
@@ -3677,6 +3825,8 @@ export const openrouterModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0.0008,
 		costPer1kOutputTokens: 0.001,
 		supportsResponseFormat: true,
+		family: "qwen",
+		openWeights: true,
 	},
 
 	"qwen/qwen2.5-vl-72b-instruct:free": {
@@ -3812,6 +3962,8 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "qwen",
+		openWeights: true,
 	},
 
 	"qwen/qwen3-235b-a22b:free": {
@@ -3863,6 +4015,8 @@ export const openrouterModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0.00004815,
 		costPer1kOutputTokens: 0.00019305,
 		supportsResponseFormat: true,
+		family: "qwen",
+		openWeights: true,
 	},
 
 	"qwen/qwen3-30b-a3b-thinking-2507": {
@@ -3888,6 +4042,8 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "qwen",
+		openWeights: true,
 	},
 
 	"qwen/qwen3-30b-a3b:free": {
@@ -4028,6 +4184,8 @@ export const openrouterModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0.00022,
 		costPer1kOutputTokens: 0.0018,
 		supportsResponseFormat: true,
+		family: "qwen",
+		openWeights: true,
 	},
 
 	"qwen/qwen3-coder-30b-a3b-instruct": {
@@ -4059,6 +4217,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "qwen",
+		openWeights: true,
 	},
 
 	"qwen/qwen3-coder-flash": {
@@ -4080,6 +4240,8 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.000195,
 		costPer1kOutputTokens: 0.000975,
+		family: "qwen",
+		openWeights: false,
 	},
 
 	"qwen/qwen3-coder:exacto": {
@@ -4131,6 +4293,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "qwen",
+		openWeights: false,
 	},
 
 	"qwen/qwen3-next-80b-a3b-instruct": {
@@ -4162,6 +4326,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "qwen",
+		openWeights: true,
 	},
 
 	"qwen/qwen3-next-80b-a3b-instruct:free": {
@@ -4193,6 +4359,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "qwen",
+		openWeights: true,
 	},
 
 	"qwen/qwen3-next-80b-a3b-thinking": {
@@ -4228,6 +4396,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "qwen",
+		openWeights: true,
 	},
 
 	"qwen/qwq-32b:free": {
@@ -4291,6 +4461,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "reka",
+		openWeights: true,
 	},
 
 	"sarvamai/sarvam-m:free": {
@@ -4415,6 +4587,7 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		openWeights: true,
 	},
 
 	"stepfun/step-3.5-flash:free": {
@@ -4731,6 +4904,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "glm",
+		openWeights: true,
 	},
 
 	"z-ai/glm-4.5-air": {
@@ -4766,6 +4941,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "glm-air",
+		openWeights: true,
 	},
 
 	"z-ai/glm-4.5-air:free": {
@@ -4836,6 +5013,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "glm",
+		openWeights: true,
 	},
 
 	"z-ai/glm-4.6": {
@@ -4871,6 +5050,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "glm",
+		openWeights: true,
 	},
 
 	"z-ai/glm-4.6:exacto": {
@@ -4936,6 +5117,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "glm",
+		openWeights: true,
 	},
 
 	"z-ai/glm-4.7-flash": {
@@ -4971,6 +5154,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "glm-flash",
+		openWeights: true,
 	},
 
 	"z-ai/glm-5": {
@@ -5005,6 +5190,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "glm",
+		openWeights: true,
 	},
 	"~anthropic/claude-haiku-latest": {
 		name: "Anthropic Claude Haiku Latest",
@@ -5028,6 +5215,8 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "claude-haiku",
+		openWeights: false,
 	},
 
 	"~anthropic/claude-opus-latest": {
@@ -5052,6 +5241,8 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "claude-opus",
+		openWeights: false,
 	},
 
 	"~anthropic/claude-sonnet-latest": {
@@ -5076,6 +5267,8 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "claude-sonnet",
+		openWeights: false,
 	},
 
 	"~google/gemini-flash-latest": {
@@ -5102,6 +5295,8 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "gemini-flash",
+		openWeights: false,
 	},
 
 	"~google/gemini-pro-latest": {
@@ -5127,6 +5322,8 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "gemini-pro",
+		openWeights: false,
 	},
 
 	"~moonshotai/kimi-latest": {
@@ -5151,6 +5348,8 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "kimi",
+		openWeights: false,
 	},
 
 	"~openai/gpt-latest": {
@@ -5176,6 +5375,8 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "gpt",
+		openWeights: false,
 	},
 
 	"~openai/gpt-mini-latest": {
@@ -5201,6 +5402,8 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "gpt-mini",
+		openWeights: false,
 	},
 
 	"ai21/jamba-large-1.7": {
@@ -5222,6 +5425,8 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 4096,
 		costPer1kInputTokens: 0.002,
 		costPer1kOutputTokens: 0.008,
+		family: "jamba",
+		openWeights: true,
 	},
 
 	"aion-labs/aion-1.0": {
@@ -5246,6 +5451,7 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		openWeights: false,
 	},
 
 	"aion-labs/aion-1.0-mini": {
@@ -5270,6 +5476,7 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		openWeights: true,
 	},
 
 	"aion-labs/aion-2.0": {
@@ -5294,6 +5501,7 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		openWeights: false,
 	},
 
 	"aion-labs/aion-rp-llama-3.1-8b": {
@@ -5315,6 +5523,8 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.0008,
 		costPer1kOutputTokens: 0.0016,
+		family: "llama",
+		openWeights: false,
 	},
 
 	"alfredpros/codellama-7b-instruct-solidity": {
@@ -5385,6 +5595,8 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "allenai",
+		openWeights: true,
 	},
 
 	"amazon/nova-2-lite-v1": {
@@ -5409,6 +5621,8 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "nova",
+		openWeights: false,
 	},
 
 	"amazon/nova-lite-v1": {
@@ -5430,6 +5644,8 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 5120,
 		costPer1kInputTokens: 0.00006,
 		costPer1kOutputTokens: 0.00024,
+		family: "nova-lite",
+		openWeights: false,
 	},
 
 	"amazon/nova-micro-v1": {
@@ -5451,6 +5667,8 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 5120,
 		costPer1kInputTokens: 0.000035,
 		costPer1kOutputTokens: 0.00014,
+		family: "nova-micro",
+		openWeights: false,
 	},
 
 	"amazon/nova-premier-v1": {
@@ -5471,6 +5689,8 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 32000,
 		costPer1kInputTokens: 0.0025,
 		costPer1kOutputTokens: 0.0125,
+		family: "nova",
+		openWeights: false,
 	},
 
 	"amazon/nova-pro-v1": {
@@ -5492,6 +5712,8 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 5120,
 		costPer1kInputTokens: 0.0008,
 		costPer1kOutputTokens: 0.0032,
+		family: "nova-pro",
+		openWeights: false,
 	},
 
 	"anthracite-org/magnum-v4-72b": {
@@ -5513,6 +5735,7 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 2048,
 		costPer1kInputTokens: 0.003,
 		costPer1kOutputTokens: 0.005,
+		openWeights: true,
 	},
 
 	"anthropic/claude-3-haiku": {
@@ -5543,6 +5766,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "claude",
+		openWeights: false,
 	},
 
 	"anthropic/claude-opus-4.6-fast": {
@@ -5577,6 +5802,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "claude-opus",
+		openWeights: false,
 	},
 
 	"anthropic/claude-opus-4.7": {
@@ -5612,6 +5839,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: 44.4,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "claude-opus",
+		openWeights: false,
 	},
 
 	"anthropic/claude-opus-4.7-fast": {
@@ -5646,6 +5875,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: 44.4,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "claude-opus",
+		openWeights: false,
 	},
 
 	"anthropic/claude-sonnet-4.6": {
@@ -5682,6 +5913,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: 40.8,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "claude-sonnet",
+		openWeights: false,
 	},
 
 	"arcee-ai/coder-large": {
@@ -5703,6 +5936,7 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.0005,
 		costPer1kOutputTokens: 0.0008,
+		openWeights: false,
 	},
 
 	"arcee-ai/maestro-reasoning": {
@@ -5799,6 +6033,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "trinity",
+		openWeights: true,
 	},
 
 	"arcee-ai/trinity-large-thinking:free": {
@@ -5857,6 +6093,8 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "trinity-mini",
+		openWeights: true,
 	},
 
 	"arcee-ai/virtuoso-large": {
@@ -5878,6 +6116,7 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 64000,
 		costPer1kInputTokens: 0.00075,
 		costPer1kOutputTokens: 0.0012,
+		openWeights: false,
 	},
 
 	"baidu/cobuddy:free": {
@@ -6027,6 +6266,8 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "ernie",
+		openWeights: true,
 	},
 
 	"baidu/qianfan-ocr-fast": {
@@ -6075,6 +6316,8 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "seed",
+		openWeights: false,
 	},
 
 	"bytedance-seed/seed-1.6-flash": {
@@ -6099,6 +6342,8 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "seed",
+		openWeights: false,
 	},
 
 	"bytedance-seed/seed-2.0-lite": {
@@ -6123,6 +6368,8 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "seed",
+		openWeights: false,
 	},
 
 	"bytedance-seed/seed-2.0-mini": {
@@ -6147,6 +6394,8 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "seed",
+		openWeights: false,
 	},
 
 	"bytedance/ui-tars-1.5-7b": {
@@ -6168,6 +6417,7 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 2048,
 		costPer1kInputTokens: 0.0001,
 		costPer1kOutputTokens: 0.0002,
+		openWeights: true,
 	},
 
 	"cohere/command-a": {
@@ -6198,6 +6448,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "command-a",
+		openWeights: true,
 	},
 
 	"cohere/command-r-08-2024": {
@@ -6228,6 +6480,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "command-r",
+		openWeights: true,
 	},
 
 	"cohere/command-r-plus-08-2024": {
@@ -6258,6 +6512,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "command-r",
+		openWeights: true,
 	},
 
 	"cohere/command-r7b-12-2024": {
@@ -6279,6 +6535,8 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 4000,
 		costPer1kInputTokens: 0.0000375,
 		costPer1kOutputTokens: 0.00015,
+		family: "command-r",
+		openWeights: true,
 	},
 
 	"deepcogito/cogito-v2.1-671b": {
@@ -6303,6 +6561,8 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "cogito",
+		openWeights: false,
 	},
 
 	"deepseek/deepseek-chat": {
@@ -6333,6 +6593,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "deepseek",
+		openWeights: true,
 	},
 
 	"deepseek/deepseek-r1": {
@@ -6367,6 +6629,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "deepseek-thinking",
+		openWeights: true,
 	},
 
 	"deepseek/deepseek-r1-distill-qwen-32b": {
@@ -6434,6 +6698,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "deepseek",
+		openWeights: true,
 	},
 
 	"deepseek/deepseek-v4-flash": {
@@ -6469,6 +6735,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "deepseek-flash",
+		openWeights: true,
 	},
 
 	"deepseek/deepseek-v4-flash:free": {
@@ -6539,6 +6807,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "deepseek-thinking",
+		openWeights: true,
 	},
 
 	"essentialai/rnj-1-instruct": {
@@ -6629,6 +6899,8 @@ export const openrouterModelConfig: ModelConfig = {
 				},
 			],
 		},
+		family: "gemini-flash",
+		openWeights: false,
 	},
 
 	"google/gemini-2.5-pro-preview": {
@@ -6664,6 +6936,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gemini",
+		openWeights: false,
 	},
 
 	"google/gemini-3-pro-image-preview": {
@@ -6709,6 +6983,8 @@ export const openrouterModelConfig: ModelConfig = {
 				},
 			],
 		},
+		family: "gemini-pro",
+		openWeights: false,
 	},
 
 	"google/gemini-3.1-flash-image-preview": {
@@ -6753,6 +7029,8 @@ export const openrouterModelConfig: ModelConfig = {
 				},
 			],
 		},
+		family: "gemini-flash",
+		openWeights: false,
 	},
 
 	"google/gemini-3.1-flash-lite": {
@@ -6789,6 +7067,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: 6.2,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gemini-flash-lite",
+		openWeights: false,
 	},
 
 	"google/gemini-3.1-flash-lite-preview": {
@@ -6825,6 +7105,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: 6.2,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gemini-flash-lite",
+		openWeights: false,
 	},
 
 	"google/gemini-3.1-pro-preview": {
@@ -6861,6 +7143,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: 21.4,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gemini-pro",
+		openWeights: false,
 	},
 
 	"google/gemini-3.1-pro-preview-customtools": {
@@ -6887,6 +7171,8 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "gemini-pro",
+		openWeights: false,
 	},
 
 	"google/gemma-2-27b-it": {
@@ -6908,6 +7194,8 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 2048,
 		costPer1kInputTokens: 0.00065,
 		costPer1kOutputTokens: 0.00065,
+		family: "gemma",
+		openWeights: true,
 	},
 
 	"google/gemma-4-26b-a4b-it": {
@@ -6943,6 +7231,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gemma",
+		openWeights: true,
 	},
 
 	"google/gemma-4-26b-a4b-it:free": {
@@ -6978,6 +7268,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gemma",
+		openWeights: true,
 	},
 
 	"google/gemma-4-31b-it": {
@@ -7013,6 +7305,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gemma",
+		openWeights: true,
 	},
 
 	"google/gemma-4-31b-it:free": {
@@ -7048,6 +7342,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gemma",
+		openWeights: true,
 	},
 
 	"google/lyria-3-clip-preview": {
@@ -7068,6 +7364,8 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 65536,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
+		family: "lyria",
+		openWeights: false,
 	},
 
 	"google/lyria-3-pro-preview": {
@@ -7088,6 +7386,8 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 65536,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
+		family: "lyria",
+		openWeights: false,
 	},
 
 	"gryphe/mythomax-l2-13b": {
@@ -7109,6 +7409,7 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 4096,
 		costPer1kInputTokens: 0.00006,
 		costPer1kOutputTokens: 0.00006,
+		openWeights: true,
 	},
 
 	"ibm-granite/granite-4.0-h-micro": {
@@ -7137,6 +7438,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "granite",
+		openWeights: true,
 	},
 
 	"ibm-granite/granite-4.1-8b": {
@@ -7167,6 +7470,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "granite",
+		openWeights: true,
 	},
 
 	"inception/mercury-2": {
@@ -7201,6 +7506,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "mercury",
+		openWeights: false,
 	},
 
 	"inclusionai/ling-2.6-1t": {
@@ -7230,6 +7537,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "ling",
+		openWeights: false,
 	},
 
 	"inclusionai/ling-2.6-flash": {
@@ -7259,6 +7568,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "ling",
+		openWeights: false,
 	},
 
 	"inclusionai/ring-2.6-1t": {
@@ -7293,6 +7604,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: 18.9,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "ring",
+		openWeights: false,
 	},
 
 	"inflection/inflection-3-pi": {
@@ -7314,6 +7627,7 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 1024,
 		costPer1kInputTokens: 0.0025,
 		costPer1kOutputTokens: 0.01,
+		openWeights: false,
 	},
 
 	"inflection/inflection-3-productivity": {
@@ -7335,6 +7649,7 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 1024,
 		costPer1kInputTokens: 0.0025,
 		costPer1kOutputTokens: 0.01,
+		openWeights: false,
 	},
 
 	"kwaipilot/kat-coder-pro-v2": {
@@ -7355,6 +7670,8 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 80000,
 		costPer1kInputTokens: 0.0003,
 		costPer1kOutputTokens: 0.0012,
+		family: "kat-coder",
+		openWeights: false,
 	},
 
 	"liquid/lfm-2-24b-a2b": {
@@ -7384,6 +7701,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "liquid",
+		openWeights: true,
 	},
 
 	"mancer/weaver": {
@@ -7405,6 +7724,8 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 2000,
 		costPer1kInputTokens: 0.00075,
 		costPer1kOutputTokens: 0.001,
+		family: "alpha",
+		openWeights: false,
 	},
 
 	"meta-llama/llama-3-70b-instruct": {
@@ -7447,6 +7768,8 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 8192,
 		costPer1kInputTokens: 0.00014,
 		costPer1kOutputTokens: 0.00014,
+		family: "llama",
+		openWeights: true,
 	},
 
 	"meta-llama/llama-3.1-70b-instruct": {
@@ -7468,6 +7791,8 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.0004,
 		costPer1kOutputTokens: 0.0004,
+		family: "llama",
+		openWeights: true,
 	},
 
 	"meta-llama/llama-3.1-8b-instruct": {
@@ -7489,6 +7814,8 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00002,
 		costPer1kOutputTokens: 0.00003,
+		family: "llama",
+		openWeights: true,
 	},
 
 	"meta-llama/llama-3.2-1b-instruct": {
@@ -7510,6 +7837,8 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 60000,
 		costPer1kInputTokens: 0.000027,
 		costPer1kOutputTokens: 0.000201,
+		family: "llama",
+		openWeights: true,
 	},
 
 	"meta-llama/llama-3.2-3b-instruct": {
@@ -7531,6 +7860,8 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 80000,
 		costPer1kInputTokens: 0.0000509,
 		costPer1kOutputTokens: 0.000335,
+		family: "llama",
+		openWeights: true,
 	},
 
 	"meta-llama/llama-3.3-70b-instruct": {
@@ -7552,6 +7883,8 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.0001,
 		costPer1kOutputTokens: 0.00032,
+		family: "llama",
+		openWeights: true,
 	},
 
 	"meta-llama/llama-4-maverick": {
@@ -7583,6 +7916,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: 1.3,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "llama",
+		openWeights: true,
 	},
 
 	"meta-llama/llama-4-scout": {
@@ -7614,6 +7949,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: 1.1,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "llama",
+		openWeights: true,
 	},
 
 	"meta-llama/llama-guard-3-8b": {
@@ -7656,6 +7993,8 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00018,
 		costPer1kOutputTokens: 0.00018,
+		family: "llama",
+		openWeights: true,
 	},
 
 	"microsoft/phi-4": {
@@ -7686,6 +8025,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "phi",
+		openWeights: true,
 	},
 
 	"microsoft/phi-4-mini-instruct": {
@@ -7715,6 +8056,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "phi",
+		openWeights: true,
 	},
 
 	"microsoft/wizardlm-2-8x22b": {
@@ -7736,6 +8079,7 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 8000,
 		costPer1kInputTokens: 0.00062,
 		costPer1kOutputTokens: 0.00062,
+		openWeights: true,
 	},
 
 	"minimax/minimax-m2-her": {
@@ -7756,6 +8100,8 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 2048,
 		costPer1kInputTokens: 0.0003,
 		costPer1kOutputTokens: 0.0012,
+		family: "minimax",
+		openWeights: false,
 	},
 
 	"minimax/minimax-m2.5": {
@@ -7790,6 +8136,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "minimax",
+		openWeights: true,
 	},
 
 	"minimax/minimax-m2.5:free": {
@@ -7858,6 +8206,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: 25.6,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "minimax",
+		openWeights: true,
 	},
 
 	"mistralai/devstral-medium": {
@@ -7909,6 +8259,8 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 262144,
 		costPer1kInputTokens: 0.0002,
 		costPer1kOutputTokens: 0.0002,
+		family: "ministral",
+		openWeights: true,
 	},
 
 	"mistralai/ministral-3b-2512": {
@@ -7929,6 +8281,8 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.0001,
 		costPer1kOutputTokens: 0.0001,
+		family: "ministral",
+		openWeights: true,
 	},
 
 	"mistralai/ministral-8b-2512": {
@@ -7949,6 +8303,8 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 262144,
 		costPer1kInputTokens: 0.00015,
 		costPer1kOutputTokens: 0.00015,
+		family: "ministral",
+		openWeights: true,
 	},
 
 	"mistralai/mistral-7b-instruct-v0.1": {
@@ -8000,6 +8356,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "mistral-large",
+		openWeights: false,
 	},
 
 	"mistralai/mistral-medium-3-5": {
@@ -8034,6 +8392,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: 19,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "mistral-medium",
+		openWeights: false,
 	},
 
 	"mistralai/mistral-nemo": {
@@ -8055,6 +8415,8 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.00002,
 		costPer1kOutputTokens: 0.00003,
+		family: "mistral-nemo",
+		openWeights: true,
 	},
 
 	"mistralai/mistral-saba": {
@@ -8085,6 +8447,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "mistral",
+		openWeights: false,
 	},
 
 	"mistralai/mistral-small-24b-instruct-2501": {
@@ -8115,6 +8479,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "mistral-small",
+		openWeights: true,
 	},
 
 	"mistralai/mistral-small-2603": {
@@ -8150,6 +8516,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "mistral-small",
+		openWeights: true,
 	},
 
 	"mistralai/mixtral-8x22b-instruct": {
@@ -8180,6 +8548,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "mistral",
+		openWeights: true,
 	},
 
 	"mistralai/pixtral-large-2411": {
@@ -8231,6 +8601,8 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 32000,
 		costPer1kInputTokens: 0.0001,
 		costPer1kOutputTokens: 0.0003,
+		family: "mistral",
+		openWeights: true,
 	},
 
 	"moonshotai/kimi-k2.6": {
@@ -8267,6 +8639,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: 30.3,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "kimi-k2",
+		openWeights: true,
 	},
 
 	"morph/morph-v3-fast": {
@@ -8287,6 +8661,8 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 38000,
 		costPer1kInputTokens: 0.0008,
 		costPer1kOutputTokens: 0.0012,
+		family: "morph",
+		openWeights: false,
 	},
 
 	"morph/morph-v3-large": {
@@ -8307,6 +8683,8 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.0009,
 		costPer1kOutputTokens: 0.0019,
+		family: "morph",
+		openWeights: false,
 	},
 
 	"nex-agi/deepseek-v3.1-nex-n1": {
@@ -8369,6 +8747,8 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.001,
 		costPer1kOutputTokens: 0.001,
+		family: "nousresearch",
+		openWeights: true,
 	},
 
 	"nousresearch/hermes-3-llama-3.1-70b": {
@@ -8390,6 +8770,8 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.0007,
 		costPer1kOutputTokens: 0.0007,
+		family: "nousresearch",
+		openWeights: true,
 	},
 
 	"nvidia/llama-3.3-nemotron-super-49b-v1.5": {
@@ -8415,6 +8797,8 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "nemotron",
+		openWeights: true,
 	},
 
 	"nvidia/nemotron-3-nano-30b-a3b": {
@@ -8449,6 +8833,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "nemotron",
+		openWeights: true,
 	},
 
 	"nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free": {
@@ -8473,6 +8859,8 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "nemotron",
+		openWeights: true,
 	},
 
 	"nvidia/nemotron-3-super-120b-a12b": {
@@ -8508,6 +8896,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: 8.7,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "nemotron",
+		openWeights: true,
 	},
 
 	"nvidia/nemotron-3-super-120b-a12b:free": {
@@ -8533,6 +8923,8 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "nemotron",
+		openWeights: true,
 	},
 
 	"openai/gpt-3.5-turbo": {
@@ -8563,6 +8955,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt",
+		openWeights: false,
 	},
 
 	"openai/gpt-3.5-turbo-16k": {
@@ -8584,6 +8978,8 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 4096,
 		costPer1kInputTokens: 0.003,
 		costPer1kOutputTokens: 0.004,
+		family: "gpt",
+		openWeights: false,
 	},
 
 	"openai/gpt-3.5-turbo-instruct": {
@@ -8605,6 +9001,8 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 4096,
 		costPer1kInputTokens: 0.0015,
 		costPer1kOutputTokens: 0.002,
+		family: "gpt",
+		openWeights: false,
 	},
 
 	"openai/gpt-4": {
@@ -8635,6 +9033,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt",
+		openWeights: false,
 	},
 
 	"openai/gpt-4-1106-preview": {
@@ -8697,6 +9097,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt",
+		openWeights: false,
 	},
 
 	"openai/gpt-4-turbo-preview": {
@@ -8718,6 +9120,8 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 4096,
 		costPer1kInputTokens: 0.01,
 		costPer1kOutputTokens: 0.03,
+		family: "gpt",
+		openWeights: false,
 	},
 
 	"openai/gpt-4.1-nano": {
@@ -8749,6 +9153,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt-nano",
+		openWeights: false,
 	},
 
 	"openai/gpt-4o": {
@@ -8780,6 +9186,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt",
+		openWeights: false,
 	},
 
 	"openai/gpt-4o-audio-preview": {
@@ -8825,6 +9233,8 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00015,
 		costPer1kOutputTokens: 0.0006,
+		family: "o-mini",
+		openWeights: false,
 	},
 
 	"openai/gpt-4o-search-preview": {
@@ -8849,6 +9259,8 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.0025,
 		costPer1kOutputTokens: 0.01,
+		family: "gpt",
+		openWeights: false,
 	},
 
 	"openai/gpt-5-image-mini": {
@@ -8873,6 +9285,8 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "gpt",
+		openWeights: false,
 	},
 
 	"openai/gpt-5.3-chat": {
@@ -8893,6 +9307,8 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00175,
 		costPer1kOutputTokens: 0.014,
+		family: "gpt",
+		openWeights: false,
 	},
 
 	"openai/gpt-5.3-codex": {
@@ -8928,6 +9344,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt-codex",
+		openWeights: false,
 	},
 
 	"openai/gpt-5.4": {
@@ -8976,6 +9394,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt",
+		openWeights: false,
 	},
 
 	"openai/gpt-5.4-image-2": {
@@ -9000,6 +9420,8 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "gpt",
+		openWeights: false,
 	},
 
 	"openai/gpt-5.4-mini": {
@@ -9048,6 +9470,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt-mini",
+		openWeights: false,
 	},
 
 	"openai/gpt-5.4-nano": {
@@ -9094,6 +9518,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt-nano",
+		openWeights: false,
 	},
 
 	"openai/gpt-5.4-pro": {
@@ -9142,6 +9568,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt-pro",
+		openWeights: false,
 	},
 
 	"openai/gpt-5.5": {
@@ -9192,6 +9620,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: 25.8,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt",
+		openWeights: false,
 	},
 
 	"openai/gpt-5.5-pro": {
@@ -9240,6 +9670,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt-pro",
+		openWeights: false,
 	},
 
 	"openai/gpt-audio": {
@@ -9260,6 +9692,8 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.0025,
 		costPer1kOutputTokens: 0.01,
+		family: "gpt",
+		openWeights: false,
 	},
 
 	"openai/gpt-audio-mini": {
@@ -9280,6 +9714,8 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.0006,
 		costPer1kOutputTokens: 0.0024,
+		family: "o-mini",
+		openWeights: false,
 	},
 
 	"openai/gpt-chat-latest": {
@@ -9300,6 +9736,8 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.005,
 		costPer1kOutputTokens: 0.03,
+		family: "gpt",
+		openWeights: false,
 	},
 
 	"openai/o1": {
@@ -9336,6 +9774,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "o",
+		openWeights: false,
 	},
 
 	"openai/o1-pro": {
@@ -9370,6 +9810,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "o-pro",
+		openWeights: false,
 	},
 
 	"openai/o3": {
@@ -9406,6 +9848,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "o",
+		openWeights: false,
 	},
 
 	"openai/o3-deep-research": {
@@ -9431,6 +9875,8 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "o",
+		openWeights: false,
 	},
 
 	"openai/o3-mini": {
@@ -9467,6 +9913,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "o-mini",
+		openWeights: false,
 	},
 
 	"openai/o3-mini-high": {
@@ -9502,6 +9950,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "o",
+		openWeights: false,
 	},
 
 	"openai/o3-pro": {
@@ -9537,6 +9987,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "o-pro",
+		openWeights: false,
 	},
 
 	"openai/o4-mini-deep-research": {
@@ -9562,6 +10014,8 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "o-mini",
+		openWeights: false,
 	},
 
 	"openai/o4-mini-high": {
@@ -9587,6 +10041,8 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "o",
+		openWeights: false,
 	},
 
 	"openrouter/bodybuilder": {
@@ -9605,6 +10061,7 @@ export const openrouterModelConfig: ModelConfig = {
 		supportsResponseFormat: false,
 		contextWindow: 128000,
 		maxTokens: 128000,
+		openWeights: false,
 	},
 
 	"openrouter/free": {
@@ -9629,6 +10086,7 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		openWeights: false,
 	},
 
 	"openrouter/owl-alpha": {
@@ -9649,6 +10107,9 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 262144,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
+		family: "alpha",
+		status: "alpha",
+		openWeights: false,
 	},
 
 	"openrouter/pareto-code": {
@@ -9667,6 +10128,7 @@ export const openrouterModelConfig: ModelConfig = {
 		supportsResponseFormat: false,
 		contextWindow: 2000000,
 		maxTokens: 200000,
+		openWeights: false,
 	},
 
 	"perceptron/perceptron-mk1": {
@@ -9691,6 +10153,7 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		openWeights: false,
 	},
 
 	"perplexity/sonar": {
@@ -9720,6 +10183,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "sonar",
+		openWeights: false,
 	},
 
 	"perplexity/sonar-deep-research": {
@@ -9745,6 +10210,8 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "sonar-deep-research",
+		openWeights: false,
 	},
 
 	"perplexity/sonar-pro": {
@@ -9774,6 +10241,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "sonar-pro",
+		openWeights: false,
 	},
 
 	"perplexity/sonar-pro-search": {
@@ -9798,6 +10267,8 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "sonar-pro",
+		openWeights: false,
 	},
 
 	"perplexity/sonar-reasoning-pro": {
@@ -9831,6 +10302,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "sonar-reasoning",
+		openWeights: false,
 	},
 
 	"poolside/laguna-m.1:free": {
@@ -9855,6 +10328,7 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		openWeights: true,
 	},
 
 	"poolside/laguna-xs.2:free": {
@@ -9879,6 +10353,7 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		openWeights: true,
 	},
 
 	"prime-intellect/intellect-3": {
@@ -9943,6 +10418,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "qwen",
+		openWeights: true,
 	},
 
 	"qwen/qwen-2.5-7b-instruct": {
@@ -9964,6 +10441,8 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.00004,
 		costPer1kOutputTokens: 0.0001,
+		family: "qwen",
+		openWeights: true,
 	},
 
 	"qwen/qwen-plus": {
@@ -9985,6 +10464,8 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.00026,
 		costPer1kOutputTokens: 0.00078,
+		family: "qwen",
+		openWeights: false,
 	},
 
 	"qwen/qwen-plus-2025-07-28:thinking": {
@@ -10010,6 +10491,8 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "qwen",
+		openWeights: false,
 	},
 
 	"qwen/qwen3-14b": {
@@ -10045,6 +10528,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "qwen",
+		openWeights: true,
 	},
 
 	"qwen/qwen3-235b-a22b": {
@@ -10080,6 +10565,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "qwen",
+		openWeights: true,
 	},
 
 	"qwen/qwen3-30b-a3b": {
@@ -10115,6 +10602,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "qwen",
+		openWeights: true,
 	},
 
 	"qwen/qwen3-32b": {
@@ -10150,6 +10639,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "qwen",
+		openWeights: true,
 	},
 
 	"qwen/qwen3-8b": {
@@ -10185,6 +10676,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "qwen",
+		openWeights: true,
 	},
 
 	"qwen/qwen3-coder-next": {
@@ -10215,6 +10708,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "qwen",
+		openWeights: true,
 	},
 
 	"qwen/qwen3-coder-plus": {
@@ -10236,6 +10731,8 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.00065,
 		costPer1kOutputTokens: 0.00325,
+		family: "qwen",
+		openWeights: false,
 	},
 
 	"qwen/qwen3-max-thinking": {
@@ -10269,6 +10766,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "qwen",
+		openWeights: false,
 	},
 
 	"qwen/qwen3-vl-235b-a22b-instruct": {
@@ -10300,6 +10799,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "qwen",
+		openWeights: true,
 	},
 
 	"qwen/qwen3-vl-235b-a22b-thinking": {
@@ -10325,6 +10826,8 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "qwen",
+		openWeights: true,
 	},
 
 	"qwen/qwen3-vl-30b-a3b-instruct": {
@@ -10356,6 +10859,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "qwen",
+		openWeights: true,
 	},
 
 	"qwen/qwen3-vl-30b-a3b-thinking": {
@@ -10381,6 +10886,8 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "qwen",
+		openWeights: true,
 	},
 
 	"qwen/qwen3-vl-32b-instruct": {
@@ -10411,6 +10918,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "qwen",
+		openWeights: true,
 	},
 
 	"qwen/qwen3-vl-8b-instruct": {
@@ -10441,6 +10950,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "qwen",
+		openWeights: true,
 	},
 
 	"qwen/qwen3-vl-8b-thinking": {
@@ -10465,6 +10976,8 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "qwen",
+		openWeights: true,
 	},
 
 	"qwen/qwen3.5-122b-a10b": {
@@ -10499,6 +11012,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "qwen",
+		openWeights: true,
 	},
 
 	"qwen/qwen3.5-27b": {
@@ -10533,6 +11048,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "qwen",
+		openWeights: true,
 	},
 
 	"qwen/qwen3.5-35b-a3b": {
@@ -10567,6 +11084,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "qwen",
+		openWeights: true,
 	},
 
 	"qwen/qwen3.5-397b-a17b": {
@@ -10602,6 +11121,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "qwen",
+		openWeights: true,
 	},
 
 	"qwen/qwen3.5-9b": {
@@ -10635,6 +11156,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "qwen",
+		openWeights: true,
 	},
 
 	"qwen/qwen3.5-flash-02-23": {
@@ -10659,6 +11182,8 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "qwen",
+		openWeights: false,
 	},
 
 	"qwen/qwen3.5-plus-02-15": {
@@ -10684,6 +11209,8 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "qwen",
+		openWeights: false,
 	},
 
 	"qwen/qwen3.5-plus-20260420": {
@@ -10708,6 +11235,8 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "qwen3.5",
+		openWeights: false,
 	},
 
 	"qwen/qwen3.6-27b": {
@@ -10742,6 +11271,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "qwen",
+		openWeights: true,
 	},
 
 	"qwen/qwen3.6-35b-a3b": {
@@ -10776,6 +11307,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "qwen",
+		openWeights: true,
 	},
 
 	"qwen/qwen3.6-flash": {
@@ -10800,6 +11333,8 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "qwen3.6",
+		openWeights: false,
 	},
 
 	"qwen/qwen3.6-max-preview": {
@@ -10835,6 +11370,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "qwen",
+		openWeights: false,
 	},
 
 	"qwen/qwen3.6-plus": {
@@ -10870,6 +11407,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: 27.6,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "qwen",
+		openWeights: false,
 	},
 
 	"rekaai/reka-edge": {
@@ -10890,6 +11429,8 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.0001,
 		costPer1kOutputTokens: 0.0001,
+		family: "reka",
+		openWeights: true,
 	},
 
 	"relace/relace-apply-3": {
@@ -10910,6 +11451,7 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.00085,
 		costPer1kOutputTokens: 0.00125,
+		openWeights: false,
 	},
 
 	"relace/relace-search": {
@@ -10930,6 +11472,7 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.001,
 		costPer1kOutputTokens: 0.003,
+		openWeights: false,
 	},
 
 	"sao10k/l3-euryale-70b": {
@@ -10972,6 +11515,8 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00004,
 		costPer1kOutputTokens: 0.00005,
+		family: "llama",
+		openWeights: true,
 	},
 
 	"sao10k/l3.1-70b-hanami-x1": {
@@ -10993,6 +11538,8 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 16000,
 		costPer1kInputTokens: 0.003,
 		costPer1kOutputTokens: 0.003,
+		family: "llama",
+		openWeights: true,
 	},
 
 	"sao10k/l3.1-euryale-70b": {
@@ -11014,6 +11561,8 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00085,
 		costPer1kOutputTokens: 0.00085,
+		family: "llama",
+		openWeights: true,
 	},
 
 	"sao10k/l3.3-euryale-70b": {
@@ -11035,6 +11584,8 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00065,
 		costPer1kOutputTokens: 0.00075,
+		family: "llama",
+		openWeights: true,
 	},
 
 	"switchpoint/router": {
@@ -11059,6 +11610,7 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		openWeights: false,
 	},
 
 	"tencent/hunyuan-a13b-instruct": {
@@ -11084,6 +11636,8 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "hunyuan",
+		openWeights: true,
 	},
 
 	"tencent/hy3-preview": {
@@ -11118,6 +11672,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "Hy",
+		openWeights: true,
 	},
 
 	"thedrummer/cydonia-24b-v4.1": {
@@ -11139,6 +11695,7 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.0003,
 		costPer1kOutputTokens: 0.0005,
+		openWeights: true,
 	},
 
 	"thedrummer/rocinante-12b": {
@@ -11160,6 +11717,7 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.00025,
 		costPer1kOutputTokens: 0.0005,
+		openWeights: true,
 	},
 
 	"thedrummer/skyfall-36b-v2": {
@@ -11181,6 +11739,7 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.00055,
 		costPer1kOutputTokens: 0.0008,
+		openWeights: true,
 	},
 
 	"thedrummer/unslopnemo-12b": {
@@ -11202,6 +11761,7 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.0004,
 		costPer1kOutputTokens: 0.0004,
+		openWeights: true,
 	},
 
 	"undi95/remm-slerp-l2-13b": {
@@ -11223,6 +11783,7 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 4096,
 		costPer1kInputTokens: 0.00045,
 		costPer1kOutputTokens: 0.00065,
+		openWeights: true,
 	},
 
 	"upstage/solar-pro-3": {
@@ -11256,6 +11817,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: 2.7,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "solar-pro",
+		openWeights: false,
 	},
 
 	"writer/palmyra-x5": {
@@ -11276,6 +11839,8 @@ export const openrouterModelConfig: ModelConfig = {
 		maxTokens: 8192,
 		costPer1kInputTokens: 0.0006,
 		costPer1kOutputTokens: 0.006,
+		family: "palmyra",
+		openWeights: false,
 	},
 
 	"x-ai/grok-4.20": {
@@ -11311,6 +11876,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "grok",
+		openWeights: false,
 	},
 
 	"x-ai/grok-4.20-multi-agent": {
@@ -11336,6 +11903,8 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "grok",
+		openWeights: false,
 	},
 
 	"x-ai/grok-4.3": {
@@ -11371,6 +11940,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: 22.8,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "grok",
+		openWeights: false,
 	},
 
 	"xiaomi/mimo-v2-omni": {
@@ -11476,6 +12047,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "mimo",
+		openWeights: true,
 	},
 
 	"xiaomi/mimo-v2.5-pro": {
@@ -11511,6 +12084,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: 29.1,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "mimo",
+		openWeights: true,
 	},
 
 	"z-ai/glm-4-32b": {
@@ -11567,6 +12142,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "glm",
+		openWeights: true,
 	},
 
 	"z-ai/glm-5-turbo": {
@@ -11600,6 +12177,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "glm",
+		openWeights: false,
 	},
 
 	"z-ai/glm-5.1": {
@@ -11634,6 +12213,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "glm",
+		openWeights: true,
 	},
 
 	"z-ai/glm-5v-turbo": {
@@ -11667,6 +12248,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "glm",
+		openWeights: false,
 	},
 	"google/gemini-3.5-flash": {
 		name: "Gemini 3.5 Flash",
@@ -11719,6 +12302,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: 37.4,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gemini-flash",
+		openWeights: false,
 	},
 	"qwen/qwen3.7-max": {
 		name: "Qwen3.7 Max",
@@ -11752,6 +12337,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: 30.6,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "qwen",
+		openWeights: false,
 	},
 
 	"x-ai/grok-build-0.1": {
@@ -11776,6 +12363,8 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "grok-build",
+		openWeights: false,
 	},
 	"anthropic/claude-opus-4.8": {
 		name: "Claude Opus 4.8",
@@ -11809,6 +12398,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: 47.2,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "claude-opus",
+		openWeights: false,
 	},
 
 	"anthropic/claude-opus-4.8-fast": {
@@ -11856,6 +12447,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: 47.2,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "claude-opus",
+		openWeights: false,
 	},
 
 	"moonshotai/kimi-k2.6:free": {
@@ -11925,6 +12518,7 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: 21.5,
 			intelligenceIndexVersion: 4.1,
 		},
+		openWeights: true,
 	},
 	"minimax/minimax-m3": {
 		name: "MiniMax M3",
@@ -11958,6 +12552,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: 35.4,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "minimax",
+		openWeights: true,
 	},
 	"openrouter/fusion": {
 		name: "Fusion",
@@ -11975,6 +12571,7 @@ export const openrouterModelConfig: ModelConfig = {
 		supportsResponseFormat: false,
 		contextWindow: 1000000,
 		maxTokens: 128000,
+		openWeights: false,
 	},
 
 	"qwen/qwen3.7-plus": {
@@ -12010,6 +12607,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: 20.8,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "qwen",
+		openWeights: false,
 	},
 	"nvidia/nemotron-3-ultra-550b-a55b": {
 		name: "Nemotron 3 Ultra 550B A55B",
@@ -12043,6 +12642,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: 27.4,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "nemotron",
+		openWeights: true,
 	},
 
 	"nvidia/nemotron-3-ultra-550b-a55b:free": {
@@ -12067,6 +12668,8 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "nemotron",
+		openWeights: true,
 	},
 
 	"nvidia/nemotron-3.5-content-safety:free": {
@@ -12091,6 +12694,8 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "nemotron",
+		openWeights: true,
 	},
 	"nex-agi/nex-n2-pro:free": {
 		name: "Nex-N2-Pro (free)",
@@ -12137,6 +12742,8 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "claude-fable",
+		openWeights: false,
 	},
 
 	"anthropic/claude-fable-5": {
@@ -12205,6 +12812,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: 29.6,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "kimi-k2",
+		openWeights: true,
 	},
 	"z-ai/glm-5.2": {
 		name: "GLM-5.2",
@@ -12238,6 +12847,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: 43.1,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "glm",
+		openWeights: true,
 	},
 	"cohere/north-mini-code:free": {
 		name: "North Mini Code (free)",
@@ -12271,6 +12882,8 @@ export const openrouterModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "north",
+		openWeights: true,
 	},
 
 	"google/gemini-3-pro-image": {
@@ -12315,6 +12928,8 @@ export const openrouterModelConfig: ModelConfig = {
 				},
 			],
 		},
+		family: "gemini",
+		openWeights: false,
 	},
 
 	"google/gemini-3.1-flash-image": {
@@ -12358,6 +12973,8 @@ export const openrouterModelConfig: ModelConfig = {
 				},
 			],
 		},
+		family: "gemini",
+		openWeights: false,
 	},
 	"poolside/laguna-m.1": {
 		name: "Laguna M.1",
@@ -12381,6 +12998,7 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		openWeights: true,
 	},
 
 	"poolside/laguna-xs.2": {
@@ -12405,6 +13023,7 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		openWeights: true,
 	},
 	"nex-agi/nex-n2-pro": {
 		name: "Nex-N2-Pro",
@@ -12428,5 +13047,7 @@ export const openrouterModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "agi",
+		openWeights: true,
 	},
 };

@@ -212,6 +212,10 @@ export function getModelInteractionCapabilities(
 	};
 }
 
+export function isStealthModel(model?: Pick<ModelConfigItem, "status">) {
+	return model?.status === "alpha";
+}
+
 export function isTextOnlyModel(model: ModelConfigItem) {
 	const inputs = getModelInputModalities(model);
 	const outputs = getModelOutputModalities(model);

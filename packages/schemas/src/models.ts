@@ -105,11 +105,16 @@ const modelArtificialAnalysisSchema = z.object({
 		.optional(),
 });
 
+const modelStatusSchema = z.enum(["alpha", "beta", "deprecated"]);
+
 export const modelConfigItemSchema = z.object({
 	id: z.string().optional(),
 	matchingModel: z.string(),
 	name: z.string().optional(),
 	provider: z.string(),
+	family: z.string().optional(),
+	status: modelStatusSchema.optional(),
+	openWeights: z.boolean().optional(),
 	description: z.string().optional(),
 	avatarUrl: z.string().optional(),
 	capabilities: z.array(z.string()).optional(),
@@ -278,6 +283,7 @@ export const modelParamsSchema = z.object({ id: z.string() });
 export type ModelRanking = z.infer<typeof modelRankingSchema>;
 export type ModelModality = z.infer<typeof modelModalitySchema>;
 export type ModelModalities = z.infer<typeof modelModalitiesSchema>;
+export type ModelStatus = z.infer<typeof modelStatusSchema>;
 export type ModelReasoningConfig = z.infer<typeof modelReasoningConfigSchema>;
 export type ModelVerbosityConfig = z.infer<typeof modelVerbosityConfigSchema>;
 export type ModelConfigItem = z.infer<typeof modelConfigItemSchema>;

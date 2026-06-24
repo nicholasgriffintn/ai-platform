@@ -15,7 +15,7 @@ import {
 
 import { ModelIcon } from "~/components/ModelIcon";
 import type { ModelRegionOption } from "~/lib/model-region-variants";
-import { getModelDisplayName, modelSupportsVisualModality } from "~/lib/models";
+import { getModelDisplayName, isStealthModel, modelSupportsVisualModality } from "~/lib/models";
 import { hasProviderReasoningOptions } from "~/lib/reasoning";
 import { cn } from "~/lib/utils";
 import type { ModelConfigItem } from "@assistant/schemas";
@@ -134,6 +134,11 @@ export const ModelOption = ({
 							{model.isByokEnabled ? (
 								<span className="rounded-full bg-emerald-100 px-1.5 py-0.5 text-[10px] font-medium leading-none text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300">
 									BYOK
+								</span>
+							) : null}
+							{isStealthModel(model) ? (
+								<span className="rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium leading-none text-amber-800 dark:bg-amber-900/30 dark:text-amber-300">
+									Stealth
 								</span>
 							) : null}
 							{isTeamAgent ? (

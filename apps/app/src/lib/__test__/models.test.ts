@@ -12,6 +12,7 @@ import {
 	getRealtimeSessionModelsByProvider,
 	getToolCallModels,
 	isImageGenerationOutputModel,
+	isStealthModel,
 	isTextInputChatModel,
 	isTextOnlyModel,
 	modelHasOutputModality,
@@ -245,6 +246,33 @@ describe("getModelInteractionCapabilities", () => {
 			supportsCode: false,
 			supportsDocuments: false,
 		});
+	});
+});
+
+describe("isStealthModel", () => {
+	it("treats alpha status models as stealth models", () => {
+		expect(
+			isStealthModel({
+				id: "openrouter/owl-alpha",
+				name: "Owl Alpha",
+				matchingModel: "openrouter/owl-alpha",
+				provider: "openrouter",
+				status: "alpha",
+			} as ModelConfigItem),
+		).toBe(true);
+	});
+
+	it("does not treat beta or unspecified status models as stealth models", () => {
+		expect(
+			isStealthModel({
+				id: "preview-model",
+				name: "Preview Model",
+				matchingModel: "preview-model",
+				provider: "provider",
+				status: "beta",
+			} as ModelConfigItem),
+		).toBe(false);
+		expect(isStealthModel(undefined)).toBe(false);
 	});
 });
 

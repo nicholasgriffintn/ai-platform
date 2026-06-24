@@ -68,4 +68,22 @@ describe("model schemas", () => {
 			}),
 		).not.toThrow();
 	});
+
+	it("accepts models.dev lifecycle and availability metadata on model catalogue items", () => {
+		expect(
+			modelConfigItemSchema.parse({
+				id: "openrouter/owl-alpha",
+				matchingModel: "openrouter/owl-alpha",
+				name: "Owl Alpha",
+				provider: "openrouter",
+				family: "alpha",
+				status: "alpha",
+				openWeights: false,
+			}),
+		).toMatchObject({
+			family: "alpha",
+			status: "alpha",
+			openWeights: false,
+		});
+	});
 });
