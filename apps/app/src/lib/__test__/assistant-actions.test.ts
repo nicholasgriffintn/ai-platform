@@ -143,7 +143,7 @@ describe("assistant action catalogue", () => {
 		).toBe(true);
 	});
 
-	it("keeps uninstalled recipes discoverable after installed recipes", () => {
+	it("hides recipes that are not installed and active", () => {
 		const catalog = buildAssistantActionCatalog({
 			recipes: [
 				{
@@ -166,13 +166,108 @@ describe("assistant action catalogue", () => {
 			installations: [],
 		});
 
-		expect(catalog.items).toMatchObject([
-			{
-				id: "recipe:daily-weather",
-				kind: "recipe",
-				label: "Daily Weather",
-				status: "available",
-			},
+		expect(catalog.items).toEqual([]);
+	});
+
+	it("only exposes configured and enabled action targets", () => {
+		const catalog = buildAssistantActionCatalog({
+			connectors: [
+				{
+					id: "posthog",
+					name: "PostHog",
+					description: "Query product analytics",
+					authType: "api_key",
+					status: "connected",
+					scopes: ["project:read"],
+					operations: ["query"],
+				},
+				{
+					id: "linear",
+					name: "Linear",
+					description: "Read issues",
+					authType: "oauth2",
+					status: "unconfigured",
+					scopes: ["read"],
+					operations: ["listIssues"],
+				},
+			],
+			recipes: [
+				{
+					id: "active-recipe",
+					title: "Active Recipe",
+					summary: "Runs now",
+					description: "Configured and active",
+					kind: "automate",
+					category: "Productivity",
+					featured: true,
+					estimatedSetupMinutes: 1,
+					integrations: [],
+					triggers: [{ type: "message", label: "Ask", description: "Ask for it" }],
+					actions: ["Run active recipe"],
+					setupPrompt: "Set up active recipe.",
+					enabledTools: [],
+					configurationFields: [],
+				},
+				{
+					id: "paused-recipe",
+					title: "Paused Recipe",
+					summary: "Should stay hidden",
+					description: "Configured but disabled",
+					kind: "automate",
+					category: "Productivity",
+					featured: false,
+					estimatedSetupMinutes: 1,
+					integrations: [],
+					triggers: [{ type: "message", label: "Ask", description: "Ask for it" }],
+					actions: ["Run paused recipe"],
+					setupPrompt: "Set up paused recipe.",
+					enabledTools: [],
+					configurationFields: [],
+				},
+				{
+					id: "uninstalled-recipe",
+					title: "Uninstalled Recipe",
+					summary: "Should stay hidden",
+					description: "Available but not configured",
+					kind: "automate",
+					category: "Productivity",
+					featured: false,
+					estimatedSetupMinutes: 1,
+					integrations: [],
+					triggers: [{ type: "message", label: "Ask", description: "Ask for it" }],
+					actions: ["Run unavailable recipe"],
+					setupPrompt: "Set up uninstalled recipe.",
+					enabledTools: [],
+					configurationFields: [],
+				},
+			],
+			installations: [
+				{
+					id: "active-installation",
+					recipeId: "active-recipe",
+					userId: 42,
+					status: "active",
+					triggers: [{ type: "manual", enabled: true }],
+					configuration: {},
+					createdAt: "2026-01-01T00:00:00.000Z",
+					updatedAt: "2026-01-01T00:00:00.000Z",
+				},
+				{
+					id: "paused-installation",
+					recipeId: "paused-recipe",
+					userId: 42,
+					status: "paused",
+					triggers: [{ type: "manual", enabled: false }],
+					configuration: {},
+					createdAt: "2026-01-01T00:00:00.000Z",
+					updatedAt: "2026-01-01T00:00:00.000Z",
+				},
+			],
+		});
+
+		expect(catalog.items.map((item) => `${item.kind}:${item.label}`)).toEqual([
+			"installed_recipe:Active Recipe",
+			"connector:PostHog",
 		]);
 	});
 

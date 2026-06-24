@@ -102,7 +102,7 @@ describe("assistant action execution", () => {
 					name: "PostHog",
 					description: "Query product analytics",
 					authType: "api_key",
-					status: "unconfigured",
+					status: "connected",
 					scopes: ["project:read"],
 					operations: ["query"],
 				},

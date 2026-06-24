@@ -215,7 +215,7 @@ function buildInstalledRecipeItems(
 ): AssistantActionItem[] {
 	const recipeById = new Map(recipes.map((recipe) => [recipe.id, recipe]));
 
-	return installations.flatMap((installation) => {
+	return installations.filter(isActiveRecipeInstallation).flatMap((installation) => {
 		const recipe = recipeById.get(installation.recipeId);
 		if (!recipe) {
 			return [];
@@ -225,15 +225,12 @@ function buildInstalledRecipeItems(
 	});
 }
 
-function buildRecipeItems(
-	recipes: readonly AssistantRecipe[],
-	installations: readonly RecipeInstallation[],
-): AssistantActionItem[] {
-	const installedRecipeIds = new Set(installations.map((installation) => installation.recipeId));
+function isActiveRecipeInstallation(installation: RecipeInstallation): boolean {
+	return installation.status === "active";
+}
 
-	return recipes
-		.filter((recipe) => !installedRecipeIds.has(recipe.id))
-		.map((recipe) => createRecipeAssistantActionItem(recipe));
+function isConnectedRecipeConnector(connector: RecipeConnectorManifest): boolean {
+	return connector.status === "connected";
 }
 
 export function createRecipeAssistantActionItem(
@@ -293,7 +290,6 @@ export function buildAssistantActionCatalog(
 		verbs: assistantActionVerbs,
 		items: [
 			...buildInstalledRecipeItems(recipes, installations),
-			...buildRecipeItems(recipes, installations),
 			...(sources.apps ?? []).map((app) => ({
 				id: `app:${app.id}`,
 				kind: "app" as const,
@@ -323,9 +319,9 @@ export function buildAssistantActionCatalog(
 					agentId: agent.id,
 				},
 			})),
-			...(sources.connectors ?? []).map((connector) =>
-				createConnectorAssistantActionItem(connector),
-			),
+			...(sources.connectors ?? [])
+				.filter(isConnectedRecipeConnector)
+				.map((connector) => createConnectorAssistantActionItem(connector)),
 			...(sources.modelTools ?? []).map((tool) => ({
 				id: `tool:${tool.id}`,
 				kind: "tool" as const,
