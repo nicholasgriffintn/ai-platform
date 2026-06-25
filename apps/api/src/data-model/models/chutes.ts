@@ -129,6 +129,8 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "deepseek-thinking",
+		openWeights: true,
 	}),
 
 	createModelConfig("deepseek-ai/DeepSeek-R1-0528-Qwen3-8B", PROVIDER, {
@@ -203,6 +205,8 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "qwen",
+		openWeights: true,
 	}),
 
 	createModelConfig("Qwen/Qwen3-235B-A22B-Instruct-2507", PROVIDER, {
@@ -278,6 +282,8 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "qwen",
+		openWeights: true,
 	}),
 
 	createModelConfig("tngtech/DeepSeek-TNG-R1T2-Chimera", PROVIDER, {
@@ -402,6 +408,8 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 			defaultEffort: "none",
 		},
 		knowledgeCutoffDate: "July 2024",
+		family: "deepseek-thinking",
+		openWeights: true,
 	}),
 
 	createModelConfig("deepseek-ai/DeepSeek-R1-TEE", PROVIDER, {
@@ -467,6 +475,8 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.00025,
 		costPer1kOutputTokens: 0.001,
+		family: "deepseek",
+		openWeights: true,
 	}),
 
 	createModelConfig("deepseek-ai/DeepSeek-V3.1-TEE", PROVIDER, {
@@ -490,6 +500,8 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "deepseek",
+		openWeights: true,
 	}),
 
 	createModelConfig("deepseek-ai/DeepSeek-V3.1-Terminus-TEE", PROVIDER, {
@@ -551,6 +563,8 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "deepseek",
+		openWeights: true,
 	}),
 
 	createModelConfig("MiniMaxAI/MiniMax-M2.1-TEE", PROVIDER, {
@@ -670,6 +684,8 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "kimi-k2",
+		openWeights: true,
 	}),
 
 	createModelConfig("NousResearch/DeepHermes-3-Mistral-24B-Preview", PROVIDER, {
@@ -689,6 +705,8 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.0000245,
 		costPer1kOutputTokens: 0.0000978,
+		family: "nousresearch",
+		openWeights: true,
 	}),
 
 	createModelConfig("NousResearch/Hermes-4-14B", PROVIDER, {
@@ -712,6 +730,8 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "nousresearch",
+		openWeights: true,
 	}),
 
 	createModelConfig("NousResearch/Hermes-4-405B-FP8-TEE", PROVIDER, {
@@ -811,6 +831,8 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "gpt-oss",
+		openWeights: true,
 	}),
 
 	createModelConfig("openai/gpt-oss-20b", PROVIDER, {
@@ -887,6 +909,8 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "qwen",
+		openWeights: true,
 	}),
 
 	createModelConfig("Qwen/Qwen2.5-Coder-32B-Instruct", PROVIDER, {
@@ -914,6 +938,8 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "qwen",
+		openWeights: true,
 	}),
 
 	createModelConfig("Qwen/Qwen2.5-VL-32B-Instruct", PROVIDER, {
@@ -933,6 +959,8 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.0000543,
 		costPer1kOutputTokens: 0.0002174,
+		family: "qwen",
+		openWeights: true,
 	}),
 
 	createModelConfig("Qwen/Qwen2.5-VL-72B-Instruct-TEE", PROVIDER, {
@@ -1030,6 +1058,8 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		costPer1kInputTokens: 0.0001,
 		costPer1kOutputTokens: 0.0006,
 		knowledgeCutoffDate: "April 2025",
+		family: "qwen",
+		openWeights: true,
 	}),
 
 	createModelConfig("Qwen/Qwen3-30B-A3B-Instruct-2507", PROVIDER, {
@@ -1155,6 +1185,8 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "qwen",
+		openWeights: true,
 	}),
 
 	createModelConfig("Qwen/Qwen3-VL-235B-A22B-Instruct", PROVIDER, {
@@ -1203,6 +1235,8 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 8192,
 		costPer1kInputTokens: 0.00001,
 		costPer1kOutputTokens: 0.0000109,
+		family: "qwen",
+		openWeights: true,
 	}),
 
 	createModelConfig("rednote-hilab/dots.ocr", PROVIDER, {
@@ -1222,6 +1256,8 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.00001,
 		costPer1kOutputTokens: 0.0000109,
+		family: "rednote",
+		openWeights: true,
 	}),
 
 	createModelConfig("tngtech/TNG-R1T-Chimera-TEE", PROVIDER, {
@@ -1279,6 +1315,8 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.00003,
 		costPer1kOutputTokens: 0.0001,
+		family: "unsloth",
+		openWeights: true,
 	}),
 
 	createModelConfig("unsloth/gemma-3-27b-it", PROVIDER, {
@@ -1298,6 +1336,8 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.0000272,
 		costPer1kOutputTokens: 0.0001087,
+		family: "unsloth",
+		openWeights: true,
 	}),
 
 	createModelConfig("unsloth/gemma-3-4b-it", PROVIDER, {
@@ -1317,6 +1357,8 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 96000,
 		costPer1kInputTokens: 0.00001,
 		costPer1kOutputTokens: 0.0000272,
+		family: "unsloth",
+		openWeights: true,
 	}),
 
 	createModelConfig("unsloth/Llama-3.2-1B-Instruct", PROVIDER, {
@@ -1336,6 +1378,8 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 8192,
 		costPer1kInputTokens: 0.00001,
 		costPer1kOutputTokens: 0.0000109,
+		family: "unsloth",
+		openWeights: true,
 	}),
 
 	createModelConfig("unsloth/Mistral-Nemo-Instruct-2407", PROVIDER, {
@@ -1355,6 +1399,8 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.00002,
 		costPer1kOutputTokens: 0.00004,
+		family: "unsloth",
+		openWeights: true,
 	}),
 
 	createModelConfig("unsloth/Mistral-Small-24B-Instruct-2501", PROVIDER, {
@@ -1492,6 +1538,8 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "glm",
+		openWeights: true,
 	}),
 
 	createModelConfig("zai-org/GLM-4.7-Flash", PROVIDER, {
@@ -1544,6 +1592,8 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "glm",
+		openWeights: true,
 	}),
 
 	createModelConfig("zai-org/GLM-4.7-TEE", PROVIDER, {
@@ -1568,6 +1618,8 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 			defaultEffort: "none",
 		},
 		knowledgeCutoffDate: "April 2025",
+		family: "glm",
+		openWeights: true,
 	}),
 	createModelConfig("google/gemma-4-31B-turbo-TEE", PROVIDER, {
 		name: "gemma 4 31B turbo TEE",
@@ -1590,6 +1642,8 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "gemma",
+		openWeights: true,
 	}),
 
 	createModelConfig("MiniMaxAI/MiniMax-M2.5-TEE", PROVIDER, {
@@ -1613,6 +1667,8 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "minimax",
+		openWeights: true,
 	}),
 
 	createModelConfig("moonshotai/Kimi-K2.6-TEE", PROVIDER, {
@@ -1637,6 +1693,8 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "kimi-k2",
+		openWeights: true,
 	}),
 
 	createModelConfig("Qwen/Qwen3-32B-TEE", PROVIDER, {
@@ -1661,6 +1719,8 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 			defaultEffort: "none",
 		},
 		knowledgeCutoffDate: "April 2025",
+		family: "qwen",
+		openWeights: true,
 	}),
 
 	createModelConfig("Qwen/Qwen3-Coder-Next-TEE", PROVIDER, {
@@ -1680,6 +1740,8 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 65536,
 		costPer1kInputTokens: 0.00012,
 		costPer1kOutputTokens: 0.00075,
+		family: "qwen",
+		openWeights: true,
 	}),
 
 	createModelConfig("Qwen/Qwen3.5-397B-A17B-TEE", PROVIDER, {
@@ -1703,6 +1765,8 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "qwen",
+		openWeights: true,
 	}),
 
 	createModelConfig("Qwen/Qwen3.6-27B-TEE", PROVIDER, {
@@ -1726,6 +1790,8 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "qwen",
+		openWeights: true,
 	}),
 
 	createModelConfig("tngtech/DeepSeek-TNG-R1T2-Chimera-TEE", PROVIDER, {
@@ -1749,6 +1815,8 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "deepseek",
+		openWeights: true,
 	}),
 
 	createModelConfig("unsloth/Llama-3.2-3B-Instruct", PROVIDER, {
@@ -1767,6 +1835,8 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00001,
 		costPer1kOutputTokens: 0.0000136,
+		family: "unsloth",
+		openWeights: true,
 	}),
 
 	createModelConfig("XiaomiMiMo/MiMo-V2-Flash-TEE", PROVIDER, {
@@ -1787,6 +1857,8 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		costPer1kInputTokens: 0.00009,
 		costPer1kOutputTokens: 0.00029,
 		knowledgeCutoffDate: "December 1, 2024",
+		family: "mimo",
+		openWeights: true,
 	}),
 
 	createModelConfig("zai-org/GLM-5-TEE", PROVIDER, {
@@ -1810,6 +1882,8 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "glm",
+		openWeights: true,
 	}),
 
 	createModelConfig("zai-org/GLM-5-Turbo", PROVIDER, {
@@ -1842,6 +1916,8 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "glm",
+		openWeights: true,
 	}),
 
 	createModelConfig("zai-org/GLM-5.1-TEE", PROVIDER, {
@@ -1865,5 +1941,7 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "glm",
+		openWeights: true,
 	}),
 ]);

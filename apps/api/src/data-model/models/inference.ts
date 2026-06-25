@@ -29,6 +29,8 @@ export const inferenceModelConfig: ModelConfig = createModelConfigObject([
 		speed: 4,
 		includedInRouter: true,
 		supportsArtifacts: true,
+		family: "mistral-nemo",
+		openWeights: true,
 	}),
 
 	createModelConfig("osmosis/osmosis-structure-0.6b", PROVIDER, {
@@ -56,6 +58,8 @@ export const inferenceModelConfig: ModelConfig = createModelConfigObject([
 		speed: 5,
 		includedInRouter: false,
 		supportsArtifacts: true,
+		family: "osmosis",
+		openWeights: true,
 	}),
 
 	createModelConfig("google/gemma-3", PROVIDER, {
@@ -85,6 +89,8 @@ export const inferenceModelConfig: ModelConfig = createModelConfigObject([
 		isFeatured: false,
 		includedInRouter: true,
 		supportsArtifacts: true,
+		family: "gemma",
+		openWeights: true,
 	}),
 
 	createModelConfig("meta/llama-3.2-1b-instruct", PROVIDER, {
@@ -112,6 +118,8 @@ export const inferenceModelConfig: ModelConfig = createModelConfigObject([
 		speed: 5,
 		includedInRouter: true,
 		supportsArtifacts: true,
+		family: "llama",
+		openWeights: true,
 	}),
 
 	createModelConfig("meta/llama-3.1-8b-instruct", PROVIDER, {
@@ -139,6 +147,8 @@ export const inferenceModelConfig: ModelConfig = createModelConfigObject([
 		speed: 4,
 		includedInRouter: true,
 		supportsArtifacts: true,
+		family: "llama",
+		openWeights: true,
 	}),
 
 	createModelConfig("meta/llama-3.2-3b-instruct", PROVIDER, {
@@ -166,6 +176,8 @@ export const inferenceModelConfig: ModelConfig = createModelConfigObject([
 		speed: 4,
 		includedInRouter: true,
 		supportsArtifacts: true,
+		family: "llama",
+		openWeights: true,
 	}),
 
 	createModelConfig("meta/llama-3.2-11b-vision-instruct", PROVIDER, {
@@ -195,6 +207,8 @@ export const inferenceModelConfig: ModelConfig = createModelConfigObject([
 		isFeatured: false,
 		includedInRouter: true,
 		supportsArtifacts: true,
+		family: "llama",
+		openWeights: true,
 	}),
 
 	createModelConfig("qwen/qwen3-embedding-4b", PROVIDER, {
@@ -221,6 +235,8 @@ export const inferenceModelConfig: ModelConfig = createModelConfigObject([
 		speed: 5,
 		includedInRouter: false,
 		supportsArtifacts: false,
+		family: "qwen",
+		openWeights: true,
 	}),
 
 	createModelConfig("qwen/qwen-2.5-7b-vision-instruct", PROVIDER, {
@@ -250,5 +266,7 @@ export const inferenceModelConfig: ModelConfig = createModelConfigObject([
 		isFeatured: false,
 		includedInRouter: true,
 		supportsArtifacts: true,
+		family: "qwen",
+		openWeights: true,
 	}),
 ]);

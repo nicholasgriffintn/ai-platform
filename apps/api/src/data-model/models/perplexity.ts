@@ -33,6 +33,7 @@ export const perplexityModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		openWeights: false,
 	},
 	"sonar-reasoning-pro": {
 		name: "Sonar Reasoning Pro",
@@ -78,6 +79,8 @@ export const perplexityModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "sonar-reasoning",
+		openWeights: false,
 	},
 	"sonar-reasoning": {
 		name: "Perplexity Sonar Reasoning",
@@ -137,6 +140,8 @@ export const perplexityModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "sonar-pro",
+		openWeights: false,
 	},
 	sonar: {
 		name: "Sonar",
@@ -170,6 +175,8 @@ export const perplexityModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "sonar",
+		openWeights: false,
 	},
 	"r1-1776": {
 		name: "Perplexity R1 1776",

@@ -55,6 +55,8 @@ export const googleAiStudioModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gemini-flash",
+		openWeights: false,
 	},
 	"gemini-flash-lite-latest": {
 		name: "Gemini Flash-Lite Latest",
@@ -88,6 +90,8 @@ export const googleAiStudioModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking", "low", "medium", "high"],
 			defaultEffort: "none",
 		},
+		family: "gemini-flash-lite",
+		openWeights: false,
 	},
 	"gemini-1.5-flash": {
 		name: "Gemini 1.5 Flash",
@@ -210,6 +214,8 @@ export const googleAiStudioModelConfig: ModelConfig = {
 			intelligenceIndexVersion: 4.1,
 		},
 		speed: 5,
+		family: "gemini-flash",
+		openWeights: false,
 	},
 
 	"gemini-2.5-flash-image": {
@@ -253,6 +259,8 @@ export const googleAiStudioModelConfig: ModelConfig = {
 				},
 			],
 		},
+		family: "gemini-flash",
+		openWeights: false,
 	},
 
 	"gemini-2.5-flash-image-preview": {
@@ -318,6 +326,8 @@ export const googleAiStudioModelConfig: ModelConfig = {
 				},
 			],
 		},
+		family: "gemini-flash-lite",
+		openWeights: false,
 	},
 
 	"gemini-2.5-flash-lite-preview-06-17": {
@@ -460,6 +470,8 @@ export const googleAiStudioModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.0005,
 		costPer1kOutputTokens: 0.01,
+		family: "gemini-flash",
+		openWeights: false,
 	},
 
 	"gemini-3.1-flash-tts-preview": {
@@ -517,6 +529,8 @@ export const googleAiStudioModelConfig: ModelConfig = {
 			intelligenceIndexVersion: 4.1,
 		},
 		speed: 3,
+		family: "gemini-pro",
+		openWeights: false,
 	},
 
 	"gemini-2.5-pro-preview-05-06": {
@@ -580,6 +594,8 @@ export const googleAiStudioModelConfig: ModelConfig = {
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.001,
 		costPer1kOutputTokens: 0.02,
+		family: "gemini-flash",
+		openWeights: false,
 	},
 
 	"gemini-embedding-001": {
@@ -600,6 +616,8 @@ export const googleAiStudioModelConfig: ModelConfig = {
 		maxTokens: 1,
 		costPer1kInputTokens: 0.00015,
 		costPer1kOutputTokens: 0,
+		family: "gemini",
+		openWeights: false,
 	},
 
 	"gemini-flash-latest": {
@@ -626,6 +644,8 @@ export const googleAiStudioModelConfig: ModelConfig = {
 			supportedEffortLevels: ["thinking", "low", "medium", "high"],
 			defaultEffort: "high",
 		},
+		family: "gemini-flash",
+		openWeights: false,
 	},
 
 	"gemini-live-2.5-flash": {
@@ -740,6 +760,8 @@ export const googleAiStudioModelConfig: ModelConfig = {
 				},
 			],
 		},
+		family: "gemini-flash",
+		openWeights: false,
 	},
 
 	"gemini-3.1-flash-lite": {
@@ -790,6 +812,8 @@ export const googleAiStudioModelConfig: ModelConfig = {
 			agenticIndex: 6.2,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gemini-flash-lite",
+		openWeights: false,
 	},
 
 	"gemini-3.1-pro-preview": {
@@ -843,6 +867,8 @@ export const googleAiStudioModelConfig: ModelConfig = {
 			agenticIndex: 21.4,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gemini-pro",
+		openWeights: false,
 	},
 
 	"gemini-3.1-pro-preview-customtools": {
@@ -869,6 +895,8 @@ export const googleAiStudioModelConfig: ModelConfig = {
 			supportedEffortLevels: ["thinking", "low", "medium", "high"],
 			defaultEffort: "high",
 		},
+		family: "gemini-pro",
+		openWeights: false,
 	},
 
 	"gemma-3-12b-it": {
@@ -1020,6 +1048,8 @@ export const googleAiStudioModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "gemma",
+		openWeights: true,
 	},
 
 	"gemma-4-31b-it": {
@@ -1054,6 +1084,8 @@ export const googleAiStudioModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gemma",
+		openWeights: true,
 	},
 	"gemini-3.5-flash": {
 		name: "Gemini 3.5 Flash",
@@ -1106,6 +1138,8 @@ export const googleAiStudioModelConfig: ModelConfig = {
 			agenticIndex: 37.4,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gemini-flash",
+		openWeights: false,
 	},
 	"gemini-3-pro-image-preview": {
 		name: "Nano Banana Pro",
@@ -1148,6 +1182,8 @@ export const googleAiStudioModelConfig: ModelConfig = {
 				},
 			],
 		},
+		family: "gemini-pro",
+		openWeights: false,
 	},
 	"gemma-4-E2B-it": {
 		name: "Gemma 4 E2B IT",

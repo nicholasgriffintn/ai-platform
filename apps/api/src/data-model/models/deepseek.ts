@@ -31,6 +31,8 @@ export const deepseekModelConfig: ModelConfig = {
 		deprecated: true,
 		supportsArtifacts: true,
 		isFree: true,
+		family: "deepseek",
+		openWeights: true,
 	},
 	"deepseek-reasoner": {
 		name: "DeepSeek Reasoner",
@@ -66,6 +68,8 @@ export const deepseekModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "deepseek-thinking",
+		openWeights: true,
 	},
 	"deepseek-v4-flash": {
 		name: "DeepSeek V4 Flash",
@@ -105,6 +109,8 @@ export const deepseekModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "deepseek-flash",
+		openWeights: true,
 	},
 
 	"deepseek-v4-pro": {
@@ -145,5 +151,7 @@ export const deepseekModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "deepseek-thinking",
+		openWeights: true,
 	},
 };

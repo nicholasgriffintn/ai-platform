@@ -20,6 +20,7 @@ export const cohereModelConfig: ModelConfig = createModelConfigObject([
 		supportsToolCalls: false,
 		contextWindow: 128000,
 		maxTokens: 4000,
+		openWeights: true,
 	}),
 
 	createModelConfig("c4ai-aya-expanse-8b", PROVIDER, {
@@ -38,6 +39,7 @@ export const cohereModelConfig: ModelConfig = createModelConfigObject([
 		supportsToolCalls: false,
 		contextWindow: 8000,
 		maxTokens: 4000,
+		openWeights: true,
 	}),
 
 	createModelConfig("c4ai-aya-vision-32b", PROVIDER, {
@@ -56,6 +58,7 @@ export const cohereModelConfig: ModelConfig = createModelConfigObject([
 		supportsToolCalls: false,
 		contextWindow: 16000,
 		maxTokens: 4000,
+		openWeights: true,
 	}),
 
 	createModelConfig("c4ai-aya-vision-8b", PROVIDER, {
@@ -74,6 +77,7 @@ export const cohereModelConfig: ModelConfig = createModelConfigObject([
 		supportsToolCalls: false,
 		contextWindow: 16000,
 		maxTokens: 4000,
+		openWeights: true,
 	}),
 
 	createModelConfig("command-a-03-2025", PROVIDER, {
@@ -106,6 +110,8 @@ export const cohereModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "command-a",
+		openWeights: true,
 	}),
 
 	createModelConfig("command-a-plus-05-2026", PROVIDER, {
@@ -143,6 +149,8 @@ export const cohereModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "command-a",
+		openWeights: true,
 	}),
 
 	createModelConfig("command-a-reasoning-08-2025", PROVIDER, {
@@ -169,6 +177,8 @@ export const cohereModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "command-a",
+		openWeights: true,
 	}),
 
 	createModelConfig("command-a-translate-08-2025", PROVIDER, {
@@ -191,6 +201,8 @@ export const cohereModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 8000,
 		costPer1kInputTokens: 0.0025,
 		costPer1kOutputTokens: 0.01,
+		family: "command-a",
+		openWeights: true,
 	}),
 
 	createModelConfig("command-a-vision-07-2025", PROVIDER, {
@@ -213,6 +225,8 @@ export const cohereModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 8000,
 		costPer1kInputTokens: 0.0025,
 		costPer1kOutputTokens: 0.01,
+		family: "command-a",
+		openWeights: true,
 	}),
 
 	createModelConfig("command-r-08-2024", PROVIDER, {
@@ -244,6 +258,8 @@ export const cohereModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "command-r",
+		openWeights: true,
 	}),
 
 	createModelConfig("command-r-plus-08-2024", PROVIDER, {
@@ -275,6 +291,8 @@ export const cohereModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "command-r",
+		openWeights: true,
 	}),
 
 	createModelConfig("command-r7b-12-2024", PROVIDER, {
@@ -297,6 +315,8 @@ export const cohereModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 4000,
 		costPer1kInputTokens: 0.0000375,
 		costPer1kOutputTokens: 0.00015,
+		family: "command-r",
+		openWeights: true,
 	}),
 
 	createModelConfig("command-r7b-arabic-02-2025", PROVIDER, {
@@ -318,6 +338,8 @@ export const cohereModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 4000,
 		costPer1kInputTokens: 0.0000375,
 		costPer1kOutputTokens: 0.00015,
+		family: "command-r",
+		openWeights: true,
 	}),
 
 	createModelConfig("north-mini-code-1-0", PROVIDER, {
@@ -355,5 +377,7 @@ export const cohereModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "north",
+		openWeights: true,
 	}),
 ]);

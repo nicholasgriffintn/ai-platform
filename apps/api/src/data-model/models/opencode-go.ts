@@ -36,6 +36,8 @@ export const opencodeGoModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "deepseek-flash",
+		openWeights: true,
 	}),
 
 	createModelConfig("deepseek-v4-pro", PROVIDER, {
@@ -70,6 +72,8 @@ export const opencodeGoModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "deepseek-thinking",
+		openWeights: true,
 	}),
 
 	createModelConfig("glm-5.1", PROVIDER, {
@@ -103,6 +107,8 @@ export const opencodeGoModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "glm",
+		openWeights: true,
 	}),
 
 	createModelConfig("kimi-k2.6", PROVIDER, {
@@ -136,6 +142,8 @@ export const opencodeGoModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: 30.3,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "kimi-k2",
+		openWeights: true,
 	}),
 
 	createModelConfig("mimo-v2.5", PROVIDER, {
@@ -169,6 +177,8 @@ export const opencodeGoModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "mimo-v2.5",
+		openWeights: true,
 	}),
 
 	createModelConfig("mimo-v2.5-pro", PROVIDER, {
@@ -202,6 +212,8 @@ export const opencodeGoModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: 29.1,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "mimo-v2.5-pro",
+		openWeights: true,
 	}),
 
 	createModelConfig("minimax-m2.7", PROVIDER, {
@@ -235,6 +247,8 @@ export const opencodeGoModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: 25.6,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "minimax-m2.7",
+		openWeights: true,
 	}),
 
 	createModelConfig("qwen3.6-plus", PROVIDER, {
@@ -268,6 +282,8 @@ export const opencodeGoModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: 27.6,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "qwen3.6",
+		openWeights: false,
 	}),
 
 	createModelConfig("qwen3.7-max", PROVIDER, {
@@ -300,6 +316,8 @@ export const opencodeGoModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: 30.6,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "qwen3.7-max",
+		openWeights: false,
 	}),
 	createModelConfig("minimax-m3", PROVIDER, {
 		name: "MiniMax M3",
@@ -332,6 +350,8 @@ export const opencodeGoModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: 35.4,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "minimax-m3",
+		openWeights: true,
 	}),
 	createModelConfig("qwen3.7-plus", PROVIDER, {
 		name: "Qwen3.7 Plus",
@@ -363,6 +383,8 @@ export const opencodeGoModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: 20.8,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "qwen3.7-plus",
+		openWeights: false,
 	}),
 	createModelConfig("kimi-k2.7-code", PROVIDER, {
 		name: "Kimi K2.7 Code",
@@ -396,6 +418,8 @@ export const opencodeGoModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: 29.6,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "kimi-k2",
+		openWeights: true,
 	}),
 	createModelConfig("glm-5.2", PROVIDER, {
 		name: "GLM-5.2",
@@ -428,5 +452,7 @@ export const opencodeGoModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: 43.1,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "glm",
+		openWeights: true,
 	}),
 ]);

@@ -149,6 +149,8 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "o",
+		openWeights: false,
 	}),
 
 	createModelConfig("o3", PROVIDER, {
@@ -201,6 +203,8 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "o",
+		openWeights: false,
 	}),
 
 	createModelConfig("o4-mini", PROVIDER, {
@@ -254,6 +258,8 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "o-mini",
+		openWeights: false,
 	}),
 
 	createModelConfig("o3-mini", PROVIDER, {
@@ -298,6 +304,8 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "o-mini",
+		openWeights: false,
 	}),
 
 	createModelConfig("gpt-4o", PROVIDER, {
@@ -345,6 +353,8 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt",
+		openWeights: false,
 	}),
 
 	createModelConfig("gpt-4o-search-preview", PROVIDER, {
@@ -426,6 +436,8 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt-mini",
+		openWeights: false,
 	}),
 
 	createModelConfig("gpt-4o-mini-search", PROVIDER, {
@@ -547,6 +559,8 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt",
+		openWeights: false,
 	}),
 	createModelConfig("gpt-4.1-mini", PROVIDER, {
 		name: "GPT-4.1 mini",
@@ -584,6 +598,8 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt-mini",
+		openWeights: false,
 	}),
 	createModelConfig("gpt-4.1-nano", PROVIDER, {
 		name: "GPT-4.1 nano",
@@ -621,6 +637,8 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt-nano",
+		openWeights: false,
 	}),
 
 	createModelConfig("gpt-5", PROVIDER, {
@@ -679,6 +697,8 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt",
+		openWeights: false,
 	}),
 	createModelConfig("gpt-5-mini", PROVIDER, {
 		name: "GPT-5 Mini",
@@ -735,6 +755,8 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt-mini",
+		openWeights: false,
 	}),
 	createModelConfig("gpt-5-nano", PROVIDER, {
 		name: "GPT-5 Nano",
@@ -783,6 +805,8 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt-nano",
+		openWeights: false,
 	}),
 
 	createModelConfig("gpt-5.2", PROVIDER, {
@@ -838,6 +862,8 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt",
+		openWeights: false,
 	}),
 	createModelConfig("gpt-5.2-chat", PROVIDER, {
 		name: "GPT-5.2 Chat",
@@ -878,6 +904,8 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 			supportedVerbosityLevels: ["low", "medium", "high"],
 			defaultVerbosity: "medium",
 		},
+		family: "gpt-codex",
+		openWeights: false,
 	}),
 
 	createModelConfig("gpt-5.1-codex", PROVIDER, {
@@ -926,6 +954,8 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt-codex",
+		openWeights: false,
 	}),
 	createModelConfig("gpt-5.1-codex-mini", PROVIDER, {
 		name: "GPT-5.1 Codex mini",
@@ -973,6 +1003,8 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt-codex",
+		openWeights: false,
 	}),
 
 	createModelConfig("gpt-image-2", PROVIDER, {
@@ -1017,6 +1049,8 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 				},
 			],
 		},
+		family: "gpt-image",
+		openWeights: false,
 	}),
 
 	createModelConfig("gpt-image-1", PROVIDER, {
@@ -1061,6 +1095,8 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 				},
 			],
 		},
+		family: "gpt-image",
+		openWeights: false,
 	}),
 
 	createModelConfig("gpt-image-1-mini", PROVIDER, {
@@ -1104,6 +1140,8 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 				},
 			],
 		},
+		family: "gpt-image",
+		openWeights: false,
 	}),
 
 	createModelConfig("gpt-image-1.5", PROVIDER, {
@@ -1148,6 +1186,8 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 				},
 			],
 		},
+		family: "gpt-image",
+		openWeights: false,
 	}),
 	createModelConfig("codex-mini-latest", PROVIDER, {
 		name: "Codex Mini",
@@ -1196,6 +1236,8 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt",
+		openWeights: false,
 	}),
 
 	createModelConfig("gpt-4", PROVIDER, {
@@ -1226,6 +1268,8 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt",
+		openWeights: false,
 	}),
 
 	createModelConfig("gpt-4-turbo", PROVIDER, {
@@ -1257,6 +1301,8 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt",
+		openWeights: false,
 	}),
 
 	createModelConfig("gpt-5-chat-latest", PROVIDER, {
@@ -1287,6 +1333,8 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 			supportedVerbosityLevels: ["low", "medium", "high"],
 			defaultVerbosity: "medium",
 		},
+		family: "gpt-codex",
+		openWeights: false,
 	}),
 
 	createModelConfig("gpt-5-codex", PROVIDER, {
@@ -1327,6 +1375,8 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt-codex",
+		openWeights: false,
 	}),
 
 	createModelConfig("gpt-5-pro", PROVIDER, {
@@ -1360,6 +1410,8 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 			supportedVerbosityLevels: ["low", "medium", "high"],
 			defaultVerbosity: "medium",
 		},
+		family: "gpt-pro",
+		openWeights: false,
 	}),
 
 	createModelConfig("gpt-5.1", PROVIDER, {
@@ -1403,6 +1455,8 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt",
+		openWeights: false,
 	}),
 
 	createModelConfig("gpt-5.1-chat-latest", PROVIDER, {
@@ -1435,6 +1489,8 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 			supportedVerbosityLevels: ["low", "medium", "high"],
 			defaultVerbosity: "medium",
 		},
+		family: "gpt-codex",
+		openWeights: false,
 	}),
 
 	createModelConfig("gpt-5.1-codex-max", PROVIDER, {
@@ -1465,6 +1521,8 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 			supportedVerbosityLevels: ["low", "medium", "high"],
 			defaultVerbosity: "medium",
 		},
+		family: "gpt-codex",
+		openWeights: false,
 	}),
 
 	createModelConfig("gpt-5.2-codex", PROVIDER, {
@@ -1505,6 +1563,8 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt-codex",
+		openWeights: false,
 	}),
 
 	createModelConfig("gpt-5.2-pro", PROVIDER, {
@@ -1537,6 +1597,8 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 			supportedVerbosityLevels: ["low", "medium", "high"],
 			defaultVerbosity: "medium",
 		},
+		family: "gpt-pro",
+		openWeights: false,
 	}),
 
 	createModelConfig("gpt-5.3-codex", PROVIDER, {
@@ -1579,6 +1641,8 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt-codex",
+		openWeights: false,
 	}),
 
 	createModelConfig("gpt-5.3-codex-spark", PROVIDER, {
@@ -1612,6 +1676,8 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 			supportedVerbosityLevels: ["low", "medium", "high"],
 			defaultVerbosity: "medium",
 		},
+		family: "gpt-codex-spark",
+		openWeights: false,
 	}),
 
 	createModelConfig("o1-pro", PROVIDER, {
@@ -1646,6 +1712,8 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "o-pro",
+		openWeights: false,
 	}),
 
 	createModelConfig("o3-deep-research", PROVIDER, {
@@ -1670,6 +1738,8 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "o",
+		openWeights: false,
 	}),
 
 	createModelConfig("o3-pro", PROVIDER, {
@@ -1705,6 +1775,8 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "o-pro",
+		openWeights: false,
 	}),
 
 	createModelConfig("o4-mini-deep-research", PROVIDER, {
@@ -1729,6 +1801,8 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "o-mini",
+		openWeights: false,
 	}),
 
 	createModelConfig("text-embedding-3-large", PROVIDER, {
@@ -1749,6 +1823,8 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 3072,
 		costPer1kInputTokens: 0.00013,
 		costPer1kOutputTokens: 0,
+		family: "text-embedding",
+		openWeights: false,
 	}),
 
 	createModelConfig("text-embedding-3-small", PROVIDER, {
@@ -1769,6 +1845,8 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 1536,
 		costPer1kInputTokens: 0.00002,
 		costPer1kOutputTokens: 0,
+		family: "text-embedding",
+		openWeights: false,
 	}),
 
 	createModelConfig("text-embedding-ada-002", PROVIDER, {
@@ -1790,6 +1868,8 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 1536,
 		costPer1kInputTokens: 0.0001,
 		costPer1kOutputTokens: 0,
+		family: "text-embedding",
+		openWeights: false,
 	}),
 	createModelConfig("chatgpt-image-latest", PROVIDER, {
 		name: "chatgpt-image-latest",
@@ -1807,6 +1887,8 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		supportsToolCalls: false,
 		contextWindow: 0,
 		maxTokens: 0,
+		family: "gpt-image",
+		openWeights: false,
 	}),
 
 	createModelConfig("gpt-5.3-chat-latest", PROVIDER, {
@@ -1836,6 +1918,8 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 			supportedVerbosityLevels: ["low", "medium", "high"],
 			defaultVerbosity: "medium",
 		},
+		family: "gpt",
+		openWeights: false,
 	}),
 
 	createModelConfig("gpt-5.4", PROVIDER, {
@@ -1892,6 +1976,8 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt",
+		openWeights: false,
 	}),
 
 	createModelConfig("gpt-5.4-mini", PROVIDER, {
@@ -1950,6 +2036,8 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt-mini",
+		openWeights: false,
 	}),
 
 	createModelConfig("gpt-5.4-nano", PROVIDER, {
@@ -2003,6 +2091,8 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt-nano",
+		openWeights: false,
 	}),
 
 	createModelConfig("gpt-5.4-pro", PROVIDER, {
@@ -2061,6 +2151,8 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt-pro",
+		openWeights: false,
 	}),
 
 	createModelConfig("gpt-5.5", PROVIDER, {
@@ -2121,6 +2213,8 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: 25.8,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt",
+		openWeights: false,
 	}),
 
 	createModelConfig("gpt-5.5-pro", PROVIDER, {
@@ -2176,6 +2270,8 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt-pro",
+		openWeights: false,
 	}),
 
 	createModelConfig("gpt-realtime-2", PROVIDER, {

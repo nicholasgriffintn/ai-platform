@@ -34,6 +34,8 @@ export const novaModelConfig: ModelConfig = createModelConfigObject([
 		supportsDocuments: true,
 		supportsArtifacts: true,
 		reasoningConfig: NOVA_2_REASONING_CONFIG,
+		family: "nova-lite",
+		openWeights: false,
 	}),
 
 	createModelConfig("nova-2-pro-v1", PROVIDER, {
@@ -61,6 +63,8 @@ export const novaModelConfig: ModelConfig = createModelConfigObject([
 		supportsDocuments: true,
 		supportsArtifacts: true,
 		reasoningConfig: NOVA_2_REASONING_CONFIG,
+		family: "nova-pro",
+		openWeights: false,
 	}),
 
 	createModelConfig("nova-2-sonic-v1", PROVIDER, {

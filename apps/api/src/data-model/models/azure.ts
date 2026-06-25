@@ -18,6 +18,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 4096,
 		costPer1kInputTokens: 0.01,
 		costPer1kOutputTokens: 0.03,
+		family: "gpt",
+		openWeights: false,
 	}),
 
 	createModelConfig("openai/gpt-4", PROVIDER, {
@@ -43,6 +45,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt",
+		openWeights: false,
 	}),
 
 	createModelConfig("openai/gpt-3.5-turbo-0125", PROVIDER, {
@@ -59,6 +63,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.0005,
 		costPer1kOutputTokens: 0.0015,
+		family: "gpt",
+		openWeights: false,
 	}),
 
 	createModelConfig("openai/gpt-4.1-mini", PROVIDER, {
@@ -85,6 +91,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt-mini",
+		openWeights: false,
 	}),
 
 	createModelConfig("openai/o4-mini", PROVIDER, {
@@ -116,6 +124,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "o-mini",
+		openWeights: false,
 	}),
 
 	createModelConfig("openai/o1-mini", PROVIDER, {
@@ -145,6 +155,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "o-mini",
+		openWeights: false,
 	}),
 
 	createModelConfig("openai/codex-mini", PROVIDER, {
@@ -165,6 +177,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "gpt-codex-mini",
+		openWeights: false,
 	}),
 
 	createModelConfig("openai/gpt-4.1-nano", PROVIDER, {
@@ -191,6 +205,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt-nano",
+		openWeights: false,
 	}),
 
 	createModelConfig("openai/o1-preview", PROVIDER, {
@@ -236,6 +252,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 4096,
 		costPer1kInputTokens: 0.0015,
 		costPer1kOutputTokens: 0.002,
+		family: "gpt",
+		openWeights: false,
 	}),
 
 	createModelConfig("openai/gpt-4o-mini", PROVIDER, {
@@ -262,6 +280,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt-mini",
+		openWeights: false,
 	}),
 
 	createModelConfig("openai/gpt-4-turbo", PROVIDER, {
@@ -288,6 +308,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt",
+		openWeights: false,
 	}),
 
 	createModelConfig("openai/o3-mini", PROVIDER, {
@@ -319,6 +341,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "o-mini",
+		openWeights: false,
 	}),
 
 	createModelConfig("openai/o1", PROVIDER, {
@@ -350,6 +374,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "o",
+		openWeights: false,
 	}),
 
 	createModelConfig("openai/gpt-4.1", PROVIDER, {
@@ -376,6 +402,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt",
+		openWeights: false,
 	}),
 
 	createModelConfig("openai/gpt-4o", PROVIDER, {
@@ -402,6 +430,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt",
+		openWeights: false,
 	}),
 
 	createModelConfig("openai/gpt-4-32k", PROVIDER, {
@@ -418,6 +448,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.06,
 		costPer1kOutputTokens: 0.12,
+		family: "gpt",
+		openWeights: false,
 	}),
 
 	createModelConfig("openai/o3", PROVIDER, {
@@ -449,6 +481,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "o",
+		openWeights: false,
 	}),
 	createModelConfig("anthropic/claude-haiku-4-5", PROVIDER, {
 		name: "Claude Haiku 4.5",
@@ -472,6 +506,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "claude-haiku",
+		openWeights: false,
 	}),
 
 	createModelConfig("anthropic/claude-opus-4-1", PROVIDER, {
@@ -496,6 +532,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "claude-opus",
+		openWeights: false,
 	}),
 
 	createModelConfig("anthropic/claude-opus-4-5", PROVIDER, {
@@ -529,6 +567,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "claude-opus",
+		openWeights: false,
 	}),
 
 	createModelConfig("anthropic/claude-opus-4-6", PROVIDER, {
@@ -562,6 +602,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "claude-opus",
+		openWeights: false,
 	}),
 
 	createModelConfig("anthropic/claude-sonnet-4-5", PROVIDER, {
@@ -586,6 +628,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "claude-sonnet",
+		openWeights: false,
 	}),
 
 	createModelConfig("mistral/codestral-2501", PROVIDER, {
@@ -605,6 +649,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 256000,
 		costPer1kInputTokens: 0.0003,
 		costPer1kOutputTokens: 0.0009,
+		family: "codestral",
+		openWeights: false,
 	}),
 
 	createModelConfig("cohere/command-a", PROVIDER, {
@@ -638,6 +684,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "command-a",
+		openWeights: true,
 	}),
 
 	createModelConfig("cohere/command-r-08-2024", PROVIDER, {
@@ -666,6 +714,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "command-r",
+		openWeights: true,
 	}),
 
 	createModelConfig("cohere/command-r-plus-08-2024", PROVIDER, {
@@ -694,6 +744,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "command-r",
+		openWeights: true,
 	}),
 
 	createModelConfig("cohere/embed-v-4-0", PROVIDER, {
@@ -712,6 +764,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 1536,
 		costPer1kInputTokens: 0.00012,
 		costPer1kOutputTokens: 0,
+		family: "cohere-embed",
+		openWeights: true,
 	}),
 
 	createModelConfig("cohere/embed-v3-english", PROVIDER, {
@@ -730,6 +784,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 1024,
 		costPer1kInputTokens: 0.0001,
 		costPer1kOutputTokens: 0,
+		family: "cohere-embed",
+		openWeights: true,
 	}),
 
 	createModelConfig("cohere/embed-v3-multilingual", PROVIDER, {
@@ -748,6 +804,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 1024,
 		costPer1kInputTokens: 0.0001,
 		costPer1kOutputTokens: 0,
+		family: "cohere-embed",
+		openWeights: true,
 	}),
 
 	createModelConfig("deepseek/r1", PROVIDER, {
@@ -779,6 +837,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "deepseek-thinking",
+		openWeights: true,
 	}),
 
 	createModelConfig("deepseek/v3-0324", PROVIDER, {
@@ -807,6 +867,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "deepseek",
+		openWeights: true,
 	}),
 
 	createModelConfig("deepseek/v3.1", PROVIDER, {
@@ -839,6 +901,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "deepseek",
+		openWeights: true,
 	}),
 
 	createModelConfig("deepseek/v3.2", PROVIDER, {
@@ -871,6 +935,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "deepseek",
+		openWeights: true,
 	}),
 
 	createModelConfig("deepseek/v3.2-speciale", PROVIDER, {
@@ -902,6 +968,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "deepseek",
+		openWeights: true,
 	}),
 
 	createModelConfig("openai/gpt-5", PROVIDER, {
@@ -935,6 +1003,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt",
+		openWeights: false,
 	}),
 
 	createModelConfig("openai/gpt-5-chat", PROVIDER, {
@@ -958,6 +1028,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "gpt-codex",
+		openWeights: false,
 	}),
 
 	createModelConfig("openai/gpt-5-codex", PROVIDER, {
@@ -991,6 +1063,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt-codex",
+		openWeights: false,
 	}),
 
 	createModelConfig("openai/gpt-5-mini", PROVIDER, {
@@ -1024,6 +1098,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt-mini",
+		openWeights: false,
 	}),
 
 	createModelConfig("openai/gpt-5-nano", PROVIDER, {
@@ -1057,6 +1133,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt-nano",
+		openWeights: false,
 	}),
 
 	createModelConfig("openai/gpt-5-pro", PROVIDER, {
@@ -1081,6 +1159,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "gpt-pro",
+		openWeights: false,
 	}),
 
 	createModelConfig("openai/gpt-5.1", PROVIDER, {
@@ -1115,6 +1195,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt",
+		openWeights: false,
 	}),
 
 	createModelConfig("openai/gpt-5.1-chat", PROVIDER, {
@@ -1139,6 +1221,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "gpt-codex",
+		openWeights: false,
 	}),
 
 	createModelConfig("openai/gpt-5.1-codex", PROVIDER, {
@@ -1173,6 +1257,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt-codex",
+		openWeights: false,
 	}),
 
 	createModelConfig("openai/gpt-5.1-codex-max", PROVIDER, {
@@ -1197,6 +1283,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "gpt-codex",
+		openWeights: false,
 	}),
 
 	createModelConfig("openai/gpt-5.1-codex-mini", PROVIDER, {
@@ -1231,6 +1319,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt-codex",
+		openWeights: false,
 	}),
 
 	createModelConfig("openai/gpt-5.2", PROVIDER, {
@@ -1265,6 +1355,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt",
+		openWeights: false,
 	}),
 
 	createModelConfig("openai/gpt-5.2-chat", PROVIDER, {
@@ -1289,6 +1381,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "gpt-codex",
+		openWeights: false,
 	}),
 
 	createModelConfig("openai/gpt-5.2-codex", PROVIDER, {
@@ -1323,6 +1417,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt-codex",
+		openWeights: false,
 	}),
 
 	createModelConfig("xai/grok-3", PROVIDER, {
@@ -1460,6 +1556,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "grok",
+		openWeights: false,
 	}),
 
 	createModelConfig("xai/grok-code-fast-1", PROVIDER, {
@@ -1521,6 +1619,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "kimi-thinking",
+		openWeights: true,
 	}),
 
 	createModelConfig("monshot/kimi-k2.5", PROVIDER, {
@@ -1555,6 +1655,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "kimi-k2",
+		openWeights: true,
 	}),
 
 	createModelConfig("meta/llama-3.2-11b-vision-instruct", PROVIDER, {
@@ -1574,6 +1676,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 8192,
 		costPer1kInputTokens: 0.00037,
 		costPer1kOutputTokens: 0.00037,
+		family: "llama",
+		openWeights: true,
 	}),
 
 	createModelConfig("meta/llama-3.2-90b-vision-instruct", PROVIDER, {
@@ -1593,6 +1697,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 8192,
 		costPer1kInputTokens: 0.00204,
 		costPer1kOutputTokens: 0.00204,
+		family: "llama",
+		openWeights: true,
 	}),
 
 	createModelConfig("meta/llama-3.3-70b-instruct", PROVIDER, {
@@ -1612,6 +1718,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.00071,
 		costPer1kOutputTokens: 0.00071,
+		family: "llama",
+		openWeights: true,
 	}),
 
 	createModelConfig("meta/llama-4-maverick-17b-128e-instruct-fp8", PROVIDER, {
@@ -1631,6 +1739,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 8192,
 		costPer1kInputTokens: 0.00025,
 		costPer1kOutputTokens: 0.001,
+		family: "llama",
+		openWeights: true,
 	}),
 
 	createModelConfig("meta/llama-4-scout-17b-16e-instruct", PROVIDER, {
@@ -1650,6 +1760,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 8192,
 		costPer1kInputTokens: 0.0002,
 		costPer1kOutputTokens: 0.00078,
+		family: "llama",
+		openWeights: true,
 	}),
 
 	createModelConfig("microsoft/mai-ds-r1", PROVIDER, {
@@ -1692,6 +1804,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 2048,
 		costPer1kInputTokens: 0.00268,
 		costPer1kOutputTokens: 0.00354,
+		family: "llama",
+		openWeights: true,
 	}),
 
 	createModelConfig("meta/llama-3-8b-instruct", PROVIDER, {
@@ -1711,6 +1825,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 2048,
 		costPer1kInputTokens: 0.0003,
 		costPer1kOutputTokens: 0.00061,
+		family: "llama",
+		openWeights: true,
 	}),
 
 	createModelConfig("meta/llama-3.1-405b-instruct", PROVIDER, {
@@ -1730,6 +1846,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.00533,
 		costPer1kOutputTokens: 0.016,
+		family: "llama",
+		openWeights: true,
 	}),
 
 	createModelConfig("meta/llama-3.1-70b-instruct", PROVIDER, {
@@ -1749,6 +1867,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.00268,
 		costPer1kOutputTokens: 0.00354,
+		family: "llama",
+		openWeights: true,
 	}),
 
 	createModelConfig("meta/llama-3.1-8b-instruct", PROVIDER, {
@@ -1768,6 +1888,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.0003,
 		costPer1kOutputTokens: 0.00061,
+		family: "llama",
+		openWeights: true,
 	}),
 
 	createModelConfig("mistral/ministral-3b", PROVIDER, {
@@ -1787,6 +1909,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 8192,
 		costPer1kInputTokens: 0.00004,
 		costPer1kOutputTokens: 0.00004,
+		family: "ministral",
+		openWeights: true,
 	}),
 
 	createModelConfig("mistral/mistral-large-2411", PROVIDER, {
@@ -1806,6 +1930,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.002,
 		costPer1kOutputTokens: 0.006,
+		family: "mistral-large",
+		openWeights: false,
 	}),
 
 	createModelConfig("mistral/medium-2505", PROVIDER, {
@@ -1835,6 +1961,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "mistral-medium",
+		openWeights: false,
 	}),
 
 	createModelConfig("mistral/mistral-nemo", PROVIDER, {
@@ -1854,6 +1982,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0.00015,
 		costPer1kOutputTokens: 0.00015,
+		family: "mistral-nemo",
+		openWeights: true,
 	}),
 
 	createModelConfig("mistral/mistral-small-2503", PROVIDER, {
@@ -1883,6 +2013,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "mistral-small",
+		openWeights: false,
 	}),
 
 	createModelConfig("azure/model-router", PROVIDER, {
@@ -1900,6 +2032,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00014,
 		costPer1kOutputTokens: 0,
+		family: "model-router",
+		openWeights: false,
 	}),
 
 	createModelConfig("microsoft/phi-3-medium-128k-instruct", PROVIDER, {
@@ -1919,6 +2053,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 4096,
 		costPer1kInputTokens: 0.00017,
 		costPer1kOutputTokens: 0.00068,
+		family: "phi",
+		openWeights: true,
 	}),
 
 	createModelConfig("microsoft/phi-3-medium-4k-instruct", PROVIDER, {
@@ -1938,6 +2074,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 1024,
 		costPer1kInputTokens: 0.00017,
 		costPer1kOutputTokens: 0.00068,
+		family: "phi",
+		openWeights: true,
 	}),
 
 	createModelConfig("microsoft/phi-3-mini-128k-instruct", PROVIDER, {
@@ -1957,6 +2095,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 4096,
 		costPer1kInputTokens: 0.00013,
 		costPer1kOutputTokens: 0.00052,
+		family: "phi",
+		openWeights: true,
 	}),
 
 	createModelConfig("microsoft/phi-3-mini-4k-instruct", PROVIDER, {
@@ -1976,6 +2116,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 1024,
 		costPer1kInputTokens: 0.00013,
 		costPer1kOutputTokens: 0.00052,
+		family: "phi",
+		openWeights: true,
 	}),
 
 	createModelConfig("microsoft/phi-3-small-128k-instruct", PROVIDER, {
@@ -1995,6 +2137,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 4096,
 		costPer1kInputTokens: 0.00015,
 		costPer1kOutputTokens: 0.0006,
+		family: "phi",
+		openWeights: true,
 	}),
 
 	createModelConfig("microsoft/phi-3-small-8k-instruct", PROVIDER, {
@@ -2014,6 +2158,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 2048,
 		costPer1kInputTokens: 0.00015,
 		costPer1kOutputTokens: 0.0006,
+		family: "phi",
+		openWeights: true,
 	}),
 
 	createModelConfig("microsoft/phi-3.5-mini-instruct", PROVIDER, {
@@ -2033,6 +2179,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 4096,
 		costPer1kInputTokens: 0.00013,
 		costPer1kOutputTokens: 0.00052,
+		family: "phi",
+		openWeights: true,
 	}),
 
 	createModelConfig("microsoft/phi-3.5-moe-instruct", PROVIDER, {
@@ -2052,6 +2200,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 4096,
 		costPer1kInputTokens: 0.00016,
 		costPer1kOutputTokens: 0.00064,
+		family: "phi",
+		openWeights: true,
 	}),
 
 	createModelConfig("microsoft/phi-4", PROVIDER, {
@@ -2080,6 +2230,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "phi",
+		openWeights: true,
 	}),
 
 	createModelConfig("microsoft/phi-4-mini", PROVIDER, {
@@ -2109,6 +2261,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "phi",
+		openWeights: true,
 	}),
 
 	createModelConfig("microsoft/phi-4-mini-reasoning", PROVIDER, {
@@ -2132,6 +2286,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "phi",
+		openWeights: true,
 	}),
 
 	createModelConfig("microsoft/phi-4-multimodal", PROVIDER, {
@@ -2161,6 +2317,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "phi",
+		openWeights: true,
 	}),
 
 	createModelConfig("microsoft/phi-4-reasoning", PROVIDER, {
@@ -2184,6 +2342,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "phi",
+		openWeights: true,
 	}),
 
 	createModelConfig("microsoft/phi-4-reasoning-plus", PROVIDER, {
@@ -2207,6 +2367,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "phi",
+		openWeights: true,
 	}),
 
 	createModelConfig("microsoft/text-embedding-3-large", PROVIDER, {
@@ -2224,6 +2386,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 3072,
 		costPer1kInputTokens: 0.00013,
 		costPer1kOutputTokens: 0,
+		family: "text-embedding",
+		openWeights: false,
 	}),
 
 	createModelConfig("microsoft/text-embedding-3-small", PROVIDER, {
@@ -2241,6 +2405,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 1536,
 		costPer1kInputTokens: 0.00002,
 		costPer1kOutputTokens: 0,
+		family: "text-embedding",
+		openWeights: false,
 	}),
 
 	createModelConfig("microsoft/text-embedding-ada-002", PROVIDER, {
@@ -2258,6 +2424,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 1536,
 		costPer1kInputTokens: 0.0001,
 		costPer1kOutputTokens: 0,
+		family: "text-embedding",
+		openWeights: false,
 	}),
 	createModelConfig("claude-sonnet-4-6", PROVIDER, {
 		name: "Claude Sonnet 4.6",
@@ -2291,6 +2459,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: 40.8,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "claude-sonnet",
+		openWeights: false,
 	}),
 
 	createModelConfig("gpt-5.3-chat", PROVIDER, {
@@ -2315,6 +2485,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "gpt-codex",
+		openWeights: false,
 	}),
 
 	createModelConfig("gpt-5.3-codex", PROVIDER, {
@@ -2349,6 +2521,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt-codex",
+		openWeights: false,
 	}),
 
 	createModelConfig("gpt-5.4", PROVIDER, {
@@ -2383,6 +2557,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt",
+		openWeights: false,
 	}),
 
 	createModelConfig("gpt-5.4-mini", PROVIDER, {
@@ -2417,6 +2593,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt-mini",
+		openWeights: false,
 	}),
 
 	createModelConfig("gpt-5.4-nano", PROVIDER, {
@@ -2451,6 +2629,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt-nano",
+		openWeights: false,
 	}),
 
 	createModelConfig("gpt-5.4-pro", PROVIDER, {
@@ -2483,6 +2663,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt-pro",
+		openWeights: false,
 	}),
 
 	createModelConfig("gpt-5.5", PROVIDER, {
@@ -2517,6 +2699,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: 25.8,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt",
+		openWeights: false,
 	}),
 
 	createModelConfig("grok-4-1-fast-non-reasoning", PROVIDER, {
@@ -2544,6 +2728,9 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "grok",
+		status: "beta",
+		openWeights: false,
 	}),
 
 	createModelConfig("grok-4-1-fast-reasoning", PROVIDER, {
@@ -2575,6 +2762,9 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "grok",
+		status: "beta",
+		openWeights: false,
 	}),
 
 	createModelConfig("grok-4-20-non-reasoning", PROVIDER, {
@@ -2604,6 +2794,9 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "grok",
+		status: "beta",
+		openWeights: false,
 	}),
 
 	createModelConfig("grok-4-20-reasoning", PROVIDER, {
@@ -2637,6 +2830,9 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "grok",
+		status: "beta",
+		openWeights: false,
 	}),
 
 	createModelConfig("kimi-k2.6", PROVIDER, {
@@ -2671,6 +2867,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: 30.3,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "kimi-k2",
+		openWeights: true,
 	}),
 	createModelConfig("deepseek-v4-flash", PROVIDER, {
 		name: "DeepSeek-V4-Flash",
@@ -2703,6 +2901,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "deepseek-flash",
+		openWeights: true,
 	}),
 
 	createModelConfig("deepseek-v4-pro", PROVIDER, {
@@ -2736,6 +2936,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "deepseek-thinking",
+		openWeights: true,
 	}),
 	createModelConfig("claude-fable-5", PROVIDER, {
 		name: "Claude Fable 5",
@@ -2767,6 +2969,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: 52.8,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "claude-fable",
+		openWeights: false,
 	}),
 	createModelConfig("gpt-image-1", PROVIDER, {
 		name: "GPT-Image-1",
@@ -2803,6 +3007,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 				},
 			],
 		},
+		family: "gpt-image",
+		openWeights: false,
 	}),
 
 	createModelConfig("gpt-image-1.5", PROVIDER, {
@@ -2840,6 +3046,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 				},
 			],
 		},
+		family: "gpt-image",
+		openWeights: false,
 	}),
 
 	createModelConfig("gpt-image-2", PROVIDER, {
@@ -2877,6 +3085,8 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 				},
 			],
 		},
+		family: "gpt-image",
+		openWeights: false,
 	}),
 	createModelConfig("claude-opus-4-8", PROVIDER, {
 		name: "Claude Opus 4.8",
@@ -2909,5 +3119,7 @@ export const azureModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: 47.2,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "claude-opus",
+		openWeights: false,
 	}),
 ]);

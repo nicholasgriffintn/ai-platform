@@ -26,6 +26,8 @@ export const opencodeModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "big-pickle",
+		openWeights: false,
 	}),
 
 	createModelConfig("claude-haiku-4-5", PROVIDER, {
@@ -49,6 +51,8 @@ export const opencodeModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "claude-haiku",
+		openWeights: false,
 	}),
 
 	createModelConfig("claude-opus-4-1", PROVIDER, {
@@ -72,6 +76,8 @@ export const opencodeModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "claude-opus",
+		openWeights: false,
 	}),
 
 	createModelConfig("claude-opus-4-5", PROVIDER, {
@@ -105,6 +111,8 @@ export const opencodeModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "claude-opus",
+		openWeights: false,
 	}),
 
 	createModelConfig("claude-opus-4-6", PROVIDER, {
@@ -138,6 +146,8 @@ export const opencodeModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "claude-opus",
+		openWeights: false,
 	}),
 
 	createModelConfig("claude-opus-4-7", PROVIDER, {
@@ -171,6 +181,8 @@ export const opencodeModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: 44.4,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "claude-opus",
+		openWeights: false,
 	}),
 
 	createModelConfig("claude-opus-4-8", PROVIDER, {
@@ -203,6 +215,8 @@ export const opencodeModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: 47.2,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "claude-opus",
+		openWeights: false,
 	}),
 
 	createModelConfig("claude-sonnet-4", PROVIDER, {
@@ -226,6 +240,8 @@ export const opencodeModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "claude-sonnet",
+		openWeights: false,
 	}),
 
 	createModelConfig("claude-sonnet-4-5", PROVIDER, {
@@ -249,6 +265,8 @@ export const opencodeModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "claude-sonnet",
+		openWeights: false,
 	}),
 
 	createModelConfig("claude-sonnet-4-6", PROVIDER, {
@@ -282,6 +300,8 @@ export const opencodeModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: 40.8,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "claude-sonnet",
+		openWeights: false,
 	}),
 
 	createModelConfig("deepseek-v4-flash-free", PROVIDER, {
@@ -306,6 +326,8 @@ export const opencodeModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "deepseek-flash-free",
+		openWeights: true,
 	}),
 
 	createModelConfig("gemini-3-flash", PROVIDER, {
@@ -340,6 +362,8 @@ export const opencodeModelConfig: ModelConfig = createModelConfigObject([
 			intelligenceIndexVersion: 4.1,
 		},
 		speed: 5,
+		family: "gemini-flash",
+		openWeights: false,
 	}),
 
 	createModelConfig("gemini-3.1-pro", PROVIDER, {
@@ -374,6 +398,8 @@ export const opencodeModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: 21.4,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gemini-pro",
+		openWeights: false,
 	}),
 
 	createModelConfig("gemini-3.5-flash", PROVIDER, {
@@ -408,6 +434,8 @@ export const opencodeModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: 37.4,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gemini-flash",
+		openWeights: false,
 	}),
 
 	createModelConfig("glm-5", PROVIDER, {
@@ -441,6 +469,8 @@ export const opencodeModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "glm",
+		openWeights: true,
 	}),
 
 	createModelConfig("glm-5.1", PROVIDER, {
@@ -474,6 +504,8 @@ export const opencodeModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "glm",
+		openWeights: true,
 	}),
 
 	createModelConfig("gpt-5", PROVIDER, {
@@ -508,6 +540,8 @@ export const opencodeModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt",
+		openWeights: false,
 	}),
 
 	createModelConfig("gpt-5-codex", PROVIDER, {
@@ -542,6 +576,8 @@ export const opencodeModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt-codex",
+		openWeights: false,
 	}),
 
 	createModelConfig("gpt-5-nano", PROVIDER, {
@@ -576,6 +612,8 @@ export const opencodeModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt-nano",
+		openWeights: false,
 	}),
 
 	createModelConfig("gpt-5.1", PROVIDER, {
@@ -610,6 +648,8 @@ export const opencodeModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt",
+		openWeights: false,
 	}),
 
 	createModelConfig("gpt-5.1-codex", PROVIDER, {
@@ -644,6 +684,8 @@ export const opencodeModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt-codex",
+		openWeights: false,
 	}),
 
 	createModelConfig("gpt-5.1-codex-max", PROVIDER, {
@@ -668,6 +710,8 @@ export const opencodeModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "gpt-codex",
+		openWeights: false,
 	}),
 
 	createModelConfig("gpt-5.1-codex-mini", PROVIDER, {
@@ -702,6 +746,8 @@ export const opencodeModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt-codex",
+		openWeights: false,
 	}),
 
 	createModelConfig("gpt-5.2", PROVIDER, {
@@ -736,6 +782,8 @@ export const opencodeModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt",
+		openWeights: false,
 	}),
 
 	createModelConfig("gpt-5.2-codex", PROVIDER, {
@@ -770,6 +818,8 @@ export const opencodeModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt-codex",
+		openWeights: false,
 	}),
 
 	createModelConfig("gpt-5.3-codex", PROVIDER, {
@@ -804,6 +854,8 @@ export const opencodeModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt-codex",
+		openWeights: false,
 	}),
 
 	createModelConfig("gpt-5.3-codex-spark", PROVIDER, {
@@ -828,6 +880,8 @@ export const opencodeModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "gpt-codex-spark",
+		openWeights: false,
 	}),
 
 	createModelConfig("gpt-5.4", PROVIDER, {
@@ -862,6 +916,8 @@ export const opencodeModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt",
+		openWeights: false,
 	}),
 
 	createModelConfig("gpt-5.4-mini", PROVIDER, {
@@ -896,6 +952,8 @@ export const opencodeModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt-mini",
+		openWeights: false,
 	}),
 
 	createModelConfig("gpt-5.4-nano", PROVIDER, {
@@ -930,6 +988,8 @@ export const opencodeModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt-nano",
+		openWeights: false,
 	}),
 
 	createModelConfig("gpt-5.4-pro", PROVIDER, {
@@ -962,6 +1022,8 @@ export const opencodeModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt-pro",
+		openWeights: false,
 	}),
 
 	createModelConfig("gpt-5.5", PROVIDER, {
@@ -996,6 +1058,8 @@ export const opencodeModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: 25.8,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt",
+		openWeights: false,
 	}),
 
 	createModelConfig("gpt-5.5-pro", PROVIDER, {
@@ -1028,6 +1092,8 @@ export const opencodeModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt-pro",
+		openWeights: false,
 	}),
 
 	createModelConfig("grok-build-0.1", PROVIDER, {
@@ -1051,6 +1117,8 @@ export const opencodeModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "grok-build",
+		openWeights: false,
 	}),
 
 	createModelConfig("kimi-k2.5", PROVIDER, {
@@ -1084,6 +1152,8 @@ export const opencodeModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "kimi-k2",
+		openWeights: true,
 	}),
 
 	createModelConfig("kimi-k2.6", PROVIDER, {
@@ -1117,6 +1187,8 @@ export const opencodeModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: 30.3,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "kimi-k2",
+		openWeights: true,
 	}),
 
 	createModelConfig("mimo-v2.5-free", PROVIDER, {
@@ -1140,6 +1212,8 @@ export const opencodeModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "mimo-v2.5-free",
+		openWeights: true,
 	}),
 
 	createModelConfig("minimax-m2.5", PROVIDER, {
@@ -1173,6 +1247,8 @@ export const opencodeModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "minimax",
+		openWeights: true,
 	}),
 
 	createModelConfig("minimax-m2.7", PROVIDER, {
@@ -1206,6 +1282,8 @@ export const opencodeModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: 25.6,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "minimax",
+		openWeights: true,
 	}),
 
 	createModelConfig("qwen3.5-plus", PROVIDER, {
@@ -1229,6 +1307,8 @@ export const opencodeModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "qwen3.5",
+		openWeights: false,
 	}),
 
 	createModelConfig("qwen3.6-plus", PROVIDER, {
@@ -1262,6 +1342,8 @@ export const opencodeModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: 27.6,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "qwen3.6",
+		openWeights: false,
 	}),
 	createModelConfig("deepseek-v4-flash", PROVIDER, {
 		name: "DeepSeek V4 Flash",
@@ -1295,6 +1377,8 @@ export const opencodeModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "deepseek-flash",
+		openWeights: true,
 	}),
 
 	createModelConfig("nemotron-3-ultra-free", PROVIDER, {
@@ -1318,6 +1402,8 @@ export const opencodeModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "nemotron-free",
+		openWeights: true,
 	}),
 	createModelConfig("north-mini-code-free", PROVIDER, {
 		name: "North Mini Code Free",
@@ -1341,6 +1427,8 @@ export const opencodeModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "north-free",
+		openWeights: true,
 	}),
 	createModelConfig("deepseek-v4-pro", PROVIDER, {
 		name: "DeepSeek V4 Pro",
@@ -1374,6 +1462,8 @@ export const opencodeModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "deepseek-thinking",
+		openWeights: true,
 	}),
 	createModelConfig("glm-5.2", PROVIDER, {
 		name: "GLM-5.2",
@@ -1406,5 +1496,7 @@ export const opencodeModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: 43.1,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "glm",
+		openWeights: true,
 	}),
 ]);

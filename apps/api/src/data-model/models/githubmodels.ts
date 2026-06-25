@@ -31,6 +31,8 @@ export const githubModelsConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "jamba",
+		openWeights: false,
 	},
 
 	"jamba-1-5-large-gh": {
@@ -62,6 +64,8 @@ export const githubModelsConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "jamba",
+		openWeights: false,
 	},
 
 	"gpt-4-1-mini-gh": {
@@ -96,6 +100,8 @@ export const githubModelsConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt-mini",
+		openWeights: false,
 	},
 
 	"o4-mini-gh": {
@@ -135,6 +141,8 @@ export const githubModelsConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "o-mini",
+		openWeights: false,
 	},
 
 	"o1-mini-gh": {
@@ -172,6 +180,8 @@ export const githubModelsConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "o-mini",
+		openWeights: false,
 	},
 
 	"gpt-4o-mini-gh": {
@@ -206,6 +216,8 @@ export const githubModelsConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt-mini",
+		openWeights: false,
 	},
 
 	"gpt-4o-gh": {
@@ -240,6 +252,8 @@ export const githubModelsConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt",
+		openWeights: false,
 	},
 
 	"o3-mini-gh": {
@@ -277,6 +291,8 @@ export const githubModelsConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "o-mini",
+		openWeights: false,
 	},
 
 	"o1-gh": {
@@ -316,6 +332,8 @@ export const githubModelsConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "o",
+		openWeights: false,
 	},
 
 	"phi-4-gh": {
@@ -354,6 +372,8 @@ export const githubModelsConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "phi",
+		openWeights: true,
 	},
 
 	"phi-4-multimodal-gh": {
@@ -392,6 +412,8 @@ export const githubModelsConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "phi",
+		openWeights: true,
 	},
 
 	"phi-4-reasoning-gh": {
@@ -423,6 +445,8 @@ export const githubModelsConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "phi",
+		openWeights: true,
 	},
 
 	"phi-3-5-vision-gh": {
@@ -455,6 +479,8 @@ export const githubModelsConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "phi",
+		openWeights: true,
 	},
 
 	"llama-3-2-90b-vision-gh": {
@@ -487,6 +513,8 @@ export const githubModelsConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "llama",
+		openWeights: true,
 	},
 
 	"llama-3-1-405b-gh": {
@@ -518,6 +546,8 @@ export const githubModelsConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "llama",
+		openWeights: true,
 	},
 
 	"deepseek-r1-gh": {
@@ -555,6 +585,8 @@ export const githubModelsConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "deepseek-thinking",
+		openWeights: true,
 	},
 
 	"mistral-large-2411-gh": {
@@ -586,6 +618,8 @@ export const githubModelsConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "mistral-large",
+		openWeights: false,
 	},
 
 	"codestral-2501-gh": {
@@ -617,6 +651,8 @@ export const githubModelsConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "codestral",
+		openWeights: false,
 	},
 
 	"grok-3-gh": {
@@ -654,6 +690,8 @@ export const githubModelsConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "grok",
+		openWeights: false,
 	},
 
 	"grok-3-mini-gh": {
@@ -686,6 +724,8 @@ export const githubModelsConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "grok",
+		openWeights: false,
 	},
 
 	"command-r-gh": {
@@ -717,6 +757,8 @@ export const githubModelsConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "command-r",
+		openWeights: false,
 	},
 
 	"command-r-plus-gh": {
@@ -744,6 +786,8 @@ export const githubModelsConfig: ModelConfig = {
 		speed: 2,
 		includedInRouter: false,
 		supportsArtifacts: true,
+		family: "command-r",
+		openWeights: false,
 	},
 	"cohere/cohere-command-a": {
 		name: "Cohere Command A",
@@ -767,6 +811,8 @@ export const githubModelsConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "command-a",
+		openWeights: false,
 	},
 
 	"cohere/cohere-command-r-08-2024": {
@@ -787,6 +833,8 @@ export const githubModelsConfig: ModelConfig = {
 		maxTokens: 4096,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
+		family: "command-r",
+		openWeights: false,
 	},
 
 	"cohere/cohere-command-r-plus-08-2024": {
@@ -807,6 +855,8 @@ export const githubModelsConfig: ModelConfig = {
 		maxTokens: 4096,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
+		family: "command-r",
+		openWeights: false,
 	},
 
 	"core42/jais-30b-chat": {
@@ -831,6 +881,8 @@ export const githubModelsConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "jais",
+		openWeights: true,
 	},
 
 	"deepseek/deepseek-v3-0324": {
@@ -864,6 +916,8 @@ export const githubModelsConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "deepseek",
+		openWeights: true,
 	},
 
 	"meta/llama-3.2-11b-vision-instruct": {
@@ -888,6 +942,8 @@ export const githubModelsConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "llama",
+		openWeights: true,
 	},
 
 	"meta/llama-3.3-70b-instruct": {
@@ -912,6 +968,8 @@ export const githubModelsConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "llama",
+		openWeights: true,
 	},
 
 	"meta/llama-4-maverick-17b-128e-instruct-fp8": {
@@ -936,6 +994,8 @@ export const githubModelsConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "llama",
+		openWeights: true,
 	},
 
 	"meta/llama-4-scout-17b-16e-instruct": {
@@ -960,6 +1020,8 @@ export const githubModelsConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "llama",
+		openWeights: true,
 	},
 
 	"meta/meta-llama-3-70b-instruct": {
@@ -984,6 +1046,8 @@ export const githubModelsConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "llama",
+		openWeights: true,
 	},
 
 	"meta/meta-llama-3-8b-instruct": {
@@ -1008,6 +1072,8 @@ export const githubModelsConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "llama",
+		openWeights: true,
 	},
 
 	"meta/meta-llama-3.1-70b-instruct": {
@@ -1032,6 +1098,8 @@ export const githubModelsConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "llama",
+		openWeights: true,
 	},
 
 	"meta/meta-llama-3.1-8b-instruct": {
@@ -1056,6 +1124,8 @@ export const githubModelsConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "llama",
+		openWeights: true,
 	},
 
 	"microsoft/mai-ds-r1": {
@@ -1080,6 +1150,8 @@ export const githubModelsConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "mai",
+		openWeights: false,
 	},
 
 	"microsoft/phi-3-medium-128k-instruct": {
@@ -1104,6 +1176,8 @@ export const githubModelsConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "phi",
+		openWeights: true,
 	},
 
 	"microsoft/phi-3-medium-4k-instruct": {
@@ -1128,6 +1202,8 @@ export const githubModelsConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "phi",
+		openWeights: true,
 	},
 
 	"microsoft/phi-3-mini-128k-instruct": {
@@ -1152,6 +1228,8 @@ export const githubModelsConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "phi",
+		openWeights: true,
 	},
 
 	"microsoft/phi-3-mini-4k-instruct": {
@@ -1176,6 +1254,8 @@ export const githubModelsConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "phi",
+		openWeights: true,
 	},
 
 	"microsoft/phi-3-small-128k-instruct": {
@@ -1200,6 +1280,8 @@ export const githubModelsConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "phi",
+		openWeights: true,
 	},
 
 	"microsoft/phi-3-small-8k-instruct": {
@@ -1224,6 +1306,8 @@ export const githubModelsConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "phi",
+		openWeights: true,
 	},
 
 	"microsoft/phi-3.5-mini-instruct": {
@@ -1248,6 +1332,8 @@ export const githubModelsConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "phi",
+		openWeights: true,
 	},
 
 	"microsoft/phi-3.5-moe-instruct": {
@@ -1272,6 +1358,8 @@ export const githubModelsConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "phi",
+		openWeights: true,
 	},
 
 	"microsoft/phi-4-mini-instruct": {
@@ -1306,6 +1394,8 @@ export const githubModelsConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "phi",
+		openWeights: true,
 	},
 
 	"microsoft/phi-4-mini-reasoning": {
@@ -1330,6 +1420,8 @@ export const githubModelsConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "phi",
+		openWeights: true,
 	},
 
 	"mistral-ai/ministral-3b": {
@@ -1354,6 +1446,8 @@ export const githubModelsConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "ministral",
+		openWeights: true,
 	},
 
 	"mistral-ai/mistral-medium-2505": {
@@ -1388,6 +1482,8 @@ export const githubModelsConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "mistral-medium",
+		openWeights: false,
 	},
 
 	"mistral-ai/mistral-nemo": {
@@ -1412,6 +1508,8 @@ export const githubModelsConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "mistral-nemo",
+		openWeights: true,
 	},
 
 	"mistral-ai/mistral-small-2503": {
@@ -1446,6 +1544,8 @@ export const githubModelsConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "mistral-small",
+		openWeights: false,
 	},
 
 	"openai/gpt-4.1": {
@@ -1476,6 +1576,8 @@ export const githubModelsConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt",
+		openWeights: false,
 	},
 
 	"openai/gpt-4.1-nano": {
@@ -1506,6 +1608,8 @@ export const githubModelsConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt-nano",
+		openWeights: false,
 	},
 
 	"openai/o1-preview": {
@@ -1538,6 +1642,8 @@ export const githubModelsConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "o",
+		openWeights: false,
 	},
 
 	"openai/o3": {
@@ -1572,5 +1678,7 @@ export const githubModelsConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "o",
+		openWeights: false,
 	},
 };

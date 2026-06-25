@@ -56,6 +56,8 @@ export const huggingfaceModelConfig: ModelConfig = {
 		speed: 3,
 		includedInRouter: false,
 		supportsArtifacts: true,
+		family: "kimi-k2",
+		openWeights: true,
 	},
 	"Qwen/Qwen3-Coder-480B-A35B-Instruct": {
 		name: "Qwen3-Coder-480B-A35B-Instruct",
@@ -87,6 +89,8 @@ export const huggingfaceModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "qwen",
+		openWeights: true,
 	},
 	"Qwen/Qwen3-235B-A22B-Thinking-2507": {
 		name: "Qwen3-235B-A22B-Thinking-2507",
@@ -116,6 +120,8 @@ export const huggingfaceModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "qwen",
+		openWeights: true,
 	},
 	"zai-org/GLM-4.5": {
 		name: "GLM-4.5",
@@ -151,6 +157,8 @@ export const huggingfaceModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "glm",
+		openWeights: true,
 	},
 	"zai-org/GLM-4.5-Air": {
 		name: "GLM-4.5-Air",
@@ -186,6 +194,8 @@ export const huggingfaceModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "glm-air",
+		openWeights: true,
 	},
 	"deepseek-ai/DeepSeek-V3.2": {
 		name: "DeepSeek-V3.2",
@@ -218,6 +228,8 @@ export const huggingfaceModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "deepseek",
+		openWeights: true,
 	},
 
 	"MiniMaxAI/MiniMax-M2.1": {
@@ -252,6 +264,8 @@ export const huggingfaceModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "minimax",
+		openWeights: true,
 	},
 
 	"moonshotai/Kimi-K2-Thinking": {
@@ -286,6 +300,8 @@ export const huggingfaceModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "kimi-thinking",
+		openWeights: true,
 	},
 
 	"moonshotai/Kimi-K2.5": {
@@ -320,6 +336,8 @@ export const huggingfaceModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "kimi-k2",
+		openWeights: true,
 	},
 
 	"Qwen/Qwen3-Embedding-4B": {
@@ -340,6 +358,8 @@ export const huggingfaceModelConfig: ModelConfig = {
 		maxTokens: 2048,
 		costPer1kInputTokens: 0.00001,
 		costPer1kOutputTokens: 0,
+		family: "qwen",
+		openWeights: true,
 	},
 
 	"Qwen/Qwen3-Embedding-8B": {
@@ -360,6 +380,8 @@ export const huggingfaceModelConfig: ModelConfig = {
 		maxTokens: 4096,
 		costPer1kInputTokens: 0.00001,
 		costPer1kOutputTokens: 0,
+		family: "qwen",
+		openWeights: true,
 	},
 
 	"Qwen/Qwen3-Next-80B-A3B-Instruct": {
@@ -390,6 +412,8 @@ export const huggingfaceModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "qwen",
+		openWeights: true,
 	},
 
 	"Qwen/Qwen3-Next-80B-A3B-Thinking": {
@@ -410,6 +434,8 @@ export const huggingfaceModelConfig: ModelConfig = {
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.0003,
 		costPer1kOutputTokens: 0.002,
+		family: "qwen",
+		openWeights: true,
 	},
 
 	"XiaomiMiMo/MiMo-V2-Flash": {
@@ -444,6 +470,8 @@ export const huggingfaceModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "mimo",
+		openWeights: true,
 	},
 
 	"zai-org/GLM-4.7": {
@@ -478,6 +506,8 @@ export const huggingfaceModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "glm",
+		openWeights: true,
 	},
 
 	"zai-org/GLM-4.7-Flash": {
@@ -512,6 +542,8 @@ export const huggingfaceModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "glm",
+		openWeights: true,
 	},
 
 	"zai-org/GLM-5": {
@@ -545,6 +577,8 @@ export const huggingfaceModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "glm",
+		openWeights: true,
 	},
 	"deepseek-ai/DeepSeek-V4-Pro": {
 		name: "DeepSeek V4 Pro",
@@ -579,6 +613,8 @@ export const huggingfaceModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "deepseek-thinking",
+		openWeights: true,
 	},
 
 	"MiniMaxAI/MiniMax-M2.5": {
@@ -612,6 +648,8 @@ export const huggingfaceModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "minimax",
+		openWeights: true,
 	},
 
 	"MiniMaxAI/MiniMax-M2.7": {
@@ -646,6 +684,8 @@ export const huggingfaceModelConfig: ModelConfig = {
 			agenticIndex: 25.6,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "minimax",
+		openWeights: true,
 	},
 
 	"moonshotai/Kimi-K2.6": {
@@ -680,6 +720,8 @@ export const huggingfaceModelConfig: ModelConfig = {
 			agenticIndex: 30.3,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "kimi-k2",
+		openWeights: true,
 	},
 
 	"Qwen/Qwen3-Coder-Next": {
@@ -710,6 +752,8 @@ export const huggingfaceModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "qwen",
+		openWeights: true,
 	},
 
 	"Qwen/Qwen3.5-397B-A17B": {
@@ -744,6 +788,8 @@ export const huggingfaceModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "qwen",
+		openWeights: true,
 	},
 
 	"zai-org/GLM-5.1": {
@@ -777,6 +823,8 @@ export const huggingfaceModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "glm",
+		openWeights: true,
 	},
 	"deepseek-ai/DeepSeek-R1": {
 		name: "DeepSeek-R1",
@@ -810,6 +858,8 @@ export const huggingfaceModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "deepseek-thinking",
+		openWeights: true,
 	},
 
 	"deepseek-ai/DeepSeek-V4-Flash": {
@@ -845,6 +895,8 @@ export const huggingfaceModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "deepseek-flash",
+		openWeights: true,
 	},
 
 	"google/gemma-4-26B-A4B-it": {
@@ -869,6 +921,8 @@ export const huggingfaceModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "gemma",
+		openWeights: true,
 	},
 
 	"google/gemma-4-31B-it": {
@@ -893,6 +947,8 @@ export const huggingfaceModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "gemma",
+		openWeights: true,
 	},
 
 	"meta-llama/Llama-3.3-70B-Instruct": {
@@ -914,6 +970,8 @@ export const huggingfaceModelConfig: ModelConfig = {
 		maxTokens: 4096,
 		costPer1kInputTokens: 0.00059,
 		costPer1kOutputTokens: 0.00079,
+		family: "llama",
+		openWeights: true,
 	},
 
 	"MiniMaxAI/MiniMax-M2": {
@@ -947,6 +1005,8 @@ export const huggingfaceModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "minimax",
+		openWeights: true,
 	},
 
 	"MiniMaxAI/MiniMax-M3": {
@@ -981,6 +1041,8 @@ export const huggingfaceModelConfig: ModelConfig = {
 			agenticIndex: 35.4,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "minimax",
+		openWeights: true,
 	},
 
 	"moonshotai/Kimi-K2.7-Code": {
@@ -1016,6 +1078,8 @@ export const huggingfaceModelConfig: ModelConfig = {
 			agenticIndex: 29.6,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "kimi-k2",
+		openWeights: true,
 	},
 
 	"Qwen/Qwen3-235B-A22B": {
@@ -1051,6 +1115,8 @@ export const huggingfaceModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "qwen",
+		openWeights: true,
 	},
 
 	"Qwen/Qwen3-32B": {
@@ -1086,6 +1152,8 @@ export const huggingfaceModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "qwen",
+		openWeights: true,
 	},
 
 	"Qwen/Qwen3-Coder-30B-A3B-Instruct": {
@@ -1117,6 +1185,8 @@ export const huggingfaceModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "qwen",
+		openWeights: true,
 	},
 
 	"Qwen/Qwen3.5-122B-A10B": {
@@ -1151,6 +1221,8 @@ export const huggingfaceModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "qwen",
+		openWeights: true,
 	},
 
 	"Qwen/Qwen3.5-27B": {
@@ -1185,6 +1257,8 @@ export const huggingfaceModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "qwen",
+		openWeights: true,
 	},
 
 	"Qwen/Qwen3.5-35B-A3B": {
@@ -1219,6 +1293,8 @@ export const huggingfaceModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "qwen",
+		openWeights: true,
 	},
 
 	"Qwen/Qwen3.5-9B": {
@@ -1252,6 +1328,8 @@ export const huggingfaceModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "qwen",
+		openWeights: true,
 	},
 
 	"Qwen/Qwen3.6-35B-A3B": {
@@ -1286,6 +1364,8 @@ export const huggingfaceModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "qwen",
+		openWeights: true,
 	},
 
 	"stepfun-ai/Step-3.5-Flash": {
@@ -1320,6 +1400,7 @@ export const huggingfaceModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		openWeights: true,
 	},
 
 	"zai-org/GLM-4.5V": {
@@ -1354,6 +1435,8 @@ export const huggingfaceModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "glm",
+		openWeights: true,
 	},
 
 	"zai-org/GLM-4.6": {
@@ -1388,6 +1471,8 @@ export const huggingfaceModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "glm",
+		openWeights: true,
 	},
 
 	"zai-org/GLM-5.2": {
@@ -1422,6 +1507,8 @@ export const huggingfaceModelConfig: ModelConfig = {
 			agenticIndex: 43.1,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "glm",
+		openWeights: true,
 	},
 	"Qwen/Qwen3.6-27B": {
 		name: "Qwen3.6 27B",
@@ -1455,6 +1542,8 @@ export const huggingfaceModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "qwen",
+		openWeights: true,
 	},
 
 	"stepfun-ai/Step-3.7-Flash": {
@@ -1489,6 +1578,7 @@ export const huggingfaceModelConfig: ModelConfig = {
 			agenticIndex: 21.5,
 			intelligenceIndexVersion: 4.1,
 		},
+		openWeights: true,
 	},
 
 	"XiaomiMiMo/MiMo-V2.5-Pro": {
@@ -1524,5 +1614,7 @@ export const huggingfaceModelConfig: ModelConfig = {
 			agenticIndex: 29.1,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "mimo",
+		openWeights: true,
 	},
 };

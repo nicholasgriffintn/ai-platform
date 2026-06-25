@@ -167,6 +167,8 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
 			intelligenceIndexVersion: 4.1,
 		},
 		speed: 3,
+		family: "gemini-pro",
+		openWeights: false,
 	}),
 
 	createModelConfig("ghcopilot/anthropic/claude-opus-4", PROVIDER, {
@@ -233,6 +235,8 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt",
+		openWeights: false,
 	}),
 
 	createModelConfig("ghcopilot/openai/gpt-4o", PROVIDER, {
@@ -308,6 +312,8 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "claude-haiku",
+		openWeights: false,
 	}),
 
 	createModelConfig("ghcopilot/anthropic/claude-opus-4.5", PROVIDER, {
@@ -341,6 +347,8 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "claude-opus",
+		openWeights: false,
 	}),
 
 	createModelConfig("ghcopilot/anthropic/claude-opus-4.6", PROVIDER, {
@@ -374,6 +382,8 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "claude-opus",
+		openWeights: false,
 	}),
 
 	createModelConfig("ghcopilot/anthropic/claude-sonnet-4.5", PROVIDER, {
@@ -397,6 +407,8 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "claude-sonnet",
+		openWeights: false,
 	}),
 
 	createModelConfig("ghcopilot/google/gemini-3-flash-preview", PROVIDER, {
@@ -431,6 +443,8 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
 			intelligenceIndexVersion: 4.1,
 		},
 		speed: 5,
+		family: "gemini-flash",
+		openWeights: false,
 	}),
 
 	createModelConfig("ghcopilot/openai/gpt-5-mini", PROVIDER, {
@@ -465,6 +479,8 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt-mini",
+		openWeights: false,
 	}),
 
 	createModelConfig("ghcopilot/openai/gpt-5.2", PROVIDER, {
@@ -499,6 +515,8 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt",
+		openWeights: false,
 	}),
 
 	createModelConfig("ghcopilot/openai/gpt-5.2-codex", PROVIDER, {
@@ -533,6 +551,8 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt-codex",
+		openWeights: false,
 	}),
 
 	createModelConfig("ghcopilot/xai/grok-code-fast-1", PROVIDER, {
@@ -597,6 +617,8 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: 44.4,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "claude-opus",
+		openWeights: false,
 	}),
 
 	createModelConfig("claude-sonnet-4.6", PROVIDER, {
@@ -630,6 +652,8 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: 40.8,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "claude-sonnet",
+		openWeights: false,
 	}),
 
 	createModelConfig("gemini-3.1-pro-preview", PROVIDER, {
@@ -664,6 +688,8 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: 21.4,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gemini-pro",
+		openWeights: false,
 	}),
 
 	createModelConfig("gpt-5.3-codex", PROVIDER, {
@@ -698,6 +724,8 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt-codex",
+		openWeights: false,
 	}),
 
 	createModelConfig("gpt-5.4", PROVIDER, {
@@ -732,6 +760,8 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt",
+		openWeights: false,
 	}),
 
 	createModelConfig("gpt-5.4-mini", PROVIDER, {
@@ -766,6 +796,8 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt-mini",
+		openWeights: false,
 	}),
 
 	createModelConfig("gpt-5.5", PROVIDER, {
@@ -800,6 +832,8 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: 25.8,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt",
+		openWeights: false,
 	}),
 	createModelConfig("gemini-3.5-flash", PROVIDER, {
 		name: "Gemini 3.5 Flash",
@@ -833,6 +867,8 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: 37.4,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gemini-flash",
+		openWeights: false,
 	}),
 	createModelConfig("claude-opus-4.8", PROVIDER, {
 		name: "Claude Opus 4.8",
@@ -865,6 +901,8 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: 47.2,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "claude-opus",
+		openWeights: false,
 	}),
 	createModelConfig("claude-sonnet-4", PROVIDER, {
 		name: "Claude Sonnet 4 (latest)",
@@ -887,6 +925,8 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "claude-sonnet",
+		openWeights: false,
 	}),
 
 	createModelConfig("gpt-5.4-nano", PROVIDER, {
@@ -921,6 +961,8 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt-nano",
+		openWeights: false,
 	}),
 
 	createModelConfig("raptor-mini", PROVIDER, {
@@ -976,5 +1018,7 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: 52.8,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "claude-fable",
+		openWeights: false,
 	}),
 ]);

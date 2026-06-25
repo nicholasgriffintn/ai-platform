@@ -62,6 +62,8 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "nova-lite",
+		openWeights: false,
 	}),
 
 	createModelConfig("nova-micro", PROVIDER, {
@@ -96,6 +98,8 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "nova-micro",
+		openWeights: false,
 	}),
 
 	createModelConfig("nova-pro", PROVIDER, {
@@ -139,6 +143,8 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "nova-pro",
+		openWeights: false,
 	}),
 
 	createModelConfig("nova-canvas", PROVIDER, {
@@ -205,6 +211,8 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		costPer1kInputTokens: 0.00015,
 		costPer1kOutputTokens: 0.0006,
 		supportsResponseFormat: true,
+		family: "gpt-oss",
+		openWeights: false,
 	}),
 
 	createModelConfig("openai.gpt-oss-safeguard-20b", PROVIDER, {
@@ -226,6 +234,8 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		costPer1kInputTokens: 0.00007,
 		costPer1kOutputTokens: 0.0002,
 		supportsResponseFormat: true,
+		family: "gpt-oss",
+		openWeights: false,
 	}),
 
 	createModelConfig("minimax.minimax-m2", PROVIDER, {
@@ -261,6 +271,8 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "minimax",
+		openWeights: true,
 	}),
 
 	createModelConfig("moonshot.kimi-k2-thinking", PROVIDER, {
@@ -296,6 +308,8 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "kimi-thinking",
+		openWeights: true,
 	}),
 
 	createModelConfig("nvidia.nemotron-nano-12b-v2", PROVIDER, {
@@ -317,6 +331,8 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		costPer1kInputTokens: 0.0002,
 		costPer1kOutputTokens: 0.0006,
 		supportsResponseFormat: true,
+		family: "nemotron",
+		openWeights: false,
 	}),
 
 	createModelConfig("nvidia.nemotron-nano-9b-v2", PROVIDER, {
@@ -348,6 +364,8 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "nemotron",
+		openWeights: false,
 	}),
 
 	createModelConfig("anthropic.claude-sonnet-4.5", PROVIDER, {
@@ -387,6 +405,8 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "claude-sonnet",
+		openWeights: false,
 	}),
 
 	createModelConfig("anthropic.claude-sonnet-4", PROVIDER, {
@@ -540,6 +560,8 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "claude-opus",
+		openWeights: false,
 	}),
 
 	createModelConfig("anthropic.claude-3-7-sonnet", PROVIDER, {
@@ -851,6 +873,8 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		reliability: 4,
 		speed: 3,
 		supportsToolCalls: true,
+		family: "llama",
+		openWeights: true,
 	}),
 
 	createModelConfig("deepseek.r1-bedrock", PROVIDER, {
@@ -886,6 +910,8 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "deepseek-thinking",
+		openWeights: false,
 	}),
 
 	createModelConfig("twelvelabs.marengo-embed-2-7-v1", PROVIDER, {
@@ -964,6 +990,8 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "nova",
+		openWeights: false,
 	}),
 
 	createModelConfig("amazon.titan-text-express-v1", PROVIDER, {
@@ -1159,6 +1187,8 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "claude-haiku",
+		openWeights: false,
 	}),
 
 	createModelConfig("anthropic.claude-instant-v1", PROVIDER, {
@@ -1209,6 +1239,8 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "claude-opus",
+		openWeights: false,
 	}),
 
 	createModelConfig("anthropic.claude-opus-4-20250514-v1:0", PROVIDER, {
@@ -1262,6 +1294,8 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "claude-opus",
+		openWeights: false,
 	}),
 
 	createModelConfig("anthropic.claude-opus-4-6-v1", PROVIDER, {
@@ -1296,6 +1330,8 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "claude-opus",
+		openWeights: false,
 	}),
 
 	createModelConfig("anthropic.claude-sonnet-4-20250514-v1:0", PROVIDER, {
@@ -1340,6 +1376,8 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "claude-sonnet",
+		openWeights: false,
 	}),
 
 	createModelConfig("anthropic.claude-v2", PROVIDER, {
@@ -1465,6 +1503,8 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "deepseek",
+		openWeights: true,
 	}),
 
 	createModelConfig("eu.anthropic.claude-haiku-4-5-20251001-v1:0", PROVIDER, {
@@ -1489,6 +1529,8 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "claude-haiku",
+		openWeights: false,
 	}),
 
 	createModelConfig("eu.anthropic.claude-opus-4-5-20251101-v1:0", PROVIDER, {
@@ -1523,6 +1565,8 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "claude-opus",
+		openWeights: false,
 	}),
 
 	createModelConfig("eu.anthropic.claude-opus-4-6-v1", PROVIDER, {
@@ -1557,6 +1601,8 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "claude-opus",
+		openWeights: false,
 	}),
 
 	createModelConfig("eu.anthropic.claude-sonnet-4-20250514-v1:0", PROVIDER, {
@@ -1601,6 +1647,8 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "claude-sonnet",
+		openWeights: false,
 	}),
 
 	createModelConfig("global.anthropic.claude-haiku-4-5-20251001-v1:0", PROVIDER, {
@@ -1625,6 +1673,8 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "claude-haiku",
+		openWeights: false,
 	}),
 
 	createModelConfig("global.anthropic.claude-opus-4-5-20251101-v1:0", PROVIDER, {
@@ -1659,6 +1709,8 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "claude-opus",
+		openWeights: false,
 	}),
 
 	createModelConfig("global.anthropic.claude-opus-4-6-v1", PROVIDER, {
@@ -1693,6 +1745,8 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "claude-opus",
+		openWeights: false,
 	}),
 
 	createModelConfig("global.anthropic.claude-sonnet-4-20250514-v1:0", PROVIDER, {
@@ -1737,6 +1791,8 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "claude-sonnet",
+		openWeights: false,
 	}),
 
 	createModelConfig("google.gemma-3-12b-it", PROVIDER, {
@@ -1757,6 +1813,8 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		costPer1kInputTokens: 0.00005,
 		costPer1kOutputTokens: 0.0001,
 		supportsResponseFormat: true,
+		family: "gemma",
+		openWeights: false,
 	}),
 
 	createModelConfig("google.gemma-3-27b-it", PROVIDER, {
@@ -1777,6 +1835,8 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		costPer1kInputTokens: 0.00012,
 		costPer1kOutputTokens: 0.0002,
 		supportsResponseFormat: true,
+		family: "gemma",
+		openWeights: true,
 	}),
 
 	createModelConfig("google.gemma-3-4b-it", PROVIDER, {
@@ -1795,6 +1855,8 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 4096,
 		costPer1kInputTokens: 0.00004,
 		costPer1kOutputTokens: 0.00008,
+		family: "gemma",
+		openWeights: false,
 	}),
 
 	createModelConfig("meta.llama3-1-8b-instruct-v1:0", PROVIDER, {
@@ -1815,6 +1877,8 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 4096,
 		costPer1kInputTokens: 0.00022,
 		costPer1kOutputTokens: 0.00022,
+		family: "llama",
+		openWeights: true,
 	}),
 
 	createModelConfig("meta.llama3-2-11b-instruct-v1:0", PROVIDER, {
@@ -1895,6 +1959,8 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 4096,
 		costPer1kInputTokens: 0.00072,
 		costPer1kOutputTokens: 0.00072,
+		family: "llama",
+		openWeights: true,
 	}),
 
 	createModelConfig("meta.llama3-70b-instruct-v1:0", PROVIDER, {
@@ -1955,6 +2021,8 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00024,
 		costPer1kOutputTokens: 0.00097,
+		family: "llama",
+		openWeights: true,
 	}),
 
 	createModelConfig("meta.llama4-scout-17b-instruct-v1:0", PROVIDER, {
@@ -1975,6 +2043,8 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00017,
 		costPer1kOutputTokens: 0.00066,
+		family: "llama",
+		openWeights: true,
 	}),
 
 	createModelConfig("minimax.minimax-m2.1", PROVIDER, {
@@ -2008,6 +2078,8 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "minimax",
+		openWeights: true,
 	}),
 
 	createModelConfig("mistral.ministral-3-14b-instruct", PROVIDER, {
@@ -2027,6 +2099,8 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		costPer1kInputTokens: 0.0002,
 		costPer1kOutputTokens: 0.0002,
 		supportsResponseFormat: true,
+		family: "ministral",
+		openWeights: false,
 	}),
 
 	createModelConfig("mistral.ministral-3-8b-instruct", PROVIDER, {
@@ -2056,6 +2130,8 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "ministral",
+		openWeights: false,
 	}),
 
 	createModelConfig("mistral.mistral-7b-instruct-v0:2", PROVIDER, {
@@ -2140,6 +2216,8 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		costPer1kInputTokens: 0.00004,
 		costPer1kOutputTokens: 0.00004,
 		supportsResponseFormat: true,
+		family: "mistral",
+		openWeights: false,
 	}),
 
 	createModelConfig("mistral.voxtral-small-24b-2507", PROVIDER, {
@@ -2159,6 +2237,8 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		costPer1kInputTokens: 0.00015,
 		costPer1kOutputTokens: 0.00035,
 		supportsResponseFormat: true,
+		family: "mistral",
+		openWeights: true,
 	}),
 
 	createModelConfig("moonshotai.kimi-k2.5", PROVIDER, {
@@ -2192,6 +2272,8 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "kimi",
+		openWeights: true,
 	}),
 
 	createModelConfig("openai.gpt-oss-120b-1:0", PROVIDER, {
@@ -2225,6 +2307,8 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: 13.2,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt-oss",
+		openWeights: false,
 	}),
 
 	createModelConfig("openai.gpt-oss-20b-1:0", PROVIDER, {
@@ -2258,6 +2342,8 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: 3.1,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt-oss",
+		openWeights: false,
 	}),
 
 	createModelConfig("qwen.qwen3-235b-a22b-2507-v1:0", PROVIDER, {
@@ -2288,6 +2374,8 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "qwen",
+		openWeights: true,
 	}),
 
 	createModelConfig("qwen.qwen3-32b-v1:0", PROVIDER, {
@@ -2322,6 +2410,8 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "qwen",
+		openWeights: true,
 	}),
 
 	createModelConfig("qwen.qwen3-coder-30b-a3b-v1:0", PROVIDER, {
@@ -2352,6 +2442,8 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "qwen",
+		openWeights: false,
 	}),
 
 	createModelConfig("qwen.qwen3-coder-480b-a35b-v1:0", PROVIDER, {
@@ -2382,6 +2474,8 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "qwen",
+		openWeights: true,
 	}),
 
 	createModelConfig("qwen.qwen3-next-80b-a3b", PROVIDER, {
@@ -2411,6 +2505,8 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "qwen",
+		openWeights: false,
 	}),
 
 	createModelConfig("qwen.qwen3-vl-235b-a22b", PROVIDER, {
@@ -2440,6 +2536,8 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "qwen",
+		openWeights: false,
 	}),
 
 	createModelConfig("us.anthropic.claude-haiku-4-5-20251001-v1:0", PROVIDER, {
@@ -2464,6 +2562,8 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "claude-haiku",
+		openWeights: false,
 	}),
 
 	createModelConfig("us.anthropic.claude-opus-4-5-20251101-v1:0", PROVIDER, {
@@ -2498,6 +2598,8 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "claude-opus",
+		openWeights: false,
 	}),
 
 	createModelConfig("us.anthropic.claude-opus-4-6-v1", PROVIDER, {
@@ -2532,6 +2634,8 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "claude-opus",
+		openWeights: false,
 	}),
 
 	createModelConfig("zai.glm-4.7", PROVIDER, {
@@ -2566,6 +2670,8 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "glm",
+		openWeights: true,
 	}),
 
 	createModelConfig("zai.glm-4.7-flash", PROVIDER, {
@@ -2600,6 +2706,8 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "glm-flash",
+		openWeights: true,
 	}),
 	createModelConfig("anthropic.claude-opus-4-7", PROVIDER, {
 		name: "Claude Opus 4.7",
@@ -2632,6 +2740,8 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: 44.4,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "claude-opus",
+		openWeights: false,
 	}),
 
 	createModelConfig("anthropic.claude-sonnet-4-6", PROVIDER, {
@@ -2666,6 +2776,8 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: 40.8,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "claude-sonnet",
+		openWeights: false,
 	}),
 
 	createModelConfig("au.anthropic.claude-haiku-4-5-20251001-v1:0", PROVIDER, {
@@ -2690,6 +2802,8 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "claude-haiku",
+		openWeights: false,
 	}),
 
 	createModelConfig("au.anthropic.claude-opus-4-6-v1", PROVIDER, {
@@ -2714,6 +2828,8 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "claude-opus",
+		openWeights: false,
 	}),
 
 	createModelConfig("au.anthropic.claude-sonnet-4-5-20250929-v1:0", PROVIDER, {
@@ -2738,6 +2854,8 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "claude-sonnet",
+		openWeights: false,
 	}),
 
 	createModelConfig("au.anthropic.claude-sonnet-4-6", PROVIDER, {
@@ -2762,6 +2880,8 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "claude-sonnet",
+		openWeights: false,
 	}),
 
 	createModelConfig("deepseek.v3.2", PROVIDER, {
@@ -2795,6 +2915,8 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "deepseek",
+		openWeights: true,
 	}),
 
 	createModelConfig("eu.anthropic.claude-opus-4-7", PROVIDER, {
@@ -2828,6 +2950,8 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: 44.4,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "claude-opus",
+		openWeights: false,
 	}),
 
 	createModelConfig("eu.anthropic.claude-sonnet-4-6", PROVIDER, {
@@ -2862,6 +2986,8 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: 40.8,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "claude-sonnet",
+		openWeights: false,
 	}),
 
 	createModelConfig("global.anthropic.claude-opus-4-7", PROVIDER, {
@@ -2895,6 +3021,8 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: 44.4,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "claude-opus",
+		openWeights: false,
 	}),
 
 	createModelConfig("global.anthropic.claude-sonnet-4-6", PROVIDER, {
@@ -2929,6 +3057,8 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: 40.8,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "claude-sonnet",
+		openWeights: false,
 	}),
 
 	createModelConfig("jp.anthropic.claude-opus-4-7", PROVIDER, {
@@ -2962,6 +3092,8 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: 44.4,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "claude-opus",
+		openWeights: false,
 	}),
 
 	createModelConfig("jp.anthropic.claude-sonnet-4-5-20250929-v1:0", PROVIDER, {
@@ -2986,6 +3118,8 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "claude-sonnet",
+		openWeights: false,
 	}),
 
 	createModelConfig("jp.anthropic.claude-sonnet-4-6", PROVIDER, {
@@ -3020,6 +3154,8 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: 40.8,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "claude-sonnet",
+		openWeights: false,
 	}),
 
 	createModelConfig("minimax.minimax-m2.5", PROVIDER, {
@@ -3053,6 +3189,8 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "minimax",
+		openWeights: true,
 	}),
 
 	createModelConfig("mistral.devstral-2-123b", PROVIDER, {
@@ -3072,6 +3210,8 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 8192,
 		costPer1kInputTokens: 0.0004,
 		costPer1kOutputTokens: 0.002,
+		family: "devstral",
+		openWeights: true,
 	}),
 
 	createModelConfig("mistral.magistral-small-2509", PROVIDER, {
@@ -3105,6 +3245,8 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "magistral",
+		openWeights: true,
 	}),
 
 	createModelConfig("mistral.ministral-3-3b-instruct", PROVIDER, {
@@ -3134,6 +3276,8 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "ministral",
+		openWeights: true,
 	}),
 
 	createModelConfig("mistral.mistral-large-3-675b-instruct", PROVIDER, {
@@ -3163,6 +3307,8 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: 5.5,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "mistral",
+		openWeights: true,
 	}),
 
 	createModelConfig("mistral.pixtral-large-2502-v1:0", PROVIDER, {
@@ -3191,6 +3337,8 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "mistral",
+		openWeights: false,
 	}),
 
 	createModelConfig("nvidia.nemotron-nano-3-30b", PROVIDER, {
@@ -3214,6 +3362,8 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "nemotron",
+		openWeights: true,
 	}),
 
 	createModelConfig("nvidia.nemotron-super-3-120b", PROVIDER, {
@@ -3247,6 +3397,8 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: 8.7,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "nemotron",
+		openWeights: true,
 	}),
 
 	createModelConfig("qwen.qwen3-coder-next", PROVIDER, {
@@ -3280,6 +3432,8 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "qwen",
+		openWeights: true,
 	}),
 
 	createModelConfig("us.anthropic.claude-opus-4-7", PROVIDER, {
@@ -3313,6 +3467,8 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: 44.4,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "claude-opus",
+		openWeights: false,
 	}),
 
 	createModelConfig("us.anthropic.claude-sonnet-4-6", PROVIDER, {
@@ -3347,6 +3503,8 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: 40.8,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "claude-sonnet",
+		openWeights: false,
 	}),
 
 	createModelConfig("us.deepseek.r1-v1:0", PROVIDER, {
@@ -3379,6 +3537,8 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "deepseek-thinking",
+		openWeights: true,
 	}),
 
 	createModelConfig("us.meta.llama4-maverick-17b-instruct-v1:0", PROVIDER, {
@@ -3399,6 +3559,8 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00024,
 		costPer1kOutputTokens: 0.00097,
+		family: "llama",
+		openWeights: true,
 	}),
 
 	createModelConfig("us.meta.llama4-scout-17b-instruct-v1:0", PROVIDER, {
@@ -3419,6 +3581,8 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00017,
 		costPer1kOutputTokens: 0.00066,
+		family: "llama",
+		openWeights: true,
 	}),
 
 	createModelConfig("writer.palmyra-x4-v1:0", PROVIDER, {
@@ -3441,6 +3605,8 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "palmyra",
+		openWeights: false,
 	}),
 
 	createModelConfig("writer.palmyra-x5-v1:0", PROVIDER, {
@@ -3463,6 +3629,8 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "palmyra",
+		openWeights: false,
 	}),
 
 	createModelConfig("zai.glm-5", PROVIDER, {
@@ -3496,6 +3664,8 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "glm",
+		openWeights: true,
 	}),
 	createModelConfig("anthropic.claude-opus-4-8", PROVIDER, {
 		name: "Claude Opus 4.8",
@@ -3527,6 +3697,8 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: 47.2,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "claude-opus",
+		openWeights: false,
 	}),
 
 	createModelConfig("au.anthropic.claude-opus-4-8", PROVIDER, {
@@ -3559,6 +3731,8 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: 47.2,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "claude-opus",
+		openWeights: false,
 	}),
 
 	createModelConfig("eu.anthropic.claude-opus-4-8", PROVIDER, {
@@ -3591,6 +3765,8 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: 47.2,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "claude-opus",
+		openWeights: false,
 	}),
 
 	createModelConfig("global.anthropic.claude-opus-4-8", PROVIDER, {
@@ -3623,6 +3799,8 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: 47.2,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "claude-opus",
+		openWeights: false,
 	}),
 
 	createModelConfig("jp.anthropic.claude-opus-4-8", PROVIDER, {
@@ -3655,6 +3833,8 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: 47.2,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "claude-opus",
+		openWeights: false,
 	}),
 
 	createModelConfig("us.anthropic.claude-opus-4-8", PROVIDER, {
@@ -3687,6 +3867,8 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: 47.2,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "claude-opus",
+		openWeights: false,
 	}),
 	createModelConfig("openai.gpt-5.4", PROVIDER, {
 		name: "GPT-5.4",
@@ -3720,6 +3902,8 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt",
+		openWeights: false,
 	}),
 
 	createModelConfig("openai.gpt-5.5", PROVIDER, {
@@ -3754,6 +3938,8 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: 25.8,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt",
+		openWeights: false,
 	}),
 
 	createModelConfig("openai.gpt-oss-120b", PROVIDER, {
@@ -3789,6 +3975,8 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: 13.2,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt-oss",
+		openWeights: false,
 	}),
 
 	createModelConfig("openai.gpt-oss-20b", PROVIDER, {
@@ -3824,6 +4012,8 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: 3.1,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt-oss",
+		openWeights: false,
 	}),
 	createModelConfig("eu.anthropic.claude-fable-5", PROVIDER, {
 		name: "Claude Fable 5 (EU)",
@@ -3855,6 +4045,8 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: 52.8,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "claude-fable",
+		openWeights: false,
 	}),
 
 	createModelConfig("global.anthropic.claude-fable-5", PROVIDER, {
@@ -3887,6 +4079,8 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: 52.8,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "claude-fable",
+		openWeights: false,
 	}),
 
 	createModelConfig("us.anthropic.claude-fable-5", PROVIDER, {
@@ -3919,5 +4113,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: 52.8,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "claude-fable",
+		openWeights: false,
 	}),
 ]);

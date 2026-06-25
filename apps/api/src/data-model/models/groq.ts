@@ -139,6 +139,8 @@ export const groqModelConfig: ModelConfig = {
 		isFeatured: true,
 		includedInRouter: true,
 		supportsArtifacts: true,
+		family: "llama",
+		openWeights: true,
 	},
 	"groq-llama-4-scout-17b": {
 		name: "Llama 4 Scout 17B",
@@ -175,6 +177,9 @@ export const groqModelConfig: ModelConfig = {
 		speed: 5,
 		supportsArtifacts: true,
 		supportsResponseFormat: true,
+		family: "llama",
+		status: "beta",
+		openWeights: true,
 	},
 	"llama-3.1-8b-instant": {
 		name: "Llama 3.1 8B Instant",
@@ -200,6 +205,8 @@ export const groqModelConfig: ModelConfig = {
 		reliability: 3,
 		includedInRouter: true,
 		supportsArtifacts: true,
+		family: "llama",
+		openWeights: true,
 	},
 	"mixtral-8x7b-32768": {
 		name: "Mixtral 8x7B Instruct",
@@ -322,6 +329,8 @@ export const groqModelConfig: ModelConfig = {
 			agenticIndex: 3.1,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt-oss",
+		openWeights: true,
 	},
 	"groq-openai-gpt-oss-120b": {
 		name: "GPT OSS 120B",
@@ -360,6 +369,8 @@ export const groqModelConfig: ModelConfig = {
 			agenticIndex: 13.2,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt-oss",
+		openWeights: true,
 	},
 	"qwen/qwen3-32b": {
 		name: "Qwen3 32B",
@@ -393,6 +404,9 @@ export const groqModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "qwen",
+		status: "beta",
+		openWeights: true,
 	},
 	"allam-2-7b": {
 		name: "ALLaM-2-7b",
@@ -432,6 +446,9 @@ export const groqModelConfig: ModelConfig = {
 		maxTokens: 50000,
 		costPer1kInputTokens: 0.04,
 		costPer1kOutputTokens: 0,
+		family: "canopylabs",
+		status: "beta",
+		openWeights: false,
 	},
 
 	"canopylabs/orpheus-v1-english": {
@@ -452,6 +469,9 @@ export const groqModelConfig: ModelConfig = {
 		maxTokens: 50000,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
+		family: "canopylabs",
+		status: "beta",
+		openWeights: false,
 	},
 
 	"groq/compound": {
@@ -479,6 +499,8 @@ export const groqModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "groq",
+		openWeights: false,
 	},
 
 	"groq/compound-mini": {
@@ -503,6 +525,8 @@ export const groqModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "groq",
+		openWeights: false,
 	},
 
 	"meta-llama/llama-prompt-guard-2-22m": {
@@ -523,6 +547,9 @@ export const groqModelConfig: ModelConfig = {
 		maxTokens: 512,
 		costPer1kInputTokens: 0.00003,
 		costPer1kOutputTokens: 0.00003,
+		family: "llama",
+		status: "beta",
+		openWeights: true,
 	},
 
 	"meta-llama/llama-prompt-guard-2-86m": {
@@ -543,6 +570,9 @@ export const groqModelConfig: ModelConfig = {
 		maxTokens: 512,
 		costPer1kInputTokens: 0.00004,
 		costPer1kOutputTokens: 0.00004,
+		family: "llama",
+		status: "beta",
+		openWeights: true,
 	},
 
 	"openai/gpt-oss-safeguard-20b": {
@@ -567,6 +597,9 @@ export const groqModelConfig: ModelConfig = {
 			defaultEffort: "none",
 		},
 		supportsResponseFormat: true,
+		family: "gpt-oss",
+		status: "beta",
+		openWeights: true,
 	},
 
 	"whisper-large-v3": {
@@ -587,6 +620,8 @@ export const groqModelConfig: ModelConfig = {
 		maxTokens: 0,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
+		family: "whisper",
+		openWeights: true,
 	},
 
 	"whisper-large-v3-turbo": {
@@ -607,5 +642,7 @@ export const groqModelConfig: ModelConfig = {
 		maxTokens: 0,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
+		family: "whisper",
+		openWeights: true,
 	},
 };

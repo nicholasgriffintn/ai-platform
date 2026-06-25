@@ -28,6 +28,8 @@ export const morphModelConfig: ModelConfig = createModelConfigObject([
 		speed: 4,
 		includedInRouter: true,
 		supportsArtifacts: true,
+		family: "auto",
+		openWeights: false,
 	}),
 
 	createModelConfig("morph-v3-large", PROVIDER, {
@@ -55,6 +57,8 @@ export const morphModelConfig: ModelConfig = createModelConfigObject([
 		speed: 3,
 		includedInRouter: true,
 		supportsArtifacts: true,
+		family: "morph",
+		openWeights: false,
 	}),
 
 	createModelConfig("morph-v3-fast", PROVIDER, {
@@ -81,5 +85,7 @@ export const morphModelConfig: ModelConfig = createModelConfigObject([
 		speed: 5,
 		includedInRouter: true,
 		supportsArtifacts: true,
+		family: "morph",
+		openWeights: false,
 	}),
 ]);

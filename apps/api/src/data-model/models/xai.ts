@@ -655,6 +655,8 @@ export const xaiModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "grok",
+		openWeights: false,
 	},
 
 	"grok-4.20-0309-reasoning": {
@@ -689,6 +691,8 @@ export const xaiModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "grok",
+		openWeights: false,
 	},
 
 	"grok-4.20-multi-agent-0309": {
@@ -713,6 +717,8 @@ export const xaiModelConfig: ModelConfig = {
 			defaultEffort: "none",
 		},
 		supportsResponseFormat: true,
+		family: "grok",
+		openWeights: false,
 	},
 
 	"grok-4.3": {
@@ -747,6 +753,8 @@ export const xaiModelConfig: ModelConfig = {
 			agenticIndex: 22.8,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "grok",
+		openWeights: false,
 	},
 
 	"grok-imagine-image": {
@@ -783,6 +791,8 @@ export const xaiModelConfig: ModelConfig = {
 				},
 			],
 		},
+		family: "grok",
+		openWeights: false,
 	},
 
 	"grok-imagine-image-quality": {
@@ -819,6 +829,8 @@ export const xaiModelConfig: ModelConfig = {
 				},
 			],
 		},
+		family: "grok",
+		openWeights: false,
 	},
 
 	"grok-imagine-video": {
@@ -855,6 +867,8 @@ export const xaiModelConfig: ModelConfig = {
 				},
 			],
 		},
+		family: "grok",
+		openWeights: false,
 	},
 	"grok-build-0.1": {
 		name: "Grok Build 0.1",
@@ -878,5 +892,7 @@ export const xaiModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "grok-build",
+		openWeights: false,
 	},
 };

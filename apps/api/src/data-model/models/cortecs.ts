@@ -35,6 +35,8 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "claude-sonnet",
+		openWeights: false,
 	}),
 
 	createModelConfig("claude-4-6-sonnet", PROVIDER, {
@@ -68,6 +70,8 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: 40.8,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "claude-sonnet",
+		openWeights: false,
 	}),
 
 	createModelConfig("claude-haiku-4-5", PROVIDER, {
@@ -91,6 +95,8 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "claude-haiku",
+		openWeights: false,
 	}),
 
 	createModelConfig("claude-opus4-5", PROVIDER, {
@@ -124,6 +130,8 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "claude-opus",
+		openWeights: false,
 	}),
 
 	createModelConfig("claude-opus4-6", PROVIDER, {
@@ -157,6 +165,8 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "claude-opus",
+		openWeights: false,
 	}),
 
 	createModelConfig("claude-opus4-7", PROVIDER, {
@@ -190,6 +200,8 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: 44.4,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "claude-opus",
+		openWeights: false,
 	}),
 
 	createModelConfig("claude-sonnet-4", PROVIDER, {
@@ -209,6 +221,8 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 64000,
 		costPer1kInputTokens: 0.003307,
 		costPer1kOutputTokens: 0.016536,
+		family: "claude-sonnet",
+		openWeights: false,
 	}),
 
 	createModelConfig("codestral-2508", PROVIDER, {
@@ -228,6 +242,8 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 256000,
 		costPer1kInputTokens: 0.0003,
 		costPer1kOutputTokens: 0.0009,
+		family: "mistral",
+		openWeights: true,
 	}),
 
 	createModelConfig("deepseek-r1-0528", PROVIDER, {
@@ -260,6 +276,8 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "deepseek-thinking",
+		openWeights: true,
 	}),
 
 	createModelConfig("deepseek-v3-0324", PROVIDER, {
@@ -288,6 +306,8 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "deepseek",
+		openWeights: true,
 	}),
 
 	createModelConfig("deepseek-v3.2", PROVIDER, {
@@ -320,6 +340,8 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "deepseek",
+		openWeights: true,
 	}),
 
 	createModelConfig("deepseek-v4-flash", PROVIDER, {
@@ -353,6 +375,8 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "deepseek-flash",
+		openWeights: true,
 	}),
 
 	createModelConfig("deepseek-v4-pro", PROVIDER, {
@@ -386,6 +410,8 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "deepseek-thinking",
+		openWeights: true,
 	}),
 
 	createModelConfig("devstral-2512", PROVIDER, {
@@ -405,6 +431,7 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 262000,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
+		openWeights: true,
 	}),
 
 	createModelConfig("devstral-small-2512", PROVIDER, {
@@ -453,6 +480,8 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
 			intelligenceIndexVersion: 4.1,
 		},
 		speed: 3,
+		family: "gemini-pro",
+		openWeights: false,
 	}),
 
 	createModelConfig("glm-4.5", PROVIDER, {
@@ -486,6 +515,8 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "glm",
+		openWeights: true,
 	}),
 
 	createModelConfig("glm-4.5-air", PROVIDER, {
@@ -519,6 +550,8 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "glm-air",
+		openWeights: true,
 	}),
 
 	createModelConfig("glm-4.7", PROVIDER, {
@@ -552,6 +585,8 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "glm",
+		openWeights: true,
 	}),
 
 	createModelConfig("glm-4.7-flash", PROVIDER, {
@@ -585,6 +620,8 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "glm",
+		openWeights: true,
 	}),
 
 	createModelConfig("glm-5", PROVIDER, {
@@ -617,6 +654,8 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "glm",
+		openWeights: true,
 	}),
 
 	createModelConfig("glm-5.1", PROVIDER, {
@@ -650,6 +689,8 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "glm",
+		openWeights: true,
 	}),
 
 	createModelConfig("gpt-4.1", PROVIDER, {
@@ -679,6 +720,8 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt",
+		openWeights: false,
 	}),
 
 	createModelConfig("gpt-oss-120b", PROVIDER, {
@@ -708,6 +751,8 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: 13.2,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt-oss",
+		openWeights: true,
 	}),
 
 	createModelConfig("hermes-4-70b", PROVIDER, {
@@ -731,6 +776,7 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		openWeights: true,
 	}),
 
 	createModelConfig("intellect-3", PROVIDER, {
@@ -763,6 +809,7 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		openWeights: true,
 	}),
 
 	createModelConfig("kimi-k2-instruct", PROVIDER, {
@@ -782,6 +829,8 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 131000,
 		costPer1kInputTokens: 0.000551,
 		costPer1kOutputTokens: 0.002646,
+		family: "kimi-k2",
+		openWeights: true,
 	}),
 
 	createModelConfig("kimi-k2-thinking", PROVIDER, {
@@ -815,6 +864,7 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		openWeights: true,
 	}),
 
 	createModelConfig("kimi-k2.5", PROVIDER, {
@@ -848,6 +898,8 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "kimi-thinking",
+		openWeights: true,
 	}),
 
 	createModelConfig("kimi-k2.6", PROVIDER, {
@@ -880,6 +932,8 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: 30.3,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "kimi-thinking",
+		openWeights: true,
 	}),
 
 	createModelConfig("llama-3.1-405b-instruct", PROVIDER, {
@@ -899,6 +953,8 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 128000,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
+		family: "llama",
+		openWeights: true,
 	}),
 
 	createModelConfig("llama-3.3-70b-instruct", PROVIDER, {
@@ -922,6 +978,8 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "llama",
+		openWeights: true,
 	}),
 
 	createModelConfig("minimax-m2", PROVIDER, {
@@ -955,6 +1013,8 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "minimax",
+		openWeights: true,
 	}),
 
 	createModelConfig("minimax-m2.1", PROVIDER, {
@@ -987,6 +1047,8 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "minimax",
+		openWeights: true,
 	}),
 
 	createModelConfig("minimax-m2.5", PROVIDER, {
@@ -1019,6 +1081,8 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "minimax",
+		openWeights: true,
 	}),
 
 	createModelConfig("minimax-m2.7", PROVIDER, {
@@ -1052,6 +1116,8 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: 25.6,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "minimax",
+		openWeights: true,
 	}),
 
 	createModelConfig("mistral-large-2512", PROVIDER, {
@@ -1071,6 +1137,8 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 256000,
 		costPer1kInputTokens: 0.0005,
 		costPer1kOutputTokens: 0.0015,
+		family: "mistral-large",
+		openWeights: true,
 	}),
 
 	createModelConfig("mixtral-8x7B-instruct-v0.1", PROVIDER, {
@@ -1094,6 +1162,7 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		openWeights: true,
 	}),
 
 	createModelConfig("nemotron-3-super-120b-a12b", PROVIDER, {
@@ -1117,6 +1186,8 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "nemotron",
+		openWeights: true,
 	}),
 
 	createModelConfig("nova-pro-v1", PROVIDER, {
@@ -1136,6 +1207,8 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 5000,
 		costPer1kInputTokens: 0.001016,
 		costPer1kOutputTokens: 0.004061,
+		family: "nova-pro",
+		openWeights: false,
 	}),
 
 	createModelConfig("qwen-2.5-72b-instruct", PROVIDER, {
@@ -1164,6 +1237,8 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "qwen",
+		openWeights: true,
 	}),
 
 	createModelConfig("qwen3-235b-a22b-instruct-2507", PROVIDER, {
@@ -1197,6 +1272,8 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "qwen",
+		openWeights: true,
 	}),
 
 	createModelConfig("qwen3-32b", PROVIDER, {
@@ -1226,6 +1303,8 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "qwen",
+		openWeights: true,
 	}),
 
 	createModelConfig("qwen3-coder-30b-a3b-instruct", PROVIDER, {
@@ -1259,6 +1338,8 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "qwen",
+		openWeights: true,
 	}),
 
 	createModelConfig("qwen3-coder-480b-a35b-instruct", PROVIDER, {
@@ -1288,6 +1369,8 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "qwen",
+		openWeights: true,
 	}),
 
 	createModelConfig("qwen3-coder-next", PROVIDER, {
@@ -1321,6 +1404,8 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "qwen",
+		openWeights: true,
 	}),
 
 	createModelConfig("qwen3-next-80b-a3b-thinking", PROVIDER, {
@@ -1344,6 +1429,7 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		openWeights: true,
 	}),
 
 	createModelConfig("qwen3.5-122b-a10b", PROVIDER, {
@@ -1377,6 +1463,8 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "qwen",
+		openWeights: true,
 	}),
 
 	createModelConfig("qwen3.5-397b-a17b", PROVIDER, {
@@ -1410,6 +1498,8 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "qwen",
+		openWeights: true,
 	}),
 
 	createModelConfig("qwen3.6-27b", PROVIDER, {
@@ -1514,6 +1604,8 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: 47.2,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "claude-opus",
+		openWeights: false,
 	}),
 
 	createModelConfig("gemini-3.5-flash", PROVIDER, {
@@ -1663,6 +1755,8 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "glm",
+		openWeights: false,
 	}),
 
 	createModelConfig("glm-5-turbo", PROVIDER, {
@@ -1695,6 +1789,8 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "glm",
+		openWeights: false,
 	}),
 
 	createModelConfig("gemma-4-26b-a4b-it", PROVIDER, {
@@ -1805,6 +1901,8 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt",
+		openWeights: false,
 	}),
 
 	createModelConfig("qwen3.5-9b", PROVIDER, {
@@ -2599,6 +2697,8 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: 1.3,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "llama",
+		openWeights: true,
 	}),
 
 	createModelConfig("mistral-small-2503", PROVIDER, {
@@ -3017,6 +3117,8 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: 35.4,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "minimax",
+		openWeights: true,
 	}),
 	createModelConfig("glm-5.2", PROVIDER, {
 		name: "GLM-5.2",
@@ -3049,6 +3151,8 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: 43.1,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "glm",
+		openWeights: true,
 	}),
 
 	createModelConfig("kimi-k2.7-code", PROVIDER, {
@@ -3083,5 +3187,7 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: 29.6,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "kimi-k2",
+		openWeights: true,
 	}),
 ]);

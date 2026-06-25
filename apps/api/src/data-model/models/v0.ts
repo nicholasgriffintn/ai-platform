@@ -32,6 +32,8 @@ export const v0ModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "v0",
+		openWeights: false,
 	},
 
 	"v0-1.5-md": {
@@ -65,6 +67,8 @@ export const v0ModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "v0",
+		openWeights: false,
 	},
 
 	"v0-1.5-lg": {
@@ -98,5 +102,7 @@ export const v0ModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "v0",
+		openWeights: false,
 	},
 };

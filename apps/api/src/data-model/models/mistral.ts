@@ -96,6 +96,8 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "magistral-small",
+		openWeights: true,
 	}),
 
 	createModelConfig("open-mixtral-8x22b", PROVIDER, {
@@ -124,6 +126,8 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		includedInRouter: false,
 		deprecated: true,
 		supportsArtifacts: true,
+		family: "mixtral",
+		openWeights: true,
 	}),
 
 	createModelConfig("mistral-large", PROVIDER, {
@@ -169,6 +173,8 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "mistral-large",
+		openWeights: true,
 	}),
 
 	createModelConfig("open-mistral-7b", PROVIDER, {
@@ -196,6 +202,8 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		includedInRouter: false,
 		deprecated: true,
 		supportsArtifacts: true,
+		family: "mistral",
+		openWeights: true,
 	}),
 
 	createModelConfig("pixtral-large", PROVIDER, {
@@ -233,6 +241,8 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "pixtral",
+		openWeights: true,
 	}),
 
 	createModelConfig("mistral-medium", PROVIDER, {
@@ -282,6 +292,8 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "mistral-medium",
+		openWeights: false,
 	}),
 
 	createModelConfig("codestral", PROVIDER, {
@@ -312,6 +324,8 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		includedInRouter: true,
 		supportsFim: true,
 		supportsArtifacts: true,
+		family: "codestral",
+		openWeights: true,
 	}),
 
 	createModelConfig("open-mixtral-8x7b", PROVIDER, {
@@ -338,6 +352,8 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		speed: 3,
 		includedInRouter: false,
 		supportsArtifacts: true,
+		family: "mixtral",
+		openWeights: true,
 	}),
 
 	createModelConfig("pixtral-12b", PROVIDER, {
@@ -366,6 +382,8 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		multimodal: true,
 		includedInRouter: false,
 		supportsArtifacts: true,
+		family: "pixtral",
+		openWeights: true,
 	}),
 
 	createModelConfig("mistral-small", PROVIDER, {
@@ -415,6 +433,8 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "mistral-small",
+		openWeights: true,
 	}),
 
 	createModelConfig("ministral-14b", PROVIDER, {
@@ -470,6 +490,8 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		knowledgeCutoffDate: "October 2024",
 		releaseDate: "October 1, 2024",
 		lastUpdated: "October 4, 2024",
+		family: "ministral",
+		openWeights: true,
 	}),
 
 	createModelConfig("ministral-3-3b", PROVIDER, {
@@ -514,6 +536,8 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "ministral",
+		openWeights: true,
 	}),
 
 	createModelConfig("magistral-medium", PROVIDER, {
@@ -552,6 +576,8 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "magistral-medium",
+		openWeights: true,
 	}),
 
 	createModelConfig("mistral-tiny", PROVIDER, {
@@ -683,6 +709,8 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 3072,
 		costPer1kInputTokens: 0.0001,
 		costPer1kOutputTokens: 0,
+		family: "mistral-embed",
+		openWeights: false,
 	}),
 
 	createModelConfig("codestral-embed", PROVIDER, {

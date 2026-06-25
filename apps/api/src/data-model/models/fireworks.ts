@@ -405,6 +405,8 @@ export const fireworksModelConfig: ModelConfig = {
 			agenticIndex: 13.2,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt-oss",
+		openWeights: true,
 	},
 
 	"accounts/fireworks/models/gpt-oss-20b": {
@@ -438,6 +440,8 @@ export const fireworksModelConfig: ModelConfig = {
 			agenticIndex: 3.1,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt-oss",
+		openWeights: true,
 	},
 
 	"accounts/fireworks/models/kimi-k2-thinking": {
@@ -623,6 +627,8 @@ export const fireworksModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "deepseek-thinking",
+		openWeights: true,
 	},
 
 	"accounts/fireworks/models/glm-5": {
@@ -685,6 +691,8 @@ export const fireworksModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "glm",
+		openWeights: true,
 	},
 
 	"accounts/fireworks/models/kimi-k2p6": {
@@ -718,6 +726,8 @@ export const fireworksModelConfig: ModelConfig = {
 			agenticIndex: 30.3,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "kimi-thinking",
+		openWeights: true,
 	},
 
 	"accounts/fireworks/models/minimax-m2p5": {
@@ -784,6 +794,8 @@ export const fireworksModelConfig: ModelConfig = {
 			agenticIndex: 25.6,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "minimax",
+		openWeights: true,
 	},
 
 	"accounts/fireworks/models/qwen3p6-plus": {
@@ -861,6 +873,8 @@ export const fireworksModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "deepseek-flash",
+		openWeights: true,
 	},
 	"accounts/fireworks/routers/glm-5p1-fast": {
 		name: "GLM 5.1 Fast",
@@ -883,6 +897,8 @@ export const fireworksModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "glm",
+		openWeights: true,
 	},
 
 	"accounts/fireworks/routers/kimi-k2p6-turbo": {
@@ -906,6 +922,8 @@ export const fireworksModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "kimi-thinking",
+		openWeights: true,
 	},
 	"accounts/fireworks/routers/kimi-k2p6-fast": {
 		name: "Kimi K2.6 Fast",
@@ -928,6 +946,8 @@ export const fireworksModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "kimi-thinking",
+		openWeights: true,
 	},
 	"accounts/fireworks/models/kimi-k2p7-code": {
 		name: "Kimi K2.7 Code",
@@ -962,6 +982,8 @@ export const fireworksModelConfig: ModelConfig = {
 			agenticIndex: 29.6,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "kimi-k2",
+		openWeights: true,
 	},
 
 	"accounts/fireworks/models/minimax-m3": {
@@ -995,6 +1017,8 @@ export const fireworksModelConfig: ModelConfig = {
 			agenticIndex: 35.4,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "minimax",
+		openWeights: true,
 	},
 
 	"accounts/fireworks/models/qwen3p7-plus": {
@@ -1018,6 +1042,8 @@ export const fireworksModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "qwen",
+		openWeights: false,
 	},
 
 	"accounts/fireworks/routers/kimi-k2p7-code-fast": {
@@ -1043,6 +1069,8 @@ export const fireworksModelConfig: ModelConfig = {
 		},
 		knowledgeCutoffDate: "January 2025",
 		supportsResponseFormat: true,
+		family: "kimi-k2",
+		openWeights: true,
 	},
 	"accounts/fireworks/models/glm-5p2": {
 		name: "GLM 5.2",
@@ -1075,5 +1103,7 @@ export const fireworksModelConfig: ModelConfig = {
 			agenticIndex: 43.1,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "glm",
+		openWeights: true,
 	},
 };

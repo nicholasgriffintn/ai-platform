@@ -62,6 +62,8 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 		speed: 5,
 		includedInRouter: true,
 		supportsArtifacts: true,
+		family: "qwen",
+		openWeights: true,
 	}),
 
 	createModelConfig("Qwen/Qwen3-Coder-480B-A35B-Instruct", PROVIDER, {
@@ -183,6 +185,7 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		openWeights: false,
 	}),
 
 	createModelConfig("deepseek-ai/DeepSeek-V3.2", PROVIDER, {
@@ -215,6 +218,7 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		openWeights: false,
 	}),
 
 	createModelConfig("MiniMaxAI/MiniMax-M2", PROVIDER, {
@@ -348,6 +352,8 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "kimi-k2",
+		openWeights: true,
 	}),
 
 	createModelConfig("openai/gpt-oss-120b", PROVIDER, {
@@ -380,6 +386,8 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: 13.2,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt-oss",
+		openWeights: true,
 	}),
 
 	createModelConfig("openai/gpt-oss-20b", PROVIDER, {
@@ -412,6 +420,8 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: 3.1,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt-oss",
+		openWeights: true,
 	}),
 
 	createModelConfig("zai-org/GLM-4.7", PROVIDER, {
@@ -445,6 +455,8 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "glm",
+		openWeights: true,
 	}),
 
 	createModelConfig("zai-org/GLM-4.7-Flash", PROVIDER, {
@@ -478,6 +490,8 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "glm-flash",
+		openWeights: true,
 	}),
 	createModelConfig("deepseek-ai/DeepSeek-V4-Flash", PROVIDER, {
 		name: "DeepSeek V4 Flash",
@@ -511,6 +525,8 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "deepseek-flash",
+		openWeights: true,
 	}),
 
 	createModelConfig("deepseek-ai/DeepSeek-V4-Pro", PROVIDER, {
@@ -545,6 +561,8 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "deepseek-thinking",
+		openWeights: true,
 	}),
 
 	createModelConfig("google/gemma-4-26B-A4B-it", PROVIDER, {
@@ -568,6 +586,8 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "gemma",
+		openWeights: true,
 	}),
 
 	createModelConfig("google/gemma-4-31B-it", PROVIDER, {
@@ -601,6 +621,8 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gemma",
+		openWeights: true,
 	}),
 
 	createModelConfig("meta-llama/Llama-3.1-70B-Instruct", PROVIDER, {
@@ -686,6 +708,8 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.0001,
 		costPer1kOutputTokens: 0.00032,
+		family: "llama",
+		openWeights: true,
 	}),
 
 	createModelConfig("meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8", PROVIDER, {
@@ -703,6 +727,8 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.00015,
 		costPer1kOutputTokens: 0.0006,
+		family: "llama",
+		openWeights: true,
 	}),
 
 	createModelConfig("meta-llama/Llama-4-Scout-17B-16E-Instruct", PROVIDER, {
@@ -720,6 +746,8 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 16384,
 		costPer1kInputTokens: 0.0001,
 		costPer1kOutputTokens: 0.0003,
+		family: "llama",
+		openWeights: true,
 	}),
 
 	createModelConfig("MiniMaxAI/MiniMax-M2.5", PROVIDER, {
@@ -753,6 +781,8 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "minimax",
+		openWeights: true,
 	}),
 
 	createModelConfig("moonshotai/Kimi-K2.6", PROVIDER, {
@@ -787,6 +817,8 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: 30.3,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "kimi-k2",
+		openWeights: true,
 	}),
 
 	createModelConfig("Qwen/Qwen3.5-35B-A3B", PROVIDER, {
@@ -820,6 +852,8 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "qwen",
+		openWeights: true,
 	}),
 
 	createModelConfig("Qwen/Qwen3.5-397B-A17B", PROVIDER, {
@@ -853,6 +887,8 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "qwen",
+		openWeights: true,
 	}),
 
 	createModelConfig("Qwen/Qwen3.6-35B-A3B", PROVIDER, {
@@ -885,6 +921,8 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "qwen",
+		openWeights: true,
 	}),
 
 	createModelConfig("xiaomi/mimo-v2.5", PROVIDER, {
@@ -984,6 +1022,8 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "glm",
+		openWeights: true,
 	}),
 
 	createModelConfig("zai-org/GLM-4.6V", PROVIDER, {
@@ -1050,6 +1090,8 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "glm",
+		openWeights: true,
 	}),
 
 	createModelConfig("zai-org/GLM-5.1", PROVIDER, {
@@ -1084,6 +1126,8 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "glm",
+		openWeights: true,
 	}),
 	createModelConfig("XiaomiMiMo/MiMo-V2.5", PROVIDER, {
 		name: "MiMo-V2.5",
@@ -1116,6 +1160,8 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "mimo",
+		openWeights: true,
 	}),
 
 	createModelConfig("XiaomiMiMo/MiMo-V2.5-Pro", PROVIDER, {
@@ -1149,5 +1195,7 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: 29.1,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "mimo",
+		openWeights: true,
 	}),
 ]);

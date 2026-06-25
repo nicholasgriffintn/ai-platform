@@ -37,6 +37,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt-mini",
+		openWeights: false,
 	}),
 
 	createModelConfig("openai/o4-mini", PROVIDER, {
@@ -77,6 +79,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "o-mini",
+		openWeights: false,
 	}),
 
 	createModelConfig("openai/gpt-4o-mini", PROVIDER, {
@@ -112,6 +116,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt-mini",
+		openWeights: false,
 	}),
 
 	createModelConfig("openai/gpt-4.1", PROVIDER, {
@@ -147,6 +153,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt",
+		openWeights: false,
 	}),
 
 	createModelConfig("anthropic/claude-4-sonnet-20250522", PROVIDER, {
@@ -215,6 +223,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "claude-sonnet",
+		openWeights: false,
 	}),
 
 	createModelConfig("anthropic/claude-opus-4", PROVIDER, {
@@ -247,6 +257,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "claude-opus",
+		openWeights: false,
 	}),
 
 	createModelConfig("google/gemini-2.5-flash", PROVIDER, {
@@ -307,6 +319,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 				},
 			],
 		},
+		family: "gemini-flash",
+		openWeights: false,
 	}),
 
 	createModelConfig("google/gemini-2.5-pro", PROVIDER, {
@@ -356,6 +370,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gemini-pro",
+		openWeights: false,
 	}),
 	createModelConfig("anthropic/claude-haiku-4-5", PROVIDER, {
 		name: "Claude Haiku 4.5",
@@ -378,6 +394,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "claude-haiku",
+		openWeights: false,
 	}),
 
 	createModelConfig("anthropic/claude-opus-4-1", PROVIDER, {
@@ -401,6 +419,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "claude-opus",
+		openWeights: false,
 	}),
 
 	createModelConfig("anthropic/claude-opus-4-5", PROVIDER, {
@@ -434,6 +454,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "claude-opus",
+		openWeights: false,
 	}),
 
 	createModelConfig("anthropic/claude-sonnet-4", PROVIDER, {
@@ -457,6 +479,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "claude-sonnet",
+		openWeights: false,
 	}),
 
 	createModelConfig("anthropic/claude-sonnet-4-5", PROVIDER, {
@@ -480,6 +504,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "claude-sonnet",
+		openWeights: false,
 	}),
 
 	createModelConfig("google/gemini-3-flash-preview", PROVIDER, {
@@ -513,6 +539,7 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 			intelligenceIndexVersion: 4.1,
 		},
 		speed: 5,
+		openWeights: false,
 	}),
 
 	createModelConfig("google/gemini-3-pro-preview", PROVIDER, {
@@ -545,6 +572,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gemini-pro",
+		openWeights: false,
 	}),
 
 	createModelConfig("openai/gpt-5", PROVIDER, {
@@ -578,6 +607,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt",
+		openWeights: false,
 	}),
 
 	createModelConfig("openai/gpt-5-mini", PROVIDER, {
@@ -611,6 +642,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt-mini",
+		openWeights: false,
 	}),
 
 	createModelConfig("openai/gpt-5-nano", PROVIDER, {
@@ -644,6 +677,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt-nano",
+		openWeights: false,
 	}),
 
 	createModelConfig("xai/grok-4", PROVIDER, {
@@ -676,6 +711,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "grok",
+		openWeights: false,
 	}),
 
 	createModelConfig("xai/grok-4-fast", PROVIDER, {
@@ -708,6 +745,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "grok",
+		openWeights: false,
 	}),
 	createModelConfig("anthropic/claude-opus-4-6", PROVIDER, {
 		name: "Claude Opus 4.6",
@@ -741,6 +780,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "claude-opus",
+		openWeights: false,
 	}),
 
 	createModelConfig("anthropic/claude-sonnet-4-6", PROVIDER, {
@@ -775,6 +816,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: 40.8,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "claude-sonnet",
+		openWeights: false,
 	}),
 
 	createModelConfig("openai/gpt-5-chat", PROVIDER, {
@@ -799,6 +842,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "gpt-codex",
+		openWeights: false,
 	}),
 
 	createModelConfig("openai/gpt-5-codex", PROVIDER, {
@@ -833,6 +878,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt-codex",
+		openWeights: false,
 	}),
 
 	createModelConfig("openai/gpt-5-image", PROVIDER, {
@@ -857,6 +904,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "gpt",
+		openWeights: false,
 	}),
 
 	createModelConfig("openai/gpt-5-pro", PROVIDER, {
@@ -881,6 +930,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "gpt-pro",
+		openWeights: false,
 	}),
 
 	createModelConfig("openai/gpt-5.1", PROVIDER, {
@@ -915,6 +966,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt",
+		openWeights: false,
 	}),
 
 	createModelConfig("openai/gpt-5.1-chat", PROVIDER, {
@@ -939,6 +992,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "gpt-codex",
+		openWeights: false,
 	}),
 
 	createModelConfig("openai/gpt-5.1-codex", PROVIDER, {
@@ -973,6 +1028,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt-codex",
+		openWeights: false,
 	}),
 
 	createModelConfig("openai/gpt-5.1-codex-max", PROVIDER, {
@@ -997,6 +1054,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "gpt-codex",
+		openWeights: false,
 	}),
 
 	createModelConfig("openai/gpt-5.1-codex-mini", PROVIDER, {
@@ -1031,6 +1090,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt-codex",
+		openWeights: false,
 	}),
 
 	createModelConfig("openai/gpt-5.2", PROVIDER, {
@@ -1065,6 +1126,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt",
+		openWeights: false,
 	}),
 
 	createModelConfig("openai/gpt-5.2-chat", PROVIDER, {
@@ -1089,6 +1152,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "gpt-codex",
+		openWeights: false,
 	}),
 
 	createModelConfig("openai/gpt-5.2-codex", PROVIDER, {
@@ -1123,6 +1188,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt-codex",
+		openWeights: false,
 	}),
 
 	createModelConfig("openai/gpt-5.2-pro", PROVIDER, {
@@ -1147,6 +1214,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "gpt-pro",
+		openWeights: false,
 	}),
 
 	createModelConfig("openai/gpt-5.3-codex", PROVIDER, {
@@ -1181,6 +1250,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt-codex",
+		openWeights: false,
 	}),
 
 	createModelConfig("openai/gpt-5.4", PROVIDER, {
@@ -1215,6 +1286,8 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt",
+		openWeights: false,
 	}),
 
 	createModelConfig("openai/gpt-5.4-pro", PROVIDER, {
@@ -1247,5 +1320,7 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt-pro",
+		openWeights: false,
 	}),
 ]);

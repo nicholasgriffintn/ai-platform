@@ -26,6 +26,8 @@ export const togetherAiModelConfig: ModelConfig = {
 		supportsAttachments: false,
 		supportsTemperature: true,
 		supportsToolCalls: true,
+		family: "llama",
+		openWeights: true,
 	},
 	"meta-llama/Llama-3.3-70B-Instruct-Turbo-Free": {
 		name: "Meta Llama 3.3 70B Instruct Turbo Free",
@@ -215,6 +217,8 @@ export const togetherAiModelConfig: ModelConfig = {
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.00015,
 		costPer1kOutputTokens: 0.00015,
+		family: "rnj",
+		openWeights: true,
 	},
 
 	"moonshotai/Kimi-K2-Instruct": {
@@ -319,6 +323,8 @@ export const togetherAiModelConfig: ModelConfig = {
 			agenticIndex: 13.2,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt-oss",
+		openWeights: true,
 	},
 
 	"Qwen/Qwen3-235B-A22B-Instruct-2507-tput": {
@@ -343,6 +349,8 @@ export const togetherAiModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "qwen",
+		openWeights: true,
 	},
 
 	"Qwen/Qwen3-Next-80B-A3B-Instruct": {
@@ -466,6 +474,8 @@ export const togetherAiModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "deepseek",
+		openWeights: true,
 	},
 
 	"google/gemma-4-31B-it": {
@@ -491,6 +501,8 @@ export const togetherAiModelConfig: ModelConfig = {
 			defaultEffort: "none",
 		},
 		supportsResponseFormat: true,
+		family: "gemma",
+		openWeights: true,
 	},
 
 	"MiniMaxAI/MiniMax-M2.7": {
@@ -525,6 +537,8 @@ export const togetherAiModelConfig: ModelConfig = {
 			agenticIndex: 25.6,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "minimax",
+		openWeights: true,
 	},
 
 	"moonshotai/Kimi-K2.6": {
@@ -560,6 +574,8 @@ export const togetherAiModelConfig: ModelConfig = {
 			agenticIndex: 30.3,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "kimi-k2",
+		openWeights: true,
 	},
 
 	"Qwen/Qwen3.5-397B-A17B": {
@@ -593,6 +609,8 @@ export const togetherAiModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "qwen",
+		openWeights: true,
 	},
 
 	"Qwen/Qwen3.6-Plus": {
@@ -626,6 +644,8 @@ export const togetherAiModelConfig: ModelConfig = {
 			agenticIndex: 27.6,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "qwen",
+		openWeights: true,
 	},
 
 	"zai-org/GLM-5.1": {
@@ -661,6 +681,8 @@ export const togetherAiModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "glm",
+		openWeights: true,
 	},
 	"Qwen/Qwen3.7-Max": {
 		name: "Qwen3.7 Max",
@@ -693,6 +715,8 @@ export const togetherAiModelConfig: ModelConfig = {
 			agenticIndex: 30.6,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "qwen",
+		openWeights: false,
 	},
 	"nvidia/nemotron-3-ultra-550b-a55b": {
 		name: "Nemotron 3 Ultra 550B A55B",
@@ -726,6 +750,8 @@ export const togetherAiModelConfig: ModelConfig = {
 			agenticIndex: 27.4,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "nemotron",
+		openWeights: true,
 	},
 	"deepcogito/cogito-v2-1-671b": {
 		name: "Cogito v2.1 671B",
@@ -748,6 +774,8 @@ export const togetherAiModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "cogito",
+		openWeights: false,
 	},
 
 	"google/gemma-3n-E4B-it": {
@@ -777,6 +805,8 @@ export const togetherAiModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gemma",
+		openWeights: true,
 	},
 
 	"LiquidAI/LFM2-24B-A2B": {
@@ -805,6 +835,8 @@ export const togetherAiModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "liquid",
+		openWeights: true,
 	},
 
 	"meta-llama/Meta-Llama-3-8B-Instruct-Lite": {
@@ -824,6 +856,8 @@ export const togetherAiModelConfig: ModelConfig = {
 		maxTokens: 8192,
 		costPer1kInputTokens: 0.00014,
 		costPer1kOutputTokens: 0.00014,
+		family: "llama",
+		openWeights: true,
 	},
 
 	"openai/gpt-oss-20b": {
@@ -858,6 +892,8 @@ export const togetherAiModelConfig: ModelConfig = {
 			agenticIndex: 3.1,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt-oss",
+		openWeights: true,
 	},
 
 	"pearl-ai/gemma-4-31b-it": {
@@ -881,6 +917,8 @@ export const togetherAiModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "gemma",
+		openWeights: false,
 	},
 
 	"Qwen/Qwen2.5-7B-Instruct-Turbo": {
@@ -901,6 +939,8 @@ export const togetherAiModelConfig: ModelConfig = {
 		maxTokens: 32768,
 		costPer1kInputTokens: 0.0003,
 		costPer1kOutputTokens: 0.0003,
+		family: "qwen",
+		openWeights: true,
 	},
 
 	"Qwen/Qwen3.5-9B": {
@@ -934,6 +974,8 @@ export const togetherAiModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "qwen",
+		openWeights: true,
 	},
 
 	"zai-org/GLM-5": {
@@ -968,6 +1010,8 @@ export const togetherAiModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "glm",
+		openWeights: true,
 	},
 	"MiniMaxAI/MiniMax-M3": {
 		name: "MiniMax-M3",
@@ -1001,6 +1045,8 @@ export const togetherAiModelConfig: ModelConfig = {
 			agenticIndex: 35.4,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "minimax",
+		openWeights: true,
 	},
 	"moonshotai/Kimi-K2.7-Code": {
 		name: "Kimi K2.7 Code",
@@ -1034,5 +1080,7 @@ export const togetherAiModelConfig: ModelConfig = {
 			agenticIndex: 29.6,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "kimi-k2",
+		openWeights: true,
 	},
 };

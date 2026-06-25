@@ -102,6 +102,8 @@ export const workersAiModelConfig: ModelConfig = {
 			agenticIndex: 30.3,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "kimi-k2",
+		openWeights: true,
 	},
 	"llama-3.3-70b-instruct": {
 		name: "Llama 3.3 70B Instruct FP8 Fast",
@@ -128,6 +130,8 @@ export const workersAiModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0.000293,
 		costPer1kOutputTokens: 0.002253,
 		knowledgeCutoffDate: "December 2023",
+		family: "llama",
+		openWeights: true,
 	},
 	"llama-3.2-1b-instruct": {
 		name: "Llama 3.2 1B Instruct",
@@ -153,6 +157,8 @@ export const workersAiModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0.000027,
 		costPer1kOutputTokens: 0.000201,
 		supportsResponseFormat: false,
+		family: "llama",
+		openWeights: true,
 	},
 	"llama-3.2-3b-instruct": {
 		name: "Llama 3.2 3B Instruct",
@@ -178,6 +184,8 @@ export const workersAiModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0.0000509,
 		costPer1kOutputTokens: 0.000335,
 		supportsResponseFormat: false,
+		family: "llama",
+		openWeights: true,
 	},
 	"llama-4-scout-17b": {
 		name: "Llama 4 Scout 17B 16E Instruct",
@@ -205,6 +213,8 @@ export const workersAiModelConfig: ModelConfig = {
 		costPer1kOutputTokens: 0.00085,
 		supportsResponseFormat: false,
 		knowledgeCutoffDate: "August 2024",
+		family: "llama",
+		openWeights: true,
 	},
 	llava: {
 		name: "HuggingFace Llava 1.5 7B",
@@ -537,6 +547,8 @@ export const workersAiModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "gemma",
+		openWeights: true,
 	},
 	"qwq-32b": {
 		name: "QwQ 32B",
@@ -574,6 +586,8 @@ export const workersAiModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "qwen",
+		openWeights: true,
 	},
 	"qwen2.5-coder-32b": {
 		name: "Qwen 2.5 Coder 32B Instruct",
@@ -606,6 +620,8 @@ export const workersAiModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "qwen",
+		openWeights: true,
 	},
 	"@cf/meta/llama-guard-3-8b": {
 		name: "Llama Guard 3 8B",
@@ -626,6 +642,8 @@ export const workersAiModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0.000484,
 		costPer1kOutputTokens: 0.00003,
 		supportsResponseFormat: false,
+		family: "llama",
+		openWeights: true,
 	},
 	"lucid-origin": {
 		name: "Leonardo Lucid Origin",
@@ -770,6 +788,8 @@ export const workersAiModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0.000351,
 		costPer1kOutputTokens: 0.000555,
 		supportsResponseFormat: false,
+		family: "gemma",
+		openWeights: true,
 	},
 
 	"@cf/baai/bge-small-en-v1.5": {
@@ -860,6 +880,8 @@ export const workersAiModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "deepseek-thinking",
+		openWeights: true,
 	},
 
 	"@cf/huggingface/distilbert-sst-2-int8": {
@@ -899,6 +921,8 @@ export const workersAiModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0.000017,
 		costPer1kOutputTokens: 0.000112,
 		supportsResponseFormat: false,
+		family: "granite",
+		openWeights: true,
 	},
 
 	"@cf/meta/llama-3.1-8b-instruct-fp8": {
@@ -919,6 +943,8 @@ export const workersAiModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0.000152,
 		costPer1kOutputTokens: 0.000287,
 		supportsResponseFormat: false,
+		family: "llama",
+		openWeights: true,
 	},
 
 	"@cf/meta/llama-3.2-11b-vision-instruct": {
@@ -939,6 +965,8 @@ export const workersAiModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0.0000485,
 		costPer1kOutputTokens: 0.000676,
 		supportsResponseFormat: false,
+		family: "llama",
+		openWeights: true,
 	},
 
 	"@cf/meta/m2m100-1.2b": {
@@ -978,6 +1006,8 @@ export const workersAiModelConfig: ModelConfig = {
 		costPer1kInputTokens: 0.000351,
 		costPer1kOutputTokens: 0.000555,
 		supportsResponseFormat: false,
+		family: "mistral-small",
+		openWeights: true,
 	},
 
 	"@cf/nvidia/nemotron-3-120b-a12b": {
@@ -1004,6 +1034,8 @@ export const workersAiModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "nemotron",
+		openWeights: true,
 	},
 
 	"@cf/zai-org/glm-4.7-flash": {
@@ -1044,6 +1076,8 @@ export const workersAiModelConfig: ModelConfig = {
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "glm-flash",
+		openWeights: true,
 	},
 
 	"@cf/openai/gpt-oss-120b": {
@@ -1080,6 +1114,8 @@ export const workersAiModelConfig: ModelConfig = {
 			agenticIndex: 13.2,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt-oss",
+		openWeights: true,
 	},
 
 	"@cf/openai/gpt-oss-20b": {
@@ -1116,6 +1152,8 @@ export const workersAiModelConfig: ModelConfig = {
 			agenticIndex: 3.1,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt-oss",
+		openWeights: true,
 	},
 
 	"@cf/pfnet/plamo-embedding-1b": {
@@ -1160,6 +1198,8 @@ export const workersAiModelConfig: ModelConfig = {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "qwen",
+		openWeights: true,
 	},
 
 	"@cf/qwen/qwen3-embedding-0.6b": {
@@ -1215,6 +1255,8 @@ export const workersAiModelConfig: ModelConfig = {
 			agenticIndex: 29.6,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "kimi-k2",
+		openWeights: true,
 	},
 	"@cf/zai-org/glm-5.2": {
 		name: "Glm 5.2",
@@ -1248,5 +1290,7 @@ export const workersAiModelConfig: ModelConfig = {
 			agenticIndex: 43.1,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "glm",
+		openWeights: true,
 	},
 };

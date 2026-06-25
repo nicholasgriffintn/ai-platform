@@ -31,6 +31,8 @@ export const upstageModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "solar-mini",
+		openWeights: false,
 	}),
 
 	createModelConfig("solar-pro2", PROVIDER, {
@@ -59,6 +61,8 @@ export const upstageModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "solar-pro",
+		openWeights: false,
 	}),
 	createModelConfig("solar-pro3", PROVIDER, {
 		name: "solar-pro3",
@@ -81,5 +85,7 @@ export const upstageModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		family: "solar-pro",
+		openWeights: false,
 	}),
 ]);

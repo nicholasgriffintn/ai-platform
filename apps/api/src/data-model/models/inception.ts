@@ -94,6 +94,8 @@ export const inceptionModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "mercury",
+		openWeights: false,
 	}),
 
 	createModelConfig("mercury-edit-2", PROVIDER, {
@@ -116,5 +118,6 @@ export const inceptionModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		openWeights: false,
 	}),
 ]);

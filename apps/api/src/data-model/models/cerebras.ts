@@ -42,6 +42,8 @@ export const cerebrasModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: 13.2,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "gpt-oss",
+		openWeights: true,
 	}),
 	createModelConfig("cerebras/qwen-3-32b", PROVIDER, {
 		name: "Cerebras Qwen 3 32B",
@@ -76,6 +78,8 @@ export const cerebrasModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		status: "beta",
+		openWeights: true,
 	}),
 	createModelConfig("cerebras/qwen-3-235b-a22b-instruct-2507", PROVIDER, {
 		name: "Qwen 3 235B Instruct",
