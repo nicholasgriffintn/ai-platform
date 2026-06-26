@@ -332,7 +332,7 @@ export const opencodeGoModelConfig: ModelConfig = createModelConfigObject([
 		supportsAttachments: false,
 		supportsTemperature: true,
 		supportsToolCalls: true,
-		contextWindow: 512000,
+		contextWindow: 1000000,
 		maxTokens: 131072,
 		costPer1kInputTokens: 0.0001,
 		costPer1kOutputTokens: 0.0004,
@@ -341,7 +341,7 @@ export const opencodeGoModelConfig: ModelConfig = createModelConfigObject([
 			defaultEffort: "none",
 		},
 		strengths: ["vision", "video", "tool_use"],
-		contextComplexity: 4,
+		contextComplexity: 5,
 		reliability: 2,
 		speed: 3,
 		artificialAnalysis: {

@@ -810,7 +810,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		supportsTemperature: true,
 		supportsToolCalls: true,
 		knowledgeCutoffDate: "June 2025",
-		releaseDate: "September 1, 2024",
+		releaseDate: "September 17, 2024",
 		lastUpdated: "March 16, 2026",
 		modalities: { input: ["text", "image"], output: ["text"] },
 		contextWindow: 32000,
@@ -935,7 +935,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		name: "Qwen3-14B",
 		matchingModel: "alibaba/qwen-3-14b",
 		knowledgeCutoffDate: "April 2025",
-		releaseDate: "April 1, 2025",
+		releaseDate: "April 28, 2025",
 		lastUpdated: "April 2025",
 		modalities: {
 			input: ["text"],
@@ -970,7 +970,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		name: "Qwen3 235B A22B Instruct 2507",
 		matchingModel: "alibaba/qwen-3-235b",
 		knowledgeCutoffDate: "April 2025",
-		releaseDate: "April 1, 2025",
+		releaseDate: "April 28, 2025",
 		lastUpdated: "April 2025",
 		modalities: {
 			input: ["text"],
@@ -1008,7 +1008,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		name: "Qwen3-30B-A3B",
 		matchingModel: "alibaba/qwen-3-30b",
 		knowledgeCutoffDate: "April 2025",
-		releaseDate: "April 1, 2025",
+		releaseDate: "April 28, 2025",
 		lastUpdated: "April 2025",
 		modalities: {
 			input: ["text"],
@@ -1043,7 +1043,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		name: "Qwen 3.32B",
 		matchingModel: "alibaba/qwen-3-32b",
 		knowledgeCutoffDate: "April 2025",
-		releaseDate: "April 1, 2025",
+		releaseDate: "April 28, 2025",
 		lastUpdated: "April 2025",
 		modalities: {
 			input: ["text"],
@@ -1068,7 +1068,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		name: "Qwen3 Coder 480B A35B Instruct",
 		matchingModel: "alibaba/qwen3-coder",
 		knowledgeCutoffDate: "April 2025",
-		releaseDate: "April 1, 2025",
+		releaseDate: "July 22, 2025",
 		lastUpdated: "April 2025",
 		modalities: {
 			input: ["text"],
@@ -1103,7 +1103,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		name: "Qwen 3 Coder 30B A3B Instruct",
 		matchingModel: "alibaba/qwen3-coder-30b-a3b",
 		knowledgeCutoffDate: "April 2025",
-		releaseDate: "April 1, 2025",
+		releaseDate: "July 31, 2025",
 		lastUpdated: "April 2025",
 		modalities: {
 			input: ["text"],
@@ -1247,7 +1247,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		name: "Qwen3 Max Preview",
 		matchingModel: "alibaba/qwen3-max-preview",
 		knowledgeCutoffDate: "April 2025",
-		releaseDate: "September 23, 2025",
+		releaseDate: "September 5, 2025",
 		lastUpdated: "September 23, 2025",
 		modalities: {
 			input: ["text"],
@@ -1278,7 +1278,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		name: "Qwen3 Next 80B A3B Instruct",
 		matchingModel: "alibaba/qwen3-next-80b-a3b-instruct",
 		knowledgeCutoffDate: "April 2025",
-		releaseDate: "September 12, 2025",
+		releaseDate: "September 11, 2025",
 		lastUpdated: "September 2025",
 		modalities: {
 			input: ["text"],
@@ -1309,7 +1309,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		name: "Qwen3 Next 80B A3B Thinking",
 		matchingModel: "alibaba/qwen3-next-80b-a3b-thinking",
 		knowledgeCutoffDate: "September 2025",
-		releaseDate: "September 12, 2025",
+		releaseDate: "September 11, 2025",
 		lastUpdated: "September 2025",
 		modalities: {
 			input: ["text"],
@@ -1334,7 +1334,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		name: "Qwen3 VL Instruct",
 		matchingModel: "alibaba/qwen3-vl-instruct",
 		knowledgeCutoffDate: "April 2025",
-		releaseDate: "September 24, 2025",
+		releaseDate: "September 23, 2025",
 		lastUpdated: "September 24, 2025",
 		modalities: {
 			input: ["text", "image"],
@@ -1355,7 +1355,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		name: "Qwen3 VL Thinking",
 		matchingModel: "alibaba/qwen3-vl-thinking",
 		knowledgeCutoffDate: "September 2025",
-		releaseDate: "September 24, 2025",
+		releaseDate: "September 23, 2025",
 		lastUpdated: "September 24, 2025",
 		modalities: {
 			input: ["text", "image"],
@@ -1380,7 +1380,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		name: "Nova 2 Lite",
 		matchingModel: "amazon/nova-2-lite",
 		knowledgeCutoffDate: "October 2024",
-		releaseDate: "December 1, 2024",
+		releaseDate: "December 2, 2025",
 		lastUpdated: "December 1, 2024",
 		modalities: {
 			input: ["text", "image"],
@@ -1404,7 +1404,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("amazon/titan-embed-text-v2", PROVIDER, {
 		name: "Titan Text Embeddings V2",
 		matchingModel: "amazon/titan-embed-text-v2",
-		releaseDate: "April 1, 2024",
+		releaseDate: "April 30, 2024",
 		lastUpdated: "April 2024",
 		modalities: {
 			input: ["text"],
@@ -1500,7 +1500,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		name: "Claude Opus 4.5",
 		matchingModel: "anthropic/claude-opus-4.5",
 		knowledgeCutoffDate: "March 31, 2025",
-		releaseDate: "November 24, 2024",
+		releaseDate: "November 24, 2025",
 		lastUpdated: "November 24, 2025",
 		modalities: {
 			input: ["text", "image", "pdf"],
@@ -1620,7 +1620,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		name: "Trinity Large Preview",
 		matchingModel: "arcee-ai/trinity-large-preview",
 		knowledgeCutoffDate: "October 2024",
-		releaseDate: "January 1, 2025",
+		releaseDate: "January 27, 2026",
 		lastUpdated: "January 2025",
 		modalities: {
 			input: ["text"],
@@ -1664,7 +1664,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("bfl/flux-kontext-max", PROVIDER, {
 		name: "FLUX.1 Kontext Max",
 		matchingModel: "bfl/flux-kontext-max",
-		releaseDate: "June 1, 2025",
+		releaseDate: "May 29, 2025",
 		lastUpdated: "June 2025",
 		modalities: {
 			input: ["text"],
@@ -1701,7 +1701,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("bfl/flux-kontext-pro", PROVIDER, {
 		name: "FLUX.1 Kontext Pro",
 		matchingModel: "bfl/flux-kontext-pro",
-		releaseDate: "June 1, 2025",
+		releaseDate: "May 29, 2025",
 		lastUpdated: "June 2025",
 		modalities: {
 			input: ["text"],
@@ -1756,7 +1756,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("bfl/flux-pro-1.1", PROVIDER, {
 		name: "FLUX1.1 [pro]",
 		matchingModel: "bfl/flux-pro-1.1",
-		releaseDate: "October 1, 2024",
+		releaseDate: "October 2, 2024",
 		lastUpdated: "October 2024",
 		modalities: {
 			input: ["text"],
@@ -2143,7 +2143,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		name: "Nano Banana (Gemini 2.5 Flash Image)",
 		matchingModel: "google/gemini-2.5-flash-image",
 		knowledgeCutoffDate: "January 2025",
-		releaseDate: "March 20, 2025",
+		releaseDate: "August 26, 2025",
 		lastUpdated: "August 26, 2025",
 		modalities: {
 			input: ["text"],
@@ -2514,14 +2514,14 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("google/imagen-4.0-generate-001", PROVIDER, {
 		name: "Imagen 4",
 		matchingModel: "google/imagen-4.0-generate-001",
-		releaseDate: "May 22, 2025",
+		releaseDate: "May 20, 2025",
 		lastUpdated: "May 22, 2025",
 		modalities: {
 			input: ["text"],
 			output: ["image"],
 		},
 		supportsAttachments: false,
-		supportsTemperature: false,
+		supportsTemperature: true,
 		supportsToolCalls: false,
 		contextWindow: 480,
 		maxTokens: 0,
@@ -2631,7 +2631,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		name: "KAT-Coder-Pro V1",
 		matchingModel: "kwaipilot/kat-coder-pro-v1",
 		knowledgeCutoffDate: "October 2024",
-		releaseDate: "October 24, 2025",
+		releaseDate: "November 9, 2025",
 		lastUpdated: "October 24, 2025",
 		modalities: {
 			input: ["text"],
@@ -2656,7 +2656,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		name: "LongCat Flash Chat",
 		matchingModel: "meituan/longcat-flash-chat",
 		knowledgeCutoffDate: "October 2024",
-		releaseDate: "August 30, 2025",
+		releaseDate: "September 1, 2025",
 		lastUpdated: "August 30, 2025",
 		modalities: {
 			input: ["text"],
@@ -2738,7 +2738,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		name: "Llama 3.2 1B Instruct",
 		matchingModel: "meta/llama-3.2-1b",
 		knowledgeCutoffDate: "December 2023",
-		releaseDate: "September 18, 2024",
+		releaseDate: "September 25, 2024",
 		lastUpdated: "September 18, 2024",
 		modalities: {
 			input: ["text"],
@@ -2759,7 +2759,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		name: "Llama 3.2 3B Instruct",
 		matchingModel: "meta/llama-3.2-3b",
 		knowledgeCutoffDate: "December 2023",
-		releaseDate: "September 18, 2024",
+		releaseDate: "September 25, 2024",
 		lastUpdated: "September 18, 2024",
 		modalities: {
 			input: ["text"],
@@ -2919,7 +2919,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		name: "MiniMax M2.1",
 		matchingModel: "minimax/minimax-m2.1",
 		knowledgeCutoffDate: "October 2024",
-		releaseDate: "October 27, 2025",
+		releaseDate: "December 23, 2025",
 		lastUpdated: "December 23, 2025",
 		modalities: {
 			input: ["text"],
@@ -2954,7 +2954,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		name: "MiniMax M2.1 Lightning",
 		matchingModel: "minimax/minimax-m2.1-lightning",
 		knowledgeCutoffDate: "October 2024",
-		releaseDate: "October 27, 2025",
+		releaseDate: "December 23, 2025",
 		lastUpdated: "October 27, 2025",
 		modalities: {
 			input: ["text"],
@@ -3030,7 +3030,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		name: "Devstral Small 1.1",
 		matchingModel: "mistral/devstral-small",
 		knowledgeCutoffDate: "October 2024",
-		releaseDate: "May 7, 2025",
+		releaseDate: "May 21, 2025",
 		lastUpdated: "May 7, 2025",
 		modalities: {
 			input: ["text"],
@@ -3061,7 +3061,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		name: "Devstral Small 2",
 		matchingModel: "mistral/devstral-small-2",
 		knowledgeCutoffDate: "October 2024",
-		releaseDate: "May 7, 2025",
+		releaseDate: "December 9, 2025",
 		lastUpdated: "May 7, 2025",
 		modalities: {
 			input: ["text"],
@@ -3092,7 +3092,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		name: "Ministral 14B",
 		matchingModel: "mistral/ministral-14b",
 		knowledgeCutoffDate: "October 2024",
-		releaseDate: "December 1, 2025",
+		releaseDate: "December 2, 2025",
 		lastUpdated: "December 1, 2025",
 		modalities: {
 			input: ["text", "image", "pdf"],
@@ -3195,7 +3195,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		name: "Mistral Nemo",
 		matchingModel: "mistral/mistral-nemo",
 		knowledgeCutoffDate: "April 2024",
-		releaseDate: "July 1, 2024",
+		releaseDate: "July 18, 2024",
 		lastUpdated: "July 1, 2024",
 		modalities: {
 			input: ["text"],
@@ -3353,7 +3353,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		name: "Nemotron 3 Nano 30B A3B",
 		matchingModel: "nvidia/nemotron-3-nano-30b-a3b",
 		knowledgeCutoffDate: "October 2024",
-		releaseDate: "December 1, 2024",
+		releaseDate: "December 15, 2025",
 		lastUpdated: "December 15, 2025",
 		modalities: {
 			input: ["text"],
@@ -3387,7 +3387,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		name: "Nvidia Nemotron Nano 12B V2 VL",
 		matchingModel: "nvidia/nemotron-nano-12b-v2-vl",
 		knowledgeCutoffDate: "October 2024",
-		releaseDate: "December 1, 2024",
+		releaseDate: "October 28, 2025",
 		lastUpdated: "October 28, 2025",
 		modalities: {
 			input: ["text", "image"],
@@ -3480,7 +3480,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		name: "GPT-3.5 Turbo",
 		matchingModel: "openai/gpt-3.5-turbo",
 		knowledgeCutoffDate: "September 2021",
-		releaseDate: "May 28, 2023",
+		releaseDate: "March 1, 2023",
 		lastUpdated: "November 6, 2023",
 		modalities: {
 			input: ["text"],
@@ -3510,7 +3510,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		name: "GPT-3.5 Turbo Instruct",
 		matchingModel: "openai/gpt-3.5-turbo-instruct",
 		knowledgeCutoffDate: "September 2021",
-		releaseDate: "September 28, 2023",
+		releaseDate: "September 18, 2023",
 		lastUpdated: "March 1, 2023",
 		modalities: {
 			input: ["text"],
@@ -3614,7 +3614,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		name: "GPT-5 pro",
 		matchingModel: "openai/gpt-5-pro",
 		knowledgeCutoffDate: "October 2024",
-		releaseDate: "August 7, 2025",
+		releaseDate: "October 6, 2025",
 		lastUpdated: "October 6, 2025",
 		modalities: {
 			input: ["text", "image", "pdf"],
@@ -3991,7 +3991,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		name: "gpt-oss-safeguard-20b",
 		matchingModel: "openai/gpt-oss-safeguard-20b",
 		knowledgeCutoffDate: "October 2024",
-		releaseDate: "December 1, 2024",
+		releaseDate: "October 29, 2025",
 		lastUpdated: "December 1, 2024",
 		modalities: {
 			input: ["text"],
@@ -4016,7 +4016,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		name: "o3-deep-research",
 		matchingModel: "openai/o3-deep-research",
 		knowledgeCutoffDate: "October 2024",
-		releaseDate: "June 26, 2024",
+		releaseDate: "June 26, 2025",
 		lastUpdated: "June 26, 2024",
 		modalities: {
 			input: ["text", "image", "pdf"],
@@ -4041,7 +4041,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		name: "o3 Pro",
 		matchingModel: "openai/o3-pro",
 		knowledgeCutoffDate: "October 2024",
-		releaseDate: "April 16, 2025",
+		releaseDate: "June 10, 2025",
 		lastUpdated: "June 10, 2025",
 		modalities: {
 			input: ["text", "image", "pdf"],
@@ -4292,7 +4292,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("recraft/recraft-v2", PROVIDER, {
 		name: "Recraft V2",
 		matchingModel: "recraft/recraft-v2",
-		releaseDate: "March 1, 2024",
+		releaseDate: "March 13, 2024",
 		lastUpdated: "March 2024",
 		modalities: {
 			input: ["text"],
@@ -4310,7 +4310,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("recraft/recraft-v3", PROVIDER, {
 		name: "Recraft V3",
 		matchingModel: "recraft/recraft-v3",
-		releaseDate: "October 1, 2024",
+		releaseDate: "October 30, 2024",
 		lastUpdated: "October 2024",
 		modalities: {
 			input: ["text"],
@@ -4391,7 +4391,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("voyage/voyage-3-large", PROVIDER, {
 		name: "voyage-3-large",
 		matchingModel: "voyage/voyage-3-large",
-		releaseDate: "September 1, 2024",
+		releaseDate: "January 7, 2025",
 		lastUpdated: "September 2024",
 		modalities: {
 			input: ["text"],
@@ -4471,7 +4471,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("voyage/voyage-code-3", PROVIDER, {
 		name: "voyage-code-3",
 		matchingModel: "voyage/voyage-code-3",
-		releaseDate: "September 1, 2024",
+		releaseDate: "December 4, 2024",
 		lastUpdated: "September 2024",
 		modalities: {
 			input: ["text"],
@@ -4491,7 +4491,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("voyage/voyage-finance-2", PROVIDER, {
 		name: "voyage-finance-2",
 		matchingModel: "voyage/voyage-finance-2",
-		releaseDate: "March 1, 2024",
+		releaseDate: "June 3, 2024",
 		lastUpdated: "March 2024",
 		modalities: {
 			input: ["text"],
@@ -4511,7 +4511,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("voyage/voyage-law-2", PROVIDER, {
 		name: "voyage-law-2",
 		matchingModel: "voyage/voyage-law-2",
-		releaseDate: "March 1, 2024",
+		releaseDate: "April 15, 2024",
 		lastUpdated: "March 2024",
 		modalities: {
 			input: ["text"],
@@ -4727,7 +4727,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		name: "Grok 4.1 Fast Non-Reasoning",
 		matchingModel: "xai/grok-4.1-fast-non-reasoning",
 		knowledgeCutoffDate: "October 2024",
-		releaseDate: "July 9, 2025",
+		releaseDate: "November 19, 2025",
 		lastUpdated: "July 9, 2025",
 		modalities: {
 			input: ["text"],
@@ -4748,7 +4748,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		name: "Grok 4.1 Fast Reasoning",
 		matchingModel: "xai/grok-4.1-fast-reasoning",
 		knowledgeCutoffDate: "October 2024",
-		releaseDate: "July 9, 2025",
+		releaseDate: "November 19, 2025",
 		lastUpdated: "July 9, 2025",
 		modalities: {
 			input: ["text"],
@@ -4810,7 +4810,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		name: "MiMo V2 Flash",
 		matchingModel: "xiaomi/mimo-v2-flash",
 		knowledgeCutoffDate: "October 2024",
-		releaseDate: "December 17, 2025",
+		releaseDate: "December 16, 2025",
 		lastUpdated: "February 4, 2026",
 		modalities: {
 			input: ["text"],
@@ -5078,7 +5078,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		name: "GLM 4.7 FlashX",
 		matchingModel: "zai/glm-4.7-flashx",
 		knowledgeCutoffDate: "January 2025",
-		releaseDate: "January 1, 2025",
+		releaseDate: "January 19, 2026",
 		lastUpdated: "January 19, 2026",
 		modalities: {
 			input: ["text"],
@@ -5159,7 +5159,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("alibaba/qwen3-vl-235b-a22b-instruct", PROVIDER, {
 		name: "Qwen3 VL 235B A22B Instruct",
 		matchingModel: "alibaba/qwen3-vl-235b-a22b-instruct",
-		releaseDate: "September 24, 2025",
+		releaseDate: "September 23, 2025",
 		lastUpdated: "May 1, 2026",
 		modalities: {
 			input: ["text", "image"],
@@ -5940,7 +5940,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("nvidia/nemotron-3-super-120b-a12b", PROVIDER, {
 		name: "NVIDIA Nemotron 3 Super 120B A12B",
 		matchingModel: "nvidia/nemotron-3-super-120b-a12b",
-		releaseDate: "March 18, 2026",
+		releaseDate: "March 11, 2026",
 		lastUpdated: "March 11, 2026",
 		modalities: {
 			input: ["text"],
@@ -5997,7 +5997,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("openai/gpt-5.3-codex", PROVIDER, {
 		name: "GPT 5.3 Codex",
 		matchingModel: "openai/gpt-5.3-codex",
-		releaseDate: "February 24, 2026",
+		releaseDate: "February 5, 2026",
 		lastUpdated: "February 5, 2026",
 		modalities: {
 			input: ["text", "image", "pdf"],
@@ -6245,7 +6245,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("voyage/voyage-4", PROVIDER, {
 		name: "voyage-4",
 		matchingModel: "voyage/voyage-4",
-		releaseDate: "March 6, 2026",
+		releaseDate: "January 15, 2026",
 		lastUpdated: "March 6, 2026",
 		modalities: {
 			input: ["text"],
@@ -6263,7 +6263,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("voyage/voyage-4-large", PROVIDER, {
 		name: "voyage-4-large",
 		matchingModel: "voyage/voyage-4-large",
-		releaseDate: "March 6, 2026",
+		releaseDate: "January 15, 2026",
 		lastUpdated: "March 6, 2026",
 		modalities: {
 			input: ["text"],
@@ -6281,7 +6281,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("voyage/voyage-4-lite", PROVIDER, {
 		name: "voyage-4-lite",
 		matchingModel: "voyage/voyage-4-lite",
-		releaseDate: "March 6, 2026",
+		releaseDate: "January 15, 2026",
 		lastUpdated: "March 6, 2026",
 		modalities: {
 			input: ["text"],
@@ -6299,7 +6299,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("xai/grok-4.20-multi-agent", PROVIDER, {
 		name: "Grok 4.20 Multi-Agent",
 		matchingModel: "xai/grok-4.20-multi-agent",
-		releaseDate: "March 9, 2026",
+		releaseDate: "March 10, 2026",
 		lastUpdated: "March 23, 2026",
 		modalities: {
 			input: ["text"],
@@ -6347,7 +6347,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("xai/grok-4.20-non-reasoning", PROVIDER, {
 		name: "Grok 4.20 Non-Reasoning",
 		matchingModel: "xai/grok-4.20-non-reasoning",
-		releaseDate: "March 9, 2026",
+		releaseDate: "March 10, 2026",
 		lastUpdated: "March 23, 2026",
 		modalities: {
 			input: ["text", "image", "pdf"],
@@ -6397,7 +6397,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("xai/grok-4.20-reasoning", PROVIDER, {
 		name: "Grok 4.20 Reasoning",
 		matchingModel: "xai/grok-4.20-reasoning",
-		releaseDate: "March 9, 2026",
+		releaseDate: "March 10, 2026",
 		lastUpdated: "March 23, 2026",
 		modalities: {
 			input: ["text", "image", "pdf"],
@@ -6655,7 +6655,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("zai/glm-4.7-flash", PROVIDER, {
 		name: "GLM 4.7 Flash",
 		matchingModel: "zai/glm-4.7-flash",
-		releaseDate: "March 13, 2026",
+		releaseDate: "January 19, 2026",
 		lastUpdated: "January 19, 2026",
 		modalities: {
 			input: ["text"],
@@ -6895,7 +6895,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("mistral/mistral-medium-3.5", PROVIDER, {
 		name: "Mistral Medium Latest",
 		matchingModel: "mistral/mistral-medium-3.5",
-		releaseDate: "May 21, 2026",
+		releaseDate: "April 29, 2026",
 		lastUpdated: "May 21, 2026",
 		modalities: {
 			input: ["text"],
@@ -6987,7 +6987,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		name: "Qwen 3.7 Plus",
 		matchingModel: "alibaba/qwen3.7-plus",
 		knowledgeCutoffDate: "April 2025",
-		releaseDate: "June 1, 2026",
+		releaseDate: "June 2, 2026",
 		lastUpdated: "June 2, 2026",
 		modalities: {
 			input: ["text", "image", "pdf"],
@@ -7290,7 +7290,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("bfl/flux-2-flex", PROVIDER, {
 		name: "FLUX.2 [flex]",
 		matchingModel: "bfl/flux-2-flex",
-		releaseDate: "June 8, 2026",
+		releaseDate: "November 25, 2025",
 		lastUpdated: "June 8, 2026",
 		modalities: {
 			input: ["text"],
@@ -7326,7 +7326,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("bfl/flux-2-klein-4b", PROVIDER, {
 		name: "FLUX.2 [klein] 4B",
 		matchingModel: "bfl/flux-2-klein-4b",
-		releaseDate: "June 8, 2026",
+		releaseDate: "January 15, 2026",
 		lastUpdated: "June 8, 2026",
 		modalities: {
 			input: ["text"],
@@ -7362,7 +7362,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("bfl/flux-2-klein-9b", PROVIDER, {
 		name: "FLUX.2 [klein] 9B",
 		matchingModel: "bfl/flux-2-klein-9b",
-		releaseDate: "June 8, 2026",
+		releaseDate: "January 15, 2026",
 		lastUpdated: "June 8, 2026",
 		modalities: {
 			input: ["text"],
@@ -7398,7 +7398,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("bfl/flux-2-max", PROVIDER, {
 		name: "FLUX.2 [max]",
 		matchingModel: "bfl/flux-2-max",
-		releaseDate: "June 8, 2026",
+		releaseDate: "December 16, 2025",
 		lastUpdated: "June 8, 2026",
 		modalities: {
 			input: ["text"],
@@ -7435,7 +7435,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("bfl/flux-2-pro", PROVIDER, {
 		name: "FLUX.2 [pro]",
 		matchingModel: "bfl/flux-2-pro",
-		releaseDate: "June 8, 2026",
+		releaseDate: "November 25, 2025",
 		lastUpdated: "June 8, 2026",
 		modalities: {
 			input: ["text"],
@@ -7577,7 +7577,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("bytedance/seedance-v1.0-pro-fast", PROVIDER, {
 		name: "Seedance v1.0 Pro Fast",
 		matchingModel: "bytedance/seedance-v1.0-pro-fast",
-		releaseDate: "October 31, 2025",
+		releaseDate: "October 24, 2025",
 		lastUpdated: "October 31, 2025",
 		modalities: {
 			input: ["text"],
@@ -7613,7 +7613,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("bytedance/seedream-4.0", PROVIDER, {
 		name: "Seedream 4.0",
 		matchingModel: "bytedance/seedream-4.0",
-		releaseDate: "August 28, 2025",
+		releaseDate: "September 9, 2025",
 		lastUpdated: "August 28, 2025",
 		modalities: {
 			input: ["text"],
@@ -7649,7 +7649,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("bytedance/seedream-4.5", PROVIDER, {
 		name: "Seedream 4.5",
 		matchingModel: "bytedance/seedream-4.5",
-		releaseDate: "November 28, 2025",
+		releaseDate: "December 3, 2025",
 		lastUpdated: "November 28, 2025",
 		modalities: {
 			input: ["text"],
@@ -7685,7 +7685,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("bytedance/seedream-5.0-lite", PROVIDER, {
 		name: "Seedream 5.0 Lite",
 		matchingModel: "bytedance/seedream-5.0-lite",
-		releaseDate: "January 28, 2026",
+		releaseDate: "February 13, 2026",
 		lastUpdated: "January 28, 2026",
 		modalities: {
 			input: ["text"],
@@ -7775,7 +7775,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("google/veo-3.0-fast-generate-001", PROVIDER, {
 		name: "Veo 3.0 Fast Generate",
 		matchingModel: "google/veo-3.0-fast-generate-001",
-		releaseDate: "June 8, 2026",
+		releaseDate: "July 31, 2025",
 		lastUpdated: "June 8, 2026",
 		modalities: {
 			input: ["text"],
@@ -7793,7 +7793,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("google/veo-3.0-generate-001", PROVIDER, {
 		name: "Veo 3.0",
 		matchingModel: "google/veo-3.0-generate-001",
-		releaseDate: "June 8, 2026",
+		releaseDate: "May 20, 2025",
 		lastUpdated: "June 8, 2026",
 		modalities: {
 			input: ["text"],
@@ -7811,7 +7811,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("google/veo-3.1-fast-generate-001", PROVIDER, {
 		name: "Veo 3.1 Fast Generate",
 		matchingModel: "google/veo-3.1-fast-generate-001",
-		releaseDate: "June 8, 2026",
+		releaseDate: "October 15, 2025",
 		lastUpdated: "June 8, 2026",
 		modalities: {
 			input: ["text"],
@@ -7829,7 +7829,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("google/veo-3.1-generate-001", PROVIDER, {
 		name: "Veo 3.1",
 		matchingModel: "google/veo-3.1-generate-001",
-		releaseDate: "June 8, 2026",
+		releaseDate: "October 15, 2025",
 		lastUpdated: "June 8, 2026",
 		modalities: {
 			input: ["text"],
@@ -7901,7 +7901,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("klingai/kling-v2.6-i2v", PROVIDER, {
 		name: "Kling v2.6 Image-to-Video",
 		matchingModel: "klingai/kling-v2.6-i2v",
-		releaseDate: "December 21, 2025",
+		releaseDate: "December 3, 2025",
 		lastUpdated: "December 21, 2025",
 		modalities: {
 			input: ["text"],
@@ -7919,7 +7919,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("klingai/kling-v2.6-motion-control", PROVIDER, {
 		name: "Kling v2.6 Motion Control",
 		matchingModel: "klingai/kling-v2.6-motion-control",
-		releaseDate: "December 21, 2025",
+		releaseDate: "December 18, 2025",
 		lastUpdated: "December 21, 2025",
 		modalities: {
 			input: ["text"],
@@ -7937,7 +7937,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("klingai/kling-v2.6-t2v", PROVIDER, {
 		name: "Kling v2.6 Text-to-Video",
 		matchingModel: "klingai/kling-v2.6-t2v",
-		releaseDate: "December 21, 2025",
+		releaseDate: "December 3, 2025",
 		lastUpdated: "December 21, 2025",
 		modalities: {
 			input: ["text"],
@@ -8009,7 +8009,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("meituan/longcat-flash-thinking-2601", PROVIDER, {
 		name: "LongCat Flash Thinking 2601",
 		matchingModel: "meituan/longcat-flash-thinking-2601",
-		releaseDate: "March 13, 2026",
+		releaseDate: "January 15, 2026",
 		lastUpdated: "March 13, 2026",
 		modalities: {
 			input: ["text"],
@@ -8183,7 +8183,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("prodia/flux-fast-schnell", PROVIDER, {
 		name: "Flux Schnell",
 		matchingModel: "prodia/flux-fast-schnell",
-		releaseDate: "June 8, 2026",
+		releaseDate: "August 2, 2024",
 		lastUpdated: "June 8, 2026",
 		modalities: {
 			input: ["text"],
@@ -8555,7 +8555,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("moonshotai/kimi-k2", PROVIDER, {
 		name: "Kimi K2 Instruct",
 		matchingModel: "moonshotai/kimi-k2",
-		releaseDate: "September 5, 2025",
+		releaseDate: "July 11, 2025",
 		lastUpdated: "September 5, 2025",
 		modalities: {
 			input: ["text"],
@@ -9036,5 +9036,46 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 0,
 		family: "grok",
 		openWeights: false,
+	}),
+	createModelConfig("xai/grok-imagine-video-1.5", PROVIDER, {
+		name: "Grok Imagine Video 1.5",
+		matchingModel: "xai/grok-imagine-video-1.5",
+		family: "grok",
+		openWeights: false,
+		releaseDate: "June 22, 2026",
+		lastUpdated: "June 22, 2026",
+		modalities: {
+			input: ["text"],
+			output: ["video"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: false,
+		contextWindow: 0,
+		maxTokens: 0,
+	}),
+
+	createModelConfig("zai/glm-5.2-fast", PROVIDER, {
+		name: "GLM 5.2 Fast",
+		matchingModel: "zai/glm-5.2-fast",
+		family: "glm",
+		openWeights: false,
+		releaseDate: "June 16, 2026",
+		lastUpdated: "June 16, 2026",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 1000000,
+		maxTokens: 128000,
+		costPer1kInputTokens: 0.003,
+		costPer1kOutputTokens: 0.01025,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 ]);
