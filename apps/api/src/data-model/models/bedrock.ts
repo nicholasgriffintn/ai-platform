@@ -1522,8 +1522,8 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		supportsToolCalls: true,
 		contextWindow: 200000,
 		maxTokens: 64000,
-		costPer1kInputTokens: 0.001,
-		costPer1kOutputTokens: 0.005,
+		costPer1kInputTokens: 0.0011,
+		costPer1kOutputTokens: 0.0055,
 		supportsResponseFormat: true,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
@@ -1548,8 +1548,8 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		supportsToolCalls: true,
 		contextWindow: 200000,
 		maxTokens: 64000,
-		costPer1kInputTokens: 0.005,
-		costPer1kOutputTokens: 0.025,
+		costPer1kInputTokens: 0.0055,
+		costPer1kOutputTokens: 0.0275,
 		supportsResponseFormat: true,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],

@@ -11256,7 +11256,7 @@ export const openrouterModelConfig: ModelConfig = {
 		contextWindow: 262140,
 		maxTokens: 262140,
 		costPer1kInputTokens: 0.0002885,
-		costPer1kOutputTokens: 0.00317,
+		costPer1kOutputTokens: 0.00265,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
