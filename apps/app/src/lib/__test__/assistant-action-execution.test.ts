@@ -36,6 +36,35 @@ const morningBriefingInstallation = {
 } satisfies RecipeInstallation;
 
 describe("assistant action execution", () => {
+	it("executes selected items through their launch contract", async () => {
+		await expect(
+			executeAssistantAction(
+				{
+					input: "Use web fetch",
+					item: {
+						id: "custom:web-fetch",
+						kind: "app",
+						label: "Web fetch",
+						launch: {
+							kind: "tool_toggle",
+							toolId: "web_fetch",
+						},
+					},
+					selectedTools: [],
+				},
+				{
+					installRecipe: vi.fn(),
+					invokeRecipe: vi.fn(),
+					startConnector: vi.fn(),
+				},
+			),
+		).resolves.toEqual({
+			kind: "submit",
+			input: "Use web fetch",
+			selectedTools: ["web_fetch"],
+		});
+	});
+
 	it("runs installed recipe catalogue items without changing the visible prompt", async () => {
 		const catalog = buildAssistantActionCatalog({
 			recipes: [morningBriefingRecipe],

@@ -10,6 +10,23 @@ describe("dynamic app catalog", () => {
 				featured: true,
 				kind: "frontend",
 				href: "/apps/strudel",
+				capability: {
+					id: "featured-strudel",
+					kind: "frontend_app",
+					name: "Strudel Music Patterns",
+					description: expect.any(String),
+					availability: "available",
+					launch: {
+						method: "navigation",
+						href: "/apps/strudel",
+					},
+					executionMode: "navigation",
+					authRequirement: "none",
+					savedState: {
+						supported: false,
+					},
+					tags: expect.any(Array),
+				},
 			}),
 		);
 	});

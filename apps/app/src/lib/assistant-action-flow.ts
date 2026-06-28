@@ -16,6 +16,18 @@ interface AssistantActionFlowInput extends AssistantActionExecutionInput {
 	verb?: Pick<AssistantActionVerb, "command" | "id">;
 }
 
+function getRecipeIdForSchedule(action: AssistantActionFlowInput): string | undefined {
+	const launch = action.item?.launch;
+	if (
+		launch?.kind === "conversation" &&
+		(launch.operation === "install_recipe" || launch.operation === "invoke_recipe")
+	) {
+		return launch.recipeId;
+	}
+
+	return action.item?.metadata?.recipeId;
+}
+
 export async function launchAssistantAction(
 	action: AssistantActionFlowInput,
 	dependencies: AssistantActionExecutionDependencies,
@@ -24,7 +36,7 @@ export async function launchAssistantAction(
 		action.verb?.command === "schedule" &&
 		(action.item?.kind === "recipe" || action.item?.kind === "installed_recipe")
 	) {
-		const recipeId = action.item.metadata?.recipeId;
+		const recipeId = getRecipeIdForSchedule(action);
 		if (!recipeId) {
 			return {
 				input: action.input,
@@ -36,16 +48,19 @@ export async function launchAssistantAction(
 			};
 		}
 
-		const params = new URLSearchParams({
-			action: "schedule",
-			recipe: recipeId,
-		});
-
-		return {
-			input: action.input,
-			kind: "navigation",
-			path: `/apps/recipes?${params.toString()}`,
-		};
+		return executeAssistantAction(
+			{
+				...action,
+				item: {
+					...action.item,
+					launch: {
+						kind: "schedule",
+						recipeId,
+					},
+				},
+			},
+			dependencies,
+		);
 	}
 
 	const result = await executeAssistantAction(action, dependencies);

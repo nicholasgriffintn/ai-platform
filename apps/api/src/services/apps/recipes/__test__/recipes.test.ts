@@ -364,6 +364,24 @@ describe("assistant recipes", () => {
 		const response = await listAssistantRecipes({ context, userId: 42 });
 		const recipe = response.recipes.find((item) => item.id === "morning-briefing");
 
+		expect(recipe?.capability).toEqual({
+			id: "morning-briefing",
+			kind: "recipe",
+			name: "Morning Briefing",
+			description: expect.any(String),
+			availability: "available",
+			launch: {
+				method: "conversation",
+				action: "recipe_chat",
+			},
+			executionMode: "workflow",
+			authRequirement: "pro",
+			savedState: {
+				supported: true,
+				kind: "installation",
+			},
+			tags: ["productivity", "automation"],
+		});
 		expect(recipe?.integrations).toEqual([
 			expect.objectContaining({
 				id: "gmail",

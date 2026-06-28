@@ -314,6 +314,71 @@ export const promptCoachResponseSchema = z.object({
 export const dynamicAppFunctionTypes = ["normal", "premium", "byok"] as const;
 export const dynamicAppFunctionTypeSchema = z.enum(dynamicAppFunctionTypes);
 
+export const assistantCapabilityKindSchema = z.enum([
+	"recipe",
+	"dynamic_app",
+	"frontend_app",
+	"connector",
+	"agent",
+	"tool",
+]);
+
+export const assistantCapabilityAvailabilitySchema = z.enum([
+	"available",
+	"installed",
+	"connected",
+	"unconfigured",
+	"blocked",
+	"unavailable",
+]);
+
+export const assistantCapabilityLaunchMethodSchema = z.enum([
+	"conversation",
+	"form",
+	"navigation",
+	"external",
+	"tool_toggle",
+	"schedule",
+]);
+
+export const assistantCapabilityExecutionModeSchema = z.enum([
+	"workflow",
+	"function",
+	"navigation",
+	"connector_operation",
+	"tool",
+	"agent",
+]);
+
+export const assistantCapabilityAuthRequirementSchema = z.enum([
+	"none",
+	"signed_in",
+	"pro",
+	"connector",
+]);
+
+export const assistantCapabilitySavedStateSchema = z.object({
+	supported: z.boolean(),
+	kind: z.enum(["installation", "stored_response", "connection"]).optional(),
+});
+
+export const assistantCapabilityDescriptorSchema = z.object({
+	id: z.string(),
+	kind: assistantCapabilityKindSchema,
+	name: z.string(),
+	description: z.string().optional(),
+	availability: assistantCapabilityAvailabilitySchema,
+	launch: z.object({
+		method: assistantCapabilityLaunchMethodSchema,
+		href: z.string().optional(),
+		action: z.string().optional(),
+	}),
+	executionMode: assistantCapabilityExecutionModeSchema,
+	authRequirement: assistantCapabilityAuthRequirementSchema,
+	savedState: assistantCapabilitySavedStateSchema,
+	tags: z.array(z.string()).default([]),
+});
+
 export const appInfoSchema = z.object({
 	id: z.string(),
 	name: z.string(),
@@ -330,6 +395,7 @@ export const appInfoSchema = z.object({
 	type: dynamicAppFunctionTypeSchema.optional(),
 	href: z.string().optional(),
 	kind: z.enum(["dynamic", "frontend"]).optional(),
+	capability: assistantCapabilityDescriptorSchema.optional(),
 });
 
 export const appInfoArraySchema = z.array(appInfoSchema);
@@ -499,6 +565,17 @@ export const dynamicAppStoredResponseResponseSchema = z.object({
 
 export type AppTheme = z.infer<typeof dynamicAppThemeSchema>;
 export type AppKind = "dynamic" | "frontend";
+export type AssistantCapabilityKind = z.infer<typeof assistantCapabilityKindSchema>;
+export type AssistantCapabilityAvailability = z.infer<typeof assistantCapabilityAvailabilitySchema>;
+export type AssistantCapabilityLaunchMethod = z.infer<typeof assistantCapabilityLaunchMethodSchema>;
+export type AssistantCapabilityExecutionMode = z.infer<
+	typeof assistantCapabilityExecutionModeSchema
+>;
+export type AssistantCapabilityAuthRequirement = z.infer<
+	typeof assistantCapabilityAuthRequirementSchema
+>;
+export type AssistantCapabilitySavedState = z.infer<typeof assistantCapabilitySavedStateSchema>;
+export type AssistantCapabilityDescriptor = z.infer<typeof assistantCapabilityDescriptorSchema>;
 export type FieldType = z.infer<typeof dynamicAppFieldTypeSchema>;
 export type DynamicAppFormField = z.infer<typeof dynamicAppFormFieldSchema>;
 export type DynamicAppFormStep = z.infer<typeof dynamicAppFormStepSchema>;
@@ -1140,6 +1217,7 @@ export const assistantRecipeSchema = z.object({
 	setupPrompt: z.string(),
 	enabledTools: z.array(z.string()).default([]),
 	configurationFields: z.array(recipeConfigurationFieldSchema).default([]),
+	capability: assistantCapabilityDescriptorSchema.optional(),
 });
 
 export const assistantRecipesResponseSchema = z.object({

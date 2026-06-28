@@ -443,6 +443,7 @@ export function useComposerCommandActions({
 					id: item.id,
 					kind: item.kind,
 					label: item.label,
+					launch: item.launch,
 					metadata: item.metadata,
 				},
 				tokenPosition: selection.replacementStart,

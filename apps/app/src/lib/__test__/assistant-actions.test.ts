@@ -100,12 +100,22 @@ describe("assistant action catalogue", () => {
 		]);
 		expect(catalog.items[0]).toMatchObject({
 			id: "installed_recipe:installation-1",
+			launch: {
+				kind: "conversation",
+				operation: "invoke_recipe",
+				recipeId: "morning-briefing",
+				installationId: "installation-1",
+			},
 			metadata: {
 				recipeId: "morning-briefing",
 				installationId: "installation-1",
 			},
 		});
 		expect(catalog.items[1]).toMatchObject({
+			launch: {
+				kind: "navigation",
+				path: "/apps?app=articles",
+			},
 			metadata: {
 				appId: "articles",
 				appKind: "dynamic",
@@ -113,17 +123,30 @@ describe("assistant action catalogue", () => {
 			},
 		});
 		expect(catalog.items[2]).toMatchObject({
+			launch: {
+				agentId: "agent-1",
+				kind: "conversation",
+				operation: "ask_agent",
+			},
 			metadata: {
 				agentId: "agent-1",
 			},
 		});
 		expect(catalog.items[3]).toMatchObject({
+			launch: {
+				kind: "navigation",
+				path: "/profile?tab=providers&type=connector&connector=posthog",
+			},
 			metadata: {
 				authType: "api_key",
 				provider: "posthog",
 			},
 		});
 		expect(catalog.items[4]).toMatchObject({
+			launch: {
+				kind: "tool_toggle",
+				toolId: "web_fetch",
+			},
 			metadata: {
 				toolId: "web_fetch",
 			},

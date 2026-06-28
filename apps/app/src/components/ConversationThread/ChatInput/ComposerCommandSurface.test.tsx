@@ -213,6 +213,10 @@ describe("ComposerCommandSurface", () => {
 				id: "connector:posthog",
 				kind: "connector",
 				label: "PostHog",
+				launch: {
+					kind: "navigation",
+					path: "/profile?tab=providers&type=connector&connector=posthog",
+				},
 				metadata: expect.objectContaining({
 					provider: "posthog",
 				}),

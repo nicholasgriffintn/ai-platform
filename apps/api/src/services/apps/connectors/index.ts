@@ -7,10 +7,8 @@ import type {
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import {
-	connectorProviders,
 	canStartOAuthConnectorAuthorization,
 	getGitHubAppInstallUrl,
-	getConnectorProviderConfig,
 	RECIPE_CONNECTOR_APP_ID,
 	RECIPE_CONNECTOR_ITEM_TYPE,
 	type ConnectorProviderConfig,
@@ -18,6 +16,10 @@ import {
 } from "~/lib/providers/capabilities/connectors";
 import type { AppData } from "~/repositories/AppDataRepository";
 import { listGitHubAppConnectionsForUser } from "~/services/github/connections";
+import {
+	getRecipeConnectorProviderConfig,
+	getRecipeConnectorProviderConfigs,
+} from "./connector-adapters";
 import { bufferToBase64 } from "~/utils/base64";
 import {
 	decryptJsonPayload,
@@ -547,7 +549,7 @@ export async function listRecipeConnectors(params: {
 	params.context.ensureDatabase();
 
 	const connectors: RecipeConnectorManifest[] = [];
-	for (const provider of connectorProviders) {
+	for (const provider of getRecipeConnectorProviderConfigs()) {
 		const state = await getConnectorStatus(params.context, params.userId, provider);
 		connectors.push({
 			id: provider.id,
@@ -586,7 +588,7 @@ export async function startRecipeConnectorAuthorization(params: {
 	returnTo?: string;
 	requestUrl?: string;
 }) {
-	const provider = getConnectorProviderConfig(params.provider);
+	const provider = getRecipeConnectorProviderConfig(params.provider);
 	if (!provider) {
 		throw new AssistantError("Unknown connector provider", ErrorType.PARAMS_ERROR, 400);
 	}
@@ -651,7 +653,7 @@ export async function completeRecipeConnectorAuthorization(params: {
 	state: string;
 	requestUrl?: string;
 }) {
-	const provider = getConnectorProviderConfig(params.provider);
+	const provider = getRecipeConnectorProviderConfig(params.provider);
 	if (!provider || provider.auth.authType !== "oauth2") {
 		throw new AssistantError("Unknown OAuth connector provider", ErrorType.PARAMS_ERROR, 400);
 	}
@@ -713,7 +715,7 @@ export async function deleteRecipeConnectorConnection(params: {
 	userId: number;
 	provider: RecipeConnectorProvider;
 }) {
-	const provider = getConnectorProviderConfig(params.provider);
+	const provider = getRecipeConnectorProviderConfig(params.provider);
 	if (!provider) {
 		throw new AssistantError("Unknown connector provider", ErrorType.PARAMS_ERROR, 400);
 	}
@@ -741,7 +743,7 @@ export async function storeRecipeConnectorApiKey(params: {
 	provider: RecipeConnectorProvider;
 	apiKey: string;
 }) {
-	const provider = getConnectorProviderConfig(params.provider);
+	const provider = getRecipeConnectorProviderConfig(params.provider);
 	if (!provider || provider.auth.authType !== "api_key") {
 		throw new AssistantError("Connector does not use API-key setup", ErrorType.PARAMS_ERROR, 400);
 	}
@@ -772,7 +774,7 @@ export async function getRecipeConnectorAccessToken(params: {
 	userId: number;
 	provider: RecipeConnectorProvider;
 }) {
-	const provider = getConnectorProviderConfig(params.provider);
+	const provider = getRecipeConnectorProviderConfig(params.provider);
 	if (!provider || (provider.auth.authType !== "oauth2" && provider.auth.authType !== "api_key")) {
 		throw new AssistantError(
 			"Connector does not expose stored credentials",

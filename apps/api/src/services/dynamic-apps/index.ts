@@ -1,5 +1,9 @@
 import { ConversationManager } from "~/lib/conversationManager";
-import { getDynamicAppFormErrors, type AppSchema } from "@assistant/schemas";
+import {
+	getDynamicAppFormErrors,
+	type AppSchema,
+	type AssistantCapabilityDescriptor,
+} from "@assistant/schemas";
 import { getFeaturedApps, type FeaturedAppDefinition } from "~/services/dynamic-apps/config";
 import { handleFunctions } from "~/services/functions";
 import type { IRequest } from "~/types";
@@ -7,6 +11,7 @@ import type { ServiceContext } from "~/lib/context/serviceContext";
 import type { AppData } from "~/repositories/AppDataRepository";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
+import { createDynamicAppCapabilityDescriptor } from "./capabilities";
 
 const logger = getLogger({ prefix: "services/dynamic-apps" });
 
@@ -67,8 +72,14 @@ export const getDynamicApps = async (): Promise<
 };
 
 type DynamicAppCatalogItem =
-	| (Omit<AppSchema, "formSchema" | "responseSchema"> & { kind: "dynamic" })
-	| (FeaturedAppDefinition & { featured: true });
+	| (Omit<AppSchema, "formSchema" | "responseSchema"> & {
+			kind: "dynamic";
+			capability?: AssistantCapabilityDescriptor;
+	  })
+	| (FeaturedAppDefinition & {
+			featured: true;
+			capability?: AssistantCapabilityDescriptor;
+	  });
 
 export const getDynamicAppCatalog = async (): Promise<DynamicAppCatalogItem[]> => {
 	const apps = await getDynamicApps();
@@ -80,17 +91,22 @@ export const getDynamicAppCatalog = async (): Promise<DynamicAppCatalogItem[]> =
 			...app,
 			featured: app.featured ?? false,
 			kind: app.kind ?? "dynamic",
+			capability: createDynamicAppCapabilityDescriptor(app),
 		});
 	}
 
 	for (const featuredApp of featuredApps) {
 		const existing = mergedApps.get(featuredApp.id);
-		mergedApps.set(featuredApp.id, {
+		const catalogItem = {
 			...existing,
 			...featuredApp,
 			featured: true,
 			kind: featuredApp.kind ?? existing?.kind ?? (featuredApp.href ? "frontend" : "dynamic"),
-		} as DynamicAppCatalogItem);
+		} as DynamicAppCatalogItem;
+		mergedApps.set(featuredApp.id, {
+			...catalogItem,
+			capability: createDynamicAppCapabilityDescriptor(catalogItem),
+		});
 	}
 
 	return Array.from(mergedApps.values());

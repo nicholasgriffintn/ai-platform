@@ -51,6 +51,44 @@ export const assistantActionItemMetadataSchema = z.object({
 	toolId: z.string().optional(),
 });
 
+export const assistantActionConversationLaunchSchema = z.object({
+	kind: z.literal("conversation"),
+	operation: z.enum(["ask_agent", "install_recipe", "invoke_recipe"]),
+	agentId: z.string().optional(),
+	installationId: z.string().optional(),
+	recipeId: z.string().optional(),
+});
+
+export const assistantActionNavigationLaunchSchema = z.object({
+	kind: z.literal("navigation"),
+	path: z.string(),
+});
+
+export const assistantActionExternalLaunchSchema = z.object({
+	kind: z.literal("external"),
+	authType: z.enum(["oauth2", "github_app"]).optional(),
+	provider: recipeConnectorProviderSchema.optional(),
+	url: z.string().optional(),
+});
+
+export const assistantActionToolToggleLaunchSchema = z.object({
+	kind: z.literal("tool_toggle"),
+	toolId: toolIdSchema,
+});
+
+export const assistantActionScheduleLaunchSchema = z.object({
+	kind: z.literal("schedule"),
+	recipeId: z.string(),
+});
+
+export const assistantActionLaunchSchema = z.discriminatedUnion("kind", [
+	assistantActionConversationLaunchSchema,
+	assistantActionExternalLaunchSchema,
+	assistantActionNavigationLaunchSchema,
+	assistantActionScheduleLaunchSchema,
+	assistantActionToolToggleLaunchSchema,
+]);
+
 export const assistantActionItemSchema = z.object({
 	id: z.string(),
 	kind: assistantActionItemKindSchema,
@@ -58,6 +96,7 @@ export const assistantActionItemSchema = z.object({
 	description: z.string().optional(),
 	status: z.string().optional(),
 	searchText: z.array(z.string()),
+	launch: assistantActionLaunchSchema,
 	metadata: assistantActionItemMetadataSchema.optional(),
 });
 
@@ -70,6 +109,7 @@ export const assistantActionSelectionItemSchema = z.object({
 	id: z.string(),
 	kind: assistantActionItemKindSchema,
 	label: z.string(),
+	launch: assistantActionLaunchSchema.optional(),
 	metadata: assistantActionItemMetadataSchema.optional(),
 });
 
@@ -250,6 +290,12 @@ export function createRecipeAssistantActionItem(
 			recipe.category,
 			...recipe.actions,
 		],
+		launch: {
+			kind: "conversation",
+			operation: installation ? "invoke_recipe" : "install_recipe",
+			recipeId: recipe.id,
+			...(installation ? { installationId: installation.id } : {}),
+		},
 		metadata: {
 			recipeId: recipe.id,
 			installationId: installation?.id,
@@ -273,6 +319,17 @@ export function createConnectorAssistantActionItem(
 			connector.status,
 			...connector.operations,
 		],
+		launch:
+			connector.authType === "api_key"
+				? {
+						kind: "navigation",
+						path: `/profile?tab=providers&type=connector&connector=${connector.id}`,
+					}
+				: {
+						kind: "external",
+						authType: connector.authType,
+						provider: connector.id,
+					},
 		metadata: {
 			authType: connector.authType,
 			provider: connector.id,
@@ -302,6 +359,13 @@ export function buildAssistantActionCatalog(
 					...nonEmptyText(app.category),
 					...(app.tags ?? []),
 				],
+				launch: {
+					kind: "navigation" as const,
+					path:
+						app.kind === "frontend" && app.href
+							? app.href
+							: `/apps?app=${encodeURIComponent(app.id)}`,
+				},
 				metadata: {
 					appId: app.id,
 					appKind: app.kind,
@@ -315,6 +379,11 @@ export function buildAssistantActionCatalog(
 				description: agent.description,
 				status: agent.model,
 				searchText: [agent.name, ...nonEmptyText(agent.description), ...nonEmptyText(agent.model)],
+				launch: {
+					kind: "conversation" as const,
+					operation: "ask_agent" as const,
+					agentId: agent.id,
+				},
 				metadata: {
 					agentId: agent.id,
 				},
@@ -328,6 +397,10 @@ export function buildAssistantActionCatalog(
 				label: tool.label,
 				description: tool.description,
 				searchText: [tool.label, tool.command, tool.description, tool.id],
+				launch: {
+					kind: "tool_toggle" as const,
+					toolId: tool.id,
+				},
 				metadata: {
 					toolId: tool.id,
 				},
@@ -375,6 +448,7 @@ export function readAssistantActionRequestOptions(
 
 export type AssistantActionVerbId = z.infer<typeof assistantActionVerbIdSchema>;
 export type AssistantActionItemKind = z.infer<typeof assistantActionItemKindSchema>;
+export type AssistantActionLaunch = z.infer<typeof assistantActionLaunchSchema>;
 export type AssistantActionVerb = z.infer<typeof assistantActionVerbSchema>;
 export type AssistantActionItemMetadata = z.infer<typeof assistantActionItemMetadataSchema>;
 export type AssistantActionItem = z.infer<typeof assistantActionItemSchema>;
