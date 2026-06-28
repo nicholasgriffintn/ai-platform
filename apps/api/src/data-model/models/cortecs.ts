@@ -753,6 +753,10 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
 		},
 		family: "gpt-oss",
 		openWeights: true,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 
 	createModelConfig("hermes-4-70b", PROVIDER, {

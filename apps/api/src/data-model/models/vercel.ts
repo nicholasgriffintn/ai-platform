@@ -3950,6 +3950,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		},
 		family: "gpt-oss",
 		openWeights: true,
+		supportsResponseFormat: true,
 	}),
 
 	createModelConfig("openai/gpt-oss-20b", PROVIDER, {
@@ -9084,7 +9085,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		family: "claude-haiku",
 		openWeights: false,
 		knowledgeCutoffDate: "July 31, 2024",
-		releaseDate: "October 22, 2024",
+		releaseDate: "November 4, 2024",
 		lastUpdated: "October 22, 2024",
 		modalities: {
 			input: ["text", "image", "pdf"],
