@@ -1,5 +1,5 @@
 import { Blocks } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { Button, Popover, PopoverContent, PopoverTrigger } from "~/components/ui";
 import { useTools } from "~/hooks/useTools";
@@ -12,12 +12,18 @@ export const ToolSelector = ({ isDisabled = false }: { isDisabled?: boolean }) =
 	const { data: toolsData, isLoading } = useTools();
 	const { selectedTools, toggleTool, resetToDefaults, defaultTools, setDefaultTools } =
 		useToolsStore();
+	const hasInitialisedDefaultTools = useRef(defaultTools.length > 0);
 
 	const tools = toolsData || [];
 
-	if (tools.length > 0 && defaultTools.length === 0) {
+	useEffect(() => {
+		if (hasInitialisedDefaultTools.current || tools.length === 0) {
+			return;
+		}
+
+		hasInitialisedDefaultTools.current = true;
 		setDefaultTools(tools);
-	}
+	}, [setDefaultTools, tools]);
 
 	return (
 		<Popover open={isOpen} onOpenChange={setIsOpen}>

@@ -2,6 +2,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useCallback } from "react";
 
 import { CHATS_QUERY_KEY } from "~/constants";
+import { upsertConversationInChatCaches } from "~/lib/conversation-cache";
 import { localChatService } from "~/lib/local/local-chat-service";
 import type { Conversation } from "~/types";
 import { useChatStore } from "~/state/stores/chatStore";
@@ -39,7 +40,6 @@ export function useConversationStorage() {
 				CHATS_QUERY_KEY,
 				conversationId,
 			]);
-			const allConversations = queryClient.getQueryData<Conversation[]>([CHATS_QUERY_KEY]) || [];
 
 			const now = new Date().toISOString();
 			const nextConversation = updater(currentConversation);
@@ -51,47 +51,10 @@ export function useConversationStorage() {
 				last_message_at: now,
 			};
 
-			queryClient.setQueryData([CHATS_QUERY_KEY, conversationId], updatedConversation);
-
-			const existingIndex = allConversations.findIndex((c) => c.id === conversationId);
-			const updatedAllConversations = [...allConversations];
-
-			if (existingIndex >= 0) {
-				updatedAllConversations[existingIndex] = updatedConversation;
-			} else {
-				updatedAllConversations.unshift(updatedConversation);
-			}
-
-			queryClient.setQueryData([CHATS_QUERY_KEY], updatedAllConversations);
-
-			if (isLocalOnly) {
-				const localChats =
-					queryClient.getQueryData<Conversation[]>([CHATS_QUERY_KEY, "local"]) || [];
-
-				const localExistingIndex = localChats.findIndex((c) => c.id === conversationId);
-				const updatedLocalChats = [...localChats];
-
-				if (localExistingIndex >= 0) {
-					updatedLocalChats[localExistingIndex] = updatedConversation;
-				} else {
-					updatedLocalChats.unshift(updatedConversation);
-				}
-
-				queryClient.setQueryData([CHATS_QUERY_KEY, "local"], updatedLocalChats);
-			} else {
-				const remoteChats =
-					queryClient.getQueryData<Conversation[]>([CHATS_QUERY_KEY, "remote"]) || [];
-				const remoteExistingIndex = remoteChats.findIndex((c) => c.id === conversationId);
-				const updatedRemoteChats = [...remoteChats];
-
-				if (remoteExistingIndex >= 0) {
-					updatedRemoteChats[remoteExistingIndex] = updatedConversation;
-				} else {
-					updatedRemoteChats.unshift(updatedConversation);
-				}
-
-				queryClient.setQueryData([CHATS_QUERY_KEY, "remote"], updatedRemoteChats);
-			}
+			upsertConversationInChatCaches(queryClient, updatedConversation, {
+				includeLocalList: isLocalOnly,
+				includeRemoteLists: !isLocalOnly,
+			});
 
 			if (isLocalOnly) {
 				await localChatService.saveLocalChat({

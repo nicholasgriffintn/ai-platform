@@ -33,6 +33,10 @@ describe("preserveOptimisticMessages", () => {
 
 		expect(preserveOptimisticMessages(fetched, cached)).toBe(fetched);
 	});
+
+	it("returns null instead of undefined when neither remote nor local chat exists", () => {
+		expect(preserveOptimisticMessages(undefined, undefined)).toBeNull();
+	});
 });
 
 describe("createConversationId", () => {

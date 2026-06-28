@@ -40,6 +40,7 @@ export function useStreamingResponse(
 		localOnlyMode,
 		useMultiModel,
 		selectedAgentId,
+		markConversationRemoteAvailable,
 		setModel,
 	} = useChatStore();
 	const setUsageLimits = useUsageStore((state) => state.setUsageLimits);
@@ -63,10 +64,16 @@ export function useStreamingResponse(
 			status: "success" | "error";
 			response: string;
 			message?: Message;
+			messages?: Message[];
+			toolResponses?: Message[];
 		}> => {
 			const isLocal = chatMode === "local";
 			let response = "";
 			let generatedMessage: Message | undefined;
+			const generatedMessages: Message[] = [];
+			const toolResponseMessages: Message[] = [];
+			let messageWriteQueue: Promise<unknown> = Promise.resolve();
+			const pendingMessageTasks: Promise<unknown>[] = [];
 			const assistantMessageData = options?.assistantMessageData;
 
 			const placeholderMessage = await addAssistantMessage(
@@ -79,7 +86,13 @@ export function useStreamingResponse(
 			let activeAssistantMessagePromise: Promise<Message> | null =
 				Promise.resolve(placeholderMessage);
 
-			const ensureActiveAssistantMessage = () => {
+			const enqueueMessageWrite = <T>(operation: () => Promise<T>): Promise<T> => {
+				const queuedWrite = messageWriteQueue.then(operation);
+				messageWriteQueue = queuedWrite.then(() => undefined);
+				return queuedWrite;
+			};
+
+			const ensureActiveAssistantMessage = (): Promise<Message> => {
 				if (activeAssistantMessage) {
 					return Promise.resolve(activeAssistantMessage);
 				}
@@ -88,11 +101,8 @@ export function useStreamingResponse(
 					return activeAssistantMessagePromise;
 				}
 
-				activeAssistantMessagePromise = addAssistantMessage(
-					conversationId,
-					"",
-					undefined,
-					assistantMessageData,
+				activeAssistantMessagePromise = enqueueMessageWrite(() =>
+					addAssistantMessage(conversationId, "", undefined, assistantMessageData),
 				).then((message) => {
 					activeAssistantMessage = message;
 					return message;
@@ -118,21 +128,27 @@ export function useStreamingResponse(
 				assistantMessage?: Message,
 			) => {
 				if (done && assistantMessage) {
-					ensureActiveAssistantMessage().then((message) => {
-						const updatedAssistantMessage = withAssistantMessageData(assistantMessage);
-						updateAssistantMessage(
-							conversationId,
-							updatedAssistantMessage.content,
-							updatedAssistantMessage.reasoning?.content || reasoning,
-							updatedAssistantMessage,
-							{
-								messageId: message.id,
-							},
-						);
-						activeAssistantMessage = undefined;
-						activeAssistantMessagePromise = null;
-					});
-					generatedMessage = withAssistantMessageData(assistantMessage);
+					const updatedAssistantMessage = withAssistantMessageData(assistantMessage);
+					generatedMessages.push(updatedAssistantMessage);
+					generatedMessage = updatedAssistantMessage;
+					const activeMessagePromise = ensureActiveAssistantMessage();
+					activeAssistantMessage = undefined;
+					activeAssistantMessagePromise = null;
+					pendingMessageTasks.push(
+						activeMessagePromise.then((message) =>
+							enqueueMessageWrite(() =>
+								updateAssistantMessage(
+									conversationId,
+									updatedAssistantMessage.content,
+									updatedAssistantMessage.reasoning?.content || reasoning,
+									updatedAssistantMessage,
+									{
+										messageId: message.id,
+									},
+								),
+							),
+						),
+					);
 					response = "";
 					return;
 				}
@@ -140,17 +156,23 @@ export function useStreamingResponse(
 				response = typeof content === "string" ? content : response;
 
 				if (toolResponses && toolResponses.length > 0) {
-					setTimeout(() => {
-						for (const toolResponse of toolResponses) {
-							addMessageToConversation(conversationId, toolResponse);
-						}
-					}, 0);
+					for (const toolResponse of toolResponses) {
+						toolResponseMessages.push(toolResponse);
+						generatedMessages.push(toolResponse);
+						pendingMessageTasks.push(
+							enqueueMessageWrite(() => addMessageToConversation(conversationId, toolResponse)),
+						);
+					}
 				} else {
-					ensureActiveAssistantMessage().then((message) => {
-						updateAssistantMessage(conversationId, content, reasoning, undefined, {
-							messageId: message.id,
-						});
-					});
+					pendingMessageTasks.push(
+						ensureActiveAssistantMessage().then((message) =>
+							enqueueMessageWrite(() =>
+								updateAssistantMessage(conversationId, content, reasoning, undefined, {
+									messageId: message.id,
+								}),
+							),
+						),
+					);
 				}
 			};
 
@@ -194,6 +216,7 @@ export function useStreamingResponse(
 						.filter((modelId): modelId is string => Boolean(modelId));
 					const modelToSend = normalizeSelectedModel(modelsToSend?.[0] ?? options?.model ?? model);
 					const providerToSend = getModelProvider(apiModels, modelToSend);
+					const modelConfigToSend = modelToSend ? apiModels[modelToSend] : undefined;
 
 					const handleStateChange = (state: string, data?: any) => {
 						if (state === "usage_limits") {
@@ -233,6 +256,7 @@ export function useStreamingResponse(
 						messages: normalizedMessages,
 						mode: chatMode,
 						model: modelToSend,
+						modelConfig: modelConfigToSend,
 						models: modelsToSend?.length ? modelsToSend : undefined,
 						onProgress: handleMessageUpdate,
 						onStateChange: handleStateChange,
@@ -243,6 +267,9 @@ export function useStreamingResponse(
 						streamingEnabled: true,
 						useMultiModel: modelsToSend && modelsToSend.length > 1 ? true : useMultiModel,
 					});
+					if (shouldStore) {
+						markConversationRemoteAvailable(conversationId);
+					}
 
 					const textPreview =
 						typeof assistantMessage.content === "string"
@@ -265,12 +292,20 @@ export function useStreamingResponse(
 
 					response = textPreview;
 					generatedMessage = withAssistantMessageData(assistantMessage);
+					if (!generatedMessages.some((message) => message.id === generatedMessage?.id)) {
+						generatedMessages.push(generatedMessage);
+					}
 				}
+
+				await Promise.all(pendingMessageTasks);
+				await messageWriteQueue;
 
 				return {
 					status: "success",
 					response,
 					message: generatedMessage,
+					messages: generatedMessages,
+					toolResponses: toolResponseMessages,
 				};
 			} catch (error) {
 				if (controller.signal.aborted) {
@@ -297,6 +332,7 @@ export function useStreamingResponse(
 			updateLoading,
 			webLLMService,
 			requestOptions,
+			markConversationRemoteAvailable,
 			setUsageLimits,
 		],
 	);

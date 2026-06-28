@@ -1,7 +1,8 @@
-import { Trash2, Tag, Plus, Check } from "lucide-react";
+import { Trash2, Tag, Plus, Check, Database, Clock3, Link2 } from "lucide-react";
 import { useState } from "react";
 
 import { Button } from "~/components/ui";
+import { formatMemoryDate, getMemoryCategoryClassName } from "~/lib/memories/presentation";
 import type { Memory, MemoryGroup } from "~/types/chat";
 
 interface MemoryListProps {
@@ -49,21 +50,6 @@ export function MemoryList({
 	};
 
 	const availableGroups = groups.filter((g) => g.id !== selectedGroup);
-
-	const getCategoryColor = (category: string) => {
-		switch (category) {
-			case "fact":
-				return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300";
-			case "preference":
-				return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300";
-			case "schedule":
-				return "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300";
-			case "general":
-				return "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300";
-			default:
-				return "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300";
-		}
-	};
 
 	if (memories.length === 0) {
 		return (
@@ -124,64 +110,109 @@ export function MemoryList({
 			</div>
 
 			<div className="space-y-2">
-				{memories.map((memory) => (
-					<div
-						key={memory.id}
-						className={`bg-white dark:bg-zinc-800 rounded-lg shadow-sm border p-4 transition-colors ${
-							selectedMemories.has(memory.id)
-								? "border-blue-300 dark:border-blue-600 bg-blue-50 dark:bg-blue-900/20"
-								: "border-zinc-200 dark:border-zinc-700"
-						}`}
-					>
-						<div className="flex items-start justify-between gap-3">
-							<div className="flex items-start gap-3 flex-1 min-w-0">
-								{onAddMemoriesToGroup && availableGroups.length > 0 && (
-									<button
-										onClick={() => toggleMemorySelection(memory.id)}
-										className={`flex items-center justify-center w-5 h-5 border-2 rounded mt-0.5 transition-colors ${
-											selectedMemories.has(memory.id)
-												? "bg-blue-600 border-blue-600 text-white"
-												: "border-zinc-300 dark:border-zinc-600 hover:border-blue-500"
-										}`}
-									>
-										{selectedMemories.has(memory.id) && <Check className="h-3 w-3" />}
-									</button>
-								)}
+				{memories.map((memory) => {
+					const createdAt = formatMemoryDate(memory.created_at);
+					const expiresAt = formatMemoryDate(memory.ttl?.expires_at);
+					const lastAccessed = formatMemoryDate(memory.lifecycle?.last_accessed);
 
-								<div className="flex-1 min-w-0">
-									<div className="flex items-center gap-2 mb-2">
-										<span
-											className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${getCategoryColor(memory.category)}`}
+					return (
+						<div
+							key={memory.id}
+							className={`bg-white dark:bg-zinc-800 rounded-lg shadow-sm border p-4 transition-colors ${
+								selectedMemories.has(memory.id)
+									? "border-blue-300 dark:border-blue-600 bg-blue-50 dark:bg-blue-900/20"
+									: "border-zinc-200 dark:border-zinc-700"
+							}`}
+						>
+							<div className="flex items-start justify-between gap-3">
+								<div className="flex items-start gap-3 flex-1 min-w-0">
+									{onAddMemoriesToGroup && availableGroups.length > 0 && (
+										<button
+											onClick={() => toggleMemorySelection(memory.id)}
+											className={`flex items-center justify-center w-5 h-5 border-2 rounded mt-0.5 transition-colors ${
+												selectedMemories.has(memory.id)
+													? "bg-blue-600 border-blue-600 text-white"
+													: "border-zinc-300 dark:border-zinc-600 hover:border-blue-500"
+											}`}
 										>
-											{memory.category}
-										</span>
-										{memory.group_title && (
-											<span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300">
-												{memory.group_title}
-											</span>
-										)}
-										<span className="text-xs text-zinc-500 dark:text-zinc-400">
-											{new Date(memory.created_at).toLocaleDateString()}
-										</span>
-									</div>
-									<p className="text-zinc-800 dark:text-zinc-100 text-sm leading-normal">
-										{memory.text}
-									</p>
-								</div>
-							</div>
+											{selectedMemories.has(memory.id) && <Check className="h-3 w-3" />}
+										</button>
+									)}
 
-							<Button
-								variant="ghost"
-								size="sm"
-								onClick={() => handleDelete(memory.id)}
-								disabled={isDeletingMemory}
-								className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/20 shrink-0"
-							>
-								<Trash2 className="h-4 w-4" />
-							</Button>
+									<div className="flex-1 min-w-0">
+										<div className="flex items-center gap-2 mb-2">
+											<span
+												className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${getMemoryCategoryClassName(memory.category)}`}
+											>
+												{memory.category}
+											</span>
+											{memory.group_title && (
+												<span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300">
+													{memory.group_title}
+												</span>
+											)}
+											<span className="text-xs text-zinc-500 dark:text-zinc-400">{createdAt}</span>
+										</div>
+										<p className="text-zinc-800 dark:text-zinc-100 text-sm leading-normal">
+											{memory.text}
+										</p>
+										<div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400">
+											{memory.provenance?.provider && (
+												<span className="inline-flex items-center gap-1 rounded border border-zinc-200 px-2 py-0.5 dark:border-zinc-700">
+													<Database className="h-3 w-3" aria-hidden="true" />
+													{memory.provenance.provider}
+												</span>
+											)}
+											{memory.provenance?.source && (
+												<span className="inline-flex items-center gap-1 rounded border border-zinc-200 px-2 py-0.5 dark:border-zinc-700">
+													<Link2 className="h-3 w-3" aria-hidden="true" />
+													{memory.provenance.source}
+												</span>
+											)}
+											{memory.provenance?.connector_provider && (
+												<span className="inline-flex items-center gap-1 rounded border border-zinc-200 px-2 py-0.5 dark:border-zinc-700">
+													{memory.provenance.connector_provider}
+												</span>
+											)}
+											{memory.scope && (
+												<span className="inline-flex items-center rounded border border-zinc-200 px-2 py-0.5 dark:border-zinc-700">
+													{memory.scope}
+												</span>
+											)}
+											{memory.namespace && (
+												<span className="inline-flex items-center rounded border border-zinc-200 px-2 py-0.5 dark:border-zinc-700">
+													{memory.namespace}
+												</span>
+											)}
+											{expiresAt && (
+												<span className="inline-flex items-center gap-1 rounded border border-amber-200 px-2 py-0.5 text-amber-700 dark:border-amber-900 dark:text-amber-300">
+													<Clock3 className="h-3 w-3" aria-hidden="true" />
+													Expires {expiresAt}
+												</span>
+											)}
+											{lastAccessed && (
+												<span className="inline-flex items-center gap-1 rounded border border-zinc-200 px-2 py-0.5 dark:border-zinc-700">
+													<Clock3 className="h-3 w-3" aria-hidden="true" />
+													Used {lastAccessed}
+												</span>
+											)}
+										</div>
+									</div>
+								</div>
+
+								<Button
+									variant="ghost"
+									size="sm"
+									onClick={() => handleDelete(memory.id)}
+									disabled={isDeletingMemory}
+									className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/20 shrink-0"
+								>
+									<Trash2 className="h-4 w-4" />
+								</Button>
+							</div>
 						</div>
-					</div>
-				))}
+					);
+				})}
 			</div>
 
 			{showAddToGroup && (

@@ -73,26 +73,7 @@ export const use_recipe_connector: ApiToolDefinition = {
 		properties: {
 			provider: {
 				type: "string",
-				enum: [
-					"asana",
-					"cloudflare",
-					"devin",
-					"fitbit",
-					"gmail",
-					"outlook",
-					"calendar",
-					"linear",
-					"netlify",
-					"notion",
-					"oura",
-					"posthog",
-					"sentry",
-					"supabase",
-					"todoist",
-					"vercel",
-					"webflow",
-					"withings",
-				],
+				enum: recipeConnectorProviderSchema.options,
 				description: "The connected provider to use.",
 			},
 			operation: {

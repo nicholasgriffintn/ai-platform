@@ -3,8 +3,9 @@ import { useMemo } from "react";
 
 import { CHATS_QUERY_KEY } from "~/constants";
 import { apiService } from "~/lib/api/api-service";
+import { updateConversationInChatCaches } from "~/lib/conversation-cache";
 import { filterConversationsByListOptions } from "~/lib/conversation-list";
-import { preserveOptimisticMessages } from "~/lib/conversations";
+import { isLocallyCreatedConversation, preserveOptimisticMessages } from "~/lib/conversations";
 import { localChatService } from "~/lib/local/local-chat-service";
 import { useChatStore } from "~/state/stores/chatStore";
 import type { Conversation, ConversationListOptions, Message } from "~/types";
@@ -71,7 +72,13 @@ export function useLocalChats() {
 }
 
 export function useChat(completion_id: string | undefined) {
-	const { isAuthenticated, isPro, localOnlyMode } = useChatStore();
+	const {
+		isAuthenticated,
+		isPro,
+		localOnlyMode,
+		locallyCreatedConversationIds,
+		markConversationRemoteAvailable,
+	} = useChatStore();
 	const queryClient = useQueryClient();
 
 	return useQuery({
@@ -79,14 +86,17 @@ export function useChat(completion_id: string | undefined) {
 		queryFn: async () => {
 			if (!completion_id) return null;
 
-			const cachedConversation = queryClient.getQueryData<Conversation>([
-				CHATS_QUERY_KEY,
-				completion_id,
-			]);
+			const getCachedConversation = () =>
+				queryClient.getQueryData<Conversation>([CHATS_QUERY_KEY, completion_id]);
 			const localChat = await localChatService.getLocalChat(completion_id);
 			const shouldUseLocalOnly = localOnlyMode || (localChat?.isLocalOnly ?? false);
+			const cachedConversation = getCachedConversation();
 
 			if (shouldUseLocalOnly || !isAuthenticated || !isPro) {
+				return preserveOptimisticMessages(localChat, cachedConversation);
+			}
+
+			if (isLocallyCreatedConversation(completion_id, locallyCreatedConversationIds)) {
 				return preserveOptimisticMessages(localChat, cachedConversation);
 			}
 
@@ -94,10 +104,13 @@ export function useChat(completion_id: string | undefined) {
 				const remoteChat = await apiService.getChat(completion_id, {
 					refreshPending: true,
 				});
-				return preserveOptimisticMessages(remoteChat || localChat, cachedConversation);
+				if (remoteChat) {
+					markConversationRemoteAvailable(completion_id);
+				}
+				return preserveOptimisticMessages(remoteChat || localChat, getCachedConversation());
 			} catch (error) {
 				console.error("Failed to fetch remote chat, falling back to local:", error);
-				return preserveOptimisticMessages(localChat, cachedConversation);
+				return preserveOptimisticMessages(localChat, getCachedConversation());
 			}
 		},
 		enabled: !!completion_id,
@@ -275,13 +288,10 @@ export function useGenerateTitle() {
 			}
 		},
 		onSuccess: (newTitle, { completion_id }) => {
-			queryClient.setQueryData<Conversation>([CHATS_QUERY_KEY, completion_id], (oldData) =>
-				oldData ? { ...oldData, title: newTitle } : oldData,
-			);
-
-			queryClient.setQueryData<Conversation[]>([CHATS_QUERY_KEY], (oldData = []) =>
-				oldData.map((chat) => (chat.id === completion_id ? { ...chat, title: newTitle } : chat)),
-			);
+			updateConversationInChatCaches(queryClient, completion_id, (chat) => ({
+				...chat,
+				title: newTitle,
+			}));
 		},
 	});
 }

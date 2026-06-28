@@ -40,8 +40,10 @@ import type { ComposerCommandAction, ComposerInlineToken } from "./composerComma
 
 const MODEL_TOOL_ICONS: Record<ModelToolId, LucideIcon> = {
 	code_execution: Code,
+	file_search: Database,
 	hosted_shell: Terminal,
 	image_generation: Image,
+	mcp: ListFilter,
 	search_grounding: Search,
 	tool_search: ListFilter,
 	web_fetch: Link,
@@ -115,7 +117,10 @@ export function useComposerCommandActions({
 		() => (modelCapabilities?.supportsToolCalls ? getAvailableModelTools(modelCapabilities) : []),
 		[modelCapabilities],
 	);
-	const actionCatalog = useAssistantActionCatalog({ modelTools: availableModelTools });
+	const actionCatalog = useAssistantActionCatalog({
+		includeApps: false,
+		modelTools: availableModelTools,
+	});
 	const canUseAgents =
 		modeCommands.length === 0 ||
 		!modeCommands.some((command) => command.isActive && command.command !== "chat");

@@ -9,6 +9,23 @@ export const memoryListResponseSchema = z.object({
 			created_at: z.string(),
 			group_id: z.string().nullable(),
 			group_title: z.string().nullable(),
+			provenance: z.object({
+				provider: z.string(),
+				source: z.string(),
+				conversation_id: z.string().nullable().optional(),
+				connector_provider: z.string().optional(),
+			}),
+			scope: z.string(),
+			namespace: z.string(),
+			ttl: z.object({
+				expires_at: z.string().nullable(),
+			}),
+			lifecycle: z.object({
+				is_active: z.boolean(),
+				importance_score: z.number(),
+				last_accessed: z.string().nullable().optional(),
+				updated_at: z.string().nullable().optional(),
+			}),
 		}),
 	),
 	groups: z.array(

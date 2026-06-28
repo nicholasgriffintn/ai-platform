@@ -503,6 +503,21 @@ export function isConnectorOperationWrite(
 	return getConnectorOperationConfig(providerId, operation)?.access === "write";
 }
 
+export function getConnectorProviderOperationAccess(
+	provider: ConnectorProviderConfig,
+): ConnectorOperationAccess | "mixed" {
+	const accessLevels = new Set(provider.operations.map((operation) => operation.access));
+	if (accessLevels.size === 0) {
+		return "read";
+	}
+
+	if (accessLevels.size === 1) {
+		return accessLevels.has("write") ? "write" : "read";
+	}
+
+	return "mixed";
+}
+
 export function isOAuthConnectorConfigured(env: IEnv, config: OAuthConnectorConfig): boolean {
 	return Boolean(env[config.clientIdEnv] && env[config.clientSecretEnv]);
 }

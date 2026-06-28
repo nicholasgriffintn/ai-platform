@@ -8,6 +8,10 @@ vi.mock("~/lib/conversationManager", () => ({
 	},
 }));
 
+vi.mock("../async/handler", () => ({
+	handleAsyncInvocation: vi.fn(),
+}));
+
 const mockEnv = {
 	DB: "test-db",
 };
@@ -119,6 +123,90 @@ describe("handleGetChatCompletion", () => {
 			const result = await handleGetChatCompletion(mockServiceContext, "");
 
 			expect(mockConversationManager.getConversationDetails).toHaveBeenCalledWith("");
+			expect(result).toEqual(mockConversation);
+		});
+
+		it("refreshes pending async invocation messages when requested", async () => {
+			const { handleAsyncInvocation } = await import("../async/handler");
+			const completionId = "completion-async";
+			const pendingMessage = {
+				id: "assistant-pending",
+				role: "assistant",
+				content: "Still running",
+				status: "in_progress",
+				data: {
+					asyncInvocation: {
+						id: "resp_123",
+						provider: "openai",
+						type: "openai.response",
+						status: "in_progress",
+					},
+				},
+			};
+			const refreshedMessage = {
+				...pendingMessage,
+				content: "Done",
+				status: "completed",
+			};
+
+			mockConversationManager.getConversationDetails.mockResolvedValue({
+				id: completionId,
+				title: "Async Conversation",
+				messages: [{ id: "user-1", role: "user", content: "Run it" }, pendingMessage],
+			});
+			vi.mocked(handleAsyncInvocation).mockResolvedValue({
+				status: "completed",
+				message: refreshedMessage as any,
+			});
+
+			const result = await handleGetChatCompletion(mockServiceContext, completionId, {
+				refreshPending: true,
+			});
+
+			expect(handleAsyncInvocation).toHaveBeenCalledWith(
+				pendingMessage.data.asyncInvocation,
+				pendingMessage,
+				expect.objectContaining({
+					conversationId: completionId,
+					conversationManager: mockConversationManager,
+					env: mockEnv,
+					user: mockUser,
+				}),
+			);
+			expect(result.messages).toEqual([
+				{ id: "user-1", role: "user", content: "Run it" },
+				refreshedMessage,
+			]);
+		});
+
+		it("does not refresh pending async messages unless requested", async () => {
+			const { handleAsyncInvocation } = await import("../async/handler");
+			const completionId = "completion-async";
+			const pendingMessage = {
+				id: "assistant-pending",
+				role: "assistant",
+				content: "Still running",
+				status: "in_progress",
+				data: {
+					asyncInvocation: {
+						id: "resp_123",
+						provider: "openai",
+						type: "openai.response",
+						status: "in_progress",
+					},
+				},
+			};
+			const mockConversation = {
+				id: completionId,
+				title: "Async Conversation",
+				messages: [pendingMessage],
+			};
+
+			mockConversationManager.getConversationDetails.mockResolvedValue(mockConversation);
+
+			const result = await handleGetChatCompletion(mockServiceContext, completionId);
+
+			expect(handleAsyncInvocation).not.toHaveBeenCalled();
 			expect(result).toEqual(mockConversation);
 		});
 	});

@@ -40,6 +40,7 @@ describe("assistant action catalogue", () => {
 					status: "connected",
 					scopes: ["project:read"],
 					operations: ["query"],
+					operationAccess: "read",
 				},
 			],
 			modelTools: [
@@ -133,6 +134,23 @@ describe("assistant action catalogue", () => {
 			},
 		});
 		expect(catalog.items[3]).toMatchObject({
+			capability: {
+				id: "posthog",
+				kind: "connector",
+				availability: "connected",
+				authRequirement: "connector",
+				authState: "connected",
+				executionMode: "connector_operation",
+				operationAccess: "read",
+				approvalPolicy: "never",
+				requiredConnectors: [
+					{
+						provider: "posthog",
+						state: "connected",
+					},
+				],
+				availabilityReason: "PostHog is connected.",
+			},
 			launch: {
 				kind: "navigation",
 				path: "/profile?tab=providers&type=connector&connector=posthog",
@@ -143,6 +161,18 @@ describe("assistant action catalogue", () => {
 			},
 		});
 		expect(catalog.items[4]).toMatchObject({
+			capability: {
+				id: "web_fetch",
+				kind: "tool",
+				availability: "available",
+				authRequirement: "none",
+				authState: "not_required",
+				executionMode: "tool",
+				operationAccess: "read",
+				approvalPolicy: "never",
+				requiredModelCapabilities: ["supportsWebFetch"],
+				availabilityReason: "Available for the selected model.",
+			},
 			launch: {
 				kind: "tool_toggle",
 				toolId: "web_fetch",
@@ -152,6 +182,9 @@ describe("assistant action catalogue", () => {
 			},
 		});
 		expect(assistantActionCatalogSchema.safeParse(catalog).success).toBe(true);
+		expect(assistantActionCatalogSchema.parse(catalog).items.every((item) => item.capability)).toBe(
+			true,
+		);
 		expect(
 			assistantActionSelectionSchema.safeParse({
 				verb: "run",
@@ -203,6 +236,7 @@ describe("assistant action catalogue", () => {
 					status: "connected",
 					scopes: ["project:read"],
 					operations: ["query"],
+					operationAccess: "read",
 				},
 				{
 					id: "linear",

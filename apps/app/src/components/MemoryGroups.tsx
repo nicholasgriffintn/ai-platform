@@ -1,5 +1,6 @@
 import { Folder, Trash2 } from "lucide-react";
 
+import { getMemoryCategoryClassName } from "~/lib/memories/presentation";
 import type { MemoryGroup } from "~/types/chat";
 
 interface MemoryGroupsProps {
@@ -25,19 +26,6 @@ export function MemoryGroups({
 		}
 
 		onDeleteGroup(groupId);
-	};
-
-	const getCategoryColor = (category: string | null) => {
-		switch (category) {
-			case "fact":
-				return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300";
-			case "preference":
-				return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300";
-			case "schedule":
-				return "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300";
-			default:
-				return "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300";
-		}
 	};
 
 	return (
@@ -87,7 +75,7 @@ export function MemoryGroups({
 										</span>
 										{group.category && (
 											<span
-												className={`inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium ${getCategoryColor(group.category)}`}
+												className={`inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium ${getMemoryCategoryClassName(group.category)}`}
 											>
 												{group.category}
 											</span>

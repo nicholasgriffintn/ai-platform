@@ -327,8 +327,11 @@ addRoute(app, "get", "/completions/:completion_id", {
 			};
 
 			const serviceContext = getServiceContext(context);
+			const refreshPending = context.req.query("refresh_pending") === "true";
 
-			const data = await handleGetChatCompletion(serviceContext, completion_id);
+			const data = await handleGetChatCompletion(serviceContext, completion_id, {
+				refreshPending,
+			});
 
 			return ResponseFactory.success(context, data);
 		})(raw),

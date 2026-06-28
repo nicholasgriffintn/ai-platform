@@ -80,7 +80,12 @@ vi.mock("./ChatSettings", () => ({
 }));
 
 vi.mock("./ComposerActionMenu", () => ({
-	ComposerActionMenu: () => <button type="button">Actions</button>,
+	ComposerActionMenu: ({ tools }: { tools?: ReactNode }) => (
+		<div>
+			<button type="button">Actions</button>
+			{tools}
+		</div>
+	),
 }));
 
 interface MockAttachmentChip {
@@ -174,7 +179,7 @@ describe("ChatInput", () => {
 		expect(screen.getByRole("button", { name: "Chat settings" })).toBeInTheDocument();
 	});
 
-	it("shows the multi-model toggle next to the model selector when auto model routing is active", () => {
+	it("shows the multi-model toggle in the composer action menu when auto model routing is active", () => {
 		store.isPro = true;
 		store.model = null;
 
@@ -188,7 +193,7 @@ describe("ChatInput", () => {
 			/>,
 		);
 
-		const toggle = screen.getByRole("button", { name: "Toggle multi-model mode" });
+		const toggle = screen.getByRole("button", { name: "Multi-model" });
 
 		fireEvent.click(toggle);
 

@@ -1,5 +1,4 @@
 import {
-	AppWindow,
 	AtSign,
 	Bot,
 	Check,
@@ -93,9 +92,6 @@ function ActionItemAvatar({ item }: { item: AssistantActionItem }) {
 	if (item.kind === "agent") {
 		return <Bot className="h-4 w-4" aria-hidden="true" />;
 	}
-	if (item.kind === "app") {
-		return <AppWindow className="h-4 w-4" aria-hidden="true" />;
-	}
 	if (item.kind === "connector") {
 		return <Plug className="h-4 w-4" aria-hidden="true" />;
 	}
@@ -111,11 +107,13 @@ const ACTION_ITEM_GROUPS: Array<{
 	emptyLabel: string;
 }> = [
 	{ kinds: ["installed_recipe", "recipe"], label: "Recipes", emptyLabel: "recipes" },
-	{ kinds: ["app"], label: "Apps", emptyLabel: "apps" },
 	{ kinds: ["agent"], label: "Agents", emptyLabel: "agents" },
 	{ kinds: ["connector"], label: "Connectors", emptyLabel: "connectors" },
 	{ kinds: ["tool"], label: "Tools", emptyLabel: "tools" },
 ];
+
+const ACTION_ITEM_SCOPE_LABEL = "Recipes, agents, connectors, and tools";
+const ACTION_ITEM_EMPTY_LABEL = "recipes, agents, connectors, or tools";
 
 function groupActionItems(items: AssistantActionItem[]) {
 	return ACTION_ITEM_GROUPS.map((group) => ({
@@ -320,7 +318,7 @@ export function ComposerCommandSuggestions(props: ComposerCommandsState) {
 				) : (
 					<AtSign className="h-3.5 w-3.5" aria-hidden="true" />
 				)}
-				<span>{isModeQuery ? "Commands" : "Recipes, apps, and agents"}</span>
+				<span>{isModeQuery ? "Commands" : ACTION_ITEM_SCOPE_LABEL}</span>
 			</div>
 			<div ref={listRef} className="max-h-72 overflow-y-auto p-2">
 				{isModeQuery ? (
@@ -345,12 +343,12 @@ export function ComposerCommandSuggestions(props: ComposerCommandsState) {
 					))
 				) : !canUseAgents ? (
 					<div className="px-3 py-2 text-sm text-zinc-500 dark:text-zinc-400">
-						Recipes, apps, and agents are available in Chat mode.
+						{ACTION_ITEM_SCOPE_LABEL} are available in Chat mode.
 					</div>
 				) : isLoadingAgents ? (
 					<div className="flex items-center gap-2 px-3 py-2 text-sm text-zinc-500 dark:text-zinc-400">
 						<Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
-						<span>Loading recipes, apps, and agents...</span>
+						<span>Loading {ACTION_ITEM_SCOPE_LABEL.toLowerCase()}...</span>
 					</div>
 				) : (
 					groupActionItems(filteredActionItems).map((group) => (
@@ -380,7 +378,7 @@ export function ComposerCommandSuggestions(props: ComposerCommandsState) {
 				)}
 				{!hasResults && !isLoadingAgents && (
 					<div className="px-3 py-2 text-sm text-zinc-500 dark:text-zinc-400">
-						No {isModeQuery ? "commands" : "recipes, apps, or agents"} match this command.
+						No {isModeQuery ? "commands" : ACTION_ITEM_EMPTY_LABEL} match this command.
 					</div>
 				)}
 			</div>
@@ -512,16 +510,16 @@ export function ComposerCommandButton(props: ComposerCommandsState) {
 						)}
 						{canUseAgents && (
 							<div>
-								<SectionLabel>Recipes, apps, and agents</SectionLabel>
+								<SectionLabel>{ACTION_ITEM_SCOPE_LABEL}</SectionLabel>
 								<div className="space-y-1">
 									{isLoadingAgents ? (
 										<div className="flex items-center gap-2 px-3 py-2 text-sm text-zinc-500 dark:text-zinc-400">
 											<Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
-											<span>Loading recipes, apps, and agents...</span>
+											<span>Loading {ACTION_ITEM_SCOPE_LABEL.toLowerCase()}...</span>
 										</div>
 									) : actionItems.length === 0 ? (
 										<div className="px-3 py-2 text-sm text-zinc-500 dark:text-zinc-400">
-											No recipes, apps, or agents available.
+											No {ACTION_ITEM_EMPTY_LABEL} available.
 										</div>
 									) : (
 										groupActionItems(actionItems).map((group) => (
@@ -549,7 +547,7 @@ export function ComposerCommandButton(props: ComposerCommandsState) {
 				</div>
 				<div className="mt-3 flex items-center gap-2 border-t border-zinc-200 px-3 pt-2 text-xs text-zinc-500 dark:border-zinc-700 dark:text-zinc-400">
 					<Search className="h-3.5 w-3.5" aria-hidden="true" />
-					<span>Type / for actions or @ for recipes, apps, agents, connectors, and tools.</span>
+					<span>Type / for actions or @ for recipes, agents, connectors, and tools.</span>
 				</div>
 			</PopoverContent>
 		</Popover>

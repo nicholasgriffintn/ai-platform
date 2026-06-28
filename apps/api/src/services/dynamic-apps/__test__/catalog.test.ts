@@ -10,7 +10,7 @@ describe("dynamic app catalog", () => {
 				featured: true,
 				kind: "frontend",
 				href: "/apps/strudel",
-				capability: {
+				capability: expect.objectContaining({
 					id: "featured-strudel",
 					kind: "frontend_app",
 					name: "Strudel Music Patterns",
@@ -26,7 +26,7 @@ describe("dynamic app catalog", () => {
 						supported: false,
 					},
 					tags: expect.any(Array),
-				},
+				}),
 			}),
 		);
 	});

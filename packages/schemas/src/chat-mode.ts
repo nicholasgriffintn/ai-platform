@@ -6,7 +6,14 @@ import {
 	sandboxTaskTypeSchema,
 } from "./sandbox";
 
-export const homeChatModeIdSchema = z.enum(["chat", "council", "sandbox", "live", "sms"]);
+export const homeChatModeIdSchema = z.enum([
+	"background",
+	"chat",
+	"council",
+	"sandbox",
+	"live",
+	"sms",
+]);
 
 export const sandboxChatModeSettingsSchema = z.object({
 	repoKey: z.string().trim().optional(),

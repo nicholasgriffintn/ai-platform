@@ -53,6 +53,10 @@ import {
 
 type CouncilResponseMode = "debate" | "single";
 
+function supportsBackgroundResponses(modelConfig: { provider?: string } | null | undefined) {
+	return modelConfig?.provider === "openai";
+}
+
 export function useHomeChatModeConfig(): {
 	activeModeId: HomeChatModeId;
 	modeConfig: ConversationThreadModeConfig;
@@ -81,6 +85,7 @@ export function useHomeChatModeConfig(): {
 		() => getModelByReference(modelReferences, selectedModel),
 		[modelReferences, selectedModel],
 	);
+	const canUseBackgroundMode = supportsBackgroundResponses(selectedModelConfig);
 	const composedReasoningModel = useMemo(
 		() => getComposedRealtimeReasoningModelId(apiModels, selectedModel),
 		[apiModels, selectedModel],
@@ -89,6 +94,8 @@ export function useHomeChatModeConfig(): {
 	const [activeModeId, setActiveModeId] = useState<HomeChatModeId>(() =>
 		resolveHomeChatModeId(searchParams.has("mode") ? searchParams.get("mode") : homeChatMode),
 	);
+	const effectiveActiveModeId =
+		activeModeId === "background" && !canUseBackgroundMode ? "chat" : activeModeId;
 	const [selectedCouncilMemberIds, setSelectedCouncilMemberIds] = useState<CouncilMemberId[]>([
 		...defaultCouncilMemberIds,
 	]);
@@ -189,7 +196,7 @@ export function useHomeChatModeConfig(): {
 
 	useEffect(() => {
 		if (
-			activeModeId !== "live" ||
+			effectiveActiveModeId !== "live" ||
 			!selectedModelLiveProvider ||
 			selectedModelLiveProvider === liveProvider
 		) {
@@ -197,7 +204,19 @@ export function useHomeChatModeConfig(): {
 		}
 
 		setLiveProvider(selectedModelLiveProvider);
-	}, [activeModeId, liveProvider, selectedModelLiveProvider, setLiveProvider]);
+	}, [effectiveActiveModeId, liveProvider, selectedModelLiveProvider, setLiveProvider]);
+
+	useEffect(() => {
+		if (activeModeId !== "background" || canUseBackgroundMode) {
+			return;
+		}
+
+		const next = new URLSearchParams(searchParams);
+		next.delete("mode");
+		setActiveModeId("chat");
+		setHomeChatMode("chat");
+		setSearchParams(next, { replace: true });
+	}, [activeModeId, canUseBackgroundMode, searchParams, setHomeChatMode, setSearchParams]);
 
 	useEffect(() => {
 		if (currentConversationId && conversationModeMetadata) {
@@ -241,6 +260,10 @@ export function useHomeChatModeConfig(): {
 
 	const handleModeChange = useCallback(
 		(modeId: HomeChatModeId) => {
+			if (modeId === "background" && !canUseBackgroundMode) {
+				return;
+			}
+
 			setActiveModeId(modeId);
 			setHomeChatMode(modeId);
 			const next = new URLSearchParams(searchParams);
@@ -257,13 +280,14 @@ export function useHomeChatModeConfig(): {
 				if (!selectedModelLiveProvider) {
 					setModel(getDefaultLiveModelId(nextLiveProvider));
 				}
-			} else if (activeModeId === "live") {
+			} else if (effectiveActiveModeId === "live") {
 				stopLiveSessionAndFlush();
 			}
 			setSearchParams(next, { replace: true });
 		},
 		[
-			activeModeId,
+			canUseBackgroundMode,
+			effectiveActiveModeId,
 			liveProvider,
 			searchParams,
 			selectedModelLiveProvider,
@@ -300,7 +324,7 @@ export function useHomeChatModeConfig(): {
 				return;
 			}
 
-			if (activeModeId !== "live") {
+			if (effectiveActiveModeId !== "live") {
 				return;
 			}
 
@@ -312,7 +336,7 @@ export function useHomeChatModeConfig(): {
 			setSearchParams(next, { replace: true });
 		},
 		[
-			activeModeId,
+			effectiveActiveModeId,
 			modelReferences,
 			searchParams,
 			setChatMode,
@@ -438,7 +462,7 @@ export function useHomeChatModeConfig(): {
 				onSelectedMemberIdsChange={setSelectedCouncilMemberIds}
 				responseMode={councilResponseMode}
 				onResponseModeChange={setCouncilResponseMode}
-				showHeader={activeModeId !== "council"}
+				showHeader={effectiveActiveModeId !== "council"}
 			/>
 		);
 		const sandboxRequestOptions = {
@@ -478,7 +502,7 @@ export function useHomeChatModeConfig(): {
 				canSaveRepo={canSaveSandboxRepo}
 				isSavingRepo={updateSandboxConnectionRepositories.isPending}
 				onSaveRepo={handleSaveSandboxRepo}
-				showHeader={activeModeId !== "sandbox"}
+				showHeader={effectiveActiveModeId !== "sandbox"}
 			/>
 		);
 		const liveControls = (
@@ -495,8 +519,8 @@ export function useHomeChatModeConfig(): {
 				onStop={stopLiveSessionAndFlush}
 				onVideoEnabledChange={setLiveVideoEnabled}
 				provider={effectiveLiveProvider}
-				showHeader={activeModeId !== "live"}
-				showSessionControls={activeModeId !== "live"}
+				showHeader={effectiveActiveModeId !== "live"}
+				showSessionControls={effectiveActiveModeId !== "live"}
 				status={liveStatus}
 				selectedCameraDeviceId={liveSelectedCameraDeviceId}
 				videoEnabled={liveVideoEnabled}
@@ -525,17 +549,23 @@ export function useHomeChatModeConfig(): {
 			/>
 		);
 		const activeModeControls =
-			activeModeId === "council"
+			effectiveActiveModeId === "council"
 				? councilControls
-				: activeModeId === "sandbox"
+				: effectiveActiveModeId === "sandbox"
 					? sandboxControls
-					: activeModeId === "live"
+					: effectiveActiveModeId === "live"
 						? liveControls
 						: undefined;
 		const modeControls = {
 			activeModeControls,
 			commands: HOME_CHAT_MODE_OPTIONS.map((option) => {
-				const availability = getHomeChatModeAvailability(option, activeModeId);
+				const availability =
+					option.id === "background" && !canUseBackgroundMode
+						? {
+								disabled: true,
+								reason: "Background mode requires an OpenAI Responses model.",
+							}
+						: getHomeChatModeAvailability(option, effectiveActiveModeId);
 				const Icon = option.icon;
 				return {
 					id: option.id,
@@ -543,19 +573,19 @@ export function useHomeChatModeConfig(): {
 					description: option.description,
 					command: option.id,
 					icon: <Icon className="h-4 w-4" aria-hidden="true" />,
-					isActive: activeModeId === option.id,
+					isActive: effectiveActiveModeId === option.id,
 					disabled: availability.disabled,
 					disabledReason: availability.reason,
 					keepPopoverOpen: option.id === "live",
 					onSelect: () => handleModeChange(option.id),
 				};
 			}),
-			onClearActive: activeModeId === "chat" ? undefined : () => handleModeChange("chat"),
+			onClearActive: effectiveActiveModeId === "chat" ? undefined : () => handleModeChange("chat"),
 		};
 
-		if (activeModeId === "sandbox") {
+		if (effectiveActiveModeId === "sandbox") {
 			return {
-				activeModeId,
+				activeModeId: effectiveActiveModeId,
 				modeConfig: {
 					analyticsSource: "sandbox",
 					welcomeTitle: "What should the sandbox work on?",
@@ -607,9 +637,9 @@ export function useHomeChatModeConfig(): {
 			};
 		}
 
-		if (activeModeId === "live") {
+		if (effectiveActiveModeId === "live") {
 			return {
-				activeModeId,
+				activeModeId: effectiveActiveModeId,
 				modeConfig: {
 					analyticsSource: "live",
 					welcomeTitle: "Start a live session",
@@ -635,9 +665,34 @@ export function useHomeChatModeConfig(): {
 			};
 		}
 
-		if (activeModeId !== "council") {
+		if (effectiveActiveModeId === "background") {
 			return {
-				activeModeId,
+				activeModeId: effectiveActiveModeId,
+				modeConfig: {
+					analyticsSource: "background",
+					welcomeTitle: "What should keep running?",
+					welcomeDescription:
+						"Describe the work to start, then track approvals, retries, and completion from the conversation.",
+					inputPlaceholder: {
+						newConversation: "Start background work...",
+						followUp: "Add instructions or continue the background response...",
+					},
+					requestOptions: {
+						background: true,
+					},
+					modelScope: "text-only",
+					conversationMode: buildConversationModeMetadata({
+						mode: "background",
+					}),
+					modeControls,
+					onModelChange: handleModelChange,
+				},
+			};
+		}
+
+		if (effectiveActiveModeId !== "council") {
+			return {
+				activeModeId: effectiveActiveModeId,
 				modeConfig: {
 					modeControls,
 					onModelChange: handleModelChange,
@@ -655,7 +710,7 @@ export function useHomeChatModeConfig(): {
 		};
 
 		return {
-			activeModeId,
+			activeModeId: effectiveActiveModeId,
 			modeConfig: {
 				analyticsSource: "council",
 				welcomeTitle: "What should the council debate?",
@@ -683,7 +738,7 @@ export function useHomeChatModeConfig(): {
 			},
 		};
 	}, [
-		activeModeId,
+		effectiveActiveModeId,
 		handleModeChange,
 		handleLiveProviderChange,
 		handleModelChange,

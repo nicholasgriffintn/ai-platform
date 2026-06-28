@@ -98,6 +98,10 @@ export const chatRequestOptionsSchema = chatHostedToolSettingsSchema
 			description:
 				"Overrides the Cloudflare AI Gateway cache TTL (in seconds). Set to 0 to disable caching.",
 		}),
+		background: z.boolean().optional().meta({
+			description:
+				"Requests a provider-backed background response when the selected provider supports resumable responses.",
+		}),
 		council: councilChatOptionsSchema.optional().meta({
 			description: "Council debate options for app-driven multi-perspective chat.",
 		}),

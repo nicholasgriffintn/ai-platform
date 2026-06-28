@@ -1,6 +1,8 @@
 import z from "zod/v4";
 
 import {
+	assistantCapabilityDescriptorSchema,
+	type AssistantCapabilityDescriptor,
 	type AssistantRecipe,
 	createRecipeChatRequestOptions,
 	type DynamicAppCatalogItem,
@@ -93,6 +95,7 @@ export const assistantActionItemSchema = z.object({
 	id: z.string(),
 	kind: assistantActionItemKindSchema,
 	label: z.string(),
+	capability: assistantCapabilityDescriptorSchema,
 	description: z.string().optional(),
 	status: z.string().optional(),
 	searchText: z.array(z.string()),
@@ -229,10 +232,14 @@ export interface AssistantActionAgentSource {
 }
 
 export interface AssistantActionModelToolDefinition {
+	availabilityReason?: string;
+	available?: boolean;
 	command: string;
 	description: string;
 	id: string;
 	label: string;
+	operationAccess?: AssistantCapabilityDescriptor["operationAccess"];
+	requiredModelCapabilities?: readonly string[];
 }
 
 export interface AssistantActionCatalogSources {
@@ -273,6 +280,221 @@ function isConnectedRecipeConnector(connector: RecipeConnectorManifest): boolean
 	return connector.status === "connected";
 }
 
+function getApprovalPolicy(
+	operationAccess: AssistantCapabilityDescriptor["operationAccess"],
+): AssistantCapabilityDescriptor["approvalPolicy"] {
+	return operationAccess === "write" || operationAccess === "mixed" ? "on_write" : "never";
+}
+
+function getHostedToolModelCapabilities(toolId: string): string[] {
+	switch (toolId) {
+		case "code_execution":
+			return ["supportsCodeExecution"];
+		case "file_search":
+			return ["supportsFileSearch"];
+		case "hosted_shell":
+			return ["supportsHostedShell"];
+		case "image_generation":
+			return ["supportsImageGenerationTool"];
+		case "mcp":
+			return ["supportsMcp"];
+		case "search_grounding":
+			return ["supportsSearchGrounding"];
+		case "tool_search":
+			return ["supportsToolSearch"];
+		case "web_fetch":
+			return ["supportsWebFetch"];
+		default:
+			return [];
+	}
+}
+
+function createRecipeCapabilityDescriptor(
+	recipe: AssistantRecipe,
+	installation?: RecipeInstallation,
+): AssistantCapabilityDescriptor {
+	return {
+		...(recipe.capability ?? {
+			id: recipe.id,
+			kind: "recipe",
+			name: recipe.title,
+			description: recipe.summary,
+			availability: "available",
+			launch: {
+				method: "conversation",
+				action: "recipe_chat",
+			},
+			executionMode: "workflow",
+			authRequirement: "pro",
+			requiredModelCapabilities: [],
+			requiredConnectors: [],
+			savedState: {
+				supported: true,
+				kind: "installation",
+			},
+			tags: [recipe.category, recipe.kind],
+		}),
+		availability: installation ? "installed" : (recipe.capability?.availability ?? "available"),
+		authState: "pro_required",
+		operationAccess: "mixed",
+		approvalPolicy: "on_write",
+		requiredConnectors: recipe.integrations
+			.filter((integration) => integration.requiresConnection !== false)
+			.map((integration) => ({
+				provider: integration.providerId,
+				state: integration.connectionStatus ?? "unknown",
+			})),
+		availabilityReason: installation
+			? "Recipe is installed and active."
+			: "Recipe can be installed.",
+	};
+}
+
+function createAppCapabilityDescriptor(app: DynamicAppCatalogItem): AssistantCapabilityDescriptor {
+	if (app.capability) {
+		return {
+			...app.capability,
+			authState: app.capability.authState ?? "not_required",
+			approvalPolicy: app.capability.approvalPolicy ?? "never",
+			requiredModelCapabilities: app.capability.requiredModelCapabilities ?? [],
+			requiredConnectors: app.capability.requiredConnectors ?? [],
+			availabilityReason: app.capability.availabilityReason ?? "Available.",
+		};
+	}
+
+	const kind = app.kind ?? (app.href ? "frontend" : "dynamic");
+	return {
+		id: app.id,
+		kind: kind === "frontend" ? "frontend_app" : "dynamic_app",
+		name: app.name,
+		description: app.description,
+		availability: "available",
+		launch: {
+			method: kind === "frontend" ? "navigation" : "form",
+			href: app.href,
+		},
+		executionMode: kind === "frontend" ? "navigation" : "function",
+		authRequirement: "none",
+		authState: "not_required",
+		operationAccess: "read",
+		approvalPolicy: "never",
+		requiredModelCapabilities: [],
+		requiredConnectors: [],
+		availabilityReason: "Available.",
+		savedState:
+			kind === "frontend"
+				? {
+						supported: false,
+					}
+				: {
+						supported: true,
+						kind: "stored_response",
+					},
+		tags: app.tags ?? [],
+	};
+}
+
+function createAgentCapabilityDescriptor(
+	agent: AssistantActionAgentSource,
+): AssistantCapabilityDescriptor {
+	return {
+		id: agent.id,
+		kind: "agent",
+		name: agent.name,
+		description: agent.description,
+		availability: "available",
+		launch: {
+			method: "conversation",
+			action: "ask_agent",
+		},
+		executionMode: "agent",
+		authRequirement: "signed_in",
+		authState: "unknown",
+		operationAccess: "mixed",
+		approvalPolicy: "on_write",
+		requiredModelCapabilities: [],
+		requiredConnectors: [],
+		availabilityReason: "Agent is available.",
+		savedState: {
+			supported: true,
+		},
+		tags: [],
+	};
+}
+
+function createConnectorCapabilityDescriptor(
+	connector: RecipeConnectorManifest,
+): AssistantCapabilityDescriptor {
+	const operationAccess = connector.operationAccess ?? "mixed";
+	return {
+		id: connector.id,
+		kind: "connector",
+		name: connector.name,
+		description: connector.description,
+		availability: connector.status === "connected" ? "connected" : connector.status,
+		launch: {
+			method: connector.authType === "api_key" ? "navigation" : "external",
+			href: connector.setupUrl,
+		},
+		executionMode: "connector_operation",
+		authRequirement: "connector",
+		authState: connector.status,
+		operationAccess,
+		approvalPolicy: getApprovalPolicy(operationAccess),
+		requiredModelCapabilities: [],
+		requiredConnectors: [
+			{
+				provider: connector.id,
+				state: connector.status,
+			},
+		],
+		availabilityReason:
+			connector.status === "connected"
+				? `${connector.name} is connected.`
+				: `${connector.name} is ${connector.status}.`,
+		savedState: {
+			supported: true,
+			kind: "connection",
+		},
+		tags: ["connector", connector.authType],
+	};
+}
+
+function createToolCapabilityDescriptor(
+	tool: AssistantActionModelToolDefinition,
+): AssistantCapabilityDescriptor {
+	const operationAccess = tool.operationAccess ?? "read";
+	return {
+		id: tool.id,
+		kind: "tool",
+		name: tool.label,
+		description: tool.description,
+		availability: tool.available === false ? "unavailable" : "available",
+		launch: {
+			method: "tool_toggle",
+			action: tool.id,
+		},
+		executionMode: "tool",
+		authRequirement: "none",
+		authState: "not_required",
+		operationAccess,
+		approvalPolicy: getApprovalPolicy(operationAccess),
+		requiredModelCapabilities: [
+			...(tool.requiredModelCapabilities ?? getHostedToolModelCapabilities(tool.id)),
+		],
+		requiredConnectors: [],
+		availabilityReason:
+			tool.availabilityReason ??
+			(tool.available === false
+				? "Not available for the selected model."
+				: "Available for the selected model."),
+		savedState: {
+			supported: false,
+		},
+		tags: ["tool"],
+	};
+}
+
 export function createRecipeAssistantActionItem(
 	recipe: AssistantRecipe,
 	installation?: RecipeInstallation,
@@ -296,6 +518,7 @@ export function createRecipeAssistantActionItem(
 			recipeId: recipe.id,
 			...(installation ? { installationId: installation.id } : {}),
 		},
+		capability: createRecipeCapabilityDescriptor(recipe, installation),
 		metadata: {
 			recipeId: recipe.id,
 			installationId: installation?.id,
@@ -330,6 +553,7 @@ export function createConnectorAssistantActionItem(
 						authType: connector.authType,
 						provider: connector.id,
 					},
+		capability: createConnectorCapabilityDescriptor(connector),
 		metadata: {
 			authType: connector.authType,
 			provider: connector.id,
@@ -351,6 +575,7 @@ export function buildAssistantActionCatalog(
 				id: `app:${app.id}`,
 				kind: "app" as const,
 				label: app.name,
+				capability: createAppCapabilityDescriptor(app),
 				description: app.description,
 				status: app.type,
 				searchText: [
@@ -376,6 +601,7 @@ export function buildAssistantActionCatalog(
 				id: `agent:${agent.id}`,
 				kind: "agent" as const,
 				label: agent.name,
+				capability: createAgentCapabilityDescriptor(agent),
 				description: agent.description,
 				status: agent.model,
 				searchText: [agent.name, ...nonEmptyText(agent.description), ...nonEmptyText(agent.model)],
@@ -395,6 +621,7 @@ export function buildAssistantActionCatalog(
 				id: `tool:${tool.id}`,
 				kind: "tool" as const,
 				label: tool.label,
+				capability: createToolCapabilityDescriptor(tool),
 				description: tool.description,
 				searchText: [tool.label, tool.command, tool.description, tool.id],
 				launch: {

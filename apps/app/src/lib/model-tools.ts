@@ -2,15 +2,19 @@ import type { ModelConfigItem } from "@assistant/schemas";
 
 export type ModelToolId =
 	| "code_execution"
+	| "file_search"
 	| "search_grounding"
 	| "image_generation"
+	| "mcp"
 	| "web_fetch"
 	| "tool_search"
 	| "hosted_shell";
 
-type ToolCapabilityKey =
+export type ToolCapabilityKey =
 	| "supportsCodeExecution"
+	| "supportsFileSearch"
 	| "supportsSearchGrounding"
+	| "supportsMcp"
 	| "supportsImageGenerationTool"
 	| "supportsWebFetch"
 	| "supportsToolSearch"
@@ -22,6 +26,13 @@ export interface ModelToolDefinition {
 	description: string;
 	id: ModelToolId;
 	label: string;
+	requiresConfiguration?: boolean;
+}
+
+export interface ModelToolOption extends ModelToolDefinition {
+	availabilityReason: string;
+	available: boolean;
+	requiredModelCapabilities: ToolCapabilityKey[];
 }
 
 export const MODEL_TOOL_DEFINITIONS: ModelToolDefinition[] = [
@@ -47,6 +58,22 @@ export const MODEL_TOOL_DEFINITIONS: ModelToolDefinition[] = [
 		label: "Image generation",
 	},
 	{
+		capability: "supportsFileSearch",
+		command: "file search",
+		description: "Let supported models search configured vector stores.",
+		id: "file_search",
+		label: "File search",
+		requiresConfiguration: true,
+	},
+	{
+		capability: "supportsMcp",
+		command: "mcp",
+		description: "Let supported models use configured remote MCP servers.",
+		id: "mcp",
+		label: "MCP",
+		requiresConfiguration: true,
+	},
+	{
 		capability: "supportsToolSearch",
 		command: "tool search",
 		description: "Let supported models search the app tool inventory.",
@@ -69,10 +96,70 @@ export const MODEL_TOOL_DEFINITIONS: ModelToolDefinition[] = [
 	},
 ];
 
-export function getAvailableModelTools(model?: Partial<Pick<ModelConfigItem, ToolCapabilityKey>>) {
+const MODEL_TOOL_IDS = new Set<ModelToolId>(MODEL_TOOL_DEFINITIONS.map((tool) => tool.id));
+
+export function isModelToolId(toolId: string): toolId is ModelToolId {
+	return MODEL_TOOL_IDS.has(toolId as ModelToolId);
+}
+
+function unavailableModelToolReason(
+	tool: ModelToolDefinition,
+	model?: Partial<Pick<ModelConfigItem, "supportsToolCalls" | ToolCapabilityKey>>,
+): string {
 	if (!model) {
-		return [];
+		return "Select a model to see tool support.";
 	}
 
-	return MODEL_TOOL_DEFINITIONS.filter((tool) => Boolean(model[tool.capability]));
+	if (!model.supportsToolCalls) {
+		return "The selected model does not support tools.";
+	}
+
+	if (model[tool.capability] && tool.id === "mcp") {
+		return "Configure MCP servers before enabling MCP.";
+	}
+
+	if (model[tool.capability] && tool.id === "file_search") {
+		return "Configure vector stores before enabling file search.";
+	}
+
+	return `The selected model does not support ${tool.command}.`;
+}
+
+export function getModelToolOptions(
+	model?: Partial<Pick<ModelConfigItem, "supportsToolCalls" | ToolCapabilityKey>>,
+): ModelToolOption[] {
+	return MODEL_TOOL_DEFINITIONS.map((tool) => {
+		const available = Boolean(
+			model?.supportsToolCalls && model[tool.capability] && !tool.requiresConfiguration,
+		);
+		return {
+			...tool,
+			available,
+			requiredModelCapabilities: [tool.capability],
+			availabilityReason: available
+				? "Available for the selected model."
+				: unavailableModelToolReason(tool, model),
+		};
+	});
+}
+
+export function getAvailableModelTools(
+	model?: Partial<Pick<ModelConfigItem, "supportsToolCalls" | ToolCapabilityKey>>,
+) {
+	return getModelToolOptions(model).filter((tool) => tool.available);
+}
+
+export function filterUnavailableModelToolSelections(
+	selectedTools: string[],
+	model?: Partial<Pick<ModelConfigItem, "supportsToolCalls" | ToolCapabilityKey>>,
+): string[] {
+	if (!model) {
+		return selectedTools;
+	}
+
+	const availableModelToolIds = new Set(getAvailableModelTools(model).map((tool) => tool.id));
+
+	return selectedTools.filter(
+		(toolId) => !isModelToolId(toolId) || availableModelToolIds.has(toolId),
+	);
 }

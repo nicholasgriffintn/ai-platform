@@ -414,7 +414,7 @@ describe("ComposerCommandSurface", () => {
 		expect(screen.getByRole("button", { name: /\/run/i })).toBeInTheDocument();
 	});
 
-	it("groups recipes, apps, agents, connectors, and tools by their own names", () => {
+	it("groups composer actions without exposing app launches", () => {
 		mocks.store.model = "tool-model";
 
 		render(
@@ -427,12 +427,12 @@ describe("ComposerCommandSurface", () => {
 		);
 
 		expect(screen.getByText("Recipes")).toBeInTheDocument();
-		expect(screen.getByText("Apps")).toBeInTheDocument();
 		expect(screen.getByText("Agents")).toBeInTheDocument();
 		expect(screen.getByText("Connectors")).toBeInTheDocument();
 		expect(screen.getByText("Tools")).toBeInTheDocument();
+		expect(screen.queryByText("Apps")).not.toBeInTheDocument();
 		expect(screen.getByRole("button", { name: /@Morning Briefing/i })).toBeInTheDocument();
-		expect(screen.getByRole("button", { name: /@Article Research/i })).toBeInTheDocument();
+		expect(screen.queryByRole("button", { name: /@Article Research/i })).not.toBeInTheDocument();
 		expect(screen.getByRole("button", { name: /@PostHog/i })).toBeInTheDocument();
 		expect(screen.getByRole("button", { name: /@Reviewer/i })).toBeInTheDocument();
 		expect(screen.getByRole("button", { name: /@Web fetch/i })).toBeInTheDocument();

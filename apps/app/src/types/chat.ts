@@ -195,6 +195,10 @@ export interface MessageUsage extends Record<string, unknown> {
 	prompt_tokens?: number;
 	completion_tokens?: number;
 	total_tokens?: number;
+	cost_usd?: number;
+	costUsd?: number;
+	estimated_cost_usd?: number;
+	estimatedCostUsd?: number;
 	promptTokenCount?: number;
 	candidatesTokensDetails?: {
 		modality: string;
@@ -282,6 +286,23 @@ export interface Memory {
 	created_at: string;
 	group_id: string | null;
 	group_title: string | null;
+	provenance?: {
+		provider: string;
+		source: string;
+		conversation_id?: string | null;
+		connector_provider?: string;
+	};
+	scope?: string;
+	namespace?: string;
+	ttl?: {
+		expires_at: string | null;
+	};
+	lifecycle?: {
+		is_active: boolean;
+		importance_score: number;
+		last_accessed?: string | null;
+		updated_at?: string | null;
+	};
 }
 
 export interface MemoryGroup {

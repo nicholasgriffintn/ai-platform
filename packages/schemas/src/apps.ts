@@ -327,6 +327,7 @@ export const assistantCapabilityAvailabilitySchema = z.enum([
 	"available",
 	"installed",
 	"connected",
+	"disconnected",
 	"unconfigured",
 	"blocked",
 	"unavailable",
@@ -357,6 +358,32 @@ export const assistantCapabilityAuthRequirementSchema = z.enum([
 	"connector",
 ]);
 
+export const assistantCapabilityAuthStateSchema = z.enum([
+	"not_required",
+	"signed_in",
+	"pro_required",
+	"connected",
+	"disconnected",
+	"unconfigured",
+	"unknown",
+]);
+
+export const assistantCapabilityOperationAccessSchema = z.enum(["read", "write", "mixed"]);
+
+export const assistantCapabilityApprovalPolicySchema = z.enum(["never", "on_write", "always"]);
+
+export const assistantCapabilityRequiredConnectorSchema = z.object({
+	provider: z.string(),
+	state: z.enum([
+		"connected",
+		"disconnected",
+		"missing",
+		"not_required",
+		"unconfigured",
+		"unknown",
+	]),
+});
+
 export const assistantCapabilitySavedStateSchema = z.object({
 	supported: z.boolean(),
 	kind: z.enum(["installation", "stored_response", "connection"]).optional(),
@@ -375,6 +402,12 @@ export const assistantCapabilityDescriptorSchema = z.object({
 	}),
 	executionMode: assistantCapabilityExecutionModeSchema,
 	authRequirement: assistantCapabilityAuthRequirementSchema,
+	authState: assistantCapabilityAuthStateSchema.optional(),
+	operationAccess: assistantCapabilityOperationAccessSchema.optional(),
+	approvalPolicy: assistantCapabilityApprovalPolicySchema.optional(),
+	requiredModelCapabilities: z.array(z.string()).default([]),
+	requiredConnectors: z.array(assistantCapabilityRequiredConnectorSchema).default([]),
+	availabilityReason: z.string().optional(),
 	savedState: assistantCapabilitySavedStateSchema,
 	tags: z.array(z.string()).default([]),
 });
@@ -573,6 +606,16 @@ export type AssistantCapabilityExecutionMode = z.infer<
 >;
 export type AssistantCapabilityAuthRequirement = z.infer<
 	typeof assistantCapabilityAuthRequirementSchema
+>;
+export type AssistantCapabilityAuthState = z.infer<typeof assistantCapabilityAuthStateSchema>;
+export type AssistantCapabilityOperationAccess = z.infer<
+	typeof assistantCapabilityOperationAccessSchema
+>;
+export type AssistantCapabilityApprovalPolicy = z.infer<
+	typeof assistantCapabilityApprovalPolicySchema
+>;
+export type AssistantCapabilityRequiredConnector = z.infer<
+	typeof assistantCapabilityRequiredConnectorSchema
 >;
 export type AssistantCapabilitySavedState = z.infer<typeof assistantCapabilitySavedStateSchema>;
 export type AssistantCapabilityDescriptor = z.infer<typeof assistantCapabilityDescriptorSchema>;
@@ -1282,6 +1325,7 @@ export const recipeConnectorManifestSchema = z.object({
 	updatedAt: z.string().optional(),
 	scopes: z.array(z.string()),
 	operations: z.array(z.string()).default([]),
+	operationAccess: assistantCapabilityOperationAccessSchema.optional(),
 });
 
 export const recipeConnectorsResponseSchema = z.object({

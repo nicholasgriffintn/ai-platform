@@ -240,6 +240,31 @@ describe("RequestPreparer", () => {
 
 			expect(result.isProUser).toBe(false);
 		});
+
+		it("rejects background responses for providers that cannot resume them", async () => {
+			const deepseekModelConfig = {
+				...mockModelConfig,
+				matchingModel: "deepseek-chat",
+				provider: "deepseek",
+				name: "DeepSeek Chat",
+			};
+
+			await expect(
+				preparer.prepare(
+					{
+						...baseOptions,
+						options: {
+							background: true,
+						},
+					},
+					{
+						...baseValidationContext,
+						modelConfig: deepseekModelConfig,
+						selectedModels: ["deepseek-chat"],
+					},
+				),
+			).rejects.toThrow("Background responses are only supported by OpenAI Responses models");
+		});
 	});
 
 	describe("buildModelConfigs", () => {

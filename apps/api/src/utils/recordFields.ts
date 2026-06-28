@@ -18,6 +18,20 @@ export function readStringField(value: unknown, fieldName: string): string | und
 	return typeof field === "string" ? field : undefined;
 }
 
+export function readStringFieldAlias(
+	value: unknown,
+	fieldNames: readonly string[],
+): string | undefined {
+	for (const fieldName of fieldNames) {
+		const field = readStringField(value, fieldName);
+		if (field?.trim()) {
+			return field;
+		}
+	}
+
+	return undefined;
+}
+
 export function readNumberField(value: unknown, fieldName: string): number | undefined {
 	const field = readRecordField(value, fieldName);
 	return typeof field === "number" && Number.isFinite(field) ? field : undefined;

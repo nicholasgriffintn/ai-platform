@@ -33,6 +33,19 @@ const logger = getLogger({ prefix: "lib/chat/preparation/RequestPreparer" });
 
 type ProviderModelConfig = NonNullable<Awaited<ReturnType<typeof findModelConfig>>>;
 
+function assertBackgroundRequestIsSupported(options: CoreChatOptions, primaryProvider: string) {
+	if (options.options?.background !== true) {
+		return;
+	}
+
+	if (primaryProvider !== "openai") {
+		throw new AssistantError(
+			"Background responses are only supported by OpenAI Responses models.",
+			ErrorType.PARAMS_ERROR,
+		);
+	}
+}
+
 export interface PreparedRequest {
 	modelConfigs: ModelConfigInfo[];
 	primaryModel: string;
@@ -130,6 +143,7 @@ export class RequestPreparer {
 
 		const primaryModel = primaryModelConfig.matchingModel;
 		const primaryProvider = primaryModelConfig.provider;
+		assertBackgroundRequestIsSupported(options, primaryProvider);
 
 		const conversationManager = ConversationManager.getInstance({
 			database,

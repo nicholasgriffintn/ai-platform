@@ -36,8 +36,16 @@ const voxtralModel: ModelConfigItem = {
 	modalities: { input: ["audio"], output: ["transcription"] },
 	supportsRealtimeSession: true,
 };
+const openAIModel: ModelConfigItem = {
+	id: "gpt-5.4",
+	matchingModel: "gpt-5.4",
+	name: "GPT 5.4",
+	provider: "openai",
+	modalities: { input: ["text"], output: ["text"] },
+};
 const models: ModelConfig = {
 	"deepseek-chat": deepseekModel,
+	"gpt-5.4": openAIModel,
 	"voxtral-mini-transcribe-realtime": voxtralModel,
 };
 const chatStoreState: {
@@ -148,6 +156,7 @@ describe("useHomeChatModeConfig", () => {
 		liveSessionState.provider = "mistral";
 		finalLiveInputTranscriptHandler = undefined;
 		models["deepseek-chat"] = deepseekModel;
+		models["gpt-5.4"] = openAIModel;
 		models["voxtral-mini-transcribe-realtime"] = voxtralModel;
 	});
 
@@ -201,6 +210,7 @@ describe("useHomeChatModeConfig", () => {
 
 	it("does not compose live transcript responses until a reasoning chat model is available", () => {
 		delete models["deepseek-chat"];
+		delete models["gpt-5.4"];
 
 		renderHook(() => useHomeChatModeConfig());
 
@@ -296,5 +306,57 @@ describe("useHomeChatModeConfig", () => {
 		expect(result.current.activeModeId).toBe("chat");
 		expect(result.current.modeConfig.requestOptions).toBeUndefined();
 		expect(result.current.modeConfig.conversationMode).toBeUndefined();
+	});
+
+	it("builds background mode metadata from the home selector", () => {
+		searchParams = new URLSearchParams("mode=background");
+		chatStoreState.homeChatMode = "background";
+		chatStoreState.model = "gpt-5.4";
+
+		const { result } = renderHook(() => useHomeChatModeConfig());
+
+		expect(result.current.activeModeId).toBe("background");
+		expect(result.current.modeConfig.analyticsSource).toBe("background");
+		expect(result.current.modeConfig.modelScope).toBe("text-only");
+		expect(result.current.modeConfig.requestOptions).toEqual({
+			background: true,
+		});
+		expect(result.current.modeConfig.conversationMode).toEqual({
+			mode: "background",
+		});
+	});
+
+	it("falls back to chat instead of sending fake background options for unsupported models", () => {
+		searchParams = new URLSearchParams("mode=background");
+		chatStoreState.homeChatMode = "background";
+		chatStoreState.model = "deepseek-chat";
+
+		const { result } = renderHook(() => useHomeChatModeConfig());
+
+		expect(result.current.activeModeId).toBe("chat");
+		expect(result.current.modeConfig.requestOptions).toBeUndefined();
+		expect(result.current.modeConfig.conversationMode).toBeUndefined();
+		expect(setHomeChatMode).toHaveBeenCalledWith("chat");
+		const nextParams = typedSetSearchParams.mock.calls.at(-1)?.[0];
+		expect(nextParams?.get("mode")).toBeNull();
+	});
+
+	it("disables background mode for models that cannot run background responses", () => {
+		searchParams = new URLSearchParams();
+		chatStoreState.homeChatMode = "chat";
+		chatStoreState.model = "deepseek-chat";
+
+		const { result } = renderHook(() => useHomeChatModeConfig());
+
+		const commands = result.current.modeConfig.modeControls?.commands;
+		if (!commands) {
+			throw new Error("Expected mode commands");
+		}
+		const backgroundCommand = commands.find((command) => command.id === "background");
+
+		expect(backgroundCommand).toMatchObject({
+			disabled: true,
+			disabledReason: "Background mode requires an OpenAI Responses model.",
+		});
 	});
 });

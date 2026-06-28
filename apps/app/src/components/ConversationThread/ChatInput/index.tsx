@@ -141,9 +141,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 			isTextToImageOnlyModel,
 			supportsAudio,
 			supportsCode,
-			supportsCodeExecution,
 			supportsDocuments,
-			supportsSearchGrounding,
 			supportsToolCalls,
 		} = modelCapabilities;
 
@@ -491,9 +489,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 		const isToolSelectionLocked = chatMode === "agent" && selectedAgentId !== null;
 		const canUseProComposerActions = isPro;
 		const showInlineMultiModelToggle = isPro && !model && chatMode === "remote";
-		const canShowToolMenu =
-			showInlineMultiModelToggle ||
-			(supportsToolCalls && (supportsCodeExecution || supportsSearchGrounding));
+		const canShowToolMenu = showInlineMultiModelToggle || supportsToolCalls;
 		const canShowActionMenu = canUseProComposerActions || canShowToolMenu;
 		const shouldRenderInputControls = hideTextInput && controls;
 		const isComposerSubmitDisabled =
@@ -593,10 +589,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 													onUploadClick={() => fileInputRef.current?.click()}
 													tools={
 														canShowToolMenu ? (
-															<ToolToggles
-																isDisabled={isLoading || isToolSelectionLocked}
-																variant="menu"
-															/>
+															<ToolToggles isDisabled={isLoading || isToolSelectionLocked} />
 														) : undefined
 													}
 													uploadIcon={getUploadButtonIcon()}
@@ -648,9 +641,6 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 											onModelChange={onModelChange}
 										/>
 									</div>
-									{showInlineMultiModelToggle && (
-										<ToolToggles isDisabled={isLoading || isToolSelectionLocked} />
-									)}
 									{!hideInlineResponseControls && <InlineResponseControls isDisabled={isLoading} />}
 								</div>
 								<div className="flex-shrink-0 flex items-center gap-2">

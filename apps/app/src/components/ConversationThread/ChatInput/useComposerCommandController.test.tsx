@@ -42,6 +42,7 @@ const mocks = vi.hoisted(() => ({
 			searchText: string[];
 		}>,
 	},
+	useAssistantActionCatalog: vi.fn(),
 }));
 
 vi.mock("~/hooks/useAgents", () => ({
@@ -52,7 +53,7 @@ vi.mock("~/hooks/useAgents", () => ({
 }));
 
 vi.mock("~/hooks/useAssistantActionCatalog", () => ({
-	useAssistantActionCatalog: () => mocks.actionCatalog,
+	useAssistantActionCatalog: mocks.useAssistantActionCatalog,
 }));
 
 vi.mock("~/hooks/useModels", () => ({
@@ -77,6 +78,20 @@ describe("useComposerCommandController", () => {
 		mocks.store.selectedAssistantAction = null;
 		mocks.actionCatalog.verbs = [];
 		mocks.actionCatalog.items = [];
+		mocks.useAssistantActionCatalog.mockReturnValue(mocks.actionCatalog);
+	});
+
+	it("excludes app launches from the composer action catalogue", () => {
+		renderHook(() =>
+			useComposerCommandController({
+				isLoading: false,
+			}),
+		);
+
+		expect(mocks.useAssistantActionCatalog).toHaveBeenCalledWith({
+			includeApps: false,
+			modelTools: [],
+		});
 	});
 
 	it("moves through slash suggestions with wraparound", () => {

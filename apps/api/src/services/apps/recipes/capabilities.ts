@@ -25,6 +25,13 @@ export function createRecipeCapabilityDescriptor(
 		},
 		executionMode: "workflow",
 		authRequirement: "pro",
+		requiredModelCapabilities: [],
+		requiredConnectors: recipe.integrations
+			.filter((integration) => integration.requiresConnection !== false)
+			.map((integration) => ({
+				provider: integration.providerId,
+				state: integration.connectionStatus ?? "unknown",
+			})),
 		savedState: {
 			supported: true,
 			kind: "installation",

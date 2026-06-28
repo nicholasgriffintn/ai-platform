@@ -24,6 +24,8 @@ export function createDynamicAppCapabilityDescriptor(
 			},
 			executionMode: "navigation",
 			authRequirement: "none",
+			requiredModelCapabilities: [],
+			requiredConnectors: [],
 			savedState: {
 				supported: false,
 			},
@@ -42,6 +44,8 @@ export function createDynamicAppCapabilityDescriptor(
 		},
 		executionMode: "function",
 		authRequirement: "none",
+		requiredModelCapabilities: [],
+		requiredConnectors: [],
 		savedState: {
 			supported: true,
 			kind: "stored_response",

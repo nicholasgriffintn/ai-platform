@@ -365,6 +365,42 @@ describe("ChatService streaming", () => {
 		).toBe(false);
 	});
 
+	it("does not send stale hosted model tools that are unavailable for the selected model", async () => {
+		const fetchMock = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) =>
+			createSseResponse([data("[DONE]")]),
+		);
+		vi.stubGlobal("fetch", fetchMock);
+
+		const service = new ChatService(async () => ({}));
+
+		await service.streamChatCompletions({
+			chatSettings: {},
+			completionId: "conversation-1",
+			endpoint: "/chat/completions",
+			messages: [{ role: "user", content: "hello" } as Message],
+			mode: "remote",
+			model: "deepseek-chat",
+			modelConfig: {
+				id: "deepseek-chat",
+				matchingModel: "deepseek-chat",
+				name: "DeepSeek Chat",
+				provider: "deepseek",
+				supportsToolCalls: true,
+				supportsWebFetch: false,
+			},
+			onProgress: () => {},
+			onStateChange: () => {},
+			selectedTools: ["web_search", "web_fetch", "file_search"],
+			signal: new AbortController().signal,
+			streamingEnabled: true,
+		});
+
+		const [, request] = fetchMock.mock.calls[0];
+		const body = JSON.parse(String(request?.body));
+
+		expect(body.enabled_tools).toEqual(["web_search"]);
+	});
+
 	it("sends recipe scope with the exact recipe tools", async () => {
 		const fetchMock = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) =>
 			createSseResponse([data("[DONE]")]),

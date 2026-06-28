@@ -132,6 +132,44 @@ describe("serialiseMessagesForChatRequest", () => {
 			}).success,
 		).toBe(true);
 	});
+
+	it("deduplicates repeated assistant tool calls before replaying provider requests", () => {
+		const messages: Message[] = [
+			{
+				id: "assistant-tool-call",
+				role: "assistant",
+				content: "Searching...",
+				tool_calls: [
+					{
+						id: "call_00_search",
+						type: "function",
+						function: {
+							name: "web_search",
+							arguments: '{"query":"Polychat"}',
+						},
+					},
+					{
+						id: "call_00_search",
+						type: "function",
+						function: {
+							name: "web_search",
+							arguments: {
+								query: "Polychat",
+							},
+						},
+					},
+				],
+			},
+		];
+
+		const requestMessages = serialiseMessagesForChatRequest(messages);
+		const updateMessages = serialiseMessagesForConversationUpdate(messages);
+
+		expect(requestMessages[0]?.tool_calls).toHaveLength(1);
+		expect(requestMessages[0]?.tool_calls?.[0]?.id).toBe("call_00_search");
+		expect(updateMessages[0]?.tool_calls).toHaveLength(1);
+		expect(updateMessages[0]?.tool_calls?.[0]?.id).toBe("call_00_search");
+	});
 });
 
 describe("serialiseMessagesForConversationUpdate", () => {

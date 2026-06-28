@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
 	buildAssistantMessageData,
 	buildConversationModeMetadataFromRequestOptions,
+	resolveChatConversationMode,
 	resolveChatPromptMode,
 } from "../mode-metadata";
 
@@ -86,6 +87,18 @@ describe("buildConversationModeMetadataFromRequestOptions", () => {
 				from: "+15551234567",
 				to: "+15557654321",
 			},
+		});
+	});
+
+	it("builds background metadata without duplicating request options", () => {
+		const options = {
+			background: true,
+		};
+
+		expect(resolveChatPromptMode(options as any)).toBeUndefined();
+		expect(resolveChatConversationMode(options as any)).toBe("background");
+		expect(buildConversationModeMetadataFromRequestOptions(options as any)).toEqual({
+			mode: "background",
 		});
 	});
 

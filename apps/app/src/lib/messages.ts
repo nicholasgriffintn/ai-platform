@@ -106,6 +106,36 @@ function normaliseMessageParts(parts: unknown): Message["parts"] | undefined {
 	return normalised.length > 0 ? normalised : undefined;
 }
 
+function getToolCallIdentity(
+	toolCall: NonNullable<Message["tool_calls"]>[number],
+	index: number,
+): string {
+	if (typeof toolCall.id === "string" && toolCall.id.trim()) {
+		return toolCall.id;
+	}
+
+	return `${index}:${toolCall.function.name}:${JSON.stringify(toolCall.function.arguments)}`;
+}
+
+function dedupeToolCalls(toolCalls: Message["tool_calls"]): Message["tool_calls"] {
+	if (!Array.isArray(toolCalls)) {
+		return undefined;
+	}
+
+	const seen = new Set<string>();
+	const deduped: NonNullable<Message["tool_calls"]> = [];
+	for (const [index, toolCall] of toolCalls.entries()) {
+		const identity = getToolCallIdentity(toolCall, index);
+		if (seen.has(identity)) {
+			continue;
+		}
+		seen.add(identity);
+		deduped.push(toolCall);
+	}
+
+	return deduped.length > 0 ? deduped : undefined;
+}
+
 export function normalizeMessage(message: Message): Message {
 	let content = message.content;
 	const reasoning = message.reasoning;
@@ -177,7 +207,7 @@ export function normalizeMessage(message: Message): Message {
 		reasoning: finalReasoning,
 		parts,
 		log_id: message.log_id,
-		tool_calls: message.tool_calls,
+		tool_calls: dedupeToolCalls(message.tool_calls),
 		usage: message.usage,
 		data: message.data,
 		status: message.status,
@@ -258,7 +288,7 @@ function serialiseContentForChatRequest(message: Message): Message["content"] {
 }
 
 function serialiseToolCallsForChatRequest(toolCalls: Message["tool_calls"]): Message["tool_calls"] {
-	return Array.isArray(toolCalls) ? toolCalls : undefined;
+	return dedupeToolCalls(toolCalls);
 }
 
 export function serialiseMessageForChatRequest(message: Message): ChatRequestMessage {

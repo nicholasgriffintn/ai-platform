@@ -312,7 +312,10 @@ export function useChatManager(
 					finalResponse = result.response;
 					if (result.message) {
 						finalAssistantMessage = result.message;
-						accumulatedMessages = [...accumulatedMessages, result.message];
+						accumulatedMessages = [
+							...accumulatedMessages,
+							...(result.messages?.length ? result.messages : [result.message]),
+						];
 						speakerQueue.splice(
 							0,
 							speakerQueue.length,

@@ -44,7 +44,9 @@ export default defineConfig(({ isSsrBuild, command }) => ({
 			babelConfig: {
 				babelrc: false,
 				configFile: false,
-				presets: ["@babel/preset-typescript"],
+				parserOpts: {
+					plugins: ["jsx", "typescript"],
+				},
 				plugins: [["babel-plugin-react-compiler", ReactCompilerConfig]],
 			},
 		}),

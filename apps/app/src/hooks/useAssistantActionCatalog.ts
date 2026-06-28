@@ -7,8 +7,10 @@ import { useDynamicApps } from "./useDynamicApps";
 import { useAssistantRecipes, useRecipeInstallations } from "./useRecipes";
 
 export function useAssistantActionCatalog({
+	includeApps = true,
 	modelTools = [],
 }: {
+	includeApps?: boolean;
 	modelTools?: readonly ModelToolDefinition[];
 } = {}): AssistantActionCatalog {
 	const { chatAgents } = useAgents();
@@ -21,7 +23,7 @@ export function useAssistantActionCatalog({
 		() =>
 			buildAssistantActionCatalog({
 				agents: chatAgents,
-				apps: appsData?.apps ?? [],
+				apps: includeApps ? (appsData?.apps ?? []) : [],
 				connectors: connectorsData?.connectors ?? [],
 				installations: installationsData?.installations ?? [],
 				modelTools,
@@ -31,6 +33,7 @@ export function useAssistantActionCatalog({
 			appsData?.apps,
 			chatAgents,
 			connectorsData?.connectors,
+			includeApps,
 			installationsData?.installations,
 			modelTools,
 			recipesData?.recipes,

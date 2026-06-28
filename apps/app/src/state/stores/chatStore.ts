@@ -35,8 +35,10 @@ const defaultSettings: ChatSettings = {
 
 export interface ChatStore {
 	currentConversationId: string | undefined;
+	locallyCreatedConversationIds: Record<string, true>;
 	setCurrentConversationId: (id: string | undefined) => void;
 	startNewConversation: (id?: string) => void;
+	markConversationRemoteAvailable: (id: string) => void;
 	clearCurrentConversation: () => void;
 
 	hasApiKey: boolean;
@@ -92,12 +94,30 @@ export const useChatStore = create<ChatStore>()(
 	persist(
 		(set, get) => ({
 			currentConversationId: undefined,
+			locallyCreatedConversationIds: {},
 			setCurrentConversationId: (id) => set({ currentConversationId: id }),
 			startNewConversation: (id?: string) =>
-				set((state) => ({
-					currentConversationId: id || createConversationId(),
-					localOnlyMode: state.temporaryChatsDefault,
-				})),
+				set((state) => {
+					const conversationId = id || createConversationId();
+
+					return {
+						currentConversationId: conversationId,
+						locallyCreatedConversationIds: {
+							...state.locallyCreatedConversationIds,
+							[conversationId]: true,
+						},
+						localOnlyMode: state.temporaryChatsDefault,
+					};
+				}),
+			markConversationRemoteAvailable: (id: string) =>
+				set((state) => {
+					if (!state.locallyCreatedConversationIds[id]) {
+						return {};
+					}
+
+					const { [id]: _removed, ...remainingIds } = state.locallyCreatedConversationIds;
+					return { locallyCreatedConversationIds: remainingIds };
+				}),
 			clearCurrentConversation: () =>
 				set((state) => ({
 					currentConversationId: undefined,

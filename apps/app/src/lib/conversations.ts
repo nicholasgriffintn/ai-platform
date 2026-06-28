@@ -8,9 +8,9 @@ export function createConversationId(): string {
 export function preserveOptimisticMessages(
 	fetchedConversation: Conversation | null | undefined,
 	cachedConversation: Conversation | null | undefined,
-): Conversation | null | undefined {
+): Conversation | null {
 	if (!fetchedConversation || !cachedConversation?.messages?.length) {
-		return fetchedConversation || cachedConversation;
+		return fetchedConversation || cachedConversation || null;
 	}
 
 	const fetchedMessageCount = fetchedConversation.messages?.length || 0;
@@ -26,4 +26,11 @@ export function preserveOptimisticMessages(
 		is_public: fetchedConversation.is_public ?? cachedConversation.is_public,
 		share_id: fetchedConversation.share_id ?? cachedConversation.share_id,
 	};
+}
+
+export function isLocallyCreatedConversation(
+	conversationId: string,
+	locallyCreatedConversationIds: Record<string, true>,
+): boolean {
+	return locallyCreatedConversationIds[conversationId] === true;
 }

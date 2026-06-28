@@ -14,7 +14,9 @@ import {
 	type ChatStreamUpdate,
 	type ParsedChatStreamSseEvent,
 } from "@assistant/schemas";
+import type { ModelConfigItem } from "@assistant/schemas";
 import { getSandboxModeToolNames } from "~/lib/sandbox/chat-mode";
+import { filterUnavailableModelToolSelections } from "~/lib/model-tools";
 import {
 	getMessageTextContent,
 	normalizeMessage,
@@ -47,6 +49,7 @@ export interface StreamChatCompletionsParams {
 	messages: Message[];
 	mode: ChatMode;
 	model?: string;
+	modelConfig?: ModelConfigItem;
 	models?: string[];
 	onProgress: StreamProgressHandler;
 	onStateChange: (state: string, data?: any) => void;
@@ -400,6 +403,7 @@ export class ChatService {
 		messages,
 		mode,
 		model,
+		modelConfig,
 		models,
 		onProgress,
 		onStateChange,
@@ -420,7 +424,9 @@ export class ChatService {
 
 		const formattedMessages = serialiseMessagesForChatRequest(messages);
 		const sandboxOptions = requestOptions?.sandbox?.enabled ? requestOptions.sandbox : undefined;
-		const selectedToolIds = selectedTools ? normaliseToolIds(selectedTools) : undefined;
+		const selectedToolIds = selectedTools
+			? normaliseToolIds(filterUnavailableModelToolSelections(selectedTools, modelConfig))
+			: undefined;
 		const requestEnabledTools = sandboxOptions
 			? normaliseToolIds([
 					...(selectedToolIds ?? []),

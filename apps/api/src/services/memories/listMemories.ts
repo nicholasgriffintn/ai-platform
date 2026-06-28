@@ -1,4 +1,5 @@
 import type { ServiceContext } from "~/lib/context/serviceContext";
+import { formatMemoryListItem } from "./formatMemory";
 
 export const handleListMemories = async (
 	context: ServiceContext,
@@ -43,18 +44,9 @@ export const handleListMemories = async (
 		}
 	}
 
-	const formattedMemories = memories.map((memory) => {
-		const groupInfo = allGroupMemberships.get(memory.id);
-
-		return {
-			id: memory.id,
-			text: memory.text,
-			category: memory.category,
-			created_at: memory.created_at,
-			group_id: groupInfo?.groupId || null,
-			group_title: groupInfo?.groupTitle || null,
-		};
-	});
+	const formattedMemories = memories.map((memory) =>
+		formatMemoryListItem(memory, allGroupMemberships.get(memory.id)),
+	);
 
 	return {
 		memories: formattedMemories,

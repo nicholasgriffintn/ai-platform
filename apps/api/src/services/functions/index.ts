@@ -33,6 +33,7 @@ import { web_search } from "./web_search";
 import { research } from "./research";
 import { extract_text_from_document } from "./ocr";
 import { configure_recipe } from "./recipes/configure_recipe";
+import { connectorOperationTools } from "./recipes/connector_operation_tools";
 import { get_recipe } from "./recipes/get_recipe";
 import { trigger_recipe } from "./recipes/trigger_recipe";
 import { use_recipe_connector } from "./recipes/use_recipe_connector";
@@ -75,6 +76,7 @@ const functionDefinitions: ApiToolDefinition[] = [
 	configure_recipe,
 	trigger_recipe,
 	capture_screenshot,
+	...connectorOperationTools,
 	create_speech,
 	tutor,
 	prompt_coach,

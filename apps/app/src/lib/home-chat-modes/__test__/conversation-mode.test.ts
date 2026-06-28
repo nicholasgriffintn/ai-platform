@@ -67,6 +67,19 @@ describe("conversation mode metadata", () => {
 		});
 	});
 
+	it("does not persist background transport options in conversation metadata", () => {
+		const metadata = buildConversationModeMetadata({
+			mode: "background",
+			requestOptions: {
+				background: true,
+			},
+		});
+
+		expect(metadata).toEqual({
+			mode: "background",
+		});
+	});
+
 	it("reads the first valid mode metadata from conversation messages", () => {
 		const conversation: Conversation = {
 			id: "conversation-1",

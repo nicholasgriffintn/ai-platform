@@ -5,6 +5,7 @@ import type { ChatMode, ChatRequestOptions } from "~/types";
 const AGENT_EXECUTION_MODES = new Set<ChatMode>(["agent", "plan", "build", "explore"]);
 
 export type ChatPromptMode = "council" | "sandbox" | "sms";
+export type ChatConversationMode = ChatPromptMode | "background";
 
 export function isAgentExecutionMode(mode: ChatMode): boolean {
 	return AGENT_EXECUTION_MODES.has(mode);
@@ -21,6 +22,19 @@ export function resolveChatPromptMode(
 	}
 	if (options?.sms?.enabled) {
 		return "sms";
+	}
+	return undefined;
+}
+
+export function resolveChatConversationMode(
+	options: ChatRequestOptions | undefined,
+): ChatConversationMode | undefined {
+	const promptMode = resolveChatPromptMode(options);
+	if (promptMode) {
+		return promptMode;
+	}
+	if (options?.background) {
+		return "background";
 	}
 	return undefined;
 }
@@ -48,14 +62,14 @@ export function buildAssistantMessageData(params: {
 export function buildConversationModeMetadataFromRequestOptions(
 	options: ChatRequestOptions | undefined,
 ): ConversationModeMetadata | undefined {
-	const mode = resolveChatPromptMode(options);
+	const mode = resolveChatConversationMode(options);
 	if (!mode) {
 		return undefined;
 	}
 
 	const parsed = conversationModeMetadataSchema.safeParse({
 		mode,
-		requestOptions: options,
+		requestOptions: mode === "background" ? undefined : options,
 		smsSettings: options?.sms?.enabled
 			? {
 					from: options.sms.from,

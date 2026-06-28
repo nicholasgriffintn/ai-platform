@@ -63,7 +63,7 @@ export function useAgents() {
 				acc.teams[agent.team_id].name =
 					agent.name.replace(/orchestrator/i, "").trim() || acc.teams[agent.team_id].name;
 			} else {
-				acc.teams[agent.team_id].members.push(agent);
+				acc.teams[agent.team_id]?.members.push(agent);
 			}
 		} else {
 			if (!acc.individual) acc.individual = [];

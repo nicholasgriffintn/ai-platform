@@ -8,6 +8,7 @@ import type {
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import {
 	canStartOAuthConnectorAuthorization,
+	getConnectorProviderOperationAccess,
 	getGitHubAppInstallUrl,
 	RECIPE_CONNECTOR_APP_ID,
 	RECIPE_CONNECTOR_ITEM_TYPE,
@@ -575,6 +576,7 @@ export async function listRecipeConnectors(params: {
 				provider.auth.authType === "api_key" ? provider.auth.credentialLabel : undefined,
 			scopes: provider.auth.scopes,
 			operations: provider.operations.map((operation) => operation.id),
+			operationAccess: getConnectorProviderOperationAccess(provider),
 		});
 	}
 
