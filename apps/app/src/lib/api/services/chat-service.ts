@@ -14,7 +14,7 @@ import {
 	type ChatStreamUpdate,
 	type ParsedChatStreamSseEvent,
 } from "@assistant/schemas";
-import type { ModelConfigItem } from "@assistant/schemas";
+import type { ModelConfigItem, ModelRouterMode } from "@assistant/schemas";
 import { getSandboxModeToolNames } from "~/lib/sandbox/chat-mode";
 import { filterUnavailableModelToolSelections } from "~/lib/model-tools";
 import {
@@ -50,6 +50,7 @@ export interface StreamChatCompletionsParams {
 	mode: ChatMode;
 	model?: string;
 	modelConfig?: ModelConfigItem;
+	modelRouterMode?: ModelRouterMode;
 	models?: string[];
 	onProgress: StreamProgressHandler;
 	onStateChange: (state: string, data?: any) => void;
@@ -404,6 +405,7 @@ export class ChatService {
 		mode,
 		model,
 		modelConfig,
+		modelRouterMode,
 		models,
 		onProgress,
 		onStateChange,
@@ -467,6 +469,7 @@ export class ChatService {
 			stream: streamingEnabled,
 			...generationSettings,
 			models,
+			model_router_mode: modelRouterMode,
 			provider,
 			mode,
 			use_multi_model: useMultiModel,

@@ -76,8 +76,39 @@ describe("selectModels", () => {
 				budgetConstraint,
 				mockUser,
 				completionId,
+				"auto",
 			);
 			expect(mockModelRouter.selectModel).not.toHaveBeenCalled();
+			expect(result).toEqual(expectedModels);
+		});
+
+		it("passes the automatic mode to multi-model router selection", async () => {
+			const expectedModels = ["lite-model", "lite-backup"];
+			mockModelRouter.selectMultipleModels.mockResolvedValue(expectedModels);
+
+			const result = await selectModels(
+				mockEnv,
+				lastMessageText,
+				mockAttachments,
+				budgetConstraint,
+				mockUser,
+				completionId,
+				undefined,
+				true,
+				undefined,
+				undefined,
+				"lite",
+			);
+
+			expect(mockModelRouter.selectMultipleModels).toHaveBeenCalledWith(
+				mockEnv,
+				lastMessageText,
+				mockAttachments,
+				budgetConstraint,
+				mockUser,
+				completionId,
+				"lite",
+			);
 			expect(result).toEqual(expectedModels);
 		});
 	});
@@ -198,6 +229,36 @@ describe("selectModels", () => {
 	});
 
 	describe("when no requestedModel and use_multi_model is false", () => {
+		it("passes the automatic mode to single model router selection", async () => {
+			const selectedModel = "lite-selected-model";
+			mockModelRouter.selectModel.mockResolvedValue(selectedModel);
+
+			const result = await selectModels(
+				mockEnv,
+				lastMessageText,
+				mockAttachments,
+				budgetConstraint,
+				mockUser,
+				completionId,
+				undefined,
+				false,
+				undefined,
+				undefined,
+				"lite",
+			);
+
+			expect(mockModelRouter.selectModel).toHaveBeenCalledWith(
+				mockEnv,
+				lastMessageText,
+				mockAttachments,
+				budgetConstraint,
+				mockUser,
+				completionId,
+				"lite",
+			);
+			expect(result).toEqual([selectedModel]);
+		});
+
 		it("should call selectModel and return result in an array", async () => {
 			const selectedModel = "auto-selected-model";
 			mockModelRouter.selectModel.mockResolvedValue(selectedModel);
@@ -220,6 +281,7 @@ describe("selectModels", () => {
 				budgetConstraint,
 				mockUser,
 				completionId,
+				"auto",
 			);
 			expect(mockModelRouter.selectMultipleModels).not.toHaveBeenCalled();
 			expect(result).toEqual([selectedModel]);
@@ -247,6 +309,7 @@ describe("selectModels", () => {
 				budgetConstraint,
 				mockUser,
 				completionId,
+				"auto",
 			);
 			expect(result).toEqual([selectedModel]);
 		});
@@ -273,6 +336,7 @@ describe("selectModels", () => {
 				undefined,
 				mockUser,
 				completionId,
+				"auto",
 			);
 			expect(result).toEqual([selectedModel]);
 		});
@@ -298,6 +362,7 @@ describe("selectModels", () => {
 				budgetConstraint,
 				mockUser,
 				completionId,
+				"auto",
 			);
 			expect(result).toEqual([selectedModel]);
 		});

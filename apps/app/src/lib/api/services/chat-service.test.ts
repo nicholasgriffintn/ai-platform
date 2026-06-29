@@ -320,13 +320,40 @@ describe("ChatService streaming", () => {
 		const [, request] = fetchMock.mock.calls[0];
 		const body = JSON.parse(String(request?.body));
 
-		expect(body.options.tool_options).toBeUndefined();
+		expect(body.options?.tool_options).toBeUndefined();
 		expect(body.tool_options.image_generation).toEqual({
 			size: "1024x1024",
 		});
 		expect(body.enabled_tools).toEqual(["image_generation"]);
 		expect(body.models).toEqual(["gpt-5", "claude-opus"]);
 		expect(body.provider).toBe("openai");
+	});
+
+	it("sends automatic router mode without an explicit model", async () => {
+		const fetchMock = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) =>
+			createSseResponse([data("[DONE]")]),
+		);
+		vi.stubGlobal("fetch", fetchMock);
+
+		const service = new ChatService(async () => ({}));
+
+		await service.streamChatCompletions({
+			chatSettings: {},
+			completionId: "conversation-1",
+			endpoint: "/chat/completions",
+			messages: [{ role: "user", content: "hello" } as Message],
+			mode: "remote",
+			modelRouterMode: "pro",
+			onProgress: () => {},
+			onStateChange: () => {},
+			signal: new AbortController().signal,
+		});
+
+		const [, request] = fetchMock.mock.calls[0];
+		const body = JSON.parse(String(request?.body));
+
+		expect(body.model).toBeUndefined();
+		expect(body.model_router_mode).toBe("pro");
 	});
 
 	it("normalises selected tool ids before sending chat requests", async () => {
@@ -355,7 +382,7 @@ describe("ChatService streaming", () => {
 		const body = JSON.parse(String(request?.body));
 
 		expect(body.enabled_tools).toEqual(["web_fetch"]);
-		expect(body.options.enabled_tools).toBeUndefined();
+		expect(body.options?.enabled_tools).toBeUndefined();
 	});
 
 	it("does not send stale hosted model tools that are unavailable for the selected model", async () => {

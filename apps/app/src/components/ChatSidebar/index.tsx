@@ -37,9 +37,7 @@ import { categorizeItemsByDate } from "~/lib/sidebar";
 import { useChatStore } from "~/state/stores/chatStore";
 import { useUIStore } from "~/state/stores/uiStore";
 import type { Conversation, ConversationArchiveFilter, ConversationSortBy } from "~/types/chat";
-import { ChatThemeDropdown } from "../Sidebar/ChatThemeDropdown";
-import { MoreOptionsDropdown } from "../Sidebar/MoreOptionsDropdown";
-import { UserMenuItem } from "../Sidebar/UserMenuItem";
+import { SidebarFooter } from "../Sidebar/SidebarFooter";
 import { ChatSidebarNotifications } from "./ChatSidebarNotifications";
 
 interface ChatSidebarProps {
@@ -54,7 +52,7 @@ export const ChatSidebar = ({
 	onCanvasModeChange,
 }: ChatSidebarProps) => {
 	const { trackEvent } = useTrackEvent();
-	const { sidebarVisible, setSidebarVisible, isMobile, setShowKeyboardShortcuts } = useUIStore();
+	const { sidebarVisible, setSidebarVisible, isMobile } = useUIStore();
 	const {
 		currentConversationId,
 		setCurrentConversationId,
@@ -322,23 +320,6 @@ export const ChatSidebar = ({
 		</div>
 	);
 
-	const sidebarFooter = (
-		<div className="p-2 bg-zinc-50 dark:bg-zinc-900">
-			<div className="flex justify-between items-center">
-				<div>
-					<UserMenuItem />
-				</div>
-				<div className="flex items-center gap-2">
-					<ChatThemeDropdown position="top" />
-					<MoreOptionsDropdown
-						position="top"
-						onShowKeyboardShortcuts={() => setShowKeyboardShortcuts(true)}
-					/>
-				</div>
-			</div>
-		</div>
-	);
-
 	return (
 		<>
 			<SidebarShell
@@ -346,7 +327,7 @@ export const ChatSidebar = ({
 				isMobile={isMobile}
 				onClose={() => setSidebarVisible(false)}
 				header={sidebarHeader}
-				footer={sidebarFooter}
+				footer={<SidebarFooter />}
 			>
 				{sidebarVisible && !isCanvasMode && !isAuthenticationLoading && (
 					<div>

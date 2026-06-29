@@ -21,6 +21,7 @@ export class ModelConfigValidator implements Validator {
 			model: requestedModel,
 			models: requestedModels,
 			provider: requestedProvider,
+			model_router_mode,
 			completion_id,
 			use_multi_model = false,
 			budget_constraint,
@@ -62,6 +63,7 @@ export class ModelConfigValidator implements Validator {
 				use_multi_model,
 				requestedModels,
 				requestedProvider,
+				model_router_mode,
 			);
 
 			logger.info("Selected models", { selectedModels });

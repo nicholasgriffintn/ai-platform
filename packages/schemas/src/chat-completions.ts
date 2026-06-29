@@ -13,6 +13,8 @@ import { toolIdsSchema } from "./tools";
 
 const recordSchema = z.record(z.string(), z.unknown());
 
+export const modelRouterModeSchema = z.enum(["auto", "lite", "standard", "pro", "max"]);
+
 export const chatHostedToolSettingsSchema = z
 	.object({
 		code_interpreter: recordSchema
@@ -287,6 +289,9 @@ export const chatCompletionsRequestFieldsSchema = z.object({
 		.string()
 		.optional()
 		.describe("The provider to use when the model name is shared by multiple providers."),
+	model_router_mode: modelRouterModeSchema
+		.optional()
+		.describe("Automatic router mode used when no explicit model is requested."),
 	mode: chatRequestModeSchema
 		.optional()
 		.describe("The chat mode to use for default parameters and prompt configuration."),
@@ -502,7 +507,7 @@ export const partialChatCompletionsJsonSchema = chatCompletionsRequestFieldsSche
 export const createChatCompletionsJsonSchema = chatCompletionsRequestFieldsSchema
 	.strict()
 	.superRefine((request, ctx) => {
-		if (!request.model && !request.models?.length) {
+		if (!request.model && !request.models?.length && !request.model_router_mode) {
 			ctx.addIssue({
 				code: "custom",
 				path: ["model"],
@@ -515,6 +520,14 @@ export const createChatCompletionsJsonSchema = chatCompletionsRequestFieldsSchem
 				code: "custom",
 				path: ["models"],
 				message: "Provide either model or models, not both",
+			});
+		}
+
+		if (request.model_router_mode && (request.model || request.models?.length)) {
+			ctx.addIssue({
+				code: "custom",
+				path: ["model_router_mode"],
+				message: "model_router_mode is only valid when no explicit model is provided",
 			});
 		}
 
@@ -549,6 +562,7 @@ export const createChatCompletionsJsonSchema = chatCompletionsRequestFieldsSchem
 	});
 
 export type ChatCompletionRequestBody = z.input<typeof createChatCompletionsJsonSchema>;
+export type ModelRouterMode = z.infer<typeof modelRouterModeSchema>;
 
 export const createChatCompletionsResponseSchema = z
 	.object({

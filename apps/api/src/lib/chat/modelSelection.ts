@@ -1,6 +1,6 @@
 import { ModelRouter } from "~/lib/modelRouter";
 import { filterModelsForUserAccess, findModelConfig, getModels } from "~/lib/providers/models";
-import type { ModelConfigItem } from "@assistant/schemas";
+import type { ModelConfigItem, ModelRouterMode } from "@assistant/schemas";
 import type { Attachment, IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
@@ -72,6 +72,7 @@ async function assertExplicitModelsAccessible(
  * @param use_multi_model - Whether to use multiple models
  * @param requestedModels - Explicit model IDs requested by the caller
  * @param requestedProvider - Optional provider constraint for requested models
+ * @param routerMode - Automatic router mode used when no explicit model is requested
  * @returns The selected models
  */
 export async function selectModels(
@@ -85,6 +86,7 @@ export async function selectModels(
 	use_multi_model?: boolean,
 	requestedModels?: string[],
 	requestedProvider?: string,
+	routerMode: ModelRouterMode = "auto",
 ): Promise<string[]> {
 	const explicitModels = normaliseExplicitModels(requestedModels);
 	if (explicitModels.length) {
@@ -100,6 +102,7 @@ export async function selectModels(
 			budgetConstraint,
 			user,
 			completionId,
+			routerMode,
 		);
 	}
 	const model =
@@ -111,6 +114,7 @@ export async function selectModels(
 			budgetConstraint,
 			user,
 			completionId,
+			routerMode,
 		));
 	return [model];
 }

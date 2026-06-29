@@ -85,6 +85,49 @@ describe("ModelRouter", () => {
 	});
 
 	describe("selectModel", () => {
+		it("filters router candidates by the requested automatic mode", async () => {
+			const availableModels = {
+				"lite-model": {
+					...mockModelConfig,
+					id: "lite-model",
+					costPer1kInputTokens: 0.0001,
+					costPer1kOutputTokens: 0.0002,
+					contextComplexity: 3,
+					speed: 5,
+					strengths: ["chat", "summarization"],
+				},
+				"max-model": {
+					...mockModelConfig,
+					id: "max-model",
+					costPer1kInputTokens: 0.05,
+					costPer1kOutputTokens: 0.1,
+					contextComplexity: 5,
+					reliability: 5,
+					speed: 2,
+					strengths: ["reasoning", "analysis", "academic"],
+				},
+			};
+
+			mockModels.getIncludedInRouterModelsForUser.mockResolvedValue(availableModels);
+			mockPromptAnalyzer.analyzePrompt.mockResolvedValue({
+				...mockRequirements,
+				requiredStrengths: ["reasoning"],
+				expectedComplexity: 5,
+			});
+
+			const result = await ModelRouter.selectModel(
+				mockEnv,
+				"Think hard",
+				[],
+				undefined,
+				mockUser,
+				"completion-123",
+				"lite",
+			);
+
+			expect(result).toBe("lite-model");
+		});
+
 		it("should select best model based on requirements", async () => {
 			const availableModels = {
 				"test-model": mockModelConfig,
