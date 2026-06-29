@@ -376,7 +376,9 @@ export const ChatSettings = ({
 				</PopoverContent>
 			</Popover>
 
-			{supportsToolCalls && <ToolSelector isDisabled={isDisabled || toolSelectionLocked} />}
+			{isPro && supportsToolCalls && (
+				<ToolSelector isDisabled={isDisabled || toolSelectionLocked} />
+			)}
 		</div>
 	);
 };

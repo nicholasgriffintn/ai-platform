@@ -14,6 +14,7 @@ import type { StorageService } from "~/lib/storage";
 import type { ChatCompletionParameters, MessageContent } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { isRecord } from "~/utils/objects";
+import { resolveRequestUser } from "~/utils/requestUser";
 import { appendUrlPath } from "~/utils/urls";
 import {
 	createCommonParameters,
@@ -138,9 +139,10 @@ export class OpenAIProvider extends BaseProvider {
 			throw new AssistantError("No image URL found for editing", ErrorType.PARAMS_ERROR);
 		}
 
+		const user = resolveRequestUser(params);
 		const imageBlob = await storageService.downloadFile(
 			imageItem.image_url.url,
-			params.context?.user?.id,
+			user?.id,
 			params.env.API_BASE_URL,
 		);
 

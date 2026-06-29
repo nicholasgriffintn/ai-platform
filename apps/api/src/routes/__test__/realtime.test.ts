@@ -81,8 +81,8 @@ describe("realtime routes", () => {
 
 	it("blocks session creation when the user cannot access the realtime model", async () => {
 		listModelsMock.mockResolvedValue({
-			"deepseek-chat": {
-				matchingModel: "deepseek-chat",
+			"deepseek-v4-flash": {
+				matchingModel: "deepseek-v4-flash",
 				name: "DeepSeek Chat",
 				provider: "deepseek",
 			},
@@ -144,8 +144,8 @@ describe("realtime routes", () => {
 				name: "Voxtral Mini Transcribe Realtime",
 				provider: "mistral",
 			},
-			"deepseek-chat": {
-				matchingModel: "deepseek-chat",
+			"deepseek-v4-flash": {
+				matchingModel: "deepseek-v4-flash",
 				name: "DeepSeek Chat",
 				provider: "deepseek",
 			},
@@ -167,7 +167,7 @@ describe("realtime routes", () => {
 					},
 					reasoning: {
 						provider: "deepseek",
-						model: "deepseek-chat",
+						model: "deepseek-v4-flash",
 					},
 					output: {
 						provider: "cartesia",
@@ -195,8 +195,8 @@ describe("realtime routes", () => {
 				name: "Voxtral Mini Transcribe Realtime",
 				provider: "mistral",
 			},
-			"deepseek-chat": {
-				matchingModel: "deepseek-chat",
+			"deepseek-v4-flash": {
+				matchingModel: "deepseek-v4-flash",
 				name: "DeepSeek Chat",
 				provider: "deepseek",
 			},
@@ -217,7 +217,7 @@ describe("realtime routes", () => {
 					},
 					reasoning: {
 						provider: "bogus",
-						model: "deepseek-chat",
+						model: "deepseek-v4-flash",
 					},
 					output: {
 						provider: "cartesia",
@@ -245,8 +245,8 @@ describe("realtime routes", () => {
 				name: "Voxtral Mini Transcribe Realtime",
 				provider: "mistral",
 			},
-			"deepseek-chat": {
-				matchingModel: "deepseek-chat",
+			"deepseek-v4-flash": {
+				matchingModel: "deepseek-v4-flash",
 				name: "DeepSeek Chat",
 				provider: "deepseek",
 			},
@@ -267,7 +267,7 @@ describe("realtime routes", () => {
 					},
 					reasoning: {
 						provider: "deepseek",
-						model: "deepseek-chat",
+						model: "deepseek-v4-flash",
 					},
 					output: {
 						provider: "mistral",
@@ -295,8 +295,8 @@ describe("realtime routes", () => {
 				name: "Voxtral Mini Transcribe Realtime",
 				provider: "mistral",
 			},
-			"deepseek-chat": {
-				matchingModel: "deepseek-chat",
+			"deepseek-v4-flash": {
+				matchingModel: "deepseek-v4-flash",
 				name: "DeepSeek Chat",
 				provider: "deepseek",
 			},
@@ -323,7 +323,7 @@ describe("realtime routes", () => {
 					},
 					reasoning: {
 						provider: "deepseek",
-						model: "deepseek-chat",
+						model: "deepseek-v4-flash",
 					},
 					output: {
 						provider: "cartesia",
@@ -355,7 +355,7 @@ describe("realtime routes", () => {
 			},
 			reasoning: {
 				provider: "deepseek",
-				model: "deepseek-chat",
+				model: "deepseek-v4-flash",
 			},
 			output: {
 				provider: "cartesia",

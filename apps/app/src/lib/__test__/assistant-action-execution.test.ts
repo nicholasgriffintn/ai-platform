@@ -108,13 +108,15 @@ describe("assistant action execution", () => {
 			kind: "submit",
 			input: "@Morning Briefing today",
 			requestOptions: {
-				recipe: {
-					id: "morning-briefing",
-					installationId: "installation-1",
-					channel: "web",
-					allowedConnectorProviders: [],
-					allowedConnectorOperations: {},
-					configuration: {},
+				options: {
+					recipe: {
+						id: "morning-briefing",
+						installationId: "installation-1",
+						channel: "web",
+						allowedConnectorProviders: [],
+						allowedConnectorOperations: {},
+						configuration: {},
+					},
 				},
 			},
 			selectedTools: ["use_recipe_connector"],

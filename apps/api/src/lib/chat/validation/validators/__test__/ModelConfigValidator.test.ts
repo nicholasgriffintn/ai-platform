@@ -123,6 +123,7 @@ describe("ModelConfigValidator", () => {
 				false,
 				undefined,
 				undefined,
+				undefined,
 			);
 			expect(mockFindModelConfig).toHaveBeenCalledWith(
 				"claude-3-sonnet",
@@ -199,6 +200,7 @@ describe("ModelConfigValidator", () => {
 				false,
 				undefined,
 				undefined,
+				undefined,
 			);
 		});
 
@@ -220,6 +222,7 @@ describe("ModelConfigValidator", () => {
 				"completion-123",
 				"claude-3-sonnet",
 				false,
+				undefined,
 				undefined,
 				undefined,
 			);
@@ -256,6 +259,7 @@ describe("ModelConfigValidator", () => {
 				"completion-123",
 				"claude-3-sonnet",
 				false,
+				undefined,
 				undefined,
 				undefined,
 			);
@@ -326,6 +330,32 @@ describe("ModelConfigValidator", () => {
 				true,
 				undefined,
 				undefined,
+				undefined,
+			);
+		});
+
+		it("should pass automatic router mode to the model selector", async () => {
+			const automaticModeOptions = {
+				...baseOptions,
+				model: undefined,
+				model_router_mode: "pro" as const,
+			};
+
+			const result = await validator.validate(automaticModeOptions, baseContext);
+
+			expect(result.validation.isValid).toBe(true);
+			expect(mockSelectModels).toHaveBeenCalledWith(
+				baseOptions.env,
+				"Hello world",
+				[],
+				1000,
+				baseOptions.user,
+				"completion-123",
+				undefined,
+				false,
+				undefined,
+				undefined,
+				"pro",
 			);
 		});
 
@@ -352,6 +382,7 @@ describe("ModelConfigValidator", () => {
 				false,
 				["claude-3-sonnet", "gpt-4"],
 				undefined,
+				undefined,
 			);
 		});
 
@@ -375,6 +406,7 @@ describe("ModelConfigValidator", () => {
 				"completion-123",
 				undefined,
 				false,
+				undefined,
 				undefined,
 				undefined,
 			);
@@ -424,6 +456,7 @@ describe("ModelConfigValidator", () => {
 				"completion-123",
 				"claude-3-sonnet",
 				false,
+				undefined,
 				undefined,
 				undefined,
 			);

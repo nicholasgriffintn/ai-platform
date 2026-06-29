@@ -230,7 +230,6 @@ export const MessageList = ({
 										opinionAvailability.get(message.id)?.canRequest ? onRequestOpinion : undefined
 									}
 									isRequestingOpinion={isRequestingOpinion}
-									shouldPromoteOpinion={opinionAvailability.get(message.id)?.shouldPromote ?? false}
 								/>
 							</div>
 						))}

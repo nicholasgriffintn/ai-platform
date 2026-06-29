@@ -244,9 +244,9 @@ describe("RequestPreparer", () => {
 		it("rejects background responses for providers that cannot resume them", async () => {
 			const deepseekModelConfig = {
 				...mockModelConfig,
-				matchingModel: "deepseek-chat",
+				matchingModel: "deepseek-v4-flash",
 				provider: "deepseek",
-				name: "DeepSeek Chat",
+				name: "DeepSeek V4 Flash",
 			};
 
 			await expect(
@@ -258,7 +258,7 @@ describe("RequestPreparer", () => {
 					{
 						...baseValidationContext,
 						modelConfig: deepseekModelConfig,
-						selectedModels: ["deepseek-chat"],
+						selectedModels: ["deepseek-v4-flash"],
 					},
 				),
 			).rejects.toThrow("Background responses are only supported by OpenAI Responses models");

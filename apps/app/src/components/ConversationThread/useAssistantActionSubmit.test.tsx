@@ -91,13 +91,15 @@ describe("useAssistantActionSubmit", () => {
 			kind: "submit",
 			input: "@Daily Weather today",
 			requestOptions: {
-				recipe: {
-					id: "daily-weather",
-					installationId: "installation-1",
-					channel: "web",
-					allowedConnectorProviders: [],
-					allowedConnectorOperations: {},
-					configuration: { location: "London" },
+				options: {
+					recipe: {
+						id: "daily-weather",
+						installationId: "installation-1",
+						channel: "web",
+						allowedConnectorProviders: [],
+						allowedConnectorOperations: {},
+						configuration: { location: "London" },
+					},
 				},
 			},
 			selectedTools: ["get_weather"],

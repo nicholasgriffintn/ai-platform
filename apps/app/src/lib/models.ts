@@ -6,7 +6,7 @@ import type {
 } from "@assistant/schemas";
 import type { ChatMode } from "~/types";
 
-export const defaultModel = "deepseek-chat";
+export const defaultModel = "deepseek-v4-flash";
 const LOCAL_MODEL_PROVIDER = "web-llm";
 const DEFAULT_MODALITIES: ModelModality[] = ["text"];
 

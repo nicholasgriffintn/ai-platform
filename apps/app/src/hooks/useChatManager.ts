@@ -157,16 +157,14 @@ export function useChatManager(
 					]);
 				};
 
+				await cancelQueries();
+
 				const previousConversation = queryClient.getQueryData<Conversation>([
 					CHATS_QUERY_KEY,
 					conversationId,
 				]);
 
-				const cancelPromise = cancelQueries();
-
 				await addMessageToConversation(conversationId, userMessage);
-
-				await cancelPromise;
 
 				const updatedMessages = previousConversation?.messages?.length
 					? [...previousConversation.messages, userMessage]

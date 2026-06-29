@@ -1,6 +1,7 @@
 import type {
 	AssistantActionSelection,
 	HomeChatModeId,
+	ModelRouterMode,
 	SandboxChatModeSettings,
 } from "@assistant/schemas";
 import { create } from "zustand";
@@ -65,6 +66,8 @@ export interface ChatStore {
 	setSandboxModeSettings: (settings: SandboxChatModeSettings) => void;
 	model: string | null;
 	setModel: (model: string | null) => void;
+	autoMode: ModelRouterMode;
+	setAutoMode: (mode: ModelRouterMode) => void;
 	useMultiModel: boolean;
 	setUseMultiModel: (useMultiModel: boolean) => void;
 	selectedAgentId: string | null;
@@ -148,6 +151,8 @@ export const useChatStore = create<ChatStore>()(
 			setSandboxModeSettings: (settings) => set({ sandboxModeSettings: settings }),
 			model: null,
 			setModel: (model) => set({ model }),
+			autoMode: "auto",
+			setAutoMode: (autoMode) => set({ autoMode }),
 			useMultiModel: false,
 			setUseMultiModel: (useMultiModel) => set({ useMultiModel }),
 			selectedAgentId: null,
@@ -241,6 +246,7 @@ export const useChatStore = create<ChatStore>()(
 				homeChatMode: state.homeChatMode,
 				sandboxModeSettings: state.sandboxModeSettings,
 				model: state.model,
+				autoMode: state.autoMode,
 				useMultiModel: state.useMultiModel,
 				chatSettings: state.chatSettings,
 				selectedAgentId: state.selectedAgentId,

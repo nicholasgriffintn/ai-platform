@@ -38,7 +38,6 @@ export interface MessageActionsProps {
 	isBranching?: boolean;
 	onRequestOpinion?: (messageId: string, request: OpinionRequest) => void;
 	isRequestingOpinion?: boolean;
-	shouldPromoteOpinion?: boolean;
 }
 
 export const MessageActions = ({
@@ -57,7 +56,6 @@ export const MessageActions = ({
 	isBranching = false,
 	onRequestOpinion,
 	isRequestingOpinion = false,
-	shouldPromoteOpinion = false,
 }: MessageActionsProps) => {
 	const [showBranchModelSelector, setShowBranchModelSelector] = useState(false);
 	const [showOpinionModelSelector, setShowOpinionModelSelector] = useState(false);
@@ -217,16 +215,13 @@ export const MessageActions = ({
 						<PopoverTrigger asChild>
 							<Button
 								type="button"
-								variant={shouldPromoteOpinion ? "secondary" : "icon"}
+								variant={"icon"}
 								disabled={isRequestingOpinion}
-								className={`cursor-pointer hover:bg-zinc-200/50 dark:hover:bg-zinc-600/50 rounded-lg transition-colors duration-200 flex items-center text-zinc-500 dark:text-zinc-400 ${
-									shouldPromoteOpinion ? "px-2 py-1 text-xs" : "p-1"
-								} ${isRequestingOpinion ? "opacity-50 cursor-not-allowed" : ""}`}
+								className={`cursor-pointer hover:bg-zinc-200/50 dark:hover:bg-zinc-600/50 rounded-lg transition-colors duration-200 flex items-center text-zinc-500 dark:text-zinc-400 ${"p-1"} ${isRequestingOpinion ? "opacity-50 cursor-not-allowed" : ""}`}
 								title={isRequestingOpinion ? "Requesting opinion..." : "Get second opinion"}
 								aria-label={isRequestingOpinion ? "Requesting opinion..." : "Get second opinion"}
 							>
 								<MessageSquareQuote size={14} />
-								{shouldPromoteOpinion && <span className="ml-1.5">Second opinion</span>}
 							</Button>
 						</PopoverTrigger>
 						<PopoverContent

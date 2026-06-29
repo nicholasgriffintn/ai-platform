@@ -9,7 +9,6 @@ import {
 	Search,
 	Server,
 	WalletCards,
-	Wand2,
 } from "lucide-react";
 import {
 	type KeyboardEvent,
@@ -28,8 +27,10 @@ import { useAgents } from "~/hooks/useAgents";
 import { useModels } from "~/hooks/useModels";
 import { useTrackEvent } from "~/hooks/use-track-event";
 import { useWebLLMModels } from "~/hooks/useWebLLMModels";
+import { getAutoRouterModeDefinition } from "~/lib/auto-router-modes";
 import { applyModelResponseDefaults } from "~/lib/chat-settings";
 import { containsEventTarget } from "~/lib/dom/containsEventTarget";
+import { formatTokenCount, formatTokenPrice } from "~/lib/model-formatting";
 import {
 	createModelReferenceMap,
 	defaultModel,
@@ -60,7 +61,7 @@ import type {
 	ModelSelectorScope,
 } from "~/types";
 import { ArtificialAnalysisScorePanel } from "./ArtificialAnalysisScorePanel";
-import { AutomaticRouterPreview } from "./AutomaticRouterPreview";
+import { AutoModePicker } from "./AutoModePicker";
 import { clampHoverPreviewTop, getHoverPreviewPosition } from "./hoverPreviewPosition";
 import { ModelsList } from "./ModelsList";
 import { useHoverPreviewDismiss } from "./useHoverPreviewDismiss";
@@ -89,20 +90,6 @@ interface HoverPreviewState {
 interface DialogLayout {
 	left: number;
 	width: number;
-}
-
-function formatTokenCount(value?: number) {
-	if (!value) return null;
-	if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}M`;
-	if (value >= 1_000) return `${(value / 1_000).toFixed(0)}K`;
-	return String(value);
-}
-
-function formatCost(value?: number) {
-	if (typeof value !== "number") return null;
-	if (value === 0) return "$0 / 1K tokens";
-	if (value < 0.01) return `$${value.toFixed(4)} / 1K tokens`;
-	return `$${value.toFixed(2)} / 1K tokens`;
 }
 
 function HoverPreview({
@@ -259,7 +246,7 @@ function HoverPreview({
 								<div className="flex items-center justify-between gap-2">
 									<span className="text-zinc-500 dark:text-zinc-400">Input</span>
 									<span className="text-right font-medium text-zinc-800 dark:text-zinc-100">
-										{formatCost(model.costPer1kInputTokens)}
+										{formatTokenPrice(model.costPer1kInputTokens)}
 									</span>
 								</div>
 							)}
@@ -267,7 +254,7 @@ function HoverPreview({
 								<div className="flex items-center justify-between gap-2">
 									<span className="text-zinc-500 dark:text-zinc-400">Output</span>
 									<span className="text-right font-medium text-zinc-800 dark:text-zinc-100">
-										{formatCost(model.costPer1kOutputTokens)}
+										{formatTokenPrice(model.costPer1kOutputTokens)}
 									</span>
 								</div>
 							)}
@@ -298,6 +285,8 @@ export const ModelSelector = ({
 		isPro,
 		model,
 		setModel,
+		autoMode,
+		setAutoMode,
 		chatMode,
 		setChatMode,
 		chatSettings,
@@ -387,6 +376,9 @@ export const ModelSelector = ({
 		() => createModelReferenceMap(filteredModels),
 		[filteredModels],
 	);
+	const selectedAutoMode = getAutoRouterModeDefinition(autoMode);
+	const selectedAutoModeDisplayName =
+		selectedAutoMode.id === "auto" ? selectedAutoMode.label : `${selectedAutoMode.label} auto`;
 	const selectedModelInfo =
 		model === null ? automaticModelOption : getModelByReference(filteredModelReferences, model);
 
@@ -416,7 +408,10 @@ export const ModelSelector = ({
 			return matchesSearch && matchesCapability;
 		});
 	}, [filteredModels, searchQuery, selectedCapability]);
-	const automaticRouterModels = useMemo(() => Object.values(filteredModels), [filteredModels]);
+	const autoModeModels = useMemo(
+		() => Object.values(getModelsByMode(availableModels, "remote")),
+		[availableModels],
+	);
 	const isModelSearchActive = searchQuery.trim().length > 0;
 
 	const getSettingsForModel = useCallback(
@@ -675,15 +670,23 @@ export const ModelSelector = ({
 		scheduleHoverPreviewDismiss();
 	};
 
-	const handleSelectAutomaticRouting = () => {
+	const handleSelectAutoMode = (nextAutoMode: typeof autoMode) => {
 		setChatMode("remote");
 		setSelectedAgentId(null);
+		setAutoMode(nextAutoMode);
 		selectModelWithDefaults(null, {
 			...chatSettings,
 			localOnly: false,
 		});
 		onModelChange?.(null);
 		setIsOpen(false);
+
+		trackEvent({
+			name: "set_auto_mode",
+			category: "conversation",
+			label: "select_auto_mode",
+			value: nextAutoMode,
+		});
 	};
 
 	return (
@@ -738,12 +741,16 @@ export const ModelSelector = ({
 										? `${selectedAgent.name} - ${selectedModelInfo?.name || "Model"}`
 										: isModelLockedByAgent
 											? `${selectedModelInfo?.name || "Model"} (set by agent)`
-											: selectedModelInfo?.name || "Select model"
+											: model === null
+												? selectedAutoModeDisplayName
+												: selectedModelInfo?.name || "Select model"
 								}
 							>
 								{selectedAgent && chatMode === "agent"
 									? `${selectedAgent.name} - ${selectedModelInfo?.name || "Model"}`
-									: selectedModelInfo?.name || "Select model"}
+									: model === null
+										? selectedAutoModeDisplayName
+										: selectedModelInfo?.name || "Select model"}
 								{isModelLockedByAgent && !selectedAgent && " (set by agent)"}
 							</span>
 						)}
@@ -774,7 +781,7 @@ export const ModelSelector = ({
 					className="absolute bottom-full left-0 z-50 mb-1 flex max-h-[70vh] w-[min(96vw,600px)] max-w-[600px] flex-col overflow-hidden rounded-xl border border-zinc-200 bg-off-white shadow-xl dark:border-zinc-700 dark:bg-zinc-900 sm:max-h-[75vh] sm:w-[min(90vw,660px)] sm:max-w-[660px]"
 					aria-label="Model selection dialog"
 				>
-					{selectedTab !== "auto" && (
+					{selectedTab === "models" && (
 						<div className="border-b border-zinc-200 p-2 dark:border-zinc-700">
 							<div className="flex flex-col gap-2 sm:flex-row">
 								<div className="relative flex-1">
@@ -829,12 +836,7 @@ export const ModelSelector = ({
 							if (tab === "auto") {
 								setChatMode("remote");
 								setSelectedAgentId(null);
-								const nextSettings = {
-									...chatSettings,
-									localOnly: false,
-								};
-								selectModelWithDefaults(null, nextSettings);
-							} else if (tab === "models") {
+							} else if (tab === "models" && model === null) {
 								setChatMode("remote");
 								setSelectedAgentId(null);
 								const nextSettings = {
@@ -850,8 +852,8 @@ export const ModelSelector = ({
 							<>
 								<TabsList className="grid h-auto w-full grid-cols-2 gap-1">
 									<TabsTrigger value="auto" className="min-w-0 px-2 py-2 text-xs sm:text-sm">
-										<Wand2 className="h-4 w-4" />
-										Automatic
+										<Gauge className="h-4 w-4" />
+										Auto
 									</TabsTrigger>
 									<TabsTrigger value="models" className="min-w-0 px-2 py-2 text-xs sm:text-sm">
 										<Server className="h-4 w-4" />
@@ -861,10 +863,11 @@ export const ModelSelector = ({
 								<div className="w-full border-b border-zinc-200 dark:border-zinc-700" />
 
 								<TabsContent value="auto" className="min-h-0 overflow-y-auto">
-									<AutomaticRouterPreview
-										models={automaticRouterModels}
-										isSelected={model === null}
-										onSelect={handleSelectAutomaticRouting}
+									<AutoModePicker
+										models={autoModeModels}
+										selectedMode={autoMode}
+										disabled={isDisabled || isModelLockedByAgent}
+										onSelectMode={handleSelectAutoMode}
 									/>
 								</TabsContent>
 							</>

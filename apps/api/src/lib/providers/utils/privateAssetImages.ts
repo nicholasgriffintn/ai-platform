@@ -1,5 +1,6 @@
 import type { StorageService } from "~/lib/storage";
 import type { ChatCompletionParameters, Message, MessageContent } from "~/types";
+import { resolveRequestUser } from "~/utils/requestUser";
 
 interface ResolvePrivateAssetImagesRequest {
 	params: ChatCompletionParameters;
@@ -104,8 +105,6 @@ async function resolvePrivateAssetImageUrl({
 		return url;
 	}
 
-	return (
-		(await storageService.getPrivateAssetImageDataUrl(url, params.context?.user?.id, assetsUrl)) ??
-		url
-	);
+	const user = resolveRequestUser(params);
+	return (await storageService.getPrivateAssetImageDataUrl(url, user?.id, assetsUrl)) ?? url;
 }

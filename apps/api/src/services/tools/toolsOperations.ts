@@ -23,6 +23,6 @@ export function getAvailableTools(
 			id: tool.name,
 			name: tool.name,
 			description: tool.description,
-			isDefault: tool.isDefault || false,
+			isDefault: isPro ? tool.isDefault || false : false,
 		}));
 }

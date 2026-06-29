@@ -88,6 +88,8 @@ export const deepseekModelConfig: ModelConfig = {
 		supportsTemperature: true,
 		supportsToolCalls: true,
 		supportsResponseFormat: true,
+		includedInRouter: true,
+		isFree: true,
 		isFeatured: true,
 		contextWindow: 1000000,
 		maxTokens: 384000,
@@ -97,7 +99,6 @@ export const deepseekModelConfig: ModelConfig = {
 		contextComplexity: 5,
 		reliability: 1,
 		speed: 4,
-		includedInRouter: true,
 		supportsArtifacts: true,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
@@ -130,6 +131,8 @@ export const deepseekModelConfig: ModelConfig = {
 		supportsTemperature: true,
 		supportsToolCalls: true,
 		supportsResponseFormat: true,
+		includedInRouter: true,
+		isFree: true,
 		isFeatured: true,
 		contextWindow: 1000000,
 		maxTokens: 384000,
@@ -139,7 +142,6 @@ export const deepseekModelConfig: ModelConfig = {
 		contextComplexity: 5,
 		reliability: 1,
 		speed: 3,
-		includedInRouter: true,
 		supportsArtifacts: true,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],

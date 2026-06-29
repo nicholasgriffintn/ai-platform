@@ -72,6 +72,7 @@ export * from "./edit";
 export * from "./fim";
 export * from "./magicLink";
 export * from "./message-parts";
+export * from "./model-router-modes";
 export * from "./models";
 export * from "./memories";
 export * from "./plans";

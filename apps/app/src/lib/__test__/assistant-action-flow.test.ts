@@ -114,15 +114,17 @@ describe("assistant action flow", () => {
 			kind: "submit",
 			input: "@Morning Briefing for today",
 			requestOptions: {
-				recipe: {
-					id: "morning-briefing",
-					installationId: "installation-1",
-					channel: "web",
-					allowedConnectorProviders: ["gmail"],
-					allowedConnectorOperations: {
-						gmail: ["search_messages"],
+				options: {
+					recipe: {
+						id: "morning-briefing",
+						installationId: "installation-1",
+						channel: "web",
+						allowedConnectorProviders: ["gmail"],
+						allowedConnectorOperations: {
+							gmail: ["search_messages"],
+						},
+						configuration: {},
 					},
-					configuration: {},
 				},
 			},
 			selectedTools: ["use_recipe_connector"],

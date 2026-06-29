@@ -22,8 +22,8 @@ let finalLiveInputTranscriptHandler: ((transcript: FinalLiveInputTranscript) => 
 
 let searchParams = new URLSearchParams("mode=live");
 const deepseekModel: ModelConfigItem = {
-	id: "deepseek-chat",
-	matchingModel: "deepseek-chat",
+	id: "deepseek-v4-flash",
+	matchingModel: "deepseek-v4-flash",
 	name: "DeepSeek Chat",
 	provider: "deepseek",
 	modalities: { input: ["text"], output: ["text"] },
@@ -44,7 +44,7 @@ const openAIModel: ModelConfigItem = {
 	modalities: { input: ["text"], output: ["text"] },
 };
 const models: ModelConfig = {
-	"deepseek-chat": deepseekModel,
+	"deepseek-v4-flash": deepseekModel,
 	"gpt-5.4": openAIModel,
 	"voxtral-mini-transcribe-realtime": voxtralModel,
 };
@@ -155,7 +155,7 @@ describe("useHomeChatModeConfig", () => {
 		chatStoreState.model = "voxtral-mini-transcribe-realtime";
 		liveSessionState.provider = "mistral";
 		finalLiveInputTranscriptHandler = undefined;
-		models["deepseek-chat"] = deepseekModel;
+		models["deepseek-v4-flash"] = deepseekModel;
 		models["gpt-5.4"] = openAIModel;
 		models["voxtral-mini-transcribe-realtime"] = voxtralModel;
 	});
@@ -209,7 +209,7 @@ describe("useHomeChatModeConfig", () => {
 	});
 
 	it("does not compose live transcript responses until a reasoning chat model is available", () => {
-		delete models["deepseek-chat"];
+		delete models["deepseek-v4-flash"];
 		delete models["gpt-5.4"];
 
 		renderHook(() => useHomeChatModeConfig());
@@ -256,14 +256,14 @@ describe("useHomeChatModeConfig", () => {
 					},
 				},
 			},
-			model: "deepseek-chat",
+			model: "deepseek-v4-flash",
 		});
 	});
 
 	it("switches to live mode when a realtime model is selected", () => {
 		searchParams = new URLSearchParams();
 		chatStoreState.homeChatMode = "chat";
-		chatStoreState.model = "deepseek-chat";
+		chatStoreState.model = "deepseek-v4-flash";
 		liveSessionState.provider = "openai";
 
 		const { result } = renderHook(() => useHomeChatModeConfig());
@@ -284,7 +284,7 @@ describe("useHomeChatModeConfig", () => {
 		const { result } = renderHook(() => useHomeChatModeConfig());
 
 		act(() => {
-			result.current.modeConfig.onModelChange?.("deepseek-chat", deepseekModel);
+			result.current.modeConfig.onModelChange?.("deepseek-v4-flash", deepseekModel);
 		});
 
 		const nextParams = typedSetSearchParams.mock.calls.at(-1)?.[0];
@@ -299,7 +299,7 @@ describe("useHomeChatModeConfig", () => {
 	it("normalises sms URL mode back to chat", () => {
 		searchParams = new URLSearchParams("mode=sms");
 		chatStoreState.homeChatMode = "chat";
-		chatStoreState.model = "deepseek-chat";
+		chatStoreState.model = "deepseek-v4-flash";
 
 		const { result } = renderHook(() => useHomeChatModeConfig());
 
@@ -329,7 +329,7 @@ describe("useHomeChatModeConfig", () => {
 	it("falls back to chat instead of sending fake background options for unsupported models", () => {
 		searchParams = new URLSearchParams("mode=background");
 		chatStoreState.homeChatMode = "background";
-		chatStoreState.model = "deepseek-chat";
+		chatStoreState.model = "deepseek-v4-flash";
 
 		const { result } = renderHook(() => useHomeChatModeConfig());
 
@@ -344,7 +344,7 @@ describe("useHomeChatModeConfig", () => {
 	it("disables background mode for models that cannot run background responses", () => {
 		searchParams = new URLSearchParams();
 		chatStoreState.homeChatMode = "chat";
-		chatStoreState.model = "deepseek-chat";
+		chatStoreState.model = "deepseek-v4-flash";
 
 		const { result } = renderHook(() => useHomeChatModeConfig());
 

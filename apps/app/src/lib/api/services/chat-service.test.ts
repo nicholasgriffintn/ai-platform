@@ -238,6 +238,64 @@ describe("ChatService streaming", () => {
 		expect(result.content).toBe("I will check the weather for London W5 1EW at 09:00 today.");
 	});
 
+	it("keeps streamed text when final metadata omits content and usable parts", async () => {
+		vi.stubGlobal(
+			"fetch",
+			vi.fn(async () =>
+				createSseResponse([
+					data({ type: "state", state: "init" }),
+					data({ type: "content_block_delta", content: "Hello" }),
+					data({ type: "content_block_delta", content: "!" }),
+					data({ type: "content_block_delta", content: " How" }),
+					data({ type: "content_block_delta", content: " can" }),
+					data({ type: "content_block_delta", content: " I" }),
+					data({ type: "content_block_delta", content: " help" }),
+					data({ type: "content_block_delta", content: " you" }),
+					data({ type: "content_block_delta", content: " today" }),
+					data({ type: "content_block_delta", content: "?" }),
+					data({ type: "state", state: "post_processing" }),
+					data({ type: "content_block_stop" }),
+					data({
+						type: "message_delta",
+						id: "conversation-1",
+						message_id: "assistant-final",
+						created: 1000,
+						model: "deepseek-v4-flash",
+						parts: [{ type: "text", text: "" }],
+					}),
+					data({ type: "message_stop" }),
+					data({ type: "usage_limits", usage_limits: { daily: { used: 5, limit: 10 } } }),
+					data({ type: "state", state: "done" }),
+					data("[DONE]"),
+				]),
+			),
+		);
+
+		const progressUpdates: string[] = [];
+		const service = new ChatService(async () => ({}));
+
+		const result = await service.streamChatCompletions({
+			chatSettings: {},
+			completionId: "conversation-1",
+			messages: [{ role: "user", content: "H" } as Message],
+			mode: "remote",
+			model: "deepseek-v4-flash",
+			onProgress: (text) => {
+				progressUpdates.push(text);
+			},
+			onStateChange: () => {},
+			signal: new AbortController().signal,
+		});
+
+		expect(progressUpdates).toContain("Hello! How can I help you today?");
+		expect(result).toEqual(
+			expect.objectContaining({
+				id: "assistant-final",
+				content: "Hello! How can I help you today?",
+			}),
+		);
+	});
+
 	it("surfaces streamed usage limits through state updates", async () => {
 		vi.stubGlobal(
 			"fetch",
@@ -320,13 +378,88 @@ describe("ChatService streaming", () => {
 		const [, request] = fetchMock.mock.calls[0];
 		const body = JSON.parse(String(request?.body));
 
-		expect(body.options.tool_options).toBeUndefined();
+		expect(body.options?.tool_options).toBeUndefined();
 		expect(body.tool_options.image_generation).toEqual({
 			size: "1024x1024",
 		});
 		expect(body.enabled_tools).toEqual(["image_generation"]);
 		expect(body.models).toEqual(["gpt-5", "claude-opus"]);
 		expect(body.provider).toBe("openai");
+	});
+
+	it("omits tool request fields when tools are not allowed", async () => {
+		const fetchMock = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) =>
+			createSseResponse([data("[DONE]")]),
+		);
+		vi.stubGlobal("fetch", fetchMock);
+
+		const service = new ChatService(async () => ({}));
+
+		await service.streamChatCompletions({
+			allowTools: false,
+			chatSettings: {
+				enabled_tools: ["web_search"],
+				tool_options: {
+					image_generation: {
+						size: "1024x1024",
+					},
+				},
+			},
+			completionId: "conversation-1",
+			endpoint: "/chat/completions",
+			messages: [{ role: "user", content: "hello" } as Message],
+			mode: "remote",
+			model: "gpt-5",
+			onProgress: () => {},
+			onStateChange: () => {},
+			requestOptions: {
+				options: {
+					sandbox: {
+						enabled: true,
+						taskType: "bug-fix",
+						maxSteps: 4,
+					},
+				},
+			},
+			selectedTools: ["image_generation"],
+			signal: new AbortController().signal,
+			streamingEnabled: true,
+		});
+
+		const [, request] = fetchMock.mock.calls[0];
+		const body = JSON.parse(String(request?.body));
+
+		expect(body.enabled_tools).toBeUndefined();
+		expect(body.approved_tools).toBeUndefined();
+		expect(body.tool_options).toBeUndefined();
+		expect(body.max_steps).toBeUndefined();
+	});
+
+	it("sends automatic router mode without an explicit model", async () => {
+		const fetchMock = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) =>
+			createSseResponse([data("[DONE]")]),
+		);
+		vi.stubGlobal("fetch", fetchMock);
+
+		const service = new ChatService(async () => ({}));
+
+		await service.streamChatCompletions({
+			chatSettings: {},
+			completionId: "conversation-1",
+			endpoint: "/chat/completions",
+			messages: [{ role: "user", content: "hello" } as Message],
+			mode: "remote",
+			modelRouterMode: "pro",
+			onProgress: () => {},
+			onStateChange: () => {},
+			signal: new AbortController().signal,
+		});
+
+		const [, request] = fetchMock.mock.calls[0];
+		const body = JSON.parse(String(request?.body));
+
+		expect(body.model).toBeUndefined();
+		expect(body.model_router_mode).toBe("pro");
 	});
 
 	it("normalises selected tool ids before sending chat requests", async () => {
@@ -355,7 +488,7 @@ describe("ChatService streaming", () => {
 		const body = JSON.parse(String(request?.body));
 
 		expect(body.enabled_tools).toEqual(["web_fetch"]);
-		expect(body.options.enabled_tools).toBeUndefined();
+		expect(body.options?.enabled_tools).toBeUndefined();
 	});
 
 	it("does not send stale hosted model tools that are unavailable for the selected model", async () => {
@@ -372,10 +505,10 @@ describe("ChatService streaming", () => {
 			endpoint: "/chat/completions",
 			messages: [{ role: "user", content: "hello" } as Message],
 			mode: "remote",
-			model: "deepseek-chat",
+			model: "deepseek-v4-flash",
 			modelConfig: {
-				id: "deepseek-chat",
-				matchingModel: "deepseek-chat",
+				id: "deepseek-v4-flash",
+				matchingModel: "deepseek-v4-flash",
 				name: "DeepSeek Chat",
 				provider: "deepseek",
 				supportsToolCalls: true,

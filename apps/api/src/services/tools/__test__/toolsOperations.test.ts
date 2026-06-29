@@ -43,4 +43,16 @@ describe("getAvailableTools", () => {
 
 		expect(tools.map((tool) => tool.id)).not.toContain("run_code_review");
 	});
+
+	it("does not mark tools as default for non-Pro users", () => {
+		const tools = getAvailableTools(false, true);
+
+		expect(tools.find((tool) => tool.id === "web_search")?.isDefault).toBe(false);
+	});
+
+	it("marks default tools for Pro users", () => {
+		const tools = getAvailableTools(true, true);
+
+		expect(tools.find((tool) => tool.id === "web_search")?.isDefault).toBe(true);
+	});
 });

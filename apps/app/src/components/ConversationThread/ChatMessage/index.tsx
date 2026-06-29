@@ -30,7 +30,6 @@ export const ChatMessage = ({
 	isBranching = false,
 	onRequestOpinion,
 	isRequestingOpinion = false,
-	shouldPromoteOpinion = false,
 }: {
 	conversationId?: string;
 	message: Message;
@@ -52,7 +51,6 @@ export const ChatMessage = ({
 	isBranching?: boolean;
 	onRequestOpinion?: (messageId: string, request: OpinionRequest) => void;
 	isRequestingOpinion?: boolean;
-	shouldPromoteOpinion?: boolean;
 }) => {
 	const { copied, copy } = useCopyToClipboard();
 	const [feedbackState, setFeedbackState] = useState<"none" | "liked" | "disliked">("none");
@@ -219,7 +217,6 @@ export const ChatMessage = ({
 								isBranching={isBranching}
 								onRequestOpinion={onRequestOpinion}
 								isRequestingOpinion={isRequestingOpinion}
-								shouldPromoteOpinion={shouldPromoteOpinion}
 							/>
 						)}
 				</div>

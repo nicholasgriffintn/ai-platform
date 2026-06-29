@@ -14,7 +14,7 @@ import {
 	type ChatStreamUpdate,
 	type ParsedChatStreamSseEvent,
 } from "@assistant/schemas";
-import type { ModelConfigItem } from "@assistant/schemas";
+import type { ModelConfigItem, ModelRouterMode } from "@assistant/schemas";
 import { getSandboxModeToolNames } from "~/lib/sandbox/chat-mode";
 import { filterUnavailableModelToolSelections } from "~/lib/model-tools";
 import {
@@ -43,6 +43,7 @@ type StreamProgressHandler = (
 ) => void;
 
 export interface StreamChatCompletionsParams {
+	allowTools?: boolean;
 	chatSettings: ChatSettings;
 	completionId: string;
 	endpoint?: string;
@@ -50,6 +51,7 @@ export interface StreamChatCompletionsParams {
 	mode: ChatMode;
 	model?: string;
 	modelConfig?: ModelConfigItem;
+	modelRouterMode?: ModelRouterMode;
 	models?: string[];
 	onProgress: StreamProgressHandler;
 	onStateChange: (state: string, data?: any) => void;
@@ -404,6 +406,7 @@ export class ChatService {
 		mode,
 		model,
 		modelConfig,
+		modelRouterMode,
 		models,
 		onProgress,
 		onStateChange,
@@ -414,6 +417,7 @@ export class ChatService {
 		store = true,
 		streamingEnabled = true,
 		useMultiModel = false,
+		allowTools = true,
 	}: StreamChatCompletionsParams): Promise<Message> {
 		let headers = {};
 		try {
@@ -423,12 +427,14 @@ export class ChatService {
 		}
 
 		const formattedMessages = serialiseMessagesForChatRequest(messages);
-		const sandboxOptions = requestOptions?.options?.sandbox?.enabled
-			? requestOptions.options.sandbox
-			: undefined;
-		const selectedToolIds = selectedTools
-			? normaliseToolIds(filterUnavailableModelToolSelections(selectedTools, modelConfig))
-			: undefined;
+		const sandboxOptions =
+			allowTools && requestOptions?.options?.sandbox?.enabled
+				? requestOptions.options.sandbox
+				: undefined;
+		const selectedToolIds =
+			allowTools && selectedTools
+				? normaliseToolIds(filterUnavailableModelToolSelections(selectedTools, modelConfig))
+				: undefined;
 		const requestEnabledTools = sandboxOptions
 			? normaliseToolIds([
 					...(selectedToolIds ?? []),
@@ -447,7 +453,7 @@ export class ChatService {
 			use_rag: useRag,
 			...generationSettings
 		} = chatSettings;
-		const enabledTools = requestEnabledTools ?? settingsEnabledTools;
+		const enabledTools = allowTools ? (requestEnabledTools ?? settingsEnabledTools) : undefined;
 		const requestRagOptions = ragOptions
 			? {
 					top_k: ragOptions.topK,
@@ -467,6 +473,7 @@ export class ChatService {
 			stream: streamingEnabled,
 			...generationSettings,
 			models,
+			model_router_mode: modelRouterMode,
 			provider,
 			mode,
 			use_multi_model: useMultiModel,
@@ -474,10 +481,8 @@ export class ChatService {
 			use_rag: useRag,
 			rag_options: requestRagOptions,
 			enabled_tools: enabledTools,
-			approved_tools: requestApprovedTools,
-			tool_options: {
-				...hostedToolOptions,
-			},
+			approved_tools: allowTools ? requestApprovedTools : undefined,
+			tool_options: allowTools ? { ...hostedToolOptions } : undefined,
 			options: featureOptions,
 		};
 

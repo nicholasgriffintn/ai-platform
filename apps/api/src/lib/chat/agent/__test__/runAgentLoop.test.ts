@@ -29,7 +29,7 @@ function createParams(overrides: Partial<AgentLoopExecutionParams> = {}): AgentL
 		toolRequestContext: {
 			env: { AI: { aiGatewayLogId: "log-1" } },
 			request: {
-				model: "deepseek-chat",
+				model: "deepseek-v4-flash",
 				mode: "agent",
 				enabled_tools: ["get_weather"],
 				approved_tools: ["get_weather"],
@@ -38,7 +38,7 @@ function createParams(overrides: Partial<AgentLoopExecutionParams> = {}): AgentL
 		} as unknown as AgentLoopExecutionParams["toolRequestContext"],
 		requestParams: {
 			env: { AI: { aiGatewayLogId: "log-1" } },
-			model: "deepseek-chat",
+			model: "deepseek-v4-flash",
 			provider: "deepseek",
 			messages: [
 				{

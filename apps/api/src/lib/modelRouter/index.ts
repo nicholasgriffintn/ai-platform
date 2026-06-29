@@ -1,7 +1,8 @@
 import { PromptAnalyzer } from "~/lib/modelRouter/promptAnalyser";
 import { defaultModel, getIncludedInRouterModelsForUser, getModels } from "~/lib/providers/models";
 import { trackModelRoutingMetrics } from "~/lib/monitoring";
-import type { ModelConfigItem, PromptRequirements } from "@assistant/schemas";
+import type { ModelConfigItem, ModelRouterMode, PromptRequirements } from "@assistant/schemas";
+import { filterModelsByRouterMode } from "@assistant/schemas";
 import type { Attachment, IEnv, IUser } from "~/types";
 import { getLogger } from "~/utils/logger";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -389,10 +390,12 @@ export class ModelRouter {
 		budget_constraint?: number,
 		user?: IUser,
 		completion_id?: string,
+		routerMode: ModelRouterMode = "auto",
 	): Promise<string> {
 		return trackModelRoutingMetrics(
 			async () => {
 				const availableModels = await getIncludedInRouterModelsForUser(env, user?.id);
+				const routedModels = filterModelsByRouterMode(availableModels, routerMode);
 
 				const requirements = await PromptAnalyzer.analyzePrompt(
 					env,
@@ -402,7 +405,7 @@ export class ModelRouter {
 					user,
 				);
 
-				const modelScores = await ModelRouter.rankModels(availableModels, requirements);
+				const modelScores = await ModelRouter.rankModels(routedModels, requirements);
 
 				const suitableModels = modelScores.filter((model) => model.score > 0);
 
@@ -425,10 +428,12 @@ export class ModelRouter {
 		budget_constraint?: number,
 		user?: IUser,
 		completion_id?: string,
+		routerMode: ModelRouterMode = "auto",
 	): Promise<string[]> {
 		return trackModelRoutingMetrics(
 			async () => {
 				const availableModels = await getIncludedInRouterModelsForUser(env, user?.id);
+				const routedModels = filterModelsByRouterMode(availableModels, routerMode);
 
 				const requirements = await PromptAnalyzer.analyzePrompt(
 					env,
@@ -438,7 +443,7 @@ export class ModelRouter {
 					user,
 				);
 
-				const modelScores = await ModelRouter.rankModels(availableModels, requirements);
+				const modelScores = await ModelRouter.rankModels(routedModels, requirements);
 
 				const suitableModels = modelScores.filter((model) => model.score > 0);
 

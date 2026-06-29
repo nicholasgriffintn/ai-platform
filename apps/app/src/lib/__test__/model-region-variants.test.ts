@@ -29,7 +29,7 @@ describe("model region variants", () => {
 			makeModel("us.anthropic.claude-sonnet-4-6", "Claude Sonnet 4.6 (US)"),
 			makeModel("eu.anthropic.claude-sonnet-4-6", "Claude Sonnet 4.6 (EU)"),
 			makeModel("global.anthropic.claude-sonnet-4-6", "Claude Sonnet 4.6 (Global)"),
-			makeModel("deepseek-chat", "DeepSeek Chat", "deepseek"),
+			makeModel("deepseek-v4-flash", "DeepSeek Chat", "deepseek"),
 		]);
 
 		const sonnetEntry = entries.find((entry) => entry.model.id === "anthropic.claude-sonnet-4-6");

@@ -48,4 +48,25 @@ describe("ChatMessage", () => {
 
 		expect(screen.getByRole("img", { name: "provider/big-pickle" })).toBeInTheDocument();
 	});
+
+	it("renders assistant content when final message parts do not include text", () => {
+		render(
+			<ChatMessage
+				message={{
+					...assistantMessage,
+					content: "Hello! How can I help you today?",
+					parts: [
+						{
+							type: "tool_use",
+							name: "web_search",
+							toolCallId: "call-1",
+							input: {},
+						},
+					],
+				}}
+			/>,
+		);
+
+		expect(screen.getByText("Hello! How can I help you today?")).toBeInTheDocument();
+	});
 });
