@@ -21,6 +21,8 @@ import {
 	getModelsByCapability,
 	getModelsByModality,
 	resolveModelProvider,
+	defaultModel,
+	defaultProvider,
 } from "../providers/models";
 
 vi.mock("~/lib/cache", () => {
@@ -138,7 +140,14 @@ describe("Models", () => {
 			const result = await getModelConfig();
 
 			expect(result).toBeDefined();
-			expect(result.provider).toBe("deepseek");
+			expect(result.provider).toBe(defaultProvider);
+		});
+
+		it("should resolve the configured default model to the configured default provider", async () => {
+			const result = await getModelConfig(defaultModel);
+
+			expect(result).toBeDefined();
+			expect(result.provider).toBe(defaultProvider);
 		});
 
 		it("should return specific model config when model specified", async () => {
@@ -254,6 +263,13 @@ describe("Models", () => {
 			const result = await getMatchingModel();
 
 			expect(result).toBeDefined();
+		});
+
+		it("should resolve the configured default matching model to the configured default provider", async () => {
+			const result = await getModelConfigByMatchingModel(defaultModel);
+
+			expect(result).toBeDefined();
+			expect(result?.provider).toBe(defaultProvider);
 		});
 
 		it("should use cache when available", async () => {

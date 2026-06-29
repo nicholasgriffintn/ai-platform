@@ -311,13 +311,13 @@ describe("OpenAIProvider", () => {
 			const endpoint = await (provider as any).getEndpoint({
 				model: "gpt-5.5",
 				messages: [{ role: "user", content: "Hello" }],
-				options: { use_responses: false },
+				use_responses: false,
 				env: { AI_GATEWAY_TOKEN: "test-token" },
 			});
 			const result = await provider.mapParameters({
 				model: "gpt-5.5",
 				messages: [{ role: "user", content: "Hello" }],
-				options: { use_responses: false },
+				use_responses: false,
 				env: { AI_GATEWAY_TOKEN: "test-token" },
 			} as any);
 
@@ -420,7 +420,7 @@ describe("OpenAIProvider", () => {
 				model: "gpt-5.5",
 				messages: [{ role: "user", content: "Run this in the background" }],
 				store: true,
-				options: { background: true },
+				background: true,
 				env: { AI_GATEWAY_TOKEN: "test-token" },
 			} as any);
 
@@ -448,7 +448,7 @@ describe("OpenAIProvider", () => {
 					model: "gpt-5.5",
 					messages: [{ role: "user", content: "Run this in the background" }],
 					store: false,
-					options: { background: true },
+					background: true,
 					env: { AI_GATEWAY_TOKEN: "test-token" },
 				} as any),
 			).rejects.toThrow("background Responses require store=true");
@@ -479,9 +479,9 @@ describe("OpenAIProvider", () => {
 				messages: [{ role: "user", content: "Use hosted tools" }],
 				store: false,
 				enabled_tools: ["code_interpreter", "file_search", "mcp", "computer_use", "hosted_shell"],
-				options: {
-					background: false,
-					prompt_cache_key: "conversation:test",
+				background: false,
+				prompt_cache_key: "conversation:test",
+				tool_options: {
 					file_search: {
 						vector_store_ids: ["vs_123"],
 						include_results: true,
@@ -640,7 +640,7 @@ describe("OpenAIProvider", () => {
 				model: "gpt-5.4",
 				messages: [{ role: "user", content: "Find the right remote tool" }],
 				enabled_tools: ["tool_search"],
-				options: {
+				tool_options: {
 					tool_search: {
 						execution: "client",
 						include_app_tools: false,
@@ -806,7 +806,7 @@ describe("OpenAIProvider", () => {
 				model: "gpt-5.5",
 				messages: [{ role: "user", content: "Generate an image" }],
 				enabled_tools: ["image_generation"],
-				options: {
+				tool_options: {
 					image_generation: {
 						size: "1536x1024",
 						quality: "high",
@@ -1034,11 +1034,9 @@ describe("OpenAIProvider", () => {
 				messages: [{ role: "user", content: "Say hello" }],
 				env: { AI_GATEWAY_TOKEN: "test-token" },
 				stream: true,
-				options: {
-					audio: {
-						voice: "cedar",
-						format: "wav",
-					},
+				audio: {
+					voice: "cedar",
+					format: "wav",
 				},
 			} as any);
 

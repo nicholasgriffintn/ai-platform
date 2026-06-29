@@ -91,13 +91,9 @@ describe("buildConversationModeMetadataFromRequestOptions", () => {
 	});
 
 	it("builds background metadata without duplicating request options", () => {
-		const options = {
-			background: true,
-		};
-
-		expect(resolveChatPromptMode(options as any)).toBeUndefined();
-		expect(resolveChatConversationMode(options as any)).toBe("background");
-		expect(buildConversationModeMetadataFromRequestOptions(options as any)).toEqual({
+		expect(resolveChatPromptMode(undefined)).toBeUndefined();
+		expect(resolveChatConversationMode(undefined, true)).toBe("background");
+		expect(buildConversationModeMetadataFromRequestOptions(undefined, true)).toEqual({
 			mode: "background",
 		});
 	});

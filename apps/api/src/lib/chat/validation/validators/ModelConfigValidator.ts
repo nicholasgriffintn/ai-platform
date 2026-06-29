@@ -8,6 +8,7 @@ import type {
 import { findModelConfig } from "~/lib/providers/models";
 import type { CoreChatOptions } from "~/types";
 import { getLogger } from "~/utils/logger";
+import { resolveRequestUser } from "~/utils/requestUser";
 
 const logger = getLogger({
 	prefix: "lib/chat/validation/validators/ModelConfigValidator",
@@ -17,7 +18,6 @@ export class ModelConfigValidator implements Validator {
 	async validate(options: CoreChatOptions, context: ValidationContext): Promise<ValidatorResult> {
 		const {
 			env,
-			user,
 			model: requestedModel,
 			models: requestedModels,
 			provider: requestedProvider,
@@ -26,6 +26,7 @@ export class ModelConfigValidator implements Validator {
 			use_multi_model = false,
 			budget_constraint,
 		} = options;
+		const user = resolveRequestUser(options);
 
 		if (!context.sanitizedMessages || !context.lastMessage) {
 			return {

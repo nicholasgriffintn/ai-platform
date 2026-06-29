@@ -329,6 +329,54 @@ describe("ChatService streaming", () => {
 		expect(body.provider).toBe("openai");
 	});
 
+	it("omits tool request fields when tools are not allowed", async () => {
+		const fetchMock = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) =>
+			createSseResponse([data("[DONE]")]),
+		);
+		vi.stubGlobal("fetch", fetchMock);
+
+		const service = new ChatService(async () => ({}));
+
+		await service.streamChatCompletions({
+			allowTools: false,
+			chatSettings: {
+				enabled_tools: ["web_search"],
+				tool_options: {
+					image_generation: {
+						size: "1024x1024",
+					},
+				},
+			},
+			completionId: "conversation-1",
+			endpoint: "/chat/completions",
+			messages: [{ role: "user", content: "hello" } as Message],
+			mode: "remote",
+			model: "gpt-5",
+			onProgress: () => {},
+			onStateChange: () => {},
+			requestOptions: {
+				options: {
+					sandbox: {
+						enabled: true,
+						taskType: "bug-fix",
+						maxSteps: 4,
+					},
+				},
+			},
+			selectedTools: ["image_generation"],
+			signal: new AbortController().signal,
+			streamingEnabled: true,
+		});
+
+		const [, request] = fetchMock.mock.calls[0];
+		const body = JSON.parse(String(request?.body));
+
+		expect(body.enabled_tools).toBeUndefined();
+		expect(body.approved_tools).toBeUndefined();
+		expect(body.tool_options).toBeUndefined();
+		expect(body.max_steps).toBeUndefined();
+	});
+
 	it("sends automatic router mode without an explicit model", async () => {
 		const fetchMock = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) =>
 			createSseResponse([data("[DONE]")]),

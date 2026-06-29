@@ -12,7 +12,7 @@ import { anthropicModelConfig } from "~/data-model/models/anthropic";
 import { azureModelConfig } from "~/data-model/models/azure";
 import { bedrockModelConfig } from "~/data-model/models/bedrock";
 import { chutesModelConfig } from "~/data-model/models/chutes";
-import { type availableModalities, defaultModel } from "~/constants/models";
+import { type availableModalities, defaultModel, defaultProvider } from "~/constants/models";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { deepinfraModelConfig } from "~/data-model/models/deepinfra";
 import { deepseekModelConfig } from "~/data-model/models/deepseek";
@@ -226,12 +226,17 @@ export async function getModelConfig(
 	userId?: number,
 ) {
 	const key = model || defaultModel;
-	const cacheParts = provider ? [key, provider] : [key];
+	const resolvedProvider = provider ?? (key === defaultModel ? defaultProvider : undefined);
+	const cacheParts = resolvedProvider ? [key, resolvedProvider] : [key];
 
 	const staticConfig = await withCache(env, "model-config", cacheParts, () => {
 		const config = modelConfig[key];
-		if (!config) return undefined;
-		if (provider && config.provider !== provider) return undefined;
+		if (config && (!resolvedProvider || config.provider === resolvedProvider)) {
+			return config;
+		}
+		if (resolvedProvider) {
+			return findModelConfigByMatchingModel(key, resolvedProvider) ?? undefined;
+		}
 		return config;
 	});
 	if (staticConfig || !model) return staticConfig;
@@ -261,16 +266,18 @@ export async function getModelConfigByMatchingModel(
 	provider?: string,
 	userId?: number,
 ) {
-	const cacheParts = provider ? [matchingModel, provider] : [matchingModel];
+	const resolvedProvider =
+		provider ?? (matchingModel === defaultModel ? defaultProvider : undefined);
+	const cacheParts = resolvedProvider ? [matchingModel, resolvedProvider] : [matchingModel];
 	const staticConfig = await withCache(
 		env,
 		"model-by-matching",
 		cacheParts,
-		() => findModelConfigByMatchingModel(matchingModel, provider) ?? null,
+		() => findModelConfigByMatchingModel(matchingModel, resolvedProvider) ?? null,
 	);
 	if (staticConfig) return staticConfig;
 
-	return findTrainingDeploymentModelConfig(matchingModel, env, userId, provider);
+	return findTrainingDeploymentModelConfig(matchingModel, env, userId, resolvedProvider);
 }
 
 export async function findModelConfig(

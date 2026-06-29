@@ -259,6 +259,7 @@ const agentCompletionOptionsSchema = z.object({
 
 export const chatRequestOptionsSchema = z
 	.object({
+		source: z.string().optional().describe("Request source marker for server-created flows."),
 		council: councilChatOptionsSchema
 			.optional()
 			.describe("Settings for council mode, which enables multi-perspective responses."),

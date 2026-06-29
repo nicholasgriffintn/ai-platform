@@ -3,6 +3,7 @@ import type { ModelConfigItem } from "@assistant/schemas";
 import type { ChatCompletionParameters } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { omitNullishValues } from "~/utils/objects";
+import { resolveRequestUser } from "~/utils/requestUser";
 import { resolveReasoningModel } from "../lib/providers/models/reasoning";
 import { formatToolCalls } from "../lib/chat/tools";
 
@@ -268,7 +269,8 @@ export function getToolsForProvider(
 
 	try {
 		const enabledTools = new Set(params.enabled_tools || []);
-		if (params.context?.user?.id && params.context?.user.plan_id === "pro") {
+		const user = resolveRequestUser(params);
+		if (user?.id && user.plan_id === "pro") {
 			for (const toolName of AUTO_ENABLED_SIGNED_IN_PRO_TOOLS) {
 				enabledTools.add(toolName);
 			}

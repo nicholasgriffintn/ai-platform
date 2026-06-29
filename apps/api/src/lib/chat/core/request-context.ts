@@ -1,5 +1,6 @@
 import type { CoreChatOptions, IRequest, ChatMode } from "~/types";
 import { getToolDefinitionName, type ToolDefinitionLike } from "~/utils/toolNames";
+import { resolveRequestUser } from "~/utils/requestUser";
 
 interface ToolDefinition extends ToolDefinitionLike {
 	permissions?: unknown;
@@ -32,6 +33,7 @@ export function buildToolRequestContext(params: {
 	provider: string;
 }): IRequest {
 	const { chatOptions, input, mode, model, provider } = params;
+	const user = resolveRequestUser(chatOptions);
 
 	return {
 		env: chatOptions.env,
@@ -51,7 +53,7 @@ export function buildToolRequestContext(params: {
 			max_delegation_depth: chatOptions.max_delegation_depth,
 		},
 		app_url: chatOptions.app_url,
-		user: chatOptions.context?.user?.id ? chatOptions.context?.user : undefined,
+		user,
 		context: chatOptions.context,
 	};
 }
