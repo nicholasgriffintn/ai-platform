@@ -252,7 +252,7 @@ export class WorkersProvider extends BaseProvider {
 
 							base64Data = await storageService.getPrivateAssetImageDataUrl(
 								imageContent,
-								params.user?.id,
+								params.context?.user?.id,
 								assetsUrl,
 							);
 						} else {
@@ -384,7 +384,7 @@ export class WorkersProvider extends BaseProvider {
 				);
 				if (imageOutput) {
 					try {
-						if (!params.user?.id) {
+						if (!params.context?.user?.id) {
 							throw new AssistantError(
 								"User ID is required to store generated image",
 								ErrorType.FORBIDDEN,
@@ -396,7 +396,7 @@ export class WorkersProvider extends BaseProvider {
 								env,
 								model,
 								completionId: params.completion_id,
-								userId: params.user.id,
+								userId: params.context?.user.id,
 							},
 							output: imageOutput,
 							extension: "png",
@@ -437,7 +437,7 @@ export class WorkersProvider extends BaseProvider {
 				);
 				if (audioOutput) {
 					try {
-						if (!params.user?.id) {
+						if (!params.context?.user?.id) {
 							throw new AssistantError(
 								"User ID is required to store generated audio",
 								ErrorType.FORBIDDEN,
@@ -449,7 +449,7 @@ export class WorkersProvider extends BaseProvider {
 								env,
 								model,
 								completionId: params.completion_id,
-								userId: params.user.id,
+								userId: params.context?.user.id,
 							},
 							output: audioOutput,
 							extension: "mp3",

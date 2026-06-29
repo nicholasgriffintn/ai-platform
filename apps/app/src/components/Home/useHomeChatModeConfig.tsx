@@ -466,19 +466,21 @@ export function useHomeChatModeConfig(): {
 			/>
 		);
 		const sandboxRequestOptions = {
-			sandbox: {
-				enabled: true,
-				repo: normalisedSandboxRepo || undefined,
-				installationId: selectedSandboxRepoOption?.installationId,
-				model: selectedModel ?? undefined,
-				taskType: sandboxTaskType,
-				promptStrategy: sandboxPromptStrategy,
-				shouldCommit: isReadOnlySandboxTaskType ? false : sandboxShouldCommit,
-				timeoutSeconds: Number.isFinite(parsedSandboxTimeoutSeconds)
-					? parsedSandboxTimeoutSeconds
-					: undefined,
-				maxSteps: 2,
-				modelSettings: sandboxModelSettings,
+			options: {
+				sandbox: {
+					enabled: true,
+					repo: normalisedSandboxRepo || undefined,
+					installationId: selectedSandboxRepoOption?.installationId,
+					model: selectedModel ?? undefined,
+					taskType: sandboxTaskType,
+					promptStrategy: sandboxPromptStrategy,
+					shouldCommit: isReadOnlySandboxTaskType ? false : sandboxShouldCommit,
+					timeoutSeconds: Number.isFinite(parsedSandboxTimeoutSeconds)
+						? parsedSandboxTimeoutSeconds
+						: undefined,
+					maxSteps: 2,
+					modelSettings: sandboxModelSettings,
+				},
 			},
 		};
 		const sandboxControls = (
@@ -701,11 +703,13 @@ export function useHomeChatModeConfig(): {
 		}
 
 		const councilRequestOptions = {
-			council: {
-				enabled: true,
-				responseMode: councilResponseMode,
-				memberIds: selectedCouncilMemberIds,
-				requireConsensus: true,
+			options: {
+				council: {
+					enabled: true,
+					responseMode: councilResponseMode,
+					memberIds: selectedCouncilMemberIds,
+					requireConsensus: true,
+				},
 			},
 		};
 

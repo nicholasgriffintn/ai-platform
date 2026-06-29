@@ -48,10 +48,6 @@ export function getActiveRecipeSetup(options: unknown): ActiveRecipeSetup | unde
 
 export function getTriggerRecipeChannel(options: unknown): "sms" | "tool" {
 	const requestOptions = parseChatRequestOptions(options);
-	if (requestOptions?.source === "sms") {
-		return "sms";
-	}
-
 	if (requestOptions?.sms?.enabled === true) {
 		return "sms";
 	}

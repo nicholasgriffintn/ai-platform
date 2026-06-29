@@ -1,14 +1,16 @@
 import type { ExecutionContext } from "@cloudflare/workers-types";
 import type {
+	ChatCompletionRequestBody as SchemaChatCompletionRequestBody,
+	ChatCompletionResponseBody as SchemaChatCompletionResponseBody,
 	ChatRequestOptions as SchemaChatRequestOptions,
 	MessagePart as SchemaMessagePart,
 } from "@assistant/schemas";
 import type { ServiceContext } from "../lib/context/serviceContext";
 import type { AnonymousUser } from "./anonymous-user";
-import type { IEnv, ReasoningEffortLevel, RequireAtLeastOne, VerbosityLevel } from "./shared";
+import type { IEnv, ReasoningEffortLevel, VerbosityLevel } from "./shared";
 import type { IUser } from "./user";
 
-export type Platform = "web" | "mobile" | "api" | "dynamic-apps";
+export type Platform = "web" | "mobile" | "api" | "obsidian" | "dynamic-apps";
 
 export type ContentType =
 	| "text"
@@ -19,6 +21,7 @@ export type ContentType =
 	| "thinking"
 	| "document_url"
 	| "markdown_document"
+	| "file"
 	| "tool_result";
 export type ChatRole = "user" | "assistant" | "tool" | "developer" | "system";
 export type ChatMode =
@@ -29,7 +32,8 @@ export type ChatMode =
 	| "agent"
 	| "plan"
 	| "build"
-	| "explore";
+	| "explore"
+	| "thinking";
 export type MessagePart = SchemaMessagePart;
 
 export interface ReasoningControls {
@@ -67,7 +71,7 @@ export type MessageContent = {
 	id?: string;
 	name?: string;
 	content?: string;
-	input?: string | Record<string, string | number | boolean>;
+	input?: string | Record<string, unknown>;
 	cache_control?: {
 		type: "ephemeral";
 	};
@@ -181,6 +185,9 @@ export interface IFeedbackBody {
 }
 
 export type RagOptions = {
+	top_k?: number;
+	score_threshold?: number;
+	include_metadata?: boolean;
 	topK?: number;
 	scoreThreshold?: number;
 	includeMetadata?: boolean;
@@ -209,63 +216,18 @@ export interface IRequest {
 	context?: ServiceContext;
 }
 
-interface AIControlParams {
-	// Controls the randomness of the output; higher values produce more random results.
-	temperature?: number;
-	// Controls the maximum number of tokens in the response.
-	max_tokens?: number;
-	// Controls the minimum number of tokens in the response.
+type InternalExecutionParams = {
+	// Minimum output tokens requested by internal orchestration.
 	min_tokens?: number;
-	// Adjusts the creativity of the AI's responses by controlling how many possible words it considers. Lower values make outputs more predictable; higher values allow for more varied and creative responses.
-	top_p?: number;
-	// Limits the AI to choose from the top 'k' most probable words. Lower values make responses more focused; higher values introduce more variety and potential surprises.
-	top_k?: number;
-	// Random seed for reproducibility of the generation.
-	seed?: number;
-	// Penalty for repeated tokens; higher values discourage repetition.
-	repetition_penalty?: number;
-	// Controls the frequency of the AI's responses by controlling how many words it considers. Lower values make outputs more predictable; higher values allow for more varied and creative responses.
-	frequency_penalty?: number;
-	// Controls the relevance of the AI's responses by controlling how many words it considers. Lower values make outputs more predictable; higher values allow for more varied and creative responses.
-	presence_penalty?: number;
-	// The number of responses to generate.
-	n?: number;
-	// Whether to stream the response.
-	stream?: boolean;
-	// The stop sequences to use for the response.
-	stop?: string[];
-	// The logit bias to use for the response.
-	logit_bias?: Record<string, number>;
-	// The metadata to use for the response.
-	metadata?: Record<string, any>;
-	// The reasoning effort to use for the response (legacy alias).
-	reasoning_effort?: ReasoningEffortLevel;
-	// Structured reasoning controls.
-	reasoning?: {
-		effort?: ReasoningEffortLevel;
-	};
-	// Whether to store the response.
-	store?: boolean;
-	// The current step to use for the response.
+	// Current orchestration step for streamed multi-step responses.
 	current_step?: number;
-	// The maximum number of steps to use for the response.
-	max_steps?: number;
-	// Whether to use multi-model for the response.
-	use_multi_model?: boolean;
-}
-
-export type ChatRequestOptions = SchemaChatRequestOptions;
-
-interface AIResponseParamsBase extends AIControlParams {
-	// The platform the user requested with.
-	platform?: Platform;
 	// The URL of the app.
 	app_url?: string;
-	// The system prompt to use for the response.
-	system_prompt?: string;
 	// The environment variables to use for the response.
 	env: IEnv;
-	// The user to use for the response.
+	// Runtime service context for authenticated user, repositories, and request cache.
+	context?: ServiceContext;
+	// Authenticated runtime user
 	user?: IUser;
 	// The Worker execution context for background analytics delivery.
 	executionCtx?: ExecutionContext;
@@ -275,40 +237,25 @@ interface AIResponseParamsBase extends AIControlParams {
 	version?: string;
 	// Whether to disable functions for the response.
 	disable_functions?: boolean;
-	// The ID of the completion to use for the response.
-	completion_id?: string;
-	// The messages to use for the response.
+	// Runtime-normalised messages.
 	messages?: Message[];
+	// Provider-formatted tools.
+	tools?: Record<string, any>[];
+	// Provider thinking configuration after request preparation.
+	thinking?: {
+		type: "enabled" | "disabled";
+		budget_tokens?: number;
+	};
 	// The message to use for the response.
 	message?: string;
 	// The prefix text used for FIM requests.
 	prompt?: string;
 	// The suffix text used for FIM requests.
 	suffix?: string;
-	// The model to use for the response.
-	model?: string;
-	// Explicit model list to use when the caller wants one or more specific responses.
-	models?: string[];
-	// The provider to use when the model name is shared by multiple providers.
-	provider?: string;
-	// The mode to use for the response.
-	mode?: ChatMode;
-	// Desired output verbosity for providers that support the legacy knob.
-	verbosity?: VerbosityLevel;
-	// Whether to think for the response.
-	should_think?: boolean;
-	// The response format to use for the response.
-	response_format?: Record<string, any>;
-	// Whether to enable RAG for the response.
-	use_rag?: boolean;
 	// Whether the request is a Fill-in-the-Middle generation.
 	fim_mode?: boolean;
 	// The Mercury edit operation requested.
 	edit_operation?: "next" | "apply";
-	// The options for RAG for the response.
-	rag_options?: RagOptions;
-	// The budget constraint to use for the response.
-	budget_constraint?: number;
 	// The location of the user to use for the response.
 	location?: {
 		latitude: number;
@@ -316,88 +263,33 @@ interface AIResponseParamsBase extends AIControlParams {
 	};
 	// The language to use for the response.
 	lang?: string;
-	// The tools that can be used for the response.
-	tools?: Record<string, any>[];
-	// The tools that should be enabled for the response.
-	enabled_tools?: string[];
-	// Tool names pre-approved for approval-gated modes.
-	approved_tools?: string[];
-	// The tool choice to use for the response.
-	tool_choice?: "required" | "auto" | "none" | { type: "function"; name: string };
-	// Whether to enable parallel tool calls for the response.
-	parallel_tool_calls?: boolean;
-	// Additional options for the response.
-	options?: ChatRequestOptions;
 	// The body of the request.
 	body?: Record<string, any>;
-	// Whether to enable thinking for the response.
-	thinking?: {
-		type: "enabled" | "disabled";
-		budget_tokens?: number;
-	};
 	// The ID of the current agent, used for team delegation.
 	current_agent_id?: string;
 	// The delegation call stack to prevent infinite loops
 	delegation_stack?: string[];
 	// Maximum delegation depth allowed
 	max_delegation_depth?: number;
-}
+};
 
-export type ChatCompletionParametersWithModel = RequireAtLeastOne<
-	AIResponseParamsBase,
-	"model" | "models" | "version"
->;
+export type ChatRequestOptions = SchemaChatRequestOptions;
 
-export type ChatCompletionParameters = RequireAtLeastOne<
-	AIResponseParamsBase,
-	"body" | "messages" | "message"
+type RuntimeChatRequestFields = "messages" | "tools" | "user";
+
+export type ChatCompletionParametersWithModel = Omit<
+	SchemaChatCompletionRequestBody,
+	RuntimeChatRequestFields
 > &
-	RequireAtLeastOne<AIResponseParamsBase, "model" | "models" | "version">;
+	InternalExecutionParams;
 
-export interface CreateChatCompletionsResponse {
-	id: string;
-	log_id: string;
-	object: string;
-	created: number;
-	model?: string;
-	choices: Array<{
-		index: number;
-		message: {
-			role: ChatRole;
-			content: string | MessageContent[];
-			parts?: MessagePart[];
-			data?: Record<string, any>;
-			tool_calls?: Record<string, any>[];
-			citations?: string[] | null;
-			status?: string;
-		};
-		finish_reason: string;
-	}>;
-	usage: {
-		prompt_tokens: number;
-		completion_tokens: number;
-		total_tokens: number;
-	};
-	post_processing?: {
-		guardrails?: {
-			passed: boolean;
-			error?: string;
-			violations?: any[];
-		};
-		steps?: Array<Record<string, any>>;
-		total_usage?: Record<string, any>;
-	};
-	usage_limits?: {
-		daily?: {
-			used: number;
-			limit: number;
-		};
-		pro?: {
-			used: number;
-			limit: number;
-		};
-	};
-}
+export type ChatCompletionParameters = Omit<
+	SchemaChatCompletionRequestBody,
+	RuntimeChatRequestFields
+> &
+	InternalExecutionParams;
+
+export type CreateChatCompletionsResponse = SchemaChatCompletionResponseBody;
 
 export interface AssistantMessageData {
 	content: string | MessageContent[];
@@ -424,10 +316,7 @@ export interface AssistantMessageData {
 	annotations?: unknown;
 }
 
-export type CoreChatOptions = AIResponseParamsBase & {
-	use_multi_model?: boolean;
+export type CoreChatOptions = ChatCompletionParameters & {
 	anonymousUser?: any;
-	current_step?: number;
-	max_steps?: number;
 	context?: ServiceContext;
 };

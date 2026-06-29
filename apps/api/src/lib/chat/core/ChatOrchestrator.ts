@@ -122,7 +122,7 @@ export class ChatOrchestrator {
 			const sessionManager = new SessionManager({
 				env: chatOptions.env,
 				conversationManager,
-				user: chatOptions.user?.id ? chatOptions.user : undefined,
+				user: chatOptions.context?.user?.id ? chatOptions.context?.user : undefined,
 			});
 			const compactedSession = await sessionManager.compact({
 				completionId: chatOptions.completion_id,
@@ -252,10 +252,10 @@ export class ChatOrchestrator {
 		}
 
 		if (response.response) {
-			const guardrails = new Guardrails(chatOptions.env, chatOptions.user, userSettings);
+			const guardrails = new Guardrails(chatOptions.env, chatOptions.context?.user, userSettings);
 			const outputValidation = await guardrails.validateOutput(
 				response.response,
-				chatOptions.user?.id,
+				chatOptions.context?.user?.id,
 				chatOptions.completion_id,
 			);
 
@@ -296,7 +296,7 @@ export class ChatOrchestrator {
 			if (userMessage && response.response && store) {
 				const context = resolveServiceContext({
 					env: chatOptions.env,
-					user: chatOptions.user || undefined,
+					user: chatOptions.context?.user || undefined,
 				});
 
 				captureTrainingExample({

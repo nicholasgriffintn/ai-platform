@@ -423,7 +423,9 @@ export class ChatService {
 		}
 
 		const formattedMessages = serialiseMessagesForChatRequest(messages);
-		const sandboxOptions = requestOptions?.sandbox?.enabled ? requestOptions.sandbox : undefined;
+		const sandboxOptions = requestOptions?.options?.sandbox?.enabled
+			? requestOptions.options.sandbox
+			: undefined;
 		const selectedToolIds = selectedTools
 			? normaliseToolIds(filterUnavailableModelToolSelections(selectedTools, modelConfig))
 			: undefined;
@@ -437,35 +439,51 @@ export class ChatService {
 			? getSandboxModeToolNames(sandboxOptions.taskType)
 			: undefined;
 
-		const { tool_options: _toolOptions, ...requestSettings } = chatSettings;
+		const {
+			enabled_tools: settingsEnabledTools,
+			localOnly: _localOnly,
+			rag_options: ragOptions,
+			tool_options: hostedToolOptions,
+			use_rag: useRag,
+			...generationSettings
+		} = chatSettings;
+		const enabledTools = requestEnabledTools ?? settingsEnabledTools;
+		const requestRagOptions = ragOptions
+			? {
+					top_k: ragOptions.topK,
+					score_threshold: ragOptions.scoreThreshold,
+					include_metadata: ragOptions.includeMetadata,
+					type: ragOptions.type,
+					namespace: ragOptions.namespace,
+				}
+			: undefined;
+		const { options: featureOptions, ...requestOptionFields } = requestOptions ?? {};
 		const requestBody: Record<string, any> = {
-			...requestSettings,
+			...requestOptionFields,
 			completion_id: completionId,
-			mode,
 			messages: formattedMessages,
 			platform: "web",
 			store,
 			stream: streamingEnabled,
-			enabled_tools: requestEnabledTools,
-			approved_tools: requestApprovedTools,
-			max_steps: sandboxOptions?.maxSteps ?? (sandboxOptions ? 2 : undefined),
+			...generationSettings,
+			models,
+			provider,
+			mode,
 			use_multi_model: useMultiModel,
-			options: {
-				...chatSettings.tool_options,
-				...requestOptions,
+			max_steps: sandboxOptions?.maxSteps ?? (sandboxOptions ? 2 : undefined),
+			use_rag: useRag,
+			rag_options: requestRagOptions,
+			enabled_tools: enabledTools,
+			approved_tools: requestApprovedTools,
+			tool_options: {
+				...hostedToolOptions,
 			},
+			options: featureOptions,
 		};
 
 		if (model !== undefined) {
 			requestBody.model = model;
 		}
-		if (models?.length) {
-			requestBody.models = models;
-		}
-		if (provider !== undefined) {
-			requestBody.provider = provider;
-		}
-
 		const response = await fetchApi(endpoint, {
 			method: "POST",
 			headers,

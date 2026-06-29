@@ -34,7 +34,7 @@ export class GithubCopilotProvider extends BaseProvider {
 	}
 
 	private async getCopilotBearer(params: ChatCompletionParameters): Promise<string> {
-		const userId = params.user?.id?.toString() || "anonymous";
+		const userId = params.context?.user?.id?.toString() || "anonymous";
 		const now = Date.now();
 		const cachedToken = copilotTokenCache.get(userId);
 
@@ -42,7 +42,7 @@ export class GithubCopilotProvider extends BaseProvider {
 			return cachedToken.token;
 		}
 
-		const hostToken = await this.getApiKey(params, params.user?.id);
+		const hostToken = await this.getApiKey(params, params.context?.user?.id);
 		const resp = await fetch("https://api.github.com/copilot_internal/v2/token", {
 			headers: {
 				Authorization: `token ${hostToken}`,

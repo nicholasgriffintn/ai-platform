@@ -29,7 +29,7 @@ class OpenAIResponsesToolBuilder {
 		private readonly modelConfig: ModelConfigItem,
 		functionTools: any[],
 	) {
-		this.options = readOptionBag(params.options);
+		this.options = readOptionBag(params.tool_options);
 		this.responseFunctionTools = this.convertFunctionToolsToResponsesTools(functionTools);
 	}
 
@@ -86,7 +86,7 @@ class OpenAIResponsesToolBuilder {
 		const vectorStoreIds = coerceStringArray(fileSearchOptions.vector_store_ids);
 		if (vectorStoreIds.length === 0) {
 			throw new AssistantError(
-				"OpenAI file_search requires options.file_search.vector_store_ids",
+				"OpenAI file_search requires tool_options.file_search.vector_store_ids",
 				ErrorType.PARAMS_ERROR,
 			);
 		}
@@ -111,7 +111,7 @@ class OpenAIResponsesToolBuilder {
 
 		if (mcpTools.length === 0) {
 			throw new AssistantError(
-				"OpenAI MCP tools require options.mcp_servers",
+				"OpenAI MCP tools require tool_options.mcp_servers",
 				ErrorType.PARAMS_ERROR,
 			);
 		}

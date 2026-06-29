@@ -4,9 +4,9 @@ import type { ChatCompletionRequestBody } from "@assistant/schemas";
 import { prepareAgentCompletionRequest } from "../completion-request";
 
 describe("agent completion request preparation", () => {
-	it("normalises the agent request before entering the chat completion seam", () => {
+	it("prepares the strict chat completion request for agent execution", () => {
 		const body: ChatCompletionRequestBody = {
-			messages: [{ role: "user" }],
+			messages: [{ role: "user", content: "" }],
 			model: "gpt-4",
 			provider: "openai",
 			platform: "obsidian",
@@ -40,7 +40,7 @@ describe("agent completion request preparation", () => {
 			current_agent_id: "agent-1",
 			platform: "api",
 			stop: ["END"],
-			tool_choice: { type: "function", name: "lookup" },
+			tool_choice: { type: "function", function: { name: "lookup" } },
 		});
 	});
 

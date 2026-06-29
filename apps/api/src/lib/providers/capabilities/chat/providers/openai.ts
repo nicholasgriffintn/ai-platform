@@ -14,7 +14,6 @@ import type { StorageService } from "~/lib/storage";
 import type { ChatCompletionParameters, MessageContent } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { isRecord } from "~/utils/objects";
-import { readOptionBag } from "~/utils/options";
 import { appendUrlPath } from "~/utils/urls";
 import {
 	createCommonParameters,
@@ -75,7 +74,7 @@ export class OpenAIProvider extends BaseProvider {
 	}
 
 	protected async getHeaders(params: ChatCompletionParameters): Promise<Record<string, string>> {
-		const apiKey = await this.getApiKey(params, params.user?.id);
+		const apiKey = await this.getApiKey(params, params.context?.user?.id);
 		const endpoint = await this.getEndpoint(params);
 		const isImageEdits = endpoint.includes("images/edits");
 
@@ -141,7 +140,7 @@ export class OpenAIProvider extends BaseProvider {
 
 		const imageBlob = await storageService.downloadFile(
 			imageItem.image_url.url,
-			params.user?.id,
+			params.context?.user?.id,
 			params.env.API_BASE_URL,
 		);
 
@@ -183,14 +182,13 @@ export class OpenAIProvider extends BaseProvider {
 	}
 
 	private buildAudioOutputParams(params: ChatCompletionParameters): Record<string, any> {
-		const options = readOptionBag(params.options);
-		const audioOptions = isRecord(options.audio) ? options.audio : {};
+		const audioOptions = isRecord(params.audio) ? params.audio : {};
 
 		return {
 			modalities: ["text", "audio"],
 			audio: {
-				voice: audioOptions.voice || options.voice || DEFAULT_AUDIO_VOICE,
-				format: audioOptions.format || options.audio_format || DEFAULT_AUDIO_FORMAT,
+				voice: audioOptions.voice || params.voice || DEFAULT_AUDIO_VOICE,
+				format: audioOptions.format || params.audio_format || DEFAULT_AUDIO_FORMAT,
 			},
 		};
 	}

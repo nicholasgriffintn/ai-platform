@@ -19,7 +19,13 @@ export function HomeConversationThread({ urlModeConfig }: HomeConversationThread
 			requestOptions: {
 				...modeConfig.requestOptions,
 				...urlModeConfig.requestOptions,
-				recipe: urlModeConfig.requestOptions?.recipe ?? modeConfig.requestOptions?.recipe,
+				options: {
+					...modeConfig.requestOptions?.options,
+					...urlModeConfig.requestOptions?.options,
+					recipe:
+						urlModeConfig.requestOptions?.options?.recipe ??
+						modeConfig.requestOptions?.options?.recipe,
+				},
 			},
 			initialAutoSubmit: urlModeConfig.initialAutoSubmit ?? modeConfig.initialAutoSubmit,
 		};

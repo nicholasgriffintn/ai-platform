@@ -268,7 +268,7 @@ export function getToolsForProvider(
 
 	try {
 		const enabledTools = new Set(params.enabled_tools || []);
-		if (params.user?.id && params.user.plan_id === "pro") {
+		if (params.context?.user?.id && params.context?.user.plan_id === "pro") {
 			for (const toolName of AUTO_ENABLED_SIGNED_IN_PRO_TOOLS) {
 				enabledTools.add(toolName);
 			}

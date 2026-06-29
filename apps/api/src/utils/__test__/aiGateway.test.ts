@@ -31,11 +31,11 @@ describe("aiGateway", () => {
 
 	describe("resolveAiGatewayCacheTtl", () => {
 		it("uses configured non-negative cache ttl seconds", () => {
-			expect(resolveAiGatewayCacheTtl({ options: { cache_ttl_seconds: 123 } })).toBe(123);
+			expect(resolveAiGatewayCacheTtl({ cache_ttl_seconds: 123 })).toBe(123);
 		});
 
 		it("falls back when cache ttl is invalid", () => {
-			expect(resolveAiGatewayCacheTtl({ options: { cache_ttl_seconds: -1 } })).toBe(86400);
+			expect(resolveAiGatewayCacheTtl({ cache_ttl_seconds: -1 })).toBe(86400);
 		});
 	});
 });

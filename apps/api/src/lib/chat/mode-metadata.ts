@@ -28,12 +28,13 @@ export function resolveChatPromptMode(
 
 export function resolveChatConversationMode(
 	options: ChatRequestOptions | undefined,
+	background?: boolean,
 ): ChatConversationMode | undefined {
 	const promptMode = resolveChatPromptMode(options);
 	if (promptMode) {
 		return promptMode;
 	}
-	if (options?.background) {
+	if (background) {
 		return "background";
 	}
 	return undefined;
@@ -61,8 +62,9 @@ export function buildAssistantMessageData(params: {
 
 export function buildConversationModeMetadataFromRequestOptions(
 	options: ChatRequestOptions | undefined,
+	background?: boolean,
 ): ConversationModeMetadata | undefined {
-	const mode = resolveChatConversationMode(options);
+	const mode = resolveChatConversationMode(options, background);
 	if (!mode) {
 		return undefined;
 	}

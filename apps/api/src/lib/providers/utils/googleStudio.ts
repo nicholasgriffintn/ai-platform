@@ -107,9 +107,9 @@ class GoogleStudioToolBuilder {
 				name: tool.function.name,
 				description: tool.function.description,
 				parameters: omitUndefinedValues({
-					type: tool.function.parameters.type,
-					properties: tool.function.parameters.properties,
-					required: tool.function.parameters.required ?? tool.function.required,
+					type: tool.function.parameters?.type,
+					properties: tool.function.parameters?.properties,
+					required: tool.function.parameters?.required ?? tool.function.required,
 				}),
 			})),
 		});
@@ -218,7 +218,7 @@ function getRequestedReasoningEffort(
 		return "thinking";
 	}
 
-	return params.reasoning?.effort ?? params.reasoning_effort;
+	return params.reasoning_effort;
 }
 
 function getConfiguredThinkingConfig(
@@ -295,15 +295,19 @@ function getConfiguredResponseFormat(
 		return {};
 	}
 
-	if (isRecord(responseFormat.image)) {
+	if ("image" in responseFormat && isRecord(responseFormat.image)) {
 		return { responseFormat };
 	}
 
-	if (responseFormat.type === "json_object") {
+	if ("type" in responseFormat && responseFormat.type === "json_object") {
 		return { responseMimeType: "application/json" };
 	}
 
-	if (responseFormat.type === "json_schema" && isRecord(responseFormat.json_schema)) {
+	if (
+		"type" in responseFormat &&
+		responseFormat.type === "json_schema" &&
+		isRecord(responseFormat.json_schema)
+	) {
 		return {
 			responseMimeType: "application/json",
 			responseSchema: responseFormat.json_schema.schema,

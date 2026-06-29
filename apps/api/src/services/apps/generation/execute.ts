@@ -133,9 +133,7 @@ export const executeModelGeneration = async (
 		body: {
 			input: params.input,
 		},
-		options: {
-			replicateWaitSeconds: params.providerWaitSeconds,
-		},
+		replicate_wait_seconds: params.providerWaitSeconds,
 		env: serviceContext.env,
 		user,
 		store: false,

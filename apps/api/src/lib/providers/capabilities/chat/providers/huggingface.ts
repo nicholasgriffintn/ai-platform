@@ -42,7 +42,7 @@ export class HuggingFaceProvider extends BaseProvider {
 	}
 
 	protected async getHeaders(params: ChatCompletionParameters): Promise<Record<string, string>> {
-		const apiKey = await this.getApiKey(params, params.user?.id);
+		const apiKey = await this.getApiKey(params, params.context?.user?.id);
 		return this.buildAiGatewayHeaders(params, apiKey);
 	}
 

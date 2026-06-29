@@ -260,14 +260,11 @@ async function handleBoundedChat(params: {
 			tool_choice: "auto",
 			messages: [...params.activeMessages, buildIncomingSmsUserMessage(params.incoming)],
 			options: {
-				source: "sms",
 				sms: {
 					enabled: true,
 					from: params.incoming.from,
 					to: params.incoming.to,
 				},
-				from: params.incoming.from,
-				to: params.incoming.to,
 			},
 		},
 	});

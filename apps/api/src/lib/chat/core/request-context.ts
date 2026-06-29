@@ -51,7 +51,7 @@ export function buildToolRequestContext(params: {
 			max_delegation_depth: chatOptions.max_delegation_depth,
 		},
 		app_url: chatOptions.app_url,
-		user: chatOptions.user?.id ? chatOptions.user : undefined,
+		user: chatOptions.context?.user?.id ? chatOptions.context?.user : undefined,
 		context: chatOptions.context,
 	};
 }

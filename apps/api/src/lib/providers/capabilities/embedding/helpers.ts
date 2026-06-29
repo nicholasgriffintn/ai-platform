@@ -136,8 +136,12 @@ export async function augmentPrompt({
 		logger.debug("augmentPrompt called", { query, options });
 		const namespace = getEmbeddingNamespace(user, options);
 		const trimmedQuery = query.trim();
-		const topK = options.topK ?? (trimmedQuery.length > 0 && trimmedQuery.length < 20 ? 1 : 3);
-		const scoreThreshold = options.scoreThreshold ?? DEFAULT_SCORE_THRESHOLD;
+		const topK =
+			options.top_k ??
+			options.topK ??
+			(trimmedQuery.length > 0 && trimmedQuery.length < 20 ? 1 : 3);
+		const scoreThreshold =
+			options.score_threshold ?? options.scoreThreshold ?? DEFAULT_SCORE_THRESHOLD;
 		const rerankCandidates =
 			options.rerankCandidates ?? Math.max(DEFAULT_RERANK_CANDIDATES, topK * 2);
 

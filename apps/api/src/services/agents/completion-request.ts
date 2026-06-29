@@ -46,7 +46,18 @@ class AgentCompletionRequestPreparer {
 			current_agent_id: this.input.agent.id,
 			platform: requestPlatform === "obsidian" ? "api" : requestPlatform,
 			stop: requestStop ? (Array.isArray(requestStop) ? requestStop : [requestStop]) : undefined,
-			tool_choice: this.resolveToolChoice(requestToolChoice),
+			enabled_tools: this.input.body.enabled_tools,
+			approved_tools: this.input.body.approved_tools,
+			use_rag: this.input.body.use_rag,
+			rag_options: this.input.body.rag_options,
+			use_multi_model: this.input.body.use_multi_model,
+			models: this.input.body.models,
+			reasoning_effort: this.input.body.reasoning_effort ?? this.input.body.reasoning?.effort,
+			verbosity: this.input.body.verbosity,
+			budget_constraint: this.input.body.budget_constraint,
+			parallel_tool_calls: this.input.body.parallel_tool_calls,
+			response_format: this.input.body.response_format,
+			tool_choice: requestToolChoice,
 		};
 	}
 
@@ -59,23 +70,6 @@ class AgentCompletionRequestPreparer {
 		return Number.isFinite(agentTemperature)
 			? agentTemperature
 			: (this.input.body.temperature ?? 0.8);
-	}
-
-	private resolveToolChoice(
-		toolChoice: ChatCompletionRequestBody["tool_choice"],
-	): PreparedAgentCompletionRequest["tool_choice"] {
-		if (!toolChoice) {
-			return undefined;
-		}
-
-		if (toolChoice === "auto" || toolChoice === "none" || toolChoice === "required") {
-			return toolChoice;
-		}
-
-		return {
-			type: "function",
-			name: toolChoice.function.name,
-		};
 	}
 }
 

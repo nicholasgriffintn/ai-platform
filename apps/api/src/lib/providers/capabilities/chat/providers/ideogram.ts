@@ -25,7 +25,7 @@ export class IdeogramProvider extends BaseProvider {
 	}
 
 	protected async getHeaders(params: ChatCompletionParameters): Promise<Record<string, string>> {
-		const apiKey = await this.getApiKey(params, params.user?.id);
+		const apiKey = await this.getApiKey(params, params.context?.user?.id);
 
 		return {
 			"cf-aig-authorization": params.env.AI_GATEWAY_TOKEN || "",

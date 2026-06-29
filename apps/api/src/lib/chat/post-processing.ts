@@ -2,6 +2,7 @@ import type { CreateChatCompletionsResponse } from "~/types";
 import { isPlainObject } from "~/utils/objects";
 
 type ChatPostProcessing = NonNullable<CreateChatCompletionsResponse["post_processing"]>;
+type ChatPostProcessingSteps = Partial<Pick<ChatPostProcessing, "steps" | "total_usage">>;
 
 function isGuardrailsPostProcessing(
 	value: unknown,
@@ -9,7 +10,7 @@ function isGuardrailsPostProcessing(
 	return isPlainObject(value) && typeof value.passed === "boolean";
 }
 
-function getStepMetadata(response: unknown): Pick<ChatPostProcessing, "steps" | "total_usage"> {
+function getStepMetadata(response: unknown): ChatPostProcessingSteps {
 	if (!isPlainObject(response)) {
 		return {};
 	}

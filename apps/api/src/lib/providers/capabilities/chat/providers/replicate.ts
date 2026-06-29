@@ -40,8 +40,8 @@ export class ReplicateProvider extends BaseProvider {
 	}
 
 	protected async getHeaders(params: ChatCompletionParameters): Promise<Record<string, string>> {
-		const apiKey = await this.getApiKey(params, params.user?.id);
-		const waitSecondsOption = params.options?.replicateWaitSeconds;
+		const apiKey = await this.getApiKey(params, params.context?.user?.id);
+		const waitSecondsOption = params.replicate_wait_seconds;
 		const waitSeconds =
 			typeof waitSecondsOption === "number" && Number.isFinite(waitSecondsOption)
 				? Math.max(0, Math.min(60, Math.floor(waitSecondsOption)))

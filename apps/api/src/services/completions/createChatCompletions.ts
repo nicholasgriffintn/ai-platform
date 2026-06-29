@@ -1,5 +1,7 @@
 import type { ExecutionContext } from "@cloudflare/workers-types";
+import type { ChatCompletionRequestBody } from "@assistant/schemas";
 import { processChatRequest } from "~/lib/chat/core";
+import { createServiceContext } from "~/lib/context/serviceContext";
 import { buildMessageParts } from "~/lib/chat/messageParts";
 import { buildChatPostProcessing } from "~/lib/chat/post-processing";
 import { formatAssistantMessage } from "~/lib/chat/responses";
@@ -15,6 +17,7 @@ import type {
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
+import { normaliseChatCompletionRequest } from "./normaliseChatCompletionRequest";
 
 const logger = getLogger({
 	prefix: "services/completions/createChatCompletions",
@@ -22,7 +25,7 @@ const logger = getLogger({
 
 export const handleCreateChatCompletions = async (req: {
 	env: IEnv;
-	request: Omit<ChatCompletionParameters, "env">;
+	request: ChatCompletionRequestBody | Omit<ChatCompletionParameters, "env">;
 	user?: IUser;
 	anonymousUser?: AnonymousUser;
 	app_url?: string;
@@ -30,6 +33,8 @@ export const handleCreateChatCompletions = async (req: {
 	executionCtx?: ExecutionContext;
 }): Promise<CreateChatCompletionsResponse | Response> => {
 	const { env, request, user, anonymousUser, app_url, context, executionCtx } = req;
+	const serviceContext = context ?? createServiceContext({ env, user });
+	const chatRequest = normaliseChatCompletionRequest(request);
 	const isStreaming = !!request.stream;
 
 	if (!request.messages?.length) {
@@ -39,16 +44,14 @@ export const handleCreateChatCompletions = async (req: {
 	const completionIdWithFallback = request.completion_id || `chat_${Date.now()}`;
 
 	const result = await processChatRequest({
-		...request,
+		...chatRequest,
 		app_url,
 		env,
-		user,
 		anonymousUser,
 		completion_id: completionIdWithFallback,
 		stream: isStreaming,
-		location: request.location || undefined,
-		options: request.options || {},
-		context,
+		location: "location" in request ? request.location || undefined : undefined,
+		context: serviceContext,
 		executionCtx,
 	});
 

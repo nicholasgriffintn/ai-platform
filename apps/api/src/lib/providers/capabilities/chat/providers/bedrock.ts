@@ -82,7 +82,7 @@ export class BedrockProvider extends BaseProvider {
 			params.model || "",
 			params.env,
 			params.provider || this.name,
-			params.user?.id,
+			params.context?.user?.id,
 		);
 		const operationPath = this.resolveOperationPath(params, modelConfig);
 
@@ -287,7 +287,7 @@ export class BedrockProvider extends BaseProvider {
 			params.model || "",
 			params.env,
 			params.provider || this.name,
-			params.user?.id,
+			params.context?.user?.id,
 		);
 		if (!modelConfig) {
 			throw new AssistantError(
@@ -482,7 +482,7 @@ export class BedrockProvider extends BaseProvider {
 				params.model || "",
 				params.env,
 				params.provider || this.name,
-				params.user?.id,
+				params.context?.user?.id,
 			);
 			const modalityInfo = getModalityInfo(modelConfig);
 			const isVideoType = modalityInfo.outputSet.has("video");
@@ -629,7 +629,7 @@ export class BedrockProvider extends BaseProvider {
 			params.model || "",
 			params.env,
 			params.provider || this.name,
-			params.user?.id,
+			params.context?.user?.id,
 		);
 		const operationPath = this.resolveOperationPath(params, modelConfig);
 		const { awsUrl: bedrockUrl, cloudflarePath } = this.buildOperationPaths(

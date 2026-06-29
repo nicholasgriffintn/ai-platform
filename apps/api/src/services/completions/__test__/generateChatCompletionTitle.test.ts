@@ -136,6 +136,28 @@ describe("handleGenerateChatCompletionTitle", () => {
 			expect(mockConversationManager.get).toHaveBeenCalledWith(completionId, undefined, 1);
 		});
 
+		it("should pass service context to the chat provider for user settings key lookup", async () => {
+			const completionId = "completion-123";
+			const messages = [{ role: "user" as const, content: "Hello" }];
+
+			mockConversationManager.get.mockResolvedValue([]);
+			mockSanitiseMessages.mockReturnValue(messages);
+
+			const mockProvider = mockChatCapability.getChatProvider();
+
+			await handleGenerateChatCompletionTitle(mockServiceContext, completionId, messages);
+
+			expect(mockProvider.getResponse).toHaveBeenCalledWith(
+				expect.objectContaining({
+					context: mockServiceContext,
+					env: mockEnv,
+					model: "test-model",
+					provider: "test-provider",
+				}),
+			);
+			expect(mockProvider.getResponse.mock.calls[0]?.[0]).not.toHaveProperty("user");
+		});
+
 		it("should generate title from conversation messages when no messages provided", async () => {
 			const completionId = "completion-123";
 			const conversationMessages = [

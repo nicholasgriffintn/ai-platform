@@ -8,14 +8,16 @@ describe("conversation mode metadata", () => {
 		const metadata = buildConversationModeMetadata({
 			mode: "sandbox",
 			requestOptions: {
-				sandbox: {
-					enabled: true,
-					repo: "owner/repo",
-					installationId: 123,
-					taskType: "bug-fix",
-					promptStrategy: "bug-fix",
-					shouldCommit: false,
-					timeoutSeconds: 900,
+				options: {
+					sandbox: {
+						enabled: true,
+						repo: "owner/repo",
+						installationId: 123,
+						taskType: "bug-fix",
+						promptStrategy: "bug-fix",
+						shouldCommit: false,
+						timeoutSeconds: 900,
+					},
 				},
 			},
 			sandboxSettings: {
@@ -43,10 +45,12 @@ describe("conversation mode metadata", () => {
 		const metadata = buildConversationModeMetadata({
 			mode: "sms",
 			requestOptions: {
-				sms: {
-					enabled: true,
-					from: "+15551234567",
-					to: "+15557654321",
+				options: {
+					sms: {
+						enabled: true,
+						from: "+15551234567",
+						to: "+15557654321",
+					},
 				},
 			},
 		});
@@ -70,9 +74,6 @@ describe("conversation mode metadata", () => {
 	it("does not persist background transport options in conversation metadata", () => {
 		const metadata = buildConversationModeMetadata({
 			mode: "background",
-			requestOptions: {
-				background: true,
-			},
 		});
 
 		expect(metadata).toEqual({

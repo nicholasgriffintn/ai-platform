@@ -89,7 +89,6 @@ describe("parameters", () => {
 				rag_options: { enabled: false, top_k: 10, similarity_threshold: 0.8 },
 			};
 
-			// @ts-expect-error - rag_options is not a valid parameter
 			const result = mergeParametersWithDefaults(params, defaults);
 
 			expect(result.rag_options).toEqual({
@@ -135,7 +134,6 @@ describe("parameters", () => {
 				},
 			};
 
-			// @ts-expect-error - rag_options is not a valid parameter
 			const result = mergeParametersWithDefaults(params, defaults);
 
 			expect(result.rag_options).toEqual({

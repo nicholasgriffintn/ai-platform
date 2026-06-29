@@ -40,7 +40,7 @@ export class AnthropicProvider extends BaseProvider {
 	}
 
 	protected async getHeaders(params: ChatCompletionParameters): Promise<Record<string, string>> {
-		const apiKey = await this.getApiKey(params, params.user?.id);
+		const apiKey = await this.getApiKey(params, params.context?.user?.id);
 		const baseHeaders = this.buildAiGatewayHeaders(params, apiKey);
 
 		return {

@@ -70,7 +70,11 @@ export function ConversationPage({ title, modeConfig }: ConversationPageProps) {
 			requestOptions: {
 				...modeConfig?.requestOptions,
 				...urlRequestOptions,
-				recipe: urlRequestOptions.recipe ?? modeConfig?.requestOptions?.recipe,
+				options: {
+					...modeConfig?.requestOptions?.options,
+					...urlRequestOptions.options,
+					recipe: urlRequestOptions.options?.recipe ?? modeConfig?.requestOptions?.options?.recipe,
+				},
 			},
 			initialAutoSubmit:
 				urlState?.autoSubmit && urlState.query

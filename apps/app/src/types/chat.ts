@@ -1,7 +1,7 @@
 import type { MessagePart as SchemaMessagePart } from "@assistant/schemas";
 import type {
+	ChatCompletionRequestBody as SchemaChatCompletionRequestBody,
 	ChatHostedToolSettings as SchemaHostedToolSettings,
-	ChatRequestOptions as SchemaChatRequestOptions,
 	ConversationModeMetadata,
 } from "@assistant/schemas";
 
@@ -46,7 +46,7 @@ export interface ChatSettings {
 	tool_options?: HostedToolSettings;
 }
 
-export type ChatRequestOptions = SchemaChatRequestOptions;
+export type ChatRequestOptions = Partial<SchemaChatCompletionRequestBody>;
 
 export interface MessageContent {
 	type:

@@ -103,7 +103,7 @@ describe("handleCreateChatCompletions", () => {
 			expect(mockProcessChatRequest).toHaveBeenCalledWith(
 				expect.objectContaining({
 					env: mockEnv,
-					user: mockUser,
+					context: expect.objectContaining({ user: mockUser }),
 					messages: request.messages,
 					model: request.model,
 					temperature: request.temperature,
@@ -175,7 +175,7 @@ describe("handleCreateChatCompletions", () => {
 			expect(mockProcessChatRequest).toHaveBeenCalledWith(
 				expect.objectContaining({
 					anonymousUser: mockAnonymousUser,
-					user: undefined,
+					context: expect.objectContaining({ user: null }),
 				}),
 			);
 

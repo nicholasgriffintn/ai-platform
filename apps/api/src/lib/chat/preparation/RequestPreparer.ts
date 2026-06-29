@@ -34,7 +34,7 @@ const logger = getLogger({ prefix: "lib/chat/preparation/RequestPreparer" });
 type ProviderModelConfig = NonNullable<Awaited<ReturnType<typeof findModelConfig>>>;
 
 function assertBackgroundRequestIsSupported(options: CoreChatOptions, primaryProvider: string) {
-	if (options.options?.background !== true) {
+	if (options.background !== true) {
 		return;
 	}
 
@@ -111,7 +111,8 @@ export class RequestPreparer {
 			throw new AssistantError("Missing required validation context", ErrorType.PARAMS_ERROR);
 		}
 
-		const { platform = "api", user, anonymousUser, mode = "normal", executionCtx } = options;
+		const { platform = "api", anonymousUser, mode = "normal", executionCtx } = options;
+		const user = options.context?.user ?? options.user;
 		const requestCache = options.context?.requestCache;
 		const database = options.context?.database ?? new Database(this.env);
 		const repositories = options.context?.repositories ?? database.repositories;
@@ -329,7 +330,10 @@ export class RequestPreparer {
 		if (shouldSkipCouncilInputStorage(options.options?.council)) {
 			return;
 		}
-		const conversationMode = buildConversationModeMetadataFromRequestOptions(options.options);
+		const conversationMode = buildConversationModeMetadataFromRequestOptions(
+			options.options,
+			options.background,
+		);
 
 		const messageToStore: Message = {
 			role: lastMessage.role,
@@ -404,13 +408,11 @@ export class RequestPreparer {
 			system_prompt,
 			mode = "normal",
 			verbosity,
-			reasoning,
 			reasoning_effort,
 			location,
 			completion_id,
 			user,
 		} = options;
-		const requestedReasoningEffort = reasoning?.effort ?? reasoning_effort;
 
 		const currentMode = mode;
 		const promptMode = resolveChatPromptMode(options.options);
@@ -454,8 +456,7 @@ export class RequestPreparer {
 				mode: currentMode,
 				promptMode,
 				verbosity,
-				reasoning_effort: requestedReasoningEffort,
-				reasoning,
+				reasoning_effort,
 				options: options.options,
 			},
 			primaryModel,

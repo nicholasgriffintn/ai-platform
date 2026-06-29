@@ -253,9 +253,7 @@ describe("RequestPreparer", () => {
 				preparer.prepare(
 					{
 						...baseOptions,
-						options: {
-							background: true,
-						},
+						background: true,
 					},
 					{
 						...baseValidationContext,

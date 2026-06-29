@@ -39,16 +39,18 @@ describe("createCouncilDebateTurnPlanner", () => {
 			}),
 		);
 		expect(turn.requestOptions).toEqual({
-			council: {
-				enabled: true,
-				responseMode: "debate",
-				phase: "debate",
-				memberIds: ["architect", "security"],
-				activeMemberId: "architect",
-				round: 1,
-				turn: 1,
-				requireConsensus: false,
-				skipInputStorage: false,
+			options: {
+				council: {
+					enabled: true,
+					responseMode: "debate",
+					phase: "debate",
+					memberIds: ["architect", "security"],
+					activeMemberId: "architect",
+					round: 1,
+					turn: 1,
+					requireConsensus: false,
+					skipInputStorage: false,
+				},
 			},
 		});
 	});
@@ -73,9 +75,9 @@ describe("createCouncilDebateTurnPlanner", () => {
 
 		expect(debateTurn.requestMessages).toHaveLength(2);
 		expect(debateTurn.requestMessages[1]).toEqual(debateTurn.promptMessage);
-		expect(debateTurn.requestOptions.council?.skipInputStorage).toBe(true);
+		expect(debateTurn.requestOptions.options?.council?.skipInputStorage).toBe(true);
 		expect(conclusion.requestMessages).toHaveLength(2);
-		expect(conclusion.requestOptions.council).toEqual(
+		expect(conclusion.requestOptions.options?.council).toEqual(
 			expect.objectContaining({
 				enabled: true,
 				responseMode: "debate",

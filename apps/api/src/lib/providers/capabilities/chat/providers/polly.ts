@@ -88,7 +88,7 @@ export class PollyProvider extends BaseProvider {
 		this.validateParams(params);
 
 		const pollyUrl = await this.getEndpoint(params);
-		const options = readPollyProviderOptions(params.options);
+		const options = readPollyProviderOptions(params.body);
 
 		return trackProviderMetrics({
 			provider: this.name,

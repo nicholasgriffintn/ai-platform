@@ -31,6 +31,7 @@ import {
 	errorResponseSchema,
 	messageSchema,
 } from "@assistant/schemas";
+import type { ChatCompletionRequestBody } from "@assistant/schemas";
 
 import { allowRestrictedPaths } from "~/middleware/auth";
 import { validateCaptcha } from "~/middleware/captchaMiddleware";
@@ -58,14 +59,7 @@ import { handleListChatCompletions } from "~/services/completions/listChatComple
 import { handleShareConversation } from "~/services/completions/shareConversation";
 import { handleUnshareConversation } from "~/services/completions/unshareConversation";
 import { handleUpdateChatCompletion } from "~/services/completions/updateChatCompletion";
-import type {
-	ChatCompletionParameters,
-	ChatRole,
-	IEnv,
-	IFeedbackBody,
-	IUser,
-	Message,
-} from "~/types";
+import type { ChatRole, IEnv, IFeedbackBody, IUser, Message } from "~/types";
 
 const app = new Hono();
 
@@ -117,7 +111,7 @@ addRoute(app, "post", "/completions", {
 	middleware: [validateCaptcha],
 	handler: async ({ raw }) =>
 		(async (context: Context) => {
-			const body = context.req.valid("json" as never) as ChatCompletionParameters;
+			const body = context.req.valid("json" as never) as ChatCompletionRequestBody;
 
 			const userContext = context.get("user");
 			const anonymousUserContext = context.get("anonymousUser");

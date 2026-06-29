@@ -25,13 +25,11 @@ export function shouldUseOpenAIResponsesApi(
 	params: ChatCompletionParameters,
 	modelConfig: ModelConfigItem,
 ): boolean {
-	const options = readOptionBag(params.options);
-
-	if (options.use_responses === false) {
+	if (params.use_responses === false) {
 		return false;
 	}
 
-	if (options.use_responses === true) {
+	if (params.use_responses === true) {
 		return hasModelTextOutput(modelConfig) && !producesNonTextPrimaryOutput(modelConfig);
 	}
 
@@ -53,18 +51,17 @@ function getOpenAIResponseId(message: Message): string | undefined {
 
 function getPreviousResponseState(
 	params: ChatCompletionParameters,
-	options: OptionBag,
 	store: boolean | undefined,
 ): { id: string; messageIndex?: number; source: "explicit" | "history" } | undefined {
-	const explicitPreviousResponseId = options.previous_response_id;
+	const explicitPreviousResponseId = params.previous_response_id;
 	if (typeof explicitPreviousResponseId === "string") {
 		return { id: explicitPreviousResponseId, source: "explicit" };
 	}
 
 	if (
 		store === false ||
-		options.auto_previous_response_id === false ||
-		options.conversation !== undefined
+		params.auto_previous_response_id === false ||
+		params.conversation !== undefined
 	) {
 		return undefined;
 	}
@@ -82,10 +79,9 @@ function getPreviousResponseState(
 
 function buildResponsesInput(
 	params: ChatCompletionParameters,
-	options: OptionBag,
 	previousResponseState?: { messageIndex?: number; source: "explicit" | "history" },
 ): unknown {
-	const explicitInput = options.input;
+	const explicitInput = params.input;
 	if (explicitInput !== undefined) {
 		return explicitInput;
 	}
@@ -101,7 +97,7 @@ function buildResponsesInput(
 		formattedInput.length === 0 && messages.length !== allMessages.length
 			? MessageFormatter.formatOpenAIResponsesInput(allMessages)
 			: formattedInput;
-	const extraInputItems = options.input_items;
+	const extraInputItems = params.input_items;
 
 	return Array.isArray(extraInputItems) ? [...fallbackInput, ...extraInputItems] : fallbackInput;
 }
@@ -128,9 +124,8 @@ function buildResponsesTextFormat(responseFormat: unknown): unknown {
 function buildResponsesTextParams(
 	params: ChatCompletionParameters,
 	modelConfig: ModelConfigItem,
-	options: OptionBag,
 ): Record<string, any> {
-	const textOptions = readRecordOption(options, "text");
+	const textOptions = isRecord(params.text) ? params.text : {};
 	const format = buildResponsesTextFormat(params.response_format || textOptions.format);
 	const verbositySetting = params.verbosity;
 	const verbosity = shouldSendProviderVerbosity(modelConfig, verbositySetting)
@@ -152,7 +147,7 @@ function buildResponsesReasoningParams(
 	options: OptionBag,
 ): Record<string, any> {
 	const reasoningOptions = readRecordOption(options, "reasoning");
-	const reasoningEffort = params.reasoning?.effort ?? params.reasoning_effort;
+	const reasoningEffort = params.reasoning_effort;
 	const effort = shouldSendProviderReasoningEffort(modelConfig, reasoningEffort)
 		? reasoningEffort
 		: undefined;
@@ -186,19 +181,11 @@ function buildResponsesToolChoice(toolChoice: ChatCompletionParameters["tool_cho
 	return toolChoice;
 }
 
-function buildConversationParam(options: OptionBag): unknown {
-	return options.conversation;
-}
-
 function getResponsesStoreValue(
 	params: ChatCompletionParameters,
-	options: OptionBag,
+	_options: OptionBag,
 ): boolean | undefined {
-	return typeof params.store === "boolean"
-		? params.store
-		: typeof options.store === "boolean"
-			? options.store
-			: undefined;
+	return typeof params.store === "boolean" ? params.store : undefined;
 }
 
 function buildResponsesInclude(
@@ -207,12 +194,12 @@ function buildResponsesInclude(
 	options: OptionBag,
 	tools: any[],
 ): string[] | undefined {
-	const include = new Set(coerceStringArray(options.include));
-	const includeDefaults = options.include_defaults !== false;
+	const include = new Set(coerceStringArray(params.include));
+	const includeDefaults = params.include_defaults !== false;
 	const store = getResponsesStoreValue(params, options);
 
 	if (
-		options.include_encrypted_reasoning === true ||
+		params.include_encrypted_reasoning === true ||
 		(includeDefaults && store === false && hasProviderReasoningOptions(modelConfig))
 	) {
 		include.add("reasoning.encrypted_content");
@@ -256,10 +243,10 @@ export function buildOpenAIResponsesBody(
 	functionTools: any[] = [],
 	streamingParams: Record<string, any> = {},
 ): Record<string, any> {
-	const options = readOptionBag(params.options);
+	const toolOptions = readOptionBag(params.tool_options);
 	const tools = buildOpenAIResponsesTools(params, modelConfig, functionTools);
-	const store = getResponsesStoreValue(params, options);
-	const background = options.background;
+	const store = getResponsesStoreValue(params, toolOptions);
+	const background = params.background;
 
 	if (background === true && store === false) {
 		throw new AssistantError(
@@ -268,13 +255,13 @@ export function buildOpenAIResponsesBody(
 		);
 	}
 
-	const previousResponseState = getPreviousResponseState(params, options, store);
-	const include = buildResponsesInclude(params, modelConfig, options, tools);
-	const conversation = buildConversationParam(options);
+	const previousResponseState = getPreviousResponseState(params, store);
+	const include = buildResponsesInclude(params, modelConfig, toolOptions, tools);
+	const conversation = params.conversation;
 
 	return {
 		model: modelConfig.matchingModel || params.model,
-		input: buildResponsesInput(params, options, previousResponseState),
+		input: buildResponsesInput(params, previousResponseState),
 		instructions: MessageFormatter.formatOpenAIResponsesInstructions(
 			params.messages || [],
 			params.system_prompt,
@@ -282,28 +269,25 @@ export function buildOpenAIResponsesBody(
 		...(tools.length ? { tools } : {}),
 		...streamingParams,
 		...createSamplingParameters(params, modelConfig),
-		...buildResponsesTextParams(params, modelConfig, options),
-		...buildResponsesReasoningParams(params, modelConfig, options),
-		max_output_tokens:
-			options.max_output_tokens || getEffectiveMaxTokens(params.max_tokens, modelConfig.maxTokens),
+		...buildResponsesTextParams(params, modelConfig),
+		...buildResponsesReasoningParams(params, modelConfig, toolOptions),
+		max_output_tokens: getEffectiveMaxTokens(params.max_tokens, modelConfig.maxTokens),
 		parallel_tool_calls: params.parallel_tool_calls,
 		tool_choice: buildResponsesToolChoice(params.tool_choice),
 		store,
 		metadata: params.metadata,
-		truncation: options.truncation,
+		truncation: params.truncation,
 		...(conversation ? { conversation } : {}),
 		...(previousResponseState?.id && !conversation
 			? { previous_response_id: previousResponseState.id }
 			: {}),
 		...(include ? { include } : {}),
 		...(typeof background === "boolean" ? { background } : {}),
-		prompt_cache_key: options.prompt_cache_key,
-		prompt_cache_retention: options.prompt_cache_retention,
-		service_tier: options.service_tier,
-		max_tool_calls: options.max_tool_calls,
-		stream_options: options.stream_options,
-		safety_identifier:
-			options.safety_identifier ||
-			(typeof params.user === "string" ? params.user : params.user?.id?.toString()),
+		prompt_cache_key: params.prompt_cache_key,
+		prompt_cache_retention: params.prompt_cache_retention,
+		service_tier: params.service_tier,
+		max_tool_calls: params.max_tool_calls,
+		stream_options: params.stream_options,
+		safety_identifier: params.safety_identifier || params.context?.user?.id?.toString(),
 	};
 }

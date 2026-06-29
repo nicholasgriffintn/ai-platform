@@ -2,6 +2,7 @@ import { MessageFormatter } from "~/lib/formatter";
 import type { CreateChatCompletionsResponse, Message, MessageContent } from "~/types";
 import { isPashiQrPngUrl } from "./qr";
 import { AssistantError, ErrorType } from "./errors";
+import { isRecord } from "./objects";
 
 export function formatMessages(
 	provider: string,
@@ -145,7 +146,11 @@ function addMessagingMediaUrl(urls: string[], value: unknown): void {
 	}
 }
 
-function extractTextFromMessageContent(content: string | MessageContent[] | undefined): string {
+function isMessageContentPart(part: unknown): part is MessageContent {
+	return isRecord(part) && typeof part.type === "string";
+}
+
+function extractTextFromMessageContent(content: unknown): string {
 	if (typeof content === "string") {
 		return content.trim();
 	}
@@ -155,21 +160,19 @@ function extractTextFromMessageContent(content: string | MessageContent[] | unde
 	}
 
 	return content
+		.filter(isMessageContentPart)
 		.map((part) => (part.type === "text" && typeof part.text === "string" ? part.text.trim() : ""))
 		.filter(Boolean)
 		.join("\n")
 		.trim();
 }
 
-function addMediaUrlsFromMessageContent(
-	urls: string[],
-	content: string | MessageContent[] | undefined,
-) {
+function addMediaUrlsFromMessageContent(urls: string[], content: unknown) {
 	if (!Array.isArray(content)) {
 		return;
 	}
 
-	for (const part of content) {
+	for (const part of content.filter(isMessageContentPart)) {
 		addMessagingMediaUrl(urls, part.image_url?.url);
 		addMessagingMediaUrl(urls, part.audio_url?.url);
 		addMessagingMediaUrl(urls, part.video_url?.url);
@@ -261,7 +264,6 @@ export function extractChatCompletionNotification(
 		);
 	}
 
-	const message = response.choices?.[0]?.message;
 	const mediaUrls: string[] = [];
 	for (const choice of response.choices ?? []) {
 		addMediaUrlsFromMessageContent(mediaUrls, choice.message?.content);

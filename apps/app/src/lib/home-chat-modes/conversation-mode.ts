@@ -19,13 +19,13 @@ export function buildConversationModeMetadata(params: {
 
 	const parsed = conversationModeMetadataSchema.safeParse({
 		mode,
-		requestOptions: mode === "background" ? undefined : requestOptions,
+		requestOptions: mode === "background" ? undefined : requestOptions?.options,
 		sandboxSettings: mode === "sandbox" ? sandboxSettings : undefined,
 		smsSettings:
-			mode === "sms" && requestOptions?.sms?.enabled
+			mode === "sms" && requestOptions?.options?.sms?.enabled
 				? {
-						from: requestOptions.sms.from,
-						to: requestOptions.sms.to,
+						from: requestOptions.options.sms.from,
+						to: requestOptions.options.sms.to,
 					}
 				: undefined,
 	});

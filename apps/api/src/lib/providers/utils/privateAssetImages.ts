@@ -104,5 +104,8 @@ async function resolvePrivateAssetImageUrl({
 		return url;
 	}
 
-	return (await storageService.getPrivateAssetImageDataUrl(url, params.user?.id, assetsUrl)) ?? url;
+	return (
+		(await storageService.getPrivateAssetImageDataUrl(url, params.context?.user?.id, assetsUrl)) ??
+		url
+	);
 }

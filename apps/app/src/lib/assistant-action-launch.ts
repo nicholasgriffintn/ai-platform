@@ -138,11 +138,11 @@ export function createAssistantActionConversationUrl(
 	return createAssistantActionChatUrl({
 		messageUrl: `/?${params.toString()}`,
 		enabledTools: launch.enabledTools,
-		actionContext: launch.requestOptions?.recipe
+		actionContext: launch.requestOptions?.options?.recipe
 			? {
 					action: {
 						kind: "recipe",
-						recipe: launch.requestOptions.recipe,
+						recipe: launch.requestOptions.options.recipe,
 					},
 				}
 			: undefined,

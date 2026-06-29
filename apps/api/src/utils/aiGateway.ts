@@ -1,15 +1,17 @@
 import type { ChatCompletionParameters } from "~/types";
+import type { IUser } from "~/types";
 import { omitNullishValues } from "~/utils/objects";
 
 const DEFAULT_AI_GATEWAY_CACHE_TTL_SECONDS = 60 * 60 * 24;
 
 type AiGatewayMetadataSource = {
-	user?: Pick<NonNullable<ChatCompletionParameters["user"]>, "email" | "id">;
+	context?: ChatCompletionParameters["context"];
+	user?: Pick<IUser, "email" | "id">;
 	platform?: ChatCompletionParameters["platform"];
 	completion_id?: ChatCompletionParameters["completion_id"];
 };
 
-type AiGatewayCacheTtlSource = Pick<ChatCompletionParameters, "options">;
+type AiGatewayCacheTtlSource = Pick<ChatCompletionParameters, "cache_ttl_seconds">;
 
 type AiGatewayMetadataValue = string | number | bigint | boolean;
 
@@ -17,8 +19,8 @@ export function getAiGatewayMetadataHeaders(
 	params: AiGatewayMetadataSource,
 ): Record<string, AiGatewayMetadataValue> {
 	const metadata: Record<string, AiGatewayMetadataValue | null | undefined> = {
-		email: params.user?.email,
-		userId: params.user?.id,
+		email: params.context?.user?.email ?? params.user?.email,
+		userId: params.context?.user?.id ?? params.user?.id,
 		platform: params.platform,
 		completionId: params.completion_id,
 	};
@@ -27,7 +29,7 @@ export function getAiGatewayMetadataHeaders(
 }
 
 export function resolveAiGatewayCacheTtl(params?: AiGatewayCacheTtlSource): number {
-	const ttl = params?.options?.cache_ttl_seconds;
+	const ttl = params?.cache_ttl_seconds;
 
 	if (typeof ttl === "number" && Number.isFinite(ttl) && ttl >= 0) {
 		return Math.floor(ttl);

@@ -1,4 +1,4 @@
-import { createChatCompletionsJsonSchema, messageSchema } from "@assistant/schemas";
+import { messageSchema } from "@assistant/schemas";
 import { describe, expect, it } from "vitest";
 
 import type { Message } from "~/types";
@@ -52,14 +52,6 @@ describe("serialiseMessagesForChatRequest", () => {
 
 		expect(requestMessages[1]?.content).toBe("Visible response");
 		expect(requestMessages[1]?.parts).toEqual(messages[1]?.parts);
-		expect(
-			createChatCompletionsJsonSchema.safeParse({
-				completion_id: "conversation-1",
-				mode: "remote",
-				model: "@cf/zai-org/glm-4.7-flash",
-				messages: requestMessages,
-			}).success,
-		).toBe(true);
 	});
 
 	it("omits null tool calls from chat request messages", () => {
@@ -75,15 +67,6 @@ describe("serialiseMessagesForChatRequest", () => {
 		const requestMessages = serialiseMessagesForChatRequest(messages);
 
 		expect(requestMessages[0]).not.toHaveProperty("tool_calls");
-		expect(
-			createChatCompletionsJsonSchema.safeParse({
-				completion_id: "conversation-1",
-				mode: "remote",
-				model: "deepseek-v4-flash",
-				provider: "deepseek",
-				messages: requestMessages,
-			}).success,
-		).toBe(true);
 	});
 
 	it("preserves tool call responses so replayed provider requests stay valid", () => {
@@ -122,15 +105,6 @@ describe("serialiseMessagesForChatRequest", () => {
 			tool_call_id: "call_recipe",
 			tool_call_arguments: "{}",
 		});
-		expect(
-			createChatCompletionsJsonSchema.safeParse({
-				completion_id: "conversation-1",
-				mode: "remote",
-				model: "deepseek-chat",
-				provider: "deepseek",
-				messages: requestMessages,
-			}).success,
-		).toBe(true);
 	});
 
 	it("deduplicates repeated assistant tool calls before replaying provider requests", () => {

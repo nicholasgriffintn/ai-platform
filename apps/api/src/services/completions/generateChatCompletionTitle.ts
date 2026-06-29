@@ -91,10 +91,11 @@ export const handleGenerateChatCompletionTitle = async (
 	const { model: modelToUse, provider: providerToUse } = await getAuxiliaryModel(runtimeEnv, user);
 	const provider = getChatProvider(providerToUse, { env: runtimeEnv, user });
 	const response: any = await provider.getResponse({
-		env: runtimeEnv!,
+		env: runtimeEnv,
+		context,
 		model: modelToUse,
+		provider: providerToUse,
 		messages: [{ role: "user", content: prompt }],
-		user: user,
 	});
 
 	let newTitle = response.response.trim();

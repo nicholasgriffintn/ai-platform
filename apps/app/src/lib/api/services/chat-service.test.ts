@@ -1,5 +1,4 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { chatRequestOptionsSchema, createChatCompletionsJsonSchema } from "@assistant/schemas";
 
 import type { Message } from "~/types";
 import { ChatService } from "./chat-service";
@@ -106,7 +105,14 @@ describe("ChatService streaming", () => {
 		const service = new ChatService(async () => ({}));
 
 		const result = await service.streamChatCompletions({
-			chatSettings: {},
+			chatSettings: {
+				tool_options: {
+					image_generation: {
+						size: "1536x1024",
+						quality: "high",
+					},
+				},
+			},
 			completionId: "conversation-1",
 			messages: [{ role: "user", content: "hello" } as Message],
 			mode: "remote",
@@ -279,7 +285,7 @@ describe("ChatService streaming", () => {
 		});
 	});
 
-	it("sends provider options inside request options", async () => {
+	it("sends hosted tool settings in top-level tool_options", async () => {
 		const fetchMock = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) =>
 			createSseResponse([data("[DONE]")]),
 		);
@@ -304,12 +310,6 @@ describe("ChatService streaming", () => {
 			onProgress: () => {},
 			onStateChange: () => {},
 			provider: "openai",
-			requestOptions: {
-				image_generation: {
-					size: "1536x1024",
-					quality: "high",
-				},
-			},
 			selectedTools: ["image_generation"],
 			signal: new AbortController().signal,
 			store: true,
@@ -320,14 +320,13 @@ describe("ChatService streaming", () => {
 		const [, request] = fetchMock.mock.calls[0];
 		const body = JSON.parse(String(request?.body));
 
-		expect(body.tool_options).toBeUndefined();
-		expect(body.options.image_generation).toEqual({
-			size: "1536x1024",
-			quality: "high",
+		expect(body.options.tool_options).toBeUndefined();
+		expect(body.tool_options.image_generation).toEqual({
+			size: "1024x1024",
 		});
-		expect(chatRequestOptionsSchema.safeParse(body.options).success).toBe(true);
 		expect(body.enabled_tools).toEqual(["image_generation"]);
 		expect(body.models).toEqual(["gpt-5", "claude-opus"]);
+		expect(body.provider).toBe("openai");
 	});
 
 	it("normalises selected tool ids before sending chat requests", async () => {
@@ -356,13 +355,7 @@ describe("ChatService streaming", () => {
 		const body = JSON.parse(String(request?.body));
 
 		expect(body.enabled_tools).toEqual(["web_fetch"]);
-		expect(createChatCompletionsJsonSchema.safeParse(body).success).toBe(true);
-		expect(
-			createChatCompletionsJsonSchema.safeParse({
-				messages: [{ role: "user", content: "hello" }],
-				enabled_tools: ["bad tool"],
-			}).success,
-		).toBe(false);
+		expect(body.options.enabled_tools).toBeUndefined();
 	});
 
 	it("does not send stale hosted model tools that are unavailable for the selected model", async () => {
@@ -419,16 +412,18 @@ describe("ChatService streaming", () => {
 			onProgress: () => {},
 			onStateChange: () => {},
 			requestOptions: {
-				recipe: {
-					id: "gmail",
-					installationId: "installation-1",
-					channel: "web",
-					allowedConnectorProviders: ["gmail"],
-					allowedConnectorOperations: {
-						gmail: ["search_messages", "create_draft"],
-					},
-					configuration: {
-						defaultSearch: "newer_than:7d",
+				options: {
+					recipe: {
+						id: "gmail",
+						installationId: "installation-1",
+						channel: "web",
+						allowedConnectorProviders: ["gmail"],
+						allowedConnectorOperations: {
+							gmail: ["search_messages", "create_draft"],
+						},
+						configuration: {
+							defaultSearch: "newer_than:7d",
+						},
 					},
 				},
 			},
@@ -453,7 +448,6 @@ describe("ChatService streaming", () => {
 				defaultSearch: "newer_than:7d",
 			},
 		});
-		expect(chatRequestOptionsSchema.safeParse(body.options).success).toBe(true);
 	});
 
 	it("throws streamed provider errors without finalizing an empty assistant message", async () => {

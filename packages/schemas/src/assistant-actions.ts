@@ -12,7 +12,7 @@ import {
 	type RecipeChatSetupResponse,
 	type RecipeInstallation,
 } from "./apps";
-import { chatRequestOptionsSchema } from "./chat";
+import { partialChatCompletionsJsonSchema } from "./chat";
 import { mergeToolIds, normaliseToolIds, toolIdsSchema, toolIdSchema } from "./tools";
 
 export const assistantActionVerbIdSchema = z.enum([
@@ -153,12 +153,12 @@ const assistantActionResultBaseSchema = z.object({
 
 export const assistantActionSubmitResultSchema = assistantActionResultBaseSchema.extend({
 	kind: z.literal("submit"),
-	requestOptions: chatRequestOptionsSchema.optional(),
+	requestOptions: partialChatCompletionsJsonSchema.optional(),
 });
 
 export const assistantActionConversationResultSchema = assistantActionResultBaseSchema.extend({
 	kind: z.literal("conversation"),
-	requestOptions: chatRequestOptionsSchema.optional(),
+	requestOptions: partialChatCompletionsJsonSchema.optional(),
 	url: z.string(),
 });
 
@@ -665,12 +665,14 @@ export function readAssistantActionRequestOptions(
 ): AssistantActionSubmitResult["requestOptions"] {
 	const actionPayload = assistantActionContextPayloadSchema.safeParse(actionContext);
 	if (actionPayload.success) {
-		return { recipe: actionPayload.data.action.recipe };
+		return { options: { recipe: actionPayload.data.action.recipe } };
 	}
 
 	const legacyRecipePayload =
 		assistantLegacyRecipeContextPayloadSchema.safeParse(legacyRecipeContext);
-	return legacyRecipePayload.success ? { recipe: legacyRecipePayload.data.recipe } : undefined;
+	return legacyRecipePayload.success
+		? { options: { recipe: legacyRecipePayload.data.recipe } }
+		: undefined;
 }
 
 export type AssistantActionVerbId = z.infer<typeof assistantActionVerbIdSchema>;

@@ -56,7 +56,7 @@ export class AzureOpenAIProvider extends BaseProvider {
 	}
 
 	protected async getHeaders(params: ChatCompletionParameters): Promise<Record<string, string>> {
-		const rawKey = await this.getApiKey(params, params.user?.id);
+		const rawKey = await this.getApiKey(params, params.context?.user?.id);
 		let token = rawKey;
 		if (rawKey.includes("::@@::")) {
 			try {
@@ -124,7 +124,7 @@ export class AzureOpenAIProvider extends BaseProvider {
 
 		const { resourceName, apiVersion } = await this.resolveAzureCredentials(
 			params,
-			params.user?.id,
+			params.context?.user?.id,
 		);
 
 		const endpoint = isOpenAiCompatible

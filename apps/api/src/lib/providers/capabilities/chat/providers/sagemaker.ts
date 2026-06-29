@@ -33,7 +33,7 @@ export class SageMakerProvider implements AIProvider {
 	supportsStreaming = false;
 
 	async getResponse(params: ChatCompletionParameters, userId?: number): Promise<any> {
-		const resolvedUserId = userId || params.user?.id;
+		const resolvedUserId = userId || params.context?.user?.id;
 		if (!resolvedUserId) {
 			throw new AssistantError(
 				"SageMaker training deployments require an authenticated user",

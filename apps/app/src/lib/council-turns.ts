@@ -117,16 +117,18 @@ class CouncilDebateTurnPlanner {
 		skipInputStorage: boolean;
 	}): ChatRequestOptions {
 		return {
-			council: {
-				enabled: true,
-				responseMode: "debate",
-				phase,
-				memberIds: this.memberIds,
-				activeMemberId,
-				round: 1,
-				turn,
-				requireConsensus: this.options.requireConsensus ?? true,
-				skipInputStorage,
+			options: {
+				council: {
+					enabled: true,
+					responseMode: "debate",
+					phase,
+					memberIds: this.memberIds,
+					activeMemberId,
+					round: 1,
+					turn,
+					requireConsensus: this.options.requireConsensus ?? true,
+					skipInputStorage,
+				},
 			},
 		};
 	}

@@ -303,7 +303,12 @@ export async function allowRestrictedPaths(context: Context, next: Next) {
 					);
 				}
 
-				if (body?.tools?.length > 0 || body?.tool_choice) {
+				if (
+					body?.tools?.length > 0 ||
+					body?.tool_choice ||
+					body?.enabled_tools?.length > 0 ||
+					body?.approved_tools?.length > 0
+				) {
 					throw new AssistantError(
 						"Tool usage requires authentication. Please provide a valid access token.",
 						ErrorType.AUTHENTICATION_ERROR,

@@ -3,7 +3,11 @@ import { isRecord } from "./objects";
 export type OptionBag = Record<string, unknown>;
 
 export function readOptionBag(value: unknown): OptionBag {
-	return isRecord(value) ? value : {};
+	if (!isRecord(value)) {
+		return {};
+	}
+
+	return value;
 }
 
 function readOption<T = unknown>(options: OptionBag | undefined, key: string): T | undefined {

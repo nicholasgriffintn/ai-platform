@@ -62,7 +62,7 @@ export abstract class BaseProvider implements AIProvider {
 			params.model || "",
 			params.env,
 			params.provider || this.name,
-			params.user?.id,
+			params.context?.user?.id,
 		);
 		if (!modelConfig) {
 			throw new AssistantError(
@@ -213,7 +213,7 @@ export abstract class BaseProvider implements AIProvider {
 			params.model || "",
 			params.env,
 			params.provider || this.name,
-			params.user?.id,
+			params.context?.user?.id,
 		);
 
 		const providerName = this.isOpenAiCompatible ? "compat" : this.name;
@@ -222,7 +222,7 @@ export abstract class BaseProvider implements AIProvider {
 			model: params.model,
 			modalities: modelConfig?.modalities,
 			env: params.env,
-			userId: typeof params.user?.id === "number" ? params.user.id : undefined,
+			userId: typeof params.context?.user?.id === "number" ? params.context?.user.id : undefined,
 		});
 	}
 
@@ -267,7 +267,7 @@ export abstract class BaseProvider implements AIProvider {
 			model,
 			params.env,
 			params.provider || this.name,
-			params.user?.id,
+			params.context?.user?.id,
 		);
 
 		if (!modelConfig) {

@@ -16,7 +16,7 @@ export class PollyAudioProvider extends BaseAudioProvider implements AudioProvid
 			env: request.env,
 			messages: [],
 			user: request.user,
-			options: {
+			body: {
 				slug: slugBase,
 				storageService: storage,
 				returnAudio: request.store === false,
