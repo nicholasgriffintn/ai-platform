@@ -40,9 +40,9 @@ const apiModels: ModelConfig = {
 		isFeatured: true,
 		modalities: { input: ["text"], output: ["text"] },
 	},
-	"deepseek-chat": {
-		id: "deepseek-chat",
-		matchingModel: "deepseek-chat",
+	"deepseek-v4-flash": {
+		id: "deepseek-v4-flash",
+		matchingModel: "deepseek-v4-flash",
 		name: "DeepSeek Chat",
 		provider: "deepseek",
 		isFeatured: false,
@@ -103,9 +103,11 @@ describe("useConversationModelOptions", () => {
 
 		expect(result.current.currentModel?.id).toBe("current-model");
 		expect(result.current.featuredModels.map((model) => model.id)).toEqual(["featured-alpha"]);
-		expect(result.current.searchModels("deep").map((model) => model.id)).toEqual(["deepseek-chat"]);
+		expect(result.current.searchModels("deep").map((model) => model.id)).toEqual([
+			"deepseek-v4-flash",
+		]);
 		expect(result.current.selectableModels.map((model) => model.id)).toEqual([
-			"deepseek-chat",
+			"deepseek-v4-flash",
 			"featured-alpha",
 		]);
 		expect(result.current.selectableModels.map((model) => model.id)).not.toContain(

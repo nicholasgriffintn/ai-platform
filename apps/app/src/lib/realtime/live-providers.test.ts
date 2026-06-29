@@ -66,9 +66,9 @@ describe("live realtime providers", () => {
 						modalities: { input: ["audio"], output: ["transcription"] },
 						supportsRealtimeSession: true,
 					},
-					"deepseek-chat": {
-						id: "deepseek-chat",
-						matchingModel: "deepseek-chat",
+					"deepseek-v4-flash": {
+						id: "deepseek-v4-flash",
+						matchingModel: "deepseek-v4-flash",
 						name: "DeepSeek Chat",
 						provider: "deepseek",
 						modalities: { input: ["text"], output: ["text"] },
@@ -76,7 +76,7 @@ describe("live realtime providers", () => {
 				},
 				"voxtral-mini-transcribe-realtime",
 			),
-		).toBe("deepseek-chat");
+		).toBe("deepseek-v4-flash");
 	});
 
 	it("prefers the default chat model over object order for composed realtime reasoning", () => {
@@ -90,9 +90,9 @@ describe("live realtime providers", () => {
 						provider: "openai",
 						modalities: { input: ["text"], output: ["text"] },
 					},
-					"deepseek-chat": {
-						id: "deepseek-chat",
-						matchingModel: "deepseek-chat",
+					"deepseek-v4-flash": {
+						id: "deepseek-v4-flash",
+						matchingModel: "deepseek-v4-flash",
 						name: "DeepSeek Chat",
 						provider: "deepseek",
 						modalities: { input: ["text"], output: ["text"] },
@@ -100,7 +100,7 @@ describe("live realtime providers", () => {
 				},
 				"voxtral-mini-transcribe-realtime",
 			),
-		).toBe("deepseek-chat");
+		).toBe("deepseek-v4-flash");
 	});
 
 	it("waits for transcription done events before closing providers that finalise on stop", () => {

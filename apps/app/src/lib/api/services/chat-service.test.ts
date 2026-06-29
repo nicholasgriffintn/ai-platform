@@ -399,10 +399,10 @@ describe("ChatService streaming", () => {
 			endpoint: "/chat/completions",
 			messages: [{ role: "user", content: "hello" } as Message],
 			mode: "remote",
-			model: "deepseek-chat",
+			model: "deepseek-v4-flash",
 			modelConfig: {
-				id: "deepseek-chat",
-				matchingModel: "deepseek-chat",
+				id: "deepseek-v4-flash",
+				matchingModel: "deepseek-v4-flash",
 				name: "DeepSeek Chat",
 				provider: "deepseek",
 				supportsToolCalls: true,

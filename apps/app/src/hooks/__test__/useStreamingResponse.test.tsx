@@ -52,7 +52,7 @@ describe("useStreamingResponse", () => {
 			isPro: true,
 			localOnlyMode: false,
 			locallyCreatedConversationIds: {},
-			model: "deepseek-chat",
+			model: "deepseek-v4-flash",
 			selectedAgentId: null,
 			useMultiModel: false,
 		});
@@ -64,7 +64,7 @@ describe("useStreamingResponse", () => {
 			id: "user-1",
 			role: "user",
 			content: "What is Polychat?",
-			model: "deepseek-chat",
+			model: "deepseek-v4-flash",
 		};
 		queryClient.setQueryData<Conversation>([CHATS_QUERY_KEY, "conversation-1"], {
 			id: "conversation-1",
@@ -77,7 +77,7 @@ describe("useStreamingResponse", () => {
 			id: "assistant-tool-call",
 			role: "assistant",
 			content: "I will search for that.",
-			model: "deepseek-chat",
+			model: "deepseek-v4-flash",
 			tool_calls: [
 				{
 					id: "call_search",
@@ -101,7 +101,7 @@ describe("useStreamingResponse", () => {
 			id: "assistant-final",
 			role: "assistant",
 			content: "Polychat is a chat product.",
-			model: "deepseek-chat",
+			model: "deepseek-v4-flash",
 		};
 
 		mocks.streamChatCompletions.mockImplementation(async ({ onProgress }) => {
@@ -152,7 +152,7 @@ describe("useStreamingResponse", () => {
 			id: "user-1",
 			role: "user",
 			content: "hello",
-			model: "deepseek-chat",
+			model: "deepseek-v4-flash",
 		};
 		queryClient.setQueryData<Conversation>([CHATS_QUERY_KEY, "conversation-1"], {
 			id: "conversation-1",
@@ -170,7 +170,7 @@ describe("useStreamingResponse", () => {
 			id: "assistant-final",
 			role: "assistant",
 			content: "Hi.",
-			model: "deepseek-chat",
+			model: "deepseek-v4-flash",
 		};
 		mocks.streamChatCompletions.mockResolvedValue(assistantFinal);
 

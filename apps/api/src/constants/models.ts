@@ -31,5 +31,5 @@ export const availableModalities = [
 	"transcription",
 ] as const;
 
-export const defaultModel = "deepseek-chat";
+export const defaultModel = "deepseek-v4-flash";
 export const defaultProvider = "deepseek";

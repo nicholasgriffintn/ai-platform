@@ -41,7 +41,7 @@ describe("ModelsList", () => {
 			<ModelsList
 				models={[
 					makeModel("claude-sonnet", "Claude Sonnet", "anthropic", { isFeatured: true }),
-					makeModel("deepseek-chat", "DeepSeek Chat", "deepseek"),
+					makeModel("deepseek-v4-flash", "DeepSeek Chat", "deepseek"),
 					makeModel("deepseek-reasoner", "DeepSeek Reasoner", "deepseek"),
 				]}
 				featuredModelIds={{
@@ -106,7 +106,7 @@ describe("ModelsList", () => {
 			<ModelsList
 				models={[
 					makeModel("claude-sonnet", "Claude Sonnet", "anthropic", { isFeatured: true }),
-					makeModel("deepseek-chat", "DeepSeek Chat", "deepseek"),
+					makeModel("deepseek-v4-flash", "DeepSeek Chat", "deepseek"),
 					makeModel("deepseek-legacy", "DeepSeek Legacy", "deepseek", { deprecated: true }),
 				]}
 				featuredModelIds={{

@@ -75,7 +75,7 @@ describe("executeRecipeInvocationChat", () => {
 			user,
 			request: expect.objectContaining({
 				completion_id: "recipe_generated-id",
-				model: "deepseek-chat",
+				model: "deepseek-v4-flash",
 				mode: "agent",
 				stream: false,
 				store: true,

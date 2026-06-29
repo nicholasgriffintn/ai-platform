@@ -385,9 +385,9 @@ describe("isTextOnlyModel", () => {
 	it("allows models with only text input and output", () => {
 		expect(
 			isTextOnlyModel({
-				id: "deepseek-chat",
+				id: "deepseek-v4-flash",
 				name: "DeepSeek Chat",
-				matchingModel: "deepseek-chat",
+				matchingModel: "deepseek-v4-flash",
 				provider: "deepseek",
 				modalities: { input: ["text"], output: ["text"] },
 			}),

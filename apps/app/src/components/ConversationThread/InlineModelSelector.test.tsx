@@ -37,9 +37,9 @@ const apiModels: ModelConfig = {
 		provider: "google-ai-studio",
 		isFeatured: true,
 	},
-	"deepseek-chat": {
-		id: "deepseek-chat",
-		matchingModel: "deepseek-chat",
+	"deepseek-v4-flash": {
+		id: "deepseek-v4-flash",
+		matchingModel: "deepseek-v4-flash",
 		name: "DeepSeek Chat",
 		provider: "deepseek",
 		isFeatured: false,
