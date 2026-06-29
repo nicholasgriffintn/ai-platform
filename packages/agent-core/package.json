@@ -20,7 +20,7 @@
 	"devDependencies": {
 		"@types/node": "25.9.4",
 		"oxfmt": "0.55.0",
-		"oxlint": "1.70.0",
+		"oxlint": "1.71.0",
 		"typescript": "6.0.3"
 	}
 }
