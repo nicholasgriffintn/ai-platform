@@ -34,8 +34,16 @@ export const ChatSettings = ({
 	supportsToolCalls = false,
 	toolSelectionLocked = false,
 }: ChatSettingsProps) => {
-	const { chatMode, chatSettings, isPro, model, setChatSettings, setUseMultiModel, useMultiModel } =
-		useChatStore();
+	const {
+		chatMode,
+		chatSettings,
+		isAuthenticated,
+		isPro,
+		model,
+		setChatSettings,
+		setUseMultiModel,
+		useMultiModel,
+	} = useChatStore();
 	const [showSettings, setShowSettings] = useState(false);
 	const { data: apiModels = {} } = useModels();
 	const webLLMModels = useWebLLMModels();
@@ -52,6 +60,8 @@ export const ChatSettings = ({
 	const verbosityOptions = getVerbosityOptions(selectedModelConfig);
 	const defaultVerbosity = getDefaultVerbosity(selectedModelConfig);
 	const showMultiModelToggle = isPro && !model && chatMode === "remote";
+	const showToolSelector =
+		isAuthenticated && (supportsToolCalls || (!model && chatMode === "remote"));
 
 	const handleSettingChange = (key: keyof ChatSettingsType, value: string | boolean) => {
 		if (typeof value === "string") {
@@ -376,9 +386,7 @@ export const ChatSettings = ({
 				</PopoverContent>
 			</Popover>
 
-			{isPro && supportsToolCalls && (
-				<ToolSelector isDisabled={isDisabled || toolSelectionLocked} />
-			)}
+			{showToolSelector && <ToolSelector isDisabled={isDisabled || toolSelectionLocked} />}
 		</div>
 	);
 };

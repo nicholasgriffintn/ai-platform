@@ -61,7 +61,7 @@ import type {
 	ModelSelectorScope,
 } from "~/types";
 import { ArtificialAnalysisScorePanel } from "./ArtificialAnalysisScorePanel";
-import { AutoModePicker } from "./AutoModePicker";
+import { AutoModePicker, getAutoRouterModeIcon } from "./AutoModePicker";
 import { clampHoverPreviewTop, getHoverPreviewPosition } from "./hoverPreviewPosition";
 import { ModelsList } from "./ModelsList";
 import { useHoverPreviewDismiss } from "./useHoverPreviewDismiss";
@@ -377,6 +377,7 @@ export const ModelSelector = ({
 		[filteredModels],
 	);
 	const selectedAutoMode = getAutoRouterModeDefinition(autoMode);
+	const SelectedAutoModeIcon = getAutoRouterModeIcon(selectedAutoMode.id);
 	const selectedAutoModeDisplayName =
 		selectedAutoMode.id === "auto" ? selectedAutoMode.label : `${selectedAutoMode.label} auto`;
 	const selectedModelInfo =
@@ -488,6 +489,7 @@ export const ModelSelector = ({
 		const handleClickOutside = (event: MouseEvent) => {
 			const isInsideSelector =
 				containsEventTarget(dropdownRef.current, event.target) ||
+				containsEventTarget(triggerWrapperRef.current, event.target) ||
 				containsEventTarget(hoverPreviewRef.current, event.target);
 			if (!isInsideSelector) {
 				setIsOpen(false);
@@ -727,12 +729,22 @@ export const ModelSelector = ({
 					</div>
 				) : (
 					<>
-						<ModelIcon
-							modelName={selectedModelInfo?.name || ""}
-							provider={selectedModelInfo?.provider}
-							size={18}
-							mono={mono}
-						/>
+						{model === null ? (
+							<span
+								className="inline-flex h-[18px] w-[18px] flex-shrink-0 items-center justify-center"
+								role="img"
+								aria-label={`${selectedAutoMode.label} automatic mode icon`}
+							>
+								<SelectedAutoModeIcon className="h-4 w-4" aria-hidden="true" />
+							</span>
+						) : (
+							<ModelIcon
+								modelName={selectedModelInfo?.name || ""}
+								provider={selectedModelInfo?.provider}
+								size={18}
+								mono={mono}
+							/>
+						)}
 						{!minimal && (
 							<span
 								className="text-sm max-w-[250px] truncate w-full"

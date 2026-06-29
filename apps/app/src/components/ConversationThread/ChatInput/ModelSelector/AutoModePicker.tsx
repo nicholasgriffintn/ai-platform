@@ -19,7 +19,7 @@ interface AutoModePickerProps {
 	onSelectMode: (mode: ModelRouterMode) => void;
 }
 
-function getModeIcon(mode: ModelRouterMode) {
+export function getAutoRouterModeIcon(mode: ModelRouterMode) {
 	switch (mode) {
 		case "lite":
 			return Zap;
@@ -112,7 +112,7 @@ function ModeDetail({
 	const candidates = getAutoRouterModeCandidates(models, mode.id);
 	const exampleModels = candidates.slice(0, 3);
 	const remainingModelCount = Math.max(0, candidates.length - exampleModels.length);
-	const Icon = getModeIcon(mode.id);
+	const Icon = getAutoRouterModeIcon(mode.id);
 	const tone = getModeTone(mode.id);
 
 	return (
@@ -209,7 +209,7 @@ export function AutoModePicker({
 		<div className="grid min-h-0 gap-3 p-3 md:grid-cols-[minmax(12rem,0.82fr)_minmax(16rem,1.18fr)]">
 			<div className="space-y-1.5">
 				{AUTO_ROUTER_MODES.map((mode) => {
-					const Icon = getModeIcon(mode.id);
+					const Icon = getAutoRouterModeIcon(mode.id);
 					const isSelected = mode.id === selectedDefinition.id;
 					const tone = getModeTone(mode.id);
 
