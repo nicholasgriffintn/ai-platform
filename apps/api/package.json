@@ -56,7 +56,7 @@
 		"@types/node": "25.9.4",
 		"better-sqlite3": "12.11.1",
 		"drizzle-kit": "0.31.10",
-		"oxfmt": "0.55.0",
+		"oxfmt": "0.56.0",
 		"oxlint": "1.71.0",
 		"typescript": "6.0.3",
 		"vitest": "4.1.9",
