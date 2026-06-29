@@ -131,6 +131,7 @@ describe("chat stream assembler", () => {
 			.filter((update) => update.type === "assistant_final")
 			.map((update) => update.message);
 
+		expect(finalisedMessages).toHaveLength(1);
 		expect(finalMessage?.content).toBe("Primary answer\n\nSecondary answer");
 		expect(finalMessage?.parts).toEqual([
 			expect.objectContaining({

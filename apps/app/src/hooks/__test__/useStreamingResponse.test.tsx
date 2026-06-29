@@ -186,4 +186,63 @@ describe("useStreamingResponse", () => {
 
 		expect(useChatStore.getState().locallyCreatedConversationIds["conversation-1"]).toBeUndefined();
 	});
+
+	it("updates local guest conversations from streamed content deltas", async () => {
+		const queryClient = createQueryClient();
+		const userMessage: Message = {
+			id: "user-1",
+			role: "user",
+			content: "A",
+			model: "deepseek-v4-flash",
+		};
+		queryClient.setQueryData<Conversation>([CHATS_QUERY_KEY, "conversation-1"], {
+			id: "conversation-1",
+			title: "A",
+			isLocalOnly: true,
+			messages: [userMessage],
+		});
+		useChatStore.setState({
+			isAuthenticated: false,
+			isPro: false,
+			localOnlyMode: false,
+		});
+
+		const assistantFinal: Message = {
+			id: "assistant-final",
+			role: "assistant",
+			content: "Hello! How can I help?",
+			model: "deepseek-v4-flash",
+		};
+		mocks.streamChatCompletions.mockImplementation(async ({ onProgress }) => {
+			onProgress("Hello");
+			onProgress("Hello!");
+			onProgress("Hello! How can I help?");
+			onProgress("Hello! How can I help?", undefined, undefined, true, assistantFinal);
+			return assistantFinal;
+		});
+
+		const { result } = renderHook(() => useStreamingResponse(undefined), {
+			wrapper: wrapper(queryClient),
+		});
+
+		await act(async () => {
+			await result.current.streamResponse([userMessage], "conversation-1", undefined, {
+				generateTitle: false,
+			});
+		});
+
+		const conversation = queryClient.getQueryData<Conversation>([
+			CHATS_QUERY_KEY,
+			"conversation-1",
+		]);
+		expect(conversation?.isLocalOnly).toBe(true);
+		expect(conversation?.messages).toEqual([
+			expect.objectContaining({ id: "user-1", content: "A" }),
+			expect.objectContaining({
+				id: "assistant-final",
+				role: "assistant",
+				content: "Hello! How can I help?",
+			}),
+		]);
+	});
 });

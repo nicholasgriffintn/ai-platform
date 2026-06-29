@@ -346,6 +346,11 @@ export const MessageContent = memo(({ message, onArtifactOpen }: MessageContentP
 
 		const messageParts = Array.isArray(message.parts) ? message.parts : [];
 		const hasReasoningPart = messageParts.some((part) => part.type === "reasoning");
+		const hasTextPart = messageParts.some(
+			(part) => part.type === "text" && part.text.trim().length > 0,
+		);
+		const shouldRenderContentFallback =
+			!hasTextPart && typeof message.content === "string" && message.content.trim().length > 0;
 
 		if (messageParts.length > 0) {
 			return (
@@ -359,6 +364,16 @@ export const MessageContent = memo(({ message, onArtifactOpen }: MessageContentP
 					{message.reasoning && !hasReasoningPart && (
 						<ReasoningSection reasoning={message.reasoning} />
 					)}
+					{shouldRenderContentFallback &&
+						renderTextContent(
+							message.role,
+							message.content as string,
+							undefined,
+							undefined,
+							undefined,
+							handleArtifactOpen,
+							"content-fallback",
+						)}
 					{messageParts.map((part, index) => {
 						if (part.type === "text") {
 							return renderTextContent(

@@ -440,7 +440,19 @@ class ChatStreamAssemblerState implements ChatStreamAssembler {
 			this.created = event.created;
 		}
 
-		return [{ type: "assistant_final", message: this.finaliseAssistantMessage(this.id) }];
+		if (!this.hasAssistantPayload()) {
+			return [];
+		}
+
+		const carriesFinalPayload =
+			typeof event.content === "string" ||
+			parts !== undefined ||
+			nextToolCalls !== undefined ||
+			event.finish_reason === "stop";
+
+		return carriesFinalPayload
+			? [{ type: "assistant_final", message: this.finaliseAssistantMessage(this.id) }]
+			: [];
 	}
 
 	private resetAssistantState() {

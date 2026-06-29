@@ -76,15 +76,17 @@ describe("assistant action launch URL contract", () => {
 		expect(url).toContain("assistant_action_context=");
 		expect(url).not.toContain("recipe_context=");
 		expect(requestOptions).toEqual({
-			recipe: {
-				id: "gmail",
-				installationId: "installation-1",
-				channel: "web",
-				allowedConnectorProviders: ["gmail"],
-				allowedConnectorOperations: {
-					gmail: ["search_messages", "create_draft"],
+			options: {
+				recipe: {
+					id: "gmail",
+					installationId: "installation-1",
+					channel: "web",
+					allowedConnectorProviders: ["gmail"],
+					allowedConnectorOperations: {
+						gmail: ["search_messages", "create_draft"],
+					},
+					configuration: { defaultSearch: "newer_than:7d" },
 				},
-				configuration: { defaultSearch: "newer_than:7d" },
 			},
 		});
 	});
@@ -113,13 +115,15 @@ describe("assistant action launch URL contract", () => {
 			input: "Run the planner recipe.",
 			enabledTools: [],
 			requestOptions: {
-				recipe: {
-					id: "plain-planner",
-					installationId: "installation-2",
-					channel: "web",
-					allowedConnectorProviders: [],
-					allowedConnectorOperations: {},
-					configuration: {},
+				options: {
+					recipe: {
+						id: "plain-planner",
+						installationId: "installation-2",
+						channel: "web",
+						allowedConnectorProviders: [],
+						allowedConnectorOperations: {},
+						configuration: {},
+					},
 				},
 			},
 		});
@@ -186,13 +190,15 @@ describe("assistant action launch URL contract", () => {
 		const state = parseAssistantActionLaunchState(params.toString());
 
 		expect(loadAssistantActionRequestOptions(state)).toEqual({
-			recipe: {
-				id: "gmail",
-				installationId: "installation-1",
-				channel: "web",
-				allowedConnectorProviders: ["gmail"],
-				allowedConnectorOperations: { gmail: ["search_messages"] },
-				configuration: { defaultSearch: "from:team" },
+			options: {
+				recipe: {
+					id: "gmail",
+					installationId: "installation-1",
+					channel: "web",
+					allowedConnectorProviders: ["gmail"],
+					allowedConnectorOperations: { gmail: ["search_messages"] },
+					configuration: { defaultSearch: "from:team" },
+				},
 			},
 		});
 	});

@@ -339,11 +339,13 @@ describe("assistant action catalogue", () => {
 				input: "Run the Morning Briefing recipe.",
 				selectedTools: ["use_recipe_connector"],
 				requestOptions: {
-					recipe: {
-						id: "morning-briefing",
-						channel: "web",
-						allowedConnectorProviders: [],
-						allowedConnectorOperations: {},
+					options: {
+						recipe: {
+							id: "morning-briefing",
+							channel: "web",
+							allowedConnectorProviders: [],
+							allowedConnectorOperations: {},
+						},
 					},
 				},
 				url: "/?query=Run+the+Morning+Briefing+recipe.",
