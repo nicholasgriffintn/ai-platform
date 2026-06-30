@@ -99,6 +99,14 @@ export function toPer1k(value) {
 	return Number.isFinite(normalized) ? normalized : undefined;
 }
 
+function isOpenRouterFreeModel(remoteModel, provider) {
+	return (
+		provider === "openrouter" &&
+		typeof remoteModel.name === "string" &&
+		/\(free\)/i.test(remoteModel.name)
+	);
+}
+
 export function buildUpdateValues(
 	remoteModel,
 	{
@@ -137,6 +145,10 @@ export function buildUpdateValues(
 
 	if (hasOwn(remoteModel, "open_weights")) {
 		values.openWeights = Boolean(remoteModel.open_weights);
+	}
+
+	if (isOpenRouterFreeModel(remoteModel, provider)) {
+		values.isFree = true;
 	}
 
 	const knowledgeDate = formatHumanDate(remoteModel.knowledge);

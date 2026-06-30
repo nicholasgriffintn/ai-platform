@@ -83,6 +83,7 @@ export const UPDATE_FIELD_ORDER = [
 	"contextComplexity",
 	"reliability",
 	"speed",
+	"isFree",
 	"reasoningConfig",
 	"artificialAnalysis",
 ];
