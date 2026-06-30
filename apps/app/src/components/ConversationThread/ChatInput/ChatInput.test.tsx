@@ -366,6 +366,54 @@ describe("ChatInput", () => {
 		expect(screen.getByAltText("Selected")).toHaveAttribute("crossorigin", "use-credentials");
 	});
 
+	it("shows artifact selection context as an attachment chip and submits it with the prompt", () => {
+		const handleSubmit = vi.fn();
+		const handleRemoveContextAttachment = vi.fn();
+		const handleClearContextAttachments = vi.fn();
+		store.chatInput = "Make this firmer";
+
+		render(
+			<ChatInput
+				controller={new AbortController()}
+				handleSubmit={handleSubmit}
+				isLoading={false}
+				onTranscribe={vi.fn()}
+				streamStarted={false}
+				contextAttachments={[
+					{
+						type: "artifact_selection",
+						name: "selection from Launch plan",
+						artifact: {
+							identifier: "launch-plan",
+							type: "text/markdown",
+							title: "Launch plan",
+						},
+						selectedText: "This paragraph needs work.",
+						selectionStart: 12,
+						selectionEnd: 38,
+					},
+				]}
+				onRemoveContextAttachment={handleRemoveContextAttachment}
+				onClearContextAttachments={handleClearContextAttachments}
+			/>,
+		);
+
+		expect(screen.getByText("selection from Launch plan")).toBeInTheDocument();
+
+		fireEvent.click(screen.getByRole("button", { name: "Send message" }));
+
+		expect(handleSubmit).toHaveBeenCalledWith([
+			expect.objectContaining({
+				type: "artifact_selection",
+				selectedText: "This paragraph needs work.",
+			}),
+		]);
+		expect(handleClearContextAttachments).toHaveBeenCalled();
+
+		fireEvent.click(screen.getByRole("button", { name: "Clear selection from Launch plan" }));
+		expect(handleRemoveContextAttachment).toHaveBeenCalledWith(0);
+	});
+
 	it("does not submit while user configuration is still loading", () => {
 		const handleSubmit = vi.fn();
 		store.chatInput = "Do this later";

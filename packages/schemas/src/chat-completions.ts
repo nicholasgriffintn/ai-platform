@@ -83,6 +83,7 @@ export const chatMessageContentPartSchema = z
 				"tool_result",
 				"document_url",
 				"markdown_document",
+				"artifact_selection",
 			])
 			.describe("Content part type."),
 		text: z.string().optional().describe("Text content for text parts."),
@@ -119,8 +120,24 @@ export const chatMessageContentPartSchema = z
 		markdown_document: z
 			.object({
 				markdown: z.string().describe("Markdown document content."),
+				name: z.string().optional().describe("Display name for the document."),
 			})
 			.describe("Markdown payload for markdown_document parts.")
+			.optional(),
+		artifact_selection: z
+			.object({
+				artifact: z
+					.object({
+						identifier: z.string().describe("Artifact identifier."),
+						type: z.string().describe("Artifact MIME or display type."),
+						title: z.string().optional().describe("Artifact title."),
+					})
+					.describe("Source artifact metadata."),
+				selectedText: z.string().min(1).describe("Selected artifact text."),
+				selectionStart: z.number().int().nonnegative().describe("Selection start offset."),
+				selectionEnd: z.number().int().nonnegative().describe("Selection end offset."),
+			})
+			.describe("Selected text from an artifact.")
 			.optional(),
 		image_url: z
 			.object({
@@ -149,6 +166,7 @@ export const chatMessageContentPartSchema = z
 			if (part.type === "input_audio") return !!part.input_audio;
 			if (part.type === "file") return !!part.file;
 			if (part.type === "markdown_document") return !!part.markdown_document;
+			if (part.type === "artifact_selection") return !!part.artifact_selection;
 			return true;
 		},
 		{

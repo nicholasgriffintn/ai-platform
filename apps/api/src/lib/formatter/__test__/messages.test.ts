@@ -944,4 +944,50 @@ describe("MessageFormatter", () => {
 			expect(result[0].content).toBe("Hello");
 		});
 	});
+
+	describe("artifact selection content", () => {
+		it("formats artifact selections as model-readable text context", () => {
+			const messages: Message[] = [
+				{
+					role: "user",
+					content: [
+						{ type: "text", text: "Make this firmer" },
+						{
+							type: "artifact_selection",
+							artifact_selection: {
+								artifact: {
+									identifier: "launch-plan",
+									type: "text/markdown",
+									title: "Launch plan",
+								},
+								selectedText: "This paragraph needs work.",
+								selectionStart: 12,
+								selectionEnd: 38,
+							},
+						},
+					],
+				},
+			];
+
+			const result = MessageFormatter.formatMessages(messages, {
+				provider: "unknown-provider",
+			});
+
+			expect(result[0].content).toEqual([
+				{ type: "text", text: "Make this firmer" },
+				{
+					type: "text",
+					text: [
+						"<artifact_selection>",
+						'<artifact identifier="launch-plan" type="text/markdown" title="Launch plan" />',
+						'<range start="12" end="38" />',
+						"<selected_text>",
+						"This paragraph needs work.",
+						"</selected_text>",
+						"</artifact_selection>",
+					].join("\n"),
+				},
+			]);
+		});
+	});
 });

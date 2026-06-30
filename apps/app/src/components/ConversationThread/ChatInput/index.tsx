@@ -1,5 +1,6 @@
 import {
 	File,
+	FileText,
 	Image as ImageIcon,
 	Loader2,
 	Paperclip,
@@ -84,6 +85,9 @@ interface ChatInputProps {
 		isPlaying: boolean;
 		onToggle: () => void;
 	};
+	contextAttachments?: AttachmentData[];
+	onRemoveContextAttachment?: (index: number) => void;
+	onClearContextAttachments?: () => void;
 }
 
 export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
@@ -108,6 +112,9 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 			hideInlineResponseControls = false,
 			hideChatSettings = false,
 			autoPlayResponses,
+			contextAttachments = [],
+			onRemoveContextAttachment,
+			onClearContextAttachments,
 		},
 		ref,
 	) => {
@@ -350,8 +357,10 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 		};
 
 		const submitSelectedAttachments = () => {
-			const attachments = selectedAttachments.length > 0 ? selectedAttachments : undefined;
+			const combinedAttachments = [...contextAttachments, ...selectedAttachments];
+			const attachments = combinedAttachments.length > 0 ? combinedAttachments : undefined;
 			clearSelectedAttachments();
+			onClearContextAttachments?.();
 			handleSubmit(attachments);
 		};
 
@@ -462,6 +471,12 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 							: attachment.name || "Document attached",
 				};
 			}
+			if (attachment.type === "artifact_selection") {
+				return {
+					preview: <FileText className="h-3.5 w-3.5" aria-hidden="true" />,
+					label: attachment.name,
+				};
+			}
 			if (attachment.type === "audio") {
 				return {
 					preview: <Volume2 className="h-3.5 w-3.5" aria-hidden="true" />,
@@ -473,7 +488,20 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 
 		const canUploadFiles = !disableAttachments && !isTextToImageOnlyModel;
 
-		const attachmentChips = selectedAttachments.flatMap((attachment, index) => {
+		const contextAttachmentChips = contextAttachments.flatMap((attachment, index) => {
+			const { preview, label } = getAttachmentIconAndLabel(attachment);
+			return preview
+				? [
+						{
+							label,
+							onClear: () => onRemoveContextAttachment?.(index),
+							preview,
+						},
+					]
+				: [];
+		});
+
+		const selectedAttachmentChips = selectedAttachments.flatMap((attachment, index) => {
 			const { preview, label } = getAttachmentIconAndLabel(attachment);
 			return preview
 				? [
@@ -485,6 +513,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 					]
 				: [];
 		});
+		const attachmentChips = [...contextAttachmentChips, ...selectedAttachmentChips];
 
 		const isToolSelectionLocked = chatMode === "agent" && selectedAgentId !== null;
 		const canUseProComposerActions = isPro;
@@ -493,7 +522,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 		const canShowActionMenu = canUseProComposerActions || canShowToolMenu;
 		const shouldRenderInputControls = hideTextInput && controls;
 		const isComposerSubmitDisabled =
-			(!chatInput?.trim() && selectedAttachments.length === 0) ||
+			(!chatInput?.trim() && selectedAttachments.length === 0 && contextAttachments.length === 0) ||
 			isLoading ||
 			isUploading ||
 			isAuthenticationLoading;

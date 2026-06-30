@@ -3,7 +3,10 @@ import { Suspense, lazy, useCallback, useEffect, useMemo, useState } from "react
 
 import { MemoizedMarkdown } from "~/components/ui/Markdown";
 import { useCopyToClipboard } from "~/hooks/useCopyToClipboard";
+import { isDocumentArtifact } from "~/lib/artifacts";
+import type { AttachmentData } from "~/lib/chat/attachments";
 import type { ArtifactProps } from "~/types/artifact";
+import { ArtifactDocumentEditor } from "./ArtifactDocumentEditor";
 
 const ArtifactSandbox = lazy(() =>
 	import("./ArtifactSandbox/index").then((mod) => ({
@@ -102,6 +105,7 @@ interface ArtifactPanelProps {
 	artifact: ArtifactProps | null;
 	artifacts?: ArtifactProps[];
 	onClose: () => void;
+	onAddSelectionToChat?: (attachment: AttachmentData) => void;
 	isVisible: boolean;
 	isCombined?: boolean;
 }
@@ -110,6 +114,7 @@ export const ArtifactPanel = ({
 	artifact,
 	artifacts = [],
 	onClose,
+	onAddSelectionToChat,
 	isVisible,
 	isCombined = false,
 }: ArtifactPanelProps) => {
@@ -159,10 +164,14 @@ export const ArtifactPanel = ({
 	const showPreviewTab = useMemo(() => codeArtifact !== undefined, [codeArtifact]);
 
 	const currentArtifact = useMemo(() => {
-		return allArtifacts[activeFileIndex] || allArtifacts[0];
+		return allArtifacts[activeFileIndex] || allArtifacts[0] || null;
 	}, [allArtifacts, activeFileIndex]);
 
 	const showFileTabs = useMemo(() => allArtifacts.length > 1, [allArtifacts.length]);
+	const isDocument = useMemo(
+		() => (currentArtifact ? isDocumentArtifact(currentArtifact) : false),
+		[currentArtifact],
+	);
 
 	const isCode = useMemo(() => {
 		if (!artifact) {
@@ -189,7 +198,7 @@ export const ArtifactPanel = ({
 
 	useEffect(() => {
 		setActiveFileIndex(0);
-	}, []);
+	}, [allArtifacts.length]);
 
 	useEffect(() => {
 		if (activeTab === "preview") {
@@ -222,7 +231,7 @@ export const ArtifactPanel = ({
 		setActiveTab(tab);
 	}, []);
 
-	if (allArtifacts.length === 0) return null;
+	if (allArtifacts.length === 0 || !currentArtifact) return null;
 
 	return (
 		<div
@@ -252,7 +261,7 @@ export const ArtifactPanel = ({
 						</span>
 					</div>
 					<div className="flex gap-2 flex-shrink-0 ml-2">
-						{!showFileTabs && (
+						{!showFileTabs && !isDocument && (
 							<button
 								type="button"
 								onClick={handleCopyCurrentFile}
@@ -332,12 +341,19 @@ export const ArtifactPanel = ({
 								/>
 							)}
 
-							<ContentViewer
-								artifact={currentArtifact}
-								showCopyButton={showFileTabs}
-								onCopy={handleCopyCurrentFile}
-								copied={copied}
-							/>
+							{isDocument ? (
+								<ArtifactDocumentEditor
+									artifact={currentArtifact}
+									onAddSelectionToChat={onAddSelectionToChat}
+								/>
+							) : (
+								<ContentViewer
+									artifact={currentArtifact}
+									showCopyButton={showFileTabs}
+									onCopy={handleCopyCurrentFile}
+									copied={copied}
+								/>
+							)}
 						</>
 					)}
 

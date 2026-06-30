@@ -1,4 +1,4 @@
-import { File, Loader2, Volume2 } from "lucide-react";
+import { File, FileText, Loader2, Volume2 } from "lucide-react";
 import { Fragment, type ReactNode } from "react";
 import { memo, useMemo } from "react";
 
@@ -221,6 +221,31 @@ const renderDocumentContent = (
 					View document
 				</a>
 			)}
+		</div>
+	);
+};
+
+const renderArtifactSelectionContent = (
+	selection: NonNullable<MessageContentType["artifact_selection"]>,
+	index?: number,
+): ReactNode => {
+	const title = selection.artifact.title || selection.artifact.identifier;
+	const byteCount = new Blob([selection.selectedText]).size;
+
+	return (
+		<div
+			key={`artifact-selection-${index ?? 0}`}
+			className="flex items-center gap-3 rounded-lg border border-zinc-200 bg-white/80 p-3 text-sm shadow-sm dark:border-zinc-700 dark:bg-zinc-900/70"
+		>
+			<div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-md bg-blue-50 text-blue-600 dark:bg-blue-950/50 dark:text-blue-300">
+				<FileText className="h-4 w-4" aria-hidden="true" />
+			</div>
+			<div className="min-w-0">
+				<div className="truncate font-medium text-zinc-800 dark:text-zinc-100">
+					selection from {title}
+				</div>
+				<div className="text-xs text-zinc-500 dark:text-zinc-400">Text · {byteCount} B</div>
+			</div>
 		</div>
 	);
 };
@@ -514,6 +539,10 @@ export const MessageContent = memo(({ message, onArtifactOpen }: MessageContentP
 										combinableCount={artifacts.length}
 									/>
 								);
+							}
+
+							if (item.type === "artifact_selection" && item.artifact_selection) {
+								return renderArtifactSelectionContent(item.artifact_selection, i);
 							}
 
 							return null;

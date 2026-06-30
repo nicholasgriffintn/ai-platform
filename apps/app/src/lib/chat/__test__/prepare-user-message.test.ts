@@ -47,6 +47,44 @@ describe("prepareUserMessage", () => {
 		]);
 	});
 
+	it("builds multimodal content for artifact selection attachments", () => {
+		const message = prepareUserMessage(
+			"Make this firmer",
+			[
+				{
+					type: "artifact_selection",
+					name: "selection from Launch plan",
+					artifact: {
+						identifier: "launch-plan",
+						type: "text/markdown",
+						title: "Launch plan",
+					},
+					selectedText: "This paragraph needs work.",
+					selectionStart: 12,
+					selectionEnd: 38,
+				},
+			],
+			"model-1",
+		);
+
+		expect(message.content).toEqual([
+			{ type: "text", text: "Make this firmer" },
+			{
+				type: "artifact_selection",
+				artifact_selection: {
+					artifact: {
+						identifier: "launch-plan",
+						type: "text/markdown",
+						title: "Launch plan",
+					},
+					selectedText: "This paragraph needs work.",
+					selectionStart: 12,
+					selectionEnd: 38,
+				},
+			},
+		]);
+	});
+
 	it("builds audio content with the expected format", () => {
 		const message = prepareUserMessage(
 			"transcribe",

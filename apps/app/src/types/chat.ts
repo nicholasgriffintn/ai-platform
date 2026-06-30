@@ -58,6 +58,7 @@ export interface MessageContent {
 		| "artifact"
 		| "document_url"
 		| "markdown_document"
+		| "artifact_selection"
 		| "thinking";
 	text?: string;
 	image_url?: {
@@ -81,6 +82,16 @@ export interface MessageContent {
 	markdown_document?: {
 		markdown: string;
 		name?: string;
+	};
+	artifact_selection?: {
+		artifact: {
+			identifier: string;
+			type: string;
+			title?: string;
+		};
+		selectedText: string;
+		selectionStart: number;
+		selectionEnd: number;
 	};
 	artifact?: {
 		identifier: string;

@@ -143,4 +143,37 @@ describe("ChatMessage", () => {
 		expect(screen.queryByText("Weather Information")).not.toBeInTheDocument();
 		expect(screen.queryByText(/Temperature:/)).not.toBeInTheDocument();
 	});
+
+	it("renders artifact selection attachments on user messages", () => {
+		render(
+			<ChatMessage
+				message={{
+					id: "user-message",
+					role: "user",
+					content: [
+						{ type: "text", text: "Make this firmer" },
+						{
+							type: "artifact_selection",
+							artifact_selection: {
+								artifact: {
+									identifier: "launch-plan",
+									type: "text/markdown",
+									title: "Launch plan",
+								},
+								selectedText: "This paragraph needs work.",
+								selectionStart: 12,
+								selectionEnd: 38,
+							},
+						},
+					],
+					created: 123,
+					model: "provider/big-pickle",
+				}}
+			/>,
+		);
+
+		expect(screen.getByText("selection from Launch plan")).toBeInTheDocument();
+		expect(screen.getByText("Text · 26 B")).toBeInTheDocument();
+		expect(screen.getByText("Make this firmer")).toBeInTheDocument();
+	});
 });

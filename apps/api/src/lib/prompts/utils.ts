@@ -386,8 +386,11 @@ export function getArtifactExample(
 
 	const guidance = [
 		"Use artifacts for deliverables the user may reuse or download later.",
+		'Downloadable documents should use type="text/markdown" so they open as editable document artifacts.',
 		"Reference each artifact in your main response so the user understands what it contains.",
 		"Reuse an existing artifact identifier when updating earlier work; choose a new one for fresh deliverables.",
+		"When a user message includes <artifact_selection>, treat it as selected context from an existing artifact; apply the requested change to that portion and reuse the referenced artifact identifier when returning an update.",
+		"Do not call tools or APIs to create artifacts; emit inline artifact tags in your response.",
 		"Tailor each artifact to the user's request—never copy the example artifact verbatim.",
 	];
 
@@ -487,8 +490,11 @@ export function getArtifactInstructions(
 	if (variant === "compact") {
 		return `${startIndex}. When using artifacts, keep them lightweight:
    - Reserve artifacts for deliverables the user may reuse or download.
+   - Use type="text/markdown" for downloadable documents that should open as editable document artifacts.
    - Summarise each artifact in your response so the user knows what's inside.
-   - Reuse identifiers when updating earlier work to keep context linked.`;
+   - Reuse identifiers when updating earlier work to keep context linked.
+   - When a user message includes <artifact_selection>, apply the requested change to that selected portion and reuse the referenced artifact identifier.
+   - Do not call tools or APIs to create artifacts; emit inline artifact tags in your response.`;
 	}
 
 	const baseInstructions = `${startIndex}. When creating artifacts:
@@ -506,9 +512,18 @@ export function getArtifactInstructions(
       - type: Appropriate content type that the type of content the artifact
         represents, assign one of the following:
         ${getArtifactTypeInstructions(forCode)}
+      - Downloadable documents: use type="text/markdown" for reports, letters,
+        plans, briefs, essays, emails, and other prose that should open as an
+        editable document artifact.
    f. Only use one artifact per message unless specifically requested.
    g. If a user asks the assistant to "draw an SVG" or "make a website", the
-      assistant should create the code for that and place it within an artifact.`;
+      assistant should create the code for that and place it within an artifact.
+   h. When a user message includes <artifact_selection>, treat it as selected
+      context from an existing artifact; apply the requested change to that
+      portion and reuse the referenced artifact identifier when returning an
+      updated artifact.
+   i. Do not call tools or APIs to create artifacts; emit inline artifact tags
+      in your response.`;
 
 	return baseInstructions;
 }

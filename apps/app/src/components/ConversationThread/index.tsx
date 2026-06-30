@@ -31,6 +31,7 @@ import { StealthModelWarning } from "./StealthModelWarning";
 import { useAssistantActionSubmit } from "./useAssistantActionSubmit";
 import { useAutoPlayResponses } from "./useAutoPlayResponses";
 import { WelcomeScreen } from "./WelcomeScreen";
+import { findLatestArtifactByIdentifier } from "~/lib/artifacts";
 
 export interface ConversationThreadModeConfig {
 	requestOptions?: ChatRequestOptions;
@@ -115,6 +116,9 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
 	const [isPanelVisible, setIsPanelVisible] = useState(false);
 	const [currentArtifacts, setCurrentArtifacts] = useState<ArtifactProps[]>([]);
 	const [isCombinedPanel, setIsCombinedPanel] = useState(false);
+	const [artifactContextAttachments, setArtifactContextAttachments] = useState<AttachmentData[]>(
+		[],
+	);
 	const [autoPlayResponsesEnabled, setAutoPlayResponsesEnabled] = useState(false);
 	const effectiveAutoPlayResponsesEnabled =
 		autoPlayResponsesEnabled || Boolean(modeConfig?.forceAutoPlayResponses);
@@ -164,6 +168,9 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
 				setIsCombinedPanel(true);
 				return;
 			}
+
+			setCurrentArtifacts([]);
+			setIsCombinedPanel(false);
 		},
 		[currentConversationId, trackFeatureUsage],
 	);
@@ -185,11 +192,45 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
 		}, 300);
 	}, [currentArtifact, currentConversationId, trackFeatureUsage]);
 
+	const handleAddArtifactSelectionToChat = useCallback(
+		(attachment: AttachmentData) => {
+			setArtifactContextAttachments((currentAttachments) => [...currentAttachments, attachment]);
+			chatInputRef.current?.focus();
+
+			trackFeatureUsage("add_artifact_selection_to_chat", {
+				conversation_id: currentConversationId || "none",
+				artifact_type: currentArtifact?.type || "unknown",
+			});
+		},
+		[currentArtifact?.type, currentConversationId, trackFeatureUsage],
+	);
+
+	const handleRemoveArtifactContextAttachment = useCallback((indexToRemove: number) => {
+		setArtifactContextAttachments((currentAttachments) =>
+			currentAttachments.filter((_, index) => index !== indexToRemove),
+		);
+	}, []);
+
+	const handleClearArtifactContextAttachments = useCallback(() => {
+		setArtifactContextAttachments([]);
+	}, []);
+
 	useEffect(() => {
 		if (isPanelVisible) {
 			handlePanelClose();
 		}
 	}, [currentConversationId]);
+
+	useEffect(() => {
+		if (!currentArtifact || !isPanelVisible || isCombinedPanel) {
+			return;
+		}
+
+		const latestArtifact = findLatestArtifactByIdentifier(messages, currentArtifact.identifier);
+		if (latestArtifact && latestArtifact.content !== currentArtifact.content) {
+			setCurrentArtifact(latestArtifact);
+		}
+	}, [currentArtifact, isCombinedPanel, isPanelVisible, messages]);
 
 	const canSubmit = useMemo(
 		() =>
@@ -450,6 +491,9 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
 						hideTextInput={modeConfig?.hideTextInput}
 						hideInlineResponseControls={modeConfig?.hideInlineResponseControls}
 						hideChatSettings={modeConfig?.hideChatSettings}
+						contextAttachments={artifactContextAttachments}
+						onRemoveContextAttachment={handleRemoveArtifactContextAttachment}
+						onClearContextAttachments={handleClearArtifactContextAttachments}
 						autoPlayResponses={{
 							enabled: effectiveAutoPlayResponsesEnabled,
 							isGenerating: isGeneratingAutoResponseSpeech,
@@ -466,6 +510,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
 				artifact={currentArtifact}
 				artifacts={currentArtifacts}
 				onClose={handlePanelClose}
+				onAddSelectionToChat={handleAddArtifactSelectionToChat}
 				isVisible={isPanelVisible}
 				isCombined={isCombinedPanel}
 			/>

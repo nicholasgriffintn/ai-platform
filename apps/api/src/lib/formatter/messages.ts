@@ -41,6 +41,10 @@ export class MessageFormatter {
 				return content.content;
 			}
 
+			if (content.type === "artifact_selection") {
+				return MessageFormatter.formatArtifactSelectionText(content as MessageContent);
+			}
+
 			return JSON.stringify(content);
 		}
 
@@ -336,6 +340,35 @@ export class MessageFormatter {
 		};
 	}
 
+	private static formatArtifactSelectionText(part: MessageContent): string {
+		const selection = part.artifact_selection;
+		if (!selection?.selectedText) {
+			return "";
+		}
+
+		const title = selection.artifact.title
+			? ` title="${MessageFormatter.escapeAttribute(selection.artifact.title)}"`
+			: "";
+
+		return [
+			"<artifact_selection>",
+			`<artifact identifier="${MessageFormatter.escapeAttribute(selection.artifact.identifier)}" type="${MessageFormatter.escapeAttribute(selection.artifact.type)}"${title} />`,
+			`<range start="${selection.selectionStart}" end="${selection.selectionEnd}" />`,
+			"<selected_text>",
+			selection.selectedText,
+			"</selected_text>",
+			"</artifact_selection>",
+		].join("\n");
+	}
+
+	private static escapeAttribute(value: string): string {
+		return value
+			.replace(/&/g, "&amp;")
+			.replace(/"/g, "&quot;")
+			.replace(/</g, "&lt;")
+			.replace(/>/g, "&gt;");
+	}
+
 	private static formatContent(content: Message["content"], provider: string): any {
 		if (!Array.isArray(content)) {
 			return content;
@@ -371,26 +404,53 @@ export class MessageFormatter {
 				) {
 					return {
 						text: content
-							.filter((item) => typeof item === "object" && "type" in item && item.type === "text")
-							.map((item) => (typeof item === "object" && "text" in item ? item.text : ""))
+							.filter(
+								(item) =>
+									typeof item === "object" &&
+									"type" in item &&
+									(item.type === "text" || item.type === "artifact_selection"),
+							)
+							.map((item) =>
+								typeof item === "object" && "text" in item
+									? item.text
+									: MessageFormatter.formatArtifactSelectionText(item as MessageContent),
+							)
 							.join("\n"),
 						image: MessageFormatter.getBase64FromUrl(imageItem.image_url.url),
 					};
 				}
 
 				return content
-					.filter((item) => typeof item === "object" && "type" in item && item.type === "text")
-					.map((item) => (typeof item === "object" && "text" in item ? item.text : ""))
+					.filter(
+						(item) =>
+							typeof item === "object" &&
+							"type" in item &&
+							(item.type === "text" || item.type === "artifact_selection"),
+					)
+					.map((item) =>
+						typeof item === "object" && "text" in item
+							? item.text
+							: MessageFormatter.formatArtifactSelectionText(item as MessageContent),
+					)
 					.join("\n");
 			}
 			default:
-				return content.filter(
-					(item) =>
-						typeof item === "object" &&
-						"type" in item &&
-						item.type !== "markdown_document" &&
-						item.type !== "thinking",
-				);
+				return content
+					.filter(
+						(item) =>
+							typeof item === "object" &&
+							"type" in item &&
+							item.type !== "markdown_document" &&
+							item.type !== "thinking",
+					)
+					.map((item) =>
+						item.type === "artifact_selection"
+							? {
+									type: "text",
+									text: MessageFormatter.formatArtifactSelectionText(item as MessageContent),
+								}
+							: item,
+					);
 		}
 	}
 
@@ -755,6 +815,9 @@ export class MessageFormatter {
 		if (item.type === "markdown_document") {
 			return null;
 		}
+		if (item.type === "artifact_selection") {
+			return { text: MessageFormatter.formatArtifactSelectionText(item) };
+		}
 		if (item.type === "thinking") {
 			return null;
 		}
@@ -792,6 +855,11 @@ export class MessageFormatter {
 		if (item.type === "markdown_document") {
 			return null;
 		}
+		if (item.type === "artifact_selection") {
+			return MessageFormatter.createAnthropicTextBlock(
+				MessageFormatter.formatArtifactSelectionText(item),
+			);
+		}
 		if (item.type === "thinking") {
 			return null;
 		}
@@ -808,6 +876,9 @@ export class MessageFormatter {
 		}
 		if (item.type === "markdown_document") {
 			return null;
+		}
+		if (item.type === "artifact_selection") {
+			return { text: MessageFormatter.formatArtifactSelectionText(item) };
 		}
 		if (item.type === "thinking") {
 			return null;

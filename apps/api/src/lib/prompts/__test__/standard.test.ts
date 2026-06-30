@@ -202,6 +202,26 @@ describe("returnStandardPrompt", () => {
 			expect(result).toContain("artifact");
 		});
 
+		it("should instruct models to create downloadable document artifacts", async () => {
+			// @ts-expect-error - mock implementation
+			const request: IBody = {};
+			const result = await returnStandardPrompt(request, undefined, undefined, false, true);
+
+			expect(result).toContain("Downloadable documents");
+			expect(result).toContain('type="text/markdown"');
+			expect(result).toContain("editable document");
+		});
+
+		it("should instruct models how to respond to artifact selections", async () => {
+			// @ts-expect-error - mock implementation
+			const request: IBody = {};
+			const result = await returnStandardPrompt(request, undefined, undefined, false, true);
+
+			expect(result).toContain("<artifact_selection>");
+			expect(result).toContain("reuse the referenced artifact identifier");
+			expect(result).toContain("Do not call tools or APIs to create artifacts");
+		});
+
 		it("should not include example output for agent mode when reasoning is supported", async () => {
 			// @ts-expect-error - mock implementation
 			const request: IBody = { mode: "agent" };

@@ -56,4 +56,46 @@ describe("chat completions schema", () => {
 			);
 		}
 	});
+
+	it("accepts artifact selection message content parts", () => {
+		expect(
+			createChatCompletionsJsonSchema.parse({
+				messages: [
+					{
+						role: "user",
+						content: [
+							{ type: "text", text: "Make this firmer" },
+							{
+								type: "artifact_selection",
+								artifact_selection: {
+									artifact: {
+										identifier: "launch-plan",
+										type: "text/markdown",
+										title: "Launch plan",
+									},
+									selectedText: "This paragraph needs work.",
+									selectionStart: 12,
+									selectionEnd: 38,
+								},
+							},
+						],
+					},
+				],
+			}),
+		).toMatchObject({
+			messages: [
+				{
+					content: [
+						{ type: "text" },
+						{
+							type: "artifact_selection",
+							artifact_selection: {
+								selectedText: "This paragraph needs work.",
+							},
+						},
+					],
+				},
+			],
+		});
+	});
 });

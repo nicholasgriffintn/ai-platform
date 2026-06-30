@@ -21,6 +21,7 @@ export type ContentType =
 	| "thinking"
 	| "document_url"
 	| "markdown_document"
+	| "artifact_selection"
 	| "file"
 	| "tool_result";
 export type ChatRole = "user" | "assistant" | "tool" | "developer" | "system";
@@ -63,6 +64,16 @@ export type MessageContent = {
 	markdown_document?: {
 		markdown: string;
 		name?: string;
+	};
+	artifact_selection?: {
+		artifact: {
+			identifier: string;
+			type: string;
+			title?: string;
+		};
+		selectedText: string;
+		selectionStart: number;
+		selectionEnd: number;
 	};
 	thinking?: string;
 	signature?: string;
