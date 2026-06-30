@@ -285,6 +285,65 @@ describe("ChatService streaming", () => {
 		expect(result.content).toBe("I will check the weather for London W5 1EW at 09:00 today.");
 	});
 
+	it("loads raw Anthropic text deltas when provider-shaped events reach the client", async () => {
+		vi.stubGlobal(
+			"fetch",
+			vi.fn(async () =>
+				createSseResponse([
+					`event: message_start\ndata: ${JSON.stringify({
+						type: "message_start",
+						message: {
+							id: "msg-anthropic",
+							model: "claude-opus-4-8",
+							role: "assistant",
+							content: [],
+						},
+					})}\n\n`,
+					`event: content_block_start\ndata: ${JSON.stringify({
+						type: "content_block_start",
+						index: 0,
+						content_block: { type: "text", text: "" },
+					})}\n\n`,
+					`event: content_block_delta\ndata: ${JSON.stringify({
+						type: "content_block_delta",
+						index: 0,
+						delta: { type: "text_delta", text: "I'll create " },
+					})}\n\n`,
+					`event: content_block_delta\ndata: ${JSON.stringify({
+						type: "content_block_delta",
+						index: 0,
+						delta: { type: "text_delta", text: "an orbit visualization." },
+					})}\n\n`,
+					`event: message_stop\ndata: ${JSON.stringify({ type: "message_stop" })}\n\n`,
+					data("[DONE]"),
+				]),
+			),
+		);
+
+		const progressUpdates: string[] = [];
+		const service = new ChatService(async () => ({}));
+
+		const result = await service.streamChatCompletions({
+			chatSettings: {},
+			completionId: "conversation-1",
+			messages: [{ role: "user", content: "show me orbit" } as Message],
+			mode: "remote",
+			model: "claude-opus-4-8",
+			onProgress: (text) => {
+				progressUpdates.push(text);
+			},
+			onStateChange: () => {},
+			signal: new AbortController().signal,
+		});
+
+		expect(progressUpdates).toContain("I'll create an orbit visualization.");
+		expect(result).toMatchObject({
+			id: "msg-anthropic",
+			model: "claude-opus-4-8",
+			content: "I'll create an orbit visualization.",
+		});
+	});
+
 	it("keeps streamed text when final metadata omits content and usable parts", async () => {
 		vi.stubGlobal(
 			"fetch",

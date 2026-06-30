@@ -237,6 +237,11 @@ class ChatStreamAssemblerState implements ChatStreamAssembler {
 			return this.ingestThinkingDelta(event.thinking);
 		}
 
+		const thinkingDelta = this.thinkingDeltaFromProviderEvent(event);
+		if (thinkingDelta) {
+			return this.ingestThinkingDelta(thinkingDelta);
+		}
+
 		if (
 			event.type === "tool_use_start" &&
 			typeof event.tool_id === "string" &&
@@ -470,14 +475,20 @@ class ChatStreamAssemblerState implements ChatStreamAssembler {
 	}
 
 	private ingestMessageStart(event: Record<string, unknown>): ChatStreamUpdate[] {
+		const anthropicMessage = streamEventSchema.safeParse(event.message);
+
 		if (typeof event.message_id === "string") {
 			this.id = event.message_id;
+		} else if (anthropicMessage.success && typeof anthropicMessage.data.id === "string") {
+			this.id = anthropicMessage.data.id;
 		}
 		if (typeof event.created === "number") {
 			this.created = event.created;
 		}
 		if (typeof event.model === "string") {
 			this.responseModel = event.model;
+		} else if (anthropicMessage.success && typeof anthropicMessage.data.model === "string") {
+			this.responseModel = anthropicMessage.data.model;
 		}
 		if (typeof event.provider === "string") {
 			this.responseProvider = event.provider;
@@ -597,6 +608,17 @@ class ChatStreamAssemblerState implements ChatStreamAssembler {
 			return event.content;
 		}
 
+		if (event.type === "content_block_delta") {
+			const delta = streamEventSchema.safeParse(event.delta);
+			if (
+				delta.success &&
+				delta.data.type === "text_delta" &&
+				typeof delta.data.text === "string"
+			) {
+				return delta.data.text;
+			}
+		}
+
 		if (!Array.isArray(event.choices)) {
 			return "";
 		}
@@ -608,6 +630,23 @@ class ChatStreamAssemblerState implements ChatStreamAssembler {
 
 		const delta = streamEventSchema.safeParse(firstChoice.data.delta);
 		return delta.success && typeof delta.data.content === "string" ? delta.data.content : "";
+	}
+
+	private thinkingDeltaFromProviderEvent(event: Record<string, unknown>): string {
+		if (event.type !== "content_block_delta") {
+			return "";
+		}
+
+		const delta = streamEventSchema.safeParse(event.delta);
+		if (
+			delta.success &&
+			delta.data.type === "thinking_delta" &&
+			typeof delta.data.thinking === "string"
+		) {
+			return delta.data.thinking;
+		}
+
+		return "";
 	}
 
 	private messagePartsFromEvent(parts: unknown): MessagePart[] | undefined {

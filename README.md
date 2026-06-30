@@ -24,6 +24,8 @@ Here are some example chats that you can try out:
 - [Code generation and execution](https://polychat.app/s/51fb196d-7def-4922-94d8-08e7ee86989d)
 - [Web search integration](https://polychat.app/s/aa7f6433-fdf8-4a56-bbe8-83fcf5715354)
 - [Perplexity Deep Research](https://polychat.app/s/643fcf03-6849-4cbf-8643-abf93660e6dc)
+- [Interactive inline artifacts](https://polychat.app/s/64bc904c-20c3-4ccf-88bc-dbfe9c7df12c)
+- [Document generation and collaboration through artifacts](https://polychat.app/s/16bbc46a-79fd-419c-a755-db14f303ced4)
 - [Combined artifact previews](https://polychat.app/s/b2137aac-bea5-4dbe-912b-e5ca107cbeca)
 - [Markdown formatting](https://polychat.app/s/0ccff6c7-7b62-4936-b18a-c05a098ef7e1)
 - [Search Grounding](https://polychat.app/s/0ecf12e1-3ed4-494c-b41d-c60a235df7de)

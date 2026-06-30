@@ -162,6 +162,48 @@ describe("chat stream assembler", () => {
 		});
 	});
 
+	it("accepts raw Anthropic message metadata and text deltas", () => {
+		const { updates, finalMessage } = collectUpdates([
+			{
+				type: "message_start",
+				message: {
+					id: "msg-anthropic",
+					model: "claude-opus-4-8",
+					role: "assistant",
+					content: [],
+				},
+			},
+			{
+				type: "content_block_delta",
+				index: 0,
+				delta: {
+					type: "text_delta",
+					text: "I'll create ",
+				},
+			},
+			{
+				type: "content_block_delta",
+				index: 0,
+				delta: {
+					type: "text_delta",
+					text: "an orbit visualization.",
+				},
+			},
+			{ type: "message_stop" },
+		]);
+
+		const deltas = updates
+			.filter((update) => update.type === "assistant_delta")
+			.map((update) => update.content);
+
+		expect(deltas).toContain("I'll create an orbit visualization.");
+		expect(finalMessage).toMatchObject({
+			id: "msg-anthropic",
+			model: "claude-opus-4-8",
+			content: "I'll create an orbit visualization.",
+		});
+	});
+
 	it("emits assistant metadata as soon as a message starts", () => {
 		const { updates } = collectUpdates([
 			{

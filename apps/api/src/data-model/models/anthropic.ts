@@ -424,6 +424,7 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 		},
 		supportsAttachments: true,
 		supportsTemperature: true,
+		restrictsCombinedTopPAndTemperature: true,
 		supportsToolCalls: true,
 		isFeatured: true,
 		...anthropicLatestHostedTools,
