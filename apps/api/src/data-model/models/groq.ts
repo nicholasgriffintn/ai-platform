@@ -580,7 +580,7 @@ export const groqModelConfig: ModelConfig = {
 		matchingModel: "openai/gpt-oss-safeguard-20b",
 		provider: "groq",
 		releaseDate: "October 29, 2025",
-		lastUpdated: "October 29, 2025",
+		lastUpdated: "June 29, 2026",
 		modalities: {
 			input: ["text"],
 			output: ["guardrails"],
