@@ -51,6 +51,7 @@ export function toAppMessage(streamMessage: ChatStreamMessage): Message {
 		created: streamMessage.created,
 		timestamp: streamMessage.timestamp,
 		model: streamMessage.model,
+		provider: streamMessage.provider,
 		platform: streamMessage.platform,
 		citations: streamMessage.citations,
 		usage: isRecord(streamMessage.usage) ? streamMessage.usage : undefined,

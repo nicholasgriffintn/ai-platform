@@ -225,6 +225,7 @@ export interface Message {
 	created?: number;
 	timestamp?: number;
 	model?: string;
+	provider?: string;
 	platform?: string;
 	citations?: string[] | null;
 	usage?: MessageUsage;

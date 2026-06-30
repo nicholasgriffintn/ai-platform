@@ -49,6 +49,19 @@ describe("ChatMessage", () => {
 		expect(screen.getByRole("img", { name: "provider/big-pickle" })).toBeInTheDocument();
 	});
 
+	it("renders assistant model icons before content arrives", () => {
+		render(
+			<ChatMessage
+				message={{
+					...assistantMessage,
+					content: "",
+				}}
+			/>,
+		);
+
+		expect(screen.getByRole("img", { name: "provider/big-pickle" })).toBeInTheDocument();
+	});
+
 	it("renders assistant content when final message parts do not include text", () => {
 		render(
 			<ChatMessage

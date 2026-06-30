@@ -197,6 +197,53 @@ describe("ChatService streaming", () => {
 		expect(assistantMessages.at(-1)?.content).toBe("Primary answer\n\nSecondary answer");
 	});
 
+	it("sends message_start metadata through progress before streamed content finishes", async () => {
+		vi.stubGlobal(
+			"fetch",
+			vi.fn(async () =>
+				createSseResponse([
+					data({
+						type: "message_start",
+						message_id: "assistant-early",
+						created: 1000,
+						model: "router-selected-model",
+						provider: "mistral",
+						platform: "web",
+					}),
+					data({ type: "content_block_delta", content: "Hello" }),
+					data({ type: "message_stop" }),
+					data("[DONE]"),
+				]),
+			),
+		);
+
+		const progressMessages: Message[] = [];
+		const service = new ChatService(async () => ({}));
+
+		await service.streamChatCompletions({
+			chatSettings: {},
+			completionId: "conversation-1",
+			messages: [{ role: "user", content: "hello" } as Message],
+			mode: "remote",
+			model: undefined,
+			onProgress: (_text, _reasoning, _toolResponses, done, assistantMessage) => {
+				if (!done && assistantMessage) {
+					progressMessages.push(assistantMessage);
+				}
+			},
+			onStateChange: () => {},
+			signal: new AbortController().signal,
+		});
+
+		expect(progressMessages[0]).toMatchObject({
+			id: "assistant-early",
+			content: "",
+			model: "router-selected-model",
+			provider: "mistral",
+			platform: "web",
+		});
+	});
+
 	it("loads CRLF-delimited content deltas and finalises when the stream closes without done", async () => {
 		vi.stubGlobal(
 			"fetch",

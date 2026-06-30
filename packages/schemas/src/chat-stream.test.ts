@@ -161,6 +161,33 @@ describe("chat stream assembler", () => {
 			content: "Started with metadata",
 		});
 	});
+
+	it("emits assistant metadata as soon as a message starts", () => {
+		const { updates } = collectUpdates([
+			{
+				type: "message_start",
+				message_id: "assistant-early",
+				created: 1000,
+				model: "router-selected-model",
+				provider: "mistral",
+				platform: "web",
+			},
+		]);
+
+		expect(updates).toEqual([
+			{
+				type: "assistant_metadata",
+				message: expect.objectContaining({
+					id: "assistant-early",
+					content: "",
+					created: 1000,
+					model: "router-selected-model",
+					provider: "mistral",
+					platform: "web",
+				}),
+			},
+		]);
+	});
 });
 
 describe("parseChatStreamSseEvent", () => {

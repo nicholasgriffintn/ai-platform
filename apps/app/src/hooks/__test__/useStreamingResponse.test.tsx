@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { act, renderHook } from "@testing-library/react";
+import { act, renderHook, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -268,6 +268,99 @@ describe("useStreamingResponse", () => {
 				content: "Hello! How can I help?",
 			}),
 		]);
+	});
+
+	it("updates the active placeholder with early assistant metadata", async () => {
+		const queryClient = createQueryClient();
+		const userMessage: Message = {
+			id: "user-1",
+			role: "user",
+			content: "Pick a model",
+			model: "auto",
+		};
+		queryClient.setQueryData<Conversation>([CHATS_QUERY_KEY, "conversation-1"], {
+			id: "conversation-1",
+			title: "Pick a model",
+			isLocalOnly: false,
+			messages: [userMessage],
+		});
+		useChatStore.setState({
+			model: "auto",
+		});
+
+		const assistantFinal: Message = {
+			id: "assistant-final",
+			role: "assistant",
+			content: "Chosen.",
+			model: "router-selected-model",
+			provider: "mistral",
+		};
+		mocks.streamChatCompletions.mockImplementation(async ({ onProgress }) => {
+			onProgress("", undefined, undefined, false, {
+				id: "assistant-early",
+				role: "assistant",
+				content: "",
+				model: "router-selected-model",
+				provider: "mistral",
+			});
+
+			await waitFor(() => {
+				const conversation = queryClient.getQueryData<Conversation>([
+					CHATS_QUERY_KEY,
+					"conversation-1",
+				]);
+				expect(conversation?.messages[1]).toEqual(
+					expect.objectContaining({
+						role: "assistant",
+						content: "",
+						model: "router-selected-model",
+						provider: "mistral",
+					}),
+				);
+			});
+
+			onProgress("Choosing a model...");
+			await waitFor(() => {
+				const conversation = queryClient.getQueryData<Conversation>([
+					CHATS_QUERY_KEY,
+					"conversation-1",
+				]);
+				expect(conversation?.messages[1]).toEqual(
+					expect.objectContaining({
+						role: "assistant",
+						content: "Choosing a model...",
+						model: "router-selected-model",
+						provider: "mistral",
+					}),
+				);
+			});
+
+			onProgress("Chosen.", undefined, undefined, true, assistantFinal);
+			return assistantFinal;
+		});
+
+		const { result } = renderHook(() => useStreamingResponse(undefined), {
+			wrapper: wrapper(queryClient),
+		});
+
+		await act(async () => {
+			await result.current.streamResponse([userMessage], "conversation-1", undefined, {
+				generateTitle: false,
+			});
+		});
+
+		const conversation = queryClient.getQueryData<Conversation>([
+			CHATS_QUERY_KEY,
+			"conversation-1",
+		]);
+		expect(conversation?.messages[1]).toEqual(
+			expect.objectContaining({
+				id: "assistant-final",
+				content: "Chosen.",
+				model: "router-selected-model",
+				provider: "mistral",
+			}),
+		);
 	});
 
 	it("persists guest assistant messages from full SSE streams with early metadata", async () => {

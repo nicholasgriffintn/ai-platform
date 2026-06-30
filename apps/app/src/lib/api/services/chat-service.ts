@@ -550,6 +550,17 @@ export class ChatService {
 		const assembler = createChatStreamAssembler({ model });
 
 		const handleUpdate = (update: ChatStreamUpdate) => {
+			if (update.type === "assistant_metadata") {
+				onProgress(
+					typeof update.message.content === "string" ? update.message.content : "",
+					update.message.reasoning?.content,
+					undefined,
+					false,
+					toAppMessage(update.message),
+				);
+				return;
+			}
+
 			if (update.type === "assistant_delta") {
 				onProgress(update.content, update.reasoning, undefined, false);
 				return;

@@ -86,7 +86,13 @@ export const ChatMessage = ({
 		return null;
 	}
 
-	if (!message.content && !message.reasoning && !hasPartContent && !isToolResponse) {
+	if (
+		!message.content &&
+		!message.reasoning &&
+		!hasPartContent &&
+		!isToolResponse &&
+		!assistantModelName
+	) {
 		return null;
 	}
 
@@ -159,7 +165,7 @@ export const ChatMessage = ({
 							<div className="flex-shrink-0 mr-2 mt-1">
 								<ModelIcon
 									modelName={assistantModelName}
-									provider={modelConfig?.provider}
+									provider={modelConfig?.provider ?? message.provider}
 									url={modelConfig?.avatarUrl}
 									size={24}
 									title={assistantModelName}

@@ -156,6 +156,34 @@ export function useStreamingResponse(
 
 				response = typeof content === "string" ? content : response;
 
+				if (assistantMessage) {
+					const updatedAssistantMessage = withAssistantMessageData({
+						...assistantMessage,
+						content,
+					});
+					pendingMessageTasks.push(
+						ensureActiveAssistantMessage().then((message) => {
+							const metadataUpdate = {
+								...updatedAssistantMessage,
+								id: message.id,
+							};
+							activeAssistantMessage = metadataUpdate;
+							return enqueueMessageWrite(() =>
+								updateAssistantMessage(
+									conversationId,
+									metadataUpdate.content,
+									metadataUpdate.reasoning?.content || reasoning,
+									metadataUpdate,
+									{
+										messageId: message.id,
+									},
+								),
+							);
+						}),
+					);
+					return;
+				}
+
 				if (toolResponses && toolResponses.length > 0) {
 					for (const toolResponse of toolResponses) {
 						toolResponseMessages.push(toolResponse);
@@ -168,7 +196,7 @@ export function useStreamingResponse(
 					pendingMessageTasks.push(
 						ensureActiveAssistantMessage().then((message) =>
 							enqueueMessageWrite(() =>
-								updateAssistantMessage(conversationId, content, reasoning, undefined, {
+								updateAssistantMessage(conversationId, content, reasoning, activeAssistantMessage, {
 									messageId: message.id,
 								}),
 							),

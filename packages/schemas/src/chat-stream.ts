@@ -38,6 +38,7 @@ export interface ChatStreamMessage {
 }
 
 export type ChatStreamUpdate =
+	| { type: "assistant_metadata"; message: ChatStreamMessage }
 	| { type: "assistant_delta"; content: string; reasoning?: string }
 	| { type: "assistant_final"; message: ChatStreamMessage }
 	| { type: "tool_result"; message: ChatStreamMessage }
@@ -485,7 +486,7 @@ class ChatStreamAssemblerState implements ChatStreamAssembler {
 			this.responsePlatform = event.platform;
 		}
 
-		return [];
+		return [{ type: "assistant_metadata", message: this.buildAssistantMessage(this.id) }];
 	}
 
 	private resetAssistantState() {
