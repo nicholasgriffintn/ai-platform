@@ -15,7 +15,6 @@ export const AddReasoningStepView = ({
 	};
 	embedded: boolean;
 }) => {
-	console.log("data", data);
 	const combinedContent = `## ${data.title}${data.reasoning_enhanced ? " ✓" : ""}
 
 **Confidence**: ${data.confidence || "unknown"}

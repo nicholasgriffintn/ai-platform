@@ -41,6 +41,7 @@ import {
 	getModelsByMode,
 	getRealtimeSessionModelsByProvider,
 	getToolCallModels,
+	isModelSelectableForAccount,
 	isTextInputChatModel,
 	modelSupportsVisualModality,
 } from "~/lib/models";
@@ -410,8 +411,11 @@ export const ModelSelector = ({
 		});
 	}, [filteredModels, searchQuery, selectedCapability]);
 	const autoModeModels = useMemo(
-		() => Object.values(getModelsByMode(availableModels, "remote")),
-		[availableModels],
+		() =>
+			Object.values(getModelsByMode(availableModels, "remote")).filter((modelConfig) =>
+				isModelSelectableForAccount(modelConfig, isPro),
+			),
+		[availableModels, isPro],
 	);
 	const isModelSearchActive = searchQuery.trim().length > 0;
 

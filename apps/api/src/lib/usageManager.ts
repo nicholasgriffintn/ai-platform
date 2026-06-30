@@ -34,10 +34,14 @@ export type UsageUpdateTaskInput =
 			functionType: FunctionType;
 			isProUser: boolean;
 			costPerCall: number;
+	  }
+	| {
+			action: "reset_daily_usage";
+			resetAt?: string;
 	  };
 
 export type UsageUpdateTaskPayload = UsageUpdateTaskInput & {
-	queuedAt: number;
+	queuedAt?: number;
 };
 
 type UsageTaskEnqueuer = (payload: UsageUpdateTaskPayload) => Promise<void>;

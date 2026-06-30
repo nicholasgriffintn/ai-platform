@@ -161,6 +161,13 @@ export function modelHasOutputModality(
 	return getModelOutputModalities(model).includes(modality);
 }
 
+export function isModelSelectableForAccount(
+	model: Pick<ModelConfigItem, "isByokEnabled" | "isFree">,
+	isPro: boolean,
+) {
+	return isPro || Boolean(model.isFree) || Boolean(model.isByokEnabled);
+}
+
 export function isImageGenerationOutputModel(model?: Pick<ModelConfigItem, "modalities">) {
 	const outputs = getModelOutputModalities(model);
 	return outputs.includes("image") && !outputs.includes("text");

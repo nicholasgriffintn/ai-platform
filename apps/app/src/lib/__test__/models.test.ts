@@ -12,6 +12,7 @@ import {
 	getRealtimeSessionModelsByProvider,
 	getToolCallModels,
 	isImageGenerationOutputModel,
+	isModelSelectableForAccount,
 	isStealthModel,
 	isTextInputChatModel,
 	isTextOnlyModel,
@@ -102,6 +103,18 @@ describe("getModelsByMode", () => {
 		};
 
 		expect(Object.keys(getModelsByMode(models, "remote"))).toEqual(["configured-provider-model"]);
+	});
+});
+
+describe("isModelSelectableForAccount", () => {
+	it("allows pro users to select paid catalogue models", () => {
+		expect(isModelSelectableForAccount({ isFree: false }, true)).toBe(true);
+	});
+
+	it("allows non-pro users to select free or BYOK-enabled models only", () => {
+		expect(isModelSelectableForAccount({ isFree: true }, false)).toBe(true);
+		expect(isModelSelectableForAccount({ isFree: false, isByokEnabled: true }, false)).toBe(true);
+		expect(isModelSelectableForAccount({ isFree: false, isByokEnabled: false }, false)).toBe(false);
 	});
 });
 

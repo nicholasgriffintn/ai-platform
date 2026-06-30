@@ -148,6 +148,55 @@ describe("createStreamWithPostProcessing", () => {
 		);
 	});
 
+	it("finalises provider streams that close without a done marker", async () => {
+		const conversationManager = {
+			getUsageLimits: vi.fn().mockResolvedValue({
+				daily: { used: 13, limit: 50 },
+				pro: { used: 11.3, limit: 200 },
+			}),
+			add: vi.fn(),
+		};
+
+		const stream = await createStreamWithPostProcessing(
+			createProviderStream([
+				`event: content_block_delta\ndata: ${JSON.stringify({
+					delta: { type: "text_delta", text: "Robots need coffee breaks." },
+				})}\n\n`,
+				`event: content_block_stop\ndata: ${JSON.stringify({
+					index: 0,
+					type: "content_block_stop",
+				})}\n\n`,
+			]),
+			{
+				env: { AI: {} } as any,
+				completion_id: "completion-1",
+				model: "claude-test",
+				provider: "anthropic",
+				platform: "web",
+			},
+			conversationManager as any,
+		);
+
+		const output = await readStream(stream);
+
+		expect(output).toContain('"type":"message_start"');
+		expect(output).toContain('"model":"claude-test"');
+		expect(output).toContain('"provider":"anthropic"');
+		expect(output).toContain('"state":"post_processing"');
+		expect(output).toContain('"type":"message_delta"');
+		expect(output).toContain('"type":"message_stop"');
+		expect(output).toContain('"state":"done"');
+		expect(output).toContain("data: [DONE]");
+		expect(conversationManager.add).toHaveBeenCalledWith(
+			"completion-1",
+			expect.objectContaining({
+				content: "Robots need coffee breaks.",
+				model: "claude-test",
+				platform: "web",
+			}),
+		);
+	});
+
 	it("emits assistant tool calls in message deltas for client replay", async () => {
 		const conversationManager = {
 			getUsageLimits: vi.fn().mockResolvedValue({

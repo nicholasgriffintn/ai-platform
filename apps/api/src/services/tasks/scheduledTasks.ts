@@ -3,8 +3,36 @@ import { RepositoryManager } from "~/repositories";
 import { scheduleDueRecipeExecutions } from "~/services/apps/recipes/scheduler";
 import { TaskService } from "./TaskService";
 import { getLogger } from "~/utils/logger";
+import { formatUtcDateKey } from "~/utils/date";
 
 const logger = getLogger({ prefix: "services/tasks/scheduled" });
+
+export async function scheduleDailyUsageReset(env: IEnv, now = new Date()): Promise<void> {
+	try {
+		const repositories = RepositoryManager.getInstance(env);
+		const taskService = new TaskService(env, repositories.tasks);
+		const resetAt = now.toISOString();
+		const resetDate = formatUtcDateKey(now);
+
+		await taskService.enqueueTask({
+			id: `usage_reset_${resetDate}`,
+			task_type: "usage_update",
+			task_data: {
+				action: "reset_daily_usage",
+				resetAt,
+			},
+			priority: 6,
+			metadata: {
+				resetDate,
+			},
+		});
+
+		logger.info("Daily usage reset task scheduled", { resetDate });
+	} catch (error) {
+		logger.error("Failed to schedule daily usage reset:", error);
+		throw error;
+	}
+}
 
 export async function scheduleDailySynthesis(env: IEnv): Promise<void> {
 	try {

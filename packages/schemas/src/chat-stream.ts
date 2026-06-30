@@ -24,6 +24,7 @@ export interface ChatStreamMessage {
 	created?: number;
 	timestamp?: number;
 	model?: string;
+	provider?: string;
 	platform?: string;
 	citations?: string[] | null;
 	usage?: unknown;
@@ -179,6 +180,8 @@ class ChatStreamAssemblerState implements ChatStreamAssembler {
 	private created?: number;
 	private logId?: string;
 	private toolCalls: ChatStreamToolCall[] = [];
+	private responseProvider?: string;
+	private responsePlatform?: string;
 	private readonly pendingToolCalls: Record<string, PendingToolCall> = {};
 	private readonly emittedToolResponseIds = new Set<string>();
 	private responseModel?: string;
@@ -219,6 +222,10 @@ class ChatStreamAssemblerState implements ChatStreamAssembler {
 
 		if (event.type === "message_stop") {
 			return this.ingestMessageStop();
+		}
+
+		if (event.type === "message_start") {
+			return this.ingestMessageStart(event);
 		}
 
 		if (event.type === "state" && typeof event.state === "string") {
@@ -422,6 +429,12 @@ class ChatStreamAssemblerState implements ChatStreamAssembler {
 		if (typeof event.model === "string") {
 			this.responseModel = event.model;
 		}
+		if (typeof event.provider === "string") {
+			this.responseProvider = event.provider;
+		}
+		if (typeof event.platform === "string") {
+			this.responsePlatform = event.platform;
+		}
 
 		const nextToolCalls = this.toolCallsFromEvent(event.tool_calls);
 		if (nextToolCalls) {
@@ -455,6 +468,26 @@ class ChatStreamAssemblerState implements ChatStreamAssembler {
 			: [];
 	}
 
+	private ingestMessageStart(event: Record<string, unknown>): ChatStreamUpdate[] {
+		if (typeof event.message_id === "string") {
+			this.id = event.message_id;
+		}
+		if (typeof event.created === "number") {
+			this.created = event.created;
+		}
+		if (typeof event.model === "string") {
+			this.responseModel = event.model;
+		}
+		if (typeof event.provider === "string") {
+			this.responseProvider = event.provider;
+		}
+		if (typeof event.platform === "string") {
+			this.responsePlatform = event.platform;
+		}
+
+		return [];
+	}
+
 	private resetAssistantState() {
 		this.content = "";
 		this.messageData = undefined;
@@ -469,6 +502,8 @@ class ChatStreamAssemblerState implements ChatStreamAssembler {
 		this.logId = undefined;
 		this.toolCalls = [];
 		this.responseModel = this.options.model;
+		this.responseProvider = undefined;
+		this.responsePlatform = undefined;
 		this.currentAssistantFinalised = false;
 	}
 
@@ -493,6 +528,8 @@ class ChatStreamAssemblerState implements ChatStreamAssembler {
 			created: this.created,
 			timestamp: this.created,
 			model: this.responseModel,
+			provider: this.responseProvider,
+			platform: this.responsePlatform,
 			citations: this.citations ?? null,
 			usage: this.usage,
 			tool_calls: this.toolCalls.length > 0 ? this.toolCalls : undefined,

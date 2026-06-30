@@ -1,6 +1,13 @@
 import type { User } from "~/types";
 import { BaseRepository } from "./BaseRepository";
 
+export interface DailyUsageResetResult {
+	regular: number;
+	pro: number;
+	byok: number;
+	total: number;
+}
+
 export class UserRepository extends BaseRepository {
 	public async getUserByOauthAccount(
 		providerId: string,
@@ -50,6 +57,48 @@ export class UserRepository extends BaseRepository {
 		}
 
 		await this.executeRun(result.query, result.values);
+	}
+
+	public async resetDailyUsage(resetAt: string): Promise<DailyUsageResetResult> {
+		const regular = await this.resetDailyUsageCounter(
+			"daily_message_count",
+			"daily_reset",
+			resetAt,
+		);
+		const pro = await this.resetDailyUsageCounter(
+			"daily_pro_message_count",
+			"daily_pro_reset",
+			resetAt,
+		);
+		const byok = await this.resetDailyUsageCounter(
+			"daily_byok_message_count",
+			"daily_byok_reset",
+			resetAt,
+		);
+
+		return {
+			regular,
+			pro,
+			byok,
+			total: regular + pro + byok,
+		};
+	}
+
+	private async resetDailyUsageCounter(
+		countColumn: string,
+		resetColumn: string,
+		resetAt: string,
+	): Promise<number> {
+		const result = await this.executeRun(
+			`UPDATE user
+			 SET ${countColumn} = 0,
+			     ${resetColumn} = ?,
+			     updated_at = datetime('now')
+			 WHERE ${resetColumn} IS NULL OR date(${resetColumn}) < date(?)`,
+			[resetAt, resetAt],
+		);
+
+		return result.meta?.changes ?? 0;
 	}
 
 	public async createUser(userData: Record<string, unknown>): Promise<User | null> {

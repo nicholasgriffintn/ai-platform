@@ -28,9 +28,11 @@ export function useAuthStatus() {
 		queryFn: async () => {
 			const isAuth = await authService.checkAuthStatus();
 
+			const user = authService.getUser();
+			const anonymousUser = user ? null : (authService.getAnonymousUser() ?? null);
+
 			if (isAuth) {
 				const token = await authService.getToken();
-				const user = authService.getUser();
 				const userSettings = authService.getUserSettings();
 				setAuthenticatedUserConfiguration({
 					hasApiKey: !!token,
@@ -43,8 +45,7 @@ export function useAuthStatus() {
 			useUsageStore
 				.getState()
 				.setUsageLimits(
-					getUsageLimitsFromUser(authService.getUser()) ??
-						getUsageLimitsFromAnonymousUser(authService.getAnonymousUser()),
+					getUsageLimitsFromUser(user) ?? getUsageLimitsFromAnonymousUser(anonymousUser),
 				);
 			setIsAuthenticationLoading(false);
 

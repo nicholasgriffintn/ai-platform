@@ -34,6 +34,58 @@ describe("preserveOptimisticMessages", () => {
 		expect(preserveOptimisticMessages(fetched, cached)).toBe(fetched);
 	});
 
+	it("keeps cached assistant content when fetched conversation has a stale placeholder", () => {
+		const cached = conversation("one", [
+			{ id: "user-1", role: "user", content: "1", model: "" },
+			{
+				id: "assistant-final",
+				role: "assistant",
+				content: 'Hello! I see you\'ve entered "1"',
+				model: "labs-leanstral-2603",
+			},
+		]);
+		const fetched = conversation("one", [
+			{ id: "user-1", role: "user", content: "1", model: "" },
+			{
+				id: "assistant-placeholder",
+				role: "assistant",
+				content: "",
+				model: "auto",
+			},
+		]);
+
+		expect(preserveOptimisticMessages(fetched, cached)?.messages).toEqual(cached.messages);
+	});
+
+	it("keeps cached assistant parts when fetched conversation has empty assistant content", () => {
+		const cached = conversation("one", [
+			{ id: "user-1", role: "user", content: "1", model: "" },
+			{
+				id: "assistant-final",
+				role: "assistant",
+				content: "",
+				model: "labs-leanstral-2603",
+				parts: [
+					{
+						type: "text",
+						text: "Hello from parts",
+					},
+				],
+			},
+		]);
+		const fetched = conversation("one", [
+			{ id: "user-1", role: "user", content: "1", model: "" },
+			{
+				id: "assistant-placeholder",
+				role: "assistant",
+				content: "",
+				model: "auto",
+			},
+		]);
+
+		expect(preserveOptimisticMessages(fetched, cached)?.messages).toEqual(cached.messages);
+	});
+
 	it("returns null instead of undefined when neither remote nor local chat exists", () => {
 		expect(preserveOptimisticMessages(undefined, undefined)).toBeNull();
 	});

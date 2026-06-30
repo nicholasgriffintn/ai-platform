@@ -71,6 +71,10 @@ export default defineConfig(({ isSsrBuild, command }) => ({
 			"lucide-react",
 		],
 	},
+	server: {
+		strictPort: true,
+		port: 5173,
+	},
 }));
 
 const chunkGroups = [

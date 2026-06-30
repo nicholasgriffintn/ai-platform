@@ -2,6 +2,7 @@ import { SANDBOX_RUN_DISPATCH_TASK_TYPE, type TaskType } from "@assistant/schema
 import { IEnv } from "../types";
 
 export const SCHEDULES = {
+	USAGE_RESET: "0 0 * * *", // Daily at midnight UTC
 	MEMORIES_SYNTHESIS: "0 2 * * *", // Daily at 2 AM
 	TRAINING_QUALITY_SCORING: "0 3 * * *", // Daily at 3 AM
 	RECIPE_EXECUTION: "*/15 * * * *", // Poll recipe schedules every 15 minutes

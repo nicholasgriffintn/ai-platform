@@ -2,6 +2,7 @@ import { IEnv } from "~/types";
 import { SCHEDULES } from "~/constants/schedules";
 import { getLogger } from "~/utils/logger";
 import {
+	scheduleDailyUsageReset,
 	scheduleDailySynthesis,
 	scheduleRecipeExecutions,
 	scheduleTrainingQualityScoring,
@@ -12,6 +13,11 @@ const logger = getLogger({ prefix: "services/tasks/schedule-executor" });
 export class ScheduleExecutor {
 	public static async respondToCronSchedules(env: IEnv, event: ScheduledController): Promise<void> {
 		switch (event.cron) {
+			case SCHEDULES.USAGE_RESET:
+				logger.info(`Starting daily usage reset scheduling`);
+				await scheduleDailyUsageReset(env);
+				logger.info(`Daily usage reset scheduling completed`);
+				break;
 			case SCHEDULES.MEMORIES_SYNTHESIS:
 				const isMemorySynthesisEnabled = env.MEMORY_SYNTHESIS_ENABLED === "true";
 				if (!isMemorySynthesisEnabled) {

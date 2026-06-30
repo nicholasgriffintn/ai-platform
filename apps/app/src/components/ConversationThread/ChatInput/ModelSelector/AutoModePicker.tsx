@@ -211,6 +211,8 @@ export function AutoModePicker({
 				{AUTO_ROUTER_MODES.map((mode) => {
 					const Icon = getAutoRouterModeIcon(mode.id);
 					const isSelected = mode.id === selectedDefinition.id;
+					const candidateCount = countAutoRouterModeCandidates(models, mode.id);
+					const isModeDisabled = disabled || candidateCount === 0;
 					const tone = getModeTone(mode.id);
 
 					return (
@@ -220,7 +222,8 @@ export function AutoModePicker({
 							role="option"
 							aria-label={`${mode.label} automatic mode`}
 							aria-selected={isSelected}
-							disabled={disabled}
+							aria-disabled={isModeDisabled}
+							disabled={isModeDisabled}
 							onMouseEnter={() => setPreviewMode(mode.id)}
 							onFocus={() => setPreviewMode(mode.id)}
 							onMouseLeave={() => setPreviewMode(null)}

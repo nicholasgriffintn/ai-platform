@@ -213,4 +213,17 @@ export class AnonymousUserRepository extends BaseRepository {
 			...(isNewDay && { daily_reset: now.toISOString() }),
 		});
 	}
+
+	public async resetDailyUsage(resetAt: string): Promise<number> {
+		const result = await this.executeRun(
+			`UPDATE anonymous_user
+			 SET daily_message_count = 0,
+			     daily_reset = ?,
+			     updated_at = datetime('now')
+			 WHERE daily_reset IS NULL OR date(daily_reset) < date(?)`,
+			[resetAt, resetAt],
+		);
+
+		return result.meta?.changes ?? 0;
+	}
 }

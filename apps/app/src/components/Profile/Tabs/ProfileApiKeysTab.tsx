@@ -47,12 +47,7 @@ function GeneratedApiKeyModal({
 						<code className="text-sm text-zinc-700 dark:text-zinc-200 break-all flex-1">
 							{apiKey}
 						</code>
-						<CopyButton
-							value={apiKey}
-							variant="icon"
-							iconSize={16}
-							onCopy={() => console.log("API Key copied to clipboard!")}
-						/>
+						<CopyButton value={apiKey} variant="icon" iconSize={16} />
 					</div>
 					<p className="text-xs text-orange-600 dark:text-orange-400 font-medium">
 						Store this key securely. It grants access to your account.
@@ -96,7 +91,6 @@ export function ProfileApiKeysTab() {
 			const result = await createApiKey({ name: newApiKeyName || undefined });
 			setGeneratedKeyInfo({ key: result.apiKey, name: result.name });
 			setNewApiKeyName("");
-			console.log(`API Key "${result.name}" created successfully!`);
 		} catch (error: any) {
 			const message = `Failed to create API key: ${error.message || "Unknown error"}`;
 			toast.error(message);
@@ -114,7 +108,6 @@ export function ProfileApiKeysTab() {
 				{ keyId: keyToDelete.id },
 				{
 					onSuccess: () => {
-						console.log(`API Key "${keyToDelete.name}" deleted.`);
 						setKeyToDelete(null);
 					},
 					onError: (error) => {

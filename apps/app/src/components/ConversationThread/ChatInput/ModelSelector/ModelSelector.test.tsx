@@ -41,6 +41,18 @@ vi.mock("~/hooks/useModels", () => ({
 				isFree: true,
 				includedInRouter: true,
 			},
+			"paid-max": {
+				id: "paid-max",
+				matchingModel: "paid-max",
+				name: "Paid Max",
+				provider: "workers-ai",
+				modalities: { input: ["text"], output: ["text"] },
+				isFree: false,
+				includedInRouter: true,
+				contextComplexity: 5,
+				reliability: 5,
+				artificialAnalysis: { intelligenceIndex: 45 },
+			},
 		},
 		isLoading: false,
 	}),
@@ -72,6 +84,7 @@ describe("ModelSelector", () => {
 	beforeEach(() => {
 		store.autoMode = "max";
 		store.chatMode = "remote";
+		store.isPro = true;
 		store.model = null;
 		store.selectedAgentId = null;
 		store.setAutoMode.mockReset();
@@ -120,5 +133,29 @@ describe("ModelSelector", () => {
 		expect(store.setChatMode).toHaveBeenCalledWith("remote");
 		expect(store.setSelectedAgentId).toHaveBeenCalledWith(null);
 		expect(store.setModel).toHaveBeenCalledWith(null);
+	});
+
+	it("disables paid-only automatic modes for non-pro users", () => {
+		store.isPro = false;
+		store.autoMode = "max";
+		store.model = null;
+
+		render(<ModelSelector />);
+
+		fireEvent.click(screen.getByRole("button", { name: "Select a model" }));
+
+		expect(screen.getByRole("option", { name: "Max automatic mode" })).toBeDisabled();
+	});
+
+	it("enables paid automatic modes for pro users", () => {
+		store.isPro = true;
+		store.autoMode = "max";
+		store.model = null;
+
+		render(<ModelSelector />);
+
+		fireEvent.click(screen.getByRole("button", { name: "Select a model" }));
+
+		expect(screen.getByRole("option", { name: "Max automatic mode" })).not.toBeDisabled();
 	});
 });

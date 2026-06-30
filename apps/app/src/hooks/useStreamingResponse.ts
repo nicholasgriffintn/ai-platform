@@ -311,7 +311,6 @@ export function useStreamingResponse(
 				};
 			} catch (error) {
 				if (controller.signal.aborted) {
-					console.log("Request aborted by user.");
 					return { status: "error" as const, response: "Request aborted" };
 				}
 				throw error;

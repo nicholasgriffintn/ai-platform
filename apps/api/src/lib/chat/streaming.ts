@@ -18,7 +18,6 @@ import { findModelConfig } from "~/lib/providers/models";
 import {
 	type ChatMode,
 	type IEnv,
-	type IUser,
 	type IUserSettings,
 	type Message,
 	type MessagePart,
@@ -253,6 +252,325 @@ export async function createStreamWithPostProcessing(
 	const guardrails = new Guardrails(env, user, userSettings);
 	const modelConfig = await findModelConfig(model, env, options.provider, user?.id);
 
+	const finalizePendingToolCalls = () => {
+		if (Object.keys(currentToolCalls).length > 0 && toolCallsData.length === 0) {
+			toolCallsData = Object.values(currentToolCalls);
+		}
+	};
+
+	async function handlePostProcessing(controller: TransformStreamDefaultController<Uint8Array>) {
+		try {
+			if (postProcessingDone) {
+				return;
+			}
+
+			emitEvent(controller, "state", {
+				state: StreamState.POST_PROCESSING,
+			});
+			postProcessingDone = true;
+
+			const isProUser = user?.plan_id === "pro";
+
+			const memoriesEnabled =
+				userSettings?.memories_save_enabled || userSettings?.memories_chat_history_enabled;
+			const memoryAlreadyStoredByTool = hasToolCallNamed(toolCallsData, MEMORY_STORE_TOOL_NAME);
+			if (isProUser && memoriesEnabled && !memoryAlreadyStoredByTool) {
+				try {
+					const history = await conversationManager.get(completion_id);
+					const userHistory = history.filter((m) => m.role === "user");
+					const lastUserRaw = userHistory.length ? userHistory[userHistory.length - 1].content : "";
+					const lastUserText =
+						typeof lastUserRaw === "string"
+							? lastUserRaw
+							: Array.isArray(lastUserRaw)
+								? lastUserRaw.find((b: any) => b.type === "text")?.text || ""
+								: "";
+
+					if (lastUserText.trim()) {
+						const memMgr = MemoryManager.getInstance(env, user, context);
+						const memEvents = await memMgr.handleMemory(
+							lastUserText,
+							history,
+							conversationManager,
+							completion_id,
+							userSettings,
+						);
+						for (const ev of memEvents) {
+							toolCallsData.push({
+								id: generateId(),
+								type: "function",
+								function: {
+									name: "memory",
+									arguments: JSON.stringify(ev),
+								},
+							});
+						}
+					}
+				} catch (error) {
+					logger.error("Failed to process memory for chat:", {
+						error,
+						completion_id,
+					});
+				}
+			}
+
+			let guardrailsFailed = false;
+			let guardrailError = "";
+			let guardrailViolations: any[] = [];
+
+			const fullContent = getFullContent();
+			if (fullContent) {
+				const outputValidation = await guardrails.validateOutput(
+					fullContent,
+					user?.id,
+					completion_id,
+				);
+
+				if (!outputValidation?.isValid) {
+					guardrailsFailed = true;
+					guardrailError = outputValidation.rawResponse || "Content failed validation checks";
+					guardrailViolations = outputValidation.violations || [];
+
+					logger.warn("Guardrails failed", {
+						outputValidation,
+						violations: guardrailViolations,
+					});
+				}
+			}
+
+			emitEvent(controller, "content_block_stop", {});
+
+			const logId = env.AI?.aiGatewayLogId;
+
+			const processedContent = preprocessQwQResponse(fullContent, model);
+			const councilTurn = extractCouncilTurnRouting(
+				processedContent,
+				options.requestOptions?.council,
+			);
+			const messageData = buildAssistantMessageData({
+				responseData: structuredData,
+				requestOptions: options.requestOptions,
+				councilRouting: councilTurn.routing,
+			});
+
+			const assistantMessage = formatAssistantMessage({
+				content: councilTurn.content,
+				thinking: getFullThinking(),
+				signature: signature,
+				citations: citationsResponse,
+				tool_calls: toolCallsData,
+				usage: usageData,
+				data: messageData,
+				guardrails: {
+					passed: !guardrailsFailed,
+					error: guardrailError,
+					violations: guardrailViolations,
+				},
+				log_id: logId,
+				model,
+				platform,
+				timestamp: Date.now(),
+				mode,
+				finish_reason: toolCallsData.length > 0 ? "tool_calls" : "stop",
+				refusal: refusalData,
+				annotations: annotationsData,
+			});
+
+			const derivedParts = buildMessageParts({
+				role: "assistant",
+				content: (assistantMessage.content as Message["content"]) || processedContent,
+				tool_calls: assistantMessage.tool_calls,
+				data: assistantMessage.data,
+				timestamp: assistantMessage.timestamp,
+			} as Message);
+
+			const messageParts = mergeMessageParts(streamedParts, derivedParts);
+
+			const contentForStorage =
+				typeof assistantMessage.content === "string" || Array.isArray(assistantMessage.content)
+					? assistantMessage.content
+					: "";
+
+			await conversationManager.add(completion_id, {
+				role: "assistant",
+				content: contentForStorage,
+				citations: assistantMessage.citations,
+				log_id: assistantMessage.log_id,
+				mode: assistantMessage.mode as ChatMode,
+				id: assistantMessage.id,
+				timestamp: assistantMessage.timestamp,
+				model: assistantMessage.model,
+				platform: assistantMessage.platform,
+				usage: assistantMessage.usage,
+				tool_calls: nonEmptyToolCallsOrNull(assistantMessage.tool_calls),
+				parts: messageParts,
+				data: assistantMessage.data || null,
+			});
+
+			emitEvent(controller, "message_delta", {
+				id: completion_id,
+				message_id: assistantMessage.id,
+				object: "chat.completion",
+				created: assistantMessage.timestamp,
+				model: assistantMessage.model,
+				provider: options.provider,
+				platform: assistantMessage.platform,
+				nonce: generateId(),
+				post_processing: {
+					guardrails: assistantMessage.guardrails,
+				},
+				log_id: assistantMessage.log_id,
+				usage: assistantMessage.usage,
+				citations: assistantMessage.citations,
+				tool_calls: assistantMessage.tool_calls,
+				finish_reason: assistantMessage.finish_reason,
+				data: assistantMessage.data,
+				parts: messageParts,
+			});
+
+			emitEvent(controller, "message_stop", {});
+
+			let toolResults: Message[] = [];
+			if (toolCallsData.length > 0) {
+				for (const toolCall of toolCallsData) {
+					try {
+						emitToolEvents(controller, toolCall, ToolStage.START);
+					} catch (error) {
+						logger.error("Error emitting tool start event", {
+							error,
+							toolCall,
+						});
+					}
+					try {
+						emitToolEvents(
+							controller,
+							toolCall,
+							ToolStage.DELTA,
+							toolCall.function?.arguments || "{}",
+						);
+					} catch (error) {
+						logger.error("Error emitting tool delta event", {
+							error,
+							toolCall,
+						});
+					}
+					try {
+						emitToolEvents(controller, toolCall, ToolStage.STOP);
+					} catch (error) {
+						logger.error("Error emitting tool stop event", {
+							error,
+							toolCall,
+						});
+					}
+				}
+
+				emitEvent(controller, "tool_response_start", {
+					tool_calls: toolCallsData,
+				});
+
+				toolResults = await handleToolCalls(
+					completion_id,
+					{ response: fullContent || "", tool_calls: toolCallsData },
+					conversationManager,
+					{
+						env,
+						mode: options.mode,
+						request: {
+							completion_id,
+							input: fullContent || "",
+							model,
+							mode: options.mode,
+							date: new Date().toISOString().split("T")[0],
+							approved_tools: approved_tools,
+							options: options.requestOptions || {},
+							current_agent_id: options.current_agent_id,
+							delegation_stack: options.delegation_stack,
+							max_delegation_depth: options.max_delegation_depth,
+						},
+						app_url,
+						user: user?.id ? user : undefined,
+						context,
+					},
+					{
+						persistResults: "immediate",
+						onToolResult: (toolResult) => {
+							emitEvent(controller, "tool_response", {
+								tool_id: toolResult.id,
+								result: toolResult,
+							});
+						},
+					},
+				);
+
+				emitEvent(controller, "tool_response_end", {});
+			}
+
+			try {
+				const updatedUsageLimits = await conversationManager.getUsageLimits();
+				if (updatedUsageLimits) {
+					emitEvent(controller, "usage_limits", {
+						usage_limits: updatedUsageLimits,
+					});
+				}
+			} catch (error) {
+				logger.error("Failed to get updated usage limits:", {
+					error_message: error instanceof Error ? error.message : "Unknown error",
+				});
+			}
+
+			if (toolCallsData.length > 0 && max_steps && current_step < max_steps) {
+				const shouldContinue = shouldContinueAfterToolResults(toolCallsData, toolResults);
+
+				if (!shouldContinue) {
+					logger.warn(
+						"Tool execution did not complete successfully, stopping multi-step execution",
+						{
+							completion_id,
+							current_step,
+						},
+					);
+				} else {
+					try {
+						const history = await conversationManager.get(completion_id);
+						const nextStream = await getAIResponse({
+							...options,
+							messages: history,
+							tools,
+							enabled_tools,
+							stream: true,
+						});
+						const nextTransformed = await createStreamWithPostProcessing(
+							nextStream,
+							{ ...options, current_step: current_step + 1 },
+							conversationManager,
+						);
+
+						const reader = nextTransformed.getReader();
+						while (true) {
+							const { done, value } = await reader.read();
+							if (done) break;
+							controller.enqueue(value);
+						}
+					} catch (error: any) {
+						console.error("Next stream error:", {
+							error_message: error instanceof Error ? error.message : "Unknown error",
+						});
+					}
+				}
+			}
+
+			emitEvent(controller, "state", {
+				state: StreamState.DONE,
+			});
+
+			emitDoneEvent(controller);
+		} catch (error) {
+			logger.error("Error in stream post-processing:", {
+				error_message: error instanceof Error ? error.message : "Unknown error",
+			});
+		}
+	}
+
 	return providerStream.pipeThrough(
 		new TransformStream({
 			async start(controller) {
@@ -266,6 +584,13 @@ export async function createStreamWithPostProcessing(
 							usage_limits: usageLimits,
 						});
 					}
+					emitEvent(controller, "message_start", {
+						id: completion_id,
+						created: Date.now(),
+						model,
+						provider: options.provider,
+						platform,
+					});
 					emitEvent(controller, "state", {
 						state: StreamState.THINKING,
 					});
@@ -317,12 +642,9 @@ export async function createStreamWithPostProcessing(
 
 						if (dataStr === "[DONE]") {
 							if (!streamFailed && !postProcessingDone) {
-								if (Object.keys(currentToolCalls).length > 0 && toolCallsData.length === 0) {
-									const completeToolCalls = Object.values(currentToolCalls);
-									toolCallsData = completeToolCalls;
-								}
+								finalizePendingToolCalls();
 
-								await handlePostProcessing();
+								await handlePostProcessing(controller);
 							}
 							continue;
 						}
@@ -564,10 +886,8 @@ export async function createStreamWithPostProcessing(
 							}
 
 							if (StreamingFormatter.isCompletionIndicated(data) && !postProcessingDone) {
-								if (Object.keys(currentToolCalls).length > 0 && toolCallsData.length === 0) {
-									toolCallsData = Object.values(currentToolCalls);
-								}
-								await handlePostProcessing();
+								finalizePendingToolCalls();
+								await handlePostProcessing(controller);
 							}
 						} catch (parseError) {
 							logger.error("Parse error on data", {
@@ -577,323 +897,14 @@ export async function createStreamWithPostProcessing(
 						}
 					}
 				}
-
-				async function handlePostProcessing() {
-					try {
-						if (postProcessingDone) {
-							return;
-						}
-
-						emitEvent(controller, "state", {
-							state: StreamState.POST_PROCESSING,
-						});
-						postProcessingDone = true;
-
-						const isProUser = user?.plan_id === "pro";
-
-						const memoriesEnabled =
-							userSettings?.memories_save_enabled || userSettings?.memories_chat_history_enabled;
-						const memoryAlreadyStoredByTool = hasToolCallNamed(
-							toolCallsData,
-							MEMORY_STORE_TOOL_NAME,
-						);
-						if (isProUser && memoriesEnabled && !memoryAlreadyStoredByTool) {
-							try {
-								const history = await conversationManager.get(completion_id);
-								const userHistory = history.filter((m) => m.role === "user");
-								const lastUserRaw = userHistory.length
-									? userHistory[userHistory.length - 1].content
-									: "";
-								const lastUserText =
-									typeof lastUserRaw === "string"
-										? lastUserRaw
-										: Array.isArray(lastUserRaw)
-											? lastUserRaw.find((b: any) => b.type === "text")?.text || ""
-											: "";
-
-								if (lastUserText.trim()) {
-									const memMgr = MemoryManager.getInstance(env, user, context);
-									const memEvents = await memMgr.handleMemory(
-										lastUserText,
-										history,
-										conversationManager,
-										completion_id,
-										userSettings,
-									);
-									for (const ev of memEvents) {
-										toolCallsData.push({
-											id: generateId(),
-											type: "function",
-											function: {
-												name: "memory",
-												arguments: JSON.stringify(ev),
-											},
-										});
-									}
-								}
-							} catch (error) {
-								logger.error("Failed to process memory for chat:", {
-									error,
-									completion_id,
-								});
-							}
-						}
-
-						let guardrailsFailed = false;
-						let guardrailError = "";
-						let guardrailViolations: any[] = [];
-
-						const fullContent = getFullContent();
-						if (fullContent) {
-							const outputValidation = await guardrails.validateOutput(
-								fullContent,
-								user?.id,
-								completion_id,
-							);
-
-							if (!outputValidation?.isValid) {
-								guardrailsFailed = true;
-								guardrailError = outputValidation.rawResponse || "Content failed validation checks";
-								guardrailViolations = outputValidation.violations || [];
-
-								logger.warn("Guardrails failed", {
-									outputValidation,
-									violations: guardrailViolations,
-								});
-							}
-						}
-
-						emitEvent(controller, "content_block_stop", {});
-
-						const logId = env.AI?.aiGatewayLogId;
-
-						const processedContent = preprocessQwQResponse(fullContent, model);
-						const councilTurn = extractCouncilTurnRouting(
-							processedContent,
-							options.requestOptions?.council,
-						);
-						const messageData = buildAssistantMessageData({
-							responseData: structuredData,
-							requestOptions: options.requestOptions,
-							councilRouting: councilTurn.routing,
-						});
-
-						const assistantMessage = formatAssistantMessage({
-							content: councilTurn.content,
-							thinking: getFullThinking(),
-							signature: signature,
-							citations: citationsResponse,
-							tool_calls: toolCallsData,
-							usage: usageData,
-							data: messageData,
-							guardrails: {
-								passed: !guardrailsFailed,
-								error: guardrailError,
-								violations: guardrailViolations,
-							},
-							log_id: logId,
-							model,
-							platform,
-							timestamp: Date.now(),
-							mode,
-							finish_reason: toolCallsData.length > 0 ? "tool_calls" : "stop",
-							refusal: refusalData,
-							annotations: annotationsData,
-						});
-
-						const derivedParts = buildMessageParts({
-							role: "assistant",
-							content: (assistantMessage.content as Message["content"]) || processedContent,
-							tool_calls: assistantMessage.tool_calls,
-							data: assistantMessage.data,
-							timestamp: assistantMessage.timestamp,
-						} as Message);
-
-						const messageParts = mergeMessageParts(streamedParts, derivedParts);
-
-						const contentForStorage =
-							typeof assistantMessage.content === "string" ||
-							Array.isArray(assistantMessage.content)
-								? assistantMessage.content
-								: "";
-
-						await conversationManager.add(completion_id, {
-							role: "assistant",
-							content: contentForStorage,
-							citations: assistantMessage.citations,
-							log_id: assistantMessage.log_id,
-							mode: assistantMessage.mode as ChatMode,
-							id: assistantMessage.id,
-							timestamp: assistantMessage.timestamp,
-							model: assistantMessage.model,
-							platform: assistantMessage.platform,
-							usage: assistantMessage.usage,
-							tool_calls: nonEmptyToolCallsOrNull(assistantMessage.tool_calls),
-							parts: messageParts,
-							data: assistantMessage.data || null,
-						});
-
-						emitEvent(controller, "message_delta", {
-							id: completion_id,
-							message_id: assistantMessage.id,
-							object: "chat.completion",
-							created: assistantMessage.timestamp,
-							model: assistantMessage.model,
-							nonce: generateId(),
-							post_processing: {
-								guardrails: assistantMessage.guardrails,
-							},
-							log_id: assistantMessage.log_id,
-							usage: assistantMessage.usage,
-							citations: assistantMessage.citations,
-							tool_calls: assistantMessage.tool_calls,
-							finish_reason: assistantMessage.finish_reason,
-							data: assistantMessage.data,
-							parts: messageParts,
-						});
-
-						emitEvent(controller, "message_stop", {});
-
-						let toolResults: Message[] = [];
-						if (toolCallsData.length > 0) {
-							for (const toolCall of toolCallsData) {
-								try {
-									emitToolEvents(controller, toolCall, ToolStage.START);
-								} catch (error) {
-									logger.error("Error emitting tool start event", {
-										error,
-										toolCall,
-									});
-								}
-								try {
-									emitToolEvents(
-										controller,
-										toolCall,
-										ToolStage.DELTA,
-										toolCall.function?.arguments || "{}",
-									);
-								} catch (error) {
-									logger.error("Error emitting tool delta event", {
-										error,
-										toolCall,
-									});
-								}
-								try {
-									emitToolEvents(controller, toolCall, ToolStage.STOP);
-								} catch (error) {
-									logger.error("Error emitting tool stop event", {
-										error,
-										toolCall,
-									});
-								}
-							}
-
-							emitEvent(controller, "tool_response_start", {
-								tool_calls: toolCallsData,
-							});
-
-							toolResults = await handleToolCalls(
-								completion_id,
-								{ response: fullContent || "", tool_calls: toolCallsData },
-								conversationManager,
-								{
-									env,
-									mode: options.mode,
-									request: {
-										completion_id,
-										input: fullContent || "",
-										model,
-										mode: options.mode,
-										date: new Date().toISOString().split("T")[0],
-										approved_tools: approved_tools,
-										options: options.requestOptions || {},
-										current_agent_id: options.current_agent_id,
-										delegation_stack: options.delegation_stack,
-										max_delegation_depth: options.max_delegation_depth,
-									},
-									app_url,
-									user: user?.id ? user : undefined,
-									context,
-								},
-								{
-									persistResults: "immediate",
-									onToolResult: (toolResult) => {
-										emitEvent(controller, "tool_response", {
-											tool_id: toolResult.id,
-											result: toolResult,
-										});
-									},
-								},
-							);
-
-							emitEvent(controller, "tool_response_end", {});
-						}
-
-						try {
-							const updatedUsageLimits = await conversationManager.getUsageLimits();
-							if (updatedUsageLimits) {
-								emitEvent(controller, "usage_limits", {
-									usage_limits: updatedUsageLimits,
-								});
-							}
-						} catch (error) {
-							logger.error("Failed to get updated usage limits:", {
-								error_message: error instanceof Error ? error.message : "Unknown error",
-							});
-						}
-
-						if (toolCallsData.length > 0 && max_steps && current_step < max_steps) {
-							const shouldContinue = shouldContinueAfterToolResults(toolCallsData, toolResults);
-
-							if (!shouldContinue) {
-								logger.warn(
-									"Tool execution did not complete successfully, stopping multi-step execution",
-									{
-										completion_id,
-										current_step,
-									},
-								);
-							} else {
-								try {
-									const history = await conversationManager.get(completion_id);
-									const nextStream = await getAIResponse({
-										...options,
-										messages: history,
-										tools,
-										enabled_tools,
-										stream: true,
-									});
-									const nextTransformed = await createStreamWithPostProcessing(
-										nextStream,
-										{ ...options, current_step: current_step + 1 },
-										conversationManager,
-									);
-
-									const reader = nextTransformed.getReader();
-									while (true) {
-										const { done, value } = await reader.read();
-										if (done) break;
-										controller.enqueue(value);
-									}
-								} catch (error: any) {
-									console.error("Next stream error:", {
-										error_message: error instanceof Error ? error.message : "Unknown error",
-									});
-								}
-							}
-						}
-
-						emitEvent(controller, "state", {
-							state: StreamState.DONE,
-						});
-
-						emitDoneEvent(controller);
-					} catch (error) {
-						logger.error("Error in stream post-processing:", {
-							error_message: error instanceof Error ? error.message : "Unknown error",
-						});
-					}
+			},
+			async flush(controller) {
+				if (streamFailed || postProcessingDone) {
+					return;
 				}
+
+				finalizePendingToolCalls();
+				await handlePostProcessing(controller);
 			},
 		}),
 	);

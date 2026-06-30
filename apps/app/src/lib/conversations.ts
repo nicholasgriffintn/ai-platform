@@ -5,6 +5,42 @@ export function createConversationId(): string {
 	return generateId();
 }
 
+type ConversationMessage = Conversation["messages"][number];
+
+function hasRenderableMessagePayload(message: ConversationMessage): boolean {
+	if (typeof message.content === "string" && message.content.trim()) {
+		return true;
+	}
+
+	if (Array.isArray(message.content) && message.content.length > 0) {
+		return true;
+	}
+
+	if (message.reasoning?.content?.trim()) {
+		return true;
+	}
+
+	if (Array.isArray(message.parts) && message.parts.length > 0) {
+		return true;
+	}
+
+	return false;
+}
+
+function hasCachedRenderablePayloadMissingFromFetched(
+	fetchedConversation: Conversation,
+	cachedConversation: Conversation,
+): boolean {
+	return cachedConversation.messages.some((cachedMessage, index) => {
+		const fetchedMessage = fetchedConversation.messages[index];
+		return (
+			cachedMessage.role === fetchedMessage?.role &&
+			hasRenderableMessagePayload(cachedMessage) &&
+			!hasRenderableMessagePayload(fetchedMessage)
+		);
+	});
+}
+
 export function preserveOptimisticMessages(
 	fetchedConversation: Conversation | null | undefined,
 	cachedConversation: Conversation | null | undefined,
@@ -16,7 +52,11 @@ export function preserveOptimisticMessages(
 	const fetchedMessageCount = fetchedConversation.messages?.length || 0;
 	const cachedMessageCount = cachedConversation.messages.length;
 
-	if (cachedMessageCount <= fetchedMessageCount) {
+	if (
+		cachedMessageCount < fetchedMessageCount ||
+		(cachedMessageCount === fetchedMessageCount &&
+			!hasCachedRenderablePayloadMissingFromFetched(fetchedConversation, cachedConversation))
+	) {
 		return fetchedConversation;
 	}
 

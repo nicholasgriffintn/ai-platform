@@ -9,7 +9,7 @@ import {
 	isRegionalModelEntrySelected,
 	type RegionalModelListEntry,
 } from "~/lib/model-region-variants";
-import { getModelDisplayName } from "~/lib/models";
+import { getModelDisplayName, isModelSelectableForAccount } from "~/lib/models";
 import { formatProviderLabel } from "~/lib/provider-display";
 import { cn } from "~/lib/utils";
 import type { ModelCatalogItem, ModelConfigItem } from "@assistant/schemas";
@@ -224,8 +224,7 @@ export function ModelsList({
 		const modelItem = modelEntry.model;
 		const selectedRegionModelId = getSelectedRegionalModelId(modelEntry, selectedId);
 		const selectedRegionModel = modelsById[selectedRegionModelId] || modelItem;
-		const disabledOption =
-			isDisabled || (!isPro && !modelItem.isFree && !modelItem.isByokEnabled) || disabled;
+		const disabledOption = isDisabled || !isModelSelectableForAccount(modelItem, isPro) || disabled;
 
 		return (
 			<ModelOption

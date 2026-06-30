@@ -116,9 +116,28 @@ export class UsageUpdateHandler implements TaskHandler {
 				});
 				return;
 			}
+			case "reset_daily_usage": {
+				const resetAt = this.getResetAt(payload.resetAt);
+				await repositories.users.resetDailyUsage(resetAt);
+				await repositories.anonymousUsers.resetDailyUsage(resetAt);
+				return;
+			}
 			default: {
 				logger.warn("Unknown usage update action", { payload });
 			}
 		}
+	}
+
+	private getResetAt(resetAt?: string): string {
+		if (!resetAt) {
+			return new Date().toISOString();
+		}
+
+		const parsedResetAt = Date.parse(resetAt);
+		if (!Number.isFinite(parsedResetAt)) {
+			throw new Error("Invalid usage reset timestamp");
+		}
+
+		return new Date(parsedResetAt).toISOString();
 	}
 }

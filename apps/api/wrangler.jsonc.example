@@ -136,7 +136,7 @@
 			},
   ],
 	"triggers": {
-		"crons": ["*/15 * * * *", "0 2 * * *", "0 3 * * *"],
+		"crons": ["*/15 * * * *", "0 0 * * *", "0 2 * * *", "0 3 * * *"],
 	},
 	"queues": {
 		"producers": [{ "binding": "TASK_QUEUE", "queue": "polychat-task-queue" }],

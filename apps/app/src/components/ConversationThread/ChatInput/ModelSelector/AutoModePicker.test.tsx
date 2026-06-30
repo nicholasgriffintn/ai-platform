@@ -40,6 +40,42 @@ describe("AutoModePicker", () => {
 		);
 	});
 
+	it("disables automatic modes with no candidates", () => {
+		const onSelectMode = vi.fn();
+
+		render(
+			<AutoModePicker
+				models={[makeModel("fast", { speed: 5, contextComplexity: 3 })]}
+				selectedMode="auto"
+				onSelectMode={onSelectMode}
+			/>,
+		);
+
+		const maxOption = screen.getByRole("option", { name: "Max automatic mode" });
+
+		expect(maxOption).toBeDisabled();
+		fireEvent.click(maxOption);
+		expect(onSelectMode).not.toHaveBeenCalledWith("max");
+	});
+
+	it("keeps automatic modes enabled when candidates exist", () => {
+		render(
+			<AutoModePicker
+				models={[
+					makeModel("max", {
+						contextComplexity: 5,
+						reliability: 5,
+						artificialAnalysis: { intelligenceIndex: 45 },
+					}),
+				]}
+				selectedMode="max"
+				onSelectMode={vi.fn()}
+			/>,
+		);
+
+		expect(screen.getByRole("option", { name: "Max automatic mode" })).not.toBeDisabled();
+	});
+
 	it("shows candidate counts from router metadata", () => {
 		render(
 			<AutoModePicker

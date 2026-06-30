@@ -141,6 +141,26 @@ describe("chat stream assembler", () => {
 		]);
 		expect(finalisedMessages.at(-1)?.content).toBe("Primary answer\n\nSecondary answer");
 	});
+
+	it("uses message_start metadata for the final assistant message", () => {
+		const { finalMessage } = collectUpdates([
+			{
+				type: "message_start",
+				message_id: "assistant-early",
+				created: 1000,
+				model: "router-selected-model",
+			},
+			{ type: "content_block_delta", content: "Started with metadata" },
+			{ type: "message_stop" },
+		]);
+
+		expect(finalMessage).toMatchObject({
+			id: "assistant-early",
+			created: 1000,
+			model: "router-selected-model",
+			content: "Started with metadata",
+		});
+	});
 });
 
 describe("parseChatStreamSseEvent", () => {
