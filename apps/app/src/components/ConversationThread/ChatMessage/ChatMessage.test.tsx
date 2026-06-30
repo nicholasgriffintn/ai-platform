@@ -176,4 +176,28 @@ describe("ChatMessage", () => {
 		expect(screen.getByText("Text · 26 B")).toBeInTheDocument();
 		expect(screen.getByText("Make this firmer")).toBeInTheDocument();
 	});
+
+	it("renders inline HTML artifacts as preview-only output", async () => {
+		render(
+			<ChatMessage
+				message={{
+					...assistantMessage,
+					content:
+						'Here is the interface:<artifact identifier="orbit-demo" type="text/html" title="Orbit demo" display="inline"><section><h1>Orbit demo</h1></section></artifact>',
+				}}
+			/>,
+		);
+
+		expect(
+			screen.getByRole("region", { name: "Inline artifact preview: Orbit demo" }),
+		).toBeInTheDocument();
+		expect(screen.getByText("Orbit demo")).toBeInTheDocument();
+		expect(await screen.findByTitle("Code Preview")).toBeInTheDocument();
+		expect(screen.queryByText(/Click here to open the code/i)).not.toBeInTheDocument();
+		expect(
+			screen
+				.getByRole("region", { name: "Inline artifact preview: Orbit demo" })
+				.querySelector("[data-inline-preview-viewport='true']"),
+		).toHaveClass("h-[75vh]");
+	});
 });

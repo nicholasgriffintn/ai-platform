@@ -387,6 +387,7 @@ export function getArtifactExample(
 	const guidance = [
 		"Use artifacts for deliverables the user may reuse or download later.",
 		'Downloadable documents should use type="text/markdown" so they open as editable document artifacts.',
+		'For custom HTML interfaces, visualisations, or interactive demos that should appear directly in chat, set display="inline" on a type="text/html" artifact; inline artifacts are preview-only and do not show the source code by default.',
 		"Reference each artifact in your main response so the user understands what it contains.",
 		"Reuse an existing artifact identifier when updating earlier work; choose a new one for fresh deliverables.",
 		"When a user message includes <artifact_selection>, treat it as selected context from an existing artifact; apply the requested change to that portion and reuse the referenced artifact identifier when returning an update.",
@@ -491,6 +492,7 @@ export function getArtifactInstructions(
 		return `${startIndex}. When using artifacts, keep them lightweight:
    - Reserve artifacts for deliverables the user may reuse or download.
    - Use type="text/markdown" for downloadable documents that should open as editable document artifacts.
+   - Use display="inline" on type="text/html" artifacts for custom HTML interfaces, visualisations, or interactive demos that should render as preview-only output in chat.
    - Summarise each artifact in your response so the user knows what's inside.
    - Reuse identifiers when updating earlier work to keep context linked.
    - When a user message includes <artifact_selection>, apply the requested change to that selected portion and reuse the referenced artifact identifier.
@@ -515,6 +517,10 @@ export function getArtifactInstructions(
       - Downloadable documents: use type="text/markdown" for reports, letters,
         plans, briefs, essays, emails, and other prose that should open as an
         editable document artifact.
+      - Inline previews: use display="inline" only on type="text/html" artifacts
+        for custom HTML interfaces, visualisations, or interactive demos that
+        should render directly in chat as preview-only output. Omit display or
+        use display="panel" when the user should inspect or copy source code.
    f. Only use one artifact per message unless specifically requested.
    g. If a user asks the assistant to "draw an SVG" or "make a website", the
       assistant should create the code for that and place it within an artifact.

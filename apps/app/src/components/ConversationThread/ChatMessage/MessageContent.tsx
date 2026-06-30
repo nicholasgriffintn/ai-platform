@@ -5,6 +5,7 @@ import { memo, useMemo } from "react";
 import { ImageModal } from "~/components/ui/ImageModal";
 import { MemoizedMarkdown } from "~/components/ui/Markdown";
 import { ResponseRenderer } from "~/components/Apps/ResponseRenderer";
+import { isInlinePreviewArtifact } from "~/lib/artifacts";
 import {
 	canCombineArtifacts,
 	processCustomXmlTags,
@@ -15,6 +16,7 @@ import { resolveRenderableToolResult } from "~/lib/tool-results";
 import type { Message, MessageContent as MessageContentType } from "~/types";
 import type { ArtifactProps } from "~/types/artifact";
 import { ArtifactCallout } from "../Artifacts/ArtifactCallout";
+import { ArtifactInlinePreview } from "../Artifacts/ArtifactInlinePreview";
 import { CitationList } from "./CitationList";
 import { ReasoningSection } from "./ReasoningSection";
 import { SearchGroundingSection } from "./SearchGroundingSection";
@@ -52,7 +54,7 @@ const renderTextContent = (
 	};
 
 	if (artifacts && artifacts.length > 0) {
-		const artifactMap = new Map();
+		const artifactMap = new Map<string, ArtifactProps>();
 		for (const artifact of artifacts) {
 			artifactMap.set(artifact.identifier, artifact);
 		}
@@ -74,18 +76,26 @@ const renderTextContent = (
 
 				if (artifact) {
 					renderedParts.push(
-						<ArtifactCallout
-							key={`artifact-${identifier}-${i}`}
-							identifier={artifact.identifier}
-							type={artifact.type}
-							language={artifact.language}
-							title={artifact.title}
-							content={artifact.content}
-							onOpen={onArtifactOpen}
-							isCombinable={isArtifactCombinable}
-							combinableCount={artifacts.length}
-							artifacts={artifacts}
-						/>,
+						isInlinePreviewArtifact(artifact) ? (
+							<ArtifactInlinePreview
+								key={`artifact-${identifier}-${i}`}
+								artifact={artifact}
+								artifacts={artifacts}
+							/>
+						) : (
+							<ArtifactCallout
+								key={`artifact-${identifier}-${i}`}
+								identifier={artifact.identifier}
+								type={artifact.type}
+								language={artifact.language}
+								title={artifact.title}
+								content={artifact.content}
+								onOpen={onArtifactOpen}
+								isCombinable={isArtifactCombinable}
+								combinableCount={artifacts.length}
+								artifacts={artifacts}
+							/>
+						),
 					);
 				} else {
 					console.warn(`No artifact found for identifier: ${identifier}`);
@@ -519,12 +529,32 @@ export const MessageContent = memo(({ message, onArtifactOpen }: MessageContentP
 													type: artifact?.type || "",
 													language: artifact?.language || "",
 													title: artifact?.title || "",
+													display: artifact?.display,
 													content: artifact?.content || "",
 												};
 											})
 									: [];
 
 								const isArtifactCombinable = canCombineArtifacts(artifacts);
+
+								const artifact: ArtifactProps = {
+									identifier: item.artifact.identifier,
+									type: item.artifact.type,
+									language: item.artifact.language,
+									title: item.artifact.title,
+									display: item.artifact.display,
+									content: item.artifact.content,
+								};
+
+								if (isInlinePreviewArtifact(artifact)) {
+									return (
+										<ArtifactInlinePreview
+											key={`artifact-item-${item.artifact.identifier}`}
+											artifact={artifact}
+											artifacts={artifacts}
+										/>
+									);
+								}
 
 								return (
 									<ArtifactCallout

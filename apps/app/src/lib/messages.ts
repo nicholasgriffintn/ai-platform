@@ -470,6 +470,7 @@ export const formattedMessageContent = (role: Message["role"], originalContent: 
 		type: string;
 		language: string;
 		title: string | undefined;
+		display: "panel" | "inline" | undefined;
 		content: string;
 		placeholder: string;
 		isOpen: boolean;
@@ -534,12 +535,18 @@ export const formattedMessageContent = (role: Message["role"], originalContent: 
 			const type = getAttributeValue("type") || "";
 			const language = getAttributeValue("language") || type || "text";
 			const title = getAttributeValue("title") || undefined;
+			const displayAttribute = getAttributeValue("display")?.toLowerCase();
+			const display =
+				displayAttribute === "inline" || displayAttribute === "panel"
+					? displayAttribute
+					: undefined;
 
 			artifacts.push({
 				identifier,
 				type,
 				language,
 				title,
+				display,
 				content: artifactContent,
 				placeholder: `[[ARTIFACT:${identifier}]]`,
 				isOpen: isOpen,

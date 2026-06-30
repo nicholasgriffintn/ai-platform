@@ -98,6 +98,7 @@ export interface MessageContent {
 		type: string;
 		language?: string;
 		title?: string;
+		display?: "panel" | "inline";
 		content: string;
 	};
 	thinking?: string;

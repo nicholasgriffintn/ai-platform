@@ -16,6 +16,8 @@ const DOCUMENT_TYPES = new Set([
 ]);
 
 const DOCUMENT_LANGUAGES = new Set(["markdown", "md", "plain", "text"]);
+const INLINE_PREVIEW_TYPES = new Set(["text/html", "application/vnd.html"]);
+const INLINE_PREVIEW_LANGUAGES = new Set(["html"]);
 
 const TYPE_EXTENSIONS: Record<string, string> = {
 	"application/json": "json",
@@ -61,6 +63,21 @@ export function isDocumentArtifact(artifact: Pick<ArtifactProps, "type" | "langu
 	}
 
 	return language ? DOCUMENT_LANGUAGES.has(language) : false;
+}
+
+export function isInlinePreviewArtifact(
+	artifact: Pick<ArtifactProps, "display" | "type" | "language">,
+): boolean {
+	if (artifact.display !== "inline") {
+		return false;
+	}
+
+	const type = artifact.type.toLowerCase();
+	const language = artifact.language?.toLowerCase();
+
+	return (
+		INLINE_PREVIEW_TYPES.has(type) || (language ? INLINE_PREVIEW_LANGUAGES.has(language) : false)
+	);
 }
 
 export function buildArtifactDownload(
@@ -140,6 +157,7 @@ function findArtifactInContent(
 				type: item.artifact.type,
 				language: item.artifact.language,
 				title: item.artifact.title,
+				display: item.artifact.display,
 				content: item.artifact.content,
 			};
 		}

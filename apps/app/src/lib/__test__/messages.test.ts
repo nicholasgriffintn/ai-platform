@@ -2,11 +2,12 @@ import { createChatCompletionsJsonSchema, messageSchema } from "@assistant/schem
 import { describe, expect, it } from "vitest";
 
 import type { Message } from "~/types";
+import { prepareUserMessage } from "../chat/prepare-user-message";
 import {
+	formattedMessageContent,
 	serialiseMessagesForChatRequest,
 	serialiseMessagesForConversationUpdate,
 } from "../messages";
-import { prepareUserMessage } from "../chat/prepare-user-message";
 
 describe("serialiseMessagesForChatRequest", () => {
 	it("removes reasoning-only content blocks from replayed assistant messages", () => {
@@ -328,5 +329,23 @@ describe("serialiseMessagesForConversationUpdate", () => {
 			tool_call_arguments: "{}",
 		});
 		expect(messageSchema.safeParse(requestMessages[0]).success).toBe(true);
+	});
+});
+
+describe("formattedMessageContent", () => {
+	it("preserves inline artifact display metadata", () => {
+		const result = formattedMessageContent(
+			"assistant",
+			'Here is the interface:<artifact identifier="orbit-demo" type="text/html" title="Orbit demo" display="inline"><div>Orbit</div></artifact>',
+		);
+
+		expect(result.content).toBe("Here is the interface:[[ARTIFACT:orbit-demo]]");
+		expect(result.artifacts[0]).toMatchObject({
+			identifier: "orbit-demo",
+			type: "text/html",
+			title: "Orbit demo",
+			display: "inline",
+			content: "<div>Orbit</div>",
+		});
 	});
 });

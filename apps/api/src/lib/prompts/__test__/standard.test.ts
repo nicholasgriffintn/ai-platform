@@ -222,6 +222,16 @@ describe("returnStandardPrompt", () => {
 			expect(result).toContain("Do not call tools or APIs to create artifacts");
 		});
 
+		it("should instruct models how to create inline HTML artifact previews", async () => {
+			// @ts-expect-error - mock implementation
+			const request: IBody = {};
+			const result = await returnStandardPrompt(request, undefined, undefined, false, true);
+
+			expect(result).toContain('display="inline"');
+			expect(result).toContain("custom HTML interfaces");
+			expect(result).toContain("preview-only");
+		});
+
 		it("should not include example output for agent mode when reasoning is supported", async () => {
 			// @ts-expect-error - mock implementation
 			const request: IBody = { mode: "agent" };
