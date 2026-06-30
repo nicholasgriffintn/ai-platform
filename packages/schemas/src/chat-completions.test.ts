@@ -60,6 +60,7 @@ describe("chat completions schema", () => {
 	it("accepts artifact selection message content parts", () => {
 		expect(
 			createChatCompletionsJsonSchema.parse({
+				model: "gpt-5",
 				messages: [
 					{
 						role: "user",
