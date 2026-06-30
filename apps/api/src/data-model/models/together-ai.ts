@@ -15,7 +15,6 @@ export const togetherAiModelConfig: ModelConfig = {
 		contextComplexity: 4,
 		reliability: 4,
 		speed: 4,
-		includedInRouter: true,
 		modalities: {
 			input: ["text"],
 			output: ["text"],
@@ -42,7 +41,6 @@ export const togetherAiModelConfig: ModelConfig = {
 		contextComplexity: 4,
 		reliability: 3,
 		speed: 3,
-		includedInRouter: true,
 		modalities: {
 			input: ["text"],
 			output: ["text"],
@@ -63,7 +61,6 @@ export const togetherAiModelConfig: ModelConfig = {
 		contextComplexity: 4,
 		reliability: 4,
 		speed: 4,
-		includedInRouter: true,
 		modalities: {
 			input: ["text", "image"],
 			output: ["text"],
@@ -103,7 +100,6 @@ export const togetherAiModelConfig: ModelConfig = {
 		contextComplexity: 3,
 		reliability: 3,
 		speed: 3,
-		includedInRouter: true,
 		modalities: {
 			input: ["text", "image"],
 			output: ["text"],
@@ -124,7 +120,6 @@ export const togetherAiModelConfig: ModelConfig = {
 		reliability: 5,
 		speed: 4,
 		isFeatured: false,
-		includedInRouter: true,
 		modalities: {
 			input: ["text", "image"],
 			output: ["text"],
@@ -143,7 +138,6 @@ export const togetherAiModelConfig: ModelConfig = {
 		contextComplexity: 4,
 		reliability: 3,
 		speed: 3,
-		includedInRouter: true,
 		modalities: {
 			input: ["text"],
 			output: ["text"],
@@ -162,7 +156,6 @@ export const togetherAiModelConfig: ModelConfig = {
 		contextWindow: 1000000,
 		maxTokens: 16384,
 		isFeatured: false,
-		includedInRouter: true,
 		multimodal: true,
 		modalities: {
 			input: ["text"],

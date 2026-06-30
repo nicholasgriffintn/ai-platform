@@ -25,7 +25,6 @@ export const githubModelsConfig: ModelConfig = {
 		contextComplexity: 4,
 		reliability: 4,
 		speed: 4,
-		includedInRouter: false,
 		supportsArtifacts: true,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
@@ -58,7 +57,6 @@ export const githubModelsConfig: ModelConfig = {
 		contextComplexity: 4,
 		reliability: 4,
 		speed: 3,
-		includedInRouter: false,
 		supportsArtifacts: true,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
@@ -92,7 +90,6 @@ export const githubModelsConfig: ModelConfig = {
 		reliability: 1,
 		speed: 3,
 		multimodal: true,
-		includedInRouter: false,
 		supportsArtifacts: true,
 		artificialAnalysis: {
 			intelligenceIndex: 16.3,
@@ -129,7 +126,6 @@ export const githubModelsConfig: ModelConfig = {
 		reliability: 1,
 		speed: 3,
 		multimodal: true,
-		includedInRouter: false,
 		supportsArtifacts: true,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
@@ -168,7 +164,6 @@ export const githubModelsConfig: ModelConfig = {
 		contextComplexity: 4,
 		reliability: 1,
 		speed: 4,
-		includedInRouter: false,
 		supportsArtifacts: true,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
@@ -208,7 +203,6 @@ export const githubModelsConfig: ModelConfig = {
 		reliability: 1,
 		speed: 3,
 		multimodal: true,
-		includedInRouter: false,
 		supportsArtifacts: true,
 		artificialAnalysis: {
 			intelligenceIndex: 6.9,
@@ -244,7 +238,6 @@ export const githubModelsConfig: ModelConfig = {
 		reliability: 1,
 		speed: 4,
 		multimodal: true,
-		includedInRouter: false,
 		supportsArtifacts: true,
 		artificialAnalysis: {
 			intelligenceIndex: 9.6,
@@ -279,7 +272,6 @@ export const githubModelsConfig: ModelConfig = {
 		contextComplexity: 4,
 		reliability: 1,
 		speed: 4,
-		includedInRouter: false,
 		supportsArtifacts: true,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
@@ -320,7 +312,6 @@ export const githubModelsConfig: ModelConfig = {
 		reliability: 2,
 		speed: 3,
 		multimodal: true,
-		includedInRouter: false,
 		supportsArtifacts: true,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
@@ -360,7 +351,6 @@ export const githubModelsConfig: ModelConfig = {
 		contextComplexity: 2,
 		reliability: 1,
 		speed: 2,
-		includedInRouter: false,
 		supportsArtifacts: true,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
@@ -400,7 +390,6 @@ export const githubModelsConfig: ModelConfig = {
 		reliability: 1,
 		speed: 2,
 		multimodal: true,
-		includedInRouter: false,
 		supportsArtifacts: true,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
@@ -439,7 +428,6 @@ export const githubModelsConfig: ModelConfig = {
 		contextComplexity: 5,
 		reliability: 4,
 		speed: 3,
-		includedInRouter: false,
 		supportsArtifacts: true,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
@@ -473,7 +461,6 @@ export const githubModelsConfig: ModelConfig = {
 		reliability: 4,
 		speed: 4,
 		multimodal: true,
-		includedInRouter: false,
 		supportsArtifacts: true,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
@@ -507,7 +494,6 @@ export const githubModelsConfig: ModelConfig = {
 		reliability: 4,
 		speed: 3,
 		multimodal: true,
-		includedInRouter: false,
 		supportsArtifacts: true,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
@@ -540,7 +526,6 @@ export const githubModelsConfig: ModelConfig = {
 		contextComplexity: 5,
 		reliability: 5,
 		speed: 1,
-		includedInRouter: false,
 		supportsArtifacts: true,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
@@ -573,7 +558,6 @@ export const githubModelsConfig: ModelConfig = {
 		contextComplexity: 3,
 		reliability: 1,
 		speed: 3,
-		includedInRouter: false,
 		supportsArtifacts: true,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
@@ -612,7 +596,6 @@ export const githubModelsConfig: ModelConfig = {
 		contextComplexity: 4,
 		reliability: 4,
 		speed: 3,
-		includedInRouter: false,
 		supportsArtifacts: true,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
@@ -645,7 +628,6 @@ export const githubModelsConfig: ModelConfig = {
 		contextComplexity: 4,
 		reliability: 4,
 		speed: 3,
-		includedInRouter: false,
 		supportsArtifacts: true,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
@@ -678,7 +660,6 @@ export const githubModelsConfig: ModelConfig = {
 		contextComplexity: 3,
 		reliability: 1,
 		speed: 3,
-		includedInRouter: false,
 		supportsArtifacts: true,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
@@ -718,7 +699,6 @@ export const githubModelsConfig: ModelConfig = {
 		contextComplexity: 3,
 		reliability: 4,
 		speed: 4,
-		includedInRouter: false,
 		supportsArtifacts: true,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
@@ -751,7 +731,6 @@ export const githubModelsConfig: ModelConfig = {
 		contextComplexity: 3,
 		reliability: 4,
 		speed: 3,
-		includedInRouter: false,
 		supportsArtifacts: true,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
@@ -784,7 +763,6 @@ export const githubModelsConfig: ModelConfig = {
 		contextComplexity: 4,
 		reliability: 4,
 		speed: 2,
-		includedInRouter: false,
 		supportsArtifacts: true,
 		family: "command-r",
 		openWeights: false,

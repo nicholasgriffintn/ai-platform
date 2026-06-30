@@ -85,7 +85,6 @@ const mockModelConfig: ModelConfigItem = {
 	reliability: 4,
 	speed: 3,
 	multimodal: false,
-	includedInRouter: true,
 	isFeatured: false,
 	supportsResponseFormat: true,
 	supportsArtifacts: true,
@@ -422,15 +421,17 @@ describe("Models", () => {
 	});
 
 	describe("getIncludedInRouterModels", () => {
-		it("should return only router-included models", () => {
+		it("should return only non-deprecated models with router scores", () => {
 			const result = getIncludedInRouterModels();
 
 			expect(result).toBeDefined();
 			expect(typeof result).toBe("object");
 
 			for (const [_key, model] of Object.entries(result)) {
-				expect(model.includedInRouter).toBe(true);
 				expect(model.deprecated).not.toBe(true);
+				expect(model.contextComplexity).toBeDefined();
+				expect(model.reliability).toBeDefined();
+				expect(model.speed).toBeDefined();
 			}
 		});
 

@@ -26,7 +26,6 @@ export const v0ModelConfig: ModelConfig = {
 		speed: 4,
 		multimodal: true,
 		isFeatured: false,
-		includedInRouter: false,
 		supportsArtifacts: true,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
@@ -61,7 +60,6 @@ export const v0ModelConfig: ModelConfig = {
 		speed: 4,
 		multimodal: true,
 		isFeatured: false,
-		includedInRouter: false,
 		supportsArtifacts: true,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
@@ -96,7 +94,6 @@ export const v0ModelConfig: ModelConfig = {
 		speed: 3,
 		multimodal: true,
 		isFeatured: false,
-		includedInRouter: false,
 		supportsArtifacts: true,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],

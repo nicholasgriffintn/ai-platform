@@ -28,8 +28,31 @@ function modelName(model: ModelConfigItem) {
 	return model.name || model.matchingModel;
 }
 
+function hasRequiredRouterScores(model: ModelConfigItem) {
+	return (
+		typeof model.contextComplexity === "number" &&
+		typeof model.reliability === "number" &&
+		typeof model.speed === "number"
+	);
+}
+
+function isOpenRouterFreeModel(model: ModelConfigItem) {
+	if (model.provider !== "openrouter") {
+		return false;
+	}
+
+	return (
+		Boolean(model.isFree) || model.matchingModel.endsWith(":free") || model.id?.endsWith(":free")
+	);
+}
+
 export function isActiveRouterModel(model: ModelConfigItem) {
-	return Boolean(model.includedInRouter) && !model.deprecated;
+	return (
+		!model.deprecated &&
+		model.status !== "alpha" &&
+		!isOpenRouterFreeModel(model) &&
+		hasRequiredRouterScores(model)
+	);
 }
 
 export function doesModelMatchRouterMode(model: ModelConfigItem, mode: ModelRouterMode) {

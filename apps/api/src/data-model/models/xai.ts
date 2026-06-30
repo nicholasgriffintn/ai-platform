@@ -23,7 +23,6 @@ export const xaiModelConfig: ModelConfig = {
 		contextComplexity: 3,
 		reliability: 4,
 		speed: 5,
-		includedInRouter: true,
 		supportsArtifacts: true,
 		costPer1kReasoningTokens: 0.004,
 	},
@@ -51,7 +50,6 @@ export const xaiModelConfig: ModelConfig = {
 		reliability: 4,
 		speed: 4,
 		multimodal: true,
-		includedInRouter: true,
 		supportsArtifacts: true,
 	},
 
@@ -77,7 +75,6 @@ export const xaiModelConfig: ModelConfig = {
 		contextComplexity: 4,
 		reliability: 4,
 		speed: 3,
-		includedInRouter: true,
 		supportsArtifacts: true,
 	},
 
@@ -106,7 +103,6 @@ export const xaiModelConfig: ModelConfig = {
 		reliability: 4,
 		speed: 4,
 		isFeatured: false,
-		includedInRouter: true,
 		supportsArtifacts: true,
 		costPer1kReasoningTokens: 0.0005,
 	},
@@ -133,7 +129,6 @@ export const xaiModelConfig: ModelConfig = {
 		contextComplexity: 4,
 		reliability: 4,
 		speed: 5,
-		includedInRouter: false,
 		supportsArtifacts: true,
 	},
 
@@ -162,7 +157,6 @@ export const xaiModelConfig: ModelConfig = {
 		reliability: 1,
 		speed: 3,
 		isFeatured: false,
-		includedInRouter: true,
 		supportsArtifacts: true,
 		artificialAnalysis: {
 			intelligenceIndex: 18.4,
@@ -194,7 +188,6 @@ export const xaiModelConfig: ModelConfig = {
 		contextComplexity: 3,
 		reliability: 4,
 		speed: 4,
-		includedInRouter: true,
 		supportsArtifacts: true,
 		costPer1kReasoningTokens: 0.0005,
 	},
@@ -221,7 +214,6 @@ export const xaiModelConfig: ModelConfig = {
 		contextComplexity: 3,
 		reliability: 4,
 		speed: 5,
-		includedInRouter: true,
 		supportsArtifacts: true,
 		costPer1kReasoningTokens: 0.004,
 	},
@@ -248,7 +240,6 @@ export const xaiModelConfig: ModelConfig = {
 		contextComplexity: 4,
 		reliability: 4,
 		speed: 3,
-		includedInRouter: true,
 		supportsArtifacts: true,
 	},
 
@@ -277,7 +268,6 @@ export const xaiModelConfig: ModelConfig = {
 		reliability: 1,
 		speed: 2,
 		isFeatured: false,
-		includedInRouter: false,
 		supportsArtifacts: true,
 		supportsRepetitionPenalty: false,
 		supportsFrequencyPenalty: false,
@@ -314,7 +304,6 @@ export const xaiModelConfig: ModelConfig = {
 		reliability: 3,
 		speed: 3,
 		multimodal: true,
-		includedInRouter: false,
 		supportsArtifacts: true,
 	},
 
@@ -340,7 +329,6 @@ export const xaiModelConfig: ModelConfig = {
 		contextComplexity: 3,
 		reliability: 1,
 		speed: 3,
-		includedInRouter: true,
 		supportsArtifacts: true,
 		artificialAnalysis: {
 			intelligenceIndex: null,
@@ -382,7 +370,6 @@ export const xaiModelConfig: ModelConfig = {
 		contextComplexity: 4,
 		reliability: 4,
 		speed: 5,
-		includedInRouter: false,
 		supportsArtifacts: true,
 	},
 	"grok-2-1212": {

@@ -13,17 +13,19 @@ const makeModel = (id: string, overrides: Partial<ModelConfigItem> = {}): ModelC
 	matchingModel: id,
 	provider: "test",
 	modalities: { input: ["text"], output: ["text"] },
-	includedInRouter: true,
+	contextComplexity: 3,
+	reliability: 4,
+	speed: 3,
 	...overrides,
 });
 
 describe("auto router modes", () => {
 	it("keeps auto as the full active router pool", () => {
 		expect(doesModelMatchAutoRouterMode(makeModel("active"), "auto")).toBe(true);
-		expect(
-			doesModelMatchAutoRouterMode(makeModel("manual", { includedInRouter: false }), "auto"),
-		).toBe(false);
 		expect(doesModelMatchAutoRouterMode(makeModel("legacy", { deprecated: true }), "auto")).toBe(
+			false,
+		);
+		expect(doesModelMatchAutoRouterMode(makeModel("unscored", { speed: undefined }), "auto")).toBe(
 			false,
 		);
 	});

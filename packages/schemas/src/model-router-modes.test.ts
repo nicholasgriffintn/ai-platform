@@ -14,7 +14,9 @@ const makeModel = (id: string, overrides: Partial<ModelConfigItem> = {}): ModelC
 	matchingModel: id,
 	provider: "test",
 	modalities: { input: ["text"], output: ["text"] },
-	includedInRouter: true,
+	contextComplexity: 3,
+	reliability: 4,
+	speed: 3,
 	...overrides,
 });
 
@@ -25,8 +27,27 @@ describe("model router modes", () => {
 
 	it("identifies active router models for display counts", () => {
 		expect(isActiveRouterModel(makeModel("active"))).toBe(true);
-		expect(isActiveRouterModel(makeModel("manual", { includedInRouter: false }))).toBe(false);
+		expect(isActiveRouterModel(makeModel("free", { isFree: true }))).toBe(true);
 		expect(isActiveRouterModel(makeModel("legacy", { deprecated: true }))).toBe(false);
+		expect(isActiveRouterModel(makeModel("preview", { status: "alpha" }))).toBe(false);
+		expect(
+			isActiveRouterModel(makeModel("openrouter/free", { provider: "openrouter", isFree: true })),
+		).toBe(false);
+		expect(
+			isActiveRouterModel(
+				makeModel("openrouter/free-suffix", {
+					provider: "openrouter",
+					matchingModel: "deepseek/deepseek-r1:free",
+				}),
+			),
+		).toBe(false);
+		expect(isActiveRouterModel(makeModel("missing-speed", { speed: undefined }))).toBe(false);
+		expect(isActiveRouterModel(makeModel("missing-reliability", { reliability: undefined }))).toBe(
+			false,
+		);
+		expect(
+			isActiveRouterModel(makeModel("missing-complexity", { contextComplexity: undefined })),
+		).toBe(false);
 	});
 
 	it("matches lite to fast low-cost models", () => {

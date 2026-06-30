@@ -30,7 +30,6 @@ export const novaModelConfig: ModelConfig = createModelConfigObject([
 		contextComplexity: 4,
 		reliability: 4,
 		speed: 4,
-		includedInRouter: true,
 		supportsDocuments: true,
 		supportsArtifacts: true,
 		reasoningConfig: NOVA_2_REASONING_CONFIG,
@@ -59,7 +58,6 @@ export const novaModelConfig: ModelConfig = createModelConfigObject([
 		contextComplexity: 5,
 		reliability: 4,
 		speed: 3,
-		includedInRouter: true,
 		supportsDocuments: true,
 		supportsArtifacts: true,
 		reasoningConfig: NOVA_2_REASONING_CONFIG,
@@ -101,7 +99,6 @@ export const novaModelConfig: ModelConfig = createModelConfigObject([
 		contextComplexity: 3,
 		reliability: 1,
 		speed: 4,
-		includedInRouter: false,
 		artificialAnalysis: {
 			intelligenceIndex: 4.7,
 			codingIndex: null,
@@ -130,7 +127,6 @@ export const novaModelConfig: ModelConfig = createModelConfigObject([
 		contextComplexity: 4,
 		reliability: 1,
 		speed: 4,
-		includedInRouter: false,
 		artificialAnalysis: {
 			intelligenceIndex: 6.9,
 			codingIndex: null,
@@ -159,7 +155,6 @@ export const novaModelConfig: ModelConfig = createModelConfigObject([
 		contextComplexity: 4,
 		reliability: 1,
 		speed: 3,
-		includedInRouter: false,
 		artificialAnalysis: {
 			intelligenceIndex: 7.7,
 			codingIndex: null,
@@ -209,7 +204,6 @@ export const novaModelConfig: ModelConfig = createModelConfigObject([
 		contextComplexity: 4,
 		reliability: 1,
 		speed: 2,
-		includedInRouter: false,
 		artificialAnalysis: {
 			intelligenceIndex: 12.7,
 			codingIndex: null,

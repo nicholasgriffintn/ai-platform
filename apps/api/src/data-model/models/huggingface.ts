@@ -23,7 +23,6 @@ export const huggingfaceModelConfig: ModelConfig = {
 		contextComplexity: 2,
 		reliability: 1,
 		speed: 3,
-		includedInRouter: false,
 		supportsArtifacts: true,
 		artificialAnalysis: {
 			intelligenceIndex: 15.7,
@@ -54,7 +53,6 @@ export const huggingfaceModelConfig: ModelConfig = {
 		contextComplexity: 5,
 		reliability: 4,
 		speed: 3,
-		includedInRouter: false,
 		supportsArtifacts: true,
 		family: "kimi-k2",
 		openWeights: true,
@@ -81,7 +79,6 @@ export const huggingfaceModelConfig: ModelConfig = {
 		contextComplexity: 4,
 		reliability: 1,
 		speed: 3,
-		includedInRouter: false,
 		supportsArtifacts: true,
 		artificialAnalysis: {
 			intelligenceIndex: 18,
@@ -114,7 +111,6 @@ export const huggingfaceModelConfig: ModelConfig = {
 		contextComplexity: 5,
 		reliability: 4,
 		speed: 2,
-		includedInRouter: false,
 		supportsArtifacts: true,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
@@ -145,7 +141,6 @@ export const huggingfaceModelConfig: ModelConfig = {
 		contextComplexity: 4,
 		reliability: 1,
 		speed: 3,
-		includedInRouter: false,
 		supportsArtifacts: true,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
@@ -182,7 +177,6 @@ export const huggingfaceModelConfig: ModelConfig = {
 		contextComplexity: 4,
 		reliability: 1,
 		speed: 3,
-		includedInRouter: false,
 		supportsArtifacts: true,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],

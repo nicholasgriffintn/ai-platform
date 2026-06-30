@@ -541,7 +541,6 @@ export const workersAiModelConfig: ModelConfig = {
 		contextComplexity: 4,
 		reliability: 4,
 		speed: 4,
-		includedInRouter: true,
 		supportsResponseFormat: true,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
@@ -556,7 +555,6 @@ export const workersAiModelConfig: ModelConfig = {
 		description:
 			"QwQ is the reasoning model of the Qwen series. Compared with conventional instruction-tuned models, QwQ, which is capable of thinking and reasoning, can achieve significantly enhanced performance in downstream tasks, especially hard problems.",
 		provider: "workers-ai",
-		includedInRouter: false,
 		strengths: ["reasoning", "math", "analysis"],
 		speed: 2,
 		reliability: 1,
@@ -595,7 +593,6 @@ export const workersAiModelConfig: ModelConfig = {
 		description:
 			"Qwen2.5-Coder is the latest series of Code-Specific Qwen large language models. As of now, Qwen2.5-Coder has covered six mainstream model sizes, 0.5, 1.5, 3, 7, 14, 32 billion parameters, to meet the needs of different developers.",
 		provider: "workers-ai",
-		includedInRouter: false,
 		strengths: ["coding"],
 		speed: 3,
 		reliability: 1,
@@ -1063,7 +1060,6 @@ export const workersAiModelConfig: ModelConfig = {
 		contextComplexity: 4,
 		reliability: 1,
 		speed: 4,
-		includedInRouter: true,
 		supportsArtifacts: true,
 		supportsResponseFormat: true,
 		reasoningConfig: {
@@ -1101,7 +1097,6 @@ export const workersAiModelConfig: ModelConfig = {
 		contextComplexity: 3,
 		reliability: 1,
 		speed: 5,
-		includedInRouter: true,
 		supportsArtifacts: true,
 		supportsResponseFormat: true,
 		reasoningConfig: {
@@ -1139,7 +1134,6 @@ export const workersAiModelConfig: ModelConfig = {
 		contextComplexity: 3,
 		reliability: 1,
 		speed: 5,
-		includedInRouter: true,
 		supportsArtifacts: true,
 		supportsResponseFormat: true,
 		reasoningConfig: {
@@ -1243,7 +1237,6 @@ export const workersAiModelConfig: ModelConfig = {
 		contextComplexity: 4,
 		reliability: 2,
 		speed: 3,
-		includedInRouter: true,
 		supportsArtifacts: true,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],

@@ -137,7 +137,6 @@ export const modelConfigItemSchema = z.object({
 	reliability: modelRankingSchema.optional(),
 	speed: modelRankingSchema.optional(),
 	multimodal: z.boolean().optional(),
-	includedInRouter: z.boolean().optional(),
 	isFeatured: z.boolean().optional(),
 	isByokEnabled: z.boolean().optional(),
 	hiddenFromDefaultList: z.boolean().optional(),

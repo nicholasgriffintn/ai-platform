@@ -20,7 +20,6 @@ export const exaModelConfig: ModelConfig = createModelConfigObject([
 		contextComplexity: 3,
 		reliability: 4,
 		speed: 4,
-		includedInRouter: true,
 		supportsArtifacts: true,
 	}),
 	createModelConfig("exa-research", PROVIDER, {
@@ -39,7 +38,6 @@ export const exaModelConfig: ModelConfig = createModelConfigObject([
 		contextComplexity: 4,
 		reliability: 4,
 		speed: 4,
-		includedInRouter: true,
 		supportsArtifacts: true,
 	}),
 	createModelConfig("exa-research-pro", PROVIDER, {
@@ -58,7 +56,6 @@ export const exaModelConfig: ModelConfig = createModelConfigObject([
 		contextComplexity: 5,
 		reliability: 4,
 		speed: 3,
-		includedInRouter: true,
 		supportsArtifacts: true,
 	}),
 ]);

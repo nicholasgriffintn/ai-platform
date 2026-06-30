@@ -24,7 +24,6 @@ export const fireworksModelConfig: ModelConfig = {
 		contextComplexity: 3,
 		reliability: 1,
 		speed: 5,
-		includedInRouter: true,
 		supportsArtifacts: true,
 		artificialAnalysis: {
 			intelligenceIndex: 23.8,
@@ -57,7 +56,6 @@ export const fireworksModelConfig: ModelConfig = {
 		contextComplexity: 3,
 		reliability: 1,
 		speed: 5,
-		includedInRouter: true,
 		supportsArtifacts: true,
 		artificialAnalysis: {
 			intelligenceIndex: 14.9,
@@ -91,7 +89,6 @@ export const fireworksModelConfig: ModelConfig = {
 		contextComplexity: 3,
 		reliability: 1,
 		speed: 3,
-		includedInRouter: false,
 		supportsArtifacts: true,
 		artificialAnalysis: {
 			intelligenceIndex: 12.6,
@@ -125,7 +122,6 @@ export const fireworksModelConfig: ModelConfig = {
 		contextComplexity: 3,
 		reliability: 1,
 		speed: 3,
-		includedInRouter: false,
 		supportsArtifacts: true,
 		artificialAnalysis: {
 			intelligenceIndex: 10.9,
@@ -159,7 +155,6 @@ export const fireworksModelConfig: ModelConfig = {
 		contextComplexity: 3,
 		reliability: 1,
 		speed: 3,
-		includedInRouter: false,
 		supportsArtifacts: true,
 		artificialAnalysis: {
 			intelligenceIndex: 15.7,
@@ -193,7 +188,6 @@ export const fireworksModelConfig: ModelConfig = {
 		contextComplexity: 4,
 		reliability: 4,
 		speed: 3,
-		includedInRouter: false,
 		supportsArtifacts: true,
 	},
 	"accounts/fireworks/models/deepseek-v3p1": {

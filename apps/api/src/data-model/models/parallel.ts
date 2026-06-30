@@ -9,7 +9,6 @@ export const parallelModelConfig: ModelConfig = {
 		provider: "parallel",
 		strengths: ["research", "search", "analysis"],
 		isFeatured: false,
-		includedInRouter: false,
 		supportsArtifacts: false,
 		isFree: false,
 		modalities: {

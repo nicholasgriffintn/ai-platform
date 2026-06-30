@@ -27,7 +27,6 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 		contextComplexity: 3,
 		reliability: 1,
 		speed: 2,
-		includedInRouter: true,
 		supportsArtifacts: true,
 		artificialAnalysis: {
 			intelligenceIndex: 19.4,
@@ -60,7 +59,6 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 		contextComplexity: 5,
 		reliability: 4,
 		speed: 5,
-		includedInRouter: true,
 		supportsArtifacts: true,
 		family: "qwen",
 		openWeights: true,
@@ -90,7 +88,6 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 		reliability: 1,
 		speed: 3,
 		isFeatured: false,
-		includedInRouter: true,
 		supportsArtifacts: true,
 		artificialAnalysis: {
 			intelligenceIndex: 18,

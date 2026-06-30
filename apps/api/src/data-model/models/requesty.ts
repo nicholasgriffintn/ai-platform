@@ -29,7 +29,6 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 		speed: 3,
 		multimodal: true,
 		isFeatured: false,
-		includedInRouter: true,
 		supportsArtifacts: true,
 		artificialAnalysis: {
 			intelligenceIndex: 16.3,
@@ -67,7 +66,6 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 		speed: 3,
 		multimodal: true,
 		isFeatured: false,
-		includedInRouter: true,
 		supportsArtifacts: true,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
@@ -108,7 +106,6 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 		speed: 3,
 		multimodal: true,
 		isFeatured: false,
-		includedInRouter: true,
 		supportsArtifacts: true,
 		artificialAnalysis: {
 			intelligenceIndex: 6.9,
@@ -145,7 +142,6 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 		speed: 4,
 		multimodal: true,
 		isFeatured: false,
-		includedInRouter: true,
 		supportsArtifacts: true,
 		artificialAnalysis: {
 			intelligenceIndex: 19.4,
@@ -182,7 +178,6 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 		speed: 3,
 		multimodal: true,
 		isFeatured: false,
-		includedInRouter: true,
 		supportsArtifacts: true,
 	}),
 
@@ -211,7 +206,6 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 		speed: 3,
 		multimodal: true,
 		isFeatured: false,
-		includedInRouter: true,
 		supportsArtifacts: true,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
@@ -251,7 +245,6 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 		speed: 2,
 		multimodal: true,
 		isFeatured: false,
-		includedInRouter: true,
 		supportsArtifacts: true,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
@@ -296,7 +289,6 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 		speed: 5,
 		multimodal: true,
 		isFeatured: false,
-		includedInRouter: true,
 		supportsArtifacts: true,
 		supportsAudio: true,
 		reasoningConfig: {
@@ -357,7 +349,6 @@ export const requestyModelConfig: ModelConfig = createModelConfigObject([
 		speed: 3,
 		multimodal: true,
 		isFeatured: false,
-		includedInRouter: true,
 		supportsArtifacts: true,
 		supportsAudio: true,
 		reasoningConfig: {

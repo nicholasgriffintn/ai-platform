@@ -23,7 +23,6 @@ export const upstageModelConfig: ModelConfig = createModelConfigObject([
 		contextComplexity: 2,
 		reliability: 1,
 		speed: 5,
-		includedInRouter: true,
 		supportsArtifacts: true,
 		artificialAnalysis: {
 			intelligenceIndex: 6.2,
@@ -54,7 +53,6 @@ export const upstageModelConfig: ModelConfig = createModelConfigObject([
 		contextComplexity: 4,
 		reliability: 4,
 		speed: 4,
-		includedInRouter: true,
 		supportsArtifacts: true,
 		isFeatured: false,
 		reasoningConfig: {

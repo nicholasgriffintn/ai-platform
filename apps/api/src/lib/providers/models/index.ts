@@ -6,6 +6,7 @@ import type {
 	ModelModalities,
 	ModelModality,
 } from "@assistant/schemas";
+import { isActiveRouterModel } from "@assistant/schemas";
 import type { IEnv, IUser, IUserSettings, ResearchProviderName, SearchProviderName } from "~/types";
 import { getLogger } from "~/utils/logger";
 import { anthropicModelConfig } from "~/data-model/models/anthropic";
@@ -421,7 +422,7 @@ export function getIncludedInRouterModels(
 
 	cachedRouterModels = Object.entries(modelConfig).reduce(
 		(acc, [key, model]) => {
-			if (model.includedInRouter && !model.deprecated) {
+			if (isActiveRouterModel(model)) {
 				acc[key] = model;
 			}
 			return acc;

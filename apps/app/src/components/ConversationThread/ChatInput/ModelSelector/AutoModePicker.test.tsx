@@ -10,7 +10,9 @@ const makeModel = (id: string, overrides: Partial<ModelConfigItem> = {}): ModelC
 	matchingModel: id,
 	provider: "test",
 	modalities: { input: ["text"], output: ["text"] },
-	includedInRouter: true,
+	contextComplexity: 3,
+	reliability: 4,
+	speed: 3,
 	...overrides,
 });
 

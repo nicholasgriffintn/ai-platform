@@ -132,7 +132,6 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		speed: 3,
 		multimodal: true,
 		isFeatured: false,
-		includedInRouter: false,
 		timeout: 1000000,
 		supportsTopP: false,
 		supportsToolCalls: true,
@@ -187,7 +186,6 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		speed: 3,
 		multimodal: true,
 		isFeatured: false,
-		includedInRouter: false,
 		supportsResponseFormat: true,
 		supportsArtifacts: true,
 		timeout: 1000000,
@@ -245,7 +243,6 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		speed: 3,
 		multimodal: true,
 		isFeatured: false,
-		includedInRouter: false,
 		supportsResponseFormat: true,
 		supportsArtifacts: true,
 		reasoningConfig: {
@@ -289,7 +286,6 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		speed: 4,
 		multimodal: false,
 		isFeatured: false,
-		includedInRouter: false,
 		supportsResponseFormat: true,
 		supportsArtifacts: true,
 		supportsToolCalls: true,
@@ -344,7 +340,6 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		speed: 4,
 		multimodal: true,
 		isFeatured: false,
-		includedInRouter: false,
 		supportsResponseFormat: true,
 		supportsArtifacts: true,
 		artificialAnalysis: {
@@ -387,7 +382,6 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		speed: 4,
 		multimodal: true,
 		isFeatured: false,
-		includedInRouter: false,
 		supportsResponseFormat: true,
 		supportsArtifacts: true,
 	}),
@@ -426,7 +420,6 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		reliability: 1,
 		speed: 3,
 		isFeatured: false,
-		includedInRouter: false,
 		supportsResponseFormat: true,
 		supportsArtifacts: true,
 		deprecated: true,
@@ -468,7 +461,6 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		reliability: 3,
 		speed: 5,
 		isFeatured: false,
-		includedInRouter: false,
 		supportsResponseFormat: true,
 		supportsArtifacts: true,
 		deprecated: true,
@@ -508,7 +500,6 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		speed: 4,
 		multimodal: true,
 		isFeatured: false,
-		includedInRouter: false,
 		supportsResponseFormat: true,
 		supportsArtifacts: true,
 		timeout: 1000000,
@@ -549,7 +540,6 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		multimodal: true,
 		supportsArtifacts: true,
 		isFeatured: false,
-		includedInRouter: false,
 		timeout: 1000000,
 		supportsResponseFormat: true,
 		deprecated: true,
@@ -589,7 +579,6 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		multimodal: true,
 		supportsArtifacts: true,
 		isFeatured: false,
-		includedInRouter: false,
 		supportsResponseFormat: true,
 		deprecated: true,
 		artificialAnalysis: {
@@ -628,7 +617,6 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		multimodal: true,
 		supportsArtifacts: true,
 		isFeatured: false,
-		includedInRouter: false,
 		supportsResponseFormat: true,
 		deprecated: true,
 		artificialAnalysis: {
@@ -678,7 +666,6 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		speed: 4,
 		multimodal: true,
 		isFeatured: false,
-		includedInRouter: false,
 		supportsArtifacts: true,
 		supportsResponseFormat: true,
 		deprecated: true,
@@ -736,7 +723,6 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		speed: 2,
 		multimodal: true,
 		isFeatured: false,
-		includedInRouter: false,
 		supportsArtifacts: true,
 		supportsResponseFormat: true,
 		deprecated: true,
@@ -786,7 +772,6 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		speed: 3,
 		multimodal: true,
 		isFeatured: false,
-		includedInRouter: false,
 		supportsArtifacts: true,
 		supportsResponseFormat: true,
 		deprecated: true,
@@ -843,7 +828,6 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		reliability: 1,
 		speed: 3,
 		multimodal: true,
-		includedInRouter: false,
 		supportsArtifacts: true,
 		isFeatured: false,
 		supportsResponseFormat: true,
@@ -891,7 +875,6 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		reliability: 5,
 		speed: 4,
 		multimodal: true,
-		includedInRouter: false,
 		supportsArtifacts: true,
 		isFeatured: false,
 		supportsResponseFormat: true,
@@ -935,7 +918,6 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		reliability: 1,
 		speed: 4,
 		multimodal: true,
-		includedInRouter: false,
 		supportsArtifacts: true,
 		isFeatured: false,
 		supportsResponseFormat: true,
@@ -984,7 +966,6 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		reliability: 1,
 		speed: 4,
 		multimodal: true,
-		includedInRouter: false,
 		supportsArtifacts: true,
 		isFeatured: false,
 		supportsResponseFormat: true,
@@ -1963,7 +1944,6 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		reliability: 1,
 		speed: 4,
 		multimodal: true,
-		includedInRouter: true,
 		supportsArtifacts: true,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "low", "medium", "high", "xhigh"],
@@ -2021,7 +2001,6 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		reliability: 1,
 		speed: 4,
 		multimodal: true,
-		includedInRouter: true,
 		supportsArtifacts: true,
 		isFeatured: true,
 
@@ -2077,7 +2056,6 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		reliability: 1,
 		speed: 4,
 		multimodal: true,
-		includedInRouter: true,
 		supportsArtifacts: true,
 
 		reasoningConfig: {
@@ -2136,7 +2114,6 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		reliability: 5,
 		speed: 2,
 		multimodal: true,
-		includedInRouter: false,
 		supportsArtifacts: true,
 		isFeatured: true,
 
@@ -2199,7 +2176,6 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		reliability: 2,
 		speed: 3,
 		multimodal: true,
-		includedInRouter: true,
 		supportsArtifacts: true,
 		isFeatured: true,
 
@@ -2257,7 +2233,6 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		reliability: 5,
 		speed: 2,
 		multimodal: true,
-		includedInRouter: false,
 		supportsArtifacts: true,
 
 		reasoningConfig: {
@@ -2304,7 +2279,6 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		reliability: 5,
 		speed: 4,
 		multimodal: true,
-		includedInRouter: false,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "low", "medium", "high"],
 			defaultEffort: "low",
@@ -2335,7 +2309,6 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		reliability: 4,
 		speed: 5,
 		hiddenFromDefaultList: true,
-		includedInRouter: false,
 	}),
 
 	createModelConfig("gpt-realtime-mini", PROVIDER, {
@@ -2363,7 +2336,6 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		reliability: 5,
 		speed: 5,
 		multimodal: true,
-		includedInRouter: false,
 		artificialAnalysis: {
 			intelligenceIndex: null,
 			codingIndex: null,
@@ -2418,7 +2390,6 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		reliability: 4,
 		speed: 3,
 		multimodal: true,
-		includedInRouter: false,
 	}),
 
 	createModelConfig("gpt-audio-mini", PROVIDER, {
@@ -2444,7 +2415,6 @@ export const openaiModelConfig: ModelConfig = createModelConfigObject([
 		reliability: 4,
 		speed: 5,
 		multimodal: true,
-		includedInRouter: false,
 	}),
 
 	createModelConfig("gpt-realtime-whisper", PROVIDER, {

@@ -28,7 +28,6 @@ export const inceptionModelConfig: ModelConfig = createModelConfigObject([
 		reliability: 4,
 		speed: 4,
 		isFeatured: false,
-		includedInRouter: true,
 		supportsNextEdit: true,
 		supportsApplyEdit: true,
 		supportsFim: true,
@@ -59,7 +58,6 @@ export const inceptionModelConfig: ModelConfig = createModelConfigObject([
 		reliability: 4,
 		speed: 4,
 		isFeatured: false,
-		includedInRouter: true,
 		supportsArtifacts: true,
 	}),
 	createModelConfig("mercury-2", PROVIDER, {

@@ -29,7 +29,6 @@ export const cerebrasModelConfig: ModelConfig = createModelConfigObject([
 		contextComplexity: 3,
 		reliability: 1,
 		speed: 5,
-		includedInRouter: true,
 		supportsArtifacts: true,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
