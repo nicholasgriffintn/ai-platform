@@ -1,4 +1,4 @@
-import { messageSchema } from "@assistant/schemas";
+import { createChatCompletionsJsonSchema, messageSchema } from "@assistant/schemas";
 import { describe, expect, it } from "vitest";
 
 import type { Message } from "~/types";
@@ -6,6 +6,7 @@ import {
 	serialiseMessagesForChatRequest,
 	serialiseMessagesForConversationUpdate,
 } from "../messages";
+import { prepareUserMessage } from "../chat/prepare-user-message";
 
 describe("serialiseMessagesForChatRequest", () => {
 	it("removes reasoning-only content blocks from replayed assistant messages", () => {
@@ -51,7 +52,138 @@ describe("serialiseMessagesForChatRequest", () => {
 		const requestMessages = serialiseMessagesForChatRequest(messages);
 
 		expect(requestMessages[1]?.content).toBe("Visible response");
-		expect(requestMessages[1]?.parts).toEqual(messages[1]?.parts);
+		expect(requestMessages[1]).not.toHaveProperty("parts");
+		expect(
+			createChatCompletionsJsonSchema.safeParse({
+				messages: requestMessages,
+				model: "gpt-5",
+			}).success,
+		).toBe(true);
+	});
+
+	it("does not send duplicate content and parts for replayed assistant messages", () => {
+		const messages: Message[] = [
+			{
+				id: "user-1",
+				role: "user",
+				content: "hi",
+			},
+			{
+				id: "assistant-1",
+				role: "assistant",
+				content: "Hi! How can I help?",
+				parts: [
+					{
+						type: "text",
+						text: "Hi! How can I help?",
+					},
+				],
+			},
+			{
+				id: "user-2",
+				role: "user",
+				content: "why",
+			},
+		];
+
+		const requestMessages = serialiseMessagesForChatRequest(messages);
+
+		expect(requestMessages[1]).toEqual({
+			id: "assistant-1",
+			role: "assistant",
+			content: "Hi! How can I help?",
+		});
+		expect(
+			createChatCompletionsJsonSchema.safeParse({
+				messages: requestMessages,
+				model_router_mode: "lite",
+			}).success,
+		).toBe(true);
+	});
+
+	it("keeps upload attachments in content parts for chat requests", () => {
+		const message = prepareUserMessage(
+			"review this",
+			[
+				{
+					type: "document",
+					data: "https://files.test/spec.pdf",
+					name: "spec.pdf",
+				},
+				{
+					type: "markdown_document",
+					data: "https://files.test/readme.md",
+					name: "readme.md",
+					markdown: "# Readme",
+				},
+			],
+			"model-1",
+		);
+
+		const requestMessages = serialiseMessagesForChatRequest([message]);
+
+		expect(requestMessages[0]).toMatchObject({
+			role: "user",
+			content: [
+				{ type: "text", text: "review this" },
+				{
+					type: "document_url",
+					document_url: {
+						url: "https://files.test/spec.pdf",
+						name: "spec.pdf",
+					},
+				},
+				{
+					type: "markdown_document",
+					markdown_document: {
+						markdown: "# Readme",
+						name: "readme.md",
+					},
+				},
+			],
+		});
+		expect(requestMessages[0]).not.toHaveProperty("parts");
+		expect(
+			createChatCompletionsJsonSchema.safeParse({
+				messages: requestMessages,
+				model: "gpt-5",
+			}).success,
+		).toBe(true);
+	});
+
+	it("uses parts when replayed content is blank", () => {
+		const messages: Message[] = [
+			{
+				id: "assistant-1",
+				role: "assistant",
+				content: "",
+				parts: [
+					{
+						type: "text",
+						text: "Recovered from parts",
+					},
+				],
+			},
+		];
+
+		const requestMessages = serialiseMessagesForChatRequest(messages);
+
+		expect(requestMessages[0]).toEqual({
+			id: "assistant-1",
+			role: "assistant",
+			parts: [
+				{
+					type: "text",
+					text: "Recovered from parts",
+				},
+			],
+		});
+		expect(
+			createChatCompletionsJsonSchema.safeParse({
+				messages: requestMessages,
+				model: "gpt-5",
+			}).success,
+		).toBe(true);
 	});
 
 	it("omits null tool calls from chat request messages", () => {

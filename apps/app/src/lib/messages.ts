@@ -4,7 +4,7 @@ import { isRecord } from "./objects";
 type ChatRequestMessage = {
 	id?: string;
 	role: Message["role"];
-	content: Message["content"];
+	content?: Message["content"];
 	data?: Message["data"];
 	name?: Message["name"];
 	parts?: Message["parts"];
@@ -291,17 +291,37 @@ function serialiseToolCallsForChatRequest(toolCalls: Message["tool_calls"]): Mes
 	return dedupeToolCalls(toolCalls);
 }
 
+function shouldSendPartsForChatRequest(
+	message: Message,
+	content: Message["content"] | undefined,
+): boolean {
+	if (!message.parts?.length) {
+		return false;
+	}
+
+	if (content === undefined || content === null) {
+		return true;
+	}
+
+	return typeof content === "string" && content.trim() === "";
+}
+
 export function serialiseMessageForChatRequest(message: Message): ChatRequestMessage {
+	const content = serialiseContentForChatRequest(message);
 	const requestMessage: ChatRequestMessage = {
 		id: message.id || undefined,
 		role: message.role,
-		content: serialiseContentForChatRequest(message),
 		data: message.data || undefined,
 		name: message.name || undefined,
-		parts: message.parts,
 		tool_call_id: message.tool_call_id || undefined,
 		tool_call_arguments: message.tool_call_arguments || undefined,
 	};
+
+	if (shouldSendPartsForChatRequest(message, content)) {
+		requestMessage.parts = message.parts;
+	} else if (content !== undefined) {
+		requestMessage.content = content;
+	}
 
 	const toolCalls = serialiseToolCallsForChatRequest(message.tool_calls);
 	if (toolCalls) {
