@@ -1,5 +1,5 @@
-import { render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { fireEvent, render, screen } from "@testing-library/react";
+import { describe, expect, it, vi } from "vitest";
 
 import type { ModelConfigItem } from "@assistant/schemas";
 import type { Message } from "~/types";
@@ -199,5 +199,66 @@ describe("ChatMessage", () => {
 				.getByRole("region", { name: "Inline artifact preview: Orbit demo" })
 				.querySelector("[data-inline-preview-viewport='true']"),
 		).toHaveClass("h-[75vh]");
+	});
+
+	it("labels plain-text artifact callouts as files", () => {
+		render(
+			<ChatMessage
+				message={{
+					...assistantMessage,
+					content:
+						'<artifact identifier="notes" type="text/plain" title="Notes">Meeting notes</artifact>',
+				}}
+			/>,
+		);
+
+		expect(screen.getByText("Click here to open the file")).toBeInTheDocument();
+		expect(screen.queryByText("Click here to open the code")).not.toBeInTheDocument();
+	});
+
+	it("passes structured artifacts when previewing a combined artifact set", () => {
+		const handleArtifactOpen = vi.fn();
+
+		render(
+			<ChatMessage
+				message={{
+					...assistantMessage,
+					content: [
+						{
+							type: "artifact",
+							artifact: {
+								identifier: "app",
+								type: "text/javascript",
+								language: "javascript",
+								title: "App",
+								content: "console.log('app');",
+							},
+						},
+						{
+							type: "artifact",
+							artifact: {
+								identifier: "styles",
+								type: "text/css",
+								language: "css",
+								title: "Styles",
+								content: "body { color: red; }",
+							},
+						},
+					],
+				}}
+				onArtifactOpen={handleArtifactOpen}
+			/>,
+		);
+
+		fireEvent.click(screen.getAllByRole("button", { name: /Preview with 1 other artifact/i })[0]);
+
+		expect(handleArtifactOpen).toHaveBeenCalledWith(
+			expect.objectContaining({ identifier: "app" }),
+			true,
+			[
+				expect.objectContaining({ identifier: "app" }),
+				expect.objectContaining({ identifier: "styles" }),
+			],
+		);
 	});
 });

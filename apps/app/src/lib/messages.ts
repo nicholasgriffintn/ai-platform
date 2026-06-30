@@ -1,5 +1,6 @@
 import type { Message, MessageContent } from "~/types";
 import { isRecord } from "./objects";
+import { escapeRegExp } from "./regex";
 
 type ChatRequestMessage = {
 	id?: string;
@@ -556,7 +557,7 @@ export const formattedMessageContent = (role: Message["role"], originalContent: 
 
 	for (const artifact of artifacts) {
 		const artifactRegex = new RegExp(
-			`<artifact[^>]*identifier="${artifact.identifier}"[^>]*>[\\s\\S]*?(?:</artifact>|$)`,
+			`<artifact[^>]*identifier="${escapeRegExp(artifact.identifier)}"[^>]*>[\\s\\S]*?(?:</artifact>|$)`,
 			"g",
 		);
 		content = content.replace(artifactRegex, artifact.placeholder);

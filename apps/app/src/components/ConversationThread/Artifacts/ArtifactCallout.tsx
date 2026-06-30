@@ -1,6 +1,7 @@
 import { Code2, Eye, FileText } from "lucide-react";
 import { memo, useMemo } from "react";
 
+import { isCodeArtifact } from "~/lib/artifacts";
 import type { ArtifactProps } from "~/types/artifact";
 
 export interface ArtifactCalloutProps extends ArtifactProps {
@@ -41,14 +42,8 @@ export const ArtifactCallout = memo(
 		};
 
 		const isCode = useMemo(() => {
-			const includedLanguages = ["jsx", "javascript", "html", "svg"];
-			const includedTypes = ["text/jsx", "text/javascript", "text/html", "image/svg+xml"];
-
-			return (
-				includedLanguages.some((lang) => language?.toLowerCase().includes(lang)) ||
-				includedTypes.some((type) => type?.includes(type))
-			);
-		}, [language]);
+			return isCodeArtifact({ type, language });
+		}, [type, language]);
 
 		const icon = isCode ? <Code2 size={16} /> : <FileText size={16} />;
 

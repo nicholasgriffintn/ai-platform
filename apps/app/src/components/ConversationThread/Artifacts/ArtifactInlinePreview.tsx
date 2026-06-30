@@ -1,6 +1,7 @@
 import { AppWindow, AlertTriangle } from "lucide-react";
 import { Suspense, useEffect, useMemo, useState } from "react";
 
+import { isStylesheetArtifact } from "~/lib/artifacts";
 import type { ArtifactProps } from "~/types/artifact";
 import { ArtifactSandbox } from "./ArtifactSandbox";
 
@@ -19,7 +20,7 @@ export function ArtifactInlinePreview({ artifact, artifacts = [] }: ArtifactInli
 	const [iframeKey, setIframeKey] = useState(0);
 	const [previewError, setPreviewError] = useState<string | null>(null);
 	const cssArtifact = useMemo(
-		() => artifacts.find((item) => item.language?.toLowerCase().includes("css")),
+		() => artifacts.find((item) => isStylesheetArtifact(item)),
 		[artifacts],
 	);
 	const title = artifact.title || artifact.identifier || "Inline artifact";

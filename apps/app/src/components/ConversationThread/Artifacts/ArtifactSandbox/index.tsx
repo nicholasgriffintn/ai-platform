@@ -4,6 +4,36 @@ import { JavaScriptSandbox } from "./JavaScriptSandbox";
 import { ReactSandbox } from "./ReactSandbox";
 import { SvgSandbox } from "./SvgSandbox";
 
+type ArtifactSandboxKind = "html" | "javascript" | "react" | "svg";
+
+function getArtifactSandboxKind(code: ArtifactProps): ArtifactSandboxKind {
+	const type = code.type.toLowerCase();
+	const language = code.language?.toLowerCase();
+
+	if (type === "image/svg+xml" || type === "application/vnd.svg" || language === "svg") {
+		return "svg";
+	}
+
+	if (type === "text/html" || type === "application/vnd.html" || language === "html") {
+		return "html";
+	}
+
+	if (type === "text/javascript" || language === "javascript" || language === "js") {
+		return "javascript";
+	}
+
+	if (
+		type === "text/jsx" ||
+		type === "application/vnd.react" ||
+		language === "jsx" ||
+		language === "react"
+	) {
+		return "react";
+	}
+
+	return "react";
+}
+
 export function ArtifactSandbox({
 	code,
 	css,
@@ -23,13 +53,8 @@ export function ArtifactSandbox({
 		);
 	}
 
-	const contentType = code.language || code.type?.split("/")[1];
-
-	switch (contentType) {
-		case "jsx":
+	switch (getArtifactSandboxKind(code)) {
 		case "react":
-		case "text/jsx":
-		case "application/vnd.react":
 			return (
 				<ReactSandbox
 					code={code}
@@ -40,8 +65,6 @@ export function ArtifactSandbox({
 			);
 
 		case "html":
-		case "text/html":
-		case "application/vnd.html":
 			return (
 				<HtmlSandbox
 					code={code}
@@ -52,25 +75,11 @@ export function ArtifactSandbox({
 			);
 
 		case "svg":
-		case "image/svg+xml":
-		case "application/vnd.svg":
 			return <SvgSandbox code={code} setPreviewError={setPreviewError} iframeKey={iframeKey} />;
 
 		case "javascript":
-		case "js":
-		case "text/javascript":
 			return (
 				<JavaScriptSandbox
-					code={code}
-					css={css}
-					setPreviewError={setPreviewError}
-					iframeKey={iframeKey}
-				/>
-			);
-
-		default:
-			return (
-				<ReactSandbox
 					code={code}
 					css={css}
 					setPreviewError={setPreviewError}

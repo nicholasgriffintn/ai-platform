@@ -137,6 +137,19 @@ describe("model router modes", () => {
 				"pro",
 			),
 		).toBe(false);
+		expect(
+			doesModelMatchRouterMode(
+				makeModel("gemini-3.5-flash", {
+					contextComplexity: 4,
+					reliability: 3,
+					speed: 3,
+					strengths: ["coding", "reasoning", "analysis", "math", "agents", "tool_use"],
+					artificialAnalysis: { intelligenceIndex: 50.2 },
+					family: "gemini-flash",
+				}),
+				"pro",
+			),
+		).toBe(false);
 	});
 
 	it("filters model maps by router mode", () => {

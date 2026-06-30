@@ -348,4 +348,14 @@ describe("formattedMessageContent", () => {
 			content: "<div>Orbit</div>",
 		});
 	});
+
+	it("replaces artifact placeholders when identifiers contain regex characters", () => {
+		const result = formattedMessageContent(
+			"assistant",
+			'<artifact identifier="app[1]" type="text/markdown" title="App notes">Literal id</artifact>',
+		);
+
+		expect(result.content).toBe("[[ARTIFACT:app[1]]]");
+		expect(result.artifacts[0]?.identifier).toBe("app[1]");
+	});
 });

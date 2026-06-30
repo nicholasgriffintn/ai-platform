@@ -105,6 +105,9 @@ export default function SharedConversationPage() {
 			setIsCombinedPanel(true);
 			return;
 		}
+
+		setCurrentArtifacts([]);
+		setIsCombinedPanel(false);
 	};
 
 	const handlePanelClose = () => {

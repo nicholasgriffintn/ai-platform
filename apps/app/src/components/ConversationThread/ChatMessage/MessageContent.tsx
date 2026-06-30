@@ -5,12 +5,8 @@ import { memo, useMemo } from "react";
 import { ImageModal } from "~/components/ui/ImageModal";
 import { MemoizedMarkdown } from "~/components/ui/Markdown";
 import { ResponseRenderer } from "~/components/Apps/ResponseRenderer";
-import { isInlinePreviewArtifact } from "~/lib/artifacts";
-import {
-	canCombineArtifacts,
-	processCustomXmlTags,
-	splitContentByArtifacts,
-} from "~/lib/message-utils";
+import { canCombineArtifacts, isInlinePreviewArtifact } from "~/lib/artifacts";
+import { processCustomXmlTags, splitContentByArtifacts } from "~/lib/message-utils";
 import { formattedMessageContent } from "~/lib/messages";
 import { resolveRenderableToolResult } from "~/lib/tool-results";
 import type { Message, MessageContent as MessageContentType } from "~/types";
@@ -567,6 +563,7 @@ export const MessageContent = memo(({ message, onArtifactOpen }: MessageContentP
 										onOpen={handleArtifactOpen}
 										isCombinable={isArtifactCombinable}
 										combinableCount={artifacts.length}
+										artifacts={artifacts}
 									/>
 								);
 							}

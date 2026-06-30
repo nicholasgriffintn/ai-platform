@@ -3,7 +3,7 @@ import { Suspense, lazy, useCallback, useEffect, useMemo, useState } from "react
 
 import { MemoizedMarkdown } from "~/components/ui/Markdown";
 import { useCopyToClipboard } from "~/hooks/useCopyToClipboard";
-import { isDocumentArtifact } from "~/lib/artifacts";
+import { isCodeArtifact, isDocumentArtifact, isStylesheetArtifact } from "~/lib/artifacts";
 import type { AttachmentData } from "~/lib/chat/attachments";
 import type { ArtifactProps } from "~/types/artifact";
 import { ArtifactDocumentEditor } from "./ArtifactDocumentEditor";
@@ -135,29 +135,12 @@ export const ArtifactPanel = ({
 	}, [artifact, artifacts, isCombined]);
 
 	const codeArtifact = useMemo(
-		() =>
-			allArtifacts.find((a) => {
-				const includedLanguages = ["jsx", "javascript", "html", "svg"];
-				const includedTypes = [
-					"text/jsx",
-					"text/javascript",
-					"text/html",
-					"image/svg+xml",
-					"application/vnd.code",
-					"application/vnd.react",
-					"application/vnd.mermaid",
-				];
-
-				return (
-					includedLanguages.some((lang) => a.language?.toLowerCase().includes(lang)) ||
-					includedTypes.some((type) => a.type?.includes(type))
-				);
-			}),
+		() => allArtifacts.find((artifact) => isCodeArtifact(artifact)),
 		[allArtifacts],
 	);
 
 	const cssArtifact = useMemo(
-		() => allArtifacts.find((a) => a.language?.toLowerCase().includes("css")),
+		() => allArtifacts.find((artifact) => isStylesheetArtifact(artifact)),
 		[allArtifacts],
 	);
 
@@ -178,21 +161,7 @@ export const ArtifactPanel = ({
 			return false;
 		}
 
-		const includedLanguages = ["jsx", "javascript", "html", "svg"];
-		const includedTypes = [
-			"text/jsx",
-			"text/javascript",
-			"text/html",
-			"image/svg+xml",
-			"application/vnd.code",
-			"application/vnd.react",
-			"application/vnd.mermaid",
-		];
-
-		return (
-			includedLanguages.some((lang) => artifact.language?.toLowerCase().includes(lang)) ||
-			includedTypes.some((type) => artifact.type?.includes(type))
-		);
+		return isCodeArtifact(artifact);
 	}, [artifact]);
 	const icon = useMemo(() => (isCode ? <Code2 size={20} /> : <FileText size={20} />), [isCode]);
 

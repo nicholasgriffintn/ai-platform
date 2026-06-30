@@ -33,23 +33,6 @@ export function processCustomXmlTags(text: string): string {
 }
 
 /**
- * Determines if a collection of artifacts can be combined (displayed together)
- * Currently checks if there are both JSX/JavaScript and CSS artifacts
- */
-export function canCombineArtifacts(artifacts: Array<{ language?: string }>): boolean {
-	if (artifacts.length < 2) return false;
-
-	const hasJsx = artifacts.some(
-		(a) =>
-			a.language?.toLowerCase().includes("jsx") || a.language?.toLowerCase().includes("javascript"),
-	);
-
-	const hasCss = artifacts.some((a) => a.language?.toLowerCase().includes("css"));
-
-	return hasJsx && hasCss;
-}
-
-/**
  * Splits content by artifact markers and returns the parts
  */
 export function splitContentByArtifacts(content: string): {
