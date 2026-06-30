@@ -1,5 +1,6 @@
 import type { IFunctionResponse, IWeather } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
+import { getOpenWeatherForecast, getOpenWeatherUrl } from "~/utils/weather-forecast";
 
 export const getWeatherForLocation = async (
 	env: any,
@@ -10,8 +11,7 @@ export const getWeatherForLocation = async (
 			throw new AssistantError("Missing OPENWEATHERMAP_API_KEY variable", ErrorType.PARAMS_ERROR);
 		}
 
-		const baseUrl = "https://api.openweathermap.org/data/2.5/weather";
-		const url = `${baseUrl}?lat=${location.latitude}&lon=${location.longitude}&units=metric&appid=${env.OPENWEATHERMAP_API_KEY}`;
+		const url = getOpenWeatherUrl("weather", env.OPENWEATHERMAP_API_KEY, location);
 
 		const weatherResponse = await fetch(url);
 
@@ -38,12 +38,13 @@ export const getWeatherForLocation = async (
 			};
 		}
 
+		const forecast = await getOpenWeatherForecast(env.OPENWEATHERMAP_API_KEY, location);
 		const response = `The current temperature is ${weatherData.main.temp}°C with ${weatherData.weather[0].main}`;
 		return {
 			status: "success",
 			name: "get_weather",
 			content: response,
-			data: weatherData,
+			data: forecast ? { ...weatherData, forecast } : weatherData,
 		};
 	} catch {
 		throw new AssistantError("Error fetching weather results");

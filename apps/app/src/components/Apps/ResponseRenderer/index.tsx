@@ -70,6 +70,7 @@ export const ResponseRenderer = ({
 				<CustomView
 					messageContent={result.content}
 					data={responseData}
+					toolName={typeof result.name === "string" ? result.name : undefined}
 					embedded={embedded}
 					onToolInteraction={onToolInteraction}
 				/>
@@ -100,6 +101,7 @@ export const ResponseRenderer = ({
 					<CustomView
 						messageContent={result.content}
 						data={responseData}
+						toolName={typeof result.name === "string" ? result.name : undefined}
 						embedded={embedded}
 						onToolInteraction={onToolInteraction}
 					/>

@@ -57,10 +57,44 @@ describe("getWeatherForLocation", () => {
 			name: "New York",
 		};
 
-		vi.mocked(fetch).mockResolvedValue({
-			ok: true,
-			json: () => Promise.resolve(mockWeatherData),
-		} as Response);
+		vi.mocked(fetch)
+			.mockResolvedValueOnce({
+				ok: true,
+				json: () => Promise.resolve(mockWeatherData),
+			} as Response)
+			.mockResolvedValueOnce({
+				ok: true,
+				json: () =>
+					Promise.resolve({
+						cod: "200",
+						list: [
+							{
+								dt: 1_782_896_400,
+								main: {
+									temp: 23,
+									temp_min: 21,
+									temp_max: 24,
+									humidity: 68,
+								},
+								weather: [{ main: "Clear", description: "clear sky", icon: "01d" }],
+								wind: { speed: 4.2 },
+								pop: 0.12,
+							},
+							{
+								dt: 1_782_982_800,
+								main: {
+									temp: 20,
+									temp_min: 18,
+									temp_max: 22,
+									humidity: 82,
+								},
+								weather: [{ main: "Rain", description: "light rain", icon: "10d" }],
+								wind: { speed: 6.1 },
+								pop: 0.84,
+							},
+						],
+					}),
+			} as Response);
 
 		const result = await getWeatherForLocation(mockEnv, mockLocation);
 
@@ -68,11 +102,58 @@ describe("getWeatherForLocation", () => {
 			status: "success",
 			name: "get_weather",
 			content: "The current temperature is 22.5°C with Clear",
-			data: mockWeatherData,
+			data: {
+				...mockWeatherData,
+				forecast: {
+					hourly: [
+						{
+							description: "clear sky",
+							humidity: 68,
+							icon: "01d",
+							precipitationProbability: 12,
+							temp: 23,
+							time: "2026-07-01T09:00:00.000Z",
+							windSpeed: 4.2,
+						},
+						{
+							description: "light rain",
+							humidity: 82,
+							icon: "10d",
+							precipitationProbability: 84,
+							temp: 20,
+							time: "2026-07-02T09:00:00.000Z",
+							windSpeed: 6.1,
+						},
+					],
+					daily: [
+						{
+							date: "2026-07-01",
+							description: "clear sky",
+							icon: "01d",
+							precipitationProbability: 12,
+							tempMax: 24,
+							tempMin: 21,
+						},
+						{
+							date: "2026-07-02",
+							description: "light rain",
+							icon: "10d",
+							precipitationProbability: 84,
+							tempMax: 22,
+							tempMin: 18,
+						},
+					],
+				},
+			},
 		});
 
-		expect(fetch).toHaveBeenCalledWith(
+		expect(fetch).toHaveBeenNthCalledWith(
+			1,
 			`https://api.openweathermap.org/data/2.5/weather?lat=40.7128&lon=-74.006&units=metric&appid=test-api-key`,
+		);
+		expect(fetch).toHaveBeenNthCalledWith(
+			2,
+			`https://api.openweathermap.org/data/2.5/forecast?lat=40.7128&lon=-74.006&units=metric&appid=test-api-key`,
 		);
 	});
 

@@ -28,7 +28,7 @@ export const getFunctionIcon = (name: string): string => {
 
 export const getFunctionResponseType = (name: string): ResponseDisplayType => {
 	if (name.includes("search")) return ResponseDisplayType.CUSTOM;
-	if (name.includes("weather")) return ResponseDisplayType.TEMPLATE;
+	if (name.includes("weather")) return ResponseDisplayType.CUSTOM;
 	if (name.includes("image") || name.includes("screenshot")) return ResponseDisplayType.TEMPLATE;
 	if (name.includes("video")) return ResponseDisplayType.TEMPLATE;
 	if (name.includes("extract")) return ResponseDisplayType.TEXT;
@@ -88,26 +88,6 @@ export const getFunctionResponseDisplay = (name: string): ResponseDisplay => {
         <div class="usage-info">
           <p><small>Tokens used: {{data.analysis.usage.total_tokens}} ({{data.analysis.usage.prompt_tokens}} prompt, {{data.analysis.usage.completion_tokens}} completion)</small></p>
         </div>
-        {{/if}}
-      </div>
-    `;
-	} else if (name.includes("weather")) {
-		display.template = `
-      <div class="weather-response">
-        <h2>Weather Information</h2>
-        <p>{{content}}</p>
-        {{#if data.weather}}
-          <div class="weather-details">
-            <div class="weather-icon">
-              <img src="https://openweathermap.org/img/wn/{{data.weather.0.icon}}@2x.png" alt="{{data.weather.0.description}}">
-            </div>
-            <div class="weather-info">
-              <p><strong>Temperature:</strong> {{data.main.temp}}°C</p>
-              <p><strong>Feels Like:</strong> {{data.main.feels_like}}°C</p>
-              <p><strong>Humidity:</strong> {{data.main.humidity}}%</p>
-              <p><strong>Wind:</strong> {{data.wind.speed}} m/s</p>
-            </div>
-          </div>
         {{/if}}
       </div>
     `;

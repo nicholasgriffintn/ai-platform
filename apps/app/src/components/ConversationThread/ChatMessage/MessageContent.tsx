@@ -4,12 +4,14 @@ import { memo, useMemo } from "react";
 
 import { ImageModal } from "~/components/ui/ImageModal";
 import { MemoizedMarkdown } from "~/components/ui/Markdown";
+import { ResponseRenderer } from "~/components/Apps/ResponseRenderer";
 import {
 	canCombineArtifacts,
 	processCustomXmlTags,
 	splitContentByArtifacts,
 } from "~/lib/message-utils";
 import { formattedMessageContent } from "~/lib/messages";
+import { resolveRenderableToolResult } from "~/lib/tool-results";
 import type { Message, MessageContent as MessageContentType } from "~/types";
 import type { ArtifactProps } from "~/types/artifact";
 import { ArtifactCallout } from "../Artifacts/ArtifactCallout";
@@ -274,6 +276,7 @@ const renderToolResultPart = (
 	part: Extract<NonNullable<Message["parts"]>[number], { type: "tool_result" }>,
 	index: number,
 ): ReactNode => {
+	const renderableResult = resolveRenderableToolResult(part);
 	const content =
 		typeof part.content === "string"
 			? part.content
@@ -290,7 +293,9 @@ const renderToolResultPart = (
 				Tool result{part.name ? `: ${part.name}` : ""}
 				{part.status ? ` (${part.status})` : ""}
 			</div>
-			{content ? (
+			{renderableResult ? (
+				<ResponseRenderer result={renderableResult.result} className="mt-3" embedded />
+			) : content ? (
 				<MemoizedMarkdown className="mt-2 text-sm">{content}</MemoizedMarkdown>
 			) : (
 				<div className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">No tool output</div>

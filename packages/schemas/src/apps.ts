@@ -807,6 +807,31 @@ export const weatherResponseSchema = z.object({
 				clouds: z.object({ all: z.number() }),
 				sys: z.object({ country: z.string() }),
 				name: z.string(),
+				forecast: z
+					.object({
+						hourly: z.array(
+							z.object({
+								time: z.string(),
+								temp: z.number(),
+								description: z.string(),
+								icon: z.string().optional(),
+								precipitationProbability: z.number(),
+								humidity: z.number().optional(),
+								windSpeed: z.number().optional(),
+							}),
+						),
+						daily: z.array(
+							z.object({
+								date: z.string(),
+								tempMin: z.number(),
+								tempMax: z.number(),
+								description: z.string(),
+								icon: z.string().optional(),
+								precipitationProbability: z.number(),
+							}),
+						),
+					})
+					.optional(),
 			})
 			.optional(),
 	}),

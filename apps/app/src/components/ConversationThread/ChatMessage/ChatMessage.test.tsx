@@ -82,4 +82,65 @@ describe("ChatMessage", () => {
 
 		expect(screen.getByText("Hello! How can I help you today?")).toBeInTheDocument();
 	});
+
+	it("renders weather tool results with the forecast widget", () => {
+		render(
+			<ChatMessage
+				message={{
+					...assistantMessage,
+					content: "",
+					parts: [
+						{
+							type: "tool_result",
+							name: "get_weather",
+							status: "success",
+							content: "Weather Information\n\nTemperature: 20.05°C",
+							data: {
+								responseType: "custom",
+								formattedName: "Get Weather",
+								cod: 200,
+								main: {
+									temp: 20.05,
+									feels_like: 19.78,
+									temp_min: 17,
+									temp_max: 22,
+									humidity: 64,
+								},
+								weather: [{ main: "Clouds", description: "scattered clouds", icon: "03d" }],
+								wind: { speed: 1.34, deg: 230 },
+								name: "London",
+								forecast: {
+									hourly: [
+										{
+											time: "2026-06-30T12:00:00.000Z",
+											temp: 20,
+											description: "scattered clouds",
+											icon: "03d",
+											precipitationProbability: 8,
+											humidity: 64,
+											windSpeed: 1.34,
+										},
+									],
+									daily: [
+										{
+											date: "2026-06-30",
+											tempMin: 17,
+											tempMax: 22,
+											description: "scattered clouds",
+											icon: "03d",
+											precipitationProbability: 8,
+										},
+									],
+								},
+							},
+						},
+					],
+				}}
+			/>,
+		);
+
+		expect(screen.getByRole("region", { name: "Weather forecast for London" })).toBeInTheDocument();
+		expect(screen.queryByText("Weather Information")).not.toBeInTheDocument();
+		expect(screen.queryByText(/Temperature:/)).not.toBeInTheDocument();
+	});
 });

@@ -23,11 +23,11 @@ describe("Tool Response Utilities", () => {
 			const result = formatToolResponse(toolName, content, data);
 
 			expect(result.content).toBe(content);
-			expect(result.data.responseType).toBe(ResponseDisplayType.TEMPLATE);
+			expect(result.data.responseType).toBe(ResponseDisplayType.CUSTOM);
 			expect(result.data.icon).toBe("cloud");
 			expect(result.data.formattedName).toBe("Get Weather");
 			expect(result.data.responseDisplay).toBeDefined();
-			expect(result.data.responseDisplay.template).toContain("weather-response");
+			expect(result.data.responseDisplay.template).toBeUndefined();
 			expect(result.data.weather).toEqual(data.weather);
 		});
 

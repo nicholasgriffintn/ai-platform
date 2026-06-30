@@ -5,16 +5,18 @@ import { renderCustomView } from "./registry";
 export function CustomView({
 	messageContent,
 	data,
+	toolName,
 	embedded,
 	onToolInteraction,
 }: {
 	messageContent: string;
 	data: any;
+	toolName?: string;
 	embedded: boolean;
 	onToolInteraction?: (toolName: string, action: "useAsPrompt", data: Record<string, any>) => void;
 }) {
 	const customData = data.data || data;
-	const registeredView = renderCustomView(data.name, {
+	const registeredView = renderCustomView(toolName ?? data.name, {
 		data: customData,
 		embedded,
 		onToolInteraction,

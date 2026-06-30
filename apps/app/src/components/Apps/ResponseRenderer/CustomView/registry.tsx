@@ -4,6 +4,7 @@ import { AddReasoningStepView } from "./Views/AddReasoningStepView";
 import { ResearchView } from "./Views/ResearchView";
 import { SandboxView } from "./Views/SandboxView";
 import { TutorView } from "./Views/TutorView";
+import { WeatherView } from "./Views/WeatherView";
 import { WebSearchView } from "./Views/WebSearchView";
 
 interface CustomViewRendererProps {
@@ -26,6 +27,7 @@ const CUSTOM_VIEW_RENDERERS: Record<string, CustomViewRenderer> = {
 	sandbox_plan: ({ data }) => <SandboxView type="sandbox_plan" data={data} />,
 	sandbox_event: ({ data }) => <SandboxView type="sandbox_event" data={data} />,
 	sandbox_result: ({ data }) => <SandboxView type="sandbox_result" data={data} />,
+	get_weather: ({ data, embedded }) => <WeatherView data={data} embedded={embedded} />,
 };
 
 export function renderCustomView(

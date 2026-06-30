@@ -119,9 +119,9 @@ describe("functions", () => {
 			expect(getFunctionResponseType("search_documents")).toBe(ResponseDisplayType.CUSTOM);
 		});
 
-		it("should return TEMPLATE for weather functions", () => {
-			expect(getFunctionResponseType("get_weather")).toBe(ResponseDisplayType.TEMPLATE);
-			expect(getFunctionResponseType("weather_forecast")).toBe(ResponseDisplayType.TEMPLATE);
+		it("should return CUSTOM for weather functions", () => {
+			expect(getFunctionResponseType("get_weather")).toBe(ResponseDisplayType.CUSTOM);
+			expect(getFunctionResponseType("weather_forecast")).toBe(ResponseDisplayType.CUSTOM);
 		});
 
 		it("should return TEMPLATE for image functions", () => {
@@ -190,13 +190,10 @@ describe("functions", () => {
 			expect(display.template).toContain("{{#if data.stories}}");
 		});
 
-		it("should include template for weather functions", () => {
+		it("should leave weather functions for the client custom renderer", () => {
 			const display = getFunctionResponseDisplay("get_weather");
 
-			expect(display.template).toBeDefined();
-			expect(display.template).toContain("weather-response");
-			expect(display.template).toContain("{{data.main.temp}}");
-			expect(display.template).toContain("{{data.weather.0.icon}}");
+			expect(display.template).toBeUndefined();
 		});
 
 		it("should include template for image functions", () => {
@@ -243,8 +240,7 @@ describe("functions", () => {
 
 		it("should handle functions with specific template structures", () => {
 			const weatherDisplay = getFunctionResponseDisplay("get_weather");
-			expect(weatherDisplay.template).toContain("weather-icon");
-			expect(weatherDisplay.template).toContain("weather-info");
+			expect(weatherDisplay.template).toBeUndefined();
 
 			const imageDisplay = getFunctionResponseDisplay("generate_image");
 			expect(imageDisplay.template).toContain("image-container");
