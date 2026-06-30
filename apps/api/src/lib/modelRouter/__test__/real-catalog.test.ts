@@ -43,6 +43,19 @@ const env: IEnv = Object.assign(Object.create(null), {
 	ALWAYS_ENABLED_PROVIDERS: "workers-ai,mistral,deepseek,google-ai-studio,cohere",
 });
 
+const defaultPromptRequirements = {
+	expectedComplexity: 3,
+	requiredStrengths: [],
+	criticalStrengths: [],
+	estimatedInputTokens: 1000,
+	estimatedOutputTokens: 500,
+	needsFunctions: false,
+	hasImages: false,
+	hasDocuments: false,
+	benefitsFromMultipleModels: false,
+	modelComparisonReason: "",
+};
+
 const user: IUser = {
 	id: 1,
 	name: "Test User",
@@ -66,21 +79,19 @@ describe("ModelRouter real catalogue routing", () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 		mockRepositories.getUserProviderSettings.mockResolvedValue([]);
-		mockPromptAnalyzer.analyzePrompt.mockResolvedValue({
-			expectedComplexity: 3,
-			requiredStrengths: [],
-			criticalStrengths: [],
-			estimatedInputTokens: 1000,
-			estimatedOutputTokens: 500,
-			needsFunctions: false,
-			hasImages: false,
-			hasDocuments: false,
-			benefitsFromMultipleModels: false,
-			modelComparisonReason: "",
-		});
+		mockPromptAnalyzer.analyzePrompt.mockResolvedValue(defaultPromptRequirements);
 	});
 
 	it("rejects pro routing instead of falling back outside the accessible mode pool", async () => {
+		const accessibleModels = await getIncludedInRouterModelsForUser(env);
+		const proModels = filterModelsByRouterMode(accessibleModels, "pro");
+
+		expect(Object.keys(proModels).length).toBeGreaterThan(0);
+		mockPromptAnalyzer.analyzePrompt.mockResolvedValueOnce({
+			...defaultPromptRequirements,
+			criticalStrengths: ["transcription"],
+		});
+
 		await expect(
 			ModelRouter.selectModel(env, "hi", [], undefined, undefined, "completion-123", "pro"),
 		).rejects.toThrow("No suitable models found for pro automatic mode.");
