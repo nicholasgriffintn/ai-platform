@@ -3,6 +3,7 @@ import type { ConversationManager } from "~/lib/conversationManager";
 import { getAuxiliaryModel } from "~/lib/providers/models";
 import { webSearchAnswerSystemPrompt, webSearchSimilarQuestionsSystemPrompt } from "~/lib/prompts";
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
+import { createServiceContext } from "~/lib/context/serviceContext";
 import { handleWebSearch } from "~/services/search/web";
 import type { IEnv, IUser, SearchOptions, SearchProviderName } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -32,6 +33,7 @@ export async function performDeepWebSearch(
 
 	const { model: modelToUse, provider: providerToUse } = await getAuxiliaryModel(env, user);
 	const provider = getChatProvider(providerToUse, { env, user });
+	const context = createServiceContext({ env, user });
 
 	const [webSearchResults, similarQuestionsResponse] = await Promise.all([
 		handleWebSearch({
@@ -50,7 +52,7 @@ export async function performDeepWebSearch(
 		(async () => {
 			return provider.getResponse({
 				env: env,
-				user: user,
+				context,
 				completion_id,
 				model: modelToUse,
 				messages: [
@@ -166,7 +168,7 @@ export async function performDeepWebSearch(
 
 	const answerResponse = await provider.getResponse({
 		env: env,
-		user: user,
+		context,
 		completion_id,
 		model: modelToUse,
 		messages: [

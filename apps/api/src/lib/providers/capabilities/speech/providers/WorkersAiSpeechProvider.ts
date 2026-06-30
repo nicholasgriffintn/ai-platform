@@ -1,5 +1,6 @@
 import { getModelConfigByModel } from "~/lib/providers/models";
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
+import { createServiceContext } from "~/lib/context/serviceContext";
 import { extractGeneratedAsset } from "~/lib/providers/utils/helpers";
 import { buildInputSchemaInput } from "~/utils/inputSchema";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -25,6 +26,7 @@ export class WorkersAiSpeechProvider implements SpeechProvider {
 			env: request.env,
 			user: request.user,
 		});
+		const context = createServiceContext({ env: request.env, user: request.user });
 		const input = buildInputSchemaInput(
 			{
 				messages: [{ role: "user", content: request.prompt }],
@@ -63,7 +65,7 @@ export class WorkersAiSpeechProvider implements SpeechProvider {
 			},
 			lang: request.locale,
 			env: request.env,
-			user: request.user,
+			context,
 		});
 
 		const attachment = extractGeneratedAsset(response);

@@ -121,7 +121,9 @@ describe("countTokens", () => {
 					messages: mockMessages,
 					system_prompt: "You are a helpful assistant.",
 					env: mockEnv,
-					user: mockUser,
+					context: expect.objectContaining({
+						user: mockUser,
+					}),
 				},
 				mockUser.id,
 			);
@@ -157,7 +159,9 @@ describe("countTokens", () => {
 					messages: mockMessages,
 					system_prompt: undefined,
 					env: mockEnv,
-					user: undefined,
+					context: expect.objectContaining({
+						user: undefined,
+					}),
 				},
 				undefined,
 			);

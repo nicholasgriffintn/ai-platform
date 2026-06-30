@@ -107,7 +107,7 @@ export async function getAIResponse({
 	app_url,
 	system_prompt,
 	env,
-	user,
+	context,
 	mode,
 	model,
 	models,
@@ -118,6 +118,7 @@ export async function getAIResponse({
 	tools,
 	...params
 }: ChatCompletionParameters) {
+	const user = context?.user;
 	const requestedModel = model || models?.[0];
 	if (!requestedModel) {
 		throw new AssistantError("Model is required", ErrorType.PARAMS_ERROR);
@@ -213,7 +214,7 @@ export async function getAIResponse({
 			app_url,
 			system_prompt,
 			env,
-			user,
+			context,
 			stream: shouldStream,
 			enabled_tools,
 			tools,

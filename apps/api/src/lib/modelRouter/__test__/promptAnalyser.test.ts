@@ -143,6 +143,9 @@ describe("PromptAnalyzer", () => {
 
 			expect(mockProvider.getResponse).toHaveBeenCalledWith({
 				env: mockEnv,
+				context: expect.objectContaining({
+					user: mockUser,
+				}),
 				model: "test-model",
 				disable_functions: true,
 				messages: [
@@ -155,7 +158,6 @@ describe("PromptAnalyzer", () => {
 						content: "Write a function to calculate fibonacci numbers",
 					},
 				],
-				user: mockUser,
 				response_format: { type: "json_object" },
 			});
 		});

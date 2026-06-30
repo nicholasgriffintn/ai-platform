@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { getAIResponse } from "~/lib/chat/responses";
+import { createServiceContext } from "~/lib/context/serviceContext";
 import type { Agent, IEnv, IUser, Message } from "~/types";
 import { TeamDelegation } from "../TeamDelegation";
 
@@ -98,7 +99,9 @@ describe("TeamDelegation", () => {
 			expect(mockAgentRepository.getAgentById).toHaveBeenCalledWith("target-agent-id");
 			expect(getAIResponse).toHaveBeenCalledWith({
 				env: mockEnv,
-				user: mockUser,
+				context: expect.objectContaining({
+					user: mockUser,
+				}),
 				messages,
 				model: "mistral-medium-latest",
 				provider: "mistral",

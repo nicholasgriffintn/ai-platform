@@ -87,7 +87,9 @@ describe("extract_content function", () => {
 				completion_id: "completion-id",
 				env: request.env,
 				model: "retrieval-aux-model",
-				user,
+				context: expect.objectContaining({
+					user,
+				}),
 			}),
 		);
 		expect(result).toEqual(

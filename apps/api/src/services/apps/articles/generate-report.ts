@@ -117,7 +117,7 @@ export async function generateArticlesReport({
 				},
 			],
 			env: serviceContext.env,
-			user,
+			context: serviceContext,
 		});
 
 		const reportGenDataContent = reportGenData.content || reportGenData.response;

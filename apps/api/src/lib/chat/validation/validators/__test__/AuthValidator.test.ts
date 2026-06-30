@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { createServiceContext } from "~/lib/context/serviceContext";
 import type { CoreChatOptions } from "~/types";
 import type { ValidationContext } from "../../ValidationPipeline";
 import { AuthValidator } from "../AuthValidator";
@@ -14,17 +15,19 @@ describe("AuthValidator", () => {
 
 		validator = new AuthValidator();
 
+		const env: any = {
+			DB: {} as any,
+			AI: {} as any,
+		};
 		baseOptions = {
-			// @ts-expect-error - mock implementation
-			env: {
-				DB: {} as any,
-				AI: {} as any,
-			},
-			// @ts-expect-error - mock implementation
-			user: {
-				id: 123,
-				email: "test@example.com",
-			},
+			env,
+			context: createServiceContext({
+				env,
+				user: {
+					id: 123,
+					email: "test@example.com",
+				} as any,
+			}),
 			messages: [
 				{
 					role: "user",
@@ -120,7 +123,7 @@ describe("AuthValidator", () => {
 		it("should fail validation when neither user nor anonymousUser is provided", async () => {
 			const optionsWithoutUsers = {
 				...baseOptions,
-				user: undefined,
+				context: createServiceContext({ env: baseOptions.env, user: null }),
 				anonymousUser: undefined,
 			};
 
@@ -135,9 +138,12 @@ describe("AuthValidator", () => {
 		it("should fail validation when user has no id", async () => {
 			const optionsWithUserNoId = {
 				...baseOptions,
-				user: {
-					email: "test@example.com",
-				} as any,
+				context: createServiceContext({
+					env: baseOptions.env,
+					user: {
+						email: "test@example.com",
+					} as any,
+				}),
 			};
 
 			const result = await validator.validate(optionsWithUserNoId, baseContext);
@@ -150,7 +156,7 @@ describe("AuthValidator", () => {
 		it("should fail validation when anonymousUser has no id", async () => {
 			const optionsWithAnonymousUserNoId = {
 				...baseOptions,
-				user: undefined,
+				context: createServiceContext({ env: baseOptions.env, user: null }),
 				anonymousUser: {
 					session_id: "session-456",
 				} as any,
@@ -166,21 +172,20 @@ describe("AuthValidator", () => {
 		it("should prioritize user over anonymousUser when both are provided", async () => {
 			const optionsWithBothUsers = {
 				...baseOptions,
-				user: {
-					id: "user-123",
-					email: "test@example.com",
-				},
+				context: createServiceContext({
+					env: baseOptions.env,
+					user: {
+						id: "user-123",
+						email: "test@example.com",
+					} as any,
+				}),
 				anonymousUser: {
 					id: "anon-123",
 					session_id: "session-456",
 				},
 			};
 
-			const result = await validator.validate(
-				// @ts-expect-error - mock implementation
-				optionsWithBothUsers,
-				baseContext,
-			);
+			const result = await validator.validate(optionsWithBothUsers, baseContext);
 
 			expect(result.validation.isValid).toBe(true);
 			expect(result.context).toEqual({});
@@ -189,17 +194,16 @@ describe("AuthValidator", () => {
 		it("should handle empty string user id", async () => {
 			const optionsWithEmptyUserId = {
 				...baseOptions,
-				user: {
-					id: "",
-					email: "test@example.com",
-				},
+				context: createServiceContext({
+					env: baseOptions.env,
+					user: {
+						id: "",
+						email: "test@example.com",
+					} as any,
+				}),
 			};
 
-			const result = await validator.validate(
-				// @ts-expect-error - mock implementation
-				optionsWithEmptyUserId,
-				baseContext,
-			);
+			const result = await validator.validate(optionsWithEmptyUserId, baseContext);
 
 			expect(result.validation.isValid).toBe(false);
 			expect(result.validation.error).toBe("User or anonymousUser is required");
@@ -209,7 +213,7 @@ describe("AuthValidator", () => {
 		it("should handle empty string anonymous user id", async () => {
 			const optionsWithEmptyAnonymousId = {
 				...baseOptions,
-				user: undefined,
+				context: createServiceContext({ env: baseOptions.env, user: null }),
 				anonymousUser: {
 					id: "",
 					session_id: "session-456",
@@ -242,18 +246,17 @@ describe("AuthValidator", () => {
 		it("should handle null anonymousUser when user is present", async () => {
 			const optionsWithNullAnonymousUser = {
 				...baseOptions,
-				user: {
-					id: "user-123",
-					email: "test@example.com",
-				},
+				context: createServiceContext({
+					env: baseOptions.env,
+					user: {
+						id: "user-123",
+						email: "test@example.com",
+					} as any,
+				}),
 				anonymousUser: null,
 			};
 
-			const result = await validator.validate(
-				// @ts-expect-error - mock implementation
-				optionsWithNullAnonymousUser,
-				baseContext,
-			);
+			const result = await validator.validate(optionsWithNullAnonymousUser, baseContext);
 
 			expect(result.validation.isValid).toBe(true);
 			expect(result.context).toEqual({});

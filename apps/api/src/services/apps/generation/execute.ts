@@ -135,7 +135,7 @@ export const executeModelGeneration = async (
 		},
 		replicate_wait_seconds: params.providerWaitSeconds,
 		env: serviceContext.env,
-		user,
+		context: serviceContext,
 		store: false,
 	});
 	const providerResponse = isRecord(providerResponseResult) ? providerResponseResult : {};

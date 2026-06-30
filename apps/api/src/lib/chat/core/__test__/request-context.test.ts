@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 
+import { createServiceContext } from "~/lib/context/serviceContext";
 import { buildToolPermissionsMap, buildToolRequestContext } from "../request-context";
 
 describe("chat request context helpers", () => {
@@ -22,8 +23,11 @@ describe("chat request context helpers", () => {
 				env: { AI: {} },
 				completion_id: "completion-1",
 				app_url: "https://app.test",
-				user: { id: "user-1" },
-				context: { requestId: "request-1" },
+				context: createServiceContext({
+					env: { AI: {} } as any,
+					user: { id: "user-1" } as any,
+					requestId: "request-1",
+				}),
 				messages: [{ role: "user", content: "hello" }],
 				approved_tools: ["sandbox"],
 				tools: [{ name: "sandbox", permissions: ["sandbox:write"] }],
@@ -42,7 +46,7 @@ describe("chat request context helpers", () => {
 			mode: "build",
 			app_url: "https://app.test",
 			user: { id: "user-1" },
-			context: { requestId: "request-1" },
+			context: expect.objectContaining({ requestId: "request-1" }),
 			request: {
 				completion_id: "completion-1",
 				input: "hello with context",

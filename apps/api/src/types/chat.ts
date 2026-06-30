@@ -227,8 +227,6 @@ type InternalExecutionParams = {
 	env: IEnv;
 	// Runtime service context for authenticated user, repositories, and request cache.
 	context?: ServiceContext;
-	// Authenticated runtime user
-	user?: IUser;
 	// The Worker execution context for background analytics delivery.
 	executionCtx?: ExecutionContext;
 	// Whether analytics tracking is permitted for this request.

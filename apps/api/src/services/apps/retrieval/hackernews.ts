@@ -1,5 +1,6 @@
 import { getAuxiliaryModelForRetrieval } from "~/lib/providers/models";
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
+import { createServiceContext } from "~/lib/context/serviceContext";
 import type { ChatRole, IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
@@ -148,6 +149,7 @@ export async function analyseHackerNewsStories({
 			user,
 		);
 		const provider = getChatProvider(providerToUse, { env, user });
+		const context = createServiceContext({ env, user });
 
 		const stringifiedStories = stories
 			.map(
@@ -170,7 +172,7 @@ export async function analyseHackerNewsStories({
 			{
 				model: modelToUse,
 				env,
-				user,
+				context,
 				messages,
 				max_tokens: 2048,
 				temperature: 0.7,

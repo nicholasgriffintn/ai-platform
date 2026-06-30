@@ -50,7 +50,6 @@ class ChatExecutionRequest {
 			model,
 			provider,
 			platform: this.platform,
-			user: chatOptions.context?.user,
 			context: chatOptions.context,
 			userSettings: prepared.userSettings,
 			app_url: chatOptions.app_url,

@@ -1,6 +1,7 @@
 import { findModelConfig } from "~/lib/providers/models";
 import { getTextToImageSystemPrompt, imagePrompts } from "~/lib/prompts/image";
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
+import { createServiceContext } from "~/lib/context/serviceContext";
 import { extractGeneratedAsset } from "~/lib/providers/utils/helpers";
 import { buildInputSchemaInput } from "~/utils/inputSchema";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -34,6 +35,7 @@ export class WorkersAiImageProvider implements ImageProvider {
 			env: request.env,
 			user: request.user,
 		});
+		const context = createServiceContext({ env: request.env, user: request.user });
 
 		const stylePrompt = resolveStylePrompt(request.style);
 		const prompt = stylePrompt ? `${stylePrompt}\n\n${request.prompt}` : request.prompt;
@@ -75,7 +77,7 @@ export class WorkersAiImageProvider implements ImageProvider {
 				input,
 			},
 			env: request.env,
-			user: request.user,
+			context,
 		});
 
 		const attachment = extractGeneratedAsset(response);

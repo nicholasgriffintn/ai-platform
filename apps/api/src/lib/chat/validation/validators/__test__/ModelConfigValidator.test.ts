@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { createServiceContext } from "~/lib/context/serviceContext";
 import type { CoreChatOptions } from "~/types";
 import type { ValidationContext } from "../../ValidationPipeline";
 import { ModelConfigValidator } from "../ModelConfigValidator";
@@ -53,19 +54,19 @@ describe("ModelConfigValidator", () => {
 
 		validator = new ModelConfigValidator();
 
+		const env: any = {
+			DB: {} as any,
+			AI: {} as any,
+			AWS_REGION: "us-east-1",
+		};
+		const user: any = {
+			id: 123,
+			email: "test@example.com",
+			plan_id: "pro",
+		};
 		baseOptions = {
-			// @ts-expect-error - mock implementation
-			env: {
-				DB: {} as any,
-				AI: {} as any,
-				AWS_REGION: "us-east-1",
-			},
-			// @ts-expect-error - mock implementation
-			user: {
-				id: 123,
-				email: "test@example.com",
-				plan_id: "pro",
-			},
+			env,
+			context: createServiceContext({ env, user }),
 			messages: [
 				{
 					role: "user",
@@ -117,7 +118,7 @@ describe("ModelConfigValidator", () => {
 				"Hello world",
 				[],
 				1000,
-				baseOptions.user,
+				baseOptions.context?.user,
 				"completion-123",
 				"claude-3-sonnet",
 				false,
@@ -129,7 +130,7 @@ describe("ModelConfigValidator", () => {
 				"claude-3-sonnet",
 				baseOptions.env,
 				undefined,
-				baseOptions.user.id,
+				baseOptions.context?.user?.id,
 			);
 		});
 
@@ -194,7 +195,7 @@ describe("ModelConfigValidator", () => {
 				"Hello world",
 				[{ type: "image", url: "data:image/jpeg;base64,..." }],
 				1000,
-				baseOptions.user,
+				baseOptions.context?.user,
 				"completion-123",
 				"claude-3-sonnet",
 				false,
@@ -218,7 +219,7 @@ describe("ModelConfigValidator", () => {
 				"Simple text message",
 				[],
 				1000,
-				baseOptions.user,
+				baseOptions.context?.user,
 				"completion-123",
 				"claude-3-sonnet",
 				false,
@@ -255,7 +256,7 @@ describe("ModelConfigValidator", () => {
 				"",
 				[],
 				1000,
-				baseOptions.user,
+				baseOptions.context?.user,
 				"completion-123",
 				"claude-3-sonnet",
 				false,
@@ -324,7 +325,7 @@ describe("ModelConfigValidator", () => {
 				"Hello world",
 				[],
 				1000,
-				baseOptions.user,
+				baseOptions.context?.user,
 				"completion-123",
 				"claude-3-sonnet",
 				true,
@@ -349,7 +350,7 @@ describe("ModelConfigValidator", () => {
 				"Hello world",
 				[],
 				1000,
-				baseOptions.user,
+				baseOptions.context?.user,
 				"completion-123",
 				undefined,
 				false,
@@ -376,7 +377,7 @@ describe("ModelConfigValidator", () => {
 				"Hello world",
 				[],
 				1000,
-				baseOptions.user,
+				baseOptions.context?.user,
 				"completion-123",
 				"claude-3-sonnet",
 				false,
@@ -402,7 +403,7 @@ describe("ModelConfigValidator", () => {
 				"Hello world",
 				[],
 				undefined,
-				baseOptions.user,
+				baseOptions.context?.user,
 				"completion-123",
 				undefined,
 				false,
@@ -452,7 +453,7 @@ describe("ModelConfigValidator", () => {
 				"Hello world",
 				complexAttachments,
 				1000,
-				baseOptions.user,
+				baseOptions.context?.user,
 				"completion-123",
 				"claude-3-sonnet",
 				false,

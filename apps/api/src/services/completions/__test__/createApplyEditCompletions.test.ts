@@ -101,7 +101,7 @@ describe("handleCreateApplyEditCompletions", () => {
 		});
 
 		const [payload, userId] = mockGetResponse.mock.calls[0];
-		expect(payload.user).toEqual(user);
+		expect(payload.context.user).toEqual(user);
 		expect(userId).toBe(user.id);
 	});
 });

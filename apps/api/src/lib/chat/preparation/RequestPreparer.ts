@@ -112,7 +112,7 @@ export class RequestPreparer {
 		}
 
 		const { platform = "api", anonymousUser, mode = "normal", executionCtx } = options;
-		const user = options.context?.user ?? options.user;
+		const user = options.context?.user;
 		const requestCache = options.context?.requestCache;
 		const database = options.context?.database ?? new Database(this.env);
 		const repositories = options.context?.repositories ?? database.repositories;
@@ -228,7 +228,8 @@ export class RequestPreparer {
 		options: CoreChatOptions,
 		validationContext: ValidationContext,
 	): Promise<ModelConfigInfo[]> {
-		const { env, provider: requestedProvider, user } = options;
+		const { env, provider: requestedProvider } = options;
+		const user = options.context?.user;
 		const { selectedModels, modelConfig } = validationContext;
 		const primaryModelConfig = modelConfig as ProviderModelConfig | undefined;
 
@@ -293,7 +294,8 @@ export class RequestPreparer {
 		userSettings: any,
 	): Promise<string> {
 		const { lastMessage } = validationContext;
-		const { use_rag, rag_options, env, user } = options;
+		const { use_rag, rag_options, env } = options;
+		const user = options.context?.user;
 
 		const lastMessageContent = Array.isArray(lastMessage!.content)
 			? lastMessage!.content
@@ -411,8 +413,8 @@ export class RequestPreparer {
 			reasoning_effort,
 			location,
 			completion_id,
-			user,
 		} = options;
+		const user = options.context?.user;
 
 		const currentMode = mode;
 		const promptMode = resolveChatPromptMode(options.options);

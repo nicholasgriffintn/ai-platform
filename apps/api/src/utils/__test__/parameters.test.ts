@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { createServiceContext } from "~/lib/context/serviceContext";
 import type { ChatCompletionParameters } from "~/types";
 import {
 	calculateReasoningBudget,
@@ -729,7 +730,10 @@ describe("parameters", () => {
 			const params = {
 				...baseParams,
 				enabled_tools: [],
-				user: { id: 1, plan_id: "pro" },
+				context: createServiceContext({
+					env: baseParams.env,
+					user: { id: 1, plan_id: "pro" } as any,
+				}),
 			} as ChatCompletionParameters;
 
 			const result = getToolsForProvider(params, modelConfig, "openai");

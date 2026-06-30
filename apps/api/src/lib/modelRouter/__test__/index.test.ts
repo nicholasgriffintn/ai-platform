@@ -162,6 +162,83 @@ describe("ModelRouter", () => {
 			);
 		});
 
+		it("does not fall back to the default model when a router mode has candidates but no required strengths", async () => {
+			const availableModels = {
+				"pro-model": {
+					...mockModelConfig,
+					id: "pro-model",
+					contextComplexity: 4,
+					reliability: 5,
+					speed: 3,
+					strengths: ["reasoning", "analysis"],
+					artificialAnalysis: { intelligenceIndex: 36 },
+				},
+			};
+
+			mockModels.getIncludedInRouterModelsForUser.mockResolvedValue(availableModels);
+			mockPromptAnalyzer.analyzePrompt.mockResolvedValue({
+				...mockRequirements,
+				expectedComplexity: 4,
+				requiredStrengths: [],
+				criticalStrengths: [],
+			});
+
+			const result = await ModelRouter.selectModel(
+				mockEnv,
+				"Hello",
+				[],
+				undefined,
+				mockUser,
+				"completion-123",
+				"pro",
+			);
+
+			expect(result).toBe("pro-model");
+		});
+
+		it("excludes flash-grade models from pro routing before ranking", async () => {
+			const availableModels = {
+				"deepseek-v4-flash": {
+					...mockModelConfig,
+					id: "deepseek-v4-flash",
+					contextComplexity: 5,
+					reliability: 1,
+					speed: 4,
+					strengths: ["reasoning", "coding", "analysis", "multilingual", "tool_use"],
+					artificialAnalysis: { intelligenceIndex: 28.7 },
+				},
+				"pro-model": {
+					...mockModelConfig,
+					id: "pro-model",
+					contextComplexity: 4,
+					reliability: 1,
+					speed: 2,
+					strengths: ["reasoning", "analysis"],
+					artificialAnalysis: { intelligenceIndex: 36 },
+				},
+			};
+
+			mockModels.getIncludedInRouterModelsForUser.mockResolvedValue(availableModels);
+			mockPromptAnalyzer.analyzePrompt.mockResolvedValue({
+				...mockRequirements,
+				expectedComplexity: 4,
+				requiredStrengths: [],
+				criticalStrengths: [],
+			});
+
+			const result = await ModelRouter.selectModel(
+				mockEnv,
+				"Hello",
+				[],
+				undefined,
+				mockUser,
+				"completion-123",
+				"pro",
+			);
+
+			expect(result).toBe("pro-model");
+		});
+
 		it("should return default model when no suitable models found", async () => {
 			mockModels.getIncludedInRouterModelsForUser.mockResolvedValue({});
 			mockPromptAnalyzer.analyzePrompt.mockResolvedValue(mockRequirements);

@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { createServiceContext } from "~/lib/context/serviceContext";
 import { createStreamWithPostProcessing } from "../streaming";
 
 const memoryMocks = vi.hoisted(() => ({
@@ -240,7 +241,10 @@ describe("createStreamWithPostProcessing", () => {
 				completion_id: "completion-1",
 				model: "gpt-5.4-mini",
 				provider: "openai",
-				user: { id: 42, plan_id: "pro" } as any,
+				context: createServiceContext({
+					env: { AI: {} } as any,
+					user: { id: 42, plan_id: "pro" } as any,
+				}),
 				userSettings: {
 					memories_save_enabled: true,
 					memories_chat_history_enabled: true,

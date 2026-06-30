@@ -103,7 +103,7 @@ export async function createNote({
 	const sanitisedContent = sanitiseInput(data.content);
 
 	const generatedMetadata = await generateNoteMetadata(
-		runtimeEnv,
+		serviceContext,
 		user,
 		sanitisedTitle,
 		sanitisedContent,
@@ -175,7 +175,7 @@ export async function updateNote({
 
 	if (shouldRegenerateMetadata) {
 		const generatedMetadata = await generateNoteMetadata(
-			runtimeEnv,
+			serviceContext,
 			user,
 			sanitisedTitle,
 			sanitisedContent,
@@ -334,7 +334,7 @@ ${note.content}`;
 			{
 				model: modelToUse,
 				env: runtimeEnv,
-				user,
+				context: serviceContext,
 				messages,
 				temperature: 0.7,
 				max_tokens: 2048,
@@ -357,12 +357,13 @@ ${note.content}`;
 }
 
 async function generateNoteMetadata(
-	env: IEnv,
+	context: ServiceContext,
 	user: IUser,
 	title: string,
 	content: string,
 	existingMetadata?: Record<string, unknown>,
 ): Promise<Record<string, unknown>> {
+	const env = context.env as IEnv;
 	const tabSource = isRecord(existingMetadata?.tabSource) ? existingMetadata.tabSource : undefined;
 	const tabSourceText = tabSource
 		? `\n\nNote: This content was captured from tab audio recording:
@@ -394,7 +395,7 @@ Return only valid JSON without any markdown formatting.`;
 			{
 				model: modelToUse,
 				env,
-				user,
+				context,
 				messages: [{ role: "user" as ChatRole, content: prompt }],
 				temperature: 0.3,
 				max_tokens: 500,

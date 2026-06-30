@@ -350,7 +350,7 @@ export class WorkersProvider extends BaseProvider {
 	}
 
 	async getResponse(params: ChatCompletionParameters, userId?: number): Promise<any> {
-		const { model, env, user: _user } = params;
+		const { model, env } = params;
 
 		if (!model) {
 			throw new AssistantError("Missing model", ErrorType.PARAMS_ERROR);

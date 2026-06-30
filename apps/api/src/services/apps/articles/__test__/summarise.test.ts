@@ -295,7 +295,9 @@ describe("summariseArticle", () => {
 				},
 			],
 			env: mockEnv,
-			user: mockUser,
+			context: expect.objectContaining({
+				user: mockUser,
+			}),
 		});
 	});
 

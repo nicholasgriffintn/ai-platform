@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { createServiceContext } from "~/lib/context/serviceContext";
 import type { CoreChatOptions } from "~/types";
 import type { ValidationContext } from "../../ValidationPipeline";
 import { ContextLimitValidator } from "../ContextLimitValidator";
@@ -37,19 +38,21 @@ describe("ContextLimitValidator", () => {
 
 		validator = new ContextLimitValidator();
 
+		const env: any = {
+			DB: {} as any,
+			AI: {} as any,
+			AWS_REGION: "us-east-1",
+		};
 		baseOptions = {
-			// @ts-expect-error - mock implementation
-			env: {
-				DB: {} as any,
-				AI: {} as any,
-				AWS_REGION: "us-east-1",
-			},
-			// @ts-expect-error - mock implementation
-			user: {
-				id: 123,
-				email: "test@example.com",
-				plan_id: "pro",
-			},
+			env,
+			context: createServiceContext({
+				env,
+				user: {
+					id: 123,
+					email: "test@example.com",
+					plan_id: "pro",
+				} as any,
+			}),
 			messages: [
 				{
 					role: "user",

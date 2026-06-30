@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { createServiceContext } from "~/lib/context/serviceContext";
 import type { CoreChatOptions } from "~/types";
 import type { ValidationContext } from "../../ValidationPipeline";
 import { GuardrailsValidator } from "../GuardrailsValidator";
@@ -45,19 +46,21 @@ describe("GuardrailsValidator", () => {
 
 		validator = new GuardrailsValidator();
 
+		const env: any = {
+			DB: {} as any,
+			AI: {} as any,
+			AWS_REGION: "us-east-1",
+		};
 		baseOptions = {
-			// @ts-expect-error - mock implementation
-			env: {
-				DB: {} as any,
-				AI: {} as any,
-				AWS_REGION: "us-east-1",
-			},
-			// @ts-expect-error - mock implementation
-			user: {
-				id: 123,
-				email: "test@example.com",
-				plan_id: "pro",
-			},
+			env,
+			context: createServiceContext({
+				env,
+				user: {
+					id: 123,
+					email: "test@example.com",
+					plan_id: "pro",
+				} as any,
+			}),
 			messages: [
 				{
 					role: "user",
@@ -162,9 +165,12 @@ describe("GuardrailsValidator", () => {
 		it("should handle missing user id", async () => {
 			const optionsWithoutUserId = {
 				...baseOptions,
-				user: {
-					email: "test@example.com",
-				} as any,
+				context: createServiceContext({
+					env: baseOptions.env,
+					user: {
+						email: "test@example.com",
+					} as any,
+				}),
 			};
 
 			const result = await validator.validate(optionsWithoutUserId, baseContext);
@@ -181,7 +187,7 @@ describe("GuardrailsValidator", () => {
 		it("should handle missing user entirely", async () => {
 			const optionsWithoutUser = {
 				...baseOptions,
-				user: undefined,
+				context: createServiceContext({ env: baseOptions.env, user: null }),
 			};
 
 			const result = await validator.validate(optionsWithoutUser, baseContext);

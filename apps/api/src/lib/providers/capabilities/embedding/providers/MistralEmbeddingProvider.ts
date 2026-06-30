@@ -12,6 +12,7 @@ import type {
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 import { getModelConfig } from "~/lib/providers/models";
+import { createServiceContext } from "~/lib/context/serviceContext";
 import { getChatProvider } from "../../chat";
 import { safeParseJson } from "~/utils/json";
 import {
@@ -63,7 +64,7 @@ export class MistralEmbeddingProvider implements EmbeddingProvider {
 			{
 				model: mistralModelConfig.matchingModel,
 				env: this.env,
-				user: this.user,
+				context: createServiceContext({ env: this.env, user: this.user }),
 				body: {
 					input: trimmedContent,
 				},

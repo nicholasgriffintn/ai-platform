@@ -1,5 +1,6 @@
 import type { AudioProvider, AudioSynthesisRequest, AudioSynthesisResult } from "..";
 import { BaseAudioProvider } from "../base";
+import { createServiceContext } from "~/lib/context/serviceContext";
 import { CertesiaProvider } from "~/lib/providers/capabilities/chat/providers/certesia";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
@@ -16,7 +17,7 @@ export class CartesiaAudioProvider extends BaseAudioProvider implements AudioPro
 			message: request.input,
 			env: request.env,
 			messages: [],
-			user: request.user,
+			context: createServiceContext({ env: request.env, user: request.user }),
 		});
 
 		if (!(response instanceof Response) && !(response instanceof ArrayBuffer)) {

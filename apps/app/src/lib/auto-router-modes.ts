@@ -1,6 +1,7 @@
 import {
 	doesModelMatchRouterMode,
 	isActiveRouterModel,
+	sortModelsByRouterModeFit,
 	type ModelConfigItem,
 	type ModelRouterMode,
 } from "@assistant/schemas";
@@ -64,7 +65,10 @@ export function countAutoRouterModeCandidates(models: ModelConfigItem[], mode: M
 }
 
 export function getAutoRouterModeCandidates(models: ModelConfigItem[], mode: ModelRouterMode) {
-	return models.filter((model) => doesModelMatchAutoRouterMode(model, mode));
+	return sortModelsByRouterModeFit(
+		models.filter((model) => doesModelMatchAutoRouterMode(model, mode)),
+		mode,
+	);
 }
 
 export function getAutoRouterModeDefinition(mode: ModelRouterMode) {

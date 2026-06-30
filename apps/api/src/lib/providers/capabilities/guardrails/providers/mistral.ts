@@ -1,6 +1,7 @@
 import type { Ai } from "@cloudflare/workers-types";
 
 import type { GuardrailResult, GuardrailsProvider, IEnv, IUser } from "~/types";
+import { createServiceContext } from "~/lib/context/serviceContext";
 import { getLogger } from "~/utils/logger";
 import { AssistantError } from "../../../../../utils/errors";
 import { getChatProvider } from "../../chat";
@@ -36,7 +37,7 @@ export class MistralGuardProvider implements GuardrailsProvider {
 				{
 					model,
 					env: this.config.env,
-					user: this.config.user,
+					context: createServiceContext({ env: this.config.env, user: this.config.user }),
 					body: {
 						input: content,
 					},

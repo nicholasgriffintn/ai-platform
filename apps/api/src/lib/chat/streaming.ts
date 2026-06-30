@@ -125,7 +125,6 @@ export interface StreamPostProcessingOptions {
 	model: string;
 	provider: string;
 	platform?: Platform;
-	user?: IUser;
 	context?: ServiceContext;
 	userSettings?: IUserSettings;
 	app_url?: string;
@@ -151,7 +150,6 @@ export async function createStreamWithPostProcessing(
 		completion_id,
 		model,
 		platform = "api",
-		user,
 		context,
 		userSettings,
 		app_url,
@@ -162,6 +160,7 @@ export async function createStreamWithPostProcessing(
 		enabled_tools,
 		approved_tools,
 	} = options;
+	const user = context?.user;
 
 	const fullContentChunks: string[] = [];
 	const fullThinkingChunks: string[] = [];
@@ -353,7 +352,7 @@ export async function createStreamWithPostProcessing(
 								modalities: modelConfig?.modalities,
 								env,
 								is_streaming: true,
-								userId: options.user?.id,
+								userId: context?.user?.id,
 							});
 
 							let contentDelta = "";

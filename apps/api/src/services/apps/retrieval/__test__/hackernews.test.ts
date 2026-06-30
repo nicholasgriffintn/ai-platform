@@ -293,7 +293,9 @@ describe("HackerNews Services", () => {
 				expect.objectContaining({
 					model: "gpt-4o-mini",
 					env: mockEnv,
-					user: mockUser,
+					context: expect.objectContaining({
+						user: mockUser,
+					}),
 					messages: expect.arrayContaining([
 						expect.objectContaining({
 							role: "system",

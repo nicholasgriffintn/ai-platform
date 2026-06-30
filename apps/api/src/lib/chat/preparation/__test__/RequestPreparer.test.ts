@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { getAllAttachments, pruneMessagesToFitContext, sanitiseInput } from "~/lib/chat/utils";
+import { createServiceContext } from "~/lib/context/serviceContext";
 import { findModelConfig } from "~/lib/providers/models";
 import { getSystemPrompt } from "~/lib/prompts";
 import type { CoreChatOptions } from "~/types";
@@ -105,14 +106,14 @@ describe("RequestPreparer", () => {
 
 		preparer = new RequestPreparer(mockEnv);
 
-		// @ts-expect-error - mock implementation
+		const user = {
+			id: "user-123",
+			email: "test@example.com",
+			plan_id: "pro",
+		};
 		baseOptions = {
 			env: mockEnv,
-			user: {
-				id: "user-123",
-				email: "test@example.com",
-				plan_id: "pro",
-			},
+			context: createServiceContext({ env: mockEnv, user: user as any }),
 			completion_id: "completion-123",
 			platform: "api",
 			mode: "normal",
@@ -221,7 +222,7 @@ describe("RequestPreparer", () => {
 		it("should handle anonymous user properly", async () => {
 			const anonymousOptions = {
 				...baseOptions,
-				user: undefined,
+				context: createServiceContext({ env: mockEnv, user: null }),
 				anonymousUser: { id: "anon-123" },
 			};
 
@@ -233,7 +234,10 @@ describe("RequestPreparer", () => {
 		it("should handle free user properly", async () => {
 			const freeUserOptions = {
 				...baseOptions,
-				user: { ...baseOptions.user!, plan_id: "free" },
+				context: createServiceContext({
+					env: mockEnv,
+					user: { ...baseOptions.context?.user!, plan_id: "free" } as any,
+				}),
 			};
 
 			const result = await preparer.prepare(freeUserOptions, baseValidationContext);
@@ -323,7 +327,7 @@ describe("RequestPreparer", () => {
 				"gpt-4o",
 				mockEnv,
 				undefined,
-				baseOptions.user.id,
+				baseOptions.context?.user?.id,
 			);
 			expect(result).toEqual([
 				{
@@ -410,7 +414,7 @@ describe("RequestPreparer", () => {
 				query: "Hello world",
 				options: { topK: 5 },
 				env: mockEnv,
-				user: ragOptions.user,
+				user: ragOptions.context?.user,
 			});
 		});
 

@@ -1,4 +1,5 @@
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
+import { createServiceContext } from "~/lib/context/serviceContext";
 import { getAuxiliaryModel } from "~/lib/providers/models";
 import type { ConversationManager } from "~/lib/conversationManager";
 import type { ChatMode, IEnv, Message, IUser } from "~/types";
@@ -93,7 +94,7 @@ export class SessionManager {
 
 			const response = await chatProvider.getResponse({
 				env: this.env,
-				user: this.user,
+				context: createServiceContext({ env: this.env, user: this.user }),
 				model,
 				messages: [
 					{

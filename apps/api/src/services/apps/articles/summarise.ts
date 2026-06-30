@@ -89,7 +89,7 @@ export async function summariseArticle({
 				},
 			],
 			env: serviceContext.env,
-			user,
+			context: serviceContext,
 		});
 
 		const summaryGenDataContent = summaryGenData.content || summaryGenData.response;

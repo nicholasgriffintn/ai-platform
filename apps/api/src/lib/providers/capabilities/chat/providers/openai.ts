@@ -440,6 +440,7 @@ export class OpenAIProvider extends BaseProvider {
 		const verbosityParams = shouldSendProviderVerbosity(modelConfig, verbositySetting)
 			? { verbosity: verbositySetting }
 			: {};
+		const user = providerParams.context?.user;
 
 		if (shouldUseOpenAIResponsesApi(providerParams, modelConfig)) {
 			return buildOpenAIResponsesBody(
@@ -462,8 +463,7 @@ export class OpenAIProvider extends BaseProvider {
 			logit_bias: providerParams.logit_bias,
 			n: providerParams.n,
 			stop: providerParams.stop,
-			user:
-				typeof providerParams.user === "string" ? providerParams.user : providerParams.user?.email,
+			user: user?.email,
 		};
 	}
 }

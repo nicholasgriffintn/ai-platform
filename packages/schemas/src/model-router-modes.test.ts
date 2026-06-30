@@ -5,6 +5,7 @@ import {
 	doesModelMatchRouterMode,
 	filterModelsByRouterMode,
 	isActiveRouterModel,
+	sortModelsByRouterModeFit,
 } from "./model-router-modes";
 
 const makeModel = (id: string, overrides: Partial<ModelConfigItem> = {}): ModelConfigItem => ({
@@ -57,17 +58,64 @@ describe("model router modes", () => {
 		const proModel = makeModel("pro", {
 			contextComplexity: 4,
 			speed: 3,
+			artificialAnalysis: { intelligenceIndex: 35 },
 			strengths: ["reasoning", "tool_use"],
 		});
 		const maxModel = makeModel("max", {
 			contextComplexity: 5,
 			reliability: 5,
+			artificialAnalysis: { intelligenceIndex: 45 },
 			strengths: ["reasoning"],
 		});
 
 		expect(doesModelMatchRouterMode(proModel, "pro")).toBe(true);
 		expect(doesModelMatchRouterMode(proModel, "max")).toBe(false);
 		expect(doesModelMatchRouterMode(maxModel, "max")).toBe(true);
+	});
+
+	it("does not promote reliable mid-grade models into max", () => {
+		expect(
+			doesModelMatchRouterMode(
+				makeModel("reliable-mid", {
+					contextComplexity: 3,
+					reliability: 5,
+					speed: 4,
+					strengths: ["chat"],
+					artificialAnalysis: { intelligenceIndex: 12 },
+				}),
+				"max",
+			),
+		).toBe(false);
+	});
+
+	it("does not promote low-benchmark advanced-strength models into pro", () => {
+		expect(
+			doesModelMatchRouterMode(
+				makeModel("weak-reasoning", {
+					contextComplexity: 4,
+					reliability: 5,
+					speed: 4,
+					strengths: ["reasoning"],
+					artificialAnalysis: { intelligenceIndex: 7 },
+				}),
+				"pro",
+			),
+		).toBe(false);
+	});
+
+	it("does not promote flash-grade models into pro", () => {
+		expect(
+			doesModelMatchRouterMode(
+				makeModel("deepseek-v4-flash", {
+					contextComplexity: 5,
+					reliability: 1,
+					speed: 4,
+					strengths: ["reasoning", "coding", "analysis", "multilingual", "tool_use"],
+					artificialAnalysis: { intelligenceIndex: 28.7 },
+				}),
+				"pro",
+			),
+		).toBe(false);
 	});
 
 	it("filters model maps by router mode", () => {
@@ -83,5 +131,31 @@ describe("model router modes", () => {
 				),
 			),
 		).toEqual(["lite-1", "lite-2"]);
+	});
+
+	it("sorts models by router-mode fit instead of catalogue order", () => {
+		expect(
+			sortModelsByRouterModeFit(
+				[
+					makeModel("mid", {
+						name: "Mid",
+						contextComplexity: 4,
+						reliability: 3,
+						speed: 3,
+						strengths: ["reasoning"],
+						artificialAnalysis: { intelligenceIndex: 35 },
+					}),
+					makeModel("strong", {
+						name: "Strong",
+						contextComplexity: 5,
+						reliability: 5,
+						speed: 3,
+						strengths: ["reasoning", "analysis"],
+						artificialAnalysis: { intelligenceIndex: 45 },
+					}),
+				],
+				"pro",
+			).map((model) => model.id),
+		).toEqual(["strong", "mid"]);
 	});
 });

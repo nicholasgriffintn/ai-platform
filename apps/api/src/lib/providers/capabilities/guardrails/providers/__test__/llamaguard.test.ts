@@ -182,7 +182,7 @@ describe("LlamaGuardProvider", () => {
 			const callArgs = mockAIProvider.getResponse.mock.calls[0][0];
 			expect(callArgs.model).toBe("llama-guard-model");
 			expect(callArgs.env).toBe(mockConfig.env);
-			expect(callArgs.user).toBe(mockConfig.user);
+			expect(callArgs.context.user).toBe(mockConfig.user);
 		});
 
 		it("should handle AI provider errors", async () => {

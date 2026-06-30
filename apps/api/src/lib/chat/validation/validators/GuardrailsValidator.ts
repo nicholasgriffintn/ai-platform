@@ -15,7 +15,8 @@ const logger = getLogger({
 
 export class GuardrailsValidator implements Validator {
 	async validate(options: CoreChatOptions, context: ValidationContext): Promise<ValidatorResult> {
-		const { env, user, completion_id } = options;
+		const { env, completion_id } = options;
+		const user = options.context?.user;
 		const requestCache = options.context?.requestCache;
 
 		if (!context.messageWithContext) {

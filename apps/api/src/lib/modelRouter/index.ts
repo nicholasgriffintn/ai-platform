@@ -211,15 +211,6 @@ export class ModelRouter {
 			};
 		}
 
-		if (requirements.requiredStrengths.length === 0) {
-			return {
-				model,
-				score: 0,
-				reason: "No required strengths",
-				provider: capabilities.provider,
-			};
-		}
-
 		const score = ModelRouter.calculateScore(requirements, capabilities);
 
 		return {
@@ -338,10 +329,20 @@ export class ModelRouter {
 		return modelScoresNormalized.sort((a, b) => b.normalizedScore - a.normalizedScore);
 	}
 
-	private static selectBestModel(modelScores: ModelScore[]): string {
+	private static selectBestModel(
+		modelScores: ModelScore[],
+		options: { fallbackModel?: string; routerMode?: ModelRouterMode } = {},
+	): string {
 		if (modelScores.length === 0) {
-			logger.warn("No suitable model found. Falling back to default model.");
-			return defaultModel;
+			if (options.fallbackModel) {
+				logger.warn("No suitable model found. Falling back to default model.");
+				return options.fallbackModel;
+			}
+
+			throw new AssistantError(
+				`No suitable models found for ${options.routerMode ?? "requested"} automatic mode.`,
+				ErrorType.PARAMS_ERROR,
+			);
 		}
 
 		return modelScores[0].model;
@@ -409,7 +410,10 @@ export class ModelRouter {
 
 				const suitableModels = modelScores.filter((model) => model.score > 0);
 
-				return ModelRouter.selectBestModel(suitableModels);
+				return ModelRouter.selectBestModel(suitableModels, {
+					fallbackModel: routerMode === "auto" ? defaultModel : undefined,
+					routerMode,
+				});
 			},
 			env.ANALYTICS,
 			{ prompt },
@@ -417,6 +421,9 @@ export class ModelRouter {
 			completion_id,
 		).catch((error) => {
 			logger.error("Error in model selection:", { error });
+			if (routerMode !== "auto") {
+				throw error;
+			}
 			return defaultModel;
 		});
 	}
@@ -453,7 +460,12 @@ export class ModelRouter {
 					return await ModelRouter.selectModelsForComparison(suitableModels);
 				}
 
-				return [ModelRouter.selectBestModel(suitableModels)];
+				return [
+					ModelRouter.selectBestModel(suitableModels, {
+						fallbackModel: routerMode === "auto" ? defaultModel : undefined,
+						routerMode,
+					}),
+				];
 			},
 			env.ANALYTICS,
 			{ prompt },
@@ -461,6 +473,9 @@ export class ModelRouter {
 			completion_id,
 		).catch((error) => {
 			logger.error("Error in multi-model selection:", { error });
+			if (routerMode !== "auto") {
+				throw error;
+			}
 			return [defaultModel];
 		});
 	}

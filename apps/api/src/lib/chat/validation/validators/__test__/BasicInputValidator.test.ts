@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { createServiceContext } from "~/lib/context/serviceContext";
 import type { CoreChatOptions } from "~/types";
 import type { ValidationContext } from "../../ValidationPipeline";
 import { BasicInputValidator } from "../BasicInputValidator";
@@ -23,17 +24,19 @@ describe("BasicInputValidator", () => {
 
 		validator = new BasicInputValidator();
 
+		const env: any = {
+			DB: {} as any,
+			AI: {} as any,
+		};
 		baseOptions = {
-			// @ts-expect-error - mock implementation
-			env: {
-				DB: {} as any,
-				AI: {} as any,
-			},
-			// @ts-expect-error - mock implementation
-			user: {
-				id: 123,
-				email: "test@example.com",
-			},
+			env,
+			context: createServiceContext({
+				env,
+				user: {
+					id: 123,
+					email: "test@example.com",
+				} as any,
+			}),
 			messages: [
 				{
 					role: "user",
@@ -179,11 +182,7 @@ describe("BasicInputValidator", () => {
 
 			mockSanitiseMessages.mockReturnValue(sanitizedMessages);
 
-			const result = await validator.validate(
-				baseOptions,
-				// @ts-expect-error - mock implementation
-				contextWithExistingData,
-			);
+			const result = await validator.validate(baseOptions, contextWithExistingData as any);
 
 			expect(result.validation.isValid).toBe(true);
 			expect(result.context).toEqual({

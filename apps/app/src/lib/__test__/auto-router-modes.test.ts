@@ -57,11 +57,13 @@ describe("auto router modes", () => {
 		const proModel = makeModel("pro", {
 			contextComplexity: 4,
 			speed: 3,
+			artificialAnalysis: { intelligenceIndex: 35 },
 			strengths: ["reasoning", "tool_use"],
 		});
 		const maxModel = makeModel("max", {
 			contextComplexity: 5,
 			reliability: 5,
+			artificialAnalysis: { intelligenceIndex: 45 },
 			strengths: ["reasoning"],
 		});
 

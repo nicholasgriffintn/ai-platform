@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import type { ModelConfigItem } from "@assistant/schemas";
+import { createServiceContext } from "~/lib/context/serviceContext";
 import type { StorageService } from "~/lib/storage";
 import { getModelConfigByMatchingModel } from "~/lib/providers/models";
 import type { ChatCompletionParameters, IEnv, IUser } from "~/types";
@@ -162,7 +163,7 @@ describe("OpenAIProvider", () => {
 					},
 				],
 				env,
-				user,
+				context: createServiceContext({ env, user }),
 			};
 			const storageService: StorageService = Object.create(null);
 			storageService.downloadFile = vi

@@ -129,7 +129,7 @@ export const handlePodcastTranscribe = async (
 				},
 			],
 			env: runtimeEnv,
-			user,
+			context: serviceContext,
 		});
 
 		const isAsync = transcriptionData?.status === "in_progress";

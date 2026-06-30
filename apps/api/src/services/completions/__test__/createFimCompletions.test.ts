@@ -103,7 +103,9 @@ describe("handleCreateFimCompletions", () => {
 		expect(mockGetProvider).toHaveBeenCalledWith("mistral", { env, user });
 		expect(mockGetResponse).toHaveBeenCalledWith({
 			env,
-			user,
+			context: expect.objectContaining({
+				user,
+			}),
 			model: "codestral-latest",
 			provider: "mistral",
 			prompt: "print(",
@@ -141,7 +143,9 @@ describe("handleCreateFimCompletions", () => {
 		});
 		expect(mockGetResponse).toHaveBeenCalledWith({
 			env,
-			user: undefined,
+			context: expect.objectContaining({
+				user: null,
+			}),
 			model: "codestral-latest",
 			provider: "mistral",
 			prompt: "function main() {",

@@ -3,6 +3,7 @@ import type { ConversationManager } from "~/lib/conversationManager";
 import { getAuxiliaryModel } from "~/lib/providers/models";
 import { tutorSystemPrompt } from "~/lib/prompts";
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
+import { createServiceContext } from "~/lib/context/serviceContext";
 import { handleWebSearch } from "~/services/search/web";
 import type { IEnv, IUser, SearchOptions } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -73,6 +74,7 @@ export async function completeTutorRequest(
 
 	const { model: modelToUse, provider: providerToUse } = await getAuxiliaryModel(env, user);
 	const provider = getChatProvider(providerToUse, { env, user });
+	const context = createServiceContext({ env, user });
 
 	if (conversationManager) {
 		await conversationManager.add(new_completion_id, {
@@ -106,7 +108,7 @@ export async function completeTutorRequest(
 				content: query,
 			},
 		],
-		user: user,
+		context,
 		store: false,
 	});
 

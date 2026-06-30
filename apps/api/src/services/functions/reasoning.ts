@@ -1,6 +1,7 @@
 import { sanitiseInput } from "~/lib/chat/utils";
 import { getAuxiliaryModel } from "~/lib/providers/models";
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
+import { createServiceContext } from "~/lib/context/serviceContext";
 import { jsonSchemaToZod } from "./jsonSchema";
 import type { ApiToolDefinition } from "./types";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -70,6 +71,7 @@ Respond with:
 				env: req.env,
 				user: req.user,
 			});
+			const context = createServiceContext({ env: req.env, user: req.user });
 
 			const aiResponse = await provider.getResponse({
 				model: modelToUse,
@@ -84,7 +86,7 @@ Respond with:
 				stream: false,
 				store: false,
 				env: req.env,
-				user: req.user,
+				context,
 			});
 
 			if (!aiResponse.response) {

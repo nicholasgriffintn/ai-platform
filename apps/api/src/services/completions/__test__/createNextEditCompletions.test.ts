@@ -64,9 +64,11 @@ describe("handleCreateNextEditCompletions", () => {
 			user: undefined,
 		});
 		const [payload, userId] = mockGetResponse.mock.calls[0];
-		expect(payload).toEqual({
+		expect(payload).toMatchObject({
 			env,
-			user: undefined,
+			context: expect.objectContaining({
+				user: null,
+			}),
 			model: "mercury-coder",
 			provider: "inception",
 			messages: [

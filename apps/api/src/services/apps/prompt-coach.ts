@@ -1,4 +1,5 @@
 import { getAIResponse } from "~/lib/chat/responses";
+import { createServiceContext } from "~/lib/context/serviceContext";
 import { sanitiseInput } from "~/lib/chat/utils";
 import { getAuxiliaryModel } from "~/lib/providers/models";
 import { returnCoachingPrompt } from "~/lib/prompts/coaching";
@@ -44,6 +45,7 @@ export const handlePromptCoachSuggestion = async (req: {
 			},
 		];
 		const { model: modelToUse, provider: providerToUse } = await getAuxiliaryModel(env, user);
+		const context = createServiceContext({ env, user });
 
 		const payload: ChatCompletionParameters = {
 			model: modelToUse,
@@ -54,7 +56,7 @@ export const handlePromptCoachSuggestion = async (req: {
 			stream: false,
 			store: false,
 			env,
-			user,
+			context,
 		};
 
 		const aiResult = await getAIResponse(payload);

@@ -1,4 +1,5 @@
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
+import { createServiceContext } from "~/lib/context/serviceContext";
 import { resolveModelConfig } from "~/lib/providers/models";
 import type { ChatCompletionParameters, ChatRole, IEnv, IUser, Message } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -68,10 +69,11 @@ export async function handleCreateEditCompletions(
 	}
 
 	const provider = getChatProvider(modelConfig.provider, { env, user });
+	const context = createServiceContext({ env, user });
 
 	const editRequest: ChatCompletionParameters = {
 		env,
-		user,
+		context,
 		model: modelConfig.matchingModel,
 		provider: modelConfig.provider,
 		messages: normalizeCompletionMessages(messages),

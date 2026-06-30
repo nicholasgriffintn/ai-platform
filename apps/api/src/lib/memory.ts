@@ -1,5 +1,5 @@
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
-import type { ServiceContext } from "~/lib/context/serviceContext";
+import { createServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
 import { getMemoryProvider } from "~/lib/providers/capabilities/memory";
 import type { IEnv, IUser, IUserSettings, Message } from "~/types";
 import { parseAIResponseJson } from "~/utils/json";
@@ -157,11 +157,13 @@ export class MemoryManager {
 						env: this.env,
 						user: this.user,
 					});
+					const chatContext =
+						this.serviceContext ?? createServiceContext({ env: this.env, user: this.user });
 					const classifier = await provider.getResponse(
 						{
 							model: modelToUse,
 							env: this.env,
-							user: this.user,
+							context: chatContext,
 							messages: [
 								{
 									role: "system",
@@ -202,7 +204,7 @@ export class MemoryManager {
 									{
 										model: modelToUse,
 										env: this.env,
-										user: this.user,
+										context: chatContext,
 										messages: [
 											{
 												role: "system",
@@ -294,12 +296,14 @@ export class MemoryManager {
 						env: this.env,
 						user: this.user,
 					});
+					const chatContext =
+						this.serviceContext ?? createServiceContext({ env: this.env, user: this.user });
 
 					const summaryResp = await provider.getResponse(
 						{
 							model: modelToUse,
 							env: this.env,
-							user: this.user,
+							context: chatContext,
 							messages: [
 								{
 									role: "system",

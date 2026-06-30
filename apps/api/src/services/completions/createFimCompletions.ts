@@ -1,4 +1,5 @@
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
+import { createServiceContext } from "~/lib/context/serviceContext";
 import { ModelRouter } from "~/lib/modelRouter";
 import { resolveModelConfig } from "~/lib/providers/models";
 import type { IEnv, IUser, ChatCompletionParameters } from "~/types";
@@ -45,10 +46,11 @@ export const handleCreateFimCompletions = async ({
 	}
 
 	const provider = getChatProvider(modelConfig.provider, { env, user });
+	const context = createServiceContext({ env, user });
 
 	const fimRequest: ChatCompletionParameters = {
 		env,
-		user,
+		context,
 		model: modelConfig.matchingModel,
 		provider: modelConfig.provider,
 		message: prompt,

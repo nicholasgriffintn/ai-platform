@@ -45,9 +45,19 @@ describe("AutoModePicker", () => {
 			<AutoModePicker
 				models={[
 					makeModel("lite-1", { name: "Lite One", speed: 5, contextComplexity: 3 }),
-					makeModel("lite-2", { name: "Lite Two", speed: 4, contextComplexity: 4 }),
-					makeModel("lite-3", { name: "Lite Three", speed: 4, contextComplexity: 4 }),
-					makeModel("lite-4", { name: "Lite Four", speed: 4, contextComplexity: 4 }),
+					makeModel("lite-2", { name: "Lite Two", speed: 5, reliability: 5, contextComplexity: 4 }),
+					makeModel("lite-3", {
+						name: "Lite Three",
+						speed: 4,
+						reliability: 5,
+						contextComplexity: 4,
+					}),
+					makeModel("lite-4", {
+						name: "Lite Four",
+						speed: 4,
+						reliability: 1,
+						contextComplexity: 4,
+					}),
 					makeModel("slow", { speed: 2, contextComplexity: 3 }),
 				]}
 				selectedMode="lite"

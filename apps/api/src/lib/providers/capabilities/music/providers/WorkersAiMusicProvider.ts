@@ -1,4 +1,5 @@
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
+import { createServiceContext } from "~/lib/context/serviceContext";
 import { getModelConfigByModel } from "~/lib/providers/models";
 import { extractGeneratedAsset } from "~/lib/providers/utils/helpers";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -26,6 +27,7 @@ export class WorkersAiMusicProvider implements MusicProvider {
 			env: request.env,
 			user: request.user,
 		});
+		const context = createServiceContext({ env: request.env, user: request.user });
 
 		const input = buildInputSchemaInput(
 			{
@@ -51,7 +53,7 @@ export class WorkersAiMusicProvider implements MusicProvider {
 				input,
 			},
 			env: request.env,
-			user: request.user,
+			context,
 		});
 
 		const attachment = extractGeneratedAsset(response);

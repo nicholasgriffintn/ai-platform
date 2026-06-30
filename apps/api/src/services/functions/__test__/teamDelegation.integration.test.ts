@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ChatOrchestrator } from "~/lib/chat/core/ChatOrchestrator";
+import { createServiceContext } from "~/lib/context/serviceContext";
 import type { CoreChatOptions, Message } from "~/types";
 import z from "zod/v4";
 import { delegateToTeamMember, delegateToTeamMemberByRole } from "../teamDelegation";
@@ -406,8 +407,8 @@ describe("Team Delegation Integration", () => {
 				completion_id: "test-completion-id",
 				model: "test-model",
 				messages: [{ role: "user", content: "Please handle this complex task" }],
-				user: mockUser,
 				env: mockEnv,
+				context: createServiceContext({ env: mockEnv, user: mockUser }),
 				app_url: "https://test.com",
 				current_agent_id: "agent-123",
 				delegation_stack: [],
@@ -498,8 +499,8 @@ describe("Team Delegation Integration", () => {
 				completion_id: "test-completion-id",
 				model: "test-model",
 				messages: [{ role: "user", content: "Please handle this task" }],
-				user: mockUser,
 				env: mockEnv,
+				context: createServiceContext({ env: mockEnv, user: mockUser }),
 				app_url: "https://test.com",
 				tools: [
 					{

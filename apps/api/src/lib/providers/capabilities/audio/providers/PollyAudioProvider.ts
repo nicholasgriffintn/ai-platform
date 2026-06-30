@@ -1,5 +1,6 @@
 import type { AudioProvider, AudioSynthesisRequest, AudioSynthesisResult } from "..";
 import { BaseAudioProvider } from "../base";
+import { createServiceContext } from "~/lib/context/serviceContext";
 import { PollyProvider } from "../../chat/providers/polly";
 
 export class PollyAudioProvider extends BaseAudioProvider implements AudioProvider {
@@ -15,7 +16,7 @@ export class PollyAudioProvider extends BaseAudioProvider implements AudioProvid
 			message: request.input,
 			env: request.env,
 			messages: [],
-			user: request.user,
+			context: createServiceContext({ env: request.env, user: request.user }),
 			body: {
 				slug: slugBase,
 				storageService: storage,

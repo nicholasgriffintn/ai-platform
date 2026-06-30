@@ -6,6 +6,7 @@ type IncomingChatCompletionRequest =
 	| Omit<ChatCompletionParameters, "env">;
 type PreparedChatCompletionRequest = Omit<ChatCompletionParameters, "env">;
 type IncomingMessage = NonNullable<IncomingChatCompletionRequest["messages"]>[number];
+type RequestWithOpenAiUser = IncomingChatCompletionRequest & { user?: unknown };
 
 function textFromPart(part: NonNullable<IncomingMessage["parts"]>[number]): string | undefined {
 	if ("text" in part && typeof part.text === "string") {
@@ -66,7 +67,7 @@ export function normaliseChatCompletionRequest(
 		max_output_tokens: _maxOutputTokens,
 		reasoning: _reasoning,
 		...chatRequest
-	} = request;
+	} = request as RequestWithOpenAiUser;
 
 	return {
 		...chatRequest,

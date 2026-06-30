@@ -1,10 +1,11 @@
 import { fireEvent, render, screen, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import type { ModelRouterMode } from "@assistant/schemas";
 import { ModelSelector } from ".";
 
 const store = {
-	autoMode: "max" as const,
+	autoMode: "max" as ModelRouterMode,
 	chatMode: "remote",
 	chatSettings: {
 		temperature: 0.7,
@@ -103,5 +104,21 @@ describe("ModelSelector", () => {
 		expect(
 			screen.queryByRole("dialog", { name: "Model selection dialog" }),
 		).not.toBeInTheDocument();
+	});
+
+	it("switching to the auto tab clears an explicit model so router mode is sent", () => {
+		store.autoMode = "pro";
+		store.model = "deepseek-v4-flash";
+
+		render(<ModelSelector />);
+
+		fireEvent.click(screen.getByRole("button", { name: "Select a model" }));
+		const autoTab = screen.getByRole("tab", { name: "Auto" });
+		fireEvent.mouseDown(autoTab, { button: 0, ctrlKey: false });
+		fireEvent.click(autoTab);
+
+		expect(store.setChatMode).toHaveBeenCalledWith("remote");
+		expect(store.setSelectedAgentId).toHaveBeenCalledWith(null);
+		expect(store.setModel).toHaveBeenCalledWith(null);
 	});
 });

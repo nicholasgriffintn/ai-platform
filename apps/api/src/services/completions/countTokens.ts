@@ -76,7 +76,7 @@ export async function handleCountTokens(
 		messages,
 		system_prompt,
 		env,
-		user,
+		context,
 	};
 
 	try {

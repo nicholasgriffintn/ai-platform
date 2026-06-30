@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { createServiceContext } from "~/lib/context/serviceContext";
 import type { CoreChatOptions } from "~/types";
 import type { ValidationContext, Validator, ValidatorResult } from "../ValidationPipeline";
 import { ValidationPipeline } from "../ValidationPipeline";
@@ -100,19 +101,21 @@ describe("ValidationPipeline", () => {
 
 		pipeline = new ValidationPipeline();
 
+		const env: any = {
+			DB: {} as any,
+			AI: {} as any,
+			AWS_REGION: "us-east-1",
+		};
 		baseOptions = {
-			// @ts-expect-error - mock implementation
-			env: {
-				DB: {} as any,
-				AI: {} as any,
-				AWS_REGION: "us-east-1",
-			},
-			// @ts-expect-error - mock implementation
-			user: {
-				id: 123,
-				email: "test@example.com",
-				plan_id: "pro",
-			},
+			env,
+			context: createServiceContext({
+				env,
+				user: {
+					id: 123,
+					email: "test@example.com",
+					plan_id: "pro",
+				} as any,
+			}),
 			messages: [
 				{
 					role: "user",
@@ -305,9 +308,8 @@ describe("ValidationPipeline", () => {
 
 		it("should merge context from each validator", async () => {
 			const result = await pipeline.validate(baseOptions, {
-				// @ts-expect-error - mock implementation
 				existingKey: "value",
-			});
+			} as any);
 
 			expect(result.context).toEqual({
 				existingKey: "value",
@@ -361,8 +363,7 @@ describe("ValidationPipeline", () => {
 			const result = await pipeline.validate(baseOptions, baseContext);
 
 			expect(result.validation.isValid).toBe(true);
-			// @ts-expect-error - mock implementation
-			expect(result.context.customField).toBe("value");
+			expect((result.context as any).customField).toBe("value");
 			expect(customValidator.validate).toHaveBeenCalled();
 		});
 

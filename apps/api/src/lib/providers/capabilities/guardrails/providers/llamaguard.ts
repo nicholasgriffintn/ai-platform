@@ -1,6 +1,7 @@
 import type { Ai } from "@cloudflare/workers-types";
 
 import { getAuxiliaryGuardrailsModel } from "~/lib/providers/models";
+import { createServiceContext } from "~/lib/context/serviceContext";
 import type { GuardrailResult, GuardrailsProvider, IEnv, IUser } from "~/types";
 import { getLogger } from "~/utils/logger";
 import { AssistantError } from "../../../../../utils/errors";
@@ -56,7 +57,7 @@ S13: Elections.
 				{
 					model,
 					env: this.config.env,
-					user: this.config.user,
+					context: createServiceContext({ env: this.config.env, user: this.config.user }),
 					messages: [
 						{
 							role: "user",

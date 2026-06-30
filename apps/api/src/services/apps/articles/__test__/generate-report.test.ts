@@ -455,7 +455,9 @@ describe("generateArticlesReport", () => {
 				},
 			],
 			env: mockEnv,
-			user: mockUser,
+			context: expect.objectContaining({
+				user: mockUser,
+			}),
 		});
 	});
 

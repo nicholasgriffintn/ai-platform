@@ -88,7 +88,7 @@ export async function analyseArticle({
 				},
 			],
 			env: serviceContext.env,
-			user,
+			context: serviceContext,
 		});
 
 		const analysisDataContent = analysisData.content || analysisData.response;

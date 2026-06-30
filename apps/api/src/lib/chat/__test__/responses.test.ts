@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { createServiceContext } from "~/lib/context/serviceContext";
 import { findModelConfig } from "~/lib/providers/models";
 import * as chatCapability from "~/lib/providers/capabilities/chat";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -190,11 +191,15 @@ describe("responses", () => {
 	});
 
 	describe("getAIResponse", () => {
+		const baseEnv: any = {};
 		const baseParams = {
 			app_url: "https://test.com",
 			system_prompt: "You are helpful",
-			env: {},
-			user: { id: "user123" },
+			env: baseEnv,
+			context: createServiceContext({
+				env: baseEnv,
+				user: { id: "user123" } as any,
+			}),
 			mode: "normal",
 			model: "gpt-4",
 			messages: [{ role: "user", content: "Hello" }],
@@ -241,11 +246,11 @@ describe("responses", () => {
 				"gpt-4",
 				baseParams.env,
 				undefined,
-				baseParams.user.id,
+				baseParams.context.user?.id,
 			);
 			expect(chatCapability.getChatProvider).toHaveBeenCalledWith("openai", {
 				env: baseParams.env,
-				user: baseParams.user,
+				user: baseParams.context.user,
 			});
 			expect(formatMessages).toHaveBeenCalledWith(
 				"openai",
@@ -301,11 +306,11 @@ describe("responses", () => {
 				"xai/grok-3",
 				env,
 				"github-models",
-				baseParams.user.id,
+				baseParams.context.user?.id,
 			);
 			expect(chatCapability.getChatProvider).toHaveBeenCalledWith("github-models", {
 				env,
-				user: baseParams.user,
+				user: baseParams.context.user,
 			});
 			expect(mergeParametersWithDefaults).toHaveBeenCalledWith(
 				expect.objectContaining({

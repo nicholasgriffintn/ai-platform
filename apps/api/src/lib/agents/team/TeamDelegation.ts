@@ -1,4 +1,5 @@
 import { getAIResponse } from "~/lib/chat/responses";
+import { createServiceContext } from "~/lib/context/serviceContext";
 import type { Agent } from "~/lib/database/schema";
 import { getAuxiliaryModel, getModelConfig } from "~/lib/providers/models";
 import { AgentRepository } from "~/repositories/AgentRepository";
@@ -133,7 +134,7 @@ export class TeamDelegation {
 
 		const response = await getAIResponse({
 			env: this.context.env,
-			user: this.context.user,
+			context: createServiceContext({ env: this.context.env, user: this.context.user }),
 			messages,
 			model: agentModelConfig?.matchingModel || modelToUse,
 			provider: agentModelConfig?.provider || providerToUse,

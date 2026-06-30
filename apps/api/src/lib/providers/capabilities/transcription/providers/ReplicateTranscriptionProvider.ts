@@ -1,5 +1,6 @@
 import { getChatProvider } from "../../chat";
 import { getModelConfigByMatchingModel } from "~/lib/providers/models";
+import { createServiceContext } from "~/lib/context/serviceContext";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import type { TranscriptionRequest, TranscriptionResult } from "../index";
 import { BaseTranscriptionProvider } from "../base";
@@ -25,6 +26,7 @@ export class ReplicateTranscriptionProvider extends BaseTranscriptionProvider {
 				env,
 				user,
 			});
+			const context = createServiceContext({ env, user });
 
 			const transcriptionData = await provider.getResponse({
 				version: REPLICATE_TRANSCRIBE_VERSION,
@@ -43,7 +45,7 @@ export class ReplicateTranscriptionProvider extends BaseTranscriptionProvider {
 					},
 				],
 				env,
-				user,
+				context,
 			});
 
 			let text = "";

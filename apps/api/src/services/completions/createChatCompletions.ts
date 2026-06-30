@@ -48,7 +48,6 @@ export const handleCreateChatCompletions = async (req: {
 		app_url,
 		env,
 		anonymousUser,
-		user,
 		completion_id: completionIdWithFallback,
 		stream: isStreaming,
 		location: "location" in request ? request.location || undefined : undefined,

@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { createServiceContext } from "~/lib/context/serviceContext";
 import type { StorageService } from "~/lib/storage";
 import type { ChatCompletionParameters, IEnv, IUser } from "~/types";
 import { ErrorType } from "~/utils/errors";
@@ -11,7 +12,7 @@ function createParams(imageUrl: string, userId = 42): ChatCompletionParameters {
 
 	return {
 		env,
-		user,
+		context: createServiceContext({ env, user }),
 		model: "gpt-5.5",
 		messages: [
 			{

@@ -1,4 +1,5 @@
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
+import { createServiceContext } from "~/lib/context/serviceContext";
 import { jsonSchemaToZod } from "./jsonSchema";
 import type { ApiToolDefinition } from "./types";
 
@@ -69,11 +70,12 @@ export const v0_code_generation: ApiToolDefinition = {
 		}
 
 		const provider = getChatProvider("v0", { env: req.env, user: req.user });
+		const serviceContext = createServiceContext({ env: req.env, user: req.user });
 		const response = await provider.getResponse(
 			{
 				model: "v0-1.0-md",
 				env: req.env,
-				user: req.user,
+				context: serviceContext,
 				messages,
 			},
 			req.user?.id,

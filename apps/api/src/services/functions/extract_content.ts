@@ -1,4 +1,5 @@
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
+import { createServiceContext } from "~/lib/context/serviceContext";
 import { getAuxiliaryModelForRetrieval } from "~/lib/providers/models";
 import { extractContentsystem_prompt } from "~/lib/prompts";
 import { extractContent } from "~/services/apps/retrieval/content-extract";
@@ -128,11 +129,12 @@ export const extract_content: ApiToolDefinition = {
 			env,
 			user,
 		});
+		const serviceContext = createServiceContext({ env, user });
 
 		const aiResponse = await provider.getResponse({
 			completion_id,
 			app_url,
-			user,
+			context: serviceContext,
 			env,
 			messages,
 			message: `Summarize content from ${typeof urls === "string" ? urls : urls.join(", ")}`,

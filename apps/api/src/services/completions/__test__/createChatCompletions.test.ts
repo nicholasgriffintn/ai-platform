@@ -103,7 +103,6 @@ describe("handleCreateChatCompletions", () => {
 			expect(mockProcessChatRequest).toHaveBeenCalledWith(
 				expect.objectContaining({
 					env: mockEnv,
-					user: mockUser,
 					context: expect.objectContaining({ user: mockUser }),
 					messages: request.messages,
 					model: request.model,

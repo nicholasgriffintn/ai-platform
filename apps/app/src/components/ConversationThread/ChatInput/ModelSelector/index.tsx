@@ -848,6 +848,11 @@ export const ModelSelector = ({
 							if (tab === "auto") {
 								setChatMode("remote");
 								setSelectedAgentId(null);
+								selectModelWithDefaults(null, {
+									...chatSettings,
+									localOnly: false,
+								});
+								onModelChange?.(null);
 							} else if (tab === "models" && model === null) {
 								setChatMode("remote");
 								setSelectedAgentId(null);

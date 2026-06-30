@@ -1,5 +1,6 @@
 import type { AudioProvider, AudioSynthesisRequest, AudioSynthesisResult } from "..";
 import { BaseAudioProvider } from "../base";
+import { createServiceContext } from "~/lib/context/serviceContext";
 import { WorkersProvider } from "../../chat/providers/workers";
 
 export class MelottsAudioProvider extends BaseAudioProvider implements AudioProvider {
@@ -22,7 +23,7 @@ export class MelottsAudioProvider extends BaseAudioProvider implements AudioProv
 			],
 			lang: request.locale ?? "en",
 			env: request.env,
-			user: request.user,
+			context: createServiceContext({ env: request.env, user: request.user }),
 		});
 
 		if (typeof response === "string") {

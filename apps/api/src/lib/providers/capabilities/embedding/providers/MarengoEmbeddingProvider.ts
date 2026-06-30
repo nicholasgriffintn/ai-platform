@@ -1,6 +1,7 @@
 import type { Vectorize } from "@cloudflare/workers-types";
 
 import { getModelConfig } from "~/lib/providers/models";
+import { createServiceContext } from "~/lib/context/serviceContext";
 import { getChatProvider } from "../../chat";
 import type {
 	EmbeddingMutationResult,
@@ -76,7 +77,7 @@ export class MarengoEmbeddingProvider implements EmbeddingProvider {
 				{
 					model: marengoModelConfig.matchingModel,
 					env: this.env,
-					user: this.user,
+					context: createServiceContext({ env: this.env, user: this.user }),
 					messages: [
 						{
 							role: "user",

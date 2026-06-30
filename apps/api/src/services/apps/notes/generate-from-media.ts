@@ -1,5 +1,6 @@
 import { handleTranscribe, TranscriptionProvider } from "~/services/audio/transcribe";
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
+import { createServiceContext } from "~/lib/context/serviceContext";
 import { getAuxiliaryModel, getModelConfig } from "~/lib/providers/models";
 import { RepositoryManager } from "~/repositories";
 import { getEmbeddingProvider } from "~/lib/providers/capabilities/embedding/helpers";
@@ -100,12 +101,13 @@ ${extraPrompt ? `Additional context: ${extraPrompt}` : ""}`;
 				env,
 				user,
 			});
+			const context = createServiceContext({ env, user });
 
 			const videoResult = await pegasusProvider.getResponse(
 				{
 					model: pegasusModelConfig.matchingModel,
 					env,
-					user,
+					context,
 					messages: [
 						{
 							role: "user",
@@ -226,6 +228,7 @@ ${extraPrompt ? `Additional context: ${extraPrompt}` : ""}`;
 		const { model: modelToUse, provider: providerToUse } = await getAuxiliaryModel(env, user);
 
 		const provider = getChatProvider(providerToUse, { env, user });
+		const context = createServiceContext({ env, user });
 
 		const userPrompt = `${extraPrompt ? `${extraPrompt}\n\n` : ""}Transcript:\n\n${transcriptText}`;
 
@@ -233,7 +236,7 @@ ${extraPrompt ? `Additional context: ${extraPrompt}` : ""}`;
 			{
 				model: modelToUse,
 				env,
-				user,
+				context,
 				messages: [
 					{ role: "system", content: notePrompt },
 					{ role: "user", content: userPrompt },

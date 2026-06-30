@@ -1,6 +1,7 @@
 import { KeywordFilter } from "~/lib/keywords";
 import { getAuxiliaryModel, getAvailableStrengths } from "~/lib/providers/models";
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
+import { createServiceContext } from "~/lib/context/serviceContext";
 import { listFunctionTools } from "~/services/functions";
 import type { PromptRequirements } from "@assistant/schemas";
 import type { Attachment, IEnv, IUser } from "~/types";
@@ -45,10 +46,12 @@ export class PromptAnalyzer {
 	) {
 		const { model: modelToUse, provider: providerToUse } = await getAuxiliaryModel(env, user);
 
+		const context = createServiceContext({ env, user });
 		const provider = getChatProvider(providerToUse, { env, user });
 
 		return provider.getResponse({
 			env,
+			context,
 			model: modelToUse,
 			disable_functions: true,
 			messages: [
@@ -58,7 +61,6 @@ export class PromptAnalyzer {
 				},
 				{ role: "user", content: prompt },
 			],
-			user,
 			response_format: { type: "json_object" },
 		});
 	}

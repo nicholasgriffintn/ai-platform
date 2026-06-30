@@ -111,7 +111,7 @@ export async function generateStrudelCode({
 		const requestParameters = mergeParametersWithDefaults({
 			model,
 			env: runtimeEnv,
-			user,
+			context: serviceContext,
 			system_prompt: systemPrompt,
 			messages: formattedMessages,
 			temperature: 0.7,

@@ -3,7 +3,6 @@ import type { IUser } from "~/types";
 
 export interface RequestUserSource {
 	context?: Pick<ServiceContext, "user">;
-	user?: IUser | string | null;
 }
 
 export function resolveRequestUser(source: RequestUserSource): IUser | undefined {
@@ -12,5 +11,5 @@ export function resolveRequestUser(source: RequestUserSource): IUser | undefined
 		return contextUser;
 	}
 
-	return typeof source.user === "object" && source.user?.id ? source.user : undefined;
+	return undefined;
 }
