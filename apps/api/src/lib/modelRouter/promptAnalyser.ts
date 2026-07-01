@@ -2,15 +2,20 @@ import { KeywordFilter } from "~/lib/keywords";
 import { getAuxiliaryModel, getAvailableStrengths } from "~/lib/providers/models";
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import { createServiceContext } from "~/lib/context/serviceContext";
+import { estimateTextTokens } from "~/lib/messageTokens";
 import { listFunctionTools } from "~/services/functions";
 import type { PromptRequirements } from "@assistant/schemas";
 import type { Attachment, IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 import { safeParseJson } from "~/utils/json";
-import z from "zod/v4";
 
 const logger = getLogger({ prefix: "lib/modelRouter/promptAnalyser" });
+
+const ANALYSIS_MAX_OUTPUT_TOKENS = 512;
+const ANALYSIS_PROMPT_SAMPLE_MAX_CHARS = 3600;
+const FUNCTION_DESCRIPTION_MAX_CHARS = 120;
+const FUNCTION_SUMMARY_MAX_CHARS = 2400;
 
 export class PromptAnalyzer {
 	private static readonly FILTERS = {
@@ -45,6 +50,7 @@ export class PromptAnalyzer {
 		user: IUser,
 	) {
 		const { model: modelToUse, provider: providerToUse } = await getAuxiliaryModel(env, user);
+		const analysisPrompt = PromptAnalyzer.preparePromptForAnalysis(prompt);
 
 		const context = createServiceContext({ env, user });
 		const provider = getChatProvider(providerToUse, { env, user });
@@ -54,23 +60,74 @@ export class PromptAnalyzer {
 			context,
 			model: modelToUse,
 			disable_functions: true,
+			max_tokens: ANALYSIS_MAX_OUTPUT_TOKENS,
 			messages: [
 				{
 					role: "system",
 					content: PromptAnalyzer.constructsystem_prompt(keywords),
 				},
-				{ role: "user", content: prompt },
+				{ role: "user", content: analysisPrompt },
 			],
 			response_format: { type: "json_object" },
 		});
 	}
 
+	private static preparePromptForAnalysis(prompt: string): string {
+		if (prompt.length <= ANALYSIS_PROMPT_SAMPLE_MAX_CHARS) {
+			return prompt;
+		}
+
+		const estimatedInputTokens = estimateTextTokens(prompt);
+		const omittedCharacters = prompt.length - ANALYSIS_PROMPT_SAMPLE_MAX_CHARS;
+		const headLength = Math.ceil(ANALYSIS_PROMPT_SAMPLE_MAX_CHARS * 0.65);
+		const tailLength = ANALYSIS_PROMPT_SAMPLE_MAX_CHARS - headLength;
+		const promptExcerpt = [
+			prompt.slice(0, headLength),
+			`\n\n[Prompt excerpt truncated: ${omittedCharacters} characters omitted]\n\n`,
+			prompt.slice(-tailLength),
+		].join("");
+
+		return [
+			`Original prompt estimated input tokens: ${estimatedInputTokens}`,
+			"Analyse this bounded excerpt for routing. Use the estimate above for input-token scale.",
+			"",
+			promptExcerpt,
+		].join("\n");
+	}
+
+	private static truncateDescription(description: string): string {
+		const normalisedDescription = description.replace(/\s+/g, " ").trim();
+		if (normalisedDescription.length <= FUNCTION_DESCRIPTION_MAX_CHARS) {
+			return normalisedDescription;
+		}
+
+		return `${normalisedDescription.slice(0, FUNCTION_DESCRIPTION_MAX_CHARS - 3)}...`;
+	}
+
+	private static summarizeAvailableFunctions(): string {
+		const tools = listFunctionTools();
+		const summaries: string[] = [];
+		let usedCharacters = 0;
+
+		for (const tool of tools) {
+			const summary = `${tool.name}: ${PromptAnalyzer.truncateDescription(tool.description)}`;
+			const separatorLength = summaries.length > 0 ? 2 : 0;
+
+			if (usedCharacters + separatorLength + summary.length > FUNCTION_SUMMARY_MAX_CHARS) {
+				const remainingTools = tools.length - summaries.length;
+				summaries.push(`and ${remainingTools} more tools`);
+				break;
+			}
+
+			summaries.push(summary);
+			usedCharacters += separatorLength + summary.length;
+		}
+
+		return summaries.join("; ");
+	}
+
 	private static constructsystem_prompt(keywords: string[]): string {
-		const availableFunctions = listFunctionTools().map((tool) => ({
-			name: tool.name,
-			description: tool.description,
-			parameters: z.toJSONSchema(tool.inputSchema),
-		}));
+		const availableFunctions = PromptAnalyzer.summarizeAvailableFunctions();
 
 		const categorizedKeywords = keywords.reduce(
 			(acc, keyword) => {
@@ -95,7 +152,7 @@ export class PromptAnalyzer {
   "criticalStrengths": string[], // array of absolutely critical model strengths
   "estimatedInputTokens": number, // estimated number of input tokens
   "estimatedOutputTokens": number, // estimated number of output tokens
-  "needsFunctions": boolean, // true if the task requires function calling based on available tools that is not available its strengths: ${JSON.stringify(availableFunctions)}
+  "needsFunctions": boolean, // true if the task requires one of these available tools: ${availableFunctions}
   "benefitsFromMultipleModels": boolean, // true if the task would benefit from multiple AI models' perspectives
   "modelComparisonReason": string // brief explanation of why multiple models would be beneficial, if applicable
 }

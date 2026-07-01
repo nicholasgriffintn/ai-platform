@@ -73,6 +73,7 @@ export const UPDATE_FIELD_ORDER = [
 	"supportsAttachments",
 	"supportsTemperature",
 	"supportsToolCalls",
+	"supportsToolChoice",
 	"supportsResponseFormat",
 	"contextWindow",
 	"maxTokens",

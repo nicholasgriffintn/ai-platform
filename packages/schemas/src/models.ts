@@ -152,6 +152,7 @@ export const modelConfigItemSchema = z.object({
 	costPer1kSearches: z.number().optional(),
 	costPerRun: z.number().optional(),
 	supportsToolCalls: z.boolean().optional(),
+	supportsToolChoice: z.boolean().optional(),
 	supportsResponseFormat: z.boolean().optional(),
 	supportsArtifacts: z.boolean().optional(),
 	supportsStreaming: z.boolean().optional(),

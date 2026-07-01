@@ -712,6 +712,25 @@ describe("parameters", () => {
 			expect(result.tool_choice).toBe("auto");
 		});
 
+		it("should omit tool_choice when model config disables tool choice support", () => {
+			const paramsWithChoice = {
+				...baseParams,
+				tool_choice: "required",
+			} as ChatCompletionParameters;
+
+			const result = getToolsForProvider(
+				paramsWithChoice,
+				{
+					...modelConfig,
+					supportsToolChoice: false,
+				},
+				"deepseek",
+			);
+
+			expect(result.tools).toBeDefined();
+			expect(result.tool_choice).toBeUndefined();
+		});
+
 		it("should map Cohere tool controls to v2 fields", () => {
 			const paramsWithTools = {
 				...baseParams,

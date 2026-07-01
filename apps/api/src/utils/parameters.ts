@@ -304,6 +304,10 @@ export function getToolsForProvider(
 			result.parallel_tool_calls = params.parallel_tool_calls;
 		}
 
+		if (modelConfig?.supportsToolChoice === false) {
+			return result;
+		}
+
 		if (providerName === "cohere") {
 			if (params.tool_choice === "required") {
 				result.tool_choice = "REQUIRED";

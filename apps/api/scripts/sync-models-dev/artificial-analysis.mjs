@@ -259,6 +259,7 @@ export function buildEffectiveModelProfile(objectNode, sourceFile, baseValues = 
 		"modalities",
 		"supportsAttachments",
 		"supportsToolCalls",
+		"supportsToolChoice",
 		"supportsResponseFormat",
 		"supportsSearchGrounding",
 		"supportsCodeExecution",

@@ -4,6 +4,10 @@ const TOOL_RESULT_SUMMARY_LIMIT = 400;
 const CHARS_PER_TOKEN = 4;
 const TOOL_RESULT_CHARS_PER_TOKEN = 6;
 
+export function estimateTextTokens(text: string): number {
+	return Math.ceil(text.length / CHARS_PER_TOKEN);
+}
+
 export function messageContentToText(content: Message["content"], role?: Message["role"]): string {
 	const truncateForTool = (text: string) => {
 		if (role === "tool" && text.length > TOOL_RESULT_SUMMARY_LIMIT) {
@@ -48,5 +52,5 @@ export function estimateMessagesTokens(messages: Message[]): number {
 
 export function estimateConversationTokens(messages: Message[], latestUserMessage: string): number {
 	const historyTokens = estimateMessagesTokens(messages);
-	return historyTokens + Math.ceil(latestUserMessage.length / CHARS_PER_TOKEN);
+	return historyTokens + estimateTextTokens(latestUserMessage);
 }

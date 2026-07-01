@@ -141,13 +141,12 @@ describe("PromptAnalyzer", () => {
 				budget_constraint: undefined,
 			});
 
-			expect(mockProvider.getResponse).toHaveBeenCalledWith({
+			const providerCall = mockProvider.getResponse.mock.calls[0][0];
+			expect(providerCall).toMatchObject({
 				env: mockEnv,
-				context: expect.objectContaining({
-					user: mockUser,
-				}),
 				model: "test-model",
 				disable_functions: true,
+				max_tokens: 512,
 				messages: [
 					{
 						role: "system",
@@ -160,6 +159,7 @@ describe("PromptAnalyzer", () => {
 				],
 				response_format: { type: "json_object" },
 			});
+			expect(providerCall.context.user).toBe(mockUser);
 		});
 
 		it("should detect images in attachments", async () => {
@@ -185,6 +185,30 @@ describe("PromptAnalyzer", () => {
 			const result = await PromptAnalyzer.analyzePrompt(mockEnv, "Simple task", [], 0.05, mockUser);
 
 			expect(result.budget_constraint).toBe(0.05);
+		});
+
+		it("should cap the analyser output budget", async () => {
+			await PromptAnalyzer.analyzePrompt(mockEnv, "Simple task", [], undefined, mockUser);
+
+			expect(mockProvider.getResponse.mock.calls[0][0].max_tokens).toBeLessThanOrEqual(512);
+		});
+
+		it("should send a bounded prompt sample to the analyser", async () => {
+			const longPrompt = [
+				"Summarise this payload:",
+				"first-section ".repeat(500),
+				"middle-section ".repeat(500),
+				"last-section ".repeat(500),
+			].join("\n");
+
+			await PromptAnalyzer.analyzePrompt(mockEnv, longPrompt, [], undefined, mockUser);
+
+			const userMessage = mockProvider.getResponse.mock.calls[0][0].messages[1].content;
+			expect(userMessage.length).toBeLessThanOrEqual(4500);
+			expect(userMessage).toContain("Prompt excerpt truncated");
+			expect(userMessage).toContain("Original prompt estimated input tokens");
+			expect(userMessage).toContain("first-section");
+			expect(userMessage).toContain("last-section");
 		});
 	});
 
@@ -407,6 +431,8 @@ describe("PromptAnalyzer", () => {
 			expect(systemPrompt).toContain("search");
 			expect(systemPrompt).toContain("calculator");
 			expect(systemPrompt).toContain("file_reader");
+			expect(systemPrompt).not.toContain('"parameters"');
+			expect(systemPrompt).not.toContain("$schema");
 		});
 	});
 });
