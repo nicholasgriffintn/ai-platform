@@ -8525,7 +8525,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("anthropic/claude-fable-5", PROVIDER, {
 		name: "Claude Fable 5",
 		matchingModel: "anthropic/claude-fable-5",
-		releaseDate: "June 9, 2026",
+		releaseDate: "July 1, 2026",
 		lastUpdated: "June 9, 2026",
 		modalities: {
 			input: ["text", "image", "pdf"],
@@ -8552,6 +8552,8 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: 52.8,
 			intelligenceIndexVersion: 4.1,
 		},
+		family: "claude-fable",
+		openWeights: false,
 	}),
 	createModelConfig("moonshotai/kimi-k2", PROVIDER, {
 		name: "Kimi K2 Instruct",
