@@ -8658,10 +8658,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		supportsTemperature: true,
 		supportsToolCalls: true,
 		supportsResponseFormat: true,
-		contextWindow: 1000000,
+		contextWindow: 1040000,
 		maxTokens: 128000,
-		costPer1kInputTokens: 0.0015,
-		costPer1kOutputTokens: 0.0045,
+		costPer1kInputTokens: 0.0014,
+		costPer1kOutputTokens: 0.0044,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
