@@ -92,4 +92,37 @@ describe("MessageRepository", () => {
 		expect(query).toContain("id NOT IN (?, ?)");
 		expect(bind).toHaveBeenCalledWith("conversation-1", "message-1", "message-2");
 	});
+
+	it("deletes selected messages only within the requested conversation", async () => {
+		const { bind, prepare, repository } = createRepository();
+
+		await repository.deleteMessages("conversation-1", ["message-1", "message-1", "message-2"]);
+
+		const query = prepare.mock.calls[0][0] as string;
+		expect(query).toContain("DELETE FROM message");
+		expect(query).toContain("conversation_id = ?");
+		expect(query).toContain("id IN (?, ?)");
+		expect(bind).toHaveBeenCalledWith("conversation-1", "message-1", "message-2");
+	});
+
+	it("calculates active conversation message metadata without the list limit", async () => {
+		const { bind, first, prepare, repository } = createRepository();
+		first.mockResolvedValue({ last_message_id: "message-99", message_count: 99 });
+
+		const result = await repository.getConversationMessageMetadata("conversation-1");
+
+		const query = prepare.mock.calls[0][0] as string;
+		expect(query).toContain("COUNT(*) AS message_count");
+		expect(query).toContain("SELECT id");
+		expect(query).toContain("is_archived = 0");
+		expect(query).toContain("ORDER BY COALESCE(");
+		expect(query).toContain("DESC");
+		expect(query).toContain("LIMIT 1");
+		expect(query).not.toContain("LIMIT ?");
+		expect(bind).toHaveBeenCalledWith("conversation-1", "conversation-1");
+		expect(result).toEqual({
+			last_message_id: "message-99",
+			message_count: 99,
+		});
+	});
 });

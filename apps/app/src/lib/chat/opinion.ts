@@ -1,5 +1,6 @@
 import { getMessageTextContent } from "~/lib/messages";
 import type { Message } from "~/types";
+import { isCompactionMarkerMessage } from "./compaction-status";
 
 export type OpinionMode = "second-opinion" | "consensus";
 
@@ -30,6 +31,17 @@ function getPreviousUserMessage(messages: Message[], messageIndex: number): Mess
 	}
 
 	return null;
+}
+
+function getLatestActionableMessage(messages: Message[]): Message | undefined {
+	for (let index = messages.length - 1; index >= 0; index--) {
+		const message = messages[index];
+		if (!isCompactionMarkerMessage(message)) {
+			return message;
+		}
+	}
+
+	return undefined;
 }
 
 function hasOpinionRequestData(message: Message | null): boolean {
@@ -70,7 +82,7 @@ export function canRequestOpinionForMessage(messages: Message[], messageId: stri
 		return false;
 	}
 
-	const latestMessage = messages[messages.length - 1];
+	const latestMessage = getLatestActionableMessage(messages);
 	if (latestMessage?.id !== messageId) {
 		return false;
 	}

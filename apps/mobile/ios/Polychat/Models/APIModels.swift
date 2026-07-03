@@ -51,7 +51,7 @@ public struct ChatCompletionRequest: Encodable {
         settings: ChatSettings? = nil,
         stream: Bool = false
     ) {
-        self.messages = messages.map(ChatRequestMessage.init)
+        self.messages = ChatMessage.providerMessages(from: messages).map(ChatRequestMessage.init)
         self.model = model
         self.provider = provider
         self.platform = "mobile"
@@ -436,8 +436,12 @@ public struct AssistantRecipeConnection: Codable, Equatable {
     public let setupUrl: String?
 }
 
-public struct TitleGenerationRequest: Codable {
-    let messages: [ChatMessage]
+public struct TitleGenerationRequest: Encodable {
+    let messages: [ChatRequestMessage]
+
+    init(messages: [ChatMessage]) {
+        self.messages = ChatMessage.providerMessages(from: messages).map(ChatRequestMessage.init)
+    }
 }
 
 public struct TitleGenerationResponse: Codable {
@@ -446,7 +450,7 @@ public struct TitleGenerationResponse: Codable {
 
 public struct UpdateConversationRequest: Encodable {
     let title: String?
-    let messages: [ChatRequestMessage]?
+    let messages: [ConversationUpdateMessage]?
     let parentConversationId: String?
     let parentMessageId: String?
 
@@ -463,7 +467,7 @@ public struct UpdateConversationRequest: Encodable {
         parentMessageId: String? = nil
     ) {
         self.title = title
-        self.messages = messages?.map(ChatRequestMessage.init)
+        self.messages = messages?.map(ConversationUpdateMessage.init)
         self.parentConversationId = parentConversationId
         self.parentMessageId = parentMessageId
     }

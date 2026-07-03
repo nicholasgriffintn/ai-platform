@@ -216,7 +216,7 @@ export function useConversationActions(
 
 				const newConversationId = createConversationId();
 				const shouldStore = isAuthenticated && isPro && !localOnlyMode && !chatSettings.localOnly;
-				const branchConversation = createBranchConversation({
+				let branchConversation = createBranchConversation({
 					conversation,
 					conversationId: newConversationId,
 					isLocalOnly: !shouldStore,
@@ -226,12 +226,23 @@ export function useConversationActions(
 				});
 
 				if (shouldStore) {
-					await apiService.updateConversation(newConversationId, {
+					const storedBranchConversation = await apiService.updateConversation(newConversationId, {
 						title: branchConversation.title,
 						messages: branchPoint.messages,
 						parent_conversation_id: currentConversationId,
 						parent_message_id: messageId,
 					});
+					branchConversation = {
+						...branchConversation,
+						...storedBranchConversation,
+						id: storedBranchConversation.id || newConversationId,
+						messages: storedBranchConversation.messages.length
+							? storedBranchConversation.messages
+							: branchPoint.messages,
+						parent_conversation_id: currentConversationId,
+						parent_message_id: messageId,
+						isLocalOnly: false,
+					};
 				}
 
 				await updateConversation(newConversationId, () => branchConversation);
@@ -239,7 +250,7 @@ export function useConversationActions(
 
 				if (branchPoint.shouldGenerateResponse) {
 					const result = await generateResponseWithLoading(
-						branchPoint.messages,
+						branchConversation.messages,
 						newConversationId,
 						"Generating branched response...",
 						undefined,
@@ -250,8 +261,9 @@ export function useConversationActions(
 					);
 
 					if (result.status === "success" && result.message) {
-						generateTitle(newConversationId, branchPoint.messages, result.message).catch((err) =>
-							console.error("Background title generation failed for branched conversation:", err),
+						generateTitle(newConversationId, branchConversation.messages, result.message).catch(
+							(err) =>
+								console.error("Background title generation failed for branched conversation:", err),
 						);
 					}
 				}
@@ -334,18 +346,11 @@ export function useConversationActions(
 					},
 				});
 				const messagesWithOpinionRequest = [...conversation.messages, opinionMessage];
-				const shouldStore = isAuthenticated && isPro && !localOnlyMode && !chatSettings.localOnly;
 
 				await updateConversation(currentConversationId, (prev) => ({
 					...prev!,
 					messages: messagesWithOpinionRequest,
 				}));
-
-				if (shouldStore) {
-					await apiService.updateConversation(currentConversationId, {
-						messages: messagesWithOpinionRequest,
-					});
-				}
 
 				await generateResponseWithLoading(
 					messagesWithOpinionRequest,

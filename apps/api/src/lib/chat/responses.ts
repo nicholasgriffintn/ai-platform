@@ -1,5 +1,6 @@
 import { findModelConfig } from "~/lib/providers/models";
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
+import { toProviderMessages } from "~/lib/chat/providerMessages";
 import type { AssistantMessageData, ChatCompletionParameters, Message } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
@@ -172,10 +173,12 @@ export async function getAIResponse({
 		);
 	}
 
+	const providerMessages = toProviderMessages(messages);
+
 	const filteredMessages =
 		mode === "normal"
-			? messages.filter((msg: Message) => !msg.mode || msg.mode === "normal")
-			: messages;
+			? providerMessages.filter((msg: Message) => !msg.mode || msg.mode === "normal")
+			: providerMessages;
 
 	if (filteredMessages.length === 0) {
 		logger.warn("No messages after filtering", { mode });

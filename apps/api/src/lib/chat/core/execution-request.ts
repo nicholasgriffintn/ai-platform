@@ -1,5 +1,6 @@
 import type { ModelConfigInfo } from "@assistant/schemas";
 import type { StreamPostProcessingOptions } from "~/lib/chat/streaming";
+import { toProviderMessages } from "~/lib/chat/providerMessages";
 import type { ChatCompletionParameters, CoreChatOptions, Message, Platform } from "~/types";
 import type { PreparedRequest } from "../preparation/RequestPreparer";
 
@@ -86,7 +87,7 @@ class ChatExecutionRequest {
 			analyticsTrackingEnabled: prepared.userSettings?.tracking_enabled ?? null,
 			disable_functions: chatOptions.disable_functions,
 			completion_id: chatOptions.completion_id,
-			messages,
+			messages: toProviderMessages(messages),
 			message: prepared.messageWithContext,
 			mode: prepared.currentMode,
 			should_think: chatOptions.should_think,

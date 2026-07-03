@@ -14,6 +14,32 @@ const assistantMessage: Message = {
 };
 
 describe("ChatMessage", () => {
+	it("copies record content through the shared message text normaliser", () => {
+		const writeText = vi.fn().mockResolvedValue(undefined);
+		Object.assign(navigator, {
+			clipboard: {
+				writeText,
+			},
+		});
+
+		render(
+			<ChatMessage
+				conversationId="conversation-1"
+				message={{
+					...assistantMessage,
+					content: {
+						status: "ok",
+						items: ["alpha"],
+					},
+				}}
+			/>,
+		);
+
+		fireEvent.click(screen.getByRole("button", { name: "Copy message" }));
+
+		expect(writeText).toHaveBeenCalledWith(JSON.stringify({ status: "ok", items: ["alpha"] }));
+	});
+
 	it("uses resolved model config for assistant model icons", () => {
 		const modelConfig: ModelConfigItem = {
 			id: "big-pickle",

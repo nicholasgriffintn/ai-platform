@@ -159,4 +159,54 @@ describe("useAutoPlayResponses", () => {
 			});
 		});
 	});
+
+	it("does not replace remote messages when speech is added to compacted visible history", async () => {
+		const compactedMessages: Message[] = [
+			{ id: "old-user", role: "user", content: "Old visible turn" },
+			{
+				id: "snapshot-1-compaction",
+				role: "compaction",
+				content: "Context compacted",
+				parts: [{ type: "compaction", status: "completed", label: "Context compacted" }],
+			},
+			assistantMessage("new-assistant-1", "Fresh response."),
+		];
+		mocks.updateConversation.mockImplementationOnce(async (_conversationId, updater) => {
+			updater({
+				id: "conversation-1",
+				title: "Conversation",
+				messages: compactedMessages,
+			});
+		});
+
+		const { rerender } = renderHook(
+			({ isStreaming, messages }: { isStreaming: boolean; messages: Message[] }) =>
+				useAutoPlayResponses({
+					conversationId: "conversation-1",
+					isEnabled: true,
+					isStreaming,
+					messages,
+				}),
+			{
+				initialProps: {
+					isStreaming: true,
+					messages: [] as Message[],
+				},
+			},
+		);
+
+		await act(async () => {
+			await Promise.resolve();
+		});
+
+		rerender({
+			isStreaming: false,
+			messages: compactedMessages,
+		});
+
+		await waitFor(() => {
+			expect(mocks.updateConversation).toHaveBeenCalled();
+		});
+		expect(mocks.updateRemoteConversation).not.toHaveBeenCalled();
+	});
 });

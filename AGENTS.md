@@ -75,15 +75,8 @@ Start from the user's global agent contract. These instructions make that contra
 
 ## Git and pull requests
 
-- Never commit directly to `main`.
-- Use short conventional commit messages.
-- Do not push or open a pull request unless explicitly instructed in the active task.
-- Pull request descriptions should be concise and should not list files changed.
-- Use this pull request shape:
-  - Short opening sentence describing the change.
-  - Concrete context for the issue.
-  - Bullets for major functional changes.
-  - Brief mention of docs and tests when applicable.
+- Do not run any git command or pull request workflow unless you are explicitly asked to do so.
+- When you are asked to commit, use short conventional commit messages.
 
 ## Definition of done
 

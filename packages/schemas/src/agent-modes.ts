@@ -18,17 +18,7 @@ export type ToolPermission = (typeof TOOL_PERMISSIONS)[number];
 export const agentModeSchema = z.enum(["chat", "plan", "build", "explore"]);
 export type AgentMode = z.infer<typeof agentModeSchema>;
 
-export const chatRequestModeSchema = z.enum([
-	"normal",
-	"thinking",
-	"no_system",
-	"local",
-	"remote",
-	"agent",
-	"plan",
-	"build",
-	"explore",
-]);
+export const chatRequestModeSchema = z.string().min(1);
 
 export type ChatRequestMode = z.infer<typeof chatRequestModeSchema>;
 

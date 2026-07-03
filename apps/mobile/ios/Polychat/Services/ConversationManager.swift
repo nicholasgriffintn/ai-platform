@@ -187,13 +187,16 @@ class ConversationManager: ObservableObject {
         }
 
         let branchMessage = parentConversation.messages[messageIndex]
-        guard branchMessage.role == "user" || branchMessage.role == "assistant" else {
+        guard !branchMessage.isCompactionMarker,
+              branchMessage.role == "user" || branchMessage.role == "assistant" else {
             error = "Only user and assistant messages can start a branch"
             return
         }
 
-        let branchMessages = Array(parentConversation.messages.prefix(messageIndex + 1))
         let branchId = UUID().uuidString
+        let branchMessages = parentConversation.messages
+            .prefix(messageIndex + 1)
+            .map { $0.replacingCompletionId(with: branchId) }
         var branch = Conversation(
             id: branchId,
             title: parentConversation.title.isEmpty ? "Branched Conversation" : parentConversation.title,
@@ -252,6 +255,11 @@ class ConversationManager: ObservableObject {
         let message = conversation.messages[messageIndex]
         let retryEndIndex: Int
 
+        if message.isCompactionMarker {
+            error = "Only user and assistant messages can be retried"
+            return
+        }
+
         if message.role == "assistant" {
             retryEndIndex = messageIndex
         } else if message.role == "user" {
@@ -282,7 +290,8 @@ class ConversationManager: ObservableObject {
             return
         }
 
-        guard currentConversation.messages[messageIndex].role == "user" else {
+        let message = currentConversation.messages[messageIndex]
+        guard !message.isCompactionMarker, message.role == "user" else {
             error = "Only user messages can be edited"
             return
         }
@@ -377,6 +386,7 @@ class ConversationManager: ObservableObject {
                 didReceiveStreamEvent = true
                 switch event {
                 case .content(let delta):
+                    completePendingCompactionMessage(conversationId: conversationId)
                     streamedContent += delta
                     updateAssistantMessage(
                         conversationId: conversationId,
@@ -386,6 +396,7 @@ class ConversationManager: ObservableObject {
                         fallbackMessageId: assistantMessageId
                     )
                 case .reasoning(let delta):
+                    completePendingCompactionMessage(conversationId: conversationId)
                     streamedReasoning += delta
                     if streamedContent.isEmpty {
                         updateAssistantMessage(
@@ -396,9 +407,21 @@ class ConversationManager: ObservableObject {
                             fallbackMessageId: assistantMessageId
                         )
                     }
-                case .state:
-                    break
+                case .state(let state):
+                    if state == "compaction" {
+                        insertPendingCompactionMessage(
+                            conversationId: conversationId,
+                            beforeMessageId: assistantMessageId
+                        )
+                    }
+                case .compaction(let message):
+                    insertCompactionMessage(
+                        conversationId: conversationId,
+                        message: message,
+                        beforeMessageId: assistantMessageId
+                    )
                 case .metadata(let metadata):
+                    completePendingCompactionMessage(conversationId: conversationId)
                     if let model = metadata.model {
                         responseModelId = model
                     }
@@ -421,6 +444,8 @@ class ConversationManager: ObservableObject {
                 }
             }
 
+            completePendingCompactionMessage(conversationId: conversationId)
+
             if streamedContent.isEmpty {
                 streamedContent = streamedReasoning.isEmpty ? "No response" : "<think>\n\(streamedReasoning)"
                 updateAssistantMessage(
@@ -438,6 +463,7 @@ class ConversationManager: ObservableObject {
                 await generateTitleIfNeeded(for: updatedConversation)
             }
         } catch {
+            removePendingCompactionMessages(conversationId: conversationId)
             updateAssistantMessage(
                 conversationId: conversationId,
                 messageId: finalMessageId,
@@ -493,6 +519,7 @@ class ConversationManager: ObservableObject {
             reasoning: reasoning,
             citations: citations,
             data: data,
+            completionId: existingMessage.completionId,
             name: name,
             status: status,
             logId: logId,
@@ -508,6 +535,132 @@ class ConversationManager: ObservableObject {
         if currentConversation?.id == conversationId {
             currentConversation = conversation
         }
+    }
+
+    private func insertCompactionMessage(
+        conversationId: String,
+        message: ChatMessage,
+        beforeMessageId: String
+    ) {
+        guard message.isCompactionMarker,
+              let index = conversations.firstIndex(where: { $0.id == conversationId }) else {
+            return
+        }
+
+        var conversation = conversations[index]
+        conversation.messages.removeAll { $0.id == CompactionStatusMarker.pendingId(for: beforeMessageId) }
+        conversation.messages.removeAll { $0.id == message.id }
+        let insertionIndex = conversation.messages.firstIndex { $0.id == beforeMessageId }
+            ?? conversation.messages.count
+        conversation.messages.insert(message, at: insertionIndex)
+        conversation.messageCount = conversation.messages.count
+        conversation.lastMessageAt = Date()
+        conversations[index] = conversation
+
+        if currentConversation?.id == conversationId {
+            currentConversation = conversation
+        }
+    }
+
+    private func insertPendingCompactionMessage(
+        conversationId: String,
+        beforeMessageId: String
+    ) {
+        guard let index = conversations.firstIndex(where: { $0.id == conversationId }) else {
+            return
+        }
+
+        let message = compactionStatusMessage(
+            id: CompactionStatusMarker.pendingId(for: beforeMessageId),
+            completionId: conversationId,
+            label: CompactionStatusLabels.automaticPending,
+            status: CompactionPartStatus.pending
+        )
+
+        var conversation = conversations[index]
+        conversation.messages.removeAll { $0.id == message.id }
+        let insertionIndex = conversation.messages.firstIndex { $0.id == beforeMessageId }
+            ?? conversation.messages.count
+        conversation.messages.insert(message, at: insertionIndex)
+        conversation.messageCount = conversation.messages.count
+        conversation.lastMessageAt = Date()
+        conversations[index] = conversation
+
+        if currentConversation?.id == conversationId {
+            currentConversation = conversation
+        }
+    }
+
+    private func completePendingCompactionMessage(conversationId: String) {
+        guard let index = conversations.firstIndex(where: { $0.id == conversationId }) else {
+            return
+        }
+
+        var conversation = conversations[index]
+        guard let messageIndex = conversation.messages.firstIndex(where: { message in
+            CompactionStatusMarker.isPendingId(message.id)
+        }) else {
+            return
+        }
+
+        conversation.messages[messageIndex] = compactionStatusMessage(
+            id: conversation.messages[messageIndex].id,
+            completionId: conversationId,
+            label: CompactionStatusLabels.automaticCompleted,
+            status: CompactionPartStatus.completed
+        )
+        conversation.lastMessageAt = Date()
+        conversations[index] = conversation
+
+        if currentConversation?.id == conversationId {
+            currentConversation = conversation
+        }
+    }
+
+    private func removePendingCompactionMessages(conversationId: String) {
+        guard let index = conversations.firstIndex(where: { $0.id == conversationId }) else {
+            return
+        }
+
+        var conversation = conversations[index]
+        let originalCount = conversation.messages.count
+        conversation.messages.removeAll { CompactionStatusMarker.isPendingId($0.id) }
+        guard conversation.messages.count != originalCount else {
+            return
+        }
+
+        conversation.messageCount = conversation.messages.count
+        conversation.lastMessageAt = Date()
+        conversations[index] = conversation
+
+        if currentConversation?.id == conversationId {
+            currentConversation = conversation
+        }
+    }
+
+    private func compactionStatusMessage(
+        id: String,
+        completionId: String,
+        label: String,
+        status: String
+    ) -> ChatMessage {
+        let timestamp = Date().timeIntervalSince1970 * 1000
+        return ChatMessage(
+            id: id,
+            role: "compaction",
+            content: label,
+            parts: [
+                ChatMessagePart(
+                    id: "\(id)-part",
+                    type: "compaction",
+                    label: label,
+                    status: status,
+                    timestamp: timestamp
+                )
+            ],
+            completionId: completionId,
+            timestamp: timestamp
+        )
     }
     
     private func assistantMessageIndex(

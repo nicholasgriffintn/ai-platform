@@ -3,6 +3,11 @@ import type { ChatCompletionRequestBody } from "@assistant/schemas";
 import { processChatRequest } from "~/lib/chat/core";
 import { createServiceContext } from "~/lib/context/serviceContext";
 import { buildMessageParts } from "~/lib/chat/messageParts";
+import {
+	toProviderMessages,
+	toProviderResponseMessagePartSource,
+	toProviderResponseMessages,
+} from "~/lib/chat/providerMessages";
 import { buildChatPostProcessing } from "~/lib/chat/post-processing";
 import { formatAssistantMessage } from "~/lib/chat/responses";
 import { sseResponse } from "~/lib/http/streaming";
@@ -36,8 +41,9 @@ export const handleCreateChatCompletions = async (req: {
 	const serviceContext = context ?? createServiceContext({ env, user });
 	const chatRequest = normaliseChatCompletionRequest(request);
 	const isStreaming = !!request.stream;
+	const providerMessages = toProviderMessages(chatRequest.messages);
 
-	if (!request.messages?.length) {
+	if (providerMessages.length === 0) {
 		throw new AssistantError("Missing required parameter: messages", ErrorType.PARAMS_ERROR);
 	}
 
@@ -45,6 +51,7 @@ export const handleCreateChatCompletions = async (req: {
 
 	const result = await processChatRequest({
 		...chatRequest,
+		messages: providerMessages,
 		app_url,
 		env,
 		anonymousUser,
@@ -149,34 +156,39 @@ export const handleCreateChatCompletions = async (req: {
 				finish_reason: assistantMessage.finish_reason,
 			},
 			...("toolResponses" in result && result.toolResponses
-				? result.toolResponses.map((toolResponse, index) => ({
-						index: index + 1,
-						message: {
-							id: toolResponse.id,
-							log_id: env.AI.aiGatewayLogId,
-							role: toolResponse.role,
-							name: toolResponse.name,
-							content: Array.isArray(toolResponse.content)
-								? toolResponse.content.map((c) => c.text || "").join("\n")
-								: typeof toolResponse.content === "string"
-									? toolResponse.content
-									: JSON.stringify(toolResponse.content),
-							parts: toolResponse.parts || buildMessageParts(toolResponse),
-							citations: toolResponse.citations || null,
-							data: toolResponse.data || null,
-							status: toolResponse.status || "unknown",
-							timestamp: toolResponse.timestamp,
-							tool_call_id: toolResponse.tool_call_id,
-							tool_call_arguments: toolResponse.tool_call_arguments,
-						},
-						finish_reason: "tool_result",
-					}))
+				? toProviderResponseMessages(result.toolResponses).map((toolResponse, index) => {
+						const messagePartSource = toProviderResponseMessagePartSource(toolResponse);
+
+						return {
+							index: index + 1,
+							message: {
+								id: toolResponse.id,
+								log_id: env.AI.aiGatewayLogId,
+								role: toolResponse.role,
+								name: toolResponse.name,
+								content: Array.isArray(toolResponse.content)
+									? toolResponse.content.map((c) => c.text || "").join("\n")
+									: typeof toolResponse.content === "string"
+										? toolResponse.content
+										: JSON.stringify(toolResponse.content),
+								parts: toolResponse.parts || buildMessageParts(messagePartSource),
+								citations: toolResponse.citations || null,
+								data: toolResponse.data || null,
+								status: toolResponse.status || "unknown",
+								timestamp: toolResponse.timestamp,
+								tool_call_id: toolResponse.tool_call_id,
+								tool_call_arguments: toolResponse.tool_call_arguments,
+							},
+							finish_reason: "tool_result",
+						};
+					})
 				: []),
 		],
 		usage: assistantMessage.usage,
 		post_processing: buildChatPostProcessing({
 			guardrails: assistantMessage.guardrails,
 			response: result.response,
+			compactionMessage: "compactionMessage" in result ? result.compactionMessage : undefined,
 		}),
 	};
 };

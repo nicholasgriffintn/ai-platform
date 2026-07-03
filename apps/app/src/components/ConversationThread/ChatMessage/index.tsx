@@ -4,9 +4,10 @@ import { ModelIcon } from "~/components/ModelIcon";
 import { useCopyToClipboard } from "~/hooks/useCopyToClipboard";
 import { apiService } from "~/lib/api/api-service";
 import type { OpinionRequest } from "~/lib/chat/opinion";
+import { getMessageTextContent } from "~/lib/messages";
 import { getModelDisplayName } from "~/lib/models";
 import type { ModelConfigItem } from "@assistant/schemas";
-import type { ChatRole, Message } from "~/types";
+import type { Message } from "~/types";
 import type { ArtifactProps } from "~/types/artifact";
 import { EditableMessageContent } from "./EditableMessageContent";
 import { MessageActions } from "./MessageActions";
@@ -30,6 +31,7 @@ export const ChatMessage = ({
 	isBranching = false,
 	onRequestOpinion,
 	isRequestingOpinion = false,
+	isArchivedByCompaction = false,
 }: {
 	conversationId?: string;
 	message: Message;
@@ -51,6 +53,7 @@ export const ChatMessage = ({
 	isBranching?: boolean;
 	onRequestOpinion?: (messageId: string, request: OpinionRequest) => void;
 	isRequestingOpinion?: boolean;
+	isArchivedByCompaction?: boolean;
 }) => {
 	const { copied, copy } = useCopyToClipboard();
 	const [feedbackState, setFeedbackState] = useState<"none" | "liked" | "disliked">("none");
@@ -62,13 +65,12 @@ export const ChatMessage = ({
 				: message.model
 			: undefined;
 
-	const isToolResponse = message.role === ("tool" as ChatRole) && message.name;
+	const isToolResponse = message.role === "tool" && message.name;
 	const isExternalFunctionCall =
 		message.name === "External Functions" &&
 		Array.isArray(message.tool_calls) &&
 		message.tool_calls.length > 0;
-	const isSystemMessage =
-		message.role === ("system" as ChatRole) || message.role === ("developer" as ChatRole);
+	const isSystemMessage = message.role === "system" || message.role === "developer";
 	const hasPartContent = Array.isArray(message.parts) && message.parts.length > 0;
 	const councilData =
 		message.data && typeof message.data === "object" && "council" in message.data
@@ -97,23 +99,7 @@ export const ChatMessage = ({
 	}
 
 	const copyMessageToClipboard = () => {
-		const textFromContent =
-			typeof message.content === "string"
-				? message.content
-				: Array.isArray(message.content)
-					? message.content
-							.filter((item) => item.type === "text")
-							.map((item) => item.text)
-							.join("\n")
-					: "";
-		const textFromParts =
-			Array.isArray(message.parts) && message.parts.length > 0
-				? message.parts
-						.filter((part) => part.type === "text")
-						.map((part) => part.text)
-						.join("\n")
-				: "";
-		const copyText = textFromContent || textFromParts;
+		const copyText = getMessageTextContent(message);
 		if (copyText) {
 			copy(copyText);
 		}
@@ -223,6 +209,7 @@ export const ChatMessage = ({
 								isBranching={isBranching}
 								onRequestOpinion={onRequestOpinion}
 								isRequestingOpinion={isRequestingOpinion}
+								isArchivedByCompaction={isArchivedByCompaction}
 							/>
 						)}
 				</div>

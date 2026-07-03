@@ -7,7 +7,7 @@ import { CHATS_QUERY_KEY } from "~/constants";
 import { apiService } from "~/lib/api/api-service";
 import { LoadingProvider, useIsLoading } from "~/state/contexts/LoadingContext";
 import { useChatStore } from "~/state/stores/chatStore";
-import type { Conversation } from "~/types";
+import type { Conversation, Message } from "~/types";
 import { useConversationActions } from "../useConversationActions";
 
 vi.mock("~/lib/api/api-service", () => ({
@@ -110,6 +110,82 @@ describe("useConversationActions", () => {
 		);
 	});
 
+	it("uses the stored branch response after branching compacted history", async () => {
+		const queryClient = createQueryClient();
+		const conversation: Conversation = {
+			id: "conversation-1",
+			title: "Compacted conversation",
+			isLocalOnly: false,
+			messages: [
+				{ id: "old-user", role: "user", content: "Old visible turn", model: "test-model" },
+				{
+					id: "snapshot-1-compaction",
+					role: "compaction",
+					content: "Context compacted",
+					parts: [{ type: "compaction", status: "completed", label: "Context compacted" }],
+				},
+				{
+					id: "latest-user",
+					role: "user",
+					content: "What was this conversation about?",
+					model: "test-model",
+				},
+			],
+		};
+		const storedBranchMessages: Message[] = [
+			{
+				id: "latest-user-copy",
+				role: "user",
+				content: "What was this conversation about?",
+				model: "test-model",
+			},
+		];
+		queryClient.setQueryData([CHATS_QUERY_KEY, "conversation-1"], conversation);
+		vi.mocked(apiService.updateConversation).mockResolvedValue({
+			id: "branch-1",
+			title: "Compacted conversation",
+			messages: storedBranchMessages,
+			parent_conversation_id: "conversation-1",
+			parent_message_id: "latest-user",
+		});
+
+		const generateResponse = vi.fn().mockResolvedValue({
+			status: "success",
+			response: "Branched response",
+		});
+		const generateTitle = vi.fn();
+		const { result } = renderHook(() => useConversationActions(generateResponse, generateTitle), {
+			wrapper: wrapper(queryClient),
+		});
+
+		await act(async () => {
+			await result.current.branchConversation("latest-user");
+		});
+
+		expect(queryClient.getQueryData<Conversation>([CHATS_QUERY_KEY, "branch-1"])).toEqual(
+			expect.objectContaining({
+				messages: storedBranchMessages,
+				parent_conversation_id: "conversation-1",
+				parent_message_id: "latest-user",
+			}),
+		);
+		expect(generateResponse).toHaveBeenCalledWith(
+			storedBranchMessages,
+			"branch-1",
+			undefined,
+			expect.objectContaining({
+				generateTitle: false,
+			}),
+		);
+		expect(generateResponse.mock.calls[0]?.[0]).not.toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					content: "Old visible turn",
+				}),
+			]),
+		);
+	});
+
 	it("appends a second opinion request and generates with the selected model", async () => {
 		const queryClient = createQueryClient();
 		const conversation: Conversation = {
@@ -162,9 +238,7 @@ describe("useConversationActions", () => {
 		expect(opinionMessage?.content).toContain("Question");
 		expect(opinionMessage?.content).toContain("Assistant answer to review:");
 		expect(opinionMessage?.content).toContain("Answer");
-		expect(apiService.updateConversation).toHaveBeenCalledWith("conversation-1", {
-			messages: updatedConversation?.messages,
-		});
+		expect(apiService.updateConversation).not.toHaveBeenCalled();
 		expect(generateResponse).toHaveBeenCalledWith(
 			expect.arrayContaining([expect.objectContaining({ content: "Answer" }), opinionMessage]),
 			"conversation-1",
@@ -174,6 +248,66 @@ describe("useConversationActions", () => {
 				model: "opinion-model",
 				models: ["opinion-model"],
 			},
+		);
+	});
+
+	it("does not replace stored compacted history when requesting an opinion", async () => {
+		const queryClient = createQueryClient();
+		const conversation: Conversation = {
+			id: "conversation-1",
+			title: "Compacted conversation",
+			isLocalOnly: false,
+			messages: [
+				{ id: "old-user", role: "user", content: "Old visible turn", model: "test-model" },
+				{
+					id: "snapshot-1-compaction",
+					role: "compaction",
+					content: "Context compacted",
+					parts: [{ type: "compaction", status: "completed", label: "Context compacted" }],
+				},
+				{ id: "latest-user", role: "user", content: "Current question", model: "test-model" },
+				{ id: "assistant-1", role: "assistant", content: "Current answer", model: "test-model" },
+			],
+		};
+		queryClient.setQueryData([CHATS_QUERY_KEY, "conversation-1"], conversation);
+
+		const generateResponse = vi.fn().mockResolvedValue({
+			status: "success",
+			response: "Second opinion",
+		});
+		const generateTitle = vi.fn();
+		const { result } = renderHook(() => useConversationActions(generateResponse, generateTitle), {
+			wrapper: wrapper(queryClient),
+		});
+
+		await act(async () => {
+			await result.current.requestOpinion("assistant-1", {
+				mode: "second-opinion",
+				modelIds: ["opinion-model"],
+			});
+		});
+
+		const updatedConversation = queryClient.getQueryData<Conversation>([
+			CHATS_QUERY_KEY,
+			"conversation-1",
+		]);
+		const opinionMessage = updatedConversation?.messages.at(-1);
+
+		expect(apiService.updateConversation).not.toHaveBeenCalled();
+		expect(opinionMessage).toEqual(
+			expect.objectContaining({
+				role: "user",
+				content: expect.stringContaining("Current answer"),
+			}),
+		);
+		expect(generateResponse).toHaveBeenCalledWith(
+			expect.arrayContaining([opinionMessage]),
+			"conversation-1",
+			undefined,
+			expect.objectContaining({
+				generateTitle: false,
+				model: "opinion-model",
+			}),
 		);
 	});
 

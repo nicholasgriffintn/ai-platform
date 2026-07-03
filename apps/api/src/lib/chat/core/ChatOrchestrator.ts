@@ -5,6 +5,7 @@ import { RequestPreparer, type PreparedRequest } from "~/lib/chat/preparation/Re
 import { createAgentExecutionStream } from "~/lib/chat/core/agent-stream";
 import { buildStoredAssistantMessage } from "~/lib/chat/core/assistant-message";
 import { createChatExecutionRequest } from "~/lib/chat/core/execution-request";
+import { prependCompactionStateEvent } from "~/lib/chat/core/compaction-stream";
 import { buildToolRequestContext } from "~/lib/chat/core/request-context";
 import { getAIResponse } from "~/lib/chat/responses";
 import { runAgentLoop, type ModelResponse } from "~/lib/chat/agent/runAgentLoop";
@@ -64,7 +65,7 @@ export class ChatOrchestrator {
 
 			const prepared = await this.preparer.prepare(options, validationResult.context);
 
-			return this.executeRequest(options, prepared);
+			return await this.executeRequest(options, prepared);
 		} catch (error: any) {
 			logger.error("Error in chat orchestration", {
 				error,
@@ -118,6 +119,8 @@ export class ChatOrchestrator {
 		}
 
 		let messages = preparedMessages;
+		let didCompact = false;
+		let compactionMessage: Message | undefined;
 		if (chatOptions.completion_id && messages.length > 0) {
 			const sessionManager = new SessionManager({
 				env: chatOptions.env,
@@ -127,12 +130,14 @@ export class ChatOrchestrator {
 			const compactedSession = await sessionManager.compact({
 				completionId: chatOptions.completion_id,
 				messages,
-				latestUserMessage: messageWithContext,
+				compaction: chatOptions.compaction,
 				mode: currentMode,
 				modelConfig: {
 					contextWindow: (primaryModelConfig as { contextWindow?: number })?.contextWindow,
 				},
 			});
+			didCompact = compactedSession.compacted;
+			compactionMessage = compactedSession.compactionMessage;
 			messages = compactedSession.messages;
 		}
 		messages = pruneMessagesToFitContext(messages, messageWithContext, primaryModelConfig);
@@ -154,7 +159,10 @@ export class ChatOrchestrator {
 			);
 
 			return {
-				stream: transformedStream,
+				stream:
+					didCompact && compactionMessage
+						? prependCompactionStateEvent(transformedStream, compactionMessage)
+						: transformedStream,
 				selectedModel: primaryModel,
 				selectedModels: modelConfigs.map((m) => m.model),
 				completion_id: chatOptions.completion_id,
@@ -175,19 +183,24 @@ export class ChatOrchestrator {
 		});
 
 		if (isAgentExecutionMode(currentMode) && stream) {
+			const agentStream = createAgentExecutionStream({
+				requestParams,
+				completionId: chatOptions.completion_id!,
+				conversationManager,
+				toolRequestContext,
+				maxSteps: resolveModeMaxSteps(currentMode, max_steps),
+				envLogId: chatOptions.env.AI.aiGatewayLogId,
+				mode: currentMode,
+				model: primaryModel,
+				platform: platform || "api",
+				requestOptions: chatOptions.options,
+			});
+
 			return {
-				stream: createAgentExecutionStream({
-					requestParams,
-					completionId: chatOptions.completion_id!,
-					conversationManager,
-					toolRequestContext,
-					maxSteps: resolveModeMaxSteps(currentMode, max_steps),
-					envLogId: chatOptions.env.AI.aiGatewayLogId,
-					mode: currentMode,
-					model: primaryModel,
-					platform: platform || "api",
-					requestOptions: chatOptions.options,
-				}),
+				stream:
+					didCompact && compactionMessage
+						? prependCompactionStateEvent(agentStream, compactionMessage)
+						: agentStream,
 				selectedModel: primaryModel,
 				completion_id: chatOptions.completion_id,
 			};
@@ -241,7 +254,10 @@ export class ChatOrchestrator {
 			);
 
 			return {
-				stream: transformedStream,
+				stream:
+					didCompact && compactionMessage
+						? prependCompactionStateEvent(transformedStream, compactionMessage)
+						: transformedStream,
 				selectedModel: primaryModel,
 				completion_id: chatOptions.completion_id,
 			};
@@ -324,6 +340,7 @@ export class ChatOrchestrator {
 			selectedModel: primaryModel,
 			selectedModels: modelConfigs.length > 1 ? modelConfigs.map((m) => m.model) : undefined,
 			completion_id: chatOptions.completion_id,
+			...(compactionMessage ? { compactionMessage } : {}),
 		};
 	}
 

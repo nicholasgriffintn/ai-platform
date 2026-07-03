@@ -15,7 +15,9 @@ export async function handleGetSharedConversation(
 		env: context.env,
 	});
 
-	const messages = await conversationManager.getPublicConversation(share_id, limit, after);
+	const messages = await conversationManager.getPublicConversation(share_id, limit, after, {
+		includeArchived: true,
+	});
 
 	return {
 		messages,

@@ -249,6 +249,55 @@ describe("parseChatStreamSseEvent", () => {
 		expect(formatChatStreamSseDone()).toBe("data: [DONE]\n\n");
 	});
 
+	it("round-trips compaction state events with durable marker metadata", () => {
+		const event = formatChatStreamSseEvent("state", {
+			state: "compaction",
+			message: {
+				id: "snapshot-1-compaction",
+				completion_id: "conversation-1",
+				role: "compaction",
+				content: "Context automatically compacted",
+				mode: "remote",
+				platform: "web",
+				parts: [
+					{
+						id: "part-1",
+						type: "compaction",
+						status: "completed",
+						label: "Context automatically compacted",
+						metadata: {
+							source: "automatic-compaction",
+						},
+					},
+				],
+			},
+		});
+
+		expect(parseChatStreamSseEvent(event)).toEqual({
+			type: "state",
+			state: "compaction",
+			message: {
+				id: "snapshot-1-compaction",
+				completion_id: "conversation-1",
+				role: "compaction",
+				content: "Context automatically compacted",
+				mode: "remote",
+				platform: "web",
+				parts: [
+					{
+						id: "part-1",
+						type: "compaction",
+						status: "completed",
+						label: "Context automatically compacted",
+						metadata: {
+							source: "automatic-compaction",
+						},
+					},
+				],
+			},
+		});
+	});
+
 	it("parses CRLF-delimited buffers and can flush a trailing final block", () => {
 		const firstParse = parseChatStreamSseBuffer(
 			'data: {"state":"thinking","type":"state"}\r\n\r\n' +

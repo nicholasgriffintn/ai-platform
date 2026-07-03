@@ -119,7 +119,6 @@ describe("responses", () => {
 				annotations: [{ note: "x" }],
 			};
 
-			// @ts-expect-error - test data
 			const result = formatAssistantMessage(input);
 
 			expect(result.content).toEqual([
@@ -264,6 +263,39 @@ describe("responses", () => {
 			});
 		});
 
+		it("does not send compaction status messages to the provider", async () => {
+			const messages = [
+				{ role: "user", content: "Hello" },
+				{
+					role: "compaction",
+					content: "Context automatically compacted",
+					parts: [
+						{
+							type: "compaction",
+							status: "completed",
+							label: "Context automatically compacted",
+						},
+					],
+				},
+				{ role: "assistant", content: "Hi there" },
+			];
+
+			await getAIResponse({
+				...baseParams,
+				messages,
+			} as any);
+
+			expect(formatMessages).toHaveBeenCalledWith(
+				"openai",
+				[
+					{ role: "user", content: "Hello" },
+					{ role: "assistant", content: "Hi there" },
+				],
+				"You are helpful",
+				"gpt-4",
+			);
+		});
+
 		it("should configure retryable provider error handling", async () => {
 			// @ts-expect-error - test data
 			await getAIResponse(baseParams);
@@ -332,10 +364,7 @@ describe("responses", () => {
 		});
 
 		it("should throw error when messages is empty", async () => {
-			await expect(
-				// @ts-expect-error - test data
-				getAIResponse({ ...baseParams, messages: [] }),
-			).rejects.toThrow(
+			await expect(getAIResponse({ ...baseParams, messages: [] })).rejects.toThrow(
 				new AssistantError(
 					"Messages array is required and cannot be empty",
 					ErrorType.PARAMS_ERROR,
@@ -344,10 +373,7 @@ describe("responses", () => {
 		});
 
 		it("should throw error when messages is not an array", async () => {
-			await expect(
-				// @ts-expect-error - test data
-				getAIResponse({ ...baseParams, messages: null as any }),
-			).rejects.toThrow(
+			await expect(getAIResponse({ ...baseParams, messages: null as any })).rejects.toThrow(
 				new AssistantError(
 					"Messages array is required and cannot be empty",
 					ErrorType.PARAMS_ERROR,

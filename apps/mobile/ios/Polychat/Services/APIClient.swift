@@ -1,5 +1,7 @@
 import Foundation
 
+private let missingChatMessagesErrorMessage = "Missing required parameter: messages"
+
 final class APIClient: ObservableObject {
     static let shared = APIClient()
 
@@ -85,6 +87,7 @@ final class APIClient: ObservableObject {
             completionId: completionId,
             settings: settings
         )
+        try validateChatCompletionRequest(requestBody)
 
         return try await send(path: "/chat/completions", method: "POST", body: requestBody)
     }
@@ -105,6 +108,11 @@ final class APIClient: ObservableObject {
             settings: settings,
             stream: true
         )
+        guard !requestBody.messages.isEmpty else {
+            return AsyncThrowingStream { continuation in
+                continuation.finish(throwing: APIClientError.invalidRequest(missingChatMessagesErrorMessage))
+            }
+        }
 
         return AsyncThrowingStream { continuation in
             let task = Task(priority: .userInitiated) {
@@ -462,6 +470,12 @@ final class APIClient: ObservableObject {
         }
     }
 
+    private func validateChatCompletionRequest(_ request: ChatCompletionRequest) throws {
+        guard !request.messages.isEmpty else {
+            throw APIClientError.invalidRequest(missingChatMessagesErrorMessage)
+        }
+    }
+
     private func buildURL(path: String, queryItems: [URLQueryItem] = []) -> URL {
         let trimmedPath = path.hasPrefix("/") ? String(path.dropFirst()) : path
         var components = URLComponents(url: baseURL.appendingPathComponent(trimmedPath), resolvingAgainstBaseURL: false)!
@@ -496,11 +510,14 @@ private struct APIDataEnvelope<T: Decodable>: Decodable {
 }
 
 enum APIClientError: LocalizedError {
+    case invalidRequest(String)
     case httpStatus(Int, String)
     case streaming(String)
 
     var errorDescription: String? {
         switch self {
+        case .invalidRequest(let message):
+            return message
         case .httpStatus(let status, let message):
             return "API returned \(status): \(message)"
         case .streaming(let message):
@@ -513,6 +530,7 @@ enum ChatStreamEvent: Equatable {
     case content(String)
     case reasoning(String)
     case state(String)
+    case compaction(ChatMessage)
     case metadata(ChatStreamMetadata)
     case done
 }

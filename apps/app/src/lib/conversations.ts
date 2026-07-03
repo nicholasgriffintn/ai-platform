@@ -27,16 +27,35 @@ function hasRenderableMessagePayload(message: ConversationMessage): boolean {
 	return false;
 }
 
+function hasVisibleTextPayload(message: ConversationMessage): boolean {
+	if (typeof message.content === "string" && message.content.trim()) {
+		return true;
+	}
+
+	if (Array.isArray(message.content)) {
+		return message.content.some((part) => part.type === "text" && part.text?.trim());
+	}
+
+	if (Array.isArray(message.parts)) {
+		return message.parts.some((part) => part.type === "text" && part.text.trim());
+	}
+
+	return false;
+}
+
 function hasCachedRenderablePayloadMissingFromFetched(
 	fetchedConversation: Conversation,
 	cachedConversation: Conversation,
 ): boolean {
 	return cachedConversation.messages.some((cachedMessage, index) => {
 		const fetchedMessage = fetchedConversation.messages[index];
+		if (cachedMessage.role !== fetchedMessage?.role) {
+			return false;
+		}
+
 		return (
-			cachedMessage.role === fetchedMessage?.role &&
-			hasRenderableMessagePayload(cachedMessage) &&
-			!hasRenderableMessagePayload(fetchedMessage)
+			(hasVisibleTextPayload(cachedMessage) && !hasVisibleTextPayload(fetchedMessage)) ||
+			(hasRenderableMessagePayload(cachedMessage) && !hasRenderableMessagePayload(fetchedMessage))
 		);
 	});
 }

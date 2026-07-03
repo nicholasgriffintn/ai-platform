@@ -3,6 +3,7 @@ import type {
 	ChatCompletionRequestBody as SchemaChatCompletionRequestBody,
 	ChatCompletionResponseBody as SchemaChatCompletionResponseBody,
 	ChatRequestOptions as SchemaChatRequestOptions,
+	MessageRole as SchemaMessageRole,
 	MessagePart as SchemaMessagePart,
 } from "@assistant/schemas";
 import type { ServiceContext } from "../lib/context/serviceContext";
@@ -10,7 +11,7 @@ import type { AnonymousUser } from "./anonymous-user";
 import type { IEnv, ReasoningEffortLevel, VerbosityLevel } from "./shared";
 import type { IUser } from "./user";
 
-export type Platform = "web" | "mobile" | "api" | "obsidian" | "dynamic-apps";
+export type Platform = string;
 
 export type ContentType =
 	| "text"
@@ -24,17 +25,8 @@ export type ContentType =
 	| "artifact_selection"
 	| "file"
 	| "tool_result";
-export type ChatRole = "user" | "assistant" | "tool" | "developer" | "system";
-export type ChatMode =
-	| "normal"
-	| "local"
-	| "remote"
-	| "no_system"
-	| "agent"
-	| "plan"
-	| "build"
-	| "explore"
-	| "thinking";
+export type ChatRole = SchemaMessageRole;
+export type ChatMode = string;
 export type MessagePart = SchemaMessagePart;
 
 export interface ReasoningControls {
@@ -153,7 +145,10 @@ export interface Message {
 	content: string | MessageContent[] | Record<string, unknown>;
 	status?: string;
 	data?: MessageDataPayload | null;
+	completion_id?: string;
+	created?: number;
 	model?: string;
+	provider?: string;
 	log_id?: string;
 	citations?: string[];
 	app?: string;

@@ -1,4 +1,5 @@
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
+import { toProviderMessages } from "~/lib/chat/providerMessages";
 import { createServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
 import { getMemoryProvider } from "~/lib/providers/capabilities/memory";
 import type { IEnv, IUser, IUserSettings, Message } from "~/types";
@@ -281,7 +282,7 @@ export class MemoryManager {
 				const userCount = messages.filter((m) => m.role === "user").length;
 				if (userCount > 0 && userCount % 5 === 0) {
 					const recent = await conversationManager.get(completionId, undefined, 10);
-					const snippet = recent
+					const snippet = toProviderMessages(recent)
 						.map(
 							(m) =>
 								`${m.role}: ${typeof m.content === "string" ? m.content : JSON.stringify(m.content)}`,

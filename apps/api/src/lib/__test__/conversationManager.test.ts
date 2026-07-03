@@ -6,7 +6,11 @@ const mockDatabase = {
 	createConversation: vi.fn(),
 	createMessage: vi.fn(),
 	upsertMessage: vi.fn(),
+	archiveMessages: vi.fn(),
+	deleteMessage: vi.fn(),
+	deleteMessages: vi.fn(),
 	deleteMessagesExcept: vi.fn(),
+	getConversationMessageMetadata: vi.fn(),
 	updateConversationAfterMessage: vi.fn(),
 	getConversationMessages: vi.fn(),
 	updateMessage: vi.fn(),
@@ -29,7 +33,11 @@ const mockDatabase = {
 		messages: {
 			createMessage: vi.fn(),
 			upsertMessage: vi.fn(),
+			archiveMessages: vi.fn(),
+			deleteMessage: vi.fn(),
+			deleteMessages: vi.fn(),
 			deleteMessagesExcept: vi.fn(),
+			getConversationMessageMetadata: vi.fn(),
 			getConversationMessages: vi.fn(),
 			updateMessage: vi.fn(),
 			getMessageById: vi.fn(),
@@ -89,8 +97,20 @@ describe("ConversationManager", () => {
 		mockDatabase.repositories.messages.upsertMessage.mockImplementation((...args) =>
 			mockDatabase.upsertMessage(...args),
 		);
+		mockDatabase.repositories.messages.archiveMessages.mockImplementation((...args) =>
+			mockDatabase.archiveMessages(...args),
+		);
+		mockDatabase.repositories.messages.deleteMessage.mockImplementation((...args) =>
+			mockDatabase.deleteMessage(...args),
+		);
+		mockDatabase.repositories.messages.deleteMessages.mockImplementation((...args) =>
+			mockDatabase.deleteMessages(...args),
+		);
 		mockDatabase.repositories.messages.deleteMessagesExcept.mockImplementation((...args) =>
 			mockDatabase.deleteMessagesExcept(...args),
+		);
+		mockDatabase.repositories.messages.getConversationMessageMetadata.mockImplementation(
+			(...args) => mockDatabase.getConversationMessageMetadata(...args),
 		);
 		mockDatabase.repositories.messages.getConversationMessages.mockImplementation((...args) =>
 			mockDatabase.getConversationMessages(...args),
@@ -105,7 +125,14 @@ describe("ConversationManager", () => {
 			mockDatabase.getMessages(...args),
 		);
 		mockDatabase.upsertMessage.mockImplementation(async (messageId) => ({ id: messageId }));
+		mockDatabase.archiveMessages.mockResolvedValue(undefined);
+		mockDatabase.deleteMessage.mockResolvedValue(undefined);
+		mockDatabase.deleteMessages.mockResolvedValue(undefined);
 		mockDatabase.deleteMessagesExcept.mockResolvedValue(undefined);
+		mockDatabase.getConversationMessageMetadata.mockResolvedValue({
+			last_message_id: null,
+			message_count: 0,
+		});
 	});
 
 	describe("getInstance", () => {
@@ -244,6 +271,46 @@ describe("ConversationManager", () => {
 			expect(mockDatabase.createMessage).toHaveBeenCalled();
 		});
 
+		it("stores ordinary object content as visible text parts", async () => {
+			const conversationId = "conv-object-content";
+			const message = {
+				id: "object-message",
+				role: "user",
+				content: {
+					answer: "Visible structured response",
+				},
+			} as any;
+
+			mockDatabase.getConversation.mockResolvedValue({
+				id: conversationId,
+				user_id: mockUser.id,
+			});
+			mockDatabase.createMessage.mockResolvedValue(undefined);
+			mockDatabase.updateConversationAfterMessage.mockResolvedValue(undefined);
+
+			const manager = ConversationManager.getInstance({
+				database: mockDatabase as any,
+				user: mockUser,
+			});
+
+			await manager.add(conversationId, message);
+
+			expect(mockDatabase.createMessage).toHaveBeenCalledWith(
+				"object-message",
+				conversationId,
+				"user",
+				'{"answer":"Visible structured response"}',
+				expect.objectContaining({
+					parts: [
+						expect.objectContaining({
+							type: "text",
+							text: '{"answer":"Visible structured response"}',
+						}),
+					],
+				}),
+			);
+		});
+
 		it("should keep batch storage order stable when message timestamps arrive out of order", async () => {
 			const conversationId = "conv-live";
 			const messages = [
@@ -293,6 +360,72 @@ describe("ConversationManager", () => {
 					timestamp: 2001,
 				},
 			]);
+		});
+
+		it("increments usage for stored assistant responses", async () => {
+			const conversationId = "conv-usage";
+			const message = {
+				id: "assistant-message",
+				role: "assistant",
+				content: "Stored assistant response",
+			} as any;
+
+			mockDatabase.getConversation.mockResolvedValue({
+				id: conversationId,
+				user_id: mockUser.id,
+			});
+			mockDatabase.createMessage.mockResolvedValue(undefined);
+			mockDatabase.updateConversationAfterMessage.mockResolvedValue(undefined);
+
+			const manager = ConversationManager.getInstance({
+				database: mockDatabase as any,
+				user: mockUser,
+				model: "gpt-4",
+			});
+			manager["usageManager"] = mockUsageManager as any;
+
+			await manager.add(conversationId, message);
+
+			expect(mockUsageManager.incrementUsageByModel).toHaveBeenCalledWith("gpt-4", true);
+		});
+
+		it("does not increment assistant usage for stored compaction snapshots", async () => {
+			const conversationId = "conv-snapshot";
+			const snapshotMessage = {
+				id: "snapshot-message",
+				role: "assistant",
+				content: "Conversation snapshot\n\nEarlier context summary.",
+				parts: [
+					{
+						type: "snapshot",
+						title: "Conversation snapshot",
+						summary: "Earlier context summary.",
+					},
+					{
+						type: "text",
+						text: "Conversation snapshot\n\nEarlier context summary.",
+					},
+				],
+			} as any;
+
+			mockDatabase.getConversation.mockResolvedValue({
+				id: conversationId,
+				user_id: mockUser.id,
+			});
+			mockDatabase.createMessage.mockResolvedValue(undefined);
+			mockDatabase.updateConversationAfterMessage.mockResolvedValue(undefined);
+
+			const manager = ConversationManager.getInstance({
+				database: mockDatabase as any,
+				user: mockUser,
+				model: "gpt-4",
+			});
+			manager["usageManager"] = mockUsageManager as any;
+
+			await manager.add(conversationId, snapshotMessage);
+
+			expect(mockDatabase.createMessage).toHaveBeenCalled();
+			expect(mockUsageManager.incrementUsageByModel).not.toHaveBeenCalled();
 		});
 
 		it("should create conversation if it doesn't exist", async () => {
@@ -560,6 +693,98 @@ describe("ConversationManager", () => {
 				is_archived: true,
 			});
 		});
+
+		it("should archive messages after checking conversation ownership and refresh metadata", async () => {
+			const conversationId = "conv-123";
+			mockDatabase.getConversation.mockResolvedValue({
+				id: conversationId,
+				user_id: mockUser.id,
+			});
+			mockDatabase.getConversationMessageMetadata.mockResolvedValue({
+				last_message_id: "snapshot-1",
+				message_count: 1,
+			});
+
+			const manager = ConversationManager.getInstance({
+				database: mockDatabase as any,
+				user: mockUser,
+			});
+
+			await manager.archiveMessages(conversationId, ["old-message", "compaction-marker"]);
+
+			expect(mockDatabase.archiveMessages).toHaveBeenCalledWith(conversationId, [
+				"old-message",
+				"compaction-marker",
+			]);
+			expect(mockDatabase.getConversationMessageMetadata).toHaveBeenCalledWith(conversationId);
+			expect(mockDatabase.updateConversation).toHaveBeenCalledWith(
+				conversationId,
+				expect.objectContaining({
+					last_message_id: "snapshot-1",
+					last_message_at: expect.any(String),
+					message_count: 1,
+				}),
+			);
+		});
+
+		it("should delete messages after checking conversation ownership", async () => {
+			const conversationId = "conv-123";
+			mockDatabase.getConversation.mockResolvedValue({
+				id: conversationId,
+				user_id: mockUser.id,
+			});
+			mockDatabase.getConversationMessageMetadata.mockResolvedValue({
+				last_message_id: "remaining-2",
+				message_count: 2,
+			});
+
+			const manager = ConversationManager.getInstance({
+				database: mockDatabase as any,
+				user: mockUser,
+			});
+
+			await manager.deleteMessages(conversationId, ["message-1", "message-2"]);
+
+			expect(mockDatabase.deleteMessages).toHaveBeenCalledWith(conversationId, [
+				"message-1",
+				"message-2",
+			]);
+			expect(mockDatabase.deleteMessage).not.toHaveBeenCalled();
+			expect(mockDatabase.getConversationMessageMetadata).toHaveBeenCalledWith(conversationId);
+			expect(mockDatabase.updateConversation).toHaveBeenCalledWith(
+				conversationId,
+				expect.objectContaining({
+					last_message_id: "remaining-2",
+					last_message_at: expect.any(String),
+					message_count: 2,
+				}),
+			);
+		});
+
+		it("should clear conversation message metadata when deleting the final messages", async () => {
+			const conversationId = "conv-empty";
+			mockDatabase.getConversation.mockResolvedValue({
+				id: conversationId,
+				user_id: mockUser.id,
+			});
+			mockDatabase.getConversationMessageMetadata.mockResolvedValue({
+				last_message_id: null,
+				message_count: 0,
+			});
+
+			const manager = ConversationManager.getInstance({
+				database: mockDatabase as any,
+				user: mockUser,
+			});
+
+			await manager.deleteMessages(conversationId, ["message-1"]);
+
+			expect(mockDatabase.updateConversation).toHaveBeenCalledWith(conversationId, {
+				last_message_id: null,
+				last_message_at: null,
+				message_count: 0,
+			});
+		});
 	});
 
 	describe("shareConversation", () => {
@@ -594,6 +819,253 @@ describe("ConversationManager", () => {
 		});
 	});
 
+	describe("getPublicConversation", () => {
+		it("hides snapshot messages from shared conversation messages", async () => {
+			mockDatabase.getConversationByShareId.mockResolvedValue({
+				id: "conv-123",
+				is_public: 1,
+			});
+			mockDatabase.getMessages.mockResolvedValue([
+				{
+					id: "snapshot-1",
+					role: "assistant",
+					content: "Conversation snapshot",
+					parts: JSON.stringify([{ type: "snapshot", summary: "Hidden summary" }]),
+				},
+				{
+					id: "compaction-1",
+					role: "compaction",
+					content: "Context compacted",
+					parts: JSON.stringify([
+						{ type: "compaction", status: "completed", label: "Context compacted" },
+					]),
+				},
+				{
+					id: "message-1",
+					role: "user",
+					content: "Visible message",
+				},
+			]);
+
+			const manager = ConversationManager.getInstance({
+				database: mockDatabase as any,
+			});
+
+			const result = await manager.getPublicConversation("share-123", 50, undefined, {
+				includeArchived: true,
+			});
+
+			expect(result).toEqual([
+				expect.objectContaining({
+					id: "compaction-1",
+					role: "compaction",
+				}),
+				expect.objectContaining({
+					id: "message-1",
+					content: "Visible message",
+				}),
+			]);
+		});
+
+		it("fills public pages with visible messages when raw pages include snapshots", async () => {
+			mockDatabase.getConversationByShareId.mockResolvedValue({
+				id: "conv-123",
+				is_public: 1,
+			});
+			mockDatabase.getMessages
+				.mockResolvedValueOnce([
+					{
+						id: "message-1",
+						role: "user",
+						content: "Visible one",
+					},
+					{
+						id: "snapshot-1",
+						role: "assistant",
+						content: "Conversation snapshot",
+						parts: JSON.stringify([{ type: "snapshot", summary: "Hidden summary" }]),
+					},
+				])
+				.mockResolvedValueOnce([
+					{
+						id: "message-2",
+						role: "assistant",
+						content: "Visible two",
+					},
+				]);
+
+			const manager = ConversationManager.getInstance({
+				database: mockDatabase as any,
+			});
+
+			const result = await manager.getPublicConversation("share-123", 2, undefined, {
+				includeArchived: true,
+			});
+
+			expect(mockDatabase.getMessages).toHaveBeenNthCalledWith(1, "conv-123", 2, undefined, {
+				includeArchived: true,
+			});
+			expect(mockDatabase.getMessages).toHaveBeenNthCalledWith(2, "conv-123", 1, "snapshot-1", {
+				includeArchived: true,
+			});
+			expect(result).toEqual([
+				expect.objectContaining({
+					id: "message-1",
+					content: "Visible one",
+				}),
+				expect.objectContaining({
+					id: "message-2",
+					content: "Visible two",
+				}),
+			]);
+		});
+	});
+
+	describe("getConversationDetails", () => {
+		it("hides snapshot messages from visible conversation details by default", async () => {
+			const conversationId = "conv-123";
+			mockDatabase.getConversation.mockResolvedValue({
+				id: conversationId,
+				user_id: mockUser.id,
+			});
+			mockDatabase.getConversationMessages.mockResolvedValue([
+				{
+					id: "snapshot-1",
+					role: "assistant",
+					content: "Conversation snapshot",
+					parts: JSON.stringify([{ type: "snapshot", summary: "Older context." }]),
+				},
+				{
+					id: "msg-1",
+					role: "user",
+					content: "Keep this visible",
+					parts: JSON.stringify([{ type: "text", text: "Keep this visible" }]),
+				},
+			]);
+
+			const manager = ConversationManager.getInstance({
+				database: mockDatabase as any,
+				user: mockUser,
+			});
+
+			const result = await manager.getConversationDetails(conversationId);
+
+			expect(result.messages).toEqual([
+				expect.objectContaining({
+					id: "msg-1",
+					content: "Keep this visible",
+				}),
+			]);
+		});
+
+		it("keeps compaction markers visible while hiding snapshots from conversation details", async () => {
+			const conversationId = "conv-123";
+			mockDatabase.getConversation.mockResolvedValue({
+				id: conversationId,
+				user_id: mockUser.id,
+			});
+			mockDatabase.getConversationMessages.mockResolvedValue([
+				{
+					id: "snapshot-1",
+					role: "assistant",
+					content: "Conversation snapshot",
+					parts: JSON.stringify([{ type: "snapshot", summary: "Older context." }]),
+				},
+				{
+					id: "compaction-1",
+					role: "compaction",
+					content: "Context compacted",
+					parts: JSON.stringify([
+						{ type: "compaction", status: "completed", label: "Context compacted" },
+					]),
+				},
+				{
+					id: "msg-1",
+					role: "user",
+					content: "Keep this visible",
+					parts: JSON.stringify([{ type: "text", text: "Keep this visible" }]),
+				},
+			]);
+
+			const manager = ConversationManager.getInstance({
+				database: mockDatabase as any,
+				user: mockUser,
+			});
+
+			const result = await manager.getConversationDetails(conversationId);
+
+			expect(result.messages).toEqual([
+				expect.objectContaining({
+					id: "compaction-1",
+					role: "compaction",
+				}),
+				expect.objectContaining({
+					id: "msg-1",
+					content: "Keep this visible",
+				}),
+			]);
+		});
+
+		it("loads full archived history for conversation details", async () => {
+			const conversationId = "conv-123";
+			mockDatabase.getConversation.mockResolvedValue({
+				id: conversationId,
+				user_id: mockUser.id,
+			});
+			mockDatabase.getConversationMessages.mockResolvedValue([]);
+
+			const manager = ConversationManager.getInstance({
+				database: mockDatabase as any,
+				user: mockUser,
+			});
+
+			await manager.getConversationDetails(conversationId, {
+				includeArchived: true,
+			});
+
+			expect(mockDatabase.getConversationMessages).toHaveBeenCalledWith(
+				conversationId,
+				0,
+				undefined,
+				{
+					includeArchived: true,
+				},
+			);
+		});
+
+		it("can include snapshot messages for internal callers", async () => {
+			const conversationId = "conv-123";
+			mockDatabase.getConversation.mockResolvedValue({
+				id: conversationId,
+				user_id: mockUser.id,
+			});
+			mockDatabase.getConversationMessages.mockResolvedValue([
+				{
+					id: "snapshot-1",
+					role: "assistant",
+					content: "Conversation snapshot",
+					parts: JSON.stringify([{ type: "snapshot", summary: "Older context." }]),
+				},
+			]);
+
+			const manager = ConversationManager.getInstance({
+				database: mockDatabase as any,
+				user: mockUser,
+			});
+
+			const result = await manager.getConversationDetails(conversationId, {
+				includeSnapshots: true,
+			});
+
+			expect(result.messages).toEqual([
+				expect.objectContaining({
+					id: "snapshot-1",
+					parts: [{ type: "snapshot", summary: "Older context." }],
+				}),
+			]);
+		});
+	});
+
 	describe("error handling", () => {
 		it("should handle database errors gracefully", async () => {
 			mockDatabase.getConversation.mockRejectedValue(new Error("Database error"));
@@ -615,6 +1087,128 @@ describe("ConversationManager", () => {
 			await expect(manager.get("conv-123")).rejects.toThrow(
 				"User ID is required to retrieve messages",
 			);
+		});
+	});
+
+	describe("getVisibleMessages", () => {
+		it("loads archived visible history while hiding snapshots", async () => {
+			const conversationId = "conv-123";
+			mockDatabase.getConversation.mockResolvedValue({
+				id: conversationId,
+				user_id: mockUser.id,
+			});
+			mockDatabase.getConversationMessages.mockResolvedValue([
+				{
+					id: "snapshot-1",
+					role: "assistant",
+					content: "Conversation snapshot",
+					parts: JSON.stringify([{ type: "snapshot", summary: "Older context." }]),
+				},
+				{
+					id: "compaction-1",
+					role: "compaction",
+					content: "Context compacted",
+					parts: JSON.stringify([
+						{ type: "compaction", status: "completed", label: "Context compacted" },
+					]),
+				},
+				{
+					id: "message-1",
+					role: "user",
+					content: "Visible message",
+				},
+			]);
+
+			const manager = ConversationManager.getInstance({
+				database: mockDatabase as any,
+				user: mockUser,
+			});
+
+			const result = await manager.getVisibleMessages(conversationId, 50);
+
+			expect(mockDatabase.getConversationMessages).toHaveBeenCalledWith(
+				conversationId,
+				50,
+				undefined,
+				{
+					includeArchived: true,
+				},
+			);
+			expect(result).toEqual([
+				expect.objectContaining({
+					id: "compaction-1",
+					role: "compaction",
+				}),
+				expect.objectContaining({
+					id: "message-1",
+					content: "Visible message",
+				}),
+			]);
+		});
+
+		it("fills visible pages when archived pages include snapshots", async () => {
+			const conversationId = "conv-123";
+			mockDatabase.getConversation.mockResolvedValue({
+				id: conversationId,
+				user_id: mockUser.id,
+			});
+			mockDatabase.getConversationMessages
+				.mockResolvedValueOnce([
+					{
+						id: "message-1",
+						role: "user",
+						content: "Visible one",
+					},
+					{
+						id: "snapshot-1",
+						role: "assistant",
+						content: "Conversation snapshot",
+						parts: JSON.stringify([{ type: "snapshot", summary: "Hidden summary" }]),
+					},
+				])
+				.mockResolvedValueOnce([
+					{
+						id: "message-2",
+						role: "assistant",
+						content: "Visible two",
+					},
+				]);
+
+			const manager = ConversationManager.getInstance({
+				database: mockDatabase as any,
+				user: mockUser,
+			});
+
+			const result = await manager.getVisibleMessages(conversationId, 2);
+
+			expect(mockDatabase.getConversationMessages).toHaveBeenNthCalledWith(
+				1,
+				conversationId,
+				2,
+				undefined,
+				{
+					includeArchived: true,
+				},
+			);
+			expect(mockDatabase.getConversationMessages).toHaveBeenNthCalledWith(
+				2,
+				conversationId,
+				1,
+				"snapshot-1",
+				{
+					includeArchived: true,
+				},
+			);
+			expect(result).toEqual([
+				expect.objectContaining({
+					id: "message-1",
+					content: "Visible one",
+				}),
+				expect.objectContaining({
+					id: "message-2",
+					content: "Visible two",
+				}),
+			]);
 		});
 	});
 });

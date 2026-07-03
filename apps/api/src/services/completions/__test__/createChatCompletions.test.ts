@@ -66,6 +66,78 @@ describe("handleCreateChatCompletions", () => {
 				}),
 			).rejects.toThrow("Missing required parameter: messages");
 		});
+
+		it("should throw error when only display-only compaction messages are provided", async () => {
+			const request = {
+				messages: [
+					{
+						role: "compaction",
+						content: "Context compacted",
+						parts: [
+							{
+								type: "compaction",
+								status: "completed",
+								label: "Context compacted",
+							},
+						],
+					},
+				],
+			} as any;
+
+			await expect(() =>
+				handleCreateChatCompletions({
+					env: mockEnv,
+					request,
+					user: mockUser,
+				}),
+			).rejects.toThrow("Missing required parameter: messages");
+			expect(mockProcessChatRequest).not.toHaveBeenCalled();
+		});
+
+		it("should remove display-only compaction messages before processing mixed requests", async () => {
+			const request = {
+				messages: [
+					{ id: "user-1", role: "user", content: "Hello" },
+					{
+						id: "compaction-1",
+						role: "compaction",
+						content: "Context compacted",
+						parts: [
+							{
+								type: "compaction",
+								status: "completed",
+								label: "Context compacted",
+							},
+						],
+					},
+				],
+				model: "gpt-4",
+			} as any;
+
+			mockProcessChatRequest.mockResolvedValue({
+				response: {
+					response: "Hello!",
+				},
+				selectedModel: "gpt-4",
+			});
+			mockFormatAssistantMessage.mockReturnValue({
+				content: "Hello!",
+				model: "gpt-4",
+				finish_reason: "stop",
+			});
+
+			await handleCreateChatCompletions({
+				env: mockEnv,
+				request,
+				user: mockUser,
+			});
+
+			expect(mockProcessChatRequest).toHaveBeenCalledWith(
+				expect.objectContaining({
+					messages: [{ id: "user-1", role: "user", content: "Hello" }],
+				}),
+			);
+		});
 	});
 
 	describe("successful chat completion", () => {
@@ -537,6 +609,53 @@ describe("handleCreateChatCompletions", () => {
 					tool_call_arguments: '{"input":"value"}',
 				},
 				finish_reason: "tool_result",
+			});
+		});
+
+		it("should expose compaction markers as post-processing metadata, not choices", async () => {
+			const request = {
+				messages: [{ role: "user", content: "Hello" }],
+				compaction: "auto",
+			} as any;
+			const compactionMessage = {
+				id: "snapshot-1-compaction",
+				role: "compaction",
+				content: "Context automatically compacted",
+				parts: [
+					{
+						type: "compaction",
+						status: "completed",
+						label: "Context automatically compacted",
+					},
+				],
+			};
+
+			mockProcessChatRequest.mockResolvedValue({
+				response: {
+					response: "Hello",
+					usage: { total_tokens: 20 },
+				},
+				selectedModel: "gpt-4",
+				compactionMessage,
+			});
+			mockFormatAssistantMessage.mockReturnValue({
+				content: "Hello",
+				model: "gpt-4",
+				usage: { total_tokens: 20 },
+				finish_reason: "stop",
+			});
+
+			const result = await handleCreateChatCompletions({
+				env: mockEnv,
+				request,
+				user: mockUser,
+			});
+
+			// @ts-expect-error - mock result
+			expect(result.choices).toHaveLength(1);
+			// @ts-expect-error - mock result
+			expect(result.post_processing.compaction).toEqual({
+				message: compactionMessage,
 			});
 		});
 	});

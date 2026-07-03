@@ -1,15 +1,17 @@
 import { ConversationManager } from "~/lib/conversationManager";
 import type { ServiceContext } from "~/lib/context/serviceContext";
-import type { AnonymousUser } from "~/types";
+import type { AnonymousUser, Message } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
+export type GetChatMessagesContext = Pick<ServiceContext, "database" | "ensureDatabase" | "user">;
+
 export const handleGetChatMessages = async (
-	context: ServiceContext,
+	context: GetChatMessagesContext,
 	anonymousUser: AnonymousUser | null,
 	completion_id: string,
 	limit?: number,
 	after?: string,
-): Promise<{ messages: any[]; conversation_id: string }> => {
+): Promise<{ messages: Message[]; conversation_id: string }> => {
 	const user = context.user ?? null;
 
 	if (!user?.id) {
@@ -24,7 +26,10 @@ export const handleGetChatMessages = async (
 		anonymousUser,
 	});
 
-	const messages = await conversationManager.get(completion_id, undefined, limit || 50, after);
+	const messages = await conversationManager.getVisibleMessages(completion_id, limit || 50, after, {
+		includeArchived: true,
+		includeSnapshots: false,
+	});
 
 	return {
 		messages,
@@ -33,10 +38,10 @@ export const handleGetChatMessages = async (
 };
 
 export const handleGetChatMessageById = async (
-	context: ServiceContext,
+	context: GetChatMessagesContext,
 	anonymousUser: AnonymousUser | null,
 	message_id: string,
-): Promise<{ message: any; conversation_id: string }> => {
+): Promise<{ message: Message; conversation_id: string }> => {
 	const user = context.user ?? null;
 
 	if (!user?.id) {

@@ -147,7 +147,7 @@ describe("AsyncMessagePollingHandler", () => {
 
 	it("returns error when message not found", async () => {
 		const mockConversationManager = {
-			get: vi.fn().mockResolvedValue([]),
+			getAllMessages: vi.fn().mockResolvedValue([]),
 		};
 		mockedConversationManager.getInstance.mockReturnValue(mockConversationManager as any);
 
@@ -157,9 +157,34 @@ describe("AsyncMessagePollingHandler", () => {
 		expect(result.message).toContain("not found in conversation");
 	});
 
+	it("loads full archived history when locating the target message", async () => {
+		const mockConversationManager = {
+			get: vi.fn().mockResolvedValue([]),
+			getAllMessages: vi.fn().mockResolvedValue([
+				{
+					id: "msg-456",
+					data: {
+						asyncInvocation: {
+							status: "completed",
+						},
+					},
+				},
+			]),
+		};
+		mockedConversationManager.getInstance.mockReturnValue(mockConversationManager as any);
+		mockedIsAsyncInvocationPending.mockReturnValue(false);
+
+		await handler.handle(baseMessage, baseEnv);
+
+		expect(mockConversationManager.getAllMessages).toHaveBeenCalledWith("conv-123", {
+			includeArchived: true,
+		});
+		expect(mockConversationManager.get).not.toHaveBeenCalled();
+	});
+
 	it("returns success when message is not pending async invocation", async () => {
 		const mockConversationManager = {
-			get: vi.fn().mockResolvedValue([
+			getAllMessages: vi.fn().mockResolvedValue([
 				{
 					id: "msg-456",
 					data: {
@@ -182,7 +207,7 @@ describe("AsyncMessagePollingHandler", () => {
 
 	it("handles completed async invocation", async () => {
 		const mockConversationManager = {
-			get: vi.fn().mockResolvedValue([
+			getAllMessages: vi.fn().mockResolvedValue([
 				{
 					id: "msg-456",
 					data: {
@@ -214,7 +239,7 @@ describe("AsyncMessagePollingHandler", () => {
 
 	it("handles failed async invocation", async () => {
 		const mockConversationManager = {
-			get: vi.fn().mockResolvedValue([
+			getAllMessages: vi.fn().mockResolvedValue([
 				{
 					id: "msg-456",
 					data: {
@@ -241,7 +266,7 @@ describe("AsyncMessagePollingHandler", () => {
 
 	it("re-queues task when async invocation still in progress", async () => {
 		const mockConversationManager = {
-			get: vi.fn().mockResolvedValue([
+			getAllMessages: vi.fn().mockResolvedValue([
 				{
 					id: "msg-456",
 					data: {

@@ -217,7 +217,14 @@ describe("MemoryManager", () => {
 			] as any;
 
 			const mockConversationManager = {
-				get: vi.fn().mockResolvedValue(messages),
+				get: vi.fn().mockResolvedValue([
+					...messages,
+					{
+						role: "compaction",
+						content: "Context compacted",
+						parts: [{ type: "compaction", status: "completed", label: "Context compacted" }],
+					},
+				]),
 			};
 
 			const mockProvider = {
@@ -249,6 +256,11 @@ describe("MemoryManager", () => {
 					category: "snapshot",
 				},
 			]);
+			const snippet = mockProvider.getResponse.mock.calls[0]?.[0].messages[1].content;
+			expect(snippet).toContain("user: Message 0");
+			expect(snippet).toContain("assistant: Response 0");
+			expect(snippet).not.toContain("compaction");
+			expect(snippet).not.toContain("Context compacted");
 		});
 
 		it("should return empty array when both settings are disabled", async () => {

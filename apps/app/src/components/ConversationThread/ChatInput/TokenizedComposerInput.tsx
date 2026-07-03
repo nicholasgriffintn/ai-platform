@@ -451,7 +451,7 @@ export const TokenizedComposerInput = forwardRef<
 					aria-disabled={disabled}
 					contentEditable={!disabled}
 					suppressContentEditableWarning={true}
-					className="min-h-[36px] w-full whitespace-pre-wrap break-words bg-transparent text-base leading-9 outline-none dark:text-white"
+					className="min-h-[36px] w-full whitespace-pre-wrap break-words bg-transparent text-base leading-6 outline-none dark:text-white"
 					onInput={emitCurrentState}
 					onKeyDown={onKeyDown}
 					onKeyUp={() => {
@@ -467,7 +467,7 @@ export const TokenizedComposerInput = forwardRef<
 					onPaste={handlePaste}
 				/>
 				{isEmpty && (
-					<span className="pointer-events-none absolute left-0 top-0 leading-9 text-zinc-400 dark:text-zinc-500">
+					<span className="pointer-events-none absolute left-0 top-0 leading-6 text-zinc-400 dark:text-zinc-500">
 						{placeholder}
 					</span>
 				)}

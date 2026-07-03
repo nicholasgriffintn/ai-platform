@@ -1,4 +1,5 @@
 import type { CreateChatCompletionsResponse } from "~/types";
+import { buildChatCompactionMetadata } from "./compaction-metadata";
 import { isPlainObject } from "~/utils/objects";
 
 type ChatPostProcessing = NonNullable<CreateChatCompletionsResponse["post_processing"]>;
@@ -24,9 +25,13 @@ function getStepMetadata(response: unknown): ChatPostProcessingSteps {
 export function buildChatPostProcessing(result: {
 	guardrails?: unknown;
 	response?: unknown;
+	compactionMessage?: unknown;
 }): ChatPostProcessing {
+	const compaction = buildChatCompactionMetadata(result.compactionMessage);
+
 	return {
 		...(isGuardrailsPostProcessing(result.guardrails) ? { guardrails: result.guardrails } : {}),
+		...(compaction ? { compaction } : {}),
 		...getStepMetadata(result.response),
 	};
 }

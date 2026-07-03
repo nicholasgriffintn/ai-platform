@@ -221,4 +221,18 @@ describe("agent provider IO", () => {
 			});
 		}
 	});
+
+	it("rejects compaction markers before agent provider projection", () => {
+		const providerIO = createAgentProviderIO();
+
+		expect(() =>
+			providerIO.initialMessages([
+				{
+					role: "compaction",
+					content: "Context compacted",
+					parts: [{ type: "compaction", status: "completed", label: "Context compacted" }],
+				},
+			]),
+		).toThrow("Agent mode received invalid message format");
+	});
 });

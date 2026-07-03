@@ -1,4 +1,4 @@
-import type { ChatCompletionRequestBody } from "@assistant/schemas";
+import type { ParsedChatCompletionRequestBody } from "@assistant/schemas";
 import type { Agent } from "~/lib/database/schema";
 import type { ChatCompletionParameters, Message } from "~/types";
 
@@ -6,7 +6,7 @@ type CompletionAgent = Pick<Agent, "id" | "model" | "temperature" | "max_steps">
 
 export interface AgentCompletionRequestInput {
 	agent: CompletionAgent;
-	body: ChatCompletionRequestBody;
+	body: ParsedChatCompletionRequestBody;
 	modelProvider: string;
 	formattedTools: NonNullable<ChatCompletionParameters["tools"]>;
 	systemPrompt: string;

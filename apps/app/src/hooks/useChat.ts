@@ -3,6 +3,7 @@ import { useMemo } from "react";
 
 import { CHATS_QUERY_KEY } from "~/constants";
 import { apiService } from "~/lib/api/api-service";
+import { createTemporaryConversationTitle } from "~/lib/chat/title-source";
 import { updateConversationInChatCaches } from "~/lib/conversation-cache";
 import { filterConversationsByListOptions } from "~/lib/conversation-list";
 import { isLocallyCreatedConversation, preserveOptimisticMessages } from "~/lib/conversations";
@@ -250,12 +251,7 @@ export function useGenerateTitle() {
 
 			let newTitle;
 			if (isLocalOnly || localOnlyMode) {
-				const firstMessage = messages[0];
-				const content =
-					typeof firstMessage.content === "string"
-						? firstMessage.content
-						: firstMessage.content.map((item) => item.text).join("");
-				newTitle = content.slice(0, 30) + (content.length > 30 ? "..." : "");
+				newTitle = createTemporaryConversationTitle(messages);
 			} else {
 				newTitle = await apiService.generateTitle(completion_id, messages);
 			}

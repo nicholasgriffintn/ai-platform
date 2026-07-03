@@ -1,60 +1,61 @@
 import type { Message } from "~/types";
+import { hasCompactionPart, isCompactionMarkerMessage } from "~/lib/chat/messageParts";
 import {
-	messageContentToText,
 	estimateConversationTokens,
 	estimateMessageTokens,
+	messageToText,
+	type MessageTokenInput,
 } from "~/lib/messageTokens";
 
 export interface CompactionWindowConfig {
 	contextWindow?: number;
+	mode?: CompactionMode;
 	triggerRatio?: number;
-	minMessages?: number;
 	keepRecentMessages?: number;
-	minArchiveCount?: number;
 }
 
-export interface CompactionPlan {
+export type CompactionMode = "auto" | "manual" | "off";
+
+export type CompactionPlanMessage = MessageTokenInput;
+
+export interface CompactionPlan<TMessage extends CompactionPlanMessage = Message> {
 	shouldCompact: boolean;
-	messagesToArchive: Message[];
-	messagesToKeep: Message[];
+	messagesToArchive: TMessage[];
+	messagesToKeep: TMessage[];
 	snapshotInsertionIndex: number;
 }
 
 const DEFAULT_CONTEXT_WINDOW = 32000;
 const DEFAULT_TRIGGER_RATIO = 0.7;
-const DEFAULT_MIN_MESSAGES = 24;
 const DEFAULT_KEEP_RECENT_MESSAGES = 8;
-const DEFAULT_MIN_ARCHIVE_COUNT = 6;
 export { estimateConversationTokens, estimateMessageTokens };
 
-function hasSnapshotPart(message: Message): boolean {
-	return Array.isArray(message.parts) && message.parts.some((part) => part.type === "snapshot");
+function countsTowardCompactionPressure(message: CompactionPlanMessage): boolean {
+	return !isCompactionMarkerMessage(message) && !hasCompactionPart(message);
 }
 
-function isCompactionCandidate(message: Message): boolean {
-	if (message.role === "system") {
+function canArchiveDuringCompaction(message: CompactionPlanMessage): boolean {
+	if (message.role === "system" || message.role === "developer") {
 		return false;
 	}
 
-	if (hasSnapshotPart(message)) {
+	if (!countsTowardCompactionPressure(message)) {
 		return false;
 	}
 
 	return true;
 }
 
-export function buildCompactionPlan(
-	messages: Message[],
-	latestUserMessage: string,
+export function buildCompactionPlan<TMessage extends CompactionPlanMessage>(
+	messages: TMessage[],
 	config: CompactionWindowConfig = {},
-): CompactionPlan {
-	const contextWindow = config.contextWindow || DEFAULT_CONTEXT_WINDOW;
-	const triggerRatio = config.triggerRatio || DEFAULT_TRIGGER_RATIO;
-	const minMessages = config.minMessages || DEFAULT_MIN_MESSAGES;
-	const keepRecentMessages = config.keepRecentMessages || DEFAULT_KEEP_RECENT_MESSAGES;
-	const minArchiveCount = config.minArchiveCount || DEFAULT_MIN_ARCHIVE_COUNT;
+): CompactionPlan<TMessage> {
+	const mode = config.mode ?? "auto";
+	const contextWindow = config.contextWindow ?? DEFAULT_CONTEXT_WINDOW;
+	const triggerRatio = config.triggerRatio ?? DEFAULT_TRIGGER_RATIO;
+	const keepRecentMessages = config.keepRecentMessages ?? DEFAULT_KEEP_RECENT_MESSAGES;
 
-	if (messages.length < minMessages) {
+	if (mode === "off") {
 		return {
 			shouldCompact: false,
 			messagesToArchive: [],
@@ -63,9 +64,22 @@ export function buildCompactionPlan(
 		};
 	}
 
-	const estimatedTokens = estimateConversationTokens(messages, latestUserMessage);
-	const compactionThreshold = Math.floor(contextWindow * triggerRatio);
-	if (estimatedTokens < compactionThreshold) {
+	if (mode === "auto") {
+		const estimatedTokens = estimateConversationTokens(
+			messages.filter(countsTowardCompactionPressure),
+		);
+		const compactionThreshold = Math.floor(contextWindow * triggerRatio);
+		if (estimatedTokens < compactionThreshold) {
+			return {
+				shouldCompact: false,
+				messagesToArchive: [],
+				messagesToKeep: messages,
+				snapshotInsertionIndex: messages.length,
+			};
+		}
+	}
+
+	if (mode !== "auto" && mode !== "manual") {
 		return {
 			shouldCompact: false,
 			messagesToArchive: [],
@@ -74,12 +88,17 @@ export function buildCompactionPlan(
 		};
 	}
 
-	const archiveBoundary = Math.max(messages.length - keepRecentMessages, 0);
+	const archiveBoundary =
+		mode === "manual"
+			? messages.length
+			: messages.length > keepRecentMessages
+				? messages.length - keepRecentMessages
+				: Math.max(messages.length - 1, 0);
 	const archiveableHead = messages.slice(0, archiveBoundary);
 	const tail = messages.slice(archiveBoundary);
 
-	const messagesToArchive = archiveableHead.filter(isCompactionCandidate);
-	if (messagesToArchive.length < minArchiveCount) {
+	const messagesToArchive = archiveableHead.filter(canArchiveDuringCompaction);
+	if (messagesToArchive.length === 0) {
 		return {
 			shouldCompact: false,
 			messagesToArchive: [],
@@ -88,7 +107,7 @@ export function buildCompactionPlan(
 		};
 	}
 
-	const preservedHead = archiveableHead.filter((message) => !isCompactionCandidate(message));
+	const preservedHead = archiveableHead.filter((message) => !canArchiveDuringCompaction(message));
 	const messagesToKeep = [...preservedHead, ...tail];
 
 	return {
@@ -104,17 +123,15 @@ const ROLE_LABELS: Partial<Record<Message["role"], string>> = {
 	assistant: "[Assistant]",
 	tool: "[Tool result]",
 	system: "[System]",
+	developer: "[Developer]",
 };
 
 export function buildFallbackSummary(messages: Message[]): string {
-	const lines = messages
-		.slice(-6)
-		.map((message) => {
-			const label = ROLE_LABELS[message.role] ?? `[${message.role}]`;
-			const text = messageContentToText(message.content, message.role);
-			return `${label} ${text}`.trim();
-		})
-		.filter((line) => line.length > 0);
+	const lines = messages.slice(-6).flatMap((message) => {
+		const label = ROLE_LABELS[message.role] ?? `[${message.role}]`;
+		const text = messageToText(message);
+		return text ? [`${label} ${text}`.trim()] : [];
+	});
 
 	if (lines.length === 0) {
 		return "Conversation snapshot recorded.";
@@ -129,7 +146,7 @@ export function formatMessagesForSummary(messages: Message[], maxCharacters = 16
 
 	for (const message of messages) {
 		const label = ROLE_LABELS[message.role] ?? `[${message.role}]`;
-		const body = messageContentToText(message.content, message.role);
+		const body = messageToText(message);
 		if (!body) {
 			continue;
 		}

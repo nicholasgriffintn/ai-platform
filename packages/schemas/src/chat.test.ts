@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 
-import { getChatCompletionMessagesResponseSchema } from "./chat";
+import {
+	compactChatCompletionResponseSchema,
+	generateChatCompletionTitleJsonSchema,
+	getChatCompletionMessagesResponseSchema,
+	getMessageResponseSchema,
+} from "./chat";
 
 describe("chat schemas", () => {
 	it("accepts stored assistant messages represented by parts and tool calls", () => {
@@ -44,6 +49,194 @@ describe("chat schemas", () => {
 							},
 						},
 					],
+				},
+			],
+		});
+
+		expect(result.success).toBe(true);
+	});
+
+	it("accepts stored message rows with nullable database metadata", () => {
+		const message = {
+			id: "snapshot-1-compaction",
+			conversation_id: "conversation-1",
+			parent_message_id: null,
+			role: "compaction",
+			content: "Context compacted",
+			name: null,
+			tool_calls: null,
+			citations: null,
+			model: null,
+			status: null,
+			timestamp: 1783110534616,
+			platform: "api",
+			mode: "remote",
+			log_id: null,
+			data: null,
+			created_at: "2026-07-03 20:28:55",
+			updated_at: "2026-07-03 20:28:55",
+			parts: [
+				{
+					timestamp: 1783110534616,
+					type: "compaction",
+					status: "completed",
+					label: "Context compacted",
+				},
+			],
+			tool_call_id: null,
+			app: null,
+			tool_call_arguments: null,
+			is_archived: 1,
+		};
+
+		expect(
+			getChatCompletionMessagesResponseSchema.safeParse({
+				conversation_id: "conversation-1",
+				messages: [message],
+			}).success,
+		).toBe(true);
+		expect(
+			getMessageResponseSchema.safeParse({
+				...message,
+				conversation_id: "conversation-1",
+			}).success,
+		).toBe(true);
+	});
+
+	it("accepts compact responses with visible compaction status messages", () => {
+		const result = compactChatCompletionResponseSchema.safeParse({
+			compacted: true,
+			conversation: {
+				id: "conversation-1",
+				title: "Bottle ideas",
+				messages: [
+					{
+						id: "snapshot-1-compaction",
+						role: "compaction",
+						content: "Context compacted",
+						parts: [
+							{
+								type: "compaction",
+								status: "completed",
+								label: "Context compacted",
+							},
+						],
+					},
+				],
+			},
+		});
+
+		expect(result.success).toBe(true);
+	});
+
+	it("rejects compact responses without valid visible messages", () => {
+		const result = compactChatCompletionResponseSchema.safeParse({
+			compacted: true,
+			conversation: {
+				id: "conversation-1",
+				messages: [
+					{
+						id: "snapshot-1-compaction",
+						role: "status",
+						content: "Context compacted",
+					},
+				],
+			},
+		});
+
+		expect(result.success).toBe(false);
+	});
+
+	it("rejects compact responses with role-only compaction markers", () => {
+		const result = compactChatCompletionResponseSchema.safeParse({
+			compacted: true,
+			conversation: {
+				id: "conversation-1",
+				messages: [
+					{
+						id: "snapshot-1-compaction",
+						role: "compaction",
+						content: "Context compacted",
+					},
+				],
+			},
+		});
+
+		expect(result.success).toBe(false);
+	});
+
+	it("rejects compacted responses that do not include a visible compaction message", () => {
+		const result = compactChatCompletionResponseSchema.safeParse({
+			compacted: true,
+			conversation: {
+				id: "conversation-1",
+				messages: [
+					{
+						id: "assistant-1",
+						role: "assistant",
+						content: "Previous answer",
+					},
+				],
+			},
+		});
+
+		expect(result.success).toBe(false);
+	});
+
+	it("accepts no-op compact responses without compaction markers", () => {
+		const result = compactChatCompletionResponseSchema.safeParse({
+			compacted: false,
+			conversation: {
+				id: "conversation-1",
+				messages: [
+					{
+						id: "assistant-1",
+						role: "assistant",
+						content: "Previous answer",
+					},
+				],
+			},
+		});
+
+		expect(result.success).toBe(true);
+	});
+
+	it("accepts visible compaction messages in title generation requests", () => {
+		const result = generateChatCompletionTitleJsonSchema.safeParse({
+			messages: [
+				{
+					role: "user",
+					content: "What was this conversation about?",
+				},
+				{
+					role: "compaction",
+					content: "Context compacted",
+					parts: [
+						{
+							type: "compaction",
+							status: "completed",
+							label: "Context compacted",
+						},
+					],
+				},
+			],
+			store: true,
+		});
+
+		expect(result.success).toBe(true);
+	});
+
+	it("accepts visible compaction messages in single message responses", () => {
+		const result = getMessageResponseSchema.safeParse({
+			id: "snapshot-1-compaction",
+			conversation_id: "conversation-1",
+			role: "compaction",
+			content: "Context compacted",
+			parts: [
+				{
+					type: "compaction",
+					status: "completed",
+					label: "Context compacted",
 				},
 			],
 		});

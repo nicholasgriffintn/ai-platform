@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 
-import { createChatCompletionsJsonSchema } from "./chat-completions";
+import {
+	createChatCompletionsJsonSchema,
+	createChatCompletionsResponseSchema,
+} from "./chat-completions";
 
 const messages = [{ role: "user" as const, content: "Hello" }];
 
@@ -98,5 +101,165 @@ describe("chat completions schema", () => {
 				},
 			],
 		});
+	});
+
+	it("accepts custom conversation mode and platform strings", () => {
+		expect(
+			createChatCompletionsJsonSchema.parse({
+				model: "gpt-5",
+				mode: "recipe",
+				platform: "desktop",
+				messages,
+			}),
+		).toMatchObject({
+			mode: "recipe",
+			platform: "desktop",
+		});
+	});
+
+	it("accepts compaction post-processing metadata with a durable compaction message", () => {
+		expect(
+			createChatCompletionsResponseSchema.parse({
+				id: "completion-1",
+				log_id: "log-1",
+				object: "chat.completion",
+				created: 1234,
+				choices: [
+					{
+						index: 0,
+						message: {
+							role: "assistant",
+							content: "Done",
+						},
+						finish_reason: "stop",
+					},
+				],
+				usage: {
+					prompt_tokens: 1,
+					completion_tokens: 1,
+					total_tokens: 2,
+				},
+				post_processing: {
+					compaction: {
+						message: {
+							id: "snapshot-1-compaction",
+							role: "compaction",
+							content: "Context automatically compacted",
+							parts: [
+								{
+									type: "compaction",
+									status: "completed",
+									label: "Context automatically compacted",
+								},
+							],
+						},
+					},
+					steps: [{ step: 1 }],
+				},
+			}),
+		).toMatchObject({
+			post_processing: {
+				compaction: {
+					message: {
+						id: "snapshot-1-compaction",
+						role: "compaction",
+					},
+				},
+			},
+		});
+	});
+
+	it("preserves tool result choice metadata in non-streaming responses", () => {
+		const parsed = createChatCompletionsResponseSchema.parse({
+			id: "completion-1",
+			log_id: "log-1",
+			object: "chat.completion",
+			created: 1234,
+			choices: [
+				{
+					index: 0,
+					message: {
+						role: "assistant",
+						content: "Using tool",
+					},
+					finish_reason: "stop",
+				},
+				{
+					index: 1,
+					message: {
+						id: "tool_123",
+						log_id: "log-1",
+						role: "tool",
+						name: "test_tool",
+						content: "Tool result",
+						parts: [
+							{
+								type: "tool_result",
+								name: "test_tool",
+								content: "Tool result",
+								status: "success",
+							},
+						],
+						citations: null,
+						data: null,
+						status: "success",
+						timestamp: "2023-01-01T00:00:00Z",
+						tool_call_id: "call-test-tool",
+						tool_call_arguments: '{"input":"value"}',
+					},
+					finish_reason: "tool_result",
+				},
+			],
+			usage: {
+				prompt_tokens: 1,
+				completion_tokens: 1,
+				total_tokens: 2,
+			},
+		});
+
+		expect(parsed.choices[1]?.message).toMatchObject({
+			id: "tool_123",
+			log_id: "log-1",
+			role: "tool",
+			name: "test_tool",
+			tool_call_id: "call-test-tool",
+			tool_call_arguments: '{"input":"value"}',
+			timestamp: "2023-01-01T00:00:00Z",
+		});
+	});
+
+	it("rejects malformed compaction post-processing metadata", () => {
+		const result = createChatCompletionsResponseSchema.safeParse({
+			id: "completion-1",
+			log_id: "log-1",
+			object: "chat.completion",
+			created: 1234,
+			choices: [
+				{
+					index: 0,
+					message: {
+						role: "assistant",
+						content: "Done",
+					},
+					finish_reason: "stop",
+				},
+			],
+			usage: {
+				prompt_tokens: 1,
+				completion_tokens: 1,
+				total_tokens: 2,
+			},
+			post_processing: {
+				compaction: {
+					message: {
+						id: "assistant-1",
+						role: "assistant",
+						content: "Ordinary assistant message",
+					},
+				},
+			},
+		});
+
+		expect(result.success).toBe(false);
 	});
 });

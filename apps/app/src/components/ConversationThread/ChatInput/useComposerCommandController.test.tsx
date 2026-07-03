@@ -227,6 +227,34 @@ describe("useComposerCommandController", () => {
 		expect(mocks.store.setChatInput).toHaveBeenCalledWith("@");
 	});
 
+	it("lets exact self-inserting slash commands submit instead of reselecting forever", () => {
+		mocks.store.chatInput = "/compact";
+		const { result } = renderHook(() =>
+			useComposerCommandController({
+				isLoading: false,
+			}),
+		);
+
+		act(() => result.current.setTextareaCursorPosition(8));
+
+		expect(result.current.applyDirectiveSelection()).toBe(false);
+		expect(mocks.store.setChatInput).not.toHaveBeenCalled();
+	});
+
+	it("lets exact self-inserting slash commands submit when cursor state still points at the partial command", () => {
+		mocks.store.chatInput = "/compact";
+		const { result } = renderHook(() =>
+			useComposerCommandController({
+				isLoading: false,
+			}),
+		);
+
+		act(() => result.current.setTextareaCursorPosition(4));
+
+		expect(result.current.applyDirectiveSelection()).toBe(false);
+		expect(mocks.store.setChatInput).not.toHaveBeenCalled();
+	});
+
 	it("does not open action suggestions from inside an already selected inline token", () => {
 		mocks.store.chatInput = "hey @Daily Weather and";
 		mocks.store.selectedAssistantAction = {

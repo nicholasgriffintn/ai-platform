@@ -22,6 +22,7 @@ import {
 	resolveAgentStepBudgetExtension,
 } from "~/lib/chat/agent/stepBudget";
 import { getAIResponse } from "~/lib/chat/responses";
+import { toProviderMessages } from "~/lib/chat/providerMessages";
 import { isSuccessfulToolStatus } from "~/lib/chat/tool-results";
 import { handleToolCalls } from "~/lib/chat/tools";
 import type { IRequest, Message } from "~/types";
@@ -66,7 +67,9 @@ export async function runAgentLoop(
 	params: AgentLoopExecutionParams,
 ): Promise<AgentLoopExecutionResult> {
 	const providerIO = createAgentProviderIO();
-	const runtimeMessages = providerIO.initialMessages(params.requestParams.messages);
+	const runtimeMessages = providerIO.initialMessages(
+		toProviderMessages(params.requestParams.messages),
+	);
 	const completionRequirements = getAgentCompletionRequirements(params.requestParams);
 	if (
 		completionRequirements.minToolCalls > 0 &&
@@ -200,7 +203,7 @@ export async function runAgentLoop(
 						isSuccessfulToolStatus(message.status),
 					).length;
 					toolResponses.push(...toolResults);
-					context.messages.push(...toolResults);
+					context.messages.push(...toProviderMessages(toolResults));
 				},
 			}),
 		],

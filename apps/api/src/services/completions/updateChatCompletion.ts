@@ -1,7 +1,9 @@
+import { canReplaceStoredConversationMessages } from "@assistant/schemas";
 import { ConversationManager } from "~/lib/conversationManager";
 import type { ServiceContext } from "~/lib/context/serviceContext";
-import { cloneMessagesForBranch } from "~/lib/chat/branchMessages";
+import { cloneMessagesForBranch, selectBranchSourceMessages } from "~/lib/chat/branchMessages";
 import type { Message } from "~/types";
+import { AssistantError, ErrorType } from "~/utils/errors";
 
 interface ChatCompletionUpdateParams {
 	title?: string;
@@ -43,10 +45,42 @@ export const handleUpdateChatCompletion = async (
 
 	if (messages) {
 		if (branchMetadata) {
-			await conversationManager.replaceMessages(completion_id, cloneMessagesForBranch(messages), {
-				metadata: branchMetadata,
-			});
+			let branchSourceMessages = messages;
+			try {
+				const parentActiveMessages = await conversationManager.get(parent_conversation_id);
+				branchSourceMessages = selectBranchSourceMessages({
+					parentActiveMessages,
+					parentMessageId: parent_message_id,
+					providedMessages: messages,
+				});
+			} catch {
+				branchSourceMessages = messages;
+			}
+
+			if (!canReplaceStoredConversationMessages(branchSourceMessages)) {
+				throw new AssistantError(
+					"Compacted visible history cannot be used to create a stored branch",
+					ErrorType.PARAMS_ERROR,
+					400,
+				);
+			}
+
+			await conversationManager.replaceMessages(
+				completion_id,
+				cloneMessagesForBranch(branchSourceMessages, completion_id),
+				{
+					metadata: branchMetadata,
+				},
+			);
 		} else {
+			if (!canReplaceStoredConversationMessages(messages)) {
+				throw new AssistantError(
+					"Compacted visible history cannot replace stored conversation messages",
+					ErrorType.PARAMS_ERROR,
+					400,
+				);
+			}
+
 			await conversationManager.replaceMessages(completion_id, messages);
 		}
 		updatedConversation = await conversationManager.getConversationDetails(completion_id);

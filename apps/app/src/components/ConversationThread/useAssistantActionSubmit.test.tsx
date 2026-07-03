@@ -113,6 +113,16 @@ describe("useAssistantActionSubmit", () => {
 		expect(mocks.installRecipe.mutateAsync).not.toHaveBeenCalled();
 	});
 
+	it("does not treat compact as a chat request option", async () => {
+		const { result } = renderHook(() => useAssistantActionSubmit());
+
+		await expect(result.current.resolveAssistantActionSubmit("/compact")).resolves.toEqual({
+			kind: "submit",
+			input: "/compact",
+		});
+		expect(mocks.chatStore.setSelectedAssistantAction).not.toHaveBeenCalled();
+	});
+
 	it("routes scheduled recipe actions through the selected slash verb", async () => {
 		mocks.chatStore.selectedAssistantAction = {
 			verb: "schedule",

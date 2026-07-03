@@ -10,10 +10,10 @@ import { MessageList } from "~/components/ConversationThread/MessageList";
 import { LoadingSpinner } from "~/components/LoadingSpinner";
 import { PageShell } from "~/components/Core/PageShell";
 import { PageStatus } from "~/components/Core/PageStatus";
-import { API_BASE_URL } from "~/constants";
+import { ApiError } from "~/lib/api/fetch-wrapper";
+import { fetchSharedConversationHistory } from "~/lib/api/shared-conversation";
 import type { Message } from "~/types";
 import type { ArtifactProps } from "~/types/artifact";
-import { returnFetchedData } from "src/lib/api/fetch-wrapper";
 
 export function meta({ params }: { params: { share_id: string } }) {
 	return [
@@ -64,27 +64,18 @@ export default function SharedConversationPage() {
 
 			try {
 				setIsLoading(true);
-				const response = await fetch(`${API_BASE_URL}/chat/shared/${share_id}`);
-
-				if (!response.ok) {
-					if (response.status === 404) {
-						setError("This shared conversation was not found or is no longer available.");
-					} else {
-						setError("Failed to load the shared conversation.");
-					}
-					setIsLoading(false);
-					return;
-				}
-
-				const data = await returnFetchedData<{
-					messages: Message[];
-					share_id: string;
-				}>(response);
+				const data = await fetchSharedConversationHistory(share_id);
 				setMessages(data.messages);
 				setIsLoading(false);
 			} catch (err) {
 				console.error("Error fetching shared conversation:", err);
-				setError("An error occurred while loading the shared conversation.");
+				if (err instanceof ApiError && err.status === 404) {
+					setError("This shared conversation was not found or is no longer available.");
+				} else if (err instanceof ApiError) {
+					setError("Failed to load the shared conversation.");
+				} else {
+					setError("An error occurred while loading the shared conversation.");
+				}
 				setIsLoading(false);
 			}
 		};

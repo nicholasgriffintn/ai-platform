@@ -12,6 +12,7 @@ import { useChat } from "~/hooks/useChat";
 import { useChatManager } from "~/hooks/useChatManager";
 import { useModels } from "~/hooks/useModels";
 import type { AttachmentData } from "~/lib/chat/attachments";
+import { isCompactConversationCommand } from "~/lib/chat/compaction-command";
 import {
 	createModelReferenceMap,
 	getModelByReference,
@@ -97,6 +98,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
 	const {
 		streamStarted,
 		controller,
+		compactConversation,
 		sendMessage,
 		sendCouncilDebate,
 		abortStream,
@@ -246,6 +248,21 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
 				return;
 			}
 
+			if (isCompactConversationCommand(chatInput) && !selectedAssistantAction?.item) {
+				const originalInput = chatInput;
+				setChatInput("");
+				setSelectedAssistantAction(null);
+
+				const result = await compactConversation();
+				if (result.status === "error") {
+					setChatInput(originalInput);
+					if (result.response) {
+						toast.error(result.response);
+					}
+				}
+				return;
+			}
+
 			// For text-to-image models, only allow the first message unless they support image edits
 			if (selectedModelConfig) {
 				if (
@@ -323,6 +340,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
 			chatInput,
 			model,
 			messages,
+			compactConversation,
 			sendMessage,
 			sendCouncilDebate,
 			resolveAssistantActionSubmit,

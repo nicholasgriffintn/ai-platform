@@ -48,7 +48,7 @@ class AgentProviderIO {
 		this.createId = options.createId ?? generateId;
 	}
 
-	initialMessages(messages: unknown): Message[] {
+	initialMessages(messages: unknown): AgentMessage[] {
 		if (!Array.isArray(messages) || messages.length === 0) {
 			throw new AssistantError("Agent mode requires at least one message", ErrorType.PARAMS_ERROR);
 		}
@@ -174,7 +174,7 @@ class AgentProviderIO {
 		});
 	}
 
-	private isChatMessage(value: unknown): value is Message {
+	private isChatMessage(value: unknown): value is AgentMessage {
 		if (!isPlainObject(value)) {
 			return false;
 		}

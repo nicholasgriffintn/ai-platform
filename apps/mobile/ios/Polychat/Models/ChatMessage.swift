@@ -28,16 +28,18 @@ public struct ChatCitation: Codable, Equatable {
 }
 
 public struct ChatMessagePart: Codable, Equatable, Identifiable {
-    public var id: String { explicitId ?? "\(type)-\(timestamp ?? 0)-\(text ?? name ?? url ?? summary ?? "")" }
+    public var id: String { explicitId ?? "\(type)-\(timestamp ?? 0)-\(text ?? name ?? url ?? summary ?? label ?? "")" }
     public let explicitId: String?
     public let type: String
     public let text: String?
     public let name: String?
+    public let label: String?
     public let toolCallId: String?
     public let input: JSONValue?
     public let status: String?
     public let content: JSONValue?
     public let data: JSONValue?
+    public let metadata: JSONValue?
     public let title: String?
     public let summary: String?
     public let url: String?
@@ -47,9 +49,47 @@ public struct ChatMessagePart: Codable, Equatable, Identifiable {
 
     enum CodingKeys: String, CodingKey {
         case explicitId = "id"
-        case type, text, name, input, status, content, data, title, summary, url, mimeType, collapsed, timestamp
+        case type, text, name, label, input, status, content, data, metadata, title, summary, url, mimeType, collapsed, timestamp
         case toolCallId
         case toolCallIdSnake = "tool_call_id"
+    }
+
+    public init(
+        id: String? = nil,
+        type: String,
+        text: String? = nil,
+        name: String? = nil,
+        label: String? = nil,
+        toolCallId: String? = nil,
+        input: JSONValue? = nil,
+        status: String? = nil,
+        content: JSONValue? = nil,
+        data: JSONValue? = nil,
+        metadata: JSONValue? = nil,
+        title: String? = nil,
+        summary: String? = nil,
+        url: String? = nil,
+        mimeType: String? = nil,
+        collapsed: Bool? = nil,
+        timestamp: Double? = nil
+    ) {
+        self.explicitId = id
+        self.type = type
+        self.text = text
+        self.name = name
+        self.label = label
+        self.toolCallId = toolCallId
+        self.input = input
+        self.status = status
+        self.content = content
+        self.data = data
+        self.metadata = metadata
+        self.title = title
+        self.summary = summary
+        self.url = url
+        self.mimeType = mimeType
+        self.collapsed = collapsed
+        self.timestamp = timestamp
     }
 
     public init(from decoder: Decoder) throws {
@@ -58,12 +98,14 @@ public struct ChatMessagePart: Codable, Equatable, Identifiable {
         type = try container.decode(String.self, forKey: .type)
         text = try container.decodeIfPresent(String.self, forKey: .text)
         name = try container.decodeIfPresent(String.self, forKey: .name)
+        label = try container.decodeIfPresent(String.self, forKey: .label)
         toolCallId = try container.decodeIfPresent(String.self, forKey: .toolCallId)
             ?? container.decodeIfPresent(String.self, forKey: .toolCallIdSnake)
         input = try container.decodeIfPresent(JSONValue.self, forKey: .input)
         status = try container.decodeIfPresent(String.self, forKey: .status)
         content = try container.decodeIfPresent(JSONValue.self, forKey: .content)
         data = try container.decodeIfPresent(JSONValue.self, forKey: .data)
+        metadata = try container.decodeIfPresent(JSONValue.self, forKey: .metadata)
         title = try container.decodeIfPresent(String.self, forKey: .title)
         summary = try container.decodeIfPresent(String.self, forKey: .summary)
         url = try container.decodeIfPresent(String.self, forKey: .url)
@@ -78,11 +120,13 @@ public struct ChatMessagePart: Codable, Equatable, Identifiable {
         try container.encode(type, forKey: .type)
         try container.encodeIfPresent(text, forKey: .text)
         try container.encodeIfPresent(name, forKey: .name)
+        try container.encodeIfPresent(label, forKey: .label)
         try container.encodeIfPresent(toolCallId, forKey: .toolCallId)
         try container.encodeIfPresent(input, forKey: .input)
         try container.encodeIfPresent(status, forKey: .status)
         try container.encodeIfPresent(content, forKey: .content)
         try container.encodeIfPresent(data, forKey: .data)
+        try container.encodeIfPresent(metadata, forKey: .metadata)
         try container.encodeIfPresent(title, forKey: .title)
         try container.encodeIfPresent(summary, forKey: .summary)
         try container.encodeIfPresent(url, forKey: .url)
@@ -229,6 +273,7 @@ public struct ChatMessage: Codable, Identifiable, Equatable {
     public let reasoning: ChatReasoning?
     public let citations: [ChatCitation]?
     public let data: ChatMessageData?
+    public let completionId: String?
     public let name: String?
     public let status: String?
     public let logId: String?
@@ -249,6 +294,38 @@ public struct ChatMessage: Codable, Identifiable, Equatable {
         content.textValue
     }
 
+    public var hasCompactionPart: Bool {
+        parts?.contains { $0.type == "compaction" } == true
+    }
+
+    public var hasValidCompactionPart: Bool {
+        parts?.contains {
+            $0.type == "compaction" && CompactionPartStatus.isValid($0.status)
+        } == true
+    }
+
+    public var isCompactionMarker: Bool {
+        role == "compaction" || hasValidCompactionPart
+    }
+
+    public var isVisibleCompactionStatus: Bool {
+        role == "compaction" && hasValidCompactionPart
+    }
+
+    public static func providerMessages(from messages: [ChatMessage]) -> [ChatMessage] {
+        messages.filter { !$0.isCompactionMarker && !$0.hasCompactionPart }
+    }
+
+    public var compactionStatusLabel: String {
+        if let label = parts?.first(where: { $0.type == "compaction" })?.label?.trimmingCharacters(in: .whitespacesAndNewlines),
+           !label.isEmpty {
+            return label
+        }
+
+        let contentLabel = textContent.trimmingCharacters(in: .whitespacesAndNewlines)
+        return contentLabel.isEmpty ? CompactionStatusLabels.manualCompleted : contentLabel
+    }
+
     public init(
         id: String = UUID().uuidString,
         role: String,
@@ -259,6 +336,7 @@ public struct ChatMessage: Codable, Identifiable, Equatable {
         reasoning: ChatReasoning? = nil,
         citations: [ChatCitation]? = nil,
         data: ChatMessageData? = nil,
+        completionId: String? = nil,
         name: String? = nil,
         status: String? = nil,
         logId: String? = nil,
@@ -274,6 +352,7 @@ public struct ChatMessage: Codable, Identifiable, Equatable {
         self.reasoning = reasoning
         self.citations = citations
         self.data = data
+        self.completionId = completionId
         self.name = name
         self.status = status
         self.logId = logId
@@ -307,6 +386,7 @@ public struct ChatMessage: Codable, Identifiable, Equatable {
         reasoning: ChatReasoning? = nil,
         citations: [ChatCitation]? = nil,
         data: ChatMessageData? = nil,
+        completionId: String? = nil,
         name: String? = nil,
         status: String? = nil,
         logId: String? = nil,
@@ -322,6 +402,7 @@ public struct ChatMessage: Codable, Identifiable, Equatable {
         self.reasoning = reasoning
         self.citations = citations
         self.data = data
+        self.completionId = completionId
         self.name = name
         self.status = status
         self.logId = logId
@@ -367,6 +448,27 @@ public struct ChatMessage: Codable, Identifiable, Equatable {
             reasoning: reasoning,
             citations: citations,
             data: data,
+            completionId: completionId,
+            name: name,
+            status: status,
+            logId: logId,
+            created: created,
+            timestamp: timestamp
+        )
+    }
+
+    public func replacingCompletionId(with completionId: String) -> ChatMessage {
+        ChatMessage(
+            id: id,
+            role: role,
+            content: content,
+            artifacts: artifacts,
+            model: model,
+            parts: parts,
+            reasoning: reasoning,
+            citations: citations,
+            data: data,
+            completionId: completionId,
             name: name,
             status: status,
             logId: logId,
@@ -377,6 +479,7 @@ public struct ChatMessage: Codable, Identifiable, Equatable {
 
     enum CodingKeys: String, CodingKey {
         case id, role, content, model, parts, reasoning, citations, data, name, status, created, timestamp
+        case completionId = "completion_id"
         case modelId = "model_id"
         case logId = "log_id"
     }
@@ -393,6 +496,7 @@ public struct ChatMessage: Codable, Identifiable, Equatable {
         reasoning = try container.decodeIfPresent(ChatReasoning.self, forKey: .reasoning)
         citations = try container.decodeIfPresent([ChatCitation].self, forKey: .citations)
         data = try container.decodeIfPresent(ChatMessageData.self, forKey: .data)
+        completionId = try container.decodeIfPresent(String.self, forKey: .completionId)
         name = try container.decodeIfPresent(String.self, forKey: .name)
         status = try container.decodeIfPresent(String.self, forKey: .status)
         logId = try container.decodeIfPresent(String.self, forKey: .logId)

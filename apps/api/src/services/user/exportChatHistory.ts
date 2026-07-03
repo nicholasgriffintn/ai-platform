@@ -54,6 +54,7 @@ export async function handleExportChatHistory({
 					conversationId,
 					messagePageSize,
 					after,
+					{ includeArchived: true },
 				);
 				if (!messages.length) break;
 

@@ -31,6 +31,591 @@ describe("ChatService streaming", () => {
 		vi.unstubAllGlobals();
 	});
 
+	it("does not send chat completion requests when compaction filtering leaves no provider messages", async () => {
+		const fetchMock = vi.fn();
+		vi.stubGlobal("fetch", fetchMock);
+
+		const service = new ChatService(async () => ({ Authorization: "Bearer token" }));
+
+		await expect(
+			service.streamChatCompletions({
+				chatSettings: {},
+				completionId: "conversation-1",
+				messages: [
+					{
+						id: "compaction-1",
+						role: "compaction",
+						content: "Context compacted",
+						parts: [
+							{
+								type: "compaction",
+								status: "completed",
+								label: "Context compacted",
+							},
+						],
+					} as Message,
+				],
+				mode: "remote",
+				model: "gpt-5.4-mini",
+				onProgress: () => {},
+				onStateChange: () => {},
+				provider: "openai",
+				signal: new AbortController().signal,
+			}),
+		).rejects.toThrow("Missing required parameter: messages");
+		expect(fetchMock).not.toHaveBeenCalled();
+	});
+
+	it("normalises stored conversation responses with missing messages", async () => {
+		const fetchMock = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) =>
+			Response.json({
+				data: {
+					id: "conversation-1",
+					title: "Recovered conversation",
+					is_public: true,
+					share_id: "share-1",
+				},
+			}),
+		);
+		vi.stubGlobal("fetch", fetchMock);
+
+		const service = new ChatService(async () => ({ Authorization: "Bearer token" }));
+
+		const result = await service.getChat("conversation-1");
+
+		expect(result).toEqual(
+			expect.objectContaining({
+				id: "conversation-1",
+				title: "Recovered conversation",
+				messages: [],
+				is_public: true,
+				share_id: "share-1",
+			}),
+		);
+	});
+
+	it("compacts a conversation through the dedicated endpoint", async () => {
+		const fetchMock = vi.fn(
+			async (_input: RequestInfo | URL, _init?: RequestInit) =>
+				new Response(
+					JSON.stringify({
+						success: true,
+						data: {
+							compacted: true,
+							conversation: {
+								id: "conversation-1",
+								title: "Wine bottle ideas",
+								messages: [
+									{
+										id: "msg-0",
+										role: "user",
+										content: "message 0",
+									},
+									{
+										id: "compaction-1",
+										completion_id: "conversation-1",
+										role: "compaction",
+										content: "Context compacted",
+										mode: "remote",
+										platform: "web",
+										parts: [
+											{
+												id: "compaction-part-1",
+												type: "compaction",
+												status: "completed",
+												label: "Context compacted",
+												metadata: {
+													source: "manual-compaction",
+												},
+											},
+										],
+									},
+								],
+							},
+						},
+					}),
+					{
+						headers: {
+							"Content-Type": "application/json",
+						},
+					},
+				),
+		);
+		vi.stubGlobal("fetch", fetchMock);
+
+		const service = new ChatService(async () => ({ Authorization: "Bearer token" }));
+
+		const result = await service.compactConversation("conversation-1");
+
+		expect(fetchMock).toHaveBeenCalledWith(
+			expect.stringContaining("/chat/completions/conversation-1/compact"),
+			expect.objectContaining({
+				method: "POST",
+			}),
+		);
+		expect(result.compacted).toBe(true);
+		expect(result.conversation.messages).toEqual([
+			expect.objectContaining({
+				id: "msg-0",
+				content: "message 0",
+			}),
+			expect.objectContaining({
+				id: "compaction-1",
+				completion_id: "conversation-1",
+				role: "compaction",
+				mode: "remote",
+				platform: "web",
+				parts: [
+					{
+						id: "compaction-part-1",
+						type: "compaction",
+						status: "completed",
+						label: "Context compacted",
+						metadata: {
+							source: "manual-compaction",
+						},
+					},
+				],
+			}),
+		]);
+	});
+
+	it("preserves compact response messages when the endpoint omits the conversation id", async () => {
+		vi.stubGlobal(
+			"fetch",
+			vi.fn(
+				async () =>
+					new Response(
+						JSON.stringify({
+							success: true,
+							data: {
+								compacted: true,
+								conversation: {
+									title: "Wine bottle ideas",
+									messages: [
+										{
+											id: "msg-0",
+											role: "user",
+											content: "message 0",
+										},
+										{
+											id: "compaction-1",
+											completion_id: "conversation-1",
+											role: "compaction",
+											content: "Context compacted",
+											parts: [
+												{
+													id: "compaction-part-1",
+													type: "compaction",
+													status: "completed",
+													label: "Context compacted",
+												},
+											],
+										},
+									],
+								},
+							},
+						}),
+						{
+							headers: {
+								"Content-Type": "application/json",
+							},
+						},
+					),
+			),
+		);
+
+		const service = new ChatService(async () => ({ Authorization: "Bearer token" }));
+
+		await expect(service.compactConversation("conversation-1")).resolves.toMatchObject({
+			compacted: true,
+			conversation: {
+				id: "conversation-1",
+				title: "Wine bottle ideas",
+				messages: [
+					expect.objectContaining({
+						id: "msg-0",
+						content: "message 0",
+					}),
+					expect.objectContaining({
+						id: "compaction-1",
+						role: "compaction",
+						content: "Context compacted",
+						parts: [
+							expect.objectContaining({
+								type: "compaction",
+								status: "completed",
+							}),
+						],
+					}),
+				],
+			},
+		});
+	});
+
+	it("accepts compact responses containing stored database message rows", async () => {
+		vi.stubGlobal(
+			"fetch",
+			vi.fn(
+				async () =>
+					new Response(
+						JSON.stringify({
+							success: true,
+							data: {
+								compacted: true,
+								conversation: {
+									id: "conversation-1",
+									title: "Decade of Meme Evolution",
+									is_archived: 0,
+									user_id: 1,
+									messages: [
+										{
+											id: "msg-0",
+											conversation_id: "conversation-1",
+											parent_message_id: null,
+											role: "user",
+											content: "Write a humorous commentary on memes.",
+											name: null,
+											tool_calls: null,
+											citations: null,
+											model: "deepseek-v4-pro",
+											status: null,
+											timestamp: 1783110478964,
+											platform: "web",
+											mode: "remote",
+											log_id: null,
+											data: null,
+											created_at: "2026-07-03 20:27:59",
+											updated_at: "2026-07-03 20:28:55",
+											parts: [
+												{
+													timestamp: 1783110478964,
+													type: "text",
+													text: "Write a humorous commentary on memes.",
+												},
+											],
+											tool_call_id: null,
+											app: null,
+											tool_call_arguments: null,
+											is_archived: 1,
+										},
+										{
+											id: "msg-0-compaction",
+											conversation_id: "conversation-1",
+											parent_message_id: null,
+											role: "compaction",
+											content: "Context compacted",
+											name: null,
+											tool_calls: null,
+											citations: null,
+											model: null,
+											status: null,
+											timestamp: 1783110534616,
+											platform: "api",
+											mode: "remote",
+											log_id: null,
+											data: null,
+											created_at: "2026-07-03 20:28:55",
+											updated_at: "2026-07-03 20:28:55",
+											parts: [
+												{
+													timestamp: 1783110534616,
+													type: "compaction",
+													status: "completed",
+													label: "Context compacted",
+												},
+											],
+											tool_call_id: null,
+											app: null,
+											tool_call_arguments: null,
+											is_archived: 1,
+										},
+									],
+								},
+							},
+						}),
+						{
+							headers: {
+								"Content-Type": "application/json",
+							},
+						},
+					),
+			),
+		);
+
+		const service = new ChatService(async () => ({ Authorization: "Bearer token" }));
+
+		await expect(service.compactConversation("conversation-1")).resolves.toMatchObject({
+			compacted: true,
+			conversation: {
+				id: "conversation-1",
+				messages: [
+					expect.objectContaining({
+						id: "msg-0",
+						content: "Write a humorous commentary on memes.",
+					}),
+					expect.objectContaining({
+						id: "msg-0-compaction",
+						role: "compaction",
+						content: "Context compacted",
+						parts: [
+							expect.objectContaining({
+								type: "compaction",
+								status: "completed",
+							}),
+						],
+					}),
+				],
+			},
+		});
+	});
+
+	it("rejects compacted endpoint responses without a visible compaction marker", async () => {
+		vi.stubGlobal(
+			"fetch",
+			vi.fn(
+				async () =>
+					new Response(
+						JSON.stringify({
+							success: true,
+							data: {
+								compacted: true,
+								conversation: {
+									id: "conversation-1",
+									title: "Wine bottle ideas",
+									messages: [
+										{
+											id: "assistant-1",
+											role: "assistant",
+											content: "Previous answer",
+										},
+									],
+								},
+							},
+						}),
+						{
+							headers: {
+								"Content-Type": "application/json",
+							},
+						},
+					),
+			),
+		);
+
+		const service = new ChatService(async () => ({ Authorization: "Bearer token" }));
+
+		await expect(service.compactConversation("conversation-1")).rejects.toThrow(
+			"Invalid compact conversation response",
+		);
+	});
+
+	it("accepts no-op compact responses without compaction markers", async () => {
+		vi.stubGlobal(
+			"fetch",
+			vi.fn(
+				async () =>
+					new Response(
+						JSON.stringify({
+							success: true,
+							data: {
+								compacted: false,
+								conversation: {
+									id: "conversation-1",
+									title: "Wine bottle ideas",
+									messages: [
+										{
+											id: "assistant-1",
+											role: "assistant",
+											content: "Previous answer",
+										},
+									],
+								},
+							},
+						}),
+						{
+							headers: {
+								"Content-Type": "application/json",
+							},
+						},
+					),
+			),
+		);
+
+		const service = new ChatService(async () => ({ Authorization: "Bearer token" }));
+
+		await expect(service.compactConversation("conversation-1")).resolves.toMatchObject({
+			compacted: false,
+			conversation: {
+				id: "conversation-1",
+				messages: [
+					{
+						id: "assistant-1",
+						role: "assistant",
+						content: "Previous answer",
+					},
+				],
+			},
+		});
+	});
+
+	it("emits compaction state metadata from non-streaming completion responses", async () => {
+		const compactionMessage = {
+			id: "snapshot-1-compaction",
+			role: "compaction",
+			content: "Context automatically compacted",
+			parts: [
+				{
+					type: "compaction",
+					status: "completed",
+					label: "Context automatically compacted",
+				},
+			],
+		};
+		const fetchMock = vi.fn(
+			async (_input: RequestInfo | URL, _init?: RequestInit) =>
+				new Response(
+					JSON.stringify({
+						success: true,
+						data: {
+							id: "completion-response-1",
+							created: 1_000,
+							model: "test-model",
+							choices: [
+								{
+									index: 0,
+									message: {
+										role: "assistant",
+										content: "Done",
+									},
+									finish_reason: "stop",
+								},
+							],
+							post_processing: {
+								compaction: {
+									message: compactionMessage,
+								},
+							},
+						},
+					}),
+					{
+						headers: {
+							"Content-Type": "application/json",
+						},
+					},
+				),
+		);
+		vi.stubGlobal("fetch", fetchMock);
+
+		const onStateChange = vi.fn();
+		const service = new ChatService(async () => ({ Authorization: "Bearer token" }));
+
+		const result = await service.streamChatCompletions({
+			chatSettings: {},
+			completionId: "conversation-1",
+			messages: [{ role: "user", content: "hello" } as Message],
+			mode: "remote",
+			model: "test-model",
+			onProgress: () => {},
+			onStateChange,
+			signal: new AbortController().signal,
+			streamingEnabled: false,
+		});
+
+		expect(result).toEqual(
+			expect.objectContaining({
+				id: "completion-response-1",
+				role: "assistant",
+				content: "Done",
+			}),
+		);
+		expect(onStateChange).toHaveBeenCalledWith("compaction", {
+			type: "state",
+			state: "compaction",
+			message: compactionMessage,
+		});
+	});
+
+	it("preserves non-streaming completion response message metadata", async () => {
+		vi.stubGlobal(
+			"fetch",
+			vi.fn(
+				async () =>
+					new Response(
+						JSON.stringify({
+							success: true,
+							data: {
+								id: "completion-response-1",
+								log_id: "top-level-log",
+								created: 1_000,
+								model: "fallback-model",
+								choices: [
+									{
+										index: 0,
+										message: {
+											id: "assistant-message-1",
+											role: "assistant",
+											content: "",
+											parts: [{ type: "text", text: "Part answer", timestamp: 1_234 }],
+											status: "completed",
+											log_id: "message-log",
+											provider: "openrouter",
+											timestamp: 1_234,
+											data: { responseType: "text" },
+										},
+										finish_reason: "stop",
+									},
+								],
+								usage: {
+									prompt_tokens: 10,
+									completion_tokens: 5,
+									total_tokens: 15,
+								},
+							},
+						}),
+						{
+							headers: {
+								"Content-Type": "application/json",
+							},
+						},
+					),
+			),
+		);
+
+		const service = new ChatService(async () => ({ Authorization: "Bearer token" }));
+
+		const result = await service.streamChatCompletions({
+			chatSettings: {},
+			completionId: "conversation-1",
+			messages: [{ role: "user", content: "hello" } as Message],
+			mode: "remote",
+			model: "request-model",
+			onProgress: () => {},
+			onStateChange: () => {},
+			signal: new AbortController().signal,
+			streamingEnabled: false,
+		});
+
+		expect(result).toEqual(
+			expect.objectContaining({
+				id: "assistant-message-1",
+				role: "assistant",
+				content: "Part answer",
+				status: "completed",
+				log_id: "message-log",
+				provider: "openrouter",
+				timestamp: 1_234,
+				model: "fallback-model",
+				data: { responseType: "text" },
+				usage: {
+					prompt_tokens: 10,
+					completion_tokens: 5,
+					total_tokens: 15,
+				},
+			}),
+		);
+		expect(result.parts).toEqual([{ type: "text", text: "Part answer", timestamp: 1_234 }]);
+	});
+
 	it("emits separate assistant messages for recursive streamed turns", async () => {
 		const toolCalls = [
 			{
@@ -566,6 +1151,92 @@ describe("ChatService streaming", () => {
 
 		expect(body.model).toBeUndefined();
 		expect(body.model_router_mode).toBe("pro");
+	});
+
+	it("sends chat compaction policy from chat settings", async () => {
+		const fetchMock = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) =>
+			createSseResponse([data("[DONE]")]),
+		);
+		vi.stubGlobal("fetch", fetchMock);
+
+		const service = new ChatService(async () => ({}));
+
+		await service.streamChatCompletions({
+			chatSettings: {
+				compaction: "off",
+			},
+			completionId: "conversation-1",
+			endpoint: "/chat/completions",
+			messages: [{ role: "user", content: "hello" } as Message],
+			mode: "remote",
+			model: "gpt-5",
+			onProgress: () => {},
+			onStateChange: () => {},
+			signal: new AbortController().signal,
+		});
+
+		const [, request] = fetchMock.mock.calls[0];
+		const body = JSON.parse(String(request?.body));
+
+		expect(body.compaction).toBe("off");
+	});
+
+	it("drops invalid persisted chat compaction settings from chat requests", async () => {
+		const fetchMock = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) =>
+			createSseResponse([data("[DONE]")]),
+		);
+		vi.stubGlobal("fetch", fetchMock);
+
+		const service = new ChatService(async () => ({}));
+
+		const chatSettings = JSON.parse('{"compaction":"manual"}');
+
+		await service.streamChatCompletions({
+			chatSettings,
+			completionId: "conversation-1",
+			endpoint: "/chat/completions",
+			messages: [{ role: "user", content: "hello" } as Message],
+			mode: "remote",
+			model: "gpt-5",
+			onProgress: () => {},
+			onStateChange: () => {},
+			signal: new AbortController().signal,
+		});
+
+		const [, request] = fetchMock.mock.calls[0];
+		const body = JSON.parse(String(request?.body));
+
+		expect(body.compaction).toBeUndefined();
+	});
+
+	it("omits empty optional settings objects from chat requests", async () => {
+		const fetchMock = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) =>
+			createSseResponse([data("[DONE]")]),
+		);
+		vi.stubGlobal("fetch", fetchMock);
+
+		const service = new ChatService(async () => ({}));
+
+		await service.streamChatCompletions({
+			chatSettings: {
+				rag_options: {},
+				tool_options: {},
+			},
+			completionId: "conversation-1",
+			endpoint: "/chat/completions",
+			messages: [{ role: "user", content: "hello" } as Message],
+			mode: "remote",
+			model: "gpt-5",
+			onProgress: () => {},
+			onStateChange: () => {},
+			signal: new AbortController().signal,
+		});
+
+		const [, request] = fetchMock.mock.calls[0];
+		const body = JSON.parse(String(request?.body));
+
+		expect(body.rag_options).toBeUndefined();
+		expect(body.tool_options).toBeUndefined();
 	});
 
 	it("normalises selected tool ids before sending chat requests", async () => {

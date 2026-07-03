@@ -1,4 +1,5 @@
 import { sanitiseMessages } from "~/lib/chat/utils";
+import { toProviderMessages } from "~/lib/chat/providerMessages";
 import { ConversationManager } from "~/lib/conversationManager";
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { getAuxiliaryModel } from "~/lib/providers/models";
@@ -45,15 +46,11 @@ export const handleGenerateChatCompletionTitle = async (
 		}
 
 		const sanitisedMessages = sanitiseMessages(rawMessages);
-		messagesToUse = sanitisedMessages.slice(0, TITLE_MAX_MESSAGES);
+		messagesToUse = toProviderMessages(sanitisedMessages).slice(0, TITLE_MAX_MESSAGES);
 	} else {
 		let conversationMessages: Message[];
 		try {
-			conversationMessages = await conversationManager.get(
-				completion_id,
-				undefined,
-				TITLE_MAX_MESSAGES,
-			);
+			conversationMessages = await conversationManager.get(completion_id, undefined);
 		} catch {
 			throw new AssistantError(
 				"Conversation not found or you don't have access to it",
@@ -65,10 +62,12 @@ export const handleGenerateChatCompletionTitle = async (
 			return { title: "New Conversation" };
 		}
 
-		messagesToUse = conversationMessages.slice(0, TITLE_MAX_MESSAGES).map((msg) => ({
-			role: msg.role,
-			content: msg.content,
-		}));
+		messagesToUse = toProviderMessages(conversationMessages)
+			.slice(0, TITLE_MAX_MESSAGES)
+			.map((msg) => ({
+				role: msg.role,
+				content: msg.content,
+			}));
 	}
 
 	if (!messagesToUse.length) {

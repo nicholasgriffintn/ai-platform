@@ -1,4 +1,4 @@
-import { BarChart2, Grid, Menu, MoreVertical, PanelLeftOpen, X } from "lucide-react";
+import { Grid, Menu, MoreVertical, PanelLeftOpen, X, Sparkles } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router";
 
@@ -43,16 +43,14 @@ export const ChatNavbar = ({ showSidebarToggle = true }: ChatNavbarProps) => {
 				<Grid size={16} />
 				<span>Apps</span>
 			</Link>
-			<a
-				href="https://metrics.polychat.app/"
-				target="_blank"
-				rel="noopener noreferrer"
+			<Link
+				to="/apps/recipes"
 				className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-zinc-700 dark:text-zinc-200 hover:bg-off-white-highlight dark:hover:bg-zinc-800 rounded-lg no-underline"
 				onClick={() => setIsMobileMenuOpen(false)}
 			>
-				<BarChart2 size={16} />
-				<span>Metrics</span>
-			</a>
+				<Sparkles size={16} />
+				<span>Recipes</span>
+			</Link>
 		</>
 	);
 

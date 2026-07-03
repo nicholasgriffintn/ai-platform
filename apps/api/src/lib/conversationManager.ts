@@ -15,8 +15,14 @@ import type { AsyncInvocationMetadata } from "./async/asyncInvocation";
 import { isAsyncInvocationPending } from "./async/asyncInvocation";
 import { TaskRepository } from "~/repositories/TaskRepository";
 import { TaskService } from "~/services/tasks/TaskService";
-import { buildMessageParts, normaliseMessageParts } from "./chat/messageParts";
+import {
+	buildMessageParts,
+	hasSnapshotPart,
+	isCompactionMarkerMessage,
+	normaliseMessageParts,
+} from "./chat/messageParts";
 import { normaliseMessageTimestampsForStorage } from "./chat/messageOrdering";
+import { loadVisibleConversationMessagePage } from "./conversation/visibleMessagePagination";
 
 const logger = getLogger({ prefix: "lib/conversationManager" });
 
@@ -173,7 +179,12 @@ export class ConversationManager {
 
 	private async incrementUsageForAssistantResponse(messages: Message[]): Promise<void> {
 		for (const message of messages) {
-			if (message.role === "assistant" && this.usageManager) {
+			if (
+				message.role === "assistant" &&
+				!hasSnapshotPart(message) &&
+				!isCompactionMarkerMessage(message) &&
+				this.usageManager
+			) {
 				try {
 					const modelUsed = message.model || this.model;
 					if (modelUsed) {
@@ -576,6 +587,62 @@ export class ConversationManager {
 		return messages.map((dbMessage) => this.formatMessage(dbMessage));
 	}
 
+	async getVisibleMessages(
+		conversation_id: string,
+		limit = 50,
+		after?: string,
+		options: { includeArchived?: boolean; includeSnapshots?: boolean } = {},
+	): Promise<Message[]> {
+		if (!this.store) {
+			return [];
+		}
+
+		if (!this.user?.id) {
+			throw new AssistantError(
+				"User ID is required to retrieve messages",
+				ErrorType.AUTHENTICATION_ERROR,
+			);
+		}
+
+		const conversation =
+			await this.database.repositories.conversations.getConversation(conversation_id);
+		if (!conversation) {
+			throw new AssistantError("Conversation not found", ErrorType.NOT_FOUND);
+		}
+
+		if (conversation.user_id !== this.user?.id) {
+			throw new AssistantError(
+				"You don't have permission to access this conversation",
+				ErrorType.FORBIDDEN,
+			);
+		}
+
+		return loadVisibleConversationMessagePage({
+			conversationId: conversation_id,
+			limit,
+			after,
+			includeArchived: options.includeArchived ?? true,
+			loadMessages: (conversationId, pageLimit, cursor, pageOptions) =>
+				this.database.repositories.messages.getConversationMessages(
+					conversationId,
+					pageLimit,
+					cursor,
+					pageOptions,
+				),
+			formatMessage: (message) => this.formatMessage(message),
+			isHiddenMessage: (message) => !options.includeSnapshots && hasSnapshotPart(message),
+		});
+	}
+
+	async getAllMessages(
+		conversation_id: string,
+		options?: {
+			includeArchived?: boolean;
+		},
+	): Promise<Message[]> {
+		return this.get(conversation_id, undefined, 0, undefined, options);
+	}
+
 	async archiveMessages(conversation_id: string, messageIds: string[]): Promise<void> {
 		if (!this.store || messageIds.length === 0) {
 			return;
@@ -602,6 +669,47 @@ export class ConversationManager {
 		}
 
 		await this.database.repositories.messages.archiveMessages(conversation_id, messageIds);
+		await this.refreshConversationMessageMetadata(conversation_id);
+	}
+
+	async deleteMessages(conversation_id: string, messageIds: string[]): Promise<void> {
+		if (!this.store || messageIds.length === 0) {
+			return;
+		}
+
+		if (!this.user?.id) {
+			throw new AssistantError(
+				"User ID is required to delete messages",
+				ErrorType.AUTHENTICATION_ERROR,
+			);
+		}
+
+		const conversation =
+			await this.database.repositories.conversations.getConversation(conversation_id);
+		if (!conversation) {
+			throw new AssistantError("Conversation not found", ErrorType.NOT_FOUND);
+		}
+
+		if (conversation.user_id !== this.user?.id) {
+			throw new AssistantError(
+				"You don't have permission to delete messages in this conversation",
+				ErrorType.FORBIDDEN,
+			);
+		}
+
+		await this.database.repositories.messages.deleteMessages(conversation_id, messageIds);
+		await this.refreshConversationMessageMetadata(conversation_id);
+	}
+
+	private async refreshConversationMessageMetadata(conversation_id: string): Promise<void> {
+		const metadata =
+			await this.database.repositories.messages.getConversationMessageMetadata(conversation_id);
+
+		await this.database.repositories.conversations.updateConversation(conversation_id, {
+			last_message_id: metadata.last_message_id,
+			last_message_at: metadata.last_message_id ? new Date().toISOString() : null,
+			message_count: metadata.message_count,
+		});
 	}
 
 	/**
@@ -659,7 +767,10 @@ export class ConversationManager {
 	 * @param conversation_id - The ID of the conversation to get the details from
 	 * @returns The details of the conversation
 	 */
-	async getConversationDetails(conversation_id: string): Promise<Record<string, unknown>> {
+	async getConversationDetails(
+		conversation_id: string,
+		options: { includeArchived?: boolean; includeSnapshots?: boolean } = {},
+	): Promise<Record<string, unknown>> {
 		if (!this.user?.id) {
 			throw new AssistantError(
 				"User ID is required to get conversation details",
@@ -682,9 +793,16 @@ export class ConversationManager {
 
 		const dbMessages = await this.database.repositories.messages.getConversationMessages(
 			conversation.id as string,
+			0,
+			undefined,
+			{
+				includeArchived: options.includeArchived ?? true,
+			},
 		);
 
-		const messages = dbMessages.map((dbMessage) => this.formatMessage(dbMessage));
+		const messages = dbMessages
+			.map((dbMessage) => this.formatMessage(dbMessage))
+			.filter((message) => options.includeSnapshots || !hasSnapshotPart(message));
 
 		return {
 			...conversation,
@@ -971,15 +1089,23 @@ export class ConversationManager {
 			throw new AssistantError("This conversation is not publicly shared", ErrorType.FORBIDDEN);
 		}
 
-		const messages = await this.database.repositories.messages.getMessages(
-			conversation.id as string,
+		const includeArchived = options?.includeArchived ?? false;
+
+		return loadVisibleConversationMessagePage({
+			conversationId: conversation.id as string,
 			limit,
 			after,
-			{
-				includeArchived: options?.includeArchived ?? false,
-			},
-		);
-		return messages.map((message) => this.formatMessage(message));
+			includeArchived,
+			loadMessages: (conversationId, pageLimit, cursor, pageOptions) =>
+				this.database.repositories.messages.getMessages(
+					conversationId,
+					pageLimit,
+					cursor,
+					pageOptions,
+				),
+			formatMessage: (message) => this.formatMessage(message),
+			isHiddenMessage: hasSnapshotPart,
+		});
 	}
 
 	async deleteAllChatCompletions(user_id: number): Promise<void> {

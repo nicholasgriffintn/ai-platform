@@ -8,10 +8,13 @@ import { ChatService } from "~/lib/api/services/chat-service";
 import { LoadingProvider } from "~/state/contexts/LoadingContext";
 import { useChatStore } from "~/state/stores/chatStore";
 import type { Conversation, Message } from "~/types";
+import { useChat } from "../useChat";
 import { useChatManager } from "../useChatManager";
 
 const mocks = vi.hoisted(() => ({
+	compactConversation: vi.fn(),
 	generateTitle: vi.fn(),
+	getChat: vi.fn(),
 	getLocalChat: vi.fn(),
 	saveLocalChat: vi.fn(),
 	streamChatCompletions: vi.fn(),
@@ -35,7 +38,9 @@ vi.mock("~/hooks/useModels", () => ({
 
 vi.mock("~/lib/api/api-service", () => ({
 	apiService: {
+		compactConversation: mocks.compactConversation,
 		generateTitle: mocks.generateTitle,
+		getChat: mocks.getChat,
 		streamChatCompletions: mocks.streamChatCompletions,
 	},
 }));
@@ -107,6 +112,9 @@ describe("useChatManager", () => {
 				localChats.set(conversationId, { ...conversation, title });
 			}
 		});
+		mocks.getChat.mockResolvedValue(null);
+		mocks.compactConversation.mockReset();
+		mocks.generateTitle.mockResolvedValue("Generated title");
 		useChatStore.setState({
 			chatMode: "remote",
 			chatSettings: {
@@ -164,6 +172,262 @@ describe("useChatManager", () => {
 				content: "Hello! How can I help you today?",
 			}),
 		);
+	});
+
+	it("compacts a stored remote conversation without sending a chat message", async () => {
+		const queryClient = createQueryClient();
+		const cancelQueries = vi.spyOn(queryClient, "cancelQueries");
+		const invalidateQueries = vi.spyOn(queryClient, "invalidateQueries");
+		const setQueryData = vi.spyOn(queryClient, "setQueryData");
+		useChatStore.setState({
+			isAuthenticated: true,
+			isPro: true,
+			currentConversationId: "remote-conversation",
+		});
+		queryClient.setQueryData<Conversation>([CHATS_QUERY_KEY, "remote-conversation"], {
+			id: "remote-conversation",
+			title: "Existing conversation",
+			messages: [
+				{
+					id: "previous-user",
+					role: "user",
+					content: "Previous message",
+				} as Message,
+			],
+		});
+		mocks.compactConversation.mockResolvedValue({
+			compacted: true,
+			conversation: {
+				id: "remote-conversation",
+				title: "Existing conversation",
+				messages: [
+					{
+						id: "snapshot-1-compaction",
+						role: "compaction",
+						content: "Context compacted",
+						parts: [
+							{
+								type: "compaction",
+								status: "completed",
+								label: "Context compacted",
+							},
+						],
+					},
+				],
+			},
+		});
+
+		const { result } = renderHook(() => useChatManager(), {
+			wrapper: wrapper(queryClient),
+		});
+
+		await act(async () => {
+			await result.current.compactConversation();
+		});
+
+		expect(mocks.streamChatCompletions).not.toHaveBeenCalled();
+		expect(mocks.compactConversation).toHaveBeenCalledWith("remote-conversation");
+		expect(cancelQueries).toHaveBeenCalledWith({
+			queryKey: [CHATS_QUERY_KEY],
+		});
+		expect(cancelQueries).toHaveBeenCalledWith({
+			queryKey: [CHATS_QUERY_KEY, "remote-conversation"],
+			exact: true,
+		});
+		expect(cancelQueries.mock.invocationCallOrder.at(-1)).toBeLessThan(
+			setQueryData.mock.invocationCallOrder.at(-1)!,
+		);
+		expect(queryClient.getQueryData([CHATS_QUERY_KEY, "remote-conversation"])).toEqual(
+			expect.objectContaining({
+				messages: [
+					expect.objectContaining({
+						id: "snapshot-1-compaction",
+						role: "compaction",
+					}),
+				],
+			}),
+		);
+		expect(invalidateQueries).toHaveBeenCalledWith({
+			queryKey: [CHATS_QUERY_KEY],
+		});
+		expect(invalidateQueries).toHaveBeenCalledWith({
+			queryKey: [CHATS_QUERY_KEY, "remote"],
+		});
+	});
+
+	it("updates the cached conversation when manual compaction is a no-op", async () => {
+		const queryClient = createQueryClient();
+		useChatStore.setState({
+			isAuthenticated: true,
+			isPro: true,
+			currentConversationId: "remote-conversation",
+		});
+		mocks.compactConversation.mockResolvedValue({
+			compacted: false,
+			conversation: {
+				id: "remote-conversation",
+				title: "Existing conversation",
+				messages: [
+					{
+						id: "assistant-1",
+						role: "assistant",
+						content: "Previous answer",
+					},
+				],
+			},
+		});
+
+		const { result } = renderHook(() => useChatManager(), {
+			wrapper: wrapper(queryClient),
+		});
+
+		const response = await act(async () => result.current.compactConversation());
+
+		expect(response).toEqual({
+			status: "success",
+			response: "",
+			compacted: false,
+		});
+		expect(mocks.streamChatCompletions).not.toHaveBeenCalled();
+		expect(queryClient.getQueryData([CHATS_QUERY_KEY, "remote-conversation"])).toEqual(
+			expect.objectContaining({
+				messages: [
+					expect.objectContaining({
+						id: "assistant-1",
+						role: "assistant",
+					}),
+				],
+			}),
+		);
+	});
+
+	it("keeps streamed remote content when the post-stream refetch returns a stale reasoning-only assistant row", async () => {
+		const queryClient = createQueryClient();
+		useChatStore.setState({
+			isAuthenticated: true,
+			isPro: true,
+			model: "deepseek-v4-pro",
+		});
+
+		const finalText = "Creative uses include candle holders, planters, and lamps.";
+		vi.stubGlobal(
+			"fetch",
+			vi.fn(async () =>
+				createSseResponse([
+					data({ state: "init", type: "state" }),
+					data({
+						id: "conversation-1",
+						created: 1782930793412,
+						model: "deepseek-v4-pro",
+						provider: "deepseek",
+						platform: "web",
+						type: "message_start",
+					}),
+					data({ state: "thinking", type: "state" }),
+					data({ thinking: "Planning", type: "thinking_delta" }),
+					data({ content: finalText, type: "content_block_delta" }),
+					data({ state: "post_processing", type: "state" }),
+					data({
+						id: "conversation-1",
+						message_id: "assistant-final",
+						object: "chat.completion",
+						created: 1782930814829,
+						model: "deepseek-v4-pro",
+						provider: "deepseek",
+						platform: "web",
+						log_id: null,
+						usage: { total_tokens: 5376 },
+						citations: [],
+						tool_calls: [],
+						finish_reason: "stop",
+						data: null,
+						parts: [
+							{
+								type: "reasoning",
+								text: "Planning",
+								collapsed: true,
+								timestamp: 1782930794534,
+							},
+							{
+								type: "text",
+								text: finalText,
+								timestamp: 1782930795186,
+							},
+						],
+						type: "message_delta",
+					}),
+					data({ type: "message_stop" }),
+					data({ state: "done", type: "state" }),
+					data("[DONE]"),
+				]),
+			),
+		);
+		mocks.streamChatCompletions.mockImplementation((params) =>
+			new ChatService(async () => ({})).streamChatCompletions(params),
+		);
+		mocks.getChat.mockImplementation(async (conversationId: string) => ({
+			id: conversationId,
+			title: "Help me brainstorm c...",
+			messages: [
+				{
+					id: "user-stale",
+					role: "user",
+					content: "Help me brainstorm creative uses for old wine bottles.",
+				},
+				{
+					id: "assistant-stale",
+					role: "assistant",
+					content: "",
+					parts: [
+						{
+							type: "reasoning",
+							text: "Planning",
+							collapsed: true,
+						},
+					],
+				},
+			],
+		}));
+		mocks.generateTitle.mockResolvedValue("Creative Wine Bottle Uses");
+
+		const { result } = renderHook(
+			() => {
+				const manager = useChatManager();
+				const conversationId = useChatStore((state) => state.currentConversationId);
+				const chat = useChat(conversationId);
+				return { manager, chat };
+			},
+			{
+				wrapper: wrapper(queryClient),
+			},
+		);
+
+		await act(async () => {
+			await result.current.manager.sendMessage(
+				"Help me brainstorm creative uses for old wine bottles.",
+			);
+		});
+
+		const conversationId = useChatStore.getState().currentConversationId;
+		const conversation = queryClient.getQueryData<Conversation>([CHATS_QUERY_KEY, conversationId]);
+
+		expect(conversation?.messages.at(-1)).toEqual(
+			expect.objectContaining({
+				id: "assistant-final",
+				role: "assistant",
+				content: finalText,
+			}),
+		);
+		expect(mocks.generateTitle).toHaveBeenCalledWith(
+			conversationId,
+			expect.arrayContaining([
+				expect.objectContaining({
+					id: "assistant-final",
+					content: finalText,
+				}),
+			]),
+		);
+		expect(conversation?.title).toBe("Creative Wine Bottle Uses");
 	});
 
 	it("keeps a new guest assistant message visible from a full SSE stream with early metadata", async () => {

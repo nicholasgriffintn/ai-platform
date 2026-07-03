@@ -18,8 +18,13 @@ struct MessageListView: View {
                             .padding(.top, 150)
                     } else {
                         ForEach(messages) { message in
-                            MessageBubble(message: message, conversationModelId: conversationModelId)
-                                .id(message.id)
+                            if message.isVisibleCompactionStatus {
+                                CompactionStatusRow(label: message.compactionStatusLabel)
+                                    .id(message.id)
+                            } else {
+                                MessageBubble(message: message, conversationModelId: conversationModelId)
+                                    .id(message.id)
+                            }
                         }
                     }
                 }
@@ -50,6 +55,26 @@ struct MessageListView: View {
         #if os(iOS)
         .scrollDismissesKeyboard(.interactively)
         #endif
+    }
+}
+
+private struct CompactionStatusRow: View {
+    let label: String
+
+    var body: some View {
+        HStack(spacing: 12) {
+            Rectangle()
+                .fill(Color.polychat.border)
+                .frame(height: 1)
+            Label(label, systemImage: "doc.text")
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(.secondary)
+                .lineLimit(1)
+            Rectangle()
+                .fill(Color.polychat.border)
+                .frame(height: 1)
+        }
+        .padding(.vertical, 8)
     }
 }
 

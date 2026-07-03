@@ -27,6 +27,21 @@ function conversation(messages: Conversation["messages"]): Conversation {
 	};
 }
 
+function compactionMessage(): Conversation["messages"][number] {
+	return {
+		id: "snapshot-1-compaction",
+		role: "compaction",
+		content: "Context automatically compacted",
+		parts: [
+			{
+				type: "compaction",
+				status: "completed",
+				label: "Context automatically compacted",
+			},
+		],
+	};
+}
+
 describe("useMessageOperations", () => {
 	beforeEach(() => {
 		useChatStore.setState({
@@ -140,5 +155,68 @@ describe("useMessageOperations", () => {
 		expect(updated?.messages[1]).toEqual(
 			expect.objectContaining({ id: "assistant-1", role: "assistant", content: "Answer" }),
 		);
+	});
+
+	it("inserts a compaction marker before the active assistant placeholder", async () => {
+		const queryClient = createQueryClient();
+		queryClient.setQueryData(
+			[CHATS_QUERY_KEY, "conversation-1"],
+			conversation([
+				{ id: "user-1", role: "user", content: "Question", model: "test-model" },
+				{ id: "assistant-1", role: "assistant", content: "", model: "test-model" },
+			]),
+		);
+		const wrapper = ({ children }: { children: ReactNode }) => (
+			<QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+		);
+		const { result } = renderHook(() => useMessageOperations(), { wrapper });
+
+		await act(async () => {
+			await result.current.insertMessageBeforeConversationMessage(
+				"conversation-1",
+				compactionMessage(),
+				"assistant-1",
+			);
+		});
+
+		const updated = queryClient.getQueryData<Conversation>([CHATS_QUERY_KEY, "conversation-1"]);
+		expect(updated?.messages.map((message) => message.id)).toEqual([
+			"user-1",
+			"snapshot-1-compaction",
+			"assistant-1",
+		]);
+	});
+
+	it("moves an existing compaction marker instead of duplicating it", async () => {
+		const queryClient = createQueryClient();
+		queryClient.setQueryData(
+			[CHATS_QUERY_KEY, "conversation-1"],
+			conversation([
+				{ id: "user-1", role: "user", content: "Question", model: "test-model" },
+				compactionMessage(),
+				{ id: "user-2", role: "user", content: "Follow-up", model: "test-model" },
+				{ id: "assistant-1", role: "assistant", content: "", model: "test-model" },
+			]),
+		);
+		const wrapper = ({ children }: { children: ReactNode }) => (
+			<QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+		);
+		const { result } = renderHook(() => useMessageOperations(), { wrapper });
+
+		await act(async () => {
+			await result.current.insertMessageBeforeConversationMessage(
+				"conversation-1",
+				compactionMessage(),
+				"assistant-1",
+			);
+		});
+
+		const updated = queryClient.getQueryData<Conversation>([CHATS_QUERY_KEY, "conversation-1"]);
+		expect(updated?.messages.map((message) => message.id)).toEqual([
+			"user-1",
+			"user-2",
+			"snapshot-1-compaction",
+			"assistant-1",
+		]);
 	});
 });

@@ -54,7 +54,10 @@ export const handleGetChatCompletion = async (
 		env: context.env,
 	});
 
-	const conversation = await conversationManager.getConversationDetails(completion_id);
+	const conversation = await conversationManager.getConversationDetails(completion_id, {
+		includeArchived: true,
+		includeSnapshots: false,
+	});
 	if (!options.refreshPending || !Array.isArray(conversation.messages)) {
 		return conversation;
 	}

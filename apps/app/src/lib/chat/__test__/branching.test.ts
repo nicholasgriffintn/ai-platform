@@ -36,6 +36,18 @@ describe("conversation branching", () => {
 		expect(getBranchPoint(messages, "tool-1")).toBeNull();
 	});
 
+	it("rejects assistant-shaped compaction markers", () => {
+		const compactionMarker = {
+			id: "compaction-1",
+			role: "assistant",
+			content: "Context compacted",
+			parts: [{ type: "compaction", status: "completed", label: "Context compacted" }],
+		} as Message;
+
+		expect(canBranchFromMessage(compactionMarker)).toBe(false);
+		expect(getBranchPoint([...messages, compactionMarker], "compaction-1")).toBeNull();
+	});
+
 	it("builds branch metadata and conversation parent fields consistently", () => {
 		expect(createBranchMetadata("conversation-1", "assistant-1")).toEqual({
 			branch_of: JSON.stringify({

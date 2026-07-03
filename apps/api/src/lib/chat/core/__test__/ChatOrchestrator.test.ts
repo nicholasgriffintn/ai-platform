@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { parseChatStreamSseBuffer } from "@assistant/schemas";
 import type { CoreChatOptions } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { ChatOrchestrator } from "../ChatOrchestrator";
@@ -12,6 +13,7 @@ const {
 	mockCreateMultiModelStream,
 	mockCreateStreamWithPostProcessing,
 	mockHandleToolCalls,
+	mockSessionCompact,
 } = vi.hoisted(() => ({
 	mockValidator: {
 		validate: vi.fn(),
@@ -30,6 +32,7 @@ const {
 	mockCreateMultiModelStream: vi.fn(),
 	mockCreateStreamWithPostProcessing: vi.fn(),
 	mockHandleToolCalls: vi.fn(),
+	mockSessionCompact: vi.fn(),
 }));
 
 let validationFactory: (() => any) | undefined;
@@ -74,6 +77,14 @@ vi.mock("~/lib/chat/tools", () => ({
 	handleToolCalls: mockHandleToolCalls,
 }));
 
+vi.mock("~/lib/session/SessionManager", () => ({
+	SessionManager: class {
+		compact(input: unknown) {
+			return mockSessionCompact(input);
+		}
+	},
+}));
+
 vi.mock("~/lib/providers/capabilities/guardrails", () => ({
 	Guardrails: class {
 		constructor() {
@@ -96,6 +107,22 @@ vi.mock("~/utils/logger", () => ({
 	}),
 }));
 
+async function readStream(stream: ReadableStream): Promise<string> {
+	const reader = stream.getReader();
+	const decoder = new TextDecoder();
+	let output = "";
+
+	while (true) {
+		const { done, value } = await reader.read();
+		if (done) {
+			break;
+		}
+		output += decoder.decode(value);
+	}
+
+	return output;
+}
+
 describe("ChatOrchestrator", () => {
 	let orchestrator: ChatOrchestrator;
 	let mockOptions: CoreChatOptions;
@@ -110,6 +137,10 @@ describe("ChatOrchestrator", () => {
 
 		mockEnv = { AI: { aiGatewayLogId: "test-log-id" } };
 		orchestrator = new ChatOrchestrator(mockEnv);
+		mockSessionCompact.mockImplementation(async (input: any) => ({
+			messages: input.messages,
+			compacted: false,
+		}));
 
 		mockOptions = {
 			completion_id: "test-completion-id",
@@ -223,6 +254,51 @@ describe("ChatOrchestrator", () => {
 				});
 			});
 
+			it("returns the compaction marker for non-streaming automatic compaction", async () => {
+				const compactionMessage = {
+					id: "snapshot-1-compaction",
+					role: "compaction",
+					content: "Context automatically compacted",
+					parts: [
+						{
+							type: "compaction",
+							status: "completed",
+							label: "Context automatically compacted",
+						},
+					],
+				};
+				const mockResponse = {
+					response: "Test response",
+					usage: { total_tokens: 100 },
+				};
+
+				mockSessionCompact.mockResolvedValueOnce({
+					messages: [{ role: "assistant", content: "Conversation snapshot" }],
+					compacted: true,
+					compactionMessage,
+				});
+				mockGetAIResponse.mockResolvedValue(mockResponse);
+				mockGuardrails.validateOutput.mockResolvedValue({ isValid: true });
+				mockConversationManager.add.mockResolvedValue(undefined);
+
+				const result = await orchestrator.process(mockOptions);
+
+				expect(mockGetAIResponse).toHaveBeenCalledWith(
+					expect.objectContaining({
+						messages: [{ role: "assistant", content: "Conversation snapshot" }],
+					}),
+				);
+				expect(result).toEqual(
+					expect.objectContaining({
+						response: mockResponse,
+						toolResponses: [],
+						selectedModel: "test-model",
+						completion_id: "test-completion-id",
+						compactionMessage,
+					}),
+				);
+			});
+
 			it("should store empty tool calls as null", async () => {
 				const mockResponse = {
 					response: "Test response",
@@ -332,6 +408,71 @@ describe("ChatOrchestrator", () => {
 				});
 			});
 
+			it("prepends the compaction marker to multi-model streaming responses", async () => {
+				const multiModelConfig = [{ model: "model-1" }, { model: "model-2" }];
+				const compactionMessage = {
+					id: "snapshot-1-compaction",
+					role: "compaction",
+					content: "Context automatically compacted",
+					parts: [
+						{
+							type: "compaction",
+							status: "completed",
+							label: "Context automatically compacted",
+						},
+					],
+				};
+				mockPreparer.prepare.mockResolvedValue({
+					modelConfigs: multiModelConfig,
+					primaryModel: "model-1",
+					primaryProvider: "provider-1",
+					conversationManager: mockConversationManager,
+					messages: [{ role: "user", content: "Hello" }],
+					systemPrompt: "Test system prompt",
+					messageWithContext: "Hello with context",
+					userSettings: {},
+					currentMode: "chat",
+				});
+				mockSessionCompact.mockResolvedValueOnce({
+					messages: [{ role: "assistant", content: "Conversation snapshot" }],
+					compacted: true,
+					compactionMessage,
+				});
+				mockCreateMultiModelStream.mockReturnValue(
+					new ReadableStream({
+						start(controller) {
+							controller.enqueue(
+								new TextEncoder().encode(
+									'data: {"type":"content_block_delta","content":"Hello"}\n\n',
+								),
+							);
+							controller.close();
+						},
+					}),
+				);
+
+				const result = await orchestrator.process({
+					...mockOptions,
+					stream: true,
+				});
+
+				if (!("stream" in result)) {
+					throw new Error("Expected streamed result");
+				}
+
+				const events = parseChatStreamSseBuffer(await readStream(result.stream), {
+					flush: true,
+				}).events;
+				expect(events).toEqual([
+					{
+						type: "state",
+						state: "compaction",
+						message: compactionMessage,
+					},
+					{ type: "content_block_delta", content: "Hello" },
+				]);
+			});
+
 			it("should handle single model streaming request", async () => {
 				const mockStream = new ReadableStream();
 				const transformedStream = new ReadableStream();
@@ -356,6 +497,61 @@ describe("ChatOrchestrator", () => {
 					selectedModel: "test-model",
 					completion_id: "test-completion-id",
 				});
+			});
+
+			it("prepends the compaction marker to single model streaming responses", async () => {
+				const compactionMessage = {
+					id: "snapshot-1-compaction",
+					role: "compaction",
+					content: "Context automatically compacted",
+					parts: [
+						{
+							type: "compaction",
+							status: "completed",
+							label: "Context automatically compacted",
+						},
+					],
+				};
+				const providerStream = new ReadableStream();
+				const transformedStream = new ReadableStream({
+					start(controller) {
+						controller.enqueue(
+							new TextEncoder().encode(
+								'data: {"type":"content_block_delta","content":"Hello"}\n\n',
+							),
+						);
+						controller.close();
+					},
+				});
+
+				mockSessionCompact.mockResolvedValueOnce({
+					messages: [{ role: "assistant", content: "Conversation snapshot" }],
+					compacted: true,
+					compactionMessage,
+				});
+				mockGetAIResponse.mockResolvedValue(providerStream);
+				mockCreateStreamWithPostProcessing.mockResolvedValue(transformedStream);
+
+				const result = await orchestrator.process({
+					...mockOptions,
+					stream: true,
+				});
+
+				if (!("stream" in result)) {
+					throw new Error("Expected streamed result");
+				}
+
+				const events = parseChatStreamSseBuffer(await readStream(result.stream), {
+					flush: true,
+				}).events;
+				expect(events).toEqual([
+					{
+						type: "state",
+						state: "compaction",
+						message: compactionMessage,
+					},
+					{ type: "content_block_delta", content: "Hello" },
+				]);
 			});
 
 			it("should give recipe streaming chats enough steps to use context tools and save setup", async () => {
@@ -772,6 +968,28 @@ describe("ChatOrchestrator", () => {
 				await expect(orchestrator.process(mockOptions)).rejects.toMatchObject({
 					message: "Model error",
 					type: ErrorType.PROVIDER_ERROR,
+					name: "AssistantError",
+				});
+			});
+
+			it("should wrap errors thrown while executing the prepared request", async () => {
+				mockPreparer.prepare.mockResolvedValue({
+					modelConfigs: [{ model: "test-model" }],
+					primaryModel: "test-model",
+					primaryProvider: "test-provider",
+					conversationManager: mockConversationManager,
+					messages: [{ role: "user", content: "Hello" }],
+					systemPrompt: "Test system prompt",
+					messageWithContext: "Hello with context",
+					userSettings: {},
+					currentMode: "chat",
+				});
+				mockConversationManager.checkUsageLimits.mockResolvedValue(undefined);
+				mockGetAIResponse.mockRejectedValue(new Error("Execution failed"));
+
+				await expect(orchestrator.process(mockOptions)).rejects.toMatchObject({
+					message: "An unexpected error occurred",
+					type: ErrorType.UNKNOWN_ERROR,
 					name: "AssistantError",
 				});
 			});

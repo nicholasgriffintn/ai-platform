@@ -1,7 +1,7 @@
 import { useCallback } from "react";
 import type { Message } from "~/types";
 import { normalizeSelectedModel } from "~/lib/chat/model-selection";
-import { normalizeMessage } from "~/lib/messages";
+import { getMessageTextContent, normalizeMessage } from "~/lib/messages";
 import { useConversationStorage } from "./useConversationStorage";
 import { useChatStore } from "~/state/stores/chatStore";
 
@@ -19,12 +19,7 @@ export function useMessageOperations() {
 
 			await updateConversation(conversationId, (oldData) => {
 				if (!oldData) {
-					const messageContent =
-						typeof normalizedMessage.content === "string"
-							? normalizedMessage.content
-							: normalizedMessage.content
-									.map((item) => (item.type === "text" ? item.text : ""))
-									.join(" ");
+					const messageContent = getMessageTextContent(normalizedMessage);
 
 					const now = new Date().toISOString();
 					return {
@@ -55,6 +50,51 @@ export function useMessageOperations() {
 				return {
 					...oldData,
 					messages: [...oldData.messages, normalizedMessage],
+					updated_at: new Date().toISOString(),
+					last_message_at: new Date().toISOString(),
+				};
+			});
+		},
+		[updateConversation],
+	);
+
+	const insertMessageBeforeConversationMessage = useCallback(
+		async (conversationId: string, message: Message, beforeMessageId: string) => {
+			const normalizedMessage = normalizeMessage(message);
+
+			await updateConversation(conversationId, (oldData) => {
+				if (!oldData) {
+					const now = new Date().toISOString();
+					return {
+						id: conversationId,
+						title:
+							typeof normalizedMessage.content === "string"
+								? `${normalizedMessage.content.slice(0, 20)}...`
+								: "New conversation",
+						messages: [normalizedMessage],
+						isLocalOnly: false,
+						created_at: now,
+						updated_at: now,
+						last_message_at: now,
+					};
+				}
+
+				const withoutExisting = oldData.messages.filter(
+					(existingMessage) => existingMessage.id !== normalizedMessage.id,
+				);
+				const beforeIndex = withoutExisting.findIndex(
+					(existingMessage) => existingMessage.id === beforeMessageId,
+				);
+				const insertIndex = beforeIndex === -1 ? withoutExisting.length : beforeIndex;
+				const messages = [
+					...withoutExisting.slice(0, insertIndex),
+					normalizedMessage,
+					...withoutExisting.slice(insertIndex),
+				];
+
+				return {
+					...oldData,
+					messages,
 					updated_at: new Date().toISOString(),
 					last_message_at: new Date().toISOString(),
 				};
@@ -165,6 +205,7 @@ export function useMessageOperations() {
 
 	return {
 		addMessageToConversation,
+		insertMessageBeforeConversationMessage,
 		addAssistantMessage,
 		updateAssistantMessage,
 	};

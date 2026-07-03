@@ -35,6 +35,12 @@ const MESSAGE_ORDER_EXPRESSION = `COALESCE(${LIVE_TURN_ORDER_EXPRESSION}, timest
 const MESSAGE_SEQUENCE_EXPRESSION = `COALESCE(${LIVE_SEQUENCE_ORDER_EXPRESSION}, 0)`;
 const MESSAGE_TIMESTAMP_TIE_EXPRESSION = "COALESCE(timestamp, 0)";
 const MESSAGE_ORDER_BY = `${MESSAGE_ORDER_EXPRESSION} ASC, ${MESSAGE_SEQUENCE_EXPRESSION} ASC, ${MESSAGE_TIMESTAMP_TIE_EXPRESSION} ASC, created_at ASC, id ASC`;
+const MESSAGE_ORDER_BY_DESC = `${MESSAGE_ORDER_EXPRESSION} DESC, ${MESSAGE_SEQUENCE_EXPRESSION} DESC, ${MESSAGE_TIMESTAMP_TIE_EXPRESSION} DESC, created_at DESC, id DESC`;
+
+export interface ConversationMessageMetadata {
+	last_message_id: string | null;
+	message_count: number;
+}
 
 export class MessageRepository extends BaseRepository {
 	private buildMessageValues(
@@ -285,6 +291,51 @@ export class MessageRepository extends BaseRepository {
 			return;
 		}
 		await this.executeRun(query, values);
+	}
+
+	public async deleteMessages(conversationId: string, messageIds: string[]): Promise<void> {
+		const uniqueMessageIds = Array.from(new Set(messageIds.filter(Boolean)));
+		if (uniqueMessageIds.length === 0) {
+			return;
+		}
+
+		const placeholders = uniqueMessageIds.map(() => "?").join(", ");
+		await this.executeRun(
+			`DELETE FROM message
+			 WHERE conversation_id = ?
+			   AND id IN (${placeholders})`,
+			[conversationId, ...uniqueMessageIds],
+		);
+	}
+
+	public async getConversationMessageMetadata(
+		conversationId: string,
+	): Promise<ConversationMessageMetadata> {
+		const result = await this.runQuery<{
+			last_message_id: string | null;
+			message_count: number;
+		}>(
+			`SELECT
+			   COUNT(*) AS message_count,
+			   (
+			     SELECT id
+			     FROM message
+			     WHERE conversation_id = ?
+			       AND is_archived = 0
+			     ORDER BY ${MESSAGE_ORDER_BY_DESC}
+			     LIMIT 1
+			   ) AS last_message_id
+			 FROM message
+			 WHERE conversation_id = ?
+			   AND is_archived = 0`,
+			[conversationId, conversationId],
+			true,
+		);
+
+		return {
+			last_message_id: typeof result?.last_message_id === "string" ? result.last_message_id : null,
+			message_count: Number(result?.message_count ?? 0),
+		};
 	}
 
 	public async deleteAllMessages(conversationId: string): Promise<void> {

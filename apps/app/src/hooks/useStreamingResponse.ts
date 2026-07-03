@@ -1,12 +1,16 @@
+import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useRef, useState } from "react";
 import { toast } from "sonner";
 
+import { CHATS_QUERY_KEY } from "~/constants";
 import { apiService } from "~/lib/api/api-service";
+import { readCompactionStatusMessage } from "~/lib/chat/compaction-status";
 import { normalizeSelectedModel } from "~/lib/chat/model-selection";
+import { getChatStreamLoadingMessage } from "~/lib/chat/stream-state";
 import { getModelProvider } from "~/lib/models";
-import { normalizeMessage } from "~/lib/messages";
+import { getMessageTextContent, normalizeMessage } from "~/lib/messages";
 import { normaliseUsageLimits } from "~/lib/usage-limits";
-import type { ChatRequestOptions, Message, MessageContent } from "~/types";
+import type { ChatRequestOptions, Message } from "~/types";
 import { useLoadingActions } from "~/state/contexts/LoadingContext";
 import { useChatStore } from "~/state/stores/chatStore";
 import { useUsageStore } from "~/state/stores/usageStore";
@@ -29,8 +33,8 @@ export function useStreamingResponse(
 	onTitleGeneration?: (conversationId: string, messages: Message[]) => Promise<void>,
 	requestOptions?: ChatRequestOptions,
 ) {
-	const { stopLoading } = useLoadingActions();
-	const { updateLoading } = useLoadingActions();
+	const queryClient = useQueryClient();
+	const { stopLoading, updateLoading } = useLoadingActions();
 	const {
 		chatMode,
 		model,
@@ -52,8 +56,12 @@ export function useStreamingResponse(
 	const assistantReasoningRef = useRef<string>("");
 	const { data: apiModels = {} } = useModels();
 
-	const { addMessageToConversation, addAssistantMessage, updateAssistantMessage } =
-		useMessageOperations();
+	const {
+		addMessageToConversation,
+		insertMessageBeforeConversationMessage,
+		addAssistantMessage,
+		updateAssistantMessage,
+	} = useMessageOperations();
 
 	const generateResponse = useCallback(
 		async (
@@ -76,6 +84,7 @@ export function useStreamingResponse(
 			let messageWriteQueue: Promise<unknown> = Promise.resolve();
 			const pendingMessageTasks: Promise<unknown>[] = [];
 			const assistantMessageData = options?.assistantMessageData;
+			let shouldRefreshStoredConversation = false;
 
 			const placeholderMessage = await addAssistantMessage(
 				conversationId,
@@ -221,10 +230,7 @@ export function useStreamingResponse(
 					};
 
 					const lastMessage = messages[messages.length - 1];
-					const lastMessageContent =
-						typeof lastMessage.content === "string"
-							? lastMessage.content
-							: lastMessage.content.map((item) => item.text || "").join("");
+					const lastMessageContent = getMessageTextContent(lastMessage);
 
 					response = await webLLMService.generate(
 						String(conversationId),
@@ -256,25 +262,25 @@ export function useStreamingResponse(
 							return;
 						}
 
-						let msg: string | undefined;
-						switch (state) {
-							case "init":
-								msg = "Calling provider...";
-								break;
-							case "thinking":
-								msg = "Thinking about response...";
-								break;
-							case "post_processing":
-								msg = "Finalizing response...";
-								break;
-							case "tool_use_start":
-								msg = `Running tool ${data?.tool_name || ""}...`;
-								break;
-							case "tool_use_stop":
-								msg = "Tool execution completed.";
-								break;
-							default:
-								return;
+						if (state === "compaction") {
+							const compactionMessage = readCompactionStatusMessage(data?.message);
+							if (compactionMessage) {
+								const targetMessageId = activeAssistantMessage?.id || placeholderMessage.id;
+								pendingMessageTasks.push(
+									enqueueMessageWrite(() =>
+										insertMessageBeforeConversationMessage(
+											conversationId,
+											compactionMessage,
+											targetMessageId,
+										),
+									),
+								);
+							}
+						}
+
+						const msg = getChatStreamLoadingMessage(state, data);
+						if (!msg) {
+							return;
 						}
 						updateLoading("stream-response", undefined, msg);
 					};
@@ -299,14 +305,13 @@ export function useStreamingResponse(
 					});
 					if (shouldStore) {
 						markConversationRemoteAvailable(conversationId);
+						shouldRefreshStoredConversation = true;
 					}
 
 					const textPreview =
 						typeof assistantMessage.content === "string"
 							? assistantMessage.content
-							: assistantMessage.content
-									.map((item: MessageContent) => (item.type === "text" ? item.text || "" : ""))
-									.join("");
+							: getMessageTextContent(assistantMessage);
 
 					if (generatedMessage?.id !== assistantMessage.id) {
 						const targetMessage = activeAssistantMessage || placeholderMessage;
@@ -329,6 +334,11 @@ export function useStreamingResponse(
 
 				await Promise.all(pendingMessageTasks);
 				await messageWriteQueue;
+				if (shouldRefreshStoredConversation) {
+					await queryClient.invalidateQueries({
+						queryKey: [CHATS_QUERY_KEY, conversationId],
+					});
+				}
 
 				return {
 					status: "success",
@@ -354,6 +364,7 @@ export function useStreamingResponse(
 			model,
 			controller,
 			addMessageToConversation,
+			insertMessageBeforeConversationMessage,
 			addAssistantMessage,
 			useMultiModel,
 			autoMode,
@@ -364,6 +375,7 @@ export function useStreamingResponse(
 			requestOptions,
 			markConversationRemoteAvailable,
 			setUsageLimits,
+			queryClient,
 		],
 	);
 

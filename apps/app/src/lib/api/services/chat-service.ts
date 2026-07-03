@@ -9,21 +9,30 @@ import type {
 } from "~/types";
 import {
 	createChatStreamAssembler,
+	compactChatCompletionResponseSchema,
 	normaliseToolIds,
 	parseChatStreamSseBuffer,
+	type ChatCompletionResponseBody,
 	type ChatStreamUpdate,
 	type ParsedChatStreamSseEvent,
 } from "@assistant/schemas";
 import type { ModelConfigItem, ModelRouterMode } from "@assistant/schemas";
 import { getSandboxModeToolNames } from "~/lib/sandbox/chat-mode";
+import { readCompactionStatusMessage } from "~/lib/chat/compaction-status";
 import { filterUnavailableModelToolSelections } from "~/lib/model-tools";
+import { isRecord } from "~/lib/objects";
 import {
 	getMessageTextContent,
-	normalizeMessage,
 	serialiseMessagesForChatRequest,
 	serialiseMessagesForConversationUpdate,
 } from "../../messages";
-import { createStreamingApiError, toAppMessage } from "../chat-stream-response";
+import {
+	createStreamingApiError,
+	toAppMessage,
+	toCompletionResponseAppMessage,
+} from "../chat-stream-response";
+import { projectChatRequestSettings } from "../chat-request-settings";
+import { normaliseConversationResponse } from "../conversation-response";
 import { ApiError, fetchApi, fetchApiOrThrow, returnFetchedData } from "../fetch-wrapper";
 
 export interface ConversationUpdateRequest {
@@ -32,6 +41,11 @@ export interface ConversationUpdateRequest {
 	parent_conversation_id?: string;
 	parent_message_id?: string;
 	title?: string;
+}
+
+export interface ConversationCompactionResult {
+	compacted: boolean;
+	conversation: Conversation;
 }
 
 type StreamProgressHandler = (
@@ -185,26 +199,37 @@ export class ChatService {
 
 		const conversation = await returnFetchedData<any>(response);
 
-		if (!conversation.id) {
-			return {
-				id: completion_id,
-				title: "New conversation",
-				messages: [],
-			};
+		return normaliseConversationResponse(conversation, completion_id);
+	}
+
+	async compactConversation(completion_id: string): Promise<ConversationCompactionResult> {
+		if (!completion_id) {
+			throw new Error("No completion ID provided");
 		}
 
-		const messages = conversation.messages;
+		let headers = {};
+		try {
+			headers = await this.getHeaders();
+		} catch (error) {
+			console.error("Error compacting chat:", error);
+		}
 
-		const transformedMessages = messages.map((msg: any) => normalizeMessage(msg));
+		const response = await fetchApiOrThrow(`/chat/completions/${completion_id}/compact`, {
+			method: "POST",
+			headers,
+		});
+		const data = await returnFetchedData<{
+			compacted: boolean;
+			conversation: Conversation;
+		}>(response);
+		const parsed = compactChatCompletionResponseSchema.safeParse(data);
+		if (!parsed.success) {
+			throw new Error("Invalid compact conversation response");
+		}
 
 		return {
-			id: completion_id,
-			title: conversation.title,
-			messages: transformedMessages,
-			is_public: conversation.is_public,
-			share_id: conversation.share_id,
-			parent_conversation_id: conversation.parent_conversation_id,
-			parent_message_id: conversation.parent_message_id,
+			compacted: parsed.data.compacted,
+			conversation: normaliseConversationResponse(parsed.data.conversation, completion_id),
 		};
 	}
 
@@ -271,13 +296,7 @@ export class ChatService {
 		});
 
 		const data = await returnFetchedData<Conversation>(updateResponse);
-		return {
-			...data,
-			id: data.id || completion_id,
-			messages: Array.isArray(data.messages)
-				? data.messages.map((message) => normalizeMessage(message))
-				: [],
-		};
+		return normaliseConversationResponse(data, completion_id);
 	}
 
 	async deleteConversation(completion_id: string): Promise<void> {
@@ -427,6 +446,9 @@ export class ChatService {
 		}
 
 		const formattedMessages = serialiseMessagesForChatRequest(messages);
+		if (formattedMessages.length === 0) {
+			throw new Error("Missing required parameter: messages");
+		}
 		const sandboxOptions =
 			allowTools && requestOptions?.options?.sandbox?.enabled
 				? requestOptions.options.sandbox
@@ -446,23 +468,13 @@ export class ChatService {
 			: undefined;
 
 		const {
-			enabled_tools: settingsEnabledTools,
-			localOnly: _localOnly,
-			rag_options: ragOptions,
-			tool_options: hostedToolOptions,
-			use_rag: useRag,
-			...generationSettings
-		} = chatSettings;
+			enabledTools: settingsEnabledTools,
+			generationSettings,
+			hostedToolOptions,
+			ragOptions: requestRagOptions,
+			useRag,
+		} = projectChatRequestSettings(chatSettings);
 		const enabledTools = allowTools ? (requestEnabledTools ?? settingsEnabledTools) : undefined;
-		const requestRagOptions = ragOptions
-			? {
-					top_k: ragOptions.topK,
-					score_threshold: ragOptions.scoreThreshold,
-					include_metadata: ragOptions.includeMetadata,
-					type: ragOptions.type,
-					namespace: ragOptions.namespace,
-				}
-			: undefined;
 		const { options: featureOptions, ...requestOptionFields } = requestOptions ?? {};
 		const requestBody: Record<string, any> = {
 			...requestOptionFields,
@@ -482,7 +494,7 @@ export class ChatService {
 			rag_options: requestRagOptions,
 			enabled_tools: enabledTools,
 			approved_tools: allowTools ? requestApprovedTools : undefined,
-			tool_options: allowTools ? { ...hostedToolOptions } : undefined,
+			tool_options: allowTools ? hostedToolOptions : undefined,
 			options: featureOptions,
 		};
 
@@ -518,25 +530,27 @@ export class ChatService {
 		const isStreamingResponse = response.headers.get("content-type")?.includes("text/event-stream");
 
 		if (!isStreamingResponse) {
-			const data = await returnFetchedData<any>(response);
+			const data = await returnFetchedData<ChatCompletionResponseBody>(response);
 
-			if (data.error) {
-				throw new Error(data.error.message || "Unknown error");
+			if ("error" in data) {
+				const error = data.error;
+				throw new Error(
+					isRecord(error) && typeof error.message === "string" ? error.message : "Unknown error",
+				);
 			}
 
-			return normalizeMessage({
-				role: "assistant",
-				content: data.choices?.[0]?.message?.content || "",
-				data: data.choices?.[0]?.message?.data || undefined,
-				reasoning: data.choices?.[0]?.message?.reasoning || undefined,
-				id: data.id || crypto.randomUUID(),
-				created: data.created || Date.now(),
-				model,
-				citations: data.choices?.[0]?.message?.citations || null,
-				usage: data.usage || undefined,
-				tool_calls: data.choices?.[0]?.message?.tool_calls || undefined,
-				log_id: data.log_id || undefined,
-			});
+			const compactionMessage = readCompactionStatusMessage(
+				data.post_processing?.compaction?.message,
+			);
+			if (compactionMessage) {
+				onStateChange("compaction", {
+					type: "state",
+					state: "compaction",
+					message: compactionMessage,
+				});
+			}
+
+			return toCompletionResponseAppMessage(data, model);
 		}
 
 		const decoder = new TextDecoder();

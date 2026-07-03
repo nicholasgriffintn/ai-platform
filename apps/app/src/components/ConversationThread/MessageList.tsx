@@ -1,4 +1,4 @@
-import { GitBranch, Loader2, MessagesSquare } from "lucide-react";
+import { GitBranch, Loader2, MessagesSquare, ScrollText } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { VList, type VListHandle } from "virtua";
 
@@ -8,6 +8,10 @@ import { useCanAccessProFeatures } from "~/hooks/useCanAccessProFeatures";
 import { useModels } from "~/hooks/useModels";
 import { useWebLLMModels } from "~/hooks/useWebLLMModels";
 import { buildAgentTraceEntries } from "~/lib/agent-trace";
+import {
+	getCompactionMessageLabel,
+	isCompactionLoadingMessage,
+} from "~/lib/chat/compaction-status";
 import {
 	canOfferOpinionRequestForMessage,
 	shouldPromoteOpinionRequest,
@@ -42,6 +46,34 @@ interface MessageListProps {
 	isBranching?: boolean;
 	onRequestOpinion?: (messageId: string, request: OpinionRequest) => void;
 	isRequestingOpinion?: boolean;
+}
+
+function CompactionStatusRow({ label, pending = false }: { label: string; pending?: boolean }) {
+	return (
+		<div
+			role="status"
+			aria-label={label}
+			className="flex items-center gap-4 py-3 text-sm font-medium text-zinc-500 dark:text-zinc-400"
+		>
+			<div className="h-px flex-1 bg-zinc-200 dark:bg-zinc-700" />
+			<div className="flex min-w-0 items-center gap-2">
+				{pending ? null : <ScrollText className="h-4 w-4 flex-shrink-0" aria-hidden="true" />}
+				<span className="truncate">{label}</span>
+			</div>
+			<div className="h-px flex-1 bg-zinc-200 dark:bg-zinc-700" />
+		</div>
+	);
+}
+
+function hasCurrentResponseCompactionMarker(messages: Message[]): boolean {
+	for (let index = messages.length - 1; index > 0; index--) {
+		if (messages[index]?.role === "assistant") {
+			const previousMessage = messages[index - 1];
+			return previousMessage ? Boolean(getCompactionMessageLabel(previousMessage)) : false;
+		}
+	}
+
+	return false;
 }
 
 export const MessageList = ({
@@ -116,6 +148,17 @@ export const MessageList = ({
 	const streamLoadingMessage = useLoadingMessage("stream-response") || "Generating response...";
 	const modelInitMessage = useLoadingMessage("model-init") || "Initializing model...";
 	const modelInitProgress = useLoadingProgress("model-init") || 0;
+	const showCompactionLoadingDivider =
+		isCompactionLoadingMessage(streamLoadingMessage) &&
+		!hasCurrentResponseCompactionMarker(messages);
+	const latestCompactionMarkerIndex = useMemo(
+		() =>
+			messages.reduce(
+				(latestIndex, message, index) => (getCompactionMessageLabel(message) ? index : latestIndex),
+				-1,
+			),
+		[messages],
+	);
 
 	const virtualRef = useRef<VListHandle>(null);
 	const prevCount = useRef(0);
@@ -196,60 +239,81 @@ export const MessageList = ({
 						</div>
 					</div>
 				)}
-				{!isSharedView && isLoadingConversation ? (
-					<div className="py-4 space-y-4">
-						{[...Array(3)].map((_, i) => (
-							<MessageSkeleton key={`skeleton-item-${i}`} />
-						))}
-					</div>
-				) : (
-					<>
-						{messages.map((message, index) => (
-							<div key={`${message.id || index}-${index}`} className={index > 0 ? "mt-4" : ""}>
-								<ChatMessage
-									conversationId={currentConversationId}
-									message={message}
-									modelConfig={getModelByReference(modelReferences, message.model)}
-									onToolInteraction={onToolInteraction}
-									onArtifactOpen={onArtifactOpen}
-									isSharedView={isSharedView}
-									onRetry={retryMessage}
-									isRetrying={streamStarted}
-									onEdit={message.id ? () => startEditingMessage(message.id!) : undefined}
-									isEditing={editingMessageId === message.id}
-									onSaveEdit={(newContent) => {
-										if (message.id) {
-											updateUserMessage(message.id, newContent);
-											stopEditingMessage();
-										}
-									}}
-									onCancelEdit={stopEditingMessage}
-									onBranch={onBranch}
-									isBranching={isBranching}
-									onRequestOpinion={
-										opinionAvailability.get(message.id)?.canRequest ? onRequestOpinion : undefined
-									}
-									isRequestingOpinion={isRequestingOpinion}
-								/>
-							</div>
-						))}
-						{!isSharedView && (isStreamLoading || streamStarted) && (
-							<div className="flex items-center gap-2 py-2 px-4 text-sm text-zinc-600 dark:text-zinc-400">
-								<Loader2 className="h-4 w-4 animate-spin text-blue-500 flex-shrink-0" />
-								<span>{streamLoadingMessage}</span>
-							</div>
-						)}
-						{!isSharedView && isModelInitializing && (
-							<div className="flex items-center gap-2 py-2 px-4 text-sm text-zinc-600 dark:text-zinc-400">
-								<Loader2 className="h-4 w-4 animate-spin text-blue-500 flex-shrink-0" />
-								<span>
-									{modelInitMessage}
-									{modelInitProgress !== undefined ? ` ${Math.round(modelInitProgress)}%` : null}
-								</span>
-							</div>
-						)}
-					</>
-				)}
+				<div className="py-4 space-y-4">
+					{!isSharedView && isLoadingConversation ? (
+						<>
+							{[...Array(3)].map((_, i) => (
+								<MessageSkeleton key={`skeleton-item-${i}`} />
+							))}
+						</>
+					) : (
+						messages.map((message, index) => {
+							const compactionLabel = getCompactionMessageLabel(message);
+
+							return (
+								<div key={`${message.id || index}-${index}`} className={index > 0 ? "mt-4" : ""}>
+									{compactionLabel ? (
+										<CompactionStatusRow label={compactionLabel} />
+									) : (
+										<ChatMessage
+											conversationId={currentConversationId}
+											message={message}
+											modelConfig={getModelByReference(modelReferences, message.model)}
+											onToolInteraction={onToolInteraction}
+											onArtifactOpen={onArtifactOpen}
+											isSharedView={isSharedView}
+											onRetry={retryMessage}
+											isRetrying={streamStarted}
+											onEdit={message.id ? () => startEditingMessage(message.id!) : undefined}
+											isEditing={editingMessageId === message.id}
+											onSaveEdit={(newContent) => {
+												if (message.id) {
+													updateUserMessage(message.id, newContent);
+													stopEditingMessage();
+												}
+											}}
+											onCancelEdit={stopEditingMessage}
+											onBranch={onBranch}
+											isBranching={isBranching}
+											onRequestOpinion={
+												opinionAvailability.get(message.id)?.canRequest
+													? onRequestOpinion
+													: undefined
+											}
+											isRequestingOpinion={isRequestingOpinion}
+											isArchivedByCompaction={
+												latestCompactionMarkerIndex !== -1 && index < latestCompactionMarkerIndex
+											}
+										/>
+									)}
+								</div>
+							);
+						})
+					)}
+					{!isSharedView && (isStreamLoading || streamStarted) && (
+						<>
+							{isCompactionLoadingMessage(streamLoadingMessage) ? (
+								showCompactionLoadingDivider ? (
+									<CompactionStatusRow label={streamLoadingMessage} pending />
+								) : null
+							) : (
+								<div className="flex items-center gap-2 py-2 px-4 text-sm text-zinc-600 dark:text-zinc-400">
+									<Loader2 className="h-4 w-4 animate-spin text-blue-500 flex-shrink-0" />
+									<span>{streamLoadingMessage}</span>
+								</div>
+							)}
+						</>
+					)}
+					{!isSharedView && isModelInitializing && (
+						<div className="flex items-center gap-2 py-2 px-4 text-sm text-zinc-600 dark:text-zinc-400">
+							<Loader2 className="h-4 w-4 animate-spin text-blue-500 flex-shrink-0" />
+							<span>
+								{modelInitMessage}
+								{modelInitProgress !== undefined ? ` ${Math.round(modelInitProgress)}%` : null}
+							</span>
+						</div>
+					)}
+				</div>
 			</VList>
 			{showScroll && !isSharedView && (
 				<div className="absolute bottom-2 right-2 z-10">

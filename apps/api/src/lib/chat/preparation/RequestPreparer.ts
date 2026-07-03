@@ -18,6 +18,8 @@ import {
 	resolveMemoryPolicy,
 } from "~/lib/chat/memoryPolicy";
 import { messagesMatchStoredPrefix } from "~/lib/chat/messageComparison";
+import { hasSnapshotPart } from "~/lib/chat/messageParts";
+import { toProviderMessages } from "~/lib/chat/providerMessages";
 import { findModelConfig } from "~/lib/providers/models";
 import { getSystemPrompt } from "~/lib/prompts";
 import type { ModelConfigInfo } from "@assistant/schemas";
@@ -111,7 +113,7 @@ export class RequestPreparer {
 			throw new AssistantError("Missing required validation context", ErrorType.PARAMS_ERROR);
 		}
 
-		const { platform = "api", anonymousUser, mode = "normal", executionCtx } = options;
+		const { platform = "api", anonymousUser, mode = "normal" } = options;
 		const user = options.context?.user;
 		const requestCache = options.context?.requestCache;
 		const database = options.context?.database ?? new Database(this.env);
@@ -181,27 +183,19 @@ export class RequestPreparer {
 		);
 
 		if (storeMessagesTask) {
-			if (executionCtx) {
-				executionCtx.waitUntil(
-					storeMessagesTask.catch((error) => {
-						logger.error("Failed to store messages asynchronously", {
-							error,
-							completionId: options.completion_id,
-						});
-					}),
-				);
-			} else {
-				await storeMessagesTask;
-			}
+			await storeMessagesTask;
 		}
 
 		const systemPrompt = await systemPromptTask;
 
-		const messages = this.buildFinalMessages(
-			sanitizedMessages!,
+		const messages = await this.buildProviderMessages({
+			conversationManager,
+			completionId: options.completion_id,
+			shouldStoreMessages,
+			fallbackMessages: sanitizedMessages!,
 			messageWithContext,
 			primaryModelConfig,
-		);
+		});
 
 		return {
 			modelConfigs,
@@ -379,17 +373,42 @@ export class RequestPreparer {
 			// We can ignore this.
 		}
 
-		if (existingMessages && existingMessages.length > options.messages.length) {
-			await conversationManager.replaceMessages(options.completion_id, options.messages);
+		const incomingMessages = Array.isArray(options.messages) ? options.messages : [];
+		const hasCompactedActiveHistory = existingMessages?.some(hasSnapshotPart) ?? false;
+		const incomingHasSnapshot = incomingMessages.some(hasSnapshotPart);
+		const latestExistingMessage = existingMessages?.at(-1);
+
+		if (
+			hasCompactedActiveHistory &&
+			!incomingHasSnapshot &&
+			latestExistingMessage?.role === lastMessage.role &&
+			latestExistingMessage.content === finalMessage
+		) {
 			return;
 		}
 
-		if (existingMessages && existingMessages.length === options.messages.length) {
-			if (messagesMatchStoredPrefix(existingMessages, options.messages)) {
+		const canReplaceFromIncoming =
+			incomingMessages.length > 0 && (!hasCompactedActiveHistory || incomingHasSnapshot);
+
+		if (
+			canReplaceFromIncoming &&
+			existingMessages &&
+			existingMessages.length > incomingMessages.length
+		) {
+			await conversationManager.replaceMessages(options.completion_id, incomingMessages);
+			return;
+		}
+
+		if (
+			canReplaceFromIncoming &&
+			existingMessages &&
+			existingMessages.length === incomingMessages.length
+		) {
+			if (messagesMatchStoredPrefix(existingMessages, incomingMessages)) {
 				return;
 			}
 
-			await conversationManager.replaceMessages(options.completion_id, options.messages);
+			await conversationManager.replaceMessages(options.completion_id, incomingMessages);
 			return;
 		}
 
@@ -544,6 +563,50 @@ export class RequestPreparer {
 			return msg;
 		});
 
-		return chatMessages.filter((msg) => msg.role !== "system");
+		return toProviderMessages(chatMessages).filter((msg) => msg.role !== "system");
+	}
+
+	private async buildProviderMessages({
+		conversationManager,
+		completionId,
+		shouldStoreMessages,
+		fallbackMessages,
+		messageWithContext,
+		primaryModelConfig,
+	}: {
+		conversationManager: ConversationManager;
+		completionId?: string;
+		shouldStoreMessages: boolean;
+		fallbackMessages: Message[];
+		messageWithContext: string;
+		primaryModelConfig: ModelConfigInfo;
+	}): Promise<Message[]> {
+		if (!shouldStoreMessages || !completionId) {
+			return this.buildFinalMessages(fallbackMessages, messageWithContext, primaryModelConfig);
+		}
+
+		try {
+			const activeMessages = await conversationManager.get(completionId);
+			if (Array.isArray(activeMessages) && activeMessages.length > 0) {
+				const providerMessages = this.buildFinalMessages(
+					activeMessages,
+					messageWithContext,
+					primaryModelConfig,
+				);
+				if (providerMessages.length > 0) {
+					return providerMessages;
+				}
+			}
+			throw new AssistantError(
+				"Stored conversation has no active messages for provider context",
+				ErrorType.PARAMS_ERROR,
+			);
+		} catch (error) {
+			logger.warn("Failed to load active conversation messages for provider context", {
+				error,
+				completionId,
+			});
+			throw error;
+		}
 	}
 }

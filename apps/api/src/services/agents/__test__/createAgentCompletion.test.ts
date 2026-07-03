@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { ChatCompletionRequestBody } from "@assistant/schemas";
+import type { ParsedChatCompletionRequestBody } from "@assistant/schemas";
 import { createAgentCompletion } from "../createAgentCompletion";
 import { handleCreateChatCompletions } from "~/services/completions/createChatCompletions";
 import type { IEnv } from "~/types";
@@ -50,7 +50,7 @@ describe("createAgentCompletion", () => {
 			messages: [{ role: "user", content: "hi" }],
 			model: "gpt-4",
 			enabled_tools: ["create_image"],
-		} as ChatCompletionRequestBody;
+		} as ParsedChatCompletionRequestBody;
 
 		await createAgentCompletion({
 			env: {} as IEnv,
@@ -98,7 +98,7 @@ describe("createAgentCompletion", () => {
 			messages: [{ role: "user", content: "hi" }],
 			model: "gpt-4",
 			enabled_tools: ["create_image"],
-		} as ChatCompletionRequestBody;
+		} as ParsedChatCompletionRequestBody;
 
 		await createAgentCompletion({
 			env: {} as IEnv,
@@ -146,7 +146,7 @@ describe("createAgentCompletion", () => {
 			messages: [{ role: "user", content: "hi" }],
 			model: "gpt-4",
 			stream: true,
-		} as ChatCompletionRequestBody;
+		} as ParsedChatCompletionRequestBody;
 
 		await createAgentCompletion({
 			env: {} as IEnv,

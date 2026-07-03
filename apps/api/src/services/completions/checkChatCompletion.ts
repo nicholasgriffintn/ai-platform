@@ -1,5 +1,6 @@
 import { ConversationManager } from "~/lib/conversationManager";
 import type { ServiceContext } from "~/lib/context/serviceContext";
+import { toProviderMessages } from "~/lib/chat/providerMessages";
 import { Guardrails } from "~/lib/providers/capabilities/guardrails";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
@@ -39,7 +40,7 @@ export const handleCheckChatCompletion = async (
 		throw new AssistantError("No messages found", ErrorType.PARAMS_ERROR);
 	}
 
-	const messageHistoryAsString = messages
+	const messageHistoryAsString = toProviderMessages(messages)
 		.filter((message) => message.content && message.status !== "error")
 		.map((message) => {
 			return `${message.role}: ${typeof message.content === "string" ? message.content : JSON.stringify(message.content)}`;

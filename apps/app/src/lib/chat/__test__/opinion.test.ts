@@ -37,6 +37,24 @@ describe("opinion helpers", () => {
 		expect(canRequestOpinionForMessage(messages.slice(0, 2), "assistant-1")).toBe(true);
 	});
 
+	it("allows opinion requests when a compaction marker follows the latest assistant answer", () => {
+		const messages = [
+			message("user-1", "user", "Question"),
+			message("assistant-1", "assistant", "Answer"),
+			{
+				id: "compaction-1",
+				role: "compaction",
+				content: "Context compacted",
+				created: 1,
+				model: "test-model",
+				parts: [{ type: "compaction", status: "completed", label: "Context compacted" }],
+			},
+		] as Message[];
+
+		expect(canRequestOpinionForMessage(messages, "assistant-1")).toBe(true);
+		expect(shouldPromoteOpinionRequest(messages, "assistant-1")).toBe(false);
+	});
+
 	it("does not suggest another opinion on an opinion response", () => {
 		const messages = [
 			message("user-1", "user", "Question"),

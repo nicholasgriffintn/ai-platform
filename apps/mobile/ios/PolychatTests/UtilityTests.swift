@@ -111,4 +111,42 @@ struct UtilityTests {
             Issue.record("Unexpected error: \(error)")
         }
     }
+
+    @Test func chatStreamParserPreservesCompactionStateMessage() throws {
+        let events = try ChatStreamEventParser.events(from: """
+        {
+            "type": "state",
+            "state": "compaction",
+            "message": {
+                "id": "snapshot-1-compaction",
+                "completion_id": "conversation-1",
+                "role": "compaction",
+                "content": "Context automatically compacted",
+                "parts": [
+                    {
+                        "type": "compaction",
+                        "status": "completed",
+                        "label": "Context automatically compacted"
+                    }
+                ]
+            }
+        }
+        """)
+
+        guard case .compaction(let message) = events.first else {
+            Issue.record("Expected compaction stream event")
+            return
+        }
+
+        #expect(message.id == "snapshot-1-compaction")
+        #expect(message.completionId == "conversation-1")
+        #expect(message.isCompactionMarker)
+        #expect(message.compactionStatusLabel == "Context automatically compacted")
+    }
+
+    @Test func chatStreamParserPreservesBareCompactionState() throws {
+        let events = try ChatStreamEventParser.events(from: #"{"type":"state","state":"compaction"}"#)
+
+        #expect(events == [.state("compaction")])
+    }
 }

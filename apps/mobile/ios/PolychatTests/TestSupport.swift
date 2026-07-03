@@ -94,6 +94,7 @@ final class ConversationAPIClientStub: ConversationAPIClient {
     var streamedModelId: String?
     var streamedCompletionId: String?
     var streamCallCount = 0
+    var streamError: Error?
     var updatedConversationTitles: [(id: String, title: String)] = []
     var updatedConversationPayloads: [(id: String, title: String?, messages: [ChatMessage]?, parentConversationId: String?, parentMessageId: String?)] = []
     var deletedConversationIds: [String] = []
@@ -123,7 +124,11 @@ final class ConversationAPIClientStub: ConversationAPIClient {
             for event in streamEvents {
                 continuation.yield(event)
             }
-            continuation.finish()
+            if let streamError {
+                continuation.finish(throwing: streamError)
+            } else {
+                continuation.finish()
+            }
         }
     }
 

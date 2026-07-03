@@ -13,7 +13,7 @@ struct MessageBubble: View {
                 Spacer(minLength: 80)
             }
 
-            if message.role == "assistant" {
+            if message.role == "assistant" && !message.isCompactionMarker {
                 ModelIconView(
                     modelName: assistantModel?.name ?? assistantModelId ?? "Assistant",
                     provider: assistantModel?.provider,
@@ -23,7 +23,7 @@ struct MessageBubble: View {
             }
 
             VStack(alignment: message.role == "user" ? .trailing : .leading, spacing: 8) {
-                if message.renderedTextContent.isEmpty && message.role == "assistant" {
+                if message.renderedTextContent.isEmpty && message.role == "assistant" && !message.isCompactionMarker {
                     HStack(spacing: 8) {
                         ProgressView()
                             .scaleEffect(0.8)
@@ -57,7 +57,7 @@ struct MessageBubble: View {
 
                 if shouldShowActions {
                     HStack(spacing: 12) {
-                        if message.role == "assistant" {
+                        if message.role == "assistant" && !message.isCompactionMarker {
                             Button(action: regenerateMessage) {
                                 Image(systemName: "arrow.clockwise")
                                     .font(.caption)
@@ -139,7 +139,7 @@ struct MessageBubble: View {
     }
 
     private var canBranch: Bool {
-        message.role == "user" || message.role == "assistant"
+        !message.isCompactionMarker && (message.role == "user" || message.role == "assistant")
     }
 
     private var displayContent: String {

@@ -136,6 +136,30 @@ describe("handleGenerateChatCompletionTitle", () => {
 			expect(mockConversationManager.get).toHaveBeenCalledWith(completionId, undefined, 1);
 		});
 
+		it("should exclude malformed provided compaction metadata from the title prompt", async () => {
+			const completionId = "completion-123";
+			const messages = [
+				{ role: "user" as const, content: "Question" },
+				{
+					role: "assistant" as const,
+					content: "Context compacted",
+					parts: [{ type: "compaction", status: "unknown", label: "Context compacted" }],
+				},
+				{ role: "assistant" as const, content: "Answer" },
+			] as any;
+
+			mockConversationManager.get.mockResolvedValue([]);
+			mockSanitiseMessages.mockReturnValue(messages);
+			const mockProvider = mockChatCapability.getChatProvider();
+
+			await handleGenerateChatCompletionTitle(mockServiceContext, completionId, messages);
+
+			const prompt = mockProvider.getResponse.mock.calls[0]?.[0].messages[0].content;
+			expect(prompt).toContain("USER: Question");
+			expect(prompt).toContain("ASSISTANT: Answer");
+			expect(prompt).not.toContain("Context compacted");
+		});
+
 		it("should pass service context to the chat provider for user settings key lookup", async () => {
 			const completionId = "completion-123";
 			const messages = [{ role: "user" as const, content: "Hello" }];
@@ -170,11 +194,56 @@ describe("handleGenerateChatCompletionTitle", () => {
 			const result = await handleGenerateChatCompletionTitle(mockServiceContext, completionId);
 
 			expect(result).toEqual({ title: "Generated Title" });
-			expect(mockConversationManager.get).toHaveBeenCalledWith(
-				completionId,
-				undefined,
-				expect.any(Number),
-			);
+			expect(mockConversationManager.get).toHaveBeenCalledWith(completionId, undefined);
+		});
+
+		it("should exclude stored compaction markers from the title prompt", async () => {
+			const completionId = "completion-123";
+			const conversationMessages = [
+				{ role: "user", content: "Question" },
+				{
+					role: "compaction",
+					content: "Context compacted",
+					parts: [{ type: "compaction", status: "completed", label: "Context compacted" }],
+				},
+				{ role: "assistant", content: "Answer" },
+				{ role: "user", content: "Follow up" },
+			];
+
+			mockConversationManager.get.mockResolvedValue(conversationMessages);
+			const mockProvider = mockChatCapability.getChatProvider();
+
+			await handleGenerateChatCompletionTitle(mockServiceContext, completionId);
+
+			const prompt = mockProvider.getResponse.mock.calls[0]?.[0].messages[0].content;
+			expect(prompt).toContain("USER: Question");
+			expect(prompt).toContain("ASSISTANT: Answer");
+			expect(prompt).toContain("USER: Follow up");
+			expect(prompt).not.toContain("COMPACTION");
+			expect(prompt).not.toContain("Context compacted");
+		});
+
+		it("should exclude malformed stored compaction metadata from the title prompt", async () => {
+			const completionId = "completion-123";
+			const conversationMessages = [
+				{ role: "user", content: "Question" },
+				{
+					role: "assistant",
+					content: "Context compacted",
+					parts: [{ type: "compaction", status: "unknown", label: "Context compacted" }],
+				},
+				{ role: "assistant", content: "Answer" },
+			];
+
+			mockConversationManager.get.mockResolvedValue(conversationMessages);
+			const mockProvider = mockChatCapability.getChatProvider();
+
+			await handleGenerateChatCompletionTitle(mockServiceContext, completionId);
+
+			const prompt = mockProvider.getResponse.mock.calls[0]?.[0].messages[0].content;
+			expect(prompt).toContain("USER: Question");
+			expect(prompt).toContain("ASSISTANT: Answer");
+			expect(prompt).not.toContain("Context compacted");
 		});
 
 		it("should return default title for empty conversation", async () => {

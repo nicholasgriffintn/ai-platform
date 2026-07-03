@@ -1,5 +1,9 @@
+import {
+	hasCompactionPart as hasCompactionMessagePart,
+	isCompactionMarkerMessage as isSchemaCompactionMarkerMessage,
+	normaliseMessageParts as normaliseSchemaMessageParts,
+} from "@assistant/schemas";
 import type { Message, MessageContent, MessagePart } from "~/types";
-import { safeParseJson } from "~/utils/json";
 import { isRecord, isObjectOrArray } from "~/utils/objects";
 
 type UnknownRecord = Record<string, unknown>;
@@ -20,30 +24,6 @@ function extractTimestamp(value: unknown, fallbackTimestamp?: number): number | 
 		return fallbackTimestamp;
 	}
 	return undefined;
-}
-
-function extractCommonPartFields(
-	part: UnknownRecord,
-	fallbackTimestamp?: number,
-): Pick<MessagePart, "id" | "timestamp" | "metadata"> {
-	return {
-		id: typeof part.id === "string" ? part.id : undefined,
-		timestamp: extractTimestamp(part.timestamp, fallbackTimestamp),
-		metadata: isRecord(part.metadata) ? part.metadata : undefined,
-	};
-}
-
-function parseToolInput(value: unknown): unknown {
-	if (typeof value !== "string") {
-		return value;
-	}
-
-	const parsed = safeParseJson(value);
-	return parsed ?? value;
-}
-
-function toText(value: unknown): string | undefined {
-	return typeof value === "string" && value.trim().length > 0 ? value : undefined;
 }
 
 function createAttachmentFilePart(
@@ -178,122 +158,23 @@ export function appendReasoningPart(
 	});
 }
 
-function normalisePart(part: unknown, fallbackTimestamp?: number): MessagePart | null {
-	if (!isRecord(part)) {
-		return null;
-	}
-
-	if (!("type" in part) && typeof part.text === "string") {
-		const text = toText(part.text);
-		if (!text) {
-			return null;
-		}
-		return {
-			type: "text",
-			text,
-			timestamp: extractTimestamp(undefined, fallbackTimestamp),
-		};
-	}
-
-	if (typeof part.type !== "string") {
-		return null;
-	}
-
-	const commonFields = extractCommonPartFields(part, fallbackTimestamp);
-
-	switch (part.type) {
-		case "text": {
-			const text = toText(part.text);
-			return text ? { type: "text", text, ...commonFields } : null;
-		}
-		case "tool_use": {
-			const name = toText(part.name);
-			if (!name) {
-				return null;
-			}
-			const input = parseToolInput(part.input);
-			return {
-				type: "tool_use",
-				name,
-				toolCallId:
-					typeof part.toolCallId === "string"
-						? part.toolCallId
-						: typeof part.tool_call_id === "string"
-							? part.tool_call_id
-							: undefined,
-				input: isObjectOrArray(input) || typeof input === "string" ? input : undefined,
-				...commonFields,
-			};
-		}
-		case "tool_result": {
-			return {
-				type: "tool_result",
-				name: typeof part.name === "string" ? part.name : undefined,
-				toolCallId:
-					typeof part.toolCallId === "string"
-						? part.toolCallId
-						: typeof part.tool_call_id === "string"
-							? part.tool_call_id
-							: undefined,
-				status: typeof part.status === "string" ? part.status : undefined,
-				content:
-					typeof part.content === "string" || isObjectOrArray(part.content)
-						? part.content
-						: undefined,
-				data: part.data,
-				...commonFields,
-			};
-		}
-		case "reasoning": {
-			const text = toText(part.text);
-			return text
-				? {
-						type: "reasoning",
-						text,
-						signature: typeof part.signature === "string" ? part.signature : undefined,
-						collapsed: typeof part.collapsed === "boolean" ? part.collapsed : undefined,
-						...commonFields,
-					}
-				: null;
-		}
-		case "snapshot": {
-			const summary = toText(part.summary);
-			return summary
-				? {
-						type: "snapshot",
-						summary,
-						title: typeof part.title === "string" ? part.title : undefined,
-						...commonFields,
-					}
-				: null;
-		}
-		case "file":
-			return {
-				type: "file",
-				name: typeof part.name === "string" ? part.name : undefined,
-				url: typeof part.url === "string" ? part.url : undefined,
-				mimeType: typeof part.mimeType === "string" ? part.mimeType : undefined,
-				sizeBytes: typeof part.sizeBytes === "number" ? part.sizeBytes : undefined,
-				...commonFields,
-			};
-		default:
-			return null;
-	}
-}
-
 export function normaliseMessageParts(
 	parts: unknown,
 	fallbackTimestamp?: number,
 ): MessagePart[] | undefined {
-	if (!Array.isArray(parts)) {
-		return undefined;
-	}
+	return normaliseSchemaMessageParts(parts, fallbackTimestamp);
+}
 
-	const normalised = parts
-		.map((part) => normalisePart(part, fallbackTimestamp))
-		.filter((part): part is MessagePart => part !== null);
+export function hasSnapshotPart(message: Pick<Message, "parts">): boolean {
+	return Array.isArray(message.parts) && message.parts.some((part) => part.type === "snapshot");
+}
 
-	return normalised.length > 0 ? normalised : undefined;
+export function hasCompactionPart(message: { parts?: unknown }): boolean {
+	return hasCompactionMessagePart(message.parts);
+}
+
+export function isCompactionMarkerMessage(message: { role?: unknown; parts?: unknown }): boolean {
+	return isSchemaCompactionMarkerMessage(message);
 }
 
 export function buildMessageParts(message: Message): MessagePart[] | undefined {
@@ -330,11 +211,7 @@ export function buildMessageParts(message: Message): MessagePart[] | undefined {
 			appendFilePartFromContent(parts, contentPart, timestamp);
 		}
 	} else if (isRecord(message.content)) {
-		parts.push({
-			type: "snapshot",
-			summary: JSON.stringify(message.content),
-			timestamp,
-		});
+		appendTextPart(parts, JSON.stringify(message.content), timestamp);
 	}
 
 	if (Array.isArray(message.tool_calls)) {
@@ -344,14 +221,18 @@ export function buildMessageParts(message: Message): MessagePart[] | undefined {
 				continue;
 			}
 
-			const input = parseToolInput(toolCall.function.arguments);
-			parts.push({
-				type: "tool_use",
-				name: functionName,
-				toolCallId: typeof toolCall.id === "string" ? toolCall.id : undefined,
-				input: isObjectOrArray(input) || typeof input === "string" ? input : undefined,
-				timestamp,
-			});
+			const toolUsePart = normaliseMessageParts([
+				{
+					type: "tool_use",
+					name: functionName,
+					toolCallId: typeof toolCall.id === "string" ? toolCall.id : undefined,
+					input: toolCall.function.arguments,
+					timestamp,
+				},
+			])?.[0];
+			if (toolUsePart?.type === "tool_use") {
+				parts.push(toolUsePart);
+			}
 		}
 	}
 

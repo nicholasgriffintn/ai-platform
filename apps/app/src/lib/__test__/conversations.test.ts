@@ -86,6 +86,35 @@ describe("preserveOptimisticMessages", () => {
 		expect(preserveOptimisticMessages(fetched, cached)?.messages).toEqual(cached.messages);
 	});
 
+	it("keeps cached visible assistant text when fetched conversation only has reasoning", () => {
+		const cached = conversation("one", [
+			{ id: "user-1", role: "user", content: "Question", model: "" },
+			{
+				id: "assistant-final",
+				role: "assistant",
+				content: "Final answer",
+				model: "deepseek-v4-pro",
+			},
+		]);
+		const fetched = conversation("one", [
+			{ id: "user-1", role: "user", content: "Question", model: "" },
+			{
+				id: "assistant-stale",
+				role: "assistant",
+				content: "",
+				model: "deepseek-v4-pro",
+				parts: [
+					{
+						type: "reasoning",
+						text: "Still thinking",
+					},
+				],
+			},
+		]);
+
+		expect(preserveOptimisticMessages(fetched, cached)?.messages).toEqual(cached.messages);
+	});
+
 	it("returns null instead of undefined when neither remote nor local chat exists", () => {
 		expect(preserveOptimisticMessages(undefined, undefined)).toBeNull();
 	});

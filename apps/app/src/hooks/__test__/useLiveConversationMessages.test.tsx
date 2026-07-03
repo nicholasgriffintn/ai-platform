@@ -124,6 +124,57 @@ describe("useLiveConversationMessages", () => {
 		);
 	});
 
+	it("does not replace remote messages when live input is added to compacted visible history", async () => {
+		const queryClient = createQueryClient();
+		useChatStore.setState({ currentConversationId: "conversation-1" });
+		queryClient.setQueryData<Conversation>([CHATS_QUERY_KEY, "conversation-1"], {
+			id: "conversation-1",
+			title: "Compacted conversation",
+			messages: [
+				createMessage({ id: "old-user", role: "user", content: "Old visible turn" }),
+				createMessage({
+					id: "snapshot-1-compaction",
+					role: "compaction",
+					content: "Context compacted",
+					parts: [{ type: "compaction", status: "completed", label: "Context compacted" }],
+				}),
+			],
+		});
+		const { result } = renderHook(
+			() =>
+				useLiveConversationMessages({
+					conversationMode: liveConversationMode,
+					model: "gpt-realtime-2",
+				}),
+			{ wrapper: wrapperFor(queryClient) },
+		);
+
+		act(() => {
+			result.current.handleTranscript({
+				isDelta: false,
+				isFinal: true,
+				source: "input",
+				text: "Continue from here.",
+			});
+		});
+
+		await waitFor(() => {
+			const conversation = queryClient.getQueryData<Conversation>([
+				CHATS_QUERY_KEY,
+				"conversation-1",
+			]);
+			expect(conversation?.messages).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						content: "Continue from here.",
+						role: "user",
+					}),
+				]),
+			);
+		});
+		expect(apiService.updateConversation).not.toHaveBeenCalled();
+	});
+
 	it("deduplicates repeated final input transcripts with the same provider item id", async () => {
 		const queryClient = createQueryClient();
 		const { result } = renderHook(

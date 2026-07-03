@@ -14,12 +14,13 @@ struct ChatRequestMessage: Encodable {
     let timestamp: Double?
 
     init(message: ChatMessage) {
+        let requestContent = ChatRequestContent(message: message)
         self.id = message.id
         self.role = message.role
-        self.content = ChatRequestContent(message: message)
+        self.content = requestContent
         self.data = message.data
         self.name = message.name
-        self.parts = message.parts
+        self.parts = Self.shouldSendParts(message: message, content: requestContent) ? message.parts : nil
         self.model = message.model
         self.citations = message.citations
         self.status = message.status
@@ -29,6 +30,56 @@ struct ChatRequestMessage: Encodable {
 
     enum CodingKeys: String, CodingKey {
         case id, role, content, data, name, parts, model, citations, status, timestamp
+        case logId = "log_id"
+    }
+
+    private static func shouldSendParts(message: ChatMessage, content: ChatRequestContent) -> Bool {
+        guard message.parts?.isEmpty == false else {
+            return false
+        }
+
+        if case .text(let text) = content {
+            return text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        }
+
+        return false
+    }
+}
+
+struct ConversationUpdateMessage: Encodable {
+    let id: String?
+    let completionId: String?
+    let role: String
+    let content: ChatRequestContent
+    let data: ChatMessageData?
+    let name: String?
+    let parts: [ChatMessagePart]?
+    let model: String?
+    let citations: [ChatCitation]?
+    let status: String?
+    let logId: String?
+    let created: Double?
+    let timestamp: Double?
+
+    init(message: ChatMessage) {
+        self.id = message.id
+        self.completionId = message.completionId
+        self.role = message.role
+        self.content = ChatRequestContent(message: message)
+        self.data = message.data
+        self.name = message.name
+        self.parts = message.parts
+        self.model = message.model
+        self.citations = message.citations
+        self.status = message.status
+        self.logId = message.logId
+        self.created = message.created
+        self.timestamp = message.timestamp
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case id, role, content, data, name, parts, model, citations, status, created, timestamp
+        case completionId = "completion_id"
         case logId = "log_id"
     }
 }

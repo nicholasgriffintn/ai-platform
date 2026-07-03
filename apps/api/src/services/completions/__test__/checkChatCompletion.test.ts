@@ -126,6 +126,13 @@ describe("handleCheckChatCompletion", () => {
 					content: "I'm doing well, thank you!",
 					status: "completed",
 				},
+				{
+					id: "compaction-1",
+					role: "compaction",
+					content: "Context compacted",
+					status: "completed",
+					parts: [{ type: "compaction", status: "completed", label: "Context compacted" }],
+				},
 			];
 
 			const mockValidation = {
@@ -147,10 +154,54 @@ describe("handleCheckChatCompletion", () => {
 				"user-123",
 				completionId,
 			);
+			expect(mockGuardrails.validateInput.mock.calls[0]?.[0]).not.toContain("compaction");
+			expect(mockGuardrails.validateInput.mock.calls[0]?.[0]).not.toContain("Context compacted");
 			expect(result).toEqual({
 				content: "Input is valid",
 				data: mockValidation,
 			});
+		});
+
+		it("should exclude malformed assistant-shaped compaction metadata from guardrail input", async () => {
+			const completionId = "completion-123";
+			const mockMessages = [
+				{
+					id: "msg-1",
+					role: "user",
+					content: "Hello",
+					status: "completed",
+				},
+				{
+					id: "malformed-compaction",
+					role: "assistant",
+					content: "Context compacted",
+					status: "completed",
+					parts: [{ type: "compaction", status: "unknown", label: "Context compacted" }],
+				},
+				{
+					id: "msg-2",
+					role: "assistant",
+					content: "Visible answer",
+					status: "completed",
+				},
+			];
+
+			const mockValidation = {
+				isValid: true,
+				score: 0.95,
+				flags: [],
+			};
+
+			mockConversationManager.get.mockResolvedValue(mockMessages);
+			mockGuardrails.validateInput.mockResolvedValue(mockValidation);
+			mockServiceContext.getUserSettings.mockResolvedValue({});
+
+			await handleCheckChatCompletion(mockServiceContext, completionId, "user");
+
+			const validationInput = mockGuardrails.validateInput.mock.calls[0]?.[0];
+			expect(validationInput).toContain("user: Hello");
+			expect(validationInput).toContain("assistant: Visible answer");
+			expect(validationInput).not.toContain("Context compacted");
 		});
 
 		it("should validate assistant output successfully", async () => {

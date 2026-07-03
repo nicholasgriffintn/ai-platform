@@ -1,4 +1,5 @@
 import type { Conversation, Message } from "~/types";
+import { isCompactionMarkerMessage } from "./compaction-status";
 
 export interface BranchPoint {
 	message: Message;
@@ -15,8 +16,12 @@ export interface BranchConversationParams {
 	parentMessageId: string;
 }
 
-export function canBranchFromMessage(message: Pick<Message, "id" | "role">): boolean {
-	return Boolean(message.id && (message.role === "user" || message.role === "assistant"));
+export function canBranchFromMessage(message: Pick<Message, "id" | "role" | "parts">): boolean {
+	return Boolean(
+		message.id &&
+		!isCompactionMarkerMessage(message) &&
+		(message.role === "user" || message.role === "assistant"),
+	);
 }
 
 export function getBranchPoint(messages: Message[], messageId: string): BranchPoint | null {

@@ -90,7 +90,10 @@ describe("handleGetChatCompletion", () => {
 
 			const result = await handleGetChatCompletion(mockServiceContext, completionId);
 
-			expect(mockConversationManager.getConversationDetails).toHaveBeenCalledWith(completionId);
+			expect(mockConversationManager.getConversationDetails).toHaveBeenCalledWith(completionId, {
+				includeArchived: true,
+				includeSnapshots: false,
+			});
 			expect(result).toEqual(mockConversation);
 		});
 
@@ -122,7 +125,10 @@ describe("handleGetChatCompletion", () => {
 
 			const result = await handleGetChatCompletion(mockServiceContext, "");
 
-			expect(mockConversationManager.getConversationDetails).toHaveBeenCalledWith("");
+			expect(mockConversationManager.getConversationDetails).toHaveBeenCalledWith("", {
+				includeArchived: true,
+				includeSnapshots: false,
+			});
 			expect(result).toEqual(mockConversation);
 		});
 

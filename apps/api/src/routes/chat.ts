@@ -3,6 +3,7 @@ import { type Context, Hono, type Next } from "hono";
 
 import z from "zod/v4";
 import {
+	compactChatCompletionResponseSchema,
 	chatCompletionResponseSchema,
 	editCompletionResponseSchema,
 	checkChatCompletionJsonSchema,
@@ -41,6 +42,7 @@ import { ResponseFactory } from "~/lib/http/ResponseFactory";
 import { sseResponse } from "~/lib/http/streaming";
 import { handleChatCompletionFeedbackSubmission } from "~/services/completions/chatCompletionFeedbackSubmission";
 import { handleCheckChatCompletion } from "~/services/completions/checkChatCompletion";
+import { handleCompactChatCompletion } from "~/services/completions/compactChatCompletion";
 import { handleCreateChatCompletions } from "~/services/completions/createChatCompletions";
 import { handleCreateFimCompletions } from "~/services/completions/createFimCompletions";
 import { handleCreateNextEditCompletions } from "~/services/completions/createNextEditCompletions";
@@ -374,6 +376,36 @@ addRoute(app, "get", "/completions/:completion_id/messages", {
 				messages,
 				conversation_id,
 			});
+		})(raw),
+});
+
+addRoute(app, "post", "/completions/:completion_id/compact", {
+	tags: ["chat"],
+	summary: "Compact chat completion history",
+	description:
+		"Summarises older stored chat history into a snapshot without creating a new chat turn.",
+	paramSchema: getChatCompletionParamsSchema,
+	responses: {
+		200: {
+			description: "Compaction result and refreshed conversation",
+			schema: compactChatCompletionResponseSchema,
+		},
+		400: {
+			description: "Bad request or validation error",
+			schema: errorResponseSchema,
+		},
+		404: { description: "Completion not found", schema: errorResponseSchema },
+	},
+	handler: async ({ raw }) =>
+		(async (context: Context) => {
+			const { completion_id } = context.req.valid("param" as never) as {
+				completion_id: string;
+			};
+
+			const serviceContext = getServiceContext(context);
+			const response = await handleCompactChatCompletion(serviceContext, completion_id);
+
+			return ResponseFactory.success(context, response);
 		})(raw),
 });
 
@@ -742,15 +774,9 @@ addRoute(app, "get", "/shared/:share_id", {
 	querySchema: chatMessageListQuerySchema,
 	responses: {
 		200: {
-			description: "Shared conversation messages and metadata",
+			description: "Shared conversation messages",
 			schema: z.object({
 				messages: z.array(messageSchema),
-				conversation: z.object({
-					id: z.string(),
-					title: z.string().nullable(),
-					created_at: z.string(),
-					model: z.string(),
-				}),
 				share_id: z.string(),
 			}),
 		},

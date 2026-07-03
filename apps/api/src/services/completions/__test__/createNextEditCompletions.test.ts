@@ -30,7 +30,7 @@ vi.mock("~/lib/providers/capabilities/chat", () => ({
 import { handleCreateNextEditCompletions } from "../createNextEditCompletions";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
-const env = {} as any;
+const env = { DB: "test-db" } as any;
 const user = { id: 1 } as any;
 
 describe("handleCreateNextEditCompletions", () => {
@@ -75,18 +75,6 @@ describe("handleCreateNextEditCompletions", () => {
 				{
 					role: "user",
 					content: "test",
-					name: undefined,
-					tool_calls: undefined,
-					parts: undefined,
-					status: undefined,
-					data: undefined,
-					model: undefined,
-					log_id: undefined,
-					citations: undefined,
-					app: undefined,
-					id: undefined,
-					timestamp: undefined,
-					platform: undefined,
 				},
 			],
 			stream: undefined,
@@ -131,5 +119,59 @@ describe("handleCreateNextEditCompletions", () => {
 		const [payload, userId] = mockGetResponse.mock.calls[0];
 		expect(payload.stream).toBe(true);
 		expect(userId).toBe(user.id);
+	});
+
+	it("excludes compaction markers from provider messages", async () => {
+		mockResolveModelConfig.mockResolvedValue({
+			matchingModel: "mercury-coder",
+			provider: "inception",
+			supportsNextEdit: true,
+		});
+		mockGetResponse.mockResolvedValue({});
+
+		await handleCreateNextEditCompletions({
+			env,
+			model: "mercury-coder",
+			messages: [
+				{ role: "user", content: "test" },
+				{
+					role: "compaction",
+					content: "Context compacted",
+					parts: [{ type: "compaction", status: "completed", label: "Context compacted" }],
+				},
+			],
+		});
+
+		const [payload] = mockGetResponse.mock.calls[0];
+		expect(payload.messages).toEqual([expect.objectContaining({ role: "user", content: "test" })]);
+	});
+
+	it("excludes malformed assistant-shaped compaction metadata from provider messages", async () => {
+		mockResolveModelConfig.mockResolvedValue({
+			matchingModel: "mercury-coder",
+			provider: "inception",
+			supportsNextEdit: true,
+		});
+		mockGetResponse.mockResolvedValue({});
+
+		await handleCreateNextEditCompletions({
+			env,
+			model: "mercury-coder",
+			messages: [
+				{ role: "user", content: "test" },
+				{
+					role: "assistant",
+					content: "Context compacted",
+					parts: [{ type: "compaction", status: "unknown", label: "Context compacted" }],
+				},
+				{ role: "assistant", content: "answer" },
+			],
+		});
+
+		const [payload] = mockGetResponse.mock.calls[0];
+		expect(payload.messages).toEqual([
+			expect.objectContaining({ role: "user", content: "test" }),
+			expect.objectContaining({ role: "assistant", content: "answer" }),
+		]);
 	});
 });

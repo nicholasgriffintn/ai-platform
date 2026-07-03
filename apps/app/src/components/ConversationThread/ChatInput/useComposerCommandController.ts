@@ -100,6 +100,15 @@ export function useComposerCommandController({
 		}
 	};
 
+	const isExactSelfInsertingSlashCommand = (command: ComposerCommandAction) => {
+		if (!directiveQuery || directiveQuery.trigger !== "/" || !command.selectionText) {
+			return false;
+		}
+
+		const selectedText = command.selectionText.trim().toLowerCase();
+		return chatInput.trim().toLowerCase() === selectedText;
+	};
+
 	const applyDirectiveSelection = () => {
 		if (!directiveQuery) {
 			return false;
@@ -111,6 +120,9 @@ export function useComposerCommandController({
 				return false;
 			}
 			if (command.disabled) {
+				return false;
+			}
+			if (isExactSelfInsertingSlashCommand(command)) {
 				return false;
 			}
 			applySlashCommand(command);

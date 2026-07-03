@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 
 import { Button } from "~/components/ui/Button";
 import { Textarea } from "~/components/ui/Textarea";
+import { getMessageTextContent } from "~/lib/messages";
 import type { Message } from "~/types";
 
 interface EditableMessageContentProps {
@@ -19,15 +20,8 @@ export const EditableMessageContent = ({
 	isUpdating = false,
 }: EditableMessageContentProps) => {
 	const textareaRef = useRef<HTMLTextAreaElement>(null);
-	const [content, setContent] = useState(() => {
-		if (typeof message.content === "string") {
-			return message.content;
-		}
-		return message.content
-			.filter((item) => item.type === "text")
-			.map((item) => item.text)
-			.join("\n");
-	});
+	const originalContent = getMessageTextContent(message);
+	const [content, setContent] = useState(() => originalContent);
 
 	useEffect(() => {
 		if (textareaRef.current) {
@@ -40,13 +34,7 @@ export const EditableMessageContent = ({
 	}, []);
 
 	const handleSave = () => {
-		if (
-			content.trim() &&
-			content.trim() !==
-				(typeof message.content === "string"
-					? message.content
-					: message.content.map((item) => item.text).join("\n"))
-		) {
+		if (content.trim() && content.trim() !== originalContent) {
 			onSave(content.trim());
 		} else {
 			onCancel();

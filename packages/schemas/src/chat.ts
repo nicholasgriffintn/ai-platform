@@ -1,7 +1,8 @@
 import z from "zod/v4";
 
+import { normaliseCompactionStatusMessage } from "./compaction-status";
 import { messagePartsSchema } from "./message-parts";
-import { messageSchema } from "./shared";
+import { messageRoleSchema, messageSchema } from "./shared";
 
 export {
 	chatCompletionMessageSchema,
@@ -25,6 +26,7 @@ export type {
 	ChatHostedToolSettings,
 	ChatRequestOptions,
 	ModelRouterMode,
+	ParsedChatCompletionRequestBody,
 } from "./chat-completions";
 
 export const chatCompletionResponseSchema = z.object({
@@ -89,7 +91,7 @@ export const generateChatCompletionTitleJsonSchema = z.object({
 	messages: z
 		.array(
 			z.object({
-				role: z.enum(["user", "assistant", "system", "tool", "developer"]),
+				role: messageRoleSchema,
 				content: z.union([z.string(), z.array(z.any())]),
 				parts: messagePartsSchema.optional(),
 			}),
@@ -169,18 +171,96 @@ export const getChatCompletionResponseSchema = z.object({
 	settings: z.record(z.string(), z.any()).optional(),
 });
 
+const storedChatMessageResponseSchema = z
+	.object({
+		id: z.string().optional(),
+		role: messageRoleSchema,
+		name: z.string().nullable().optional(),
+		tool_calls: z.array(z.unknown()).nullable().optional(),
+		parts: messagePartsSchema.nullable().optional(),
+		content: z
+			.union([z.string(), z.array(z.unknown()), z.record(z.string(), z.unknown())])
+			.nullable()
+			.optional(),
+		status: z.string().nullable().optional(),
+		data: z.record(z.string(), z.any()).nullable().optional(),
+		completion_id: z.string().nullable().optional(),
+		created: z.number().optional(),
+		model: z.string().nullable().optional(),
+		provider: z.string().nullable().optional(),
+		log_id: z.string().nullable().optional(),
+		reasoning: z
+			.object({
+				collapsed: z.boolean().optional(),
+				content: z.string(),
+			})
+			.nullable()
+			.optional(),
+		citations: z.array(z.string()).nullable().optional(),
+		app: z.string().nullable().optional(),
+		mode: z.string().nullable().optional(),
+		parent_message_id: z.string().nullable().optional(),
+		tool_call_id: z.string().nullable().optional(),
+		tool_call_arguments: z.any().optional(),
+		timestamp: z.number().optional(),
+		platform: z.string().nullable().optional(),
+		usage: z.record(z.string(), z.any()).nullable().optional(),
+	})
+	.passthrough()
+	.superRefine((message, ctx) => {
+		const hasContent = message.content !== undefined && message.content !== null;
+		const hasParts = Array.isArray(message.parts) && message.parts.length > 0;
+		const hasToolCalls = Array.isArray(message.tool_calls) && message.tool_calls.length > 0;
+
+		if (!hasContent && !hasParts && !hasToolCalls) {
+			ctx.addIssue({
+				code: "custom",
+				path: ["content"],
+				message: "Stored message responses must include content, parts, or tool_calls",
+			});
+		}
+
+		if (message.role === "compaction" && !normaliseCompactionStatusMessage(message)) {
+			ctx.addIssue({
+				code: "custom",
+				path: ["parts"],
+				message: "Compaction messages must include a valid compaction part",
+			});
+		}
+	});
+
 export const getChatCompletionMessagesResponseSchema = z.object({
-	messages: z.array(messageSchema),
+	messages: z.array(storedChatMessageResponseSchema),
 	conversation_id: z.string(),
 });
 
-export const getMessageResponseSchema = z.object({
-	id: z.string(),
-	role: z.enum(["user", "assistant", "system", "function"]),
-	content: z.union([z.string(), z.array(z.any())]),
-	parts: messagePartsSchema.optional(),
-	name: z.string().optional(),
-	function_call: z.any().optional(),
-	timestamp: z.number().optional(),
-	conversation_id: z.string(),
-});
+export const compactChatCompletionResponseSchema = z
+	.object({
+		compacted: z.boolean(),
+		conversation: z
+			.object({
+				messages: z.array(storedChatMessageResponseSchema),
+			})
+			.passthrough(),
+	})
+	.superRefine((response, ctx) => {
+		if (
+			response.compacted &&
+			!response.conversation.messages.some((message) => normaliseCompactionStatusMessage(message))
+		) {
+			ctx.addIssue({
+				code: "custom",
+				path: ["conversation", "messages"],
+				message: "Compacted responses must include a visible compaction message",
+			});
+		}
+	});
+
+export type CompactChatCompletionResponse = z.infer<typeof compactChatCompletionResponseSchema>;
+
+export const getMessageResponseSchema = storedChatMessageResponseSchema.and(
+	z.object({
+		id: z.string(),
+		conversation_id: z.string(),
+	}),
+);

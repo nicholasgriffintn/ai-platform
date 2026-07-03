@@ -3,9 +3,10 @@ import type {
 	ChatCompletionRequestBody as SchemaChatCompletionRequestBody,
 	ChatHostedToolSettings as SchemaHostedToolSettings,
 	ConversationModeMetadata,
+	MessageRole as SchemaMessageRole,
 } from "@assistant/schemas";
 
-export type ChatRole = "user" | "assistant" | "system" | "tool";
+export type ChatRole = SchemaMessageRole;
 
 export type ChatMode = "remote" | "local" | "tool" | "agent";
 
@@ -31,6 +32,7 @@ export interface ChatSettings {
 	max_tokens?: number;
 	presence_penalty?: number;
 	frequency_penalty?: number;
+	compaction?: SchemaChatCompletionRequestBody["compaction"];
 	use_rag?: boolean;
 	localOnly?: boolean;
 	enabled_tools?: string[];
@@ -227,7 +229,7 @@ export interface MessageUsage extends Record<string, unknown> {
 export interface Message {
 	completion_id?: string;
 	role: ChatRole;
-	content: string | MessageContent[];
+	content: string | MessageContent[] | Record<string, unknown>;
 	parts?: SchemaMessagePart[];
 	reasoning?: {
 		collapsed: boolean;
@@ -239,6 +241,7 @@ export interface Message {
 	model?: string;
 	provider?: string;
 	platform?: string;
+	mode?: string;
 	citations?: string[] | null;
 	usage?: MessageUsage;
 	log_id?: string;

@@ -56,6 +56,7 @@ describe("handleGetSharedConversation", () => {
 				shareId,
 				50,
 				undefined,
+				{ includeArchived: true },
 			);
 			expect(result).toEqual({
 				messages: mockMessages,
@@ -97,6 +98,7 @@ describe("handleGetSharedConversation", () => {
 				shareId,
 				limit,
 				after,
+				{ includeArchived: true },
 			);
 			expect(result).toEqual({
 				messages: mockMessages,

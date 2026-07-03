@@ -1,3 +1,4 @@
+import { canReplaceStoredConversationMessages } from "@assistant/schemas";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
@@ -81,7 +82,11 @@ export function useAutoPlayResponses({
 				};
 			});
 
-			if (determineStorageMode().shouldSyncRemote && updatedMessages) {
+			if (
+				determineStorageMode().shouldSyncRemote &&
+				updatedMessages &&
+				canReplaceStoredConversationMessages(updatedMessages)
+			) {
 				await apiService.updateConversation(conversationId, {
 					messages: updatedMessages,
 				});

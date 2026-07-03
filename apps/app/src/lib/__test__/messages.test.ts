@@ -5,11 +5,97 @@ import type { Message } from "~/types";
 import { prepareUserMessage } from "../chat/prepare-user-message";
 import {
 	formattedMessageContent,
+	normalizeMessage,
 	serialiseMessagesForChatRequest,
 	serialiseMessagesForConversationUpdate,
 } from "../messages";
 
 describe("serialiseMessagesForChatRequest", () => {
+	it("does not send compaction status messages to chat completions", () => {
+		const messages: Message[] = [
+			{
+				id: "user-1",
+				role: "user",
+				content: "Help me brainstorm creative uses for old wine bottles.",
+			},
+			{
+				id: "assistant-1",
+				role: "assistant",
+				content: "Use bottles as candle holders.",
+			},
+			{
+				id: "compaction-1",
+				role: "compaction",
+				content: "Context compacted",
+				parts: [
+					{
+						type: "compaction",
+						status: "completed",
+						label: "Context compacted",
+					},
+				],
+			},
+			{
+				id: "user-2",
+				role: "user",
+				content: "Repeat this conversation",
+			},
+			{
+				id: "compaction-2",
+				role: "assistant",
+				content: "Context compacted",
+				parts: [
+					{
+						type: "compaction",
+						status: "completed",
+						label: "Context compacted",
+					},
+				],
+			},
+		];
+
+		const requestMessages = serialiseMessagesForChatRequest(messages);
+
+		expect(requestMessages.map((message) => message.role)).toEqual(["user", "assistant", "user"]);
+		expect(
+			createChatCompletionsJsonSchema.safeParse({
+				messages: requestMessages,
+				model: "gpt-5",
+			}).success,
+		).toBe(true);
+	});
+
+	it("sends snapshot messages as text without internal parts", () => {
+		const messages: Message[] = [
+			{
+				id: "snapshot-1",
+				role: "assistant",
+				content: "Conversation snapshot\n\nEarlier context summary.",
+				parts: [
+					{
+						type: "snapshot",
+						title: "Conversation snapshot",
+						summary: "Earlier context summary.",
+					},
+					{
+						type: "text",
+						text: "Conversation snapshot\n\nEarlier context summary.",
+					},
+				],
+			},
+		];
+
+		const requestMessages = serialiseMessagesForChatRequest(messages);
+
+		expect(requestMessages).toEqual([
+			{
+				id: "snapshot-1",
+				role: "assistant",
+				content: "Conversation snapshot\n\nEarlier context summary.",
+			},
+		]);
+	});
+
 	it("removes reasoning-only content blocks from replayed assistant messages", () => {
 		const messages: Message[] = [
 			{
@@ -329,6 +415,125 @@ describe("serialiseMessagesForConversationUpdate", () => {
 			tool_call_arguments: "{}",
 		});
 		expect(messageSchema.safeParse(requestMessages[0]).success).toBe(true);
+	});
+
+	it("preserves durable compaction marker metadata for persisted conversation updates", () => {
+		const messages: Message[] = [
+			{
+				id: "snapshot-1-compaction",
+				completion_id: "conversation-1",
+				role: "compaction",
+				content: "Context automatically compacted",
+				created: 1234,
+				provider: "deepseek",
+				mode: "remote",
+				platform: "web",
+				usage: {
+					total_tokens: 42,
+				},
+				parts: [
+					{
+						id: "compaction-part-1",
+						type: "compaction",
+						status: "completed",
+						label: "Context automatically compacted",
+						metadata: {
+							source: "automatic-compaction",
+						},
+					},
+				],
+			},
+		];
+
+		const requestMessages = serialiseMessagesForConversationUpdate(messages);
+
+		expect(requestMessages[0]).toEqual(
+			expect.objectContaining({
+				id: "snapshot-1-compaction",
+				completion_id: "conversation-1",
+				role: "compaction",
+				content: "Context automatically compacted",
+				created: 1234,
+				provider: "deepseek",
+				mode: "remote",
+				platform: "web",
+				usage: {
+					total_tokens: 42,
+				},
+				parts: [
+					expect.objectContaining({
+						id: "compaction-part-1",
+						type: "compaction",
+						metadata: {
+							source: "automatic-compaction",
+						},
+					}),
+				],
+			}),
+		);
+		expect(messageSchema.safeParse(requestMessages[0]).success).toBe(true);
+	});
+});
+
+describe("normalizeMessage", () => {
+	it("normalises record content from durable messages into renderable text", () => {
+		const result = normalizeMessage({
+			id: "tool-json",
+			role: "tool",
+			content: {
+				status: "ok",
+				items: ["alpha"],
+			},
+		});
+
+		expect(result.content).toBe(JSON.stringify({ status: "ok", items: ["alpha"] }));
+		expect(messageSchema.safeParse(result).success).toBe(true);
+	});
+
+	it("normalises persisted snake-case tool part identifiers", () => {
+		const result = normalizeMessage({
+			id: "assistant-tools",
+			role: "assistant",
+			content: "",
+			parts: [
+				{
+					type: "tool_use",
+					name: "web_search",
+					tool_call_id: "call-search",
+					input: { query: "context compaction" },
+				},
+				{
+					type: "tool_result",
+					tool_call_id: "call-search",
+					content: "Search result",
+				},
+			],
+		});
+
+		expect(result.parts).toEqual([
+			expect.objectContaining({
+				type: "tool_use",
+				toolCallId: "call-search",
+			}),
+			expect.objectContaining({
+				type: "tool_result",
+				toolCallId: "call-search",
+			}),
+		]);
+		expect(messageSchema.safeParse(result).success).toBe(true);
+	});
+
+	it("keeps malformed role-level compaction metadata display-only during normalisation", () => {
+		const result = normalizeMessage({
+			id: "compaction-invalid",
+			role: "compaction",
+			content: "Context compacted",
+			parts: [{ type: "compaction", status: "unknown", label: "Context compacted" }],
+		});
+
+		expect(result.role).toBe("compaction");
+		expect(result.parts).toBeUndefined();
+		expect(serialiseMessagesForChatRequest([result])).toEqual([]);
 	});
 });
 

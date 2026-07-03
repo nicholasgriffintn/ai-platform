@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
 
-import type { ChatCompletionRequestBody } from "@assistant/schemas";
+import type { ParsedChatCompletionRequestBody } from "@assistant/schemas";
 import { prepareAgentCompletionRequest } from "../completion-request";
 
 describe("agent completion request preparation", () => {
 	it("prepares the strict chat completion request for agent execution", () => {
-		const body: ChatCompletionRequestBody = {
+		const body: ParsedChatCompletionRequestBody = {
 			messages: [{ role: "user", content: "" }],
 			model: "gpt-4",
 			provider: "openai",
@@ -45,7 +45,7 @@ describe("agent completion request preparation", () => {
 	});
 
 	it("preserves explicit zero temperature from the agent", () => {
-		const body: ChatCompletionRequestBody = {
+		const body: ParsedChatCompletionRequestBody = {
 			messages: [{ role: "user", content: "hi" }],
 			model: "gpt-4",
 			store: true,

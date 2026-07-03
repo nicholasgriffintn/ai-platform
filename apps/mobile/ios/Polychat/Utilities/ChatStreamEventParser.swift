@@ -70,6 +70,10 @@ enum ChatStreamEventParser {
         case "tool_response", "tool_response_start", "tool_response_end", "tool_use_delta":
             return []
         case "state":
+            if object["state"] as? String == "compaction",
+               let message = extractCompactionMessage(from: object) {
+                return [.compaction(message)]
+            }
             return (object["state"] as? String).map { [.state($0)] } ?? []
         case "message_stop":
             return [.done]
@@ -184,6 +188,15 @@ enum ChatStreamEventParser {
 
         let content = textParts.joined(separator: "\n").trimmingCharacters(in: .whitespacesAndNewlines)
         return content.isEmpty ? nil : content
+    }
+
+    private static func extractCompactionMessage(from object: [String: Any]) -> ChatMessage? {
+        guard let messageObject = object["message"] as? [String: Any],
+              let data = try? JSONSerialization.data(withJSONObject: messageObject) else {
+            return nil
+        }
+
+        return try? JSONDecoder().decode(ChatMessage.self, from: data)
     }
 
     private static func extractStreamMetadata(from object: [String: Any]) -> ChatStreamMetadata {

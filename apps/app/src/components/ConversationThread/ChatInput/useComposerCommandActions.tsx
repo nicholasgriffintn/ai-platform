@@ -1,4 +1,5 @@
 import {
+	Archive,
 	Brain,
 	Code,
 	Database,
@@ -25,6 +26,7 @@ import {
 	removeComposerDirective,
 	replaceComposerDirectiveWithCursor,
 } from "~/lib/composer-commands";
+import { COMPACT_CONVERSATION_COMMAND } from "~/lib/chat/compaction-command";
 import { getAvailableModelTools, type ModelToolId } from "~/lib/model-tools";
 import { getAvailableModels, defaultModel } from "~/lib/models";
 import {
@@ -300,6 +302,22 @@ export function useComposerCommandActions({
 		verbosityOptions,
 	]);
 
+	const compactionCommands = useMemo<ComposerCommandAction[]>(
+		() => [
+			{
+				id: "manual-compaction",
+				label: "Compact conversation",
+				description: "Summarise older context before the next response.",
+				command: "compact",
+				icon: <Archive className="h-4 w-4" aria-hidden="true" />,
+				isActive: false,
+				selectionText: COMPACT_CONVERSATION_COMMAND,
+				onSelect: () => setChatInput(COMPACT_CONVERSATION_COMMAND),
+			},
+		],
+		[setChatInput],
+	);
+
 	const inlineSkillTokens = useMemo<ComposerInlineToken[]>(() => {
 		const tokens: ComposerInlineToken[] = [];
 
@@ -325,8 +343,8 @@ export function useComposerCommandActions({
 	}, [availableModelTools, selectedTools, setSelectedTools, toolSelectionLocked]);
 
 	const slashCommands = useMemo(
-		() => [...actionVerbCommands, ...modeCommands, ...settingCommands],
-		[actionVerbCommands, modeCommands, settingCommands],
+		() => [...actionVerbCommands, ...modeCommands, ...compactionCommands, ...settingCommands],
+		[actionVerbCommands, compactionCommands, modeCommands, settingCommands],
 	);
 	const filteredSlashCommands = useMemo(() => {
 		const query = directive?.trigger === "/" ? directive.query : "";

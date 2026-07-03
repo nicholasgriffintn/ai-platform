@@ -1,18 +1,23 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback } from "react";
-import type { ConversationModeMetadata } from "@assistant/schemas";
+import {
+	compactionStatusLabels,
+	type ConversationModeMetadata,
+	type CouncilMemberId,
+} from "@assistant/schemas";
 
 import { CHATS_QUERY_KEY } from "~/constants";
+import { apiService } from "~/lib/api/api-service";
 import type { AttachmentData } from "~/lib/chat/attachments";
 import { normalizeSelectedModel } from "~/lib/chat/model-selection";
 import { prepareUserMessage } from "~/lib/chat/prepare-user-message";
+import { createTemporaryConversationTitle } from "~/lib/chat/title-source";
 import { createCouncilDebateTurnPlanner } from "~/lib/council-turns";
 import { createConversationId } from "~/lib/conversations";
 import { getErrorMessage } from "~/lib/errors";
 import { useLoadingActions } from "~/state/contexts/LoadingContext";
 import { useChatStore } from "~/state/stores/chatStore";
 import type { ChatRequestOptions, Conversation, Message } from "~/types";
-import type { CouncilMemberId } from "@assistant/schemas";
 import { useGenerateTitle } from "./useChat";
 import { useModels } from "./useModels";
 import { useConversationActions } from "./useConversationActions";
@@ -37,24 +42,41 @@ export function useChatManager(
 	const queryClient = useQueryClient();
 	const generateTitleMutation = useGenerateTitle();
 	const { data: apiModels = {} } = useModels();
-	const { startLoading } = useLoadingActions();
+	const { startLoading, stopLoading } = useLoadingActions();
 
-	const { currentConversationId, startNewConversation, model } = useChatStore();
+	const {
+		chatMode,
+		chatSettings,
+		currentConversationId,
+		isAuthenticated,
+		isPro,
+		localOnlyMode,
+		model,
+		startNewConversation,
+	} = useChatStore();
 
 	const { webLLMService } = useWebLLMInitialization(apiModels);
 	const { updateConversation } = useConversationStorage();
 	const { addMessageToConversation, addAssistantMessage, updateAssistantMessage } =
 		useMessageOperations();
 
+	const cancelConversationQueries = useCallback(
+		async (conversationId: string) => {
+			await Promise.all([
+				queryClient.cancelQueries({ queryKey: [CHATS_QUERY_KEY] }),
+				queryClient.cancelQueries({
+					queryKey: [CHATS_QUERY_KEY, conversationId],
+					exact: true,
+				}),
+			]);
+		},
+		[queryClient],
+	);
+
 	const generateConversationTitle = useCallback(
 		async (conversationId: string, messages: Message[], assistantMessage: Message) => {
 			try {
-				const userMessage = messages[0] || { content: "" };
-				const titleText =
-					typeof userMessage.content === "string"
-						? userMessage.content
-						: userMessage.content.map((item) => (item.type === "text" ? item.text : "")).join(" ");
-				const tempTitle = `${titleText.slice(0, 30)}${titleText.length > 30 ? "..." : ""}`;
+				const tempTitle = createTemporaryConversationTitle(messages);
 
 				await updateConversation(conversationId, (oldData) => ({
 					...oldData!,
@@ -147,17 +169,7 @@ export function useChatManager(
 
 				const userMessage = prepareUserMessage(input, attachments, currentModel, conversationMode);
 
-				const cancelQueries = async () => {
-					await Promise.all([
-						queryClient.cancelQueries({ queryKey: [CHATS_QUERY_KEY] }),
-						queryClient.cancelQueries({
-							queryKey: [CHATS_QUERY_KEY, conversationId],
-							exact: true,
-						}),
-					]);
-				};
-
-				await cancelQueries();
+				await cancelConversationQueries(conversationId);
 
 				const previousConversation = queryClient.getQueryData<Conversation>([
 					CHATS_QUERY_KEY,
@@ -189,6 +201,7 @@ export function useChatManager(
 			currentConversationId,
 			startNewConversation,
 			queryClient,
+			cancelConversationQueries,
 			streamResponse,
 			startLoading,
 			addMessageToConversation,
@@ -196,6 +209,62 @@ export function useChatManager(
 			conversationMode,
 		],
 	);
+
+	const compactConversation = useCallback(async () => {
+		if (!currentConversationId) {
+			return {
+				status: "error" as const,
+				response: "No conversation to compact",
+			};
+		}
+
+		const isRemoteStoredConversation =
+			isAuthenticated && isPro && !localOnlyMode && !chatSettings.localOnly && chatMode !== "local";
+
+		if (!isRemoteStoredConversation) {
+			return {
+				status: "error" as const,
+				response: "Compaction is only available for stored conversations.",
+			};
+		}
+
+		setStreamStarted(true);
+		startLoading("stream-response", compactionStatusLabels.manualPending);
+
+		try {
+			await cancelConversationQueries(currentConversationId);
+			const result = await apiService.compactConversation(currentConversationId);
+			queryClient.setQueryData([CHATS_QUERY_KEY, currentConversationId], result.conversation);
+			queryClient.invalidateQueries({ queryKey: [CHATS_QUERY_KEY] });
+			queryClient.invalidateQueries({ queryKey: [CHATS_QUERY_KEY, "remote"] });
+
+			return {
+				status: "success" as const,
+				response: "",
+				compacted: result.compacted,
+			};
+		} catch (error) {
+			console.error("Failed to compact conversation:", error);
+			return {
+				status: "error" as const,
+				response: getErrorMessage(error, "Failed to compact conversation"),
+			};
+		} finally {
+			setStreamStarted(false);
+			stopLoading("stream-response");
+		}
+	}, [
+		chatMode,
+		chatSettings.localOnly,
+		currentConversationId,
+		isAuthenticated,
+		isPro,
+		localOnlyMode,
+		queryClient,
+		cancelConversationQueries,
+		startLoading,
+		stopLoading,
+	]);
 
 	const respondToExistingConversation = useCallback(
 		async (
@@ -266,13 +335,7 @@ export function useChatManager(
 				]);
 				const userMessage = prepareUserMessage(input, attachments, currentModel, conversationMode);
 
-				await Promise.all([
-					queryClient.cancelQueries({ queryKey: [CHATS_QUERY_KEY] }),
-					queryClient.cancelQueries({
-						queryKey: [CHATS_QUERY_KEY, conversationId],
-						exact: true,
-					}),
-				]);
+				await cancelConversationQueries(conversationId);
 
 				await addMessageToConversation(conversationId, userMessage);
 
@@ -366,6 +429,7 @@ export function useChatManager(
 			currentConversationId,
 			startNewConversation,
 			queryClient,
+			cancelConversationQueries,
 			addMessageToConversation,
 			streamResponse,
 			startLoading,
@@ -382,6 +446,7 @@ export function useChatManager(
 		assistantReasoningRef,
 		editingMessageId,
 		isBranching,
+		compactConversation,
 		sendMessage,
 		respondToExistingConversation,
 		sendCouncilDebate,

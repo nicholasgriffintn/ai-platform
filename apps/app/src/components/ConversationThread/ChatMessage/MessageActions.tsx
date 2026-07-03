@@ -15,6 +15,7 @@ import { toast } from "sonner";
 
 import { Button, Popover, PopoverContent, PopoverTrigger } from "~/components/ui";
 import { canBranchFromMessage } from "~/lib/chat/branching";
+import { isCompactionMarkerMessage } from "~/lib/chat/compaction-status";
 import type { OpinionRequest } from "~/lib/chat/opinion";
 import { resolveMessageSpeechAudioSource } from "~/lib/speech/message-speech";
 import type { Message } from "~/types";
@@ -38,6 +39,7 @@ export interface MessageActionsProps {
 	isBranching?: boolean;
 	onRequestOpinion?: (messageId: string, request: OpinionRequest) => void;
 	isRequestingOpinion?: boolean;
+	isArchivedByCompaction?: boolean;
 }
 
 export const MessageActions = ({
@@ -56,17 +58,29 @@ export const MessageActions = ({
 	isBranching = false,
 	onRequestOpinion,
 	isRequestingOpinion = false,
+	isArchivedByCompaction = false,
 }: MessageActionsProps) => {
 	const [showBranchModelSelector, setShowBranchModelSelector] = useState(false);
 	const [showOpinionModelSelector, setShowOpinionModelSelector] = useState(false);
 	const [isPlayingSpeech, setIsPlayingSpeech] = useState(false);
 	const speechAudioRef = useRef<HTMLAudioElement | null>(null);
-	const canBranch = Boolean(onBranch && !isSharedView && canBranchFromMessage(message));
+	const isCompactionMarker = isCompactionMarkerMessage(message);
+	const canMutateConversation = !isArchivedByCompaction;
+	const canBranch = Boolean(
+		onBranch && !isSharedView && canMutateConversation && canBranchFromMessage(message),
+	);
 	const canRequestOpinion = Boolean(
-		onRequestOpinion && !isSharedView && message.role === "assistant" && message.content,
+		onRequestOpinion &&
+		!isSharedView &&
+		canMutateConversation &&
+		!isCompactionMarker &&
+		message.role === "assistant" &&
+		message.content,
 	);
 	const speechAudioSource =
-		message.role === "assistant" ? resolveMessageSpeechAudioSource(message) : undefined;
+		message.role === "assistant" && !isCompactionMarker
+			? resolveMessageSpeechAudioSource(message)
+			: undefined;
 
 	const handleAssistantBranchClick = useCallback(() => {
 		if (!onBranch) {
@@ -180,7 +194,7 @@ export const MessageActions = ({
 						{isPlayingSpeech ? <VolumeX size={14} /> : <Volume2 size={14} />}
 					</Button>
 				)}
-				{message.role === "user" && onEdit && !isSharedView && (
+				{message.role === "user" && onEdit && !isSharedView && canMutateConversation && (
 					<Button
 						type="button"
 						variant="icon"
@@ -195,7 +209,7 @@ export const MessageActions = ({
 						<Edit size={14} />
 					</Button>
 				)}
-				{onRetry && !isSharedView && (
+				{onRetry && !isSharedView && canMutateConversation && (
 					<Button
 						type="button"
 						variant="icon"

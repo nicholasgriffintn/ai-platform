@@ -1,6 +1,7 @@
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import { createServiceContext } from "~/lib/context/serviceContext";
 import { resolveModelConfig } from "~/lib/providers/models";
+import { toProviderMessages } from "~/lib/chat/providerMessages";
 import type { ChatCompletionParameters, ChatRole, IEnv, IUser, Message } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
@@ -27,22 +28,24 @@ interface CreateEditCompletionsOptions {
 function normalizeCompletionMessages(
 	messages: HandleCreateEditCompletionsRequest["messages"],
 ): Message[] {
-	return messages.map((message) => ({
-		role: message.role as ChatRole,
-		content: message.content ?? "",
-		name: message.name,
-		tool_calls: message.tool_calls,
-		parts: message.parts,
-		status: message.status,
-		data: message.data,
-		model: message.model,
-		log_id: message.log_id,
-		citations: message.citations,
-		app: message.app,
-		id: message.id,
-		timestamp: message.timestamp,
-		platform: message.platform,
-	}));
+	return toProviderMessages(
+		messages.map((message) => ({
+			role: message.role as ChatRole,
+			content: message.content ?? "",
+			name: message.name,
+			tool_calls: message.tool_calls,
+			parts: message.parts,
+			status: message.status,
+			data: message.data,
+			model: message.model,
+			log_id: message.log_id,
+			citations: message.citations,
+			app: message.app,
+			id: message.id,
+			timestamp: message.timestamp,
+			platform: message.platform,
+		})),
+	);
 }
 
 export async function handleCreateEditCompletions(

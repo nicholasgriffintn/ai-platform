@@ -101,6 +101,67 @@ describe("MessageActions", () => {
 		});
 	});
 
+	it("does not expose assistant actions for assistant-shaped compaction markers", () => {
+		const onBranch = vi.fn();
+		const onRequestOpinion = vi.fn();
+		const compactionMessage: Message = {
+			...message("assistant"),
+			id: "compaction-message",
+			content: "Context compacted",
+			parts: [{ type: "compaction", status: "completed", label: "Context compacted" }],
+			data: {
+				speech: {
+					audioUrl: "https://assets.example/tts/message.mp3",
+					generatedAt: 123,
+				},
+			},
+		};
+
+		render(
+			<MessageActions
+				{...messageActionsProps(compactionMessage)}
+				onBranch={onBranch}
+				onRequestOpinion={onRequestOpinion}
+			/>,
+		);
+
+		expect(screen.queryByRole("button", { name: "Branch conversation" })).toBeNull();
+		expect(screen.queryByRole("button", { name: "Get second opinion" })).toBeNull();
+		expect(screen.queryByRole("button", { name: "Replay response audio" })).toBeNull();
+	});
+
+	it("does not expose mutating actions for messages archived by compaction", () => {
+		render(
+			<MessageActions
+				{...messageActionsProps(message("user"))}
+				onEdit={vi.fn()}
+				onRetry={vi.fn()}
+				onBranch={vi.fn()}
+				isArchivedByCompaction
+			/>,
+		);
+
+		expect(screen.queryByRole("button", { name: "Edit message" })).toBeNull();
+		expect(screen.queryByRole("button", { name: "Retry message" })).toBeNull();
+		expect(screen.queryByRole("button", { name: "Branch conversation" })).toBeNull();
+	});
+
+	it("does not expose generation actions for archived assistant messages", () => {
+		render(
+			<MessageActions
+				{...messageActionsProps(message("assistant"))}
+				onRetry={vi.fn()}
+				onBranch={vi.fn()}
+				onRequestOpinion={vi.fn()}
+				isArchivedByCompaction
+			/>,
+		);
+
+		expect(screen.queryByRole("button", { name: "Retry message" })).toBeNull();
+		expect(screen.queryByRole("button", { name: "Branch conversation" })).toBeNull();
+		expect(screen.queryByRole("button", { name: "Get second opinion" })).toBeNull();
+	});
+
 	it("replays stored assistant speech audio", () => {
 		const assistantMessage = {
 			...message("assistant"),

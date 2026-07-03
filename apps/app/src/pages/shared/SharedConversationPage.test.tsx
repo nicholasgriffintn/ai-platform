@@ -5,7 +5,7 @@ import type { ArtifactProps } from "~/types/artifact";
 import SharedConversationPage from "./[share_id]";
 
 const mocks = vi.hoisted(() => ({
-	returnFetchedData: vi.fn(),
+	fetchSharedConversationHistory: vi.fn(),
 }));
 
 vi.mock("react-router", () => ({
@@ -17,8 +17,8 @@ vi.mock("~/constants", () => ({
 	API_BASE_URL: "https://api.test",
 }));
 
-vi.mock("src/lib/api/fetch-wrapper", () => ({
-	returnFetchedData: mocks.returnFetchedData,
+vi.mock("~/lib/api/shared-conversation", () => ({
+	fetchSharedConversationHistory: mocks.fetchSharedConversationHistory,
 }));
 
 vi.mock("~/components/Core/PageShell", () => ({
@@ -111,7 +111,7 @@ describe("SharedConversationPage artifacts", () => {
 				ok: true,
 			}),
 		);
-		mocks.returnFetchedData.mockResolvedValue({
+		mocks.fetchSharedConversationHistory.mockResolvedValue({
 			messages: [{ id: "message-1", role: "assistant", content: "Shared message" }],
 			share_id: "shared-1",
 		});

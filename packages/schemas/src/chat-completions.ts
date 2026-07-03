@@ -7,13 +7,15 @@ import {
 	conversationSmsRequestOptionsSchema,
 } from "./chat-mode";
 import { councilChatOptionsSchema } from "./council";
-import { messagePartsSchema } from "./message-parts";
+import { hasCompactionPart, messagePartsSchema } from "./message-parts";
 import { reasoningEffortSchema, reasoningSettingsSchema } from "./reasoning";
+import { messageSchema } from "./shared";
 import { toolIdsSchema } from "./tools";
 
 const recordSchema = z.record(z.string(), z.unknown());
 
 export const modelRouterModeSchema = z.enum(["auto", "lite", "standard", "pro", "max"]);
+export const chatCompactionModeSchema = z.enum(["auto", "off"]);
 
 export const chatHostedToolSettingsSchema = z
 	.object({
@@ -216,6 +218,14 @@ export const chatCompletionMessageSchema = z
 				message: "Provide either content or parts, not both",
 			});
 		}
+
+		if (hasCompactionPart(message.parts)) {
+			ctx.addIssue({
+				code: "custom",
+				path: ["parts"],
+				message: "Compaction status messages are display-only and cannot be sent to providers",
+			});
+		}
 	});
 
 export const chatResponseFormatSchema = z.union([
@@ -311,6 +321,11 @@ export const chatCompletionsRequestFieldsSchema = z.object({
 	model_router_mode: modelRouterModeSchema
 		.optional()
 		.describe("Automatic router mode used when no explicit model is requested."),
+	compaction: chatCompactionModeSchema
+		.optional()
+		.describe(
+			"Conversation compaction policy for this request. Use auto to compact near the model context limit, or off to disable compaction.",
+		),
 	mode: chatRequestModeSchema
 		.optional()
 		.describe("The chat mode to use for default parameters and prompt configuration."),
@@ -510,10 +525,7 @@ export const chatCompletionsRequestFieldsSchema = z.object({
 	safety_identifier: z.string().optional().describe("Provider safety identifier."),
 	store: z.boolean().optional().describe("Whether to store the conversation and response."),
 	completion_id: z.string().optional().describe("Existing or new completion ID."),
-	platform: z
-		.enum(["web", "mobile", "api", "obsidian", "dynamic-apps"])
-		.optional()
-		.describe("Client platform sending the request."),
+	platform: z.string().min(1).optional().describe("Client platform sending the request."),
 	options: chatRequestOptionsSchema
 		.optional()
 		.describe("Grouped feature settings that are not model generation controls."),
@@ -581,7 +593,65 @@ export const createChatCompletionsJsonSchema = chatCompletionsRequestFieldsSchem
 	});
 
 export type ChatCompletionRequestBody = z.input<typeof createChatCompletionsJsonSchema>;
+export type ParsedChatCompletionRequestBody = z.output<typeof createChatCompletionsJsonSchema>;
 export type ModelRouterMode = z.infer<typeof modelRouterModeSchema>;
+
+const chatCompactionPostProcessingMessageSchema = messageSchema.and(
+	z.object({
+		id: z.string().describe("Persisted compaction marker message ID."),
+		role: z.literal("compaction").describe("Display-only compaction marker role."),
+	}),
+);
+
+const chatPostProcessingSchema = z
+	.object({
+		guardrails: recordSchema.optional().describe("Guardrail result metadata."),
+		compaction: z
+			.object({
+				message: chatCompactionPostProcessingMessageSchema.describe(
+					"Persisted display-only compaction marker message.",
+				),
+			})
+			.describe("Conversation compaction metadata.")
+			.optional(),
+		steps: z.array(recordSchema).optional().describe("Tool step metadata."),
+		total_usage: recordSchema.optional().describe("Aggregate usage across post-processing steps."),
+	})
+	.passthrough();
+
+const chatCompletionResponseMessageSchema = z
+	.object({
+		id: z.string().optional().describe("Message identifier."),
+		log_id: z.string().optional().describe("Provider or gateway log identifier."),
+		role: z
+			.enum(["developer", "system", "user", "assistant", "tool"])
+			.describe("Response message role."),
+		name: z.string().optional().describe("Tool or participant name."),
+		content: z
+			.union([z.string(), z.array(z.unknown()), recordSchema])
+			.nullable()
+			.optional()
+			.describe("Response message content."),
+		parts: messagePartsSchema.optional().describe("Assistant-native structured message parts."),
+		data: recordSchema.nullable().optional().describe("Additional response message data."),
+		tool_calls: z.array(recordSchema).optional().describe("Tool calls returned by the model."),
+		tool_call_id: z.string().optional().describe("Tool call ID for tool-result messages."),
+		tool_call_arguments: z
+			.union([z.string(), recordSchema])
+			.optional()
+			.describe("Tool call arguments for tool-result messages."),
+		citations: z
+			.array(z.string())
+			.nullable()
+			.optional()
+			.describe("Citations returned with the response."),
+		status: z.string().optional().describe("Response message status."),
+		timestamp: z
+			.union([z.number(), z.string()])
+			.optional()
+			.describe("Message timestamp from runtime or persistence."),
+	})
+	.passthrough();
 
 export const createChatCompletionsResponseSchema = z
 	.object({
@@ -594,30 +664,7 @@ export const createChatCompletionsResponseSchema = z
 			.array(
 				z.object({
 					index: z.number().describe("Choice index."),
-					message: z
-						.object({
-							role: z
-								.enum(["developer", "system", "user", "assistant", "tool"])
-								.describe("Response message role."),
-							content: z
-								.union([z.string(), z.array(z.unknown()), recordSchema])
-								.describe("Response message content."),
-							parts: messagePartsSchema
-								.optional()
-								.describe("Assistant-native structured message parts."),
-							data: recordSchema.optional().describe("Additional response message data."),
-							tool_calls: z
-								.array(recordSchema)
-								.optional()
-								.describe("Tool calls returned by the model."),
-							citations: z
-								.array(z.string())
-								.nullable()
-								.optional()
-								.describe("Citations returned with the response."),
-							status: z.string().optional().describe("Response message status."),
-						})
-						.describe("Response message."),
+					message: chatCompletionResponseMessageSchema.describe("Response message."),
 					finish_reason: z.string().describe("Reason generation finished."),
 				}),
 			)
@@ -629,7 +676,7 @@ export const createChatCompletionsResponseSchema = z
 				total_tokens: z.number().describe("Total token count."),
 			})
 			.describe("Token usage for the response."),
-		post_processing: recordSchema.optional().describe("Post-processing metadata."),
+		post_processing: chatPostProcessingSchema.optional().describe("Post-processing metadata."),
 		usage_limits: recordSchema.optional().describe("Usage limit metadata."),
 	})
 	.describe("Chat completion response.");

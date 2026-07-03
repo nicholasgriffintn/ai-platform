@@ -4,7 +4,7 @@ import { getAllAttachments, pruneMessagesToFitContext, sanitiseInput } from "~/l
 import { createServiceContext } from "~/lib/context/serviceContext";
 import { findModelConfig } from "~/lib/providers/models";
 import { getSystemPrompt } from "~/lib/prompts";
-import type { CoreChatOptions } from "~/types";
+import type { CoreChatOptions, Message } from "~/types";
 import { generateId } from "~/utils/id";
 import type { ValidationContext } from "../../validation/ValidationPipeline";
 import { RequestPreparer } from "../RequestPreparer";
@@ -85,6 +85,9 @@ describe("RequestPreparer", () => {
 
 	beforeEach(async () => {
 		vi.clearAllMocks();
+		mockConversationManager.addBatch.mockReset();
+		mockConversationManager.get.mockReset();
+		mockConversationManager.replaceMessages.mockReset();
 		mockAugmentPrompt.mockReset();
 		mockGetEmbeddingProvider.mockReset();
 		mockGetEmbeddingProvider.mockReturnValue({} as any);
@@ -139,6 +142,7 @@ describe("RequestPreparer", () => {
 			messageWithContext: "Hello world",
 		} as ValidationContext;
 
+		mockConversationManager.get.mockResolvedValue(baseValidationContext.sanitizedMessages);
 		mockRepositories.userSettings.getUserSettings.mockResolvedValue({
 			embedding_provider: "vectorize",
 			memories_save_enabled: true,
@@ -208,6 +212,203 @@ describe("RequestPreparer", () => {
 			expect((result as any).enabledTools).toEqual(["search_memories"]);
 		});
 
+		it("uses active stored messages for provider context after compaction", async () => {
+			const snapshotMessage: Message = {
+				id: "snapshot-1",
+				role: "assistant",
+				content: "Conversation snapshot\n\nThe user asked for wine bottle ideas.",
+				parts: [
+					{
+						type: "snapshot",
+						title: "Conversation snapshot",
+						summary: "The user asked for wine bottle ideas.",
+					},
+				],
+			};
+			const latestUserMessage: Message = {
+				id: "user-latest",
+				role: "user",
+				content: "What was this conversation about?",
+			};
+			mockConversationManager.get
+				.mockResolvedValueOnce([snapshotMessage])
+				.mockResolvedValueOnce([snapshotMessage, latestUserMessage]);
+
+			const visibleHistory: Message[] = [
+				{
+					id: "old-user",
+					role: "user",
+					content: "Help me brainstorm creative uses for old wine bottles.",
+				},
+				{
+					id: "old-assistant",
+					role: "assistant",
+					content: "Use bottles as candle holders.",
+				},
+				{
+					id: "snapshot-1-compaction",
+					role: "compaction",
+					content: "Context compacted",
+					parts: [
+						{
+							type: "compaction",
+							status: "completed",
+							label: "Context compacted",
+						},
+					],
+				},
+				latestUserMessage,
+			];
+
+			const result = await preparer.prepare(
+				{
+					...baseOptions,
+					messages: visibleHistory,
+				},
+				{
+					...baseValidationContext,
+					sanitizedMessages: visibleHistory,
+					lastMessage: latestUserMessage,
+					messageWithContext: "What was this conversation about?",
+				},
+			);
+
+			expect(result.messages).toEqual([snapshotMessage, latestUserMessage]);
+			expect(result.messages).not.toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({ id: "old-user" }),
+					expect.objectContaining({ id: "snapshot-1-compaction" }),
+				]),
+			);
+		});
+
+		it("excludes visible compaction markers from fallback provider context", async () => {
+			const latestUserMessage: Message = {
+				id: "user-latest",
+				role: "user",
+				content: "What was this conversation about?",
+			};
+			const visibleHistory: Message[] = [
+				{
+					id: "snapshot-1",
+					role: "assistant",
+					content: "Conversation snapshot\n\nThe user asked for wine bottle ideas.",
+					parts: [
+						{
+							type: "snapshot",
+							title: "Conversation snapshot",
+							summary: "The user asked for wine bottle ideas.",
+						},
+					],
+				},
+				{
+					id: "snapshot-1-compaction",
+					role: "compaction",
+					content: "Context compacted",
+					parts: [
+						{
+							type: "compaction",
+							status: "completed",
+							label: "Context compacted",
+						},
+					],
+				},
+				latestUserMessage,
+			];
+
+			const result = await preparer.prepare(
+				{
+					...baseOptions,
+					store: false,
+					messages: visibleHistory,
+				},
+				{
+					...baseValidationContext,
+					sanitizedMessages: visibleHistory,
+					lastMessage: latestUserMessage,
+					messageWithContext: "What was this conversation about?",
+				},
+			);
+
+			expect(result.messages).toEqual([visibleHistory[0], latestUserMessage]);
+		});
+
+		it("does not fall back to visible archived history when active stored context cannot load", async () => {
+			const snapshotMessage: Message = {
+				id: "snapshot-1",
+				role: "assistant",
+				content: "Conversation snapshot\n\nThe user asked for wine bottle ideas.",
+				parts: [{ type: "snapshot", summary: "The user asked for wine bottle ideas." }],
+			};
+			const latestUserMessage: Message = {
+				id: "user-latest",
+				role: "user",
+				content: "What was this conversation about?",
+			};
+			mockConversationManager.get
+				.mockResolvedValueOnce([snapshotMessage])
+				.mockRejectedValueOnce(new Error("active context unavailable"));
+
+			const visibleHistory: Message[] = [
+				{
+					id: "old-user",
+					role: "user",
+					content: "Help me brainstorm creative uses for old wine bottles.",
+				},
+				{
+					id: "old-assistant",
+					role: "assistant",
+					content: "Use bottles as candle holders.",
+				},
+				latestUserMessage,
+			];
+
+			await expect(
+				preparer.prepare(
+					{
+						...baseOptions,
+						messages: visibleHistory,
+					},
+					{
+						...baseValidationContext,
+						sanitizedMessages: visibleHistory,
+						lastMessage: latestUserMessage,
+						messageWithContext: "What was this conversation about?",
+					},
+				),
+			).rejects.toThrow("active context unavailable");
+		});
+
+		it("rejects stored conversations with no active provider context", async () => {
+			mockConversationManager.get.mockResolvedValue([]);
+
+			await expect(preparer.prepare(baseOptions, baseValidationContext)).rejects.toThrow(
+				"Stored conversation has no active messages for provider context",
+			);
+		});
+
+		it("rejects stored conversations with only compaction markers in active context", async () => {
+			const activeMessages: Message[] = [
+				{
+					id: "snapshot-1-compaction",
+					role: "compaction",
+					content: "Context compacted",
+					parts: [
+						{
+							type: "compaction",
+							status: "completed",
+							label: "Context compacted",
+						},
+					],
+				},
+			];
+			mockConversationManager.get.mockResolvedValue(activeMessages);
+
+			await expect(preparer.prepare(baseOptions, baseValidationContext)).rejects.toThrow(
+				"Stored conversation has no active messages for provider context",
+			);
+		});
+
 		it("should throw error when validation context is missing required fields", async () => {
 			const invalidContext = {
 				...baseValidationContext,
@@ -232,11 +433,16 @@ describe("RequestPreparer", () => {
 		});
 
 		it("should handle free user properly", async () => {
+			const user = baseOptions.context?.user;
+			if (!user) {
+				throw new Error("Expected base user");
+			}
+
 			const freeUserOptions = {
 				...baseOptions,
 				context: createServiceContext({
 					env: mockEnv,
-					user: { ...baseOptions.context?.user!, plan_id: "free" } as any,
+					user: { ...user, plan_id: "free" } as any,
 				}),
 			};
 
@@ -632,6 +838,43 @@ describe("RequestPreparer", () => {
 
 			expect(mockConversationManagerInstance.addBatch).not.toHaveBeenCalled();
 			expect(mockConversationManagerInstance.replaceMessages).not.toHaveBeenCalled();
+		});
+
+		it("does not restore visible archived history over compacted active history", async () => {
+			mockConversationManagerInstance.get.mockResolvedValueOnce([
+				{
+					id: "snapshot-1",
+					role: "assistant",
+					content: "Conversation snapshot\n\nEarlier context.",
+					parts: [{ type: "snapshot", summary: "Earlier context." }],
+				},
+				{ id: "stored-latest", role: "user", content: "What was this conversation about?" },
+			]);
+
+			const optionsWithVisibleArchivedHistory = {
+				...baseOptions,
+				messages: [
+					{ id: "old-user", role: "user", content: "Old visible turn" },
+					{
+						id: "visible-latest",
+						role: "user",
+						content: "What was this conversation about?",
+					},
+				],
+			};
+
+			await (preparer as any).storeMessages(
+				optionsWithVisibleArchivedHistory,
+				mockConversationManagerInstance,
+				{ role: "user", content: "What was this conversation about?" },
+				"What was this conversation about?",
+				"claude-3-sonnet",
+				"api",
+				"normal",
+			);
+
+			expect(mockConversationManagerInstance.replaceMessages).not.toHaveBeenCalled();
+			expect(mockConversationManagerInstance.addBatch).not.toHaveBeenCalled();
 		});
 
 		it("should store metadata when provided", async () => {

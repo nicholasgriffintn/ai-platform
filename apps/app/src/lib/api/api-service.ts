@@ -74,6 +74,10 @@ class ApiService {
 		return this.chatService.generateTitle(completion_id, messages);
 	};
 
+	compactConversation = (completion_id: string) => {
+		return this.chatService.compactConversation(completion_id);
+	};
+
 	updateConversationTitle = (completion_id: string, newTitle: string): Promise<void> => {
 		return this.chatService.updateConversationTitle(completion_id, newTitle);
 	};

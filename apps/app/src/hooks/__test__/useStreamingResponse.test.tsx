@@ -4,7 +4,11 @@ import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { CHATS_QUERY_KEY } from "~/constants";
-import { LoadingProvider } from "~/state/contexts/LoadingContext";
+import {
+	LoadingProvider,
+	useLoadingActions,
+	useLoadingMessage,
+} from "~/state/contexts/LoadingContext";
 import { ChatService } from "~/lib/api/services/chat-service";
 import { useChatStore } from "~/state/stores/chatStore";
 import type { Conversation, Message } from "~/types";
@@ -468,6 +472,127 @@ describe("useStreamingResponse", () => {
 				content: "Hello! I see you",
 				model: "labs-leanstral-2603",
 			}),
+		]);
+	});
+
+	it("shows automatic compaction loading state from streamed state events", async () => {
+		const queryClient = createQueryClient();
+		const userMessage: Message = {
+			id: "user-1",
+			role: "user",
+			content: "Please continue",
+			model: "deepseek-v4-flash",
+		};
+		queryClient.setQueryData<Conversation>([CHATS_QUERY_KEY, "conversation-1"], {
+			id: "conversation-1",
+			title: "Compaction",
+			messages: [userMessage],
+		});
+
+		let resolveStream: (message: Message) => void = () => {};
+		mocks.streamChatCompletions.mockImplementation(
+			(params) =>
+				new Promise<Message>((resolve) => {
+					resolveStream = resolve;
+					params.onStateChange("compaction");
+				}),
+		);
+
+		const { result } = renderHook(
+			() => ({
+				streaming: useStreamingResponse(undefined),
+				loadingActions: useLoadingActions(),
+				loadingMessage: useLoadingMessage("stream-response"),
+			}),
+			{ wrapper: wrapper(queryClient) },
+		);
+
+		act(() => {
+			result.current.loadingActions.startLoading("stream-response", "Generating response...");
+		});
+
+		const streamPromise = result.current.streaming.streamResponse(
+			[userMessage],
+			"conversation-1",
+			undefined,
+			{
+				generateTitle: false,
+			},
+		);
+
+		await waitFor(() =>
+			expect(result.current.loadingMessage).toBe("Automatically compacting context"),
+		);
+
+		await act(async () => {
+			resolveStream({
+				id: "assistant-1",
+				role: "assistant",
+				content: "Done",
+				model: "deepseek-v4-flash",
+			});
+			await streamPromise;
+		});
+	});
+
+	it("adds the persisted compaction marker from streamed state events", async () => {
+		const queryClient = createQueryClient();
+		const userMessage: Message = {
+			id: "user-1",
+			role: "user",
+			content: "Please continue",
+			model: "deepseek-v4-flash",
+		};
+		const compactionMessage: Message = {
+			id: "snapshot-1-compaction",
+			role: "compaction",
+			content: "Context automatically compacted",
+			parts: [
+				{
+					type: "compaction",
+					status: "completed",
+					label: "Context automatically compacted",
+				},
+			],
+		};
+		queryClient.setQueryData<Conversation>([CHATS_QUERY_KEY, "conversation-1"], {
+			id: "conversation-1",
+			title: "Compaction",
+			messages: [userMessage],
+		});
+
+		mocks.streamChatCompletions.mockImplementation(async (params) => {
+			params.onStateChange("compaction", {
+				type: "state",
+				state: "compaction",
+				message: compactionMessage,
+			});
+			return {
+				id: "assistant-1",
+				role: "assistant",
+				content: "Done",
+				model: "deepseek-v4-flash",
+			};
+		});
+
+		const { result } = renderHook(() => useStreamingResponse(undefined), {
+			wrapper: wrapper(queryClient),
+		});
+
+		await act(async () => {
+			await result.current.streamResponse([userMessage], "conversation-1", undefined, {
+				generateTitle: false,
+			});
+		});
+
+		const conversation = queryClient.getQueryData<Conversation>([
+			CHATS_QUERY_KEY,
+			"conversation-1",
+		]);
+		expect(conversation?.messages.map((message) => message.id)).toEqual([
+			"user-1",
+			"snapshot-1-compaction",
+			"assistant-1",
 		]);
 	});
 });

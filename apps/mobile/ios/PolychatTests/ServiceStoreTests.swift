@@ -104,6 +104,79 @@ struct ServiceStoreTests {
     }
 
     @MainActor
+    @Test func conversationManagerInsertsStreamedCompactionMarkerBeforeAssistantReply() async throws {
+        let compactionMessage = try JSONDecoder().decode(ChatMessage.self, from: Data("""
+        {
+            "id": "snapshot-1-compaction",
+            "role": "compaction",
+            "content": "Context automatically compacted",
+            "parts": [
+                {
+                    "type": "compaction",
+                    "status": "completed",
+                    "label": "Context automatically compacted"
+                }
+            ]
+        }
+        """.utf8))
+        let apiClient = ConversationAPIClientStub()
+        apiClient.streamEvents = [
+            .compaction(compactionMessage),
+            .content("After compaction"),
+            .done
+        ]
+
+        let manager = ConversationManager()
+        manager.configure(apiClient: apiClient)
+        _ = manager.startNewConversation()
+
+        try await manager.addMessage(ChatMessage(role: "user", content: "Continue"))
+
+        #expect(manager.currentConversation?.messages.map(\.role) == ["user", "compaction", "assistant"])
+        #expect(manager.currentConversation?.messages[1].id == "snapshot-1-compaction")
+        #expect(manager.currentConversation?.messages[1].compactionStatusLabel == "Context automatically compacted")
+        #expect(manager.currentConversation?.messages.last?.textContent == "After compaction")
+    }
+
+    @MainActor
+    @Test func conversationManagerCompletesBareCompactionStateBeforeAssistantReply() async throws {
+        let apiClient = ConversationAPIClientStub()
+        apiClient.streamEvents = [
+            .state("compaction"),
+            .content("After compaction"),
+            .done
+        ]
+
+        let manager = ConversationManager()
+        manager.configure(apiClient: apiClient)
+        _ = manager.startNewConversation()
+
+        try await manager.addMessage(ChatMessage(role: "user", content: "Continue"))
+
+        #expect(manager.currentConversation?.messages.map(\.role) == ["user", "compaction", "assistant"])
+        #expect(manager.currentConversation?.messages[1].isCompactionMarker == true)
+        #expect(manager.currentConversation?.messages[1].compactionStatusLabel == "Context automatically compacted")
+        #expect(manager.currentConversation?.messages.last?.textContent == "After compaction")
+    }
+
+    @MainActor
+    @Test func conversationManagerRemovesPendingCompactionStateWhenStreamFails() async throws {
+        let apiClient = ConversationAPIClientStub()
+        apiClient.streamEvents = [.state("compaction")]
+        apiClient.streamError = TestFailure.forced
+
+        let manager = ConversationManager()
+        manager.configure(apiClient: apiClient)
+        _ = manager.startNewConversation()
+
+        try await manager.addMessage(ChatMessage(role: "user", content: "Continue"))
+
+        #expect(manager.currentConversation?.messages.map(\.role) == ["user", "assistant"])
+        #expect(manager.currentConversation?.messages.contains { $0.isCompactionMarker } == false)
+        #expect(manager.currentConversation?.messages.last?.textContent.hasPrefix("Error:") == true)
+    }
+
+    @MainActor
     @Test func conversationManagerReplacesLoadingMessageWhenAPIClientIsMissing() async throws {
         let manager = ConversationManager()
         _ = manager.startNewConversation()
@@ -147,6 +220,40 @@ struct ServiceStoreTests {
     }
 
     @MainActor
+    @Test func conversationManagerRejectsAssistantShapedCompactionRetry() async throws {
+        let apiClient = ConversationAPIClientStub()
+        let manager = ConversationManager()
+        manager.configure(apiClient: apiClient)
+        let conversation = manager.startNewConversation()
+        manager.currentConversation?.messages = [
+            ChatMessage(id: "user-1", role: "user", content: "Question"),
+            ChatMessage(
+                id: "compaction-1",
+                role: "assistant",
+                content: "Context compacted",
+                parts: [
+                    ChatMessagePart(
+                        type: "compaction",
+                        label: "Context compacted",
+                        status: "completed"
+                    )
+                ]
+            )
+        ]
+        if let currentConversation = manager.currentConversation {
+            manager.conversations = [currentConversation]
+        }
+
+        await manager.regenerateAssistantMessage("compaction-1")
+
+        #expect(apiClient.streamCallCount == 0)
+        #expect(apiClient.streamedMessages.isEmpty)
+        #expect(manager.currentConversation?.id == conversation.id)
+        #expect(manager.currentConversation?.messages.map(\.id) == ["user-1", "compaction-1"])
+        #expect(manager.error == "Only user and assistant messages can be retried")
+    }
+
+    @MainActor
     @Test func conversationManagerEditsUserMessageAndRegeneratesFromThatPoint() async throws {
         let apiClient = ConversationAPIClientStub()
         apiClient.streamEvents = [
@@ -175,6 +282,38 @@ struct ServiceStoreTests {
         #expect(manager.currentConversation?.messages.map(\.role) == ["user", "assistant"])
         #expect(manager.currentConversation?.messages.first?.textContent == "Edited question")
         #expect(manager.currentConversation?.messages.last?.textContent == "Edited answer")
+    }
+
+    @MainActor
+    @Test func conversationManagerRejectsUserShapedCompactionEdit() async throws {
+        let apiClient = ConversationAPIClientStub()
+        let manager = ConversationManager()
+        manager.configure(apiClient: apiClient)
+        _ = manager.startNewConversation()
+        manager.currentConversation?.messages = [
+            ChatMessage(
+                id: "compaction-1",
+                role: "user",
+                content: "Context compacted",
+                parts: [
+                    ChatMessagePart(
+                        type: "compaction",
+                        label: "Context compacted",
+                        status: "completed"
+                    )
+                ]
+            )
+        ]
+        if let currentConversation = manager.currentConversation {
+            manager.conversations = [currentConversation]
+        }
+
+        await manager.editUserMessage("compaction-1", text: "Edited")
+
+        #expect(apiClient.streamCallCount == 0)
+        #expect(apiClient.streamedMessages.isEmpty)
+        #expect(manager.currentConversation?.messages.first?.textContent == "Context compacted")
+        #expect(manager.error == "Only user messages can be edited")
     }
 
     @MainActor
@@ -247,6 +386,81 @@ struct ServiceStoreTests {
         #expect(apiClient.updatedConversationPayloads.first?.messages?.map(\.id) == ["user-1", "assistant-1"])
         #expect(apiClient.updatedConversationPayloads.first?.parentConversationId == "parent-1")
         #expect(apiClient.updatedConversationPayloads.first?.parentMessageId == "assistant-1")
+    }
+
+    @MainActor
+    @Test func conversationManagerBranchesCompactionMarkersOntoBranchConversation() async throws {
+        let apiClient = ConversationAPIClientStub()
+        let manager = ConversationManager()
+        manager.configure(apiClient: apiClient)
+        let parent = makeConversation(
+            id: "parent-1",
+            title: "Original",
+            messages: [
+                ChatMessage(id: "user-1", role: "user", content: "Question", completionId: "parent-1"),
+                ChatMessage(
+                    id: "compaction-1",
+                    role: "compaction",
+                    content: "Context compacted",
+                    parts: [
+                        ChatMessagePart(
+                            type: "compaction",
+                            label: "Context compacted",
+                            status: "completed"
+                        )
+                    ],
+                    completionId: "parent-1"
+                ),
+                ChatMessage(id: "assistant-1", role: "assistant", content: "Answer", completionId: "parent-1")
+            ],
+            isLoadedFromAPI: true
+        )
+        manager.conversations = [parent]
+        manager.currentConversation = parent
+
+        await manager.branchConversation(from: "assistant-1")
+
+        let branch = try #require(manager.currentConversation)
+        #expect(branch.id != "parent-1")
+        #expect(branch.messages.map(\.id) == ["user-1", "compaction-1", "assistant-1"])
+        #expect(branch.messages.map(\.completionId) == [branch.id, branch.id, branch.id])
+        #expect(apiClient.updatedConversationPayloads.first?.messages?.map(\.completionId) == [branch.id, branch.id, branch.id])
+    }
+
+    @MainActor
+    @Test func conversationManagerRejectsAssistantShapedCompactionBranch() async throws {
+        let apiClient = ConversationAPIClientStub()
+        let manager = ConversationManager()
+        manager.configure(apiClient: apiClient)
+        let parent = makeConversation(
+            id: "parent-1",
+            title: "Original",
+            messages: [
+                ChatMessage(id: "user-1", role: "user", content: "Question"),
+                ChatMessage(
+                    id: "compaction-1",
+                    role: "assistant",
+                    content: "Context compacted",
+                    parts: [
+                        ChatMessagePart(
+                            type: "compaction",
+                            label: "Context compacted",
+                            status: "completed"
+                        )
+                    ]
+                )
+            ],
+            isLoadedFromAPI: true
+        )
+        manager.conversations = [parent]
+        manager.currentConversation = parent
+
+        await manager.branchConversation(from: "compaction-1")
+
+        #expect(manager.currentConversation?.id == "parent-1")
+        #expect(apiClient.streamCallCount == 0)
+        #expect(apiClient.updatedConversationPayloads.isEmpty)
+        #expect(manager.error == "Only user and assistant messages can start a branch")
     }
 
     @MainActor

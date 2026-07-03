@@ -29,6 +29,22 @@ interface ChatSettingsProps {
 	toolSelectionLocked?: boolean;
 }
 
+type NumericChatSettingKey =
+	| "temperature"
+	| "top_p"
+	| "max_tokens"
+	| "presence_penalty"
+	| "frequency_penalty";
+
+type RagNumericOptionKey = "topK" | "scoreThreshold";
+type RagBooleanOptionKey = "includeMetadata";
+type RagStringOptionKey = "type" | "namespace";
+type ChatCompactionMode = NonNullable<ChatSettingsType["compaction"]>;
+
+function isChatCompactionMode(value: string): value is ChatCompactionMode {
+	return value === "auto" || value === "off";
+}
+
 export const ChatSettings = ({
 	isDisabled = false,
 	supportsToolCalls = false,
@@ -63,27 +79,34 @@ export const ChatSettings = ({
 	const showToolSelector =
 		isAuthenticated && (supportsToolCalls || (!model && chatMode === "remote"));
 
-	const handleSettingChange = (key: keyof ChatSettingsType, value: string | boolean) => {
-		if (typeof value === "string") {
-			const numValue = Number.parseFloat(value);
-			if (!Number.isNaN(numValue)) {
-				setChatSettings({
-					...chatSettings,
-					[key]: numValue,
-				});
-				return;
-			}
-
-			setChatSettings({
-				...chatSettings,
-				[key]: value,
-			});
-		} else {
-			setChatSettings({
-				...chatSettings,
-				[key]: value,
-			});
+	const handleNumericSettingChange = (key: NumericChatSettingKey, value: string) => {
+		const numValue = Number.parseFloat(value);
+		if (Number.isNaN(numValue)) {
+			return;
 		}
+
+		setChatSettings({
+			...chatSettings,
+			[key]: numValue,
+		});
+	};
+
+	const handleBooleanSettingChange = (key: "use_rag", value: boolean) => {
+		setChatSettings({
+			...chatSettings,
+			[key]: value,
+		});
+	};
+
+	const handleCompactionChange = (value: string) => {
+		if (!isChatCompactionMode(value)) {
+			return;
+		}
+
+		setChatSettings({
+			...chatSettings,
+			compaction: value,
+		});
 	};
 
 	const handleReasoningEffortChange = (value: string) => {
@@ -119,27 +142,37 @@ export const ChatSettings = ({
 		});
 	};
 
-	const handleRagOptionChange = (
-		key: keyof NonNullable<ChatSettingsType["rag_options"]>,
-		value: string | boolean,
-	) => {
-		if (typeof value === "boolean") {
-			setChatSettings({
-				...chatSettings,
-				rag_options: {
-					...chatSettings.rag_options,
-					[key]: value,
-				},
-			});
+	const handleRagNumericOptionChange = (key: RagNumericOptionKey, value: string) => {
+		const numValue = Number.parseFloat(value);
+		if (Number.isNaN(numValue)) {
 			return;
 		}
 
-		const numValue = Number.parseFloat(value);
 		setChatSettings({
 			...chatSettings,
 			rag_options: {
 				...chatSettings.rag_options,
-				[key]: !Number.isNaN(numValue) ? numValue : value,
+				[key]: numValue,
+			},
+		});
+	};
+
+	const handleRagBooleanOptionChange = (key: RagBooleanOptionKey, value: boolean) => {
+		setChatSettings({
+			...chatSettings,
+			rag_options: {
+				...chatSettings.rag_options,
+				[key]: value,
+			},
+		});
+	};
+
+	const handleRagStringOptionChange = (key: RagStringOptionKey, value: string) => {
+		setChatSettings({
+			...chatSettings,
+			rag_options: {
+				...chatSettings.rag_options,
+				[key]: value,
 			},
 		});
 	};
@@ -210,7 +243,7 @@ export const ChatSettings = ({
 									max={2}
 									step={0.1}
 									value={chatSettings.temperature ?? 1}
-									onChange={(value) => handleSettingChange("temperature", value)}
+									onChange={(value) => handleNumericSettingChange("temperature", value)}
 									markers={["Precise", "Neutral", "Creative"]}
 								/>
 
@@ -219,7 +252,7 @@ export const ChatSettings = ({
 									label="Enable RAG"
 									checked={chatSettings.use_rag ?? false}
 									disabled={isDisabled}
-									onChange={(checked) => handleSettingChange("use_rag", checked)}
+									onChange={(checked) => handleBooleanSettingChange("use_rag", checked)}
 								/>
 								{showMultiModelToggle && (
 									<CompactSettingSwitch
@@ -246,6 +279,19 @@ export const ChatSettings = ({
 								</details>
 							</TabsContent>
 							<TabsContent value="advanced" className="space-y-3 px-1 pt-3">
+								<CompactSettingSelect
+									id="compaction"
+									label="Context compaction"
+									value={chatSettings.compaction ?? "auto"}
+									onChange={handleCompactionChange}
+									disabled={isDisabled}
+									options={[
+										{ value: "auto", label: "Automatic" },
+										{ value: "off", label: "Off" },
+									]}
+									description="Controls whether stored context is compacted near the model limit."
+								/>
+
 								<CompactSettingRange
 									id="top_p"
 									label="Top P"
@@ -253,7 +299,7 @@ export const ChatSettings = ({
 									max={1}
 									step={0.05}
 									value={chatSettings.top_p ?? 1}
-									onChange={(value) => handleSettingChange("top_p", value)}
+									onChange={(value) => handleNumericSettingChange("top_p", value)}
 								/>
 
 								<CompactSettingNumber
@@ -262,7 +308,7 @@ export const ChatSettings = ({
 									min={1}
 									max={4096}
 									value={chatSettings.max_tokens ?? 2048}
-									onChange={(value) => handleSettingChange("max_tokens", value)}
+									onChange={(value) => handleNumericSettingChange("max_tokens", value)}
 								/>
 
 								<CompactSettingRange
@@ -272,7 +318,7 @@ export const ChatSettings = ({
 									max={2}
 									step={0.1}
 									value={chatSettings.presence_penalty ?? 0}
-									onChange={(value) => handleSettingChange("presence_penalty", value)}
+									onChange={(value) => handleNumericSettingChange("presence_penalty", value)}
 									markers={["-2", "0", "+2"]}
 								/>
 
@@ -283,7 +329,7 @@ export const ChatSettings = ({
 									max={2}
 									step={0.1}
 									value={chatSettings.frequency_penalty ?? 0}
-									onChange={(value) => handleSettingChange("frequency_penalty", value)}
+									onChange={(value) => handleNumericSettingChange("frequency_penalty", value)}
 									markers={["-2", "0", "+2"]}
 								/>
 
@@ -316,7 +362,7 @@ export const ChatSettings = ({
 											min={1}
 											max={20}
 											value={chatSettings.rag_options?.topK ?? 3}
-											onChange={(value) => handleRagOptionChange("topK", value)}
+											onChange={(value) => handleRagNumericOptionChange("topK", value)}
 										/>
 
 										<CompactSettingRange
@@ -326,7 +372,7 @@ export const ChatSettings = ({
 											max={1}
 											step={0.05}
 											value={chatSettings.rag_options?.scoreThreshold ?? 0.5}
-											onChange={(value) => handleRagOptionChange("scoreThreshold", value)}
+											onChange={(value) => handleRagNumericOptionChange("scoreThreshold", value)}
 											markers={["0", "0.5", "1"]}
 										/>
 
@@ -335,7 +381,9 @@ export const ChatSettings = ({
 											label="Include Metadata"
 											checked={chatSettings.rag_options?.includeMetadata ?? false}
 											disabled={isDisabled}
-											onChange={(checked) => handleRagOptionChange("includeMetadata", checked)}
+											onChange={(checked) =>
+												handleRagBooleanOptionChange("includeMetadata", checked)
+											}
 										/>
 										<p id="metadata-description" className="sr-only">
 											Include additional information about the retrieved documents.
@@ -351,7 +399,9 @@ export const ChatSettings = ({
 											<input
 												id="rag_namespace"
 												value={chatSettings.rag_options?.namespace ?? ""}
-												onChange={(event) => handleRagOptionChange("namespace", event.target.value)}
+												onChange={(event) =>
+													handleRagStringOptionChange("namespace", event.target.value)
+												}
 												placeholder="e.g., docs"
 												aria-describedby="namespace-description"
 												className="h-8 w-full rounded-md border border-zinc-200 bg-off-white px-2 text-sm text-zinc-900 outline-none transition-colors placeholder:text-zinc-400 focus:border-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:focus:border-zinc-500"

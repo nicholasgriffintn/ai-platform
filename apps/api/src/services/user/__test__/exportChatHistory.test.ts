@@ -162,4 +162,81 @@ describe("handleExportChatHistory", () => {
 		expect(rows.length).toBe(2);
 		expect(getConversationMessages).toHaveBeenCalledTimes(2);
 	});
+
+	it("exports archived compacted conversation history", async () => {
+		const getConversationMessages = vi
+			.fn()
+			.mockResolvedValueOnce([
+				{
+					id: "snapshot-1",
+					role: "assistant",
+					content: "Conversation snapshot\n\nEarlier context summary.",
+					timestamp: 100,
+					model: "summary-model",
+				},
+				{
+					id: "snapshot-1-compaction",
+					role: "compaction",
+					content: "Context compacted",
+					parts: [{ type: "compaction", status: "completed", label: "Context compacted" }],
+					timestamp: 100,
+					model: null,
+				},
+				{
+					id: "message-2",
+					role: "user",
+					content: "Continue from there",
+					timestamp: 101,
+					model: null,
+				},
+			])
+			.mockResolvedValueOnce([]);
+
+		vi.spyOn(ConversationRepoModule, "ConversationRepository").mockImplementation(
+			// @ts-ignore
+			function () {
+				return {
+					getUserConversations: async () => ({
+						conversations: [{ id: "c1", title: "T1", created_at: "2024" }],
+						totalPages: 1,
+						pageNumber: 1,
+						pageSize: 100,
+					}),
+				} as any;
+			},
+		);
+
+		vi.spyOn(MessageRepoModule, "MessageRepository").mockImplementation(
+			// @ts-ignore
+			function () {
+				return {
+					getConversationMessages,
+				} as any;
+			},
+		);
+
+		const rows = await handleExportChatHistory({ env: baseEnv, user });
+
+		expect(getConversationMessages).toHaveBeenCalledWith("c1", 500, undefined, {
+			includeArchived: true,
+		});
+		expect(rows).toEqual([
+			expect.objectContaining({
+				message_id: "snapshot-1",
+				message_role: "assistant",
+				message_content: "Conversation snapshot\n\nEarlier context summary.",
+				message_model: "summary-model",
+			}),
+			expect.objectContaining({
+				message_id: "snapshot-1-compaction",
+				message_role: "compaction",
+				message_content: "Context compacted",
+			}),
+			expect.objectContaining({
+				message_id: "message-2",
+				message_role: "user",
+				message_content: "Continue from there",
+			}),
+		]);
+	});
 });

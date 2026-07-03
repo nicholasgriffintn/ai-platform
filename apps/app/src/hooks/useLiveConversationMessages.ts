@@ -1,4 +1,7 @@
-import type { ConversationModeMetadata } from "@assistant/schemas";
+import {
+	canReplaceStoredConversationMessages,
+	type ConversationModeMetadata,
+} from "@assistant/schemas";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useRef } from "react";
 
@@ -304,6 +307,10 @@ export function useLiveConversationMessages({
 				conversationId,
 			]);
 			if (!conversation?.messages.length) {
+				return;
+			}
+
+			if (!canReplaceStoredConversationMessages(conversation.messages)) {
 				return;
 			}
 

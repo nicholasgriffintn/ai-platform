@@ -1,4 +1,6 @@
 import type { Message, MessageContent } from "~/types";
+import { normaliseMessageParts } from "./chat/message-parts";
+import { toProviderMessages, type ProviderMessage } from "./chat/provider-messages";
 import { isRecord } from "./objects";
 import { escapeRegExp } from "./regex";
 
@@ -14,13 +16,27 @@ type ChatRequestMessage = {
 	tool_calls?: Message["tool_calls"];
 };
 
+type ChatRequestSourceMessage = Message | ProviderMessage;
+
 type ConversationUpdateMessage = ChatRequestMessage & {
 	citations?: string[];
+	completion_id?: string;
+	created?: number;
 	log_id?: string;
 	model?: string;
+	mode?: string;
 	platform?: string;
+	provider?: string;
 	status?: string;
 	timestamp?: number;
+	usage?: Message["usage"];
+};
+
+type NormalizableMessage = Omit<Partial<Message>, "content" | "parts" | "reasoning" | "role"> & {
+	role: Message["role"];
+	content?: Message["content"] | null;
+	parts?: unknown;
+	reasoning?: Message["reasoning"];
 };
 
 type ChatRequestContent =
@@ -83,35 +99,6 @@ function serialiseCitationsForConversationUpdate(citations: unknown): string[] |
 	return serialised.length > 0 ? serialised : undefined;
 }
 
-function normaliseMessageParts(parts: unknown): Message["parts"] | undefined {
-	if (!Array.isArray(parts)) {
-		return undefined;
-	}
-
-	const normalised = parts.flatMap((part) => {
-		if (!part || typeof part !== "object") {
-			return [];
-		}
-
-		if ("type" in part && typeof part.type === "string") {
-			return [part as NonNullable<Message["parts"]>[number]];
-		}
-
-		if ("text" in part && typeof part.text === "string") {
-			return [
-				{
-					type: "text",
-					text: part.text,
-				} as NonNullable<Message["parts"]>[number],
-			];
-		}
-
-		return [];
-	});
-
-	return normalised.length > 0 ? normalised : undefined;
-}
-
 function getToolCallIdentity(
 	toolCall: NonNullable<Message["tool_calls"]>[number],
 	index: number,
@@ -142,11 +129,11 @@ function dedupeToolCalls(toolCalls: Message["tool_calls"]): Message["tool_calls"
 	return deduped.length > 0 ? deduped : undefined;
 }
 
-export function normalizeMessage(message: Message): Message {
+export function normalizeMessage(message: NormalizableMessage): Message {
 	let content = message.content;
 	const reasoning = message.reasoning;
 	let newReasoning: string | null = null;
-	const parts = normaliseMessageParts((message as Message & { parts?: unknown }).parts);
+	const parts = normaliseMessageParts(message.parts);
 
 	if (typeof content === "string") {
 		const formatted = formatMessageContent(content);
@@ -204,7 +191,7 @@ export function normalizeMessage(message: Message): Message {
 	return {
 		...message,
 		role: message.role,
-		content: content,
+		content: content ?? "",
 		id: message.id || crypto.randomUUID(),
 		created: message.created || message.timestamp || now,
 		timestamp: message.timestamp || message.created || now,
@@ -273,7 +260,7 @@ function toChatRequestContentPart(part: MessageContent): ChatRequestContent | nu
 	return null;
 }
 
-function serialiseContentForChatRequest(message: Message): Message["content"] {
+function serialiseContentForChatRequest(message: ChatRequestSourceMessage): Message["content"] {
 	if (typeof message.content === "string") {
 		return message.content;
 	}
@@ -305,7 +292,7 @@ function serialiseToolCallsForChatRequest(toolCalls: Message["tool_calls"]): Mes
 }
 
 function shouldSendPartsForChatRequest(
-	message: Message,
+	message: ChatRequestSourceMessage,
 	content: Message["content"] | undefined,
 ): boolean {
 	if (!message.parts?.length) {
@@ -319,7 +306,9 @@ function shouldSendPartsForChatRequest(
 	return typeof content === "string" && content.trim() === "";
 }
 
-export function serialiseMessageForChatRequest(message: Message): ChatRequestMessage {
+export function serialiseMessageForChatRequest(
+	message: ChatRequestSourceMessage,
+): ChatRequestMessage {
 	const content = serialiseContentForChatRequest(message);
 	const requestMessage: ChatRequestMessage = {
 		id: message.id || undefined,
@@ -345,25 +334,30 @@ export function serialiseMessageForChatRequest(message: Message): ChatRequestMes
 }
 
 export function serialiseMessagesForChatRequest(messages: Message[]): ChatRequestMessage[] {
-	return messages.map((message) => serialiseMessageForChatRequest(message));
+	return toProviderMessages(messages).map((message) => serialiseMessageForChatRequest(message));
 }
 
 export function serialiseMessageForConversationUpdate(message: Message): ConversationUpdateMessage {
 	const normalizedMessage = normalizeMessage(message);
 	const requestMessage: ConversationUpdateMessage = {
 		id: normalizedMessage.id || undefined,
+		completion_id: normalizedMessage.completion_id || undefined,
 		role: normalizedMessage.role,
 		content: serialiseContentForChatRequest(normalizedMessage),
+		created: normalizedMessage.created,
 		data: normalizedMessage.data || undefined,
 		name: normalizedMessage.name || undefined,
 		parts: normalizedMessage.parts,
 		model: normalizedMessage.model || undefined,
+		mode: normalizedMessage.mode || undefined,
 		log_id: normalizedMessage.log_id || undefined,
 		platform: normalizedMessage.platform || undefined,
+		provider: normalizedMessage.provider || undefined,
 		status: normalizedMessage.status || undefined,
 		timestamp: normalizedMessage.timestamp,
 		tool_call_id: normalizedMessage.tool_call_id || undefined,
 		tool_call_arguments: normalizedMessage.tool_call_arguments || undefined,
+		usage: normalizedMessage.usage,
 	};
 
 	const toolCalls = serialiseToolCallsForChatRequest(normalizedMessage.tool_calls);
@@ -402,6 +396,10 @@ export function getMessageTextContent(message: Pick<Message, "content" | "parts"
 		if (text) {
 			return text;
 		}
+	}
+
+	if (isRecord(message.content)) {
+		return JSON.stringify(message.content);
 	}
 
 	if (Array.isArray(message.parts)) {
