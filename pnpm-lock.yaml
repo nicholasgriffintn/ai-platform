@@ -78,8 +78,8 @@ importers:
         specifier: ^5.38.2
         version: 5.38.5
       stripe:
-        specifier: 22.2.3
-        version: 22.2.3(@types/node@25.9.4)
+        specifier: 22.3.0
+        version: 22.3.0(@types/node@25.9.4)
       zod:
         specifier: 4.4.3
         version: 4.4.3
@@ -5954,8 +5954,8 @@ packages:
     resolution: {integrity: sha512-4gB8na07fecVVkOI6Rs4e7T6NOTki5EmL7TUduTs6bu3EdnSycntVJ4re8kgZA+wx9IueI2Y11bfbgwtzuE0KQ==}
     engines: {node: '>=0.10.0'}
 
-  stripe@22.2.3:
-    resolution: {integrity: sha512-9lrggvLtjO4Ef5WXH4t50ckHJcJgTD72xFB+KJgZCSszAH9zMV1BqU6PwmWbRLdcdX7LK6PbErBapiGK7pIb+g==}
+  stripe@22.3.0:
+    resolution: {integrity: sha512-ypO6xjVrMWs9SmIMeHr8naCx3dAQ0clxMdUTxn7Ejd7hmY9meBGfE+N4pVHkf9sUNebAHp6uJo6mV3GxDIc2cA==}
     engines: {node: '>=18'}
     peerDependencies:
       '@types/node': '>=18'
@@ -12060,7 +12060,7 @@ snapshots:
 
   strip-json-comments@2.0.1: {}
 
-  stripe@22.2.3(@types/node@25.9.4):
+  stripe@22.3.0(@types/node@25.9.4):
     optionalDependencies:
       '@types/node': 25.9.4
 
