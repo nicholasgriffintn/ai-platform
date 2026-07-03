@@ -577,7 +577,7 @@ describe("Models", () => {
 		it("should return default model when no groq models available", async () => {
 			const result = await getAuxiliaryModel(mockEnv, mockUser);
 
-			expect(result.model).toBe("@cf/google/gemma-4-26b-a4b-it");
+			expect(result.model).toBe("@cf/zai-org/glm-4.7-flash");
 			expect(result.provider).toBe("workers-ai");
 		});
 
@@ -589,7 +589,7 @@ describe("Models", () => {
 
 			const result = await getAuxiliaryModel(mockEnv, mockProUser);
 
-			expect(result.model).toBe("openai/gpt-oss-20b");
+			expect(result.model).toBe("groq/compound-mini");
 			expect(result.provider).toBe("groq");
 		});
 	});
@@ -598,7 +598,7 @@ describe("Models", () => {
 		it("should return default model when no perplexity models available", async () => {
 			const result = await getAuxiliaryModelForRetrieval(mockEnv, mockUser);
 
-			expect(result.model).toBe("@cf/google/gemma-4-26b-a4b-it");
+			expect(result.model).toBe("@cf/zai-org/glm-4.7-flash");
 			expect(result.provider).toBe("workers-ai");
 		});
 

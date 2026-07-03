@@ -579,7 +579,7 @@ export async function getAuxiliaryModel(
 	env: IEnv,
 	user?: IUser,
 ): Promise<{ model: string; provider: string }> {
-	let modelToUse = "gemma-4-26b-a4b-it";
+	let modelToUse = "@cf/zai-org/glm-4.7-flash";
 
 	const availableModels = await getIncludedInRouterModelsForUser(env, user?.id);
 
@@ -588,7 +588,7 @@ export async function getAuxiliaryModel(
 	);
 
 	if (hasGroqModel) {
-		modelToUse = "groq-openai-gpt-oss-20b";
+		modelToUse = "groq/compound-mini";
 	}
 
 	const modelConfig = await getModelConfig(modelToUse, env);
@@ -597,7 +597,7 @@ export async function getAuxiliaryModel(
 }
 
 export const getAuxiliaryModelForRetrieval = async (env: IEnv, user?: IUser) => {
-	let modelToUse = "gemma-4-26b-a4b-it";
+	let modelToUse = "@cf/zai-org/glm-4.7-flash";
 
 	const availableModels = await getIncludedInRouterModelsForUser(env, user?.id);
 
