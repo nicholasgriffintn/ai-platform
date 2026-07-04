@@ -124,8 +124,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/schemas
       '@babel/standalone':
-        specifier: 8.0.2
-        version: 8.0.2
+        specifier: 8.0.3
+        version: 8.0.3
       '@mlc-ai/web-llm':
         specifier: 0.2.84
         version: 0.2.84
@@ -911,8 +911,8 @@ packages:
     resolution: {integrity: sha512-Nq8OhGWiZIZGV6hLHoyAKLLcJihP/xFeBMGJoUrxTX2psI8dCifzLhZISFb+VWS3wFMRDmCGw5R+dOySCqPLhw==}
     engines: {node: '>=6.9.0'}
 
-  '@babel/standalone@8.0.2':
-    resolution: {integrity: sha512-fxVjA+dyCXC6tZm8sp21egVF0WVpPRnJOhmfG4WavISe2otyfOLleh+owitHWMhILTdjd7W0mfpadS16cj8LBw==}
+  '@babel/standalone@8.0.3':
+    resolution: {integrity: sha512-lYtDQG08udh0+pGOQxj1R8W+fIbp7T0F8XFEFSvfWNQ+ywmi/bOxTcSDSB84y0et+B+QQl8yMWl/rnSB7OzLMg==}
     engines: {node: ^22.18.0 || >=24.11.0}
 
   '@babel/template@7.29.7':
@@ -7075,7 +7075,7 @@ snapshots:
 
   '@babel/runtime@7.29.7': {}
 
-  '@babel/standalone@8.0.2': {}
+  '@babel/standalone@8.0.3': {}
 
   '@babel/template@7.29.7':
     dependencies:
