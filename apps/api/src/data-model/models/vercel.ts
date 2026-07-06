@@ -1471,31 +1471,6 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		openWeights: false,
 	}),
 
-	createModelConfig("anthropic/claude-opus-4.1", PROVIDER, {
-		name: "Claude Opus 4",
-		matchingModel: "anthropic/claude-opus-4.1",
-		knowledgeCutoffDate: "March 31, 2025",
-		releaseDate: "August 5, 2025",
-		lastUpdated: "August 5, 2025",
-		modalities: {
-			input: ["text", "image", "pdf"],
-			output: ["text"],
-		},
-		supportsAttachments: true,
-		supportsTemperature: true,
-		supportsToolCalls: true,
-		contextWindow: 200000,
-		maxTokens: 32000,
-		costPer1kInputTokens: 0.015,
-		costPer1kOutputTokens: 0.075,
-		reasoningConfig: {
-			supportedEffortLevels: ["none", "thinking"],
-			defaultEffort: "none",
-		},
-		family: "claude-opus",
-		openWeights: false,
-	}),
-
 	createModelConfig("anthropic/claude-opus-4.5", PROVIDER, {
 		name: "Claude Opus 4.5",
 		matchingModel: "anthropic/claude-opus-4.5",
@@ -1579,7 +1554,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		supportsAttachments: true,
 		supportsTemperature: true,
 		supportsToolCalls: true,
-		contextWindow: 200000,
+		contextWindow: 1000000,
 		maxTokens: 64000,
 		costPer1kInputTokens: 0.003,
 		costPer1kOutputTokens: 0.015,
@@ -1604,7 +1579,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		supportsAttachments: true,
 		supportsTemperature: true,
 		supportsToolCalls: true,
-		contextWindow: 200000,
+		contextWindow: 1000000,
 		maxTokens: 64000,
 		costPer1kInputTokens: 0.003,
 		costPer1kOutputTokens: 0.015,
@@ -1614,6 +1589,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		},
 		family: "claude-sonnet",
 		openWeights: false,
+		supportsResponseFormat: true,
 	}),
 
 	createModelConfig("arcee-ai/trinity-large-preview", PROVIDER, {
@@ -3986,6 +3962,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		},
 		family: "gpt-oss",
 		openWeights: true,
+		supportsResponseFormat: true,
 	}),
 
 	createModelConfig("openai/gpt-oss-safeguard-20b", PROVIDER, {
@@ -9174,6 +9151,35 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
+		},
+	}),
+	createModelConfig("anthropic/claude-3-haiku", PROVIDER, {
+		name: "Claude Haiku 3",
+		matchingModel: "anthropic/claude-3-haiku",
+		family: "claude-haiku",
+		openWeights: false,
+		knowledgeCutoffDate: "August 31, 2023",
+		releaseDate: "March 13, 2024",
+		lastUpdated: "March 13, 2024",
+		modalities: {
+			input: ["text", "image"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 200000,
+		maxTokens: 4096,
+		costPer1kInputTokens: 0.00025,
+		costPer1kOutputTokens: 0.00125,
+		strengths: ["vision", "document", "tool_use"],
+		contextComplexity: 3,
+		reliability: 1,
+		artificialAnalysis: {
+			intelligenceIndex: 3.9,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: 4.1,
 		},
 	}),
 ]);

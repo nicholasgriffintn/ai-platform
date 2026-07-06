@@ -54,7 +54,7 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 		supportsDocuments: true,
 		supportsTokenCounting: true,
 		supportsTopP: false,
-		releaseDate: "February 5, 2026",
+		releaseDate: "February 4, 2026",
 		lastUpdated: "March 13, 2026",
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
@@ -68,6 +68,7 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 		},
 		family: "claude-opus",
 		openWeights: false,
+		supportsResponseFormat: true,
 	}),
 	createModelConfig("claude-4-5-sonnet", PROVIDER, {
 		name: "Claude Sonnet 4.5",
@@ -85,7 +86,7 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 		supportsAttachments: true,
 		supportsTemperature: true,
 		card: "https://www.prompthub.us/models/claude-sonnet-4-5",
-		contextWindow: 200000,
+		contextWindow: 1000000,
 		maxTokens: 64000,
 		costPer1kInputTokens: 0.003,
 		costPer1kOutputTokens: 0.015,
@@ -123,6 +124,7 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 		},
 		family: "claude-sonnet",
 		openWeights: false,
+		supportsResponseFormat: true,
 	}),
 
 	createModelConfig("claude-4-sonnet", PROVIDER, {
@@ -226,56 +228,6 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 		openWeights: false,
 	}),
 
-	createModelConfig("claude-4.1-opus", PROVIDER, {
-		name: "Claude Opus 4.1",
-		matchingModel: "claude-opus-4-1",
-		description: "Enhanced Claude 4 Opus with improved reasoning and analysis capabilities.",
-		knowledgeCutoffDate: "March 31, 2025",
-		releaseDate: "August 5, 2025",
-		lastUpdated: "August 5, 2025",
-		deprecated: true,
-		modalities: {
-			input: ["text", "image", "pdf"],
-			output: ["text"],
-		},
-		supportsAttachments: true,
-		supportsTemperature: true,
-		card: "https://www.prompthub.us/models/claude-4-opus",
-		contextWindow: 200000,
-		maxTokens: 32000,
-		costPer1kInputTokens: 0.015,
-		costPer1kOutputTokens: 0.075,
-		strengths: [
-			"chat",
-			"general_knowledge",
-			"analysis",
-			"reasoning",
-			"creative",
-			"vision",
-			"document",
-			"tool_use",
-		],
-		contextComplexity: 4,
-		reliability: 1,
-		speed: 2,
-		multimodal: true,
-		supportsArtifacts: true,
-		supportsToolCalls: true,
-		supportsTokenCounting: true,
-		reasoningConfig: {
-			supportedEffortLevels: ["none", "thinking"],
-			defaultEffort: "none",
-		},
-		artificialAnalysis: {
-			intelligenceIndex: 28.2,
-			codingIndex: null,
-			agenticIndex: null,
-			intelligenceIndexVersion: 4.1,
-		},
-		family: "claude-opus",
-		openWeights: false,
-	}),
-
 	createModelConfig("claude-haiku-4-5", PROVIDER, {
 		name: "Claude Haiku 4.5",
 		matchingModel: "claude-haiku-4-5",
@@ -308,6 +260,7 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 		},
 		family: "claude-haiku",
 		openWeights: false,
+		supportsResponseFormat: true,
 	}),
 
 	createModelConfig("claude-opus-4-0", PROVIDER, {
@@ -371,6 +324,7 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 		},
 		family: "claude-opus",
 		openWeights: false,
+		supportsResponseFormat: true,
 	}),
 	createModelConfig("claude-opus-4-7", PROVIDER, {
 		name: "Claude Opus 4.7",
@@ -378,7 +332,7 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 			"Our most capable generally available model for complex reasoning and agentic coding",
 		matchingModel: "claude-opus-4-7",
 		knowledgeCutoffDate: "January 31, 2026",
-		releaseDate: "April 16, 2026",
+		releaseDate: "April 14, 2026",
 		lastUpdated: "April 16, 2026",
 		modalities: {
 			input: ["text", "image", "pdf"],
@@ -409,6 +363,7 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 		},
 		family: "claude-opus",
 		openWeights: false,
+		supportsResponseFormat: true,
 	}),
 
 	createModelConfig("claude-sonnet-4-6", PROVIDER, {
@@ -429,7 +384,7 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 		isFeatured: true,
 		...anthropicLatestHostedTools,
 		contextWindow: 1000000,
-		maxTokens: 64000,
+		maxTokens: 128000,
 		costPer1kInputTokens: 0.003,
 		costPer1kOutputTokens: 0.015,
 		reasoningConfig: {
@@ -437,7 +392,7 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 			defaultEffort: "none",
 		},
 		strengths: ["coding", "vision", "document", "tool_use"],
-		contextComplexity: 4,
+		contextComplexity: 5,
 		reliability: 3,
 		speed: 2,
 		artificialAnalysis: {
@@ -448,6 +403,7 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 		},
 		family: "claude-sonnet",
 		openWeights: false,
+		supportsResponseFormat: true,
 	}),
 	createModelConfig("claude-opus-4-8", PROVIDER, {
 		name: "Claude Opus 4.8",
@@ -499,11 +455,12 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 		},
 		family: "claude-opus",
 		openWeights: false,
+		supportsResponseFormat: true,
 	}),
 	createModelConfig("claude-fable-5", PROVIDER, {
 		name: "Claude Fable 5",
 		matchingModel: "claude-fable-5",
-		releaseDate: "June 9, 2026",
+		releaseDate: "June 7, 2026",
 		lastUpdated: "June 9, 2026",
 		modalities: {
 			input: ["text", "image", "pdf"],
@@ -546,6 +503,7 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 		},
 		family: "claude-fable",
 		openWeights: false,
+		supportsResponseFormat: true,
 	}),
 	createModelConfig("claude-sonnet-5", PROVIDER, {
 		name: "Claude Sonnet 5",
@@ -553,7 +511,7 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 		family: "claude-sonnet",
 		openWeights: false,
 		knowledgeCutoffDate: "January 31, 2026",
-		releaseDate: "June 30, 2026",
+		releaseDate: "June 29, 2026",
 		lastUpdated: "June 30, 2026",
 		modalities: {
 			input: ["text", "image", "pdf"],
@@ -570,5 +528,6 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		supportsResponseFormat: true,
 	}),
 ]);
