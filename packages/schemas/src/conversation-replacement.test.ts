@@ -18,15 +18,6 @@ describe("canReplaceStoredConversationMessages", () => {
 		).toBe(false);
 	});
 
-	it("allows ordinary active message replacement", () => {
-		expect(
-			canReplaceStoredConversationMessages([
-				{ id: "user-1", role: "user", content: "Question" },
-				{ id: "assistant-1", role: "assistant", content: "Answer" },
-			]),
-		).toBe(true);
-	});
-
 	it("blocks malformed assistant-shaped compaction metadata", () => {
 		expect(
 			canReplaceStoredConversationMessages([

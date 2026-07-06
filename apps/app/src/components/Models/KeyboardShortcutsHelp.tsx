@@ -1,12 +1,6 @@
 import { useEffect, useRef } from "react";
 
-import {
-	Dialog,
-	DialogClose,
-	DialogContent,
-	DialogHeader,
-	DialogTitle,
-} from "~/components/ui/Dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "~/components/ui/Dialog";
 
 interface KeyboardShortcutsHelpProps {
 	isOpen: boolean;
@@ -21,14 +15,10 @@ interface Shortcut {
 
 export const KeyboardShortcutsHelp = ({ isOpen, onClose }: KeyboardShortcutsHelpProps) => {
 	const previousActiveElement = useRef<Element | null>(null);
-	const closeButtonRef = useRef<HTMLButtonElement>(null);
 
 	useEffect(() => {
 		if (isOpen) {
 			previousActiveElement.current = document.activeElement;
-			setTimeout(() => {
-				closeButtonRef.current?.focus();
-			}, 50);
 		} else {
 			if (previousActiveElement.current && "focus" in previousActiveElement.current) {
 				(previousActiveElement.current as HTMLElement).focus();
@@ -77,7 +67,6 @@ export const KeyboardShortcutsHelp = ({ isOpen, onClose }: KeyboardShortcutsHelp
 			<DialogContent className="max-h-[90vh]">
 				<DialogHeader>
 					<DialogTitle>Keyboard Shortcuts</DialogTitle>
-					<DialogClose onClick={onClose} />
 				</DialogHeader>
 
 				<div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">

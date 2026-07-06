@@ -47,4 +47,19 @@ describe("useAgentForm", () => {
 
 		expect(result.current.getFormData()).not.toHaveProperty("enabled_tools");
 	});
+
+	it("omits cleared or invalid numeric settings from form payloads", () => {
+		const { result } = renderHook(() => useAgentForm());
+
+		act(() => {
+			result.current.setName("Agent");
+			result.current.setTemperature(Number.NaN);
+			result.current.setMaxSteps("");
+		});
+
+		const formData = result.current.getFormData();
+
+		expect(formData).not.toHaveProperty("temperature");
+		expect(formData).not.toHaveProperty("max_steps");
+	});
 });

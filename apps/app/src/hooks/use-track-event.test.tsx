@@ -6,8 +6,8 @@ import { useTrackEvent } from "./use-track-event";
 const posthogCapture = vi.fn();
 const beaconTrackEvent = vi.fn();
 
-vi.mock("posthog-js/react", () => ({
-	usePostHog: () => ({ capture: posthogCapture }),
+vi.mock("./use-posthog-client", () => ({
+	usePostHogClient: () => ({ capture: posthogCapture }),
 }));
 
 const chatStore = vi.hoisted(() => ({

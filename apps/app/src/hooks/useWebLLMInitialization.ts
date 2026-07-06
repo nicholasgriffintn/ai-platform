@@ -13,7 +13,7 @@ import { useWebLLMModels } from "./useWebLLMModels";
 export function useWebLLMInitialization(apiModels: Record<string, any> = {}) {
 	const { startLoading, updateLoading, stopLoading } = useLoadingActions();
 	const { chatMode, model, setModel } = useChatStore();
-	const webLLMModels = useWebLLMModels();
+	const webLLMModels = useWebLLMModels({ enabled: chatMode === "local" });
 
 	const webLLMService = useRef<WebLLMService>(WebLLMService.getInstance());
 	const initializingRef = useRef<boolean>(false);

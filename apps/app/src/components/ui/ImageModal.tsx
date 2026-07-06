@@ -2,7 +2,7 @@ import { Download } from "lucide-react";
 import { useState } from "react";
 
 import { cn } from "~/lib/utils";
-import { Dialog, DialogClose, DialogContent } from "./Dialog";
+import { Dialog, DialogContent, DialogTitle } from "./Dialog";
 
 interface ImageModalProps {
 	src: string;
@@ -32,13 +32,14 @@ export function ImageModal({
 					type="button"
 					className="cursor-pointer"
 					onClick={() => setOpen(true)}
-					aria-label="View larger image"
+					aria-label={`View ${alt} larger`}
 				>
 					<img
 						src={src}
 						alt={alt}
 						className={cn("max-w-full h-auto object-contain", imageClassName)}
 						crossOrigin={crossOrigin}
+						decoding="async"
 					/>
 				</button>
 				<a
@@ -47,6 +48,7 @@ export function ImageModal({
 					target="_blank"
 					rel="noreferrer"
 					title="Download image"
+					aria-label={`Download ${alt}`}
 					className="absolute top-2 right-2 z-10 p-2 bg-white/75 rounded-full hover:bg-white dark:bg-zinc-800 dark:hover:bg-zinc-700 transition-colors"
 				>
 					<Download className="h-6 w-6 text-zinc-600 dark:text-zinc-400" />
@@ -55,6 +57,7 @@ export function ImageModal({
 
 			<Dialog open={open} onOpenChange={setOpen} width="auto">
 				<DialogContent className={cn("p-0 bg-transparent border-0", className)}>
+					<DialogTitle className="sr-only">{alt}</DialogTitle>
 					<div className="flex items-center justify-center p-2">
 						<img
 							src={src}
@@ -62,9 +65,9 @@ export function ImageModal({
 							className={cn("w-auto h-auto max-w-full object-contain rounded-lg", imageClassName)}
 							style={{ maxHeight }}
 							crossOrigin={crossOrigin}
+							decoding="async"
 						/>
 					</div>
-					<DialogClose onClick={() => setOpen(false)} />
 				</DialogContent>
 			</Dialog>
 		</>

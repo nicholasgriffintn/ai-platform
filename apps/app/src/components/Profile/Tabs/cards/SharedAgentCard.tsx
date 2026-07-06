@@ -65,6 +65,8 @@ export function SharedAgentCard({ agent, onInstall, isInstalling }: any) {
 									src={agent.author_avatar_url || "/placeholder.svg"}
 									alt={agent.author_name}
 									className="w-4 h-4 rounded-full"
+									decoding="async"
+									loading="lazy"
 								/>
 							)}
 							<span className="truncate max-w-20">{agent.author_name}</span>

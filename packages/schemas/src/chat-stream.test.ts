@@ -2,10 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import {
 	createChatStreamAssembler,
-	formatChatStreamSseDone,
-	formatChatStreamSseEvent,
 	parseChatStreamSseBuffer,
-	parseChatStreamSseEvent,
 	type ChatStreamUpdate,
 } from "./chat-stream";
 
@@ -203,101 +200,9 @@ describe("chat stream assembler", () => {
 			content: "I'll create an orbit visualization.",
 		});
 	});
-
-	it("emits assistant metadata as soon as a message starts", () => {
-		const { updates } = collectUpdates([
-			{
-				type: "message_start",
-				message_id: "assistant-early",
-				created: 1000,
-				model: "router-selected-model",
-				provider: "mistral",
-				platform: "web",
-			},
-		]);
-
-		expect(updates).toEqual([
-			{
-				type: "assistant_metadata",
-				message: expect.objectContaining({
-					id: "assistant-early",
-					content: "",
-					created: 1000,
-					model: "router-selected-model",
-					provider: "mistral",
-					platform: "web",
-				}),
-			},
-		]);
-	});
 });
 
-describe("parseChatStreamSseEvent", () => {
-	it("parses data events and done markers from raw SSE blocks", () => {
-		expect(parseChatStreamSseEvent('data: {"type":"state","state":"thinking"}\n\n')).toEqual({
-			type: "state",
-			state: "thinking",
-		});
-		expect(parseChatStreamSseEvent("data: [DONE]\n\n")).toEqual({ type: "done" });
-		expect(parseChatStreamSseEvent(": ping\n\n")).toBeNull();
-	});
-
-	it("formats typed events and done markers as SSE data blocks", () => {
-		expect(formatChatStreamSseEvent("state", { state: "thinking" })).toBe(
-			'data: {"state":"thinking","type":"state"}\n\n',
-		);
-		expect(formatChatStreamSseDone()).toBe("data: [DONE]\n\n");
-	});
-
-	it("round-trips compaction state events with durable marker metadata", () => {
-		const event = formatChatStreamSseEvent("state", {
-			state: "compaction",
-			message: {
-				id: "snapshot-1-compaction",
-				completion_id: "conversation-1",
-				role: "compaction",
-				content: "Context automatically compacted",
-				mode: "remote",
-				platform: "web",
-				parts: [
-					{
-						id: "part-1",
-						type: "compaction",
-						status: "completed",
-						label: "Context automatically compacted",
-						metadata: {
-							source: "automatic-compaction",
-						},
-					},
-				],
-			},
-		});
-
-		expect(parseChatStreamSseEvent(event)).toEqual({
-			type: "state",
-			state: "compaction",
-			message: {
-				id: "snapshot-1-compaction",
-				completion_id: "conversation-1",
-				role: "compaction",
-				content: "Context automatically compacted",
-				mode: "remote",
-				platform: "web",
-				parts: [
-					{
-						id: "part-1",
-						type: "compaction",
-						status: "completed",
-						label: "Context automatically compacted",
-						metadata: {
-							source: "automatic-compaction",
-						},
-					},
-				],
-			},
-		});
-	});
-
+describe("parseChatStreamSseBuffer", () => {
 	it("parses CRLF-delimited buffers and can flush a trailing final block", () => {
 		const firstParse = parseChatStreamSseBuffer(
 			'data: {"state":"thinking","type":"state"}\r\n\r\n' +

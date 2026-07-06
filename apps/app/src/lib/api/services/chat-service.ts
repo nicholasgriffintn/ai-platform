@@ -9,14 +9,16 @@ import type {
 } from "~/types";
 import {
 	createChatStreamAssembler,
-	compactChatCompletionResponseSchema,
-	normaliseToolIds,
 	parseChatStreamSseBuffer,
-	type ChatCompletionResponseBody,
 	type ChatStreamUpdate,
 	type ParsedChatStreamSseEvent,
+} from "@assistant/schemas/chat-stream";
+import { normaliseToolIds } from "@assistant/schemas/tool-ids";
+import type {
+	ChatCompletionResponseBody,
+	ModelConfigItem,
+	ModelRouterMode,
 } from "@assistant/schemas";
-import type { ModelConfigItem, ModelRouterMode } from "@assistant/schemas";
 import { getSandboxModeToolNames } from "~/lib/sandbox/chat-mode";
 import { readCompactionStatusMessage } from "~/lib/chat/compaction-status";
 import { filterUnavailableModelToolSelections } from "~/lib/model-tools";
@@ -32,6 +34,7 @@ import {
 	toCompletionResponseAppMessage,
 } from "../chat-stream-response";
 import { projectChatRequestSettings } from "../chat-request-settings";
+import { parseCompactConversationResponse } from "../compact-conversation-response";
 import { normaliseConversationResponse } from "../conversation-response";
 import { ApiError, fetchApi, fetchApiOrThrow, returnFetchedData } from "../fetch-wrapper";
 
@@ -218,18 +221,14 @@ export class ChatService {
 			method: "POST",
 			headers,
 		});
-		const data = await returnFetchedData<{
-			compacted: boolean;
-			conversation: Conversation;
-		}>(response);
-		const parsed = compactChatCompletionResponseSchema.safeParse(data);
-		if (!parsed.success) {
+		const parsed = parseCompactConversationResponse(await returnFetchedData<unknown>(response));
+		if (!parsed) {
 			throw new Error("Invalid compact conversation response");
 		}
 
 		return {
-			compacted: parsed.data.compacted,
-			conversation: normaliseConversationResponse(parsed.data.conversation, completion_id),
+			compacted: parsed.compacted,
+			conversation: normaliseConversationResponse(parsed.conversation, completion_id),
 		};
 	}
 

@@ -1,4 +1,4 @@
-import { compactionStatusLabels } from "@assistant/schemas";
+import { compactionStatusLabels } from "@assistant/schemas/compaction-status";
 import { isRecord } from "~/lib/objects";
 
 export function getChatStreamLoadingMessage(state: string, data?: unknown): string | null {

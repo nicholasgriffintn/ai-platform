@@ -1,4 +1,7 @@
-import { toProviderChatMessages, type NormalisedProviderChatMessage } from "@assistant/schemas";
+import {
+	toProviderChatMessages,
+	type NormalisedProviderChatMessage,
+} from "@assistant/schemas/provider-messages";
 import type { Message, MessageContent } from "~/types";
 import { isRecord } from "../objects";
 

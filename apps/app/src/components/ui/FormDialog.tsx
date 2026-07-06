@@ -4,9 +4,9 @@ import type { FormEvent, ReactNode } from "react";
 import { Button } from "./Button";
 import {
 	Dialog,
-	DialogClose,
 	DialogContent,
 	DialogDescription,
+	DialogFooter,
 	DialogHeader,
 	DialogTitle,
 } from "./Dialog";
@@ -61,12 +61,11 @@ export function FormDialog({
 					<DialogTitle>{title}</DialogTitle>
 					{description && <DialogDescription>{description}</DialogDescription>}
 				</DialogHeader>
-				<DialogClose onClick={() => onOpenChange(false)} />
 
 				<form onSubmit={handleSubmit} className="space-y-4 py-2">
 					{children}
 
-					<div className="flex justify-end gap-3 pt-4">
+					<DialogFooter className="pt-4">
 						<Button
 							type="button"
 							variant="outline"
@@ -90,7 +89,7 @@ export function FormDialog({
 								submitText
 							)}
 						</Button>
-					</div>
+					</DialogFooter>
 				</form>
 			</DialogContent>
 		</Dialog>

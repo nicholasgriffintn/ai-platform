@@ -13,7 +13,8 @@ import {
 	type RecipeInstallation,
 } from "./apps";
 import { partialChatCompletionsJsonSchema } from "./chat";
-import { mergeToolIds, normaliseToolIds, toolIdsSchema, toolIdSchema } from "./tools";
+import { mergeToolIds, normaliseToolIds } from "./tool-ids";
+import { toolIdsSchema, toolIdSchema } from "./tools";
 
 export const assistantActionVerbIdSchema = z.enum([
 	"run",

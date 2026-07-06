@@ -1,25 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
+import { parseMetricMetadata } from "../lib/metrics";
 import type { Metric } from "../types";
 import { CombinedMetricsChart } from "./chart";
 import { MetricDetails } from "./details";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
 import { ScrollArea } from "./ui/scroll-area";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "./ui/table";
-
-const parseMetadata = (metadataString: string) => {
-	try {
-		if (!metadataString) {
-			return {};
-		}
-		return JSON.parse(metadataString);
-	} catch (error) {
-		console.error("Error parsing metadata:", error);
-		return {};
-	}
-};
 
 interface MetricsDashboardProps {
 	metrics: Metric[];
@@ -29,35 +18,37 @@ interface MetricsDashboardProps {
 
 export function MetricsDashboard({ metrics, interval, limit }: MetricsDashboardProps) {
 	const [selectedMetric, setSelectedMetric] = useState<Metric | null>(null);
+	const parsedMetrics = useMemo(
+		() =>
+			metrics.map((metric) => ({
+				metric,
+				metadata: parseMetricMetadata(metric.metadata),
+			})),
+		[metrics],
+	);
 
 	const totalRequests = metrics.length;
-	const totalTokens = metrics.reduce((sum, metric) => {
-		const metadata = parseMetadata(metric.metadata);
-		return sum + (metadata.tokenUsage?.total_tokens || 0);
-	}, 0);
-	const totalCost = metrics.reduce((sum, metric) => {
-		const metadata = parseMetadata(metric.metadata);
-		return sum + (metadata.cost || 0);
-	}, 0);
-	const cachedRequests = metrics.filter((m) => {
-		const metadata = parseMetadata(m.metadata);
-		return metadata.cached === "true";
-	}).length;
-	const cachedPercentage = ((cachedRequests / totalRequests) * 100).toFixed(2);
+	const totalTokens = parsedMetrics.reduce(
+		(sum, item) => sum + item.metadata.tokenUsage.total_tokens,
+		0,
+	);
+	const totalCost = parsedMetrics.reduce((sum, item) => sum + item.metadata.cost, 0);
+	const cachedRequests = parsedMetrics.filter((item) => item.metadata.cached).length;
+	const cachedPercentage =
+		totalRequests === 0 ? "0.00" : ((cachedRequests / totalRequests) * 100).toFixed(2);
 	const errorRequests = metrics.filter((m) => m.status === "error").length;
 
-	const combinedChartData = metrics
-		.map((metric) => {
-			const metadata = parseMetadata(metric.metadata);
-			const tokenUsage = metadata.tokenUsage || {};
+	const combinedChartData = parsedMetrics
+		.map(({ metric, metadata }) => {
+			const tokenUsage = metadata.tokenUsage;
 			return {
 				name: `${metadata.provider} (${metadata.model})`,
 				latency: metric.value,
-				promptTokens: tokenUsage.prompt_tokens || 0,
-				completionTokens: tokenUsage.completion_tokens || 0,
-				totalTokens: tokenUsage.total_tokens || 0,
+				promptTokens: tokenUsage.prompt_tokens,
+				completionTokens: tokenUsage.completion_tokens,
+				totalTokens: tokenUsage.total_tokens,
 				timestamp: metric.timestamp.replace(" ", "T"),
-				provider: metadata.provider || "unknown",
+				provider: metadata.provider,
 			};
 		})
 		.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
@@ -145,9 +136,8 @@ export function MetricsDashboard({ metrics, interval, limit }: MetricsDashboardP
 										</TableRow>
 									</TableHeader>
 									<TableBody>
-										{metrics.map((metric, idx) => {
-											const metadata = parseMetadata(metric.metadata);
-											const tokenUsage = metadata.tokenUsage || {};
+										{parsedMetrics.map(({ metric, metadata }, idx) => {
+											const tokenUsage = metadata.tokenUsage;
 											return (
 												<TableRow
 													key={`${metric.traceId}-${idx}`}

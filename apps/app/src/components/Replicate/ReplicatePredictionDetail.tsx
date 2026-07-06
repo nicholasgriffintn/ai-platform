@@ -199,7 +199,13 @@ function OutputItem({ item }: OutputItemProps) {
 	if (isImage) {
 		return (
 			<div>
-				<img src={url} alt="Generated output" className="max-w-full rounded-lg" />
+				<img
+					src={url}
+					alt="Generated output"
+					className="max-w-full rounded-lg"
+					decoding="async"
+					loading="lazy"
+				/>
 				<a
 					href={url}
 					target="_blank"

@@ -1,8 +1,9 @@
-import type { InputHTMLAttributes } from "react";
+import type { ChangeEvent, InputHTMLAttributes } from "react";
 import { forwardRef } from "react";
 
 import { cn } from "~/lib/utils";
 import { Label } from "../label";
+import { mergeDescribedBy } from "./describedBy";
 
 export interface SwitchProps extends Omit<
 	InputHTMLAttributes<HTMLInputElement>,
@@ -13,67 +14,64 @@ export interface SwitchProps extends Omit<
 	className?: string;
 	labelPosition?: "left" | "right";
 	checked?: boolean;
-	onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+	onChange?: (e: ChangeEvent<HTMLInputElement>) => void;
 }
 
 export const Switch = forwardRef<HTMLInputElement, SwitchProps>(
 	(
-		{ label, description, className, labelPosition = "left", id, checked, onChange, ...props },
+		{
+			label,
+			description,
+			className,
+			labelPosition = "left",
+			id,
+			checked,
+			onChange,
+			"aria-describedby": ariaDescribedBy,
+			...props
+		},
 		ref,
 	) => {
-		const handleToggle = () => {
-			if (onChange) {
-				const event = {
-					target: {
-						name: props.name,
-						checked: !checked,
-					},
-				} as React.ChangeEvent<HTMLInputElement>;
-				onChange(event);
-			}
-		};
+		const descriptionId = description && id ? `${id}-description` : undefined;
+		const describedBy = mergeDescribedBy(ariaDescribedBy, descriptionId);
 
 		return (
 			<div className="space-y-1">
 				<div className="flex items-center justify-between">
 					{label && labelPosition === "left" && <Label htmlFor={id}>{label}</Label>}
-					<button
-						type="button"
-						role="switch"
-						aria-checked={checked}
-						onClick={handleToggle}
-						className={cn(
-							"relative inline-block w-10 h-6 focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:ring-offset-2 rounded-full",
-							className,
-						)}
-						id={id}
-					>
+					<label className={cn("relative inline-flex h-6 w-10 shrink-0", className)}>
 						<input
 							ref={ref}
-							id={`${id}-hidden`}
+							id={id}
 							type="checkbox"
-							className="sr-only"
+							role="switch"
+							className="peer sr-only"
 							checked={checked}
 							onChange={onChange}
+							aria-describedby={describedBy}
 							{...props}
 						/>
 						<span
 							className={cn(
-								"absolute inset-0 rounded-full transition-colors",
+								"absolute inset-0 rounded-full transition-colors peer-focus-visible:outline-none peer-focus-visible:ring-2 peer-focus-visible:ring-zinc-500 peer-focus-visible:ring-offset-2 peer-disabled:cursor-not-allowed peer-disabled:opacity-60",
 								checked ? "bg-zinc-600 dark:bg-zinc-400" : "bg-zinc-300 dark:bg-zinc-700",
 							)}
+							aria-hidden="true"
 						/>
 						<span
 							className={cn(
 								"absolute left-1 top-1 w-4 h-4 rounded-full bg-white transition-transform duration-200 ease-in-out",
 								checked ? "translate-x-4" : "translate-x-0",
 							)}
+							aria-hidden="true"
 						/>
-					</button>
+					</label>
 					{label && labelPosition === "right" && <Label htmlFor={id}>{label}</Label>}
 				</div>
 				{description && (
-					<p className="text-xs text-zinc-600 dark:text-zinc-400 mt-1">{description}</p>
+					<p id={descriptionId} className="text-xs text-zinc-600 dark:text-zinc-400 mt-1">
+						{description}
+					</p>
 				)}
 			</div>
 		);

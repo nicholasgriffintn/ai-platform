@@ -15,10 +15,11 @@ describe("LoadingSpinner", () => {
 		expect(screen.getByText(", 76% complete", { selector: ".sr-only" })).toBeInTheDocument();
 	});
 
-	it("applies caller styling without adding progress text", () => {
-		render(<LoadingSpinner className="test-custom-class" />);
+	it("clamps progress and exposes clean status text without a message", () => {
+		render(<LoadingSpinner progress={125.6} />);
 
-		expect(screen.getByRole("status")).toHaveClass("test-custom-class");
-		expect(screen.queryByText(/% complete/)).not.toBeInTheDocument();
+		expect(screen.getByText("100%", { selector: ".text-xs" })).toBeInTheDocument();
+		expect(screen.getByText("100% complete", { selector: ".sr-only" })).toBeInTheDocument();
+		expect(screen.queryByText(", 100% complete")).not.toBeInTheDocument();
 	});
 });

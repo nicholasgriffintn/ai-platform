@@ -1,15 +1,23 @@
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { XIcon } from "lucide-react";
 import type * as React from "react";
+import { createContext, useContext } from "react";
 
 import { cn } from "~/lib/utils";
 
-function Dialog({
-	...props
-}: React.ComponentProps<typeof DialogPrimitive.Root> & {
-	width?: string;
-}) {
-	return <DialogPrimitive.Root data-slot="dialog" {...props} />;
+type DialogWidth = React.CSSProperties["width"];
+type DialogRootProps = React.ComponentProps<typeof DialogPrimitive.Root> & {
+	width?: DialogWidth;
+};
+
+const DialogWidthContext = createContext<DialogWidth | undefined>(undefined);
+
+function Dialog({ width, ...props }: DialogRootProps) {
+	return (
+		<DialogWidthContext.Provider value={width}>
+			<DialogPrimitive.Root data-slot="dialog" {...props} />
+		</DialogWidthContext.Provider>
+	);
 }
 
 function DialogTrigger({ ...props }: React.ComponentProps<typeof DialogPrimitive.Trigger>) {
@@ -43,8 +51,17 @@ function DialogOverlay({
 function DialogContent({
 	className,
 	children,
+	style,
 	...props
 }: React.ComponentProps<typeof DialogPrimitive.Content>) {
+	const dialogWidth = useContext(DialogWidthContext);
+	const widthStyle = dialogWidth
+		? {
+				width: dialogWidth,
+				maxWidth: "calc(100vw - 2rem)",
+			}
+		: undefined;
+
 	return (
 		<DialogPortal data-slot="dialog-portal">
 			<DialogOverlay />
@@ -54,6 +71,7 @@ function DialogContent({
 					"bg-background data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 fixed top-[50%] left-[50%] z-50 grid w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] gap-4 rounded-lg border p-6 shadow-lg duration-200 overflow-y-auto max-h-[calc(100vh-4rem)] sm:max-w-lg",
 					className,
 				)}
+				style={{ ...widthStyle, ...style }}
 				{...props}
 			>
 				{children}
@@ -80,7 +98,10 @@ function DialogFooter({ className, ...props }: React.ComponentProps<"div">) {
 	return (
 		<div
 			data-slot="dialog-footer"
-			className={cn("flex flex-col-reverse gap-2 sm:flex-row sm:justify-end", className)}
+			className={cn(
+				"flex flex-col-reverse gap-2 sm:flex-row sm:justify-end [&>button]:w-full sm:[&>button]:w-auto",
+				className,
+			)}
 			{...props}
 		/>
 	);

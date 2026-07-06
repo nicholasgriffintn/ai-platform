@@ -10,6 +10,7 @@ interface StrudelMirrorInstance {
 	stop: () => Promise<void>;
 	setCode: (code: string) => void;
 	clear: () => void;
+	setTheme?: (theme: string) => void;
 }
 
 interface StrudelPlayerProps {
@@ -29,9 +30,12 @@ export function StrudelPlayer({
 }: StrudelPlayerProps) {
 	const [isPlaying, setIsPlaying] = useState(false);
 	const [error, setError] = useState<string | null>(null);
+	const [isRuntimeLoading, setIsRuntimeLoading] = useState(false);
 
 	const editorContainerRef = useRef<HTMLDivElement>(null);
 	const editorRef = useRef<StrudelMirrorInstance | null>(null);
+	const editorLoadPromiseRef = useRef<Promise<StrudelMirrorInstance | null> | null>(null);
+	const isMountedRef = useRef(false);
 	const latestCodeRef = useRef(code);
 	const onChangeRef = useRef(onChange);
 
@@ -40,15 +44,23 @@ export function StrudelPlayer({
 		onChangeRef.current = onChange;
 	}, [code, onChange]);
 
-	useEffect(() => {
-		if (readOnly || !editorContainerRef.current || editorRef.current) return;
+	const createEditor = useCallback(async () => {
+		if (editorRef.current) return editorRef.current;
+		if (editorLoadPromiseRef.current) return editorLoadPromiseRef.current;
 
 		const root = editorContainerRef.current;
-		let isMounted = true;
+		if (!root) return null;
 
-		loadStrudelRuntime()
-			.then(({ StrudelMirror, getAudioContext, webaudioOutput, transpiler, prebake }) => {
-				if (!isMounted || editorRef.current) return;
+		editorLoadPromiseRef.current = (async () => {
+			setIsRuntimeLoading(true);
+
+			try {
+				const { StrudelMirror, getAudioContext, webaudioOutput, transpiler, prebake } =
+					await loadStrudelRuntime();
+
+				if (!isMountedRef.current || editorRef.current || editorContainerRef.current !== root) {
+					return editorRef.current;
+				}
 
 				const editor = new StrudelMirror({
 					theme: "teletext",
@@ -60,30 +72,50 @@ export function StrudelPlayer({
 					drawTime: [-2, 2],
 					prebake,
 					onChange: (update) => {
-						if (update.docChanged) {
+						if (!readOnly && update.docChanged) {
 							onChangeRef.current?.(update.state.doc.toString());
 						}
 					},
 				});
 
-				editor.setTheme("tokyoNight");
+				editor.setTheme?.("tokyoNight");
 				editorRef.current = editor;
 				setError(null);
-			})
-			.catch((err: unknown) => {
-				if (!isMounted) return;
-				setError(err instanceof Error ? err.message : "Unable to load Strudel runtime");
-			});
+				return editor;
+			} catch (err: unknown) {
+				if (isMountedRef.current) {
+					setError(err instanceof Error ? err.message : "Unable to load Strudel runtime");
+				}
+				return null;
+			} finally {
+				if (isMountedRef.current) {
+					setIsRuntimeLoading(false);
+				}
+				editorLoadPromiseRef.current = null;
+			}
+		})();
+
+		return editorLoadPromiseRef.current;
+	}, [readOnly]);
+
+	useEffect(() => {
+		isMountedRef.current = true;
 
 		return () => {
-			isMounted = false;
+			isMountedRef.current = false;
 			if (editorRef.current) {
 				void editorRef.current.stop();
 				editorRef.current.clear();
 				editorRef.current = null;
 			}
 		};
-	}, [readOnly]);
+	}, []);
+
+	useEffect(() => {
+		if (!readOnly) {
+			void createEditor();
+		}
+	}, [createEditor, readOnly]);
 
 	useEffect(() => {
 		if (editorRef.current) {
@@ -95,7 +127,7 @@ export function StrudelPlayer({
 	}, [code]);
 
 	const handlePlay = useCallback(async () => {
-		const editor = editorRef.current;
+		const editor = editorRef.current ?? (await createEditor());
 		if (!editor) return;
 
 		try {
@@ -105,7 +137,7 @@ export function StrudelPlayer({
 		} catch (err) {
 			setError(err instanceof Error ? err.message : "Evaluation error");
 		}
-	}, []);
+	}, [createEditor]);
 
 	const handlePause = useCallback(() => {
 		const editor = editorRef.current;
@@ -164,7 +196,7 @@ export function StrudelPlayer({
 							size="icon"
 							variant="ghost"
 							onClick={handlePlay}
-							disabled={isPlaying}
+							disabled={isPlaying || isRuntimeLoading}
 							aria-label={isPlaying ? "update" : "play"}
 							className="h-7 w-7 rounded-full hover:bg-emerald-500/20"
 						>
@@ -188,6 +220,7 @@ export function StrudelPlayer({
 						<pre className="p-4 overflow-x-auto text-xs sm:text-sm font-mono bg-slate-900/80">
 							{code}
 						</pre>
+						<div ref={editorContainerRef} className="sr-only" aria-hidden="true" />
 					</div>
 				) : (
 					<div ref={editorContainerRef} className="w-full min-h-[320px]" />
@@ -200,11 +233,17 @@ export function StrudelPlayer({
 				)}
 			</div>
 
-			<p className="text-xs sm:text-sm text-muted-foreground mt-2 sm:mt-3">
-				The Strudel REPL runs entirely in your browser. Edit the code and press{" "}
-				<span className="font-mono text-[11px]">Alt+Enter</span> to play,{" "}
-				<span className="font-mono text-[11px]">Alt+.</span> to pause.
-			</p>
+			{readOnly ? (
+				<p className="text-xs sm:text-sm text-muted-foreground mt-2 sm:mt-3">
+					Press play to load the Strudel runtime and listen in your browser.
+				</p>
+			) : (
+				<p className="text-xs sm:text-sm text-muted-foreground mt-2 sm:mt-3">
+					The Strudel REPL runs entirely in your browser. Edit the code and press{" "}
+					<span className="font-mono text-[11px]">Alt+Enter</span> to play,{" "}
+					<span className="font-mono text-[11px]">Alt+.</span> to pause.
+				</p>
+			)}
 		</div>
 	);
 }

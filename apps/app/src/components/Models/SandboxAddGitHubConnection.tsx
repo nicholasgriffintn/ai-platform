@@ -13,7 +13,6 @@ import {
 	Label,
 	Textarea,
 	Button,
-	DialogClose,
 } from "~/components/ui";
 import { useUpsertSandboxConnection, useSandboxInstallConfig } from "~/hooks/useSandbox";
 import { parseGitHubRepositoryList } from "~/lib/sandbox/repositories";
@@ -81,7 +80,6 @@ export const SandboxAddGitHubConnection = ({
 						Use our GitHub App installation for an automated setup, or set up your own connection
 						manually.
 					</DialogDescription>
-					<DialogClose onClick={onClose} />
 				</DialogHeader>
 
 				<div className="space-y-4">

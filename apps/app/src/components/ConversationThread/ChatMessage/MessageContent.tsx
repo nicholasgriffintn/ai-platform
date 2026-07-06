@@ -186,11 +186,13 @@ const renderTextContent = (
 };
 
 const renderImageContent = (imageUrl: string, index?: number): ReactNode => {
+	const imageLabel = `Attached content${index === undefined ? "" : ` ${index + 1}`}`;
+
 	return (
 		<div key={`image-attachment-${index ?? 0}`}>
 			<ImageModal
 				src={imageUrl}
-				alt="Attached content"
+				alt={imageLabel}
 				thumbnailClassName="rounded-lg"
 				imageClassName="rounded-lg"
 				crossOrigin="use-credentials"

@@ -1,4 +1,12 @@
-import { defaultCouncilMemberIds, type CouncilMemberId } from "@assistant/schemas";
+import { defaultCouncilMemberIds, type CouncilMemberId } from "@assistant/schemas/council-data";
+import {
+	SANDBOX_TIMEOUT_DEFAULT_SECONDS,
+	SANDBOX_TIMEOUT_MAX_SECONDS,
+	SANDBOX_TIMEOUT_MIN_SECONDS,
+	type SandboxPromptStrategy,
+	type SandboxTaskType,
+} from "@assistant/schemas/sandbox-constants";
+import type { SandboxModelSettings } from "@assistant/schemas";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router";
 
@@ -21,7 +29,7 @@ import {
 	buildConversationModeMetadata,
 	getConversationModeMetadata,
 } from "~/lib/home-chat-modes/conversation-mode";
-import { createModelReferenceMap, getModelByReference } from "~/lib/models";
+import { createModelReferenceMap, EMPTY_MODEL_CONFIG, getModelByReference } from "~/lib/models";
 import {
 	getComposedRealtimeReasoningModelId,
 	getDefaultLiveModelId,
@@ -33,14 +41,6 @@ import {
 } from "~/lib/realtime/live-providers";
 import { normaliseGitHubRepoInput } from "~/lib/sandbox/repositories";
 import { useChatStore } from "~/state/stores/chatStore";
-import {
-	SANDBOX_TIMEOUT_DEFAULT_SECONDS,
-	SANDBOX_TIMEOUT_MAX_SECONDS,
-	SANDBOX_TIMEOUT_MIN_SECONDS,
-	type SandboxModelSettings,
-	type SandboxPromptStrategy,
-	type SandboxTaskType,
-} from "@assistant/schemas";
 import type { ModelSelectionChangeHandler } from "~/types";
 import { LiveChatModeControls, LiveSessionComposerControls } from "./LiveChatModeControls";
 import { SandboxChatModeControls } from "./SandboxChatModeControls";
@@ -75,7 +75,7 @@ export function useHomeChatModeConfig(): {
 		setSandboxModeSettings,
 	} = useChatStore();
 	const { data: currentConversation } = useChat(currentConversationId);
-	const { data: apiModels = {} } = useModels();
+	const { data: apiModels = EMPTY_MODEL_CONFIG } = useModels();
 	const conversationModeMetadata = useMemo(
 		() => getConversationModeMetadata(currentConversation),
 		[currentConversation],

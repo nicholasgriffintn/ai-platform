@@ -1,7 +1,5 @@
-import {
-	canReplaceStoredConversationMessages,
-	type ConversationModeMetadata,
-} from "@assistant/schemas";
+import { canReplaceStoredConversationMessages } from "@assistant/schemas/conversation-replacement";
+import type { ConversationModeMetadata } from "@assistant/schemas";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useRef } from "react";
 

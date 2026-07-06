@@ -1,5 +1,7 @@
 import { useState, useCallback } from "react";
 import { normaliseToolIds, readToolIds } from "@assistant/schemas";
+import type { ParsedNumberInput } from "~/lib/number-input";
+import { getFiniteNumberOrFallback } from "~/lib/number-input";
 import { generateId } from "~/lib/utils";
 
 interface FewShotExample {
@@ -28,8 +30,8 @@ export function useAgentForm() {
 		{ id: generateId(), url: "", type: "sse" },
 	]);
 	const [selectedModel, setSelectedModel] = useState("");
-	const [temperature, setTemperature] = useState(0.7);
-	const [maxSteps, setMaxSteps] = useState(20);
+	const [temperature, setTemperature] = useState<ParsedNumberInput>(0.7);
+	const [maxSteps, setMaxSteps] = useState<ParsedNumberInput>(20);
 	const [systemPrompt, setSystemPrompt] = useState("");
 	const [useFewShotExamples, setUseFewShotExamples] = useState(false);
 	const [fewShotExamples, setFewShotExamples] = useState<FewShotExample[]>([
@@ -98,8 +100,8 @@ export function useAgentForm() {
 		const isModelAvailable = agentModel === "" || apiModels[agentModel]?.supportsToolCalls;
 
 		setSelectedModel(isModelAvailable ? agentModel : "");
-		setTemperature(agent.temperature ? Number.parseFloat(agent.temperature) : 0.7);
-		setMaxSteps(agent.max_steps || 20);
+		setTemperature(getFiniteNumberOrFallback(Number(agent.temperature), 0.7));
+		setMaxSteps(getFiniteNumberOrFallback(Number(agent.max_steps), 20));
 		setSystemPrompt(agent.system_prompt || "");
 
 		if (agent.few_shot_examples) {
@@ -140,6 +142,8 @@ export function useAgentForm() {
 
 	const getFormData = useCallback(() => {
 		const normalisedEnabledTools = normaliseToolIds(enabledTools);
+		const finiteTemperature = getFiniteNumberOrFallback(temperature, 0.7);
+		const finiteMaxSteps = getFiniteNumberOrFallback(maxSteps, 20);
 
 		return {
 			name,
@@ -149,8 +153,8 @@ export function useAgentForm() {
 				servers: servers.map((s) => ({ url: s.url, type: s.type })),
 			}),
 			...(selectedModel && { model: selectedModel }),
-			...(temperature !== 0.7 && { temperature }),
-			...(maxSteps !== 20 && { max_steps: maxSteps }),
+			...(finiteTemperature !== 0.7 && { temperature: finiteTemperature }),
+			...(finiteMaxSteps !== 20 && { max_steps: finiteMaxSteps }),
 			...(systemPrompt && { system_prompt: systemPrompt }),
 			...(useFewShotExamples && {
 				few_shot_examples: fewShotExamples.map(({ input, output }) => ({

@@ -4,6 +4,7 @@ import { useModels } from "~/hooks/useModels";
 import { useWebLLMModels } from "~/hooks/useWebLLMModels";
 import {
 	doesModelMatchId,
+	EMPTY_MODEL_CONFIG,
 	getAvailableModels,
 	getFeaturedModels,
 	getModelsByMode,
@@ -29,8 +30,8 @@ export function useConversationModelOptions({
 }: UseConversationModelOptionsOptions = {}) {
 	const chatMode = useChatStore((state) => state.chatMode);
 	const currentModelId = useChatStore((state) => state.model);
-	const { data: apiModels = {}, isLoading } = useModels();
-	const webLLMModels = useWebLLMModels();
+	const { data: apiModels = EMPTY_MODEL_CONFIG, isLoading } = useModels();
+	const webLLMModels = useWebLLMModels({ enabled: chatMode === "local" });
 
 	const availableModels = useMemo(
 		() => getAvailableModels(apiModels, chatMode === "local", webLLMModels),

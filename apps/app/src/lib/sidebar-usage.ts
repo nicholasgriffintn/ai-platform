@@ -1,4 +1,5 @@
 import type { UsageLimits } from "~/state/stores/usageStore";
+import { getBoundedPercentage } from "./percentage";
 
 export interface SidebarUsageItem {
 	id: string;
@@ -9,20 +10,8 @@ export interface SidebarUsageItem {
 	tone: "blue" | "emerald" | "amber";
 }
 
-function clampPercentage(value: number) {
-	if (!Number.isFinite(value)) {
-		return 0;
-	}
-
-	return Math.min(100, Math.max(0, value));
-}
-
-function getBoundedUsagePercentage(used: number, limit: number) {
-	if (!Number.isFinite(used) || !Number.isFinite(limit) || limit <= 0) {
-		return 0;
-	}
-
-	return clampPercentage((used / limit) * 100);
+export function getBoundedUsagePercentage(used: number, limit: number) {
+	return getBoundedPercentage(used, limit);
 }
 
 export function getSidebarUsageItems(usageLimits: UsageLimits | null): SidebarUsageItem[] {

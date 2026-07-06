@@ -25,7 +25,7 @@ import {
 import { useGenerateStrudelPattern, useSaveStrudelPattern } from "~/hooks/useStrudel";
 import { useModels } from "~/hooks/useModels";
 import { defaultCode, examplePatterns, type PatternExample } from "~/lib/strudel/examples";
-import { getAvailableModels } from "~/lib/models";
+import { EMPTY_MODEL_CONFIG, getAvailableModels } from "~/lib/models";
 import { cn } from "~/lib/utils";
 import type { StrudelComplexity, StrudelStyle } from "~/types";
 
@@ -65,7 +65,7 @@ export default function CreateStrudelPatternPage() {
 	const navigate = useNavigate();
 	const generateMutation = useGenerateStrudelPattern();
 	const saveMutation = useSaveStrudelPattern();
-	const { data: apiModels = {} } = useModels();
+	const { data: apiModels = EMPTY_MODEL_CONFIG } = useModels();
 
 	const [prompt, setPrompt] = useState("");
 	const [style, setStyle] = useState<"" | StrudelStyle>("");
@@ -80,20 +80,23 @@ export default function CreateStrudelPatternPage() {
 
 	const parsedTags = useMemo(() => parseTagsInput(tagsInput), [tagsInput]);
 
-	const availableModels = getAvailableModels(apiModels, false);
-	const textModels = Object.entries(availableModels)
-		.filter(([_, model]) => {
-			const inputs = model.modalities?.input ?? ["text"];
-			const outputs = model.modalities?.output ?? inputs;
-			const supportsOnlyText =
-				outputs.length === 1 && outputs[0] === "text" && inputs.includes("text");
-			return supportsOnlyText;
-		})
-		.map(([id, model]) => ({
-			value: id,
-			label: model.name || id,
-			provider: model.provider,
-		}));
+	const textModels = useMemo(() => {
+		const availableModels = getAvailableModels(apiModels, false);
+
+		return Object.entries(availableModels)
+			.filter(([_, model]) => {
+				const inputs = model.modalities?.input ?? ["text"];
+				const outputs = model.modalities?.output ?? inputs;
+				const supportsOnlyText =
+					outputs.length === 1 && outputs[0] === "text" && inputs.includes("text");
+				return supportsOnlyText;
+			})
+			.map(([id, model]) => ({
+				value: id,
+				label: model.name || id,
+				provider: model.provider,
+			}));
+	}, [apiModels]);
 
 	const handleGenerate = async () => {
 		if (!prompt.trim()) {

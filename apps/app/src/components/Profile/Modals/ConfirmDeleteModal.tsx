@@ -1,7 +1,13 @@
 import { Loader2 } from "lucide-react";
 
 import { Button } from "~/components/ui/Button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "~/components/ui/Dialog";
+import {
+	Dialog,
+	DialogContent,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+} from "~/components/ui/Dialog";
 
 export function ConfirmDeleteModal({
 	isOpen,
@@ -28,7 +34,7 @@ export function ConfirmDeleteModal({
 						<span className="font-medium text-foreground">"{agentName}"</span>? This action cannot
 						be undone.
 					</p>
-					<div className="flex justify-end gap-3">
+					<DialogFooter>
 						<Button variant="outline" onClick={onClose} disabled={isDeleting}>
 							Cancel
 						</Button>
@@ -42,7 +48,7 @@ export function ConfirmDeleteModal({
 								"Delete Agent"
 							)}
 						</Button>
-					</div>
+					</DialogFooter>
 				</div>
 			</DialogContent>
 		</Dialog>

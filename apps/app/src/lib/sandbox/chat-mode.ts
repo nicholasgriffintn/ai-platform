@@ -1,4 +1,4 @@
-import type { SandboxTaskType } from "@assistant/schemas";
+import type { SandboxTaskType } from "@assistant/schemas/sandbox-constants";
 
 export const SANDBOX_MODE_TOOL_NAMES = [
 	"run_feature_implementation",

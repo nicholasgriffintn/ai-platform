@@ -36,6 +36,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
 			children,
 			disabled,
 			type = "button",
+			"aria-busy": ariaBusy,
 			...props
 		},
 		ref,
@@ -82,12 +83,16 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
 				ref={ref}
 				type={type}
 				disabled={disabled || isLoading}
+				aria-busy={isLoading ? true : ariaBusy}
 				className={buttonClasses}
 				{...props}
 			>
 				{isLoading ? (
 					<div className="flex items-center justify-center">
-						<div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+						<div
+							className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"
+							aria-hidden="true"
+						/>
 						{children && <span className="ml-2">{children}</span>}
 					</div>
 				) : (

@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { useCopyToClipboard } from "~/hooks/useCopyToClipboard";
 import { cn } from "~/lib/utils";
 import { Button } from "./Button";
-import { Dialog, DialogClose, DialogContent, DialogHeader, DialogTitle } from "./Dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./Dialog";
 
 interface ShareDialogProps {
 	/** Type of item being shared */
@@ -152,7 +152,6 @@ export function ShareDialog({
 							{currentIsPublic ? finalLabels.manageTitle : finalLabels.title}
 						</DialogTitle>
 					</DialogHeader>
-					<DialogClose onClick={() => setIsOpen(false)} />
 
 					<div className="space-y-4 py-2">
 						{currentIsPublic && currentShareId ? (

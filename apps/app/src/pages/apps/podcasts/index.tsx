@@ -91,6 +91,8 @@ export default function PodcastsPage() {
 											src={podcast.imageUrl}
 											alt={podcast.title}
 											className="w-full h-full object-cover"
+											decoding="async"
+											loading="lazy"
 										/>
 									) : (
 										<div className="w-full h-full bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center">

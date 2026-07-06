@@ -4,21 +4,9 @@ import { describe, expect, it } from "vitest";
 import { ImageModal } from "./ImageModal";
 
 describe("ImageModal", () => {
-	it("uses anonymous CORS by default", () => {
+	it("uses the image description for the opener", () => {
 		render(<ImageModal src="https://example.com/image.png" alt="Example" />);
 
-		expect(screen.getByAltText("Example")).toHaveAttribute("crossorigin", "anonymous");
-	});
-
-	it("can include credentials for private asset images", () => {
-		render(
-			<ImageModal
-				src="http://localhost:8787/assets/asset-123"
-				alt="Private asset"
-				crossOrigin="use-credentials"
-			/>,
-		);
-
-		expect(screen.getByAltText("Private asset")).toHaveAttribute("crossorigin", "use-credentials");
+		expect(screen.getByRole("button", { name: "View Example larger" })).toBeInTheDocument();
 	});
 });

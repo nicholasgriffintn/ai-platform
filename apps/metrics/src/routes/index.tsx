@@ -4,13 +4,7 @@ import { useCallback, useState } from "react";
 import { MetricsControls } from "../components/controls";
 import { MetricsDashboard } from "../components/dashboard";
 import { Layout } from "../components/layout";
-
-interface MetricsParams {
-	status: string;
-	limit: number;
-	interval: number;
-	timeframe: number;
-}
+import type { MetricsParams } from "../lib/filters";
 
 async function fetchMetrics(params: MetricsParams) {
 	const searchParams = new URLSearchParams({

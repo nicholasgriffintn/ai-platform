@@ -1,4 +1,4 @@
-import { hasCompactionPart, isCompactionMarkerMessage } from "./message-parts";
+import { hasCompactionPart, isCompactionMarkerMessage } from "./message-part-utils";
 
 export type StoredConversationReplacementMessage = {
 	parts?: unknown;

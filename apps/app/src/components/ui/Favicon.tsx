@@ -27,6 +27,8 @@ export function Favicon({
 			alt=""
 			aria-hidden="true"
 			className={className}
+			decoding="async"
+			loading="lazy"
 			onError={(e) => {
 				const target = e.target as HTMLImageElement;
 				target.style.display = "none";

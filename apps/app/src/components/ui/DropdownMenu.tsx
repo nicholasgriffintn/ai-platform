@@ -1,4 +1,13 @@
-import { type ReactNode, useEffect, useRef, useState } from "react";
+import {
+	cloneElement,
+	isValidElement,
+	type MouseEvent as ReactMouseEvent,
+	type ReactElement,
+	type ReactNode,
+	useEffect,
+	useRef,
+	useState,
+} from "react";
 import type { ButtonProps } from "./Button";
 import { Button } from "./Button";
 
@@ -42,7 +51,7 @@ export const DropdownMenu = ({
 		if (!isOpen) return;
 
 		const menuItems = Array.from(
-			menuRef.current?.querySelectorAll('button[role="menuitem"]') || [],
+			menuRef.current?.querySelectorAll('[role="menuitem"]') || [],
 		) as HTMLElement[];
 		menuItemsRef.current = menuItems;
 
@@ -152,6 +161,7 @@ interface DropdownMenuItemProps {
 	children: ReactNode;
 	className?: string;
 	disabled?: boolean;
+	asChild?: boolean;
 }
 
 export const DropdownMenuItem = ({
@@ -160,12 +170,42 @@ export const DropdownMenuItem = ({
 	children,
 	className = "",
 	disabled = false,
+	asChild = false,
 }: DropdownMenuItemProps) => {
+	const itemClassName = `cursor-pointer flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-zinc-700 dark:text-zinc-200 hover:bg-off-white-highlight dark:hover:bg-zinc-700 disabled:opacity-50 disabled:cursor-not-allowed z-10 ${className}`;
+
+	if (asChild && isValidElement<MenuItemChildProps>(children)) {
+		const child = children as ReactElement<MenuItemChildProps>;
+		const handleClick = (event: ReactMouseEvent<HTMLElement>) => {
+			if (disabled) {
+				event.preventDefault();
+				return;
+			}
+
+			child.props.onClick?.(event);
+			onClick?.();
+		};
+
+		return cloneElement(child, {
+			className: `${itemClassName} ${child.props.className || ""}`,
+			role: "menuitem",
+			tabIndex: -1,
+			"aria-disabled": disabled || undefined,
+			onClick: handleClick,
+			children: (
+				<>
+					{icon}
+					{child.props.children}
+				</>
+			),
+		});
+	}
+
 	return (
 		<button
 			type="button"
 			onClick={onClick}
-			className={`cursor-pointer flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-zinc-700 dark:text-zinc-200 hover:bg-off-white-highlight dark:hover:bg-zinc-700 disabled:opacity-50 disabled:cursor-not-allowed z-10 ${className}`}
+			className={itemClassName}
 			disabled={disabled}
 			role="menuitem"
 			tabIndex={-1}
@@ -175,3 +215,12 @@ export const DropdownMenuItem = ({
 		</button>
 	);
 };
+
+interface MenuItemChildProps {
+	className?: string;
+	children?: ReactNode;
+	role?: string;
+	tabIndex?: number;
+	"aria-disabled"?: boolean;
+	onClick?: (event: ReactMouseEvent<HTMLElement>) => void;
+}

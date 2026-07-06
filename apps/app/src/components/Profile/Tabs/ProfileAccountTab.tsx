@@ -3,12 +3,21 @@ import { PageTitle } from "~/components/Core/PageTitle";
 import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
 import { useAuthStatus } from "~/hooks/useAuth";
 import { formatDate } from "~/lib/dates";
+import { getBoundedUsagePercentage } from "~/lib/sidebar-usage";
 
 const AUTH_DAILY_MESSAGE_LIMIT = 50;
 const DAILY_LIMIT_PRO_MODELS = 200;
 
 export function ProfileAccountTab() {
 	const { user } = useAuthStatus();
+	const dailyUsagePercentage = getBoundedUsagePercentage(
+		user?.daily_message_count || 0,
+		AUTH_DAILY_MESSAGE_LIMIT,
+	);
+	const proUsagePercentage = getBoundedUsagePercentage(
+		user?.daily_pro_message_count || 0,
+		DAILY_LIMIT_PRO_MODELS,
+	);
 
 	const formatTimeAgo = (dateString: string | null | undefined) => {
 		if (!dateString) return "N/A";
@@ -215,12 +224,12 @@ export function ProfileAccountTab() {
 										<div
 											className="bg-blue-500 h-2.5 rounded-full"
 											style={{
-												width: `${((user?.daily_message_count || 0) / AUTH_DAILY_MESSAGE_LIMIT) * 100}%`,
+												width: `${dailyUsagePercentage}%`,
 											}}
 										/>
 									</div>
 
-									<div className="flex items-center justify-between text-sm">
+									<div className="flex flex-col gap-2 text-sm sm:flex-row sm:items-center sm:justify-between">
 										<div className="text-zinc-700 dark:text-zinc-300 flex items-center">
 											<div className="h-3 w-3 bg-blue-500 rounded-full mr-2" />
 											<span>{AUTH_DAILY_MESSAGE_LIMIT} messages per day</span>
@@ -247,12 +256,12 @@ export function ProfileAccountTab() {
 											<div
 												className="bg-purple-500 h-2.5 rounded-full"
 												style={{
-													width: `${((user?.daily_pro_message_count || 0) / DAILY_LIMIT_PRO_MODELS) * 100}%`,
+													width: `${proUsagePercentage}%`,
 												}}
 											/>
 										</div>
 
-										<div className="flex items-center justify-between text-sm mb-4">
+										<div className="mb-4 flex flex-col gap-2 text-sm sm:flex-row sm:items-center sm:justify-between">
 											<div className="text-zinc-700 dark:text-zinc-300 flex items-center">
 												<div className="h-3 w-3 bg-purple-500 rounded-full mr-2" />
 												<span>{DAILY_LIMIT_PRO_MODELS} pro tokens per day</span>
@@ -266,7 +275,7 @@ export function ProfileAccountTab() {
 											<div className="text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
 												Approximate message equivalents:
 											</div>
-											<div className="grid grid-cols-3 gap-2">
+											<div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
 												<div className="bg-zinc-50 dark:bg-zinc-800 p-2 rounded">
 													<div className="text-xs text-zinc-500 dark:text-zinc-400">
 														Expensive models
@@ -304,7 +313,7 @@ export function ProfileAccountTab() {
 										</div>
 									</div>
 
-									<div className="flex items-center justify-between text-sm">
+									<div className="flex flex-col gap-2 text-sm sm:flex-row sm:items-center sm:justify-between">
 										<div className="text-zinc-700 dark:text-zinc-300 flex items-center">
 											<div className="h-3 w-3 bg-emerald-500 rounded-full mr-2" />
 											<span>Unlimited provider-key messages</span>

@@ -97,7 +97,15 @@ export const ModelIcon = forwardRef<HTMLDivElement, ModelIconProps>(
 		const iconLabel = provider ? `${modelName} by ${provider}` : modelName;
 
 		if (url) {
-			return <img src={url} alt={modelName} className="w-6 h-6 rounded-full object-cover" />;
+			return (
+				<img
+					src={url}
+					alt={modelName}
+					className="w-6 h-6 rounded-full object-cover"
+					decoding="async"
+					loading="lazy"
+				/>
+			);
 		}
 
 		return (

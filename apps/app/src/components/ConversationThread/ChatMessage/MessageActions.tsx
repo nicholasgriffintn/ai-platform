@@ -18,6 +18,7 @@ import { canBranchFromMessage } from "~/lib/chat/branching";
 import { isCompactionMarkerMessage } from "~/lib/chat/compaction-status";
 import type { OpinionRequest } from "~/lib/chat/opinion";
 import { resolveMessageSpeechAudioSource } from "~/lib/speech/message-speech";
+import { cn } from "~/lib/utils";
 import type { Message } from "~/types";
 import { MessageInfo } from "./MessageInfo";
 import { InlineModelSelector } from "../InlineModelSelector";
@@ -41,6 +42,9 @@ export interface MessageActionsProps {
 	isRequestingOpinion?: boolean;
 	isArchivedByCompaction?: boolean;
 }
+
+const messageActionButtonClassName =
+	"flex size-6 min-h-0 min-w-0 shrink-0 cursor-pointer items-center justify-center rounded-lg p-1 text-zinc-500 transition-colors duration-200 hover:bg-zinc-200/50 dark:text-zinc-400 dark:hover:bg-zinc-600/50";
 
 export const MessageActions = ({
 	message,
@@ -167,11 +171,12 @@ export const MessageActions = ({
 						type="button"
 						variant="icon"
 						onClick={copyMessageToClipboard}
-						className={`cursor-pointer p-1 hover:bg-zinc-200/50 dark:hover:bg-zinc-600/50 rounded-lg transition-colors duration-200 flex items-center ${
+						className={cn(
+							messageActionButtonClassName,
 							copied
 								? "text-green-500 dark:text-green-400 bg-green-100/50 dark:bg-green-900/20"
-								: "text-zinc-500 dark:text-zinc-400"
-						}`}
+								: undefined,
+						)}
 						title={copied ? "Copied!" : "Copy message"}
 						aria-label={copied ? "Copied!" : "Copy message"}
 					>
@@ -183,11 +188,12 @@ export const MessageActions = ({
 						type="button"
 						variant="icon"
 						onClick={handleReplaySpeech}
-						className={`cursor-pointer p-1 hover:bg-zinc-200/50 dark:hover:bg-zinc-600/50 rounded-lg transition-colors duration-200 flex items-center ${
+						className={cn(
+							messageActionButtonClassName,
 							isPlayingSpeech
 								? "text-emerald-500 dark:text-emerald-400 bg-emerald-100/50 dark:bg-emerald-900/20"
-								: "text-zinc-500 dark:text-zinc-400"
-						}`}
+								: undefined,
+						)}
 						title={isPlayingSpeech ? "Stop response audio" : "Replay response audio"}
 						aria-label={isPlayingSpeech ? "Stop response audio" : "Replay response audio"}
 					>
@@ -200,9 +206,10 @@ export const MessageActions = ({
 						variant="icon"
 						onClick={onEdit}
 						disabled={isEditing}
-						className={`cursor-pointer p-1 hover:bg-zinc-200/50 dark:hover:bg-zinc-600/50 rounded-lg transition-colors duration-200 flex items-center text-zinc-500 dark:text-zinc-400 ${
-							isEditing ? "opacity-50 cursor-not-allowed" : ""
-						}`}
+						className={cn(
+							messageActionButtonClassName,
+							isEditing && "cursor-not-allowed opacity-50",
+						)}
 						title={isEditing ? "Editing..." : "Edit message"}
 						aria-label={isEditing ? "Editing..." : "Edit message"}
 					>
@@ -215,9 +222,10 @@ export const MessageActions = ({
 						variant="icon"
 						onClick={onRetry}
 						disabled={isRetrying}
-						className={`cursor-pointer p-1 hover:bg-zinc-200/50 dark:hover:bg-zinc-600/50 rounded-lg transition-colors duration-200 flex items-center text-zinc-500 dark:text-zinc-400 ${
-							isRetrying ? "opacity-50 cursor-not-allowed" : ""
-						}`}
+						className={cn(
+							messageActionButtonClassName,
+							isRetrying && "cursor-not-allowed opacity-50",
+						)}
 						title={isRetrying ? "Retrying..." : "Retry message"}
 						aria-label={isRetrying ? "Retrying..." : "Retry message"}
 					>
@@ -229,9 +237,12 @@ export const MessageActions = ({
 						<PopoverTrigger asChild>
 							<Button
 								type="button"
-								variant={"icon"}
+								variant="icon"
 								disabled={isRequestingOpinion}
-								className={`cursor-pointer hover:bg-zinc-200/50 dark:hover:bg-zinc-600/50 rounded-lg transition-colors duration-200 flex items-center text-zinc-500 dark:text-zinc-400 ${"p-1"} ${isRequestingOpinion ? "opacity-50 cursor-not-allowed" : ""}`}
+								className={cn(
+									messageActionButtonClassName,
+									isRequestingOpinion && "cursor-not-allowed opacity-50",
+								)}
 								title={isRequestingOpinion ? "Requesting opinion..." : "Get second opinion"}
 								aria-label={isRequestingOpinion ? "Requesting opinion..." : "Get second opinion"}
 							>
@@ -263,9 +274,10 @@ export const MessageActions = ({
 										type="button"
 										variant="icon"
 										disabled={isBranching}
-										className={`cursor-pointer p-1 hover:bg-zinc-200/50 dark:hover:bg-zinc-600/50 rounded-lg transition-colors duration-200 flex items-center text-zinc-500 dark:text-zinc-400 ${
-											isBranching ? "opacity-50 cursor-not-allowed" : ""
-										}`}
+										className={cn(
+											messageActionButtonClassName,
+											isBranching && "cursor-not-allowed opacity-50",
+										)}
 										title={isBranching ? "Branching..." : "Branch conversation"}
 										aria-label={isBranching ? "Branching..." : "Branch conversation"}
 									>
@@ -292,9 +304,10 @@ export const MessageActions = ({
 								variant="icon"
 								onClick={handleAssistantBranchClick}
 								disabled={isBranching}
-								className={`cursor-pointer p-1 hover:bg-zinc-200/50 dark:hover:bg-zinc-600/50 rounded-lg transition-colors duration-200 flex items-center text-zinc-500 dark:text-zinc-400 ${
-									isBranching ? "opacity-50 cursor-not-allowed" : ""
-								}`}
+								className={cn(
+									messageActionButtonClassName,
+									isBranching && "cursor-not-allowed opacity-50",
+								)}
 								title={isBranching ? "Branching..." : "Branch conversation"}
 								aria-label={isBranching ? "Branching..." : "Branch conversation"}
 							>
@@ -304,12 +317,7 @@ export const MessageActions = ({
 					</div>
 				)}
 				{message.role !== "user" && (message.created || message.timestamp) && (
-					<MessageInfo
-						message={message}
-						buttonClassName={
-							"cursor-pointer p-1 hover:bg-zinc-200/50 dark:hover:bg-zinc-600/50 rounded-lg transition-colors duration-200 flex items-center text-zinc-500 dark:text-zinc-400"
-						}
-					/>
+					<MessageInfo message={message} buttonClassName={messageActionButtonClassName} />
 				)}
 			</div>
 			{!isSharedView && message.role !== "user" && message.log_id && (
@@ -320,15 +328,14 @@ export const MessageActions = ({
 						variant="icon"
 						onClick={() => submitFeedback(1)}
 						disabled={isSubmittingFeedback || feedbackState === "liked"}
-						className={`cursor-pointer p-1 hover:bg-zinc-200/50 dark:hover:bg-zinc-600/50 rounded-lg transition-colors duration-200 ${
+						className={cn(
+							messageActionButtonClassName,
 							feedbackState === "liked"
 								? "text-green-500 dark:text-green-400 bg-green-100/50 dark:bg-green-900/20"
-								: "text-zinc-500 dark:text-zinc-400"
-						} ${
-							isSubmittingFeedback || feedbackState === "liked"
-								? "opacity-50 cursor-not-allowed"
-								: ""
-						}`}
+								: undefined,
+							(isSubmittingFeedback || feedbackState === "liked") &&
+								"cursor-not-allowed opacity-50",
+						)}
 						title={feedbackState === "liked" ? "Feedback submitted" : "Thumbs up"}
 						aria-label={feedbackState === "liked" ? "Feedback submitted" : "Thumbs up"}
 					>
@@ -339,15 +346,14 @@ export const MessageActions = ({
 						variant="icon"
 						onClick={() => submitFeedback(-1)}
 						disabled={isSubmittingFeedback || feedbackState === "disliked"}
-						className={`cursor-pointer p-1 hover:bg-zinc-200/50 dark:hover:bg-zinc-600/50 rounded-lg transition-colors duration-200 ${
+						className={cn(
+							messageActionButtonClassName,
 							feedbackState === "disliked"
 								? "text-red-500 dark:text-red-400 bg-red-100/50 dark:bg-red-900/20"
-								: "text-zinc-500 dark:text-zinc-400"
-						} ${
-							isSubmittingFeedback || feedbackState === "disliked"
-								? "opacity-50 cursor-not-allowed"
-								: ""
-						}`}
+								: undefined,
+							(isSubmittingFeedback || feedbackState === "disliked") &&
+								"cursor-not-allowed opacity-50",
+						)}
 						title={feedbackState === "disliked" ? "Feedback submitted" : "Thumbs down"}
 						aria-label={feedbackState === "disliked" ? "Feedback submitted" : "Thumbs down"}
 					>

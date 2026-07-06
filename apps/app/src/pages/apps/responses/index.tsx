@@ -1,4 +1,5 @@
 import { Clock } from "lucide-react";
+import { useMemo } from "react";
 import { Link } from "react-router";
 
 import { getIcon } from "~/components/Apps/utils";
@@ -27,7 +28,10 @@ export default function DynamicAppResponsesPage() {
 	const { data: responses, isLoading, error } = useDynamicAppResponses();
 
 	const { data: appsData } = useDynamicApps();
-	const appMap = new Map((appsData?.apps ?? []).map((a) => [a.id, a] as const));
+	const appMap = useMemo(
+		() => new Map((appsData?.apps ?? []).map((app) => [app.id, app] as const)),
+		[appsData?.apps],
+	);
 
 	return (
 		<PageShell

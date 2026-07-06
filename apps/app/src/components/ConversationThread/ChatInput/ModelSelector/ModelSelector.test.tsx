@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, within } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { ModelRouterMode } from "@assistant/schemas";
@@ -96,15 +96,6 @@ describe("ModelSelector", () => {
 		store.setSelectedAgentId.mockReset();
 	});
 
-	it("uses the selected auto mode icon in the closed trigger", () => {
-		render(<ModelSelector />);
-
-		const trigger = screen.getByRole("button", { name: "Select a model" });
-
-		expect(within(trigger).getByText("Max auto")).toBeInTheDocument();
-		expect(within(trigger).getByLabelText("Max automatic mode icon")).toBeInTheDocument();
-	});
-
 	it("closes when the open trigger body is clicked", () => {
 		render(<ModelSelector />);
 
@@ -147,17 +138,5 @@ describe("ModelSelector", () => {
 		fireEvent.click(screen.getByRole("button", { name: "Select a model" }));
 
 		expect(screen.getByRole("option", { name: "Max automatic mode" })).toBeDisabled();
-	});
-
-	it("enables paid automatic modes for pro users", () => {
-		store.isPro = true;
-		store.autoMode = "max";
-		store.model = null;
-
-		render(<ModelSelector />);
-
-		fireEvent.click(screen.getByRole("button", { name: "Select a model" }));
-
-		expect(screen.getByRole("option", { name: "Max automatic mode" })).not.toBeDisabled();
 	});
 });

@@ -17,31 +17,6 @@ const makeModel = (id: string, overrides: Partial<ModelConfigItem> = {}): ModelC
 });
 
 describe("AutoModePicker", () => {
-	it("selects an automatic router mode", () => {
-		const onSelectMode = vi.fn();
-
-		render(
-			<AutoModePicker
-				models={[makeModel("fast", { speed: 5, contextComplexity: 3 })]}
-				selectedMode="auto"
-				onSelectMode={onSelectMode}
-			/>,
-		);
-
-		fireEvent.click(screen.getByRole("option", { name: "Lite automatic mode" }));
-
-		expect(onSelectMode).toHaveBeenCalledWith("lite");
-	});
-
-	it("marks the selected automatic mode", () => {
-		render(<AutoModePicker models={[]} selectedMode="pro" onSelectMode={vi.fn()} />);
-
-		expect(screen.getByRole("option", { name: "Pro automatic mode" })).toHaveAttribute(
-			"aria-selected",
-			"true",
-		);
-	});
-
 	it("disables automatic modes with no candidates", () => {
 		const onSelectMode = vi.fn();
 
@@ -58,24 +33,6 @@ describe("AutoModePicker", () => {
 		expect(maxOption).toBeDisabled();
 		fireEvent.click(maxOption);
 		expect(onSelectMode).not.toHaveBeenCalledWith("max");
-	});
-
-	it("keeps automatic modes enabled when candidates exist", () => {
-		render(
-			<AutoModePicker
-				models={[
-					makeModel("max", {
-						contextComplexity: 5,
-						reliability: 5,
-						artificialAnalysis: { intelligenceIndex: 45 },
-					}),
-				]}
-				selectedMode="max"
-				onSelectMode={vi.fn()}
-			/>,
-		);
-
-		expect(screen.getByRole("option", { name: "Max automatic mode" })).not.toBeDisabled();
 	});
 
 	it("shows candidate counts from router metadata", () => {

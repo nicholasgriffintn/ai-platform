@@ -1,6 +1,7 @@
 import { ExternalLink } from "lucide-react";
 
 import type { ModelConfigItem } from "@assistant/schemas";
+import { clampPercentage } from "~/lib/percentage";
 
 type ArtificialAnalysisScore = {
 	key: "intelligenceIndex" | "codingIndex" | "agenticIndex";
@@ -54,7 +55,7 @@ function getScoreWidth(score: DisplayScore) {
 	const boundedValue = Math.min(max, Math.max(min, score.value));
 	const ratio = (boundedValue - min) / range;
 	const percentage = score.lowerIsBetter ? (1 - ratio) * 100 : ratio * 100;
-	return `${Math.min(100, Math.max(0, percentage))}%`;
+	return `${clampPercentage(percentage)}%`;
 }
 
 function formatScore(score: number) {

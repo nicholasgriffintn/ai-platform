@@ -1,4 +1,8 @@
-import { defaultCouncilMemberIds, councilMembers, type CouncilMemberId } from "@assistant/schemas";
+import {
+	defaultCouncilMemberIds,
+	councilMembers,
+	type CouncilMemberId,
+} from "@assistant/schemas/council-data";
 import { UsersRound } from "lucide-react";
 import { useMemo } from "react";
 

@@ -2,16 +2,8 @@
 
 import { Bar, CartesianGrid, Cell, ComposedChart, Legend, Line, XAxis, YAxis } from "recharts";
 
+import { buildMetricsChartData, type MetricDataPoint } from "./chart-data";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "./ui/chart";
-
-interface MetricDataPoint {
-	timestamp: string;
-	provider: string;
-	latency: number;
-	promptTokens: number;
-	completionTokens: number;
-	totalTokens: number;
-}
 
 interface CombinedMetricsChartProps {
 	data: MetricDataPoint[];
@@ -27,77 +19,7 @@ export function CombinedMetricsChart({ data, interval = 60 }: CombinedMetricsCha
 		);
 	}
 
-	const sanitizedData = data
-		.map((point) => {
-			const raw = point.timestamp || "";
-			const normalized = raw.includes("T") ? raw : raw.replace(" ", "T");
-			const dateObj = new Date(normalized);
-			const time = dateObj.getTime();
-			return {
-				timestamp: normalized,
-				time,
-				provider: point.provider || "unknown",
-				latency: typeof point.latency === "number" ? point.latency : 0,
-				promptTokens: typeof point.promptTokens === "number" ? point.promptTokens : 0,
-				completionTokens: typeof point.completionTokens === "number" ? point.completionTokens : 0,
-				totalTokens: typeof point.totalTokens === "number" ? point.totalTokens : 0,
-			};
-		})
-		.sort((a, b) => a.time - b.time);
-
-	const extendedData = [...sanitizedData];
-	const lastEntry = sanitizedData[sanitizedData.length - 1];
-
-	if (lastEntry?.timestamp) {
-		const currentDate = new Date();
-		const lastEntryDate = new Date(lastEntry.timestamp.replace(" ", "T"));
-
-		if (!Number.isNaN(lastEntryDate.getTime())) {
-			while (lastEntryDate < currentDate) {
-				lastEntryDate.setMinutes(lastEntryDate.getMinutes() + interval);
-
-				if (lastEntryDate < currentDate) {
-					const interpolatedTimestamp = `${lastEntryDate.toISOString().split("T")[0]} ${lastEntryDate.getHours().toString().padStart(2, "0")}:${lastEntryDate.getMinutes().toString().padStart(2, "0")}`;
-
-					const normalizedInterp = interpolatedTimestamp.includes("T")
-						? interpolatedTimestamp
-						: interpolatedTimestamp.replace(" ", "T");
-					const interpTime = new Date(normalizedInterp).getTime();
-					extendedData.push({
-						timestamp: interpolatedTimestamp,
-						time: interpTime,
-						provider: lastEntry.provider,
-						latency: 0,
-						promptTokens: 0,
-						completionTokens: 0,
-						totalTokens: 0,
-					});
-				}
-			}
-
-			const currentMinutes = currentDate.getMinutes();
-			const roundedMinutes = Math.floor(currentMinutes / interval) * interval;
-			currentDate.setMinutes(roundedMinutes);
-
-			const currentTimestamp = `${currentDate.toISOString().split("T")[0]} ${currentDate.getHours().toString().padStart(2, "0")}:${currentDate.getMinutes().toString().padStart(2, "0")}`;
-
-			if (currentTimestamp > lastEntry.timestamp) {
-				const normalizedCurr = currentTimestamp.includes("T")
-					? currentTimestamp
-					: currentTimestamp.replace(" ", "T");
-				const currTime = new Date(normalizedCurr).getTime();
-				extendedData.push({
-					timestamp: currentTimestamp,
-					time: currTime,
-					provider: lastEntry.provider,
-					latency: 0,
-					promptTokens: 0,
-					completionTokens: 0,
-					totalTokens: 0,
-				});
-			}
-		}
-	}
+	const extendedData = buildMetricsChartData({ data, interval });
 
 	const formatLatency = (value: number) => `${value.toLocaleString()}ms`;
 	const formatTokens = (value: number) => `${value.toLocaleString()}`;

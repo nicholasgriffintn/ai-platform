@@ -22,6 +22,8 @@ export function AgentCard({
 							src={agent.avatar_url || "/placeholder.svg"}
 							alt={agent.name}
 							className="w-12 h-12 rounded-full object-cover"
+							decoding="async"
+							loading="lazy"
 						/>
 					)}
 

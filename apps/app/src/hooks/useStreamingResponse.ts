@@ -7,7 +7,7 @@ import { apiService } from "~/lib/api/api-service";
 import { readCompactionStatusMessage } from "~/lib/chat/compaction-status";
 import { normalizeSelectedModel } from "~/lib/chat/model-selection";
 import { getChatStreamLoadingMessage } from "~/lib/chat/stream-state";
-import { getModelProvider } from "~/lib/models";
+import { EMPTY_MODEL_CONFIG, getModelProvider } from "~/lib/models";
 import { getMessageTextContent, normalizeMessage } from "~/lib/messages";
 import { normaliseUsageLimits } from "~/lib/usage-limits";
 import type { ChatRequestOptions, Message } from "~/types";
@@ -54,7 +54,7 @@ export function useStreamingResponse(
 	const [controller, setController] = useState(() => new AbortController());
 	const assistantResponseRef = useRef<string>("");
 	const assistantReasoningRef = useRef<string>("");
-	const { data: apiModels = {} } = useModels();
+	const { data: apiModels = EMPTY_MODEL_CONFIG } = useModels();
 
 	const {
 		addMessageToConversation,

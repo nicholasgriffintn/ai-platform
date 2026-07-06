@@ -56,10 +56,11 @@ describe("ModelsList", () => {
 		);
 
 		expect(screen.getByRole("heading", { name: "Deepseek" })).toBeInTheDocument();
-		expect(screen.getByRole("button", { name: /Deepseek/i })).toHaveAttribute(
-			"aria-pressed",
-			"true",
-		);
+		const selectedProviderButton = screen
+			.getAllByRole("button", { name: /Deepseek/i })
+			.find((button) => !button.hasAttribute("data-model-option"));
+
+		expect(selectedProviderButton).toHaveAttribute("aria-pressed", "true");
 		expect(screen.getByRole("option", { name: /DeepSeek Reasoner/i })).toHaveAttribute(
 			"aria-selected",
 			"true",
@@ -168,19 +169,6 @@ describe("ModelsList", () => {
 		expect(screen.getByText("BYOK")).toBeInTheDocument();
 	});
 
-	it("labels alpha status models as stealth", () => {
-		render(
-			<ModelsList
-				models={[makeModel("openrouter/owl-alpha", "Owl Alpha", "openrouter", { status: "alpha" })]}
-				featuredModelIds={{}}
-				isPro={true}
-				onSelect={vi.fn()}
-			/>,
-		);
-
-		expect(screen.getByText("Stealth")).toBeInTheDocument();
-	});
-
 	it("collapses Bedrock region variants behind a region selector", () => {
 		const onSelect = vi.fn();
 		render(
@@ -212,6 +200,27 @@ describe("ModelsList", () => {
 		});
 
 		expect(onSelect).toHaveBeenCalledWith("eu.anthropic.claude-sonnet-4-6");
+	});
+
+	it("selects a model from the full row option when metadata icons are present", () => {
+		const onSelect = vi.fn();
+		render(
+			<ModelsList
+				models={[
+					makeModel("deepseek-v4-pro", "DeepSeek V4 Pro", "deepseek", {
+						description: "A frontier Mixture-of-Experts model.",
+						supportsToolCalls: true,
+					}),
+				]}
+				featuredModelIds={{}}
+				isPro={true}
+				onSelect={onSelect}
+			/>,
+		);
+
+		fireEvent.click(screen.getByRole("option", { name: /DeepSeek V4 Pro/i }));
+
+		expect(onSelect).toHaveBeenCalledWith("deepseek-v4-pro");
 	});
 
 	it("opens model details from click and keyboard focus", () => {

@@ -4,7 +4,7 @@ import {
 	stringifyAnalyticsProperties,
 	type AnalyticsEvent as SharedAnalyticsEvent,
 	type AnalyticsEventProperties,
-} from "@assistant/schemas";
+} from "@assistant/schemas/analytics";
 
 import type { User } from "~/types";
 

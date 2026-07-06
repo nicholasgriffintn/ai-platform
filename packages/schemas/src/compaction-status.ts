@@ -1,9 +1,12 @@
 import {
 	compactionStatusLabels,
 	hasInvalidCompactionPart,
+	isCompactionMarkerMessage,
 	normaliseCompactionParts,
 	type CompactionMessagePart,
-} from "./message-parts";
+} from "./message-part-utils";
+
+export { compactionStatusLabels, isCompactionMarkerMessage };
 
 export type CompactionStatusMessageContent = string | unknown[] | Record<string, unknown>;
 

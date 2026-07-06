@@ -9,6 +9,14 @@ import {
 } from "lucide-react";
 import { type ReactNode, useState } from "react";
 import { Link } from "react-router";
+import {
+	SANDBOX_TASK_TYPES,
+	SANDBOX_TIMEOUT_DEFAULT_SECONDS,
+	SANDBOX_TIMEOUT_MAX_SECONDS,
+	SANDBOX_TIMEOUT_MIN_SECONDS,
+	type SandboxPromptStrategy,
+	type SandboxTaskType,
+} from "@assistant/schemas/sandbox-constants";
 
 import { Checkbox, Input } from "~/components/ui";
 import { Popover, PopoverContent, PopoverTrigger } from "~/components/ui/popover";
@@ -17,14 +25,6 @@ import {
 	sandboxPromptStrategyOptions,
 } from "~/lib/sandbox/prompt-strategies";
 import { cn } from "~/lib/utils";
-import {
-	SANDBOX_TASK_TYPES,
-	SANDBOX_TIMEOUT_DEFAULT_SECONDS,
-	SANDBOX_TIMEOUT_MAX_SECONDS,
-	SANDBOX_TIMEOUT_MIN_SECONDS,
-	type SandboxPromptStrategy,
-	type SandboxTaskType,
-} from "@assistant/schemas";
 
 const SANDBOX_TASK_TYPE_LABELS: Record<SandboxTaskType, string> = {
 	"feature-implementation": "Feature implementation",

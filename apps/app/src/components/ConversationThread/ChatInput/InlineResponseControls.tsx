@@ -5,7 +5,7 @@ import { useMemo, useState } from "react";
 import { Popover, PopoverContent, PopoverTrigger } from "~/components/ui/popover";
 import { useModels } from "~/hooks/useModels";
 import { useWebLLMModels } from "~/hooks/useWebLLMModels";
-import { getAvailableModels } from "~/lib/models";
+import { EMPTY_MODEL_CONFIG, getAvailableModels } from "~/lib/models";
 import {
 	formatReasoningLabel,
 	getDefaultReasoningEffort,
@@ -118,12 +118,12 @@ function InlineSettingSelect<T extends string>({
 }
 
 export function InlineResponseControls({ isDisabled = false }: InlineResponseControlsProps) {
-	const { chatSettings, model, setChatSettings } = useChatStore();
-	const { data: apiModels = {} } = useModels();
-	const webLLMModels = useWebLLMModels();
+	const { chatMode, chatSettings, model, setChatSettings } = useChatStore();
+	const { data: apiModels = EMPTY_MODEL_CONFIG } = useModels();
+	const webLLMModels = useWebLLMModels({ enabled: chatMode === "local" });
 	const availableModels = useMemo(
-		() => getAvailableModels(apiModels, true, webLLMModels),
-		[apiModels, webLLMModels],
+		() => getAvailableModels(apiModels, chatMode === "local", webLLMModels),
+		[apiModels, chatMode, webLLMModels],
 	);
 	const selectedModelConfig = model ? availableModels[model] : undefined;
 

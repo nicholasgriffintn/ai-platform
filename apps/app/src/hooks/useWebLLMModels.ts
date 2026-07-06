@@ -3,10 +3,18 @@ import { useEffect, useState } from "react";
 import { getCachedWebLLMModels, loadWebLLMModels } from "~/lib/web-llm-models";
 import type { ModelConfig } from "@assistant/schemas";
 
-export function useWebLLMModels() {
+interface UseWebLLMModelsOptions {
+	enabled?: boolean;
+}
+
+export function useWebLLMModels({ enabled = true }: UseWebLLMModelsOptions = {}) {
 	const [models, setModels] = useState<ModelConfig>(() => getCachedWebLLMModels());
 
 	useEffect(() => {
+		if (!enabled) {
+			return;
+		}
+
 		let mounted = true;
 
 		loadWebLLMModels()
@@ -22,7 +30,7 @@ export function useWebLLMModels() {
 		return () => {
 			mounted = false;
 		};
-	}, []);
+	}, [enabled]);
 
 	return models;
 }

@@ -15,6 +15,51 @@
 			"types": "./dist/index.d.ts",
 			"import": "./dist/index.mjs",
 			"require": "./dist/index.js"
+		},
+		"./analytics": {
+			"types": "./dist/analytics.d.ts",
+			"import": "./dist/analytics.mjs",
+			"require": "./dist/analytics.js"
+		},
+		"./chat-stream": {
+			"types": "./dist/chat-stream.d.ts",
+			"import": "./dist/chat-stream.mjs",
+			"require": "./dist/chat-stream.js"
+		},
+		"./compaction-status": {
+			"types": "./dist/compaction-status.d.ts",
+			"import": "./dist/compaction-status.mjs",
+			"require": "./dist/compaction-status.js"
+		},
+		"./conversation-replacement": {
+			"types": "./dist/conversation-replacement.d.ts",
+			"import": "./dist/conversation-replacement.mjs",
+			"require": "./dist/conversation-replacement.js"
+		},
+		"./council-data": {
+			"types": "./dist/council-data.d.ts",
+			"import": "./dist/council-data.mjs",
+			"require": "./dist/council-data.js"
+		},
+		"./message-part-utils": {
+			"types": "./dist/message-part-utils.d.ts",
+			"import": "./dist/message-part-utils.mjs",
+			"require": "./dist/message-part-utils.js"
+		},
+		"./provider-messages": {
+			"types": "./dist/provider-messages.d.ts",
+			"import": "./dist/provider-messages.mjs",
+			"require": "./dist/provider-messages.js"
+		},
+		"./sandbox-constants": {
+			"types": "./dist/sandbox-constants.d.ts",
+			"import": "./dist/sandbox-constants.mjs",
+			"require": "./dist/sandbox-constants.js"
+		},
+		"./tool-ids": {
+			"types": "./dist/tool-ids.d.ts",
+			"import": "./dist/tool-ids.mjs",
+			"require": "./dist/tool-ids.js"
 		}
 	},
 	"scripts": {

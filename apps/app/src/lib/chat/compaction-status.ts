@@ -2,7 +2,7 @@ import {
 	compactionStatusLabels,
 	isCompactionMarkerMessage as isSchemaCompactionMarkerMessage,
 	normaliseCompactionStatusMessage,
-} from "@assistant/schemas";
+} from "@assistant/schemas/compaction-status";
 import type { Message, MessageContent } from "~/types";
 import { isRecord } from "../objects";
 

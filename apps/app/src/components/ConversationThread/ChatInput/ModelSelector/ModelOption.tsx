@@ -35,15 +35,6 @@ interface ModelOptionProps {
 	onInfoHoverEnd?: () => void;
 }
 
-function isInteractiveEventTarget(target: EventTarget | null) {
-	return (
-		target instanceof HTMLButtonElement ||
-		target instanceof HTMLInputElement ||
-		target instanceof HTMLSelectElement ||
-		target instanceof HTMLTextAreaElement
-	);
-}
-
 export const ModelOption = ({
 	model,
 	isSelected,
@@ -58,18 +49,6 @@ export const ModelOption = ({
 	onInfoHoverStart,
 	onInfoHoverEnd,
 }: ModelOptionProps) => {
-	const handleKeyDown = (e: React.KeyboardEvent) => {
-		if (isInteractiveEventTarget(e.target)) {
-			return;
-		}
-		if (e.key === "Enter" || e.key === " ") {
-			e.preventDefault();
-			if (!disabled) {
-				onClick();
-			}
-		}
-	};
-
 	const showDetailsTrigger = Boolean(
 		model.description ||
 		(model.strengths && model.strengths.length > 0) ||
@@ -79,24 +58,40 @@ export const ModelOption = ({
 	);
 	const canShowHoverPreview = showDetailsTrigger && Boolean(onInfoHoverStart);
 	const hasRegionOptions = regionOptions.length > 1;
+	const selectModel = () => {
+		if (disabled) {
+			return;
+		}
+
+		onClick();
+	};
+	const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+		if (event.key !== "Enter" && event.key !== " ") {
+			return;
+		}
+
+		event.preventDefault();
+		selectModel();
+	};
 	const showModelDetails = (event: React.SyntheticEvent<HTMLButtonElement>) => {
 		event.stopPropagation();
-		const rowElement = event.currentTarget.closest('[role="option"]');
+		const rowElement = event.currentTarget.closest("[data-model-option-row]");
 		const anchorElement = rowElement instanceof HTMLElement ? rowElement : event.currentTarget;
 		onInfoHoverStart?.(model, anchorElement.getBoundingClientRect());
 	};
 
 	return (
 		<div
-			onClick={disabled ? undefined : onClick}
-			onKeyDown={handleKeyDown}
 			role="option"
-			aria-selected={isSelected}
-			aria-disabled={disabled || undefined}
-			id={`model-${model.matchingModel}`}
 			tabIndex={disabled ? -1 : 0}
+			data-model-option
+			data-model-option-row
+			aria-disabled={disabled || undefined}
+			aria-selected={isSelected}
+			onClick={selectModel}
+			onKeyDown={handleKeyDown}
 			className={cn(
-				"w-full rounded-lg border px-3 py-2 text-left text-sm transition-colors",
+				"w-full rounded-lg border px-3 py-2 text-left text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500/40",
 				!disabled
 					? "cursor-pointer"
 					: "cursor-not-allowed border-zinc-200/60 opacity-50 dark:border-zinc-700/60",
@@ -159,7 +154,12 @@ export const ModelOption = ({
 				</div>
 				<div className="flex w-full flex-wrap items-center gap-1.5 pl-[2.6rem] sm:w-[124px] sm:flex-shrink-0 sm:justify-end sm:pl-0">
 					{hasRegionOptions && (
-						<label className="relative flex max-w-[112px] items-center" title="Region">
+						<label
+							className="relative flex max-w-[112px] items-center"
+							title="Region"
+							onClick={(event) => event.stopPropagation()}
+							onMouseDown={(event) => event.stopPropagation()}
+						>
 							<Globe2
 								size={12}
 								className="pointer-events-none absolute left-1.5 text-zinc-500 dark:text-zinc-400"

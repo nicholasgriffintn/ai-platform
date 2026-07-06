@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { SignInWithAppleWebButton } from "~/components/Auth/SignInWithAppleWebButton";
 import GithubIcon from "~/components/ModelIcon/Icons/github";
 import { Button, FormInput } from "~/components/ui";
-import { Dialog, DialogContent } from "~/components/ui/Dialog";
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from "~/components/ui/Dialog";
 import { APP_NAME } from "~/constants";
 import { useTrackEvent } from "~/hooks/use-track-event";
 import { useAuthStatus } from "~/hooks/useAuth";
@@ -152,6 +152,10 @@ export const LoginModal = ({ open, onOpenChange, onKeySubmit }: LoginModalProps)
 		return (
 			<Dialog open={open} onOpenChange={onOpenChange} width="480px">
 				<DialogContent>
+					<DialogTitle className="sr-only">Checking authentication status</DialogTitle>
+					<DialogDescription className="sr-only">
+						Wait while your authentication status is checked.
+					</DialogDescription>
 					<div className="flex flex-col items-center justify-center gap-4 py-8">
 						<Loader2 size={32} className="animate-spin text-blue-600" />
 						<p className="text-sm text-zinc-600 dark:text-zinc-400">
@@ -168,9 +172,9 @@ export const LoginModal = ({ open, onOpenChange, onKeySubmit }: LoginModalProps)
 			<Dialog open={open} onOpenChange={onOpenChange} width="480px">
 				<DialogContent>
 					<div className="p-6">
-						<h2 className="text-xl font-semibold text-zinc-900 dark:text-white">
+						<DialogTitle className="text-xl font-semibold text-zinc-900 dark:text-white">
 							You are already signed in.
-						</h2>
+						</DialogTitle>
 					</div>
 				</DialogContent>
 			</Dialog>
@@ -183,12 +187,12 @@ export const LoginModal = ({ open, onOpenChange, onKeySubmit }: LoginModalProps)
 				<div className="p-6">
 					<div className="space-y-6">
 						<div>
-							<h2 className="text-xl font-semibold text-zinc-900 dark:text-white">
+							<DialogTitle className="text-xl font-semibold text-zinc-900 dark:text-white">
 								Sign in to {APP_NAME}
-							</h2>
-							<p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+							</DialogTitle>
+							<DialogDescription className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
 								Sign in with GitHub, Passkey, Apple, or use a Magic Link to continue.
-							</p>
+							</DialogDescription>
 						</div>
 
 						<div className={`${AUTH_CONTROL_CLASS_NAME} space-y-6`}>
@@ -210,7 +214,7 @@ export const LoginModal = ({ open, onOpenChange, onKeySubmit }: LoginModalProps)
 									className={GITHUB_BUTTON_CLASS_NAME}
 									disabled={isAuthenticatingWithPasskey || isRequestingLink}
 									icon={
-										<span className={GITHUB_ICON_CLASS_NAME}>
+										<span aria-hidden="true" className={GITHUB_ICON_CLASS_NAME}>
 											<GithubIcon size={AUTH_PROVIDER_ICON_SIZE} />
 										</span>
 									}

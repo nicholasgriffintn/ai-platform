@@ -1,11 +1,21 @@
-import React from "react";
+import React, { Suspense, lazy } from "react";
 
-import { LoginModal } from "~/components/Models/LoginModal";
 import { ChatNavbar } from "~/components/Navbar";
 import { useKeyboardShortcuts } from "~/hooks/useKeyboardShortcuts";
 import { cn } from "~/lib/utils";
 import { useUIStore } from "~/state/stores/uiStore";
-import { KeyboardShortcutsHelp } from "../components/Models/KeyboardShortcutsHelp";
+
+const LoginModal = lazy(() =>
+	import("~/components/Models/LoginModal").then((mod) => ({
+		default: mod.LoginModal,
+	})),
+);
+
+const KeyboardShortcutsHelp = lazy(() =>
+	import("~/components/Models/KeyboardShortcutsHelp").then((mod) => ({
+		default: mod.KeyboardShortcutsHelp,
+	})),
+);
 
 interface SidebarLayoutProps {
 	children: React.ReactNode;
@@ -64,20 +74,28 @@ export function SidebarLayout({
 						)}
 						<div className="flex-1 overflow-auto w-full">
 							{children}
-							<LoginModal
-								open={showLoginModal}
-								onOpenChange={setShowLoginModal}
-								onKeySubmit={() => setShowLoginModal(false)}
-							/>
+							{showLoginModal && (
+								<Suspense fallback={null}>
+									<LoginModal
+										open={showLoginModal}
+										onOpenChange={setShowLoginModal}
+										onKeySubmit={() => setShowLoginModal(false)}
+									/>
+								</Suspense>
+							)}
 						</div>
 					</div>
 				</div>
 			</div>
 
-			<KeyboardShortcutsHelp
-				isOpen={showKeyboardShortcuts}
-				onClose={() => setShowKeyboardShortcuts(false)}
-			/>
+			{showKeyboardShortcuts && (
+				<Suspense fallback={null}>
+					<KeyboardShortcutsHelp
+						isOpen={showKeyboardShortcuts}
+						onClose={() => setShowKeyboardShortcuts(false)}
+					/>
+				</Suspense>
+			)}
 		</>
 	);
 }

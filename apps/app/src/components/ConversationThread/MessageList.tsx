@@ -17,7 +17,12 @@ import {
 	shouldPromoteOpinionRequest,
 	type OpinionRequest,
 } from "~/lib/chat/opinion";
-import { createModelReferenceMap, getAvailableModels, getModelByReference } from "~/lib/models";
+import {
+	createModelReferenceMap,
+	EMPTY_MODEL_CONFIG,
+	getAvailableModels,
+	getModelByReference,
+} from "~/lib/models";
 import {
 	useIsLoading,
 	useLoadingMessage,
@@ -86,13 +91,14 @@ export const MessageList = ({
 	onRequestOpinion,
 	isRequestingOpinion = false,
 }: MessageListProps) => {
-	const { currentConversationId, isAuthenticated, setCurrentConversationId } = useChatStore();
+	const { chatMode, currentConversationId, isAuthenticated, setCurrentConversationId } =
+		useChatStore();
 
 	const { data: conversation, isLoading: isLoadingConversation } = useChat(
 		!isSharedView ? currentConversationId : undefined,
 	);
-	const { data: apiModels = {} } = useModels();
-	const webLLMModels = useWebLLMModels();
+	const { data: apiModels = EMPTY_MODEL_CONFIG } = useModels();
+	const webLLMModels = useWebLLMModels({ enabled: chatMode === "local" });
 	const canAccessProFeatures = useCanAccessProFeatures();
 
 	const {
@@ -107,8 +113,8 @@ export const MessageList = ({
 	const messages = propMessages || conversation?.messages || [];
 	const traceEntries = useMemo(() => buildAgentTraceEntries(messages), [messages]);
 	const availableModels = useMemo(
-		() => getAvailableModels(apiModels, true, webLLMModels),
-		[apiModels, webLLMModels],
+		() => getAvailableModels(apiModels, chatMode === "local", webLLMModels),
+		[apiModels, chatMode, webLLMModels],
 	);
 	const modelReferences = useMemo(
 		() => createModelReferenceMap(availableModels),

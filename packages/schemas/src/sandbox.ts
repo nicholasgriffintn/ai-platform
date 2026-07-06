@@ -1,28 +1,18 @@
 import z from "zod/v4";
 import { reasoningEffortSchema, reasoningSettingsSchema } from "./reasoning";
+export * from "./sandbox-constants";
+import {
+	SANDBOX_PROMPT_STRATEGIES,
+	SANDBOX_TASK_TYPES,
+	SANDBOX_TIMEOUT_MAX_SECONDS,
+	SANDBOX_TIMEOUT_MIN_SECONDS,
+	SANDBOX_TRUST_LEVELS,
+	type SandboxModelSettings,
+	type SandboxPromptStrategy,
+	type SandboxTaskType,
+	type SandboxTrustLevel,
+} from "./sandbox-constants";
 import { SANDBOX_RUN_DISPATCH_TASK_TYPE } from "./tasks";
-
-export const SANDBOX_PROMPT_STRATEGIES = [
-	"auto",
-	"feature-delivery",
-	"bug-fix",
-	"refactor",
-	"test-hardening",
-] as const;
-export const SANDBOX_TASK_TYPES = [
-	"feature-implementation",
-	"code-review",
-	"test-suite",
-	"bug-fix",
-	"refactoring",
-	"documentation",
-	"migration",
-] as const;
-
-export const SANDBOX_TIMEOUT_MIN_SECONDS = 30;
-export const SANDBOX_TIMEOUT_DEFAULT_SECONDS = 900;
-export const SANDBOX_TIMEOUT_MAX_SECONDS = 7200;
-export const SANDBOX_TRUST_LEVELS = ["strict", "balanced", "trusted"] as const;
 
 export const sandboxWebhookCommandSchema = z.enum(["implement", "review", "test", "fix"]);
 export const sandboxRepoSchema = z
@@ -334,7 +324,7 @@ export type AutoConnectPayload = z.infer<typeof autoConnectSchema>;
 export type SandboxConnectionRepositoriesPayload = z.infer<
 	typeof sandboxConnectionRepositoriesSchema
 >;
-export type SandboxModelSettings = z.infer<typeof sandboxModelSettingsSchema>;
+export type { SandboxModelSettings };
 export type ListRunInstructionsQueryPayload = z.infer<typeof listRunInstructionsQuerySchema>;
 export type SubmitRunInstructionPayload = z.infer<typeof submitRunInstructionSchema>;
 
@@ -345,9 +335,7 @@ export type SandboxRunResult = z.infer<typeof sandboxRunResultSchema>;
 export type SandboxTaskResult = z.infer<typeof sandboxTaskResultSchema>;
 export type SandboxRunEvent = z.infer<typeof sandboxRunEventSchema>;
 export type SandboxRunData = z.infer<typeof sandboxRunDataSchema>;
-export type SandboxTaskType = z.infer<typeof sandboxTaskTypeSchema>;
-export type SandboxPromptStrategy = z.infer<typeof sandboxPromptStrategySchema>;
-export type SandboxTrustLevel = z.infer<typeof sandboxTrustLevelSchema>;
+export type { SandboxPromptStrategy, SandboxTaskType, SandboxTrustLevel };
 export type SandboxWebhookCommand = z.infer<typeof sandboxWebhookCommandSchema>;
 export type SandboxRunControlState = z.infer<typeof sandboxRunControlStateSchema>;
 export type SandboxRunControl = z.infer<typeof sandboxRunControlSchema>;

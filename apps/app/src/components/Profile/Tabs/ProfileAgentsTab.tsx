@@ -7,6 +7,7 @@ import { PageTitle } from "~/components/Core/PageTitle";
 import { type AgentData, useAgents } from "~/hooks/useAgents";
 import { useModels } from "~/hooks/useModels";
 import { useSharedAgents } from "~/hooks/useSharedAgents";
+import { EMPTY_MODEL_CONFIG } from "~/lib/models";
 import { AgentFormModal } from "./AgentFormModal";
 import { AgentsList } from "./AgentsList";
 import { ConfirmDeleteModal } from "../Modals/ConfirmDeleteModal";
@@ -25,7 +26,7 @@ export function ProfileAgentsTab() {
 		isDeletingAgent,
 	} = useAgents();
 
-	const { data: apiModels = {} } = useModels();
+	const { data: apiModels = EMPTY_MODEL_CONFIG } = useModels();
 
 	const { installSharedAgent, isInstalling, shareAgent, isSharing, categories } = useSharedAgents();
 

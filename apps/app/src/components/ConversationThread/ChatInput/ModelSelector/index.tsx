@@ -34,6 +34,7 @@ import { formatTokenCount, formatTokenPrice } from "~/lib/model-formatting";
 import {
 	createModelReferenceMap,
 	defaultModel,
+	EMPTY_MODEL_CONFIG,
 	getAvailableModels,
 	getChatAndRealtimeModelsByMode,
 	getFeaturedModelIds,
@@ -326,15 +327,15 @@ export const ModelSelector = ({
 		isFree: true,
 	};
 
-	const { data: apiModels = {}, isLoading: isLoadingModels } = useModels();
-	const webLLMModels = useWebLLMModels();
+	const { data: apiModels = EMPTY_MODEL_CONFIG, isLoading: isLoadingModels } = useModels();
+	const webLLMModels = useWebLLMModels({ enabled: chatMode === "local" });
 	const isModelLoading = useIsLoading("model-init");
 	const modelLoadingProgress = useLoadingProgress("model-init");
 	const modelLoadingMessage = useLoadingMessage("model-init");
 
 	const availableModels = useMemo(
-		() => getAvailableModels(apiModels, true, webLLMModels),
-		[apiModels, webLLMModels],
+		() => getAvailableModels(apiModels, chatMode === "local", webLLMModels),
+		[apiModels, chatMode, webLLMModels],
 	);
 	const functionModels = useMemo(() => getToolCallModels(availableModels), [availableModels]);
 	const featuredModelIds = useMemo(() => getFeaturedModelIds(availableModels), [availableModels]);
@@ -517,7 +518,7 @@ export const ModelSelector = ({
 		if (e.key === "ArrowDown" || e.key === "ArrowUp") {
 			e.preventDefault();
 			const items = dropdownRef.current?.querySelectorAll(
-				'[role="option"]:not([aria-disabled="true"])',
+				'[data-model-option]:not([aria-disabled="true"])',
 			);
 			if (!items?.length) return;
 			const list = Array.from(items) as HTMLElement[];
@@ -536,7 +537,7 @@ export const ModelSelector = ({
 			searchInputRef.current.focus();
 			return;
 		}
-		const firstOpt = dropdownRef.current?.querySelector('[role="option"]');
+		const firstOpt = dropdownRef.current?.querySelector("[data-model-option]");
 		(firstOpt as HTMLElement | null)?.focus();
 	}, [isOpen, isMobile]);
 

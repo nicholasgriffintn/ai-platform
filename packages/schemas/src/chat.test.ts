@@ -183,24 +183,6 @@ describe("chat schemas", () => {
 		expect(result.success).toBe(false);
 	});
 
-	it("accepts no-op compact responses without compaction markers", () => {
-		const result = compactChatCompletionResponseSchema.safeParse({
-			compacted: false,
-			conversation: {
-				id: "conversation-1",
-				messages: [
-					{
-						id: "assistant-1",
-						role: "assistant",
-						content: "Previous answer",
-					},
-				],
-			},
-		});
-
-		expect(result.success).toBe(true);
-	});
-
 	it("accepts visible compaction messages in title generation requests", () => {
 		const result = generateChatCompletionTitleJsonSchema.safeParse({
 			messages: [

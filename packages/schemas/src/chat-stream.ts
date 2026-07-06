@@ -1,6 +1,4 @@
-import z from "zod/v4";
-
-import { messagePartSchema, type MessagePart } from "./message-parts";
+import { normaliseMessageParts, type MessagePart } from "./message-part-utils";
 
 export interface ChatStreamToolCall {
 	id?: string;
@@ -69,25 +67,40 @@ interface PendingToolCall {
 	parameters: Record<string, unknown>;
 }
 
-const streamEventSchema = z.record(z.string(), z.unknown());
-const chatStreamCitationsSchema = z.array(z.string()).nullable();
-const chatStreamToolCallSchema = z
-	.object({
-		id: z.string().optional(),
-		function: z.object({
-			name: z.string(),
-			arguments: z.union([z.string(), streamEventSchema]),
-		}),
-		index: z.number().optional(),
-	})
-	.transform(
-		(toolCall): ChatStreamToolCall => ({
-			id: toolCall.id,
-			type: "function",
-			function: toolCall.function,
-			index: toolCall.index,
-		}),
-	);
+function isRecord(value: unknown): value is Record<string, unknown> {
+	return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function readStringArrayOrNull(value: unknown): string[] | null | undefined {
+	if (value === null) {
+		return null;
+	}
+
+	return Array.isArray(value) && value.every((item) => typeof item === "string")
+		? value
+		: undefined;
+}
+
+function readChatStreamToolCall(value: unknown): ChatStreamToolCall | null {
+	if (!isRecord(value) || !isRecord(value.function) || typeof value.function.name !== "string") {
+		return null;
+	}
+
+	const args = value.function.arguments;
+	if (typeof args !== "string" && !isRecord(args)) {
+		return null;
+	}
+
+	return {
+		id: typeof value.id === "string" ? value.id : undefined,
+		type: "function",
+		function: {
+			name: value.function.name,
+			arguments: args,
+		},
+		index: typeof value.index === "number" ? value.index : undefined,
+	};
+}
 
 function defaultCreateId(): string {
 	if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
@@ -124,8 +137,7 @@ export function parseChatStreamSseEvent(block: string): ParsedChatStreamSseEvent
 		return null;
 	}
 
-	const parsed = streamEventSchema.safeParse(rawParsed);
-	return parsed.success ? parsed.data : null;
+	return isRecord(rawParsed) ? rawParsed : null;
 }
 
 export function parseChatStreamSseBuffer(
@@ -199,12 +211,11 @@ class ChatStreamAssemblerState implements ChatStreamAssembler {
 	}
 
 	ingest(event: unknown): ChatStreamUpdate[] {
-		const parsed = streamEventSchema.safeParse(event);
-		if (!parsed.success) {
+		if (!isRecord(event)) {
 			return [];
 		}
 
-		return this.ingestEvent(parsed.data);
+		return this.ingestEvent(event);
 	}
 
 	getFinalMessage(): ChatStreamMessage | undefined {
@@ -355,14 +366,13 @@ class ChatStreamAssemblerState implements ChatStreamAssembler {
 	}
 
 	private ingestToolResponse(event: Record<string, unknown>): ChatStreamUpdate[] {
-		const result = streamEventSchema.safeParse(event.result);
-		if (!result.success) {
+		if (!isRecord(event.result)) {
 			return [];
 		}
 
 		const toolResponseId =
-			typeof result.data.id === "string"
-				? result.data.id
+			typeof event.result.id === "string"
+				? event.result.id
 				: typeof event.tool_id === "string"
 					? event.tool_id
 					: this.createId();
@@ -371,12 +381,12 @@ class ChatStreamAssemblerState implements ChatStreamAssembler {
 			return [];
 		}
 		this.emittedToolResponseIds.add(toolResponseId);
-		const parsedToolCallArguments = streamEventSchema.safeParse(result.data.tool_call_arguments);
+		const rawToolCallArguments = event.result.tool_call_arguments;
 		const toolCallArguments =
-			typeof result.data.tool_call_arguments === "string"
-				? result.data.tool_call_arguments
-				: parsedToolCallArguments.success
-					? parsedToolCallArguments.data
+			typeof rawToolCallArguments === "string"
+				? rawToolCallArguments
+				: isRecord(rawToolCallArguments)
+					? rawToolCallArguments
 					: undefined;
 
 		return [
@@ -385,19 +395,20 @@ class ChatStreamAssemblerState implements ChatStreamAssembler {
 				message: {
 					role: "tool",
 					id: toolResponseId,
-					content: typeof result.data.content === "string" ? result.data.content : "",
-					name: typeof result.data.name === "string" ? result.data.name : undefined,
-					status: typeof result.data.status === "string" ? result.data.status : null,
-					data: result.data.data ?? null,
+					content: typeof event.result.content === "string" ? event.result.content : "",
+					name: typeof event.result.name === "string" ? event.result.name : undefined,
+					status: typeof event.result.status === "string" ? event.result.status : null,
+					data: event.result.data ?? null,
 					created: this.now(),
-					timestamp: typeof result.data.timestamp === "number" ? result.data.timestamp : undefined,
-					log_id: typeof result.data.log_id === "string" ? result.data.log_id : undefined,
-					model: typeof result.data.model === "string" ? result.data.model : undefined,
-					platform: typeof result.data.platform === "string" ? result.data.platform : undefined,
+					timestamp:
+						typeof event.result.timestamp === "number" ? event.result.timestamp : undefined,
+					log_id: typeof event.result.log_id === "string" ? event.result.log_id : undefined,
+					model: typeof event.result.model === "string" ? event.result.model : undefined,
+					platform: typeof event.result.platform === "string" ? event.result.platform : undefined,
 					tool_call_id:
-						typeof result.data.tool_call_id === "string" ? result.data.tool_call_id : undefined,
+						typeof event.result.tool_call_id === "string" ? event.result.tool_call_id : undefined,
 					tool_call_arguments: toolCallArguments,
-					tool_calls: this.toolCallsFromEvent(result.data.tool_calls),
+					tool_calls: this.toolCallsFromEvent(event.result.tool_calls),
 				},
 			},
 		];
@@ -424,9 +435,9 @@ class ChatStreamAssemblerState implements ChatStreamAssembler {
 			this.logId = event.log_id;
 		}
 
-		const citations = chatStreamCitationsSchema.safeParse(event.citations);
-		if (citations.success) {
-			this.citations = citations.data;
+		const citations = readStringArrayOrNull(event.citations);
+		if (citations !== undefined) {
+			this.citations = citations;
 		}
 
 		if ("data" in event) {
@@ -475,20 +486,20 @@ class ChatStreamAssemblerState implements ChatStreamAssembler {
 	}
 
 	private ingestMessageStart(event: Record<string, unknown>): ChatStreamUpdate[] {
-		const anthropicMessage = streamEventSchema.safeParse(event.message);
+		const anthropicMessage = isRecord(event.message) ? event.message : null;
 
 		if (typeof event.message_id === "string") {
 			this.id = event.message_id;
-		} else if (anthropicMessage.success && typeof anthropicMessage.data.id === "string") {
-			this.id = anthropicMessage.data.id;
+		} else if (anthropicMessage && typeof anthropicMessage.id === "string") {
+			this.id = anthropicMessage.id;
 		}
 		if (typeof event.created === "number") {
 			this.created = event.created;
 		}
 		if (typeof event.model === "string") {
 			this.responseModel = event.model;
-		} else if (anthropicMessage.success && typeof anthropicMessage.data.model === "string") {
-			this.responseModel = anthropicMessage.data.model;
+		} else if (anthropicMessage && typeof anthropicMessage.model === "string") {
+			this.responseModel = anthropicMessage.model;
 		}
 		if (typeof event.provider === "string") {
 			this.responseProvider = event.provider;
@@ -609,13 +620,9 @@ class ChatStreamAssemblerState implements ChatStreamAssembler {
 		}
 
 		if (event.type === "content_block_delta") {
-			const delta = streamEventSchema.safeParse(event.delta);
-			if (
-				delta.success &&
-				delta.data.type === "text_delta" &&
-				typeof delta.data.text === "string"
-			) {
-				return delta.data.text;
+			const delta = isRecord(event.delta) ? event.delta : null;
+			if (delta?.type === "text_delta" && typeof delta.text === "string") {
+				return delta.text;
 			}
 		}
 
@@ -623,13 +630,14 @@ class ChatStreamAssemblerState implements ChatStreamAssembler {
 			return "";
 		}
 
-		const firstChoice = streamEventSchema.safeParse(event.choices[0]);
-		if (!firstChoice.success) {
+		const firstChoice = isRecord(event.choices[0]) ? event.choices[0] : null;
+		if (!firstChoice) {
 			return "";
 		}
 
-		const delta = streamEventSchema.safeParse(firstChoice.data.delta);
-		return delta.success && typeof delta.data.content === "string" ? delta.data.content : "";
+		const firstChoiceData = isRecord(firstChoice.data) ? firstChoice.data : null;
+		const delta = firstChoiceData && isRecord(firstChoiceData.delta) ? firstChoiceData.delta : null;
+		return delta && typeof delta.content === "string" ? delta.content : "";
 	}
 
 	private thinkingDeltaFromProviderEvent(event: Record<string, unknown>): string {
@@ -637,35 +645,21 @@ class ChatStreamAssemblerState implements ChatStreamAssembler {
 			return "";
 		}
 
-		const delta = streamEventSchema.safeParse(event.delta);
-		if (
-			delta.success &&
-			delta.data.type === "thinking_delta" &&
-			typeof delta.data.thinking === "string"
-		) {
-			return delta.data.thinking;
+		const delta = isRecord(event.delta) ? event.delta : null;
+		if (delta?.type === "thinking_delta" && typeof delta.thinking === "string") {
+			return delta.thinking;
 		}
 
 		return "";
 	}
 
 	private messagePartsFromEvent(parts: unknown): MessagePart[] | undefined {
-		if (!Array.isArray(parts)) {
-			return undefined;
-		}
-
-		const parsedParts = parts.flatMap((part): MessagePart[] => {
-			const parsed = messagePartSchema.safeParse(part);
-			return parsed.success ? [parsed.data] : [];
-		});
-
-		return parsedParts.length > 0 ? parsedParts : undefined;
+		return normaliseMessageParts(parts);
 	}
 
 	private toolUseParametersFromEvent(parameters: unknown): Record<string, unknown> {
-		const directParameters = streamEventSchema.safeParse(parameters);
-		if (directParameters.success) {
-			return directParameters.data;
+		if (isRecord(parameters)) {
+			return parameters;
 		}
 
 		if (typeof parameters !== "string") {
@@ -673,8 +667,8 @@ class ChatStreamAssemblerState implements ChatStreamAssembler {
 		}
 
 		try {
-			const parsed = streamEventSchema.safeParse(JSON.parse(parameters));
-			return parsed.success ? parsed.data : {};
+			const parsed: unknown = JSON.parse(parameters);
+			return isRecord(parsed) ? parsed : {};
 		} catch {
 			return {};
 		}
@@ -686,8 +680,8 @@ class ChatStreamAssemblerState implements ChatStreamAssembler {
 		}
 
 		const toolCalls = value.flatMap((item): ChatStreamToolCall[] => {
-			const parsed = chatStreamToolCallSchema.safeParse(item);
-			return parsed.success ? [parsed.data] : [];
+			const parsed = readChatStreamToolCall(item);
+			return parsed ? [parsed] : [];
 		});
 
 		return toolCalls.length > 0 ? toolCalls : undefined;

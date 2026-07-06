@@ -1,8 +1,11 @@
 import type { InputHTMLAttributes } from "react";
 import { forwardRef } from "react";
+import { useId } from "react";
 
 import { cn } from "~/lib/utils";
+import { clampPercentage } from "~/lib/percentage";
 import { Label } from "../label";
+import { mergeDescribedBy } from "./describedBy";
 
 export interface RangeInputProps extends InputHTMLAttributes<HTMLInputElement> {
 	label?: string;
@@ -28,16 +31,22 @@ export const RangeInput = forwardRef<HTMLInputElement, RangeInputProps>(
 			className,
 			id,
 			value,
+			"aria-describedby": ariaDescribedBy,
 			...props
 		},
 		ref,
 	) => {
-		const percentage = ((Number(value) - min) / (max - min)) * 100;
+		const generatedId = useId();
+		const controlId = id ?? generatedId;
+		const rawPercentage = ((Number(value) - min) / (max - min)) * 100;
+		const percentage = clampPercentage(rawPercentage);
+		const descriptionId = description ? `${controlId}-description` : undefined;
+		const describedBy = mergeDescribedBy(ariaDescribedBy, descriptionId);
 
 		return (
 			<div className="space-y-1">
 				<div className="flex justify-between items-center">
-					{label && <Label htmlFor={id}>{label}</Label>}
+					{label && <Label htmlFor={controlId}>{label}</Label>}
 					{displayValue && (
 						<span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{value}</span>
 					)}
@@ -45,7 +54,7 @@ export const RangeInput = forwardRef<HTMLInputElement, RangeInputProps>(
 				<div className="relative mt-2">
 					<input
 						ref={ref}
-						id={id}
+						id={controlId}
 						type="range"
 						min={min}
 						max={max}
@@ -58,7 +67,8 @@ export const RangeInput = forwardRef<HTMLInputElement, RangeInputProps>(
 						aria-valuemin={min}
 						aria-valuemax={max}
 						aria-valuenow={Number(value)}
-						aria-valuetext={`${label}: ${value}`}
+						aria-valuetext={label ? `${label}: ${value}` : String(value)}
+						aria-describedby={describedBy}
 						{...props}
 					/>
 					<div
@@ -77,7 +87,9 @@ export const RangeInput = forwardRef<HTMLInputElement, RangeInputProps>(
 					</div>
 				)}
 				{description && (
-					<p className="text-xs text-zinc-600 dark:text-zinc-400 mt-1">{description}</p>
+					<p id={descriptionId} className="text-xs text-zinc-600 dark:text-zinc-400 mt-1">
+						{description}
+					</p>
 				)}
 			</div>
 		);

@@ -121,10 +121,10 @@ export default function DynamicAppResponsePage() {
 							{Object.entries(parsedData.formData).map(([key, value]) => (
 								<div
 									key={key}
-									className="py-2 grid grid-cols-3 gap-4 text-sm text-zinc-700 dark:text-zinc-300"
+									className="grid grid-cols-1 gap-1 py-2 text-sm text-zinc-700 dark:text-zinc-300 sm:grid-cols-3 sm:gap-4"
 								>
-									<dt className="font-medium col-span-1">{key}</dt>
-									<dd className="col-span-2 break-words">
+									<dt className="font-medium sm:col-span-1">{key}</dt>
+									<dd className="break-words sm:col-span-2">
 										{typeof value === "object" ? JSON.stringify(value) : String(value)}
 									</dd>
 								</div>

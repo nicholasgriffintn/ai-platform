@@ -1,9 +1,9 @@
 import { Search, X } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 
 import { Button, FormInput } from "~/components/ui";
-import { Dialog, DialogContent } from "~/components/ui/Dialog";
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from "~/components/ui/Dialog";
 import { useTrackEvent } from "~/hooks/use-track-event";
 import { useChats } from "~/hooks/useChat";
 import { useChatStore } from "~/state/stores/chatStore";
@@ -12,6 +12,14 @@ type SearchDialogProps = {
 	isOpen: boolean;
 	onClose: () => void;
 };
+
+function filterChatsByQuery<T extends { title?: string | null }>(
+	chats: readonly T[],
+	query: string,
+): T[] {
+	const normalisedQuery = query.toLowerCase();
+	return chats.filter((chat) => chat.title?.toLowerCase().includes(normalisedQuery));
+}
 
 export const SearchDialog = ({ isOpen, onClose }: SearchDialogProps) => {
 	const inputRef = useRef<HTMLInputElement>(null);
@@ -39,23 +47,25 @@ export const SearchDialog = ({ isOpen, onClose }: SearchDialogProps) => {
 		}
 	}, [isOpen]);
 
-	const filteredChats =
-		chats?.filter((chat) => chat.title?.toLowerCase().includes(searchQuery.toLowerCase())) || [];
+	const filteredChats = useMemo(
+		() => filterChatsByQuery(chats ?? [], searchQuery),
+		[chats, searchQuery],
+	);
 
 	useEffect(() => {
-		setFocusedIndex(-1);
-	}, []);
+		setFocusedIndex((index) => Math.min(index, filteredChats.length - 1));
+	}, [filteredChats.length]);
 
-	const totalItems = searchQuery ? filteredChats.length + 1 : filteredChats.length;
+	const totalItems = filteredChats.length;
 
-	const handleSelectChat = (chatId: string) => {
+	const handleSelectChat = (chatId: string, selectionMethod: "click" | "keyboard" = "click") => {
 		const selectedChat = filteredChats.find((chat) => chat.id === chatId);
 		trackFeatureUsage("search_result_selected", {
 			query_length: searchQuery.length,
 			had_query: searchQuery.length > 0,
 			result_position: filteredChats.findIndex((chat) => chat.id === chatId) + 1,
 			total_results: filteredChats.length,
-			selection_method: "click",
+			selection_method: selectionMethod,
 			chat_title: selectedChat?.title || "Untitled chat",
 		});
 
@@ -86,17 +96,9 @@ export const SearchDialog = ({ isOpen, onClose }: SearchDialogProps) => {
 			case "Enter":
 				e.preventDefault();
 				if (focusedIndex >= 0) {
-					const chatIndex = searchQuery ? focusedIndex - 1 : focusedIndex;
+					const chatIndex = focusedIndex;
 					if (filteredChats[chatIndex]) {
-						trackFeatureUsage("search_result_selected", {
-							query_length: searchQuery.length,
-							had_query: searchQuery.length > 0,
-							result_position: chatIndex + 1,
-							total_results: filteredChats.length,
-							selection_method: "keyboard",
-							chat_title: filteredChats[chatIndex].title || "Untitled chat",
-						});
-						handleSelectChat(filteredChats[chatIndex].id || "");
+						handleSelectChat(filteredChats[chatIndex].id || "", "keyboard");
 					}
 				}
 				break;
@@ -106,21 +108,28 @@ export const SearchDialog = ({ isOpen, onClose }: SearchDialogProps) => {
 	return (
 		<Dialog open={isOpen} onOpenChange={(open) => !open && onClose()} width="max-w-md">
 			<DialogContent className="p-2">
+				<DialogTitle className="sr-only">Search conversations</DialogTitle>
+				<DialogDescription className="sr-only">
+					Find and open an existing conversation.
+				</DialogDescription>
 				<div className="p-2" onKeyDown={handleKeyDown}>
 					<div className="relative mb-4">
 						<FormInput
 							id="search-input"
 							ref={inputRef}
+							aria-label="Search conversations"
 							placeholder="Search conversations..."
 							value={searchQuery}
 							onChange={(e) => {
 								const newQuery = e.target.value;
+								const nextFilteredChats = filterChatsByQuery(chats ?? [], newQuery);
 								setSearchQuery(newQuery);
+								setFocusedIndex((index) => Math.min(index, nextFilteredChats.length - 1));
 
 								if (Math.abs(newQuery.length - searchQuery.length) > 2) {
 									trackFeatureUsage("search_query_changed", {
 										query_length: newQuery.length,
-										results_count: newQuery ? filteredChats.length : 0,
+										results_count: newQuery ? nextFilteredChats.length : 0,
 									});
 								}
 							}}
@@ -134,6 +143,7 @@ export const SearchDialog = ({ isOpen, onClose }: SearchDialogProps) => {
 						{searchQuery && (
 							<button
 								type="button"
+								aria-label="Clear search"
 								className="absolute inset-y-0 right-0 flex items-center pr-3"
 								onClick={() => setSearchQuery("")}
 							>
@@ -146,7 +156,7 @@ export const SearchDialog = ({ isOpen, onClose }: SearchDialogProps) => {
 						{filteredChats.length > 0 ? (
 							<div className="space-y-1">
 								{filteredChats.map((chat, index) => {
-									const itemIndex = searchQuery ? index + 1 : index;
+									const itemIndex = index;
 
 									return (
 										<Button

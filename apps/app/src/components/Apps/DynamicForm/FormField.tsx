@@ -2,6 +2,7 @@ import type { ChangeEvent } from "react";
 import type { AppSchema } from "@assistant/schemas";
 
 import { FormCheckbox, FormInput, FormSelect, Textarea } from "~/components/ui";
+import { getNumberInputValue, parseNumberInputValue } from "~/lib/number-input";
 
 type FieldType = AppSchema["formSchema"]["steps"][0]["fields"][0];
 
@@ -13,13 +14,17 @@ interface FormFieldProps {
 }
 
 export const FormField = ({ field, value, onChange, error }: FormFieldProps) => {
+	const descriptionId = field.description ? `${field.id}-description` : undefined;
+	const errorId = error ? `${field.id}-error` : undefined;
+	const describedBy = [descriptionId, errorId].filter(Boolean).join(" ") || undefined;
+
 	const handleChange = (
 		e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
 	) => {
 		let newValue: any = e.target.value;
 
 		if (field.type === "number") {
-			newValue = e.target.value === "" ? "" : Number(e.target.value);
+			newValue = parseNumberInputValue(e.target.value);
 		} else if (field.type === "checkbox") {
 			newValue = (e.target as HTMLInputElement).checked;
 		}
@@ -27,7 +32,7 @@ export const FormField = ({ field, value, onChange, error }: FormFieldProps) => 
 		onChange(field.id, newValue);
 	};
 
-	const handleMultiSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+	const handleMultiSelectChange = (e: ChangeEvent<HTMLSelectElement>) => {
 		const options = e.target.options;
 		const selectedValues: string[] = [];
 
@@ -40,7 +45,7 @@ export const FormField = ({ field, value, onChange, error }: FormFieldProps) => 
 		onChange(field.id, selectedValues);
 	};
 
-	const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+	const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
 		const files = e.target.files;
 		if (files && files.length > 0) {
 			onChange(field.id, files[0]);
@@ -57,8 +62,7 @@ export const FormField = ({ field, value, onChange, error }: FormFieldProps) => 
 						onChange={handleChange}
 						placeholder={field.placeholder}
 						required={field.required}
-						description={error}
-						aria-describedby={error ? `${field.id}-error` : undefined}
+						aria-describedby={describedBy}
 						aria-invalid={!!error}
 					/>
 				);
@@ -72,7 +76,7 @@ export const FormField = ({ field, value, onChange, error }: FormFieldProps) => 
 						placeholder={field.placeholder}
 						className="text-base w-full px-3 py-2 border border-zinc-300 dark:border-zinc-600 bg-off-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 min-h-[100px]"
 						required={field.required}
-						aria-describedby={error ? `${field.id}-error` : undefined}
+						aria-describedby={describedBy}
 						aria-invalid={!!error}
 					/>
 				);
@@ -82,14 +86,13 @@ export const FormField = ({ field, value, onChange, error }: FormFieldProps) => 
 					<FormInput
 						id={field.id}
 						type="number"
-						value={value === undefined ? "" : value}
+						value={getNumberInputValue(value)}
 						onChange={handleChange}
 						placeholder={field.placeholder}
 						min={field.validation?.min}
 						max={field.validation?.max}
 						required={field.required}
-						description={error}
-						aria-describedby={error ? `${field.id}-error` : undefined}
+						aria-describedby={describedBy}
 						aria-invalid={!!error}
 					/>
 				);
@@ -101,8 +104,7 @@ export const FormField = ({ field, value, onChange, error }: FormFieldProps) => 
 						value={value || ""}
 						onChange={handleChange}
 						required={field.required}
-						description={error}
-						aria-describedby={error ? `${field.id}-error` : undefined}
+						aria-describedby={describedBy}
 						aria-invalid={!!error}
 						options={[
 							{ value: "", label: "Select an option" },
@@ -123,7 +125,7 @@ export const FormField = ({ field, value, onChange, error }: FormFieldProps) => 
 						onChange={handleMultiSelectChange}
 						className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-600 bg-off-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 min-h-[100px]"
 						required={field.required}
-						aria-describedby={error ? `${field.id}-error` : undefined}
+						aria-describedby={describedBy}
 						aria-invalid={!!error}
 					>
 						{field.validation?.options?.map((option) => (
@@ -142,9 +144,8 @@ export const FormField = ({ field, value, onChange, error }: FormFieldProps) => 
 						onChange={handleChange}
 						required={field.required}
 						label={field.label}
-						description={error}
 						labelPosition="right"
-						aria-describedby={error ? `${field.id}-error` : undefined}
+						aria-describedby={describedBy}
 						aria-invalid={!!error}
 					/>
 				);
@@ -157,8 +158,7 @@ export const FormField = ({ field, value, onChange, error }: FormFieldProps) => 
 						value={value || ""}
 						onChange={handleChange}
 						required={field.required}
-						description={error}
-						aria-describedby={error ? `${field.id}-error` : undefined}
+						aria-describedby={describedBy}
 						aria-invalid={!!error}
 					/>
 				);
@@ -171,7 +171,7 @@ export const FormField = ({ field, value, onChange, error }: FormFieldProps) => 
 						onChange={handleFileChange}
 						className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-600 bg-off-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
 						required={field.required}
-						aria-describedby={error ? `${field.id}-error` : undefined}
+						aria-describedby={describedBy}
 						aria-invalid={!!error}
 					/>
 				);
@@ -205,6 +205,12 @@ export const FormField = ({ field, value, onChange, error }: FormFieldProps) => 
 			)}
 
 			{renderField()}
+
+			{error && (
+				<p id={errorId} className="text-sm text-red-600 dark:text-red-400 mt-1">
+					{error}
+				</p>
+			)}
 		</div>
 	);
 };

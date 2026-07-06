@@ -48,7 +48,7 @@ export default function Root() {
 					</CaptchaProvider>
 				</AppInitializer>
 			</LoadingProvider>
-			{shouldShowDevTools() && <ReactQueryDevtools initialIsOpen={false} />}
+			<ReactQueryDevtools initialIsOpen={false} />
 		</>
 	);
 }

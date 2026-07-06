@@ -5,7 +5,7 @@ import { Button, Popover, PopoverContent, PopoverTrigger } from "~/components/ui
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { useModels } from "~/hooks/useModels";
 import { useWebLLMModels } from "~/hooks/useWebLLMModels";
-import { getAvailableModels } from "~/lib/models";
+import { EMPTY_MODEL_CONFIG, getAvailableModels } from "~/lib/models";
 import {
 	formatReasoningLabel,
 	getDefaultReasoningEffort,
@@ -61,11 +61,11 @@ export const ChatSettings = ({
 		useMultiModel,
 	} = useChatStore();
 	const [showSettings, setShowSettings] = useState(false);
-	const { data: apiModels = {} } = useModels();
-	const webLLMModels = useWebLLMModels();
+	const { data: apiModels = EMPTY_MODEL_CONFIG } = useModels();
+	const webLLMModels = useWebLLMModels({ enabled: chatMode === "local" });
 	const availableModels = useMemo(
-		() => getAvailableModels(apiModels, true, webLLMModels),
-		[apiModels, webLLMModels],
+		() => getAvailableModels(apiModels, chatMode === "local", webLLMModels),
+		[apiModels, chatMode, webLLMModels],
 	);
 
 	const activeModelId = model && model.length > 0 ? model : undefined;
@@ -243,6 +243,7 @@ export const ChatSettings = ({
 									max={2}
 									step={0.1}
 									value={chatSettings.temperature ?? 1}
+									disabled={isDisabled}
 									onChange={(value) => handleNumericSettingChange("temperature", value)}
 									markers={["Precise", "Neutral", "Creative"]}
 								/>
@@ -253,6 +254,7 @@ export const ChatSettings = ({
 									checked={chatSettings.use_rag ?? false}
 									disabled={isDisabled}
 									onChange={(checked) => handleBooleanSettingChange("use_rag", checked)}
+									description="RAG stands for Retrieval-Augmented Generation, which enhances the model with external data."
 								/>
 								{showMultiModelToggle && (
 									<CompactSettingSwitch
@@ -263,11 +265,6 @@ export const ChatSettings = ({
 										onChange={setUseMultiModel}
 									/>
 								)}
-								<p id="rag-description" className="sr-only">
-									RAG stands for Retrieval-Augmented Generation, which enhances the model with
-									external data.
-								</p>
-
 								<details>
 									<summary className="cursor-pointer px-2 text-xs text-zinc-500 dark:text-zinc-400">
 										What do these settings mean?
@@ -299,6 +296,7 @@ export const ChatSettings = ({
 									max={1}
 									step={0.05}
 									value={chatSettings.top_p ?? 1}
+									disabled={isDisabled}
 									onChange={(value) => handleNumericSettingChange("top_p", value)}
 								/>
 
@@ -308,6 +306,7 @@ export const ChatSettings = ({
 									min={1}
 									max={4096}
 									value={chatSettings.max_tokens ?? 2048}
+									disabled={isDisabled}
 									onChange={(value) => handleNumericSettingChange("max_tokens", value)}
 								/>
 
@@ -318,6 +317,7 @@ export const ChatSettings = ({
 									max={2}
 									step={0.1}
 									value={chatSettings.presence_penalty ?? 0}
+									disabled={isDisabled}
 									onChange={(value) => handleNumericSettingChange("presence_penalty", value)}
 									markers={["-2", "0", "+2"]}
 								/>
@@ -329,6 +329,7 @@ export const ChatSettings = ({
 									max={2}
 									step={0.1}
 									value={chatSettings.frequency_penalty ?? 0}
+									disabled={isDisabled}
 									onChange={(value) => handleNumericSettingChange("frequency_penalty", value)}
 									markers={["-2", "0", "+2"]}
 								/>
@@ -362,6 +363,7 @@ export const ChatSettings = ({
 											min={1}
 											max={20}
 											value={chatSettings.rag_options?.topK ?? 3}
+											disabled={isDisabled}
 											onChange={(value) => handleRagNumericOptionChange("topK", value)}
 										/>
 
@@ -372,6 +374,7 @@ export const ChatSettings = ({
 											max={1}
 											step={0.05}
 											value={chatSettings.rag_options?.scoreThreshold ?? 0.5}
+											disabled={isDisabled}
 											onChange={(value) => handleRagNumericOptionChange("scoreThreshold", value)}
 											markers={["0", "0.5", "1"]}
 										/>
@@ -384,10 +387,8 @@ export const ChatSettings = ({
 											onChange={(checked) =>
 												handleRagBooleanOptionChange("includeMetadata", checked)
 											}
+											description="Include additional information about the retrieved documents."
 										/>
-										<p id="metadata-description" className="sr-only">
-											Include additional information about the retrieved documents.
-										</p>
 
 										<div className="space-y-1.5">
 											<label
@@ -399,12 +400,13 @@ export const ChatSettings = ({
 											<input
 												id="rag_namespace"
 												value={chatSettings.rag_options?.namespace ?? ""}
+												disabled={isDisabled}
 												onChange={(event) =>
 													handleRagStringOptionChange("namespace", event.target.value)
 												}
 												placeholder="e.g., docs"
 												aria-describedby="namespace-description"
-												className="h-8 w-full rounded-md border border-zinc-200 bg-off-white px-2 text-sm text-zinc-900 outline-none transition-colors placeholder:text-zinc-400 focus:border-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:focus:border-zinc-500"
+												className="h-8 w-full rounded-md border border-zinc-200 bg-off-white px-2 text-sm text-zinc-900 outline-none transition-colors placeholder:text-zinc-400 focus:border-zinc-400 disabled:cursor-not-allowed disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:focus:border-zinc-500"
 											/>
 											<p id="namespace-description" className="sr-only">
 												Specify a namespace to restrict document retrieval to a specific collection.

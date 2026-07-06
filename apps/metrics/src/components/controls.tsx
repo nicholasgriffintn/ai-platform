@@ -1,15 +1,9 @@
 import type { FormEvent } from "react";
+import { normaliseMetricsFilters, type MetricsParams } from "../lib/filters";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
-
-interface MetricsParams {
-	status: string;
-	limit: number;
-	interval: number;
-	timeframe: number;
-}
 
 interface MetricsControlsProps {
 	initialValues: MetricsParams;
@@ -21,12 +15,17 @@ export function MetricsControls({ initialValues, onSubmit }: MetricsControlsProp
 		e.preventDefault();
 		const formData = new FormData(e.currentTarget);
 
-		onSubmit({
-			status: formData.get("status") as string,
-			limit: Number(formData.get("limit")),
-			interval: Number(formData.get("interval")),
-			timeframe: Number(formData.get("timeframe")),
-		});
+		onSubmit(
+			normaliseMetricsFilters(
+				{
+					status: formData.get("status"),
+					limit: formData.get("limit"),
+					interval: formData.get("interval"),
+					timeframe: formData.get("timeframe"),
+				},
+				initialValues,
+			),
+		);
 	};
 
 	return (
@@ -46,6 +45,7 @@ export function MetricsControls({ initialValues, onSubmit }: MetricsControlsProp
 			<div className="w-[calc(50%-0.5rem)] sm:w-[100px]">
 				<Label htmlFor="limit">Limit</Label>
 				<Input
+					id="limit"
 					name="limit"
 					type="number"
 					defaultValue={initialValues.limit}
@@ -57,6 +57,7 @@ export function MetricsControls({ initialValues, onSubmit }: MetricsControlsProp
 			<div className="w-[calc(50%-0.5rem)] sm:w-[100px]">
 				<Label htmlFor="interval">Interval</Label>
 				<Input
+					id="interval"
 					name="interval"
 					type="number"
 					defaultValue={initialValues.interval}
@@ -68,6 +69,7 @@ export function MetricsControls({ initialValues, onSubmit }: MetricsControlsProp
 			<div className="w-[calc(50%-0.5rem)] sm:w-[100px]">
 				<Label htmlFor="timeframe">Timeframe</Label>
 				<Input
+					id="timeframe"
 					name="timeframe"
 					type="number"
 					defaultValue={initialValues.timeframe}

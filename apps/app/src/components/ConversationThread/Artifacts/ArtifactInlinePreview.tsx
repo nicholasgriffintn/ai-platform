@@ -1,9 +1,14 @@
 import { AppWindow, AlertTriangle } from "lucide-react";
-import { Suspense, useEffect, useMemo, useState } from "react";
+import { Suspense, lazy, useEffect, useMemo, useState } from "react";
 
 import { isStylesheetArtifact } from "~/lib/artifacts";
 import type { ArtifactProps } from "~/types/artifact";
-import { ArtifactSandbox } from "./ArtifactSandbox";
+
+const ArtifactSandbox = lazy(() =>
+	import("./ArtifactSandbox/index").then((mod) => ({
+		default: mod.ArtifactSandbox,
+	})),
+);
 
 interface ArtifactInlinePreviewProps {
 	artifact: ArtifactProps;

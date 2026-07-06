@@ -3,8 +3,8 @@ import { useEffect, useState } from "react";
 import { Button } from "~/components/ui/Button";
 import {
 	Dialog,
-	DialogClose,
 	DialogContent,
+	DialogFooter,
 	DialogHeader,
 	DialogTitle,
 } from "~/components/ui/Dialog";
@@ -125,7 +125,6 @@ export function ProviderApiKeyModal({
 			<DialogContent>
 				<DialogHeader>
 					<DialogTitle>Configure {providerName}</DialogTitle>
-					<DialogClose onClick={() => onOpenChange(false)} />
 				</DialogHeader>
 
 				<form onSubmit={handleSubmit} className="space-y-4">
@@ -202,7 +201,7 @@ export function ProviderApiKeyModal({
 						/>
 					)}
 
-					<div className="flex justify-end space-x-2">
+					<DialogFooter>
 						<Button
 							type="button"
 							variant="secondary"
@@ -222,7 +221,7 @@ export function ProviderApiKeyModal({
 						>
 							Save
 						</Button>
-					</div>
+					</DialogFooter>
 				</form>
 			</DialogContent>
 		</Dialog>

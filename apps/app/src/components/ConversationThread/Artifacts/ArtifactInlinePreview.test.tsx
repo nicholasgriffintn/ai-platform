@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import { ArtifactInlinePreview } from "./ArtifactInlinePreview";
 
-vi.mock("./ArtifactSandbox", () => ({
+vi.mock("./ArtifactSandbox/index", () => ({
 	ArtifactSandbox: ({
 		css,
 	}: {
@@ -14,7 +14,7 @@ vi.mock("./ArtifactSandbox", () => ({
 }));
 
 describe("ArtifactInlinePreview", () => {
-	it("passes type-only CSS artifacts into inline previews", () => {
+	it("passes type-only CSS artifacts into inline previews", async () => {
 		render(
 			<ArtifactInlinePreview
 				artifact={{
@@ -34,6 +34,6 @@ describe("ArtifactInlinePreview", () => {
 			/>,
 		);
 
-		expect(screen.getByTestId("inline-preview-css")).toHaveTextContent("styles");
+		expect(await screen.findByTestId("inline-preview-css")).toHaveTextContent("styles");
 	});
 });

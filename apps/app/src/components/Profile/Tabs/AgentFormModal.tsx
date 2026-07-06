@@ -2,7 +2,13 @@ import { Loader2, Plus, Trash2 } from "lucide-react";
 import React, { type FormEvent } from "react";
 
 import { Button } from "~/components/ui/Button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "~/components/ui/Dialog";
+import {
+	Dialog,
+	DialogContent,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+} from "~/components/ui/Dialog";
 import { FormInput } from "~/components/ui/Form/Input";
 import { FormSelect } from "~/components/ui/Form/Select";
 import { Switch } from "~/components/ui/Form/Switch";
@@ -11,6 +17,7 @@ import { Label } from "~/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { useAgentForm } from "~/hooks/useAgentForm";
 import { useTools } from "~/hooks/useTools";
+import { getNumberInputValue, parseNumberInputValue } from "~/lib/number-input";
 import { cn, generateId } from "~/lib/utils";
 
 interface AgentFormModalProps {
@@ -80,7 +87,7 @@ export function AgentFormModal({
 
 				<form onSubmit={handleSubmit} className="space-y-6">
 					<Tabs value={form.activeTab} onValueChange={form.setActiveTab} className="w-full">
-						<TabsList className="grid w-full grid-cols-5">
+						<TabsList className="grid h-auto w-full grid-cols-2 gap-1 sm:grid-cols-5">
 							<TabsTrigger value="basic">Basic</TabsTrigger>
 							<TabsTrigger value="model">Model</TabsTrigger>
 							<TabsTrigger value="team">Team</TabsTrigger>
@@ -121,15 +128,15 @@ export function AgentFormModal({
 								description="Select a model to use with this agent"
 							/>
 
-							<div className="grid grid-cols-2 gap-4">
+							<div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
 								<FormInput
 									label="Temperature"
 									type="number"
 									min="0"
 									max="1"
 									step="0.1"
-									value={form.temperature}
-									onChange={(e) => form.setTemperature(Number.parseFloat(e.target.value))}
+									value={getNumberInputValue(form.temperature)}
+									onChange={(e) => form.setTemperature(parseNumberInputValue(e.target.value))}
 									description="Controls randomness (0-1)"
 								/>
 								<FormInput
@@ -138,8 +145,10 @@ export function AgentFormModal({
 									min="1"
 									max="50"
 									step="1"
-									value={form.maxSteps}
-									onChange={(e) => form.setMaxSteps(Number.parseInt(e.target.value))}
+									value={getNumberInputValue(form.maxSteps)}
+									onChange={(e) =>
+										form.setMaxSteps(parseNumberInputValue(e.target.value, { integer: true }))
+									}
 									description="Maximum execution steps"
 								/>
 							</div>
@@ -441,7 +450,7 @@ export function AgentFormModal({
 
 					<hr className="my-4" />
 
-					<div className="flex justify-end gap-3">
+					<DialogFooter>
 						<Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting}>
 							Cancel
 						</Button>
@@ -457,7 +466,7 @@ export function AgentFormModal({
 								"Create Agent"
 							)}
 						</Button>
-					</div>
+					</DialogFooter>
 				</form>
 			</DialogContent>
 		</Dialog>

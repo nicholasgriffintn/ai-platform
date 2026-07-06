@@ -15,6 +15,7 @@ import type { AttachmentData } from "~/lib/chat/attachments";
 import { isCompactConversationCommand } from "~/lib/chat/compaction-command";
 import {
 	createModelReferenceMap,
+	EMPTY_MODEL_CONFIG,
 	getModelByReference,
 	isImageGenerationOutputModel,
 } from "~/lib/models";
@@ -107,8 +108,8 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
 		requestOpinion,
 		isRequestingOpinion,
 	} = useChatManager(modeConfig?.requestOptions, modeConfig?.conversationMode);
-	const { data: apiModels } = useModels();
-	const modelReferences = useMemo(() => createModelReferenceMap(apiModels ?? {}), [apiModels]);
+	const { data: apiModels = EMPTY_MODEL_CONFIG } = useModels();
+	const modelReferences = useMemo(() => createModelReferenceMap(apiModels), [apiModels]);
 	const selectedModelConfig = useMemo(
 		() => getModelByReference(modelReferences, model),
 		[modelReferences, model],

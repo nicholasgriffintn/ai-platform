@@ -7,6 +7,7 @@ import type {
 import type { ChatMode } from "~/types";
 
 export const defaultModel = "deepseek-v4-flash";
+export const EMPTY_MODEL_CONFIG: ModelConfig = {};
 const LOCAL_MODEL_PROVIDER = "web-llm";
 const DEFAULT_MODALITIES: ModelModality[] = ["text"];
 

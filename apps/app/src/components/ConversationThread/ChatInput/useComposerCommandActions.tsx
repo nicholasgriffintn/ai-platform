@@ -28,7 +28,7 @@ import {
 } from "~/lib/composer-commands";
 import { COMPACT_CONVERSATION_COMMAND } from "~/lib/chat/compaction-command";
 import { getAvailableModelTools, type ModelToolId } from "~/lib/model-tools";
-import { getAvailableModels, defaultModel } from "~/lib/models";
+import { defaultModel, EMPTY_MODEL_CONFIG, getAvailableModels } from "~/lib/models";
 import {
 	formatReasoningLabel,
 	getDefaultReasoningEffort,
@@ -92,14 +92,14 @@ export function useComposerCommandActions({
 	} = useChatStore();
 	const { chatAgents, isLoadingAgents } = useAgents();
 	const agents = chatAgents as AgentCommand[];
-	const { data: apiModels = {} } = useModels();
-	const webLLMModels = useWebLLMModels();
+	const { data: apiModels = EMPTY_MODEL_CONFIG } = useModels();
+	const webLLMModels = useWebLLMModels({ enabled: chatMode === "local" });
 	const selectedTools = useToolsStore((state) => state.selectedTools);
 	const setSelectedTools = useToolsStore((state) => state.setSelectedTools);
 
 	const availableModels = useMemo(
-		() => getAvailableModels(apiModels, true, webLLMModels),
-		[apiModels, webLLMModels],
+		() => getAvailableModels(apiModels, chatMode === "local", webLLMModels),
+		[apiModels, chatMode, webLLMModels],
 	);
 	const selectedModelConfig = model ? availableModels[model] : undefined;
 	const modelCapabilities = model ? apiModels[model] : undefined;
