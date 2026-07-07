@@ -1,12 +1,13 @@
+import { sandboxWorkerExecuteRequestSchema, NO_STORE } from "@assistant/schemas";
+
 import { executeSandboxTask } from "./tasks";
 import { verifySandboxJwt } from "./lib/auth";
 import { SandboxCancellationError } from "./lib/cancellation";
-import { sandboxWorkerExecuteRequestSchema } from "@assistant/schemas";
 import type { TaskEvent, TaskParams, TaskSecrets, Env } from "./types";
 
 const SSE_HEADERS = {
 	"Content-Type": "text/event-stream",
-	"Cache-Control": "no-cache, no-transform",
+	"Cache-Control": NO_STORE,
 	Connection: "keep-alive",
 } as const;
 

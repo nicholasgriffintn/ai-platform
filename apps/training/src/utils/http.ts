@@ -1,6 +1,5 @@
 import { ZodError, type ZodType } from "zod";
-
-const NO_STORE = "private, no-store";
+import { NO_STORE } from "@assistant/schemas";
 
 export class HttpError extends Error {
 	constructor(
