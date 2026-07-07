@@ -9,9 +9,9 @@ import {
 	type RealtimeTranscriptionDelay,
 } from "~/lib/providers/capabilities/realtime";
 import { getMistralTargetStreamingDelayMs } from "~/lib/providers/capabilities/realtime/providers";
-import { resolveProviderApiKey } from "~/lib/providers/utils/apiKeys";
 import { formatProviderError } from "~/lib/providers/utils/errors";
 import { ResponseFactory } from "~/lib/http/ResponseFactory";
+import { NO_STORE } from "@assistant/schemas";
 
 const logger = getLogger({ prefix: "services/realtime/mistral" });
 const MISTRAL_REALTIME_USER_AGENT = "polychat-mistral-realtime-proxy/1.0";
@@ -189,7 +189,7 @@ export async function createMistralRealtimeProxyResponse({
 	if (!isWebSocketUpgrade) {
 		return new Response("Expected WebSocket upgrade", {
 			status: 426,
-			headers: { Upgrade: "websocket" },
+			headers: { Upgrade: "websocket", "Cache-Control": NO_STORE },
 		});
 	}
 
@@ -276,5 +276,8 @@ export async function createMistralRealtimeProxyResponse({
 	return new Response(null, {
 		status: 101,
 		webSocket: clientSocket,
+		headers: {
+			"Cache-Control": NO_STORE,
+		},
 	});
 }

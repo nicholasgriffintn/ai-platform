@@ -1,7 +1,7 @@
 {
 	"name": "assistant",
 	"main": "src/index.ts",
-  "compatibility_date": "2026-05-14",
+	"compatibility_date": "2026-06-16",
 	"compatibility_flags": [
 		"nodejs_compat",
 		"nodejs_compat_populate_process_env"
@@ -10,6 +10,9 @@
 	"preview_urls": false,
 	"placement": {
 		"mode": "smart"
+	},
+	"cache": {
+		"enabled": true
 	},
 	"observability": {
 		"enabled": true,

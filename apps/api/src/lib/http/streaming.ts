@@ -1,6 +1,8 @@
+import { NO_STORE } from "@assistant/schemas";
+
 export const SSE_HEADERS = {
 	"Content-Type": "text/event-stream",
-	"Cache-Control": "no-cache, no-transform",
+	"Cache-Control": NO_STORE,
 	Connection: "keep-alive",
 } as const;
 

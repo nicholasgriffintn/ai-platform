@@ -1,7 +1,7 @@
 import { addRoute } from "~/lib/http/routeBuilder";
 import { type Context, Hono } from "hono";
 
-import { errorResponseSchema } from "@assistant/schemas";
+import { errorResponseSchema, NO_STORE } from "@assistant/schemas";
 
 import { getServiceContext } from "~/lib/context/serviceContext";
 import { requireAuth } from "~/middleware/auth";
@@ -53,7 +53,7 @@ addRoute(app, "get", "/", {
 					headers: {
 						"Content-Type": "application/json",
 						"Content-Disposition": `attachment; filename="${filename}"`,
-						"Cache-Control": "no-store",
+						"Cache-Control": NO_STORE,
 					},
 				});
 			} catch (error: any) {

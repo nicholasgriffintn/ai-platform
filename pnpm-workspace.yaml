@@ -12,7 +12,7 @@ allowBuilds:
   workerd: false
 
 minimumReleaseAgeExclude:
-  - '@cloudflare/workers-types@4.20260523.1'
+  - '@cloudflare/workers-types@4.20260523.1 || 4.20260530.1'
   - '@scalar/client-side-rendering@0.1.12'
   - '@scalar/hono-api-reference@0.10.19'
   - '@scalar/schemas@0.3.2'
@@ -27,7 +27,8 @@ minimumReleaseAgeExclude:
   - '@aws-sdk/credential-provider-node@3.972.47'
   - '@aws-sdk/s3-request-presigner@3.1057.0'
   - '@aws-sdk/token-providers@3.1057.0'
-  - '@cloudflare/workers-types@4.20260530.1'
+  - miniflare@4.20260702.0
+  - wrangler@4.107.1
 
 onlyBuiltDependencies:
   - better-sqlite3

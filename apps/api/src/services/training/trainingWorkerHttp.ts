@@ -7,8 +7,10 @@ import { isRecord } from "~/utils/objects";
 
 const TRAINING_WORKER_ORIGIN = "https://training.worker.internal";
 
+type TrainingWorkerEnv = Pick<IEnv, "TRAINING_WORKER" | "TRAINING_WORKER_TOKEN">;
+
 export async function requestTrainingWorker<T>(
-	env: IEnv,
+	env: TrainingWorkerEnv,
 	path: string,
 	responseSchema: ZodType<T>,
 	init: { method?: string; body?: unknown; userId: number },
@@ -36,7 +38,9 @@ export async function requestTrainingWorker<T>(
 		headers,
 		body: init.body === undefined ? undefined : JSON.stringify(init.body),
 	});
-	const response = await env.TRAINING_WORKER.fetch(request);
+	const response = await env.TRAINING_WORKER.fetch(request, {
+		props: { userId: String(init.userId) },
+	});
 	const payload = await readTrainingWorkerJson(response);
 
 	if (!response.ok) {

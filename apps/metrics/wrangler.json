@@ -1,11 +1,14 @@
 {
 	"$schema": "node_modules/wrangler/config-schema.json",
 	"name": "assistant-metrics",
-	"compatibility_date": "2026-05-14",
+	"compatibility_date": "2026-06-16",
 	"workers_dev": false,
 	"preview_urls": false,
 	"placement": {
 		"mode": "smart"
+	},
+	"cache": {
+		"enabled": true
 	},
 	"observability": {
 		"enabled": true,

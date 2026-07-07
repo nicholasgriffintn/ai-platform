@@ -14,6 +14,10 @@ export type RequireAtLeastOne<T, Keys extends keyof T = keyof T> = Pick<T, Exclu
 		[K in Keys]-?: Required<Pick<T, K>> & Partial<Pick<T, Exclude<Keys, K>>>;
 	}[Keys];
 
+type WorkerCacheFetcher<Props> = {
+	fetch(input: RequestInfo | URL, init?: RequestInit & { props?: Props }): Promise<Response>;
+};
+
 export type IEnv = {
 	ANALYTICS: AnalyticsEngineDataset;
 	AI: Ai;
@@ -31,7 +35,7 @@ export type IEnv = {
 	ANTHROPIC_API_KEY?: string;
 	AI_GATEWAY_TOKEN?: string;
 	SANDBOX_WORKER?: Fetcher;
-	TRAINING_WORKER?: Fetcher;
+	TRAINING_WORKER?: WorkerCacheFetcher<{ userId: string }>;
 	TRAINING_WORKER_TOKEN?: string;
 	SANDBOX_RUN_COORDINATOR?: DurableObjectNamespace;
 	GROK_API_KEY?: string;

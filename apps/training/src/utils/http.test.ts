@@ -1,7 +1,32 @@
 import { describe, expect, it } from "vitest";
 import { z } from "zod";
 
-import { errorResponse, HttpError, parseJsonBody } from "./http.js";
+import { errorResponse, HttpError, jsonResponse, parseJsonBody } from "./http.js";
+
+describe("jsonResponse", () => {
+	it("marks responses as no-store by default", () => {
+		const response = jsonResponse({ ok: true });
+
+		expect(response.headers.get("Cache-Control")).toBe("private, no-store");
+	});
+
+	it("sets public cache headers and cache tags when requested", () => {
+		const response = jsonResponse(
+			{ jobs: [] },
+			{
+				cacheControl: "public, max-age=300, stale-while-revalidate=3600",
+				cacheTag: "user:123",
+				vary: "X-Training-User-ID",
+			},
+		);
+
+		expect(response.headers.get("Cache-Control")).toBe(
+			"public, max-age=300, stale-while-revalidate=3600",
+		);
+		expect(response.headers.get("Cache-Tag")).toBe("user:123");
+		expect(response.headers.get("Vary")).toBe("X-Training-User-ID");
+	});
+});
 
 describe("parseJsonBody", () => {
 	it("returns schema-validated request payloads", async () => {

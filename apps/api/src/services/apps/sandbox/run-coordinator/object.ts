@@ -20,6 +20,7 @@ import {
 	SANDBOX_RUN_DISPATCH_FIBER_NAME,
 	type SandboxDispatchFiberSnapshot,
 } from "./fibers";
+import { NO_STORE } from "@assistant/schemas";
 
 const CONTROL_KEY = "control";
 const EVENTS_KEY = "events";
@@ -303,6 +304,9 @@ export class SandboxRunCoordinator extends Agent<IEnv> {
 			return new Response(null, {
 				status: 101,
 				webSocket: client,
+				headers: {
+					"Cache-Control": NO_STORE,
+				},
 			});
 		}
 

@@ -1,4 +1,5 @@
 import type { Context } from "hono";
+import { NO_STORE } from "@assistant/schemas";
 
 import { ResponseFactory } from "~/lib/http/ResponseFactory";
 import { formatProviderError } from "~/lib/providers/utils/errors";
@@ -180,7 +181,7 @@ export async function createRealtimeTranscriptionProxyResponse({
 	if (!isWebSocketUpgrade) {
 		return new Response("Expected WebSocket upgrade", {
 			status: 426,
-			headers: { Upgrade: "websocket" },
+			headers: { Upgrade: "websocket", "Cache-Control": NO_STORE },
 		});
 	}
 
@@ -224,5 +225,8 @@ export async function createRealtimeTranscriptionProxyResponse({
 	return new Response(null, {
 		status: 101,
 		webSocket: clientSocket,
+		headers: {
+			"Cache-Control": NO_STORE,
+		},
 	});
 }

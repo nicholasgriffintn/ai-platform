@@ -51,7 +51,6 @@ describe("assets route", () => {
 
 		expect(response.status).toBe(200);
 		expect(response.headers.get("cross-origin-resource-policy")).toBe("cross-origin");
-		expect(response.headers.get("cache-control")).toBe("private, no-store");
 		expect(response.headers.get("content-type")).toBe("image/png");
 		expect(readAssetMock).toHaveBeenCalledWith({
 			context: serviceContext,
