@@ -1626,4 +1626,27 @@ export const opencodeModelConfig: ModelConfig = createModelConfigObject([
 			intelligenceIndexVersion: 4.1,
 		},
 	}),
+	createModelConfig("hy3-free", PROVIDER, {
+		name: "Hy3 Free",
+		matchingModel: "hy3-free",
+		family: "hy3-free",
+		openWeights: true,
+		releaseDate: "June 26, 2026",
+		lastUpdated: "June 26, 2026",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 256000,
+		maxTokens: 64000,
+		costPer1kInputTokens: 0,
+		costPer1kOutputTokens: 0,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
+	}),
 ]);
