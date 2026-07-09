@@ -45,7 +45,7 @@
 		"globals": "17.7.0",
 		"jsdom": "29.1.1",
 		"oxfmt": "0.57.0",
-		"oxlint": "1.71.0",
+		"oxlint": "1.72.0",
 		"rollup-plugin-visualizer": "7.0.1",
 		"terser": "5.48.0",
 		"typescript": "6.0.3",
