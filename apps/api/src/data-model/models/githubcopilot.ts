@@ -319,7 +319,7 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("ghcopilot/anthropic/claude-opus-4.5", PROVIDER, {
 		name: "Claude Opus 4.5",
 		matchingModel: "claude-opus-4.5",
-		knowledgeCutoffDate: "March 31, 2025",
+		knowledgeCutoffDate: "May 2025",
 		releaseDate: "November 24, 2025",
 		lastUpdated: "November 24, 2025",
 		modalities: {
@@ -873,7 +873,7 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("claude-opus-4.8", PROVIDER, {
 		name: "Claude Opus 4.8",
 		matchingModel: "claude-opus-4.8",
-		knowledgeCutoffDate: "January 31, 2026",
+		knowledgeCutoffDate: "January 2026",
 		releaseDate: "May 28, 2026",
 		lastUpdated: "May 28, 2026",
 		modalities: {

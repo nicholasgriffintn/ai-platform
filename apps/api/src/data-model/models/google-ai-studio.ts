@@ -1262,4 +1262,28 @@ export const googleAiStudioModelConfig: ModelConfig = {
 			defaultEffort: "none",
 		},
 	},
+	"gemini-omni-flash-preview": {
+		name: "Gemini Omni Flash Preview",
+		matchingModel: "gemini-omni-flash-preview",
+		provider: "google-ai-studio",
+		family: "gemini",
+		openWeights: false,
+		releaseDate: "June 30, 2026",
+		lastUpdated: "June 30, 2026",
+		modalities: {
+			input: ["text", "image", "video"],
+			output: ["video"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: false,
+		contextWindow: 131072,
+		maxTokens: 65536,
+		costPer1kInputTokens: 0.0015,
+		costPer1kOutputTokens: 0.0175,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
+	},
 };

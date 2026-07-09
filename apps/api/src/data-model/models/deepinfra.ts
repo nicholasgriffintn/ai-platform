@@ -370,7 +370,7 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 		supportsToolCalls: true,
 		contextWindow: 131072,
 		maxTokens: 16384,
-		costPer1kInputTokens: 0.000039,
+		costPer1kInputTokens: 0.000037,
 		costPer1kOutputTokens: 0.00017,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],

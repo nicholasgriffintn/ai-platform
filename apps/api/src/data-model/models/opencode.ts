@@ -217,6 +217,7 @@ export const opencodeModelConfig: ModelConfig = createModelConfigObject([
 		},
 		family: "claude-opus",
 		openWeights: false,
+		knowledgeCutoffDate: "January 2026",
 	}),
 
 	createModelConfig("claude-sonnet-4", PROVIDER, {
@@ -1644,6 +1645,30 @@ export const opencodeModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 64000,
 		costPer1kInputTokens: 0,
 		costPer1kOutputTokens: 0,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
+	}),
+	createModelConfig("grok-4.5", PROVIDER, {
+		name: "Grok 4.5",
+		matchingModel: "grok-4.5",
+		family: "grok",
+		openWeights: false,
+		releaseDate: "July 8, 2026",
+		lastUpdated: "July 8, 2026",
+		modalities: {
+			input: ["text", "image"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		supportsResponseFormat: true,
+		contextWindow: 500000,
+		maxTokens: 500000,
+		costPer1kInputTokens: 0.002,
+		costPer1kOutputTokens: 0.006,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",

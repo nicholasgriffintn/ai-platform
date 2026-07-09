@@ -292,7 +292,7 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("claude-opus-4-5", PROVIDER, {
 		name: "Claude Opus 4.5",
 		matchingModel: "claude-opus-4-5",
-		knowledgeCutoffDate: "March 31, 2025",
+		knowledgeCutoffDate: "May 2025",
 		releaseDate: "November 24, 2025",
 		lastUpdated: "November 24, 2025",
 		deprecated: true,
@@ -456,6 +456,7 @@ export const anthropicModelConfig: ModelConfig = createModelConfigObject([
 		family: "claude-opus",
 		openWeights: false,
 		supportsResponseFormat: true,
+		knowledgeCutoffDate: "January 2026",
 	}),
 	createModelConfig("claude-fable-5", PROVIDER, {
 		name: "Claude Fable 5",

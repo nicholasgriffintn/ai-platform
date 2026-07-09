@@ -1474,7 +1474,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("anthropic/claude-opus-4.5", PROVIDER, {
 		name: "Claude Opus 4.5",
 		matchingModel: "anthropic/claude-opus-4.5",
-		knowledgeCutoffDate: "March 31, 2025",
+		knowledgeCutoffDate: "May 2025",
 		releaseDate: "November 24, 2025",
 		lastUpdated: "November 24, 2025",
 		modalities: {
@@ -6960,6 +6960,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		},
 		family: "claude-opus",
 		openWeights: false,
+		knowledgeCutoffDate: "January 2026",
 	}),
 	createModelConfig("alibaba/qwen3.7-plus", PROVIDER, {
 		name: "Qwen 3.7 Plus",
@@ -9216,5 +9217,53 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		supportsToolCalls: false,
 		contextWindow: 0,
 		maxTokens: 0,
+	}),
+	createModelConfig("google/gemini-omni-flash-preview", PROVIDER, {
+		name: "Gemini Omni Flash Preview",
+		matchingModel: "google/gemini-omni-flash-preview",
+		family: "gemini",
+		openWeights: false,
+		releaseDate: "June 30, 2026",
+		lastUpdated: "June 30, 2026",
+		modalities: {
+			input: ["text", "image", "pdf"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: false,
+		contextWindow: 1000000,
+		maxTokens: 57920,
+		costPer1kInputTokens: 0.0015,
+		costPer1kOutputTokens: 0.009,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
+	}),
+
+	createModelConfig("xai/grok-4.5", PROVIDER, {
+		name: "Grok 4.5",
+		matchingModel: "xai/grok-4.5",
+		family: "grok",
+		openWeights: false,
+		releaseDate: "July 8, 2026",
+		lastUpdated: "July 8, 2026",
+		modalities: {
+			input: ["text", "image", "pdf"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		supportsResponseFormat: true,
+		contextWindow: 500000,
+		maxTokens: 500000,
+		costPer1kInputTokens: 0.002,
+		costPer1kOutputTokens: 0.006,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
 	}),
 ]);

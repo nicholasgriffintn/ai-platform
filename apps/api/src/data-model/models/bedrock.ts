@@ -3691,6 +3691,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		},
 		family: "claude-opus",
 		openWeights: false,
+		knowledgeCutoffDate: "January 2026",
 	}),
 
 	createModelConfig("au.anthropic.claude-opus-4-8", PROVIDER, {
@@ -3725,6 +3726,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		},
 		family: "claude-opus",
 		openWeights: false,
+		knowledgeCutoffDate: "January 2026",
 	}),
 
 	createModelConfig("eu.anthropic.claude-opus-4-8", PROVIDER, {
@@ -3759,6 +3761,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		},
 		family: "claude-opus",
 		openWeights: false,
+		knowledgeCutoffDate: "January 2026",
 	}),
 
 	createModelConfig("global.anthropic.claude-opus-4-8", PROVIDER, {
@@ -3793,6 +3796,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		},
 		family: "claude-opus",
 		openWeights: false,
+		knowledgeCutoffDate: "January 2026",
 	}),
 
 	createModelConfig("jp.anthropic.claude-opus-4-8", PROVIDER, {
@@ -3827,6 +3831,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		},
 		family: "claude-opus",
 		openWeights: false,
+		knowledgeCutoffDate: "January 2026",
 	}),
 
 	createModelConfig("us.anthropic.claude-opus-4-8", PROVIDER, {
@@ -3861,6 +3866,7 @@ export const bedrockModelConfig: ModelConfig = createModelConfigObject([
 		},
 		family: "claude-opus",
 		openWeights: false,
+		knowledgeCutoffDate: "January 2026",
 	}),
 	createModelConfig("openai.gpt-5.4", PROVIDER, {
 		name: "GPT-5.4",

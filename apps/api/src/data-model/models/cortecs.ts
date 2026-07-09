@@ -1610,6 +1610,7 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
 		},
 		family: "claude-opus",
 		openWeights: false,
+		knowledgeCutoffDate: "January 2026",
 	}),
 
 	createModelConfig("gemini-3.5-flash", PROVIDER, {
