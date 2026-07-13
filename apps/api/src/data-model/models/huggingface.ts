@@ -1544,7 +1544,7 @@ export const huggingfaceModelConfig: ModelConfig = {
 		name: "Step 3.7 Flash",
 		matchingModel: "stepfun-ai/Step-3.7-Flash",
 		provider: "huggingface",
-		knowledgeCutoffDate: "January 1, 2026",
+		knowledgeCutoffDate: "March 1, 2026",
 		releaseDate: "May 29, 2026",
 		lastUpdated: "May 29, 2026",
 		modalities: {

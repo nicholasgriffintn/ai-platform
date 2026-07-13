@@ -225,7 +225,7 @@ export const googleAiStudioModelConfig: ModelConfig = {
 		name: "Gemini 2.5 Flash Image",
 		matchingModel: "gemini-2.5-flash-image",
 		provider: "google-ai-studio",
-		knowledgeCutoffDate: "June 2025",
+		knowledgeCutoffDate: "June 2024",
 		releaseDate: "August 26, 2025",
 		lastUpdated: "August 26, 2025",
 		modalities: {

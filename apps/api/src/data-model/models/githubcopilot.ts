@@ -1109,7 +1109,7 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("gpt-5.6-luna", PROVIDER, {
 		name: "GPT-5.6 Luna",
 		matchingModel: "gpt-5.6-luna",
-		family: "gpt-nano",
+		family: "gpt-luna",
 		openWeights: false,
 		knowledgeCutoffDate: "February 16, 2026",
 		releaseDate: "July 9, 2026",
@@ -1135,7 +1135,7 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("gpt-5.6-sol", PROVIDER, {
 		name: "GPT-5.6 Sol",
 		matchingModel: "gpt-5.6-sol",
-		family: "gpt",
+		family: "gpt-sol",
 		openWeights: false,
 		knowledgeCutoffDate: "February 16, 2026",
 		releaseDate: "July 9, 2026",
@@ -1161,7 +1161,7 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("gpt-5.6-terra", PROVIDER, {
 		name: "GPT-5.6 Terra",
 		matchingModel: "gpt-5.6-terra",
-		family: "gpt-mini",
+		family: "gpt-terra",
 		openWeights: false,
 		knowledgeCutoffDate: "February 16, 2026",
 		releaseDate: "July 9, 2026",
