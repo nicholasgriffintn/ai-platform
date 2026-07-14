@@ -1460,7 +1460,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		supportsTemperature: true,
 		supportsToolCalls: true,
 		contextWindow: 200000,
-		maxTokens: 32000,
+		maxTokens: 8192,
 		costPer1kInputTokens: 0.015,
 		costPer1kOutputTokens: 0.075,
 		reasoningConfig: {
@@ -1555,7 +1555,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		supportsTemperature: true,
 		supportsToolCalls: true,
 		contextWindow: 1000000,
-		maxTokens: 64000,
+		maxTokens: 8192,
 		costPer1kInputTokens: 0.003,
 		costPer1kOutputTokens: 0.015,
 		reasoningConfig: {
@@ -1947,10 +1947,10 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		supportsAttachments: false,
 		supportsTemperature: true,
 		supportsToolCalls: true,
-		contextWindow: 128000,
+		contextWindow: 163840,
 		maxTokens: 128000,
-		costPer1kInputTokens: 0.0006,
-		costPer1kOutputTokens: 0.0017,
+		costPer1kInputTokens: 0.00021,
+		costPer1kOutputTokens: 0.00079,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
@@ -2358,7 +2358,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		name: "Nano Banana Pro (Gemini 3 Pro Image)",
 		matchingModel: "google/gemini-3-pro-image",
 		knowledgeCutoffDate: "January 2025",
-		releaseDate: "May 28, 2026",
+		releaseDate: "September 1, 2025",
 		lastUpdated: "May 28, 2026",
 		modalities: {
 			input: ["text"],
