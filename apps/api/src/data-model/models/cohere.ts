@@ -217,7 +217,7 @@ export const cohereModelConfig: ModelConfig = createModelConfigObject([
 			input: ["text", "image"],
 			output: ["text"],
 		},
-		supportsAttachments: false,
+		supportsAttachments: true,
 		supportsTemperature: true,
 		supportsToolCalls: false,
 		isFree: true,
