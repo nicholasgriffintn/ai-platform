@@ -1408,41 +1408,6 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 		},
 	}),
 
-	createModelConfig("nvidia/Nemotron-3-Nano-Omni-30B-A3B-Reasoning", PROVIDER, {
-		name: "Nemotron 3 Nano Omni 30B A3B Reasoning",
-		matchingModel: "nvidia/Nemotron-3-Nano-Omni-30B-A3B-Reasoning",
-		family: "nemotron",
-		openWeights: true,
-		releaseDate: "April 28, 2026",
-		lastUpdated: "April 28, 2026",
-		modalities: {
-			input: ["text", "image", "video", "audio"],
-			output: ["text"],
-		},
-		supportsAttachments: true,
-		supportsTemperature: true,
-		supportsToolCalls: true,
-		supportsResponseFormat: true,
-		contextWindow: 262144,
-		maxTokens: 65536,
-		costPer1kInputTokens: 0.0002,
-		costPer1kOutputTokens: 0.0008,
-		strengths: ["vision", "audio", "video", "document", "tool_use"],
-		contextComplexity: 4,
-		reliability: 1,
-		speed: 4,
-		reasoningConfig: {
-			supportedEffortLevels: ["none", "thinking"],
-			defaultEffort: "none",
-		},
-		artificialAnalysis: {
-			intelligenceIndex: 14.9,
-			codingIndex: null,
-			agenticIndex: null,
-			intelligenceIndexVersion: 4.1,
-		},
-	}),
-
 	createModelConfig("Qwen/Qwen3-32B", PROVIDER, {
 		name: "Qwen3 32B",
 		matchingModel: "Qwen/Qwen3-32B",
