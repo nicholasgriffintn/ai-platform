@@ -757,41 +757,6 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 		supportsResponseFormat: true,
 	}),
 
-	createModelConfig("MiniMaxAI/MiniMax-M2.5", PROVIDER, {
-		name: "MiniMax M2.5",
-		matchingModel: "MiniMaxAI/MiniMax-M2.5",
-		knowledgeCutoffDate: "June 2025",
-		releaseDate: "February 12, 2026",
-		lastUpdated: "February 12, 2026",
-		modalities: {
-			input: ["text"],
-			output: ["text"],
-		},
-		supportsAttachments: false,
-		supportsTemperature: true,
-		supportsToolCalls: true,
-		contextWindow: 196608,
-		maxTokens: 131072,
-		costPer1kInputTokens: 0.00015,
-		costPer1kOutputTokens: 0.00115,
-		reasoningConfig: {
-			supportedEffortLevels: ["none", "thinking"],
-			defaultEffort: "none",
-		},
-		strengths: ["tool_use"],
-		contextComplexity: 4,
-		reliability: 1,
-		speed: 4,
-		artificialAnalysis: {
-			intelligenceIndex: 33.7,
-			codingIndex: null,
-			agenticIndex: null,
-			intelligenceIndexVersion: 4.1,
-		},
-		family: "minimax",
-		openWeights: true,
-	}),
-
 	createModelConfig("moonshotai/Kimi-K2.6", PROVIDER, {
 		name: "Kimi K2.6",
 		matchingModel: "moonshotai/Kimi-K2.6",
@@ -1346,31 +1311,6 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 			codingIndex: 58.6,
 			agenticIndex: 35.4,
 			intelligenceIndexVersion: 4.1,
-		},
-	}),
-
-	createModelConfig("nvidia/Llama-3.3-Nemotron-Super-49B-v1.5", PROVIDER, {
-		name: "Llama 3.3 Nemotron Super 49B v1.5",
-		matchingModel: "nvidia/Llama-3.3-Nemotron-Super-49B-v1.5",
-		family: "nemotron",
-		openWeights: true,
-		releaseDate: "July 25, 2025",
-		lastUpdated: "July 25, 2025",
-		modalities: {
-			input: ["text"],
-			output: ["text"],
-		},
-		supportsAttachments: false,
-		supportsTemperature: true,
-		supportsToolCalls: true,
-		supportsResponseFormat: true,
-		contextWindow: 131072,
-		maxTokens: 131072,
-		costPer1kInputTokens: 0.0004,
-		costPer1kOutputTokens: 0.0004,
-		reasoningConfig: {
-			supportedEffortLevels: ["none", "thinking"],
-			defaultEffort: "none",
 		},
 	}),
 
