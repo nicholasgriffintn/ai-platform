@@ -492,7 +492,7 @@ export const opencodeGoModelConfig: ModelConfig = createModelConfigObject([
 			output: ["text"],
 		},
 		supportsAttachments: true,
-		supportsTemperature: true,
+		supportsTemperature: false,
 		supportsToolCalls: true,
 		supportsResponseFormat: true,
 		contextWindow: 1048576,
