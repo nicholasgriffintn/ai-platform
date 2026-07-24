@@ -1458,14 +1458,16 @@ export const googleAiStudioModelConfig: ModelConfig = {
 			codingIndex: null,
 			agenticIndex: null,
 			intelligenceIndexVersion: null,
-			mediaScores: [{
-				key: "text_to_imageElo",
-				label: "Text-to-image arena",
-				value: 1219,
-				min: 800,
-				max: 1400,
-				confidenceInterval95: 9,
-			}],
+			mediaScores: [
+				{
+					key: "text_to_imageElo",
+					label: "Text-to-image arena",
+					value: 1219,
+					min: 800,
+					max: 1400,
+					confidenceInterval95: 9,
+				},
+			],
 		},
 	},
 
@@ -1501,14 +1503,16 @@ export const googleAiStudioModelConfig: ModelConfig = {
 			codingIndex: null,
 			agenticIndex: null,
 			intelligenceIndexVersion: null,
-			mediaScores: [{
-				key: "text_to_imageElo",
-				label: "Text-to-image arena",
-				value: 1254,
-				min: 800,
-				max: 1400,
-				confidenceInterval95: 9,
-			}],
+			mediaScores: [
+				{
+					key: "text_to_imageElo",
+					label: "Text-to-image arena",
+					value: 1254,
+					min: 800,
+					max: 1400,
+					confidenceInterval95: 9,
+				},
+			],
 		},
 	},
 
@@ -1679,14 +1683,16 @@ export const googleAiStudioModelConfig: ModelConfig = {
 			codingIndex: null,
 			agenticIndex: null,
 			intelligenceIndexVersion: null,
-			mediaScores: [{
-				key: "text_to_videoElo",
-				label: "Text-to-video arena",
-				value: 1218,
-				min: 800,
-				max: 1400,
-				confidenceInterval95: 8,
-			}],
+			mediaScores: [
+				{
+					key: "text_to_videoElo",
+					label: "Text-to-video arena",
+					value: 1218,
+					min: 800,
+					max: 1400,
+					confidenceInterval95: 8,
+				},
+			],
 		},
 	},
 
@@ -1716,14 +1722,16 @@ export const googleAiStudioModelConfig: ModelConfig = {
 			codingIndex: null,
 			agenticIndex: null,
 			intelligenceIndexVersion: null,
-			mediaScores: [{
-				key: "text_to_videoElo",
-				label: "Text-to-video arena",
-				value: 1223,
-				min: 800,
-				max: 1400,
-				confidenceInterval95: 8,
-			}],
+			mediaScores: [
+				{
+					key: "text_to_videoElo",
+					label: "Text-to-video arena",
+					value: 1223,
+					min: 800,
+					max: 1400,
+					confidenceInterval95: 8,
+				},
+			],
 		},
 	},
 
@@ -1752,14 +1760,16 @@ export const googleAiStudioModelConfig: ModelConfig = {
 			codingIndex: null,
 			agenticIndex: null,
 			intelligenceIndexVersion: null,
-			mediaScores: [{
-				key: "text_to_videoElo",
-				label: "Text-to-video arena",
-				value: 1218,
-				min: 800,
-				max: 1400,
-				confidenceInterval95: 9,
-			}],
+			mediaScores: [
+				{
+					key: "text_to_videoElo",
+					label: "Text-to-video arena",
+					value: 1218,
+					min: 800,
+					max: 1400,
+					confidenceInterval95: 9,
+				},
+			],
 		},
 	},
 };

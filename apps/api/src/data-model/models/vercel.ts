@@ -6866,14 +6866,16 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			codingIndex: null,
 			agenticIndex: null,
 			intelligenceIndexVersion: null,
-			mediaScores: [{
-				key: "text_to_imageElo",
-				label: "Text-to-image arena",
-				value: 1254,
-				min: 800,
-				max: 1400,
-				confidenceInterval95: 9,
-			}],
+			mediaScores: [
+				{
+					key: "text_to_imageElo",
+					label: "Text-to-image arena",
+					value: 1254,
+					min: 800,
+					max: 1400,
+					confidenceInterval95: 9,
+				},
+			],
 		},
 	}),
 
