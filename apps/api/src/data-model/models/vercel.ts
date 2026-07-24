@@ -9669,7 +9669,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		family: "laguna-s",
 		openWeights: true,
 		releaseDate: "July 20, 2026",
-		lastUpdated: "July 20, 2026",
+		lastUpdated: "July 21, 2026",
 		modalities: {
 			input: ["text"],
 			output: ["text"],
@@ -9744,6 +9744,28 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			codingIndex: null,
 			agenticIndex: null,
 			intelligenceIndexVersion: 4.1,
+		},
+	}),
+	createModelConfig("inclusionai/ling-3.0-flash-free", PROVIDER, {
+		name: "Ling 3.0 Flash",
+		matchingModel: "inclusionai/ling-3.0-flash-free",
+		family: "ling",
+		openWeights: false,
+		releaseDate: "July 23, 2026",
+		lastUpdated: "July 23, 2026",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsToolCalls: true,
+		contextWindow: 256000,
+		maxTokens: 256000,
+		costPer1kInputTokens: 0,
+		costPer1kOutputTokens: 0,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
 		},
 	}),
 ]);

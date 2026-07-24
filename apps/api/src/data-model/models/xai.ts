@@ -907,4 +907,22 @@ export const xaiModelConfig: ModelConfig = {
 			defaultEffort: "none",
 		},
 	},
+	"grok-imagine-video-1.5": {
+		name: "Grok Imagine Video 1.5",
+		matchingModel: "grok-imagine-video-1.5",
+		provider: "grok",
+		family: "grok",
+		openWeights: false,
+		releaseDate: "May 30, 2026",
+		lastUpdated: "May 30, 2026",
+		modalities: {
+			input: ["text", "image", "video"],
+			output: ["video"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: false,
+		supportsToolCalls: false,
+		contextWindow: 1024,
+		maxTokens: 0,
+	},
 };

@@ -1804,4 +1804,28 @@ export const opencodeModelConfig: ModelConfig = createModelConfigObject([
 			defaultEffort: "none",
 		},
 	}),
+	createModelConfig("ling-3.0-flash-free", PROVIDER, {
+		name: "Ling-3.0-flash Free",
+		matchingModel: "ling-3.0-flash-free",
+		family: "ling",
+		openWeights: false,
+		releaseDate: "July 23, 2026",
+		lastUpdated: "July 23, 2026",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		supportsResponseFormat: false,
+		contextWindow: 262144,
+		maxTokens: 32768,
+		costPer1kInputTokens: 0,
+		costPer1kOutputTokens: 0,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
+	}),
 ]);

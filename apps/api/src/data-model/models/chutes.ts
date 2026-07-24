@@ -2015,4 +2015,23 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 			defaultEffort: "none",
 		},
 	}),
+	createModelConfig("Nemotron-3-Nano-Omni-30B-TEE", PROVIDER, {
+		name: "Nemotron 3 Nano Omni 30B TEE",
+		matchingModel: "Nemotron-3-Nano-Omni-30B-TEE",
+		family: "nemotron",
+		openWeights: true,
+		releaseDate: "July 23, 2026",
+		lastUpdated: "July 23, 2026",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: false,
+		contextWindow: 131072,
+		maxTokens: 0,
+		costPer1kInputTokens: 0.0000245,
+		costPer1kOutputTokens: 0.0000978,
+	}),
 ]);
