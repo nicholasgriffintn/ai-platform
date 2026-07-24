@@ -2,8 +2,8 @@ import { handleResearchTask, startResearchTask } from "~/services/research/task"
 import type { ResearchOptions, ParallelTaskSpec, ResearchProviderName } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { safeParseJson } from "../../utils/json";
-import { jsonSchemaToZod } from "./jsonSchema";
-import type { ApiToolDefinition } from "./types";
+import { jsonSchemaToZod } from "../../utils/jsonSchema";
+import type { ApiToolDefinition } from "../../types/functions";
 
 function coercePollingOptions(args: any): ResearchOptions["polling"] | undefined {
 	const interval =

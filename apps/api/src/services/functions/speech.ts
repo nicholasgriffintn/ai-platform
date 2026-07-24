@@ -1,8 +1,8 @@
 import { generateSpeech } from "~/services/generate/speech";
 import { replicateModelConfig } from "~/data-model/models/replicate";
 import { workersAiModelConfig } from "~/data-model/models/workersai";
-import { jsonSchemaToZod } from "./jsonSchema";
-import type { ApiToolDefinition } from "./types";
+import { jsonSchemaToZod } from "../../utils/jsonSchema";
+import type { ApiToolDefinition } from "../../types/functions";
 import { getModelIdsByOutput } from "~/utils/models";
 
 const SPEECH_PROVIDERS = ["workers-ai", "replicate"] as const;

@@ -12,8 +12,8 @@ import {
 } from "~/services/apps/recipes/toolContext";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { isRecord } from "~/utils/objects";
-import { jsonSchemaToZod } from "../jsonSchema";
-import type { ApiToolDefinition } from "../types";
+import { jsonSchemaToZod } from "../../../utils/jsonSchema";
+import type { ApiToolDefinition } from "../../../types/functions";
 
 function buildConnectorToolError(params: {
 	provider: string;

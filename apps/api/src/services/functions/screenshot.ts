@@ -1,6 +1,6 @@
 import { captureScreenshot } from "~/services/apps/retrieval/screenshot";
-import { jsonSchemaToZod } from "./jsonSchema";
-import type { ApiToolDefinition } from "./types";
+import { jsonSchemaToZod } from "../../utils/jsonSchema";
+import type { ApiToolDefinition } from "../../types/functions";
 
 const DEFAULT_VIEWPORT = {
 	width: 1740,

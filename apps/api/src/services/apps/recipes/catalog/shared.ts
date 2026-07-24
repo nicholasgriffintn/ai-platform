@@ -8,6 +8,8 @@ export const WEATHER_TOOL = "get_weather";
 export const WEB_SEARCH_TOOL = "web_search";
 export const IMAGE_TOOL = "create_image";
 export const QR_TOOL = "create_qr_code";
+export const PASHI_DISCOVERY_TOOL = "search_pashi_tools";
+export const PASHI_EXECUTION_TOOL = "run_pashi_tools";
 
 export type CatalogRecipeConfigurationField = Omit<RecipeConfigurationField, "required"> & {
 	required?: boolean;

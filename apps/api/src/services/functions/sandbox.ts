@@ -15,8 +15,8 @@ import {
 } from "~/lib/chat/sandbox-messages";
 import { executeSandboxRunStream } from "~/services/apps/sandbox/execute-stream";
 import type { IFunctionResponse, IRequest } from "~/types";
-import { jsonSchemaToZod } from "./jsonSchema";
-import type { ApiToolDefinition } from "./types";
+import { jsonSchemaToZod } from "../../utils/jsonSchema";
+import type { ApiToolDefinition } from "../../types/functions";
 
 interface SandboxFunctionArgs {
 	repo: string;

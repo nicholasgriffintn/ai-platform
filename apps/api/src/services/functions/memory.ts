@@ -6,8 +6,8 @@ import {
 import { sanitiseInput } from "~/lib/chat/utils";
 import { MemoryManager } from "~/lib/memory";
 import type { IUserSettings } from "~/types";
-import { jsonSchemaToZod } from "./jsonSchema";
-import type { ApiToolDefinition } from "./types";
+import { jsonSchemaToZod } from "../../utils/jsonSchema";
+import type { ApiToolDefinition } from "../../types/functions";
 
 async function getMemoryToolSettings(
 	context: Parameters<ApiToolDefinition["execute"]>[1],

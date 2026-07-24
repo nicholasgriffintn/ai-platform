@@ -20,6 +20,18 @@ vi.mock("~/services/functions", () => ({
 			type: "premium",
 			isDefault: false,
 		},
+		{
+			name: "connector_slack_search",
+			description: "Search Slack",
+			type: "normal",
+			isDefault: false,
+		},
+		{
+			name: "unknown_tool",
+			description: "A future tool",
+			type: "normal",
+			isDefault: false,
+		},
 	],
 }));
 
@@ -29,13 +41,22 @@ describe("getAvailableTools", () => {
 	it("includes BYOK tools for signed-in users", () => {
 		const tools = getAvailableTools(false, true);
 
-		expect(tools.map((tool) => tool.id)).toEqual(["web_search", "research"]);
+		expect(tools.map((tool) => tool.id)).toEqual([
+			"web_search",
+			"research",
+			"connector_slack_search",
+			"unknown_tool",
+		]);
 	});
 
 	it("hides BYOK tools from anonymous users", () => {
 		const tools = getAvailableTools(false, false);
 
-		expect(tools.map((tool) => tool.id)).toEqual(["web_search"]);
+		expect(tools.map((tool) => tool.id)).toEqual([
+			"web_search",
+			"connector_slack_search",
+			"unknown_tool",
+		]);
 	});
 
 	it("keeps platform premium tools hidden from non-Pro users", () => {
@@ -54,5 +75,15 @@ describe("getAvailableTools", () => {
 		const tools = getAvailableTools(true, true);
 
 		expect(tools.find((tool) => tool.id === "web_search")?.isDefault).toBe(true);
+	});
+
+	it("returns stable categories for known, connector, and future tools", () => {
+		const tools = getAvailableTools(false, true);
+
+		expect(tools.find((tool) => tool.id === "web_search")?.category).toBe("Research");
+		expect(tools.find((tool) => tool.id === "connector_slack_search")?.category).toBe(
+			"Productivity",
+		);
+		expect(tools.find((tool) => tool.id === "unknown_tool")?.category).toBe("Other");
 	});
 });

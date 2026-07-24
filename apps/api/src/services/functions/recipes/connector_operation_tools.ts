@@ -1,6 +1,6 @@
 import { connectorProviders } from "~/lib/providers/capabilities/connectors";
-import { jsonSchemaToZod } from "../jsonSchema";
-import type { ApiToolDefinition } from "../types";
+import { jsonSchemaToZod } from "../../../utils/jsonSchema";
+import type { ApiToolDefinition } from "../../../types/functions";
 import { use_recipe_connector } from "./use_recipe_connector";
 
 const connectorOperationInputSchema = {

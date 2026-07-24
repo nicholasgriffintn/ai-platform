@@ -49,6 +49,7 @@ export type IEnv = {
 	IDEOGRAM_API_KEY?: string;
 	PARALLEL_API_KEY?: string;
 	EXA_API_KEY?: string;
+	PASHI_API_KEY?: string;
 	BEDROCK_AWS_ACCESS_KEY?: string;
 	BEDROCK_AWS_SECRET_KEY?: string;
 	BEDROCK_AWS_REGION?: string;

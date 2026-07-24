@@ -1,7 +1,7 @@
 import { performDeepWebSearch } from "~/services/apps/retrieval/web-search";
 import type { SearchOptions } from "~/types";
-import { jsonSchemaToZod } from "./jsonSchema";
-import type { ApiToolDefinition } from "./types";
+import { jsonSchemaToZod } from "../../utils/jsonSchema";
+import type { ApiToolDefinition } from "../../types/functions";
 
 export const web_search: ApiToolDefinition = {
 	name: "web_search",

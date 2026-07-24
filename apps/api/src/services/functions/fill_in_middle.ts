@@ -1,6 +1,6 @@
 import { handleCreateFimCompletions } from "~/services/completions/createFimCompletions";
-import { jsonSchemaToZod } from "./jsonSchema";
-import type { ApiToolDefinition } from "./types";
+import { jsonSchemaToZod } from "../../utils/jsonSchema";
+import type { ApiToolDefinition } from "../../types/functions";
 
 const toOptionalNumber = (value: unknown): number | undefined => {
 	if (typeof value === "number") {

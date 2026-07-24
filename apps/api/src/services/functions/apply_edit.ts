@@ -1,6 +1,6 @@
 import { handleCreateApplyEditCompletions } from "~/services/completions/createApplyEditCompletions";
-import { jsonSchemaToZod } from "./jsonSchema";
-import type { ApiToolDefinition } from "./types";
+import { jsonSchemaToZod } from "../../utils/jsonSchema";
+import type { ApiToolDefinition } from "../../types/functions";
 
 export const apply_edit_completion: ApiToolDefinition = {
 	name: "apply_edit_completion",

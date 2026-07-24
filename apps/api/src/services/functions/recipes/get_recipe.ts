@@ -5,8 +5,8 @@ import {
 	getRecipeConfiguration,
 	getRecipeExecutionChannel,
 } from "~/services/apps/recipes/toolContext";
-import { jsonSchemaToZod } from "../jsonSchema";
-import type { ApiToolDefinition } from "../types";
+import { jsonSchemaToZod } from "../../../utils/jsonSchema";
+import type { ApiToolDefinition } from "../../../types/functions";
 
 export const get_recipe: ApiToolDefinition = {
 	name: "get_recipe",

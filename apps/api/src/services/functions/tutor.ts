@@ -1,7 +1,7 @@
 import { completeTutorRequest } from "~/services/apps/tutor";
 import type { SearchOptions } from "~/types";
-import { jsonSchemaToZod } from "./jsonSchema";
-import type { ApiToolDefinition } from "./types";
+import { jsonSchemaToZod } from "../../utils/jsonSchema";
+import type { ApiToolDefinition } from "../../types/functions";
 
 export const tutor: ApiToolDefinition = {
 	name: "tutor",

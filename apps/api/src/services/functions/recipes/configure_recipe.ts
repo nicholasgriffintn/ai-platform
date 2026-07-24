@@ -6,8 +6,8 @@ import {
 } from "~/services/apps/recipes/notificationCapabilities";
 import { getActiveRecipeSetup } from "~/services/apps/recipes/toolContext";
 import { AssistantError } from "~/utils/errors";
-import { jsonSchemaToZod } from "../jsonSchema";
-import type { ApiToolDefinition } from "../types";
+import { jsonSchemaToZod } from "../../../utils/jsonSchema";
+import type { ApiToolDefinition } from "../../../types/functions";
 
 export const configure_recipe: ApiToolDefinition = {
 	name: "configure_recipe",

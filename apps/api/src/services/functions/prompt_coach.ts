@@ -1,6 +1,6 @@
 import { handlePromptCoachSuggestion } from "~/services/apps/prompt-coach";
-import { jsonSchemaToZod } from "./jsonSchema";
-import type { ApiToolDefinition } from "./types";
+import { jsonSchemaToZod } from "../../utils/jsonSchema";
+import type { ApiToolDefinition } from "../../types/functions";
 
 export const prompt_coach: ApiToolDefinition = {
 	name: "prompt_coach",

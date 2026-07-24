@@ -4,8 +4,8 @@ import {
 	DEFAULT_OCR_PROVIDER,
 } from "~/lib/providers/capabilities/ocr/constants";
 import type { OcrExtractionRequest } from "~/lib/providers/capabilities/ocr/types";
-import { jsonSchemaToZod } from "./jsonSchema";
-import type { ApiToolDefinition } from "./types";
+import { jsonSchemaToZod } from "../../utils/jsonSchema";
+import type { ApiToolDefinition } from "../../types/functions";
 
 type OcrToolRequest = Omit<OcrExtractionRequest, "env" | "user" | "storage">;
 

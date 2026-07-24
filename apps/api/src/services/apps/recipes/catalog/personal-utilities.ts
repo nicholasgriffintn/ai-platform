@@ -4,6 +4,8 @@ import {
 	WEATHER_TOOL,
 	WEB_SEARCH_TOOL,
 	IMAGE_TOOL,
+	PASHI_DISCOVERY_TOOL,
+	PASHI_EXECUTION_TOOL,
 	QR_TOOL,
 	reviewInstructionsField,
 	locationField,
@@ -341,6 +343,49 @@ export const personalUtilityRecipes: CatalogRecipe[] = [
 				label: "QR notes",
 				type: "textarea",
 				placeholder: "Preferred format, labels, or content to avoid encoding",
+			},
+		],
+	},
+	{
+		id: "pashi-generator-toolkit",
+		title: "Pashi Generator Toolkit",
+		summary:
+			"Discover and run Pashi generators and text converters for code, design, data, and documents.",
+		description:
+			"Uses Pashi's live tool catalogue to select the best current generator or text converter, validate its inputs, and run one or more operations in order.",
+		kind: "integrate",
+		category: "Developer",
+		featured: false,
+		estimatedSetupMinutes: 1,
+		enabledTools: [PASHI_DISCOVERY_TOOL, PASHI_EXECUTION_TOOL],
+		integrations: [],
+		triggers: [
+			{
+				type: "message",
+				label: "Generate or convert with Pashi",
+				description:
+					"Ask Polychat to create structured data, developer assets, design values, or convert text formats.",
+			},
+		],
+		actions: [
+			"Search the live Pashi catalogue for the requested generator or converter",
+			"Choose an executable tool and validate its current fields",
+			"Run the requested operations in order and return each result",
+		],
+		setupPrompt:
+			"Set up the Pashi Generator Toolkit recipe. Ask what I want to generate or convert and any required format constraints. Call search_pashi_tools with an explicit tool_types list before choosing a tool, then call run_pashi_tools with only exact executable tool IDs and documented fields. Preserve user-supplied text exactly. File converters are not supported yet. Never send existing passwords, private keys, access tokens, personal data, or other secrets to Pashi; ask for confirmation when input may be sensitive.",
+		configurationFields: [
+			{
+				key: "preferredToolTypes",
+				label: "Preferred tool types",
+				type: "string_list",
+				placeholder: "generator, converter",
+			},
+			{
+				key: "outputPreferences",
+				label: "Output preferences",
+				type: "textarea",
+				placeholder: "Preferred formats, naming, limits, and content to avoid",
 			},
 		],
 	},

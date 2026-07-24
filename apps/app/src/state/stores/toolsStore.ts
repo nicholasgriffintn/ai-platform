@@ -1,12 +1,8 @@
+import type { Tool } from "@assistant/schemas";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-export interface Tool {
-	id: string;
-	name: string;
-	description: string;
-	isDefault?: boolean;
-}
+export type { Tool } from "@assistant/schemas";
 
 interface ToolsStore {
 	selectedTools: string[];

@@ -2,8 +2,8 @@ import { imagePrompts } from "~/lib/prompts/image";
 import { replicateModelConfig } from "~/data-model/models/replicate";
 import { workersAiModelConfig } from "~/data-model/models/workersai";
 import { generateImage } from "~/services/generate/image";
-import { jsonSchemaToZod } from "./jsonSchema";
-import type { ApiToolDefinition } from "./types";
+import { jsonSchemaToZod } from "../../utils/jsonSchema";
+import type { ApiToolDefinition } from "../../types/functions";
 import { getModelIdsByOutput } from "~/utils/models";
 
 const IMAGE_PROVIDERS = ["workers-ai", "replicate"] as const;

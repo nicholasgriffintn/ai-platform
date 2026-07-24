@@ -19,7 +19,7 @@ import {
 	type AgentMCPToolDefinition,
 	type MCPServerConfig,
 } from "~/services/agents/mcp-client";
-import type { ApiToolDefinition } from "~/services/functions/types";
+import type { ApiToolDefinition } from "~/types/functions";
 import type { IEnv } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { safeParseJson } from "~/utils/json";

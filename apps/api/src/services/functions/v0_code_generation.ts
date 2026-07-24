@@ -1,7 +1,7 @@
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import { createServiceContext } from "~/lib/context/serviceContext";
-import { jsonSchemaToZod } from "./jsonSchema";
-import type { ApiToolDefinition } from "./types";
+import { jsonSchemaToZod } from "../../utils/jsonSchema";
+import type { ApiToolDefinition } from "../../types/functions";
 
 export const v0_code_generation: ApiToolDefinition = {
 	name: "v0_code_generation",

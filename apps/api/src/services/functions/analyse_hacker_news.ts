@@ -2,8 +2,8 @@ import {
 	analyseHackerNewsStories,
 	retrieveHackerNewsTopStories,
 } from "~/services/apps/retrieval/hackernews";
-import { jsonSchemaToZod } from "./jsonSchema";
-import type { ApiToolDefinition } from "./types";
+import { jsonSchemaToZod } from "../../utils/jsonSchema";
+import type { ApiToolDefinition } from "../../types/functions";
 
 export const analyse_hacker_news: ApiToolDefinition = {
 	name: "analyse_hacker_news",

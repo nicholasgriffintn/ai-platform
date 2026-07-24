@@ -1,14 +1,8 @@
+import type { Tool } from "@assistant/schemas";
 import { listFunctionTools } from "~/services/functions";
+import { getToolCategory } from "./toolCategories";
 
-export function getAvailableTools(
-	isPro = false,
-	isSignedIn = false,
-): Array<{
-	id: string;
-	name: string;
-	description: string;
-	isDefault: boolean;
-}> {
+export function getAvailableTools(isPro = false, isSignedIn = false): Tool[] {
 	return listFunctionTools()
 		.filter((tool) => {
 			if (tool.type === "premium" && !isPro) {
@@ -23,6 +17,7 @@ export function getAvailableTools(
 			id: tool.name,
 			name: tool.name,
 			description: tool.description,
+			category: getToolCategory(tool.name),
 			isDefault: isPro ? tool.isDefault || false : false,
 		}));
 }

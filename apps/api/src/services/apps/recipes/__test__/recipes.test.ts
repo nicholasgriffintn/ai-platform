@@ -978,6 +978,18 @@ describe("assistant recipes", () => {
 		expect(getRecipeCatalogValidationIssues()).toEqual([]);
 	});
 
+	it("exposes Pashi discovery and ordered execution through its recipe", () => {
+		expect(getRecipeById("pashi-generator-toolkit")).toMatchObject({
+			id: "pashi-generator-toolkit",
+			enabledTools: ["search_pashi_tools", "run_pashi_tools"],
+			integrations: [],
+			configurationFields: [
+				expect.objectContaining({ key: "preferredToolTypes" }),
+				expect.objectContaining({ key: "outputPreferences" }),
+			],
+		});
+	});
+
 	it("builds install setup with connector status and stores installation", async () => {
 		const context = createTestServiceContext();
 

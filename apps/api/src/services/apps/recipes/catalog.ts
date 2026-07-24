@@ -14,6 +14,8 @@ import { personalUtilityRecipes } from "./catalog/personal-utilities";
 import type { CatalogRecipe } from "./catalog/shared";
 export {
 	IMAGE_TOOL,
+	PASHI_DISCOVERY_TOOL,
+	PASHI_EXECUTION_TOOL,
 	QR_TOOL,
 	RECIPE_CONNECTOR_TOOL,
 	RECIPE_LOOKUP_TOOL,

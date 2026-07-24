@@ -1,4 +1,4 @@
-import type { ModelConfig } from "@assistant/schemas";
+import type { ModelConfig, Tool } from "@assistant/schemas";
 import { fetchApi, returnFetchedData } from "../fetch-wrapper";
 
 export interface ProviderSetting {
@@ -74,7 +74,7 @@ export class UserService {
 		return responseData;
 	}
 
-	async fetchTools(): Promise<any> {
+	async fetchTools(): Promise<Tool[]> {
 		let headers = {};
 		try {
 			headers = await this.getHeaders();
@@ -90,7 +90,7 @@ export class UserService {
 		if (!response.ok) {
 			throw new Error(`Failed to fetch tools: ${response.statusText}`);
 		}
-		const responseData = await returnFetchedData<any>(response);
+		const responseData = await returnFetchedData<Tool[]>(response);
 
 		return responseData;
 	}

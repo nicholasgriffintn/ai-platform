@@ -2,8 +2,8 @@ import { TeamDelegation } from "~/lib/agents/team/TeamDelegation";
 import { resolveServiceContext, createServiceContext } from "~/lib/context/serviceContext";
 import type { Message } from "~/types";
 import { getLogger } from "~/utils/logger";
-import { jsonSchemaToZod } from "./jsonSchema";
-import type { ApiToolDefinition } from "./types";
+import { jsonSchemaToZod } from "../../utils/jsonSchema";
+import type { ApiToolDefinition } from "../../types/functions";
 
 const logger = getLogger({ prefix: "services/functions/teamDelegation" });
 

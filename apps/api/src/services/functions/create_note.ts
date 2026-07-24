@@ -1,7 +1,7 @@
 import { sanitiseInput } from "~/lib/chat/utils";
 import { insertEmbedding } from "~/services/apps/embeddings/insert";
-import { jsonSchemaToZod } from "./jsonSchema";
-import type { ApiToolDefinition } from "./types";
+import { jsonSchemaToZod } from "../../utils/jsonSchema";
+import type { ApiToolDefinition } from "../../types/functions";
 
 export const create_note: ApiToolDefinition = {
 	name: "create_note",

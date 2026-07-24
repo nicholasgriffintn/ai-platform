@@ -1,6 +1,6 @@
 import { handleCreateNextEditCompletions } from "~/services/completions/createNextEditCompletions";
-import { jsonSchemaToZod } from "./jsonSchema";
-import type { ApiToolDefinition } from "./types";
+import { jsonSchemaToZod } from "../../utils/jsonSchema";
+import type { ApiToolDefinition } from "../../types/functions";
 
 export const next_edit_completion: ApiToolDefinition = {
 	name: "next_edit_completion",

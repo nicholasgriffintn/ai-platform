@@ -1,5 +1,5 @@
-import { jsonSchemaToZod } from "./jsonSchema";
-import type { ApiToolDefinition } from "./types";
+import { jsonSchemaToZod } from "../../utils/jsonSchema";
+import type { ApiToolDefinition } from "../../types/functions";
 import { isAbortError } from "~/utils/abort";
 import { headersToRecord, readHttpResponseBody, setDefaultHeader } from "~/utils/http";
 import { getLogger } from "~/utils/logger";

@@ -4,6 +4,7 @@ import type {
 	CreateAgentInput,
 	MarkdownConversionOptions,
 	ModelConfig,
+	Tool,
 	UpdateAgentInput,
 } from "@assistant/schemas";
 import type { Conversation, ConversationListOptions, ConversationListPage, Message } from "~/types";
@@ -238,7 +239,7 @@ class ApiService {
 		return this.userService.fetchModels();
 	};
 
-	fetchTools = (): Promise<any> => {
+	fetchTools = (): Promise<Tool[]> => {
 		return this.userService.fetchTools();
 	};
 

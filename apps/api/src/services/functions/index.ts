@@ -18,6 +18,7 @@ import { search_memories, store_memory } from "./memory";
 import { create_music } from "./music";
 import { prompt_coach } from "./prompt_coach";
 import { create_qr_code } from "./qr";
+import { run_pashi_tools, search_pashi_tools } from "./pashi";
 import { add_reasoning_step } from "./reasoning";
 import { capture_screenshot } from "./screenshot";
 import { create_speech } from "./speech";
@@ -47,7 +48,7 @@ import {
 	run_refactoring,
 	run_test_suite,
 } from "./sandbox";
-import type { ApiToolDefinition } from "./types";
+import type { ApiToolDefinition } from "../../types/functions";
 
 const logger = getLogger({ prefix: "services/functions" });
 const FUNCTIONS_TOOL_CATEGORY = "functions";
@@ -63,6 +64,8 @@ const functionDefinitions: ApiToolDefinition[] = [
 	apply_edit_completion,
 	web_search,
 	create_qr_code,
+	search_pashi_tools,
+	run_pashi_tools,
 	call_api,
 	research,
 	extract_content,

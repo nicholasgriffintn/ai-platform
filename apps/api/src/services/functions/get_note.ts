@@ -1,6 +1,6 @@
 import { queryEmbeddings } from "~/services/apps/embeddings/query";
-import { jsonSchemaToZod } from "./jsonSchema";
-import type { ApiToolDefinition } from "./types";
+import { jsonSchemaToZod } from "../../utils/jsonSchema";
+import type { ApiToolDefinition } from "../../types/functions";
 
 export const get_note: ApiToolDefinition = {
 	name: "get_note",
