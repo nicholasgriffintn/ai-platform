@@ -10,7 +10,7 @@
 		"mode": "smart",
 	},
 	"cache": {
-		"enabled": true,
+		"enabled": false,
 	},
 	"observability": {
 		"enabled": true,
