@@ -8900,7 +8900,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		family: "glm",
 		openWeights: false,
 		releaseDate: "June 23, 2026",
-		lastUpdated: "June 16, 2026",
+		lastUpdated: "June 13, 2026",
 		modalities: {
 			input: ["text"],
 			output: ["text"],
@@ -8916,6 +8916,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		supportsResponseFormat: true,
 	}),
 	createModelConfig("anthropic/claude-3.5-haiku", PROVIDER, {
 		name: "Claude 3.5 Haiku",
