@@ -3425,7 +3425,7 @@ export const openrouterModelConfig: ModelConfig = {
 		supportsToolCalls: true,
 		supportsResponseFormat: true,
 		contextWindow: 400000,
-		maxTokens: 100000,
+		maxTokens: 128000,
 		costPer1kInputTokens: 0.00025,
 		costPer1kOutputTokens: 0.002,
 		reasoningConfig: {
@@ -10617,9 +10617,9 @@ export const openrouterModelConfig: ModelConfig = {
 		supportsToolCalls: true,
 		supportsResponseFormat: true,
 		contextWindow: 131072,
-		maxTokens: 8192,
-		costPer1kInputTokens: 0.00013,
-		costPer1kOutputTokens: 0.00052,
+		maxTokens: 16384,
+		costPer1kInputTokens: 0.00012,
+		costPer1kOutputTokens: 0.0005,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
@@ -12834,7 +12834,7 @@ export const openrouterModelConfig: ModelConfig = {
 		supportsResponseFormat: true,
 		contextWindow: 262144,
 		maxTokens: 262144,
-		costPer1kInputTokens: 0.00078,
+		costPer1kInputTokens: 0.00073,
 		costPer1kOutputTokens: 0.0035,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
@@ -12869,8 +12869,8 @@ export const openrouterModelConfig: ModelConfig = {
 		supportsResponseFormat: true,
 		contextWindow: 1048576,
 		maxTokens: 131072,
-		costPer1kInputTokens: 0.0007182,
-		costPer1kOutputTokens: 0.0022572,
+		costPer1kInputTokens: 0.0006692,
+		costPer1kOutputTokens: 0.0021032,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
