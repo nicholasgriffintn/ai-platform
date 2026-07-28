@@ -9660,4 +9660,28 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			defaultEffort: "none",
 		},
 	}),
+	createModelConfig("moonshotai/kimi-k3-fast", PROVIDER, {
+		name: "Kimi K3 Fast",
+		matchingModel: "moonshotai/kimi-k3-fast",
+		family: "kimi-k3",
+		openWeights: false,
+		releaseDate: "July 27, 2026",
+		lastUpdated: "July 16, 2026",
+		modalities: {
+			input: ["text", "image", "pdf"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: false,
+		supportsToolCalls: true,
+		supportsResponseFormat: true,
+		contextWindow: 1000000,
+		maxTokens: 131072,
+		costPer1kInputTokens: 0.0045,
+		costPer1kOutputTokens: 0.0225,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
+	}),
 ]);
