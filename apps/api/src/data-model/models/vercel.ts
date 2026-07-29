@@ -5396,7 +5396,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("google/gemini-3.1-pro-preview", PROVIDER, {
 		name: "Gemini 3.1 Pro Preview",
 		matchingModel: "google/gemini-3.1-pro-preview",
-		releaseDate: "November 18, 2025",
+		releaseDate: "February 19, 2026",
 		lastUpdated: "February 19, 2026",
 		modalities: {
 			input: ["text", "image", "pdf"],
