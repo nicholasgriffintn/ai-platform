@@ -2034,4 +2034,28 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		costPer1kInputTokens: 0.0000245,
 		costPer1kOutputTokens: 0.0000978,
 	}),
+	createModelConfig("moonshotai/Kimi-K3-TEE", PROVIDER, {
+		name: "Kimi K3 TEE",
+		matchingModel: "moonshotai/Kimi-K3-TEE",
+		family: "kimi-k3",
+		openWeights: true,
+		releaseDate: "July 29, 2026",
+		lastUpdated: "July 29, 2026",
+		modalities: {
+			input: ["text", "image", "video"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		supportsResponseFormat: true,
+		contextWindow: 1048576,
+		maxTokens: 65535,
+		costPer1kInputTokens: 0.003,
+		costPer1kOutputTokens: 0.015,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
+	}),
 ]);
