@@ -1669,8 +1669,8 @@ export const opencodeModelConfig: ModelConfig = createModelConfigObject([
 		supportsResponseFormat: true,
 		contextWindow: 1050000,
 		maxTokens: 128000,
-		costPer1kInputTokens: 0.001,
-		costPer1kOutputTokens: 0.006,
+		costPer1kInputTokens: 0.0002,
+		costPer1kOutputTokens: 0.0012,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
