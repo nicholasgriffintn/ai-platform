@@ -327,7 +327,7 @@ export const opencodeModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
-		family: "deepseek-flash-free",
+		family: "deepseek-flash",
 		openWeights: true,
 	}),
 

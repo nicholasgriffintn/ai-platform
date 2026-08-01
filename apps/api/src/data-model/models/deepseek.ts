@@ -68,6 +68,7 @@ export const deepseekModelConfig: ModelConfig = {
 		},
 		family: "deepseek-thinking",
 		openWeights: true,
+		costPer1kReasoningTokens: 0.00028,
 	},
 	"deepseek-v4-flash": {
 		name: "DeepSeek V4 Flash",
@@ -110,6 +111,7 @@ export const deepseekModelConfig: ModelConfig = {
 		},
 		family: "deepseek-flash",
 		openWeights: true,
+		costPer1kReasoningTokens: 0.00028,
 	},
 
 	"deepseek-v4-pro": {
@@ -153,5 +155,6 @@ export const deepseekModelConfig: ModelConfig = {
 		},
 		family: "deepseek-thinking",
 		openWeights: true,
+		costPer1kReasoningTokens: 0.00087,
 	},
 };
