@@ -9762,4 +9762,20 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			defaultEffort: "none",
 		},
 	}),
+	createModelConfig("google/veo-3.1-lite-generate-001", PROVIDER, {
+		name: "Veo 3.1 Lite Generate",
+		matchingModel: "google/veo-3.1-lite-generate-001",
+		family: "veo",
+		openWeights: false,
+		releaseDate: "April 2, 2026",
+		lastUpdated: "April 2, 2026",
+		modalities: {
+			input: ["text"],
+			output: ["video"],
+		},
+		supportsAttachments: false,
+		supportsToolCalls: false,
+		contextWindow: 0,
+		maxTokens: 0,
+	}),
 ]);
