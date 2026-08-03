@@ -77,8 +77,8 @@ export const deepseekModelConfig: ModelConfig = {
 		matchingModel: "deepseek-v4-flash",
 		provider: "deepseek",
 		knowledgeCutoffDate: "May 2025",
-		releaseDate: "April 24, 2026",
-		lastUpdated: "April 24, 2026",
+		releaseDate: "July 31, 2026",
+		lastUpdated: "July 31, 2026",
 		modalities: {
 			input: ["text"],
 			output: ["text"],

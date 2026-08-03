@@ -1803,4 +1803,28 @@ export const huggingfaceModelConfig: ModelConfig = {
 			defaultEffort: "none",
 		},
 	},
+	"thinkingmachines/Inkling-Small": {
+		name: "Inkling Small",
+		matchingModel: "thinkingmachines/Inkling-Small",
+		provider: "huggingface",
+		family: "ling",
+		openWeights: true,
+		releaseDate: "July 30, 2026",
+		lastUpdated: "July 30, 2026",
+		modalities: {
+			input: ["text", "image"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 524288,
+		maxTokens: 1048576,
+		costPer1kInputTokens: 0.0005,
+		costPer1kOutputTokens: 0.0012,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
+	},
 };

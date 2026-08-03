@@ -309,8 +309,8 @@ export const opencodeModelConfig: ModelConfig = createModelConfigObject([
 		name: "DeepSeek V4 Flash Free",
 		matchingModel: "deepseek-v4-flash-free",
 		knowledgeCutoffDate: "May 2025",
-		releaseDate: "April 24, 2026",
-		lastUpdated: "April 24, 2026",
+		releaseDate: "July 31, 2026",
+		lastUpdated: "July 31, 2026",
 		modalities: {
 			input: ["text"],
 			output: ["text"],
@@ -1350,8 +1350,8 @@ export const opencodeModelConfig: ModelConfig = createModelConfigObject([
 		name: "DeepSeek V4 Flash",
 		matchingModel: "deepseek-v4-flash",
 		knowledgeCutoffDate: "May 2025",
-		releaseDate: "April 24, 2026",
-		lastUpdated: "April 24, 2026",
+		releaseDate: "July 31, 2026",
+		lastUpdated: "July 31, 2026",
 		modalities: {
 			input: ["text"],
 			output: ["text"],

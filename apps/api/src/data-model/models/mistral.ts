@@ -603,6 +603,17 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 			output: ["speech"],
 		},
 		supportsAudio: true,
+		family: "voxtral",
+		openWeights: true,
+		releaseDate: "July 15, 2025",
+		lastUpdated: "July 15, 2025",
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 32000,
+		maxTokens: 32000,
+		costPer1kInputTokens: 0.0001,
+		costPer1kOutputTokens: 0.0003,
 	}),
 
 	createModelConfig("voxtral-mini", PROVIDER, {
@@ -615,6 +626,15 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 			output: ["speech"],
 		},
 		supportsAudio: true,
+		family: "voxtral",
+		openWeights: false,
+		releaseDate: "February 1, 2026",
+		lastUpdated: "February 1, 2026",
+		supportsAttachments: false,
+		supportsTemperature: false,
+		supportsToolCalls: false,
+		contextWindow: 0,
+		maxTokens: 0,
 	}),
 
 	createModelConfig("voxtral-mini-transcribe-realtime", PROVIDER, {
@@ -635,44 +655,6 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 		supportsToolCalls: false,
 		card: "https://docs.mistral.ai/models/model-cards/voxtral-mini-transcribe-realtime-26-02",
 		strengths: ["audio", "transcription"],
-	}),
-
-	createModelConfig("voxtral-mini-tts", PROVIDER, {
-		name: "Voxtral Mini TTS",
-		matchingModel: "voxtral-mini-tts-2603",
-		description:
-			"Mistral text-to-speech model that generates speech from text using either a saved voice or one-off reference audio.",
-		modalities: {
-			input: ["text"],
-			output: ["speech"],
-		},
-		inputSchema: {
-			fields: [
-				{
-					name: "input",
-					type: "string",
-					description: "Text to generate speech for",
-					required: true,
-				},
-				{
-					name: "voice_id",
-					type: "string",
-					description: "Saved Mistral voice identifier",
-				},
-				{
-					name: "ref_audio",
-					type: "string",
-					description: "Base64-encoded reference audio for one-off voice cloning",
-				},
-				{
-					name: "response_format",
-					type: "string",
-					description: "Response audio format",
-					default: "mp3",
-					enum: ["mp3", "wav", "pcm", "flac", "opus"],
-				},
-			],
-		},
 	}),
 
 	createModelConfig("mistral-embed", PROVIDER, {
@@ -717,5 +699,22 @@ export const mistralModelConfig: ModelConfig = createModelConfigObject([
 			input: ["moderation"],
 			output: ["moderation"],
 		},
+	}),
+	createModelConfig("voxtral-mini-tts-latest", PROVIDER, {
+		name: "Voxtral Mini TTS (latest)",
+		matchingModel: "voxtral-mini-tts-latest",
+		family: "voxtral",
+		openWeights: false,
+		releaseDate: "March 1, 2026",
+		lastUpdated: "March 1, 2026",
+		modalities: {
+			input: ["text"],
+			output: ["audio"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: false,
+		supportsToolCalls: false,
+		contextWindow: 0,
+		maxTokens: 0,
 	}),
 ]);
