@@ -1312,6 +1312,7 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 			agenticIndex: 35.4,
 			intelligenceIndexVersion: 4.1,
 		},
+		supportsResponseFormat: true,
 	}),
 
 	createModelConfig("nvidia/Nemotron-3-Nano-30B-A3B", PROVIDER, {
@@ -1781,5 +1782,25 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+	}),
+	createModelConfig("Qwen/Qwen3.8-Max", PROVIDER, {
+		name: "Qwen3.8 Max",
+		matchingModel: "Qwen/Qwen3.8-Max",
+		family: "qwen",
+		openWeights: false,
+		releaseDate: "August 3, 2026",
+		lastUpdated: "August 3, 2026",
+		modalities: {
+			input: ["text", "image", "video"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		supportsResponseFormat: true,
+		contextWindow: 256000,
+		maxTokens: 131072,
+		costPer1kInputTokens: 0.00165,
+		costPer1kOutputTokens: 0.004951,
 	}),
 ]);
