@@ -159,6 +159,7 @@ export const workersAiModelConfig: ModelConfig = {
 		supportsResponseFormat: false,
 		family: "llama",
 		openWeights: true,
+		knowledgeCutoffDate: "December 2023",
 	},
 	"llama-3.2-3b-instruct": {
 		name: "Llama 3.2 3B Instruct",
@@ -186,6 +187,7 @@ export const workersAiModelConfig: ModelConfig = {
 		supportsResponseFormat: false,
 		family: "llama",
 		openWeights: true,
+		knowledgeCutoffDate: "December 2023",
 	},
 	"llama-4-scout-17b": {
 		name: "Llama 4 Scout 17B 16E Instruct",
