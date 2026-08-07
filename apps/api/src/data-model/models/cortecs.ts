@@ -1453,9 +1453,9 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("qwen3-coder-next", PROVIDER, {
 		name: "Qwen3 Coder Next 80B",
 		matchingModel: "qwen3-coder-next",
-		knowledgeCutoffDate: "April 2025",
-		releaseDate: "February 4, 2026",
-		lastUpdated: "February 4, 2026",
+		knowledgeCutoffDate: "September 2025",
+		releaseDate: "February 3, 2026",
+		lastUpdated: "February 3, 2026",
 		modalities: {
 			input: ["text"],
 			output: ["text"],

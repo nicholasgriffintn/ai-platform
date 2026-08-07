@@ -1873,6 +1873,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		},
 		family: "deepseek",
 		openWeights: false,
+		supportsResponseFormat: true,
 	}),
 
 	createModelConfig("deepseek/deepseek-v3.2-exp", PROVIDER, {
@@ -4941,7 +4942,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		name: "Qwen3 Coder Next",
 		matchingModel: "alibaba/qwen3-coder-next",
 		releaseDate: "July 22, 2025",
-		lastUpdated: "February 19, 2026",
+		lastUpdated: "February 3, 2026",
 		modalities: {
 			input: ["text"],
 			output: ["text"],
@@ -4969,6 +4970,8 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		},
 		family: "qwen",
 		openWeights: false,
+		knowledgeCutoffDate: "September 2025",
+		supportsResponseFormat: true,
 	}),
 
 	createModelConfig("alibaba/qwen3-vl-235b-a22b-instruct", PROVIDER, {
@@ -5005,7 +5008,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		name: "Qwen 3.5 Flash",
 		matchingModel: "alibaba/qwen3.5-flash",
 		releaseDate: "February 24, 2026",
-		lastUpdated: "February 24, 2026",
+		lastUpdated: "February 23, 2026",
 		modalities: {
 			input: ["text", "image", "pdf"],
 			output: ["text"],
@@ -5023,6 +5026,7 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		},
 		family: "qwen",
 		openWeights: false,
+		supportsResponseFormat: true,
 	}),
 
 	createModelConfig("alibaba/qwen3.5-plus", PROVIDER, {
@@ -6583,8 +6587,8 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		supportsAttachments: true,
 		supportsTemperature: true,
 		supportsToolCalls: true,
-		contextWindow: 202000,
-		maxTokens: 202000,
+		contextWindow: 202800,
+		maxTokens: 64000,
 		costPer1kInputTokens: 0.0014,
 		costPer1kOutputTokens: 0.0044,
 		reasoningConfig: {
@@ -9875,6 +9879,8 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		supportsTemperature: true,
+		supportsResponseFormat: true,
 	}),
 
 	createModelConfig("meta/muse-spark-1.2-contributor", PROVIDER, {
@@ -9894,6 +9900,133 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 1048576,
 		costPer1kInputTokens: 0.0001,
 		costPer1kOutputTokens: 0.0002,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
+	}),
+	createModelConfig("fish-audio/s1", PROVIDER, {
+		name: "S1",
+		matchingModel: "fish-audio/s1",
+		family: "o",
+		openWeights: false,
+		releaseDate: "October 20, 2025",
+		lastUpdated: "October 20, 2025",
+		modalities: {
+			input: ["text"],
+			output: ["audio"],
+		},
+		supportsAttachments: false,
+		supportsToolCalls: false,
+		contextWindow: 0,
+		maxTokens: 0,
+	}),
+
+	createModelConfig("fish-audio/s2-pro", PROVIDER, {
+		name: "S2 Pro",
+		matchingModel: "fish-audio/s2-pro",
+		family: "o",
+		openWeights: false,
+		releaseDate: "March 9, 2026",
+		lastUpdated: "March 9, 2026",
+		modalities: {
+			input: ["text"],
+			output: ["audio"],
+		},
+		supportsAttachments: false,
+		supportsToolCalls: false,
+		contextWindow: 0,
+		maxTokens: 0,
+		strengths: ["audio"],
+		reliability: 3,
+		artificialAnalysis: {
+			intelligenceIndex: null,
+			codingIndex: null,
+			agenticIndex: null,
+			intelligenceIndexVersion: null,
+			mediaScores: [{
+				key: "text_to_speechElo",
+				label: "Text-to-speech arena",
+				value: 1117,
+				min: 800,
+				max: 1400,
+				confidenceInterval95: 14,
+			}],
+		},
+	}),
+
+	createModelConfig("fish-audio/s2.1-pro", PROVIDER, {
+		name: "S2.1 Pro",
+		matchingModel: "fish-audio/s2.1-pro",
+		family: "o",
+		openWeights: false,
+		releaseDate: "July 28, 2026",
+		lastUpdated: "July 28, 2026",
+		modalities: {
+			input: ["text"],
+			output: ["audio"],
+		},
+		supportsAttachments: false,
+		supportsToolCalls: false,
+		contextWindow: 0,
+		maxTokens: 0,
+	}),
+
+	createModelConfig("fish-audio/transcribe-1", PROVIDER, {
+		name: "Transcribe-1",
+		matchingModel: "fish-audio/transcribe-1",
+		family: "o",
+		openWeights: false,
+		releaseDate: "March 1, 2026",
+		lastUpdated: "March 1, 2026",
+		modalities: {
+			input: ["audio"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsToolCalls: false,
+		contextWindow: 0,
+		maxTokens: 0,
+	}),
+
+	createModelConfig("inclusionai/ling-3.0-flash", PROVIDER, {
+		name: "Ling 3.0 Flash",
+		matchingModel: "inclusionai/ling-3.0-flash",
+		family: "ling",
+		openWeights: false,
+		releaseDate: "August 6, 2026",
+		lastUpdated: "August 6, 2026",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsToolCalls: true,
+		contextWindow: 256000,
+		maxTokens: 32000,
+		costPer1kInputTokens: 0.00006,
+		costPer1kOutputTokens: 0.00018,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
+	}),
+
+	createModelConfig("inclusionai/ling-3.0-tiny-free", PROVIDER, {
+		name: "Ling 3.0 Tiny (Free)",
+		matchingModel: "inclusionai/ling-3.0-tiny-free",
+		family: "ling",
+		openWeights: false,
+		releaseDate: "August 6, 2026",
+		lastUpdated: "August 6, 2026",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsToolCalls: true,
+		contextWindow: 256000,
+		maxTokens: 32000,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",

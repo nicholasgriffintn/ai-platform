@@ -1258,4 +1258,28 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
 			defaultEffort: "none",
 		},
 	}),
+	createModelConfig("kimi-k3", PROVIDER, {
+		name: "Kimi K3",
+		matchingModel: "kimi-k3",
+		family: "kimi-k3",
+		openWeights: true,
+		releaseDate: "July 16, 2026",
+		lastUpdated: "July 16, 2026",
+		modalities: {
+			input: ["text", "image"],
+			output: ["text"],
+		},
+		supportsAttachments: true,
+		supportsTemperature: false,
+		supportsToolCalls: true,
+		supportsResponseFormat: true,
+		contextWindow: 1048576,
+		maxTokens: 131072,
+		costPer1kInputTokens: 0.00095,
+		costPer1kOutputTokens: 0.004,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
+	}),
 ]);

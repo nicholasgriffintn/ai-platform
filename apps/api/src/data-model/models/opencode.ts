@@ -55,31 +55,6 @@ export const opencodeModelConfig: ModelConfig = createModelConfigObject([
 		openWeights: false,
 	}),
 
-	createModelConfig("claude-opus-4-1", PROVIDER, {
-		name: "Claude Opus 4.1",
-		matchingModel: "claude-opus-4-1",
-		knowledgeCutoffDate: "March 31, 2025",
-		releaseDate: "August 5, 2025",
-		lastUpdated: "August 5, 2025",
-		modalities: {
-			input: ["text", "image", "pdf"],
-			output: ["text"],
-		},
-		supportsAttachments: true,
-		supportsTemperature: true,
-		supportsToolCalls: true,
-		contextWindow: 200000,
-		maxTokens: 32000,
-		costPer1kInputTokens: 0.015,
-		costPer1kOutputTokens: 0.075,
-		reasoningConfig: {
-			supportedEffortLevels: ["none", "thinking"],
-			defaultEffort: "none",
-		},
-		family: "claude-opus",
-		openWeights: false,
-	}),
-
 	createModelConfig("claude-opus-4-5", PROVIDER, {
 		name: "Claude Opus 4.5",
 		matchingModel: "claude-opus-4-5",

@@ -565,6 +565,7 @@ export const chutesModelConfig: ModelConfig = createModelConfigObject([
 		},
 		family: "deepseek",
 		openWeights: true,
+		knowledgeCutoffDate: "July 2024",
 	}),
 
 	createModelConfig("MiniMaxAI/MiniMax-M2.1-TEE", PROVIDER, {
