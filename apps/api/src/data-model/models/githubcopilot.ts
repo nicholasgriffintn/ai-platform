@@ -1275,8 +1275,8 @@ export const githubCopilotModelConfig: ModelConfig = createModelConfigObject([
 		supportsResponseFormat: true,
 		contextWindow: 1048576,
 		maxTokens: 131072,
-		costPer1kInputTokens: 0.00095,
-		costPer1kOutputTokens: 0.004,
+		costPer1kInputTokens: 0.003,
+		costPer1kOutputTokens: 0.015,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",

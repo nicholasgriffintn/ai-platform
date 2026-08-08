@@ -10032,4 +10032,20 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			defaultEffort: "none",
 		},
 	}),
+	createModelConfig("bytedance/seedance-2.5", PROVIDER, {
+		name: "Seedance 2.5",
+		matchingModel: "bytedance/seedance-2.5",
+		family: "seed",
+		openWeights: false,
+		releaseDate: "August 7, 2026",
+		lastUpdated: "August 7, 2026",
+		modalities: {
+			input: ["text"],
+			output: ["video"],
+		},
+		supportsAttachments: false,
+		supportsToolCalls: false,
+		contextWindow: 0,
+		maxTokens: 0,
+	}),
 ]);
