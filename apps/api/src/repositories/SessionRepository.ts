@@ -1,3 +1,8 @@
+import type { AuthSessionRecord, SessionStore } from "@ngriffin_uk/auth-core";
+import { eq } from "drizzle-orm";
+
+import { AUTH_SESSION_TTL_MS } from "~/constants/app";
+import { session } from "~/lib/database/schema";
 import { BaseRepository } from "./BaseRepository";
 
 interface ConsumeMobileAuthCodeOptions {
@@ -7,7 +12,42 @@ interface ConsumeMobileAuthCodeOptions {
 	expiresAt: Date;
 }
 
-export class SessionRepository extends BaseRepository {
+export class SessionRepository extends BaseRepository implements SessionStore {
+	public async create(record: AuthSessionRecord): Promise<void> {
+		await this.database.insert(session).values({
+			id: record.tokenHash,
+			user_id: Number(record.userId),
+			expires_at: record.expiresAt.toISOString(),
+			jwt_token: null,
+			jwt_expires_at: null,
+		});
+	}
+
+	public async findByTokenHash(tokenHash: string): Promise<AuthSessionRecord | null> {
+		const [record] = await this.database
+			.select({
+				id: session.id,
+				userId: session.user_id,
+				expiresAt: session.expires_at,
+			})
+			.from(session)
+			.where(eq(session.id, tokenHash))
+			.limit(1);
+		if (!record) return null;
+
+		const expiresAt = new Date(record.expiresAt);
+		return {
+			tokenHash: record.id,
+			userId: String(record.userId),
+			createdAt: new Date(expiresAt.getTime() - AUTH_SESSION_TTL_MS),
+			expiresAt,
+		};
+	}
+
+	public async deleteByTokenHash(tokenHash: string): Promise<void> {
+		await this.database.delete(session).where(eq(session.id, tokenHash));
+	}
+
 	public async deleteSession(sessionId: string): Promise<void> {
 		const { query, values } = this.buildDeleteQuery("session", {
 			id: sessionId,

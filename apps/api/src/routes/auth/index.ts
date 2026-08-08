@@ -18,13 +18,7 @@ import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import { ResponseFactory } from "~/lib/http/ResponseFactory";
 import { handleAppleIdentityTokenSignIn } from "~/services/auth/apple";
 import { getUserSettings } from "~/services/auth/user";
-import { handleGitHubOAuthCallback, getGitHubAuthUrl } from "~/services/auth/github";
-import {
-	buildMobileRedirectUri,
-	createMobileOAuthState,
-	parseMobileOAuthState,
-	requireMobileRedirectUri,
-} from "~/services/auth/mobile";
+import { buildMobileRedirectUri, requireMobileRedirectUri } from "~/services/auth/mobile";
 import {
 	handleLogout,
 	exchangeMobileAuthCode,
@@ -37,6 +31,8 @@ import {
 import type { AnonymousUser, User } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
+import { createAssistantGitHubAuth } from "~/services/auth/sharedAuth";
+import { handleAssistantAuthUiRequest } from "~/services/auth/authUi";
 import authMagicLink from "./magic-link";
 import authWebauthn from "./webauthn";
 
@@ -49,6 +45,18 @@ const routeLogger = createRouteLogger("auth");
 app.use("/*", (c, next) => {
 	routeLogger.info(`Processing auth route: ${c.req.path}`);
 	return next();
+});
+
+app.post("/", async (c) => {
+	const response = await handleAssistantAuthUiRequest({
+		context: getServiceContext(c),
+		request: c.req.raw,
+		input: await c.req.json(),
+	});
+	if (response.sessionToken) {
+		c.header("Set-Cookie", createSessionCookie(response.sessionToken));
+	}
+	return c.json(response.result);
 });
 
 addRoute(app, "get", "/github", {
@@ -77,10 +85,13 @@ addRoute(app, "get", "/github", {
 			};
 			const mobileRedirectUri =
 				platform === "mobile" ? requireMobileRedirectUri(redirect_uri, "/callback") : undefined;
-			const githubAuthUrl = getGitHubAuthUrl(c.env, {
-				state: mobileRedirectUri ? createMobileOAuthState(mobileRedirectUri) : undefined,
+			const serviceContext = getServiceContext(c);
+			const github = createAssistantGitHubAuth(serviceContext);
+			const githubAuthUrl = await github.providers.github.startAuthorization({
+				scopes: ["user:email"],
+				...(mobileRedirectUri ? { context: { mobileRedirectUri } } : {}),
 			});
-			return c.redirect(githubAuthUrl);
+			return c.redirect(githubAuthUrl.toString());
 		})(raw),
 });
 
@@ -108,21 +119,27 @@ addRoute(app, "get", "/github/callback", {
 			};
 
 			const serviceContext = getServiceContext(c);
-			const { user, sessionId } = await handleGitHubOAuthCallback({
-				context: serviceContext,
+			const github = createAssistantGitHubAuth(serviceContext);
+			const result = await github.providers.github.completeAuthorization({
 				code,
+				state: state ?? "",
 			});
-
-			const mobileState = parseMobileOAuthState(state);
-			if (mobileState) {
-				const mobileRedirectUri = requireMobileRedirectUri(mobileState.redirect_uri, "/callback");
+			if (result.status !== "authenticated") {
+				throw new AssistantError("GitHub sign-in failed", ErrorType.AUTHENTICATION_ERROR);
+			}
+			const { user, token: sessionId } = result.session;
+			if (user.continuation?.mobileRedirectUri) {
+				const validatedRedirectUri = requireMobileRedirectUri(
+					user.continuation.mobileRedirectUri,
+					"/callback",
+				);
 				const { code: mobileCode } = await generateMobileAuthExchangeCode({
 					context: serviceContext,
-					userId: user.id,
+					userId: user.record.id,
 					sessionId,
 				});
 
-				return c.redirect(buildMobileRedirectUri(mobileRedirectUri, { code: mobileCode }));
+				return c.redirect(buildMobileRedirectUri(validatedRedirectUri, { code: mobileCode }));
 			}
 
 			c.header("Set-Cookie", createSessionCookie(sessionId));

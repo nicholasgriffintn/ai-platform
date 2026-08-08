@@ -1,4 +1,5 @@
 import type { IEnv } from "~/types";
+import { createDatabaseClient, type DatabaseClient } from "~/lib/database/client";
 import { QueryBuilder } from "~/lib/database/QueryBuilder";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
@@ -9,12 +10,14 @@ const logger = getLogger({ prefix: "repositories/BaseRepository" });
 
 export abstract class BaseRepository {
 	protected env: IEnv;
+	protected database: DatabaseClient;
 
 	constructor(env: IEnv) {
 		if (!env?.DB) {
 			throw new AssistantError("Database not configured", ErrorType.CONFIGURATION_ERROR);
 		}
 		this.env = env;
+		this.database = createDatabaseClient(env.DB);
 	}
 
 	protected async runQuery<T>(query: string, params: any[], returnFirst: true): Promise<T | null>;

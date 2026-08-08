@@ -1,141 +1,134 @@
-import { Octokit } from "@octokit/rest";
+import { type ExternalIdentity, isRecord } from "@ngriffin_uk/auth-core";
+import type { OAuthTokenSet } from "@ngriffin_uk/auth-oauth2";
 
-import { resolveServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
-import type { IEnv } from "~/types";
-import { AssistantError, ErrorType } from "~/utils/errors";
-import { generateId } from "~/utils/id";
+import type { ServiceContext } from "~/lib/context/serviceContext";
+import { type AssistantAuthUser, toAssistantAuthUser } from "~/services/auth/authUser";
+import { getStringRecordValue } from "~/utils/objects";
 
-export interface GitHubUser {
-	id: number;
-	login: string;
-	email: string;
-	name?: string;
-	avatar_url: string;
-	company?: string;
-	location?: string;
-	bio?: string;
-	twitter_username?: string;
-	site?: string;
-}
-
-export async function handleGitHubOAuthCallback({
-	context,
-	env,
-	code,
-}: {
-	context?: ServiceContext;
-	env?: IEnv;
-	code: string;
-}): Promise<{ user: GitHubUser; sessionId: string }> {
-	const serviceContext = resolveServiceContext({ context, env });
-
-	if (!serviceContext.env.GITHUB_CLIENT_ID || !serviceContext.env.GITHUB_CLIENT_SECRET) {
-		throw new AssistantError("Missing GitHub OAuth configuration", ErrorType.CONFIGURATION_ERROR);
-	}
-
-	const tokenResponse = await fetch("https://github.com/login/oauth/access_token", {
-		method: "POST",
-		headers: {
-			"Content-Type": "application/json",
-			Accept: "application/json",
-		},
-		body: JSON.stringify({
-			client_id: serviceContext.env.GITHUB_CLIENT_ID,
-			client_secret: serviceContext.env.GITHUB_CLIENT_SECRET,
-			code,
-		}),
-	});
-
-	const tokenData = (await tokenResponse.json()) as {
-		access_token: string;
-		scope: string;
-		token_type: string;
-		error?: string;
-		error_description?: string;
+export async function resolveGitHubIdentity(
+	tokens: OAuthTokenSet,
+	_claims: unknown,
+	context: Readonly<Record<string, string>>,
+): Promise<ExternalIdentity> {
+	const headers = {
+		Accept: "application/vnd.github+json",
+		Authorization: `Bearer ${tokens.accessToken}`,
+		"User-Agent": "Assistant",
+		"X-GitHub-Api-Version": "2022-11-28",
 	};
-
-	if (tokenData.error) {
-		throw new AssistantError(
-			`GitHub OAuth error: ${tokenData.error_description}`,
-			ErrorType.AUTHENTICATION_ERROR,
-		);
+	const [profileResponse, emailsResponse] = await Promise.all([
+		fetch("https://api.github.com/user", { headers }),
+		fetch("https://api.github.com/user/emails", { headers }),
+	]);
+	if (!profileResponse.ok || !emailsResponse.ok) {
+		throw new Error("GitHub profile request failed.");
 	}
 
-	const accessToken = tokenData.access_token;
-
-	const { githubUser, primaryEmail } = await getGitHubUserData(accessToken);
-
-	const user = await serviceContext.repositories.users.createOrUpdateGithubUser({
-		githubId: githubUser.id.toString(),
-		username: githubUser.login,
-		email: primaryEmail,
-		name: githubUser.name || undefined,
-		avatar_url: githubUser.avatar_url,
-		company: githubUser.company || undefined,
-		location: githubUser.location || undefined,
-		bio: githubUser.bio || undefined,
-		twitter_username: githubUser.twitter_username || undefined,
-		site: githubUser.site || undefined,
-	});
-
-	const sessionId = generateId();
-	const expiresAt = new Date();
-	expiresAt.setDate(expiresAt.getDate() + 7); // 7 days
-
-	await serviceContext.repositories.sessions.createSession(sessionId, user.id, expiresAt);
+	const profile = await profileResponse.json();
+	const emails = await emailsResponse.json();
+	if (!isGitHubApiProfile(profile) || !Array.isArray(emails)) {
+		throw new TypeError("GitHub returned an invalid profile.");
+	}
+	const verifiedEmails = emails.filter(isVerifiedGitHubEmail);
+	const email =
+		verifiedEmails.find((candidate) => candidate.primary)?.email ?? verifiedEmails[0]?.email;
+	if (!email) throw new TypeError("A verified GitHub email address is required.");
 
 	return {
-		user: {
-			id: user.id,
-			login: (user as any).username,
-			email: (user as any).email,
-			name: (user as any).name || undefined,
-			avatar_url: (user as any).avatar_url,
-			company: (user as any).company || undefined,
-			location: (user as any).location || undefined,
-			bio: (user as any).bio || undefined,
-			twitter_username: (user as any).twitter_username || undefined,
-			site: (user as any).site || undefined,
+		provider: "github",
+		providerSubject: String(profile.id),
+		email,
+		emailVerified: true,
+		claims: {
+			profile: {
+				login: profile.login,
+				email,
+				name: getStringRecordValue(profile, "name"),
+				avatarUrl: profile.avatar_url,
+				company: getStringRecordValue(profile, "company"),
+				location: getStringRecordValue(profile, "location"),
+				bio: getStringRecordValue(profile, "bio"),
+				twitterUsername: getStringRecordValue(profile, "twitter_username"),
+				site: getStringRecordValue(profile, "blog"),
+				mobileRedirectUri: context["mobileRedirectUri"],
+			},
 		},
-		sessionId,
 	};
 }
 
-async function getGitHubUserData(accessToken: string): Promise<{
-	githubUser: any;
-	primaryEmail: string;
-}> {
-	const octokit = new Octokit({
-		auth: accessToken,
+export async function resolveGitHubUser(
+	context: ServiceContext,
+	identity: ExternalIdentity,
+): Promise<AssistantAuthUser> {
+	const profile = readGitHubProfile(identity);
+	const user = await context.repositories.users.createOrUpdateGithubUser({
+		githubId: identity.providerSubject,
+		username: profile.login,
+		email: profile.email,
+		name: profile.name,
+		avatar_url: profile.avatarUrl,
+		company: profile.company,
+		location: profile.location,
+		bio: profile.bio,
+		twitter_username: profile.twitterUsername,
+		site: profile.site,
 	});
-
-	const { data: githubUser } = await octokit.users.getAuthenticated();
-	const { data: emails } = await octokit.users.listEmailsForAuthenticatedUser();
-
-	const primaryEmail = emails.find((email) => email.primary)?.email || emails[0]?.email;
-
-	if (!primaryEmail) {
-		throw new AssistantError(
-			"Could not retrieve email from GitHub account",
-			ErrorType.AUTHENTICATION_ERROR,
-		);
-	}
-
-	return { githubUser, primaryEmail };
+	const continuation = profile.mobileRedirectUri
+		? { mobileRedirectUri: profile.mobileRedirectUri }
+		: undefined;
+	return {
+		...toAssistantAuthUser(user),
+		...(continuation ? { continuation } : {}),
+	};
 }
 
-export function getGitHubAuthUrl(env: IEnv, options?: { state?: string }): string {
-	if (!env.GITHUB_CLIENT_ID) {
-		throw new AssistantError("Missing GitHub OAuth configuration", ErrorType.CONFIGURATION_ERROR);
+function readGitHubProfile(identity: ExternalIdentity) {
+	const value = identity.claims["profile"];
+	if (!isRecord(value)) {
+		throw new TypeError("GitHub returned an invalid identity.");
 	}
-
-	const authUrl = new URL("https://github.com/login/oauth/authorize");
-	authUrl.searchParams.set("client_id", env.GITHUB_CLIENT_ID);
-	authUrl.searchParams.set("scope", "user:email");
-
-	if (options?.state) {
-		authUrl.searchParams.set("state", options.state);
+	const login = getStringRecordValue(value, "login");
+	const email = getStringRecordValue(value, "email");
+	const avatarUrl = getStringRecordValue(value, "avatarUrl");
+	if (!login || !email || !avatarUrl) {
+		throw new TypeError("GitHub returned an invalid identity.");
 	}
+	return {
+		login,
+		email,
+		avatarUrl,
+		name: getStringRecordValue(value, "name"),
+		company: getStringRecordValue(value, "company"),
+		location: getStringRecordValue(value, "location"),
+		bio: getStringRecordValue(value, "bio"),
+		twitterUsername: getStringRecordValue(value, "twitterUsername"),
+		site: getStringRecordValue(value, "site"),
+		mobileRedirectUri: getStringRecordValue(value, "mobileRedirectUri"),
+	};
+}
 
-	return authUrl.toString();
+function isGitHubApiProfile(value: unknown): value is GitHubApiProfile {
+	return (
+		isRecord(value) &&
+		typeof value.id === "number" &&
+		typeof value.login === "string" &&
+		typeof value.avatar_url === "string"
+	);
+}
+
+function isVerifiedGitHubEmail(
+	value: unknown,
+): value is { email: string; verified: true; primary: boolean } {
+	return (
+		isRecord(value) &&
+		typeof value.email === "string" &&
+		value.verified === true &&
+		typeof value.primary === "boolean"
+	);
+}
+
+interface GitHubApiProfile extends Record<string, unknown> {
+	id: number;
+	login: string;
+	avatar_url: string;
 }

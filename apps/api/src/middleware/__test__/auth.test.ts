@@ -1,6 +1,7 @@
 import type { Context, Next } from "hono";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import { getServiceContext, serviceContextMiddleware } from "~/lib/context/serviceContext";
 import { AssistantError } from "~/utils/errors";
 import { allowRestrictedPaths, authMiddleware, requireAuth } from "../auth";
 
@@ -18,7 +19,7 @@ const mockRepositories = {
 };
 
 const mockGetUserByJwtToken = vi.fn();
-const mockGetUserBySessionId = vi.fn();
+const mockAuthenticateSession = vi.hoisted(() => vi.fn());
 const mockIsbot = vi.fn();
 const repositoryCtor = vi.fn();
 let repositoryFactory = () => mockRepositories;
@@ -44,8 +45,10 @@ vi.mock("~/services/auth/jwt", () => ({
 	getUserByJwtToken: vi.fn(),
 }));
 
-vi.mock("~/services/auth/user", () => ({
-	getUserBySessionId: vi.fn(),
+vi.mock("~/services/auth/sharedAuth", () => ({
+	createAssistantAuth: vi.fn(() => ({
+		authenticate: mockAuthenticateSession,
+	})),
 }));
 
 vi.mock("isbot", () => ({
@@ -62,6 +65,7 @@ vi.mock("~/utils/logger", () => ({
 }));
 
 function createMockContext(overrides: any = {}): Context {
+	const variables = new Map<string, unknown>();
 	const mockContext = {
 		req: {
 			header: vi.fn(),
@@ -77,8 +81,8 @@ function createMockContext(overrides: any = {}): Context {
 			JWT_SECRET: "test-secret",
 			...overrides.env,
 		},
-		get: vi.fn(),
-		set: vi.fn(),
+		get: vi.fn((key: string) => variables.get(key)),
+		set: vi.fn((key: string, value: unknown) => variables.set(key, value)),
 		header: vi.fn(),
 		...overrides,
 	} as any;
@@ -95,13 +99,11 @@ describe("Auth Middleware", () => {
 
 		const { KVCache } = await import("~/lib/cache");
 		const { getUserByJwtToken } = await import("~/services/auth/jwt");
-		const { getUserBySessionId } = await import("~/services/auth/user");
 		const { isbot } = await import("isbot");
 
 		repositoryFactory = () => mockRepositories as any;
 		vi.mocked(KVCache.createKey).mockReturnValue("bot:user-agent");
 		vi.mocked(getUserByJwtToken).mockImplementation(mockGetUserByJwtToken);
-		vi.mocked(getUserBySessionId).mockImplementation(mockGetUserBySessionId);
 		vi.mocked(isbot).mockImplementation(mockIsbot);
 
 		mockIsbot.mockReturnValue(false);
@@ -175,7 +177,7 @@ describe("Auth Middleware", () => {
 				return null;
 			});
 			mockIsbot.mockReturnValue(true);
-			mockGetUserBySessionId.mockResolvedValue(mockProUser);
+			mockAuthenticateSession.mockResolvedValue({ user: { record: mockProUser } });
 
 			await authMiddleware(context, mockNext);
 
@@ -196,13 +198,33 @@ describe("Auth Middleware", () => {
 				return null;
 			});
 
-			mockGetUserBySessionId.mockResolvedValue(mockUser);
+			mockAuthenticateSession.mockResolvedValue({ user: { record: mockUser } });
 
 			await authMiddleware(context, mockNext);
 
-			expect(mockGetUserBySessionId).toHaveBeenCalledWith(mockRepositories, "session-123");
+			expect(mockAuthenticateSession).toHaveBeenCalledWith("session-123");
 			expect(context.set).toHaveBeenCalledWith("user", mockUser);
 			expect(mockNext).toHaveBeenCalled();
+		});
+
+		it("makes the session user available to downstream services", async () => {
+			const mockUser = { id: 123, email: "test@example.com" };
+			const context = createMockContext();
+
+			// @ts-expect-error - mock implementation
+			context.req.header.mockImplementation((name: string) => {
+				if (name === "user-agent") return "Mozilla/5.0";
+				if (name === "CF-Connecting-IP") return "127.0.0.1";
+				if (name === "Cookie") return "session=session-123";
+				return null;
+			});
+			mockAuthenticateSession.mockResolvedValue({ user: { record: mockUser } });
+
+			await authMiddleware(context, async () => {
+				await serviceContextMiddleware(context, mockNext);
+			});
+
+			expect(getServiceContext(context).requireUser()).toEqual(mockUser);
 		});
 
 		it("should authenticate user with API key", async () => {

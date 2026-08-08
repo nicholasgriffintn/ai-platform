@@ -29,6 +29,7 @@ minimumReleaseAgeExclude:
   - '@aws-sdk/token-providers@3.1057.0'
   - miniflare@4.20260702.0
   - wrangler@4.107.1
+  - '@ngriffin_uk/*'
 
 onlyBuiltDependencies:
   - better-sqlite3

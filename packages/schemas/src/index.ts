@@ -92,7 +92,6 @@ export * from "./tool-registry";
 export * from "./tools";
 export * from "./uploads";
 export * from "./user";
-export * from "./webAuthN";
 export * from "./webhooks";
 export * from "./training";
 export * from "./headers";

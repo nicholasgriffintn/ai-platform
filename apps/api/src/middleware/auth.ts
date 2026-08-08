@@ -2,9 +2,10 @@ import type { Context, Next } from "hono";
 import { isbot } from "isbot";
 
 import { KVCache } from "~/lib/cache";
+import { createServiceContext } from "~/lib/context/serviceContext";
 import { RepositoryManager } from "~/repositories";
 import { getUserByJwtToken } from "~/services/auth/jwt";
-import { getUserBySessionId } from "~/services/auth/user";
+import { createAssistantAuth } from "~/services/auth/sharedAuth";
 import type { AnonymousUser, User } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
@@ -127,7 +128,16 @@ export async function authMiddleware(context: Context, next: Next) {
 	const sessionId = getCookies().session;
 
 	if (sessionId) {
-		authPromises.push(getUserBySessionId(getRepositories(), sessionId));
+		// The request context must be created after authentication so downstream services receive its user.
+		const authenticationContext = createServiceContext({
+			env: context.env,
+			requestId: context.get("requestId"),
+		});
+		authPromises.push(
+			createAssistantAuth(authenticationContext)
+				.authenticate(sessionId)
+				.then((session) => session?.user.record ?? null),
+		);
 	}
 
 	if (authToken?.startsWith("ak_")) {

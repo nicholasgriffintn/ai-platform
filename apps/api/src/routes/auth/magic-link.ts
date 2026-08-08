@@ -8,10 +8,10 @@ import {
 	errorResponseSchema,
 } from "@assistant/schemas";
 
-import { buildMobileRedirectUri, requireMobileRedirectUri } from "~/services/auth/mobile";
-import { requestMagicLink, verifyMagicLink } from "~/services/auth/magicLink";
-import { createSession } from "~/services/auth/user";
-import { sendMagicLinkEmail } from "~/services/notifications";
+import { createAssistantMagicLinkAuth } from "~/services/auth/sharedAuth";
+import { createSessionCookie } from "~/services/auth/sessions";
+import { requestAssistantMagicLink } from "~/services/auth/magicLinkRequest";
+import { AssistantError, ErrorType } from "~/utils/errors";
 
 const app = new Hono();
 
@@ -34,18 +34,11 @@ addRoute(app, "post", "/request", {
 		},
 	},
 	handler: async ({ body, serviceContext }) => {
-		const { token, nonce } = await requestMagicLink(serviceContext.env, body.email);
-		const baseUrl = serviceContext.env.APP_BASE_URL;
-
-		if (token && nonce && baseUrl) {
-			const mobileRedirectUri = body.redirect_uri
-				? requireMobileRedirectUri(body.redirect_uri, "/magic-link")
-				: undefined;
-			const link = mobileRedirectUri
-				? buildMobileRedirectUri(mobileRedirectUri, { token, nonce })
-				: `${baseUrl}/auth/verify-magic-link?token=${token}&nonce=${nonce}`;
-			await sendMagicLinkEmail(serviceContext.env, body.email, link);
-		}
+		await requestAssistantMagicLink({
+			context: serviceContext,
+			email: body.email,
+			...(body.redirect_uri ? { redirectUri: body.redirect_uri } : {}),
+		});
 
 		return { success: true };
 	},
@@ -70,13 +63,25 @@ addRoute(app, "post", "/verify", {
 		},
 	},
 	handler: async ({ body, raw, serviceContext }) => {
-		const userId = await verifyMagicLink(serviceContext.env, body.token, body.nonce);
-		const sessionId = await createSession(serviceContext.repositories, userId);
-
-		raw.header(
-			"Set-Cookie",
-			`session=${sessionId}; HttpOnly; Path=/; SameSite=Lax; Max-Age=604800`,
-		);
+		if (body.token !== body.nonce) {
+			throw new AssistantError(
+				"Invalid magic-link verification data.",
+				ErrorType.AUTHENTICATION_ERROR,
+				401,
+			);
+		}
+		const magicLink = createAssistantMagicLinkAuth(serviceContext, async () => {});
+		const result = await magicLink.providers["magic-link"].authenticate({
+			token: body.token,
+		});
+		if (result.status !== "authenticated") {
+			throw new AssistantError(
+				"Magic-link authentication did not complete.",
+				ErrorType.AUTHENTICATION_ERROR,
+				401,
+			);
+		}
+		raw.header("Set-Cookie", createSessionCookie(result.session.token));
 
 		return { success: true };
 	},

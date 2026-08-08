@@ -1,7 +1,9 @@
-import jwt from "@tsndr/cloudflare-worker-jwt";
+import { hashSecret } from "@ngriffin_uk/auth-core";
+import { importHmacSecret, signJwt, verifyJwt, type JwtClaims } from "@ngriffin_uk/auth-jwt";
 
 import { resolveServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
 import { generateJwtToken } from "~/services/auth/jwt";
+import { createAssistantAuth } from "~/services/auth/sharedAuth";
 import type { IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
@@ -9,7 +11,7 @@ import { generateId } from "~/utils/id";
 const MOBILE_AUTH_CODE_EXPIRES_IN_SECONDS = 60;
 const MOBILE_AUTH_CODE_PURPOSE = "mobile_auth_exchange";
 
-interface MobileAuthCodePayload {
+interface MobileAuthCodePayload extends JwtClaims {
 	purpose: typeof MOBILE_AUTH_CODE_PURPOSE;
 	jti: string;
 	sub: string;
@@ -36,7 +38,7 @@ export async function handleLogout({
 }): Promise<{ success: boolean }> {
 	if (sessionId) {
 		const serviceContext = resolveServiceContext({ context, env });
-		await serviceContext.repositories.sessions.deleteSession(sessionId);
+		await createAssistantAuth(serviceContext).revokeSession(sessionId);
 	}
 
 	return { success: true };
@@ -60,7 +62,9 @@ export async function generateUserToken({
 	}
 
 	if (sessionId) {
-		const sessionData = await serviceContext.repositories.sessions.getSessionWithJwt(sessionId);
+		const sessionTokenHash = await hashSecret(sessionId);
+		const sessionData =
+			await serviceContext.repositories.sessions.getSessionWithJwt(sessionTokenHash);
 
 		if (sessionData?.jwt_token && sessionData?.jwt_expires_at) {
 			const jwtExpiresAt = new Date(sessionData.jwt_expires_at);
@@ -80,7 +84,11 @@ export async function generateUserToken({
 		const token = await generateJwtToken(user, serviceContext.env.JWT_SECRET, expiresIn);
 		const jwtExpiresAt = new Date(Date.now() + expiresIn * 1000);
 
-		await serviceContext.repositories.sessions.updateSessionJwt(sessionId, token, jwtExpiresAt);
+		await serviceContext.repositories.sessions.updateSessionJwt(
+			sessionTokenHash,
+			token,
+			jwtExpiresAt,
+		);
 
 		return {
 			token,
@@ -126,8 +134,9 @@ export async function generateMobileAuthExchangeCode({
 		exp: now + MOBILE_AUTH_CODE_EXPIRES_IN_SECONDS,
 	};
 
-	const code = await jwt.sign(payload, serviceContext.env.JWT_SECRET, {
+	const code = await signJwt(payload, {
 		algorithm: "HS256",
+		key: await importHmacSecret(serviceContext.env.JWT_SECRET),
 	});
 
 	return {
@@ -151,37 +160,33 @@ export async function exchangeMobileAuthCode({
 		throw new AssistantError("JWT authentication not configured", ErrorType.CONFIGURATION_ERROR);
 	}
 
-	let verified: unknown;
+	let payload;
 	try {
-		verified = await jwt.verify(code, serviceContext.env.JWT_SECRET, {
-			algorithm: "HS256",
+		payload = await verifyJwt(code, {
+			algorithms: ["HS256"],
+			key: await importHmacSecret(serviceContext.env.JWT_SECRET),
+			issuer: "assistant",
+			audience: "assistant-mobile",
+			maxTokenAgeSeconds: MOBILE_AUTH_CODE_EXPIRES_IN_SECONDS,
 		});
-	} catch {
+	} catch (cause) {
 		throw new AssistantError(
 			"Invalid or expired mobile auth code",
 			ErrorType.AUTHENTICATION_ERROR,
 			401,
+			{ cause },
 		);
 	}
 
-	if (!verified) {
-		throw new AssistantError(
-			"Invalid or expired mobile auth code",
-			ErrorType.AUTHENTICATION_ERROR,
-			401,
-		);
-	}
-
-	const { payload } = jwt.decode<Partial<MobileAuthCodePayload>>(code);
 	const now = Math.floor(Date.now() / 1000);
 
 	if (
-		payload?.purpose !== MOBILE_AUTH_CODE_PURPOSE ||
+		payload["purpose"] !== MOBILE_AUTH_CODE_PURPOSE ||
 		payload.iss !== "assistant" ||
 		payload.aud !== "assistant-mobile" ||
 		typeof payload.jti !== "string" ||
 		!payload.sub ||
-		!payload.session_id ||
+		typeof payload["session_id"] !== "string" ||
 		typeof payload.exp !== "number" ||
 		payload.exp < now
 	) {
@@ -197,7 +202,9 @@ export async function exchangeMobileAuthCode({
 		throw new AssistantError("Invalid mobile auth user", ErrorType.AUTHENTICATION_ERROR, 401);
 	}
 
-	const session = await serviceContext.repositories.sessions.getSessionWithJwt(payload.session_id);
+	const sessionId = payload["session_id"];
+	const sessionTokenHash = await hashSecret(sessionId);
+	const session = await serviceContext.repositories.sessions.getSessionWithJwt(sessionTokenHash);
 	if (!session || session.user_id !== userId) {
 		throw new AssistantError(
 			"Invalid or expired mobile session",
@@ -208,7 +215,7 @@ export async function exchangeMobileAuthCode({
 
 	const consumed = await serviceContext.repositories.sessions.consumeMobileAuthCode({
 		jti: payload.jti,
-		sessionId: payload.session_id,
+		sessionId: sessionTokenHash,
 		userId,
 		expiresAt: new Date(payload.exp * 1000),
 	});
@@ -233,12 +240,12 @@ export async function exchangeMobileAuthCode({
 	const token = await generateUserToken({
 		context: serviceContext,
 		user,
-		sessionId: payload.session_id,
+		sessionId,
 	});
 
 	return {
 		...token,
-		sessionId: payload.session_id,
+		sessionId,
 	};
 }
 
@@ -248,9 +255,9 @@ export function extractSessionIdFromCookies(cookies: string): string | null {
 }
 
 export function createLogoutCookie(): string {
-	return "session=; HttpOnly; Path=/; SameSite=Lax; Max-Age=0";
+	return "session=; HttpOnly; Secure; Path=/; SameSite=Lax; Max-Age=0";
 }
 
 export function createSessionCookie(sessionId: string): string {
-	return `session=${sessionId}; HttpOnly; Path=/; SameSite=Lax; Max-Age=604800`; // 7 days
+	return `session=${sessionId}; HttpOnly; Secure; Path=/; SameSite=Lax; Max-Age=604800`;
 }

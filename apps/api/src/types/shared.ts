@@ -126,7 +126,6 @@ export type IEnv = {
 	SANDBOX_ALLOWED_MODELS?: string;
 	SANDBOX_BLOCKED_MODELS?: string;
 	JWT_SECRET?: string;
-	EMAIL_JWT_SECRET?: string;
 	CARTESIA_API_KEY?: string;
 	ELEVENLABS_API_KEY?: string;
 	TOGETHER_AI_API_KEY?: string;

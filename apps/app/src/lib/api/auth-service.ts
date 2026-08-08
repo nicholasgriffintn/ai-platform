@@ -38,9 +38,15 @@ class AuthService {
 		window.location.href = `${API_BASE_URL}/auth/github`;
 	}
 
+	public githubLoginUrl(): string {
+		return `${API_BASE_URL}/auth/github`;
+	}
+
 	public isPasskeySupported(): boolean {
 		return (
-			window.PublicKeyCredential !== undefined && typeof window.PublicKeyCredential === "function"
+			typeof window !== "undefined" &&
+			window.PublicKeyCredential !== undefined &&
+			typeof window.PublicKeyCredential === "function"
 		);
 	}
 

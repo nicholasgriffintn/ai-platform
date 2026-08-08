@@ -8,22 +8,6 @@ The API provides a unified interface to multiple AI providers, following OpenAI'
 
 **Base URL:** `https://api.polychat.app`
 
-## Documentation
-
-**[Complete API Documentation](./docs/README.md)**
-
-### Quick Links
-
-- **[Getting Started](./docs/README.md)** - API overview and quickstart
-- **[Authentication](./docs/features/authentication.md)** - OAuth, API keys, JWT, magic links, passkeys
-- **[Chat Completions](./docs/features/chat-completions.md)** - Core chat API with streaming and tools
-- **[Code Generation](./docs/features/code-generation.md)** - FIM, edit, and apply endpoints
-- **[Models](./docs/features/models.md)** - Browse 40+ available models
-- **[Agents](./docs/features/agents.md)** - Custom AI agents with MCP servers
-- **[Memories](./docs/features/memories.md)** - RAG with vector embeddings
-- **[Guardrails](./docs/features/guardrails.md)** - Content safety and moderation
-- **[Live API Reference](https://api.polychat.app)** - OpenAPI documentation
-
 ## Key Features
 
 - **OpenAI-Compatible** - Drop-in replacement for OpenAI API

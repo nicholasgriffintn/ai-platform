@@ -1,3 +1,4 @@
+import type { AuthChallengeKind } from "@ngriffin_uk/auth-core";
 import { sql } from "drizzle-orm";
 import { index, integer, primaryKey, real, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
@@ -94,6 +95,39 @@ export const session = sqliteTable("session", {
 });
 
 export type Session = typeof session.$inferSelect;
+
+export const oauthState = sqliteTable(
+	"oauth_state",
+	{
+		state_hash: text().primaryKey(),
+		provider: text().notNull(),
+		code_verifier: text(),
+		nonce: text(),
+		redirect_uri: text(),
+		context: text({ mode: "json" }).$type<Readonly<Record<string, string>>>(),
+		created_at: text().notNull(),
+		expires_at: text().notNull(),
+	},
+	(table) => ({
+		expiresAtIdx: index("oauth_state_expires_at_idx").on(table.expires_at),
+	}),
+);
+
+export const authChallenge = sqliteTable(
+	"auth_challenge",
+	{
+		token_hash: text().primaryKey(),
+		provider: text().notNull(),
+		kind: text().$type<AuthChallengeKind>().notNull(),
+		payload: text({ mode: "json" }).$type<Readonly<Record<string, unknown>>>().notNull(),
+		created_at: text().notNull(),
+		expires_at: text().notNull(),
+		attempts: integer().default(0).notNull(),
+	},
+	(table) => ({
+		expiresAtIdx: index("auth_challenge_expires_at_idx").on(table.expires_at),
+	}),
+);
 
 export const mobileAuthExchangeCodes = sqliteTable(
 	"mobile_auth_exchange_code",
@@ -400,13 +434,11 @@ export const passkey = sqliteTable(
 			.notNull()
 			.references(() => user.id),
 		credential_id: text().notNull().unique(),
-		public_key: text().notNull(),
+		public_key: text({ mode: "json" }).$type<JsonWebKey>().notNull(),
 		counter: integer().notNull(),
 		device_type: text().notNull(),
 		backed_up: integer({ mode: "boolean" }).notNull(),
-		transports: text({
-			mode: "json",
-		}),
+		transports: text({ mode: "json" }).$type<readonly AuthenticatorTransport[]>(),
 		created_at: text()
 			.default(sql`(CURRENT_TIMESTAMP)`)
 			.notNull(),
@@ -421,44 +453,6 @@ export const passkey = sqliteTable(
 );
 
 export type Passkey = typeof passkey.$inferSelect;
-
-export const webauthnChallenge = sqliteTable(
-	"webauthn_challenge",
-	{
-		id: integer({ mode: "number" }).primaryKey({ autoIncrement: true }),
-		user_id: integer().references(() => user.id),
-		challenge: text().notNull(),
-		expires_at: text().notNull(),
-		created_at: text()
-			.default(sql`(CURRENT_TIMESTAMP)`)
-			.notNull(),
-	},
-	(table) => ({
-		userIdIdx: index("webauthn_challenge_user_id_idx").on(table.user_id),
-		challengeIdx: index("webauthn_challenge_challenge_idx").on(table.challenge),
-		expiresAtIdx: index("webauthn_challenge_expires_at_idx").on(table.expires_at),
-	}),
-);
-
-export type WebAuthnChallenge = typeof webauthnChallenge.$inferSelect;
-
-export const magicLinkNonces = sqliteTable(
-	"magic_link_nonce",
-	{
-		nonce: text("nonce").primaryKey(),
-		userId: integer("user_id")
-			.notNull()
-			.references(() => user.id, { onDelete: "cascade" }),
-		expiresAt: integer("expires_at", { mode: "timestamp" }).notNull(),
-	},
-	(table) => ({
-		userIdx: index("magic_link_nonce_user_idx").on(table.userId),
-		expiresIdx: index("magic_link_nonce_expires_idx").on(table.expiresAt),
-	}),
-);
-
-export type MagicLinkNonce = typeof magicLinkNonces.$inferSelect;
-export type NewMagicLinkNonce = typeof magicLinkNonces.$inferInsert;
 
 export const appData = sqliteTable(
 	"app_data",

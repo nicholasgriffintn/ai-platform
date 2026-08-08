@@ -5,14 +5,15 @@ import { AnonymousUserRepository } from "./AnonymousUserRepository";
 import { ApiKeyRepository } from "./ApiKeyRepository";
 import { AppDataRepository } from "./AppDataRepository";
 import { ArtificialAnalysisRepository } from "./ArtificialAnalysisRepository";
+import { AuthChallengeRepository } from "./AuthChallengeRepository";
 import { BaseRepository } from "./BaseRepository";
 import { ConversationRepository } from "./ConversationRepository";
 import { DynamicAppResponseRepository } from "./DynamicAppResponseRepository";
 import { EmbeddingRepository } from "./EmbeddingRepository";
-import { MagicLinkNonceRepository } from "./MagicLinkNonceRepository";
 import { MemoryRepository } from "./MemoryRepository";
 import { MemorySynthesisRepository } from "./MemorySynthesisRepository";
 import { MessageRepository } from "./MessageRepository";
+import { OAuthStateRepository } from "./OAuthStateRepository";
 import { PlanRepository } from "./PlanRepository";
 import { SessionRepository } from "./SessionRepository";
 import { SharedAgentRepository } from "./SharedAgentRepository";
@@ -29,14 +30,15 @@ export {
 	ApiKeyRepository,
 	AppDataRepository,
 	ArtificialAnalysisRepository,
+	AuthChallengeRepository,
 	BaseRepository,
 	ConversationRepository,
 	DynamicAppResponseRepository,
 	EmbeddingRepository,
-	MagicLinkNonceRepository,
 	MemoryRepository,
 	MemorySynthesisRepository,
 	MessageRepository,
+	OAuthStateRepository,
 	SessionRepository,
 	TaskRepository,
 	TrainingExampleRepository,
@@ -59,11 +61,12 @@ export class RepositoryManager {
 	private messageRepo: MessageRepository;
 	private embeddingRepo: EmbeddingRepository;
 	private webAuthnRepo: WebAuthnRepository;
-	private magicLinkNonceRepo: MagicLinkNonceRepository;
 	private memoryRepo: MemoryRepository;
 	private apiKeyRepo: ApiKeyRepository;
 	private appDataRepo: AppDataRepository;
 	private artificialAnalysisRepo: ArtificialAnalysisRepository;
+	private authChallengeRepo: AuthChallengeRepository;
+	private oauthStateRepo: OAuthStateRepository;
 	private sharedAgentRepo: SharedAgentRepository;
 	private storedAssetRepo: StoredAssetRepository;
 	private dynamicAppResponseRepo: DynamicAppResponseRepository;
@@ -82,11 +85,12 @@ export class RepositoryManager {
 		this.messageRepo = new MessageRepository(env);
 		this.embeddingRepo = new EmbeddingRepository(env);
 		this.webAuthnRepo = new WebAuthnRepository(env);
-		this.magicLinkNonceRepo = new MagicLinkNonceRepository(env);
 		this.memoryRepo = new MemoryRepository(env);
 		this.apiKeyRepo = new ApiKeyRepository(env);
 		this.appDataRepo = new AppDataRepository(env);
 		this.artificialAnalysisRepo = new ArtificialAnalysisRepository(env);
+		this.authChallengeRepo = new AuthChallengeRepository(env);
+		this.oauthStateRepo = new OAuthStateRepository(env);
 		this.sharedAgentRepo = new SharedAgentRepository(env);
 		this.storedAssetRepo = new StoredAssetRepository(env);
 		this.dynamicAppResponseRepo = new DynamicAppResponseRepository(env);
@@ -115,6 +119,14 @@ export class RepositoryManager {
 		return this.sessionRepo;
 	}
 
+	public get authChallenges(): AuthChallengeRepository {
+		return this.authChallengeRepo;
+	}
+
+	public get oauthStates(): OAuthStateRepository {
+		return this.oauthStateRepo;
+	}
+
 	public get userSettings(): UserSettingsRepository {
 		return this.userSettingsRepo;
 	}
@@ -133,10 +145,6 @@ export class RepositoryManager {
 
 	public get webAuthn(): WebAuthnRepository {
 		return this.webAuthnRepo;
-	}
-
-	public get magicLinkNonces(): MagicLinkNonceRepository {
-		return this.magicLinkNonceRepo;
 	}
 
 	public get apiKeys(): ApiKeyRepository {

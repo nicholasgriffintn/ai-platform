@@ -53,6 +53,7 @@ export const USAGE_CONFIG = {
 
 export const FREE_TRIAL_DAYS = 90;
 
+export const AUTH_SESSION_TTL_MS = 7 * 24 * 60 * 60 * 1_000;
 export const MAGIC_LINK_EXPIRATION_MINUTES = 15;
 
 export const MAX_CONTENT_LENGTH = 1000000; // 1MB

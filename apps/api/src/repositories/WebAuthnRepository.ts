@@ -1,178 +1,97 @@
-import type { AuthenticatorTransportFuture } from "@simplewebauthn/types";
+import type { WebAuthnCredential, WebAuthnStore } from "@ngriffin_uk/auth-webauthn";
+import { and, asc, eq } from "drizzle-orm";
 
-import { encodeBase64Url } from "~/utils/base64url";
+import { passkey, type Passkey } from "~/lib/database/schema";
 import { getLogger } from "~/utils/logger";
-import { AssistantError, ErrorType } from "~/utils/errors";
 import { BaseRepository } from "./BaseRepository";
 
 const logger = getLogger({ prefix: "repositories/WebAuthnRepository" });
 
-export class WebAuthnRepository extends BaseRepository {
-	public async createChallenge(
-		challenge: string,
-		userId?: number,
-		expiresInMinutes = 5,
-	): Promise<void> {
-		const expiresAt = new Date();
-		expiresAt.setMinutes(expiresAt.getMinutes() + expiresInMinutes);
-
-		try {
-			if (userId) {
-				const deleteExisting = this.buildDeleteQuery("webauthn_challenge", {
-					user_id: userId,
-				});
-				if (deleteExisting.query) {
-					await this.executeRun(deleteExisting.query, deleteExisting.values);
-				}
-
-				const insert = this.buildInsertQuery("webauthn_challenge", {
-					user_id: userId,
-					challenge,
-					expires_at: expiresAt.toISOString(),
-				});
-
-				if (insert) {
-					await this.executeRun(insert.query, insert.values);
-				}
-			} else {
-				const insert = this.buildInsertQuery("webauthn_challenge", {
-					challenge,
-					expires_at: expiresAt.toISOString(),
-				});
-
-				if (insert) {
-					await this.executeRun(insert.query, insert.values);
-				}
-			}
-		} catch (error) {
-			logger.error("Error in createChallenge:", { error });
-			throw new AssistantError("Failed to create challenge", ErrorType.DATABASE_ERROR);
-		}
-	}
-
-	public async getChallenge(
-		challenge: string,
-		userId?: number,
-	): Promise<{ challenge: string } | null> {
-		const query = userId
-			? `SELECT challenge FROM webauthn_challenge 
-         WHERE user_id = ? AND challenge = ? AND expires_at > datetime('now')
-         ORDER BY created_at DESC LIMIT 1`
-			: `SELECT challenge FROM webauthn_challenge 
-         WHERE challenge = ? AND expires_at > datetime('now')
-         ORDER BY created_at DESC LIMIT 1`;
-
-		const params = userId ? [userId, challenge] : [challenge];
-
-		return this.runQuery<{ challenge: string }>(query, params, true);
-	}
-
-	public async getChallengeByUserId(userId: number): Promise<{ challenge: string } | null> {
-		return this.runQuery<{ challenge: string }>(
-			`SELECT challenge FROM webauthn_challenge 
-       WHERE user_id = ? AND expires_at > datetime('now')
-       ORDER BY created_at DESC LIMIT 1`,
-			[userId],
-			true,
-		);
-	}
-
-	public async deleteChallenge(challenge: string, userId?: number): Promise<void> {
-		const conditions: Record<string, unknown> = { challenge };
-		if (userId) {
-			conditions.user_id = userId;
-		}
-
-		const { query, values } = this.buildDeleteQuery("webauthn_challenge", conditions);
-		await this.executeRun(query, values);
-	}
-
-	public async createPasskey(
-		userId: number,
-		credentialId: string,
-		publicKey: Uint8Array,
-		counter: number,
-		deviceType: string,
-		backedUp: boolean,
-		transports?: AuthenticatorTransportFuture[],
-	): Promise<void> {
-		try {
-			const publicKeyBase64 = encodeBase64Url(publicKey);
-
-			const insert = this.buildInsertQuery(
-				"passkey",
-				{
-					user_id: userId,
-					credential_id: credentialId,
-					public_key: publicKeyBase64,
-					counter,
-					device_type: deviceType,
-					backed_up: backedUp ? 1 : 0,
-					transports: transports ?? null,
-				},
-				{ jsonFields: ["transports"] },
-			);
-
-			if (!insert) {
-				return;
-			}
-
-			await this.executeRun(insert.query, insert.values);
-		} catch (error) {
-			logger.error("Error creating passkey:", { error });
-			throw error;
-		}
-	}
-
-	public async getPasskeysByUserId(userId: number): Promise<Record<string, unknown>[]> {
-		const { query, values } = this.buildSelectQuery("passkey", {
-			user_id: userId,
+export class WebAuthnRepository extends BaseRepository implements WebAuthnStore {
+	public async saveCredential(credential: WebAuthnCredential): Promise<void> {
+		await this.database.insert(passkey).values({
+			user_id: Number(credential.userId),
+			credential_id: credential.id,
+			public_key: credential.publicKeyJwk,
+			counter: credential.signCount,
+			device_type: credential.backupEligible ? "multiDevice" : "singleDevice",
+			backed_up: credential.backedUp,
+			transports: credential.transports ?? null,
+			created_at: credential.createdAt.toISOString(),
+			updated_at: credential.updatedAt.toISOString(),
 		});
-		return this.runQuery<Record<string, unknown>>(query, values);
 	}
 
-	public async getPasskeyByCredentialId(
-		credentialId: string,
-	): Promise<Record<string, unknown> | null> {
-		return this.runQuery<Record<string, unknown>>(
-			`SELECT p.*, u.id as user_id, u.* 
-       FROM passkey p 
-       JOIN user u ON p.user_id = u.id 
-       WHERE p.credential_id = ?`,
-			[credentialId],
-			true,
-		);
+	public async findCredential(credentialId: string): Promise<WebAuthnCredential | null> {
+		const [record] = await this.database
+			.select()
+			.from(passkey)
+			.where(eq(passkey.credential_id, credentialId))
+			.limit(1);
+		return record ? mapCredential(record) : null;
 	}
 
-	public async updatePasskeyCounter(credentialId: string, counter: number): Promise<void> {
-		const update = this.buildUpdateQuery("passkey", { counter }, ["counter"], "credential_id = ?", [
-			credentialId,
-		]);
+	public async listCredentials(userId: string): Promise<readonly WebAuthnCredential[]> {
+		const records = await this.database
+			.select()
+			.from(passkey)
+			.where(eq(passkey.user_id, Number(userId)))
+			.orderBy(asc(passkey.created_at));
+		return records.map(mapCredential);
+	}
 
-		if (!update) {
-			return;
-		}
+	public async updateSignCount(input: {
+		readonly credentialId: string;
+		readonly previousSignCount: number;
+		readonly signCount: number;
+		readonly backedUp: boolean;
+	}): Promise<boolean> {
+		const updated = await this.database
+			.update(passkey)
+			.set({
+				counter: input.signCount,
+				backed_up: input.backedUp,
+				updated_at: new Date().toISOString(),
+			})
+			.where(
+				and(
+					eq(passkey.credential_id, input.credentialId),
+					eq(passkey.counter, input.previousSignCount),
+				),
+			)
+			.returning({ id: passkey.id });
+		return updated.length === 1;
+	}
 
-		const queryWithTimestamp = update.query.replace(
-			"updated_at = datetime('now')",
-			"updated_at = CURRENT_TIMESTAMP",
-		);
-
-		await this.executeRun(queryWithTimestamp, update.values);
+	public async getPasskeysByUserId(userId: number): Promise<Passkey[]> {
+		return this.database.select().from(passkey).where(eq(passkey.user_id, userId));
 	}
 
 	public async deletePasskey(passkeyId: number, userId: number): Promise<boolean> {
 		try {
-			const { query, values } = this.buildDeleteQuery("passkey", {
-				id: passkeyId,
-				user_id: userId,
-			});
-			const result = await this.executeRun(query, values);
-
-			return result?.success && result?.meta?.changes > 0;
+			const deleted = await this.database
+				.delete(passkey)
+				.where(and(eq(passkey.id, passkeyId), eq(passkey.user_id, userId)))
+				.returning({ id: passkey.id });
+			return deleted.length === 1;
 		} catch (error) {
 			logger.error("Error deleting passkey:", { error });
 			return false;
 		}
 	}
+}
+
+function mapCredential(record: Passkey): WebAuthnCredential {
+	return {
+		id: record.credential_id,
+		userId: String(record.user_id),
+		publicKeyJwk: record.public_key,
+		algorithm: record.public_key.kty === "RSA" ? "RS256" : "ES256",
+		signCount: record.counter,
+		...(record.transports ? { transports: record.transports } : {}),
+		backupEligible: record.device_type === "multiDevice",
+		backedUp: record.backed_up,
+		createdAt: new Date(record.created_at),
+		updatedAt: new Date(record.updated_at),
+	};
 }

@@ -5,11 +5,6 @@ const MOBILE_AUTH_HOST = "auth";
 
 export type MobileAuthPath = "/callback" | "/magic-link";
 
-interface MobileOAuthState {
-	platform: "mobile";
-	redirect_uri: string;
-}
-
 export function isAllowedMobileRedirectUri(
 	redirectUri: string | undefined,
 	path: MobileAuthPath,
@@ -59,33 +54,4 @@ export function buildMobileRedirectUri(
 	}
 
 	return url.toString();
-}
-
-export function createMobileOAuthState(redirectUri: string): string {
-	const state: MobileOAuthState = {
-		platform: "mobile",
-		redirect_uri: redirectUri,
-	};
-
-	return encodeURIComponent(JSON.stringify(state));
-}
-
-export function parseMobileOAuthState(state: string | undefined): MobileOAuthState | null {
-	if (!state) {
-		return null;
-	}
-
-	try {
-		const parsed = JSON.parse(decodeURIComponent(state)) as Partial<MobileOAuthState>;
-		if (parsed.platform === "mobile" && typeof parsed.redirect_uri === "string") {
-			return {
-				platform: "mobile",
-				redirect_uri: parsed.redirect_uri,
-			};
-		}
-	} catch {
-		return null;
-	}
-
-	return null;
 }

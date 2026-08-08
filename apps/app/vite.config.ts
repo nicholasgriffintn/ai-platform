@@ -66,6 +66,7 @@ export default defineConfig(({ isSsrBuild, command }) => ({
 			"react",
 			"react-dom",
 			"react-router",
+			"@ngriffin_uk/auth-react",
 			"@tanstack/react-query",
 			"zustand",
 			"lucide-react",

@@ -7,7 +7,7 @@ export const githubLoginSchema = z.object({
 
 export const githubCallbackSchema = z.object({
 	code: z.string().meta({ example: "a1b2c3d4" }),
-	state: z.string().optional(),
+	state: z.string().min(1),
 });
 
 export const mobileAuthExchangeSchema = z.object({

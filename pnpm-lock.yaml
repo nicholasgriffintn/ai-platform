@@ -41,18 +41,36 @@ importers:
       '@hono/zod-validator':
         specifier: 0.8.0
         version: 0.8.0(hono@4.12.27)(zod@4.4.3)
-      '@octokit/rest':
-        specifier: 22.0.1
-        version: 22.0.1
+      '@ngriffin_uk/auth-core':
+        specifier: ^0.4.2
+        version: 0.4.2
+      '@ngriffin_uk/auth-encoding':
+        specifier: ^0.2.4
+        version: 0.2.4
+      '@ngriffin_uk/auth-jwt':
+        specifier: ^1.1.3
+        version: 1.1.3(@ngriffin_uk/auth-crypto@1.0.3(@ngriffin_uk/auth-encoding@0.2.4))(@ngriffin_uk/auth-encoding@0.2.4)(@ngriffin_uk/auth-request@0.2.4)
+      '@ngriffin_uk/auth-magic-link':
+        specifier: ^0.0.3
+        version: 0.0.3(@ngriffin_uk/auth-encoding@0.2.4)
+      '@ngriffin_uk/auth-oauth2':
+        specifier: ^3.0.3
+        version: 3.0.3(@ngriffin_uk/auth-core@0.4.2)(@ngriffin_uk/auth-crypto@1.0.3(@ngriffin_uk/auth-encoding@0.2.4))(@ngriffin_uk/auth-encoding@0.2.4)(@ngriffin_uk/auth-jwt@1.1.3(@ngriffin_uk/auth-crypto@1.0.3(@ngriffin_uk/auth-encoding@0.2.4))(@ngriffin_uk/auth-encoding@0.2.4)(@ngriffin_uk/auth-request@0.2.4))(@ngriffin_uk/auth-request@0.2.4)
+      '@ngriffin_uk/auth-provider-apple':
+        specifier: ^3.0.2
+        version: 3.0.2(@ngriffin_uk/auth-core@0.4.2)(@ngriffin_uk/auth-jwt@1.1.3(@ngriffin_uk/auth-crypto@1.0.3(@ngriffin_uk/auth-encoding@0.2.4))(@ngriffin_uk/auth-encoding@0.2.4)(@ngriffin_uk/auth-request@0.2.4))(@ngriffin_uk/auth-oauth2@3.0.3(@ngriffin_uk/auth-core@0.4.2)(@ngriffin_uk/auth-crypto@1.0.3(@ngriffin_uk/auth-encoding@0.2.4))(@ngriffin_uk/auth-encoding@0.2.4)(@ngriffin_uk/auth-jwt@1.1.3(@ngriffin_uk/auth-crypto@1.0.3(@ngriffin_uk/auth-encoding@0.2.4))(@ngriffin_uk/auth-encoding@0.2.4)(@ngriffin_uk/auth-request@0.2.4))(@ngriffin_uk/auth-request@0.2.4))
+      '@ngriffin_uk/auth-provider-github':
+        specifier: ^3.0.2
+        version: 3.0.2(@ngriffin_uk/auth-core@0.4.2)(@ngriffin_uk/auth-oauth2@3.0.3(@ngriffin_uk/auth-core@0.4.2)(@ngriffin_uk/auth-crypto@1.0.3(@ngriffin_uk/auth-encoding@0.2.4))(@ngriffin_uk/auth-encoding@0.2.4)(@ngriffin_uk/auth-jwt@1.1.3(@ngriffin_uk/auth-crypto@1.0.3(@ngriffin_uk/auth-encoding@0.2.4))(@ngriffin_uk/auth-encoding@0.2.4)(@ngriffin_uk/auth-request@0.2.4))(@ngriffin_uk/auth-request@0.2.4))
+      '@ngriffin_uk/auth-webauthn':
+        specifier: ^0.4.3
+        version: 0.4.3
       '@scalar/hono-api-reference':
         specifier: 0.11.8
         version: 0.11.8(hono@4.12.27)
       '@sentry/cloudflare':
         specifier: 10.63.0
         version: 10.63.0(@cloudflare/workers-types@4.20260617.1)
-      '@simplewebauthn/server':
-        specifier: 13.3.2
-        version: 13.3.2
       '@tsndr/cloudflare-worker-jwt':
         specifier: 3.2.1
         version: 3.2.1
@@ -129,6 +147,9 @@ importers:
       '@mlc-ai/web-llm':
         specifier: 0.2.84
         version: 0.2.84
+      '@ngriffin_uk/auth-react':
+        specifier: ^0.6.2
+        version: 0.6.2(react@19.2.7)
       '@radix-ui/react-checkbox':
         specifier: 1.3.6
         version: 1.3.6(@types/react-dom@19.2.3(@types/react@19.2.17))(@types/react@19.2.17)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
@@ -1698,9 +1719,6 @@ packages:
   '@floating-ui/utils@0.2.11':
     resolution: {integrity: sha512-RiB/yIh78pcIxl6lLMG0CgBXAZ2Y0eVHqMPYugu+9U0AeT6YBeiJpf7lbdJNIugFP5SIjwNRgo4DhR1Qxi26Gg==}
 
-  '@hexagon/base64@1.1.28':
-    resolution: {integrity: sha512-lhqDEAvWixy3bZ+UOYbPwUbBkwBq5C1LAJ/xPC8Oi+lL54oyakv/npbA0aU2hgCsx/1NUd4IBvV03+aUBWxerw==}
-
   '@hono/node-server@1.19.14':
     resolution: {integrity: sha512-GwtvgtXxnWsucXvbQXkRgqksiH2Qed37H9xHZocE5sA3N8O8O8/8FA3uclQXxXVzc9XBZuEOMK7+r02FmSpHtw==}
     engines: {node: '>=18.14.1'}
@@ -1903,9 +1921,6 @@ packages:
   '@kabelsalat/web@0.4.1':
     resolution: {integrity: sha512-ASkFhePJLx3GjadYOueI7sHKXBbRPk/a1pfslFeQNI9gU7yZq/KrnkmOmLrgrtixAsy7gyi1vWqkmRRvH3Ki6w==}
 
-  '@levischuck/tiny-cbor@0.2.11':
-    resolution: {integrity: sha512-llBRm4dT4Z89aRsm6u2oEZ8tfwL/2l6BwpZ7JcyieouniDECM5AqNgr/y08zalEIvW3RSK4upYyybDcmjXqAow==}
-
   '@lezer/common@1.5.2':
     resolution: {integrity: sha512-sxQE460fPZyU3sdc8lafxiPwJHBzZRy/udNFynGQky1SePYBdhkBl1kOagA9uT3pxR8K09bOrmTUqA9wb/PjSQ==}
 
@@ -1949,57 +1964,59 @@ packages:
       '@emnapi/core': ^1.7.1
       '@emnapi/runtime': ^1.7.1
 
-  '@octokit/auth-token@6.0.0':
-    resolution: {integrity: sha512-P4YJBPdPSpWTQ1NU4XYdvHvXJJDxM6YwpS0FZHRgP7YFkdVxsWcpWGy/NVqlAA7PcPCnMacXlRm1y2PFZRWL/w==}
-    engines: {node: '>= 20'}
+  '@ngriffin_uk/auth-core@0.4.2':
+    resolution: {integrity: sha512-fACkKI+WkgXQ0mFq9NwX5TlCnqf6N0u/gm5YZCcfUctItEzGl6rkCwx/7Yb+TuhkfDjgS8IqGfZ2/auxKkQGCw==}
 
-  '@octokit/core@7.0.6':
-    resolution: {integrity: sha512-DhGl4xMVFGVIyMwswXeyzdL4uXD5OGILGX5N8Y+f6W7LhC1Ze2poSNrkF/fedpVDHEEZ+PHFW0vL14I+mm8K3Q==}
-    engines: {node: '>= 20'}
-
-  '@octokit/endpoint@11.0.3':
-    resolution: {integrity: sha512-FWFlNxghg4HrXkD3ifYbS/IdL/mDHjh9QcsNyhQjN8dplUoZbejsdpmuqdA76nxj2xoWPs7p8uX2SNr9rYu0Ag==}
-    engines: {node: '>= 20'}
-
-  '@octokit/graphql@9.0.3':
-    resolution: {integrity: sha512-grAEuupr/C1rALFnXTv6ZQhFuL1D8G5y8CN04RgrO4FIPMrtm+mcZzFG7dcBm+nq+1ppNixu+Jd78aeJOYxlGA==}
-    engines: {node: '>= 20'}
-
-  '@octokit/openapi-types@27.0.0':
-    resolution: {integrity: sha512-whrdktVs1h6gtR+09+QsNk2+FO+49j6ga1c55YZudfEG+oKJVvJLQi3zkOm5JjiUXAagWK2tI2kTGKJ2Ys7MGA==}
-
-  '@octokit/plugin-paginate-rest@14.0.0':
-    resolution: {integrity: sha512-fNVRE7ufJiAA3XUrha2omTA39M6IXIc6GIZLvlbsm8QOQCYvpq/LkMNGyFlB1d8hTDzsAXa3OKtybdMAYsV/fw==}
-    engines: {node: '>= 20'}
+  '@ngriffin_uk/auth-crypto@1.0.3':
+    resolution: {integrity: sha512-dISn8fedBEUpwFlb6Oeds6YzB2b6LmQDRgWlrg+PPNvDAxRdpGAsiz7AoA5vmbzIXhy8KcBCq3guarRKAwFswQ==}
     peerDependencies:
-      '@octokit/core': '>=6'
+      '@ngriffin_uk/auth-encoding': ^0.2.4
 
-  '@octokit/plugin-request-log@6.0.0':
-    resolution: {integrity: sha512-UkOzeEN3W91/eBq9sPZNQ7sUBvYCqYbrrD8gTbBuGtHEuycE4/awMXcYvx6sVYo7LypPhmQwwpUe4Yyu4QZN5Q==}
-    engines: {node: '>= 20'}
+  '@ngriffin_uk/auth-encoding@0.2.4':
+    resolution: {integrity: sha512-mx3c0AFnqYARfEwWvOmvodt/+DHNDLUdB6JhpTNXGd7BLrj+A75a4Ir2XoQ+N9qkYx9VZnnin89in809OeZvzQ==}
+
+  '@ngriffin_uk/auth-jwt@1.1.3':
+    resolution: {integrity: sha512-uE3+nkK8Jt8HihI05BAKY2NJGB2iM23jkeYAvqlpgrmEnew1d3yEYY43qzTCJ6P6R1XH+5dswL/hLzW441Xk0g==}
     peerDependencies:
-      '@octokit/core': '>=6'
+      '@ngriffin_uk/auth-crypto': ^1.0.3
+      '@ngriffin_uk/auth-encoding': ^0.2.4
+      '@ngriffin_uk/auth-request': ^0.2.4
 
-  '@octokit/plugin-rest-endpoint-methods@17.0.0':
-    resolution: {integrity: sha512-B5yCyIlOJFPqUUeiD0cnBJwWJO8lkJs5d8+ze9QDP6SvfiXSz1BF+91+0MeI1d2yxgOhU/O+CvtiZ9jSkHhFAw==}
-    engines: {node: '>= 20'}
+  '@ngriffin_uk/auth-magic-link@0.0.3':
+    resolution: {integrity: sha512-2SkBO72c+bFjWMMYx1jDKDL/SWDq4uSxRJ894ior98RBcqkxe/9/2G9ANINC3NSXeQt7wHBooqZywGFYGkldTw==}
+
+  '@ngriffin_uk/auth-oauth2@3.0.3':
+    resolution: {integrity: sha512-bAymI2qHnv7Bv76o1tCaqV2esEsYPT2srX8nzplHy3vo052h1Ch3kAeV1naBWID5g/tSNFG81ru1oWYD2ZQbBw==}
     peerDependencies:
-      '@octokit/core': '>=6'
+      '@ngriffin_uk/auth-core': ^0.4.2
+      '@ngriffin_uk/auth-crypto': ^1.0.3
+      '@ngriffin_uk/auth-encoding': ^0.2.4
+      '@ngriffin_uk/auth-jwt': ^1.1.3
+      '@ngriffin_uk/auth-request': ^0.2.4
 
-  '@octokit/request-error@7.1.0':
-    resolution: {integrity: sha512-KMQIfq5sOPpkQYajXHwnhjCC0slzCNScLHs9JafXc4RAJI+9f+jNDlBNaIMTvazOPLgb4BnlhGJOTbnN0wIjPw==}
-    engines: {node: '>= 20'}
+  '@ngriffin_uk/auth-provider-apple@3.0.2':
+    resolution: {integrity: sha512-xA0g0wmo1AG+jxI+t1UoQS+WwcwNLaBSY57e+EvtFDecI8eVlwGNBr6rB36AWF9D6uFw7WG1KkhmdWiUUxa8Aw==}
+    peerDependencies:
+      '@ngriffin_uk/auth-core': ^0.4.2
+      '@ngriffin_uk/auth-jwt': ^1.1.3
+      '@ngriffin_uk/auth-oauth2': ^3.0.3
 
-  '@octokit/request@10.0.11':
-    resolution: {integrity: sha512-+s7HUxjfFqOMS9VlIwDffq0MikjSAK0gSpG73W+meAvVAvX4MBrHYTK5Bj3Uot55qFT4gzUtfzE4mGWY4Br8/Q==}
-    engines: {node: '>= 20'}
+  '@ngriffin_uk/auth-provider-github@3.0.2':
+    resolution: {integrity: sha512-sSmudGRBVE1EnqJRdSQHSGYbgt2IGkToIcKtJhpdmZJ7tfZtVPHEEr9MOO4z9ctOFSi6nddGUMQVQKKmsg5/OA==}
+    peerDependencies:
+      '@ngriffin_uk/auth-core': ^0.4.2
+      '@ngriffin_uk/auth-oauth2': ^3.0.3
 
-  '@octokit/rest@22.0.1':
-    resolution: {integrity: sha512-Jzbhzl3CEexhnivb1iQ0KJ7s5vvjMWcmRtq5aUsKmKDrRW6z3r84ngmiFKFvpZjpiU/9/S6ITPFRpn5s/3uQJw==}
-    engines: {node: '>= 20'}
+  '@ngriffin_uk/auth-react@0.6.2':
+    resolution: {integrity: sha512-Gy25WuRhm9Pk0gHcN8Btu9bjqlOUJUqkVxnWAuY0Y1KvpLzXKPVXKMVLJAaVvlvK8gaOmzJcmLbVWPB21dUxag==}
+    peerDependencies:
+      react: '>=18.2.0'
 
-  '@octokit/types@16.0.0':
-    resolution: {integrity: sha512-sKq+9r1Mm4efXW1FCk7hFSeJo4QKreL/tTbR0rz/qx/r1Oa2VV83LTA/H/MuCOX7uCIJmQVRKBcbmWoySjAnSg==}
+  '@ngriffin_uk/auth-request@0.2.4':
+    resolution: {integrity: sha512-Wl1IGye0HN2geFRQ/h3lyyQoPaei+Tx6iuoqMNfBOHT/uhxUTqlYTg2yQDApTNo8bCEFrV4LpBH8kd5qffVZMQ==}
+
+  '@ngriffin_uk/auth-webauthn@0.4.3':
+    resolution: {integrity: sha512-aYSOWqla9jF5UYeU6Vze5Hy+FDE0LI0Ljxc17pSMNznoOoXB46+BR46xWAyOnUQO4qWj4yKVJs2MGsWNufVjsA==}
 
   '@opentelemetry/api@1.9.1':
     resolution: {integrity: sha512-gLyJlPHPZYdAk1JENA9LeHejZe1Ti77/pTeFm/nMXmQH/HFZlcS/O2XJB+L8fkbrNSqhdtlvjBVjxwUYanNH5Q==}
@@ -2251,46 +2268,6 @@ packages:
     engines: {node: ^20.19.0 || >=22.12.0}
     cpu: [x64]
     os: [win32]
-
-  '@peculiar/asn1-android@2.8.0':
-    resolution: {integrity: sha512-skLbS+IOGv1lUgDqtChr8xvtvEr3HMse/JGBaL2r1J1o/n7a8wqOrovMtlRq/UXLhxvmLaONP67hwtshgzwfzA==}
-
-  '@peculiar/asn1-cms@2.8.0':
-    resolution: {integrity: sha512-NgekZOrSJFSBFLFoLfwePguAWAx7z1+f2TEsWFUMyiqqfntZ4+S/S5hzqME3q4pCA0iOsFKdwiQ35dwY24eVqA==}
-
-  '@peculiar/asn1-csr@2.8.0':
-    resolution: {integrity: sha512-akbF8+uvleHs8sejNPQxwmVFuInAg6FMNHOwMILXfP518YfFJwdR3jr6oNUPOaEJfuEhn/vkNOCIT6ASUd4mbg==}
-
-  '@peculiar/asn1-ecc@2.8.0':
-    resolution: {integrity: sha512-ohwlk+u9Rv2NOAY1c6MfHj45ATVF8R1DUN/WCgABiRtLi2ZftlZWZX7KvpAbU8v9xPcmoILfELeEABj/rn18AQ==}
-
-  '@peculiar/asn1-pfx@2.8.0':
-    resolution: {integrity: sha512-5yof1ytoB++RQtaFbqSUJ8pxDJtZT6vbVqZ8XoJ61ph7UjNVvfFwAilnCodqkNsAodpy13gDhoxZXw00pghnyg==}
-
-  '@peculiar/asn1-pkcs8@2.8.0':
-    resolution: {integrity: sha512-qAKXtLpBEw9LqhKpjw3ajZSXlBur+ipW+y2ivVBQAG6F6qRx94yO+1ZR4mvw+YaCfKSaOzLeYEzsPaBp4SJELA==}
-
-  '@peculiar/asn1-pkcs9@2.8.0':
-    resolution: {integrity: sha512-b5nDWCnkV60+cQ141D6sVVwK9nz64R5n3zSVnklGd+ECdkW2Ol3U1a6yYFlalpSOaD557yuJB64A+q42jG7lUQ==}
-
-  '@peculiar/asn1-rsa@2.8.0':
-    resolution: {integrity: sha512-zHEUlCqB2mk7x2lxDwHHJy7hWZOPdGHVlsmITWKB5/PbQo61atbu9PJ/0r9dQNMwFzbKPXZ8uK8/91eUhRznSg==}
-
-  '@peculiar/asn1-schema@2.8.0':
-    resolution: {integrity: sha512-7YT0U/ze0tF2QOBbE15gKZwy5tvgGyLRiRHLzhlbOpf7BT032oBSd0haZqXn5W6l26WLlu3dyxzjM+2638/z2Q==}
-
-  '@peculiar/asn1-x509-attr@2.8.0':
-    resolution: {integrity: sha512-tHjkfS/qhMnmrlB2J9NhflQlQ7In3khO3CfmVrriOlpTeErY9ZIKOso1hQ5JQiyrJ7ShvqVPk7E5fQmbclkSKA==}
-
-  '@peculiar/asn1-x509@2.8.0':
-    resolution: {integrity: sha512-N0CMuhWUzsWEVq6F1q9X6+VKUnWzSW+cSVg+aPaGGwDdbFoFWTYgin5MHwXgpWd6y9COMBxnfy/Qc+Xc7F0Zwg==}
-
-  '@peculiar/utils@2.0.3':
-    resolution: {integrity: sha512-+oL3HPFRIZ1St2K50lWCXiioIgSoxzz7R1J3uF6neO2yl1sgmpgY6XXJH4BdpoDkMWznQTeYF6oWNDZLCdQ4eQ==}
-
-  '@peculiar/x509@1.14.3':
-    resolution: {integrity: sha512-C2Xj8FZ0uHWeCXXqX5B4/gVFQmtSkiuOolzAgutjTfseNOHT3pUjljDZsTSxXFGgio54bCzVFqmEOUrIVk8RDA==}
-    engines: {node: '>=20.0.0'}
 
   '@playwright/test@1.61.1':
     resolution: {integrity: sha512-8nKv6+0RJSL9FE4jYOEGXnPeM/Hg12qZpmqzZjRh3qM0Y7c3z1mrOTfFLids72RDQYVh9WpLEfR5WdpNX4fkig==}
@@ -3148,10 +3125,6 @@ packages:
   '@simplewebauthn/browser@13.3.0':
     resolution: {integrity: sha512-BE/UWv6FOToAdVk0EokzkqQQDOWtNydYlY6+OrmiZ5SCNmb41VehttboTetUM3T/fr6EAFYVXjz4My2wg230rQ==}
 
-  '@simplewebauthn/server@13.3.2':
-    resolution: {integrity: sha512-KEDhfcGP1PAKRVSDjA3npTQFqS2b/srm+ipoNBNHdkzrHAlaRQUTE+a5f4ywsx6thxAw1NU2rYcLEY1949RGbQ==}
-    engines: {node: '>=20.0.0'}
-
   '@simplewebauthn/types@12.0.0':
     resolution: {integrity: sha512-q6y8MkoV8V8jB4zzp18Uyj2I7oFp2/ONL8c3j8uT06AOWu3cIChc1au71QYHrP2b+xDapkGTiv+9lX7xkTlAsA==}
     deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
@@ -3815,10 +3788,6 @@ packages:
   array-flatten@1.1.1:
     resolution: {integrity: sha512-PCVAQswWemu6UdxsDFFX/+gVeYqKAod3D3UVm91jHwynguOwAvYPhx8nNlM++NqRcK6CxxpUafjmhIdKiHibqg==}
 
-  asn1js@3.0.10:
-    resolution: {integrity: sha512-S2s3aOytiKdFRdulw2qPE51MzjzVOisppcVv7jVFR+Kw0kxwvFrDcYA0h7Ndqbmj0HkMIXYWaoj7fli8kgx1eg==}
-    engines: {node: '>=12.0.0'}
-
   assertion-error@2.0.1:
     resolution: {integrity: sha512-Izi8RQcffqCeNVgFigKli1ssklIbpHnCYc6AknXGYoB6grJqyeby7jv12JUQgmTAnIDnbck1uxksT4dzN3PWBA==}
     engines: {node: '>=12'}
@@ -3852,9 +3821,6 @@ packages:
   basic-auth@2.0.1:
     resolution: {integrity: sha512-NF+epuEdnUYVlGuhaxbbq+dvJttwLnGY+YixlXlME5KpQ5W3CnXA5cVTneY3SPbPDRkcjMbifrwmFYcClgOZeg==}
     engines: {node: '>= 0.8'}
-
-  before-after-hook@4.0.0:
-    resolution: {integrity: sha512-q6tR3RPqIB1pMiTRMFcZwuG5T8vwp+vUvEG0vuI6B+Rikh5BfPp2fQ82c925FOs+b0lcFQ8CFrL+KbilfZFhOQ==}
 
   better-sqlite3@12.11.1:
     resolution: {integrity: sha512-dq9AtApgg5PGFtBzPFSBl3HZQjHok5gaQCM6zh2Yk0aSmDCs1CbnVI8/HgASQkNKsWFpseIO9beg5xxpYhbIfA==}
@@ -4818,9 +4784,6 @@ packages:
   json-schema@0.4.0:
     resolution: {integrity: sha512-es94M3nTIfsEPisRafak+HDLfHXnKBhV3vU5eqPcS3flIWqcxJWgXHXiey3YrpaNsanY5ei1VoYEbOzijuq9BA==}
 
-  json-with-bigint@3.5.8:
-    resolution: {integrity: sha512-eq/4KP6K34kwa7TcFdtvnftvHCD9KvHOGGICWwMFc4dOOKF5t4iYqnfLK8otCRCRv06FXOzGGyqE8h8ElMvvdw==}
-
   json5@2.2.3:
     resolution: {integrity: sha512-XmOWe7eyHYH14cLdVPoyg+GOH3rYX++KpzrylJwSW98t3Nk+U8XOl8FWKOgwtzdb8lXGf6zYwDUzeHMWfxasyg==}
     engines: {node: '>=6'}
@@ -4940,6 +4903,11 @@ packages:
 
   lucide-react@1.23.0:
     resolution: {integrity: sha512-38BpJcD0JhFosxHApP/BYsBetLpQFRoTRzEzstM/XCc3jsAG7wqaY1lgVwxiUe3xqYE+lNxo2PkCmYwXWrwwIw==}
+    peerDependencies:
+      react: ^16.5.1 || ^17.0.0 || ^18.0.0 || ^19.0.0
+
+  lucide-react@1.28.0:
+    resolution: {integrity: sha512-fARAFJULsGuDDydjp6+6blekG/sBIM29TerzLjc9bQUKAcEfrSc4ZQKb25KRz4OMKd87cZTb5dgq0w/T6KufVg==}
     peerDependencies:
       react: ^16.5.1 || ^17.0.0 || ^18.0.0 || ^19.0.0
 
@@ -5446,12 +5414,10 @@ packages:
     resolution: {integrity: sha512-vYt7UD1U9Wg6138shLtLOvdAu+8DsC/ilFtEVHcH+wydcSpNE20AfSOduf6MkRFahL5FY7X1oU7nKVZFtfq8Fg==}
     engines: {node: '>=6'}
 
-  pvtsutils@1.3.6:
-    resolution: {integrity: sha512-PLgQXQ6H2FWCaeRak8vvk1GW462lMxB5s3Jm673N82zI4vqtVUPuZdffdZbPDFRoU8kAhItWFtPCWiPpp4/EDg==}
-
-  pvutils@1.1.5:
-    resolution: {integrity: sha512-KTqnxsgGiQ6ZAzZCVlJH5eOjSnvlyEgx1m8bkRJfOhmGRqfo5KLvmAlACQkrjEtOQ4B7wF9TdSLIs9O90MX9xA==}
-    engines: {node: '>=16.0.0'}
+  qrcode.react@4.2.0:
+    resolution: {integrity: sha512-QpgqWi8rD9DsS9EP3z7BT+5lY5SFhsqGjpgW5DY/i3mK4M9DTBNz3ErMi8BWYEfI3L0d8GIbGmcdFAS1uIRGjA==}
+    peerDependencies:
+      react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
 
   qs@6.15.3:
     resolution: {integrity: sha512-O9gl3zCl5h5blw1KGUzQKhA5oUXSl8rwUIM5o0S3nCXMliSvy5Dzx7/DJcI+SwgICv+IneSZwhBh1oSyEHA71A==}
@@ -5596,9 +5562,6 @@ packages:
 
   redux@5.0.1:
     resolution: {integrity: sha512-M9/ELqF6fy8FwmkpnF0S3YKOqMyoWJ4+CS5Efg2ct3oY9daQvd/Pc71FpGZsVsbl3Cpb+IIcjBDUnnyBdQbq4w==}
-
-  reflect-metadata@0.2.2:
-    resolution: {integrity: sha512-urBwgfrvVP/eAyXx4hluJivBKzuEbSQs9rKWCrCkbSxNv8mxPcUZKeuoF3Uy4mJl3Lwprp6yy5/39VWigZ4K6Q==}
 
   regl@1.7.0:
     resolution: {integrity: sha512-bEAtp/qrtKucxXSJkD4ebopFZYP0q1+3Vb2WECWv/T8yQEgKxDxJ7ztO285tAMaYZVR6mM1GgI6CCn8FROtL1w==}
@@ -6017,9 +5980,6 @@ packages:
   ts-interface-checker@0.1.13:
     resolution: {integrity: sha512-Y/arvbn+rrz3JCKl9C4kVNfTfSm2/mEp5FSz5EsZSANGPSlQrpRI5M4PKF+mJnE52jOO90PnPSc3Ur3bTQw0gA==}
 
-  tslib@1.14.1:
-    resolution: {integrity: sha512-Xni35NKzjgMrwevysHTCArtLDpPvye8zV/0E4EyYn43P7/7qvQwPh9BGkHewbMulVntbigmcT7rdX3BNo9wRJg==}
-
   tslib@2.8.1:
     resolution: {integrity: sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w==}
 
@@ -6046,10 +6006,6 @@ packages:
     resolution: {integrity: sha512-eUdUIaCr963q2h5u3+QwvYp0+eqPvn+egeqZUm0hwERCqqx1E3kK5ehbGCvqSE5MQAULr67ww0cA3jKc3YkM1w==}
     engines: {node: '>=18.0.0'}
     hasBin: true
-
-  tsyringe@4.10.0:
-    resolution: {integrity: sha512-axr3IdNuVIxnaK5XGEUFTu3YmAQ6lllgrvqfEoR16g/HGnYY/6We4oWENtAnzK6/LpJ2ur9PAb80RBt7/U4ugw==}
-    engines: {node: '>= 6.0.0'}
 
   tunnel-agent@0.6.0:
     resolution: {integrity: sha512-McnNiV1l8RYeY8tBgEpuodCC1mLUdbSN+CYBL7kJsJNInOP8UjDDEwdk6Mw60vdLLrr5NHKZhMAOSrR2NZuQ+w==}
@@ -6107,9 +6063,6 @@ packages:
 
   unist-util-visit@5.1.0:
     resolution: {integrity: sha512-m+vIdyeCOpdr/QeQCu2EzxX/ohgS8KbnPDgFni4dQsfSCtpz8UqDyY5GjRru8PDKuYn7Fq19j1CQ+nJSsGKOzg==}
-
-  universal-user-agent@7.0.3:
-    resolution: {integrity: sha512-TmnEAEAsBJVZM/AADELsK76llnwcf9vMKuPz8JflO1frO8Lchitr0fNaN9d+Ap0BjKtqWqd/J17qeDnXh8CL2A==}
 
   unpipe@1.0.0:
     resolution: {integrity: sha512-pjy2bYhSsufwWlKwPc+l3cN7+wuJlK6uz0YdJEOlQDbl6jo/YlPi4mb8agUkVC8BF7V8NuzeyPNqRksA3hztKQ==}
@@ -7472,8 +7425,6 @@ snapshots:
 
   '@floating-ui/utils@0.2.11': {}
 
-  '@hexagon/base64@1.1.28': {}
-
   '@hono/node-server@1.19.14(hono@4.12.27)':
     dependencies:
       hono: 4.12.27
@@ -7624,8 +7575,6 @@ snapshots:
       '@kabelsalat/core': 0.4.0
       '@kabelsalat/lib': 0.4.1
 
-  '@levischuck/tiny-cbor@0.2.11': {}
-
   '@lezer/common@1.5.2': {}
 
   '@lezer/highlight@1.2.3':
@@ -7685,68 +7634,59 @@ snapshots:
       '@tybys/wasm-util': 0.10.3
     optional: true
 
-  '@octokit/auth-token@6.0.0': {}
+  '@ngriffin_uk/auth-core@0.4.2': {}
 
-  '@octokit/core@7.0.6':
+  '@ngriffin_uk/auth-crypto@1.0.3(@ngriffin_uk/auth-encoding@0.2.4)':
     dependencies:
-      '@octokit/auth-token': 6.0.0
-      '@octokit/graphql': 9.0.3
-      '@octokit/request': 10.0.11
-      '@octokit/request-error': 7.1.0
-      '@octokit/types': 16.0.0
-      before-after-hook: 4.0.0
-      universal-user-agent: 7.0.3
+      '@ngriffin_uk/auth-encoding': 0.2.4
 
-  '@octokit/endpoint@11.0.3':
+  '@ngriffin_uk/auth-encoding@0.2.4': {}
+
+  '@ngriffin_uk/auth-jwt@1.1.3(@ngriffin_uk/auth-crypto@1.0.3(@ngriffin_uk/auth-encoding@0.2.4))(@ngriffin_uk/auth-encoding@0.2.4)(@ngriffin_uk/auth-request@0.2.4)':
     dependencies:
-      '@octokit/types': 16.0.0
-      universal-user-agent: 7.0.3
+      '@ngriffin_uk/auth-crypto': 1.0.3(@ngriffin_uk/auth-encoding@0.2.4)
+      '@ngriffin_uk/auth-encoding': 0.2.4
+      '@ngriffin_uk/auth-request': 0.2.4
 
-  '@octokit/graphql@9.0.3':
+  '@ngriffin_uk/auth-magic-link@0.0.3(@ngriffin_uk/auth-encoding@0.2.4)':
     dependencies:
-      '@octokit/request': 10.0.11
-      '@octokit/types': 16.0.0
-      universal-user-agent: 7.0.3
+      '@ngriffin_uk/auth-core': 0.4.2
+      '@ngriffin_uk/auth-crypto': 1.0.3(@ngriffin_uk/auth-encoding@0.2.4)
+    transitivePeerDependencies:
+      - '@ngriffin_uk/auth-encoding'
 
-  '@octokit/openapi-types@27.0.0': {}
-
-  '@octokit/plugin-paginate-rest@14.0.0(@octokit/core@7.0.6)':
+  '@ngriffin_uk/auth-oauth2@3.0.3(@ngriffin_uk/auth-core@0.4.2)(@ngriffin_uk/auth-crypto@1.0.3(@ngriffin_uk/auth-encoding@0.2.4))(@ngriffin_uk/auth-encoding@0.2.4)(@ngriffin_uk/auth-jwt@1.1.3(@ngriffin_uk/auth-crypto@1.0.3(@ngriffin_uk/auth-encoding@0.2.4))(@ngriffin_uk/auth-encoding@0.2.4)(@ngriffin_uk/auth-request@0.2.4))(@ngriffin_uk/auth-request@0.2.4)':
     dependencies:
-      '@octokit/core': 7.0.6
-      '@octokit/types': 16.0.0
+      '@ngriffin_uk/auth-core': 0.4.2
+      '@ngriffin_uk/auth-crypto': 1.0.3(@ngriffin_uk/auth-encoding@0.2.4)
+      '@ngriffin_uk/auth-encoding': 0.2.4
+      '@ngriffin_uk/auth-jwt': 1.1.3(@ngriffin_uk/auth-crypto@1.0.3(@ngriffin_uk/auth-encoding@0.2.4))(@ngriffin_uk/auth-encoding@0.2.4)(@ngriffin_uk/auth-request@0.2.4)
+      '@ngriffin_uk/auth-request': 0.2.4
 
-  '@octokit/plugin-request-log@6.0.0(@octokit/core@7.0.6)':
+  '@ngriffin_uk/auth-provider-apple@3.0.2(@ngriffin_uk/auth-core@0.4.2)(@ngriffin_uk/auth-jwt@1.1.3(@ngriffin_uk/auth-crypto@1.0.3(@ngriffin_uk/auth-encoding@0.2.4))(@ngriffin_uk/auth-encoding@0.2.4)(@ngriffin_uk/auth-request@0.2.4))(@ngriffin_uk/auth-oauth2@3.0.3(@ngriffin_uk/auth-core@0.4.2)(@ngriffin_uk/auth-crypto@1.0.3(@ngriffin_uk/auth-encoding@0.2.4))(@ngriffin_uk/auth-encoding@0.2.4)(@ngriffin_uk/auth-jwt@1.1.3(@ngriffin_uk/auth-crypto@1.0.3(@ngriffin_uk/auth-encoding@0.2.4))(@ngriffin_uk/auth-encoding@0.2.4)(@ngriffin_uk/auth-request@0.2.4))(@ngriffin_uk/auth-request@0.2.4))':
     dependencies:
-      '@octokit/core': 7.0.6
+      '@ngriffin_uk/auth-core': 0.4.2
+      '@ngriffin_uk/auth-jwt': 1.1.3(@ngriffin_uk/auth-crypto@1.0.3(@ngriffin_uk/auth-encoding@0.2.4))(@ngriffin_uk/auth-encoding@0.2.4)(@ngriffin_uk/auth-request@0.2.4)
+      '@ngriffin_uk/auth-oauth2': 3.0.3(@ngriffin_uk/auth-core@0.4.2)(@ngriffin_uk/auth-crypto@1.0.3(@ngriffin_uk/auth-encoding@0.2.4))(@ngriffin_uk/auth-encoding@0.2.4)(@ngriffin_uk/auth-jwt@1.1.3(@ngriffin_uk/auth-crypto@1.0.3(@ngriffin_uk/auth-encoding@0.2.4))(@ngriffin_uk/auth-encoding@0.2.4)(@ngriffin_uk/auth-request@0.2.4))(@ngriffin_uk/auth-request@0.2.4)
 
-  '@octokit/plugin-rest-endpoint-methods@17.0.0(@octokit/core@7.0.6)':
+  '@ngriffin_uk/auth-provider-github@3.0.2(@ngriffin_uk/auth-core@0.4.2)(@ngriffin_uk/auth-oauth2@3.0.3(@ngriffin_uk/auth-core@0.4.2)(@ngriffin_uk/auth-crypto@1.0.3(@ngriffin_uk/auth-encoding@0.2.4))(@ngriffin_uk/auth-encoding@0.2.4)(@ngriffin_uk/auth-jwt@1.1.3(@ngriffin_uk/auth-crypto@1.0.3(@ngriffin_uk/auth-encoding@0.2.4))(@ngriffin_uk/auth-encoding@0.2.4)(@ngriffin_uk/auth-request@0.2.4))(@ngriffin_uk/auth-request@0.2.4))':
     dependencies:
-      '@octokit/core': 7.0.6
-      '@octokit/types': 16.0.0
+      '@ngriffin_uk/auth-core': 0.4.2
+      '@ngriffin_uk/auth-oauth2': 3.0.3(@ngriffin_uk/auth-core@0.4.2)(@ngriffin_uk/auth-crypto@1.0.3(@ngriffin_uk/auth-encoding@0.2.4))(@ngriffin_uk/auth-encoding@0.2.4)(@ngriffin_uk/auth-jwt@1.1.3(@ngriffin_uk/auth-crypto@1.0.3(@ngriffin_uk/auth-encoding@0.2.4))(@ngriffin_uk/auth-encoding@0.2.4)(@ngriffin_uk/auth-request@0.2.4))(@ngriffin_uk/auth-request@0.2.4)
 
-  '@octokit/request-error@7.1.0':
+  '@ngriffin_uk/auth-react@0.6.2(react@19.2.7)':
     dependencies:
-      '@octokit/types': 16.0.0
+      lucide-react: 1.28.0(react@19.2.7)
+      qrcode.react: 4.2.0(react@19.2.7)
+      react: 19.2.7
 
-  '@octokit/request@10.0.11':
-    dependencies:
-      '@octokit/endpoint': 11.0.3
-      '@octokit/request-error': 7.1.0
-      '@octokit/types': 16.0.0
-      content-type: 2.0.0
-      json-with-bigint: 3.5.8
-      universal-user-agent: 7.0.3
+  '@ngriffin_uk/auth-request@0.2.4': {}
 
-  '@octokit/rest@22.0.1':
+  '@ngriffin_uk/auth-webauthn@0.4.3':
     dependencies:
-      '@octokit/core': 7.0.6
-      '@octokit/plugin-paginate-rest': 14.0.0(@octokit/core@7.0.6)
-      '@octokit/plugin-request-log': 6.0.0(@octokit/core@7.0.6)
-      '@octokit/plugin-rest-endpoint-methods': 17.0.0(@octokit/core@7.0.6)
-
-  '@octokit/types@16.0.0':
-    dependencies:
-      '@octokit/openapi-types': 27.0.0
+      '@ngriffin_uk/auth-core': 0.4.2
+      '@ngriffin_uk/auth-crypto': 1.0.3(@ngriffin_uk/auth-encoding@0.2.4)
+      '@ngriffin_uk/auth-encoding': 0.2.4
 
   '@opentelemetry/api@1.9.1': {}
 
@@ -7865,106 +7805,6 @@ snapshots:
 
   '@oxlint/binding-win32-x64-msvc@1.72.0':
     optional: true
-
-  '@peculiar/asn1-android@2.8.0':
-    dependencies:
-      '@peculiar/asn1-schema': 2.8.0
-      asn1js: 3.0.10
-      tslib: 2.8.1
-
-  '@peculiar/asn1-cms@2.8.0':
-    dependencies:
-      '@peculiar/asn1-schema': 2.8.0
-      '@peculiar/asn1-x509': 2.8.0
-      '@peculiar/asn1-x509-attr': 2.8.0
-      asn1js: 3.0.10
-      tslib: 2.8.1
-
-  '@peculiar/asn1-csr@2.8.0':
-    dependencies:
-      '@peculiar/asn1-schema': 2.8.0
-      '@peculiar/asn1-x509': 2.8.0
-      asn1js: 3.0.10
-      tslib: 2.8.1
-
-  '@peculiar/asn1-ecc@2.8.0':
-    dependencies:
-      '@peculiar/asn1-schema': 2.8.0
-      '@peculiar/asn1-x509': 2.8.0
-      asn1js: 3.0.10
-      tslib: 2.8.1
-
-  '@peculiar/asn1-pfx@2.8.0':
-    dependencies:
-      '@peculiar/asn1-cms': 2.8.0
-      '@peculiar/asn1-pkcs8': 2.8.0
-      '@peculiar/asn1-rsa': 2.8.0
-      '@peculiar/asn1-schema': 2.8.0
-      asn1js: 3.0.10
-      tslib: 2.8.1
-
-  '@peculiar/asn1-pkcs8@2.8.0':
-    dependencies:
-      '@peculiar/asn1-schema': 2.8.0
-      '@peculiar/asn1-x509': 2.8.0
-      asn1js: 3.0.10
-      tslib: 2.8.1
-
-  '@peculiar/asn1-pkcs9@2.8.0':
-    dependencies:
-      '@peculiar/asn1-cms': 2.8.0
-      '@peculiar/asn1-pfx': 2.8.0
-      '@peculiar/asn1-pkcs8': 2.8.0
-      '@peculiar/asn1-schema': 2.8.0
-      '@peculiar/asn1-x509': 2.8.0
-      '@peculiar/asn1-x509-attr': 2.8.0
-      asn1js: 3.0.10
-      tslib: 2.8.1
-
-  '@peculiar/asn1-rsa@2.8.0':
-    dependencies:
-      '@peculiar/asn1-schema': 2.8.0
-      '@peculiar/asn1-x509': 2.8.0
-      asn1js: 3.0.10
-      tslib: 2.8.1
-
-  '@peculiar/asn1-schema@2.8.0':
-    dependencies:
-      '@peculiar/utils': 2.0.3
-      asn1js: 3.0.10
-      tslib: 2.8.1
-
-  '@peculiar/asn1-x509-attr@2.8.0':
-    dependencies:
-      '@peculiar/asn1-schema': 2.8.0
-      '@peculiar/asn1-x509': 2.8.0
-      asn1js: 3.0.10
-      tslib: 2.8.1
-
-  '@peculiar/asn1-x509@2.8.0':
-    dependencies:
-      '@peculiar/asn1-schema': 2.8.0
-      '@peculiar/utils': 2.0.3
-      asn1js: 3.0.10
-      tslib: 2.8.1
-
-  '@peculiar/utils@2.0.3':
-    dependencies:
-      tslib: 2.8.1
-
-  '@peculiar/x509@1.14.3':
-    dependencies:
-      '@peculiar/asn1-cms': 2.8.0
-      '@peculiar/asn1-csr': 2.8.0
-      '@peculiar/asn1-ecc': 2.8.0
-      '@peculiar/asn1-pkcs9': 2.8.0
-      '@peculiar/asn1-rsa': 2.8.0
-      '@peculiar/asn1-schema': 2.8.0
-      '@peculiar/asn1-x509': 2.8.0
-      pvtsutils: 1.3.6
-      reflect-metadata: 0.2.2
-      tslib: 2.8.1
-      tsyringe: 4.10.0
 
   '@playwright/test@1.61.1':
     dependencies:
@@ -8744,17 +8584,6 @@ snapshots:
 
   '@simplewebauthn/browser@13.3.0': {}
 
-  '@simplewebauthn/server@13.3.2':
-    dependencies:
-      '@hexagon/base64': 1.1.28
-      '@levischuck/tiny-cbor': 0.2.11
-      '@peculiar/asn1-android': 2.8.0
-      '@peculiar/asn1-ecc': 2.8.0
-      '@peculiar/asn1-rsa': 2.8.0
-      '@peculiar/asn1-schema': 2.8.0
-      '@peculiar/asn1-x509': 2.8.0
-      '@peculiar/x509': 1.14.3
-
   '@simplewebauthn/types@12.0.0': {}
 
   '@sindresorhus/is@7.2.0': {}
@@ -9531,12 +9360,6 @@ snapshots:
 
   array-flatten@1.1.1: {}
 
-  asn1js@3.0.10:
-    dependencies:
-      pvtsutils: 1.3.6
-      pvutils: 1.1.5
-      tslib: 2.8.1
-
   assertion-error@2.0.1: {}
 
   ast-v8-to-istanbul@1.0.4:
@@ -9571,8 +9394,6 @@ snapshots:
   basic-auth@2.0.1:
     dependencies:
       safe-buffer: 5.1.2
-
-  before-after-hook@4.0.0: {}
 
   better-sqlite3@12.11.1:
     dependencies:
@@ -10513,8 +10334,6 @@ snapshots:
 
   json-schema@0.4.0: {}
 
-  json-with-bigint@3.5.8: {}
-
   json5@2.2.3: {}
 
   jzz@1.9.6:
@@ -10598,6 +10417,10 @@ snapshots:
       yallist: 3.1.1
 
   lucide-react@1.23.0(react@19.2.7):
+    dependencies:
+      react: 19.2.7
+
+  lucide-react@1.28.0(react@19.2.7):
     dependencies:
       react: 19.2.7
 
@@ -11308,11 +11131,9 @@ snapshots:
 
   punycode@2.3.1: {}
 
-  pvtsutils@1.3.6:
+  qrcode.react@4.2.0(react@19.2.7):
     dependencies:
-      tslib: 2.8.1
-
-  pvutils@1.1.5: {}
+      react: 19.2.7
 
   qs@6.15.3:
     dependencies:
@@ -11479,8 +11300,6 @@ snapshots:
       redux: 5.0.1
 
   redux@5.0.1: {}
-
-  reflect-metadata@0.2.2: {}
 
   regl@1.7.0: {}
 
@@ -11992,8 +11811,6 @@ snapshots:
 
   ts-interface-checker@0.1.13: {}
 
-  tslib@1.14.1: {}
-
   tslib@2.8.1: {}
 
   tsup@8.5.1(jiti@2.7.0)(postcss@8.5.16)(tsx@4.23.0)(typescript@6.0.3):
@@ -12029,10 +11846,6 @@ snapshots:
       esbuild: 0.28.1
     optionalDependencies:
       fsevents: 2.3.3
-
-  tsyringe@4.10.0:
-    dependencies:
-      tslib: 1.14.1
 
   tunnel-agent@0.6.0:
     dependencies:
@@ -12104,8 +11917,6 @@ snapshots:
       '@types/unist': 3.0.3
       unist-util-is: 6.0.1
       unist-util-visit-parents: 6.0.2
-
-  universal-user-agent@7.0.3: {}
 
   unpipe@1.0.0: {}
 

@@ -2,9 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
 	buildMobileRedirectUri,
-	createMobileOAuthState,
 	isAllowedMobileRedirectUri,
-	parseMobileOAuthState,
 	requireMobileRedirectUri,
 } from "../mobile";
 
@@ -29,16 +27,6 @@ describe("mobile auth helpers", () => {
 		expect(() => requireMobileRedirectUri("https://example.com/callback", "/callback")).toThrow(
 			"Invalid mobile redirect URI",
 		);
-	});
-
-	it("round-trips mobile OAuth state", () => {
-		const redirectUri = "polychat://auth/callback";
-		const state = createMobileOAuthState(redirectUri);
-
-		expect(parseMobileOAuthState(state)).toEqual({
-			platform: "mobile",
-			redirect_uri: redirectUri,
-		});
 	});
 
 	it("appends callback parameters without replacing the redirect target", () => {

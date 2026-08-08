@@ -7,6 +7,7 @@ import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 
 export * as schema from "./schema";
+export { createDatabaseClient, type DatabaseClient } from "./client";
 
 export interface Env {
 	DB: D1Database;
@@ -81,22 +82,6 @@ export class Database {
 			});
 
 			throw new AssistantError("Unable to create user account", ErrorType.DATABASE_ERROR, 500);
-		}
-	}
-
-	public async consumeMagicLinkNonce(nonce: string, userId: number): Promise<boolean> {
-		try {
-			const foundNonce = await this._repositories.magicLinkNonces.findNonce(nonce, userId);
-
-			if (!foundNonce) {
-				return false;
-			}
-
-			await this._repositories.magicLinkNonces.deleteNonce(nonce);
-			return true;
-		} catch (error) {
-			logger.error(`Error consuming nonce ${nonce}:`, { error });
-			return false;
 		}
 	}
 
