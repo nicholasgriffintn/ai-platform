@@ -3,10 +3,14 @@ import type { ReactNode } from "react";
 import { describe, expect, it, vi } from "vitest";
 
 const useAuthStatus = vi.hoisted(() => vi.fn());
+const authProviderConfig = vi.hoisted(() => vi.fn());
 
 vi.mock("@ngriffin_uk/auth-react", () => ({
 	AuthFlow: () => null,
-	AuthProvider: ({ children }: { children: ReactNode }) => children,
+	AuthProvider: ({ children, config }: { children: ReactNode; config: unknown }) => {
+		authProviderConfig(config);
+		return children;
+	},
 	isWebAuthnSupported: () => true,
 }));
 
@@ -26,6 +30,20 @@ vi.mock("~/components/ui/Dialog", () => ({
 import { LoginModal } from "./LoginModal";
 
 describe("LoginModal", () => {
+	it("spaces authentication feedback from the active sign-in view", () => {
+		useAuthStatus.mockReturnValue({ isAuthenticated: false, isLoading: false });
+
+		render(<LoginModal open onOpenChange={vi.fn()} onKeySubmit={vi.fn()} />);
+
+		expect(authProviderConfig).toHaveBeenCalledWith(
+			expect.objectContaining({
+				classNames: expect.objectContaining({
+					panel: expect.stringContaining("space-y-3"),
+				}),
+			}),
+		);
+	});
+
 	it("closes when authentication completes", async () => {
 		useAuthStatus.mockReturnValue({ isAuthenticated: true, isLoading: false });
 		const onOpenChange = vi.fn();

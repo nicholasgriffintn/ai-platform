@@ -41,7 +41,7 @@
 		"@ngriffin_uk/auth-oauth2": "^3.0.3",
 		"@ngriffin_uk/auth-provider-apple": "^3.0.2",
 		"@ngriffin_uk/auth-provider-github": "^3.0.2",
-		"@ngriffin_uk/auth-webauthn": "^0.4.3",
+		"@ngriffin_uk/auth-webauthn": "^0.4.4",
 		"@scalar/hono-api-reference": "0.11.8",
 		"@sentry/cloudflare": "10.63.0",
 		"@tsndr/cloudflare-worker-jwt": "3.2.1",

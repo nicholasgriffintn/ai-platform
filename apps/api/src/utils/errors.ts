@@ -1,3 +1,5 @@
+import { AuthError, type AuthErrorCode } from "@ngriffin_uk/auth-core";
+
 import { getLogger } from "./logger";
 
 const logger = getLogger({ prefix: "utils/errors" });
@@ -92,6 +94,38 @@ export class AssistantError extends Error {
 		};
 
 		return userSafeMessages[this.type] || "An internal error occurred. Please try again later.";
+	}
+}
+
+export function normaliseApiError(error: Error): AssistantError {
+	if (error instanceof AssistantError) return error;
+	if (!(error instanceof AuthError)) return AssistantError.fromError(error);
+
+	const [type, statusCode] = authErrorResponse(error.code);
+	return new AssistantError(error.message, type, statusCode);
+}
+
+function authErrorResponse(code: AuthErrorCode): readonly [ErrorType, number] {
+	switch (code) {
+		case "invalid_input":
+			return [ErrorType.PARAMS_ERROR, 400];
+		case "rate_limited":
+			return [ErrorType.RATE_LIMIT_ERROR, 429];
+		case "oauth_exchange_failed":
+		case "provider_error":
+			return [ErrorType.PROVIDER_ERROR, 502];
+		case "storage_error":
+			return [ErrorType.STORAGE_ERROR, 500];
+		case "duplicate_plugin":
+		case "insecure_runtime":
+		case "provider_not_found":
+		case "unsupported_operation":
+			return [ErrorType.CONFIGURATION_ERROR, 500];
+		case "email_in_use":
+		case "identity_conflict":
+			return [ErrorType.CONFLICT_ERROR, 409];
+		default:
+			return [ErrorType.AUTHENTICATION_ERROR, 401];
 	}
 }
 

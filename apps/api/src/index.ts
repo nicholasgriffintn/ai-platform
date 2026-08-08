@@ -47,7 +47,7 @@ import { addRoute } from "./lib/http/routeBuilder";
 import { autoRegisterDynamicApps } from "./services/dynamic-apps/auto-register-apps";
 import { handleGetMetrics } from "./services/metrics/getMetrics";
 import type { IEnv } from "./types";
-import { AssistantError, ErrorType, handleAIServiceError } from "./utils/errors";
+import { handleAIServiceError, normaliseApiError } from "./utils/errors";
 import { LogLevel, getLogger } from "./utils/logger";
 import { tagDescriptions } from "./openapi/documentation";
 import { apiInfoDescription } from "./openapi/content/apiDescription";
@@ -330,8 +330,7 @@ app.route(ROUTES.TRAINING, training);
 app.notFound((c) => c.json({ status: "not found" }, 404));
 
 app.onError((err, _c) => {
-	const error =
-		err instanceof AssistantError ? err : AssistantError.fromError(err, ErrorType.UNKNOWN_ERROR);
+	const error = normaliseApiError(err);
 	captureApiError(error, err);
 	return handleAIServiceError(error);
 });

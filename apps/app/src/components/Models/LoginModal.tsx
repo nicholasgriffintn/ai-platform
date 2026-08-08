@@ -82,7 +82,7 @@ export function LoginModal({ open, onOpenChange, onKeySubmit }: LoginModalProps)
 				passkeyLabel: "Sign in with Passkey",
 			},
 			classNames: {
-				panel: "mx-auto w-full max-w-[375px]",
+				panel: "mx-auto w-full max-w-[375px] space-y-3",
 				signIn: "space-y-3",
 				header: "mb-3 space-y-1",
 				title: "text-xl font-semibold text-zinc-900 dark:text-white",

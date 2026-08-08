@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { AuthError } from "@ngriffin_uk/auth-core";
 
-import { AssistantError, ErrorType, handleAIServiceError } from "../errors";
+import { AssistantError, ErrorType, handleAIServiceError, normaliseApiError } from "../errors";
 
 vi.mock("../logger", () => ({
 	getLogger: vi.fn(() => ({
@@ -16,6 +17,16 @@ describe("errors", () => {
 	});
 
 	describe("AssistantError", () => {
+		it("normalises shared authentication failures without exposing their cause", () => {
+			const error = normaliseApiError(new AuthError("invalid_credentials"));
+
+			expect(error).toMatchObject({
+				type: ErrorType.AUTHENTICATION_ERROR,
+				statusCode: 401,
+				context: {},
+			});
+		});
+
 		it("should create error with message and type", () => {
 			const error = new AssistantError("Test error", ErrorType.NETWORK_ERROR);
 
