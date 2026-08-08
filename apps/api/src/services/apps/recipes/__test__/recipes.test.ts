@@ -1,6 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { RecipeConnectorsResponse } from "@assistant/schemas";
+import {
+	recipeInstallationUpdateRequestSchema,
+	type RecipeConnectorsResponse,
+} from "@assistant/schemas";
 import { createServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
 import { AppDataRepository, RepositoryManager } from "~/repositories";
 import { TaskRepository } from "~/repositories/TaskRepository";
@@ -1409,6 +1412,45 @@ describe("assistant recipes", () => {
 					prompt: "Run briefing",
 				}),
 			],
+		});
+	});
+
+	it("pauses a configured scheduled recipe without clearing its configuration", async () => {
+		const context = createTestServiceContext();
+		const setup = await installAssistantRecipe("bad-weather-alerts", {
+			context,
+			userId: 42,
+			channel: "web",
+			triggers: [
+				{ type: "manual", enabled: true },
+				{
+					type: "schedule",
+					enabled: true,
+					cronExpression: "0 9 * * *",
+					prompt: "Check morning weather for London",
+				},
+			],
+			configuration: {
+				location: "London",
+				alertThresholds: ["Heavy rain", "strong winds"],
+				forecastTime: "09:00",
+			},
+		});
+
+		const updated = await updateRecipeInstallation({
+			context,
+			userId: 42,
+			installationId: setup?.installation?.id ?? "",
+			update: recipeInstallationUpdateRequestSchema.parse({ status: "paused" }),
+		});
+
+		expect(updated).toMatchObject({
+			status: "paused",
+			configuration: {
+				location: "London",
+				alertThresholds: ["Heavy rain", "strong winds"],
+				forecastTime: "09:00",
+			},
 		});
 	});
 

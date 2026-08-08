@@ -1419,7 +1419,7 @@ export const recipeInstallRequestSchema = assistantRecipeInstallRequestSchema;
 export const recipeInstallationUpdateRequestSchema = z.object({
 	status: z.enum(["active", "paused"]).optional(),
 	triggers: z.array(recipeInstallationTriggerSchema).optional(),
-	configuration: recipeConfigurationSchema.optional(),
+	configuration: recipeConfigurationRecordSchema.optional(),
 });
 
 export const recipeInvocationRequestSchema = z.object({
