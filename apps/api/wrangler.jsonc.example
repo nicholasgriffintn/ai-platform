@@ -35,6 +35,7 @@
 	},
 	"vars": {
 		"ACCOUNT_ID": "REPLACE_ME",
+		"API_BASE_URL": "REPLACE_ME",
 		"APP_BASE_URL": "REPLACE_ME",
 		"APPLE_IOS_CLIENT_ID": "com.polychat-app.app",
 		"APPLE_WEB_CLIENT_ID": "com.polychat.web",

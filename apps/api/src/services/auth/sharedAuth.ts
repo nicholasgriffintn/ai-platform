@@ -15,6 +15,7 @@ import type { ServiceContext } from "~/lib/context/serviceContext";
 import { createAssistantUserStore, resolveAssistantEmailUser } from "~/services/auth/authUser";
 import { resolveGitHubIdentity } from "~/services/auth/github";
 import { createAssistantIdentityStore } from "~/services/auth/identity";
+import { AssistantError, ErrorType } from "~/utils/errors";
 import { appendUrlPath } from "~/utils/urls";
 
 export type { AssistantAuthUser } from "~/services/auth/authUser";
@@ -44,7 +45,7 @@ export function createAssistantGitHubAuth(context: ServiceContext) {
 	const clientSecret = context.env.GITHUB_CLIENT_SECRET;
 	const apiBaseUrl = context.env.API_BASE_URL;
 	if (!clientId || !clientSecret || !apiBaseUrl) {
-		throw new TypeError("Missing GitHub OAuth configuration.");
+		throw new AssistantError("Missing GitHub OAuth configuration", ErrorType.CONFIGURATION_ERROR);
 	}
 	return createAssistantAuth(context).use(
 		createGitHubAuth({

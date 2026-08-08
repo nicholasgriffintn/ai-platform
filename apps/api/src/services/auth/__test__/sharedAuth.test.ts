@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
+import { AssistantError } from "~/utils/errors";
 
 const useAuthPlugin = vi.hoisted(() => vi.fn());
 const createAuth = vi.hoisted(() => vi.fn(() => ({ use: useAuthPlugin })));
@@ -41,5 +42,13 @@ describe("Assistant GitHub authentication", () => {
 				redirectUri: "http://localhost:8787/auth/github/callback",
 			}),
 		);
+	});
+
+	it("reports missing GitHub settings as a configuration error", () => {
+		expect(() =>
+			createAssistantGitHubAuth({
+				env: { API_BASE_URL: "https://api.polychat.app" },
+			} as ServiceContext),
+		).toThrowError(AssistantError);
 	});
 });
