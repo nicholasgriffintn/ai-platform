@@ -9944,14 +9944,16 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 			codingIndex: null,
 			agenticIndex: null,
 			intelligenceIndexVersion: null,
-			mediaScores: [{
-				key: "text_to_speechElo",
-				label: "Text-to-speech arena",
-				value: 1117,
-				min: 800,
-				max: 1400,
-				confidenceInterval95: 14,
-			}],
+			mediaScores: [
+				{
+					key: "text_to_speechElo",
+					label: "Text-to-speech arena",
+					value: 1117,
+					min: 800,
+					max: 1400,
+					confidenceInterval95: 14,
+				},
+			],
 		},
 	}),
 
