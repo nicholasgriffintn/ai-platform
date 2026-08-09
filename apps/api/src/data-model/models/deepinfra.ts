@@ -1635,8 +1635,8 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 		supportsResponseFormat: true,
 		contextWindow: 1048576,
 		maxTokens: 131072,
-		costPer1kInputTokens: 0.0027,
-		costPer1kOutputTokens: 0.0135,
+		costPer1kInputTokens: 0.00285,
+		costPer1kOutputTokens: 0.01425,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
@@ -1782,6 +1782,7 @@ export const deepinfraModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		supportsResponseFormat: true,
 	}),
 	createModelConfig("Qwen/Qwen3.8-Max", PROVIDER, {
 		name: "Qwen3.8 Max",

@@ -10050,4 +10050,20 @@ export const vercelModelConfig: ModelConfig = createModelConfigObject([
 		contextWindow: 0,
 		maxTokens: 0,
 	}),
+	createModelConfig("xai/grok-imagine-image-2.0-preview", PROVIDER, {
+		name: "Grok Imagine Image 2.0 Preview",
+		matchingModel: "xai/grok-imagine-image-2.0-preview",
+		family: "grok",
+		openWeights: false,
+		releaseDate: "August 8, 2026",
+		lastUpdated: "August 8, 2026",
+		modalities: {
+			input: ["text"],
+			output: ["image"],
+		},
+		supportsAttachments: false,
+		supportsToolCalls: false,
+		contextWindow: 0,
+		maxTokens: 0,
+	}),
 ]);

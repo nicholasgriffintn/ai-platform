@@ -358,41 +358,6 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
 		supportsResponseFormat: true,
 	}),
 
-	createModelConfig("deepseek-v4-flash", PROVIDER, {
-		name: "DeepSeek V4 Flash",
-		matchingModel: "deepseek-v4-flash",
-		knowledgeCutoffDate: "May 2025",
-		releaseDate: "April 24, 2026",
-		lastUpdated: "April 24, 2026",
-		modalities: {
-			input: ["text"],
-			output: ["text"],
-		},
-		supportsAttachments: false,
-		supportsTemperature: true,
-		supportsToolCalls: true,
-		contextWindow: 1048576,
-		maxTokens: 1048576,
-		costPer1kInputTokens: 0.000148,
-		costPer1kOutputTokens: 0.000296,
-		reasoningConfig: {
-			supportedEffortLevels: ["none", "thinking"],
-			defaultEffort: "none",
-		},
-		strengths: ["tool_use"],
-		contextComplexity: 5,
-		reliability: 1,
-		speed: 4,
-		artificialAnalysis: {
-			intelligenceIndex: 28.7,
-			codingIndex: null,
-			agenticIndex: null,
-			intelligenceIndexVersion: 4.1,
-		},
-		family: "deepseek-flash",
-		openWeights: true,
-	}),
-
 	createModelConfig("deepseek-v4-pro", PROVIDER, {
 		name: "DeepSeek V4 Pro",
 		matchingModel: "deepseek-v4-pro",
@@ -3445,9 +3410,9 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
 	createModelConfig("apertus-70b", PROVIDER, {
 		name: "apertus-70b",
 		matchingModel: "apertus-70b",
-		openWeights: false,
-		releaseDate: "July 8, 2026",
-		lastUpdated: "July 8, 2026",
+		openWeights: true,
+		releaseDate: "September 2, 2025",
+		lastUpdated: "September 2, 2025",
 		modalities: {
 			input: ["text"],
 			output: ["text"],
@@ -3464,6 +3429,7 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
 		},
+		knowledgeCutoffDate: "September 2025",
 	}),
 
 	createModelConfig("claude-opus-5", PROVIDER, {
@@ -3640,6 +3606,30 @@ export const cortecsModelConfig: ModelConfig = createModelConfigObject([
 		maxTokens: 1048576,
 		costPer1kInputTokens: 0.00033,
 		costPer1kOutputTokens: 0.002749,
+		reasoningConfig: {
+			supportedEffortLevels: ["none", "thinking"],
+			defaultEffort: "none",
+		},
+	}),
+	createModelConfig("deepseek-v4-flash-0731", PROVIDER, {
+		name: "DeepSeek V4 Flash 0731",
+		matchingModel: "deepseek-v4-flash-0731",
+		family: "deepseek-flash",
+		openWeights: true,
+		knowledgeCutoffDate: "May 2025",
+		releaseDate: "July 31, 2026",
+		lastUpdated: "July 31, 2026",
+		modalities: {
+			input: ["text"],
+			output: ["text"],
+		},
+		supportsAttachments: false,
+		supportsTemperature: true,
+		supportsToolCalls: true,
+		contextWindow: 1048576,
+		maxTokens: 1048576,
+		costPer1kInputTokens: 0.00025,
+		costPer1kOutputTokens: 0.0003,
 		reasoningConfig: {
 			supportedEffortLevels: ["none", "thinking"],
 			defaultEffort: "none",
