@@ -26,7 +26,7 @@
     "test:mobile": "sh scripts/xcodebuild-mobile.sh test"
   },
   "devDependencies": {
-    "@playwright/test": "1.61.1",
+    "@playwright/test": "1.62.1",
     "@types/node": "26.2.0",
     "@vitest/browser-playwright": "4.1.10",
     "@vitest/coverage-v8": "4.1.10",
