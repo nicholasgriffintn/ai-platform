@@ -9,7 +9,7 @@ overrides:
   ip-address@<=10.3.0: 10.3.1
   nanoid@<3.3.17: 3.3.17
   partyserver: 0.5.10
-  postcss@>=8.0.0 <8.5.23: 8.5.23
+  postcss@>=8.0.0 <8.5.23: 8.5.25
   sharp@<0.35.0: 0.35.0
   undici@>=7.0.0 <7.29.0: 7.29.0
 
@@ -5145,7 +5145,7 @@ packages:
     engines: {node: '>= 18'}
     peerDependencies:
       jiti: '>=1.21.0'
-      postcss: 8.5.23
+      postcss: 8.5.25
       tsx: ^4.8.1
       yaml: ^2.4.2
     peerDependenciesMeta:
@@ -5713,7 +5713,7 @@ packages:
     peerDependencies:
       '@microsoft/api-extractor': ^7.36.0
       '@swc/core': ^1
-      postcss: 8.5.23
+      postcss: 8.5.25
       typescript: '>=4.5.0'
     peerDependenciesMeta:
       '@microsoft/api-extractor':
