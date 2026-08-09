@@ -38,6 +38,7 @@ import { allowRestrictedPaths } from "~/middleware/auth";
 import { validateCaptcha } from "~/middleware/captchaMiddleware";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import { getServiceContext } from "~/lib/context/serviceContext";
+import { requireCloudflareExecutionContext } from "~/lib/cloudflare/execution-context";
 import { ResponseFactory } from "~/lib/http/ResponseFactory";
 import { sseResponse } from "~/lib/http/streaming";
 import { handleChatCompletionFeedbackSubmission } from "~/services/completions/chatCompletionFeedbackSubmission";
@@ -144,7 +145,7 @@ addRoute(app, "post", "/completions", {
 				user,
 				anonymousUser: anonymousUserContext,
 				context: serviceContext,
-				executionCtx: context.executionCtx,
+				executionCtx: requireCloudflareExecutionContext(context.executionCtx),
 			});
 
 			if (response instanceof Response) {

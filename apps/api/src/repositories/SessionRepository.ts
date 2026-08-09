@@ -4,6 +4,7 @@ import { eq } from "drizzle-orm";
 import { AUTH_SESSION_TTL_MS } from "~/constants/app";
 import { session } from "~/lib/database/schema";
 import { BaseRepository } from "./BaseRepository";
+import { toAuthSessionRecord, type StoredSessionRecord } from "./sessionRecord";
 
 interface ConsumeMobileAuthCodeOptions {
 	jti: string;
@@ -35,17 +36,62 @@ export class SessionRepository extends BaseRepository implements SessionStore {
 			.limit(1);
 		if (!record) return null;
 
-		const expiresAt = new Date(record.expiresAt);
-		return {
-			tokenHash: record.id,
-			userId: String(record.userId),
-			createdAt: new Date(expiresAt.getTime() - AUTH_SESSION_TTL_MS),
-			expiresAt,
-		};
+		return toAuthSessionRecord(record, AUTH_SESSION_TTL_MS);
 	}
 
 	public async deleteByTokenHash(tokenHash: string): Promise<void> {
 		await this.database.delete(session).where(eq(session.id, tokenHash));
+	}
+
+	public async rotateByTokenHash(
+		currentTokenHash: string,
+		replacement: AuthSessionRecord,
+	): Promise<AuthSessionRecord | null> {
+		const [, consumed] = await this.env.DB.batch<StoredSessionRecord>([
+			this.env.DB.prepare(
+				`INSERT INTO session (
+				   id, user_id, expires_at, jwt_token, jwt_expires_at
+				 )
+				 SELECT ?, user_id, ?, NULL, NULL FROM session
+				 WHERE id = ? AND user_id = ? AND datetime(expires_at) > datetime(?)`,
+			).bind(
+				replacement.tokenHash,
+				replacement.expiresAt.toISOString(),
+				currentTokenHash,
+				Number(replacement.userId),
+				replacement.createdAt.toISOString(),
+			),
+			this.env.DB.prepare(
+				`DELETE FROM session
+				 WHERE id = ? AND EXISTS (SELECT 1 FROM session WHERE id = ?)
+				 RETURNING id, user_id AS userId, expires_at AS expiresAt`,
+			).bind(currentTokenHash, replacement.tokenHash),
+		]);
+		const record = consumed?.results[0];
+		return record ? toAuthSessionRecord(record, AUTH_SESSION_TTL_MS) : null;
+	}
+
+	public async touchByTokenHash(
+		tokenHash: string,
+		expiresAt: Date,
+	): Promise<AuthSessionRecord | null> {
+		const record = await this.env.DB.prepare(
+			`UPDATE session
+			 SET expires_at = MAX(expires_at, ?)
+			 WHERE id = ? AND datetime(expires_at) > datetime(?)
+			 RETURNING id, user_id AS userId, expires_at AS expiresAt`,
+		)
+			.bind(
+				expiresAt.toISOString(),
+				tokenHash,
+				new Date(expiresAt.getTime() - AUTH_SESSION_TTL_MS).toISOString(),
+			)
+			.first<StoredSessionRecord>();
+		return record ? toAuthSessionRecord(record, AUTH_SESSION_TTL_MS) : null;
+	}
+
+	public async deleteByUserId(userId: string): Promise<void> {
+		await this.database.delete(session).where(eq(session.user_id, Number(userId)));
 	}
 
 	public async deleteSession(sessionId: string): Promise<void> {

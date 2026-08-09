@@ -1,4 +1,3 @@
-import type { ExecutionContext } from "@cloudflare/workers-types";
 import type {
 	ChatCompletionRequestBody as SchemaChatCompletionRequestBody,
 	ChatCompletionResponseBody as SchemaChatCompletionResponseBody,
@@ -6,6 +5,7 @@ import type {
 	MessageRole as SchemaMessageRole,
 	MessagePart as SchemaMessagePart,
 } from "@assistant/schemas";
+import type { ExecutionContext } from "@cloudflare/workers-types";
 import type { ServiceContext } from "../lib/context/serviceContext";
 import type { AnonymousUser } from "./anonymous-user";
 import type { IEnv, ReasoningEffortLevel, VerbosityLevel } from "./shared";

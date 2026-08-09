@@ -15,9 +15,7 @@ describe("Dialog", () => {
 
 		const dialog = screen.getByRole("dialog", { name: "Keyboard Shortcuts" });
 
-		expect(dialog).toHaveStyle({
-			width: "840px",
-			maxWidth: "calc(100vw - 2rem)",
-		});
+		expect(dialog.style.width).toBe("840px");
+		expect(dialog.style.maxWidth).toBe("calc(100vw - 2rem)");
 	});
 });

@@ -144,6 +144,45 @@ describe("Auth Middleware", () => {
 			expect(mockIsbot).toHaveBeenCalled();
 		});
 
+		it("should not let unverified URL credentials bypass bot detection", async () => {
+			const context = createMockContext();
+			// @ts-expect-error - mock implementation
+			context.req.query.mockImplementation((name: string) =>
+				name === "token" ? "ak_unverified" : undefined,
+			);
+			// @ts-expect-error - mock implementation
+			context.req.header.mockImplementation((name: string) => {
+				if (name === "user-agent") return "Googlebot";
+				if (name === "CF-Connecting-IP") return "127.0.0.1";
+				return null;
+			});
+			mockIsbot.mockReturnValue(true);
+
+			await expect(authMiddleware(context, mockNext)).rejects.toThrow("Bot access is not allowed.");
+
+			expect(mockRepositories.apiKeys.findUserIdByApiKey).not.toHaveBeenCalled();
+			expect(mockIsbot).toHaveBeenCalledWith("Googlebot");
+			expect(mockNext).not.toHaveBeenCalled();
+		});
+
+		it("should not let invalid bearer credentials bypass bot detection", async () => {
+			const context = createMockContext();
+			// @ts-expect-error - mock implementation
+			context.req.header.mockImplementation((name: string) => {
+				if (name === "user-agent") return "Googlebot";
+				if (name === "CF-Connecting-IP") return "127.0.0.1";
+				if (name === "Authorization") return "Bearer ak_invalid";
+				return null;
+			});
+			mockRepositories.apiKeys.findUserIdByApiKey.mockResolvedValue(null);
+			mockIsbot.mockReturnValue(true);
+
+			await expect(authMiddleware(context, mockNext)).rejects.toThrow("Bot access is not allowed.");
+
+			expect(mockIsbot).toHaveBeenCalledWith("Googlebot");
+			expect(mockNext).not.toHaveBeenCalled();
+		});
+
 		it("should allow native mobile app user agents that are not classified as bots", async () => {
 			const mockAnonymousUser = { id: "anon-123", ip_address: "127.0.0.1" };
 			const context = createMockContext();

@@ -30,7 +30,7 @@ vi.mock("~/components/ui/Dialog", () => ({
 import { LoginModal } from "./LoginModal";
 
 describe("LoginModal", () => {
-	it("spaces authentication feedback from the active sign-in view", () => {
+	it("provides the layout classes required by the shared authentication flow", () => {
 		useAuthStatus.mockReturnValue({ isAuthenticated: false, isLoading: false });
 
 		render(<LoginModal open onOpenChange={vi.fn()} onKeySubmit={vi.fn()} />);
@@ -38,6 +38,9 @@ describe("LoginModal", () => {
 		expect(authProviderConfig).toHaveBeenCalledWith(
 			expect.objectContaining({
 				classNames: expect.objectContaining({
+					input: expect.stringMatching(/\bw-full\b.*\bpl-10\b/u),
+					inputContainer: expect.stringContaining("relative w-full"),
+					inputIcon: expect.stringMatching(/\babsolute\b.*\bleft-3\b/u),
 					panel: expect.stringContaining("space-y-3"),
 				}),
 			}),

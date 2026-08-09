@@ -1,4 +1,5 @@
 import type { Context, Next } from "hono";
+import { parse as parseCookieHeader } from "hono/utils/cookie";
 import { isbot } from "isbot";
 
 import { KVCache } from "~/lib/cache";
@@ -8,6 +9,7 @@ import { getUserByJwtToken } from "~/services/auth/jwt";
 import { createAssistantAuth } from "~/services/auth/sharedAuth";
 import type { AnonymousUser, User } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
+import { parseBearerToken } from "~/utils/http";
 import { getLogger } from "~/utils/logger";
 
 const logger = getLogger({ prefix: "middleware/auth" });
@@ -61,22 +63,8 @@ async function isBotCached(userAgent: string, kv: any): Promise<boolean> {
 	return isBotUser;
 }
 
-function parseCookies(cookieHeader: string): Record<string, string> {
-	const cookies: Record<string, string> = {};
-	if (!cookieHeader) return cookies;
-
-	for (const cookie of cookieHeader.split(";")) {
-		const [name, ...rest] = cookie.trim().split("=");
-		if (name && rest.length > 0) {
-			cookies[name] = rest.join("=");
-		}
-	}
-
-	return cookies;
-}
-
 /**
- * Authentication middleware that supports session-based, token-based, and JWT auth
+ * Authentication middleware that supports session, API-key, and JWT auth
  * Also handles anonymous user tracking for unauthenticated requests
  * @param context - The context of the request
  * @param next - The next middleware function
@@ -96,7 +84,7 @@ export async function authMiddleware(context: Context, next: Next) {
 
 	const userAgent = context.req.header("user-agent") || "unknown";
 
-	const hasJwtSecret = !!context.env.JWT_SECRET;
+	const jwtSecret = context.env.JWT_SECRET;
 	let repositories: RepositoryManager | null = null;
 	const getRepositories = () => {
 		if (!repositories) {
@@ -108,24 +96,14 @@ export async function authMiddleware(context: Context, next: Next) {
 	let user: User | null = null;
 	let anonymousUser: AnonymousUser | null = null;
 
-	const authFromQuery = context.req.query("token");
-	const authFromHeaders = context.req.header("Authorization");
-	const authToken = authFromQuery || authFromHeaders?.split("Bearer ")[1];
-
-	let parsedCookies: Record<string, string> | null = null;
-	const getCookies = () => {
-		if (parsedCookies === null) {
-			const header = context.req.header("Cookie") || "";
-			parsedCookies = header ? parseCookies(header) : {};
-		}
-		return parsedCookies;
-	};
+	const authToken = parseBearerToken(context.req.header("Authorization"));
 
 	const isJwtToken = authToken?.split(".").length === 3;
 
 	const authPromises: Promise<User | null>[] = [];
 
-	const sessionId = getCookies().session;
+	const cookies = parseCookieHeader(context.req.header("Cookie") || "");
+	const sessionId = cookies.session;
 
 	if (sessionId) {
 		// The request context must be created after authentication so downstream services receive its user.
@@ -147,8 +125,7 @@ export async function authMiddleware(context: Context, next: Next) {
 					const repo = getRepositories();
 					const userId = await repo.apiKeys.findUserIdByApiKey(authToken);
 					if (userId) {
-						const foundUser = await repo.users.getUserById(userId);
-						return (foundUser as unknown as User) || null;
+						return repo.users.getUserById(userId);
 					}
 					return null;
 				} catch (error) {
@@ -159,11 +136,11 @@ export async function authMiddleware(context: Context, next: Next) {
 		);
 	}
 
-	if (isJwtToken && hasJwtSecret) {
+	if (authToken && isJwtToken && jwtSecret) {
 		authPromises.push(
 			(async () => {
 				try {
-					return await getUserByJwtToken(context.env, authToken!, context.env.JWT_SECRET!);
+					return await getUserByJwtToken(context.env, authToken, jwtSecret);
 				} catch (error) {
 					if (error instanceof AssistantError && error.type === ErrorType.AUTHENTICATION_ERROR) {
 						return null;
@@ -191,7 +168,7 @@ export async function authMiddleware(context: Context, next: Next) {
 	}
 
 	let isBot = false;
-	const shouldSkipBotCheck = Boolean(authToken) || Boolean(isProUser);
+	const shouldSkipBotCheck = Boolean(user);
 
 	if (!shouldSkipBotCheck) {
 		isBot = await isBotCached(userAgent, context.env.CACHE);
@@ -203,7 +180,7 @@ export async function authMiddleware(context: Context, next: Next) {
 
 	if (!user) {
 		try {
-			const anonymousId = getCookies()[ANONYMOUS_ID_COOKIE];
+			const anonymousId = cookies[ANONYMOUS_ID_COOKIE];
 			if (anonymousId) {
 				anonymousUser = await getRepositories().anonymousUsers.getAnonymousUserById(anonymousId);
 			}

@@ -1,4 +1,4 @@
-import type { AuthChallengeKind } from "@ngriffin_uk/auth-core";
+import type { AuthChallengeKind } from "@ngriffin_uk/auth-protocol";
 import { sql } from "drizzle-orm";
 import { index, integer, primaryKey, real, sqliteTable, text } from "drizzle-orm/sqlite-core";
 

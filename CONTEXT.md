@@ -32,7 +32,6 @@ Use this file as the domain context for architecture reviews. Keep new terms her
 - **`apps/api`** is the Hono backend Worker. `src/index.ts` owns global middleware, OpenAPI docs, route mounting, scheduled events, queue events, and Durable Object export. Route modules validate and orchestrate; non-trivial behaviour belongs in `src/services`, `src/lib`, or `src/repositories`.
 - **`apps/sandbox-worker`** is the isolated coding-run Worker. It owns `/execute`, JWT and GitHub-token checks, Cloudflare Sandbox execution, task runner selection, cancellation, and SSE task events.
 - **`apps/training`** is the internal training Worker. It owns authenticated job/deployment routes, provider execution, persisted training records, and event history.
-- **`apps/metrics`** is a small React dashboard over the API Worker `/metrics` route.
 - **`apps/mobile`** is the iOS client. It mirrors core conversation, model, auth, streaming, artefact, and tool concepts in Swift.
 - **`packages/schemas`** is the shared contract module. It exports Zod schemas and inferred types used by the frontend, backend, sandbox Worker, and training Worker.
 - **`packages/agent-core`** is the shared agent loop module. It exposes the decision loop, approval resolution, and action handlers used by sandbox-style agent execution.
@@ -77,7 +76,6 @@ Use this file as the domain context for architecture reviews. Keep new terms her
 - Local-only chat requests use browser storage and optional WebLLM modules instead of backend persistence.
 - Sandbox requests originate in the web app or GitHub webhook flow, are coordinated by API sandbox modules, then execute in `apps/sandbox-worker` with SSE progress.
 - Training requests originate in the web app, are validated and authorised by the API Worker, then delegated to `apps/training` through an internal Worker interface.
-- Metrics are written by backend analytics modules and read by `apps/metrics` through the API Worker `/metrics` route.
 - The scheduled models.dev sync updates checked-in model configs, then calls the API admin task trigger. The API queues Artificial Analysis ingestion, stores the Free-tier language model data server-side, and schedules derived scoring one hour later.
 
 ## Architecture Review Defaults

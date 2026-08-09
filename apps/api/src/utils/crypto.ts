@@ -2,11 +2,11 @@ import { base64ToBuffer, bufferToBase64 } from "./base64";
 import { AssistantError, ErrorType } from "./errors";
 import { isPlainObject } from "./objects";
 
-export interface EncryptedJsonPayload {
-	v: 1;
-	iv: string;
-	data: string;
-}
+export type EncryptedJsonPayload = Readonly<Record<string, unknown>> & {
+	readonly v: 1;
+	readonly iv: string;
+	readonly data: string;
+};
 
 export function isEncryptedJsonPayload(value: unknown): value is EncryptedJsonPayload {
 	return (
@@ -33,11 +33,22 @@ async function deriveAesGcmKey(keyMaterial: string): Promise<CryptoKey> {
 export async function encryptJsonPayload(params: {
 	keyMaterial: string;
 	payload: Record<string, unknown>;
+	additionalData?: string;
 }): Promise<EncryptedJsonPayload> {
 	const key = await deriveAesGcmKey(params.keyMaterial);
 	const iv = crypto.getRandomValues(new Uint8Array(12));
 	const plaintext = new TextEncoder().encode(JSON.stringify(params.payload));
-	const encrypted = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, plaintext);
+	const encrypted = await crypto.subtle.encrypt(
+		{
+			name: "AES-GCM",
+			iv,
+			...(params.additionalData
+				? { additionalData: new TextEncoder().encode(params.additionalData) }
+				: {}),
+		},
+		key,
+		plaintext,
+	);
 
 	return {
 		v: 1,
@@ -49,6 +60,7 @@ export async function encryptJsonPayload(params: {
 export async function decryptJsonPayload(params: {
 	keyMaterial: string;
 	encrypted: EncryptedJsonPayload;
+	additionalData?: string;
 	invalidMessage?: string;
 	reconnectMessage?: string;
 }): Promise<Record<string, unknown>> {
@@ -68,14 +80,24 @@ export async function decryptJsonPayload(params: {
 		const key = await deriveAesGcmKey(params.keyMaterial);
 		const iv = new Uint8Array(base64ToBuffer(params.encrypted.iv));
 		const ciphertext = new Uint8Array(base64ToBuffer(params.encrypted.data));
-		const decrypted = await crypto.subtle.decrypt({ name: "AES-GCM", iv }, key, ciphertext);
-		const parsed = JSON.parse(new TextDecoder().decode(decrypted));
+		const decrypted = await crypto.subtle.decrypt(
+			{
+				name: "AES-GCM",
+				iv,
+				...(params.additionalData
+					? { additionalData: new TextEncoder().encode(params.additionalData) }
+					: {}),
+			},
+			key,
+			ciphertext,
+		);
+		const parsed: unknown = JSON.parse(new TextDecoder().decode(decrypted));
 
-		if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+		if (!isPlainObject(parsed)) {
 			throw new AssistantError(reconnectMessage, ErrorType.CONFLICT_ERROR, 409);
 		}
 
-		return parsed as Record<string, unknown>;
+		return parsed;
 	} catch (error) {
 		if (error instanceof AssistantError) {
 			throw error;

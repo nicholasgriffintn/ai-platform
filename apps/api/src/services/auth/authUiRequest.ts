@@ -1,24 +1,40 @@
-import { getStringRecordValue, isRecord } from "~/utils/objects";
+import { AuthProtocolError, parseAuthRequest, type AuthRequest } from "@ngriffin_uk/auth-protocol";
 
-export function requireAuthUiRequest(value: unknown): Record<string, unknown> {
-	if (!isRecord(value)) {
-		throw new Error("The authentication request is invalid.");
+type AssistantAuthAction =
+	| "start_oauth"
+	| "request_magic_link"
+	| "start_passkey"
+	| "start_webauthn_registration"
+	| "continue"
+	| "sign_in_direct";
+
+export type AssistantAuthUiRequest = Extract<AuthRequest, { readonly action: AssistantAuthAction }>;
+
+const ASSISTANT_AUTH_ACTIONS = [
+	"start_oauth",
+	"request_magic_link",
+	"start_passkey",
+	"start_webauthn_registration",
+	"continue",
+	"sign_in_direct",
+] as const satisfies readonly AssistantAuthAction[];
+
+export function parseAssistantAuthUiRequest(value: unknown): AssistantAuthUiRequest {
+	try {
+		const request = parseAuthRequest(value, {
+			allowedActions: ASSISTANT_AUTH_ACTIONS,
+		});
+		switch (request.action) {
+			case "start_oauth":
+			case "request_magic_link":
+			case "start_passkey":
+			case "start_webauthn_registration":
+			case "continue":
+			case "sign_in_direct":
+				return request;
+		}
+	} catch (error) {
+		if (!(error instanceof AuthProtocolError)) throw error;
 	}
-	return value;
-}
-
-export function requireAuthUiValue(value: Record<string, unknown>, name: string): string {
-	return requireAuthUiString(requireAuthUiValues(value), name);
-}
-
-export function requireAuthUiValues(value: Record<string, unknown>): Record<string, unknown> {
-	return requireAuthUiRequest(value.values);
-}
-
-export function requireAuthUiString(value: Record<string, unknown>, name: string): string {
-	const result = getStringRecordValue(value, name);
-	if (!result) {
-		throw new Error(`Authentication value ${name} is required.`);
-	}
-	return result;
+	throw new Error("This authentication action is not supported.");
 }

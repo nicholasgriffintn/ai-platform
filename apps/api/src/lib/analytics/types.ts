@@ -1,5 +1,5 @@
-import type { ExecutionContext } from "@cloudflare/workers-types";
 import type { AnalyticsEvent } from "@assistant/schemas";
+import type { ExecutionContext } from "@cloudflare/workers-types";
 import type { PostHog, PostHogOptions } from "posthog-node";
 
 import type { AnonymousUser, IEnv, IUser, Message } from "~/types";

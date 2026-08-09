@@ -29,12 +29,10 @@ class AgentCompletionRequestPreparer {
 
 		return {
 			...requestBody,
-			messages: requestMessages.map(
-				(message): Message => ({
-					...message,
-					content: message.content ?? "",
-				}),
-			),
+			messages: requestMessages.map((message): Message => ({
+				...message,
+				content: message.content ?? "",
+			})),
 			system_prompt: this.input.systemPrompt,
 			model: this.input.agent.model || this.input.body.model,
 			provider: this.input.agent.model ? this.input.modelProvider : this.input.body.provider,

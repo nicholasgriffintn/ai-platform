@@ -72,14 +72,11 @@ describe("SessionManager", () => {
 			conversationManager: mockConversationManager,
 		});
 
-		const messages = Array.from(
-			{ length: 8 },
-			(_, index): Message => ({
-				id: `msg-${index}`,
-				role: "user",
-				content: "short",
-			}),
-		);
+		const messages = Array.from({ length: 8 }, (_, index): Message => ({
+			id: `msg-${index}`,
+			role: "user",
+			content: "short",
+		}));
 
 		const result = await manager.compact({
 			completionId: "conv-1",
@@ -279,14 +276,11 @@ describe("SessionManager", () => {
 				content: "Conversation snapshot\n\nEarlier context.",
 				parts: [{ type: "snapshot", summary: "Earlier context." }],
 			},
-			...Array.from(
-				{ length: 12 },
-				(_, index): Message => ({
-					id: `msg-${index}`,
-					role: index % 2 === 0 ? "user" : "assistant",
-					content: `message ${index}`,
-				}),
-			),
+			...Array.from({ length: 12 }, (_, index): Message => ({
+				id: `msg-${index}`,
+				role: index % 2 === 0 ? "user" : "assistant",
+				content: `message ${index}`,
+			})),
 		] satisfies Message[];
 
 		const result = await manager.compact({
@@ -310,15 +304,12 @@ describe("SessionManager", () => {
 			conversationManager: mockConversationManager,
 		});
 
-		const messages = Array.from(
-			{ length: 30 },
-			(_, index): Message => ({
-				id: `msg-${index}`,
-				role: index % 2 === 0 ? "user" : "assistant",
-				content: `${"x".repeat(900)}-${index}`,
-				timestamp: 10_000 + index,
-			}),
-		);
+		const messages = Array.from({ length: 30 }, (_, index): Message => ({
+			id: `msg-${index}`,
+			role: index % 2 === 0 ? "user" : "assistant",
+			content: `${"x".repeat(900)}-${index}`,
+			timestamp: 10_000 + index,
+		}));
 
 		const result = await manager.compact({
 			completionId: "conv-order",

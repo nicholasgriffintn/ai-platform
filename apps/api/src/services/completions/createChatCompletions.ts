@@ -1,5 +1,5 @@
-import type { ExecutionContext } from "@cloudflare/workers-types";
 import type { ChatCompletionRequestBody } from "@assistant/schemas";
+import type { ExecutionContext } from "@cloudflare/workers-types";
 import { processChatRequest } from "~/lib/chat/core";
 import { createServiceContext } from "~/lib/context/serviceContext";
 import { buildMessageParts } from "~/lib/chat/messageParts";

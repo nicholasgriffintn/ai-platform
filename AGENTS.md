@@ -38,7 +38,7 @@ Start from the user's global agent contract. These instructions make that contra
 - Use `pnpm --filter <workspace> <script>` from the repo root for app-specific commands.
 - Use root scripts for repo-wide checks only when the wider blast radius is justified. Prefer filtered workspace commands for focused changes.
 - Cloudflare Worker apps live in `apps/api`, `apps/sandbox-worker`, and `apps/training`. Keep request handling, service logic, repository access, and shared utilities separated by the existing folder structure.
-- React apps live in `apps/app` and `apps/metrics`. Keep pages/routes thin and move UI behaviour into components, hooks, state modules, or shared libraries.
+- React apps live in `apps/app`. Keep pages/routes thin and move UI behaviour into components, hooks, state modules, or shared libraries.
 - Preserve existing formatter and linter choices. Most app workspaces use `oxfmt`, `oxlint`, TypeScript, and Vitest.
 - Use Vitest for unit and integration-style tests in apps and packages. Keep tests near the behaviour they cover and use existing workspace `vitest.config.ts` files instead of adding ad hoc config.
 - Use Playwright only for browser end-to-end coverage that genuinely needs a running app. Follow the root `test:e2e` script and do not start dev servers outside the documented test flow unless the task explicitly requires live browser validation.

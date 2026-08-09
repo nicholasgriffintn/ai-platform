@@ -17,11 +17,9 @@ type TestProvider = {
 
 describe("generateWithProviderFallback", () => {
 	it("uses the requested provider when generation succeeds", async () => {
-		const generate = vi.fn(
-			async (_request: TestRequest): Promise<TestResult> => ({
-				url: "primary",
-			}),
-		);
+		const generate = vi.fn(async (_request: TestRequest): Promise<TestResult> => ({
+			url: "primary",
+		}));
 		const getProvider = vi.fn((_providerName: string): TestProvider => ({ generate }));
 
 		await expect(
@@ -41,16 +39,12 @@ describe("generateWithProviderFallback", () => {
 		const primaryGenerate = vi.fn(async (_request: TestRequest): Promise<TestResult> => {
 			throw new Error("primary failed");
 		});
-		const fallbackGenerate = vi.fn(
-			async (_request: TestRequest): Promise<TestResult> => ({
-				url: "fallback",
-			}),
-		);
-		const getProvider = vi.fn(
-			(providerName: string): TestProvider => ({
-				generate: providerName === "workers-ai" ? fallbackGenerate : primaryGenerate,
-			}),
-		);
+		const fallbackGenerate = vi.fn(async (_request: TestRequest): Promise<TestResult> => ({
+			url: "fallback",
+		}));
+		const getProvider = vi.fn((providerName: string): TestProvider => ({
+			generate: providerName === "workers-ai" ? fallbackGenerate : primaryGenerate,
+		}));
 
 		await expect(
 			generateWithProviderFallback<TestRequest, TestProvider>({
@@ -67,13 +61,11 @@ describe("generateWithProviderFallback", () => {
 
 	it("does not fall back when the model explicitly selected the provider", async () => {
 		const error = new Error("model provider failed");
-		const getProvider = vi.fn(
-			(): TestProvider => ({
-				generate: vi.fn(async (_request: TestRequest): Promise<TestResult> => {
-					throw error;
-				}),
+		const getProvider = vi.fn((): TestProvider => ({
+			generate: vi.fn(async (_request: TestRequest): Promise<TestResult> => {
+				throw error;
 			}),
-		);
+		}));
 
 		await expect(
 			generateWithProviderFallback<TestRequest, TestProvider>({
@@ -89,13 +81,11 @@ describe("generateWithProviderFallback", () => {
 
 	it("does not fall back when fallback is disabled", async () => {
 		const error = new Error("primary failed");
-		const getProvider = vi.fn(
-			(): TestProvider => ({
-				generate: vi.fn(async (_request: TestRequest): Promise<TestResult> => {
-					throw error;
-				}),
+		const getProvider = vi.fn((): TestProvider => ({
+			generate: vi.fn(async (_request: TestRequest): Promise<TestResult> => {
+				throw error;
 			}),
-		);
+		}));
 
 		await expect(
 			generateWithProviderFallback<TestRequest, TestProvider>({

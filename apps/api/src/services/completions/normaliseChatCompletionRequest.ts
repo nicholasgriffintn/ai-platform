@@ -33,12 +33,10 @@ function contentFromParts(parts: IncomingMessage["parts"]): string {
 function normaliseMessages(
 	messages: IncomingChatCompletionRequest["messages"],
 ): Message[] | undefined {
-	return messages?.map(
-		(message): Message => ({
-			...message,
-			content: message.content ?? contentFromParts(message.parts),
-		}),
-	);
+	return messages?.map((message): Message => ({
+		...message,
+		content: message.content ?? contentFromParts(message.parts),
+	}));
 }
 
 function normaliseStop(stop: IncomingChatCompletionRequest["stop"]): string[] | undefined {

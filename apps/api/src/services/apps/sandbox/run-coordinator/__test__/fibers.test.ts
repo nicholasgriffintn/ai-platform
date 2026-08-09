@@ -38,6 +38,7 @@ describe("sandbox run coordinator fibers", () => {
 				metadata: { message: dispatchMessage },
 				snapshot: null,
 				createdAt: 1773576000000,
+				recoveryReason: "interrupted",
 			}),
 		).toMatchObject({
 			runId: "run-123",

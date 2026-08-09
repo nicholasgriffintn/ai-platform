@@ -95,7 +95,10 @@ export function LoginModal({ open, onOpenChange, onKeySubmit }: LoginModalProps)
 				field: "flex flex-col gap-2",
 				label: "text-sm font-medium text-zinc-800 dark:text-zinc-200",
 				input:
-					"h-11 rounded-lg border border-zinc-300 bg-white px-3 text-zinc-950 outline-none focus:border-blue-500 dark:border-zinc-700 dark:bg-zinc-950 dark:text-white",
+					"h-11 w-full rounded-lg border border-zinc-300 bg-white pr-3 pl-10 text-zinc-950 outline-none focus:border-blue-500 dark:border-zinc-700 dark:bg-zinc-950 dark:text-white",
+				inputContainer: "relative w-full",
+				inputIcon:
+					"pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-zinc-500 dark:text-zinc-400",
 				error:
 					"rounded-md border border-red-500/40 bg-red-500/10 px-3 py-2 text-sm text-red-700 dark:text-red-300",
 				separator:

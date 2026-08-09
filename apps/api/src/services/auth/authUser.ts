@@ -1,9 +1,9 @@
-import type { AuthUser, UserStore } from "@ngriffin_uk/auth-core";
+import type { AuthUserWithEmail, UserStore } from "@ngriffin_uk/auth-core";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import type { User } from "~/types";
 
-export interface AssistantAuthUser extends AuthUser {
+export interface AssistantAuthUser extends AuthUserWithEmail {
 	readonly record: User;
 	readonly continuation?: Readonly<{ mobileRedirectUri?: string }>;
 }

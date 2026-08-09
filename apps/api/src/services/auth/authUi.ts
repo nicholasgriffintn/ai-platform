@@ -1,16 +1,15 @@
-import type { AuthFlowResult, PublicChallenge } from "@ngriffin_uk/auth-core";
 import { AuthError } from "@ngriffin_uk/auth-core";
+import {
+	requireAuthStringValue,
+	serializeAuthFlowResult,
+	type SerializedAuthFlowResult,
+} from "@ngriffin_uk/auth-protocol";
 import { parseWebAuthnResponse } from "@ngriffin_uk/auth-webauthn";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { getStringRecordValue } from "~/utils/objects";
 import { handleAppleIdentityTokenSignIn } from "~/services/auth/apple";
-import {
-	requireAuthUiRequest,
-	requireAuthUiString,
-	requireAuthUiValue,
-	requireAuthUiValues,
-} from "~/services/auth/authUiRequest";
+import { parseAssistantAuthUiRequest } from "~/services/auth/authUiRequest";
 import { requestAssistantMagicLink } from "~/services/auth/magicLinkRequest";
 import {
 	createAssistantAuth,
@@ -21,38 +20,9 @@ import {
 import { extractSessionIdFromCookies } from "~/services/auth/sessions";
 
 export interface AssistantAuthUiResult {
-	readonly result: AssistantAuthUiClientResult;
+	readonly result: SerializedAuthFlowResult<AssistantAuthUser["record"]>["result"];
 	readonly sessionToken?: string;
 }
-
-interface AuthUiChallenge {
-	readonly kind: PublicChallenge["kind"];
-	readonly continuationToken: string;
-	readonly expiresAt: string;
-	readonly parameters?: PublicChallenge["parameters"];
-}
-
-type AssistantAuthUiClientResult =
-	| {
-			readonly status: "authenticated";
-			readonly user: unknown;
-	  }
-	| {
-			readonly status: Exclude<
-				AuthFlowResult<AssistantAuthUser>["status"],
-				"authenticated" | "redirect_required"
-			>;
-			readonly challenge: AuthUiChallenge;
-	  }
-	| {
-			readonly status: "redirect_required";
-			readonly provider: string;
-			readonly url: string;
-	  }
-	| {
-			readonly status: "completed";
-			readonly message: string;
-	  };
 
 export async function handleAssistantAuthUiRequest({
 	context,
@@ -63,10 +33,10 @@ export async function handleAssistantAuthUiRequest({
 	readonly request: Request;
 	readonly input: unknown;
 }): Promise<AssistantAuthUiResult> {
-	const authRequest = requireAuthUiRequest(input);
+	const authRequest = parseAssistantAuthUiRequest(input);
 
 	if (authRequest.action === "start_oauth") {
-		const provider = requireAuthUiString(authRequest, "provider");
+		const provider = authRequest.provider;
 		if (provider !== "github") {
 			throw new Error("This sign-in provider is not supported.");
 		}
@@ -86,7 +56,7 @@ export async function handleAssistantAuthUiRequest({
 	if (authRequest.action === "request_magic_link") {
 		await requestAssistantMagicLink({
 			context,
-			email: requireAuthUiValue(authRequest, "email"),
+			email: authRequest.values.email,
 		});
 		return {
 			result: {
@@ -114,13 +84,13 @@ export async function handleAssistantAuthUiRequest({
 	}
 
 	if (authRequest.action === "continue") {
-		if (requireAuthUiString(authRequest, "kind") !== "webauthn") {
+		if (authRequest.kind !== "webauthn") {
 			throw new Error("This authentication challenge is not supported.");
 		}
-		const values = requireAuthUiValues(authRequest);
-		const ceremony = requireAuthUiString(values, "ceremony");
-		const credential = requireAuthUiString(values, "credential");
-		const token = requireAuthUiString(authRequest, "continuationToken");
+		const values = authRequest.values;
+		const ceremony = requireAuthStringValue(values, "ceremony");
+		const credential = requireAuthStringValue(values, "credential");
+		const token = authRequest.continuationToken;
 		const auth = createAssistantWebAuthn(context);
 		if (ceremony === "registration") {
 			const user = await requireAuthenticatedUser(context, request);
@@ -144,15 +114,15 @@ export async function handleAssistantAuthUiRequest({
 	}
 
 	if (authRequest.action === "sign_in_direct") {
-		if (requireAuthUiString(authRequest, "provider") !== "apple") {
+		if (authRequest.provider !== "apple") {
 			throw new Error("This direct sign-in provider is not supported.");
 		}
-		const values = requireAuthUiValues(authRequest);
+		const values = authRequest.values;
 		const fullName = getStringRecordValue(values, "fullName");
 		const signedIn = await handleAppleIdentityTokenSignIn({
 			context,
-			identityToken: requireAuthUiString(values, "identityToken"),
-			nonce: requireAuthUiString(values, "nonce"),
+			identityToken: requireAuthStringValue(values, "identityToken"),
+			nonce: requireAuthStringValue(values, "nonce"),
 			...(fullName ? { fullName } : {}),
 		});
 		return {
@@ -176,35 +146,12 @@ async function requireAuthenticatedUser(
 	return session.user;
 }
 
-function toClientResult(result: AuthFlowResult<AssistantAuthUser>): AssistantAuthUiResult {
-	if (result.status === "authenticated") {
-		return {
-			result: { status: "authenticated", user: result.session.user.record },
-			sessionToken: result.session.token,
-		};
-	}
-	if (result.status === "redirect_required") {
-		return {
-			result: {
-				status: result.status,
-				provider: result.provider,
-				url: result.url.toString(),
-			},
-		};
-	}
-	return {
-		result: {
-			status: result.status,
-			challenge: serializeChallenge(result.challenge),
-		},
-	};
-}
-
-function serializeChallenge(challenge: PublicChallenge): AuthUiChallenge {
-	return {
-		kind: challenge.kind,
-		continuationToken: challenge.continuationToken,
-		expiresAt: challenge.expiresAt.toISOString(),
-		...(challenge.parameters ? { parameters: challenge.parameters } : {}),
-	};
+function toClientResult(
+	result: Parameters<
+		typeof serializeAuthFlowResult<AssistantAuthUser, AssistantAuthUser["record"]>
+	>[0],
+): AssistantAuthUiResult {
+	return serializeAuthFlowResult(result, {
+		mapUser: (user) => user.record,
+	});
 }

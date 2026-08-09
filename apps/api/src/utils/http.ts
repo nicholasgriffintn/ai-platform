@@ -1,5 +1,11 @@
 import { safeParseJson } from "./json";
 
+const BEARER_CREDENTIAL = /^Bearer +([A-Za-z0-9._~+/-]+=*)$/i;
+
+export function parseBearerToken(value: string | undefined): string | undefined {
+	return value ? BEARER_CREDENTIAL.exec(value)?.[1] : undefined;
+}
+
 export function headersToRecord(headers: Headers): Record<string, string> {
 	const result: Record<string, string> = {};
 	headers.forEach((value, key) => {

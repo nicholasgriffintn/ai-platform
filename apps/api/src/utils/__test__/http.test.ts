@@ -1,6 +1,20 @@
 import { describe, expect, it } from "vitest";
 
-import { headersToRecord, readHttpResponseBody, setDefaultHeader } from "../http";
+import { headersToRecord, parseBearerToken, readHttpResponseBody, setDefaultHeader } from "../http";
+
+describe("parseBearerToken", () => {
+	it("accepts a single Bearer token", () => {
+		expect(parseBearerToken("Bearer ak_test.123_abc-def")).toBe("ak_test.123_abc-def");
+		expect(parseBearerToken("bearer jwt.payload.signature")).toBe("jwt.payload.signature");
+	});
+
+	it("rejects malformed authorization values", () => {
+		expect(parseBearerToken(undefined)).toBeUndefined();
+		expect(parseBearerToken("Basic credentials")).toBeUndefined();
+		expect(parseBearerToken("prefix Bearer token")).toBeUndefined();
+		expect(parseBearerToken("Bearer token suffix")).toBeUndefined();
+	});
+});
 
 describe("http utilities", () => {
 	it("maps headers to a plain record", () => {

@@ -1,10 +1,26 @@
-import type { ExecutionContext } from "@cloudflare/workers-types";
+import type { ExecutionContext, Span } from "@cloudflare/workers-types";
 import { PostHog } from "posthog-node";
 import { describe, expect, it, vi } from "vitest";
 
 import { buildAiGenerationEvent } from "./ai-observability";
 import { createBackendAnalytics } from "./core";
 import { buildAnalyticsDistinctId } from "./identity";
+
+class TestSpan implements Span {
+	get isTraced(): boolean {
+		return false;
+	}
+
+	setAttribute(): this {
+		return this;
+	}
+
+	setAttributes(): this {
+		return this;
+	}
+
+	end(): void {}
+}
 
 class TestPostHog extends PostHog {
 	constructor(
@@ -131,7 +147,29 @@ describe("backend analytics", () => {
 		const executionCtx = {
 			waitUntil,
 			passThroughOnException: vi.fn(),
-			props: {},
+			exports: {},
+			props: undefined,
+			abort: vi.fn(),
+			tracing: {
+				enterSpan<T, A extends unknown[]>(
+					_name: string,
+					callback: (span: Span, ...args: A) => T,
+					...args: A
+				): T {
+					return callback(new TestSpan(), ...args);
+				},
+				startActiveSpan<T, A extends unknown[]>(
+					_name: string,
+					callback: (span: Span, ...args: A) => T,
+					...args: A
+				): T {
+					return callback(new TestSpan(), ...args);
+				},
+				startSpan(): Span {
+					return new TestSpan();
+				},
+				Span: TestSpan,
+			},
 		} satisfies ExecutionContext;
 		const analytics = createBackendAnalytics({
 			env: {

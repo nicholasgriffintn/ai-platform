@@ -1,25 +1,13 @@
+import { cloudflare } from "@cloudflare/vite-plugin";
 import { reactRouter } from "@react-router/dev/vite";
-import { cloudflareDevProxy } from "@react-router/dev/vite/cloudflare";
+import babel from "@rolldown/plugin-babel";
 import tailwindcss from "@tailwindcss/vite";
+import { reactCompilerPreset } from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
-import babel from "vite-plugin-babel";
 import { visualizer } from "rollup-plugin-visualizer";
 
-const ReactCompilerConfig = {
-	panicThreshold: "none",
-};
-
-export default defineConfig(({ isSsrBuild, command }) => ({
+export default defineConfig(({ command }) => ({
 	build: {
-		rollupOptions: isSsrBuild
-			? {
-					input: "./workers/app.ts",
-				}
-			: {
-					output: {
-						manualChunks: manualVendorChunk,
-					},
-				},
 		chunkSizeWarningLimit: 6500,
 		sourcemap: command === "build" ? false : true,
 		minify: "terser",
@@ -30,25 +18,30 @@ export default defineConfig(({ isSsrBuild, command }) => ({
 			},
 		},
 	},
-	plugins: [
-		cloudflareDevProxy({
-			getLoadContext({ context }) {
-				return { cloudflare: context.cloudflare };
+	environments: {
+		client: {
+			build: {
+				rolldownOptions: {
+					output: {
+						manualChunks: manualVendorChunk,
+					},
+				},
 			},
-		}),
+		},
+		ssr: {
+			build: {
+				rolldownOptions: {
+					input: "./workers/app.ts",
+				},
+			},
+		},
+	},
+	plugins: [
+		cloudflare({ viteEnvironment: { name: "ssr" } }),
 		tailwindcss(),
 		reactRouter(),
 		babel({
-			include: /\.[jt]sx?$/,
-			exclude: /node_modules/,
-			babelConfig: {
-				babelrc: false,
-				configFile: false,
-				parserOpts: {
-					plugins: ["jsx", "typescript"],
-				},
-				plugins: [["babel-plugin-react-compiler", ReactCompilerConfig]],
-			},
+			presets: [reactCompilerPreset({ panicThreshold: "none" })],
 		}),
 		command === "build" &&
 			visualizer({

@@ -45,7 +45,6 @@ This monorepo contains:
 - **[API](./apps/api)** - OpenAI-style API for chat, agents, models, tools, memories, media, realtime sessions, payments, and webhooks
 - **[Web App](./apps/app)** - React-based PWA frontend for chat, shared conversations, generated artefacts, and focused app workflows
 - **[Sandbox Worker](./apps/sandbox-worker)** - Automated coding worker built on Cloudflare Sandboxes
-- **[Metrics Dashboard](./apps/metrics)** - Usage analytics and monitoring
 - **[Training Worker](./apps/training)** - Internal Worker for API-managed model training and deployment jobs
 - **[Mobile App](./apps/mobile/ios)** - iOS application (In Development) ([TestFlight](https://testflight.apple.com/join/52xrwxRP))
 
@@ -200,16 +199,6 @@ To generate a new migration, run:
 ```bash
 pnpm run db:generate
 ```
-
-## Monitoring and Analytics
-
-The metrics application provides dashboards for monitoring:
-
-- API usage and performance
-- Model performance and costs
-- User activity and engagement
-
-Access the metrics dashboard at [metrics.polychat.app](https://metrics.polychat.app).
 
 ## Contributing
 
