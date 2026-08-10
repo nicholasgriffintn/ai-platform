@@ -20,6 +20,7 @@ import type { ComposerCommandAction } from "./composerCommandTypes";
 import { useComposerCommandActions } from "./useComposerCommandActions";
 
 interface ComposerCommandsState {
+	allowedAssistantActionCapabilityIds?: readonly string[];
 	modeCommands: ComposerCommandAction[];
 	activeModeControls?: ReactNode;
 	directive: ComposerDirectiveQuery | null;

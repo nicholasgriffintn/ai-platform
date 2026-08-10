@@ -2,9 +2,9 @@ import { describe, expect, it, vi } from "vitest";
 
 import { DynamicAppResponseRepository } from "../DynamicAppResponseRepository";
 
-function createRepository() {
+function createRepository(firstResult: unknown = null) {
 	const all = vi.fn().mockResolvedValue({ results: [] });
-	const first = vi.fn().mockResolvedValue(null);
+	const first = vi.fn().mockResolvedValue(firstResult);
 	const run = vi.fn().mockResolvedValue({ success: true });
 	const bind = vi.fn().mockReturnValue({ all, first, run });
 	const prepare = vi.fn().mockReturnValue({ bind });
@@ -23,6 +23,15 @@ function createRepository() {
 }
 
 describe("DynamicAppResponseRepository", () => {
+	it("persists project scope with a dynamic app response", async () => {
+		const { bind, prepare, repository } = createRepository({ id: "response-1" });
+
+		await repository.createResponse(42, "research", { result: "done" }, "run-1", "project-1");
+
+		expect(prepare.mock.calls[0][0]).toContain("project_id");
+		expect(bind.mock.calls[0]).toContain("project-1");
+	});
+
 	it("scopes response lookup to the owning user", async () => {
 		const { bind, prepare, repository } = createRepository();
 

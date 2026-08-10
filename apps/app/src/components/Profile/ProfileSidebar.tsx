@@ -70,7 +70,7 @@ export function ProfileSidebar({ activeItemId, onSelectItem }: ProfileSidebarPro
 				{sidebarVisible && (
 					<div className="flex flex-col h-full w-64">
 						<div className="sticky top-0 bg-off-white dark:bg-zinc-900 border-b border-r border-zinc-200 dark:border-zinc-700 z-10 w-full">
-							<SidebarHeader showCloudButton={false} />
+							<SidebarHeader />
 						</div>
 						<nav className="flex-1 overflow-y-auto overflow-x-hidden p-2 pb-[50px]">
 							<ul className="space-y-1">

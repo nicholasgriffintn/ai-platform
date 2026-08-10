@@ -78,6 +78,7 @@ export * from "./model-router-modes";
 export * from "./models";
 export * from "./memories";
 export * from "./plans";
+export * from "./workspaces";
 export * from "./provider-messages";
 export * from "./realtime";
 export * from "./replicate";

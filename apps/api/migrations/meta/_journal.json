@@ -337,6 +337,20 @@
       "when": 1782181439006,
       "tag": "0047_wet_pete_wisdom",
       "breakpoints": true
+    },
+    {
+      "idx": 48,
+      "version": "6",
+      "when": 1786364156641,
+      "tag": "0048_shared_auth_state",
+      "breakpoints": true
+    },
+    {
+      "idx": 49,
+      "version": "6",
+      "when": 1786364191260,
+      "tag": "0049_workspace_projects",
+      "breakpoints": true
     }
   ]
 }

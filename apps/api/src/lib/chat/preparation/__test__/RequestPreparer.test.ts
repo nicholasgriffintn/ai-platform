@@ -10,6 +10,15 @@ import type { ValidationContext } from "../../validation/ValidationPipeline";
 import { RequestPreparer } from "../RequestPreparer";
 
 const mockRepositories = {
+	conversations: {
+		getConversation: vi.fn(),
+	},
+	workspaces: {
+		getProject: vi.fn(),
+		getWorkspace: vi.fn(),
+		getMembership: vi.fn(),
+		listProjectCapabilities: vi.fn(),
+	},
 	userSettings: {
 		getUserSettings: vi.fn(),
 	},
@@ -88,6 +97,8 @@ describe("RequestPreparer", () => {
 		mockConversationManager.addBatch.mockReset();
 		mockConversationManager.get.mockReset();
 		mockConversationManager.replaceMessages.mockReset();
+		mockRepositories.conversations.getConversation.mockReset();
+		mockRepositories.conversations.getConversation.mockResolvedValue(null);
 		mockAugmentPrompt.mockReset();
 		mockGetEmbeddingProvider.mockReset();
 		mockGetEmbeddingProvider.mockReturnValue({} as any);
@@ -198,6 +209,34 @@ describe("RequestPreparer", () => {
 				"search_memories",
 				"store_memory",
 			]);
+		});
+
+		it("loads project instructions and tool selection from the server", async () => {
+			mockRepositories.workspaces.getProject.mockResolvedValue({
+				id: "project-1",
+				workspace_id: "workspace-1",
+				instructions: "Use the shared launch brief.",
+			});
+			mockRepositories.workspaces.getWorkspace.mockResolvedValue({ id: "workspace-1" });
+			mockRepositories.workspaces.getMembership.mockResolvedValue({ role: "member" });
+			mockRepositories.workspaces.listProjectCapabilities.mockResolvedValue([
+				{ kind: "tool", capability_id: "web_search" },
+				{ kind: "recipe", capability_id: "launch-brief" },
+			]);
+
+			const result = await preparer.prepare(
+				{
+					...baseOptions,
+					metadata: { project_id: "project-1" },
+					enabled_tools: ["untrusted_tool"],
+				},
+				baseValidationContext,
+			);
+
+			expect(result.systemPrompt).toContain(
+				"Generated system prompt\n\nProject instructions:\nUse the shared launch brief.",
+			);
+			expect(result.enabledTools).toEqual(["web_search", "search_memories", "store_memory"]);
 		});
 
 		it("should only enable memory search when chat history memories are enabled", async () => {

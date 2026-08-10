@@ -1,8 +1,10 @@
-import { useEffect, useMemo, useState } from "react";
+import { type ReactNode, useEffect, useMemo, useState } from "react";
+import { useLocation } from "react-router";
 
 import { ChatSidebar } from "~/components/ChatSidebar";
 import { PageShell } from "~/components/Core/PageShell";
 import { PageTitle } from "~/components/Core/PageTitle";
+import { ProductModeHeader } from "~/components/Core/ProductModeHeader";
 import { SearchDialog } from "~/components/Search/SearchDialog";
 import {
 	type AssistantActionLaunchState,
@@ -17,21 +19,32 @@ import { ConversationThread, type ConversationThreadModeConfig } from ".";
 interface ConversationPageProps {
 	title: string;
 	modeConfig?: ConversationThreadModeConfig;
+	sidebarContent?: ReactNode;
 }
 
-export function ConversationPage({ title, modeConfig }: ConversationPageProps) {
-	const { initializeStore, showSearch, setShowSearch, setChatInput, startNewConversation } =
-		useChatStore();
+export function ConversationPage({ title, modeConfig, sidebarContent }: ConversationPageProps) {
+	const {
+		clearCurrentConversation,
+		initializeStore,
+		showSearch,
+		setShowSearch,
+		setChatInput,
+		startNewConversation,
+	} = useChatStore();
 	const { setSelectedTools } = useToolsStore();
+	const location = useLocation();
 	const [urlRequestOptions, setUrlRequestOptions] = useState<ChatRequestOptions | undefined>();
 	const [urlState, setUrlState] = useState<AssistantActionLaunchState | null>(null);
 
 	useEffect(() => {
 		const init = async () => {
-			const searchParams = new URLSearchParams(window.location.search);
+			const searchParams = new URLSearchParams(location.search);
 			const completionId = searchParams.get("completion_id");
-			const nextUrlState = parseAssistantActionLaunchState(window.location.search);
+			const nextUrlState = parseAssistantActionLaunchState(location.search);
 
+			if (!completionId) {
+				clearCurrentConversation();
+			}
 			await initializeStore(completionId || undefined);
 
 			if (nextUrlState.autoSubmit) {
@@ -58,7 +71,14 @@ export function ConversationPage({ title, modeConfig }: ConversationPageProps) {
 		};
 
 		init();
-	}, [initializeStore, setChatInput, setSelectedTools, startNewConversation]);
+	}, [
+		clearCurrentConversation,
+		initializeStore,
+		location.search,
+		setChatInput,
+		setSelectedTools,
+		startNewConversation,
+	]);
 
 	const effectiveModeConfig = useMemo<ConversationThreadModeConfig | undefined>(() => {
 		if (!urlRequestOptions) {
@@ -88,19 +108,23 @@ export function ConversationPage({ title, modeConfig }: ConversationPageProps) {
 
 	return (
 		<PageShell
-			sidebarContent={<ChatSidebar />}
+			sidebarContent={sidebarContent ?? <ChatSidebar />}
 			fullBleed={true}
+			displayNavBar={false}
 			headerContent={<PageTitle title={title} className="sr-only" />}
 		>
-			<div className="relative flex h-full min-h-0 flex-1 flex-grow flex-row overflow-hidden">
-				<div className="flex h-full min-h-0 w-full flex-grow flex-col">
-					<div className="relative min-h-0 flex-1 overflow-hidden">
-						<ConversationThread modeConfig={effectiveModeConfig} />
+			<div className="flex h-full min-h-0 flex-col overflow-hidden">
+				<ProductModeHeader />
+				<div className="relative flex min-h-0 flex-1 flex-grow flex-row overflow-hidden">
+					<div className="flex min-h-0 w-full flex-grow flex-col">
+						<div className="relative min-h-0 flex-1 overflow-hidden">
+							<ConversationThread modeConfig={effectiveModeConfig} />
+						</div>
 					</div>
 				</div>
-			</div>
 
-			<SearchDialog isOpen={showSearch} onClose={() => setShowSearch(false)} />
+				<SearchDialog isOpen={showSearch} onClose={() => setShowSearch(false)} />
+			</div>
 		</PageShell>
 	);
 }

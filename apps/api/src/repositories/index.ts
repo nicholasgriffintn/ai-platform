@@ -23,6 +23,7 @@ import { TrainingExampleRepository } from "./TrainingExampleRepository";
 import { UserRepository } from "./UserRepository";
 import { UserSettingsRepository } from "./UserSettingsRepository";
 import { WebAuthnRepository } from "./WebAuthnRepository";
+import { WorkspaceRepository } from "./WorkspaceRepository";
 
 export {
 	AgentRepository,
@@ -48,6 +49,7 @@ export {
 	PlanRepository,
 	SharedAgentRepository,
 	StoredAssetRepository,
+	WorkspaceRepository,
 };
 
 export class RepositoryManager {
@@ -73,6 +75,7 @@ export class RepositoryManager {
 	private taskRepo: TaskRepository;
 	private memorySynthesisRepo: MemorySynthesisRepository;
 	private trainingExampleRepo: TrainingExampleRepository;
+	private workspaceRepo: WorkspaceRepository;
 
 	constructor(env: IEnv) {
 		this.agentRepo = new AgentRepository(env);
@@ -97,6 +100,7 @@ export class RepositoryManager {
 		this.taskRepo = new TaskRepository(env);
 		this.memorySynthesisRepo = new MemorySynthesisRepository(env);
 		this.trainingExampleRepo = new TrainingExampleRepository(env);
+		this.workspaceRepo = new WorkspaceRepository(env);
 	}
 
 	public static getInstance(env: IEnv): RepositoryManager {
@@ -189,5 +193,9 @@ export class RepositoryManager {
 
 	public get trainingExamples(): TrainingExampleRepository {
 		return this.trainingExampleRepo;
+	}
+
+	public get workspaces(): WorkspaceRepository {
+		return this.workspaceRepo;
 	}
 }

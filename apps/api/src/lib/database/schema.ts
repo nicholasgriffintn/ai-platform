@@ -1,6 +1,14 @@
 import type { AuthChallengeKind } from "@ngriffin_uk/auth-protocol";
 import { sql } from "drizzle-orm";
-import { index, integer, primaryKey, real, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import {
+	index,
+	integer,
+	primaryKey,
+	real,
+	sqliteTable,
+	text,
+	uniqueIndex,
+} from "drizzle-orm/sqlite-core";
 
 export const plans = sqliteTable("plans", {
 	id: text().primaryKey(),
@@ -181,6 +189,150 @@ export const embedding = sqliteTable(
 
 export type Embedding = typeof embedding.$inferSelect;
 
+export const workspace = sqliteTable(
+	"workspace",
+	{
+		id: text().primaryKey(),
+		name: text().notNull(),
+		description: text().default("").notNull(),
+		colour: text().default("#E8643C").notNull(),
+		created_by: integer()
+			.notNull()
+			.references(() => user.id),
+		created_at: text()
+			.default(sql`(CURRENT_TIMESTAMP)`)
+			.notNull(),
+		updated_at: text()
+			.default(sql`(CURRENT_TIMESTAMP)`)
+			.$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
+	},
+	(table) => ({
+		createdByIdx: index("workspace_created_by_idx").on(table.created_by),
+	}),
+);
+
+export type Workspace = typeof workspace.$inferSelect;
+
+export const workspaceMember = sqliteTable(
+	"workspace_member",
+	{
+		workspace_id: text()
+			.notNull()
+			.references(() => workspace.id, { onDelete: "cascade" }),
+		user_id: integer()
+			.notNull()
+			.references(() => user.id, { onDelete: "cascade" }),
+		role: text({ enum: ["owner", "admin", "member"] }).notNull(),
+		joined_at: text()
+			.default(sql`(CURRENT_TIMESTAMP)`)
+			.notNull(),
+	},
+	(table) => ({
+		pk: primaryKey({ columns: [table.workspace_id, table.user_id] }),
+		userIdIdx: index("workspace_member_user_id_idx").on(table.user_id),
+	}),
+);
+
+export type WorkspaceMember = typeof workspaceMember.$inferSelect;
+
+export const workspaceInvitation = sqliteTable(
+	"workspace_invitation",
+	{
+		id: text().primaryKey(),
+		workspace_id: text()
+			.notNull()
+			.references(() => workspace.id, { onDelete: "cascade" }),
+		email: text().notNull(),
+		role: text({ enum: ["admin", "member"] }).notNull(),
+		token_hash: text().notNull().unique(),
+		status: text({ enum: ["pending", "accepted", "revoked"] })
+			.default("pending")
+			.notNull(),
+		invited_by: integer()
+			.notNull()
+			.references(() => user.id),
+		accepted_by: integer().references(() => user.id),
+		expires_at: text().notNull(),
+		accepted_at: text(),
+		created_at: text()
+			.default(sql`(CURRENT_TIMESTAMP)`)
+			.notNull(),
+		updated_at: text()
+			.default(sql`(CURRENT_TIMESTAMP)`)
+			.$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
+	},
+	(table) => ({
+		workspaceEmailIdx: uniqueIndex("workspace_invitation_workspace_email_idx").on(
+			table.workspace_id,
+			table.email,
+		),
+		workspaceStatusIdx: index("workspace_invitation_workspace_status_idx").on(
+			table.workspace_id,
+			table.status,
+		),
+	}),
+);
+
+export type WorkspaceInvitation = typeof workspaceInvitation.$inferSelect;
+
+export const project = sqliteTable(
+	"project",
+	{
+		id: text().primaryKey(),
+		workspace_id: text()
+			.notNull()
+			.references(() => workspace.id, { onDelete: "cascade" }),
+		name: text().notNull(),
+		description: text().default("").notNull(),
+		instructions: text().default("").notNull(),
+		colour: text().default("#2563EB").notNull(),
+		created_by: integer()
+			.notNull()
+			.references(() => user.id),
+		archived_at: text(),
+		created_at: text()
+			.default(sql`(CURRENT_TIMESTAMP)`)
+			.notNull(),
+		updated_at: text()
+			.default(sql`(CURRENT_TIMESTAMP)`)
+			.$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
+	},
+	(table) => ({
+		workspaceIdx: index("project_workspace_id_idx").on(table.workspace_id),
+		workspaceNameIdx: uniqueIndex("project_workspace_name_idx").on(table.workspace_id, table.name),
+	}),
+);
+
+export type Project = typeof project.$inferSelect;
+
+export const projectCapability = sqliteTable(
+	"project_capability",
+	{
+		id: text().primaryKey(),
+		project_id: text()
+			.notNull()
+			.references(() => project.id, { onDelete: "cascade" }),
+		kind: text({ enum: ["app", "recipe", "tool"] }).notNull(),
+		capability_id: text().notNull(),
+		configuration: text({ mode: "json" }).$type<Record<string, unknown>>().default({}).notNull(),
+		created_by: integer()
+			.notNull()
+			.references(() => user.id),
+		created_at: text()
+			.default(sql`(CURRENT_TIMESTAMP)`)
+			.notNull(),
+	},
+	(table) => ({
+		projectCapabilityIdx: uniqueIndex("project_capability_project_kind_id_idx").on(
+			table.project_id,
+			table.kind,
+			table.capability_id,
+		),
+	}),
+);
+
+export type ProjectCapability = typeof projectCapability.$inferSelect;
+
 export const conversation = sqliteTable(
 	"conversation",
 	{
@@ -197,6 +349,7 @@ export const conversation = sqliteTable(
 		message_count: integer().default(0),
 		parent_conversation_id: text().references(() => conversation.id),
 		parent_message_id: text(),
+		project_id: text().references(() => project.id, { onDelete: "cascade" }),
 		created_at: text()
 			.default(sql`(CURRENT_TIMESTAMP)`)
 			.notNull(),
@@ -214,6 +367,7 @@ export const conversation = sqliteTable(
 			table.parent_conversation_id,
 		),
 		parentMessageIdIdx: index("conversation_parent_message_id_idx").on(table.parent_message_id),
+		projectIdIdx: index("conversation_project_id_idx").on(table.project_id),
 	}),
 );
 
@@ -464,6 +618,7 @@ export const appData = sqliteTable(
 		app_id: text().notNull(),
 		item_id: text(),
 		item_type: text(),
+		project_id: text().references(() => project.id, { onDelete: "cascade" }),
 		data: text({
 			mode: "json",
 		}),
@@ -480,6 +635,7 @@ export const appData = sqliteTable(
 		appIdIdx: index("app_data_app_id_idx").on(table.app_id),
 		itemIdIdx: index("app_data_item_id_idx").on(table.item_id),
 		itemTypeIdx: index("app_data_item_type_idx").on(table.item_type),
+		projectIdIdx: index("app_data_project_id_idx").on(table.project_id),
 		shareIdIdx: index("app_data_share_id_idx").on(table.share_id),
 		lookupIdx: index("app_data_lookup_idx").on(
 			table.user_id,
@@ -823,6 +979,7 @@ export const tasks = sqliteTable(
 			.default("pending"),
 		priority: integer().default(5),
 		user_id: integer().references(() => user.id),
+		project_id: text().references(() => project.id, { onDelete: "cascade" }),
 		task_data: text(),
 		schedule_type: text({
 			enum: ["immediate", "scheduled", "recurring", "event_triggered"],
@@ -845,6 +1002,7 @@ export const tasks = sqliteTable(
 	},
 	(table) => ({
 		userIdIdx: index("tasks_user_id_idx").on(table.user_id),
+		projectIdIdx: index("tasks_project_id_idx").on(table.project_id),
 		statusIdx: index("tasks_status_idx").on(table.status),
 		taskTypeIdx: index("tasks_task_type_idx").on(table.task_type),
 		scheduledAtIdx: index("tasks_scheduled_at_idx").on(table.scheduled_at),

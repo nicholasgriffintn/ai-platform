@@ -10,6 +10,7 @@ export interface AppData {
 	app_id: string;
 	item_id?: string;
 	item_type?: string;
+	project_id?: string | null;
 	data: string;
 	share_id?: string | null;
 	created_at: string;
@@ -83,6 +84,7 @@ export class AppDataRepository extends BaseRepository {
 		itemId: string,
 		itemType: string,
 		data: Record<string, any>,
+		projectId?: string,
 	): Promise<AppData> {
 		const id = generateId();
 
@@ -94,6 +96,7 @@ export class AppDataRepository extends BaseRepository {
 				app_id: appId,
 				item_id: itemId,
 				item_type: itemType,
+				...(projectId ? { project_id: projectId } : {}),
 				data,
 			},
 			{ jsonFields: ["data"], returning: "*" },

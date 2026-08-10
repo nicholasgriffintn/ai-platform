@@ -150,6 +150,7 @@ export const fetchDynamicAppResponses = async (appId?: string): Promise<AppDataI
 export const executeDynamicApp = async (
 	id: string,
 	formData: Record<string, any>,
+	projectId: string,
 ): Promise<DynamicAppExecutionResult> => {
 	try {
 		let headers = {};
@@ -159,11 +160,14 @@ export const executeDynamicApp = async (
 			console.error("Error executing dynamic app:", error);
 		}
 
-		const response = await fetchApi(`/dynamic-apps/${id}/execute`, {
-			method: "POST",
-			body: formData,
-			headers,
-		});
+		const response = await fetchApi(
+			`/dynamic-apps/${id}/execute?projectId=${encodeURIComponent(projectId)}`,
+			{
+				method: "POST",
+				body: formData,
+				headers,
+			},
+		);
 
 		if (!response.ok) {
 			throw new Error(`Failed to execute dynamic app: ${response.statusText}`);

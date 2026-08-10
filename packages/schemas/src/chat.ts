@@ -168,6 +168,7 @@ export const getChatCompletionResponseSchema = z.object({
 	is_archived: z.boolean(),
 	user_id: z.string().nullable(),
 	share_id: z.string().nullable(),
+	project_id: z.string().nullable().optional(),
 	settings: z.record(z.string(), z.any()).optional(),
 });
 

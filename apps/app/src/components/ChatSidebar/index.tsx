@@ -1,13 +1,10 @@
 import {
-	Cloud,
 	CloudOff,
 	Edit,
 	GitBranch,
 	Image as ImageIcon,
 	Loader2,
 	MessageCircle,
-	PanelLeftClose,
-	PanelLeftOpen,
 	SlidersHorizontal,
 	SquarePen,
 	Trash2,
@@ -38,6 +35,7 @@ import { useChatStore } from "~/state/stores/chatStore";
 import { useUIStore } from "~/state/stores/uiStore";
 import type { Conversation, ConversationArchiveFilter, ConversationSortBy } from "~/types/chat";
 import { SidebarFooter } from "../Sidebar/SidebarFooter";
+import { SidebarHeader } from "../Sidebar/SidebarHeader";
 import { ChatSidebarNotifications } from "./ChatSidebarNotifications";
 
 interface ChatSidebarProps {
@@ -61,7 +59,6 @@ export const ChatSidebar = ({
 		isAuthenticationLoading,
 		isPro,
 		localOnlyMode,
-		setLocalOnlyMode,
 	} = useChatStore();
 
 	const [searchQuery, setSearchQuery] = useState("");
@@ -178,21 +175,6 @@ export const ChatSidebar = ({
 		}
 	};
 
-	const toggleLocalOnlyMode = () => {
-		const newMode = !localOnlyMode;
-		setLocalOnlyMode(newMode);
-		if (window.localStorage) {
-			window.localStorage.setItem("localOnlyMode", String(newMode));
-		}
-
-		trackEvent({
-			name: "toggle_local_only_mode",
-			category: "sidebar",
-			label: "toggle_local_only_mode",
-			value: newMode ? "local-only" : "cloud",
-		});
-	};
-
 	const toggleCanvasMode = () => {
 		onCanvasModeChange?.(!isCanvasMode);
 
@@ -283,41 +265,20 @@ export const ChatSidebar = ({
 	};
 
 	const sidebarHeader = (
-		<div className="h-[44px]">
-			<div className="mx-2 my-2 flex items-center justify-between h-[37px]">
-				<Button
-					type="button"
-					variant="icon"
-					title={sidebarVisible ? "Hide sidebar" : "Show sidebar"}
-					aria-label={sidebarVisible ? "Hide sidebar" : "Show sidebar"}
-					icon={sidebarVisible ? <PanelLeftClose size={20} /> : <PanelLeftOpen size={20} />}
-					onClick={() => setSidebarVisible(!sidebarVisible)}
-				/>
-
-				<div className="flex items-center gap-2">
-					{canvas && onCanvasModeChange && (
-						<Button
-							type="button"
-							variant={isCanvasMode ? "iconActive" : "icon"}
-							title={isCanvasMode ? "Switch to chat" : "Switch to image generation"}
-							aria-label={isCanvasMode ? "Switch to chat" : "Switch to image generation"}
-							icon={isCanvasMode ? <MessageCircle size={20} /> : <ImageIcon size={20} />}
-							onClick={toggleCanvasMode}
-						/>
-					)}
-					{isAuthenticated && (
-						<Button
-							type="button"
-							variant={localOnlyMode ? "iconActive" : "icon"}
-							title={localOnlyMode ? "Switch to cloud mode" : "Switch to local-only mode"}
-							aria-label={localOnlyMode ? "Switch to cloud mode" : "Switch to local-only mode"}
-							icon={localOnlyMode ? <CloudOff size={20} /> : <Cloud size={20} />}
-							onClick={toggleLocalOnlyMode}
-						/>
-					)}
-				</div>
-			</div>
-		</div>
+		<SidebarHeader
+			actions={
+				canvas && onCanvasModeChange ? (
+					<Button
+						type="button"
+						variant={isCanvasMode ? "iconActive" : "icon"}
+						title={isCanvasMode ? "Switch to chat" : "Switch to image generation"}
+						aria-label={isCanvasMode ? "Switch to chat" : "Switch to image generation"}
+						icon={isCanvasMode ? <MessageCircle size={20} /> : <ImageIcon size={20} />}
+						onClick={toggleCanvasMode}
+					/>
+				) : undefined
+			}
+		/>
 	);
 
 	return (
@@ -347,7 +308,7 @@ export const ChatSidebar = ({
 					</div>
 				) : (
 					<div>
-						<div className="p-2">
+						<div className="pb-2 px-2">
 							<Button
 								type="button"
 								variant="primary"

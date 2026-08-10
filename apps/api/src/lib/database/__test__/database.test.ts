@@ -107,6 +107,7 @@ describe("Database", () => {
 				"userRepo",
 				"userSettingsRepo",
 				"webAuthnRepo",
+				"workspaceRepo",
 			]);
 		});
 	});

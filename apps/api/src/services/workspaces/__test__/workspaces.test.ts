@@ -1,0 +1,263 @@
+import { afterEach, describe, expect, it, vi } from "vitest";
+
+import type { ServiceContext } from "~/lib/context/serviceContext";
+import type {
+	ProjectRow,
+	WorkspaceInvitationRow,
+	WorkspaceMemberRow,
+	WorkspaceRow,
+} from "~/repositories/WorkspaceRepository";
+import { sha256Hex } from "~/utils/crypto";
+import { ErrorType } from "~/utils/errors";
+import {
+	acceptWorkspaceInvitation,
+	createProject,
+	getProject,
+	getWorkspace,
+	inviteWorkspaceMember,
+} from "../index";
+
+const NOW = new Date("2026-08-10T12:00:00.000Z");
+const WORKSPACE_ID = "workspace-1";
+const PROJECT_ID = "project-1";
+
+const workspace: WorkspaceRow = {
+	id: WORKSPACE_ID,
+	name: "Product",
+	description: "Product planning",
+	colour: "#E8643C",
+	created_by: 1,
+	created_at: "2026-08-01T09:00:00.000Z",
+	updated_at: null,
+};
+
+const owner: WorkspaceMemberRow = {
+	user_id: 1,
+	name: "Owner",
+	email: "owner@example.com",
+	avatar_url: null,
+	role: "owner",
+	joined_at: "2026-08-01T09:00:00.000Z",
+};
+
+const project: ProjectRow = {
+	id: PROJECT_ID,
+	workspace_id: WORKSPACE_ID,
+	name: "Launch",
+	description: "Launch planning",
+	instructions: "Keep decisions concise.",
+	colour: "#2563EB",
+	created_by: 1,
+	archived_at: null,
+	created_at: "2026-08-02T09:00:00.000Z",
+	updated_at: null,
+	conversation_count: 0,
+	capability_count: 0,
+};
+
+function createHarness(params?: {
+	user?: { id: number; email: string };
+	role?: "owner" | "admin" | "member" | null;
+}) {
+	const user = params?.user ?? { id: 1, email: "owner@example.com" };
+	const role = params?.role === undefined ? "owner" : params.role;
+	const repositories = {
+		getWorkspace: vi.fn().mockResolvedValue(workspace),
+		getMembership: vi.fn().mockResolvedValue(role ? { role } : null),
+		listProjects: vi.fn().mockResolvedValue([]),
+		listMembers: vi.fn().mockResolvedValue([owner]),
+		listInvitations: vi.fn().mockResolvedValue([]),
+		upsertInvitation: vi.fn(),
+		getInvitationByTokenHash: vi.fn(),
+		acceptInvitation: vi.fn().mockResolvedValue(undefined),
+		createProject: vi.fn().mockResolvedValue(undefined),
+		getProject: vi.fn().mockResolvedValue(project),
+		listProjectCapabilities: vi.fn().mockResolvedValue([]),
+		listProjectConversations: vi.fn().mockResolvedValue([]),
+	};
+	const context = {
+		env: { APP_BASE_URL: "https://work.polychat.test/" },
+		requireUser: vi.fn().mockReturnValue(user),
+		repositories: { workspaces: repositories },
+	} as unknown as ServiceContext;
+
+	return { context, repositories };
+}
+
+function invitation(overrides: Partial<WorkspaceInvitationRow> = {}): WorkspaceInvitationRow {
+	return {
+		id: "invitation-1",
+		workspace_id: WORKSPACE_ID,
+		email: "invitee@example.com",
+		role: "member",
+		token_hash: "stored-hash",
+		status: "pending",
+		invited_by: 1,
+		accepted_by: null,
+		expires_at: "2026-08-17T12:00:00.000Z",
+		accepted_at: null,
+		created_at: "2026-08-10T12:00:00.000Z",
+		updated_at: null,
+		...overrides,
+	};
+}
+
+afterEach(() => {
+	vi.useRealTimers();
+});
+
+describe("workspace invitation lifecycle", () => {
+	it("stores only a hash of the invitation token and returns the raw token in the invite URL", async () => {
+		vi.useFakeTimers();
+		vi.setSystemTime(NOW);
+		const { context, repositories } = createHarness();
+		repositories.upsertInvitation.mockImplementation(async (input) =>
+			invitation({
+				id: input.id,
+				email: input.email,
+				role: input.role,
+				token_hash: input.tokenHash,
+				expires_at: input.expiresAt,
+			}),
+		);
+
+		const result = await inviteWorkspaceMember(context, WORKSPACE_ID, {
+			email: "invitee@example.com",
+			role: "member",
+		});
+
+		const inviteUrl = new URL(result.inviteUrl);
+		const rawToken = inviteUrl.searchParams.get("token");
+		const persisted = repositories.upsertInvitation.mock.calls[0][0];
+
+		expect(inviteUrl.origin).toBe("https://work.polychat.test");
+		if (!rawToken) throw new Error("Invite URL did not contain a token");
+		expect(rawToken).toHaveLength(64);
+		expect(persisted.tokenHash).toBe(await sha256Hex(rawToken));
+		expect(persisted.tokenHash).not.toBe(rawToken);
+		expect(persisted.expiresAt).toBe("2026-08-17T12:00:00.000Z");
+		expect(result.invitation).not.toHaveProperty("token_hash");
+	});
+
+	it("binds acceptance to the invited email address", async () => {
+		vi.useFakeTimers();
+		vi.setSystemTime(NOW);
+		const { context, repositories } = createHarness({
+			user: { id: 2, email: "different@example.com" },
+		});
+		repositories.getInvitationByTokenHash.mockResolvedValue(invitation());
+
+		await expect(acceptWorkspaceInvitation(context, "a".repeat(64))).rejects.toMatchObject({
+			type: ErrorType.FORBIDDEN,
+			statusCode: 403,
+			message: "Sign in with the email address that received this invitation",
+		});
+		expect(repositories.acceptInvitation).not.toHaveBeenCalled();
+	});
+
+	it("rejects expired invitations without creating a membership", async () => {
+		vi.useFakeTimers();
+		vi.setSystemTime(NOW);
+		const { context, repositories } = createHarness({
+			user: { id: 2, email: "invitee@example.com" },
+		});
+		repositories.getInvitationByTokenHash.mockResolvedValue(
+			invitation({ expires_at: "2026-08-10T11:59:59.999Z" }),
+		);
+
+		await expect(acceptWorkspaceInvitation(context, "a".repeat(64))).rejects.toMatchObject({
+			message: "Invitation has expired",
+			statusCode: 410,
+		});
+		expect(repositories.acceptInvitation).not.toHaveBeenCalled();
+	});
+
+	it("accepts a valid invitation once and rejects replay with the same token", async () => {
+		vi.useFakeTimers();
+		vi.setSystemTime(NOW);
+		const { context, repositories } = createHarness({
+			user: { id: 2, email: " INVITEE@example.com " },
+			role: "member",
+		});
+		let storedInvitation = invitation();
+		repositories.getInvitationByTokenHash.mockImplementation(async () => storedInvitation);
+		repositories.acceptInvitation.mockImplementation(async () => {
+			storedInvitation = invitation({ status: "accepted", token_hash: "consumed:invitation-1" });
+		});
+
+		const result = await acceptWorkspaceInvitation(context, "a".repeat(64));
+
+		expect(repositories.acceptInvitation).toHaveBeenCalledWith(
+			expect.objectContaining({
+				id: "invitation-1",
+				status: "pending",
+			}),
+			2,
+		);
+		expect(result).toMatchObject({ id: WORKSPACE_ID, role: "member", invitations: [] });
+		await expect(acceptWorkspaceInvitation(context, "a".repeat(64))).rejects.toMatchObject({
+			type: ErrorType.NOT_FOUND,
+			statusCode: 404,
+		});
+		expect(repositories.acceptInvitation).toHaveBeenCalledTimes(1);
+	});
+
+	it("prevents administrators from escalating invitations to the admin role", async () => {
+		const { context, repositories } = createHarness({ role: "admin" });
+
+		await expect(
+			inviteWorkspaceMember(context, WORKSPACE_ID, {
+				email: "invitee@example.com",
+				role: "admin",
+			}),
+		).rejects.toMatchObject({ type: ErrorType.FORBIDDEN, statusCode: 403 });
+		expect(repositories.upsertInvitation).not.toHaveBeenCalled();
+	});
+});
+
+describe("workspace and project isolation", () => {
+	it("does not disclose pending invitations to ordinary workspace members", async () => {
+		const { context, repositories } = createHarness({
+			user: { id: 3, email: "member@example.com" },
+			role: "member",
+		});
+
+		const result = await getWorkspace(context, WORKSPACE_ID);
+
+		expect(result.role).toBe("member");
+		expect(result.invitations).toEqual([]);
+		expect(repositories.listInvitations).not.toHaveBeenCalled();
+	});
+
+	it("prevents ordinary members from creating projects", async () => {
+		const { context, repositories } = createHarness({
+			user: { id: 3, email: "member@example.com" },
+			role: "member",
+		});
+
+		await expect(
+			createProject(context, WORKSPACE_ID, {
+				name: "Restricted project",
+				description: "",
+				instructions: "",
+				colour: "#2563EB",
+			}),
+		).rejects.toMatchObject({ type: ErrorType.FORBIDDEN, statusCode: 403 });
+		expect(repositories.createProject).not.toHaveBeenCalled();
+	});
+
+	it("does not load project contents when the user is outside its workspace", async () => {
+		const { context, repositories } = createHarness({
+			user: { id: 4, email: "outsider@example.com" },
+			role: null,
+		});
+
+		await expect(getProject(context, PROJECT_ID)).rejects.toMatchObject({
+			type: ErrorType.NOT_FOUND,
+			statusCode: 404,
+		});
+		expect(repositories.getMembership).toHaveBeenCalledWith(WORKSPACE_ID, 4);
+		expect(repositories.listProjectCapabilities).not.toHaveBeenCalled();
+		expect(repositories.listProjectConversations).not.toHaveBeenCalled();
+	});
+});

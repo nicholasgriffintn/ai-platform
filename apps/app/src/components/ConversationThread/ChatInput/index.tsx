@@ -75,6 +75,7 @@ interface ChatInputProps {
 	disableAttachments?: boolean;
 	hideDefaultControls?: boolean;
 	hideComposerActionMenu?: boolean;
+	allowedAssistantActionCapabilityIds?: readonly string[];
 	hideSubmitButton?: boolean;
 	hideTextInput?: boolean;
 	hideInlineResponseControls?: boolean;
@@ -107,6 +108,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 			disableAttachments = false,
 			hideDefaultControls = false,
 			hideComposerActionMenu = false,
+			allowedAssistantActionCapabilityIds,
 			hideSubmitButton = false,
 			hideTextInput = false,
 			hideInlineResponseControls = false,
@@ -163,6 +165,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 			setTextareaCursorPosition,
 		} = useComposerCommandController({
 			isLoading,
+			allowedAssistantActionCapabilityIds,
 			modeControls: {
 				...modeControls,
 				includeSettingCommands: modeControls?.includeSettingCommands ?? !hideChatSettings,

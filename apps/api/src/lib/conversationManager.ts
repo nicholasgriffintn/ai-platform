@@ -242,6 +242,20 @@ export class ConversationManager {
 
 		if (!conversation) {
 			const { parentConversationId, parentMessageId } = this.getBranchParentIds(options);
+			const projectId = options?.metadata?.project_id;
+			if (projectId) {
+				const project = await this.repositories?.workspaces.getProject(projectId);
+				const membership = project
+					? await this.repositories?.workspaces.getMembership(project.workspace_id, this.user.id)
+					: null;
+				if (!project || !membership) {
+					throw new AssistantError(
+						"You don't have access to this project",
+						ErrorType.FORBIDDEN,
+						403,
+					);
+				}
+			}
 
 			return await this.database.repositories.conversations.createConversation(
 				conversation_id,
@@ -250,11 +264,12 @@ export class ConversationManager {
 				{
 					parent_conversation_id: parentConversationId,
 					parent_message_id: parentMessageId,
+					project_id: projectId,
 				},
 			);
 		}
 
-		if (conversation.user_id !== this.user.id) {
+		if (!(await this.canAccessConversation(conversation))) {
 			throw new AssistantError(
 				"You don't have permission to update this conversation",
 				ErrorType.FORBIDDEN,
@@ -262,6 +277,18 @@ export class ConversationManager {
 		}
 
 		return conversation;
+	}
+
+	private async canAccessConversation(conversation: Record<string, unknown>): Promise<boolean> {
+		if (!this.user?.id) return false;
+		if (conversation.user_id === this.user.id) return true;
+		if (!conversation.project_id) return false;
+		return (
+			(await this.repositories?.workspaces.canAccessConversation(
+				String(conversation.id),
+				this.user.id,
+			)) ?? false
+		);
 	}
 
 	private async enqueueAsyncInvocationTasks(
@@ -501,7 +528,7 @@ export class ConversationManager {
 			throw new AssistantError("Conversation not found", ErrorType.NOT_FOUND);
 		}
 
-		if (conversation.user_id !== this.user?.id) {
+		if (!(await this.canAccessConversation(conversation))) {
 			throw new AssistantError(
 				"You don't have permission to update this conversation",
 				ErrorType.FORBIDDEN,
@@ -568,7 +595,7 @@ export class ConversationManager {
 			throw new AssistantError("Conversation not found", ErrorType.NOT_FOUND);
 		}
 
-		if (conversation.user_id !== this.user?.id) {
+		if (!(await this.canAccessConversation(conversation))) {
 			throw new AssistantError(
 				"You don't have permission to access this conversation",
 				ErrorType.FORBIDDEN,
@@ -610,7 +637,7 @@ export class ConversationManager {
 			throw new AssistantError("Conversation not found", ErrorType.NOT_FOUND);
 		}
 
-		if (conversation.user_id !== this.user?.id) {
+		if (!(await this.canAccessConversation(conversation))) {
 			throw new AssistantError(
 				"You don't have permission to access this conversation",
 				ErrorType.FORBIDDEN,
@@ -661,7 +688,7 @@ export class ConversationManager {
 			throw new AssistantError("Conversation not found", ErrorType.NOT_FOUND);
 		}
 
-		if (conversation.user_id !== this.user?.id) {
+		if (!(await this.canAccessConversation(conversation))) {
 			throw new AssistantError(
 				"You don't have permission to archive messages in this conversation",
 				ErrorType.FORBIDDEN,
@@ -690,7 +717,7 @@ export class ConversationManager {
 			throw new AssistantError("Conversation not found", ErrorType.NOT_FOUND);
 		}
 
-		if (conversation.user_id !== this.user?.id) {
+		if (!(await this.canAccessConversation(conversation))) {
 			throw new AssistantError(
 				"You don't have permission to delete messages in this conversation",
 				ErrorType.FORBIDDEN,
@@ -784,7 +811,7 @@ export class ConversationManager {
 			throw new AssistantError("Conversation not found", ErrorType.NOT_FOUND);
 		}
 
-		if (conversation.user_id !== this.user?.id) {
+		if (!(await this.canAccessConversation(conversation))) {
 			throw new AssistantError(
 				"You don't have permission to access this conversation",
 				ErrorType.FORBIDDEN,
@@ -840,7 +867,7 @@ export class ConversationManager {
 			throw new AssistantError("Conversation not found", ErrorType.NOT_FOUND);
 		}
 
-		if (conversation.user_id !== this.user?.id) {
+		if (!(await this.canAccessConversation(conversation))) {
 			throw new AssistantError(
 				"You don't have permission to update this conversation",
 				ErrorType.FORBIDDEN,
@@ -883,7 +910,12 @@ export class ConversationManager {
 			throw new AssistantError("Message not found", ErrorType.NOT_FOUND);
 		}
 
-		if (result.user_id !== this.user?.id) {
+		if (
+			!(await this.repositories?.workspaces.canAccessConversation(
+				result.conversation_id,
+				this.user.id,
+			))
+		) {
 			throw new AssistantError(
 				"You don't have permission to access this message",
 				ErrorType.FORBIDDEN,
@@ -1001,7 +1033,7 @@ export class ConversationManager {
 			throw new AssistantError("Conversation not found", ErrorType.NOT_FOUND);
 		}
 
-		if (conversation.user_id !== this.user?.id) {
+		if (!(await this.canAccessConversation(conversation))) {
 			throw new AssistantError(
 				"You don't have permission to share this conversation",
 				ErrorType.FORBIDDEN,
@@ -1044,7 +1076,7 @@ export class ConversationManager {
 			throw new AssistantError("Conversation not found", ErrorType.NOT_FOUND);
 		}
 
-		if (conversation.user_id !== this.user?.id) {
+		if (!(await this.canAccessConversation(conversation))) {
 			throw new AssistantError(
 				"You don't have permission to unshare this conversation",
 				ErrorType.FORBIDDEN,

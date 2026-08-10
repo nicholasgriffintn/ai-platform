@@ -16,7 +16,7 @@ import {
 import { addRoute } from "~/lib/http/routeBuilder";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import {
-	executeDynamicApp,
+	executeProjectDynamicApp,
 	getDynamicAppById,
 	getDynamicAppCatalog,
 	getDynamicAppResponseById,
@@ -32,6 +32,7 @@ const routeLogger = createRouteLogger("dynamic-apps");
 const dynamicAppParamsSchema = z.object({ id: z.string().min(1) });
 const dynamicAppResponseParamsSchema = z.object({ responseId: z.string().min(1) });
 const dynamicAppExecutionBodySchema = z.record(z.string(), z.any());
+const dynamicAppExecutionQuerySchema = z.object({ projectId: z.string().min(1) });
 
 dynamicApps.use("*", (c, next) => {
 	routeLogger.info(`Processing dynamic-apps route: ${c.req.path}`);
@@ -103,8 +104,9 @@ addRoute(dynamicApps, "post", "/:id/execute", {
 	tags: ["dynamic-apps"],
 	summary: "Execute dynamic app",
 	description: "Executes a dynamic app with the provided form data",
-	auth: "user-or-anonymous",
+	auth: true,
 	paramSchema: dynamicAppParamsSchema,
+	querySchema: dynamicAppExecutionQuerySchema,
 	bodySchema: dynamicAppExecutionBodySchema,
 	responses: {
 		200: {
@@ -119,7 +121,7 @@ addRoute(dynamicApps, "post", "/:id/execute", {
 		404: { description: "App not found", schema: dynamicAppErrorResponseSchema },
 		500: { description: "Server error", schema: dynamicAppErrorResponseSchema },
 	},
-	handler: async ({ anonymousUser, body, params, raw, serviceContext, user }) => {
+	handler: async ({ body, params, query, raw, serviceContext, user }) => {
 		const requestUrl = new URL(raw.req.url);
 		const req: IRequest = {
 			app_url: `${requestUrl.protocol}//${requestUrl.host}`,
@@ -131,11 +133,10 @@ addRoute(dynamicApps, "post", "/:id/execute", {
 				platform: "dynamic-apps",
 			},
 			user,
-			anonymousUser,
 			context: serviceContext,
 		};
 
-		return executeDynamicApp(params.id, body, req);
+		return executeProjectDynamicApp(params.id, body, req, query.projectId);
 	},
 });
 

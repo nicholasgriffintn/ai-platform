@@ -30,6 +30,10 @@ import { getLogger } from "~/utils/logger";
 import { getAllAttachments, pruneMessagesToFitContext, sanitiseInput } from "../utils";
 import type { ValidationContext } from "../validation/ValidationPipeline";
 import { memoizeRequest } from "~/utils/requestCache";
+import {
+	resolveProjectChatContext,
+	type ProjectChatContext,
+} from "~/services/workspaces/chatContext";
 
 const logger = getLogger({ prefix: "lib/chat/preparation/RequestPreparer" });
 
@@ -118,6 +122,9 @@ export class RequestPreparer {
 		const requestCache = options.context?.requestCache;
 		const database = options.context?.database ?? new Database(this.env);
 		const repositories = options.context?.repositories ?? database.repositories;
+		const projectContext = options.context
+			? await resolveProjectChatContext(options.context, options)
+			: null;
 
 		const isProUser = user?.plan_id === "pro";
 
@@ -180,6 +187,7 @@ export class RequestPreparer {
 			primaryModel,
 			userSettings,
 			memoriesEnabled,
+			projectContext,
 		);
 
 		if (storeMessagesTask) {
@@ -210,7 +218,7 @@ export class RequestPreparer {
 			currentMode: mode,
 			isProUser,
 			enabledTools: mergeEnabledMemoryToolNames({
-				enabledTools: options.enabled_tools,
+				enabledTools: projectContext?.enabledTools ?? options.enabled_tools,
 				user,
 				userSettings,
 				store: options.store,
@@ -424,6 +432,7 @@ export class RequestPreparer {
 		primaryModel: string,
 		userSettings: any,
 		memoriesEnabled: boolean,
+		projectContext: ProjectChatContext | null,
 	): Promise<string> {
 		const {
 			system_prompt,
@@ -443,7 +452,7 @@ export class RequestPreparer {
 		}
 
 		if (system_prompt) {
-			return this.enhanceSystemPromptWithMemory(
+			const prompt = await this.enhanceSystemPromptWithMemory(
 				system_prompt,
 				finalMessage,
 				user,
@@ -451,12 +460,13 @@ export class RequestPreparer {
 				userSettings,
 				options.context,
 			);
+			return this.appendProjectInstructions(prompt, projectContext);
 		}
 
 		const systemPromptFromMessages = sanitizedMessages.find((message) => message.role === "system");
 
 		if (systemPromptFromMessages?.content && typeof systemPromptFromMessages.content === "string") {
-			return this.enhanceSystemPromptWithMemory(
+			const prompt = await this.enhanceSystemPromptWithMemory(
 				systemPromptFromMessages.content,
 				finalMessage,
 				user,
@@ -464,6 +474,7 @@ export class RequestPreparer {
 				userSettings,
 				options.context,
 			);
+			return this.appendProjectInstructions(prompt, projectContext);
 		}
 
 		const generatedPrompt = await getSystemPrompt(
@@ -485,7 +496,7 @@ export class RequestPreparer {
 			userSettings,
 		);
 
-		return this.enhanceSystemPromptWithMemory(
+		const prompt = await this.enhanceSystemPromptWithMemory(
 			generatedPrompt,
 			finalMessage,
 			user,
@@ -493,6 +504,17 @@ export class RequestPreparer {
 			userSettings,
 			options.context,
 		);
+		return this.appendProjectInstructions(prompt, projectContext);
+	}
+
+	private appendProjectInstructions(
+		systemPrompt: string,
+		projectContext: ProjectChatContext | null,
+	): string {
+		if (!projectContext?.instructions) return systemPrompt;
+
+		const projectInstructions = `Project instructions:\n${projectContext.instructions}`;
+		return systemPrompt ? `${systemPrompt}\n\n${projectInstructions}` : projectInstructions;
 	}
 
 	private async enhanceSystemPromptWithMemory(

@@ -17,6 +17,7 @@ export class DynamicAppResponseRepository {
 		appId: string,
 		payload: Record<string, any>,
 		itemId?: string,
+		projectId?: string,
 	): Promise<AppData> {
 		return this.repo.createAppDataWithItem(
 			userId,
@@ -24,6 +25,7 @@ export class DynamicAppResponseRepository {
 			itemId ?? generateId(),
 			DYNAMIC_APP_RESPONSE_ITEM_TYPE,
 			payload,
+			projectId,
 		);
 	}
 

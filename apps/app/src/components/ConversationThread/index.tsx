@@ -66,6 +66,7 @@ export interface ConversationThreadModeConfig {
 	onModelChange?: ModelSelectionChangeHandler;
 	hideDefaultControls?: boolean;
 	hideComposerActionMenu?: boolean;
+	allowedAssistantActionCapabilityIds?: readonly string[];
 	hideSubmitButton?: boolean;
 	hideTextInput?: boolean;
 	hideInlineResponseControls?: boolean;
@@ -506,6 +507,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
 						onModelChange={modeConfig?.onModelChange}
 						hideDefaultControls={modeConfig?.hideDefaultControls}
 						hideComposerActionMenu={modeConfig?.hideComposerActionMenu}
+						allowedAssistantActionCapabilityIds={modeConfig?.allowedAssistantActionCapabilityIds}
 						hideSubmitButton={modeConfig?.hideSubmitButton}
 						hideTextInput={modeConfig?.hideTextInput}
 						hideInlineResponseControls={modeConfig?.hideInlineResponseControls}

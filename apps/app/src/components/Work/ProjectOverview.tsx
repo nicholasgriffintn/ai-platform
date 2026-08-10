@@ -1,0 +1,136 @@
+import { ArrowRight, MessageSquareText, Settings2, SquarePen } from "lucide-react";
+import { Link } from "react-router";
+
+import { EmptyState } from "~/components/Core/EmptyState";
+import { PageHeader } from "~/components/Core/PageHeader";
+import { PageTitle } from "~/components/Core/PageTitle";
+import { Button, Card } from "~/components/ui";
+import { useProject, useWorkspace } from "~/hooks/useWorkspaces";
+import { ProjectBriefCard } from "./ProjectBriefCard";
+import { ProjectOverviewSkeleton } from "./WorkLoadingSkeletons";
+import { WorkPageShell } from "./WorkPageShell";
+
+export function ProjectOverview({
+	workspaceId,
+	projectId,
+}: {
+	workspaceId: string;
+	projectId: string;
+}) {
+	const { data: project, isLoading, error } = useProject(projectId);
+	const { data: workspace } = useWorkspace(workspaceId);
+	if (isLoading)
+		return (
+			<WorkPageShell workspaceId={workspaceId} projectId={projectId}>
+				<ProjectOverviewSkeleton />
+			</WorkPageShell>
+		);
+	if (error || !project)
+		return (
+			<WorkPageShell workspaceId={workspaceId} projectId={projectId}>
+				<div className="p-10 text-sm text-red-700">{error?.message ?? "Project not found"}</div>
+			</WorkPageShell>
+		);
+	const canManage = workspace?.role === "owner" || workspace?.role === "admin";
+
+	return (
+		<WorkPageShell workspaceId={workspaceId} projectId={projectId}>
+			<main className="container mx-auto max-w-6xl px-4 py-8">
+				<PageHeader>
+					<div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+						<div>
+							<PageTitle title={project.name} />
+							<p className="mt-1 max-w-2xl text-sm text-zinc-500 dark:text-zinc-400">
+								{project.description || "No project description"}
+							</p>
+						</div>
+						<div className="flex shrink-0 gap-2">
+							<Link to={`/work/${workspaceId}/projects/${projectId}/library`}>
+								<Button variant="outline" icon={<Settings2 size={16} />}>
+									Capabilities
+								</Button>
+							</Link>
+							<Link to={`/work/${workspaceId}/projects/${projectId}/chat`}>
+								<Button variant="primary" icon={<SquarePen size={16} />}>
+									New conversation
+								</Button>
+							</Link>
+						</div>
+					</div>
+				</PageHeader>
+
+				<div className="grid gap-5 lg:grid-cols-[1.45fr_0.75fr]">
+					<section>
+						<div className="mb-3 flex items-center justify-between">
+							<h2 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">
+								Recent conversations
+							</h2>
+							<span className="text-xs text-zinc-400">
+								{project.conversationCount} conversations
+							</span>
+						</div>
+						{project.conversations.length === 0 ? (
+							<EmptyState
+								icon={<MessageSquareText className="text-zinc-400" size={24} />}
+								title="No conversations yet"
+								message="Start a project conversation to use its instructions and capabilities."
+								action={
+									<Link to={`/work/${workspaceId}/projects/${projectId}/chat`}>
+										<Button variant="primary">New conversation</Button>
+									</Link>
+								}
+								className="min-h-[220px]"
+							/>
+						) : (
+							<div className="space-y-2">
+								{project.conversations.map((conversation) => (
+									<Link
+										key={conversation.id}
+										to={`/work/${workspaceId}/projects/${projectId}/chat?completion_id=${conversation.id}`}
+										className="group block no-underline"
+									>
+										<Card className="flex-row items-center gap-4 p-4 py-4 shadow-none group-hover:border-zinc-400 dark:group-hover:border-zinc-600">
+											<MessageSquareText size={18} className="text-zinc-400" />
+											<div className="min-w-0 flex-1">
+												<p className="truncate text-sm font-medium text-zinc-950 dark:text-white">
+													{conversation.title || "New project conversation"}
+												</p>
+												<p className="text-xs text-zinc-500">
+													{conversation.createdBy.name || "Workspace member"} ·{" "}
+													{conversation.messageCount} messages
+												</p>
+											</div>
+											<ArrowRight size={16} className="text-zinc-400" />
+										</Card>
+									</Link>
+								))}
+							</div>
+						)}
+					</section>
+					<aside className="space-y-4">
+						<ProjectBriefCard
+							canManage={canManage}
+							instructions={project.instructions}
+							projectId={projectId}
+						/>
+						<Card className="p-6 shadow-none">
+							<Settings2 size={20} className="text-zinc-500" />
+							<h2 className="text-sm font-semibold">Project capabilities</h2>
+							<p className="text-sm text-zinc-500">{project.capabilityCount} enabled</p>
+							<div className="flex flex-wrap gap-2">
+								{project.capabilities.map((capability) => (
+									<span
+										key={capability.id}
+										className="rounded-full border border-zinc-200 px-2.5 py-1 text-xs dark:border-zinc-700"
+									>
+										{capability.capabilityId}
+									</span>
+								))}
+							</div>
+						</Card>
+					</aside>
+				</div>
+			</main>
+		</WorkPageShell>
+	);
+}

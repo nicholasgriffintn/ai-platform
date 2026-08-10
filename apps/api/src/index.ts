@@ -15,7 +15,6 @@ import {
 	PROD_HOST,
 	METRICS_LOCAL_HOST,
 	METRICS_PROD_HOST,
-	ROUTES,
 } from "./constants/app";
 import { authMiddleware } from "./middleware/auth";
 import { loggerMiddleware } from "./middleware/loggerMiddleware";
@@ -41,6 +40,9 @@ import user from "./routes/user";
 import memories from "./routes/memories";
 import webhook from "./routes/webhooks";
 import training from "./routes/training";
+import projects from "./routes/projects";
+import workspaceInvitations from "./routes/workspace-invitations";
+import workspaces from "./routes/workspaces";
 import { serviceContextMiddleware } from "./lib/context/serviceContext";
 import { ResponseFactory } from "./lib/http/ResponseFactory";
 import { addRoute } from "./lib/http/routeBuilder";
@@ -103,7 +105,7 @@ app.use(
 );
 
 app.use("*", (c, next) => {
-	if (c.req.path.startsWith(ROUTES.WEBHOOKS)) {
+	if (c.req.path.startsWith("/webhooks")) {
 		return next();
 	}
 
@@ -307,25 +309,28 @@ addRoute(app, "get", "/metrics", {
 		})(raw),
 });
 
-app.route(ROUTES.AUTH, auth);
-app.route(ROUTES.CHAT, chat);
-app.route(ROUTES.APPS, apps);
-app.route(ROUTES.ASSETS, assets);
-app.route(ROUTES.MODELS, models);
-app.route(ROUTES.TASKS, tasks);
-app.route(ROUTES.TOOLS, tools);
-app.route(ROUTES.AUDIO, audio);
-app.route(ROUTES.DYNAMIC_APPS, dynamicApps);
-app.route(ROUTES.UPLOADS, uploads);
-app.route(ROUTES.USER, user);
-app.route(ROUTES.PLANS, plans);
-app.route(ROUTES.STRIPE, stripe);
-app.route(ROUTES.REALTIME, realtime);
-app.route(ROUTES.AGENTS, agents);
-app.route(ROUTES.ADMIN, admin);
-app.route(ROUTES.MEMORIES, memories);
-app.route(ROUTES.WEBHOOKS, webhook);
-app.route(ROUTES.TRAINING, training);
+app.route("/auth", auth);
+app.route("/chat", chat);
+app.route("/apps", apps);
+app.route("/assets", assets);
+app.route("/models", models);
+app.route("/tasks", tasks);
+app.route("/tools", tools);
+app.route("/audio", audio);
+app.route("/dynamic-apps", dynamicApps);
+app.route("/uploads", uploads);
+app.route("/auth", user);
+app.route("/plans", plans);
+app.route("/stripe", stripe);
+app.route("/realtime", realtime);
+app.route("/agents", agents);
+app.route("/admin", admin);
+app.route("/memories", memories);
+app.route("/webhooks", webhook);
+app.route("/training", training);
+app.route("/workspaces", workspaces);
+app.route("/projects", projects);
+app.route("/workspace-invitations", workspaceInvitations);
 
 app.notFound((c) => c.json({ status: "not found" }, 404));
 

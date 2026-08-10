@@ -47,17 +47,15 @@ export function SidebarShell({
 					"fixed md:relative z-50 h-full w-64",
 					"bg-off-white dark:bg-zinc-900",
 					"transition-transform duration-300 ease-in-out",
-					"border-r border-zinc-200 dark:border-zinc-800",
+					"border-r border-zinc-200 dark:border-zinc-700",
 					visible ? "translate-x-0" : "-translate-x-full md:translate-x-0 md:w-0 md:border-0",
 					className,
 				)}
 			>
 				{visible && (
-					<div className={cn("flex flex-col h-full w-64", contentClassName)}>
+					<div className={cn("flex h-full w-full flex-col", contentClassName)}>
 						{header && (
-							<div className="sticky top-0 bg-off-white dark:bg-zinc-900 border-b border-r border-zinc-200 dark:border-zinc-700 z-10 w-full">
-								{header}
-							</div>
+							<div className="sticky top-0 z-10 w-full bg-off-white dark:bg-zinc-900">{header}</div>
 						)}
 
 						<div className="flex-1 overflow-y-auto overflow-x-hidden">{children}</div>

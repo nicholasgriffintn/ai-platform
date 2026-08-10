@@ -391,7 +391,8 @@ export class MessageRepository extends BaseRepository {
 			`SELECT m.* 
        FROM message m
        JOIN conversation c ON m.conversation_id = c.id
-       WHERE c.user_id = ?
+	   WHERE c.user_id = ?
+	   AND c.project_id IS NULL
        AND m.content LIKE ?
        ORDER BY m.created_at DESC
        LIMIT ? OFFSET ?`,

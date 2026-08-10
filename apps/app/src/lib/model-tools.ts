@@ -22,6 +22,7 @@ export type ToolCapabilityKey =
 
 export interface ModelToolDefinition {
 	capability: ToolCapabilityKey;
+	category: string;
 	command: string;
 	description: string;
 	id: ModelToolId;
@@ -38,6 +39,7 @@ export interface ModelToolOption extends ModelToolDefinition {
 export const MODEL_TOOL_DEFINITIONS: ModelToolDefinition[] = [
 	{
 		capability: "supportsCodeExecution",
+		category: "Development",
 		command: "code execution",
 		description: "Let supported models run code tools.",
 		id: "code_execution",
@@ -45,6 +47,7 @@ export const MODEL_TOOL_DEFINITIONS: ModelToolDefinition[] = [
 	},
 	{
 		capability: "supportsSearchGrounding",
+		category: "Research",
 		command: "search grounding",
 		description: "Let supported models use search grounding.",
 		id: "search_grounding",
@@ -52,6 +55,7 @@ export const MODEL_TOOL_DEFINITIONS: ModelToolDefinition[] = [
 	},
 	{
 		capability: "supportsImageGenerationTool",
+		category: "Media",
 		command: "image generation",
 		description: "Let supported models generate images as a response tool.",
 		id: "image_generation",
@@ -59,6 +63,7 @@ export const MODEL_TOOL_DEFINITIONS: ModelToolDefinition[] = [
 	},
 	{
 		capability: "supportsFileSearch",
+		category: "Knowledge",
 		command: "file search",
 		description: "Let supported models search configured vector stores.",
 		id: "file_search",
@@ -67,6 +72,7 @@ export const MODEL_TOOL_DEFINITIONS: ModelToolDefinition[] = [
 	},
 	{
 		capability: "supportsMcp",
+		category: "Integrations",
 		command: "mcp",
 		description: "Let supported models use configured remote MCP servers.",
 		id: "mcp",
@@ -75,6 +81,7 @@ export const MODEL_TOOL_DEFINITIONS: ModelToolDefinition[] = [
 	},
 	{
 		capability: "supportsToolSearch",
+		category: "Utilities",
 		command: "tool search",
 		description: "Let supported models search the app tool inventory.",
 		id: "tool_search",
@@ -82,6 +89,7 @@ export const MODEL_TOOL_DEFINITIONS: ModelToolDefinition[] = [
 	},
 	{
 		capability: "supportsHostedShell",
+		category: "Development",
 		command: "hosted shell",
 		description: "Let supported models use OpenAI hosted shell.",
 		id: "hosted_shell",
@@ -89,6 +97,7 @@ export const MODEL_TOOL_DEFINITIONS: ModelToolDefinition[] = [
 	},
 	{
 		capability: "supportsWebFetch",
+		category: "Research",
 		command: "web fetch",
 		description: "Let supported models fetch URLs present in the conversation.",
 		id: "web_fetch",

@@ -1,0 +1,45 @@
+import type { WorkspaceRole } from "@assistant/schemas";
+
+import type { ServiceContext } from "~/lib/context/serviceContext";
+import type { ProjectRow, WorkspaceRow } from "~/repositories/WorkspaceRepository";
+import { AssistantError, ErrorType } from "~/utils/errors";
+
+export interface WorkspaceAccess {
+	workspace: WorkspaceRow;
+	role: WorkspaceRole;
+}
+
+export async function requireWorkspaceAccess(
+	context: ServiceContext,
+	workspaceId: string,
+	allowedRoles: readonly WorkspaceRole[] = ["owner", "admin", "member"],
+): Promise<WorkspaceAccess> {
+	const user = context.requireUser();
+	const [workspace, membership] = await Promise.all([
+		context.repositories.workspaces.getWorkspace(workspaceId),
+		context.repositories.workspaces.getMembership(workspaceId, user.id),
+	]);
+
+	if (!workspace || !membership) {
+		throw new AssistantError("Workspace not found", ErrorType.NOT_FOUND, 404);
+	}
+	if (!allowedRoles.includes(membership.role)) {
+		throw new AssistantError("You do not have access to this workspace", ErrorType.FORBIDDEN, 403);
+	}
+
+	return { workspace, role: membership.role };
+}
+
+export async function requireProjectAccess(
+	context: ServiceContext,
+	projectId: string,
+	allowedRoles: readonly WorkspaceRole[] = ["owner", "admin", "member"],
+): Promise<{ project: ProjectRow; role: WorkspaceRole }> {
+	const project = await context.repositories.workspaces.getProject(projectId);
+	if (!project) {
+		throw new AssistantError("Project not found", ErrorType.NOT_FOUND, 404);
+	}
+
+	const { role } = await requireWorkspaceAccess(context, project.workspace_id, allowedRoles);
+	return { project, role };
+}

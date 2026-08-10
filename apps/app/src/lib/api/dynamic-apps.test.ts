@@ -23,7 +23,7 @@ describe("dynamic-apps api", () => {
 		);
 		vi.stubGlobal("fetch", fetchMock);
 
-		const result = await executeDynamicApp("research", { query: "contract drift" });
+		const result = await executeDynamicApp("research", { query: "contract drift" }, "project-123");
 
 		expect(result).toEqual({
 			success: true,
@@ -35,5 +35,9 @@ describe("dynamic-apps api", () => {
 				result: { summary: "ok" },
 			},
 		});
+		expect(fetchMock).toHaveBeenCalledWith(
+			expect.stringContaining("/dynamic-apps/research/execute?projectId=project-123"),
+			expect.objectContaining({ method: "POST" }),
+		);
 	});
 });

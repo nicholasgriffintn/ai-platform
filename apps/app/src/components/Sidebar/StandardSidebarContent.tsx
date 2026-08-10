@@ -15,7 +15,7 @@ export function StandardSidebarContent() {
 			visible={sidebarVisible}
 			isMobile={isMobile}
 			onClose={() => setSidebarVisible(false)}
-			header={<SidebarHeader showCloudButton={false} />}
+			header={<SidebarHeader />}
 			footer={<SidebarFooter />}
 		>
 			<nav className="p-2 pb-[50px]">

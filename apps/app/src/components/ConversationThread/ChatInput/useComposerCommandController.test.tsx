@@ -36,6 +36,7 @@ const mocks = vi.hoisted(() => ({
 			kind: "connector" | "recipe";
 			label: string;
 			description: string;
+			capability?: { id: string };
 			metadata?: {
 				recipeId?: string;
 			};
@@ -92,6 +93,43 @@ describe("useComposerCommandController", () => {
 			includeApps: false,
 			modelTools: [],
 		});
+	});
+
+	it("limits project action suggestions to enabled capabilities", () => {
+		mocks.store.chatInput = "@";
+		mocks.actionCatalog.items = [
+			{
+				id: "recipe:unselected",
+				kind: "recipe",
+				label: "Unselected recipe",
+				description: "Not enabled for this project",
+				capability: { id: "unselected" },
+				searchText: [],
+			},
+			{
+				id: "recipe:selected",
+				kind: "recipe",
+				label: "Selected recipe",
+				description: "Enabled for this project",
+				capability: { id: "selected" },
+				searchText: [],
+			},
+		];
+		const { result } = renderHook(() =>
+			useComposerCommandController({
+				isLoading: false,
+				allowedAssistantActionCapabilityIds: ["selected"],
+			}),
+		);
+
+		act(() => result.current.setTextareaCursorPosition(1));
+		act(() => result.current.applyDirectiveSelection());
+
+		expect(mocks.store.setSelectedAssistantAction).toHaveBeenCalledWith(
+			expect.objectContaining({
+				item: expect.objectContaining({ id: "recipe:selected" }),
+			}),
+		);
 	});
 
 	it("moves through slash suggestions with wraparound", () => {

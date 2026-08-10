@@ -2,7 +2,7 @@ import { FileText } from "lucide-react";
 import { useCallback } from "react";
 import type { Podcast } from "@assistant/schemas";
 
-import { TranscriptViewer } from "~/components/Apps/Podcasts";
+import { TranscriptViewer } from "~/components/Apps/Podcasts/TranscriptViewer";
 import { Button } from "~/components/ui";
 import { Markdown } from "~/components/ui/Markdown";
 

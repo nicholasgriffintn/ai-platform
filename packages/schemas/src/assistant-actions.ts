@@ -47,6 +47,7 @@ export const assistantActionItemMetadataSchema = z.object({
 	appId: z.string().optional(),
 	appKind: z.enum(["dynamic", "frontend"]).optional(),
 	authType: z.enum(["oauth2", "github_app", "api_key"]).optional(),
+	category: z.string().optional(),
 	href: z.string().optional(),
 	installationId: z.string().optional(),
 	provider: recipeConnectorProviderSchema.optional(),
@@ -235,6 +236,7 @@ export interface AssistantActionAgentSource {
 export interface AssistantActionModelToolDefinition {
 	availabilityReason?: string;
 	available?: boolean;
+	category?: string;
 	command: string;
 	description: string;
 	id: string;
@@ -521,6 +523,7 @@ export function createRecipeAssistantActionItem(
 		},
 		capability: createRecipeCapabilityDescriptor(recipe, installation),
 		metadata: {
+			category: recipe.category,
 			recipeId: recipe.id,
 			installationId: installation?.id,
 		},
@@ -595,6 +598,7 @@ export function buildAssistantActionCatalog(
 				metadata: {
 					appId: app.id,
 					appKind: app.kind,
+					category: app.category,
 					href: app.href,
 				},
 			})),
@@ -630,6 +634,7 @@ export function buildAssistantActionCatalog(
 					toolId: tool.id,
 				},
 				metadata: {
+					category: tool.category,
 					toolId: tool.id,
 				},
 			})),

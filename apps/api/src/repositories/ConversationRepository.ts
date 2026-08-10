@@ -22,6 +22,7 @@ export class ConversationRepository extends BaseRepository {
 	): Promise<Record<string, unknown> | null> {
 		const parentConversationId = options.parent_conversation_id;
 		const parentMessageId = options.parent_message_id;
+		const projectId = options.project_id;
 
 		const result = this.runQuery<Record<string, unknown>>(
 			`INSERT INTO conversation (
@@ -29,11 +30,12 @@ export class ConversationRepository extends BaseRepository {
          user_id, 
          title, 
          parent_conversation_id,
-         parent_message_id,
+		 parent_message_id,
+		 project_id,
          created_at, 
          updated_at
        )
-       VALUES (?, ?, ?, ?, ?, datetime('now'), datetime('now'))
+		 VALUES (?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
        RETURNING *`,
 			[
 				conversationId,
@@ -41,6 +43,7 @@ export class ConversationRepository extends BaseRepository {
 				title ?? null,
 				parentConversationId ?? null,
 				parentMessageId ?? null,
+				projectId ?? null,
 			],
 			true,
 		);
@@ -82,7 +85,7 @@ export class ConversationRepository extends BaseRepository {
 				: optionsOrLimit;
 		const { archiveFilter = "active", limit = 25, page = 1, query, sortBy = "updated" } = options;
 		const { limit: safeLimit, offset } = PaginationHelper.calculate(page, limit);
-		const whereClauses = ["c.user_id = ?"];
+		const whereClauses = ["c.user_id = ?", "c.project_id IS NULL"];
 		const values: unknown[] = [userId];
 
 		if (archiveFilter === "active") {
@@ -203,6 +206,7 @@ export class ConversationRepository extends BaseRepository {
 			`SELECT c.* 
        FROM conversation c
        WHERE c.user_id = ?
+	   AND c.project_id IS NULL
        AND (
          c.title LIKE ?
          OR c.id IN (

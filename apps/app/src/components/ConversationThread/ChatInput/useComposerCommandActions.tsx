@@ -62,12 +62,14 @@ export interface AgentCommand {
 }
 
 export function useComposerCommandActions({
+	allowedAssistantActionCapabilityIds,
 	chatInput,
 	directive,
 	includeSettingCommands = true,
 	modeCommands,
 	setChatInput,
 }: {
+	allowedAssistantActionCapabilityIds?: readonly string[];
 	chatInput: string;
 	directive: ComposerDirectiveQuery | null;
 	includeSettingCommands?: boolean;
@@ -357,15 +359,20 @@ export function useComposerCommandActions({
 		if (!canUseAgents) {
 			return [];
 		}
-		return actionCatalog.items.filter((item) =>
-			matchesComposerCommand(query, [
-				item.label,
-				item.description,
-				item.status,
-				...item.searchText,
-			]),
+		const allowedCapabilityIds = allowedAssistantActionCapabilityIds
+			? new Set(allowedAssistantActionCapabilityIds)
+			: null;
+		return actionCatalog.items.filter(
+			(item) =>
+				(!allowedCapabilityIds || allowedCapabilityIds.has(item.capability?.id ?? "")) &&
+				matchesComposerCommand(query, [
+					item.label,
+					item.description,
+					item.status,
+					...item.searchText,
+				]),
 		);
-	}, [actionCatalog.items, canUseAgents, directive]);
+	}, [actionCatalog.items, allowedAssistantActionCapabilityIds, canUseAgents, directive]);
 
 	const selectedAgent = agents.find((agent) => agent.id === selectedAgentId);
 

@@ -16,8 +16,8 @@ export function PageHeader({
 	}[];
 }) {
 	return (
-		<div className="flex justify-between items-center mb-6">
-			<div>{children}</div>
+		<div className="mb-6 flex items-center justify-between gap-4">
+			<div className="min-w-0 flex-1">{children}</div>
 			{actions && (
 				<div className="flex items-center gap-2">
 					{actions.map((action, index) => (

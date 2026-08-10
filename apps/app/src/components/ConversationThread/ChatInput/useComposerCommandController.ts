@@ -21,9 +21,11 @@ interface ComposerCommandControls {
 
 export function useComposerCommandController({
 	isLoading,
+	allowedAssistantActionCapabilityIds,
 	modeControls,
 }: {
 	isLoading: boolean;
+	allowedAssistantActionCapabilityIds?: readonly string[];
 	modeControls?: ComposerCommandControls;
 }) {
 	const {
@@ -64,6 +66,7 @@ export function useComposerCommandController({
 	});
 	const modeCommands = modeControls?.commands ?? [];
 	const commandActions = useComposerCommandActions({
+		allowedAssistantActionCapabilityIds,
 		chatInput,
 		directive: directiveQuery,
 		includeSettingCommands: modeControls?.includeSettingCommands,
@@ -148,6 +151,7 @@ export function useComposerCommandController({
 	return {
 		applyDirectiveSelection,
 		commandState: {
+			allowedAssistantActionCapabilityIds,
 			chatInput,
 			directive: directiveQuery,
 			activeModeControls: modeControls?.activeModeControls,

@@ -1,0 +1,379 @@
+import type { ProjectCapabilityKind, WorkspaceRole } from "@assistant/schemas";
+
+import { BaseRepository } from "./BaseRepository";
+
+export interface WorkspaceRow {
+	id: string;
+	name: string;
+	description: string;
+	colour: string;
+	created_by: number;
+	created_at: string;
+	updated_at: string | null;
+}
+
+export interface WorkspaceSummaryRow extends WorkspaceRow {
+	role: WorkspaceRole;
+	member_count: number;
+	project_count: number;
+}
+
+export interface WorkspaceMemberRow {
+	user_id: number;
+	name: string | null;
+	email: string;
+	avatar_url: string | null;
+	role: WorkspaceRole;
+	joined_at: string;
+}
+
+export interface WorkspaceInvitationRow {
+	id: string;
+	workspace_id: string;
+	email: string;
+	role: Exclude<WorkspaceRole, "owner">;
+	token_hash: string;
+	status: "pending" | "accepted" | "revoked";
+	invited_by: number;
+	accepted_by: number | null;
+	expires_at: string;
+	accepted_at: string | null;
+	created_at: string;
+	updated_at: string | null;
+}
+
+export interface ProjectRow {
+	id: string;
+	workspace_id: string;
+	name: string;
+	description: string;
+	instructions: string;
+	colour: string;
+	created_by: number;
+	archived_at: string | null;
+	created_at: string;
+	updated_at: string | null;
+	conversation_count: number;
+	capability_count: number;
+}
+
+export interface ProjectCapabilityRow {
+	id: string;
+	project_id: string;
+	kind: ProjectCapabilityKind;
+	capability_id: string;
+	configuration: string | Record<string, unknown> | null;
+	created_by: number;
+	created_at: string;
+}
+
+export interface ProjectConversationRow {
+	id: string;
+	title: string | null;
+	created_at: string;
+	updated_at: string | null;
+	last_message_at: string | null;
+	message_count: number | null;
+	created_by: number;
+	created_by_name: string | null;
+	created_by_avatar_url: string | null;
+}
+
+export class WorkspaceRepository extends BaseRepository {
+	async createWorkspace(params: {
+		id: string;
+		name: string;
+		description: string;
+		colour: string;
+		userId: number;
+	}): Promise<void> {
+		const database = this.env.DB;
+		if (!database) return;
+
+		await database.batch([
+			database
+				.prepare(
+					`INSERT INTO workspace (id, name, description, colour, created_by)
+					 VALUES (?, ?, ?, ?, ?)`,
+				)
+				.bind(params.id, params.name, params.description, params.colour, params.userId),
+			database
+				.prepare(
+					`INSERT INTO workspace_member (workspace_id, user_id, role)
+					 VALUES (?, ?, 'owner')`,
+				)
+				.bind(params.id, params.userId),
+		]);
+	}
+
+	async listWorkspaces(userId: number): Promise<WorkspaceSummaryRow[]> {
+		return this.runQuery<WorkspaceSummaryRow>(
+			`SELECT w.*, wm.role,
+				COUNT(DISTINCT members.user_id) AS member_count,
+				COUNT(DISTINCT p.id) AS project_count
+			 FROM workspace w
+			 JOIN workspace_member wm ON wm.workspace_id = w.id AND wm.user_id = ?
+			 LEFT JOIN workspace_member members ON members.workspace_id = w.id
+			 LEFT JOIN project p ON p.workspace_id = w.id AND p.archived_at IS NULL
+			 GROUP BY w.id, wm.role
+			 ORDER BY w.updated_at DESC, w.created_at DESC`,
+			[userId],
+		);
+	}
+
+	async getWorkspace(workspaceId: string): Promise<WorkspaceRow | null> {
+		return this.runQuery<WorkspaceRow>("SELECT * FROM workspace WHERE id = ?", [workspaceId], true);
+	}
+
+	async getMembership(
+		workspaceId: string,
+		userId: number,
+	): Promise<{ role: WorkspaceRole } | null> {
+		return this.runQuery<{ role: WorkspaceRole }>(
+			"SELECT role FROM workspace_member WHERE workspace_id = ? AND user_id = ?",
+			[workspaceId, userId],
+			true,
+		);
+	}
+
+	async listMembers(workspaceId: string): Promise<WorkspaceMemberRow[]> {
+		return this.runQuery<WorkspaceMemberRow>(
+			`SELECT u.id AS user_id, u.name, u.email, u.avatar_url, wm.role, wm.joined_at
+			 FROM workspace_member wm
+			 JOIN user u ON u.id = wm.user_id
+			 WHERE wm.workspace_id = ?
+			 ORDER BY CASE wm.role WHEN 'owner' THEN 0 WHEN 'admin' THEN 1 ELSE 2 END, u.name, u.email`,
+			[workspaceId],
+		);
+	}
+
+	async updateWorkspace(workspaceId: string, updates: Record<string, unknown>): Promise<void> {
+		const result = this.buildUpdateQuery(
+			"workspace",
+			updates,
+			["name", "description", "colour"],
+			"id = ?",
+			[workspaceId],
+		);
+		if (result) await this.executeRun(result.query, result.values);
+	}
+
+	async deleteWorkspace(workspaceId: string): Promise<void> {
+		await this.executeRun("DELETE FROM workspace WHERE id = ?", [workspaceId]);
+	}
+
+	async upsertInvitation(params: {
+		id: string;
+		workspaceId: string;
+		email: string;
+		role: Exclude<WorkspaceRole, "owner">;
+		tokenHash: string;
+		invitedBy: number;
+		expiresAt: string;
+	}): Promise<WorkspaceInvitationRow | null> {
+		return this.runQuery<WorkspaceInvitationRow>(
+			`INSERT INTO workspace_invitation
+				(id, workspace_id, email, role, token_hash, status, invited_by, expires_at)
+			 VALUES (?, ?, ?, ?, ?, 'pending', ?, ?)
+			 ON CONFLICT(workspace_id, email) DO UPDATE SET
+				id = excluded.id,
+				role = excluded.role,
+				token_hash = excluded.token_hash,
+				status = 'pending',
+				invited_by = excluded.invited_by,
+				accepted_by = NULL,
+				accepted_at = NULL,
+				expires_at = excluded.expires_at,
+				updated_at = CURRENT_TIMESTAMP
+			 RETURNING *`,
+			[
+				params.id,
+				params.workspaceId,
+				params.email,
+				params.role,
+				params.tokenHash,
+				params.invitedBy,
+				params.expiresAt,
+			],
+			true,
+		);
+	}
+
+	async listInvitations(workspaceId: string): Promise<WorkspaceInvitationRow[]> {
+		return this.runQuery<WorkspaceInvitationRow>(
+			"SELECT * FROM workspace_invitation WHERE workspace_id = ? ORDER BY created_at DESC",
+			[workspaceId],
+		);
+	}
+
+	async getInvitationByTokenHash(tokenHash: string): Promise<WorkspaceInvitationRow | null> {
+		return this.runQuery<WorkspaceInvitationRow>(
+			"SELECT * FROM workspace_invitation WHERE token_hash = ?",
+			[tokenHash],
+			true,
+		);
+	}
+
+	async acceptInvitation(invitation: WorkspaceInvitationRow, userId: number): Promise<void> {
+		const database = this.env.DB;
+		if (!database) return;
+
+		await database.batch([
+			database
+				.prepare(
+					`INSERT INTO workspace_member (workspace_id, user_id, role)
+					 VALUES (?, ?, ?)
+					 ON CONFLICT(workspace_id, user_id) DO UPDATE SET role = excluded.role`,
+				)
+				.bind(invitation.workspace_id, userId, invitation.role),
+			database
+				.prepare(
+					`UPDATE workspace_invitation
+					 SET status = 'accepted', accepted_by = ?, accepted_at = CURRENT_TIMESTAMP,
+					     token_hash = 'consumed:' || id, updated_at = CURRENT_TIMESTAMP
+					 WHERE id = ? AND status = 'pending'`,
+				)
+				.bind(userId, invitation.id),
+		]);
+	}
+
+	async revokeInvitation(workspaceId: string, invitationId: string): Promise<void> {
+		await this.executeRun(
+			`UPDATE workspace_invitation
+			 SET status = 'revoked', token_hash = 'revoked:' || id, updated_at = CURRENT_TIMESTAMP
+			 WHERE id = ? AND workspace_id = ? AND status = 'pending'`,
+			[invitationId, workspaceId],
+		);
+	}
+
+	async createProject(params: {
+		id: string;
+		workspaceId: string;
+		name: string;
+		description: string;
+		instructions: string;
+		colour: string;
+		createdBy: number;
+	}): Promise<void> {
+		await this.executeRun(
+			`INSERT INTO project
+				(id, workspace_id, name, description, instructions, colour, created_by)
+			 VALUES (?, ?, ?, ?, ?, ?, ?)`,
+			[
+				params.id,
+				params.workspaceId,
+				params.name,
+				params.description,
+				params.instructions,
+				params.colour,
+				params.createdBy,
+			],
+		);
+	}
+
+	async listProjects(workspaceId: string): Promise<ProjectRow[]> {
+		return this.runQuery<ProjectRow>(
+			`SELECT p.*,
+				COUNT(DISTINCT c.id) AS conversation_count,
+				COUNT(DISTINCT pc.id) AS capability_count
+			 FROM project p
+			 LEFT JOIN conversation c ON c.project_id = p.id AND c.is_archived = 0
+			 LEFT JOIN project_capability pc ON pc.project_id = p.id
+			 WHERE p.workspace_id = ? AND p.archived_at IS NULL
+			 GROUP BY p.id
+			 ORDER BY p.updated_at DESC, p.created_at DESC`,
+			[workspaceId],
+		);
+	}
+
+	async getProject(projectId: string): Promise<ProjectRow | null> {
+		return this.runQuery<ProjectRow>(
+			`SELECT p.*,
+				COUNT(DISTINCT c.id) AS conversation_count,
+				COUNT(DISTINCT pc.id) AS capability_count
+			 FROM project p
+			 LEFT JOIN conversation c ON c.project_id = p.id AND c.is_archived = 0
+			 LEFT JOIN project_capability pc ON pc.project_id = p.id
+			 WHERE p.id = ? AND p.archived_at IS NULL
+			 GROUP BY p.id`,
+			[projectId],
+			true,
+		);
+	}
+
+	async updateProject(projectId: string, updates: Record<string, unknown>): Promise<void> {
+		const result = this.buildUpdateQuery(
+			"project",
+			updates,
+			["name", "description", "instructions", "colour", "archived_at"],
+			"id = ?",
+			[projectId],
+		);
+		if (result) await this.executeRun(result.query, result.values);
+	}
+
+	async listProjectCapabilities(projectId: string): Promise<ProjectCapabilityRow[]> {
+		return this.runQuery<ProjectCapabilityRow>(
+			"SELECT * FROM project_capability WHERE project_id = ? ORDER BY created_at",
+			[projectId],
+		);
+	}
+
+	async addProjectCapability(params: {
+		id: string;
+		projectId: string;
+		kind: ProjectCapabilityKind;
+		capabilityId: string;
+		configuration: Record<string, unknown>;
+		createdBy: number;
+	}): Promise<void> {
+		await this.executeRun(
+			`INSERT INTO project_capability
+				(id, project_id, kind, capability_id, configuration, created_by)
+			 VALUES (?, ?, ?, ?, ?, ?)
+			 ON CONFLICT(project_id, kind, capability_id) DO UPDATE SET
+				configuration = excluded.configuration`,
+			[
+				params.id,
+				params.projectId,
+				params.kind,
+				params.capabilityId,
+				JSON.stringify(params.configuration),
+				params.createdBy,
+			],
+		);
+	}
+
+	async removeProjectCapability(projectId: string, capabilityId: string): Promise<void> {
+		await this.executeRun("DELETE FROM project_capability WHERE project_id = ? AND id = ?", [
+			projectId,
+			capabilityId,
+		]);
+	}
+
+	async listProjectConversations(projectId: string): Promise<ProjectConversationRow[]> {
+		return this.runQuery<ProjectConversationRow>(
+			`SELECT c.id, c.title, c.created_at, c.updated_at, c.last_message_at, c.message_count,
+				u.id AS created_by, u.name AS created_by_name, u.avatar_url AS created_by_avatar_url
+			 FROM conversation c
+			 JOIN user u ON u.id = c.user_id
+			 WHERE c.project_id = ? AND c.is_archived = 0
+			 ORDER BY COALESCE(c.last_message_at, c.updated_at, c.created_at) DESC`,
+			[projectId],
+		);
+	}
+
+	async canAccessConversation(conversationId: string, userId: number): Promise<boolean> {
+		const row = await this.runQuery<{ allowed: number }>(
+			`SELECT EXISTS(
+				SELECT 1 FROM conversation c
+				LEFT JOIN project p ON p.id = c.project_id
+				LEFT JOIN workspace_member wm ON wm.workspace_id = p.workspace_id AND wm.user_id = ?
+				WHERE c.id = ? AND (c.user_id = ? OR wm.user_id IS NOT NULL)
+			) AS allowed`,
+			[userId, conversationId, userId],
+			true,
+		);
+		return row?.allowed === 1;
+	}
+}

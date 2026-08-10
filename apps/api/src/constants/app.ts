@@ -13,29 +13,6 @@ export const API_PROD_HOST = "api.polychat.app";
 
 export const gatewayId = "llm-assistant";
 
-export const ROUTES = {
-	CHAT: "/chat",
-	APPS: "/apps",
-	AUTH: "/auth",
-	MODELS: "/models",
-	AUDIO: "/audio",
-	ASSETS: "/assets",
-	DYNAMIC_APPS: "/dynamic-apps",
-	SEARCH: "/search",
-	TASKS: "/tasks",
-	TOOLS: "/tools",
-	UPLOADS: "/uploads",
-	USER: "/user",
-	PLANS: "/plans",
-	STRIPE: "/stripe",
-	REALTIME: "/realtime",
-	AGENTS: "/agents",
-	ADMIN: "/admin",
-	MEMORIES: "/memories",
-	WEBHOOKS: "/webhooks",
-	TRAINING: "/training",
-} as const;
-
 const NON_AUTH_DAILY_MESSAGE_LIMIT = 10;
 const AUTH_DAILY_MESSAGE_LIMIT = 50;
 const DAILY_LIMIT_PRO_MODELS = 200;

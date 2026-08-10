@@ -12,6 +12,7 @@ import type { AppData } from "~/repositories/AppDataRepository";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 import { createDynamicAppCapabilityDescriptor } from "./capabilities";
+import { requireProjectAccess } from "~/services/workspaces/access";
 
 const logger = getLogger({ prefix: "services/dynamic-apps" });
 
@@ -143,6 +144,34 @@ export const executeDynamicApp = async (
 	id: string,
 	formData: Record<string, any>,
 	req: IRequest,
+): Promise<Record<string, any>> => executeDynamicAppRuntime(id, formData, req);
+
+export const executeProjectDynamicApp = async (
+	id: string,
+	formData: Record<string, any>,
+	req: IRequest,
+	projectId: string,
+): Promise<Record<string, any>> => {
+	const serviceContext = getDynamicAppServiceContext(req);
+	await requireProjectAccess(serviceContext, projectId);
+	const projectCapabilities =
+		await serviceContext.repositories.workspaces.listProjectCapabilities(projectId);
+	if (
+		!projectCapabilities.some(
+			(capability) => capability.kind === "app" && capability.capability_id === id,
+		)
+	) {
+		throw new AssistantError("App is not available in this project", ErrorType.NOT_FOUND, 404);
+	}
+
+	return executeDynamicAppRuntime(id, formData, req, projectId);
+};
+
+const executeDynamicAppRuntime = async (
+	id: string,
+	formData: Record<string, any>,
+	req: IRequest,
+	projectId?: string,
 ): Promise<Record<string, any>> => {
 	const app = dynamicApps.get(id);
 
@@ -194,6 +223,7 @@ export const executeDynamicApp = async (
 						result: functionResult,
 					},
 					runId,
+					projectId,
 				);
 				response_id = saved.id;
 
@@ -271,8 +301,17 @@ export const createDynamicAppResponse = async (
 	appId: string,
 	payload: Record<string, any>,
 	itemId?: string,
+	projectId?: string,
 ): Promise<AppData> => {
-	return context.repositories.dynamicAppResponses.createResponse(userId, appId, payload, itemId);
+	return projectId
+		? context.repositories.dynamicAppResponses.createResponse(
+				userId,
+				appId,
+				payload,
+				itemId,
+				projectId,
+			)
+		: context.repositories.dynamicAppResponses.createResponse(userId, appId, payload, itemId);
 };
 
 /**

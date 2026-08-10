@@ -50,7 +50,14 @@ export function useDynamicAppResponses(appId?: string) {
 
 export function useExecuteDynamicApp() {
 	return useMutation({
-		mutationFn: ({ id, formData }: { id: string; formData: Record<string, any> }) =>
-			executeDynamicApp(id, formData),
+		mutationFn: ({
+			id,
+			formData,
+			projectId,
+		}: {
+			id: string;
+			formData: Record<string, any>;
+			projectId: string;
+		}) => executeDynamicApp(id, formData, projectId),
 	});
 }
