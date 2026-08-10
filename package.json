@@ -33,5 +33,5 @@
     "sherif": "^1.11.1",
     "vitest": "4.1.10"
   },
-  "packageManager": "pnpm@11.10.0"
+  "packageManager": "pnpm@11.19.0"
 }
