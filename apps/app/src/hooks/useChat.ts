@@ -4,7 +4,10 @@ import { useMemo } from "react";
 import { CHATS_QUERY_KEY } from "~/constants";
 import { apiService } from "~/lib/api/api-service";
 import { createTemporaryConversationTitle } from "~/lib/chat/title-source";
-import { updateConversationInChatCaches } from "~/lib/conversation-cache";
+import {
+	removeConversationFromChatCaches,
+	updateConversationInChatCaches,
+} from "~/lib/conversation-cache";
 import { filterConversationsByListOptions } from "~/lib/conversation-list";
 import { isLocallyCreatedConversation, preserveOptimisticMessages } from "~/lib/conversations";
 import { localChatService } from "~/lib/local/local-chat-service";
@@ -12,6 +15,9 @@ import { useChatStore } from "~/state/stores/chatStore";
 import type { Conversation, ConversationListOptions, Message } from "~/types";
 
 const DEFAULT_CHAT_LIST_LIMIT = 30;
+const CHAT_LIST_STALE_TIME = 2 * 60 * 1000;
+const CHAT_DETAIL_STALE_TIME = 2 * 60 * 1000;
+const CHAT_QUERY_GC_TIME = 30 * 60 * 1000;
 
 export function useChats(options: ConversationListOptions = {}) {
 	const { isAuthenticated, isPro, localOnlyMode } = useChatStore();
@@ -30,6 +36,8 @@ export function useChats(options: ConversationListOptions = {}) {
 		queryFn: ({ pageParam }) =>
 			apiService.listChats({ ...queryOptions, page: Number(pageParam) || 1 }),
 		initialPageParam: 1,
+		staleTime: CHAT_LIST_STALE_TIME,
+		gcTime: CHAT_QUERY_GC_TIME,
 		getNextPageParam: (lastPage) => {
 			if (lastPage.pageNumber >= lastPage.totalPages) return undefined;
 			return lastPage.pageNumber + 1;
@@ -40,6 +48,8 @@ export function useChats(options: ConversationListOptions = {}) {
 	const localChatsQuery = useQuery({
 		queryKey: [CHATS_QUERY_KEY, "local"],
 		queryFn: async () => await localChatService.listLocalChats(),
+		staleTime: CHAT_LIST_STALE_TIME,
+		gcTime: CHAT_QUERY_GC_TIME,
 	});
 
 	const allChats = useMemo(() => {
@@ -69,6 +79,8 @@ export function useLocalChats() {
 	return useQuery({
 		queryKey: [CHATS_QUERY_KEY, "local"],
 		queryFn: async () => await localChatService.listLocalChats(),
+		staleTime: CHAT_LIST_STALE_TIME,
+		gcTime: CHAT_QUERY_GC_TIME,
 	});
 }
 
@@ -115,6 +127,8 @@ export function useChat(completion_id: string | undefined) {
 			}
 		},
 		enabled: !!completion_id,
+		staleTime: CHAT_DETAIL_STALE_TIME,
+		gcTime: CHAT_QUERY_GC_TIME,
 		refetchInterval: (query) => {
 			const data = query.state.data as Conversation | null | undefined;
 
@@ -152,21 +166,10 @@ export function useChat(completion_id: string | undefined) {
 	});
 }
 
-const invalidateAllChatQueries = (queryClient: any, completion_id?: string) => {
-	queryClient.invalidateQueries({ queryKey: [CHATS_QUERY_KEY] });
-	queryClient.invalidateQueries({ queryKey: [CHATS_QUERY_KEY, "local"] });
-	queryClient.invalidateQueries({ queryKey: [CHATS_QUERY_KEY, "remote"] });
-
-	if (completion_id) {
-		queryClient.invalidateQueries({
-			queryKey: [CHATS_QUERY_KEY, completion_id],
-		});
-	}
-};
-
 export function useDeleteChat() {
 	const queryClient = useQueryClient();
-	const { isAuthenticated, isPro, localOnlyMode } = useChatStore();
+	const { currentConversationId, isAuthenticated, isPro, localOnlyMode, setCurrentConversationId } =
+		useChatStore();
 
 	return useMutation({
 		mutationFn: async (completion_id: string) => {
@@ -180,7 +183,10 @@ export function useDeleteChat() {
 			}
 		},
 		onSuccess: (_, completion_id) => {
-			invalidateAllChatQueries(queryClient, completion_id);
+			if (currentConversationId === completion_id) {
+				setCurrentConversationId(undefined);
+			}
+			removeConversationFromChatCaches(queryClient, completion_id);
 		},
 	});
 }
@@ -195,7 +201,7 @@ export function useDeleteAllLocalChats() {
 		},
 		onSuccess: () => {
 			setCurrentConversationId(undefined);
-			invalidateAllChatQueries(queryClient);
+			queryClient.setQueryData([CHATS_QUERY_KEY, "local"], []);
 		},
 	});
 }
@@ -208,7 +214,7 @@ export function useDeleteAllRemoteChats() {
 			await apiService.deleteAllConversations();
 		},
 		onSuccess: () => {
-			invalidateAllChatQueries(queryClient);
+			queryClient.invalidateQueries({ queryKey: [CHATS_QUERY_KEY, "remote"] });
 		},
 	});
 }
@@ -228,8 +234,11 @@ export function useUpdateChatTitle() {
 				await apiService.updateConversationTitle(completion_id, title);
 			}
 		},
-		onSuccess: (_, { completion_id }) => {
-			invalidateAllChatQueries(queryClient, completion_id);
+		onSuccess: (_, { completion_id, title }) => {
+			updateConversationInChatCaches(queryClient, completion_id, (chat) => ({
+				...chat,
+				title,
+			}));
 		},
 	});
 }
@@ -261,28 +270,6 @@ export function useGenerateTitle() {
 			return newTitle;
 		},
 
-		onMutate: async ({ completion_id }) => {
-			await queryClient.cancelQueries({
-				queryKey: [CHATS_QUERY_KEY, completion_id],
-			});
-			await queryClient.cancelQueries({ queryKey: [CHATS_QUERY_KEY] });
-
-			const previousSingleChat = queryClient.getQueryData<Conversation>([
-				CHATS_QUERY_KEY,
-				completion_id,
-			]);
-			const previousAllChats = queryClient.getQueryData<Conversation[]>([CHATS_QUERY_KEY]);
-
-			return { previousSingleChat, previousAllChats };
-		},
-		onError: (_, { completion_id }, context) => {
-			if (context?.previousSingleChat) {
-				queryClient.setQueryData([CHATS_QUERY_KEY, completion_id], context.previousSingleChat);
-			}
-			if (context?.previousAllChats) {
-				queryClient.setQueryData([CHATS_QUERY_KEY], context.previousAllChats);
-			}
-		},
 		onSuccess: (newTitle, { completion_id }) => {
 			updateConversationInChatCaches(queryClient, completion_id, (chat) => ({
 				...chat,

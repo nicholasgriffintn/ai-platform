@@ -13,7 +13,13 @@ export function PodcastsExperience({ basePath, projectId, subpath }: ExperienceP
 	const segments = subpath.split("/").filter(Boolean);
 	const podcastId = segments[0] && segments[0] !== "new" ? segments[0] : undefined;
 	const isNew = segments[0] === "new";
-	const { data: podcasts, isLoading, error } = useFetchPodcasts(projectId);
+	const {
+		data: podcasts,
+		isLoading,
+		error,
+	} = useFetchPodcasts(projectId, {
+		enabled: !isNew && !podcastId,
+	});
 	const {
 		data: podcast,
 		isLoading: isPodcastLoading,

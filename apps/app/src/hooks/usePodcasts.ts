@@ -3,10 +3,11 @@ import type { Podcast, PodcastListItem } from "@assistant/schemas";
 
 import { fetchPodcast, fetchPodcasts, processPodcast, uploadPodcast } from "~/lib/api/dynamic-apps";
 
-export const useFetchPodcasts = (projectId?: string) => {
+export const useFetchPodcasts = (projectId?: string, options?: { enabled?: boolean }) => {
 	return useQuery<PodcastListItem[], Error>({
 		queryKey: ["podcasts", projectId],
 		queryFn: () => fetchPodcasts(projectId),
+		enabled: options?.enabled ?? true,
 	});
 };
 
@@ -19,8 +20,13 @@ export const useFetchPodcast = (id: string, projectId?: string) => {
 };
 
 export const useUploadPodcast = (projectId?: string) => {
+	const queryClient = useQueryClient();
+
 	return useMutation({
 		mutationFn: (params: Parameters<typeof uploadPodcast>[0]) => uploadPodcast(params, projectId),
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ["podcasts", projectId] });
+		},
 	});
 };
 

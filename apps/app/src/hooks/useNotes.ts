@@ -11,10 +11,11 @@ import {
 	generateNotesFromMedia,
 } from "~/lib/api/dynamic-apps";
 
-export const useFetchNotes = (projectId?: string) => {
+export const useFetchNotes = (projectId?: string, options?: { enabled?: boolean }) => {
 	return useQuery<Note[], Error>({
 		queryKey: ["notes", projectId],
 		queryFn: () => fetchNotes(projectId),
+		enabled: options?.enabled ?? true,
 	});
 };
 

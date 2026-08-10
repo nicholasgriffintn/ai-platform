@@ -11,6 +11,7 @@ import { prepareUserMessage } from "~/lib/chat/prepare-user-message";
 import { createTemporaryConversationTitle } from "~/lib/chat/title-source";
 import { createCouncilDebateTurnPlanner } from "~/lib/council-turns";
 import { createConversationId } from "~/lib/conversations";
+import { upsertConversationInChatCaches } from "~/lib/conversation-cache";
 import { getErrorMessage } from "~/lib/errors";
 import { EMPTY_MODEL_CONFIG } from "~/lib/models";
 import { useLoadingActions } from "~/state/contexts/LoadingContext";
@@ -61,11 +62,15 @@ export function useChatManager(
 	const cancelConversationQueries = useCallback(
 		async (conversationId: string) => {
 			await Promise.all([
-				queryClient.cancelQueries({ queryKey: [CHATS_QUERY_KEY] }),
 				queryClient.cancelQueries({
 					queryKey: [CHATS_QUERY_KEY, conversationId],
 					exact: true,
 				}),
+				queryClient.cancelQueries({
+					queryKey: [CHATS_QUERY_KEY, "local"],
+					exact: true,
+				}),
+				queryClient.cancelQueries({ queryKey: [CHATS_QUERY_KEY, "remote"] }),
 			]);
 		},
 		[queryClient],
@@ -232,9 +237,10 @@ export function useChatManager(
 		try {
 			await cancelConversationQueries(currentConversationId);
 			const result = await apiService.compactConversation(currentConversationId);
-			queryClient.setQueryData([CHATS_QUERY_KEY, currentConversationId], result.conversation);
-			queryClient.invalidateQueries({ queryKey: [CHATS_QUERY_KEY] });
-			queryClient.invalidateQueries({ queryKey: [CHATS_QUERY_KEY, "remote"] });
+			upsertConversationInChatCaches(queryClient, result.conversation, {
+				includeLocalList: false,
+				includeRemoteLists: true,
+			});
 
 			return {
 				status: "success" as const,

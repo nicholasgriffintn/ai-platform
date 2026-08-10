@@ -54,8 +54,6 @@ vi.mock("~/components/Apps/Recipes/useRecipeWorkflows", () => ({
 	}),
 }));
 vi.mock("~/hooks/useWorkspaces", () => ({
-	useProject: () => ({ data: { capabilities: [], name: "Project" }, isLoading: false }),
-	useWorkspace: () => ({ data: { role: "owner" } }),
 	useAddProjectCapability: () => ({
 		isPending: false,
 		mutateAsync: mocks.add,
@@ -63,6 +61,13 @@ vi.mock("~/hooks/useWorkspaces", () => ({
 	useRemoveProjectCapability: () => ({
 		isPending: false,
 		mutate: mocks.remove,
+	}),
+}));
+vi.mock("./WorkContext", () => ({
+	useWorkData: () => ({
+		projectQuery: { data: { capabilities: [], name: "Project" }, isLoading: false },
+		workspaceQuery: { data: { role: "owner" } },
+		workspacesQuery: { data: { workspaces: [] } },
 	}),
 }));
 

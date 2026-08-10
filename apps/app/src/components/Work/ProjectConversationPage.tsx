@@ -3,10 +3,10 @@ import { useEffect, useRef } from "react";
 
 import { ConversationPage } from "~/components/ConversationThread/ConversationPage";
 import { useIsLoading } from "~/state/contexts/LoadingContext";
-import { projectQueryKey, useProject } from "~/hooks/useWorkspaces";
+import { projectQueryKey } from "~/hooks/useWorkspaces";
 import { getProjectLibraryPath } from "~/lib/project-experiences";
 import { useChatStore } from "~/state/stores/chatStore";
-import { WorkSidebar } from "./WorkSidebar";
+import { useWorkData } from "./WorkContext";
 
 export function ProjectConversationPage({
 	workspaceId,
@@ -15,7 +15,8 @@ export function ProjectConversationPage({
 	workspaceId: string;
 	projectId: string;
 }) {
-	const { data: project } = useProject(projectId);
+	const { projectQuery } = useWorkData();
+	const { data: project } = projectQuery;
 	const queryClient = useQueryClient();
 	const currentConversationId = useChatStore((state) => state.currentConversationId);
 	const setChatMode = useChatStore((state) => state.setChatMode);
@@ -55,8 +56,8 @@ export function ProjectConversationPage({
 
 	return (
 		<ConversationPage
+			embedded
 			title={project?.name ?? "Project conversation"}
-			sidebarContent={<WorkSidebar workspaceId={workspaceId} projectId={projectId} />}
 			modeConfig={{
 				assistantActionRoutes: {
 					recipes: recipeManagementPath,

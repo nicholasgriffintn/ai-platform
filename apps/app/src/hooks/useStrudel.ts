@@ -16,10 +16,11 @@ export const STRUDEL_QUERY_KEYS = {
 		[...STRUDEL_QUERY_KEYS.root, projectId, "pattern", id] as const,
 };
 
-export const useStrudelPatterns = (projectId?: string) =>
+export const useStrudelPatterns = (projectId?: string, options?: { enabled?: boolean }) =>
 	useQuery<StrudelPattern[], Error>({
 		queryKey: STRUDEL_QUERY_KEYS.list(projectId),
 		queryFn: () => strudelService.list(projectId),
+		enabled: options?.enabled ?? true,
 	});
 
 export const useStrudelPattern = (id?: string, projectId?: string) =>

@@ -10,7 +10,13 @@ import { WorkCardGridSkeleton } from "../WorkLoadingSkeletons";
 
 export function ResponsesExperience({ basePath, projectId, subpath }: ExperienceProps) {
 	const responseId = subpath.split("/").filter(Boolean)[0];
-	const { data: responses, isLoading, error } = useDynamicAppResponses(projectId);
+	const {
+		data: responses,
+		isLoading,
+		error,
+	} = useDynamicAppResponses(projectId, undefined, {
+		enabled: !responseId,
+	});
 	const {
 		data: response,
 		isLoading: isResponseLoading,

@@ -6,34 +6,27 @@ import { EmptyState } from "~/components/Core/EmptyState";
 import { PageHeader } from "~/components/Core/PageHeader";
 import { PageTitle } from "~/components/Core/PageTitle";
 import { Button, Card } from "~/components/ui";
-import { useWorkspace } from "~/hooks/useWorkspaces";
+import { useWorkData } from "./WorkContext";
 import { CreateProjectDialog } from "./CreateProjectDialog";
 import { InviteMemberDialog } from "./InviteMemberDialog";
 import { WorkspaceOverviewSkeleton } from "./WorkLoadingSkeletons";
-import { WorkPageShell } from "./WorkPageShell";
 
 export function WorkspaceOverview({ workspaceId }: { workspaceId: string }) {
-	const { data: workspace, isLoading, error } = useWorkspace(workspaceId);
+	const { workspaceQuery } = useWorkData();
+	const { data: workspace, isLoading, error } = workspaceQuery;
 	const [isCreateOpen, setIsCreateOpen] = useState(false);
 	const [isInviteOpen, setIsInviteOpen] = useState(false);
 
-	if (isLoading)
-		return (
-			<WorkPageShell workspaceId={workspaceId}>
-				<WorkspaceOverviewSkeleton />
-			</WorkPageShell>
-		);
+	if (isLoading) return <WorkspaceOverviewSkeleton />;
 	if (error || !workspace)
 		return (
-			<WorkPageShell workspaceId={workspaceId}>
-				<div className="p-10 text-sm text-red-700">{error?.message ?? "Workspace not found"}</div>
-			</WorkPageShell>
+			<div className="p-10 text-sm text-red-700">{error?.message ?? "Workspace not found"}</div>
 		);
 
 	const canManage = workspace.role === "owner" || workspace.role === "admin";
 
 	return (
-		<WorkPageShell workspaceId={workspaceId}>
+		<>
 			<main className="container mx-auto max-w-6xl px-4 py-8">
 				<PageHeader
 					actions={
@@ -129,6 +122,6 @@ export function WorkspaceOverview({ workspaceId }: { workspaceId: string }) {
 				open={isInviteOpen}
 				onOpenChange={setIsInviteOpen}
 			/>
-		</WorkPageShell>
+		</>
 	);
 }

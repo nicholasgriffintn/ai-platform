@@ -12,14 +12,13 @@ import { ReplicatePredictions } from "~/components/Replicate/ReplicatePrediction
 import { TrainingDashboard } from "~/components/Training/TrainingDashboard";
 import { Button } from "~/components/ui";
 import { useDynamicApps } from "~/hooks/useDynamicApps";
-import { useProject } from "~/hooks/useWorkspaces";
 import {
 	getProjectExperiencePath,
 	getProjectExperiencesPath,
 	isProjectExperienceEnabled,
 } from "~/lib/project-experiences";
+import { useWorkData } from "./WorkContext";
 import { ProjectOverviewSkeleton } from "./WorkLoadingSkeletons";
-import { WorkPageShell } from "./WorkPageShell";
 import { ArticlesExperience } from "./Experiences/ArticlesExperience";
 import { NotesExperience } from "./Experiences/NotesExperience";
 import { PodcastsExperience } from "./Experiences/PodcastsExperience";
@@ -61,7 +60,8 @@ export function ProjectExperienceRoute({
 	subpath?: string;
 	workspaceId: string;
 }) {
-	const { data: project, isLoading, error } = useProject(projectId);
+	const { projectQuery } = useWorkData();
+	const { data: project, isLoading, error } = projectQuery;
 	const { data: dynamicApps, isLoading: isCatalogLoading, error: catalogError } = useDynamicApps();
 	const hubPath = getProjectExperiencesPath(workspaceId, projectId);
 	const definition = dynamicApps?.experiences.find((item) => item.id === experienceId);
@@ -75,7 +75,7 @@ export function ProjectExperienceRoute({
 	const pageError = error ?? catalogError;
 
 	return (
-		<WorkPageShell workspaceId={workspaceId} projectId={projectId}>
+		<>
 			<main className="container mx-auto max-w-7xl px-4 py-8">
 				<PageHeader>
 					<BackLink to={hubPath} label="Back to experiences" />
@@ -131,6 +131,6 @@ export function ProjectExperienceRoute({
 					/>
 				)}
 			</main>
-		</WorkPageShell>
+		</>
 	);
 }

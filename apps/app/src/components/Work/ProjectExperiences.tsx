@@ -7,11 +7,10 @@ import { PageHeader } from "~/components/Core/PageHeader";
 import { PageTitle } from "~/components/Core/PageTitle";
 import { Button, Card } from "~/components/ui";
 import { useDynamicApps } from "~/hooks/useDynamicApps";
-import { useProject } from "~/hooks/useWorkspaces";
 import { getEnabledProjectExperiences, getProjectExperiencePath } from "~/lib/project-experiences";
+import { useWorkData } from "./WorkContext";
 import { cn } from "~/lib/utils";
 import { WorkCardGridSkeleton } from "./WorkLoadingSkeletons";
-import { WorkPageShell } from "./WorkPageShell";
 
 export function ProjectExperiences({
 	workspaceId,
@@ -20,7 +19,8 @@ export function ProjectExperiences({
 	workspaceId: string;
 	projectId: string;
 }) {
-	const { data: project, isLoading, error } = useProject(projectId);
+	const { projectQuery } = useWorkData();
+	const { data: project, isLoading, error } = projectQuery;
 	const { data: dynamicApps, isLoading: isCatalogLoading, error: catalogError } = useDynamicApps();
 	const experiences = getEnabledProjectExperiences(
 		project?.capabilities ?? [],
@@ -31,7 +31,7 @@ export function ProjectExperiences({
 	const pageError = error ?? catalogError;
 
 	return (
-		<WorkPageShell workspaceId={workspaceId} projectId={projectId}>
+		<>
 			<main className="container mx-auto max-w-6xl px-4 py-8">
 				<PageHeader>
 					<div className="flex items-start justify-between gap-4">
@@ -106,6 +106,6 @@ export function ProjectExperiences({
 					</div>
 				)}
 			</main>
-		</WorkPageShell>
+		</>
 	);
 }

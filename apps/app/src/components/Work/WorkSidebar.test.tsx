@@ -14,37 +14,39 @@ vi.mock("~/components/Sidebar/SidebarHeader", () => ({
 	SidebarHeader: () => <div>Polychat</div>,
 }));
 
-vi.mock("~/hooks/useWorkspaces", () => ({
-	useProject: () => ({
-		data: {
-			id: "project-1",
-			conversations: [
-				{
-					id: "conversation-1",
-					title: "Existing project chat",
-					createdAt: "2026-08-10T10:00:00.000Z",
-					updatedAt: null,
-					lastMessageAt: null,
-					messageCount: 2,
-					createdBy: { id: 1, name: "Nicholas", avatarUrl: null },
-				},
-			],
+vi.mock("./WorkContext", () => ({
+	useWorkData: () => ({
+		projectQuery: {
+			data: {
+				id: "project-1",
+				conversations: [
+					{
+						id: "conversation-1",
+						title: "Existing project chat",
+						createdAt: "2026-08-10T10:00:00.000Z",
+						updatedAt: null,
+						lastMessageAt: null,
+						messageCount: 2,
+						createdBy: { id: 1, name: "Nicholas", avatarUrl: null },
+					},
+				],
+			},
 		},
-	}),
-	useWorkspace: () => ({
-		data: {
-			id: "workspace-1",
-			name: "Product",
-			projects: [
-				{
-					id: "project-1",
-					name: "Work navigation",
-					colour: "#2563EB",
-				},
-			],
+		workspaceQuery: {
+			data: {
+				id: "workspace-1",
+				name: "Product",
+				projects: [
+					{
+						id: "project-1",
+						name: "Work navigation",
+						colour: "#2563EB",
+					},
+				],
+			},
 		},
+		workspacesQuery: { data: { workspaces: [] } },
 	}),
-	useWorkspaces: () => ({ data: { workspaces: [] } }),
 }));
 
 describe("WorkSidebar", () => {

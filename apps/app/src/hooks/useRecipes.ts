@@ -18,11 +18,15 @@ import { useCanAccessProFeatures } from "./useCanAccessProFeatures";
 export const ASSISTANT_RECIPES_QUERY_KEY = ["assistant-recipes"] as const;
 export const RECIPE_INSTALLATIONS_QUERY_KEY = ["recipe-installations"] as const;
 
+const RECIPE_CATALOG_STALE_TIME = 30 * 60 * 1000;
+const RECIPE_CATALOG_GC_TIME = 60 * 60 * 1000;
+
 export function useAssistantRecipes() {
 	return useQuery({
 		queryKey: ASSISTANT_RECIPES_QUERY_KEY,
 		queryFn: listAssistantRecipes,
-		staleTime: 5 * 60 * 1000,
+		staleTime: RECIPE_CATALOG_STALE_TIME,
+		gcTime: RECIPE_CATALOG_GC_TIME,
 	});
 }
 

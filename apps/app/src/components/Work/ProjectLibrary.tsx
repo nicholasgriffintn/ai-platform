@@ -10,7 +10,6 @@ import { ProjectCapabilityFilters } from "./ProjectCapabilityFilters";
 import { ProjectCapabilityGroups } from "./ProjectCapabilityGroups";
 import { ProjectToolConfigurationDialog } from "./ProjectToolConfigurationDialog";
 import { WorkCardGridSkeleton } from "./WorkLoadingSkeletons";
-import { WorkPageShell } from "./WorkPageShell";
 import { useProjectLibraryController } from "./useProjectLibraryController";
 
 export function ProjectLibrary({ workspaceId, projectId }: ProjectLibraryProps) {
@@ -19,7 +18,7 @@ export function ProjectLibrary({ workspaceId, projectId }: ProjectLibraryProps) 
 	const recipeWorkflows = controller.recipes.workflows;
 
 	return (
-		<WorkPageShell workspaceId={workspaceId} projectId={projectId}>
+		<>
 			<main className="container mx-auto max-w-6xl px-4 py-8">
 				<PageHeader>
 					<PageTitle title="Capabilities" />
@@ -118,7 +117,7 @@ export function ProjectLibrary({ workspaceId, projectId }: ProjectLibraryProps) 
 				onSubmit={controller.toolConfigurationDialog.submit}
 				tool={controller.toolConfigurationDialog.tool}
 			/>
-		</WorkPageShell>
+		</>
 	);
 }
 

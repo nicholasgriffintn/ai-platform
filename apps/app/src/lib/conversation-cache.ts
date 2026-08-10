@@ -70,6 +70,23 @@ function updateInfiniteConversation(
 	};
 }
 
+function removeFromInfiniteConversations(
+	data: InfiniteData<ConversationListPage> | undefined,
+	conversationId: string,
+) {
+	if (!data?.pages.length) {
+		return data;
+	}
+
+	return {
+		...data,
+		pages: data.pages.map((page) => ({
+			...page,
+			conversations: page.conversations.filter((chat) => chat.id !== conversationId),
+		})),
+	};
+}
+
 function updateRemoteConversationLists(
 	queryClient: QueryClient,
 	updater: (
@@ -95,10 +112,6 @@ export function upsertConversationInChatCaches(
 ) {
 	queryClient.setQueryData([CHATS_QUERY_KEY, conversation.id], conversation);
 
-	queryClient.setQueryData<Conversation[]>([CHATS_QUERY_KEY], (oldData = []) =>
-		upsertConversation(oldData, conversation),
-	);
-
 	if (options.includeLocalList) {
 		queryClient.setQueryData<Conversation[]>([CHATS_QUERY_KEY, "local"], (oldData = []) =>
 			upsertConversation(oldData, conversation),
@@ -121,15 +134,24 @@ export function updateConversationInChatCaches(
 		oldData ? updater(oldData) : oldData,
 	);
 
-	queryClient.setQueryData<Conversation[]>([CHATS_QUERY_KEY], (oldData = []) =>
-		updateConversation(oldData, conversationId, updater),
-	);
-
 	queryClient.setQueryData<Conversation[]>([CHATS_QUERY_KEY, "local"], (oldData = []) =>
 		updateConversation(oldData, conversationId, updater),
 	);
 
 	updateRemoteConversationLists(queryClient, (oldData) =>
 		updateInfiniteConversation(oldData, conversationId, updater),
+	);
+}
+
+export function removeConversationFromChatCaches(queryClient: QueryClient, conversationId: string) {
+	queryClient.removeQueries({
+		queryKey: [CHATS_QUERY_KEY, conversationId],
+		exact: true,
+	});
+	queryClient.setQueryData<Conversation[]>([CHATS_QUERY_KEY, "local"], (oldData) =>
+		oldData?.filter((chat) => chat.id !== conversationId),
+	);
+	updateRemoteConversationLists(queryClient, (oldData) =>
+		removeFromInfiniteConversations(oldData, conversationId),
 	);
 }

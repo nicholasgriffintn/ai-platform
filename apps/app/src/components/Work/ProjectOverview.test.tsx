@@ -1,37 +1,36 @@
 import { render, screen } from "@testing-library/react";
-import type { ReactNode } from "react";
 import { MemoryRouter } from "react-router";
 import { describe, expect, it, vi } from "vitest";
 
 import { ProjectOverview } from "./ProjectOverview";
 
-vi.mock("~/hooks/useWorkspaces", () => ({
-	useProject: () => ({
-		data: {
-			capabilities: [],
-			capabilityCount: 0,
-			conversationCount: 1,
-			conversations: [
-				{
-					createdBy: { name: "Member" },
-					id: "conversation-1",
-					messageCount: 2,
-					title: "Existing conversation",
-				},
-			],
-			description: "Project description",
-			instructions: "Project brief",
-			name: "Project",
+vi.mock("./WorkContext", () => ({
+	useWorkData: () => ({
+		projectQuery: {
+			data: {
+				capabilities: [],
+				capabilityCount: 0,
+				conversationCount: 1,
+				conversations: [
+					{
+						createdBy: { name: "Member" },
+						id: "conversation-1",
+						messageCount: 2,
+						title: "Existing conversation",
+					},
+				],
+				description: "Project description",
+				instructions: "Project brief",
+				name: "Project",
+			},
+			error: null,
+			isLoading: false,
 		},
-		error: null,
-		isLoading: false,
+		workspaceQuery: { data: { role: "owner" } },
+		workspacesQuery: { data: { workspaces: [] } },
 	}),
-	useWorkspace: () => ({ data: { role: "owner" } }),
 }));
 vi.mock("./ProjectBriefCard", () => ({ ProjectBriefCard: () => null }));
-vi.mock("./WorkPageShell", () => ({
-	WorkPageShell: ({ children }: { children: ReactNode }) => <div>{children}</div>,
-}));
 
 describe("ProjectOverview", () => {
 	it("presents new conversation as the primary project action", () => {

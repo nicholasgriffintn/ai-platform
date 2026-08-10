@@ -6,21 +6,21 @@ import { EmptyState } from "~/components/Core/EmptyState";
 import { PageHeader } from "~/components/Core/PageHeader";
 import { PageTitle } from "~/components/Core/PageTitle";
 import { Button, Card } from "~/components/ui";
-import { useWorkspaces } from "~/hooks/useWorkspaces";
 import { useChatStore } from "~/state/stores/chatStore";
 import { useUIStore } from "~/state/stores/uiStore";
+import { useWorkData } from "./WorkContext";
 import { CreateWorkspaceDialog } from "./CreateWorkspaceDialog";
 import { WorkCardGridSkeleton } from "./WorkLoadingSkeletons";
-import { WorkPageShell } from "./WorkPageShell";
 
 export function WorkOverview() {
 	const [isCreateOpen, setIsCreateOpen] = useState(false);
-	const { data, isLoading } = useWorkspaces();
+	const { workspacesQuery } = useWorkData();
+	const { data, isLoading } = workspacesQuery;
 	const isAuthenticated = useChatStore((state) => state.isAuthenticated);
 	const setShowLoginModal = useUIStore((state) => state.setShowLoginModal);
 
 	return (
-		<WorkPageShell>
+		<>
 			<main className="container mx-auto max-w-6xl px-4 py-8">
 				<PageHeader
 					actions={[
@@ -95,6 +95,6 @@ export function WorkOverview() {
 				) : null}
 			</main>
 			<CreateWorkspaceDialog open={isCreateOpen} onOpenChange={setIsCreateOpen} />
-		</WorkPageShell>
+		</>
 	);
 }

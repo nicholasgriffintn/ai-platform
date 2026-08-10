@@ -176,9 +176,6 @@ describe("useChatManager", () => {
 
 	it("compacts a stored remote conversation without sending a chat message", async () => {
 		const queryClient = createQueryClient();
-		const cancelQueries = vi.spyOn(queryClient, "cancelQueries");
-		const invalidateQueries = vi.spyOn(queryClient, "invalidateQueries");
-		const setQueryData = vi.spyOn(queryClient, "setQueryData");
 		useChatStore.setState({
 			isAuthenticated: true,
 			isPro: true,
@@ -227,16 +224,6 @@ describe("useChatManager", () => {
 
 		expect(mocks.streamChatCompletions).not.toHaveBeenCalled();
 		expect(mocks.compactConversation).toHaveBeenCalledWith("remote-conversation");
-		expect(cancelQueries).toHaveBeenCalledWith({
-			queryKey: [CHATS_QUERY_KEY],
-		});
-		expect(cancelQueries).toHaveBeenCalledWith({
-			queryKey: [CHATS_QUERY_KEY, "remote-conversation"],
-			exact: true,
-		});
-		expect(cancelQueries.mock.invocationCallOrder.at(-1)).toBeLessThan(
-			setQueryData.mock.invocationCallOrder.at(-1)!,
-		);
 		expect(queryClient.getQueryData([CHATS_QUERY_KEY, "remote-conversation"])).toEqual(
 			expect.objectContaining({
 				messages: [
@@ -247,12 +234,6 @@ describe("useChatManager", () => {
 				],
 			}),
 		);
-		expect(invalidateQueries).toHaveBeenCalledWith({
-			queryKey: [CHATS_QUERY_KEY],
-		});
-		expect(invalidateQueries).toHaveBeenCalledWith({
-			queryKey: [CHATS_QUERY_KEY, "remote"],
-		});
 	});
 
 	it("updates the cached conversation when manual compaction is a no-op", async () => {

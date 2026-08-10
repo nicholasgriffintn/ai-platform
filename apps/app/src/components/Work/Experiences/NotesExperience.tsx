@@ -21,7 +21,13 @@ export function NotesExperience({ basePath, projectId, subpath }: ExperienceProp
 	const segments = subpath.split("/").filter(Boolean);
 	const noteId = segments[0] && segments[0] !== "new" ? segments[0] : undefined;
 	const isNew = segments[0] === "new";
-	const { data: notes, isLoading, error } = useFetchNotes(projectId);
+	const {
+		data: notes,
+		isLoading,
+		error,
+	} = useFetchNotes(projectId, {
+		enabled: !isNew && !noteId,
+	});
 	const {
 		data: note,
 		isLoading: isNoteLoading,

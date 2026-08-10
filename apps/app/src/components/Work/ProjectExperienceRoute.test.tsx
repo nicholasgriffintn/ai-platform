@@ -1,19 +1,27 @@
 import { render, screen } from "@testing-library/react";
-import type { ReactNode } from "react";
 import { MemoryRouter } from "react-router";
 import { describe, expect, it, vi } from "vitest";
 
 import { ProjectExperienceRoute } from "./ProjectExperienceRoute";
 
-vi.mock("~/hooks/useWorkspaces", () => ({
-	useProject: () => ({
-		data: {
-			capabilities: [
-				{ capabilityId: "featured-note-taker", configuration: {}, id: "capability-1", kind: "app" },
-			],
+vi.mock("./WorkContext", () => ({
+	useWorkData: () => ({
+		projectQuery: {
+			data: {
+				capabilities: [
+					{
+						capabilityId: "featured-note-taker",
+						configuration: {},
+						id: "capability-1",
+						kind: "app",
+					},
+				],
+			},
+			error: null,
+			isLoading: false,
 		},
-		error: null,
-		isLoading: false,
+		workspaceQuery: { data: undefined },
+		workspacesQuery: { data: { workspaces: [] } },
 	}),
 }));
 vi.mock("~/hooks/useDynamicApps", () => ({
@@ -44,9 +52,6 @@ vi.mock("~/hooks/useDynamicApps", () => ({
 		error: null,
 		isLoading: false,
 	}),
-}));
-vi.mock("./WorkPageShell", () => ({
-	WorkPageShell: ({ children }: { children: ReactNode }) => <div>{children}</div>,
 }));
 vi.mock("./Experiences/NotesExperience", () => ({
 	NotesExperience: ({ basePath, projectId }: { basePath: string; projectId: string }) => (

@@ -5,9 +5,8 @@ import { ResponseRenderer } from "~/components/Apps/ResponseRenderer";
 import { BackLink } from "~/components/Core/BackLink";
 import { Card } from "~/components/ui";
 import { useDynamicApp, useExecuteDynamicApp } from "~/hooks/useDynamicApps";
-import { useProject } from "~/hooks/useWorkspaces";
+import { useWorkData } from "./WorkContext";
 import { ProjectAppSkeleton } from "./WorkLoadingSkeletons";
-import { WorkPageShell } from "./WorkPageShell";
 
 export function ProjectApp({
 	workspaceId,
@@ -18,7 +17,8 @@ export function ProjectApp({
 	projectId: string;
 	appId: string;
 }) {
-	const { data: project, isLoading: isProjectLoading } = useProject(projectId);
+	const { projectQuery } = useWorkData();
+	const { data: project, isLoading: isProjectLoading } = projectQuery;
 	const { data: app, isLoading: isAppLoading, error } = useDynamicApp(appId);
 	const executeApp = useExecuteDynamicApp();
 	const [result, setResult] = useState<Record<string, unknown> | null>(null);
@@ -27,29 +27,23 @@ export function ProjectApp({
 	);
 
 	if (isProjectLoading || isAppLoading) {
-		return (
-			<WorkPageShell workspaceId={workspaceId} projectId={projectId}>
-				<ProjectAppSkeleton />
-			</WorkPageShell>
-		);
+		return <ProjectAppSkeleton />;
 	}
 
 	if (error || !app || !hasCapability) {
 		return (
-			<WorkPageShell workspaceId={workspaceId} projectId={projectId}>
-				<main className="mx-auto max-w-xl px-6 py-16">
-					<Card className="p-8 text-center shadow-none">
-						<h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">App unavailable</h1>
-						<p className="text-sm leading-6 text-zinc-500">
-							This app is not enabled for the project, or it no longer exists.
-						</p>
-						<BackLink
-							to={`/work/${workspaceId}/projects/${projectId}/library`}
-							label="Back to capabilities"
-						/>
-					</Card>
-				</main>
-			</WorkPageShell>
+			<main className="mx-auto max-w-xl px-6 py-16">
+				<Card className="p-8 text-center shadow-none">
+					<h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">App unavailable</h1>
+					<p className="text-sm leading-6 text-zinc-500">
+						This app is not enabled for the project, or it no longer exists.
+					</p>
+					<BackLink
+						to={`/work/${workspaceId}/projects/${projectId}/library`}
+						label="Back to capabilities"
+					/>
+				</Card>
+			</main>
 		);
 	}
 
@@ -58,7 +52,7 @@ export function ProjectApp({
 	};
 
 	return (
-		<WorkPageShell workspaceId={workspaceId} projectId={projectId}>
+		<>
 			<main className="mx-auto max-w-5xl px-6 py-10 md:px-10 md:py-14">
 				<header className="mb-8">
 					<BackLink
@@ -77,6 +71,6 @@ export function ProjectApp({
 					/>
 				)}
 			</main>
-		</WorkPageShell>
+		</>
 	);
 }

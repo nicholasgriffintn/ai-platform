@@ -5,10 +5,9 @@ import { EmptyState } from "~/components/Core/EmptyState";
 import { PageHeader } from "~/components/Core/PageHeader";
 import { PageTitle } from "~/components/Core/PageTitle";
 import { Button, Card } from "~/components/ui";
-import { useProject, useWorkspace } from "~/hooks/useWorkspaces";
+import { useWorkData } from "./WorkContext";
 import { ProjectBriefCard } from "./ProjectBriefCard";
 import { ProjectOverviewSkeleton } from "./WorkLoadingSkeletons";
-import { WorkPageShell } from "./WorkPageShell";
 
 export function ProjectOverview({
 	workspaceId,
@@ -17,24 +16,16 @@ export function ProjectOverview({
 	workspaceId: string;
 	projectId: string;
 }) {
-	const { data: project, isLoading, error } = useProject(projectId);
-	const { data: workspace } = useWorkspace(workspaceId);
-	if (isLoading)
-		return (
-			<WorkPageShell workspaceId={workspaceId} projectId={projectId}>
-				<ProjectOverviewSkeleton />
-			</WorkPageShell>
-		);
+	const { projectQuery, workspaceQuery } = useWorkData();
+	const { data: project, isLoading, error } = projectQuery;
+	const { data: workspace } = workspaceQuery;
+	if (isLoading) return <ProjectOverviewSkeleton />;
 	if (error || !project)
-		return (
-			<WorkPageShell workspaceId={workspaceId} projectId={projectId}>
-				<div className="p-10 text-sm text-red-700">{error?.message ?? "Project not found"}</div>
-			</WorkPageShell>
-		);
+		return <div className="p-10 text-sm text-red-700">{error?.message ?? "Project not found"}</div>;
 	const canManage = workspace?.role === "owner" || workspace?.role === "admin";
 
 	return (
-		<WorkPageShell workspaceId={workspaceId} projectId={projectId}>
+		<>
 			<main className="container mx-auto max-w-6xl px-4 py-8">
 				<PageHeader>
 					<div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
@@ -132,6 +123,6 @@ export function ProjectOverview({
 					</aside>
 				</div>
 			</main>
-		</WorkPageShell>
+		</>
 	);
 }

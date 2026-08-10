@@ -150,9 +150,8 @@ export function TrainingDashboard() {
 	const handleStartJob = useCallback(
 		async (request: StartTrainingJobRequest) => {
 			await startJob(request);
-			void refetchJobs();
 		},
-		[refetchJobs, startJob],
+		[startJob],
 	);
 
 	const handleOpenJobLogs = useCallback((job: TrainingJob) => {
@@ -170,9 +169,8 @@ export function TrainingDashboard() {
 	const handleDeploy = useCallback(
 		async (request: DeployTrainingModelRequest) => {
 			await deployModel(request);
-			void refetchDeployments();
 		},
-		[deployModel, refetchDeployments],
+		[deployModel],
 	);
 
 	const handleOpenDeploymentLogs = useCallback((deployment: TrainingDeployment) => {
@@ -196,10 +194,9 @@ export function TrainingDashboard() {
 			if (logsDeployment && trainingRecordKey(logsDeployment) === trainingRecordKey(deployment)) {
 				setLogsDeploymentTarget(null);
 			}
-			void refetchDeployments();
 			return result;
 		},
-		[deleteDeployment, logsDeployment, refetchDeployments],
+		[deleteDeployment, logsDeployment],
 	);
 
 	if (isLoading) {

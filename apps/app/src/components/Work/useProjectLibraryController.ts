@@ -8,12 +8,7 @@ import type {
 
 import { useProjectCapabilityCatalog } from "~/hooks/useProjectCapabilityCatalog";
 import { useRecipeInstallations } from "~/hooks/useRecipes";
-import {
-	useAddProjectCapability,
-	useProject,
-	useRemoveProjectCapability,
-	useWorkspace,
-} from "~/hooks/useWorkspaces";
+import { useAddProjectCapability, useRemoveProjectCapability } from "~/hooks/useWorkspaces";
 import {
 	filterProjectCapabilities,
 	getProjectCapabilityCategories,
@@ -24,10 +19,10 @@ import {
 import { useRecipeActionRequest } from "~/components/Apps/Recipes/useRecipeActionRequest";
 import { useRecipeWorkflows } from "~/components/Apps/Recipes/useRecipeWorkflows";
 import type { ProjectToolConfiguration } from "~/lib/project-tool-configuration";
+import { useWorkData } from "./WorkContext";
 
 export function useProjectLibraryController(workspaceId: string, projectId: string) {
-	const projectQuery = useProject(projectId);
-	const workspaceQuery = useWorkspace(workspaceId);
+	const { projectQuery, workspaceQuery } = useWorkData();
 	const catalog = useProjectCapabilityCatalog();
 	const addCapability = useAddProjectCapability();
 	const removeCapability = useRemoveProjectCapability();

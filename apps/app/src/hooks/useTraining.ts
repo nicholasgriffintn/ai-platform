@@ -36,6 +36,8 @@ export const TRAINING_QUERY_KEYS = {
 
 const ACTIVE_JOB_STATUSES = new Set(["starting", "inprogress", "in progress", "stopping"]);
 const ACTIVE_DEPLOYMENT_STATUSES = new Set(["creating", "updating"]);
+const TRAINING_MODEL_STALE_TIME = 30 * 60 * 1000;
+const TRAINING_STATUS_STALE_TIME = 30 * 1000;
 
 interface TrainingEventsOptions {
 	enabled?: boolean;
@@ -46,7 +48,7 @@ export function useTrainingModels() {
 	return useQuery({
 		queryKey: TRAINING_QUERY_KEYS.models,
 		queryFn: fetchTrainingModels,
-		staleTime: 1000 * 60 * 5,
+		staleTime: TRAINING_MODEL_STALE_TIME,
 	});
 }
 
@@ -54,6 +56,7 @@ export function useTrainingJobs() {
 	return useQuery({
 		queryKey: TRAINING_QUERY_KEYS.jobs,
 		queryFn: fetchTrainingJobs,
+		staleTime: TRAINING_STATUS_STALE_TIME,
 		refetchInterval: (query) => {
 			const jobs = query.state.data;
 			if (!jobs?.some((job) => ACTIVE_JOB_STATUSES.has(job.status.toLowerCase()))) {
@@ -79,6 +82,7 @@ export function useTrainingJobEvents(
 			return fetchTrainingJobEvents(provider, jobName);
 		},
 		enabled: Boolean(enabled && provider && jobName),
+		staleTime: TRAINING_STATUS_STALE_TIME,
 		refetchInterval: enabled && provider && jobName ? (options.refetchInterval ?? false) : false,
 	});
 }
@@ -97,6 +101,7 @@ export function useTrainingDeploymentEvents(
 			return fetchTrainingDeploymentEvents(provider, endpointName);
 		},
 		enabled: Boolean(enabled && provider && endpointName),
+		staleTime: TRAINING_STATUS_STALE_TIME,
 		refetchInterval:
 			enabled && provider && endpointName ? (options.refetchInterval ?? false) : false,
 	});
@@ -106,6 +111,7 @@ export function useTrainingDeployments() {
 	return useQuery({
 		queryKey: TRAINING_QUERY_KEYS.deployments,
 		queryFn: fetchTrainingDeployments,
+		staleTime: TRAINING_STATUS_STALE_TIME,
 		refetchInterval: (query) => {
 			const deployments = query.state.data;
 			if (

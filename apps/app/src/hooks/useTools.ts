@@ -8,6 +8,7 @@ export function useTools() {
 	return useQuery({
 		queryKey: [TOOLS_QUERY_KEY],
 		queryFn: apiService.fetchTools,
-		staleTime: 1000 * 60 * 30, // Cache for 30 minutes
+		staleTime: 1000 * 60 * 60,
+		gcTime: 1000 * 60 * 60,
 	});
 }

@@ -11,10 +11,11 @@ import {
 	summariseArticle,
 } from "~/lib/api/dynamic-apps";
 
-export const useFetchArticleReports = (projectId?: string) => {
+export const useFetchArticleReports = (projectId?: string, options?: { enabled?: boolean }) => {
 	return useQuery({
 		queryKey: ["articles", projectId, "reports"],
 		queryFn: () => fetchArticles(projectId),
+		enabled: options?.enabled ?? true,
 		select: (data) => data.articles || [],
 	});
 };

@@ -13,10 +13,10 @@ import { Link, NavLink, useLocation, useSearchParams } from "react-router";
 import { SidebarFooter } from "~/components/Sidebar/SidebarFooter";
 import { SidebarHeader } from "~/components/Sidebar/SidebarHeader";
 import { SidebarShell } from "~/components/ui";
-import { useProject, useWorkspace, useWorkspaces } from "~/hooks/useWorkspaces";
 import { cn } from "~/lib/utils";
 import { useChatStore } from "~/state/stores/chatStore";
 import { useUIStore } from "~/state/stores/uiStore";
+import { useWorkData } from "./WorkContext";
 
 interface WorkSidebarProps {
 	workspaceId?: string;
@@ -25,9 +25,10 @@ interface WorkSidebarProps {
 
 export function WorkSidebar({ workspaceId, projectId }: WorkSidebarProps) {
 	const { sidebarVisible, setSidebarVisible, isMobile } = useUIStore();
-	const { data } = useWorkspaces();
-	const { data: workspace } = useWorkspace(workspaceId);
-	const { data: project } = useProject(projectId);
+	const { workspacesQuery, workspaceQuery, projectQuery } = useWorkData();
+	const { data } = workspacesQuery;
+	const { data: workspace } = workspaceQuery;
+	const { data: project } = projectQuery;
 	const { pathname } = useLocation();
 	const [searchParams] = useSearchParams();
 	const { clearCurrentConversation, currentConversationId, setCurrentConversationId } =

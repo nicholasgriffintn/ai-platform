@@ -1,14 +1,14 @@
 import { render, screen } from "@testing-library/react";
-import type { ReactNode } from "react";
 import { describe, expect, it, vi } from "vitest";
 
 import { WorkspaceMembers } from "./WorkspaceMembers";
 
-vi.mock("~/hooks/useWorkspaces", () => ({
-	useWorkspace: () => ({ data: undefined, error: null, isLoading: true }),
-}));
-vi.mock("./WorkPageShell", () => ({
-	WorkPageShell: ({ children }: { children: ReactNode }) => <div>{children}</div>,
+vi.mock("./WorkContext", () => ({
+	useWorkData: () => ({
+		projectQuery: { data: undefined },
+		workspaceQuery: { data: undefined, error: null, isLoading: true },
+		workspacesQuery: { data: { workspaces: [] } },
+	}),
 }));
 
 describe("WorkspaceMembers", () => {

@@ -12,7 +12,13 @@ export function ArticlesExperience({ basePath, projectId, subpath }: ExperienceP
 	const segments = subpath.split("/").filter(Boolean);
 	const articleId = segments[0] && segments[0] !== "new" ? segments[0] : undefined;
 	const isNew = segments[0] === "new";
-	const { data: reports, isLoading, error } = useFetchArticleReports(projectId);
+	const {
+		data: reports,
+		isLoading,
+		error,
+	} = useFetchArticleReports(projectId, {
+		enabled: !isNew && !articleId,
+	});
 	const {
 		data: report,
 		isLoading: isReportLoading,

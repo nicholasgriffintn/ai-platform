@@ -1,12 +1,16 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient, type QueryClient } from "@tanstack/react-query";
 
 import type {
 	AddProjectCapabilityInput,
 	CreateProjectInput,
 	CreateWorkspaceInput,
 	CreateWorkspaceInvitationInput,
+	ProjectDetail,
+	ProjectSummary,
 	UpdateProjectInput,
 	UpdateWorkspaceInput,
+	WorkspaceDetail,
+	WorkspaceSummary,
 } from "@assistant/schemas";
 import {
 	acceptWorkspaceInvitation,
@@ -27,12 +31,102 @@ export const WORKSPACES_QUERY_KEY = ["workspaces"] as const;
 export const workspaceQueryKey = (workspaceId: string) => ["workspace", workspaceId] as const;
 export const projectQueryKey = (projectId: string) => ["project", projectId] as const;
 
+const WORK_QUERY_STALE_TIME = 2 * 60 * 1000;
+const WORK_QUERY_GC_TIME = 30 * 60 * 1000;
+
+type WorkspaceListData = { workspaces: WorkspaceSummary[] };
+
+function projectSummaryFromDetail(project: ProjectDetail): ProjectSummary {
+	return {
+		id: project.id,
+		workspaceId: project.workspaceId,
+		name: project.name,
+		description: project.description,
+		instructions: project.instructions,
+		colour: project.colour,
+		createdBy: project.createdBy,
+		createdAt: project.createdAt,
+		updatedAt: project.updatedAt,
+		conversationCount: project.conversationCount,
+		capabilityCount: project.capabilityCount,
+	};
+}
+
+function workspaceSummaryFromDetail(workspace: WorkspaceDetail): WorkspaceSummary {
+	return {
+		id: workspace.id,
+		name: workspace.name,
+		description: workspace.description,
+		colour: workspace.colour,
+		role: workspace.role,
+		memberCount: workspace.memberCount,
+		projectCount: workspace.projectCount,
+		createdAt: workspace.createdAt,
+		updatedAt: workspace.updatedAt,
+	};
+}
+
+function updateProjectInWorkspaceCaches(queryClient: QueryClient, project: ProjectDetail) {
+	const summary = projectSummaryFromDetail(project);
+	queryClient.setQueryData<WorkspaceDetail>(workspaceQueryKey(project.workspaceId), (workspace) => {
+		if (!workspace) return workspace;
+		return {
+			...workspace,
+			projects: workspace.projects.map((item) => (item.id === project.id ? summary : item)),
+		};
+	});
+}
+
+function addProjectToWorkspaceCaches(queryClient: QueryClient, project: ProjectDetail) {
+	const summary = projectSummaryFromDetail(project);
+	queryClient.setQueryData<WorkspaceDetail>(workspaceQueryKey(project.workspaceId), (workspace) => {
+		if (!workspace || workspace.projects.some((item) => item.id === project.id)) return workspace;
+		return {
+			...workspace,
+			projectCount: workspace.projectCount + 1,
+			projects: [...workspace.projects, summary],
+		};
+	});
+	queryClient.setQueryData<WorkspaceListData>(WORKSPACES_QUERY_KEY, (data) => {
+		if (!data) return data;
+		return {
+			workspaces: data.workspaces.map((workspace) =>
+				workspace.id === project.workspaceId
+					? { ...workspace, projectCount: workspace.projectCount + 1 }
+					: workspace,
+			),
+		};
+	});
+}
+
+function addWorkspaceToListCache(queryClient: QueryClient, workspace: WorkspaceDetail) {
+	queryClient.setQueryData<WorkspaceListData>(WORKSPACES_QUERY_KEY, (data) => {
+		if (!data || data.workspaces.some((item) => item.id === workspace.id)) return data;
+		return { workspaces: [workspaceSummaryFromDetail(workspace), ...data.workspaces] };
+	});
+}
+
+function upsertWorkspaceInListCache(queryClient: QueryClient, workspace: WorkspaceDetail) {
+	queryClient.setQueryData<WorkspaceListData>(WORKSPACES_QUERY_KEY, (data) => {
+		if (!data) return data;
+		const summary = workspaceSummaryFromDetail(workspace);
+		if (!data.workspaces.some((item) => item.id === workspace.id)) {
+			return { workspaces: [summary, ...data.workspaces] };
+		}
+		return {
+			workspaces: data.workspaces.map((item) => (item.id === workspace.id ? summary : item)),
+		};
+	});
+}
+
 export function useWorkspaces() {
 	const isAuthenticated = useChatStore((state) => state.isAuthenticated);
 	return useQuery({
 		queryKey: WORKSPACES_QUERY_KEY,
 		queryFn: listWorkspaces,
 		enabled: isAuthenticated,
+		staleTime: WORK_QUERY_STALE_TIME,
+		gcTime: WORK_QUERY_GC_TIME,
 	});
 }
 
@@ -41,6 +135,8 @@ export function useWorkspace(workspaceId?: string) {
 		queryKey: workspaceQueryKey(workspaceId ?? ""),
 		queryFn: () => getWorkspace(workspaceId!),
 		enabled: Boolean(workspaceId),
+		staleTime: WORK_QUERY_STALE_TIME,
+		gcTime: WORK_QUERY_GC_TIME,
 	});
 }
 
@@ -49,6 +145,8 @@ export function useProject(projectId?: string) {
 		queryKey: projectQueryKey(projectId ?? ""),
 		queryFn: () => getProject(projectId!),
 		enabled: Boolean(projectId),
+		staleTime: WORK_QUERY_STALE_TIME,
+		gcTime: WORK_QUERY_GC_TIME,
 	});
 }
 
@@ -58,7 +156,7 @@ export function useCreateWorkspace() {
 		mutationFn: (input: CreateWorkspaceInput) => createWorkspace(input),
 		onSuccess: (workspace) => {
 			queryClient.setQueryData(workspaceQueryKey(workspace.id), workspace);
-			queryClient.invalidateQueries({ queryKey: WORKSPACES_QUERY_KEY });
+			addWorkspaceToListCache(queryClient, workspace);
 		},
 	});
 }
@@ -70,7 +168,7 @@ export function useUpdateWorkspace() {
 			updateWorkspace(workspaceId, input),
 		onSuccess: (workspace) => {
 			queryClient.setQueryData(workspaceQueryKey(workspace.id), workspace);
-			queryClient.invalidateQueries({ queryKey: WORKSPACES_QUERY_KEY });
+			upsertWorkspaceInListCache(queryClient, workspace);
 		},
 	});
 }
@@ -82,8 +180,7 @@ export function useCreateProject() {
 			createProject(workspaceId, input),
 		onSuccess: (project) => {
 			queryClient.setQueryData(projectQueryKey(project.id), project);
-			queryClient.invalidateQueries({ queryKey: workspaceQueryKey(project.workspaceId) });
-			queryClient.invalidateQueries({ queryKey: WORKSPACES_QUERY_KEY });
+			addProjectToWorkspaceCaches(queryClient, project);
 		},
 	});
 }
@@ -95,7 +192,7 @@ export function useUpdateProject() {
 			updateProject(projectId, input),
 		onSuccess: (project) => {
 			queryClient.setQueryData(projectQueryKey(project.id), project);
-			queryClient.invalidateQueries({ queryKey: workspaceQueryKey(project.workspaceId) });
+			updateProjectInWorkspaceCaches(queryClient, project);
 		},
 	});
 }
@@ -121,7 +218,7 @@ export function useAcceptWorkspaceInvitation() {
 		mutationFn: acceptWorkspaceInvitation,
 		onSuccess: (workspace) => {
 			queryClient.setQueryData(workspaceQueryKey(workspace.id), workspace);
-			queryClient.invalidateQueries({ queryKey: WORKSPACES_QUERY_KEY });
+			upsertWorkspaceInListCache(queryClient, workspace);
 		},
 	});
 }
@@ -131,7 +228,10 @@ export function useAddProjectCapability() {
 	return useMutation({
 		mutationFn: ({ projectId, input }: { projectId: string; input: AddProjectCapabilityInput }) =>
 			addProjectCapability(projectId, input),
-		onSuccess: (project) => queryClient.setQueryData(projectQueryKey(project.id), project),
+		onSuccess: (project) => {
+			queryClient.setQueryData(projectQueryKey(project.id), project);
+			updateProjectInWorkspaceCaches(queryClient, project);
+		},
 	});
 }
 
@@ -140,6 +240,9 @@ export function useRemoveProjectCapability() {
 	return useMutation({
 		mutationFn: ({ projectId, capabilityId }: { projectId: string; capabilityId: string }) =>
 			removeProjectCapability(projectId, capabilityId),
-		onSuccess: (project) => queryClient.setQueryData(projectQueryKey(project.id), project),
+		onSuccess: (project) => {
+			queryClient.setQueryData(projectQueryKey(project.id), project);
+			updateProjectInWorkspaceCaches(queryClient, project);
+		},
 	});
 }

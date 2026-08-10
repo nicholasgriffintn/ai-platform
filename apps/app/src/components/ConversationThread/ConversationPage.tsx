@@ -18,12 +18,18 @@ import type { ChatRequestOptions } from "~/types";
 import { ConversationThread, type ConversationThreadModeConfig } from ".";
 
 interface ConversationPageProps {
+	embedded?: boolean;
 	title: string;
 	modeConfig?: ConversationThreadModeConfig;
 	sidebarContent?: ReactNode;
 }
 
-export function ConversationPage({ title, modeConfig, sidebarContent }: ConversationPageProps) {
+export function ConversationPage({
+	embedded = false,
+	title,
+	modeConfig,
+	sidebarContent,
+}: ConversationPageProps) {
 	const {
 		clearCurrentConversation,
 		initializeStore,
@@ -99,6 +105,25 @@ export function ConversationPage({ title, modeConfig, sidebarContent }: Conversa
 		};
 	}, [modeConfig, urlRequestOptions, urlState]);
 
+	const content = (
+		<div className="flex h-full min-h-0 flex-col overflow-hidden">
+			{!embedded && <ProductModeHeader />}
+			<div className="relative flex min-h-0 flex-1 flex-grow flex-row overflow-hidden">
+				<div className="flex min-h-0 w-full flex-grow flex-col">
+					<div className="relative min-h-0 flex-1 overflow-hidden">
+						<ConversationThread modeConfig={effectiveModeConfig} />
+					</div>
+				</div>
+			</div>
+
+			<SearchDialog isOpen={showSearch} onClose={() => setShowSearch(false)} />
+		</div>
+	);
+
+	if (embedded) {
+		return content;
+	}
+
 	return (
 		<PageShell
 			sidebarContent={sidebarContent ?? <ChatSidebar />}
@@ -106,18 +131,7 @@ export function ConversationPage({ title, modeConfig, sidebarContent }: Conversa
 			displayNavBar={false}
 			headerContent={<PageTitle title={title} className="sr-only" />}
 		>
-			<div className="flex h-full min-h-0 flex-col overflow-hidden">
-				<ProductModeHeader />
-				<div className="relative flex min-h-0 flex-1 flex-grow flex-row overflow-hidden">
-					<div className="flex min-h-0 w-full flex-grow flex-col">
-						<div className="relative min-h-0 flex-1 overflow-hidden">
-							<ConversationThread modeConfig={effectiveModeConfig} />
-						</div>
-					</div>
-				</div>
-
-				<SearchDialog isOpen={showSearch} onClose={() => setShowSearch(false)} />
-			</div>
+			{content}
 		</PageShell>
 	);
 }

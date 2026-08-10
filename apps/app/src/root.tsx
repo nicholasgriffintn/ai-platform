@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import { useEffect } from "react";
-import { Outlet, isRouteErrorResponse } from "react-router";
+import { useEffect, useState } from "react";
+import { Outlet, isRouteErrorResponse, ScrollRestoration } from "react-router";
 
 import { AnalyticsBootstrap } from "~/components/Core/AnalyticsBootstrap";
 import { AppInitializer } from "~/components/Core/AppInitializer";
@@ -18,16 +18,30 @@ import type { Route } from "./+types/root";
 
 import { shouldShowDevTools } from "~/constants";
 
-const queryClient = new QueryClient({
-	defaultOptions: {
-		queries: {
-			staleTime: 1000 * 60 * 5, // 5 minutes
-			retry: shouldRetryApiQuery,
+function createQueryClient() {
+	return new QueryClient({
+		defaultOptions: {
+			queries: {
+				staleTime: 1000 * 60 * 5,
+				retry: shouldRetryApiQuery,
+			},
 		},
-	},
-});
+	});
+}
+
+let browserQueryClient: QueryClient | undefined;
+
+function getQueryClient() {
+	if (typeof window === "undefined") {
+		return createQueryClient();
+	}
+
+	return (browserQueryClient ??= createQueryClient());
+}
 
 export const Layout = ({ children }: { children: React.ReactNode }) => {
+	const [queryClient] = useState(getQueryClient);
+
 	return (
 		<AppShell>
 			<QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
@@ -41,6 +55,7 @@ export default function Root() {
 			<LoadingProvider>
 				<AppInitializer>
 					<CaptchaProvider>
+						<ScrollRestoration />
 						<AnalyticsBootstrap />
 						<Outlet />
 						<ServiceWorkerRegistration />
