@@ -1,3 +1,5 @@
+import type { ChatHostedToolSettings } from "@assistant/schemas";
+
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import type { CoreChatOptions } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -7,11 +9,13 @@ import {
 	RECIPE_SETUP_TOOL,
 } from "~/services/apps/recipes/catalog";
 import { requireProjectAccess } from "./access";
+import { resolveProjectTools } from "./projectTools";
 
 export interface ProjectChatContext {
 	projectId: string;
 	instructions: string;
 	enabledTools: string[];
+	toolOptions?: ChatHostedToolSettings;
 }
 
 export async function resolveProjectChatContext(
@@ -46,9 +50,8 @@ export async function resolveProjectChatContext(
 
 	const { project } = await requireProjectAccess(context, projectId);
 	const capabilities = await context.repositories.workspaces.listProjectCapabilities(projectId);
-	const toolIds = capabilities
-		.filter((capability) => capability.kind === "tool")
-		.map((capability) => capability.capability_id);
+	const projectTools = resolveProjectTools(capabilities);
+	const toolIds = [...projectTools.enabledTools];
 	const recipeId = options.options?.recipe?.id;
 	const hasRecipe =
 		recipeId &&
@@ -69,5 +72,6 @@ export async function resolveProjectChatContext(
 		projectId,
 		instructions: project.instructions,
 		enabledTools: [...new Set(toolIds)],
+		toolOptions: projectTools.toolOptions,
 	};
 }

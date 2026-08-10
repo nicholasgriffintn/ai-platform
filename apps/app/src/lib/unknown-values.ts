@@ -30,3 +30,15 @@ export function formatUnknownValue(value: unknown): string {
 		return String(value);
 	}
 }
+
+export function parseRecordValue(value: unknown): Record<string, unknown> {
+	if (isRecord(value)) return value;
+	if (typeof value !== "string") return {};
+
+	try {
+		const parsed: unknown = JSON.parse(value);
+		return isRecord(parsed) ? parsed : {};
+	} catch {
+		return {};
+	}
+}

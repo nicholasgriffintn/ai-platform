@@ -165,4 +165,32 @@ describe("assistant action execution", () => {
 		});
 		expect(startConnector).not.toHaveBeenCalled();
 	});
+
+	it("does not fabricate a removed global route when scheduling outside a project", async () => {
+		await expect(
+			executeAssistantAction(
+				{
+					input: "@Morning Briefing",
+					item: {
+						id: "installed_recipe:installation-1",
+						kind: "installed_recipe",
+						label: "Morning Briefing",
+						launch: { kind: "schedule", recipeId: "morning-briefing" },
+					},
+				},
+				{
+					installRecipe: vi.fn(),
+					invokeRecipe: vi.fn(),
+					startConnector: vi.fn(),
+				},
+			),
+		).resolves.toEqual({
+			input: "@Morning Briefing",
+			kind: "submit",
+			notification: {
+				message: "Schedule this recipe from a Work project's Capabilities page.",
+				type: "error",
+			},
+		});
+	});
 });

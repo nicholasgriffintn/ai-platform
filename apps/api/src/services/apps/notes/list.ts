@@ -35,10 +35,12 @@ export async function listNotes({
 	context,
 	env,
 	userId,
+	projectId,
 }: {
 	context?: ServiceContext;
 	env?: IEnv;
 	userId: number;
+	projectId?: string;
 }): Promise<Note[]> {
 	if (!userId) {
 		throw new AssistantError("User ID is required", ErrorType.PARAMS_ERROR);
@@ -47,7 +49,9 @@ export async function listNotes({
 	const serviceContext = resolveServiceContext({ context, env });
 	serviceContext.ensureDatabase();
 	const repo = serviceContext.repositories.appData;
-	const list = await repo.getAppDataByUserAndApp(userId, "notes");
+	const list = projectId
+		? await repo.getAppDataByProjectAndApp(projectId, "notes")
+		: await repo.getAppDataByUserAndApp(userId, "notes");
 
 	return list.map(mapAppDataToNote);
 }
@@ -57,11 +61,13 @@ export async function getNote({
 	env,
 	userId,
 	noteId,
+	projectId,
 }: {
 	context?: ServiceContext;
 	env?: IEnv;
 	userId: number;
 	noteId: string;
+	projectId?: string;
 }): Promise<Note> {
 	if (!userId || !noteId) {
 		throw new AssistantError("Note ID and user ID are required", ErrorType.PARAMS_ERROR);
@@ -70,9 +76,11 @@ export async function getNote({
 	const serviceContext = resolveServiceContext({ context, env });
 	serviceContext.ensureDatabase();
 	const repo = serviceContext.repositories.appData;
-	const entry = await repo.getAppDataById(noteId);
+	const entry = projectId
+		? await repo.getAppDataByProjectAndId(projectId, noteId)
+		: await repo.getAppDataById(noteId);
 
-	if (!entry || entry.user_id !== userId || entry.app_id !== "notes") {
+	if (!entry || entry.app_id !== "notes" || (!projectId && entry.user_id !== userId)) {
 		throw new AssistantError("Note not found", ErrorType.NOT_FOUND);
 	}
 
@@ -84,18 +92,19 @@ export async function createNote({
 	env,
 	user,
 	data,
+	projectId,
 }: {
 	context?: ServiceContext;
 	env?: IEnv;
 	user: IUser;
 	data: NoteCreateRequest;
+	projectId?: string;
 }): Promise<Note> {
 	if (!user?.id) {
 		throw new AssistantError("User data required", ErrorType.PARAMS_ERROR);
 	}
 	const serviceContext = resolveServiceContext({ context, env, user });
 	serviceContext.ensureDatabase();
-	const runtimeEnv = serviceContext.env as IEnv;
 	const repo = serviceContext.repositories.appData;
 	const noteId = generateId();
 
@@ -116,7 +125,9 @@ export async function createNote({
 		metadata: { ...generatedMetadata, ...data.metadata },
 	};
 
-	const entry = await repo.createAppDataWithItem(user.id, "notes", noteId, "note", appData);
+	const entry = projectId
+		? await repo.createAppDataWithItem(user.id, "notes", noteId, "note", appData, projectId)
+		: await repo.createAppDataWithItem(user.id, "notes", noteId, "note", appData);
 
 	const full = await repo.getAppDataById(entry.id);
 	if (!full) {
@@ -132,12 +143,14 @@ export async function updateNote({
 	user,
 	noteId,
 	data,
+	projectId,
 }: {
 	context?: ServiceContext;
 	env?: IEnv;
 	user: IUser;
 	noteId: string;
 	data: NoteUpdateRequest;
+	projectId?: string;
 }): Promise<Note> {
 	if (!user?.id || !noteId) {
 		throw new AssistantError("Note ID and user ID are required", ErrorType.PARAMS_ERROR);
@@ -145,11 +158,12 @@ export async function updateNote({
 
 	const serviceContext = resolveServiceContext({ context, env, user });
 	serviceContext.ensureDatabase();
-	const runtimeEnv = serviceContext.env as IEnv;
 	const repo = serviceContext.repositories.appData;
-	const existing = await repo.getAppDataById(noteId);
+	const existing = projectId
+		? await repo.getAppDataByProjectAndId(projectId, noteId)
+		: await repo.getAppDataById(noteId);
 
-	if (!existing || existing.user_id !== user.id || existing.app_id !== "notes") {
+	if (!existing || existing.app_id !== "notes" || (!projectId && existing.user_id !== user.id)) {
 		throw new AssistantError("Note not found", ErrorType.NOT_FOUND);
 	}
 
@@ -210,7 +224,9 @@ export async function updateNote({
 	};
 
 	await repo.updateAppData(noteId, finalData);
-	const updated = await repo.getAppDataById(noteId);
+	const updated = projectId
+		? await repo.getAppDataByProjectAndId(projectId, noteId)
+		: await repo.getAppDataById(noteId);
 	if (!updated) {
 		throw new AssistantError("Updated note could not be loaded", ErrorType.UNKNOWN_ERROR);
 	}
@@ -223,11 +239,13 @@ export async function deleteNote({
 	env,
 	user,
 	noteId,
+	projectId,
 }: {
 	context?: ServiceContext;
 	env?: IEnv;
 	user: IUser;
 	noteId: string;
+	projectId?: string;
 }): Promise<void> {
 	if (!user?.id || !noteId) {
 		throw new AssistantError("Note ID and user ID are required", ErrorType.PARAMS_ERROR);
@@ -236,9 +254,11 @@ export async function deleteNote({
 	const serviceContext = resolveServiceContext({ context, env, user });
 	serviceContext.ensureDatabase();
 	const repo = serviceContext.repositories.appData;
-	const existing = await repo.getAppDataById(noteId);
+	const existing = projectId
+		? await repo.getAppDataByProjectAndId(projectId, noteId)
+		: await repo.getAppDataById(noteId);
 
-	if (!existing || existing.user_id !== user.id || existing.app_id !== "notes") {
+	if (!existing || existing.app_id !== "notes" || (!projectId && existing.user_id !== user.id)) {
 		throw new AssistantError("Note not found", ErrorType.NOT_FOUND);
 	}
 
@@ -251,12 +271,14 @@ export async function formatNote({
 	user,
 	noteId,
 	prompt,
+	projectId,
 }: {
 	context?: ServiceContext;
 	env?: IEnv;
 	user: IUser;
 	noteId: string;
 	prompt?: string;
+	projectId?: string;
 }): Promise<NoteFormatResponse> {
 	const serviceContext = resolveServiceContext({ context, env, user });
 	serviceContext.ensureDatabase();
@@ -266,6 +288,7 @@ export async function formatNote({
 		context: serviceContext,
 		userId: user.id,
 		noteId,
+		projectId,
 	});
 
 	const promptText = `Transform and enhance my notes using these guidelines:

@@ -1,34 +1,56 @@
 import type {
 	AssistantActionItem,
+	AssistantRecipe,
+	DynamicAppCatalogItem,
 	ProjectCapability,
 	ProjectCapabilityKind,
+	ProjectExperienceDefinition,
+	ProjectToolDefinition,
+	RecipeInstallation,
 } from "@assistant/schemas";
 
+import type { useRecipeWorkflows } from "~/components/Apps/Recipes/useRecipeWorkflows";
 import type { ProjectCapabilityKindGroup } from "~/lib/project-capability-catalog";
 import { getProjectCapabilityKind } from "~/lib/project-capability-catalog";
+import { parseProjectToolConfiguration } from "~/lib/project-tool-configuration";
 import { ProjectCapabilityCard } from "./ProjectCapabilityCard";
+import { ProjectRecipeCapabilityCard } from "./ProjectRecipeCapabilityCard";
 
 interface ProjectCapabilityGroupsProps {
 	canManage: boolean;
+	appById: Map<string, DynamicAppCatalogItem>;
 	capabilities: ProjectCapability[];
 	groups: ProjectCapabilityKindGroup[];
+	experiences: ProjectExperienceDefinition[];
 	isAdding: boolean;
 	isRemoving: boolean;
 	onAdd: (item: AssistantActionItem, kind: ProjectCapabilityKind) => void;
+	onConfigureTool: (tool: ProjectToolDefinition, capability?: ProjectCapability) => void;
 	onRemove: (capability: ProjectCapability) => void;
 	projectId: string;
+	recipeById: Map<string, AssistantRecipe>;
+	recipeInstallationById: Map<string, RecipeInstallation>;
+	recipeWorkflows: ReturnType<typeof useRecipeWorkflows>;
+	toolById: Map<string, ProjectToolDefinition>;
 	workspaceId: string;
 }
 
 export function ProjectCapabilityGroups({
+	appById,
 	canManage,
 	capabilities,
 	groups,
+	experiences,
 	isAdding,
 	isRemoving,
 	onAdd,
+	onConfigureTool,
 	onRemove,
 	projectId,
+	recipeById,
+	recipeInstallationById,
+	recipeWorkflows,
+	toolById,
 	workspaceId,
 }: ProjectCapabilityGroupsProps) {
 	return (
@@ -58,19 +80,49 @@ export function ProjectCapabilityGroups({
 												capability.kind === itemKind &&
 												capability.capabilityId === item.capability.id,
 										);
-
+										const recipe =
+											itemKind === "recipe" ? recipeById.get(item.capability.id) : undefined;
+										if (recipe) {
+											return (
+												<ProjectRecipeCapabilityCard
+													key={item.id}
+													canManage={canManage}
+													capability={existing}
+													installation={recipeInstallationById.get(recipe.id)}
+													isAdding={isAdding}
+													isRemoving={isRemoving}
+													onAdd={() => onAdd(item, itemKind)}
+													onRemove={() => existing && onRemove(existing)}
+													recipe={recipe}
+													workflows={recipeWorkflows}
+												/>
+											);
+										}
+										const tool = itemKind === "tool" ? toolById.get(item.capability.id) : undefined;
 										return (
 											<ProjectCapabilityCard
 												key={item.id}
 												canManage={canManage}
 												existing={existing}
 												isAdding={isAdding}
+												isConfigured={Boolean(
+													tool &&
+													parseProjectToolConfiguration(tool, existing?.configuration ?? {}),
+												)}
 												isRemoving={isRemoving}
 												item={item}
 												kind={itemKind}
+												app={appById.get(item.capability.id)}
+												experiences={experiences}
 												onAdd={() => onAdd(item, itemKind)}
+												onConfigure={
+													tool?.requiresConfiguration
+														? () => onConfigureTool(tool, existing)
+														: undefined
+												}
 												onRemove={() => existing && onRemove(existing)}
 												projectId={projectId}
+												tool={tool}
 												workspaceId={workspaceId}
 											/>
 										);

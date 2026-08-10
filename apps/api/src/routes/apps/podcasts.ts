@@ -20,6 +20,10 @@ import { handlePodcastSummarise } from "~/services/apps/podcast/summarise";
 import { handlePodcastTranscribe } from "~/services/apps/podcast/transcribe";
 import { handlePodcastUpload } from "~/services/apps/podcast/upload";
 import { AssistantError, ErrorType } from "~/utils/errors";
+import {
+	projectScopeQuerySchema,
+	requireProjectCapabilityAccess,
+} from "~/services/workspaces/access";
 
 const app = new Hono();
 
@@ -44,12 +48,23 @@ addRoute(app, "get", "/", {
 		},
 	},
 	auth: true,
+	querySchema: projectScopeQuerySchema,
 	middleware: [requirePlan("pro")],
-	handler: async ({ serviceContext, user }) => {
+	handler: async ({ query, serviceContext, user }) => {
 		try {
+			if (query.projectId) {
+				await requireProjectCapabilityAccess(
+					serviceContext,
+					query.projectId,
+					"app",
+					"featured-podcast-processor",
+				);
+			}
+
 			const podcasts = await handlePodcastList({
 				context: serviceContext,
 				user,
+				projectId: query.projectId,
 			});
 
 			return { podcasts };
@@ -77,13 +92,24 @@ addRoute(app, "get", "/:id", {
 		},
 	},
 	auth: true,
+	querySchema: projectScopeQuerySchema,
 	middleware: [requirePlan("pro")],
-	handler: async ({ params, serviceContext, user }) => {
+	handler: async ({ params, query, serviceContext, user }) => {
 		try {
+			if (query.projectId) {
+				await requireProjectCapabilityAccess(
+					serviceContext,
+					query.projectId,
+					"app",
+					"featured-podcast-processor",
+				);
+			}
+
 			const podcast = await handlePodcastDetail({
 				context: serviceContext,
 				podcastId: params.id,
 				user,
+				projectId: query.projectId,
 			});
 
 			return { podcast };
@@ -107,9 +133,19 @@ addRoute(app, "post", "/upload", {
 		200: { description: "Response", schema: apiResponseSchema },
 	},
 	auth: true,
+	querySchema: projectScopeQuerySchema,
 	middleware: [requirePlan("pro")],
-	handler: async ({ raw, serviceContext, user }) => {
+	handler: async ({ query, raw, serviceContext, user }) => {
 		try {
+			if (query.projectId) {
+				await requireProjectCapabilityAccess(
+					serviceContext,
+					query.projectId,
+					"app",
+					"featured-podcast-processor",
+				);
+			}
+
 			const formData = await raw.req.formData();
 			const title = formData.get("title") as string;
 			const description = formData.get("description") as string | null;
@@ -129,6 +165,7 @@ addRoute(app, "post", "/upload", {
 					description: description || undefined,
 				},
 				user,
+				projectId: query.projectId,
 			});
 
 			if (response.status === "error") {
@@ -159,8 +196,16 @@ addRoute(app, "post", "/transcribe", {
 		200: { description: "Response", schema: apiResponseSchema },
 	},
 	auth: true,
+	querySchema: projectScopeQuerySchema,
 	middleware: [requirePlan("pro")],
-	handler: async ({ body, raw, serviceContext, user }) => {
+	handler: async ({ body, query, raw, serviceContext, user }) => {
+		if (query.projectId)
+			await requireProjectCapabilityAccess(
+				serviceContext,
+				query.projectId,
+				"app",
+				"featured-podcast-processor",
+			);
 		const newUrl = new URL(raw.req.url);
 		const app_url = `${newUrl.protocol}//${newUrl.hostname}`;
 
@@ -169,6 +214,7 @@ addRoute(app, "post", "/transcribe", {
 			request: body,
 			user,
 			app_url,
+			projectId: query.projectId,
 		});
 
 		return { response };
@@ -183,12 +229,21 @@ addRoute(app, "post", "/summarise", {
 		200: { description: "Response", schema: apiResponseSchema },
 	},
 	auth: true,
+	querySchema: projectScopeQuerySchema,
 	middleware: [requirePlan("pro")],
-	handler: async ({ body, serviceContext, user }) => {
+	handler: async ({ body, query, serviceContext, user }) => {
+		if (query.projectId)
+			await requireProjectCapabilityAccess(
+				serviceContext,
+				query.projectId,
+				"app",
+				"featured-podcast-processor",
+			);
 		const response = await handlePodcastSummarise({
 			context: serviceContext,
 			request: body,
 			user,
+			projectId: query.projectId,
 		});
 
 		return { response };
@@ -203,12 +258,21 @@ addRoute(app, "post", "/generate-image", {
 		200: { description: "Response", schema: apiResponseSchema },
 	},
 	auth: true,
+	querySchema: projectScopeQuerySchema,
 	middleware: [requirePlan("pro")],
-	handler: async ({ body, serviceContext, user }) => {
+	handler: async ({ body, query, serviceContext, user }) => {
+		if (query.projectId)
+			await requireProjectCapabilityAccess(
+				serviceContext,
+				query.projectId,
+				"app",
+				"featured-podcast-processor",
+			);
 		const response = await handlePodcastGenerateImage({
 			context: serviceContext,
 			request: body,
 			user,
+			projectId: query.projectId,
 		});
 
 		return { response };

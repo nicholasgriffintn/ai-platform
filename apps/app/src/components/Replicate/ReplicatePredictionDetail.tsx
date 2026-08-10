@@ -4,10 +4,14 @@ import { formatUnknownValue, getStringProperty, isRecord } from "~/lib/unknown-v
 
 interface ReplicatePredictionDetailProps {
 	predictionId: string;
+	projectId?: string;
 }
 
-export function ReplicatePredictionDetail({ predictionId }: ReplicatePredictionDetailProps) {
-	const { data: prediction, isLoading, error } = useReplicatePrediction(predictionId);
+export function ReplicatePredictionDetail({
+	predictionId,
+	projectId,
+}: ReplicatePredictionDetailProps) {
+	const { data: prediction, isLoading, error } = useReplicatePrediction(predictionId, projectId);
 
 	if (isLoading) {
 		return (

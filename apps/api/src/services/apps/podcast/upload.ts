@@ -15,6 +15,7 @@ export type UploadRequest = {
 		description?: string;
 	};
 	user: IUser;
+	projectId?: string;
 };
 
 interface IPodcastUploadResponse extends IFunctionResponse {
@@ -22,7 +23,7 @@ interface IPodcastUploadResponse extends IFunctionResponse {
 }
 
 export const handlePodcastUpload = async (req: UploadRequest): Promise<IPodcastUploadResponse> => {
-	const { env, context, request, user } = req;
+	const { env, context, request, user, projectId } = req;
 
 	if (!user?.id) {
 		throw new AssistantError("User data required", ErrorType.PARAMS_ERROR);
@@ -71,13 +72,25 @@ export const handlePodcastUpload = async (req: UploadRequest): Promise<IPodcastU
 			createdAt: new Date().toISOString(),
 		};
 
-		await repositories.appData.createAppDataWithItem(
-			user.id,
-			"podcasts",
-			podcastId,
-			"upload",
-			appData,
-		);
+		if (projectId) {
+			const created = await repositories.appData.createAppDataWithItem(
+				user.id,
+				"podcasts",
+				podcastId,
+				"upload",
+				appData,
+				projectId,
+			);
+			await repositories.storedAssets.linkAssetToAppData(storedAudio.assetId, created.id);
+		} else {
+			await repositories.appData.createAppDataWithItem(
+				user.id,
+				"podcasts",
+				podcastId,
+				"upload",
+				appData,
+			);
+		}
 
 		return {
 			status: "success",
@@ -95,13 +108,24 @@ export const handlePodcastUpload = async (req: UploadRequest): Promise<IPodcastU
 		createdAt: new Date().toISOString(),
 	};
 
-	await repositories.appData.createAppDataWithItem(
-		user.id,
-		"podcasts",
-		podcastId,
-		"upload",
-		appData,
-	);
+	if (projectId) {
+		await repositories.appData.createAppDataWithItem(
+			user.id,
+			"podcasts",
+			podcastId,
+			"upload",
+			appData,
+			projectId,
+		);
+	} else {
+		await repositories.appData.createAppDataWithItem(
+			user.id,
+			"podcasts",
+			podcastId,
+			"upload",
+			appData,
+		);
+	}
 
 	return {
 		status: "success",

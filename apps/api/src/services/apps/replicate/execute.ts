@@ -20,6 +20,7 @@ export interface ExecuteReplicateModelRequest {
 		appId?: string;
 		itemType?: string;
 		extraData?: Record<string, unknown>;
+		projectId?: string;
 	};
 }
 
@@ -56,6 +57,7 @@ export const executeReplicateModel = async (req: ExecuteReplicateModelRequest) =
 			appId: storage?.appId ?? "replicate",
 			itemType: storage?.itemType ?? "prediction",
 			extraData: storage?.extraData,
+			projectId: storage?.projectId,
 			pollingTaskType: "replicate_polling",
 		},
 	});

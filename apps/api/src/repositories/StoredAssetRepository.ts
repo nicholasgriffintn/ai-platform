@@ -42,4 +42,15 @@ export class StoredAssetRepository extends BaseRepository {
 		});
 		return this.runQuery<StoredAsset>(query, values, true);
 	}
+
+	public async linkAssetToAppData(assetId: string, appDataId: string): Promise<void> {
+		const result = this.buildUpdateQuery(
+			"stored_asset",
+			{ app_data_id: appDataId },
+			["app_data_id"],
+			"id = ?",
+			[assetId],
+		);
+		if (result) await this.executeRun(result.query, result.values);
+	}
 }

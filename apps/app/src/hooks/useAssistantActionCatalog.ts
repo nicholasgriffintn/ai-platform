@@ -8,9 +8,11 @@ import { useAssistantRecipes, useRecipeInstallations } from "./useRecipes";
 
 export function useAssistantActionCatalog({
 	includeApps = true,
+	includeFrontendApps = false,
 	modelTools = [],
 }: {
 	includeApps?: boolean;
+	includeFrontendApps?: boolean;
 	modelTools?: readonly ModelToolDefinition[];
 } = {}): AssistantActionCatalog {
 	const { chatAgents } = useAgents();
@@ -23,7 +25,9 @@ export function useAssistantActionCatalog({
 		() =>
 			buildAssistantActionCatalog({
 				agents: chatAgents,
-				apps: includeApps ? (appsData?.apps ?? []) : [],
+				apps: includeApps
+					? (appsData?.apps ?? []).filter((app) => includeFrontendApps || app.kind !== "frontend")
+					: [],
 				connectors: connectorsData?.connectors ?? [],
 				installations: installationsData?.installations ?? [],
 				modelTools,
@@ -34,6 +38,7 @@ export function useAssistantActionCatalog({
 			chatAgents,
 			connectorsData?.connectors,
 			includeApps,
+			includeFrontendApps,
 			installationsData?.installations,
 			modelTools,
 			recipesData?.recipes,

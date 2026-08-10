@@ -30,10 +30,12 @@ export async function listArticles({
 	context,
 	env,
 	userId,
+	projectId,
 }: {
 	context?: ServiceContext;
 	env?: IEnv;
 	userId: number;
+	projectId?: string;
 }): Promise<ListSuccessResponse> {
 	if (!userId) {
 		throw new AssistantError("User ID is required", ErrorType.PARAMS_ERROR);
@@ -55,7 +57,9 @@ export async function listArticles({
 
 		serviceContext.ensureDatabase();
 		const appDataRepo = serviceContext.repositories.appData;
-		const allArticleData = await appDataRepo.getAppDataByUserAndApp(userId, "articles");
+		const allArticleData = projectId
+			? await appDataRepo.getAppDataByProjectAndApp(projectId, "articles")
+			: await appDataRepo.getAppDataByUserAndApp(userId, "articles");
 
 		if (!allArticleData || allArticleData.length === 0) {
 			return { status: "success", sessions: [] };

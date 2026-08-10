@@ -3,13 +3,15 @@ import { useReplicateModels, useExecuteReplicateModel } from "~/hooks/useReplica
 import { ReplicateModelForm } from "./ReplicateModelForm";
 
 interface ReplicateModelDetailProps {
+	basePath: string;
 	modelId: string;
+	projectId?: string;
 }
 
-export function ReplicateModelDetail({ modelId }: ReplicateModelDetailProps) {
+export function ReplicateModelDetail({ basePath, modelId, projectId }: ReplicateModelDetailProps) {
 	const navigate = useNavigate();
-	const { data: models, isLoading, error } = useReplicateModels();
-	const executeMutation = useExecuteReplicateModel();
+	const { data: models, isLoading, error } = useReplicateModels(projectId);
+	const executeMutation = useExecuteReplicateModel(projectId);
 
 	const model = models?.find((m) => m.id === modelId);
 
@@ -38,7 +40,7 @@ export function ReplicateModelDetail({ modelId }: ReplicateModelDetailProps) {
 				input: data,
 			});
 
-			navigate(`/apps/replicate/predictions/${result.id}`);
+			navigate(`${basePath}/predictions/${result.id}`);
 		} catch (error) {
 			console.error("Failed to execute model:", error);
 		}

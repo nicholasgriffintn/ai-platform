@@ -17,6 +17,7 @@ import { cn } from "~/lib/utils";
 
 interface NoteEditorProps {
 	noteId?: string;
+	projectId?: string;
 	initialText?: string;
 	initialMetadata?: NoteMetadataType;
 	onSave: (
@@ -38,6 +39,7 @@ interface NoteEditorProps {
 
 export function NoteEditor({
 	noteId,
+	projectId,
 	initialText = "",
 	initialMetadata,
 	onSave,
@@ -83,7 +85,7 @@ export function NoteEditor({
 		formatNoteMutation,
 		runFormat,
 		openFormatModal,
-	} = useNoteFormatter(noteId ?? "");
+	} = useNoteFormatter(noteId ?? "", projectId);
 
 	const handleMetadataUpdate = useCallback(
 		async (newMetadata: NoteMetadataType) => {

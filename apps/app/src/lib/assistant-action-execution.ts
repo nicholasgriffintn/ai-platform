@@ -13,6 +13,7 @@ import { mergeAssistantActionToolIds, recipeConnectorProviderSchema } from "@ass
 import {
 	createAppAssistantActionLaunch,
 	createConnectorAssistantActionLaunch,
+	createRecipeManagementActionPath,
 	createRecipeAssistantActionLaunch,
 } from "./assistant-action-launch";
 import type { ChatRequestOptions } from "~/types";
@@ -21,6 +22,7 @@ export interface AssistantActionExecutionInput {
 	connectorReturnTo?: string;
 	input: string;
 	item?: AssistantActionSelectionItem;
+	recipeManagementPath?: string;
 	selectedTools?: string[];
 }
 
@@ -238,15 +240,25 @@ export async function executeAssistantAction(
 	}
 
 	if (launch.kind === "schedule") {
-		const params = new URLSearchParams({
-			action: "schedule",
-			recipe: launch.recipeId,
-		});
+		if (action.recipeManagementPath) {
+			return {
+				input: action.input,
+				kind: "navigation",
+				path: createRecipeManagementActionPath(
+					action.recipeManagementPath,
+					"schedule",
+					launch.recipeId,
+				),
+			};
+		}
 
 		return {
 			input: action.input,
-			kind: "navigation",
-			path: `/apps/recipes?${params.toString()}`,
+			kind: "submit",
+			notification: {
+				type: "error",
+				message: "Schedule this recipe from a Work project's Capabilities page.",
+			},
 		};
 	}
 

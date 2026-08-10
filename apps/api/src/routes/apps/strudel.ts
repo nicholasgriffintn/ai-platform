@@ -22,6 +22,10 @@ import { updatePattern } from "~/services/apps/strudel/update";
 import { deletePattern } from "~/services/apps/strudel/delete";
 import { submitStrudelFeedback } from "~/services/apps/strudel/feedback";
 import { AssistantError, ErrorType } from "~/utils/errors";
+import {
+	projectScopeQuerySchema,
+	requireProjectCapabilityAccess,
+} from "~/services/workspaces/access";
 
 const app = new Hono();
 
@@ -47,11 +51,22 @@ addRoute(app, "get", "/", {
 		401: { description: "Unauthorized", schema: errorResponseSchema },
 	},
 	auth: true,
-	handler: async ({ serviceContext, user }) => {
+	querySchema: projectScopeQuerySchema,
+	handler: async ({ query, serviceContext, user }) => {
 		try {
+			if (query.projectId) {
+				await requireProjectCapabilityAccess(
+					serviceContext,
+					query.projectId,
+					"app",
+					"featured-strudel",
+				);
+			}
+
 			const patterns = await listPatterns({
 				context: serviceContext,
 				userId: user.id,
+				projectId: query.projectId,
 			});
 
 			return { patterns };
@@ -79,12 +94,23 @@ addRoute(app, "get", "/:id", {
 		404: { description: "Pattern not found", schema: errorResponseSchema },
 	},
 	auth: true,
-	handler: async ({ params, serviceContext, user }) => {
+	querySchema: projectScopeQuerySchema,
+	handler: async ({ params, query, serviceContext, user }) => {
 		try {
+			if (query.projectId) {
+				await requireProjectCapabilityAccess(
+					serviceContext,
+					query.projectId,
+					"app",
+					"featured-strudel",
+				);
+			}
+
 			const pattern = await getPatternDetails({
 				context: serviceContext,
 				userId: user.id,
 				patternId: params.id,
+				projectId: query.projectId,
 			});
 
 			return { pattern };
@@ -111,8 +137,18 @@ addRoute(app, "post", "/generate", {
 		},
 	},
 	auth: true,
-	handler: async ({ body, serviceContext, user }) => {
+	querySchema: projectScopeQuerySchema,
+	handler: async ({ body, query, serviceContext, user }) => {
 		try {
+			if (query.projectId) {
+				await requireProjectCapabilityAccess(
+					serviceContext,
+					query.projectId,
+					"app",
+					"featured-strudel",
+				);
+			}
+
 			const response = await generateStrudelCode({
 				context: serviceContext,
 				request: body,
@@ -153,12 +189,23 @@ addRoute(app, "post", "/", {
 		},
 	},
 	auth: true,
-	handler: async ({ body, serviceContext, user }) => {
+	querySchema: projectScopeQuerySchema,
+	handler: async ({ body, query, serviceContext, user }) => {
 		try {
+			if (query.projectId) {
+				await requireProjectCapabilityAccess(
+					serviceContext,
+					query.projectId,
+					"app",
+					"featured-strudel",
+				);
+			}
+
 			const pattern = await savePattern({
 				context: serviceContext,
 				request: body,
 				user,
+				projectId: query.projectId,
 			});
 
 			return { pattern };
@@ -186,13 +233,24 @@ addRoute(app, "put", "/:id", {
 		},
 	},
 	auth: true,
-	handler: async ({ body, params, serviceContext, user }) => {
+	querySchema: projectScopeQuerySchema,
+	handler: async ({ body, params, query, serviceContext, user }) => {
 		try {
+			if (query.projectId) {
+				await requireProjectCapabilityAccess(
+					serviceContext,
+					query.projectId,
+					"app",
+					"featured-strudel",
+				);
+			}
+
 			const pattern = await updatePattern({
 				context: serviceContext,
 				request: body,
 				user,
 				patternId: params.id,
+				projectId: query.projectId,
 			});
 
 			return { pattern };
@@ -219,12 +277,23 @@ addRoute(app, "delete", "/:id", {
 		},
 	},
 	auth: true,
-	handler: async ({ params, serviceContext, user }) => {
+	querySchema: projectScopeQuerySchema,
+	handler: async ({ params, query, serviceContext, user }) => {
 		try {
+			if (query.projectId) {
+				await requireProjectCapabilityAccess(
+					serviceContext,
+					query.projectId,
+					"app",
+					"featured-strudel",
+				);
+			}
+
 			await deletePattern({
 				context: serviceContext,
 				userId: user.id,
 				patternId: params.id,
+				projectId: query.projectId,
 			});
 
 			return { status: "success", message: "Pattern deleted successfully" };

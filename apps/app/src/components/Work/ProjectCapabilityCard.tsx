@@ -1,48 +1,95 @@
-import { ExternalLink, Plus, Puzzle, Trash2, Wrench } from "lucide-react";
-import { Link } from "react-router";
+import { Ellipsis, ExternalLink, Plus, Puzzle, Settings2, Trash2, Wrench } from "lucide-react";
+import { useNavigate } from "react-router";
 import type {
 	AssistantActionItem,
+	DynamicAppCatalogItem,
 	ProjectCapability,
 	ProjectCapabilityKind,
+	ProjectExperienceDefinition,
+	ProjectToolDefinition,
 } from "@assistant/schemas";
 
-import { Button, Card } from "~/components/ui";
+import { Button, Card, DropdownMenu, DropdownMenuItem } from "~/components/ui";
+import { getIcon, getIconContainerClass } from "~/components/Apps/utils";
+import { getProjectCapabilityOpenPath } from "~/lib/project-experiences";
 
 interface ProjectCapabilityCardProps {
 	canManage: boolean;
+	app?: DynamicAppCatalogItem;
 	existing?: ProjectCapability;
 	isAdding: boolean;
+	isConfigured?: boolean;
 	isRemoving: boolean;
 	item: AssistantActionItem;
 	kind: ProjectCapabilityKind;
 	onAdd: () => void;
+	onConfigure?: () => void;
 	onRemove: () => void;
 	projectId: string;
+	experiences: ProjectExperienceDefinition[];
+	tool?: ProjectToolDefinition;
 	workspaceId: string;
 }
 
 export function ProjectCapabilityCard({
+	app,
 	canManage,
 	existing,
 	isAdding,
+	isConfigured,
 	isRemoving,
 	item,
 	kind,
 	onAdd,
+	onConfigure,
 	onRemove,
 	projectId,
+	experiences,
+	tool,
 	workspaceId,
 }: ProjectCapabilityCardProps) {
+	const navigate = useNavigate();
+	const openPath = getProjectCapabilityOpenPath(item, workspaceId, projectId, experiences);
+	const appIcon = app ? getIcon(app.icon, app.theme) : null;
+	const isIncluded = Boolean(existing) || kind === "tool";
+	const primaryAction = onConfigure
+		? {
+				icon: <Settings2 size={15} />,
+				label: "Configure",
+				onClick: onConfigure,
+				requiresManagement: true,
+			}
+		: openPath
+			? {
+					icon: <ExternalLink size={15} />,
+					label: "Open",
+					onClick: () => navigate(openPath),
+					requiresManagement: false,
+				}
+			: null;
+	const statusLabel =
+		kind === "tool"
+			? tool?.requiresConfiguration
+				? isConfigured
+					? "Configured"
+					: "Configuration required"
+				: "Included"
+			: "Enabled";
+
 	return (
 		<Card className="justify-between p-5 shadow-none">
 			<div>
 				<div className="mb-4 flex items-center justify-between">
-					<span className="flex h-10 w-10 items-center justify-center rounded-xl bg-zinc-100 dark:bg-zinc-800">
-						{kind === "tool" ? <Wrench size={18} /> : <Puzzle size={18} />}
+					<span
+						className={`flex h-10 w-10 items-center justify-center rounded-xl ${
+							app ? getIconContainerClass(app.theme) : "bg-zinc-100 dark:bg-zinc-800"
+						}`}
+					>
+						{appIcon ? appIcon : kind === "tool" ? <Wrench size={18} /> : <Puzzle size={18} />}
 					</span>
-					{existing && (
+					{isIncluded && (
 						<span className="rounded-full bg-zinc-100 px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
-							Enabled
+							{statusLabel}
 						</span>
 					)}
 				</div>
@@ -51,31 +98,44 @@ export function ProjectCapabilityCard({
 					{item.description || item.capability.description}
 				</p>
 			</div>
-			{existing ? (
+			{isIncluded ? (
 				<div className="flex gap-2">
-					{kind === "app" && (
-						<Link
-							to={`/work/${workspaceId}/projects/${projectId}/apps/${item.capability.id}`}
+					{primaryAction && (
+						<Button
 							className="flex-1"
+							variant="primary"
+							icon={primaryAction.icon}
+							disabled={primaryAction.requiresManagement && !canManage}
+							onClick={primaryAction.onClick}
 						>
-							<Button className="w-full" icon={<ExternalLink size={15} />}>
-								Open
-							</Button>
-						</Link>
+							{primaryAction.label}
+						</Button>
 					)}
-					<Button
-						variant="outline"
-						icon={<Trash2 size={15} />}
-						isLoading={isRemoving}
-						disabled={!canManage}
-						onClick={onRemove}
-					>
-						Remove
-					</Button>
+					{existing && kind !== "tool" && (
+						<DropdownMenu
+							position="top"
+							buttonProps={{
+								"aria-label": "More actions",
+								disabled: !canManage || isRemoving,
+								isLoading: isRemoving,
+								size: "md",
+								variant: "outline",
+							}}
+							trigger={<Ellipsis size={16} />}
+						>
+							<DropdownMenuItem
+								className="text-red-700 dark:text-red-300"
+								icon={<Trash2 size={15} />}
+								onClick={onRemove}
+							>
+								Remove from project
+							</DropdownMenuItem>
+						</DropdownMenu>
+					)}
 				</div>
 			) : (
 				<Button
-					variant="secondary"
+					variant="primary"
 					icon={<Plus size={15} />}
 					isLoading={isAdding}
 					disabled={!canManage}

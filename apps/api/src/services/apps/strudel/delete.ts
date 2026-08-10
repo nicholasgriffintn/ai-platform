@@ -8,19 +8,20 @@ export async function deletePattern({
 	context,
 	userId,
 	patternId,
+	projectId,
 }: {
 	context: ServiceContext;
 	userId: number;
 	patternId: string;
+	projectId?: string;
 }): Promise<void> {
 	try {
 		context.ensureDatabase();
 		const { repositories } = context;
 
-		const existing = await repositories.dynamicAppResponses.getResponseByIdForUser(
-			patternId,
-			userId,
-		);
+		const existing = projectId
+			? await repositories.dynamicAppResponses.getResponseByIdForProject(patternId, projectId)
+			: await repositories.dynamicAppResponses.getResponseByIdForUser(patternId, userId);
 
 		if (!existing) {
 			throw new AssistantError("Pattern not found", ErrorType.NOT_FOUND);

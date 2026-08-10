@@ -1,6 +1,7 @@
 import {
 	ChevronRight,
 	FolderKanban,
+	Grid2X2,
 	LayoutDashboard,
 	MessageSquareText,
 	Settings2,
@@ -126,6 +127,13 @@ export function WorkSidebar({ workspaceId, projectId }: WorkSidebarProps) {
 						>
 							<SquarePen size={16} /> New conversation
 						</Link>
+						<NavLink
+							to={`/work/${workspaceId}/projects/${projectId}/experiences`}
+							className={linkClass}
+							onClick={closeOnMobile}
+						>
+							<Grid2X2 size={16} /> Experiences
+						</NavLink>
 						<NavLink
 							to={`/work/${workspaceId}/projects/${projectId}/library`}
 							className={linkClass}

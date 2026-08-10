@@ -19,11 +19,13 @@ export async function getSourceArticles({
 	env,
 	ids,
 	userId,
+	projectId,
 }: {
 	context?: ServiceContext;
 	env?: IEnv;
 	ids: string[];
 	userId: number;
+	projectId?: string;
 }): Promise<GetSourceArticlesSuccessResponse> {
 	if (!ids || !ids.length) {
 		throw new AssistantError("Article IDs are required", ErrorType.PARAMS_ERROR);
@@ -52,9 +54,11 @@ export async function getSourceArticles({
 
 		const articlePromises = ids.map(async (id) => {
 			try {
-				const article = await appDataRepo.getAppDataById(id);
+				const article = projectId
+					? await appDataRepo.getAppDataByProjectAndId(projectId, id)
+					: await appDataRepo.getAppDataById(id);
 
-				if (article && article.user_id === userId) {
+				if (article && (projectId || article.user_id === userId)) {
 					let parsedArticleData = safeParseJson(article.data || "{}") ?? {};
 
 					return {

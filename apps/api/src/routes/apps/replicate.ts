@@ -14,6 +14,10 @@ import {
 } from "@assistant/schemas";
 
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
+import {
+	projectScopeQuerySchema,
+	requireProjectCapabilityAccess,
+} from "~/services/workspaces/access";
 import { executeReplicateModel } from "~/services/apps/replicate/execute";
 import { listReplicatePredictions } from "~/services/apps/replicate/list";
 import { getReplicatePredictionDetails } from "~/services/apps/replicate/get-details";
@@ -165,11 +169,22 @@ addRoute(app, "get", "/predictions", {
 		200: { description: "List of predictions", schema: replicatePredictionsResponseSchema },
 	},
 	auth: true,
-	handler: async ({ serviceContext, user }) => {
+	querySchema: projectScopeQuerySchema,
+	handler: async ({ query, serviceContext, user }) => {
 		try {
+			if (query.projectId) {
+				await requireProjectCapabilityAccess(
+					serviceContext,
+					query.projectId,
+					"app",
+					"featured-replicate",
+				);
+			}
+
 			const predictions = await listReplicatePredictions({
 				context: serviceContext,
 				userId: user.id,
+				projectId: query.projectId,
 			});
 
 			return { predictions };
@@ -194,12 +209,23 @@ addRoute(app, "get", "/predictions/:id", {
 		200: { description: "Prediction details", schema: replicatePredictionResponseSchema },
 	},
 	auth: true,
-	handler: async ({ params, serviceContext, user }) => {
+	querySchema: projectScopeQuerySchema,
+	handler: async ({ params, query, serviceContext, user }) => {
 		try {
+			if (query.projectId) {
+				await requireProjectCapabilityAccess(
+					serviceContext,
+					query.projectId,
+					"app",
+					"featured-replicate",
+				);
+			}
+
 			const prediction = await getReplicatePredictionDetails({
 				context: serviceContext,
 				predictionId: params.id,
 				userId: user.id,
+				projectId: query.projectId,
 			});
 
 			return { prediction };
@@ -224,12 +250,23 @@ addRoute(app, "post", "/execute", {
 		200: { description: "Execution result", schema: replicateExecuteResponseSchema },
 	},
 	auth: true,
-	handler: async ({ body, serviceContext, user }) => {
+	querySchema: projectScopeQuerySchema,
+	handler: async ({ body, query, serviceContext, user }) => {
 		try {
+			if (query.projectId) {
+				await requireProjectCapabilityAccess(
+					serviceContext,
+					query.projectId,
+					"app",
+					"featured-replicate",
+				);
+			}
+
 			const result = await executeReplicateModel({
 				context: serviceContext,
 				params: body,
 				user,
+				storage: { projectId: query.projectId },
 			});
 
 			return { response: result };

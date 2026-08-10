@@ -36,6 +36,9 @@ import { WelcomeScreen } from "./WelcomeScreen";
 import { findLatestArtifactByIdentifier } from "~/lib/artifacts";
 
 export interface ConversationThreadModeConfig {
+	assistantActionRoutes?: {
+		recipes?: string;
+	};
 	requestOptions?: ChatRequestOptions;
 	initialAutoSubmit?: {
 		key: string;
@@ -137,7 +140,9 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
 
 	const chatInputRef = useRef<ChatInputHandle>(null);
 	const autoSubmittedKeyRef = useRef<string | null>(null);
-	const { resolveAssistantActionSubmit } = useAssistantActionSubmit();
+	const { resolveAssistantActionSubmit } = useAssistantActionSubmit({
+		recipeManagementPath: modeConfig?.assistantActionRoutes?.recipes,
+	});
 	const {
 		isGeneratingSpeech: isGeneratingAutoResponseSpeech,
 		isPlaying: isPlayingAutoResponse,

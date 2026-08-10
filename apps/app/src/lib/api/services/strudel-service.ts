@@ -1,4 +1,5 @@
 import { fetchApi, returnFetchedData } from "../fetch-wrapper";
+import { withProjectScope } from "../project-scope";
 import type {
 	GenerateStrudelRequest,
 	GenerateStrudelResponse,
@@ -17,8 +18,8 @@ async function parseResponse<T>(response: Response, errorMessage: string): Promi
 }
 
 export const strudelService = {
-	async list(): Promise<StrudelPattern[]> {
-		const response = await fetchApi(STRUDEL_BASE_PATH, {
+	async list(projectId?: string): Promise<StrudelPattern[]> {
+		const response = await fetchApi(withProjectScope(STRUDEL_BASE_PATH, projectId), {
 			method: "GET",
 		});
 		const payload = await parseResponse<{ patterns: StrudelPattern[] }>(
@@ -28,8 +29,8 @@ export const strudelService = {
 		return payload.patterns;
 	},
 
-	async get(id: string): Promise<StrudelPattern> {
-		const response = await fetchApi(`${STRUDEL_BASE_PATH}/${id}`, {
+	async get(id: string, projectId?: string): Promise<StrudelPattern> {
+		const response = await fetchApi(withProjectScope(`${STRUDEL_BASE_PATH}/${id}`, projectId), {
 			method: "GET",
 		});
 		const payload = await parseResponse<{ pattern: StrudelPattern }>(
@@ -39,16 +40,19 @@ export const strudelService = {
 		return payload.pattern;
 	},
 
-	async generate(request: GenerateStrudelRequest): Promise<GenerateStrudelResponse> {
-		const response = await fetchApi(`${STRUDEL_BASE_PATH}/generate`, {
+	async generate(
+		request: GenerateStrudelRequest,
+		projectId?: string,
+	): Promise<GenerateStrudelResponse> {
+		const response = await fetchApi(withProjectScope(`${STRUDEL_BASE_PATH}/generate`, projectId), {
 			method: "POST",
 			body: request,
 		});
 		return parseResponse<GenerateStrudelResponse>(response, "Failed to generate Strudel pattern");
 	},
 
-	async save(request: SaveStrudelPatternInput): Promise<StrudelPattern> {
-		const response = await fetchApi(STRUDEL_BASE_PATH, {
+	async save(request: SaveStrudelPatternInput, projectId?: string): Promise<StrudelPattern> {
+		const response = await fetchApi(withProjectScope(STRUDEL_BASE_PATH, projectId), {
 			method: "POST",
 			body: request,
 		});
@@ -59,8 +63,12 @@ export const strudelService = {
 		return payload.pattern;
 	},
 
-	async update(id: string, request: UpdateStrudelPatternInput): Promise<StrudelPattern> {
-		const response = await fetchApi(`${STRUDEL_BASE_PATH}/${id}`, {
+	async update(
+		id: string,
+		request: UpdateStrudelPatternInput,
+		projectId?: string,
+	): Promise<StrudelPattern> {
+		const response = await fetchApi(withProjectScope(`${STRUDEL_BASE_PATH}/${id}`, projectId), {
 			method: "PUT",
 			body: request,
 		});
@@ -71,8 +79,8 @@ export const strudelService = {
 		return payload.pattern;
 	},
 
-	async delete(id: string): Promise<void> {
-		const response = await fetchApi(`${STRUDEL_BASE_PATH}/${id}`, {
+	async delete(id: string, projectId?: string): Promise<void> {
+		const response = await fetchApi(withProjectScope(`${STRUDEL_BASE_PATH}/${id}`, projectId), {
 			method: "DELETE",
 		});
 

@@ -4,9 +4,16 @@ import { RerunReportButton } from "./RerunReportButton";
 interface ArticleReportHeaderProps {
 	report: ArticleReportItem;
 	isShared?: boolean;
+	basePath?: string;
+	projectId?: string;
 }
 
-export function ArticleReportHeader({ report, isShared }: ArticleReportHeaderProps) {
+export function ArticleReportHeader({
+	report,
+	isShared,
+	basePath,
+	projectId,
+}: ArticleReportHeaderProps) {
 	return (
 		<div className="bg-white dark:bg-zinc-800 rounded-lg border border-zinc-200 dark:border-zinc-700 p-5 shadow-sm">
 			<div className="flex flex-col md:flex-row justify-between md:items-center gap-3">
@@ -15,6 +22,8 @@ export function ArticleReportHeader({ report, isShared }: ArticleReportHeaderPro
 				</h2>
 				{!isShared && (
 					<RerunReportButton
+						basePath={basePath}
+						projectId={projectId}
 						sourceIds={report.data?.sourceItemIds || []}
 						itemId={report.item_id || ""}
 					/>

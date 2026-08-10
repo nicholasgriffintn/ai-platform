@@ -10,6 +10,7 @@ export interface IPodcastDetailRequest {
 	env?: IEnv;
 	podcastId: string;
 	user: IUser;
+	projectId?: string;
 }
 
 interface PodcastItem {
@@ -23,7 +24,7 @@ interface PodcastItem {
 }
 
 export const handlePodcastDetail = async (req: IPodcastDetailRequest): Promise<Podcast> => {
-	const { env, context, podcastId, user } = req;
+	const { env, context, podcastId, user, projectId } = req;
 
 	if (!user?.id) {
 		throw new AssistantError("User data required", ErrorType.PARAMS_ERROR);
@@ -33,11 +34,9 @@ export const handlePodcastDetail = async (req: IPodcastDetailRequest): Promise<P
 	serviceContext.ensureDatabase();
 	const repositories = serviceContext.repositories;
 
-	const appDataItems = await repositories.appData.getAppDataByUserAppAndItem(
-		user.id,
-		"podcasts",
-		podcastId,
-	);
+	const appDataItems = projectId
+		? await repositories.appData.getAppDataByProjectAppAndItem(projectId, "podcasts", podcastId)
+		: await repositories.appData.getAppDataByUserAppAndItem(user.id, "podcasts", podcastId);
 
 	if (!appDataItems || appDataItems.length === 0) {
 		throw new AssistantError("Podcast not found", ErrorType.NOT_FOUND);

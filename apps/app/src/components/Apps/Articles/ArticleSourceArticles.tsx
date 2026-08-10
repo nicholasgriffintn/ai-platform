@@ -22,11 +22,14 @@ interface SourceArticleData {
 
 interface ArticleSourceArticlesProps {
 	sourceIds: string[];
+	projectId?: string;
 }
 
-export function ArticleSourceArticles({ sourceIds }: ArticleSourceArticlesProps) {
-	const { data: sourceArticles, isLoading: isLoadingSourceArticles } =
-		useFetchSourceArticlesByIds(sourceIds);
+export function ArticleSourceArticles({ sourceIds, projectId }: ArticleSourceArticlesProps) {
+	const { data: sourceArticles, isLoading: isLoadingSourceArticles } = useFetchSourceArticlesByIds(
+		sourceIds,
+		projectId,
+	);
 
 	const [isSourcesExpanded, setIsSourcesExpanded] = useState(true);
 	const [expandedArticleIds, setExpandedArticleIds] = useState<Record<string, boolean>>({});

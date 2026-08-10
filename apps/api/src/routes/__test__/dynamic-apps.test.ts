@@ -10,6 +10,7 @@ const getDynamicAppCatalogMock = vi.hoisted(() => vi.fn());
 const getDynamicAppByIdMock = vi.hoisted(() => vi.fn());
 const getDynamicAppResponseByIdMock = vi.hoisted(() => vi.fn());
 const listDynamicAppResponsesForUserMock = vi.hoisted(() => vi.fn());
+const getProjectExperienceCatalogMock = vi.hoisted(() => vi.fn());
 
 vi.mock("~/services/dynamic-apps", () => ({
 	executeProjectDynamicApp: executeProjectDynamicAppMock,
@@ -17,6 +18,19 @@ vi.mock("~/services/dynamic-apps", () => ({
 	getDynamicAppCatalog: getDynamicAppCatalogMock,
 	getDynamicAppResponseById: getDynamicAppResponseByIdMock,
 	listDynamicAppResponsesForUser: listDynamicAppResponsesForUserMock,
+}));
+vi.mock("~/services/dynamic-apps/config", () => ({
+	getProjectExperienceCatalog: getProjectExperienceCatalogMock,
+	PROJECT_TOOL_DEFINITIONS: [
+		{
+			id: "web_fetch",
+			capability: "supportsWebFetch",
+			category: "Research",
+			command: "web fetch",
+			description: "Fetch URLs",
+			label: "Web fetch",
+		},
+	],
 }));
 
 const anonymousUser: AnonymousUser = {
@@ -68,6 +82,19 @@ function createApp({ authenticated = false } = {}) {
 describe("dynamic apps routes", () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
+		getProjectExperienceCatalogMock.mockReturnValue([
+			{
+				id: "strudel",
+				runtime: "strudel",
+				name: "Strudel",
+				description: "Create music patterns",
+				requirement: {
+					kind: "capability",
+					capabilityKind: "app",
+					capabilityId: "featured-strudel",
+				},
+			},
+		]);
 	});
 
 	it("allows anonymous users to load the app catalog", async () => {
@@ -94,6 +121,29 @@ describe("dynamic apps routes", () => {
 					featured: true,
 					kind: "frontend",
 					href: "/apps/strudel",
+				},
+			],
+			experiences: [
+				{
+					id: "strudel",
+					runtime: "strudel",
+					name: "Strudel",
+					description: "Create music patterns",
+					requirement: {
+						kind: "capability",
+						capabilityKind: "app",
+						capabilityId: "featured-strudel",
+					},
+				},
+			],
+			tools: [
+				{
+					id: "web_fetch",
+					capability: "supportsWebFetch",
+					category: "Research",
+					command: "web fetch",
+					description: "Fetch URLs",
+					label: "Web fetch",
 				},
 			],
 		});

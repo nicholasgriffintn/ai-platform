@@ -3,8 +3,14 @@ import { useReplicatePredictions } from "~/hooks/useReplicate";
 import { EmptyState } from "~/components/Core/EmptyState";
 import { Card } from "~/components/ui";
 
-export function ReplicatePredictions() {
-	const { data: predictions, isLoading, error } = useReplicatePredictions();
+export function ReplicatePredictions({
+	basePath,
+	projectId,
+}: {
+	basePath: string;
+	projectId?: string;
+}) {
+	const { data: predictions, isLoading, error } = useReplicatePredictions(projectId);
 
 	if (isLoading) {
 		return (
@@ -30,7 +36,7 @@ export function ReplicatePredictions() {
 				message="You haven't created any predictions yet. Explore models to get started."
 				action={
 					<Link
-						to="/apps/replicate"
+						to={basePath}
 						className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
 					>
 						Explore Models
@@ -43,17 +49,18 @@ export function ReplicatePredictions() {
 	return (
 		<div className="space-y-4">
 			{predictions.map((prediction) => (
-				<PredictionCard key={prediction.id} prediction={prediction} />
+				<PredictionCard key={prediction.id} basePath={basePath} prediction={prediction} />
 			))}
 		</div>
 	);
 }
 
 interface PredictionCardProps {
+	basePath: string;
 	prediction: any;
 }
 
-function PredictionCard({ prediction }: PredictionCardProps) {
+function PredictionCard({ basePath, prediction }: PredictionCardProps) {
 	const statusColors = {
 		processing: "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200",
 		succeeded: "bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200",
@@ -62,7 +69,7 @@ function PredictionCard({ prediction }: PredictionCardProps) {
 	};
 
 	return (
-		<Link to={`/apps/replicate/predictions/${prediction.id}`} className="block no-underline">
+		<Link to={`${basePath}/predictions/${prediction.id}`} className="block no-underline">
 			<Card className="p-6 hover:shadow-lg transition-all">
 				<div className="flex items-start justify-between gap-4 mb-4">
 					<div className="flex-1 min-w-0">

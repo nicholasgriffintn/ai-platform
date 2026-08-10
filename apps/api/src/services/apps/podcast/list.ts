@@ -9,6 +9,7 @@ export interface IPodcastListRequest {
 	context?: ServiceContext;
 	env?: IEnv;
 	user: IUser;
+	projectId?: string;
 }
 
 interface PodcastItem {
@@ -22,7 +23,7 @@ interface PodcastItem {
 }
 
 export const handlePodcastList = async (req: IPodcastListRequest): Promise<PodcastListItem[]> => {
-	const { env, context, user } = req;
+	const { env, context, user, projectId } = req;
 
 	if (!user?.id) {
 		throw new AssistantError("User data required", ErrorType.PARAMS_ERROR);
@@ -31,7 +32,9 @@ export const handlePodcastList = async (req: IPodcastListRequest): Promise<Podca
 	serviceContext.ensureDatabase();
 	const repositories = serviceContext.repositories;
 
-	const appDataList = await repositories.appData.getAppDataByUserAndApp(user.id, "podcasts");
+	const appDataList = projectId
+		? await repositories.appData.getAppDataByProjectAndApp(projectId, "podcasts")
+		: await repositories.appData.getAppDataByUserAndApp(user.id, "podcasts");
 
 	if (!appDataList || appDataList.length === 0) {
 		return [];

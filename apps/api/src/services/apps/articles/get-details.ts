@@ -17,11 +17,13 @@ export async function getArticleDetails({
 	env,
 	id,
 	userId,
+	projectId,
 }: {
 	context?: ServiceContext;
 	env?: IEnv;
 	id: string;
 	userId: number;
+	projectId?: string;
 }): Promise<GetDetailsSuccessResponse> {
 	if (!id) {
 		throw new AssistantError("Article ID is required", ErrorType.PARAMS_ERROR);
@@ -46,13 +48,14 @@ export async function getArticleDetails({
 
 		serviceContext.ensureDatabase();
 		const appDataRepo = serviceContext.repositories.appData;
-		const article = await appDataRepo.getAppDataById(id);
+		const article = projectId
+			? await appDataRepo.getAppDataByProjectAndId(projectId, id)
+			: await appDataRepo.getAppDataById(id);
 
 		if (!article) {
 			throw new AssistantError("Article data not found", ErrorType.NOT_FOUND);
 		}
-
-		if (article.user_id !== userId) {
+		if (!projectId && article.user_id !== userId) {
 			throw new AssistantError("Forbidden", ErrorType.FORBIDDEN);
 		}
 

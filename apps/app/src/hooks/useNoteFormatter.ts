@@ -3,11 +3,11 @@ import { toast } from "sonner";
 
 import { useFormatNote } from "./useNotes";
 
-export function useNoteFormatter(noteId: string) {
+export function useNoteFormatter(noteId: string, projectId?: string) {
 	const [isAIModalOpen, setIsAIModalOpen] = useState(false);
 	const [aiPrompt, setAIPrompt] = useState<string>("");
 	const [aiResult, setAIResult] = useState<string>("");
-	const formatNoteMutation = useFormatNote(noteId);
+	const formatNoteMutation = useFormatNote(noteId, projectId);
 
 	const runFormat = async () => {
 		formatNoteMutation.reset();

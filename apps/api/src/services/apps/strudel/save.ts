@@ -18,11 +18,13 @@ export async function savePattern({
 	env,
 	request,
 	user,
+	projectId,
 }: {
 	context?: ServiceContext;
 	env?: IEnv;
 	request: SavePatternRequest;
 	user: IUser;
+	projectId?: string;
 }) {
 	const serviceContext = resolveServiceContext({ context, env, user });
 	serviceContext.ensureDatabase();
@@ -36,7 +38,13 @@ export async function savePattern({
 		const payload = buildPatternPayload(request);
 
 		const record = user.id
-			? await repositories.dynamicAppResponses.createResponse(user.id, STRUDEL_APP_ID, payload)
+			? await repositories.dynamicAppResponses.createResponse(
+					user.id,
+					STRUDEL_APP_ID,
+					payload,
+					undefined,
+					projectId,
+				)
 			: null;
 
 		if (!record) {

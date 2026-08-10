@@ -51,6 +51,10 @@ vi.mock("~/hooks/useModels", () => ({
 	}),
 }));
 
+vi.mock("~/hooks/useModelTools", () => ({
+	useModelToolOptions: () => [],
+}));
+
 vi.mock("~/hooks/useVoiceRecorder", () => ({
 	useVoiceRecorder: () => ({
 		isRecording: false,

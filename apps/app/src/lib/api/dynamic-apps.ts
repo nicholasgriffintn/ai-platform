@@ -29,6 +29,7 @@ import type {
 import type { ProcessPodcastParams, UploadPodcastParams, UploadResponse } from "~/types/podcast";
 import { apiService } from "./api-service";
 import { fetchApi, returnFetchedData } from "./fetch-wrapper";
+import { withProjectScope } from "./project-scope";
 
 export interface DynamicAppExecutionResult {
 	success: boolean;
@@ -92,7 +93,10 @@ export const fetchDynamicAppById = async (id: string): Promise<AppSchema> => {
 	}
 };
 
-export const fetchDynamicAppResponseById = async (responseId: string): Promise<AppDataItem> => {
+export const fetchDynamicAppResponseById = async (
+	responseId: string,
+	projectId?: string,
+): Promise<AppDataItem> => {
 	try {
 		let headers: Record<string, string> = {};
 		try {
@@ -101,10 +105,13 @@ export const fetchDynamicAppResponseById = async (responseId: string): Promise<A
 			console.error("Error fetching dynamic app response:", error);
 		}
 
-		const response = await fetchApi(`/dynamic-apps/responses/${responseId}`, {
-			method: "GET",
-			headers,
-		});
+		const response = await fetchApi(
+			withProjectScope(`/dynamic-apps/responses/${responseId}`, projectId),
+			{
+				method: "GET",
+				headers,
+			},
+		);
 
 		if (!response.ok) {
 			throw new Error(`Failed to fetch dynamic app response: ${response.statusText}`);
@@ -118,7 +125,10 @@ export const fetchDynamicAppResponseById = async (responseId: string): Promise<A
 	}
 };
 
-export const fetchDynamicAppResponses = async (appId?: string): Promise<AppDataItem[]> => {
+export const fetchDynamicAppResponses = async (
+	appId?: string,
+	projectId?: string,
+): Promise<AppDataItem[]> => {
 	try {
 		let headers: Record<string, string> = {};
 		try {
@@ -131,7 +141,7 @@ export const fetchDynamicAppResponses = async (appId?: string): Promise<AppDataI
 			? `/dynamic-apps/responses?appId=${encodeURIComponent(appId)}`
 			: "/dynamic-apps/responses";
 
-		const response = await fetchApi(url, {
+		const response = await fetchApi(withProjectScope(url, projectId), {
 			method: "GET",
 			headers,
 		});
@@ -180,7 +190,7 @@ export const executeDynamicApp = async (
 	}
 };
 
-export const fetchPodcasts = async (): Promise<PodcastListItem[]> => {
+export const fetchPodcasts = async (projectId?: string): Promise<PodcastListItem[]> => {
 	let headers = {};
 	try {
 		headers = await apiService.getHeaders();
@@ -188,7 +198,7 @@ export const fetchPodcasts = async (): Promise<PodcastListItem[]> => {
 		console.error("Error fetching podcasts:", error);
 	}
 
-	const response = await fetchApi("/apps/podcasts", {
+	const response = await fetchApi(withProjectScope("/apps/podcasts", projectId), {
 		method: "GET",
 		headers,
 	});
@@ -201,7 +211,7 @@ export const fetchPodcasts = async (): Promise<PodcastListItem[]> => {
 	return data.podcasts || [];
 };
 
-export const fetchPodcast = async (id: string): Promise<Podcast> => {
+export const fetchPodcast = async (id: string, projectId?: string): Promise<Podcast> => {
 	let headers = {};
 	try {
 		headers = await apiService.getHeaders();
@@ -209,7 +219,7 @@ export const fetchPodcast = async (id: string): Promise<Podcast> => {
 		console.error("Error fetching podcast:", error);
 	}
 
-	const response = await fetchApi(`/apps/podcasts/${id}`, {
+	const response = await fetchApi(withProjectScope(`/apps/podcasts/${id}`, projectId), {
 		method: "GET",
 		headers,
 	});
@@ -222,7 +232,10 @@ export const fetchPodcast = async (id: string): Promise<Podcast> => {
 	return data.podcast;
 };
 
-export const uploadPodcast = async (params: UploadPodcastParams): Promise<UploadResponse> => {
+export const uploadPodcast = async (
+	params: UploadPodcastParams,
+	projectId?: string,
+): Promise<UploadResponse> => {
 	const formData = new FormData();
 	formData.append("title", params.title);
 	if (params.description) {
@@ -244,7 +257,7 @@ export const uploadPodcast = async (params: UploadPodcastParams): Promise<Upload
 
 	const filteredHeaders = { ...headers };
 
-	const response = await fetchApi("/apps/podcasts/upload", {
+	const response = await fetchApi(withProjectScope("/apps/podcasts/upload", projectId), {
 		method: "POST",
 		body: formData,
 		headers: filteredHeaders,
@@ -257,8 +270,8 @@ export const uploadPodcast = async (params: UploadPodcastParams): Promise<Upload
 	return await returnFetchedData<UploadResponse>(response);
 };
 
-export const processPodcast = async (params: ProcessPodcastParams) => {
-	const endpoint = `/apps/podcasts/${params.action}`;
+export const processPodcast = async (params: ProcessPodcastParams, projectId?: string) => {
+	const endpoint = withProjectScope(`/apps/podcasts/${params.action}`, projectId);
 	const body: Record<string, any> = {
 		podcastId: params.podcastId,
 	};
@@ -294,7 +307,7 @@ export const processPodcast = async (params: ProcessPodcastParams) => {
 	return await returnFetchedData<Record<string, any>>(response);
 };
 
-export const fetchArticles = async (): Promise<ArticlesResponse> => {
+export const fetchArticles = async (projectId?: string): Promise<ArticlesResponse> => {
 	let headers = {};
 	try {
 		headers = await apiService.getHeaders();
@@ -302,7 +315,7 @@ export const fetchArticles = async (): Promise<ArticlesResponse> => {
 		console.error("Error fetching articles:", error);
 	}
 
-	const response = await fetchApi("/apps/articles", {
+	const response = await fetchApi(withProjectScope("/apps/articles", projectId), {
 		method: "GET",
 		headers,
 	});
@@ -314,7 +327,7 @@ export const fetchArticles = async (): Promise<ArticlesResponse> => {
 	return await returnFetchedData<ArticlesResponse>(response);
 };
 
-export const fetchArticle = async (id: string): Promise<ArticleResponse> => {
+export const fetchArticle = async (id: string, projectId?: string): Promise<ArticleResponse> => {
 	let headers = {};
 	try {
 		headers = await apiService.getHeaders();
@@ -322,7 +335,7 @@ export const fetchArticle = async (id: string): Promise<ArticleResponse> => {
 		console.error("Error fetching article:", error);
 	}
 
-	const response = await fetchApi(`/apps/articles/${id}`, {
+	const response = await fetchApi(withProjectScope(`/apps/articles/${id}`, projectId), {
 		method: "GET",
 		headers,
 	});
@@ -335,6 +348,7 @@ export const fetchArticle = async (id: string): Promise<ArticleResponse> => {
 
 export const analyseArticle = async (
 	params: AnalyseArticleParams,
+	projectId?: string,
 ): Promise<AnalyseArticleResponse> => {
 	let headers = {};
 	try {
@@ -343,7 +357,7 @@ export const analyseArticle = async (
 		console.error("Error analysing article:", error);
 	}
 
-	const response = await fetchApi("/apps/articles/analyse", {
+	const response = await fetchApi(withProjectScope("/apps/articles/analyse", projectId), {
 		method: "POST",
 		body: params,
 		headers,
@@ -357,6 +371,7 @@ export const analyseArticle = async (
 
 export const summariseArticle = async (
 	params: SummariseArticleParams,
+	projectId?: string,
 ): Promise<SummariseArticleResponse> => {
 	let headers = {};
 	try {
@@ -365,7 +380,7 @@ export const summariseArticle = async (
 		console.error("Error summarising article:", error);
 	}
 
-	const response = await fetchApi("/apps/articles/summarise", {
+	const response = await fetchApi(withProjectScope("/apps/articles/summarise", projectId), {
 		method: "POST",
 		body: params,
 		headers,
@@ -379,6 +394,7 @@ export const summariseArticle = async (
 
 export const generateReport = async (
 	params: GenerateReportParams,
+	projectId?: string,
 ): Promise<GenerateReportResponse> => {
 	let headers = {};
 	try {
@@ -387,7 +403,7 @@ export const generateReport = async (
 		console.error("Error generating report:", error);
 	}
 
-	const response = await fetchApi("/apps/articles/generate-report", {
+	const response = await fetchApi(withProjectScope("/apps/articles/generate-report", projectId), {
 		method: "POST",
 		body: params,
 		headers,
@@ -401,6 +417,7 @@ export const generateReport = async (
 
 export const fetchSourceArticlesByIds = async (
 	ids: string[],
+	projectId?: string,
 ): Promise<FetchMultipleArticlesResponse> => {
 	if (!ids.length) return { status: "success", articles: [] };
 
@@ -412,10 +429,13 @@ export const fetchSourceArticlesByIds = async (
 		console.error("Error fetching source articles:", error);
 	}
 
-	const response = await fetchApi(`/apps/articles/sources?${queryString}`, {
-		method: "GET",
-		headers,
-	});
+	const response = await fetchApi(
+		withProjectScope(`/apps/articles/sources?${queryString}`, projectId),
+		{
+			method: "GET",
+			headers,
+		},
+	);
 
 	if (!response.ok) {
 		const errorData = await returnFetchedData<{ message?: string }>(response);
@@ -426,7 +446,7 @@ export const fetchSourceArticlesByIds = async (
 	return await returnFetchedData<FetchMultipleArticlesResponse>(response);
 };
 
-export const fetchNotes = async (): Promise<Note[]> => {
+export const fetchNotes = async (projectId?: string): Promise<Note[]> => {
 	let headers = {};
 	try {
 		headers = await apiService.getHeaders();
@@ -434,7 +454,7 @@ export const fetchNotes = async (): Promise<Note[]> => {
 		console.error("Error fetching notes:", e);
 	}
 
-	const response = await fetchApi("/apps/notes", {
+	const response = await fetchApi(withProjectScope("/apps/notes", projectId), {
 		method: "GET",
 		headers,
 	});
@@ -447,7 +467,7 @@ export const fetchNotes = async (): Promise<Note[]> => {
 	return data.notes;
 };
 
-export const fetchNote = async (id: string): Promise<Note> => {
+export const fetchNote = async (id: string, projectId?: string): Promise<Note> => {
 	let headers = {};
 	try {
 		headers = await apiService.getHeaders();
@@ -455,7 +475,7 @@ export const fetchNote = async (id: string): Promise<Note> => {
 		console.error("Error fetching note:", e);
 	}
 
-	const response = await fetchApi(`/apps/notes/${id}`, {
+	const response = await fetchApi(withProjectScope(`/apps/notes/${id}`, projectId), {
 		method: "GET",
 		headers,
 	});
@@ -469,7 +489,7 @@ export const fetchNote = async (id: string): Promise<Note> => {
 	return data.note;
 };
 
-export const createNote = async (params: NoteCreateRequest): Promise<Note> => {
+export const createNote = async (params: NoteCreateRequest, projectId?: string): Promise<Note> => {
 	let headers = {};
 	try {
 		headers = await apiService.getHeaders();
@@ -477,7 +497,7 @@ export const createNote = async (params: NoteCreateRequest): Promise<Note> => {
 		console.error("Error creating note:", e);
 	}
 
-	const response = await fetchApi("/apps/notes", {
+	const response = await fetchApi(withProjectScope("/apps/notes", projectId), {
 		method: "POST",
 		headers,
 		body: params,
@@ -492,7 +512,10 @@ export const createNote = async (params: NoteCreateRequest): Promise<Note> => {
 	return data.note;
 };
 
-export const updateNote = async (params: NoteUpdateRequest & { id: string }): Promise<Note> => {
+export const updateNote = async (
+	params: NoteUpdateRequest & { id: string },
+	projectId?: string,
+): Promise<Note> => {
 	let headers = {};
 	try {
 		headers = await apiService.getHeaders();
@@ -502,7 +525,7 @@ export const updateNote = async (params: NoteUpdateRequest & { id: string }): Pr
 
 	const { id, ...body } = params;
 
-	const response = await fetchApi(`/apps/notes/${id}`, {
+	const response = await fetchApi(withProjectScope(`/apps/notes/${id}`, projectId), {
 		method: "PUT",
 		headers,
 		body,
@@ -517,7 +540,7 @@ export const updateNote = async (params: NoteUpdateRequest & { id: string }): Pr
 	return data.note;
 };
 
-export const deleteNote = async (id: string): Promise<void> => {
+export const deleteNote = async (id: string, projectId?: string): Promise<void> => {
 	let headers = {};
 	try {
 		headers = await apiService.getHeaders();
@@ -525,7 +548,7 @@ export const deleteNote = async (id: string): Promise<void> => {
 		console.error("Error deleting note:", e);
 	}
 
-	const response = await fetchApi(`/apps/notes/${id}`, {
+	const response = await fetchApi(withProjectScope(`/apps/notes/${id}`, projectId), {
 		method: "DELETE",
 		headers,
 	});
@@ -536,7 +559,11 @@ export const deleteNote = async (id: string): Promise<void> => {
 	}
 };
 
-export const formatNoteAPI = async (id: string, prompt?: string): Promise<string> => {
+export const formatNoteAPI = async (
+	id: string,
+	prompt?: string,
+	projectId?: string,
+): Promise<string> => {
 	let headers = {};
 	try {
 		headers = await apiService.getHeaders();
@@ -544,7 +571,7 @@ export const formatNoteAPI = async (id: string, prompt?: string): Promise<string
 		console.error("Error getting headers for note formatting:", e);
 	}
 
-	const response = await fetchApi(`/apps/notes/${id}/format`, {
+	const response = await fetchApi(withProjectScope(`/apps/notes/${id}/format`, projectId), {
 		method: "POST",
 		headers,
 		body: { prompt },
@@ -561,6 +588,7 @@ export const formatNoteAPI = async (id: string, prompt?: string): Promise<string
 
 export const extractArticleContent = async (
 	params: ExtractArticleContentParams,
+	projectId?: string,
 ): Promise<ExtractArticleContentResponse> => {
 	let headers = {};
 	try {
@@ -569,7 +597,7 @@ export const extractArticleContent = async (
 		console.error("Error extracting article content:", e);
 	}
 
-	const response = await fetchApi("/apps/articles/extract-content", {
+	const response = await fetchApi(withProjectScope("/apps/articles/extract-content", projectId), {
 		method: "POST",
 		headers: {
 			...headers,
@@ -592,7 +620,7 @@ export const extractArticleContent = async (
 	return await returnFetchedData<ExtractArticleContentResponse>(response);
 };
 
-export const prepareSessionForRerun = async (itemId: string): Promise<void> => {
+export const prepareSessionForRerun = async (itemId: string, projectId?: string): Promise<void> => {
 	let headers = {};
 	try {
 		headers = await apiService.getHeaders();
@@ -600,13 +628,16 @@ export const prepareSessionForRerun = async (itemId: string): Promise<void> => {
 		console.error("Error preparing session for rerun:", e);
 	}
 
-	const response = await fetchApi(`/apps/articles/prepare-rerun/${itemId}`, {
-		method: "POST",
-		headers: {
-			...headers,
-			"Content-Type": "application/json",
+	const response = await fetchApi(
+		withProjectScope(`/apps/articles/prepare-rerun/${itemId}`, projectId),
+		{
+			method: "POST",
+			headers: {
+				...headers,
+				"Content-Type": "application/json",
+			},
 		},
-	});
+	);
 
 	if (!response.ok) {
 		const errorData = await returnFetchedData<{ message?: string }>(response);
@@ -616,37 +647,40 @@ export const prepareSessionForRerun = async (itemId: string): Promise<void> => {
 	}
 };
 
-export const generateNotesFromMedia = async (params: {
-	url: string;
-	outputs: (
-		| "concise_summary"
-		| "detailed_outline"
-		| "key_takeaways"
-		| "action_items"
-		| "meeting_minutes"
-		| "qa_extraction"
-		| "scene_analysis"
-		| "visual_insights"
-		| "smart_timestamps"
-	)[];
-	noteType:
-		| "general"
-		| "meeting"
-		| "training"
-		| "lecture"
-		| "interview"
-		| "podcast"
-		| "webinar"
-		| "tutorial"
-		| "video_content"
-		| "educational_video"
-		| "documentary"
-		| "other";
-	extraPrompt?: string;
-	timestamps?: boolean;
-	useVideoAnalysis?: boolean;
-	enableVideoSearch?: boolean;
-}): Promise<{ content: string }> => {
+export const generateNotesFromMedia = async (
+	params: {
+		url: string;
+		outputs: (
+			| "concise_summary"
+			| "detailed_outline"
+			| "key_takeaways"
+			| "action_items"
+			| "meeting_minutes"
+			| "qa_extraction"
+			| "scene_analysis"
+			| "visual_insights"
+			| "smart_timestamps"
+		)[];
+		noteType:
+			| "general"
+			| "meeting"
+			| "training"
+			| "lecture"
+			| "interview"
+			| "podcast"
+			| "webinar"
+			| "tutorial"
+			| "video_content"
+			| "educational_video"
+			| "documentary"
+			| "other";
+		extraPrompt?: string;
+		timestamps?: boolean;
+		useVideoAnalysis?: boolean;
+		enableVideoSearch?: boolean;
+	},
+	projectId?: string,
+): Promise<{ content: string }> => {
 	let headers = {};
 	try {
 		headers = await apiService.getHeaders();
@@ -654,7 +688,7 @@ export const generateNotesFromMedia = async (params: {
 		console.error("Error getting headers for media generation:", e);
 	}
 
-	const response = await fetchApi(`/apps/notes/generate-from-media`, {
+	const response = await fetchApi(withProjectScope(`/apps/notes/generate-from-media`, projectId), {
 		method: "POST",
 		headers: {
 			...headers,

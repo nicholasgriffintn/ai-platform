@@ -11,56 +11,64 @@ import {
 	summariseArticle,
 } from "~/lib/api/dynamic-apps";
 
-export const useFetchArticleReports = () => {
+export const useFetchArticleReports = (projectId?: string) => {
 	return useQuery({
-		queryKey: ["articles", "reports"],
-		queryFn: fetchArticles,
+		queryKey: ["articles", projectId, "reports"],
+		queryFn: () => fetchArticles(projectId),
 		select: (data) => data.articles || [],
 	});
 };
 
-export const useFetchArticleReport = (id: string | undefined) => {
+export const useFetchArticleReport = (id: string | undefined, projectId?: string) => {
 	return useQuery({
-		queryKey: ["articleReport", id],
-		queryFn: () => fetchArticle(id!),
+		queryKey: ["articleReport", projectId, id],
+		queryFn: () => fetchArticle(id!, projectId),
 		enabled: !!id,
 		select: (data) => data.article,
 	});
 };
 
-export const useAnalyseArticle = () => {
-	return useMutation({ mutationFn: analyseArticle });
+export const useAnalyseArticle = (projectId?: string) => {
+	return useMutation({
+		mutationFn: (params: Parameters<typeof analyseArticle>[0]) => analyseArticle(params, projectId),
+	});
 };
 
-export const useSummariseArticle = () => {
-	return useMutation({ mutationFn: summariseArticle });
+export const useSummariseArticle = (projectId?: string) => {
+	return useMutation({
+		mutationFn: (params: Parameters<typeof summariseArticle>[0]) =>
+			summariseArticle(params, projectId),
+	});
 };
 
-export const useGenerateReport = () => {
+export const useGenerateReport = (projectId?: string) => {
 	const queryClient = useQueryClient();
 	return useMutation({
-		mutationFn: generateReport,
+		mutationFn: (params: Parameters<typeof generateReport>[0]) => generateReport(params, projectId),
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["articles", "reports"] });
+			queryClient.invalidateQueries({ queryKey: ["articles", projectId, "reports"] });
 		},
 	});
 };
 
-export const useFetchSourceArticlesByIds = (ids: string[] | undefined) => {
+export const useFetchSourceArticlesByIds = (ids: string[] | undefined, projectId?: string) => {
 	return useQuery({
-		queryKey: ["articles", "multiple", ids],
-		queryFn: () => fetchSourceArticlesByIds(ids || []),
+		queryKey: ["articles", projectId, "multiple", ids],
+		queryFn: () => fetchSourceArticlesByIds(ids || [], projectId),
 		enabled: !!ids && ids.length > 0,
 		select: (data) => data.articles || [],
 	});
 };
 
-export const useExtractArticleContent = () => {
-	return useMutation({ mutationFn: extractArticleContent });
+export const useExtractArticleContent = (projectId?: string) => {
+	return useMutation({
+		mutationFn: (params: Parameters<typeof extractArticleContent>[0]) =>
+			extractArticleContent(params, projectId),
+	});
 };
 
-export const usePrepareSessionForRerun = () => {
+export const usePrepareSessionForRerun = (projectId?: string) => {
 	return useMutation({
-		mutationFn: prepareSessionForRerun,
+		mutationFn: (itemId: string) => prepareSessionForRerun(itemId, projectId),
 	});
 };

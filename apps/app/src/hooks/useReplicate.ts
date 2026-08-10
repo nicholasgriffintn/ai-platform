@@ -9,18 +9,18 @@ import type { ExecuteReplicateRequest, ReplicatePrediction } from "@assistant/sc
 
 const REPLICATE_QUERY_KEY = "replicate";
 
-export function useReplicateModels() {
+export function useReplicateModels(projectId?: string) {
 	return useQuery({
-		queryKey: [REPLICATE_QUERY_KEY, "models"],
-		queryFn: fetchReplicateModels,
+		queryKey: [REPLICATE_QUERY_KEY, projectId, "models"],
+		queryFn: () => fetchReplicateModels(projectId),
 		staleTime: 1000 * 60 * 5, // 5 minutes
 	});
 }
 
-export function useReplicatePredictions() {
+export function useReplicatePredictions(projectId?: string) {
 	return useQuery({
-		queryKey: [REPLICATE_QUERY_KEY, "predictions"],
-		queryFn: fetchReplicatePredictions,
+		queryKey: [REPLICATE_QUERY_KEY, projectId, "predictions"],
+		queryFn: () => fetchReplicatePredictions(projectId),
 		refetchInterval: (query) => {
 			const data = query.state.data as ReplicatePrediction[] | undefined;
 			if (!data) return false;
@@ -34,10 +34,10 @@ export function useReplicatePredictions() {
 	});
 }
 
-export function useReplicatePrediction(predictionId: string | null) {
+export function useReplicatePrediction(predictionId: string | null, projectId?: string) {
 	return useQuery({
-		queryKey: [REPLICATE_QUERY_KEY, "prediction", predictionId],
-		queryFn: () => fetchReplicatePrediction(predictionId!),
+		queryKey: [REPLICATE_QUERY_KEY, projectId, "prediction", predictionId],
+		queryFn: () => fetchReplicatePrediction(predictionId!, projectId),
 		enabled: !!predictionId,
 		refetchInterval: (query) => {
 			const data = query.state.data as ReplicatePrediction | undefined;
@@ -48,14 +48,14 @@ export function useReplicatePrediction(predictionId: string | null) {
 	});
 }
 
-export function useExecuteReplicateModel() {
+export function useExecuteReplicateModel(projectId?: string) {
 	const queryClient = useQueryClient();
 
 	return useMutation({
-		mutationFn: (request: ExecuteReplicateRequest) => executeReplicateModel(request),
+		mutationFn: (request: ExecuteReplicateRequest) => executeReplicateModel(request, projectId),
 		onSuccess: () => {
 			queryClient.invalidateQueries({
-				queryKey: [REPLICATE_QUERY_KEY, "predictions"],
+				queryKey: [REPLICATE_QUERY_KEY, projectId, "predictions"],
 			});
 		},
 	});

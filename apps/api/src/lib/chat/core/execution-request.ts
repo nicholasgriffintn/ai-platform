@@ -126,7 +126,7 @@ class ChatExecutionRequest {
 			safety_identifier: chatOptions.safety_identifier,
 			service_tier: chatOptions.service_tier,
 			stream_options: chatOptions.stream_options,
-			tool_options: chatOptions.tool_options,
+			tool_options: prepared.toolOptions,
 			audio: chatOptions.audio,
 			audio_format: chatOptions.audio_format,
 			modalities: chatOptions.modalities,

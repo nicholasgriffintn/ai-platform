@@ -211,7 +211,7 @@ describe("RequestPreparer", () => {
 			]);
 		});
 
-		it("loads project instructions and tool selection from the server", async () => {
+		it("loads project instructions and effective default tools from the server", async () => {
 			mockRepositories.workspaces.getProject.mockResolvedValue({
 				id: "project-1",
 				workspace_id: "workspace-1",
@@ -236,7 +236,16 @@ describe("RequestPreparer", () => {
 			expect(result.systemPrompt).toContain(
 				"Generated system prompt\n\nProject instructions:\nUse the shared launch brief.",
 			);
-			expect(result.enabledTools).toEqual(["web_search", "search_memories", "store_memory"]);
+			expect(result.enabledTools).toEqual([
+				"code_execution",
+				"search_grounding",
+				"image_generation",
+				"tool_search",
+				"hosted_shell",
+				"web_fetch",
+				"search_memories",
+				"store_memory",
+			]);
 		});
 
 		it("should only enable memory search when chat history memories are enabled", async () => {

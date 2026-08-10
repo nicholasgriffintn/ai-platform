@@ -31,6 +31,7 @@ export async function analyseArticle({
 	env,
 	args,
 	user,
+	projectId,
 }: {
 	completion_id: string;
 	app_url: string | undefined;
@@ -38,6 +39,7 @@ export async function analyseArticle({
 	env?: IEnv;
 	args: Params;
 	user: IUser;
+	projectId?: string;
 }): Promise<AnalyseSuccessResponse> {
 	if (!user.id) {
 		throw new AssistantError("User ID is required", ErrorType.PARAMS_ERROR);
@@ -116,13 +118,22 @@ export async function analyseArticle({
 			analysis: analysisResult,
 			title: `Analysis: ${args.article.substring(0, 80)}...`,
 		};
-		const savedData = await appDataRepo.createAppDataWithItem(
-			user.id,
-			"articles",
-			args.itemId,
-			"analysis",
-			appData,
-		);
+		const savedData = projectId
+			? await appDataRepo.createAppDataWithItem(
+					user.id,
+					"articles",
+					args.itemId,
+					"analysis",
+					appData,
+					projectId,
+				)
+			: await appDataRepo.createAppDataWithItem(
+					user.id,
+					"articles",
+					args.itemId,
+					"analysis",
+					appData,
+				);
 
 		return {
 			status: "success",

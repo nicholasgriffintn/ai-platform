@@ -59,4 +59,18 @@ describe("createChatExecutionRequest", () => {
 			{ role: "assistant", content: "Hi" },
 		]);
 	});
+
+	it("uses tool options resolved from project capability configuration", () => {
+		const input = createInput();
+		input.prepared.toolOptions = {
+			file_search: { vector_store_ids: ["vs_project"] },
+		};
+		input.chatOptions.tool_options = {
+			file_search: { vector_store_ids: ["vs_untrusted_request"] },
+		};
+
+		expect(createChatExecutionRequest(input).providerRequest().tool_options).toEqual({
+			file_search: { vector_store_ids: ["vs_project"] },
+		});
+	});
 });

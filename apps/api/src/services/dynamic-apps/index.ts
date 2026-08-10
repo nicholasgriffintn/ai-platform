@@ -4,7 +4,7 @@ import {
 	type AppSchema,
 	type AssistantCapabilityDescriptor,
 } from "@assistant/schemas";
-import { getFeaturedApps, type FeaturedAppDefinition } from "~/services/dynamic-apps/config";
+import { getFeaturedApps, type FeaturedAppCatalogDefinition } from "~/services/dynamic-apps/config";
 import { handleFunctions } from "~/services/functions";
 import type { IRequest } from "~/types";
 import type { ServiceContext } from "~/lib/context/serviceContext";
@@ -77,7 +77,7 @@ type DynamicAppCatalogItem =
 			kind: "dynamic";
 			capability?: AssistantCapabilityDescriptor;
 	  })
-	| (FeaturedAppDefinition & {
+	| (FeaturedAppCatalogDefinition & {
 			featured: true;
 			capability?: AssistantCapabilityDescriptor;
 	  });
@@ -325,8 +325,11 @@ export const getDynamicAppResponseById = async (
 	context: ServiceContext,
 	userId: number,
 	responseId: string,
+	projectId?: string,
 ): Promise<AppData | null> => {
-	return context.repositories.dynamicAppResponses.getResponseByIdForUser(responseId, userId);
+	return projectId
+		? context.repositories.dynamicAppResponses.getResponseByIdForProject(responseId, projectId)
+		: context.repositories.dynamicAppResponses.getResponseByIdForUser(responseId, userId);
 };
 
 /**
@@ -340,6 +343,9 @@ export const listDynamicAppResponsesForUser = async (
 	context: ServiceContext,
 	userId: number,
 	appId?: string,
+	projectId?: string,
 ): Promise<AppData[]> => {
-	return context.repositories.dynamicAppResponses.listResponsesForUser(userId, appId);
+	return projectId
+		? context.repositories.dynamicAppResponses.listResponsesForProject(projectId, appId)
+		: context.repositories.dynamicAppResponses.listResponsesForUser(userId, appId);
 };

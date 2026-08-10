@@ -12,6 +12,7 @@ import {
 import { createAssistantActionConversationUrl } from "./assistant-action-launch";
 
 interface AssistantActionFlowInput extends AssistantActionExecutionInput {
+	conversationPath?: string;
 	delivery: AssistantActionDelivery;
 	verb?: Pick<AssistantActionVerb, "command" | "id">;
 }
@@ -75,11 +76,14 @@ export async function launchAssistantAction(
 			...(result.notification ? { notification: result.notification } : {}),
 			...(result.requestOptions ? { requestOptions: result.requestOptions } : {}),
 			...(result.selectedTools ? { selectedTools: result.selectedTools } : {}),
-			url: createAssistantActionConversationUrl({
-				input: result.input,
-				enabledTools: result.selectedTools ?? [],
-				requestOptions: result.requestOptions,
-			}),
+			url: createAssistantActionConversationUrl(
+				{
+					input: result.input,
+					enabledTools: result.selectedTools ?? [],
+					requestOptions: result.requestOptions,
+				},
+				action.conversationPath,
+			),
 		};
 	}
 

@@ -90,8 +90,8 @@ export function InviteMemberDialog({
 								Done
 							</Button>
 						) : (
-							<Button type="submit" isLoading={inviteMember.isPending}>
-								Create secure invite
+							<Button type="submit" variant="primary" isLoading={inviteMember.isPending}>
+								Send invite
 							</Button>
 						)}
 					</DialogFooter>

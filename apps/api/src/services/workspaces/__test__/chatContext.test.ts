@@ -49,7 +49,50 @@ describe("project chat context", () => {
 		).resolves.toEqual({
 			projectId: "project-1",
 			instructions: "Use the approved launch brief.",
-			enabledTools: ["web_search"],
+			enabledTools: [
+				"code_execution",
+				"search_grounding",
+				"image_generation",
+				"tool_search",
+				"hosted_shell",
+				"web_fetch",
+			],
+			toolOptions: undefined,
+		});
+	});
+
+	it("enables configuration-backed tools only from validated project settings", async () => {
+		const { context, repositories } = createContext();
+		repositories.workspaces.listProjectCapabilities.mockResolvedValue([
+			{
+				kind: "tool",
+				capability_id: "file_search",
+				configuration: JSON.stringify({ vectorStoreIds: ["vs_project"] }),
+			},
+			{
+				kind: "tool",
+				capability_id: "mcp",
+				configuration: {
+					servers: [{ label: "docs", url: "https://mcp.example.com" }],
+				},
+			},
+		]);
+
+		const result = await resolveProjectChatContext(context, {
+			metadata: { project_id: "project-1" },
+		});
+
+		expect(result?.enabledTools).toContain("file_search");
+		expect(result?.enabledTools).toContain("mcp");
+		expect(result?.toolOptions).toEqual({
+			file_search: { vector_store_ids: ["vs_project"] },
+			mcp_servers: [
+				{
+					require_approval: "always",
+					server_label: "docs",
+					server_url: "https://mcp.example.com/",
+				},
+			],
 		});
 	});
 
@@ -76,7 +119,15 @@ describe("project chat context", () => {
 			options: { recipe: { id: "daily-weather" } },
 		});
 
-		expect(result?.enabledTools).toEqual(["get_weather"]);
+		expect(result?.enabledTools).toEqual([
+			"code_execution",
+			"search_grounding",
+			"image_generation",
+			"tool_search",
+			"hosted_shell",
+			"web_fetch",
+			"get_weather",
+		]);
 	});
 
 	it("rejects moving an existing personal conversation into a project", async () => {

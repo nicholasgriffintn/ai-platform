@@ -19,22 +19,23 @@ export async function updatePattern({
 	request,
 	user,
 	patternId,
+	projectId,
 }: {
 	context?: ServiceContext;
 	env?: IEnv;
 	request: UpdatePatternRequest;
 	user: IUser;
 	patternId: string;
+	projectId?: string;
 }) {
 	const serviceContext = resolveServiceContext({ context, env, user });
 	serviceContext.ensureDatabase();
 	const { repositories } = serviceContext;
 
 	try {
-		const existing = await repositories.dynamicAppResponses.getResponseByIdForUser(
-			patternId,
-			user.id,
-		);
+		const existing = projectId
+			? await repositories.dynamicAppResponses.getResponseByIdForProject(patternId, projectId)
+			: await repositories.dynamicAppResponses.getResponseByIdForUser(patternId, user.id);
 
 		if (!existing) {
 			throw new AssistantError("Pattern not found", ErrorType.NOT_FOUND);
@@ -51,10 +52,9 @@ export async function updatePattern({
 
 		await repositories.dynamicAppResponses.updateResponseData(patternId, mergedPayload);
 
-		const updated = await repositories.dynamicAppResponses.getResponseByIdForUser(
-			patternId,
-			user.id,
-		);
+		const updated = projectId
+			? await repositories.dynamicAppResponses.getResponseByIdForProject(patternId, projectId)
+			: await repositories.dynamicAppResponses.getResponseByIdForUser(patternId, user.id);
 
 		if (!updated) {
 			throw new AssistantError("Failed to load pattern after update", ErrorType.UNKNOWN_ERROR);

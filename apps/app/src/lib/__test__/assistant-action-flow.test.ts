@@ -132,7 +132,7 @@ describe("assistant action flow", () => {
 		expect(invokeRecipe).toHaveBeenCalledWith("morning-briefing", "@Morning Briefing for today");
 	});
 
-	it("routes schedule recipe actions to the recipe scheduler instead of running the recipe", async () => {
+	it("routes schedule recipe actions to the current project's capability workflow", async () => {
 		const catalog = buildAssistantActionCatalog({
 			recipes: [morningBriefingRecipe],
 			installations: [morningBriefingInstallation],
@@ -151,6 +151,7 @@ describe("assistant action flow", () => {
 					delivery: "submit",
 					input: "@Morning Briefing",
 					item: recipeItem,
+					recipeManagementPath: "/work/workspace-1/projects/project-1/library",
 					selectedTools: [],
 					verb: scheduleVerb,
 				},
@@ -163,7 +164,7 @@ describe("assistant action flow", () => {
 		).resolves.toEqual({
 			kind: "navigation",
 			input: "@Morning Briefing",
-			path: "/apps/recipes?action=schedule&recipe=morning-briefing",
+			path: "/work/workspace-1/projects/project-1/library?action=schedule&recipe=morning-briefing",
 		});
 		expect(installRecipe).not.toHaveBeenCalled();
 		expect(invokeRecipe).not.toHaveBeenCalled();

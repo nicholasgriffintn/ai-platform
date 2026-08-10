@@ -22,6 +22,7 @@ export interface ExecuteModelGenerationStorage {
 	itemType: string;
 	extraData?: Record<string, unknown>;
 	pollingTaskType?: TaskType;
+	projectId?: string;
 }
 
 export interface ExecuteModelGenerationRequest {
@@ -165,13 +166,22 @@ export const executeModelGeneration = async (
 		createdAt: new Date().toISOString(),
 	};
 
-	const stored = await serviceContext.repositories.appData.createAppDataWithItem(
-		user.id,
-		storage.appId,
-		invocationId,
-		storage.itemType,
-		appDataPayload,
-	);
+	const stored = storage.projectId
+		? await serviceContext.repositories.appData.createAppDataWithItem(
+				user.id,
+				storage.appId,
+				invocationId,
+				storage.itemType,
+				appDataPayload,
+				storage.projectId,
+			)
+		: await serviceContext.repositories.appData.createAppDataWithItem(
+				user.id,
+				storage.appId,
+				invocationId,
+				storage.itemType,
+				appDataPayload,
+			);
 
 	if (!stored?.id) {
 		throw new AssistantError("Failed to store generation data", ErrorType.STORAGE_ERROR);

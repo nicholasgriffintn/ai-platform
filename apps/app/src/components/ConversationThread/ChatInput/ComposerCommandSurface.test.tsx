@@ -79,6 +79,17 @@ vi.mock("~/hooks/useDynamicApps", () => ({
 					type: "normal",
 				},
 			],
+			tools: [
+				{
+					id: "web_fetch",
+					command: "Web fetch",
+					label: "Web fetch",
+					description: "Fetch content from the web",
+					category: "Research",
+					capability: "supportsWebFetch",
+					requiresConfiguration: false,
+				},
+			],
 		},
 	}),
 }));
@@ -136,6 +147,26 @@ vi.mock("~/hooks/useModels", () => ({
 			},
 		},
 	}),
+}));
+
+vi.mock("~/hooks/useModelTools", () => ({
+	useModelToolOptions: (model: { supportsWebFetch?: boolean } | undefined) =>
+		model?.supportsWebFetch
+			? [
+					{
+						id: "web_fetch",
+						command: "Web fetch",
+						label: "Web fetch",
+						description: "Fetch content from the web",
+						category: "Research",
+						capability: "supportsWebFetch",
+						requiresConfiguration: false,
+						available: true,
+						availabilityReason: "Available for the selected model.",
+						requiredModelCapabilities: ["supportsWebFetch"],
+					},
+				]
+			: [],
 }));
 
 vi.mock("~/hooks/useWebLLMModels", () => ({

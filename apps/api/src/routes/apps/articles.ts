@@ -25,6 +25,10 @@ import { summariseArticle, cleanupArticleSession } from "~/services/apps/article
 import { extractContent } from "~/services/apps/retrieval/content-extract";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
+import {
+	projectScopeQuerySchema,
+	requireProjectCapabilityAccess,
+} from "~/services/workspaces/access";
 
 const app = new Hono();
 
@@ -51,12 +55,23 @@ addRoute(app, "get", "/", {
 		401: { description: "Unauthorized", schema: errorResponseSchema },
 	},
 	auth: true,
+	querySchema: projectScopeQuerySchema,
 	middleware: [requirePlan("pro")],
-	handler: async ({ serviceContext, user }) => {
+	handler: async ({ query, serviceContext, user }) => {
 		try {
+			if (query.projectId) {
+				await requireProjectCapabilityAccess(
+					serviceContext,
+					query.projectId,
+					"app",
+					"featured-article-processor",
+				);
+			}
+
 			const response = await listArticles({
 				context: serviceContext,
 				userId: user.id,
+				projectId: query.projectId,
 			});
 
 			return {
@@ -95,8 +110,16 @@ addRoute(app, "get", "/sources", {
 		403: { description: "Forbidden", schema: errorResponseSchema },
 	},
 	auth: true,
+	querySchema: projectScopeQuerySchema,
 	middleware: [requirePlan("pro")],
-	handler: async ({ raw, serviceContext, user }) => {
+	handler: async ({ query, raw, serviceContext, user }) => {
+		if (query.projectId)
+			await requireProjectCapabilityAccess(
+				serviceContext,
+				query.projectId,
+				"app",
+				"featured-article-processor",
+			);
 		const url = new URL(raw.req.url);
 		const ids = url.searchParams.getAll("ids[]");
 
@@ -111,6 +134,7 @@ addRoute(app, "get", "/sources", {
 				context: serviceContext,
 				ids: validIds,
 				userId: user.id,
+				projectId: query.projectId,
 			});
 
 			return {
@@ -147,13 +171,24 @@ addRoute(app, "get", "/:id", {
 		404: { description: "Article data not found", schema: errorResponseSchema },
 	},
 	auth: true,
+	querySchema: projectScopeQuerySchema,
 	middleware: [requirePlan("pro")],
-	handler: async ({ params, serviceContext, user }) => {
+	handler: async ({ params, query, serviceContext, user }) => {
 		try {
+			if (query.projectId) {
+				await requireProjectCapabilityAccess(
+					serviceContext,
+					query.projectId,
+					"app",
+					"featured-article-processor",
+				);
+			}
+
 			const response = await getArticleDetails({
 				context: serviceContext,
 				id: params.id,
 				userId: user.id,
+				projectId: query.projectId,
 			});
 
 			return { article: response.article };
@@ -192,9 +227,19 @@ addRoute(app, "post", "/analyse", {
 		401: { description: "Unauthorized", schema: errorResponseSchema },
 	},
 	auth: true,
+	querySchema: projectScopeQuerySchema,
 	middleware: [requirePlan("pro")],
-	handler: async ({ body, raw, serviceContext, user }) => {
+	handler: async ({ body, query, raw, serviceContext, user }) => {
 		try {
+			if (query.projectId) {
+				await requireProjectCapabilityAccess(
+					serviceContext,
+					query.projectId,
+					"app",
+					"featured-article-processor",
+				);
+			}
+
 			const completion_id = generateId();
 			const newUrl = new URL(raw.req.url);
 			const app_url = `${newUrl.protocol}//${newUrl.hostname}`;
@@ -205,6 +250,7 @@ addRoute(app, "post", "/analyse", {
 				args: { article: body.article, itemId: body.itemId },
 				app_url,
 				user,
+				projectId: query.projectId,
 			});
 
 			return response;
@@ -246,9 +292,19 @@ addRoute(app, "post", "/summarise", {
 		401: { description: "Unauthorized", schema: errorResponseSchema },
 	},
 	auth: true,
+	querySchema: projectScopeQuerySchema,
 	middleware: [requirePlan("pro")],
-	handler: async ({ body, raw, serviceContext, user }) => {
+	handler: async ({ body, query, raw, serviceContext, user }) => {
 		try {
+			if (query.projectId) {
+				await requireProjectCapabilityAccess(
+					serviceContext,
+					query.projectId,
+					"app",
+					"featured-article-processor",
+				);
+			}
+
 			const completion_id = generateId();
 			const newUrl = new URL(raw.req.url);
 			const app_url = `${newUrl.protocol}//${newUrl.hostname}`;
@@ -259,6 +315,7 @@ addRoute(app, "post", "/summarise", {
 				args: { article: body.article, itemId: body.itemId },
 				app_url,
 				user,
+				projectId: query.projectId,
 			});
 
 			return response;
@@ -306,9 +363,19 @@ addRoute(app, "post", "/generate-report", {
 		},
 	},
 	auth: true,
+	querySchema: projectScopeQuerySchema,
 	middleware: [requirePlan("pro")],
-	handler: async ({ body, raw, serviceContext, user }) => {
+	handler: async ({ body, query, raw, serviceContext, user }) => {
 		try {
+			if (query.projectId) {
+				await requireProjectCapabilityAccess(
+					serviceContext,
+					query.projectId,
+					"app",
+					"featured-article-processor",
+				);
+			}
+
 			const completion_id = generateId();
 			const newUrl = new URL(raw.req.url);
 			const app_url = `${newUrl.protocol}//${newUrl.hostname}`;
@@ -319,6 +386,7 @@ addRoute(app, "post", "/generate-report", {
 				args: { itemId: body.itemId },
 				app_url,
 				user,
+				projectId: query.projectId,
 			});
 
 			return response;
@@ -358,10 +426,20 @@ addRoute(app, "post", "/prepare-rerun/:itemId", {
 		401: { description: "Unauthorized", schema: errorResponseSchema },
 	},
 	auth: true,
+	querySchema: projectScopeQuerySchema,
 	middleware: [requirePlan("pro")],
-	handler: async ({ params, serviceContext, user }) => {
+	handler: async ({ params, query, serviceContext, user }) => {
 		try {
-			await cleanupArticleSession(serviceContext, user.id, params.itemId);
+			if (query.projectId) {
+				await requireProjectCapabilityAccess(
+					serviceContext,
+					query.projectId,
+					"app",
+					"featured-article-processor",
+				);
+			}
+
+			await cleanupArticleSession(serviceContext, user.id, params.itemId, query.projectId);
 
 			return { status: "success", message: "Session prepared for rerun" };
 		} catch (error) {
@@ -408,9 +486,19 @@ addRoute(app, "post", "/extract-content", {
 		401: { description: "Unauthorized", schema: errorResponseSchema },
 	},
 	auth: true,
+	querySchema: projectScopeQuerySchema,
 	middleware: [requirePlan("pro")],
-	handler: async ({ body, raw, serviceContext, user }) => {
+	handler: async ({ body, query, raw, serviceContext, user }) => {
 		try {
+			if (query.projectId) {
+				await requireProjectCapabilityAccess(
+					serviceContext,
+					query.projectId,
+					"app",
+					"featured-article-processor",
+				);
+			}
+
 			const extractResult = await extractContent(
 				{
 					urls: body.urls,

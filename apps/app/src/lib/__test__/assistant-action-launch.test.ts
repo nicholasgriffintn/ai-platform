@@ -2,8 +2,10 @@ import { describe, expect, it } from "vitest";
 import type { AssistantRecipeInstallResponse, RecipeInvocationResponse } from "@assistant/schemas";
 
 import {
+	createAssistantActionConversationUrl,
 	createAppAssistantActionLaunch,
 	createConnectorAssistantActionLaunch,
+	createRecipeManagementActionPath,
 	createRecipeAssistantActionLaunch,
 	createRecipeAssistantActionChatUrl,
 	loadAssistantActionRequestOptions,
@@ -129,6 +131,20 @@ describe("assistant action launch URL contract", () => {
 		});
 	});
 
+	it("targets project chat without changing assistant action query state", () => {
+		const url = createAssistantActionConversationUrl(
+			{
+				input: "Run the planner recipe.",
+				enabledTools: ["use_recipe_connector"],
+			},
+			"/work/workspace-1/projects/project-1/chat",
+		);
+
+		expect(url).toMatch(
+			/^\/work\/workspace-1\/projects\/project-1\/chat\?query=Run\+the\+planner\+recipe\./,
+		);
+	});
+
 	it("creates an app launch path for frontend and dynamic apps", () => {
 		expect(
 			createAppAssistantActionLaunch({
@@ -144,6 +160,18 @@ describe("assistant action launch URL contract", () => {
 				appKind: "dynamic",
 			}),
 		).toEqual({ navigationPath: "/apps?app=article-research" });
+	});
+
+	it("creates recipe management links without discarding existing route state", () => {
+		expect(
+			createRecipeManagementActionPath(
+				"/work/workspace-1/projects/project-1/library?view=installed",
+				"configure",
+				"daily briefing",
+			),
+		).toBe(
+			"/work/workspace-1/projects/project-1/library?view=installed&action=configure&recipe=daily+briefing",
+		);
 	});
 
 	it("rejects app launch payloads without an app id", () => {

@@ -9,19 +9,20 @@ export async function getPatternDetails({
 	context,
 	userId,
 	patternId,
+	projectId,
 }: {
 	context: ServiceContext;
 	userId: number;
 	patternId: string;
+	projectId?: string;
 }) {
 	try {
 		context.ensureDatabase();
 		const { repositories } = context;
 
-		const response = await repositories.dynamicAppResponses.getResponseByIdForUser(
-			patternId,
-			userId,
-		);
+		const response = projectId
+			? await repositories.dynamicAppResponses.getResponseByIdForProject(patternId, projectId)
+			: await repositories.dynamicAppResponses.getResponseByIdForUser(patternId, userId);
 
 		if (!response) {
 			throw new AssistantError("Pattern not found", ErrorType.NOT_FOUND);

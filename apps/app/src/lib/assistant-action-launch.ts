@@ -15,6 +15,8 @@ const ACTION_CONTEXT_PARAM = "assistant_action_context";
 const LEGACY_RECIPE_CONTEXT_PARAM = "recipe_context";
 const AUTO_SUBMIT_PARAM = "auto_submit";
 
+export type RecipeManagementAction = "configure" | "schedule";
+
 export interface AssistantActionLaunchState {
 	query: string | null;
 	enabledTools: string[];
@@ -132,11 +134,12 @@ export function createRecipeAssistantActionLaunch(
 
 export function createAssistantActionConversationUrl(
 	launch: AssistantActionChatLaunchPayload,
+	conversationPath = "/",
 ): string {
 	const params = new URLSearchParams({ query: launch.input });
 
 	return createAssistantActionChatUrl({
-		messageUrl: `/?${params.toString()}`,
+		messageUrl: `${conversationPath}?${params.toString()}`,
 		enabledTools: launch.enabledTools,
 		actionContext: launch.requestOptions?.options?.recipe
 			? {
@@ -147,6 +150,19 @@ export function createAssistantActionConversationUrl(
 				}
 			: undefined,
 	});
+}
+
+export function createRecipeManagementActionPath(
+	basePath: string,
+	action: RecipeManagementAction,
+	recipeId: string,
+): string {
+	const [path, search = ""] = basePath.split("?");
+	const params = new URLSearchParams(search);
+	params.set("action", action);
+	params.set("recipe", recipeId);
+
+	return `${path}?${params.toString()}`;
 }
 
 export function createAppAssistantActionLaunch(

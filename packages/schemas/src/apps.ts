@@ -485,6 +485,73 @@ export const FieldType = {
 } satisfies Record<string, (typeof dynamicAppFieldTypes)[number]>;
 
 export const dynamicAppThemeSchema = z.enum(dynamicAppThemes);
+
+export const projectExperienceRuntimeSchema = z.enum([
+	"articles",
+	"finetuning",
+	"notes",
+	"podcasts",
+	"replicate",
+	"responses",
+	"strudel",
+]);
+
+export const projectExperienceRequirementSchema = z.discriminatedUnion("kind", [
+	z.object({
+		kind: z.literal("capability"),
+		capabilityKind: z.enum(["app", "recipe"]),
+		capabilityId: z.string(),
+	}),
+	z.object({
+		kind: z.literal("capability_kind"),
+		capabilityKind: z.enum(["app", "recipe"]),
+		appKind: z.enum(["dynamic", "frontend"]).optional(),
+	}),
+]);
+
+export const projectExperienceDefinitionSchema = z.object({
+	id: z.string(),
+	runtime: projectExperienceRuntimeSchema,
+	name: z.string(),
+	description: z.string(),
+	icon: z.string().optional(),
+	category: z.string().optional(),
+	theme: dynamicAppThemeSchema.optional(),
+	requirement: projectExperienceRequirementSchema,
+});
+
+export const projectToolIdSchema = z.enum([
+	"code_execution",
+	"file_search",
+	"search_grounding",
+	"image_generation",
+	"mcp",
+	"web_fetch",
+	"tool_search",
+	"hosted_shell",
+]);
+
+export const projectToolCapabilitySchema = z.enum([
+	"supportsCodeExecution",
+	"supportsFileSearch",
+	"supportsSearchGrounding",
+	"supportsMcp",
+	"supportsImageGenerationTool",
+	"supportsWebFetch",
+	"supportsToolSearch",
+	"supportsHostedShell",
+]);
+
+export const projectToolDefinitionSchema = z.object({
+	id: projectToolIdSchema,
+	capability: projectToolCapabilitySchema,
+	category: z.string(),
+	command: z.string(),
+	description: z.string(),
+	label: z.string(),
+	requiresConfiguration: z.boolean().optional(),
+	configurationKind: z.enum(["file_search", "mcp"]).optional(),
+});
 export const dynamicAppFieldTypeSchema = z.enum(dynamicAppFieldTypes);
 export const dynamicAppResponseDisplayTypeSchema = z.enum(dynamicAppResponseDisplayTypes);
 
@@ -561,6 +628,8 @@ export const dynamicAppSchema = z.object({
 
 export const dynamicAppsResponseSchema = z.object({
 	apps: appInfoArraySchema,
+	experiences: z.array(projectExperienceDefinitionSchema),
+	tools: z.array(projectToolDefinitionSchema),
 });
 
 export const dynamicAppIdParamSchema = z.object({ id: z.string() });
@@ -631,6 +700,12 @@ export type ResponseDisplay = DynamicAppResponseDisplay;
 export type DynamicAppResponseSchema = z.infer<typeof dynamicAppResponseSchema>;
 export type AppSchema = z.infer<typeof dynamicAppSchema>;
 export type DynamicAppCatalogItem = z.infer<typeof appInfoSchema>;
+export type ProjectExperienceRuntime = z.infer<typeof projectExperienceRuntimeSchema>;
+export type ProjectExperienceRequirement = z.infer<typeof projectExperienceRequirementSchema>;
+export type ProjectExperienceDefinition = z.infer<typeof projectExperienceDefinitionSchema>;
+export type ProjectToolId = z.infer<typeof projectToolIdSchema>;
+export type ProjectToolCapability = z.infer<typeof projectToolCapabilitySchema>;
+export type ProjectToolDefinition = z.infer<typeof projectToolDefinitionSchema>;
 export type DynamicAppsResponse = z.infer<typeof dynamicAppsResponseSchema>;
 export type DynamicAppFormData = Record<string, unknown>;
 export type DynamicAppFormErrors = Record<string, string>;
@@ -1106,6 +1181,7 @@ export const generateNotesFromMediaResponseSchema = z.object({
 
 export const listDynamicAppResponsesQuerySchema = z.object({
 	appId: z.string().optional(),
+	projectId: z.string().min(1).optional(),
 });
 
 export const strudelGenerateSchema = z.object({

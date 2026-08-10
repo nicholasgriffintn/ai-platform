@@ -7,7 +7,11 @@ import { launchAssistantAction } from "~/lib/assistant-action-flow";
 import { useChatStore } from "~/state/stores/chatStore";
 import { useToolsStore } from "~/state/stores/toolsStore";
 
-export function useAssistantActionSubmit() {
+interface UseAssistantActionSubmitOptions {
+	recipeManagementPath?: string;
+}
+
+export function useAssistantActionSubmit(options: UseAssistantActionSubmitOptions = {}) {
 	const selectedAssistantAction = useChatStore((state) => state.selectedAssistantAction);
 	const setSelectedAssistantAction = useChatStore((state) => state.setSelectedAssistantAction);
 	const selectedTools = useToolsStore((state) => state.selectedTools);
@@ -28,6 +32,9 @@ export function useAssistantActionSubmit() {
 				delivery: "submit",
 				input,
 				item,
+				...(options.recipeManagementPath
+					? { recipeManagementPath: options.recipeManagementPath }
+					: {}),
 				selectedTools,
 				...(verb ? { verb: { command: verb, id: verb } } : {}),
 			},

@@ -31,6 +31,7 @@ export async function generateArticlesReport({
 	env,
 	args,
 	user,
+	projectId,
 }: {
 	completion_id: string;
 	app_url: string | undefined;
@@ -38,6 +39,7 @@ export async function generateArticlesReport({
 	env?: IEnv;
 	args: Params;
 	user: IUser;
+	projectId?: string;
 }): Promise<GenerateReportSuccessResponse> {
 	if (!user.id) {
 		throw new AssistantError("User ID is required", ErrorType.PARAMS_ERROR);
@@ -63,11 +65,9 @@ export async function generateArticlesReport({
 		serviceContext.ensureDatabase();
 		const appDataRepo = serviceContext.repositories.appData;
 
-		const relatedItems = await appDataRepo.getAppDataByUserAppAndItem(
-			user.id,
-			"articles",
-			args.itemId,
-		);
+		const relatedItems = projectId
+			? await appDataRepo.getAppDataByProjectAppAndItem(projectId, "articles", args.itemId)
+			: await appDataRepo.getAppDataByUserAppAndItem(user.id, "articles", args.itemId);
 
 		const analysisItems = relatedItems.filter((item) => item.item_type === "analysis");
 
@@ -144,13 +144,22 @@ export async function generateArticlesReport({
 			title: `Report for Analysis Session ${args.itemId} (${analysisItems.length} articles)`,
 		};
 
-		const savedReport = await appDataRepo.createAppDataWithItem(
-			user.id,
-			"articles",
-			args.itemId,
-			"report",
-			reportAppData,
-		);
+		const savedReport = projectId
+			? await appDataRepo.createAppDataWithItem(
+					user.id,
+					"articles",
+					args.itemId,
+					"report",
+					reportAppData,
+					projectId,
+				)
+			: await appDataRepo.createAppDataWithItem(
+					user.id,
+					"articles",
+					args.itemId,
+					"report",
+					reportAppData,
+				);
 
 		return {
 			status: "success",

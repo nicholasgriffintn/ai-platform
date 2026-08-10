@@ -23,6 +23,7 @@ describe("listArticles", () => {
 	beforeEach(() => {
 		mockAppDataRepo = {
 			getAppDataByUserAndApp: vi.fn(),
+			getAppDataByProjectAndApp: vi.fn(),
 		};
 		appDataRepoFactory = () => mockAppDataRepo;
 	});
@@ -47,6 +48,16 @@ describe("listArticles", () => {
 			sessions: [],
 		});
 		expect(mockAppDataRepo.getAppDataByUserAndApp).toHaveBeenCalledWith(123, "articles");
+	});
+
+	it("lists the project's reports without filtering by creator", async () => {
+		mockAppDataRepo.getAppDataByProjectAndApp.mockResolvedValue([]);
+
+		const result = await listArticles({ env: mockEnv, userId: 123, projectId: "project-1" });
+
+		expect(result.sessions).toEqual([]);
+		expect(mockAppDataRepo.getAppDataByProjectAndApp).toHaveBeenCalledWith("project-1", "articles");
+		expect(mockAppDataRepo.getAppDataByUserAndApp).not.toHaveBeenCalled();
 	});
 
 	it("should return empty sessions when articles array is null", async () => {

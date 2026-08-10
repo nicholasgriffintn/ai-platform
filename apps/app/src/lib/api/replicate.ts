@@ -9,8 +9,9 @@ import type {
 } from "@assistant/schemas";
 import { apiService } from "./api-service";
 import { fetchApi, returnFetchedData } from "./fetch-wrapper";
+import { withProjectScope } from "./project-scope";
 
-export const fetchReplicateModels = async (): Promise<ReplicateModel[]> => {
+export const fetchReplicateModels = async (projectId?: string): Promise<ReplicateModel[]> => {
 	try {
 		let headers = {};
 		try {
@@ -19,7 +20,7 @@ export const fetchReplicateModels = async (): Promise<ReplicateModel[]> => {
 			console.error("Error getting headers:", error);
 		}
 
-		const response = await fetchApi("/apps/replicate/models", {
+		const response = await fetchApi(withProjectScope("/apps/replicate/models", projectId), {
 			method: "GET",
 			headers,
 		});
@@ -38,11 +39,12 @@ export const fetchReplicateModels = async (): Promise<ReplicateModel[]> => {
 
 export const executeReplicateModel = async (
 	request: ExecuteReplicateRequest,
+	projectId?: string,
 ): Promise<ReplicatePrediction> => {
 	try {
 		const headers = await apiService.getHeaders();
 
-		const response = await fetchApi("/apps/replicate/execute", {
+		const response = await fetchApi(withProjectScope("/apps/replicate/execute", projectId), {
 			method: "POST",
 			headers: {
 				...headers,
@@ -66,7 +68,9 @@ export const executeReplicateModel = async (
 	}
 };
 
-export const fetchReplicatePredictions = async (): Promise<ReplicatePrediction[]> => {
+export const fetchReplicatePredictions = async (
+	projectId?: string,
+): Promise<ReplicatePrediction[]> => {
 	try {
 		let headers = {};
 		try {
@@ -75,7 +79,7 @@ export const fetchReplicatePredictions = async (): Promise<ReplicatePrediction[]
 			console.error("Error getting headers:", error);
 		}
 
-		const response = await fetchApi("/apps/replicate/predictions", {
+		const response = await fetchApi(withProjectScope("/apps/replicate/predictions", projectId), {
 			method: "GET",
 			headers,
 		});
@@ -94,6 +98,7 @@ export const fetchReplicatePredictions = async (): Promise<ReplicatePrediction[]
 
 export const fetchReplicatePrediction = async (
 	predictionId: string,
+	projectId?: string,
 ): Promise<ReplicatePrediction> => {
 	try {
 		let headers = {};
@@ -103,10 +108,13 @@ export const fetchReplicatePrediction = async (
 			console.error("Error getting headers:", error);
 		}
 
-		const response = await fetchApi(`/apps/replicate/predictions/${predictionId}`, {
-			method: "GET",
-			headers,
-		});
+		const response = await fetchApi(
+			withProjectScope(`/apps/replicate/predictions/${predictionId}`, projectId),
+			{
+				method: "GET",
+				headers,
+			},
+		);
 
 		if (!response.ok) {
 			throw new Error(`Failed to fetch prediction: ${response.statusText}`);

@@ -19,12 +19,13 @@ type GenerateImageRequest = {
 	request: IPodcastGenerateImageBody;
 	user: IUser;
 	app_url?: string;
+	projectId?: string;
 };
 
 export const handlePodcastGenerateImage = async (
 	req: GenerateImageRequest,
 ): Promise<IFunctionResponse | IFunctionResponse[]> => {
-	const { request, context, env, user } = req;
+	const { request, context, env, user, projectId } = req;
 
 	if (!request.podcastId) {
 		throw new AssistantError("Missing podcast id", ErrorType.PARAMS_ERROR);
@@ -40,12 +41,19 @@ export const handlePodcastGenerateImage = async (
 		const repositories = serviceContext.repositories;
 		const runtimeEnv = serviceContext.env as IEnv;
 
-		const existingImages = await repositories.appData.getAppDataByUserAppAndItem(
-			user.id,
-			"podcasts",
-			request.podcastId,
-			"image",
-		);
+		const existingImages = projectId
+			? await repositories.appData.getAppDataByProjectAppAndItem(
+					projectId,
+					"podcasts",
+					request.podcastId,
+					"image",
+				)
+			: await repositories.appData.getAppDataByUserAppAndItem(
+					user.id,
+					"podcasts",
+					request.podcastId,
+					"image",
+				);
 
 		if (existingImages.length > 0) {
 			let imageData = safeParseJson(existingImages[0].data);
@@ -59,12 +67,19 @@ export const handlePodcastGenerateImage = async (
 			};
 		}
 
-		const summaryData = await repositories.appData.getAppDataByUserAppAndItem(
-			user.id,
-			"podcasts",
-			request.podcastId,
-			"summary",
-		);
+		const summaryData = projectId
+			? await repositories.appData.getAppDataByProjectAppAndItem(
+					projectId,
+					"podcasts",
+					request.podcastId,
+					"summary",
+				)
+			: await repositories.appData.getAppDataByUserAppAndItem(
+					user.id,
+					"podcasts",
+					request.podcastId,
+					"summary",
+				);
 
 		if (summaryData.length === 0) {
 			throw new AssistantError("Podcast summary not found. Please summarize podcast first");
@@ -133,13 +148,25 @@ export const handlePodcastGenerateImage = async (
 			createdAt: new Date().toISOString(),
 		};
 
-		await repositories.appData.createAppDataWithItem(
-			user.id,
-			"podcasts",
-			request.podcastId,
-			"image",
-			appData,
-		);
+		if (projectId) {
+			const created = await repositories.appData.createAppDataWithItem(
+				user.id,
+				"podcasts",
+				request.podcastId,
+				"image",
+				appData,
+				projectId,
+			);
+			await repositories.storedAssets.linkAssetToAppData(storedImage.assetId, created.id);
+		} else {
+			await repositories.appData.createAppDataWithItem(
+				user.id,
+				"podcasts",
+				request.podcastId,
+				"image",
+				appData,
+			);
+		}
 
 		return {
 			status: "success",

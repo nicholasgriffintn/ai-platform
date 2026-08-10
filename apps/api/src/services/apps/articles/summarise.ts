@@ -31,6 +31,7 @@ export async function summariseArticle({
 	env,
 	args,
 	user,
+	projectId,
 }: {
 	completion_id: string;
 	app_url: string | undefined;
@@ -38,6 +39,7 @@ export async function summariseArticle({
 	env?: IEnv;
 	args: Params;
 	user: IUser;
+	projectId?: string;
 }): Promise<SummariseSuccessResponse> {
 	if (!user.id) {
 		throw new AssistantError("User ID is required", ErrorType.PARAMS_ERROR);
@@ -118,13 +120,22 @@ export async function summariseArticle({
 			title: `Summary: ${args.article.substring(0, 80)}...`,
 		};
 
-		const savedData = await appDataRepo.createAppDataWithItem(
-			user.id,
-			"articles",
-			args.itemId,
-			"summary",
-			appData,
-		);
+		const savedData = projectId
+			? await appDataRepo.createAppDataWithItem(
+					user.id,
+					"articles",
+					args.itemId,
+					"summary",
+					appData,
+					projectId,
+				)
+			: await appDataRepo.createAppDataWithItem(
+					user.id,
+					"articles",
+					args.itemId,
+					"summary",
+					appData,
+				);
 
 		return {
 			status: "success",
@@ -156,11 +167,17 @@ export const cleanupArticleSession = async (
 	context: ServiceContext,
 	userId: number,
 	itemId: string,
+	projectId?: string,
 ): Promise<void> => {
 	context.ensureDatabase();
 	const appDataRepo = context.repositories.appData;
 
-	await appDataRepo.deleteAppDataByUserAppAndItem(userId, "articles", itemId, "analysis");
+	if (projectId) {
+		await appDataRepo.deleteAppDataByProjectAppAndItem(projectId, "articles", itemId, "analysis");
+		await appDataRepo.deleteAppDataByProjectAppAndItem(projectId, "articles", itemId, "summary");
+		return;
+	}
 
+	await appDataRepo.deleteAppDataByUserAppAndItem(userId, "articles", itemId, "analysis");
 	await appDataRepo.deleteAppDataByUserAppAndItem(userId, "articles", itemId, "summary");
 };

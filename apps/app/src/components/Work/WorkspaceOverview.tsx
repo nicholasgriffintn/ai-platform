@@ -69,7 +69,7 @@ export function WorkspaceOverview({ workspaceId }: { workspaceId: string }) {
 						to={`/work/${workspaceId}/members`}
 						className="text-sm text-zinc-600 underline-offset-4 hover:underline dark:text-zinc-300"
 					>
-						{workspace.memberCount} people
+						{workspace.memberCount} {workspace.memberCount === 1 ? "member" : "members"}
 					</Link>
 				</div>
 				{workspace.projects.length === 0 ? (
@@ -104,8 +104,13 @@ export function WorkspaceOverview({ workspaceId }: { workspaceId: string }) {
 										{project.description || "No description"}
 									</p>
 									<div className="flex gap-4 border-t border-zinc-100 pt-4 text-xs text-zinc-500 dark:border-zinc-800">
-										<span>{project.conversationCount} conversations</span>
-										<span>{project.capabilityCount} capabilities</span>
+										<span>
+											{project.conversationCount} conversation
+											{project.conversationCount > 1 ? "s" : ""}
+										</span>
+										<span>
+											{project.capabilityCount} capabilit{project.capabilityCount > 1 ? "es" : "y"}
+										</span>
 									</div>
 								</Card>
 							</Link>

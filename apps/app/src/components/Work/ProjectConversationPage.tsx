@@ -4,6 +4,8 @@ import { useEffect, useRef } from "react";
 import { ConversationPage } from "~/components/ConversationThread/ConversationPage";
 import { useIsLoading } from "~/state/contexts/LoadingContext";
 import { projectQueryKey, useProject } from "~/hooks/useWorkspaces";
+import { useDynamicApps } from "~/hooks/useDynamicApps";
+import { getProjectLibraryPath } from "~/lib/project-experiences";
 import { useChatStore } from "~/state/stores/chatStore";
 import { WorkSidebar } from "./WorkSidebar";
 
@@ -15,11 +17,16 @@ export function ProjectConversationPage({
 	projectId: string;
 }) {
 	const { data: project } = useProject(projectId);
+	const { data: dynamicApps } = useDynamicApps();
 	const queryClient = useQueryClient();
 	const currentConversationId = useChatStore((state) => state.currentConversationId);
 	const isStreamLoading = useIsLoading("stream-response");
 	const refreshedConversationIdRef = useRef<string | null>(null);
-	const capabilityIds = project?.capabilities.map((item) => item.capabilityId) ?? [];
+	const capabilityIds = [
+		...(project?.capabilities.map((item) => item.capabilityId) ?? []),
+		...(dynamicApps?.tools.map((tool) => tool.id) ?? []),
+	];
+	const recipeManagementPath = getProjectLibraryPath(workspaceId, projectId);
 
 	useEffect(() => {
 		if (isStreamLoading) {
@@ -42,6 +49,7 @@ export function ProjectConversationPage({
 			title={project?.name ?? "Project conversation"}
 			sidebarContent={<WorkSidebar workspaceId={workspaceId} projectId={projectId} />}
 			modeConfig={{
+				assistantActionRoutes: { recipes: recipeManagementPath },
 				allowedAssistantActionCapabilityIds: capabilityIds,
 				welcomeTitle: project?.name ?? "Project conversation",
 				welcomeDescription:

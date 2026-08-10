@@ -22,7 +22,7 @@ import { hasSnapshotPart } from "~/lib/chat/messageParts";
 import { toProviderMessages } from "~/lib/chat/providerMessages";
 import { findModelConfig } from "~/lib/providers/models";
 import { getSystemPrompt } from "~/lib/prompts";
-import type { ModelConfigInfo } from "@assistant/schemas";
+import type { ChatHostedToolSettings, ModelConfigInfo } from "@assistant/schemas";
 import type { ChatMode, CoreChatOptions, Message, Platform } from "~/types";
 import { generateId } from "~/utils/id";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -65,6 +65,7 @@ export interface PreparedRequest {
 	currentMode: ChatMode;
 	isProUser: boolean;
 	enabledTools: string[];
+	toolOptions?: ChatHostedToolSettings;
 }
 
 export class RequestPreparer {
@@ -223,6 +224,7 @@ export class RequestPreparer {
 				userSettings,
 				store: options.store,
 			}),
+			toolOptions: projectContext ? projectContext.toolOptions : options.tool_options,
 		};
 	}
 

@@ -16,8 +16,8 @@ const DEFAULT_CATEGORY = "Creative Tools";
 const formatTypeLabel = (type: string): string =>
 	type.replace(/-/g, " ").replace(/\b\w/g, (char) => char.toUpperCase());
 
-export function ReplicateModels() {
-	const { data: models, isLoading, error } = useReplicateModels();
+export function ReplicateModels({ basePath, projectId }: { basePath: string; projectId?: string }) {
+	const { data: models, isLoading, error } = useReplicateModels(projectId);
 	const navigate = useNavigate();
 	const [selectedSignature, setSelectedSignature] = useState<string | null>(null);
 	const [searchQuery, setSearchQuery] = useState("");
@@ -72,25 +72,25 @@ export function ReplicateModels() {
 			category: model.category ?? model.modalityLabel ?? DEFAULT_CATEGORY,
 			theme: model.theme,
 			tags: model.tags ?? [model.modalityLabel],
-			href: model.href ?? `/apps/replicate/${model.id}`,
+			href: `${basePath}/${model.id}`,
 			kind: model.kind ?? "frontend",
 			featured: model.featured,
 			type: "normal",
 		}));
-	}, [filteredModels]);
+	}, [basePath, filteredModels]);
 
 	const groupedApps = useMemo(() => groupAppsByCategory(appItems), [appItems]);
 
 	const handleModelSelect = useCallback(
 		(app: AppListItem) => {
-			navigate(app.href ?? `/apps/replicate/${app.id}`);
+			navigate(`${basePath}/${app.id}`);
 		},
-		[navigate],
+		[basePath, navigate],
 	);
 
 	const handlePredictionsClick = useCallback(() => {
-		navigate("/apps/replicate/predictions");
-	}, [navigate]);
+		navigate(`${basePath}/predictions`);
+	}, [basePath, navigate]);
 
 	const handleClearFilters = useCallback(() => {
 		setSearchQuery("");

@@ -11,14 +11,23 @@ import {
 	useSummariseArticle,
 } from "~/hooks/useArticles";
 import { cn } from "~/lib/utils";
+import { getStringProperty, isRecord } from "~/lib/unknown-values";
 
 interface RerunReportButtonProps {
 	sourceIds: string[];
 	itemId: string;
 	className?: string;
+	basePath?: string;
+	projectId?: string;
 }
 
-export function RerunReportButton({ sourceIds, itemId, className }: RerunReportButtonProps) {
+export function RerunReportButton({
+	basePath,
+	className,
+	itemId,
+	projectId,
+	sourceIds,
+}: RerunReportButtonProps) {
 	const navigate = useNavigate();
 	const [isRerunning, setIsRerunning] = useState(false);
 	const [error, setError] = useState<string | null>(null);
@@ -36,13 +45,15 @@ export function RerunReportButton({ sourceIds, itemId, className }: RerunReportB
 		total: 0,
 	});
 
-	const analyseMutation = useAnalyseArticle();
-	const summariseMutation = useSummariseArticle();
-	const generateReportMutation = useGenerateReport();
-	const prepareSessionMutation = usePrepareSessionForRerun();
+	const analyseMutation = useAnalyseArticle(projectId);
+	const summariseMutation = useSummariseArticle(projectId);
+	const generateReportMutation = useGenerateReport(projectId);
+	const prepareSessionMutation = usePrepareSessionForRerun(projectId);
 
-	const { data: sourceArticles, isLoading: isLoadingSourceArticles } =
-		useFetchSourceArticlesByIds(sourceIds);
+	const { data: sourceArticles, isLoading: isLoadingSourceArticles } = useFetchSourceArticlesByIds(
+		sourceIds,
+		projectId,
+	);
 
 	const handleRerunAnalysis = async () => {
 		if (!itemId || !sourceIds.length) {
@@ -67,13 +78,13 @@ export function RerunReportButton({ sourceIds, itemId, className }: RerunReportB
 			await prepareSessionMutation.mutateAsync(itemId);
 
 			const articlesWithContent = sourceArticles
-				// @ts-ignore
-				.filter((article) => article?.data?.originalArticle)
 				.map((article) => ({
 					id: article.id,
-					// @ts-ignore
-					content: article.data.originalArticle,
-				}));
+					content: isRecord(article.data)
+						? getStringProperty(article.data, "originalArticle")
+						: undefined,
+				}))
+				.filter((article): article is { id: string; content: string } => Boolean(article.content));
 
 			if (articlesWithContent.length === 0) {
 				throw new Error("Could not find original article content");
@@ -131,12 +142,12 @@ export function RerunReportButton({ sourceIds, itemId, className }: RerunReportB
 			}));
 
 			if (reportResult.appDataId) {
-				navigate(`/apps/articles/${reportResult.appDataId}`);
+				navigate(`${basePath ?? "/work"}/${reportResult.appDataId}`);
 			} else {
 				throw new Error("Failed to generate report");
 			}
-		} catch (error: any) {
-			setError(`Error: ${error.message || "Failed to rerun analysis"}`);
+		} catch (error: unknown) {
+			setError(`Error: ${error instanceof Error ? error.message : "Failed to rerun analysis"}`);
 		} finally {
 			setIsRerunning(false);
 		}

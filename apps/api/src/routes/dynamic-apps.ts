@@ -22,9 +22,14 @@ import {
 	getDynamicAppResponseById,
 	listDynamicAppResponsesForUser,
 } from "~/services/dynamic-apps";
+import {
+	getProjectExperienceCatalog,
+	PROJECT_TOOL_DEFINITIONS,
+} from "~/services/dynamic-apps/config";
 import type { IRequest } from "~/types/chat";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
+import { requireProjectAccess } from "~/services/workspaces/access";
 
 const dynamicApps = new Hono();
 const routeLogger = createRouteLogger("dynamic-apps");
@@ -56,6 +61,8 @@ addRoute(dynamicApps, "get", "/", {
 	},
 	handler: async () => ({
 		apps: await getDynamicAppCatalog(),
+		experiences: getProjectExperienceCatalog(),
+		tools: PROJECT_TOOL_DEFINITIONS,
 	}),
 });
 
@@ -71,8 +78,10 @@ addRoute(dynamicApps, "get", "/responses", {
 			schema: errorResponseSchema,
 		},
 	},
-	handler: async ({ query, serviceContext, user }) =>
-		listDynamicAppResponsesForUser(serviceContext, user.id, query.appId),
+	handler: async ({ query, serviceContext, user }) => {
+		if (query.projectId) await requireProjectAccess(serviceContext, query.projectId);
+		return listDynamicAppResponsesForUser(serviceContext, user.id, query.appId, query.projectId);
+	},
 });
 
 addRoute(dynamicApps, "get", "/:id", {
@@ -146,6 +155,7 @@ addRoute(dynamicApps, "get", "/responses/:responseId", {
 	description: "Retrieve a stored dynamic-app response by its `id` (response_id)",
 	auth: true,
 	paramSchema: dynamicAppResponseParamsSchema,
+	querySchema: z.object({ projectId: z.string().min(1).optional() }),
 	responses: {
 		200: {
 			description: "Stored dynamic-app response",
@@ -158,8 +168,14 @@ addRoute(dynamicApps, "get", "/responses/:responseId", {
 		},
 		404: { description: "Response not found", schema: dynamicAppErrorResponseSchema },
 	},
-	handler: async ({ params, serviceContext, user }) => {
-		const data = await getDynamicAppResponseById(serviceContext, user.id, params.responseId);
+	handler: async ({ params, query, serviceContext, user }) => {
+		if (query.projectId) await requireProjectAccess(serviceContext, query.projectId);
+		const data = await getDynamicAppResponseById(
+			serviceContext,
+			user.id,
+			params.responseId,
+			query.projectId,
+		);
 		if (!data) {
 			throw new AssistantError("Response not found", ErrorType.NOT_FOUND, 404);
 		}

@@ -127,6 +127,21 @@ export const addProjectCapabilitySchema = z.object({
 	configuration: z.record(z.string(), z.unknown()).default({}),
 });
 
+export const projectFileSearchConfigurationSchema = z.object({
+	vectorStoreIds: z.array(z.string().trim().min(1)).min(1),
+});
+
+export const projectMcpServerConfigurationSchema = z.object({
+	label: z.string().trim().min(1).max(80),
+	url: z.url().refine((value) => new URL(value).protocol === "https:", {
+		message: "MCP server URLs must use HTTPS",
+	}),
+});
+
+export const projectMcpConfigurationSchema = z.object({
+	servers: z.array(projectMcpServerConfigurationSchema).min(1),
+});
+
 export const projectConversationSchema = z.object({
 	id: z.string(),
 	title: z.string().nullable(),
@@ -163,3 +178,5 @@ export type CreateProjectInput = z.infer<typeof createProjectSchema>;
 export type UpdateProjectInput = z.infer<typeof updateProjectSchema>;
 export type CreateWorkspaceInvitationInput = z.infer<typeof createWorkspaceInvitationSchema>;
 export type AddProjectCapabilityInput = z.infer<typeof addProjectCapabilitySchema>;
+export type ProjectFileSearchConfiguration = z.infer<typeof projectFileSearchConfigurationSchema>;
+export type ProjectMcpConfiguration = z.infer<typeof projectMcpConfigurationSchema>;

@@ -40,12 +40,13 @@ type SummariseRequest = {
 	request: IPodcastSummariseBody;
 	user: IUser;
 	app_url?: string;
+	projectId?: string;
 };
 
 export const handlePodcastSummarise = async (
 	req: SummariseRequest,
 ): Promise<IFunctionResponse | IFunctionResponse[]> => {
-	const { request, context, env, user } = req;
+	const { request, context, env, user, projectId } = req;
 
 	if (!request.podcastId || !request.speakers) {
 		throw new AssistantError("Missing podcast id or speakers", ErrorType.PARAMS_ERROR);
@@ -61,12 +62,19 @@ export const handlePodcastSummarise = async (
 		const repositories = serviceContext.repositories;
 		const runtimeEnv = serviceContext.env as IEnv;
 
-		const existingSummaries = await repositories.appData.getAppDataByUserAppAndItem(
-			user.id,
-			"podcasts",
-			request.podcastId,
-			"summary",
-		);
+		const existingSummaries = projectId
+			? await repositories.appData.getAppDataByProjectAppAndItem(
+					projectId,
+					"podcasts",
+					request.podcastId,
+					"summary",
+				)
+			: await repositories.appData.getAppDataByUserAppAndItem(
+					user.id,
+					"podcasts",
+					request.podcastId,
+					"summary",
+				);
 
 		if (existingSummaries.length > 0) {
 			let summaryData = safeParseJson(existingSummaries[0].data);
@@ -80,12 +88,19 @@ export const handlePodcastSummarise = async (
 			};
 		}
 
-		const transcriptionData = await repositories.appData.getAppDataByUserAppAndItem(
-			user.id,
-			"podcasts",
-			request.podcastId,
-			"transcribe",
-		);
+		const transcriptionData = projectId
+			? await repositories.appData.getAppDataByProjectAppAndItem(
+					projectId,
+					"podcasts",
+					request.podcastId,
+					"transcribe",
+				)
+			: await repositories.appData.getAppDataByUserAppAndItem(
+					user.id,
+					"podcasts",
+					request.podcastId,
+					"transcribe",
+				);
 
 		if (transcriptionData.length === 0) {
 			throw new AssistantError(
@@ -111,13 +126,23 @@ export const handlePodcastSummarise = async (
 				createdAt: new Date().toISOString(),
 			};
 
-			await repositories.appData.createAppDataWithItem(
-				user.id,
-				"podcasts",
-				request.podcastId,
-				"summary",
-				appData,
-			);
+			const createSummary = projectId
+				? repositories.appData.createAppDataWithItem(
+						user.id,
+						"podcasts",
+						request.podcastId,
+						"summary",
+						appData,
+						projectId,
+					)
+				: repositories.appData.createAppDataWithItem(
+						user.id,
+						"podcasts",
+						request.podcastId,
+						"summary",
+						appData,
+					);
+			await createSummary;
 
 			return {
 				status: "success",
@@ -157,13 +182,24 @@ export const handlePodcastSummarise = async (
 			createdAt: new Date().toISOString(),
 		};
 
-		await repositories.appData.createAppDataWithItem(
-			user.id,
-			"podcasts",
-			request.podcastId,
-			"summary",
-			appData,
-		);
+		if (projectId) {
+			await repositories.appData.createAppDataWithItem(
+				user.id,
+				"podcasts",
+				request.podcastId,
+				"summary",
+				appData,
+				projectId,
+			);
+		} else {
+			await repositories.appData.createAppDataWithItem(
+				user.id,
+				"podcasts",
+				request.podcastId,
+				"summary",
+				appData,
+			);
+		}
 
 		return {
 			status: "success",

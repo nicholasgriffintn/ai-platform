@@ -40,6 +40,7 @@ const mocks = vi.hoisted(() => {
 		compactConversation: vi.fn(),
 		sendMessage: vi.fn(),
 		resolveAssistantActionSubmit: vi.fn(),
+		useAssistantActionSubmitOptions: vi.fn(),
 		setChatInput: vi.fn(),
 		setSelectedAssistantAction: vi.fn(),
 		chatStore,
@@ -108,9 +109,12 @@ vi.mock("~/state/stores/chatStore", () => ({
 }));
 
 vi.mock("./useAssistantActionSubmit", () => ({
-	useAssistantActionSubmit: () => ({
-		resolveAssistantActionSubmit: mocks.resolveAssistantActionSubmit,
-	}),
+	useAssistantActionSubmit: (options: unknown) => {
+		mocks.useAssistantActionSubmitOptions(options);
+		return {
+			resolveAssistantActionSubmit: mocks.resolveAssistantActionSubmit,
+		};
+	},
 }));
 
 vi.mock("./useAutoPlayResponses", () => ({
@@ -166,6 +170,22 @@ describe("ConversationThread assistant action submit", () => {
 			tokenPosition: 4,
 		};
 		mocks.submitAttachments.current = undefined;
+	});
+
+	it("passes project recipe management routes to assistant actions", () => {
+		render(
+			<ConversationThread
+				modeConfig={{
+					assistantActionRoutes: {
+						recipes: "/work/workspace-1/projects/project-1/library",
+					},
+				}}
+			/>,
+		);
+
+		expect(mocks.useAssistantActionSubmitOptions).toHaveBeenCalledWith({
+			recipeManagementPath: "/work/workspace-1/projects/project-1/library",
+		});
 	});
 
 	it("compacts the current conversation without sending a chat message", async () => {

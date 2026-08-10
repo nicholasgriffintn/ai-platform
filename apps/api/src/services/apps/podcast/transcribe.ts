@@ -26,12 +26,13 @@ interface TranscribeRequest {
 	request: IPodcastTranscribeBody;
 	user: IUser;
 	app_url?: string;
+	projectId?: string;
 }
 
 export const handlePodcastTranscribe = async (
 	req: TranscribeRequest,
 ): Promise<IFunctionResponse | IFunctionResponse[]> => {
-	const { request, context, env, user, app_url } = req;
+	const { request, context, env, user, app_url, projectId } = req;
 
 	if (!request.podcastId || !request.prompt || !request.numberOfSpeakers) {
 		throw new AssistantError(
@@ -50,12 +51,19 @@ export const handlePodcastTranscribe = async (
 		const repositories = serviceContext.repositories;
 		const runtimeEnv = serviceContext.env as IEnv;
 
-		const existingTranscriptions = await repositories.appData.getAppDataByUserAppAndItem(
-			user.id,
-			"podcasts",
-			request.podcastId,
-			"transcribe",
-		);
+		const existingTranscriptions = projectId
+			? await repositories.appData.getAppDataByProjectAppAndItem(
+					projectId,
+					"podcasts",
+					request.podcastId,
+					"transcribe",
+				)
+			: await repositories.appData.getAppDataByUserAppAndItem(
+					user.id,
+					"podcasts",
+					request.podcastId,
+					"transcribe",
+				);
 
 		if (existingTranscriptions.length > 0) {
 			let transcriptionData = safeParseJson(existingTranscriptions[0].data)?.transcriptionData;
@@ -67,12 +75,19 @@ export const handlePodcastTranscribe = async (
 			};
 		}
 
-		const uploadData = await repositories.appData.getAppDataByUserAppAndItem(
-			user.id,
-			"podcasts",
-			request.podcastId,
-			"upload",
-		);
+		const uploadData = projectId
+			? await repositories.appData.getAppDataByProjectAppAndItem(
+					projectId,
+					"podcasts",
+					request.podcastId,
+					"upload",
+				)
+			: await repositories.appData.getAppDataByUserAppAndItem(
+					user.id,
+					"podcasts",
+					request.podcastId,
+					"upload",
+				);
 
 		if (uploadData.length === 0) {
 			throw new AssistantError(
@@ -144,13 +159,24 @@ export const handlePodcastTranscribe = async (
 			createdAt: new Date().toISOString(),
 		};
 
-		await repositories.appData.createAppDataWithItem(
-			user.id,
-			"podcasts",
-			request.podcastId,
-			"transcribe",
-			appData,
-		);
+		if (projectId) {
+			await repositories.appData.createAppDataWithItem(
+				user.id,
+				"podcasts",
+				request.podcastId,
+				"transcribe",
+				appData,
+				projectId,
+			);
+		} else {
+			await repositories.appData.createAppDataWithItem(
+				user.id,
+				"podcasts",
+				request.podcastId,
+				"transcribe",
+				appData,
+			);
+		}
 
 		if (isAsync) {
 			const taskService = new TaskService(runtimeEnv, new TaskRepository(runtimeEnv));

@@ -1,4 +1,9 @@
-import type { AppTheme } from "@assistant/schemas";
+import type {
+	AppTheme,
+	ProjectExperienceDefinition,
+	ProjectExperienceRuntime,
+	ProjectToolDefinition,
+} from "@assistant/schemas";
 
 type DynamicAppCategory =
 	| "Agents & Delegation"
@@ -8,7 +13,8 @@ type DynamicAppCategory =
 	| "Productivity & Coaching"
 	| "Data & Utilities"
 	| "OCR"
-	| "System & Meta";
+	| "System & Meta"
+	| "Connectors";
 
 export type AppKind = "dynamic" | "frontend";
 
@@ -31,7 +37,13 @@ export interface FeaturedAppDefinition {
 	type?: "normal" | "premium" | "byok";
 	href: string;
 	kind?: AppKind;
+	experience?: {
+		id: string;
+		runtime: ProjectExperienceRuntime;
+	};
 }
+
+export type FeaturedAppCatalogDefinition = Omit<FeaturedAppDefinition, "experience">;
 
 export const FUNCTION_APP_METADATA: Record<string, DynamicAppMetadata> = {
 	add_reasoning_step: {
@@ -244,6 +256,90 @@ export const FUNCTION_APP_METADATA: Record<string, DynamicAppMetadata> = {
 		theme: "slate",
 		tags: ["workflow", "parallelism", "system"],
 	},
+	configure_recipe: {
+		category: "System & Meta",
+		icon: "wrench",
+		theme: "slate",
+		tags: ["workflow", "configuration", "system"],
+	},
+	create_note: {
+		category: "System & Meta",
+		icon: "notebook",
+		theme: "amber",
+		tags: ["note-taking", "system", "meta"],
+	},
+	get_note: {
+		category: "System & Meta",
+		icon: "notebook-search",
+		theme: "amber",
+		tags: ["note-taking", "system", "meta"],
+	},
+	create_qr_code: {
+		category: "Content Generation",
+		icon: "qr-code",
+		theme: "emerald",
+		tags: ["qr", "generation"],
+	},
+	get_recipe: {
+		category: "System & Meta",
+		icon: "book-open",
+		theme: "slate",
+		tags: ["workflow", "recipe", "system"],
+	},
+	run_documentation: {
+		category: "Code Assistance",
+		icon: "book",
+		theme: "slate",
+		tags: ["sandbox", "github", "documentation"],
+	},
+	run_migration: {
+		category: "Code Assistance",
+		icon: "arrow-right-square",
+		theme: "slate",
+		tags: ["sandbox", "github", "migration"],
+	},
+	run_refactoring: {
+		category: "Code Assistance",
+		icon: "arrows-maximize",
+		theme: "slate",
+		tags: ["sandbox", "github", "refactoring"],
+	},
+	run_pashi_tools: {
+		category: "Code Assistance",
+		icon: "terminal",
+		theme: "slate",
+		tags: ["sandbox", "pashi", "tools"],
+	},
+	search_pashi_tools: {
+		category: "Code Assistance",
+		icon: "search",
+		theme: "slate",
+		tags: ["sandbox", "pashi", "search"],
+	},
+	search_memories: {
+		category: "System & Meta",
+		icon: "search",
+		theme: "slate",
+		tags: ["memory", "search", "system"],
+	},
+	store_memory: {
+		category: "System & Meta",
+		icon: "database",
+		theme: "slate",
+		tags: ["memory", "storage", "system"],
+	},
+	trigger_recipe: {
+		category: "System & Meta",
+		icon: "play",
+		theme: "slate",
+		tags: ["workflow", "trigger", "system"],
+	},
+	use_recipe_connector: {
+		category: "System & Meta",
+		icon: "plug",
+		theme: "slate",
+		tags: ["workflow", "connector", "system"],
+	},
 };
 
 export const FEATURED_APPS: FeaturedAppDefinition[] = [
@@ -259,6 +355,7 @@ export const FEATURED_APPS: FeaturedAppDefinition[] = [
 		href: "/apps/strudel",
 		type: "normal",
 		kind: "frontend",
+		experience: { id: "strudel", runtime: "strudel" },
 	},
 	{
 		id: "featured-replicate",
@@ -271,6 +368,7 @@ export const FEATURED_APPS: FeaturedAppDefinition[] = [
 		href: "/apps/replicate",
 		type: "byok",
 		kind: "frontend",
+		experience: { id: "replicate", runtime: "replicate" },
 	},
 	{
 		id: "featured-finetuning",
@@ -283,6 +381,7 @@ export const FEATURED_APPS: FeaturedAppDefinition[] = [
 		href: "/apps/finetuning",
 		type: "premium",
 		kind: "frontend",
+		experience: { id: "finetuning", runtime: "finetuning" },
 	},
 	{
 		id: "featured-podcast-processor",
@@ -295,6 +394,7 @@ export const FEATURED_APPS: FeaturedAppDefinition[] = [
 		href: "/apps/podcasts",
 		type: "premium",
 		kind: "frontend",
+		experience: { id: "podcasts", runtime: "podcasts" },
 	},
 	{
 		id: "featured-article-processor",
@@ -307,6 +407,7 @@ export const FEATURED_APPS: FeaturedAppDefinition[] = [
 		href: "/apps/articles",
 		type: "premium",
 		kind: "frontend",
+		experience: { id: "articles", runtime: "articles" },
 	},
 	{
 		id: "featured-note-taker",
@@ -319,11 +420,140 @@ export const FEATURED_APPS: FeaturedAppDefinition[] = [
 		href: "/apps/notes",
 		type: "premium",
 		kind: "frontend",
+		experience: { id: "notes", runtime: "notes" },
+	},
+];
+
+const PROJECT_EXPERIENCE_MANAGERS: ProjectExperienceDefinition[] = [
+	{
+		id: "responses",
+		runtime: "responses",
+		name: "Saved Dynamic App Responses",
+		description: "Review saved outputs from the project's form-backed apps.",
+		category: "Results",
+		icon: "puzzle",
+		theme: "slate",
+		requirement: {
+			kind: "capability_kind",
+			capabilityKind: "app",
+			appKind: "dynamic",
+		},
+	},
+];
+
+export const PROJECT_TOOL_DEFINITIONS: ProjectToolDefinition[] = [
+	{
+		capability: "supportsCodeExecution",
+		category: "Development",
+		command: "code execution",
+		description: "Let supported models run code tools.",
+		id: "code_execution",
+		label: "Code execution",
+	},
+	{
+		capability: "supportsSearchGrounding",
+		category: "Research",
+		command: "search grounding",
+		description: "Let supported models use search grounding.",
+		id: "search_grounding",
+		label: "Search grounding",
+	},
+	{
+		capability: "supportsImageGenerationTool",
+		category: "Media",
+		command: "image generation",
+		description: "Let supported models generate images as a response tool.",
+		id: "image_generation",
+		label: "Image generation",
+	},
+	{
+		capability: "supportsFileSearch",
+		category: "Knowledge",
+		command: "file search",
+		description: "Let supported models search configured vector stores.",
+		id: "file_search",
+		label: "File search",
+		requiresConfiguration: true,
+		configurationKind: "file_search",
+	},
+	{
+		capability: "supportsMcp",
+		category: "Integrations",
+		command: "mcp",
+		description: "Let supported models use configured remote MCP servers.",
+		id: "mcp",
+		label: "MCP",
+		requiresConfiguration: true,
+		configurationKind: "mcp",
+	},
+	{
+		capability: "supportsToolSearch",
+		category: "Utilities",
+		command: "tool search",
+		description: "Let supported models search the app tool inventory.",
+		id: "tool_search",
+		label: "Tool search",
+	},
+	{
+		capability: "supportsHostedShell",
+		category: "Development",
+		command: "hosted shell",
+		description: "Let supported models use OpenAI hosted shell.",
+		id: "hosted_shell",
+		label: "Hosted shell",
+	},
+	{
+		capability: "supportsWebFetch",
+		category: "Research",
+		command: "web fetch",
+		description: "Let supported models fetch URLs present in the conversation.",
+		id: "web_fetch",
+		label: "Web fetch",
 	},
 ];
 
 export const getFunctionMetadata = (name: string): DynamicAppMetadata | undefined => {
+	if (name.startsWith("connector_")) {
+		return {
+			category: "Connectors",
+			icon: "server-cog",
+			theme: "slate",
+			tags: ["connector", "integration"],
+		};
+	}
+
+	const functionMetadata = FUNCTION_APP_METADATA[name];
+
+	if (!functionMetadata) {
+		console.warn(`No metadata found for function "${name}"`);
+	}
+
 	return FUNCTION_APP_METADATA[name];
 };
 
-export const getFeaturedApps = (): FeaturedAppDefinition[] => FEATURED_APPS;
+export const getFeaturedApps = (): FeaturedAppCatalogDefinition[] =>
+	FEATURED_APPS.map(({ experience: _experience, ...app }) => app);
+
+export const getProjectExperienceCatalog = (): ProjectExperienceDefinition[] => [
+	...FEATURED_APPS.flatMap((app) =>
+		app.experience
+			? [
+					{
+						id: app.experience.id,
+						runtime: app.experience.runtime,
+						name: app.name,
+						description: app.description,
+						icon: app.icon,
+						category: app.category,
+						theme: app.theme,
+						requirement: {
+							kind: "capability" as const,
+							capabilityKind: "app" as const,
+							capabilityId: app.id,
+						},
+					},
+				]
+			: [],
+	),
+	...PROJECT_EXPERIENCE_MANAGERS,
+];

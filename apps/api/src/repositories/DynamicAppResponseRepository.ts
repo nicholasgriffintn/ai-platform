@@ -37,6 +37,14 @@ export class DynamicAppResponseRepository {
 		return this.repo.getAppDataByUserAndId(userId, responseId, DYNAMIC_APP_RESPONSE_ITEM_TYPE);
 	}
 
+	async getResponseByIdForProject(responseId: string, projectId: string): Promise<AppData | null> {
+		return this.repo.getAppDataByProjectAndId(
+			projectId,
+			responseId,
+			DYNAMIC_APP_RESPONSE_ITEM_TYPE,
+		);
+	}
+
 	async getResponseByItemId(itemId: string): Promise<AppData | null> {
 		return this.repo.getAppDataByItemId(itemId);
 	}
@@ -51,6 +59,13 @@ export class DynamicAppResponseRepository {
 		}
 
 		return data.filter((d) => d.item_type === "dynamic_app_response");
+	}
+
+	async listResponsesForProject(projectId: string, appId?: string): Promise<AppData[]> {
+		const data = appId
+			? await this.repo.getAppDataByProjectAndApp(projectId, appId)
+			: await this.repo.getAppDataByProject(projectId);
+		return data.filter((entry) => entry.item_type === DYNAMIC_APP_RESPONSE_ITEM_TYPE);
 	}
 
 	async updateResponseData(responseId: string, payload: Record<string, any>): Promise<void> {

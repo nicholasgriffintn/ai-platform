@@ -136,12 +136,16 @@ describe("useAssistantActionSubmit", () => {
 			},
 		};
 
-		const { result } = renderHook(() => useAssistantActionSubmit());
+		const { result } = renderHook(() =>
+			useAssistantActionSubmit({
+				recipeManagementPath: "/work/workspace-1/projects/project-1/library",
+			}),
+		);
 
 		await expect(result.current.resolveAssistantActionSubmit("@Daily Weather")).resolves.toEqual({
 			kind: "navigation",
 			input: "@Daily Weather",
-			path: "/apps/recipes?action=schedule&recipe=daily-weather",
+			path: "/work/workspace-1/projects/project-1/library?action=schedule&recipe=daily-weather",
 		});
 		expect(mocks.invokeRecipe.mutateAsync).not.toHaveBeenCalled();
 		expect(mocks.installRecipe.mutateAsync).not.toHaveBeenCalled();
@@ -174,7 +178,7 @@ describe("useAssistantActionSubmit", () => {
 		expect(mocks.chatStore.setSelectedAssistantAction).toHaveBeenCalledWith(null);
 	});
 
-	it("opens selected apps through the assistant action launch path", async () => {
+	it("honours explicit frontend app navigation launch contracts", async () => {
 		mocks.chatStore.selectedAssistantAction = {
 			item: {
 				id: "app:articles",

@@ -153,6 +153,19 @@ export class AppDataRepository extends BaseRepository {
 		return this.runQuery<AppData>(query, values, true);
 	}
 
+	public async getAppDataByProjectAndId(
+		projectId: string,
+		id: string,
+		itemType?: string,
+	): Promise<AppData | null> {
+		const { query, values } = this.buildSelectQuery("app_data", {
+			id,
+			project_id: projectId,
+			item_type: itemType,
+		});
+		return this.runQuery<AppData>(query, values, true);
+	}
+
 	/**
 	 * Gets app data by item id
 	 * @param id - The ID of the item
@@ -215,6 +228,24 @@ export class AppDataRepository extends BaseRepository {
 		return this.runQuery<AppData>(query, values);
 	}
 
+	public async getAppDataByProjectAndApp(projectId: string, appId: string): Promise<AppData[]> {
+		const { query, values } = this.buildSelectQuery(
+			"app_data",
+			{ project_id: projectId, app_id: appId },
+			{ orderBy: "created_at DESC" },
+		);
+		return this.runQuery<AppData>(query, values);
+	}
+
+	public async getAppDataByProject(projectId: string): Promise<AppData[]> {
+		const { query, values } = this.buildSelectQuery(
+			"app_data",
+			{ project_id: projectId },
+			{ orderBy: "created_at DESC" },
+		);
+		return this.runQuery<AppData>(query, values);
+	}
+
 	/**
 	 * Gets all app data records for an app id
 	 * @param appId - The app ID
@@ -247,6 +278,25 @@ export class AppDataRepository extends BaseRepository {
 			"app_data",
 			{
 				user_id: userId,
+				app_id: appId,
+				item_id: itemId,
+				item_type: itemType,
+			},
+			{ orderBy: "created_at DESC" },
+		);
+		return this.runQuery<AppData>(query, values);
+	}
+
+	public async getAppDataByProjectAppAndItem(
+		projectId: string,
+		appId: string,
+		itemId: string,
+		itemType?: string,
+	): Promise<AppData[]> {
+		const { query, values } = this.buildSelectQuery(
+			"app_data",
+			{
+				project_id: projectId,
 				app_id: appId,
 				item_id: itemId,
 				item_type: itemType,
@@ -357,6 +407,21 @@ export class AppDataRepository extends BaseRepository {
 		await this.executeRun(query, values);
 
 		await this.invalidateUserAppCache(userId, appId);
+	}
+
+	public async deleteAppDataByProjectAppAndItem(
+		projectId: string,
+		appId: string,
+		itemId: string,
+		itemType?: string,
+	): Promise<void> {
+		const { query, values } = this.buildDeleteQuery("app_data", {
+			project_id: projectId,
+			app_id: appId,
+			item_id: itemId,
+			item_type: itemType,
+		});
+		await this.executeRun(query, values);
 	}
 
 	/**

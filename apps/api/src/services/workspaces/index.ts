@@ -13,6 +13,7 @@ import { sha256Hex } from "~/utils/crypto";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId, randomHex } from "~/utils/id";
 import { requireProjectAccess, requireWorkspaceAccess } from "./access";
+import { validateProjectToolConfiguration } from "./projectTools";
 import {
 	formatProjectDetail,
 	formatProjectSummary,
@@ -214,12 +215,16 @@ export async function addProjectCapability(
 ) {
 	const user = context.requireUser();
 	await requireProjectAccess(context, projectId, ["owner", "admin"]);
+	const configuration =
+		input.kind === "tool"
+			? validateProjectToolConfiguration(input.capabilityId, input.configuration)
+			: input.configuration;
 	await context.repositories.workspaces.addProjectCapability({
 		id: generateId(),
 		projectId,
 		kind: input.kind,
 		capabilityId: input.capabilityId,
-		configuration: input.configuration,
+		configuration,
 		createdBy: user.id,
 	});
 	return getProject(context, projectId);

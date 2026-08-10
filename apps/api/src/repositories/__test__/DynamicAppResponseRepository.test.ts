@@ -44,4 +44,16 @@ describe("DynamicAppResponseRepository", () => {
 		expect(query).toContain("item_type = ?");
 		expect(bind).toHaveBeenCalledWith("response-1", 42, "dynamic_app_response");
 	});
+
+	it("scopes collaborative response lookup to the project", async () => {
+		const { bind, prepare, repository } = createRepository();
+
+		await repository.getResponseByIdForProject("response-1", "project-1");
+
+		const query = prepare.mock.calls[0][0] as string;
+		expect(query).toContain("id = ?");
+		expect(query).toContain("project_id = ?");
+		expect(query).not.toContain("user_id = ?");
+		expect(bind).toHaveBeenCalledWith("response-1", "project-1", "dynamic_app_response");
+	});
 });

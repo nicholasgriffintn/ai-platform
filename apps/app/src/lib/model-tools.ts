@@ -1,34 +1,17 @@
-import type { ModelConfigItem } from "@assistant/schemas";
+import type {
+	ModelConfigItem,
+	ProjectToolCapability,
+	ProjectToolDefinition,
+	ProjectToolId,
+} from "@assistant/schemas";
+import { projectToolIdSchema } from "@assistant/schemas";
 
-export type ModelToolId =
-	| "code_execution"
-	| "file_search"
-	| "search_grounding"
-	| "image_generation"
-	| "mcp"
-	| "web_fetch"
-	| "tool_search"
-	| "hosted_shell";
-
-export type ToolCapabilityKey =
-	| "supportsCodeExecution"
-	| "supportsFileSearch"
-	| "supportsSearchGrounding"
-	| "supportsMcp"
-	| "supportsImageGenerationTool"
-	| "supportsWebFetch"
-	| "supportsToolSearch"
-	| "supportsHostedShell";
-
-export interface ModelToolDefinition {
-	capability: ToolCapabilityKey;
-	category: string;
-	command: string;
-	description: string;
-	id: ModelToolId;
-	label: string;
-	requiresConfiguration?: boolean;
-}
+export type ModelToolId = ProjectToolId;
+export type ToolCapabilityKey = ProjectToolCapability;
+export type ModelToolDefinition = ProjectToolDefinition;
+export type ModelToolModelCapabilities = Partial<
+	Pick<ModelConfigItem, "supportsToolCalls" | ToolCapabilityKey>
+>;
 
 export interface ModelToolOption extends ModelToolDefinition {
 	availabilityReason: string;
@@ -36,108 +19,30 @@ export interface ModelToolOption extends ModelToolDefinition {
 	requiredModelCapabilities: ToolCapabilityKey[];
 }
 
-export const MODEL_TOOL_DEFINITIONS: ModelToolDefinition[] = [
-	{
-		capability: "supportsCodeExecution",
-		category: "Development",
-		command: "code execution",
-		description: "Let supported models run code tools.",
-		id: "code_execution",
-		label: "Code execution",
-	},
-	{
-		capability: "supportsSearchGrounding",
-		category: "Research",
-		command: "search grounding",
-		description: "Let supported models use search grounding.",
-		id: "search_grounding",
-		label: "Search grounding",
-	},
-	{
-		capability: "supportsImageGenerationTool",
-		category: "Media",
-		command: "image generation",
-		description: "Let supported models generate images as a response tool.",
-		id: "image_generation",
-		label: "Image generation",
-	},
-	{
-		capability: "supportsFileSearch",
-		category: "Knowledge",
-		command: "file search",
-		description: "Let supported models search configured vector stores.",
-		id: "file_search",
-		label: "File search",
-		requiresConfiguration: true,
-	},
-	{
-		capability: "supportsMcp",
-		category: "Integrations",
-		command: "mcp",
-		description: "Let supported models use configured remote MCP servers.",
-		id: "mcp",
-		label: "MCP",
-		requiresConfiguration: true,
-	},
-	{
-		capability: "supportsToolSearch",
-		category: "Utilities",
-		command: "tool search",
-		description: "Let supported models search the app tool inventory.",
-		id: "tool_search",
-		label: "Tool search",
-	},
-	{
-		capability: "supportsHostedShell",
-		category: "Development",
-		command: "hosted shell",
-		description: "Let supported models use OpenAI hosted shell.",
-		id: "hosted_shell",
-		label: "Hosted shell",
-	},
-	{
-		capability: "supportsWebFetch",
-		category: "Research",
-		command: "web fetch",
-		description: "Let supported models fetch URLs present in the conversation.",
-		id: "web_fetch",
-		label: "Web fetch",
-	},
-];
-
-const MODEL_TOOL_IDS = new Set<ModelToolId>(MODEL_TOOL_DEFINITIONS.map((tool) => tool.id));
-
 export function isModelToolId(toolId: string): toolId is ModelToolId {
-	return MODEL_TOOL_IDS.has(toolId as ModelToolId);
+	return projectToolIdSchema.safeParse(toolId).success;
 }
 
 function unavailableModelToolReason(
 	tool: ModelToolDefinition,
-	model?: Partial<Pick<ModelConfigItem, "supportsToolCalls" | ToolCapabilityKey>>,
+	model?: ModelToolModelCapabilities,
 ): string {
-	if (!model) {
-		return "Select a model to see tool support.";
-	}
-
-	if (!model.supportsToolCalls) {
-		return "The selected model does not support tools.";
-	}
-
+	if (!model) return "Select a model to see tool support.";
+	if (!model.supportsToolCalls) return "The selected model does not support tools.";
 	if (model[tool.capability] && tool.id === "mcp") {
 		return "Configure MCP servers before enabling MCP.";
 	}
-
 	if (model[tool.capability] && tool.id === "file_search") {
 		return "Configure vector stores before enabling file search.";
 	}
-
 	return `The selected model does not support ${tool.command}.`;
 }
 
 export function getModelToolOptions(
-	model?: Partial<Pick<ModelConfigItem, "supportsToolCalls" | ToolCapabilityKey>>,
+	model: ModelToolModelCapabilities | undefined,
+	definitions: readonly ModelToolDefinition[],
 ): ModelToolOption[] {
-	return MODEL_TOOL_DEFINITIONS.map((tool) => {
+	return definitions.map((tool) => {
 		const available = Boolean(
 			model?.supportsToolCalls && model[tool.capability] && !tool.requiresConfiguration,
 		);
@@ -153,22 +58,32 @@ export function getModelToolOptions(
 }
 
 export function getAvailableModelTools(
-	model?: Partial<Pick<ModelConfigItem, "supportsToolCalls" | ToolCapabilityKey>>,
-) {
-	return getModelToolOptions(model).filter((tool) => tool.available);
+	model: ModelToolModelCapabilities | undefined,
+	definitions: readonly ModelToolDefinition[],
+): ModelToolOption[] {
+	return getModelToolOptions(model, definitions).filter((tool) => tool.available);
 }
+
+const TOOL_CAPABILITIES: Record<ModelToolId, ToolCapabilityKey> = {
+	code_execution: "supportsCodeExecution",
+	file_search: "supportsFileSearch",
+	hosted_shell: "supportsHostedShell",
+	image_generation: "supportsImageGenerationTool",
+	mcp: "supportsMcp",
+	search_grounding: "supportsSearchGrounding",
+	tool_search: "supportsToolSearch",
+	web_fetch: "supportsWebFetch",
+};
 
 export function filterUnavailableModelToolSelections(
 	selectedTools: string[],
-	model?: Partial<Pick<ModelConfigItem, "supportsToolCalls" | ToolCapabilityKey>>,
+	model?: ModelToolModelCapabilities,
 ): string[] {
-	if (!model) {
-		return selectedTools;
-	}
+	if (!model) return selectedTools;
 
-	const availableModelToolIds = new Set(getAvailableModelTools(model).map((tool) => tool.id));
-
-	return selectedTools.filter(
-		(toolId) => !isModelToolId(toolId) || availableModelToolIds.has(toolId),
-	);
+	return selectedTools.filter((toolId) => {
+		if (!isModelToolId(toolId)) return true;
+		if (toolId === "mcp" || toolId === "file_search") return false;
+		return Boolean(model.supportsToolCalls && model[TOOL_CAPABILITIES[toolId]]);
+	});
 }

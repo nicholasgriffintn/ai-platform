@@ -11,64 +11,64 @@ import {
 	generateNotesFromMedia,
 } from "~/lib/api/dynamic-apps";
 
-export const useFetchNotes = () => {
+export const useFetchNotes = (projectId?: string) => {
 	return useQuery<Note[], Error>({
-		queryKey: ["notes"],
-		queryFn: fetchNotes,
+		queryKey: ["notes", projectId],
+		queryFn: () => fetchNotes(projectId),
 	});
 };
 
-export const useFetchNote = (id: string | undefined) => {
+export const useFetchNote = (id: string | undefined, projectId?: string) => {
 	return useQuery<Note, Error>({
-		queryKey: ["note", id],
-		queryFn: () => fetchNote(id!),
+		queryKey: ["note", projectId, id],
+		queryFn: () => fetchNote(id!, projectId),
 		enabled: !!id,
 	});
 };
 
-export const useCreateNote = () => {
+export const useCreateNote = (projectId?: string) => {
 	const queryClient = useQueryClient();
 	return useMutation({
-		mutationFn: (data: NoteCreateRequest) => createNote(data),
+		mutationFn: (data: NoteCreateRequest) => createNote(data, projectId),
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["notes"] });
+			queryClient.invalidateQueries({ queryKey: ["notes", projectId] });
 		},
 	});
 };
 
-export const useUpdateNote = (id: string) => {
+export const useUpdateNote = (id: string, projectId?: string) => {
 	const queryClient = useQueryClient();
 	return useMutation({
-		mutationFn: (data: NoteUpdateRequest) => updateNote({ id, ...data }),
+		mutationFn: (data: NoteUpdateRequest) => updateNote({ id, ...data }, projectId),
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["notes"] });
-			queryClient.invalidateQueries({ queryKey: ["note", id] });
+			queryClient.invalidateQueries({ queryKey: ["notes", projectId] });
+			queryClient.invalidateQueries({ queryKey: ["note", projectId, id] });
 		},
 	});
 };
 
-export const useDeleteNote = () => {
+export const useDeleteNote = (projectId?: string) => {
 	const queryClient = useQueryClient();
 	return useMutation({
-		mutationFn: (id: string) => deleteNote(id),
+		mutationFn: (id: string) => deleteNote(id, projectId),
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["notes"] });
+			queryClient.invalidateQueries({ queryKey: ["notes", projectId] });
 		},
 	});
 };
 
-export const useFormatNote = (id: string) => {
+export const useFormatNote = (id: string, projectId?: string) => {
 	return useMutation<string, Error, string | undefined>({
 		mutationFn: (prompt?: string) => {
 			if (!id) {
 				throw new Error("Note ID is required");
 			}
-			return formatNoteAPI(id, prompt);
+			return formatNoteAPI(id, prompt, projectId);
 		},
 	});
 };
 
-export const useGenerateNotesFromMedia = () => {
+export const useGenerateNotesFromMedia = (projectId?: string) => {
 	return useMutation<
 		{ content: string },
 		Error,
@@ -104,6 +104,6 @@ export const useGenerateNotesFromMedia = () => {
 			enableVideoSearch?: boolean;
 		}
 	>({
-		mutationFn: (params) => generateNotesFromMedia(params),
+		mutationFn: (params) => generateNotesFromMedia(params, projectId),
 	});
 };

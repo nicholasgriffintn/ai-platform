@@ -8,18 +8,19 @@ const logger = getLogger({ prefix: "services/strudel/list" });
 export async function listPatterns({
 	context,
 	userId,
+	projectId,
 }: {
 	context: ServiceContext;
 	userId: number;
+	projectId?: string;
 }) {
 	try {
 		context.ensureDatabase();
 		const { repositories } = context;
 
-		const responses = await repositories.dynamicAppResponses.listResponsesForUser(
-			userId,
-			STRUDEL_APP_ID,
-		);
+		const responses = projectId
+			? await repositories.dynamicAppResponses.listResponsesForProject(projectId, STRUDEL_APP_ID)
+			: await repositories.dynamicAppResponses.listResponsesForUser(userId, STRUDEL_APP_ID);
 
 		const patterns = responses.map(mapResponseToPattern);
 

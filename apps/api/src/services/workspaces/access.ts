@@ -1,4 +1,5 @@
 import type { WorkspaceRole } from "@assistant/schemas";
+import { z } from "zod/v4";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import type { ProjectRow, WorkspaceRow } from "~/repositories/WorkspaceRepository";
@@ -8,6 +9,10 @@ export interface WorkspaceAccess {
 	workspace: WorkspaceRow;
 	role: WorkspaceRole;
 }
+
+export const projectScopeQuerySchema = z.object({
+	projectId: z.string().min(1).optional(),
+});
 
 export async function requireWorkspaceAccess(
 	context: ServiceContext,
@@ -42,4 +47,25 @@ export async function requireProjectAccess(
 
 	const { role } = await requireWorkspaceAccess(context, project.workspace_id, allowedRoles);
 	return { project, role };
+}
+
+export async function requireProjectCapabilityAccess(
+	context: ServiceContext,
+	projectId: string,
+	kind: "app" | "recipe" | "tool",
+	capabilityId: string,
+): Promise<void> {
+	await requireProjectAccess(context, projectId);
+	const capabilities = await context.repositories.workspaces.listProjectCapabilities(projectId);
+	const isEnabled = capabilities.some(
+		(capability) => capability.kind === kind && capability.capability_id === capabilityId,
+	);
+
+	if (!isEnabled) {
+		throw new AssistantError(
+			"Capability is not available in this project",
+			ErrorType.NOT_FOUND,
+			404,
+		);
+	}
 }

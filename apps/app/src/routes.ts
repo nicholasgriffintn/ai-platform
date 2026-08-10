@@ -9,6 +9,11 @@ export default [
 	route("/work/:workspaceId/members", "pages/work/members.tsx"),
 	route("/work/:workspaceId/projects/:projectId", "pages/work/project.tsx"),
 	route("/work/:workspaceId/projects/:projectId/chat", "pages/work/project-chat.tsx"),
+	route("/work/:workspaceId/projects/:projectId/experiences", "pages/work/project-experiences.tsx"),
+	route(
+		"/work/:workspaceId/projects/:projectId/experiences/:experienceId/*",
+		"pages/work/project-experience.tsx",
+	),
 	route("/work/:workspaceId/projects/:projectId/library", "pages/work/project-library.tsx"),
 	route("/work/:workspaceId/projects/:projectId/apps/:appId", "pages/work/project-app.tsx"),
 	route("/terms", "pages/terms.tsx"),

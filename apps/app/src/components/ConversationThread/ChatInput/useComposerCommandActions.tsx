@@ -16,6 +16,7 @@ import type { AssistantActionItem, AssistantActionVerbId } from "@assistant/sche
 
 import { useAssistantActionCatalog } from "~/hooks/useAssistantActionCatalog";
 import { useAgents } from "~/hooks/useAgents";
+import { useModelToolOptions } from "~/hooks/useModelTools";
 import { useModels } from "~/hooks/useModels";
 import { useWebLLMModels } from "~/hooks/useWebLLMModels";
 import { applyModelResponseDefaults } from "~/lib/chat-settings";
@@ -27,7 +28,7 @@ import {
 	replaceComposerDirectiveWithCursor,
 } from "~/lib/composer-commands";
 import { COMPACT_CONVERSATION_COMMAND } from "~/lib/chat/compaction-command";
-import { getAvailableModelTools, type ModelToolId } from "~/lib/model-tools";
+import type { ModelToolId } from "~/lib/model-tools";
 import { defaultModel, EMPTY_MODEL_CONFIG, getAvailableModels } from "~/lib/models";
 import {
 	formatReasoningLabel,
@@ -117,9 +118,10 @@ export function useComposerCommandActions({
 	);
 	const defaultVerbosity = getDefaultVerbosity(selectedModelConfig);
 	const selectedVerbosity = chatSettings.verbosity ?? defaultVerbosity;
+	const modelToolOptions = useModelToolOptions(modelCapabilities);
 	const availableModelTools = useMemo(
-		() => (modelCapabilities?.supportsToolCalls ? getAvailableModelTools(modelCapabilities) : []),
-		[modelCapabilities],
+		() => modelToolOptions.filter((tool) => tool.available),
+		[modelToolOptions],
 	);
 	const actionCatalog = useAssistantActionCatalog({
 		includeApps: false,

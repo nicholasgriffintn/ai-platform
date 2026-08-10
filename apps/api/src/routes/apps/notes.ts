@@ -27,6 +27,10 @@ import {
 } from "~/services/apps/notes/list";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateNotesFromMedia } from "~/services/apps/notes/generate-from-media";
+import {
+	projectScopeQuerySchema,
+	requireProjectCapabilityAccess,
+} from "~/services/workspaces/access";
 
 const app = new Hono();
 const routeLogger = createRouteLogger("apps/notes");
@@ -50,13 +54,25 @@ addRoute(app, "get", "/", {
 		},
 	},
 	auth: true,
+	querySchema: projectScopeQuerySchema,
 	middleware: [requirePlan("pro")],
-	handler: async ({ serviceContext, user }) => {
+	handler: async ({ query, serviceContext, user }) => {
 		try {
+			if (query.projectId) {
+				await requireProjectCapabilityAccess(
+					serviceContext,
+					query.projectId,
+					"app",
+					"featured-note-taker",
+				);
+			}
+
 			const notes = await listNotes({
 				context: serviceContext,
 				userId: user.id,
+				projectId: query.projectId,
 			});
+
 			return { notes };
 		} catch (error) {
 			if (error instanceof AssistantError) {
@@ -79,14 +95,26 @@ addRoute(app, "get", "/:id", {
 		404: { description: "Note not found", schema: errorResponseSchema },
 	},
 	auth: true,
+	querySchema: projectScopeQuerySchema,
 	middleware: [requirePlan("pro")],
-	handler: async ({ params, serviceContext, user }) => {
+	handler: async ({ params, query, serviceContext, user }) => {
 		try {
+			if (query.projectId) {
+				await requireProjectCapabilityAccess(
+					serviceContext,
+					query.projectId,
+					"app",
+					"featured-note-taker",
+				);
+			}
+
 			const note = await getNote({
 				context: serviceContext,
 				userId: user.id,
 				noteId: params.id,
+				projectId: query.projectId,
 			});
+
 			return { note };
 		} catch (error) {
 			if (error instanceof AssistantError) {
@@ -115,15 +143,27 @@ addRoute(app, "post", "/", {
 		},
 	},
 	auth: true,
+	querySchema: projectScopeQuerySchema,
 	middleware: [requirePlan("pro")],
-	handler: async ({ body, serviceContext, user }) => {
+	handler: async ({ body, query, serviceContext, user }) => {
 		try {
+			if (query.projectId) {
+				await requireProjectCapabilityAccess(
+					serviceContext,
+					query.projectId,
+					"app",
+					"featured-note-taker",
+				);
+			}
+
 			const note = await createNote({
 				context: serviceContext,
 				env: serviceContext.env,
 				user,
 				data: body,
+				projectId: query.projectId,
 			});
+
 			return { note };
 		} catch (error) {
 			if (error instanceof AssistantError) {
@@ -151,16 +191,28 @@ addRoute(app, "put", "/:id", {
 		404: { description: "Note not found", schema: errorResponseSchema },
 	},
 	auth: true,
+	querySchema: projectScopeQuerySchema,
 	middleware: [requirePlan("pro")],
-	handler: async ({ body, params, serviceContext, user }) => {
+	handler: async ({ body, params, query, serviceContext, user }) => {
 		try {
+			if (query.projectId) {
+				await requireProjectCapabilityAccess(
+					serviceContext,
+					query.projectId,
+					"app",
+					"featured-note-taker",
+				);
+			}
+
 			const note = await updateNote({
 				context: serviceContext,
 				env: serviceContext.env,
 				user,
 				noteId: params.id,
 				data: body,
+				projectId: query.projectId,
 			});
+
 			return { note };
 		} catch (error) {
 			if (error instanceof AssistantError) {
@@ -183,15 +235,27 @@ addRoute(app, "delete", "/:id", {
 		404: { description: "Note not found", schema: errorResponseSchema },
 	},
 	auth: true,
+	querySchema: projectScopeQuerySchema,
 	middleware: [requirePlan("pro")],
-	handler: async ({ params, serviceContext, user }) => {
+	handler: async ({ params, query, serviceContext, user }) => {
 		try {
+			if (query.projectId) {
+				await requireProjectCapabilityAccess(
+					serviceContext,
+					query.projectId,
+					"app",
+					"featured-note-taker",
+				);
+			}
+
 			await deleteNote({
 				context: serviceContext,
 				env: serviceContext.env,
 				user,
 				noteId: params.id,
+				projectId: query.projectId,
 			});
+
 			return { status: "success", message: "Note deleted" };
 		} catch (error) {
 			if (error instanceof AssistantError) {
@@ -222,16 +286,28 @@ addRoute(app, "post", "/:id/format", {
 		404: { description: "Note not found", schema: errorResponseSchema },
 	},
 	auth: true,
+	querySchema: projectScopeQuerySchema,
 	middleware: [requirePlan("pro")],
-	handler: async ({ body, params, serviceContext, user }) => {
+	handler: async ({ body, params, query, serviceContext, user }) => {
 		try {
+			if (query.projectId) {
+				await requireProjectCapabilityAccess(
+					serviceContext,
+					query.projectId,
+					"app",
+					"featured-note-taker",
+				);
+			}
+
 			const result = await formatNote({
 				context: serviceContext,
 				env: serviceContext.env,
 				user,
 				noteId: params.id,
 				prompt: body.prompt,
+				projectId: query.projectId,
 			});
+
 			return result;
 		} catch (error) {
 			if (error instanceof AssistantError) throw error;
@@ -259,9 +335,19 @@ addRoute(app, "post", "/generate-from-media", {
 		},
 	},
 	auth: true,
+	querySchema: projectScopeQuerySchema,
 	middleware: [requirePlan("pro")],
-	handler: async ({ body, serviceContext, user }) => {
+	handler: async ({ body, query, serviceContext, user }) => {
 		try {
+			if (query.projectId) {
+				await requireProjectCapabilityAccess(
+					serviceContext,
+					query.projectId,
+					"app",
+					"featured-note-taker",
+				);
+			}
+
 			const result = await generateNotesFromMedia({
 				env: serviceContext.env,
 				user,
@@ -273,6 +359,7 @@ addRoute(app, "post", "/generate-from-media", {
 				useVideoAnalysis: body.useVideoAnalysis,
 				enableVideoSearch: body.enableVideoSearch,
 			});
+
 			return { content: result.content };
 		} catch (error) {
 			if (error instanceof AssistantError) {

@@ -8,22 +8,22 @@ export const getReplicatePredictionDetails = async ({
 	env,
 	predictionId,
 	userId,
+	projectId,
 }: {
 	context?: ServiceContext;
 	env?: IEnv;
 	predictionId: string;
 	userId: number;
+	projectId?: string;
 }) => {
 	const serviceContext = resolveServiceContext({ context, env });
 
-	const prediction = await serviceContext.repositories.appData.getAppDataById(predictionId);
+	const prediction = projectId
+		? await serviceContext.repositories.appData.getAppDataByProjectAndId(projectId, predictionId)
+		: await serviceContext.repositories.appData.getAppDataByUserAndId(userId, predictionId);
 
 	if (!prediction) {
 		throw new AssistantError("Prediction not found", ErrorType.NOT_FOUND);
-	}
-
-	if (prediction.user_id !== userId) {
-		throw new AssistantError("Unauthorized", ErrorType.UNAUTHORIZED);
 	}
 
 	const data = safeParseJson(prediction.data);

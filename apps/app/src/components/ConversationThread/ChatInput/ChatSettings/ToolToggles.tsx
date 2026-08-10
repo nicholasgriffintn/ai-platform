@@ -11,8 +11,9 @@ import {
 } from "lucide-react";
 import * as React from "react";
 
+import { useModelToolOptions } from "~/hooks/useModelTools";
 import { useModels } from "~/hooks/useModels";
-import { getModelToolOptions, type ModelToolId } from "~/lib/model-tools";
+import type { ModelToolId } from "~/lib/model-tools";
 import { cn } from "~/lib/utils";
 import { useChatStore } from "~/state/stores/chatStore";
 import { useToolsStore } from "~/state/stores/toolsStore";
@@ -94,11 +95,7 @@ export const ToolToggles = ({ isDisabled = false }: ToolTogglesProps) => {
 	const { data: apiModels } = useModels();
 
 	const modelCapabilities = model ? apiModels?.[model] : undefined;
-
-	const modelToolOptions = React.useMemo(
-		() => getModelToolOptions(modelCapabilities),
-		[modelCapabilities],
-	);
+	const modelToolOptions = useModelToolOptions(modelCapabilities);
 
 	const toggleTool = (toolName: string) => {
 		setSelectedTools(

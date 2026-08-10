@@ -8,16 +8,25 @@ export function ArticleView({
 	report,
 	sourceIds,
 	isShared,
+	basePath,
+	projectId,
 }: {
 	report: ArticleReportItem;
 	sourceIds: string[];
 	isShared?: boolean;
+	basePath?: string;
+	projectId?: string;
 }) {
 	return (
 		<div className="space-y-6">
-			<ArticleReportHeader report={report} isShared={isShared} />
+			<ArticleReportHeader
+				report={report}
+				isShared={isShared}
+				basePath={basePath}
+				projectId={projectId}
+			/>
 			<ArticleReportContent report={report} />
-			<ArticleSourceArticles sourceIds={sourceIds} />
+			<ArticleSourceArticles sourceIds={sourceIds} projectId={projectId} />
 			<ArticleReportMetadata report={report} />
 		</div>
 	);

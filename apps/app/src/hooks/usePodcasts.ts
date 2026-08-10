@@ -1,31 +1,36 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { Podcast, PodcastListItem } from "@assistant/schemas";
 
 import { fetchPodcast, fetchPodcasts, processPodcast, uploadPodcast } from "~/lib/api/dynamic-apps";
 
-export const useFetchPodcasts = () => {
+export const useFetchPodcasts = (projectId?: string) => {
 	return useQuery<PodcastListItem[], Error>({
-		queryKey: ["podcasts"],
-		queryFn: fetchPodcasts,
+		queryKey: ["podcasts", projectId],
+		queryFn: () => fetchPodcasts(projectId),
 	});
 };
 
-export const useFetchPodcast = (id: string) => {
+export const useFetchPodcast = (id: string, projectId?: string) => {
 	return useQuery<Podcast, Error>({
-		queryKey: ["podcast", id],
-		queryFn: () => fetchPodcast(id),
+		queryKey: ["podcast", projectId, id],
+		queryFn: () => fetchPodcast(id, projectId),
 		enabled: !!id,
 	});
 };
 
-export const useUploadPodcast = () => {
+export const useUploadPodcast = (projectId?: string) => {
 	return useMutation({
-		mutationFn: uploadPodcast,
+		mutationFn: (params: Parameters<typeof uploadPodcast>[0]) => uploadPodcast(params, projectId),
 	});
 };
 
-export const useProcessPodcast = () => {
+export const useProcessPodcast = (projectId?: string) => {
+	const queryClient = useQueryClient();
 	return useMutation({
-		mutationFn: processPodcast,
+		mutationFn: (params: Parameters<typeof processPodcast>[0]) => processPodcast(params, projectId),
+		onSuccess: (_, params) => {
+			queryClient.invalidateQueries({ queryKey: ["podcast", projectId, params.podcastId] });
+			queryClient.invalidateQueries({ queryKey: ["podcasts", projectId] });
+		},
 	});
 };

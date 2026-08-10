@@ -61,6 +61,10 @@ vi.mock("~/hooks/useModels", () => ({
 	useModels: () => ({ data: {} }),
 }));
 
+vi.mock("~/hooks/useModelTools", () => ({
+	useModelToolOptions: () => [],
+}));
+
 vi.mock("~/hooks/useWebLLMModels", () => ({
 	useWebLLMModels: () => ({}),
 }));

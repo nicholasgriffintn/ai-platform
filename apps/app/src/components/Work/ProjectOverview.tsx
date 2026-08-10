@@ -97,7 +97,8 @@ export function ProjectOverview({
 												</p>
 												<p className="text-xs text-zinc-500">
 													{conversation.createdBy.name || "Workspace member"} ·{" "}
-													{conversation.messageCount} messages
+													{conversation.messageCount} message
+													{conversation.messageCount !== 1 ? "s" : ""}
 												</p>
 											</div>
 											<ArrowRight size={16} className="text-zinc-400" />
