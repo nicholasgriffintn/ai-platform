@@ -938,7 +938,7 @@ export const togetherAiModelConfig: ModelConfig = {
 		supportsTemperature: true,
 		supportsToolCalls: true,
 		supportsResponseFormat: true,
-		contextWindow: 262144,
+		contextWindow: 512000,
 		maxTokens: 164000,
 		costPer1kInputTokens: 0.0014,
 		costPer1kOutputTokens: 0.0044,
