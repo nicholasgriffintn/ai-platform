@@ -16,10 +16,12 @@ trap 'rm -f "${TMP_FILE}"' EXIT
 
 wrangler d1 export personal-assistant-preview --remote --output "${TMP_FILE}"
 
-LOCAL_DB_PATH="$(find .wrangler/state/v3/d1 -type f -name '*.sqlite' -print -quit || true)"
+LOCAL_DB_DIR=".wrangler/state/v3/d1/miniflare-D1DatabaseObject"
+LOCAL_DB_PATH="$(find "${LOCAL_DB_DIR}" -maxdepth 1 -type f -name '*.sqlite' ! -name 'metadata.sqlite' -print -quit 2>/dev/null || true)"
 if [[ -n "${LOCAL_DB_PATH}" && -f "${LOCAL_DB_PATH}" ]]; then
 	echo "Clearing existing local D1 file at ${LOCAL_DB_PATH}"
-	rm -f "${LOCAL_DB_PATH}"
+	rm -f "${LOCAL_DB_PATH}" "${LOCAL_DB_PATH}-shm" "${LOCAL_DB_PATH}-wal"
+	rm -f "${LOCAL_DB_DIR}/metadata.sqlite" "${LOCAL_DB_DIR}/metadata.sqlite-shm" "${LOCAL_DB_DIR}/metadata.sqlite-wal"
 fi
 
 if [[ -z "${LOCAL_DB_PATH}" ]]; then
