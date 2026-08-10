@@ -9,10 +9,12 @@ import { ProductModeHeader } from "~/components/Core/ProductModeHeader";
 import { SearchDialog } from "~/components/Search/SearchDialog";
 import { useChatStore } from "~/state/stores/chatStore";
 import { HomeConversationThread } from "./HomeConversationThread";
+import { useHomeChatModeConfig } from "./useHomeChatModeConfig";
 
 export function HomePage() {
 	const { clearCurrentConversation, initializeStore, showSearch, setShowSearch } = useChatStore();
 	const [isCanvasMode, setIsCanvasMode] = useState(false);
+	const { modeConfig } = useHomeChatModeConfig();
 	const canvas = useCanvasStudio({ enabled: isCanvasMode });
 
 	useEffect(() => {
@@ -48,7 +50,7 @@ export function HomePage() {
 							{isCanvasMode ? (
 								<CanvasGenerationsView canvas={canvas} />
 							) : (
-								<HomeConversationThread />
+								<HomeConversationThread urlModeConfig={modeConfig} />
 							)}
 						</div>
 					</div>

@@ -52,6 +52,12 @@ vi.mock("~/state/stores/chatStore", () => ({
 		showSearch: false,
 	}),
 }));
+vi.mock("./useHomeChatModeConfig", () => ({
+	useHomeChatModeConfig: () => ({
+		activeModeId: "chat",
+		modeConfig: {},
+	}),
+}));
 vi.mock("./HomeConversationThread", () => ({
 	HomeConversationThread: () => <div>Conversation</div>,
 }));

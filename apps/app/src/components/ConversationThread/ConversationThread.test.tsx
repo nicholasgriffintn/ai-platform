@@ -129,7 +129,7 @@ vi.mock("./ChatInput", () => ({
 	ChatInput: ({
 		handleSubmit,
 	}: {
-		handleSubmit: (attachments?: AttachmentData[]) => Promise<void>;
+		handleSubmit: (attachments?: AttachmentData[]) => void | Promise<unknown>;
 	}) => (
 		<button type="button" onClick={() => void handleSubmit(mocks.submitAttachments.current)}>
 			Send
@@ -269,6 +269,56 @@ describe("ConversationThread assistant action submit", () => {
 		expect(mocks.setChatInput).toHaveBeenCalledWith("run @Daily Weather");
 		expect(mocks.setSelectedAssistantAction).toHaveBeenCalledWith(
 			mocks.chatStore.selectedAssistantAction,
+		);
+	});
+
+	it("retains the Work project scope when a recipe adds request options", async () => {
+		mocks.resolveAssistantActionSubmit.mockResolvedValue({
+			kind: "submit",
+			input: "run @Daily Weather",
+			requestOptions: { options: { recipe: { id: "daily-weather" } } },
+		});
+		mocks.sendMessage.mockResolvedValue({ status: "success", response: "Done" });
+
+		render(
+			<ConversationThread
+				modeConfig={{
+					requestOptions: { metadata: { project_id: "project-1" } },
+				}}
+			/>,
+		);
+
+		fireEvent.click(screen.getByRole("button", { name: "Send" }));
+
+		await waitFor(() =>
+			expect(mocks.sendMessage).toHaveBeenCalledWith("run @Daily Weather", undefined, {
+				metadata: { project_id: "project-1" },
+				options: { recipe: { id: "daily-weather" } },
+			}),
+		);
+	});
+
+	it("passes mode request options to an initial auto-submit", async () => {
+		mocks.chatStore.chatInput = "";
+		mocks.chatStore.selectedAssistantAction = null;
+		mocks.sendMessage.mockResolvedValue({ status: "success", response: "Done" });
+
+		render(
+			<ConversationThread
+				modeConfig={{
+					initialAutoSubmit: {
+						key: "project-recipe:daily-weather",
+						input: "Run the recipe",
+					},
+					requestOptions: { metadata: { project_id: "project-1" } },
+				}}
+			/>,
+		);
+
+		await waitFor(() =>
+			expect(mocks.sendMessage).toHaveBeenCalledWith("Run the recipe", undefined, {
+				metadata: { project_id: "project-1" },
+			}),
 		);
 	});
 });

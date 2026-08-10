@@ -1,4 +1,4 @@
-import { type Context, Hono } from "hono";
+import { Hono } from "hono";
 
 import { addRoute } from "~/lib/http/routeBuilder";
 import {

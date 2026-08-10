@@ -438,7 +438,7 @@ export const ChatSettings = ({
 				</PopoverContent>
 			</Popover>
 
-			{showToolSelector && <ToolSelector isDisabled={isDisabled || toolSelectionLocked} />}
+			{showToolSelector && !toolSelectionLocked && <ToolSelector isDisabled={isDisabled} />}
 		</div>
 	);
 };

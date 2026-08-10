@@ -1,10 +1,13 @@
+import type { ProjectCapabilityKind } from "@assistant/schemas";
 import type { ReactNode } from "react";
 
-export interface ComposerInlineToken {
-	id: string;
-	label: string;
-	icon: ReactNode;
-	onClear?: () => void;
+export interface ComposerAssistantActionCapability {
+	kind: ProjectCapabilityKind;
+	capabilityId: string;
+}
+
+export interface ComposerActionCatalogConfig {
+	includeTools?: boolean;
 }
 
 export interface ComposerCommandAction {

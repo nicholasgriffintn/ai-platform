@@ -9,7 +9,6 @@ import type { StorageService } from "~/lib/storage";
 import type { ChatCompletionParameters } from "~/types";
 import { getAiGatewayMetadataHeaders, resolveAiGatewayCacheTtl } from "~/utils/aiGateway";
 import { AssistantError, ErrorType } from "~/utils/errors";
-import { getLogger } from "~/utils/logger";
 import { mergeToolDefinitionsByName } from "~/utils/toolNames";
 import {
 	calculateReasoningBudget,
@@ -18,8 +17,6 @@ import {
 	shouldEnableStreaming,
 } from "~/utils/parameters";
 import { BaseProvider } from "./base";
-
-const logger = getLogger({ prefix: "lib/providers/anthropic" });
 
 export class AnthropicProvider extends BaseProvider {
 	name = "anthropic";

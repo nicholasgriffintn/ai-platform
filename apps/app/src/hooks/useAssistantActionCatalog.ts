@@ -3,42 +3,30 @@ import { buildAssistantActionCatalog, type AssistantActionCatalog } from "@assis
 import type { ModelToolDefinition } from "~/lib/model-tools";
 import { useAgents } from "./useAgents";
 import { useRecipeConnectors } from "./useConnectors";
-import { useDynamicApps } from "./useDynamicApps";
 import { useAssistantRecipes, useRecipeInstallations } from "./useRecipes";
 
 export function useAssistantActionCatalog({
-	includeApps = true,
-	includeFrontendApps = false,
 	modelTools = [],
 }: {
-	includeApps?: boolean;
-	includeFrontendApps?: boolean;
 	modelTools?: readonly ModelToolDefinition[];
 } = {}): AssistantActionCatalog {
 	const { chatAgents } = useAgents();
 	const { data: recipesData } = useAssistantRecipes();
 	const { data: installationsData } = useRecipeInstallations();
-	const { data: appsData } = useDynamicApps();
 	const { data: connectorsData } = useRecipeConnectors();
 
 	return useMemo(
 		() =>
 			buildAssistantActionCatalog({
 				agents: chatAgents,
-				apps: includeApps
-					? (appsData?.apps ?? []).filter((app) => includeFrontendApps || app.kind !== "frontend")
-					: [],
 				connectors: connectorsData?.connectors ?? [],
 				installations: installationsData?.installations ?? [],
 				modelTools,
 				recipes: recipesData?.recipes ?? [],
 			}),
 		[
-			appsData?.apps,
 			chatAgents,
 			connectorsData?.connectors,
-			includeApps,
-			includeFrontendApps,
 			installationsData?.installations,
 			modelTools,
 			recipesData?.recipes,

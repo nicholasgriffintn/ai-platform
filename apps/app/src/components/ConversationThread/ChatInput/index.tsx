@@ -36,7 +36,11 @@ import {
 	ComposerCommandChips,
 	ComposerCommandSuggestions,
 } from "./ComposerCommandSurface";
-import type { ComposerCommandAction } from "./composerCommandTypes";
+import type {
+	ComposerAssistantActionCapability,
+	ComposerActionCatalogConfig,
+	ComposerCommandAction,
+} from "./composerCommandTypes";
 import { InlineResponseControls } from "./InlineResponseControls";
 import { ModelSelector } from "./ModelSelector";
 import {
@@ -53,7 +57,7 @@ export interface ChatInputHandle {
 }
 
 interface ChatInputProps {
-	handleSubmit: (attachments?: AttachmentData[]) => void;
+	handleSubmit: (attachments?: AttachmentData[]) => void | Promise<boolean>;
 	isLoading: boolean;
 	streamStarted: boolean;
 	controller: AbortController;
@@ -75,7 +79,9 @@ interface ChatInputProps {
 	disableAttachments?: boolean;
 	hideDefaultControls?: boolean;
 	hideComposerActionMenu?: boolean;
-	allowedAssistantActionCapabilityIds?: readonly string[];
+	allowedAssistantActionCapabilities?: readonly ComposerAssistantActionCapability[];
+	assistantActionCatalog?: ComposerActionCatalogConfig;
+	toolSelectionLocked?: boolean;
 	hideSubmitButton?: boolean;
 	hideTextInput?: boolean;
 	hideInlineResponseControls?: boolean;
@@ -108,7 +114,9 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 			disableAttachments = false,
 			hideDefaultControls = false,
 			hideComposerActionMenu = false,
-			allowedAssistantActionCapabilityIds,
+			allowedAssistantActionCapabilities,
+			assistantActionCatalog,
+			toolSelectionLocked = false,
 			hideSubmitButton = false,
 			hideTextInput = false,
 			hideInlineResponseControls = false,
@@ -165,11 +173,13 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 			setTextareaCursorPosition,
 		} = useComposerCommandController({
 			isLoading,
-			allowedAssistantActionCapabilityIds,
+			allowedAssistantActionCapabilities,
+			assistantActionCatalog,
 			modeControls: {
 				...modeControls,
 				includeSettingCommands: modeControls?.includeSettingCommands ?? !hideChatSettings,
 			},
+			toolSelectionLocked,
 		});
 
 		useImperativeHandle(
@@ -359,12 +369,18 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 			);
 		};
 
-		const submitSelectedAttachments = () => {
+		const submitSelectedAttachments = async () => {
 			const combinedAttachments = [...contextAttachments, ...selectedAttachments];
 			const attachments = combinedAttachments.length > 0 ? combinedAttachments : undefined;
+			const submitResult = handleSubmit(attachments);
+			if (submitResult && typeof submitResult.then === "function") {
+				const didSubmit = await submitResult;
+				if (didSubmit === false) {
+					return;
+				}
+			}
 			clearSelectedAttachments();
 			onClearContextAttachments?.();
-			handleSubmit(attachments);
 		};
 
 		const getFileTypeAccept = () => {
@@ -518,14 +534,19 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 		});
 		const attachmentChips = [...contextAttachmentChips, ...selectedAttachmentChips];
 
-		const isToolSelectionLocked = chatMode === "agent" && selectedAgentId !== null;
+		const isToolSelectionLocked =
+			toolSelectionLocked || (chatMode === "agent" && selectedAgentId !== null);
 		const canUseProComposerActions = isPro;
 		const showInlineMultiModelToggle = isPro && !model && chatMode === "remote";
-		const canShowToolMenu = showInlineMultiModelToggle || supportsToolCalls;
+		const canShowToolMenu =
+			!isToolSelectionLocked && (showInlineMultiModelToggle || supportsToolCalls);
 		const canShowActionMenu = canUseProComposerActions || canShowToolMenu;
 		const shouldRenderInputControls = hideTextInput && controls;
 		const isComposerSubmitDisabled =
-			(!chatInput?.trim() && selectedAttachments.length === 0 && contextAttachments.length === 0) ||
+			(!chatInput?.trim() &&
+				!selectedAssistantAction?.item &&
+				selectedAttachments.length === 0 &&
+				contextAttachments.length === 0) ||
 			isLoading ||
 			isUploading ||
 			isAuthenticationLoading;

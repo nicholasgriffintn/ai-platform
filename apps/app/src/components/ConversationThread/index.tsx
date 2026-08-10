@@ -26,7 +26,11 @@ import type { CouncilMemberId } from "@assistant/schemas";
 import type { ArtifactProps } from "~/types/artifact";
 import { ArtifactPanel } from "./Artifacts/ArtifactPanel";
 import { ChatInput, type ChatInputHandle } from "./ChatInput";
-import type { ComposerCommandAction } from "./ChatInput/composerCommandTypes";
+import type {
+	ComposerAssistantActionCapability,
+	ComposerActionCatalogConfig,
+	ComposerCommandAction,
+} from "./ChatInput/composerCommandTypes";
 import { FooterInfo } from "./FooterInfo";
 import { MessageList } from "./MessageList";
 import { StealthModelWarning } from "./StealthModelWarning";
@@ -34,6 +38,7 @@ import { useAssistantActionSubmit } from "./useAssistantActionSubmit";
 import { useAutoPlayResponses } from "./useAutoPlayResponses";
 import { WelcomeScreen } from "./WelcomeScreen";
 import { findLatestArtifactByIdentifier } from "~/lib/artifacts";
+import { mergeChatRequestOptions } from "~/lib/chat/request-options";
 
 export interface ConversationThreadModeConfig {
 	assistantActionRoutes?: {
@@ -69,7 +74,9 @@ export interface ConversationThreadModeConfig {
 	onModelChange?: ModelSelectionChangeHandler;
 	hideDefaultControls?: boolean;
 	hideComposerActionMenu?: boolean;
-	allowedAssistantActionCapabilityIds?: readonly string[];
+	allowedAssistantActionCapabilities?: readonly ComposerAssistantActionCapability[];
+	assistantActionCatalog?: ComposerActionCatalogConfig;
+	toolSelectionLocked?: boolean;
 	hideSubmitButton?: boolean;
 	hideTextInput?: boolean;
 	hideInlineResponseControls?: boolean;
@@ -252,7 +259,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
 	const handleSubmit = useCallback(
 		async (attachments?: AttachmentData[]) => {
 			if (!chatInput.trim() && !attachments?.length && !selectedAssistantAction?.item) {
-				return;
+				return false;
 			}
 
 			if (isCompactConversationCommand(chatInput) && !selectedAssistantAction?.item) {
@@ -267,7 +274,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
 						toast.error(result.response);
 					}
 				}
-				return;
+				return result.status !== "error";
 			}
 
 			// For text-to-image models, only allow the first message unless they support image edits
@@ -280,7 +287,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
 					toast.error(
 						"Text-to-image models only support one message per conversation. Please start a new conversation.",
 					);
-					return;
+					return false;
 				}
 			}
 
@@ -310,17 +317,21 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
 
 				if (actionSubmit.kind === "external") {
 					window.location.href = actionSubmit.url;
-					return;
+					return true;
 				}
 
 				if (actionSubmit.kind === "navigation") {
 					navigate(actionSubmit.path);
-					return;
+					return true;
 				}
 
+				const requestOptions = mergeChatRequestOptions(
+					modeConfig?.requestOptions,
+					actionSubmit.requestOptions,
+				);
 				const result = modeConfig?.councilDebate?.enabled
 					? await sendCouncilDebate(actionSubmit.input, attachments, modeConfig.councilDebate)
-					: await sendMessage(actionSubmit.input, attachments, actionSubmit.requestOptions);
+					: await sendMessage(actionSubmit.input, attachments, requestOptions);
 				if (result?.status === "error") {
 					setChatInput(originalInput);
 					setSelectedAssistantAction(originalAssistantAction);
@@ -332,6 +343,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
 						chatInputRef.current?.focus();
 					}, 0);
 				}
+				return result?.status !== "error";
 			} catch (error) {
 				setChatInput(originalInput);
 				setSelectedAssistantAction(originalAssistantAction);
@@ -341,6 +353,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
 					conversation_id: currentConversationId || "new",
 					model_id: model || "unknown",
 				});
+				return false;
 			}
 		},
 		[
@@ -373,8 +386,8 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
 
 		autoSubmittedKeyRef.current = initialAutoSubmit.key;
 		setChatInput("");
-		sendMessage(initialAutoSubmit.input);
-	}, [modeConfig?.initialAutoSubmit, sendMessage, setChatInput]);
+		void sendMessage(initialAutoSubmit.input, undefined, modeConfig?.requestOptions);
+	}, [modeConfig?.initialAutoSubmit, modeConfig?.requestOptions, sendMessage, setChatInput]);
 
 	const handleKeyPress = useCallback(
 		(e: KeyboardEvent) => {
@@ -512,7 +525,9 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
 						onModelChange={modeConfig?.onModelChange}
 						hideDefaultControls={modeConfig?.hideDefaultControls}
 						hideComposerActionMenu={modeConfig?.hideComposerActionMenu}
-						allowedAssistantActionCapabilityIds={modeConfig?.allowedAssistantActionCapabilityIds}
+						allowedAssistantActionCapabilities={modeConfig?.allowedAssistantActionCapabilities}
+						assistantActionCatalog={modeConfig?.assistantActionCatalog}
+						toolSelectionLocked={modeConfig?.toolSelectionLocked}
 						hideSubmitButton={modeConfig?.hideSubmitButton}
 						hideTextInput={modeConfig?.hideTextInput}
 						hideInlineResponseControls={modeConfig?.hideInlineResponseControls}

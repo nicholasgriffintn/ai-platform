@@ -13,6 +13,7 @@ import {
 } from "~/lib/assistant-action-launch";
 import { useChatStore } from "~/state/stores/chatStore";
 import { useToolsStore } from "~/state/stores/toolsStore";
+import { mergeChatRequestOptions } from "~/lib/chat/request-options";
 import type { ChatRequestOptions } from "~/types";
 import { ConversationThread, type ConversationThreadModeConfig } from ".";
 
@@ -87,15 +88,7 @@ export function ConversationPage({ title, modeConfig, sidebarContent }: Conversa
 
 		return {
 			...modeConfig,
-			requestOptions: {
-				...modeConfig?.requestOptions,
-				...urlRequestOptions,
-				options: {
-					...modeConfig?.requestOptions?.options,
-					...urlRequestOptions.options,
-					recipe: urlRequestOptions.options?.recipe ?? modeConfig?.requestOptions?.options?.recipe,
-				},
-			},
+			requestOptions: mergeChatRequestOptions(modeConfig?.requestOptions, urlRequestOptions),
 			initialAutoSubmit:
 				urlState?.autoSubmit && urlState.query
 					? {

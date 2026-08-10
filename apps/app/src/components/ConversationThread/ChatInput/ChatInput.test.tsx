@@ -418,6 +418,43 @@ describe("ChatInput", () => {
 		expect(handleRemoveContextAttachment).toHaveBeenCalledWith(0);
 	});
 
+	it("retains artifact context when the asynchronous send fails", async () => {
+		const handleSubmit = vi.fn().mockResolvedValue(false);
+		const handleClearContextAttachments = vi.fn();
+		store.chatInput = "Make this firmer";
+
+		render(
+			<ChatInput
+				controller={new AbortController()}
+				handleSubmit={handleSubmit}
+				isLoading={false}
+				onTranscribe={vi.fn()}
+				streamStarted={false}
+				contextAttachments={[
+					{
+						type: "artifact_selection",
+						name: "selection from Launch plan",
+						artifact: {
+							identifier: "launch-plan",
+							type: "text/markdown",
+							title: "Launch plan",
+						},
+						selectedText: "This paragraph needs work.",
+						selectionStart: 12,
+						selectionEnd: 38,
+					},
+				]}
+				onClearContextAttachments={handleClearContextAttachments}
+			/>,
+		);
+
+		fireEvent.click(screen.getByRole("button", { name: "Send message" }));
+
+		await waitFor(() => expect(handleSubmit).toHaveBeenCalledOnce());
+		expect(handleClearContextAttachments).not.toHaveBeenCalled();
+		expect(screen.getByText("selection from Launch plan")).toBeInTheDocument();
+	});
+
 	it("does not submit while user configuration is still loading", () => {
 		const handleSubmit = vi.fn();
 		store.chatInput = "Do this later";

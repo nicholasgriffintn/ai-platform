@@ -11,7 +11,10 @@ export function HomeConversationThread({ urlModeConfig }: HomeConversationThread
 			modeConfig={{
 				...urlModeConfig,
 				hideComposerActionMenu: true,
-				modeControls: { includeSettingCommands: false },
+				modeControls: {
+					...urlModeConfig?.modeControls,
+					includeSettingCommands: false,
+				},
 				welcomeTitle: "How can I help?",
 				welcomeDescription: "A clean conversation, separate from your shared project work.",
 			}}

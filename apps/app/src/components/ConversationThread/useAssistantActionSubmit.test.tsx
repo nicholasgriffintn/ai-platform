@@ -178,34 +178,6 @@ describe("useAssistantActionSubmit", () => {
 		expect(mocks.chatStore.setSelectedAssistantAction).toHaveBeenCalledWith(null);
 	});
 
-	it("honours explicit frontend app navigation launch contracts", async () => {
-		mocks.chatStore.selectedAssistantAction = {
-			item: {
-				id: "app:articles",
-				kind: "app",
-				label: "Article Research",
-				metadata: {
-					appId: "articles",
-					appKind: "frontend",
-					href: "/apps/articles",
-				},
-			},
-		};
-
-		const { result } = renderHook(() => useAssistantActionSubmit());
-
-		await expect(result.current.resolveAssistantActionSubmit("@Article Research")).resolves.toEqual(
-			{
-				kind: "navigation",
-				input: "@Article Research",
-				path: "/apps/articles",
-			},
-		);
-		expect(mocks.chatStore.setSelectedAssistantAction).toHaveBeenCalledWith(null);
-		expect(mocks.installRecipe.mutateAsync).not.toHaveBeenCalled();
-		expect(mocks.invokeRecipe.mutateAsync).not.toHaveBeenCalled();
-	});
-
 	it("opens API-key connector setup through the assistant action launch path", async () => {
 		mocks.chatStore.selectedAssistantAction = {
 			item: {

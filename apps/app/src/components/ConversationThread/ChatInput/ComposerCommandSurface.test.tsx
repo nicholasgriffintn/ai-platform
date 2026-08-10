@@ -66,34 +66,6 @@ vi.mock("~/hooks/useConnectors", () => ({
 	}),
 }));
 
-vi.mock("~/hooks/useDynamicApps", () => ({
-	useDynamicApps: () => ({
-		data: {
-			apps: [
-				{
-					id: "articles",
-					name: "Article Research",
-					description: "Analyse articles",
-					category: "Research",
-					kind: "dynamic",
-					type: "normal",
-				},
-			],
-			tools: [
-				{
-					id: "web_fetch",
-					command: "Web fetch",
-					label: "Web fetch",
-					description: "Fetch content from the web",
-					category: "Research",
-					capability: "supportsWebFetch",
-					requiresConfiguration: false,
-				},
-			],
-		},
-	}),
-}));
-
 vi.mock("~/hooks/useRecipes", () => ({
 	useAssistantRecipes: () => ({
 		data: {
@@ -445,7 +417,7 @@ describe("ComposerCommandSurface", () => {
 		expect(screen.getByRole("button", { name: /\/run/i })).toBeInTheDocument();
 	});
 
-	it("groups composer actions without exposing app launches", () => {
+	it("groups available composer actions", () => {
 		mocks.store.model = "tool-model";
 
 		render(
@@ -461,9 +433,7 @@ describe("ComposerCommandSurface", () => {
 		expect(screen.getByText("Agents")).toBeInTheDocument();
 		expect(screen.getByText("Connectors")).toBeInTheDocument();
 		expect(screen.getByText("Tools")).toBeInTheDocument();
-		expect(screen.queryByText("Apps")).not.toBeInTheDocument();
 		expect(screen.getByRole("button", { name: /@Morning Briefing/i })).toBeInTheDocument();
-		expect(screen.queryByRole("button", { name: /@Article Research/i })).not.toBeInTheDocument();
 		expect(screen.getByRole("button", { name: /@PostHog/i })).toBeInTheDocument();
 		expect(screen.getByRole("button", { name: /@Reviewer/i })).toBeInTheDocument();
 		expect(screen.getByRole("button", { name: /@Web fetch/i })).toBeInTheDocument();

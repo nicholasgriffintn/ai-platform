@@ -10,7 +10,11 @@ import {
 	getComposerInlineTokenRange,
 } from "~/lib/composer-commands";
 import { useChatStore } from "~/state/stores/chatStore";
-import type { ComposerCommandAction } from "./composerCommandTypes";
+import type {
+	ComposerAssistantActionCapability,
+	ComposerActionCatalogConfig,
+	ComposerCommandAction,
+} from "./composerCommandTypes";
 import { useComposerCommandActions } from "./useComposerCommandActions";
 
 interface ComposerCommandControls {
@@ -21,12 +25,16 @@ interface ComposerCommandControls {
 
 export function useComposerCommandController({
 	isLoading,
-	allowedAssistantActionCapabilityIds,
+	allowedAssistantActionCapabilities,
+	assistantActionCatalog,
 	modeControls,
+	toolSelectionLocked,
 }: {
 	isLoading: boolean;
-	allowedAssistantActionCapabilityIds?: readonly string[];
+	allowedAssistantActionCapabilities?: readonly ComposerAssistantActionCapability[];
+	assistantActionCatalog?: ComposerActionCatalogConfig;
 	modeControls?: ComposerCommandControls;
+	toolSelectionLocked?: boolean;
 }) {
 	const {
 		chatInput,
@@ -66,12 +74,14 @@ export function useComposerCommandController({
 	});
 	const modeCommands = modeControls?.commands ?? [];
 	const commandActions = useComposerCommandActions({
-		allowedAssistantActionCapabilityIds,
+		allowedAssistantActionCapabilities,
+		assistantActionCatalog,
 		chatInput,
 		directive: directiveQuery,
 		includeSettingCommands: modeControls?.includeSettingCommands,
 		modeCommands,
 		setChatInput,
+		toolSelectionLocked,
 	});
 
 	useAgentToolDefaults({
@@ -151,7 +161,8 @@ export function useComposerCommandController({
 	return {
 		applyDirectiveSelection,
 		commandState: {
-			allowedAssistantActionCapabilityIds,
+			allowedAssistantActionCapabilities,
+			assistantActionCatalog,
 			chatInput,
 			directive: directiveQuery,
 			activeModeControls: modeControls?.activeModeControls,
@@ -165,6 +176,7 @@ export function useComposerCommandController({
 			onSlashCommandSelect: applySlashCommand,
 			clearAgent: commandActions.clearAgent,
 			selectedAgent: commandActions.selectedAgent,
+			toolSelectionLocked,
 		},
 		directiveQuery,
 		moveActiveSuggestion,

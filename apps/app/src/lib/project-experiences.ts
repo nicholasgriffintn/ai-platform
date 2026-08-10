@@ -25,6 +25,28 @@ export function getProjectExperiencePath(
 	return suffix ? `${base}/${suffix.replace(/^\/+/, "")}` : base;
 }
 
+export function getProjectAppOpenPath(
+	appId: string,
+	appKind: "dynamic" | "frontend" | undefined,
+	workspaceId: string,
+	projectId: string,
+	experiences: ProjectExperienceDefinition[],
+): string {
+	if (appKind !== "frontend") {
+		return `/work/${workspaceId}/projects/${projectId}/apps/${encodeURIComponent(appId)}`;
+	}
+
+	const experience = experiences.find(
+		(candidate) =>
+			candidate.requirement.kind === "capability" &&
+			candidate.requirement.capabilityKind === "app" &&
+			candidate.requirement.capabilityId === appId,
+	);
+	return experience
+		? getProjectExperiencePath(workspaceId, projectId, experience.id)
+		: getProjectExperiencesPath(workspaceId, projectId);
+}
+
 function capabilityEnablesExperience(
 	capability: ProjectCapability,
 	experience: ProjectExperienceDefinition,
@@ -59,19 +81,13 @@ export function getProjectCapabilityOpenPath(
 	}
 
 	if (item.kind !== "app") return null;
-	if (item.metadata?.appKind !== "frontend") {
-		return `/work/${workspaceId}/projects/${projectId}/apps/${item.capability.id}`;
-	}
-
-	const experience = experiences.find(
-		(candidate) =>
-			candidate.requirement.kind === "capability" &&
-			candidate.requirement.capabilityKind === "app" &&
-			candidate.requirement.capabilityId === item.capability.id,
+	return getProjectAppOpenPath(
+		item.capability.id,
+		item.metadata?.appKind,
+		workspaceId,
+		projectId,
+		experiences,
 	);
-	return experience
-		? getProjectExperiencePath(workspaceId, projectId, experience.id)
-		: getProjectExperiencesPath(workspaceId, projectId);
 }
 
 export function getEnabledProjectExperiences(

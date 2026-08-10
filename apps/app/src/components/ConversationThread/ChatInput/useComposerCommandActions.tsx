@@ -12,7 +12,12 @@ import {
 	type LucideIcon,
 } from "lucide-react";
 import { useCallback, useMemo } from "react";
-import type { AssistantActionItem, AssistantActionVerbId } from "@assistant/schemas";
+import type {
+	AssistantActionItem,
+	AssistantActionItemKind,
+	AssistantActionVerbId,
+	ProjectCapabilityKind,
+} from "@assistant/schemas";
 
 import { useAssistantActionCatalog } from "~/hooks/useAssistantActionCatalog";
 import { useAgents } from "~/hooks/useAgents";
@@ -39,7 +44,20 @@ import { formatVerbosityLabel, getDefaultVerbosity, getVerbosityOptions } from "
 import { useChatStore } from "~/state/stores/chatStore";
 import { useToolsStore } from "~/state/stores/toolsStore";
 import type { ChatSettings, ReasoningEffort, VerbosityLevel } from "~/types";
-import type { ComposerCommandAction, ComposerInlineToken } from "./composerCommandTypes";
+import type {
+	ComposerAssistantActionCapability,
+	ComposerActionCatalogConfig,
+	ComposerCommandAction,
+} from "./composerCommandTypes";
+
+const PROJECT_CAPABILITY_KIND_BY_ACTION_KIND: Partial<
+	Record<AssistantActionItemKind, ProjectCapabilityKind>
+> = {
+	app: "app",
+	installed_recipe: "recipe",
+	recipe: "recipe",
+	tool: "tool",
+};
 
 const MODEL_TOOL_ICONS: Record<ModelToolId, LucideIcon> = {
 	code_execution: Code,
@@ -63,19 +81,23 @@ export interface AgentCommand {
 }
 
 export function useComposerCommandActions({
-	allowedAssistantActionCapabilityIds,
+	allowedAssistantActionCapabilities,
+	assistantActionCatalog,
 	chatInput,
 	directive,
 	includeSettingCommands = true,
 	modeCommands,
 	setChatInput,
+	toolSelectionLocked: toolSelectionLockedOverride = false,
 }: {
-	allowedAssistantActionCapabilityIds?: readonly string[];
+	allowedAssistantActionCapabilities?: readonly ComposerAssistantActionCapability[];
+	assistantActionCatalog?: ComposerActionCatalogConfig;
 	chatInput: string;
 	directive: ComposerDirectiveQuery | null;
 	includeSettingCommands?: boolean;
 	modeCommands: ComposerCommandAction[];
 	setChatInput: (value: string) => void;
+	toolSelectionLocked?: boolean;
 }) {
 	const {
 		chatMode,
@@ -124,13 +146,13 @@ export function useComposerCommandActions({
 		[modelToolOptions],
 	);
 	const actionCatalog = useAssistantActionCatalog({
-		includeApps: false,
-		modelTools: availableModelTools,
+		modelTools: assistantActionCatalog?.includeTools === false ? [] : availableModelTools,
 	});
 	const canUseAgents =
 		modeCommands.length === 0 ||
 		!modeCommands.some((command) => command.isActive && command.command !== "chat");
-	const toolSelectionLocked = chatMode === "agent" && selectedAgentId !== null;
+	const toolSelectionLocked =
+		toolSelectionLockedOverride || (chatMode === "agent" && selectedAgentId !== null);
 
 	const selectModelWithDefaults = useCallback(
 		(nextModel: string | null, settings: ChatSettings = chatSettings) => {
@@ -177,11 +199,6 @@ export function useComposerCommandActions({
 			);
 		},
 		[selectedTools, setSelectedTools],
-	);
-
-	const clearAssistantAction = useCallback(
-		() => setSelectedAssistantAction(null),
-		[setSelectedAssistantAction],
 	);
 
 	const actionVerbCommands = useMemo<ComposerCommandAction[]>(
@@ -265,7 +282,7 @@ export function useComposerCommandActions({
 			});
 		}
 
-		if (availableModelTools.length > 0) {
+		if (availableModelTools.length > 0 && !toolSelectionLocked) {
 			for (const tool of availableModelTools) {
 				const Icon = MODEL_TOOL_ICONS[tool.id];
 				commands.push({
@@ -322,30 +339,6 @@ export function useComposerCommandActions({
 		[setChatInput],
 	);
 
-	const inlineSkillTokens = useMemo<ComposerInlineToken[]>(() => {
-		const tokens: ComposerInlineToken[] = [];
-
-		for (const tool of availableModelTools) {
-			if (!selectedTools.includes(tool.id)) {
-				continue;
-			}
-			const Icon = MODEL_TOOL_ICONS[tool.id];
-			tokens.push({
-				id: `tool-${tool.id}`,
-				label: tool.command,
-				icon: <Icon className="h-3.5 w-3.5" aria-hidden="true" />,
-				...(toolSelectionLocked
-					? {}
-					: {
-							onClear: () =>
-								setSelectedTools(selectedTools.filter((selectedTool) => selectedTool !== tool.id)),
-						}),
-			});
-		}
-
-		return tokens;
-	}, [availableModelTools, selectedTools, setSelectedTools, toolSelectionLocked]);
-
 	const slashCommands = useMemo(
 		() => [...actionVerbCommands, ...modeCommands, ...compactionCommands, ...settingCommands],
 		[actionVerbCommands, compactionCommands, modeCommands, settingCommands],
@@ -361,20 +354,35 @@ export function useComposerCommandActions({
 		if (!canUseAgents) {
 			return [];
 		}
-		const allowedCapabilityIds = allowedAssistantActionCapabilityIds
-			? new Set(allowedAssistantActionCapabilityIds)
+		const allowedCapabilityIdsByKind = allowedAssistantActionCapabilities
+			? new Map(
+					(["app", "recipe", "tool"] as const).map((kind) => [
+						kind,
+						new Set(
+							allowedAssistantActionCapabilities
+								.filter((capability) => capability.kind === kind)
+								.map((capability) => capability.capabilityId),
+						),
+					]),
+				)
 			: null;
-		return actionCatalog.items.filter(
-			(item) =>
-				(!allowedCapabilityIds || allowedCapabilityIds.has(item.capability?.id ?? "")) &&
+		return actionCatalog.items.filter((item) => {
+			const capabilityKind = PROJECT_CAPABILITY_KIND_BY_ACTION_KIND[item.kind];
+			const isAllowed =
+				!allowedCapabilityIdsByKind ||
+				(capabilityKind !== undefined &&
+					allowedCapabilityIdsByKind.get(capabilityKind)?.has(item.capability.id) === true);
+			return (
+				isAllowed &&
 				matchesComposerCommand(query, [
 					item.label,
 					item.description,
 					item.status,
 					...item.searchText,
-				]),
-		);
-	}, [actionCatalog.items, allowedAssistantActionCapabilityIds, canUseAgents, directive]);
+				])
+			);
+		});
+	}, [actionCatalog.items, allowedAssistantActionCapabilities, canUseAgents, directive]);
 
 	const selectedAgent = agents.find((agent) => agent.id === selectedAgentId);
 
@@ -500,10 +508,8 @@ export function useComposerCommandActions({
 		actionItems: actionCatalog.items,
 		canUseAgents,
 		clearAgent,
-		clearAssistantAction,
 		filteredActionItems,
 		filteredSlashCommands,
-		inlineSkillTokens,
 		isLoadingAgents,
 		modeCommands,
 		selectActionItem,

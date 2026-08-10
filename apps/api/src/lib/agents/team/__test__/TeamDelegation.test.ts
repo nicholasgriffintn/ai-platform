@@ -1,6 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { getAIResponse } from "~/lib/chat/responses";
-import { createServiceContext } from "~/lib/context/serviceContext";
 import type { Agent, IEnv, IUser, Message } from "~/types";
 import { TeamDelegation } from "../TeamDelegation";
 

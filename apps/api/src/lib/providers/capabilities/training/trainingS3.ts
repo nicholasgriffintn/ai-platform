@@ -1,10 +1,5 @@
 import type { ServiceContext } from "~/lib/context/serviceContext";
-import {
-	encodeAwsS3Key,
-	getAwsS3ObjectUrl,
-	hasAwsS3Object,
-	putAwsS3Object,
-} from "~/lib/providers/utils/awsS3";
+import { encodeAwsS3Key, hasAwsS3Object, putAwsS3Object } from "~/lib/providers/utils/awsS3";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
 interface SageMakerS3Options {
@@ -100,8 +95,4 @@ function getSageMakerS3Config({ context, bucket }: SageMakerS3Options): SageMake
 		bucket: targetBucket,
 		region,
 	};
-}
-
-function getSageMakerS3ObjectUrl(config: SageMakerS3Config, key: string): string {
-	return getAwsS3ObjectUrl({ ...config, key });
 }

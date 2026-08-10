@@ -86,22 +86,17 @@ describe("useComposerCommandController", () => {
 		mocks.useAssistantActionCatalog.mockReturnValue(mocks.actionCatalog);
 	});
 
-	it("excludes app launches from the composer action catalogue", () => {
-		renderHook(() =>
-			useComposerCommandController({
-				isLoading: false,
-			}),
-		);
-
-		expect(mocks.useAssistantActionCatalog).toHaveBeenCalledWith({
-			includeApps: false,
-			modelTools: [],
-		});
-	});
-
 	it("limits project action suggestions to enabled capabilities", () => {
 		mocks.store.chatInput = "@";
 		mocks.actionCatalog.items = [
+			{
+				id: "connector:selected",
+				kind: "connector",
+				label: "Selected connector",
+				description: "Shares an ID but is not a project capability",
+				capability: { id: "selected" },
+				searchText: [],
+			},
 			{
 				id: "recipe:unselected",
 				kind: "recipe",
@@ -122,7 +117,7 @@ describe("useComposerCommandController", () => {
 		const { result } = renderHook(() =>
 			useComposerCommandController({
 				isLoading: false,
-				allowedAssistantActionCapabilityIds: ["selected"],
+				allowedAssistantActionCapabilities: [{ kind: "recipe", capabilityId: "selected" }],
 			}),
 		);
 

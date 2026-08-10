@@ -4,7 +4,6 @@ import { useEffect, useRef } from "react";
 import { ConversationPage } from "~/components/ConversationThread/ConversationPage";
 import { useIsLoading } from "~/state/contexts/LoadingContext";
 import { projectQueryKey, useProject } from "~/hooks/useWorkspaces";
-import { useDynamicApps } from "~/hooks/useDynamicApps";
 import { getProjectLibraryPath } from "~/lib/project-experiences";
 import { useChatStore } from "~/state/stores/chatStore";
 import { WorkSidebar } from "./WorkSidebar";
@@ -17,16 +16,26 @@ export function ProjectConversationPage({
 	projectId: string;
 }) {
 	const { data: project } = useProject(projectId);
-	const { data: dynamicApps } = useDynamicApps();
 	const queryClient = useQueryClient();
 	const currentConversationId = useChatStore((state) => state.currentConversationId);
+	const setChatMode = useChatStore((state) => state.setChatMode);
+	const setSelectedAgentId = useChatStore((state) => state.setSelectedAgentId);
+	const setSelectedAgentTokenPosition = useChatStore(
+		(state) => state.setSelectedAgentTokenPosition,
+	);
+	const setSelectedAssistantAction = useChatStore((state) => state.setSelectedAssistantAction);
 	const isStreamLoading = useIsLoading("stream-response");
 	const refreshedConversationIdRef = useRef<string | null>(null);
-	const capabilityIds = [
-		...(project?.capabilities.map((item) => item.capabilityId) ?? []),
-		...(dynamicApps?.tools.map((tool) => tool.id) ?? []),
-	];
+	const capabilities =
+		project?.capabilities.map(({ kind, capabilityId }) => ({ kind, capabilityId })) ?? [];
 	const recipeManagementPath = getProjectLibraryPath(workspaceId, projectId);
+
+	useEffect(() => {
+		setChatMode("remote");
+		setSelectedAgentId(null);
+		setSelectedAgentTokenPosition(null);
+		setSelectedAssistantAction(null);
+	}, [setChatMode, setSelectedAgentId, setSelectedAgentTokenPosition, setSelectedAssistantAction]);
 
 	useEffect(() => {
 		if (isStreamLoading) {
@@ -49,8 +58,14 @@ export function ProjectConversationPage({
 			title={project?.name ?? "Project conversation"}
 			sidebarContent={<WorkSidebar workspaceId={workspaceId} projectId={projectId} />}
 			modeConfig={{
-				assistantActionRoutes: { recipes: recipeManagementPath },
-				allowedAssistantActionCapabilityIds: capabilityIds,
+				assistantActionRoutes: {
+					recipes: recipeManagementPath,
+				},
+				assistantActionCatalog: {
+					includeTools: false,
+				},
+				allowedAssistantActionCapabilities: capabilities,
+				toolSelectionLocked: true,
 				welcomeTitle: project?.name ?? "Project conversation",
 				welcomeDescription:
 					project?.description ||

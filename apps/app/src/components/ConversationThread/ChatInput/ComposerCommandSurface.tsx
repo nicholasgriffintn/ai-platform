@@ -16,11 +16,16 @@ import type { AssistantActionItem, AssistantActionItemKind } from "@assistant/sc
 import { Button, Popover, PopoverContent, PopoverTrigger } from "~/components/ui";
 import type { ComposerDirectiveQuery } from "~/lib/composer-commands";
 import { cn } from "~/lib/utils";
-import type { ComposerCommandAction } from "./composerCommandTypes";
+import type {
+	ComposerAssistantActionCapability,
+	ComposerActionCatalogConfig,
+	ComposerCommandAction,
+} from "./composerCommandTypes";
 import { useComposerCommandActions } from "./useComposerCommandActions";
 
 interface ComposerCommandsState {
-	allowedAssistantActionCapabilityIds?: readonly string[];
+	allowedAssistantActionCapabilities?: readonly ComposerAssistantActionCapability[];
+	assistantActionCatalog?: ComposerActionCatalogConfig;
 	modeCommands: ComposerCommandAction[];
 	activeModeControls?: ReactNode;
 	directive: ComposerDirectiveQuery | null;
@@ -32,6 +37,7 @@ interface ComposerCommandsState {
 	onActiveSuggestionIndexChange?: (index: number) => void;
 	onActionItemSelect?: (item: AssistantActionItem) => void;
 	onSlashCommandSelect?: (command: ComposerCommandAction) => void;
+	toolSelectionLocked?: boolean;
 }
 
 function CommandRow({
@@ -458,35 +464,37 @@ export function ComposerCommandButton(props: ComposerCommandsState) {
 			>
 				<div className="max-h-[min(34rem,72dvh)] overflow-y-auto pr-1">
 					<div className="space-y-3">
-						<div>
-							<SectionLabel>Modes</SectionLabel>
-							<div className="space-y-1">
-								{modeCommands.map((command) => (
-									<CommandRow
-										key={command.id}
-										icon={command.icon}
-										description={
-											command.disabled
-												? (command.disabledReason ?? command.description)
-												: `/${command.command} - ${command.description}`
-										}
-										isActive={command.isActive}
-										isDisabled={command.disabled}
-										onClick={() => handleCommandSelect(command)}
-										title={
-											command.disabled ? (command.disabledReason ?? command.label) : command.label
-										}
-									>
-										{command.label}
-									</CommandRow>
-								))}
-							</div>
-							{props.activeModeControls && (
-								<div className="mt-2 rounded-lg border border-zinc-200/80 p-2 dark:border-zinc-700/80">
-									{props.activeModeControls}
+						{modeCommands.length > 0 && (
+							<div>
+								<SectionLabel>Modes</SectionLabel>
+								<div className="space-y-1">
+									{modeCommands.map((command) => (
+										<CommandRow
+											key={command.id}
+											icon={command.icon}
+											description={
+												command.disabled
+													? (command.disabledReason ?? command.description)
+													: `/${command.command} - ${command.description}`
+											}
+											isActive={command.isActive}
+											isDisabled={command.disabled}
+											onClick={() => handleCommandSelect(command)}
+											title={
+												command.disabled ? (command.disabledReason ?? command.label) : command.label
+											}
+										>
+											{command.label}
+										</CommandRow>
+									))}
 								</div>
-							)}
-						</div>
+								{props.activeModeControls && (
+									<div className="mt-2 rounded-lg border border-zinc-200/80 p-2 dark:border-zinc-700/80">
+										{props.activeModeControls}
+									</div>
+								)}
+							</div>
+						)}
 						{settingCommands.length > 0 && (
 							<div>
 								<SectionLabel>Settings</SectionLabel>

@@ -1,6 +1,5 @@
 import type { Context } from "hono";
 import type { Message } from "~/types";
-import type { CreateChatCompletionsResponse } from "~/types";
 import { ConversationManager } from "~/lib/conversationManager";
 import { createServiceContext } from "~/lib/context/serviceContext";
 import {

@@ -13,6 +13,7 @@ import { sha256Hex } from "~/utils/crypto";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId, randomHex } from "~/utils/id";
 import { requireProjectAccess, requireWorkspaceAccess } from "./access";
+import { validateProjectCapabilityReference } from "./capabilities";
 import { validateProjectToolConfiguration } from "./projectTools";
 import {
 	formatProjectDetail,
@@ -215,6 +216,7 @@ export async function addProjectCapability(
 ) {
 	const user = context.requireUser();
 	await requireProjectAccess(context, projectId, ["owner", "admin"]);
+	await validateProjectCapabilityReference(input.kind, input.capabilityId);
 	const configuration =
 		input.kind === "tool"
 			? validateProjectToolConfiguration(input.capabilityId, input.configuration)
