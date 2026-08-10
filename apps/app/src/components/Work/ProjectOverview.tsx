@@ -87,12 +87,12 @@ export function ProjectOverview({
 									<Link
 										key={conversation.id}
 										to={`/work/${workspaceId}/projects/${projectId}/chat?completion_id=${conversation.id}`}
-										className="group block no-underline"
+										className="group block no-underline hover:!no-underline"
 									>
 										<Card className="flex-row items-center gap-4 p-4 py-4 shadow-none group-hover:border-zinc-400 dark:group-hover:border-zinc-600">
 											<MessageSquareText size={18} className="text-zinc-400" />
 											<div className="min-w-0 flex-1">
-												<p className="truncate text-sm font-medium text-zinc-950 dark:text-white">
+												<p className="truncate text-sm font-medium text-zinc-950 group-hover:underline dark:text-white">
 													{conversation.title || "New project conversation"}
 												</p>
 												<p className="text-xs text-zinc-500">

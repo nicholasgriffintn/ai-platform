@@ -62,7 +62,7 @@ export function WebSearchView({
 								href={source.url}
 								target="_blank"
 								rel="noopener noreferrer"
-								className="no-underline flex-1 min-w-[150px] border border-gray-700 rounded-md p-3 hover:bg-gray-800 transition-colors"
+								className="group no-underline hover:!no-underline flex-1 min-w-[150px] border border-gray-700 rounded-md p-3 hover:bg-gray-800 transition-colors"
 								aria-label={`View source: ${source.title}`}
 							>
 								<div className="flex items-center mb-2">
@@ -71,7 +71,7 @@ export function WebSearchView({
 										{getDomain(source.url)}
 									</div>
 								</div>
-								<p className="text-sm font-medium line-clamp-2 text-zinc-600 dark:text-zinc-300">
+								<p className="text-sm font-medium line-clamp-2 text-zinc-600 group-hover:underline dark:text-zinc-300">
 									{source.title}
 								</p>
 							</a>

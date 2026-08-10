@@ -74,7 +74,7 @@ export function ProjectExperiences({
 								<Link
 									key={experience.id}
 									to={getProjectExperiencePath(workspaceId, projectId, experience.id)}
-									className="group no-underline"
+									className="group no-underline hover:!no-underline"
 								>
 									<Card className="h-full gap-5 p-6 shadow-none transition-colors group-hover:border-zinc-400 dark:group-hover:border-zinc-600">
 										<div className="flex items-start justify-between">
@@ -92,7 +92,7 @@ export function ProjectExperiences({
 											<p className="text-xs font-medium uppercase tracking-wide text-zinc-400">
 												{experience.category}
 											</p>
-											<h2 className="mt-1 text-lg font-semibold text-zinc-950 dark:text-white">
+											<h2 className="mt-1 text-lg font-semibold text-zinc-950 group-hover:underline dark:text-white">
 												{experience.name}
 											</h2>
 											<p className="mt-2 text-sm leading-6 text-zinc-500">

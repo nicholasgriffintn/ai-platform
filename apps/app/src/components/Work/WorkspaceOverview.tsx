@@ -90,14 +90,14 @@ export function WorkspaceOverview({ workspaceId }: { workspaceId: string }) {
 							<Link
 								key={project.id}
 								to={`/work/${workspaceId}/projects/${project.id}`}
-								className="group no-underline"
+								className="group no-underline hover:!no-underline"
 							>
 								<Card className="h-full p-6 transition-colors group-hover:border-zinc-400 dark:group-hover:border-zinc-600">
 									<div className="flex items-start justify-between">
 										<FolderKanban size={20} className="text-zinc-500" />
 										<ArrowRight size={18} className="text-zinc-400" />
 									</div>
-									<h3 className="mt-4 text-xl font-semibold text-zinc-950 dark:text-white">
+									<h3 className="mt-4 text-xl font-semibold text-zinc-950 group-hover:underline dark:text-white">
 										{project.name}
 									</h3>
 									<p className="min-h-12 text-sm leading-6 text-zinc-500">

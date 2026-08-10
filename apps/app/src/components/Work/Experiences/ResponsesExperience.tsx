@@ -49,12 +49,16 @@ export function ResponsesExperience({ basePath, projectId, subpath }: Experience
 				const data = parseRecordValue(item.data);
 				const message = typeof data.message === "string" ? data.message : undefined;
 				return (
-					<Link key={item.id} to={`${basePath}/${item.id}`} className="no-underline">
+					<Link
+						key={item.id}
+						to={`${basePath}/${item.id}`}
+						className="group no-underline hover:!no-underline"
+					>
 						<Card className="h-full gap-3 p-5 shadow-none hover:border-zinc-400 dark:hover:border-zinc-600">
 							<p className="text-xs font-medium uppercase tracking-wide text-zinc-400">
 								{item.app_id}
 							</p>
-							<h2 className="font-semibold text-zinc-950 dark:text-white">
+							<h2 className="font-semibold text-zinc-950 group-hover:underline dark:text-white">
 								{message || item.item_type || "App response"}
 							</h2>
 							<p className="mt-auto pt-3 text-xs text-zinc-400">

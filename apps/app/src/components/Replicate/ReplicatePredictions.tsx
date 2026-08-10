@@ -69,11 +69,14 @@ function PredictionCard({ basePath, prediction }: PredictionCardProps) {
 	};
 
 	return (
-		<Link to={`${basePath}/predictions/${prediction.id}`} className="block no-underline">
+		<Link
+			to={`${basePath}/predictions/${prediction.id}`}
+			className="group block no-underline hover:!no-underline"
+		>
 			<Card className="p-6 hover:shadow-lg transition-all">
 				<div className="flex items-start justify-between gap-4 mb-4">
 					<div className="flex-1 min-w-0">
-						<h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-1 break-words">
+						<h3 className="text-lg font-semibold text-zinc-900 group-hover:underline dark:text-zinc-100 mb-1 break-words">
 							{prediction.input?.prompt || prediction.modelName || prediction.modelId}
 						</h3>
 						<div className="flex items-center gap-2 text-sm text-zinc-500 dark:text-zinc-400">

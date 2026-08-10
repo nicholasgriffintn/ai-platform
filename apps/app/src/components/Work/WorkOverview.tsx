@@ -64,12 +64,16 @@ export function WorkOverview() {
 				{data?.workspaces.length ? (
 					<div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
 						{data.workspaces.map((workspace) => (
-							<Link key={workspace.id} to={`/work/${workspace.id}`} className="group no-underline">
+							<Link
+								key={workspace.id}
+								to={`/work/${workspace.id}`}
+								className="group no-underline hover:!no-underline"
+							>
 								<Card className="h-full p-6 transition-colors group-hover:border-zinc-400 dark:group-hover:border-zinc-600">
 									<div className="flex items-start justify-between">
 										<div>
 											<p className="text-xs capitalize text-zinc-500">{workspace.role}</p>
-											<h2 className="mt-1 text-lg font-semibold text-zinc-950 dark:text-white">
+											<h2 className="mt-1 text-lg font-semibold text-zinc-950 group-hover:underline dark:text-white">
 												{workspace.name}
 											</h2>
 										</div>

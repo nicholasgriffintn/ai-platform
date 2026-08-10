@@ -157,9 +157,13 @@ export function NotesExperience({ basePath, projectId, subpath }: ExperienceProp
 			) : (
 				<div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
 					{filteredNotes.map((item) => (
-						<Link key={item.id} to={`${basePath}/${item.id}`} className="no-underline">
+						<Link
+							key={item.id}
+							to={`${basePath}/${item.id}`}
+							className="group no-underline hover:!no-underline"
+						>
 							<Card className="h-full gap-2 p-5 shadow-none hover:border-zinc-400 dark:hover:border-zinc-600">
-								<h2 className="font-semibold text-zinc-950 dark:text-white">
+								<h2 className="font-semibold text-zinc-950 group-hover:underline dark:text-white">
 									{item.title || "Untitled note"}
 								</h2>
 								<p className="line-clamp-3 text-sm leading-6 text-zinc-500">

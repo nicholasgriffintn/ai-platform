@@ -58,14 +58,20 @@ export function StrudelExperience({ basePath, projectId, subpath }: ExperiencePr
 			</div>
 			<div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
 				{patterns.map((pattern) => (
-					<Link key={pattern.id} to={`${basePath}/${pattern.id}`} className="no-underline">
+					<Link
+						key={pattern.id}
+						to={`${basePath}/${pattern.id}`}
+						className="group no-underline hover:!no-underline"
+					>
 						<Card className="h-full gap-4 p-5 shadow-none transition hover:border-blue-500/60 dark:hover:border-blue-400/60">
 							<div className="flex items-center gap-3">
 								<span className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-600/10 text-blue-600 dark:text-blue-300">
 									<Music4 className="h-5 w-5" />
 								</span>
 								<div>
-									<h2 className="font-semibold text-zinc-950 dark:text-white">{pattern.name}</h2>
+									<h2 className="font-semibold text-zinc-950 group-hover:underline dark:text-white">
+										{pattern.name}
+									</h2>
 									<p className="text-xs text-zinc-400">
 										Updated {new Date(pattern.updatedAt).toLocaleDateString()}
 									</p>
