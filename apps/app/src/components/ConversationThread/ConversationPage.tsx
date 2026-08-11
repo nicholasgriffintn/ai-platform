@@ -1,4 +1,4 @@
-import { type ReactNode, useEffect, useMemo, useState } from "react";
+import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { useLocation } from "react-router";
 
 import { ChatSidebar } from "~/components/ChatSidebar";
@@ -9,6 +9,7 @@ import {
 	type AssistantActionLaunchState,
 	loadAssistantActionRequestOptions,
 	parseAssistantActionLaunchState,
+	removeConsumedAssistantActionLaunchParams,
 } from "~/lib/assistant-action-launch";
 import { useChatStore } from "~/state/stores/chatStore";
 import { useToolsStore } from "~/state/stores/toolsStore";
@@ -42,8 +43,16 @@ export function ConversationPage({
 	const location = useLocation();
 	const [urlRequestOptions, setUrlRequestOptions] = useState<ChatRequestOptions | undefined>();
 	const [urlState, setUrlState] = useState<AssistantActionLaunchState | null>(null);
+	const handledLocationKeyRef = useRef<string | null>(null);
 
 	useEffect(() => {
+		// React replays mount effects in development, so consume each launch URL only once.
+		const locationKey = `${location.pathname}${location.search}`;
+		if (handledLocationKeyRef.current === locationKey) {
+			return;
+		}
+		handledLocationKeyRef.current = locationKey;
+
 		const init = async () => {
 			const searchParams = new URLSearchParams(location.search);
 			const completionId = searchParams.get("completion_id");
@@ -67,8 +76,7 @@ export function ConversationPage({
 			setUrlState(nextUrlState);
 
 			if (nextUrlState.autoSubmit) {
-				searchParams.delete("auto_submit");
-				const query = searchParams.toString();
+				const query = removeConsumedAssistantActionLaunchParams(location.search);
 				window.history.replaceState(
 					{},
 					"",
@@ -81,6 +89,7 @@ export function ConversationPage({
 	}, [
 		clearCurrentConversation,
 		initializeStore,
+		location.pathname,
 		location.search,
 		setChatInput,
 		setSelectedTools,

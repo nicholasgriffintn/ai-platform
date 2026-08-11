@@ -299,6 +299,33 @@ describe("handleGenerateChatCompletionTitle", () => {
 
 			expect(result.title).toMatch(/^A{47}\.\.\.$/);
 		});
+
+		it("should keep the message excerpt when the provider returns an empty title", async () => {
+			const completionId = "completion-123";
+			const messages = [
+				{
+					role: "user" as const,
+					content: "Help me brainstorm creative uses for old wine bottles.",
+				},
+			];
+
+			mockConversationManager.get.mockResolvedValue([]);
+			mockSanitiseMessages.mockReturnValue(messages);
+
+			const mockProvider = mockChatCapability.getChatProvider();
+			mockProvider.getResponse.mockResolvedValue({ response: "   " });
+
+			const result = await handleGenerateChatCompletionTitle(
+				mockServiceContext,
+				completionId,
+				messages,
+			);
+
+			expect(result).toEqual({ title: "Help me brainstorm creative us..." });
+			expect(mockConversationManager.updateConversation).toHaveBeenCalledWith(completionId, {
+				title: "Help me brainstorm creative us...",
+			});
+		});
 	});
 
 	describe("error handling", () => {

@@ -47,6 +47,7 @@ export const projectCapabilitySchema = z.object({
 	kind: projectCapabilityKindSchema,
 	capabilityId: z.string(),
 	configuration: z.record(z.string(), z.unknown()).default({}),
+	createdBy: z.number().int().positive(),
 	createdAt: z.string(),
 });
 

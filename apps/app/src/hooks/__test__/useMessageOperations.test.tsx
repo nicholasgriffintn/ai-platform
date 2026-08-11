@@ -53,6 +53,28 @@ describe("useMessageOperations", () => {
 		});
 	});
 
+	it("uses the first message excerpt as a new conversation title", async () => {
+		const queryClient = createQueryClient();
+		const wrapper = ({ children }: { children: ReactNode }) => (
+			<QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+		);
+		const { result } = renderHook(() => useMessageOperations(), { wrapper });
+
+		await act(async () => {
+			await result.current.addMessageToConversation("conversation-1", {
+				id: "user-1",
+				role: "user",
+				content: "Help me brainstorm creative uses for old wine bottles.",
+			});
+		});
+
+		const conversation = queryClient.getQueryData<Conversation>([
+			CHATS_QUERY_KEY,
+			"conversation-1",
+		]);
+		expect(conversation?.title).toBe("Help me brainstorm creative us...");
+	});
+
 	it("throws by default when there is no assistant message to update", async () => {
 		const queryClient = createQueryClient();
 		queryClient.setQueryData(

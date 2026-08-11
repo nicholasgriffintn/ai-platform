@@ -10,6 +10,7 @@ import {
 	createRecipeAssistantActionChatUrl,
 	loadAssistantActionRequestOptions,
 	parseAssistantActionLaunchState,
+	removeConsumedAssistantActionLaunchParams,
 } from "../assistant-action-launch";
 
 const gmailSetup = {
@@ -110,6 +111,22 @@ describe("assistant action launch URL contract", () => {
 
 		expect(state.enabledTools).toEqual(["web_fetch", "tool:search"]);
 		expect(state.hasEnabledTools).toBe(true);
+	});
+
+	it("removes consumed launch state without removing unrelated URL parameters", () => {
+		const search = new URLSearchParams({
+			completion_id: "conversation-1",
+			query: "Run the planner recipe.",
+			enabled_tools: "use_recipe_connector",
+			auto_submit: "1",
+			assistant_action_context: "{}",
+			recipe_context: "{}",
+			view: "compact",
+		}).toString();
+
+		expect(removeConsumedAssistantActionLaunchParams(search)).toBe(
+			"completion_id=conversation-1&view=compact",
+		);
 	});
 
 	it("creates a direct chat launch payload for recipe invocation from the composer", () => {

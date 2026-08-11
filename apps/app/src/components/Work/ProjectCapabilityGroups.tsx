@@ -13,13 +13,15 @@ import type { useRecipeWorkflows } from "~/components/Apps/Recipes/useRecipeWork
 import type { ProjectCapabilityKindGroup } from "~/lib/project-capability-catalog";
 import { getProjectCapabilityKind } from "~/lib/project-capability-catalog";
 import { parseProjectToolConfiguration } from "~/lib/project-tool-configuration";
+import { areUserIdsEqual } from "~/lib/user-ids";
 import { ProjectCapabilityCard } from "./ProjectCapabilityCard";
 import { ProjectRecipeCapabilityCard } from "./ProjectRecipeCapabilityCard";
 
 interface ProjectCapabilityGroupsProps {
-	canManage: boolean;
+	canManageProject: boolean;
 	appById: Map<string, DynamicAppCatalogItem>;
 	capabilities: ProjectCapability[];
+	currentUserId?: string | number;
 	groups: ProjectCapabilityKindGroup[];
 	experiences: ProjectExperienceDefinition[];
 	isAdding: boolean;
@@ -37,8 +39,9 @@ interface ProjectCapabilityGroupsProps {
 
 export function ProjectCapabilityGroups({
 	appById,
-	canManage,
+	canManageProject,
 	capabilities,
+	currentUserId,
 	groups,
 	experiences,
 	isAdding,
@@ -82,11 +85,15 @@ export function ProjectCapabilityGroups({
 										);
 										const recipe =
 											itemKind === "recipe" ? recipeById.get(item.capability.id) : undefined;
+										const canManageCapability = existing
+											? areUserIdsEqual(existing.createdBy, currentUserId) ||
+												(existing.kind === "tool" && canManageProject)
+											: itemKind !== "tool" || canManageProject;
 										if (recipe) {
 											return (
 												<ProjectRecipeCapabilityCard
 													key={item.id}
-													canManage={canManage}
+													canManage={canManageCapability}
 													capability={existing}
 													installation={recipeInstallationById.get(recipe.id)}
 													isAdding={isAdding}
@@ -102,7 +109,7 @@ export function ProjectCapabilityGroups({
 										return (
 											<ProjectCapabilityCard
 												key={item.id}
-												canManage={canManage}
+												canManage={canManageCapability}
 												existing={existing}
 												isAdding={isAdding}
 												isConfigured={Boolean(

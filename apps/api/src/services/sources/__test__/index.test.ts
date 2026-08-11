@@ -2,15 +2,25 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { MemoryManager } from "~/lib/memory";
 import type { ServiceContext } from "~/lib/context/serviceContext";
-import type { SourceRecord } from "~/repositories/SourceRepository";
-import { deleteSource } from "..";
+import type { SourceCollectionRecord, SourceRecord } from "~/repositories/SourceRepository";
+import { deleteSource, deleteSourceCollection, setProjectContextSources } from "..";
 
 const deleteMemoryMock = vi.hoisted(() => vi.fn());
+const requireProjectAccessMock = vi.hoisted(() => vi.fn());
+const recordProjectAuditMock = vi.hoisted(() => vi.fn());
 
 vi.mock("~/lib/memory", () => ({
 	MemoryManager: {
 		getInstance: vi.fn(() => ({ deleteMemory: deleteMemoryMock })),
 	},
+}));
+
+vi.mock("~/services/workspaces/access", () => ({
+	requireProjectAccess: requireProjectAccessMock,
+}));
+
+vi.mock("~/services/audit", () => ({
+	recordProjectAudit: recordProjectAuditMock,
 }));
 
 const memory: SourceRecord = {
@@ -39,6 +49,8 @@ describe("source deletion", () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 		deleteMemoryMock.mockResolvedValue(true);
+		requireProjectAccessMock.mockResolvedValue({ role: "admin" });
+		recordProjectAuditMock.mockResolvedValue(undefined);
 	});
 
 	it("deletes personal memories through their recorded provider", async () => {
@@ -98,5 +110,101 @@ describe("source deletion", () => {
 		await deleteSource(context, 42, migratedMemory.id);
 
 		expect(deleteMemoryMock).toHaveBeenCalledWith(migratedMemory.id, "built-in");
+	});
+});
+
+describe("project conversation context", () => {
+	const projectSource: SourceRecord = {
+		...memory,
+		id: "source-1",
+		project_id: "project-1",
+		kind: "text",
+		title: "Launch brief",
+		content: "Launch in October.",
+		provider: null,
+		vector_id: null,
+		metadata: "{}",
+	};
+	const contextCollection: SourceCollectionRecord = {
+		id: "project-context:project-1",
+		created_by_user_id: 42,
+		project_id: "project-1",
+		title: "Project context",
+		description: "Sources attached to new project conversations.",
+		kind: "context",
+		created_at: "2026-08-11T00:00:00.000Z",
+		updated_at: null,
+	};
+
+	beforeEach(() => {
+		vi.clearAllMocks();
+		requireProjectAccessMock.mockResolvedValue({ role: "admin" });
+		recordProjectAuditMock.mockResolvedValue(undefined);
+	});
+
+	it("replaces the persistent source set and records the project change", async () => {
+		const replaceCollectionSources = vi.fn().mockResolvedValue(undefined);
+		const context = {
+			env: {},
+			user: { id: 42 },
+			repositories: {
+				sources: {
+					getSource: vi.fn().mockResolvedValue(projectSource),
+					ensureProjectContextCollection: vi.fn().mockResolvedValue(contextCollection),
+					replaceCollectionSources,
+					getProjectContextCollection: vi.fn().mockResolvedValue(contextCollection),
+					listCollectionSources: vi.fn().mockResolvedValue([projectSource]),
+				},
+			},
+		} as unknown as ServiceContext;
+
+		const result = await setProjectContextSources(context, 42, "project-1", [projectSource.id]);
+
+		expect(requireProjectAccessMock).toHaveBeenCalledWith(context, "project-1", ["owner", "admin"]);
+		expect(replaceCollectionSources).toHaveBeenCalledWith(contextCollection.id, [projectSource.id]);
+		expect(recordProjectAuditMock).toHaveBeenCalledWith(
+			context,
+			"project-1",
+			expect.objectContaining({ action: "project.context.updated" }),
+		);
+		expect(result.sources).toEqual([expect.objectContaining({ id: projectSource.id })]);
+	});
+
+	it("rejects a source outside the project", async () => {
+		const context = {
+			env: {},
+			user: { id: 42 },
+			repositories: {
+				sources: {
+					getSource: vi.fn().mockResolvedValue({ ...projectSource, project_id: "project-2" }),
+					ensureProjectContextCollection: vi.fn(),
+					replaceCollectionSources: vi.fn(),
+				},
+			},
+		} as unknown as ServiceContext;
+
+		await expect(
+			setProjectContextSources(context, 42, "project-1", [projectSource.id]),
+		).rejects.toMatchObject({ statusCode: 400 });
+		expect(context.repositories.sources.replaceCollectionSources).not.toHaveBeenCalled();
+	});
+
+	it("prevents the reserved project context collection from generic deletion", async () => {
+		const deleteCollection = vi.fn();
+		const context = {
+			env: {},
+			user: { id: 42 },
+			repositories: {
+				sources: {
+					getCollection: vi.fn().mockResolvedValue(contextCollection),
+					deleteCollection,
+				},
+			},
+		} as unknown as ServiceContext;
+
+		await expect(deleteSourceCollection(context, 42, contextCollection.id)).rejects.toMatchObject({
+			statusCode: 403,
+		});
+		expect(deleteCollection).not.toHaveBeenCalled();
 	});
 });

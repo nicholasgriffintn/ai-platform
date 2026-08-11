@@ -9,6 +9,7 @@ import {
 	sourceListQuerySchema,
 	sourceListResponseSchema,
 	sourceSchema,
+	setProjectContextSourcesSchema,
 	updateSourceSchema,
 } from "@assistant/schemas";
 
@@ -21,8 +22,10 @@ import {
 	deleteSourceCollection,
 	getSource,
 	listCollectionSources,
+	listProjectContextSources,
 	listSourceCollections,
 	listSources,
+	setProjectContextSources,
 	updateSource,
 } from "~/services/sources";
 import { getPrivateFileResponse, readPrivateFile } from "~/lib/storage/read-resource";
@@ -31,6 +34,7 @@ const app = new Hono();
 const sourceParams = z.object({ sourceId: z.string().min(1) });
 const collectionParams = z.object({ collectionId: z.string().min(1) });
 const projectQuery = z.object({ projectId: z.string().min(1).optional() });
+const requiredProjectQuery = z.object({ projectId: z.string().min(1) });
 const createSourceRequestSchema = createSourceSchema.omit({ file: true });
 
 addRoute(app, "get", "/:sourceId/content", {
@@ -106,6 +110,25 @@ addRoute(app, "post", "/collections/:collectionId/sources", {
 	},
 	handler: ({ body, params, serviceContext, user }) =>
 		addCollectionSources(serviceContext, user.id, params.collectionId, body.sourceIds),
+});
+
+addRoute(app, "get", "/project-context", {
+	tags: ["sources"],
+	auth: true,
+	querySchema: requiredProjectQuery,
+	responses: { 200: { description: "Project context sources", schema: sourceListResponseSchema } },
+	handler: ({ query, serviceContext, user }) =>
+		listProjectContextSources(serviceContext, user.id, query.projectId),
+});
+
+addRoute(app, "put", "/project-context", {
+	tags: ["sources"],
+	auth: true,
+	querySchema: requiredProjectQuery,
+	bodySchema: setProjectContextSourcesSchema,
+	responses: { 200: { description: "Project context sources", schema: sourceListResponseSchema } },
+	handler: ({ body, query, serviceContext, user }) =>
+		setProjectContextSources(serviceContext, user.id, query.projectId, body.sourceIds),
 });
 
 addRoute(app, "delete", "/collections/:collectionId", {

@@ -72,6 +72,8 @@ function createWorkflows() {
 			openConfigurationDialog: vi.fn(),
 			openScheduleDialog: vi.fn(),
 			toggleInstallationStatus: vi.fn(),
+			setScheduleEnabled: vi.fn(),
+			stopSchedule: vi.fn(),
 			getRecipeCardState: vi.fn().mockReturnValue({
 				installation,
 				isStarting: false,
@@ -99,6 +101,7 @@ describe("ProjectRecipeCapabilityCard", () => {
 						kind: "recipe",
 						capabilityId: recipe.id,
 						configuration: {},
+						createdBy: 42,
 						createdAt: "2026-01-01",
 					}}
 					installation={installation}

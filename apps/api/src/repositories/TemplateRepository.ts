@@ -6,6 +6,7 @@ export interface TemplateRecord {
 	id: string;
 	created_by_user_id: number;
 	workspace_id: string | null;
+	project_id: string | null;
 	kind: "project" | "recipe" | "capability";
 	capability_id: string | null;
 	name: string;
@@ -20,6 +21,7 @@ export class TemplateRepository extends BaseRepository {
 	async createTemplate(input: {
 		createdByUserId: number;
 		workspaceId?: string | null;
+		projectId?: string | null;
 		kind: TemplateRecord["kind"];
 		capabilityId?: string | null;
 		name: string;
@@ -33,6 +35,7 @@ export class TemplateRepository extends BaseRepository {
 				id: generateId(),
 				created_by_user_id: input.createdByUserId,
 				workspace_id: input.workspaceId ?? null,
+				project_id: input.projectId ?? null,
 				kind: input.kind,
 				capability_id: input.capabilityId ?? null,
 				name: input.name,
@@ -61,6 +64,23 @@ export class TemplateRepository extends BaseRepository {
 		const { query, values } = this.buildSelectQuery("template", {
 			created_by_user_id: userId,
 			workspace_id: null,
+			project_id: null,
+			kind,
+			capability_id: capabilityId,
+		});
+		return this.runQuery<TemplateRecord>(query, values, true);
+	}
+
+	async getProjectTemplate(
+		userId: number,
+		projectId: string,
+		kind: TemplateRecord["kind"],
+		capabilityId: string,
+	): Promise<TemplateRecord | null> {
+		const { query, values } = this.buildSelectQuery("template", {
+			created_by_user_id: userId,
+			workspace_id: null,
+			project_id: projectId,
 			kind,
 			capability_id: capabilityId,
 		});
@@ -73,7 +93,19 @@ export class TemplateRepository extends BaseRepository {
 	): Promise<TemplateRecord[]> {
 		const { query, values } = this.buildSelectQuery(
 			"template",
-			{ created_by_user_id: userId, workspace_id: null, kind },
+			{ created_by_user_id: userId, workspace_id: null, project_id: null, kind },
+			{ orderBy: "updated_at DESC, created_at DESC" },
+		);
+		return this.runQuery<TemplateRecord>(query, values);
+	}
+
+	async listProjectTemplates(
+		projectId: string,
+		kind?: TemplateRecord["kind"],
+	): Promise<TemplateRecord[]> {
+		const { query, values } = this.buildSelectQuery(
+			"template",
+			{ project_id: projectId, kind },
 			{ orderBy: "updated_at DESC, created_at DESC" },
 		);
 		return this.runQuery<TemplateRecord>(query, values);

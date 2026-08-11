@@ -48,6 +48,7 @@ export async function installAssistantRecipe(
 	recipeId: string,
 	triggers?: RecipeInstallationTrigger[],
 	configuration?: RecipeConfiguration,
+	projectId?: string,
 ): Promise<AssistantRecipeInstallResponse> {
 	let headers = {};
 	try {
@@ -59,7 +60,7 @@ export async function installAssistantRecipe(
 	const response = await fetchApiOrThrow(`/apps/recipes/${recipeId}/install`, {
 		method: "POST",
 		headers,
-		body: { channel: "web", triggers, configuration },
+		body: { channel: "web", triggers, configuration, projectId },
 	});
 
 	return returnFetchedData<AssistantRecipeInstallResponse>(response);
@@ -68,6 +69,7 @@ export async function installAssistantRecipe(
 export async function invokeAssistantRecipe(
 	recipeId: string,
 	input?: string,
+	projectId?: string,
 ): Promise<RecipeInvocationResponse> {
 	let headers = {};
 	try {
@@ -79,13 +81,15 @@ export async function invokeAssistantRecipe(
 	const response = await fetchApiOrThrow(`/apps/recipes/${recipeId}/invoke`, {
 		method: "POST",
 		headers,
-		body: { channel: "web", input },
+		body: { channel: "web", input, projectId },
 	});
 
 	return returnFetchedData<RecipeInvocationResponse>(response);
 }
 
-export async function listRecipeInstallations(): Promise<RecipeInstallationsResponse> {
+export async function listRecipeInstallations(
+	projectId?: string,
+): Promise<RecipeInstallationsResponse> {
 	let headers = {};
 	try {
 		headers = await apiService.getHeaders();
@@ -93,7 +97,10 @@ export async function listRecipeInstallations(): Promise<RecipeInstallationsResp
 		console.error("Error preparing recipe installation headers:", error);
 	}
 
-	const response = await fetchApi("/apps/recipes/installations", { method: "GET", headers });
+	const path = projectId
+		? `/apps/recipes/installations?projectId=${encodeURIComponent(projectId)}`
+		: "/apps/recipes/installations";
+	const response = await fetchApi(path, { method: "GET", headers });
 	if (!response.ok) {
 		throw new Error("Failed to fetch installed assistant recipes");
 	}

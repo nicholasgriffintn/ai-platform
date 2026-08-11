@@ -18,7 +18,9 @@ import {
 } from "~/lib/project-capability-catalog";
 import { useRecipeActionRequest } from "~/components/Apps/Recipes/useRecipeActionRequest";
 import { useRecipeWorkflows } from "~/components/Apps/Recipes/useRecipeWorkflows";
+import { useChatStore } from "~/state/stores/chatStore";
 import type { ProjectToolConfiguration } from "~/lib/project-tool-configuration";
+import { areUserIdsEqual } from "~/lib/user-ids";
 import { useWorkData } from "./WorkContext";
 
 export function useProjectLibraryController(workspaceId: string, projectId: string) {
@@ -26,9 +28,11 @@ export function useProjectLibraryController(workspaceId: string, projectId: stri
 	const catalog = useProjectCapabilityCatalog();
 	const addCapability = useAddProjectCapability();
 	const removeCapability = useRemoveProjectCapability();
-	const { data: installationsData } = useRecipeInstallations();
+	const currentUserId = useChatStore((state) => state.user?.id);
+	const { data: installationsData } = useRecipeInstallations(projectId);
 	const recipeWorkflows = useRecipeWorkflows({
 		conversationPath: `/work/${workspaceId}/projects/${projectId}/chat`,
+		projectId,
 	});
 	const [query, setQuery] = useState("");
 	const [kind, setKind] = useState<ProjectCapabilityKindFilter>("all");
@@ -59,12 +63,11 @@ export function useProjectLibraryController(workspaceId: string, projectId: stri
 	const installationByRecipeId = useMemo(
 		() =>
 			new Map(
-				(installationsData?.installations ?? []).map((installation) => [
-					installation.recipeId,
-					installation,
-				]),
+				(installationsData?.installations ?? [])
+					.filter((installation) => areUserIdsEqual(installation.userId, currentUserId))
+					.map((installation) => [installation.recipeId, installation]),
 			),
-		[installationsData?.installations],
+		[currentUserId, installationsData?.installations],
 	);
 
 	useRecipeActionRequest(catalog.recipes, installationByRecipeId, recipeWorkflows.actions);
@@ -143,6 +146,7 @@ export function useProjectLibraryController(workspaceId: string, projectId: stri
 		project: projectQuery.data,
 		projectError: projectQuery.error,
 		isLoadingProject: projectQuery.isLoading,
+		currentUserId,
 		canManage: workspaceQuery.data?.role === "owner" || workspaceQuery.data?.role === "admin",
 		actions: {
 			addItem,

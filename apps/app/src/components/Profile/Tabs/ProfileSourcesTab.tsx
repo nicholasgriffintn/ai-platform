@@ -54,7 +54,8 @@ export function SourcesLibrary({ projectId, title = "Sources" }: SourcesLibraryP
 		kind: collectionId ? undefined : kind || undefined,
 		collectionId,
 	});
-	const { data: collections } = useSourceCollections(projectId);
+	const { data: sourceCollections } = useSourceCollections(projectId);
+	const collections = sourceCollections?.filter((collection) => collection.kind !== "context");
 	const mutations = useSourceMutations();
 	const selectedCollection = collections?.find((collection) => collection.id === collectionId);
 

@@ -186,6 +186,7 @@ export async function scheduleDueRecipeExecutions(env: IEnv, now = new Date()): 
 					task_data: {
 						recipeId: installation.recipeId,
 						installationId: record.id,
+						projectId: record.project_id,
 						input: trigger.prompt,
 						channel: "scheduled",
 						configuration: installation.configuration,

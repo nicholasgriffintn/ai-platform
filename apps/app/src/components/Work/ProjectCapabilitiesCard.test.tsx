@@ -11,6 +11,7 @@ function createCapability(index: number): ProjectCapability {
 		kind: "tool",
 		capabilityId: `tool-${index}`,
 		configuration: {},
+		createdBy: 42,
 		createdAt: "2026-08-11T00:00:00.000Z",
 	};
 }
@@ -25,7 +26,8 @@ describe("ProjectCapabilitiesCard", () => {
 		);
 
 		expect(screen.queryByText("6 enabled")).not.toBeInTheDocument();
-		expect(screen.getByText("8 enabled")).toBeInTheDocument();
+		const enabledSummary = screen.getByText("8 enabled").parentElement;
+		expect(enabledSummary).toContainElement(screen.getByText("tool-1"));
 		expect(screen.getByText("tool-1")).toBeInTheDocument();
 		expect(screen.getByText("tool-6")).toBeInTheDocument();
 		expect(screen.queryByText("tool-7")).not.toBeInTheDocument();

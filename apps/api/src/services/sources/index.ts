@@ -289,6 +289,53 @@ export async function listCollectionSources(
 	};
 }
 
+export async function listProjectContextSources(
+	context: ServiceContext,
+	userId: number,
+	projectId: string,
+): Promise<{ sources: SourceSummary[] }> {
+	await requireProjectAccess(context, projectId);
+	const collection = await context.repositories.sources.getProjectContextCollection(projectId);
+	if (!collection) return { sources: [] };
+	return {
+		sources: (await context.repositories.sources.listCollectionSources(collection.id)).map(
+			formatSourceSummary,
+		),
+	};
+}
+
+export async function setProjectContextSources(
+	context: ServiceContext,
+	userId: number,
+	projectId: string,
+	sourceIds: string[],
+): Promise<{ sources: SourceSummary[] }> {
+	await requireProjectAccess(context, projectId, ["owner", "admin"]);
+	for (const sourceId of sourceIds) {
+		const source = await requireSourceAccess(context, userId, sourceId);
+		if (source.project_id !== projectId || source.status !== "available") {
+			throw new AssistantError(
+				"Project context sources must be available in this project",
+				ErrorType.PARAMS_ERROR,
+				400,
+			);
+		}
+	}
+	const collection = await context.repositories.sources.ensureProjectContextCollection({
+		projectId,
+		createdByUserId: userId,
+	});
+	await context.repositories.sources.replaceCollectionSources(collection.id, sourceIds);
+	await recordProjectAudit(context, projectId, {
+		actorUserId: userId,
+		action: "project.context.updated",
+		targetType: "project",
+		targetId: projectId,
+		metadata: { sourceCount: sourceIds.length },
+	});
+	return listProjectContextSources(context, userId, projectId);
+}
+
 export async function addCollectionSources(
 	context: ServiceContext,
 	userId: number,
@@ -316,6 +363,13 @@ export async function deleteSourceCollection(
 	userId: number,
 	collectionId: string,
 ): Promise<void> {
-	await requireCollectionAccess(context, userId, collectionId, true);
+	const collection = await requireCollectionAccess(context, userId, collectionId, true);
+	if (collection.kind === "context") {
+		throw new AssistantError(
+			"Project context is managed from the project overview",
+			ErrorType.FORBIDDEN,
+			403,
+		);
+	}
 	await context.repositories.sources.deleteCollection(collectionId);
 }

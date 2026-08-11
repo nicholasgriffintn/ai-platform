@@ -60,6 +60,7 @@ const projectCapability = (
 	kind,
 	capabilityId,
 	configuration: {},
+	createdBy: 42,
 	createdAt: "2026-01-01",
 });
 

@@ -7,13 +7,18 @@ import {
 } from "./title-source";
 
 describe("conversation title source", () => {
-	it("uses the first non-compaction message with text", () => {
+	it("uses the first non-compaction user message with text", () => {
 		const messages: Message[] = [
 			{
 				id: "compaction-1",
 				role: "compaction",
 				content: "Context compacted",
 				parts: [{ type: "compaction", status: "completed", label: "Context compacted" }],
+			},
+			{
+				id: "assistant-1",
+				role: "assistant",
+				content: "Earlier assistant text",
 			},
 			{
 				id: "user-1",

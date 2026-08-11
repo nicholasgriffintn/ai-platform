@@ -78,3 +78,23 @@ export async function addCollectionSources(
 		body: { sourceIds },
 	});
 }
+
+export async function listProjectContextSources(projectId: string): Promise<SourceSummary[]> {
+	return (
+		await request<{ sources: SourceSummary[] }>(
+			`/sources/project-context?projectId=${encodeURIComponent(projectId)}`,
+		)
+	).sources;
+}
+
+export async function setProjectContextSources(
+	projectId: string,
+	sourceIds: string[],
+): Promise<SourceSummary[]> {
+	return (
+		await request<{ sources: SourceSummary[] }>(
+			`/sources/project-context?projectId=${encodeURIComponent(projectId)}`,
+			{ method: "PUT", body: { sourceIds } },
+		)
+	).sources;
+}

@@ -10,6 +10,7 @@ export const sourceKindSchema = z.enum([
 ]);
 export const sourceStatusSchema = z.enum(["processing", "available", "failed", "archived"]);
 export const sourceScopeSchema = z.enum(["personal", "project"]);
+export const sourceCollectionKindSchema = z.enum(["general", "memory", "context"]);
 
 export const sourceFileSchema = z
 	.object({
@@ -90,7 +91,7 @@ export const sourceCollectionSchema = z
 		projectId: z.string().nullable(),
 		title: z.string().min(1).max(120),
 		description: z.string().max(500).nullable(),
-		kind: z.enum(["general", "memory"]),
+		kind: sourceCollectionKindSchema,
 		sourceCount: z.number().int().nonnegative(),
 		createdAt: z.string(),
 		updatedAt: z.string().nullable(),
@@ -114,6 +115,10 @@ export const addCollectionSourcesSchema = z
 	.object({ sourceIds: z.array(z.string().min(1)).min(1).max(100) })
 	.strict();
 
+export const setProjectContextSourcesSchema = z
+	.object({ sourceIds: z.array(z.string().min(1)).max(100) })
+	.strict();
+
 export const providerConnectionSummarySchema = z
 	.object({
 		id: z.string().min(1),
@@ -135,5 +140,6 @@ export type SourceSummary = z.infer<typeof sourceSummarySchema>;
 export type CreateSourceInput = z.infer<typeof createSourceSchema>;
 export type UpdateSourceInput = z.infer<typeof updateSourceSchema>;
 export type SourceCollection = z.infer<typeof sourceCollectionSchema>;
+export type SourceCollectionKind = z.infer<typeof sourceCollectionKindSchema>;
 export type CreateSourceCollectionInput = z.infer<typeof createSourceCollectionSchema>;
 export type ProviderConnectionSummary = z.infer<typeof providerConnectionSummarySchema>;

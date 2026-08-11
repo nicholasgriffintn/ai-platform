@@ -84,6 +84,7 @@ export interface ConversationThreadModeConfig {
 	forceAutoPlayResponses?: boolean;
 	analyticsSource?: string;
 	contextAttachments?: AttachmentData[];
+	contextAttachmentsReady?: boolean;
 	onRemoveContextAttachment?: (index: number) => void;
 	onClearContextAttachments?: () => void;
 	councilDebate?: {
@@ -402,14 +403,29 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
 
 	useEffect(() => {
 		const initialAutoSubmit = modeConfig?.initialAutoSubmit;
-		if (!initialAutoSubmit || autoSubmittedKeyRef.current === initialAutoSubmit.key) {
+		if (
+			!initialAutoSubmit ||
+			modeConfig?.contextAttachmentsReady === false ||
+			autoSubmittedKeyRef.current === initialAutoSubmit.key
+		) {
 			return;
 		}
 
 		autoSubmittedKeyRef.current = initialAutoSubmit.key;
 		setChatInput("");
-		void sendMessage(initialAutoSubmit.input, undefined, modeConfig?.requestOptions);
-	}, [modeConfig?.initialAutoSubmit, modeConfig?.requestOptions, sendMessage, setChatInput]);
+		void sendMessage(
+			initialAutoSubmit.input,
+			contextAttachments.length > 0 ? contextAttachments : undefined,
+			modeConfig?.requestOptions,
+		);
+	}, [
+		contextAttachments,
+		modeConfig?.contextAttachmentsReady,
+		modeConfig?.initialAutoSubmit,
+		modeConfig?.requestOptions,
+		sendMessage,
+		setChatInput,
+	]);
 
 	const handleKeyPress = useCallback(
 		(e: KeyboardEvent) => {

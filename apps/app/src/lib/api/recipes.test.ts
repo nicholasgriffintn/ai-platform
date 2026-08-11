@@ -25,13 +25,17 @@ describe("recipes api", () => {
 		);
 		vi.stubGlobal("fetch", fetchMock);
 
-		const result = await invokeAssistantRecipe("daily-weather", "today");
+		const result = await invokeAssistantRecipe("daily-weather", "today", "project-1");
 
 		expect(fetchMock).toHaveBeenCalledTimes(1);
 		const [url, init] = fetchMock.mock.calls[0];
 		expect(String(url)).toContain("/apps/recipes/daily-weather/invoke");
 		expect(init).toMatchObject({ method: "POST" });
-		expect(JSON.parse(String(init?.body))).toEqual({ channel: "web", input: "today" });
+		expect(JSON.parse(String(init?.body))).toEqual({
+			channel: "web",
+			input: "today",
+			projectId: "project-1",
+		});
 		expect(result.status).toBe("ready");
 		expect(result.configuration).toEqual({ location: "London" });
 	});
@@ -77,6 +81,7 @@ describe("recipes api", () => {
 				},
 			],
 			{ location: "London" },
+			"project-1",
 		);
 
 		expect(fetchMock).toHaveBeenCalledTimes(1);
@@ -95,6 +100,7 @@ describe("recipes api", () => {
 				},
 			],
 			configuration: { location: "London" },
+			projectId: "project-1",
 		});
 	});
 

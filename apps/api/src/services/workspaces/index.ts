@@ -429,7 +429,25 @@ export async function addProjectCapability(
 	input: AddProjectCapabilityInput,
 ) {
 	const user = context.requireUser();
-	const { project } = await requireProjectAccess(context, projectId, ["owner", "admin"]);
+	const { project, role } = await requireProjectAccess(context, projectId);
+	if (input.kind === "tool" && role === "member") {
+		throw new AssistantError(
+			"Only project admins can manage project tools",
+			ErrorType.FORBIDDEN,
+			403,
+		);
+	}
+	const existing = (await context.repositories.workspaces.listProjectCapabilities(projectId)).find(
+		(capability) =>
+			capability.kind === input.kind && capability.capability_id === input.capabilityId,
+	);
+	if (existing && existing.created_by !== user.id) {
+		throw new AssistantError(
+			"Only the member who attached this capability can manage it",
+			ErrorType.FORBIDDEN,
+			403,
+		);
+	}
 	await validateProjectCapabilityReference(input.kind, input.capabilityId);
 	const configuration =
 		input.kind === "tool"
@@ -460,7 +478,28 @@ export async function removeProjectCapability(
 	capabilityId: string,
 ) {
 	const user = context.requireUser();
-	const { project } = await requireProjectAccess(context, projectId, ["owner", "admin"]);
+	const { project, role } = await requireProjectAccess(context, projectId);
+	const capability = (
+		await context.repositories.workspaces.listProjectCapabilities(projectId)
+	).find((candidate) => candidate.id === capabilityId);
+	if (!capability) {
+		throw new AssistantError("Project capability not found", ErrorType.NOT_FOUND, 404);
+	}
+	if (capability.kind === "tool") {
+		if (role === "member") {
+			throw new AssistantError(
+				"Only project admins can manage project tools",
+				ErrorType.FORBIDDEN,
+				403,
+			);
+		}
+	} else if (capability.created_by !== user.id) {
+		throw new AssistantError(
+			"Only the member who attached this capability can manage it",
+			ErrorType.FORBIDDEN,
+			403,
+		);
+	}
 	await context.repositories.workspaces.removeProjectCapability(projectId, capabilityId);
 	await context.repositories.audit.createRecord({
 		workspaceId: project.workspace_id,

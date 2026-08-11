@@ -79,6 +79,7 @@ const baseMessage: TaskMessage = {
 	user_id: 42,
 	task_data: {
 		recipeId: "morning-briefing",
+		projectId: "project-1",
 		input: "Run briefing",
 		channel: "scheduled",
 	},
@@ -169,6 +170,7 @@ describe("RecipeExecutionHandler", () => {
 			input: "Run briefing",
 			configuration: undefined,
 			requireInstalled: true,
+			projectId: "project-1",
 		});
 		expect(result).toMatchObject({
 			status: "skipped",
@@ -209,6 +211,7 @@ describe("RecipeExecutionHandler", () => {
 			input: "Run briefing",
 			configuration: undefined,
 			requireInstalled: true,
+			projectId: "project-1",
 		});
 		expect(mocks.executeRecipeInvocationChat).toHaveBeenCalledWith({
 			env,
@@ -217,6 +220,7 @@ describe("RecipeExecutionHandler", () => {
 			invocation,
 			conversationId: "recipe_task-1",
 			titleConversation: true,
+			projectId: "project-1",
 		});
 		expect(result).toMatchObject({
 			status: "success",

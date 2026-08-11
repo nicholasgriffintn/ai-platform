@@ -7,6 +7,7 @@ vi.mock("~/services/email", () => ({
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { deriveProjectColour } from "@assistant/schemas";
 import type {
+	ProjectCapabilityRow,
 	ProjectRow,
 	WorkspaceInvitationRow,
 	WorkspaceMemberRow,
@@ -15,13 +16,16 @@ import type {
 import { sha256Hex } from "~/utils/crypto";
 import { ErrorType } from "~/utils/errors";
 import { sendEmail } from "~/services/email";
+import { assistantRecipes } from "~/services/apps/recipes/catalog";
 import {
 	acceptWorkspaceInvitation,
+	addProjectCapability,
 	createProject,
 	getProject,
 	getWorkspace,
 	inviteWorkspaceMember,
 	listWorkspaces,
+	removeProjectCapability,
 } from "../index";
 
 const NOW = new Date("2026-08-10T12:00:00.000Z");
@@ -86,6 +90,8 @@ function createHarness(params?: {
 		createProject: vi.fn().mockResolvedValue(undefined),
 		getProject: vi.fn().mockResolvedValue(project),
 		listProjectCapabilities: vi.fn().mockResolvedValue([]),
+		addProjectCapability: vi.fn().mockResolvedValue(undefined),
+		removeProjectCapability: vi.fn().mockResolvedValue(undefined),
 		listProjectConversations: vi.fn().mockResolvedValue([]),
 	};
 	const audit = { createRecord: vi.fn().mockResolvedValue(undefined) };
@@ -323,5 +329,91 @@ describe("workspace and project isolation", () => {
 		expect(repositories.getMembership).toHaveBeenCalledWith(WORKSPACE_ID, 4);
 		expect(repositories.listProjectCapabilities).not.toHaveBeenCalled();
 		expect(repositories.listProjectConversations).not.toHaveBeenCalled();
+	});
+});
+
+describe("project capability ownership", () => {
+	const recipeCapability: ProjectCapabilityRow = {
+		id: "capability-1",
+		project_id: PROJECT_ID,
+		kind: "recipe",
+		capability_id: assistantRecipes[0].id,
+		configuration: {},
+		created_by: 2,
+		created_at: "2026-08-10T12:00:00.000Z",
+	};
+
+	it("lets project members attach recipes under their own ownership", async () => {
+		const { context, repositories } = createHarness({
+			user: { id: 3, email: "member@example.com" },
+			role: "member",
+		});
+
+		await addProjectCapability(context, PROJECT_ID, {
+			kind: "recipe",
+			capabilityId: assistantRecipes[0].id,
+			configuration: {},
+		});
+
+		expect(repositories.addProjectCapability).toHaveBeenCalledWith(
+			expect.objectContaining({
+				projectId: PROJECT_ID,
+				kind: "recipe",
+				capabilityId: assistantRecipes[0].id,
+				createdBy: 3,
+			}),
+		);
+	});
+
+	it("prevents another project member from changing or removing an attached recipe", async () => {
+		const { context, repositories } = createHarness({
+			user: { id: 3, email: "member@example.com" },
+			role: "member",
+		});
+		repositories.listProjectCapabilities.mockResolvedValue([recipeCapability]);
+
+		await expect(
+			addProjectCapability(context, PROJECT_ID, {
+				kind: "recipe",
+				capabilityId: recipeCapability.capability_id,
+				configuration: {},
+			}),
+		).rejects.toMatchObject({ statusCode: 403 });
+		await expect(
+			removeProjectCapability(context, PROJECT_ID, recipeCapability.id),
+		).rejects.toMatchObject({ statusCode: 403 });
+		expect(repositories.addProjectCapability).not.toHaveBeenCalled();
+		expect(repositories.removeProjectCapability).not.toHaveBeenCalled();
+	});
+
+	it("lets the attaching member remove their recipe capability", async () => {
+		const { context, repositories } = createHarness({
+			user: { id: 2, email: "creator@example.com" },
+			role: "member",
+		});
+		repositories.listProjectCapabilities.mockResolvedValue([recipeCapability]);
+
+		await removeProjectCapability(context, PROJECT_ID, recipeCapability.id);
+
+		expect(repositories.removeProjectCapability).toHaveBeenCalledWith(
+			PROJECT_ID,
+			recipeCapability.id,
+		);
+	});
+
+	it("keeps project tools restricted to project admins", async () => {
+		const { context, repositories } = createHarness({
+			user: { id: 3, email: "member@example.com" },
+			role: "member",
+		});
+
+		await expect(
+			addProjectCapability(context, PROJECT_ID, {
+				kind: "tool",
+				capabilityId: "web_fetch",
+				configuration: {},
+			}),
+		).rejects.toMatchObject({ statusCode: 403 });
+		expect(repositories.addProjectCapability).not.toHaveBeenCalled();
 	});
 });

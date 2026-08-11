@@ -6,11 +6,17 @@ import { useUpdateProject } from "~/hooks/useWorkspaces";
 
 interface ProjectBriefCardProps {
 	canManage: boolean;
+	embedded?: boolean;
 	instructions: string;
 	projectId: string;
 }
 
-export function ProjectBriefCard({ canManage, instructions, projectId }: ProjectBriefCardProps) {
+export function ProjectBriefCard({
+	canManage,
+	embedded = false,
+	instructions,
+	projectId,
+}: ProjectBriefCardProps) {
 	const updateProject = useUpdateProject();
 	const [isEditing, setIsEditing] = useState(false);
 	const [draft, setDraft] = useState(instructions);
@@ -27,12 +33,19 @@ export function ProjectBriefCard({ canManage, instructions, projectId }: Project
 		setIsEditing(false);
 	};
 
-	return (
-		<Card className="p-6 shadow-none">
+	const content = (
+		<>
 			<div className="flex items-center justify-between gap-3">
-				<div className="flex items-center gap-2">
-					<BookOpen size={20} className="text-zinc-500" />
-					<h2 className="text-sm font-semibold">Project brief</h2>
+				<div className="flex items-center gap-3">
+					<div className="rounded-lg bg-indigo-50 p-2 text-indigo-600 dark:bg-indigo-950/40 dark:text-indigo-300">
+						<BookOpen size={17} />
+					</div>
+					<div>
+						<h2 className="text-sm font-semibold">Project brief</h2>
+						<p className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">
+							Shared instructions for every project conversation.
+						</p>
+					</div>
 				</div>
 				{canManage && !isEditing && (
 					<Button
@@ -73,13 +86,19 @@ export function ProjectBriefCard({ canManage, instructions, projectId }: Project
 					</div>
 				</div>
 			) : (
-				<p className="whitespace-pre-wrap text-sm leading-6 text-zinc-600 dark:text-zinc-400">
+				<p className="whitespace-pre-wrap pl-11 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
 					{instructions ||
 						(canManage
 							? "Add instructions to give every project conversation the same context."
 							: "No project instructions have been added.")}
 				</p>
 			)}
-		</Card>
+		</>
+	);
+
+	return embedded ? (
+		<section className="space-y-4 p-5">{content}</section>
+	) : (
+		<Card className="gap-4 p-5 shadow-none">{content}</Card>
 	);
 }

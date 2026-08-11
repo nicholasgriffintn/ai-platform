@@ -23,6 +23,7 @@ import {
 } from "./chat/messageParts";
 import { normaliseMessageTimestampsForStorage } from "./chat/messageOrdering";
 import { loadVisibleConversationMessagePage } from "./conversation/visibleMessagePagination";
+import { createInitialConversationTitle } from "./conversation/title-source";
 
 const logger = getLogger({ prefix: "lib/conversationManager" });
 
@@ -237,6 +238,7 @@ export class ConversationManager {
 		conversation_id: string,
 		authErrorMessage: string,
 		options?: { metadata?: Record<string, string> },
+		initialMessages: Message[] = [],
 	): Promise<Record<string, unknown> | null> {
 		if (!this.user?.id) {
 			throw new AssistantError(authErrorMessage, ErrorType.AUTHENTICATION_ERROR);
@@ -265,7 +267,7 @@ export class ConversationManager {
 			return await this.database.repositories.conversations.createConversation(
 				conversation_id,
 				this.user.id,
-				"New Conversation",
+				createInitialConversationTitle(initialMessages),
 				{
 					parent_conversation_id: parentConversationId,
 					parent_message_id: parentMessageId,
@@ -424,6 +426,7 @@ export class ConversationManager {
 			conversation_id,
 			"User ID is required to store conversations",
 			options,
+			normalisedMessages,
 		);
 
 		const createPromises = normalisedMessages.map((message) => {
@@ -473,6 +476,7 @@ export class ConversationManager {
 			conversation_id,
 			"User ID is required to replace messages",
 			options,
+			normalisedMessages,
 		);
 
 		const messageIds = normalisedMessages.map((message) => message.id as string);

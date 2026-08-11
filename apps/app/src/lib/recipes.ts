@@ -135,6 +135,15 @@ export function hasSavedRecipeConfiguration(installation?: RecipeInstallation) {
 	);
 }
 
+export function formatRecipeConfigurationSummaryValue(
+	value: RecipeConfiguration[string] | undefined,
+): string {
+	if (Array.isArray(value)) return value.join(", ");
+	if (typeof value === "boolean") return value ? "Yes" : "No";
+	if (value === null || value === undefined || value === "") return "Not set";
+	return String(value);
+}
+
 export function recipeSupportsSchedule(recipe: AssistantRecipe) {
 	return recipe.triggers.some((trigger) => trigger.type === "schedule");
 }

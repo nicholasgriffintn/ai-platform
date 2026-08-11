@@ -33,7 +33,10 @@ import {
 	isRecipeScheduleCronSupported,
 } from "~/lib/recipes";
 
-export function useRecipeWorkflows({ conversationPath }: { conversationPath?: string } = {}) {
+export function useRecipeWorkflows({
+	conversationPath,
+	projectId,
+}: { conversationPath?: string; projectId?: string } = {}) {
 	const navigate = useNavigate();
 	const location = useLocation();
 	const queryClient = useQueryClient();
@@ -48,6 +51,7 @@ export function useRecipeWorkflows({ conversationPath }: { conversationPath?: st
 	const [configurationInstallation, setConfigurationInstallation] =
 		useState<RecipeInstallation | null>(null);
 	const [configurationValues, setConfigurationValues] = useState<ConfigurationFormValues>({});
+	const [continueToSchedule, setContinueToSchedule] = useState(false);
 	const installRecipe = useInstallAssistantRecipe();
 	const invokeRecipe = useInvokeAssistantRecipe();
 	const updateInstallation = useUpdateRecipeInstallation();
@@ -74,10 +78,11 @@ export function useRecipeWorkflows({ conversationPath }: { conversationPath?: st
 					selectedTools: [],
 				},
 				{
-					installRecipe: (recipeId) => installRecipe.mutateAsync({ recipeId }),
+					installRecipe: (recipeId) => installRecipe.mutateAsync({ recipeId, projectId }),
 					invokeRecipe: (recipeId, input) =>
 						invokeRecipe.mutateAsync({
 							recipeId,
+							projectId,
 							...(input.trim() ? { input } : {}),
 						}),
 					startConnector: (provider, returnTo) =>
@@ -136,6 +141,7 @@ export function useRecipeWorkflows({ conversationPath }: { conversationPath?: st
 			} else {
 				await installRecipe.mutateAsync({
 					recipeId: scheduleRecipe.id,
+					projectId,
 					triggers,
 				});
 			}
@@ -153,6 +159,7 @@ export function useRecipeWorkflows({ conversationPath }: { conversationPath?: st
 	const openConfigurationDialog = (
 		nextRecipe: AssistantRecipe,
 		installation?: RecipeInstallation,
+		options: { continueToSchedule?: boolean } = {},
 	) => {
 		const configuration = installation?.configuration ?? {};
 		const values = Object.fromEntries(
@@ -164,6 +171,7 @@ export function useRecipeWorkflows({ conversationPath }: { conversationPath?: st
 		setConfigurationRecipe(nextRecipe);
 		setConfigurationInstallation(installation ?? null);
 		setConfigurationValues(values);
+		setContinueToSchedule(options.continueToSchedule ?? false);
 	};
 
 	const submitConfiguration = async () => {
@@ -177,19 +185,37 @@ export function useRecipeWorkflows({ conversationPath }: { conversationPath?: st
 		);
 
 		try {
+			let savedInstallation: RecipeInstallation;
 			if (configurationInstallation) {
-				await updateInstallation.mutateAsync({
+				savedInstallation = await updateInstallation.mutateAsync({
 					installationId: configurationInstallation.id,
 					update: { configuration },
 				});
 			} else {
-				await installRecipe.mutateAsync({
+				const setup = await installRecipe.mutateAsync({
 					recipeId: configurationRecipe.id,
+					projectId,
 					configuration,
 				});
+				if (!setup.installation) {
+					throw new Error("Recipe installation was not returned after saving configuration");
+				}
+				savedInstallation = setup.installation;
 			}
+			const shouldContinueToSchedule = continueToSchedule;
+			const savedRecipe = configurationRecipe;
 			setConfigurationRecipe(null);
 			setConfigurationInstallation(null);
+			setContinueToSchedule(false);
+			if (shouldContinueToSchedule) {
+				const scheduleTrigger = getRecipeScheduleTrigger(savedInstallation);
+				setScheduleRecipe(savedRecipe);
+				setScheduleInstallation(savedInstallation);
+				setScheduleCronExpression(scheduleTrigger?.cronExpression ?? "0 9 * * *");
+				setSchedulePrompt(scheduleTrigger?.prompt ?? savedRecipe.setupPrompt);
+				setScheduleNotifySms(scheduleTrigger?.notificationChannel === "sms");
+				setScheduleSmsTarget(scheduleTrigger?.notificationTarget ?? "");
+			}
 			toast.success("Recipe configuration saved.");
 		} catch (configurationError) {
 			console.error(configurationError);
@@ -203,7 +229,7 @@ export function useRecipeWorkflows({ conversationPath }: { conversationPath?: st
 			installation,
 		);
 		if (missingRequiredFields.length > 0) {
-			openConfigurationDialog(nextRecipe, installation);
+			openConfigurationDialog(nextRecipe, installation, { continueToSchedule: true });
 			toast.info("Save required recipe configuration before scheduling.");
 			return;
 		}
@@ -227,6 +253,39 @@ export function useRecipeWorkflows({ conversationPath }: { conversationPath?: st
 		} catch (updateError) {
 			console.error(updateError);
 			toast.error("Could not update recipe.");
+		}
+	};
+
+	const setScheduleEnabled = async (installation: RecipeInstallation, enabled: boolean) => {
+		try {
+			await updateInstallation.mutateAsync({
+				installationId: installation.id,
+				update: {
+					status: enabled ? "active" : installation.status,
+					triggers: installation.triggers.map((trigger) =>
+						trigger.type === "schedule" ? { ...trigger, enabled } : trigger,
+					),
+				},
+			});
+			toast.success(enabled ? "Recipe schedule resumed." : "Recipe schedule paused.");
+		} catch (updateError) {
+			console.error(updateError);
+			toast.error("Could not update recipe schedule.");
+		}
+	};
+
+	const stopSchedule = async (installation: RecipeInstallation) => {
+		try {
+			await updateInstallation.mutateAsync({
+				installationId: installation.id,
+				update: {
+					triggers: installation.triggers.filter((trigger) => trigger.type !== "schedule"),
+				},
+			});
+			toast.success("Recipe schedule stopped.");
+		} catch (updateError) {
+			console.error(updateError);
+			toast.error("Could not stop recipe schedule.");
 		}
 	};
 
@@ -266,10 +325,11 @@ export function useRecipeWorkflows({ conversationPath }: { conversationPath?: st
 					selectedTools: [],
 				},
 				{
-					installRecipe: (recipeId) => installRecipe.mutateAsync({ recipeId }),
+					installRecipe: (recipeId) => installRecipe.mutateAsync({ recipeId, projectId }),
 					invokeRecipe: (recipeId, input) =>
 						invokeRecipe.mutateAsync({
 							recipeId,
+							projectId,
 							...(input.trim() ? { input } : {}),
 						}),
 					startConnector: (provider, returnTo) =>
@@ -303,6 +363,7 @@ export function useRecipeWorkflows({ conversationPath }: { conversationPath?: st
 		setConfigurationRecipe(null);
 		setConfigurationInstallation(null);
 		setConfigurationValues({});
+		setContinueToSchedule(false);
 	};
 
 	const closeScheduleDialog = () => {
@@ -374,6 +435,8 @@ export function useRecipeWorkflows({ conversationPath }: { conversationPath?: st
 			configureProvider,
 			openConfigurationDialog,
 			openScheduleDialog,
+			setScheduleEnabled,
+			stopSchedule,
 			toggleInstallationStatus,
 			getRecipeCardState,
 		},

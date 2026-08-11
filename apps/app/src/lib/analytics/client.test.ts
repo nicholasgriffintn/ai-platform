@@ -51,7 +51,7 @@ describe("client analytics", () => {
 		syncAnalyticsIdentity({
 			isAuthenticated: true,
 			user: {
-				id: "123",
+				id: 123,
 				email: "test@example.com",
 				plan_id: "pro",
 			},

@@ -357,25 +357,48 @@ describe("ConversationThread assistant action submit", () => {
 		expect(onRemoveContextAttachment).toHaveBeenCalledWith(0);
 	});
 
-	it("passes mode request options to an initial auto-submit", async () => {
+	it("waits for project context before an initial auto-submit", async () => {
 		mocks.chatStore.chatInput = "";
 		mocks.chatStore.selectedAssistantAction = null;
 		mocks.sendMessage.mockResolvedValue({ status: "success", response: "Done" });
+		const contextAttachment: AttachmentData = {
+			type: "markdown_document",
+			data: "source:launch-brief",
+			name: "Launch brief",
+			markdown: "Launch in October.",
+		};
 
-		render(
+		const { rerender } = render(
 			<ConversationThread
 				modeConfig={{
 					initialAutoSubmit: {
 						key: "project-recipe:daily-weather",
 						input: "Run the recipe",
 					},
+					contextAttachments: [],
+					contextAttachmentsReady: false,
+					requestOptions: { metadata: { project_id: "project-1" } },
+				}}
+			/>,
+		);
+		expect(mocks.sendMessage).not.toHaveBeenCalled();
+
+		rerender(
+			<ConversationThread
+				modeConfig={{
+					initialAutoSubmit: {
+						key: "project-recipe:daily-weather",
+						input: "Run the recipe",
+					},
+					contextAttachments: [contextAttachment],
+					contextAttachmentsReady: true,
 					requestOptions: { metadata: { project_id: "project-1" } },
 				}}
 			/>,
 		);
 
 		await waitFor(() =>
-			expect(mocks.sendMessage).toHaveBeenCalledWith("Run the recipe", undefined, {
+			expect(mocks.sendMessage).toHaveBeenCalledWith("Run the recipe", [contextAttachment], {
 				metadata: { project_id: "project-1" },
 			}),
 		);

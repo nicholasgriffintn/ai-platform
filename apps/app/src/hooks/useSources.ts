@@ -14,6 +14,8 @@ import {
 	listCollectionSources,
 	listSourceCollections,
 	listSources,
+	listProjectContextSources,
+	setProjectContextSources,
 } from "~/lib/api/sources";
 
 export const SOURCE_QUERY_KEYS = {
@@ -21,6 +23,7 @@ export const SOURCE_QUERY_KEYS = {
 	list: (projectId?: string, kind?: SourceKind, collectionId?: string | null) =>
 		["sources", "list", projectId, kind, collectionId] as const,
 	collections: (projectId?: string) => ["sources", "collections", projectId] as const,
+	projectContext: (projectId: string) => ["sources", "project-context", projectId] as const,
 };
 
 export function useSources(
@@ -45,6 +48,25 @@ export function useSourceCollections(projectId?: string) {
 	return useQuery({
 		queryKey: SOURCE_QUERY_KEYS.collections(projectId),
 		queryFn: () => listSourceCollections(projectId),
+	});
+}
+
+export function useProjectContextSources(projectId: string) {
+	return useQuery({
+		queryKey: SOURCE_QUERY_KEYS.projectContext(projectId),
+		queryFn: () => listProjectContextSources(projectId),
+		enabled: Boolean(projectId),
+	});
+}
+
+export function useSetProjectContextSources(projectId: string) {
+	const queryClient = useQueryClient();
+	return useMutation({
+		mutationFn: (sourceIds: string[]) => setProjectContextSources(projectId, sourceIds),
+		onSuccess: (sources) => {
+			queryClient.setQueryData(SOURCE_QUERY_KEYS.projectContext(projectId), sources);
+			queryClient.invalidateQueries({ queryKey: SOURCE_QUERY_KEYS.collections(projectId) });
+		},
 	});
 }
 

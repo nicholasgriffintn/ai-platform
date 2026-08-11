@@ -1,6 +1,7 @@
 import { sanitiseMessages } from "~/lib/chat/utils";
 import { toProviderMessages } from "~/lib/chat/providerMessages";
 import { ConversationManager } from "~/lib/conversationManager";
+import { createInitialConversationTitle } from "~/lib/conversation/title-source";
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { getAuxiliaryModel } from "~/lib/providers/models";
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
@@ -111,7 +112,7 @@ export const handleGenerateChatCompletionTitle = async (
 	}
 
 	if (!newTitle) {
-		newTitle = "New Conversation";
+		newTitle = createInitialConversationTitle(messagesToUse);
 	}
 
 	await conversationManager.updateConversation(completion_id, {

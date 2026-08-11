@@ -66,7 +66,13 @@ describe("executeRecipeInvocationChat", () => {
 	});
 
 	it("runs the invocation through a stored non-streaming chat completion", async () => {
-		const result = await executeRecipeInvocationChat({ env, context, user, invocation });
+		const result = await executeRecipeInvocationChat({
+			env,
+			context,
+			user,
+			invocation,
+			projectId: "project-1",
+		});
 
 		expect(result.conversationId).toBe("recipe_generated-id");
 		expect(mocks.handleCreateChatCompletions).toHaveBeenCalledWith({
@@ -79,6 +85,7 @@ describe("executeRecipeInvocationChat", () => {
 				mode: "agent",
 				stream: false,
 				store: true,
+				metadata: { project_id: "project-1" },
 				enabled_tools: ["use_recipe_connector"],
 				approved_tools: ["use_recipe_connector"],
 				tool_choice: "auto",

@@ -69,6 +69,7 @@ export * from "./chat-mode";
 export * from "./chat-stream";
 export * from "./compaction-status";
 export * from "./conversation-replacement";
+export * from "./conversation-title";
 export * from "./council";
 export * from "./cron";
 export * from "./edit";

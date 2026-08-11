@@ -451,10 +451,11 @@ describe("ConversationManager", () => {
 			expect(mockDatabase.createConversation).toHaveBeenCalledWith(
 				conversationId,
 				mockUser.id,
-				"New Conversation",
+				"Hello",
 				{
 					parent_conversation_id: undefined,
 					parent_message_id: undefined,
+					project_id: undefined,
 				},
 			);
 		});

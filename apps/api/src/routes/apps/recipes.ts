@@ -25,6 +25,7 @@ import {
 } from "~/services/apps/recipes";
 
 const app = new Hono();
+const installationListQuerySchema = z.object({ projectId: z.string().min(1).optional() });
 
 addRoute(app, "get", "/", {
 	tags: ["apps"],
@@ -45,6 +46,7 @@ addRoute(app, "get", "/", {
 addRoute(app, "get", "/installations", {
 	auth: true,
 	tags: ["apps"],
+	querySchema: installationListQuerySchema,
 	summary: "List installed assistant recipes",
 	responses: {
 		200: {
@@ -52,8 +54,12 @@ addRoute(app, "get", "/installations", {
 			schema: recipeInstallationsResponseSchema,
 		},
 	},
-	handler: async ({ serviceContext, user }) =>
-		listRecipeInstallations({ context: serviceContext, userId: user.id }),
+	handler: async ({ query, serviceContext, user }) =>
+		listRecipeInstallations({
+			context: serviceContext,
+			userId: user.id,
+			projectId: query.projectId,
+		}),
 });
 
 addRoute(app, "put", "/installations/:installationId", {
@@ -154,6 +160,7 @@ addRoute(app, "post", "/:id/install", {
 			channel: body.channel,
 			triggers: body.triggers,
 			configuration: body.configuration,
+			projectId: body.projectId,
 			requestUrl: raw.req.url,
 		});
 
@@ -181,6 +188,7 @@ addRoute(app, "post", "/:id/invoke", {
 			userId: user.id,
 			channel: body.channel,
 			input: body.input,
+			projectId: body.projectId,
 			requestUrl: raw.req.url,
 			requireInstalled: true,
 		});
@@ -209,6 +217,7 @@ addRoute(app, "post", "/:id/queue", {
 			userId: user.id,
 			channel: body.channel,
 			input: body.input,
+			projectId: body.projectId,
 			requestUrl: raw.req.url,
 			queue: true,
 			requireInstalled: true,

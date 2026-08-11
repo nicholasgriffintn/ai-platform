@@ -71,6 +71,7 @@ describe("recipe scheduler", () => {
 			{
 				id: "installation-1",
 				created_by_user_id: 42,
+				project_id: "project-1",
 				capability_id: "morning-briefing",
 				configuration: JSON.stringify({
 					recipeId: "morning-briefing",
@@ -109,6 +110,7 @@ describe("recipe scheduler", () => {
 				task_data: expect.objectContaining({
 					recipeId: "morning-briefing",
 					installationId: "installation-1",
+					projectId: "project-1",
 					input: "Run briefing",
 					channel: "scheduled",
 					configuration: {

@@ -70,8 +70,9 @@ export function ProjectLibrary({ workspaceId, projectId }: ProjectLibraryProps) 
 				) : (
 					<ProjectCapabilityGroups
 						appById={controller.catalog.appById}
-						canManage={controller.canManage}
+						canManageProject={controller.canManage}
 						capabilities={controller.project?.capabilities ?? []}
+						currentUserId={controller.currentUserId}
 						experiences={controller.catalog.experiences}
 						groups={controller.catalog.groups}
 						isAdding={controller.mutations.add.isPending}

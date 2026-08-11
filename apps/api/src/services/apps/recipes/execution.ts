@@ -57,6 +57,7 @@ export async function recordRecipeInvocationFailure(params: {
 	user: IUser;
 	invocation: RecipeInvocationResponse;
 	conversationId: string;
+	projectId?: string;
 	error: unknown;
 }): Promise<string> {
 	const conversationManager = ConversationManager.getInstance({
@@ -93,7 +94,9 @@ export async function recordRecipeInvocationFailure(params: {
 	}
 
 	if (messagesToAdd.length > 0) {
-		await conversationManager.addBatch(params.conversationId, messagesToAdd);
+		await conversationManager.addBatch(params.conversationId, messagesToAdd, {
+			metadata: params.projectId ? { project_id: params.projectId } : undefined,
+		});
 	}
 
 	await params.context.repositories.conversations.updateConversation(params.conversationId, {
@@ -109,6 +112,7 @@ export async function executeRecipeInvocationChat(params: {
 	user: IUser;
 	invocation: RecipeInvocationResponse;
 	conversationId?: string;
+	projectId?: string;
 	titleConversation?: boolean;
 	priorMessages?: Message[];
 	sms?: {
@@ -142,6 +146,7 @@ export async function executeRecipeInvocationChat(params: {
 			approved_tools: params.invocation.enabledTools,
 			tool_choice: "auto",
 			temperature: 0.4,
+			metadata: params.projectId ? { project_id: params.projectId } : undefined,
 			options: buildRecipeExecutionOptions(params),
 		},
 	});

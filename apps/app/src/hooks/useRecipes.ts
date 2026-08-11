@@ -2,6 +2,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import type {
 	RecipeConfiguration,
+	RecipeInstallation,
+	RecipeInstallationsResponse,
 	RecipeInstallationTrigger,
 	RecipeInstallationUpdateRequest,
 } from "@assistant/schemas";
@@ -21,6 +23,27 @@ export const RECIPE_INSTALLATIONS_QUERY_KEY = ["recipe-installations"] as const;
 const RECIPE_CATALOG_STALE_TIME = 30 * 60 * 1000;
 const RECIPE_CATALOG_GC_TIME = 60 * 60 * 1000;
 
+function recipeInstallationsQueryKey(projectId?: string | null) {
+	return projectId
+		? [...RECIPE_INSTALLATIONS_QUERY_KEY, projectId]
+		: RECIPE_INSTALLATIONS_QUERY_KEY;
+}
+
+function upsertRecipeInstallation(
+	queryClient: ReturnType<typeof useQueryClient>,
+	installation: RecipeInstallation,
+) {
+	queryClient.setQueryData<RecipeInstallationsResponse>(
+		recipeInstallationsQueryKey(installation.projectId),
+		(current) => ({
+			installations: [
+				installation,
+				...(current?.installations ?? []).filter((item) => item.id !== installation.id),
+			],
+		}),
+	);
+}
+
 export function useAssistantRecipes() {
 	return useQuery({
 		queryKey: ASSISTANT_RECIPES_QUERY_KEY,
@@ -35,14 +58,19 @@ export function useInstallAssistantRecipe() {
 	return useMutation({
 		mutationFn: ({
 			recipeId,
+			projectId,
 			triggers,
 			configuration,
 		}: {
 			recipeId: string;
+			projectId?: string;
 			triggers?: RecipeInstallationTrigger[];
 			configuration?: RecipeConfiguration;
-		}) => installAssistantRecipe(recipeId, triggers, configuration),
-		onSuccess: () => {
+		}) => installAssistantRecipe(recipeId, triggers, configuration, projectId),
+		onSuccess: (response) => {
+			if (response.installation) {
+				upsertRecipeInstallation(queryClient, response.installation);
+			}
 			queryClient.invalidateQueries({ queryKey: RECIPE_INSTALLATIONS_QUERY_KEY });
 			queryClient.invalidateQueries({ queryKey: ASSISTANT_RECIPES_QUERY_KEY });
 		},
@@ -51,16 +79,23 @@ export function useInstallAssistantRecipe() {
 
 export function useInvokeAssistantRecipe() {
 	return useMutation({
-		mutationFn: ({ recipeId, input }: { recipeId: string; input?: string }) =>
-			invokeAssistantRecipe(recipeId, input),
+		mutationFn: ({
+			recipeId,
+			input,
+			projectId,
+		}: {
+			recipeId: string;
+			input?: string;
+			projectId?: string;
+		}) => invokeAssistantRecipe(recipeId, input, projectId),
 	});
 }
 
-export function useRecipeInstallations() {
+export function useRecipeInstallations(projectId?: string) {
 	const canAccessProFeatures = useCanAccessProFeatures();
 	const query = useQuery({
-		queryKey: RECIPE_INSTALLATIONS_QUERY_KEY,
-		queryFn: listRecipeInstallations,
+		queryKey: recipeInstallationsQueryKey(projectId),
+		queryFn: () => listRecipeInstallations(projectId),
 		enabled: canAccessProFeatures,
 		staleTime: 60 * 1000,
 	});
@@ -83,7 +118,8 @@ export function useUpdateRecipeInstallation() {
 			installationId: string;
 			update: RecipeInstallationUpdateRequest;
 		}) => updateRecipeInstallation(installationId, update),
-		onSuccess: () => {
+		onSuccess: (installation) => {
+			upsertRecipeInstallation(queryClient, installation);
 			queryClient.invalidateQueries({ queryKey: RECIPE_INSTALLATIONS_QUERY_KEY });
 			queryClient.invalidateQueries({ queryKey: ASSISTANT_RECIPES_QUERY_KEY });
 		},

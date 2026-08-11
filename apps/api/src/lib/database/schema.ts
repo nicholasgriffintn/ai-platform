@@ -705,7 +705,7 @@ export const sourceCollection = sqliteTable(
 		project_id: text().references(() => project.id, { onDelete: "cascade" }),
 		title: text().notNull(),
 		description: text(),
-		kind: text({ enum: ["general", "memory"] })
+		kind: text({ enum: ["general", "memory", "context"] })
 			.default("general")
 			.notNull(),
 		created_at: text()
@@ -870,6 +870,7 @@ export const template = sqliteTable(
 			.notNull()
 			.references(() => user.id),
 		workspace_id: text().references(() => workspace.id, { onDelete: "cascade" }),
+		project_id: text().references(() => project.id, { onDelete: "cascade" }),
 		kind: text({ enum: ["project", "recipe", "capability"] }).notNull(),
 		capability_id: text(),
 		name: text().notNull(),
@@ -888,6 +889,7 @@ export const template = sqliteTable(
 	(table) => ({
 		creatorIdx: index("template_created_by_user_id_idx").on(table.created_by_user_id),
 		workspaceIdx: index("template_workspace_id_idx").on(table.workspace_id),
+		projectIdx: index("template_project_id_idx").on(table.project_id),
 		capabilityIdx: index("template_capability_id_idx").on(table.capability_id),
 	}),
 );

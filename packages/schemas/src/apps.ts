@@ -1306,6 +1306,7 @@ export const assistantRecipesResponseSchema = z.object({
 
 export const assistantRecipeInstallRequestSchema = z.object({
 	channel: z.enum(["web", "ios", "sms"]).default("web"),
+	projectId: z.string().min(1).optional(),
 	triggers: z.lazy(() => z.array(recipeInstallationTriggerSchema)).optional(),
 	configuration: z.lazy(() => recipeConfigurationSchema).optional(),
 });
@@ -1413,6 +1414,7 @@ export const recipeInstallationSchema = z.object({
 	id: z.string(),
 	recipeId: z.string(),
 	userId: z.number(),
+	projectId: z.string().nullable().optional(),
 	status: z.enum(["active", "paused"]),
 	triggers: z.array(recipeInstallationTriggerSchema),
 	configuration: recipeConfigurationSchema,
@@ -1434,6 +1436,7 @@ export const recipeInstallationUpdateRequestSchema = z.object({
 
 export const recipeInvocationRequestSchema = z.object({
 	input: z.string().optional(),
+	projectId: z.string().min(1).optional(),
 	channel: z.enum(["web", "ios", "sms", "scheduled", "tool"]).default("web"),
 });
 
@@ -1441,6 +1444,7 @@ export const recipeInvocationResponseSchema = z.object({
 	recipeId: z.string(),
 	recipeTitle: z.string().optional(),
 	installationId: z.string().optional(),
+	projectId: z.string().nullable().optional(),
 	channel: z.enum(["web", "ios", "sms", "scheduled", "tool"]).default("web"),
 	status: z.enum(["ready", "queued", "blocked", "not_installed"]),
 	conversationStarter: z.string(),

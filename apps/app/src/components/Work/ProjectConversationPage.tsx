@@ -1,13 +1,16 @@
 import { useQueryClient } from "@tanstack/react-query";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { sandboxTaskTypeSchema, type SandboxTaskType } from "@assistant/schemas";
 
 import { ConversationPage } from "~/components/ConversationThread/ConversationPage";
 import { useIsLoading } from "~/state/contexts/LoadingContext";
 import { projectQueryKey } from "~/hooks/useWorkspaces";
 import { useChat } from "~/hooks/useChat";
+import { useModels } from "~/hooks/useModels";
+import { useProjectConversationSources } from "~/hooks/useProjectConversationSources";
 import { getProjectLibraryPath } from "~/lib/project-experiences";
 import { getProjectCodingPresentation } from "~/lib/project-coding-presentation";
+import { getModelInteractionCapabilities } from "~/lib/models";
 import { useChatStore } from "~/state/stores/chatStore";
 import { useWorkData } from "./WorkContext";
 import { ProjectCodingTaskControl } from "./ProjectCodingTaskControl";
@@ -23,6 +26,17 @@ export function ProjectConversationPage({
 	const { data: project } = projectQuery;
 	const queryClient = useQueryClient();
 	const currentConversationId = useChatStore((state) => state.currentConversationId);
+	const model = useChatStore((state) => state.model);
+	const { data: models } = useModels();
+	const sourceCapabilities = useMemo(() => {
+		const modelCapabilities = getModelInteractionCapabilities(model ? models?.[model] : undefined);
+		return {
+			supportsAudio: modelCapabilities.supportsAudio,
+			supportsDocuments: modelCapabilities.supportsDocuments,
+			supportsImages: modelCapabilities.isImageModel || modelCapabilities.isMultimodalModel,
+		};
+	}, [model, models]);
+	const projectSources = useProjectConversationSources(projectId, sourceCapabilities);
 	const { data: currentConversation } = useChat(currentConversationId);
 	const setChatMode = useChatStore((state) => state.setChatMode);
 	const setSelectedAgentId = useChatStore((state) => state.setSelectedAgentId);
@@ -116,6 +130,8 @@ export function ProjectConversationPage({
 			embedded
 			title={project?.name ?? "Project conversation"}
 			modeConfig={{
+				contextAttachments: projectSources.attachments,
+				contextAttachmentsReady: !projectSources.isLoading,
 				assistantActionRoutes: {
 					recipes: recipeManagementPath,
 				},

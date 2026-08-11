@@ -91,6 +91,22 @@ const morningBriefingInstallation = {
 	updatedAt: "2026-01-01T00:00:00.000Z",
 } satisfies RecipeInstallation;
 
+const configuredRecipe = {
+	...morningBriefingRecipe,
+	id: "daily-weather",
+	title: "Daily Weather",
+	setupPrompt: "Prepare the daily weather forecast.",
+	triggers: [{ type: "schedule", label: "Daily", description: "Run every day" }],
+	configurationFields: [
+		{
+			key: "location",
+			label: "Location",
+			type: "text",
+			required: true,
+		},
+	],
+} satisfies AssistantRecipe;
+
 function wrapper({ children }: { children: ReactNode }) {
 	const queryClient = new QueryClient({
 		defaultOptions: {
@@ -214,5 +230,69 @@ describe("useRecipeWorkflows", () => {
 			"/profile?tab=providers&type=connector&connector=posthog",
 		);
 		expect(mocks.startConnector.mutateAsync).not.toHaveBeenCalled();
+	});
+
+	it("continues scheduling with the configuration returned by the save", async () => {
+		const savedInstallation = {
+			...morningBriefingInstallation,
+			id: "installation-weather",
+			recipeId: configuredRecipe.id,
+			projectId: "project-1",
+			configuration: { location: "London" },
+		} satisfies RecipeInstallation;
+		mocks.installRecipe.mutateAsync.mockResolvedValue({ installation: savedInstallation });
+		const { result } = renderHook(() => useRecipeWorkflows({ projectId: "project-1" }), {
+			wrapper,
+		});
+
+		act(() => result.current.actions.openScheduleDialog(configuredRecipe));
+		expect(result.current.configurationDialog.recipe).toBe(configuredRecipe);
+		expect(result.current.scheduleDialog.recipe).toBeNull();
+
+		act(() => result.current.configurationDialog.setValues({ location: "London" }));
+		await act(async () => result.current.configurationDialog.submit());
+
+		expect(mocks.installRecipe.mutateAsync).toHaveBeenCalledWith({
+			recipeId: configuredRecipe.id,
+			projectId: "project-1",
+			configuration: { location: "London" },
+		});
+		expect(result.current.configurationDialog.recipe).toBeNull();
+		expect(result.current.scheduleDialog.recipe).toBe(configuredRecipe);
+		expect(result.current.scheduleDialog.prompt).toBe(configuredRecipe.setupPrompt);
+	});
+
+	it("pauses and stops only the scheduled trigger", async () => {
+		const scheduledInstallation = {
+			...morningBriefingInstallation,
+			triggers: [
+				{ type: "manual", enabled: true },
+				{ type: "schedule", enabled: true, cronExpression: "0 9 * * *" },
+			],
+		} satisfies RecipeInstallation;
+		mocks.updateInstallation.mutateAsync.mockResolvedValue(scheduledInstallation);
+		const { result } = renderHook(() => useRecipeWorkflows(), { wrapper });
+
+		await act(async () => {
+			await result.current.actions.setScheduleEnabled(scheduledInstallation, false);
+		});
+		expect(mocks.updateInstallation.mutateAsync).toHaveBeenLastCalledWith({
+			installationId: scheduledInstallation.id,
+			update: {
+				status: "active",
+				triggers: [
+					{ type: "manual", enabled: true },
+					{ type: "schedule", enabled: false, cronExpression: "0 9 * * *" },
+				],
+			},
+		});
+
+		await act(async () => {
+			await result.current.actions.stopSchedule(scheduledInstallation);
+		});
+		expect(mocks.updateInstallation.mutateAsync).toHaveBeenLastCalledWith({
+			installationId: scheduledInstallation.id,
+			update: { triggers: [{ type: "manual", enabled: true }] },
+		});
 	});
 });

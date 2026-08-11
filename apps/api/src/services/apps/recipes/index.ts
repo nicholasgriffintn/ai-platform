@@ -13,6 +13,7 @@ import { recipeConfigurationSchema } from "@assistant/schemas";
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import type { TemplateRecord } from "~/repositories/TemplateRepository";
 import { TaskService } from "~/services/tasks/TaskService";
+import { requireProjectAccess } from "~/services/workspaces/access";
 import { isSupportedCronExpression } from "~/utils/cron";
 import { safeParseJson } from "~/utils/json";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -40,6 +41,7 @@ interface RecipeListOptions {
 
 interface RecipeInstallOptions extends RecipeListOptions {
 	channel: "web" | "ios" | "sms";
+	projectId?: string;
 	triggers?: RecipeInstallationTrigger[];
 	configuration?: RecipeConfiguration;
 }
@@ -305,6 +307,7 @@ export function parseRecipeInstallationRecord(
 		id: record.id,
 		recipeId: parsed.recipeId,
 		userId: record.created_by_user_id,
+		projectId: record.project_id,
 		status: parsed.status ?? "active",
 		triggers: Array.isArray(parsed.triggers) ? parsed.triggers : [],
 		configuration: normaliseRecipeConfigurationForRecipe(
@@ -325,6 +328,9 @@ async function getRecipeInstallationRecord(params: {
 	if (!record || record.created_by_user_id !== params.userId || record.kind !== "recipe") {
 		return null;
 	}
+	if (record.project_id) {
+		await requireProjectAccess(params.context, record.project_id);
+	}
 
 	const data = parseStoredRecipeInstallationData(record);
 	if (!data) {
@@ -338,15 +344,23 @@ async function upsertRecipeInstallation(params: {
 	context: ServiceContext;
 	userId: number;
 	recipe: AssistantRecipe;
+	projectId?: string;
 	triggers?: RecipeInstallationTrigger[];
 	configuration?: RecipeConfiguration;
 }): Promise<RecipeInstallation> {
 	params.context.ensureDatabase();
-	const existing = await params.context.repositories.templates.getPersonalTemplate(
-		params.userId,
-		"recipe",
-		params.recipe.id,
-	);
+	const existing = params.projectId
+		? await params.context.repositories.templates.getProjectTemplate(
+				params.userId,
+				params.projectId,
+				"recipe",
+				params.recipe.id,
+			)
+		: await params.context.repositories.templates.getPersonalTemplate(
+				params.userId,
+				"recipe",
+				params.recipe.id,
+			);
 	const existingData = existing ? parseStoredRecipeInstallationData(existing) : null;
 	const now = new Date().toISOString();
 	const triggers =
@@ -398,6 +412,7 @@ async function upsertRecipeInstallation(params: {
 
 	const created = await params.context.repositories.templates.createTemplate({
 		createdByUserId: params.userId,
+		projectId: params.projectId,
 		kind: "recipe",
 		capabilityId: params.recipe.id,
 		name: params.recipe.title,
@@ -417,12 +432,20 @@ async function getRecipeInstallation(params: {
 	context: ServiceContext;
 	userId: number;
 	recipeId: string;
+	projectId?: string;
 }): Promise<RecipeInstallation | null> {
-	const record = await params.context.repositories.templates.getPersonalTemplate(
-		params.userId,
-		"recipe",
-		params.recipeId,
-	);
+	const record = params.projectId
+		? await params.context.repositories.templates.getProjectTemplate(
+				params.userId,
+				params.projectId,
+				"recipe",
+				params.recipeId,
+			)
+		: await params.context.repositories.templates.getPersonalTemplate(
+				params.userId,
+				"recipe",
+				params.recipeId,
+			);
 
 	return record ? parseRecipeInstallationRecord(record) : null;
 }
@@ -430,12 +453,13 @@ async function getRecipeInstallation(params: {
 export async function listRecipeInstallations(params: {
 	context: ServiceContext;
 	userId: number;
+	projectId?: string;
 }): Promise<{ installations: RecipeInstallation[] }> {
 	params.context.ensureDatabase();
-	const records = await params.context.repositories.templates.listPersonalTemplates(
-		params.userId,
-		"recipe",
-	);
+	const records = params.projectId
+		? (await requireProjectAccess(params.context, params.projectId),
+			await params.context.repositories.templates.listProjectTemplates(params.projectId, "recipe"))
+		: await params.context.repositories.templates.listPersonalTemplates(params.userId, "recipe");
 
 	return {
 		installations: records
@@ -584,6 +608,23 @@ export async function installAssistantRecipe(id: string, options: RecipeInstallO
 			ErrorType.AUTHENTICATION_ERROR,
 		);
 	}
+	if (options.projectId) {
+		await requireProjectAccess(options.context, options.projectId);
+		const capabilities = await options.context.repositories.workspaces.listProjectCapabilities(
+			options.projectId,
+		);
+		if (
+			!capabilities.some(
+				(capability) => capability.kind === "recipe" && capability.capability_id === recipe.id,
+			)
+		) {
+			throw new AssistantError(
+				"This recipe is not enabled for the project",
+				ErrorType.FORBIDDEN,
+				403,
+			);
+		}
+	}
 
 	const connections = buildRecipeConnections(recipe);
 	assertNoUnavailableConnections(recipe, connections, "set up");
@@ -592,6 +633,7 @@ export async function installAssistantRecipe(id: string, options: RecipeInstallO
 		context: options.context,
 		userId: options.userId,
 		recipe,
+		projectId: options.projectId,
 		triggers: options.triggers,
 		configuration: options.configuration,
 	});
@@ -623,6 +665,7 @@ export async function invokeAssistantRecipe(
 		configuration?: RecipeConfiguration;
 		queue?: boolean;
 		requireInstalled?: boolean;
+		projectId?: string;
 	},
 ) {
 	if (!options.context || !options.userId) {
@@ -636,6 +679,9 @@ export async function invokeAssistantRecipe(
 	if (!recipe) {
 		return null;
 	}
+	if (options.projectId) {
+		await requireProjectAccess(options.context, options.projectId);
+	}
 
 	const connections = buildRecipeConnections(recipe);
 	const blockingConnections = getBlockingConnections(connections);
@@ -643,6 +689,7 @@ export async function invokeAssistantRecipe(
 		context: options.context,
 		userId: options.userId,
 		recipeId: recipe.id,
+		projectId: options.projectId,
 	});
 	const installation =
 		existingInstallation ??
@@ -652,6 +699,7 @@ export async function invokeAssistantRecipe(
 					context: options.context,
 					userId: options.userId,
 					recipe,
+					projectId: options.projectId,
 				}));
 	const invocationConfiguration = installation
 		? options.configuration
@@ -670,6 +718,7 @@ export async function invokeAssistantRecipe(
 		return {
 			recipeId: recipe.id,
 			recipeTitle: recipe.title,
+			projectId: options.projectId ?? null,
 			status: "not_installed" as const,
 			channel: options.channel,
 			conversationStarter: runtime.conversationStarter,
@@ -687,6 +736,7 @@ export async function invokeAssistantRecipe(
 			recipeId: recipe.id,
 			recipeTitle: recipe.title,
 			installationId: installation.id,
+			projectId: installation.projectId,
 			status: "blocked" as const,
 			channel: options.channel,
 			conversationStarter: runtime.conversationStarter,
@@ -708,6 +758,7 @@ export async function invokeAssistantRecipe(
 			task_data: {
 				recipeId: recipe.id,
 				installationId: installation.id,
+				projectId: installation.projectId,
 				input: options.input,
 				channel: options.channel,
 				configuration: invocationConfiguration,
@@ -720,6 +771,7 @@ export async function invokeAssistantRecipe(
 		recipeId: recipe.id,
 		recipeTitle: recipe.title,
 		installationId: installation.id,
+		projectId: installation.projectId,
 		status: options.queue ? ("queued" as const) : ("ready" as const),
 		channel: options.channel,
 		conversationStarter: runtime.conversationStarter,

@@ -1,7 +1,10 @@
 import { describe, expect, it } from "vitest";
 import type { AssistantRecipe, RecipeInstallation } from "@assistant/schemas";
 
-import { getMissingRequiredRecipeConfigurationFields } from "./recipes";
+import {
+	formatRecipeConfigurationSummaryValue,
+	getMissingRequiredRecipeConfigurationFields,
+} from "./recipes";
 
 const baseRecipe = {
 	id: "daily-weather",
@@ -56,5 +59,14 @@ describe("recipe helpers", () => {
 		} satisfies RecipeInstallation;
 
 		expect(getMissingRequiredRecipeConfigurationFields(baseRecipe, installation)).toEqual([]);
+	});
+
+	it("formats saved configuration values for project schedule summaries", () => {
+		expect(formatRecipeConfigurationSummaryValue(["London", "Edinburgh"])).toBe(
+			"London, Edinburgh",
+		);
+		expect(formatRecipeConfigurationSummaryValue(true)).toBe("Yes");
+		expect(formatRecipeConfigurationSummaryValue(false)).toBe("No");
+		expect(formatRecipeConfigurationSummaryValue(undefined)).toBe("Not set");
 	});
 });

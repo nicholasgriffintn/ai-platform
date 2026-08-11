@@ -1,7 +1,8 @@
 import { useCallback } from "react";
 import type { Message } from "~/types";
 import { normalizeSelectedModel } from "~/lib/chat/model-selection";
-import { getMessageTextContent, normalizeMessage } from "~/lib/messages";
+import { createTemporaryConversationTitle } from "~/lib/chat/title-source";
+import { normalizeMessage } from "~/lib/messages";
 import { useConversationStorage } from "./useConversationStorage";
 import { useChatStore } from "~/state/stores/chatStore";
 
@@ -19,12 +20,10 @@ export function useMessageOperations() {
 
 			await updateConversation(conversationId, (oldData) => {
 				if (!oldData) {
-					const messageContent = getMessageTextContent(normalizedMessage);
-
 					const now = new Date().toISOString();
 					return {
 						id: conversationId,
-						title: `${messageContent.slice(0, 20)}...`,
+						title: createTemporaryConversationTitle([normalizedMessage]),
 						messages: [normalizedMessage],
 						isLocalOnly: false,
 						created_at: now,
@@ -67,10 +66,7 @@ export function useMessageOperations() {
 					const now = new Date().toISOString();
 					return {
 						id: conversationId,
-						title:
-							typeof normalizedMessage.content === "string"
-								? `${normalizedMessage.content.slice(0, 20)}...`
-								: "New conversation",
+						title: createTemporaryConversationTitle([normalizedMessage]),
 						messages: [normalizedMessage],
 						isLocalOnly: false,
 						created_at: now,

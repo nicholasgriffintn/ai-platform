@@ -1,4 +1,4 @@
-import type { SourceKind, SourceStatus } from "@assistant/schemas";
+import type { SourceCollectionKind, SourceKind, SourceStatus } from "@assistant/schemas";
 
 import { BaseRepository } from "./BaseRepository";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -52,7 +52,7 @@ export interface SourceCollectionRecord {
 	project_id: string | null;
 	title: string;
 	description: string | null;
-	kind: "general" | "memory";
+	kind: SourceCollectionKind;
 	created_at: string;
 	updated_at: string | null;
 	source_count?: number;
@@ -158,7 +158,7 @@ export class SourceRepository extends BaseRepository {
 		projectId?: string | null;
 		title: string;
 		description?: string | null;
-		kind?: "general" | "memory";
+		kind?: SourceCollectionKind;
 	}): Promise<SourceCollectionRecord> {
 		const insert = this.buildInsertQuery(
 			"source_collection",
@@ -198,6 +198,35 @@ export class SourceRepository extends BaseRepository {
 		return this.runQuery<SourceCollectionRecord>(query, values, true);
 	}
 
+	async getProjectContextCollection(projectId: string): Promise<SourceCollectionRecord | null> {
+		const { query, values } = this.buildSelectQuery("source_collection", {
+			project_id: projectId,
+			kind: "context",
+		});
+		return this.runQuery<SourceCollectionRecord>(query, values, true);
+	}
+
+	async ensureProjectContextCollection(params: {
+		projectId: string;
+		createdByUserId: number;
+	}): Promise<SourceCollectionRecord> {
+		const id = `project-context:${params.projectId}`;
+		await this.executeRun(
+			`INSERT OR IGNORE INTO source_collection
+			 (id, created_by_user_id, project_id, title, description, kind)
+			 VALUES (?, ?, ?, 'Project context', 'Sources attached to new project conversations.', 'context')`,
+			[id, params.createdByUserId, params.projectId],
+		);
+		const collection = await this.getCollection(id);
+		if (!collection) {
+			throw new AssistantError(
+				"Failed to create project context collection",
+				ErrorType.DATABASE_ERROR,
+			);
+		}
+		return collection;
+	}
+
 	async listCollectionSources(collectionId: string): Promise<SourceRecord[]> {
 		return this.runQuery<SourceRecord>(
 			`SELECT s.* FROM source s
@@ -220,6 +249,22 @@ export class SourceRepository extends BaseRepository {
 			),
 		);
 		return results.filter((result) => result.success && result.meta.changes > 0).length;
+	}
+
+	async replaceCollectionSources(collectionId: string, sourceIds: string[]): Promise<void> {
+		if (!this.env.DB) return;
+		await this.env.DB.batch([
+			this.env.DB.prepare("DELETE FROM source_collection_member WHERE collection_id = ?").bind(
+				collectionId,
+			),
+			...sourceIds.map((sourceId) =>
+				this.env
+					.DB!.prepare(
+						"INSERT INTO source_collection_member (collection_id, source_id) VALUES (?, ?)",
+					)
+					.bind(collectionId, sourceId),
+			),
+		]);
 	}
 
 	async removeSourceFromCollections(sourceId: string): Promise<void> {

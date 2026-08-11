@@ -81,6 +81,7 @@ describe("ProjectCapabilityCard", () => {
 						kind: "app",
 						capabilityId: "music-studio",
 						configuration: {},
+						createdBy: 42,
 						createdAt: "2026-01-01",
 					}}
 					experiences={experiences}
@@ -201,6 +202,7 @@ describe("ProjectCapabilityCard", () => {
 						kind: "tool",
 						capabilityId: "get_weather",
 						configuration: {},
+						createdBy: 42,
 						createdAt: "2026-01-01",
 					}}
 					experiences={[]}

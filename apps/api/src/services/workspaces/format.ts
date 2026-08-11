@@ -95,6 +95,7 @@ export function formatProjectCapability(row: ProjectCapabilityRow): ProjectCapab
 		kind: row.kind,
 		capabilityId: row.capability_id,
 		configuration,
+		createdBy: row.created_by,
 		createdAt: row.created_at,
 	};
 }

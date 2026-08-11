@@ -9,9 +9,11 @@ import { useUpdateProject } from "~/hooks/useWorkspaces";
 export function ProjectCodingEnvironmentCard({
 	canManage,
 	project,
+	embedded = false,
 }: {
 	canManage: boolean;
 	project: ProjectDetail;
+	embedded?: boolean;
 }) {
 	const updateProject = useUpdateProject();
 	const { data: connections = [], isLoading: isLoadingConnections } = useSandboxConnections();
@@ -58,11 +60,18 @@ export function ProjectCodingEnvironmentCard({
 	};
 
 	const content = (
-		<>
+		<div className="space-y-4">
 			<div className="flex items-center justify-between gap-3">
-				<div className="flex items-center gap-2">
-					<GitBranch size={20} className="text-zinc-500" />
-					<h2 className="text-sm font-semibold">Coding repository</h2>
+				<div className="flex items-center gap-3">
+					<div className="rounded-lg bg-emerald-50 p-2 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
+						<GitBranch size={17} />
+					</div>
+					<div>
+						<h2 className="text-sm font-semibold">Coding repository</h2>
+						<p className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">
+							The repository used for project coding tasks.
+						</p>
+					</div>
 				</div>
 				{canManage && !isEditing && (
 					<Button
@@ -149,8 +158,12 @@ export function ProjectCodingEnvironmentCard({
 					)}
 				</div>
 			)}
-		</>
+		</div>
 	);
 
-	return <Card className="p-6 shadow-none">{content}</Card>;
+	return embedded ? (
+		<section className="border-t border-zinc-100 p-5 dark:border-zinc-800">{content}</section>
+	) : (
+		<Card className="p-5 shadow-none">{content}</Card>
+	);
 }

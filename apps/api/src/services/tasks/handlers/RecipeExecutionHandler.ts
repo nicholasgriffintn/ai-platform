@@ -19,6 +19,7 @@ const logger = getLogger({ prefix: "services/tasks/handlers/RecipeExecutionHandl
 
 interface RecipeExecutionTaskData {
 	recipeId: string;
+	projectId?: string | null;
 	input?: string;
 	channel?: "web" | "ios" | "sms" | "scheduled" | "tool";
 	configuration?: RecipeConfiguration;
@@ -97,6 +98,7 @@ export class RecipeExecutionHandler implements TaskHandler {
 			channel: data.channel ?? "scheduled",
 			input: data.input,
 			configuration: data.configuration,
+			projectId: data.projectId ?? undefined,
 			requireInstalled: true,
 		});
 
@@ -132,6 +134,7 @@ export class RecipeExecutionHandler implements TaskHandler {
 				user: user as IUser,
 				invocation,
 				conversationId,
+				projectId: data.projectId ?? undefined,
 				titleConversation: true,
 			});
 		} catch (error) {
@@ -141,6 +144,7 @@ export class RecipeExecutionHandler implements TaskHandler {
 				user: user as IUser,
 				invocation,
 				conversationId,
+				projectId: data.projectId ?? undefined,
 				error,
 			});
 			return {

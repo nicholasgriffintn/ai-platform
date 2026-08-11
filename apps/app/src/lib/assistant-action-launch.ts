@@ -14,6 +14,15 @@ import type { ChatRequestOptions } from "~/types";
 const ACTION_CONTEXT_PARAM = "assistant_action_context";
 const LEGACY_RECIPE_CONTEXT_PARAM = "recipe_context";
 const AUTO_SUBMIT_PARAM = "auto_submit";
+const QUERY_PARAM = "query";
+const ENABLED_TOOLS_PARAM = "enabled_tools";
+const ASSISTANT_ACTION_LAUNCH_PARAMS = [
+	ACTION_CONTEXT_PARAM,
+	LEGACY_RECIPE_CONTEXT_PARAM,
+	AUTO_SUBMIT_PARAM,
+	QUERY_PARAM,
+	ENABLED_TOOLS_PARAM,
+] as const;
 
 export type RecipeManagementAction = "configure" | "schedule";
 
@@ -76,13 +85,21 @@ export function parseAssistantActionLaunchState(search: string): AssistantAction
 	const params = new URLSearchParams(search);
 
 	return {
-		query: params.get("query"),
-		enabledTools: normaliseAssistantActionToolIds(params.get("enabled_tools") ?? undefined),
-		hasEnabledTools: params.has("enabled_tools"),
+		query: params.get(QUERY_PARAM),
+		enabledTools: normaliseAssistantActionToolIds(params.get(ENABLED_TOOLS_PARAM) ?? undefined),
+		hasEnabledTools: params.has(ENABLED_TOOLS_PARAM),
 		actionContext: params.get(ACTION_CONTEXT_PARAM),
 		recipeContext: params.get(LEGACY_RECIPE_CONTEXT_PARAM),
 		autoSubmit: params.get(AUTO_SUBMIT_PARAM) === "1",
 	};
+}
+
+export function removeConsumedAssistantActionLaunchParams(search: string): string {
+	const params = new URLSearchParams(search);
+	for (const param of ASSISTANT_ACTION_LAUNCH_PARAMS) {
+		params.delete(param);
+	}
+	return params.toString();
 }
 
 export function loadAssistantActionRequestOptions(
@@ -99,7 +116,7 @@ export function createAssistantActionChatUrl(launch: AssistantActionChatLaunch):
 	const params = new URLSearchParams(search);
 	const enabledTools = normaliseAssistantActionToolIds(launch.enabledTools);
 
-	params.set("enabled_tools", enabledTools.join(","));
+	params.set(ENABLED_TOOLS_PARAM, enabledTools.join(","));
 	params.set(AUTO_SUBMIT_PARAM, "1");
 	if (launch.actionContext) {
 		params.set(ACTION_CONTEXT_PARAM, JSON.stringify(launch.actionContext));
@@ -136,7 +153,7 @@ export function createAssistantActionConversationUrl(
 	launch: AssistantActionChatLaunchPayload,
 	conversationPath = "/",
 ): string {
-	const params = new URLSearchParams({ query: launch.input });
+	const params = new URLSearchParams({ [QUERY_PARAM]: launch.input });
 
 	return createAssistantActionChatUrl({
 		messageUrl: `${conversationPath}?${params.toString()}`,

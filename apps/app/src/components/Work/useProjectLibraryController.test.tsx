@@ -8,7 +8,12 @@ import {
 
 import { useProjectLibraryController } from "./useProjectLibraryController";
 
-const mocks = vi.hoisted(() => ({ add: vi.fn(), catalog: vi.fn(), remove: vi.fn() }));
+const mocks = vi.hoisted(() => ({
+	add: vi.fn(),
+	catalog: vi.fn(),
+	installations: vi.fn(),
+	remove: vi.fn(),
+}));
 const configuredRecipe = {
 	id: "configured-recipe",
 	title: "Configured Recipe",
@@ -40,7 +45,11 @@ vi.mock("~/hooks/useProjectCapabilityCatalog", () => ({
 	}),
 }));
 vi.mock("~/hooks/useRecipes", () => ({
-	useRecipeInstallations: () => ({ data: { installations: [] } }),
+	useRecipeInstallations: () => ({ data: { installations: mocks.installations() } }),
+}));
+vi.mock("~/state/stores/chatStore", () => ({
+	useChatStore: (selector: (state: { user: { id: number } }) => unknown) =>
+		selector({ user: { id: 42 } }),
 }));
 vi.mock("~/components/Apps/Recipes/useRecipeActionRequest", () => ({
 	useRecipeActionRequest: vi.fn(),
@@ -75,6 +84,7 @@ describe("useProjectLibraryController", () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 		mocks.add.mockResolvedValue({});
+		mocks.installations.mockReturnValue([]);
 		mocks.catalog.mockReturnValue({
 			apps: [],
 			error: null,
@@ -84,6 +94,27 @@ describe("useProjectLibraryController", () => {
 			recipes: [configuredRecipe],
 			tools: [],
 		});
+	});
+
+	it("keeps a configured installation visible when the authenticated ID is numeric", () => {
+		const installation = {
+			id: "installation-1",
+			recipeId: configuredRecipe.id,
+			userId: 42,
+			projectId: "project-1",
+			status: "active",
+			triggers: [{ type: "manual", enabled: true }],
+			configuration: { topic: "Launch plan" },
+			createdAt: "2026-08-11T00:00:00.000Z",
+			updatedAt: "2026-08-11T00:00:00.000Z",
+		};
+		mocks.installations.mockReturnValue([installation]);
+
+		const { result } = renderHook(() => useProjectLibraryController("workspace-1", "project-1"));
+
+		expect(result.current.recipes.installationByRecipeId.get(configuredRecipe.id)).toBe(
+			installation,
+		);
 	});
 
 	it("adds a recipe association without duplicating recipe installation configuration", async () => {

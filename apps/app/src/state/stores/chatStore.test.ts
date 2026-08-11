@@ -20,7 +20,7 @@ describe("chatStore user configuration", () => {
 
 	it("applies temporary chat defaults once when authenticated settings first hydrate", () => {
 		const user: User = {
-			id: "1",
+			id: 1,
 			name: "Nicholas",
 			github_username: "nicholas",
 			plan_id: "pro",
