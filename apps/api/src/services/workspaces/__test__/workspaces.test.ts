@@ -5,6 +5,7 @@ vi.mock("~/services/email", () => ({
 }));
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
+import { deriveProjectColour } from "@assistant/schemas";
 import type {
 	ProjectRow,
 	WorkspaceInvitationRow,
@@ -246,6 +247,38 @@ describe("workspace invitation lifecycle", () => {
 });
 
 describe("workspace and project isolation", () => {
+	it("derives a stable colour when creating a project without one", async () => {
+		const { context, repositories } = createHarness();
+
+		await createProject(context, WORKSPACE_ID, {
+			name: "Customer research",
+			description: "Summarise interview themes",
+			instructions: "",
+		});
+
+		expect(repositories.createProject).toHaveBeenCalledWith(
+			expect.objectContaining({
+				name: "Customer research",
+				colour: deriveProjectColour("Customer research", "Summarise interview themes"),
+			}),
+		);
+	});
+
+	it("preserves a colour supplied when creating a project", async () => {
+		const { context, repositories } = createHarness();
+
+		await createProject(context, WORKSPACE_ID, {
+			name: "Customer research",
+			description: "Summarise interview themes",
+			instructions: "",
+			colour: "#2563EB",
+		});
+
+		expect(repositories.createProject).toHaveBeenCalledWith(
+			expect.objectContaining({ colour: "#2563EB" }),
+		);
+	});
+
 	it("does not disclose pending invitations to ordinary workspace members", async () => {
 		const { context, repositories } = createHarness({
 			user: { id: 3, email: "member@example.com" },

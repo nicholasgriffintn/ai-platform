@@ -117,7 +117,7 @@ export const createProjectSchema = z.object({
 	...projectFields,
 	description: projectFields.description.default(""),
 	instructions: projectFields.instructions.default(""),
-	colour: projectFields.colour.default("#2563EB"),
+	colour: projectFields.colour.optional(),
 	codingEnvironment: projectCodingEnvironmentSchema.nullable().optional(),
 });
 

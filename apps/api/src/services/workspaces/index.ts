@@ -7,6 +7,7 @@ import type {
 	UpdateWorkspaceInput,
 	WorkspaceDetail,
 } from "@assistant/schemas";
+import { deriveProjectColour } from "@assistant/schemas";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { sha256Hex } from "~/utils/crypto";
@@ -191,7 +192,7 @@ export async function createProject(
 		name: input.name,
 		description: input.description,
 		instructions: input.instructions,
-		colour: input.colour,
+		colour: input.colour ?? deriveProjectColour(input.name, input.description),
 		codingEnvironment: input.codingEnvironment,
 		createdBy: user.id,
 	});

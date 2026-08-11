@@ -80,6 +80,7 @@ export * from "./memories";
 export * from "./plans";
 export * from "./workspaces";
 export * from "./provider-messages";
+export * from "./project-colour";
 export * from "./realtime";
 export * from "./replicate";
 export * from "./reasoning";
