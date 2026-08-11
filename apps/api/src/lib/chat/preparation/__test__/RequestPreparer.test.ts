@@ -237,6 +237,7 @@ describe("RequestPreparer", () => {
 				"Generated system prompt\n\nProject instructions:\nUse the shared launch brief.",
 			);
 			expect(result.enabledTools).toEqual([
+				"web_search",
 				"code_execution",
 				"search_grounding",
 				"image_generation",

@@ -7,6 +7,7 @@ import {
 
 import type { ProjectCapabilityRow } from "~/repositories/WorkspaceRepository";
 import { PROJECT_TOOL_DEFINITIONS } from "~/services/dynamic-apps/config";
+import { listFunctionTools } from "~/services/functions";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
 interface ResolvedProjectTools {
@@ -27,12 +28,17 @@ function getToolDefinition(toolId: string): ProjectToolDefinition | undefined {
 	return PROJECT_TOOL_DEFINITIONS.find((tool) => tool.id === toolId);
 }
 
+function getCallableToolIds(): Set<string> {
+	return new Set(listFunctionTools().map((tool) => tool.name));
+}
+
 export function validateProjectToolConfiguration(
 	toolId: string,
 	configuration: Record<string, unknown>,
 ): Record<string, unknown> {
 	const definition = getToolDefinition(toolId);
 	if (!definition) {
+		if (getCallableToolIds().has(toolId)) return {};
 		throw new AssistantError("Unknown project tool", ErrorType.PARAMS_ERROR, 400);
 	}
 	if (!definition.requiresConfiguration) return {};
@@ -55,12 +61,17 @@ export function validateProjectToolConfiguration(
 }
 
 export function resolveProjectTools(capabilities: ProjectCapabilityRow[]): ResolvedProjectTools {
+	const callableToolIds = getCallableToolIds();
 	const configuredToolRows = new Map(
 		capabilities
 			.filter((capability) => capability.kind === "tool")
 			.map((capability) => [capability.capability_id, capability]),
 	);
-	const enabledTools: string[] = [];
+	const enabledTools = capabilities
+		.filter(
+			(capability) => capability.kind === "tool" && callableToolIds.has(capability.capability_id),
+		)
+		.map((capability) => capability.capability_id);
 	const toolOptions: ChatHostedToolSettings = {};
 
 	for (const definition of PROJECT_TOOL_DEFINITIONS) {
@@ -93,7 +104,7 @@ export function resolveProjectTools(capabilities: ProjectCapabilityRow[]): Resol
 	}
 
 	return {
-		enabledTools,
+		enabledTools: [...new Set(enabledTools)],
 		...(Object.keys(toolOptions).length > 0 ? { toolOptions } : {}),
 	};
 }

@@ -20,6 +20,7 @@ import {
 	getProject,
 	getWorkspace,
 	inviteWorkspaceMember,
+	listWorkspaces,
 } from "../index";
 
 const NOW = new Date("2026-08-10T12:00:00.000Z");
@@ -61,12 +62,18 @@ const project: ProjectRow = {
 };
 
 function createHarness(params?: {
-	user?: { id: number; email: string };
+	user?: { id: number; email: string; plan_id?: string };
 	role?: "owner" | "admin" | "member" | null;
 }) {
-	const user = params?.user ?? { id: 1, email: "owner@example.com" };
+	const user = {
+		id: 1,
+		email: "owner@example.com",
+		plan_id: "pro",
+		...params?.user,
+	};
 	const role = params?.role === undefined ? "owner" : params.role;
 	const repositories = {
+		listWorkspaces: vi.fn().mockResolvedValue([]),
 		getWorkspace: vi.fn().mockResolvedValue(workspace),
 		getMembership: vi.fn().mockResolvedValue(role ? { role } : null),
 		listProjects: vi.fn().mockResolvedValue([]),
@@ -88,6 +95,17 @@ function createHarness(params?: {
 
 	return { context, repositories };
 }
+
+describe("Work entitlement", () => {
+	it("does not query workspace data for a signed-in user without Pro", async () => {
+		const { context, repositories } = createHarness({
+			user: { id: 2, email: "free@example.com", plan_id: "free" },
+		});
+
+		await expect(listWorkspaces(context)).rejects.toMatchObject({ statusCode: 403 });
+		expect(repositories.listWorkspaces).not.toHaveBeenCalled();
+	});
+});
 
 function invitation(overrides: Partial<WorkspaceInvitationRow> = {}): WorkspaceInvitationRow {
 	return {

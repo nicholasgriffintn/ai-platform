@@ -29,6 +29,15 @@ export function InviteMemberDialog({
 	const [email, setEmail] = useState("");
 	const [role, setRole] = useState<"admin" | "member">("member");
 	const inviteUrl = inviteMember.data?.inviteUrl;
+	const resetDialog = () => {
+		inviteMember.reset();
+		setEmail("");
+		setRole("member");
+	};
+	const handleOpenChange = (nextOpen: boolean) => {
+		if (!nextOpen) resetDialog();
+		onOpenChange(nextOpen);
+	};
 
 	const handleSubmit = async (event: React.FormEvent) => {
 		event.preventDefault();
@@ -36,7 +45,7 @@ export function InviteMemberDialog({
 	};
 
 	return (
-		<Dialog open={open} onOpenChange={onOpenChange}>
+		<Dialog open={open} onOpenChange={handleOpenChange}>
 			<DialogContent>
 				<form onSubmit={handleSubmit} className="space-y-5">
 					<DialogHeader>
@@ -86,7 +95,7 @@ export function InviteMemberDialog({
 					)}
 					<DialogFooter>
 						{inviteUrl ? (
-							<Button type="button" onClick={() => onOpenChange(false)}>
+							<Button type="button" onClick={() => handleOpenChange(false)}>
 								Done
 							</Button>
 						) : (

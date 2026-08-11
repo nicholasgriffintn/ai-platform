@@ -398,11 +398,20 @@ export class WorkspaceRepository extends BaseRepository {
 		const row = await this.runQuery<{ allowed: number }>(
 			`SELECT EXISTS(
 				SELECT 1 FROM conversation c
+				JOIN user access_user ON access_user.id = ?
 				LEFT JOIN project p ON p.id = c.project_id
-				LEFT JOIN workspace_member wm ON wm.workspace_id = p.workspace_id AND wm.user_id = ?
-				WHERE c.id = ? AND (c.user_id = ? OR wm.user_id IS NOT NULL)
+				LEFT JOIN workspace_member wm
+					ON wm.workspace_id = p.workspace_id AND wm.user_id = access_user.id
+				WHERE c.id = ? AND (
+					(c.project_id IS NULL AND c.user_id = access_user.id)
+					OR (
+						c.project_id IS NOT NULL
+						AND access_user.plan_id = 'pro'
+						AND wm.user_id IS NOT NULL
+					)
+				)
 			) AS allowed`,
-			[userId, conversationId, userId],
+			[userId, conversationId],
 			true,
 		);
 		return row?.allowed === 1;

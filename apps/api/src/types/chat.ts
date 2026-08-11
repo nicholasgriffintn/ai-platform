@@ -185,12 +185,6 @@ export interface IBody {
 	[other: string]: any;
 }
 
-export interface IFeedbackBody {
-	log_id: string;
-	feedback: 1 | -1 | "1" | "-1" | undefined | null;
-	score: number;
-}
-
 export type RagOptions = {
 	top_k?: number;
 	score_threshold?: number;

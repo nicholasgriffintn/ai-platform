@@ -1,24 +1,23 @@
-import { ConversationManager } from "~/lib/conversationManager";
-import type { ServiceContext } from "~/lib/context/serviceContext";
+import type { ConversationRepository } from "~/repositories";
 
 interface DeleteChatCompletionResult {
 	success: boolean;
 	message: string;
 }
 
+export interface DeleteAllChatCompletionsContext {
+	requireUser(): { id: number };
+	repositories: {
+		conversations: Pick<ConversationRepository, "deleteAllPersonalConversations">;
+	};
+}
+
 export const handleDeleteAllChatCompletions = async (
-	context: ServiceContext,
+	context: DeleteAllChatCompletionsContext,
 ): Promise<DeleteChatCompletionResult> => {
 	const user = context.requireUser();
 
-	context.ensureDatabase();
-
-	const conversationManager = ConversationManager.getInstance({
-		database: context.database,
-		user,
-	});
-
-	await conversationManager.deleteAllChatCompletions(user.id);
+	await context.repositories.conversations.deleteAllPersonalConversations(user.id);
 
 	return {
 		success: true,

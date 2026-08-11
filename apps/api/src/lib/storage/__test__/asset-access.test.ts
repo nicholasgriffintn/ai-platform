@@ -56,7 +56,7 @@ describe("assertAssetAccess", () => {
 
 	it("allows a project member to read an app asset created by another member", async () => {
 		const context = createContext(null);
-		context.requireUser = vi.fn().mockReturnValue({ id: 7 });
+		context.requireUser = vi.fn().mockReturnValue({ id: 7, plan_id: "pro" });
 		context.repositories.appData.getAppDataById = vi
 			.fn()
 			.mockResolvedValue({ id: "app-data-1", project_id: "project-1" });
@@ -73,6 +73,22 @@ describe("assertAssetAccess", () => {
 				context,
 			}),
 		).resolves.toBeUndefined();
+	});
+
+	it("blocks project asset access when a member no longer has Pro", async () => {
+		const context = createContext(null);
+		context.requireUser = vi.fn().mockReturnValue({ id: 7, plan_id: "free" });
+		context.repositories.appData.getAppDataById = vi
+			.fn()
+			.mockResolvedValue({ id: "app-data-1", project_id: "project-1" });
+
+		await expect(
+			assertAssetAccess({
+				asset: { ...privateAsset, app_data_id: "app-data-1", conversation_id: null },
+				userId: 7,
+				context,
+			}),
+		).rejects.toMatchObject({ statusCode: 403 });
 	});
 
 	it("allows anonymous access when the asset belongs to a public conversation", async () => {

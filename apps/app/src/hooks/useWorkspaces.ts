@@ -15,13 +15,16 @@ import type {
 import {
 	acceptWorkspaceInvitation,
 	addProjectCapability,
+	archiveProject,
 	createProject,
 	createWorkspace,
+	deleteWorkspace,
 	getProject,
 	getWorkspace,
 	inviteWorkspaceMember,
 	listWorkspaces,
 	removeProjectCapability,
+	revokeWorkspaceInvitation,
 	updateProject,
 	updateWorkspace,
 } from "~/lib/api/workspaces";
@@ -120,12 +123,44 @@ function upsertWorkspaceInListCache(queryClient: QueryClient, workspace: Workspa
 	});
 }
 
+function removeWorkspaceFromCaches(queryClient: QueryClient, workspaceId: string) {
+	queryClient.removeQueries({ queryKey: workspaceQueryKey(workspaceId) });
+	queryClient.setQueryData<WorkspaceListData>(WORKSPACES_QUERY_KEY, (data) =>
+		data
+			? { workspaces: data.workspaces.filter((workspace) => workspace.id !== workspaceId) }
+			: data,
+	);
+}
+
+function removeProjectFromCaches(queryClient: QueryClient, workspaceId: string, projectId: string) {
+	queryClient.removeQueries({ queryKey: projectQueryKey(projectId) });
+	queryClient.setQueryData<WorkspaceDetail>(workspaceQueryKey(workspaceId), (workspace) => {
+		if (!workspace) return workspace;
+		return {
+			...workspace,
+			projectCount: Math.max(0, workspace.projectCount - 1),
+			projects: workspace.projects.filter((project) => project.id !== projectId),
+		};
+	});
+	queryClient.setQueryData<WorkspaceListData>(WORKSPACES_QUERY_KEY, (data) => {
+		if (!data) return data;
+		return {
+			workspaces: data.workspaces.map((workspace) =>
+				workspace.id === workspaceId
+					? { ...workspace, projectCount: Math.max(0, workspace.projectCount - 1) }
+					: workspace,
+			),
+		};
+	});
+}
+
 export function useWorkspaces() {
 	const isAuthenticated = useChatStore((state) => state.isAuthenticated);
+	const isPro = useChatStore((state) => state.isPro);
 	return useQuery({
 		queryKey: WORKSPACES_QUERY_KEY,
 		queryFn: listWorkspaces,
-		enabled: isAuthenticated,
+		enabled: isAuthenticated && isPro,
 		staleTime: WORK_QUERY_STALE_TIME,
 		gcTime: WORK_QUERY_GC_TIME,
 	});
@@ -133,10 +168,11 @@ export function useWorkspaces() {
 
 export function useWorkspace(workspaceId?: string) {
 	const isAuthenticated = useChatStore((state) => state.isAuthenticated);
+	const isPro = useChatStore((state) => state.isPro);
 	return useQuery({
 		queryKey: workspaceQueryKey(workspaceId ?? ""),
 		queryFn: () => getWorkspace(workspaceId!),
-		enabled: Boolean(workspaceId) && isAuthenticated,
+		enabled: Boolean(workspaceId) && isAuthenticated && isPro,
 		staleTime: WORK_QUERY_STALE_TIME,
 		gcTime: WORK_QUERY_GC_TIME,
 	});
@@ -144,10 +180,11 @@ export function useWorkspace(workspaceId?: string) {
 
 export function useProject(projectId?: string) {
 	const isAuthenticated = useChatStore((state) => state.isAuthenticated);
+	const isPro = useChatStore((state) => state.isPro);
 	return useQuery({
 		queryKey: projectQueryKey(projectId ?? ""),
 		queryFn: () => getProject(projectId!),
-		enabled: Boolean(projectId) && isAuthenticated,
+		enabled: Boolean(projectId) && isAuthenticated && isPro,
 		staleTime: WORK_QUERY_STALE_TIME,
 		gcTime: WORK_QUERY_GC_TIME,
 	});
@@ -176,6 +213,14 @@ export function useUpdateWorkspace() {
 	});
 }
 
+export function useDeleteWorkspace() {
+	const queryClient = useQueryClient();
+	return useMutation({
+		mutationFn: deleteWorkspace,
+		onSuccess: (_, workspaceId) => removeWorkspaceFromCaches(queryClient, workspaceId),
+	});
+}
+
 export function useCreateProject() {
 	const queryClient = useQueryClient();
 	return useMutation({
@@ -200,6 +245,16 @@ export function useUpdateProject() {
 	});
 }
 
+export function useArchiveProject() {
+	const queryClient = useQueryClient();
+	return useMutation({
+		mutationFn: ({ projectId }: { workspaceId: string; projectId: string }) =>
+			archiveProject(projectId),
+		onSuccess: (_, { workspaceId, projectId }) =>
+			removeProjectFromCaches(queryClient, workspaceId, projectId),
+	});
+}
+
 export function useInviteWorkspaceMember() {
 	const queryClient = useQueryClient();
 	return useMutation({
@@ -210,6 +265,16 @@ export function useInviteWorkspaceMember() {
 			workspaceId: string;
 			input: CreateWorkspaceInvitationInput;
 		}) => inviteWorkspaceMember(workspaceId, input),
+		onSuccess: (_, variables) =>
+			queryClient.invalidateQueries({ queryKey: workspaceQueryKey(variables.workspaceId) }),
+	});
+}
+
+export function useRevokeWorkspaceInvitation() {
+	const queryClient = useQueryClient();
+	return useMutation({
+		mutationFn: ({ workspaceId, invitationId }: { workspaceId: string; invitationId: string }) =>
+			revokeWorkspaceInvitation(workspaceId, invitationId),
 		onSuccess: (_, variables) =>
 			queryClient.invalidateQueries({ queryKey: workspaceQueryKey(variables.workspaceId) }),
 	});

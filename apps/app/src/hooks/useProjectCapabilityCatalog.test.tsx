@@ -4,7 +4,7 @@ import type { AssistantRecipe } from "@assistant/schemas";
 
 import { useProjectCapabilityCatalog } from "./useProjectCapabilityCatalog";
 
-const mocks = vi.hoisted(() => ({ appsData: vi.fn(), recipes: vi.fn() }));
+const mocks = vi.hoisted(() => ({ appsData: vi.fn(), recipes: vi.fn(), tools: vi.fn() }));
 
 const recipe = {
 	id: "daily-briefing",
@@ -41,6 +41,13 @@ vi.mock("./useRecipes", () => ({
 		isLoading: false,
 	}),
 }));
+vi.mock("./useTools", () => ({
+	useTools: () => ({
+		data: mocks.tools(),
+		error: null,
+		isLoading: false,
+	}),
+}));
 
 describe("useProjectCapabilityCatalog", () => {
 	it("uses API metadata and includes every recipe rather than only installations", () => {
@@ -70,6 +77,7 @@ describe("useProjectCapabilityCatalog", () => {
 			recipe,
 			{ ...recipe, id: "weekly-briefing", title: "Weekly Briefing" },
 		]);
+		mocks.tools.mockReturnValue([]);
 		const { result } = renderHook(() => useProjectCapabilityCatalog());
 
 		expect(
@@ -88,6 +96,49 @@ describe("useProjectCapabilityCatalog", () => {
 				label: "Web fetch",
 				metadata: expect.objectContaining({ category: "Research" }),
 			}),
+		);
+	});
+
+	it("classifies callable API tools as tools instead of duplicate apps", () => {
+		mocks.appsData.mockReturnValue({
+			apps: [
+				{
+					id: "get_weather",
+					name: "Get Weather",
+					description: "Get a weather forecast",
+					kind: "dynamic",
+					category: "Data & Utilities",
+				},
+			],
+			experiences: [],
+			tools: [],
+		});
+		mocks.recipes.mockReturnValue([]);
+		mocks.tools.mockReturnValue([
+			{
+				id: "get_weather",
+				name: "Get Weather",
+				description: "Get a weather forecast",
+				category: "Research",
+				isDefault: false,
+			},
+		]);
+
+		const { result } = renderHook(() => useProjectCapabilityCatalog());
+
+		expect(result.current.items).toContainEqual(
+			expect.objectContaining({
+				id: "tool:get_weather",
+				kind: "tool",
+				label: "Get Weather",
+				metadata: expect.objectContaining({
+					category: "Research",
+					toolId: "get_weather",
+				}),
+			}),
+		);
+		expect(result.current.items).not.toContainEqual(
+			expect.objectContaining({ id: "app:get_weather", kind: "app" }),
 		);
 	});
 });

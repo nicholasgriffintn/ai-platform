@@ -1,12 +1,13 @@
-import { ArrowRight, FolderKanban, Plus, Users } from "lucide-react";
+import { ArrowRight, FolderKanban, Plus, Trash2, Users } from "lucide-react";
 import { useState } from "react";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 
 import { EmptyState } from "~/components/Core/EmptyState";
 import { PageHeader } from "~/components/Core/PageHeader";
 import { PageTitle } from "~/components/Core/PageTitle";
 import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
-import { Button, Card } from "~/components/ui";
+import { Button, Card, ConfirmationDialog } from "~/components/ui";
+import { useDeleteWorkspace } from "~/hooks/useWorkspaces";
 import { isAuthenticationError } from "~/lib/errors";
 import { useWorkData } from "./WorkContext";
 import { CreateProjectDialog } from "./CreateProjectDialog";
@@ -18,6 +19,9 @@ export function WorkspaceOverview({ workspaceId }: { workspaceId: string }) {
 	const { data: workspace, isLoading, error } = workspaceQuery;
 	const [isCreateOpen, setIsCreateOpen] = useState(false);
 	const [isInviteOpen, setIsInviteOpen] = useState(false);
+	const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+	const deleteWorkspace = useDeleteWorkspace();
+	const navigate = useNavigate();
 
 	if (isLoading) return <WorkspaceOverviewSkeleton />;
 	if (isAuthenticationError(error)) {
@@ -54,6 +58,16 @@ export function WorkspaceOverview({ workspaceId }: { workspaceId: string }) {
 										icon: <Plus size={16} />,
 										onClick: () => setIsCreateOpen(true),
 									},
+									...(workspace.role === "owner"
+										? [
+												{
+													label: "Delete",
+													icon: <Trash2 size={16} />,
+													onClick: () => setIsDeleteOpen(true),
+													variant: "secondary" as const,
+												},
+											]
+										: []),
 								]
 							: undefined
 					}
@@ -110,10 +124,11 @@ export function WorkspaceOverview({ workspaceId }: { workspaceId: string }) {
 									<div className="flex gap-4 border-t border-zinc-100 pt-4 text-xs text-zinc-500 dark:border-zinc-800">
 										<span>
 											{project.conversationCount} conversation
-											{project.conversationCount > 1 ? "s" : ""}
+											{project.conversationCount !== 1 ? "s" : ""}
 										</span>
 										<span>
-											{project.capabilityCount} capabilit{project.capabilityCount > 1 ? "es" : "y"}
+											{project.capabilityCount} capabilit
+											{project.capabilityCount !== 1 ? "es" : "y"}
 										</span>
 									</div>
 								</Card>
@@ -133,6 +148,23 @@ export function WorkspaceOverview({ workspaceId }: { workspaceId: string }) {
 				open={isInviteOpen}
 				onOpenChange={setIsInviteOpen}
 			/>
+			<ConfirmationDialog
+				open={isDeleteOpen}
+				onOpenChange={setIsDeleteOpen}
+				title="Delete workspace"
+				description={`Delete ${workspace.name} and all of its projects, conversations, and invitations. This cannot be undone.`}
+				confirmText="Delete workspace"
+				variant="destructive"
+				isLoading={deleteWorkspace.isPending}
+				onConfirm={async () => {
+					await deleteWorkspace.mutateAsync(workspaceId);
+					navigate("/work", { replace: true });
+				}}
+			>
+				{deleteWorkspace.error && (
+					<p className="text-sm text-red-700 dark:text-red-400">{deleteWorkspace.error.message}</p>
+				)}
+			</ConfirmationDialog>
 		</>
 	);
 }

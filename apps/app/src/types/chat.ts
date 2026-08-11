@@ -272,6 +272,7 @@ export interface Conversation {
 	last_message_at?: string;
 	parent_conversation_id?: string;
 	parent_message_id?: string;
+	project_id?: string | null;
 	isLocalOnly?: boolean;
 	is_public?: boolean;
 	share_id?: string;

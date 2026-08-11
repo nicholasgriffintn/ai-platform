@@ -30,7 +30,11 @@ function createContext({
 		},
 	};
 	const context = {
-		requireUser: vi.fn().mockReturnValue({ id: 7, email: "member@example.com" }),
+		requireUser: vi.fn().mockReturnValue({
+			id: 7,
+			email: "member@example.com",
+			plan_id: "pro",
+		}),
 		repositories,
 	} as unknown as ServiceContext;
 
@@ -86,6 +90,7 @@ describe("project chat context", () => {
 			projectId: "project-1",
 			instructions: "Use the approved launch brief.",
 			enabledTools: [
+				"web_search",
 				"code_execution",
 				"search_grounding",
 				"image_generation",

@@ -41,6 +41,27 @@ const experiences: ProjectExperienceDefinition[] = [
 	},
 ];
 
+const callableToolItem = {
+	id: "tool:get_weather",
+	kind: "tool",
+	label: "Get Weather",
+	searchText: [],
+	capability: {
+		id: "get_weather",
+		kind: "tool",
+		name: "Get Weather",
+		availability: "available",
+		launch: { method: "tool_toggle" },
+		executionMode: "tool",
+		authRequirement: "none",
+		requiredModelCapabilities: [],
+		requiredConnectors: [],
+		savedState: { supported: false },
+		tags: ["tool"],
+	},
+	launch: { kind: "tool_toggle", toolId: "get_weather" },
+} satisfies AssistantActionItem;
+
 function LocationProbe() {
 	const location = useLocation();
 	return <output data-testid="location">{`${location.pathname}${location.search}`}</output>;
@@ -145,5 +166,58 @@ describe("ProjectCapabilityCard", () => {
 		expect(screen.queryByRole("button", { name: "Add to project" })).not.toBeInTheDocument();
 		fireEvent.click(screen.getByRole("button", { name: "Configure" }));
 		expect(onConfigure).toHaveBeenCalledOnce();
+	});
+
+	it("lets project managers add and remove callable tools", () => {
+		const onAdd = vi.fn();
+		const onRemove = vi.fn();
+		const { rerender } = render(
+			<MemoryRouter>
+				<ProjectCapabilityCard
+					canManage
+					experiences={[]}
+					isAdding={false}
+					isRemoving={false}
+					item={callableToolItem}
+					kind="tool"
+					onAdd={onAdd}
+					onRemove={onRemove}
+					projectId="project-1"
+					workspaceId="workspace-1"
+				/>
+			</MemoryRouter>,
+		);
+
+		fireEvent.click(screen.getByRole("button", { name: "Add to project" }));
+		expect(onAdd).toHaveBeenCalledOnce();
+
+		rerender(
+			<MemoryRouter>
+				<ProjectCapabilityCard
+					canManage
+					existing={{
+						id: "capability-1",
+						projectId: "project-1",
+						kind: "tool",
+						capabilityId: "get_weather",
+						configuration: {},
+						createdAt: "2026-01-01",
+					}}
+					experiences={[]}
+					isAdding={false}
+					isRemoving={false}
+					item={callableToolItem}
+					kind="tool"
+					onAdd={onAdd}
+					onRemove={onRemove}
+					projectId="project-1"
+					workspaceId="workspace-1"
+				/>
+			</MemoryRouter>,
+		);
+
+		fireEvent.click(screen.getByRole("button", { name: "More actions" }));
+		fireEvent.click(screen.getByRole("menuitem", { name: "Remove from project" }));
+		expect(onRemove).toHaveBeenCalledOnce();
 	});
 });

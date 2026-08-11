@@ -1,417 +1,168 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { createServiceContext } from "~/lib/context/serviceContext";
+import type { IEnv, IUser, Message } from "~/types";
 import { handleUpdateChatCompletion } from "../updateChatCompletion";
 
-vi.mock("~/utils/id", () => ({
+const mocks = vi.hoisted(() => ({
 	generateId: vi.fn(),
+	getConversationDetails: vi.fn(),
+	replaceMessages: vi.fn(),
+	updateConversation: vi.fn(),
 }));
 
+vi.mock("~/utils/id", () => ({ generateId: mocks.generateId }));
 vi.mock("~/lib/conversationManager", () => ({
 	ConversationManager: {
-		getInstance: vi.fn(),
+		getInstance: () => ({
+			getConversationDetails: mocks.getConversationDetails,
+			replaceMessages: mocks.replaceMessages,
+			updateConversation: mocks.updateConversation,
+		}),
 	},
 }));
 
-const mockEnv = {
-	DB: "test-db",
+const user: IUser = {
+	id: 123,
+	name: "Test person",
+	avatar_url: null,
+	email: "person@example.com",
+	github_username: null,
+	company: null,
+	site: null,
+	location: null,
+	bio: null,
+	twitter_username: null,
+	created_at: "2026-01-01T00:00:00.000Z",
+	updated_at: "2026-01-01T00:00:00.000Z",
+	setup_at: null,
+	terms_accepted_at: null,
+	plan_id: "pro",
 };
 
-const mockUser = {
-	id: "user-123",
-	email: "test@example.com",
-};
-
-let mockServiceContext: any;
+const env = { DB: {} } as IEnv;
+const context = createServiceContext({ env, user });
 
 describe("handleUpdateChatCompletion", () => {
-	let mockConversationManager: any;
-
-	beforeEach(async () => {
+	beforeEach(() => {
 		vi.clearAllMocks();
-
-		const { ConversationManager } = await import("~/lib/conversationManager");
-		const { generateId } = await import("~/utils/id");
-
-		vi.mocked(generateId)
-			.mockReset()
+		mocks.generateId
 			.mockReturnValueOnce("branch-copy-1")
 			.mockReturnValueOnce("branch-copy-2")
 			.mockReturnValue("branch-copy-extra");
-
-		mockConversationManager = {
-			get: vi.fn(),
-			getConversationDetails: vi.fn(),
-			replaceMessages: vi.fn(),
-			updateConversation: vi.fn(),
-		};
-
-		mockServiceContext = {
-			env: mockEnv,
-			user: mockUser,
-			ensureDatabase: vi.fn(),
-			database: {} as any,
-			repositories: {} as any,
-			requireUser: vi.fn().mockReturnValue(mockUser),
-		};
-
-		vi.mocked(ConversationManager.getInstance).mockReturnValue(mockConversationManager);
 	});
 
-	afterEach(() => {
-		vi.restoreAllMocks();
+	it("persists messages before metadata and returns the final stored conversation", async () => {
+		const messages: Message[] = [{ id: "message-1", role: "user", content: "Hello" }];
+		mocks.updateConversation.mockResolvedValue({ id: "conversation-1", title: "Live title" });
+		mocks.getConversationDetails.mockResolvedValue({
+			id: "conversation-1",
+			title: "Live title",
+			messages,
+		});
+
+		const result = await handleUpdateChatCompletion(context, "conversation-1", {
+			title: "Live title",
+			messages,
+		});
+
+		expect(mocks.replaceMessages).toHaveBeenCalledWith("conversation-1", messages);
+		expect(mocks.updateConversation).toHaveBeenCalledWith("conversation-1", {
+			title: "Live title",
+		});
+		expect(mocks.replaceMessages.mock.invocationCallOrder[0]).toBeLessThan(
+			mocks.updateConversation.mock.invocationCallOrder[0],
+		);
+		expect(result).toEqual({ id: "conversation-1", title: "Live title", messages });
 	});
 
-	describe("parameter validation", () => {
-		it("should throw error for missing user ID", async () => {
-			mockServiceContext.requireUser.mockImplementationOnce(() => {
-				throw new Error("User is not authenticated");
-			});
+	it("rejects compacted visible history as a replacement for canonical messages", async () => {
+		const messages: Message[] = [
+			{ id: "old-user", role: "user", content: "Old visible turn" },
+			{
+				id: "snapshot-1-compaction",
+				role: "compaction",
+				content: "Context compacted",
+				parts: [{ type: "compaction", status: "completed", label: "Context compacted" }],
+			},
+			{ id: "latest-user", role: "user", content: "Current question" },
+		];
 
-			await expect(() =>
-				handleUpdateChatCompletion(mockServiceContext, "completion-123", {
-					title: "Test",
-				}),
-			).rejects.toThrow("User is not authenticated");
-		});
-
-		it("should surface errors from ensureDatabase", async () => {
-			mockServiceContext.ensureDatabase.mockImplementationOnce(() => {
-				throw new Error("Database not configured");
-			});
-
-			await expect(() =>
-				handleUpdateChatCompletion(mockServiceContext, "completion-123", {
-					title: "Test",
-				}),
-			).rejects.toThrow("Database not configured");
-		});
+		await expect(
+			handleUpdateChatCompletion(context, "conversation-1", { messages }),
+		).rejects.toThrow("Compacted visible history cannot replace stored conversation messages");
+		expect(mocks.replaceMessages).not.toHaveBeenCalled();
 	});
 
-	describe("successful updates", () => {
-		it("should update conversation title successfully", async () => {
-			const completionId = "completion-123";
-			const updates = { title: "New Title" };
-			const mockResult = {
-				id: completionId,
-				title: "New Title",
-				updated_at: new Date().toISOString(),
-			};
+	it("branches from authorised active context and inherits its project scope", async () => {
+		const providedMessages: Message[] = [
+			{ id: "old-user", role: "user", content: "Old visible turn" },
+			{ id: "latest-user", role: "user", content: "Current question" },
+		];
+		const activeParentMessages: Message[] = [
+			{
+				id: "snapshot-1",
+				role: "assistant",
+				content: "Conversation snapshot\n\nEarlier context.",
+				parts: [{ type: "snapshot", summary: "Earlier context." }],
+			},
+			{ id: "latest-user", role: "user", content: "Current question" },
+			{ id: "later-assistant", role: "assistant", content: "Later answer" },
+		];
+		mocks.getConversationDetails
+			.mockResolvedValueOnce({
+				id: "parent-1",
+				project_id: "project-1",
+				messages: activeParentMessages,
+			})
+			.mockResolvedValue({ id: "branch-1", project_id: "project-1", messages: [] });
 
-			mockConversationManager.updateConversation.mockResolvedValue(mockResult);
-
-			const result = await handleUpdateChatCompletion(mockServiceContext, completionId, updates);
-
-			expect(mockConversationManager.updateConversation).toHaveBeenCalledWith(
-				completionId,
-				updates,
-			);
-			expect(result).toEqual(mockResult);
+		await handleUpdateChatCompletion(context, "branch-1", {
+			messages: providedMessages,
+			parent_conversation_id: "parent-1",
+			parent_message_id: "latest-user",
 		});
 
-		it("should update conversation archived status", async () => {
-			const completionId = "completion-456";
-			const updates = { archived: true };
-			const mockResult = {
-				id: completionId,
-				archived: true,
-				updated_at: new Date().toISOString(),
-			};
-
-			mockConversationManager.updateConversation.mockResolvedValue(mockResult);
-
-			const result = await handleUpdateChatCompletion(mockServiceContext, completionId, updates);
-
-			expect(mockConversationManager.updateConversation).toHaveBeenCalledWith(
-				completionId,
-				updates,
-			);
-			expect(result.archived).toBe(true);
+		expect(mocks.getConversationDetails).toHaveBeenCalledWith("parent-1", {
+			includeArchived: false,
+			includeSnapshots: true,
 		});
-
-		it("should replace stored messages", async () => {
-			const completionId = "completion-live";
-			const messages = [
-				{
-					id: "message-1",
-					role: "user",
-					content: "Hello",
-				},
-			] as any;
-			const mockResult = {
-				id: completionId,
-				title: "Live",
-				messages,
-			};
-
-			mockConversationManager.getConversationDetails.mockResolvedValue(mockResult);
-
-			const result = await handleUpdateChatCompletion(mockServiceContext, completionId, {
-				messages,
-			});
-
-			expect(mockConversationManager.replaceMessages).toHaveBeenCalledWith(completionId, messages);
-			expect(mockConversationManager.updateConversation).not.toHaveBeenCalled();
-			expect(result).toEqual(mockResult);
-		});
-
-		it("should reject replacing stored messages with compacted visible history", async () => {
-			const completionId = "completion-compacted";
-			const messages = [
-				{
-					id: "old-user",
-					role: "user",
-					content: "Old visible turn",
-				},
-				{
-					id: "snapshot-1-compaction",
-					role: "compaction",
-					content: "Context compacted",
-					parts: [{ type: "compaction", status: "completed", label: "Context compacted" }],
-				},
-				{
-					id: "latest-user",
-					role: "user",
-					content: "Current question",
-				},
-			] as any;
-
-			await expect(
-				handleUpdateChatCompletion(mockServiceContext, completionId, { messages }),
-			).rejects.toThrow("Compacted visible history cannot replace stored conversation messages");
-			expect(mockConversationManager.replaceMessages).not.toHaveBeenCalled();
-		});
-
-		it("should replace messages before applying conversation metadata", async () => {
-			const completionId = "completion-live";
-			const messages = [
-				{
-					id: "message-1",
-					role: "user",
-					content: "Hello",
-				},
-			] as any;
-			const mockResult = {
-				id: completionId,
-				title: "Live title",
-				messages,
-			};
-
-			mockConversationManager.updateConversation.mockResolvedValue({
-				id: completionId,
-				title: "Live title",
-			});
-			mockConversationManager.getConversationDetails.mockResolvedValue(mockResult);
-
-			const result = await handleUpdateChatCompletion(mockServiceContext, completionId, {
-				title: "Live title",
-				messages,
-			});
-
-			expect(mockConversationManager.replaceMessages).toHaveBeenCalledWith(completionId, messages);
-			expect(mockConversationManager.updateConversation).toHaveBeenCalledWith(completionId, {
-				title: "Live title",
-			});
-			expect(result).toEqual(mockResult);
-		});
-
-		it("should pass branch metadata when creating branched messages", async () => {
-			const completionId = "branch-live";
-			const messages = [
-				{
-					id: "assistant-1",
-					role: "assistant",
-					content: "Answer",
-				},
-			] as any;
-			const mockResult = {
-				id: completionId,
-				title: "Branch",
-				messages,
-			};
-
-			mockConversationManager.getConversationDetails.mockResolvedValue(mockResult);
-			mockConversationManager.get.mockResolvedValue(messages);
-
-			const result = await handleUpdateChatCompletion(mockServiceContext, completionId, {
-				messages,
-				parent_conversation_id: "conversation-1",
-				parent_message_id: "assistant-1",
-			});
-
-			expect(mockConversationManager.replaceMessages).toHaveBeenCalledWith(
-				completionId,
-				[
-					{
-						id: "branch-copy-1",
-						completion_id: completionId,
-						parent_message_id: "assistant-1",
-						role: "assistant",
-						content: "Answer",
-					},
-				],
-				{
-					metadata: {
-						branch_of: JSON.stringify({
-							conversation_id: "conversation-1",
-							message_id: "assistant-1",
-						}),
-					},
-				},
-			);
-			expect(mockConversationManager.updateConversation).not.toHaveBeenCalled();
-			expect(result).toEqual(mockResult);
-		});
-
-		it("should branch from active parent context after compaction", async () => {
-			const completionId = "branch-compacted";
-			const visibleMessages = [
-				{
-					id: "old-user",
-					role: "user",
-					content: "Old visible turn",
-				},
-				{
-					id: "snapshot-1-compaction",
-					role: "compaction",
-					content: "Context compacted",
-					parts: [{ type: "compaction", status: "completed", label: "Context compacted" }],
-				},
-				{
-					id: "latest-user",
-					role: "user",
-					content: "What was this conversation about?",
-				},
-			] as any;
-			const activeParentMessages = [
-				{
-					id: "snapshot-1",
-					role: "assistant",
-					content: "Conversation snapshot\n\nEarlier context.",
-					parts: [{ type: "snapshot", summary: "Earlier context." }],
-				},
-				{
-					id: "latest-user",
-					role: "user",
-					content: "What was this conversation about?",
-				},
-				{
-					id: "later-assistant",
-					role: "assistant",
-					content: "Later answer",
-				},
-			] as any;
-			const mockResult = {
-				id: completionId,
-				title: "Branch",
-				messages: activeParentMessages.slice(0, 2),
-			};
-
-			mockConversationManager.get.mockResolvedValue(activeParentMessages);
-			mockConversationManager.getConversationDetails.mockResolvedValue(mockResult);
-
-			const result = await handleUpdateChatCompletion(mockServiceContext, completionId, {
-				messages: visibleMessages,
-				parent_conversation_id: "conversation-1",
-				parent_message_id: "latest-user",
-			});
-
-			expect(mockConversationManager.get).toHaveBeenCalledWith("conversation-1");
-			expect(mockConversationManager.replaceMessages).toHaveBeenCalledWith(
-				completionId,
-				[
-					expect.objectContaining({
-						completion_id: completionId,
-						content: "Conversation snapshot\n\nEarlier context.",
-						parent_message_id: "snapshot-1",
-					}),
-					expect.objectContaining({
-						completion_id: completionId,
-						content: "What was this conversation about?",
-						parent_message_id: "latest-user",
-					}),
-				],
+		expect(mocks.replaceMessages).toHaveBeenCalledWith(
+			"branch-1",
+			[
 				expect.objectContaining({
-					metadata: {
-						branch_of: JSON.stringify({
-							conversation_id: "conversation-1",
-							message_id: "latest-user",
-						}),
-					},
+					id: "branch-copy-1",
+					content: "Conversation snapshot\n\nEarlier context.",
+					parent_message_id: "snapshot-1",
 				}),
-			);
-			expect(mockConversationManager.replaceMessages.mock.calls[0]?.[1]).not.toEqual(
-				expect.arrayContaining([
-					expect.objectContaining({
-						content: "Old visible turn",
+				expect.objectContaining({
+					id: "branch-copy-2",
+					content: "Current question",
+					parent_message_id: "latest-user",
+				}),
+			],
+			{
+				metadata: {
+					branch_of: JSON.stringify({
+						conversation_id: "parent-1",
+						message_id: "latest-user",
 					}),
-				]),
-			);
-			expect(result).toEqual(mockResult);
-		});
-
-		it("should reject branch creation from compacted visible history when active parent context is unavailable", async () => {
-			const completionId = "branch-live";
-			const messages = [
-				{
-					id: "compaction-marker-1",
-					completion_id: "conversation-1",
-					role: "compaction",
-					content: "Context compacted",
-					parts: [
-						{
-							type: "compaction",
-							status: "completed",
-							label: "Context compacted",
-						},
-					],
+					project_id: "project-1",
 				},
-				{
-					id: "assistant-1",
-					completion_id: "conversation-1",
-					role: "assistant",
-					content: "Answer",
-				},
-			] as any;
-			mockConversationManager.get.mockRejectedValue(new Error("active context unavailable"));
-
-			await expect(
-				handleUpdateChatCompletion(mockServiceContext, completionId, {
-					messages,
-					parent_conversation_id: "conversation-1",
-					parent_message_id: "assistant-1",
-				}),
-			).rejects.toThrow("Compacted visible history cannot be used to create a stored branch");
-			expect(mockConversationManager.replaceMessages).not.toHaveBeenCalled();
-		});
-
-		it("should handle empty completion ID", async () => {
-			const updates = { title: "Test" };
-			const mockResult = {
-				id: "",
-				title: "Test",
-			};
-
-			mockConversationManager.updateConversation.mockResolvedValue(mockResult);
-
-			const result = await handleUpdateChatCompletion(mockServiceContext, "", updates);
-
-			expect(mockConversationManager.updateConversation).toHaveBeenCalledWith("", updates);
-			expect(result).toEqual(mockResult);
-		});
+			},
+		);
 	});
 
-	describe("error handling", () => {
-		it("should handle conversation not found errors", async () => {
-			const completionId = "nonexistent";
-			const updates = { title: "New Title" };
+	it("does not create a branch when its parent cannot be authorised or loaded", async () => {
+		mocks.getConversationDetails.mockRejectedValue(new Error("active context unavailable"));
 
-			mockConversationManager.updateConversation.mockRejectedValue(
-				new Error("Conversation not found"),
-			);
-
-			await expect(() =>
-				handleUpdateChatCompletion(mockServiceContext, completionId, updates),
-			).rejects.toThrow("Conversation not found");
-		});
+		await expect(
+			handleUpdateChatCompletion(context, "branch-1", {
+				messages: [{ id: "assistant-1", role: "assistant", content: "Answer" }],
+				parent_conversation_id: "parent-1",
+				parent_message_id: "assistant-1",
+			}),
+		).rejects.toThrow("active context unavailable");
+		expect(mocks.replaceMessages).not.toHaveBeenCalled();
 	});
 });

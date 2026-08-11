@@ -1,471 +1,105 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { handleChatCompletionFeedbackSubmission } from "../chatCompletionFeedbackSubmission";
-let repositoryFactory = () => ({});
+import {
+	handleChatCompletionFeedbackSubmission,
+	type ChatFeedbackContext,
+} from "../chatCompletionFeedbackSubmission";
 
-vi.mock("~/repositories", () => ({
-	RepositoryManager: class {
-		constructor() {
-			return repositoryFactory();
-		}
-	},
-}));
+const patchLog = vi.fn(async () => undefined);
+const gateway = vi.fn(() => ({ patchLog }));
+const findMany = vi.fn(async () => [{ id: "training-example-1" }]);
+const updateById = vi.fn(async () => true);
 
-const mockGateway = {
-	patchLog: vi.fn(),
-};
-
-const mockAI = {
-	gateway: vi.fn(() => mockGateway),
-};
-
-const mockEnv = {
-	AI_GATEWAY_TOKEN: "test-token",
-	ACCOUNT_ID: "test-account",
-	AI: mockAI,
-} as any;
-
-const mockUser = {
-	email: "test@example.com",
-} as any;
-
-let mockServiceContext: any;
+function createContext(overrides: Partial<ChatFeedbackContext> = {}): ChatFeedbackContext {
+	return {
+		env: {
+			AI_GATEWAY_TOKEN: "gateway-token",
+			ACCOUNT_ID: "account-1",
+			AI: { gateway },
+		},
+		user: { email: "person@example.com" },
+		repositories: {
+			trainingExamples: { findMany, updateById },
+		},
+		...overrides,
+	};
+}
 
 describe("handleChatCompletionFeedbackSubmission", () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
-		repositoryFactory = () => ({});
+		findMany.mockResolvedValue([{ id: "training-example-1" }]);
+		updateById.mockResolvedValue(true);
+		patchLog.mockResolvedValue(undefined);
+	});
 
-		mockServiceContext = {
-			env: mockEnv,
-			user: mockUser,
-			requireUser: vi.fn().mockReturnValue(mockUser),
-			ensureDatabase: vi.fn(),
-			database: {} as any,
-			repositories: {} as any,
-			requestCache: new Map(),
-			userSettings: null,
-			getUserSettings: vi.fn(),
-			setUserSettings: vi.fn(),
-			getLogger: vi.fn().mockReturnValue({
-				info: vi.fn(),
-				warn: vi.fn(),
-				error: vi.fn(),
-				debug: vi.fn(),
+	it("records positive feedback at both external and local seams", async () => {
+		const result = await handleChatCompletionFeedbackSubmission(createContext(), {
+			completion_id: "completion-1",
+			request: { log_id: "log-1", feedback: 1, score: 80 },
+		});
+
+		expect(gateway).toHaveBeenCalledWith("llm-assistant");
+		expect(patchLog).toHaveBeenCalledWith("log-1", {
+			feedback: 1,
+			score: 80,
+			metadata: { user: "person@example.com" },
+		});
+		expect(findMany).toHaveBeenCalledWith({
+			conversationId: "completion-1",
+			source: "chat",
+			limit: 1,
+		});
+		expect(updateById).toHaveBeenCalledWith("training-example-1", {
+			feedback_rating: 5,
+		});
+		expect(result).toEqual({
+			success: true,
+			message: "Feedback submitted successfully",
+			completion_id: "completion-1",
+		});
+	});
+
+	it("records negative feedback locally when the gateway is not configured", async () => {
+		const context = createContext({
+			env: {
+				AI: { gateway },
+			},
+		});
+
+		await handleChatCompletionFeedbackSubmission(context, {
+			completion_id: "completion-2",
+			request: { log_id: "log-2", feedback: -1 },
+		});
+
+		expect(patchLog).not.toHaveBeenCalled();
+		expect(updateById).toHaveBeenCalledWith("training-example-1", {
+			feedback_rating: 1,
+		});
+	});
+
+	it("keeps local feedback when the optional gateway write fails", async () => {
+		patchLog.mockRejectedValueOnce(new Error("gateway unavailable"));
+
+		await expect(
+			handleChatCompletionFeedbackSubmission(createContext(), {
+				completion_id: "completion-3",
+				request: { log_id: "log-3", feedback: 1 },
 			}),
-		};
-	});
-
-	afterEach(() => {
-		vi.restoreAllMocks();
-	});
-
-	describe("parameter validation", () => {
-		it("should throw error for missing request", async () => {
-			await expect(() =>
-				handleChatCompletionFeedbackSubmission(mockServiceContext, {
-					request: null as any,
-					completion_id: "completion-123",
-				}),
-			).rejects.toThrow("Missing request");
-		});
-
-		it("should throw error for missing feedback", async () => {
-			const request = {
-				log_id: "log-123",
-			} as any;
-
-			await expect(() =>
-				handleChatCompletionFeedbackSubmission(mockServiceContext, {
-					request,
-					completion_id: "completion-123",
-				}),
-			).rejects.toThrow("Missing feedback");
-		});
-
-		it("should succeed without log_id when only feedback is provided", async () => {
-			const mockRepositories = {
-				trainingExamples: {
-					findMany: vi.fn().mockResolvedValue([]),
-				},
-			};
-
-			repositoryFactory = () => mockRepositories as any;
-
-			const ctx = {
-				...mockServiceContext,
-				env: { ...mockEnv, DB: {} as any },
-			};
-
-			const request = {
-				feedback: "positive",
-			} as any;
-
-			const result = await handleChatCompletionFeedbackSubmission(ctx, {
-				request,
-				completion_id: "completion-123",
-			});
-
-			expect(result.success).toBe(true);
-			expect(mockGateway.patchLog).not.toHaveBeenCalled();
-		});
-
-		it("should succeed without AI_GATEWAY_TOKEN when log_id not provided", async () => {
-			const mockRepositories = {
-				trainingExamples: {
-					findMany: vi.fn().mockResolvedValue([]),
-				},
-			};
-
-			repositoryFactory = () => mockRepositories as any;
-
-			const ctx = {
-				...mockServiceContext,
-				env: {
-					ACCOUNT_ID: "test-account",
-					AI: mockAI,
-					DB: {} as any,
-				} as any,
-			};
-
-			const request = {
-				feedback: "positive",
-			} as any;
-
-			const result = await handleChatCompletionFeedbackSubmission(ctx, {
-				request,
-				completion_id: "completion-123",
-			});
-
-			expect(result.success).toBe(true);
-			expect(mockGateway.patchLog).not.toHaveBeenCalled();
+		).resolves.toMatchObject({ success: true });
+		expect(updateById).toHaveBeenCalledWith("training-example-1", {
+			feedback_rating: 5,
 		});
 	});
 
-	describe("successful feedback submission", () => {
-		it("should submit positive feedback successfully", async () => {
-			const completionId = "completion-123";
-			const request = {
-				log_id: "log-123",
-				feedback: "positive",
-				score: 5,
-			} as any;
+	it("does not invent a local update when no training example exists", async () => {
+		findMany.mockResolvedValueOnce([]);
 
-			mockGateway.patchLog.mockResolvedValue(undefined);
-
-			const result = await handleChatCompletionFeedbackSubmission(mockServiceContext, {
-				request,
-				completion_id: completionId,
-			});
-
-			expect(mockAI.gateway).toHaveBeenCalledWith("llm-assistant");
-			expect(mockGateway.patchLog).toHaveBeenCalledWith("log-123", {
-				feedback: "positive",
-				score: 5,
-				metadata: {
-					user: "test@example.com",
-				},
-			});
-			expect(result).toEqual({
-				success: true,
-				message: "Feedback submitted successfully",
-				completion_id: completionId,
-			});
+		await handleChatCompletionFeedbackSubmission(createContext(), {
+			completion_id: "completion-4",
+			request: { log_id: "log-4", feedback: -1 },
 		});
 
-		it("should submit negative feedback successfully", async () => {
-			const completionId = "completion-456";
-			const request = {
-				log_id: "log-456",
-				feedback: "negative",
-				score: 1,
-			} as any;
-
-			mockGateway.patchLog.mockResolvedValue(undefined);
-
-			const result = await handleChatCompletionFeedbackSubmission(mockServiceContext, {
-				request,
-				completion_id: completionId,
-			});
-
-			expect(mockGateway.patchLog).toHaveBeenCalledWith("log-456", {
-				feedback: "negative",
-				score: 1,
-				metadata: {
-					user: "test@example.com",
-				},
-			});
-			expect(result).toEqual({
-				success: true,
-				message: "Feedback submitted successfully",
-				completion_id: completionId,
-			});
-		});
-
-		it("should submit feedback without score", async () => {
-			const completionId = "completion-no-score";
-			const request = {
-				log_id: "log-no-score",
-				feedback: "helpful",
-			} as any;
-
-			mockGateway.patchLog.mockResolvedValue(undefined);
-
-			const result = await handleChatCompletionFeedbackSubmission(mockServiceContext, {
-				request,
-				completion_id: completionId,
-			});
-
-			expect(mockGateway.patchLog).toHaveBeenCalledWith("log-no-score", {
-				feedback: "helpful",
-				score: undefined,
-				metadata: {
-					user: "test@example.com",
-				},
-			});
-			expect(result.success).toBe(true);
-		});
-
-		it("should handle different feedback types", async () => {
-			const feedbackTypes = [
-				"thumbs_up",
-				"thumbs_down",
-				"helpful",
-				"not_helpful",
-				"accurate",
-				"inaccurate",
-			];
-
-			for (const feedbackType of feedbackTypes) {
-				const request = {
-					log_id: `log-${feedbackType}`,
-					feedback: feedbackType,
-					score: 3,
-				} as any;
-
-				mockGateway.patchLog.mockResolvedValue(undefined);
-
-				const result = await handleChatCompletionFeedbackSubmission(mockServiceContext, {
-					request,
-					completion_id: `completion-${feedbackType}`,
-				});
-
-				expect(mockGateway.patchLog).toHaveBeenCalledWith(`log-${feedbackType}`, {
-					feedback: feedbackType,
-					score: 3,
-					metadata: {
-						user: "test@example.com",
-					},
-				});
-				expect(result.success).toBe(true);
-			}
-		});
-
-		it("should handle different score values", async () => {
-			const scores = [1, 2, 3, 4, 5];
-
-			for (const score of scores) {
-				const request = {
-					log_id: `log-score-${score}`,
-					feedback: "rating",
-					score,
-				} as any;
-
-				mockGateway.patchLog.mockResolvedValue(undefined);
-
-				const result = await handleChatCompletionFeedbackSubmission(mockServiceContext, {
-					request,
-					completion_id: `completion-score-${score}`,
-				});
-
-				expect(mockGateway.patchLog).toHaveBeenCalledWith(`log-score-${score}`, {
-					feedback: "rating",
-					score,
-					metadata: {
-						user: "test@example.com",
-					},
-				});
-				expect(result.success).toBe(true);
-			}
-		});
-	});
-
-	describe("user context", () => {
-		it("should include user email in metadata", async () => {
-			const request = {
-				log_id: "log-with-user",
-				feedback: "positive",
-			} as any;
-
-			const userWithEmail = {
-				email: "specific-user@example.com",
-			} as any;
-
-			mockGateway.patchLog.mockResolvedValue(undefined);
-
-			await handleChatCompletionFeedbackSubmission(
-				{ ...mockServiceContext, user: userWithEmail },
-				{ request, completion_id: "completion-user" },
-			);
-
-			expect(mockGateway.patchLog).toHaveBeenCalledWith("log-with-user", {
-				feedback: "positive",
-				score: undefined,
-				metadata: {
-					user: "specific-user@example.com",
-				},
-			});
-		});
-
-		it("should handle user without email", async () => {
-			const request = {
-				log_id: "log-no-email",
-				feedback: "positive",
-			} as any;
-
-			const userWithoutEmail = {} as any;
-
-			mockGateway.patchLog.mockResolvedValue(undefined);
-
-			await handleChatCompletionFeedbackSubmission(
-				{ ...mockServiceContext, user: userWithoutEmail },
-				{ request, completion_id: "completion-no-email" },
-			);
-
-			expect(mockGateway.patchLog).toHaveBeenCalledWith("log-no-email", {
-				feedback: "positive",
-				score: undefined,
-				metadata: {
-					user: undefined,
-				},
-			});
-		});
-	});
-
-	describe("error handling", () => {
-		it("should succeed even when gateway patch log fails", async () => {
-			const mockRepositories = {
-				trainingExamples: {
-					findMany: vi.fn().mockResolvedValue([]),
-				},
-			};
-
-			repositoryFactory = () => mockRepositories as any;
-
-			const ctx = {
-				...mockServiceContext,
-				env: { ...mockEnv, DB: {} as any },
-			};
-
-			const request = {
-				log_id: "log-error",
-				feedback: "positive",
-			} as any;
-
-			mockGateway.patchLog.mockRejectedValue(new Error("Gateway service unavailable"));
-
-			const result = await handleChatCompletionFeedbackSubmission(ctx, {
-				request,
-				completion_id: "completion-error",
-			});
-
-			expect(result.success).toBe(true);
-			expect(mockRepositories.trainingExamples.findMany).toHaveBeenCalled();
-		});
-
-		it("should succeed even when gateway initialization fails", async () => {
-			const mockRepositories = {
-				trainingExamples: {
-					findMany: vi.fn().mockResolvedValue([]),
-				},
-			};
-
-			repositoryFactory = () => mockRepositories as any;
-
-			const ctx = {
-				...mockServiceContext,
-				env: {
-					AI_GATEWAY_TOKEN: "test-token",
-					ACCOUNT_ID: "test-account",
-					DB: {} as any,
-					AI: {
-						gateway: vi.fn(() => {
-							throw new Error("Gateway initialization failed");
-						}),
-					},
-				} as any,
-			};
-
-			const request = {
-				log_id: "log-init-error",
-				feedback: "positive",
-			} as any;
-
-			const result = await handleChatCompletionFeedbackSubmission(ctx, {
-				request,
-				completion_id: "completion-init-error",
-			});
-
-			expect(result.success).toBe(true);
-			expect(mockRepositories.trainingExamples.findMany).toHaveBeenCalled();
-		});
-
-		it("should succeed even with invalid log ID", async () => {
-			const mockRepositories = {
-				trainingExamples: {
-					findMany: vi.fn().mockResolvedValue([]),
-				},
-			};
-
-			repositoryFactory = () => mockRepositories as any;
-
-			const ctx = {
-				...mockServiceContext,
-				env: { ...mockEnv, DB: {} as any },
-			};
-
-			const request = {
-				log_id: "invalid-log-id",
-				feedback: "positive",
-			} as any;
-
-			mockGateway.patchLog.mockRejectedValue(new Error("Log not found"));
-
-			const result = await handleChatCompletionFeedbackSubmission(ctx, {
-				request,
-				completion_id: "completion-invalid-log",
-			});
-
-			expect(result.success).toBe(true);
-			expect(mockRepositories.trainingExamples.findMany).toHaveBeenCalled();
-		});
-	});
-
-	describe("response format", () => {
-		it("should return consistent response format", async () => {
-			const completionId = "completion-format-test";
-			const request = {
-				log_id: "log-format-test",
-				feedback: "positive",
-				score: 4,
-			} as any;
-
-			mockGateway.patchLog.mockResolvedValue(undefined);
-
-			const result = await handleChatCompletionFeedbackSubmission(mockServiceContext, {
-				request,
-				completion_id: completionId,
-			});
-
-			expect(result).toHaveProperty("success");
-			expect(result).toHaveProperty("message");
-			expect(result).toHaveProperty("completion_id");
-			expect(typeof result.success).toBe("boolean");
-			expect(typeof result.message).toBe("string");
-			expect(typeof result.completion_id).toBe("string");
-			expect(result.success).toBe(true);
-			expect(result.message).toBe("Feedback submitted successfully");
-			expect(result.completion_id).toBe(completionId);
-		});
+		expect(updateById).not.toHaveBeenCalled();
 	});
 });

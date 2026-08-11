@@ -1,11 +1,11 @@
 import { describe, expect, it, vi } from "vitest";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
-import { requireProjectCapabilityAccess } from "../access";
+import { requireProjectCapabilityAccess, requireWorkAccess } from "../access";
 
 function createContext(capabilityId: string) {
 	return {
-		requireUser: vi.fn().mockReturnValue({ id: 7 }),
+		requireUser: vi.fn().mockReturnValue({ id: 7, plan_id: "pro" }),
 		repositories: {
 			workspaces: {
 				getProject: vi.fn().mockResolvedValue({ id: "project-1", workspace_id: "workspace-1" }),
@@ -18,6 +18,21 @@ function createContext(capabilityId: string) {
 		},
 	} as unknown as ServiceContext;
 }
+
+describe("requireWorkAccess", () => {
+	it("rejects signed-in users without a Pro entitlement", () => {
+		const context = {
+			requireUser: vi.fn().mockReturnValue({ id: 7, plan_id: "free" }),
+		} as unknown as ServiceContext;
+
+		expect(() => requireWorkAccess(context)).toThrow(
+			expect.objectContaining({
+				message: "Workspaces require a Pro plan",
+				statusCode: 403,
+			}),
+		);
+	});
+});
 
 describe("requireProjectCapabilityAccess", () => {
 	it("allows members to use an enabled project capability", async () => {

@@ -1,11 +1,12 @@
-import { Clock3, Link2, ShieldCheck, UserPlus } from "lucide-react";
+import { Clock3, Link2, ShieldCheck, Trash2, UserPlus } from "lucide-react";
 import { useState } from "react";
 
 import { PageHeader } from "~/components/Core/PageHeader";
 import { PageTitle } from "~/components/Core/PageTitle";
 import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
-import { Card } from "~/components/ui";
+import { Button, Card } from "~/components/ui";
 import { isAuthenticationError } from "~/lib/errors";
+import { useRevokeWorkspaceInvitation } from "~/hooks/useWorkspaces";
 import { useWorkData } from "./WorkContext";
 import { InviteMemberDialog } from "./InviteMemberDialog";
 import { WorkspaceMembersSkeleton } from "./WorkLoadingSkeletons";
@@ -14,6 +15,7 @@ export function WorkspaceMembers({ workspaceId }: { workspaceId: string }) {
 	const { workspaceQuery } = useWorkData();
 	const { data: workspace, isLoading, error } = workspaceQuery;
 	const [isInviteOpen, setIsInviteOpen] = useState(false);
+	const revokeInvitation = useRevokeWorkspaceInvitation();
 
 	if (isLoading) return <WorkspaceMembersSkeleton />;
 	if (isAuthenticationError(error)) {
@@ -93,6 +95,21 @@ export function WorkspaceMembers({ workspaceId }: { workspaceId: string }) {
 											</p>
 										</div>
 										<span className="text-xs capitalize text-zinc-500">{invite.role}</span>
+										<Button
+											type="button"
+											size="sm"
+											variant="outline"
+											icon={<Trash2 size={14} />}
+											isLoading={
+												revokeInvitation.isPending &&
+												revokeInvitation.variables?.invitationId === invite.id
+											}
+											onClick={() =>
+												revokeInvitation.mutate({ workspaceId, invitationId: invite.id })
+											}
+										>
+											Revoke
+										</Button>
 									</div>
 								))}
 						</Card>

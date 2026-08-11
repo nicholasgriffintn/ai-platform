@@ -1,4 +1,4 @@
-import { SearchInput } from "~/components/ui";
+import { FormSelect, SearchInput } from "~/components/ui";
 import type { ProjectCapabilityKindFilter } from "~/lib/project-capability-catalog";
 import { cn } from "~/lib/utils";
 
@@ -28,8 +28,16 @@ export function ProjectCapabilityFilters({
 	onQueryChange,
 	query,
 }: ProjectCapabilityFiltersProps) {
+	const categoryFilters = [
+		{ label: "All categories", value: "all" },
+		...categories.map((capabilityCategory) => ({
+			label: capabilityCategory,
+			value: capabilityCategory,
+		})),
+	];
+
 	return (
-		<div className="mb-8 space-y-3">
+		<div className="mb-8 space-y-4">
 			<SearchInput
 				aria-label="Search project capabilities"
 				className="max-w-xl"
@@ -37,7 +45,7 @@ export function ProjectCapabilityFilters({
 				value={query}
 				onChange={onQueryChange}
 			/>
-			<div className="flex flex-wrap items-center gap-2">
+			<div className="space-y-3">
 				<div
 					className="flex flex-wrap gap-1.5"
 					aria-label="Filter capabilities by type"
@@ -60,26 +68,34 @@ export function ProjectCapabilityFilters({
 						</button>
 					))}
 				</div>
-				<span className="hidden h-6 w-px bg-zinc-200 dark:bg-zinc-700 sm:block" />
+				<div className="sm:hidden">
+					<FormSelect
+						aria-label="Filter capabilities by category"
+						className="h-10 bg-white dark:bg-zinc-900"
+						onChange={(event) => onCategoryChange(event.target.value)}
+						options={categoryFilters}
+						value={category}
+					/>
+				</div>
 				<div
-					className="flex max-w-full gap-1.5 overflow-x-auto pb-1"
+					className="hidden min-w-0 flex-wrap gap-1.5 sm:flex"
 					aria-label="Filter capabilities by category"
 					role="group"
 				>
-					{["all", ...categories].map((capabilityCategory) => (
+					{categoryFilters.map((filter) => (
 						<button
-							key={capabilityCategory}
+							key={filter.value}
 							type="button"
-							aria-pressed={category === capabilityCategory}
-							onClick={() => onCategoryChange(capabilityCategory)}
+							aria-pressed={category === filter.value}
+							onClick={() => onCategoryChange(filter.value)}
 							className={cn(
-								"shrink-0 rounded-full border px-3 py-1.5 text-xs transition-colors",
-								category === capabilityCategory
+								"rounded-full border px-3 py-1.5 text-xs transition-colors",
+								category === filter.value
 									? "border-zinc-400 bg-zinc-100 text-zinc-950 dark:border-zinc-500 dark:bg-zinc-800 dark:text-white"
 									: "border-transparent text-zinc-500 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800",
 							)}
 						>
-							{capabilityCategory === "all" ? "All categories" : capabilityCategory}
+							{filter.label}
 						</button>
 					))}
 				</div>

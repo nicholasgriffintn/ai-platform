@@ -31,31 +31,28 @@ export const handleUpdateChatCompletion = async (
 	const hasConversationUpdates = Object.values(conversationUpdates).some(
 		(value) => value !== undefined,
 	);
-	const branchMetadata =
-		parent_conversation_id && parent_message_id
-			? {
-					branch_of: JSON.stringify({
-						conversation_id: parent_conversation_id,
-						message_id: parent_message_id,
-					}),
-				}
-			: undefined;
-
 	let updatedConversation: Record<string, unknown> = {};
 
 	if (messages) {
-		if (branchMetadata) {
-			let branchSourceMessages = messages;
-			try {
-				const parentActiveMessages = await conversationManager.get(parent_conversation_id);
-				branchSourceMessages = selectBranchSourceMessages({
-					parentActiveMessages,
-					parentMessageId: parent_message_id,
-					providedMessages: messages,
-				});
-			} catch {
-				branchSourceMessages = messages;
-			}
+		if (parent_conversation_id && parent_message_id) {
+			const parentConversation = await conversationManager.getConversationDetails(
+				parent_conversation_id,
+				{ includeArchived: false, includeSnapshots: true },
+			);
+			const branchSourceMessages = selectBranchSourceMessages({
+				parentActiveMessages: parentConversation.messages,
+				parentMessageId: parent_message_id,
+				providedMessages: messages,
+			});
+			const branchMetadata = {
+				branch_of: JSON.stringify({
+					conversation_id: parent_conversation_id,
+					message_id: parent_message_id,
+				}),
+				...(typeof parentConversation.project_id === "string"
+					? { project_id: parentConversation.project_id }
+					: {}),
+			};
 
 			if (!canReplaceStoredConversationMessages(branchSourceMessages)) {
 				throw new AssistantError(

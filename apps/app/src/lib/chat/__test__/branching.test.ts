@@ -62,6 +62,7 @@ describe("conversation branching", () => {
 					id: "conversation-1",
 					title: "Original",
 					messages,
+					project_id: "project-1",
 				},
 				conversationId: "branch-1",
 				isLocalOnly: false,
@@ -76,6 +77,7 @@ describe("conversation branching", () => {
 				messages: [messages[0], messages[1]],
 				parent_conversation_id: "conversation-1",
 				parent_message_id: "assistant-1",
+				project_id: "project-1",
 				isLocalOnly: false,
 			}),
 		);

@@ -37,6 +37,19 @@ export function readNumberField(value: unknown, fieldName: string): number | und
 	return typeof field === "number" && Number.isFinite(field) ? field : undefined;
 }
 
+export function readNumericField(value: unknown, fieldName: string): number | undefined {
+	const field = readRecordField(value, fieldName);
+	if (typeof field === "number") {
+		return Number.isFinite(field) ? field : undefined;
+	}
+	if (typeof field !== "string" || !field.trim()) {
+		return undefined;
+	}
+
+	const parsed = Number(field);
+	return Number.isFinite(parsed) ? parsed : undefined;
+}
+
 export function readNumberFieldAlias(
 	value: unknown,
 	fieldNames: readonly string[],

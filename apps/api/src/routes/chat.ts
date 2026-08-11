@@ -62,7 +62,9 @@ import { handleListChatCompletions } from "~/services/completions/listChatComple
 import { handleShareConversation } from "~/services/completions/shareConversation";
 import { handleUnshareConversation } from "~/services/completions/unshareConversation";
 import { handleUpdateChatCompletion } from "~/services/completions/updateChatCompletion";
-import type { ChatRole, IEnv, IFeedbackBody, IUser, Message } from "~/types";
+import type { SubmitChatCompletionFeedbackInput } from "@assistant/schemas";
+import type { ChatRole, IEnv, IUser, Message } from "~/types";
+import { readNumericField, readRecordObjectField } from "~/utils/recordFields";
 
 const app = new Hono();
 
@@ -119,12 +121,11 @@ addRoute(app, "post", "/completions", {
 			const userContext = context.get("user");
 			const anonymousUserContext = context.get("anonymousUser");
 			const serviceContext = getServiceContext(context);
+			const cfProperties = readRecordObjectField(context.req.raw, "cf");
 
 			const user = {
-				// @ts-ignore
-				longitude: context.req.cf?.longitude,
-				// @ts-ignore
-				latitude: context.req.cf?.latitude,
+				longitude: readNumericField(cfProperties, "longitude"),
+				latitude: readNumericField(cfProperties, "latitude"),
 				...userContext,
 			};
 
@@ -684,7 +685,7 @@ addRoute(app, "post", "/completions/:completion_id/feedback", {
 			const { completion_id } = context.req.valid("param" as never) as {
 				completion_id: string;
 			};
-			const body = context.req.valid("json" as never) as IFeedbackBody;
+			const body = context.req.valid("json" as never) as SubmitChatCompletionFeedbackInput;
 
 			const serviceContext = getServiceContext(context);
 

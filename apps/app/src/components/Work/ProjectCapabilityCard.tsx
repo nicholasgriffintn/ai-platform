@@ -51,7 +51,7 @@ export function ProjectCapabilityCard({
 	const navigate = useNavigate();
 	const openPath = getProjectCapabilityOpenPath(item, workspaceId, projectId, experiences);
 	const appIcon = app ? getIcon(app.icon, app.theme) : null;
-	const isIncluded = Boolean(existing) || kind === "tool";
+	const isIncluded = Boolean(existing) || Boolean(tool);
 	const primaryAction = onConfigure
 		? {
 				icon: <Settings2 size={15} />,
@@ -111,7 +111,7 @@ export function ProjectCapabilityCard({
 							{primaryAction.label}
 						</Button>
 					)}
-					{existing && kind !== "tool" && (
+					{existing && (kind !== "tool" || !tool) && (
 						<DropdownMenu
 							position="top"
 							buttonProps={{

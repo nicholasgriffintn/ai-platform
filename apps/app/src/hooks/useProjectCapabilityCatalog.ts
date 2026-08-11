@@ -3,27 +3,41 @@ import { buildAssistantActionCatalog, createRecipeAssistantActionItem } from "@a
 
 import { useAssistantRecipes } from "./useRecipes";
 import { useDynamicApps } from "./useDynamicApps";
+import { useTools } from "./useTools";
 
 export function useProjectCapabilityCatalog() {
 	const appsQuery = useDynamicApps();
 	const recipesQuery = useAssistantRecipes();
-	const apps = appsQuery.data?.apps ?? [];
+	const toolsQuery = useTools();
+	const callableTools = useMemo(() => toolsQuery.data ?? [], [toolsQuery.data]);
+	const callableToolIds = useMemo(
+		() => new Set(callableTools.map((tool) => tool.id)),
+		[callableTools],
+	);
+	const apps = useMemo(
+		() => (appsQuery.data?.apps ?? []).filter((app) => !callableToolIds.has(app.id)),
+		[appsQuery.data?.apps, callableToolIds],
+	);
 	const recipes = recipesQuery.data?.recipes ?? [];
 	const tools = appsQuery.data?.tools ?? [];
 
 	const items = useMemo(() => {
-		const baseCatalog = buildAssistantActionCatalog({ apps, modelTools: tools });
+		const baseCatalog = buildAssistantActionCatalog({
+			apps,
+			modelTools: tools,
+			tools: callableTools,
+		});
 		return [
 			...baseCatalog.items,
 			...recipes.map((recipe) => createRecipeAssistantActionItem(recipe)),
 		];
-	}, [apps, recipes, tools]);
+	}, [apps, callableTools, recipes, tools]);
 
 	return {
 		apps,
-		error: appsQuery.error ?? recipesQuery.error,
+		error: appsQuery.error ?? recipesQuery.error ?? toolsQuery.error,
 		experiences: appsQuery.data?.experiences ?? [],
-		isLoading: appsQuery.isLoading || recipesQuery.isLoading,
+		isLoading: appsQuery.isLoading || recipesQuery.isLoading || toolsQuery.isLoading,
 		items,
 		recipes,
 		tools,

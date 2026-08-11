@@ -278,19 +278,3 @@ export function useGenerateTitle() {
 		},
 	});
 }
-
-export function useSubmitFeedback() {
-	return useMutation({
-		mutationFn: ({
-			completion_id,
-			log_id,
-			feedback,
-			score = 50,
-		}: {
-			completion_id: string;
-			log_id: string;
-			feedback: 1 | -1;
-			score?: number;
-		}) => apiService.submitFeedback(completion_id, log_id, feedback, score),
-	});
-}

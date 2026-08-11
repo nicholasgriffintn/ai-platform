@@ -4,7 +4,6 @@ import { RepositoryManager } from "~/repositories";
 import type { IEnv, User } from "~/types";
 import { logError } from "~/utils/errorLogger";
 import { AssistantError, ErrorType } from "~/utils/errors";
-import { getLogger } from "~/utils/logger";
 
 export * as schema from "./schema";
 export { createDatabaseClient, type DatabaseClient } from "./client";
@@ -12,8 +11,6 @@ export { createDatabaseClient, type DatabaseClient } from "./client";
 export interface Env {
 	DB: D1Database;
 }
-
-const logger = getLogger({ prefix: "lib/database" });
 
 /**
  * Database class - lightweight wrapper around RepositoryManager
@@ -82,33 +79,6 @@ export class Database {
 			});
 
 			throw new AssistantError("Unable to create user account", ErrorType.DATABASE_ERROR, 500);
-		}
-	}
-
-	public async deleteAllChatCompletions(userId: number): Promise<void> {
-		try {
-			const allConversations = await this._repositories.conversations.getUserConversations(
-				userId,
-				1000,
-				1,
-				false,
-			);
-
-			if (allConversations.conversations.length === 0) {
-				return;
-			}
-
-			for (const conversation of allConversations.conversations) {
-				if (!conversation.id || typeof conversation.id !== "string") {
-					continue;
-				}
-				await this._repositories.messages.deleteAllMessages(conversation.id);
-				await this._repositories.conversations.deleteConversation(conversation.id);
-			}
-
-			return;
-		} catch (error) {
-			logger.error(`Error deleting all chat completions: ${error}`);
 		}
 	}
 }

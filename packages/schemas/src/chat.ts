@@ -144,7 +144,8 @@ export const submitChatCompletionFeedbackParamsSchema = z.object({
 
 export const submitChatCompletionFeedbackJsonSchema = z.object({
 	log_id: z.string().min(1, "log_id is required"),
-	feedback: z.number(),
+	feedback: z.union([z.literal(1), z.literal(-1)]),
+	score: z.number().min(0).max(100).optional(),
 });
 
 export const shareConversationParamsSchema = z.object({
@@ -258,6 +259,9 @@ export const compactChatCompletionResponseSchema = z
 	});
 
 export type CompactChatCompletionResponse = z.infer<typeof compactChatCompletionResponseSchema>;
+export type SubmitChatCompletionFeedbackInput = z.infer<
+	typeof submitChatCompletionFeedbackJsonSchema
+>;
 
 export const getMessageResponseSchema = storedChatMessageResponseSchema.and(
 	z.object({

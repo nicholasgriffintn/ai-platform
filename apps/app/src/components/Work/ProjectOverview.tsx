@@ -1,14 +1,17 @@
-import { ArrowRight, MessageSquareText, Settings2, SquarePen } from "lucide-react";
-import { Link } from "react-router";
+import { Archive, ArrowRight, MessageSquareText, Settings2, SquarePen } from "lucide-react";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router";
 
 import { EmptyState } from "~/components/Core/EmptyState";
 import { PageHeader } from "~/components/Core/PageHeader";
 import { PageTitle } from "~/components/Core/PageTitle";
 import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
-import { Button, Card } from "~/components/ui";
+import { Button, Card, ConfirmationDialog } from "~/components/ui";
+import { useArchiveProject } from "~/hooks/useWorkspaces";
 import { isAuthenticationError } from "~/lib/errors";
 import { useWorkData } from "./WorkContext";
 import { ProjectBriefCard } from "./ProjectBriefCard";
+import { ProjectCapabilitiesCard } from "./ProjectCapabilitiesCard";
 import { ProjectOverviewSkeleton } from "./WorkLoadingSkeletons";
 import { ProjectCodingEnvironmentCard } from "./ProjectCodingEnvironmentCard";
 
@@ -19,6 +22,9 @@ export function ProjectOverview({
 	workspaceId: string;
 	projectId: string;
 }) {
+	const [isArchiveOpen, setIsArchiveOpen] = useState(false);
+	const archiveProject = useArchiveProject();
+	const navigate = useNavigate();
 	const { projectQuery, workspaceQuery } = useWorkData();
 	const { data: project, isLoading, error } = projectQuery;
 	const { data: workspace } = workspaceQuery;
@@ -48,6 +54,15 @@ export function ProjectOverview({
 							</p>
 						</div>
 						<div className="flex shrink-0 gap-2">
+							{canManage && (
+								<Button
+									variant="outline"
+									icon={<Archive size={16} />}
+									onClick={() => setIsArchiveOpen(true)}
+								>
+									Archive
+								</Button>
+							)}
 							<Link to={`/work/${workspaceId}/projects/${projectId}/library`}>
 								<Button variant="outline" icon={<Settings2 size={16} />}>
 									Capabilities
@@ -118,24 +133,30 @@ export function ProjectOverview({
 							projectId={projectId}
 						/>
 						<ProjectCodingEnvironmentCard canManage={canManage} project={project} />
-						<Card className="p-6 shadow-none">
-							<Settings2 size={20} className="text-zinc-500" />
-							<h2 className="text-sm font-semibold">Project capabilities</h2>
-							<p className="text-sm text-zinc-500">{project.capabilityCount} enabled</p>
-							<div className="flex flex-wrap gap-2">
-								{project.capabilities.map((capability) => (
-									<span
-										key={capability.id}
-										className="rounded-full border border-zinc-200 px-2.5 py-1 text-xs dark:border-zinc-700"
-									>
-										{capability.capabilityId}
-									</span>
-								))}
-							</div>
-						</Card>
+						<ProjectCapabilitiesCard
+							capabilities={project.capabilities}
+							capabilityCount={project.capabilityCount}
+						/>
 					</aside>
 				</div>
 			</main>
+			<ConfirmationDialog
+				open={isArchiveOpen}
+				onOpenChange={setIsArchiveOpen}
+				title="Archive project"
+				description={`Archive ${project.name}. Its conversations will no longer appear in this workspace.`}
+				confirmText="Archive project"
+				variant="destructive"
+				isLoading={archiveProject.isPending}
+				onConfirm={async () => {
+					await archiveProject.mutateAsync({ workspaceId, projectId });
+					navigate(`/work/${workspaceId}`, { replace: true });
+				}}
+			>
+				{archiveProject.error && (
+					<p className="text-sm text-red-700 dark:text-red-400">{archiveProject.error.message}</p>
+				)}
+			</ConfirmationDialog>
 		</>
 	);
 }

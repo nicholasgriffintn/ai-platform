@@ -384,12 +384,7 @@ export class ChatService {
 		}
 	}
 
-	async submitFeedback(
-		completion_id: string,
-		log_id: string,
-		feedback: 1 | -1,
-		score = 50,
-	): Promise<void> {
+	async submitFeedback(completion_id: string, log_id: string, feedback: 1 | -1): Promise<void> {
 		if (!completion_id) {
 			throw new Error("No completion ID provided");
 		}
@@ -407,7 +402,6 @@ export class ChatService {
 			body: {
 				log_id,
 				feedback,
-				score,
 			},
 		});
 

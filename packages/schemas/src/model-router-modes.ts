@@ -46,6 +46,10 @@ function isOpenRouterFreeModel(model: ModelConfigItem) {
 	);
 }
 
+function isFlashFamily(model: ModelConfigItem) {
+	return model.family?.toLowerCase().includes("flash") ?? false;
+}
+
 export function isActiveRouterModel(model: ModelConfigItem) {
 	return (
 		!model.deprecated &&
@@ -82,6 +86,7 @@ export function doesModelMatchRouterMode(model: ModelConfigItem, mode: ModelRout
 			);
 		case "pro": {
 			if (
+				isFlashFamily(model) ||
 				(model.contextComplexity ?? 3) < 4 ||
 				(model.speed ?? 3) < 2 ||
 				!hasAnyStrength(model, advancedStrengths)

@@ -5,6 +5,7 @@ import { PageShell } from "~/components/Core/PageShell";
 import { ProductModeHeader } from "~/components/Core/ProductModeHeader";
 import { SignInEmptyState } from "~/components/Core/SignInEmptyState";
 import { useChatStore } from "~/state/stores/chatStore";
+import { WorkAccessEmptyState } from "./WorkAccessEmptyState";
 import { WorkSidebar } from "./WorkSidebar";
 
 export function WorkPageShell({
@@ -18,6 +19,7 @@ export function WorkPageShell({
 }) {
 	const isAuthenticated = useChatStore((state) => state.isAuthenticated);
 	const isAuthenticationLoading = useChatStore((state) => state.isAuthenticationLoading);
+	const isPro = useChatStore((state) => state.isPro);
 	const requiresAuthentication = Boolean(workspaceId || projectId);
 	const content =
 		requiresAuthentication && isAuthenticationLoading ? (
@@ -28,6 +30,10 @@ export function WorkPageShell({
 				message="Sign in to access this workspace and its projects."
 				className="min-h-[360px] border-0 bg-transparent dark:bg-transparent"
 			/>
+		) : requiresAuthentication && !isPro ? (
+			<div className="p-4 sm:p-8">
+				<WorkAccessEmptyState />
+			</div>
 		) : (
 			children
 		);

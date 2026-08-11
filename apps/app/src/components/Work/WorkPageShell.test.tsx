@@ -1,5 +1,6 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import type { ReactNode } from "react";
+import { MemoryRouter } from "react-router";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { useChatStore } from "~/state/stores/chatStore";
@@ -20,7 +21,11 @@ vi.mock("./WorkSidebar", () => ({
 
 describe("WorkPageShell", () => {
 	beforeEach(() => {
-		useChatStore.setState({ isAuthenticated: false, isAuthenticationLoading: false });
+		useChatStore.setState({
+			isAuthenticated: false,
+			isAuthenticationLoading: false,
+			isPro: false,
+		});
 		useUIStore.setState({ showLoginModal: false });
 	});
 
@@ -36,5 +41,20 @@ describe("WorkPageShell", () => {
 
 		fireEvent.click(screen.getByRole("button", { name: "Sign in" }));
 		expect(useUIStore.getState().showLoginModal).toBe(true);
+	});
+
+	it("shows the Pro upgrade state instead of protected content for free users", () => {
+		useChatStore.setState({ isAuthenticated: true, isPro: false });
+
+		render(
+			<MemoryRouter>
+				<WorkPageShell workspaceId="workspace-1">
+					<div>Private workspace content</div>
+				</WorkPageShell>
+			</MemoryRouter>,
+		);
+
+		expect(screen.getByRole("heading", { name: "Unlock shared workspaces." })).toBeInTheDocument();
+		expect(screen.queryByText("Private workspace content")).not.toBeInTheDocument();
 	});
 });

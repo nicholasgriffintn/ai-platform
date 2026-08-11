@@ -1,8 +1,7 @@
+import type { SubmitChatCompletionFeedbackInput } from "@assistant/schemas";
+
 import { gatewayId } from "~/constants/app";
-import type { ServiceContext } from "~/lib/context/serviceContext";
-import type { IFeedbackBody } from "~/types";
-import { AssistantError, ErrorType } from "~/utils/errors";
-import { RepositoryManager } from "~/repositories";
+import type { TrainingExampleRepository } from "~/repositories";
 import { getLogger } from "~/utils/logger";
 
 const logger = getLogger({
@@ -10,41 +9,48 @@ const logger = getLogger({
 });
 
 interface FeedbackParams {
-	request: IFeedbackBody;
+	request: SubmitChatCompletionFeedbackInput;
 	completion_id: string;
 }
 
+interface FeedbackGateway {
+	patchLog(
+		logId: string,
+		data: {
+			feedback: 1 | -1;
+			score?: number;
+			metadata?: Record<string, string>;
+		},
+	): Promise<void>;
+}
+
+export interface ChatFeedbackContext {
+	env: {
+		AI_GATEWAY_TOKEN?: string;
+		ACCOUNT_ID?: string;
+		AI: {
+			gateway(id: string): FeedbackGateway;
+		};
+	};
+	user?: { email?: string } | null;
+	repositories: {
+		trainingExamples: Pick<TrainingExampleRepository, "findMany" | "updateById">;
+	};
+}
+
 export const handleChatCompletionFeedbackSubmission = async (
-	context: ServiceContext,
+	context: ChatFeedbackContext,
 	{ request, completion_id }: FeedbackParams,
 ): Promise<{ success: boolean; message: string; completion_id: string }> => {
 	const { env, user } = context;
 
-	if (!request) {
-		throw new AssistantError("Missing request", ErrorType.PARAMS_ERROR);
-	}
-
-	if (!request.feedback) {
-		throw new AssistantError("Missing feedback", ErrorType.PARAMS_ERROR);
-	}
-
-	if (request.log_id && env.AI_GATEWAY_TOKEN && env.ACCOUNT_ID) {
+	if (env.AI_GATEWAY_TOKEN && env.ACCOUNT_ID) {
 		try {
-			if (!env.AI_GATEWAY_TOKEN || !env.ACCOUNT_ID) {
-				throw new AssistantError(
-					"Missing AI_GATEWAY_TOKEN or ACCOUNT_ID binding",
-					ErrorType.PARAMS_ERROR,
-				);
-			}
-
 			const gateway = env.AI.gateway(gatewayId);
 			await gateway.patchLog(request.log_id, {
-				// @ts-ignore
 				feedback: request.feedback,
 				score: request.score,
-				metadata: {
-					user: user?.email,
-				},
+				metadata: user?.email ? { user: user.email } : undefined,
 			});
 		} catch (error) {
 			logger.error("Failed to send feedback to AI Gateway", {
@@ -55,30 +61,21 @@ export const handleChatCompletionFeedbackSubmission = async (
 	}
 
 	try {
-		const repositories = new RepositoryManager(env);
-		const trainingExamples = await repositories.trainingExamples.findMany({
+		const trainingExamples = await context.repositories.trainingExamples.findMany({
 			conversationId: completion_id,
 			source: "chat",
 			limit: 1,
 		});
+		const [example] = trainingExamples;
 
-		if (trainingExamples.length > 0) {
-			const example = trainingExamples[0];
-			const updateData: any = {};
-
-			if (request.score !== undefined) {
-				updateData.feedback_rating = request.score;
-			}
-
-			if (request.feedback) {
-				updateData.feedback_comment = request.feedback;
-			}
-
-			await repositories.trainingExamples.updateById(example.id, updateData);
+		if (example) {
+			await context.repositories.trainingExamples.updateById(example.id, {
+				feedback_rating: request.feedback === 1 ? 5 : 1,
+			});
 			logger.info("Updated training example with feedback", {
 				exampleId: example.id,
 				completionId: completion_id,
-				score: request.score,
+				feedback: request.feedback,
 			});
 		}
 	} catch (error) {

@@ -14,12 +14,20 @@ export const projectScopeQuerySchema = z.object({
 	projectId: z.string().min(1).optional(),
 });
 
+export function requireWorkAccess(context: ServiceContext) {
+	const user = context.requireUser();
+	if (user.plan_id !== "pro") {
+		throw new AssistantError("Workspaces require a Pro plan", ErrorType.AUTHORISATION_ERROR, 403);
+	}
+	return user;
+}
+
 export async function requireWorkspaceAccess(
 	context: ServiceContext,
 	workspaceId: string,
 	allowedRoles: readonly WorkspaceRole[] = ["owner", "admin", "member"],
 ): Promise<WorkspaceAccess> {
-	const user = context.requireUser();
+	const user = requireWorkAccess(context);
 	const [workspace, membership] = await Promise.all([
 		context.repositories.workspaces.getWorkspace(workspaceId),
 		context.repositories.workspaces.getMembership(workspaceId, user.id),
@@ -40,6 +48,7 @@ export async function requireProjectAccess(
 	projectId: string,
 	allowedRoles: readonly WorkspaceRole[] = ["owner", "admin", "member"],
 ): Promise<{ project: ProjectRow; role: WorkspaceRole }> {
+	requireWorkAccess(context);
 	const project = await context.repositories.workspaces.getProject(projectId);
 	if (!project) {
 		throw new AssistantError("Project not found", ErrorType.NOT_FOUND, 404);

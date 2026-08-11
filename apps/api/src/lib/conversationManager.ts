@@ -34,6 +34,11 @@ export interface ConversationListOptions {
 	sortBy?: ConversationSortBy;
 }
 
+export interface ConversationDetails extends Record<string, unknown> {
+	messages: Message[];
+	project_id?: string | null;
+}
+
 export class ConversationManager {
 	private database: Database;
 	private model?: string;
@@ -281,13 +286,12 @@ export class ConversationManager {
 
 	private async canAccessConversation(conversation: Record<string, unknown>): Promise<boolean> {
 		if (!this.user?.id) return false;
-		if (conversation.user_id === this.user.id) return true;
-		if (!conversation.project_id) return false;
+		if (!conversation.project_id) return conversation.user_id === this.user.id;
+		if (this.user.plan_id !== "pro") return false;
+		if (typeof conversation.id !== "string") return false;
 		return (
-			(await this.repositories?.workspaces.canAccessConversation(
-				String(conversation.id),
-				this.user.id,
-			)) ?? false
+			(await this.repositories?.workspaces.canAccessConversation(conversation.id, this.user.id)) ??
+			false
 		);
 	}
 
@@ -797,7 +801,7 @@ export class ConversationManager {
 	async getConversationDetails(
 		conversation_id: string,
 		options: { includeArchived?: boolean; includeSnapshots?: boolean } = {},
-	): Promise<Record<string, unknown>> {
+	): Promise<ConversationDetails> {
 		if (!this.user?.id) {
 			throw new AssistantError(
 				"User ID is required to get conversation details",
@@ -818,8 +822,10 @@ export class ConversationManager {
 			);
 		}
 
+		const storedConversationId =
+			typeof conversation.id === "string" ? conversation.id : conversation_id;
 		const dbMessages = await this.database.repositories.messages.getConversationMessages(
-			conversation.id as string,
+			storedConversationId,
 			0,
 			undefined,
 			{
@@ -1039,6 +1045,13 @@ export class ConversationManager {
 				ErrorType.FORBIDDEN,
 			);
 		}
+		if (conversation.project_id) {
+			throw new AssistantError(
+				"Project conversations cannot be shared publicly",
+				ErrorType.FORBIDDEN,
+				403,
+			);
+		}
 
 		const share_id = (conversation.share_id as string) || this.generateShareId();
 
@@ -1138,16 +1151,5 @@ export class ConversationManager {
 			formatMessage: (message) => this.formatMessage(message),
 			isHiddenMessage: hasSnapshotPart,
 		});
-	}
-
-	async deleteAllChatCompletions(user_id: number): Promise<void> {
-		if (!user_id) {
-			throw new AssistantError(
-				"User ID is required to delete all chat completions",
-				ErrorType.AUTHENTICATION_ERROR,
-			);
-		}
-
-		await this.database.deleteAllChatCompletions(user_id);
 	}
 }

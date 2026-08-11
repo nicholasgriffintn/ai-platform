@@ -64,6 +64,13 @@ export interface TrainingExampleFilters {
 	maxTokens?: number;
 }
 
+export interface UpdateTrainingExampleData {
+	feedback_rating?: number;
+	feedback_comment?: string;
+	quality_score?: number;
+	include_in_training?: boolean;
+}
+
 export class TrainingExampleRepository extends BaseRepository {
 	constructor(env: IEnv) {
 		super(env);
@@ -230,15 +237,7 @@ export class TrainingExampleRepository extends BaseRepository {
 		return result.meta.changes > 0;
 	}
 
-	async updateById(
-		id: string,
-		updates: Partial<{
-			feedback_rating: number;
-			feedback_comment: string;
-			quality_score: number;
-			include_in_training: boolean;
-		}>,
-	): Promise<boolean> {
+	async updateById(id: string, updates: UpdateTrainingExampleData): Promise<boolean> {
 		const setClauses: string[] = [];
 		const params: any[] = [];
 

@@ -106,13 +106,8 @@ class ApiService {
 		return this.chatService.unshareConversation(completion_id);
 	};
 
-	submitFeedback = (
-		completion_id: string,
-		log_id: string,
-		feedback: 1 | -1,
-		score = 50,
-	): Promise<void> => {
-		return this.chatService.submitFeedback(completion_id, log_id, feedback, score);
+	submitFeedback = (completion_id: string, log_id: string, feedback: 1 | -1): Promise<void> => {
+		return this.chatService.submitFeedback(completion_id, log_id, feedback);
 	};
 
 	generateSpeech = (

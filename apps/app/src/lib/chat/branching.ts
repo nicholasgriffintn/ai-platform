@@ -67,6 +67,7 @@ export function createBranchConversation({
 		messages,
 		parent_conversation_id: parentConversationId,
 		parent_message_id: parentMessageId,
+		project_id: conversation.project_id,
 		isLocalOnly,
 		created_at: now,
 		updated_at: now,

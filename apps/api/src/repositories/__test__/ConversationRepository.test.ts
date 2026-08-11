@@ -4,13 +4,15 @@ import { ConversationRepository } from "../ConversationRepository";
 
 function createMockD1() {
 	const calls: { params: unknown[]; query: string }[] = [];
+	const batch = vi.fn(async () => []);
 
 	const db = {
+		batch,
 		prepare: vi.fn((query: string) => ({
 			bind: (...params: unknown[]) => {
 				calls.push({ query, params });
 				return {
-					first: vi.fn(async () => ({ total: 1 })),
+					first: vi.fn(async () => ({ allowed: 1, total: 1 })),
 					all: vi.fn(async () => ({
 						results: [
 							{
@@ -25,7 +27,7 @@ function createMockD1() {
 		})),
 	};
 
-	return { calls, db };
+	return { batch, calls, db };
 }
 
 describe("ConversationRepository", () => {
@@ -48,5 +50,22 @@ describe("ConversationRepository", () => {
 		expect(calls[0]?.params).toEqual([123, "%50\\%\\_plan%"]);
 		expect(calls[1]?.query).toContain("ORDER BY c.created_at DESC, c.id DESC");
 		expect(calls[1]?.params).toEqual([123, "%50\\%\\_plan%", 10, 10]);
+	});
+
+	it("bulk deletes every personal conversation without touching project conversations", async () => {
+		const { batch, calls, db } = createMockD1();
+		const repository = new ConversationRepository({ DB: db } as any);
+
+		await repository.deleteAllPersonalConversations(123);
+
+		expect(batch).toHaveBeenCalledOnce();
+		expect(calls).toHaveLength(5);
+		for (const call of calls) {
+			expect(call.query).toContain("project_id IS NULL");
+			expect(call.params).toEqual([123]);
+		}
+		expect(calls.at(-1)?.query).toBe(
+			"DELETE FROM conversation WHERE user_id = ? AND project_id IS NULL",
+		);
 	});
 });

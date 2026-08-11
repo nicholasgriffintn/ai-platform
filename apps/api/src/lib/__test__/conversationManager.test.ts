@@ -19,7 +19,6 @@ const mockDatabase = {
 	getMessageById: vi.fn(),
 	getConversationByShareId: vi.fn(),
 	getMessages: vi.fn(),
-	deleteAllChatCompletions: vi.fn(),
 	repositories: {
 		conversations: {
 			getConversation: vi.fn(),
@@ -28,7 +27,6 @@ const mockDatabase = {
 			getUserConversations: vi.fn(),
 			updateConversation: vi.fn(),
 			getConversationByShareId: vi.fn(),
-			deleteAllChatCompletions: vi.fn(),
 		},
 		messages: {
 			createMessage: vi.fn(),
@@ -42,6 +40,9 @@ const mockDatabase = {
 			updateMessage: vi.fn(),
 			getMessageById: vi.fn(),
 			getMessages: vi.fn(),
+		},
+		workspaces: {
+			canAccessConversation: vi.fn(),
 		},
 	},
 };
@@ -67,6 +68,7 @@ describe("ConversationManager", () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 		ConversationManager["instance"] = undefined as any;
+		mockDatabase.repositories.workspaces.canAccessConversation.mockResolvedValue(true);
 
 		// Link old methods to new repository structure for backwards compatibility
 		mockDatabase.repositories.conversations.getConversation.mockImplementation((...args) =>
@@ -87,10 +89,6 @@ describe("ConversationManager", () => {
 		mockDatabase.repositories.conversations.getConversationByShareId.mockImplementation((...args) =>
 			mockDatabase.getConversationByShareId(...args),
 		);
-		mockDatabase.repositories.conversations.deleteAllChatCompletions.mockImplementation((...args) =>
-			mockDatabase.deleteAllChatCompletions(...args),
-		);
-
 		mockDatabase.repositories.messages.createMessage.mockImplementation((...args) =>
 			mockDatabase.createMessage(...args),
 		);
@@ -816,6 +814,66 @@ describe("ConversationManager", () => {
 					share_id: expect.any(String),
 				}),
 			);
+		});
+
+		it("does not publish a project conversation outside its workspace boundary", async () => {
+			mockDatabase.getConversation.mockResolvedValue({
+				id: "project-conversation-1",
+				user_id: mockUser.id,
+				project_id: "project-1",
+			});
+
+			const manager = ConversationManager.getInstance({
+				database: mockDatabase as any,
+				user: { ...mockUser, plan_id: "pro" },
+			});
+
+			await expect(manager.shareConversation("project-conversation-1")).rejects.toThrow(
+				"Project conversations cannot be shared publicly",
+			);
+			expect(mockDatabase.updateConversation).not.toHaveBeenCalled();
+		});
+	});
+
+	describe("project conversation access", () => {
+		it("does not treat creator attribution as access after workspace membership is removed", async () => {
+			mockDatabase.getConversation.mockResolvedValue({
+				id: "project-conversation-1",
+				user_id: mockUser.id,
+				project_id: "project-1",
+			});
+			mockDatabase.repositories.workspaces.canAccessConversation.mockResolvedValue(false);
+
+			const manager = ConversationManager.getInstance({
+				database: mockDatabase as any,
+				user: { ...mockUser, plan_id: "pro" },
+			});
+
+			await expect(manager.getConversationDetails("project-conversation-1")).rejects.toThrow(
+				"You don't have permission to access this conversation",
+			);
+			expect(mockDatabase.repositories.workspaces.canAccessConversation).toHaveBeenCalledWith(
+				"project-conversation-1",
+				mockUser.id,
+			);
+		});
+
+		it("does not query workspace membership when the creator no longer has Pro", async () => {
+			mockDatabase.getConversation.mockResolvedValue({
+				id: "project-conversation-1",
+				user_id: mockUser.id,
+				project_id: "project-1",
+			});
+
+			const manager = ConversationManager.getInstance({
+				database: mockDatabase as any,
+				user: mockUser,
+			});
+
+			await expect(manager.getConversationDetails("project-conversation-1")).rejects.toThrow(
+				"You don't have permission to access this conversation",
+			);
+			expect(mockDatabase.repositories.workspaces.canAccessConversation).not.toHaveBeenCalled();
 		});
 	});
 

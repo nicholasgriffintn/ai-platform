@@ -86,4 +86,10 @@ describe("getAvailableTools", () => {
 		);
 		expect(tools.find((tool) => tool.id === "unknown_tool")?.category).toBe("Other");
 	});
+
+	it("publishes human-readable names without changing callable identifiers", () => {
+		const tools = getAvailableTools(false, true);
+
+		expect(tools.find((tool) => tool.id === "web_search")?.name).toBe("Web Search");
+	});
 });

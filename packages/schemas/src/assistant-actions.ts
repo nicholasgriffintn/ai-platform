@@ -14,7 +14,7 @@ import {
 } from "./apps";
 import { partialChatCompletionsJsonSchema } from "./chat";
 import { mergeToolIds, normaliseToolIds } from "./tool-ids";
-import { toolIdsSchema, toolIdSchema } from "./tools";
+import { toolIdsSchema, toolIdSchema, type Tool } from "./tools";
 
 export const assistantActionVerbIdSchema = z.enum([
 	"run",
@@ -252,6 +252,7 @@ export interface AssistantActionCatalogSources {
 	installations?: readonly RecipeInstallation[];
 	modelTools?: readonly AssistantActionModelToolDefinition[];
 	recipes?: readonly AssistantRecipe[];
+	tools?: readonly Tool[];
 }
 
 function nonEmptyText(value: string | undefined): string[] {
@@ -629,6 +630,30 @@ export function buildAssistantActionCatalog(
 				capability: createToolCapabilityDescriptor(tool),
 				description: tool.description,
 				searchText: [tool.label, tool.command, tool.description, tool.id],
+				launch: {
+					kind: "tool_toggle" as const,
+					toolId: tool.id,
+				},
+				metadata: {
+					category: tool.category,
+					toolId: tool.id,
+				},
+			})),
+			...(sources.tools ?? []).map((tool) => ({
+				id: `tool:${tool.id}`,
+				kind: "tool" as const,
+				label: tool.name,
+				capability: createToolCapabilityDescriptor({
+					id: tool.id,
+					label: tool.name,
+					command: tool.id,
+					description: tool.description,
+					category: tool.category,
+					availabilityReason: "Available as an AI tool.",
+					requiredModelCapabilities: [],
+				}),
+				description: tool.description,
+				searchText: [tool.name, tool.id, tool.description, tool.category],
 				launch: {
 					kind: "tool_toggle" as const,
 					toolId: tool.id,

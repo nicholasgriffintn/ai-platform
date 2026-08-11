@@ -178,6 +178,44 @@ export class ConversationRepository extends BaseRepository {
 		}
 	}
 
+	public async deleteAllPersonalConversations(userId: number): Promise<void> {
+		const personalConversationIds =
+			"SELECT id FROM conversation WHERE user_id = ? AND project_id IS NULL";
+		const database = this.env.DB;
+
+		await database.batch([
+			database
+				.prepare(
+					`UPDATE conversation
+					 SET parent_conversation_id = NULL, parent_message_id = NULL
+					 WHERE parent_conversation_id IN (${personalConversationIds})`,
+				)
+				.bind(userId),
+			database
+				.prepare(
+					`UPDATE stored_asset
+					 SET conversation_id = NULL, message_id = NULL
+					 WHERE conversation_id IN (${personalConversationIds})`,
+				)
+				.bind(userId),
+			database
+				.prepare(
+					`DELETE FROM training_examples
+					 WHERE conversation_id IN (${personalConversationIds})`,
+				)
+				.bind(userId),
+			database
+				.prepare(
+					`DELETE FROM message
+					 WHERE conversation_id IN (${personalConversationIds})`,
+				)
+				.bind(userId),
+			database
+				.prepare("DELETE FROM conversation WHERE user_id = ? AND project_id IS NULL")
+				.bind(userId),
+		]);
+	}
+
 	public async updateConversationAfterMessage(
 		conversationId: string,
 		messageId: string,

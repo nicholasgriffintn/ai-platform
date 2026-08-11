@@ -55,6 +55,13 @@ export async function updateWorkspace(
 	return returnFetchedData(response);
 }
 
+export async function deleteWorkspace(workspaceId: string): Promise<void> {
+	await fetchApiOrThrow(`/workspaces/${workspaceId}`, {
+		method: "DELETE",
+		headers: await authHeaders(),
+	});
+}
+
 export async function createProject(
 	workspaceId: string,
 	input: CreateProjectInput,
@@ -87,6 +94,13 @@ export async function updateProject(
 	return returnFetchedData(response);
 }
 
+export async function archiveProject(projectId: string): Promise<void> {
+	await fetchApiOrThrow(`/projects/${projectId}`, {
+		method: "DELETE",
+		headers: await authHeaders(),
+	});
+}
+
 export async function inviteWorkspaceMember(
 	workspaceId: string,
 	input: CreateWorkspaceInvitationInput,
@@ -97,6 +111,16 @@ export async function inviteWorkspaceMember(
 		body: input,
 	});
 	return returnFetchedData(response);
+}
+
+export async function revokeWorkspaceInvitation(
+	workspaceId: string,
+	invitationId: string,
+): Promise<void> {
+	await fetchApiOrThrow(`/workspaces/${workspaceId}/invitations/${invitationId}`, {
+		method: "DELETE",
+		headers: await authHeaders(),
+	});
 }
 
 export async function acceptWorkspaceInvitation(token: string): Promise<WorkspaceDetail> {

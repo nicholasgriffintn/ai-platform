@@ -12,7 +12,7 @@ import type { ServiceContext } from "~/lib/context/serviceContext";
 import { sha256Hex } from "~/utils/crypto";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId, randomHex } from "~/utils/id";
-import { requireProjectAccess, requireWorkspaceAccess } from "./access";
+import { requireProjectAccess, requireWorkAccess, requireWorkspaceAccess } from "./access";
 import { validateProjectCapabilityReference } from "./capabilities";
 import { validateProjectToolConfiguration } from "./projectTools";
 import { sendWorkspaceInvitationEmail } from "./invitation-email";
@@ -27,13 +27,13 @@ import {
 const INVITATION_LIFETIME_MS = 7 * 24 * 60 * 60 * 1000;
 
 export async function listWorkspaces(context: ServiceContext) {
-	const user = context.requireUser();
+	const user = requireWorkAccess(context);
 	const workspaces = await context.repositories.workspaces.listWorkspaces(user.id);
 	return { workspaces: workspaces.map(formatWorkspaceSummary) };
 }
 
 export async function createWorkspace(context: ServiceContext, input: CreateWorkspaceInput) {
-	const user = context.requireUser();
+	const user = requireWorkAccess(context);
 	const id = generateId();
 	await context.repositories.workspaces.createWorkspace({ id, ...input, userId: user.id });
 	return getWorkspace(context, id);
@@ -141,7 +141,7 @@ export async function inviteWorkspaceMember(
 }
 
 export async function acceptWorkspaceInvitation(context: ServiceContext, token: string) {
-	const user = context.requireUser();
+	const user = requireWorkAccess(context);
 	const invitation = await context.repositories.workspaces.getInvitationByTokenHash(
 		await sha256Hex(token),
 	);

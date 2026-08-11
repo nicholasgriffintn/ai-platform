@@ -5,9 +5,33 @@ import {
 	generateChatCompletionTitleJsonSchema,
 	getChatCompletionMessagesResponseSchema,
 	getMessageResponseSchema,
+	submitChatCompletionFeedbackJsonSchema,
 } from "./chat";
 
 describe("chat schemas", () => {
+	it("accepts only thumb feedback and bounded optional scores", () => {
+		expect(
+			submitChatCompletionFeedbackJsonSchema.parse({
+				log_id: "gateway-log-1",
+				feedback: 1,
+				score: 100,
+			}),
+		).toEqual({ log_id: "gateway-log-1", feedback: 1, score: 100 });
+		expect(
+			submitChatCompletionFeedbackJsonSchema.safeParse({
+				log_id: "gateway-log-1",
+				feedback: 0,
+			}),
+		).toMatchObject({ success: false });
+		expect(
+			submitChatCompletionFeedbackJsonSchema.safeParse({
+				log_id: "gateway-log-1",
+				feedback: -1,
+				score: 101,
+			}),
+		).toMatchObject({ success: false });
+	});
+
 	it("accepts stored assistant messages represented by parts and tool calls", () => {
 		const result = getChatCompletionMessagesResponseSchema.safeParse({
 			conversation_id: "1d465ce1-a3ee-4818-97ad-30f633330c2c",
